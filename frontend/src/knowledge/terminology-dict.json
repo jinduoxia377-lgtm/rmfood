@@ -1,0 +1,203 @@
+{
+  "metadata": {
+    "version": "1.0.0",
+    "lastUpdated": "2026-05-17",
+    "description": "药食同源与多肽领域专业术语词典",
+    "languages": ["zh-CN", "en"],
+    "totalTerms": 0
+  },
+  "categories": {
+    "tcm_fundamentals": {
+      "name": "中医基础理论",
+      "terms": {
+        "四气": {
+          "zh": "指药物的寒、热、温、凉四种性质",
+          "en": "Four natures of Traditional Chinese Medicine",
+          "examples": ["寒", "热", "温", "凉", "平"],
+          "category": "tcm_properties"
+        },
+        "五味": {
+          "zh": "指药物的酸、苦、甘、辛、咸五种味道",
+          "en": "Five flavors of Traditional Chinese Medicine",
+          "examples": ["酸", "苦", "甘", "辛", "咸"],
+          "category": "tcm_properties"
+        },
+        "归经": {
+          "zh": "药物作用的经络或脏腑",
+          "en": "Meridian tropism",
+          "examples": ["肝经", "心经", "脾经", "肺经", "肾经"],
+          "category": "tcm_properties"
+        },
+        "药食同源": {
+          "zh": "既可作为药物又可作为食物使用的物质",
+          "en": "Medicinal and edible substances",
+          "examples": ["枸杞", "山楂", "黑芝麻", "蜂蜜"],
+          "category": "tcm_concept"
+        },
+        "君臣佐使": {
+          "zh": "方剂配伍原则",
+          "en": "Monarch, minister, assistant, envoy principle",
+          "examples": ["君药为主", "臣药为辅", "佐药调和", "使药引导"],
+          "category": "tcm_formula"
+        }
+      }
+    },
+    "peptide_science": {
+      "name": "多肽科学",
+      "terms": {
+        "氨基酸序列": {
+          "zh": "肽链中氨基酸的排列顺序",
+          "en": "Amino acid sequence",
+          "abbreviation": "AA sequence",
+          "category": "peptide_structure"
+        },
+        "分子量": {
+          "zh": "多肽分子的质量",
+          "en": "Molecular weight",
+          "abbreviation": "MW",
+          "unit": "Da (道尔顿) / kDa (千道尔顿)",
+          "category": "peptide_chemistry"
+        },
+        "等电点": {
+          "zh": "多肽分子净电荷为零时的pH值",
+          "en": "Isoelectric point",
+          "abbreviation": "pI",
+          "category": "peptide_chemistry"
+        },
+        "疏水性": {
+          "zh": "多肽分子对疏水环境的亲和性",
+          "en": "Hydrophobicity",
+          "category": "peptide_property"
+        },
+        "生物活性": {
+          "zh": "多肽在生物体内产生的生理作用",
+          "en": "Bioactivity",
+          "examples": ["抗氧化", "抗炎", "抗菌", "降血压"],
+          "category": "peptide_function"
+        },
+        "IC50": {
+          "zh": "抑制50%生物活性所需的浓度",
+          "en": "Half maximal inhibitory concentration",
+          "unit": "μM 或 nM",
+          "category": "peptide_assay"
+        },
+        "EC50": {
+          "zh": "产生50%最大效应所需的浓度",
+          "en": "Half maximal effective concentration",
+          "unit": "μM 或 nM",
+          "category": "peptide_assay"
+        },
+        "水解稳定性": {
+          "zh": "多肽抵抗水解酶降解的能力",
+          "en": "Hydrolytic stability",
+          "category": "peptide_stability"
+        },
+        "口服生物利用度": {
+          "zh": "口服后进入血液循环的药物比例",
+          "en": "Oral bioavailability",
+          "abbreviation": "F",
+          "unit": "%",
+          "category": "peptide_pharmacokinetics"
+        }
+      }
+    },
+    "bioactivity": {
+      "name": "生物活性类型",
+      "terms": {
+        "抗氧化": {
+          "zh": "清除自由基，防止氧化损伤",
+          "en": "Antioxidant",
+          "mechanism": "清除ROS, 激活抗氧化酶",
+          "related_peptides": ["谷胱甘肽", "肌肽"]
+        },
+        "抗炎": {
+          "zh": "减轻炎症反应",
+          "en": "Anti-inflammatory",
+          "mechanism": "抑制炎症因子, 调节免疫",
+          "related_peptides": ["胸腺肽", "鹿胶原肽"]
+        },
+        "抗菌": {
+          "zh": "抑制或杀灭细菌",
+          "en": "Antimicrobial",
+          "mechanism": "破坏细菌细胞膜, 抑制蛋白质合成",
+          "related_peptides": ["乳铁蛋白肽", "防御素"]
+        },
+        "降血压": {
+          "zh": "降低血压",
+          "en": "Antihypertensive",
+          "mechanism": "ACE抑制, 血管舒张",
+          "related_peptides": ["ACE抑制肽", "乳清蛋白肽"]
+        },
+        "降血糖": {
+          "zh": "降低血糖水平",
+          "en": "Antidiabetic",
+          "mechanism": "增强胰岛素敏感性, 抑制α-葡萄糖苷酶",
+          "related_peptides": ["苦瓜肽", "燕麦肽"]
+        },
+        "抗肿瘤": {
+          "zh": "抑制肿瘤细胞生长",
+          "en": "Anticancer",
+          "mechanism": "诱导凋亡, 抑制血管生成",
+          "related_peptides": ["肿瘤穿透肽", "RGD肽"]
+        }
+      }
+    },
+    "food_sources": {
+      "name": "食源分类",
+      "terms": {
+        "动物源多肽": {
+          "zh": "来源于动物的生物活性多肽",
+          "en": "Animal-derived peptides",
+          "examples": ["胶原蛋白肽", "乳清蛋白肽", "鱼皮肽", "蚕蛹肽"],
+          "category": "source"
+        },
+        "植物源多肽": {
+          "zh": "来源于植物的生物活性多肽",
+          "en": "Plant-derived peptides",
+          "examples": ["大豆肽", "玉米肽", "小麦肽", "苦瓜肽"],
+          "category": "source"
+        },
+        "微生物源多肽": {
+          "zh": "来源于微生物的生物活性多肽",
+          "en": "Microbial-derived peptides",
+          "examples": ["益生菌肽", "发酵产物肽"],
+          "category": "source"
+        }
+      }
+    }
+  },
+  "abbreviations": {
+    "AA": "氨基酸 (Amino Acid)",
+    "MW": "分子量 (Molecular Weight)",
+    "pI": "等电点 (Isoelectric Point)",
+    "IC50": "半数抑制浓度 (Half Maximal Inhibitory Concentration)",
+    "EC50": "半数有效浓度 (Half Maximal Effective Concentration)",
+    "ACE": "血管紧张素转化酶 (Angiotensin-Converting Enzyme)",
+    "ROS": "活性氧 (Reactive Oxygen Species)",
+    "DPP-IV": "二肽基肽酶IV (Dipeptidyl Peptidase IV)",
+    "TCM": "中医药 (Traditional Chinese Medicine)"
+  },
+  "units": {
+    "molecular_weight": {
+      "Da": "道尔顿，分子量单位",
+      "kDa": "千道尔顿，1000 Da",
+      "g/mol": "克/摩尔，SI单位"
+    },
+    "concentration": {
+      "M": "摩尔/升",
+      "mM": "毫摩尔/升",
+      "μM": "微摩尔/升",
+      "nM": "纳摩尔/升"
+    },
+    "dosage": {
+      "mg": "毫克",
+      "g": "克",
+      "kg": "千克"
+    }
+  },
+  "searchable_index": {
+    "by_pinyin": {},
+    "by_english": {},
+    "by_category": {}
+  }
+}

@@ -1,0 +1,71 @@
+# ═══════════════════════════════════════════════
+# RMFOOD Docker 构建排除文件
+# ═══════════════════════════════════════════════
+
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.egg-info
+.eggs
+dist
+build
+*.egg
+.mypy_cache
+.pytest_cache
+.ruff_cache
+
+# 虚拟环境
+.venv
+venv
+env
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# 测试（不需要打包到生产镜像）
+tests/
+**/test_*.py
+**/tests/
+coverage/
+htmlcov/
+.coverage
+*.xml
+
+# 文档
+docs/
+*.md
+!README.md
+
+# 环境文件
+.env
+.env.*
+!.env.example
+
+# 临时文件
+tmp/
+temp/
+*.tmp
+*.bak
+
+# 前端构建产物（由 Dockerfile.frontend 单独构建）
+frontend/node_modules
+frontend/dist
+frontend/build
+
+# 数据文件
+data/
+*.db
+*.sqlite
+
+# 报告文件
+*.report.html
+*_REPORT.md
+*_report.*

@@ -1,0 +1,212 @@
+{
+  "suite_name": "ETL 数据同步验证测试套件",
+  "timestamp": "2026-06-10T13:37:16.888278+00:00",
+  "total_duration_seconds": 59.461,
+  "categories": [
+    {
+      "name": "标准业务数据验证",
+      "description": "标准业务数据测试",
+      "passed": 5,
+      "total": 5,
+      "all_passed": true,
+      "tests": [
+        {
+          "name": "1.1 全部292条记录 name_cn 非NULL",
+          "passed": true,
+          "duration_ms": 4.6,
+          "detail": "共 292 条，全部非NULL",
+          "error": ""
+        },
+        {
+          "name": "1.2 已匹配记录 tcmsp_id 非空且格式正确",
+          "passed": true,
+          "duration_ms": 1.6,
+          "detail": "TMSP_前缀 / LOCAL_前缀 格式全部正确",
+          "error": ""
+        },
+        {
+          "name": "1.3 所有分类属于标准26分类集",
+          "passed": true,
+          "duration_ms": 0.9,
+          "detail": "共 22 个分类，全部在标准集中",
+          "error": ""
+        },
+        {
+          "name": "1.4 ob_percent 取值范围 [0, 100]",
+          "passed": true,
+          "duration_ms": 3.4,
+          "detail": "全部 292 条在 [0, 100] 内",
+          "error": ""
+        },
+        {
+          "name": "1.5 is_food_homology 为布尔值（非 NULL）",
+          "passed": true,
+          "duration_ms": 2.0,
+          "detail": "TRUE=77, FALSE=215, 无NULL",
+          "error": ""
+        }
+      ]
+    },
+    {
+      "name": "边界值测试",
+      "description": "边界值测试",
+      "passed": 5,
+      "total": 5,
+      "all_passed": true,
+      "tests": [
+        {
+          "name": "2.1 NULL ob_percent 处理 — 插入后可正常读取",
+          "passed": true,
+          "duration_ms": 122.5,
+          "detail": "Pipeline 正确处理 NULL ob_percent",
+          "error": ""
+        },
+        {
+          "name": "2.2 极端 OB 值 — 0.0 / 100.0 / -1 / 101",
+          "passed": true,
+          "duration_ms": 583.4,
+          "detail": "合法值['__ETL_TEST_ob0', '__ETL_TEST_ob100'] ✅ | 超范围值['__ETL_TEST_ob_neg1', '__ETL_TEST_ob101'] 可存入（由约束层控制）",
+          "error": ""
+        },
+        {
+          "name": "2.3 特殊字符 name_cn — 括号/斜杠/Unicode",
+          "passed": true,
+          "duration_ms": 712.2,
+          "detail": "4 个特殊名称均正常读写",
+          "error": ""
+        },
+        {
+          "name": "2.4 空 JSON 数组 — compounds/targets/diseases=[]",
+          "passed": true,
+          "duration_ms": 292.9,
+          "detail": "三个 JSON 字段均为空数组 []，读写一致",
+          "error": ""
+        },
+        {
+          "name": "2.5 超长 effects 文本 (>1000 字符)",
+          "passed": true,
+          "duration_ms": 6.3,
+          "detail": "写入 1120 字符, 完整读出 1120 字符，无截断",
+          "error": ""
+        }
+      ]
+    },
+    {
+      "name": "异常数据处理测试",
+      "description": "异常数据测试",
+      "passed": 5,
+      "total": 5,
+      "all_passed": true,
+      "tests": [
+        {
+          "name": "3.1 重复 name_cn — UNIQUE 约束检测",
+          "passed": true,
+          "duration_ms": 10.2,
+          "detail": "UNIQUE 约束生效，重复插入被正确拒绝",
+          "error": ""
+        },
+        {
+          "name": "3.2 compounds 字段无效 JSON — 异常捕获",
+          "passed": true,
+          "duration_ms": 4.1,
+          "detail": "4/4 个无效 JSON 被数据库层拒绝",
+          "error": ""
+        },
+        {
+          "name": "3.3 非标准分类 — 归一化验证",
+          "passed": true,
+          "duration_ms": 890.7,
+          "detail": "非标准分类 ['清热泻火药', '润下药', '峻下逐水药', '止咳平喘药'] 可正常存储，待 pipeline 归一化",
+          "error": ""
+        },
+        {
+          "name": "3.4 负数 dl_value — 钳位或标记检查",
+          "passed": true,
+          "duration_ms": 13.1,
+          "detail": "负值 dl_value [-1.0, -99.9, -0.001] 可存储，需 pipeline 层钳位处理",
+          "error": ""
+        },
+        {
+          "name": "3.5 孤儿记录（无 compounds/targets/diseases）— 仍可处理",
+          "passed": true,
+          "duration_ms": 445.3,
+          "detail": "孤儿记录（三字段全 NULL）可正常插入和读取",
+          "error": ""
+        }
+      ]
+    },
+    {
+      "name": "大规模数据性能测试",
+      "description": "≥150%生产量 (≥438条)",
+      "passed": 4,
+      "total": 4,
+      "all_passed": true,
+      "tests": [
+        {
+          "name": "4.1 批量插入200条测试记录 + 校验 + 清理",
+          "passed": true,
+          "duration_ms": 14550.9,
+          "detail": "插入 200 条 → 总量 492 → 清理后恢复 292 条",
+          "error": ""
+        },
+        {
+          "name": "4.2 批量 UPDATE 全部 292+200 条 — 性能 <10s 目标",
+          "passed": true,
+          "duration_ms": 11616.6,
+          "detail": "UPDATE 492 条耗时 0.016s (<10s目标)",
+          "error": ""
+        },
+        {
+          "name": "4.3 全表扫描 COUNT(*) + SHA256(name_cn) 聚合",
+          "passed": true,
+          "duration_ms": 13037.2,
+          "detail": "COUNT(*)=492, SHA256=93a78f6cc079572b..., 耗时 0.002s",
+          "error": ""
+        },
+        {
+          "name": "4.4 并发读写安全性 — 无死锁",
+          "passed": true,
+          "duration_ms": 16941.0,
+          "detail": "50轮交替读写完成，耗时 5.821s，无死锁 ✅",
+          "error": ""
+        }
+      ]
+    },
+    {
+      "name": "参照完整性测试",
+      "description": "FK 关系表完整性",
+      "passed": 3,
+      "total": 3,
+      "all_passed": true,
+      "tests": [
+        {
+          "name": "5.1 tcm_herb_compounds → tcm_compounds FK 完整性",
+          "passed": true,
+          "duration_ms": 21.2,
+          "detail": "FK 完整 ✅ | 共 0 条引用，0 个孤立",
+          "error": ""
+        },
+        {
+          "name": "5.2 tcm_compound_targets → tcm_targets FK 完整性",
+          "passed": true,
+          "duration_ms": 10.2,
+          "detail": "FK 完整 ✅ | 共 0 条引用，0 个孤立",
+          "error": ""
+        },
+        {
+          "name": "5.3 全关系表孤立 FK 引用巡检",
+          "passed": true,
+          "duration_ms": 107.9,
+          "detail": "巡检 6 张关系表，全部 FK 引用完整 ✅",
+          "error": ""
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_passed": 22,
+    "total_tests": 22,
+    "total_failed": 0,
+    "pass_rate": "100.0%"
+  }
+}

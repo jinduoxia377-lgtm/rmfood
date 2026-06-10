@@ -1,0 +1,113 @@
+# RMFOOD Helm Chart 配置
+
+global:
+  environment: production
+  imageRegistry: docker.io/rmfood
+
+# ─── 后端服务 ───
+backend:
+  replicaCount: 3
+  image:
+    repository: rmfood-backend
+    tag: latest
+    pullPolicy: Always
+  service:
+    port: 8000
+    targetPort: 8000
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "512Mi"
+    limits:
+      cpu: "2"
+      memory: "2Gi"
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+  env:
+    - name: DEBUG
+      value: "false"
+    - name: DATABASE_POOL_SIZE
+      value: "20"
+    - name: DATABASE_MAX_OVERFLOW
+      value: "10"
+
+# ─── 前端服务 ───
+frontend:
+  replicaCount: 2
+  image:
+    repository: rmfood-frontend
+    tag: latest
+    pullPolicy: Always
+  service:
+    port: 80
+    targetPort: 80
+  resources:
+    requests:
+      cpu: "200m"
+      memory: "256Mi"
+    limits:
+      cpu: "1"
+      memory: "512Mi"
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 70
+
+# ─── PostgreSQL ───
+postgresql:
+  enabled: true
+  image: postgres:16-alpine
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+    limits:
+      cpu: "1"
+      memory: "2Gi"
+  persistence:
+    enabled: true
+    size: 20Gi
+  env:
+    POSTGRES_DB: rmfood
+    POSTGRES_USER: rmfood
+
+# ─── Redis ───
+redis:
+  enabled: true
+  image: redis:7-alpine
+  resources:
+    requests:
+      cpu: "200m"
+      memory: "256Mi"
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+  persistence:
+    enabled: true
+    size: 5Gi
+
+# ─── Ingress ───
+ingress:
+  enabled: true
+  host: api.rmfood.com
+  frontendHost: app.rmfood.com
+  tls:
+    enabled: true
+    secretName: rmfood-tls
+
+# ─── 配置 ───
+config:
+  # JWT
+  jwtAlgorithm: HS256
+  accessTokenExpireMinutes: 30
+  refreshTokenExpireDays: 7
+
+# ─── 监控 ───
+monitoring:
+  enabled: true
+  prometheusScrape: true

@@ -1,0 +1,564 @@
+{
+  "schema": {
+    "version": "1.0.0",
+    "lastUpdated": "2026-05-17",
+    "description": "食源性多肽数据库Schema定义",
+    "structure": {
+      "peptides": {
+        "tableName": "peptides",
+        "description": "多肽主表",
+        "primaryKey": "id",
+        "fields": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "唯一标识符",
+            "required": true,
+            "indexed": true
+          },
+          "sequence": {
+            "type": "string",
+            "description": "氨基酸序列",
+            "required": true,
+            "indexed": true,
+            "pattern": "^[ACDEFGHIKLMNPQRSTVWY]+$"
+          },
+          "name": {
+            "type": "string",
+            "description": "多肽名称",
+            "required": true,
+            "indexed": true
+          },
+          "alternative_names": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "别名"
+          },
+          "length": {
+            "type": "integer",
+            "description": "氨基酸残基数量",
+            "required": true,
+            "min": 2,
+            "max": 100
+          },
+          "molecular_formula": {
+            "type": "string",
+            "description": "分子式"
+          },
+          "molecular_weight": {
+            "type": "number",
+            "description": "分子量 (Da)",
+            "min": 0,
+            "max": 50000
+          },
+          "isoelectric_point": {
+            "type": "number",
+            "description": "等电点 (pI)",
+            "min": 0,
+            "max": 14
+          },
+          "hydrophobicity": {
+            "type": "number",
+            "description": "疏水性指数",
+            "min": -5,
+            "max": 5
+          },
+          "charge_at_ph7": {
+            "type": "number",
+            "description": "pH 7时的净电荷"
+          },
+          "extinction_coefficient": {
+            "type": "number",
+            "description": "消光系数"
+          },
+          "instability_index": {
+            "type": "number",
+            "description": "不稳定指数"
+          },
+          "aliphatic_index": {
+            "type": "number",
+            "description": "脂肪族指数"
+          },
+          "modifications": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "description": "修饰类型"
+                },
+                "position": {
+                  "type": "integer",
+                  "description": "修饰位置"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "effect": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "bioactivities": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "enum",
+                  "values": [
+                    "antioxidant",
+                    "anti-inflammatory",
+                    "antimicrobial",
+                    "antihypertensive",
+                    "antidiabetic",
+                    "anticancer",
+                    "immunomodulatory",
+                    "neuroprotective",
+                    "analgesic",
+                    "anticoagulant",
+                    "antiobesity",
+                    "other"
+                  ]
+                },
+                "potency": {
+                  "type": "string"
+                },
+                "mechanism": {
+                  "type": "string"
+                },
+                "ic50": {
+                  "type": "number",
+                  "description": "IC50值 (μM)"
+                },
+                "ec50": {
+                  "type": "number",
+                  "description": "EC50值 (μM)"
+                }
+              }
+            }
+          },
+          "food_sources": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "食物来源",
+            "indexed": true
+          },
+          "animal_sources": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "plant_sources": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "target_receptors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "toxicity": {
+            "type": "object",
+            "properties": {
+              "acute": {
+                "type": "enum",
+                "values": ["none", "low", "moderate", "high", "unknown"]
+              },
+              "chronic": {
+                "type": "enum",
+                "values": ["none", "low", "moderate", "high", "unknown"]
+              },
+              "cytotoxicity": {
+                "type": "enum",
+                "values": ["none", "low", "moderate", "high", "unknown"]
+              },
+              "ld50": {
+                "type": "number",
+                "description": "LD50值 (mg/kg)"
+              },
+              "study_details": {
+                "type": "string"
+              }
+            }
+          },
+          "stability": {
+            "type": "object",
+            "properties": {
+              "thermal": {
+                "type": "enum",
+                "values": ["stable", "moderate", "unstable", "unknown"]
+              },
+              "ph": {
+                "type": "enum",
+                "values": ["stable", "moderate", "unstable", "unknown"]
+              },
+              "gastrointestinal": {
+                "type": "enum",
+                "values": ["stable", "moderate", "unstable", "unknown"]
+              },
+              "storage": {
+                "type": "string"
+              },
+              "half_life": {
+                "type": "string"
+              }
+            }
+          },
+          "pharmacological_effects": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "dosage": {
+            "type": "object",
+            "properties": {
+              "min": {
+                "type": "number"
+              },
+              "max": {
+                "type": "number"
+              },
+              "unit": {
+                "type": "string"
+              },
+              "form": {
+                "type": "string"
+              }
+            }
+          },
+          "research_status": {
+            "type": "enum",
+            "values": ["validated", "preliminary", "hypothetical", "discovered"],
+            "indexed": true
+          },
+          "patents": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "number": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "holder": {
+                  "type": "string"
+                },
+                "year": {
+                  "type": "integer"
+                },
+                "status": {
+                  "type": "enum",
+                  "values": ["active", "expired", "pending"]
+                }
+              }
+            }
+          },
+          "references": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "doi": {
+            "type": "string",
+            "description": "DOI号"
+          },
+          "created_at": {
+            "type": "datetime"
+          },
+          "updated_at": {
+            "type": "datetime"
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "relationships": {
+          "sources": {
+            "type": "many-to-many",
+            "target": "food_sources",
+            "through": "peptide_sources"
+          },
+          "bioactivities": {
+            "type": "one-to-many",
+            "target": "peptide_bioactivities",
+            "foreignKey": "peptide_id"
+          },
+          "target_proteins": {
+            "type": "many-to-many",
+            "target": "proteins",
+            "through": "peptide_protein_interactions"
+          }
+        },
+        "indexes": [
+          "sequence",
+          "name",
+          "length",
+          "research_status",
+          "food_sources"
+        ],
+        "full_text_search": [
+          "name",
+          "alternative_names",
+          "pharmacological_effects",
+          "mechanism"
+        ]
+      },
+      "food_sources": {
+        "tableName": "food_sources",
+        "description": "食物来源表",
+        "primaryKey": "id",
+        "fields": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "required": true
+          },
+          "name": {
+            "type": "string",
+            "required": true,
+            "indexed": true
+          },
+          "english_name": {
+            "type": "string"
+          },
+          "category": {
+            "type": "enum",
+            "values": ["animal", "plant", "microbial", "marine"],
+            "required": true
+          },
+          "subcategory": {
+            "type": "string"
+          },
+          "scientific_name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      },
+      "bioactivity_assays": {
+        "tableName": "bioactivity_assays",
+        "description": "生物活性测定表",
+        "primaryKey": "id",
+        "fields": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "required": true
+          },
+          "peptide_id": {
+            "type": "string",
+            "format": "uuid",
+            "required": true,
+            "indexed": true
+          },
+          "assay_type": {
+            "type": "string",
+            "required": true
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "ic50": {
+                "type": "number"
+              },
+              "ec50": {
+                "type": "number"
+              },
+              "value": {
+                "type": "number"
+              },
+              "unit": {
+                "type": "string"
+              }
+            }
+          },
+          "conditions": {
+            "type": "object"
+          },
+          "reference": {
+            "type": "string"
+          },
+          "date": {
+            "type": "date"
+          }
+        }
+      },
+      "peptide_protein_interactions": {
+        "tableName": "peptide_protein_interactions",
+        "description": "多肽-蛋白相互作用表",
+        "primaryKey": "id",
+        "fields": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "required": true
+          },
+          "peptide_id": {
+            "type": "string",
+            "format": "uuid",
+            "required": true,
+            "indexed": true
+          },
+          "protein_id": {
+            "type": "string",
+            "format": "uuid",
+            "required": true,
+            "indexed": true
+          },
+          "interaction_type": {
+            "type": "enum",
+            "values": ["binding", "inhibition", "activation", "cleavage"],
+            "required": true
+          },
+          "affinity": {
+            "type": "number",
+            "description": "亲和力 (Kd, nM)"
+          },
+          "binding_site": {
+            "type": "string"
+          },
+          "mechanism": {
+            "type": "string"
+          },
+          "evidence": {
+            "type": "string"
+          }
+        }
+      },
+      "clinical_trials": {
+        "tableName": "clinical_trials",
+        "description": "临床试验表",
+        "primaryKey": "id",
+        "fields": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "required": true
+          },
+          "peptide_id": {
+            "type": "string",
+            "format": "uuid",
+            "required": true,
+            "indexed": true
+          },
+          "trial_id": {
+            "type": "string",
+            "required": true
+          },
+          "phase": {
+            "type": "enum",
+            "values": ["I", "II", "III", "IV"]
+          },
+          "status": {
+            "type": "enum",
+            "values": ["recruiting", "completed", "terminated", "suspended"]
+          },
+          "purpose": {
+            "type": "string"
+          },
+          "results": {
+            "type": "string"
+          },
+          "conclusions": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "constraints": {
+      "unique_constraints": [
+        {
+          "table": "peptides",
+          "fields": ["sequence"]
+        },
+        {
+          "table": "food_sources",
+          "fields": ["name", "category"]
+        }
+      ],
+      "check_constraints": [
+        {
+          "table": "peptides",
+          "condition": "length >= 2 AND length <= 100"
+        },
+        {
+          "table": "peptides",
+          "condition": "molecular_weight > 0"
+        },
+        {
+          "table": "peptides",
+          "condition": "isoelectric_point >= 0 AND isoelectric_point <= 14"
+        }
+      ]
+    },
+    "computed_properties": {
+      "peptides": {
+        "mass_charge_ratio": {
+          "formula": "molecular_weight / charge_at_ph7",
+          "description": "质荷比"
+        },
+        "instability_risk": {
+          "formula": "CASE WHEN instability_index > 40 THEN 'unstable' ELSE 'stable' END",
+          "description": "稳定性风险评估"
+        },
+        "bioactivity_score": {
+          "formula": "COUNT(bioactivities)",
+          "description": "生物活性评分"
+        }
+      }
+    },
+    "views": {
+      "validated_peptides": {
+        "description": "已验证的多肽视图",
+        "sql": "SELECT * FROM peptides WHERE research_status = 'validated'"
+      },
+      "high_confidence_bioactive": {
+        "description": "高置信度生物活性多肽",
+        "sql": "SELECT p.*, COUNT(b.id) as activity_count FROM peptides p LEFT JOIN bioactivity_assays b ON p.id = b.peptide_id WHERE b.result.ic50 IS NOT NULL GROUP BY p.id HAVING activity_count >= 2"
+      },
+      "food_source_summary": {
+        "description": "食物来源摘要",
+        "sql": "SELECT fs.name, COUNT(ps.peptide_id) as peptide_count FROM food_sources fs LEFT JOIN peptide_sources ps ON fs.id = ps.source_id GROUP BY fs.id"
+      }
+    },
+    "relationships": {
+      "many_to_many": [
+        {
+          "relation": "peptide_sources",
+          "tables": ["peptides", "food_sources"],
+          "through": "peptide_sources",
+          "fields": {
+            "peptide_id": "uuid",
+            "source_id": "uuid",
+            "extraction_method": "string",
+            "yield_percentage": "number"
+          }
+        }
+      ]
+    },
+    "import_export": {
+      "formats": ["json", "csv", "fasta"],
+      "fasta_format": {
+        "header": ">peptide_id|name|length",
+        "sequence": "^[ACDEFGHIKLMNPQRSTVWY]+$"
+      }
+    }
+  }
+}

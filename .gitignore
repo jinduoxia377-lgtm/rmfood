@@ -1,0 +1,214 @@
+# ============================================
+# RMFOOD 配方平台 - Git 忽略规则
+# ============================================
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# ---- Virtual Environments ----
+.env
+.venv/
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# ---- Database ----
+*.db
+*.sqlite3
+rmfood.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# ---- Environment & Config ----
+.env.local
+.env.production
+.env.staging
+config/local_*.py
+!config/example_*.py
+
+# ---- IDE / Editor ----
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+.settings/
+*.sublime-workspace
+*.sublime-project
+
+# ---- OS Generated Files ----
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# ---- Logs ----
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ---- Frontend ----
+node_modules/
+dist/
+.next/
+out/
+.nuxt
+.cache/
+
+# ---- Testing ----
+.coverage
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+jest_coverage/
+.nyc_output/
+
+# ---- Build Artifacts ----
+*.tar.gz
+*.zip
+*.whl
+*.egg
+uploads/*  # 用户上传的文件（保留目录结构）
+!uploads/.gitkeep
+
+# ---- Temporary Files ----
+*.tmp
+*.temp
+*.bak
+*.cache
+*.pid
+*.seed
+*.pid.lock
+*.network-response
+*.network-request
+*_snapshot.txt
+backend.log
+
+# ---- Security Sensitive ----
+secrets.yml
+secrets.yaml
+*.pem
+*.key
+*.crt
+*.p12
+credentials.json
+service-account.json
+
+# ---- Documentation Generated ----
+docs/_build/
+site/
+
+# ---- Jupyter Notebook ----
+.ipynb_checkpoints/
+
+# ---- Docker (optional) ----
+docker-compose.override.yml
+
+# ---- Local Development ----
+local_settings.py
+db.sqlite3
+media/  # 如果有用户媒体文件
+
+# ---- Node.js runtimes (use system/nvm install instead) ----
+nodejs/
+nodejs-new/
+
+# ============================================
+# RMFOOD 项目特定忽略规则
+# ============================================
+
+# ---- PostgreSQL 本地数据 ----
+backend/pg_data/
+backend/pg_data_backup*/
+
+# ---- 后端临时文件 ----
+backend/temp_files/
+backend/chat_output.txt
+backend/chat_test_output.txt
+backend/database_encoding_report*.json
+backend/etl_sync_report.json
+backend/herb_audit_*.json
+backend/herb_crossval_report.json
+backend/pg_log.txt
+backend/existing_herbs.txt
+backend/test_results*.txt
+backend/test_schema_output.txt
+backend/test_schema_result.txt
+backend/decode_jwt.ps1
+
+# ---- 后端测试脚本（根目录散落） ----
+backend/test_*.py
+backend/test_*.ps1
+
+# ---- 后端日志 ----
+backend/logs/
+
+# ---- ChromaDB 数据 ----
+data/chromadb/
+data/test_chromadb*/
+
+# ---- TCMS 原始数据（大文件，不应提交） ----
+tcmsp_data/data/
+tcmsp_data/reports/
+tcmsp_data/*.json
+
+# ---- 前端构建产物 ----
+frontend/dist/
+frontend/coverage/
+frontend/test-results/
+frontend/playwright-report/
+frontend/lighthouse-report.html
+
+# ---- 前端修复脚本（临时） ----
+frontend/fix_*.py
+frontend/test_*.ts
+frontend/check_*.py
+frontend/count_*.py
+
+# ---- IDE / 工具特定 ----
+.trae/
+.workbuddy/
+*.bak.bak
+
+# ---- 第三方技能目录（不应在项目中） ----
+andrej-karpathy-skills/
+
+# ---- AI 对话参考资料（大文件，不应提交） ----
+AI 助手对话方式/
+
+# ---- SSL 证书 ----
+ssl/

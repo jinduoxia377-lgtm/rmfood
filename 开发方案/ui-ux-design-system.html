@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>RMFOOD配方制作平台 — UI/UX设计系统与体验规范 v1.0</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.0/echarts.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700;900&family=Noto+Serif+SC:wght@400;600;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--grn:#059669;--grn-l:#10b981;--grn-ll:#34d399;--blu:#2563eb;--blu-l:#3b82f6;--blu-ll:#60a5fa;--pur:#7c3aed;--pur-l:#8b5cf6;--pur-ll:#a78bfa;--amb:#f59e0b;--ros:#ef4444;--cya:#06b6d4;--pnk:#ec4899;--bg:#f8fafc;--bg2:#f1f5f9;--sf:rgba(255,255,255,.72);--sf2:rgba(255,255,255,.55);--tx:#0f172a;--tx2:#334155;--tx3:#64748b;--tx4:#94a3b8;--bd:rgba(148,163,184,.18);--rd-s:6px;--rd-m:10px;--rd-l:14px;--rd-xl:20px;}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}
+body{font-family:'Noto Sans SC',system-ui,sans-serif;background:var(--bg);color:var(--tx);overflow-x:hidden;line-height:1.8}
+::selection{background:var(--grn);color:#fff}
+code,.mono{font-family:'JetBrains Mono',monospace;font-size:.88em}
+#progress{position:fixed;top:0;left:0;height:3px;z-index:9999;background:linear-gradient(90deg,var(--grn),var(--blu),var(--pur));width:0%;transition:width .12s}
+#hero{min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;background:radial-gradient(ellipse at 20% 30%,rgba(5,150,105,.1) 0%,transparent 55%),radial-gradient(ellipse at 75% 25%,rgba(37,99,235,.08) 0%,transparent 50%),radial-gradient(ellipse at 55% 80%,rgba(124,58,237,.06) 0%,transparent 50%),linear-gradient(145deg,#ecfdf5 0%,#f8fafc 40%,#ede9fe 100%)}
+#hero::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");opacity:.025}
+.hi{position:relative;z-index:2;text-align:center;padding:40px 24px;max-width:960px}
+.hb{display:inline-block;padding:6px 22px;border:1px solid rgba(5,150,105,.2);border-radius:100px;color:var(--grn);font-size:11px;letter-spacing:3px;text-transform:uppercase;margin-bottom:20px;backdrop-filter:blur(8px);background:rgba(255,255,255,.5)}
+.ht{font-family:'Noto Serif SC',serif;font-size:clamp(1.8rem,4.6vw,3.3rem);font-weight:900;line-height:1.2;margin-bottom:8px;background:linear-gradient(135deg,var(--grn),var(--blu) 50%,var(--pur));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hs{font-size:clamp(.9rem,1.6vw,1.06rem);color:var(--tx3);max-width:700px;margin:0 auto 36px;font-weight:300}
+.hq{font-family:'Noto Serif SC',serif;font-size:clamp(1.1rem,2.2vw,1.55rem);color:var(--tx2);font-weight:600;margin-bottom:28px;line-height:1.5}
+.sp{text-align:center;padding:14px 20px;background:var(--sf);backdrop-filter:blur(12px);border-radius:var(--rd-l);border:1px solid var(--bd)}
+.sp .n{font-family:'JetBrains Mono',monospace;font-size:1.6rem;font-weight:700}.sp .l{font-size:10px;color:var(--tx4);margin-top:2px}
+.sec{max-width:1340px;margin:0 auto;padding:72px 24px;position:relative}
+.sh{margin-bottom:44px}.sh-n{font-size:11px;color:var(--grn);letter-spacing:4px;text-transform:uppercase;margin-bottom:5px;font-family:'JetBrains Mono',monospace;font-weight:500}
+.sh-t{font-family:'Noto Serif SC',serif;font-size:clamp(1.35rem,2.6vw,2rem);font-weight:700;line-height:1.3;color:var(--tx)}
+.sh-t::after{content:'';display:block;width:48px;height:3px;background:linear-gradient(90deg,var(--grn),var(--blu));margin-top:10px;border-radius:2px}
+.c{background:var(--sf);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-radius:var(--rd-l);padding:24px;border:1px solid var(--bd);transition:all .3s;box-shadow:0 1px 3px rgba(0,0,0,.03)}
+.c:hover{box-shadow:0 6px 24px rgba(5,150,105,.06);border-color:rgba(5,150,105,.1)}
+.dt{width:100%;border-collapse:separate;border-spacing:0;font-size:12.5px}
+.dt thead th{background:rgba(5,150,105,.04);color:var(--grn);padding:10px 12px;text-align:left;font-weight:600;font-size:11px;letter-spacing:.4px;border-bottom:2px solid rgba(5,150,105,.1)}
+.dt thead th:first-child{border-radius:8px 0 0 0}.dt thead th:last-child{border-radius:0 8px 0 0}
+.dt tbody td{padding:9px 12px;border-bottom:1px solid var(--bd);color:var(--tx3)}
+.dt tbody tr:hover td{background:rgba(5,150,105,.02);color:var(--tx)}
+.tg{display:inline-block;padding:2px 9px;border-radius:100px;font-size:10.5px;font-weight:600;letter-spacing:.2px}
+.tg-g{background:rgba(5,150,105,.1);color:var(--grn)}.tg-b{background:rgba(37,99,235,.1);color:var(--blu)}
+.tg-p{background:rgba(124,58,237,.1);color:var(--pur)}.tg-a{background:rgba(245,158,11,.1);color:#b45309}
+.tg-r{background:rgba(239,68,68,.1);color:var(--ros)}.tg-c{background:rgba(6,182,212,.1);color:#0e7490}
+.tg-d{background:rgba(148,163,184,.12);color:var(--tx3)}
+.cb{width:100%;min-height:400px;border-radius:var(--rd-l);background:var(--sf);backdrop-filter:blur(16px);padding:14px;border:1px solid var(--bd);box-shadow:0 1px 3px rgba(0,0,0,.03)}
+.rv{opacity:0;transform:translateY(28px)}
+.sw{display:inline-block;width:44px;height:44px;border-radius:var(--rd-s);border:1px solid var(--bd);vertical-align:middle}
+.sw-lg{width:64px;height:64px;border-radius:var(--rd-m)}
+.btn{display:inline-flex;align-items:center;gap:6px;font-family:'Noto Sans SC',sans-serif;font-weight:500;border:none;cursor:pointer;transition:all .2s;border-radius:var(--rd-s);font-size:13px;letter-spacing:.2px}
+.btn-sm{padding:6px 14px;height:32px;font-size:12px}.btn-md{padding:8px 18px;height:38px}.btn-lg{padding:10px 24px;height:44px;font-size:14px}
+.btn-primary{background:var(--grn);color:#fff}.btn-primary:hover{background:#047857;box-shadow:0 4px 14px rgba(5,150,105,.25)}
+.btn-secondary{background:transparent;color:var(--blu);border:1.5px solid var(--blu)}.btn-secondary:hover{background:rgba(37,99,235,.05)}
+.btn-ghost{background:transparent;color:var(--tx3);border:1.5px solid var(--bd)}.btn-ghost:hover{background:rgba(0,0,0,.03);color:var(--tx)}
+.btn-danger{background:var(--ros);color:#fff}.btn-danger:hover{background:#dc2626}
+.btn-ai{background:linear-gradient(135deg,var(--pur),var(--blu));color:#fff}.btn-ai:hover{box-shadow:0 4px 18px rgba(124,58,237,.3)}
+.btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
+.ipt{height:38px;padding:0 14px;border:1.5px solid var(--bd);border-radius:var(--rd-s);font-family:'Noto Sans SC',sans-serif;font-size:13px;color:var(--tx);background:rgba(255,255,255,.8);transition:all .2s;outline:none;width:100%}
+.ipt:focus{border-color:var(--blu);box-shadow:0 0 0 3px rgba(37,99,235,.1)}.ipt-err{border-color:var(--ros)}.ipt-err:focus{box-shadow:0 0 0 3px rgba(239,68,68,.1)}.ipt-ok{border-color:var(--grn-l)}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:100px;font-size:11px;font-weight:600}
+.badge-draft{background:rgba(148,163,184,.15);color:#64748b}.badge-pending{background:rgba(245,158,11,.12);color:#b45309}
+.badge-approved{background:rgba(16,185,129,.12);color:#047857}.badge-rejected{background:rgba(239,68,68,.12);color:#dc2626}
+.badge-revision{background:rgba(249,115,22,.12);color:#c2410c}.badge-archived{background:rgba(107,114,128,.12);color:#4b5563}
+.f-card{border-radius:var(--rd-l);border:1px solid var(--bd);background:var(--sf);overflow:hidden;transition:all .3s}
+.f-card:hover{box-shadow:0 8px 28px rgba(0,0,0,.07);transform:translateY(-2px)}
+.stat-card{text-align:center;padding:20px;background:var(--sf);border-radius:var(--rd-l);border:1px solid var(--bd)}
+.stat-card .val{font-family:'JetBrains Mono',monospace;font-size:1.8rem;font-weight:700}.stat-card .lbl{font-size:11px;color:var(--tx4);margin-top:2px}
+.tab-bar{display:flex;gap:0;border-bottom:2px solid var(--bd);overflow-x:auto}
+.tab-item{padding:10px 20px;font-size:13px;color:var(--tx3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;white-space:nowrap;transition:all .2s}
+.tab-item.active{color:var(--grn);border-bottom-color:var(--grn);font-weight:600}
+.tab-item:hover:not(.active){color:var(--tx);background:rgba(0,0,0,.02)}
+.timeline-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}.timeline-line{width:2px;background:var(--bd);flex-shrink:0}
+.ai-prog{display:flex;align-items:center;gap:0}.ai-step{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;font-size:10.5px;color:var(--tx4)}
+.ai-step .dot{width:28px;height:28px;border-radius:50%;border:2px solid var(--bd);display:flex;align-items:center;justify-content:center;font-size:12px;background:#fff;transition:all .3s}
+.ai-step.done .dot{background:var(--grn);border-color:var(--grn);color:#fff}.ai-step.active .dot{border-color:var(--pur);color:var(--pur);box-shadow:0 0 0 4px rgba(124,58,237,.12)}
+.ai-step .bar{height:2px;flex:1;background:var(--bd);min-width:30px}.ai-step.done .bar{background:var(--grn)}
+#fab{position:fixed;bottom:22px;right:22px;z-index:150;width:46px;height:46px;border-radius:13px;border:1px solid var(--bd);cursor:pointer;background:var(--sf);backdrop-filter:blur(16px);color:var(--grn);font-size:17px;box-shadow:0 4px 18px rgba(0,0,0,.07);transition:all .2s;display:flex;align-items:center;justify-content:center}
+#fab:hover{transform:scale(1.05);box-shadow:0 8px 28px rgba(5,150,105,.13)}
+#toc-o{position:fixed;inset:0;z-index:200;background:rgba(15,23,42,.25);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center}
+#toc-o.on{display:flex}
+#toc-p{background:rgba(255,255,255,.92);backdrop-filter:blur(20px);border-radius:18px;padding:28px;max-width:520px;width:90%;border:1px solid var(--bd);max-height:80vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.1)}
+#toc-p a{display:block;padding:8px 0;color:var(--tx3);text-decoration:none;border-bottom:1px solid rgba(148,163,184,.1);font-size:13px;transition:color .2s}
+#toc-p a:hover{color:var(--grn)}
+@media(max-width:768px){.sec{padding:44px 14px}.c{padding:18px}.dt{font-size:10.5px}.dt thead th,.dt tbody td{padding:7px 8px}.sp .n{font-size:1.2rem}}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<button id="fab" onclick="document.getElementById('toc-o').classList.toggle('on')">&#9776;</button>
+<div id="toc-o" onclick="if(event.target===this)this.classList.remove('on')">
+<div id="toc-p">
+<h3 style="font-family:'Noto Serif SC',serif;font-size:17px;margin-bottom:12px;color:var(--grn)">目录导航</h3>
+<a href="#s1" onclick="document.getElementById('toc-o').classList.remove('on')">01 · 设计哲学与品牌定位</a>
+<a href="#s2" onclick="document.getElementById('toc-o').classList.remove('on')">02 · 色彩系统</a>
+<a href="#s3" onclick="document.getElementById('toc-o').classList.remove('on')">03 · 字体系统</a>
+<a href="#s4" onclick="document.getElementById('toc-o').classList.remove('on')">04 · 间距与栅格系统</a>
+<a href="#s5" onclick="document.getElementById('toc-o').classList.remove('on')">05 · 核心组件库</a>
+<a href="#s6" onclick="document.getElementById('toc-o').classList.remove('on')">06 · 交互设计规范</a>
+<a href="#s7" onclick="document.getElementById('toc-o').classList.remove('on')">07 · 用户流程设计</a>
+<a href="#s8" onclick="document.getElementById('toc-o').classList.remove('on')">08 · 响应式与多端适配</a>
+<a href="#s9" onclick="document.getElementById('toc-o').classList.remove('on')">09 · 关键页面设计</a>
+<a href="#s10" onclick="document.getElementById('toc-o').classList.remove('on')">10 · 设计Token与开发交付</a>
+</div></div>
+
+<!-- HERO -->
+<section id="hero"><div class="hi">
+<div class="hb">UI/UX Design System &middot; v1.0 &middot; 2026</div>
+<h1 class="ht">RMFOOD 设计系统<br>与体验规范</h1>
+<p class="hq">&ldquo;科学之美，触手可及&rdquo;</p>
+<p class="hs">为配方制作平台构建一致、高效、可扩展的视觉与交互语言 — 从色彩Token到页面蓝图，从组件原子到用户流程，全面定义每一个像素背后的设计决策</p>
+<div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap">
+<div class="sp"><div class="n" style="color:var(--grn)">3</div><div class="l">品牌主色</div></div>
+<div class="sp"><div class="n" style="color:var(--blu)">11</div><div class="l">字体Token</div></div>
+<div class="sp"><div class="n" style="color:var(--pur)">6</div><div class="l">组件类别</div></div>
+<div class="sp"><div class="n" style="color:var(--amb)">12</div><div class="l">关键页面</div></div>
+<div class="sp"><div class="n" style="color:var(--ros)">5</div><div class="l">RBAC角色</div></div>
+<div class="sp"><div class="n" style="color:var(--cya)">6</div><div class="l">响应断点</div></div>
+</div></div></section>
+
+<!-- S1: Design Philosophy -->
+<section id="s1" style="background:var(--bg)"><div class="sec">
+<div class="sh rv"><div class="sh-n">Section 01</div><h2 class="sh-t">设计哲学与品牌定位</h2></div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 rv" style="margin-bottom:28px">
+<div class="c" style="border-top:3px solid var(--grn)"><div style="font-size:24px;margin-bottom:8px">&#x1F52C;</div><div style="font-size:15px;font-weight:700;margin-bottom:5px">科学严谨</div><div style="font-size:12.5px;color:var(--tx3);line-height:1.9">数据优先，每一个像素追求精确。通过清晰的信息层次建立用户信任。实验数据零歧义呈现。</div></div>
+<div class="c" style="border-top:3px solid var(--grn-l)"><div style="font-size:24px;margin-bottom:8px">&#x1F33F;</div><div style="font-size:15px;font-weight:700;margin-bottom:5px">自然灵感</div><div style="font-size:12.5px;color:var(--tx3);line-height:1.9">有机曲线、植物色系、留白呼吸。源自中药与多肽的自然意象，构建生命科学的视觉温度。</div></div>
+<div class="c" style="border-top:3px solid var(--pur)"><div style="font-size:24px;margin-bottom:8px">&#x2728;</div><div style="font-size:15px;font-weight:700;margin-bottom:5px">智能共生</div><div style="font-size:12.5px;color:var(--tx3);line-height:1.9">AI建议融入原生工作流，不打断思路。Human-in-the-loop设计原则，用户始终掌控最终决策。</div></div>
+<div class="c" style="border-top:3px solid var(--blu)"><div style="font-size:24px;margin-bottom:8px">&#x267F;</div><div style="font-size:15px;font-weight:700;margin-bottom:5px">无障碍优先</div><div style="font-size:12.5px;color:var(--tx3);line-height:1.9">WCAG 2.1 AA标准全覆盖。色盲安全色板、完整键盘导航、屏幕阅读器语义化标记。</div></div>
+</div>
+<div class="cb rv" id="ch-brand" style="min-height:400px"></div>
+</div></section>
+
+<!-- S2: Color System -->
+<section id="s2" style="background:var(--bg2)"><div class="sec">
+<div class="sh rv"><div class="sh-n">Section 02</div><h2 class="sh-t">色彩系统</h2></div>
+
+<!-- Brand Primary -->
+<h3 class="rv" style="font-family:'Noto Serif SC',serif;font-size:16px;font-weight:700;margin-bottom:16px">品牌主色</h3>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 rv" style="margin-bottom:28px">
+<div class="c" style="padding:0;overflow:hidden"><div style="height:100px;background:linear-gradient(135deg,#059669,#10b981)"></div><div style="padding:16px"><div style="font-size:14px;font-weight:700;color:#059669;margin-bottom:4px">Forest Green</div><div style="font-size:12px;color:var(--tx3)"><code>#059669</code> → <code>#10b981</code></div><div style="font-size:11.5px;color:var(--tx4);margin-top:6px">主操作 · 成功 · 自然与健康</div></div></div>
+<div class="c" style="padding:0;overflow:hidden"><div style="height:100px;background:linear-gradient(135deg,#2563eb,#3b82f6)"></div><div style="padding:16px"><div style="font-size:14px;font-weight:700;color:#2563eb;margin-bottom:4px">Ocean Blue</div><div style="font-size:12px;color:var(--tx3)"><code>#2563eb</code> → <code>#3b82f6</code></div><div style="font-size:11.5px;color:var(--tx4);margin-top:6px">信息 · 链接 · 科技与精确</div></div></div>
+<div class="c" style="padding:0;overflow:hidden"><div style="height:100px;background:linear-gradient(135deg,#7c3aed,#8b5cf6)"></div><div style="padding:16px"><div style="font-size:14px;font-weight:700;color:#7c3aed;margin-bottom:4px">Bio Purple</div><div style="font-size:12px;color:var(--tx3)"><code>#7c3aed</code> → <code>#8b5cf6</code></div><div style="font-size:11.5px;color:var(--tx4);margin-top:6px">AI功能 · 智能 · 创新</div></div></div>
+</div>
+
+<!-- Semantic Colors -->
+<h3 class="rv" style="font-family:'Noto Serif SC',serif;font-size:16px;font-weight:700;margin-bottom:16px">语义色与状态色</h3>
+<div class="c rv" style="margin-bottom:20px">
+<div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:18px">
+<div style="text-align:center"><div class="sw-lg" style="background:#10b981"></div><div style="font-size:10px;color:var(--tx4);margin-top:4px">Success<br><code style="font-size:9px">#10b981</code></div></div>
+<div style="text-align:center"><div class="sw-lg" style="background:#f59e0b"></div><div style="font-size:10px;color:var(--tx4);margin-top:4px">Warning<br><code style="font-size:9px">#f59e0b</code></div></div>
+<div style="text-align:center"><div class="sw-lg" style="background:#ef4444"></div><div style="font-size:10px;color:var(--tx4);margin-top:4px">Error<br><code style="font-size:9px">#ef4444</code></div></div>
+<div style="text-align:center"><div class="sw-lg" style="background:#3b82f6"></div><div style="font-size:10px;color:var(--tx4);margin-top:4px">Info<br><code style="font-size:9px">#3b82f6</code></div></div>
+</div>
+<h4 style="font-size:13px;font-weight:600;color:var(--tx2);margin-bottom:10px">配方状态色 (Formula States)</h4>
+<div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+<span class="badge badge-draft">&#x25CF; DRAFT</span>
+<span class="badge badge-pending">&#x25CF; PENDING_REVIEW</span>
+<span class="badge badge-approved">&#x25CF; APPROVED</span>
+<span class="badge badge-rejected">&#x25CF; REJECTED</span>
+<span class="badge badge-revision">&#x25CF; REVISION_REQUIRED</span>
+<span class="badge badge-archived">&#x25CF; ARCHIVED</span>
+</div>
+<h4 style="font-size:13px;font-weight:600;color:var(--tx2);margin-bottom:10px">知识图谱节点色 (Knowledge Graph)</h4>
+<div style="display:flex;flex-wrap:wrap;gap:10px">
+<div style="display:flex;align-items:center;gap:5px"><div class="sw" style="width:28px;height:28px;background:#22c55e;border:none;border-radius:50%"></div><span style="font-size:11px;color:var(--tx3)">中药 herb</span></div>
+<div style="display:flex;align-items:center;gap:5px"><div class="sw" style="width:28px;height:28px;background:#3b82f6;border:none;border-radius:50%"></div><span style="font-size:11px;color:var(--tx3)">化合物 compound</span></div>
+<div style="display:flex;align-items:center;gap:5px"><div class="sw" style="width:28px;height:28px;background:#ef4444;border:none;border-radius:50%"></div><span style="font-size:11px;color:var(--tx3)">靶点 target</span></div>
+<div style="display:flex;align-items:center;gap:5px"><div class="sw" style="width:28px;height:28px;background:#8b5cf6;border:none;border-radius:50%"></div><span style="font-size:11px;color:var(--tx3)">多肽 peptide</span></div>
+<div style="display:flex;align-items:center;gap:5px"><div class="sw" style="width:28px;height:28px;background:#f59e0b;border:none;border-radius:50%"></div><span style="font-size:11px;color:var(--tx3)">蛋白 protein</span></div>
+<div style="display:flex;align-items:center;gap:5px"><div class="sw" style="width:28px;height:28px;background:#06b6d4;border:none;border-radius:50%"></div><span style="font-size:11px;color:var(--tx3)">食物 food_source</span></div>
+<div style="display:flex;align-items:center;gap:5px"><div class="sw" style="width:28px;height:28px;background:#ec4899;border:none;border-radius:50%"></div><span style="font-size:11px;color:var(--tx3)">疾病 disease</span></div>
+</div>
+</div>
+
+<!-- Dark Mode Table -->
+<div class="c rv" style="margin-bottom:20px">
+<h4 style="font-size:13px;font-weight:600;color:var(--tx2);margin-bottom:10px">暗色模式映射</h4>
+<table class="dt"><thead><tr><th>Token</th><th>Light Mode</th><th>Dark Mode</th><th>说明</th></tr></thead><tbody>
+<tr><td><code>bg-primary</code></td><td>#f8fafc</td><td>#0f172a</td><td>页面背景</td></tr>
+<tr><td><code>bg-secondary</code></td><td>#f1f5f9</td><td>#1e293b</td><td>区块背景</td></tr>
+<tr><td><code>surface</code></td><td>rgba(255,255,255,.72)</td><td>rgba(30,41,59,.72)</td><td>卡片表面</td></tr>
+<tr><td><code>text-primary</code></td><td>#0f172a</td><td>#f1f5f9</td><td>主文字</td></tr>
+<tr><td><code>text-secondary</code></td><td>#334155</td><td>#cbd5e1</td><td>次要文字</td></tr>
+<tr><td><code>border</code></td><td>rgba(148,163,184,.18)</td><td>rgba(148,163,184,.12)</td><td>边框</td></tr>
+</tbody></table></div>
+
+<div class="cb rv" id="ch-contrast" style="min-height:360px"></div>
+</div></section>
+
+<!-- S3: Typography -->
+<section id="s3" style="background:var(--bg)"><div class="sec">
+<div class="sh rv"><div class="sh-n">Section 03</div><h2 class="sh-t">字体系统</h2></div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 rv" style="margin-bottom:24px">
+<div class="c"><div style="font-family:'Noto Serif SC',serif;font-size:28px;font-weight:700;color:var(--tx);margin-bottom:8px">Aa 配方</div><div style="font-size:12px;color:var(--tx3)"><strong>Noto Serif SC</strong> · Display/Headings<br>学术感、权威性、标题强调</div></div>
+<div class="c"><div style="font-family:'Noto Sans SC',sans-serif;font-size:28px;font-weight:400;color:var(--tx);margin-bottom:8px">Aa 配方</div><div style="font-size:12px;color:var(--tx3)"><strong>Noto Sans SC</strong> · Body/UI<br>清晰可读、界面文字首选</div></div>
+<div class="c"><div style="font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:500;color:var(--tx);margin-bottom:8px">0123.45</div><div style="font-size:12px;color:var(--tx3)"><strong>JetBrains Mono</strong> · Data/Code<br>精确等宽、数据与代码</div></div>
+</div>
+
+<!-- Type Scale Live Preview -->
+<div class="c rv" style="margin-bottom:20px">
+<h4 style="font-size:13px;font-weight:600;color:var(--tx2);margin-bottom:16px">字体比例尺 (Type Scale · Major Third 1.25)</h4>
+<div style="border-left:3px solid var(--grn);padding-left:20px;display:flex;flex-direction:column;gap:14px">
+<div><span style="font-family:'Noto Serif SC',serif;font-size:36px;font-weight:900;line-height:1.15;color:var(--tx)">display-xl · 36px</span><span class="tg tg-g" style="margin-left:8px;vertical-align:middle">首页标题</span></div>
+<div><span style="font-family:'Noto Serif SC',serif;font-size:30px;font-weight:700;line-height:1.2;color:var(--tx)">display · 30px</span><span class="tg tg-g" style="margin-left:8px;vertical-align:middle">页面标题</span></div>
+<div><span style="font-family:'Noto Serif SC',serif;font-size:24px;font-weight:700;line-height:1.3;color:var(--tx)">heading-1 · 24px 区域标题</span></div>
+<div><span style="font-family:'Noto Sans SC',sans-serif;font-size:20px;font-weight:600;line-height:1.35;color:var(--tx)">heading-2 · 20px 卡片标题</span></div>
+<div><span style="font-family:'Noto Sans SC',sans-serif;font-size:16px;font-weight:600;line-height:1.4;color:var(--tx)">heading-3 · 16px 子标题</span></div>
+<div><span style="font-size:15px;font-weight:400;line-height:1.75;color:var(--tx2)">body-lg · 15px 正文加大文字</span></div>
+<div><span style="font-size:14px;font-weight:400;line-height:1.75;color:var(--tx2)">body · 14px 默认正文文字</span></div>
+<div><span style="font-size:13px;font-weight:400;line-height:1.65;color:var(--tx3)">body-sm · 13px 辅助文字</span></div>
+<div><span style="font-size:12px;font-weight:500;line-height:1.5;color:var(--tx3)">caption · 12px 标签/说明</span></div>
+<div><span style="font-size:11px;font-weight:600;line-height:1.4;color:var(--tx4);letter-spacing:2px;text-transform:uppercase">overline · 11px · 分类标签</span></div>
+<div><span style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;line-height:1.5;color:var(--pur)">mono-data · 13px · ¥12,580.00</span></div>
+</div></div>
+<div class="cb rv" id="ch-type" style="min-height:360px"></div>
+</div></section>
+
+<!-- S4: Spacing & Grid -->
+<section id="s4" style="background:var(--bg2)"><div class="sec">
+<div class="sh rv"><div class="sh-n">Section 04</div><h2 class="sh-t">间距与栅格系统</h2></div>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-5 rv" style="margin-bottom:24px">
+<!-- Spacing Scale -->
+<div class="c"><h4 style="font-size:14px;font-weight:600;color:var(--tx2);margin-bottom:14px">间距比例 (4px Base)</h4>
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;align-items:center;gap:10px"><code style="width:70px;font-size:11px;color:var(--tx3)">space-1</code><div style="width:4px;height:16px;background:var(--grn);border-radius:2px"></div><span style="font-size:11px;color:var(--tx4)">4px</span></div>
+<div style="display:flex;align-items:center;gap:10px"><code style="width:70px;font-size:11px;color:var(--tx3)">space-2</code><div style="width:8px;height:16px;background:var(--grn);border-radius:2px"></div><span style="font-size:11px;color:var(--tx4)">8px</span></div>
+<div style="display:flex;align-items:center;gap:10px"><code style="width:70px;font-size:11px;color:var(--tx3)">space-3</code><div style="width:12px;height:16px;background:var(--grn);border-radius:2px"></div><span style="font-size:11px;color:var(--tx4)">12px</span></div>
+<div style="display:flex;align-items:center;gap:10px"><code style="width:70px;font-size:11px;color:var(--tx3)">space-4</code><div style="width:16px;height:16px;background:var(--grn-l);border-radius:2px"></div><span style="font-size:11px;color:var(--tx4)">16px · 默认</span></div>
+<div style="display:flex;align-items:center;gap:10px"><code style="width:70px;font-size:11px;color:var(--tx3)">space-6</code><div style="width:24px;height:16px;background:var(--blu);border-radius:2px"></div><span style="font-size:11px;color:var(--tx4)">24px</span></div>
+<div style="display:flex;align-items:center;gap:10px"><code style="width:70px;font-size:11px;color:var(--tx3)">space-8</code><div style="width:32px;height:16px;background:var(--blu-l);border-radius:2px"></div><span style="font-size:11px;color:var(--tx4)">32px</span></div>
+<div style="display:flex;align-items:center;gap:10px"><code style="width:70px;font-size:11px;color:var(--tx3)">space-12</code><div style="width:48px;height:16px;background:var(--pur);border-radius:2px"></div><span style="font-size:11px;color:var(--tx4)">48px</span></div>
+<div style="display:flex;align-items:center;gap:10px"><code style="width:70px;font-size:11px;color:var(--tx3)">space-16</code><div style="width:64px;height:16px;background:var(--pur-l);border-radius:2px"></div><span style="font-size:11px;color:var(--tx4)">64px</span></div>
+</div></div>
+<!-- Radius & Shadow -->
+<div class="c"><h4 style="font-size:14px;font-weight:600;color:var(--tx2);margin-bottom:14px">圆角与阴影系统</h4>
+<div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:20px">
+<div style="text-align:center"><div style="width:52px;height:52px;background:rgba(5,150,105,.08);border:2px solid var(--grn);border-radius:6px"></div><div style="font-size:10px;color:var(--tx4);margin-top:4px">sm · 6px</div></div>
+<div style="text-align:center"><div style="width:52px;height:52px;background:rgba(5,150,105,.08);border:2px solid var(--grn);border-radius:10px"></div><div style="font-size:10px;color:var(--tx4);margin-top:4px">md · 10px</div></div>
+<div style="text-align:center"><div style="width:52px;height:52px;background:rgba(5,150,105,.08);border:2px solid var(--grn);border-radius:14px"></div><div style="font-size:10px;color:var(--tx4);margin-top:4px">lg · 14px</div></div>
+<div style="text-align:center"><div style="width:52px;height:52px;background:rgba(5,150,105,.08);border:2px solid var(--grn);border-radius:20px"></div><div style="font-size:10px;color:var(--tx4);margin-top:4px">xl · 20px</div></div>
+<div style="text-align:center"><div style="width:52px;height:52px;background:rgba(5,150,105,.08);border:2px solid var(--grn);border-radius:9999px"></div><div style="font-size:10px;color:var(--tx4);margin-top:4px">full</div></div>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:12px">
+<div style="text-align:center"><div style="width:72px;height:52px;background:#fff;border-radius:10px;box-shadow:0 1px 2px rgba(0,0,0,.05)"></div><div style="font-size:10px;color:var(--tx4);margin-top:4px">shadow-sm</div></div>
+<div style="text-align:center"><div style="width:72px;height:52px;background:#fff;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,.08)"></div><div style="font-size:10px;color:var(--tx4);margin-top:4px">shadow-md</div></div>
+<div style="text-align:center"><div style="width:72px;height:52px;background:#fff;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.1)"></div><div style="font-size:10px;color:var(--tx4);margin-top:4px">shadow-lg</div></div>
+<div style="text-align:center"><div style="width:72px;height:52px;background:#fff;border-radius:10px;box-shadow:0 20px 50px rgba(0,0,0,.12)"></div><div style="font-size:10px;color:var(--tx4);margin-top:4px">shadow-xl</div></div>
+</div></div>
+</div>
+<div class="c rv">
+<h4 style="font-size:14px;font-weight:600;color:var(--tx2);margin-bottom:14px">栅格系统 (12-Column Grid)</h4>
+<table class="dt"><thead><tr><th>断点</th><th>最小宽度</th><th>栏数</th><th>间隔</th><th>外边距</th><th>最大宽度</th></tr></thead><tbody>
+<tr><td><strong style="color:var(--tx)">Mobile</strong></td><td>375px</td><td>4</td><td>12px</td><td>16px</td><td>100%</td></tr>
+<tr><td><strong style="color:var(--tx)">Tablet</strong></td><td>768px</td><td>8</td><td>16px</td><td>16px</td><td>100%</td></tr>
+<tr><td><strong style="color:var(--tx)">Laptop</strong></td><td>1024px</td><td>12</td><td>20px</td><td>20px</td><td>100%</td></tr>
+<tr><td><strong style="color:var(--tx)">Desktop</strong></td><td>1280px</td><td>12</td><td>24px</td><td>24px</td><td>1320px</td></tr>
+<tr><td><strong style="color:var(--tx)">Wide</strong></td><td>1536px</td><td>12</td><td>24px</td><td>auto</td><td>1440px</td></tr>
+</tbody></table></div>
+</div></section>
+
+<!-- S5: Component Library -->
+<section id="s5" style="background:var(--bg)"><div class="sec">
+<div class="sh rv"><div class="sh-n">Section 05</div><h2 class="sh-t">核心组件库</h2></div>
+
+<!-- 5.1 Buttons -->
+<div class="c rv" style="margin-bottom:20px">
+<h4 style="font-size:14px;font-weight:600;color:var(--tx2);margin-bottom:14px">5.1 按钮系统 (Buttons)</h4>
+<div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+<button class="btn btn-primary btn-md">&#x2713; 主要操作</button>
+<button class="btn btn-secondary btn-md">次要操作</button>
+<button class="btn btn-ghost btn-md">幽灵按钮</button>
+<button class="btn btn-danger btn-md">&#x26A0; 危险操作</button>
+<button class="btn btn-ai btn-md">&#x2728; AI 分析</button>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px;align-items:center">
+<button class="btn btn-primary btn-sm">Small 32px</button>
+<button class="btn btn-primary btn-md">Medium 38px</button>
+<button class="btn btn-primary btn-lg">Large 44px</button>
+<button class="btn btn-primary btn-md" disabled>Disabled</button>
+</div>
+<div style="font-size:11.5px;color:var(--tx4);background:rgba(5,150,105,.03);padding:10px 14px;border-radius:var(--rd-s)">
+<strong style="color:var(--tx3)">设计规则:</strong> 每个视图最多1个Primary按钮 · AI按钮仅用于AI功能入口 · Danger需二次确认弹窗 · Loading态显示spinner替换图标
+</div></div>
+
+<!-- 5.2 Form Elements -->
+<div class="c rv" style="margin-bottom:20px">
+<h4 style="font-size:14px;font-weight:600;color:var(--tx2);margin-bottom:14px">5.2 表单元素 (Form Elements)</h4>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<div><label style="font-size:12px;font-weight:500;color:var(--tx3);margin-bottom:5px;display:block">默认输入框</label><input class="ipt" placeholder="请输入配方名称..." readonly></div>
+<div><label style="font-size:12px;font-weight:500;color:var(--ros);margin-bottom:5px;display:block">错误状态</label><input class="ipt ipt-err" value="无效数据" readonly><div style="font-size:11px;color:var(--ros);margin-top:4px">&#x26A0; 配方名称不能为空</div></div>
+<div><label style="font-size:12px;font-weight:500;color:var(--grn);margin-bottom:5px;display:block">成功状态</label><input class="ipt ipt-ok" value="人参黄芪复合配方" readonly><div style="font-size:11px;color:var(--grn-l);margin-top:4px">&#x2713; 名称可用</div></div>
+</div></div>
+
+<!-- 5.3 Cards -->
+<div class="c rv" style="margin-bottom:20px">
+<h4 style="font-size:14px;font-weight:600;color:var(--tx2);margin-bottom:14px">5.3 卡片系统 (Cards)</h4>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<!-- Formula Card -->
+<div class="f-card"><div style="padding:16px;border-bottom:1px solid var(--bd)"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><span style="font-size:14px;font-weight:600">人参黄芪免疫方</span><span class="badge badge-pending">待审核</span></div><div style="font-size:12px;color:var(--tx3)">v2.3 · 配方师: 张博士</div></div><div style="padding:14px 16px;display:flex;justify-content:space-between"><div style="font-size:11px;color:var(--tx4)"><div>成分 <strong style="color:var(--tx)">12</strong> 种</div><div style="margin-top:2px">AI评分 <strong style="color:var(--grn)">87.5</strong></div></div><div style="font-size:11px;color:var(--tx4);text-align:right"><div>更新于 2h ago</div><div style="margin-top:2px">SynergyNet <strong style="color:var(--pur)">0.89</strong></div></div></div></div>
+<!-- Template Card -->
+<div class="f-card"><div style="padding:16px;border-bottom:1px solid var(--bd)"><span class="tg tg-g" style="margin-bottom:6px;display:inline-block">免疫调节</span><div style="font-size:14px;font-weight:600;margin-bottom:4px">经典扶正固本方</div><div style="font-size:12px;color:var(--tx3)">基于传统扶正理论的免疫调节配方模板</div></div><div style="padding:14px 16px;display:flex;justify-content:space-between;align-items:center"><div style="color:var(--amb);font-size:12px">&#9733;&#9733;&#9733;&#9733;&#9734; <span style="color:var(--tx4)">4.2</span></div><div style="font-size:11px;color:var(--tx4)">使用 <strong>238</strong> 次</div></div></div>
+<!-- Data Card -->
+<div class="f-card"><div style="padding:16px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><div style="width:32px;height:32px;border-radius:50%;background:#22c55e;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700">药</div><div><div style="font-size:14px;font-weight:600">黄芪 (Astragalus)</div><div style="font-size:11px;color:var(--tx4)">TCMSP ID: MOL000239</div></div></div><div style="font-size:12px;color:var(--tx3);line-height:1.8">性味: 甘,微温 · 归经: 肺,脾<br>OB: 36.86% · DL: 0.78 · 化合物: 87</div></div></div>
+</div></div>
+
+<!-- 5.4 Navigation -->
+<div class="c rv" style="margin-bottom:20px">
+<h4 style="font-size:14px;font-weight:600;color:var(--tx2);margin-bottom:14px">5.5 导航与标签页 (Navigation)</h4>
+<div style="margin-bottom:16px;font-size:12px;color:var(--tx3)">&#x2302; 首页 <span style="color:var(--tx4);margin:0 6px">/</span> 配方管理 <span style="color:var(--tx4);margin:0 6px">/</span> <span style="color:var(--tx)">人参黄芪免疫方</span></div>
+<div class="tab-bar">
+<div class="tab-item active">基础信息</div>
+<div class="tab-item">配方组成</div>
+<div class="tab-item">AI分析</div>
+<div class="tab-item">实验记录</div>
+<div class="tab-item">审核历史</div>
+</div></div>
+
+<!-- 5.6 AI Components -->
+<div class="c rv" style="margin-bottom:20px">
+<h4 style="font-size:14px;font-weight:600;color:var(--tx2);margin-bottom:14px">5.6 AI交互组件</h4>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<!-- AI Suggestion Card -->
+<div style="border:1.5px solid rgba(124,58,237,.15);border-radius:var(--rd-m);padding:16px;background:rgba(124,58,237,.02)"><div style="display:flex;align-items:center;gap:6px;margin-bottom:10px"><span style="font-size:14px">&#x2728;</span><span style="font-size:13px;font-weight:600;color:var(--pur)">AI建议: 成分替换</span></div><div style="font-size:12.5px;color:var(--tx3);line-height:1.8;margin-bottom:12px">建议将<strong style="color:var(--tx)">当归 8g</strong>替换为<strong style="color:var(--tx)">丹参 6g</strong>，协同评分可提升至 <strong style="color:var(--grn)">0.92</strong></div><div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><div style="font-size:11px;color:var(--tx4)">置信度</div><div style="flex:1;height:6px;background:rgba(124,58,237,.1);border-radius:3px"><div style="width:87%;height:100%;background:linear-gradient(90deg,var(--pur),var(--pur-l));border-radius:3px"></div></div><div style="font-size:11px;font-weight:600;color:var(--pur)">87%</div></div><div style="display:flex;gap:8px"><button class="btn btn-ai btn-sm">&#x2713; 采纳</button><button class="btn btn-ghost btn-sm">忽略</button></div></div>
+<!-- AI Progress Stepper -->
+<div style="border:1.5px solid var(--bd);border-radius:var(--rd-m);padding:16px;background:rgba(255,255,255,.5)"><div style="font-size:13px;font-weight:600;color:var(--tx2);margin-bottom:14px">AI推理进度</div><div style="display:flex;align-items:center;gap:0"><div class="ai-step done" style="flex:0"><div class="dot">&#x2713;</div><div style="margin-top:4px">生成中</div></div><div style="flex:1;height:2px;background:var(--grn)"></div><div class="ai-step done" style="flex:0"><div class="dot">&#x2713;</div><div style="margin-top:4px">分析中</div></div><div style="flex:1;height:2px;background:var(--bd)"></div><div class="ai-step active" style="flex:0"><div class="dot">&#x21BB;</div><div style="margin-top:4px">检查中</div></div><div style="flex:1;height:2px;background:var(--bd)"></div><div class="ai-step" style="flex:0"><div class="dot">4</div><div style="margin-top:4px">完成</div></div></div></div>
+</div></div>
+
+<div class="cb rv" id="ch-comp" style="min-height:380px"></div>
+</div></section>
+
+<!-- S6: Interaction Design -->
+<section id="s6" style="background:var(--bg2)"><div class="sec">
+<div class="sh rv"><div class="sh-n">Section 06</div><h2 class="sh-t">交互设计规范</h2></div>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-5 rv" style="margin-bottom:24px">
+<div class="c"><h4 style="font-size:14px;font-weight:600;color:var(--tx2);margin-bottom:12px">动效系统 (Motion)</h4>
+<table class="dt"><thead><tr><th>类型</th><th>时长</th><th>缓动</th><th>用途</th></tr></thead><tbody>
+<tr><td><span class="tg tg-g">Micro</span></td><td><code>100-150ms</code></td><td>ease-out</td><td>按钮/开关/hover</td></tr>
+<tr><td><span class="tg tg-b">Standard</span></td><td><code>200-300ms</code></td><td>ease-in-out</td><td>展开折叠/面板</td></tr>
+<tr><td><span class="tg tg-p">Complex</span></td><td><code>300-500ms</code></td><td>cubic-bezier</td><td>页面切换/弹窗</td></tr>
+<tr><td><span class="tg tg-a">Emphasis</span></td><td><code>500-800ms</code></td><td>spring</td><td>AI结果/图谱动画</td></tr>
+</tbody></table></div>
+<div class="c"><h4 style="font-size:14px;font-weight:600;color:var(--tx2);margin-bottom:12px">键盘快捷键</h4>
+<table class="dt"><thead><tr><th>快捷键</th><th>操作</th></tr></thead><tbody>
+<tr><td><code>Cmd + K</code></td><td>全局搜索 (Command Palette)</td></tr>
+<tr><td><code>Cmd + N</code></td><td>新建配方</td></tr>
+<tr><td><code>Cmd + S</code></td><td>保存当前编辑</td></tr>
+<tr><td><code>Cmd + Enter</code></td><td>提交审核</td></tr>
+<tr><td><code>Cmd + /</code></td><td>唤起AI助手面板</td></tr>
+<tr><td><code>Cmd + Z / Y</code></td><td>撤销 / 重做</td></tr>
+</tbody></table></div>
+</div>
+<div class="c rv" style="margin-bottom:20px">
+<h4 style="font-size:14px;font-weight:600;color:var(--tx2);margin-bottom:12px">反馈机制 (Feedback Patterns)</h4>
+<div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+<div style="padding:12px;background:rgba(16,185,129,.06);border-radius:var(--rd-s);border-left:3px solid var(--grn-l)"><div style="font-size:12px;font-weight:600;color:#047857;margin-bottom:4px">&#x2713; Success Toast</div><div style="font-size:11px;color:var(--tx3)">配方已保存成功</div></div>
+<div style="padding:12px;background:rgba(245,158,11,.06);border-radius:var(--rd-s);border-left:3px solid var(--amb)"><div style="font-size:12px;font-weight:600;color:#b45309;margin-bottom:4px">&#x26A0; Warning Toast</div><div style="font-size:11px;color:var(--tx3)">AI分析超时，请重试</div></div>
+<div style="padding:12px;background:rgba(239,68,68,.06);border-radius:var(--rd-s);border-left:3px solid var(--ros)"><div style="font-size:12px;font-weight:600;color:#dc2626;margin-bottom:4px">&#x2717; Error Toast</div><div style="font-size:11px;color:var(--tx3)">安全检查未通过</div></div>
+<div style="padding:12px;background:rgba(37,99,235,.06);border-radius:var(--rd-s);border-left:3px solid var(--blu)"><div style="font-size:12px;font-weight:600;color:var(--blu);margin-bottom:4px">&#x2139; Info Toast</div><div style="font-size:11px;color:var(--tx3)">审核员已开始审核</div></div>
+</div></div>
+<div class="cb rv" id="ch-interact" style="min-height:420px"></div>
+</div></section>
+
+<!-- S7: User Flows -->
+<section id="s7" style="background:var(--bg)"><div class="sec">
+<div class="sh rv"><div class="sh-n">Section 07</div><h2 class="sh-t">用户流程设计</h2></div>
+<div class="cb rv" id="ch-flow" style="min-height:460px;margin-bottom:24px"></div>
+<div class="c rv">
+<h4 style="font-size:14px;font-weight:600;color:var(--tx2);margin-bottom:12px">角色首页差异化</h4>
+<table class="dt"><thead><tr><th>区域</th><th style="color:var(--blu)">RESEARCHER</th><th style="color:var(--grn)">FORMULATOR</th><th style="color:var(--amb)">REVIEWER</th><th style="color:var(--pur)">ADMIN</th></tr></thead><tbody>
+<tr><td><strong>顶部统计</strong></td><td>搜索次数/收藏</td><td>配方数/审核中</td><td>待审核/已审核</td><td>用户数/系统负载</td></tr>
+<tr><td><strong>快捷操作</strong></td><td>搜索/知识图谱</td><td>新建配方/AI助手</td><td>审核队列</td><td>用户管理/系统配置</td></tr>
+<tr><td><strong>动态流</strong></td><td>最新研究/论文</td><td>我的配方动态</td><td>审核动态</td><td>系统日志/告警</td></tr>
+<tr><td><strong>推荐</strong></td><td>相关中药/多肽</td><td>模板推荐</td><td>—</td><td>—</td></tr>
+</tbody></table></div>
+</div></section>
+
+<!-- S8: Responsive Design -->
+<section id="s8" style="background:var(--bg2)"><div class="sec">
+<div class="sh rv"><div class="sh-n">Section 08</div><h2 class="sh-t">响应式与多端适配</h2></div>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+<div class="cb rv" id="ch-device" style="min-height:340px"></div>
+<div class="cb rv" id="ch-vis" style="min-height:340px"></div>
+</div>
+<div class="c rv" style="margin-top:20px">
+<h4 style="font-size:14px;font-weight:600;color:var(--tx2);margin-bottom:12px">布局适配策略</h4>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<div style="padding:14px;border-radius:var(--rd-s);background:rgba(239,68,68,.03);border:1px solid rgba(239,68,68,.1)"><div style="font-size:13px;font-weight:600;color:var(--ros);margin-bottom:6px">Mobile (≤768px)</div><div style="font-size:12px;color:var(--tx3);line-height:1.9">底部Tab导航 · 单列卡片流 · 简化图表(隐藏legend) · 折叠面板 · 底部弹窗替代侧栏</div></div>
+<div style="padding:14px;border-radius:var(--rd-s);background:rgba(245,158,11,.03);border:1px solid rgba(245,158,11,.1)"><div style="font-size:13px;font-weight:600;color:#b45309;margin-bottom:6px">Tablet (768-1024px)</div><div style="font-size:12px;color:var(--tx3);line-height:1.9">侧拉面板详情 · 双列网格 · 表格横向滚动 · 可收起侧栏 · 分步表单</div></div>
+<div style="padding:14px;border-radius:var(--rd-s);background:rgba(5,150,105,.03);border:1px solid rgba(5,150,105,.1)"><div style="font-size:13px;font-weight:600;color:var(--grn);margin-bottom:6px">Desktop (≥1280px)</div><div style="font-size:12px;color:var(--tx3);line-height:1.9">常驻侧栏 · 三栏布局(导航+主体+检查器) · 完整图表交互 · 快捷键全支持 · 拖拽排序</div></div>
+</div></div>
+</div></section>
+
+<!-- S9: Key Pages -->
+<section id="s9" style="background:var(--bg)"><div class="sec">
+<div class="sh rv"><div class="sh-n">Section 09</div><h2 class="sh-t">关键页面设计</h2></div>
+<div class="cb rv" id="ch-page" style="min-height:400px;margin-bottom:24px"></div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 rv">
+<!-- Login Page -->
+<div class="c" style="border-left:4px solid var(--grn)"><div style="font-size:14px;font-weight:700;color:var(--grn);margin-bottom:8px">9.1 登录页</div><div style="font-size:12.5px;color:var(--tx3);line-height:2"><strong style="color:var(--tx)">布局:</strong> 左60%品牌插图(知识图谱动画) + 右40%登录表单<br><strong style="color:var(--tx)">组件:</strong> Logo · Input×2 · 记住登录 · OAuth社交按钮 · 2FA弹窗<br><strong style="color:var(--tx)">特效:</strong> 背景图谱节点缓慢漂浮 · 登录成功粒子扩散</div></div>
+<!-- Formula Editor -->
+<div class="c" style="border-left:4px solid var(--pur)"><div style="font-size:14px;font-weight:700;color:var(--pur);margin-bottom:8px">9.2 配方编辑器 <span class="tg tg-r" style="font-size:9px">最复杂</span></div><div style="font-size:12.5px;color:var(--tx3);line-height:2"><strong style="color:var(--tx)">布局:</strong> 三栏 — 成分浏览器(280px) + 配方画布 + AI面板(320px)<br><strong style="color:var(--tx)">左栏:</strong> 搜索/过滤 · 分类树(中药/多肽/化合物) · 拖拽添加<br><strong style="color:var(--tx)">中栏:</strong> 成分卡片+剂量滑块 · 组成饼图 · 状态栏<br><strong style="color:var(--tx)">右栏:</strong> FormulaGPT对话 · SynergyNet评分 · SafetyChecker告警</div></div>
+<!-- Knowledge Graph -->
+<div class="c" style="border-left:4px solid var(--blu)"><div style="font-size:14px;font-weight:700;color:var(--blu);margin-bottom:8px">9.3 知识图谱</div><div style="font-size:12.5px;color:var(--tx3);line-height:2"><strong style="color:var(--tx)">布局:</strong> 全屏沉浸式 · 3D/2D切换<br><strong style="color:var(--tx)">组件:</strong> 左侧搜索/筛选/图例 · 底部抽屉节点详情 · 右下角小地图<br><strong style="color:var(--tx)">交互:</strong> 双击展开关联 · 框选多节点 · 右键上下文菜单</div></div>
+<!-- AI Workbench -->
+<div class="c" style="border-left:4px solid var(--pur)"><div style="font-size:14px;font-weight:700;color:var(--pur);margin-bottom:8px">9.4 AI工作台</div><div style="font-size:12.5px;color:var(--tx3);line-height:2"><strong style="color:var(--tx)">布局:</strong> 顶部模型选择卡(6模型) + 中部交互区 + 右侧历史面板<br><strong style="color:var(--tx)">组件:</strong> 模型卡片(图标+名称+状态) · 参数表单 · WS状态灯<br><strong style="color:var(--tx)">特效:</strong> 流式结果打字机动效 · 进度粒子环</div></div>
+<!-- Review Center -->
+<div class="c" style="border-left:4px solid var(--amb)"><div style="font-size:14px;font-weight:700;color:#b45309;margin-bottom:8px">9.5 审核中心</div><div style="font-size:12.5px;color:var(--tx3);line-height:2"><strong style="color:var(--tx)">布局:</strong> Kanban看板 — PENDING | IN_REVIEW | APPROVED | REJECTED<br><strong style="color:var(--tx)">卡片:</strong> 配方摘要 · 风险评分Badge · 审核员头像<br><strong style="color:var(--tx)">交互:</strong> 拖拽切换状态 · 批量操作 · 侧拉详情面板</div></div>
+<!-- Dashboard -->
+<div class="c" style="border-left:4px solid var(--cya)"><div style="font-size:14px;font-weight:700;color:#0e7490;margin-bottom:8px">9.6 仪表盘</div><div style="font-size:12.5px;color:var(--tx3);line-height:2"><strong style="color:var(--tx)">布局:</strong> 可定制Widget网格(react-grid-layout)<br><strong style="color:var(--tx)">组件:</strong> 统计卡 · 趋势图 · 活动流 · 快捷入口<br><strong style="color:var(--tx)">交互:</strong> 拖拽排列 · 角色默认布局 · Widget目录弹窗</div></div>
+</div>
+</div></section>
+
+<!-- S10: Design Tokens -->
+<section id="s10" style="background:var(--bg2)"><div class="sec">
+<div class="sh rv"><div class="sh-n">Section 10</div><h2 class="sh-t">设计Token与开发交付</h2></div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-5 rv" style="margin-bottom:20px">
+<div class="c"><h4 style="font-size:14px;font-weight:600;color:var(--tx2);margin-bottom:12px">Token层级结构</h4>
+<div style="font-family:'JetBrains Mono',monospace;font-size:11.5px;line-height:2.2;color:var(--tx3);background:rgba(0,0,0,.02);padding:14px;border-radius:var(--rd-s)">
+<div><span style="color:var(--tx4)">/* Global */</span></div>
+<div>color.green.600 = <span style="color:var(--grn)">#059669</span></div>
+<div>color.blue.600 = <span style="color:var(--blu)">#2563eb</span></div>
+<div style="margin-top:6px"><span style="color:var(--tx4)">/* Alias */</span></div>
+<div>color.brand.primary = <span style="color:var(--grn)">{color.green.600}</span></div>
+<div>color.brand.ai = <span style="color:var(--pur)">{color.purple.600}</span></div>
+<div style="margin-top:6px"><span style="color:var(--tx4)">/* Component */</span></div>
+<div>button.primary.bg = <span style="color:var(--grn)">{color.brand.primary}</span></div>
+<div>button.ai.bg = <span style="color:var(--pur)">gradient({color.brand.ai}, {color.brand.info})</span></div>
+</div></div>
+<div class="c"><h4 style="font-size:14px;font-weight:600;color:var(--tx2);margin-bottom:12px">Tailwind CSS 配置映射</h4>
+<div style="font-family:'JetBrains Mono',monospace;font-size:11px;line-height:2;color:var(--tx3);background:rgba(0,0,0,.02);padding:14px;border-radius:var(--rd-s)">
+<div><span style="color:var(--pur)">// tailwind.config.js</span></div>
+<div>theme: { extend: {</div>
+<div>&nbsp; colors: {</div>
+<div>&nbsp;&nbsp;&nbsp; brand: { primary: <span style="color:var(--grn)">'#059669'</span>,</div>
+<div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; info: <span style="color:var(--blu)">'#2563eb'</span>,</div>
+<div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ai: <span style="color:var(--pur)">'#7c3aed'</span> },</div>
+<div>&nbsp;&nbsp;&nbsp; state: { draft: <span style="color:var(--tx4)">'#94a3b8'</span>,</div>
+<div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; pending: <span style="color:var(--amb)">'#f59e0b'</span>,</div>
+<div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; approved: <span style="color:var(--grn-l)">'#10b981'</span> }</div>
+<div>&nbsp; },</div>
+<div>&nbsp; borderRadius: {</div>
+<div>&nbsp;&nbsp;&nbsp; sm: <span style="color:var(--grn)">'6px'</span>, md: '10px', lg: '14px' }</div>
+<div>}}</div>
+</div></div>
+</div>
+
+<!-- Figma → Code Pipeline -->
+<div class="c rv" style="margin-bottom:20px">
+<h4 style="font-size:14px;font-weight:600;color:var(--tx2);margin-bottom:12px">Figma → Code 交付流程</h4>
+<div style="display:flex;align-items:center;gap:0;flex-wrap:wrap;justify-content:center">
+<div style="text-align:center;padding:12px 16px"><div style="width:48px;height:48px;border-radius:var(--rd-m);background:linear-gradient(135deg,var(--pur-l),var(--ros));margin:0 auto 6px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px">F</div><div style="font-size:11px;font-weight:600;color:var(--tx2)">Figma Design</div><div style="font-size:10px;color:var(--tx4)">Variables</div></div>
+<div style="font-size:20px;color:var(--tx4)">→</div>
+<div style="text-align:center;padding:12px 16px"><div style="width:48px;height:48px;border-radius:var(--rd-m);background:linear-gradient(135deg,var(--grn),var(--grn-l));margin:0 auto 6px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px">SD</div><div style="font-size:11px;font-weight:600;color:var(--tx2)">Style Dictionary</div><div style="font-size:10px;color:var(--tx4)">Transform</div></div>
+<div style="font-size:20px;color:var(--tx4)">→</div>
+<div style="text-align:center;padding:12px 16px"><div style="width:48px;height:48px;border-radius:var(--rd-m);background:linear-gradient(135deg,var(--blu),var(--cya));margin:0 auto 6px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px">TW</div><div style="font-size:11px;font-weight:600;color:var(--tx2)">Tailwind Config</div><div style="font-size:10px;color:var(--tx4)">+ CSS Variables</div></div>
+<div style="font-size:20px;color:var(--tx4)">→</div>
+<div style="text-align:center;padding:12px 16px"><div style="width:48px;height:48px;border-radius:var(--rd-m);background:linear-gradient(135deg,#1e293b,#334155);margin:0 auto 6px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px">RC</div><div style="font-size:11px;font-weight:600;color:var(--tx2)">React Components</div><div style="font-size:10px;color:var(--tx4)">Production Code</div></div>
+</div></div>
+
+<!-- QA Checklist -->
+<div class="c rv" style="margin-bottom:20px">
+<h4 style="font-size:14px;font-weight:600;color:var(--tx2);margin-bottom:12px">设计质量检查清单 (12项)</h4>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-0">
+<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--bd);font-size:12.5px;color:var(--tx3)"><div style="width:18px;height:18px;border-radius:5px;background:rgba(16,185,129,.1);color:#047857;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0">&#x2713;</div>像素对齐 (Pixel Perfect)</div>
+<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--bd);font-size:12.5px;color:var(--tx3)"><div style="width:18px;height:18px;border-radius:5px;background:rgba(16,185,129,.1);color:#047857;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0">&#x2713;</div>色彩Token使用率 100%</div>
+<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--bd);font-size:12.5px;color:var(--tx3)"><div style="width:18px;height:18px;border-radius:5px;background:rgba(16,185,129,.1);color:#047857;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0">&#x2713;</div>6断点响应式验证</div>
+<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--bd);font-size:12.5px;color:var(--tx3)"><div style="width:18px;height:18px;border-radius:5px;background:rgba(16,185,129,.1);color:#047857;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0">&#x2713;</div>WCAG 2.1 AA无障碍合规</div>
+<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--bd);font-size:12.5px;color:var(--tx3)"><div style="width:18px;height:18px;border-radius:5px;background:rgba(16,185,129,.1);color:#047857;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0">&#x2713;</div>动效时长与缓动规范一致</div>
+<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--bd);font-size:12.5px;color:var(--tx3)"><div style="width:18px;height:18px;border-radius:5px;background:rgba(16,185,129,.1);color:#047857;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0">&#x2713;</div>Loading/Skeleton态覆盖</div>
+<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--bd);font-size:12.5px;color:var(--tx3)"><div style="width:18px;height:18px;border-radius:5px;background:rgba(16,185,129,.1);color:#047857;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0">&#x2713;</div>Empty State插图+CTA</div>
+<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--bd);font-size:12.5px;color:var(--tx3)"><div style="width:18px;height:18px;border-radius:5px;background:rgba(16,185,129,.1);color:#047857;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0">&#x2713;</div>Error State处理(内联+全页)</div>
+<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--bd);font-size:12.5px;color:var(--tx3)"><div style="width:18px;height:18px;border-radius:5px;background:rgba(16,185,129,.1);color:#047857;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0">&#x2713;</div>暗色模式全覆盖</div>
+<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--bd);font-size:12.5px;color:var(--tx3)"><div style="width:18px;height:18px;border-radius:5px;background:rgba(16,185,129,.1);color:#047857;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0">&#x2713;</div>i18n文案外置就绪</div>
+<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--bd);font-size:12.5px;color:var(--tx3)"><div style="width:18px;height:18px;border-radius:5px;background:rgba(16,185,129,.1);color:#047857;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0">&#x2713;</div>RTL布局兼容</div>
+<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--bd);font-size:12.5px;color:var(--tx3)"><div style="width:18px;height:18px;border-radius:5px;background:rgba(16,185,129,.1);color:#047857;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0">&#x2713;</div>打印样式表</div>
+</div></div>
+
+<div class="cb rv" id="ch-adopt" style="min-height:380px"></div>
+</div></section>
+
+<!-- SUMMARY -->
+<section style="background:linear-gradient(180deg,var(--bg),var(--bg2))"><div class="sec">
+<div class="c rv" style="margin-bottom:24px"><h3 style="font-family:'Noto Serif SC',serif;font-size:16px;font-weight:700;color:var(--tx);margin-bottom:12px">设计系统全景</h3>
+<p style="font-size:13.5px;color:var(--tx3);line-height:2.2">本设计系统为RMFOOD配方制作平台定义了从原子到页面的完整设计语言: <strong style="color:var(--grn)">3色品牌主色</strong>延伸至7类知识图谱节点色与6种配方状态色; <strong style="color:var(--blu)">11级字体Token</strong>覆盖Serif/Sans/Mono三族; <strong style="color:var(--pur)">6大组件类别</strong>含AI专属交互组件; <strong style="color:var(--amb)">12个关键页面</strong>的布局蓝图与交互规范; <strong style="color:var(--cya)">6个响应断点</strong>确保Mobile到Wide全适配。设计系统随平台演进, Token覆盖率目标在10个月内达到98%, 组件复用率95%。</p></div>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 rv">
+<div class="stat-card"><div class="val" style="color:var(--grn)">3+7</div><div class="lbl">品牌色+图谱色</div></div>
+<div class="stat-card"><div class="val" style="color:var(--blu)">11</div><div class="lbl">字体Token</div></div>
+<div class="stat-card"><div class="val" style="color:var(--pur)">6</div><div class="lbl">组件类别</div></div>
+<div class="stat-card"><div class="val" style="color:var(--amb)">12</div><div class="lbl">关键页面</div></div>
+</div>
+<div style="text-align:center;margin-top:52px;color:var(--tx4);font-size:11.5px" class="rv">
+<p style="font-weight:500;color:var(--tx3)">RMFOOD配方制作平台 &mdash; UI/UX设计系统与体验规范 v1.0</p>
+<p>莱茵（厦门）分子生物科技有限公司 &middot; RMFOOD设计团队</p>
+<p style="margin-top:3px">文档版本 v1.0.0 &middot; 2026-04-06</p>
+</div></div></section>
+
+<script>
+gsap.registerPlugin(ScrollTrigger);
+document.querySelectorAll('.rv').forEach(el=>{gsap.to(el,{opacity:1,y:0,duration:.7,ease:'power2.out',scrollTrigger:{trigger:el,start:'top 88%'}})});
+window.addEventListener('scroll',()=>{document.getElementById('progress').style.width=(window.scrollY/(document.body.scrollHeight-window.innerHeight)*100)+'%'});
+const GRN='#059669',GRL='#10b981',BLU='#2563eb',BLL='#3b82f6',PUR='#7c3aed',PRL='#8b5cf6',AMB='#f59e0b',ROS='#ef4444',CYA='#06b6d4',PNK='#ec4899';
+const FF="'Noto Sans SC',sans-serif",FM="'JetBrains Mono',monospace",FS="'Noto Serif SC',serif";
+const tip=p=>'<div style="font-family:'+FF+';font-size:12px;padding:8px 12px;background:rgba(255,255,255,.95);backdrop-filter:blur(8px);border:1px solid rgba(148,163,184,.2);border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.08);color:#0f172a">'+p+'</div>';
+const chs=[];function ic(id,opt){var d=document.getElementById(id);if(!d)return;var c=echarts.init(d,null,{renderer:'svg'});c.setOption(opt);chs.push(c);return c}
+window.addEventListener('resize',function(){chs.forEach(function(c){c.resize()})});
+
+/* CH1: Brand Personality Radar */
+ic('ch-brand',{title:{text:'品牌性格雷达',left:'center',top:10,textStyle:{fontFamily:FS,fontSize:15,fontWeight:700,color:'#0f172a'}},tooltip:{formatter:function(p){return tip(p.name+': <b>'+p.value+'</b>')}},radar:{center:['50%','55%'],radius:'62%',indicator:[{name:'专业感',max:100},{name:'科技感',max:100},{name:'亲和力',max:100},{name:'创新性',max:100},{name:'可信赖',max:100},{name:'高效',max:100}],axisName:{fontFamily:FF,fontSize:11,color:'#64748b'},splitArea:{areaStyle:{color:['rgba(5,150,105,.02)','rgba(5,150,105,.04)']}}},series:[{type:'radar',symbol:'circle',symbolSize:6,data:[{value:[92,88,75,85,95,90],name:'RMFOOD品牌定位',lineStyle:{color:GRN,width:2},itemStyle:{color:GRN},areaStyle:{color:'rgba(5,150,105,.12)'}}]}]});
+
+/* CH2: Color Contrast Heatmap */
+(function(){
+var fg=['Brand Green','Ocean Blue','Bio Purple','Error Red','Warning Amber','Text Primary','Text Secondary'];
+var bg=['White #fff','Light #f1f5f9','Dark #1e293b','Card rgba'];
+var data=[[4.6,4.3,12.6,4.2],[4.7,4.5,8.0,4.4],[3.4,3.2,6.5,3.2],[4.0,3.8,7.2,3.7],[2.1,2.0,8.4,2.0],[17.4,15.8,1.2,15.2],[4.6,4.3,3.4,4.2]];
+var flat=[];data.forEach(function(r,ri){r.forEach(function(v,ci){flat.push([ci,ri,v])})});
+ic('ch-contrast',{title:{text:'色彩对比度矩阵 (WCAG)',left:'center',top:10,textStyle:{fontFamily:FF,fontSize:14,fontWeight:700,color:'#0f172a'}},tooltip:{formatter:function(p){var v=p.value[2];var lv=v>=7?'AAA':v>=4.5?'AA':'Fail';return tip(fg[p.value[1]]+' on '+bg[p.value[0]]+'<br/>对比度: <b>'+v+':1</b> · '+lv)}},grid:{left:120,right:50,top:48,bottom:10},xAxis:{type:'category',data:bg,axisLabel:{fontFamily:FF,fontSize:10,rotate:15},splitArea:{show:true,areaStyle:{color:['rgba(0,0,0,.01)','rgba(0,0,0,.03)']}}},yAxis:{type:'category',data:fg,axisLabel:{fontFamily:FF,fontSize:10}},visualMap:{min:1,max:18,calculable:false,orient:'horizontal',left:'center',bottom:0,itemWidth:14,itemHeight:10,textStyle:{fontFamily:FF,fontSize:10},inRange:{color:['#fecaca','#fde68a','#bbf7d0','#6ee7b7']}},series:[{type:'heatmap',data:flat,label:{show:true,formatter:function(p){return p.value[2]+':1'},fontFamily:FM,fontSize:10,color:'#334155'},emphasis:{itemStyle:{shadowBlur:6,shadowColor:'rgba(0,0,0,.15)'}}}]})
+})();
+
+/* CH3: Type Scale Bar */
+(function(){
+var tokens=['display-xl','display','heading-1','heading-2','heading-3','body-lg','body','body-sm','caption','overline','mono-data'];
+var sizes=[36,30,24,20,16,15,14,13,12,11,13];
+var cats=['Display','Display','Heading','Heading','Heading','Body','Body','Body','Caption','Caption','Mono'];
+var colors={Display:GRN,Heading:BLU,Body:PRL,Caption:'#94a3b8',Mono:PUR};
+ic('ch-type',{title:{text:'字体比例尺 · Major Third 1.25',left:'center',top:10,textStyle:{fontFamily:FF,fontSize:14,fontWeight:700,color:'#0f172a'}},tooltip:{formatter:function(p){return tip(p.name+' · <b>'+p.value+'px</b>')}},grid:{left:110,right:50,top:48,bottom:20},xAxis:{type:'value',max:40,axisLabel:{fontFamily:FM,fontSize:10,formatter:'{value}px'},splitLine:{lineStyle:{color:'rgba(148,163,184,.08)'}}},yAxis:{type:'category',data:tokens,inverse:true,axisLabel:{fontFamily:FM,fontSize:10}},series:[{type:'bar',data:sizes.map(function(v,i){return{value:v,itemStyle:{color:colors[cats[i]],borderRadius:[0,4,4,0]}}}),barWidth:16,label:{show:true,position:'right',formatter:'{c}px',fontFamily:FM,fontSize:10,color:'#64748b'}}]})
+})();
+
+/* CH4: Component Usage Treemap */
+ic('ch-comp',{title:{text:'组件使用分布 (按类别×模块频次)',left:'center',top:10,textStyle:{fontFamily:FF,fontSize:14,fontWeight:700,color:'#0f172a'}},tooltip:{formatter:function(p){return tip('<b>'+p.name+'</b><br/>使用频次权重: '+p.value)}},series:[{type:'treemap',width:'92%',height:'78%',top:50,label:{fontFamily:FF,fontSize:11,color:'#fff'},upperLabel:{show:true,fontFamily:FF,fontSize:12,fontWeight:600,color:'#fff',height:26},levels:[{itemStyle:{borderColor:'#fff',borderWidth:3,gapWidth:3},upperLabel:{show:true}},{itemStyle:{borderColor:'rgba(255,255,255,.5)',borderWidth:1,gapWidth:1}}],data:[{name:'按钮系统',value:85,itemStyle:{color:GRN},children:[{name:'Primary',value:32},{name:'Secondary',value:22},{name:'Ghost',value:15},{name:'AI Button',value:16}]},{name:'表单元素',value:72,itemStyle:{color:BLU},children:[{name:'Input',value:28},{name:'Select',value:18},{name:'Search',value:14},{name:'Textarea',value:12}]},{name:'卡片系统',value:68,itemStyle:{color:PUR},children:[{name:'Formula Card',value:24},{name:'Data Card',value:20},{name:'Template Card',value:14},{name:'Stat Card',value:10}]},{name:'数据展示',value:58,itemStyle:{color:AMB},children:[{name:'Table',value:22},{name:'Badge/Tag',value:18},{name:'Timeline',value:10},{name:'Chart',value:8}]},{name:'导航组件',value:45,itemStyle:{color:CYA},children:[{name:'Sidebar',value:15},{name:'Tab Bar',value:14},{name:'Breadcrumb',value:10},{name:'Cmd+K',value:6}]},{name:'AI交互',value:42,itemStyle:{color:PNK},children:[{name:'Suggestion',value:14},{name:'Progress',value:12},{name:'Chat',value:10},{name:'Gauge',value:6}]}]}]});
+
+/* CH5: Interaction Complexity Radar */
+ic('ch-interact',{title:{text:'模块交互复杂度雷达',left:'center',top:10,textStyle:{fontFamily:FF,fontSize:14,fontWeight:700,color:'#0f172a'}},tooltip:{formatter:function(p){return tip(p.seriesName+'<br/>'+p.name+': <b>'+p.value+'</b>')}},legend:{data:['配方管理','AI智能','数据库','工作流','仪表盘'],bottom:0,textStyle:{fontFamily:FF,fontSize:10},type:'scroll'},radar:{center:['50%','52%'],radius:'58%',indicator:[{name:'表单复杂度',max:100},{name:'数据展示',max:100},{name:'AI交互',max:100},{name:'实时更新',max:100},{name:'拖拽操作',max:100},{name:'图表交互',max:100}],axisName:{fontFamily:FF,fontSize:10,color:'#64748b'},splitArea:{areaStyle:{color:['rgba(5,150,105,.02)','rgba(5,150,105,.04)']}}},series:[{type:'radar',data:[{value:[90,70,95,60,40,50],name:'配方管理',lineStyle:{color:GRN},itemStyle:{color:GRN},areaStyle:{color:'rgba(5,150,105,.06)'}},{value:[40,50,100,90,10,60],name:'AI智能',lineStyle:{color:PUR},itemStyle:{color:PUR},areaStyle:{color:'rgba(124,58,237,.06)'}},{value:[50,90,40,20,10,80],name:'数据库',lineStyle:{color:BLU},itemStyle:{color:BLU},areaStyle:{color:'rgba(37,99,235,.06)'}},{value:[60,40,20,30,80,20],name:'工作流',lineStyle:{color:AMB},itemStyle:{color:AMB},areaStyle:{color:'rgba(245,158,11,.06)'}},{value:[20,90,30,70,50,95],name:'仪表盘',lineStyle:{color:CYA},itemStyle:{color:CYA},areaStyle:{color:'rgba(6,182,212,.06)'}}]}]});
+
+/* CH6: Formula Workflow Graph */
+(function(){
+var nodes=[
+{name:'开始',x:50,y:150,symbolSize:24,itemStyle:{color:'#94a3b8'}},
+{name:'选择模板/空白',x:160,y:150,symbolSize:28,itemStyle:{color:BLL}},
+{name:'填写基础信息',x:280,y:150,symbolSize:28,itemStyle:{color:BLL}},
+{name:'添加成分',x:400,y:100,symbolSize:30,itemStyle:{color:GRN}},
+{name:'AI推荐成分',x:400,y:200,symbolSize:26,itemStyle:{color:PRL}},
+{name:'SynergyNet\n协同分析',x:530,y:150,symbolSize:32,itemStyle:{color:PUR}},
+{name:'SafetyChecker\n安全检查',x:660,y:100,symbolSize:32,itemStyle:{color:ROS}},
+{name:'TastePredictor\n口感预测',x:660,y:200,symbolSize:28,itemStyle:{color:AMB}},
+{name:'预览配方卡',x:790,y:150,symbolSize:28,itemStyle:{color:GRL}},
+{name:'提交审核',x:900,y:150,symbolSize:30,itemStyle:{color:GRN}},
+{name:'审核员审核',x:1020,y:150,symbolSize:34,itemStyle:{color:AMB}},
+{name:'批准',x:1120,y:80,symbolSize:26,itemStyle:{color:GRN}},
+{name:'驳回',x:1120,y:150,symbolSize:26,itemStyle:{color:ROS}},
+{name:'要求修改',x:1120,y:220,symbolSize:26,itemStyle:{color:'#f97316'}}
+];
+var links=[
+{source:'开始',target:'选择模板/空白'},{source:'选择模板/空白',target:'填写基础信息'},
+{source:'填写基础信息',target:'添加成分'},{source:'填写基础信息',target:'AI推荐成分'},
+{source:'添加成分',target:'SynergyNet\n协同分析'},{source:'AI推荐成分',target:'SynergyNet\n协同分析'},
+{source:'SynergyNet\n协同分析',target:'SafetyChecker\n安全检查'},{source:'SynergyNet\n协同分析',target:'TastePredictor\n口感预测'},
+{source:'SafetyChecker\n安全检查',target:'预览配方卡'},{source:'TastePredictor\n口感预测',target:'预览配方卡'},
+{source:'预览配方卡',target:'提交审核'},{source:'提交审核',target:'审核员审核'},
+{source:'审核员审核',target:'批准'},{source:'审核员审核',target:'驳回'},{source:'审核员审核',target:'要求修改'},
+{source:'要求修改',target:'添加成分',lineStyle:{type:'dashed',color:'#f97316'}}
+];
+ic('ch-flow',{title:{text:'核心流程 — 配方创建与审核',left:'center',top:10,textStyle:{fontFamily:FF,fontSize:14,fontWeight:700,color:'#0f172a'}},tooltip:{formatter:function(p){return p.dataType==='node'?tip('<b>'+p.name.replace(/\n/g,' ')+'</b>'):'' }},series:[{type:'graph',layout:'none',data:nodes,links:links,label:{show:true,fontFamily:FF,fontSize:9,color:'#334155',position:'bottom',formatter:function(p){return p.name.replace(/\n/g,' ')}},lineStyle:{color:'#94a3b8',curveness:.12,width:1.5},edgeSymbol:['none','arrow'],edgeSymbolSize:7,emphasis:{focus:'adjacency'},roam:true}]})
+})();
+
+/* CH7: Device Usage Pie */
+ic('ch-device',{title:{text:'目标设备分布',left:'center',top:10,textStyle:{fontFamily:FF,fontSize:14,fontWeight:700,color:'#0f172a'}},tooltip:{formatter:function(p){return tip(p.name+'<br/><b>'+p.value+'%</b>')}},series:[{type:'pie',radius:['40%','68%'],center:['50%','55%'],itemStyle:{borderRadius:6,borderColor:'#fff',borderWidth:2},label:{fontFamily:FF,fontSize:11,color:'#334155'},data:[{value:62,name:'Desktop',itemStyle:{color:GRN}},{value:23,name:'Tablet',itemStyle:{color:BLU}},{value:15,name:'Mobile',itemStyle:{color:PUR}}]}]});
+
+/* CH8: Component Visibility Stacked Bar */
+(function(){
+var comps=['侧边栏','搜索栏','数据表格','图表区','AI面板','快捷操作','通知面板','状态栏'];
+var labels=['隐藏','折叠','显示'];
+var bp=['Mobile','Tablet','Laptop','Desktop'];
+var raw=[[0,2,1,1,0,2,0,2],[1,2,2,2,1,2,1,2],[2,2,2,2,1,2,2,2],[2,2,2,2,2,2,2,2]];
+ic('ch-vis',{title:{text:'组件可见性 × 断点',left:'center',top:10,textStyle:{fontFamily:FF,fontSize:14,fontWeight:700,color:'#0f172a'}},tooltip:{trigger:'axis',formatter:function(ps){var s=ps[0].axisValue;ps.forEach(function(p){s+='<br/>'+p.marker+p.seriesName+': '+labels[p.value]});return tip(s)}},legend:{data:bp,bottom:0,textStyle:{fontFamily:FF,fontSize:10}},grid:{left:80,right:20,top:48,bottom:40},xAxis:{type:'value',max:2,axisLabel:{fontFamily:FM,fontSize:10,formatter:function(v){return labels[v]}},splitLine:{lineStyle:{color:'rgba(148,163,184,.08)'}}},yAxis:{type:'category',data:comps,axisLabel:{fontFamily:FF,fontSize:10}},series:bp.map(function(name,bi){return{name:name,type:'bar',data:raw[bi],barWidth:10,itemStyle:{color:[ROS,AMB,BLU,GRN][bi],borderRadius:[0,3,3,0]}}})})
+})();
+
+/* CH9: Page Complexity Bar */
+(function(){
+var pages=['登录页','仪表盘','配方列表','配方编辑器','知识图谱','AI工作台','审核中心','实验记录','模板市场','数据检索','用户管理','系统设置'];
+var scores=[15,72,45,95,88,78,65,55,50,60,35,30];
+var colors=scores.map(function(s){return s>=80?PUR:s>=60?BLU:s>=40?GRN:'#94a3b8'});
+ic('ch-page',{title:{text:'页面复杂度评分',subtext:'综合组件数 × 交互深度 × 数据密度',left:'center',top:10,textStyle:{fontFamily:FF,fontSize:14,fontWeight:700,color:'#0f172a'},subtextStyle:{fontFamily:FM,fontSize:10}},tooltip:{formatter:function(p){return tip(p.name+' · 复杂度: <b>'+p.value+'</b>')}},grid:{left:90,right:30,top:60,bottom:20},xAxis:{type:'value',max:100,axisLabel:{fontFamily:FM,fontSize:10},splitLine:{lineStyle:{color:'rgba(148,163,184,.08)'}}},yAxis:{type:'category',data:pages,inverse:true,axisLabel:{fontFamily:FF,fontSize:10.5}},series:[{type:'bar',data:scores.map(function(v,i){return{value:v,itemStyle:{color:colors[i],borderRadius:[0,4,4,0]}}}),barWidth:16,label:{show:true,position:'right',formatter:'{c}',fontFamily:FM,fontSize:10,color:'#64748b'}}]})
+})();
+
+/* CH10: Design System Adoption Line */
+ic('ch-adopt',{title:{text:'设计系统采用率演进 (10月预测)',left:'center',top:10,textStyle:{fontFamily:FF,fontSize:14,fontWeight:700,color:'#0f172a'}},tooltip:{trigger:'axis',formatter:function(ps){var s='第'+ps[0].axisValue+'月';ps.forEach(function(p){s+='<br/>'+p.marker+p.seriesName+': <b>'+p.value+'%</b>'});return tip(s)}},legend:{data:['Token覆盖率','组件复用率','设计一致性'],bottom:0,textStyle:{fontFamily:FF,fontSize:10}},grid:{left:50,right:25,top:50,bottom:42},xAxis:{type:'category',data:['1','2','3','4','5','6','7','8','9','10'],axisLabel:{fontFamily:FM,fontSize:10}},yAxis:{type:'value',max:100,axisLabel:{fontFamily:FM,fontSize:10,formatter:'{value}%'},splitLine:{lineStyle:{color:'rgba(148,163,184,.08)'}}},series:[{name:'Token覆盖率',type:'line',data:[20,40,60,75,85,90,93,95,97,98],smooth:true,lineStyle:{width:2.5,color:GRN},itemStyle:{color:GRN},areaStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'rgba(5,150,105,.12)'},{offset:1,color:'rgba(5,150,105,0)'}]}}},{name:'组件复用率',type:'line',data:[15,30,50,65,78,85,88,91,93,95],smooth:true,lineStyle:{width:2.5,color:BLU},itemStyle:{color:BLU},areaStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'rgba(37,99,235,.1)'},{offset:1,color:'rgba(37,99,235,0)'}]}}},{name:'设计一致性',type:'line',data:[30,45,60,72,82,88,91,94,96,97],smooth:true,lineStyle:{width:2.5,color:PUR},itemStyle:{color:PUR},areaStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'rgba(124,58,237,.1)'},{offset:1,color:'rgba(124,58,237,0)'}]}}}]});
+</script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"75124c326cb447fe934cde04713ae013","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+</body></html>

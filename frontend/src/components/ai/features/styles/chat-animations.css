@@ -1,0 +1,230 @@
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes typingDot {
+  0%, 60%, 100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  30% {
+    transform: translateY(-8px);
+    opacity: 1;
+  }
+}
+
+@keyframes typingDot1 {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-8px); opacity: 1; }
+}
+
+@keyframes typingDot2 {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-8px); opacity: 1; }
+}
+
+@keyframes typingDot3 {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-8px); opacity: 1; }
+}
+
+@keyframes thinkingPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 1;
+  }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes checkmarkDraw {
+  0% { stroke-dashoffset: 24; }
+  100% { stroke-dashoffset: 0; }
+}
+
+@keyframes bounceIn {
+  0% { transform: scale(0); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+@keyframes pressDown {
+  to { transform: scale(0.95); }
+}
+
+@keyframes hoverLift {
+  to { transform: translateY(-2px); box-shadow: var(--shadow-level-2); }
+}
+
+@keyframes barWave {
+  0%, 40%, 100% { transform: scaleY(0.4); }
+  20% { transform: scaleY(1); }
+}
+
+.chat-message-user {
+  animation: slideInRight var(--duration-fast) var(--ease-out) both;
+  will-change: transform, opacity;
+}
+
+.chat-message-ai {
+  animation: slideInLeft var(--duration-fast) var(--ease-out) both;
+  will-change: transform, opacity;
+}
+
+.chat-message-system {
+  animation: fadeInUp 150ms var(--ease-out) both;
+  will-change: transform, opacity;
+}
+
+.typing-indicator-dot {
+  animation: typingDot var(--typing-animation-duration) ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+.typing-indicator-dot:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.typing-indicator-dot:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.typing-indicator-dot:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.typing-indicator-pulse {
+  animation: thinkingPulse 1.4s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+.typing-indicator-bar {
+  animation: barWave 1.2s ease-in-out infinite;
+  will-change: transform;
+}
+
+.typing-indicator-bar:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.typing-indicator-bar:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.typing-indicator-bar:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.spinner-icon {
+  animation: spin 1s linear infinite;
+  will-change: transform;
+}
+
+.shimmer-effect {
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  will-change: background-position;
+}
+
+.checkmark-animate {
+  stroke-dasharray: 24;
+  stroke-dashoffset: 24;
+  animation: checkmarkDraw 0.4s var(--ease-out) forwards;
+  will-change: stroke-dashoffset;
+}
+
+.bounce-in {
+  animation: bounceIn 0.4s var(--ease-spring) both;
+  will-change: transform;
+}
+
+.press-feedback:active {
+  animation: pressDown var(--duration-instant) var(--ease-out) both;
+}
+
+.hover-lift:hover {
+  animation: hoverLift var(--duration-fast) var(--ease-out) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chat-message-user,
+  .chat-message-ai,
+  .chat-message-system {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .typing-indicator-dot,
+  .typing-indicator-pulse,
+  .typing-indicator-bar,
+  .spinner-icon,
+  .shimmer-effect {
+    animation: none !important;
+  }
+
+  .typing-indicator-dot {
+    opacity: 0.6;
+  }
+
+  .shimmer-effect {
+    background-position: 0 0 !important;
+  }
+
+  .press-feedback:active,
+  .hover-lift:hover {
+    animation: none !important;
+    transform: none !important;
+  }
+
+  .checkmark-animate {
+    animation: none !important;
+    stroke-dashoffset: 0 !important;
+  }
+
+  .bounce-in {
+    animation: none !important;
+    transform: scale(1) !important;
+  }
+}

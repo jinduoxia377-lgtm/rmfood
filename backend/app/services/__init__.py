@@ -1,0 +1,147 @@
+"""RMFOOD 服务层"""
+from .auth import AuthService, get_current_user
+from .user import UserService
+from .formula import FormulaService
+from .experiment import ExperimentService
+from .ingredient import IngredientService
+from .peptide import PeptideService
+from .ai import AIService, ai_service
+from .cost_calculator import (
+    CostCalculator,
+    CostCalculationResult,
+    CostEffectivenessResult,
+    OptimizationResult,
+    CostBreakdownItem,
+    CostUnit,
+    cost_calculator,
+    calculate_formula_cost,
+    calculate_cost_effectiveness,
+    optimize_cost_constraints,
+    INGREDIENT_COSTS,
+)
+from .data_preprocessing import (
+    DataPreprocessingPipeline,
+    data_preprocessing_pipeline,
+    ParameterNormalizer,
+    MissingValueHandler,
+    EffectEncoder,
+    HerbFeatureExtractor,
+    CompatibilityFeatureBuilder,
+    PreprocessingConfig,
+    EFFECT_ENCODINGS,
+    CATEGORY_ENCODINGS,
+)
+from .notification import NotificationService
+from .workflow import WorkflowService
+from .file_generator import FileGeneratorService, file_generator_service, FileFormat, TaskStatus
+from .document_templates import (
+    DocumentTemplateService,
+    document_template_service,
+    DocumentConverter,
+    MarkdownParser,
+    HTMLParser,
+    ChineseMedicineReportTemplate,
+    ExperimentDataTemplate,
+    FormulaAnalysisReportTemplate,
+)
+from .synthetic_data_generator import (
+    SyntheticFormulaGenerator,
+    SyntheticDataQualityAssessor,
+    SyntheticDataStorage,
+    Formula,
+    generate_ingredient_perturbations,
+)
+from .constraint_penalty import (
+    ConstraintPenaltyMechanism,
+    PenaltyFunctionFactory,
+    SoftConstraintScorer,
+    ConstraintVisualizer,
+    PenaltyForm,
+    Constraint,
+    create_penalty_aware_objective,
+)
+from .historical_learning import (
+    EnhancedHistoricalLearner,
+    EnhancedSimilarityCalculator,
+    KnowledgeGraphEnhancer,
+    FeedbackLearningSystem,
+    FormulaEmbedding,
+)
+from .data_preprocessing_pipeline import (
+    DataPreprocessingPipeline,
+    AutoDataCleaner,
+    OutlierDetector,
+    AutoFeatureEngineer,
+    DataQualityMonitor,
+    PipelineManager,
+    PipelineConfig,
+)
+
+__all__ = [
+    "AuthService",
+    "get_current_user",
+    "UserService",
+    "FormulaService",
+    "ExperimentService",
+    "IngredientService",
+    "PeptideService",
+    "AIService",
+    "ai_service",
+    "CostCalculator",
+    "CostCalculationResult",
+    "CostEffectivenessResult",
+    "OptimizationResult",
+    "CostBreakdownItem",
+    "CostUnit",
+    "cost_calculator",
+    "calculate_formula_cost",
+    "calculate_cost_effectiveness",
+    "optimize_cost_constraints",
+    "INGREDIENT_COSTS",
+    "DataPreprocessingPipeline",
+    "data_preprocessing_pipeline",
+    "ParameterNormalizer",
+    "MissingValueHandler",
+    "EffectEncoder",
+    "HerbFeatureExtractor",
+    "CompatibilityFeatureBuilder",
+    "PreprocessingConfig",
+    "EFFECT_ENCODINGS",
+    "CATEGORY_ENCODINGS",
+    "NotificationService",
+    "WorkflowService",
+    "FileGeneratorService",
+    "file_generator_service",
+    "FileFormat",
+    "TaskStatus",
+    "DocumentTemplateService",
+    "document_template_service",
+    "DocumentConverter",
+    "MarkdownParser",
+    "HTMLParser",
+    "ChineseMedicineReportTemplate",
+    "ExperimentDataTemplate",
+    "FormulaAnalysisReportTemplate",
+    "SyntheticFormulaGenerator",
+    "SyntheticDataQualityAssessor",
+    "SyntheticDataStorage",
+    "Formula",
+    "generate_ingredient_perturbations",
+    "ConstraintPenaltyMechanism",
+    "PenaltyFunctionFactory",
+    "SoftConstraintScorer",
+    "ConstraintVisualizer",
+    "PenaltyForm",
+    "Constraint",
+    "create_penalty_aware_objective",
+    "EnhancedHistoricalLearner",
+    "EnhancedSimilarityCalculator",
+    "KnowledgeGraphEnhancer",
+    "FeedbackLearningSystem",
+    "FormulaEmbedding",
+    "AutoDataCleaner",
+    "OutlierDetector",
+    "AutoFeatureEngineer",
+    "DataQualityMonitor",
+    "PipelineManager",
+]

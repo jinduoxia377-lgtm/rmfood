@@ -1,0 +1,399 @@
+{
+  "started_at": "2026-06-03T14:30:03.885430",
+  "completed_at": "2026-06-03T14:30:06.284732",
+  "tables": {
+    "ai_suggestions": {
+      "migrated_rows": 0,
+      "total_rows": 0,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:04.136435"
+    },
+    "attachments": {
+      "migrated_rows": 0,
+      "total_rows": 0,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:04.137700"
+    },
+    "audit_logs": {
+      "migrated_rows": 0,
+      "total_rows": 0,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:04.140858"
+    },
+    "bioactive_peptides": {
+      "migrated_rows": 7540,
+      "total_rows": 7540,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.291224"
+    },
+    "categories": {
+      "migrated_rows": 0,
+      "total_rows": 0,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.293131"
+    },
+    "change_events": {
+      "migrated_rows": 2,
+      "total_rows": 2,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.381980"
+    },
+    "chat_messages": {
+      "migrated_rows": 0,
+      "total_rows": 0,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.383858"
+    },
+    "chat_sessions": {
+      "migrated_rows": 0,
+      "total_rows": 0,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.385910"
+    },
+    "comment_likes": {
+      "migrated_rows": 0,
+      "total_rows": 0,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.387633"
+    },
+    "comments": {
+      "migrated_rows": 0,
+      "total_rows": 0,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.390286"
+    },
+    "compatibility_reports": {
+      "migrated_rows": 0,
+      "total_rows": 0,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.392853"
+    },
+    "data_snapshots": {
+      "migrated_rows": 0,
+      "total_rows": 0,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.394899"
+    },
+    "data_source_health": {
+      "migrated_rows": 0,
+      "total_rows": 0,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.396471"
+    },
+    "effect_predictions": {
+      "migrated_rows": 0,
+      "total_rows": 0,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.398167"
+    },
+    "experiment_data": {
+      "migrated_rows": 0,
+      "total_rows": 0,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.399816"
+    },
+    "experiments": {
+      "migrated_rows": 0,
+      "total_rows": 0,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.401427"
+    },
+    "formula_categories": {
+      "migrated_rows": 0,
+      "total_rows": 0,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.403088"
+    },
+    "formula_generation_history": {
+      "migrated_rows": 0,
+      "total_rows": 0,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.405051"
+    },
+    "formula_ingredients": {
+      "migrated_rows": 0,
+      "total_rows": 0,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.408336"
+    },
+    "formula_peptides": {
+      "migrated_rows": 0,
+      "total_rows": 0,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.410084"
+    },
+    "formula_tags": {
+      "migrated_rows": 0,
+      "total_rows": 0,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.411997"
+    },
+    "formula_versions": {
+      "migrated_rows": 0,
+      "total_rows": 0,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.413778"
+    },
+    "formulas": {
+      "migrated_rows": 0,
+      "total_rows": 0,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.415532"
+    },
+    "ingredients": {
+      "migrated_rows": 0,
+      "total_rows": 0,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.417603"
+    },
+    "kg_edges": {
+      "migrated_rows": 0,
+      "total_rows": 0,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.419380"
+    },
+    "kg_nodes": {
+      "migrated_rows": 0,
+      "total_rows": 0,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.421332"
+    },
+    "knowledge_graph_nodes": {
+      "migrated_rows": 0,
+      "total_rows": 0,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.425045"
+    },
+    "lab_validation_data": {
+      "migrated_rows": 0,
+      "total_rows": 0,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.427079"
+    },
+    "notifications": {
+      "migrated_rows": 0,
+      "total_rows": 0,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.428995"
+    },
+    "optimization_results": {
+      "migrated_rows": 0,
+      "total_rows": 0,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.430777"
+    },
+    "peptide_activities": {
+      "migrated_rows": 0,
+      "total_rows": 0,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.432902"
+    },
+    "peptide_analyses": {
+      "migrated_rows": 0,
+      "total_rows": 0,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.434790"
+    },
+    "peptide_analysis_details": {
+      "migrated_rows": 0,
+      "total_rows": 0,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.436693"
+    },
+    "peptide_design_candidates": {
+      "migrated_rows": 0,
+      "total_rows": 0,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.438598"
+    },
+    "peptide_designs": {
+      "migrated_rows": 0,
+      "total_rows": 0,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.442103"
+    },
+    "peptide_enzyme_links": {
+      "migrated_rows": 0,
+      "total_rows": 0,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.444178"
+    },
+    "peptide_enzymes": {
+      "migrated_rows": 0,
+      "total_rows": 0,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.446436"
+    },
+    "peptide_source_proteins": {
+      "migrated_rows": 0,
+      "total_rows": 0,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.448494"
+    },
+    "peptides": {
+      "migrated_rows": 0,
+      "total_rows": 0,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.450671"
+    },
+    "prompt_templates": {
+      "migrated_rows": 0,
+      "total_rows": 0,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.452720"
+    },
+    "prompt_versions": {
+      "migrated_rows": 0,
+      "total_rows": 0,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.454960"
+    },
+    "safety_alert_logs": {
+      "migrated_rows": 0,
+      "total_rows": 0,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.459503"
+    },
+    "safety_threshold_change_log": {
+      "migrated_rows": 0,
+      "total_rows": 0,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.461569"
+    },
+    "sync_logs": {
+      "migrated_rows": 0,
+      "total_rows": 0,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.463641"
+    },
+    "synergy_records": {
+      "migrated_rows": 0,
+      "total_rows": 0,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.466262"
+    },
+    "tags": {
+      "migrated_rows": 0,
+      "total_rows": 0,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.468584"
+    },
+    "tcm_compound_targets": {
+      "migrated_rows": 0,
+      "total_rows": 0,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.470804"
+    },
+    "tcm_compounds": {
+      "migrated_rows": 0,
+      "total_rows": 0,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.474954"
+    },
+    "tcm_diseases": {
+      "migrated_rows": 0,
+      "total_rows": 0,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.477535"
+    },
+    "tcm_herb_compounds": {
+      "migrated_rows": 0,
+      "total_rows": 0,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.479858"
+    },
+    "tcm_herbs": {
+      "migrated_rows": 47,
+      "total_rows": 47,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.579088"
+    },
+    "tcm_target_diseases": {
+      "migrated_rows": 0,
+      "total_rows": 0,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.581792"
+    },
+    "tcm_targets": {
+      "migrated_rows": 0,
+      "total_rows": 0,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.584229"
+    },
+    "team_members": {
+      "migrated_rows": 0,
+      "total_rows": 0,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.586565"
+    },
+    "teams": {
+      "migrated_rows": 0,
+      "total_rows": 0,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.589917"
+    },
+    "term_categories": {
+      "migrated_rows": 26,
+      "total_rows": 26,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.632361"
+    },
+    "term_normalization_rules": {
+      "migrated_rows": 9,
+      "total_rows": 9,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.694036"
+    },
+    "term_statistics": {
+      "migrated_rows": 0,
+      "total_rows": 0,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.699627"
+    },
+    "term_validations": {
+      "migrated_rows": 12,
+      "total_rows": 12,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.711723"
+    },
+    "term_variants": {
+      "migrated_rows": 0,
+      "total_rows": 0,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.714143"
+    },
+    "terms": {
+      "migrated_rows": 1026,
+      "total_rows": 1026,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.892076"
+    },
+    "user_devices": {
+      "migrated_rows": 0,
+      "total_rows": 0,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:05.895302"
+    },
+    "users": {
+      "migrated_rows": 1,
+      "total_rows": 1,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:06.113350"
+    },
+    "workflow_tasks": {
+      "migrated_rows": 0,
+      "total_rows": 0,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:06.116251"
+    },
+    "workflows": {
+      "migrated_rows": 0,
+      "total_rows": 0,
+      "status": "completed",
+      "updated_at": "2026-06-03T14:30:06.119263"
+    }
+  },
+  "current_table": "workflows",
+  "errors": [],
+  "statistics": {}
+}

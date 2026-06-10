@@ -1,0 +1,142 @@
+:root {
+  --empty-state-primary-50: #eef2ff;
+  --empty-state-primary-100: #e0e7ff;
+  --empty-state-primary-200: #c7d2fe;
+  --empty-state-primary-300: #a5b4fc;
+  --empty-state-primary-400: #818cf8;
+  --empty-state-primary-500: #6366f1;
+  --empty-state-primary-600: #4f46e5;
+  --empty-state-primary-700: #4338ca;
+  --empty-state-primary-800: #3730a3;
+  --empty-state-primary-900: #312e81;
+
+  --empty-state-secondary-50: #f5f3ff;
+  --empty-state-secondary-500: #8b5cf6;
+  --empty-state-secondary-600: #7c3aed;
+
+  --empty-state-slate-50: #f8fafc;
+  --empty-state-slate-100: #f1f5f9;
+  --empty-state-slate-200: #e2e8f0;
+  --empty-state-slate-300: #cbd5e1;
+  --empty-state-slate-400: #94a3b8;
+  --empty-state-slate-500: #64748b;
+  --empty-state-slate-600: #475569;
+  --empty-state-slate-700: #334155;
+  --empty-state-slate-800: #1e293b;
+  --empty-state-slate-900: #0f172a;
+  --empty-state-slate-950: #020617;
+
+  --empty-state-success: #10b981;
+  --empty-state-warning: #f59e0b;
+  --empty-state-error: #ef4444;
+  --empty-state-info: #3b82f6;
+
+  --empty-state-bg-primary: #ffffff;
+  --empty-state-bg-secondary: #f8fafc;
+  --empty-state-bg-tertiary: #f1f5f9;
+
+  --empty-state-text-primary: #1e293b;
+  --empty-state-text-secondary: #64748b;
+  --empty-state-text-tertiary: #94a3b8;
+  --empty-state-text-disabled: #cbd5e1;
+
+  --empty-state-border-light: #e2e8f0;
+  --empty-state-border-default: #cbd5e1;
+  --empty-state-border-dark: #94a3b8;
+
+  --empty-state-font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --empty-state-font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  --empty-state-text-xs: 0.75rem;
+  --empty-state-text-sm: 0.875rem;
+  --empty-state-text-base: 1rem;
+  --empty-state-text-lg: 1.125rem;
+  --empty-state-text-xl: 1.25rem;
+  --empty-state-text-2xl: 1.5rem;
+  --empty-state-text-3xl: 1.875rem;
+
+  --empty-state-font-light: 300;
+  --empty-state-font-normal: 400;
+  --empty-state-font-medium: 500;
+  --empty-state-font-semibold: 600;
+  --empty-state-font-bold: 700;
+
+  --empty-state-leading-tight: 1.25;
+  --empty-state-leading-normal: 1.5;
+  --empty-state-leading-relaxed: 1.75;
+
+  --empty-state-tracking-tight: -0.02em;
+  --empty-state-tracking-normal: 0;
+  --empty-state-tracking-wide: 0.05em;
+
+  --empty-state-space-1: 0.25rem;
+  --empty-state-space-2: 0.5rem;
+  --empty-state-space-3: 0.75rem;
+  --empty-state-space-4: 1rem;
+  --empty-state-space-5: 1.25rem;
+  --empty-state-space-6: 1.5rem;
+  --empty-state-space-8: 2rem;
+  --empty-state-space-10: 2.5rem;
+  --empty-state-space-12: 3rem;
+  --empty-state-space-16: 4rem;
+  --empty-state-space-20: 5rem;
+  --empty-state-space-24: 6rem;
+
+  --empty-state-padding-sm: 1rem;
+  --empty-state-padding-md: 1.5rem;
+  --empty-state-padding-lg: 2rem;
+  --empty-state-padding-xl: 2.5rem;
+
+  --empty-state-gap-xs: 0.5rem;
+  --empty-state-gap-sm: 0.75rem;
+  --empty-state-gap-md: 1rem;
+  --empty-state-gap-lg: 1.5rem;
+  --empty-state-gap-xl: 2rem;
+
+  --empty-state-radius-xs: 0.25rem;
+  --empty-state-radius-sm: 0.5rem;
+  --empty-state-radius-md: 0.75rem;
+  --empty-state-radius-lg: 1rem;
+  --empty-state-radius-xl: 1.5rem;
+  --empty-state-radius-2xl: 2rem;
+  --empty-state-radius-full: 9999px;
+
+  --empty-state-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --empty-state-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.07), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --empty-state-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+  --empty-state-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
+  --empty-state-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -3px rgba(0, 0, 0, 0.04);
+  --empty-state-shadow-glow: 0 0 20px rgba(99, 102, 241, 0.3);
+
+  --empty-state-duration-fast: 150ms;
+  --empty-state-duration-normal: 200ms;
+  --empty-state-duration-medium: 300ms;
+  --empty-state-duration-slow: 500ms;
+
+  --empty-state-easing-in: cubic-bezier(0.4, 0, 1, 1);
+  --empty-state-easing-out: cubic-bezier(0, 0, 0.2, 1);
+  --empty-state-easing-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --empty-state-easing-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --empty-state-bg-primary: #0f172a;
+    --empty-state-bg-secondary: #1e293b;
+    --empty-state-bg-tertiary: #334155;
+
+    --empty-state-text-primary: #f1f5f9;
+    --empty-state-text-secondary: #94a3b8;
+    --empty-state-text-tertiary: #64748b;
+    --empty-state-text-disabled: #475569;
+
+    --empty-state-border-light: #334155;
+    --empty-state-border-default: #475569;
+    --empty-state-border-dark: #64748b;
+
+    --empty-state-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.12);
+    --empty-state-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.15);
+    --empty-state-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.35), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
+    --empty-state-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.45), 0 8px 10px -3px rgba(0, 0, 0, 0.15);
+  }
+}

@@ -1,0 +1,1108 @@
+/* ══════════════════════════════════════════════════════════════
+   RMFOOD 登录页面样式 — v2.0 专业重设计
+   基于 UI/UX Pro Max 设计智能框架
+   设计令牌 · Spring 动画 · 品牌化 · 全响应式 · WCAG AA
+   ══════════════════════════════════════════════════════════════ */
+
+/* ================================================================
+   1. 设计令牌 (Design Tokens)
+   ================================================================ */
+:root {
+  /* ── 品牌色 (Emerald Green) ── */
+  --login-brand-50: #ecfdf5;
+  --login-brand-100: #d1fae5;
+  --login-brand-200: #a7f3d0;
+  --login-brand-300: #6ee7b7;
+  --login-brand-400: #34d399;
+  --login-brand-500: #10b981;
+  --login-brand-600: #059669;
+  --login-brand-700: #047857;
+  --login-brand-800: #065f46;
+  --login-brand-900: #064e3b;
+
+  /* ── 辅助色 ── */
+  --login-accent: #2563eb;
+  --login-accent-hover: #1d4ed8;
+
+  /* ── 功能色 ── */
+  --login-error: #ef4444;
+  --login-error-bg: #fef2f2;
+  --login-error-border: #fecaca;
+  --login-success: #22c55e;
+  --login-success-bg: #f0fdf4;
+  --login-success-border: #bbf7d0;
+  --login-warning: #f59e0b;
+
+  /* ── 中性色 (Light) ── */
+  --login-surface: #ffffff;
+  --login-bg: #f8fafc;
+  --login-text-primary: #0f172a;
+  --login-text-secondary: #475569;
+  --login-text-tertiary: #94a3b8;
+  --login-border: #e2e8f0;
+  --login-border-hover: #cbd5e1;
+  --login-divider: #f1f5f9;
+
+  /* ── 阴影 ── */
+  --login-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --login-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --login-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+  --login-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.06);
+  --login-shadow-glow: 0 0 0 3px rgba(5, 150, 105, 0.15);
+
+  /* ── 圆角 ── */
+  --login-radius-sm: 6px;
+  --login-radius-md: 10px;
+  --login-radius-lg: 16px;
+  --login-radius-xl: 24px;
+  --login-radius-full: 9999px;
+
+  /* ── 间距 ── */
+  --login-space-1: 4px;
+  --login-space-2: 8px;
+  --login-space-3: 12px;
+  --login-space-4: 16px;
+  --login-space-5: 20px;
+  --login-space-6: 24px;
+  --login-space-8: 32px;
+  --login-space-10: 40px;
+  --login-space-12: 48px;
+
+  /* ── 字体 ── */
+  --login-font-sans: 'Inter', 'Noto Sans SC', system-ui, -apple-system, sans-serif;
+  --login-font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --login-text-xs: 12px;
+  --login-text-sm: 14px;
+  --login-text-base: 16px;
+  --login-text-lg: 18px;
+  --login-text-xl: 20px;
+  --login-text-2xl: 24px;
+  --login-text-3xl: 30px;
+  --login-text-4xl: 36px;
+  --login-leading-tight: 1.25;
+  --login-leading-normal: 1.5;
+  --login-leading-relaxed: 1.625;
+
+  /* ── 动画 ── */
+  --login-duration-fast: 150ms;
+  --login-duration-normal: 250ms;
+  --login-duration-slow: 350ms;
+  --login-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --login-ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --login-ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --login-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ── 过渡 ── */
+  --login-transition-colors: background-color var(--login-duration-normal) var(--login-ease-out),
+                             border-color var(--login-duration-normal) var(--login-ease-out),
+                             color var(--login-duration-normal) var(--login-ease-out);
+  --login-transition-transform: transform var(--login-duration-normal) var(--login-ease-spring);
+  --login-transition-shadow: box-shadow var(--login-duration-normal) var(--login-ease-out);
+}
+
+/* ================================================================
+   2. 深色模式令牌 (Dark Mode Tokens)
+   ================================================================ */
+.dark,
+[data-mode="dark"] {
+  --login-surface: #0f172a;
+  --login-bg: #020617;
+  --login-text-primary: #f1f5f9;
+  --login-text-secondary: #94a3b8;
+  --login-text-tertiary: #64748b;
+  --login-border: #1e293b;
+  --login-border-hover: #334155;
+  --login-divider: #1e293b;
+
+  --login-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --login-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+  --login-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.3);
+  --login-shadow-glow: 0 0 0 3px rgba(16, 185, 129, 0.25);
+
+  --login-error-bg: #450a0a;
+  --login-error-border: #7f1d1d;
+  --login-success-bg: #052e16;
+  --login-success-border: #14532d;
+}
+
+/* ================================================================
+   3. 动画关键帧 (Animation Keyframes)
+   ================================================================ */
+@keyframes loginFadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes loginFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes loginFadeInScale {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes loginSlideInLeft {
+  from { opacity: 0; transform: translateX(-24px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes loginShake {
+  0%, 100% { transform: translateX(0); }
+  10%, 50%, 90% { transform: translateX(-4px); }
+  30%, 70% { transform: translateX(4px); }
+}
+@keyframes loginPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+@keyframes loginSpin {
+  to { transform: rotate(360deg); }
+}
+@keyframes loginRipple {
+  0% { transform: scale(0); opacity: 0.4; }
+  100% { transform: scale(4); opacity: 0; }
+}
+@keyframes loginBrandFloat {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-6px) rotate(1deg); }
+  75% { transform: translateY(6px) rotate(-1deg); }
+}
+@keyframes loginMoleculeDrift {
+  0% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(2px, -3px) scale(1.05); }
+  66% { transform: translate(-2px, 2px) scale(0.95); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+/* ================================================================
+   4. 动画应用类 (Animation Utility Classes)
+   ================================================================ */
+.login-anim-fade-in-up {
+  animation: loginFadeInUp 0.5s var(--login-ease-out) forwards;
+  opacity: 0;
+}
+.login-anim-fade-in {
+  animation: loginFadeIn 0.3s var(--login-ease-out) forwards;
+}
+.login-anim-fade-in-scale {
+  animation: loginFadeInScale 0.4s var(--login-ease-spring) forwards;
+  opacity: 0;
+}
+.login-anim-slide-in-left {
+  animation: loginSlideInLeft 0.5s var(--login-ease-out) forwards;
+  opacity: 0;
+}
+.login-anim-shake {
+  animation: loginShake 0.5s var(--login-ease-in-out);
+}
+.login-anim-pulse {
+  animation: loginPulse 2s var(--login-ease-in-out) infinite;
+}
+/* 动画延迟 */
+.login-delay-100 { animation-delay: 0.1s; }
+.login-delay-200 { animation-delay: 0.2s; }
+.login-delay-300 { animation-delay: 0.3s; }
+.login-delay-400 { animation-delay: 0.4s; }
+.login-delay-500 { animation-delay: 0.5s; }
+.login-delay-600 { animation-delay: 0.6s; }
+
+/* ================================================================
+   5. 布局容器 (Layout)
+   ================================================================ */
+.login-page {
+  display: flex;
+  min-height: 100vh;
+  min-height: 100dvh;
+  font-family: var(--login-font-sans);
+  background-color: var(--login-bg);
+  color: var(--login-text-primary);
+}
+
+/* ── Skip Link ── */
+.login-skip-link {
+  position: fixed;
+  top: -48px;
+  left: 16px;
+  z-index: 1000;
+  padding: 10px 20px;
+  background: var(--login-brand-600);
+  color: #ffffff;
+  font-size: var(--login-text-sm);
+  font-weight: 600;
+  border-radius: var(--login-radius-md);
+  text-decoration: none;
+  box-shadow: var(--login-shadow-lg);
+  transition: top var(--login-duration-fast) var(--login-ease-out);
+}
+.login-skip-link:focus {
+  top: 16px;
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+}
+
+/* ── 品牌区 (左侧) ── */
+.login-brand-panel {
+  position: relative;
+  display: none;
+  overflow: hidden;
+}
+@media (min-width: 1024px) {
+  .login-brand-panel {
+    display: flex;
+    width: 55%;
+    min-height: 100vh;
+    min-height: 100dvh;
+    position: sticky;
+    top: 0;
+  }
+}
+
+.login-brand-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(160deg, var(--login-brand-900) 0%, var(--login-brand-700) 40%, var(--login-brand-600) 100%);
+}
+.dark .login-brand-gradient {
+  background: linear-gradient(160deg, #020617 0%, var(--login-brand-900) 40%, var(--login-brand-700) 100%);
+}
+
+/* ── 品牌区有机纹理 ── */
+.login-brand-texture {
+  position: absolute;
+  inset: 0;
+  opacity: 0.06;
+  background-image:
+    radial-gradient(circle at 20% 30%, var(--login-brand-200) 1px, transparent 1px),
+    radial-gradient(circle at 60% 70%, var(--login-brand-200) 1.5px, transparent 1.5px),
+    radial-gradient(circle at 80% 20%, var(--login-brand-200) 1px, transparent 1px),
+    radial-gradient(circle at 40% 80%, var(--login-brand-200) 2px, transparent 2px);
+  background-size: 80px 80px, 120px 120px, 100px 100px, 90px 90px;
+  background-position: 0 0, 40px 60px, 20px 30px, 60px 10px;
+}
+
+/* ── 品牌区内容 ── */
+.login-brand-content {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: var(--login-space-12) var(--login-space-10);
+  max-width: 560px;
+  margin: 0 auto;
+  width: 100%;
+  color: #ffffff;
+}
+
+.login-brand-logo {
+  display: flex;
+  align-items: center;
+  gap: var(--login-space-3);
+  margin-bottom: var(--login-space-12);
+}
+.login-brand-logo-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--login-radius-md);
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.login-brand-logo-text {
+  font-size: var(--login-text-xl);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.login-brand-tagline {
+  display: inline-block;
+  padding: 6px 14px;
+  font-size: var(--login-text-xs);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border-radius: var(--login-radius-full);
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  margin-bottom: var(--login-space-6);
+  color: var(--login-brand-200);
+}
+
+.login-brand-headline {
+  font-size: var(--login-text-4xl);
+  font-weight: 800;
+  line-height: var(--login-leading-tight);
+  letter-spacing: -0.03em;
+  margin-bottom: var(--login-space-6);
+  white-space: pre-line;
+}
+.login-brand-headline em {
+  font-style: normal;
+  color: var(--login-brand-300);
+}
+
+.login-brand-description {
+  font-size: var(--login-text-base);
+  line-height: var(--login-leading-relaxed);
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: var(--login-space-10);
+  max-width: 440px;
+}
+
+/* ── 品牌支柱 ── */
+.login-brand-pillars {
+  display: flex;
+  flex-direction: column;
+  gap: var(--login-space-5);
+}
+.login-brand-pillar {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--login-space-4);
+  padding: var(--login-space-4);
+  border-radius: var(--login-radius-md);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: background var(--login-duration-normal) var(--login-ease-out);
+}
+.login-brand-pillar:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+.login-brand-pillar-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--login-radius-sm);
+  background: rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.login-brand-pillar-text h4 {
+  font-size: var(--login-text-sm);
+  font-weight: 700;
+  margin-bottom: 2px;
+  color: #ffffff;
+}
+.login-brand-pillar-text p {
+  font-size: var(--login-text-xs);
+  color: rgba(255, 255, 255, 0.55);
+  line-height: var(--login-leading-normal);
+}
+
+/* ── 品牌区底部版权 ── */
+.login-brand-footer {
+  margin-top: auto;
+  padding-top: var(--login-space-8);
+  font-size: var(--login-text-xs);
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* ================================================================
+   6. 表单区 (右侧)
+   ================================================================ */
+.login-form-panel {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--login-space-6);
+  background-color: var(--login-bg);
+  transition: background-color var(--login-duration-normal) var(--login-ease-out);
+}
+
+.login-form-container {
+  width: 100%;
+  max-width: 440px;
+}
+
+/* ── 移动端品牌条 ── */
+.login-mobile-brand {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--login-space-8);
+}
+@media (min-width: 1024px) {
+  .login-mobile-brand { display: none; }
+}
+.login-mobile-brand-left {
+  display: flex;
+  align-items: center;
+  gap: var(--login-space-3);
+}
+.login-mobile-logo-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--login-radius-sm);
+  background: linear-gradient(135deg, var(--login-brand-500), var(--login-brand-700));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  box-shadow: var(--login-shadow-md);
+}
+.login-mobile-logo-text h2 {
+  font-size: var(--login-text-lg);
+  font-weight: 700;
+  color: var(--login-text-primary);
+  line-height: 1.2;
+}
+.login-mobile-logo-text span {
+  font-size: var(--login-text-xs);
+  color: var(--login-text-tertiary);
+}
+
+/* ── 主题切换 ── */
+.login-theme-toggle {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--login-radius-full);
+  border: 1px solid var(--login-border);
+  background: var(--login-surface);
+  color: var(--login-text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--login-transition-colors), var(--login-transition-transform);
+}
+.login-theme-toggle:hover {
+  border-color: var(--login-border-hover);
+  color: var(--login-text-primary);
+  transform: scale(1.08);
+}
+.login-theme-toggle:focus-visible {
+  outline: 2px solid var(--login-brand-600);
+  outline-offset: 2px;
+}
+
+/* ── 登录卡片 ── */
+.login-card {
+  background: var(--login-surface);
+  border: 1px solid var(--login-border);
+  border-radius: var(--login-radius-xl);
+  padding: var(--login-space-10);
+  box-shadow: var(--login-shadow-md);
+  transition: var(--login-transition-colors), var(--login-transition-shadow);
+}
+@media (max-width: 639px) {
+  .login-card {
+    padding: var(--login-space-6);
+    border-radius: var(--login-radius-lg);
+    border: none;
+    box-shadow: none;
+    background: transparent;
+  }
+}
+
+.login-card-header {
+  margin-bottom: var(--login-space-8);
+}
+.login-card-header h2 {
+  font-size: var(--login-text-2xl);
+  font-weight: 700;
+  color: var(--login-text-primary);
+  line-height: var(--login-leading-tight);
+  margin-bottom: var(--login-space-2);
+  letter-spacing: -0.02em;
+}
+.login-card-header p {
+  font-size: var(--login-text-sm);
+  color: var(--login-text-secondary);
+  line-height: var(--login-leading-normal);
+}
+
+/* ================================================================
+   7. 表单元素 (Form Elements)
+   ================================================================ */
+
+/* ── 表单组 ── */
+.login-form-group {
+  margin-bottom: var(--login-space-5);
+}
+
+/* ── 标签 ── */
+.login-label {
+  display: block;
+  font-size: var(--login-text-sm);
+  font-weight: 600;
+  color: var(--login-text-primary);
+  margin-bottom: var(--login-space-2);
+  line-height: var(--login-leading-normal);
+}
+.login-label-required::after {
+  content: ' *';
+  color: var(--login-error);
+  font-weight: 500;
+}
+
+/* ── 输入框容器 ── */
+.login-input-wrapper {
+  position: relative;
+}
+.login-input-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--login-text-tertiary);
+  pointer-events: none;
+  transition: color var(--login-duration-fast) var(--login-ease-out);
+}
+
+/* ── 输入框 (5 态: idle / hover / focus / filled / error) ── */
+.login-input {
+  width: 100%;
+  height: 48px;
+  padding: 0 var(--login-space-4) 0 48px;
+  font-size: var(--login-text-base);
+  font-family: var(--login-font-sans);
+  line-height: var(--login-leading-normal);
+  color: var(--login-text-primary);
+  background: var(--login-surface);
+  border: 1.5px solid var(--login-border);
+  border-radius: var(--login-radius-md);
+  transition: var(--login-transition-colors), box-shadow var(--login-duration-fast) var(--login-ease-out);
+  outline: none;
+}
+/* 密码输入框右侧留出切换按钮空间 */
+.login-input[type="password"],
+.login-input[type="text"][id="password"] {
+  padding-right: 48px;
+}
+.login-input:hover {
+  border-color: var(--login-border-hover);
+}
+.login-input:focus {
+  border-color: var(--login-brand-500);
+  box-shadow: var(--login-shadow-glow);
+}
+.login-input.filled {
+  border-color: var(--login-border-hover);
+}
+.login-input.error {
+  border-color: var(--login-error);
+}
+.login-input.error:focus {
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+}
+
+/* ── 输入框聚焦时图标变色 ── */
+.login-input:focus ~ .login-input-icon,
+.login-input-wrapper:focus-within .login-input-icon {
+  color: var(--login-brand-500);
+}
+.login-input.error ~ .login-input-icon,
+.login-input-wrapper:has(.login-input.error) .login-input-icon {
+  color: var(--login-error);
+}
+
+/* ── 密码切换按钮 ── */
+.login-password-toggle {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--login-text-tertiary);
+  cursor: pointer;
+  border-radius: var(--login-radius-sm);
+  transition: color var(--login-duration-fast) var(--login-ease-out);
+  padding: 0;
+}
+.login-password-toggle:hover {
+  color: var(--login-text-secondary);
+}
+.login-password-toggle:focus-visible {
+  outline: 2px solid var(--login-brand-600);
+  outline-offset: -2px;
+}
+
+/* ── 错误消息 ── */
+.login-error-text {
+  margin-top: var(--login-space-2);
+  font-size: var(--login-text-xs);
+  color: var(--login-error);
+  font-weight: 500;
+  line-height: var(--login-leading-normal);
+}
+
+/* ── 密码强度指示器 ── */
+.login-password-strength {
+  margin-top: var(--login-space-3);
+}
+.login-password-strength-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--login-space-2);
+}
+.login-password-strength-label {
+  font-size: var(--login-text-xs);
+  color: var(--login-text-secondary);
+}
+.login-password-strength-value {
+  font-size: var(--login-text-xs);
+  font-weight: 600;
+}
+.login-password-strength-bar {
+  height: 4px;
+  background: var(--login-border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.login-password-strength-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width var(--login-duration-normal) var(--login-ease-out),
+              background-color var(--login-duration-normal) var(--login-ease-out);
+}
+
+/* ── 记住我 & 忘记密码 ── */
+.login-form-options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--login-space-6);
+}
+.login-remember-me {
+  display: flex;
+  align-items: center;
+  gap: var(--login-space-2);
+  cursor: pointer;
+  font-size: var(--login-text-sm);
+  color: var(--login-text-secondary);
+  user-select: none;
+}
+.login-remember-checkbox {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  border: 1.5px solid var(--login-border);
+  background: var(--login-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--login-transition-colors);
+  cursor: pointer;
+}
+.login-remember-checkbox.checked {
+  background: var(--login-brand-600);
+  border-color: var(--login-brand-600);
+}
+.login-forgot-link {
+  font-size: var(--login-text-sm);
+  font-weight: 600;
+  color: var(--login-brand-600);
+  text-decoration: none;
+  transition: color var(--login-duration-fast) var(--login-ease-out);
+}
+.login-forgot-link:hover {
+  color: var(--login-brand-700);
+}
+.login-forgot-link:focus-visible {
+  outline: 2px solid var(--login-brand-600);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* ── 主按钮 ── */
+.login-submit-btn {
+  width: 100%;
+  height: 48px;
+  padding: 0 var(--login-space-6);
+  font-size: var(--login-text-base);
+  font-weight: 600;
+  font-family: var(--login-font-sans);
+  color: #ffffff;
+  background: var(--login-brand-600);
+  border: none;
+  border-radius: var(--login-radius-md);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--login-space-2);
+  position: relative;
+  overflow: hidden;
+  transition: var(--login-transition-colors), var(--login-transition-transform), var(--login-transition-shadow);
+}
+.login-submit-btn:hover {
+  background: var(--login-brand-700);
+  box-shadow: var(--login-shadow-md);
+}
+.login-submit-btn:active {
+  transform: scale(0.98);
+}
+.login-submit-btn:focus-visible {
+  outline: 2px solid var(--login-brand-600);
+  outline-offset: 2px;
+}
+.login-submit-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+.login-submit-btn:disabled:hover {
+  background: var(--login-brand-600);
+  box-shadow: none;
+}
+
+/* ── 按钮涟漪效果 ── */
+.login-ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(0);
+  animation: loginRipple 0.6s linear;
+  pointer-events: none;
+}
+
+/* ── 加载 Spinner ── */
+.login-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: loginSpin 0.7s linear infinite;
+}
+
+/* ── 提示框 ── */
+.login-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--login-space-3);
+  padding: var(--login-space-4);
+  border-radius: var(--login-radius-md);
+  margin-bottom: var(--login-space-6);
+  font-size: var(--login-text-sm);
+  line-height: var(--login-leading-normal);
+}
+.login-alert-error {
+  background: var(--login-error-bg);
+  border: 1px solid var(--login-error-border);
+  color: var(--login-error);
+}
+.login-alert-success {
+  background: var(--login-success-bg);
+  border: 1px solid var(--login-success-border);
+  color: var(--login-success);
+}
+.login-alert-icon {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* ================================================================
+   8. 社交登录 (Social Login)
+   ================================================================ */
+.login-divider {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: var(--login-space-8) 0;
+}
+.login-divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--login-divider);
+}
+.login-divider-text {
+  position: relative;
+  padding: 0 var(--login-space-4);
+  font-size: var(--login-text-xs);
+  color: var(--login-text-tertiary);
+  background: var(--login-surface);
+}
+@media (max-width: 639px) {
+  .login-divider-text {
+    background: var(--login-bg);
+  }
+}
+
+.login-social-buttons {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--login-space-3);
+}
+.login-social-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--login-space-2);
+  padding: var(--login-space-3) var(--login-space-2);
+  border: 1.5px solid var(--login-border);
+  border-radius: var(--login-radius-md);
+  background: var(--login-surface);
+  cursor: pointer;
+  transition: var(--login-transition-colors), var(--login-transition-transform);
+  min-height: 64px;
+}
+.login-social-btn:hover {
+  border-color: var(--login-border-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--login-shadow-sm);
+}
+.login-social-btn:focus-visible {
+  outline: 2px solid var(--login-brand-600);
+  outline-offset: 2px;
+}
+.login-social-btn-icon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.login-social-btn-label {
+  font-size: var(--login-text-xs);
+  font-weight: 500;
+  color: var(--login-text-secondary);
+}
+
+/* ================================================================
+   9. 页脚 (Footer)
+   ================================================================ */
+.login-footer {
+  margin-top: var(--login-space-6);
+  padding-top: var(--login-space-5);
+  border-top: 1px solid var(--login-divider);
+  text-align: center;
+}
+.login-footer-info {
+  font-size: var(--login-text-xs);
+  color: var(--login-text-tertiary);
+  margin-bottom: var(--login-space-2);
+}
+.login-footer-links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--login-space-4);
+  font-size: var(--login-text-xs);
+}
+.login-footer-links a {
+  color: var(--login-text-tertiary);
+  text-decoration: none;
+  transition: color var(--login-duration-fast) var(--login-ease-out);
+}
+.login-footer-links a:hover {
+  color: var(--login-brand-600);
+}
+.login-footer-links .login-footer-sep {
+  width: 1px;
+  height: 12px;
+  background: var(--login-border);
+}
+
+/* ── 安全提示 ── */
+.login-security-note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--login-space-2);
+  margin-top: var(--login-space-4);
+  font-size: var(--login-text-xs);
+  color: var(--login-text-tertiary);
+}
+
+/* ── 默认凭证提示 ── */
+.login-credentials-hint {
+  margin-top: var(--login-space-6);
+  padding: var(--login-space-3) var(--login-space-4);
+  background: var(--login-brand-50);
+  border: 1px solid var(--login-brand-100);
+  border-radius: var(--login-radius-md);
+  text-align: center;
+}
+.dark .login-credentials-hint {
+  background: rgba(5, 150, 105, 0.08);
+  border-color: rgba(5, 150, 105, 0.15);
+}
+.login-credentials-hint p {
+  font-size: var(--login-text-xs);
+  color: var(--login-brand-700);
+}
+.dark .login-credentials-hint p {
+  color: var(--login-brand-300);
+}
+.login-credentials-hint code {
+  font-family: var(--login-font-mono);
+  font-size: var(--login-text-xs);
+  background: rgba(5, 150, 105, 0.1);
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-weight: 600;
+}
+
+/* ================================================================
+   10. 平板适配 (Tablet: 768px - 1023px)
+   ================================================================ */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .login-brand-panel {
+    display: flex;
+    width: 100%;
+    min-height: auto;
+    height: 200px;
+    position: relative;
+  }
+  .login-brand-content {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--login-space-8);
+    padding: var(--login-space-8);
+    max-width: 100%;
+  }
+  .login-brand-logo {
+    margin-bottom: 0;
+    flex-shrink: 0;
+  }
+  .login-brand-tagline { display: none; }
+  .login-brand-headline {
+    font-size: var(--login-text-xl);
+    white-space: normal;
+    margin-bottom: var(--login-space-2);
+  }
+  .login-brand-description { display: none; }
+  .login-brand-pillars { display: none; }
+  .login-brand-footer { display: none; }
+
+  .login-form-panel {
+    min-height: calc(100vh - 200px);
+    min-height: calc(100dvh - 200px);
+  }
+}
+
+/* ================================================================
+   11. 手机适配 (Mobile: < 768px)
+   ================================================================ */
+@media (max-width: 767px) {
+  .login-brand-panel { display: none; }
+
+  .login-form-panel {
+    padding: var(--login-space-4);
+    align-items: flex-start;
+    padding-top: var(--login-space-10);
+  }
+
+  .login-form-container { max-width: 100%; }
+  .login-card-header h2 { font-size: var(--login-text-xl); }
+}
+
+/* ── 小手机 (< 480px) ── */
+@media (max-width: 479px) {
+  .login-form-panel {
+    padding: var(--login-space-3);
+    padding-top: var(--login-space-8);
+  }
+  .login-input {
+    height: 52px;
+    font-size: var(--login-text-base);
+  }
+  .login-submit-btn {
+    height: 52px;
+  }
+  .login-social-buttons {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--login-space-2);
+  }
+  .login-social-btn {
+    min-height: 56px;
+    padding: var(--login-space-2);
+  }
+}
+
+/* ================================================================
+   12. 可访问性 (Accessibility)
+   ================================================================ */
+
+/* ── 减少动画 ── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ── 高对比度 ── */
+@media (prefers-contrast: high) {
+  .login-input {
+    border-width: 2px;
+    border-color: var(--login-text-primary);
+  }
+  .login-input:focus {
+    border-color: var(--login-brand-700);
+    box-shadow: 0 0 0 3px var(--login-brand-700);
+  }
+  .login-submit-btn {
+    border: 2px solid #ffffff;
+    background: var(--login-brand-700);
+  }
+  .login-alert {
+    border-width: 2px;
+  }
+}
+
+/* ── 焦点可见 (Focus Visible) ── */
+.login-input:focus-visible,
+.login-submit-btn:focus-visible,
+.login-social-btn:focus-visible,
+.login-theme-toggle:focus-visible,
+.login-password-toggle:focus-visible {
+  outline: 2px solid var(--login-brand-600);
+  outline-offset: 2px;
+}
+
+/* 鼠标操作时隐藏焦点环 */
+.login-input:focus:not(:focus-visible),
+.login-submit-btn:focus:not(:focus-visible),
+.login-social-btn:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* ── 屏幕阅读器专用 ── */
+.login-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* ================================================================
+   13. 骨架加载 (Skeleton Loading)
+   ================================================================ */
+.login-skeleton {
+  background: linear-gradient(90deg, var(--login-border) 25%, var(--login-divider) 50%, var(--login-border) 75%);
+  background-size: 200% 100%;
+  animation: loginSkeletonShimmer 1.5s ease-in-out infinite;
+  border-radius: var(--login-radius-sm);
+}
+@keyframes loginSkeletonShimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}

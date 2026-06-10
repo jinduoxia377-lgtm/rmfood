@@ -1,0 +1,287 @@
+import { useState, useMemo, useCallback, memo } from 'react'
+import {
+  Save,
+  Loader2,
+  Camera,
+  AlertTriangle,
+  Archive,
+  Trash2,
+  CheckCircle,
+  Info,
+} from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { useToast } from '@/components/ui/Toast'
+import { LazyImage } from '@/components/ui/LazyImage'
+
+interface SettingsTabProps {
+  organizationId: number
+  organization: any
+  onArchive?: () => Promise<void>
+  onDelete?: () => void
+}
+
+function generateSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[\s_]+/g, '-')
+    .replace(/[^\w\u4e00-\u9fff-]/g, '')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+}
+
+const SettingsTab = memo(({ organization, onArchive, onDelete }: SettingsTabProps) => {
+  const toast = useToast()
+
+  const [name, setName] = useState(organization?.name || '')
+  const [slug, setSlug] = useState(organization?.slug || '')
+  const [description, setDescription] = useState(organization?.description || '')
+  const [autoSlug, setAutoSlug] = useState(true)
+  const [saving, setSaving] = useState(false)
+
+  const handleNameChange = useCallback(
+    (value: string) => {
+      setName(value)
+      if (autoSlug) {
+        setSlug(generateSlug(value))
+      }
+    },
+    [autoSlug],
+  )
+
+  const handleSave = useCallback(async () => {
+    if (!name.trim()) {
+      toast.warning('组织名称不能为空')
+      return
+    }
+    setSaving(true)
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 800))
+      toast.success('组织信息已更新')
+    } catch (err: any) {
+      toast.error(err.message || '保存失败')
+    } finally {
+      setSaving(false)
+    }
+  }, [name, slug, description, toast])
+
+  const isModified = useMemo(
+    () =>
+      name !== (organization?.name || '') ||
+      slug !== (organization?.slug || '') ||
+      description !== (organization?.description || ''),
+    [name, slug, description, organization],
+  )
+
+  return (
+    <div className="p-6 space-y-8">
+      {/* Header */}
+      <div>
+        <h2 className="text-lg font-semibold text-slate-900 dark:text-white">组织设置</h2>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">管理组织的基本信息和配置</p>
+      </div>
+
+      {/* Basic Information */}
+      <section aria-label="基本信息" className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6 space-y-6">
+        <h3 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+          <Info className="w-5 h-5 text-blue-500" />
+          基本信息
+        </h3>
+
+        {/* Avatar Upload */}
+        <div>
+          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+            组织头像
+          </label>
+          <div className="flex items-center gap-5">
+            <div className="relative group">
+              <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center text-white font-bold text-3xl shadow-lg shadow-blue-500/20 overflow-hidden">
+                {organization?.logo_url ? (
+                  <LazyImage src={organization.logo_url} alt={organization.name} className="w-full h-full object-cover" />
+                ) : (
+                  organization?.name?.charAt(0)?.toUpperCase() || '?'
+                )}
+              </div>
+              <button
+                className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl flex items-center justify-center cursor-pointer"
+                aria-label="上传头像"
+              >
+                <Camera className="w-6 h-6 text-white" />
+              </button>
+            </div>
+            <div>
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                点击头像上传新的组织 Logo
+              </p>
+              <p className="text-xs text-slate-400 mt-1">
+                支持 JPG、PNG 格式，建议尺寸 200×200px，最大 2MB
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Organization Name */}
+        <div>
+          <label htmlFor="org-name" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+            组织名称 <span className="text-red-500">*</span>
+          </label>
+          <input
+            id="org-name"
+            type="text"
+            value={name}
+            onChange={(e) => handleNameChange(e.target.value)}
+            placeholder="输入组织名称"
+            maxLength={50}
+            className="w-full max-w-md px-3 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+          />
+          <p className="mt-1 text-xs text-slate-400">{name.length}/50</p>
+        </div>
+
+        {/* Slug / URL Identifier */}
+        <div>
+          <div className="flex items-center gap-2 mb-1.5">
+            <label htmlFor="org-slug" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+              URL 标识符（Slug）
+            </label>
+            <button
+              onClick={() => setAutoSlug(!autoSlug)}
+              className={cn(
+                'text-xs px-2 py-0.5 rounded-full transition-colors',
+                autoSlug
+                  ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                  : 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400',
+              )}
+            >
+              {autoSlug ? '自动生成' : '自定义'}
+            </button>
+          </div>
+          <div className="flex items-center max-w-md">
+            <span className="px-3 py-2.5 border border-r-0 border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 text-slate-500 text-sm rounded-l-lg select-none">
+              @
+            </span>
+            <input
+              id="org-slug"
+              type="text"
+              value={slug}
+              onChange={(e) => {
+                setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))
+                if (autoSlug && e.target.value !== generateSlug(name)) setAutoSlug(false)
+              }}
+              placeholder="url-friendly-identifier"
+              disabled={autoSlug}
+              className={cn(
+                'flex-1 px-3 py-2.5 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm rounded-r-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors',
+                autoSlug && 'opacity-60 cursor-not-allowed',
+              )}
+            />
+          </div>
+          <p className="mt-1 text-xs text-slate-400">
+            用于 URL 和 API 引用，仅支持小写字母、数字和连字符
+          </p>
+        </div>
+
+        {/* Description */}
+        <div>
+          <label htmlFor="org-desc" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+            描述
+          </label>
+          <textarea
+            id="org-desc"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="简要描述组织的用途和目标..."
+            rows={4}
+            maxLength={500}
+            className="w-full max-w-lg px-3 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm resize-y focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+          />
+          <p className="mt-1 text-xs text-slate-400">{description.length}/500</p>
+        </div>
+
+        {/* Save Button */}
+        <div className="flex items-center gap-3 pt-2">
+          <button
+            onClick={handleSave}
+            disabled={saving || !isModified}
+            className={cn(
+              'inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all',
+              saving || !isModified
+                ? 'bg-slate-200 dark:bg-slate-700 text-slate-400 cursor-not-allowed'
+                : 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm shadow-blue-500/25 hover:shadow-md',
+            )}
+          >
+            {saving ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                保存中...
+              </>
+            ) : (
+              <>
+                <Save className="w-4 h-4" />
+                保存更改
+              </>
+            )}
+          </button>
+          {!isModified && !saving && (
+            <span className="flex items-center gap-1.5 text-sm text-green-600 dark:text-green-400">
+              <CheckCircle className="w-4 h-4" />
+              已保存
+            </span>
+          )}
+        </div>
+      </section>
+
+      {/* Danger Zone */}
+      <section aria-label="危险操作" className="rounded-xl border-2 border-red-200 dark:border-red-900/50 p-6 space-y-5 bg-red-50/30 dark:bg-red-900/10">
+        <div className="flex items-center gap-2.5">
+          <AlertTriangle className="w-5 h-5 text-red-500" />
+          <h3 className="font-semibold text-red-800 dark:text-red-300">危险操作</h3>
+        </div>
+        <p className="text-sm text-red-700/80 dark:text-red-400/80">
+          以下操作不可逆或需要谨慎处理，请确认后再操作。
+        </p>
+
+        <div className="space-y-3">
+          {/* Archive */}
+          <div className="flex items-start justify-between gap-4 p-4 bg-white dark:bg-slate-800 rounded-xl border border-red-100 dark:border-red-900/30">
+            <div className="space-y-1 min-w-0">
+              <h4 className="font-medium text-slate-900 dark:text-white flex items-center gap-2">
+                <Archive className="w-4 h-4 text-yellow-500" />
+                归档此组织
+              </h4>
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                归档后所有数据保留但无法访问，可随时恢复。
+              </p>
+            </div>
+            <button
+              onClick={onArchive}
+              className="shrink-0 px-4 py-2 text-sm font-medium bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors"
+            >
+              归档
+            </button>
+          </div>
+
+          {/* Delete */}
+          <div className="flex items-start justify-between gap-4 p-4 bg-white dark:bg-slate-800 rounded-xl border border-red-200 dark:border-red-900/40">
+            <div className="space-y-1 min-w-0">
+              <h4 className="font-medium text-red-700 dark:text-red-400 flex items-center gap-2">
+                <Trash2 className="w-4 h-4" />
+                删除此组织
+              </h4>
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                ⚠️ 此操作不可逆！删除后所有数据将永久丢失。
+              </p>
+            </div>
+            <button
+              onClick={onDelete}
+              className="shrink-0 px-4 py-2 text-sm font-medium bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors shadow-sm shadow-red-500/25"
+            >
+              确认删除
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+  )
+})
+
+export default SettingsTab

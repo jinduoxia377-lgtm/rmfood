@@ -1,0 +1,234 @@
+/**
+ * 流式输出动画样式 (Phase 4.2)
+ *
+ * 包含：
+ * - 打字机光标闪烁动画
+ * - 流式消息容器边框动画
+ * - 中断按钮交互效果
+ * - 骨架屏加载动画
+ *
+ * @version 7.0.0
+ * @lastUpdated 2026-05-11
+ * @phase Phase 4.2 - 流式输出完整支持
+ */
+
+/* ═══════════════════════════════════════════════════════════
+   打字机光标动画
+   ═══════════════════════════════════════════════════════════ */
+
+.typing-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  background-color: #1976D2;
+  margin-left: 2px;
+  animation: cursor-blink 1s step-end infinite;
+  vertical-align: text-bottom;
+  font-weight: 300;
+}
+
+@keyframes cursor-blink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+/* 深色模式下的光标颜色调整 */
+.dark .typing-cursor {
+  background-color: #64B5F6;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   流式消息容器样式
+   ═══════════════════════════════════════════════════════════ */
+
+.streaming-message {
+  position: relative;
+}
+
+.streaming-border {
+  border-left: 3px solid #1976D2;
+  animation: pulse-border-color 2s ease-in-out infinite;
+}
+
+@keyframes pulse-border-color {
+  0%, 100% {
+    border-left-color: #1976D2;
+  }
+  50% {
+    border-left-color: #64B5F6;
+  }
+}
+
+/* 深色模式下的流式边框 */
+.dark .streaming-border {
+  border-left-color: #42A5F5;
+}
+
+@keyframes pulse-border-color-dark {
+  0%, 100% {
+    border-left-color: #42A5F5;
+  }
+  50% {
+    border-left-color: #90CAF9;
+  }
+}
+
+.dark .streaming-border {
+  animation-name: pulse-border-color-dark;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   中断按钮样式
+   ═══════════════════════════════════════════════════════════ */
+
+.interrupt-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  background-color: rgba(255, 255, 255, 0.95);
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #dc2626;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  z-index: 10;
+  white-space: nowrap;
+}
+
+.interrupt-btn:hover {
+  background-color: #fef2f2;
+  border-color: #fecaca;
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(220, 38, 38, 0.15);
+}
+
+.interrupt-btn:active {
+  transform: scale(0.98);
+}
+
+.interrupt-btn:focus-visible {
+  outline: 2px solid #dc2626;
+  outline-offset: 2px;
+}
+
+/* 深色模式下的中断按钮 */
+.dark .interrupt-btn {
+  background-color: rgba(31, 41, 55, 0.95);
+  border-color: #4b5563;
+  color: #f87171;
+}
+
+.dark .interrupt-btn:hover {
+  background-color: rgba(127, 29, 29, 0.15);
+  border-color: #fca5a5;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   骨架屏加载动画（Shimmer Effect）
+   ═══════════════════════════════════════════════════════════ */
+
+.skeleton-shimmer {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(
+    90deg,
+    #f0f0f0 25%,
+    #e0e0e0 50%,
+    #f0f0f0 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer-loading 1.5s ease-in-out infinite;
+}
+
+@keyframes shimmer-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* 深色模式下的骨架屏 */
+.dark .skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    #374151 25%,
+    #4b5563 50%,
+    #374151 75%
+  );
+  background-size: 200% 100%;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   性能优化：GPU 加速
+   ═══════════════════════════════════════════════════════════ */
+
+.typing-cursor,
+.streaming-border,
+.skeleton-shimmer {
+  will-change: opacity, border-color, background-position;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   响应式适配
+   ═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 640px) {
+  .interrupt-btn {
+    top: 4px;
+    right: 4px;
+    padding: 3px 10px;
+    font-size: 11px;
+  }
+
+  .typing-cursor {
+    width: 1.5px;
+    height: 0.9em;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   无障碍访问（Accessibility）
+   ═══════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .typing-cursor {
+    animation: none;
+    opacity: 1;
+  }
+
+  .streaming-border {
+    animation: none;
+    border-left-color: #1976D2;
+  }
+
+  .dark .streaming-border {
+    border-left-color: #42A5F5;
+  }
+
+  .skeleton-shimmer {
+    animation: none;
+    background: #f0f0f0;
+  }
+
+  .dark .skeleton-shimmer {
+    background: #374151;
+  }
+
+  .interrupt-btn {
+    transition: none;
+  }
+}

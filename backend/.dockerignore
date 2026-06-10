@@ -1,0 +1,82 @@
+# ============================================================
+# RMFOOD 后端 .dockerignore
+# 排除不需要的文件以减小镜像大小和加速构建
+# ============================================================
+
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info
+.eggs/
+*.egg
+dist/
+build/
+develop-eggs/
+
+# 虚拟环境
+venv/
+ENV/
+env/
+.venv/
+.env.local
+.env.production  # 生产环境变量不应打包进镜像！
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 测试
+.pytest_cache
+.coverage
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/nose_results.xml
+junit*.xml
+
+# 文档
+docs/
+README.md
+CHANGELOG.md
+LICENSE
+*.md
+!app/**/*.md
+
+# 日志（运行时生成）
+logs/
+*.log
+
+# 数据文件（应使用 volume 挂载）
+data/
+*.db
+*.sqlite3
+uploads/  # 上传目录用 volume 挂载
+
+# 操作系统
+.DS_Store
+Thumbs.db
+
+# Docker 相关
+Dockerfile*
+docker-compose*.yml
+.docker/
+.dockerignore
+
+# 临时文件
+tmp/
+temp/
+*.tmp
+*.temp

@@ -1,0 +1,54 @@
+{
+  "current_version": 23,
+  "coefficients": [
+    {
+      "ingredient_a": "黄芪",
+      "ingredient_b": "大豆肽",
+      "mechanism": "bliss_independence",
+      "coefficient": 0.72,
+      "source": "test_literature",
+      "confidence": 0.85,
+      "version": 1,
+      "created_at": "2026-05-03 17:28:39.866054",
+      "updated_at": "2026-05-03 17:28:39.866054",
+      "notes": "测试数据"
+    },
+    {
+      "ingredient_a": "黄芪",
+      "ingredient_b": "大豆肽",
+      "mechanism": "ki_value",
+      "coefficient": 8.5,
+      "source": "test_literature",
+      "confidence": 0.78,
+      "version": 1,
+      "created_at": "2026-05-03 17:28:39.866054",
+      "updated_at": "2026-05-03 17:28:39.866054",
+      "notes": "Test Paper et al., 2024"
+    },
+    {
+      "ingredient_a": "测试A",
+      "ingredient_b": "测试B",
+      "mechanism": "bliss_independence",
+      "coefficient": 0.75,
+      "source": "unit_test",
+      "confidence": 0.9,
+      "version": 22,
+      "created_at": "2026-05-03 19:41:46.838011",
+      "updated_at": "2026-05-14 16:43:12.319694",
+      "notes": ""
+    },
+    {
+      "ingredient_a": "VTest_A",
+      "ingredient_b": "VTest_B",
+      "mechanism": "bliss_independence",
+      "coefficient": 0.6,
+      "source": "version_test",
+      "confidence": 0.85,
+      "version": 23,
+      "created_at": "2026-05-03 20:03:37.976505",
+      "updated_at": "2026-05-14 16:43:12.332661",
+      "notes": ""
+    }
+  ],
+  "updated_at": "2026-05-14T16:43:12.332831"
+}

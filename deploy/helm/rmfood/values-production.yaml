@@ -1,0 +1,38 @@
+# 生产环境配置覆盖
+
+global:
+  environment: production
+
+backend:
+  replicaCount: 5
+  autoscaling:
+    minReplicas: 3
+    maxReplicas: 15
+
+frontend:
+  replicaCount: 3
+  autoscaling:
+    minReplicas: 3
+    maxReplicas: 10
+
+postgresql:
+  persistence:
+    size: 100Gi
+  resources:
+    requests:
+      cpu: "1"
+      memory: "2Gi"
+    limits:
+      cpu: "4"
+      memory: "8Gi"
+
+redis:
+  persistence:
+    size: 20Gi
+
+ingress:
+  host: api.rmfood.com
+  frontendHost: app.rmfood.com
+
+monitoring:
+  enabled: true

@@ -1,0 +1,39 @@
+[project]
+name = "rmfood-backend"
+version = "1.0.0"
+description = "RMFOOD配方制作平台后端"
+requires-python = ">=3.12"
+
+[tool.uv]
+dev-dependencies = []
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+markers = [
+    "unit: 单元测试（快速，无外部依赖）",
+    "integration: 集成测试（需要数据库）",
+    "e2e: 端到端测试（完整流程）",
+    "slow: 慢速测试（可跳过）",
+]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::pytest.PytestUnraisableExceptionWarning",
+]
+
+[tool.coverage.run]
+source = ["app"]
+omit = [
+    "app/services/data_sources/*",
+]
+
+[tool.coverage.report]
+fail_under = 70
+show_missing = true

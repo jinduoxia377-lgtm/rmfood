@@ -1,0 +1,627 @@
+/**
+ * 增强型组织列表组件 - 支持卡片/表格/紧凑三种视图模式
+ */
+import React, { memo, useMemo, useCallback } from 'react'
+import {
+  Building2, Users, Settings, Clock, HardDrive, Zap,
+  Star, Pin, MoreVertical, Crown, Shield, UserCheck,
+  ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight,
+} from 'lucide-react'
+import type { Organization, ViewMode } from '@/types/organization.types'
+
+interface OrganizationListProps {
+  organizations: Organization[]
+  loading?: boolean
+  viewMode: ViewMode
+  search: string
+  selectedIds: Set<number>
+  onToggleSelect: (id: number) => void
+  onSelectAll: () => void
+  onNavigateToDetail: (id: number) => void
+  onToggleFavorite: (id: number) => void
+  onTogglePin: (id: number) => void
+  page: number
+  pageSize: number
+  total: number
+  onPageChange: (page: number) => void
+  onPageSizeChange: (size: number) => void
+}
+
+const PlanBadgeConfig = {
+  free: { label: '免费版', className: 'bg-gray-100 text-gray-700 dark:bg-slate-800 dark:text-gray-300' },
+  pro: { label: '专业版', className: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
+  enterprise: { label: '企业版', className: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' },
+}
+
+const RoleIcon = ({ role }: { role: string }) => {
+  switch (role) {
+    case 'owner': return <Crown className="w-4 h-4 text-yellow-500" />
+    case 'admin': return <Shield className="w-4 h-4 text-blue-500" />
+    case 'member':
+    default: return <UserCheck className="w-4 h-4 text-green-500" />
+  }
+}
+
+// 卡片视图项
+const OrganizationCard = memo(({
+  org,
+  isSelected,
+  search,
+  onToggleSelect,
+  onNavigateToDetail,
+  onToggleFavorite,
+  onTogglePin,
+}: {
+  org: Organization
+  isSelected: boolean
+  search: string
+  onToggleSelect: (id: number) => void
+  onNavigateToDetail: (id: number) => void
+  onToggleFavorite: (id: number) => void
+  onTogglePin: (id: number) => void
+}) => {
+  const planConfig = PlanBadgeConfig[org.plan] || PlanBadgeConfig.free
+
+  const highlightText = (text: string) => {
+    if (!search) return text
+    const regex = new RegExp(`(${search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi')
+    const parts = text.split(regex)
+    return parts.map((part, i) =>
+      regex.test(part) ? <mark key={i} className="bg-yellow-200 dark:bg-yellow-800 rounded px-0.5">{part}</mark> : part,
+    )
+  }
+
+  const storagePercent = org.storageLimit > 0 ? (org.storageUsed / org.storageLimit) * 100 : 0
+
+  return (
+    <div
+      className={`bg-white dark:bg-slate-900 rounded-xl border transition-all duration-200 ${
+        isSelected
+          ? 'border-primary-500 shadow-md ring-2 ring-primary-100 dark:ring-primary-900/50'
+          : 'border-gray-200 dark:border-slate-700 hover:border-primary-300 hover:shadow-lg'
+      } ${org.isPinned ? 'ring-2 ring-yellow-300' : ''}`}
+    >
+      <div className="p-6">
+        {/* 头部 */}
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <input
+              type="checkbox"
+              checked={isSelected}
+              onChange={() => onToggleSelect(org.id)}
+              className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+            />
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
+              {org.name.charAt(0)}
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-semibold text-gray-900 dark:text-white truncate">
+                {highlightText(org.name)}
+              </h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 truncate">@{highlightText(org.slug)}</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 ml-2">
+            <RoleIcon role={org.myRole} />
+            <button
+              onClick={(e) => { e.stopPropagation(); onToggleFavorite(org.id) }}
+              className={`p-1.5 rounded-lg transition-colors ${org.isFavorite ? 'text-yellow-500 bg-yellow-50 dark:bg-yellow-900/20' : 'text-gray-400 hover:text-yellow-500 hover:bg-gray-100 dark:hover:bg-slate-800'}`}
+            >
+              <Star className={`w-4 h-4 ${org.isFavorite ? 'fill-current' : ''}`} />
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); onTogglePin(org.id) }}
+              className={`p-1.5 rounded-lg transition-colors ${org.isPinned ? 'text-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'text-gray-400 hover:text-blue-500 hover:bg-gray-100 dark:hover:bg-slate-800'}`}
+            >
+              <Pin className={`w-4 h-4 ${org.isPinned ? 'fill-current' : ''}`} />
+            </button>
+          </div>
+        </div>
+
+        {/* 计划徽章 */}
+        <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium mb-4 ${planConfig.className}`}>
+          {planConfig.label}
+        </span>
+
+        {/* 统计数据 */}
+        <div className="grid grid-cols-3 gap-3 mb-4">
+          <div className="text-center p-3 bg-gray-50 dark:bg-slate-800 rounded-lg">
+            <Users className="w-5 h-5 mx-auto mb-1 text-blue-500" />
+            <p className="text-lg font-bold text-gray-900 dark:text-white">{org.memberCount}</p>
+            <p className="text-xs text-gray-500">成员</p>
+          </div>
+          <div className="text-center p-3 bg-gray-50 dark:bg-slate-800 rounded-lg">
+            <Settings className="w-5 h-5 mx-auto mb-1 text-green-500" />
+            <p className="text-lg font-bold text-gray-900 dark:text-white">{org.teamCount}</p>
+            <p className="text-xs text-gray-500">团队</p>
+          </div>
+          <div className="text-center p-3 bg-gray-50 dark:bg-slate-800 rounded-lg">
+            <Clock className="w-5 h-5 mx-auto mb-1 text-purple-500" />
+            <p className="text-sm font-bold text-gray-900 dark:text-white">
+              {new Date(org.createdAt).toLocaleDateString('zh-CN', { month: 'short', year: 'numeric' })}
+            </p>
+            <p className="text-xs text-gray-500">创建于</p>
+          </div>
+        </div>
+
+        {/* 底部操作区 */}
+        <div className="pt-4 border-t border-gray-100 dark:border-slate-800">
+          <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
+            <span className="flex items-center gap-1">
+              <HardDrive className="w-3.5 h-3.5" />
+              存储: {(org.storageUsed / 1024).toFixed(1)}GB / {(org.storageLimit / 1024).toFixed(0)}GB
+            </span>
+            <span className="flex items-center gap-1">
+              <Zap className="w-3.5 h-3.5" />
+              API: {(org.apiCalls / 1000).toFixed(1)}K / 10K
+            </span>
+          </div>
+
+          {/* 存储进度条 */}
+          <div className="mb-3">
+            <div className="h-1.5 bg-gray-200 dark:bg-slate-700 rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all ${
+                  storagePercent >= 90 ? 'bg-red-500' :
+                  storagePercent >= 60 ? 'bg-yellow-500' :
+                  'bg-green-500'
+                }`}
+                style={{ width: `${Math.min(storagePercent, 100)}%` }}
+              />
+            </div>
+          </div>
+
+          <button
+            onClick={() => onNavigateToDetail(org.id)}
+            className="w-full px-4 py-2 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-300 rounded-lg transition-colors text-sm font-medium"
+          >
+            管理
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+})
+
+OrganizationCard.displayName = 'OrganizationCard'
+
+// 表格视图行
+const OrganizationTableRow = memo(({
+  org,
+  isSelected,
+  index,
+  search,
+  onToggleSelect,
+  onNavigateToDetail,
+}: {
+  org: Organization
+  isSelected: boolean
+  index: number
+  search: string
+  onToggleSelect: (id: number) => void
+  onNavigateToDetail: (id: number) => void
+}) => {
+  const planConfig = PlanBadgeConfig[org.plan] || PlanBadgeConfig.free
+  const storagePercent = org.storageLimit > 0 ? (org.storageUsed / org.storageLimit) * 100 : 0
+
+  const highlightText = (text: string) => {
+    if (!search) return text
+    const regex = new RegExp(`(${search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi')
+    const parts = text.split(regex)
+    return parts.map((part, i) =>
+      regex.test(part) ? <mark key={i} className="bg-yellow-200 dark:bg-yellow-800 rounded px-0.5">{part}</mark> : part,
+    )
+  }
+
+  return (
+    <tr
+      className={`transition-colors ${
+        index % 2 === 0 ? 'bg-white dark:bg-slate-900' : 'bg-gray-50 dark:bg-slate-800/50'
+      } ${isSelected ? 'bg-primary-50 dark:bg-primary-900/20 border-l-4 border-l-primary-500' : ''} hover:bg-gray-100 dark:hover:bg-slate-700/50`}
+    >
+      <td className="px-4 py-3">
+        <input
+          type="checkbox"
+          checked={isSelected}
+          onChange={() => onToggleSelect(org.id)}
+          className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+        />
+      </td>
+      <td className="px-4 py-3">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+            {org.name.charAt(0)}
+          </div>
+          <div className="min-w-0">
+            <p className="font-medium text-gray-900 dark:text-white truncate">{highlightText(org.name)}</p>
+            <p className="text-xs text-gray-500 truncate">@{org.slug}</p>
+          </div>
+        </div>
+      </td>
+      <td className="px-4 py-3">
+        <span className={`px-2 py-1 rounded-full text-xs font-medium ${planConfig.className}`}>
+          {planConfig.label}
+        </span>
+      </td>
+      <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">{org.memberCount}</td>
+      <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">{org.teamCount}</td>
+      <td className="px-4 py-3">
+        <div className="flex items-center gap-2">
+          <div className="w-20 h-1.5 bg-gray-200 dark:bg-slate-700 rounded-full overflow-hidden">
+            <div
+              className={`h-full rounded-full ${storagePercent >= 90 ? 'bg-red-500' : storagePercent >= 60 ? 'bg-yellow-500' : 'bg-green-500'}`}
+              style={{ width: `${Math.min(storagePercent, 100)}%` }}
+            />
+          </div>
+          <span className="text-xs text-gray-500">{storagePercent.toFixed(0)}%</span>
+        </div>
+      </td>
+      <td className="px-4 py-3"><RoleIcon role={org.myRole} /></td>
+      <td className="px-4 py-3 text-sm text-gray-500">
+        {new Date(org.createdAt).toLocaleDateString('zh-CN')}
+      </td>
+      <td className="px-4 py-3">
+        <button
+          onClick={() => onNavigateToDetail(org.id)}
+          className="text-primary-600 hover:text-primary-700 text-sm font-medium"
+        >
+          管理
+        </button>
+      </td>
+    </tr>
+  )
+})
+
+OrganizationTableRow.displayName = 'OrganizationTableRow'
+
+// 紧凑视图项
+const OrganizationCompactItem = memo(({
+  org,
+  isSelected,
+  search,
+  onToggleSelect,
+  onNavigateToDetail,
+}: {
+  org: Organization
+  isSelected: boolean
+  search: string
+  onToggleSelect: (id: number) => void
+  onNavigateToDetail: (id: number) => void
+}) => {
+  const highlightText = (text: string) => {
+    if (!search) return text
+    const regex = new RegExp(`(${search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi')
+    const parts = text.split(regex)
+    return parts.map((part, i) =>
+      regex.test(part) ? <mark key={i} className="bg-yellow-200 dark:bg-yellow-800 rounded px-0.5">{part}</mark> : part,
+    )
+  }
+
+  return (
+    <div
+      className={`flex items-center gap-4 px-4 py-3 border-b border-gray-100 dark:border-slate-800 last:border-0 transition-colors hover:bg-gray-50 dark:hover:bg-slate-800/50 ${
+        isSelected ? 'bg-primary-50 dark:bg-primary-900/20' : ''
+      }`}
+    >
+      <input
+        type="checkbox"
+        checked={isSelected}
+        onChange={() => onToggleSelect(org.id)}
+        className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+      />
+
+      <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+        {org.name.charAt(0)}
+      </div>
+
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+          {highlightText(org.name)}
+        </p>
+      </div>
+
+      <div className="hidden sm:flex items-center gap-6 text-xs text-gray-500">
+        <span className="flex items-center gap-1">
+          <Users className="w-3.5 h-3.5" /> {org.memberCount}
+        </span>
+        <span className="flex items-center gap-1">
+          <Settings className="w-3.5 h-3.5" /> {org.teamCount}
+        </span>
+        <span>{(org.storageUsed / 1024).toFixed(1)}GB</span>
+      </div>
+
+      <button
+        onClick={() => onNavigateToDetail(org.id)}
+        className="text-primary-600 hover:text-primary-700 text-sm font-medium flex-shrink-0"
+      >
+        管理
+      </button>
+    </div>
+  )
+})
+
+OrganizationCompactItem.displayName = 'OrganizationCompactItem'
+
+// 分页组件
+const Pagination = memo(({
+  page,
+  pageSize,
+  total,
+  onPageChange,
+  onPageSizeChange,
+}: {
+  page: number
+  pageSize: number
+  total: number
+  onPageChange: (page: number) => void
+  onPageSizeChange: (size: number) => void
+}) => {
+  const totalPages = Math.ceil(total / pageSize)
+
+  return (
+    <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 dark:border-slate-700">
+      <div className="flex items-center gap-2 text-sm text-gray-500">
+        <span>每页</span>
+        <select
+          value={pageSize}
+          onChange={(e) => onPageSizeChange(Number(e.target.value))}
+          className="px-2 py-1 border border-gray-300 dark:border-slate-600 rounded bg-white dark:bg-slate-800 text-gray-900 dark:text-white text-sm"
+        >
+          <option value={10}>10</option>
+          <option value={20}>20</option>
+          <option value={50}>50</option>
+        </select>
+        <span>条</span>
+        <span className="ml-4">
+          共 {total} 条，第 {page}/{totalPages} 页
+        </span>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => onPageChange(1)}
+          disabled={page === 1}
+          className="p-1.5 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+          title="首页"
+        >
+          <ChevronsLeft className="w-4 h-4" />
+        </button>
+        <button
+          onClick={() => onPageChange(Math.max(1, page - 1))}
+          disabled={page === 1}
+          className="p-1.5 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+          title="上一页"
+        >
+          <ChevronLeft className="w-4 h-4" />
+        </button>
+
+        <span className="px-3 py-1 bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 rounded font-medium text-sm">
+          {page}
+        </span>
+
+        <button
+          onClick={() => onPageChange(Math.min(totalPages, page + 1))}
+          disabled={page === totalPages || totalPages === 0}
+          className="p-1.5 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+          title="下一页"
+        >
+          <ChevronRight className="w-4 h-4" />
+        </button>
+        <button
+          onClick={() => onPageChange(totalPages)}
+          disabled={page === totalPages || totalPages === 0}
+          className="p-1.5 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+          title="末页"
+        >
+          <ChevronsRight className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  )
+})
+
+Pagination.displayName = 'Pagination'
+
+// Loading 骨架屏
+const CardSkeleton = () => (
+  <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 animate-pulse">
+    <div className="p-6 space-y-4">
+      <div className="flex items-start gap-3">
+        <div className="w-12 h-12 bg-gray-200 dark:bg-slate-700 rounded-xl" />
+        <div className="flex-1 space-y-2">
+          <div className="h-5 bg-gray-200 dark:bg-slate-700 rounded w-3/4" />
+          <div className="h-4 bg-gray-200 dark:bg-slate-700 rounded w-1/2" />
+        </div>
+      </div>
+      <div className="grid grid-cols-3 gap-3">
+        {[1, 2, 3].map(i => (
+          <div key={i} className="h-16 bg-gray-100 dark:bg-slate-800 rounded-lg" />
+        ))}
+      </div>
+      <div className="h-10 bg-gray-100 dark:bg-slate-800 rounded-lg" />
+    </div>
+  </div>
+)
+
+const TableSkeleton = () => (
+  <div className="animate-pulse">
+    <div className="h-12 bg-gray-100 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700" />
+    {[1, 2, 3, 4, 5].map(i => (
+      <div key={i} className="h-14 border-b border-gray-100 dark:border-slate-800" />
+    ))}
+  </div>
+)
+
+const CompactSkeleton = () => (
+  <div className="animate-pulse">
+    {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
+      <div key={i} className="h-14 border-b border-gray-100 dark:border-slate-800" />
+    ))}
+  </div>
+)
+
+// Empty 空状态
+const EmptyState = () => (
+  <div className="text-center py-16">
+    <Building2 className="w-16 h-16 mx-auto text-gray-300 dark:text-slate-600 mb-4" />
+    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">暂无组织</h3>
+    <p className="text-gray-500 dark:text-gray-400 mb-6">创建您的第一个组织开始使用</p>
+    <button className="px-6 py-2.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors inline-flex items-center gap-2">
+      <Building2 className="w-4 h-4" />
+      创建组织
+    </button>
+  </div>
+)
+
+export const OrganizationList: React.FC<OrganizationListProps> = ({
+  organizations,
+  loading = false,
+  viewMode = 'card',
+  search = '',
+  selectedIds,
+  onToggleSelect,
+  onSelectAll,
+  onNavigateToDetail,
+  onToggleFavorite,
+  onTogglePin,
+  page,
+  pageSize,
+  total,
+  onPageChange,
+  onPageSizeChange,
+}) => {
+  // 排序：置顶优先，然后按名称
+  const sortedOrganizations = useMemo(() => {
+    return [...organizations].sort((a, b) => {
+      if (a.isPinned && !b.isPinned) return -1
+      if (!a.isPinned && b.isPinned) return 1
+      return a.name.localeCompare(b.name)
+    })
+  }, [organizations])
+
+  const handleSelectAll = useCallback(() => {
+    onSelectAll()
+  }, [onSelectAll])
+
+  if (loading) {
+    return (
+      <div>
+        {viewMode === 'card' && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {[1, 2, 3, 4, 5, 6].map(i => <CardSkeleton key={i} />)}
+          </div>
+        )}
+        {viewMode === 'table' && <TableSkeleton />}
+        {viewMode === 'compact' && <CompactSkeleton />}
+      </div>
+    )
+  }
+
+  if (!loading && organizations.length === 0) {
+    return <EmptyState />
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* 结果计数和全选 */}
+      <div className="flex items-center justify-between px-1">
+        <div className="flex items-center gap-3 text-sm text-gray-500">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              onChange={handleSelectAll}
+              className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+            />
+            全选
+          </label>
+          <span>共找到 {total} 个组织</span>
+          {selectedIds.size > 0 && (
+            <span className="text-primary-600 font-medium">
+              已选择 {selectedIds.size} 个
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* 列表内容 */}
+      {viewMode === 'card' && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {sortedOrganizations.map(org => (
+            <OrganizationCard
+              key={org.id}
+              org={org}
+              isSelected={selectedIds.has(org.id)}
+              search={search}
+              onToggleSelect={onToggleSelect}
+              onNavigateToDetail={onNavigateToDetail}
+              onToggleFavorite={onToggleFavorite}
+              onTogglePin={onTogglePin}
+            />
+          ))}
+        </div>
+      )}
+
+      {viewMode === 'table' && (
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 overflow-hidden">
+          <table className="w-full">
+            <thead className="bg-gray-50 dark:bg-slate-800 sticky top-0 z-10">
+              <tr>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12"></th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">名称</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">计划</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">成员</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">团队</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">存储</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">角色</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">创建时间</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200 dark:divide-slate-700">
+              {sortedOrganizations.map((org, index) => (
+                <OrganizationTableRow
+                  key={org.id}
+                  org={org}
+                  isSelected={selectedIds.has(org.id)}
+                  index={index}
+                  search={search}
+                  onToggleSelect={onToggleSelect}
+                  onNavigateToDetail={onNavigateToDetail}
+                />
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {viewMode === 'compact' && (
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 divide-y divide-gray-100 dark:divide-slate-800">
+          {sortedOrganizations.map(org => (
+            <OrganizationCompactItem
+              key={org.id}
+              org={org}
+              isSelected={selectedIds.has(org.id)}
+              search={search}
+              onToggleSelect={onToggleSelect}
+              onNavigateToDetail={onNavigateToDetail}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* 分页 */}
+      {total > pageSize && (
+        <Pagination
+          page={page}
+          pageSize={pageSize}
+          total={total}
+          onPageChange={onPageChange}
+          onPageSizeChange={onPageSizeChange}
+        />
+      )}
+    </div>
+  )
+}
+
+export default OrganizationList

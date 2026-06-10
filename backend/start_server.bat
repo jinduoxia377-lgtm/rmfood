@@ -1,0 +1,33 @@
+@echo off
+REM RMFOOD 后端服务启动脚本
+
+REM 检查 Python 是否安装
+python --version >nul 2>&1
+if %errorlevel% neq 0 (
+    echo Error: Python is not installed or not in PATH
+    pause
+    exit /b 1
+)
+
+REM 安装依赖
+echo Installing dependencies...
+pip install -r requirements.txt
+if %errorlevel% neq 0 (
+    echo Error: Failed to install dependencies
+    pause
+    exit /b 1
+)
+
+REM 创建必要的目录
+echo Creating necessary directories...
+mkdir logs 2>nul
+mkdir uploads 2>nul
+mkdir temp_files 2>nul
+
+REM 启动服务
+echo Starting RMFOOD backend service...
+echo Service will run at http://localhost:8000
+echo Health check: http://localhost:8000/health
+echo API docs: http://localhost:8000/docs
+
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload

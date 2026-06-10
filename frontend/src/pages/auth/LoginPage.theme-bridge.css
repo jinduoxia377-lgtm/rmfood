@@ -1,0 +1,59 @@
+/**
+ * 登录页主题桥接层 v2.0
+ * 将全局主题变量映射到登录页专用令牌
+ * 确保登录页与整个应用的主题完全同步
+ *
+ * 加载顺序: LoginPage.css → LoginPage.theme-bridge.css
+ */
+
+/* ========================================
+   Light Mode — 全局主题 → 登录页令牌
+   ======================================== */
+:root:not(.dark):not([data-mode="dark"]) {
+  --login-brand-600: var(--color-primary-main, #059669);
+  --login-brand-700: var(--color-primary-dark, #047857);
+  --login-accent: var(--color-info-main, #2563eb);
+  --login-surface: var(--color-surface-default, #ffffff);
+  --login-bg: var(--color-background-default, #f8fafc);
+  --login-text-primary: var(--color-text-primary, #0f172a);
+  --login-text-secondary: var(--color-text-secondary, #475569);
+  --login-border: var(--color-divider, #e2e8f0);
+  --login-shadow-sm: var(--shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.05));
+  --login-shadow-md: var(--shadow-md, 0 4px 6px -1px rgba(0, 0, 0, 0.07));
+  --login-shadow-lg: var(--shadow-lg, 0 10px 15px -3px rgba(0, 0, 0, 0.08));
+}
+
+/* ========================================
+   Dark Mode — 全局主题 → 登录页令牌
+   ======================================== */
+.dark,
+[data-mode="dark"] {
+  --login-brand-600: var(--color-primary-light, #10b981);
+  --login-brand-700: var(--color-primary-main, #059669);
+  --login-accent: var(--color-info-light, #60a5fa);
+  --login-surface: var(--color-surface-default, #0f172a);
+  --login-bg: var(--color-background-default, #020617);
+  --login-text-primary: var(--color-text-primary, #f1f5f9);
+  --login-text-secondary: var(--color-text-secondary, #94a3b8);
+  --login-border: var(--color-divider, #1e293b);
+  --login-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --login-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+  --login-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+}
+
+/* ========================================
+   High Contrast Mode 增强
+   ======================================== */
+@media (prefers-contrast: high) {
+  :root:not(.dark) {
+    --login-brand-600: #047857;
+    --login-text-primary: #000000;
+    --login-text-secondary: #1e293b;
+  }
+  .dark,
+  [data-mode="dark"] {
+    --login-brand-600: #34d399;
+    --login-text-primary: #ffffff;
+    --login-text-secondary: #e2e8f0;
+  }
+}

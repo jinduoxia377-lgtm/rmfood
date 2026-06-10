@@ -1,0 +1,621 @@
+/* ============================================
+   Empty State Responsive Adaptation System
+   智能对话空状态组件 - 响应式适配方案
+   Version: 1.0.0
+   Date: 2026-05-19
+   ============================================ */
+
+/* ============================================
+   CSS Custom Properties - 响应式变量
+   ============================================ */
+:root {
+  --empty-state-mobile-padding: 1rem 1.25rem;
+  --empty-state-tablet-padding: 1.5rem 2rem;
+  --empty-state-desktop-padding: 2rem 4rem;
+  --empty-state-ultrawide-padding: 3rem 6rem;
+
+  --empty-state-mobile-min-height: 50vh;
+  --empty-state-tablet-min-height: 55vh;
+  --empty-state-desktop-min-height: 60vh;
+
+  --empty-state-mobile-max-width: 100%;
+  --empty-state-tablet-max-width: 90%;
+  --empty-state-desktop-max-width: 48rem;
+  --empty-state-ultrawide-max-width: 56rem;
+
+  --empty-state-card-mobile-width: 100%;
+  --empty-state-card-tablet-width: 90%;
+  --empty-state-card-desktop-width: 25rem;
+
+  --empty-state-icon-mobile: 3rem;
+  --empty-state-icon-tablet: 3.5rem;
+  --empty-state-icon-desktop: 4rem;
+
+  --empty-state-title-mobile: 1rem;
+  --empty-state-title-tablet: 1.125rem;
+  --empty-state-title-desktop: 1.25rem;
+
+  --empty-state-touch-target: 2.75rem;
+}
+
+/* ============================================
+   Base Styles - 基础样式
+   ============================================ */
+.empty-state-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: var(--empty-state-mobile-min-height);
+  padding: var(--empty-state-mobile-padding);
+  margin: 0 auto;
+  font-size: 16px;
+  background: linear-gradient(to bottom, #ffffff, rgba(249, 250, 251, 0.5));
+}
+
+.dark .empty-state-container {
+  background: linear-gradient(to bottom, #111827, #030712);
+}
+
+/* 触控优化基础类 */
+.touch-target-min {
+  min-height: var(--empty-state-touch-target);
+  min-width: var(--empty-state-touch-target);
+}
+
+/* ============================================
+   Mobile First (< 640px) - 移动端优先规则
+   ============================================ */
+
+/* 主容器 - 移动端 */
+.empty-state-mobile {
+  padding: 1rem 1.25rem;
+  min-height: 50vh;
+  max-width: var(--empty-state-mobile-max-width);
+}
+
+/* 标题栏 - 移动端 */
+.empty-state-header-mobile {
+  width: 100%;
+  margin-bottom: 1.5rem;
+}
+
+.empty-state-header-mobile .title {
+  font-size: 1.125rem;
+  line-height: 1.4;
+}
+
+.empty-state-header-mobile .tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  background-color: rgba(239, 246, 255, 1);
+  color: rgba(67, 56, 202, 1);
+  border: 1px solid rgba(199, 210, 254, 1);
+}
+
+.dark .empty-state-header-mobile .tag {
+  background-color: rgba(30, 27, 75, 0.5);
+  color: rgba(165, 180, 252, 1);
+  border-color: rgba(79, 70, 229, 0.3);
+}
+
+.empty-state-header-mobile .action-buttons {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.empty-state-header-mobile .action-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  transition: all 150ms ease-out;
+}
+
+.empty-state-header-mobile .new-chat-button {
+  display: none;
+}
+
+/* 空状态内容 - 移动端 */
+.empty-state-content-mobile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  width: 100%;
+  padding: 1rem 0;
+}
+
+.empty-state-content-mobile .icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--empty-state-icon-mobile);
+  height: var(--empty-state-icon-mobile);
+  margin-bottom: 1.5rem;
+  color: rgba(203, 213, 225, 1);
+}
+
+.dark .empty-state-content-mobile .icon-wrapper {
+  color: rgba(71, 85, 105, 1);
+}
+
+.empty-state-content-mobile .icon {
+  width: 100%;
+  height: 100%;
+}
+
+.empty-state-content-mobile .title {
+  font-size: var(--empty-state-title-mobile);
+  font-weight: 500;
+  color: rgba(100, 116, 139, 1);
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.dark .empty-state-content-mobile .title {
+  color: rgba(148, 163, 184, 1);
+}
+
+.empty-state-content-mobile .subtitle {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: rgba(148, 163, 184, 1);
+  max-width: 17.5rem;
+  margin-top: 0.5rem;
+}
+
+.dark .empty-state-content-mobile .subtitle {
+  color: rgba(100, 116, 139, 1);
+}
+
+/* CTA卡片 - 移动端 */
+.empty-state-card-mobile {
+  position: relative;
+  width: var(--empty-state-card-mobile-width);
+  margin: 2rem auto 0;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  background: linear-gradient(to bottom right, #ffffff, rgba(248, 250, 252, 0.8));
+  border: 1px solid rgba(229, 231, 235, 0.8);
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: all 200ms ease-out;
+}
+
+.dark .empty-state-card-mobile {
+  background: linear-gradient(to bottom right, #1f2937, rgba(17, 24, 39, 0.9));
+  border-color: rgba(55, 65, 81, 0.6);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+}
+
+.empty-state-card-mobile:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 8px 10px -6px rgba(0, 0, 0, 0.1),
+    0 0 20px rgba(99, 102, 241, 0.1);
+  border-color: rgba(199, 210, 254, 1);
+}
+
+.dark .empty-state-card-mobile:hover {
+  border-color: rgba(99, 102, 241, 0.6);
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.3),
+    0 8px 10px -6px rgba(0, 0, 0, 0.3),
+    0 0 20px rgba(99, 102, 241, 0.2);
+}
+
+.empty-state-card-mobile:active {
+  transform: scale(0.98);
+  filter: brightness(0.98);
+  transition-duration: 100ms;
+}
+
+.empty-state-card-mobile:focus {
+  outline: none;
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 1),
+    0 0 0 4px rgba(99, 102, 241, 1);
+}
+
+.dark .empty-state-card-mobile:focus {
+  box-shadow:
+    0 0 0 2px rgba(17, 24, 39, 1),
+    0 0 0 4px rgba(99, 102, 241, 1);
+}
+
+.empty-state-card-mobile .card-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.empty-state-card-mobile .icon-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--empty-state-icon-mobile);
+  height: var(--empty-state-icon-mobile);
+  margin-bottom: 1.5rem;
+  border-radius: 50%;
+  background: linear-gradient(to bottom right, #a78bfa, #818cf8);
+  box-shadow:
+    inset 0 0 20px rgba(99, 102, 241, 0.3),
+    0 0 15px rgba(99, 102, 241, 0.2);
+  animation: iconPulse 3s ease-in-out infinite;
+}
+
+.empty-state-card-mobile .icon-container svg {
+  width: 1.75rem;
+  height: 1.75rem;
+  color: white;
+}
+
+.empty-state-card-mobile .title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  color: rgba(30, 41, 59, 1);
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.dark .empty-state-card-mobile .title {
+  color: rgba(241, 245, 249, 1);
+}
+
+.empty-state-card-mobile .subtitle {
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  color: rgba(100, 116, 139, 1);
+  max-width: 16.25rem;
+  margin-top: 0.5rem;
+}
+
+.dark .empty-state-card-mobile .subtitle {
+  color: rgba(148, 163, 184, 1);
+}
+
+.empty-state-card-mobile .suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+}
+
+.empty-state-card-mobile .suggestion-tag {
+  padding: 0.375rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: 1px solid rgba(229, 231, 235, 1);
+  background-color: white;
+  color: rgba(71, 85, 105, 1);
+  transition: all 150ms ease-out;
+}
+
+.dark .empty-state-card-mobile .suggestion-tag {
+  border-color: rgba(55, 65, 81, 1);
+  background-color: rgba(31, 41, 55, 1);
+  color: rgba(148, 163, 184, 1);
+}
+
+.empty-state-card-mobile .suggestion-tag:hover {
+  border-color: rgba(199, 210, 254, 1);
+  background-color: rgba(239, 246, 255, 1);
+  color: rgba(67, 56, 202, 1);
+}
+
+.dark .empty-state-card-mobile .suggestion-tag:hover {
+  border-color: rgba(99, 102, 241, 0.6);
+  background-color: rgba(30, 27, 75, 0.3);
+  color: rgba(165, 180, 252, 1);
+}
+
+/* ============================================
+   Tablet (640px - 1023px) - 平板端
+   ============================================ */
+@media (min-width: 640px) and (max-width: 1023px) {
+  /* 主容器 - 平板端 */
+  .empty-state-tablet {
+    max-width: var(--empty-state-tablet-max-width);
+    padding: var(--empty-state-tablet-padding);
+    min-height: var(--empty-state-tablet-min-height);
+  }
+
+  /* 标题栏 - 平板端 */
+  .empty-state-header-tablet .title {
+    font-size: 1.25rem;
+  }
+
+  .empty-state-header-tablet .tag {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+  }
+
+  .empty-state-header-tablet .action-button {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+
+  .empty-state-header-tablet .new-chat-button {
+    display: inline-flex;
+  }
+
+  /* 空状态内容 - 平板端 */
+  .empty-state-content-tablet .icon-wrapper {
+    width: var(--empty-state-icon-tablet);
+    height: var(--empty-state-icon-tablet);
+  }
+
+  .empty-state-content-tablet .title {
+    font-size: var(--empty-state-title-tablet);
+  }
+
+  .empty-state-content-tablet .subtitle {
+    max-width: 20rem;
+  }
+
+  /* CTA卡片 - 平板端 */
+  .empty-state-card-tablet {
+    width: var(--empty-state-card-tablet-width);
+    max-width: 28rem;
+    padding: 1.75rem;
+    border-radius: 1.25rem;
+  }
+
+  .empty-state-card-tablet .icon-container {
+    width: var(--empty-state-icon-tablet);
+    height: var(--empty-state-icon-tablet);
+  }
+
+  .empty-state-card-tablet .icon-container svg {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .empty-state-card-tablet .title {
+    font-size: 1.375rem;
+  }
+
+  .empty-state-card-tablet .subtitle {
+    font-size: 0.875rem;
+    max-width: 18.75rem;
+  }
+}
+
+/* ============================================
+   Desktop (≥ 1024px) - 桌面端
+   ============================================ */
+@media (min-width: 1024px) {
+  /* 主容器 - 桌面端 */
+  .empty-state-desktop {
+    max-width: var(--empty-state-desktop-max-width);
+    padding: var(--empty-state-desktop-padding);
+    min-height: var(--empty-state-desktop-min-height);
+  }
+
+  .empty-state-desktop .container-inner {
+    max-width: 44rem;
+    margin: 0 auto;
+  }
+
+  /* 标题栏 - 桌面端 */
+  .empty-state-header-desktop .title {
+    font-size: 1.5rem;
+  }
+
+  .empty-state-header-desktop .tag {
+    padding: 0.375rem 1rem;
+    font-size: 0.8125rem;
+  }
+
+  .empty-state-header-desktop .action-buttons {
+    gap: 0.75rem;
+  }
+
+  /* 空状态内容 - 桌面端 */
+  .empty-state-content-desktop .icon-wrapper {
+    width: var(--empty-state-icon-desktop);
+    height: var(--empty-state-icon-desktop);
+  }
+
+  .empty-state-content-desktop .title {
+    font-size: var(--empty-state-title-desktop);
+  }
+
+  .empty-state-content-desktop .subtitle {
+    max-width: 22rem;
+    font-size: 0.9375rem;
+  }
+
+  /* CTA卡片 - 桌面端 */
+  .empty-state-card-desktop {
+    width: var(--empty-state-card-desktop-width);
+    max-width: 30rem;
+    padding: 2rem;
+    border-radius: 1.5rem;
+  }
+
+  .empty-state-card-desktop .icon-container {
+    width: 3.5rem;
+    height: 3.5rem;
+  }
+
+  .empty-state-card-desktop .icon-container svg {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+
+  .empty-state-card-desktop .title {
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+
+  .empty-state-card-desktop .subtitle {
+    font-size: 0.9375rem;
+    max-width: 20rem;
+  }
+}
+
+/* ============================================
+   Ultrawide (> 1536px) - 超宽屏
+   ============================================ */
+@media (min-width: 96rem) {
+  .empty-state-ultrawide {
+    max-width: var(--empty-state-ultrawide-max-width);
+    padding: var(--empty-state-ultrawide-padding);
+  }
+
+  .empty-state-ultrawide .container-inner {
+    max-width: 52rem;
+  }
+
+  .empty-state-card-ultrawide {
+    width: 28rem;
+    max-width: 32rem;
+    padding: 2.5rem;
+  }
+}
+
+/* ============================================
+   Animation Keyframes - 动画关键帧
+   ============================================ */
+@keyframes gentleFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes iconPulse {
+  0%, 100% {
+    box-shadow:
+      inset 0 0 20px rgba(99, 102, 241, 0.3),
+      0 0 15px rgba(99, 102, 241, 0.2);
+  }
+  50% {
+    box-shadow:
+      inset 0 0 25px rgba(99, 102, 241, 0.4),
+      0 0 20px rgba(99, 102, 241, 0.35);
+  }
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ============================================
+   Reduced Motion - 减少动画支持
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  .empty-state-content-mobile .icon-wrapper,
+  .empty-state-content-tablet .icon-wrapper,
+  .empty-state-content-desktop .icon-wrapper,
+  .empty-state-card-mobile .icon-container,
+  .empty-state-card-tablet .icon-container,
+  .empty-state-card-desktop .icon-container {
+    animation: none !important;
+  }
+
+  .empty-state-card-mobile,
+  .empty-state-card-tablet,
+  .empty-state-card-desktop {
+    transition-duration: 0ms !important;
+  }
+
+  .empty-state-card-mobile:hover,
+  .empty-state-card-tablet:hover,
+  .empty-state-card-desktop:hover {
+    transform: none !important;
+  }
+}
+
+/* ============================================
+   Safe Area Support - 安全区域适配
+   ============================================ */
+@supports (padding: env(safe-area-inset-top)) {
+  .empty-state-mobile {
+    padding-top: calc(1rem + env(safe-area-inset-top));
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+    padding-left: calc(1.25rem + env(safe-area-inset-left));
+    padding-right: calc(1.25rem + env(safe-area-inset-right));
+  }
+
+  .empty-state-tablet {
+    padding-top: calc(1.5rem + env(safe-area-inset-top));
+    padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));
+    padding-left: calc(2rem + env(safe-area-inset-left));
+    padding-right: calc(2rem + env(safe-area-inset-right));
+  }
+}
+
+/* ============================================
+   Print Styles - 打印样式
+   ============================================ */
+@media print {
+  .empty-state-container,
+  .empty-state-mobile,
+  .empty-state-tablet,
+  .empty-state-desktop {
+    background: white !important;
+    color: black !important;
+    box-shadow: none !important;
+    min-height: auto !important;
+    padding: 1rem !important;
+  }
+
+  .empty-state-card-mobile,
+  .empty-state-card-tablet,
+  .empty-state-card-desktop {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}

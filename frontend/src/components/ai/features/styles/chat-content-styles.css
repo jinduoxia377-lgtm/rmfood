@@ -1,0 +1,553 @@
+/* ============================================================
+   RMFOOD配方平台 - 智能对话模块内容展示样式系统
+   用于增强Markdown渲染效果的专业级样式
+   ============================================================ */
+
+/* ------------------------------------------------------------
+   1. 表格数据可视化样式
+   ------------------------------------------------------------ */
+
+/* 表格容器 - 移动端横向滚动 */
+.chat-table-container {
+  overflow-x: auto;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-level-1);
+  margin: var(--space-md) 0;
+}
+
+/* 表格基础 */
+.chat-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-body-sm);
+  line-height: var(--line-height-normal);
+}
+
+/* 表头 */
+.chat-table thead {
+  background: var(--color-gray-50);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.chat-table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-gray-700);
+  border-bottom: 2px solid var(--color-primary-200);
+  white-space: nowrap;
+}
+
+/* 单元格 */
+.chat-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-gray-200);
+  color: var(--color-gray-700);
+}
+
+/* 斑马纹行 */
+.chat-table tbody tr:nth-child(even) {
+  background-color: var(--color-gray-50);
+}
+
+/* 行悬停高亮 */
+.chat-table tbody tr:hover {
+  background-color: var(--color-primary-50);
+  transition: background-color 150ms ease-out;
+}
+
+
+/* ------------------------------------------------------------
+   2. 代码块专业样式
+   ------------------------------------------------------------ */
+
+/* 代码块容器 */
+.chat-code-block {
+  position: relative;
+  background: var(--color-gray-900);
+  color: #e2e8f0;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-level-2);
+  margin: var(--space-md) 0;
+  overflow: hidden;
+  font-family: var(--font-family-mono);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* 代码头部栏 */
+.chat-code-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 16px;
+  background: rgba(255,255,255,0.05);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+/* 语言标识标签 */
+.chat-code-lang {
+  font-size: 11px;
+  font-weight: 500;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* 复制按钮 */
+.chat-code-copy {
+  padding: 4px 8px;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: var(--radius-xs);
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 150ms ease-out;
+}
+
+.chat-code-copy:hover {
+  background: rgba(255,255,255,0.1);
+  color: white;
+  border-color: rgba(255,255,255,0.3);
+}
+
+/* 代码内容区 */
+.chat-code-content {
+  padding: 16px;
+  overflow-x: auto;
+  max-height: 400px;
+}
+
+/* 行号显示 */
+.chat-code-line-numbers {
+  counter-reset: line;
+  padding-right: 16px;
+  margin-right: 16px;
+  border-right: 1px solid rgba(255,255,255,0.1);
+  color: #64748b;
+  text-align: right;
+  user-select: none;
+}
+
+/* 内联代码 */
+.chat-inline-code {
+  background: var(--color-primary-50);
+  color: var(--color-primary-700);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: var(--font-family-mono);
+  font-size: 0.9em;
+  font-weight: 500;
+}
+
+
+/* ------------------------------------------------------------
+   3. 图片展示系统
+   ------------------------------------------------------------ */
+
+/* 图片容器 */
+.chat-image-container {
+  margin: var(--space-md) 0;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-level-2);
+  cursor: pointer;
+  transition: transform 250ms var(--ease-out), box-shadow 250ms var(--ease-out);
+}
+
+.chat-image-container:hover {
+  transform: scale(1.02);
+  box-shadow: var(--shadow-level-3);
+}
+
+/* 响应式图片 */
+.chat-image {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* 图片说明文字 */
+.chat-image-caption {
+  padding: 12px 16px;
+  background: var(--color-gray-50);
+  font-size: var(--font-size-caption);
+  color: var(--color-gray-500);
+  text-align: center;
+  border-top: 1px solid var(--color-gray-200);
+}
+
+/* 多图网格布局 */
+.chat-image-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--space-sm);
+  margin: var(--space-md) 0;
+}
+
+/* 图片占位骨架屏 */
+.chat-image-placeholder {
+  background: linear-gradient(
+    90deg,
+    var(--color-gray-200) 25%,
+    var(--color-gray-100) 50%,
+    var(--color-gray-200) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius-md);
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+
+/* ------------------------------------------------------------
+   4. 引用和列表样式
+   ------------------------------------------------------------ */
+
+/* 引用文本块 */
+.chat-blockquote {
+  position: relative;
+  margin: var(--space-md) 0;
+  padding: 12px 16px 12px 20px;
+  background: var(--color-primary-50);
+  border-left: 4px solid var(--color-primary-500);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  font-style: italic;
+  color: var(--color-gray-700);
+}
+
+/* 嵌套引用 */
+.chat-blockquote .chat-blockquote {
+  margin-top: var(--space-sm);
+  background: var(--color-gray-100);
+  border-left-color: var(--color-primary-300);
+}
+
+/* 有序列表 */
+.chat-ol {
+  list-style: none;
+  counter-reset: chat-list-counter;
+  padding-left: 0;
+  margin: var(--space-md) 0;
+}
+
+.chat-ol li {
+  counter-increment: chat-list-counter;
+  position: relative;
+  padding-left: 32px;
+  margin-bottom: var(--space-sm);
+}
+
+.chat-ol li::before {
+  content: counter(chat-list-counter);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 22px;
+  height: 22px;
+  background: var(--gradient-primary);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: var(--font-weight-semibold);
+}
+
+/* 无序列表 */
+.chat-ul {
+  list-style: none;
+  padding-left: 0;
+  margin: var(--space-md) 0;
+}
+
+.chat-ul li {
+  position: relative;
+  padding-left: 24px;
+  margin-bottom: var(--space-sm);
+}
+
+.chat-ul li::before {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 10px;
+  width: 6px;
+  height: 6px;
+  background: var(--color-primary-500);
+  border-radius: 50%;
+}
+
+
+/* ------------------------------------------------------------
+   5. 提示框/Callout组件样式
+   ------------------------------------------------------------ */
+
+/* 提示框基础 */
+.chat-callout {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  border-radius: var(--radius-sm);
+  margin: var(--space-md) 0;
+  border-left: 4px solid;
+}
+
+/* 四种类型变体 */
+.chat-callout-info {
+  background: #eff6ff;
+  border-color: var(--color-info-500);
+}
+
+.chat-callout-success {
+  background: #ecfdf5;
+  border-color: var(--color-success-500);
+}
+
+.chat-callout-warning {
+  background: #fffbeb;
+  border-color: var(--color-warning-500);
+}
+
+.chat-callout-error {
+  background: #fef2f2;
+  border-color: var(--color-error-500);
+}
+
+/* 提示框图标 */
+.chat-callout-icon {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+}
+
+/* 提示框内容 */
+.chat-callout-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.chat-callout-title {
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: 4px;
+}
+
+
+/* ------------------------------------------------------------
+   6. 分割线和水平线
+   ------------------------------------------------------------ */
+
+/* 装饰性分割线 */
+.chat-divider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: var(--space-lg) 0;
+  color: var(--color-gray-400);
+  font-size: var(--font-size-caption);
+}
+
+.chat-divider::before,
+.chat-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--color-gray-300),
+    transparent
+  );
+}
+
+
+/* ------------------------------------------------------------
+   7. 暗色模式适配
+   ------------------------------------------------------------ */
+
+[data-theme="dark"] {
+  /* 表格暗色模式 */
+  .chat-table thead { background: var(--color-gray-800); }
+  .chat-table th { color: var(--color-gray-300); border-color: var(--color-gray-600); }
+  .chat-table td { color: var(--color-gray-300); border-color: var(--color-gray-700); }
+  .chat-table tbody tr:nth-child(even) { background: var(--color-gray-800); }
+  .chat-table tbody tr:hover { background: var(--color-gray-750); }
+
+  /* 代码块暗色模式 (保持深色背景，微调边框) */
+
+  /* 内联代码暗色模式 */
+  .chat-inline-code {
+    background: rgba(102,126,234,0.15);
+    color: var(--color-primary-300);
+  }
+
+  /* 图片说明文字 */
+  .chat-image-caption { background: var(--color-gray-800); color: var(--color-gray-400); }
+
+  /* 引用暗色模式 */
+  .chat-blockquote {
+    background: rgba(102,126,234,0.1);
+    border-color: var(--color-primary-400);
+    color: var(--color-gray-300);
+  }
+
+  /* Callout暗色模式 */
+  .chat-callout-info { background: rgba(59,130,246,0.1); }
+  .chat-callout-success { background: rgba(16,185,129,0.1); }
+  .chat-callout-warning { background: rgba(245,158,11,0.1); }
+  .chat-callout-error { background: rgba(239,68,68,0.1); }
+
+  /* 分割线暗色模式 */
+  .chat-divider { color: var(--color-gray-500); }
+  .chat-divider::before,
+  .chat-divider::after {
+    background: linear-gradient(
+      to right,
+      transparent,
+      var(--color-gray-600),
+      transparent
+    );
+  }
+}
+
+
+/* ------------------------------------------------------------
+   8. 响应式媒体查询
+   ------------------------------------------------------------ */
+
+/* 平板设备适配 */
+@media screen and (max-width: 768px) {
+  /* 表格响应式 */
+  .chat-table th,
+  .chat-table td {
+    padding: 8px 12px;
+    font-size: var(--font-size-caption);
+  }
+
+  /* 代码块响应式 */
+  .chat-code-block {
+    font-size: 12px;
+    border-radius: var(--radius-sm);
+    margin: var(--space-sm) 0;
+  }
+
+  .chat-code-header {
+    padding: 6px 12px;
+  }
+
+  .chat-code-content {
+    padding: 12px;
+    max-height: 300px;
+  }
+
+  /* 图片网格响应式 */
+  .chat-image-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: var(--space-xs);
+  }
+
+  /* Callout响应式 */
+  .chat-callout {
+    gap: 8px;
+    padding: 12px;
+  }
+
+  /* 列表间距调整 */
+  .chat-ol li,
+  .chat-ul li {
+    margin-bottom: var(--space-xs);
+  }
+
+  /* 引用响应式 */
+  .chat-blockquote {
+    padding: 10px 14px 10px 18px;
+    margin: var(--space-sm) 0;
+  }
+}
+
+/* 手机设备适配 */
+@media screen and (max-width: 480px) {
+  /* 表格紧凑布局 */
+  .chat-table th,
+  .chat-table td {
+    padding: 6px 10px;
+    white-space: normal;
+  }
+
+  /* 代码块紧凑布局 */
+  .chat-code-block {
+    font-size: 11px;
+    border-radius: var(--radius-xs);
+  }
+
+  .chat-code-header {
+    padding: 4px 10px;
+  }
+
+  .chat-code-content {
+    padding: 10px;
+    max-height: 250px;
+  }
+
+  .chat-code-lang {
+    font-size: 10px;
+  }
+
+  .chat-code-copy {
+    font-size: 11px;
+    padding: 3px 6px;
+  }
+
+  /* 图片单列显示 */
+  .chat-image-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Callout紧凑布局 */
+  .chat-callout {
+    padding: 10px;
+    gap: 8px;
+  }
+
+  .chat-callout-icon {
+    width: 16px;
+    height: 16px;
+  }
+
+  /* 有序列表数字缩小 */
+  .chat-ol li {
+    padding-left: 28px;
+  }
+
+  .chat-ol li::before {
+    width: 18px;
+    height: 18px;
+    font-size: 10px;
+  }
+
+  /* 无序列表缩进减少 */
+  .chat-ul li {
+    padding-left: 20px;
+  }
+
+  /* 引用紧凑布局 */
+  .chat-blockquote {
+    padding: 8px 12px 8px 16px;
+    border-left-width: 3px;
+  }
+
+  /* 分割线字体缩小 */
+  .chat-divider {
+    font-size: 11px;
+    gap: 10px;
+  }
+}

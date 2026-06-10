@@ -1,0 +1,414 @@
+{
+  "schema": {
+    "version": "1.0.0",
+    "lastUpdated": "2026-05-17",
+    "description": "药食同源数据库Schema定义",
+    "structure": {
+      "ingredients": {
+        "tableName": "ingredients",
+        "description": "药食同源成分主表",
+        "primaryKey": "id",
+        "fields": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "唯一标识符",
+            "required": true,
+            "indexed": true
+          },
+          "name": {
+            "type": "string",
+            "description": "中文名称",
+            "required": true,
+            "indexed": true
+          },
+          "chinese_name": {
+            "type": "string",
+            "description": "中文别名",
+            "indexed": true
+          },
+          "pinyin": {
+            "type": "string",
+            "description": "拼音",
+            "indexed": true
+          },
+          "latin_name": {
+            "type": "string",
+            "description": "拉丁学名",
+            "indexed": true
+          },
+          "english_name": {
+            "type": "string",
+            "description": "英文名称",
+            "indexed": true
+          },
+          "category": {
+            "type": "enum",
+            "values": ["medicinal_food", "food_material", "medicine"],
+            "description": "分类",
+            "required": true,
+            "indexed": true
+          },
+          "source": {
+            "type": "string",
+            "description": "来源",
+            "required": true
+          },
+          "nature": {
+            "type": "enum",
+            "values": ["cold", "cool", "neutral", "warm", "hot"],
+            "description": "四气",
+            "indexed": true
+          },
+          "flavor": {
+            "type": "array",
+            "items": {
+              "type": "enum",
+              "values": ["sour", "bitter", "sweet", "pungent", "salty"]
+            },
+            "description": "五味"
+          },
+          "meridian_tropism": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "归经"
+          },
+          "functions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "功效"
+          },
+          "dosage_min": {
+            "type": "number",
+            "description": "最小剂量"
+          },
+          "dosage_max": {
+            "type": "number",
+            "description": "最大剂量"
+          },
+          "dosage_unit": {
+            "type": "string",
+            "description": "剂量单位"
+          },
+          "toxicity": {
+            "type": "enum",
+            "values": ["none", "low", "moderate", "high"],
+            "description": "毒性"
+          },
+          "contraindications": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "禁忌"
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "注意事项"
+          },
+          "safety_level": {
+            "type": "enum",
+            "values": ["safe", "caution", "warning", "prohibited"],
+            "description": "安全等级"
+          },
+          "evidence_level": {
+            "type": "enum",
+            "values": ["high", "medium", "low"],
+            "description": "证据级别"
+          },
+          "created_at": {
+            "type": "datetime",
+            "description": "创建时间"
+          },
+          "updated_at": {
+            "type": "datetime",
+            "description": "更新时间"
+          },
+          "version": {
+            "type": "string",
+            "description": "版本号"
+          }
+        },
+        "relationships": {
+          "active_components": {
+            "type": "one-to-many",
+            "target": "active_components",
+            "foreignKey": "ingredient_id"
+          },
+          "interactions": {
+            "type": "many-to-many",
+            "target": "ingredients",
+            "through": "ingredient_interactions"
+          },
+          "compatibility_rules": {
+            "type": "one-to-many",
+            "target": "compatibility_rules",
+            "foreignKey": "ingredient_id"
+          }
+        },
+        "indexes": [
+          "name",
+          "category",
+          "nature",
+          "latin_name",
+          "pinyin"
+        ]
+      },
+      "active_components": {
+        "tableName": "active_components",
+        "description": "活性成分表",
+        "primaryKey": "id",
+        "fields": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "required": true
+          },
+          "ingredient_id": {
+            "type": "string",
+            "format": "uuid",
+            "required": true,
+            "indexed": true
+          },
+          "name": {
+            "type": "string",
+            "required": true,
+            "indexed": true
+          },
+          "english_name": {
+            "type": "string"
+          },
+          "cas_number": {
+            "type": "string",
+            "description": "CAS登记号"
+          },
+          "molecular_formula": {
+            "type": "string"
+          },
+          "molecular_weight": {
+            "type": "number"
+          },
+          "concentration": {
+            "type": "string"
+          },
+          "percentage": {
+            "type": "number"
+          },
+          "bioactivity": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "source": {
+            "type": "string"
+          }
+        },
+        "relationships": {
+          "ingredient": {
+            "type": "many-to-one",
+            "target": "ingredients",
+            "foreignKey": "ingredient_id"
+          }
+        }
+      },
+      "compatibility_rules": {
+        "tableName": "compatibility_rules",
+        "description": "配伍规则表",
+        "primaryKey": "id",
+        "fields": {
+          "id": {
+            "type": "string",
+            "required": true,
+            "indexed": true
+          },
+          "ingredient_id": {
+            "type": "string",
+            "format": "uuid",
+            "indexed": true
+          },
+          "paired_ingredient_id": {
+            "type": "string",
+            "format": "uuid",
+            "indexed": true
+          },
+          "type": {
+            "type": "enum",
+            "values": ["synergistic", "antagonistic", "contraindicated", "neutral"],
+            "required": true
+          },
+          "effect": {
+            "type": "string"
+          },
+          "mechanism": {
+            "type": "string"
+          },
+          "clinical_evidence": {
+            "type": "string"
+          },
+          "safety_level": {
+            "type": "enum",
+            "values": ["safe", "caution", "prohibited"]
+          },
+          "evidence_level": {
+            "type": "enum",
+            "values": ["high", "medium", "low"]
+          },
+          "references": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "indexes": [
+          "ingredient_id",
+          "paired_ingredient_id",
+          "type"
+        ]
+      },
+      "formulas": {
+        "tableName": "formulas",
+        "description": "配方表",
+        "primaryKey": "id",
+        "fields": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "required": true
+          },
+          "name": {
+            "type": "string",
+            "required": true,
+            "indexed": true
+          },
+          "ingredients": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "ingredient_id": {
+                  "type": "string"
+                },
+                "amount": {
+                  "type": "number"
+                },
+                "unit": {
+                  "type": "string"
+                },
+                "role": {
+                  "type": "enum",
+                  "values": ["monarch", "minister", "assistant", "envoy"]
+                }
+              }
+            }
+          },
+          "functions": {
+            "type": "string"
+          },
+          "indications": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "usage": {
+            "type": "string"
+          },
+          "cautions": {
+            "type": "string"
+          }
+        },
+        "relationships": {
+          "ingredients": {
+            "type": "many-to-many",
+            "target": "ingredients",
+            "through": "formula_ingredients"
+          }
+        }
+      }
+    },
+    "constraints": {
+      "unique_constraints": [
+        {
+          "table": "ingredients",
+          "fields": ["name", "latin_name"]
+        },
+        {
+          "table": "active_components",
+          "fields": ["ingredient_id", "name"]
+        }
+      ],
+      "check_constraints": [
+        {
+          "table": "ingredients",
+          "condition": "dosage_max >= dosage_min"
+        }
+      ]
+    },
+    "views": {
+      "ingredient_summary": {
+        "description": "成分摘要视图",
+        "sql": "SELECT id, name, latin_name, category, nature, toxicity FROM ingredients"
+      },
+      "compatibility_summary": {
+        "description": "配伍摘要视图",
+        "sql": "SELECT * FROM compatibility_rules WHERE safety_level = 'prohibited'"
+      }
+    }
+  },
+  "relationships": {
+    "many_to_many": [
+      {
+        "relation": "ingredient_interactions",
+        "tables": ["ingredients", "ingredients"],
+        "through": "ingredient_interactions",
+        "fields": {
+          "ingredient_a_id": "uuid",
+          "ingredient_b_id": "uuid",
+          "interaction_type": "string",
+          "description": "string"
+        }
+      },
+      {
+        "relation": "formula_ingredients",
+        "tables": ["formulas", "ingredients"],
+        "through": "formula_ingredients",
+        "fields": {
+          "formula_id": "uuid",
+          "ingredient_id": "uuid",
+          "amount": "number",
+          "role": "string"
+        }
+      }
+    ]
+  },
+  "indexes": {
+    "full_text_search": [
+      {
+        "table": "ingredients",
+        "columns": ["name", "chinese_name", "latin_name", "english_name"],
+        "description": "全文检索索引"
+      }
+    ],
+    "performance_indexes": [
+      {
+        "table": "ingredients",
+        "columns": ["category", "nature"],
+        "description": "分类查询优化"
+      },
+      {
+        "table": "compatibility_rules",
+        "columns": ["type", "safety_level"],
+        "description": "配伍查询优化"
+      }
+    ]
+  }
+}

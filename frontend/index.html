@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#3b82f6" />
+    <meta name="description" content="RMFOOD 智能配方设计平台 - 专业的配方研发与管理系统" />
+    <meta name="application-name" content="RMFOOD" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preload" href="/src/main.tsx" as="script" />
+    <link rel="preload" href="/src/index.css" as="style" />
+    <title>RMFOOD 配方设计平台</title>
+    <!-- Node.js Process Polyfill for ExcelJS and other Node.js libraries -->
+    <script>
+      // 必须在所有脚本之前定义 process 对象
+      window.process = window.process || {
+        env: {
+          NODE_ENV: 'development',
+          DEBUG: undefined,
+          PRODUCTION: false,
+        },
+        version: 'v18.0.0',
+        platform: 'browser',
+        arch: 'unknown',
+        node: false,
+        title: 'browser',
+        browser: true,
+        argv: [],
+        execPath: '',
+        cwd: function() { return '/'; },
+        nextTick: function(cb) {
+          var args = Array.prototype.slice.call(arguments, 1);
+          setTimeout(function() { cb.apply(null, args); }, 0);
+        },
+        stdout: {
+          write: function(s) { console.log(s); },
+          writeLine: function(s) { console.log(s || ''); },
+        },
+        stderr: {
+          write: function(s) { console.error(s); },
+          writeLine: function(s) { console.error(s || ''); },
+        },
+        stdin: {},
+        exit: function(code) {
+          if (code && code !== 0) throw new Error('Process exited with code ' + code);
+        },
+        on: function() {},
+        off: function() {},
+        removeAllListeners: function() {},
+        emit: function() { return false; },
+        listeners: function() { return []; },
+        once: function() {},
+        prependListener: function() {},
+        prependOnceListener: function() {},
+        removeListener: function() {},
+        uptime: function() { return Math.floor(performance.now() / 1000); },
+        memoryUsage: function() {
+          return { rss: 0, heapTotal: 0, heapUsed: 0, external: 0, arrayBuffers: 0 };
+        },
+        hrtime: function(time) {
+          var now = performance.now() * 1e-6;
+          if (!time) return [Math.floor(now), (now % 1) * 1e9];
+          var diff = now - (time[0] + time[1] * 1e-9);
+          return [Math.floor(diff), (diff % 1) * 1e9];
+        }
+      };
+      
+      // Global polyfill
+      if (typeof global === 'undefined') {
+        window.global = window;
+      }
+      
+      // Buffer polyfill
+      if (typeof Buffer === 'undefined') {
+        window.Buffer = {
+          from: function(data, encoding) {
+            if (typeof data === 'string') {
+              if (encoding === 'base64') {
+                var binary = atob(data);
+                var bytes = new Uint8Array(binary.length);
+                for (var i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+                return bytes;
+              }
+              return new TextEncoder().encode(data);
+            }
+            if (data instanceof ArrayBuffer) return new Uint8Array(data);
+            if (Array.isArray(data)) return new Uint8Array(data);
+            return new Uint8Array(0);
+          },
+          alloc: function(size) { return new Uint8Array(size); },
+          isBuffer: function(obj) { return obj instanceof Uint8Array; }
+        };
+      }
+    </script>
+    <!-- 使用系统字体，无需加载外部资源 -->
+    <!-- 主题初始化脚本 - 防止主题切换闪烁 -->
+    <script>
+      (function() {
+        const stored = localStorage.getItem('rmfood-theme-settings-v2');
+        if (stored) {
+          try {
+            const { mode, customColors } = JSON.parse(stored);
+            const isDark = mode === 'dark' || 
+              (mode === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            if (isDark) {
+              document.documentElement.classList.add('dark');
+            }
+          } catch (e) {
+            if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+              document.documentElement.classList.add('dark');
+            }
+          }
+        } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

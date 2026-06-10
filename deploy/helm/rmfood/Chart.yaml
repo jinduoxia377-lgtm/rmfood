@@ -1,0 +1,14 @@
+apiVersion: v2
+name: rmfood
+description: RMFOOD 智能配方设计平台 — Helm Chart
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords:
+  - food-tech
+  - formula
+  - ai
+  - functional-food
+maintainers:
+  - name: RMFOOD Team
+    email: team@rmfood.com

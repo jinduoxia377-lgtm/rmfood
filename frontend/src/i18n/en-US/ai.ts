@@ -1,0 +1,257 @@
+export default {
+  // ===== AI Chat Module =====
+  chat: {
+    title: 'AI Assistant',
+    placeholder: 'Enter your question...',
+    send: 'Send',
+    stopGenerating: 'Stop Generating',
+    newSession: 'New Session',
+    sessionHistory: 'History',
+    exportChat: 'Export Chat',
+    clearChat: 'Clear Chat',
+
+    // Slash Commands
+    commands: {
+      help: {
+        desc: 'Show help information',
+        usage: '/help',
+      },
+      clear: {
+        desc: 'Clear current conversation',
+        usage: '/clear',
+      },
+      export: {
+        desc: 'Export conversation history',
+        usage: '/export',
+      },
+      new: {
+        desc: 'Create new session',
+        usage: '/new',
+      },
+      settings: {
+        desc: 'Open settings panel',
+        usage: '/settings',
+      },
+    },
+
+    // API Key Configuration
+    apiKey: {
+      title: 'API Key Configuration',
+      addProvider: 'Add Provider',
+      testConnection: 'Test Connection',
+      connectionSuccess: 'Connection Successful',
+      connectionFailed: 'Connection Failed',
+      usageStats: 'Usage Statistics',
+      monthlyCalls: 'Monthly Calls',
+      remainingQuota: 'Remaining Quota',
+      encryptedStorage: 'Key encrypted and stored securely',
+    },
+
+    // Streaming Output
+    streaming: {
+      typingSpeed: 'Typing Speed',
+      slow: 'Slow',
+      medium: 'Medium',
+      fast: 'Fast',
+      instant: 'Instant',
+      interrupt: 'Interrupt Output',
+      resume: 'Resume Output',
+    },
+
+    // ChatTab Component
+    chatTab: {
+      title: 'Smart Chat',
+      offlineMode: 'Offline Mode',
+      clear: 'Clear',
+      chatError: 'Chat Error',
+      retry: 'Retry',
+      close: 'Close',
+      startNewChat: 'Start New Chat',
+      chatDescription: 'Enter your questions or requirements, and AI will provide professional formula recommendations and analysis.',
+    },
+  },
+
+  // ===== Formula Generation Module =====
+  formula: {
+    title: 'Smart Formula Generation',
+    wizard: {
+      step1: 'Target Efficacy',
+      step2: 'Constraints',
+      step3: 'Advanced Options',
+      next: 'Next',
+      prev: 'Previous',
+      complete: 'Complete Configuration',
+      startGeneration: 'Start Generation',
+    },
+    progress: {
+      preparing: 'Preparing...',
+      generating: 'Generating candidates...',
+      scoring: 'Scoring candidates...',
+      optimizing: 'Optimizing...',
+      sorting: 'Sorting results...',
+      finalizing: 'Finalizing...',
+      completed: 'Generation Complete',
+      failed: 'Generation Failed',
+      cancelled: 'Cancelled',
+      paused: 'Paused',
+      estimatedTime: 'Estimated Time Remaining',
+      viewLog: 'View Log',
+      pause: 'Pause',
+      resume: 'Resume',
+      cancel: 'Cancel',
+    },
+    result: {
+      candidateComparison: 'Candidate Comparison',
+      sensitivityAnalysis: 'Sensitivity Analysis',
+      whatIf: 'What-if Analysis',
+      exportResult: 'Export Results',
+      paretoFrontier: 'Pareto Frontier',
+    },
+
+    // GenerateTab Component
+    generateTab: {
+      loading: 'Loading...',
+      formulaDetails: 'Formula Details',
+      close: 'Close',
+      allCategories: 'All Categories',
+      score: 'Score',
+      synergy: 'Synergy',
+      export: 'Export',
+      json: 'JSON',
+      csv: 'CSV',
+      pdf: 'PDF',
+      pdfDeveloping: 'PDF (Developing)',
+    },
+  },
+
+  // ===== Safety Check Module =====
+  safety: {
+    title: 'Safety Assessment',
+    riskLevels: {
+      low: 'Low Risk',
+      medium: 'Medium Risk',
+      high: 'High Risk',
+    },
+    batchCheck: {
+      title: 'Batch Check',
+      uploadFile: 'Upload File',
+      supportedFormats: 'Supports CSV, Excel formats',
+      taskQueue: 'Task Queue',
+      completed: 'Completed',
+      processing: 'Processing',
+      queued: 'Queued',
+      failed: 'Failed',
+      reviewRequired: 'Review Required',
+    },
+    regulation: {
+      browser: 'Regulation Browser',
+      filterByRegion: 'Filter by Region',
+      filterByType: 'Filter by Type',
+      complianceStatus: 'Compliance Status',
+      passed: 'Passed',
+      pending: 'Pending Review',
+      nonCompliant: 'Non-Compliant',
+      updateAvailable: 'Update Available',
+    },
+    report: {
+      generateReport: 'Generate Report',
+      fdaTemplate: 'FDA Format',
+      nmpaTemplate: 'NMPA Format',
+      efsaTemplate: 'EFSA Format',
+      preview: 'Preview',
+      downloadPDF: 'Download PDF',
+    },
+  },
+
+  // ===== Synergy Analysis Module =====
+  synergy: {
+    title: 'Synergy Analysis',
+    knowledgeGraph: 'Knowledge Graph',
+    recommendationPanel: 'Recommendation Panel',
+    radarChart: 'Radar Chart Comparison',
+    selectAlgorithm: 'Select Algorithm',
+    adjustWeights: 'Adjust Weights',
+    aiRecommendation: 'AI Recommendation',
+    confidence: 'Confidence',
+    savePreset: 'Save Preset',
+    loadPreset: 'Load Preset',
+    reset: 'Reset',
+
+    // SynergyTab Component
+    synergyTab: {
+      title: 'Synergy Analysis',
+      inputDescription: 'Enter herb names, separated by commas. Analyze synergy/antagonism relationships between ingredients.',
+      inputPlaceholder: 'e.g., Astragalus, Codonopsis, Wolfberry, Yam',
+      analyze: 'Analyze',
+      analyzeFailed: 'Analysis failed:',
+      retryTip: 'Please check input and retry',
+      synergyScore: 'Synergy Score: ',
+      antagonismWarning: 'Antagonism Warning',
+      relationshipMatrix: 'Relationship Matrix',
+      synergy: 'Synergy',
+      antagonism: 'Antagonism',
+      noData: 'No Data',
+      sharedPathways: 'Shared Pathways: ',
+    },
+  },
+
+  // ===== Taste Prediction Module =====
+  taste: {
+    title: 'Taste Prediction',
+    flavorWheel: 'Flavor Wheel',
+    preferenceLearning: 'Preference Learning',
+    dimensions: {
+      sour: 'Sourness',
+      sweet: 'Sweetness',
+      bitter: 'Bitterness',
+      spicy: 'Spiciness',
+      umami: 'Umami',
+      astringent: 'Astringency',
+    },
+    rating: {
+      veryLow: 'Very Low Preference',
+      low: 'Low Preference',
+      medium: 'Medium Preference',
+      high: 'High Preference',
+      veryHigh: 'Very High Preference',
+    },
+    recommendations: 'Recommended for You',
+    matchRate: 'Match Rate',
+    exportPreference: 'Export Preferences',
+    resetRating: 'Reset Ratings',
+    savePreference: 'Save Preferences',
+  },
+
+  // ===== Stability Prediction Module =====
+  stability: {
+    title: 'Stability Prediction',
+    timeSeries: 'Time Series Analysis',
+    sensitivityTornado: 'Sensitivity Analysis',
+    inflectionPoints: 'Inflection Points',
+    confidenceInterval: 'Confidence Interval',
+    optimalRegion: 'Optimal Region',
+    exportChart: 'Export Chart',
+    sensitivityRanking: 'Sensitivity Ranking Summary',
+    peak: 'Peak',
+    valley: 'Valley',
+    inflection: 'Inflection Point',
+  },
+
+  // ===== Academic Report Module =====
+  report: {
+    title: 'Academic Report Generation',
+    templateEngine: 'Template Engine',
+    versionHistory: 'Version History',
+    templateMarket: 'Template Marketplace',
+    academicReport: 'Academic Report Template',
+    safetyReport: 'Safety Assessment Report Template',
+    customTemplate: 'Custom Template',
+    createBranch: 'Create Branch',
+    compareMode: 'Compare Mode',
+    diffView: 'Diff View',
+    unifiedDiff: 'Unified Diff',
+    splitView: 'Split View',
+    rollbackVersion: 'Rollback to This Version',
+    noVersions: 'No versions available',
+  },
+}

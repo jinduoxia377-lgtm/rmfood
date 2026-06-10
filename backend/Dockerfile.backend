@@ -1,0 +1,103 @@
+# ============================================================
+# RMFOOD 后端 Dockerfile (生产级)
+# 多阶段构建 + 安全加固 + 性能优化
+#
+# 构建命令:
+#   docker build -f Dockerfile.backend -t rmfood-backend:latest .
+#
+# 运行命令:
+#   docker run -d \
+#     --name rmfood-backend \
+#     --env-file .env.production \
+#     -p 8000:8000 \
+#     -v ./uploads:/app/uploads \
+#     rmfood-backend:latest
+# ============================================================
+
+# ── Stage 1: Builder (构建依赖) ───────────────────────
+FROM python:3.11-slim AS builder
+
+WORKDIR /build
+
+# 安装系统依赖（编译Python包需要）
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# 复制依赖文件
+COPY requirements.txt .
+
+# 创建虚拟环境并安装依赖
+RUN python -m venv /opt/venv && \
+    /opt/venv/bin/pip install --no-cache-dir --upgrade pip && \
+    /opt/venv/bin/pip install --no-cache-dir -r requirements.txt
+
+
+# ── Stage 2: Runtime (生产运行时) ───────────────────
+FROM python:3.11-slim AS runtime
+
+# 元数据标签
+LABEL maintainer="RMFOOD Team"
+LABEL version="1.0.0"
+LABEL description="RMFOOD配方设计平台后端服务"
+
+# 安装运行时依赖（最小化）
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq5 \
+    curl \
+    && rm -rf /var/lib/apt/lists/* \
+    # 清理apt缓存减小镜像
+    && apt-get clean \
+    && rm -rf /tmp/* /var/tmp/*
+
+# 创建非 root 用户（安全最佳实践）
+RUN groupadd -r appuser && useradd -r -g appuser -d /app -s /sbin/nologin appuser
+
+# 设置工作目录
+WORKDIR /app
+
+# 从 builder 复制虚拟环境和已安装的包
+COPY --from=builder /opt/venv /opt/venv
+
+# 确保使用虚拟环境的 Python
+ENV PATH="/opt/venv/bin:$PATH"
+
+# 复制应用代码
+COPY app/ ./app/
+COPY pyproject.toml .
+COPY alembic.ini .  # 如果存在 Alembic 配置
+COPY alembic/ ./alembic/  # 如果存在迁移脚本
+
+# 创建必要的目录并设置权限
+RUN mkdir -p /app/uploads /app/logs /app/data && \
+    chown -R appuser:appuser /app
+
+# 切换到非 root 用户
+USER appuser
+
+# 暴露端口
+EXPOSE 8000
+
+# 环境变量（可通过 docker run -e 覆盖）
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    ENVIRONMENT=production \
+    DEBUG=false \
+    WORKERS=4 \
+    LOG_LEVEL=INFO
+
+# 健康检查（Kubernetes/Docker Compose 兼容）
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# 启动命令（使用 uvicorn 生产服务器）
+CMD ["uvicorn", "app.main:app", \
+     "--host", "0.0.0.0", \
+     "--port", "8000", \
+     "--workers", "${WORKERS:-4}", \
+     "--log-level", "${LOG_LEVEL:-info}", \
+     "--access-log", "-", \
+     "--error-log", "-", \
+     "--proxy-headers", \
+     "--forwarded-allow-ips"]

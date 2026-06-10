@@ -1,0 +1,224 @@
+"""
+数据库读写分离路由（ADR-003 / M1.5）
+
+支持主库（写）+ 从库（读）的自动路由。
+基于操作类型（SELECT vs INSERT/UPDATE/DELETE）自动选择数据源。
+
+架构：
+┌──────────────┐
+│  Application │
+└──────┬───────┘
+       │
+┌──────▼────────────────┐
+│  DatabaseRouter       │
+│  - write() → Primary  │
+│  - read()  → Replica  │
+└──────┬────────────────┘
+       │
+┌──────▼──────┐  ┌──────▼──────┐
+│  Primary    │  │  Replica    │
+│  (Postgres) │  │  (Postgres) │
+└─────────────┘  └─────────────┘
+       │
+┌──────▼──────┐
+│  PgBouncer  │ (连接池)
+└─────────────┘
+"""
+from __future__ import annotations
+import logging
+from contextlib import asynccontextmanager
+from typing import AsyncGenerator, Optional, Literal
+
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import (
+    AsyncSession, async_sessionmaker, create_async_engine, AsyncEngine,
+)
+
+from ..core.config import settings
+
+logger = logging.getLogger(__name__)
+
+
+class DatabaseRouter:
+    """
+    读写分离数据库路由器
+
+    策略：
+    - 写操作（INSERT/UPDATE/DELETE）→ 主库
+    - 读操作（SELECT）→ 从库（有从库时）
+    - 事务内的读操作 → 主库（保持一致性）
+    - 无从库配置时 → 全部路由到主库
+    """
+
+    def __init__(self):
+        self._primary_engine: Optional[AsyncEngine] = None
+        self._replica_engine: Optional[AsyncEngine] = None
+        self._primary_session_factory: Optional[async_sessionmaker] = None
+        self._replica_session_factory: Optional[async_sessionmaker] = None
+
+    def initialize(self) -> None:
+        """初始化主库和从库引擎"""
+        self._primary_engine = self._create_engine(
+            settings.database_url,
+            pool_size=settings.database_pool_size,
+            max_overflow=settings.database_max_overflow,
+        )
+        self._primary_session_factory = async_sessionmaker(
+            self._primary_engine,
+            class_=AsyncSession,
+            expire_on_commit=False,
+            autoflush=False,
+        )
+
+        # 如果配置了只读副本 URL，则创建副本引擎
+        if settings.database_read_replica_url:
+            self._replica_engine = self._create_engine(
+                settings.database_read_replica_url,
+                pool_size=settings.database_pool_size // 2,
+                max_overflow=settings.database_max_overflow // 2,
+                # 只读副本使用更短的超时
+                pool_recycle=settings.database_pool_recycle // 2,
+            )
+            self._replica_session_factory = async_sessionmaker(
+                self._replica_engine,
+                class_=AsyncSession,
+                expire_on_commit=False,
+                autoflush=False,
+            )
+            logger.info(f"读写分离已启用 | 主库 + 从库")
+        else:
+            self._replica_session_factory = None
+            logger.info(f"数据库单实例模式 | 未配置只读副本")
+
+        logger.info("DatabaseRouter 初始化完成")
+
+    async def close_all(self) -> None:
+        """关闭所有数据库连接"""
+        if self._primary_engine:
+            await self._primary_engine.dispose()
+        if self._replica_engine:
+            await self._replica_engine.dispose()
+        logger.info("DatabaseRouter 已关闭")
+
+    # ─── 会话获取 ───
+
+    @asynccontextmanager
+    async def get_session(
+        self,
+        mode: Literal["write", "read"] = "write",
+    ) -> AsyncGenerator[AsyncSession, None]:
+        """
+        获取数据库会话（自动路由）
+
+        Args:
+            mode: "write" 使用主库, "read" 使用从库（若有）
+
+        Yields:
+            AsyncSession
+        """
+        if mode == "read" and self._replica_session_factory:
+            factory = self._replica_session_factory
+        else:
+            factory = self._primary_session_factory
+
+        async with factory() as session:
+            try:
+                yield session
+                await session.commit()
+            except Exception:
+                await session.rollback()
+                raise
+            finally:
+                await session.close()
+
+    # ─── 写操作会话 ───
+
+    @asynccontextmanager
+    async def write_session(self) -> AsyncGenerator[AsyncSession, None]:
+        """获取主库写会话"""
+        async with self.get_session("write") as session:
+            yield session
+
+    # ─── 读操作会话 ───
+
+    @asynccontextmanager
+    async def read_session(self) -> AsyncGenerator[AsyncSession, None]:
+        """获取从库读会话（若无从库则回退到主库）"""
+        async with self.get_session("read") as session:
+            yield session
+
+    # ─── 显式事务 ───
+
+    @asynccontextmanager
+    async def transaction(self) -> AsyncGenerator[AsyncSession, None]:
+        """
+        开启显式事务（全部使用主库，保证一致性）
+
+        适用于：
+        - 需要在单个事务中执行多个操作
+        - 先读后写的场景（如变更审批流程）
+        """
+        async with self._primary_session_factory() as session:
+            try:
+                yield session
+                await session.commit()
+            except Exception:
+                await session.rollback()
+                raise
+            finally:
+                await session.close()
+
+    # ─── 健康检查 ───
+
+    async def check_health(self) -> dict:
+        """检查主从库健康状态"""
+        status = {"primary": False, "replica": False}
+
+        try:
+            async with self._primary_engine.connect() as conn:
+                await conn.execute(text("SELECT 1"))
+                status["primary"] = True
+        except Exception as e:
+            logger.error(f"主库健康检查失败: {e}")
+
+        if self._replica_engine:
+            try:
+                async with self._replica_engine.connect() as conn:
+                    await conn.execute(text("SELECT 1"))
+                    status["replica"] = True
+            except Exception as e:
+                logger.error(f"从库健康检查失败: {e}")
+
+        return status
+
+    # ─── 内部方法 ───
+
+    @staticmethod
+    def _create_engine(
+        database_url: str,
+        pool_size: int = 20,
+        max_overflow: int = 10,
+        pool_recycle: int = 1800,
+    ) -> AsyncEngine:
+        """创建异步数据库引擎"""
+        return create_async_engine(
+            database_url,
+            echo=settings.debug,
+            future=True,
+            pool_size=pool_size,
+            max_overflow=max_overflow,
+            pool_timeout=settings.database_pool_timeout,
+            pool_recycle=pool_recycle,
+            pool_pre_ping=settings.database_pool_pre_ping,
+            connect_args={
+                "server_settings": {
+                    "application_name": "rmfood",
+                    "jit": "off",
+                    "client_encoding": "UTF8",
+                },
+            },
+        )
+
+
+# 全局数据库路由器实例
+router = DatabaseRouter()

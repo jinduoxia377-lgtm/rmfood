@@ -1,0 +1,519 @@
+/**
+ * Responsive Layout Optimization System
+ * 智能对话模块 - 响应式布局优化系统
+ *
+ * 断点定义 (基于UI/UX Pro Max最佳实践)：
+ * 📱 移动端 Mobile: ≤ 767px  (max-width: 767px)
+ * 📱 平板端 Tablet: 768px - 1199px  (min-width: 768px, max-width: 1199px)
+ * 💻 桌面端 Desktop: ≥ 1200px  (min-width: 1200px)
+ * 🖥 超宽屏 Ultrawide: ≥ 1536px  (min-width: 1536px)
+ *
+ * 设计原则：
+ * ✅ Mobile-First 移动优先策略
+ * ✅ 触控目标最小44×44px (移动端)
+ * ✅ 内容密度自适应
+ * ✅ 字体大小渐进增强
+ * ✅ 间距系统8px网格
+ * ✅ 安全区域适配 (notch, home indicator)
+ * ✅ 横屏模式支持
+ *
+ * @version 2.0.0
+ * @lastUpdated 2026-05-20
+ */
+
+/* ============================================
+   CSS Custom Properties - 响应式变量
+   ============================================ */
+
+:root {
+  /* ===== 容器宽度 Container Widths ===== */
+  --responsive-container-mobile: 100%;
+  --responsive-container-tablet: 90%;
+  --responsive-container-desktop: 85%;
+  --responsive-container-max-width: 1200px;
+
+  /* ===== 间距响应式 Spacing Scale ===== */
+  --responsive-padding-x-mobile: 1rem;
+  --responsive-padding-x-tablet: 1.5rem;
+  --responsive-padding-x-desktop: 2rem;
+
+  --responsive-padding-y-mobile: 0.75rem;
+  --responsive-padding-y-tablet: 1rem;
+  --responsive-padding-y-desktop: 1.5rem;
+
+  /* ===== 字体大小响应式 Typography Scale ===== */
+  --responsive-font-size-h1-mobile: 1.5rem;     /* 24px */
+  --responsive-font-size-h1-tablet: 1.75rem;    /* 28px */
+  --responsive-font-size-h1-desktop: 2rem;      /* 32px */
+
+  --responsive-font-size-h2-mobile: 1.25rem;    /* 20px */
+  --responsive-font-size-h2-tablet: 1.5rem;     /* 24px */
+  --responsive-font-size-h2-desktop: 1.75rem;   /* 28px */
+
+  --responsive-font-size-body-mobile: 0.9375rem; /* 15px - 防止iOS自动缩放 */
+  --responsive-font-size-body-tablet: 1rem;      /* 16px */
+  --responsive-font-size-body-desktop: 1rem;     /* 16px */
+
+  --responsive-font-size-small-mobile: 0.8125rem; /* 13px */
+  --responsive-font-size-small-tablet: 0.875rem;  /* 14px */
+  --responsive-font-size-small-desktop: 0.875rem; /* 14px */
+
+  /* ===== 输入框尺寸 Input Dimensions ===== */
+  --responsive-input-height-mobile: 48px;       /* 最小触控高度 */
+  --responsive-input-height-tablet: 52px;
+  --responsive-input-height-desktop: 56px;
+
+  --responsive-input-min-width-mobile: 100%;
+  --responsive-input-min-width-tablet: 400px;
+  --responsive-input-min-width-desktop: 500px;
+
+  /* ===== 卡片尺寸 Card Dimensions ===== */
+  --responsive-card-max-width-mobile: 100%;
+  --responsive-card-max-width-tablet: 90%;
+  --responsive-card-max-width-desktop: 400px;
+
+  --responsive-card-padding-mobile: 1.25rem;
+  --responsive-card-padding-tablet: 1.5rem;
+  --responsive-card-padding-desktop: 2rem;
+
+  /* ===== 触控目标 Touch Targets (移动端优化) ===== */
+  --responsive-touch-target-min: 44px;
+  --responsive-touch-spacing: 8px;
+
+  /* ===== 空状态组件尺寸 Empty State Sizes ===== */
+  --responsive-empty-state-height-mobile: 40vh;
+  --responsive-empty-state-height-tablet: 50vh;
+  --responsive-empty-state-height-desktop: 55vh;
+
+  --responsive-empty-state-icon-mobile: 3rem;    /* 48px */
+  --responsive-empty-state-icon-tablet: 3.5rem;  /* 56px */
+  --responsive-empty-state-icon-desktop: 4rem;   /* 64px */
+
+  /* ===== 提示词库布局 Prompt Library Layout ===== */
+  --responsive-sidebar-width-mobile: 100%;        /* 全屏抽屉 */
+  --responsive-sidebar-width-tablet: 280px;
+  --responsive-sidebar-width-desktop: 256px;
+
+  --responsive-grid-columns-mobile: 1;
+  --responsive-grid-columns-tablet: 2;
+  --responsive-grid-columns-desktop: 2;
+}
+
+/* ============================================
+   Base Styles - 基础样式 (Mobile First)
+   ============================================ */
+
+/* 主容器 */
+.chat-tab-container {
+  width: 100%;
+  height: 100%;
+  height: 100dvh; /* 动态视口高度，适配移动浏览器 */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: var(--responsive-padding-x-mobile);
+  padding-top: calc(var(--responsive-padding-y-mobile) + env(safe-area-inset-top, 0));
+  padding-bottom: calc(var(--responsive-padding-y-mobile) + env(safe-area-inset-bottom, 0));
+}
+
+/* 头部栏 */
+.chat-header {
+  flex-shrink: 0;
+  padding: var(--responsive-padding-y-mobile) var(--responsive-padding-x-mobile);
+  min-height: auto;
+}
+
+/* 主内容区 */
+.chat-main-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch; /* iOS平滑滚动 */
+  padding: var(--responsive-space-4);
+}
+
+/* 输入区域容器 */
+.chat-input-container {
+  flex-shrink: 0;
+  padding: var(--responsive-padding-y-mobile) var(--responsive-padding-x-mobile);
+  border-top: 1px solid var(--a11y-border-default);
+  margin-top: var(--responsive-space-6);
+}
+
+/* ============================================
+   Empty State Component - 响应式样式
+   ============================================ */
+
+.empty-state-responsive {
+  min-height: var(--responsive-empty-state-height-mobile);
+  padding: var(--responsive-padding-x-mobile);
+  max-width: var(--responsive-container-mobile);
+}
+
+.empty-state-card-responsive {
+  width: var(--responsive-card-max-width-mobile);
+  padding: var(--responsive-card-padding-mobile);
+  border-radius: 1rem;
+}
+
+.empty-state-icon-responsive {
+  width: var(--responsive-empty-state-icon-mobile);
+  height: var(--responsive-empty-state-icon-mobile);
+}
+
+/* ============================================
+   Chat Input Area - 响应式样式
+   ============================================ */
+
+.chat-input-responsive {
+  width: 100%;
+  min-height: var(--responsive-input-height-mobile);
+  padding-left: var(--space-md);   /* 16px */
+  padding-right: 6rem;            /* 为按钮留出空间 */
+  padding-top: var(--space-md);   /* 16px */
+  padding-bottom: var(--space-md); /* 16px */
+  font-size: var(--responsive-font-size-body-mobile);
+  line-height: var(--a11y-line-height-normal);
+}
+
+/* 发送按钮 */
+.chat-send-button-responsive {
+  min-width: 88px;
+  min-height: var(--responsive-input-height-mobile);
+  font-size: var(--responsive-font-size-small-mobile);
+}
+
+/* ============================================
+   Prompt Library - 响应式样式
+   ============================================ */
+
+.prompt-library-modal {
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  margin: 0;
+  border-radius: 0;
+  max-height: none;
+}
+
+.prompt-library-sidebar {
+  display: none; /* 移动端隐藏侧边栏 */
+}
+
+.prompt-library-grid {
+  grid-template-columns: repeat(var(--responsive-grid-columns-mobile), 1fr);
+  gap: var(--responsive-space-3);
+}
+
+/* ============================================
+   Tablet Breakpoint (≥ 768px)
+   平板端优化
+   ============================================ */
+
+@media (min-width: 768px) and (max-width: 1199px) {
+  :root {
+    --responsive-padding-x-mobile: 1.5rem;
+    --responsive-padding-y-mobile: 1rem;
+  }
+
+  .chat-tab-container {
+    padding: var(--responsive-padding-x-tablet);
+  }
+
+  .chat-header {
+    padding: var(--responsive-padding-y-tablet) var(--responsive-padding-x-tablet);
+  }
+
+  .chat-main-content {
+    padding: var(--responsive-space-6);
+  }
+
+  .chat-input-container {
+    padding: var(--responsive-padding-y-tablet) var(--responsive-padding-x-tablet);
+  }
+
+  .empty-state-responsive {
+    min-height: var(--responsive-empty-state-height-tablet);
+    max-width: var(--responsive-container-tablet);
+    padding: var(--responsive-padding-x-tablet);
+  }
+
+  .empty-state-card-responsive {
+    max-width: var(--responsive-card-max-width-tablet);
+    padding: var(--responsive-card-padding-tablet);
+    border-radius: 1.25rem;
+  }
+
+  .empty-state-icon-responsive {
+    width: var(--responsive-empty-state-icon-tablet);
+    height: var(--responsive-empty-state-icon-tablet);
+  }
+
+  .chat-input-responsive {
+    min-height: var(--responsive-input-height-tablet);
+    font-size: var(--responsive-font-size-body-tablet);
+    padding-left: var(--space-lg);   /* 20px */
+    padding-right: 7rem;
+    padding-top: var(--space-lg);   /* 20px */
+    padding-bottom: var(--space-lg); /* 20px */
+  }
+
+  .chat-send-button-responsive {
+    min-width: 104px;
+    min-height: var(--responsive-input-height-tablet);
+    font-size: var(--responsive-font-size-small-tablet);
+  }
+
+  .prompt-library-modal {
+    width: 95vw;
+    height: 90vh;
+    margin: auto;
+    border-radius: 1.5rem;
+    max-height: 85vh;
+  }
+
+  .prompt-library-sidebar {
+    display: block;
+    width: var(--responsive-sidebar-width-tablet);
+  }
+
+  .prompt-library-grid {
+    grid-template-columns: repeat(var(--responsive-grid-columns-tablet), 1fr);
+    gap: var(--responsive-space-4);
+  }
+}
+
+/* ============================================
+   Desktop Breakpoint (≥ 1200px)
+   桌面端优化
+   ============================================ */
+
+@media (min-width: 1200px) {
+  :root {
+    --responsive-padding-x-mobile: 2rem;
+    --responsive-padding-y-mobile: 1.5rem;
+  }
+
+  .chat-tab-container {
+    padding: var(--responsive-padding-x-desktop);
+    max-width: var(--responsive-container-max-width);
+    margin: 0 auto;
+  }
+
+  .chat-header {
+    padding: var(--responsive-padding-y-desktop) var(--responsive-padding-x-desktop);
+  }
+
+  .chat-main-content {
+    padding: var(--responsive-space-8);
+  }
+
+  .chat-input-container {
+    padding: var(--responsive-padding-y-desktop) var(--responsive-padding-x-desktop);
+  }
+
+  .empty-state-responsive {
+    min-height: var(--responsive-empty-state-height-desktop);
+    max-width: var(--responsive-container-desktop);
+    padding: var(--responsive-padding-x-desktop);
+  }
+
+  .empty-state-card-responsive {
+    max-width: var(--responsive-card-max-width-desktop);
+    padding: var(--responsive-card-padding-desktop);
+    border-radius: 1.5rem;
+  }
+
+  .empty-state-icon-responsive {
+    width: var(--responsive-empty-state-icon-desktop);
+    height: var(--responsive-empty-state-icon-desktop);
+  }
+
+  .chat-input-responsive {
+    min-height: var(--responsive-input-height-desktop);
+    font-size: var(--responsive-font-size-body-desktop);
+    padding-left: var(--space-xl);   /* 24px */
+    padding-right: 8rem;
+    padding-top: var(--space-xl);   /* 24px */
+    padding-bottom: var(--space-xl); /* 24px */
+  }
+
+  .chat-send-button-responsive {
+    min-width: 120px;
+    min-height: var(--responsive-input-height-desktop);
+    font-size: var(--responsive-font-size-base);
+  }
+
+  .prompt-library-modal {
+    width: 90vw;
+    max-width: 1400px;
+    height: 85vh;
+    margin: auto;
+    border-radius: 1.5rem;
+  }
+
+  .prompt-library-sidebar {
+    width: var(--responsive-sidebar-width-desktop);
+  }
+
+  .prompt-library-grid {
+    grid-template-columns: repeat(var(--responsive-grid-columns-desktop), 1fr);
+    gap: var(--responsive-space-5);
+  }
+}
+
+/* ============================================
+   Ultrawide Breakpoint (≥ 1536px)
+   超宽屏优化
+   ============================================ */
+
+@media (min-width: 1536px) {
+  .chat-tab-container {
+    max-width: 1440px;
+  }
+
+  .prompt-library-modal {
+    max-width: 1600px;
+  }
+
+  .prompt-library-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ============================================
+   Small Mobile (< 480px) - 小屏手机特殊处理
+   ============================================ */
+
+@media (max-width: 479px) {
+  .chat-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--responsive-space-3);
+  }
+
+  .chat-header > div:first-child {
+    justify-content: center;
+  }
+
+  .chat-header > div:last-child {
+    justify-content: center;
+  }
+
+  .empty-state-card-responsive {
+    padding: var(--responsive-space-4);
+  }
+
+  .chat-send-button-responsive {
+    flex: 1;
+  }
+
+  /* 触控区域放大 */
+  button,
+  [role="button"],
+  input[type="checkbox"],
+  input[type="radio"] {
+    min-height: var(--responsive-touch-target-min);
+    min-width: var(--responsive-touch-target-min);
+  }
+}
+
+/* ============================================
+   Landscape Orientation - 横屏模式适配
+   ============================================
+
+@media (orientation: landscape) and (max-height: 500px) {
+  .empty-state-responsive {
+    min-height: 70vh;
+    padding-top: var(--responsive-space-4);
+    padding-bottom: var(--responsive-space-4);
+  }
+
+  .chat-main-content {
+    max-height: calc(100vh - 200px);
+  }
+
+  .chat-input-container {
+    padding-top: var(--responsive-space-2);
+    padding-bottom: var(--responsive-space-2);
+  }
+}
+*/
+
+/* ============================================
+   Safe Area Support - 安全区域适配
+   (iPhone X+, notch devices)
+   ============================================ */
+
+@supports (padding: env(safe-area-inset-top)) {
+  .chat-header {
+    padding-top: calc(var(--responsive-padding-y-mobile) + env(safe-area-inset-top));
+  }
+
+  .chat-input-container {
+    padding-bottom: calc(var(--responsive-padding-y-mobile) + env(safe-area-inset-bottom));
+  }
+
+  .empty-state-responsive {
+    padding-left: calc(var(--responsive-padding-x-mobile) + env(safe-area-inset-left));
+    padding-right: calc(var(--responsive-padding-x-mobile) + env(safe-area-inset-right));
+  }
+}
+
+/* ============================================
+   Print Styles - 打印优化
+   ============================================ */
+
+@media print {
+  .chat-tab-container,
+  .chat-header,
+  .chat-input-container,
+  .empty-state-responsive {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    box-shadow: none !important;
+    background: white !important;
+    color: black !important;
+  }
+
+  .prompt-library-modal {
+    position: static !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+}
+
+/* ============================================
+   High DPI / Retina Displays - 高分屏优化
+   ============================================
+
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .chat-input-responsive,
+  .empty-state-card-responsive {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+*/
+
+/* ============================================
+   Touch Device Optimizations - 触控设备优化
+   ============================================
+
+@media (hover: none) and (pointer: coarse) {
+  /* 增大点击区域 */
+  .chat-input-responsive {
+    min-height: calc(var(--responsive-touch-target-min) * 1.2);
+  }
+
+  /* 移除hover依赖的交互 */
+  .prompt-card:hover {
+    transform: none;
+  }
+
+  /* 显示所有操作按钮（不依赖hover） */
+  .prompt-card-actions {
+    opacity: 1 !important;
+  }
+}

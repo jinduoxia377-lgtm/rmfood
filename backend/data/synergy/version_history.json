@@ -1,0 +1,188 @@
+{
+  "versions": [
+    {
+      "version": 1,
+      "timestamp": "2026-05-03 17:28:39.866054",
+      "source": "test_literature",
+      "changes_count": 2,
+      "description": "导入 2 个新系数，更新 0 个现有系数",
+      "checksum": "2513a3f885aa"
+    },
+    {
+      "version": 2,
+      "timestamp": "2026-05-03 19:41:46.838011",
+      "source": "unit_test",
+      "changes_count": 1,
+      "description": "导入 1 个新系数，更新 0 个现有系数",
+      "checksum": "2b6096cbb433"
+    },
+    {
+      "version": 3,
+      "timestamp": "2026-05-03 19:45:42.603749",
+      "source": "unit_test",
+      "changes_count": 1,
+      "description": "导入 0 个新系数，更新 1 个现有系数",
+      "checksum": "2b6096cbb433"
+    },
+    {
+      "version": 4,
+      "timestamp": "2026-05-03 20:03:37.965919",
+      "source": "unit_test",
+      "changes_count": 1,
+      "description": "导入 0 个新系数，更新 1 个现有系数",
+      "checksum": "2b6096cbb433"
+    },
+    {
+      "version": 5,
+      "timestamp": "2026-05-03 20:03:37.976505",
+      "source": "version_test",
+      "changes_count": 1,
+      "description": "导入 1 个新系数，更新 0 个现有系数",
+      "checksum": "91eefc9a0287"
+    },
+    {
+      "version": 6,
+      "timestamp": "2026-05-03 20:05:52.137423",
+      "source": "unit_test",
+      "changes_count": 1,
+      "description": "导入 0 个新系数，更新 1 个现有系数",
+      "checksum": "2b6096cbb433"
+    },
+    {
+      "version": 7,
+      "timestamp": "2026-05-03 20:05:52.148199",
+      "source": "version_test",
+      "changes_count": 1,
+      "description": "导入 0 个新系数，更新 1 个现有系数",
+      "checksum": "91eefc9a0287"
+    },
+    {
+      "version": 8,
+      "timestamp": "2026-05-03 20:19:56.922324",
+      "source": "unit_test",
+      "changes_count": 1,
+      "description": "导入 0 个新系数，更新 1 个现有系数",
+      "checksum": "2b6096cbb433"
+    },
+    {
+      "version": 9,
+      "timestamp": "2026-05-03 20:19:56.934619",
+      "source": "version_test",
+      "changes_count": 1,
+      "description": "导入 0 个新系数，更新 1 个现有系数",
+      "checksum": "91eefc9a0287"
+    },
+    {
+      "version": 10,
+      "timestamp": "2026-05-03 20:20:29.627484",
+      "source": "unit_test",
+      "changes_count": 1,
+      "description": "导入 0 个新系数，更新 1 个现有系数",
+      "checksum": "2b6096cbb433"
+    },
+    {
+      "version": 11,
+      "timestamp": "2026-05-03 20:20:29.640043",
+      "source": "version_test",
+      "changes_count": 1,
+      "description": "导入 0 个新系数，更新 1 个现有系数",
+      "checksum": "91eefc9a0287"
+    },
+    {
+      "version": 12,
+      "timestamp": "2026-05-03 20:21:11.990043",
+      "source": "unit_test",
+      "changes_count": 1,
+      "description": "导入 0 个新系数，更新 1 个现有系数",
+      "checksum": "2b6096cbb433"
+    },
+    {
+      "version": 13,
+      "timestamp": "2026-05-03 20:21:12.003914",
+      "source": "version_test",
+      "changes_count": 1,
+      "description": "导入 0 个新系数，更新 1 个现有系数",
+      "checksum": "91eefc9a0287"
+    },
+    {
+      "version": 14,
+      "timestamp": "2026-05-03 20:21:57.639835",
+      "source": "unit_test",
+      "changes_count": 1,
+      "description": "导入 0 个新系数，更新 1 个现有系数",
+      "checksum": "2b6096cbb433"
+    },
+    {
+      "version": 15,
+      "timestamp": "2026-05-03 20:21:57.653831",
+      "source": "version_test",
+      "changes_count": 1,
+      "description": "导入 0 个新系数，更新 1 个现有系数",
+      "checksum": "91eefc9a0287"
+    },
+    {
+      "version": 16,
+      "timestamp": "2026-05-03 20:25:26.228278",
+      "source": "unit_test",
+      "changes_count": 1,
+      "description": "导入 0 个新系数，更新 1 个现有系数",
+      "checksum": "2b6096cbb433"
+    },
+    {
+      "version": 17,
+      "timestamp": "2026-05-03 20:25:26.247954",
+      "source": "version_test",
+      "changes_count": 1,
+      "description": "导入 0 个新系数，更新 1 个现有系数",
+      "checksum": "91eefc9a0287"
+    },
+    {
+      "version": 18,
+      "timestamp": "2026-05-14 11:47:59.808721",
+      "source": "unit_test",
+      "changes_count": 1,
+      "description": "导入 0 个新系数，更新 1 个现有系数",
+      "checksum": "2b6096cbb433"
+    },
+    {
+      "version": 19,
+      "timestamp": "2026-05-14 11:47:59.854172",
+      "source": "version_test",
+      "changes_count": 1,
+      "description": "导入 0 个新系数，更新 1 个现有系数",
+      "checksum": "91eefc9a0287"
+    },
+    {
+      "version": 20,
+      "timestamp": "2026-05-14 15:53:23.188527",
+      "source": "unit_test",
+      "changes_count": 1,
+      "description": "导入 0 个新系数，更新 1 个现有系数",
+      "checksum": "2b6096cbb433"
+    },
+    {
+      "version": 21,
+      "timestamp": "2026-05-14 15:53:23.198477",
+      "source": "version_test",
+      "changes_count": 1,
+      "description": "导入 0 个新系数，更新 1 个现有系数",
+      "checksum": "91eefc9a0287"
+    },
+    {
+      "version": 22,
+      "timestamp": "2026-05-14 16:43:12.319694",
+      "source": "unit_test",
+      "changes_count": 1,
+      "description": "导入 0 个新系数，更新 1 个现有系数",
+      "checksum": "2b6096cbb433"
+    },
+    {
+      "version": 23,
+      "timestamp": "2026-05-14 16:43:12.332661",
+      "source": "version_test",
+      "changes_count": 1,
+      "description": "导入 0 个新系数，更新 1 个现有系数",
+      "checksum": "91eefc9a0287"
+    }
+  ]
+}

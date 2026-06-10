@@ -1,0 +1,110 @@
+{
+  "metadata": {
+    "version": "1.0.0",
+    "lastUpdated": "2026-05-17",
+    "description": "药食同源成分配伍禁忌与协同知识库",
+    "sources": ["本草纲目", "中药学", "现代药理研究"],
+    "totalRules": 0
+  },
+  "categories": {
+    "synergistic_pairs": {
+      "description": "协同配伍 - 增强功效",
+      "examples": []
+    },
+    "antagonistic_pairs": {
+      "description": "相克配伍 - 降低毒性或副作用",
+      "examples": []
+    },
+    "contraindicated_pairs": {
+      "description": "禁忌配伍 - 不宜同用",
+      "examples": []
+    }
+  },
+  "rules": [],
+  "pair_rules": [
+    {
+      "id": "SP001",
+      "type": "synergistic",
+      "ingredients": ["枸杞", "菊花"],
+      "effect": "清肝明目",
+      "mechanism": "枸杞滋补肝肾，菊花清肝明目，二者配伍协同增效",
+      "clinical_evidence": "传统中医配伍理论",
+      "safety_level": "safe"
+    },
+    {
+      "id": "SP002",
+      "type": "synergistic",
+      "ingredients": ["人参", "黄芪"],
+      "effect": "补气固表",
+      "mechanism": "人参大补元气，黄芪益气固表，配伍增强补气效果",
+      "clinical_evidence": "中医临床实践",
+      "safety_level": "safe"
+    },
+    {
+      "id": "AP001",
+      "type": "antagonistic",
+      "ingredients": ["甘草", "海藻"],
+      "effect": "降低海藻寒性",
+      "mechanism": "甘草调和诸药，缓解海藻的寒性",
+      "clinical_evidence": "十八反记载",
+      "safety_level": "caution"
+    },
+    {
+      "id": "CP001",
+      "type": "contraindicated",
+      "ingredients": ["甘草", "甘遂"],
+      "effect": "产生毒性反应",
+      "mechanism": "相反配伍，增加毒性",
+      "clinical_evidence": "十八反禁忌",
+      "safety_level": "prohibited"
+    },
+    {
+      "id": "CP002",
+      "type": "contraindicated",
+      "ingredients": ["人参", "莱菔子"],
+      "effect": "降低人参补气功效",
+      "mechanism": "莱菔子破气，抵消人参的补气作用",
+      "clinical_evidence": "中医配伍禁忌",
+      "safety_level": "prohibited"
+    }
+  ],
+  "group_compatibility": {
+    "tonic_group": {
+      "ingredients": ["人参", "黄芪", "党参", "枸杞", "山药"],
+      "characteristics": "补益类药食同源成分",
+      "synergies": ["可相互配伍增强补益效果"],
+      "contraindications": ["实热证患者慎用"]
+    },
+    "cooling_group": {
+      "ingredients": ["菊花", "金银花", "夏枯草", "薄荷"],
+      "characteristics": "清热类药食同源成分",
+      "synergies": ["可配合使用增强清热效果"],
+      "contraindications": ["脾胃虚寒者慎用"]
+    }
+  },
+  "modern_research": {
+    "synergistic_interactions": [
+      {
+        "ingredients": ["姜黄", "胡椒"],
+        "effect": "提高姜黄素生物利用度",
+        "evidence_level": "high",
+        "mechanism": "胡椒碱抑制姜黄素代谢酶，增强吸收"
+      }
+    ],
+    "antagonistic_interactions": []
+  },
+  "safety_warnings": [
+    {
+      "category": "pregnancy",
+      "ingredients": ["当归", "川芎", "红花"],
+      "warning": "孕妇慎用或禁用",
+      "severity": "high"
+    },
+    {
+      "category": "anticoagulation",
+      "ingredients": ["丹参", "银杏", "当归"],
+      "warning": "具有抗凝血作用，与抗凝药物同用需谨慎",
+      "severity": "medium"
+    }
+  ]
+}
