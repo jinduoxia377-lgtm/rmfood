@@ -16,6 +16,8 @@ from typing import Any, Dict, List, Optional, Tuple
 import hashlib
 import time
 
+from app.core.logging_config import logger
+
 
 try:
     import msgpack
@@ -465,7 +467,7 @@ class SyncProtocol:
                 except asyncio.CancelledError:
                     break
                 except Exception as e:
-                    print(f"[SyncProtocol] 心跳异常 ({device_id}): {e}")
+                    logger.warning(f"[SyncProtocol] 心跳异常 ({device_id}): {e}")
                     await asyncio.sleep(5)
 
         task = asyncio.create_task(_heartbeat_loop())

@@ -62,11 +62,11 @@ class ErrorAlertSystem:
         
         # 这里可以集成邮件、短信、Webhook等通知方式
         logger.critical(alert_message)
-        
-        # 示例：打印预警信息
-        print("\n" + "="*60)
-        print(alert_message)
-        print("="*60 + "\n")
+
+        # 预警信息也通过日志输出
+        logger.critical("\n" + "="*60)
+        logger.critical(alert_message)
+        logger.critical("="*60 + "\n")
     
     def get_error_stats(self, hours: int = 24) -> Dict:
         """获取错误统计信息"""

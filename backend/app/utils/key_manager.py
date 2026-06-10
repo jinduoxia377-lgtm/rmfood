@@ -12,6 +12,8 @@ from datetime import datetime, timezone, timedelta
 from typing import Any, Dict, List, Optional, Tuple
 from dataclasses import dataclass, field
 
+from app.core.logging_config import logger
+
 try:
     from cryptography.hazmat.primitives.kdf.hkdf import HKDF
     from cryptography.hazmat.primitives import hashes
@@ -416,7 +418,7 @@ class KeyManager:
             return entry
             
         except Exception as e:
-            print(f"[KeyManager] 归档密钥失败: {e}")
+            logger.error(f"[KeyManager] 归档密钥失败: {e}")
             return None
 
     def _cleanup_expired_archives(self) -> int:

@@ -10,6 +10,8 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Dict, List, Optional, Tuple
 
+from app.core.logging_config import logger
+
 
 class SeverityLevel(str, Enum):
     """严重级别"""
@@ -125,7 +127,7 @@ class PromptSyntaxChecker:
                     "compiled_pattern": compiled_pattern,
                 })
             except re.error as e:
-                print(f"⚠️ 正则表达式编译失败 [{rule['id']}]: {e}")
+                logger.warning(f"⚠️ 正则表达式编译失败 [{rule['id']}]: {e}")
 
     def check(self, prompt_text: str) -> List[SyntaxIssue]:
         """

@@ -12,6 +12,8 @@ from typing import Any, Dict, List, Optional, Set
 import asyncio
 import time
 
+from app.core.logging_config import logger
+
 
 class ChangeType(str, Enum):
     """变更类型枚举"""
@@ -385,7 +387,7 @@ async def batch_detect_changes(
     all_changes: List[SyncChange] = []
     for result in results:
         if isinstance(result, Exception):
-            print(f"[DiffDetector] 批量检测异常: {result}")
+            logger.warning(f"[DiffDetector] 批量检测异常: {result}")
             continue
         all_changes.extend(result)
     

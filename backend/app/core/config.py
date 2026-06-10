@@ -156,11 +156,10 @@ class Settings(BaseSettings):
                 v = secrets.token_urlsafe(48)
                 # 安全输出：只显示部分掩码，避免完整密钥泄露到日志
                 masked_key = f"{v[:8]}...{v[-4:]}"
-                import sys
-                print(f"\n{'='*60}", file=sys.stderr)
-                print(f"⚠️  [开发模式] 自动生成 SECRET_KEY: {masked_key}", file=sys.stderr)
-                print(f"   完整值已写入 .env 文件，请勿分享日志！", file=sys.stderr)
-                print(f"{'='*60}\n", file=sys.stderr)
+                logger.warning(f"\n{'='*60}")
+                logger.warning(f"⚠️  [开发模式] 自动生成 SECRET_KEY: {masked_key}")
+                logger.warning(f"   完整值已写入 .env 文件，请勿分享日志！")
+                logger.warning(f"{'='*60}\n")
 
                 # 自动将生成的密钥写入.env文件（如果存在）
                 try:
@@ -232,12 +231,11 @@ class Settings(BaseSettings):
                 
                 # 安全输出：只显示部分掩码
                 masked_pwd = f"{v[:4]}****{v[-4:]}"
-                import sys
-                print(f"\n{'='*60}", file=sys.stderr)
-                print(f"⚠️  [开发模式] 自动生成 ADMIN_PASSWORD: {masked_pwd}", file=sys.stderr)
-                print(f"   用户名: admin", file=sys.stderr)
-                print(f"   ⚠️ 完整密码已保存至 .env 文件，请勿泄露日志！", file=sys.stderr)
-                print(f"{'='*60}\n", file=sys.stderr)
+                logger.warning(f"\n{'='*60}")
+                logger.warning(f"⚠️  [开发模式] 自动生成 ADMIN_PASSWORD: {masked_pwd}")
+                logger.warning(f"   用户名: admin")
+                logger.warning(f"   ⚠️ 完整密码已保存至 .env 文件，请勿泄露日志！")
+                logger.warning(f"{'='*60}\n")
 
                 # 自动将生成的密码写入.env文件（如果存在）
                 try:

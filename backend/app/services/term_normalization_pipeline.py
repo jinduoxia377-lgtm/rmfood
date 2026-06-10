@@ -7,6 +7,8 @@ import re
 import string
 from collections import OrderedDict
 
+from app.core.logging_config import logger
+
 
 @dataclass
 class PipelineStep:
@@ -96,7 +98,7 @@ class TermNormalizationPipeline:
                 try:
                     result = step.transform(result)
                 except Exception as e:
-                    print(f"Error in step {step_name}: {e}")
+                    logger.error(f"Error in step {step_name}: {e}")
         
         return result
     
