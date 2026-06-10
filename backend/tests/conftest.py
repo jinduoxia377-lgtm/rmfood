@@ -24,11 +24,13 @@ from sqlalchemy.pool import StaticPool
 from app.main import app
 from app.core.database import Base
 from app.core.session import get_db
+from app.api.deps import get_db_session
 from app.models.user_model import User
 from app.models.formula import Formula
 from app.models.experiment import Experiment
 from app.models.enums import UserRole, FormulaStatus, ExperimentStatus
-from app.utils.auth import get_password_hash, create_access_token
+from app.utils.auth import get_password_hash
+from app.services.auth import create_access_token
 
 
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
@@ -95,6 +97,7 @@ async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
         yield db_session
 
     app.dependency_overrides[get_db] = override_get_db
+    app.dependency_overrides[get_db_session] = override_get_db
 
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:

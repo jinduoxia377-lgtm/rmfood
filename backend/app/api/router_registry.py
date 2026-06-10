@@ -138,20 +138,7 @@ class RouterRegistry:
                     module_info.name,
                 )
 
-            # 确定标签
-            tags = getattr(module, "__tags__", None) or TAG_OVERRIDES.get(
-                module_info.name, [module_info.name.replace("_", " ").title()]
-            )
-
-            # 确定是否关键
-            is_critical = getattr(module, "__critical__", False) or module_info.name in CRITICAL_MODULES
-
-            # v1 模块使用 v1 前缀
-            registry_key = f"v1.{module_info.name}" if is_v1 else module_info.name
-            self._routers[registry_key] = (router, tags, is_critical)
-
-            status = "🔴 critical" if is_critical else "🟢 lazy"
-            logger.debug(f"  发现路由: {registry_key} ({status})")
+            # 标签和注册已在 if/else 分支中处理
 
     def _load_deferred_modules(self) -> None:
         """加载延迟模块（非关键路由，首次注册时才导入）"""
