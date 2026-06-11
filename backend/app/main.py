@@ -178,7 +178,7 @@ Authorization: Bearer <your_access_token>
 - **文档地址**: /docs (开发环境) | /redoc (生产环境只读)
         """,
         version=settings.app_version,
-        docs_url="/docs" if settings.debug else "/docs",  # 生产环境也可访问（只读）
+        docs_url=None,  # 使用自定义 /docs 路由（本地静态资源）
         redoc_url="/redoc" if settings.debug else None,
         openapi_tags=[
             {
@@ -329,6 +329,41 @@ Authorization: Bearer <your_access_token>
     uploads_dir = "uploads"
     os.makedirs(uploads_dir, exist_ok=True)
     app.mount("/uploads", StaticFiles(directory=uploads_dir), name="uploads")
+    app.mount("/static", StaticFiles(directory="static"), name="static")
+
+    # ── 自定义 /docs (使用本地静态资源，避免 CDN 依赖) ──
+    from fastapi.responses import HTMLResponse
+
+    @app.get("/docs", tags=["文档"])
+    async def swagger_docs():
+        return HTMLResponse(content="""<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link type="text/css" rel="stylesheet" href="/static/swagger-ui.css">
+<link rel="shortcut icon" href="https://fastapi.tiangolo.com/img/favicon.png">
+<title>""" + settings.app_name + """ - Swagger UI</title>
+</head>
+<body>
+<div id="swagger-ui"></div>
+<script src="/static/swagger-ui-bundle.js"></script>
+<script>
+const ui = SwaggerUIBundle({
+    url: '/openapi.json',
+    dom_id: "#swagger-ui",
+    layout: "BaseLayout",
+    deepLinking: true,
+    showExtensions: true,
+    showCommonExtensions: true,
+    oauth2RedirectUrl: window.location.origin + '/docs/oauth2-redirect',
+    presets: [
+        SwaggerUIBundle.presets.apis,
+        SwaggerUIBundle.SwaggerUIStandalonePreset
+    ],
+})
+</script>
+</body>
+</html>""")
 
     # ── 根路径 ──
     @app.get("/", tags=["系统"])
