@@ -207,6 +207,9 @@ frontend/count_*.py
 # ---- 第三方技能目录（不应在项目中） ----
 andrej-karpathy-skills/
 
+# ---- 归档脚本（已归档，不再跟踪） ----
+scripts/archive/
+
 # ---- AI 对话参考资料（大文件，不应提交） ----
 AI 助手对话方式/
 
