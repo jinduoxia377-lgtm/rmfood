@@ -5,22 +5,18 @@ import os
 # 添加项目路径
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-# 直接导入模块，避免包级导入问题
-import importlib.util
-
-spec = importlib.util.spec_from_file_location(
-    "safety_alert_system",
-    "d:/RMFOOD配方平台/backend/app/services/formula/safety_alert_system.py"
+# 导入安全预警系统模块
+from app.services.formula.safety_alert_system import (
+    SafetyAlertSystem,
+    BUILT_IN_THRESHOLDS,
+    AlertLevel,
+    SafetyThreshold,
+    SafetyAlert,
+    SafetyCheckResult,
 )
-safety_module = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(safety_module)
 
-SafetyAlertSystem = safety_module.SafetyAlertSystem
-BUILT_IN_THRESHOLDS = safety_module.BUILT_IN_THRESHOLDS
-AlertLevel = safety_module.AlertLevel
-SafetyThreshold = safety_module.SafetyThreshold
-SafetyAlert = safety_module.SafetyAlert
-SafetyCheckResult = safety_module.SafetyCheckResult
+# 兼容旧代码中对 safety_module 的引用
+import app.services.formula.safety_alert_system as safety_module
 
 print("=" * 70)
 print("SafetyAlertSystem 功能验证")

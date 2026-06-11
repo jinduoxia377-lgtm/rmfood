@@ -183,6 +183,14 @@
       "changes_count": 1,
       "description": "导入 0 个新系数，更新 1 个现有系数",
       "checksum": "91eefc9a0287"
+    },
+    {
+      "version": 24,
+      "timestamp": "2026-06-11 09:08:53.136874",
+      "source": "test",
+      "changes_count": 1,
+      "description": "导入 1 个新系数，更新 0 个现有系数",
+      "checksum": "cb2c0c0773f8"
     }
   ]
 }
