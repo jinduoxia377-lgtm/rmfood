@@ -1,0 +1,39 @@
+[importlinter]
+root_package = app
+
+[importlinter:contract:1]
+name = No circular imports in core
+type = forbidden
+source_modules =
+    app.core
+forbidden_modules =
+    app.api
+    app.services
+    app.models
+
+[importlinter:contract:2]
+name = API cannot import from other API modules
+type = forbidden
+source_modules =
+    app.api
+forbidden_modules =
+    app.api.v1
+
+[importlinter:contract:3]
+name = Models cannot import from services or API
+type = forbidden
+source_modules =
+    app.models
+forbidden_modules =
+    app.services
+    app.api
+
+[importlinter:contract:4]
+name = Domain layer independence
+type = forbidden
+source_modules =
+    app.domain
+forbidden_modules =
+    app.api
+    app.infrastructure
+    app.services
