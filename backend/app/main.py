@@ -340,22 +340,91 @@ Authorization: Bearer <your_access_token>
             "health": "/health",
         }
 
-    # ── 健康检查（含数据库状态） ──
+    # ── 健康检查（含全部依赖服务状态） ──
     @app.get("/health", tags=["系统"])
     async def health_check():
+        import time
         from .core.session import check_database_health
+
+        checks = {}
+        overall_status = "healthy"
+
+        # 1. 数据库健康检查
         db_health = await check_database_health()
-        overall_status = "healthy" if db_health["status"] == "healthy" else db_health["status"]
+        checks["database"] = {
+            "type": db_health["database"],
+            "status": db_health["status"],
+            "latency_ms": db_health["latency_ms"],
+            "pool": db_health["pool"],
+        }
+        if db_health["status"] != "healthy":
+            overall_status = db_health["status"]
+
+        # 2. Redis 健康检查（可选）
+        if settings.redis_available:
+            try:
+                import redis.asyncio as aioredis
+                start = time.perf_counter()
+                r = aioredis.from_url(settings.redis_url, socket_timeout=2)
+                await r.ping()
+                latency = (time.perf_counter() - start) * 1000
+                info = await r.info("memory")
+                checks["redis"] = {
+                    "status": "healthy",
+                    "latency_ms": round(latency, 2),
+                    "used_memory_mb": round(info.get("used_memory", 0) / 1024 / 1024, 1),
+                }
+                await r.close()
+            except Exception as e:
+                checks["redis"] = {"status": "unhealthy", "error": str(e)}
+                overall_status = "degraded"
+        else:
+            checks["redis"] = {"status": "not_configured"}
+
+        # 3. Neo4j 健康检查（可选）
+        if settings.neo4j_available:
+            try:
+                from neo4j import GraphDatabase
+                start = time.perf_counter()
+                driver = GraphDatabase.driver(settings.neo4j_uri, auth=(settings.neo4j_user, settings.neo4j_password))
+                with driver.session() as session:
+                    session.run("RETURN 1")
+                latency = (time.perf_counter() - start) * 1000
+                checks["neo4j"] = {"status": "healthy", "latency_ms": round(latency, 2)}
+                driver.close()
+            except Exception as e:
+                checks["neo4j"] = {"status": "unhealthy", "error": str(e)}
+                overall_status = "degraded"
+        else:
+            checks["neo4j"] = {"status": "not_configured"}
+
+        # 4. Elasticsearch 健康检查（可选）
+        if settings.elasticsearch_available:
+            try:
+                import httpx
+                start = time.perf_counter()
+                async with httpx.AsyncClient(timeout=2) as client:
+                    resp = await client.get(f"{settings.elasticsearch_url}/_cluster/health")
+                    latency = (time.perf_counter() - start) * 1000
+                    data = resp.json()
+                    checks["elasticsearch"] = {
+                        "status": data.get("status", "unknown"),
+                        "latency_ms": round(latency, 2),
+                        "cluster": data.get("cluster_name"),
+                    }
+                    if data.get("status") == "red":
+                        overall_status = "degraded"
+            except Exception as e:
+                checks["elasticsearch"] = {"status": "unhealthy", "error": str(e)}
+                overall_status = "degraded"
+        else:
+            checks["elasticsearch"] = {"status": "not_configured"}
+
         return {
             "status": overall_status,
             "app": settings.app_name,
             "version": settings.app_version,
-            "database": {
-                "type": db_health["database"],
-                "status": db_health["status"],
-                "latency_ms": db_health["latency_ms"],
-                "pool": db_health["pool"],
-            },
+            **checks,
         }
 
     @app.get("/api/v1/system/info", tags=["系统"])

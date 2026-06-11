@@ -336,6 +336,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
 
     async def dispatch(self, request: Request, call_next):
         from .request_context import generate_request_id, set_request_id, clear_context
+        from .metrics import metrics
 
         start_time = time.time()
         client_ip = request.client.host if request.client else "unknown"
@@ -345,11 +346,23 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
         set_request_id(request_id)
         request.state.request_id = request_id
 
+        # 记录进行中的请求
+        metrics.http_requests_in_progress.inc()
+
         log_data = await self._extract_request_info(request)
 
         try:
             response = await call_next(request)
             process_time = (time.time() - start_time) * 1000
+
+            # 记录 Prometheus 指标
+            metrics.record_request(
+                method=request.method,
+                path=request.url.path,
+                status_code=response.status_code,
+                duration=process_time / 1000,  # 转换为秒
+            )
+            metrics.http_requests_in_progress.dec()
 
             # 注入 request_id 到响应头
             response.headers["X-Request-ID"] = request_id
@@ -364,6 +377,8 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
             return response
         except Exception as e:
             process_time = (time.time() - start_time) * 1000
+            metrics.http_requests_in_progress.dec()
+            metrics.http_errors_total.inc()
             logger.error(
                 f"[API] {request.method} {request.url.path} "
                 f"Error: {e} "
