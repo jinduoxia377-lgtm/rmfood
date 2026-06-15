@@ -1,0 +1,82 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "title": "服务状态",
+      "type": stat,
+      "targets": [
+        {
+          "expr": "up{job=\"rmfood-backend\"},"
+          "legendFormat": "{{instance}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "options": { "0": { "text": "DOWN" }, "1": { "text": "UP" } }, "type": "value" }
+          ]
+        }
+      }
+    },
+    {
+      "title": "请求速率 (QPS)",
+      "type": timeseries,
+      "targets": [
+        {
+          "expr": "rate(http_requests_total[5m]),"
+          "legendFormat": "{{method}} {{handler}}"
+        }
+      ]
+    },
+    {
+      "title": "请求延迟 P95",
+      "type": timeseries,
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))",
+          "legendFormat": "{{handler}}"
+        }
+      ],
+      "yAxes": [{ "label": "秒", "format": "s" }]
+    },
+    {
+      "title": "错误率",
+      "type": timeseries,
+      "targets": [
+        {
+          "expr": "rate(http_requests_total{status=~\"5..\"}[5m]) / rate(http_requests_total[5m])",
+          "legendFormat": "{{handler}}"
+        }
+      ],
+      "yAxes": [{ "label": "比例", "format": "percentunit" }]
+    },
+    {
+      "title": "数据库连接池",
+      "type": timeseries,
+      "targets": [
+        {
+          "expr": "sql_connections_available",
+          "legendFormat": "可用连接"
+        },
+        {
+          "expr": "sql_connections_in_use",
+          "legendFormat": "使用中"
+        }
+      ]
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["RMFOOD", "Backend"],
+  "templating": { "list": [] },
+  "time": { "from": "now-1h", "to": "now" },
+  "title": "RMFOOD 后端概览",
+  "uid": "rmfood-backend-overview",
+  "version": 1
+}

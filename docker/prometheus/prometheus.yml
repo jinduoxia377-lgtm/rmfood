@@ -1,0 +1,30 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  - "rules/*.yml"
+
+scrape_configs:
+  - job_name: "rmfood-backend"
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["rmfood_backend:8000"]
+        labels:
+          service: rmfood-backend
+          environment: docker
+
+  - job_name: "rmfood-frontend"
+    metrics_path: /
+    static_configs:
+      - targets: ["rmfood_frontend:80"]
+        labels:
+          service: rmfood-frontend
+
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  - job_name: "node-exporter"
+    static_configs:
+      - targets: ["node-exporter:9100"]

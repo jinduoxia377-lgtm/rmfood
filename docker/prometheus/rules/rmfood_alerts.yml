@@ -1,0 +1,54 @@
+# RMFOOD 自定义告警规则
+
+groups:
+  - name: rmfood_alerts
+    rules:
+      # 后端健康检查
+      - alert: BackendDown
+        expr: up{job="rmfood-backend"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "RMFOOD 后端服务不可用"
+          description: "rmfood-backend 实例已不可达超过 1 分钟"
+
+      # 高错误率
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "高 HTTP 5xx 错误率"
+          description: "5xx 错误率超过 5% (当前 {{ $value | humanizePercentage }})"
+
+      # 高 P95 延迟
+      - alert: HighLatency
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "高 P95 请求延迟"
+          description: "P95 延迟超过 1s (当前 {{ $value | humanize }}s)"
+
+      # 数据库连接池耗尽
+      - alert: DatabasePoolExhausted
+        expr: sql_connections_available < 5
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "数据库连接池接近耗尽"
+          description: "仅剩 {{ $value }} 个可用连接"
+
+      # Redis 不可用
+      - alert: RedisDown
+        expr: up{job="rmfood-backend", name=~".*redis.*"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Redis 服务不可用"
+          description: "Redis 实例已不可达"

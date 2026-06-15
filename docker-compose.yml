@@ -219,6 +219,26 @@ services:
       - monitoring
 
   # ══════════════════════════════════════════════
+  # 🔍 分布式追踪 (Tempo)
+  # ══════════════════════════════════════════════
+
+  tempo:
+    image: grafana/tempo:2.3.0
+    container_name: rmfood_tempo
+    restart: unless-stopped
+    command: [-config.file=/etc/tempo.yaml]
+    volumes:
+      - ./docker/tempo/tempo-config.yml:/etc/tempo.yaml:ro
+      - tempo_data:/tmp/tempo
+    ports:
+      - "${TEMPO_PORT:-3200}:3200"
+      - "${TEMPO_HTTP_PORT:-4318}:4318"
+    networks:
+      - backend
+    profiles:
+      - tracing
+
+  # ══════════════════════════════════════════════
   # 🔍 日志聚合 (Graylog / Loki)
   # ══════════════════════════════════════════════
 
@@ -299,3 +319,5 @@ volumes:
     name: rmfood_grafana_data
   loki_data:
     name: rmfood_loki_data
+  tempo_data:
+    name: rmfood_tempo_data

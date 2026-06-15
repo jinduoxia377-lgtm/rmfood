@@ -1,0 +1,24 @@
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+    labels:  |
+      job: varlogs
+      __path__: /var/log/**/*.log
+
+positions:
+  filename: /run/promtail/positions.yaml
+
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+limits_config:
+  reject_old_samples: true
+  reject_old_samples_max_age: 168h
+
+scrape_configs:
+  - job_name: system
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          __path__: /var/log/*.log
