@@ -8,6 +8,9 @@ import string
 from collections import OrderedDict
 
 from app.core.logging_config import logger
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -377,16 +380,16 @@ if __name__ == "__main__":
         "太肽",
     ]
     
-    print("术语处理测试:")
-    print("=" * 50)
+    logger.info("术语处理测试:")
+    logger.info("=" * 50)
     for term in test_terms:
         result = pipeline.process(term)
-        print(f"原始: '{term}'")
-        print(f"标准化: '{result['normalized']}'")
-        print(f"纠错后: '{result['corrected']}'")
-        print(f"有效: {result['is_valid']}")
+        logger.info(f"原始: '{term}'")
+        logger.info(f"标准化: '{result['normalized']}'")
+        logger.info(f"纠错后: '{result['corrected']}'")
+        logger.info(f"有效: {result['is_valid']}")
         if result['errors']:
-            print(f"错误: {result['errors']}")
+            logger.error(f"错误: {result['errors']}")
         if result['warnings']:
-            print(f"警告: {result['warnings']}")
+            logger.warning(f"警告: {result['warnings']}")
         print()

@@ -6,6 +6,19 @@ import './polyfills'
 import { initWebVitals, webVitalsMonitor } from './utils/webVitals'
 initWebVitals()
 
+// 🔒 P3-4: 增强版前端性能监控（Web Vitals + 自定义指标 + 批量上报
+import { initPerformanceMonitoring } from './utils/performance'
+initPerformanceMonitoring({
+  enabled: true,
+  endpoint: '/api/v1/metrics/client-perf',
+  sampleRate: process.env.NODE_ENV === 'production' ? 0.3 : 1.0,
+  batchSize: 10,
+  batchInterval: 5000,
+  debug: process.env.NODE_ENV === 'development',
+})
+
+// 开发环境下自动输出性能报告
+
 // 开发环境下自动输出性能报告
 if (process.env.NODE_ENV === 'development') {
   setTimeout(() => {

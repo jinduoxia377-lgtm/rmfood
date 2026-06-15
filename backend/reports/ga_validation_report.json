@@ -1,0 +1,221 @@
+{
+  "timestamp": "2026-06-12 01:04:49",
+  "system": "RMFOOD配方平台 - 遗传算法深度整合版",
+  "algorithm": "NSGA-II (Non-dominated Sorting Genetic Algorithm II)",
+  "cases": [
+    {
+      "name": "Case1-成本最低优化",
+      "mode": "weighted",
+      "config": {
+        "population_size": 40,
+        "generations": 30,
+        "objectives": [
+          "cost_efficiency",
+          "efficacy",
+          "safety",
+          "synergy"
+        ]
+      },
+      "results": {
+        "execution_time_ms": 648.8,
+        "total_evaluations": 1200,
+        "convergence_generation": 0,
+        "stop_reason": "completed",
+        "best_score": 0.716578,
+        "candidate_count": 5,
+        "history_records": 30
+      },
+      "top_3_candidates": [
+        {
+          "rank": 1,
+          "fitness": 0.716578,
+          "objectives": {
+            "cost_efficiency": 0.838,
+            "efficacy": 0.5364,
+            "safety": 0.9231,
+            "synergy": 0.4009
+          },
+          "herb_count": 2,
+          "pareto_rank": 1
+        },
+        {
+          "rank": 2,
+          "fitness": 0.707638,
+          "objectives": {
+            "cost_efficiency": 0.768,
+            "efficacy": 0.6415,
+            "safety": 0.884,
+            "synergy": 0.37
+          },
+          "herb_count": 2,
+          "pareto_rank": 1
+        },
+        {
+          "rank": 3,
+          "fitness": 0.696283,
+          "objectives": {
+            "cost_efficiency": 0.8,
+            "efficacy": 0.5022,
+            "safety": 0.9338,
+            "synergy": 0.4557
+          },
+          "herb_count": 3,
+          "pareto_rank": 1
+        }
+      ],
+      "best_by_objective": {
+        "cost_efficiency": 0.838,
+        "efficacy": 0.6415,
+        "safety": 0.9338,
+        "synergy": 0.5744
+      },
+      "final_diversity": 0.412284
+    },
+    {
+      "name": "Case2-性能最优优化",
+      "mode": "pareto",
+      "config": {
+        "population_size": 50,
+        "generations": 35,
+        "objectives": [
+          "efficacy",
+          "synergy",
+          "safety",
+          "stability"
+        ]
+      },
+      "results": {
+        "execution_time_ms": 1198.9,
+        "total_evaluations": 1750,
+        "convergence_generation": 0,
+        "stop_reason": "completed",
+        "best_score": 0.690004,
+        "candidate_count": 8,
+        "history_records": 35
+      },
+      "top_3_candidates": [
+        {
+          "rank": 1,
+          "fitness": 0.690004,
+          "objectives": {
+            "efficacy": 0.7438,
+            "synergy": 0.4791,
+            "safety": 0.8177,
+            "stability": 0.8407
+          },
+          "herb_count": 2,
+          "pareto_rank": 1
+        },
+        {
+          "rank": 2,
+          "fitness": 0.678021,
+          "objectives": {
+            "efficacy": 0.6921,
+            "synergy": 0.4806,
+            "safety": 0.836,
+            "stability": 0.8772
+          },
+          "herb_count": 2,
+          "pareto_rank": 1
+        },
+        {
+          "rank": 3,
+          "fitness": 0.662014,
+          "objectives": {
+            "efficacy": 0.7035,
+            "synergy": 0.4242,
+            "safety": 0.8331,
+            "stability": 0.8561
+          },
+          "herb_count": 2,
+          "pareto_rank": 1
+        }
+      ],
+      "best_by_objective": {
+        "efficacy": 0.7438,
+        "synergy": 0.5245,
+        "safety": 0.8693,
+        "stability": 0.9247
+      },
+      "final_diversity": 0.587891
+    },
+    {
+      "name": "Case3-均衡多目标优化",
+      "mode": "pareto",
+      "config": {
+        "population_size": 60,
+        "generations": 40,
+        "objectives": [
+          "efficacy",
+          "safety",
+          "taste",
+          "cost_efficiency",
+          "synergy",
+          "stability"
+        ]
+      },
+      "results": {
+        "execution_time_ms": 2800.5,
+        "total_evaluations": 2400,
+        "convergence_generation": 0,
+        "stop_reason": "completed",
+        "best_score": 0.730743,
+        "candidate_count": 10,
+        "history_records": 40
+      },
+      "top_3_candidates": [
+        {
+          "rank": 1,
+          "fitness": 0.730743,
+          "objectives": {
+            "efficacy": 0.4123,
+            "safety": 0.8778,
+            "taste": 0.8499,
+            "cost_efficiency": 0.931,
+            "synergy": 0.5937,
+            "stability": 0.9227
+          },
+          "herb_count": 4,
+          "pareto_rank": 1
+        },
+        {
+          "rank": 2,
+          "fitness": 0.73045,
+          "objectives": {
+            "efficacy": 0.6865,
+            "safety": 0.8085,
+            "taste": 0.6629,
+            "cost_efficiency": 0.9307,
+            "synergy": 0.4769,
+            "stability": 0.798
+          },
+          "herb_count": 2,
+          "pareto_rank": 1
+        },
+        {
+          "rank": 3,
+          "fitness": 0.726167,
+          "objectives": {
+            "efficacy": 0.4204,
+            "safety": 0.8856,
+            "taste": 0.8318,
+            "cost_efficiency": 0.9112,
+            "synergy": 0.5277,
+            "stability": 0.9663
+          },
+          "herb_count": 5,
+          "pareto_rank": 1
+        }
+      ],
+      "best_by_objective": {
+        "efficacy": 0.6865,
+        "safety": 0.8856,
+        "taste": 0.9634,
+        "cost_efficiency": 0.9487,
+        "synergy": 0.5937,
+        "stability": 0.9663
+      },
+      "final_diversity": 0.662952
+    }
+  ]
+}

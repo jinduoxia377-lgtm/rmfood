@@ -210,16 +210,14 @@ class SynergyEngine(
 def example_usage():
     """示例用法演示"""
 
-    print("=" * 70)
-    print("SynergyEngine 示例用法演示")
-    print("=" * 70)
-
+    logger.info("=" * 70)
+    logger.info("SynergyEngine 示例用法演示")
+    logger.info("=" * 70)
     # 初始化引擎
     engine = SynergyEngine()
 
     # 示例 1: 单独调用各机制
-    print("\n--- 示例 1: 单独调用各机制 ---\n")
-
+    logger.info("\n--- 示例 1: 单独调用各机制 ---\n")
     # 1.1 Bliss Independence
     bliss_result = engine.bliss_independence(
         efficacy_a=0.7,
@@ -228,10 +226,9 @@ def example_usage():
         ingredient_a="黄芪多糖",
         ingredient_b="大豆肽",
     )
-    print(f"Bliss Independence: {bliss_result.score:.4f} (置信度: {bliss_result.confidence:.2f})")
-    print(f"  详情: {bliss_result.details}")
-    print(f"  参数: {bliss_result.parameters}")
-
+    logger.info(f"Bliss Independence: {bliss_result.score:.4f} (置信度: {bliss_result.confidence:.2f})")
+    logger.info(f"  详情: {bliss_result.details}")
+    logger.info(f"  参数: {bliss_result.parameters}")
     # 1.2 PK Interaction
     pk_result = engine.pk_interaction(
         auc_a=120.0,
@@ -244,10 +241,9 @@ def example_usage():
         ingredient_a="姜黄素",
         ingredient_b="胡椒碱",
     )
-    print(f"\nPK Interaction: {pk_result.score:.4f} (置信度: {pk_result.confidence:.2f})")
-    print(f"  详情: {pk_result.details}")
-    print(f"  类型: {pk_result.parameters['pk_type']}")
-
+    logger.info(f"\nPK Interaction: {pk_result.score:.4f} (置信度: {pk_result.confidence:.2f})")
+    logger.info(f"  详情: {pk_result.details}")
+    logger.info(f"  类型: {pk_result.parameters['pk_type']}")
     # 1.3 Gibbs Stability
     gibbs_result = engine.gibbs_stability(
         delta_h=-25.0,
@@ -259,11 +255,10 @@ def example_usage():
         ingredient_a="乳清蛋白",
         ingredient_b="胶原蛋白肽",
     )
-    print(f"\nGibbs Stability: {gibbs_result.score:.4f} (置信度: {gibbs_result.confidence:.2f})")
-    print(f"  详情: {gibbs_result.details}")
-    print(f"  等级: {gibbs_result.parameters['stability_level']}")
-    print(f"  ΔG: {gibbs_result.parameters['delta_g_final']:.2f} kJ/mol")
-
+    logger.info(f"\nGibbs Stability: {gibbs_result.score:.4f} (置信度: {gibbs_result.confidence:.2f})")
+    logger.info(f"  详情: {gibbs_result.details}")
+    logger.info(f"  等级: {gibbs_result.parameters['stability_level']}")
+    logger.info(f"  ΔG: {gibbs_result.parameters['delta_g_final']:.2f} kJ/mol")
     # 1.4 Network Pharmacology
     network_result = engine.network_pharmacology(
         targets_a=["EGFR", "VEGF", "TNF", "IL6", "NFkB", "AKT1"],
@@ -278,11 +273,10 @@ def example_usage():
         ingredient_a="人参皂苷",
         ingredient_b="灵芝多糖",
     )
-    print(f"\nNetwork Pharmacology: {network_result.score:.4f} (置信度: {network_result.confidence:.2f})")
-    print(f"  详情: {network_result.details}")
-    print(f"  Jaccard: {network_result.parameters['jaccard_coefficient']:.4f}")
-    print(f"  共同靶点: {network_result.parameters['intersect_count']}")
-
+    logger.info(f"\nNetwork Pharmacology: {network_result.score:.4f} (置信度: {network_result.confidence:.2f})")
+    logger.info(f"  详情: {network_result.details}")
+    logger.info(f"  Jaccard: {network_result.parameters['jaccard_coefficient']:.4f}")
+    logger.info(f"  共同靶点: {network_result.parameters['intersect_count']}")
     # 1.5 Taste Matrix
     taste_result = engine.taste_matrix(
         taste_profile_a={
@@ -298,15 +292,13 @@ def example_usage():
         ingredient_a="绿茶提取物",
         ingredient_b="罗汉果甜苷",
     )
-    print(f"\nTaste Matrix: {taste_result.score:.4f} (置信度: {taste_result.confidence:.2f})")
-    print(f"  详情: {taste_result.details}")
-    print(f"  等级: {taste_result.parameters['quality_level']}")
-
+    logger.info(f"\nTaste Matrix: {taste_result.score:.4f} (置信度: {taste_result.confidence:.2f})")
+    logger.info(f"  详情: {taste_result.details}")
+    logger.info(f"  等级: {taste_result.parameters['quality_level']}")
     # 示例 2: 统一接口
-    print("\n" + "=" * 70)
-    print("--- 示例 2: 统一接口 analyze_synergy() ---")
-    print("=" * 70 + "\n")
-
+    logger.info("\n" + "=" * 70)
+    logger.info("--- 示例 2: 统一接口 analyze_synergy() ---")
+    logger.info("=" * 70 + "\n")
     report = engine.analyze_synergy(
         ingredient_a="黄芪多糖",
         ingredient_b="大豆肽",
@@ -352,23 +344,21 @@ def example_usage():
         },
     )
 
-    print(f"\n{'='*50}")
-    print(f"协同分析报告: {report.ingredient_pair[0]} + {report.ingredient_pair[1]}")
-    print(f"{'='*50}")
-    print(f"综合协同指数 (SI): {report.overall_si:.4f}")
-    print(f"主导机制: {report.dominant_mechanism.value if report.dominant_mechanism else 'None'}")
-    print(f"\n各机制得分:")
+    logger.info(f"\n{'='*50}")
+    logger.info(f"协同分析报告: {report.ingredient_pair[0]} + {report.ingredient_pair[1]}")
+    logger.info(f"{'='*50}")
+    logger.info(f"综合协同指数 (SI): {report.overall_si:.4f}")
+    logger.info(f"主导机制: {report.dominant_mechanism.value if report.dominant_mechanism else 'None'}")
+    logger.info(f"\n各机制得分:")
     for mech in report.mechanisms:
         status = "✓" if mech.confidence > 0 else "✗"
-        print(f"  [{status}] {mech.mechanism_type.value:25s}: {mech.score:.4f} (置信度: {mech.confidence:.2f})")
+        logger.info(f"  [{status}] {mech.mechanism_type.value:25s}: {mech.score:.4f} (置信度: {mech.confidence:.2f})")
         if mech.details:
-            print(f"       {mech.details}")
-
+            logger.info(f"       {mech.details}")
     # 示例 3: 动态更新 API
-    print("\n" + "=" * 70)
-    print("--- 示例 3: 动态更新 API ---")
-    print("=" * 70 + "\n")
-
+    logger.info("\n" + "=" * 70)
+    logger.info("--- 示例 3: 动态更新 API ---")
+    logger.info("=" * 70 + "\n")
     import_result = engine.import_research_data({
         "data_source": "test_literature",
         "research_paper": "Test Paper et al., 2024",
@@ -391,33 +381,27 @@ def example_usage():
         ],
     })
 
-    print(f"导入成功: {import_result['success']}")
-    print(f"新版本: v{import_result['version']}")
-    print(f"新增系数: {import_result['imported_count']}")
-    print(f"更新系数: {import_result['updated_count']}")
-
+    logger.info(f"导入成功: {import_result['success']}")
+    logger.info(f"新版本: v{import_result['version']}")
+    logger.info(f"新增系数: {import_result['imported_count']}")
+    logger.info(f"更新系数: {import_result['updated_count']}")
     # 查询新导入的系数
     alpha_new = engine.get_coefficient("黄芪", "大豆肽", "bliss_independence")
-    print(f"\n查询新系数: 黄豆-大豆肽 (bliss) = {alpha_new}")
-
+    logger.info(f"\n查询新系数: 黄豆-大豆肽 (bliss) = {alpha_new}")
     # 版本历史
-    print(f"\n版本历史:")
+    logger.info(f"\n版本历史:")
     history = engine.get_version_history()
     for ver in history[-3:]:
-        print(f"  v{ver['version']}: {ver['source']} - {ver['changes_count']} 条变更")
-
+        logger.info(f"  v{ver['version']}: {ver['source']} - {ver['changes_count']} 条变更")
     # 统计信息
     stats = engine.get_statistics()
-    print(f"\n引擎统计:")
-    print(f"  总系数数量: {stats['total_coefficients']}")
-    print(f"  当前版本: v{stats['current_version']}")
-    print(f"  SciPy 可用: {stats['has_scipy']}")
-    print(f"  JSONSchema 可用: {stats['has_jsonschema']}")
-
-    print("\n" + "=" * 70)
-    print("示例演示完成!")
-    print("=" * 70)
-
-
+    logger.info(f"\n引擎统计:")
+    logger.info(f"  总系数数量: {stats['total_coefficients']}")
+    logger.info(f"  当前版本: v{stats['current_version']}")
+    logger.info(f"  SciPy 可用: {stats['has_scipy']}")
+    logger.info(f"  JSONSchema 可用: {stats['has_jsonschema']}")
+    logger.info("\n" + "=" * 70)
+    logger.info("示例演示完成!")
+    logger.info("=" * 70)
 if __name__ == "__main__":
     example_usage()

@@ -116,7 +116,7 @@ def _create_engine():
     - SQLite: 不使用连接池（单文件数据库，pool_size 无效）
     - PostgreSQL: 使用连接池 + 健康检查
     """
-    database_url = _build_database_url_with_encoding(settings.database_url)
+    database_url = _build_database_url_with_encoding(settings.database.url)
     is_sqlite = database_url.startswith('sqlite')
 
     if is_sqlite:
@@ -135,11 +135,11 @@ def _create_engine():
             echo=settings.debug,
             future=True,
             # ── 连接池配置 ──
-            pool_size=settings.database_pool_size,          # 常驻连接数（默认20）
-            max_overflow=settings.database_max_overflow,     # 溢出连接数（默认10）
-            pool_timeout=settings.database_pool_timeout,     # 获取连接超时（秒）
-            pool_recycle=settings.database_pool_recycle,     # 连接回收时间（秒）
-            pool_pre_ping=settings.database_pool_pre_ping,   # 连接健康检查
+            pool_size=settings.database.pool_size,          # 常驻连接数（默认20）
+            max_overflow=settings.database.max_overflow,     # 溢出连接数（默认10）
+            pool_timeout=settings.database.pool_timeout,     # 获取连接超时（秒）
+            pool_recycle=settings.database.pool_recycle,     # 连接回收时间（秒）
+            pool_pre_ping=True,                            # 连接健康检查
             # ── 连接参数 ──
             connect_args={
                 "server_settings": {
@@ -151,9 +151,9 @@ def _create_engine():
         )
         logger.info(
             f"📦 PostgreSQL 引擎已创建 | "
-            f"pool_size={settings.database_pool_size} | "
-            f"max_overflow={settings.database_max_overflow} | "
-            f"pool_pre_ping={settings.database_pool_pre_ping}"
+            f"pool_size={settings.database.pool_size} | "
+            f"max_overflow={settings.database.max_overflow} | "
+            f"pool_pre_ping=True"
         )
 
     return engine
@@ -236,7 +236,7 @@ async def check_database_health() -> dict:
     try:
         # 1. 执行简单查询验证连接可用性
         async with engine.connect() as conn:
-            is_pg = not settings.database_url.startswith("sqlite")
+            is_pg = not settings.database.url.startswith("sqlite")
             if is_pg:
                 db_result = await conn.execute(text("SELECT version()"))
                 version_row = db_result.scalar()

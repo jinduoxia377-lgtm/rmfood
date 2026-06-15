@@ -618,22 +618,19 @@ def setup_tls_for_app(app, tls_config: TLSConfig):
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     
-    print("=" * 60)
-    print("RMFOOD TLS Configuration Test")
-    print("=" * 60)
-    
+    logger.info("=" * 60)
+    logger.info("RMFOOD TLS Configuration Test")
+    logger.info("=" * 60)
     dev_config = create_development_tls_config()
-    print("\n🔧 开发环境配置:")
-    print(f"   Enabled: {dev_config.enabled}")
-    print(f"   Protocol: {dev_config.protocol_version}")
-    
-    print("\n📋 配置验证:")
+    logger.info("\n🔧 开发环境配置:")
+    logger.info(f"   Enabled: {dev_config.enabled}")
+    logger.info(f"   Protocol: {dev_config.protocol_version}")
+    logger.info("\n📋 配置验证:")
     is_valid, messages = dev_config.validate_configuration()
-    print(f"   Valid: {is_valid}")
+    logger.info(f"   Valid: {is_valid}")
     for msg in messages:
-        print(f"   - {msg}")
-    
-    print("\n🔒 安全头:")
+        logger.info(f"   - {msg}")
+    logger.info("\n🔒 安全头:")
     headers = dev_config.get_security_headers()
     for k, v in headers.items():
-        print(f"   {k}: {v[:50]}..." if len(v) > 50 else f"   {k}: {v}")
+        logger.info(f"   {k}: {v[:50]}..." if len(v) > 50 else f"   {k}: {v}")

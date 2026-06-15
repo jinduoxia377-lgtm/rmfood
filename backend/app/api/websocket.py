@@ -65,13 +65,15 @@ async def websocket_endpoint(
             except json.JSONDecodeError:
                 pass
         
-        # 连接到管理器
-        await connection_manager.connect(
+        # 连接到管理器（院士级修复: 检查返回值，若超限则已自动拒绝）
+        connected = await connection_manager.connect(
             websocket=websocket,
             user_id=user_id,
             connection_id=connection_id,
             client_info=client_info_dict
         )
+        if not connected:
+            return  # 连接已被拒绝，管理器已发送错误消息并关闭
         
         # 发送用户在线状态
         await connection_manager.broadcast(
@@ -89,13 +91,18 @@ async def websocket_endpoint(
                 
                 # 处理不同类型的消息
                 if message_type == "ping":
-                    # 更新ping时间
+                    # 更新活跃时间（客户端主动 ping）
                     connection_manager.update_ping(connection_id)
-                    # 回复pong
+                    # 回复 pong
                     await websocket.send_json({
                         "type": "pong",
                         "timestamp": message.get("timestamp")
                     })
+
+                elif message_type == "pong":
+                    # 院士级修复[P1]: 处理服务端 ping 的 pong 响应
+                    connection_manager.handle_pong(connection_id)
+                    # 不回复，仅更新连接状态
                 
                 elif message_type == "subscribe":
                     # 处理订阅请求

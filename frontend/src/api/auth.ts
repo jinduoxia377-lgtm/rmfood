@@ -16,6 +16,9 @@ export const authApi = {
 
   getMe: () => api.get<User>('/auth/me').then((r) => r.data),
 
+  // 🔒 P0 安全修复: 登出 API
+  logout: () => api.post('/auth/logout'),
+
   updateMe: (data: { email?: string; full_name?: string; phone?: string; department?: string; avatar_url?: string }) =>
     api.put<User>('/auth/me', data).then((r) => r.data),
 

@@ -200,7 +200,7 @@ class Formula:
 @dataclass
 class DomainEvent:
     """领域事件基类"""
-    formula_id: FormulaId = None  # placeholder — 子类应覆盖此字段
+    formula_id: Optional[FormulaId] = field(default=None, init=False)  # 不包含在 __init__ 中
 
     def __post_init__(self) -> None:
         if not hasattr(self, 'timestamp'):
@@ -241,6 +241,29 @@ class FormulaRejectedEvent:
     reviewer_id: str
     reason: str
     timestamp: datetime = field(default_factory=datetime.utcnow)
+
+
+@dataclass
+class DataChangedEvent(DomainEvent):
+    """数据变更事件（CDC 触发）
+
+    Phase 3-B: 用于通过事件总线发布 CDC 捕获的变更事件。
+    """
+    # 无默认值字段放在前面
+    entity_type: str
+    entity_id: int
+    action: str  # INSERT, UPDATE, DELETE
+    # 有默认值字段放在后面
+    changed_fields: Optional[List[str]] = None
+    old_values: Optional[Dict[str, Any]] = None
+    new_values: Optional[Dict[str, Any]] = None
+    user_id: Optional[int] = None
+    ip_address: Optional[str] = None
+    timestamp: datetime = field(default_factory=datetime.utcnow)
+
+    def __post_init__(self):
+        """覆盖父类的时间戳逻辑"""
+        pass  # 使用 field(default_factory=...) 初始化
 
 
 @dataclass

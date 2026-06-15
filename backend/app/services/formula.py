@@ -1,10 +1,17 @@
 """
 配方服务
 配方 CRUD、版本管理、审核流程、AI 推荐、协同效应分析
+
+院士级架构升级说明 (2026-06-12):
+- 引入双轨模式：同时支持旧版 AsyncSession 直连（向后兼容）
+  和新版 FormulaRepository 接口（DDD 正确路径）。
+- 新代码应通过 FormulaRepository 接口操作配方聚合根，
+  逐步淘汰直接 Session 操作，最终完成依赖倒置原则(DIP)迁移。
+- 过渡期参考: infrastructure/formula_repository.py
 """
 import logging
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Union
 
 from fastapi import HTTPException, status
 from sqlalchemy import select, func
@@ -17,15 +24,42 @@ from ..models import (
     formula_ingredients, formula_peptides,
 )
 from ..schemas.formula import FormulaCreate, FormulaUpdate, FormulaReviewRequest
+# 新增: 引入 Repository 端口（DDD 路径）
+from ..domain.ports import FormulaRepository as FormulaRepositoryPort
 
 logger = logging.getLogger(__name__)
 
 
 class FormulaService:
-    """配方业务逻辑"""
+    """
+    配方业务逻辑
 
-    def __init__(self, db: AsyncSession):
-        self.db = db
+    院士级双轨构造函数：
+    - FormulaService(db=session)     → 旧路径（向后兼容）
+    - FormulaService(repo=formula_repo) → 新 DDD 路径（推荐）
+
+    新功能开发应使用 repo 参数以遵循依赖倒置原则(DIP)。
+    """
+
+    def __init__(
+        self,
+        db: Optional[AsyncSession] = None,
+        repo: Optional[FormulaRepositoryPort] = None,
+    ):
+        if db is None and repo is None:
+            raise ValueError("FormulaService 需要提供 db 或 repo 参数之一")
+        self.db = db  # 旧路径（向后兼容 - 不建议在新代码中使用）
+        self._repo = repo  # 新 DDD 路径（推荐）
+
+    @property
+    def _session(self) -> AsyncSession:
+        """内部使用：获取 Session（向后兼容助手）"""
+        if self.db is None:
+            raise RuntimeError(
+                "此操作需要 AsyncSession，但 FormulaService 以 repo 模式初始化。"
+                "请通过 FormulaRepository 接口访问配方数据。"
+            )
+        return self.db
 
     # ── 配方编号生成器 ──
 
@@ -35,7 +69,7 @@ class FormulaService:
         prefix = f"RMF-{today}-"
 
         # 查询今日已有的配方数量
-        result = await self.db.execute(
+        result = await self._session.execute(
             select(func.count()).select_from(Formula).where(Formula.code.like(f"{prefix}%"))
         )
         count = result.scalar() or 0
@@ -68,8 +102,8 @@ class FormulaService:
             safety_check=data.safety_check,
             synergy_analysis=data.synergy_analysis,
         )
-        self.db.add(formula)
-        await self.db.flush()
+        self._session.add(formula)
+        await self._session.flush()
 
         # 关联成分
         if data.ingredient_ids:
@@ -94,7 +128,7 @@ class FormulaService:
 
     async def get_formula(self, formula_id: int) -> Formula:
         """获取配方详情（含成分和肽段）"""
-        result = await self.db.execute(
+        result = await self._session.execute(
             select(Formula)
             .options(
                 selectinload(Formula.ingredients),

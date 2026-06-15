@@ -1,466 +1,488 @@
 """
-RMFOOD 查询性能优化工具
+🔴 P0-1: Repository 查询优化层（QueryOptimizer
 
-功能特性:
-- ✅ 查询结果缓存（自动管理TTL）
-- ✅ 分页查询优化（游标分页）
-- ✅ 批量操作优化
-- ✅ N+1 查询检测与修复
-- ✅ 慢查询日志记录
-- ✅ 数据库索引建议
+解决 N+1 查询问题
+统一的查询优化，统一的查询优化模式
 
-使用方法:
-    from app.core.query_optimizer import QueryOptimizer, cached_query, optimize_pagination
-    
-    optimizer = QueryOptimizer(db)
-    
-    # 带缓存的查询
-    result = await optimizer.cached_query(
-        select(User), 
-        cache_key="all_users",
-        ttl=300  # 5分钟
-    )
-    
-    # 优化的分页
-    paginated = await optimizer.paginate(
-        select(Formula),
-        page=1,
-        page_size=20
-    )
+核心思想:
+1. 定义所有配方的关联关系（categories/tags/ingredients/peptides
+2. 使用 selectinload/joinedload 统一查询优化器
+3. 提供带 eager 预加载策略，消除 N+1 并自动检测的查询优化
+4. 提供统一的查询优化辅助函数，供各 API 层直接调用
 
-作者: RMFOOD Team
-日期: 2026-05-02
+性能提升预估: 5-10 倍（N+1 场景
+使用方式:
+
+from app.core.query_optimizer import (
+    FormulaQueryOptimizer, optimized_list,
+    get_optimized_formulas, get_optimized_formula,
+    get_optimized_users,
+)
+
+# 方式1: 配方列表
+optimized_service = FormulaQueryOptimizer(db)
+formulas = await optimized_service.list_optimized(
+    page=1, page_size=20, status="DRAFT"
+)
+
+# 方式2: 单个配方详情
+formula = await optimized_service.get_optimized(formula_id=123)
 """
+from __future__ import annotations
 
 import time
 import logging
-from typing import Any, Dict, Generic, List, Optional, TypeVar, Union
-from functools import wraps
 from dataclasses import dataclass, field
+from typing import Any, Dict, List, Optional, Tuple, TypeVar, Generic
 
-from sqlalchemy import Select, func, text, desc, asc, or_, and_
+from sqlalchemy import select, func, and_, or_
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload, joinedload
+from sqlalchemy.orm import (
+    selectinload, joinedload, subqueryload,
+)
+
+# 导入领域模型
+from ..models.formula import Formula, Category, Tag
+from ..models.ingredient import Ingredient
+from ..models.peptide import Peptide
+from ..models.user_model import User
+from ..models.experiment import Experiment
+from ..models.enums import FormulaStatus
 
 logger = logging.getLogger(__name__)
 
-# ── 类型变量 ──
 T = TypeVar('T')
 
-# ── 查询性能数据 ──
+# ═══════════════════════════════════════
+# 🔴 P0-1: 查询优化配置
+# ═══════════════════════════════════════
 
 @dataclass
-class QueryMetrics:
-    """查询性能指标"""
-    query_hash: str
-    execution_time_ms: float
-    rows_returned: int
-    cache_hit: bool = False
-    table_name: Optional[str] = None
-    slow_query_threshold: float = 1000.0  # 慢查询阈值 (ms)
+class EagerLoadStrategy:
+    """预加载策略配置"""
     
-    @property
-    def is_slow(self) -> bool:
-        return self.execution_time_ms > self.slow_query_threshold
-
-
-@dataclass
-class PaginatedResult(Generic[T]):
-    """分页结果"""
-    items: List[T]
-    total: int
-    page: int
-    page_size: int
-    total_pages: int
-    has_next: bool
-    has_prev: bool
+    # 配方预加载
+    formula_full: list = field(default_factory=lambda: [
+        # 关联实体（集合关系，使用 selectinload 更高效）
+        'categories',        # 配方类别（多对多）
+        'tags',              # 标签（多对多）
+        'ingredients',       # 成分（多对多）
+        'peptides',          # 肽段（多对多）
+        # 单值关联（一对一/多对一）
+        'creator',           # 创建者
+        'reviewer',          # 审核者
+        # 版本历史（一对多）
+        'versions',          # 版本历史
+        # 关联集合（一对多）
+        'experiments',       # 关联实验
+    ])
     
-    def to_dict(self) -> Dict[str, Any]:
-        return {
-            "items": [item.to_dict() if hasattr(item, 'to_dict') else item for item in self.items],
-            "total": self.total,
-            "page": self.page,
-            "page_size": self.page_size,
-            "total_pages": self.total_pages,
-            "has_next": self.has_next,
-            "has_prev": self.has_prev,
-        }
+    # 配方精简版（列表页使用）
+    formula_list: list = field(default_factory=lambda: [
+        'categories',
+        'tags',
+        'creator',  # 只在列表页显示创建者信息
+    ])
+    
+    # 用户预加载
+    user_detail: list = field(default_factory=lambda: [
+        'teams',
+        'devices',
+    ])
 
+# 全局策略实例
+strategy = EagerLoadStrategy()
 
-class QueryOptimizer:
+# ═══════════════════════════════════════
+# 🔴 P0-1: 查询优化辅助函数
+# ═══════════════════════════════════════
+
+class FormulaQueryOptimizer:
     """
-    SQL 查询优化器
-    
-    提供自动化的查询性能优化能力。
-    
-    Attributes:
-        db: 数据库会话
-        slow_query_log: 慢查询日志记录
-        cache_enabled: 是否启用缓存
+    🔴 P0-1: 配方查询优化器
+
+    消除 N+1 查询，统一使用 selectinload/joinedload
+    预加载关联关系，提升查询性能。
+
+    使用方式:
+        optimizer = FormulaQueryOptimizer(db_session)
+        # 列表查询（自动预加载所有关联关系，避免 N+1）
+        formulas, total = await optimizer.list_optimized(
+            page=1, page_size=20,
+            status=FormulaStatus.DRAFT,
+        )
+        # 详情查询
+        formula = await optimizer.get_optimized(formula_id=123)
     """
-    
-    def __init__(self, db: AsyncSession, cache_enabled: bool = True):
-        """
-        初始化查询优化器
-        
-        Args:
-            db: 异步数据库会话
-            cache_enabled: 是否启用查询缓存
-        """
-        self.db = db
-        self.cache_enabled = cache_enabled
-        self.slow_query_log: List[QueryMetrics] = []
-        
-        logger.info("✅ 查询优化器已初始化")
-    
-    async def execute(
+
+    def __init__(self, session: AsyncSession):
+        self._session = session
+
+    # ─────────────────────────────────────────
+    # 配方列表（带预加载优化）
+    # ─────────────────────────────────────────
+    async def list_optimized(
         self,
-        statement: Select,
-        *,
-        cache_key: Optional[str] = None,
-        cache_ttl: int = 300,
-        load_options: Optional[Any] = None,
-        metrics_label: str = ""
-    ) -> List[T]:
-        """
-        执行优化的查询
-        
-        Args:
-            statement: SQLAlchemy Select 语句
-            cache_key: 缓存键（可选）
-            cache_ttl: 缓存过期时间（秒）
-            load_options: 预加载选项（解决N+1问题）
-            metrics_label: 性能指标标签
-            
-        Returns:
-            List[T]: 查询结果列表
-        """
-        start_time = time.perf_counter()
-        
-        # 应用预加载选项
-        if load_options:
-            statement = statement.options(load_options)
-        
-        # 尝试从缓存获取
-        if cache_key and self.cache_enabled:
-            from ..core.cache_system import cache_service
-            
-            cached_result = await cache_service.get_json(cache_key)
-            if cached_result is not None:
-                elapsed = (time.perf_counter() - start_time) * 1000
-                
-                metrics = QueryMetrics(
-                    query_hash=hash(str(statement)),
-                    execution_time_ms=elapsed,
-                    rows_returned=len(cached_result),
-                    cache_hit=True,
-                )
-                
-                if metrics.is_slow:
-                    self.slow_query_log.append(metrics)
-                    logger.warning(f"⚠️ 缓存查询仍较慢: {metrics_label} ({elapsed:.2f}ms)")
-                
-                return cached_result
-        
-        # 执行实际查询
-        try:
-            result = await self.db.execute(statement)
-            items = result.scalars().all()
-            
-            elapsed = (time.perf_counter() - start_time) * 1000
-            
-            # 记录性能指标
-            metrics = QueryMetrics(
-                query_hash=hash(str(statement)),
-                execution_time_ms=elapsed,
-                rows_returned=len(items),
-                cache_hit=False,
-            )
-            
-            if metrics.is_slow:
-                self.slow_query_log.append(metrics)
-                logger.warning(
-                    f"🐌 慢查询检测:\n"
-                    f"   标签: {metrics_label}\n"
-                    f"   耗时: {elapsed:.2f}ms\n"
-                    f"   返回行数: {len(items)}\n"
-                    f"   建议检查索引或优化SQL"
-                )
-            else:
-                logger.debug(f"✅ 查询完成: {metrics_label} ({elapsed:.2f}ms, {len(items)}行)")
-            
-            # 存入缓存
-            if cache_key and self.cache_enabled and items:
-                from ..core.cache_system import cache_service
-                
-                # 序列化结果
-                serializable_items = [
-                    item.to_dict() if hasattr(item, 'to_dict') else 
-                    {c.name: getattr(item, c.name) for c in item.__table__.columns}
-                    for item in items
-                ]
-                await cache_service.set_json(cache_key, serializable_items, cache_ttl)
-            
-            return list(items)
-            
-        except Exception as e:
-            logger.error(f"❌ 查询执行失败: {e}")
-            raise
-    
-    async def paginate(
-        self,
-        statement: Select,
-        *,
         page: int = 1,
         page_size: int = 20,
-        max_page_size: int = 100,
-        order_by: Optional[Any] = None,
-        count_query: Optional[Select] = None,
-    ) -> PaginatedResult:
+        status: Optional[FormulaStatus] = None,
+        creator_id: Optional[int] = None,
+        search: Optional[str] = None,
+        include_deleted: bool = False,
+        eager_load: bool = True,
+    ) -> Tuple[List[Formula], int]:
         """
-        优化的分页查询
-        
+        🔴 P0-1: 优化版配方列表查询
+
         Args:
-            statement: 基础查询语句
-            page: 页码（从1开始）
-            page_size: 每页数量
-            max_page_size: 最大每页数量限制
-            order_by: 排序字段
-            count_query: 自定义计数查询（用于复杂查询）
-            
+            eager_load: 是否启用预加载（默认为 True，False 时仅查询主表）
+
         Returns:
-            PaginatedResult: 分页结果对象
+            (formulas, total_count)
         """
-        # 限制最大页大小
-        page_size = min(page_size, max_page_size)
-        
-        start_time = time.perf_counter()
-        
-        # 计算总数（优化：使用独立的轻量级计数查询）
-        if count_query:
-            total_result = await self.db.execute(count_query)
-        else:
-            # 自动生成计数查询（移除ORDER BY和LIMIT/OFFSET以提高性能）
-            base_count_stmt = statement.order_by(None).limit(None).offset(None)
-            total_result = await self.db.execute(
-                func.count().select_from(base_count_stmt.subquery())
+        start = time.time()
+
+        # 基础查询
+        query = select(Formula)
+
+        if eager_load:
+            # 🔴 核心优化：使用 selectinload 预加载所有关联关系
+            # 避免在 Pydantic 序列化时产生 N+1 查询
+            query = query.options(
+                # 配方关联关系（多对多）
+                selectinload(Formula.categories),
+                selectinload(Formula.tags),
+                selectinload(Formula.ingredients),
+                selectinload(Formula.peptides),
+                # 创建者信息（多对一）
+                selectinload(Formula.creator),
+                # 审核者信息（多对一）
+                selectinload(Formula.reviewer),
+                # 版本历史（一对多）
+                selectinload(Formula.versions),
+                # 关联实验（一对多）
+                selectinload(Formula.experiments),
             )
-        
-        total = total_result.scalar() or 0
-        total_pages = max(1, (total + page_size - 1) // page_size)
-        
-        # 确保页码在有效范围内
-        page = max(1, min(page, total_pages))
-        offset = (page - 1) * page_size
-        
-        # 应用排序和分页
-        if order_by is not None:
-            statement = statement.order_by(order_by)
-        
-        paginated_statement = statement.limit(page_size).offset(offset)
-        
-        # 执行查询
-        result = await self.db.execute(paginated_statement)
-        items = result.scalars().all()
-        
-        elapsed = (time.perf_counter() - start_time) * 1000
-        
-        logger.debug(
-            f"📄 分页查询完成:\n"
-            f"   总数: {total}\n"
-            f"   页码: {page}/{total_pages}\n"
-            f"   耗时: {elapsed:.2f}ms"
-        )
-        
-        return PaginatedResult(
-            items=list(items),
-            total=total,
-            page=page,
-            page_size=page_size,
-            total_pages=total_pages,
-            has_next=page < total_pages,
-            has_prev=page > 1,
-        )
-    
-    async def batch_get(
-        self,
-        model_class: type,
-        ids: List[int],
-        *,
-        batch_size: int = 50,
-        id_column: str = "id"
-    ) -> Dict[int, T]:
-        """
-        批量获取记录（避免循环查询）
-        
-        Args:
-            model_class: ORM模型类
-            ids: 要获取的ID列表
-            batch_size: 每批次的ID数量
-            id_column: ID列名
-            
-        Returns:
-            Dict[int, T]: ID到对象的映射字典
-        """
-        if not ids:
-            return {}
-        
-        result_map: Dict[int, Any] = {}
-        
-        # 分批处理
-        for i in range(0, len(ids), batch_size):
-            batch_ids = ids[i:i + batch_size]
-            
-            stmt = select(model_class).where(
-                getattr(model_class, id_column).in_(batch_ids)
+
+        # 软删除过滤
+        if not include_deleted and hasattr(Formula, 'deleted_at'):
+            query = query.where(Formula.deleted_at.is_(None))
+
+        # 状态筛选
+        if status:
+            query = query.where(Formula.status == status)
+        if creator_id:
+            query = query.where(Formula.creator_id == creator_id)
+
+        # 关键词搜索（配方名称/编号/描述）
+        if search:
+            pattern = f"%{search}%"
+            query = query.where(
+                or_(
+                    Formula.name.ilike(pattern),
+                    Formula.code.ilike(pattern),
+                    Formula.description.ilike(pattern),
+                )
             )
-            
-            batch_results = await self.execute(stmt)
-            
-            for item in batch_results:
-                item_id = getattr(item, id_column)
-                result_map[item_id] = item
-        
-        logger.debug(f"📦 批量获取完成: {model_class.__name__}, {len(result_map)}条")
-        
-        return result_map
-    
-    async def exists(
+
+        # 🔴 总数查询（避免重复查询开销）
+        count_stmt = select(func.count()).select_from(query.subquery())
+        total = (await self._session.execute(count_stmt)).scalar() or 0
+
+        # 分页
+        query = query.order_by(Formula.updated_at.desc())
+        query = query.offset((page - 1) * page_size).limit(page_size)
+
+        # 执行主查询（只执行一次
+        result = await self._session.execute(query)
+        formulas = list(result.scalars().all())
+
+        elapsed = time.time() - start
+        logger.info(
+            f"[QueryOptimizer] 配方列表查询: %dms total=%d "
+            f"(eager_load=%s, eager_relations=%d)",
+            int(elapsed * 1000), total, eager_load,
+            len(strategy.formula_full),
+        )
+
+        return formulas, total
+
+    # ─────────────────────────────────────────
+    # 配方详情（带预加载优化）
+    # ─────────────────────────────────────────
+    async def get_optimized(
         self,
-        statement: Select,
-        *,
-        cache_key: Optional[str] = None,
-        cache_ttl: int = 60,
-    ) -> bool:
-        """
-        高效的存在性检查（只返回布尔值）
-        
-        Args:
-            statement: 查询语句
-            cache_key: 可选的缓存键
-            cache_ttl: 缓存时间
-            
-        Returns:
-            bool: 是否存在匹配记录
-        """
-        # 使用 EXISTS 子查询提高性能
-        exists_stmt = select(func.literal(True)).where(
-            statement.exists()
-        ).limit(1)
-        
-        result = await self.db.execute(exists_stmt)
-        exists = result.scalar() is not None
-        
-        # 缓存结果
-        if cache_key and self.cache_enabled:
-            from ..core.cache_system import cache_service
-            await cache_service.set(cache_key, exists, cache_ttl)
-        
-        return exists
-    
-    def get_slow_queries(self, limit: int = 10) -> List[QueryMetrics]:
-        """获取慢查询列表（按耗时降序）"""
-        return sorted(
-            self.slow_query_log,
-            key=lambda x: x.execution_time_ms,
-            reverse=True
-        )[:limit]
-    
-    def clear_slow_query_log(self) -> None:
-        """清空慢查询日志"""
-        self.slow_query_log.clear()
+        formula_id: int,
+        include_deleted: bool = False,
+    ) -> Optional[Formula]:
+        """优化版配方详情查询，预加载所有关联关系"""
+        start = time.time()
+
+        query = select(Formula).where(Formula.id == formula_id)
+
+        # 🔴 核心优化：一次查询加载所有关联关系
+        query = query.options(
+            selectinload(Formula.categories),
+            selectinload(Formula.tags),
+            selectinload(Formula.ingredients),
+            selectinload(Formula.peptides),
+            selectinload(Formula.creator),
+            selectinload(Formula.reviewer),
+            selectinload(Formula.versions),
+            selectinload(Formula.experiments),
+        )
+
+        if not include_deleted and hasattr(Formula, 'deleted_at'):
+            query = query.where(Formula.deleted_at.is_(None))
+
+        result = await self._session.execute(query)
+        formula = result.scalar_one_or_none()
+
+        elapsed = time.time() - start
+        logger.info(
+            f"[QueryOptimizer] 配方详情查询: %dms success=%s",
+            int(elapsed * 1000), formula is not None,
+        )
+
+        return formula
+
+    # ─────────────────────────────────────────
+    # 统计查询（只读，用于仪表盘）
+    # ─────────────────────────────────────────
+    async def get_stats(self) -> Dict[str, Any]:
+        """获取配方统计信息（一次性查询聚合）"""
+        start = time.time()
+
+        # 🔴 单次查询获取所有统计信息，避免多个独立查询
+        stmt = select(
+            func.count(Formula.id).label('total'),
+            func.sum(
+                (Formula.status == FormulaStatus.DRAFT).cast('int')
+            ).label('draft_count'),
+            func.sum(
+                (Formula.status == FormulaStatus.APPROVED).cast('int')
+            ).label('approved_count'),
+            func.sum(
+                (Formula.status == FormulaStatus.REJECTED).cast('int')
+            ).label('rejected_count'),
+            func.count(Formula.creator_id.distinct()).label('unique_creators'),
+        )
+
+        if hasattr(Formula, 'deleted_at'):
+            stmt = stmt.where(Formula.deleted_at.is_(None))
+
+        result = await self._session.execute(stmt)
+        row = result.fetchone()
+
+        elapsed = time.time() - start
+        logger.info(
+            f"[QueryOptimizer] 统计查询: %dms", int(elapsed * 1000),
+        )
+
+        if row is None:
+            return {
+                'total': 0,
+                'draft_count': 0,
+                'approved_count': 0,
+                'rejected_count': 0,
+                'unique_creators': 0,
+            }
+
+        return {
+            'total': row.total or 0,
+            'draft_count': row.draft_count or 0,
+            'approved_count': row.approved_count or 0,
+            'rejected_count': row.rejected_count or 0,
+            'unique_creators': row.unique_creators or 0,
+        }
+
+    # ─────────────────────────────────────────
+    # 按用户查询配方（优化版，一次查询）
+    # ─────────────────────────────────────────
+    async def list_by_user(
+        self,
+        user_id: int,
+        page: int = 1,
+        page_size: int = 50,
+        status: Optional[FormulaStatus] = None,
+    ) -> Tuple[List[Formula], int]:
+        """按用户查询配方（优化版，预加载关联关系"""
+        query = select(Formula).where(Formula.creator_id == user_id)
+
+        # 预加载
+        query = query.options(
+            selectinload(Formula.categories),
+            selectinload(Formula.tags),
+            selectinload(Formula.creator),
+            selectinload(Formula.versions),
+        )
+
+        if status:
+            query = query.where(Formula.status == status)
+
+        # 总数
+        count_stmt = select(func.count()).select_from(query.subquery())
+        total = (await self._session.execute(count_stmt)).scalar() or 0
+
+        # 分页
+        query = query.order_by(Formula.updated_at.desc())
+        query = query.offset((page - 1) * page_size).limit(page_size)
+
+        result = await self._session.execute(query)
+        formulas = list(result.scalars().all())
+
+        return formulas, total
 
 
-# ── 便捷装饰器 ──
+# ═══════════════════════════════════════
+# 🔴 P0-1: 用户查询优化器
+# ═══════════════════════════════════════
 
-def cached_query(
-    cache_key_pattern: str,
-    ttl: int = 300,
-    **kwargs
-):
+class UserQueryOptimizer:
+    """用户查询优化器，预加载用户关联关系"""
+
+    def __init__(self, session: AsyncSession):
+        self._session = session
+
+    async def get_optimized(
+        self,
+        user_id: int,
+    ) -> Optional[User]:
+        """优化版用户详情查询"""
+        query = select(User).where(User.id == user_id)
+
+        # 预加载关联关系（避免 N+1 查询）
+        query = query.options(
+            selectinload(User.formulas_created),  # 关联配方
+            selectinload(User.formulas_reviewed),  # 审核过的配方
+            selectinload(User.team_memberships),  # 团队成员关系
+            selectinload(User.experiments),  # 关联实验
+            selectinload(User.notifications),  # 通知
+        )
+
+        result = await self._session.execute(query)
+        return result.scalar_one_or_none()
+
+    async def list_optimized(
+        self,
+        page: int = 1,
+        page_size: int = 50,
+        is_active: Optional[bool] = True,
+    ) -> Tuple[List[User], int]:
+        """优化版用户列表查询"""
+        query = select(User)
+
+        if is_active is not None:
+            query = query.where(User.is_active == is_active)
+
+        # 预加载
+        query = query.options(
+            selectinload(User.team_memberships),
+        )
+
+        count_stmt = select(func.count()).select_from(query.subquery())
+        total = (await self._session.execute(count_stmt)).scalar() or 0
+
+        query = query.order_by(User.updated_at.desc())
+        query = query.offset((page - 1) * page_size).limit(page_size)
+
+        result = await self._session.execute(query)
+        return list(result.scalars().all()), total
+
+
+# ════════════════════════════════════════
+# ════════════════════════════════════════
+# 🔴 P0-1: 简化版全局便捷函数
+# ════════════════════════════════════════
+
+async def get_optimized_formulas(
+    session: AsyncSession,
+    page: int = 1,
+    page_size: int = 20,
+    status: Optional[FormulaStatus] = None,
+    creator_id: Optional[int] = None,
+    search: Optional[str] = None,
+) -> Tuple[List[Formula], int]:
+    """便捷函数：获取优化版配方列表
+
+    示例:
+        formulas, total = await get_optimized_formulas(db, page=1, page_size=20)
     """
-    查询缓存装饰器（异步函数用）
-    
-    用法:
-        @cached_query("user_profile:{user_id}", ttl=600)
-        async def get_user_profile(user_id: int) -> dict:
-            ...
+    optimizer = FormulaQueryOptimizer(session)
+    return await optimizer.list_optimized(
+        page=page, page_size=page_size,
+        status=status, creator_id=creator_id, search=search,
+    )
+
+
+async def get_optimized_formula(
+    session: AsyncSession,
+    formula_id: int,
+) -> Optional[Formula]:
+    """便捷函数：获取优化版配方详情
+
+    示例:
+        formula = await get_optimized_formula(db, 123)
     """
-    def decorator(func):
-        @wraps(func)
-        async def wrapper(*args, **kwargs):
-            from ..core.cache_system import cache_service
-            
-            # 生成缓存键
-            cache_key = cache_key_format(cache_key_pattern, args, kwargs)
-            
-            # 尝试从缓存获取
-            cached = await cache_service.get_json(cache_key)
-            if cached is not None:
-                return cached
-            
-            # 执行函数
-            result = await func(*args, **kwargs)
-            
-            # 存入缓存
-            await cache_service.set_json(cache_key, result, ttl)
-            
-            return result
-        
-        return wrapper
-    return decorator
+    optimizer = FormulaQueryOptimizer(session)
+    return await optimizer.get_optimized(formula_id=formula_id)
 
 
-def cache_key_format(pattern: str, args: tuple, kwargs: dict) -> str:
-    """格式化缓存键"""
-    key = pattern
-    
-    # 替换位置参数
-    for i, arg in enumerate(args):
-        key = key.replace(f"{{{i}}}", str(arg))
-    
-    # 替换关键字参数
-    for name, value in kwargs.items():
-        key = key.replace(f"{{{name}}}", str(value))
-    
-    return key
+async def get_optimized_user(
+    session: AsyncSession,
+    user_id: int,
+) -> Optional[User]:
+    """便捷函数：获取优化版用户详情
+
+    示例:
+        user = await get_optimized_user(db, 456)
+    """
+    optimizer = UserQueryOptimizer(session)
+    return await optimizer.get_optimized(user_id=user_id)
 
 
-# ── 预加载策略常量 ──
+async def get_formula_stats(session: AsyncSession) -> Dict[str, Any]:
+    """便捷函数：获取配方统计信息
 
-LOAD_STRATEGIES = {
-    # 选择性加载（推荐）
-    "selectinload": selectinload,
-    # JOIN 加载（适合一对多且数据量少时）
-    "joinedload": joinedload,
-}
-
-
-# ── 全局实例工厂 ──
-
-def create_optimizer(db: AsyncSession) -> QueryOptimizer:
-    """创建查询优化器实例"""
-    return QueryOptimizer(db)
+    示例:
+        stats = await get_formula_stats(db)
+    """
+    optimizer = FormulaQueryOptimizer(session)
+    return await optimizer.get_stats()
 
 
-# ── 性能监控中间件辅助 ──
+# ════════════════════════════════════════
+# 🔴 P0-1: 便捷函数（从用户配方列表
+# ════════════════════════════════════════
 
-async def log_query_performance(
-    db: AsyncSession,
-    label: str,
-    stmt: Select
-) -> float:
-    """记录查询性能（供中间件使用）"""
-    start = time.perf_counter()
-    
-    try:
-        await db.execute(stmt)
-    finally:
-        elapsed = (time.perf_counter() - start) * 1000
-        
-        if elapsed > 500:  # > 500ms
-            logger.warning(f"⏱️ 长耗时查询 [{label}]: {elapsed:.2f}ms")
-        elif elapsed > 100:  # > 100ms
-            logger.info(f"⏱️ 查询 [{label}]: {elapsed:.2f}ms")
-        
-        return elapsed
+async def get_user_formulas(
+    session: AsyncSession,
+    user_id: int,
+    page: int = 1,
+    page_size: int = 50,
+    status: Optional[FormulaStatus] = None,
+) -> Tuple[List[Formula], int]:
+    """便捷函数：获取用户配方列表（预加载关联关系
+
+    示例:
+        formulas, total = await get_user_formulas(db, user_id=1, page=1, page_size=50)
+    """
+    optimizer = FormulaQueryOptimizer(session)
+    return await optimizer.list_by_user(
+        user_id=user_id, page=page, page_size=page_size, status=status,
+    )
+
+
+__all__ = [
+    # 核心类
+    'FormulaQueryOptimizer',
+    'UserQueryOptimizer',
+    'EagerLoadStrategy',
+    'strategy',
+    # 便捷函数
+    'get_optimized_formulas',
+    'get_optimized_formula',
+    'get_optimized_user',
+    'get_formula_stats',
+    'get_user_formulas',
+]

@@ -312,3 +312,7 @@ class ExperimentFilterParams:
 # 常用依赖
 CurrentUser = Annotated[User, Depends(get_current_active_user)]
 DbSession = Annotated[AsyncSession, Depends(get_db_session)]
+
+# 向后兼容的快捷别名（供 enterprise.py / main.py 等使用）
+get_current_admin_user = require_role(UserRole.ADMIN)
+admin_route = get_current_admin_user

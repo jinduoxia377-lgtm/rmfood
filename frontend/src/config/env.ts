@@ -26,8 +26,8 @@ export interface WebSocketConfig {
 export interface AppConfig {
   name: string
   version: string
-  defaultUsername: string
-  defaultPassword: string
+  // 🔒 P0 安全修复: 移除默认凭据硬编码，防止信息泄露
+  // 生产环境必须从环境变量配置，禁止任何默认值
 }
 
 export interface FeaturesConfig {
@@ -117,8 +117,8 @@ export const envConfig: EnvConfig = {
   app: {
     name: import.meta.env?.VITE_APP_NAME || 'RMFOOD',
     version: import.meta.env?.VITE_APP_VERSION || '1.0.0',
-    defaultUsername: import.meta.env?.VITE_DEFAULT_USERNAME || 'admin',
-    defaultPassword: import.meta.env?.VITE_DEFAULT_PASSWORD || 'admin123',
+    // 🔒 P0 安全修复: 已移除 defaultUsername/defaultPassword
+    // 如需开发环境填充登录表单，仅在严格控制的开发配置中启用
   },
 
   features: {

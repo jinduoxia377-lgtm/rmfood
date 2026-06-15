@@ -618,16 +618,14 @@ async def test_preprocessor():
     """
     测试序列预处理引擎的功能和性能
     """
-    print("\n" + "="*80)
-    print("🧪 序列预处理引擎 - 功能与性能测试")
-    print("="*80 + "\n")
-    
+    logger.info("\n" + "="*80)
+    logger.info("🧪 序列预处理引擎 - 功能与性能测试")
+    logger.info("="*80 + "\n")
     preprocessor = SequencePreprocessor()
     
     # 测试1: 有效序列验证
-    print("📌 测试1: 有效序列验证")
-    print("-" * 60)
-    
+    logger.info("📌 测试1: 有效序列验证")
+    logger.info("-" * 60)
     valid_seqs = [
         "VLGYTKEGNHIVGKKISARFAQEINQLDLTTLLKLAQPEEL",  # 正常序列
         "ACDEFGHIKLMNPQRSTVWY",  # 包含所有20种AA
@@ -638,13 +636,12 @@ async def test_preprocessor():
         result = await preprocessor.validate_sequence(seq)
         assert result.is_valid, f"❌ 应该通过: {seq[:30]}..."
         assert result.quality_score > 0.7, f"❌ 质量分数过低: {result.quality_score}"
-        print(f"   ✅ 长度:{len(seq):4d} | 质量:{result.quality_score:.3f} | 警告数:{len(result.warnings)}")
+        logger.warning(f"   ✅ 长度:{len(seq):4d} | 质量:{result.quality_score:.3f} | 警告数:{len(result.warnings)}")
     print()
     
     # 测试2: 无效序列检测
-    print("📌 测试2: 无效序列检测")
-    print("-" * 60)
-    
+    logger.info("📌 测试2: 无效序列检测")
+    logger.info("-" * 60)
     invalid_cases = [
         ("", "空序列"),
         ("A", "过短"),
@@ -657,13 +654,12 @@ async def test_preprocessor():
         result = await preprocessor.validate_sequence(seq)
         assert not result.is_valid, f"❌ 应该失败: {desc}"
         assert len(result.errors) > 0, f"❌ 应该有错误信息: {desc}"
-        print(f"   ✅ {desc:15s} | 错误数: {len(result.errors)} | {result.errors[0].message[:50]}")
+        logger.error(f"   ✅ {desc:15s} | 错误数: {len(result.errors)} | {result.errors[0].message[:50]}")
     print()
     
     # 测试3: 序列标准化
-    print("📌 测试3: 序列标准化")
-    print("-" * 60)
-    
+    logger.info("📌 测试3: 序列标准化")
+    logger.info("-" * 60)
     standardize_cases = [
         ("vlgytkegn", "小写转大写"),
         ("V L G Y T K E G N", "去除空格"),
@@ -673,13 +669,12 @@ async def test_preprocessor():
     
     for seq, desc in standardize_cases:
         std_result = await preprocessor.standardize(seq)
-        print(f"   ✅ {desc:20s} | 原始:'{seq}' → 标准化:'{std_result.value}' | 修饰:{len(std_result.modifications_detected)}处")
+        logger.info(f"   ✅ {desc:20s} | 原始:'{seq}' → 标准化:'{std_result.value}' | 修饰:{len(std_result.modifications_detected)}处")
     print()
     
     # 测试4: 质量评估
-    print("📌 测试4: 质量评估")
-    print("-" * 60)
-    
+    logger.info("📌 测试4: 质量评估")
+    logger.info("-" * 60)
     test_sequences = {
         "ACDEFGHIKLMNPQRSTVWY": "高多样性 (全20种AA)",
         "AAAAAAA": "极低质量 (单AA重复)",
@@ -688,17 +683,15 @@ async def test_preprocessor():
     
     for seq, desc in test_sequences.items():
         metrics = await preprocessor.quality_assess(seq)
-        print(f"   ✅ {desc}")
-        print(f"      Shannon熵: {metrics.complexity_score:.3f}")
-        print(f"      有重复: {'是' if metrics.has_repeats else '否'}")
-        print(f"      低复杂度区: {len(metrics.low_complexity_regions)} 个")
-        print(f"      异常标志: {metrics.anomaly_flags if metrics.anomaly_flags else '无'}")
-        print(f"      综合质量: {metrics.overall_quality:.3f}\n")
-        
+        logger.info(f"   ✅ {desc}")
+        logger.info(f"      Shannon熵: {metrics.complexity_score:.3f}")
+        logger.info(f"      有重复: {'是' if metrics.has_repeats else '否'}")
+        logger.info(f"      低复杂度区: {len(metrics.low_complexity_regions)} 个")
+        logger.error(f"      异常标志: {metrics.anomaly_flags if metrics.anomaly_flags else '无'}")
+        logger.info(f"      综合质量: {metrics.overall_quality:.3f}\n")
     # 测试5: 性能基准测试
-    print("📌 测试5: 性能基准测试 (>10,000 seq/s)")
-    print("-" * 60)
-    
+    logger.info("📌 测试5: 性能基准测试 (>10,000 seq/s)")
+    logger.info("-" * 60)
     import time
     import random
     
@@ -718,21 +711,18 @@ async def test_preprocessor():
     elapsed = time.time() - start_time
     throughput = len(test_batch) / elapsed
     
-    print(f"   📊 测试规模: {len(test_batch):,} 条序列")
-    print(f"   ⏱️ 总耗时: {elapsed:.2f}s")
-    print(f"   🚀 吞吐量: {throughput:,.0f} seq/s")
-    
+    logger.info(f"   📊 测试规模: {len(test_batch):,} 条序列")
+    logger.info(f"   ⏱️ 总耗时: {elapsed:.2f}s")
+    logger.info(f"   🚀 吞吐量: {throughput:,.0f} seq/s")
     if throughput > 10000:
-        print(f"   ✅ 性能达标! (目标: >10,000 seq/s)")
+        logger.info(f"   ✅ 性能达标! (目标: >10,000 seq/s)")
     else:
-        print(f"   ⚠️ 性能未达标 (目标: >10,000 seq/s)")
+        logger.info(f"   ⚠️ 性能未达标 (目标: >10,000 seq/s)")
     print()
     
-    print("="*80)
-    print("🎉 序列预处理引擎测试完成！")
-    print("="*80 + "\n")
-
-
+    logger.info("="*80)
+    logger.info("🎉 序列预处理引擎测试完成！")
+    logger.info("="*80 + "\n")
 if __name__ == "__main__":
     logging.basicConfig(
         level=logging.INFO,

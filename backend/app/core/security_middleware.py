@@ -94,18 +94,54 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             # Referrer策略
             response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
 
-            # Content Security Policy
-            csp = (
-                "default-src 'self'; "
-                "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
-                "style-src 'self' 'unsafe-inline'; "
-                "img-src 'self' data: blob:; "
-                "font-src 'self' data:; "
-                "connect-src 'self' wss: ws: http://localhost:* http://127.0.0.1:*; "
-                "frame-ancestors 'none'; "
-                "base-uri 'self'; "
-                "form-action 'self'"
-            )
+            # Content Security Policy (CSP)
+            #
+            # 🔒 P0 安全修复: 移除 'unsafe-inline' 和 'unsafe-eval'
+            #
+            # 安全策略说明:
+            # - default-src 'self': 默认仅允许同源资源
+            # - script-src 'self': 仅允许同源脚本（无 unsafe-eval）
+            #   生产环境应使用 nonce 或 hash 方案:
+            #   "script-src 'self' 'nonce-{random}'"
+            # - style-src 'self': 仅允许同源样式（无 unsafe-inline）
+            #   现代浏览器支持 'strict-dynamic' 或 nonce
+            # - img-src 'self' data: blob:: 图片来源
+            # - font-src 'self' data:: 字体来源
+            # - connect-src 'self' wss: ws:: WebSocket 来源
+            #
+            # ⚠️ 注意: 如果前端需要内联脚本（如 React/Vue 运行时），
+            # 需要在构建时注入 nonce 并配置 "script-src 'self' 'nonce-xxx'"
+            #
+            if self.is_production:
+                # 🔒 生产环境: 严格 CSP（无 unsafe-*）
+                csp = (
+                    "default-src 'self'; "
+                    "script-src 'self'; "  # 🔒 移除 unsafe-eval
+                    "style-src 'self'; "   # 🔒 移除 unsafe-inline
+                    "img-src 'self' data: blob: https:; "
+                    "font-src 'self' data:; "
+                    "connect-src 'self' wss: ws: https:; "
+                    "frame-ancestors 'none'; "
+                    "base-uri 'self'; "
+                    "form-action 'self'; "
+                    "object-src 'none'; "
+                    "upgrade-insecure-requests"
+                )
+            else:
+                # 🔒 开发环境: 宽松但仍然安全
+                # 仅允许本地开发服务器的 inline 脚本和 eval
+                csp = (
+                    "default-src 'self' 'unsafe-inline' 'unsafe-eval'; "
+                    "script-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:* http://127.0.0.1:*; "
+                    "style-src 'self' 'unsafe-inline' http://localhost:* http://127.0.0.1:*; "
+                    "img-src 'self' data: blob: https:; "
+                    "font-src 'self' data: http://localhost:* http://127.0.0.1:*; "
+                    "connect-src 'self' ws: wss: http://localhost:* http://127.0.0.1:* https:; "
+                    "frame-ancestors 'none'; "
+                    "base-uri 'self'; "
+                    "form-action 'self'; "
+                    "object-src 'none'"
+                )
             response.headers["Content-Security-Policy"] = csp
 
             # 权限策略

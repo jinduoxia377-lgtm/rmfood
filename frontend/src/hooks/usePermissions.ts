@@ -1,374 +1,599 @@
-import { useReducer, useCallback, useEffect, useRef, useMemo } from 'react'
-import api from '@/api/client'
+/**
+ * 🔒 P5-4: 前端权限控制与路由守卫
+ *
+ * 提供:
+ * 1. **权限定义** - 基于角色的权限系统 (RBAC)
+ * 2. **路由守卫** - 基于权限的访问控制
+ * 3. **权限指令** - ngIf / disabled 等权限指令
+ * 4. **动态权限** - 基于后端返回的动态权限
+ * 5. **审计日志** - 敏感操作记录
+ *
+ * 使用方式:
+ *   import { PermissionGuard, withPermission, usePermissions } from '@/hooks/usePermissions'
+ *
+ *   // 路由守卫
+ *   <Route path="/admin" element={<AdminPage />} loader={withPermission('admin:access')} />
+ *
+ *   // 权限检查
+ *   const { can, canAny } = usePermissions()
+ *   {can('formula:write') && <EditButton />}
+ */
 
-export type PermissionAction =
-  | 'create'
-  | 'read'
-  | 'update'
-  | 'delete'
-  | 'manage'
-  | 'invite'
-  | 'export'
-  | 'archive'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuthStore } from '@/stores/auth';
 
-export type ResourceType = 'organization' | 'team' | 'member' | 'formula' | 'setting' | 'all'
+// ════════════════════════════════════════════
+// 🔒 P5-4: 权限类型定义
+// ════════════════════════════════════════════
 
-export interface Permission {
-  id: number
-  name: string
-  code: string
-  description?: string
-  resource: ResourceType
-  actions: PermissionAction[]
-  createdAt?: string
+export type Permission =
+  | 'admin:access'
+  | 'admin:users'
+  | 'admin:settings'
+  | 'formula:read'
+  | 'formula:write'
+  | 'formula:delete'
+  | 'formula:approve'
+  | 'experiment:read'
+  | 'experiment:write'
+  | 'experiment:delete'
+  | 'ai:access'
+  | 'ai:advanced'
+  | 'export:excel'
+  | 'export:pdf'
+  | 'export:csv'
+  | 'user:read'
+  | 'user:write'
+  | 'organization:manage'
+  | string;  // 允许自定义权限
+
+export type Role = 'admin' | 'manager' | 'researcher' | 'viewer' | 'guest';
+
+export interface PermissionContext {
+  userId: string;
+  role: Role;
+  permissions: Permission[];
+  organizationId?: string;
+  metadata?: Record<string, any>;
 }
 
-export interface RoleDefinition {
-  id: number
-  name: string
-  code: string
-  description?: string
-  permissions: Permission[]
-  isSystem: boolean
-  memberCount?: number
-  createdAt?: string
-  updatedAt?: string
-}
+// 默认角色权限映射
+export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
+  admin: [
+    'admin:access',
+    'admin:users',
+    'admin:settings',
+    'formula:read',
+    'formula:write',
+    'formula:delete',
+    'formula:approve',
+    'experiment:read',
+    'experiment:write',
+    'experiment:delete',
+    'ai:access',
+    'ai:advanced',
+    'export:excel',
+    'export:pdf',
+    'export:csv',
+    'user:read',
+    'user:write',
+    'organization:manage',
+  ],
+  manager: [
+    'formula:read',
+    'formula:write',
+    'formula:approve',
+    'experiment:read',
+    'experiment:write',
+    'experiment:delete',
+    'ai:access',
+    'ai:advanced',
+    'export:excel',
+    'export:pdf',
+    'export:csv',
+    'user:read',
+    'organization:manage',
+  ],
+  researcher: [
+    'formula:read',
+    'formula:write',
+    'experiment:read',
+    'experiment:write',
+    'ai:access',
+    'export:excel',
+    'export:pdf',
+    'export:csv',
+  ],
+  viewer: [
+    'formula:read',
+    'experiment:read',
+    'ai:access',
+    'export:pdf',
+  ],
+  guest: [
+    'formula:read',
+    'ai:access',
+  ],
+};
 
-export interface CreateRoleRequest {
-  name: string
-  code: string
-  description?: string
-  permissionIds: number[]
-}
+// ════════════════════════════════════════════
+// 🔒 P5-4: 权限检查 Hook
+// ════════════════════════════════════════════
 
-interface PermissionsState {
-  permissions: Permission[]
-  roles: RoleDefinition[]
-  loading: boolean
-  error: Error | null
-  currentOrgId: number | null
-  lastFetchedAt: number | null
-}
+export function usePermissions() {
+  const user = useAuthStore(state => state.user);
+  const navigate = useNavigate();
+  const location = useLocation();
 
-type PermissionsAction =
-  | { type: 'SET_LOADING'; payload: boolean }
-  | { type: 'SET_ERROR'; payload: Error | null }
-  | { type: 'SET_PERMISSIONS'; payload: Permission[] }
-  | { type: 'SET_ROLES'; payload: RoleDefinition[] }
-  | { type: 'ADD_ROLE'; payload: RoleDefinition }
-  | { type: 'UPDATE_ROLE'; payload: { id: number; data: Partial<RoleDefinition> } }
-  | { type: 'REMOVE_ROLE'; payload: number }
-  | { type: 'SET_ORG_ID'; payload: number | null }
-  | { type: 'RESET_STATE' }
+  // 从用户信息中获取权限（支持动态权限）
+  const permissions = useMemo((): Permission[] => {
+    if (!user) return [];
 
-const initialState: PermissionsState = {
-  permissions: [],
-  roles: [],
-  loading: false,
-  error: null,
-  currentOrgId: null,
-  lastFetchedAt: null,
-}
-
-function permissionsReducer(state: PermissionsState, action: PermissionsAction): PermissionsState {
-  switch (action.type) {
-    case 'SET_LOADING':
-      return { ...state, loading: action.payload }
-
-    case 'SET_ERROR':
-      return { ...state, error: action.payload, loading: false }
-
-    case 'SET_PERMISSIONS':
-      return { ...state, permissions: action.payload, loading: false, lastFetchedAt: Date.now() }
-
-    case 'SET_ROLES':
-      return { ...state, roles: action.payload, loading: false }
-
-    case 'ADD_ROLE':
-      return { ...state, roles: [...state.roles, action.payload] }
-
-    case 'UPDATE_ROLE':
-      return {
-        ...state,
-        roles: state.roles.map((role) =>
-          role.id === action.payload.id ? { ...role, ...action.payload.data } : role,
-        ),
-      }
-
-    case 'REMOVE_ROLE':
-      return {
-        ...state,
-        roles: state.roles.filter((role) => role.id !== action.payload),
-      }
-
-    case 'SET_ORG_ID':
-      return { ...state, currentOrgId: action.payload }
-
-    case 'RESET_STATE':
-      return { ...initialState }
-
-    default:
-      return state
-  }
-}
-
-const DEFAULT_PERMISSIONS: Record<ResourceType, PermissionAction[]> = {
-  organization: ['read', 'update', 'manage'],
-  team: ['create', 'read', 'update', 'delete'],
-  member: ['invite', 'read', 'update', 'delete'],
-  formula: ['create', 'read', 'update', 'delete', 'export'],
-  setting: ['read', 'update'],
-  all: [],
-}
-
-interface UsePermissionsOptions {
-  autoFetch?: boolean
-  cacheTTL?: number
-}
-
-export function usePermissions(options: UsePermissionsOptions = {}) {
-  const { autoFetch = true, cacheTTL = 1000 * 60 * 10 } = options
-
-  const [state, dispatch] = useReducer(permissionsReducer, initialState)
-  const abortControllerRef = useRef<AbortController | null>(null)
-  const mountedRef = useRef(true)
-
-  useEffect(() => {
-    mountedRef.current = true
-    return () => {
-      mountedRef.current = false
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort()
-      }
-    }
-  }, [])
-
-  const fetchPermissions = useCallback(
-    async (orgId: number): Promise<void> => {
-      if (!mountedRef.current || typeof window === 'undefined') return
-
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort()
-      }
-
-      abortControllerRef.current = new AbortController()
-
-      dispatch({ type: 'SET_ORG_ID', payload: orgId })
-      dispatch({ type: 'SET_LOADING', payload: true })
-      dispatch({ type: 'SET_ERROR', payload: null })
-
-      try {
-        const response = await api.get(`/organizations/${orgId}/permissions`, {
-          signal: abortControllerRef.current.signal,
-        })
-
-        if (!mountedRef.current) return
-
-        dispatch({
-          type: 'SET_PERMISSIONS',
-          payload: response.data.items || response.data || DEFAULT_PERMISSIONS as any,
-        })
-      } catch (error: any) {
-        if (!mountedRef.current) return
-        if (error.name === 'CanceledError') return
-
-        dispatch({ type: 'SET_ERROR', payload: error as Error })
-      }
-    },
-    [],
-  )
-
-  const fetchRoles = useCallback(async (): Promise<void> => {
-    if (!mountedRef.current || !state.currentOrgId || typeof window === 'undefined') return
-
-    dispatch({ type: 'SET_LOADING', payload: true })
-    dispatch({ type: 'SET_ERROR', payload: null })
-
-    try {
-      const response = await api.get(`/organizations/${state.currentOrgId}/roles`)
-
-      if (!mountedRef.current) return
-
-      dispatch({
-        type: 'SET_ROLES',
-        payload: response.data.items || response.data || [],
-      })
-    } catch (error: any) {
-      if (!mountedRef.current) return
-
-      dispatch({ type: 'SET_ERROR', payload: error as Error })
-    }
-  }, [state.currentOrgId])
-
-  useEffect(() => {
-    if (autoFetch && state.currentOrgId && typeof window !== 'undefined') {
-      fetchRoles()
-    }
-  }, [autoFetch, state.currentOrgId, fetchRoles])
-
-  const createRole = useCallback(
-    async (data: CreateRoleRequest): Promise<RoleDefinition> => {
-      if (!state.currentOrgId) throw new Error('No organization selected')
-
-      dispatch({ type: 'SET_ERROR', payload: null })
-
-      try {
-        const response = await api.post(`/organizations/${state.currentOrgId}/roles`, data)
-        const newRole = response.data as RoleDefinition
-        dispatch({ type: 'ADD_ROLE', payload: newRole })
-        return newRole
-      } catch (error: any) {
-        dispatch({ type: 'SET_ERROR', payload: error as Error })
-        throw error
-      }
-    },
-    [state.currentOrgId],
-  )
-
-  const updateRole = useCallback(
-    async (roleId: number, data: Partial<RoleDefinition>): Promise<void> => {
-      if (!state.currentOrgId) throw new Error('No organization selected')
-
-      dispatch({ type: 'SET_ERROR', payload: null })
-
-      try {
-        await api.patch(`/organizations/${state.currentOrgId}/roles/${roleId}`, data)
-        dispatch({
-          type: 'UPDATE_ROLE',
-          payload: { id: roleId, data },
-        })
-      } catch (error: any) {
-        dispatch({ type: 'SET_ERROR', payload: error as Error })
-        throw error
-      }
-    },
-    [state.currentOrgId],
-  )
-
-  const deleteRole = useCallback(
-    async (roleId: number): Promise<void> => {
-      if (!state.currentOrgId) throw new Error('No organization selected')
-
-      dispatch({ type: 'SET_ERROR', payload: null })
-
-      try {
-        await api.delete(`/organizations/${state.currentOrgId}/roles/${roleId}`)
-        dispatch({ type: 'REMOVE_ROLE', payload: roleId })
-      } catch (error: any) {
-        dispatch({ type: 'SET_ERROR', payload: error as Error })
-        throw error
-      }
-    },
-    [state.currentOrgId],
-  )
-
-  const hasPermission = useCallback(
-    (action: PermissionAction, resource?: ResourceType): boolean => {
-      if (resource === 'all' || !resource) {
-        return state.permissions.some((p) => p.actions.includes(action))
-      }
-
-      const resourcePermission = state.permissions.find((p) => p.resource === resource)
-      if (!resourcePermission) {
-        const defaults = DEFAULT_PERMISSIONS[resource]
-        return defaults?.includes(action) ?? false
-      }
-
-      return resourcePermission.actions.includes(action)
-    },
-    [state.permissions],
-  )
-
-  const hasAnyPermission = useCallback(
-    (actions: PermissionAction[], resource?: ResourceType): boolean => {
-      return actions.some((action) => hasPermission(action, resource))
-    },
-    [hasPermission],
-  )
-
-  const hasAllPermissions = useCallback(
-    (actions: PermissionAction[], resource?: ResourceType): boolean => {
-      return actions.every((action) => hasPermission(action, resource))
-    },
-    [hasPermission],
-  )
-
-  const getRoleById = useCallback(
-    (roleId: number): RoleDefinition | undefined => {
-      return state.roles.find((r) => r.id === roleId)
-    },
-    [state.roles],
-  )
-
-  const getRoleByCode = useCallback(
-    (code: string): RoleDefinition | undefined => {
-      return state.roles.find((r) => r.code === code)
-    },
-    [state.roles],
-  )
-
-  const refetch = useCallback(() => {
-    if (state.currentOrgId) {
-      fetchPermissions(state.currentOrgId)
-      fetchRoles()
-    }
-  }, [fetchPermissions, fetchRoles, state.currentOrgId])
-
-  const isStale = useMemo(() => {
-    if (!state.lastFetchedAt) return true
-    return Date.now() - state.lastFetchedAt > cacheTTL
-  }, [state.lastFetchedAt, cacheTTL])
-
-  const permissionGroups = useMemo(() => {
-    const groups = new Map<ResourceType, Permission[]>()
-
-    for (const perm of state.permissions) {
-      const existing = groups.get(perm.resource) || []
-      existing.push(perm)
-      groups.set(perm.resource, existing)
+    // 优先使用后端返回的动态权限
+    if (user.permissions && Array.isArray(user.permissions)) {
+      return user.permissions as Permission[];
     }
 
-    return Object.fromEntries(groups) as Record<ResourceType, Permission[]>
-  }, [state.permissions])
+    // 否则基于角色推断权限
+    const role = user.role as Role;
+    return ROLE_PERMISSIONS[role] || [];
+  }, [user]);
 
-  const systemRoles = useMemo(
-    () => state.roles.filter((r) => r.isSystem),
-    [state.roles],
-  )
+  const role = user?.role as Role || 'guest';
 
-  const customRoles = useMemo(
-    () => state.roles.filter((r) => !r.isSystem),
-    [state.roles],
-  )
+  // ─────────────────────────────────────────────
+  // 权限检查函数
+  // ─────────────────────────────────────────────
+
+  const can = useCallback(
+    (permission: Permission): boolean => {
+      if (!user) return false;
+      return permissions.includes(permission);
+    },
+    [permissions, user]
+  );
+
+  const canAny = useCallback(
+    (perms: Permission[]): boolean => {
+      if (!user) return false;
+      return perms.some(p => permissions.includes(p));
+    },
+    [permissions, user]
+  );
+
+  const canAll = useCallback(
+    (perms: Permission[]): boolean => {
+      if (!user) return false;
+      return perms.every(p => permissions.includes(p));
+    },
+    [permissions, user]
+  );
+
+  const isRole = useCallback(
+    (roles: Role | Role[]): boolean => {
+      if (!user) return false;
+      const roleArray = Array.isArray(roles) ? roles : [roles];
+      return roleArray.includes(role);
+    },
+    [role, user]
+  );
+
+  const isAtLeast = useCallback(
+    (minRole: Role): boolean => {
+      if (!user) return false;
+      const hierarchy: Role[] = ['guest', 'viewer', 'researcher', 'manager', 'admin'];
+      const userLevel = hierarchy.indexOf(role);
+      const minLevel = hierarchy.indexOf(minRole);
+      return userLevel >= minLevel;
+    },
+    [role, user]
+  );
 
   return {
-    permissions: state.permissions,
-    roles: state.roles,
-    loading: state.loading,
-    error: state.error,
+    // 状态
+    permissions,
+    role,
+    isAdmin: role === 'admin',
+    isAuthenticated: !!user,
 
-    fetchPermissions,
-    fetchRoles,
+    // 检查函数
+    can,
+    canAny,
+    canAll,
+    isRole,
+    isAtLeast,
 
-    createRole,
-    updateRole,
-    deleteRole,
-
-    hasPermission,
-    hasAnyPermission,
-    hasAllPermissions,
-
-    getRoleById,
-    getRoleByCode,
-
-    refetch,
-
-    isStale,
-    permissionGroups,
-    systemRoles,
-    customRoles,
-  }
+    // 便捷方法
+    canReadFormula: can('formula:read'),
+    canWriteFormula: can('formula:write'),
+    canDeleteFormula: can('formula:delete'),
+    canApproveFormula: can('formula:approve'),
+    canAccessAdmin: can('admin:access'),
+    canAccessAI: can('ai:access'),
+    canAccessAdvancedAI: can('ai:advanced'),
+    canExport: canAny(['export:excel', 'export:pdf', 'export:csv']),
+  };
 }
 
-export type UsePermissionsReturn = ReturnType<typeof usePermissions>
+// ════════════════════════════════════════════
+// 🔒 P5-4: 权限守卫 Hook
+// ════════════════════════════════════════════
+
+export function usePermissionGuard(
+  requiredPermission: Permission | Permission[],
+  options: {
+    mode?: 'all' | 'any';
+    fallback?: 'redirect' | 'hide' | 'disable';
+    redirectTo?: string;
+    onDenied?: () => void;
+  } = {}
+) {
+  const { can, canAny, canAll, isAuthenticated } = usePermissions();
+  const navigate = useNavigate();
+
+  const {
+    mode = Array.isArray(requiredPermission) ? 'any' : 'all',
+    fallback = 'hide',
+    redirectTo = '/unauthorized',
+    onDenied,
+  } = options;
+
+  const hasPermission = useMemo(() => {
+    if (!isAuthenticated) return false;
+    if (typeof requiredPermission === 'string') {
+      return can(requiredPermission);
+    }
+    return mode === 'all' ? canAll(requiredPermission) : canAny(requiredPermission);
+  }, [requiredPermission, mode, can, canAny, canAll, isAuthenticated]);
+
+  const handleDenied = useCallback(() => {
+    if (onDenied) {
+      onDenied();
+    } else if (fallback === 'redirect') {
+      navigate(redirectTo, { replace: true });
+    }
+  }, [fallback, redirectTo, navigate, onDenied]);
+
+  return {
+    hasPermission,
+    handleDenied,
+    isLoading: !isAuthenticated,
+  };
+}
+
+// ════════════════════════════════════════════
+// 🔒 P5-4: 路由守卫组件
+// ════════════════════════════════════════════
+
+interface PermissionRouteProps {
+  children: React.ReactNode;
+  permission?: Permission | Permission[];
+  requireAll?: boolean;
+  redirectTo?: string;
+  fallback?: React.ReactNode;
+}
+
+export function PermissionRoute({
+  children,
+  permission,
+  requireAll = false,
+  redirectTo = '/unauthorized',
+  fallback = null,
+}: PermissionRouteProps) {
+  const { can, canAny, canAll, isAuthenticated } = usePermissions();
+  const navigate = useNavigate();
+
+  // 无需权限的路由
+  if (!permission) {
+    return <>{children}</>;
+  }
+
+  // 未登录
+  if (!isAuthenticated) {
+    navigate('/login', { replace: true });
+    return fallback;
+  }
+
+  // 权限检查
+  let hasPermission = true;
+  if (typeof permission === 'string') {
+    hasPermission = can(permission);
+  } else if (Array.isArray(permission)) {
+    hasPermission = requireAll ? canAll(permission) : canAny(permission);
+  }
+
+  if (hasPermission) {
+    return <>{children}</>;
+  }
+
+  // 无权限
+  navigate(redirectTo, { replace: true });
+  return fallback;
+}
+
+// ─────────────────────────────────────────────
+// 认证守卫
+// ─────────────────────────────────────────────
+
+interface AuthGuardProps {
+  children: React.ReactNode;
+  redirectTo?: string;
+  allowedRoles?: Role[];
+  requiredPermissions?: Permission[];
+}
+
+export function AuthGuard({
+  children,
+  redirectTo = '/login',
+  allowedRoles,
+  requiredPermissions,
+}: AuthGuardProps) {
+  const { isAuthenticated, isRole, canAny } = usePermissions();
+
+  // 未登录
+  if (!isAuthenticated) {
+    window.location.href = redirectTo;
+    return null;
+  }
+
+  // 角色检查
+  if (allowedRoles && allowedRoles.length > 0) {
+    if (!isRole(allowedRoles)) {
+      window.location.href = '/unauthorized';
+      return null;
+    }
+  }
+
+  // 权限检查
+  if (requiredPermissions && requiredPermissions.length > 0) {
+    if (!canAny(requiredPermissions)) {
+      window.location.href = '/unauthorized';
+      return null;
+    }
+  }
+
+  return <>{children}</>;
+}
+
+// ════════════════════════════════════════════
+// 🔒 P5-4: 权限高阶组件
+// ════════════════════════════════════════════
+
+export function withPermission<P extends object>(
+  permission: Permission | Permission[],
+  mode: 'all' | 'any' = 'any'
+) {
+  return function WithPermissionWrapper<P extends object>(
+    WrappedComponent: React.ComponentType<P>
+  ) {
+    return function PermissionWrapper(props: P) {
+      const { can, canAny, canAll } = usePermissions();
+      const navigate = useNavigate();
+
+      let hasPermission = true;
+      if (typeof permission === 'string') {
+        hasPermission = can(permission);
+      } else if (Array.isArray(permission)) {
+        hasPermission = mode === 'all' ? canAll(permission) : canAny(permission);
+      }
+
+      if (!hasPermission) {
+        navigate('/unauthorized', { replace: true });
+        return null;
+      }
+
+      return <WrappedComponent {...props} />;
+    };
+  };
+}
+
+// ════════════════════════════════════════════
+// 🔒 P5-4: 权限按钮组件
+// ════════════════════════════════════════════
+
+interface PermissionButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  permission?: Permission | Permission[];
+  requireAll?: boolean;
+  children: React.ReactNode;
+  fallback?: React.ReactNode;
+}
+
+export function PermissionButton({
+  permission,
+  requireAll = false,
+  children,
+  fallback = null,
+  ...buttonProps
+}: PermissionButtonProps) {
+  const { can, canAny, canAll, isAuthenticated } = usePermissions();
+
+  if (!isAuthenticated) {
+    return <>{fallback}</>;
+  }
+
+  if (!permission) {
+    return (
+      <button {...buttonProps}>
+        {children}
+      </button>
+    );
+  }
+
+  let hasPermission = true;
+  if (typeof permission === 'string') {
+    hasPermission = can(permission);
+  } else if (Array.isArray(permission)) {
+    hasPermission = requireAll ? canAll(permission) : canAny(permission);
+  }
+
+  if (!hasPermission) {
+    return <>{fallback}</>;
+  }
+
+  return (
+    <button {...buttonProps}>
+      {children}
+    </button>
+  );
+}
+
+// ════════════════════════════════════════════
+// 🔒 P5-4: 权限菜单项
+// ════════════════════════════════════════════
+
+interface PermissionMenuItemProps {
+  permission?: Permission | Permission[];
+  requireAll?: boolean;
+  children: React.ReactNode;
+  onClick?: () => void;
+  disabled?: boolean;
+}
+
+export function PermissionMenuItem({
+  permission,
+  requireAll = false,
+  children,
+  onClick,
+  disabled = false,
+}: PermissionMenuItemProps) {
+  const { can, canAny, canAll } = usePermissions();
+
+  let hasPermission = true;
+  if (permission) {
+    if (typeof permission === 'string') {
+      hasPermission = can(permission);
+    } else if (Array.isArray(permission)) {
+      hasPermission = requireAll ? canAll(permission) : canAny(permission);
+    }
+  }
+
+  if (!hasPermission) {
+    return null;
+  }
+
+  return (
+    <li onClick={disabled ? undefined : onClick}>
+      {children}
+    </li>
+  );
+}
+
+// ════════════════════════════════════════════
+// 🔒 P5-4: 审计日志 Hook
+// ════════════════════════════════════════════
+
+interface AuditLogEntry {
+  action: string;
+  resource: string;
+  resourceId?: string;
+  metadata?: Record<string, any>;
+  timestamp?: number;
+}
+
+const AUDIT_QUEUE: AuditLogEntry[] = [];
+const AUDIT_ENDPOINT = '/api/v1/audit/log';
+
+export function useAuditLog() {
+  const user = useAuthStore(state => state.user);
+  const queueRef = useRef<AuditLogEntry[]>([]);
+  const isProcessingRef = useRef(false);
+
+  const log = useCallback(
+    async (entry: AuditLogEntry) => {
+      const fullEntry: AuditLogEntry = {
+        ...entry,
+        timestamp: Date.now(),
+      };
+
+      queueRef.current.push(fullEntry);
+
+      // 批量发送（最多 10 条或间隔 5 秒）
+      if (queueRef.current.length >= 10) {
+        await flushAuditLog();
+      }
+    },
+    []
+  );
+
+  const flushAuditLog = useCallback(async () => {
+    if (queueRef.current.length === 0 || isProcessingRef.current) {
+      return;
+    }
+
+    isProcessingRef.current = true;
+    const entries = [...queueRef.current];
+    queueRef.current = [];
+
+    try {
+      await fetch(AUDIT_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          entries,
+          userId: user?.id,
+          sessionId: sessionStorage.getItem('session_id'),
+        }),
+      });
+    } catch (e) {
+      // 失败时放回队列
+      queueRef.current.unshift(...entries);
+      console.warn('[AuditLog] Failed to send audit log:', e);
+    } finally {
+      isProcessingRef.current = false;
+    }
+  }, [user]);
+
+  // 定期刷新
+  useEffect(() => {
+    const interval = setInterval(flushAuditLog, 5000);
+    return () => {
+      clearInterval(interval);
+      flushAuditLog();
+    };
+  }, [flushAuditLog]);
+
+  return {
+    log,
+    flush: flushAuditLog,
+    // 便捷方法
+    logView: (resource: string, resourceId?: string) =>
+      log({ action: 'view', resource, resourceId }),
+    logCreate: (resource: string, resourceId?: string, metadata?: any) =>
+      log({ action: 'create', resource, resourceId, metadata }),
+    logUpdate: (resource: string, resourceId?: string, metadata?: any) =>
+      log({ action: 'update', resource, resourceId, metadata }),
+    logDelete: (resource: string, resourceId?: string) =>
+      log({ action: 'delete', resource, resourceId }),
+    logExport: (resource: string, format: string) =>
+      log({ action: 'export', resource, metadata: { format } }),
+    logLogin: (method: string) =>
+      log({ action: 'login', resource: 'auth', metadata: { method } }),
+    logLogout: () =>
+      log({ action: 'logout', resource: 'auth' }),
+  };
+}
+
+// ════════════════════════════════════════════
+// 🔒 P5-4: 导出
+// ════════════════════════════════════════════
+
+export {
+  usePermissions,
+  usePermissionGuard,
+  PermissionRoute,
+  AuthGuard,
+  PermissionButton,
+  PermissionMenuItem,
+  withPermission,
+  useAuditLog,
+};
+
+export type {
+  PermissionRouteProps,
+  AuthGuardProps,
+  PermissionButtonProps,
+  PermissionMenuItemProps,
+};

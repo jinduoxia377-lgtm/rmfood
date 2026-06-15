@@ -276,42 +276,37 @@ async def test_swissprot_real_data():
     """
     测试Swiss-Prot客户端的真实数据获取能力
     """
-    print("\n" + "="*80)
-    print("🧪 Swiss-Prot客户端 - 真实数据验证测试")
-    print("="*80 + "\n")
-    
+    logger.info("\n" + "="*80)
+    logger.info("🧪 Swiss-Prot客户端 - 真实数据验证测试")
+    logger.info("="*80 + "\n")
     async with SwissProtClient() as client:
         
         # 测试1: 获取Swiss-Prot专家注释
-        print("📌 测试1: 获取 Insulin 的Swiss-Prot专家注释")
-        print("-" * 60)
-        
+        logger.info("📌 测试1: 获取 Insulin 的Swiss-Prot专家注释")
+        logger.info("-" * 60)
         expert_info = await client.get_expert_annotation("P01308")
         
         assert expert_info.get("found", True), "❌ 失败: 应该找到条目"
         
         if expert_info.get("is_swiss_prot"):
-            print(f"   ✅ 是Swiss-Prot条目")
-            print(f"   ✅ 可靠性评分: {expert_info['reliability_score']}/5")
-            print(f"   ✅ 蛋白质存在性: {expert_info['protein_existence_level']}")
-            print(f"   ✅ 文献引用数: {expert_info['literature_count']}")
-            print(f"   ✅ ECO证据标签数: {len(expert_info['evidence_tags'])}")
-            
+            logger.info(f"   ✅ 是Swiss-Prot条目")
+            logger.info(f"   ✅ 可靠性评分: {expert_info['reliability_score']}/5")
+            logger.info(f"   ✅ 蛋白质存在性: {expert_info['protein_existence_level']}")
+            logger.info(f"   ✅ 文献引用数: {expert_info['literature_count']}")
+            logger.info(f"   ✅ ECO证据标签数: {len(expert_info['evidence_tags'])}")
             quality = expert_info["quality_indicators"]
-            print(f"\n   📊 质量指标:")
-            print(f"      - 有3D结构: {'是' if quality['has_3d_structure'] else '否'}")
-            print(f"      - 有GO注释: {'是' if quality['has_go_annotations'] else '否'} ({len(expert_info['go_terms'])} terms)")
-            print(f"      - 有EC编号: {'是' if quality['has_ec_numbers'] else '否'} ({len(expert_info['ec_numbers'])})")
-            print(f"      - 注释质量分: {quality['annotation_score']}")
+            logger.info(f"\n   📊 质量指标:")
+            logger.info(f"      - 有3D结构: {'是' if quality['has_3d_structure'] else '否'}")
+            logger.info(f"      - 有GO注释: {'是' if quality['has_go_annotations'] else '否'} ({len(expert_info['go_terms'])} terms)")
+            logger.info(f"      - 有EC编号: {'是' if quality['has_ec_numbers'] else '否'} ({len(expert_info['ec_numbers'])})")
+            logger.info(f"      - 注释质量分: {quality['annotation_score']}")
         else:
-            print(f"   ⚠️ 不是Swiss-Prot条目: {expert_info.get('warning')}")
+            logger.warning(f"   ⚠️ 不是Swiss-Prot条目: {expert_info.get('warning')}")
         print()
         
-    print("="*80)
-    print("🎉 Swiss-Prot真实数据验证测试通过！")
-    print("="*80 + "\n")
-
-
+    logger.info("="*80)
+    logger.info("🎉 Swiss-Prot真实数据验证测试通过！")
+    logger.info("="*80 + "\n")
 if __name__ == "__main__":
     import sys
     logging.basicConfig(

@@ -1,40 +1,49 @@
+# 📦 RMFOOD 后端依赖 - 已锁定版本（P1-2 修复）
+# 此文件由 pyproject.toml 生成，作为 pip 安装的兼容格式
+# 如需更新依赖，请修改 pyproject.toml 后运行:
+#   pip-compile pyproject.toml > requirements.txt
+#   或使用: pip-audit 扫描漏洞
+
+# ── Web 框架 ──
 fastapi==0.115.0
 uvicorn[standard]==0.30.0
+
+# ── ORM + 数据库 ──
 sqlalchemy[asyncio]==2.0.35
 aiosqlite==0.20.0
+asyncpg==0.29.0            # PostgreSQL 异步驱动（生产环境）
+alembic==1.13.2             # 数据库迁移工具
+
+# ── 数据验证 ──
 pydantic==2.9.0
 pydantic-settings==2.5.0
+jsonschema==4.23.0
+
+# ── 认证 + 安全 ──
 python-jose[cryptography]==3.3.0
-bcrypt>=4.0.0
+passlib[bcrypt]==1.7.4
+bcrypt==4.2.0
 python-multipart==0.0.9
-httpx>=0.27.0
+
+# ── HTTP 客户端 ──
+httpx==0.27.2
+
+# ── 文档导出 ──
 python-docx==1.1.2
 reportlab==4.2.5
 openpyxl==3.1.5
 
-# ── 数据库迁移 (P1-1 新增) ──
-alembic>=1.13.0
-asyncpg>=0.29.0  # PostgreSQL 异步驱动（生产环境）
+# ── 科学计算（协同作用引擎）──
+numpy==2.0.0
+scipy==1.14.0
 
-# ── 安全扫描工具 (P1-5 新增) ──
-pip-audit>=2.7.0    # 依赖漏洞扫描器（PyPA官方）
-safety>=2.3.0       # 另一个安全扫描工具（备选）
-bandit>=1.7.0       # 代码安全静态分析工具
+# ── RAG 检索增强生成 ──
+chromadb==0.5.0
 
-# ── PepINVERT 集成 (可选) ──
-# 安装命令: pip install -e ".[pepinvent]"
-torch>=2.0.0          # PyTorch 深度学习框架
-rdkit-pypi>=2023.9.6  # 化学信息学库
-transformers>=4.35.0  # HuggingFace transformers
-# 如需从源码安装 PepINVENT:
-# git+https://github.com/MolecularAI/PepINVENT.git@master#egg=pepinvent
+# ── 可观测性 ──
+opentelemetry-api==1.28.0
+opentelemetry-sdk==1.28.0
 
-# ── 协同作用引擎 (Phase 1) ──
-numpy>=1.24.0         # 数值计算库（核心依赖）
-scipy>=1.11.0         # 科学计算库（统计检验、特殊函数）
-jsonschema>=4.17.0    # JSON Schema 验证库
-
-# ── RAG 检索增强生成 (Phase 2) ──
-chromadb>=1.5.0          # 向量数据库
-# PyPDF2>=3.0.0          # PDF 解析（可选，如需要 PDF 支持）
-# pdfminer.six>=20231228 # PDF 解析（可选，PyPDF2 备选）
+# ── 安全扫描工具（可选 - CI/CD 使用）──
+# pip-audit>=2.7.0    # 依赖漏洞扫描器（PyPA官方）
+# bandit>=1.7.0        # 代码安全静态分析工具

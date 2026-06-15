@@ -1,6 +1,11 @@
 /**
  * Axios API 客户端
  * 自动附加 JWT 令牌、统一错误处理、刷新令牌逻辑
+ *
+ * 🔒 P0 安全修复:
+ * - Token 现在通过 HttpOnly Cookie 存储（后端设置）
+ * - 前端不再从 localStorage 读写敏感 Token
+ * - Authorization 头仅用于向后兼容，新请求依赖 Cookie 自动携带
  */
 import axios from 'axios'
 import type { Token, User } from '@/types'
@@ -9,13 +14,19 @@ import { envConfig } from '@/config/env'
 
 const API_BASE = envConfig.api.baseUrl
 
+// 🔒 Cookie 名称（与后端一致）
+const ACCESS_TOKEN_COOKIE = 'rmfood_access_token'
+const REFRESH_TOKEN_COOKIE = 'rmfood_refresh_token'
+
 const api = axios.create({
   baseURL: API_BASE,
   timeout: envConfig.api.timeout,
   headers: { 'Content-Type': 'application/json' },
+  // 🔒 启用 credentials，使浏览器自动携带 Cookie
+  withCredentials: true,
 })
 
-// 模拟数据
+// 模拟数据（仅开发环境使用）
 const mockToken: Token = {
   accessToken: 'mock_access_token_123456',
   refreshToken: 'mock_refresh_token_123456',
@@ -39,15 +50,6 @@ const mockUser: User = {
   updatedAt: new Date().toISOString(),
 }
 
-// ── 请求拦截器：附加 access_token ──
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('access_token')
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
-  }
-  return config
-})
-
 // ── Token 刷新状态管理 ──
 let isRefreshing = false
 let refreshSubscribers: ((token: string) => void)[] = []
@@ -68,9 +70,15 @@ const notifyTokenRefresh = (token: string) => {
 }
 
 /**
- * 检查是否应该使用模拟数据
+ * 🔒 P0 安全修复: 检查是否应该使用模拟数据
+ * 仅开发环境允许 mock 数据，生产环境直接拒绝
  */
 const shouldUseMockData = (error: any): boolean => {
+  // 🔒 生产环境禁止使用 mock 数据
+  if (import.meta.env.PROD) {
+    return false
+  }
+
   if (!error.response) return true
   const status = error.response.status
   if (status === 502 || status === 503 || status === 504) return true
@@ -83,7 +91,7 @@ const shouldUseMockData = (error: any): boolean => {
 }
 
 /**
- * 生成模拟响应
+ * 生成模拟响应（仅开发环境）
  */
 const createMockResponse = (original: any, data: any) => ({
   data,
@@ -94,29 +102,39 @@ const createMockResponse = (original: any, data: any) => ({
 })
 
 /**
- * 刷新 Token
+ * 🔒 P0 安全修复: 刷新 Token
+ * 现在完全依赖后端 HttpOnly Cookie，刷新成功后自动续期
  */
 const refreshToken = async (): Promise<string> => {
-  const refreshToken = localStorage.getItem('refresh_token')
-  if (!refreshToken) {
-    throw new Error('没有可用的刷新令牌')
-  }
-
   try {
-    const response = await axios.post<{ access_token: string; refresh_token: string }>(
+    // 🔒 刷新请求会自动携带 HttpOnly Cookie
+    const response = await axios.post<Token>(
       `${API_BASE}/auth/refresh`,
-      { refresh_token: refreshToken },
+      {},
+      { withCredentials: true },
     )
 
-    const { access_token, refresh_token } = response.data
-    localStorage.setItem('access_token', access_token)
-    localStorage.setItem('refresh_token', refresh_token)
-
-    return access_token
+    // 🔒 Token 现在存储在后端设置的 HttpOnly Cookie 中，前端不再需要处理
+    return response.data.access_token
   } catch (error) {
+    // 🔒 刷新失败时，Cookie 会被后端清除或过期
+    // 重定向到登录页
+    if (typeof window !== 'undefined') {
+      window.location.href = '/login'
+    }
+    throw error
+  }
+}
+
+/**
+ * 清除认证状态
+ */
+const clearAuthState = () => {
+  if (typeof window !== 'undefined') {
     localStorage.removeItem('access_token')
     localStorage.removeItem('refresh_token')
-    throw error
+    localStorage.removeItem('remember_me')
+    localStorage.removeItem('username')
   }
 }
 
@@ -126,13 +144,8 @@ api.interceptors.response.use(
   async (error) => {
     const original = error.config
 
-    // ── 静默处理请求被中止的错误（页面导航、组件卸载、React Query 取消等正常场景）──
-    // net::ERR_ABORTED 是浏览器级别的网络事件，Chrome 会自动记录到 Console（JS 层无法屏蔽）
-    // 此处必须返回一个已 resolve 的 Promise（非 reject），避免：
-    //   1. 触发后续 401/mockData 等错误处理分支产生额外日志
-    //   2. 产生 unhandled promise rejection 警告叠加到浏览器原生日志上
+    // ── 静默处理请求被中止的错误（页面导航、组件卸载等正常场景）──
     if (error.code === 'ERR_ABORTED' || error.message === 'canceled') {
-      // 返回标记为已中止的"成功"响应，调用方可通过 response.__aborted 检测
       const silentResponse = {
         data: null,
         status: 0,
@@ -145,18 +158,12 @@ api.interceptors.response.use(
       return Promise.resolve(silentResponse as any)
     }
 
-    // 使用模拟数据处理后端不可用的情况
+    // 🔒 仅开发环境使用模拟数据
     if (shouldUseMockData(error)) {
       const urlPath = original.url?.replace(API_BASE, '') || original.url || ''
 
-      // 登录请求
+      // 登录请求（开发环境自动成功）
       if (urlPath.includes('/auth/login')) {
-        if (mockToken.accessToken) {
-          localStorage.setItem('access_token', mockToken.accessToken)
-        }
-        if (mockToken.refreshToken) {
-          localStorage.setItem('refresh_token', mockToken.refreshToken)
-        }
         return createMockResponse(original, mockToken)
       }
 
@@ -207,121 +214,23 @@ api.interceptors.response.use(
       if (urlPath.includes('/ai/generate')) {
         const mockCandidates = [
           {
-            id: 'auto_0_' + Date.now(),
-            name: '免疫增强配方方案1',
-            formula_name: '免疫增强配方方案1',
+            id: 'mock_' + Date.now(),
+            name: '配方示例（Mock）',
+            formula_name: '配方示例',
             ingredients: [
               { name: '黄芪', dosage: '10g', unit: 'g' },
-              { name: '党参', dosage: '8g', unit: 'g' },
               { name: '枸杞子', dosage: '5g', unit: 'g' },
             ],
-            herb_combination: [
-              { name: '黄芪', dosage: '10g', role: '君药' },
-              { name: '党参', dosage: '8g', role: '臣药' },
-              { name: '枸杞子', dosage: '5g', role: '佐药' },
-            ],
-            score: 0.88,
-            synergy_score: 0.85,
-            peptide_candidates: [],
-            patent_synergy_scores: {
-              bliss_independence: 0.75,
-              pk_interaction: 0.82,
-              gibbs_stability: 0.78,
-              network_pharmacology: 0.85,
-              taste_matrix: 0.70,
-              overall_si: 0.80,
-              weighted_score: 85,
-              dominant_mechanism: '免疫调节',
-              quality_level: 'A',
-              confidence: 0.92,
-            },
-            safety_passed: true,
-            taste_score: 0.75,
-            stability_score: 0.88,
-            overall_score: 0.85,
-            effects: ['增强免疫', '抗疲劳'],
-            generated_by: 'rule_engine',
-            generated_at: new Date().toISOString(),
-          },
-          {
-            id: 'auto_1_' + Date.now(),
-            name: '免疫增强配方方案2',
-            formula_name: '免疫增强配方方案2',
-            ingredients: [
-              { name: '人参', dosage: '6g', unit: 'g' },
-              { name: '黄芪', dosage: '12g', unit: 'g' },
-              { name: '当归', dosage: '6g', unit: 'g' },
-            ],
-            herb_combination: [
-              { name: '人参', dosage: '6g', role: '君药' },
-              { name: '黄芪', dosage: '12g', role: '臣药' },
-              { name: '当归', dosage: '6g', role: '佐药' },
-            ],
-            score: 0.92,
-            synergy_score: 0.88,
-            peptide_candidates: [],
-            patent_synergy_scores: {
-              bliss_independence: 0.80,
-              pk_interaction: 0.85,
-              gibbs_stability: 0.82,
-              network_pharmacology: 0.88,
-              taste_matrix: 0.65,
-              overall_si: 0.84,
-              weighted_score: 88,
-              dominant_mechanism: '气血双补',
-              quality_level: 'A',
-              confidence: 0.95,
-            },
-            safety_passed: true,
-            taste_score: 0.70,
-            stability_score: 0.90,
-            overall_score: 0.88,
-            effects: ['增强免疫', '补气养血'],
-            generated_by: 'rule_engine',
-            generated_at: new Date().toISOString(),
-          },
-          {
-            id: 'auto_2_' + Date.now(),
-            name: '免疫增强配方方案3',
-            formula_name: '免疫增强配方方案3',
-            ingredients: [
-              { name: '灵芝', dosage: '5g', unit: 'g' },
-              { name: '香菇', dosage: '10g', unit: 'g' },
-              { name: '银耳', dosage: '8g', unit: 'g' },
-            ],
-            herb_combination: [
-              { name: '灵芝', dosage: '5g', role: '君药' },
-              { name: '香菇', dosage: '10g', role: '臣药' },
-              { name: '银耳', dosage: '8g', role: '佐药' },
-            ],
             score: 0.85,
-            synergy_score: 0.82,
-            peptide_candidates: [],
-            patent_synergy_scores: {
-              bliss_independence: 0.78,
-              pk_interaction: 0.80,
-              gibbs_stability: 0.85,
-              network_pharmacology: 0.75,
-              taste_matrix: 0.80,
-              overall_si: 0.79,
-              weighted_score: 82,
-              dominant_mechanism: '免疫调节',
-              quality_level: 'B',
-              confidence: 0.88,
-            },
-            safety_passed: true,
-            taste_score: 0.85,
-            stability_score: 0.85,
-            overall_score: 0.83,
-            effects: ['增强免疫', '美容养颜'],
-            generated_by: 'rule_engine',
+            effects: ['增强免疫'],
+            generated_by: 'mock',
             generated_at: new Date().toISOString(),
           },
         ]
         return createMockResponse(original, {
           candidates: mockCandidates,
           total: mockCandidates.length,
-          generator: 'rule_engine',
+          generator: 'mock',
         })
       }
 
@@ -330,11 +239,11 @@ api.interceptors.response.use(
     }
 
     // 处理 404 错误
-    if (error.response.status === 404) {
+    if (error.response?.status === 404) {
       return Promise.reject(error)
     }
 
-    // ✅ 修复：实现完整的 401 错误处理和 Token 自动刷新
+    // ✅ 完整的 401 错误处理和 Token 自动刷新
     if (error.response?.status === 401) {
       const errorDetail = error.response.data?.detail || error.response.data?.message || ''
       const isAuthError = errorDetail.includes('认证') ||
@@ -347,16 +256,15 @@ api.interceptors.response.use(
         // 如果是登录或刷新请求，直接拒绝
         if (original.url?.includes('/auth/login') || original.url?.includes('/auth/refresh')) {
           console.warn('[API] 登录或刷新失败:', errorDetail)
-          localStorage.removeItem('access_token')
-          localStorage.removeItem('refresh_token')
+          clearAuthState()
           return Promise.reject(error)
         }
 
         // 如果正在刷新，等待刷新完成
         if (isRefreshing) {
           return new Promise((resolve) => {
-            subscribeTokenRefresh((newToken) => {
-              original.headers.Authorization = `Bearer ${newToken}`
+            subscribeTokenRefresh(() => {
+              // Token 刷新后重试请求（Cookie 会自动携带）
               resolve(api(original))
             })
           })
@@ -366,18 +274,20 @@ api.interceptors.response.use(
         isRefreshing = true
 
         try {
-          const newToken = await refreshToken()
+          await refreshToken()
           isRefreshing = false
-          notifyTokenRefresh(newToken)
+          notifyTokenRefresh('refreshed')
 
-          // 重新发送原始请求
-          original.headers.Authorization = `Bearer ${newToken}`
+          // 重新发送原始请求（Cookie 会自动携带）
           return api(original)
         } catch (refreshError) {
           isRefreshing = false
           console.warn('[API] Token 刷新失败，用户将被登出')
-          localStorage.removeItem('access_token')
-          localStorage.removeItem('refresh_token')
+          clearAuthState()
+          // 重定向到登录页
+          if (typeof window !== 'undefined') {
+            window.location.href = '/login'
+          }
           return Promise.reject(error)
         }
       }
@@ -396,4 +306,5 @@ api.interceptors.response.use(
   },
 )
 
+export { ACCESS_TOKEN_COOKIE, REFRESH_TOKEN_COOKIE }
 export default api

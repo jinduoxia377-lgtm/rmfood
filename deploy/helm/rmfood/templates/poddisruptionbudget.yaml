@@ -1,0 +1,30 @@
+{{- if .Values.podDisruptionBudget.enabled -}}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "rmfood.fullname" . }}-backend-pdb
+  namespace: {{ .Release.Namespace }}
+  labels: {{ include "rmfood.labels" . | nindent 4 }}
+    app.kubernetes.io/component: backend
+spec:
+  minAvailable: {{ .Values.podDisruptionBudget.backend.minAvailable }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "rmfood.name" . }}
+      app.kubernetes.io/component: backend
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "rmfood.fullname" . }}-frontend-pdb
+  namespace: {{ .Release.Namespace }}
+  labels: {{ include "rmfood.labels" . | nindent 4 }}
+    app.kubernetes.io/component: frontend
+spec:
+  minAvailable: {{ .Values.podDisruptionBudget.frontend.minAvailable }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "rmfood.name" . }}
+      app.kubernetes.io/component: frontend
+{{- end }}

@@ -74,6 +74,9 @@ from .tcm_schema import TCMCompound, TCMTarget, TCMDisease, tcm_herb_compounds, 
 # DFBP 规范化模块
 from .dfbp_schema import PeptideActivity, PeptideSourceProtein, PeptideEnzyme, peptide_enzyme_links
 
+# GA/NSGA-II 优化结果持久化模块
+from .ga_optimization import GARunRecord, GACandidateRecord
+
 __all__ = [
     # 枚举
     "UserRole",
@@ -171,4 +174,7 @@ __all__ = [
     "PeptideSourceProtein",
     "PeptideEnzyme",
     "peptide_enzyme_links",
+    # GA/NSGA-II 优化结果持久化模块
+    "GARunRecord",
+    "GACandidateRecord",
 ]

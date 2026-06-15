@@ -58,10 +58,13 @@ class User(Base):
         "PeptideDesign", back_populates="user", cascade="all, delete-orphan"
     )
     peptide_analyses: Mapped[list["PeptideAnalysis"]] = relationship(
-        "PeptideAnalysis", 
-        back_populates="user", 
+        "PeptideAnalysis",
+        back_populates="user",
         cascade="all, delete-orphan",
         foreign_keys="PeptideAnalysis.user_id"
+    )
+    ga_runs: Mapped[list["GARunRecord"]] = relationship(
+        "GARunRecord", back_populates="user", cascade="all, delete-orphan"
     )
 
     @property

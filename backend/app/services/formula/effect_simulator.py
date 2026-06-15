@@ -445,10 +445,9 @@ class EffectSimulator:
 
 def quick_test():
     """快速测试函数"""
-    print("=" * 70)
-    print("效果预测模拟器 - 快速测试")
-    print("=" * 70)
-    
+    logger.info("=" * 70)
+    logger.info("效果预测模拟器 - 快速测试")
+    logger.info("=" * 70)
     simulator = EffectSimulator()
     
     test_formula = [
@@ -459,9 +458,8 @@ def quick_test():
         {"name": "大豆异黄酮", "amount_mg": 80, "percentage": 5},
     ]
     
-    print("\n【测试配方】综合营养配方")
-    print("-" * 70)
-    
+    logger.info("\n【测试配方】综合营养配方")
+    logger.info("-" * 70)
     prediction = simulator.predict_effect(
         formula_ingredients=test_formula,
         formula_id="TEST-FORMULA-001",
@@ -470,30 +468,26 @@ def quick_test():
         time_points=100
     )
     
-    print(f"\n✅ 预测完成!")
-    print(f"\n📊 核心指标:")
-    print(f"   • 达峰时间 Tmax: {prediction.peak_time:.2f} 小时")
-    print(f"   • 峰浓度 Cmax: {prediction.peak_concentration:.4f} μg/mL")
-    print(f"   • 最大效应 Emax: {prediction.max_effect:.4f} (归一化)")
-    print(f"   • 曲线下面积 AUC: {prediction.auc:.2f} μg·h/mL")
-    print(f"   • 效应持续时间: {prediction.effect_duration:.2f} 小时")
-    print(f"   • 最佳服用窗口: {prediction.optimal_window[0]:.1f}h - {prediction.optimal_window[1]:.1f}h")
-    
-    print(f"\n📈 时效曲线采样 (前 10 个点):")
-    print(f"   {'时间(h)':<10} {'浓度(μg/mL)':<14} {'效应水平':<10}")
-    print(f"   {'-'*34}")
+    logger.info(f"\n✅ 预测完成!")
+    logger.info(f"\n📊 核心指标:")
+    logger.info(f"   • 达峰时间 Tmax: {prediction.peak_time:.2f} 小时")
+    logger.info(f"   • 峰浓度 Cmax: {prediction.peak_concentration:.4f} μg/mL")
+    logger.info(f"   • 最大效应 Emax: {prediction.max_effect:.4f} (归一化)")
+    logger.info(f"   • 曲线下面积 AUC: {prediction.auc:.2f} μg·h/mL")
+    logger.info(f"   • 效应持续时间: {prediction.effect_duration:.2f} 小时")
+    logger.info(f"   • 最佳服用窗口: {prediction.optimal_window[0]:.1f}h - {prediction.optimal_window[1]:.1f}h")
+    logger.info(f"\n📈 时效曲线采样 (前 10 个点):")
+    logger.info(f"   {'时间(h)':<10} {'浓度(μg/mL)':<14} {'效应水平':<10}")
+    logger.info(f"   {'-'*34}")
     for tp in prediction.ct_curve[:10]:
-        print(f"   {tp.time_hour:<10.2f} {tp.concentration:<14.4f} {tp.effect_level:<10.4f}")
-    
-    print(f"\n🎨 可视化数据结构:")
-    print(f"   图表类型: {prediction.visualization_data['chart_type']}")
-    print(f"   数据序列数: {len(prediction.visualization_data['series'])}")
-    print(f"   标记点数: {len(prediction.visualization_data['markers'])}")
-    print(f"   关键指标: {list(prediction.visualization_data['key_metrics'].keys())}")
-    
-    print("\n\n【多方案对比测试】")
-    print("-" * 70)
-    
+        logger.info(f"   {tp.time_hour:<10.2f} {tp.concentration:<14.4f} {tp.effect_level:<10.4f}")
+    logger.info(f"\n🎨 可视化数据结构:")
+    logger.info(f"   图表类型: {prediction.visualization_data['chart_type']}")
+    logger.info(f"   数据序列数: {len(prediction.visualization_data['series'])}")
+    logger.info(f"   标记点数: {len(prediction.visualization_data['markers'])}")
+    logger.info(f"   关键指标: {list(prediction.visualization_data['key_metrics'].keys())}")
+    logger.info("\n\n【多方案对比测试】")
+    logger.info("-" * 70)
     formula_a = [
         {"name": "人参皂苷", "amount_mg": 150, "percentage": 40},
         {"name": "黄芪多糖", "amount_mg": 200, "percentage": 30},
@@ -511,17 +505,15 @@ def quick_test():
         "抗氧化配方-B": formula_b
     })
     
-    print(f"\n对比方案数: {len(comparison.formulas)}")
-    print(f"\n详细指标对比:")
+    logger.info(f"\n对比方案数: {len(comparison.formulas)}")
+    logger.debug(f"\n详细指标对比:")
     for name, metrics in comparison.comparison_metrics.items():
-        print(f"\n【{name}】")
+        logger.info(f"\n【{name}】")
         for key, value in metrics.items():
-            print(f"   • {key}: {value}")
-    
-    print("\n" + "=" * 70)
-    print("验证标准检查:")
-    print("=" * 70)
-    
+            logger.info(f"   • {key}: {value}")
+    logger.info("\n" + "=" * 70)
+    logger.info("验证标准检查:")
+    logger.info("=" * 70)
     checks = [
         ("3.8 C-T 曲线形状合理性", 
          prediction.peak_concentration > 0 and prediction.peak_time > 0 and prediction.peak_time < 10),
@@ -539,8 +531,7 @@ def quick_test():
     
     for check_name, result in checks:
         status = "✅ PASS" if result else "❌ FAIL"
-        print(f"{status}: {check_name}")
-    
+        logger.info(f"{status}: {check_name}")
     return prediction
 
 

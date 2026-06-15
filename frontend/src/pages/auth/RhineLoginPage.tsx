@@ -443,10 +443,12 @@ export default function RhineLoginPage() {
               </div>
             </div>
 
-            {/* 默认凭证 (开发环境) */}
-            <div className="rhine-credentials-hint">
-              <p>{msg.defaultAdmin}：<code>{credentials.defaultUsername}</code> / <code>{credentials.defaultPassword}</code></p>
-            </div>
+            {/* 🔒 P0 安全修复: 仅开发环境显示默认账号，不显示明文密码 */}
+            {import.meta.env?.DEV && credentials.defaultUsername && (
+              <div className="rhine-credentials-hint">
+                <p>{msg.defaultAdmin}：<code>{credentials.defaultUsername}</code> / <code>******</code></p>
+              </div>
+            )}
           </div>
         </div>
       </div>

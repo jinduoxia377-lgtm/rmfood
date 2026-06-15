@@ -97,7 +97,7 @@ class AuditLogEntry:
 class ComplianceReport:
     """合规报告"""
     id: str
-    title: string
+    title: str
     period_start: datetime
     period_end: datetime
     generated_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))

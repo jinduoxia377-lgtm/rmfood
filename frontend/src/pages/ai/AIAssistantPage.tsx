@@ -23,7 +23,7 @@ import { ToastContainer } from '@/components/ui/Toast'
 import { ModelConfigPanel } from '@/components/ai/ModelConfigPanel'
 import { ModelSelector } from '@/components/ai/ModelSelector'
 import { ChatTab } from '@/components/ai/features'
-import { Search, Settings, Activity, MessageSquare, Sparkles, Shield, GitMerge, Bot, Dna, Database } from 'lucide-react'
+import { Search, Settings, Activity, MessageSquare, Sparkles, Shield, GitMerge, Bot, Dna, Database, GitBranch } from 'lucide-react'
 import { logger } from '@/utils/safeLogger'
 import { useFeedbackSystem, useAccessibility, useResponsive } from '@/utils/uiuxEnhancement'
 
@@ -37,6 +37,8 @@ const AdvancedPeptideAnalyzer = lazy(() => import('@/components/ai').then(m => (
 const AdvancedPeptideDesign = lazy(() => import('@/components/ai').then(m => ({ default: m.AdvancedPeptideDesign })))
 const ModelConfigPanelLazy = lazy(() => import('@/components/ai/ModelConfigPanel').then(m => ({ default: m.ModelConfigPanel })))
 const KnowledgeBasePanel = lazy(() => import('@/components/ai/rag').then(m => ({ default: m.KnowledgeBasePanel })))
+const GeneticAlgorithmPanel = lazy(() => import('@/components/ai/features/GeneticAlgorithmPanel').then(m => ({ default: m.GeneticAlgorithmPanel })))
+const MultiObjectivePanel = lazy(() => import('@/components/ai/features/MultiObjectivePanel').then(m => ({ default: m.MultiObjectivePanel })))
 
 // Tab 加载骨架屏
 function TabLoadingSkeleton() {
@@ -53,11 +55,12 @@ function TabLoadingSkeleton() {
   )
 }
 
-type AITab = 'chat' | 'generate' | 'safety' | 'synergy' | 'taste' | 'stability' | 'peptide-analyze' | 'peptide-design' | 'knowledge' | 'config'
+type AITab = 'chat' | 'generate' | 'genetic' | 'safety' | 'synergy' | 'taste' | 'stability' | 'peptide-analyze' | 'peptide-design' | 'knowledge' | 'config'
 
 export default function AIAssistantPage() {
   const [tab, setTab] = useState<AITab>('chat')
   const [selectedModel, setSelectedModel] = useState<ModelType>('formula_gpt')
+  const [geneticMode, setGeneticMode] = useState<'single' | 'multi'>('single')
 
   // UI/UX Enhancement Hooks
   const { feedbacks, showSuccess, showError } = useFeedbackSystem()
@@ -250,6 +253,10 @@ export default function AIAssistantPage() {
                 配方生成
                 {generateCount > 0 && <Badge variant="info" size="sm" className="ml-1.5" aria-label={`${generateCount}个配方`}>{generateCount}</Badge>}
               </TabsTrigger>
+              <TabsTrigger value="genetic" role="tab" aria-selected={tab === 'genetic'} aria-controls="panel-genetic">
+                遗传优化
+                <Dna className="w-3.5 h-3.5 ml-1.5 text-purple-500" />
+              </TabsTrigger>
               <TabsTrigger value="safety" role="tab" aria-selected={tab === 'safety'} aria-controls="panel-safety">
                 安全检查
                 {safetyChecks > 0 && <Badge variant="warning" size="sm" className="ml-1.5" aria-label={`${safetyChecks}次安全检查`}>{safetyChecks}</Badge>}
@@ -292,6 +299,34 @@ export default function AIAssistantPage() {
               <ErrorBoundary customMessage="配方生成模块加载失败">
                 <Suspense fallback={<TabLoadingSkeleton />}>
                   <GenerateTab llmAvailable={llmAvailable} modelStatus={modelStatus || {}} />
+                </Suspense>
+              </ErrorBoundary>
+            </TabsContent>
+
+            <TabsContent value="genetic" id="panel-genetic" role="tabpanel" aria-labelledby="tab-genetic">
+              <ErrorBoundary customMessage="遗传算法优化模块加载失败">
+                <Suspense fallback={<TabLoadingSkeleton />}>
+                  {/* 嵌套模式切换：单目标 GA / 多目标 NSGA-II */}
+                  <div className="mb-4">
+                    <Tabs value={geneticMode} onValueChange={(v) => { setGeneticMode(v as 'single' | 'multi'); announceToScreenReader(v === 'multi' ? '切换到多目标优化模式' : '切换到单目标遗传算法模式') }}>
+                      <TabsList className="mb-4" role="tablist" aria-label="遗传优化模式切换">
+                        <TabsTrigger value="single" role="tab" aria-selected={geneticMode === 'single'}>
+                          <Dna className="w-3.5 h-3.5 mr-1.5 text-purple-500" />
+                          单目标 (GA)
+                        </TabsTrigger>
+                        <TabsTrigger value="multi" role="tab" aria-selected={geneticMode === 'multi'}>
+                          <GitBranch className="w-3.5 h-3.5 mr-1.5 text-indigo-500" />
+                          多目标 (NSGA-II)
+                        </TabsTrigger>
+                      </TabsList>
+                      <TabsContent value="single">
+                        <GeneticAlgorithmPanel />
+                      </TabsContent>
+                      <TabsContent value="multi">
+                        <MultiObjectivePanel />
+                      </TabsContent>
+                    </Tabs>
+                  </div>
                 </Suspense>
               </ErrorBoundary>
             </TabsContent>

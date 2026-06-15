@@ -400,10 +400,10 @@ class WebSocketSender(BaseNotificationSender):
                 logger.debug(f"⚠️ 用户 {recipient.user_id} 无活跃WebSocket连接，跳过推送")
                 return False
             
-            from app.core.websocket import broadcast_to_user
-            
+            from app.core.websocket import connection_manager
+
             for session_id in session_ids:
-                await broadcast_to_user(recipient.user_id, payload)
+                await connection_manager.broadcast_to_user(recipient.user_id, payload)
             
             logger.debug(f"📡 WebSocket推送成功: user={recipient.user_id}, sessions={len(session_ids)}")
             return True

@@ -421,3 +421,210 @@ def _generate_jti() -> str:
     """生成唯一的JWT ID"""
     import uuid
     return str(uuid.uuid4())
+
+
+# ═══════════════════════════════════════════════════════════════
+# 🔒 P0 安全修复: HttpOnly Cookie 支持
+# ═══════════════════════════════════════════════════════════════
+
+# ── Refresh Token 速率限制 + 重用检测 ──
+_refresh_token_usage: Dict[str, str] = {}  # {jti: "used_at_timestamp"}
+_refresh_token_ratelimit: Dict[str, list] = {}  # {jti: [timestamp1, timestamp2]}
+_refresh_token_lock = threading.Lock()
+
+# 刷新 token 速率限制配置
+REFRESH_TOKEN_RATE_LIMIT = 5  # 每次 token 最多刷新 5 次
+REFRESH_TOKEN_WINDOW_SECONDS = 60  # 时间窗口 60 秒
+
+
+def check_refresh_token_reuse(token: str) -> tuple[bool, str]:
+    """
+    检查 refresh token 是否已被使用（Token 旋转重用攻击防护）
+
+    Args:
+        token: 待检查的 JWT token
+
+    Returns:
+        tuple[bool, str]: (是否已被使用, 错误消息)
+    """
+    with _refresh_token_lock:
+        try:
+            payload = jwt.get_unverified_claims(token)
+            jti = payload.get("jti", "")
+
+            if not jti:
+                # 没有 JTI 的 token 无法追踪重用，警告但放行
+                logger.warning("Refresh token 没有 JTI，无法追踪重用")
+                return False, ""
+
+            if jti in _refresh_token_usage:
+                used_at = _refresh_token_usage[jti]
+                logger.warning(f"⚠️ 检测到 Refresh token 重用攻击! JTI={jti}, 首次使用时间={used_at}")
+                return True, "Refresh token 已被使用，请使用新的 token"
+
+            return False, ""
+        except Exception as e:
+            logger.error(f"检查 token 重用时发生错误: {e}")
+            return False, ""
+
+
+def mark_refresh_token_used(token: str) -> bool:
+    """
+    标记 refresh token 已被使用（用于 Token 旋转）
+
+    Args:
+        token: 已使用的 JWT token
+
+    Returns:
+        bool: 是否成功标记
+    """
+    with _refresh_token_lock:
+        try:
+            payload = jwt.get_unverified_claims(token)
+            jti = payload.get("jti", "")
+
+            if not jti:
+                return False
+
+            # 记录使用时间
+            _refresh_token_usage[jti] = datetime.now(timezone.utc).isoformat()
+
+            # 清理过期的使用记录（保留最近 1000 条）
+            if len(_refresh_token_usage) > 1000:
+                # 保留最近的 500 条
+                keys_to_remove = list(_refresh_token_usage.keys())[:-500]
+                for key in keys_to_remove:
+                    del _refresh_token_usage[key]
+
+            return True
+        except Exception as e:
+            logger.error(f"标记 token 使用时发生错误: {e}")
+            return False
+
+
+def check_refresh_token_ratelimit(token: str) -> tuple[bool, int]:
+    """
+    检查 refresh token 的速率限制
+
+    Args:
+        token: 待检查的 JWT token
+
+    Returns:
+        tuple[bool, int]: (是否允许刷新, 剩余可用次数)
+    """
+    with _refresh_token_lock:
+        try:
+            payload = jwt.get_unverified_claims(token)
+            jti = payload.get("jti", "")
+
+            if not jti:
+                return True, REFRESH_TOKEN_RATE_LIMIT
+
+            current_time = datetime.now(timezone.utc).timestamp()
+
+            if jti not in _refresh_token_ratelimit:
+                _refresh_token_ratelimit[jti] = []
+
+            # 清理超出时间窗口的记录
+            _refresh_token_ratelimit[jti] = [
+                ts for ts in _refresh_token_ratelimit[jti]
+                if current_time - ts < REFRESH_TOKEN_WINDOW_SECONDS
+            ]
+
+            usage_count = len(_refresh_token_ratelimit[jti])
+
+            if usage_count >= REFRESH_TOKEN_RATE_LIMIT:
+                remaining_time = int(
+                    REFRESH_TOKEN_WINDOW_SECONDS - (current_time - _refresh_token_ratelimit[jti][0])
+                )
+                logger.warning(
+                    f"⚠️ Refresh token 速率限制触发! JTI={jti}, "
+                    f"使用次数={usage_count}, 需等待 {remaining_time} 秒"
+                )
+                return False, 0
+
+            # 记录本次使用
+            _refresh_token_ratelimit[jti].append(current_time)
+            remaining = REFRESH_TOKEN_RATE_LIMIT - len(_refresh_token_ratelimit[jti])
+
+            return True, remaining
+        except Exception as e:
+            logger.error(f"检查 token 速率限制时发生错误: {e}")
+            return True, REFRESH_TOKEN_RATE_LIMIT
+
+
+def create_secure_cookie_settings(
+    cookie_name: str,
+    cookie_value: str,
+    max_age_seconds: int,
+    is_refresh_token: bool = False,
+) -> dict:
+    """
+    创建安全 Cookie 设置字典（用于 set_cookie）
+
+    安全特性:
+    - HttpOnly: 防止 JavaScript 访问（XSS 无法窃取）
+    - Secure: 仅在 HTTPS 传输（生产环境）
+    - SameSite=Strict: 防止 CSRF
+    - 适当的过期时间
+
+    Args:
+        cookie_name: Cookie 名称
+        cookie_value: Cookie 值
+        max_age_seconds: 过期时间（秒）
+        is_refresh_token: 是否为 refresh token（通常有更长的过期时间）
+
+    Returns:
+        dict: FastAPI set_cookie 参数
+    """
+    from ..core.config import settings
+
+    # 基础安全设置
+    cookie_config = {
+        "key": cookie_name,
+        "value": cookie_value,
+        "max_age": max_age_seconds,
+        "path": "/",
+        "httponly": True,  # 🔒 防止 XSS 窃取
+        "samesite": "strict",  # 🔒 CSRF 防护
+        "secure": not settings.debug,  # 🔒 生产环境强制 HTTPS
+    }
+
+    # refresh_token 需要更宽松的 SameSite（跨域刷新）
+    if is_refresh_token:
+        cookie_config["samesite"] = "lax"  # 允许顶级导航携带
+
+    return cookie_config
+
+
+def get_cookie_value(cookies: dict, cookie_name: str) -> Optional[str]:
+    """
+    从 Cookie 字典中安全获取值
+
+    Args:
+        cookies: FastAPI Request.cookies 字典
+        cookie_name: 要获取的 Cookie 名称
+
+    Returns:
+        Optional[str]: Cookie 值，如果不存在返回 None
+    """
+    return cookies.get(cookie_name)
+
+
+def clear_cookie_settings(cookie_name: str) -> dict:
+    """
+    创建清除 Cookie 的设置（用于 logout）
+
+    Args:
+        cookie_name: 要清除的 Cookie 名称
+
+    Returns:
+        dict: FastAPI delete_cookie 参数
+    """
+    return {
+        "key": cookie_name,
+        "path": "/",
+        "httponly": True,
+        "secure": True,
+        "samesite": "strict",
+    }

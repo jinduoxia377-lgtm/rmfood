@@ -101,10 +101,11 @@ export const LOGIN_PAGE_CONFIG = {
     levels: ['非常弱', '弱', '中等', '强', '非常强'] as string[],
     colors: ['#ef4444', '#f97316', '#eab308', '#22c55e', '#059669'] as string[],
   },
-  // 凭证
+  // 凭证 — 🔒 P0 安全修复: 移除默认凭据硬编码
+  // 生产环境不显示默认凭据，仅开发环境可选启用
   credentials: {
-    defaultUsername: envConfig.app.defaultUsername,
-    defaultPassword: envConfig.app.defaultPassword,
+    defaultUsername: import.meta.env?.DEV ? 'admin' : undefined,
+    defaultPassword: import.meta.env?.DEV ? undefined : undefined, // 开发环境不填充密码
   },
   // 颜色令牌
   colors: {
@@ -438,8 +439,8 @@ export const RHINE_LOGIN_CONFIG = {
     colors: ['#dc2626', '#ca8a04', '#ca8a04', '#16a34a', '#059669'] as string[],
   },
   credentials: {
-    defaultUsername: envConfig.app.defaultUsername,
-    defaultPassword: envConfig.app.defaultPassword,
+    defaultUsername: import.meta.env?.DEV ? 'admin' : undefined,
+    defaultPassword: import.meta.env?.DEV ? undefined : undefined,
   },
 };
 

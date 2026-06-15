@@ -45,6 +45,8 @@ TAG_OVERRIDES: dict[str, list[str]] = {
     "knowledge_graph": ["知识数据库"],
     "experiments": ["实验管理"],
     "ai": ["AI智能"],
+    "ai_task_router": ["AI推理任务队列"],
+    "quota_router": ["配额管理"],
     "chat": ["AI智能"],
     "dashboard": ["仪表盘"],
     "notifications": ["通知系统"],
@@ -65,6 +67,8 @@ V1_MODULES = frozenset({
     "version_router",
     "notification_router",
     "ai_router",
+    "ai_task_router",       # Phase 4-A: AI 推理任务队列
+    "quota_router",         # Phase 4-B: 多租户配额管理
     "websocket_router",
 })
 

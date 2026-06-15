@@ -591,10 +591,9 @@ class CompatibilityChecker:
 
 def quick_test():
     """快速测试函数"""
-    print("=" * 70)
-    print("配方兼容性检测系统 - 快速测试")
-    print("=" * 70)
-    
+    logger.info("=" * 70)
+    logger.info("配方兼容性检测系统 - 快速测试")
+    logger.info("=" * 70)
     checker = CompatibilityChecker()
     
     test_formula_1 = [
@@ -606,28 +605,25 @@ def quick_test():
         {"name": "大豆异黄酮", "amount_mg": 80, "percentage": 4},
     ]
     
-    print("\n【测试配方 1】普通成人配方")
-    print("-" * 70)
+    logger.info("\n【测试配方 1】普通成人配方")
+    logger.info("-" * 70)
     report_1 = checker.check_compatibility(test_formula_1, formula_id="TEST-001")
     
-    print(f"\n总体评分: {report_1.overall_score}/100")
-    print(f"检测结果: {report_1.passed_checks}/{report_1.total_checks} 项通过")
-    print(f"问题统计: ERROR={report_1.error_count}, WARNING={report_1.warning_count}, INFO={report_1.info_count}")
-    
-    print("\n详细问题列表:")
+    logger.info(f"\n总体评分: {report_1.overall_score}/100")
+    logger.info(f"检测结果: {report_1.passed_checks}/{report_1.total_checks} 项通过")
+    logger.error(f"问题统计: ERROR={report_1.error_count}, WARNING={report_1.warning_count}, INFO={report_1.info_count}")
+    logger.debug("\n详细问题列表:")
     for i, issue in enumerate(report_1.issues, 1):
         icon = "🔴" if issue.level == IssueLevel.ERROR else \
                "⚠️" if issue.level == IssueLevel.WARNING else "ℹ️"
-        print(f"\n{icon} [{issue.category.value.upper()}] 问题 #{i}: {issue.description}")
-        print(f"   科学依据: {issue.scientific_basis}")
-        print(f"   影响成分: {', '.join(issue.affected_ingredients)}")
-        print(f"   严重程度: {issue.severity_score}/10")
-        print(f"   建议: {issue.suggestion}")
-    
-    print("\n修改建议:")
+        logger.info(f"\n{icon} [{issue.category.value.upper()}] 问题 #{i}: {issue.description}")
+        logger.info(f"   科学依据: {issue.scientific_basis}")
+        logger.info(f"   影响成分: {', '.join(issue.affected_ingredients)}")
+        logger.info(f"   严重程度: {issue.severity_score}/10")
+        logger.info(f"   建议: {issue.suggestion}")
+    logger.info("\n修改建议:")
     for rec in report_1.recommendations:
-        print(f"  • {rec}")
-    
+        logger.info(f"  • {rec}")
     test_formula_2 = [
         {"name": "大豆肽", "amount_mg": 600, "percentage": 30},
         {"name": "维生素C", "amount_mg": 2500, "percentage": 25},
@@ -635,16 +631,15 @@ def quick_test():
         {"name": "人参皂苷", "amount_mg": 150, "percentage": 6},
     ]
     
-    print("\n\n【测试配方 2】含超标成分的配方")
-    print("-" * 70)
+    logger.info("\n\n【测试配方 2】含超标成分的配方")
+    logger.info("-" * 70)
     report_2 = checker.check_compatibility(test_formula_2, formula_id="TEST-002")
     
-    print(f"\n总体评分: {report_2.overall_score}/100")
-    print(f"检测结果: {report_2.passed_checks}/{report_2.total_checks} 项通过")
-    print(f"问题统计: ERROR={report_2.error_count}, WARNING={report_2.warning_count}, INFO={report_2.info_count}")
-    
-    print("\n【测试配方 3】孕妇禁忌测试")
-    print("-" * 70)
+    logger.info(f"\n总体评分: {report_2.overall_score}/100")
+    logger.info(f"检测结果: {report_2.passed_checks}/{report_2.total_checks} 项通过")
+    logger.error(f"问题统计: ERROR={report_2.error_count}, WARNING={report_2.warning_count}, INFO={report_2.info_count}")
+    logger.info("\n【测试配方 3】孕妇禁忌测试")
+    logger.info("-" * 70)
     test_formula_3 = [
         {"name": "大豆异黄酮", "amount_mg": 120, "percentage": 10},
         {"name": "人参皂苷", "amount_mg": 200, "percentage": 15},
@@ -653,18 +648,15 @@ def quick_test():
     report_3 = checker.check_compatibility(test_formula_3, formula_id="TEST-003", 
                                            target_population="pregnant")
     
-    print(f"\n总体评分: {report_3.overall_score}/100 (目标人群: 孕妇)")
-    print(f"问题统计: ERROR={report_3.error_count}, WARNING={report_3.warning_count}")
-    
+    logger.info(f"\n总体评分: {report_3.overall_score}/100 (目标人群: 孕妇)")
+    logger.error(f"问题统计: ERROR={report_3.error_count}, WARNING={report_3.warning_count}")
     for issue in report_3.issues:
         if issue.level == IssueLevel.ERROR:
-            print(f"\n🚨 致命问题: {issue.description}")
-            print(f"   建议: {issue.suggestion}")
-    
-    print("\n" + "=" * 70)
-    print("验证标准检查:")
-    print("=" * 70)
-    
+            logger.info(f"\n🚨 致命问题: {issue.description}")
+            logger.info(f"   建议: {issue.suggestion}")
+    logger.info("\n" + "=" * 70)
+    logger.info("验证标准检查:")
+    logger.info("=" * 70)
     checks = [
         ("3.1 4层架构完整实现", True),
         ("3.2 pH冲突检测", any(i.category == CheckCategory.CHEMICAL for i in report_1.issues)),
@@ -678,8 +670,7 @@ def quick_test():
     
     for check_name, result in checks:
         status = "✅ PASS" if result else "❌ FAIL"
-        print(f"{status}: {check_name}")
-    
+        logger.info(f"{status}: {check_name}")
     return report_1
 
 

@@ -737,10 +737,9 @@ class RatioOptimizer:
 
 def quick_test():
     """快速测试函数"""
-    print("=" * 60)
-    print("NSGA-III 配比优化器 - 快速测试")
-    print("=" * 60)
-    
+    logger.info("=" * 60)
+    logger.info("NSGA-III 配比优化器 - 快速测试")
+    logger.info("=" * 60)
     ingredients = [
         Ingredient(name="大豆肽", min_ratio=0.05, max_ratio=0.40, 
                   cost_per_gram=0.8, efficacy_base=0.85, safety_score=0.92),
@@ -762,63 +761,54 @@ def quick_test():
     
     optimizer = RatioOptimizer(config=config)
     
-    print("\n开始优化...")
+    logger.info("\n开始优化...")
     result = optimizer.optimize_ratio(ingredients)
     
-    print(f"\n✅ 优化状态: {result.status.value}")
-    print(f"⏱️  计算耗时: {result.computation_time:.2f} 秒")
-    print(f"📊 迭代次数: {result.generation_count}")
-    print(f"🎯 Pareto 解数量: {len(result.solutions)}")
-    print(f"📈 多样性指标: {result.diversity_metric:.4f}")
-    
-    print("\n" + "=" * 60)
-    print("TOP 5 最优配比方案:")
-    print("=" * 60)
-    
+    logger.info(f"\n✅ 优化状态: {result.status.value}")
+    logger.info(f"⏱️  计算耗时: {result.computation_time:.2f} 秒")
+    logger.info(f"📊 迭代次数: {result.generation_count}")
+    logger.info(f"🎯 Pareto 解数量: {len(result.solutions)}")
+    logger.info(f"📈 多样性指标: {result.diversity_metric:.4f}")
+    logger.info("\n" + "=" * 60)
+    logger.info("TOP 5 最优配比方案:")
+    logger.info("=" * 60)
     for i, sol in enumerate(result.solutions[:5], 1):
-        print(f"\n【方案 {i}】Pareto Rank: {sol.pareto_rank}")
-        print(f"  配比详情:")
+        logger.info(f"\n【方案 {i}】Pareto Rank: {sol.pareto_rank}")
+        logger.info(f"  配比详情:")
         for name, ratio in sorted(sol.ratios.items(), key=lambda x: x[1], reverse=True):
             if ratio > 1:
-                print(f"    • {name}: {ratio:.2f}%")
-        
-        print(f"  目标得分:")
-        print(f"    • 功效: {sol.objectives['efficacy']:.4f}")
-        print(f"    • 安全: {sol.objectives['safety']:.4f}")
-        print(f"    • 稳定: {sol.objectives['stability']:.4f}")
-        print(f"    • 成本: {sol.objectives['cost']:.4f}")
-        print(f"  推荐理由: {sol.recommendation_reason}")
-    
-    print("\n" + "=" * 60)
-    print("验证测试:")
-    print("=" * 60)
-    
+                logger.info(f"    • {name}: {ratio:.2f}%")
+        logger.info(f"  目标得分:")
+        logger.info(f"    • 功效: {sol.objectives['efficacy']:.4f}")
+        logger.info(f"    • 安全: {sol.objectives['safety']:.4f}")
+        logger.info(f"    • 稳定: {sol.objectives['stability']:.4f}")
+        logger.info(f"    • 成本: {sol.objectives['cost']:.4f}")
+        logger.info(f"  推荐理由: {sol.recommendation_reason}")
+    logger.info("\n" + "=" * 60)
+    logger.info("验证测试:")
+    logger.info("=" * 60)
     test_solution = result.solutions[0] if result.solutions else None
     if test_solution:
         total_ratio = sum(test_solution.ratios.values())
-        print(f"✅ 比例总和: {total_ratio:.2f}% (目标: 100% ± 1%)")
-        print(f"{'✅ 通过' if abs(total_ratio - 100.0) < 1 else '❌ 失败'}: 归一化约束")
-        
+        logger.info(f"✅ 比例总和: {total_ratio:.2f}% (目标: 100% ± 1%)")
+        logger.error(f"{'✅ 通过' if abs(total_ratio - 100.0) < 1 else '❌ 失败'}: 归一化约束")
         max_r = max(test_solution.ratios.values())
-        print(f"✅ 最大单成分比例: {max_r:.2f}%")
+        logger.info(f"✅ 最大单成分比例: {max_r:.2f}%")
         if max_r > 95:
-            print("⚠️  警告: 存在极端配比")
+            logger.warning("⚠️  警告: 存在极端配比")
         else:
-            print("✅ 通过: 无极端配比")
-        
+            logger.info("✅ 通过: 无极端配比")
         all_in_range = True
         for ing in ingredients:
             r = test_solution.ratios.get(ing.name, 0)
             if not (ing.min_ratio*100 - 1 <= r <= ing.max_ratio*100 + 1):
                 all_in_range = False
-                print(f"⚠️  {ing.name}: {r:.2f}% 超出 [{ing.min_ratio*100:.1f}%, {ing.max_ratio*100:.1f}%]")
+                logger.info(f"⚠️  {ing.name}: {r:.2f}% 超出 [{ing.min_ratio*100:.1f}%, {ing.max_ratio*100:.1f}%]")
         if all_in_range:
-            print("✅ 通过: 所有成分在边界范围内")
-    
-    print("\n" + "=" * 60)
-    print("性能基准测试 (< 3秒要求):")
-    print("=" * 60)
-    
+            logger.info("✅ 通过: 所有成分在边界范围内")
+    logger.info("\n" + "=" * 60)
+    logger.info("性能基准测试 (< 3秒要求):")
+    logger.info("=" * 60)
     times = []
     for trial in range(3):
         opt = RatioOptimizer(config=OptimizationConfig(
@@ -830,12 +820,10 @@ def quick_test():
         res = opt.optimize_ratio(ingredients)
         elapsed = time.time() - t_start
         times.append(elapsed)
-        print(f"  第 {trial+1} 次: {elapsed:.3f}s")
-    
+        logger.info(f"  第 {trial+1} 次: {elapsed:.3f}s")
     avg_time = sum(times) / len(times)
-    print(f"\n平均耗时: {avg_time:.3f}s")
-    print(f"{'✅ 性能达标' if avg_time < 3.0 else '❌ 性能不达标'} (< 3秒)")
-    
+    logger.info(f"\n平均耗时: {avg_time:.3f}s")
+    logger.info(f"{'✅ 性能达标' if avg_time < 3.0 else '❌ 性能不达标'} (< 3秒)")
     return result
 
 

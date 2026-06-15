@@ -19,7 +19,7 @@
     )
 
     # 查看队列统计
-    print(queue.stats)
+    logger.info(queue.stats)
 """
 from __future__ import annotations
 

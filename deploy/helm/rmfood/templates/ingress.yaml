@@ -1,15 +1,20 @@
-{{- if .Values.ingress.enabled }}
+{{- if .Values.ingress.enabled -}}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ include "rmfood.fullname" . }}-ingress
+  namespace: {{ .Release.Namespace }}
   labels: {{ include "rmfood.labels" . | nindent 4 }}
   annotations:
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
-    nginx.ingress.kubernetes.io/proxy-read-timeout: "120"
-    nginx.ingress.kubernetes.io/proxy-send-timeout: "120"
+    {{- if .Values.ingress.className }}
+    {{- end }}
+    {{- with .Values.ingress.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
 spec:
+  {{- if .Values.ingress.className }}
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- end }}
   {{- if .Values.ingress.tls.enabled }}
   tls:
     - hosts:
@@ -42,7 +47,15 @@ spec:
                 name: {{ include "rmfood.fullname" . }}-backend
                 port:
                   number: {{ .Values.backend.service.port }}
+          # WebSocket 路径 — 长连接需特殊超时配置
           - path: /ws
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "rmfood.fullname" . }}-backend
+                port:
+                  number: {{ .Values.backend.service.port }}
+          - path: /metrics
             pathType: Prefix
             backend:
               service:

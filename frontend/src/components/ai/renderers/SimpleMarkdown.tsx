@@ -252,10 +252,21 @@ export function SimpleMarkdown({ content, className = '' }: SimpleMarkdownProps)
     )
   }
 
+  // 🔒 P0 安全修复: 确保 sanitizedHtml 存在才渲染
+  // 消毒失败时返回安全的占位符，绝不回退到未消毒的 rawHtml
+  if (!sanitizedHtml) {
+    // 消毒失败时返回安全占位符，不显示可能包含恶意脚本的内容
+    return (
+      <div className={`text-sm leading-[1.7] space-y-1 ${className}`}>
+        <span className="text-gray-500 italic">[内容已过滤]</span>
+      </div>
+    )
+  }
+
   return (
     <div
       className={`text-sm leading-[1.7] space-y-1 ${className}`}
-      dangerouslySetInnerHTML={{ __html: sanitizedHtml || rawHtml }}
+      dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
     />
   )
 }

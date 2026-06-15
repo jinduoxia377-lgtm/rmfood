@@ -434,10 +434,9 @@ class FormulaIntegrationService:
 
 def quick_test():
     """快速测试函数"""
-    print("=" * 70)
-    print("统一配方集成服务 - 快速测试")
-    print("=" * 70)
-    
+    logger.info("=" * 70)
+    logger.info("统一配方集成服务 - 快速测试")
+    logger.info("=" * 70)
     service = FormulaIntegrationService()
     
     test_request = DeepGenerationRequest(
@@ -455,74 +454,62 @@ def quick_test():
         use_caching=True
     )
     
-    print("\n开始增强配方生成...")
-    print("-" * 70)
-    
+    logger.info("\n开始增强配方生成...")
+    logger.info("-" * 70)
     def on_progress(stage, step, total):
-        print(f"  ⏳ [{step}/{total}] {stage}...")
-    
+        logger.info(f"  ⏳ [{step}/{total}] {stage}...")
     response = service.orchestrate_deep_generation(test_request, progress_callback=on_progress)
     
-    print(f"\n✅ 生成完成!")
-    print(f"\n📋 基本信息:")
-    print(f"   • 配方ID: {response.formula_id}")
-    print(f"   • 执行模式: {response.mode_used.value}")
-    print(f"   • 是否成功: {'✅ 是' if response.success else '❌ 否'}")
-    print(f"   • 总耗时: {response.generation_time:.2f}s")
-    print(f"   • 缓存命中: {'是' if response.cache_hit else '否'}")
-    
+    logger.info(f"\n✅ 生成完成!")
+    logger.info(f"\n📋 基本信息:")
+    logger.info(f"   • 配方ID: {response.formula_id}")
+    logger.info(f"   • 执行模式: {response.mode_used.value}")
+    logger.info(f"   • 是否成功: {'✅ 是' if response.success else '❌ 否'}")
+    logger.info(f"   • 总耗时: {response.generation_time:.2f}s")
+    logger.info(f"   • 缓存命中: {'是' if response.cache_hit else '否'}")
     if response.optimized_ratios:
-        print(f"\n🎯 优化后配比:")
+        logger.info(f"\n🎯 优化后配比:")
         for name, ratio in sorted(response.optimized_ratios.items(), 
                                   key=lambda x: x[1], reverse=True):
             if ratio > 0.5:
-                print(f"   • {name}: {ratio:.2f}%")
-    
+                logger.info(f"   • {name}: {ratio:.2f}%")
     if response.pareto_frontier:
         pf = response.pareto_frontier
-        print(f"\n📊 Pareto 前沿:")
-        print(f"   • 方案数量: {len(pf.solutions)}")
-        print(f"   • 多样性指标: {pf.diversity_metric:.4f}")
-        print(f"   • 优化状态: {pf.status.value}")
-    
+        logger.info(f"\n📊 Pareto 前沿:")
+        logger.info(f"   • 方案数量: {len(pf.solutions)}")
+        logger.info(f"   • 多样性指标: {pf.diversity_metric:.4f}")
+        logger.info(f"   • 优化状态: {pf.status.value}")
     if response.compatibility_report:
         cr = response.compatibility_report
-        print(f"\n🔍 兼容性报告:")
-        print(f"   • 总体评分: {cr.overall_score}/100")
-        print(f"   • 问题数: ERROR={cr.error_count}, WARNING={cr.warning_count}, INFO={cr.info_count}")
-    
+        logger.info(f"\n🔍 兼容性报告:")
+        logger.info(f"   • 总体评分: {cr.overall_score}/100")
+        logger.error(f"   • 问题数: ERROR={cr.error_count}, WARNING={cr.warning_count}, INFO={cr.info_count}")
     if response.effect_prediction:
         ep = response.effect_prediction
-        print(f"\n📈 效果预测:")
-        print(f"   • 达峰时间: {ep.peak_time:.2f}h")
-        print(f"   • 最大效应: {ep.max_effect:.3f}")
-        print(f"   • 持续时间: {ep.effect_duration:.2f}h")
-    
+        logger.info(f"\n📈 效果预测:")
+        logger.info(f"   • 达峰时间: {ep.peak_time:.2f}h")
+        logger.info(f"   • 最大效应: {ep.max_effect:.3f}")
+        logger.info(f"   • 持续时间: {ep.effect_duration:.2f}h")
     if response.safety_check:
         sc = response.safety_check
-        print(f"\n🛡️ 安全检查:")
-        print(f"   • 是否安全: {'✅' if sc.is_safe else '❌'}")
-        print(f"   • 风险评分: {sc.overall_risk_score:.1f}/100")
-        print(f"   • 预警数: {len(sc.alerts)}")
-    
-    print(f"\n💡 建议 ({len(response.recommendations)} 条):")
+        logger.info(f"\n🛡️ 安全检查:")
+        logger.info(f"   • 是否安全: {'✅' if sc.is_safe else '❌'}")
+        logger.info(f"   • 风险评分: {sc.overall_risk_score:.1f}/100")
+        logger.info(f"   • 预警数: {len(sc.alerts)}")
+    logger.info(f"\n💡 建议 ({len(response.recommendations)} 条):")
     for rec in response.recommendations[:5]:
-        print(f"   • {rec}")
-    
-    print("\n\n【缓存测试】")
-    print("-" * 70)
-    
+        logger.info(f"   • {rec}")
+    logger.info("\n\n【缓存测试】")
+    logger.info("-" * 70)
     response_cached = service.orchestrate_deep_generation(test_request)
-    print(f"第二次调用缓存命中: {'✅ 是' if response_cached.cache_hit else '❌ 否'}")
-    
+    logger.info(f"第二次调用缓存命中: {'✅ 是' if response_cached.cache_hit else '❌ 否'}")
     cache_stats = service.get_cache_stats()
     print(f"缓存统计: 当前大小={cache_stats['current_size']}/{cache_stats['max_size']}, "
           f"利用率={cache_stats['utilization']:.1f}%")
     
-    print("\n" + "=" * 70)
-    print("验证标准检查:")
-    print("=" * 70)
-    
+    logger.info("\n" + "=" * 70)
+    logger.info("验证标准检查:")
+    logger.info("=" * 70)
     checks = [
         ("5.1 管线完整执行", response.success or response.mode_used == GenerationMode.STANDARD),
         ("5.2 错误处理与回退", True),  # 如果出错会自动回退到标准模式
@@ -534,8 +521,7 @@ def quick_test():
     
     for check_name, result in checks:
         status = "✅ PASS" if result else "❌ FAIL"
-        print(f"{status}: {check_name}")
-    
+        logger.info(f"{status}: {check_name}")
     return response
 
 

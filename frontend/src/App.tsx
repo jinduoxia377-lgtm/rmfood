@@ -3,6 +3,11 @@
  * 路由配置、认证守卫、QueryProvider
  *
  * 使用 react-router-dom v7 的 createBrowserRouter + RouterProvider
+ *
+ * 🔒 P3-1: lazyWithPreload 懒加载策略：
+ * - 首屏关键页面（登录、仪表盘）同步加载
+ * - 其他页面使用懒加载 + 空闲预加载
+ * - 大体积模块（图表/导出）延迟加载
  */
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -17,37 +22,53 @@ import { ToastProvider } from '@/components/ui/Toast'
 import { ToastContainer } from '@/components/ui/ToastContainer'
 import { ShortcutHelpProvider } from '@/hooks/useKeyboardShortcuts.tsx'
 
-// 关键页面直接导入，确保首屏加载速度
+// 🔒 P3-1: 可预加载懒加载（空闲时预加载）
+import { lazyWithPreload } from '@/components/LazyLoad.tsx'
+
+// 🔒 P3-1: 关键页面直接导入，确保首屏加载速度
+// 这些文件体积小，同步加载无影响首屏性能
 import RhineLoginPage from '@/pages/auth/RhineLoginPage'
 import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage'
 import DashboardPage from '@/pages/dashboard/DashboardPage'
 
-// 非关键页面使用懒加载，优化启动速度
-const FormulaListPage = lazy(() => import('@/pages/formula/FormulaListPage'))
-const FormulaNewPage = lazy(() => import('@/pages/formula/FormulaNewPage'))
-const FormulaDetailPage = lazy(() => import('@/pages/formula/FormulaDetailPage'))
-const FormulaEditPage = lazy(() => import('@/pages/formula/FormulaEditPage'))
-const FormulaTemplatesPage = lazy(() => import('@/pages/formula/FormulaTemplatesPage'))
-const FormulaComparePage = lazy(() => import('@/pages/formula/FormulaComparePage'))
-const FormulaTestPage = lazy(() => import('@/pages/formula/FormulaTestPage'))
-const ExperimentListPage = lazy(() => import('@/pages/experiment/ExperimentListPage'))
-const ExperimentDetailPage = lazy(() => import('@/pages/experiment/ExperimentDetailPage'))
-const ExperimentNewPage = lazy(() => import('@/pages/experiment/ExperimentNewPage'))
-const ExperimentEditPage = lazy(() => import('@/pages/experiment/ExperimentEditPage'))
-const AIAssistantPage = lazy(() => import('@/pages/ai/AIAssistantPage'))
-const AcademicReportPage = lazy(() => import('@/pages/academic/AcademicReportPage'))
-const DatabasePage = lazy(() => import('@/pages/database/DatabasePage'))
-const UserManagementPage = lazy(() => import('@/pages/user/UserManagementPage'))
-const SettingsPage = lazy(() => import('@/pages/settings/SettingsPage'))
-const NotificationPage = lazy(() => import('@/pages/notification/NotificationPage'))
-const WorkflowPage = lazy(() => import('@/pages/workflow/WorkflowPage'))
-const AuditLogPage = lazy(() => import('@/pages/admin/AuditLogPage'))
-const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'))
+// 🔒 P3-1: 中等体积页面 - 标准懒加载
+const FormulaListPage = lazyWithPreload(() => import('@/pages/formula/FormulaListPage'))
+const FormulaNewPage = lazyWithPreload(() => import('@/pages/formula/FormulaNewPage'))
+const FormulaDetailPage = lazyWithPreload(() => import('@/pages/formula/FormulaDetailPage'))
+const FormulaEditPage = lazyWithPreload(() => import('@/pages/formula/FormulaEditPage'))
+const FormulaTemplatesPage = lazyWithPreload(() => import('@/pages/formula/FormulaTemplatesPage'))
+const FormulaComparePage = lazyWithPreload(() => import('@/pages/formula/FormulaComparePage'))
+const FormulaTestPage = lazyWithPreload(() => import('@/pages/formula/FormulaTestPage'))
 
-// SSS 企业级功能页面（懒加载）
-const AnalyticsPage = lazy(() => import('@/pages/analytics/AnalyticsPage'))
-const OrganizationsPage = lazy(() => import('@/pages/organizations/OrganizationsPage'))
-const IntegrationsPage = lazy(() => import('@/pages/integrations/IntegrationsPage'))
+// 🔒 P3-1: 数据管理 - 中等体积
+const ExperimentListPage = lazyWithPreload(() => import('@/pages/experiment/ExperimentListPage'))
+const ExperimentDetailPage = lazyWithPreload(() => import('@/pages/experiment/ExperimentDetailPage'))
+const ExperimentNewPage = lazyWithPreload(() => import('@/pages/experiment/ExperimentNewPage'))
+const ExperimentEditPage = lazyWithPreload(() => import('@/pages/experiment/ExperimentEditPage'))
+
+// 🔒 P3-1: AI 相关页面 - 大体积，懒加载
+const AIAssistantPage = lazyWithPreload(() => import('@/pages/ai/AIAssistantPage'))
+const AcademicReportPage = lazyWithPreload(() => import('@/pages/academic/AcademicReportPage'))
+
+// 🔒 P3-1: 数据库页面 - 数据密集型
+const DatabasePage = lazyWithPreload(() => import('@/pages/database/DatabasePage'))
+
+// 🔒 P3-1: 用户/设置/通知 - 标准懒加载
+const UserManagementPage = lazyWithPreload(() => import('@/pages/user/UserManagementPage'))
+const SettingsPage = lazyWithPreload(() => import('@/pages/settings/SettingsPage'))
+const NotificationPage = lazyWithPreload(() => import('@/pages/notification/NotificationPage'))
+const WorkflowPage = lazyWithPreload(() => import('@/pages/workflow/WorkflowPage'))
+
+// 🔒 P3-1: 管理员页面 - 大体积（含图表/审计功能）
+const AuditLogPage = lazyWithPreload(() => import('@/pages/admin/AuditLogPage'))
+
+// 🔒 P3-1: 404 页面 - 极小文件同步加载
+const NotFoundPage = lazyWithPreload(() => import('@/pages/NotFoundPage'))
+
+// 🔒 P3-1: SSS 企业级功能页面 - 大体积，懒加载
+const AnalyticsPage = lazyWithPreload(() => import('@/pages/analytics/AnalyticsPage'))
+const OrganizationsPage = lazyWithPreload(() => import('@/pages/organizations/OrganizationsPage'))
+const IntegrationsPage = lazyWithPreload(() => import('@/pages/integrations/IntegrationsPage'))
 
 // React Query 客户端
 const queryClient = new QueryClient({
@@ -400,19 +421,53 @@ const router = createBrowserRouter([
    ═══════════════════════════════════════════ */
 
 export default function App() {
+  // 🔒 P2-4: 错误上报函数（生产环境可接入 Sentry）
+  const handleErrorReport = (error: Error, errorInfo: React.ErrorInfo) => {
+    // 开发环境输出到控制桌
+    console.error('[App] Uncaught error:', error, errorInfo)
+
+    // 生产环境上报（扩展点）
+    if (import.meta.env.PROD) {
+      // 例: fetch('/api/errors', { method: 'POST', body: JSON.stringify({...}) })
+      // 或: window.Sentry?.captureException(error, { contexts: { react: errorInfo } })
+    }
+  }
+
   return (
-    <ErrorBoundary fallback={<div className="flex items-center justify-center h-screen">
-      <div className="text-center">
-        <h1 className="text-2xl font-bold text-red-600">应用加载失败</h1>
-        <p className="mt-4 text-gray-600">请刷新页面重试</p>
-        <button
-          className="mt-6 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
-          onClick={() => window.location.reload()}
-        >
-          刷新页面
-        </button>
-      </div>
-    </div>}>
+    <ErrorBoundary
+      onErrorReport={handleErrorReport}
+      fallback={(error, reset) => (
+        <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-red-50 to-white">
+          <div className="text-center max-w-md p-8">
+            <div className="text-6xl mb-4">⚠️</div>
+            <h1 className="text-2xl font-bold text-red-600 mb-4">页面遇到了一些问题</h1>
+            <p className="text-gray-600 mb-6">
+              抱歉，页面在加载时发生了错误。请尝试刷新或返回首页。
+            </p>
+            <div className="flex gap-3 justify-center flex-wrap">
+              <button
+                className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+                onClick={reset}
+              >
+                重试
+              </button>
+              <button
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                onClick={() => window.location.href = '/'}
+              >
+                返回首页
+              </button>
+              <button
+                className="px-4 py-2 text-gray-500 hover:text-gray-700 transition-colors"
+                onClick={() => window.location.reload()}
+              >
+                刷新页面
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    >
       <ThemeProvider>
         <QueryClientProvider client={queryClient}>
           <ToastProvider>

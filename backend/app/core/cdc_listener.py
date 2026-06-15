@@ -46,6 +46,8 @@ class CDCListener:
 
     监听 SQLAlchemy Session 的 flush 事件，
     自动检测并记录所有实体变更。
+
+    Phase 3-B: 支持通过事件总线发布变更事件。
     """
 
     def __init__(self):
@@ -55,11 +57,21 @@ class CDCListener:
         # 当前用户上下文（由中间件设置）
         self._current_user_id: Optional[int] = None
         self._current_ip: Optional[str] = None
+        # Phase 3-B: 事件总线实例
+        self._event_bus = None
 
     def set_context(self, user_id: Optional[int] = None, ip_address: Optional[str] = None):
         """设置当前操作上下文（由认证中间件调用）"""
         self._current_user_id = user_id
         self._current_ip = ip_address
+
+    def set_event_bus(self, event_bus=None):
+        """设置事件总线实例（Phase 3-B: 事件驱动架构）"""
+        self._event_bus = event_bus
+        if event_bus:
+            logger.info("[CDC] 事件总线已设置，变更事件将通过 EventBus 发布")
+        else:
+            logger.info("[CDC] 事件总线未设置，变更事件仅持久化到数据库")
 
     def start(self):
         """启动 CDC 监听"""
@@ -261,7 +273,7 @@ class CDCListener:
             logger.error(f"CDC 持久化失败: {e}", exc_info=True)
 
     async def _async_persist_events(self, events: list):
-        """异步持久化 CDC 事件并通过 WebSocket 推送"""
+        """异步持久化 CDC 事件并通过事件总线发布"""
         try:
             from ..models.change_event import ChangeEvent, ChangeAction
             from ..core.session import async_session_factory
@@ -283,8 +295,12 @@ class CDCListener:
                 await session.commit()
                 logger.debug(f"CDC: 持久化 {len(events)} 个变更事件")
 
-            # 通过 WebSocket 推送变更事件
-            await self._broadcast_changes(events)
+            # Phase 3-B: 通过事件总线发布变更事件
+            if self._event_bus:
+                await self._publish_to_event_bus(events)
+            else:
+                # 降级：通过 WebSocket 推送变更事件
+                await self._broadcast_changes(events)
 
             # 失效相关缓存
             await self._invalidate_cache(events)
@@ -370,6 +386,37 @@ class CDCListener:
 
         except Exception as e:
             logger.error(f"CDC 缓存失效失败: {e}", exc_info=True)
+
+    async def _publish_to_event_bus(self, events: list):
+        """通过事件总线发布 CDC 事件（Phase 3-B: 事件驱动架构）"""
+        try:
+            from ..domain.entities import DataChangedEvent
+
+            for event_data in events:
+                # 创建 DataChangedEvent 实例
+                data_changed_event = DataChangedEvent(
+                    entity_type=event_data["entity_type"],
+                    entity_id=event_data["entity_id"],
+                    action=event_data["action"],
+                    changed_fields=event_data.get("changed_fields"),
+                    old_values=event_data.get("old_values"),
+                    new_values=event_data.get("new_values"),
+                    user_id=event_data.get("user_id"),
+                    ip_address=event_data.get("ip_address"),
+                )
+                # formula_id 使用 field(init=False)，不包含在 __init__ 中
+                # 如果需要设置 formula_id，可以在创建后手动赋值（但 CDC 事件通常不需要）
+
+                # 通过事件总线发布
+                await self._event_bus.publish(data_changed_event)
+                logger.debug(f"CDC: 事件已发布到 EventBus [{event_data['entity_type']}:{event_data['action']}]")
+
+            logger.info(f"CDC: 已发布 {len(events)} 个变更事件到 EventBus")
+
+        except Exception as e:
+            logger.error(f"CDC: 发布事件到 EventBus 失败: {e}", exc_info=True)
+            # 降级：通过 WebSocket 推送
+            await self._broadcast_changes(events)
 
     def _get_table_name(self, obj) -> Optional[str]:
         """获取实体的表名"""

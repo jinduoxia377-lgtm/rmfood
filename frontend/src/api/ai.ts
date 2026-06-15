@@ -171,6 +171,152 @@ export interface PepinventStatusResponse {
   }
 }
 
+/** 遗传算法生成响应 */
+export interface GeneticGenerateResponse {
+  candidates: Array<{
+    ingredients: Array<{ id: string; name_cn: string; dosage: number }>
+    efficacy_score: number
+    safety_score: number
+    taste_score: number
+    cost_score: number
+    overall_score: number
+    confidence: number
+    explanation: string | null
+  }>
+  history: Array<{
+    generation: number
+    best_fitness: number
+    avg_fitness: number
+    min_fitness: number
+    diversity: number
+  }>
+  algorithm: string
+  total_generations: number
+  total_evaluations: number
+  best_score: number
+}
+
+/** 多目标优化目标 */
+export interface MOObjective {
+  name: string
+  key: string
+  direction: 'maximize' | 'minimize'
+  weight: number
+  description?: string
+}
+
+/** Pareto 前沿坐标点 */
+export interface MOParetoPoint {
+  objective_values: Record<string, number>
+  rank: number
+  crowding_distance: number
+}
+
+/** 多目标候选方案 */
+export interface MOCandidate {
+  ingredients: Array<{ id: string; name_cn: string; dosage: number }>
+  objective_scores: Record<string, number>
+  overall_fitness: number
+  pareto_rank: number
+  crowding_distance: number
+  explanation: string | null
+}
+
+/** 各目标最优解 */
+export interface MOBestByObjective {
+  objective_key: string
+  objective_name: string
+  score: number
+  ingredients: Array<{ id: string; name_cn: string; dosage: number }>
+  explanation: string
+}
+
+/** 多目标优化响应 */
+export interface MultiObjectiveResponse {
+  candidates: MOCandidate[]
+  pareto_front: MOParetoPoint[]
+  best_by_objective: MOBestByObjective[]
+  history: Array<{
+    generation: number
+    best_fitness: number
+    avg_fitness: number
+    min_fitness: number
+    diversity: number
+  }>
+  algorithm: string
+  mode: string
+  objectives_config: Array<{
+    name: string
+    key: string
+    direction: string
+    weight: number
+  }>
+  total_generations: number
+  total_evaluations: number
+  execution_time_ms: number
+  convergence_generation: number
+  stop_reason: string
+}
+
+/** 预设场景信息 */
+export interface MOPresetInfo {
+  name: string
+  objectives: MOObjective[]
+  mode: string
+  default_params: {
+    population_size: number
+    generations: number
+    mutation_rate: number
+    crossover_rate: number
+  }
+}
+
+/** GA 运行历史记录 */
+export interface GAHistoryRecord {
+  run_id: string
+  algorithm_type: string
+  mode: string
+  preset_name: string | null
+  target_effects: string[]
+  best_fitness: number
+  candidate_count: number
+  total_generations: number
+  execution_time_ms: number
+  stop_reason: string
+  final_diversity: number
+  created_at: string
+}
+
+/** GA 运行完整详情 */
+export interface GADetailResponse {
+  run: GAHistoryRecord & {
+    algorithm_params: Record<string, unknown>
+    objectives_config: Array<{ name: string; key: string; direction: string; weight: number }>
+    constraints: Record<string, unknown> | null
+    history: GenerationRecord[]
+    pareto_front: MOParetoPoint[]
+    best_by_objective: MOBestByObjective[]
+  }
+  candidates: Array<{
+    rank: number
+    pareto_rank: number
+    crowding_distance: number
+    ingredients: Array<{ id: string; name_cn: string; dosage: number }>
+    ingredient_count: number
+    total_dosage: number
+    efficacy_score: number
+    safety_score: number
+    taste_score: number
+    cost_score: number
+    synergy_score: number
+    stability_score: number
+    admet_score: number
+    overall_fitness: number
+    objective_scores: Record<string, number>
+    explanation: string | null
+  }>
+}
+
 export const aiApi = {
   /** AI 配方生成（支持 LLM 模式） */
   generate: (
@@ -217,6 +363,88 @@ export const aiApi = {
       },
       { timeout: 45000, signal },
     ).then((r) => r.data),
+
+  /** 遗传算法配方生成 */
+  generateGenetic: async (params: {
+    targetEffects: string[]
+    populationSize?: number
+    generations?: number
+    mutationRate?: number
+    crossoverRate?: number
+    eliteRatio?: number
+    tournamentSize?: number
+    count?: number
+    constraints?: Record<string, unknown>
+  }, signal?: AbortSignal) => {
+    const res = await api.post('/ai/generate/genetic', {
+      target_effects: params.targetEffects,
+      population_size: params.populationSize ?? 50,
+      generations: params.generations ?? 40,
+      mutation_rate: params.mutationRate ?? 0.15,
+      crossover_rate: params.crossoverRate ?? 0.85,
+      elite_ratio: params.eliteRatio ?? 0.15,
+      tournament_size: params.tournamentSize ?? 5,
+      count: params.count ?? 5,
+      constraints: params.constraints ?? null
+    }, { signal, timeout: 120000 })
+    return res.data as GeneticGenerateResponse
+  },
+
+  // 多目标优化 (NSGA-II)
+  multiObjectiveOptimize: async (params: {
+    targetEffects?: string[]
+    objectives?: Array<{ name?: string; key: string; direction?: string; weight?: number; description?: string }>
+    preset?: 'balanced' | 'cost_first' | 'efficacy_first' | 'safety_first' | 'synergy_focused' | 'comprehensive'
+    mode?: 'pareto' | 'weighted' | 'epsilon'
+    populationSize?: number
+    generations?: number
+    mutationRate?: number
+    crossoverRate?: number
+    eliteRatio?: number
+    constraints?: Record<string, unknown>
+    count?: number
+  }, signal?: AbortSignal) => {
+    const res = await api.post('/ai/generate/multi-objective', {
+      target_effects: params.targetEffects || ['免疫调节'],
+      objectives: params.objectives || null,
+      preset: params.preset || null,
+      mode: params.mode || 'pareto',
+      population_size: params.populationSize ?? 60,
+      generations: params.generations ?? 50,
+      mutation_rate: params.mutationRate ?? 0.15,
+      crossover_rate: params.crossoverRate ?? 0.85,
+      elite_ratio: params.eliteRatio ?? 0.1,
+      constraints: params.constraints ?? null,
+      count: params.count ?? 10,
+    }, { signal, timeout: 180000 })
+    return res.data as MultiObjectiveResponse
+  },
+
+  // 获取预设场景列表
+  getMOPresets: async () => {
+    const res = await api.get('/ai/generate/multi-objective/presets')
+    return res.data as { presets: Record<string, MOPresetInfo>; total: number }
+  },
+
+  // GA 运行历史 (数据库版)
+  getGAHistory: async (params?: {
+    algorithmType?: 'all' | 'genetic' | 'nsga2'
+    limit?: number
+    offset?: number
+  }) => {
+    const q = new URLSearchParams()
+    if (params?.algorithmType && params.algorithmType !== 'all') q.set('algorithm_type', params.algorithmType)
+    if (params?.limit) q.set('limit', String(params.limit))
+    if (params?.offset) q.set('offset', String(params.offset))
+    const res = await api.get(`/ai/generate/history?${q.toString()}`)
+    return res.data as { records: GAHistoryRecord[]; total: number; limit: number; offset: number }
+  },
+
+  // GA 运行详情
+  getGADetail: async (runId: string) => {
+    const res = await api.get(`/ai/generate/history/${runId}`)
+    return res.data as GADetailResponse
+  },
 
   /** 安全合规检查 */
   safetyCheck: (ingredientNames: string[], peptideSequences?: string[]) =>

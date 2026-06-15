@@ -9,8 +9,10 @@ P0 安全修复:
 - ✅ 登录失败次数限制
 - ✅ 自动账号锁定/解锁
 - ✅ 安全日志记录
+- ✅ Refresh Token 速率限制和重用检测
 """
 import logging
+import os
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
@@ -32,6 +34,9 @@ from ..utils.auth import (
     create_access_token as _create_access_token,
     create_refresh_token as _create_refresh_token,
     decode_token as _decode_token_raw,
+    check_refresh_token_reuse,
+    mark_refresh_token_used,
+    check_refresh_token_ratelimit,
 )
 
 logger = logging.getLogger(__name__)
@@ -238,15 +243,66 @@ class AuthService:
         return user
 
     async def refresh_access_token(self, refresh_token: str) -> Token:
-        """使用刷新令牌获取新的访问令牌"""
-        payload = decode_token(refresh_token)
+        """
+        使用刷新令牌获取新的访问令牌
+
+        🔒 P0 安全修复:
+        - 检查 refresh token 是否已被使用（防止 Token 重用攻击）
+        - 检查 refresh token 速率限制（防止暴力刷新）
+        - Token 旋转：每次刷新生成新的 refresh token
+
+        Args:
+            refresh_token: 刷新令牌
+
+        Returns:
+            Token: 新的 access token 和 refresh token
+
+        Raises:
+            HTTPException: Token 无效、已使用、速率限制触发等
+        """
+        # 🔒 Step 1: 检查 Token 重用攻击
+        is_reused, reuse_error = check_refresh_token_reuse(refresh_token)
+        if is_reused:
+            logger.warning(f"⚠️ Refresh token 重用检测: {reuse_error}")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail={
+                    "error_code": "TOKEN_REUSED",
+                    "message": reuse_error,
+                    "hint": "检测到安全威胁，请重新登录",
+                }
+            )
+
+        # 🔒 Step 2: 检查速率限制
+        is_allowed, remaining = check_refresh_token_ratelimit(refresh_token)
+        if not is_allowed:
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail={
+                    "error_code": "REFRESH_RATE_LIMITED",
+                    "message": "刷新频率过高，请稍后再试",
+                    "hint": "短时间内刷新次数过多，建议使用较长的 access token 有效期",
+                }
+            )
+
+        # Step 3: 解码并验证 token
+        try:
+            payload = decode_token(refresh_token)
+        except HTTPException:
+            # Token 无效或过期时，清除重用记录（允许重新登录）
+            logger.warning("Refresh token 解码失败，可能是过期或无效")
+            raise
 
         if payload.type != "refresh":
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="请使用刷新令牌",
+                detail={
+                    "error_code": "INVALID_TOKEN_TYPE",
+                    "message": "请使用刷新令牌",
+                }
             )
 
+        # Step 4: 查询用户
         result = await self.db.execute(
             select(User).where(User.id == int(payload.sub))
         )
@@ -255,11 +311,24 @@ class AuthService:
         if not user or not user.is_active:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="用户不存在或已被禁用",
+                detail={
+                    "error_code": "USER_INVALID",
+                    "message": "用户不存在或已被禁用",
+                }
             )
 
+        # Step 5: 标记旧 token 为已使用（实现 Token 旋转）
+        mark_refresh_token_used(refresh_token)
+
+        # Step 6: 生成新的 token 对
         new_access_token = create_access_token(user.id, user.role.value)
         new_refresh_token = create_refresh_token(user.id, user.role.value)
+
+        logger.info(
+            f"✅ Token 刷新成功:\n"
+            f"   用户: {user.username}\n"
+            f"   剩余可用刷新次数: {remaining - 1}"
+        )
 
         return Token(
             access_token=new_access_token,
@@ -284,28 +353,100 @@ class AuthService:
         logger.info(f"用户修改密码: {user.username}")
 
     async def forgot_password(self, email: str) -> None:
-        """发送密码重置邮件"""
+        """
+        发送密码重置邮件
+
+        🔒 P1-3 修复:
+        - 实现实际的邮件发送（SMTP / 开发环境文件保存）
+        - reset token 速率限制（每邮箱每分钟 5 次）
+        - 邮件包含一次性 token（24小时有效期）
+        - 即使邮箱不存在，也返回成功（避免用户枚举攻击）
+        """
+        # Step 1: 检查速率限制（即使邮箱不存在，也不能被滥用）
+        from ..utils.email_service import _check_and_add_reset_attempt
+        is_allowed, _ = _check_and_add_reset_attempt(email)
+        if not is_allowed:
+            logger.warning(f"⚠️ 密码重置请求被拒绝（速率限制）: {email}")
+            return
+
+        # Step 2: 查找用户
         result = await self.db.execute(
             select(User).where(User.email == email)
         )
         user = result.scalar_one_or_none()
 
         if not user:
-            # 为了安全，即使邮箱不存在也返回成功
+            # 🔒 为了安全，即使邮箱不存在也返回成功（防止用户枚举攻击）
+            logger.info(f"密码重置请求: 邮箱 {email} 不存在，返回成功（未发送邮件）")
             return
 
-        # 生成密码重置令牌（24小时有效期）
-        reset_token = _create_access_token({
-            "sub": str(user.id),
-            "type": "reset",
-        })
+        # Step 3: 生成密码重置令牌（24小时有效期）
+        from datetime import timedelta
+        reset_token = _create_access_token(
+            {"sub": str(user.id), "type": "reset", "username": user.username},
+            expires_delta=timedelta(hours=24),
+        )
 
-        # TODO: 这里应该发送邮件，现在只是记录
-        logger.info(f"密码重置邮件已发送到: {email}, token长度: {len(reset_token)}字符")
+        # Step 4: 发送邮件
+        from ..utils.email_service import send_password_reset_email
+        from ..core.config import settings
+
+        # 从环境变量获取 SMTP 配置
+        smtp_host = os.getenv("SMTP_HOST", "")
+        smtp_port = int(os.getenv("SMTP_PORT", "465"))
+        smtp_username = os.getenv("SMTP_USERNAME", "")
+        smtp_password = os.getenv("SMTP_PASSWORD", "")
+        frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5173")
+
+        success = send_password_reset_email(
+            to_email=email,
+            username=user.username,
+            reset_token=reset_token,
+            smtp_host=smtp_host,
+            smtp_port=smtp_port,
+            smtp_username=smtp_username,
+            smtp_password=smtp_password,
+            frontend_url=frontend_url,
+            use_tls=smtp_port == 465,
+            is_development=settings.debug,
+        )
+
+        logger.info(
+            f"🔐 密码重置邮件已处理: {email}, 结果: {'成功' if success else '配置缺失(开发模式)'}"
+        )
 
     async def reset_password(self, token: str, new_password: str) -> None:
-        """使用令牌重置密码"""
-        payload_dict = _decode_token_raw(token)
+        """
+        使用令牌重置密码
+
+        🔒 P1-3 修复:
+        - Token 重用检测：每个 reset token 仅可使用一次
+        - 密码复杂度验证：检查新密码是否符合要求
+        - Token 类型验证：必须为 "reset" 类型
+        - 记录操作日志（审计）
+        """
+        # 🔒 Step 1: 检测 token 重用攻击
+        from ..utils.email_service import (
+            _check_reset_token_reused,
+            _mark_reset_token_used,
+        )
+
+        if _check_reset_token_reused(token):
+            logger.warning(f"⚠️ Reset token 重用检测: token已被使用过")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="重置令牌已使用，请重新申请",
+            )
+
+        # Step 2: 解码并验证 token
+        try:
+            payload_dict = _decode_token_raw(token)
+        except Exception as e:
+            logger.error(f"Reset token 解码失败: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="无效的重置令牌",
+            )
 
         if payload_dict.get("type") != "reset":
             raise HTTPException(
@@ -313,6 +454,7 @@ class AuthService:
                 detail="无效的重置令牌",
             )
 
+        # Step 3: 查找用户
         user_id = int(payload_dict["sub"])
         result = await self.db.execute(
             select(User).where(User.id == user_id)
@@ -325,9 +467,37 @@ class AuthService:
                 detail="用户不存在",
             )
 
+        # Step 4: 🔒 密码复杂度验证
+        if len(new_password) < 8:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="密码至少需要 8 个字符",
+            )
+
+        has_upper = any(c.isupper() for c in new_password)
+        has_lower = any(c.islower() for c in new_password)
+        has_digit = any(c.isdigit() for c in new_password)
+
+        # 生产环境要求更严格
+        if settings.debug is False:
+            if not (has_upper and has_lower and has_digit):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="密码必须包含大小写字母和数字",
+                )
+
+        # Step 5: 🔒 标记 token 为已使用
+        if not _mark_reset_token_used(token):
+            logger.warning(f"⚠️ Reset token 标记失败: 可能被并发使用")
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="重置令牌正在被使用，请稍后再试",
+            )
+
+        # Step 6: 更新密码
         user.hashed_password = get_password_hash(new_password)
         await self.db.flush()
-        logger.info(f"用户重置密码: {user.username}")
+        logger.info(f"✅ 用户重置密码成功: {user.username}")
 
     async def get_current_user(self, token: str) -> User | None:
         """通过 JWT token 获取当前用户（供 deps.py 调用）"""

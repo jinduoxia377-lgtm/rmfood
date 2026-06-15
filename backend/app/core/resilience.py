@@ -36,9 +36,7 @@ from typing import Any, Callable, Dict, List, Optional, TypeVar, Union
 from contextlib import asynccontextmanager
 
 from ..core.exceptions import (
-    RMFOODBaseException,
-    DatabaseOperationException,
-    ValidationException,
+    AppError,
 )
 
 logger = logging.getLogger(__name__)
@@ -197,10 +195,10 @@ class CircuitBreaker:
             @functools.wraps(func)
             async def async_wrapper(*args, **kwargs):
                 if not await self.allow_request():
-                    raise RMFOODBaseException(
+                    raise AppError(
                         message=f"服务 [{self.name}] 暂时不可用（断路器开启）",
                         error_code="CIRCUIT_OPEN",
-                        http_status=503,
+                        status_code=503,
                         details={"service": self.name, "state": self.state.name}
                     )
                 
@@ -404,7 +402,7 @@ class ServiceDegradationManager:
             服务结果或FallbackResult
             
         Raises:
-            RMFOODBaseException: 主服务和降级服务都失败时
+            AppError: 主服务和降级服务都失败时
         """
         if service_name not in self._services:
             raise ValueError(f"未注册的服务: {service_name}")
@@ -434,11 +432,11 @@ class ServiceDegradationManager:
                 
             except Exception as e:
                 logger.error(f"❌ 降级服务也失败 | {service_name}: {e}")
-                raise RMFOODBaseException(
+                raise AppError(
                     message=f"服务 [{service_name}] 完全不可用",
                     error_code="SERVICE_UNAVAILABLE",
-                    http_status=503,
-                    original_error=e,
+                    status_code=503,
+                    details={"original_error": str(e)},
                 )
         
         # 尝试主服务
@@ -487,15 +485,11 @@ class ServiceDegradationManager:
                     f"主错误: {e} | 降级错误: {fallback_err}"
                 )
                 
-                raise RMFOODBaseException(
+                raise AppError(
                     message=f"服务 [{service_name}] 不可用且降级失败",
                     error_code="SERVICE_DEGRADATION_FAILED",
-                    http_status=503,
-                    original_error=fallback_err,
-                    details={
-                        "primary_error": str(e),
-                        "fallback_error": str(fallback_err),
-                    }
+                    status_code=503,
+                    details={"primary_error": str(e), "fallback_error": str(fallback_err)},
                 )
     
     def _log_degradation(

@@ -590,16 +590,14 @@ async def test_uniprot_real_data():
     
     所有测试数据必须来自真实的UniProt数据库！
     """
-    print("\n" + "="*80)
-    print("🧪 UniProt客户端 - 真实数据验证测试")
-    print("="*80 + "\n")
-    
+    logger.info("\n" + "="*80)
+    logger.info("🧪 UniProt客户端 - 真实数据验证测试")
+    logger.info("="*80 + "\n")
     async with UniProtClient() as client:
         
         # 测试1: 获取已知蛋白质 (Insulin)
-        print("📌 测试1: 获取 Insulin (P01308)")
-        print("-" * 60)
-        
+        logger.info("📌 测试1: 获取 Insulin (P01308)")
+        logger.info("-" * 60)
         insulin = await client.get_protein_by_accession("P01308")
         
         assert insulin is not None, "❌ 失败: Insulin条目应该存在"
@@ -608,42 +606,36 @@ async def test_uniprot_real_data():
         assert insulin.length == 110, f"❌ 错误的序列长度: {insulin.length} (期望: 110)"
         assert abs(insulin.mass - 5807.59) < 1.0, f"❌ 错误的分子量: {insulin.mass} (期望: 5807.59)"
         
-        print(f"   ✅ Accession: {insulin.accession[0]}")
-        print(f"   ✅ 蛋白质名称: {insulin.protein_name}")
-        print(f"   ✅ 序列长度: {insulin.length} AA")
-        print(f"   ✅ 分子量: {insulin.mass:.2f} Da")
-        print(f"   ✅ 注释质量评分: {insulin.annotation_score}")
-        print(f"   ✅ 物种: {insulin.organism['scientificName']}\n")
-        
+        logger.info(f"   ✅ Accession: {insulin.accession[0]}")
+        logger.info(f"   ✅ 蛋白质名称: {insulin.protein_name}")
+        logger.info(f"   ✅ 序列长度: {insulin.length} AA")
+        logger.info(f"   ✅ 分子量: {insulin.mass:.2f} Da")
+        logger.info(f"   ✅ 注释质量评分: {insulin.annotation_score}")
+        logger.info(f"   ✅ 物种: {insulin.organism['scientificName']}\n")
         # 测试2: 不存在的ID
-        print("📌 测试2: 不存在的Accession号")
-        print("-" * 60)
-        
+        logger.info("📌 测试2: 不存在的Accession号")
+        logger.info("-" * 60)
         unknown = await client.get_protein_by_accession("INVALID_ID_12345")
         assert unknown is None, "❌ 失败: 不存在的ID应该返回None"
-        print("   ✅ 正确返回None\n")
-        
+        logger.info("   ✅ 正确返回None\n")
         # 测试3: 序列搜索
-        print("📌 测试3: 序列相似性搜索")
-        print("-" * 60)
-        
+        logger.info("📌 测试3: 序列相似性搜索")
+        logger.info("-" * 60)
         test_seq = "VLGYTKEGNHIVGKKISARFAQEINQLDLTTLLKLAQPEEL"
         search_results = await client.search_by_sequence(test_seq, max_results=5)
         
         assert len(search_results) > 0, "❌ 失败: 应该返回至少1个结果"
-        print(f"   ✅ 查询序列长度: {len(test_seq)} AA")
-        print(f"   ✅ 返回结果数: {len(search_results)}")
-        
+        logger.info(f"   ✅ 查询序列长度: {len(test_seq)} AA")
+        logger.info(f"   ✅ 返回结果数: {len(search_results)}")
         if search_results:
             top_hit = search_results[0]
-            print(f"   ✅ 最佳匹配: {top_hit['primaryAccession']}")
-            print(f"   ✅ 序列长度: {top_hit['sequence']['length']} AA")
+            logger.info(f"   ✅ 最佳匹配: {top_hit['primaryAccession']}")
+            logger.info(f"   ✅ 序列长度: {top_hit['sequence']['length']} AA")
         print()
         
         # 测试4: 批量查询
-        print("📌 测试4: 批量查询 (混合有效和无效ID)")
-        print("-" * 60)
-        
+        logger.info("📌 测试4: 批量查询 (混合有效和无效ID)")
+        logger.info("-" * 60)
         test_ids = ["P01308", "P12345", "Q9Y5K6", "NOT_REAL_ID", "P69905"]
         batch_results = await client.batch_get_proteins(test_ids)
         
@@ -652,26 +644,22 @@ async def test_uniprot_real_data():
         found_count = sum(1 for v in batch_results.values() if v is not None)
         not_found_ids = [k for k, v in batch_results.items() if v is None]
         
-        print(f"   ✅ 请求数: {len(test_ids)}")
-        print(f"   ✅ 找到: {found_count}")
-        print(f"   ✅ 未找到: {not_found_ids}")
-        
+        logger.info(f"   ✅ 请求数: {len(test_ids)}")
+        logger.info(f"   ✅ 找到: {found_count}")
+        logger.info(f"   ✅ 未找到: {not_found_ids}")
         # 验证成功获取的数据
         if batch_results.get("P01308"):
             p = batch_results["P01308"]
-            print(f"\n   📊 P01308 详细信息:")
-            print(f"      - 名称: {p.protein_name}")
-            print(f"      - 长度: {p.length} AA")
-            print(f"      - GO术语数: {len(p.go_terms)}")
-            print(f"      - 关键词: {', '.join(p.keywords[:5])}")
-        
+            logger.debug(f"\n   📊 P01308 详细信息:")
+            logger.info(f"      - 名称: {p.protein_name}")
+            logger.info(f"      - 长度: {p.length} AA")
+            logger.info(f"      - GO术语数: {len(p.go_terms)}")
+            logger.info(f"      - 关键词: {', '.join(p.keywords[:5])}")
         print()
         
-    print("="*80)
-    print("🎉 所有UniProt真实数据验证测试通过！")
-    print("="*80 + "\n")
-
-
+    logger.info("="*80)
+    logger.info("🎉 所有UniProt真实数据验证测试通过！")
+    logger.info("="*80 + "\n")
 if __name__ == "__main__":
     import sys
     logging.basicConfig(

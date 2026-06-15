@@ -296,23 +296,20 @@ def get_safety_system() -> SafetyAlertSystem:
 def example_usage():
     """示例用法演示"""
 
-    print("=" * 70)
-    print("SafetyAlertSystem 示例用法演示")
-    print("=" * 70)
-
+    logger.info("=" * 70)
+    logger.info("SafetyAlertSystem 示例用法演示")
+    logger.info("=" * 70)
     system = SafetyAlertSystem()
 
     # 示例 1: 查看统计信息
-    print("\n--- 示例 1: 系统统计 ---\n")
+    logger.info("\n--- 示例 1: 系统统计 ---\n")
     stats = system.get_statistics()
-    print(f"总成分数量: {stats['total_ingredients']}")
-    print(f"内置阈值: {stats['builtin_count']}")
-    print(f"自定义阈值: {stats['custom_count']}")
-    print(f"当前版本: {stats['current_version']}")
-
+    logger.info(f"总成分数量: {stats['total_ingredients']}")
+    logger.info(f"内置阈值: {stats['builtin_count']}")
+    logger.info(f"自定义阈值: {stats['custom_count']}")
+    logger.info(f"当前版本: {stats['current_version']}")
     # 示例 2: 单个成分检查
-    print("\n--- 示例 2: 单个成分安全检查 ---\n")
-
+    logger.info("\n--- 示例 2: 单个成分安全检查 ---\n")
     test_cases = [
         ("大豆异黄酮", 96, "adult"),      # 接近软阈值 (INFO)
         ("大豆异黄酮", 105, "adult"),     # 超过软阈值 (WARNING)
@@ -326,16 +323,15 @@ def example_usage():
     for name, amount, group in test_cases:
         alert = system.check_single_parameter(name, amount, group)
         if alert:
-            print(f"[{alert.alert_level.value.upper():8s}] {name}: {amount}mg ({group})")
-            print(f"   {alert.message[:80]}...")
-            print(f"   阻断: {'是' if alert.blocking else '否'}")
+            logger.info(f"[{alert.alert_level.value.upper():8s}] {name}: {amount}mg ({group})")
+            logger.info(f"   {alert.message[:80]}...")
+            logger.info(f"   阻断: {'是' if alert.blocking else '否'}")
         else:
-            print(f"[{'SAFE':8s}] {name}: {amount}mg ({group}) - 安全")
+            logger.info(f"[{'SAFE':8s}] {name}: {amount}mg ({group}) - 安全")
         print()
 
     # 示例 3: 配方安全检查
-    print("\n--- 示例 3: 配方安全检查 ---\n")
-
+    logger.info("\n--- 示例 3: 配方安全检查 ---\n")
     formula_ingredients = [
         {"name": "大豆异黄酮", "amount_mg": 80, "percentage": 15},
         {"name": "维生素C", "amount_mg": 500, "percentage": 10},
@@ -351,22 +347,19 @@ def example_usage():
         usage_scenario="supplement",
     )
 
-    print(f"是否安全: {'是' if result.is_safe else '否'}")
-    print(f"风险评分: {result.overall_risk_score}/100")
-    print(f"检查参数: {result.checked_parameters}")
-    print(f"是否阻断: {'是' if result.blocked_by_critical else '否'}")
-    print(f"\n预警数量: {len(result.alerts)}")
+    logger.info(f"是否安全: {'是' if result.is_safe else '否'}")
+    logger.info(f"风险评分: {result.overall_risk_score}/100")
+    logger.info(f"检查参数: {result.checked_parameters}")
+    logger.info(f"是否阻断: {'是' if result.blocked_by_critical else '否'}")
+    logger.info(f"\n预警数量: {len(result.alerts)}")
     for alert in result.alerts:
-        print(f"\n  [{alert.alert_level.value.upper()}] {alert.ingredient_name}")
-        print(f"  {alert.message[:100]}...")
-
-    print("\n建议:")
+        logger.info(f"\n  [{alert.alert_level.value.upper()}] {alert.ingredient_name}")
+        logger.info(f"  {alert.message[:100]}...")
+    logger.info("\n建议:")
     for rec in result.recommendations:
-        print(f"  • {rec}")
-
+        logger.info(f"  • {rec}")
     # 示例 4: 特殊人群检查对比
-    print("\n--- 示例 4: 特殊人群对比 ---\n")
-
+    logger.info("\n--- 示例 4: 特殊人群对比 ---\n")
     groups = ["adult", "pregnant", "children", "elderly"]
     test_formula = [
         {"name": "大豆异黄酮", "amount_mg": 70},
@@ -380,14 +373,11 @@ def example_usage():
               f"预警: {len(result.alerts)}, 阻断: {'是' if result.blocked_by_critical else '否'}")
 
     # 示例 5: 搜索功能
-    print("\n--- 示例 5: 成分搜索 ---\n")
+    logger.info("\n--- 示例 5: 成分搜索 ---\n")
     results = system.search_ingredients("黄", limit=10)
-    print(f"搜索'黄'的结果: {results}")
-
-    print("\n" + "=" * 70)
-    print("示例演示完成!")
-    print("=" * 70)
-
-
+    logger.info(f"搜索'黄'的结果: {results}")
+    logger.info("\n" + "=" * 70)
+    logger.info("示例演示完成!")
+    logger.info("=" * 70)
 if __name__ == "__main__":
     example_usage()

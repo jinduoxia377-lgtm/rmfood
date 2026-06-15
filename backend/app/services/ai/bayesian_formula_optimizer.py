@@ -167,19 +167,62 @@ class BayesianFormulaOptimizer:
     参考:
     - Mockus, J. (2012). Bayesian approach to global optimization.
     - Snoek, J., et al. (2012). Practical Bayesian Optimization of ML algorithms.
+
+    院士级修复[P0]: 增加 herb_knowledge 参数，支持 HerbKnowledgePort 依赖注入。
+    当提供 herb_knowledge 时，从端口动态加载药材知识（推荐）；
+    否则回退到内置字典（向后兼容）。
     """
 
-    def __init__(self, config: Optional[BayesianConfig] = None):
+    def __init__(
+        self,
+        config: Optional[BayesianConfig] = None,
+        herb_knowledge=None,  # Optional[HerbKnowledgePort]，避免循环导入用 Any
+    ):
         self.config = config or BayesianConfig()
-        self._herbs = dict(_BUILTIN_HERBS)  # 可扩展的药材库
+        self._herb_knowledge = herb_knowledge  # HerbKnowledgePort 注入点
+        self._herbs = dict(_BUILTIN_HERBS)  # 内置兜底（向后兼容）
         self._history: List[FormulaCandidate] = []  # 优化历史
+
+    async def _ensure_herbs_loaded(self, target_effects: List[str]) -> None:
+        """
+        优先从 HerbKnowledgePort 加载药材，不可用时回退内置字典。
+        院士级修复：这是打通 AI 知识库与 TCMSP 数据库的关键桥梁。
+        """
+        if self._herb_knowledge is None:
+            return  # 无端口注入，使用内置字典
+
+        try:
+            all_herbs = await self._herb_knowledge.get_all_herbs()
+            if all_herbs:
+                # 将 HerbProfile 转换为 HerbParameter 格式（保持内部一致性）
+                for profile in all_herbs:
+                    self._herbs[profile.herb_id] = HerbParameter(
+                        herb_id=profile.herb_id,
+                        name_cn=profile.name_cn,
+                        dosage_min=profile.dosage_min,
+                        dosage_max=profile.dosage_max,
+                        dosage_step=profile.dosage_step,
+                        efficacy_scores=profile.efficacy_scores,
+                        safety_index=profile.safety_index,
+                        cost_per_gram=profile.cost_per_gram,
+                        synergy_partners=profile.synergy_partners,
+                        antagonistic_pairs=profile.antagonistic_pairs,
+                    )
+                logger.info(
+                    f"[BayesianOptimizer] 从 HerbKnowledgePort 加载药材 "
+                    f"{len(all_herbs)} 种（覆盖内置字典 {len(_BUILTIN_HERBS)} 种）"
+                )
+            else:
+                logger.warning("[BayesianOptimizer] HerbKnowledgePort 返回空数据，回退内置字典")
+        except Exception as e:
+            logger.warning(f"[BayesianOptimizer] HerbKnowledgePort 加载失败，回退内置字典: {e}")
 
     # ── 公共接口 ──
 
-    def generate(self, target_effects: List[str],
+    async def generate(self, target_effects: List[str],
                  constraints: Optional[Dict[str, Any]] = None) -> List[FormulaCandidate]:
         """
-        使用贝叶斯优化生成配方候选方案
+        使用贝叶斯优化生成配方候选方案（异步版本）
 
         Args:
             target_effects: 目标功效列表, e.g., ["免疫调节", "抗氧化"]
@@ -187,8 +230,13 @@ class BayesianFormulaOptimizer:
 
         Returns:
             List[FormulaCandidate]: 按综合评分排序的候选方案列表
+
+        院士级修复：方法改为 async，优先从 HerbKnowledgePort 加载最新药材知识。
         """
-        logger.info(f"[BayesianFormulaOptimizer] 开始优化, 目标功效: {target_effects}")
+        # 院士级修复[P0]: 优先从 HerbKnowledgePort 刷新药材知识库
+        await self._ensure_herbs_loaded(target_effects)
+
+        logger.info(f"[BayesianFormulaOptimizer] 开始优化, 目标功效: {target_effects}, 药材库: {len(self._herbs)} 种")
 
         # Step 1: 选择候选药材
         candidate_herbs = self._select_herbs(target_effects, constraints)

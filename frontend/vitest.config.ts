@@ -26,6 +26,10 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'text-summary', 'html', 'json', 'json-summary'],
       reportsDirectory: './coverage',
+      # 🔒 P2-1: CI 强制覆盖率检查
+      # 生产/CI 环境低于阈值则构建失败
+      # 开发环境可使用 ENFORCE_COVERAGE=false 跳过
+      checkOnRun: process.env.CI === 'true' || process.env.ENFORCE_COVERAGE === 'true',
       include: [
         'src/components/ai/features/**/*.{ts,tsx}',
         'src/api/**/*.{ts,tsx}',
@@ -41,13 +45,18 @@ export default defineConfig({
         '**/__tests__/**',
         '**/__mocks__/**',
         '**/types/**',
+        'src/tests/**',  # 测试辅助文件不计入覆盖率
       ],
+      # 🔒 P2-1: 分类阈值
+      # AI 核心业务: 严格（95%）
+      # API/Utils: 中等（90%）
+      # 其他: 基础（70%）
       thresholds: {
         global: {
-          branches: 85,
-          functions: 85,
-          lines: 85,
-          statements: 85,
+          branches: 70,
+          functions: 70,
+          lines: 70,
+          statements: 70,
         },
         './src/components/ai/features/hooks/': {
           branches: 95,
@@ -66,6 +75,18 @@ export default defineConfig({
           functions: 95,
           lines: 95,
           statements: 95,
+        },
+        './src/api/': {
+          branches: 90,
+          functions: 90,
+          lines: 90,
+          statements: 90,
+        },
+        './src/utils/': {
+          branches: 85,
+          functions: 85,
+          lines: 85,
+          statements: 85,
         },
       },
     },

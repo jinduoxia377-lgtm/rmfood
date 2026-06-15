@@ -1,279 +1,301 @@
-# ════════════════════════════════════════════
-#  RMFOOD 配方平台 - 企业级 Docker Compose
-#  SSS 级功能完整版
-#  包含: 后端 + 前端 + PostgreSQL + Redis + Nginx
-# ════════════════════════════════════════════
-
-version: '3.8'
+# 🟡 P3-1: Docker Compose - RMFOOD 配方平台完整部署
+# =====================================================
 
 services:
-  # ============================================================
-  # 🐍 后端 API 服务 (FastAPI)
-  # ============================================================
+  # ══════════════════════════════════════════════
+  # 🔧 数据库层
+  # ══════════════════════════════════════════════
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: rmfood_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-rmfood_db}
+      POSTGRES_USER: ${POSTGRES_USER:-rmfood}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?请设置 POSTGRES_PASSWORD 环境变量}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --lc-collate=C --lc-ctype=C"
+    volumes:
+      # 数据持久化
+      - postgres_data:/var/lib/postgresql/data
+      # 初始化脚本
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-rmfood} -d ${POSTGRES_DB:-rmfood_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 256M
+    networks:
+      - backend
+
+  # ══════════════════════════════════════════════
+  # 🔴 缓存层 (Redis)
+  # ══════════════════════════════════════════════
+
+  redis:
+    image: redis:7-alpine
+    container_name: rmfood_redis
+    restart: unless-stopped
+    command: >
+      redis-server
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+      --save 900 1
+      --save 300 10
+      --save 60 10000
+      --appendonly yes
+      --appendfsync everysec
+    volumes:
+      - redis_data:/data
+      # 自定义配置
+      - ./docker/redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    networks:
+      - backend
+
+  # ══════════════════════════════════════════════
+  # 🖥️ 后端服务
+  # ══════════════════════════════════════════════
+
   backend:
     build:
-      context: ./backend
-      dockerfile: ../Dockerfile.backend
-    container_name: rmfood-backend
+      context: .
+      dockerfile: Dockerfile
+      target: backend-production
+      args:
+        - PYTHONUNBUFFERED=1
+    container_name: rmfood_backend
     restart: unless-stopped
-    ports:
-      - "8000:8000"
     environment:
-      # 数据库连接 (PostgreSQL)
-      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-rmfood}:${POSTGRES_PASSWORD:-rmfood_secret}@postgres:5432/${POSTGRES_DB:-rmfood}
-
-      # Redis缓存
-      - REDIS_URL=redis://redis:6379/0
-
-      # 安全配置 (生产环境必须设置 SECRET_KEY 和 ADMIN_PASSWORD)
-      - SECRET_KEY=${SECRET_KEY:?SECRET_KEY must be set in .env}
-      - ADMIN_PASSWORD=${ADMIN_PASSWORD:?ADMIN_PASSWORD must be set in .env}
-      - DEBUG=false
-
+      # 数据库
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-rmfood}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-rmfood_db}
+      DATABASE_POOL_SIZE: 20
+      DATABASE_MAX_OVERFLOW: 10
+      # Redis
+      REDIS_URL: redis://:${REDIS_PASSWORD:-}@redis:6379/0
+      # JWT
+      SECRET_KEY: ${SECRET_KEY:?请设置 SECRET_KEY 环境变量}
+      JWT_ALGORITHM: HS256
+      JWT_EXPIRE_MINUTES: 480
+      # AI 服务
+      AI_API_KEY: ${AI_API_KEY:-}
+      AI_BASE_URL: ${AI_BASE_URL:-}
       # CORS
-      - CORS_ORIGINS=${CORS_ORIGINS:-https://rmfood.example.com,http://localhost:3000}
-
-      # JWT配置
-      - JWT_ALGORITHM=HS256
-      - ACCESS_TOKEN_EXPIRE_MINUTES=30
-      - REFRESH_TOKEN_EXPIRE_DAYS=7
-
-      # AI服务配置
-      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
-      - OPENAI_BASE_URL=${OPENAI_BASE_URL:-https://api.openai.com/v1}
-    
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+      # 日志
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      # 健康检查
+      HEALTH_CHECK_TOKEN: ${HEALTH_CHECK_TOKEN:-changeme}
     volumes:
-      - backend-data:/app/data
-      - uploads-data:/app/uploads
-      # DEV ONLY: Remove this bind mount in production (code is baked into Docker image)
-      - ./backend:/app
-    
+      # 挂载本地代码（开发模式）
+      - ./backend:/app:ro
+      # 上传文件目录
+      - uploads_data:/app/uploads
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
-    
-    networks:
-      - rmfood-network
-    
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ["CMD", "python", "/usr/local/bin/healthcheck.py"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 15s
-    
+      start_period: 40s
     deploy:
       resources:
         limits:
-          cpus: '2.0'
-          memory: 2G
+          memory: 1G
         reservations:
-          cpus: '0.5'
           memory: 512M
-
-  # ============================================================
-  # ⚛️ PostgreSQL 数据库
-  # ============================================================
-  postgres:
-    image: postgres:16-alpine
-    container_name: rmfood-postgres
-    restart: unless-stopped
-    ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-rmfood}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env}
-      POSTGRES_DB: ${POSTGRES_DB:-rmfood}
-      PGDATA: /var/lib/postgresql/data/pgdata
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
     networks:
-      - rmfood-network
-    
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U rmfood -d rmfood"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-    
-    deploy:
-      resources:
-        limits:
-          cpus: '1.0'
-          memory: 1G
+      - backend
 
-  # ============================================================
-  # 🔁 PgBouncer — PostgreSQL 连接池（M1.5 读写分离）
-  # ============================================================
-  pgbouncer:
-    image: edoburu/pgbouncer:1.23
-    container_name: rmfood-pgbouncer
-    restart: unless-stopped
-    ports:
-      - "6432:5432"
-    environment:
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_USER: ${POSTGRES_USER:-rmfood}
-      DB_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env}
-      DB_NAME: ${POSTGRES_DB:-rmfood}
-      AUTH_TYPE: scram-sha-256
-      POOL_MODE: transaction        # 事务级池化
-      DEFAULT_POOL_SIZE: 25         # 默认池大小
-      MAX_CLIENT_CONN: 100          # 最大客户端连接
-      RESERVE_POOL_SIZE: 5          # 保留连接数（高峰负载）
-      RESERVE_POOL_TIMEOUT: 3       # 保留连接超时（秒）
-      SERVER_RESET_QUERY: "DISCARD ALL"
-    networks:
-      - rmfood-network
-    depends_on:
-      postgres:
-        condition: service_healthy
+  # ══════════════════════════════════════════════
+  # 🌐 前端服务 (Nginx)
+  # ══════════════════════════════════════════════
 
-  # ============================================================
-  # 🗄️ PostgreSQL 只读副本（M1.5 读写分离，可选）
-  # ============================================================
-  postgres-replica:
-    image: postgres:16-alpine
-    container_name: rmfood-postgres-replica
-    restart: unless-stopped
-    profiles: [ "production" ]  # 仅生产环境启用
-    ports:
-      - "5433:5432"
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-rmfood}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env}
-      POSTGRES_DB: ${POSTGRES_DB:-rmfood}
-      PGDATA: /var/lib/postgresql/data/pgdata
-      PRIMARY_HOST: postgres                     # 主库地址
-      REPLICATION_SLOT: replica_slot
-    volumes:
-      - postgres-replica-data:/var/lib/postgresql/data
-    networks:
-      - rmfood-network
-    depends_on:
-      postgres:
-        condition: service_healthy
-    deploy:
-      resources:
-        limits:
-          cpus: '1.0'
-          memory: 1G
-
-  # ============================================================
-  # ⚡ Redis 缓存服务
-  # ============================================================
-  redis:
-    image: redis:7-alpine
-    container_name: rmfood-redis
-    restart: unless-stopped
-    ports:
-      - "6379:6379"
-    command: >
-      redis-server 
-      --maxmemory 256mb 
-      --maxmemory-policy allkeys-lru 
-      --appendonly yes 
-      --appendfsync everysec
-    volumes:
-      - redis-data:/data
-    networks:
-      - rmfood-network
-    
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 5s
-    
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 512M
-
-  # ============================================================
-  # 🎨 前端服务 (React + Vite → Nginx)
-  # ============================================================
   frontend:
     build:
-      context: ./frontend
-      dockerfile: ../Dockerfile.frontend
+      context: .
+      dockerfile: Dockerfile
+      target: frontend-production
       args:
-        - VITE_API_URL=http://localhost:8000/api/v1
-        - VITE_WS_URL=ws://localhost:8000/ws
-    container_name: rmfood-frontend
+        - VITE_API_BASE_URL: ${VITE_API_BASE_URL:-/api}
+        - VITE_APP_TITLE: ${VITE_APP_TITLE:-RMFOOD配方平台}
+    container_name: rmfood_frontend
     restart: unless-stopped
-    ports:
-      - "3000:80"
     environment:
-      - NODE_ENV=production
+      - NGINX_WORKER_PROCESSES: auto
+      - NGINX_WORKER_CONNECTIONS: 1024
+    volumes:
+      # 静态资源（可选）
+      - ./frontend/public:/usr/share/nginx/html/public:ro
+    ports:
+      - "${FRONTEND_PORT:-3000}:80"
     depends_on:
       - backend
-    networks:
-      - rmfood-network
-    
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/"]
+      test: ["CMD-SHELL", "wget -qO- http://localhost/health || exit 1"]
       interval: 30s
-      timeout: 10s
+      timeout: 5s
       retries: 3
       start_period: 10s
-    
-    deploy:
-      resources:
-        limits:
-          cpus: '1.0'
-          memory: 512M
+    networks:
+      - backend
 
-  # ============================================================
-  # 🌐 Nginx 反向代理 (生产入口)
-  # ============================================================
-  nginx:
-    image: nginx:alpine
-    container_name: rmfood-nginx
+  # ══════════════════════════════════════════════
+  # 📊 监控层 (Prometheus + Grafana)
+  # ══════════════════════════════════════════════
+
+  prometheus:
+    image: prom/prometheus:v2.48.0
+    container_name: rmfood_prometheus
     restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=15d'
+      - '--storage.tsdb.wal-compression'
+      - '--web.enable-lifecycle'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--query.max-samples=50000'
     volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./ssl:/etc/nginx/ssl:ro
-      - nginx-logs:/var/log/nginx
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./docker/prometheus/rules:/etc/prometheus/rules:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
     depends_on:
       - backend
-      - frontend
     networks:
-      - rmfood-network
-    
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 128M
+      - backend
+    profiles:
+      - monitoring
+
+  grafana:
+    image: grafana/grafana:10.2.2
+    container_name: rmfood_grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin123}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_INSTALL_PLUGINS: grafana-piechart-panel,grafana-worldmap-panel
+      GF_LOG_MODE: console
+      GF_LOG_LEVEL: warn
+    volumes:
+      - ./docker/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./docker/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana_data:/var/lib/grafana
+    ports:
+      - "${GRAFANA_PORT:-3030}:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - backend
+    profiles:
+      - monitoring
+
+  # ══════════════════════════════════════════════
+  # 🔍 日志聚合 (Graylog / Loki)
+  # ══════════════════════════════════════════════
+
+  loki:
+    image: grafana/loki:2.9.2
+    container_name: rmfood_loki
+    restart: unless-stopped
+    volumes:
+      - ./docker/loki/loki-config.yml:/etc/loki/local-config.yaml:ro
+      - loki_data:/loki
+    ports:
+      - "${LOKI_PORT:-3100}:3100"
+    networks:
+      - backend
+    profiles:
+      - logging
+
+  promtail:
+    image: grafana/promtail:2.9.2
+    container_name: rmfood_promtail
+    restart: unless-stopped
+    volumes:
+      - ./docker/loki/promtail-config.yml:/etc/promtail/config.yml:ro
+      - /var/log:/var/log:ro
+    depends_on:
+      - loki
+    networks:
+      - backend
+    profiles:
+      - logging
+
+  # ══════════════════════════════════════════════
+  # 🛡️ Nginx 反向代理 + SSL
+  # ══════════════════════════════════════════════
+
+  nginx-proxy:
+    image: nginx:1.25-alpine
+    container_name: rmfood_nginx_proxy
+    restart: unless-stopped
+    volumes:
+      - ./docker/nginx/proxy.conf:/etc/nginx/conf.d/default.conf:ro
+      # SSL 证书（生产环境挂载真实证书）
+      # - ./docker/ssl:/etc/nginx/ssl:ro
+    ports:
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - backend
+    profiles:
+      - proxy
+
+# ══════════════════════════════════════════════
+# 网络定义
+# ══════════════════════════════════════════════
 
 networks:
-  rmfood-network:
+  backend:
     driver: bridge
-    ipam:
-      config:
-        - subnet: 172.28.0.0/16
+    name: rmfood_backend
+
+# ══════════════════════════════════════════════
+# 持久化卷
+# ══════════════════════════════════════════════
 
 volumes:
-  backend-data:
-    driver: local
-  postgres-data:
-    driver: local
-  redis-data:
-    driver: local
-  uploads-data:
-    driver: local
-  postgres-replica-data:
-    driver: local
-  nginx-logs:
-    driver: local
+  postgres_data:
+    name: rmfood_postgres_data
+  redis_data:
+    name: rmfood_redis_data
+  uploads_data:
+    name: rmfood_uploads_data
+  prometheus_data:
+    name: rmfood_prometheus_data
+  grafana_data:
+    name: rmfood_grafana_data
+  loki_data:
+    name: rmfood_loki_data

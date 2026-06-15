@@ -4,6 +4,12 @@ WebSocket 连接管理模块
 - 处理消息广播和定向发送
 - 实现连接状态监控
 - 支持心跳检测和自动重连
+
+院士级修复[P1]:
+- 增加连接数上限（MAX_CONNECTIONS），超限时拒绝新连接
+- 实现真正的 ping-pong 双向心跳机制（服务端主动 ping，等待 pong 响应）
+- 超时未响应的连接会被主动关闭，不再依赖单向广播
+- 连接状态细化：CONNECTED / AWAITING_PONG / TIMEOUT
 """
 import asyncio
 import json
@@ -13,14 +19,32 @@ from typing import Dict, Set, Optional, Any
 
 logger = logging.getLogger("rmfood.websocket")
 
+# ── 连接保护参数（可通过环境变量覆盖）──
+MAX_CONNECTIONS: int = 500        # 单实例最大并发 WebSocket 连接数
+MAX_CONNECTIONS_PER_USER: int = 5 # 每个用户最多同时持有的连接数
+HEARTBEAT_INTERVAL: int = 30      # 心跳间隔（秒）
+PONG_TIMEOUT: int = 10            # 等待 pong 超时（秒）
+IDLE_TIMEOUT: int = 300           # 无任何消息的空闲超时（秒，5分钟）
+
 
 class ConnectionManager:
-    """WebSocket连接管理器"""
-    
+    """
+    WebSocket 连接管理器（院士级增强版）
+
+    心跳协议（真正双向 ping-pong）：
+    1. 服务端每 HEARTBEAT_INTERVAL 秒发送 {"type": "ping", "timestamp": <ts>}
+    2. 客户端必须在 PONG_TIMEOUT 秒内回复 {"type": "pong", "timestamp": <orig_ts>}
+    3. 超时未 pong 的连接被标记为 TIMEOUT 并主动关闭
+
+    连接数保护：
+    - 全局超过 MAX_CONNECTIONS 时，新连接立即发送 {"type":"error","code":"MAX_CONNECTIONS"} 并关闭
+    - 单用户超过 MAX_CONNECTIONS_PER_USER 时，踢掉最老的连接
+    """
+
     def __init__(self):
         # 存储所有活跃连接: {user_id: {connection_id: websocket}}
         self.active_connections: Dict[str, Dict[str, Any]] = {}
-        # 存储连接信息: {connection_id: {user_id, last_ping, client_info}}
+        # 存储连接信息: {connection_id: {user_id, last_ping, last_pong, status, client_info}}
         self.connection_info: Dict[str, Dict[str, Any]] = {}
         # 消息队列
         self.message_queue: asyncio.Queue = asyncio.Queue()
@@ -30,14 +54,22 @@ class ConnectionManager:
         self.heartbeat_task: Optional[asyncio.Task] = None
         # 启动标志
         self.running = False
-    
+
+    @property
+    def total_connections(self) -> int:
+        """当前全局活跃连接总数"""
+        return sum(len(conns) for conns in self.active_connections.values())
+
     async def start(self):
         """启动连接管理器"""
         if not self.running:
             self.running = True
             self.broadcast_task = asyncio.create_task(self._process_message_queue())
             self.heartbeat_task = asyncio.create_task(self._heartbeat_check())
-            logger.info("WebSocket连接管理器已启动")
+            logger.info(
+                "WebSocket连接管理器已启动 (max=%d, per_user=%d, ping_interval=%ds)",
+                MAX_CONNECTIONS, MAX_CONNECTIONS_PER_USER, HEARTBEAT_INTERVAL,
+            )
     
     async def stop(self):
         """停止连接管理器"""
@@ -61,8 +93,44 @@ class ConnectionManager:
             self.connection_info.clear()
             logger.info("WebSocket连接管理器已停止")
     
-    async def connect(self, websocket: Any, user_id: str, connection_id: str, client_info: Dict[str, Any]):
-        """添加新连接"""
+    async def connect(self, websocket: Any, user_id: str, connection_id: str, client_info: Dict[str, Any]) -> bool:
+        """
+        添加新连接
+
+        院士级修复[P1]: 增加全局连接数上限 + 单用户连接数上限保护。
+
+        Returns:
+            True  → 连接成功
+            False → 超出上限，已拒绝（调用方应立即 close websocket）
+        """
+        # ── 检查全局上限 ──
+        if self.total_connections >= MAX_CONNECTIONS:
+            logger.warning(
+                "[WS] 拒绝新连接 %s — 全局连接数已达上限 %d",
+                connection_id, MAX_CONNECTIONS,
+            )
+            try:
+                await websocket.send_json({
+                    "type": "error",
+                    "code": "MAX_CONNECTIONS",
+                    "message": f"服务器连接数已达上限 {MAX_CONNECTIONS}，请稍后重试",
+                })
+                await websocket.close(code=1013)  # 1013: Try Again Later
+            except Exception:
+                pass
+            return False
+
+        # ── 检查单用户上限（踢掉最老的连接）──
+        if user_id in self.active_connections:
+            user_conns = self.active_connections[user_id]
+            if len(user_conns) >= MAX_CONNECTIONS_PER_USER:
+                oldest_conn_id = next(iter(user_conns))
+                logger.warning(
+                    "[WS] 用户 %s 连接数超过 %d，踢掉最老连接 %s",
+                    user_id, MAX_CONNECTIONS_PER_USER, oldest_conn_id,
+                )
+                await self.disconnect(user_id, oldest_conn_id)
+
         if user_id not in self.active_connections:
             self.active_connections[user_id] = {}
         
@@ -70,10 +138,16 @@ class ConnectionManager:
         self.connection_info[connection_id] = {
             "user_id": user_id,
             "last_ping": datetime.utcnow().timestamp(),
-            "client_info": client_info
+            "last_pong": datetime.utcnow().timestamp(),   # 新增：上次 pong 时间
+            "last_msg": datetime.utcnow().timestamp(),    # 新增：上次任意消息时间
+            "status": "CONNECTED",                         # CONNECTED / AWAITING_PONG / TIMEOUT
+            "client_info": client_info,
         }
         
-        logger.info(f"用户 {user_id} 已连接 (连接ID: {connection_id})")
+        logger.info(
+            "[WS] 用户 %s 已连接 (id=%s, 总连接数=%d)",
+            user_id, connection_id, self.total_connections,
+        )
         
         # 发送连接成功消息
         await self.send_personal_message(
@@ -83,14 +157,23 @@ class ConnectionManager:
                 "type": "connection_established",
                 "message": "连接成功",
                 "connection_id": connection_id,
-                "timestamp": datetime.utcnow().isoformat()
+                "timestamp": datetime.utcnow().isoformat(),
+                "heartbeat_interval": HEARTBEAT_INTERVAL,
+                "pong_timeout": PONG_TIMEOUT,
             }
         )
+        return True
     
     async def disconnect(self, user_id: str, connection_id: str):
         """移除连接"""
         if user_id in self.active_connections:
             if connection_id in self.active_connections[user_id]:
+                # 尝试关闭底层 websocket
+                try:
+                    ws = self.active_connections[user_id][connection_id]
+                    await ws.close()
+                except Exception:
+                    pass
                 del self.active_connections[user_id][connection_id]
                 
                 if not self.active_connections[user_id]:
@@ -99,7 +182,10 @@ class ConnectionManager:
         if connection_id in self.connection_info:
             del self.connection_info[connection_id]
         
-        logger.info(f"用户 {user_id} 已断开连接 (连接ID: {connection_id})")
+        logger.info(
+            "[WS] 用户 %s 断开连接 (id=%s, 剩余连接数=%d)",
+            user_id, connection_id, self.total_connections,
+        )
     
     async def send_personal_message(self, user_id: str, connection_id: str, message: Dict[str, Any]):
         """发送个人消息"""
@@ -157,47 +243,116 @@ class ConnectionManager:
                 logger.error(f"处理消息队列时出错: {e}")
     
     async def _heartbeat_check(self):
-        """心跳检测"""
+        """
+        双向心跳检测（院士级增强）
+
+        心跳流程：
+        1. 每 HEARTBEAT_INTERVAL 秒向所有连接发送 {"type":"ping"}
+        2. 连接状态标记为 AWAITING_PONG
+        3. 再等待 PONG_TIMEOUT 秒检查是否收到 pong
+        4. 超过 IDLE_TIMEOUT 无任何消息则强制断开
+        """
         while self.running:
             try:
+                await asyncio.sleep(HEARTBEAT_INTERVAL)
+                if not self.running:
+                    break
+
                 current_time = datetime.utcnow().timestamp()
-                timeout = 30  # 30秒超时
-                
-                # 检查所有连接
-                to_remove = []
-                for connection_id, info in self.connection_info.items():
-                    if current_time - info["last_ping"] > timeout:
-                        to_remove.append((info["user_id"], connection_id))
-                
-                # 移除超时连接
-                for user_id, connection_id in to_remove:
-                    await self.disconnect(user_id, connection_id)
-                
-                # 发送心跳
-                await self.broadcast({
-                    "type": "heartbeat",
-                    "timestamp": current_time
-                })
-                
-                await asyncio.sleep(10)  # 每10秒检查一次
+                to_disconnect: list = []
+
+                # ── 1. 检查超时连接并发送新一轮 ping ──
+                conn_snapshot = dict(self.connection_info)
+                for conn_id, info in conn_snapshot.items():
+                    # 空闲超时（IDLE_TIMEOUT 内无任何消息）
+                    if current_time - info.get("last_msg", current_time) > IDLE_TIMEOUT:
+                        logger.warning(
+                            "[WS] 连接 %s (user=%s) 空闲超时 %ds，主动断开",
+                            conn_id, info["user_id"], IDLE_TIMEOUT,
+                        )
+                        to_disconnect.append((info["user_id"], conn_id))
+                        continue
+
+                    # Pong 超时（AWAITING_PONG 状态超过 PONG_TIMEOUT）
+                    if info.get("status") == "AWAITING_PONG":
+                        last_ping = info.get("last_ping", current_time)
+                        if current_time - last_ping > PONG_TIMEOUT:
+                            logger.warning(
+                                "[WS] 连接 %s (user=%s) pong 超时 %ds，主动断开",
+                                conn_id, info["user_id"], PONG_TIMEOUT,
+                            )
+                            to_disconnect.append((info["user_id"], conn_id))
+                            continue
+
+                # ── 2. 断开超时连接 ──
+                for user_id, conn_id in to_disconnect:
+                    await self.disconnect(user_id, conn_id)
+
+                # ── 3. 向所有剩余活跃连接发送 ping，标记 AWAITING_PONG ──
+                ping_ts = current_time
+                conn_snapshot = dict(self.connection_info)
+                for conn_id, info in conn_snapshot.items():
+                    if info.get("status") == "CONNECTED":
+                        user_id = info["user_id"]
+                        sent = await self.send_personal_message(
+                            user_id, conn_id,
+                            {"type": "ping", "timestamp": ping_ts}
+                        )
+                        if sent and conn_id in self.connection_info:
+                            self.connection_info[conn_id]["status"] = "AWAITING_PONG"
+                            self.connection_info[conn_id]["last_ping"] = ping_ts
+
+                active = self.total_connections
+                if active > 0:
+                    logger.debug("[WS] 心跳轮次完成，活跃连接: %d", active)
+
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                logger.error(f"心跳检测时出错: {e}")
-                await asyncio.sleep(10)
+                logger.error("[WS] 心跳检测异常: %s", e, exc_info=True)
     
-    def update_ping(self, connection_id: str):
-        """更新连接的ping时间"""
+    def handle_pong(self, connection_id: str) -> None:
+        """
+        处理客户端 pong 响应（院士级修复：真正的双向心跳）
+
+        连接状态从 AWAITING_PONG → CONNECTED
+        """
         if connection_id in self.connection_info:
-            self.connection_info[connection_id]["last_ping"] = datetime.utcnow().timestamp()
-    
-    def get_connection_count(self) -> Dict[str, int]:
-        """获取连接统计"""
-        total = sum(len(connections) for connections in self.active_connections.values())
-        per_user = {user_id: len(connections) for user_id, connections in self.active_connections.items()}
+            info = self.connection_info[connection_id]
+            info["last_pong"] = datetime.utcnow().timestamp()
+            info["last_msg"] = info["last_pong"]
+            info["status"] = "CONNECTED"
+            logger.debug("[WS] 收到 pong: %s", connection_id)
+
+    def update_ping(self, connection_id: str) -> None:
+        """
+        更新连接最后活跃时间（兼容旧 API，推荐改用 handle_pong）
+        """
+        if connection_id in self.connection_info:
+            now = datetime.utcnow().timestamp()
+            self.connection_info[connection_id]["last_ping"] = now
+            self.connection_info[connection_id]["last_msg"] = now
+            self.connection_info[connection_id]["status"] = "CONNECTED"
+
+    def update_message_time(self, connection_id: str) -> None:
+        """更新连接的最后消息时间（收到任意消息时调用）"""
+        if connection_id in self.connection_info:
+            self.connection_info[connection_id]["last_msg"] = datetime.utcnow().timestamp()
+
+    def get_connection_count(self) -> Dict[str, Any]:
+        """获取连接统计（含保护参数信息）"""
+        total = self.total_connections
+        per_user = {uid: len(conns) for uid, conns in self.active_connections.items()}
+        awaiting_pong = sum(
+            1 for info in self.connection_info.values()
+            if info.get("status") == "AWAITING_PONG"
+        )
         return {
             "total": total,
-            "per_user": per_user
+            "limit": MAX_CONNECTIONS,
+            "utilization_pct": round(total / MAX_CONNECTIONS * 100, 1),
+            "awaiting_pong": awaiting_pong,
+            "per_user": per_user,
         }
     
     def get_connection_info(self, connection_id: str) -> Optional[Dict[str, Any]]:

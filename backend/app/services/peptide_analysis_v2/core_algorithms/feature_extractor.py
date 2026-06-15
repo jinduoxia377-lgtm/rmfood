@@ -545,84 +545,69 @@ async def test_feature_extractor():
     """
     测试特征提取引擎的功能和准确性
     """
-    print("\n" + "="*80)
-    print("🧪 特征提取引擎 - 功能与准确性测试")
-    print("="*80 + "\n")
-    
+    logger.info("\n" + "="*80)
+    logger.info("🧪 特征提取引擎 - 功能与准确性测试")
+    logger.info("="*80 + "\n")
     extractor = FeatureExtractor()
     
     # 测试用例: Insulin B chain (已知精确值)
     insulin_b = "FVNQHLCGSHLVEALYLVCGERGFFYTPKT"
     
-    print(f"📌 测试序列: Insulin B chain ({len(insulin_b)} AA)")
-    print(f"   序列: {insulin_b}\n")
-    
+    logger.info(f"📌 测试序列: Insulin B chain ({len(insulin_b)} AA)")
+    logger.info(f"   序列: {insulin_b}\n")
     features = await extractor.extract_all_features(insulin_b)
     
     # 验证物理化学特征
-    print("📌 物理化学特征验证:")
-    print("-" * 60)
-    
+    logger.info("📌 物理化学特征验证:")
+    logger.info("-" * 60)
     pc = features.physicochemical
     
     # 分子量验证 (理论值: ~3429.66 Da)
     expected_mw = 3429.66
     mw_error = abs(pc.molecular_weight - expected_mw)
     assert mw_error < 1.0, f"❌ 分子量误差过大: {mw_error}"
-    print(f"   ✅ 分子量: {pc.molecular_weight:.2f} Da (期望: {expected_mw:.2f}, 误差: {mw_error:.2f})")
-    
+    logger.error(f"   ✅ 分子量: {pc.molecular_weight:.2f} Da (期望: {expected_mw:.2f}, 误差: {mw_error:.2f})")
     # 等电点验证 (实验值: ~5.78)
     expected_pi = 5.78
     pi_error = abs(pc.theoretical_pi - expected_pi)
     assert pi_error < 0.5, f"❌ 等电点误差过大: {pi_error}"
-    print(f"   ✅ 等电点: {pc.theoretical_pi} (期望: {expected_pi}, 误差: ±{pi_error:.2f})")
-    
+    logger.error(f"   ✅ 等电点: {pc.theoretical_pi} (期望: {expected_pi}, 误差: ±{pi_error:.2f})")
     # 消光系数验证 (理论值: ~5890 M^-1 cm^-1)
     expected_ext = 5890
     ext_error = abs(pc.extinction_coefficient - expected_ext)
     assert ext_error < 200, f"❌ 消光系数误差过大: {ext_error}"
-    print(f"   ✅ 消光系数 (ε280): {pc.extinction_coefficient:.0f} (期望: ~{expected_ext})")
-    
-    print(f"   ✅ 不稳定指数: {pc.instability_index}")
-    print(f"   ✅ GRAVY: {pc.gravy:.3f}")
-    print(f"   ✅ 总残基数: {pc.total_residues}")
-    print(f"   ✅ 带电荷残基: {pc.charged_residues}")
-    print(f"   ✅ 疏水比例: {pc.hydrophobic_ratio:.3f}")
-    print(f"   ✅ 极性比例: {pc.polar_ratio:.3f}\n")
-    
+    logger.info(f"   ✅ 消光系数 (ε280): {pc.extinction_coefficient:.0f} (期望: ~{expected_ext})")
+    logger.info(f"   ✅ 不稳定指数: {pc.instability_index}")
+    logger.info(f"   ✅ GRAVY: {pc.gravy:.3f}")
+    logger.info(f"   ✅ 总残基数: {pc.total_residues}")
+    logger.info(f"   ✅ 带电荷残基: {pc.charged_residues}")
+    logger.info(f"   ✅ 疏水比例: {pc.hydrophobic_ratio:.3f}")
+    logger.info(f"   ✅ 极性比例: {pc.polar_ratio:.3f}\n")
     # 验证组成特征
-    print("📌 组成特征:")
-    print("-" * 60)
-    
+    logger.info("📌 组成特征:")
+    logger.info("-" * 60)
     comp = features.composition
-    print(f"   ✅ 氨基酸种类数: {len(comp.aa_frequencies)}")
-    print(f"   ✅ 二肽种类数: {len(comp.dipeptide_frequencies)}")
-    
+    logger.info(f"   ✅ 氨基酸种类数: {len(comp.aa_frequencies)}")
+    logger.info(f"   ✅ 二肽种类数: {len(comp.dipeptide_frequencies)}")
     top5_aa = sorted(comp.aa_percentages.items(), key=lambda x: -x[1])[:5]
-    print(f"   ✅ Top 5 氨基酸: {[(aa, f'{pct:.1f}%') for aa, pct in top5_aa]}\n")
-    
+    logger.info(f"   ✅ Top 5 氨基酸: {[(aa, f'{pct:.1f}%') for aa, pct in top5_aa]}\n")
     # 验证结构特征
-    print("📌 结构倾向性:")
-    print("-" * 60)
-    
+    logger.info("📌 结构倾向性:")
+    logger.info("-" * 60)
     struct = features.structural
-    print(f"   ✅ α-helix倾向性: {struct.helix_propensity:.3f}")
-    print(f"   ✅ β-sheet倾向性: {struct.sheet_propensity:.3f}")
-    print(f"   ✅ Turn倾向性: {struct.turn_propensity:.3f}\n")
-    
+    logger.info(f"   ✅ α-helix倾向性: {struct.helix_propensity:.3f}")
+    logger.info(f"   ✅ β-sheet倾向性: {struct.sheet_propensity:.3f}")
+    logger.info(f"   ✅ Turn倾向性: {struct.turn_propensity:.3f}\n")
     # 功能位点
-    print("📌 功能位点:")
-    print("-" * 60)
-    
+    logger.info("📌 功能位点:")
+    logger.info("-" * 60)
     func = features.functional
-    print(f"   ✅ 酶活性motif数: {len(func.enzyme_motifs)}")
-    print(f"   ✅ 信号肽概率: {func.signal_peptide_probability:.3f}")
-    print(f"   ✅ 跨膜螺旋数: {func.transmembrane_helices}\n")
-    
+    logger.info(f"   ✅ 酶活性motif数: {len(func.enzyme_motifs)}")
+    logger.info(f"   ✅ 信号肽概率: {func.signal_peptide_probability:.3f}")
+    logger.info(f"   ✅ 跨膜螺旋数: {func.transmembrane_helices}\n")
     # 性能测试
-    print("📌 性能基准测试 (<50ms/seq):")
-    print("-" * 60)
-    
+    logger.info("📌 性能基准测试 (<50ms/seq):")
+    logger.info("-" * 60)
     import time
     import random
     
@@ -640,22 +625,19 @@ async def test_feature_extractor():
     avg_time = elapsed / len(test_seqs)
     throughput = len(test_seqs) / (elapsed / 1000)
     
-    print(f"   📊 测试规模: {len(test_seqs)} 条序列")
-    print(f"   ⏱️ 总耗时: {elapsed:.0f}ms")
-    print(f"   🚀 平均耗时: {avg_time:.1f} ms/seq")
-    print(f"   🚀 吞吐量: {throughput:.0f} seq/s")
-    
+    logger.info(f"   📊 测试规模: {len(test_seqs)} 条序列")
+    logger.info(f"   ⏱️ 总耗时: {elapsed:.0f}ms")
+    logger.info(f"   🚀 平均耗时: {avg_time:.1f} ms/seq")
+    logger.info(f"   🚀 吞吐量: {throughput:.0f} seq/s")
     if avg_time < 50:
-        print(f"   ✅ 性能达标! (目标: <50ms)")
+        logger.info(f"   ✅ 性能达标! (目标: <50ms)")
     else:
-        print(f"   ⚠️ 性能未达标 (目标: <50ms)")
+        logger.info(f"   ⚠️ 性能未达标 (目标: <50ms)")
     print()
     
-    print("="*80)
-    print(f"🎉 特征提取引擎测试完成! | 总维度: {FeatureVector().total_dimensions}")
-    print("="*80 + "\n")
-
-
+    logger.info("="*80)
+    logger.info(f"🎉 特征提取引擎测试完成! | 总维度: {FeatureVector().total_dimensions}")
+    logger.info("="*80 + "\n")
 if __name__ == "__main__":
     logging.basicConfig(
         level=logging.INFO,

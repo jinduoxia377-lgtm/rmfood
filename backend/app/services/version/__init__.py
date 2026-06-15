@@ -20,7 +20,7 @@ from sqlalchemy import select, func, desc, and_
 
 from app.models.prompt_version import PromptVersion
 from app.core.exceptions import ResourceNotFoundException
-from app.core.audit_system import AuditLogger
+from app.core.audit_system import AuditService
 
 logger = logging.getLogger(__name__)
 
@@ -100,7 +100,7 @@ class VersioningService:
 
     def __init__(self, db: AsyncSession):
         self.db = db
-        self.audit_logger = AuditLogger(db)
+        self.audit_logger = AuditService(db)
 
     async def create_version(
         self,

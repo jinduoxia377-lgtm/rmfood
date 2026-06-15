@@ -22,15 +22,16 @@ from app.models.prompt_version import PromptVersion
 from app.core.exceptions import NotFoundError as ResourceNotFoundException
 
 try:
-    from app.core.audit_system import AuditSystem
-    class AuditLogger:
+    from app.core.audit_system import AuditService
+    class _AuditLogger:
         def __init__(self, db):
-            self._audit = AuditSystem(db)
+            self._audit = AuditService(db)
         async def log(self, **kwargs):
             try:
                 await self._audit.log(**kwargs)
             except Exception as e:
                 logger.debug(f"Audit log failed: {e}")
+    AuditLogger = _AuditLogger
 except ImportError:
     AuditLogger = None
 

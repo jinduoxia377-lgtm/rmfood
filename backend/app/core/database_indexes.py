@@ -3,6 +3,9 @@
 为常用查询字段添加索引以提升查询性能
 """
 from sqlalchemy import text
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 # 建议添加的索引
@@ -168,10 +171,10 @@ async def apply_indexes(session):
 
 
 if __name__ == "__main__":
-    print("数据库索引优化建议")
-    print("=" * 60)
-    print("\n创建索引 SQL:")
-    print(generate_create_index_sql())
-    print("\n" + "=" * 60)
-    print("\n回滚索引 SQL:")
-    print(generate_drop_index_sql())
+    logger.info("数据库索引优化建议")
+    logger.info("=" * 60)
+    logger.info("\n创建索引 SQL:")
+    logger.info(generate_create_index_sql())
+    logger.info("\n" + "=" * 60)
+    logger.info("\n回滚索引 SQL:")
+    logger.info(generate_drop_index_sql())

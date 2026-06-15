@@ -1,221 +1,326 @@
 /**
- * React Error Boundary — 全局错误捕获
- * 捕获子组件树中的渲染错误，展示友好的错误回退 UI
+ * 🔒 P2-4: React ErrorBoundary 组件
+ *
+ * 错误边界用于捕获子组件树中的 JavaScript 错误，
+ * 防止整个应用白屏，只显示错误的部分。
+ *
+ * 特性:
+ * - 捕获渲染阶段、生命周期、构造函数中的错误
+ * - 不捕获：事件处理器、异步代码、定时器、SSR
+ * - 提供友好的错误提示 UI
+ * - 支持错误上报（如 Sentry）
+ * - 支持重置和回退
  */
-import { Component, type ErrorInfo, type ReactNode } from 'react'
-import { AlertTriangle, RefreshCw, Home, Send, Info, Network, Code, Database } from 'lucide-react'
-import { Button } from '@/components/ui'
-import { logger } from '@/utils/safeLogger';
-
+import React, { Component, ErrorInfo, ReactNode } from 'react'
+import { Button } from '@/components/ui/button'
 
 interface Props {
   children: ReactNode
-  fallback?: ReactNode
-  errorType?: string
+  /** 错误上报函数（可选） */
+  onErrorReport?: (error: Error, errorInfo: ErrorInfo) => void
+  /** 自定义 Fallback UI */
+  fallback?: ReactNode | ((error: Error, reset: () => void) => ReactNode)
+  /** 包装的类名 */
+  className?: string
 }
 
 interface State {
   hasError: boolean
   error: Error | null
   errorInfo: ErrorInfo | null
-  errorTime: string
-  errorUrl: string
+  errorId: string | null
 }
 
-export default class ErrorBoundary extends Component<Props, State> {
+export class ErrorBoundary extends Component<Props, State> {
+  private static readonly MAX_ERROR_ID_LENGTH = 8
+
   constructor(props: Props) {
     super(props)
     this.state = {
       hasError: false,
       error: null,
       errorInfo: null,
-      errorTime: new Date().toISOString(),
-      errorUrl: window.location.href,
+      errorId: null,
     }
   }
 
   static getDerivedStateFromError(error: Error): Partial<State> {
-    return { hasError: true, error, errorTime: new Date().toISOString(), errorUrl: window.location.href }
+    // 生成唯一错误 ID，便于日志追踪
+    const errorId = `${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`
+    return {
+      hasError: true,
+      error,
+      errorId,
+    }
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+  componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     this.setState({ errorInfo })
-    this.logError(error, errorInfo)
-  }
 
-  logError = (error: Error, errorInfo: ErrorInfo) => {
-    logger.error('[ErrorBoundary] Caught error:', error, errorInfo)
+    // 🔒 P2-4: 错误上报（开发环境输出到控制台）
+    console.error('🔴 ErrorBoundary caught an error:', error, errorInfo)
 
-    // 构建错误日志对象
-    const errorLog = {
-      timestamp: new Date().toISOString(),
-      url: window.location.href,
-      userAgent: navigator.userAgent,
-      error: {
-        message: error.message,
-        name: error.name,
-        stack: error.stack,
-      },
-      componentStack: errorInfo.componentStack,
+    if (this.props.onErrorReport) {
+      this.props.onErrorReport(error, errorInfo)
     }
 
-    // 可以发送到服务器或存储在本地
-    try {
-      // 这里可以添加错误上报逻辑，例如发送到后端API
-      // fetch('/api/error-report', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(errorLog)
-      // })
-
-      // 暂时存储在localStorage中
-      const existingLogs = JSON.parse(localStorage.getItem('errorLogs') || '[]')
-      existingLogs.push(errorLog)
-      // 只保留最近10条错误日志
-      if (existingLogs.length > 10) {
-        existingLogs.shift()
-      }
-      localStorage.setItem('errorLogs', JSON.stringify(existingLogs))
-    } catch (e) {
-      logger.error('Error logging failed:', e)
+    // 🔒 P2-4: 可扩展：上报到 Sentry / Datadog / 自建服务
+    if (import.meta.env.PROD) {
+      this.reportToMonitoringService(error, errorInfo)
     }
   }
 
-  getErrorType = (error: Error): string => {
-    if (error.message.includes('Network') || error.message.includes('fetch') || error.message.includes('axios')) {
-      return '网络错误'
-    }
-    if (error.message.includes('Database') || error.message.includes('SQL') || error.message.includes('database')) {
-      return '数据库错误'
-    }
-    if (error.message.includes('TypeError') || error.message.includes('Cannot')) {
-      return '类型错误'
-    }
-    if (error.message.includes('Syntax')) {
-      return '语法错误'
-    }
-    if (error.message.includes('RangeError')) {
-      return '范围错误'
-    }
-    return '未知错误'
-  }
-
-  getErrorIcon = (errorType: string) => {
-    switch (errorType) {
-      case '网络错误':
-        return <Network className="w-8 h-8 text-blue-500" />
-      case '数据库错误':
-        return <Database className="w-8 h-8 text-green-500" />
-      case '类型错误':
-      case '语法错误':
-      case '范围错误':
-        return <Code className="w-8 h-8 text-amber-500" />
-      default:
-        return <AlertTriangle className="w-8 h-8 text-danger-500" />
+  private reportToMonitoringService(error: Error, errorInfo: ErrorInfo): void {
+    // 🔒 P2-4: 扩展点 - 接入 Sentry / Bugsnag / 自建服务
+    // 例：Sentry.captureException(error, { extra: errorInfo })
+    if (typeof window !== 'undefined' && (window as any).Sentry) {
+      ;(window as any).Sentry.captureException(error, {
+        contexts: { react: { componentStack: errorInfo.componentStack } },
+      })
     }
   }
 
-  handleRetry = () => {
-    this.setState({ hasError: false, error: null, errorInfo: null })
+  private handleReset = (): void => {
+    this.setState({
+      hasError: false,
+      error: null,
+      errorInfo: null,
+      errorId: null,
+    })
   }
 
-  handleGoHome = () => {
-    window.location.href = '/dashboard'
-  }
-
-  handleReportError = () => {
-    const { error, errorInfo, errorTime, errorUrl } = this.state
+  private copyErrorToClipboard = (): void => {
+    const { error, errorInfo, errorId } = this.state
     if (!error) return
 
-    const errorType = this.getErrorType(error)
-    const errorLog = {
-      timestamp: errorTime,
-      url: errorUrl,
-      errorType,
-      message: error.message,
-      stack: error.stack,
-      componentStack: errorInfo?.componentStack,
-    }
+    const errorText = [
+      `Error ID: ${errorId}`,
+      `Error: ${error.name}: ${error.message}`,
+      `Stack: ${error.stack}`,
+      `Component Stack: ${errorInfo?.componentStack}`,
+    ].join('\n\n')
 
-    // 复制错误信息到剪贴板
-    navigator.clipboard.writeText(JSON.stringify(errorLog, null, 2))
-      .then(() => {
-        alert('错误信息已复制到剪贴板，请粘贴给技术支持人员。')
-      })
-      .catch(err => {
-        logger.error('复制失败:', err)
-        alert('复制失败，请手动记录错误信息。')
-      })
+    navigator.clipboard.writeText(errorText).then(() => {
+      alert('错误详情已复制到剪贴板')
+    }).catch(() => {
+      // Fallback
+      console.log('错误详情:', errorText)
+    })
   }
 
-  render() {
-    if (this.state.hasError) {
-      if (this.props.fallback) {
-        return this.props.fallback
+  render(): ReactNode {
+    const { hasError, error, errorId } = this.state
+    const { children, fallback, className } = this.props
+
+    if (hasError) {
+      // 🔒 使用自定义 Fallback
+      if (fallback) {
+        return typeof fallback === 'function'
+          ? fallback(error!, this.handleReset)
+          : fallback
       }
 
-      const error = this.state.error
-      const errorType = error ? this.getErrorType(error) : '未知错误'
-      const errorIcon = this.getErrorIcon(errorType)
-
+      // 🔒 默认错误 UI
       return (
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-6">
-          <div className="max-w-md w-full text-center space-y-6 animate-fade-in">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-danger-50 dark:bg-danger-500/10">
-              {errorIcon}
-            </div>
-
-            <div className="space-y-2">
-              <h1 className="text-2xl font-bold text-slate-900 dark:text-white">出了点问题</h1>
-              <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
-                {errorType}：页面渲染时发生了意外错误。
-                {error?.message && (
-                  <span className="block mt-2 text-xs text-slate-400 dark:text-slate-500 font-mono bg-slate-100 dark:bg-slate-800 rounded-lg p-3 text-left break-all">
-                      {error.message}
-                  </span>
-                )}
-                {this.state.errorInfo?.componentStack && (
-                  <details className="mt-2 text-xs text-slate-400 dark:text-slate-500 font-mono bg-slate-100 dark:bg-slate-800 rounded-lg p-3 text-left">
-                    <summary className="cursor-pointer">查看组件堆栈</summary>
-                    <pre className="whitespace-pre-wrap mt-2">{this.state.errorInfo.componentStack}</pre>
-                  </details>
-                )}
-              </p>
-            </div>
-
-            <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-              <Button
-                variant="secondary"
-                icon={<RefreshCw className="w-4 h-4" />}
-                onClick={this.handleRetry}
-              >
-                重试
-              </Button>
-              <Button
-                variant="primary"
-                icon={<Home className="w-4 h-4" />}
-                onClick={this.handleGoHome}
-              >
-                回到工作台
-              </Button>
-              <Button
-                variant="ghost"
-                icon={<Send className="w-4 h-4" />}
-                onClick={this.handleReportError}
-              >
-                报告错误
-              </Button>
-            </div>
-
-            <div className="mt-4 text-xs text-slate-400 dark:text-slate-500">
-              <p>错误发生时间: {new Date(this.state.errorTime).toLocaleString()}</p>
-              <p>当前页面: {this.state.errorUrl}</p>
-            </div>
+        <div
+          className={`error-boundary-container ${className || ''}`}
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minHeight: '200px',
+            padding: '32px',
+            background: '#fef2f2',
+            borderRadius: '12px',
+            border: '1px solid #fecaca',
+          }}
+        >
+          <div
+            style={{
+              fontSize: '48px',
+              marginBottom: '16px',
+            }}
+          >
+            ⚠️
           </div>
+
+          <h2
+            style={{
+              fontSize: '20px',
+              fontWeight: 600,
+              color: '#991b1b',
+              margin: '0 0 8px 0',
+            }}
+          >
+            页面遇到了一些问题
+          </h2>
+
+          <p
+            style={{
+              fontSize: '14px',
+              color: '#7f1d1d',
+              margin: '0 0 16px 0',
+              textAlign: 'center',
+              maxWidth: '400px',
+            }}
+          >
+            抱歉，页面在加载时发生了错误。请尝试刷新或返回上一页。
+          </p>
+
+          {errorId && (
+            <p
+              style={{
+                fontSize: '12px',
+                color: '#b91c1c',
+                fontFamily: 'monospace',
+                margin: '0 0 16px 0',
+              }}
+            >
+              错误 ID: {errorId}
+            </p>
+          )}
+
+          <div
+            style={{
+              display: 'flex',
+              gap: '12px',
+              flexWrap: 'wrap',
+              justifyContent: 'center',
+            }}
+          >
+            <Button
+              onClick={this.handleReset}
+              variant="outline"
+              size="sm"
+            >
+              重试
+            </Button>
+
+            <Button
+              onClick={() => window.location.href = '/'}
+              variant="outline"
+              size="sm"
+            >
+              返回首页
+            </Button>
+
+            <Button
+              onClick={this.copyErrorToClipboard}
+              variant="ghost"
+              size="sm"
+            >
+              复制错误信息
+            </Button>
+          </div>
+
+          {import.meta.env.DEV && error && (
+            <details
+              style={{
+                marginTop: '24px',
+                width: '100%',
+                maxWidth: '600px',
+                textAlign: 'left',
+              }}
+            >
+              <summary
+                style={{
+                  cursor: 'pointer',
+                  fontWeight: 500,
+                  color: '#dc2626',
+                  marginBottom: '8px',
+                }}
+              >
+                🔧 开发模式：错误详情
+              </summary>
+              <pre
+                style={{
+                  fontSize: '11px',
+                  background: '#1f2937',
+                  color: '#f9fafb',
+                  padding: '16px',
+                  borderRadius: '8px',
+                  overflow: 'auto',
+                  maxHeight: '300px',
+                  margin: 0,
+                }}
+              >
+                {error.name}: {error.message}
+                {'\n\n'}
+                {error.stack}
+                {'\n\n'}
+                {this.state.errorInfo?.componentStack}
+              </pre>
+            </details>
+          )}
         </div>
       )
     }
 
-    return this.props.children
+    return children
+  }
+}
+
+/**
+ * 🔒 P2-4: 异步错误处理 Hook
+ *
+ * 在异步函数中使用 try-catch 并更新 ErrorBoundary
+ *
+ * 用法:
+ * ```tsx
+ * const { error, run } = useAsyncError()
+ *
+ * const handleSubmit = async () => {
+ *   run(async () => {
+ *     await api.save(data)
+ *   })
+ * }
+ * ```
+ */
+export function useAsyncError() {
+  const [error, setError] = React.useState<Error | null>(null)
+
+  const run = React.useCallback((promise: Promise<unknown>) => {
+    setError(null)
+    return promise.catch((e) => {
+      setError(e instanceof Error ? e : new Error(String(e)))
+      throw e
+    })
+  }, [])
+
+  const clearError = React.useCallback(() => setError(null), [])
+
+  return { error, run, clearError }
+}
+
+/**
+ * 🔒 P2-4: 包裹组件的错误边界 HOC
+ *
+ * 用法:
+ * ```tsx
+ * const SafeAIChat = withErrorBoundary(AIChatComponent, {
+ *   fallback: <div>AI 组件加载失败</div>,
+ *   onErrorReport: (error) => logError(error),
+ * })
+ * ```
+ */
+export function withErrorBoundary<P extends object>(
+  Component: React.ComponentType<P>,
+  options: {
+    fallback?: ReactNode | ((error: Error, reset: () => void) => ReactNode)
+    onErrorReport?: (error: Error, errorInfo: ErrorInfo) => void
+    className?: string
+  },
+) {
+  return function WrappedComponent(props: P) {
+    return (
+      <ErrorBoundary
+        fallback={options.fallback}
+        onErrorReport={options.onErrorReport}
+        className={options.className}
+      >
+        <Component {...props} />
+      </ErrorBoundary>
+    )
   }
 }

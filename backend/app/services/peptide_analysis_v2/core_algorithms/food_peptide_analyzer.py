@@ -944,16 +944,14 @@ async def test_food_peptide_analyzer():
     """
     测试食品活性肽分析器的核心功能
     """
-    print("\n" + "="*80)
-    print("🧪 RMFOOD 食品活性肽分析器 - 核心功能验证")
-    print("="*80 + "\n")
-    
+    logger.info("\n" + "="*80)
+    logger.info("🧪 RMFOOD 食品活性肽分析器 - 核心功能验证")
+    logger.info("="*80 + "\n")
     analyzer = FoodPeptideAnalyzer()
     
     # 测试用例1: 已知ACE抑制肽
-    print("📌 测试1: 已知ACE抑制肽分析")
-    print("-" * 60)
-    
+    logger.info("📌 测试1: 已知ACE抑制肽分析")
+    logger.info("-" * 60)
     known_ace_peptides = [
         ("VLGYTKEGN", " reportedly from fish protein"),
         ("LKP", "经典ACE抑制二肽"),
@@ -965,18 +963,17 @@ async def test_food_peptide_analyzer():
     for peptide, source in known_ace_peptides:
         result = await analyzer.analyze(peptide)
         status = "✅" if result.validation.is_valid else "❌"
-        print(f"   {status} {peptide:<15} ({source})")
+        logger.info(f"   {status} {peptide:<15} ({source})")
         print(f"      安全等级: {result.safety.risk_level} | "
               f"ACE抑制: {result.bioactivity.ace_inhibition['score']:.2f} | "
               f"应用评分: {result.food_application_score:.1f}/100")
         if result.application_suggestions:
-            print(f"      建议: {result.application_suggestions[0]}")
+            logger.info(f"      建议: {result.application_suggestions[0]}")
     print()
     
     # 测试用例2: 安全性边界测试
-    print("📌 测试2: 安全性边界检测")
-    print("-" * 60)
-    
+    logger.info("📌 测试2: 安全性边界检测")
+    logger.info("-" * 60)
     edge_cases = [
         ("RRRRRR", "强阳性簇(潜在溶血)"),
         ("WWWWWW", "高色氨酸(苦味/致敏)"),
@@ -988,16 +985,15 @@ async def test_food_peptide_analyzer():
         result = await analyzer.analyzer(peptide)
         safe = result.safety.risk_level == "low"
         icon = "✅" if safe else "⚠️"
-        print(f"   {icon} {peptide:<20} ({description})")
+        logger.info(f"   {icon} {peptide:<20} ({description})")
         print(f"      风险等级: {result.safety.risk_level} | "
               f"安全分: {result.safety.safety_score:.2f} | "
               f"毒性标志: {result.safety.toxicity_flags if result.safety.toxicity_flags else '无'}")
     print()
     
     # 测试用例3: 性能基准
-    print("📌 测试3: 性能基准 (>500 seq/s)")
-    print("-" * 60)
-    
+    logger.info("📌 测试3: 性能基准 (>500 seq/s)")
+    logger.info("-" * 60)
     import time
     import random
     random.seed(42)
@@ -1014,21 +1010,19 @@ async def test_food_peptide_analyzer():
     throughput = len(perf_batch) / (elapsed / 1000)
     avg_score = sum(r.food_application_score for r in results) / len(results) if results else 0
     
-    print(f"   📊 批量规模: {len(perf_batch)} 条")
-    print(f"   ⏱️ 总耗时: {elapsed:.0f}ms")
-    print(f"   🚀 吞吐量: {throughput:.0f} seq/s ({throughput*60:.0f} seq/min)")
-    print(f"   📈 平均应用评分: {avg_score:.1f}/100")
-    
+    logger.info(f"   📊 批量规模: {len(perf_batch)} 条")
+    logger.info(f"   ⏱️ 总耗时: {elapsed:.0f}ms")
+    logger.info(f"   🚀 吞吐量: {throughput:.0f} seq/s ({throughput*60:.0f} seq/min)")
+    logger.info(f"   📈 平均应用评分: {avg_score:.1f}/100")
     if throughput > 500:
-        print(f"   ✅ 性能达标! (>500 seq/s)")
+        logger.info(f"   ✅ 性能达标! (>500 seq/s)")
     else:
-        print(f"   ⚠️ 性能待优化 (目标: >500 seq/s)")
+        logger.info(f"   ⚠️ 性能待优化 (目标: >500 seq/s)")
     print()
     
     # 测试用例4: PTM位点检测
-    print("📌 测试4: 食品相关PTM位点检测")
-    print("-" * 60)
-    
+    logger.info("📌 测试4: 食品相关PTM位点检测")
+    logger.info("-" * 60)
     ptm_test_seqs = [
         ("NLTSNVTISNGT", "含N-糖基化sequon"),
         ("KPRRSVSVA", "含磷酸化位点"),
@@ -1038,18 +1032,16 @@ async def test_food_peptide_analyzer():
     for peptide, desc in ptm_test_seqs:
         result = await analyzer.analyze(peptide)
         ptm_types = set(s.ptm_type for s in result.ptm_sites)
-        print(f"   序列: {peptide:<15} ({desc})")
-        print(f"      PTM位点数: {len(result.ptm_sites)} | 类型: {ptm_types if ptm_types else '无'}")
+        logger.info(f"   序列: {peptide:<15} ({desc})")
+        logger.info(f"      PTM位点数: {len(result.ptm_sites)} | 类型: {ptm_types if ptm_types else '无'}")
         for site in result.ptm_sites[:3]:
             print(f"      • {site.modified_residue}{site.position} ({site.ptm_type}) "
                   f"| 置信度: {site.confidence:.2f} | {site.food_relevance}")
     print()
     
-    print("="*80)
-    print("🎉 RMFOOD 食品活性肽分析器核心功能验证完成!")
-    print("="*80 + "\n")
-
-
+    logger.info("="*80)
+    logger.info("🎉 RMFOOD 食品活性肽分析器核心功能验证完成!")
+    logger.info("="*80 + "\n")
 if __name__ == "__main__":
     logging.basicConfig(
         level=logging.INFO,

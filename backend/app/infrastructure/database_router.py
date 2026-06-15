@@ -59,9 +59,9 @@ class DatabaseRouter:
     def initialize(self) -> None:
         """初始化主库和从库引擎"""
         self._primary_engine = self._create_engine(
-            settings.database_url,
-            pool_size=settings.database_pool_size,
-            max_overflow=settings.database_max_overflow,
+            settings.database.url,
+            pool_size=settings.database.pool_size,
+            max_overflow=settings.database.max_overflow,
         )
         self._primary_session_factory = async_sessionmaker(
             self._primary_engine,
@@ -74,10 +74,10 @@ class DatabaseRouter:
         if settings.database_read_replica_url:
             self._replica_engine = self._create_engine(
                 settings.database_read_replica_url,
-                pool_size=settings.database_pool_size // 2,
-                max_overflow=settings.database_max_overflow // 2,
+                pool_size=settings.database.pool_size // 2,
+                max_overflow=settings.database.max_overflow // 2,
                 # 只读副本使用更短的超时
-                pool_recycle=settings.database_pool_recycle // 2,
+                pool_recycle=settings.database.pool_recycle // 2,
             )
             self._replica_session_factory = async_sessionmaker(
                 self._replica_engine,
@@ -207,9 +207,9 @@ class DatabaseRouter:
             future=True,
             pool_size=pool_size,
             max_overflow=max_overflow,
-            pool_timeout=settings.database_pool_timeout,
+            pool_timeout=settings.database.pool_timeout,
             pool_recycle=pool_recycle,
-            pool_pre_ping=settings.database_pool_pre_ping,
+            pool_pre_ping=True,
             connect_args={
                 "server_settings": {
                     "application_name": "rmfood",
