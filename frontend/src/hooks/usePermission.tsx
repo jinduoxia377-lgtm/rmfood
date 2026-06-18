@@ -27,7 +27,7 @@
  * const { can, isAdmin, hasAny } = usePermission()
  */
 
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useContext, createContext } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 
 // 权限元数据配置
@@ -125,7 +125,7 @@ function getRolePermissions(role: string): string[] {
  * 检查用户是否具有所需权限
  */
 export function hasPermission(required: string | string[], user: any = getCurrentUser()): boolean {
-  const { role, permissions = user || getCurrentUser();
+  const { role, permissions } = user || getCurrentUser();
 
   // 获取用户的角色权限
   const rolePermissions = getRolePermissions(role || 'viewer');
@@ -287,7 +287,6 @@ export function PermissionMenuItem({
  */
 export function WithPermission({
   required,
-  children,
   children,
 }: {
   required: string | string[];

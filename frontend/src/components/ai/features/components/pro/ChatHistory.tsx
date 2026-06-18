@@ -147,11 +147,12 @@ export default function ChatHistory({
 
                 {/* 操作按钮（hover 显示） */}
                 {!isEditing && (
-                  <div className="absolute top-1 right-1 flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className={`absolute top-1 right-1 flex gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity${'ontouchstart' in window ? ' !opacity-100' : ''}`}>
                     <button onClick={() => startRename(session.id, session.title)}
                       className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-400 hover:text-gray-600"
                     ><Edit2 className="w-3 h-3" /></button>
                     <button onClick={() => onDeleteSession(session.id)}
+                      aria-label="删除对话"
                       className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-400 hover:text-red-500"
                     ><Trash2 className="w-3 h-3" /></button>
                   </div>

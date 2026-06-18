@@ -495,11 +495,11 @@ export default function ChatMessages(props: ChatMessagesProps) {
             <div className="flex flex-col items-end gap-2 flex-1 max-w-[75%]">
               <div className="skeleton-bubble skeleton-user h-10 w-[70%] rounded-2xl rounded-br-sm" />
             </div>
-            <div className="skeleton-avatar w-9 h-9 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse" />
+            <div className="skeleton-avatar w-9 h-9 rounded-full bg-gray-300 dark:bg-gray-600 animate-pulse" />
           </div>
           {/* 头像 + 气泡骨架：AI */}
           <div className="flex items-start gap-3">
-            <div className="skeleton-avatar w-9 h-9 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse" />
+            <div className="skeleton-avatar w-9 h-9 rounded-full bg-gray-300 dark:bg-gray-600 animate-pulse" />
             <div className="flex flex-col gap-2 flex-1 max-w-[80%]">
               <div className="skeleton-bubble skeleton-ai h-16 w-full rounded-2xl rounded-tl-sm" />
               <div className="skeleton-bubble skeleton-ai h-8 w-[60%] rounded-2xl rounded-tl-sm" />
@@ -510,7 +510,7 @@ export default function ChatMessages(props: ChatMessagesProps) {
             <div className="flex flex-col items-end gap-2 flex-1 max-w-[65%]">
               <div className="skeleton-bubble skeleton-user h-7 w-[90%] rounded-2xl rounded-br-sm" />
             </div>
-            <div className="skeleton-avatar w-9 h-9 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse" />
+            <div className="skeleton-avatar w-9 h-9 rounded-full bg-gray-300 dark:bg-gray-600 animate-pulse" />
           </div>
         </div>
       </div>
@@ -550,7 +550,7 @@ export default function ChatMessages(props: ChatMessagesProps) {
               </div>
               <div className="min-w-0">
                 <div className="text-xs font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-gray-100 transition-colors">{action.title}</div>
-                <div className="text-[11px] text-gray-400 dark:text-gray-500 line-clamp-2 mt-0.5">{action.desc}</div>
+                <div className="text-[11px] text-gray-500 dark:text-gray-500 line-clamp-2 mt-0.5">{action.desc}</div>
               </div>
             </button>
           ))}
@@ -563,6 +563,9 @@ export default function ChatMessages(props: ChatMessagesProps) {
     <div
       ref={scrollRef}
       onScroll={handleScroll}
+      role="log"
+      aria-label="对话消息"
+      aria-live="polite"
       className={`flex-1 overflow-y-auto px-3 py-4 space-y-1 scrollbar-thin relative chat-custom-scrollbar${isSlowConnection ? ' chat-slow-network' : ''}`}
     >
       {/* 离线状态横幅（任务4） */}
@@ -624,7 +627,7 @@ export default function ChatMessages(props: ChatMessagesProps) {
           <div key={msg.id}>
             {/* 日期分隔线 */}
             {showDateSep && (
-              <div className="chat-date-separator">
+              <div className="chat-date-separator" role="separator" aria-label="日期分隔">
                 <span>{formatDate(msg.timestamp)}</span>
               </div>
             )}
@@ -659,6 +662,7 @@ export default function ChatMessages(props: ChatMessagesProps) {
                     <textarea
                       value={editContent}
                       onChange={(e) => setEditContent(e.target.value)}
+                      aria-label="编辑消息"
                       className="w-full min-h-[60px] max-h-[200px] px-3 py-2 rounded-lg bg-white dark:bg-gray-900
                         border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-200 text-sm
                         resize-y focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
@@ -699,7 +703,7 @@ export default function ChatMessages(props: ChatMessagesProps) {
                           <button
                             onClick={() => onRetryMessage(msg.id)}
                             className="inline-flex items-center gap-1.5 text-[11px] px-3 py-1.5 rounded-lg
-                              bg-red-400/20 hover:bg-red-400/30 text-red-100 transition-colors"
+                              bg-red-500/30 ring-1 ring-red-300 dark:ring-red-700 hover:bg-red-400/30 text-red-100 transition-colors"
                           >
                             <RefreshCw className="w-3 h-3" /> 重新发送
                           </button>
@@ -742,40 +746,40 @@ export default function ChatMessages(props: ChatMessagesProps) {
                 {!msg.error && !msg.isLoading && msg.content && !msg.isRetracted && (
                   <div className="chat-action-bar">
                     {msg.role === 'user' && onEditMessage && (
-                      <button onClick={() => startEdit(msg)} className="chat-action-btn" title="编辑">
+                      <button onClick={() => startEdit(msg)} className="chat-action-btn" title="编辑" aria-label="编辑消息">
                         <Pencil className="w-3.5 h-3.5" />
                       </button>
                     )}
-                    <button onClick={() => handleCopy(msg.id, msg.content)} className="chat-action-btn" title="复制">
+                    <button onClick={() => handleCopy(msg.id, msg.content)} className="chat-action-btn" title="复制" aria-label="复制消息">
                       {copiedId === msg.id ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
                     </button>
                     {onReferenceMessage && (
-                      <button onClick={() => onReferenceMessage(msg)} className="chat-action-btn" title="引用">
+                      <button onClick={() => onReferenceMessage(msg)} className="chat-action-btn" title="引用" aria-label="引用消息">
                         <span className="text-xs font-bold">↑</span>
                       </button>
                     )}
                     {msg.role === 'assistant' && (
                       <>
-                        <button onClick={() => handleReaction(msg.id, 'like')} className={`chat-action-btn ${reaction === 'like' ? 'text-blue-500' : ''}`} title="有用">
+                        <button onClick={() => handleReaction(msg.id, 'like')} className={`chat-action-btn ${reaction === 'like' ? 'text-blue-500' : ''}`} title="有用" aria-label="点赞">
                           <ThumbsUp className="w-3.5 h-3.5" />
                         </button>
                         <button onClick={() => handleReaction(msg.id, 'dislike')} className={`chat-action-btn ${reaction === 'dislike' ? 'text-red-500' : ''}`} title="没用">
                           <ThumbsDown className="w-3.5 h-3.5" />
                         </button>
                         {onRegenerate && (
-                          <button onClick={() => onRegenerate(msg.id)} className="chat-action-btn" title="重新生成">
+                          <button onClick={() => onRegenerate(msg.id)} className="chat-action-btn" title="重新生成" aria-label="重新生成">
                             <RefreshCw className="w-3.5 h-3.5" />
                           </button>
                         )}
                       </>
                     )}
                     {msg.role === 'user' && onRetractMessage && (
-                      <button onClick={() => onRetractMessage(msg.id)} className="chat-action-btn" title="撤回">
+                      <button onClick={() => onRetractMessage(msg.id)} className="chat-action-btn" title="撤回" aria-label="撤回消息">
                         <Undo2 className="w-3.5 h-3.5" />
                       </button>
                     )}
                     {onDeleteMessage && !(msg.role === 'user' && onRetractMessage) && (
-                      <button onClick={() => onDeleteMessage(msg.id)} className="chat-action-btn" title="删除">
+                      <button onClick={() => onDeleteMessage(msg.id)} className="chat-action-btn" title="删除" aria-label="删除消息">
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     )}

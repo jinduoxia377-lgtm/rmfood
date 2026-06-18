@@ -475,25 +475,27 @@ function sendReport(payload: any) {
 
     // 使用 sendBeacon（页面卸载时更可靠）
     if (navigator.sendBeacon) {
-      navigator.sendBeacon(
+      const result = navigator.sendBeacon(
         config.endpoint,
         new Blob([body], { type: 'application/json' }),
       );
-      return;
+      if (result) return;
+      // sendBeacon 返回 false 表示请求被拒绝，静默忽略
     }
 
-    // 回退到 fetch（keepalive）
-    fetch(config.endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: body,
-      keepalive: true,
-      mode: 'no-cors',
-    }).catch((e) => {
-      if (config.debug) console.warn('[Perf] Report failed:', e);
-    });
-  } catch (e) {
-    if (config.debug) console.warn('[Perf] Report serialization failed:', e);
+    // 回退到 fetch（keepalive）— 仅在页面活跃时使用
+    if (!document.hidden) {
+      fetch(config.endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: body,
+        keepalive: true,
+      }).catch(() => {
+        // 静默忽略上报失败，避免页面卸载时产生 ERR_ABORTED
+      });
+    }
+  } catch {
+    // 静默忽略上报序列化失败
   }
 }
 

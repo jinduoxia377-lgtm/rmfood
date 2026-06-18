@@ -111,7 +111,7 @@ export default function TypewriterText({
 
       {/* 进度条（极简） */}
       {displayedLen < content.length && (
-        <div className="h-0.5 bg-gray-100 dark:bg-gray-800 rounded-full mt-2 overflow-hidden opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="h-0.5 bg-gray-200 dark:bg-gray-700 rounded-full mt-2 overflow-hidden opacity-0 group-hover:opacity-100 transition-opacity">
           <div
             className="h-full bg-primary-400 rounded-full transition-all duration-300"
             style={{ width: `${progress}%` }}

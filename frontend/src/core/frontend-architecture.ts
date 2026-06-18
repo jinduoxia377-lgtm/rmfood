@@ -87,7 +87,7 @@ class MicroFrontendCore {
   _createLogger() {
     return {
       log: (...args) => console.log("%c[MF]", "color:#4f46e5;font-weight:bold;", ...args),
-      warn: (...args => console.warn("%c[MF]", "color:#f59e0b;font-weight:bold;", ...args),
+      warn: (...args) => console.warn("%c[MF]", "color:#f59e0b;font-weight:bold;", ...args),
       error: (...args) => console.error("%c[MF]", "color:#ef4444;font-weight:bold;", ...args),
     };
   }

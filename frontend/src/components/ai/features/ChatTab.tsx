@@ -341,7 +341,7 @@ export function ChatTab({ }: ChatTabProps) {
         {/* 主内容区 */}
         <div className="flex flex-col flex-1 min-w-0">
           {/* 顶部栏：模型状态 + 配方计数 */}
-          <div className="flex items-center justify-between p-4 border-b dark:border-gray-700 bg-gradient-to-r from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
+          <div className="flex items-center justify-between p-4 border-b dark:border-gray-700 bg-gradient-to-r from-[var(--bg-secondary)] to-[var(--bg-tertiary)] dark:from-gray-900 dark:to-gray-800">
             <div className="flex items-center gap-3 group">
               {/* AI头像 */}
               <div className="relative">
@@ -375,10 +375,11 @@ export function ChatTab({ }: ChatTabProps) {
               {/* D-1: 对话历史切换按钮 */}
               <button
                 onClick={() => setHistoryVisible(v => !v)}
-                className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg border transition-all duration-200 hover:shadow-md ${
+                aria-label="对话历史"
+                className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg border transition-all duration-200 hover:shadow-md active:scale-95 ${
                   historyVisible
                     ? 'bg-primary-50 dark:bg-primary-900/20 border-primary-300 dark:border-primary-700 text-primary-600 dark:text-primary-400'
-                    : 'bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600'
+                    : 'bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600 active:bg-gray-100 dark:active:bg-gray-700'
                 }`}
                 title="对话历史"
               >
@@ -391,7 +392,8 @@ export function ChatTab({ }: ChatTabProps) {
               {/* 主题切换按钮 */}
               <button
                 onClick={cycleScheme}
-                className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg border transition-all duration-200 hover:shadow-md bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-violet-300 dark:hover:border-violet-600 hover:text-violet-600 dark:hover:text-violet-400"
+                aria-label="切换主题"
+                className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg border transition-all duration-200 hover:shadow-md active:scale-95 bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-violet-300 dark:hover:border-violet-600 hover:text-violet-600 dark:hover:text-violet-400 active:bg-gray-100 dark:active:bg-gray-700"
                 title={`切换主题: ${schemeInfo?.nameCN || scheme}`}
               >
                 <Palette className="w-4 h-4" />
@@ -401,10 +403,11 @@ export function ChatTab({ }: ChatTabProps) {
               {/* RAG 知识库开关 */}
               <button
                 onClick={rag.toggleRAG}
-                className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg border transition-all duration-200 hover:shadow-md ${
+                aria-label="RAG知识库"
+                className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg border transition-all duration-200 hover:shadow-md active:scale-95 ${
                   rag.isEnabled
                     ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-300 dark:border-emerald-700 text-emerald-600 dark:text-emerald-400'
-                    : 'bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-emerald-300 dark:hover:border-emerald-600'
+                    : 'bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-emerald-300 dark:hover:border-emerald-600 active:bg-gray-100 dark:active:bg-gray-700'
                 }`}
                 title={rag.isEnabled ? '知识库检索已开启' : '知识库检索已关闭'}
               >
@@ -420,7 +423,8 @@ export function ChatTab({ }: ChatTabProps) {
               {/* 配方计数徽章 */}
               <button
                 onClick={() => setShowFormulaList(true)}
-                className="relative flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 rounded-lg border border-indigo-200 dark:border-indigo-800 hover:border-indigo-400 dark:hover:border-indigo-600 transition-all duration-200 hover:shadow-md"
+                aria-label="已生成配方数"
+                className="relative flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 rounded-lg border border-indigo-200 dark:border-indigo-800 hover:border-indigo-400 dark:hover:border-indigo-600 transition-all duration-200 hover:shadow-md active:scale-95"
                 title={`${formulaCount} 个配方`}
               >
                 <FlaskConical className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
@@ -431,7 +435,7 @@ export function ChatTab({ }: ChatTabProps) {
               </button>
 
               {/* Phase 4: 场景模式切换器 */}
-              <div className="flex items-center gap-0.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50/80 dark:bg-gray-800/50 p-0.5">
+              <div role="radiogroup" aria-label="场景模式" className="flex items-center gap-0.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50/80 dark:bg-gray-800/50 p-0.5">
                 {([
                   { mode: 'academician' as ScenarioMode, icon: GraduationCap, label: '学者顾问', color: 'text-blue-600 dark:text-blue-400 active:bg-blue-100 dark:active:bg-blue-900/30' },
                   { mode: 'safety_off' as ScenarioMode, icon: Shield, label: '安全专员', color: 'text-red-600 dark:text-red-400 active:bg-red-100 dark:active:bg-red-900/30' },
@@ -440,12 +444,14 @@ export function ChatTab({ }: ChatTabProps) {
                 ]).map(({ mode, icon: Icon, label, color }) => (
                   <button
                     key={mode}
+                    role="radio"
+                    aria-checked={scenarioMode === mode}
                     onClick={() => handleScenarioSwitch(mode)}
                     title={label}
-                    className={`flex items-center justify-center w-8 h-7 rounded-md transition-all duration-200 ${
+                    className={`flex items-center justify-center w-9 h-9 min-w-[36px] min-h-[36px] rounded-md transition-all duration-200 active:scale-95 ${
                       scenarioMode === mode
                         ? `${color} bg-white dark:bg-gray-700 shadow-sm scale-105`
-                        : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                        : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 active:bg-gray-200 dark:active:bg-gray-600'
                     }`}
                   >
                     <Icon className="w-3.5 h-3.5" />
@@ -492,6 +498,37 @@ export function ChatTab({ }: ChatTabProps) {
               sources={rag.lastSources}
               onDismiss={rag.clearChunks}
             />
+
+            {/* 空状态欢迎引导 */}
+            {messages.length === 0 && (
+              <div className="flex flex-col items-center justify-center min-h-[40vh] max-w-2xl mx-auto w-full animate-[fadeInUp_0.5s_ease-out]">
+                <div className="text-center mb-8">
+                  <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center shadow-lg shadow-primary-500/25">
+                    <Brain className="w-7 h-7 text-white" />
+                  </div>
+                  <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                    {safeT('ai.chat.chatTab.welcomeTitle', '欢迎使用智能配方助手')}
+                  </h2>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    {safeT('ai.chat.chatTab.welcomeSubtitle', '选择下方问题快速开始，或直接输入您的配方需求')}
+                  </p>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full">
+                  {QUICK_QUESTIONS.filter(q => q.popular).slice(0, 3).map((q) => (
+                    <button
+                      key={q.id}
+                      onClick={() => handleSendMessage(q.question)}
+                      className="group/card flex flex-col items-start p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/50 hover:border-primary-300 dark:hover:border-primary-600 hover:shadow-md transition-all duration-200 active:scale-[0.98] text-left"
+                    >
+                      <span className="text-xs font-medium text-primary-500 dark:text-primary-400 mb-1.5">{q.category}</span>
+                      <span className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed group-hover/card:text-gray-900 dark:group-hover/card:text-white transition-colors">
+                        {q.question}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <ChatMessages
               messages={messages}

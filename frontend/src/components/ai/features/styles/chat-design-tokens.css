@@ -438,3 +438,32 @@
     --shadow-level-4: none;
   }
 }
+
+/* ============================================
+   工具类 Utility Classes
+   ============================================ */
+
+.chat-highlighted {
+  background: var(--color-primary-50, #ECFDF5);
+  outline: 2px solid var(--color-primary-300, #6EE7B7);
+  border-radius: 4px;
+}
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 3s ease-in-out infinite;
+}
+
+@keyframes check-bounce {
+  0% { transform: scale(0); }
+  60% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+.animate-check-bounce {
+  animation: check-bounce 300ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}

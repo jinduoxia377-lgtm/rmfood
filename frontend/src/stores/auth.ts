@@ -13,6 +13,7 @@ import { UserRole } from '@/types'
 import { authApi } from '@/api/auth'
 import { connectWebSocket, disconnectWebSocket } from '@/services/websocket'
 import { logger } from '@/utils/safeLogger';
+import api from '@/api/client'
 
 
 interface AuthState {
@@ -26,7 +27,22 @@ interface AuthState {
   setUser: (user: User) => void
 }
 
-export const useAuthStore = create<AuthState>()((set) => {
+export const useAuthStore = create<AuthState>()((set, get) => {
+  // 启动时静默检查认证状态（不触发 token 刷新逻辑）
+  setTimeout(async () => {
+    try {
+      const response = await api.get('/auth/me', { params: { _silent: true } })
+      const user = response.data
+      if (user) {
+        set({ user, isAuthenticated: true, isLoading: false })
+      } else {
+        set({ user: null, isAuthenticated: false, isLoading: false })
+      }
+    } catch {
+      set({ user: null, isAuthenticated: false, isLoading: false })
+    }
+  }, 0)
+
   return {
     user: null,
     isAuthenticated: false,

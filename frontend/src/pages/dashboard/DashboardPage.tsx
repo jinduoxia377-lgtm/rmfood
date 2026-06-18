@@ -2,7 +2,7 @@
  * RMFOOD 仪表盘 - 深度增强版
  * 新增：个性化配置、可拖拽布局、通知中心、AI智能洞察、KPI监控
  */
-import { useState, useCallback, lazy, Suspense } from 'react'
+import { useState, useCallback, useEffect, lazy, Suspense } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
@@ -21,6 +21,7 @@ import { useAuthStore } from '@/stores/auth'
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from '@/components/ui'
 import { StatusBadge, Skeleton, EmptyState } from '@/components/ui/Common'
 import { activityApi, type TimelineEvent, type TodoItem, type ReviewQueueItem } from '@/api/activity'
+import { notificationApi } from '@/api/notifications'
 import { useQuery } from '@tanstack/react-query'
 import { cn } from '@/lib/utils'
 import { STATUS_CONFIG, DASHBOARD_CONFIG } from '@/config'
@@ -728,7 +729,14 @@ export default function DashboardPage() {
   const [isEditMode, setIsEditMode] = useState(false)
   const [showEditor, setShowEditor] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
-  const [notificationCount, setNotificationCount] = useState(3)
+  const [notificationCount, setNotificationCount] = useState(0)
+
+  // 从后端 API 获取未读通知数
+  useEffect(() => {
+    notificationApi.unreadCount()
+      .then((data) => setNotificationCount(data.count))
+      .catch(() => setNotificationCount(0))
+  }, [])
   const [layoutColumns, setLayoutColumns] = useState(4)
   const [layoutGap, setLayoutGap] = useState(16)
 

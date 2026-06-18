@@ -104,45 +104,20 @@ export class WebSocketService {
       this.isConnecting = true
 
       try {
-        // 获取最新 token（优先从 store）
+        // 🔒 P0 安全修复: Token 存储在 HttpOnly Cookie 中，前端无法直接读取
+        // WebSocket 连接时浏览器会自动携带同源 Cookie，后端可通过 Cookie 认证
+        // 不再通过 URL query param 传递 token（更安全）
         const authState = useAuthStore.getState()
-        let token = authState?.accessToken || ''
+        const isAuthenticated = authState?.isAuthenticated
 
-        // JWT 过期检测：如果 token 将在 60s 内过期，触发非阻塞刷新
-        if (token) {
-          try {
-            const payload = JSON.parse(atob(token.split('.')[1]))
-            const now = Math.floor(Date.now() / 1000)
-            if (payload.exp && payload.exp < now + 60) {
-              logger.warn('WebSocket: Token 即将过期，触发刷新')
-              const rt = localStorage.getItem('refresh_token')
-              if (rt) {
-                // 非阻塞刷新：不等待结果，下次重连时使用新 token
-                authApi.refresh(rt).then((refreshed: any) => {
-                  const newAT = refreshed?.access_token || refreshed?.accessToken
-                  if (newAT) {
-                    const store = useAuthStore.getState()
-                    if (store) store.accessToken = newAT
-                    logger.info('WebSocket: 后台 Token 刷新成功')
-                  }
-                }).catch(() => {})
-              }
-              // 立即从 store 重读（可能已被 HTTP 拦截器更新过）
-              token = useAuthStore.getState()?.accessToken || token
-            }
-          } catch {
-            // 非 JWT 格式，忽略
-          }
-        }
-
-        if (!token) {
-          logger.error('WebSocket: No authentication token')
+        if (!isAuthenticated) {
+          logger.warn('WebSocket: 用户未认证，跳过连接')
           this.isConnecting = false
           resolve(false)
           return
         }
 
-        const url = `${this.url}?token=${token}&connection_id=${this.connectionId}&client_info=${encodeURIComponent(JSON.stringify({
+        const url = `${this.url}?connection_id=${this.connectionId}&client_info=${encodeURIComponent(JSON.stringify({
           userAgent: navigator.userAgent,
           screenSize: `${window.screen.width}x${window.screen.height}`,
           timestamp: new Date().toISOString(),

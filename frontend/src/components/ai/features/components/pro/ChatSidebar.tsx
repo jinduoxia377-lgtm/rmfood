@@ -48,10 +48,10 @@ export default function ChatSidebar({ steps, isThinking, isVisible, onToggle }: 
   if (!isVisible) return null
 
   return (
-    <div className="border-l border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50 w-72 flex-shrink-0 overflow-y-auto hidden lg:block">
+    <div 900/50 w-72 flex-shrink-0 overflow-y-auto hidden lg:block">
       <div className="p-3 space-y-3">
         {/* 头部 */}
-        <button onClick={onToggle} className="flex items-center justify-between w-full">
+        <button onClick={onToggle} className="flex items-center justify-between w-fu
           <div className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
             <Cpu className="w-4 h-4 text-primary-500" />
             <span>AI 思考过程</span>
@@ -80,7 +80,7 @@ export default function ChatSidebar({ steps, isThinking, isVisible, onToggle }: 
         {steps.length === 0 && !isThinking && (
           <div className="text-center py-8">
             <Brain className="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
-            <p className="text-xs text-gray-400">AI 思考过程将在此显示</p>
+            <p className="text-xs text-gray-500">AI 思考过程将在此显示</p>
           </div>
         )}
 
@@ -93,7 +93,7 @@ export default function ChatSidebar({ steps, isThinking, isVisible, onToggle }: 
             const isLast = i === steps.length - 1
 
             return (
-              <div key={i} className="relative">
+              <div key={i} className="relative transition-all duration-300">
                 {/* 连接线 */}
                 {!isLast && (
                   <div className={`absolute left-3 top-7 bottom-0 w-0.5 ${isComplete ? 'bg-primary-200 dark:bg-primary-800' : 'bg-gray-200 dark:bg-gray-700'}`} />
@@ -120,6 +120,7 @@ export default function ChatSidebar({ steps, isThinking, isVisible, onToggle }: 
                   <div className="flex-1 min-w-0 pb-3">
                     <button
                       onClick={() => setExpandedStep(isExpanded ? null : step.step)}
+                      aria-expanded={isExpanded}
                       className="flex items-center gap-1 text-xs font-medium text-gray-700 dark:text-gray-300 hover:text-primary-600 transition-colors"
                     >
                       {step.step}

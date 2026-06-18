@@ -264,7 +264,6 @@ export default function ChatInput({
             className={`
               flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center
               transition-all duration-200 relative overflow-hidden
-              ${sendSuccess
                 ? 'bg-green-500 text-white scale-[1.05] shadow-md shadow-green-200'
                 : isStreaming
                   ? 'bg-red-500 hover:bg-red-600 text-white'
@@ -287,7 +286,7 @@ export default function ChatInput({
 
         {/* 快捷键提示条（仅桌面端 >768px 显示） */}
         <div className="hidden md:flex items-center justify-center py-1.5 px-2 rounded-lg bg-gray-50 dark:bg-gray-800/60 text-[11px] text-gray-400 dark:text-gray-500 gap-3">
-          <Keyboard className="w-3 h-3" />
+          <Keyboard className="w-3 h-3" />5
           <span><kbd className="px-1 py-0.5 rounded bg-gray-200 dark:bg-gray-700 font-mono text-[10px]">↵</kbd> 发送</span>
           <span><kbd className="px-1 py-0.5 rounded bg-gray-200 dark:bg-gray-700 font-mono text-[10px]">⇧↵</kbd> 换行</span>
           <span><kbd className="px-1 py-0.5 rounded bg-gray-200 dark:bg-gray-700 font-mono text-[10px]">⌃↵</kbd> 强制换行</span>
@@ -311,12 +310,14 @@ export default function ChatInput({
 
             {showModelPicker && (
               <>
-                <div className="fixed inset-0 z-10" onClick={() => setShowModelPicker(false)} />
-                <div className="absolute bottom-full left-0 mb-1 z-20 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-1 min-w-[160px]">
+                <div className="fixed inset-0 z-10" onClick={() => setShowModelPicker(false)} aria-hidden="true" />
+                <div className="absolute bottom-full left-0 mb-1 z-20 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-1 min-w-[160px]" role="listbox">
                   {MODELS.map(m => (
                     <button
                       key={m.id}
                       onClick={() => { onModelChange?.(m.id); setShowModelPicker(false) }}
+                      role="option"
+                      aria-selected={m.id === modelName}
                       className={`w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors
                         ${m.id === modelName ? 'bg-primary-50 dark:bg-primary-900/20' : ''}`}
                     >
