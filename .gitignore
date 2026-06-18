@@ -215,3 +215,9 @@ AI 助手对话方式/
 
 # ---- SSL 证书 ----
 ssl/
+
+# ---- Vite 构建缓存 ----
+frontend/.vite-cache/
+
+# ---- 调试截图 ----
+debug_*.png

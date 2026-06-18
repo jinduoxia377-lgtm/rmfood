@@ -9,80 +9,67 @@
  * - 其他页面使用懒加载 + 空闲预加载
  * - 大体积模块（图表/导出）延迟加载
  */
-import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { useEffect, lazy, Suspense, type ReactNode } from 'react'
+import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClient } from '@/utils/queryClient';
+import { useEffect, lazy, Suspense, type ReactNode } from 'react';
 
-import { useAuthStore } from '@/stores/auth'
-import { UserRole } from '@/types/index'
-import { ThemeProvider } from '@/stores/ThemeProvider'
-import MainLayout from '@/components/layout/MainLayout'
-import ErrorBoundary from '@/components/ErrorBoundary'
-import { ToastProvider } from '@/components/ui/Toast'
-import { ToastContainer } from '@/components/ui/ToastContainer'
-import { ShortcutHelpProvider } from '@/hooks/useKeyboardShortcuts.tsx'
+import { useAuthStore } from '@/stores/auth';
+import { UserRole } from '@/types/index';
+import { ThemeProvider } from '@/stores/ThemeProvider';
+import MainLayout from '@/components/layout/MainLayout';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { ToastProvider } from '@/components/ui/Toast';
+import { ToastContainer } from '@/components/ui/ToastContainer';
+import { ShortcutHelpProvider } from '@/hooks/useKeyboardShortcuts.tsx';
 
 // 🔒 P3-1: 可预加载懒加载（空闲时预加载）
-import { lazyWithPreload } from '@/components/LazyLoad.tsx'
+import { lazyWithPreload } from '@/components/LazyLoad.tsx';
 
 // 🔒 P3-1: 关键页面直接导入，确保首屏加载速度
 // 这些文件体积小，同步加载无影响首屏性能
-import RhineLoginPage from '@/pages/auth/RhineLoginPage'
-import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage'
-import DashboardPage from '@/pages/dashboard/DashboardPage'
+import RhineLoginPage from '@/pages/auth/RhineLoginPage';
+import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage';
+import DashboardPage from '@/pages/dashboard/DashboardPage';
 
 // 🔒 P3-1: 中等体积页面 - 标准懒加载
-const FormulaListPage = lazyWithPreload(() => import('@/pages/formula/FormulaListPage'))
-const FormulaNewPage = lazyWithPreload(() => import('@/pages/formula/FormulaNewPage'))
-const FormulaDetailPage = lazyWithPreload(() => import('@/pages/formula/FormulaDetailPage'))
-const FormulaEditPage = lazyWithPreload(() => import('@/pages/formula/FormulaEditPage'))
-const FormulaTemplatesPage = lazyWithPreload(() => import('@/pages/formula/FormulaTemplatesPage'))
-const FormulaComparePage = lazyWithPreload(() => import('@/pages/formula/FormulaComparePage'))
-const FormulaTestPage = lazyWithPreload(() => import('@/pages/formula/FormulaTestPage'))
+const FormulaListPage = lazyWithPreload(() => import('@/pages/formula/FormulaListPage'));
+const FormulaNewPage = lazyWithPreload(() => import('@/pages/formula/FormulaNewPage'));
+const FormulaDetailPage = lazyWithPreload(() => import('@/pages/formula/FormulaDetailPage'));
+const FormulaEditPage = lazyWithPreload(() => import('@/pages/formula/FormulaEditPage'));
+const FormulaTemplatesPage = lazyWithPreload(() => import('@/pages/formula/FormulaTemplatesPage'));
+const FormulaComparePage = lazyWithPreload(() => import('@/pages/formula/FormulaComparePage'));
+const FormulaTestPage = lazyWithPreload(() => import('@/pages/formula/FormulaTestPage'));
 
 // 🔒 P3-1: 数据管理 - 中等体积
-const ExperimentListPage = lazyWithPreload(() => import('@/pages/experiment/ExperimentListPage'))
-const ExperimentDetailPage = lazyWithPreload(() => import('@/pages/experiment/ExperimentDetailPage'))
-const ExperimentNewPage = lazyWithPreload(() => import('@/pages/experiment/ExperimentNewPage'))
-const ExperimentEditPage = lazyWithPreload(() => import('@/pages/experiment/ExperimentEditPage'))
+const ExperimentListPage = lazyWithPreload(() => import('@/pages/experiment/ExperimentListPage'));
+const ExperimentDetailPage = lazyWithPreload(() => import('@/pages/experiment/ExperimentDetailPage'));
+const ExperimentNewPage = lazyWithPreload(() => import('@/pages/experiment/ExperimentNewPage'));
+const ExperimentEditPage = lazyWithPreload(() => import('@/pages/experiment/ExperimentEditPage'));
 
 // 🔒 P3-1: AI 相关页面 - 大体积，懒加载
-const AIAssistantPage = lazyWithPreload(() => import('@/pages/ai/AIAssistantPage'))
-const AcademicReportPage = lazyWithPreload(() => import('@/pages/academic/AcademicReportPage'))
+const AIAssistantPage = lazyWithPreload(() => import('@/pages/ai/AIAssistantPage'));
+const AcademicReportPage = lazyWithPreload(() => import('@/pages/academic/AcademicReportPage'));
 
 // 🔒 P3-1: 数据库页面 - 数据密集型
-const DatabasePage = lazyWithPreload(() => import('@/pages/database/DatabasePage'))
+const DatabasePage = lazyWithPreload(() => import('@/pages/database/DatabasePage'));
 
 // 🔒 P3-1: 用户/设置/通知 - 标准懒加载
-const UserManagementPage = lazyWithPreload(() => import('@/pages/user/UserManagementPage'))
-const SettingsPage = lazyWithPreload(() => import('@/pages/settings/SettingsPage'))
-const NotificationPage = lazyWithPreload(() => import('@/pages/notification/NotificationPage'))
-const WorkflowPage = lazyWithPreload(() => import('@/pages/workflow/WorkflowPage'))
+const UserManagementPage = lazyWithPreload(() => import('@/pages/user/UserManagementPage'));
+const SettingsPage = lazyWithPreload(() => import('@/pages/settings/SettingsPage'));
+const NotificationPage = lazyWithPreload(() => import('@/pages/notification/NotificationPage'));
+const WorkflowPage = lazyWithPreload(() => import('@/pages/workflow/WorkflowPage'));
 
 // 🔒 P3-1: 管理员页面 - 大体积（含图表/审计功能）
-const AuditLogPage = lazyWithPreload(() => import('@/pages/admin/AuditLogPage'))
+const AuditLogPage = lazyWithPreload(() => import('@/pages/admin/AuditLogPage'));
 
 // 🔒 P3-1: 404 页面 - 极小文件同步加载
-const NotFoundPage = lazyWithPreload(() => import('@/pages/NotFoundPage'))
+const NotFoundPage = lazyWithPreload(() => import('@/pages/NotFoundPage'));
 
 // 🔒 P3-1: SSS 企业级功能页面 - 大体积，懒加载
-const AnalyticsPage = lazyWithPreload(() => import('@/pages/analytics/AnalyticsPage'))
-const OrganizationsPage = lazyWithPreload(() => import('@/pages/organizations/OrganizationsPage'))
-const IntegrationsPage = lazyWithPreload(() => import('@/pages/integrations/IntegrationsPage'))
-
-// React Query 客户端
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      refetchOnWindowFocus: false,
-      staleTime: 30_000,
-    },
-    mutations: {
-      retry: 0,
-    },
-  },
-})
+const AnalyticsPage = lazyWithPreload(() => import('@/pages/analytics/AnalyticsPage'));
+const OrganizationsPage = lazyWithPreload(() => import('@/pages/organizations/OrganizationsPage'));
+const IntegrationsPage = lazyWithPreload(() => import('@/pages/integrations/IntegrationsPage'));
 
 /* ═══════════════════════════════════════════
    路由守卫组件
@@ -93,37 +80,37 @@ const queryClient = new QueryClient({
  * ✅ 修复：添加 isLoading 检查，避免 Zustand persist 异步恢复导致的竞态条件
  */
 function AuthGuard({ children }: { children: ReactNode }) {
-  const { isAuthenticated, isLoading, fetchUser } = useAuthStore()
+  const { isAuthenticated, isLoading, fetchUser } = useAuthStore();
 
   useEffect(() => {
     if (isAuthenticated) {
-      fetchUser()
+      fetchUser();
     }
-  }, [isAuthenticated, fetchUser, isLoading])
+  }, [isAuthenticated, fetchUser, isLoading]);
 
   // ✅ 关键修复：如果正在加载（persist 还没恢复），显示 loading 而不是立即重定向
   if (isLoading) {
-    return <LoadingComponent />
+    return <LoadingComponent />;
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />
+    return <Navigate to="/login" replace />;
   }
 
-  return <>{children}</>
+  return <>{children}</>;
 }
 
 /**
  * 已登录守卫：登录后跳转到仪表盘
  */
 function GuestGuard({ children }: { children: ReactNode }) {
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
 
   if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />
+    return <Navigate to="/dashboard" replace />;
   }
 
-  return <>{children}</>
+  return <>{children}</>;
 }
 
 /**
@@ -132,27 +119,27 @@ function GuestGuard({ children }: { children: ReactNode }) {
  * ✅ 修复：角色比较使用 toUpperCase() 兼容 API 返回的小写 'admin'
  */
 function AdminGuard({ children }: { children: ReactNode }) {
-  const user = useAuthStore((s) => s.user)
-  const isLoading = useAuthStore((s) => s.isLoading)
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
+  const user = useAuthStore((s) => s.user);
+  const isLoading = useAuthStore((s) => s.isLoading);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
 
   if (isLoading) {
-    return <LoadingComponent />
+    return <LoadingComponent />;
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />
+    return <Navigate to="/login" replace />;
   }
 
   if (!user) {
-    return <LoadingComponent />
+    return <LoadingComponent />;
   }
 
   if ((user.role as string).toUpperCase() !== UserRole.ADMIN) {
-    return <Navigate to="/dashboard" replace />
+    return <Navigate to="/dashboard" replace />;
   }
 
-  return <>{children}</>
+  return <>{children}</>;
 }
 
 // 加载组件，用于Suspense的fallback
@@ -163,7 +150,7 @@ const LoadingComponent = () => (
       <p className="text-gray-600">加载中...</p>
     </div>
   </div>
-)
+);
 
 /* ═══════════════════════════════════════════
    路由配置 (react-router-dom v7)
@@ -376,7 +363,6 @@ const router = createBrowserRouter([
         ),
       },
 
-
       // 管理员路由
       {
         path: 'users',
@@ -414,7 +400,7 @@ const router = createBrowserRouter([
 
   // 兜底
   { path: '*', element: <Navigate to="/404" replace /> },
-])
+]);
 
 /* ═══════════════════════════════════════════
    应用根组件
@@ -424,14 +410,14 @@ export default function App() {
   // 🔒 P2-4: 错误上报函数（生产环境可接入 Sentry）
   const handleErrorReport = (error: Error, errorInfo: React.ErrorInfo) => {
     // 开发环境输出到控制桌
-    console.error('[App] Uncaught error:', error, errorInfo)
+    console.error('[App] Uncaught error:', error, errorInfo);
 
     // 生产环境上报（扩展点）
     if (import.meta.env.PROD) {
       // 例: fetch('/api/errors', { method: 'POST', body: JSON.stringify({...}) })
       // 或: window.Sentry?.captureException(error, { contexts: { react: errorInfo } })
     }
-  }
+  };
 
   return (
     <ErrorBoundary
@@ -441,9 +427,7 @@ export default function App() {
           <div className="text-center max-w-md p-8">
             <div className="text-6xl mb-4">⚠️</div>
             <h1 className="text-2xl font-bold text-red-600 mb-4">页面遇到了一些问题</h1>
-            <p className="text-gray-600 mb-6">
-              抱歉，页面在加载时发生了错误。请尝试刷新或返回首页。
-            </p>
+            <p className="text-gray-600 mb-6">抱歉，页面在加载时发生了错误。请尝试刷新或返回首页。</p>
             <div className="flex gap-3 justify-center flex-wrap">
               <button
                 className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
@@ -453,7 +437,7 @@ export default function App() {
               </button>
               <button
                 className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
-                onClick={() => window.location.href = '/'}
+                onClick={() => (window.location.href = '/')}
               >
                 返回首页
               </button>
@@ -479,5 +463,5 @@ export default function App() {
         </QueryClientProvider>
       </ThemeProvider>
     </ErrorBoundary>
-  )
+  );
 }

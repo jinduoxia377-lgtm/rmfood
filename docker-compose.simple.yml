@@ -1,0 +1,117 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: rmfood_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-rmfood_db}
+      POSTGRES_USER: ${POSTGRES_USER:-rmfood}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?请设置 POSTGRES_PASSWORD 环境变量}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --lc-collate=C --lc-ctype=C"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-rmfood} -d ${POSTGRES_DB:-rmfood_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 256M
+    networks:
+      - backend
+
+  redis:
+    image: redis:7-alpine
+    container_name: rmfood_redis
+    restart: unless-stopped
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru --save 900 1 --save 300 10 --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6380:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    networks:
+      - backend
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: backend-production
+      args:
+        PYTHONUNBUFFERED: "1"
+    container_name: rmfood_backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-rmfood}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-rmfood_db}
+      DATABASE_POOL_SIZE: 20
+      DATABASE_MAX_OVERFLOW: 10
+      REDIS_URL: redis://:@redis:6379/0
+      SECRET_KEY: ${SECRET_KEY:?请设置 SECRET_KEY 环境变量}
+      JWT_ALGORITHM: HS256
+      JWT_EXPIRE_MINUTES: 480
+      AI_API_KEY: ${AI_API_KEY:-}
+      AI_BASE_URL: ${AI_BASE_URL:-}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      HEALTH_CHECK_TOKEN: ${HEALTH_CHECK_TOKEN:-changeme}
+    volumes:
+      - ./backend:/app:ro
+      - uploads_data:/app/uploads
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - backend
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: frontend-production
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-/api}
+        VITE_APP_TITLE: ${VITE_APP_TITLE:-RMFOOD配方平台}
+    container_name: rmfood_frontend
+    restart: unless-stopped
+    volumes:
+      - ./frontend/public:/usr/share/nginx/html/public:ro
+    ports:
+      - "${FRONTEND_PORT:-3000}:80"
+    depends_on:
+      - backend
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
+    name: rmfood_backend
+
+volumes:
+  postgres_data:
+    name: rmfood_postgres_data
+  redis_data:
+    name: rmfood_redis_data
+  uploads_data:
+    name: rmfood_uploads_data

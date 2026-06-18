@@ -245,6 +245,21 @@ api.interceptors.response.use(
 
     // ✅ 完整的 401 错误处理和 Token 自动刷新
     if (error.response?.status === 401) {
+      // 静默请求（启动时认证检查）不触发 token 刷新和重定向
+      if (original.params?._silent) {
+        return Promise.resolve({ data: null, status: 401, statusText: 'Unauthorized', headers: {}, config: original })
+      }
+
+      // 防止无限重试：同一请求最多重试 1 次
+      if (original._retryCount) {
+        clearAuthState()
+        if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
+          window.location.href = '/login'
+        }
+        return Promise.reject(error)
+      }
+      original._retryCount = true
+
       const errorDetail = error.response.data?.detail || error.response.data?.message || ''
       const isAuthError = errorDetail.includes('认证') ||
                           errorDetail.includes('token') ||

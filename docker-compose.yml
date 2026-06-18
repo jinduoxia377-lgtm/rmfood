@@ -141,13 +141,13 @@ services:
       dockerfile: Dockerfile
       target: frontend-production
       args:
-        - VITE_API_BASE_URL: ${VITE_API_BASE_URL:-/api}
-        - VITE_APP_TITLE: ${VITE_APP_TITLE:-RMFOOD配方平台}
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-/api}
+        VITE_APP_TITLE: ${VITE_APP_TITLE:-RMFOOD配方平台}
     container_name: rmfood_frontend
     restart: unless-stopped
     environment:
-      - NGINX_WORKER_PROCESSES: auto
-      - NGINX_WORKER_CONNECTIONS: 1024
+      NGINX_WORKER_PROCESSES: auto
+      NGINX_WORKER_CONNECTIONS: "1024"
     volumes:
       # 静态资源（可选）
       - ./frontend/public:/usr/share/nginx/html/public:ro
