@@ -69,3 +69,34 @@ data/
 *.report.html
 *_REPORT.md
 *_report.*
+
+# 部署文档（不需要打包到镜像）
+DEPLOYMENT_*.md
+LAN_*.md
+PRODUCTION_*.md
+NETWORK_*.md
+QUICK_START.md
+FINAL_CLOSURE_REPORT.md
+
+# 调试截图
+debug_*.png
+
+# 脚本（不需要打包到镜像）
+scripts/
+run_backend.py
+run_backend_simple.py
+start-lan.bat
+stop-lan.bat
+start_backend.bat
+
+# Docker compose 文件
+docker-compose*.yml
+!docker-compose.yml
+
+# 前端构建缓存
+frontend/.vite-cache/
+frontend/tsconfig.tsbuildinfo
+
+# Claude 配置
+.claude/
+backend/.claude/
