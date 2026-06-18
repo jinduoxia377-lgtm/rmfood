@@ -1,5 +1,6 @@
 """RMFOOD 用户模型"""
 from datetime import datetime, timezone
+from typing import Optional
 from sqlalchemy import Integer, String, Boolean, DateTime, JSON, Enum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from ..core.database import Base

@@ -55,20 +55,18 @@ async def login(
     access_cookie = create_secure_cookie_settings(
         ACCESS_TOKEN_COOKIE,
         token_data.access_token,
-        max_age_seconds=settings.access_token_expire_minutes * 60,
+        max_age_seconds=settings.security.jwt_expire_minutes * 60,
     )
-    for key, value in access_cookie.items():
-        response.set_cookie(**{key: value} if key != "key" else {}, key=key, value=value)
+    response.set_cookie(**access_cookie)
 
     # Refresh Token: 7天
     refresh_cookie = create_secure_cookie_settings(
         REFRESH_TOKEN_COOKIE,
         token_data.refresh_token,
-        max_age_seconds=settings.refresh_token_expire_days * 24 * 60 * 60,
+        max_age_seconds=settings.security.jwt_refresh_expire_days * 24 * 60 * 60,
         is_refresh_token=True,
     )
-    for key, value in refresh_cookie.items():
-        response.set_cookie(**{key: value} if key != "key" else {}, key=key, value=value)
+    response.set_cookie(**refresh_cookie)
 
     return token_data
 
@@ -94,10 +92,8 @@ async def logout(
         add_token_to_blacklist(token)
 
     # 🔒 清除 Cookie
-    for key, value in clear_cookie_settings(ACCESS_TOKEN_COOKIE).items():
-        response.delete_cookie(key=key)
-    for key, value in clear_cookie_settings(REFRESH_TOKEN_COOKIE).items():
-        response.delete_cookie(key=key)
+    response.delete_cookie(key=ACCESS_TOKEN_COOKIE)
+    response.delete_cookie(key=REFRESH_TOKEN_COOKIE)
 
     return SuccessResponse(message="登出成功")
 
@@ -150,20 +146,18 @@ async def refresh_token(
     access_cookie = create_secure_cookie_settings(
         ACCESS_TOKEN_COOKIE,
         token_data.access_token,
-        max_age_seconds=settings.access_token_expire_minutes * 60,
+        max_age_seconds=settings.security.jwt_expire_minutes * 60,
     )
-    for key, value in access_cookie.items():
-        response.set_cookie(**{key: value} if key != "key" else {}, key=key, value=value)
+    response.set_cookie(**access_cookie)
 
     # Refresh Token 保持不变（仅更新过期时间）
     refresh_cookie = create_secure_cookie_settings(
         REFRESH_TOKEN_COOKIE,
         token_data.refresh_token,
-        max_age_seconds=settings.refresh_token_expire_days * 24 * 60 * 60,
+        max_age_seconds=settings.security.jwt_refresh_expire_days * 24 * 60 * 60,
         is_refresh_token=True,
     )
-    for key, value in refresh_cookie.items():
-        response.set_cookie(**{key: value} if key != "key" else {}, key=key, value=value)
+    response.set_cookie(**refresh_cookie)
 
     return token_data
 

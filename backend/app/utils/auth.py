@@ -75,7 +75,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
     else:
-        expire = datetime.now(timezone.utc) + timedelta(minutes=settings.access_token_expire_minutes)
+        expire = datetime.now(timezone.utc) + timedelta(minutes=settings.security.jwt_expire_minutes)
 
     payload = {
         **data,
@@ -85,7 +85,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
         "jti": _generate_jti(),  # JWT ID，用于唯一标识和撤销
     }
 
-    token = jwt.encode(payload, settings.secret_key, algorithm=settings.jwt_algorithm)
+    token = jwt.encode(payload, settings.secret_key, algorithm=settings.security.jwt_algorithm)
     logger.debug(f"创建访问令牌成功，用户ID: {data.get('sub')}")
     return token
 
@@ -100,7 +100,7 @@ def create_refresh_token(user_id: str) -> str:
     Returns:
         str: 编码后的Refresh Token
     """
-    expire = datetime.now(timezone.utc) + timedelta(days=settings.refresh_token_expire_days)
+    expire = datetime.now(timezone.utc) + timedelta(days=settings.security.jwt_refresh_expire_days)
     payload = {
         "sub": user_id,
         "exp": expire,
@@ -109,7 +109,7 @@ def create_refresh_token(user_id: str) -> str:
         "jti": _generate_jti(),
     }
 
-    token = jwt.encode(payload, settings.secret_key, algorithm=settings.jwt_algorithm)
+    token = jwt.encode(payload, settings.secret_key, algorithm=settings.security.jwt_algorithm)
     logger.info(f"创建刷新令牌成功，用户ID: {user_id}")
     return token
 
@@ -140,7 +140,7 @@ def decode_token(token: str) -> dict:
         payload = jwt.decode(
             token,
             settings.secret_key,
-            algorithms=[settings.jwt_algorithm],
+            algorithms=[settings.security.jwt_algorithm],
         )
         return payload
 
@@ -227,7 +227,7 @@ def add_token_to_blacklist(token: str) -> bool:
                     return True
                 ttl = int(exp - datetime.now(timezone.utc).timestamp())
             else:
-                ttl = settings.access_token_expire_minutes * 60  # 默认 TTL
+                ttl = settings.security.jwt_expire_minutes * 60  # 默认 TTL
 
             # 写入内存黑名单
             _token_blacklist.add(token)

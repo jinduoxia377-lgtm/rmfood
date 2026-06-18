@@ -524,10 +524,26 @@ class AuthService:
 # ── 依赖注入：获取当前用户 ──
 
 async def get_current_user(
-    token: str = Depends(oauth2_scheme),
+    request: Request,
     db: AsyncSession = Depends(get_db),
 ) -> User:
-    """从 JWT 令牌获取当前登录用户"""
+    """从 JWT 令牌获取当前登录用户（支持 Authorization header 和 HttpOnly Cookie）"""
+    # 优先从 Authorization header 获取 token
+    token: Optional[str] = None
+    auth_header = request.headers.get("authorization", "")
+    if auth_header.startswith("Bearer "):
+        token = auth_header[7:]
+
+    # 如果 header 中没有，从 Cookie 中获取
+    if not token:
+        token = request.cookies.get("rmfood_access_token")
+
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="未提供认证凭据",
+        )
+
     payload = decode_token(token)
 
     if payload.type != "access":

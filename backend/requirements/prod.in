@@ -1,0 +1,17 @@
+# 生产环境依赖
+# --------------------------------------
+# 生产部署、监控、安全扫描
+
+# 包含所有基础功能依赖
+-r base.in
+-r api.in
+-r db.in
+-r ml.in
+
+# 可观测性
+opentelemetry-api==1.28.0
+opentelemetry-sdk==1.28.0
+
+# 安全扫描工具
+pip-audit==2.7.3
+bandit==1.7.10

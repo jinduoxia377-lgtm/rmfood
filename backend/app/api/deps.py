@@ -28,7 +28,7 @@ async def data_route(user: User = Depends(require_permissions(["data:read"]))):
 """
 import logging
 from typing import Annotated, Optional, List
-from fastapi import Depends, HTTPException, status, Query
+from fastapi import Depends, HTTPException, Request, status, Query
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -53,21 +53,30 @@ async def get_db_session() -> AsyncSession:
 
 
 async def get_current_user(
+    request: Request,
     credentials: Annotated[Optional[HTTPAuthorizationCredentials], Depends(security)],
     db: Annotated[AsyncSession, Depends(get_db_session)]
 ) -> Optional[User]:
     """
-    获取当前认证用户（可选认证）
+    获取当前认证用户（可选认证，支持 Authorization header 和 HttpOnly Cookie）
 
     - 如果提供了有效的Token，返回用户对象
     - 如果未提供Token或Token无效，返回None
     - 用于需要可选认证的端点（如公开API但登录后可看到更多信息）
     """
-    if credentials is None:
+    # 优先从 Authorization header 获取 token
+    token: Optional[str] = None
+    if credentials is not None:
+        token = credentials.credentials
+
+    # 如果 header 中没有，从 Cookie 中获取
+    if not token:
+        token = request.cookies.get("rmfood_access_token")
+
+    if not token:
         return None
 
     try:
-        token = credentials.credentials
         payload = decode_token(token)
 
         if not payload:

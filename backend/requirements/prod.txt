@@ -1,0 +1,35 @@
+# 生产环境依赖（包含所有依赖）
+-r base.txt
+-r api.txt
+-r db.txt
+-r ml.txt
+
+# 📦 RMFOOD 后端依赖 - 已锁定版本（P1-2 修复）
+# 此文件由 pyproject.toml 生成，作为 pip 安装的兼容格式
+# 如需更新依赖，请修改 pyproject.toml 后运行:
+#   pip-compile pyproject.toml > requirements.txt
+#   或使用: pip-audit 扫描漏洞
+
+# ── Web 框架 ──
+
+# ── ORM + 数据库 ──
+
+# ── 数据验证 ──
+
+# ── 认证 + 安全 ──
+
+# ── HTTP 客户端 ──
+
+# ── 文档导出 ──
+
+# ── 科学计算（协同作用引擎）──
+
+# ── RAG 检索增强生成 ──
+
+# ── 可观测性 ──
+opentelemetry-api==1.28.0
+opentelemetry-sdk==1.28.0
+
+# ── 安全扫描工具（可选 - CI/CD 使用）──
+# pip-audit>=2.7.0    # 依赖漏洞扫描器（PyPA官方）
+# bandit>=1.7.0        # 代码安全静态分析工具

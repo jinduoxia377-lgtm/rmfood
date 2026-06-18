@@ -646,7 +646,7 @@ class AnalyticsService:
             return 0
 
     async def _count_since(self, table: str, days: int) -> int:
-        """统计最近N天的记录数（方言无关：PostgreSQL/SQLite 均可运行）"""
+        """统计最近N天的记录数（PostgreSQL 兼容）"""
         try:
             # 使用 SQLAlchemy func.now() + timedelta 替代 NOW() - INTERVAL
             cutoff = datetime.now(timezone.utc) - timedelta(days=days)
@@ -757,7 +757,7 @@ class AnalyticsService:
             
             time_unit, interval = interval_map.get(granularity, ("day", "1 day"))
 
-            # 使用参数化查询防止SQL注入（方言无关：PostgreSQL/SQLite 均可运行）
+            # 使用参数化查询防止SQL注入（PostgreSQL 原生兼容）
             cutoff = datetime.now(timezone.utc) - timedelta(days=days)
             query = text(f"""
                 SELECT

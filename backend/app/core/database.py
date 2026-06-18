@@ -1,6 +1,8 @@
 """
-数据库基类定义
-PostgreSQL（生产）/ SQLite（开发）双数据库支持
+数据库 ORM 基类定义
+
+仅支持 PostgreSQL 数据库。使用 SQLAlchemy 2.0 声明式映射。
+命名约定遵循 PostgreSQL 最佳实践，确保索引和约束名称的一致性。
 """
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy import MetaData

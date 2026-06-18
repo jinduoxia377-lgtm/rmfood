@@ -36,25 +36,33 @@ async def get_user_from_token(token: HTTPAuthorizationCredentials = Depends(secu
 @router.websocket("/ws")
 async def websocket_endpoint(
     websocket: WebSocket,
-    token: str = Query(...),
+    token: str = Query(None),
     connection_id: str = Query(...),
     client_info: str = Query(None)
 ):
-    """WebSocket连接端点"""
+    """WebSocket连接端点（支持 URL token 和 HttpOnly Cookie 认证）"""
     await websocket.accept()
-    
+
     user_data = None
     user_id = None
-    
+
     try:
-        # 验证token
-        try:
-            payload = decode_access_token(token)
-            user_data = payload
-            user_id = payload.sub
-        except Exception as e:
-            logger.warning(f"无效的token，使用匿名连接: {e}")
-            user_data = None
+        # 验证token：优先 URL 参数，其次 Cookie
+        ws_token = token
+        if not ws_token:
+            ws_token = websocket.cookies.get("rmfood_access_token")
+
+        if ws_token:
+            try:
+                payload = decode_access_token(ws_token)
+                user_data = payload
+                user_id = payload.sub
+            except Exception as e:
+                logger.warning(f"无效的token，使用匿名连接: {e}")
+                user_data = None
+                user_id = f"anonymous_{connection_id[:8]}"
+        else:
+            logger.warning("WebSocket: 未提供认证凭据，使用匿名连接")
             user_id = f"anonymous_{connection_id[:8]}"
         
         # 解析客户端信息

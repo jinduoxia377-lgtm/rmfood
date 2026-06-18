@@ -3,6 +3,7 @@
 负责管理文档模板、Markdown转换和专业模板生成
 """
 import re
+from datetime import datetime
 from typing import Dict, List, Any, Optional, Tuple
 from app.services.file_generator import FileGeneratorService, FileFormat
 
@@ -87,14 +88,7 @@ class TemplateManager:
         return self.templates.get(template_name, self.templates['default'])
     
     def parse_markdown(self, markdown: str) -> Dict[str, Any]:
-        """解析Markdown内容
-        
-        Args:
-            markdown: Markdown文本
-            
-        Returns:
-            结构化内容字典
-        """
+        """解析Markdown内容"""
         content = {
             'title': '',
             'sections': []
@@ -137,12 +131,10 @@ class TemplateManager:
             # 代码块处理
             if line.startswith('```'):
                 if in_code_block:
-                    # 代码块结束
                     in_code_block = False
                     current_content.append(f'```\n{code_content}\n```')
                     code_content = ''
                 else:
-                    # 代码块开始
                     in_code_block = True
                     code_language = line[3:].strip()
                 continue
@@ -156,10 +148,8 @@ class TemplateManager:
                 if not current_table:
                     current_table = {'headers': [], 'data': []}
                 
-                # 解析表格行
                 cells = [cell.strip() for cell in line.split('|') if cell.strip()]
                 if any('---' in cell for cell in cells):
-                    # 表头分隔线，跳过
                     continue
                 
                 if not current_table['headers']:
@@ -174,7 +164,8 @@ class TemplateManager:
                 indent = len(list_match.group(1))
                 list_type = 'unordered' if list_match.group(2) in ['-', '*'] else 'ordered'
                 item = list_match.group(3)
-                current_content.append(f'{'  ' * (indent // 2)}{list_match.group(2)} {item}')
+                spaces = '  ' * (indent // 2)
+                current_content.append(f'{spaces}{list_match.group(2)} {item}')
                 continue
             
             # 普通段落
@@ -191,7 +182,7 @@ class TemplateManager:
                 current_section['table'] = current_table
             content['sections'].append(current_section)
         
-        # 提取标题（第一个H1）
+        # 提取标题
         for section in content['sections']:
             if section.get('level') == 1:
                 content['title'] = section['heading']
@@ -204,14 +195,12 @@ class TemplateManager:
         parsed_content = self.parse_markdown(markdown)
         template = self.get_template(template_name)
         
-        # 根据模板结构组织内容
         organized_content = {
             'title': parsed_content.get('title', '文档'),
             'sections': parsed_content.get('sections', []),
-            'footer': f'生成时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}'
+            'footer': f'生成时间: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}'
         }
         
-        # 处理专业模板的特殊结构
         if template_name == 'tcm_recipe':
             organized_content = self._organize_tcm_recipe_content(organized_content)
         
@@ -234,14 +223,12 @@ class TemplateManager:
             'references': []
         }
         
-        # 生成目录
         for section in content.get('sections', []):
             tcm_content['table_of_contents'].append({
                 'title': section.get('heading', ''),
                 'level': section.get('level', 1)
             })
         
-        # 组织内容到对应章节
         for section in content.get('sections', []):
             heading = section.get('heading', '').lower()
             if '基本信息' in heading or '配方名称' in heading:
@@ -263,36 +250,15 @@ class TemplateManager:
     
     def generate_from_markdown(self, markdown: str, format: FileFormat, 
                              filename: str, template_name: str = 'default') -> Tuple[str, str]:
-        """从Markdown生成文件
-        
-        Args:
-            markdown: Markdown文本
-            format: 文件格式
-            filename: 文件名
-            template_name: 模板名称
-            
-        Returns:
-            (文件路径, 文件名)
-        """
+        """从Markdown生成文件"""
         content = self.convert_markdown_to_content(markdown, template_name)
         return self.file_generator.generate_file(content, format, filename)
     
     def generate_from_template(self, template_name: str, data: Dict[str, Any], 
                              format: FileFormat, filename: str) -> Tuple[str, str]:
-        """从模板生成文件
-        
-        Args:
-            template_name: 模板名称
-            data: 模板数据
-            format: 文件格式
-            filename: 文件名
-            
-        Returns:
-            (文件路径, 文件名)
-        """
+        """从模板生成文件"""
         template = self.get_template(template_name)
         
-        # 根据模板结构组织内容
         if template_name == 'tcm_recipe':
             content = {
                 'cover': data.get('cover', {}),
@@ -303,24 +269,21 @@ class TemplateManager:
                 'usage': data.get('usage', []),
                 'notes': data.get('notes', []),
                 'references': data.get('references', []),
-                'footer': f'生成时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}'
+                'footer': f'生成时间: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}'
             }
         else:
             content = {
                 'title': data.get('title', '文档'),
                 'sections': data.get('sections', []),
-                'footer': f'生成时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}'
+                'footer': f'生成时间: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}'
             }
         
         return self.file_generator.generate_file(content, format, filename)
 
 
-# 导入 datetime
-from datetime import datetime
-
-
 # 创建模板管理器实例
 template_manager = None
+
 
 def get_template_manager(file_generator: FileGeneratorService) -> TemplateManager:
     """获取模板管理器实例"""

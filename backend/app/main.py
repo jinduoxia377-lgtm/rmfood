@@ -55,17 +55,51 @@ from .core.database_and_bi_engine import get_db_optimizer, get_bi_engine
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """应用生命周期：启动初始化 + 关闭清理"""
+    """
+    应用生命周期：启动初始化 + 关闭清理
+
+    启动阶段:
+    1. 验证 PostgreSQL 连接可用性
+    2. 初始化数据库表结构
+    3. 种子数据导入
+
+    关闭阶段:
+    1. 关闭数据库连接池
+    """
     # 创建模块级 logger
     logger = get_logger(__name__)
     logger.info("应用启动中...")
 
-    # 跳过大部分初始化以调试问题
-    # TODO: 逐步恢复这些初始化
+    # ── 启动阶段：验证 PostgreSQL 连接 ──
+    from .core.session import ensure_connection, init_database, close_database
+    from .core.init_db import init_db
+
+    # 1. 验证数据库连接（指数退避重试，最多5次）
+    db_connected = await ensure_connection()
+    if not db_connected:
+        logger.error(
+            "[Startup] PostgreSQL 连接验证失败！应用将以降级模式运行。"
+            "请检查数据库配置和连接状态。"
+        )
+        # 不直接退出，允许应用启动（降级模式），但数据库操作将失败
+    else:
+        logger.info("[Startup] PostgreSQL 连接验证通过")
+
+        # 2. 初始化数据库表结构 + 种子数据
+        try:
+            await init_db()
+            logger.info("[Startup] 数据库初始化完成")
+        except Exception as e:
+            logger.error(f"[Startup] 数据库初始化失败: {e}")
 
     yield
 
+    # ── 关闭阶段：释放资源 ──
     logger.info("应用关闭中...")
+    try:
+        await close_database()
+    except Exception as e:
+        logger.warning(f"[Shutdown] 数据库连接池关闭异常: {e}")
 
 
 def create_app() -> FastAPI:

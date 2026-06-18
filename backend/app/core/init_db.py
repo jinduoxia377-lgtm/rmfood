@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 async def _seed_tcmsp_herbs(session) -> int:
-    """将内存中的TCMSP药材数据导入SQLite，返回导入条数"""
+    """将内存中的TCMSP药材数据导入PostgreSQL，返回导入条数"""
     from ..models.external_data import TCMHerb
     from ..services.data_sources.tcmsp_client import TCMSP_HERB_DATABASE
 
@@ -48,7 +48,7 @@ async def _seed_tcmsp_herbs(session) -> int:
 
 
 async def _seed_dfbp_peptides(session) -> int:
-    """将内存中的DFBP活性肽数据导入SQLite，返回导入条数"""
+    """将内存中的DFBP活性肽数据导入PostgreSQL，返回导入条数"""
     from ..models.external_data import BioactivePeptide
     from ..services.data_sources.dfbp_client import DFBP_PEPTIDE_DATABASE
 

@@ -43,11 +43,16 @@ async def websocket_generic_endpoint(
     try:
         from app.utils.auth import decode_token
 
-        if not token:
+        # 支持 URL token 和 HttpOnly Cookie 认证
+        ws_token = token
+        if not ws_token:
+            ws_token = websocket.cookies.get("rmfood_access_token")
+
+        if not ws_token:
             await websocket.close(code=4001, reason="Missing authentication token")
             return
 
-        payload = decode_token(token)
+        payload = decode_token(ws_token)
 
         if not payload or payload.get("type") != "access":
             await websocket.close(code=4003, reason="Invalid or expired token")

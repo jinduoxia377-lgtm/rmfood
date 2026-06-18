@@ -80,28 +80,126 @@ class Environment(str, Enum):
 
 
 class DatabaseConfig(BaseModel):
-    """数据库配置"""
-    url: str = Field(default="", description="数据库连接 URL")
-    pool_size: int = Field(default=20, ge=1, le=100, description="连接池大小")
-    max_overflow: int = Field(default=10, ge=0, le=50, description="连接池溢出上限")
-    pool_timeout: int = Field(default=30, ge=1, description="连接获取超时（秒）")
-    pool_recycle: int = Field(default=3600, ge=0, description="连接回收周期（秒）")
-    echo: bool = Field(default=False, description="是否打印 SQL 语句")
-    echo_pool: bool = Field(default=False, description="是否打印连接池状态")
+    """
+    PostgreSQL 数据库配置
+
+    安全注意事项:
+    - 密码等敏感凭证必须通过环境变量注入，禁止硬编码
+    - 生产环境必须使用 SSL/TLS 加密连接（ssl_mode 参数）
+    - 遵循最小权限原则：数据库用户仅授予必要的 DML 权限
+    - 支持凭证轮换：修改环境变量后调用 reload_settings() 即可生效
+
+    性能优化建议:
+    - pool_size 建议设为 (CPU核心数 * 2) + 有效磁盘数
+    - max_overflow 建议设为 pool_size 的 50%
+    - pool_recycle 应小于数据库的 wait_timeout（默认 8h）
+    - 生产环境建议启用 pool_pre_ping（在 session.py 中已默认开启）
+
+    故障排除:
+    - 连接超时: 检查 DATABASE_URL、防火墙、PostgreSQL pg_hba.conf
+    - 认证失败: 确认用户名/密码正确，检查 pg_hba.conf 认证方式
+    - SSL 错误: 确认 ssl_mode 与服务器证书配置匹配
+    - 连接池耗尽: 增大 pool_size / max_overflow，排查长事务或慢查询
+    """
+
+    url: str = Field(
+        default="",
+        description=(
+            "PostgreSQL 连接 URL，格式: postgresql+asyncpg://user:password@host:port/dbname "
+            "| 必须通过环境变量 DATABASE_URL 或 POSTGRES_* 组合注入"
+        ),
+    )
+    pool_size: int = Field(
+        default=20, ge=1, le=100,
+        description="连接池常驻连接数（建议: CPU核心数*2）",
+    )
+    max_overflow: int = Field(
+        default=10, ge=0, le=50,
+        description="连接池溢出上限（超出 pool_size 的临时连接数）",
+    )
+    pool_timeout: int = Field(
+        default=30, ge=1,
+        description="获取连接超时时间（秒），超时抛出 TimeoutError",
+    )
+    pool_recycle: int = Field(
+        default=3600, ge=300,
+        description="连接回收周期（秒），防止使用过期连接",
+    )
+    echo: bool = Field(default=False, description="是否打印 SQL 语句（仅开发调试用）")
+    echo_pool: bool = Field(default=False, description="是否打印连接池状态日志")
+    ssl_mode: str = Field(
+        default="prefer",
+        description=(
+            "SSL 模式: disable | prefer | require | verify-ca | verify-full "
+            "| 生产环境建议 require 或 verify-full"
+        ),
+    )
+    statement_timeout_ms: int = Field(
+        default=30000, ge=1000,
+        description="单条 SQL 语句超时（毫秒），防止慢查询阻塞连接池",
+    )
 
     @field_validator("url", mode="before")
     @classmethod
-    def build_url_from_parts(cls, v: str, info) -> str:
-        """如果 URL 为空，从各部分构建"""
+    def validate_and_build_url(cls, v: str, info) -> str:
+        """
+        验证并构建 PostgreSQL 连接 URL
+
+        优先级:
+        1. 直接传入的 url 值（最高优先级）
+        2. DATABASE_URL 环境变量
+        3. POSTGRES_* 组合环境变量构建
+
+        安全: 拒绝任何非 PostgreSQL 的连接 URL（如 sqlite、mysql）
+        """
         if v:
+            # 拒绝非 PostgreSQL URL
+            if v.startswith("sqlite"):
+                raise ValueError(
+                    "SQLite 连接已被禁用。本项目仅支持 PostgreSQL。"
+                    "请设置 DATABASE_URL=postgresql+asyncpg://user:password@host:port/dbname"
+                )
+            if not v.startswith(("postgresql", "postgres")):
+                raise ValueError(
+                    f"不支持的数据库类型: {v.split('://')[0] if '://' in v else v}。"
+                    "本项目仅支持 PostgreSQL。"
+                )
             return v
-        # 尝试从环境变量构建
-        host = os.environ.get("POSTGRES_HOST", "localhost")
+
+        # 优先检查 DATABASE_URL 环境变量
+        db_url = os.environ.get("DATABASE_URL")
+        if db_url:
+            if db_url.startswith("sqlite"):
+                raise ValueError(
+                    "SQLite 连接已被禁用。DATABASE_URL 不能使用 sqlite:// 协议。"
+                    "请设置 DATABASE_URL=postgresql+asyncpg://user:password@host:port/dbname"
+                )
+            return db_url
+
+        # 从 POSTGRES_* 环境变量组合构建
+        host = os.environ.get("POSTGRES_HOST")
         port = os.environ.get("POSTGRES_PORT", "5432")
-        user = os.environ.get("POSTGRES_USER", "rmfood")
-        password = os.environ.get("POSTGRES_PASSWORD", "")
-        db = os.environ.get("POSTGRES_DB", "rmfood_db")
+        user = os.environ.get("POSTGRES_USER")
+        password = os.environ.get("POSTGRES_PASSWORD")
+        db = os.environ.get("POSTGRES_DB")
+
+        if not all([host, user, password, db]):
+            raise ValueError(
+                "PostgreSQL 连接配置不完整。请设置以下任一方式:\n"
+                "  方式1: DATABASE_URL=postgresql+asyncpg://user:password@host:port/dbname\n"
+                "  方式2: POSTGRES_HOST, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB"
+            )
+
         return f"postgresql+asyncpg://{user}:{password}@{host}:{port}/{db}"
+
+    @field_validator("ssl_mode", mode="after")
+    @classmethod
+    def validate_ssl_mode(cls, v: str) -> str:
+        """验证 SSL 模式值"""
+        valid_modes = {"disable", "prefer", "require", "verify-ca", "verify-full"}
+        if v not in valid_modes:
+            raise ValueError(f"无效的 ssl_mode: {v}，可选值: {valid_modes}")
+        return v
 
 
 class RedisConfig(BaseModel):
@@ -205,6 +303,11 @@ class Settings(BaseSettings):
     app_env: Environment = Field(default=Environment.DEVELOPMENT, alias="ENV")
     debug: bool = Field(default=False, alias="DEBUG")
 
+    # ─── 初始管理员账号 ───
+    admin_username: str = Field(default="admin", alias="ADMIN_USERNAME", description="初始管理员用户名")
+    admin_password: str = Field(default="admin123", alias="ADMIN_PASSWORD", description="初始管理员密码")
+    admin_email: str = Field(default="admin@rmfood.com", alias="ADMIN_EMAIL", description="初始管理员邮箱")
+
     # ─── 子配置 ───
     app: "AppInfoConfig" = Field(default_factory=lambda: AppInfoConfig())
     database: DatabaseConfig = Field(default_factory=DatabaseConfig)
@@ -232,15 +335,28 @@ class Settings(BaseSettings):
         self._apply_env_overrides()
 
     def _fix_nested_config(self) -> None:
-        """修复嵌套配置（pydantic-settings v2 的嵌套模型更新问题）"""
+        """
+        修复嵌套配置（pydantic-settings v2 的嵌套模型更新问题）
+
+        支持 DATABASE__URL（pydantic-settings v2 嵌套格式）和 DATABASE_URL（扁平格式）。
+        同时拒绝任何 SQLite URL。
+        """
         import os
-        # 直接从环境变量读取并设置嵌套配置
-        if os.environ.get("DATABASE__URL"):
-            self.database.url = os.environ["DATABASE__URL"]
+        # 数据库 URL：支持多种环境变量格式
+        db_url = os.environ.get("DATABASE__URL") or os.environ.get("DATABASE_URL")
+        if db_url:
+            if db_url.startswith("sqlite"):
+                raise ValueError(
+                    "SQLite 连接已被禁用。检测到 DATABASE_URL 使用了 sqlite:// 协议。"
+                    "请改为: DATABASE_URL=postgresql+asyncpg://user:password@host:port/dbname"
+                )
+            self.database.url = db_url
         if os.environ.get("DATABASE__POOL_SIZE"):
             self.database.pool_size = int(os.environ["DATABASE__POOL_SIZE"])
         if os.environ.get("DATABASE__MAX_OVERFLOW"):
             self.database.max_overflow = int(os.environ["DATABASE__MAX_OVERFLOW"])
+        if os.environ.get("DATABASE__SSL_MODE"):
+            self.database.ssl_mode = os.environ["DATABASE__SSL_MODE"]
 
         if os.environ.get("SECURITY__SECRET_KEY"):
             self.security.secret_key = os.environ["SECURITY__SECRET_KEY"]
@@ -252,8 +368,28 @@ class Settings(BaseSettings):
                 pass
 
     def _validate_config(self) -> None:
-        """配置校验"""
+        """
+        配置校验
+
+        检查项:
+        - 生产环境必须设置 SECRET_KEY
+        - 生产环境日志级别不能为 DEBUG
+        - 数据库 URL 必须是 PostgreSQL 协议
+        - 生产环境 SSL 模式不能为 disable
+        """
         errors = []
+
+        # 数据库 URL 协议检查
+        if self.database.url:
+            if self.database.url.startswith("sqlite"):
+                errors.append(
+                    "SQLite 连接已被禁用。请设置 DATABASE_URL 为 PostgreSQL 连接串。"
+                )
+            elif not self.database.url.startswith(("postgresql", "postgres")):
+                errors.append(
+                    f"数据库 URL 协议不支持: {self.database.url.split('://')[0]}，"
+                    "仅支持 postgresql+asyncpg://"
+                )
 
         # 生产环境检查
         if self.app_env == Environment.PRODUCTION:
@@ -262,6 +398,18 @@ class Settings(BaseSettings):
 
             if self.logging.level == "DEBUG":
                 errors.append("生产环境日志级别不能为 DEBUG")
+
+            if self.database.ssl_mode == "disable":
+                errors.append(
+                    "生产环境数据库 SSL 模式不能为 disable，"
+                    "建议使用 require 或 verify-full"
+                )
+
+            if self.admin_password == "admin123":
+                errors.append(
+                    "生产环境管理员密码不能使用默认值 admin123，"
+                    "请设置 ADMIN_PASSWORD 环境变量"
+                )
 
         if errors:
             error_msg = "\n".join(f"  - {e}" for e in errors)
@@ -331,14 +479,38 @@ class Settings(BaseSettings):
 
     @property
     def database_host(self) -> str:
+        """从连接 URL 中解析主机地址"""
+        try:
+            url = self.database.url
+            if "@" in url:
+                host_part = url.split("@")[1].split("/")[0]
+                return host_part.split(":")[0]
+        except (IndexError, ValueError):
+            pass
         return "localhost"
 
     @property
     def database_port(self) -> int:
+        """从连接 URL 中解析端口号"""
+        try:
+            url = self.database.url
+            if "@" in url:
+                host_part = url.split("@")[1].split("/")[0]
+                if ":" in host_part:
+                    return int(host_part.split(":")[1])
+        except (IndexError, ValueError):
+            pass
         return 5432
 
     @property
     def database_name(self) -> str:
+        """从连接 URL 中解析数据库名"""
+        try:
+            url = self.database.url
+            if "/" in url:
+                return url.split("/")[-1].split("?")[0]
+        except (IndexError, ValueError):
+            pass
         return "rmfood"
 
     @property

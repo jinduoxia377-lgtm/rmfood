@@ -25,8 +25,12 @@ class Notification(Base):
     type: Mapped[NotificationType] = mapped_column(
         Enum(NotificationType), default=NotificationType.SYSTEM, nullable=False
     )
+    status: Mapped[NotificationStatus] = mapped_column(
+        Enum(NotificationStatus), default=NotificationStatus.UNREAD, nullable=False
+    )
     title: Mapped[str] = mapped_column(String(200), nullable=False)
     content: Mapped[str | None] = mapped_column(Text)
+    link: Mapped[str | None] = mapped_column(String(500))
     metadata_: Mapped[dict | None] = mapped_column("metadata", JSON, default=dict)
     is_read: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     read_at: Mapped[datetime | None] = mapped_column(DateTime)

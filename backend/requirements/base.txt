@@ -1,0 +1,34 @@
+# 📦 RMFOOD 后端依赖 - 已锁定版本（P1-2 修复）
+# 此文件由 pyproject.toml 生成，作为 pip 安装的兼容格式
+# 如需更新依赖，请修改 pyproject.toml 后运行:
+#   pip-compile pyproject.toml > requirements.txt
+#   或使用: pip-audit 扫描漏洞
+
+# ── Web 框架 ──
+fastapi==0.115.0
+uvicorn[standard]==0.30.0
+
+# ── ORM + 数据库 ──
+
+# ── 数据验证 ──
+pydantic==2.9.0
+pydantic-settings==2.5.0
+jsonschema==4.23.0
+
+# ── 认证 + 安全 ──
+python-multipart==0.0.9
+
+# ── HTTP 客户端 ──
+httpx==0.27.2
+
+# ── 文档导出 ──
+
+# ── 科学计算（协同作用引擎）──
+
+# ── RAG 检索增强生成 ──
+
+# ── 可观测性 ──
+
+# ── 安全扫描工具（可选 - CI/CD 使用）──
+# pip-audit>=2.7.0    # 依赖漏洞扫描器（PyPA官方）
+# bandit>=1.7.0        # 代码安全静态分析工具

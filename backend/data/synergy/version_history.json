@@ -191,6 +191,22 @@
       "changes_count": 1,
       "description": "导入 1 个新系数，更新 0 个现有系数",
       "checksum": "cb2c0c0773f8"
+    },
+    {
+      "version": 25,
+      "timestamp": "2026-06-16 10:00:48.023351",
+      "source": "unit_test",
+      "changes_count": 1,
+      "description": "导入 0 个新系数，更新 1 个现有系数",
+      "checksum": "2b6096cbb433"
+    },
+    {
+      "version": 26,
+      "timestamp": "2026-06-16 10:00:48.037547",
+      "source": "version_test",
+      "changes_count": 1,
+      "description": "导入 0 个新系数，更新 1 个现有系数",
+      "checksum": "91eefc9a0287"
     }
   ]
 }

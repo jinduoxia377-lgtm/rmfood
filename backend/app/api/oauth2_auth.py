@@ -225,7 +225,7 @@ async def login(
         access_token=access_token,
         refresh_token=refresh_token,
         token_type="bearer",
-        expires_in=settings.access_token_expire_minutes * 60,
+        expires_in=settings.security.jwt_expire_minutes * 60,
     )
 
 
@@ -295,7 +295,7 @@ async def refresh_token(
             access_token=new_access_token,
             refresh_token=new_refresh_token,
             token_type="bearer",
-            expires_in=settings.access_token_expire_minutes * 60,
+            expires_in=settings.security.jwt_expire_minutes * 60,
         )
 
     except HTTPException:

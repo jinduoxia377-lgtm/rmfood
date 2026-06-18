@@ -1,0 +1,11 @@
+# Web API相关依赖
+# --------------------------------------
+# API开发、文档、路由等
+
+# 包含基础依赖
+-r base.in
+
+# 认证和安全
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+bcrypt==4.2.0

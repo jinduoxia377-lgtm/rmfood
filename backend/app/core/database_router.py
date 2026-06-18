@@ -220,7 +220,7 @@ async def get_replication_lag() -> dict:
                     if row:
                         replica_ts = row[0]
             except Exception:
-                # 不支持 pg_last_xact_replay_timestamp()（如 SQLite）
+                # pg_last_xact_replay_timestamp() 不可用（如权限不足）
                 result = await conn.execute(text("SELECT NOW()"))
                 row = result.fetchone()
                 if row:

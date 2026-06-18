@@ -690,6 +690,7 @@ class NotificationService:
                 )
                 .values(
                     status=NotificationStatus.READ,
+                    is_read=True,
                     read_at=datetime.now(timezone.utc)
                 )
             )
@@ -717,6 +718,7 @@ class NotificationService:
                 )
                 .values(
                     status=NotificationStatus.READ,
+                    is_read=True,
                     read_at=datetime.now(timezone.utc)
                 )
             )

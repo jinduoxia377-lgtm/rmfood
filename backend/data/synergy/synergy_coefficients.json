@@ -1,5 +1,5 @@
 {
-  "current_version": 24,
+  "current_version": 26,
   "coefficients": [
     {
       "ingredient_a": "黄芪",
@@ -32,9 +32,9 @@
       "coefficient": 0.75,
       "source": "unit_test",
       "confidence": 0.9,
-      "version": 22,
+      "version": 25,
       "created_at": "2026-05-03 19:41:46.838011",
-      "updated_at": "2026-05-14 16:43:12.319694",
+      "updated_at": "2026-06-16 10:00:48.023351",
       "notes": ""
     },
     {
@@ -44,9 +44,9 @@
       "coefficient": 0.6,
       "source": "version_test",
       "confidence": 0.85,
-      "version": 23,
+      "version": 26,
       "created_at": "2026-05-03 20:03:37.976505",
-      "updated_at": "2026-05-14 16:43:12.332661",
+      "updated_at": "2026-06-16 10:00:48.037547",
       "notes": ""
     },
     {
@@ -62,5 +62,5 @@
       "notes": ""
     }
   ],
-  "updated_at": "2026-06-11T09:08:54.013052"
+  "updated_at": "2026-06-16T10:00:48.037707"
 }

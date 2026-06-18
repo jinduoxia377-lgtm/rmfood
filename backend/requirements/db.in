@@ -1,0 +1,16 @@
+# 数据库相关依赖
+# --------------------------------------
+# ORM、迁移、数据库驱动
+
+# 包含基础依赖
+-r base.in
+
+# SQLAlchemy ORM
+sqlalchemy[asyncio]==2.0.35
+
+# 数据库驱动
+aiosqlite==0.20.0
+asyncpg==0.29.0
+
+# 数据库迁移
+alembic==1.13.2
