@@ -18,8 +18,8 @@ from typing import Any, Dict, List, Optional
 logger = logging.getLogger(__name__)
 
 
-from ..api.deps import get_db_session, get_current_user
-from ...core.multi_tenant_service import (
+from .deps import get_db_session, get_current_user
+from ..core.multi_tenant_service import (
     OrganizationService,
     OrganizationRole,
     OrganizationPlan,
@@ -291,7 +291,7 @@ async def invite_member(
             team_ids=request.team_ids,
         )
 
-        from ...core.notification_center import notify_mention
+        from ..core.notification_center import notify_mention
         
         await notify_mention(
             db=db,

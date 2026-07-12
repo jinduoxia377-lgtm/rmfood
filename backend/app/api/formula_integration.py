@@ -9,6 +9,7 @@
 """
 
 from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect, Query, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel, Field
 from typing import List, Dict, Optional, Any
 from datetime import datetime
@@ -16,7 +17,7 @@ import asyncio
 import json
 import logging
 
-from ..api.deps import get_current_active_user, CurrentUser, require_role
+from .deps import get_db_session, get_current_active_user, CurrentUser, require_role
 from ..models.enums import UserRole
 
 logger = logging.getLogger(__name__)
