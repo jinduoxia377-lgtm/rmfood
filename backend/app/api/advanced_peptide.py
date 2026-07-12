@@ -168,14 +168,11 @@ async def deep_analysis(
         try:
             result = await analyzer.analyze_peptide_deeply(req.sequence)
         except ValueError as ve:
-            logger.warning(f"序列验证失败: {ve}")
-            raise HTTPException(status_code=422, detail=str(ve))
+            logger.warning("序列验证失败: %s", ve)
+            raise HTTPException(status_code=422, detail="参数无效")
         except Exception as analysis_error:
-            logger.error(f"分析引擎异常: {analysis_error}", exc_info=True)
-            raise HTTPException(
-                status_code=500,
-                detail=f"分析引擎异常: {str(analysis_error)}"
-            )
+            logger.error("分析引擎异常: %s", analysis_error, exc_info=True)
+            raise HTTPException(status_code=500, detail="分析引擎异常")
 
         logger.info(f"深度分析成功 - 序列: {req.sequence}, 综合得分: {result.overall_scores.get('composite', 'N/A')}")
 
@@ -198,8 +195,8 @@ async def deep_analysis(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"深度分析API异常: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"服务器内部错误: {str(e)}")
+        logger.error("深度分析API异常: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="服务器内部错误，请稍后重试")
 
 
 @router.post("/analyze/batch", summary="批量深度分析")
@@ -252,8 +249,8 @@ async def batch_analysis(
 
         except Exception as e:
             _task_store[task_id]["status"] = "failed"
-            _task_store[task_id]["error"] = str(e)
-            logger.error(f"批量分析失败: {e}", exc_info=True)
+            _task_store[task_id]["error"] = "分析任务失败"
+            logger.error("批量分析失败: %s", e, exc_info=True)
 
     asyncio.create_task(run_batch())
 
@@ -314,8 +311,8 @@ async def pareto_optimization(
         }
 
     except Exception as e:
-        logger.error(f"Pareto 优化失败: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("Pareto 优化失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="服务器内部错误，请稍后重试")
 
 
 @router.post("/optimize/custom", summary="自定义评分函数优化")
@@ -357,10 +354,10 @@ async def custom_optimization(
         }
 
     except ValueError as e:
-        raise HTTPException(status_code=422, detail=str(e))
+        raise HTTPException(status_code=422, detail="参数无效")
     except Exception as e:
-        logger.error(f"自定义优化失败: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("自定义优化失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="服务器内部错误，请稍后重试")
 
 
 @router.post("/analyze/synergy", summary="肽-药材协同效应分析")
@@ -395,8 +392,8 @@ async def synergy_analysis(
         }
 
     except Exception as e:
-        logger.error(f"协同分析失败: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("协同分析失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="服务器内部错误，请稍后重试")
 
 
 @router.post("/predict/solubility", summary="pH-温度依赖的溶解度预测")
@@ -437,8 +434,8 @@ async def solubility_prediction(
         }
 
     except Exception as e:
-        logger.error(f"溶解度预测失败: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("溶解度预测失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="服务器内部错误，请稍后重试")
 
 
 @router.post("/generate/variants", summary="生成结构变体库")
@@ -493,10 +490,10 @@ async def generate_variants(
         }
 
     except ValueError as e:
-        raise HTTPException(status_code=422, detail=str(e))
+        raise HTTPException(status_code=422, detail="参数无效")
     except Exception as e:
-        logger.error(f"变体生成失败: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("变体生成失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="服务器内部错误，请稍后重试")
 
 
 @router.get("/tasks/{task_id}", summary="查询异步任务状态")

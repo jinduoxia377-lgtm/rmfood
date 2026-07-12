@@ -16,6 +16,9 @@ import asyncio
 import json
 import logging
 
+from ..api.deps import get_current_active_user, CurrentUser, require_role
+from ..models.enums import UserRole
+
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/formula", tags=["配方深度集成"])
@@ -131,7 +134,7 @@ class SafetyCheckResponse(BaseModel):
 class DeepGenerationRequest(BaseModel):
     """增强配方生成请求"""
     ingredients: List[Dict[str, Any]]
-    mode: str = Field(default="deep_integration", regex="^(standard|deep_integration)$")
+    mode: str = Field(default="deep_integration", pattern="^(standard|deep_integration)$")
     target_efficacy: float = Field(default=0.75, ge=0, le=1)
     safety_priority: bool = True
     cost_constraint: Optional[float] = None
@@ -194,7 +197,10 @@ manager = ConnectionManager()
 # ==================== API 端点实现 ====================
 
 @router.post("/synergy/analyze", response_model=SynergyAnalysisResponse, summary="分析成分协同效应")
-async def analyze_synergy(request: SynergyAnalysisRequest):
+async def analyze_synergy(
+    request: SynergyAnalysisRequest,
+    db: AsyncSession = Depends(get_db_session),
+):
     """
     分析两个成分之间的协同作用机制
     
@@ -225,14 +231,17 @@ async def analyze_synergy(request: SynergyAnalysisRequest):
         )
         
     except ImportError as e:
-        raise HTTPException(status_code=503, detail=f"SynergyEngine 模块不可用: {str(e)}")
+        raise HTTPException(status_code=503, detail="协同分析模块不可用")
     except Exception as e:
-        logger.error(f"协同分析失败: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("协同分析失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="服务器内部错误，请稍后重试")
 
 
 @router.post("/ratio/optimize", response_model=RatioOptimizationResponse, summary="多目标配比优化")
-async def optimize_ratio(request: RatioOptimizationRequest):
+async def optimize_ratio(
+    request: RatioOptimizationRequest,
+    db: AsyncSession = Depends(get_db_session),
+):
     """
     使用 NSGA-III 多目标遗传算法优化配方比例
     
@@ -290,14 +299,17 @@ async def optimize_ratio(request: RatioOptimizationRequest):
         )
         
     except ImportError as e:
-        raise HTTPException(status_code=503, detail=f"RatioOptimizer 模块不可用: {str(e)}")
+        raise HTTPException(status_code=503, detail="配比优化模块不可用")
     except Exception as e:
-        logger.error(f"配比优化失败: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("配比优化失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="服务器内部错误，请稍后重试")
 
 
 @router.post("/compatibility/check", response_model=CompatibilityCheckResponse, summary="检查配方兼容性")
-async def check_compatibility(request: CompatibilityCheckRequest):
+async def check_compatibility(
+    request: CompatibilityCheckRequest,
+    db: AsyncSession = Depends(get_db_session),
+):
     """
     执行 4 层架构的配方兼容性检测
     
@@ -345,14 +357,17 @@ async def check_compatibility(request: CompatibilityCheckRequest):
         )
         
     except ImportError as e:
-        raise HTTPException(status_code=503, detail=f"CompatibilityChecker 模块不可用: {str(e)}")
+        raise HTTPException(status_code=503, detail="兼容性检测模块不可用")
     except Exception as e:
-        logger.error(f"兼容性检测失败: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("兼容性检测失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="服务器内部错误，请稍后重试")
 
 
 @router.post("/effect/predict", response_model=EffectPredictionResponse, summary="预测配方效果")
-async def predict_effect(request: EffectPredictionRequest):
+async def predict_effect(
+    request: EffectPredictionRequest,
+    db: AsyncSession = Depends(get_db_session),
+):
     """
     基于 PopPK/PD 模型预测配方的时效曲线和效应曲线
     
@@ -390,14 +405,17 @@ async def predict_effect(request: EffectPredictionRequest):
         )
         
     except ImportError as e:
-        raise HTTPException(status_code=503, detail=f"EffectSimulator 模块不可用: {str(e)}")
+        raise HTTPException(status_code=503, detail="效果预测模块不可用")
     except Exception as e:
-        logger.error(f"效果预测失败: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("效果预测失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="服务器内部错误，请稍后重试")
 
 
 @router.post("/safety/check", response_model=SafetyCheckResponse, summary="检查配方安全性")
-async def check_safety(request: SafetyCheckRequest):
+async def check_safety(
+    request: SafetyCheckRequest,
+    db: AsyncSession = Depends(get_db_session),
+):
     """
     三级安全阈值预警系统
     
@@ -446,14 +464,17 @@ async def check_safety(request: SafetyCheckRequest):
         )
         
     except ImportError as e:
-        raise HTTPException(status_code=503, detail=f"SafetyAlertSystem 模块不可用: {str(e)}")
+        raise HTTPException(status_code=503, detail="安全检查模块不可用")
     except Exception as e:
-        logger.error(f"安全检查失败: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("安全检查失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="服务器内部错误，请稍后重试")
 
 
 @router.post("/deep-generation", response_model=DeepGenerationResponse, summary="增强配方生成 (完整管线)")
-async def deep_generation(request: DeepGenerationRequest):
+async def deep_generation(
+    request: DeepGenerationRequest,
+    db: AsyncSession = Depends(get_db_session),
+):
     """
     执行完整的增强配方生成管线
     
@@ -521,10 +542,10 @@ async def deep_generation(request: DeepGenerationRequest):
         )
         
     except ImportError as e:
-        raise HTTPException(status_code=503, detail=f"FormulaIntegrationService 模块不可用: {str(e)}")
+        raise HTTPException(status_code=503, detail="配方集成服务模块不可用")
     except Exception as e:
-        logger.error(f"增强配方生成失败: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("增强配方生成失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="服务器内部错误，请稍后重试")
 
 
 @router.get("/safety-thresholds", summary="查询安全阈值配置")
@@ -549,31 +570,28 @@ async def get_safety_thresholds():
         }
         
     except ImportError as e:
-        raise HTTPException(status_code=503, detail=f"SafetyAlertSystem 模块不可用: {str(e)}")
+        raise HTTPException(status_code=503, detail="安全检查模块不可用")
     except Exception as e:
-        logger.error(f"查询安全阈值失败: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("查询安全阈值失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="服务器内部错误，请稍后重试")
 
 
 @router.put("/safety-thresholds/{ingredient_name}", summary="更新安全阈值 (管理员)")
 async def update_safety_threshold(
     ingredient_name: str,
     updates: Dict[str, Any],
-    current_user: Depends(...) = None  # TODO: 实际权限验证
+    current_user: CurrentUser = Depends(require_role(UserRole.ADMIN))
 ):
     """
     更新指定成分的安全阈值 (仅管理员可调用)
-    
+
     权限要求: admin 角色
-    
+
     操作日志:
     - 记录变更前后值
     - 记录操作人和时间戳
     - 更新后立即生效
     """
-    # TODO: 实现 RBAC 权限验证
-    # if not current_user or current_user.role != UserRole.ADMIN:
-    #     raise HTTPException(status_code=403, detail="仅管理员可执行此操作")
     
     try:
         from ..services.formula.safety_alert_system import SafetyAlertSystem
@@ -590,10 +608,10 @@ async def update_safety_threshold(
         }
         
     except ImportError as e:
-        raise HTTPException(status_code=503, detail=f"SafetyAlertSystem 模块不可用: {str(e)}")
+        raise HTTPException(status_code=503, detail="安全检查模块不可用")
     except Exception as e:
-        logger.error(f"更新安全阈值失败: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("更新安全阈值失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="服务器内部错误，请稍后重试")
 
 
 # ==================== WebSocket 端点 ====================
@@ -716,8 +734,8 @@ async def health_check():
             modules_status[class_name] = "available"
         except ImportError:
             modules_status[class_name] = "unavailable"
-        except Exception as e:
-            modules_status[class_name] = f"error: {str(e)}"
+        except Exception:
+            modules_status[class_name] = "error"
     
     all_available = all(s == "available" for s in modules_status.values())
     

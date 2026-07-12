@@ -39,6 +39,7 @@ import type {
   FormulaVersion,
   VersionDiffResult,
   FormulaStatistics,
+  IngredientConfig,
 } from '@/types/formula'
 
 import type { Formula } from '@/types/index'
@@ -77,15 +78,10 @@ export async function optimizeRatio(
 
 // 快速优化（使用默认参数）
 export async function quickOptimizeRatio(
-  ingredients: {
-    name: string
-    min_ratio?: number
-    max_ratio?: number
-    cost_per_gram?: number
-  }[],
+  ingredients: Omit<IngredientConfig, 'efficacy_base' | 'safety_score' | 'stability_score'>[],
 ): Promise<RatioOptimizationResponse> {
   return optimizeRatio({
-    ingredients: ingredients as any,
+    ingredients,
     population_size: 80,
     max_generations: 40,
   })

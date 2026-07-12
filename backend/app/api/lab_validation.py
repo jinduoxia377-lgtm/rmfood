@@ -352,10 +352,16 @@ async def get_experiment_detail(
     }
 
 
+class ExperimentReviewRequest(BaseModel):
+    """实验审核请求"""
+    qc_passed: bool = False
+    notes: str = ""
+
+
 @router.put("/experiments/{experiment_id}/review", summary="审核实验数据 (管理员)")
 async def review_experiment(
     experiment_id: str,
-    review_data: dict,
+    review_data: ExperimentReviewRequest,
     current_user: CurrentUser = Depends(require_role(UserRole.ADMIN, UserRole.REVIEWER))
 ):
     """
@@ -368,9 +374,9 @@ async def review_experiment(
     record = await LabValidationData.get_or_none(experiment_id=experiment_id)
     if not record:
         raise HTTPException(status_code=404, detail="实验不存在")
-    
-    qc_passed = review_data.get("qc_passed", False)
-    notes = review_data.get("notes", "")
+
+    qc_passed = review_data.qc_passed
+    notes = review_data.notes
     
     record.qc_passed = qc_passed
     record.reviewer_id = current_user.id if current_user else None

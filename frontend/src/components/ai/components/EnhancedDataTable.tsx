@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback } from 'react'
 import { useReactTable, getCoreRowModel, getSortedRowModel, getFilteredRowModel, getPaginationRowModel, flexRender } from '@tanstack/react-table'
 import type { ColumnDef, SortingState } from '@tanstack/react-table'
-import type { EnhancedIngredient } from '@/types/ai.types'
+import type { EnhancedIngredient, EfficacyTag, Precaution } from '@/types/ai.types'
 import { ExportFormat } from '@/types/ai.types'
 
 import {
@@ -40,9 +40,9 @@ const PAGE_SIZE_OPTIONS = [10, 20, 50, 100]
 function DefaultEmptyState() {
   return (
     <div className="flex flex-col items-center justify-center py-16 px-4">
-      <AlertCircle className="w-12 h-12 text-gray-300 dark:text-gray-600 mb-4" />
-      <p className="text-gray-500 dark:text-gray-400 text-base font-medium">暂无数据</p>
-      <p className="text-gray-400 dark:text-gray-500 text-sm mt-2">当前表格没有可显示的数据</p>
+      <AlertCircle className="w-12 h-12 text-neutral-300 dark:text-neutral-600 mb-4" />
+      <p className="text-neutral-500 dark:text-neutral-400 text-base font-medium">暂无数据</p>
+      <p className="text-neutral-400 dark:text-neutral-500 text-sm mt-2">当前表格没有可显示的数据</p>
     </div>
   )
 }
@@ -51,14 +51,14 @@ function TableSkeleton({ rows = 10 }: { rows?: number }) {
   return (
     <tbody>
       {Array.from({ length: rows }).map((_, i) => (
-        <tr key={i} className="border-b border-gray-100 dark:border-gray-700/50 animate-pulse">
-          <td className="px-4 py-3"><div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-8" /></td>
-          <td className="px-4 py-3"><div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24 mb-1" /><div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-16" /></td>
-          <td className="px-4 py-3"><div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-20" /></td>
-          <td className="px-4 py-3"><div className="flex gap-1"><div className="h-5 bg-gray-200 dark:bg-gray-700 rounded-full w-14" /><div className="h-5 bg-gray-200 dark:bg-gray-700 rounded-full w-16" /></div></td>
-          <td className="px-4 py-3"><div className="h-5 bg-gray-200 dark:bg-gray-700 rounded-full w-20" /></td>
-          <td className="px-4 py-3"><div className="h-5 bg-gray-200 dark:bg-gray-700 rounded-full w-16" /></td>
-          <td className="px-4 py-3"><div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-8" /></td>
+        <tr key={i} className="border-b border-neutral-100 dark:border-neutral-700/50 animate-pulse">
+          <td className="px-4 py-3"><div className="h-4 bg-neutral-200 dark:bg-neutral-700 rounded w-8" /></td>
+          <td className="px-4 py-3"><div className="h-4 bg-neutral-200 dark:bg-neutral-700 rounded w-24 mb-1" /><div className="h-3 bg-neutral-200 dark:bg-neutral-700 rounded w-16" /></td>
+          <td className="px-4 py-3"><div className="h-5 bg-neutral-200 dark:bg-neutral-700 rounded w-20" /></td>
+          <td className="px-4 py-3"><div className="flex gap-1"><div className="h-5 bg-neutral-200 dark:bg-neutral-700 rounded-full w-14" /><div className="h-5 bg-neutral-200 dark:bg-neutral-700 rounded-full w-16" /></div></td>
+          <td className="px-4 py-3"><div className="h-5 bg-neutral-200 dark:bg-neutral-700 rounded-full w-20" /></td>
+          <td className="px-4 py-3"><div className="h-5 bg-neutral-200 dark:bg-neutral-700 rounded-full w-16" /></td>
+          <td className="px-4 py-3"><div className="h-4 bg-neutral-200 dark:bg-neutral-700 rounded w-8" /></td>
         </tr>
       ))}
     </tbody>
@@ -86,7 +86,7 @@ export function EnhancedDataTable({
         accessorFn: (_row, index) => index + 1 + pagination.pageIndex * pagination.pageSize,
         id: 'index',
         header: '序号',
-        cell: (info) => <span className="text-gray-500 dark:text-gray-400 text-sm">{String(info.getValue())}</span>,
+        cell: (info) => <span className="text-neutral-500 dark:text-neutral-400 text-sm">{String(info.getValue())}</span>,
         size: 60,
       },
       {
@@ -99,9 +99,9 @@ export function EnhancedDataTable({
         ),
         cell: (info) => (
           <div className="flex flex-col">
-            <span className="font-medium text-gray-900 dark:text-gray-100 text-sm">{String(info.getValue())}</span>
+            <span className="font-medium text-neutral-900 dark:text-neutral-100 text-sm">{String(info.getValue())}</span>
             {info.row.original.latinName && (
-              <span className="text-xs text-gray-500 dark:text-gray-400 italic">{info.row.original.latinName}</span>
+              <span className="text-xs text-neutral-500 dark:text-neutral-400 italic">{info.row.original.latinName}</span>
             )}
           </div>
         ),
@@ -119,7 +119,7 @@ export function EnhancedDataTable({
           const ingredient = info.row.original
           return (
             <div className="flex flex-col gap-1">
-              <span className="font-mono text-sm text-gray-700 dark:text-gray-300">
+              <span className="font-mono text-sm text-neutral-700 dark:text-neutral-300">
                 {ingredient.amount}{ingredient.unit}
               </span>
               {typeof ingredient.percentage === 'number' && ingredient.percentage > 0 && (
@@ -135,8 +135,8 @@ export function EnhancedDataTable({
         id: 'efficacyTags',
         header: '功效标签',
         cell: (info) => {
-          const tags = info.getValue() as any[]
-          if (!tags || tags.length === 0) return <span className="text-xs text-gray-400">—</span>
+          const tags = info.getValue() as EfficacyTag[]
+          if (!tags || tags.length === 0) return <span className="text-xs text-neutral-400">—</span>
           return (
             <EfficacyTagList tags={tags} maxVisible={3} size="small" />
           )
@@ -148,8 +148,8 @@ export function EnhancedDataTable({
         id: 'precautions',
         header: '注意事项',
         cell: (info) => {
-          const precautions = info.getValue() as any[]
-          if (!precautions || precautions.length === 0) return <span className="text-xs text-gray-300">—</span>
+          const precautions = info.getValue() as Precaution[]
+          if (!precautions || precautions.length === 0) return <span className="text-xs text-neutral-300">—</span>
           return <PrecautionBadge precautions={precautions} size="sm" />
         },
         size: 100,
@@ -166,9 +166,9 @@ export function EnhancedDataTable({
         cell: (info) => {
           const source = info.getValue() as string
           const sourceConfig: Record<string, { label: string; color: string; bgColor: string }> = {
-            TCM: { label: '药食同源', color: 'text-green-700 dark:text-green-400', bgColor: 'bg-green-50 dark:bg-green-900/20' },
-            PEPTIDE: { label: '食源性多肽', color: 'text-blue-700 dark:text-blue-400', bgColor: 'bg-blue-50 dark:bg-blue-900/20' },
-            EXCIPIENT: { label: '辅料', color: 'text-gray-700 dark:text-gray-400', bgColor: 'bg-gray-50 dark:bg-gray-800/50' },
+            TCM: { label: '药食同源', color: 'text-success-700 dark:text-success-400', bgColor: 'bg-success-50 dark:bg-success-900/20' },
+            PEPTIDE: { label: '食源性多肽', color: 'text-secondary-700 dark:text-secondary-400', bgColor: 'bg-secondary-50 dark:bg-secondary-900/20' },
+            EXCIPIENT: { label: '辅料', color: 'text-neutral-700 dark:text-neutral-400', bgColor: 'bg-slate-50 dark:bg-neutral-800/50' },
           }
           const config = sourceConfig[source] ?? sourceConfig.TCM
           if (!config) return null
@@ -185,10 +185,10 @@ export function EnhancedDataTable({
         header: '',
         cell: () => (
           <button
-            className="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            className="p-1.5 rounded hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
             title="查看详情"
           >
-            <Table className="w-4 h-4 text-gray-400" />
+            <Table className="w-4 h-4 text-neutral-400" />
           </button>
         ),
         size: 60,
@@ -244,53 +244,53 @@ export function EnhancedDataTable({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>
       <div
-        className="w-full max-w-7xl max-h-[90vh] bg-white dark:bg-gray-900 rounded-xl shadow-2xl overflow-hidden flex flex-col"
+        className="w-full max-w-7xl max-h-[90vh] bg-white dark:bg-neutral-900 rounded-xl shadow-2xl overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-200 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-800/50">
           <div className="flex items-center gap-3">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{title}</h2>
-            <span className="text-sm text-gray-500 dark:text-gray-400">
-              共 <strong className="text-gray-700 dark:text-gray-300">{table.getFilteredRowModel().rows.length}</strong> 条记录
+            <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">{title}</h2>
+            <span className="text-sm text-neutral-500 dark:text-neutral-400">
+              共 <strong className="text-neutral-700 dark:text-neutral-300">{table.getFilteredRowModel().rows.length}</strong> 条记录
             </span>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+            className="p-2 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
             aria-label="关闭"
           >
-            <X className="w-5 h-5 text-gray-500" />
+            <X className="w-5 h-5 text-neutral-500" />
           </button>
         </div>
 
         {/* Toolbar */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 px-6 py-3 border-b border-gray-100 dark:border-gray-800">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 px-6 py-3 border-b border-neutral-100 dark:border-neutral-800">
           <div className="relative flex-1 max-w-sm w-full">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
             <input
               type="search"
               value={globalFilter}
               onChange={(e) => setGlobalFilter(e.target.value)}
               placeholder="搜索成分名称..."
-              className="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 transition-all"
+              className="w-full pl-9 pr-4 py-2 text-sm border border-neutral-200 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 placeholder-slate-400 focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 transition-all"
             />
           </div>
 
           <div className="flex items-center gap-2">
             {/* Export Dropdown */}
             <div className="relative group">
-              <button className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+              <button className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-600 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-700 transition-colors">
                 <Download className="w-4 h-4" />
                 导出
                 <ChevronDown className="w-3 h-3" />
               </button>
-              <div className="absolute right-0 mt-1 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
+              <div className="absolute right-0 mt-1 w-40 bg-white dark:bg-neutral-800 rounded-lg shadow-lg border border-neutral-200 dark:border-neutral-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
                 {[ExportFormat.CSV, ExportFormat.EXCEL, ExportFormat.JSON].map((format) => (
                   <button
                     key={format}
                     onClick={() => handleExport(format)}
-                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 first:rounded-t-lg last:rounded-b-lg capitalize"
+                    className="block w-full text-left px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 first:rounded-t-lg last:rounded-b-lg capitalize"
                   >
                     导出为 {format.toLowerCase()}
                   </button>
@@ -303,13 +303,13 @@ export function EnhancedDataTable({
         {/* Table Container */}
         <div className="flex-1 overflow-auto">
           <table className="w-full min-w-[900px]" role="table">
-            <thead className="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
+            <thead className="bg-slate-50 dark:bg-neutral-800/50 border-b border-neutral-200 dark:border-neutral-700 sticky top-0 z-10">
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id}>
                   {headerGroup.headers.map((header) => (
                     <th
                       key={header.id}
-                      className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                      className="px-4 py-3 text-left text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider"
                       style={{ width: header.getSize() !== 150 ? header.getSize() : undefined }}
                     >
                       {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
@@ -330,11 +330,11 @@ export function EnhancedDataTable({
                 </tr>
               </tbody>
             ) : (
-              <tbody className="divide-y divide-gray-100 dark:divide-gray-700/50">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
                 {table.getRowModel().rows.map((row) => (
                   <tr
                     key={row.id}
-                    className="group hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-colors"
+                    className="group hover:bg-secondary-50/50 dark:hover:bg-secondary-900/10 transition-colors"
                   >
                     {row.getVisibleCells().map((cell) => (
                       <td key={cell.id} className="px-4 py-3">
@@ -349,21 +349,21 @@ export function EnhancedDataTable({
         </div>
 
         {/* Pagination */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-6 py-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/30">
-          <div className="text-sm text-gray-500 dark:text-gray-400 order-2 sm:order-1">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-6 py-3 border-t border-neutral-200 dark:border-neutral-700 bg-slate-50/50 dark:bg-neutral-800/30">
+          <div className="text-sm text-neutral-500 dark:text-neutral-400 order-2 sm:order-1">
             显示{' '}
-            <strong className="text-gray-700 dark:text-gray-300">
+            <strong className="text-neutral-700 dark:text-neutral-300">
               {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1}
             </strong>
             {' '}—{' '}
-            <strong className="text-gray-700 dark:text-gray-300">
+            <strong className="text-neutral-700 dark:text-neutral-300">
               {Math.min(
                 (table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize,
                 table.getFilteredRowModel().rows.length,
               )}
             </strong>
             {' '}条，共{' '}
-            <strong className="text-gray-700 dark:text-gray-300">{table.getFilteredRowModel().rows.length}</strong>{' '}
+            <strong className="text-neutral-700 dark:text-neutral-300">{table.getFilteredRowModel().rows.length}</strong>{' '}
             条
           </div>
 
@@ -371,7 +371,7 @@ export function EnhancedDataTable({
             <select
               value={table.getState().pagination.pageSize}
               onChange={(e) => table.setPageSize(Number(e.target.value))}
-              className="px-2 py-1 text-sm border border-gray-200 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+              className="px-2 py-1 text-sm border border-neutral-200 dark:border-neutral-600 rounded bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100"
             >
               {PAGE_SIZE_OPTIONS.map((size) => (
                 <option key={size} value={size}>{size} 条/页</option>
@@ -382,7 +382,7 @@ export function EnhancedDataTable({
               <button
                 onClick={() => table.setPageIndex(0)}
                 disabled={!table.getCanPreviousPage()}
-                className="p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="p-1.5 rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 aria-label="首页"
               >
                 <ChevronsLeft className="w-4 h-4" />
@@ -390,7 +390,7 @@ export function EnhancedDataTable({
               <button
                 onClick={() => table.previousPage()}
                 disabled={!table.getCanPreviousPage()}
-                className="p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="p-1.5 rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 aria-label="上一页"
               >
                 <ChevronLeft className="w-4 h-4" />
@@ -419,7 +419,7 @@ export function EnhancedDataTable({
                       className={`w-8 h-8 rounded text-sm font-medium transition-colors ${
                         table.getState().pagination.pageIndex === pageNum
                           ? 'bg-primary-600 text-white'
-                          : 'hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
+                          : 'hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300'
                       }`}
                     >
                       {pageNum + 1}
@@ -431,7 +431,7 @@ export function EnhancedDataTable({
               <button
                 onClick={() => table.nextPage()}
                 disabled={!table.getCanNextPage()}
-                className="p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="p-1.5 rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 aria-label="下一页"
               >
                 <ChevronRight className="w-4 h-4" />
@@ -439,7 +439,7 @@ export function EnhancedDataTable({
               <button
                 onClick={() => table.setPageIndex(table.getPageCount() - 1)}
                 disabled={!table.getCanNextPage()}
-                className="p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="p-1.5 rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 aria-label="末页"
               >
                 <ChevronsRight className="w-4 h-4" />
@@ -454,7 +454,7 @@ export function EnhancedDataTable({
 
 function SortIcon({ column }: { column: any }) {
   const sorted = column.getIsSorted()
-  if (!sorted) return <ArrowUpDown className="w-3.5 h-3.5 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+  if (!sorted) return <ArrowUpDown className="w-3.5 h-3.5 text-neutral-400 opacity-0 group-hover:opacity-100 transition-opacity" />
   return sorted === 'asc' ? (
     <ArrowUp className="w-3.5 h-3.5 text-primary-500" />
   ) : (

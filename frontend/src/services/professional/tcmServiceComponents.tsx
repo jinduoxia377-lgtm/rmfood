@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import tcmService from './tcmService';
 import type { TCMHerb, TCMChemistry, TCMChemistryVisualization } from './tcmService';
+import { sanitizeHTML } from '@/utils/sanitize';
 
 interface TCMViewerProps {
   herbId: string;
@@ -204,7 +205,7 @@ const TCMViewer: React.FC<TCMViewerProps> = ({
             </div>
             <div
               className="structure-svg"
-              dangerouslySetInnerHTML={{ __html: visualization.svgData }}
+              dangerouslySetInnerHTML={{ __html: sanitizeHTML(visualization.svgData) }}
             />
           </div>
         )}

@@ -204,12 +204,12 @@ async def food_deep_analysis(
         return response_data
         
     except ValueError as ve:
-        logger.warning(f"序列验证失败: {ve}")
-        raise HTTPException(status_code=422, detail=str(ve))
-        
+        logger.warning("序列验证失败: %s", ve)
+        raise HTTPException(status_code=422, detail="参数无效")
+
     except Exception as e:
-        logger.error(f"❌ RMFOOD食品肽分析异常: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"分析引擎异常: {str(e)}")
+        logger.error("RMFOOD食品肽分析异常: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="分析引擎异常，请稍后重试")
 
 
 @router.post("/batch/screen", summary="批量筛选食品肽")
@@ -287,8 +287,8 @@ async def food_batch_screen(
         return response_data
         
     except Exception as e:
-        logger.error(f"❌ 批量筛选异常: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"批量分析异常: {str(e)}")
+        logger.error("批量筛选异常: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="批量分析异常，请稍后重试")
 
 
 @router.get("/info", summary="RMFOOD食品肽分析模块信息")
