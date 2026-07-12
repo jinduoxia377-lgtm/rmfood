@@ -81,6 +81,8 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
         **data,
         "exp": expire,
         "iat": datetime.now(timezone.utc),
+        "iss": settings.security.jwt_issuer,
+        "aud": settings.security.jwt_audience,
         "type": "access",
         "jti": _generate_jti(),  # JWT ID，用于唯一标识和撤销
     }
@@ -105,6 +107,8 @@ def create_refresh_token(user_id: str) -> str:
         "sub": user_id,
         "exp": expire,
         "iat": datetime.now(timezone.utc),
+        "iss": settings.security.jwt_issuer,
+        "aud": settings.security.jwt_audience,
         "type": "refresh",
         "jti": _generate_jti(),
     }
@@ -141,6 +145,8 @@ def decode_token(token: str) -> dict:
             token,
             settings.secret_key,
             algorithms=[settings.security.jwt_algorithm],
+            issuer=settings.security.jwt_issuer,
+            audience=settings.security.jwt_audience,
         )
         return payload
 

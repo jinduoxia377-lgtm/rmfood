@@ -86,8 +86,8 @@ async def create_backup(
         )
         return {"success": True, "backup": record.to_dict()}
     except Exception as e:
-        logger.error(f"备份创建失败: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("备份创建失败: %s", e)
+        raise HTTPException(status_code=500, detail="备份创建失败，请稍后重试")
 
 
 @backup_router.post("/{backup_id}/restore", summary="从备份恢复")
@@ -117,10 +117,10 @@ async def restore_backup(
             },
         }
     except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
+        raise HTTPException(status_code=404, detail="备份数据无效")
     except Exception as e:
-        logger.error(f"备份恢复失败: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("备份恢复失败: %s", e)
+        raise HTTPException(status_code=500, detail="备份恢复失败，请稍后重试")
 
 
 @backup_router.post("/drill", summary="运行恢复演练")
@@ -138,8 +138,8 @@ async def run_restore_drill(
         result = await bm.run_restore_drill(backup_id)
         return result
     except Exception as e:
-        logger.error(f"恢复演练失败: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("恢复演练失败: %s", e)
+        raise HTTPException(status_code=500, detail="恢复演练失败，请稍后重试")
 
 
 @backup_router.get("/statistics", summary="备份统计")

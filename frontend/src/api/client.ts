@@ -26,30 +26,6 @@ const api = axios.create({
   withCredentials: true,
 })
 
-// 模拟数据（仅开发环境使用）
-const mockToken: Token = {
-  accessToken: 'mock_access_token_123456',
-  refreshToken: 'mock_refresh_token_123456',
-  tokenType: 'Bearer',
-  expiresIn: 3600,
-  expiresAt: new Date(Date.now() + 3600 * 1000),
-}
-
-const mockUser: User = {
-  id: 1,
-  username: 'admin',
-  email: 'admin@example.com',
-  fullName: '管理员',
-  role: UserRole.ADMIN,
-  isActive: true,
-  createdAt: new Date().toISOString(),
-  department: '',
-  phone: '',
-  avatarUrl: '',
-  loginAttempts: 0,
-  updatedAt: new Date().toISOString(),
-}
-
 // ── Token 刷新状态管理 ──
 let isRefreshing = false
 let refreshSubscribers: ((token: string) => void)[] = []
@@ -70,38 +46,6 @@ const notifyTokenRefresh = (token: string) => {
 }
 
 /**
- * 🔒 P0 安全修复: 检查是否应该使用模拟数据
- * 仅开发环境允许 mock 数据，生产环境直接拒绝
- */
-const shouldUseMockData = (error: any): boolean => {
-  // 🔒 生产环境禁止使用 mock 数据
-  if (import.meta.env.PROD) {
-    return false
-  }
-
-  if (!error.response) return true
-  const status = error.response.status
-  if (status === 502 || status === 503 || status === 504) return true
-  if (status === 500) return true
-  if (status === 422) {
-    const urlPath = error.config?.url?.replace(envConfig.api.baseUrl, '') || ''
-    if (urlPath.includes('/formulas/statistics') || urlPath.includes('/formulas/logs')) return true
-  }
-  return false
-}
-
-/**
- * 生成模拟响应（仅开发环境）
- */
-const createMockResponse = (original: any, data: any) => ({
-  data,
-  status: 200,
-  statusText: 'OK',
-  headers: {},
-  config: original,
-})
-
-/**
  * 🔒 P0 安全修复: 刷新 Token
  * 现在完全依赖后端 HttpOnly Cookie，刷新成功后自动续期
  */
@@ -115,7 +59,7 @@ const refreshToken = async (): Promise<string> => {
     )
 
     // 🔒 Token 现在存储在后端设置的 HttpOnly Cookie 中，前端不再需要处理
-    return response.data.access_token
+    return response.data.accessToken
   } catch (error) {
     // 🔒 刷新失败时，Cookie 会被后端清除或过期
     // 重定向到登录页
@@ -131,8 +75,11 @@ const refreshToken = async (): Promise<string> => {
  */
 const clearAuthState = () => {
   if (typeof window !== 'undefined') {
-    localStorage.removeItem('access_token')
-    localStorage.removeItem('refresh_token')
+    // 清除 HttpOnly Cookie（后端 set-cookie with empty value）
+    fetch(`${api.defaults.baseURL}/auth/logout`, {
+      method: 'POST',
+      credentials: 'include',
+    }).catch(() => { /* 静默失败，不影响用户体验 */ })
     localStorage.removeItem('remember_me')
     localStorage.removeItem('username')
   }
@@ -158,84 +105,26 @@ api.interceptors.response.use(
       return Promise.resolve(silentResponse as any)
     }
 
-    // 🔒 仅开发环境使用模拟数据
-    if (shouldUseMockData(error)) {
+    // 🔒 仅开发环境使用模拟数据（条件导入，生产构建不包含 mock 代码）
+    if (import.meta.env.DEV && shouldUseMockData(error)) {
       const urlPath = original.url?.replace(API_BASE, '') || original.url || ''
+      const { getMockData } = await import('./client.mock')
+      return getMockData(urlPath, original)
+    }
 
-      // 登录请求（开发环境自动成功）
-      if (urlPath.includes('/auth/login')) {
-        return createMockResponse(original, mockToken)
+    /**
+     * 判断是否应该使用模拟数据（仅开发环境）
+     */
+    function shouldUseMockData(err: any): boolean {
+      if (!err.response) return true
+      const status = err.response.status
+      if (status === 502 || status === 503 || status === 504) return true
+      if (status === 500) return true
+      if (status === 422) {
+        const urlPath = err.config?.url?.replace(API_BASE, '') || ''
+        if (urlPath.includes('/formulas/statistics') || urlPath.includes('/formulas/logs')) return true
       }
-
-      // 获取用户信息
-      if (urlPath.includes('/auth/me')) {
-        return createMockResponse(original, mockUser)
-      }
-
-      // 用户列表
-      if (urlPath.includes('/users')) {
-        return createMockResponse(original, {
-          data: [mockUser],
-          total: 1,
-          page: 1,
-          page_size: 10,
-        })
-      }
-
-      // 配方列表
-      if (urlPath.includes('/formulas')) {
-        if (urlPath.includes('/statistics')) {
-          return createMockResponse(original, {
-            total: 0,
-            approved: 0,
-            pending: 0,
-            draft: 0,
-            archived: 0,
-            this_month: 0,
-          })
-        }
-        if (urlPath.includes('/logs')) {
-          return createMockResponse(original, {
-            data: [],
-            total: 0,
-            page: 1,
-            page_size: 20,
-          })
-        }
-        return createMockResponse(original, {
-          data: [],
-          total: 0,
-          page: 1,
-          page_size: 10,
-        })
-      }
-
-      // AI 生成请求
-      if (urlPath.includes('/ai/generate')) {
-        const mockCandidates = [
-          {
-            id: 'mock_' + Date.now(),
-            name: '配方示例（Mock）',
-            formula_name: '配方示例',
-            ingredients: [
-              { name: '黄芪', dosage: '10g', unit: 'g' },
-              { name: '枸杞子', dosage: '5g', unit: 'g' },
-            ],
-            score: 0.85,
-            effects: ['增强免疫'],
-            generated_by: 'mock',
-            generated_at: new Date().toISOString(),
-          },
-        ]
-        return createMockResponse(original, {
-          candidates: mockCandidates,
-          total: mockCandidates.length,
-          generator: 'mock',
-        })
-      }
-
-      // 默认返回空数据
-      return createMockResponse(original, {})
+      return false
     }
 
     // 处理 404 错误
@@ -270,7 +159,7 @@ api.interceptors.response.use(
       if (isAuthError) {
         // 如果是登录或刷新请求，直接拒绝
         if (original.url?.includes('/auth/login') || original.url?.includes('/auth/refresh')) {
-          console.warn('[API] 登录或刷新失败:', errorDetail)
+          if (import.meta.env.DEV) console.warn('[API] 登录或刷新失败:', errorDetail)
           clearAuthState()
           return Promise.reject(error)
         }
@@ -297,7 +186,7 @@ api.interceptors.response.use(
           return api(original)
         } catch (refreshError) {
           isRefreshing = false
-          console.warn('[API] Token 刷新失败，用户将被登出')
+          if (import.meta.env.DEV) console.warn('[API] Token 刷新失败，用户将被登出')
           clearAuthState()
           // 重定向到登录页
           if (typeof window !== 'undefined') {
@@ -313,7 +202,7 @@ api.interceptors.response.use(
     // 处理 403 权限不足错误
     if (error.response?.status === 403) {
       const errorDetail = error.response.data?.detail || error.response.data?.message || ''
-      console.warn(`[API] 权限不足 (403): ${original.url} - ${errorDetail}`)
+      if (import.meta.env.DEV) console.warn(`[API] 权限不足 (403): ${original.url} - ${errorDetail}`)
       return Promise.reject(error)
     }
 

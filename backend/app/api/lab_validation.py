@@ -15,6 +15,9 @@ from datetime import datetime, date
 import json
 import logging
 
+from ..api.deps import get_current_active_user, CurrentUser, require_role
+from ..models.enums import UserRole
+
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/lab-validation", tags=["实验室验证"])
@@ -30,7 +33,7 @@ class LabExperimentData(BaseModel):
     researcher_name: str = Field(..., min_length=2, max_length=100)
     
     # 目标信息
-    target_type: str = Field(..., regex="^(formula|ingredient|synergy_pair)$")
+    target_type: str = Field(..., pattern="^(formula|ingredient|synergy_pair)$")
     target_name: str = Field(..., max_length=200)
     target_id: Optional[int] = None
     
@@ -88,7 +91,7 @@ class ValidationReport(BaseModel):
 @router.post("/experiments", summary="提交实验数据")
 async def submit_experiment_data(
     data: LabExperimentData,
-    current_user: Depends(...) = None  # TODO: 认证依赖
+    current_user: CurrentUser = Depends(get_current_active_user)
 ):
     """
     提交新的实验室验证数据
@@ -138,13 +141,14 @@ async def submit_experiment_data(
         
     except Exception as e:
         logger.error(f"提交实验数据失败: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="提交实验数据失败")
+
 
 
 @router.post("/experiments/batch-import", summary="批量导入实验数据")
 async def batch_import_experiments(
     request: ValidationBatchImportRequest,
-    current_user: Depends(...) = None
+    current_user: CurrentUser = Depends(get_current_active_user)
 ):
     """
     批量导入多个实验数据
@@ -159,12 +163,35 @@ async def batch_import_experiments(
     for exp_data in request.experiments:
         try:
             # 复用单个提交流程
-            record = {
+            existing = await LabValidationData.get_or_none(experiment_id=exp_data.experiment_id)
+            if existing:
+                results.append({
+                    "experiment_id": exp_data.experiment_id,
+                    "target_name": exp_data.target_name,
+                    "status": "duplicate_skipped"
+                })
+                continue
+
+            validation_record = await LabValidationData.create(
+                target_type=exp_data.target_type,
+                target_id=exp_data.target_id,
+                target_name=exp_data.target_name,
+                experiment_id=exp_data.experiment_id,
+                lab_name=exp_data.lab_name,
+                experiment_date=exp_data.experiment_date,
+                researcher_name=exp_data.researcher_name,
+                status=ValidationStatus.PENDING,
+                method_description=exp_data.method_description,
+                equipment_used=exp_data.equipment_used,
+                measured_parameters=exp_data.measured_parameters,
+                predicted_values=exp_data.predicted_values
+            )
+            results.append({
                 "experiment_id": exp_data.experiment_id,
                 "target_name": exp_data.target_name,
-                "status": "imported"
-            }
-            results.append(record)
+                "status": "imported",
+                "record_id": validation_record.id
+            })
             success_count += 1
             
         except Exception as e:
@@ -189,7 +216,7 @@ async def batch_import_experiments(
 async def run_validation_comparison(
     experiment_id: str,
     request: ValidationComparisonRequest,
-    current_user: Depends(...) = None
+    current_user: CurrentUser = Depends(get_current_active_user)
 ):
     """
     对指定实验执行预测值与实测值的对比分析
@@ -238,34 +265,36 @@ async def run_validation_comparison(
             deviation_statistics=comparison_result["statistics"],
             conclusion_notes=comparison_result["conclusion"],
             recommendations=comparison_result["recommendations"],
-            validated_at=datetime.utcnow(),
+            validated_at=datetime.now(timezone.utc),
             reviewed_by=current_user.username if current_user else None
         )
         
     except Exception as e:
         logger.error(f"验证对比失败 ({experiment_id}): {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="验证对比失败")
 
 
 @router.get("/experiments", summary="查询实验列表")
 async def list_experiments(
-    target_type: Optional[str] = Query(None, regex="^(formula|ingredient|synergy_pair)$"),
-    status: Optional[str] = Query(None, regex="^(pending|in_progress|completed|failed)$"),
+    current_user: CurrentUser = Depends(get_current_active_user),
+    target_type: Optional[str] = Query(None, pattern="^(formula|ingredient|synergy_pair)$"),
+    status: Optional[str] = Query(None, pattern="^(pending|in_progress|completed|failed)$"),
     target_name: Optional[str] = Query(None, description="目标名称模糊搜索"),
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100)
 ):
     """
-    分页查询实验室验证数据
-    
+    分页查询实验室验证数据（仅返回当前用户的数据）
+
     支持筛选条件:
     - target_type: 目标类型
     - status: 验证状态
     - target_name: 名称模糊搜索
     """
     from ..models.formula_deep_integration import LabValidationData
-    
-    query = LabValidationData.all()
+
+    # 数据隔离: 仅查询当前用户的数据
+    query = LabValidationData.all().filter(LabValidationData.owner_id == current_user.id)
     
     if target_type:
         query = query.filter(target_type=target_type)
@@ -303,7 +332,10 @@ async def list_experiments(
 
 
 @router.get("/experiments/{experiment_id}", summary="获取实验详情")
-async def get_experiment_detail(experiment_id: str):
+async def get_experiment_detail(
+    experiment_id: str,
+    current_user: CurrentUser = Depends(get_current_active_user),
+):
     """获取单个实验的完整详情，包括原始数据和对比分析"""
     from ..models.formula_deep_integration import LabValidationData
     
@@ -324,19 +356,15 @@ async def get_experiment_detail(experiment_id: str):
 async def review_experiment(
     experiment_id: str,
     review_data: dict,
-    current_user: Depends(...) = None
+    current_user: CurrentUser = Depends(require_role(UserRole.ADMIN, UserRole.REVIEWER))
 ):
     """
     审核并确认实验数据质量
-    
+
     权限: 仅管理员/审核员可调用
     """
-    # TODO: RBAC权限检查
-    # if current_user.role not in ['admin', 'reviewer']:
-    #     raise HTTPException(403, "无权执行此操作")
-    
     from ..models.formula_deep_integration import LabValidationData, ValidationStatus
-    
+
     record = await LabValidationData.get_or_none(experiment_id=experiment_id)
     if not record:
         raise HTTPException(status_code=404, detail="实验不存在")
@@ -346,7 +374,7 @@ async def review_experiment(
     
     record.qc_passed = qc_passed
     record.reviewer_id = current_user.id if current_user else None
-    record.reviewed_at = datetime.utcnow()
+    record.reviewed_at = datetime.now(timezone.utc)
     
     if qc_passed and record.validation_result == 'passed':
         record.status = ValidationStatus.COMPLETED
@@ -363,12 +391,14 @@ async def review_experiment(
         "experiment_id": experiment_id,
         "qc_passed": qc_passed,
         "reviewed_by": current_user.username if current_user else None,
-        "reviewed_at": datetime.utcnow().isoformat()
+        "reviewed_at": datetime.now(timezone.utc).isoformat()
     }
 
 
 @router.get("/statistics/dashboard", summary="验证统计仪表板")
-async def get_validation_dashboard():
+async def get_validation_dashboard(
+    current_user: CurrentUser = Depends(get_current_active_user),
+):
     """
     实验室验证统计概览
     
@@ -401,6 +431,27 @@ async def get_validation_dashboard():
     
     overall_mape = sum(avg_deviations) / len(avg_deviations) if avg_deviations else 0
     
+    from datetime import timedelta as _td
+
+    # 最近30天趋势
+    thirty_days_ago = date.today() - _td(days=30)
+    daily_counts = {}
+    for d in range(30):
+        day = thirty_days_ago + _td(days=d)
+        daily_counts[str(day)] = 0
+
+    all_recs = await LabValidationData.all()
+    for r in all_recs:
+        if r.experiment_date:
+            key = str(r.experiment_date)
+            if key in daily_counts:
+                daily_counts[key] += 1
+
+    recent_trend = [
+        {"date": d, "count": c}
+        for d, c in daily_counts.items()
+    ]
+
     return {
         "success": True,
         "summary": {
@@ -411,8 +462,8 @@ async def get_validation_dashboard():
             "overall_mape": round(overall_mape, 2)
         },
         "by_target_type": type_stats,
-        "recent_trend": [],  # TODO: 实现时间序列聚合
-        "generated_at": datetime.utcnow().isoformat()
+        "recent_trend": recent_trend,
+        "generated_at": datetime.now(timezone.utc).isoformat()
     }
 
 

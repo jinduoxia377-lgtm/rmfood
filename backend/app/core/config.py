@@ -217,8 +217,10 @@ class SecurityConfig(BaseModel):
     """安全配置"""
     secret_key: str = Field(default="", description="JWT 签名密钥")
     jwt_algorithm: str = Field(default="HS256", description="JWT 算法")
-    jwt_expire_minutes: int = Field(default=480, ge=1, description="JWT 过期时间（分钟）")
+    jwt_expire_minutes: int = Field(default=60, ge=1, description="JWT 过期时间（分钟）")
     jwt_refresh_expire_days: int = Field(default=30, ge=1, description="刷新令牌过期时间（天）")
+    jwt_issuer: str = Field(default="rmfood", description="JWT 签发者")
+    jwt_audience: str = Field(default="rmfood-api", description="JWT 受众")
     password_min_length: int = Field(default=8, ge=4, description="密码最小长度")
     password_require_uppercase: bool = Field(default=True, description="密码是否需要大写字母")
     password_require_number: bool = Field(default=True, description="密码是否需要数字")
@@ -305,7 +307,7 @@ class Settings(BaseSettings):
 
     # ─── 初始管理员账号 ───
     admin_username: str = Field(default="admin", alias="ADMIN_USERNAME", description="初始管理员用户名")
-    admin_password: str = Field(default="admin123", alias="ADMIN_PASSWORD", description="初始管理员密码")
+    admin_password: str = Field(default="", alias="ADMIN_PASSWORD", description="初始管理员密码（生产环境必须通过环境变量设置）")
     admin_email: str = Field(default="admin@rmfood.com", alias="ADMIN_EMAIL", description="初始管理员邮箱")
 
     # ─── 子配置 ───
@@ -410,6 +412,15 @@ class Settings(BaseSettings):
                     "生产环境管理员密码不能使用默认值 admin123，"
                     "请设置 ADMIN_PASSWORD 环境变量"
                 )
+
+        # 开发/测试环境：如果 admin_password 为空，生成随机密码
+        if self.app_env != Environment.PRODUCTION and not self.admin_password:
+            logger.warning(
+                "⚠️  开发/测试环境 admin_password 为空，使用随机生成的密码。"
+                "请设置 ADMIN_PASSWORD 环境变量以固定密码。"
+            )
+            import secrets
+            self.admin_password = secrets.token_urlsafe(16)
 
         if errors:
             error_msg = "\n".join(f"  - {e}" for e in errors)
