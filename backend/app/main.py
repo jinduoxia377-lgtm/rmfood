@@ -301,7 +301,8 @@ Authorization: Bearer <your_access_token>
         allow_origins=cors_origins,
         allow_credentials=settings.security.cors_allow_credentials,
         allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-        allow_headers=["Authorization", "Content-Type", "Accept", "X-Requested-With"],
+        allow_headers=["Authorization", "Content-Type", "Accept", "X-Requested-With", "X-CSRF-Token"],
+        max_age=86400,  # 24小时缓存预检请求，减少 OPTIONS 开销
     )
 
     # ── 全局异常处理 (待激活: 需要统一错误码体系) ──

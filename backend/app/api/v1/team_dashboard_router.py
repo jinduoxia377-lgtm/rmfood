@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ...core.session import get_db
 from ...api.deps import get_current_active_user, CurrentUser, DbSession
-from ...services.team.team_service import TeamService
+from ...services.team.team_impl import TeamService
 from ...services.team.team_dashboard import TeamDashboardService
 from ...services.search.elasticsearch_service import ElasticsearchService, SearchFilters
 
@@ -41,9 +41,10 @@ async def get_team_dashboard(
         stats = await dashboard_service.get_stats(team_id)
         return stats
     except Exception as e:
+        logger.error("获取仪表盘数据失败: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"获取仪表盘数据失败: {str(e)}"
+            detail="获取仪表盘数据失败，请稍后重试"
         )
 
 

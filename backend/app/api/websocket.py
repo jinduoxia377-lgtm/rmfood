@@ -138,7 +138,7 @@ async def websocket_endpoint(
                 await websocket.send_json(WebSocketMessage.error("无效的JSON格式"))
             except Exception as e:
                 logger.error(f"处理消息时出错: {e}")
-                await websocket.send_json(WebSocketMessage.error(f"处理消息时出错: {str(e)}"))
+                await websocket.send_json(WebSocketMessage.error("处理消息时出错，请稍后重试"))
 
     except WebSocketDisconnect:
         logger.info(f"WebSocket连接断开: {user_id}")
