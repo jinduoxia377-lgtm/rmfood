@@ -807,3 +807,65 @@ def get_audit_logger() -> SecurityAuditLogger:
     if _audit_logger is None:
         _audit_logger = SecurityAuditLogger()
     return _audit_logger
+
+
+# ════════════════════════════════════════════
+# 8. CSRF 双提交保护中间件
+# ════════════════════════════════════════════
+
+import secrets
+
+
+class CsrfProtectMiddleware(BaseHTTPMiddleware):
+    """
+    CSRF 双提交 Cookie 保护中间件
+
+    工作原理:
+    1. GET 请求返回时设置 csrf_cookie (HttpOnly)
+    2. 前端必须在请求头 X-CSRF-Token 中发送相同的 token 值
+    3. 后端校验 cookie 与 header 是否匹配
+
+    适用场景:
+    - 与 HttpOnly Cookie 认证配合使用
+    - SameSite=Strict 提供额外保护
+    - 不适用于 SPA 跨域场景 (此时应使用 CSRF token 端点)
+    """
+
+    CSRF_COOKIE_NAME = "csrf_token"
+    CSRF_HEADER_NAME = "X-CSRF-Token"
+
+    async def dispatch(self, request: Request, call_next):
+        # 只保护状态改变的方法
+        if request.method in ("GET", "HEAD", "OPTIONS"):
+            response = await call_next(request)
+            # 为 GET 请求设置 CSRF cookie
+            if request.method == "GET":
+                token = secrets.token_hex(32)
+                response.set_cookie(
+                    key=self.CSRF_COOKIE_NAME,
+                    value=token,
+                    httponly=True,
+                    samesite="strict",
+                    secure=not request.url.scheme.startswith("http://"),
+                    max_age=86400,  # 24 hours
+                )
+            return response
+
+        # POST/PUT/DELETE/PATCH — 验证 CSRF token
+        cookie_token = request.cookies.get(self.CSRF_COOKIE_NAME)
+        header_token = request.headers.get(self.CSRF_HEADER_NAME)
+
+        if not cookie_token or not header_token:
+            return JSONResponse(
+                status_code=status.HTTP_403_FORBIDDEN,
+                content={"detail": "CSRF token missing"},
+            )
+
+        if not secrets.compare_digest(cookie_token, header_token):
+            return JSONResponse(
+                status_code=status.HTTP_403_FORBIDDEN,
+                content={"detail": "CSRF token mismatch"},
+            )
+
+        return await call_next(request)
+

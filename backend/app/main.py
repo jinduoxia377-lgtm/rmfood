@@ -18,6 +18,7 @@ from .core.security_middleware import (
     RateLimitMiddleware,
     RequestLoggingMiddleware,
     RateLimitConfig,
+    CsrfProtectMiddleware,
 )
 from .core.encoding import UTF8EncodingMiddleware
 from .core.exceptions import GlobalExceptionHandler  # 新增：全局异常处理
@@ -276,6 +277,7 @@ Authorization: Bearer <your_access_token>
 
     # ── 安全中间件 (按顺序添加，后添加的先执行) ──
     app.add_middleware(RequestLoggingMiddleware)
+    app.add_middleware(CsrfProtectMiddleware)  # CSRF 双提交保护
     app.add_middleware(UTF8EncodingMiddleware)
     app.add_middleware(SecurityHeadersMiddleware, is_production=not settings.debug)
     app.add_middleware(RateLimitMiddleware, config=RateLimitConfig(
