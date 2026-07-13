@@ -481,7 +481,7 @@ const MESSAGES_MAP: Record<Locale, TranslationMessages> = {
 /**
  * 获取嵌套对象属性（安全访问）
  */
-function getNestedValue(obj: any, path: string): any {
+function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
   return path.split('.').reduce((current, key) => current?.[key], obj);
 }
 
@@ -587,7 +587,7 @@ export function TranslationProvider({
   const setLocale = useCallback(
     (newLocale: Locale) => {
       if (!LOCALES[newLocale]) {
-        console.warn(`Unknown locale: ${newLocale}`);
+        if (import.meta.env.DEV) console.warn(`Unknown locale: ${newLocale}`);
         return;
       }
 
@@ -627,7 +627,7 @@ export function TranslationProvider({
 
       // 如果仍找不到，返回 key
       if (translation === undefined) {
-        if (process.env.NODE_ENV === 'development') {
+        if (import.meta.env.DEV) {
           console.warn(`Missing translation: ${key}`);
         }
         return key;
@@ -767,4 +767,4 @@ export function LocaleSwitcher({ className }: LocaleSwitcherProps) {
 // 🟡 P4-5: 导出
 // ═════════════════════════════════════════════
 
-export { LOCALES };
+// LOCALES is exported at line 83 above — no duplicate export needed.
