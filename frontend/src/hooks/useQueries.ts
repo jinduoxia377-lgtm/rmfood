@@ -2,11 +2,12 @@
  * React Query Hooks
  * 数据获取与缓存
  */
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { authApi } from '@/api/auth'
-import { formulaApi, type FormulaCreatePayload } from '@/api/formula'
-import { experimentApi, type ExperimentCreatePayload } from '@/api/experiment'
-import { dashboardApi } from '@/api/dashboard'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { authApi } from '@/api/auth';
+import { formulaApi } from '@/api/formula';
+import type { FormulaListQueryParams } from '@/types/formula';
+import { experimentApi, type ExperimentCreatePayload } from '@/api/experiment';
+import { dashboardApi } from '@/api/dashboard';
 
 // ── 认证 ──
 export function useCurrentUser() {
@@ -15,15 +16,22 @@ export function useCurrentUser() {
     queryFn: authApi.getMe,
     retry: false,
     staleTime: 5 * 60_000,
-  })
+  });
 }
 
 // ── 配方列表 ──
-export function useFormulas(params?: { page?: number; page_size?: number; status?: string; search?: string; category_ids?: number[]; tag_ids?: number[] }) {
+export function useFormulas(params?: {
+  page?: number;
+  page_size?: number;
+  status?: string;
+  search?: string;
+  category_ids?: number[];
+  tag_ids?: number[];
+}) {
   return useQuery({
     queryKey: ['formulas', params],
-    queryFn: () => formulaApi.list(params),
-  })
+    queryFn: () => formulaApi.list(params as FormulaListQueryParams | undefined),
+  });
 }
 
 // ── 配方详情 ──
@@ -32,47 +40,47 @@ export function useFormula(id: number) {
     queryKey: ['formula', id],
     queryFn: () => formulaApi.get(id),
     enabled: !!id,
-  })
+  });
 }
 
 // ── 创建配方 ──
 export function useCreateFormula() {
-  const qc = useQueryClient()
+  const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: FormulaCreatePayload) => formulaApi.create(data),
+    mutationFn: (data: any) => formulaApi.create(data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['formulas'] }),
-  })
+  });
 }
 
 // ── 更新配方 ──
 export function useUpdateFormula(id: number) {
-  const qc = useQueryClient()
+  const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: Partial<FormulaCreatePayload>) => formulaApi.update(id, data),
+    mutationFn: (data: Partial<any>) => formulaApi.update(id, data),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['formulas'] })
-      qc.invalidateQueries({ queryKey: ['formula', id] })
+      qc.invalidateQueries({ queryKey: ['formulas'] });
+      qc.invalidateQueries({ queryKey: ['formula', id] });
     },
-  })
+  });
 }
 
 // ── 提交审核 ──
 export function useSubmitFormula() {
-  const qc = useQueryClient()
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: number) => formulaApi.submit(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['formulas'] }),
-  })
+  });
 }
 
 // ── 审核配方 ──
 export function useReviewFormula() {
-  const qc = useQueryClient()
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, approved, notes }: { id: number; approved: boolean; notes?: string }) =>
       formulaApi.review(id, approved, notes),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['formulas'] }),
-  })
+  });
 }
 
 // ── 配方版本历史 ──
@@ -81,7 +89,7 @@ export function useFormulaVersions(id: number) {
     queryKey: ['formula-versions', id],
     queryFn: () => formulaApi.versions(id),
     enabled: !!id,
-  })
+  });
 }
 
 // ── AI 推荐 ──
@@ -90,20 +98,15 @@ export function useAIRecommendations(effects: string[], enabled = false) {
     queryKey: ['ai-recommendations', effects],
     queryFn: () => formulaApi.recommendations(effects),
     enabled,
-  })
+  });
 }
 
 // ── 实验列表 ──
-export function useExperiments(params?: {
-  page?: number
-  page_size?: number
-  status?: string
-  search?: string
-}) {
+export function useExperiments(params?: { page?: number; page_size?: number; status?: string; search?: string }) {
   return useQuery({
     queryKey: ['experiments', params],
     queryFn: () => experimentApi.list(params),
-  })
+  });
 }
 
 // ── 实验详情 ──
@@ -112,16 +115,16 @@ export function useExperiment(id: number) {
     queryKey: ['experiment', id],
     queryFn: () => experimentApi.get(id),
     enabled: !!id,
-  })
+  });
 }
 
 // ── 创建实验 ──
 export function useCreateExperiment() {
-  const qc = useQueryClient()
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: ExperimentCreatePayload) => experimentApi.create(data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['experiments'] }),
-  })
+  });
 }
 
 // ── 实验统计 ──
@@ -130,7 +133,7 @@ export function useExperimentStatistics() {
     queryKey: ['experiment-statistics'],
     queryFn: experimentApi.statistics,
     staleTime: 60_000,
-  })
+  });
 }
 
 // ── 仪表盘统计 ──
@@ -139,7 +142,7 @@ export function useDashboardStatistics() {
     queryKey: ['dashboard-statistics'],
     queryFn: dashboardApi.getStatistics,
     staleTime: 60_000,
-  })
+  });
 }
 
 export function useDashboardTrends(period: '7d' | '30d' | '90d' = '30d') {
@@ -147,5 +150,5 @@ export function useDashboardTrends(period: '7d' | '30d' | '90d' = '30d') {
     queryKey: ['dashboard-trends', period],
     queryFn: () => dashboardApi.getTrends(period),
     staleTime: 60_000,
-  })
+  });
 }

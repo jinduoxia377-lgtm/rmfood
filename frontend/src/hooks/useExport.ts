@@ -11,7 +11,7 @@ import type {
 
 export interface UseExportReturn {
   doExport: (options: ExportOptions) => Promise<ExportResult>;
-  export: (options: ExportOptions, data: any[], onProgress?: ExportCallback) => Promise<ExportResult>;
+  export: (options: ExportOptions, data: unknown[], onProgress?: ExportCallback) => Promise<ExportResult>;
   progress: ExportProgress;
   isExporting: boolean;
   cancelExport: () => void;
@@ -40,7 +40,7 @@ export function useExport(): UseExportReturn {
 
   const exportData = useCallback(async (
     options: ExportOptions,
-    data: any[],
+    data: unknown[],
     onProgress?: ExportCallback,
   ): Promise<ExportResult> => {
     abortRef.current = false;
@@ -356,7 +356,7 @@ async function exportToPDF(
     if (options.includeIndex) tableHeaders.push('序号');
     columns.forEach(col => tableHeaders.push(col.label));
 
-    doc.autoTable({
+    (doc as any).autoTable({
       head: [tableHeaders],
       body: tableData,
       startY: options.pdfConfig?.title ? 35 : 20,

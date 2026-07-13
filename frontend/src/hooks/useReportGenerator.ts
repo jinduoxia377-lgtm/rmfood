@@ -147,34 +147,34 @@ export function useReportGenerator(): UseReportGeneratorReturn {
       'academic-research-v1': `
         <div style="font-family: serif; padding: 20px;">
           <h1 style="text-align: center; font-size: 24px; margin-bottom: 20px;">学术论文预览</h1>
-          <h2 style="font-size: 18px; color: #1e40af;">摘要</h2>
+          <h2 style="font-size: 18px; color: #003E87;">摘要</h2>
           <p style="line-height: 1.6;">[摘要内容将显示在此处...]</p>
-          <h2 style="font-size: 18px; color: #1e40af; margin-top: 16px;">引言</h2>
+          <h2 style="font-size: 18px; color: #003E87; margin-top: 16px;">引言</h2>
           <p style="line-height: 1.6;">[研究背景和目的说明...]</p>
-          <h2 style="font-size: 18px; color: #1e40af; margin-top: 16px;">方法</h2>
+          <h2 style="font-size: 18px; color: #003E87; margin-top: 16px;">方法</h2>
           <p style="line-height: 1.6;">[实验设计和分析方法描述...]</p>
         </div>
       `,
       'business-proposal-v1': `
         <div style="font-family: sans-serif; padding: 20px;">
-          <h1 style="text-align: center; font-size: 24px; color: #059669; margin-bottom: 20px;">商业提案预览</h1>
-          <h2 style="font-size: 18px; color: #059669;">执行摘要</h2>
+          <h1 style="text-align: center; font-size: 24px; color: #28A745; margin-bottom: 20px;">商业提案预览</h1>
+          <h2 style="font-size: 18px; color: #28A745;">执行摘要</h2>
           <p style="line-height: 1.6;">[项目概述和价值主张...]</p>
-          <h2 style="font-size: 18px; color: #059669; margin-top: 16px;">市场分析</h2>
+          <h2 style="font-size: 18px; color: #28A745; margin-top: 16px;">市场分析</h2>
           <p style="line-height: 1.6;">[市场规模和竞争格局...]</p>
-          <h2 style="font-size: 18px; color: #059669; margin-top: 16px;">财务预测</h2>
+          <h2 style="font-size: 18px; color: #28A745; margin-top: 16px;">财务预测</h2>
           <p style="line-height: 1.6;">[收入和成本预测模型...]</p>
         </div>
       `,
       'experiment-record-v1': `
         <div style="font-family: monospace; padding: 20px;">
-          <h1 style="text-align: center; font-size: 24px; color: #7c3aed; margin-bottom: 20px;">实验记录预览</h1>
+          <h1 style="text-align: center; font-size: 24px; color: #AF52DE; margin-bottom: 20px;">实验记录预览</h1>
           <table style="width: 100%; border-collapse: collapse;">
             <tr><td style="border: 1px solid #ddd; padding: 8px;"><strong>实验编号:</strong></td><td style="border: 1px solid #ddd; padding: 8px;">EXP-2024-001</td></tr>
             <tr><td style="border: 1px solid #ddd; padding: 8px;"><strong>实验日期:</strong></td><td style="border: 1px solid #ddd; padding: 8px;">${new Date().toLocaleDateString()}</td></tr>
             <tr><td style="border: 1px solid #ddd; padding: 8px;"><strong>实验人员:</strong></td><td style="border: 1px solid #ddd; padding: 8px;">[待填写]</td></tr>
           </table>
-          <h2 style="font-size: 18px; color: #7c3aed; margin-top: 16px;">实验步骤</h2>
+          <h2 style="font-size: 18px; color: #AF52DE; margin-top: 16px;">实验步骤</h2>
           <ol style="line-height: 1.8;">
             <li>准备实验材料和设备...</li>
             <li>按照标准操作程序执行...</li>
@@ -184,23 +184,23 @@ export function useReportGenerator(): UseReportGeneratorReturn {
       `,
       'patent-application-v1': `
         <div style="font-family: serif; padding: 20px;">
-          <h1 style="text-align: center; font-size: 24px; color: #dc2626; margin-bottom: 20px;">专利申请文档预览</h1>
-          <h2 style="font-size: 18px; color: #dc2626;">技术领域</h2>
+          <h1 style="text-align: center; font-size: 24px; color: #B91C1C; margin-bottom: 20px;">专利申请文档预览</h1>
+          <h2 style="font-size: 18px; color: #B91C1C;">技术领域</h2>
           <p style="line-height: 1.6;">[本发明涉及的技术领域说明...]</p>
-          <h2 style="font-size: 18px; color: #dc2626; margin-top: 16px;">背景技术</h2>
+          <h2 style="font-size: 18px; color: #B91C1C; margin-top: 16px;">背景技术</h2>
           <p style="line-height: 1.6;">[现有技术的不足和待解决问题...]</p>
-          <h2 style="font-size: 18px; color: #dc2626; margin-top: 16px;">发明内容</h2>
+          <h2 style="font-size: 18px; color: #B91C1C; margin-top: 16px;">发明内容</h2>
           <p style="line-height: 1.6;">[本发明的技术方案和有益效果...]</p>
         </div>
       `,
       'regulatory-filing-v1': `
         <div style="font-family: sans-serif; padding: 20px;">
-          <h1 style="text-align: center; font-size: 24px; color: #0891b2; margin-bottom: 20px;">监管申报文档预览</h1>
-          <h2 style="font-size: 18px; color: #0891b2;">法规合规性声明</h2>
+          <h1 style="text-align: center; font-size: 24px; color: #0E7490; margin-bottom: 20px;">监管申报文档预览</h1>
+          <h2 style="font-size: 18px; color: #0E7490;">法规合规性声明</h2>
           <p style="line-height: 1.6;">[符合相关监管要求的声明...]</p>
-          <h2 style="font-size: 18px; color: #0891b2; margin-top: 16px;">产品描述</h2>
+          <h2 style="font-size: 18px; color: #0E7490; margin-top: 16px;">产品描述</h2>
           <p style="line-height: 1.6;">[产品的详细规格和特性...]</p>
-          <h2 style="font-size: 18px; color: #0891b2; margin-top: 16px;">质量控制数据</h2>
+          <h2 style="font-size: 18px; color: #0E7490; margin-top: 16px;">质量控制数据</h2>
           <p style="line-height: 1.6;">[质量检验结果和合规性证明...]</p>
         </div>
       `,
@@ -359,8 +359,8 @@ function generateHTMLDocument(content: string): string {
   <title>生成的报告</title>
   <style>
     body { font-family: "SimSun", "Times New Roman", serif; line-height: 1.6; max-width: 800px; margin: 40px auto; padding: 20px; }
-    h1 { color: #1e40af; text-align: center; border-bottom: 3px solid #1e40af; padding-bottom: 10px; }
-    h2 { color: #2563eb; margin-top: 24px; border-left: 4px solid #2563eb; padding-left: 12px; }
+    h1 { color: #003E87; text-align: center; border-bottom: 3px solid #003E87; padding-bottom: 10px; }
+    h2 { color: #007AFF; margin-top: 24px; border-left: 4px solid #007AFF; padding-left: 12px; }
     table { width: 100%; border-collapse: collapse; margin: 16px 0; }
     th, td { border: 1px solid #d1d5db; padding: 8px; text-align: left; }
     th { background-color: #f3f4f6; font-weight: bold; }

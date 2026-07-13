@@ -86,7 +86,7 @@ export default function MobileBottomSheet({
       <div
         ref={sheetRef}
         className={cn(
-          'relative w-full max-w-lg bg-white dark:bg-slate-800 rounded-t-2xl shadow-2xl overflow-hidden',
+          'relative w-full max-w-lg bg-white dark:bg-neutral-800 rounded-t-2xl shadow-2xl overflow-hidden',
           'animate-slide-up',
         )}
         style={{
@@ -105,15 +105,15 @@ export default function MobileBottomSheet({
             onTouchMove={handleDragMove}
             onTouchEnd={handleDragEnd}
           >
-            <div className="w-10 h-1 rounded-full bg-slate-300 dark:bg-slate-600" />
+            <div className="w-10 h-1 rounded-full bg-neutral-300 dark:bg-neutral-600" />
           </div>
         )}
 
         {/* 标题栏 */}
         {(title || showClose) && (
-          <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-700">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-200 dark:border-neutral-700">
             {title && (
-              <h3 className="text-base font-semibold text-slate-900 dark:text-white">
+              <h3 className="text-base font-semibold text-neutral-900 dark:text-white">
                 {title}
               </h3>
             )}
@@ -123,10 +123,10 @@ export default function MobileBottomSheet({
             {showClose && (
               <button
                 onClick={onClose}
-                className="p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-200 touch-target"
+                className="p-1.5 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-all duration-200 touch-target"
                 aria-label="关闭面板"
               >
-                <X size={20} className="text-slate-500" />
+                <X size={20} className="text-neutral-500" />
               </button>
             )}
           </div>

@@ -1,4 +1,4 @@
-import { logger } from '@/utils/safeLogger'
+import { logger } from '@/utils/safeLogger';
 import { useState, useCallback, useRef, useEffect } from 'react';
 import type {
   Collaborator,
@@ -10,7 +10,7 @@ import type {
   CollaborationSession,
   RealtimeEvent,
 } from '../types/collaboration.types';
-import { CollaborationPermission } from '../types/collaboration.types';
+import { CollaborationPermission, ShareAccessType } from '../types/collaboration.types';
 
 export interface UseCollaborationReturn {
   session: CollaborationSession | null;
@@ -33,7 +33,9 @@ export interface UseCollaborationReturn {
   deleteAnnotation: (id: string) => Promise<void>;
   resolveAnnotation: (id: string) => Promise<void>;
 
-  addCommentThread: (thread: Omit<CommentThread, 'id' | 'createdAt' | 'updatedAt' | 'annotations'>) => Promise<CommentThread>;
+  addCommentThread: (
+    thread: Omit<CommentThread, 'id' | 'createdAt' | 'updatedAt' | 'annotations'>,
+  ) => Promise<CommentThread>;
   replyToComment: (threadId: string, content: string) => Promise<void>;
 
   saveVersion: (message?: string) => Promise<VersionInfo>;
@@ -71,7 +73,7 @@ export function useCollaboration(): UseCollaborationReturn {
   const [versions, setVersions] = useState<VersionInfo[]>([]);
   const [shareSettings, setShareSettings] = useState<ShareSettings>({
     isPublic: false,
-    accessType: 'link',
+    accessType: ShareAccessType.LINK,
     allowDownload: true,
     allowCopy: true,
     allowComment: true,
@@ -112,7 +114,15 @@ export function useCollaboration(): UseCollaborationReturn {
         currentVersion: {
           id: 'version-1',
           versionNumber: 1,
-          createdBy: { id: 'user-current', name: '当前用户', email: '', permission: CollaborationPermission.ADMIN, joinedAt: '', lastActiveAt: '', isOnline: true },
+          createdBy: {
+            id: 'user-current',
+            name: '当前用户',
+            email: '',
+            permission: CollaborationPermission.ADMIN,
+            joinedAt: '',
+            lastActiveAt: '',
+            isOnline: true,
+          },
           createdAt: new Date().toISOString(),
           message: '初始版本',
           changes: [],
@@ -127,7 +137,6 @@ export function useCollaboration(): UseCollaborationReturn {
       setSession(mockSession);
       setCollaborators(mockSession.collaborators);
       setVersions([mockSession.currentVersion]);
-
     } catch (error) {
       logger.error('Failed to join collaboration session:', error);
       throw error;
@@ -145,10 +154,7 @@ export function useCollaboration(): UseCollaborationReturn {
     setAnnotations([]);
   }, []);
 
-  const addCollaborator = useCallback(async (
-    email: string,
-    permission: CollaborationPermission,
-  ): Promise<boolean> => {
+  const addCollaborator = useCallback(async (email: string, permission: CollaborationPermission): Promise<boolean> => {
     const newCollaborator: Collaborator = {
       id: `user-${Date.now()}`,
       name: email.split('@')[0],
@@ -159,126 +165,142 @@ export function useCollaboration(): UseCollaborationReturn {
       isOnline: false,
     };
 
-    setCollaborators(prev => [...prev, newCollaborator]);
+    setCollaborators((prev) => [...prev, newCollaborator]);
     return true;
   }, []);
 
   const removeCollaborator = useCallback(async (userId: string): Promise<void> => {
-    setCollaborators(prev => prev.filter(c => c.id !== userId));
+    setCollaborators((prev) => prev.filter((c) => c.id !== userId));
   }, []);
 
-  const updatePermission = useCallback(async (
-    userId: string,
-    permission: CollaborationPermission,
-  ): Promise<void> => {
-    setCollaborators(prev =>
-      prev.map(c => c.id === userId ? { ...c, permission } : c),
-    );
+  const updatePermission = useCallback(async (userId: string, permission: CollaborationPermission): Promise<void> => {
+    setCollaborators((prev) => prev.map((c) => (c.id === userId ? { ...c, permission } : c)));
   }, []);
 
-  const addAnnotation = useCallback(async (
-    annotationData: Omit<Annotation, 'id' | 'createdAt' | 'updatedAt'>,
-  ): Promise<Annotation> => {
-    const newAnnotation: Annotation = {
-      ...annotationData,
-      id: `annotation-${Date.now()}`,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+  const addAnnotation = useCallback(
+    async (annotationData: Omit<Annotation, 'id' | 'createdAt' | 'updatedAt'>): Promise<Annotation> => {
+      const newAnnotation: Annotation = {
+        ...annotationData,
+        id: `annotation-${Date.now()}`,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
 
-    setAnnotations(prev => [...prev, newAnnotation]);
-    return newAnnotation;
-  }, []);
+      setAnnotations((prev) => [...prev, newAnnotation]);
+      return newAnnotation;
+    },
+    [],
+  );
 
-  const updateAnnotation = useCallback(async (
-    id: string,
-    updates: Partial<Annotation>,
-  ): Promise<void> => {
-    setAnnotations(prev =>
-      prev.map(a => a.id === id ? { ...a, ...updates, updatedAt: new Date().toISOString() } : a),
+  const updateAnnotation = useCallback(async (id: string, updates: Partial<Annotation>): Promise<void> => {
+    setAnnotations((prev) =>
+      prev.map((a) => (a.id === id ? { ...a, ...updates, updatedAt: new Date().toISOString() } : a)),
     );
   }, []);
 
   const deleteAnnotation = useCallback(async (id: string): Promise<void> => {
-    setAnnotations(prev => prev.filter(a => a.id !== id));
+    setAnnotations((prev) => prev.filter((a) => a.id !== id));
   }, []);
 
-  const resolveAnnotation = useCallback(async (id: string): Promise<void> => {
-    updateAnnotation(id, {
-      resolved: true,
-      resolvedAt: new Date().toISOString(),
-    });
-  }, [updateAnnotation]);
+  const resolveAnnotation = useCallback(
+    async (id: string): Promise<void> => {
+      updateAnnotation(id, {
+        resolved: true,
+        resolvedAt: new Date().toISOString(),
+      });
+    },
+    [updateAnnotation],
+  );
 
-  const addCommentThread = useCallback(async (
-    threadData: Omit<CommentThread, 'id' | 'createdAt' | 'updatedAt' | 'annotations'>,
-  ): Promise<CommentThread> => {
-    const newThread: CommentThread = {
-      ...threadData,
-      id: `thread-${Date.now()}`,
-      annotations: [],
-      status: 'open',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+  const addCommentThread = useCallback(
+    async (
+      threadData: Omit<CommentThread, 'id' | 'createdAt' | 'updatedAt' | 'annotations'>,
+    ): Promise<CommentThread> => {
+      const newThread: CommentThread = {
+        ...threadData,
+        id: `thread-${Date.now()}`,
+        annotations: [],
+        status: 'open',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
 
-    setCommentThreads(prev => [...prev, newThread]);
-    return newThread;
-  }, []);
+      setCommentThreads((prev) => [...prev, newThread]);
+      return newThread;
+    },
+    [],
+  );
 
   const replyToComment = useCallback(async (threadId: string, content: string): Promise<void> => {
     logger.log(`Replying to thread ${threadId}:`, content);
   }, []);
 
-  const saveVersion = useCallback(async (message?: string): Promise<VersionInfo> => {
-    const newVersion: VersionInfo = {
-      id: `version-${Date.now()}`,
-      versionNumber: versions.length + 1,
-      createdBy: collaborators[0] || { id: '', name: '', email: '', permission: CollaborationPermission.VIEW, joinedAt: '', lastActiveAt: '', isOnline: false },
-      createdAt: new Date().toISOString(),
-      message: message || `版本 ${versions.length + 1}`,
-      changes: [],
-      fileSize: Math.floor(Math.random() * 1000000),
-      checksum: `hash-${Date.now()}`,
-    };
+  const saveVersion = useCallback(
+    async (message?: string): Promise<VersionInfo> => {
+      const newVersion: VersionInfo = {
+        id: `version-${Date.now()}`,
+        versionNumber: versions.length + 1,
+        createdBy: collaborators[0] || {
+          id: '',
+          name: '',
+          email: '',
+          permission: CollaborationPermission.VIEW,
+          joinedAt: '',
+          lastActiveAt: '',
+          isOnline: false,
+        },
+        createdAt: new Date().toISOString(),
+        message: message || `版本 ${versions.length + 1}`,
+        changes: [],
+        fileSize: Math.floor(Math.random() * 1000000),
+        checksum: `hash-${Date.now()}`,
+      };
 
-    setVersions(prev => [...prev, newVersion]);
-    return newVersion;
-  }, [collaborators, versions.length]);
+      setVersions((prev) => [...prev, newVersion]);
+      return newVersion;
+    },
+    [collaborators, versions.length],
+  );
 
-  const getVersion = useCallback(async (versionId: string): Promise<VersionInfo> => {
-    return versions.find(v => v.id === versionId) || versions[0];
-  }, [versions]);
+  const getVersion = useCallback(
+    async (versionId: string): Promise<VersionInfo> => {
+      return versions.find((v) => v.id === versionId) || versions[0];
+    },
+    [versions],
+  );
 
-  const compareVersions = useCallback(async (
-    version1Id: string,
-    version2Id: string,
-  ): Promise<VersionDiff> => {
-    const v1 = versions.find(v => v.id === version1Id);
-    const v2 = versions.find(v => v.id === version2Id);
+  const compareVersions = useCallback(
+    async (version1Id: string, version2Id: string): Promise<VersionDiff> => {
+      const v1 = versions.find((v) => v.id === version1Id);
+      const v2 = versions.find((v) => v.id === version2Id);
 
-    return {
-      version1: v1!,
-      version2: v2!,
-      changes: [
-        { type: 'modify', sectionId: 'intro', content: '修改了引言部分内容', highlight: 'yellow' },
-        { type: 'add', sectionId: 'new-section', content: '新增了章节', highlight: 'green' },
-        { type: 'delete', sectionId: 'old-section', content: '删除了章节', highlight: 'red' },
-      ],
-    };
-  }, [versions]);
+      return {
+        version1: v1!,
+        version2: v2!,
+        changes: [
+          { type: 'modify', sectionId: 'intro', content: '修改了引言部分内容', highlight: 'yellow' },
+          { type: 'add', sectionId: 'new-section', content: '新增了章节', highlight: 'green' },
+          { type: 'delete', sectionId: 'old-section', content: '删除了章节', highlight: 'red' },
+        ],
+      };
+    },
+    [versions],
+  );
 
   const restoreVersion = useCallback(async (versionId: string): Promise<void> => {
     logger.log('Restoring version:', versionId);
   }, []);
 
   const updateShareSettingsInternal = useCallback((settings: Partial<ShareSettings>) => {
-    setShareSettings(prev => ({ ...prev, ...settings }));
+    setShareSettings((prev) => ({ ...prev, ...settings }));
   }, []);
 
-  const updateShareSettings = useCallback(async (settings: Partial<ShareSettings>): Promise<void> => {
-    updateShareSettingsInternal(settings);
-  }, [updateShareSettingsInternal]);
+  const updateShareSettings = useCallback(
+    async (settings: Partial<ShareSettings>): Promise<void> => {
+      updateShareSettingsInternal(settings);
+    },
+    [updateShareSettingsInternal],
+  );
 
   const generateShareLink = useCallback(async (): Promise<string> => {
     const link = `${window.location.origin}/share/report/${session?.reportId}?token=${Date.now()}`;

@@ -4,7 +4,7 @@ FastAPI 应用工厂 + 生命周期事件
 """
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
@@ -62,6 +62,8 @@ async def lifespan(app: FastAPI):
     1. 验证 PostgreSQL 连接可用性
     2. 初始化数据库表结构
     3. 种子数据导入
+    4. 注册延迟加载路由
+    5. 初始化 AI 服务
 
     关闭阶段:
     1. 关闭数据库连接池
@@ -91,6 +93,21 @@ async def lifespan(app: FastAPI):
             logger.info("[Startup] 数据库初始化完成")
         except Exception as e:
             logger.error(f"[Startup] 数据库初始化失败: {e}")
+
+    # 3. 注册延迟加载路由（包括 ingredients）
+    try:
+        register_lazy_routers()
+        logger.info("[Startup] 延迟路由注册完成")
+    except Exception as e:
+        logger.error(f"[Startup] 延迟路由注册失败: {e}")
+
+    # 4. 初始化 AI 服务
+    try:
+        from .services.ai import init_ai_services
+        await init_ai_services()
+        logger.info("[Startup] AI 服务初始化完成")
+    except Exception as e:
+        logger.error(f"[Startup] AI 服务初始化失败: {e}")
 
     yield
 
@@ -242,7 +259,7 @@ Authorization: Bearer <your_access_token>
         ],
     )
 
-    # ── 可观测性中间件 (院士级修复[P1]: 最外层，捕获所有请求的 Trace 上下文) ──
+    # ── 可观测性中间件 (待激活: 需要 OpenTelemetry collector 部署) ──
     # from .core.metrics import metrics as metrics_collector
     # app.add_middleware(
     #     TelemetryMiddleware,
@@ -250,7 +267,7 @@ Authorization: Bearer <your_access_token>
     #     slow_threshold_ms=500,
     # )
 
-    # 🔒 P4-3: 初始化增强日志系统（请求追踪 + 结构化日志 + 错误告警）
+    # 🔒 P4-3: 增强日志系统 (待激活: 需要 init_enhanced_logging 完成)
     # try:
     #     init_enhanced_logging(app)
     #     logger.info("[LoggingEnhanced] 增强日志系统已注册")
@@ -258,41 +275,39 @@ Authorization: Bearer <your_access_token>
     #     logger.warning(f"[LoggingEnhanced] 日志系统初始化失败（非阻塞）: {e}")
 
     # ── 安全中间件 (按顺序添加，后添加的先执行) ──
-    # app.add_middleware(RequestLoggingMiddleware)
-    # app.add_middleware(UTF8EncodingMiddleware)
-    # app.add_middleware(SecurityHeadersMiddleware, is_production=not settings.debug)
-    # app.add_middleware(RateLimitMiddleware, config=RateLimitConfig(
-    #     requests_per_minute=60 if settings.debug else 100,
-    #     requests_per_hour=1000,
-    # ))
+    app.add_middleware(RequestLoggingMiddleware)
+    app.add_middleware(UTF8EncodingMiddleware)
+    app.add_middleware(SecurityHeadersMiddleware, is_production=not settings.debug)
+    app.add_middleware(RateLimitMiddleware, config=RateLimitConfig(
+        requests_per_minute=60 if settings.debug else 30,
+        requests_per_hour=1000,
+    ))
 
-    # 院士级修复[P1]: 多租户行级安全中间件（从 JWT 注入 org_id 到请求上下文）
+    # 多租户行级安全 (待激活: 需要 TenantMiddleware 实现完成)
     # app.add_middleware(TenantMiddleware)
 
     # ── CORS 中间件 ──
+    cors_origins = settings.get_cors_origins()
+    # 生产环境禁止空列表（等于拒绝所有 CORS），至少允许自身
+    if not cors_origins and settings.is_production:
+        cors_origins = [f"http://localhost:{settings.server.port}"]
+        logger.warning(
+            f"[CORS] 生产环境未配置 cors_origins，仅允许 localhost:{settings.server.port}"
+        )
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=['*'],
-        allow_credentials=True,
-        allow_methods=['*'],
-        allow_headers=['*'],
+        allow_origins=cors_origins,
+        allow_credentials=settings.security.cors_allow_credentials,
+        allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+        allow_headers=["Authorization", "Content-Type", "Accept", "X-Requested-With"],
     )
 
-    # ── 全局异常处理中间件 (新增) ──
+    # ── 全局异常处理 (待激活: 需要统一错误码体系) ──
     # app.add_middleware(GlobalExceptionHandler)
 
-    # 🔒 P5-1: 注册审计中间件（自动记录所有 HTTP 请求）
+    # 🔒 P5-1: 审计中间件 (待激活: 需要 audit_logs 表迁移完成)
     # try:
-    #     # 直接传递类给 add_middleware，让 FastAPI 自动实例化
     #     app.add_middleware(AuditMiddleware,
-    #         include_paths=["/api/v1/"],
-    #         exclude_paths=["/health", "/metrics", "/static", "/docs", "/redoc", "/openapi.json"],
-    #         sampling_rate=1.0,
-    #         record_body=False,
-    #         alert_threshold_ms=5000,
-    #     )
-    #     app.state.audit_middleware = AuditMiddleware(
-    #         app=None,
     #         include_paths=["/api/v1/"],
     #         exclude_paths=["/health", "/metrics", "/static", "/docs", "/redoc", "/openapi.json"],
     #         sampling_rate=1.0,
@@ -308,7 +323,8 @@ Authorization: Bearer <your_access_token>
     setup_error_handling(app)
 
     # ── 调试端点：Trace 摘要（仅开发环境） ──
-    if settings.debug:
+    # 生产环境绝对不注册调试端点（双重防护）
+    if settings.debug and not settings.is_production:
         from fastapi import Depends
         from .api.deps import admin_route
 
@@ -322,6 +338,8 @@ Authorization: Bearer <your_access_token>
             """返回当前请求的 Trace 上下文（用于验证中间件注入正确性）"""
             from .core.telemetry import get_trace_context
             return get_trace_context()
+    elif settings.is_production:
+        logger.info("[Debug] 调试端点已禁用（生产环境）")
 
     # ── 注册路由（路由注册管理）──
     # 院士级修复[P1]: 统一路由注册，增加冲突检测和明确失败告警。
@@ -422,16 +440,27 @@ Authorization: Bearer <your_access_token>
 
     # ── 静态文件服务 ──
     import os
-    uploads_dir = "uploads"
-    os.makedirs(uploads_dir, exist_ok=True)
-    app.mount("/uploads", StaticFiles(directory=uploads_dir), name="uploads")
-    app.mount("/static", StaticFiles(directory="static"), name="static")
+    from pathlib import Path
 
-    # ── 自定义 /docs (使用本地静态资源，避免 CDN 依赖) ──
+    # 使用应用根目录作为基准，避免 Docker 内相对路径问题
+    app_root = Path(__file__).resolve().parent.parent  # backend/
+    uploads_dir = app_root / "uploads"
+    static_dir = app_root / "static"
+
+    uploads_dir.mkdir(exist_ok=True)
+    app.mount("/uploads", StaticFiles(directory=str(uploads_dir)), name="uploads")
+    if static_dir.exists():
+        app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
+    else:
+        logger.warning(f"[Static] 静态目录不存在: {static_dir}，跳过挂载")
+
+    # ── 自定义 /docs (仅开发环境暴露) ──
     from fastapi.responses import HTMLResponse
 
     @app.get("/docs", tags=["文档"])
     async def swagger_docs():
+        if not settings.debug:
+            raise HTTPException(status_code=404, detail="Documentation not available in production")
         return HTMLResponse(content="""<!DOCTYPE html>
 <html>
 <head>
@@ -494,7 +523,6 @@ const ui = SwaggerUIBundle({
         return {
             "app_name": settings.app_name,
             "version": settings.app_version,
-            "debug": settings.debug,
         }
 
     @app.get("/api/v1/system/modules", tags=["系统"])

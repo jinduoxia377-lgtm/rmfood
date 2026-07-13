@@ -1,11 +1,14 @@
 import React from 'react';
 import { render } from '@testing-library/react';
 import axe from '@axe-core/react';
+import type { AxeResults } from 'axe-core';
 
-export async function renderWithAxe(
-  ui: React.ReactElement,
-  options?: Parameters<typeof render>[1],
-) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const axeCore = (axe as any).core as
+  | { run: (container: HTMLElement, options?: Record<string, unknown>) => Promise<AxeResults> }
+  | undefined;
+
+export async function renderWithAxe(ui: React.ReactElement, options?: Parameters<typeof render>[1]) {
   const container = document.createElement('div');
   document.body.appendChild(container);
 
@@ -15,7 +18,11 @@ export async function renderWithAxe(
       container,
     });
 
-    await axe(container);
+    if (axeCore) {
+      await axeCore.run(container);
+    } else {
+      await axe(React, require('react-dom'), 0);
+    }
 
     return result;
   } finally {
@@ -24,7 +31,10 @@ export async function renderWithAxe(
 }
 
 export async function checkA11y(container: HTMLElement): Promise<void> {
-  const results = await axe(container);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const results: AxeResults = axeCore
+    ? await axeCore.run(container)
+    : ((await (axe as any)(React, require('react-dom'), 0)) as AxeResults);
 
   if (results.violations.length > 0) {
     const violationMessages = results.violations
@@ -36,9 +46,7 @@ export async function checkA11y(container: HTMLElement): Promise<void> {
       )
       .join('\n\n');
 
-    throw new Error(
-      `Accessibility violations found:\n\n${violationMessages}`,
-    );
+    throw new Error(`Accessibility violations found:\n\n${violationMessages}`);
   }
 }
 
@@ -51,7 +59,7 @@ export const axeOptions = {
     'color-contrast': {
       enabled: true,
     },
-    'keyboard': {
+    keyboard: {
       enabled: true,
     },
     'screen-reader': {

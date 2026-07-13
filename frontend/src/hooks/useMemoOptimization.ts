@@ -74,6 +74,7 @@ export function useThrottle<T>(value: T, interval: number): T {
 
       return () => clearTimeout(timeoutId)
     }
+    return
   }, [value, interval])
 
   return throttledValue

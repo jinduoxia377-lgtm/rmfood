@@ -186,9 +186,9 @@ function Kbd({ children }: { children: ReactNode }) {
     <kbd className={cn(
       'inline-flex items-center justify-center min-w-[24px] h-6 px-1.5',
       'rounded-md text-[11px] font-medium font-mono',
-      'bg-slate-100 dark:bg-slate-800',
-      'border border-slate-200 dark:border-slate-700',
-      'text-slate-600 dark:text-slate-400',
+      'bg-neutral-100 dark:bg-neutral-800',
+      'border border-neutral-200 dark:border-neutral-700',
+      'text-neutral-600 dark:text-neutral-400',
       'shadow-[0_1px_0_1px_rgba(0,0,0,0.04)]',
     )}>
       {children}
@@ -203,7 +203,7 @@ function formatKeys(keys: string): ReactNode[] {
   const rawParts = keys.split('+')
   return rawParts.map((part, i) => (
     <span key={i} className="flex items-center gap-0.5">
-      {i > 0 && <span className="text-slate-300 dark:text-slate-600 text-[10px] mx-px">+</span>}
+      {i > 0 && <span className="text-neutral-300 dark:text-neutral-600 text-[10px] mx-px">+</span>}
       <Kbd>{part}</Kbd>
     </span>
   ))
@@ -228,12 +228,12 @@ function KeyboardShortcutsHelp({ onClose }: { onClose: () => void }) {
 
       {/* 面板 */}
       <div className={cn(
-        'relative w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl',
-        'border border-slate-200 dark:border-slate-700 shadow-2xl',
+        'relative w-full max-w-md bg-white dark:bg-neutral-900 rounded-2xl',
+        'border border-neutral-200 dark:border-neutral-700 shadow-2xl',
         'animate-scale-in overflow-hidden',
       )}>
         {/* 头部 */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-100 dark:border-neutral-800">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center">
               <svg className="w-4 h-4 text-primary-600 dark:text-primary-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -242,13 +242,13 @@ function KeyboardShortcutsHelp({ onClose }: { onClose: () => void }) {
               </svg>
             </div>
             <div>
-              <h2 className="text-base font-semibold text-slate-900 dark:text-white">键盘快捷键</h2>
-              <p className="text-xs text-slate-400 dark:text-slate-500">提高工作效率的快捷操作</p>
+              <h2 className="text-base font-semibold text-neutral-900 dark:text-white">键盘快捷键</h2>
+              <p className="text-xs text-neutral-400 dark:text-neutral-500">提高工作效率的快捷操作</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
             aria-label="关闭"
           >
             <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -261,16 +261,16 @@ function KeyboardShortcutsHelp({ onClose }: { onClose: () => void }) {
         <div className="px-6 py-4 space-y-5 max-h-[60vh] overflow-y-auto">
           {Object.entries(groups).map(([group, shortcuts]) => (
             <div key={group}>
-              <p className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2.5">
+              <p className="text-[11px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-2.5">
                 {GROUP_LABELS[group] ?? group}
               </p>
               <div className="space-y-1">
                 {shortcuts.map((s) => (
                   <div
                     key={s.keys}
-                    className="flex items-center justify-between py-2 px-2.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group"
+                    className="flex items-center justify-between py-2 px-2.5 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-800/50 transition-colors group"
                   >
-                    <span className="text-sm text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white">
+                    <span className="text-sm text-neutral-700 dark:text-neutral-300 group-hover:text-neutral-900 dark:group-hover:text-white">
                       {s.label}
                     </span>
                     <div className="flex items-center">
@@ -284,8 +284,8 @@ function KeyboardShortcutsHelp({ onClose }: { onClose: () => void }) {
         </div>
 
         {/* 底部 */}
-        <div className="px-6 py-3 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/20">
-          <p className="text-[11px] text-slate-400 dark:text-slate-500 text-center">
+        <div className="px-6 py-3 border-t border-neutral-100 dark:border-neutral-800 bg-slate-50/50 dark:bg-neutral-800/20">
+          <p className="text-[11px] text-neutral-400 dark:text-neutral-500 text-center">
             按 <Kbd>ESC</Kbd> 关闭 &middot; 按 <Kbd>Ctrl+/</Kbd> 随时打开
           </p>
         </div>

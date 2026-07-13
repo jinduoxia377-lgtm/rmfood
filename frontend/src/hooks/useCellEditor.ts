@@ -20,6 +20,7 @@ import type {
   UseCellEditorReturn,
 } from '@/types/editing.types';
 import { EditMode } from '@/types/editing.types';
+import axios from 'axios';
 
 /** 最大撤销/重做步数 */
 const MAX_UNDO_STACK_SIZE = 50;
@@ -574,12 +575,16 @@ export function useCellEditor(
    */
   const saveAllChanges = useCallback(async (): Promise<boolean> => {
     try {
-      // TODO: 这里应该调用后端 API 提交变更
-      // await api.post('/api/v1/ai/formulas/batch-update', { changes: state.changes });
+      if (state.changes.length === 0) {
+        dispatch({ type: 'SAVE_CHANGES' });
+        return true;
+      }
+
+      await axios.post('/api/v1/ai/formulas/batch-update', { changes: state.changes });
 
       dispatch({ type: 'SAVE_CHANGES' });
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error('[useCellEditor] 保存失败:', error);
       return false;
     }
