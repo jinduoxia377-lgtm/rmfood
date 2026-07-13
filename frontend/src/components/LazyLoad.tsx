@@ -17,14 +17,7 @@
  * }, [])
  * ```
  */
-import React, {
-  ComponentType,
-  Suspense,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import React, { ComponentType, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 
 interface LoadableComponent<P = object> extends React.LazyExoticComponent<ComponentType<P>> {
   preload: () => Promise<void>;
@@ -55,8 +48,8 @@ export function lazyWithPreload<P = object>(
     preloadStarted = true;
     preloadPromise = factory()
       .then(() => {
-        if (typeof window !== 'undefined' && (window as any).__RMFOOD_PERF__) {
-          (window as any).__RMFOOD_PERF__.record(componentName, 'preloaded');
+        if (typeof window !== 'undefined' && window.__RMFOOD_PERF__) {
+          (window.__RMFOOD_PERF__ as { record: (name: string, type: string) => void }).record(componentName, 'preloaded');
         }
       })
       .catch((error) => {
@@ -69,7 +62,7 @@ export function lazyWithPreload<P = object>(
 
   // 🔒 P3-1: 当页面空闲时触发预加载（避免阻塞关键路径）
   if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-    (window as any).requestIdleCallback(() => {
+    window.requestIdleCallback(() => {
       // 不立即预加载，避免阻塞
     });
   }
@@ -115,11 +108,7 @@ export function LazyLoadWrapper<P = object>(props: {
     // 设置超时警告
     timeoutRef.current = window.setTimeout(() => {
       if (isMountedRef.current) {
-        console.warn(
-          `[LazyLoad] 组件加载超时 (${timeout}ms): ${
-            (LazyComponent as any).displayName || 'Unknown'
-          }`,
-        );
+        console.warn(`[LazyLoad] 组件加载超时 (${timeout}ms): ${(LazyComponent as any).displayName || 'Unknown'}`);
       }
     }, timeout);
 
@@ -139,12 +128,12 @@ export function LazyLoadWrapper<P = object>(props: {
   // 默认 fallback（骨架屏）
   const defaultFallback = skeleton || (
     <div className="animate-pulse space-y-4 p-8">
-      <div className="h-6 bg-gray-200 rounded w-3/4" />
-      <div className="h-4 bg-gray-200 rounded w-1/2" />
-      <div className="h-4 bg-gray-200 rounded w-full" />
-      <div className="h-4 bg-gray-200 rounded w-5/6" />
-      <div className="h-4 bg-gray-200 rounded w-2/3" />
-      <div className="h-24 bg-gray-100 rounded mt-8" />
+      <div className="h-6 bg-neutral-200 rounded w-3/4" />
+      <div className="h-4 bg-neutral-200 rounded w-1/2" />
+      <div className="h-4 bg-neutral-200 rounded w-full" />
+      <div className="h-4 bg-neutral-200 rounded w-5/6" />
+      <div className="h-4 bg-neutral-200 rounded w-2/3" />
+      <div className="h-24 bg-neutral-100 rounded mt-8" />
     </div>
   );
 
@@ -159,10 +148,8 @@ export function LazyLoadWrapper<P = object>(props: {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] p-8 text-center">
         <div className="text-4xl mb-4">⚠️</div>
-        <h3 className="text-lg font-semibold text-gray-700 mb-2">组件加载失败</h3>
-        <p className="text-sm text-gray-500 mb-6">
-          抱歉，页面组件加载时发生错误。请重试或刷新页面。
-        </p>
+        <h3 className="text-lg font-semibold text-neutral-700 mb-2">组件加载失败</h3>
+        <p className="text-sm text-neutral-500 mb-6">抱歉，页面组件加载时发生错误。请重试或刷新页面。</p>
         <div className="flex gap-3">
           <button
             onClick={handleRetry}
@@ -172,7 +159,7 @@ export function LazyLoadWrapper<P = object>(props: {
           </button>
           <button
             onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+            className="px-4 py-2 bg-neutral-200 text-neutral-700 rounded-lg hover:bg-neutral-300 transition-colors"
           >
             刷新页面
           </button>
@@ -183,9 +170,7 @@ export function LazyLoadWrapper<P = object>(props: {
 
   return (
     <Suspense fallback={fallback || defaultFallback} key={retryKey}>
-      <ErrorBoundary onError={onError}>
-        <LazyComponent {...(componentProps as P)} />
-      </ErrorBoundary>
+      {React.createElement(LazyComponent as React.ComponentType<any>, componentProps as any)}
     </Suspense>
   );
 }

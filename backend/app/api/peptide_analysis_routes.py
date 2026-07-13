@@ -14,7 +14,8 @@ import logging
 from typing import Optional
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
+from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..api.deps import get_db_session, get_current_user, PaginationParams
@@ -60,8 +61,8 @@ async def create_analysis(
         )
 
     except Exception as e:
-        logger.error(f"创建分析失败: {e}", exc_info=True)
-        raise HTTPException(status_code=422, detail=str(e))
+        logger.error("创建分析失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=422, detail="分析创建失败，请检查请求参数")
 
 
 @router.get(
@@ -104,8 +105,8 @@ async def list_analyses(
         )
 
     except Exception as e:
-        logger.error(f"查询分析列表失败: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"查询失败: {str(e)}")
+        logger.error("查询分析列表失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="查询失败，请稍后重试")
 
 
 @router.get(
@@ -151,8 +152,8 @@ async def get_analysis(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"获取分析详情失败: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("获取分析详情失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="获取分析详情失败，请稍后重试")
 
 
 @router.put(
@@ -187,8 +188,8 @@ async def update_analysis(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"更新分析失败: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("更新分析失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="更新分析失败，请稍后重试")
 
 
 @router.delete(
@@ -212,8 +213,8 @@ async def delete_analysis(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"删除分析失败: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("删除分析失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="删除分析失败，请稍后重试")
 
 
 @router.post(
@@ -239,10 +240,10 @@ async def batch_create_analyses(
         return result
 
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail="参数无效")
     except Exception as e:
-        logger.error(f"批量创建失败: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("批量创建失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="批量创建失败，请稍后重试")
 
 
 @router.get(
@@ -305,8 +306,47 @@ async def export_analyses(
             )
 
         elif format == "excel":
-            # TODO: 实现Excel导出（需要openpyxl库）
-            raise HTTPException(status_code=501, detail="Excel导出功能开发中")
+            # Excel 导出使用 openpyxl
+            from io import BytesIO
+            from openpyxl import Workbook
+            from openpyxl.styles import Font, Alignment, PatternFill
+
+            wb = Workbook()
+            ws = wb.active
+            ws.title = "肽段分析"
+
+            # 表头
+            headers = ["ID", "序列", "分子量", "等电点", "疏水性", "活性评分", "创建时间"]
+            header_fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
+            header_font = Font(bold=True, color="FFFFFF", size=11)
+
+            for col_idx, header in enumerate(headers, 1):
+                cell = ws.cell(row=1, column=col_idx, value=header)
+                cell.fill = header_fill
+                cell.font = header_font
+                cell.alignment = Alignment(horizontal="center")
+
+            # 数据行
+            for idx, row in enumerate(items, 2):
+                ws.cell(row=idx, column=1, value=row.get("id", ""))
+                ws.cell(row=idx, column=2, value=row.get("sequence", ""))
+                ws.cell(row=idx, column=3, value=row.get("molecular_weight", ""))
+                ws.cell(row=idx, column=4, value=row.get("isoelectric_point", ""))
+                ws.cell(row=idx, column=5, value=row.get("hydrophobicity", ""))
+                ws.cell(row=idx, column=6, value=row.get("activity_score", ""))
+                ws.cell(row=idx, column=7, value=row.get("created_at", ""))
+
+            output = BytesIO()
+            wb.save(output)
+            output.seek(0)
+
+            return StreamingResponse(
+                output,
+                media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                headers={
+                    "Content-Disposition": f"attachment; filename=peptide_analyses_{datetime.now().strftime('%Y%m%d')}.xlsx"
+                }
+            )
 
         else:
             raise HTTPException(status_code=400, detail=f"不支持的格式: {format}")
@@ -314,5 +354,5 @@ async def export_analyses(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"导出失败: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("导出失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="导出失败，请稍后重试")

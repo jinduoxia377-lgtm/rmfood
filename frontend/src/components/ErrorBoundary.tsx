@@ -12,7 +12,8 @@
  * - 支持重置和回退
  */
 import React, { Component, ErrorInfo, ReactNode } from 'react'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/Button'
+import { logger } from '@/utils/safeLogger'
 
 interface Props {
   children: ReactNode
@@ -73,10 +74,9 @@ export class ErrorBoundary extends Component<Props, State> {
   private reportToMonitoringService(error: Error, errorInfo: ErrorInfo): void {
     // 🔒 P2-4: 扩展点 - 接入 Sentry / Bugsnag / 自建服务
     // 例：Sentry.captureException(error, { extra: errorInfo })
-    if (typeof window !== 'undefined' && (window as any).Sentry) {
-      ;(window as any).Sentry.captureException(error, {
-        contexts: { react: { componentStack: errorInfo.componentStack } },
-      })
+    const sentry = (window as { Sentry?: { captureException: (err: unknown, info?: { componentStack?: string | null }) => void } }).Sentry;
+    if (sentry) {
+      sentry.captureException(error, { componentStack: errorInfo.componentStack ?? undefined });
     }
   }
 
@@ -104,7 +104,7 @@ export class ErrorBoundary extends Component<Props, State> {
       alert('错误详情已复制到剪贴板')
     }).catch(() => {
       // Fallback
-      console.log('错误详情:', errorText)
+      logger.log('错误详情:', errorText)
     })
   }
 
@@ -131,9 +131,9 @@ export class ErrorBoundary extends Component<Props, State> {
             justifyContent: 'center',
             minHeight: '200px',
             padding: '32px',
-            background: '#fef2f2',
+            background: '#FFF0F0',
             borderRadius: '12px',
-            border: '1px solid #fecaca',
+            border: '1px solid #FFD0D0',
           }}
         >
           <div
@@ -149,7 +149,7 @@ export class ErrorBoundary extends Component<Props, State> {
             style={{
               fontSize: '20px',
               fontWeight: 600,
-              color: '#991b1b',
+              color: '#DC2626',
               margin: '0 0 8px 0',
             }}
           >
@@ -172,7 +172,7 @@ export class ErrorBoundary extends Component<Props, State> {
             <p
               style={{
                 fontSize: '12px',
-                color: '#b91c1c',
+                color: '#DC2626',
                 fontFamily: 'monospace',
                 margin: '0 0 16px 0',
               }}
@@ -227,7 +227,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 style={{
                   cursor: 'pointer',
                   fontWeight: 500,
-                  color: '#dc2626',
+                  color: '#B91C1C',
                   marginBottom: '8px',
                 }}
               >

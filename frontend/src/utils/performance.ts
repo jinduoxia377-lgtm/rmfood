@@ -21,23 +21,23 @@
 
 // Web Vitals 指标类型
 export type VitalMetric = {
-  name: string;           // 指标名称
-  value: number;          // 指标值（毫秒或小数）
-  id: string;             // 指标唯一 ID
-  delta: number;          // 与上次的差值
-  rating: 'good' | 'needs-improvement' | 'poor';  // 评级
-  navigationType?: string;  // 导航类型
-  attribution?: Record<string, any>;  // 归属信息
+  name: string; // 指标名称
+  value: number; // 指标值（毫秒或小数）
+  id: string; // 指标唯一 ID
+  delta: number; // 与上次的差值
+  rating: 'good' | 'needs-improvement' | 'poor'; // 评级
+  navigationType?: string; // 导航类型
+  attribution?: Record<string, any>; // 归属信息
 };
 
 // 性能配置
 export interface PerformanceConfig {
   enabled: boolean;
-  endpoint?: string;       // 上报端点
-  sampleRate?: number;     // 采样率 (0.0 ~ 1.0)
-  batchSize?: number;      // 批量上报大小
-  batchInterval?: number;  // 批量上报间隔 (ms)
-  debug?: boolean;         // 是否开启调试日志
+  endpoint?: string; // 上报端点
+  sampleRate?: number; // 采样率 (0.0 ~ 1.0)
+  batchSize?: number; // 批量上报大小
+  batchInterval?: number; // 批量上报间隔 (ms)
+  debug?: boolean; // 是否开启调试日志
   reportOnUnload?: boolean; // 页面卸载时是否上报
   userIdentifier?: string; // 用户标识（匿名 ID）
 }
@@ -108,7 +108,7 @@ function observeLCP(callback: (metric: VitalMetric) => void) {
       const lastEntry = entries[entries.length - 1];
 
       if (lastEntry) {
-        const value = Math.max(lastEntry.startTime, lastEntry.renderTime || lastEntry.loadTime || 0);
+        const value = Math.max(lastEntry.startTime, 0);
         callback({
           name: 'LCP',
           value: value,
@@ -118,8 +118,8 @@ function observeLCP(callback: (metric: VitalMetric) => void) {
           attribution: {
             element: (lastEntry as any).element?.tagName || 'unknown',
             url: (lastEntry as any).url || 'n/a',
-            renderTime: lastEntry.renderTime || 0,
-            loadTime: lastEntry.loadTime || 0,
+            renderTime: 0,
+            loadTime: 0,
           },
         });
       }
@@ -356,9 +356,7 @@ function handleMetric(metric: VitalMetric) {
   metrics.push(metric);
 
   if (config.debug) {
-    console.log(
-      `[Perf] ${metric.name}: ${metric.value.toFixed(2)}ms (${metric.rating})`,
-    );
+    console.log(`[Perf] ${metric.name}: ${metric.value.toFixed(2)}ms (${metric.rating})`);
   }
 
   // 关键指标达到阈值时立即上报
@@ -385,11 +383,13 @@ function buildReportPayload(): any {
     screenHeight: window.screen.height,
     colorDepth: window.screen.colorDepth,
     devicePixelRatio: window.devicePixelRatio,
-    connection: (navigator as any).connection ? {
-      effectiveType: (navigator as any).connection.effectiveType,
-      downlink: (navigator as any).connection.downlink,
-      rtt: (navigator as any).connection.rtt,
-    } : null,
+    connection: (navigator as any).connection
+      ? {
+          effectiveType: (navigator as any).connection.effectiveType,
+          downlink: (navigator as any).connection.downlink,
+          rtt: (navigator as any).connection.rtt,
+        }
+      : null,
     memory: (navigator as any).deviceMemory || null,
     hardwareConcurrency: navigator.hardwareConcurrency || null,
   };
@@ -446,13 +446,13 @@ function getNavigationTimingSummary(): any {
  */
 function getMemoryUsage(): any {
   try {
-    const perf = (performance as any);
+    const perf = performance as any;
     if (perf.memory) {
       return {
         usedMB: Math.round(perf.memory.usedJSHeapSize / 1024 / 1024),
         totalMB: Math.round(perf.memory.totalJSHeapSize / 1024 / 1024),
         limitMB: Math.round(perf.memory.jsHeapSizeLimit / 1024 / 1024),
-        percent: (perf.memory.usedJSHeapSize / perf.memory.jsHeapSizeLimit * 100).toFixed(2),
+        percent: ((perf.memory.usedJSHeapSize / perf.memory.jsHeapSizeLimit) * 100).toFixed(2),
       };
     }
     return null;
@@ -475,10 +475,7 @@ function sendReport(payload: any) {
 
     // 使用 sendBeacon（页面卸载时更可靠）
     if (navigator.sendBeacon) {
-      const result = navigator.sendBeacon(
-        config.endpoint,
-        new Blob([body], { type: 'application/json' }),
-      );
+      const result = navigator.sendBeacon(config.endpoint, new Blob([body], { type: 'application/json' }));
       if (result) return;
       // sendBeacon 返回 false 表示请求被拒绝，静默忽略
     }
@@ -509,9 +506,7 @@ function scheduleReport(immediate: boolean = false) {
   metrics = [];
 
   const shouldReportNow =
-    immediate ||
-    pendingReports.length >= (config.batchSize || 10) ||
-    pendingReports.some((m) => m.rating === 'poor');
+    immediate || pendingReports.length >= (config.batchSize || 10) || pendingReports.some((m) => m.rating === 'poor');
 
   if (shouldReportNow) {
     const payload = buildReportPayload();
@@ -597,13 +592,16 @@ export function initPerformanceMonitoring(userConfig: Partial<PerformanceConfig>
 
   // 🔒 P3-4: 定期上报（即使没有变化也采样）
   if (config.batchInterval) {
-    setInterval(() => {
-      if (pendingReports.length > 0) {
-        const payload = buildReportPayload();
-        pendingReports = [];
-        sendReport(payload);
-      }
-    }, Math.max(config.batchInterval, 30000)); // 至少 30 秒
+    setInterval(
+      () => {
+        if (pendingReports.length > 0) {
+          const payload = buildReportPayload();
+          pendingReports = [];
+          sendReport(payload);
+        }
+      },
+      Math.max(config.batchInterval, 30000),
+    ); // 至少 30 秒
   }
 }
 
@@ -621,7 +619,7 @@ export function usePerformance(enabled: boolean = true) {
 
 // 暴露为全局对象（便于调试）
 if (typeof window !== 'undefined') {
-  (window as any).__RMFOOD_PERF__ = {
+  window.__RMFOOD_PERF__ = {
     init: initPerformanceMonitoring,
     getSummary: getPerformanceSummary,
     startTimer: startPerfTimer,
