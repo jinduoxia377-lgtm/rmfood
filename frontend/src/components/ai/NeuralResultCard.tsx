@@ -1,24 +1,26 @@
-import { Card } from '@/components/ui'
-import { ScoreRadarChart, ScoreCards } from './charts'
-import type { AICandidate } from '@/types'
-import { PatentSynergyDetails } from './PatentSynergyDetails'
-import { FormulaComposition } from './components/FormulaComposition'
-import { PeptideInfo } from './components/PeptideInfo'
-import { ContraindicationWarning } from './components/ContraindicationWarning'
-import { EditIndicator } from './components/EditIndicator'
-import { SimpleEditToolbar } from './components/SimpleEditToolbar'
-import { CardHeader } from './components/CardHeader'
-import { ActionButtons } from './components/ActionButtons'
-import { useNeuralResultCard } from './hooks/useNeuralResultCard'
+import { Card } from '@/components/ui';
+import { ScoreRadarChart, ScoreCards } from './charts';
+import type { AICandidate } from '@/api/ai';
+import { PatentSynergyDetails } from './PatentSynergyDetails';
+import { FormulaComposition } from './components/FormulaComposition';
+import { PeptideInfo } from './components/PeptideInfo';
+import { ContraindicationWarning } from './components/ContraindicationWarning';
+import { EditIndicator } from './components/EditIndicator';
+import { SimpleEditToolbar } from './components/SimpleEditToolbar';
+import { CardHeader } from './components/CardHeader';
+import { ActionButtons } from './components/ActionButtons';
+import { useNeuralResultCard } from './hooks/useNeuralResultCard';
 
 interface NeuralResultCardProps {
-  candidate: AICandidate
-  index: number
-  onSaveSuccess?: (formulaId: number, candidateId: string) => void
-  onViewReport?: (candidate: AICandidate) => void
-  onEdit?: (candidate: AICandidate, index: number) => void
-  savedFormulas?: Map<string, { formulaId: number; savedAt: number }>
-  selectedEffects?: string[]
+  candidate: AICandidate;
+  index: number;
+  onSaveSuccess?: (formulaId: number, candidateId: string) => void;
+  onViewReport?: (candidate: AICandidate) => void;
+  onEdit?: (candidate: AICandidate, index: number) => void;
+  onSelect?: (candidate: AICandidate) => void;
+  isSelected?: boolean;
+  savedFormulas?: Map<string, { formulaId: number; savedAt: number }>;
+  selectedEffects?: string[];
 }
 
 export function NeuralResultCard({
@@ -59,7 +61,7 @@ export function NeuralResultCard({
     onEdit,
     savedFormulas,
     selectedEffects,
-  })
+  });
 
   return (
     <Card
@@ -74,9 +76,9 @@ export function NeuralResultCard({
         <CardHeader
           isEditing={isEditing}
           editedName={editedName}
-          safetyPassed={candidate.safety_passed}
+          safetyPassed={candidate.safety_passed ?? false}
           overallScore={candidate.overall_score}
-          nameInputRef={nameInputRef}
+          nameInputRef={nameInputRef as React.RefObject<HTMLInputElement>}
           onNameChange={handleNameChange}
         />
         {isEditing ? (
@@ -93,7 +95,7 @@ export function NeuralResultCard({
               ref={descriptionTextareaRef}
               value={editedDescription}
               onChange={(e) => handleDescriptionChange(e.target.value)}
-              className="w-full min-h-[100px] p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none resize-none text-sm transition-all duration-200"
+              className="w-full min-h-[100px] p-4 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none resize-none text-sm transition-all duration-200"
               style={{ color: 'var(--text-secondary)' }}
               placeholder="输入配方描述..."
             />
@@ -128,7 +130,7 @@ export function NeuralResultCard({
         {candidate.peptide_candidates && candidate.peptide_candidates.length > 0 && (
           <PeptideInfo peptideCandidates={candidate.peptide_candidates} />
         )}
-        <ContraindicationWarning contraindications={(candidate as any).contraindications} />
+        <ContraindicationWarning contraindications={candidate.safety_details?.contraindications || []} />
         <ActionButtons
           isEditing={isEditing}
           hasUnsavedChanges={hasUnsavedChanges}
@@ -143,7 +145,7 @@ export function NeuralResultCard({
         />
       </div>
     </Card>
-  )
+  );
 }
 
-export default NeuralResultCard
+export default NeuralResultCard;

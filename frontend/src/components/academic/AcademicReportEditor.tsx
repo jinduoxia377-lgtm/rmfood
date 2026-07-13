@@ -68,8 +68,8 @@ export function AcademicReportEditor() {
 
   const getExportService = () => {
     if (!reportDoc) return null;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return new AcademicExportService(reportDoc as any);
+    // reportDoc is of type ReportDocument — AcademicExportService accepts any report-like object
+return new AcademicExportService(reportDoc as any);
   };
 
   const selectedChapter = reportDoc?.chapters.find(chapter => chapter.id === selectedChapterId);
@@ -369,12 +369,12 @@ export function AcademicReportEditor() {
     return (<div className="h-screen flex items-center justify-center">
       <div className="text-center">
         <div className="text-6xl mb-4">📄</div>
-        <p className="text-gray-500">正在加载文档...</p>
+        <p className="text-neutral-500">正在加载文档...</p>
       </div>
     </div>);
   }
 
-  return (<div className="h-screen flex flex-col bg-gray-100 dark:bg-gray-900">
+  return (<div className="h-screen flex flex-col bg-neutral-100 dark:bg-neutral-900">
     {showImportDialog && (
       <DocumentImport
         onImport={handleImport}
@@ -397,14 +397,14 @@ export function AcademicReportEditor() {
       />
     )}
 
-    <header className="flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
+    <header className="flex items-center justify-between px-4 py-3 bg-white dark:bg-neutral-800 border-b border-neutral-200 dark:border-neutral-700 shadow-sm">
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2">
           <BookMarked className="w-6 h-6 text-primary"/>
-          <span className="font-bold text-gray-900 dark:text-gray-100">学术报告系统</span>
+          <span className="font-bold text-neutral-900 dark:text-neutral-100">学术报告系统</span>
         </div>
 
-        <input type="text" value={reportDoc.title} onChange={(e) => setReportDoc({ ...reportDoc, title: e.target.value })} className="px-3 py-1.5 text-sm bg-gray-100 dark:bg-gray-700 border-none rounded-lg focus:outline-none focus:ring-2 focus:ring-primary max-w-xs"/>
+        <input type="text" value={reportDoc.title} onChange={(e) => setReportDoc({ ...reportDoc, title: e.target.value })} className="px-3 py-1.5 text-sm bg-neutral-100 dark:bg-neutral-700 border-none rounded-lg focus:outline-none focus:ring-2 focus:ring-primary max-w-xs"/>
 
         <SaveStatusIndicator
           status={saveStatus}
@@ -417,7 +417,7 @@ export function AcademicReportEditor() {
       <div className="flex items-center gap-2">
         <button
           onClick={() => setShowImportDialog(true)}
-          className="flex items-center gap-2 px-3 py-1.5 text-sm bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+          className="flex items-center gap-2 px-3 py-1.5 text-sm bg-neutral-200 dark:bg-neutral-700 rounded-lg hover:bg-neutral-300 dark:hover:bg-neutral-600 transition-colors"
         >
           <Upload className="w-4 h-4"/>
           导入
@@ -429,7 +429,7 @@ export function AcademicReportEditor() {
             'flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg transition-colors',
             batchMode
               ? 'bg-primary text-white'
-              : 'bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600',
+              : 'bg-neutral-200 dark:bg-neutral-700 hover:bg-neutral-300 dark:hover:bg-neutral-600',
           )}
         >
           {batchMode ? <CheckSquare className="w-4 h-4"/> : <Square className="w-4 h-4"/>}
@@ -437,14 +437,14 @@ export function AcademicReportEditor() {
         </button>
 
         <div className="relative">
-          <button onClick={() => setShowNewDocMenu(!showNewDocMenu)} className="flex items-center gap-2 px-3 py-1.5 text-sm bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+          <button onClick={() => setShowNewDocMenu(!showNewDocMenu)} className="flex items-center gap-2 px-3 py-1.5 text-sm bg-neutral-200 dark:bg-neutral-700 rounded-lg hover:bg-neutral-300 dark:hover:bg-neutral-600 transition-colors">
             <FileText className="w-4 h-4"/>
             新建
             <Menu className="w-4 h-4"/>
           </button>
           {showNewDocMenu && (
-            <div className="absolute right-0 top-full mt-1 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-2 w-48 z-50">
-              {Object.entries(ReportTypeConfig).map(([key, config]) => (<button key={key} onClick={() => handleNewDocument(key as ReportType)} className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2">
+            <div className="absolute right-0 top-full mt-1 bg-white dark:bg-neutral-800 rounded-lg shadow-lg border border-neutral-200 dark:border-neutral-700 py-2 w-48 z-50">
+              {Object.entries(ReportTypeConfig).map(([key, config]) => (<button key={key} onClick={() => handleNewDocument(key as ReportType)} className="w-full px-4 py-2 text-left text-sm hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center gap-2">
                 {getReportTypeIcon(key as ReportType)}
                 {config.label}
               </button>))}
@@ -458,22 +458,22 @@ export function AcademicReportEditor() {
         </button>
 
         <div className="relative">
-          <button onClick={() => setShowExportMenu(!showExportMenu)} disabled={isExporting} className="flex items-center gap-2 px-3 py-1.5 text-sm bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors disabled:opacity-50">
+          <button onClick={() => setShowExportMenu(!showExportMenu)} disabled={isExporting} className="flex items-center gap-2 px-3 py-1.5 text-sm bg-neutral-200 dark:bg-neutral-700 rounded-lg hover:bg-neutral-300 dark:hover:bg-neutral-600 transition-colors disabled:opacity-50">
             <Download className="w-4 h-4"/>
             {isExporting ? '导出中...' : '导出'}
             <Menu className="w-4 h-4"/>
           </button>
           {showExportMenu && (
-            <div className="absolute right-0 top-full mt-1 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-2 w-40 z-50">
-              <button onClick={() => handleExport('html')} className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2">
+            <div className="absolute right-0 top-full mt-1 bg-white dark:bg-neutral-800 rounded-lg shadow-lg border border-neutral-200 dark:border-neutral-700 py-2 w-40 z-50">
+              <button onClick={() => handleExport('html')} className="w-full px-4 py-2 text-left text-sm hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center gap-2">
                 <FileCode className="w-4 h-4"/>
                 HTML格式
               </button>
-              <button onClick={() => handleExport('docx')} className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2">
+              <button onClick={() => handleExport('docx')} className="w-full px-4 py-2 text-left text-sm hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center gap-2">
                 <FileTextIcon className="w-4 h-4"/>
                 Word格式
               </button>
-              <button onClick={() => handleExport('pdf')} className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2">
+              <button onClick={() => handleExport('pdf')} className="w-full px-4 py-2 text-left text-sm hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center gap-2">
                 <Printer className="w-4 h-4"/>
                 PDF格式
               </button>
@@ -481,27 +481,27 @@ export function AcademicReportEditor() {
           )}
         </div>
 
-        <button onClick={handlePrint} className="flex items-center gap-2 px-3 py-1.5 text-sm bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+        <button onClick={handlePrint} className="flex items-center gap-2 px-3 py-1.5 text-sm bg-neutral-200 dark:bg-neutral-700 rounded-lg hover:bg-neutral-300 dark:hover:bg-neutral-600 transition-colors">
           <Printer className="w-4 h-4"/>
           打印
         </button>
       </div>
     </header>
 
-    <div className="px-4 py-2 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+    <div className="px-4 py-2 bg-slate-50 dark:bg-neutral-800 border-b border-neutral-200 dark:border-neutral-700">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4 text-sm">
           <div className="flex items-center gap-2">
-            <label className="text-gray-600 dark:text-gray-400">作者：</label>
-            <input type="text" value={reportDoc.authors?.join('，') || ''} onChange={(e) => updateMetadata('authors', e.target.value.split('，'))} placeholder="请输入作者姓名" className="px-2 py-1 text-sm bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-primary max-w-32"/>
+            <label className="text-neutral-600 dark:text-neutral-400">作者：</label>
+            <input type="text" value={reportDoc.authors?.join('，') || ''} onChange={(e) => updateMetadata('authors', e.target.value.split('，'))} placeholder="请输入作者姓名" className="px-2 py-1 text-sm bg-white dark:bg-neutral-700 border border-neutral-200 dark:border-neutral-600 rounded focus:outline-none focus:ring-1 focus:ring-primary max-w-32"/>
           </div>
           <div className="flex items-center gap-2">
-            <label className="text-gray-600 dark:text-gray-400">单位：</label>
-            <input type="text" value={reportDoc.institution || ''} onChange={(e) => updateMetadata('institution', e.target.value)} placeholder="请输入单位名称" className="px-2 py-1 text-sm bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-primary max-w-40"/>
+            <label className="text-neutral-600 dark:text-neutral-400">单位：</label>
+            <input type="text" value={reportDoc.institution || ''} onChange={(e) => updateMetadata('institution', e.target.value)} placeholder="请输入单位名称" className="px-2 py-1 text-sm bg-white dark:bg-neutral-700 border border-neutral-200 dark:border-neutral-600 rounded focus:outline-none focus:ring-1 focus:ring-primary max-w-40"/>
           </div>
           <div className="flex items-center gap-2">
-            <label className="text-gray-600 dark:text-gray-400">日期：</label>
-            <input type="date" value={reportDoc.date || ''} onChange={(e) => updateMetadata('date', e.target.value)} className="px-2 py-1 text-sm bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-primary"/>
+            <label className="text-neutral-600 dark:text-neutral-400">日期：</label>
+            <input type="date" value={reportDoc.date || ''} onChange={(e) => updateMetadata('date', e.target.value)} className="px-2 py-1 text-sm bg-white dark:bg-neutral-700 border border-neutral-200 dark:border-neutral-600 rounded focus:outline-none focus:ring-1 focus:ring-primary"/>
           </div>
         </div>
 
@@ -514,49 +514,49 @@ export function AcademicReportEditor() {
     </div>
 
     <div className="flex-1 flex overflow-hidden">
-      <aside className={cn('flex flex-col border-r border-gray-200 dark:border-gray-700 transition-all duration-300', sidebarCollapsed ? 'w-16' : 'w-72')}>
-        <button onClick={() => setSidebarCollapsed(!sidebarCollapsed)} className="p-3 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors border-b border-gray-200 dark:border-gray-700">
+      <aside className={cn('flex flex-col border-r border-neutral-200 dark:border-neutral-700 transition-all duration-300', sidebarCollapsed ? 'w-16' : 'w-72')}>
+        <button onClick={() => setSidebarCollapsed(!sidebarCollapsed)} className="p-3 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors border-b border-neutral-200 dark:border-neutral-700">
           {sidebarCollapsed ? <Menu className="w-5 h-5 mx-auto"/> : <X className="w-5 h-5 mx-auto"/>}
         </button>
 
         <nav className="flex-1 p-2 space-y-1">
           <button onClick={() => setActivePanel('chapters')} className={cn('w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors', activePanel === 'chapters'
             ? 'bg-primary text-white'
-            : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800')}>
+            : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800')}>
             <LayoutDashboard className="w-5 h-5"/>
             {!sidebarCollapsed && <span>章节结构</span>}
           </button>
           <button onClick={() => setActivePanel('editor')} className={cn('w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors', activePanel === 'editor'
             ? 'bg-primary text-white'
-            : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800')}>
+            : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800')}>
             <Edit3 className="w-5 h-5"/>
             {!sidebarCollapsed && <span>文档编辑</span>}
           </button>
           <button onClick={() => setActivePanel('preview')} className={cn('w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors', activePanel === 'preview'
             ? 'bg-primary text-white'
-            : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800')}>
+            : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800')}>
             <Eye className="w-5 h-5"/>
             {!sidebarCollapsed && <span>预览</span>}
           </button>
         </nav>
 
-        {!sidebarCollapsed && (<div className="p-2 border-t border-gray-200 dark:border-gray-700">
+        {!sidebarCollapsed && (<div className="p-2 border-t border-neutral-200 dark:border-neutral-700">
           <CitationPanel citations={reportDoc.citations} citationStyle={reportDoc.citationStyle} onUpdateCitations={handleUpdateCitations} onUpdateStyle={handleUpdateCitationStyle}/>
         </div>)}
       </aside>
 
       <main className="flex-1 flex overflow-hidden">
-        {activePanel === 'chapters' && (<div className="w-72 border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
-          <div className="p-3 border-b border-gray-200 dark:border-gray-700">
+        {activePanel === 'chapters' && (<div className="w-72 border-r border-neutral-200 dark:border-neutral-700 overflow-y-auto">
+          <div className="p-3 border-b border-neutral-200 dark:border-neutral-700">
             <div className="flex items-center justify-between">
-              <h3 className="font-medium text-gray-900 dark:text-gray-100">章节结构</h3>
+              <h3 className="font-medium text-neutral-900 dark:text-neutral-100">章节结构</h3>
               {!batchMode && (
                 <button
                   onClick={() => setBatchMode(true)}
-                  className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                  className="p-1 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded transition-colors"
                   title="批量选择模式"
                 >
-                  <Layers className="w-4 h-4 text-gray-500" />
+                  <Layers className="w-4 h-4 text-neutral-500" />
                 </button>
               )}
             </div>
@@ -572,10 +572,10 @@ export function AcademicReportEditor() {
           />
         </div>)}
 
-        <div className={cn('flex-1 flex flex-col overflow-hidden', activePanel === 'chapters' ? 'border-l border-gray-200 dark:border-gray-700' : '')}>
+        <div className={cn('flex-1 flex flex-col overflow-hidden', activePanel === 'chapters' ? 'border-l border-neutral-200 dark:border-neutral-700' : '')}>
           {activePanel === 'editor' && (<DocumentEditor chapter={selectedChapter || null} onUpdate={handleUpdateChapter}/>)}
           {activePanel === 'preview' && (<DocumentPreview document={reportDoc}/>)}
-          {activePanel === 'chapters' && (<div className="flex-1 flex items-center justify-center text-gray-500 dark:text-gray-400">
+          {activePanel === 'chapters' && (<div className="flex-1 flex items-center justify-center text-neutral-500 dark:text-neutral-400">
             <div className="text-center">
               <div className="text-6xl mb-4">📝</div>
               <p>请从左侧选择章节进行编辑</p>

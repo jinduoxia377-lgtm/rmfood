@@ -72,9 +72,9 @@ const SOURCE_CONFIG: Record<IngredientSource, {
   },
   [IngredientSource.EXCIPIENT]: {
     label: '辅料',
-    color: 'text-gray-600 dark:text-gray-400',
-    bgColor: 'bg-gray-50 dark:bg-gray-800/50',
-    borderColor: 'border-l-gray-400',
+    color: 'text-neutral-600 dark:text-neutral-400',
+    bgColor: 'bg-slate-50 dark:bg-neutral-800/50',
+    borderColor: 'border-l-slate-400',
     icon: <Package className="w-3.5 h-3.5" />,
   },
 }
@@ -150,10 +150,10 @@ const IngredientRow = memo(({
       <tr
         ref={rowRef}
         className={`
-          group relative border-b border-gray-100 dark:border-gray-700/50
+          group relative border-b border-neutral-100 dark:border-neutral-700/50
           transition-all duration-150 ease-in-out
-          ${index % 2 === 0 ? 'bg-white dark:bg-gray-900/30' : 'bg-gray-50/50 dark:bg-gray-800/20'}
-          ${isHovered ? 'bg-blue-50/50 dark:bg-blue-900/10 shadow-sm' : ''}
+          ${index % 2 === 0 ? 'bg-white dark:bg-neutral-900/30' : 'bg-slate-50/50 dark:bg-neutral-800/20'}
+          ${isHovered ? 'bg-secondary-50/50 dark:bg-secondary-900/10 shadow-sm' : ''}
           ${sourceConfig.borderColor} border-l-4
           focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:z-10
         `}
@@ -167,11 +167,11 @@ const IngredientRow = memo(({
       >
         <td className="px-4 py-3">
           <div className="flex flex-col gap-0.5">
-            <span className="font-medium text-gray-900 dark:text-gray-100 text-sm">
+            <span className="font-medium text-neutral-900 dark:text-neutral-100 text-sm">
               {highlightText(ingredient.name)}
             </span>
             {ingredient.latinName && (
-              <span className="text-xs text-gray-500 dark:text-gray-400 italic">
+              <span className="text-xs text-neutral-500 dark:text-neutral-400 italic">
                 {highlightText(ingredient.latinName)}
               </span>
             )}
@@ -180,10 +180,10 @@ const IngredientRow = memo(({
 
         <td className="px-4 py-3">
           <div className="flex flex-col gap-0.5">
-            <span className="font-mono text-sm text-gray-700 dark:text-gray-300">
+            <span className="font-mono text-sm text-neutral-700 dark:text-neutral-300">
               {ingredient.amount}{ingredient.unit}
             </span>
-            <span className="text-xs text-gray-500 dark:text-gray-400">
+            <span className="text-xs text-neutral-500 dark:text-neutral-400">
               ({(ingredient.percentage ?? 0).toFixed(1)}%)
             </span>
           </div>
@@ -193,14 +193,14 @@ const IngredientRow = memo(({
           <div className="flex flex-wrap gap-1 max-w-[200px]">
             {tagMatchStatus === 'loading' && (
               <div className="flex gap-1">
-                <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded-full w-14 animate-pulse" />
-                <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded-full w-16 animate-pulse" />
+                <div className="h-5 bg-neutral-200 dark:bg-neutral-700 rounded-full w-14 animate-pulse" />
+                <div className="h-5 bg-neutral-200 dark:bg-neutral-700 rounded-full w-16 animate-pulse" />
               </div>
             )}
 
             {tagMatchStatus === 'error' && matchError && (
               <span
-                className="inline-flex items-center px-2 py-1 text-xs rounded-full bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800"
+                className="inline-flex items-center px-2 py-1 text-xs rounded-full bg-error-50 dark:bg-error-900/20 text-error-600 dark:text-error-400 border border-red-200 dark:border-red-800"
                 title={`⚠️ 匹配失败: ${matchError}`}
               >
                 ⚠️ 匹配失败
@@ -210,7 +210,7 @@ const IngredientRow = memo(({
             {tagMatchStatus === 'success' && matchedTags && (() => {
               const tags = matchedTags.get(ingredient.name) || []
               if (tags.length === 0) {
-                return <span className="text-xs text-gray-400">—</span>
+                return <span className="text-xs text-neutral-400">—</span>
               }
               return (
                 <EfficacyTagList
@@ -231,7 +231,7 @@ const IngredientRow = memo(({
             )}
 
             {(tagMatchStatus === 'idle' || !matchedTags) && (ingredient.efficacyTags ?? []).length === 0 && tagMatchStatus !== 'loading' && (
-              <span className="text-xs text-gray-400">—</span>
+              <span className="text-xs text-neutral-400">—</span>
             )}
           </div>
         </td>
@@ -248,7 +248,7 @@ const IngredientRow = memo(({
               </div>
             ))}
             {(ingredient.precautions ?? []).length > 2 && (
-              <span className="text-xs text-gray-400">+{(ingredient.precautions ?? []).length - 2}</span>
+              <span className="text-xs text-neutral-400">+{(ingredient.precautions ?? []).length - 2}</span>
             )}
           </div>
         </td>
@@ -268,17 +268,17 @@ const IngredientRow = memo(({
               e.stopPropagation()
               onToggleExpand()
             }}
-            className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            className="p-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
             aria-label={isExpanded ? '收起详情' : '展开详情'}
             aria-expanded={isExpanded}
           >
-            <Info className={`w-4 h-4 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+            <Info className={`w-4 h-4 text-neutral-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
           </button>
         </td>
       </tr>
 
       {isExpanded && (
-        <tr className="bg-blue-50/30 dark:bg-blue-900/5">
+        <tr className="bg-secondary-50/30 dark:bg-secondary-900/5">
           <td colSpan={6} className="px-6 py-4">
             <IngredientDetail ingredient={ingredient} />
           </td>
@@ -293,30 +293,30 @@ IngredientRow.displayName = 'IngredientRow'
 const IngredientDetail = memo(({ ingredient }: { ingredient: Ingredient }) => (
   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
     <div className="space-y-2">
-      <h4 className="font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+      <h4 className="font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-2">
         <Leaf className="w-4 h-4" /> 药理作用
       </h4>
-      <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+      <p className="text-neutral-600 dark:text-neutral-400 leading-relaxed">
         {ingredient.name}具有{(ingredient.efficacyTags ?? []).join('、')}等功效，
         在配方中起到{(ingredient.percentage ?? 0) > 10 ? '主要' : '辅助'}作用。
       </p>
     </div>
 
     <div className="space-y-2">
-      <h4 className="font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+      <h4 className="font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-2">
         <Package className="w-4 h-4" /> 推荐用量
       </h4>
-      <p className="text-gray-600 dark:text-gray-400 font-mono">
+      <p className="text-neutral-600 dark:text-neutral-400 font-mono">
         {(ingredient.amount * 0.8).toFixed(0)}-{(ingredient.amount * 1.2).toFixed(0)}{ingredient.unit}
-        <span className="block text-xs mt-1 text-gray-500">±20% 安全范围</span>
+        <span className="block text-xs mt-1 text-neutral-500">±20% 安全范围</span>
       </p>
     </div>
 
     <div className="space-y-2">
-      <h4 className="font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+      <h4 className="font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-2">
         <AlertCircle className="w-4 h-4" /> 禁忌与注意
       </h4>
-      <ul className="space-y-1 text-gray-600 dark:text-gray-400">
+      <ul className="space-y-1 text-neutral-600 dark:text-neutral-400">
         {(ingredient.precautions ?? []).map((p, i) => (
           <li key={i} className="flex items-start gap-1">
             <span className={`mt-1.5 w-1.5 h-1.5 rounded-full ${
@@ -330,10 +330,10 @@ const IngredientDetail = memo(({ ingredient }: { ingredient: Ingredient }) => (
     </div>
 
     <div className="space-y-2">
-      <h4 className="font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+      <h4 className="font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-2">
         <Dna className="w-4 h-4" /> 参考文献
       </h4>
-      <p className="text-gray-600 dark:text-gray-400 text-xs leading-relaxed">
+      <p className="text-neutral-600 dark:text-neutral-400 text-xs leading-relaxed">
         《中国药典》2025年版、相关临床研究文献及传统应用记录。
         {ingredient.source === IngredientSource.TCM && ' 经典方剂配伍参考。'}
         {ingredient.source === IngredientSource.PEPTIDE && ' 现代生物活性肽研究。'}
@@ -347,29 +347,29 @@ IngredientDetail.displayName = 'IngredientDetail'
 const TableSkeleton = memo(() => (
   <tbody>
     {Array.from({ length: 8 }).map((_, i) => (
-      <tr key={i} className="border-b border-gray-100 dark:border-gray-700/50 animate-pulse">
+      <tr key={i} className="border-b border-neutral-100 dark:border-neutral-700/50 animate-pulse">
         <td className="px-4 py-3">
-          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-1" />
-          <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2" />
+          <div className="h-4 bg-neutral-200 dark:bg-neutral-700 rounded w-3/4 mb-1" />
+          <div className="h-3 bg-neutral-200 dark:bg-neutral-700 rounded w-1/2" />
         </td>
         <td className="px-4 py-3">
-          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-16 mb-1" />
-          <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-12" />
+          <div className="h-4 bg-neutral-200 dark:bg-neutral-700 rounded w-16 mb-1" />
+          <div className="h-3 bg-neutral-200 dark:bg-neutral-700 rounded w-12" />
         </td>
         <td className="px-4 py-3">
           <div className="flex gap-1">
-            <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded-full w-14" />
-            <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded-full w-16" />
+            <div className="h-5 bg-neutral-200 dark:bg-neutral-700 rounded-full w-14" />
+            <div className="h-5 bg-neutral-200 dark:bg-neutral-700 rounded-full w-16" />
           </div>
         </td>
         <td className="px-4 py-3">
-          <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded-full w-24" />
+          <div className="h-5 bg-neutral-200 dark:bg-neutral-700 rounded-full w-24" />
         </td>
         <td className="px-4 py-3">
-          <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded-full w-16" />
+          <div className="h-5 bg-neutral-200 dark:bg-neutral-700 rounded-full w-16" />
         </td>
         <td className="px-4 py-3">
-          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-4" />
+          <div className="h-4 bg-neutral-200 dark:bg-neutral-700 rounded w-4" />
         </td>
       </tr>
     ))}
@@ -458,7 +458,7 @@ export function FormulaTable({ data, isLoading = false }: FormulaTableProps) {
           .reduce((sum, ing) => sum + ing.amount, 0)
 
     return {
-      title: data.title || (data as any).name || '配方详情',
+      title: data.title || (data as { name?: string }).name || '配方详情',
       ingredients: enhancedIngredients,
       totalAmount,
       description: data.description || '',
@@ -606,7 +606,7 @@ export function FormulaTable({ data, isLoading = false }: FormulaTableProps) {
 
   const getSortIcon = (field: SortField) => {
     if (sortConfig.field !== field) {
-      return <ArrowUpDown className="w-3.5 h-3.5 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+      return <ArrowUpDown className="w-3.5 h-3.5 text-neutral-400 opacity-0 group-hover:opacity-100 transition-opacity" />
     }
     return sortConfig.direction === 'asc' ? (
       <ArrowUp className="w-3.5 h-3.5 text-primary-500" />
@@ -619,12 +619,12 @@ export function FormulaTable({ data, isLoading = false }: FormulaTableProps) {
 
   if (isLoading) {
     return (
-      <div className="w-full overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm">
+      <div className="w-full overflow-hidden rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 shadow-sm">
         <table className="w-full" role="table" aria-label="配方表格加载中">
-          <thead className="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700">
+          <thead className="bg-slate-50 dark:bg-neutral-800/50 border-b border-neutral-200 dark:border-neutral-700">
             <tr>
               {['成分名称', '用量', '功效标签', '注意事项', '来源分类', ''].map((header, i) => (
-                <th key={i} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th key={i} className="px-4 py-3 text-left text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
                   {header || '\u00A0'}
                 </th>
               ))}
@@ -638,10 +638,10 @@ export function FormulaTable({ data, isLoading = false }: FormulaTableProps) {
 
   if (!hasValidData) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 px-4 text-center bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
-        <AlertCircle className="w-12 h-12 text-gray-300 dark:text-gray-600 mb-4" />
-        <p className="text-gray-500 dark:text-gray-400 text-base font-medium">暂无配方数据</p>
-        <p className="text-gray-400 dark:text-gray-500 text-sm mt-2">请生成或导入配方数据后查看</p>
+      <div className="flex flex-col items-center justify-center py-16 px-4 text-center bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-700">
+        <AlertCircle className="w-12 h-12 text-neutral-300 dark:text-neutral-600 mb-4" />
+        <p className="text-neutral-500 dark:text-neutral-400 text-base font-medium">暂无配方数据</p>
+        <p className="text-neutral-400 dark:text-neutral-500 text-sm mt-2">请生成或导入配方数据后查看</p>
       </div>
     )
   }
@@ -650,15 +650,15 @@ export function FormulaTable({ data, isLoading = false }: FormulaTableProps) {
     <div className="w-full space-y-4" role="region" aria-label="配方结构化表格">
       <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
         <div className="relative flex-1 max-w-md w-full">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
           <input
             type="search"
             placeholder="搜索成分名称..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-lg
-                       bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100
-                       placeholder-gray-400 dark:placeholder-gray-500
+            className="w-full pl-9 pr-4 py-2 text-sm border border-neutral-200 dark:border-neutral-600 rounded-lg
+                       bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100
+                       placeholder-slate-400 dark:placeholder-slate-500
                        focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500
                        transition-all duration-200"
             aria-label="搜索成分"
@@ -666,7 +666,7 @@ export function FormulaTable({ data, isLoading = false }: FormulaTableProps) {
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+          <div className="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400">
             <Filter className="w-4 h-4" />
             <span className="font-medium">来源:</span>
             {Object.entries(SOURCE_CONFIG).map(([key, config]) => (
@@ -678,7 +678,7 @@ export function FormulaTable({ data, isLoading = false }: FormulaTableProps) {
                   type="checkbox"
                   checked={selectedSources.has(key as IngredientSource)}
                   onChange={() => toggleSourceFilter(key as IngredientSource)}
-                  className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                  className="rounded border-neutral-300 text-primary-600 focus:ring-primary-500"
                   aria-label={`筛选${config.label}`}
                 />
                 <span className={`text-xs ${config.color}`}>{config.label}</span>
@@ -690,7 +690,7 @@ export function FormulaTable({ data, isLoading = false }: FormulaTableProps) {
 
       {allTags.length > 0 && (
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">功效筛选:</span>
+          <span className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">功效筛选:</span>
           {allTags.map((tag) => (
             <button
               key={tag}
@@ -700,7 +700,7 @@ export function FormulaTable({ data, isLoading = false }: FormulaTableProps) {
                 border
                 ${selectedTags.has(tag)
                   ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 border-primary-300 dark:border-primary-700'
-                  : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
+                  : 'bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-600 hover:border-neutral-300 dark:hover:border-neutral-500'
                 }
               `}
               aria-pressed={selectedTags.has(tag)}
@@ -719,18 +719,18 @@ export function FormulaTable({ data, isLoading = false }: FormulaTableProps) {
         </div>
       )}
 
-      <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm">
+      <div className="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 shadow-sm">
         <table
           className="w-full min-w-[900px]"
           role="table"
           aria-label={`${safeData.title || '配方'}成分列表`}
           aria-rowcount={filteredAndSortedData.length}
         >
-          <thead className="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
+          <thead className="bg-slate-50 dark:bg-neutral-800/50 border-b border-neutral-200 dark:border-neutral-700 sticky top-0 z-10">
             <tr>
               <th
                 scope="col"
-                className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer group hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors"
+                className="px-4 py-3 text-left text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider cursor-pointer group hover:bg-neutral-100 dark:hover:bg-neutral-700/50 transition-colors"
                 onClick={() => handleSort('name')}
                 aria-sort={
                   sortConfig.field === 'name'
@@ -746,7 +746,7 @@ export function FormulaTable({ data, isLoading = false }: FormulaTableProps) {
 
               <th
                 scope="col"
-                className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer group hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors"
+                className="px-4 py-3 text-left text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider cursor-pointer group hover:bg-neutral-100 dark:hover:bg-neutral-700/50 transition-colors"
                 onClick={() => handleSort('amount')}
                 aria-sort={
                   sortConfig.field === 'amount'
@@ -762,21 +762,21 @@ export function FormulaTable({ data, isLoading = false }: FormulaTableProps) {
 
               <th
                 scope="col"
-                className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                className="px-4 py-3 text-left text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider"
               >
                 功效标签
               </th>
 
               <th
                 scope="col"
-                className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                className="px-4 py-3 text-left text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider"
               >
                 注意事项
               </th>
 
               <th
                 scope="col"
-                className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                className="px-4 py-3 text-left text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider"
               >
                 来源分类
               </th>
@@ -791,20 +791,20 @@ export function FormulaTable({ data, isLoading = false }: FormulaTableProps) {
             </tr>
           </thead>
 
-          <tbody className="divide-y divide-gray-100 dark:divide-gray-700/50">
+          <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
             {filteredAndSortedData.length === 0 ? (
               <tr>
                 <td colSpan={6} className="px-4 py-12 text-center">
                   <div className="flex flex-col items-center gap-2">
-                    <Search className="w-8 h-8 text-gray-300 dark:text-gray-600" />
-                    <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
+                    <Search className="w-8 h-8 text-neutral-300 dark:text-neutral-600" />
+                    <p className="text-sm text-neutral-500 dark:text-neutral-400 font-medium">
                       {safeData.ingredients?.length === 0
                         ? '暂无成分数据'
                         : '未找到匹配的成分'}
                     </p>
                     {safeData.ingredients?.length > 0 && (
                       <>
-                        <p className="text-xs text-gray-400 dark:text-gray-500">
+                        <p className="text-xs text-neutral-400 dark:text-neutral-500">
                           当前有 {safeData.ingredients.length} 条数据被筛选条件隐藏
                           {(searchQuery || selectedTags.size > 0 || selectedSources.size !== Object.values(IngredientSource).length) && '，请检查以下条件：'}
                         </p>
@@ -877,9 +877,9 @@ export function FormulaTable({ data, isLoading = false }: FormulaTableProps) {
         </table>
       </div>
 
-      <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 pt-2">
+      <div className="flex items-center justify-between text-xs text-neutral-500 dark:text-neutral-400 pt-2">
         <span>
-          共 <strong className="text-gray-700 dark:text-gray-300">{filteredAndSortedData.length}</strong> 条记录
+          共 <strong className="text-neutral-700 dark:text-neutral-300">{filteredAndSortedData.length}</strong> 条记录
           {filteredAndSortedData.length !== safeData.ingredients?.length && (
             <span className="ml-2">
               （从 {safeData.ingredients?.length || 0} 条中筛选）
@@ -897,39 +897,39 @@ export function FormulaTable({ data, isLoading = false }: FormulaTableProps) {
       {isDev && (
         <div className="mt-4 p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
           <div className="flex items-center justify-between mb-3">
-            <h4 className="text-sm font-semibold text-blue-800 dark:text-blue-300 flex items-center gap-2">
-              <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+            <h4 className="text-sm font-semibold text-secondary-800 dark:text-secondary-300 flex items-center gap-2">
+              <span className="w-2 h-2 bg-secondary-500 rounded-full animate-pulse" />
               调试面板 (仅开发模式)
             </h4>
-            <span className="text-xs text-blue-600 dark:text-blue-400 font-mono">FormulaTable Debug</span>
+            <span className="text-xs text-secondary-600 dark:text-secondary-400 font-mono">FormulaTable Debug</span>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-            <div className="bg-white/60 dark:bg-gray-800/60 p-2 rounded">
-              <div className="text-gray-500 dark:text-gray-400">接收数据</div>
-              <div className="font-mono font-bold text-gray-900 dark:text-gray-100">{safeData.ingredients?.length ?? 0} 条</div>
+            <div className="bg-white/60 dark:bg-neutral-800/60 p-2 rounded">
+              <div className="text-neutral-500 dark:text-neutral-400">接收数据</div>
+              <div className="font-mono font-bold text-neutral-900 dark:text-neutral-100">{safeData.ingredients?.length ?? 0} 条</div>
             </div>
-            <div className="bg-white/60 dark:bg-gray-800/60 p-2 rounded">
-              <div className="text-gray-500 dark:text-gray-400">筛选结果</div>
-              <div className={`font-mono font-bold ${filteredAndSortedData.length === 0 ? 'text-red-600' : 'text-green-600'}`}>
+            <div className="bg-white/60 dark:bg-neutral-800/60 p-2 rounded">
+              <div className="text-neutral-500 dark:text-neutral-400">筛选结果</div>
+              <div className={`font-mono font-bold ${filteredAndSortedData.length === 0 ? 'text-error-600' : 'text-success-600'}`}>
                 {filteredAndSortedData.length} 条
               </div>
             </div>
-            <div className="bg-white/60 dark:bg-gray-800/60 p-2 rounded">
-              <div className="text-gray-500 dark:text-gray-400">选中来源</div>
-              <div className="font-mono text-gray-900 dark:text-gray-100">
+            <div className="bg-white/60 dark:bg-neutral-800/60 p-2 rounded">
+              <div className="text-neutral-500 dark:text-neutral-400">选中来源</div>
+              <div className="font-mono text-neutral-900 dark:text-neutral-100">
                 {Array.from(selectedSources).join(', ') || '无'}
               </div>
             </div>
-            <div className="bg-white/60 dark:bg-gray-800/60 p-2 rounded">
-              <div className="text-gray-500 dark:text-gray-400">搜索关键词</div>
-              <div className="font-mono text-gray-900 dark:text-gray-100 truncate">
+            <div className="bg-white/60 dark:bg-neutral-800/60 p-2 rounded">
+              <div className="text-neutral-500 dark:text-neutral-400">搜索关键词</div>
+              <div className="font-mono text-neutral-900 dark:text-neutral-100 truncate">
                 {searchQuery || '(空)'}
               </div>
             </div>
           </div>
           {safeData.ingredients?.length > 0 && (
             <div className="mt-3 pt-3 border-t border-blue-200 dark:border-blue-800">
-              <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">数据来源分布：</div>
+              <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-2">数据来源分布：</div>
               <div className="flex flex-wrap gap-2">
                 {Object.values(IngredientSource).map((source) => {
                   const count = safeData.ingredients?.filter(ing => ing.source === source).length ?? 0

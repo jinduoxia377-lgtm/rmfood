@@ -116,7 +116,7 @@ export const logger = {
 export function setupGlobalErrorHandler(): void {
   window.onerror = (message, source, lineno, colno, error) => {
     // ── 静默过滤请求被中止的错误（检查 message 和 error 对象）──
-    const msg = String(message || '') + ' ' + String(error?.message || error?.code || '')
+    const msg = String(message || '') + ' ' + String(error?.message || (error as Error & { code?: string })?.code || '')
     if (msg.match(/ERR_ABORTED|canceled|Request aborted|aborted/i)) {
       return false
     }

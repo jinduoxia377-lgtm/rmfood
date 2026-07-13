@@ -9,16 +9,47 @@ import { peptideAnalysisApi, type PeptideAnalysisData } from '@/api/ai'
 import { logger } from '@/utils/safeLogger';
 
 
+interface PeptideAnalysisResult {
+  sequence?: string;
+  details?: {
+    id: number;
+    dimension_type: 'basic' | 'structure' | 'physicochemical' | 'bioactivity' | 'safety' | 'overall';
+    data: Record<string, unknown>;
+    created_at: string;
+  }[];
+  overall_scores?: Record<string, unknown>;
+  basic_properties?: Record<string, unknown>;
+  secondary_structure?: Record<string, unknown> & {
+    percentages?: {
+      alpha_helix?: number;
+      beta_sheet?: number;
+      random_coil?: number;
+    };
+    predicted_sequence?: string;
+  };
+  bioactivity_predictions?: Record<string, unknown>;
+  safety_assessment?: Record<string, unknown> & {
+    risk_level?: 'low' | 'medium' | 'high';
+    safety_score?: number;
+    penalties?: string[];
+    immunogenicity_risk?: number;
+    allergenicity_risk?: number;
+    protease_cleavage_sites?: string[];
+    recommended_storage_conditions?: string;
+  };
+}
+
+
 interface DeepAnalysisProps {
   initialSequence?: string
-  onAnalysisComplete?: (result: any) => void
+  onAnalysisComplete?: (result: PeptideAnalysisResult) => void
 }
 
 export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComplete }: DeepAnalysisProps) {
   const [activeMode, setActiveMode] = useState<'single' | 'batch' | 'pareto' | 'synergy' | 'solubility'>('single')
   const [sequence, setSequence] = useState(initialSequence)
   const [loading, setLoading] = useState(false)
-  const [result, setResult] = useState<any>(null)
+  const [result, setResult] = useState<PeptideAnalysisResult | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     basic: true, structure: true, bioactivity: true, safety: true,
@@ -220,8 +251,8 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
 
   const renderScoreBar = (label: string, score: number, color: string) => (
     <div className="flex items-center gap-3 mb-2">
-      <span className="text-sm text-gray-600 w-32">{label}</span>
-      <div className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+      <span className="text-sm text-neutral-600 w-32">{label}</span>
+      <div className="flex-1 h-2 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden">
         <div
           className={`h-full rounded-full transition-all duration-500 bg-${color}-500`}
           style={{ width: `${Math.min(score * 100, 100)}%` }}
@@ -236,8 +267,8 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
   const renderPropertyGrid = (props: Record<string, any>) => (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
       {Object.entries(props).map(([key, value]) => (
-        <div key={key} className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-          <div className="text-xs text-gray-500 capitalize">{key.replace(/_/g, ' ')}</div>
+        <div key={key} className="p-3 bg-slate-50 dark:bg-neutral-800 rounded-lg">
+          <div className="text-xs text-neutral-500 capitalize">{key.replace(/_/g, ' ')}</div>
           <div className="text-lg font-semibold mt-1">
             {typeof value === 'number' ? value.toFixed(2) : String(value)}
           </div>
@@ -247,9 +278,9 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
   )
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+    <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-lg border border-neutral-200 dark:border-neutral-700 overflow-hidden">
       {/* Header */}
-      <div className="p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
+      <div className="p-6 border-b border-neutral-200 dark:border-neutral-700 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
         <div className="flex items-center gap-3">
           <div className="p-3 bg-white/20 rounded-xl backdrop-blur">
             <Microscope className="w-7 h-7 text-white" />
@@ -271,10 +302,10 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
           ].map(({ id, icon: Icon, label }) => (
             <button
               key={id}
-              onClick={() => setActiveMode(id as any)}
+              onClick={() => setActiveMode(id as 'single' | 'batch' | 'pareto' | 'synergy' | 'solubility')}
               className={`px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${
                 activeMode === id
-                  ? 'bg-white text-purple-600 shadow-md'
+                  ? 'bg-white text-accent-600 shadow-md'
                   : 'bg-white/10 text-white hover:bg-white/20'
               }`}
             >
@@ -296,8 +327,8 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
                 value={sequence}
                 onChange={(e) => setSequence(e.target.value.toUpperCase())}
                 placeholder="输入肽序列，如 VLGYT 或 LRPFFY..."
-                className="flex-1 px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg
-                         bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-mono text-lg
+                className="flex-1 px-4 py-3 border-2 border-neutral-300 dark:border-neutral-600 rounded-lg
+                         bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white font-mono text-lg
                          focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all"
               />
               <button
@@ -313,9 +344,9 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
 
             {/* Error */}
             {error && (
-              <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-start gap-3">
-                <AlertTriangle className="w-5 h-5 text-red-500 mt-0.5" />
-                <div className="text-red-700 dark:text-red-300">{error}</div>
+              <div className="p-4 bg-error-50 dark:bg-error-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-start gap-3">
+                <AlertTriangle className="w-5 h-5 text-error-500 mt-0.5" />
+                <div className="text-error-700 dark:text-error-300">{error}</div>
               </div>
             )}
 
@@ -327,15 +358,15 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
                   <div className="flex items-center gap-3">
                     {currentAnalysisId ? (
                       <>
-                        <Database className="w-5 h-5 text-green-600" />
-                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        <Database className="w-5 h-5 text-success-600" />
+                        <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                           已保存 (ID: {currentAnalysisId})
                         </span>
                       </>
                     ) : (
                       <>
                         <Save className="w-5 h-5 text-orange-600" />
-                        <span className="text-sm text-gray-500">分析完成，可保存到数据库</span>
+                        <span className="text-sm text-neutral-500">分析完成，可保存到数据库</span>
                       </>
                     )}
                   </div>
@@ -346,7 +377,7 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
                       <button
                         onClick={handleSaveAnalysis}
                         disabled={saving}
-                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 flex items-center gap-2 text-sm"
+                        className="px-4 py-2 bg-success-600 text-white rounded-lg hover:bg-success-700 disabled:opacity-50 flex items-center gap-2 text-sm"
                       >
                         {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                         保存到数据库
@@ -358,14 +389,14 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
                       <>
                         <button
                           onClick={() => setIsEditing(!isEditing)}
-                          className="px-3 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 flex items-center gap-1.5 text-sm"
+                          className="px-3 py-2 bg-secondary-100 text-secondary-700 rounded-lg hover:bg-secondary-200 flex items-center gap-1.5 text-sm"
                         >
                           <Edit3 className="w-4 h-4" />
                           编辑备注
                         </button>
                         <button
                           onClick={() => setShowDeleteConfirm(true)}
-                          className="px-3 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 flex items-center gap-1.5 text-sm"
+                          className="px-3 py-2 bg-error-100 text-error-700 rounded-lg hover:bg-error-200 flex items-center gap-1.5 text-sm"
                         >
                           <Trash2 className="w-4 h-4" />
                           删除
@@ -376,7 +407,7 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
                     {/* 历史记录按钮 */}
                     <button
                       onClick={() => setShowHistoryPanel(!showHistoryPanel)}
-                      className="px-3 py-2 bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 flex items-center gap-1.5 text-sm"
+                      className="px-3 py-2 bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 flex items-center gap-1.5 text-sm"
                     >
                       <History className="w-4 h-4" />
                       历史记录 ({historyTotal})
@@ -393,19 +424,19 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
                       value={editingTags}
                       onChange={(e) => setEditingTags(e.target.value)}
                       placeholder="标签（逗号分隔）"
-                      className="w-full px-3 py-2 border border-yellow-300 dark:border-yellow-700 rounded bg-white dark:bg-gray-800 text-sm"
+                      className="w-full px-3 py-2 border border-yellow-300 dark:border-yellow-700 rounded bg-white dark:bg-neutral-800 text-sm"
                     />
                     <textarea
                       value={editingNotes}
                       onChange={(e) => setEditingNotes(e.target.value)}
                       placeholder="备注信息..."
                       rows={2}
-                      className="w-full px-3 py-2 border border-yellow-300 dark:border-yellow-700 rounded bg-white dark:bg-gray-800 text-sm resize-none"
+                      className="w-full px-3 py-2 border border-yellow-300 dark:border-yellow-700 rounded bg-white dark:bg-neutral-800 text-sm resize-none"
                     />
                     <div className="flex gap-2 justify-end">
                       <button
                         onClick={() => setIsEditing(false)}
-                        className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800"
+                        className="px-3 py-1.5 text-sm text-neutral-600 hover:text-neutral-800"
                       >
                         取消
                       </button>
@@ -421,26 +452,26 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
 
                 {/* 删除确认对话框 */}
                 {showDeleteConfirm && (
-                  <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg space-y-3">
-                    <div className="font-medium text-red-800 dark:text-red-200 flex items-center gap-2">
+                  <div className="p-4 bg-error-50 dark:bg-error-900/20 border border-red-200 dark:border-red-800 rounded-lg space-y-3">
+                    <div className="font-medium text-error-800 dark:text-error-200 flex items-center gap-2">
                       <AlertTriangle className="w-5 h-5" />
                       确认删除此分析记录？
                     </div>
-                    <p className="text-sm text-red-600 dark:text-red-300">
+                    <p className="text-sm text-error-600 dark:text-error-300">
                       删除后数据将移至回收站，可在管理后台恢复。此操作不可撤销。
                     </p>
                     <div className="flex gap-2 justify-end">
                       <button
                         onClick={() => setShowDeleteConfirm(false)}
                         disabled={deleteLoading}
-                        className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800"
+                        className="px-3 py-1.5 text-sm text-neutral-600 hover:text-neutral-800"
                       >
                         取消
                       </button>
                       <button
                         onClick={handleDeleteAnalysis}
                         disabled={deleteLoading}
-                        className="px-4 py-1.5 bg-red-600 text-white rounded text-sm hover:bg-red-700 disabled:opacity-50 flex items-center gap-1.5"
+                        className="px-4 py-1.5 bg-error-600 text-white rounded text-sm hover:bg-error-700 disabled:opacity-50 flex items-center gap-1.5"
                       >
                         {deleteLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
                         确认删除
@@ -451,15 +482,15 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
 
                 {/* 历史记录侧边栏 */}
                 {showHistoryPanel && (
-                  <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-                    <div className="px-4 py-3 bg-gray-50 dark:bg-gray-800 flex items-center justify-between">
-                      <div className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                  <div className="border border-neutral-200 dark:border-neutral-700 rounded-lg overflow-hidden">
+                    <div className="px-4 py-3 bg-slate-50 dark:bg-neutral-800 flex items-center justify-between">
+                      <div className="font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
                         <Clock className="w-5 h-5" />
                         我的历史分析 ({historyTotal}条)
                       </div>
                       <button
                         onClick={() => setShowHistoryPanel(false)}
-                        className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded"
+                        className="p-1 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded"
                       >
                         <X className="w-5 h-5" />
                       </button>
@@ -467,27 +498,27 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
 
                     <div className="max-h-96 overflow-y-auto">
                       {historyLoading ? (
-                        <div className="p-8 text-center text-gray-500">
+                        <div className="p-8 text-center text-neutral-500">
                           <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2" />
                           加载中...
                         </div>
                       ) : historyList.length === 0 ? (
-                        <div className="p-8 text-center text-gray-400">
+                        <div className="p-8 text-center text-neutral-400">
                           <Database className="w-12 h-12 mx-auto mb-2 opacity-30" />
                           暂无历史记录
                         </div>
                       ) : (
-                        <div className="divide-y divide-gray-200 dark:divide-gray-700">
+                        <div className="divide-y divide-slate-200 dark:divide-slate-700">
                           {historyList.map((item) => (
                             <button
                               key={item.id}
                               onClick={() => handleLoadFromHistory(item.id)}
-                              className="w-full px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 text-left transition-colors"
+                              className="w-full px-4 py-3 hover:bg-slate-50 dark:hover:bg-neutral-800 text-left transition-colors"
                             >
-                              <div className="font-mono font-semibold text-gray-900 dark:text-white">
+                              <div className="font-mono font-semibold text-neutral-900 dark:text-white">
                                 {item.sequence}
                               </div>
-                              <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
+                              <div className="flex items-center gap-3 mt-1 text-xs text-neutral-500">
                                 <span>{item.analysis_mode}</span>
                                 <span>•</span>
                                 <span>{new Date(item.created_at).toLocaleDateString()}</span>
@@ -510,22 +541,22 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
 
                     {/* 分页控件 */}
                     {historyTotal > 20 && (
-                      <div className="px-4 py-3 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between text-sm">
-                        <span className="text-gray-500">
+                      <div className="px-4 py-3 bg-slate-50 dark:bg-neutral-800 border-t border-neutral-200 dark:border-neutral-700 flex items-center justify-between text-sm">
+                        <span className="text-neutral-500">
                           第 {(historyPage - 1) * 20 + 1}-{Math.min(historyPage * 20, historyTotal)} 条，共 {historyTotal} 条
                         </span>
                         <div className="flex gap-2">
                           <button
                             onClick={() => loadHistory(historyPage - 1)}
                             disabled={historyPage <= 1}
-                            className="px-3 py-1 border rounded disabled:opacity-50 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            className="px-3 py-1 border rounded disabled:opacity-50 hover:bg-neutral-100 dark:hover:bg-neutral-700"
                           >
                             上一页
                           </button>
                           <button
                             onClick={() => loadHistory(historyPage + 1)}
                             disabled={historyPage * 20 >= historyTotal}
-                            className="px-3 py-1 border rounded disabled:opacity-50 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            className="px-3 py-1 border rounded disabled:opacity-50 hover:bg-neutral-100 dark:hover:bg-neutral-700"
                           >
                             下一页
                           </button>
@@ -538,14 +569,14 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
                 {/* Overall Score Card */}
                 <div className="grid grid-cols-5 gap-4 p-5 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl border border-purple-200 dark:border-purple-800">
                   {[
-                    { label: '综合得分', value: result.overall_scores?.composite ?? 0, color: 'purple' },
-                    { label: '稳定性', value: result.overall_scores?.stability ?? 0, color: 'blue' },
-                    { label: '类药性', value: result.overall_scores?.druglikeness ?? 0, color: 'green' },
-                    { label: '生物活性', value: result.overall_scores?.bioactivity ?? 0, color: 'orange' },
-                    { label: '安全性', value: result.overall_scores?.safety ?? 0, color: 'emerald' },
+                    { label: '综合得分', value: Number(result.overall_scores?.composite ?? 0), color: 'purple' },
+                    { label: '稳定性', value: Number(result.overall_scores?.stability ?? 0), color: 'blue' },
+                    { label: '类药性', value: Number(result.overall_scores?.druglikeness ?? 0), color: 'green' },
+                    { label: '生物活性', value: Number(result.overall_scores?.bioactivity ?? 0), color: 'orange' },
+                    { label: '安全性', value: Number(result.overall_scores?.safety ?? 0), color: 'emerald' },
                   ].map(({ label, value, color }) => (
                     <div key={label} className="text-center">
-                      <div className="text-xs text-gray-500 mb-1">{label}</div>
+                      <div className="text-xs text-neutral-500 mb-1">{label}</div>
                       <div className={`text-3xl font-bold text-${color}-600`}>
                         {(value * 100).toFixed(1)}<span className="text-lg">%</span>
                       </div>
@@ -582,9 +613,9 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
                           { type: 'β-Sheet', percent: result.secondary_structure.percentages?.beta_sheet ?? 0, color: 'blue' },
                           { type: 'Random Coil', percent: result.secondary_structure.percentages?.random_coil ?? 0, color: 'green' },
                         ].map(({ type, percent, color }) => (
-                          <div key={type} className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg text-center">
+                          <div key={type} className="p-4 bg-slate-50 dark:bg-neutral-800 rounded-lg text-center">
                             <div className={`text-2xl font-bold text-${color}-600`}>{percent.toFixed(1)}%</div>
-                            <div className="text-sm text-gray-500 mt-1">{type}</div>
+                            <div className="text-sm text-neutral-500 mt-1">{type}</div>
                             <div className={`mt-2 h-2 bg-${color}-200 rounded-full overflow-hidden`}>
                               <div className={`h-full bg-${color}-500 rounded-full transition-all`} style={{ width: `${percent}%` }} />
                             </div>
@@ -595,19 +626,19 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
                       {/* Predicted Sequence Visualization */}
                       {result.secondary_structure.predicted_sequence && (
                         <div className="mt-4">
-                          <div className="text-sm text-gray-500 mb-2">结构序列可视化</div>
+                          <div className="text-sm text-neutral-500 mb-2">结构序列可视化</div>
                           <div className="font-mono text-lg flex flex-wrap gap-1">
                             {result.secondary_structure.predicted_sequence.split('').map((char: string, i: number) => (
                               <span
                                 key={i}
                                 className={`px-2 py-1 rounded ${
-                                  char === 'H' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' :
-                                  char === 'E' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' :
-                                  'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
+                                  char === 'H' ? 'bg-error-100 text-error-700 dark:bg-error-900/30 dark:text-error-300' :
+                                  char === 'E' ? 'bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-300' :
+                                  'bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-300'
                                 }`}
-                                title={`${result.sequence[i]}${i + 1}: ${char === 'H' ? 'Helix' : char === 'E' ? 'Sheet' : 'Coil'}`}
+                                title={`${(result.sequence?.[i] ?? '')}${i + 1}: ${char === 'H' ? 'Helix' : char === 'E' ? 'Sheet' : 'Coil'}`}
                               >
-                                {result.sequence[i]}
+                                {result.sequence?.[i] ?? ''}
                               </span>
                             ))}
                           </div>
@@ -630,21 +661,21 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
                         const score = data.score ?? 0.5
                         const tier = data.tier ?? 'moderate'
                         return (
-                          <div key={activity} className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                          <div key={activity} className="p-4 bg-slate-50 dark:bg-neutral-800 rounded-lg">
                             <div className="flex justify-between items-center mb-2">
                               <span className="font-medium">{activity}</span>
                               <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                                tier === 'excellent' ? 'bg-green-100 text-green-700' :
-                                tier === 'good' ? 'bg-blue-100 text-blue-700' :
+                                tier === 'excellent' ? 'bg-success-100 text-success-700' :
+                                tier === 'good' ? 'bg-secondary-100 text-secondary-700' :
                                 tier === 'moderate' ? 'bg-yellow-100 text-yellow-700' :
-                                'bg-red-100 text-red-700'
+                                'bg-error-100 text-error-700'
                               }`}>
                                 {tier.toUpperCase()}
                               </span>
                             </div>
                             {renderScoreBar(activity, score, tier === 'excellent' ? 'green' : tier === 'good' ? 'blue' : 'yellow')}
                             {data.potential_applications && (
-                              <div className="mt-2 text-xs text-gray-500">
+                              <div className="mt-2 text-xs text-neutral-500">
                                 应用场景: {data.potential_applications.join(', ')}
                               </div>
                             )}
@@ -662,28 +693,30 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
                   expanded={expandedSections.safety ?? false}
                   onToggle={() => toggleSection('safety')}
                 >
-                  {result.safety_assessment && (
+                  {result.safety_assessment && (() => {
+                    const sa = result.safety_assessment;
+                    return (
                     <div className="space-y-4">
                       <div className={`p-4 rounded-lg ${
-                        result.safety_assessment.risk_level === 'low' ? 'bg-green-50 dark:bg-green-900/20 border border-green-200' :
-                        result.safety_assessment.risk_level === 'medium' ? 'bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200' :
-                        'bg-red-50 dark:bg-red-900/20 border border-red-200'
+                        sa.risk_level === 'low' ? 'bg-success-50 dark:bg-success-900/20 border border-green-200' :
+                        sa.risk_level === 'medium' ? 'bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200' :
+                        'bg-error-50 dark:bg-error-900/20 border border-red-200'
                       }`}>
                         <div className="flex items-center gap-3">
-                          {result.safety_assessment.risk_level === 'low' && <CheckCircle2 className="w-6 h-6 text-green-500" />}
-                          {result.safety_assessment.risk_level === 'medium' && <AlertTriangle className="w-6 h-6 text-yellow-500" />}
-                          {result.safety_assessment.risk_level === 'high' && <AlertTriangle className="w-6 h-6 text-red-500" />}
+                          {sa.risk_level === 'low' && <CheckCircle2 className="w-6 h-6 text-success-500" />}
+                          {sa.risk_level === 'medium' && <AlertTriangle className="w-6 h-6 text-yellow-500" />}
+                          {sa.risk_level === 'high' && <AlertTriangle className="w-6 h-6 text-error-500" />}
                           <div>
-                            <div className="font-semibold">安全等级: {result.safety_assessment.risk_level.toUpperCase()}</div>
-                            <div className="text-sm text-gray-500">评分: {(result.safety_assessment.safety_score * 100).toFixed(1)}%</div>
+                            <div className="font-semibold">安全等级: {sa.risk_level?.toUpperCase() ?? '-'}</div>
+                            <div className="text-sm text-neutral-500">评分: {(sa.safety_score ?? 0 * 100).toFixed(1)}%</div>
                           </div>
                         </div>
                       </div>
 
-                      {result.safety_assessment.penalties?.length > 0 && (
+                      {sa.penalties && sa.penalties.length > 0 && (
                         <div className="space-y-2">
-                          <div className="text-sm font-medium text-gray-700">风险因素:</div>
-                          {result.safety_assessment.penalties.map((penalty: string, i: number) => (
+                          <div className="text-sm font-medium text-neutral-700">风险因素:</div>
+                          {sa.penalties.map((penalty: string, i: number) => (
                             <div key={i} className="flex items-center gap-2 text-sm text-orange-600">
                               <AlertTriangle className="w-4 h-4" />
                               {penalty}
@@ -694,13 +727,13 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
 
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                         {[
-                          { label: '免疫原性风险', value: result.safety_assessment.immunogenicity_risk },
-                          { label: '过敏风险', value: result.safety_assessment.allergenicity_risk },
-                          { label: '蛋白酶位点数', value: result.safety_assessment.protease_cleavage_sites?.length ?? 0 },
-                          { label: '推荐储存', value: result.safety_assessment.recommended_storage_conditions ?? '-' },
+                          { label: '免疫原性风险', value: sa.immunogenicity_risk },
+                          { label: '过敏风险', value: sa.allergenicity_risk },
+                          { label: '蛋白酶位点数', value: sa.protease_cleavage_sites?.length ?? 0 },
+                          { label: '推荐储存', value: sa.recommended_storage_conditions ?? '-' },
                         ].map(({ label, value }) => (
-                          <div key={label} className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                            <div className="text-xs text-gray-500">{label}</div>
+                          <div key={label} className="p-3 bg-slate-50 dark:bg-neutral-800 rounded-lg">
+                            <div className="text-xs text-neutral-500">{label}</div>
                             <div className="text-sm font-medium mt-0.5">
                               {typeof value === 'number' ? `${(value * 100).toFixed(1)}%` : value}
                             </div>
@@ -708,11 +741,12 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
                         ))}
                       </div>
                     </div>
-                  )}
+                    );
+                  })()}
                 </SectionCard>
 
                 {/* Export Button */}
-                <div className="flex justify-end pt-4 border-t border-gray-200 dark:border-gray-700">
+                <div className="flex justify-end pt-4 border-t border-neutral-200 dark:border-neutral-700">
                   <button
                     onClick={() => {
                       const blob = new Blob([JSON.stringify(result, null, 2)], { type: 'application/json' })
@@ -722,7 +756,7 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
                       a.download = `peptide_analysis_${sequence}_${Date.now()}.json`
                       a.click()
                     }}
-                    className="px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 flex items-center gap-2"
+                    className="px-4 py-2 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 flex items-center gap-2"
                   >
                     <Download className="w-4 h-4" />
                     导出报告
@@ -735,13 +769,13 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
 
         {/* Other modes placeholder */}
         {activeMode !== 'single' && (
-          <div className="text-center py-16 text-gray-500">
+          <div className="text-center py-16 text-neutral-500">
             <Atom className="w-16 h-16 mx-auto mb-4 opacity-30" />
             <h3 className="text-lg font-medium mb-2">功能开发中</h3>
             <p className="text-sm">"{activeMode}" 模式即将上线</p>
             <button
               onClick={() => setActiveMode('single')}
-              className="mt-4 px-4 py-2 text-purple-600 hover:bg-purple-50 rounded-lg"
+              className="mt-4 px-4 py-2 text-accent-600 hover:bg-accent-50 rounded-lg"
             >
               返回深度分析模式
             </button>
@@ -766,19 +800,19 @@ function SectionCard({
   children: React.ReactNode
 }) {
   return (
-    <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+    <div className="border border-neutral-200 dark:border-neutral-700 rounded-lg overflow-hidden">
       <button
         onClick={onToggle}
-        className="w-full px-5 py-4 flex items-center justify-between bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-750 transition-colors"
+        className="w-full px-5 py-4 flex items-center justify-between bg-slate-50 dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-slate-750 transition-colors"
       >
         <div className="flex items-center gap-3">
           {icon}
-          <h3 className="font-semibold text-gray-900 dark:text-white">{title}</h3>
+          <h3 className="font-semibold text-neutral-900 dark:text-white">{title}</h3>
         </div>
-        {expanded ? <ChevronUp className="w-5 h-5 text-gray-400" /> : <ChevronDown className="w-5 h-5 text-gray-400" />}
+        {expanded ? <ChevronUp className="w-5 h-5 text-neutral-400" /> : <ChevronDown className="w-5 h-5 text-neutral-400" />}
       </button>
       {expanded && (
-        <div className="px-5 py-4 bg-white dark:bg-gray-900">
+        <div className="px-5 py-4 bg-white dark:bg-neutral-900">
           {children}
         </div>
       )}
