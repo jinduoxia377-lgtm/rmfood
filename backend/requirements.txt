@@ -20,7 +20,6 @@ jsonschema==4.23.0
 
 # ── 认证 + 安全 ──
 python-jose[cryptography]==3.3.0
-passlib[bcrypt]==1.7.4
 bcrypt==4.2.0
 python-multipart==0.0.9
 
@@ -33,11 +32,12 @@ reportlab==4.2.5
 openpyxl==3.1.5
 
 # ── 科学计算（协同作用引擎）──
-numpy==2.0.0
+numpy==1.26.4  # 固定 <2.0：chromadb 0.5.0 依赖已被 NumPy 2.0 移除的 np.float_
 scipy==1.14.0
 
 # ── RAG 检索增强生成 ──
 chromadb==0.5.0
+fastembed==0.8.0  # 本地 embedding 模型（EMBEDDING_PROVIDER=local），免 API key、离线可用
 
 # ── 可观测性 ──
 opentelemetry-api==1.28.0
@@ -46,3 +46,6 @@ opentelemetry-sdk==1.28.0
 # ── 安全扫描工具（可选 - CI/CD 使用）──
 # pip-audit>=2.7.0    # 依赖漏洞扫描器（PyPA官方）
 # bandit>=1.7.0        # 代码安全静态分析工具
+psutil>=5.9.0
+email-validator>=2.0.0
+pandas>=2.0.0
