@@ -180,7 +180,7 @@ const ZH_CN_MESSAGES = {
     delete: '删除配方',
     name: '配方名称',
     category: '分类',
-    status: '状态',
+    status_label: '状态',
     creator: '创建人',
     created_at: '创建时间',
     updated_at: '更新时间',
@@ -357,7 +357,7 @@ const EN_US_MESSAGES: TranslationMessages = {
     delete: 'Delete Formula',
     name: 'Formula Name',
     category: 'Category',
-    status: 'Status',
+    status_label: 'Status',
     creator: 'Creator',
     created_at: 'Created At',
     updated_at: 'Updated At',
@@ -482,7 +482,13 @@ const MESSAGES_MAP: Record<Locale, TranslationMessages> = {
  * 获取嵌套对象属性（安全访问）
  */
 function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
-  return path.split('.').reduce((current, key) => current?.[key], obj);
+  const parts = path.split('.');
+  let current: unknown = obj;
+  for (const key of parts) {
+    if (current == null || typeof current !== 'object') return undefined;
+    current = (current as Record<string, unknown>)[key];
+  }
+  return current;
 }
 
 /**
@@ -634,7 +640,7 @@ export function TranslationProvider({
       }
 
       // 插值
-      return interpolate(translation, params, locale);
+      return interpolate(typeof translation === 'string' ? translation : key, params, locale);
     },
     [locale, fallbackLocale],
   );
@@ -727,7 +733,7 @@ export function tf(key: string, params?: Record<string, any>): string {
     return key;
   }
 
-  return interpolate(translation, params, _currentLocale);
+  return interpolate(typeof translation === 'string' ? translation : key, params, _currentLocale);
 }
 
 // ═════════════════════════════════════════════
