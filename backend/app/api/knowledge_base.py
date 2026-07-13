@@ -84,7 +84,8 @@ async def smart_query(
                 ],
             }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"查询失败: {str(e)}")
+        logger.error("查询失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="服务器内部错误，请稍后重试")
     
     # 缓存结果（有效期5分钟）
     await cache.set(cache_key, result, ttl=300)

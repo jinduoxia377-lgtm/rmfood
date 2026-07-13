@@ -361,7 +361,6 @@ async def health_check(request: Request):
         "service": settings.app_name,
         "version": settings.app_version,
         "timestamp": datetime.now(timezone.utc).isoformat(),
-        "environment": "development" if settings.debug else "production",
     }
 
 
@@ -465,7 +464,6 @@ async def detailed_health_check(db: AsyncSession = Depends(get_db)):
         "status": overall_status,
         "service": settings.app_name,
         "version": settings.app_version,
-        "environment": "development" if settings.debug else "production",
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "checks": checks,
         "check_count": len(checks),
@@ -534,18 +532,16 @@ async def health_metrics():
                 "threads": psutil.Process().num_threads(),
             },
             "system": {
-                "hostname": platform.node(),
                 "platform": platform.platform(),
                 "architecture": platform.machine(),
-                "python_version": platform.python_version(),
                 "uptime_seconds": int(time.time() - psutil.boot_time()),
             },
         }
     except Exception as e:
-        logger.error(f"[Health] 指标采集失败: {e}")
+        logger.error("[Health] 指标采集失败: %s", e)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail={"error": str(e), "message": "系统指标采集失败"},
+            detail="系统指标采集失败",
         )
 
 

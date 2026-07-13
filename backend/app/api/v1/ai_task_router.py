@@ -98,15 +98,16 @@ async def submit_inference_task(
             "message": f"任务已提交，使用 GET /api/v1/ai/tasks/{task_id} 查询结果",
         }
     except QueueFullError as e:
+        logger.error("队列已满: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=str(e),
+            detail="服务暂时不可用，请稍后重试",
         )
     except Exception as e:
         logger.error("[AI Tasks] 任务提交失败: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"任务提交失败: {str(e)}",
+            detail="服务器内部错误，请稍后重试",
         )
 
 

@@ -65,10 +65,11 @@ async def create_project(
         )
 
     except ValueError as e:
-        raise HTTPException(status_code=422, detail=str(e))
+        logger.error("参数无效: %s", e, exc_info=True)
+        raise HTTPException(status_code=422, detail="参数无效")
     except Exception as e:
-        logger.error(f"创建项目失败: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("创建项目失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="服务器内部错误，请稍后重试")
 
 
 @router.get(
@@ -128,8 +129,8 @@ async def list_projects(
         )
 
     except Exception as e:
-        logger.error(f"查询项目列表失败: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("查询项目列表失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="服务器内部错误，请稍后重试")
 
 
 @router.get(
@@ -186,8 +187,8 @@ async def get_project(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"获取项目详情失败: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("获取项目详情失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="服务器内部错误，请稍后重试")
 
 
 @router.put(
@@ -224,8 +225,8 @@ async def update_project(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"更新项目失败: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("更新项目失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="服务器内部错误，请稍后重试")
 
 
 @router.patch(
@@ -258,8 +259,8 @@ async def update_project_status(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"更新状态失败: {e}", exc_info=True)
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error("更新状态失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=400, detail="参数无效")
 
 
 @router.delete(
@@ -283,8 +284,8 @@ async def archive_project(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"归档项目失败: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("归档项目失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="服务器内部错误，请稍后重试")
 
 
 @router.post(
@@ -318,10 +319,11 @@ async def add_candidates(
         )
 
     except ValueError as e:
-        raise HTTPException(status_code=422, detail=str(e))
+        logger.error("参数无效: %s", e, exc_info=True)
+        raise HTTPException(status_code=422, detail="参数无效")
     except Exception as e:
-        logger.error(f"添加候选失败: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("添加候选失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="服务器内部错误，请稍后重试")
 
 
 @router.get(
@@ -345,8 +347,8 @@ async def get_project_versions(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"获取版本历史失败: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("获取版本历史失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="服务器内部错误，请稍后重试")
 
 
 @router.get(
@@ -372,5 +374,5 @@ async def compare_versions(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"版本对比失败: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("版本对比失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="服务器内部错误，请稍后重试")

@@ -175,6 +175,9 @@ class RateLimitConfig:
     endpoint_limits: Dict[str, int] = field(default_factory=lambda: {
         "/api/v1/auth/login": 5,
         "/api/v1/auth/register": 3,
+        "/api/v1/auth/forgot-password": 3,
+        "/api/v1/auth/reset-password": 3,
+        "/api/v1/auth/refresh": 10,
         "/api/v1/files": 10,
         "/api/v1/ai": 20,
         "/api/v1/peptide-analyses/batch": 10,

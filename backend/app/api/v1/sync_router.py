@@ -202,10 +202,10 @@ async def push_changes(
         )
         
     except Exception as e:
-        logger.error(f"[Sync] 推送失败: {e}", exc_info=True)
+        logger.error("[Sync] 推送失败: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"同步推送失败: {str(e)}",
+            detail="服务器内部错误，请稍后重试",
         )
 
 
@@ -426,10 +426,10 @@ async def resolve_conflict(
         )
         
     except Exception as e:
-        logger.error(f"[Sync] 冲突解决失败: {e}", exc_info=True)
+        logger.error("[Sync] 冲突解决失败: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"冲突解决失败: {str(e)}",
+            detail="服务器内部错误，请稍后重试",
         )
 
 
@@ -679,10 +679,10 @@ async def full_sync(
         }
         
     except Exception as e:
-        logger.error(f"[Sync] 完整同步失败: {e}", exc_info=True)
+        logger.error("[Sync] 完整同步失败: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"同步失败: {str(e)}",
+            detail="服务器内部错误，请稍后重试",
         )
 
 
@@ -736,10 +736,10 @@ async def incremental_sync(
         }
         
     except Exception as e:
-        logger.error(f"[Sync] 增量同步失败: {e}", exc_info=True)
+        logger.error("[Sync] 增量同步失败: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"增量同步失败: {str(e)}",
+            detail="服务器内部错误，请稍后重试",
         )
 
 
@@ -810,10 +810,10 @@ async def encrypt_sensitive_data(
         }
         
     except Exception as e:
-        logger.error(f"[Sync] 数据加密失败: {e}", exc_info=True)
+        logger.error("[Sync] 数据加密失败: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"数据加密失败: {str(e)}",
+            detail="服务器内部错误，请稍后重试",
         )
 
 
@@ -845,8 +845,8 @@ async def decrypt_sensitive_data(
         }
         
     except Exception as e:
-        logger.error(f"[Sync] 数据解密失败: {e}", exc_info=True)
+        logger.error("[Sync] 数据解密失败: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"数据解密失败: {str(e)}",
+            detail="服务器内部错误，请稍后重试",
         )

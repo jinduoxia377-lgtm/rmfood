@@ -66,10 +66,10 @@ async def build_knowledge_graph(
             "stats": stats,
         }
     except Exception as e:
-        logger.error(f"知识图谱构建失败: {e}", exc_info=True)
+        logger.error("知识图谱构建失败: %s", e, exc_info=True)
         raise HTTPException(
             status_code=500,
-            detail={"error": "GRAPH_BUILD_FAILED", "message": str(e)},
+            detail="服务器内部错误，请稍后重试",
         )
 
 
