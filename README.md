@@ -550,11 +550,12 @@ npm run dev                  # http://localhost:3000
 ```bash
 cp .env.example .env         # 必填: SECRET_KEY, ADMIN_PASSWORD, POSTGRES_PASSWORD
 
-# 开发环境 (含代码热挂载)
-docker compose up -d
+# 开发环境
+cd backend && uvicorn app.main:app --reload --port 8000
+cd frontend && npm run dev
 
-# 生产环境 (DEBUG=false)
-docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+# 生产环境
+# 请参考 docs/deployment/ 下的部署指南
 ```
 
 | 服务 | 基础镜像 | 端口 | 资源限制 |
@@ -679,9 +680,6 @@ rmfood-platform/
 ├── 📂 tests/ (14 文件): e2e/performance/security
 ├── 📂 docs/ (74+ 资产): 28 文档 + 27 截图 + 22 报告
 ├── 📂 .github/workflows/ci-cd.yml (9 Job)
-├── docker-compose*.yml (3 套)
-├── Dockerfile.backend / Dockerfile.frontend
-├── DOCKER.md (341 行部署手册)
 ├── .env.example (50+ 变量)
 └── README.md
 ```
