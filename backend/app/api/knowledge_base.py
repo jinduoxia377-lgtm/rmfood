@@ -10,12 +10,12 @@ from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
-from app.api.deps import get_db_session
-from app.core.cache_system import get_cache, MultiLevelCache
-from app.services.data_sources.tcmsp_client import tcmsp_service
-from app.services.data_sources.dfbp_client import dfbp_service
-from app.services.data_sources.china_food_regulations import regulation_service
-from app.services.intent_recognition import (
+from .deps import get_db_session
+from ..core.cache_system import get_cache, MultiLevelCache
+from ..services.data_sources.tcmsp_client import tcmsp_service
+from ..services.data_sources.dfbp_client import dfbp_service
+from ..services.data_sources.china_food_regulations import regulation_service
+from ..services.intent_recognition import (
     intent_recognition_service,
     KnowledgeBaseType,
     IntentType,

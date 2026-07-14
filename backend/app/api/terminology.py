@@ -2,8 +2,8 @@
 from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from app.models.terminology import Term, TermCategory, TermVariant, TermNormalizationRule
-from app.schemas.terminology import (
+from ..models.terminology import Term, TermCategory, TermVariant, TermNormalizationRule
+from ..schemas.terminology import (
     TermCreate, TermUpdate, TermOut,
     TermCategoryCreate, TermCategoryUpdate, TermCategoryOut,
     TermVariantCreate, TermVariantOut,
@@ -13,9 +13,9 @@ from app.schemas.terminology import (
     TermSuggestionRequest, TermSuggestionResponse,
     TermNormalizationRuleCreate, TermNormalizationRuleOut
 )
-from app.schemas.base import ApiResponse, PaginatedResponse
-from app.api.deps import get_db
-from app.services.terminology_service import TerminologyService
+from ..schemas.base import ApiResponse, PaginatedResponse
+from .deps import get_db
+from ..services.terminology_service import TerminologyService
 
 router = APIRouter(prefix="/api/terminology", tags=["术语管理"])
 

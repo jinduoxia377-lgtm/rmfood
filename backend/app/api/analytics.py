@@ -279,7 +279,7 @@ async def websocket_dashboard_endpoint(
 
     user_id = None
     try:
-        from app.core.security import decode_access_token
+        from ..core.security import decode_access_token
         payload = decode_access_token(ws_token)
         user_id = str(payload.get("sub", "unknown"))
     except Exception as e:

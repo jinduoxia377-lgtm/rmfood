@@ -7,9 +7,9 @@ from typing import Optional, Dict, Any
 import os
 import urllib.parse
 
-from app.services.file_generator import file_generator_service, FileFormat
-from app.services.template_manager import get_template_manager
-from app.core.encoding import sanitize_filename
+from ..services.file_generator import file_generator_service, FileFormat
+from ..services.template_manager import get_template_manager
+from ..core.encoding import sanitize_filename
 
 logger = logging.getLogger(__name__)
 

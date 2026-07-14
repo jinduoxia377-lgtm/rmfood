@@ -18,8 +18,8 @@ from typing import Any, Dict, List, Optional
 logger = logging.getLogger(__name__)
 
 
-from app.api.deps import get_db_session, get_current_user
-from app.core.integration_framework import (
+from .deps import get_db_session, get_current_user
+from ..core.integration_framework import (
     WebhookService,
     APIKeyService,
     ThirdPartyIntegrationService,
@@ -291,7 +291,7 @@ async def test_webhook(
         }
 
         if request.secret:
-            from app.core.integration_framework import WebhookService
+            from ..core.integration_framework import WebhookService
             sig = WebhookService._generate_signature(body, request.secret)
             headers["X-Webhook-Signature"] = f"sha256={sig}"
 

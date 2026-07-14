@@ -10,6 +10,7 @@
 - 数据隔离与安全
 """
 
+import json
 import logging
 import re
 import uuid
@@ -229,7 +230,7 @@ class OrganizationService:
                 "description": org.description,
                 "owner_id": org.owner_id,
                 "plan": org.plan.value,
-                "settings": __import__("json").dumps(org.settings),
+                "settings": json.dumps(org.settings),
                 "is_active": org.is_active,
             },
         )
@@ -262,7 +263,7 @@ class OrganizationService:
             logo_url=row.logo_url,
             owner_id=row.owner_id,
             plan=OrganizationPlan(row.plan),
-            settings=__import__("json").loads(row.settings) if row.settings else {},
+            settings=json.loads(row.settings) if row.settings else {},
             created_at=row.created_at,
             updated_at=row.updated_at,
             is_active=row.is_active,
@@ -287,7 +288,7 @@ class OrganizationService:
             logo_url=row.logo_url,
             owner_id=row.owner_id,
             plan=OrganizationPlan(row.plan),
-            settings=__import__("json").loads(row.settings) if row.settings else {},
+            settings=json.loads(row.settings) if row.settings else {},
             created_at=row.created_at,
             updated_at=row.updated_at,
             is_active=row.is_active,
@@ -311,7 +312,7 @@ class OrganizationService:
             if key in allowed_fields:
                 if key == "settings":
                     set_clauses.append(f"{key} = :{key}::jsonb")
-                    params[key] = __import__("json").dumps(value)
+                    params[key] = json.dumps(value)
                 else:
                     set_clauses.append(f"{key} = :{key}")
                     params[key] = value
@@ -511,7 +512,7 @@ class OrganizationService:
                 name=row.name,
                 description=row.description,
                 lead_id=row.lead_id,
-                permissions=__import__("json").loads(row.permissions) if row.permissions else {},
+                permissions=json.loads(row.permissions) if row.permissions else {},
                 created_at=row.created_at,
             ))
         
@@ -735,7 +736,7 @@ class OrganizationService:
             name=row.name,
             description=row.description,
             lead_id=row.lead_id,
-            permissions=__import__("json").loads(row.permissions) if row.permissions else {},
+            permissions=json.loads(row.permissions) if row.permissions else {},
             created_at=row.created_at,
         )
 

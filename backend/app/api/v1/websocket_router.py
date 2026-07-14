@@ -5,6 +5,7 @@
 import json
 import logging
 import asyncio
+from datetime import datetime, timezone
 from typing import Optional
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query, Depends
@@ -94,14 +95,14 @@ async def websocket_generic_endpoint(
                     connection_manager.update_ping(effective_connection_id)
                     await websocket.send_json({
                         "type": "pong",
-                        "timestamp": __import__('datetime').datetime.now(__import__('datetime').timezone.utc).isoformat(),
+                        "timestamp": datetime.now(timezone.utc).isoformat(),
                     })
 
                 elif msg_type == "heartbeat":
                     connection_manager.update_ping(effective_connection_id)
                     await websocket.send_json({
                         "type": "heartbeat_ack",
-                        "timestamp": __import__('datetime').datetime.now(__import__('datetime').timezone.utc).isoformat(),
+                        "timestamp": datetime.now(timezone.utc).isoformat(),
                     })
 
                 else:
@@ -197,13 +198,13 @@ async def websocket_notification_endpoint(
                     await ws_handler.handle_heartbeat(websocket, team_id, user_id)
                     await websocket.send_json({
                         "type": "heartbeat_ack",
-                        "timestamp": __import__('datetime').datetime.now(__import__('datetime').timezone.utc).isoformat(),
+                        "timestamp": datetime.now(timezone.utc).isoformat(),
                     })
 
                 elif msg_type == "ping":
                     await websocket.send_json({
                         "type": "pong",
-                        "timestamp": __import__('datetime').datetime.now(__import__('datetime').timezone.utc).isoformat(),
+                        "timestamp": datetime.now(timezone.utc).isoformat(),
                     })
 
                 else:

@@ -43,9 +43,9 @@ fastembed==0.8.0  # 本地 embedding 模型（EMBEDDING_PROVIDER=local），免 
 opentelemetry-api==1.28.0
 opentelemetry-sdk==1.28.0
 
-# ── 安全扫描工具（可选 - CI/CD 使用）──
-# pip-audit>=2.7.0    # 依赖漏洞扫描器（PyPA官方）
-# bandit>=1.7.0        # 代码安全静态分析工具
+# ── 安全扫描工具 ──
+pip-audit>=2.7.0    # 依赖漏洞扫描器（PyPA官方）
+bandit>=1.7.0        # 代码安全静态分析工具
 psutil>=5.9.0
 email-validator>=2.0.0
 pandas>=2.0.0

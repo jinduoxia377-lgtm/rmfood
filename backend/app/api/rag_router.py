@@ -7,9 +7,9 @@ import logging
 import hashlib
 from fastapi import APIRouter, UploadFile, File, HTTPException
 
-from app.services.ai.rag.rag_service import rag_service
-from app.services.ai.rag.document_version_manager import DocumentVersionManager, DocumentVersion
-from app.services.ai.rag.seeder import seed_if_needed
+from ..services.ai.rag.rag_service import rag_service
+from ..services.ai.rag.document_version_manager import DocumentVersionManager, DocumentVersion
+from ..services.ai.rag.seeder import seed_if_needed
 from datetime import datetime, timezone
 
 logger = logging.getLogger(__name__)

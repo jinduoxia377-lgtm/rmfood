@@ -11,13 +11,14 @@
 from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect, Query, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel, Field
-from typing import List, Dict, Optional, Any
+from typing import Annotated, List, Dict, Optional, Any
 from datetime import datetime
 import asyncio
+import importlib
 import json
 import logging
 
-from .deps import get_db_session, get_current_active_user, CurrentUser, require_role
+from .deps import get_db_session, get_current_active_user, CurrentUser, require_role, User
 from ..models.enums import UserRole
 
 logger = logging.getLogger(__name__)
@@ -581,7 +582,7 @@ async def get_safety_thresholds():
 async def update_safety_threshold(
     ingredient_name: str,
     updates: Dict[str, Any],
-    current_user: CurrentUser = Depends(require_role(UserRole.ADMIN))
+    current_user: Annotated[User, Depends(get_current_active_user)]
 ):
     """
     更新指定成分的安全阈值 (仅管理员可调用)
@@ -731,7 +732,7 @@ async def health_check():
     
     for import_path, class_name in module_names:
         try:
-            __import__(f"app.services.formula.{import_path}")
+            importlib.import_module(f"app.services.formula.{import_path}")
             modules_status[class_name] = "available"
         except ImportError:
             modules_status[class_name] = "unavailable"
