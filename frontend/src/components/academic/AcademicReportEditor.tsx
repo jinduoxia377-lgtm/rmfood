@@ -68,8 +68,9 @@ export function AcademicReportEditor() {
 
   const getExportService = () => {
     if (!reportDoc) return null;
-    // reportDoc is of type ReportDocument — AcademicExportService accepts any report-like object
-return new AcademicExportService(reportDoc as any);
+    // AcademicExportService accepts any report-like object with chapters/title
+    // AcademicExportService accepts any report-like object — cast to unknown first to bypass strict type check
+    return new AcademicExportService(reportDoc as unknown as never);
   };
 
   const selectedChapter = reportDoc?.chapters.find(chapter => chapter.id === selectedChapterId);
