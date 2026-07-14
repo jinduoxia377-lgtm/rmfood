@@ -41,6 +41,7 @@ export interface ExportTask {
   completedAt?: Date
   fileSize?: number
   error?: string
+  downloadUrl?: string
   progressTracker?: ExportProgressTracker
 }
 
@@ -159,7 +160,10 @@ class ExportService {
     this.progressTracker?.updateStage('processing', 30, '正在提取CSV数据...')
 
     const headers = columns
-      ? columns.map((col) => (col as any).header || (col as any).accessorKey || '')
+      ? columns.map((col) => {
+          const h = (col as ColumnDef<any, any> & { header?: string | ((info: unknown) => unknown) }).header
+          return typeof h === 'function' ? String(h({ table: {} as any, column: {} as any })) : (h as string) || (col as ColumnDef<any, any> & { accessorKey?: string }).accessorKey || ''
+        })
       : Object.keys(data[0])
 
     const useChunkProcessing = shouldUseChunkProcessing(

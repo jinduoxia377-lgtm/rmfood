@@ -281,8 +281,8 @@ function addFooterInfo(doc: jsPDF, config: Required<PdfExportOptions>): void {
 function prepareTableHeaders(firstRow: any, columns?: ColumnDef<any>[]): string[] {
   if (columns && columns.length > 0) {
     return columns.map((col) => {
-      const header = (col as any).header
-      return typeof header === 'string' ? header : (col as any).accessorKey || ''
+      const h = (col as ColumnDef<any, any> & { header?: string | ((info: unknown) => unknown) }).header
+      return typeof h === 'function' ? String(h({} as any)) : (typeof h === 'string' ? h : (col as ColumnDef<any, any> & { accessorKey?: string }).accessorKey || '')
     }).filter(Boolean)
   }
 

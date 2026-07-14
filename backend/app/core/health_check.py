@@ -34,6 +34,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from ..core.config import settings
 from ..core.session import get_db
+from ..api.deps import get_current_active_user, CurrentUser
 from ..services.ai.inference_queue import inference_queue
 
 logger = logging.getLogger(__name__)
@@ -364,8 +365,11 @@ async def health_check(request: Request):
     }
 
 
-@router.get("/ready", summary="就绪检查（Readiness Probe）")
-async def readiness_check(db: AsyncSession = Depends(get_db)):
+@router.get("/ready", summary="就绪检查（需要认证）")
+async def readiness_check(
+    db: AsyncSession = Depends(get_db),
+    current_user: CurrentUser = Depends(get_current_active_user),
+):
     """
     🔒 P3-2: 就绪检查 - 用于 Kubernetes readinessProbe
 
@@ -403,8 +407,11 @@ async def readiness_check(db: AsyncSession = Depends(get_db)):
     return response
 
 
-@router.get("/health/detailed", summary="详细健康报告（Dependency Probe）")
-async def detailed_health_check(db: AsyncSession = Depends(get_db)):
+@router.get("/health/detailed", summary="详细健康报告（需要认证）")
+async def detailed_health_check(
+    db: AsyncSession = Depends(get_db),
+    current_user: CurrentUser = Depends(get_current_active_user),
+):
     """
     🔒 P3-2: 详细健康检查报告 - 包含所有依赖
 
@@ -474,8 +481,10 @@ async def detailed_health_check(db: AsyncSession = Depends(get_db)):
     }
 
 
-@router.get("/health/metrics", summary="系统资源指标（Prometheus 风格）")
-async def health_metrics():
+@router.get("/health/metrics", summary="系统资源指标（需要认证）")
+async def health_metrics(
+    current_user: CurrentUser = Depends(get_current_active_user),
+):
     """
     🔒 P3-2: 系统资源指标
 
