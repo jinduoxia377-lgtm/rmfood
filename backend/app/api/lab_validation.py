@@ -15,7 +15,8 @@ from datetime import datetime, date
 import json
 import logging
 
-from ..api.deps import get_current_active_user, CurrentUser, require_role
+from ..api.deps import get_current_active_user, require_role
+from ..models import User
 from ..models.enums import UserRole
 
 logger = logging.getLogger(__name__)
@@ -91,7 +92,7 @@ class ValidationReport(BaseModel):
 @router.post("/experiments", summary="提交实验数据")
 async def submit_experiment_data(
     data: LabExperimentData,
-    current_user: CurrentUser = Depends(get_current_active_user)
+    current_user: User = Depends(get_current_active_user)
 ):
     """
     提交新的实验室验证数据
@@ -148,7 +149,7 @@ async def submit_experiment_data(
 @router.post("/experiments/batch-import", summary="批量导入实验数据")
 async def batch_import_experiments(
     request: ValidationBatchImportRequest,
-    current_user: CurrentUser = Depends(get_current_active_user)
+    current_user: User = Depends(get_current_active_user)
 ):
     """
     批量导入多个实验数据
@@ -197,7 +198,7 @@ async def batch_import_experiments(
         except Exception as e:
             results.append({
                 "experiment_id": exp_data.experiment_id,
-                "error": str(e),
+                "error": "导入失败，请检查数据格式",
                 "status": "failed"
             })
             failed_count += 1
@@ -216,7 +217,7 @@ async def batch_import_experiments(
 async def run_validation_comparison(
     experiment_id: str,
     request: ValidationComparisonRequest,
-    current_user: CurrentUser = Depends(get_current_active_user)
+    current_user: User = Depends(get_current_active_user)
 ):
     """
     对指定实验执行预测值与实测值的对比分析
@@ -276,7 +277,7 @@ async def run_validation_comparison(
 
 @router.get("/experiments", summary="查询实验列表")
 async def list_experiments(
-    current_user: CurrentUser = Depends(get_current_active_user),
+    current_user: User = Depends(get_current_active_user),
     target_type: Optional[str] = Query(None, pattern="^(formula|ingredient|synergy_pair)$"),
     status: Optional[str] = Query(None, pattern="^(pending|in_progress|completed|failed)$"),
     target_name: Optional[str] = Query(None, description="目标名称模糊搜索"),
@@ -334,7 +335,7 @@ async def list_experiments(
 @router.get("/experiments/{experiment_id}", summary="获取实验详情")
 async def get_experiment_detail(
     experiment_id: str,
-    current_user: CurrentUser = Depends(get_current_active_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """获取单个实验的完整详情，包括原始数据和对比分析"""
     from ..models.formula_deep_integration import LabValidationData
@@ -362,7 +363,7 @@ class ExperimentReviewRequest(BaseModel):
 async def review_experiment(
     experiment_id: str,
     review_data: ExperimentReviewRequest,
-    current_user: CurrentUser = Depends(require_role(UserRole.ADMIN, UserRole.REVIEWER))
+    current_user: User = Depends(require_role(UserRole.ADMIN, UserRole.REVIEWER)),
 ):
     """
     审核并确认实验数据质量
@@ -403,7 +404,7 @@ async def review_experiment(
 
 @router.get("/statistics/dashboard", summary="验证统计仪表板")
 async def get_validation_dashboard(
-    current_user: CurrentUser = Depends(get_current_active_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """
     实验室验证统计概览
