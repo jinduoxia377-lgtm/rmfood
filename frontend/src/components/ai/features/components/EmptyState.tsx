@@ -2,10 +2,9 @@ import React from 'react'
 import { cn } from '@/lib/utils'
 import { EmptyStateContent } from './EmptyStateContent'
 import { StartConversationCard } from './StartConversationCard'
-import '@/components/ai/features/styles/empty-state-design-tokens.css'
-import '@/components/ai/features/styles/empty-state-animations.css'
-import '@/components/ai/features/styles/empty-state-accessibility.css'
-import '@/components/ai/features/styles/wcag21-color-system.css'
+import '@/components/ai/features/styles/chat-core.css'
+import '@/components/ai/features/styles/chat-interactions.css'
+import '@/components/ai/features/styles/chat-accessibility.css'
 
 export interface EmptyStateProps {
   title?: string
@@ -37,8 +36,8 @@ export const EmptyState = React.forwardRef<HTMLElement, EmptyStateProps>(({
         'lg:min-h-[55vh]',
         'max-w-2xl mx-auto',
         'animate-[fadeInUp_0.5s_ease-out]',
-        'bg-gradient-to-b from-white to-gray-50/50',
-        'dark:from-gray-900 dark:to-gray-950',
+        'bg-gradient-to-b from-white to-slate-50/50',
+        'dark:from-slate-900 dark:to-slate-950',
         'before:pointer-events-none before:absolute before:inset-0 before:bg-[radial-gradient(circle_at_50%_30%,rgba(99,102,241,0.05)_0%,transparent_70%)] dark:before:hidden',
         className,
       )}

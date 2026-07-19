@@ -77,12 +77,12 @@ interface StabilityTimeSeriesProps {
 // ===== 默认配置 =====
 
 const DEFAULT_METRICS = [
-  { key: 'stability', name: '稳定性指数', color: '#6366f1' },
-  { key: 'temperature', name: '温度 (°C)', color: '#ef4444' },
-  { key: 'ph', name: 'pH 值', color: '#10b981' },
+  { key: 'stability', name: '稳定性指数', color: 'var(--color-indigo-500, #6366F1)' },
+  { key: 'temperature', name: '温度 (°C)', color: 'var(--color-error, #FF3B30)' },
+  { key: 'ph', name: 'pH 值', color: 'var(--color-primary, #34C759)' },
 ]
 
-const COLORS = ['#6366f1', '#ef4444', '#10b981', '#f59e0b', '#ec4899']
+const COLORS = ['var(--color-indigo-500, #6366F1)', 'var(--color-error, #FF3B30)', 'var(--color-primary, #34C759)', 'var(--color-warning, #FF9F0A)', 'var(--color-pink-500, #D946EF)']
 
 // ===== 主组件实现 =====
 
@@ -121,8 +121,8 @@ function StabilityTimeSeries({
       if (!active || !payload?.length) return null
 
       return (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 p-3 min-w-[200px]">
-          <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
+        <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-xl border border-neutral-200 dark:border-neutral-700 p-3 min-w-[200px]">
+          <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 mb-2">
             📅 {label}
           </p>
           {payload.map((entry: any, index: number) => (
@@ -134,7 +134,7 @@ function StabilityTimeSeries({
                 />
                 {entry.name}
               </span>
-              <span className="font-medium text-gray-900 dark:text-gray-100">
+              <span className="font-medium text-neutral-900 dark:text-neutral-100">
                 {typeof entry.value === 'number' ? entry.value.toFixed(2) : entry.value}
                 {metrics.find(m => m.name === entry.name)?.unit || ''}
               </span>
@@ -185,15 +185,15 @@ function StabilityTimeSeries({
   )
 
   return (
-    <div className={`bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden ${className}`}>
+    <div className={`bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 shadow-sm overflow-hidden ${className}`}>
       {/* 头部 */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+      <div className="flex items-center justify-between p-4 border-b border-neutral-200 dark:border-neutral-700">
         <div>
-          <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+          <h3 className="text-base font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-primary-500" />
             稳定性时间序列分析
           </h3>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
             共 {data.length} 个数据点 · {inflectionPoints.length} 个关键拐点
           </p>
         </div>
@@ -203,7 +203,7 @@ function StabilityTimeSeries({
           <select
             value={selectedMetric || ''}
             onChange={e => setSelectedMetric(e.target.value || null)}
-            className="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+            className="px-3 py-1.5 text-sm border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100"
           >
             <option value="">全部指标</option>
             {metrics.map(m => (
@@ -225,16 +225,16 @@ function StabilityTimeSeries({
             </Button>
 
             {showExportMenu && (
-              <div className="absolute top-full right-0 mt-1 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-10 overflow-hidden">
+              <div className="absolute top-full right-0 mt-1 bg-white dark:bg-neutral-800 rounded-lg shadow-xl border border-neutral-200 dark:border-neutral-700 z-10 overflow-hidden">
                 <button
                   onClick={() => handleExport('png')}
-                  className="w-full px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 text-left"
+                  className="w-full px-4 py-2 text-sm hover:bg-slate-50 dark:hover:bg-neutral-700 text-left"
                 >
                   导出 PNG 图片
                 </button>
                 <button
                   onClick={() => handleExport('svg')}
-                  className="w-full px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 text-left border-t border-gray-200 dark:border-gray-700"
+                  className="w-full px-4 py-2 text-sm hover:bg-slate-50 dark:hover:bg-neutral-700 text-left border-t border-neutral-200 dark:border-neutral-700"
                 >
                   导出 SVG 矢量图
                 </button>
@@ -248,14 +248,14 @@ function StabilityTimeSeries({
       <div ref={chartRef} className="p-4" style={{ height: 400 }}>
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={confidenceData.length > 0 ? confidenceData : data} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" opacity={0.5} />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--color-slate-200, #E5E7EB)" opacity={0.5} />
             <XAxis
               dataKey="date"
-              tick={{ fontSize: 11, fill: '#6b7280' }}
+              tick={{ fontSize: 11, fill: 'var(--color-slate-500, #6B7280)' }}
               interval="preserveStartEnd"
             />
             <YAxis
-              tick={{ fontSize: 11, fill: '#6b7280' }}
+              tick={{ fontSize: 11, fill: 'var(--color-slate-500, #6B7280)' }}
               domain={['auto', 'auto']}
             />
             <Tooltip content={<CustomTooltip />} />
@@ -266,7 +266,7 @@ function StabilityTimeSeries({
               <Area
                 type="monotone"
                 dataKey="upper"
-                fill="#6366f1"
+                fill="var(--color-indigo-500, #6366F1)"
                 fillOpacity={0.1}
                 stroke="none"
                 name={`${(confidenceLevel * 100).toFixed(0)}% 置信上限`}
@@ -311,16 +311,16 @@ function StabilityTimeSeries({
                 x={data.find(d => d.timestamp === point.timestamp)?.date}
                 stroke={
                   point.type === 'peak'
-                    ? '#ef4444'
+                    ? 'var(--color-error, #FF3B30)'
                     : point.type === 'valley'
-                    ? '#10b981'
-                    : '#f59e0b'
+                    ? 'var(--color-primary, #34C759)'
+                    : 'var(--color-warning, #FF9F0A)'
                 }
                 strokeDasharray="5 5"
                 label={{
                   value: point.label,
                   position: 'top',
-                  fill: '#374151',
+                  fill: 'var(--color-gray-700, #374151)',
                   fontSize: 11,
                 }}
                 onClick={() => onInflectionPointClick?.(point)}
@@ -333,8 +333,8 @@ function StabilityTimeSeries({
 
       {/* 拐点列表 */}
       {inflectionPoints.length > 0 && (
-        <div className="border-t border-gray-200 dark:border-gray-700 p-4">
-          <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2">
+        <div className="border-t border-neutral-200 dark:border-neutral-700 p-4">
+          <h4 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 mb-3 flex items-center gap-2">
             <MapPin className="w-4 h-4 text-yellow-500" />
             关键拐点标记
           </h4>
@@ -343,22 +343,22 @@ function StabilityTimeSeries({
               <button
                 key={point.id}
                 onClick={() => onInflectionPointClick?.(point)}
-                className="flex items-center gap-2 px-3 py-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-left"
+                className="flex items-center gap-2 px-3 py-2 bg-slate-50 dark:bg-neutral-700/50 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors text-left"
               >
                 <AlertTriangle
                   className={`w-4 h-4 ${
                     point.type === 'peak'
-                      ? 'text-red-500'
+                      ? 'text-error-500'
                       : point.type === 'valley'
-                      ? 'text-green-500'
+                      ? 'text-success-500'
                       : 'text-yellow-500'
                   }`}
                 />
                 <div className="flex-1 min-w-0">
-                  <div className="text-xs font-medium text-gray-900 dark:text-gray-100 truncate">
+                  <div className="text-xs font-medium text-neutral-900 dark:text-neutral-100 truncate">
                     {point.label}
                   </div>
-                  <div className="text-[11px] text-gray-500">
+                  <div className="text-[11px] text-neutral-500">
                     {new Date(point.timestamp).toLocaleDateString('zh-CN')}
                   </div>
                 </div>

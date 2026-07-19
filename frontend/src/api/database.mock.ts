@@ -3,8 +3,8 @@
  * 用于后端服务不可用时提供模拟数据
  */
 
-import type { TCMHerb, BioactivePeptide, KnowledgeNode } from '@/types'
-import type { DashboardOverview, DashboardTrends, CrossSearchResult, DataQualityReport } from './database'
+import type { TCMHerb, SymMapHerb, BioactivePeptide, KnowledgeNode } from '@/types';
+import type { DashboardOverview, DashboardTrends, CrossSearchResult, DataQualityReport } from './database';
 
 // 类型断言：允许mock数据使用旧格式字段（向后兼容）
 type MockTCMHerb = Partial<TCMHerb> & Record<string, any>;
@@ -16,7 +16,7 @@ const mockHerbs: MockTCMHerb[] = [
   {
     id: 1,
     name: '黄芪',
-    name_cn: '黄芪',           // 兼容旧字段
+    name_cn: '黄芪', // 兼容旧字段
     latinName: 'Astragalus membranaceus',
     name_latin: 'Astragalus membranaceus',
     name_pinyin: 'huang qi',
@@ -254,7 +254,7 @@ const mockDashboardOverview: DashboardOverview = {
     '40+': 87,
   },
   categories: mockCategories,
-  activity_types: mockActivityTypes.map(a => ({ type: a.type_cn, count: a.count })),
+  activity_types: mockActivityTypes.map((a) => ({ type: a.type_cn, count: a.count })),
   enzymes: [
     { enzyme: 'Trypsin', count: 856 },
     { enzyme: 'Chymotrypsin', count: 432 },
@@ -267,15 +267,15 @@ const mockDashboardOverview: DashboardOverview = {
     { organism: 'Bos taurus', count: 450 },
     { organism: 'Oryza sativa', count: 234 },
   ],
-  top_herbs_by_ob: mockHerbs.map(h => ({
-    name_cn: h.name_cn,
+  top_herbs_by_ob: mockHerbs.map((h) => ({
+    name_cn: (h as any).name_cn,
     ob_percent: h.ob_percent ?? 0,
     dl_value: h.dl_value ?? 0,
     compound_count: h.compound_count,
     category: h.category ?? '',
-    is_food_homology: h.is_food_homology,
+    is_food_homology: (h.is_food_homology ?? true) as boolean,
   })),
-  top_active_peptides: mockPeptides.map(p => ({
+  top_active_peptides: mockPeptides.map((p) => ({
     sequence: p.sequence || '',
     activity_value: p.activity_value ?? 0,
     activity_unit: p.activity_unit ?? '',
@@ -295,19 +295,19 @@ const mockDashboardOverview: DashboardOverview = {
 
 // 模拟趋势数据
 const mockDashboardTrends: DashboardTrends = {
-  ob_dl_scatter: mockHerbs.map(h => ({
+  ob_dl_scatter: mockHerbs.map((h) => ({
     x: h.ob_percent ?? 0,
     y: h.dl_value ?? 0,
-    name: h.name_cn,
+    name: (h as any).name_cn,
     category: h.category ?? '',
-    is_food_homology: h.is_food_homology,
+    is_food_homology: (h.is_food_homology ?? false) as boolean,
   })),
   compound_target_correlation: Array.from({ length: 20 }, (_, i) => ({
     x: Math.random() * 100,
     y: Math.random() * 50,
     name: `数据点${i + 1}`,
   })),
-  mw_activity_scatter: mockPeptides.map(p => ({
+  mw_activity_scatter: mockPeptides.map((p) => ({
     x: p.molecular_weight ?? 0,
     y: p.activity_value ?? 0,
     seq_len: p.sequence?.length || 0,
@@ -330,7 +330,7 @@ const mockDashboardTrends: DashboardTrends = {
 };
 
 // 模拟交叉搜索结果
-const firstHerb = mockHerbs[0] || {}
+const firstHerb = mockHerbs[0] || {};
 const mockCrossSearchResults: CrossSearchResult[] = [
   {
     herb: {
@@ -454,6 +454,81 @@ const mockSyncStats = {
   errors: [] as string[],
 };
 
+// 模拟 SymMap 药材数据
+const mockSymmapHerbs: SymMapHerb[] = [
+  {
+    id: 1,
+    symmapId: 1,
+    nameCn: '人参',
+    nameLatin: 'Panax ginseng',
+    namePinyin: 'ren shen',
+    nameEng: 'Ginseng',
+    natureCn: '甘、微苦，微温',
+    meridiansCn: '脾、肺、心、肾经',
+    categoryCn: '补气药',
+    usePart: '根及根茎',
+    tcmspId: 1,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: 2,
+    symmapId: 2,
+    nameCn: '黄芪',
+    nameLatin: 'Astragalus membranaceus',
+    namePinyin: 'huang qi',
+    natureCn: '甘，微温',
+    meridiansCn: '脾、肺经',
+    categoryCn: '补气药',
+    usePart: '根',
+    tcmspId: 2,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: 3,
+    symmapId: 3,
+    nameCn: '当归',
+    nameLatin: 'Angelica sinensis',
+    namePinyin: 'dang gui',
+    natureCn: '甘、辛，温',
+    meridiansCn: '肝、心、脾经',
+    categoryCn: '补血药',
+    usePart: '根',
+    tcmspId: 3,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: 4,
+    symmapId: 4,
+    nameCn: '枸杞子',
+    nameLatin: 'Lycium barbarum',
+    namePinyin: 'gou qi zi',
+    natureCn: '甘，平',
+    meridiansCn: '肝、肾经',
+    categoryCn: '补阴药',
+    usePart: '果实',
+    tcmspId: 4,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: 5,
+    symmapId: 5,
+    nameCn: '甘草',
+    nameLatin: 'Glycyrrhiza uralensis',
+    namePinyin: 'gan cao',
+    natureCn: '甘，平',
+    meridiansCn: '心、肺、脾、胃经',
+    categoryCn: '补气药',
+    usePart: '根及根茎',
+    tcmspId: 5,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+];
+
 // 模拟 API 实现
 export const mockDatabaseApi = {
   searchHerbs: (params: {
@@ -466,18 +541,19 @@ export const mockDatabaseApi = {
     let filtered = [...mockHerbs];
     if (params.keyword) {
       const kw = params.keyword.toLowerCase();
-      filtered = filtered.filter(h =>
-        h.name_cn.toLowerCase().includes(kw) ||
-        (h.name_latin?.toLowerCase().includes(kw) ?? false) ||
-        (h.name_pinyin?.toLowerCase().includes(kw) ?? false) ||
-        (h.effects?.toLowerCase().includes(kw) ?? false),
+      filtered = filtered.filter(
+        (h) =>
+          (h as any).name_cn.toLowerCase().includes(kw) ||
+          (h.name_latin?.toLowerCase().includes(kw) ?? false) ||
+          (h.name_pinyin?.toLowerCase().includes(kw) ?? false) ||
+          (h.effects?.toLowerCase().includes(kw) ?? false),
       );
     }
     if (params.category) {
-      filtered = filtered.filter(h => h.category === params.category);
+      filtered = filtered.filter((h) => h.category === params.category);
     }
     if (params.food_homology_only) {
-      filtered = filtered.filter(h => h.is_food_homology);
+      filtered = filtered.filter((h) => h.is_food_homology);
     }
     const page = params.page ?? 1;
     const pageSize = params.page_size ?? 10;
@@ -492,7 +568,7 @@ export const mockDatabaseApi = {
   },
 
   getHerb: (id: number) => {
-    const herb = mockHerbs.find(h => h.id === id);
+    const herb = mockHerbs.find((h) => h.id === id);
     return Promise.resolve(herb ?? null);
   },
 
@@ -501,12 +577,11 @@ export const mockDatabaseApi = {
   },
 
   getFoodHomologyHerbs: (params: { keyword?: string; page?: number; page_size?: number }) => {
-    let filtered = mockHerbs.filter(h => h.is_food_homology);
+    let filtered = mockHerbs.filter((h) => h.is_food_homology);
     if (params.keyword) {
       const kw = params.keyword.toLowerCase();
-      filtered = filtered.filter(h =>
-        h.name_cn.toLowerCase().includes(kw) ||
-        (h.name_latin?.toLowerCase().includes(kw) ?? false),
+      filtered = filtered.filter(
+        (h) => (h as any).name_cn.toLowerCase().includes(kw) || (h.name_latin?.toLowerCase().includes(kw) ?? false),
       );
     }
     const page = params.page ?? 1;
@@ -522,26 +597,20 @@ export const mockDatabaseApi = {
   },
 
   checkFoodHomology: (herbName: string) => {
-    const herb = mockHerbs.find(h => h.name_cn === herbName);
+    const herb = mockHerbs.find((h) => (h as any).name_cn === herbName);
     return Promise.resolve({ is_food_homology: herb?.is_food_homology ?? false });
   },
 
-  searchPeptides: (params: {
-    keyword?: string;
-    activity_type?: string;
-    page?: number;
-    page_size?: number;
-  }) => {
+  searchPeptides: (params: { keyword?: string; activity_type?: string; page?: number; page_size?: number }) => {
     let filtered = [...mockPeptides];
     if (params.keyword) {
       const kw = params.keyword.toLowerCase();
-      filtered = filtered.filter(p =>
-        (p.sequence || '').toLowerCase().includes(kw) ||
-        ((p.source_protein || '').toLowerCase().includes(kw)),
+      filtered = filtered.filter(
+        (p) => (p.sequence || '').toLowerCase().includes(kw) || (p.source_protein || '').toLowerCase().includes(kw),
       );
     }
     if (params.activity_type) {
-      filtered = filtered.filter(p => p.activity_type === params.activity_type);
+      filtered = filtered.filter((p) => p.activity_type === params.activity_type);
     }
     const page = params.page ?? 1;
     const pageSize = params.page_size ?? 10;
@@ -556,7 +625,7 @@ export const mockDatabaseApi = {
   },
 
   getPeptide: (id: number) => {
-    const peptide = mockPeptides.find(p => p.id === id);
+    const peptide = mockPeptides.find((p) => p.id === id);
     return Promise.resolve(peptide ?? null);
   },
 
@@ -564,19 +633,14 @@ export const mockDatabaseApi = {
     return Promise.resolve({ activity_types: mockActivityTypes });
   },
 
-  searchKnowledge: (params: {
-    keyword?: string;
-    node_type?: string;
-    page?: number;
-    page_size?: number;
-  }) => {
+  searchKnowledge: (params: { keyword?: string; node_type?: string; page?: number; page_size?: number }) => {
     let filtered = [...mockGraphNodes];
     if (params.keyword) {
       const kw = params.keyword.toLowerCase();
-      filtered = filtered.filter(n => n.node_label.toLowerCase().includes(kw));
+      filtered = filtered.filter((n) => n.node_label.toLowerCase().includes(kw));
     }
     if (params.node_type) {
-      filtered = filtered.filter(n => n.node_type === params.node_type);
+      filtered = filtered.filter((n) => n.node_type === params.node_type);
     }
     const page = params.page ?? 1;
     const pageSize = params.page_size ?? 10;
@@ -592,15 +656,13 @@ export const mockDatabaseApi = {
 
   unifiedSearch: (params: { keyword: string; page?: number; page_size?: number }) => {
     const kw = params.keyword.toLowerCase();
-    const herbs = mockHerbs.filter(h =>
-      h.name_cn.toLowerCase().includes(kw) ||
-      (h.name_latin?.toLowerCase().includes(kw) ?? false),
+    const herbs = mockHerbs.filter(
+      (h) => (h as any).name_cn.toLowerCase().includes(kw) || (h.name_latin?.toLowerCase().includes(kw) ?? false),
     );
-    const peptides = mockPeptides.filter(p =>
-      (p.sequence || '').toLowerCase().includes(kw) ||
-      ((p.source_protein || '').toLowerCase().includes(kw)),
+    const peptides = mockPeptides.filter(
+      (p) => (p.sequence || '').toLowerCase().includes(kw) || (p.source_protein || '').toLowerCase().includes(kw),
     );
-    const nodes = mockGraphNodes.filter(n => n.node_label.toLowerCase().includes(kw));
+    const nodes = mockGraphNodes.filter((n) => n.node_label.toLowerCase().includes(kw));
     return Promise.resolve({
       herbs: herbs.slice(0, 5),
       peptides: peptides.slice(0, 5),
@@ -617,14 +679,37 @@ export const mockDatabaseApi = {
 
   getSearchSuggestions: (keyword: string, limit = 10) => {
     const kw = keyword.toLowerCase();
-    const suggestions = mockSearchSuggestions.filter(s => s.keyword.toLowerCase().includes(kw));
+    const suggestions = mockSearchSuggestions.filter((s) => s.keyword.toLowerCase().includes(kw));
     return Promise.resolve(suggestions.slice(0, limit));
   },
 
   crossSearch: (herbName: string) => {
-    const result = mockCrossSearchResults.find(r => r.herb.name_cn === herbName);
+    const result = mockCrossSearchResults.find((r) => r.herb.name_cn === herbName);
     return Promise.resolve(result ?? null);
   },
 
   getDataQuality: () => Promise.resolve(mockDataQuality),
+
+  searchSymmapHerbs: (params: { keyword?: string; page?: number; page_size?: number }) => {
+    let filtered = [...mockSymmapHerbs];
+    if (params.keyword) {
+      const kw = params.keyword.toLowerCase();
+      filtered = filtered.filter(
+        (h) =>
+          h.nameCn.toLowerCase().includes(kw) ||
+          (h.nameLatin?.toLowerCase().includes(kw) ?? false) ||
+          (h.namePinyin?.toLowerCase().includes(kw) ?? false),
+      );
+    }
+    const page = params.page ?? 1;
+    const pageSize = params.page_size ?? 10;
+    const start = (page - 1) * pageSize;
+    const end = start + pageSize;
+    return Promise.resolve({
+      items: filtered.slice(start, end),
+      total: filtered.length,
+      page,
+      page_size: pageSize,
+    });
+  },
 };

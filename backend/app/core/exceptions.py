@@ -4,7 +4,6 @@
 将所有业务异常转换为合适的HTTP状态码，避免500错误
 """
 
-import traceback
 import logging
 import time
 import uuid
@@ -13,6 +12,9 @@ from typing import Optional
 from fastapi import Request, HTTPException
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
+from pydantic_core import ValidationError as PydanticValidationError
+
+from app.utils.error_sanitize import sanitize_error
 
 
 logger = logging.getLogger(__name__)
@@ -70,7 +72,13 @@ class GlobalExceptionHandler(BaseHTTPMiddleware):
         
         # 返回JSON格式的错误响应
         error_code = getattr(exception, 'error_code', f"ERROR_{status_code}")
-        details = getattr(exception, 'details', None)
+        raw_details = getattr(exception, 'details', None)
+        # 脱敏 details 字段，防止内部信息泄露
+        details = None
+        if raw_details and isinstance(raw_details, dict):
+            details = {k: sanitize_error(type('', (), {'__str__': lambda s: str(v)})(), str(v)[:50]) if isinstance(v, (str, Exception)) else v for k, v in raw_details.items()}
+        elif raw_details:
+            details = str(raw_details)[:200]
         retry_after = getattr(exception, 'retry_after', None)
         request_id = getattr(request.state, 'request_id', str(uuid.uuid4())[:12])
 
@@ -118,6 +126,10 @@ class GlobalExceptionHandler(BaseHTTPMiddleware):
             VersionNotFoundError,
         )
 
+        # Pydantic 验证错误 -> 422
+        if isinstance(exception, PydanticValidationError):
+            return 422, sanitize_error(exception, "数据验证失败")
+
         # 认证相关异常 -> 401
         if isinstance(exception, (AuthenticationError, TokenExpiredError)):
             return 401, "认证失败，请重新登录"
@@ -128,7 +140,7 @@ class GlobalExceptionHandler(BaseHTTPMiddleware):
 
         # 验证异常 -> 400
         if isinstance(exception, ValidationError):
-            return 400, f"请求参数无效: {str(exception)}"
+            return 400, sanitize_error(exception, "请求参数无效，请检查后重试")
 
         # 未找到异常 -> 404
         if isinstance(exception, (NotFoundError, VersionNotFoundError, DeviceNotRegisteredError)):
@@ -146,6 +158,18 @@ class GlobalExceptionHandler(BaseHTTPMiddleware):
         if isinstance(exception, AIServiceUnavailableError):
             return 503, getattr(exception, 'message', "AI服务暂时不可用，请稍后再试")
 
+        # AI认证错误 -> 401
+        if isinstance(exception, AIAuthenticationError):
+            return 401, getattr(exception, 'message', "AI API Key 无效或过期")
+
+        # AI限流 -> 429
+        if isinstance(exception, AIRateLimitError):
+            return 429, getattr(exception, 'message', "AI 请求过于频繁")
+
+        # AI验证错误 -> 400
+        if isinstance(exception, AIValidationError):
+            return 400, getattr(exception, 'message', "AI 请求参数无效")
+
         # 服务不可用异常 -> 503
         if isinstance(exception, ServiceUnavailableError):
             return 503, "服务暂时不可用，请稍后再试"
@@ -154,14 +178,27 @@ class GlobalExceptionHandler(BaseHTTPMiddleware):
         if isinstance(exception, AppError):
             return exception.status_code, exception.message
 
-        # HTTPException (FastAPI内置) -> 保持原状态码
+        # HTTPException (FastAPI内置) -> 保持原状态码，但脱敏消息
         if isinstance(exception, HTTPException):
-            return exception.status_code, exception.detail
+            detail = exception.detail
+            if isinstance(detail, str):
+                detail = sanitize_error(type('', (), {'__str__': lambda s: detail})(), "服务器内部错误")
+            return exception.status_code, detail
 
-        # 数据库相关异常 -> 500 但给出友好提示
+        # 数据库相关异常 -> 根据具体类型返回不同状态码
+        from app.core.session import DatabaseConnectionError, DatabaseQueryError, DatabasePoolExhaustedError
+        
+        if isinstance(exception, DatabaseConnectionError):
+            return 503, "数据库连接异常，请稍后再试"
+        if isinstance(exception, DatabasePoolExhaustedError):
+            return 503, "数据库连接池已满，请稍后再试"
+        if isinstance(exception, DatabaseQueryError):
+            return 400, "数据库查询异常，请检查请求参数"
+        
+        # 其他数据库相关异常 -> 503 服务不可用
         exception_str = str(exception).lower()
         if any(keyword in exception_str for keyword in [
-            'database', 'sql', 'connection', 'timeout', 'operational'
+            'database', 'sql', 'connection', 'timeout', 'operational', 'asyncpg'
         ]):
             return 503, "数据库服务暂时不可用，请稍后再试"
 
@@ -286,6 +323,25 @@ class AIServiceUnavailableError(Exception):
         self.message = message
         self.error_code = error_code
         self.suggestion = suggestion or "请稍后重试或联系技术支持"
+
+
+class AIAuthenticationError(AIServiceUnavailableError):
+    """AI认证失败"""
+    def __init__(self, message="AI API Key 无效或过期"):
+        super().__init__(message, "AI_AUTH_001", "请检查配置管理中的 API Key")
+
+
+class AIRateLimitError(AIServiceUnavailableError):
+    """AI请求限流"""
+    def __init__(self, message="AI 请求过于频繁"):
+        super().__init__(message, "AI_RATE_LIMIT_001", "请稍后再试")
+
+
+class AIValidationError(AIServiceUnavailableError):
+    """AI输入验证错误"""
+    def __init__(self, message="AI 请求参数无效", field: str = ""):
+        super().__init__(message, "AI_VALIDATION_001")
+        self.field = field
 
 
 class VersionNotFoundError(Exception):

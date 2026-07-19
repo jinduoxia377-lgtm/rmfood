@@ -32,7 +32,7 @@ from ..core.notification_center import (
 )
 
 
-router = APIRouter(prefix="/notifications", tags=["notifications"])
+router = APIRouter(prefix="/notifications/v2", tags=["notifications"])
 
 
 # ============================================================

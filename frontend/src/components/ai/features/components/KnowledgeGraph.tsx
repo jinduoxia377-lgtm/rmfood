@@ -25,6 +25,12 @@ import { logger } from '@/utils/safeLogger'
 // ===== 类型定义 =====
 
 interface GraphNode {
+  x?: number;
+  y?: number;
+  fx?: number | null;
+  fy?: number | null;
+  vx?: number;
+  vy?: number;
   id: string
   label: string
   group?: string
@@ -66,11 +72,11 @@ const DEFAULT_CONFIG = {
   simulationAlphaDecay: 0.02,
   zoomExtent: [0.2, 4] as [number, number],
   colors: {
-    node: ['#6366f1', '#8b5cf6', '#ec4899', '#f43f5e', '#f97316', '#eab308'],
-    link: '#94a3b8',
-    linkHighlight: '#3b82f6',
-    background: '#ffffff',
-    text: '#374151',
+    node: ['var(--color-indigo-500, #6366F1)', 'var(--color-violet-500, #AF52DE)', 'var(--color-pink-500, #D946EF)', 'var(--color-rose-500, #F43F5E)', 'var(--color-orange-500, #EA580C)', 'var(--color-yellow-500, #EAB308)'],
+    link: 'var(--color-slate-400, #9CA3AF)',
+    linkHighlight: 'var(--color-secondary, #0A84FF)',
+    background: 'var(--color-white, #FFFFFF)',
+    text: 'var(--color-gray-700, #374151)',
   },
 }
 
@@ -163,7 +169,7 @@ const KnowledgeGraph = memo(({
       .attr('fill', (_: any, i: number) =>
         DEFAULT_CONFIG.colors.node[i % DEFAULT_CONFIG.colors.node.length],
       )
-      .attr('stroke', '#fff')
+      .attr('stroke', 'var(--color-white, #FFFFFF)')
       .attr('stroke-width', 2)
       .style('cursor', 'pointer')
       .call(d3.drag<SVGCircleElement, GraphNode>()
@@ -199,7 +205,7 @@ const KnowledgeGraph = memo(({
           return baseR * 1.2
         })
         .attr('stroke-width', 3)
-        .attr('stroke', '#3b82f6')
+        .attr('stroke', 'var(--color-secondary, #0A84FF)')
 
       // 高亮相关连线
       link.attr('stroke', (l: any) =>
@@ -224,7 +230,7 @@ const KnowledgeGraph = memo(({
             (DEFAULT_CONFIG.nodeRadius.max - DEFAULT_CONFIG.nodeRadius.min)
         })
         .attr('stroke-width', 2)
-        .attr('stroke', '#fff')
+        .attr('stroke', 'var(--color-white, #FFFFFF)')
 
       link.attr('stroke', DEFAULT_CONFIG.colors.link)
         .attr('stroke-opacity', 0.6)
@@ -326,26 +332,26 @@ const KnowledgeGraph = memo(({
         <div className="absolute top-4 right-4 z-10 flex flex-col gap-2">
           <button
             onClick={handleZoomIn}
-            className="p-2 bg-white dark:bg-gray-800 rounded-lg shadow-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            className="p-2 bg-white dark:bg-neutral-800 rounded-lg shadow-md hover:bg-slate-50 dark:hover:bg-neutral-700 transition-colors"
             title="放大"
           >
-            <ZoomIn className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+            <ZoomIn className="w-4 h-4 text-neutral-600 dark:text-neutral-300" />
           </button>
           <button
             onClick={handleZoomOut}
-            className="p-2 bg-white dark:bg-gray-800 rounded-lg shadow-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            className="p-2 bg-white dark:bg-neutral-800 rounded-lg shadow-md hover:bg-slate-50 dark:hover:bg-neutral-700 transition-colors"
             title="缩小"
           >
-            <ZoomOut className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+            <ZoomOut className="w-4 h-4 text-neutral-600 dark:text-neutral-300" />
           </button>
           <button
             onClick={handleResetZoom}
-            className="p-2 bg-white dark:bg-gray-800 rounded-lg shadow-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            className="p-2 bg-white dark:bg-neutral-800 rounded-lg shadow-md hover:bg-slate-50 dark:hover:bg-neutral-700 transition-colors"
             title="重置视图"
           >
-            <RotateCcw className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+            <RotateCcw className="w-4 h-4 text-neutral-600 dark:text-neutral-300" />
           </button>
-          <div className="text-xs text-center text-gray-500 dark:text-gray-400 mt-1">
+          <div className="text-xs text-center text-neutral-500 dark:text-neutral-400 mt-1">
             {(zoomLevel * 100).toFixed(0)}%
           </div>
         </div>
@@ -354,7 +360,7 @@ const KnowledgeGraph = memo(({
       {/* SVG 图表 */}
       <svg
         ref={svgRef}
-        className="w-full rounded-lg border border-gray-200 dark:border-gray-700"
+        className="w-full rounded-lg border border-neutral-200 dark:border-neutral-700"
         style={{ maxWidth: '100%', height: 'auto' }}
       />
 
@@ -364,7 +370,7 @@ const KnowledgeGraph = memo(({
           <div className="space-y-1">
             <div className="font-semibold">{hoveredNode.label}</div>
             {hoveredNode.category && (
-              <div className="text-xs text-gray-400">分类: {hoveredNode.category}</div>
+              <div className="text-xs text-neutral-400">分类: {hoveredNode.category}</div>
             )}
             {hoveredNode.description && (
               <div className="text-xs">{hoveredNode.description.slice(0, 100)}...</div>
@@ -377,14 +383,14 @@ const KnowledgeGraph = memo(({
 
       {/* 选中节点详情面板 */}
       {selectedNode && (
-        <div className="absolute bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-80 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 p-4 animate-in slide-in-from-bottom-2 fade-in duration-200">
+        <div className="absolute bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-80 bg-white dark:bg-neutral-800 rounded-xl shadow-xl border border-neutral-200 dark:border-neutral-700 p-4 animate-in slide-in-from-bottom-2 fade-in duration-200">
           <div className="flex items-start justify-between mb-3">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+            <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">
               {selectedNode.label}
             </h3>
             <button
               onClick={() => setSelectedNode(null)}
-              className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+              className="p-1 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded transition-colors"
             >
               ×
             </button>
@@ -399,21 +405,21 @@ const KnowledgeGraph = memo(({
           )}
 
           {selectedNode.description && (
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+            <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
               {selectedNode.description}
             </p>
           )}
 
           {selectedNode.metadata && Object.keys(selectedNode.metadata).length > 0 && (
-            <div className="border-t border-gray-200 dark:border-gray-700 pt-3">
-              <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+            <div className="border-t border-neutral-200 dark:border-neutral-700 pt-3">
+              <h4 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2">
                 详细信息
               </h4>
               <div className="grid grid-cols-2 gap-2 text-xs">
                 {Object.entries(selectedNode.metadata).map(([key, value]) => (
                   <div key={key}>
-                    <span className="text-gray-500">{key}:</span>{' '}
-                    <span className="font-medium text-gray-900 dark:text-gray-100">
+                    <span className="text-neutral-500">{key}:</span>{' '}
+                    <span className="font-medium text-neutral-900 dark:text-neutral-100">
                       {String(value)}
                     </span>
                   </div>
@@ -425,8 +431,8 @@ const KnowledgeGraph = memo(({
       )}
 
       {/* 统计信息 */}
-      <div className="absolute top-4 left-4 z-10 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-sm">
-        <div className="flex items-center gap-3 text-xs text-gray-600 dark:text-gray-400">
+      <div className="absolute top-4 left-4 z-10 bg-white/90 dark:bg-neutral-800/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-sm">
+        <div className="flex items-center gap-3 text-xs text-neutral-600 dark:text-neutral-400">
           <span className="flex items-center gap-1">
             <Info className="w-3.5 h-3.5" />
             {nodes.length} 个节点

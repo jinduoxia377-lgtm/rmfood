@@ -57,7 +57,7 @@ const Switch = React.forwardRef<HTMLButtonElement, SwitchProps>(
             'border-2 border-transparent transition-colors duration-200 ease-in-out',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2',
             'disabled:cursor-not-allowed disabled:opacity-50',
-            checked ? 'bg-primary-600' : 'bg-gray-200 dark:bg-gray-700',
+            checked ? 'bg-primary-600' : 'bg-neutral-200 dark:bg-neutral-700',
             className,
           )}
           {...props}
@@ -72,7 +72,7 @@ const Switch = React.forwardRef<HTMLButtonElement, SwitchProps>(
         {label && (
           <span
             className={cn(
-              'text-sm font-medium text-gray-700 dark:text-gray-300 select-none',
+              'text-sm font-medium text-neutral-700 dark:text-neutral-300 select-none',
               disabled && 'opacity-50 cursor-not-allowed',
             )}
           >

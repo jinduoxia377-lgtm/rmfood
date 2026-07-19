@@ -43,7 +43,7 @@ export function RadarMiniChart({ synergy, taste, stability, safety, overall }: R
             key={i}
             points={gridPoints}
             fill="none"
-            stroke="#e5e7eb"
+            stroke="var(--border-subtle, rgba(0,0,0,0.06))"
             strokeWidth={1}
           />
         )
@@ -58,7 +58,7 @@ export function RadarMiniChart({ synergy, taste, stability, safety, overall }: R
             y1={50}
             x2={50 + 40 * Math.cos(angle)}
             y2={50 + 40 * Math.sin(angle)}
-            stroke="#e5e7eb"
+            stroke="var(--border-subtle, rgba(0,0,0,0.06))"
             strokeWidth={1}
           />
         )
@@ -66,9 +66,9 @@ export function RadarMiniChart({ synergy, taste, stability, safety, overall }: R
       {/* 数据区域 */}
       <polygon
         points={pointsString}
-        fill="#8B5CF6"
+        fill="var(--color-tertiary, #AF52DE)"
         fillOpacity={0.3}
-        stroke="#8B5CF6"
+        stroke="var(--color-tertiary, #AF52DE)"
         strokeWidth={2}
       />
       {/* 数据点 */}
@@ -80,7 +80,7 @@ export function RadarMiniChart({ synergy, taste, stability, safety, overall }: R
             cx={point.x}
             cy={point.y}
             r={3}
-            fill="#8B5CF6"
+            fill="var(--color-tertiary, #AF52DE)"
           />
         )
       })}
@@ -101,7 +101,7 @@ export function RadarMiniChart({ synergy, taste, stability, safety, overall }: R
             y={50 + radius * Math.sin(angle)}
             textAnchor="middle"
             dominantBaseline="middle"
-            fill="#6b7280"
+            fill="var(--text-secondary, #6E6E73)"
             fontSize={8}
           >
             {item.label}

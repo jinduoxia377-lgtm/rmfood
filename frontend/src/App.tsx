@@ -19,6 +19,7 @@ import { UserRole } from '@/types/index';
 import { ThemeProvider } from '@/stores/ThemeProvider';
 import MainLayout from '@/components/layout/MainLayout';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { ModuleErrorBoundary } from '@/components/ai/features';
 import { ToastProvider } from '@/components/ui/Toast';
 import { ToastContainer } from '@/components/ui/ToastContainer';
 import { ShortcutHelpProvider } from '@/hooks/useKeyboardShortcuts.tsx';
@@ -28,7 +29,7 @@ import { lazyWithPreload } from '@/components/LazyLoad.tsx';
 
 // 🔒 P3-1: 关键页面直接导入，确保首屏加载速度
 // 这些文件体积小，同步加载无影响首屏性能
-import RhineLoginPage from '@/pages/auth/RhineLoginPage';
+import LoginPage from '@/pages/auth/LoginPage';
 import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage';
 import DashboardPage from '@/pages/dashboard/DashboardPage';
 
@@ -54,6 +55,9 @@ const AcademicReportPage = lazyWithPreload(() => import('@/pages/academic/Academ
 // 🔒 P3-1: 数据库页面 - 数据密集型
 const DatabasePage = lazyWithPreload(() => import('@/pages/database/DatabasePage'));
 
+// 🔒 术语管理页面
+const TerminologyPage = lazyWithPreload(() => import('@/pages/terminology/TerminologyPage'));
+
 // 🔒 P3-1: 用户/设置/通知 - 标准懒加载
 const UserManagementPage = lazyWithPreload(() => import('@/pages/user/UserManagementPage'));
 const SettingsPage = lazyWithPreload(() => import('@/pages/settings/SettingsPage'));
@@ -66,10 +70,18 @@ const AuditLogPage = lazyWithPreload(() => import('@/pages/admin/AuditLogPage'))
 // 🔒 P3-1: 404 页面 - 极小文件同步加载
 const NotFoundPage = lazyWithPreload(() => import('@/pages/NotFoundPage'));
 
+// 🔒 P3-1: Token 可视化文档页面
+const TokenDocPage = lazyWithPreload(() => import('@/pages/TokenDocPage'));
+
 // 🔒 P3-1: SSS 企业级功能页面 - 大体积，懒加载
 const AnalyticsPage = lazyWithPreload(() => import('@/pages/analytics/AnalyticsPage'));
 const OrganizationsPage = lazyWithPreload(() => import('@/pages/organizations/OrganizationsPage'));
 const IntegrationsPage = lazyWithPreload(() => import('@/pages/integrations/IntegrationsPage'));
+
+/**
+ * 页面过渡动画 — 已移至 MainLayout 内部，避免双重嵌套
+ * App.tsx 不再包裹 PageTransition
+ */
 
 /* ═══════════════════════════════════════════
    路由守卫组件
@@ -146,8 +158,14 @@ function AdminGuard({ children }: { children: ReactNode }) {
 const LoadingComponent = () => (
   <div className="flex items-center justify-center h-screen">
     <div className="text-center">
-      <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary-600 mb-4"></div>
-      <p className="text-gray-600">加载中...</p>
+      <div
+        className="inline-block rounded-full h-8 w-8 border-t-2 border-b-2 animate-spin mb-4"
+        style={{
+          borderColor: 'var(--color-primary-600, var(--color-primary, #34C759))',
+          borderTopColor: 'var(--color-primary, #34C759)',
+        }}
+      ></div>
+      <p className="text-neutral-600 dark:text-neutral-400">加载中...</p>
     </div>
   </div>
 );
@@ -162,7 +180,7 @@ const router = createBrowserRouter([
     path: '/login',
     element: (
       <GuestGuard>
-        <RhineLoginPage />
+        <LoginPage />
       </GuestGuard>
     ),
   },
@@ -196,7 +214,9 @@ const router = createBrowserRouter([
         path: 'formulas',
         element: (
           <Suspense fallback={<LoadingComponent />}>
-            <FormulaListPage />
+            <ModuleErrorBoundary moduleName="配方列表">
+              <FormulaListPage />
+            </ModuleErrorBoundary>
           </Suspense>
         ),
       },
@@ -212,7 +232,9 @@ const router = createBrowserRouter([
         path: 'formulas/:id',
         element: (
           <Suspense fallback={<LoadingComponent />}>
-            <FormulaDetailPage />
+            <ModuleErrorBoundary moduleName="配方详情">
+              <FormulaDetailPage />
+            </ModuleErrorBoundary>
           </Suspense>
         ),
       },
@@ -220,7 +242,9 @@ const router = createBrowserRouter([
         path: 'formulas/:id/edit',
         element: (
           <Suspense fallback={<LoadingComponent />}>
-            <FormulaEditPage />
+            <ModuleErrorBoundary moduleName="配方编辑">
+              <FormulaEditPage />
+            </ModuleErrorBoundary>
           </Suspense>
         ),
       },
@@ -309,6 +333,14 @@ const router = createBrowserRouter([
         ),
       },
       {
+        path: 'terminology',
+        element: (
+          <Suspense fallback={<LoadingComponent />}>
+            <TerminologyPage />
+          </Suspense>
+        ),
+      },
+      {
         path: 'workflows',
         element: (
           <Suspense fallback={<LoadingComponent />}>
@@ -344,6 +376,14 @@ const router = createBrowserRouter([
           </Suspense>
         ),
       },
+      {
+        path: 'tokens',
+        element: (
+          <Suspense fallback={<LoadingComponent />}>
+            <TokenDocPage />
+          </Suspense>
+        ),
+      },
 
       // 系统
       {
@@ -358,7 +398,9 @@ const router = createBrowserRouter([
         path: 'settings',
         element: (
           <Suspense fallback={<LoadingComponent />}>
-            <SettingsPage />
+            <ModuleErrorBoundary moduleName="设置">
+              <SettingsPage />
+            </ModuleErrorBoundary>
           </Suspense>
         ),
       },
@@ -369,7 +411,9 @@ const router = createBrowserRouter([
         element: (
           <Suspense fallback={<LoadingComponent />}>
             <AdminGuard>
-              <UserManagementPage />
+              <ModuleErrorBoundary moduleName="用户管理">
+                <UserManagementPage />
+              </ModuleErrorBoundary>
             </AdminGuard>
           </Suspense>
         ),
@@ -394,7 +438,6 @@ const router = createBrowserRouter([
           </Suspense>
         ),
       },
-      { path: '*', element: <Navigate to="/404" replace /> },
     ],
   },
 
@@ -421,36 +464,7 @@ export default function App() {
 
   return (
     <ErrorBoundary
-      onErrorReport={handleErrorReport}
-      fallback={(error, reset) => (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-red-50 to-white">
-          <div className="text-center max-w-md p-8">
-            <div className="text-6xl mb-4">⚠️</div>
-            <h1 className="text-2xl font-bold text-red-600 mb-4">页面遇到了一些问题</h1>
-            <p className="text-gray-600 mb-6">抱歉，页面在加载时发生了错误。请尝试刷新或返回首页。</p>
-            <div className="flex gap-3 justify-center flex-wrap">
-              <button
-                className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
-                onClick={reset}
-              >
-                重试
-              </button>
-              <button
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
-                onClick={() => (window.location.href = '/')}
-              >
-                返回首页
-              </button>
-              <button
-                className="px-4 py-2 text-gray-500 hover:text-gray-700 transition-colors"
-                onClick={() => window.location.reload()}
-              >
-                刷新页面
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      fallback={<div className="flex items-center justify-center min-h-screen"><p>页面加载失败，请刷新重试</p></div>}
     >
       <ThemeProvider>
         <QueryClientProvider client={queryClient}>

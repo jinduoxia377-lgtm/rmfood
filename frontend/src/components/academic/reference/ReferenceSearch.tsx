@@ -30,7 +30,7 @@ export function ReferenceSearch() {
   };
 
   return (
-    <div className="border rounded-lg p-6 bg-white dark:bg-gray-800">
+    <div className="border rounded-lg p-6 bg-white dark:bg-neutral-800">
       <div className="flex items-center gap-2 mb-6">
         <FileSearch className="w-5 h-5 text-primary-500" />
         <h3 className="text-lg font-semibold">文献检索</h3>
@@ -42,7 +42,7 @@ export function ReferenceSearch() {
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
             searchType === 'search'
               ? 'bg-primary-500 text-white'
-              : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+              : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'
           }`}
         >
           <Search className="w-4 h-4 inline mr-2" />
@@ -53,7 +53,7 @@ export function ReferenceSearch() {
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
             searchType === 'doi'
               ? 'bg-primary-500 text-white'
-              : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+              : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'
           }`}
         >
           DOI检索
@@ -63,7 +63,7 @@ export function ReferenceSearch() {
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
             searchType === 'isbn'
               ? 'bg-primary-500 text-white'
-              : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+              : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'
           }`}
         >
           <BookOpen className="w-4 h-4 inline mr-2" />
@@ -83,7 +83,7 @@ export function ReferenceSearch() {
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => setQuery(e.target.value)}
           onKeyDown={(e: any) => e.key === 'Enter' && handleSearch()}
           disabled={isLoading}
-          className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+          className="flex-1 px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100"
         />
         <button
           onClick={handleSearch}
@@ -95,32 +95,32 @@ export function ReferenceSearch() {
       </div>
 
       {error && (
-        <div className="mb-4 px-3 py-2 bg-red-50 text-red-600 border border-red-200 rounded-lg text-sm">
+        <div className="mb-4 px-3 py-2 bg-error-50 text-error-600 border border-red-200 rounded-lg text-sm">
           {error}
         </div>
       )}
 
-      <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
-        <p className="text-sm text-gray-500 mb-3">快速检索示例：</p>
+      <div className="mt-4 pt-4 border-t border-neutral-100 dark:border-neutral-700">
+        <p className="text-sm text-neutral-500 mb-3">快速检索示例：</p>
         <div className="flex flex-wrap gap-2">
           <button
             onClick={() => handleQuickSearch('doi', '10.1038/s41586-023-06164-9')}
-            className="px-3 py-1.5 text-xs bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30"
+            className="px-3 py-1.5 text-xs bg-secondary-50 dark:bg-secondary-900/20 text-secondary-600 dark:text-secondary-400 rounded-lg hover:bg-secondary-100 dark:hover:bg-secondary-900/30"
           >
             DOI: 10.1038/s41586-023-06164-9
           </button>
           <button
             onClick={() => handleQuickSearch('isbn', '9787030720378')}
-            className="px-3 py-1.5 text-xs bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30"
+            className="px-3 py-1.5 text-xs bg-success-50 dark:bg-success-900/20 text-success-600 dark:text-success-400 rounded-lg hover:bg-success-100 dark:hover:bg-success-900/30"
           >
             ISBN: 9787030720378
           </button>
         </div>
       </div>
 
-      <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">检索说明</h4>
-        <ul className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
+      <div className="mt-4 p-4 bg-slate-50 dark:bg-neutral-800 rounded-lg">
+        <h4 className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">检索说明</h4>
+        <ul className="text-xs text-neutral-500 dark:text-neutral-400 space-y-1">
           <li>• DOI检索：输入完整DOI号，自动获取文献元数据</li>
           <li>• ISBN检索：输入ISBN号，获取书籍信息</li>
           <li>• 关键词搜索：在本地文献库中搜索标题、作者、期刊等</li>

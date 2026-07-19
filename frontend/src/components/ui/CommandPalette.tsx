@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils'
 
 const TYPE_CONFIG: Record<string, { icon: typeof FlaskConical; label: string; color: string }> = {
   formula: { icon: FlaskConical, label: '配方', color: 'text-primary-600 dark:text-primary-400' },
-  experiment: { icon: TestTubes, label: '实验', color: 'text-blue-600 dark:text-blue-400' },
+  experiment: { icon: TestTubes, label: '实验', color: 'text-secondary-600 dark:text-secondary-400' },
   herb: { icon: Leaf, label: '药材', color: 'text-primary-600 dark:text-primary-400' },
   peptide: { icon: Dna, label: '肽', color: 'text-violet-600 dark:text-violet-400' },
 }
@@ -53,10 +53,10 @@ function ResultItem({
         'group',
         isSelected
           ? 'bg-primary-50 dark:bg-primary-900/20'
-          : 'hover:bg-slate-100 dark:hover:bg-slate-800/70',
+          : 'hover:bg-neutral-100 dark:hover:bg-neutral-800/70',
       )}
     >
-      <div className={cn('shrink-0 w-9 h-9 rounded-lg flex items-center justify-center bg-slate-100 dark:bg-slate-800', config.color)}>
+      <div className={cn('shrink-0 w-9 h-9 rounded-lg flex items-center justify-center bg-neutral-100 dark:bg-neutral-800', config.color)}>
         <Icon size={16} />
       </div>
       <div className="flex-1 min-w-0">
@@ -64,15 +64,15 @@ function ResultItem({
           'text-sm font-medium truncate',
           isSelected
             ? 'text-primary-700 dark:text-primary-300'
-            : 'text-slate-900 dark:text-white group-hover:text-primary-700 dark:group-hover:text-primary-300',
+            : 'text-neutral-900 dark:text-white group-hover:text-primary-700 dark:group-hover:text-primary-300',
         )}>
           {item.title}
         </p>
-        <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{item.subtitle}</p>
+        <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">{item.subtitle}</p>
       </div>
       <div className="flex items-center gap-2 shrink-0">
         {item.status && (
-          <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
+          <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400">
             {STATUS_LABELS[item.status] || item.status}
           </span>
         )}
@@ -81,7 +81,7 @@ function ResultItem({
             跳转
           </span>
         ) : (
-          <ArrowRight size={14} className="text-slate-300 dark:text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+          <ArrowRight size={14} className="text-neutral-300 dark:text-neutral-600 opacity-0 group-hover:opacity-100 transition-opacity" />
         )}
       </div>
     </button>
@@ -156,6 +156,7 @@ export default function CommandPalette() {
     } else {
       setQuery('')
     }
+    return
   }, [open])
 
   // ── 搜索请求（防抖 300ms） ──
@@ -260,7 +261,7 @@ export default function CommandPalette() {
       <div
         className={cn(
           'fixed left-1/2 top-[15%] z-[70] w-full max-w-xl -translate-x-1/2',
-          'bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700',
+          'bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-neutral-200 dark:border-neutral-700',
           'overflow-hidden flex flex-col',
           'transition-all duration-200 origin-top',
           open ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none',
@@ -268,8 +269,8 @@ export default function CommandPalette() {
         style={{ maxHeight: '70vh' }}
       >
         {/* 搜索输入 */}
-        <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-200 dark:border-slate-800">
-          <Search size={18} className="text-slate-400 shrink-0" />
+        <div className="flex items-center gap-3 px-4 py-3 border-b border-neutral-200 dark:border-neutral-800">
+          <Search size={18} className="text-neutral-400 shrink-0" />
           <input
             ref={inputRef}
             id="command-palette-search"
@@ -279,18 +280,18 @@ export default function CommandPalette() {
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="搜索配方、实验、药材、活性肽..."
-            className="flex-1 bg-transparent text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none"
+            className="flex-1 bg-transparent text-sm text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none"
             autoComplete="off"
           />
           {query && (
             <button
               onClick={() => setQuery('')}
-              className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+              className="text-xs text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
             >
               清除
             </button>
           )}
-          <kbd className="shrink-0 px-1.5 py-0.5 rounded text-[10px] font-medium text-slate-400 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+          <kbd className="shrink-0 px-1.5 py-0.5 rounded text-[10px] font-medium text-neutral-400 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700">
             ESC
           </kbd>
         </div>
@@ -300,11 +301,11 @@ export default function CommandPalette() {
           {query.length === 0 ? (
             /* 空状态 - 显示快捷入口 */
             <div className="px-4 py-6 text-center">
-              <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                <Command size={20} className="text-slate-400" />
+              <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
+                <Command size={20} className="text-neutral-400" />
               </div>
-              <p className="text-sm text-slate-500 dark:text-slate-400">输入关键词开始搜索</p>
-              <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">支持搜索配方、实验、中药材、活性肽</p>
+              <p className="text-sm text-neutral-500 dark:text-neutral-400">输入关键词开始搜索</p>
+              <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1">支持搜索配方、实验、中药材、活性肽</p>
 
               {/* 快捷入口 */}
               <div className="mt-5 grid grid-cols-2 gap-2 max-w-xs mx-auto">
@@ -322,19 +323,19 @@ export default function CommandPalette() {
                 </button>
                 <button
                   onClick={() => { navigate('/ai'); setOpen(false) }}
-                  className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors text-sm font-medium"
+                  className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-warning-50 dark:bg-warning-900/20 text-warning-700 dark:text-warning-300 hover:bg-warning-100 dark:hover:bg-warning-900/30 transition-colors text-sm font-medium"
                 >
                   <Sparkles size={14} /> AI 助手
                 </button>
                 <button
                   onClick={() => { navigate('/databases'); setOpen(false) }}
-                  className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors text-sm font-medium"
+                  className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-secondary-50 dark:bg-secondary-900/20 text-secondary-700 dark:text-secondary-300 hover:bg-secondary-100 dark:hover:bg-secondary-900/30 transition-colors text-sm font-medium"
                 >
                   <Dna size={14} /> 数据库
                 </button>
               </div>
 
-              <div className="mt-4 flex items-center justify-center gap-4 text-xs text-slate-400">
+              <div className="mt-4 flex items-center justify-center gap-4 text-xs text-neutral-400">
                 <span className="flex items-center gap-1"><Leaf size={12} /> 药材</span>
                 <span className="flex items-center gap-1"><FlaskConical size={12} /> 配方</span>
                 <span className="flex items-center gap-1"><TestTubes size={12} /> 实验</span>
@@ -344,7 +345,7 @@ export default function CommandPalette() {
           ) : searching ? (
             <div className="px-4 py-6 text-center">
               <div className="inline-block w-5 h-5 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
-              <p className="text-xs text-slate-400 mt-2">搜索中...</p>
+              <p className="text-xs text-neutral-400 mt-2">搜索中...</p>
             </div>
           ) : allResults.length > 0 ? (
             <div className="space-y-0.5 px-2">
@@ -373,46 +374,46 @@ export default function CommandPalette() {
                       'w-full flex items-center gap-3 px-4 py-2.5 text-left rounded-xl transition-colors',
                       isSel
                         ? 'bg-primary-50 dark:bg-primary-900/20'
-                        : 'hover:bg-slate-100 dark:hover:bg-slate-800/70',
+                        : 'hover:bg-neutral-100 dark:hover:bg-neutral-800/70',
                     )}
                   >
                     <Icon size={14} className={cn('shrink-0', config.color)} />
                     <span className={cn(
                       'text-sm',
-                      isSel ? 'text-primary-700 dark:text-primary-300' : 'text-slate-700 dark:text-slate-300',
+                      isSel ? 'text-primary-700 dark:text-primary-300' : 'text-neutral-700 dark:text-neutral-300',
                     )}>
                       {s.text}
                     </span>
-                    <span className="text-xs text-slate-400 ml-auto">{s.hint}</span>
+                    <span className="text-xs text-neutral-400 ml-auto">{s.hint}</span>
                   </button>
                 )
               })}
             </div>
           ) : (
             <div className="px-4 py-8 text-center">
-              <p className="text-sm text-slate-500 dark:text-slate-400">未找到相关结果</p>
-              <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">尝试不同的关键词</p>
+              <p className="text-sm text-neutral-500 dark:text-neutral-400">未找到相关结果</p>
+              <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1">尝试不同的关键词</p>
             </div>
           )}
         </div>
 
         {/* 底部提示 */}
         {(searchData || query.length > 0) && (
-          <div className="px-4 py-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
-            <span className="text-[10px] text-slate-400">
+          <div className="px-4 py-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
+            <span className="text-[10px] text-neutral-400">
               {searchData ? `共 ${searchData.total} 个结果` : '输入关键词搜索'}
             </span>
-            <div className="flex items-center gap-3 text-[10px] text-slate-400">
+            <div className="flex items-center gap-3 text-[10px] text-neutral-400">
               <span className="flex items-center gap-1">
-                <kbd className="px-1 py-0.5 rounded bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[9px]">↑↓</kbd>
+                <kbd className="px-1 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-[9px]">↑↓</kbd>
                 导航
               </span>
               <span className="flex items-center gap-1">
-                <kbd className="px-1 py-0.5 rounded bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[9px]">↵</kbd>
+                <kbd className="px-1 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-[9px]">↵</kbd>
                 选择
               </span>
               <span className="flex items-center gap-1">
-                <kbd className="px-1 py-0.5 rounded bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[9px]">esc</kbd>
+                <kbd className="px-1 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-[9px]">esc</kbd>
                 关闭
               </span>
             </div>

@@ -51,7 +51,7 @@ function ChartBlock({ data }: ChartBlockProps) {
       default:
         return (
           <div className="text-center py-4">
-            <p className="text-xs text-gray-400">暂不支持的图表类型: {chartType}</p>
+            <p className="text-xs text-neutral-400">暂不支持的图表类型: {chartType}</p>
           </div>
         )
     }
@@ -60,13 +60,13 @@ function ChartBlock({ data }: ChartBlockProps) {
   return (
     <div className="mb-3 last:mb-0">
       {/* 卡片容器 */}
-      <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 overflow-hidden">
+      <div className="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 overflow-hidden">
         {/* 标题栏 */}
         {title && (
-          <div className="flex items-center gap-1.5 px-4 py-2.5 border-b border-gray-100 dark:border-gray-800
+          <div className="flex items-center gap-1.5 px-4 py-2.5 border-b border-neutral-100 dark:border-neutral-800
             bg-gradient-to-r from-blue-50/60 to-transparent dark:from-blue-950/20 dark:to-transparent">
-            <BarChart3 className="w-3.5 h-3.5 text-blue-500" />
-            <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">{title}</span>
+            <BarChart3 className="w-3.5 h-3.5 text-secondary-500" />
+            <span className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">{title}</span>
           </div>
         )}
 

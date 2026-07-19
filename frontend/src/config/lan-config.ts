@@ -23,17 +23,22 @@ export const SUPPORTED_HOSTS = [
   '192.168.137.1',
   '172.28.128.1',
   '172.31.80.1',
-  '172.20.3.122',
+  '172.20.3.152',
+  '172.20.3.153',
+  '172.20.3.154',
   'localhost:3000',
   '127.0.0.1:3000',
   '192.168.137.1:3000',
   '172.28.128.1:3000',
   '172.31.80.1:3000',
   '172.20.3.122:3000',
+  '172.20.3.152:3000',
+  '172.20.3.153:3000',
+  '172.20.3.154:3000',
 ];
 
 // 验证当前访问地址是否被允许
-export const isHostAllowed = (currentHost) => {
+export const isHostAllowed = (currentHost: string) => {
   return SUPPORTED_HOSTS.some(host => currentHost.includes(host));
 };
 
@@ -48,8 +53,10 @@ export const getWebSocketUrl = () => {
   return `${protocol}://${hostname}:8000`;
 };
 
-// 日志输出
-console.log('[RMFOOD 局域网配置]');
-console.log('当前访问主机:', hostname);
-console.log('API 基地址:', getApiBaseUrl());
-console.log('WebSocket URL:', getWebSocketUrl());
+// 日志输出（仅开发环境）
+if (import.meta.env.DEV) {
+  console.log('[RMFOOD 局域网配置]');
+  console.log('当前访问主机:', hostname);
+  console.log('API 基地址:', getApiBaseUrl());
+  console.log('WebSocket URL:', getWebSocketUrl());
+}

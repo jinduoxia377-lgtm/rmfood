@@ -358,7 +358,7 @@ class PeptideAnalysisService:
                 except Exception as e:
                     failed_items.append({
                         "index": idx,
-                        "error": str(e),
+                        "error": "处理异常",
                         "sequence": item.sequence
                     })
 

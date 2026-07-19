@@ -74,7 +74,7 @@ function generateId(): string {
   return `step-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`
 }
 
-function createStep(config: StepGeneratorConfig): Omit<ThinkingStepV3, 'metadata'> {
+function createStep(config: StepGeneratorConfig): ThinkingStepV3 {
   return {
     id: config.parentId ? generateId() : generateId(),
     type: config.type,
@@ -234,16 +234,26 @@ export const useThinkingProcessV3 = (): UseThinkingProcessV3Return => {
   const sessionRef = useRef<string>('')
   const interactionsRef = useRef<ThinkingSessionMetadata['userInteractions']>([])
 
-  const addStep = useCallback((stepConfig: Omit<ThinkingStepV3, 'id' | 'metadata'>): string => {
-    const id = stepConfig.id || generateId()
+  const addStep = useCallback((stepConfig: StepGeneratorConfig & { status?: ThinkingStepV3['status'] }): string => {
+    const id = generateId()
     const fullStep: ThinkingStepV3 = {
-      ...stepConfig,
+      type: stepConfig.type,
+      dimension: stepConfig.dimension,
+      title: stepConfig.title,
+      description: stepConfig.description,
+      confidence: stepConfig.confidence,
+      status: stepConfig.status || 'pending',
+      parentId: stepConfig.parentId ?? null,
+      childrenIds: [],
+      branchId: null,
+      details: stepConfig.details,
+      evidence: stepConfig.evidence,
       id,
-      metadata: stepConfig.metadata || {
+      metadata: {
         timestamp: Date.now(),
         retryCount: 0,
         userFeedback: null,
-        tags: [],
+        tags: stepConfig.tags || [],
       },
     }
 
@@ -265,7 +275,7 @@ export const useThinkingProcessV3 = (): UseThinkingProcessV3Return => {
     return id
   }, [])
 
-  const updateStepStatus = useCallback((stepId: string, status: ThinkingStepV3['status'], extra?: Partial<Pick<ThinkingStepV3, 'metadata'>>) => {
+  const updateStepStatus = useCallback((stepId: string, status: ThinkingStepV3['status'], extra?: { metadata?: Partial<ThinkingStepV3['metadata']> }) => {
     setState(prev => ({
       ...prev,
       steps: prev.steps.map(step =>
@@ -322,9 +332,7 @@ export const useThinkingProcessV3 = (): UseThinkingProcessV3Return => {
       const processTime = 400 + Math.random() * 500
       await new Promise(resolve => setTimeout(resolve, processTime))
 
-      updateStepStatus(stepId, 'completed', {
-        metadata: { durationMs: Math.round(processTime) },
-      })
+      updateStepStatus(stepId, 'completed', { metadata: { durationMs: Math.round(processTime) } })
 
       if (i === 0 && decompResult.subProblems.length > 2) {
         await new Promise(resolve => setTimeout(resolve, 200))
@@ -459,24 +467,24 @@ export const useThinkingProcessV3 = (): UseThinkingProcessV3Return => {
   // 加载后端返回的 thinking_steps
   const loadExternalSteps = useCallback((steps: BackendThinkingStep[], answer: string) => {
     const stepTypeMap: Record<string, ThinkingStepType> = {
-      '问题理解': 'problem_analysis',
-      '知识检索': 'knowledge_retrieval',
+      '问题理解': 'analysis',
+      '知识检索': 'retrieval',
       '推理分析': 'reasoning',
-      '配方设计': 'formula_design',
+      '配方设计': 'generation',
       '生成回答': 'synthesis',
     }
     const dimensionMap: Record<string, ThinkingDimension> = {
-      '问题理解': 'analysis',
-      '知识检索': 'knowledge',
-      '推理分析': 'reasoning',
-      '配方设计': 'formula',
-      '生成回答': 'synthesis',
+      '问题理解': 'domain',
+      '知识检索': 'technical',
+      '推理分析': 'domain',
+      '配方设计': 'domain',
+      '生成回答': 'semantic',
     }
 
     const converted: ThinkingStepV3[] = steps.map((s, i) => ({
       id: `ext-${i}`,
       type: stepTypeMap[s.step] || 'reasoning',
-      dimension: dimensionMap[s.step] || 'reasoning',
+      dimension: dimensionMap[s.step] || 'domain',
       title: s.step,
       description: s.content + (s.detail ? '\n' + s.detail : ''),
       status: s.status === 'complete' ? 'completed' as const : 'processing' as const,
@@ -486,9 +494,13 @@ export const useThinkingProcessV3 = (): UseThinkingProcessV3Return => {
       branchId: null,
       details: s.detail || '',
       evidence: s.formula_data ? [{
+        id: `ev-${i}`,
+        type: 'document',
+        title: 'AI推理引擎',
         source: 'AI推理引擎',
         content: JSON.stringify(s.formula_data),
         relevance: 0.9,
+        credibility: 0.85,
       }] : [],
       metadata: {
         timestamp: Date.now() - (steps.length - i) * 1000,
@@ -513,7 +525,8 @@ export const useThinkingProcessV3 = (): UseThinkingProcessV3Return => {
         totalSteps: steps.length,
         completedSteps: steps.filter(s => s.status === 'complete').length,
         branchesExplored: 0,
-        dimensionsCovered: [...new Set(steps.map(s => dimensionMap[s.step] || 'reasoning'))],
+        dimensionsCovered: [...new Set(steps.map(s => dimensionMap[s.step] || 'domain'))],
+        finalConfidence: 0,
         userInteractions: [],
       },
     })
@@ -528,23 +541,23 @@ export const useThinkingProcessV3 = (): UseThinkingProcessV3Return => {
     const unsub = eventBus.subscribe('thinking:step', (data: { step: string; content: string }) => {
       // 后端通过 SSE type=step 事件发送的实时思考步骤
       const stepTypeMap: Record<string, ThinkingStepType> = {
-        '问题理解': 'problem_analysis', '意图识别': 'problem_analysis',
-        '知识检索': 'knowledge_retrieval', '搜索': 'knowledge_retrieval',
+        '问题理解': 'analysis', '意图识别': 'analysis',
+        '知识检索': 'retrieval', '搜索': 'retrieval',
         '推理分析': 'reasoning', '评估': 'reasoning',
-        '配方设计': 'formula_design', '生成': 'formula_design', '优化': 'formula_design',
+        '配方设计': 'generation', '生成': 'generation', '优化': 'generation',
         '回答': 'synthesis', '整合': 'synthesis', '结论': 'synthesis',
       }
       const dimMap: Record<string, ThinkingDimension> = {
-        '问题理解': 'analysis', '意图识别': 'analysis',
-        '知识检索': 'knowledge', '搜索': 'knowledge',
-        '推理分析': 'reasoning', '评估': 'reasoning',
+        '问题理解': 'domain', '意图识别': 'domain',
+        '知识检索': 'domain', '搜索': 'domain',
+        '推理分析': 'domain', '评估': 'domain',
         '配方设计': 'domain', '生成': 'domain', '优化': 'domain',
-        '回答': 'synthesis', '整合': 'synthesis', '结论': 'synthesis',
+        '回答': 'semantic', '整合': 'semantic', '结论': 'semantic',
       }
 
       const stepName = data.step || '处理中'
       const matchedType = stepTypeMap[stepName] || 'reasoning'
-      const matchedDim = dimMap[stepName] || 'reasoning'
+      const matchedDim = dimMap[stepName] || 'domain'
 
       addStep({
         type: matchedType,

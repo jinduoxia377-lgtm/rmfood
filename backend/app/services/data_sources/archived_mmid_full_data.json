@@ -1,0 +1,3362 @@
+[
+  {
+    "pid": "B00362",
+    "cn": "阿魏",
+    "pinyin": "Awei",
+    "latin": "Ferulae Resina",
+    "eng": "Chinese Asafoe tida Sinkiang Ferula",
+    "type": "樹脂類"
+  },
+  {
+    "pid": "B00238",
+    "cn": "巴豆",
+    "pinyin": "Badou",
+    "latin": "Crotonis Fructus",
+    "eng": "Purging Croton Seed",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00152",
+    "cn": "白扁豆",
+    "pinyin": "Baibiandou",
+    "latin": "Lablab Semen Album",
+    "eng": "White Hyacinth Bean",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00022",
+    "cn": "百部",
+    "pinyin": "Baibu",
+    "latin": "Stemonae Radix",
+    "eng": "Stemona Root",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00399",
+    "cn": "白礬",
+    "pinyin": "Baifan",
+    "latin": "Alumen",
+    "eng": "Alum",
+    "type": "礦物類"
+  },
+  {
+    "pid": "B00023",
+    "cn": "白附子",
+    "pinyin": "Baifuzi",
+    "latin": "Typhonii Rhizoma",
+    "eng": "Giant Typhonium Tuber",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00153",
+    "cn": "白果",
+    "pinyin": "Baiguo",
+    "latin": "Ginkgo Semen",
+    "eng": "Ginkgo Seed",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00340",
+    "cn": "百合",
+    "pinyin": "Baihe",
+    "latin": "Lilii Bulbus",
+    "eng": "Greenish lily Bulb Liy Bulb",
+    "type": "葉類"
+  },
+  {
+    "pid": "B00259",
+    "cn": "白花蛇舌草",
+    "pinyin": "Baihuasheshecao",
+    "latin": "Hedyotidis Herba",
+    "eng": "Spreading Hedyotis Herb",
+    "type": "全草類"
+  },
+  {
+    "pid": "B00028",
+    "cn": "白及",
+    "pinyin": "Baiji",
+    "latin": "Bletillae Rhizoma",
+    "eng": "Common Bletilla Tuber",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00029",
+    "cn": "白蘞",
+    "pinyin": "Bailian",
+    "latin": "Ampelopsis Radix",
+    "eng": "Japanese Ampelopsis Root Tuber",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00024",
+    "cn": "白茅根",
+    "pinyin": "Baimaogen",
+    "latin": "Imperatae Rhizoma",
+    "eng": "Lalang Grass Rhizome",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00025",
+    "cn": "白前",
+    "pinyin": "Baiqian",
+    "latin": "Cynanchi Stauntonii Rhizoma et Radix",
+    "eng": "Willowleaf Swallowwort Rhizome and Root",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00026",
+    "cn": "白芍",
+    "pinyin": "Baishao",
+    "latin": "Paeoniae Radix Alba",
+    "eng": "White Peony Root",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00027",
+    "cn": "白頭翁",
+    "pinyin": "Baitouweng",
+    "latin": "Pulsatillae Radix",
+    "eng": "Chinese Pulsatilla Root",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00030",
+    "cn": "白薇",
+    "pinyin": "Baiwei",
+    "latin": "Cynanchi Atrati Radix et Rhizoma",
+    "eng": "Blackend Swallowwort Root and Rhizome",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00341",
+    "cn": "白鮮皮",
+    "pinyin": "Baixianpi",
+    "latin": "Dictamni Cortex",
+    "eng": "Denesefruit Pittany Root - bark",
+    "type": "皮類"
+  },
+  {
+    "pid": "B00031",
+    "cn": "白芷",
+    "pinyin": "Baizhi",
+    "latin": "Angelicae Dahuricae Radix",
+    "eng": "Taiwan Angelica Root",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00032",
+    "cn": "白朮",
+    "pinyin": "Baizhu",
+    "latin": "Atractylodis Macrocephalae Rhizoma",
+    "eng": "Largehead Atractylodes Rhizome",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00154",
+    "cn": "柏子仁",
+    "pinyin": "Baiziren",
+    "latin": "Platycladi Semen",
+    "eng": "Chinese Arborvilae Seed",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00155",
+    "cn": "八角茴香",
+    "pinyin": "Bajiaohuixiang",
+    "latin": "Anisi Stellati Fructus",
+    "eng": "Truestar Anise",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00033",
+    "cn": "巴戟天",
+    "pinyin": "Bajitian",
+    "latin": "Morindae Officinalis Radix",
+    "eng": "Medicinal Morinda Root",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00260",
+    "cn": "半邊蓮",
+    "pinyin": "Banbianlian",
+    "latin": "Lobeliae Chinensis Herba",
+    "eng": "Chinese Lobelia Herb",
+    "type": "全草類"
+  },
+  {
+    "pid": "B00034",
+    "cn": "板藍根",
+    "pinyin": "Banlangen",
+    "latin": "Isatidis Radix",
+    "eng": "Indigowoad Root",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00367",
+    "cn": "斑蝥",
+    "pinyin": "Banmao",
+    "latin": "Mylabris",
+    "eng": "Chinese Blistering Beetle",
+    "type": "動物類"
+  },
+  {
+    "pid": "B00132",
+    "cn": "半夏",
+    "pinyin": "Banxia",
+    "latin": "Pinelliae Rhizoma",
+    "eng": "Ternate Pinellia",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00035",
+    "cn": "菝葜",
+    "pinyin": "Baqia",
+    "latin": "Smilacis Chinae Rhizoma",
+    "eng": "Chinaroot Greenbrier Rhizome",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00036",
+    "cn": "北豆根",
+    "pinyin": "Beidougen",
+    "latin": "Menispermi Rhizoma",
+    "eng": "Asiatic Moonseed Rhizome",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00004",
+    "cn": "北沙參",
+    "pinyin": "Beishashen",
+    "latin": "Glehniae Radix",
+    "eng": "Coastal Glehnia Root",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00156",
+    "cn": "蓽茇",
+    "pinyin": "Bibo",
+    "latin": "Piperis Longi Fructus",
+    "eng": "Long Pepper Fruit",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00368",
+    "cn": "鱉甲",
+    "pinyin": "Biejia",
+    "latin": "Trionycis Carapax",
+    "eng": "Turtle Carapace",
+    "type": "動物類"
+  },
+  {
+    "pid": "B00157",
+    "cn": "蓖麻子",
+    "pinyin": "Bimazi",
+    "latin": "Ricini Semen",
+    "eng": "Castorbean",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00158",
+    "cn": "檳榔",
+    "pinyin": "Binglang",
+    "latin": "Arecae Semen",
+    "eng": "Betelnutpalm Seed",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00415",
+    "cn": "冰片",
+    "pinyin": "Bingpian",
+    "latin": "Borneolum Syntheticum",
+    "eng": "Synthetic Borneol",
+    "type": "其他類"
+  },
+  {
+    "pid": "B00261",
+    "cn": "薄荷",
+    "pinyin": "Bohe",
+    "latin": "Menthae Haplocalycis Herba",
+    "eng": "Wild Mint Herb",
+    "type": "全草類"
+  },
+  {
+    "pid": "B00159",
+    "cn": "補骨脂",
+    "pinyin": "Buguzhi",
+    "latin": "Psoraleae Fructus",
+    "eng": "Malaytea Scurfpea Fruit",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00241",
+    "cn": "蒼耳子",
+    "pinyin": "Cang'erzi",
+    "latin": "Xanthii Fructus",
+    "eng": "Siberian Cocklebur Fruit",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00040",
+    "cn": "蒼朮",
+    "pinyin": "Cangzhu",
+    "latin": "Atractylodis Rhizoma",
+    "eng": "Swordlike Atracylodes Rhizome",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00160",
+    "cn": "草豆蔻",
+    "pinyin": "Caodoukou",
+    "latin": "Alpiniae Katsumadai Semen",
+    "eng": "Katsumada Galangal Seed",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00161",
+    "cn": "草果",
+    "pinyin": "Caoguo",
+    "latin": "Tsaoko Fructus",
+    "eng": "Tsaoko Amomum Fruit",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00037",
+    "cn": "草烏",
+    "pinyin": "Caowu",
+    "latin": "Aconiti Kusnezoffii Radix",
+    "eng": "Kusnezoff Monkshood Mother Root",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00323",
+    "cn": "側柏葉",
+    "pinyin": "Cebaiye",
+    "latin": "Platycladi Cacumen",
+    "eng": "Chinese Arborviae Twig and Leaf",
+    "type": "葉類"
+  },
+  {
+    "pid": "B00038",
+    "cn": "柴胡",
+    "pinyin": "Chaihu",
+    "latin": "Bupleuri Radix",
+    "eng": "Chinese Thorawax Root",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00039",
+    "cn": "常山",
+    "pinyin": "Changshan",
+    "latin": "Dichroae Radix",
+    "eng": "Antifebrile Dichroa Root",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00369",
+    "cn": "蟾酥",
+    "pinyin": "Chansu",
+    "latin": "Bufonis Venenum",
+    "eng": "Dried Toads Venom",
+    "type": "動物類"
+  },
+  {
+    "pid": "B00370",
+    "cn": "蟬蛻",
+    "pinyin": "Chantui",
+    "latin": "Cicadae Periostracum",
+    "eng": "Cicada Slough",
+    "type": "動物類"
+  },
+  {
+    "pid": "B00162",
+    "cn": "陳皮",
+    "pinyin": "Chenpi",
+    "latin": "Citri Reticulatae Pericarpium",
+    "eng": "Tangerine Peel",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00421",
+    "cn": "沉香",
+    "pinyin": "Chenxiang",
+    "latin": "Aquilariae Lignum Resinatum",
+    "eng": "Tambac",
+    "type": "藤木類"
+  },
+  {
+    "pid": "B00262",
+    "cn": "車前草",
+    "pinyin": "Cheqiancao",
+    "latin": "Plantaginis Herba",
+    "eng": "Asiatic Plantain Herb",
+    "type": "全草類"
+  },
+  {
+    "pid": "B00163",
+    "cn": "車前子",
+    "pinyin": "Cheqianzi",
+    "latin": "Plantaginis Semen",
+    "eng": "Asiatic Plantain Seed",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00041",
+    "cn": "赤芍",
+    "pinyin": "Chishao",
+    "latin": "Paeoniae Radix Rubra",
+    "eng": "Red Paeoniae Trichocarpae",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00164",
+    "cn": "赤小豆",
+    "pinyin": "Chixiaodou",
+    "latin": "Vignae Semen",
+    "eng": "Rice Bean",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00371",
+    "cn": "蟲白蠟",
+    "pinyin": "Chongbaila",
+    "latin": "Cera Chinensis",
+    "eng": "Chinese Cera",
+    "type": "動物類"
+  },
+  {
+    "pid": "B00042",
+    "cn": "重樓",
+    "pinyin": "Chonglou",
+    "latin": "Paridis Rhizoma",
+    "eng": "Chinese Manyleaf Paris Rhizome",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00165",
+    "cn": "茺蔚子",
+    "pinyin": "Chongweizi",
+    "latin": "Leonuri Fructus",
+    "eng": "Common Motherwort Fruit",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00043",
+    "cn": "川貝母",
+    "pinyin": "Chuanbeimu",
+    "latin": "Fritillariae Cirrhosae Bulbus",
+    "eng": "Tendrilleaf Fritillary Bulb",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00242",
+    "cn": "川楝子",
+    "pinyin": "Chuanlianzi",
+    "latin": "Toosendan Fructus",
+    "eng": "Szechwan Chinaberry Fruit",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00136",
+    "cn": "川木通",
+    "pinyin": "Chuanmutong",
+    "latin": "Clematidis Armandii Caulis",
+    "eng": "Armand Clematis Stem",
+    "type": "藤木類"
+  },
+  {
+    "pid": "B00044",
+    "cn": "川木香",
+    "pinyin": "Chuanmuxiang",
+    "latin": "Vladimirae Radix",
+    "eng": "Common Vladimiria Root",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00045",
+    "cn": "川牛膝",
+    "pinyin": "Chuanniuxi",
+    "latin": "Cyathulae Radix",
+    "eng": "Medicinal Cyathula officinalis Root",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00046",
+    "cn": "川烏",
+    "pinyin": "Chuanwu",
+    "latin": "Aconiti Radix",
+    "eng": "Common Monkshood Mother Root",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00263",
+    "cn": "穿心蓮",
+    "pinyin": "Chuanxinlian",
+    "latin": "Andrographitis Herba",
+    "eng": "Common Andrographis Herb",
+    "type": "全草類"
+  },
+  {
+    "pid": "B00047",
+    "cn": "川芎",
+    "pinyin": "Chuanxiong",
+    "latin": "Chuanxiong Rhizoma",
+    "eng": "Szechwan Lovage Rhizome",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00264",
+    "cn": "垂盆草",
+    "pinyin": "Chuipencao",
+    "latin": "Sedi Herba",
+    "eng": "Stringy Stonecrop Herb",
+    "type": "全草類"
+  },
+  {
+    "pid": "B00342",
+    "cn": "椿皮",
+    "pinyin": "Chunpi",
+    "latin": "Ailanthi Cortex",
+    "eng": "Heaven Ailanthus Root - bark or Bark",
+    "type": "皮類"
+  },
+  {
+    "pid": "B00166",
+    "cn": "楮實子",
+    "pinyin": "Chushizi",
+    "latin": "Broussonetiae Fructus",
+    "eng": "Papermulberry Fruit",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00400",
+    "cn": "磁石",
+    "pinyin": "Cishi",
+    "latin": "Magnetitum",
+    "eng": "Magnetite",
+    "type": "礦物類"
+  },
+  {
+    "pid": "B00048",
+    "cn": "刺五加",
+    "pinyin": "Ciwujia",
+    "latin": "Acanthopanacis Senticosi Radix et Rhizoma Sue Caulis",
+    "eng": "Manyprinckle Acanthopanax",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00167",
+    "cn": "大腹皮",
+    "pinyin": "Dafupi",
+    "latin": "Arecae Pericarpium",
+    "eng": "Areca Peel",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00006",
+    "cn": "大黃",
+    "pinyin": "Dahuang",
+    "latin": "Rhei Radix et Rhizoma",
+    "eng": "Rhubarb Tangute Rhubarb",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00265",
+    "cn": "大薊",
+    "pinyin": "Daji",
+    "latin": "Cirsii Japonici Herba",
+    "eng": "Japanese Thistle",
+    "type": "全草類"
+  },
+  {
+    "pid": "B00168",
+    "cn": "淡豆豉",
+    "pinyin": "Dandouchi",
+    "latin": "Sojae Semen Praeparatum",
+    "eng": "Fermented Soybean",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00049",
+    "cn": "當歸",
+    "pinyin": "Danggui",
+    "latin": "Angelicae Sinensis Radix",
+    "eng": "Chinese Angelica",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00021",
+    "cn": "黨參",
+    "pinyin": "Dangshen",
+    "latin": "Codonopsis Radix",
+    "eng": "Pilose Asiabell Root",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00020",
+    "cn": "丹參",
+    "pinyin": "Danshen",
+    "latin": "Salviae Miltiorrhizae Radix et Rhizoma",
+    "eng": "Dan - shen Root",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00267",
+    "cn": "淡竹葉",
+    "pinyin": "Danzhuye",
+    "latin": "Lophatheri Herba",
+    "eng": "Common Lophatherum Herb",
+    "type": "全草類"
+  },
+  {
+    "pid": "B00169",
+    "cn": "刀豆",
+    "pinyin": "Daodou",
+    "latin": "Canavaliae Semen",
+    "eng": "Sword Jackbean Seed",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00170",
+    "cn": "稻芽",
+    "pinyin": "Daoya",
+    "latin": "Oryzae Fructus Germinatus",
+    "eng": "Rice - grain Sprout",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00325",
+    "cn": "大青葉",
+    "pinyin": "Daqingye",
+    "latin": "Isatidis Folium",
+    "eng": "Indigowoad Leaf",
+    "type": "葉類"
+  },
+  {
+    "pid": "B00135",
+    "cn": "大血藤",
+    "pinyin": "Daxueteng",
+    "latin": "Sargentodexae Caulis",
+    "eng": "Sargenrgloryvine",
+    "type": "藤木類"
+  },
+  {
+    "pid": "B00171",
+    "cn": "大棗",
+    "pinyin": "Dazao",
+    "latin": "Jujubae Fructus",
+    "eng": "Common Jujube",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00268",
+    "cn": "燈心草",
+    "pinyin": "Dengxincao",
+    "latin": "Junci Medulla",
+    "eng": "Common Rush Pith or Herba",
+    "type": "全草類"
+  },
+  {
+    "pid": "B00172",
+    "cn": "地膚子",
+    "pinyin": "Difuzi",
+    "latin": "Kochiae Fructus",
+    "eng": "Belvedere Fruit",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00343",
+    "cn": "地骨皮",
+    "pinyin": "Digupi",
+    "latin": "Lycii Cortex",
+    "eng": "Chinese Wolfberry Root - bark",
+    "type": "皮類"
+  },
+  {
+    "pid": "B00050",
+    "cn": "地黃",
+    "pinyin": "Dihuang",
+    "latin": "Rehmanniae Radix",
+    "eng": "Adhesive Rehmannia Root Tuber",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00372",
+    "cn": "地龍",
+    "pinyin": "Dilong",
+    "latin": "Pheretima",
+    "eng": "Earthworm",
+    "type": "動物類"
+  },
+  {
+    "pid": "B00299",
+    "cn": "丁香",
+    "pinyin": "Dingxiang",
+    "latin": "Caryophylli Flos",
+    "eng": "Clove",
+    "type": "花類"
+  },
+  {
+    "pid": "B00051",
+    "cn": "地榆",
+    "pinyin": "Diyu",
+    "latin": "Sanguisorbae Radix",
+    "eng": "Longleaf Garden Burnet Root",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00414",
+    "cn": "冬蟲夏草",
+    "pinyin": "Dongchongxiacao",
+    "latin": "Cordyceps",
+    "eng": "Chinese Caterpillar Fungus",
+    "type": "其他類"
+  },
+  {
+    "pid": "B00173",
+    "cn": "冬葵果",
+    "pinyin": "Dongkuiguo",
+    "latin": "Malvae Fructus",
+    "eng": "Cluster Mallow Fruit",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00174",
+    "cn": "豆蔻",
+    "pinyin": "Doukou",
+    "latin": "Amomi Fructus Rotundus",
+    "eng": "Whitefruit Amomim Fruit",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00052",
+    "cn": "獨活",
+    "pinyin": "Duhuo",
+    "latin": "Angelicae Pubescentis Radix",
+    "eng": "Doubleteeth Angelicae Root",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00344",
+    "cn": "杜仲",
+    "pinyin": "Duzhong",
+    "latin": "Eucommiae Cortex",
+    "eng": "Eucommia Bark",
+    "type": "皮類"
+  },
+  {
+    "pid": "B00326",
+    "cn": "杜仲葉",
+    "pinyin": "Duzhongye",
+    "latin": "Eucommiae Folium",
+    "eng": "Eucommia ulmoides Oliv",
+    "type": "葉類"
+  },
+  {
+    "pid": "B00373",
+    "cn": "阿膠",
+    "pinyin": "Ejiao",
+    "latin": "Asini Corii Colla",
+    "eng": "Ass-hide Gelatin",
+    "type": "動物類"
+  },
+  {
+    "pid": "B00416",
+    "cn": "兒茶",
+    "pinyin": "Ercha",
+    "latin": "Catechu",
+    "eng": "Cutch Khair Black Catechu",
+    "type": "其他類"
+  },
+  {
+    "pid": "B00053",
+    "cn": "莪朮",
+    "pinyin": "Ezhu",
+    "latin": "Curcumae Rhizoma",
+    "eng": "Blue Turmeric Rhizome",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00054",
+    "cn": "防風",
+    "pinyin": "Fangfeng",
+    "latin": "Saposhnikoviae Radix",
+    "eng": "Divaricate Saposhnikovia",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00055",
+    "cn": "防己",
+    "pinyin": "Fangji",
+    "latin": "Stephaniae Tetrandrae Radix",
+    "eng": "Fourstamen Stephania Root",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00327",
+    "cn": "番瀉葉",
+    "pinyin": "Fanxieye",
+    "latin": "Sennae Folium",
+    "eng": "Sanna Leaf",
+    "type": "葉類"
+  },
+  {
+    "pid": "B00175",
+    "cn": "榧子",
+    "pinyin": "Feizi",
+    "latin": "Torreyae Semen",
+    "eng": "Grand Torreya",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00057",
+    "cn": "粉葛",
+    "pinyin": "Fenge",
+    "latin": "Puerariae Thomsonii Radix",
+    "eng": "Edible Kudzuvine Root",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00363",
+    "cn": "楓香脂",
+    "pinyin": "Fengxiangzhi",
+    "latin": "Liquidambaris Resina",
+    "eng": "Beautiful Steetgum Resin",
+    "type": "樹脂類"
+  },
+  {
+    "pid": "B00056",
+    "cn": "粉萆薢",
+    "pinyin": "Fenpixie",
+    "latin": "Dioscoreae Hypoglaucae Rhizoma",
+    "eng": "Hypoglaucous Yam Rhizome",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00176",
+    "cn": "佛手",
+    "pinyin": "Foshou",
+    "latin": "Citri Sarcodactylis Fructus",
+    "eng": "Finger Citron Fruit",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00356",
+    "cn": "茯苓",
+    "pinyin": "Fuling",
+    "latin": "Poria",
+    "eng": "Indian Buead Tuckahoe",
+    "type": "菌藻類"
+  },
+  {
+    "pid": "B00243",
+    "cn": "覆盆子",
+    "pinyin": "Fupenzi",
+    "latin": "Rubi Fructus",
+    "eng": "Palmleaf Raspberry Fruit",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00058",
+    "cn": "附子",
+    "pinyin": "Fuzi",
+    "latin": "Aconiti Lateralis Radix Praeparata",
+    "eng": "Prepared Common Monkshood Daughter Root",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00129",
+    "cn": "甘草",
+    "pinyin": "Gancao",
+    "latin": "Glycyrrhizae Radix et Rhizoma",
+    "eng": "Liquorice Root",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00013",
+    "cn": "乾薑",
+    "pinyin": "Ganjiang",
+    "latin": "Zingiberis Rhizoma",
+    "eng": "Dried Ginger",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00059",
+    "cn": "甘松",
+    "pinyin": "Gansong",
+    "latin": "Nardostachyos Radix et Rhizoma",
+    "eng": "Chinese Nardostachys Root and Rhizome",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00060",
+    "cn": "甘遂",
+    "pinyin": "Gansui",
+    "latin": "Kansui Radix",
+    "eng": "Gansui Root Kansui Root",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00061",
+    "cn": "藁本",
+    "pinyin": "Gaoben",
+    "latin": "Ligustici Rhizoma et Radix",
+    "eng": "Chinese Ligusticum Rhizome",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00062",
+    "cn": "高良薑",
+    "pinyin": "Gaoliangjiang",
+    "latin": "Alpiniae Officinarum Rhizoma",
+    "eng": "Lesser Galangal Rhizome",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00063",
+    "cn": "葛根",
+    "pinyin": "Gegen",
+    "latin": "Puerariae Lobatae Radix",
+    "eng": "Lobed Kudzuvine Root",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00374",
+    "cn": "蛤蚧",
+    "pinyin": "Gejie",
+    "latin": "Gecko",
+    "eng": "Giant Gecko",
+    "type": "動物類"
+  },
+  {
+    "pid": "B00375",
+    "cn": "蛤殼",
+    "pinyin": "Geqiao",
+    "latin": "Meretricis ConchaCyclinae Concha",
+    "eng": "Clam Shell",
+    "type": "動物類"
+  },
+  {
+    "pid": "B00328",
+    "cn": "枸骨葉",
+    "pinyin": "Gouguye",
+    "latin": "Ilicis Cornutae Folium",
+    "eng": "Chinese Holly Leaf",
+    "type": "葉類"
+  },
+  {
+    "pid": "B00064",
+    "cn": "狗脊",
+    "pinyin": "Gouji",
+    "latin": "Cibotii Rhizoma",
+    "eng": "East Asian Tree Fern",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00227",
+    "cn": "枸杞子",
+    "pinyin": "Gouqizi",
+    "latin": "Lycii Fructus",
+    "eng": "Babury Wolfberry Fruit",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00133",
+    "cn": "鉤藤",
+    "pinyin": "Gouteng",
+    "latin": "Uncariae Ramulus cum Uncis",
+    "eng": "Sharpleaf Uncaria Stem with Hools",
+    "type": "藤木類"
+  },
+  {
+    "pid": "B00177",
+    "cn": "瓜蔞",
+    "pinyin": "Gualou",
+    "latin": "Trichosanthis Fructus",
+    "eng": "Mongolian Snakegourd Fruit",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00269",
+    "cn": "廣藿香",
+    "pinyin": "Guanghuoxiang",
+    "latin": "Pogostemonis Herba",
+    "eng": "Cablin Potchouli Herb",
+    "type": "全草類"
+  },
+  {
+    "pid": "B00270",
+    "cn": "廣金錢草",
+    "pinyin": "Guangjinqiancao",
+    "latin": "Desmodii Stracifolii Herba",
+    "eng": "Snowbellleaf Tickclover Herb",
+    "type": "全草類"
+  },
+  {
+    "pid": "B00345",
+    "cn": "關黃柏",
+    "pinyin": "Guanhuangbai",
+    "latin": "Phellodendri Amurensis Cortex",
+    "eng": "Chinese Corktree Bark",
+    "type": "皮類"
+  },
+  {
+    "pid": "B00376",
+    "cn": "龜甲",
+    "pinyin": "Guijia",
+    "latin": "Testudinis Carapax et Plastrum",
+    "eng": "Tortose's Carapae and Plastron",
+    "type": "動物類"
+  },
+  {
+    "pid": "B00138",
+    "cn": "桂枝",
+    "pinyin": "Guizhi",
+    "latin": "Cinnamomi Ramulus",
+    "eng": "Cassiabarktree Twig",
+    "type": "藤木類"
+  },
+  {
+    "pid": "B00300",
+    "cn": "穀精草",
+    "pinyin": "Gujingcao",
+    "latin": "Eriocauli Flos",
+    "eng": "Buerger Pipewort Head",
+    "type": "花類"
+  },
+  {
+    "pid": "B00065",
+    "cn": "骨碎補",
+    "pinyin": "Gusuibu",
+    "latin": "Drynariae Rhizoma",
+    "eng": "Fortune's Drynaria Rhizome",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00178",
+    "cn": "穀芽",
+    "pinyin": "Guya",
+    "latin": "Setariae Fructus Germinatus",
+    "eng": "Foxtail Millet Sprout",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00357",
+    "cn": "海金沙",
+    "pinyin": "Haijinsha",
+    "latin": "Lygodii Spora",
+    "eng": "Japanese Climbing Fern Spore",
+    "type": "菌藻類"
+  },
+  {
+    "pid": "B00377",
+    "cn": "海馬",
+    "pinyin": "Haima",
+    "latin": "Hippocampus",
+    "eng": "Kellogg’s Seahorse",
+    "type": "動物類"
+  },
+  {
+    "pid": "B00378",
+    "cn": "海螵蛸",
+    "pinyin": "Haipiaoxiao",
+    "latin": "Sepiae Endoconcha",
+    "eng": "Cuttlebone Sepium",
+    "type": "動物類"
+  },
+  {
+    "pid": "B00358",
+    "cn": "海藻",
+    "pinyin": "Haizao",
+    "latin": "Sargassum",
+    "eng": "Seaweed",
+    "type": "菌藻類"
+  },
+  {
+    "pid": "B00301",
+    "cn": "合歡花",
+    "pinyin": "Hehuanhua",
+    "latin": "Albiziae Flos",
+    "eng": "Silktree Albizia Flower",
+    "type": "花類"
+  },
+  {
+    "pid": "B00179",
+    "cn": "鶴虱",
+    "pinyin": "Heshi",
+    "latin": "Carpesii Fructus",
+    "eng": "Common Carpesium Fruit",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00130",
+    "cn": "何首烏",
+    "pinyin": "Heshouwu",
+    "latin": "Polygoni Multiflori Radix",
+    "eng": "Tuber Fleeceflower Root",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00228",
+    "cn": "核桃仁",
+    "pinyin": "Hetaoren",
+    "latin": "Juglandis Semen",
+    "eng": "Walnut Meat",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00329",
+    "cn": "荷葉",
+    "pinyin": "Heye",
+    "latin": "Nelumbinis Folium",
+    "eng": "Hindu Lotus Leaf",
+    "type": "葉類"
+  },
+  {
+    "pid": "B00180",
+    "cn": "訶子",
+    "pinyin": "Hezi",
+    "latin": "Chebulae Fructus",
+    "eng": "Medicine Terminalia",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00066",
+    "cn": "紅大戟",
+    "pinyin": "Hongdaji",
+    "latin": "Knoxiae Radix",
+    "eng": "Konxia Root",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00181",
+    "cn": "紅豆蔻",
+    "pinyin": "Hongdoukou",
+    "latin": "Galangae Fructus",
+    "eng": "Galanga Galangal Fruit",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00319",
+    "cn": "紅花",
+    "pinyin": "Honghua",
+    "latin": "Carthami Flos",
+    "eng": "Safflower",
+    "type": "花類"
+  },
+  {
+    "pid": "B00067",
+    "cn": "紅景天",
+    "pinyin": "Hongjintian",
+    "latin": "Rhodiolae Crenulatae Radix et Rhizoma",
+    "eng": "Kirilow Rhodiola Root and Rhizome",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00068",
+    "cn": "紅芪",
+    "pinyin": "Hongqi",
+    "latin": "Hedysari Radix",
+    "eng": "Manyinflorecenced Sweetvetch",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00069",
+    "cn": "紅參",
+    "pinyin": "Hongshen",
+    "latin": "Ginseng Radix et Rhizoma Rubra",
+    "eng": "Red Ginseng",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00347",
+    "cn": "厚朴",
+    "pinyin": "Houpo",
+    "latin": "Magnoliae Officinalis Cortex",
+    "eng": "Officinal Magnolia Bark",
+    "type": "皮類"
+  },
+  {
+    "pid": "B00302",
+    "cn": "槐花",
+    "pinyin": "Huaihua",
+    "latin": "Sophorae Flos",
+    "eng": "Black Locust Flower",
+    "type": "花類"
+  },
+  {
+    "pid": "B00229",
+    "cn": "槐角",
+    "pinyin": "Huaijiao",
+    "latin": "Sophprae Fructus",
+    "eng": "Japanese Pagodatree Fruit",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00182",
+    "cn": "花椒",
+    "pinyin": "Huajiao",
+    "latin": "Zanthoxyli Pericarpium",
+    "eng": "Bunge Pricklyath Pericarp",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00183",
+    "cn": "化橘紅",
+    "pinyin": "Huajuhong",
+    "latin": "Citri Grandis Exocarpium",
+    "eng": "Tomentose Pummelo Peel",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00346",
+    "cn": "黃柏",
+    "pinyin": "Huangbai",
+    "latin": "Phellodendri Chinensis Cortex",
+    "eng": "Amur Corktree Bark",
+    "type": "皮類"
+  },
+  {
+    "pid": "B00075",
+    "cn": "黃精",
+    "pinyin": "Huangjing",
+    "latin": "Polygonati Rhizoma",
+    "eng": "Siberian Solomonseal Rhizome",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00070",
+    "cn": "黃連",
+    "pinyin": "Huanglian",
+    "latin": "Coptidis Rhizoma",
+    "eng": "Chinese Goldthread Rhizome",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00071",
+    "cn": "黃芪",
+    "pinyin": "Huangqi",
+    "latin": "Astragali Radix",
+    "eng": "Mongolian Milkvetch Root Membranous Milkvetch Root",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00072",
+    "cn": "黃芩",
+    "pinyin": "Huangqin",
+    "latin": "Scutellariae Radix",
+    "eng": "Baikal Skullcap Root",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00401",
+    "cn": "滑石",
+    "pinyin": "Huashi",
+    "latin": "Talcum",
+    "eng": "Talc",
+    "type": "礦物類"
+  },
+  {
+    "pid": "B00073",
+    "cn": "胡黃連",
+    "pinyin": "Huhuanglian",
+    "latin": "Picrorhizae Rhizoma",
+    "eng": "Figwortflower Picrorhiza Rhizome",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00184",
+    "cn": "胡椒",
+    "pinyin": "Hujiao",
+    "latin": "Piperis Fructus",
+    "eng": "Black Pepper Fruit",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00271",
+    "cn": "槲寄生",
+    "pinyin": "Hujisheng",
+    "latin": "Visci Herba",
+    "eng": "Colored Mistletoe Herb",
+    "type": "全草類"
+  },
+  {
+    "pid": "B00185",
+    "cn": "胡蘆巴",
+    "pinyin": "Huluba",
+    "latin": "Trigonellae Semen",
+    "eng": "Common Fenugreek Seed",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00244",
+    "cn": "火麻仁",
+    "pinyin": "Huomaren",
+    "latin": "Cannabis Fructus",
+    "eng": "Hemp Fruit",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00074",
+    "cn": "虎杖",
+    "pinyin": "Huzhang",
+    "latin": "Polygoni Cuspidati Rhizoma et Radix",
+    "eng": "Giant Knotweed Root",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00379",
+    "cn": "僵蠶",
+    "pinyin": "Jiangcan",
+    "latin": "Bombyx Batryticatus",
+    "eng": "Stiff Silkworm",
+    "type": "動物類"
+  },
+  {
+    "pid": "B00005",
+    "cn": "薑黃",
+    "pinyin": "Jianghuang",
+    "latin": "Curcumae Longae Rhizoma",
+    "eng": "Common Turmeric Rhizome",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00139",
+    "cn": "降香",
+    "pinyin": "Jiangxiang",
+    "latin": "Dalbergiae Odoriferae Lignum",
+    "eng": "Rosewood Heart Wood",
+    "type": "藤木類"
+  },
+  {
+    "pid": "B00272",
+    "cn": "絞股藍",
+    "pinyin": "Jiaogulan",
+    "latin": "Gynostemmatis Pentaphylli Herba seu Radix",
+    "eng": "Fiveleaf Gynostemma Herb or Root",
+    "type": "全草類"
+  },
+  {
+    "pid": "B00303",
+    "cn": "雞蛋花",
+    "pinyin": "Jidanhua",
+    "latin": "Plumeriae Acutifoliae Flos",
+    "eng": "Mexican Frangipani Flower",
+    "type": "花類"
+  },
+  {
+    "pid": "B00076",
+    "cn": "桔梗",
+    "pinyin": "Jiegeng",
+    "latin": "Platycodonis Radix",
+    "eng": "Balloonflower Root",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00186",
+    "cn": "芥子",
+    "pinyin": "Jiezi",
+    "latin": "Sinapis Semen",
+    "eng": "Indian Mustard Seed",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00304",
+    "cn": "雞冠花",
+    "pinyin": "Jiguanhua",
+    "latin": "Celosiae Cristatae Flos",
+    "eng": "Cockscomb Flower",
+    "type": "花類"
+  },
+  {
+    "pid": "B00273",
+    "cn": "雞骨草",
+    "pinyin": "Jigucao",
+    "latin": "Abri Herba",
+    "eng": "Canton Abrus Herb",
+    "type": "全草類"
+  },
+  {
+    "pid": "B00230",
+    "cn": "蒺藜",
+    "pinyin": "Jili",
+    "latin": "Tribuli Fructus",
+    "eng": "Puncturevine Caltrap Fruit",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00380",
+    "cn": "雞內金",
+    "pinyin": "Jineijin",
+    "latin": "Galli Gigerii Endothelium Coreneum",
+    "eng": "Chicken's Gizzard-membrane",
+    "type": "動物類"
+  },
+  {
+    "pid": "B00077",
+    "cn": "京大戟",
+    "pinyin": "Jingdaji",
+    "latin": "Euphorbiae Pekinensis Radix",
+    "eng": "Peking Euphorbia Root",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00274",
+    "cn": "荊芥",
+    "pinyin": "Jingjie",
+    "latin": "Schizonepetae Herba",
+    "eng": "Fineleaf Schizonepeta Herb",
+    "type": "全草類"
+  },
+  {
+    "pid": "B00402",
+    "cn": "金礞石",
+    "pinyin": "Jinmengshi",
+    "latin": "Micae Lapis Aureus",
+    "eng": "Mica Schist",
+    "type": "礦物類"
+  },
+  {
+    "pid": "B00398",
+    "cn": "金錢白花蛇",
+    "pinyin": "Jinqianbaihuashe",
+    "latin": "Bungarus Parvus",
+    "eng": "Little Multibanded Krait",
+    "type": "動物類"
+  },
+  {
+    "pid": "B00275",
+    "cn": "金錢草",
+    "pinyin": "Jinqiancao",
+    "latin": "Lysimachiae Herba",
+    "eng": "Christina Loosestrife Herb",
+    "type": "全草類"
+  },
+  {
+    "pid": "B00078",
+    "cn": "金蕎麥",
+    "pinyin": "Jinqiaomai",
+    "latin": "Fagopyri Dibotrydis Rhizoma",
+    "eng": "Wild Buckwheat Rhizome",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00236",
+    "cn": "金櫻子",
+    "pinyin": "Jinyingzi",
+    "latin": "Rosae Laevigatae Fructus",
+    "eng": "Cherokee Rose Fruit",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00305",
+    "cn": "金銀花",
+    "pinyin": "Jinyinhua",
+    "latin": "Lonicerae Japonicae Flos",
+    "eng": "Japanese Honysuckle Flower Bud",
+    "type": "花類"
+  },
+  {
+    "pid": "B00140",
+    "cn": "雞屎藤",
+    "pinyin": "Jishiteng",
+    "latin": "Paederiae Scandentis Herba et Radix",
+    "eng": "Chinese Fevervine Herb and Root",
+    "type": "藤木類"
+  },
+  {
+    "pid": "B00187",
+    "cn": "韭菜子",
+    "pinyin": "Jiucaizi",
+    "latin": "Allii Tuberosi Semen",
+    "eng": "Tuber Onion Seed",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00330",
+    "cn": "九里香",
+    "pinyin": "Jiulixiang",
+    "latin": "Murrayae Folium et Cacumen",
+    "eng": "Common Jasminorange Twig and Leaf PaniculateJasminorangeTwig and Leaf",
+    "type": "葉類"
+  },
+  {
+    "pid": "B00141",
+    "cn": "雞血藤",
+    "pinyin": "Jixueteng",
+    "latin": "Spatholobi Caulis",
+    "eng": "Suberect Spatholobus Stem",
+    "type": "藤木類"
+  },
+  {
+    "pid": "B00276",
+    "cn": "卷柏",
+    "pinyin": "Juanbai",
+    "latin": "Selaginellae Herba",
+    "eng": "Tamarisklike Spikemoss Herb",
+    "type": "全草類"
+  },
+  {
+    "pid": "B00188",
+    "cn": "決明子",
+    "pinyin": "Juemingzi",
+    "latin": "Cassiae Semen",
+    "eng": "Sickle Senna Seed",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00306",
+    "cn": "菊花",
+    "pinyin": "Juhua",
+    "latin": "Chrysanthemi Flos",
+    "eng": "Florists Dendranthema",
+    "type": "花類"
+  },
+  {
+    "pid": "B00307",
+    "cn": "款冬花",
+    "pinyin": "Kuandonghua",
+    "latin": "Farfarae Flos",
+    "eng": "Common Coltsfoot Flower",
+    "type": "花類"
+  },
+  {
+    "pid": "B00348",
+    "cn": "苦楝皮",
+    "pinyin": "Kulianpi",
+    "latin": "Meliae Cortex",
+    "eng": "Chinaberry - Tree Bark",
+    "type": "皮類"
+  },
+  {
+    "pid": "B00361",
+    "cn": "昆布",
+    "pinyin": "Kunbu",
+    "latin": "Laminariae ThallusEckloniae Thallus",
+    "eng": "Kelp",
+    "type": "菌藻類"
+  },
+  {
+    "pid": "B00018",
+    "cn": "苦參",
+    "pinyin": "Kushen",
+    "latin": "Sophorae Flavescentis Radix",
+    "eng": "Lightyellow Sophra Root",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00216",
+    "cn": "苦杏仁",
+    "pinyin": "Kuxingren",
+    "latin": "Armeniacae Semen Amarum",
+    "eng": "Ansu Apricot Seed",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00189",
+    "cn": "萊菔子",
+    "pinyin": "Laifuzi",
+    "latin": "Raphani Semen",
+    "eng": "Garden Radish Seed",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00321",
+    "cn": "臘梅花",
+    "pinyin": "Lameihua",
+    "latin": "Chimonathi Praecocis Flos",
+    "eng": "Winteersweet Flower Bud",
+    "type": "花類"
+  },
+  {
+    "pid": "B00079",
+    "cn": "狼毒",
+    "pinyin": "Langdu",
+    "latin": "Euphoriae Ebracteolata Radix",
+    "eng": "Fischer Euphorbia Root",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00258",
+    "cn": "老鸛草",
+    "pinyin": "Laoguancao",
+    "latin": "Erodii Herba;Geranii Herba",
+    "eng": "Common Heron’s Bill Herb",
+    "type": "全草類"
+  },
+  {
+    "pid": "B00080",
+    "cn": "兩面針",
+    "pinyin": "Liangmianzhen",
+    "latin": "Zanthoxyl Radix",
+    "eng": "Shinyleaf Pricklyash Root",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00190",
+    "cn": "連翹",
+    "pinyin": "Lianqiao",
+    "latin": "Forsythiae Fructus",
+    "eng": "Weeping Forsythia Fruit",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00245",
+    "cn": "蓮子",
+    "pinyin": "Lianzi",
+    "latin": "Nelumbinis Semen",
+    "eng": "Lotus Seed",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00246",
+    "cn": "蓮子心",
+    "pinyin": "Lianzixin",
+    "latin": "Nelumbinis Plumula",
+    "eng": "Lotus Plumule",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00308",
+    "cn": "淩霄花",
+    "pinyin": "Lingxiaohua",
+    "latin": "Campsis Flos",
+    "eng": "Chinese Trumpetcreeper",
+    "type": "花類"
+  },
+  {
+    "pid": "B00381",
+    "cn": "羚羊角",
+    "pinyin": "Lingyangjiao",
+    "latin": "Saigae Tataricae Cornu",
+    "eng": "Antelope Hom",
+    "type": "動物類"
+  },
+  {
+    "pid": "B00359",
+    "cn": "靈芝",
+    "pinyin": "Lingzhi",
+    "latin": "Ganoderma",
+    "eng": "Lucid Ganoderma",
+    "type": "菌藻類"
+  },
+  {
+    "pid": "B00081",
+    "cn": "龍膽",
+    "pinyin": "Longdan",
+    "latin": "Gentianae Radix et Rhizoma",
+    "eng": "Chinese Gentian Root Rough Gentian Root",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00191",
+    "cn": "龍眼肉",
+    "pinyin": "Longyanrou",
+    "latin": "Longan Arillus",
+    "eng": "Dried Longan Pulp",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00082",
+    "cn": "漏蘆",
+    "pinyin": "Loulu",
+    "latin": "Rhapontici Radix",
+    "eng": "Common Swisscentaury Root",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00403",
+    "cn": "爐甘石",
+    "pinyin": "Luganshi",
+    "latin": "Calamina",
+    "eng": "Smithsonite Calamine",
+    "type": "礦物類"
+  },
+  {
+    "pid": "B00083",
+    "cn": "蘆根",
+    "pinyin": "Lugen",
+    "latin": "Phragmitis Rhizoma",
+    "eng": "Reed Rhizome",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00417",
+    "cn": "蘆薈",
+    "pinyin": "Luhui",
+    "latin": "Aloe",
+    "eng": "Aloes",
+    "type": "其他類"
+  },
+  {
+    "pid": "B00192",
+    "cn": "路路通",
+    "pinyin": "Lulutong",
+    "latin": "Liquidambaris Fructus",
+    "eng": "Beautiful Sweetgum Fruit",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00331",
+    "cn": "羅布麻葉",
+    "pinyin": "Luobumaye",
+    "latin": "Apocyni Veneti Folium",
+    "eng": "Dogbane Leaf",
+    "type": "葉類"
+  },
+  {
+    "pid": "B00231",
+    "cn": "羅漢果",
+    "pinyin": "Luohanguo",
+    "latin": "Siraitiae Fructus",
+    "eng": "Lohanguo Siraitia Fruit",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00142",
+    "cn": "絡石藤",
+    "pinyin": "Luoshiteng",
+    "latin": "Trachelospermi Caulis et Folium",
+    "eng": "Chinese Starasmine Stem",
+    "type": "藤木類"
+  },
+  {
+    "pid": "B00382",
+    "cn": "鹿茸",
+    "pinyin": "Lurong",
+    "latin": "Cervi Cornu Pantotrichum",
+    "eng": "Hairy Antler Pilose Antler",
+    "type": "動物類"
+  },
+  {
+    "pid": "B00277",
+    "cn": "鹿銜草",
+    "pinyin": "Luxiancao",
+    "latin": "Pyrolae Herba",
+    "eng": "Chinese Pyrola Herb",
+    "type": "全草類"
+  },
+  {
+    "pid": "B00001",
+    "cn": "馬勃",
+    "pinyin": "Mabo",
+    "latin": "Lasiosphaera Calvatia",
+    "eng": "BB",
+    "type": "菌藻類"
+  },
+  {
+    "pid": "B00247",
+    "cn": "馬兜鈴",
+    "pinyin": "Madouling",
+    "latin": "Aristolochiae Fructus",
+    "eng": "Slender Dutchmanspipe Fruit",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00278",
+    "cn": "麻黃",
+    "pinyin": "Mahuang",
+    "latin": "Ephedrae Herba",
+    "eng": "Chinese Ephedrs Herb",
+    "type": "全草類"
+  },
+  {
+    "pid": "B00084",
+    "cn": "麥冬",
+    "pinyin": "Maidong",
+    "latin": "Ophiopogonis Radix",
+    "eng": "Dwarf Lilyturf Root Tuber",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00193",
+    "cn": "麥芽",
+    "pinyin": "Maiya",
+    "latin": "Hordei Fructus Germinatus",
+    "eng": "Barley Sprout",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00404",
+    "cn": "芒硝",
+    "pinyin": "Mangxiao",
+    "latin": "Natrii Sulfas",
+    "eng": "Mirabilite Glauber’s Salt",
+    "type": "礦物類"
+  },
+  {
+    "pid": "B00194",
+    "cn": "蔓荊子",
+    "pinyin": "Manjingzi",
+    "latin": "Viticis Fructus",
+    "eng": "Sinplelaef Shrub Chastetree Fruit",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00248",
+    "cn": "馬錢子",
+    "pinyin": "Maqianzi",
+    "latin": "Strychni Semen",
+    "eng": "Nux Vomica",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00309",
+    "cn": "玫瑰花",
+    "pinyin": "Meiguihua",
+    "latin": "Rosae Rugosae Flos",
+    "eng": "Rose",
+    "type": "花類"
+  },
+  {
+    "pid": "B00085",
+    "cn": "綿萆薢",
+    "pinyin": "Mianbixie",
+    "latin": "Discoreae Septemlobae Rhizoma",
+    "eng": "Spingy Yam Rhizome",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00086",
+    "cn": "綿馬貫眾",
+    "pinyin": "Mianmaguanzhong",
+    "latin": "Dryopteridis Crassirhizomatis Rhizoma",
+    "eng": "Male Fern Rhizome",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00087",
+    "cn": "明黨參",
+    "pinyin": "Mingdangshen",
+    "latin": "Changii Radix",
+    "eng": "Medicinal Changium",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00364",
+    "cn": "沒藥",
+    "pinyin": "Moyao",
+    "latin": "Myrrha",
+    "eng": "Myrrh",
+    "type": "樹脂類"
+  },
+  {
+    "pid": "B00249",
+    "cn": "木鱉子",
+    "pinyin": "Mubiezi",
+    "latin": "Momordicae Semen",
+    "eng": "Cochinchina Momordica Seed",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00349",
+    "cn": "牡丹皮",
+    "pinyin": "Mudanpi",
+    "latin": "Moutan Cortex",
+    "eng": "Tree Peony Root - bark",
+    "type": "皮類"
+  },
+  {
+    "pid": "B00195",
+    "cn": "木瓜",
+    "pinyin": "Mugua",
+    "latin": "Chaenomelis Fructus",
+    "eng": "Common Floweringquine Fruit",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00250",
+    "cn": "木蝴蝶",
+    "pinyin": "Muhudie",
+    "latin": "Oroxyli Semen",
+    "eng": "Indian Trunpetflower Seed",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00332",
+    "cn": "牡荊葉",
+    "pinyin": "Mujingye",
+    "latin": "Viticis Negundo Folium",
+    "eng": "Hempleaf Negundo Chastetree Leaf",
+    "type": "葉類"
+  },
+  {
+    "pid": "B00383",
+    "cn": "牡蠣",
+    "pinyin": "Muli",
+    "latin": "Ostreae Concha",
+    "eng": "Common Oyster Shell",
+    "type": "動物類"
+  },
+  {
+    "pid": "B00143",
+    "cn": "木通",
+    "pinyin": "Mutong",
+    "latin": "Akebiae Caulis",
+    "eng": "Akabia Stem",
+    "type": "藤木類"
+  },
+  {
+    "pid": "B00088",
+    "cn": "木香",
+    "pinyin": "Muxiang",
+    "latin": "Aucklandiae Radix",
+    "eng": "Costusroot",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00279",
+    "cn": "木賊",
+    "pinyin": "Muzei",
+    "latin": "Equiseti Hiemalis Herba",
+    "eng": "Common Scouring Rush",
+    "type": "全草類"
+  },
+  {
+    "pid": "B00089",
+    "cn": "南板藍根",
+    "pinyin": "Nanbanlangen",
+    "latin": "Baphicacanthis Cusiae Rhizoma et Radix",
+    "eng": "Common Baphicacanthus Rhizome and Root",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00237",
+    "cn": "南鶴虱",
+    "pinyin": "Nanheshi",
+    "latin": "Carotae Fructus",
+    "eng": "Wild Carrot Fruit",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00017",
+    "cn": "南沙參",
+    "pinyin": "Nanshashen",
+    "latin": "Adenophorae Radix",
+    "eng": "Fourleaf Ladybell Root",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00196",
+    "cn": "南五味子",
+    "pinyin": "Nanwuweizi",
+    "latin": "Schisandrae Sphenantherae Fructus",
+    "eng": "Orange Magnoliavine Fruit",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00310",
+    "cn": "鬧羊花",
+    "pinyin": "Naoyanghua",
+    "latin": "Rhododendri Mollis Flos",
+    "eng": "Chinese Azalea Flower",
+    "type": "花類"
+  },
+  {
+    "pid": "B00251",
+    "cn": "牛蒡子",
+    "pinyin": "Niubangzi",
+    "latin": "Arctii Fructus",
+    "eng": "Great Burdock Fruit",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00384",
+    "cn": "牛黃",
+    "pinyin": "Niuhuang",
+    "latin": "Bovis Calculus",
+    "eng": "Bezoar",
+    "type": "動物類"
+  },
+  {
+    "pid": "B00016",
+    "cn": "牛膝",
+    "pinyin": "Niuxi",
+    "latin": "Achyranthis Bidentatae Radix",
+    "eng": "Common Achyranthes",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00252",
+    "cn": "女貞子",
+    "pinyin": "Nvzhenzi",
+    "latin": "Ligustri Lucidi Fructus",
+    "eng": "Glossy Privet Fruit",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00253",
+    "cn": "胖大海",
+    "pinyin": "Pangdahai",
+    "latin": "Sterculiae Lychnophorae Semen",
+    "eng": "Boat - fruited Sterculia Seed",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00297",
+    "cn": "佩蘭",
+    "pinyin": "Peilan",
+    "latin": "Eupatorii Herba",
+    "eng": "Fortune’s Eupatorium Herb",
+    "type": "全草類"
+  },
+  {
+    "pid": "B00090",
+    "cn": "平貝母",
+    "pinyin": "Pingbeimu",
+    "latin": "Fritillariae Ussuriensis Bulbus",
+    "eng": "Ussuri Fritillary Vulb",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00333",
+    "cn": "枇杷葉",
+    "pinyin": "Pipaye",
+    "latin": "Eriobotryae Folium",
+    "eng": "Loquat Leaf",
+    "type": "葉類"
+  },
+  {
+    "pid": "B00280",
+    "cn": "蒲公英",
+    "pinyin": "Pugongying",
+    "latin": "Taraxaci Herba",
+    "eng": "Mongolian Dandelion Herb",
+    "type": "全草類"
+  },
+  {
+    "pid": "B00311",
+    "cn": "蒲黃",
+    "pinyin": "Puhuang",
+    "latin": "Typhae Pollen",
+    "eng": "Cattail Pollen",
+    "type": "花類"
+  },
+  {
+    "pid": "B00091",
+    "cn": "茜草",
+    "pinyin": "Qiancao",
+    "latin": "Rubiae Radix et Rhizoma",
+    "eng": "Indian Madder Root",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00092",
+    "cn": "羌活",
+    "pinyin": "Qianghuo",
+    "latin": "Notopterygii Rhizoma et Radix",
+    "eng": "Incised Notopterygium Rhizome and Root",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00093",
+    "cn": "前胡",
+    "pinyin": "Qianhu",
+    "latin": "Peucedani Radix",
+    "eng": "Whiteflower Hogfennel Root Common Hogfennel Root",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00197",
+    "cn": "千金子",
+    "pinyin": "Qianjinzi",
+    "latin": "Euphorbiae Semen",
+    "eng": "Caper Euphorbia Seed",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00094",
+    "cn": "千年健",
+    "pinyin": "Qiannianjian",
+    "latin": "Homalomenae Rhizoma",
+    "eng": "Obscuteed Homalomena Rhizome",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00198",
+    "cn": "牽牛子",
+    "pinyin": "Qianniuzi",
+    "latin": "Pharbitidis Semen",
+    "eng": "Lobedleaf Pharbitis Seed",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00232",
+    "cn": "芡實",
+    "pinyin": "Qianshi",
+    "latin": "Euryales Semen",
+    "eng": "Gordon Euryale Seed",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00413",
+    "cn": "青黛",
+    "pinyin": "Qingdai",
+    "latin": "Indigo Naturalis",
+    "eng": "Natural Indigo",
+    "type": "其他類"
+  },
+  {
+    "pid": "B00134",
+    "cn": "青風藤",
+    "pinyin": "Qingfengteng",
+    "latin": "Sinomenii Caulis",
+    "eng": "Ovientvine Stem",
+    "type": "藤木類"
+  },
+  {
+    "pid": "B00199",
+    "cn": "青果",
+    "pinyin": "Qingguo",
+    "latin": "Canarii Fructus",
+    "eng": "White Canarytree Fruit",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00281",
+    "cn": "青蒿",
+    "pinyin": "Qinghao",
+    "latin": "Artemisiae Annuae Herba",
+    "eng": "Sweet Wormwood Herb",
+    "type": "全草類"
+  },
+  {
+    "pid": "B00405",
+    "cn": "青礞石",
+    "pinyin": "Qingmengshi",
+    "latin": "Chloriti Lapis",
+    "eng": "Biotite Schist",
+    "type": "礦物類"
+  },
+  {
+    "pid": "B00200",
+    "cn": "青皮",
+    "pinyin": "Qingpi",
+    "latin": "Citri Reticulatae Pericarpium Viride",
+    "eng": "Immature Tangerine Fruit",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00233",
+    "cn": "青葙子",
+    "pinyin": "Qingxiangzi",
+    "latin": "Celosiae Semen",
+    "eng": "Feather Cockscomb Seed",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00095",
+    "cn": "秦艽",
+    "pinyin": "Qinjiao",
+    "latin": "Gentianae Macrophyllae Radix",
+    "eng": "Largeleaf Gentian Root",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00350",
+    "cn": "秦皮",
+    "pinyin": "Qinpi",
+    "latin": "Fraxini Cortex",
+    "eng": "Ash Bark",
+    "type": "皮類"
+  },
+  {
+    "pid": "B00385",
+    "cn": "蘄蛇",
+    "pinyin": "Qishe",
+    "latin": "Agkistrodon",
+    "eng": "Long-nosed Pit Viper",
+    "type": "動物類"
+  },
+  {
+    "pid": "B00096",
+    "cn": "拳參",
+    "pinyin": "Quanshen",
+    "latin": "Bistortae Rhizoma",
+    "eng": "Bistort Rhizome",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00386",
+    "cn": "全蠍",
+    "pinyin": "Quanxie",
+    "latin": "Scorpio",
+    "eng": "Scorpion",
+    "type": "動物類"
+  },
+  {
+    "pid": "B00282",
+    "cn": "瞿麥",
+    "pinyin": "Qumai",
+    "latin": "Dianthi Herba",
+    "eng": "Fringed Pink Herb",
+    "type": "全草類"
+  },
+  {
+    "pid": "B00144",
+    "cn": "忍冬藤",
+    "pinyin": "Rendongteng",
+    "latin": "Lonicerae Japonicae Caulis",
+    "eng": "Japanese Honeysuckle Stem",
+    "type": "藤木類"
+  },
+  {
+    "pid": "B00002",
+    "cn": "人參",
+    "pinyin": "Renshen",
+    "latin": "Ginseng Radix et Rhizoma",
+    "eng": "Ginseng Root",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00283",
+    "cn": "肉蓯蓉",
+    "pinyin": "Roucongrong",
+    "latin": "Cistanches Herba",
+    "eng": "Desertliving Cistanche Herb",
+    "type": "全草類"
+  },
+  {
+    "pid": "B00201",
+    "cn": "肉豆蔻",
+    "pinyin": "Roudoukou",
+    "latin": "Myristicae Semen",
+    "eng": "Nutmeg",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00351",
+    "cn": "肉桂",
+    "pinyin": "Rougui",
+    "latin": "Cinnamomi Cortex",
+    "eng": "Cassia Bark",
+    "type": "皮類"
+  },
+  {
+    "pid": "B00365",
+    "cn": "乳香",
+    "pinyin": "Ruxiang",
+    "latin": "Olibanum",
+    "eng": "Frankincense",
+    "type": "樹脂類"
+  },
+  {
+    "pid": "B00352",
+    "cn": "桑白皮",
+    "pinyin": "Sangbaipi",
+    "latin": "Mori Cortex",
+    "eng": "White Mulberry Root - bark",
+    "type": "皮類"
+  },
+  {
+    "pid": "B00145",
+    "cn": "桑寄生",
+    "pinyin": "Sangjisheng",
+    "latin": "Taxilli Herba",
+    "eng": "Chinese Taxillus Herb",
+    "type": "藤木類"
+  },
+  {
+    "pid": "B00387",
+    "cn": "桑螵蛸",
+    "pinyin": "Sangpiaoxiao",
+    "latin": "Mantidis Ootheca",
+    "eng": "Mantis Egg-case",
+    "type": "動物類"
+  },
+  {
+    "pid": "B00202",
+    "cn": "桑椹",
+    "pinyin": "Sangshen",
+    "latin": "Mori Fructus",
+    "eng": "Mullberry Fruit",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00334",
+    "cn": "桑葉",
+    "pinyin": "Sangye",
+    "latin": "Mori Folium",
+    "eng": "Mulberry Leaf",
+    "type": "葉類"
+  },
+  {
+    "pid": "B00146",
+    "cn": "桑枝",
+    "pinyin": "Sangzhi",
+    "latin": "Mori Ramulus",
+    "eng": "Mulberry Twig",
+    "type": "藤木類"
+  },
+  {
+    "pid": "B00011",
+    "cn": "三棱",
+    "pinyin": "Sanleng",
+    "latin": "Sparganii Rhizoma",
+    "eng": "Common Burreed Tuber",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00010",
+    "cn": "三七",
+    "pinyin": "Sanqi",
+    "latin": "Notoginseng Radix et Rhizoma",
+    "eng": "Sanchi",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00009",
+    "cn": "山慈菇",
+    "pinyin": "Shancigu",
+    "latin": "Cremastrae Pseudobulbus Pleiones Pseudobulbus",
+    "eng": "Appendiculate Cremastra Pseudobulb",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00008",
+    "cn": "山豆根",
+    "pinyin": "Shandougen",
+    "latin": "Sophorae Tonkinensis Radix et Rhizoma",
+    "eng": "Tonkin Sophora Root",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00097",
+    "cn": "商陸",
+    "pinyin": "Shanglu",
+    "latin": "Phytolaccae Radix",
+    "eng": "Indian Pokwees Roxb",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00098",
+    "cn": "山麥冬",
+    "pinyin": "Shanmaidong",
+    "latin": "Liriopes Radix",
+    "eng": "Hupeh Liriope Root Tuber",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00099",
+    "cn": "山柰",
+    "pinyin": "Shannai",
+    "latin": "Kaempferiae Rhizoma",
+    "eng": "Galanga Resurrectionlily Rhizome",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00007",
+    "cn": "山藥",
+    "pinyin": "Shanyao",
+    "latin": "Dioscoreae Rhizoma",
+    "eng": "Common Yan Rhizome",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00312",
+    "cn": "山銀花",
+    "pinyin": "Shanyinhua",
+    "latin": "Lonicerae Flos",
+    "eng": "Wild Honeysuckle Flower Bud",
+    "type": "花類"
+  },
+  {
+    "pid": "B00203",
+    "cn": "山楂",
+    "pinyin": "Shanzha",
+    "latin": "Crataegi Fructus",
+    "eng": "Chinese Hawthorn Fruit",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00335",
+    "cn": "山楂葉",
+    "pinyin": "Shanzhaye",
+    "latin": "Crataegi Folium",
+    "eng": "Howthorn Leaf",
+    "type": "葉類"
+  },
+  {
+    "pid": "B00234",
+    "cn": "山茱萸",
+    "pinyin": "Shanzhuyu",
+    "latin": "Corni Fructus",
+    "eng": "Common Macrocarpium Fruit",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00254",
+    "cn": "砂仁",
+    "pinyin": "Sharen",
+    "latin": "Amomi Fructus",
+    "eng": "Villous Amomum Fruit",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00204",
+    "cn": "蛇床子",
+    "pinyin": "Shechuangzi",
+    "latin": "Cnidii Fructus",
+    "eng": "Common Cnidium Fruit",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00100",
+    "cn": "射干",
+    "pinyin": "Shegan",
+    "latin": "Belamcandae Rhizoma",
+    "eng": "Blackberrglily Rhizome",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00012",
+    "cn": "生薑",
+    "pinyin": "Shengjiang",
+    "latin": "Zingiberis Rhizoma Recens",
+    "eng": "Fresh Ginger",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00101",
+    "cn": "升麻",
+    "pinyin": "Shengma",
+    "latin": "Cimicifugae Rhizoma",
+    "eng": "Skunk Bugbane Rhizome",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00284",
+    "cn": "伸筋草",
+    "pinyin": "Shenjincao",
+    "latin": "Lycopodii Herba",
+    "eng": "Japanese Clubmoss Herb",
+    "type": "全草類"
+  },
+  {
+    "pid": "B00388",
+    "cn": "蛇蛻",
+    "pinyin": "Shetui",
+    "latin": "Serpentis Periostracum",
+    "eng": "Snake Slough",
+    "type": "動物類"
+  },
+  {
+    "pid": "B00389",
+    "cn": "麝香",
+    "pinyin": "Shexiang",
+    "latin": "Moschus",
+    "eng": "Forest Musk Abelmosk",
+    "type": "動物類"
+  },
+  {
+    "pid": "B00102",
+    "cn": "石菖蒲",
+    "pinyin": "Shichangpu",
+    "latin": "Acori Tatarinowii Rhizoma",
+    "eng": "Tatarinow Sweerflag Rhizome",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00420",
+    "cn": "柿蒂",
+    "pinyin": "Shidi",
+    "latin": "Kaki Calyx",
+    "eng": "Persimmon Calyx and Receptacle",
+    "type": "其他類"
+  },
+  {
+    "pid": "B00412",
+    "cn": "石膏",
+    "pinyin": "Shigao",
+    "latin": "Gypsum Fibrosum",
+    "eng": "Gypsum",
+    "type": "礦物類"
+  },
+  {
+    "pid": "B00285",
+    "cn": "石斛",
+    "pinyin": "Shihu",
+    "latin": "Dendrobii Caulis",
+    "eng": "Noble Dendrobium Stem Herb",
+    "type": "全草類"
+  },
+  {
+    "pid": "B00390",
+    "cn": "石決明",
+    "pinyin": "Shijueming",
+    "latin": "Haliotidis Concha",
+    "eng": "Sea-ear Shell",
+    "type": "動物類"
+  },
+  {
+    "pid": "B00255",
+    "cn": "使君子",
+    "pinyin": "Shijunzi",
+    "latin": "Quisqualis Fructus",
+    "eng": "Rangooncreeper Fruit",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00336",
+    "cn": "石韋",
+    "pinyin": "Shiwei",
+    "latin": "Pyrrosiae Folium",
+    "eng": "Japanese Felt Fern",
+    "type": "葉類"
+  },
+  {
+    "pid": "B00256",
+    "cn": "水飛薊",
+    "pinyin": "Shuifeiji",
+    "latin": "Silybi Fructus",
+    "eng": "Blessed Thistle Fruit",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00205",
+    "cn": "水紅花子",
+    "pinyin": "Shuihonghuazi",
+    "latin": "Polygni Orientalis Fructus",
+    "eng": "Prince's Feather Fruit",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00391",
+    "cn": "水牛角",
+    "pinyin": "Shuiniujiao",
+    "latin": "Bubali Cornu",
+    "eng": "Buffalo Horn",
+    "type": "動物類"
+  },
+  {
+    "pid": "B00392",
+    "cn": "水蛭",
+    "pinyin": "Shuizhi",
+    "latin": "Hirudo",
+    "eng": "Leech",
+    "type": "動物類"
+  },
+  {
+    "pid": "B00206",
+    "cn": "絲瓜絡",
+    "pinyin": "Sigualuo",
+    "latin": "Luffae Fructus Retinervus",
+    "eng": "Loofah, Towel Gourd Vegetable Sponge",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00235",
+    "cn": "酸棗仁",
+    "pinyin": "Suanzaoren",
+    "latin": "Ziziphi Spinosae Semen",
+    "eng": "Spine Date Seed",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00137",
+    "cn": "蘇木",
+    "pinyin": "Sumu",
+    "latin": "Sappan Lignum",
+    "eng": "Sappan Wood",
+    "type": "藤木類"
+  },
+  {
+    "pid": "B00286",
+    "cn": "鎖陽",
+    "pinyin": "Suoyang",
+    "latin": "Cynomorii Herba",
+    "eng": "Songaria Cynomorium Herb",
+    "type": "全草類"
+  },
+  {
+    "pid": "B00019",
+    "cn": "太子參",
+    "pinyin": "Taizishen",
+    "latin": "Pseudostellariae Radix",
+    "eng": "Different Leaves Pseudostellaria",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00148",
+    "cn": "檀香",
+    "pinyin": "Tanxiang",
+    "latin": "Santali Albi Lignum",
+    "eng": "Sandalwood",
+    "type": "藤木類"
+  },
+  {
+    "pid": "B00207",
+    "cn": "桃仁",
+    "pinyin": "Taoren",
+    "latin": "Persicae Semen",
+    "eng": "Peach Seed",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00103",
+    "cn": "天冬",
+    "pinyin": "Tiandong",
+    "latin": "Asparagi Radix",
+    "eng": "Cochinchinese Asparagus Root Tuber",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00104",
+    "cn": "天花粉",
+    "pinyin": "Tianhuafen",
+    "latin": "Trichosanthis Radix",
+    "eng": "Snakegourd Root",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00105",
+    "cn": "天葵子",
+    "pinyin": "Tiankuizi",
+    "latin": "Semiaquilegiae Radix",
+    "eng": "Muskroot - like Semiaquilegia Root",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00003",
+    "cn": "天麻",
+    "pinyin": "Tianma",
+    "latin": "Gastrodiae Rhizoma",
+    "eng": "Tall Gastrodiae",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00106",
+    "cn": "天南星",
+    "pinyin": "Tiannanxing",
+    "latin": "Arisaematis Rhizoma",
+    "eng": "Reddish Jackinthepulpit Tuber",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00287",
+    "cn": "天山雪蓮",
+    "pinyin": "Tianshanxuelian",
+    "latin": "Saussureae Involucratae Herba",
+    "eng": "Snow Lotus Herb",
+    "type": "全草類"
+  },
+  {
+    "pid": "B00257",
+    "cn": "天仙子",
+    "pinyin": "Tianxianzi",
+    "latin": "Hyosyami Semen",
+    "eng": "Henbane Seed",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00418",
+    "cn": "天竺黃",
+    "pinyin": "Tianzhuhuang",
+    "latin": "Bambusae Concretio Silicea",
+    "eng": "Tabasheer",
+    "type": "其他類"
+  },
+  {
+    "pid": "B00208",
+    "cn": "葶藶子",
+    "pinyin": "Tinglizi",
+    "latin": "Descurainiea Semen;Lepidii Semen",
+    "eng": "Pepperweed Seed",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00147",
+    "cn": "通草",
+    "pinyin": "Tongcao",
+    "latin": "Tetrapanacis Medulla",
+    "eng": "Rice Paper Plant Pith",
+    "type": "藤木類"
+  },
+  {
+    "pid": "B00014",
+    "cn": "土貝母",
+    "pinyin": "Tubeimu",
+    "latin": "Bolbostemmatis Rhizoma",
+    "eng": "Paniculate Bolbostemma Bulb",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00396",
+    "cn": "土鼈蟲",
+    "pinyin": "Tubiechong",
+    "latin": "Eupolyphaga Steleophaga",
+    "eng": "Ground Beetle",
+    "type": "動物類"
+  },
+  {
+    "pid": "B00015",
+    "cn": "土茯苓",
+    "pinyin": "Tufulin",
+    "latin": "Smilacis Glabrae Rhizoma",
+    "eng": "Glabrous Greenbrier Rhizome",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00353",
+    "cn": "土荊皮",
+    "pinyin": "Tujingpi",
+    "latin": "Pseudolaricis Cortex",
+    "eng": "Golden Larch Root - bark or Bark",
+    "type": "皮類"
+  },
+  {
+    "pid": "B00107",
+    "cn": "土木香",
+    "pinyin": "Tumuxiang",
+    "latin": "Inulae Radix",
+    "eng": "Elecampane Inula Root",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00209",
+    "cn": "菟絲子",
+    "pinyin": "Tusizi",
+    "latin": "Cuscutae Semen",
+    "eng": "Chinese Dodder Seed",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00393",
+    "cn": "瓦楞子",
+    "pinyin": "Walengzi",
+    "latin": "Arcae Concha",
+    "eng": "Ark Shell",
+    "type": "動物類"
+  },
+  {
+    "pid": "B00210",
+    "cn": "王不留行",
+    "pinyin": "Wangbuliuxing",
+    "latin": "Vaccariae Semen",
+    "eng": "Cowherb Seed",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00288",
+    "cn": "委陵菜",
+    "pinyin": "Weilingcai",
+    "latin": "Potentillae Chinensis Herba",
+    "eng": "Chinese Cinquefoil Herb",
+    "type": "全草類"
+  },
+  {
+    "pid": "B00131",
+    "cn": "威靈仙",
+    "pinyin": "Weilingxian",
+    "latin": "Clematidis Radix et Rhizoma",
+    "eng": "Chinese Clematis Root and Rhizome",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00419",
+    "cn": "五倍子",
+    "pinyin": "Wubeizi",
+    "latin": "Galla Chinensis",
+    "eng": "Chinese Nut-gall",
+    "type": "其他類"
+  },
+  {
+    "pid": "B00394",
+    "cn": "蜈蚣",
+    "pinyin": "Wugong",
+    "latin": "Scolopendra",
+    "eng": "Centipede",
+    "type": "動物類"
+  },
+  {
+    "pid": "B00354",
+    "cn": "五加皮",
+    "pinyin": "Wujiapi",
+    "latin": "Acanthopanacis Cortex",
+    "eng": "SlenderstyleAcanthopanax Root - bark",
+    "type": "皮類"
+  },
+  {
+    "pid": "B00240",
+    "cn": "烏梅",
+    "pinyin": "Wumei",
+    "latin": "Mume Fructus",
+    "eng": "Smoked Plum",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00395",
+    "cn": "烏梢蛇",
+    "pinyin": "Wushaoshe",
+    "latin": "Zaocys",
+    "eng": "Black Soake",
+    "type": "動物類"
+  },
+  {
+    "pid": "B00211",
+    "cn": "五味子",
+    "pinyin": "Wuweizi",
+    "latin": "Schisandrae Chinensis Fructus",
+    "eng": "Chinese Magnoliavine Fruit",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00108",
+    "cn": "烏藥",
+    "pinyin": "Wuyao",
+    "latin": "Linderae Radix",
+    "eng": "Combined Spicebush Root",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00212",
+    "cn": "吳茱萸",
+    "pinyin": "Wuzhuyu",
+    "latin": "Euodiae Fructus",
+    "eng": "Medicinal Evodia Immature Fruit",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00313",
+    "cn": "夏枯草",
+    "pinyin": "Xiakucao",
+    "latin": "Prunellae Spica",
+    "eng": "Common Selfheal Spike",
+    "type": "花類"
+  },
+  {
+    "pid": "B00109",
+    "cn": "香附",
+    "pinyin": "Xiangfu",
+    "latin": "Cyperi Rhizoma",
+    "eng": "Nutgrass Galingale Rhizome",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00355",
+    "cn": "香加皮",
+    "pinyin": "Xiangjiapi",
+    "latin": "Periplocae Cortex",
+    "eng": "Chinese Silkvine Root - bark",
+    "type": "皮類"
+  },
+  {
+    "pid": "B00289",
+    "cn": "香薷",
+    "pinyin": "Xiangru",
+    "latin": "Moslae Herba",
+    "eng": "Chinese Mosla Herb",
+    "type": "全草類"
+  },
+  {
+    "pid": "B00213",
+    "cn": "相思子",
+    "pinyin": "Xiangsizi",
+    "latin": "Abri precatorii Semen",
+    "eng": "Coralhead Plant Seed",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00214",
+    "cn": "香櫞",
+    "pinyin": "Xiangyuan",
+    "latin": "Citri Fructus",
+    "eng": "Medical Citron Fruit",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00290",
+    "cn": "仙鶴草",
+    "pinyin": "Xianhecao",
+    "latin": "Agrimoniae Herba",
+    "eng": "Hairyvein Agrimonia Herb",
+    "type": "全草類"
+  },
+  {
+    "pid": "B00110",
+    "cn": "仙茅",
+    "pinyin": "Xianmao",
+    "latin": "Curculiginis Rhizoma",
+    "eng": "Common Vurculigo Rhizome",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00215",
+    "cn": "小茴香",
+    "pinyin": "Xiaohuixiang",
+    "latin": "Foeniculi Fructus",
+    "eng": "Fennel Fruit",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00266",
+    "cn": "小薊",
+    "pinyin": "Xiaoji",
+    "latin": "Cirsii Herba",
+    "eng": "Common Thistle Field Thistle",
+    "type": "全草類"
+  },
+  {
+    "pid": "B00111",
+    "cn": "薤白",
+    "pinyin": "Xiebai",
+    "latin": "Allii Macrostemonis Bulbus",
+    "eng": "Longstamen Onion Bulb",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00320",
+    "cn": "西紅花",
+    "pinyin": "Xihonghua",
+    "latin": "Croci Stigma",
+    "eng": "Saffon Crocus Style and Stigma",
+    "type": "花類"
+  },
+  {
+    "pid": "B00314",
+    "cn": "辛夷",
+    "pinyin": "Xinyi",
+    "latin": "Magnoliae Flos",
+    "eng": "Biod Magnolia Bud",
+    "type": "花類"
+  },
+  {
+    "pid": "B00406",
+    "cn": "雄黃",
+    "pinyin": "Xionghuang",
+    "latin": "Realgar",
+    "eng": "Red Orpiment",
+    "type": "礦物類"
+  },
+  {
+    "pid": "B00291",
+    "cn": "豨薟草",
+    "pinyin": "Xixiancao",
+    "latin": "Siegesbeckiae Herba",
+    "eng": "Common St. Paulswort Herb Glandulartalk St. Paulswort Herb",
+    "type": "全草類"
+  },
+  {
+    "pid": "B00112",
+    "cn": "細辛",
+    "pinyin": "Xixin",
+    "latin": "Asari Radix et Rhizoma",
+    "eng": "Manchurian Wildginger Herb",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00113",
+    "cn": "西洋參",
+    "pinyin": "Xiyangshen",
+    "latin": "Panacis Quinquefolii Radix",
+    "eng": "American Ginseng",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00322",
+    "cn": "旋覆花",
+    "pinyin": "Xuanfuhua",
+    "latin": "Inulae Flos",
+    "eng": "Japanese Inula Flower",
+    "type": "花類"
+  },
+  {
+    "pid": "B00407",
+    "cn": "玄明粉",
+    "pinyin": "Xuanmingfen",
+    "latin": "Natrii Sulfas Exsiccatus",
+    "eng": "Weathered Sodium Sulfate",
+    "type": "礦物類"
+  },
+  {
+    "pid": "B00114",
+    "cn": "玄參",
+    "pinyin": "Xuanshen",
+    "latin": "Scrophulariae Radix",
+    "eng": "Figwort Root",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00115",
+    "cn": "徐長卿",
+    "pinyin": "Xuchangqing",
+    "latin": "Cynanchi Paniculati Radix et Rhizoma",
+    "eng": "Paniculate Swallowwort Root or Herb",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00116",
+    "cn": "續斷",
+    "pinyin": "Xuduan",
+    "latin": "Dipsaci Radix",
+    "eng": "Asper - like Teasel Root",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00366",
+    "cn": "血竭",
+    "pinyin": "Xuejie",
+    "latin": "Draconis Sanguis",
+    "eng": "Dragon’s Blood",
+    "type": "樹脂類"
+  },
+  {
+    "pid": "B00217",
+    "cn": "鴉膽子",
+    "pinyin": "Yadanzi",
+    "latin": "Bruceae Fructus",
+    "eng": "Java Brucea Fruit",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00315",
+    "cn": "洋金花",
+    "pinyin": "Yangjinhua",
+    "latin": "Daturae Flos",
+    "eng": "Hindu Datura Flower",
+    "type": "花類"
+  },
+  {
+    "pid": "B00117",
+    "cn": "延胡索",
+    "pinyin": "Yanhusuo",
+    "latin": "Corydalis Rhizoma",
+    "eng": "Yanhusuo Tuber",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00316",
+    "cn": "野菊花",
+    "pinyin": "Yejuhua",
+    "latin": "Chrysanthemi Indici Flos",
+    "eng": "Wild Dendranthema Flower",
+    "type": "花類"
+  },
+  {
+    "pid": "B00292",
+    "cn": "益母草",
+    "pinyin": "Yimucao",
+    "latin": "Leonuri Herba",
+    "eng": "Common Motherwort Herb",
+    "type": "全草類"
+  },
+  {
+    "pid": "B00118",
+    "cn": "銀柴胡",
+    "pinyin": "Yinchaihu",
+    "latin": "Stellariae Radix",
+    "eng": "Lanceolate Dichotomous Starwort Root",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00293",
+    "cn": "茵陳",
+    "pinyin": "Yinchen",
+    "latin": "Artemisiae Scopariae Herba",
+    "eng": "Capillary Wormwood Herb",
+    "type": "全草類"
+  },
+  {
+    "pid": "B00218",
+    "cn": "罌粟殼",
+    "pinyin": "Yingsuqiao",
+    "latin": "Papaveris Pericarpium",
+    "eng": "Opium Poppy Peel",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00337",
+    "cn": "銀杏葉",
+    "pinyin": "Yinxingye",
+    "latin": "Ginkgo Folium",
+    "eng": "Ginkgo Leaf",
+    "type": "葉類"
+  },
+  {
+    "pid": "B00294",
+    "cn": "淫羊藿",
+    "pinyin": "Yinyanghuo",
+    "latin": "Epimedii Folium",
+    "eng": "Short-horned Epimedium Herb",
+    "type": "全草類"
+  },
+  {
+    "pid": "B00219",
+    "cn": "薏苡仁",
+    "pinyin": "Yiyiren",
+    "latin": "Coicis Semen",
+    "eng": "Ma - yuen Jobstears Seed",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00239",
+    "cn": "益智",
+    "pinyin": "Yizhi",
+    "latin": "Alpiniae Oxyphyllae Fructus",
+    "eng": "Sharpleaf Galangal Fruit",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00317",
+    "cn": "芫花",
+    "pinyin": "Yuanhua",
+    "latin": "Genkwa Flos",
+    "eng": "Lilac Daphe Flower Bud",
+    "type": "花類"
+  },
+  {
+    "pid": "B00119",
+    "cn": "遠志",
+    "pinyin": "Yuanzhi",
+    "latin": "Polygalae Radix",
+    "eng": "Thinleaf Milkwort Willd.",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00318",
+    "cn": "月季花",
+    "pinyin": "Yuejihua",
+    "latin": "Rosae Chinensis Flos",
+    "eng": "Chinese Rose Flower",
+    "type": "花類"
+  },
+  {
+    "pid": "B00220",
+    "cn": "余甘子",
+    "pinyin": "Yuganzi",
+    "latin": "Phyllanthi Fructus",
+    "eng": "Emblic Leafflower Fruit",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00120",
+    "cn": "鬱金",
+    "pinyin": "Yujin",
+    "latin": "Curcumae Radix",
+    "eng": "Wenchow Turmeric Root Tuber",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00221",
+    "cn": "郁李仁",
+    "pinyin": "Yuliren",
+    "latin": "Pruni Semen",
+    "eng": "Dwarf Flowering Cherry Seed",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00295",
+    "cn": "魚腥草",
+    "pinyin": "Yuxingcao",
+    "latin": "Houttuyniae Herba",
+    "eng": "Heartleaf Houttuynia Herb",
+    "type": "全草類"
+  },
+  {
+    "pid": "B00121",
+    "cn": "禹州漏蘆",
+    "pinyin": "Yuzhouloulu",
+    "latin": "Echinopsis Radix",
+    "eng": "Broadleaf Globethistle Root",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00122",
+    "cn": "玉竹",
+    "pinyin": "Yuzhu",
+    "latin": "Polygonati Odorati Rhizoma",
+    "eng": "Fragrant Solomonseal Rhizome",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00151",
+    "cn": "皂角刺",
+    "pinyin": "Zaojiaoci",
+    "latin": "Gleditsiae Spina",
+    "eng": "Chinese Honeylocust Spine",
+    "type": "藤木類"
+  },
+  {
+    "pid": "B00298",
+    "cn": "澤蘭",
+    "pinyin": "Zelan",
+    "latin": "Lycopi Herba",
+    "eng": "Hirsute Bugleweed Herb",
+    "type": "全草類"
+  },
+  {
+    "pid": "B00123",
+    "cn": "澤瀉",
+    "pinyin": "Zexie",
+    "latin": "Alismatis Rhizoma",
+    "eng": "Oriental Waterplantain Tuber",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00124",
+    "cn": "浙貝母",
+    "pinyin": "Zhebeimu",
+    "latin": "Fritillariae Thunbergii Bulbus",
+    "eng": "Chekiang Fritillary Bulb",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00397",
+    "cn": "珍珠母",
+    "pinyin": "Zhenzhumu",
+    "latin": "Margaritifera Concha",
+    "eng": "Nacre",
+    "type": "動物類"
+  },
+  {
+    "pid": "B00408",
+    "cn": "赭石",
+    "pinyin": "Zheshi",
+    "latin": "Haematitum",
+    "eng": "Hematite",
+    "type": "礦物類"
+  },
+  {
+    "pid": "B00125",
+    "cn": "知母",
+    "pinyin": "Zhimu",
+    "latin": "Anemarrhenae Rhizoma",
+    "eng": "Common Anemarrhena",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00222",
+    "cn": "枳殼",
+    "pinyin": "Zhiqiao",
+    "latin": "Aurantii Fructus",
+    "eng": "Submature Bitter Orange",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00223",
+    "cn": "枳實",
+    "pinyin": "Zhishi",
+    "latin": "Aurantii Fructus Immaturus",
+    "eng": "Immature Bitter Orange",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00224",
+    "cn": "梔子",
+    "pinyin": "Zhizi",
+    "latin": "Gardeniae Fructus",
+    "eng": "Common Gardenia Fruit",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00296",
+    "cn": "腫節風",
+    "pinyin": "Zhongjiefeng",
+    "latin": "Sarcandrae Herba",
+    "eng": "Glabrous Scrcandra Herb",
+    "type": "全草類"
+  },
+  {
+    "pid": "B00360",
+    "cn": "豬苓",
+    "pinyin": "Zhuling",
+    "latin": "Polyporus",
+    "eng": "Agaric",
+    "type": "菌藻類"
+  },
+  {
+    "pid": "B00149",
+    "cn": "竹茹",
+    "pinyin": "Zhuru",
+    "latin": "Bambusae Caulis in Taenias",
+    "eng": "Bamboo Shavings",
+    "type": "藤木類"
+  },
+  {
+    "pid": "B00409",
+    "cn": "朱砂",
+    "pinyin": "Zhusha",
+    "latin": "Cinnabaris",
+    "eng": "Cinnabar",
+    "type": "礦物類"
+  },
+  {
+    "pid": "B00126",
+    "cn": "朱砂根",
+    "pinyin": "Zhushagen",
+    "latin": "Ardisiae Crenatae Radix",
+    "eng": "Coral Ardisia Root",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00225",
+    "cn": "豬牙皂",
+    "pinyin": "Zhuyazao",
+    "latin": "Gleditsiae Fructus Abnormalis",
+    "eng": "Abnorma Chinese Honeylocust Fruit",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00127",
+    "cn": "紫草",
+    "pinyin": "Zicao",
+    "latin": "Arnebiae Radix",
+    "eng": "Redroot Gromwell",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00410",
+    "cn": "自然銅",
+    "pinyin": "Zirantong",
+    "latin": "Pyritum",
+    "eng": "Pyrite",
+    "type": "礦物類"
+  },
+  {
+    "pid": "B00411",
+    "cn": "紫石英",
+    "pinyin": "Zishiying",
+    "latin": "Fluoritum",
+    "eng": "Fluorite",
+    "type": "礦物類"
+  },
+  {
+    "pid": "B00150",
+    "cn": "紫蘇梗",
+    "pinyin": "Zisugeng",
+    "latin": "Perillae Caulis",
+    "eng": "Cutivated Purple Perilla Stem",
+    "type": "藤木類"
+  },
+  {
+    "pid": "B00338",
+    "cn": "紫蘇葉",
+    "pinyin": "Zisuye",
+    "latin": "Perillae Folium",
+    "eng": "Cultibated Purple Perilla Leaf",
+    "type": "葉類"
+  },
+  {
+    "pid": "B00226",
+    "cn": "紫蘇子",
+    "pinyin": "Zisuzi",
+    "latin": "Perillae Fructus",
+    "eng": "Cultivated Puple Perilla Fruit",
+    "type": "果實及種子類"
+  },
+  {
+    "pid": "B00128",
+    "cn": "紫菀",
+    "pinyin": "Ziwan",
+    "latin": "Asteris Radix et Rhizoma",
+    "eng": "Tatarian Aster Root and Rhizome",
+    "type": "根及根莖類"
+  },
+  {
+    "pid": "B00339",
+    "cn": "棕櫚",
+    "pinyin": "Zonglu",
+    "latin": "Trachycarpi Petiolus",
+    "eng": "Fortune Windmillpalm Petiole",
+    "type": "葉類"
+  }
+]

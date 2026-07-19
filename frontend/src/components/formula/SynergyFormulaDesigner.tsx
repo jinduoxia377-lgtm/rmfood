@@ -216,24 +216,24 @@ export function SynergyFormulaDesigner() {
   // ==================== 渲染辅助函数 ====================
 
   const renderModeSwitcher = () => (
-    <div className="flex items-center justify-between mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 rounded-xl border border-blue-200 dark:border-gray-700">
+    <div className="flex items-center justify-between mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-800 dark:to-slate-900 rounded-xl border border-blue-200 dark:border-neutral-700">
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+        <h3 className="text-lg font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
           <Sparkles className="w-5 h-5 text-primary-500" />
           协同配方设计器
         </h3>
-        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+        <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">
           基于多目标优化的智能配方生成系统
         </p>
       </div>
 
-      <div className="flex bg-white dark:bg-gray-800 rounded-lg p-1 shadow-sm">
+      <div className="flex bg-white dark:bg-neutral-800 rounded-lg p-1 shadow-sm">
         <button
           onClick={() => setUserMode('guided')}
           className={`flex items-center gap-2 px-4 py-2 rounded-md transition-all ${
             userMode === 'guided'
               ? 'bg-primary-500 text-white shadow-md'
-              : 'text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700'
+              : 'text-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-700'
           }`}
         >
           <User className="w-4 h-4" />
@@ -244,7 +244,7 @@ export function SynergyFormulaDesigner() {
           className={`flex items-center gap-2 px-4 py-2 rounded-md transition-all ${
             userMode === 'expert'
               ? 'bg-primary-500 text-white shadow-md'
-              : 'text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700'
+              : 'text-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-700'
           }`}
         >
           <Settings2 className="w-4 h-4" />
@@ -274,10 +274,10 @@ export function SynergyFormulaDesigner() {
               >
                 <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${
                   idx < currentStep
-                    ? 'bg-green-500 text-white'
+                    ? 'bg-success-500 text-white'
                     : idx === currentStep
                     ? 'bg-primary-500 text-white ring-4 ring-primary-200 dark:ring-primary-900'
-                    : 'bg-gray-200 dark:bg-gray-700 text-gray-500'
+                    : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-500'
                 }`}>
                   {idx < currentStep ? (
                     <CheckCircle2 className="w-6 h-6" />
@@ -286,14 +286,14 @@ export function SynergyFormulaDesigner() {
                   )}
                 </div>
                 <span className={`text-xs font-medium text-center max-w-[80px] ${
-                  idx === currentStep ? 'text-primary-600 dark:text-primary-400' : 'text-gray-600 dark:text-gray-400'
+                  idx === currentStep ? 'text-primary-600 dark:text-primary-400' : 'text-neutral-600 dark:text-neutral-400'
                 }`}>
                   {s.title}
                 </span>
               </button>
               {idx < GUIDED_STEPS.length - 1 && (
                 <div className={`flex-1 h-0.5 mx-2 rounded ${
-                  idx < currentStep ? 'bg-green-500' : 'bg-gray-200 dark:bg-gray-700'
+                  idx < currentStep ? 'bg-success-500' : 'bg-neutral-200 dark:bg-neutral-700'
                 }`} />
               )}
             </React.Fragment>
@@ -304,11 +304,11 @@ export function SynergyFormulaDesigner() {
         <Card className="p-8 min-h-[400px]">
           <div className="space-y-6">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+              <h2 className="h2 text-neutral-900 dark:text-white flex items-center gap-3">
                 {step.icon}
                 {step.title}
               </h2>
-              <p className="text-gray-600 dark:text-gray-400 mt-2">{step.description}</p>
+              <p className="text-neutral-600 dark:text-neutral-400 mt-2">{step.description}</p>
             </div>
 
             {/* 步骤 1: 功效选择 */}
@@ -321,7 +321,7 @@ export function SynergyFormulaDesigner() {
                     className={`p-4 rounded-xl border-2 transition-all hover:shadow-md ${
                       selectedEfficacy.includes(option.id)
                         ? 'border-primary-500 bg-primary-50 dark:bg-primary-950 shadow-md'
-                        : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
+                        : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300'
                     }`}
                   >
                     <div className="flex items-center gap-3 text-primary-600 dark:text-primary-400 mb-2">
@@ -350,20 +350,20 @@ export function SynergyFormulaDesigner() {
                   {ingredients.map((ing, idx) => (
                     <div
                       key={ing.name}
-                      className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg"
+                      className="flex items-center justify-between p-4 bg-slate-50 dark:bg-neutral-800 rounded-lg"
                     >
                       <div className="flex items-center gap-3">
                         <FlaskConical className="w-5 h-5 text-primary-500" />
                         <div>
-                          <p className="font-semibold text-gray-900 dark:text-white">{ing.name}</p>
-                          <p className="text-sm text-gray-500">{ing.category} • ¥{ing.cost_per_gram}/g</p>
+                          <p className="font-semibold text-neutral-900 dark:text-white">{ing.name}</p>
+                          <p className="text-sm text-neutral-500">{ing.category} • ¥{ing.cost_per_gram}/g</p>
                         </div>
                       </div>
                       <div className="text-right">
                         <p className="font-mono font-bold text-lg text-primary-600">
                           {ing.percentage.toFixed(1)}%
                         </p>
-                        <p className="text-sm text-gray-500">{ing.amount_mg}mg</p>
+                        <p className="text-sm text-neutral-500">{ing.amount_mg}mg</p>
                       </div>
                     </div>
                   ))}
@@ -376,7 +376,7 @@ export function SynergyFormulaDesigner() {
               <div className="space-y-6 mt-6">
                 {/* 目标权重滑块 */}
                 <div className="space-y-4">
-                  <h3 className="font-semibold text-gray-900 dark:text-white">优化目标优先级</h3>
+                  <h3 className="font-semibold text-neutral-900 dark:text-white">优化目标优先级</h3>
 
                   {[
                     { key: 'efficacy' as const, label: '功效强度', color: 'blue' },
@@ -386,7 +386,7 @@ export function SynergyFormulaDesigner() {
                   ].map(({ key, label, color: sliderColor }) => (
                     <div key={key} className="space-y-2">
                       <div className="flex justify-between text-sm">
-                        <span className="font-medium text-gray-700 dark:text-gray-300">{label}</span>
+                        <span className="font-medium text-neutral-700 dark:text-neutral-300">{label}</span>
                         <span className="font-mono text-primary-600 font-bold">
                           {(objectives[key] * 100).toFixed(0)}%
                         </span>
@@ -405,12 +405,12 @@ export function SynergyFormulaDesigner() {
 
                 {/* 成分比例微调 */}
                 <div className="mt-8 space-y-4">
-                  <h3 className="font-semibold text-gray-900 dark:text-white">成分比例调整</h3>
+                  <h3 className="font-semibold text-neutral-900 dark:text-white">成分比例调整</h3>
 
                   {ingredients.map((ing: FormulaIngredient, idx: number) => (
                     <div key={ing.name} className="space-y-2">
                       <div className="flex justify-between text-sm">
-                        <span className="font-medium text-gray-700 dark:text-gray-300">{ing.name}</span>
+                        <span className="font-medium text-neutral-700 dark:text-neutral-300">{ing.name}</span>
                         <span className="font-mono font-bold text-primary-600">
                           {ing.percentage.toFixed(1)}%
                         </span>
@@ -426,13 +426,13 @@ export function SynergyFormulaDesigner() {
                     </div>
                   ))}
 
-                  <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <div className="pt-4 border-t border-neutral-200 dark:border-neutral-700">
                     <div className="flex justify-between font-semibold">
                       <span>总计</span>
                       <span className={`${
                         Math.abs(ingredients.reduce((sum, ing) => sum + ing.percentage, 0) - 100) < 1
-                          ? 'text-green-600'
-                          : 'text-red-600'
+                          ? 'text-success-600'
+                          : 'text-error-600'
                       }`}>
                         {ingredients.reduce((sum, ing) => sum + ing.percentage, 0).toFixed(1)}%
                       </span>
@@ -457,24 +457,24 @@ export function SynergyFormulaDesigner() {
                       <div className={`inline-flex items-center justify-center w-10 h-10 rounded-lg bg-${color}-100 dark:bg-${color}-900 text-${color}-600 dark:text-${color}-400 mb-2`}>
                         {icon}
                       </div>
-                      <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                      <p className="text-2xl font-bold text-neutral-900 dark:text-white">
                         {typeof value === 'number' ? (value * 100).toFixed(0) : value}
                       </p>
-                      <p className="text-xs text-gray-500 mt-1">{label}</p>
+                      <p className="text-xs text-neutral-500 mt-1">{label}</p>
                     </Card>
                   ))}
                 </div>
 
                 {/* 推荐列表 */}
                 <div className="space-y-3">
-                  <h3 className="font-semibold text-gray-900 dark:text-white">💡 系统建议</h3>
+                  <h3 className="font-semibold text-neutral-900 dark:text-white">💡 系统建议</h3>
                   {generationResult.recommendations.slice(0, 5).map((rec: string, idx: number) => (
                     <div
                       key={idx}
-                      className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
+                      className="flex items-start gap-3 p-3 bg-slate-50 dark:bg-neutral-800 rounded-lg"
                     >
                       <ChevronRight className="w-5 h-5 text-primary-500 mt-0.5 flex-shrink-0" />
-                      <p className="text-sm text-gray-700 dark:text-gray-300">{rec}</p>
+                      <p className="text-sm text-neutral-700 dark:text-neutral-300">{rec}</p>
                     </div>
                   ))}
                 </div>
@@ -483,7 +483,7 @@ export function SynergyFormulaDesigner() {
           </div>
 
           {/* 导航按钮 */}
-          <div className="flex justify-between mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex justify-between mt-8 pt-6 border-t border-neutral-200 dark:border-neutral-700">
             <Button
               variant="outline"
               onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}
@@ -534,7 +534,7 @@ export function SynergyFormulaDesigner() {
     <div className="space-y-6">
       {/* 参数控制面板 */}
       <Card className="p-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+        <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4 flex items-center gap-2">
           <Settings2 className="w-5 h-5 text-primary-500" />
           高级参数控制
         </h3>
@@ -542,15 +542,15 @@ export function SynergyFormulaDesigner() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* 左侧：优化参数 */}
           <div className="space-y-4">
-            <h4 className="font-medium text-gray-700 dark:text-gray-300">NSGA-III 优化器配置</h4>
+            <h4 className="font-medium text-neutral-700 dark:text-neutral-300">NSGA-III 优化器配置</h4>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">种群大小</label>
+                <label className="block text-sm text-neutral-600 dark:text-neutral-400 mb-1">种群大小</label>
                 <Input type="number" defaultValue={100} min={20} max={200} />
               </div>
               <div>
-                <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">迭代次数</label>
+                <label className="block text-sm text-neutral-600 dark:text-neutral-400 mb-1">迭代次数</label>
                 <Input type="number" defaultValue={50} min={10} max={100} />
               </div>
             </div>
@@ -575,35 +575,35 @@ export function SynergyFormulaDesigner() {
 
           {/* 右侧：约束条件 */}
           <div className="space-y-4">
-            <h4 className="font-medium text-gray-700 dark:text-gray-300">约束条件设置</h4>
+            <h4 className="font-medium text-neutral-700 dark:text-neutral-300">约束条件设置</h4>
 
             <div>
-              <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">目标功效值</label>
+              <label className="block text-sm text-neutral-600 dark:text-neutral-400 mb-1">目标功效值</label>
               <Input type="number" defaultValue={0.75} min={0} max={1} step={0.05} />
             </div>
 
             <div>
-              <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">安全阈值</label>
+              <label className="block text-sm text-neutral-600 dark:text-neutral-400 mb-1">安全阈值</label>
               <Input type="number" defaultValue={0.80} min={0} max={1} step={0.05} />
             </div>
 
             <div className="flex items-center gap-2 pt-2">
               <input type="checkbox" id="safety-priority" defaultChecked className="rounded" />
-              <label htmlFor="safety-priority" className="text-sm text-gray-700 dark:text-gray-300">
+              <label htmlFor="safety-priority" className="text-sm text-neutral-700 dark:text-neutral-300">
                 安全性优先模式
               </label>
             </div>
 
             <div className="flex items-center gap-2">
               <input type="checkbox" id="use-cache" defaultChecked className="rounded" />
-              <label htmlFor="use-cache" className="text-sm text-gray-700 dark:text-gray-300">
+              <label htmlFor="use-cache" className="text-sm text-neutral-700 dark:text-neutral-300">
                 启用结果缓存
               </label>
             </div>
           </div>
         </div>
 
-        <div className="flex gap-3 mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="flex gap-3 mt-6 pt-4 border-t border-neutral-200 dark:border-neutral-700">
           <Button
             onClick={handleGenerateFormula}
             loading={loading}
@@ -626,25 +626,25 @@ export function SynergyFormulaDesigner() {
       {/* 实时数据表格 */}
       {showRawData && (
         <Card className="p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4 flex items-center gap-2">
             <BarChart3 className="w-5 h-5 text-primary-500" />
             原始数据视图
           </h3>
 
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-gray-50 dark:bg-gray-800">
+              <thead className="bg-slate-50 dark:bg-neutral-800">
                 <tr>
-                  <th className="px-4 py-2 text-left font-medium text-gray-700 dark:text-gray-300">成分名称</th>
-                  <th className="px-4 py-2 text-right font-medium text-gray-700 dark:text-gray-300">比例 (%)</th>
-                  <th className="px-4 py-2 text-right font-medium text-gray-700 dark:text-gray-300">剂量 (mg)</th>
-                  <th className="px-4 py-2 text-right font-medium text-gray-700 dark:text-gray-300">成本 (¥)</th>
+                  <th className="px-4 py-2 text-left font-medium text-neutral-700 dark:text-neutral-300">成分名称</th>
+                  <th className="px-4 py-2 text-right font-medium text-neutral-700 dark:text-neutral-300">比例 (%)</th>
+                  <th className="px-4 py-2 text-right font-medium text-neutral-700 dark:text-neutral-300">剂量 (mg)</th>
+                  <th className="px-4 py-2 text-right font-medium text-neutral-700 dark:text-neutral-300">成本 (¥)</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
                 {ingredients.map(ing => (
-                  <tr key={ing.name} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                    <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">{ing.name}</td>
+                  <tr key={ing.name} className="hover:bg-slate-50 dark:hover:bg-neutral-800">
+                    <td className="px-4 py-3 font-medium text-neutral-900 dark:text-white">{ing.name}</td>
                     <td className="px-4 py-3 text-right font-mono">{ing.percentage.toFixed(2)}</td>
                     <td className="px-4 py-3 text-right font-mono">{ing.amount_mg.toFixed(0)}</td>
                     <td className="px-4 py-3 text-right font-mono">
@@ -652,8 +652,8 @@ export function SynergyFormulaDesigner() {
                     </td>
                   </tr>
                 ))}
-                <tr className="bg-gray-100 dark:bg-gray-900 font-semibold">
-                  <td className="px-4 py-3 text-gray-900 dark:text-white">合计</td>
+                <tr className="bg-neutral-100 dark:bg-neutral-900 font-semibold">
+                  <td className="px-4 py-3 text-neutral-900 dark:text-white">合计</td>
                   <td className="px-4 py-3 text-right font-mono text-primary-600">
                     {ingredients.reduce((sum, ing) => sum + ing.percentage, 0).toFixed(2)}
                   </td>
@@ -675,23 +675,23 @@ export function SynergyFormulaDesigner() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Pareto 前沿散点图占位 */}
           <Card className="p-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+            <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4 flex items-center gap-2">
               <ScatterChart className="w-5 h-5 text-primary-500" />
               Pareto 最优前沿
             </h3>
-            <div className="h-64 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-900 rounded-lg flex items-center justify-center">
-              <p className="text-gray-500">📊 Pareto 散点图 (待集成 ECharts)</p>
+            <div className="h-64 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-slate-800 dark:to-slate-900 rounded-lg flex items-center justify-center">
+              <p className="text-neutral-500">📊 Pareto 散点图 (待集成 ECharts)</p>
             </div>
           </Card>
 
           {/* 协同机制饼图占位 */}
           <Card className="p-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+            <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4 flex items-center gap-2">
               <PieChartIcon className="w-5 h-5 text-primary-500" />
               协同机制分布
             </h3>
-            <div className="h-64 bg-gradient-to-br from-green-50 to-teal-50 dark:from-gray-800 dark:to-gray-900 rounded-lg flex items-center justify-center">
-              <p className="text-gray-500">🥧 机制贡献饼图 (待集成 ECharts)</p>
+            <div className="h-64 bg-gradient-to-br from-green-50 to-teal-50 dark:from-slate-800 dark:to-slate-900 rounded-lg flex items-center justify-center">
+              <p className="text-neutral-500">🥧 机制贡献饼图 (待集成 ECharts)</p>
             </div>
           </Card>
         </div>
@@ -709,10 +709,10 @@ export function SynergyFormulaDesigner() {
 
       {/* 性能指标 */}
       {generationResult && (
-        <div className="flex items-center justify-between p-4 bg-green-50 dark:bg-green-950 rounded-lg border border-green-200 dark:border-green-900">
+        <div className="flex items-center justify-between p-4 bg-success-50 dark:bg-green-950 rounded-lg border border-green-200 dark:border-green-900">
           <div className="flex items-center gap-3">
-            <CheckCircle2 className="w-5 h-5 text-green-600" />
-            <span className="text-sm font-medium text-green-800 dark:text-green-200">
+            <CheckCircle2 className="w-5 h-5 text-success-600" />
+            <span className="text-sm font-medium text-success-800 dark:text-success-200">
               优化完成 · 耗时 {(generationResult.generation_time_ms / 1000).toFixed(2)}s
             </span>
           </div>

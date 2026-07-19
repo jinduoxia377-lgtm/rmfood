@@ -269,7 +269,7 @@ class FileGeneratorService:
             self._update_task(
                 task_id,
                 status=TaskStatus.FAILED,
-                error_message=str(e)
+                error_message="生成失败，请稍后重试"
             )
             raise
 
@@ -279,7 +279,7 @@ class FileGeneratorService:
         format: FileFormat,
         file_name: str
     ) -> str:
-        loop = asyncio.get_event_loop()
+        loop = asyncio.new_event_loop()
         task_info = self._create_task()
         task_id = task_info.task_id
 

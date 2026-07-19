@@ -468,7 +468,7 @@ class SearchEngine:
         
         stmt = (
             select(model_class.name)
-            .where(model_name.ilike(f"{prefix}%"))
+            .where(getattr(model_class, 'name').ilike(f"{prefix}%"))
             .distinct()
             .limit(limit)
         )
@@ -479,56 +479,152 @@ class SearchEngine:
         return suggestions
     
     async def get_recent_searches(self, user_id: int, limit: int = 10) -> List[Dict]:
-        """
-        获取用户的最近搜索历史
-        """
-        from ..models.user_model import User
-        
-        # 这里可以使用缓存或独立的搜索历史表
-        # 简化实现：返回空列表（实际应从Redis或数据库读取）
-        return []
-    
+        """从数据库查询最近搜索历史"""
+        try:
+            result = await self.db.execute(
+                text("SELECT keyword, searched_at, result_count FROM search_history WHERE user_id = :uid ORDER BY searched_at DESC LIMIT :lim"),
+                {"uid": user_id, "lim": limit}
+            )
+            return [
+                {"keyword": row[0], "searched_at": row[1].isoformat() if row[1] else None, "result_count": row[2]}
+                for row in result.fetchall()
+            ]
+        except Exception:
+            return []
+
     async def save_search_history(self, user_id: int, keyword: str, result_count: int) -> None:
-        """
-        保存搜索历史
-        """
-        # 实际实现：写入搜索历史表或Redis
-        logger.debug(f"保存搜索历史: user={user_id}, keyword='{keyword}', results={result_count}")
-    
+        """保存搜索历史到数据库"""
+        try:
+            await self.db.execute(
+                text("""INSERT INTO search_history (user_id, keyword, result_count, searched_at)
+                        VALUES (:uid, :kw, :rc, NOW())"""),
+                {"uid": user_id, "kw": keyword, "rc": result_count}
+            )
+            await self.db.commit()
+        except Exception as e:
+            logger.debug(f"保存搜索历史失败（表可能不存在）: {e}")
+
     # ── 收藏夹管理 ──
-    
+
     async def add_to_favorites(self, user_id: int, item_type: str, item_id: int) -> bool:
         """添加到收藏夹"""
-        # TODO: 实现收藏逻辑（写入favorites表或使用缓存）
-        logger.info(f"⭐ 添加收藏: user={user_id}, type={item_type}, id={item_id}")
-        return True
-    
+        try:
+            await self.db.execute(
+                text("""INSERT INTO search_favorites (user_id, item_type, item_id, favorited_at)
+                        VALUES (:uid, :itype, :iid, NOW()) ON CONFLICT DO NOTHING"""),
+                {"uid": user_id, "itype": item_type, "iid": item_id}
+            )
+            await self.db.commit()
+            return True
+        except Exception as e:
+            logger.debug(f"添加收藏失败（表可能不存在）: {e}")
+            return False
+
     async def remove_from_favorites(self, user_id: int, item_type: str, item_id: int) -> bool:
         """从收藏夹移除"""
-        logger.info(f"❌ 移除收藏: user={user_id}, type={item_type}, id={item_id}")
-        return True
-    
+        try:
+            result = await self.db.execute(
+                text("DELETE FROM search_favorites WHERE user_id = :uid AND item_type = :itype AND item_id = :iid"),
+                {"uid": user_id, "itype": item_type, "iid": item_id}
+            )
+            await self.db.commit()
+            return result.rowcount > 0
+        except Exception as e:
+            logger.debug(f"移除收藏失败（表可能不存在）: {e}")
+            return False
+
     async def get_favorites(self, user_id: int, item_type: Optional[str] = None) -> List[Dict]:
         """获取收藏列表"""
-        # TODO: 从数据库查询
-        return []
-    
+        try:
+            stmt = text("""
+                SELECT sf.item_type, sf.item_id, sf.favorited_at,
+                       COALESCE(f.name, e.name, i.name) as name,
+                       COALESCE(f.description, e.description, i.description) as description
+                FROM search_favorites sf
+                LEFT JOIN formulas f ON sf.item_type = 'formula' AND sf.item_id = f.id
+                LEFT JOIN experiments e ON sf.item_type = 'experiment' AND sf.item_id = e.id
+                LEFT JOIN ingredients i ON sf.item_type = 'ingredient' AND sf.item_id = i.id
+                WHERE sf.user_id = :uid
+            """)
+            if item_type:
+                stmt = stmt.where(text("sf.item_type = :itype")).bindparams(itype=item_type)
+            stmt = stmt.order_by(text("sf.favorited_at DESC"))
+
+            result = await self.db.execute(stmt, {"uid": user_id})
+            rows = result.fetchall()
+            return [
+                {
+                    "item_type": row[0],
+                    "item_id": row[1],
+                    "favorited_at": row[2].isoformat() if row[2] else None,
+                    "name": row[3],
+                    "description": row[4],
+                }
+                for row in rows
+            ]
+        except Exception as e:
+            logger.debug(f"获取收藏列表失败（表可能不存在）: {e}")
+            return []
+
     async def is_favorited(self, user_id: int, item_type: str, item_id: int) -> bool:
         """检查是否已收藏"""
-        # TODO: 查询收藏状态
-        return False
-    
+        try:
+            result = await self.db.execute(
+                text("SELECT 1 FROM search_favorites WHERE user_id = :uid AND item_type = :itype AND item_id = :iid LIMIT 1"),
+                {"uid": user_id, "itype": item_type, "iid": item_id}
+            )
+            return result.scalar_one_or_none() is not None
+        except Exception:
+            return False
+
     # ── 最近访问 ──
-    
+
     async def record_view(self, user_id: int, item_type: str, item_id: int) -> None:
-        """记录访问历史"""
-        logger.debug(f"👁️ 记录访问: user={user_id}, type={item_type}, id={item_id}")
-        # TODO: 写入最近访问表（保持最近100条）
-    
+        """记录访问历史（保持最近100条）"""
+        try:
+            await self.db.execute(
+                text("""INSERT INTO search_recent_views (user_id, item_type, item_id, viewed_at)
+                        VALUES (:uid, :itype, :iid, NOW())"""),
+                {"uid": user_id, "itype": item_type, "iid": item_id}
+            )
+            await self.db.execute(
+                text("""DELETE FROM search_recent_views WHERE user_id = :uid AND item_type = :itype
+                        AND viewed_at NOT IN (
+                            SELECT viewed_at FROM search_recent_views
+                            WHERE user_id = :uid2 AND item_type = :itype2
+                            ORDER BY viewed_at DESC LIMIT 100
+                        )"""),
+                {"uid": user_id, "itype": item_type, "uid2": user_id, "itype2": item_type}
+            )
+            await self.db.commit()
+        except Exception as e:
+            logger.debug(f"记录访问失败（表可能不存在）: {e}")
+
     async def get_recent_views(self, user_id: int, limit: int = 20) -> List[Dict]:
         """获取最近访问列表"""
-        # TODO: 从数据库查询并按时间倒序排列
-        return []
+        try:
+            result = await self.db.execute(
+                text("""SELECT item_type, item_id, viewed_at,
+                              COALESCE(f.name, e.name, i.name) as name
+                       FROM search_recent_views sv
+                       LEFT JOIN formulas f ON sv.item_type = 'formula' AND sv.item_id = f.id
+                       LEFT JOIN experiments e ON sv.item_type = 'experiment' AND sv.item_id = e.id
+                       LEFT JOIN ingredients i ON sv.item_type = 'ingredient' AND sv.item_id = i.id
+                       WHERE sv.user_id = :uid
+                       ORDER BY sv.viewed_at DESC LIMIT :lim"""),
+                {"uid": user_id, "lim": limit}
+            )
+            return [
+                {
+                    "item_type": row[0],
+                    "item_id": row[1],
+                    "viewed_at": row[2].isoformat() if row[2] else None,
+                    "name": row[3],
+                }
+                for row in result.fetchall()
+            ]
+        except Exception:
+            return []
     
     # ── 内部方法 ──
     

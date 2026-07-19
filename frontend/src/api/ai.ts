@@ -352,7 +352,7 @@ export const aiApi = {
       console.warn('[aiApi.chat] ⚠️ API Key为空，请求可能会被后端拒绝');
     }
 
-    return api.post<{ answer: string }>('/ai/chat', { question, history, api_key: apiKey, scenario_mode: window.__SCENARIO_MODE__ || 'academician' }).then((r) => r.data);
+    return api.post<{ answer: string }>('/ai/chat', { question, history, scenario_mode: window.__SCENARIO_MODE__ || 'academician' }).then((r) => r.data);
   },
 
   /** AI 智能对话（流式） - 返回原始 Response 用于 ReadableStream */
@@ -387,7 +387,7 @@ export const aiApi = {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ question, history, stream: true, api_key: apiKey, scenario_mode: window.__SCENARIO_MODE__ || 'academician' }),
+      body: JSON.stringify({ question, history, stream: true, scenario_mode: window.__SCENARIO_MODE__ || 'academician' }),
     });
     if (!response.ok) throw new Error(`AI 对话失败: ${response.status}`);
     return response;

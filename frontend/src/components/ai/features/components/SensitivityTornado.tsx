@@ -15,7 +15,7 @@
  * @lastUpdated 2026-05-12
  */
 
-import React, { useMemo } from 'react'
+import React, { useMemo, useCallback } from 'react';
 import {
   BarChart,
   Bar,
@@ -29,56 +29,56 @@ import {
   ZAxis,
   ReferenceArea,
   Cell,
-} from 'recharts'
-import { Info, ArrowUpDown } from 'lucide-react'
-import { Badge, Tooltip as UITooltip } from '@/components/ui'
+} from 'recharts';
+import { Info, ArrowUpDown } from 'lucide-react';
+import { Badge, Tooltip as UITooltip } from '@/components/ui';
 
 // ===== 类型定义 =====
 
 export interface SensitivityFactor {
-  id: string
-  name: string
-  lowValue: number
-  baseValue: number
-  highValue: number
-  sensitivity: number // 影响程度 (-1 到 1)
-  unit?: string
-  description?: string
+  id: string;
+  name: string;
+  lowValue: number;
+  baseValue: number;
+  highValue: number;
+  sensitivity: number; // 影响程度 (-1 到 1)
+  unit?: string;
+  description?: string;
 }
 
 export interface InteractionEffect {
-  factorX: string
-  factorY: string
-  effectSize: number
-  significance: 'high' | 'medium' | 'low'
+  factorX: string;
+  factorY: string;
+  effectSize: number;
+  significance: 'high' | 'medium' | 'low';
   optimalRange?: {
-    x: [number, number]
-    y: [number, number]
-  }
+    x: [number, number];
+    y: [number, number];
+  };
 }
 
 interface SensitivityTornadoProps {
-  factors: SensitivityFactor[]
-  interactions?: InteractionEffect[]
+  factors: SensitivityFactor[];
+  interactions?: InteractionEffect[];
   optimalRegion?: {
-    xMin: number
-    xMax: number
-    yMin: number
-    yMax: number
-  }
-  showInteractions?: boolean
-  onFactorClick?: (factor: SensitivityFactor) => void
-  className?: string
+    xMin: number;
+    xMax: number;
+    yMin: number;
+    yMax: number;
+  };
+  showInteractions?: boolean;
+  onFactorClick?: (factor: SensitivityFactor) => void;
+  className?: string;
 }
 
 // ===== 颜色配置 =====
 
 const SENSITIVITY_COLORS = {
-  positive: '#10b981',
-  negative: '#ef4444',
-  neutral: '#6b7280',
-  highlight: '#3b82f6',
-}
+  positive: 'var(--color-primary, #34C759)',
+  negative: 'var(--color-error, #FF3B30)',
+  neutral: 'var(--color-slate-500, #6B7280)',
+  highlight: 'var(--color-secondary, #0A84FF)',
+};
 
 // ===== 主组件实现 =====
 
@@ -94,19 +94,16 @@ function SensitivityTornado({
    * 排序后的因子数据（按敏感性绝对值降序）
    */
   const sortedFactors = useMemo(
-    () =>
-      [...factors].sort(
-        (a, b) => Math.abs(b.sensitivity) - Math.abs(a.sensitivity),
-      ),
+    () => [...factors].sort((a, b) => Math.abs(b.sensitivity) - Math.abs(a.sensitivity)),
     [factors],
-  )
+  );
 
   /**
    * Tornado 图数据转换
    */
   const tornadoData = useMemo(
     () =>
-      sortedFactors.map(factor => ({
+      sortedFactors.map((factor) => ({
         name: factor.name,
         positive: Math.max(0, factor.sensitivity),
         negative: Math.min(0, factor.sensitivity),
@@ -115,14 +112,14 @@ function SensitivityTornado({
         fullId: factor.id,
       })),
     [sortedFactors],
-  )
+  );
 
   /**
    * 散点矩阵数据
    */
   const scatterData = useMemo(
     () =>
-      interactions.map(interaction => ({
+      interactions.map((interaction) => ({
         x: interaction.factorX,
         y: interaction.factorY,
         z: interaction.effectSize,
@@ -130,151 +127,143 @@ function SensitivityTornado({
         significance: interaction.significance,
       })),
     [interactions],
-  )
+  );
 
   /**
    * 自定义 Tornado 图 Tooltip
    */
-  const TornadoTooltip = useCallback(({ active, payload }: any) => {
-    if (!active || !payload?.length) return null
+  const TornadoTooltip = useCallback(
+    ({ active, payload }: any) => {
+      if (!active || !payload?.length) return null;
 
-    const data = payload[0].payload
-    const factor = factors.find(f => f.id === data.fullId)
+      const data = payload[0].payload;
+      const factor = factors.find((f) => f.id === data.fullId);
 
-    return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 p-3 min-w-[220px]">
-        <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
-          {factor?.name || data.name}
-        </p>
-        {factor && (
-          <>
-            <div className="space-y-1 text-xs">
-              <div className="flex justify-between">
-                <span className="text-gray-500">敏感性:</span>
-                <span
-                  className={`font-medium ${
-                    factor.sensitivity > 0
-                      ? 'text-green-600'
-                      : factor.sensitivity < 0
-                      ? 'text-red-600'
-                      : 'text-gray-600'
-                  }`}
-                >
-                  {(factor.sensitivity * 100).toFixed(1)}%
-                </span>
+      return (
+        <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-xl border border-neutral-200 dark:border-neutral-700 p-3 min-w-[220px]">
+          <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 mb-2">{factor?.name || data.name}</p>
+          {factor && (
+            <>
+              <div className="space-y-1 text-xs">
+                <div className="flex justify-between">
+                  <span className="text-neutral-500">敏感性:</span>
+                  <span
+                    className={`font-medium ${
+                      factor.sensitivity > 0
+                        ? 'text-success-600'
+                        : factor.sensitivity < 0
+                          ? 'text-error-600'
+                          : 'text-neutral-600'
+                    }`}
+                  >
+                    {(factor.sensitivity * 100).toFixed(1)}%
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-neutral-500">基准值:</span>
+                  <span className="font-medium">
+                    {factor.baseValue}
+                    {factor.unit || ''}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-neutral-500">变化范围:</span>
+                  <span className="font-medium">
+                    [{factor.lowValue}, {factor.highValue}]{factor.unit || ''}
+                  </span>
+                </div>
               </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">基准值:</span>
-                <span className="font-medium">{factor.baseValue}{factor.unit || ''}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">变化范围:</span>
-                <span className="font-medium">
-                  [{factor.lowValue}, {factor.highValue}]{factor.unit || ''}
-                </span>
-              </div>
-            </div>
-            {factor.description && (
-              <p className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700 text-[11px] text-gray-500">
-                {factor.description}
-              </p>
-            )}
-          </>
-        )}
-      </div>
-    )
-  }, [factors])
+              {factor.description && (
+                <p className="mt-2 pt-2 border-t border-neutral-200 dark:border-neutral-700 text-[11px] text-neutral-500">
+                  {factor.description}
+                </p>
+              )}
+            </>
+          )}
+        </div>
+      );
+    },
+    [factors],
+  );
 
   /**
    * 自定义散点图 Tooltip
    */
-  const ScatterTooltipContent = useCallback(({ active, payload }: any) => {
-    if (!active || !payload?.length) return null
+  const ScatterTooltipContent = useCallback(
+    ({ active, payload }: any) => {
+      if (!active || !payload?.length) return null;
 
-    const data = payload[0].payload
-    const interaction = interactions.find(
-      i => i.factorX === data.x && i.factorY === data.y,
-    )
+      const data = payload[0].payload;
+      const interaction = interactions.find((i) => i.factorX === data.x && i.factorY === data.y);
 
-    return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 p-3">
-        <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-1">
-          交互效应: {data.x} × {data.y}
-        </p>
-        {interaction && (
-          <>
-            <div className="text-xs space-y-1 mt-2">
-              <div className="flex justify-between">
-                <span className="text-gray-500">效应大小:</span>
-                <span className="font-medium">
-                  {(interaction.effectSize * 100).toFixed(1)}%
-                </span>
+      return (
+        <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-xl border border-neutral-200 dark:border-neutral-700 p-3">
+          <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 mb-1">
+            交互效应: {data.x} × {data.y}
+          </p>
+          {interaction && (
+            <>
+              <div className="text-xs space-y-1 mt-2">
+                <div className="flex justify-between">
+                  <span className="text-neutral-500">效应大小:</span>
+                  <span className="font-medium">{(interaction.effectSize * 100).toFixed(1)}%</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-neutral-500">显著性:</span>
+                  <Badge
+                    variant={
+                      interaction.significance === 'high'
+                        ? 'danger'
+                        : interaction.significance === 'medium'
+                          ? 'warning'
+                          : 'info'
+                    }
+                  >
+                    {interaction.significance === 'high' ? '高' : interaction.significance === 'medium' ? '中' : '低'}
+                  </Badge>
+                </div>
               </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">显著性:</span>
-                <Badge
-                  variant={
-                    interaction.significance === 'high'
-                      ? 'danger'
-                      : interaction.significance === 'medium'
-                      ? 'warning'
-                      : 'info'
-                  }
-                >
-                  {interaction.significance === 'high'
-                    ? '高'
-                    : interaction.significance === 'medium'
-                    ? '中'
-                    : '低'}
-                </Badge>
-              </div>
-            </div>
-          </>
-        )}
-      </div>
-    )
-  }, [interactions])
+            </>
+          )}
+        </div>
+      );
+    },
+    [interactions],
+  );
 
   return (
-    <div className={`bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-6 space-y-6 ${className}`}>
+    <div
+      className={`bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 shadow-sm p-6 space-y-6 ${className}`}
+    >
       {/* 头部 */}
       <div className="flex items-start justify-between">
         <div>
-          <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+          <h3 className="text-base font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
             <ArrowUpDown className="w-5 h-5 text-primary-500" />
             因素敏感性分析
           </h3>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
             按敏感性从高到低排列，展示各因素对稳定性的影响程度
           </p>
         </div>
 
         <UITooltip content="Tornado 图用于比较多个因素的相对影响，柱子越长表示该因素对结果的影响越大">
-          <Info className="w-4 h-4 text-gray-400 cursor-help" />
+          <Info className="w-4 h-4 text-neutral-400 cursor-help" />
         </UITooltip>
       </div>
 
       {/* Tornado 图 */}
       <div style={{ height: Math.max(300, sortedFactors.length * 40 + 60) }}>
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart
-            data={tornadoData}
-            layout="vertical"
-            margin={{ top: 10, right: 30, left: 80, bottom: 10 }}
-          >
-            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" opacity={0.5} horizontal={false} />
+          <BarChart data={tornadoData} layout="vertical" margin={{ top: 10, right: 30, left: 80, bottom: 10 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--color-slate-200, #E5E7EB)" opacity={0.5} horizontal={false} />
             <XAxis
               type="number"
               domain={['dataMin - 0.05', 'dataMax + 0.05']}
-              tick={{ fontSize: 11, fill: '#6b7280' }}
+              tick={{ fontSize: 11, fill: 'var(--color-slate-500, #6B7280)' }}
               tickFormatter={(value: number) => `${(value * 100).toFixed(0)}%`}
             />
-            <YAxis
-              type="category"
-              dataKey="name"
-              tick={{ fontSize: 12, fill: '#374151' }}
-              width={80}
-            />
+            <YAxis type="category" dataKey="name" tick={{ fontSize: 12, fill: 'var(--color-gray-700, #374151)' }} width={80} />
             <Tooltip content={<TornadoTooltip />} cursor={{ fill: 'rgba(99, 102, 241, 0.08)' }} />
 
             {/* 正向影响 */}
@@ -284,8 +273,8 @@ function SensitivityTornado({
               fill={SENSITIVITY_COLORS.positive}
               radius={[0, 4, 4, 0]}
               onClick={(data: any) => {
-                const factor = factors.find(f => f.id === data.fullId)
-                onFactorClick?.(factor!)
+                const factor = factors.find((f) => f.id === data.fullId);
+                onFactorClick?.(factor!);
               }}
               style={{ cursor: 'pointer' }}
             >
@@ -305,8 +294,8 @@ function SensitivityTornado({
               fill={SENSITIVITY_COLORS.negative}
               radius={[4, 0, 0, 4]}
               onClick={(data: any) => {
-                const factor = factors.find(f => f.id === data.fullId)
-                onFactorClick?.(factor!)
+                const factor = factors.find((f) => f.id === data.fullId);
+                onFactorClick?.(factor!);
               }}
               style={{ cursor: 'pointer' }}
             >
@@ -324,10 +313,8 @@ function SensitivityTornado({
 
       {/* 两因素交互效应散点图 */}
       {showInteractions && scatterData.length > 0 && (
-        <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
-          <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">
-            两因素交互效应矩阵
-          </h4>
+        <div className="border-t border-neutral-200 dark:border-neutral-700 pt-6">
+          <h4 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 mb-4">两因素交互效应矩阵</h4>
 
           <div style={{ height: 350 }}>
             <ResponsiveContainer width="100%" height="100%">
@@ -337,24 +324,13 @@ function SensitivityTornado({
                   type="category"
                   dataKey="x"
                   name="因素 X"
-                  tick={{ fontSize: 11, fill: '#6b7280' }}
+                  tick={{ fontSize: 11, fill: 'var(--color-slate-500, #6B7280)' }}
                   angle={-45}
                   textAnchor="end"
                   height={70}
                 />
-                <YAxis
-                  type="category"
-                  dataKey="y"
-                  name="因素 Y"
-                  tick={{ fontSize: 11, fill: '#6b7280' }}
-                  width={60}
-                />
-                <ZAxis
-                  type="number"
-                  dataKey="z"
-                  range={[50, 400]}
-                  name="效应大小"
-                />
+                <YAxis type="category" dataKey="y" name="因素 Y" tick={{ fontSize: 11, fill: 'var(--color-slate-500, #6B7280)' }} width={60} />
+                <ZAxis type="number" dataKey="z" range={[50, 400]} name="效应大小" />
                 <Tooltip content={<ScatterTooltipContent />} cursor={{ strokeDasharray: '3 3' }} />
 
                 {/* 最优条件区域高亮 */}
@@ -364,9 +340,9 @@ function SensitivityTornado({
                     x2={optimalRegion.xMax}
                     y1={optimalRegion.yMin}
                     y2={optimalRegion.yMax}
-                    fill="#10b981"
+                    fill="var(--color-primary, #34C759)"
                     fillOpacity={0.15}
-                    stroke="#10b981"
+                    stroke="var(--color-primary, #34C759)"
                     strokeDasharray="5 5"
                   />
                 )}
@@ -374,13 +350,13 @@ function SensitivityTornado({
                 <Scatter
                   data={scatterData}
                   shape={(props: any) => {
-                    const { cx, cy, payload } = props
+                    const { cx, cy, payload } = props;
                     const colors =
                       payload.significance === 'high'
-                        ? '#ef4444'
+                        ? 'var(--color-error, #FF3B30)'
                         : payload.significance === 'medium'
-                        ? '#f59e0b'
-                        : '#6b7280'
+                          ? 'var(--color-warning, #FF9F0A)'
+                          : 'var(--color-slate-500, #6B7280)';
 
                     return (
                       <circle
@@ -393,7 +369,7 @@ function SensitivityTornado({
                         strokeWidth={2}
                         style={{ transition: 'all 0.2s' }}
                       />
-                    )
+                    );
                   }}
                 />
               </ScatterChart>
@@ -401,19 +377,19 @@ function SensitivityTornado({
           </div>
 
           {/* 图例说明 */}
-          <div className="mt-4 flex items-center gap-4 text-xs text-gray-600 dark:text-gray-400">
+          <div className="mt-4 flex items-center gap-4 text-xs text-neutral-600 dark:text-neutral-400">
             <span className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded-full bg-red-500" /> 高显著性
+              <span className="w-3 h-3 rounded-full bg-error-500" /> 高显著性
             </span>
             <span className="flex items-center gap-1.5">
               <span className="w-3 h-3 rounded-full bg-yellow-500" /> 中等显著性
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded-full bg-gray-500" /> 低显著性
+              <span className="w-3 h-3 rounded-full bg-neutral-500" /> 低显著性
             </span>
             {optimalRegion && (
               <span className="flex items-center gap-1.5 ml-auto">
-                <span className="w-8 h-4 bg-green-500/15 border border-dashed border-green-500 rounded" />
+                <span className="w-8 h-4 bg-success-500/15 border border-dashed border-green-500 rounded" />
                 最优区域
               </span>
             )}
@@ -422,40 +398,34 @@ function SensitivityTornado({
       )}
 
       {/* 敏感性排名摘要 */}
-      <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-        <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">
-          敏感性排名摘要
-        </h4>
+      <div className="border-t border-neutral-200 dark:border-neutral-700 pt-4">
+        <h4 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 mb-3">敏感性排名摘要</h4>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
           {sortedFactors.slice(0, 10).map((factor, idx) => (
             <div
               key={factor.id}
-              className="flex items-center gap-2 px-3 py-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg"
+              className="flex items-center gap-2 px-3 py-2 bg-slate-50 dark:bg-neutral-700/50 rounded-lg"
               onClick={() => onFactorClick?.(factor)}
               style={{ cursor: 'pointer' }}
             >
               <span
                 className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white ${
-                  idx < 3 ? 'bg-primary-500' : 'bg-gray-400'
+                  idx < 3 ? 'bg-primary-500' : 'bg-neutral-400'
                 }`}
               >
                 {idx + 1}
               </span>
               <div className="flex-1 min-w-0">
-                <div className="text-xs font-medium text-gray-900 dark:text-gray-100 truncate">
-                  {factor.name}
-                </div>
-                <div className="text-[11px] text-gray-500">
-                  {(factor.sensitivity * 100).toFixed(1)}%
-                </div>
+                <div className="text-xs font-medium text-neutral-900 dark:text-neutral-100 truncate">{factor.name}</div>
+                <div className="text-[11px] text-neutral-500">{(factor.sensitivity * 100).toFixed(1)}%</div>
               </div>
             </div>
           ))}
         </div>
       </div>
     </div>
-  )
+  );
 }
 
-export { SensitivityTornado }
-export default SensitivityTornado
+export { SensitivityTornado };
+export default SensitivityTornado;

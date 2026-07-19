@@ -32,13 +32,13 @@ interface PatentSynergyDetailsProps {
 const getQualityLevelColor = (level: string) => {
   switch (level) {
     case '优秀':
-      return { bg: 'rgba(16, 185, 129, 0.15)', color: '#10B981', border: '#10B981' }
+      return { bg: 'rgba(16, 185, 129, 0.15)', color: '#34C759', border: '#34C759' }
     case '良好':
-      return { bg: 'rgba(59, 130, 246, 0.15)', color: '#3B82F6', border: '#3B82F6' }
+      return { bg: 'rgba(59, 130, 246, 0.15)', color: '#007AFF', border: '#007AFF' }
     case '一般':
-      return { bg: 'rgba(245, 158, 11, 0.15)', color: '#F59E0B', border: '#F59E0B' }
+      return { bg: 'rgba(245, 158, 11, 0.15)', color: '#D97706', border: '#D97706' }
     case '待优化':
-      return { bg: 'rgba(239, 68, 68, 0.15)', color: '#EF4444', border: '#EF4444' }
+      return { bg: 'rgba(239, 68, 68, 0.15)', color: '#FF3B30', border: '#FF3B30' }
     default:
       return { bg: 'rgba(156, 163, 175, 0.15)', color: '#9CA3AF', border: '#9CA3AF' }
   }
@@ -51,7 +51,7 @@ export function PatentSynergyDetails({ patentSynergyScores }: PatentSynergyDetai
     <div className="mt-4 border-t" style={{ borderColor: 'var(--border-color)' }}>
       <button
         onClick={() => setShowDetails(!showDetails)}
-        className="w-full flex items-center justify-between py-3 text-left transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg px-1"
+        className="w-full flex items-center justify-between py-3 text-left transition-colors hover:bg-slate-50 dark:hover:bg-neutral-800/50 rounded-lg px-1"
       >
         <div className="flex items-center gap-2">
           <Award className="w-4 h-4" style={{ color: 'var(--color-primary-500)' }} />
@@ -60,7 +60,7 @@ export function PatentSynergyDetails({ patentSynergyScores }: PatentSynergyDetai
           </span>
           {patentSynergyScores.quality_level && (
             <Badge
-              variant="secondary"
+              variant="neutral"
               className="text-[10px]"
               style={{ backgroundColor: getQualityLevelColor(patentSynergyScores.quality_level).bg }}
             >
@@ -78,43 +78,43 @@ export function PatentSynergyDetails({ patentSynergyScores }: PatentSynergyDetai
       {showDetails && (
         <div className="pb-4 space-y-3">
           <div className="grid grid-cols-2 gap-2">
-            <div className="flex items-center gap-2 p-2 rounded-lg bg-gray-50 dark:bg-gray-800/50">
-              <FlaskConical className="w-4 h-4" style={{ color: '#10B981' }} />
+            <div className="flex items-center gap-2 p-2 rounded-lg bg-slate-50 dark:bg-neutral-800/50">
+              <FlaskConical className="w-4 h-4" style={{ color: 'var(--color-primary, #34C759)' }} />
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-muted-foreground">药效增强</p>
                 <p className="text-sm font-semibold">{(patentSynergyScores.bliss_independence * 100).toFixed(1)}</p>
               </div>
             </div>
-            <div className="flex items-center gap-2 p-2 rounded-lg bg-gray-50 dark:bg-gray-800/50">
-              <Target className="w-4 h-4" style={{ color: '#3B82F6' }} />
+            <div className="flex items-center gap-2 p-2 rounded-lg bg-slate-50 dark:bg-neutral-800/50">
+              <Target className="w-4 h-4" style={{ color: 'var(--color-secondary, #0A84FF)' }} />
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-muted-foreground">药代动力学</p>
                 <p className="text-sm font-semibold">{(patentSynergyScores.pk_interaction * 100).toFixed(1)}</p>
               </div>
             </div>
-            <div className="flex items-center gap-2 p-2 rounded-lg bg-gray-50 dark:bg-gray-800/50">
-              <Activity className="w-4 h-4" style={{ color: '#F59E0B' }} />
+            <div className="flex items-center gap-2 p-2 rounded-lg bg-slate-50 dark:bg-neutral-800/50">
+              <Activity className="w-4 h-4" style={{ color: 'var(--color-warning, #FF9F0A)' }} />
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-muted-foreground">结构稳定性</p>
                 <p className="text-sm font-semibold">{(patentSynergyScores.gibbs_stability * 100).toFixed(1)}</p>
               </div>
             </div>
-            <div className="flex items-center gap-2 p-2 rounded-lg bg-gray-50 dark:bg-gray-800/50">
-              <Network className="w-4 h-4" style={{ color: '#8B5CF6' }} />
+            <div className="flex items-center gap-2 p-2 rounded-lg bg-slate-50 dark:bg-neutral-800/50">
+              <Network className="w-4 h-4" style={{ color: 'var(--color-tertiary, #AF52DE)' }} />
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-muted-foreground">靶点通路</p>
                 <p className="text-sm font-semibold">{(patentSynergyScores.network_pharmacology * 100).toFixed(1)}</p>
               </div>
             </div>
-            <div className="flex items-center gap-2 p-2 rounded-lg bg-gray-50 dark:bg-gray-800/50">
-              <Palette className="w-4 h-4" style={{ color: '#EC4899' }} />
+            <div className="flex items-center gap-2 p-2 rounded-lg bg-slate-50 dark:bg-neutral-800/50">
+              <Palette className="w-4 h-4" style={{ color: 'var(--color-pink-500, #D946EF)' }} />
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-muted-foreground">感官品质</p>
                 <p className="text-sm font-semibold">{(patentSynergyScores.taste_matrix * 100).toFixed(1)}</p>
               </div>
             </div>
-            <div className="flex items-center gap-2 p-2 rounded-lg bg-gray-50 dark:bg-gray-800/50">
-              <Sparkles className="w-4 h-4" style={{ color: '#10B981' }} />
+            <div className="flex items-center gap-2 p-2 rounded-lg bg-slate-50 dark:bg-neutral-800/50">
+              <Sparkles className="w-4 h-4" style={{ color: 'var(--color-primary, #34C759)' }} />
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-muted-foreground">综合协同指数</p>
                 <p className="text-sm font-semibold">{(patentSynergyScores.overall_si * 100).toFixed(1)}</p>
@@ -125,7 +125,7 @@ export function PatentSynergyDetails({ patentSynergyScores }: PatentSynergyDetai
           {patentSynergyScores.dominant_mechanism && (
             <div className="flex items-center justify-between p-3 rounded-lg" style={{ backgroundColor: 'rgba(16, 185, 129, 0.08)' }}>
               <span className="text-sm text-muted-foreground">主导机制</span>
-              <span className="text-sm font-semibold" style={{ color: '#10B981' }}>
+              <span className="text-sm font-semibold" style={{ color: 'var(--color-primary, #34C759)' }}>
                 {patentSynergyScores.dominant_mechanism}
               </span>
             </div>

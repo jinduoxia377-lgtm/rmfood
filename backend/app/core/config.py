@@ -226,6 +226,7 @@ class SecurityConfig(BaseModel):
     password_require_number: bool = Field(default=True, description="密码是否需要数字")
     cors_origins: List[str] = Field(default_factory=list, description="CORS 允许的源")
     cors_allow_credentials: bool = Field(default=True, description="是否允许携带凭证")
+    csrf_secret: str = Field(default="", description="CSRF double-submit secret")
 
     @field_validator("secret_key", mode="before")
     @classmethod
@@ -297,8 +298,8 @@ class Settings(BaseSettings):
 
     使用示例:
         settings = Settings()  # 自动加载
-        print(settings.app.env)  # development
-        print(settings.database.url)  # postgresql://...
+        # print(settings.app.env)  # development
+        # print(settings.database.url)  # postgresql://...
     """
 
     # ─── 环境配置 ───
@@ -321,7 +322,7 @@ class Settings(BaseSettings):
     monitoring: MonitoringConfig = Field(default_factory=MonitoringConfig)
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=str(Path(__file__).parent.parent / ".env"),
         env_file_encoding="utf-8",
         extra="ignore",
         case_sensitive=False,
@@ -428,21 +429,35 @@ class Settings(BaseSettings):
 
     def _apply_env_overrides(self) -> None:
         """应用环境变量覆盖"""
-        # 特殊处理：在 Settings 级别设置的变量会覆盖子配置
         for env_key, value in os.environ.items():
             if env_key.startswith("APP_"):
-                continue  # 跳过应用级配置
+                continue
 
             # 自动映射常见的环境变量到对应配置
-            mappings = {
-                "POSTGRES_HOST": ("database.url", "host"),
-                "POSTGRES_PORT": ("database.url", "port"),
-                "REDIS_HOST": ("redis.url", "host"),
-                "SECRET_KEY": ("security.secret_key",),
-                "LOG_LEVEL": ("logging.level",),
-            }
-
-            # ... 实际实现应解析 dotted path 并更新嵌套配置
+            if env_key == "POSTGRES_HOST":
+                if self.database.url:
+                    parsed = self.database.url.replace("postgresql+asyncpg://", "").replace("postgresql://", "")
+                    at_idx = parsed.find("@")
+                    if at_idx >= 0:
+                        self.database.url = self.database.url[:at_idx+1] + value + self.database.url[at_idx+1:]
+            elif env_key == "POSTGRES_PORT":
+                if self.database.url:
+                    parsed = self.database.url.replace("postgresql+asyncpg://", "").replace("postgresql://", "")
+                    at_idx = parsed.find("@")
+                    if at_idx >= 0:
+                        host_part = parsed[at_idx+1:]
+                        slash_idx = host_part.find("/")
+                        colon_idx = host_part.find(":")
+                        if colon_idx >= 0:
+                            new_url = parsed[:at_idx+1] + host_part[:colon_idx] + ":" + value + (host_part[slash_idx:] if slash_idx >= 0 else "")
+                            self.database.url = "postgresql+asyncpg://" + new_url
+            elif env_key == "REDIS_HOST":
+                if self.redis.url:
+                    self.redis.url = self.redis.url.replace("localhost", value)
+            elif env_key == "SECRET_KEY":
+                self.security.secret_key = value
+            elif env_key == "LOG_LEVEL":
+                self.logging.level = value.upper()
 
     @computed_field
     @property

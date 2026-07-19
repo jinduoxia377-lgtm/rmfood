@@ -18,19 +18,19 @@ import { zhCN } from 'date-fns/locale'
 import { useToast } from '@/components/ui/Toast'
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; icon: typeof CheckCircle }> = {
-  pending: { label: '等待中', color: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300', icon: CircleDot },
-  in_progress: { label: '进行中', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400', icon: Loader2 },
-  completed: { label: '已完成', color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400', icon: CheckCircle },
-  cancelled: { label: '已取消', color: 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400', icon: XCircle },
+  pending: { label: '等待中', color: 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300', icon: CircleDot },
+  in_progress: { label: '进行中', color: 'bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-400', icon: Loader2 },
+  completed: { label: '已完成', color: 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400', icon: CheckCircle },
+  cancelled: { label: '已取消', color: 'bg-neutral-100 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400', icon: XCircle },
   failed: { label: '已失败', color: 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400', icon: XCircle },
 }
 
 const TASK_STATUS_CONFIG: Record<string, { label: string; color: string; icon: typeof CheckCircle }> = {
-  pending: { label: '等待', color: 'border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800', icon: CircleDot },
-  in_progress: { label: '执行中', color: 'border-blue-400 bg-blue-50 dark:bg-blue-900/20 ring-2 ring-blue-200 dark:ring-blue-800', icon: Play },
-  completed: { label: '完成', color: 'border-emerald-400 bg-emerald-50 dark:bg-emerald-900/20', icon: CheckCircle },
+  pending: { label: '等待', color: 'border-neutral-300 dark:border-neutral-600 bg-slate-50 dark:bg-neutral-800', icon: CircleDot },
+  in_progress: { label: '执行中', color: 'border-blue-400 bg-secondary-50 dark:bg-secondary-900/20 ring-2 ring-blue-200 dark:ring-blue-800', icon: Play },
+  completed: { label: '完成', color: 'border-emerald-400 bg-primary-50 dark:bg-primary-900/20', icon: CheckCircle },
   failed: { label: '失败', color: 'border-rose-400 bg-rose-50 dark:bg-rose-900/20', icon: XCircle },
-  skipped: { label: '跳过', color: 'border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 opacity-50', icon: CircleDot },
+  skipped: { label: '跳过', color: 'border-neutral-300 dark:border-neutral-600 bg-slate-50 dark:bg-neutral-800 opacity-50', icon: CircleDot },
 }
 
 const TYPE_LABELS: Record<string, string> = {
@@ -94,8 +94,8 @@ export default function WorkflowPage() {
                     <Icon size={16} className="text-white" />
                   </div>
                 </div>
-                <p className="text-xl font-bold text-slate-900 dark:text-white">{stat.value}</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{stat.label}</p>
+                <p className="text-xl font-bold text-neutral-900 dark:text-white">{stat.value}</p>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">{stat.label}</p>
               </Card>
             )
           })}
@@ -104,12 +104,12 @@ export default function WorkflowPage() {
 
       {/* 筛选栏 */}
       <div className="flex items-center gap-2">
-        <div className="flex items-center gap-1 p-1 rounded-xl bg-slate-100 dark:bg-slate-800">
+        <div className="flex items-center gap-1 p-1 rounded-xl bg-neutral-100 dark:bg-neutral-800">
           <button
             onClick={() => { setStatusFilter(''); setPage(1) }}
             className={cn(
               'px-3 py-1.5 rounded-lg text-xs font-medium transition-all',
-              !statusFilter ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400',
+              !statusFilter ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-sm' : 'text-neutral-500 dark:text-neutral-400',
             )}
           >
             全部
@@ -120,7 +120,7 @@ export default function WorkflowPage() {
               onClick={() => { setStatusFilter(statusFilter === key ? '' : key); setPage(1) }}
               className={cn(
                 'px-3 py-1.5 rounded-lg text-xs font-medium transition-all',
-                statusFilter === key ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400',
+                statusFilter === key ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-sm' : 'text-neutral-500 dark:text-neutral-400',
               )}
             >
               {cfg.label}
@@ -137,7 +137,7 @@ export default function WorkflowPage() {
           ))
         ) : workflows.length === 0 ? (
           <EmptyState
-            icon={<GitBranch className="w-10 h-10 text-slate-300 dark:text-slate-600" />}
+            icon={<GitBranch className="w-10 h-10 text-neutral-300 dark:text-neutral-600" />}
             title="暂无工作流"
             description="当创建配方或运行AI分析时，工作流会自动创建"
           />
@@ -214,26 +214,26 @@ function WorkflowCard({
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <h3 className="text-sm font-semibold text-slate-900 dark:text-white truncate">{workflow.name}</h3>
-              <span className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
+              <h3 className="text-sm font-semibold text-neutral-900 dark:text-white truncate">{workflow.name}</h3>
+              <span className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400">
                 {TYPE_LABELS[workflow.workflow_type] || workflow.workflow_type}
               </span>
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
               {workflow.description || '无描述'}
               {workflow.task_count !== undefined && ` · ${workflow.task_count} 个任务`}
             </p>
           </div>
 
           <div className="flex items-center gap-3 shrink-0">
-            <span className="text-[11px] text-slate-400 dark:text-slate-500 hidden sm:block">
+            <span className="text-[11px] text-neutral-400 dark:text-neutral-500 hidden sm:block">
               {workflow.created_at && format(new Date(workflow.created_at), 'MM-dd HH:mm', { locale: zhCN })}
             </span>
             <Badge variant={workflow.status === 'completed' ? 'success' : workflow.status === 'in_progress' ? 'info' : workflow.status === 'failed' ? 'danger' : 'neutral'} size="sm">
               {statusCfg.label}
             </Badge>
             <ChevronRight size={16} className={cn(
-              'text-slate-400 transition-transform',
+              'text-neutral-400 transition-transform',
               isExpanded && 'rotate-90',
             )} />
           </div>
@@ -242,7 +242,7 @@ function WorkflowCard({
 
       {/* 展开的任务管线 */}
       {isExpanded && (
-        <div className="border-t border-slate-100 dark:border-slate-800/40 bg-slate-50/50 dark:bg-slate-800/20 p-5">
+        <div className="border-t border-neutral-100 dark:border-neutral-800/40 bg-slate-50/50 dark:bg-neutral-800/20 p-5">
           {detailLoading ? (
             <div className="space-y-2"><Skeleton className="h-8 w-full" /><Skeleton className="h-8 w-full" /></div>
           ) : detail?.tasks && detail.tasks.length > 0 ? (
@@ -263,7 +263,7 @@ function WorkflowCard({
                         <TaskIcon size={12} />
                       </div>
                       {!isLast && (
-                        <div className="flex-1 w-0.5 min-h-[24px] bg-slate-200 dark:bg-slate-700 my-1" />
+                        <div className="flex-1 w-0.5 min-h-[24px] bg-neutral-200 dark:bg-neutral-700 my-1" />
                       )}
                     </div>
 
@@ -273,13 +273,13 @@ function WorkflowCard({
                       isLast && 'pb-0',
                     )}>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-slate-400 dark:text-slate-500 font-mono">
+                        <span className="text-xs text-neutral-400 dark:text-neutral-500 font-mono">
                           Step {task.step_order}
                         </span>
-                        <span className="text-sm font-medium text-slate-900 dark:text-white">
+                        <span className="text-sm font-medium text-neutral-900 dark:text-white">
                           {task.name}
                         </span>
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400">
                           {task.task_type}
                         </span>
                       </div>
@@ -289,7 +289,7 @@ function WorkflowCard({
                           {TASK_STATUS_CONFIG[task.status]?.label || task.status}
                         </span>
                         {task.duration_ms != null && task.duration_ms > 0 && (
-                          <span className="text-[10px] text-slate-400">
+                          <span className="text-[10px] text-neutral-400">
                             {(task.duration_ms / 1000).toFixed(1)}s
                           </span>
                         )}
@@ -305,12 +305,12 @@ function WorkflowCard({
               })}
             </div>
           ) : (
-            <p className="text-sm text-slate-400 dark:text-slate-500 text-center py-4">暂无任务节点</p>
+            <p className="text-sm text-neutral-400 dark:text-neutral-500 text-center py-4">暂无任务节点</p>
           )}
 
           {/* 操作按钮 */}
           {(workflow.status === 'in_progress' || workflow.status === 'pending') && (
-            <div className="mt-4 pt-3 border-t border-slate-200 dark:border-slate-700/40 flex justify-end">
+            <div className="mt-4 pt-3 border-t border-neutral-200 dark:border-neutral-700/40 flex justify-end">
               <Button
                 variant="danger"
                 size="sm"
@@ -323,7 +323,7 @@ function WorkflowCard({
             </div>
           )}
           {workflow.status === 'failed' && (
-            <div className="mt-4 pt-3 border-t border-slate-200 dark:border-slate-700/40 flex justify-end">
+            <div className="mt-4 pt-3 border-t border-neutral-200 dark:border-neutral-700/40 flex justify-end">
               <Button
                 size="sm"
                 icon={<RotateCcw className="w-3.5 h-3.5" />}

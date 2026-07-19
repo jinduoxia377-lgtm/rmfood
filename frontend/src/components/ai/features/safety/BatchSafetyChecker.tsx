@@ -115,7 +115,7 @@ export function BatchSafetyChecker({
     if (extension === 'csv') {
       const text = await file.text()
       const workbook = new ExcelJS.Workbook()
-      await workbook.xlsx.load(text)
+      await workbook.xlsx.load(Buffer.from(text))
       const firstSheet = workbook.worksheets[0]
       if (!firstSheet) throw new Error('文件中没有工作表')
       data = sheetToArray(firstSheet)
@@ -425,8 +425,8 @@ export function BatchSafetyChecker({
           <div
             className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
               dragOver
-                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'
+                ? 'border-blue-500 bg-secondary-50 dark:bg-secondary-900/20'
+                : 'border-neutral-300 dark:border-neutral-600 hover:border-neutral-400 dark:hover:border-neutral-500'
             }`}
             onDrop={handleDrop}
             onDragOver={handleDragOver}
@@ -442,10 +442,10 @@ export function BatchSafetyChecker({
             <div className="space-y-3">
               <div className="text-4xl">📁</div>
               <div>
-                <p className="text-gray-700 dark:text-gray-300 font-medium">
+                <p className="text-neutral-700 dark:text-neutral-300 font-medium">
                   拖拽文件到此处或点击上传
                 </p>
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="text-sm text-neutral-500 mt-1">
                   支持 CSV、Excel 格式，最大 {maxFileSize / 1024 / 1024}MB
                 </p>
               </div>
@@ -464,7 +464,7 @@ export function BatchSafetyChecker({
                 <span>📄</span>
                 <div className="flex-1">
                   <p className="font-medium">{uploadData.file.name}</p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">
                     大小: {(uploadData.file.size / 1024).toFixed(1)} KB |
                     预览: {uploadData.preview.length - 1} 行数据
                   </p>
@@ -481,21 +481,21 @@ export function BatchSafetyChecker({
 
             <div className="overflow-x-auto border rounded-lg">
               <table className="w-full text-sm">
-                <thead className="bg-gray-50 dark:bg-gray-800">
+                <thead className="bg-slate-50 dark:bg-neutral-800">
                   <tr>
                     {uploadData.preview[0]?.map((header, idx) => (
-                      <th key={idx} className="px-4 py-2 text-left font-medium text-gray-700 dark:text-gray-300">
+                      <th key={idx} className="px-4 py-2 text-left font-medium text-neutral-700 dark:text-neutral-300">
                         {header}
-                        {idx === 0 && <span className="ml-1 text-red-500">*</span>}
+                        {idx === 0 && <span className="ml-1 text-error-500">*</span>}
                       </th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {uploadData.preview.slice(1, 6).map((row, rowIdx) => (
-                    <tr key={rowIdx} className="border-t border-gray-200 dark:border-gray-700">
+                    <tr key={rowIdx} className="border-t border-neutral-200 dark:border-neutral-700">
                       {row.map((cell, cellIdx) => (
-                        <td key={cellIdx} className="px-4 py-2 text-gray-600 dark:text-gray-400">
+                        <td key={cellIdx} className="px-4 py-2 text-neutral-600 dark:text-neutral-400">
                           {cell}
                         </td>
                       ))}
@@ -506,7 +506,7 @@ export function BatchSafetyChecker({
             </div>
 
             <div className="flex items-center justify-between">
-              <div className="text-sm text-gray-600 dark:text-gray-400">
+              <div className="text-sm text-neutral-600 dark:text-neutral-400">
                 列映射:
                 <span className="ml-2 font-medium">成分名: {uploadData.columnMapping.ingredientColumn}</span>
                 {uploadData.columnMapping.concentrationColumn && (
@@ -558,31 +558,31 @@ export function BatchSafetyChecker({
             <Progress value={statistics.completionRate} className="mb-4" />
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg text-center">
-                <div className="text-2xl font-bold text-green-600">{statistics.passed}</div>
-                <div className="text-xs text-green-600 mt-1">✅ 通过 ({Math.round(statistics.passed / statistics.total * 100) || 0}%)</div>
+              <div className="p-3 bg-success-50 dark:bg-success-900/20 rounded-lg text-center">
+                <div className="text-2xl font-bold text-success-600">{statistics.passed}</div>
+                <div className="text-xs text-success-600 mt-1">✅ 通过 ({Math.round(statistics.passed / statistics.total * 100) || 0}%)</div>
               </div>
               <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg text-center">
                 <div className="text-2xl font-bold text-yellow-600">{statistics.warning}</div>
                 <div className="text-xs text-yellow-600 mt-1">⚠️ 警告（需复核）</div>
               </div>
-              <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg text-center">
-                <div className="text-2xl font-bold text-red-600">{statistics.failed}</div>
-                <div className="text-xs text-red-600 mt-1">❌ 不合规</div>
+              <div className="p-3 bg-error-50 dark:bg-error-900/20 rounded-lg text-center">
+                <div className="text-2xl font-bold text-error-600">{statistics.failed}</div>
+                <div className="text-xs text-error-600 mt-1">❌ 不合规</div>
               </div>
-              <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg text-center">
-                <div className="text-2xl font-bold text-gray-600">{statistics.pending}</div>
-                <div className="text-xs text-gray-600 mt-1">❓ 待检测</div>
+              <div className="p-3 bg-slate-50 dark:bg-neutral-800 rounded-lg text-center">
+                <div className="text-2xl font-bold text-neutral-600">{statistics.pending}</div>
+                <div className="text-xs text-neutral-600 mt-1">❓ 待检测</div>
               </div>
             </div>
 
             {estimatedTimeRemaining > 0 && (
-              <div className="mt-4 text-sm text-center text-gray-500">
+              <div className="mt-4 text-sm text-center text-neutral-500">
                 ⏱️ 预计剩余时间: ~{estimatedTimeRemaining}秒
               </div>
             )}
 
-            <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-800 rounded text-sm text-gray-600 dark:text-gray-400">
+            <div className="mt-4 p-3 bg-slate-50 dark:bg-neutral-800 rounded text-sm text-neutral-600 dark:text-neutral-400">
               并发限制: {maxConcurrentTasks} | 进行中: {activeTasks.length} | 排队中: {queuedTasks.length}
             </div>
           </Card>
@@ -594,7 +594,7 @@ export function BatchSafetyChecker({
 
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="bg-gray-50 dark:bg-gray-800">
+                <thead className="bg-slate-50 dark:bg-neutral-800">
                   <tr>
                     <th className="px-4 py-2 text-left">#</th>
                     <th className="px-4 py-2 text-left">文件名</th>
@@ -606,7 +606,7 @@ export function BatchSafetyChecker({
                 </thead>
                 <tbody>
                   {tasks.map((task, index) => (
-                    <tr key={task.id} className="border-t border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800">
+                    <tr key={task.id} className="border-t border-neutral-200 dark:border-neutral-700 hover:bg-slate-50 dark:hover:bg-neutral-800">
                       <td className="px-4 py-2">{index + 1}</td>
                       <td className="px-4 py-2 font-medium">{task.fileName}</td>
                       <td className="px-4 py-2">{task.ingredientCount}</td>
@@ -625,7 +625,7 @@ export function BatchSafetyChecker({
                       <td className="px-4 py-2">
                         <div className="flex items-center gap-2">
                           <Progress value={task.progress} className="w-24" />
-                          <span className="text-xs text-gray-500">{task.progress}%</span>
+                          <span className="text-xs text-neutral-500">{task.progress}%</span>
                         </div>
                       </td>
                       <td className="px-4 py-2">
@@ -634,14 +634,14 @@ export function BatchSafetyChecker({
                             <>
                               <button
                                 onClick={() => moveTaskPriority(task.id, 'up')}
-                                className="px-2 py-1 text-xs bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300"
+                                className="px-2 py-1 text-xs bg-neutral-200 dark:bg-neutral-700 rounded hover:bg-neutral-300"
                                 disabled={index === 0}
                               >
                                 ↑
                               </button>
                               <button
                                 onClick={() => moveTaskPriority(task.id, 'down')}
-                                className="px-2 py-1 text-xs bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300"
+                                className="px-2 py-1 text-xs bg-neutral-200 dark:bg-neutral-700 rounded hover:bg-neutral-300"
                                 disabled={index === tasks.length - 1}
                               >
                                 ↓
@@ -681,13 +681,13 @@ export function BatchSafetyChecker({
 
               <div className="space-y-3">
                 {reviewRequiredTasks.map(task => (
-                  <div key={task.id} className="p-4 bg-white dark:bg-gray-800 rounded-lg border border-yellow-200">
+                  <div key={task.id} className="p-4 bg-white dark:bg-neutral-800 rounded-lg border border-yellow-200">
                     <div className="flex items-start justify-between mb-3">
                       <div>
-                        <h4 className="font-medium text-gray-900 dark:text-gray-100">
+                        <h4 className="font-medium text-neutral-900 dark:text-neutral-100">
                           {task.fileName}
                         </h4>
-                        <p className="text-sm text-gray-500 mt-1">
+                        <p className="text-sm text-neutral-500 mt-1">
                           成分数: {task.ingredientCount} | 检测时间: {new Date(task.createdAt).toLocaleString()}
                         </p>
                       </div>
@@ -708,7 +708,7 @@ export function BatchSafetyChecker({
                     <div className="flex gap-2 mb-3">
                       <textarea
                         placeholder="添加复核备注..."
-                        className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded text-sm resize-none"
+                        className="flex-1 px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded text-sm resize-none"
                         rows={2}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' && e.ctrlKey) {
@@ -737,10 +737,10 @@ export function BatchSafetyChecker({
                     </div>
 
                     {task.reviewNotes && task.reviewNotes.length > 0 && (
-                      <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-                        <p className="text-xs font-medium text-gray-500 mb-2">复核历史:</p>
+                      <div className="mt-3 pt-3 border-t border-neutral-200 dark:border-neutral-700">
+                        <p className="text-xs font-medium text-neutral-500 mb-2">复核历史:</p>
                         {task.reviewNotes.map((note, idx) => (
-                          <div key={idx} className="text-xs text-gray-600 dark:text-gray-400 mb-1">
+                          <div key={idx} className="text-xs text-neutral-600 dark:text-neutral-400 mb-1">
                             • {note}
                           </div>
                         ))}

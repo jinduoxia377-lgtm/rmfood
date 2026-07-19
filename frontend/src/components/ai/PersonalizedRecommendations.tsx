@@ -37,12 +37,12 @@ export function PersonalizedRecommendations({
             <h3 className="font-semibold text-primary-700 dark:text-primary-300 mb-1">
               个性化推荐
             </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+            <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
               系统将学习您的偏好，为您推荐更符合需求的配方
             </p>
             {frequentEffects.length > 0 && (
               <div className="flex flex-wrap gap-2">
-                <span className="text-xs text-gray-500">常用功效：</span>
+                <span className="text-xs text-neutral-500">常用功效：</span>
                 {frequentEffects.map((effect) => (
                   <span
                     key={effect}
@@ -69,7 +69,7 @@ export function PersonalizedRecommendations({
           <h3 className="font-semibold text-accent-700 dark:text-accent-300">
             为您推荐
           </h3>
-          <p className="text-xs text-gray-500">基于您的历史偏好</p>
+          <p className="text-xs text-neutral-500">基于您的历史偏好</p>
         </div>
       </div>
 
@@ -77,7 +77,7 @@ export function PersonalizedRecommendations({
         {recommendations.slice(0, maxDisplay).map((rec, index) => (
           <div
             key={rec.id}
-            className="group p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700 hover:border-accent-300 dark:hover:border-accent-600 transition-colors cursor-pointer"
+            className="group p-3 bg-white dark:bg-neutral-800 rounded-lg border border-neutral-100 dark:border-neutral-700 hover:border-accent-300 dark:hover:border-accent-600 transition-colors cursor-pointer"
             onClick={() => onSelectRecommendation?.(rec)}
           >
             <div className="flex items-start justify-between gap-2">
@@ -86,7 +86,7 @@ export function PersonalizedRecommendations({
                   <span className="text-xs font-medium text-accent-600 dark:text-accent-400">
                     #{index + 1}
                   </span>
-                  <div className="flex items-center gap-1 text-xs text-gray-500">
+                  <div className="flex items-center gap-1 text-xs text-neutral-500">
                     <Clock className="w-3 h-3" />
                     {new Date(rec.createdAt).toLocaleDateString('zh-CN')}
                   </div>
@@ -103,9 +103,9 @@ export function PersonalizedRecommendations({
                   ))}
                 </div>
 
-                <div className="flex items-center gap-3 text-xs text-gray-500">
+                <div className="flex items-center gap-3 text-xs text-neutral-500">
                   <div className="flex items-center gap-1">
-                    <Star className="w-3 h-3 text-amber-500" />
+                    <Star className="w-3 h-3 text-warning-500" />
                     <span>{rec.scores.overall.toFixed(2)}</span>
                   </div>
                   <span>{rec.ingredients.length}种原料</span>
@@ -126,7 +126,7 @@ export function PersonalizedRecommendations({
                   className={`p-1.5 rounded-lg transition-colors ${
                     rec.liked
                       ? 'bg-accent-100 text-accent-600 dark:bg-accent-900/40'
-                      : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400'
+                      : 'hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-400'
                   }`}
                   title="喜欢"
                 >
@@ -141,7 +141,7 @@ export function PersonalizedRecommendations({
                       timestamp: Date.now(),
                     })
                   }}
-                  className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400 transition-colors"
+                  className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-400 transition-colors"
                   title="不喜欢"
                 >
                   <ThumbsDown className="w-3.5 h-3.5" />

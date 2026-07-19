@@ -23,7 +23,7 @@ export interface ModelConfig {
 
 // 模型状态类型 - 与后端 API 返回的数据结构匹配
 export interface ModelStatus {
-  status: 'active' | 'inactive' | 'error' | 'unconfigured'
+  status: 'active' | 'inactive' | 'error' | 'unconfigured' | 'unknown'
   provider: string
   model: string
   version?: string
@@ -32,6 +32,9 @@ export interface ModelStatus {
   error?: string
   note?: string
   base_url?: string
+  api_key_configured?: boolean
+  api_key_length?: number
+  suggestion?: string
 }
 
 // 模型调用参数类型 - 类型安全
@@ -415,14 +418,15 @@ export class ModelClient {
     options?: GenerationOptions,
   ): Promise<{ candidates: AICandidate[]; total: number; generator: string }> {
     return RequestQueue.enqueue('formula_gpt', async () => {
+      const effects = input.targetEffects || input.target_effects || []
       const response = await api.post<{ candidates: AICandidate[]; total: number; generator: string }>(
         '/ai/generate',
         {
-          target_effects: input.targetEffects || input.target_effects,
+          target_effects: effects,
           constraints: input.constraints,
           use_llm: input.useLlm ?? false,
-          description: (input.targetEffects || input.target_effects)?.length > 0
-            ? `基于${(input.targetEffects || input.target_effects).join('、')}功效需求，生成中药配方方案`
+          description: effects.length > 0
+            ? `基于${effects.join('、')}功效需求，生成中药配方方案`
             : undefined,
           ...options,
         },

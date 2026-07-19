@@ -17,7 +17,7 @@ from typing import Dict, List, Optional
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..domain.ports import HerbKnowledgePort, HerbProfile
+from ..domain.herb_ports import HerbKnowledgePort, HerbProfile
 
 logger = logging.getLogger(__name__)
 

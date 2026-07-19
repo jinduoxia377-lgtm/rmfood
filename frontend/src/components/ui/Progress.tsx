@@ -23,9 +23,9 @@ export function Progress({
 
   const variantClasses = {
     default: 'bg-primary-500',
-    success: 'bg-green-500',
-    warning: 'bg-amber-500',
-    danger: 'bg-red-500',
+    success: 'bg-success-500',
+    warning: 'bg-warning-500',
+    danger: 'bg-error-500',
   }
 
   const sizeClasses = {
@@ -37,7 +37,7 @@ export function Progress({
   return (
     <div
       className={cn(
-        'w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden',
+        'w-full bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden',
         sizeClasses[size],
         className,
       )}

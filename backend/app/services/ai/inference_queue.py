@@ -56,9 +56,9 @@ INSTANCE_HEARTBEAT_INTERVAL: int = 30  # 心跳间隔（秒）
 
 # ── 数据模型（从 inference_store 导入，保持单一定义）────────────────────
 
-# 说明：TaskStatus 和 InferenceResult 的 authoritative 定义在 inference_store.py
-# 此处重新导出，保持向后兼容（inference_queue 内部和 ai_task_router.py 均使用）
-from .inference_store import TaskStatus, InferenceResult, InferenceResultStore
+# 说明：InferenceTaskStatus 和 InferenceResult 的 authoritative 定义在 inference_store.py
+from .inference_store import InferenceTaskStatus as TaskStatus
+from .inference_store import InferenceResult, InferenceResultStore
 from .inference_store import MemoryResultStore, RedisResultStore, create_result_store
 
 
@@ -493,7 +493,7 @@ class AsyncInferenceQueue:
             return
 
         try:
-            loop = asyncio.get_event_loop()
+            loop = asyncio.new_event_loop()
 
             # 在线程池中执行 CPU 密集型推理（不阻塞事件循环）
             result_data = await asyncio.wait_for(

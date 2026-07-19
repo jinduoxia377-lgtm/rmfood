@@ -37,12 +37,12 @@ function CategoryProgressBar({
     <div className="mt-3 space-y-1.5">
       {entries.slice(0, 6).map(([name, count]: [string, any]) => (
         <div key={name} className="flex items-center gap-2 text-xs">
-          <span className="w-20 text-[#64748B] dark:text-[#94A3B8] truncate">{name}</span>
+          <span className="w-20 text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)] truncate">{name}</span>
           <div className="flex-1 h-1.5 bg-[rgba(148,163,184,0.12)] rounded-full overflow-hidden">
             <div className={`h-full ${color} rounded-full transition-all duration-700`}
               style={{ width: `${total > 0 ? (Number(count) / total) * 100 : 0}%` }} />
           </div>
-          <span className="w-6 text-right font-mono text-[#64748B] dark:text-[#94A3B8]">{count}</span>
+          <span className="w-6 text-right font-mono text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)]">{count}</span>
         </div>
       ))}
     </div>
@@ -101,22 +101,22 @@ export default function SyncTab({
               <div className="w-8 h-8 rounded-lg bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center">
                 <Database className="w-4 h-4 text-primary-600" />
               </div>
-              <h3 className="font-bold text-[#0f172a] dark:text-[#f1f5f9]">TCMSP 中药材</h3>
+              <h3 className="font-bold text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)]">TCMSP 中药材</h3>
             </div>
             <Badge variant="primary" size="sm">{stats?.tcmsp?.kb_total ?? 0} 知识库</Badge>
           </div>
           <div className="space-y-2 text-sm">
-            <div className="flex justify-between py-1.5 border-b border-[rgba(148,163,184,0.08)]">
-              <span className="text-[#64748B] dark:text-[#94A3B8]">本地数据库</span>
-              <strong className="text-[#0f172a] dark:text-[#f1f5f9] font-mono">{tcmspTotal} 条</strong>
+            <div className="flex justify-between py-1.5 border-b border-[var(--border-subtle,rgba(0,0,0,0.06))]">
+              <span className="text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)]">本地数据库</span>
+              <strong className="text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)] font-mono">{tcmspTotal} 条</strong>
             </div>
-            <div className="flex justify-between py-1.5 border-b border-[rgba(148,163,184,0.08)]">
-              <span className="text-[#64748B] dark:text-[#94A3B8]">药食同源</span>
-              <strong className="text-[#0f172a] dark:text-[#f1f5f9] font-mono">{stats?.tcmsp?.food_homology_count ?? 0} 种</strong>
+            <div className="flex justify-between py-1.5 border-b border-[var(--border-subtle,rgba(0,0,0,0.06))]">
+              <span className="text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)]">药食同源</span>
+              <strong className="text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)] font-mono">{stats?.tcmsp?.food_homology_count ?? 0} 种</strong>
             </div>
             <div className="flex justify-between py-1.5">
-              <span className="text-[#64748B] dark:text-[#94A3B8]">最后同步</span>
-              <span className="text-xs font-mono text-[#94A3B8]">
+              <span className="text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)]">最后同步</span>
+              <span className="text-xs font-mono text-[var(--text-muted,#9A9A9F)]">
                 {stats?.tcmsp?.last_sync
                   ? new Date(stats.tcmsp.last_sync).toLocaleString('zh-CN')
                   : '未同步'}
@@ -144,40 +144,40 @@ export default function SyncTab({
         <Card className="p-5">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center">
-                <Activity className="w-4 h-4 text-blue-600" />
+              <div className="w-8 h-8 rounded-lg bg-secondary-100 dark:bg-secondary-900/40 flex items-center justify-center">
+                <Activity className="w-4 h-4 text-secondary-600" />
               </div>
-              <h3 className="font-bold text-[#0f172a] dark:text-[#f1f5f9]">DFBP 活性肽</h3>
+              <h3 className="font-bold text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)]">DFBP 活性肽</h3>
             </div>
             <Badge variant="info" size="sm">{stats?.dfbp?.kb_total ?? 0} 知识库</Badge>
           </div>
           <div className="space-y-2 text-sm">
-            <div className="flex justify-between py-1.5 border-b border-[rgba(148,163,184,0.08)]">
-              <span className="text-[#64748B] dark:text-[#94A3B8]">本地数据库</span>
-              <strong className="text-[#0f172a] dark:text-[#f1f5f9] font-mono">{dfbpTotal} 条</strong>
+            <div className="flex justify-between py-1.5 border-b border-[var(--border-subtle,rgba(0,0,0,0.06))]">
+              <span className="text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)]">本地数据库</span>
+              <strong className="text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)] font-mono">{dfbpTotal} 条</strong>
             </div>
-            <div className="flex justify-between py-1.5 border-b border-[rgba(148,163,184,0.08)]">
-              <span className="text-[#64748B] dark:text-[#94A3B8]">活性类型</span>
-              <strong className="text-[#0f172a] dark:text-[#f1f5f9] font-mono">
+            <div className="flex justify-between py-1.5 border-b border-[var(--border-subtle,rgba(0,0,0,0.06))]">
+              <span className="text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)]">活性类型</span>
+              <strong className="text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)] font-mono">
                 {Object.keys(stats?.dfbp?.activity_types ?? {}).length} 种
               </strong>
             </div>
             <div className="flex justify-between py-1.5">
-              <span className="text-[#64748B] dark:text-[#94A3B8]">最后同步</span>
-              <span className="text-xs font-mono text-[#94A3B8]">
+              <span className="text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)]">最后同步</span>
+              <span className="text-xs font-mono text-[var(--text-muted,#9A9A9F)]">
                 {stats?.dfbp?.last_sync
                   ? new Date(stats.dfbp.last_sync).toLocaleString('zh-CN')
                   : '未同步'}
               </span>
             </div>
           </div>
-          <CategoryProgressBar raw={stats?.dfbp?.activity_types} total={dfbpTotal} color="bg-blue-500" />
+          <CategoryProgressBar raw={stats?.dfbp?.activity_types} total={dfbpTotal} color="bg-secondary-500" />
           <Button variant="secondary" className="mt-4 w-full gap-1.5" onClick={onSyncPeptides} disabled={isSyncingPeptides}>
             <RefreshCw className={`w-4 h-4 ${isSyncingPeptides ? 'animate-spin' : ''}`} />
             {isSyncingPeptides ? '同步中...' : '同步肽数据'}
           </Button>
           {lastPeptideSync && (
-            <div className="mt-2 p-3 bg-blue-50/60 dark:bg-blue-950/20 rounded-lg text-xs text-blue-700 dark:text-blue-400 border border-blue-100 dark:border-blue-900/30">
+            <div className="mt-2 p-3 bg-secondary-50/60 dark:bg-blue-950/20 rounded-lg text-xs text-secondary-700 dark:text-secondary-400 border border-blue-100 dark:border-blue-900/30">
               <div className="font-semibold mb-1">同步完成</div>
               <div className="flex gap-4">
                 <span>新增 <strong>{lastPeptideSync.inserted}</strong></span>
@@ -192,24 +192,24 @@ export default function SyncTab({
       {/* 知识图谱统计 */}
       {stats?.knowledge_graph && (
         <Card className="p-5">
-          <h3 className="font-bold text-[#0f172a] dark:text-[#f1f5f9] mb-4 flex items-center gap-2">
+          <h3 className="font-bold text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)] mb-4 flex items-center gap-2">
             <Layers className="w-4 h-4 text-primary-600" />知识图谱概览
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {[
               { label: '药材节点', value: stats.knowledge_graph.total_herbs, icon: Database, bg: 'bg-primary-50 dark:bg-primary-950/40' },
-              { label: '化合物节点', value: stats.knowledge_graph.total_compounds, icon: BarChart2, bg: 'bg-blue-50 dark:bg-blue-950/40' },
-              { label: '靶点节点', value: stats.knowledge_graph.total_targets, icon: TrendingUp, bg: 'bg-amber-50 dark:bg-amber-950/40' },
+              { label: '化合物节点', value: stats.knowledge_graph.total_compounds, icon: BarChart2, bg: 'bg-secondary-50 dark:bg-blue-950/40' },
+              { label: '靶点节点', value: stats.knowledge_graph.total_targets, icon: TrendingUp, bg: 'bg-warning-50 dark:bg-amber-950/40' },
               { label: '疾病节点', value: stats.knowledge_graph.total_diseases, icon: Layers, bg: 'bg-rose-50 dark:bg-rose-950/40' },
               { label: '活性肽数据', value: stats.knowledge_graph.total_peptides, icon: Activity, bg: 'bg-accent-50 dark:bg-accent-950/40' },
               { label: '配伍关系', value: stats.knowledge_graph.herb_interactions, icon: TrendingUp, bg: 'bg-cyan-50 dark:bg-cyan-950/40' },
-              { label: '化合物-靶点路径', value: stats.knowledge_graph.compound_target_paths, icon: Layers, bg: 'bg-emerald-50 dark:bg-emerald-950/40' },
+              { label: '化合物-靶点路径', value: stats.knowledge_graph.compound_target_paths, icon: Layers, bg: 'bg-primary-50 dark:bg-emerald-950/40' },
               { label: '药食同源药材', value: stats.knowledge_graph.food_homology_herbs, icon: Database, bg: 'bg-orange-50 dark:bg-orange-950/40' },
             ].map(({ label, value, icon: Icon, bg }) => (
               <div key={label} className={`p-3 rounded-xl text-center ${bg}`}>
-                <Icon className="w-4 h-4 mx-auto mb-1 text-[#64748B] dark:text-[#94A3B8]" />
-                <div className="text-xl font-bold text-[#0f172a] dark:text-[#f1f5f9]">{value}</div>
-                <div className="text-xs text-[#64748B] dark:text-[#94A3B8] mt-1">{label}</div>
+                <Icon className="w-4 h-4 mx-auto mb-1 text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)]" />
+                <div className="text-xl font-bold text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)]">{value}</div>
+                <div className="text-xs text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)] mt-1">{label}</div>
               </div>
             ))}
           </div>
@@ -219,8 +219,8 @@ export default function SyncTab({
       {/* 数据快照时间线 */}
       {snapshotsQuery.data?.snapshots && Array.isArray(snapshotsQuery.data.snapshots) && snapshotsQuery.data.snapshots.length > 0 && (
         <Card className="p-5">
-          <h3 className="font-bold text-[#0f172a] dark:text-[#f1f5f9] mb-4 flex items-center gap-2">
-            <Clock className="w-4 h-4 text-blue-600" />同步快照记录
+          <h3 className="font-bold text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)] mb-4 flex items-center gap-2">
+            <Clock className="w-4 h-4 text-secondary-600" />同步快照记录
           </h3>
           <div className="relative">
             {/* 时间线 */}
@@ -229,25 +229,25 @@ export default function SyncTab({
               {snapshotsQuery.data?.snapshots?.slice(0, 8).map((s: any) => (
                 <div key={s.snapshot_id} className="flex items-start gap-4 pl-8 relative">
                   {/* 时间线节点 */}
-                  <div className={`absolute left-2.5 w-3 h-3 rounded-full border-2 bg-white dark:bg-slate-900 z-10 ${
-                    s.is_active ? 'border-primary-500' : 'border-[rgba(148,163,184,0.3)]'
+                  <div className={`absolute left-2.5 w-3 h-3 rounded-full border-2 bg-white dark:bg-neutral-900 z-10 ${
+                    s.is_active ? 'border-primary-500' : 'border-[var(--border-subtle,rgba(0,0,0,0.06))]'
                   }`} />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-0.5">
-                      <span className="text-sm font-medium text-[#0f172a] dark:text-[#f1f5f9]">{s.source_db}</span>
+                      <span className="text-sm font-medium text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)]">{s.source_db}</span>
                       {s.is_active && <Badge variant="success" size="sm">当前</Badge>}
                     </div>
-                    <div className="flex items-center gap-3 text-xs text-[#94A3B8]">
+                    <div className="flex items-center gap-3 text-xs text-[var(--text-muted,#9A9A9F)]">
                       <span className="font-mono">{s.total_records} 条记录</span>
                       <span>·</span>
                       <span className="font-mono">{new Date(s.created_at).toLocaleString('zh-CN')}</span>
                     </div>
                     {s.metadata && (
                       <div className="flex gap-3 mt-1 text-xs">
-                        <span className="text-emerald-600 dark:text-emerald-400">
+                        <span className="text-primary-600 dark:text-primary-400">
                           +{s.metadata?.inserted ?? 0} 新增
                         </span>
-                        <span className="text-blue-600 dark:text-blue-400">
+                        <span className="text-secondary-600 dark:text-secondary-400">
                           ~{s.metadata?.updated ?? 0} 更新
                         </span>
                       </div>

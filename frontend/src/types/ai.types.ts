@@ -11,20 +11,20 @@
  * 用于对功效标签进行层级分类管理
  */
 export type TagCategory =
-  | 'immune'       // 免疫调节
-  | 'antioxidant'   // 抗氧化
+  | 'immune' // 免疫调节
+  | 'antioxidant' // 抗氧化
   | 'cardiovascular' // 心血管保护
-  | 'metabolic'     // 代谢调节
-  | 'digestive'     // 消化系统
-  | 'nervous'       // 神经系统
-  | 'beauty'        // 美容养颜
-  | 'anti_aging'    // 抗衰老
-  | 'bone_joint'    // 骨关节健康
-  | 'liver_kidney'  // 肝肾养护
-  | 'respiratory'   // 呼吸系统
-  | 'energy'        // 能量补充
-  | 'sleep'         // 助眠安神
-  | 'other'         // 其他
+  | 'metabolic' // 代谢调节
+  | 'digestive' // 消化系统
+  | 'nervous' // 神经系统
+  | 'beauty' // 美容养颜
+  | 'anti_aging' // 抗衰老
+  | 'bone_joint' // 骨关节健康
+  | 'liver_kidney' // 肝肾养护
+  | 'respiratory' // 呼吸系统
+  | 'energy' // 能量补充
+  | 'sleep' // 助眠安神
+  | 'other'; // 其他
 
 /**
  * 成分功效标签枚举（扩展版）
@@ -81,26 +81,26 @@ export type EfficacyTag =
   | '通乳'
   | '驱虫'
   | '解表散寒'
-  | '和解少阳'
+  | '和解少阳';
 
 // ==================== 注意事项 ====================
 
 /**
  * 注意事项严重程度
  */
-export type PrecautionSeverity = 'low' | 'medium' | 'high' | 'critical'
+export type PrecautionSeverity = 'low' | 'medium' | 'high' | 'critical';
 
 /**
  * 注意事项类型分类（扩展版）
  */
 export type PrecautionCategory =
-  | 'contraindication'  // 禁忌症
-  | 'warning'           // 警告/慎用
-  | 'dosage'            // 用量注意
-  | 'interaction'       // 药物相互作用
-  | 'pregnancy'         // 孕期相关
-  | 'allergy'           // 过敏风险
-  | 'special_pop'       // 特殊人群
+  | 'contraindication' // 禁忌症
+  | 'warning' // 警告/慎用
+  | 'dosage' // 用量注意
+  | 'interaction' // 药物相互作用
+  | 'pregnancy' // 孕期相关
+  | 'allergy' // 过敏风险
+  | 'special_pop'; // 特殊人群
 
 /**
  * 触发条件接口
@@ -108,13 +108,13 @@ export type PrecautionCategory =
  */
 export interface TriggerCondition {
   /** 条件类型 */
-  type: 'age_range' | 'condition' | 'dosage_exceed' | 'combination' | 'duration'
+  type: 'age_range' | 'condition' | 'dosage_exceed' | 'combination' | 'duration';
   /** 条件描述 */
-  description: string
+  description: string;
   /** 条件值（根据type不同而不同） */
-  value: string | number | { min?: number; max?: number }
+  value: string | number | { min?: number; max?: number };
   /** 是否为硬性限制 */
-  isHardLimit: boolean
+  isHardLimit: boolean;
 }
 
 /**
@@ -138,17 +138,17 @@ export interface TriggerCondition {
  */
 export interface Precaution {
   /** 注意事项分类 */
-  category: PrecautionCategory
+  category: PrecautionCategory;
   /** 注意事项具体内容 */
-  content: string
+  content: string;
   /** 严重程度 */
-  severity: PrecautionSeverity
+  severity: PrecautionSeverity;
   /** 触发条件列表（可选） */
-  triggerConditions?: TriggerCondition[]
+  triggerConditions?: TriggerCondition[];
   /** 参考来源（可选） */
-  reference?: string
+  reference?: string;
   /** 建议措施（可选） */
-  recommendation?: string
+  recommendation?: string;
 }
 
 // ==================== 来源分类 ====================
@@ -163,7 +163,7 @@ export enum IngredientSource {
   /** 食源性多肽 - 通过酶解等技术制备的功能性多肽 */
   PEPTIDE = 'PEPTIDE',
   /** 辅料 - 赋形剂、稳定剂等辅助材料 */
-  EXCIPIENT = 'EXCIPIENT'
+  EXCIPIENT = 'EXCIPIENT',
 }
 
 // ==================== 剂量计算 ====================
@@ -174,17 +174,17 @@ export enum IngredientSource {
  */
 export interface DosageCalculationResult {
   /** 原始值 */
-  originalValue: number
+  originalValue: number;
   /** 原始单位 */
-  originalUnit: string
+  originalUnit: string;
   /** 转换后值 */
-  convertedValue: number
+  convertedValue: number;
   /** 转换后单位 */
-  convertedUnit: string
+  convertedUnit: string;
   /** 换算系数 */
-  conversionFactor: number
+  conversionFactor: number;
   /** 计算时间戳 */
-  calculatedAt: Date
+  calculatedAt: Date;
 }
 
 // ==================== 核心成分 ====================
@@ -211,27 +211,27 @@ export interface DosageCalculationResult {
  */
 export interface Ingredient {
   /** 中文名称 */
-  name: string
+  name: string;
   /** 拉丁学名（可选） */
-  latinName?: string
+  latinName?: string;
   /** 用量数值 */
-  amount: number
+  amount: number;
   /** 单位（g/ml 等） */
-  unit: string
+  unit: string;
   /** 在配方中的占比百分比（0-100，可选） */
-  percentage?: number
+  percentage?: number;
   /** 功效标签数组（可选） */
-  efficacyTags?: EfficacyTag[]
+  efficacyTags?: EfficacyTag[];
   /** 注意事项数组（可选） */
-  precautions?: Precaution[]
+  precautions?: Precaution[];
   /** 来源分类 */
-  source: IngredientSource
+  source: IngredientSource;
   /** 质量评分 (0-100，可选) */
-  qualityScore?: number
+  qualityScore?: number;
   /** 数据来源数据库（可选） */
-  sourceDatabase?: string
+  sourceDatabase?: string;
   /** 成分角色（可选，如主药/辅药/佐使） */
-  role?: string
+  role?: string;
 }
 
 /**
@@ -240,23 +240,23 @@ export interface Ingredient {
  */
 export interface EnhancedIngredient extends Ingredient {
   /** 成分唯一ID */
-  id: string
+  id: string;
   /** 化学成分列表 */
-  activeCompounds?: string[]
+  activeCompounds?: string[];
   /** 药理作用机制 */
-  mechanismOfAction?: string
+  mechanismOfAction?: string;
   /** 生物利用度 (%) */
-  bioavailability?: number
+  bioavailability?: number;
   /** 半衰期信息 */
-  halfLife?: string
+  halfLife?: string;
   /** 相互作用成分列表 */
-  interactions?: string[]
+  interactions?: string[];
   /** 临床研究数量 */
-  clinicalStudiesCount?: number
+  clinicalStudiesCount?: number;
   /** 推荐日用量范围 */
-  recommendedDosage?: { min: number; max: number; unit: string }
+  recommendedDosage?: { min: number; max: number; unit: string };
   /** 毒性等级 */
-  toxicityLevel?: 'safe' | 'low' | 'moderate' | 'high'
+  toxicityLevel?: 'safe' | 'low' | 'moderate' | 'high';
 }
 
 // ==================== 配方表格数据 ====================
@@ -278,23 +278,23 @@ export interface EnhancedIngredient extends Ingredient {
  */
 export interface FormulaTableData {
   /** 配方标题 */
-  title: string
+  title: string;
   /** 成分列表 */
-  ingredients: Ingredient[]
+  ingredients: Ingredient[];
   /** 总用量 */
-  totalAmount: number
+  totalAmount: number;
   /** 配方描述（可选） */
-  description?: string
+  description?: string;
   /** 扩展元数据（可选） */
-  metadata?: Record<string, any>
+  metadata?: Record<string, any>;
   /** 置信度评分 (0-1，表示解析结果的可信程度) */
-  confidence?: number
+  confidence?: number;
   /** 本次解析识别到的候选配方数量 */
-  parseCount?: number
+  parseCount?: number;
   /** AI评估的综合评分 (0-100) */
-  score?: number
+  score?: number;
   /** 加权总分 (考虑各维度权重的最终得分) */
-  totalScore?: number
+  totalScore?: number;
 }
 
 // ==================== 协同维度 ====================
@@ -315,7 +315,7 @@ export enum SynergyDimension {
   /** 稳定性改善 - 配方在储存和使用过程中的稳定性提升 */
   STABILITY_IMPROVEMENT = 'STABILITY_IMPROVEMENT',
   /** 口感平衡 - 多成分组合后的感官协调性 */
-  TASTE_BALANCE = 'TASTE_BALANCE'
+  TASTE_BALANCE = 'TASTE_BALANCE',
 }
 
 /**
@@ -338,13 +338,13 @@ export enum SynergyDimension {
  */
 export interface SynergyRadarData {
   /** 成分组合名称 */
-  combinationName: string
+  combinationName: string;
   /** 各维度的评分与描述 */
-  dimensions: Record<SynergyDimension, { score: number; description: string }>
+  dimensions: Record<SynergyDimension, { score: number; description: string }>;
   /** 协同机制说明（可选） */
-  mechanism?: string
+  mechanism?: string;
   /** 图表显示颜色（可选） */
-  color?: string
+  color?: string;
 }
 
 // ==================== 报告元数据 ====================
@@ -365,15 +365,15 @@ export interface SynergyRadarData {
  */
 export interface ReportMetadata {
   /** 关联的配方 ID（可选） */
-  formulaId?: string
+  formulaId?: string;
   /** 报告作者（可选） */
-  author?: string
+  author?: string;
   /** 所属项目名称（可选） */
-  projectName?: string
+  projectName?: string;
   /** 标签列表（可选） */
-  tags?: string[]
+  tags?: string[];
   /** 分析引擎版本号 (用于追踪算法迭代) */
-  analysisVersion?: string
+  analysisVersion?: string;
 }
 
 // ==================== 报告章节 ====================
@@ -389,7 +389,7 @@ export type ReportSectionType =
   | 'ingredient-analysis'
   | 'synergy-assessment'
   | 'recommendations'
-  | 'appendix'
+  | 'appendix';
 
 /**
  * 报告章节接口
@@ -407,15 +407,15 @@ export type ReportSectionType =
  */
 export interface ReportSection {
   /** 章节ID（可选，用于标识和引用） */
-  id?: string
+  id?: string;
   /** 章节类型 */
-  type: ReportSectionType
+  type: ReportSectionType;
   /** 章节标题 */
-  title: string
+  title: string;
   /** 章节内容（支持文本、表格、图表等多种格式） */
-  content: any
+  content: any;
   /** 排序序号 */
-  order: number
+  order: number;
 }
 
 // ==================== 专业报告 ====================
@@ -438,17 +438,17 @@ export interface ReportSection {
  */
 export interface ProfessionalReport {
   /** 报告唯一标识 */
-  id: string
+  id: string;
   /** 报告标题 */
-  title: string
+  title: string;
   /** 生成时间 */
-  generatedAt: Date
+  generatedAt: Date;
   /** 报告版本号 */
-  version: string
+  version: string;
   /** 报告章节列表 */
-  sections: ReportSection[]
+  sections: ReportSection[];
   /** 报告元数据 */
-  metadata: ReportMetadata
+  metadata: ReportMetadata;
 }
 
 // ==================== 表格配置与导出格式 ====================
@@ -467,7 +467,7 @@ export enum ExportFormat {
   /** CSV 格式 */
   CSV = 'CSV',
   /** JSON 格式 */
-  JSON = 'JSON'
+  JSON = 'JSON',
 }
 
 /**
@@ -476,23 +476,23 @@ export enum ExportFormat {
  */
 export interface ColumnConfig {
   /** 列标识符（字段名） */
-  key: string
+  key: string;
   /** 列标题 */
-  title: string
+  title: string;
   /** 列宽度（像素或百分比） */
-  width?: number | string
+  width?: number | string;
   /** 是否固定列 */
-  fixed?: 'left' | 'right'
+  fixed?: 'left' | 'right';
   /** 是否可排序 */
-  sortable?: boolean
+  sortable?: boolean;
   /** 是否可筛选 */
-  filterable?: boolean
+  filterable?: boolean;
   /** 是否默认可见 */
-  visible?: boolean
+  visible?: boolean;
   /** 列对齐方式 */
-  align?: 'left' | 'center' | 'right'
+  align?: 'left' | 'center' | 'right';
   /** 自定义渲染器名称 */
-  renderer?: string
+  renderer?: string;
 }
 
 /**
@@ -500,19 +500,19 @@ export interface ColumnConfig {
  */
 export interface PaginationConfig {
   /** 当前页码 */
-  current: number
+  current: number;
   /** 每页条数 */
-  pageSize: number
+  pageSize: number;
   /** 可选的每页条数选项 */
-  pageSizeOptions: number[]
+  pageSizeOptions: number[];
   /** 是否显示分页 */
-  showPagination: boolean
+  showPagination: boolean;
   /** 是否显示总数 */
-  showTotal: boolean
+  showTotal: boolean;
   /** 是否显示快速跳转 */
-  showQuickJumper: boolean
+  showQuickJumper: boolean;
   /** 是否显示页码选择器 */
-  showSizeChanger: boolean
+  showSizeChanger: boolean;
 }
 
 /**
@@ -521,27 +521,27 @@ export interface PaginationConfig {
  */
 export interface TableConfig {
   /** 表格唯一标识 */
-  id: string
+  id: string;
   /** 表格标题 */
-  title: string
+  title: string;
   /** 列配置列表 */
-  columns: ColumnConfig[]
+  columns: ColumnConfig[];
   /** 默认排序列 */
-  defaultSortKey?: string
+  defaultSortKey?: string;
   /** 默认排序方向 */
-  defaultSortOrder?: 'asc' | 'desc'
+  defaultSortOrder?: 'asc' | 'desc';
   /** 分页配置 */
-  pagination: PaginationConfig
+  pagination: PaginationConfig;
   /** 是否支持行选择 */
-  rowSelection?: boolean
+  rowSelection?: boolean;
   /** 是否支持行展开 */
-  expandable?: boolean
+  expandable?: boolean;
   /** 是否显示边框 */
-  bordered?: boolean
+  bordered?: boolean;
   /** 行高模式 */
-  size?: 'small' | 'middle' | 'large'
+  size?: 'small' | 'middle' | 'large';
   /** 滚动配置 */
-  scroll?: { x?: number; y?: number }
+  scroll?: { x?: number; y?: number };
 }
 
 // ==================== 消息类型扩展 ====================
@@ -567,7 +567,7 @@ export enum MessageType {
   /** 协同雷达图消息 */
   RADAR_CHART = 'RADAR_CHART',
   /** 报告预览消息 */
-  REPORT_PREVIEW = 'REPORT_PREVIEW'
+  REPORT_PREVIEW = 'REPORT_PREVIEW',
 }
 
 // ==================== 解析后的配方数据 ====================
@@ -578,15 +578,15 @@ export enum MessageType {
  */
 export interface ParsedIngredient {
   /** 成分名称 */
-  name: string
+  name: string;
   /** 用量数值 */
-  amount: number
+  amount: number;
   /** 单位 */
-  unit: string
+  unit: string;
   /** 功效角色 */
-  role: string
+  role: string;
   /** 是否药食同源 */
-  is_food_homology: boolean
+  is_food_homology: boolean;
 }
 
 /**
@@ -611,23 +611,23 @@ export interface ParsedIngredient {
  */
 export interface ParsedFormula {
   /** 配方唯一标识 */
-  id: number | string
+  id: number | string;
   /** 配方名称 */
-  name: string
+  name: string;
   /** 配方编码 */
-  code: string
+  code: string;
   /** 配方状态 */
-  status: string
+  status: string;
   /** 配方描述（可选） */
-  description: string | null
+  description: string | null;
   /** 成分列表 */
-  ingredients: ParsedIngredient[]
+  ingredients: ParsedIngredient[];
   /** 安全检查结果（可选） */
-  safety_check: Record<string, unknown> | null
+  safety_check: Record<string, unknown> | null;
   /** 协同分析结果（可选） */
-  synergy_analysis: Record<string, unknown> | null
+  synergy_analysis: Record<string, unknown> | null;
   /** 成分数量（计算属性，用于快速显示） */
-  ingredientCount?: number
+  ingredientCount?: number;
 }
 
 // ==================== AI识别配方数据结构 ====================
@@ -649,15 +649,15 @@ export interface ParsedFormula {
  */
 export interface RecognizedFormulaIngredient {
   /** 成分名称 */
-  name: string
+  name: string;
   /** 用量/剂量值 */
-  dosage: string
+  dosage: string;
   /** 单位（可选） */
-  unit?: string
+  unit?: string;
   /** 功效说明（可选） */
-  efficacy?: string
+  efficacy?: string;
   /** 备注信息（可选） */
-  notes?: string
+  notes?: string;
 }
 
 /**
@@ -683,62 +683,68 @@ export interface RecognizedFormulaIngredient {
  */
 export interface AIRecognizedFormula {
   /** 唯一标识符 (基于名称哈希 + 时间戳生成) */
-  id: string
+  id: string;
   /** 配方名称 */
-  name: string
+  name: string;
   /** 成分数量统计 */
-  ingredientCount: number
+  ingredientCount: number;
   /** 置信度评分 (0-1，越高表示识别越准确) */
-  confidence: number
+  confidence: number;
   /** 来源消息ID (标识该配方来自哪条AI回复) */
-  sourceMessageId: string
+  sourceMessageId: string;
   /** 解析识别的时间戳 */
-  parsedAt: Date
+  parsedAt: Date;
   /** 原始解析数据 (完整的表格数据结构) */
-  rawData: FormulaTableData
+  rawData: FormulaTableData;
   /** 结构化的成分列表 */
-  ingredients: RecognizedFormulaIngredient[]
+  ingredients: RecognizedFormulaIngredient[];
 
   // ===== 新增字段 (v8.0 增强版) =====
 
   /** 自动生成的语义化名称（由formulaNamingEngine生成） */
-  autoName?: string
+  autoName?: string;
 
   /** 配方质量综合评分 (0-100) */
-  qualityScore?: number
+  qualityScore?: number;
 
   /** 质量等级 (A/B/C/D/F) */
-  qualityGrade?: 'A' | 'B' | 'C' | 'D' | 'F'
+  qualityGrade?: 'A' | 'B' | 'C' | 'D' | 'F';
 
   /** 功效标签数组（自动提取或手动添加） */
-  tags?: string[]
+  tags?: string[];
 
   /** 功效描述文本 */
-  efficacy?: string
+  efficacy?: string;
 
   /** 适用人群标签 */
-  targetAudience?: string[]
+  targetAudience?: string[];
 
   /** 推荐剂量范围 */
-  recommendedDosage?: string
+  recommendedDosage?: string;
 
   /** 禁忌症/注意事项 */
-  contraindications?: string
+  contraindications?: string;
 
   /** 用户自定义备注 */
-  userNotes?: string
+  userNotes?: string;
 
   /** 是否已收藏 */
-  isFavorite?: boolean
+  isFavorite?: boolean;
 
   /** 创建时间戳 */
-  createdAt?: number
+  createdAt?: number;
 
   /** 最后更新时间戳 */
-  updatedAt?: number
+  updatedAt?: number;
 
   /** 版本号（用于版本追踪） */
-  version?: number
+  version?: number;
+
+  /** 原始文本内容（用于命名引擎提取关键词） */
+  content?: string;
+
+  /** 扩展元数据（功效、来源等） */
+  metadata?: Record<string, unknown>;
 }
 
 /**
@@ -753,7 +759,7 @@ export interface AIRecognizedFormula {
  * const formula = formulaIndex.get('FMT-1a2b3c-xyz123')
  * ```
  */
-export type FormulaIndex = Map<string, AIRecognizedFormula>
+export type FormulaIndex = Map<string, AIRecognizedFormula>;
 
 // ==================== v8.0 新增：质量评分与筛选类型 ====================
 
@@ -775,17 +781,17 @@ export type FormulaIndex = Map<string, AIRecognizedFormula>
  */
 export interface FormulaQualityScore {
   /** 综合评分 (0-100) */
-  overallScore: number
+  overallScore: number;
   /** 置信度得分 (0-100) */
-  confidenceScore: number
+  confidenceScore: number;
   /** 完整性得分 (0-100) */
-  completenessScore: number
+  completenessScore: number;
   /** 成分多样性得分 (0-100) */
-  diversityScore: number
+  diversityScore: number;
   /** 质量等级 */
-  qualityGrade: 'A' | 'B' | 'C' | 'D' | 'F'
+  qualityGrade: 'A' | 'B' | 'C' | 'D' | 'F';
   /** 改进建议列表 */
-  recommendations: string[]
+  recommendations: string[];
 }
 
 /**
@@ -805,64 +811,58 @@ export interface FormulaQualityScore {
  */
 export interface FormulaFilters {
   /** 搜索关键词 */
-  keyword?: string
+  keyword?: string;
 
   /** 质量等级筛选（多选） */
-  qualityGrades?: ('A' | 'B' | 'C' | 'D' | 'F')[]
+  qualityGrades?: ('A' | 'B' | 'C' | 'D' | 'F')[];
 
   /** 置信度范围（百分比） */
   confidenceRange?: {
-    min: number
-    max: number
-  }
+    min: number;
+    max: number;
+  };
 
   /** 时间范围 */
   dateRange?: {
-    start: number
-    end: number
-  }
+    start: number;
+    end: number;
+  };
 
   /** 成分数量范围 */
   ingredientCountRange?: {
-    min: number
-    max: number
-  }
+    min: number;
+    max: number;
+  };
 
   /** 标签筛选（多选） */
-  tags?: string[]
+  tags?: string[];
 
   /** @deprecated 使用 confidenceRange 替代 */
-  minConfidence?: number
+  minConfidence?: number;
   /** @deprecated 使用 confidenceRange 替代 */
-  maxConfidence?: number
+  maxConfidence?: number;
   /** @deprecated 使用 qualityGrades 替代 */
-  grade?: ('A' | 'B' | 'C' | 'D' | 'F')[]
+  grade?: ('A' | 'B' | 'C' | 'D' | 'F')[];
   /** @deprecated 使用 dateRange 替代 */
-  dateFrom?: number
+  dateFrom?: number;
   /** @deprecated 使用 dateRange 替代 */
-  dateTo?: number
+  dateTo?: number;
   /** @deprecated 使用 ingredientCountRange 替代 */
-  minIngredients?: number
+  minIngredients?: number;
   /** @deprecated 使用 ingredientCountRange 替代 */
-  maxIngredients?: number
+  maxIngredients?: number;
 }
 
 /**
  * 排序字段枚举
  * 定义可用的排序维度
  */
-export type FormulaSortField =
-  | 'createdAt'
-  | 'updatedAt'
-  | 'name'
-  | 'confidence'
-  | 'qualityScore'
-  | 'ingredientCount'
+export type FormulaSortField = 'createdAt' | 'updatedAt' | 'name' | 'confidence' | 'qualityScore' | 'ingredientCount';
 
 /**
  * 排序方向
  */
-export type SortOrder = 'asc' | 'desc'
+export type SortOrder = 'asc' | 'desc';
 
 // ==================== Phase 2: AI 智能化增强类型 ====================
 
@@ -872,24 +872,24 @@ export type SortOrder = 'asc' | 'desc'
  */
 export interface ChatMessage {
   /** 消息唯一标识 */
-  id: string
+  id: string;
   /** 消息角色 */
-  role: 'user' | 'assistant' | 'system'
+  role: 'user' | 'assistant' | 'system';
   /** 消息内容（支持 Markdown） */
-  content: string
+  content: string;
   /** 时间戳 (Unix ms) */
-  timestamp: number
+  timestamp: number;
   /** 关联的配方数据（可选） */
   formulas?: {
-    name: string
-    value: number
-    unit?: string
-    confidence?: number
-  }[]
+    name: string;
+    value: number;
+    unit?: string;
+    confidence?: number;
+  }[];
   /** 是否正在加载 */
-  isLoading?: boolean
+  isLoading?: boolean;
   /** 错误信息 */
-  error?: string
+  error?: string;
 }
 
 /**
@@ -897,47 +897,47 @@ export interface ChatMessage {
  * 定义 NLP 引擎可识别的用户意图分类
  */
 export type IntentType =
-  | 'greeting'                    // 问候
-  | 'formula_inquiry'             // 配方查询
-  | 'ingredient_query'            // 成分查询
-  | 'dosage_inquiry'              // 剂量咨询
-  | 'safety_review'               // 安全性审查
-  | 'regulation_inquiry'          // 法规咨询
-  | 'cost_analysis'               // 成本分析
-  | 'synergy_analysis'            // 协同效应分析
-  | 'comparison'                  // 对比分析
-  | 'optimization_request'        // 优化请求
-  | 'general_inquiry'             // 一般性询问
-  | 'feedback_positive'           // 正面反馈
-  | 'feedback_negative'           // 负面反馈
-  | 'clarification'               // 澄清/追问
-  | 'topic_change'                // 话题切换
-  | 'farewell'                    // 告别
+  | 'greeting' // 问候
+  | 'formula_inquiry' // 配方查询
+  | 'ingredient_query' // 成分查询
+  | 'dosage_inquiry' // 剂量咨询
+  | 'safety_review' // 安全性审查
+  | 'regulation_inquiry' // 法规咨询
+  | 'cost_analysis' // 成本分析
+  | 'synergy_analysis' // 协同效应分析
+  | 'comparison' // 对比分析
+  | 'optimization_request' // 优化请求
+  | 'general_inquiry' // 一般性询问
+  | 'feedback_positive' // 正面反馈
+  | 'feedback_negative' // 负面反馈
+  | 'clarification' // 澄清/追问
+  | 'topic_change' // 话题切换
+  | 'farewell'; // 告别
 
 /**
  * 子意图类型
  * 提供更细粒度的意图分类
  */
 export type SubIntent =
-  | 'single_ingredient'           // 单一成分
-  | 'multi_ingredient'            // 多成分组合
-  | 'specific_dosage'             // 特定剂量
-  | 'dosage_range'                // 剂量范围
-  | 'toxicity_check'              // 毒性检查
-  | 'interaction_check'           // 相互作用检查
-  | 'pregnancy_safety'            // 孕期安全
-  | 'efficacy_enhancement'        // 功效增强
-  | 'taste_optimization'          // 口感优化
-  | 'stability_improvement'       // 稳定性改善
-  | 'cost_reduction'              // 成本降低
-  | 'regulatory_compliance'       // 法规合规
-  | 'general'                     // 通用
+  | 'single_ingredient' // 单一成分
+  | 'multi_ingredient' // 多成分组合
+  | 'specific_dosage' // 特定剂量
+  | 'dosage_range' // 剂量范围
+  | 'toxicity_check' // 毒性检查
+  | 'interaction_check' // 相互作用检查
+  | 'pregnancy_safety' // 孕期安全
+  | 'efficacy_enhancement' // 功效增强
+  | 'taste_optimization' // 口感优化
+  | 'stability_improvement' // 稳定性改善
+  | 'cost_reduction' // 成本降低
+  | 'regulatory_compliance' // 法规合规
+  | 'general'; // 通用
 
 /**
  * 置信度级别
  * 用于标注意图识别的置信程度
  */
-export type ConfidenceLevel = 'high' | 'medium' | 'low' | 'unknown'
+export type ConfidenceLevel = 'high' | 'medium' | 'low' | 'unknown';
 
 /**
  * 意图检测结果
@@ -945,29 +945,29 @@ export type ConfidenceLevel = 'high' | 'medium' | 'low' | 'unknown'
  */
 export interface IntentDetectionResult {
   /** 主要意图 */
-  primaryIntent: IntentType
+  primaryIntent: IntentType;
   /** 置信度分数 (0-1) */
-  confidence: number
+  confidence: number;
   /** 子意图列表 */
-  subIntents?: SubIntent[]
+  subIntents?: SubIntent[];
   /** 识别方法 ('rule-based' | 'semantic' | 'fallback') */
-  method: string
+  method: string;
   /** 处理耗时 (ms) */
-  processingTime?: number
+  processingTime?: number;
   /** 提取的实体列表 */
   entities?: {
-    type: string
-    text: string
-    confidence: number
-    position?: [number, number]
-  }[]
+    type: string;
+    text: string;
+    confidence: number;
+    position?: [number, number];
+  }[];
   /** 情感分析结果 */
   sentiment?: {
-    sentiment: 'positive' | 'negative' | 'neutral'
-    score: number
-  }
+    sentiment: 'positive' | 'negative' | 'neutral';
+    score: number;
+  };
   /** 原始输入文本 */
-  originalText?: string
+  originalText?: string;
 }
 
 /**
@@ -976,15 +976,15 @@ export interface IntentDetectionResult {
  */
 export interface Entity {
   /** 实体类型分类 */
-  type: 'formula' | 'ingredient' | 'dosage' | 'regulation' | 'general'
+  type: 'formula' | 'ingredient' | 'dosage' | 'regulation' | 'general';
   /** 实体值 */
-  value: string
+  value: string;
   /** 置信度 (0-1) */
-  confidence: number
+  confidence: number;
   /** 最后被提及的时间戳 */
-  lastMentioned: number
+  lastMentioned: number;
   /** 被提及次数 */
-  mentionCount: number
+  mentionCount: number;
 }
 
 /**
@@ -993,23 +993,23 @@ export interface Entity {
  */
 export interface Topic {
   /** 话题唯一 ID */
-  id: string
+  id: string;
   /** 话题标题 */
-  title: string
+  title: string;
   /** 话题类型分类 */
-  type: 'formula-design' | 'safety-review' | 'cost-analysis' | 'general-qna' | 'regulatory-query' | 'quality-control'
+  type: 'formula-design' | 'safety-review' | 'cost-analysis' | 'general-qna' | 'regulatory-query' | 'quality-control';
   /** 话题上下文 */
-  context: TopicContext
+  context: TopicContext;
   /** 父话题 ID（用于嵌套话题） */
-  parentTopicId?: string
+  parentTopicId?: string;
   /** 子话题 ID 列表 */
-  childTopics: string[]
+  childTopics: string[];
   /** 创建时间 */
-  createdAt: number
+  createdAt: number;
   /** 最后活跃时间 */
-  lastActiveAt: number
+  lastActiveAt: number;
   /** 消息数量 */
-  messageCount: number
+  messageCount: number;
 }
 
 /**
@@ -1017,11 +1017,11 @@ export interface Topic {
  */
 export interface TopicContext {
   /** 主题关键词 */
-  keywords: string[]
+  keywords: string[];
   /** 相关实体 */
-  entities: string[]
+  entities: string[];
   /** 话题摘要 */
-  summary: string
+  summary: string;
 }
 
 /**
@@ -1030,15 +1030,15 @@ export interface TopicContext {
  */
 export interface Reference {
   /** 原始代词文本 */
-  originalText: string
+  originalText: string;
   /** 解析后的实际指向 */
-  resolvedText: string
+  resolvedText: string;
   /** 解析的实体 ID */
-  entityId?: string
+  entityId?: string;
   /** 置信度 */
-  confidence: number
+  confidence: number;
   /** 解析时间戳 */
-  resolvedAt: number
+  resolvedAt: number;
 }
 
 /**
@@ -1046,15 +1046,15 @@ export interface Reference {
  */
 export interface ProcessResult {
   /** 指代消解后的用户输入 */
-  resolvedInput: string
+  resolvedInput: string;
   /** 话题更新信息 */
   topicUpdate?: {
-    topic: Topic
-    isTopicChange: boolean
-    previousTopic?: Topic
-  }
+    topic: Topic;
+    isTopicChange: boolean;
+    previousTopic?: Topic;
+  };
   /** 已解析的引用列表 */
-  referencesResolved?: Reference[]
+  referencesResolved?: Reference[];
   /** 处理耗时 (ms) */
-  processingTime: number
+  processingTime: number;
 }

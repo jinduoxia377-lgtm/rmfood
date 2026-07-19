@@ -18,7 +18,7 @@ export interface ExportColumn {
   visible: boolean;
   order: number;
   width?: number;
-  format?: (value: any) => string;
+  format?: (value: unknown) => string;
 }
 
 interface ExcelStyleConfig {

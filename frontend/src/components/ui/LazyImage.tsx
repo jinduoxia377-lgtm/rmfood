@@ -16,7 +16,7 @@ export function LazyImage({
   src,
   alt,
   className = '',
-  placeholder = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"%3E%3Crect fill="%23f3f4f6" width="200" height="200"/%3E%3Ctext fill="%239ca3af" font-family="sans-serif" font-size="14" x="50%25" y="50%25" text-anchor="middle" dominant-baseline="middle"%3E加载中...%3C/text%3E%3C/svg%3E',
+  placeholder = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"%3E%3Crect fill="%23f3f4f6" width="200" height="200"/%3E%3C/svg%3E',
   width,
   height,
   onLoad,
@@ -58,7 +58,7 @@ export function LazyImage({
   return (
     <div
       ref={handleRef}
-      className={`relative overflow-hidden bg-gray-100 ${className}`}
+      className={`relative overflow-hidden bg-neutral-100 ${className}`}
       style={{ width, height }}
     >
       {!isLoaded && !hasError && (
@@ -84,9 +84,9 @@ export function LazyImage({
       )}
 
       {hasError && (
-        <div className="flex items-center justify-center w-full h-full bg-gray-100">
+        <div className="flex items-center justify-center w-full h-full bg-neutral-100">
           <svg
-            className="w-8 h-8 text-gray-400"
+            className="w-8 h-8 text-neutral-400"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -95,7 +95,7 @@ export function LazyImage({
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth={2}
-              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              d="M18.364 5.636a9 9 0 11-12.728 0M12 9v4m0 4h.01"
             />
           </svg>
         </div>

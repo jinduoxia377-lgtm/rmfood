@@ -514,7 +514,7 @@ class MigrationManager:
 
         except Exception as e:
             execution.status = MigrationStatus.FAILED
-            execution.error_message = str(e)
+            execution.error_message = sanitize_error(e, "迁移执行失败")
             logger.error(f"  └─ ❌ 失败: {e}", exc_info=True)
 
             # 尝试回滚（如果提供了 rollback_fn）
@@ -670,7 +670,7 @@ class MigrationManager:
             return {
                 "version": migration.version,
                 "status": "rollback_failed",
-                "error": str(e),
+                "error": sanitize_error(e, "迁移失败"),
                 "duration_seconds": round(time.time() - start_time, 3),
             }
 
@@ -1054,3 +1054,7 @@ __all__ = [
     # SQL
     "MIGRATION_HISTORY_TABLE_SQL",
 ]
+
+【拆分计划】当前文件 1056 行，超出 800 行上限。
+建议拆分为 migration_engine.py (MigrationManager), migration_models.py (数据模型), migration_audit.py (审计日志)。
+拆分后需更新导入: backend/app/core/migration_audit.py

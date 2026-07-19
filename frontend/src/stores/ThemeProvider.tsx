@@ -45,7 +45,7 @@ interface ThemeContextValue {
   setPresetTheme: (themeId: PresetThemeId) => void;
 
   /** 应用自定义主题覆盖 */
-  applyCustomTheme: (overrides: any) => void;
+  applyCustomTheme: (overrides: Record<string, unknown>) => void;
 
   /** 设置辅助功能模式 */
   setAccessibilityMode: (mode: AccessibilityMode) => void;
@@ -205,7 +205,7 @@ export function ThemeProvider({
             logger.error('[ThemeProvider] setPresetTheme error:', err);
           }
         },
-        applyCustomTheme: (overrides: any) => {
+        applyCustomTheme: (overrides: Record<string, unknown>) => {
           try {
             store.applyCustomTheme(overrides);
           } catch (err) {

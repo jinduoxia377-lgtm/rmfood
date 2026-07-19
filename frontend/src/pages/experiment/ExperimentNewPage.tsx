@@ -2,9 +2,9 @@
  * 新建实验页面 — Phase 6 专业增强版
  * 实验类型分类 + 参数模板 + 预算估算 + 表单验证
  */
-import { useState, useMemo } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
-import { ArrowLeft, Save, FlaskConical, CalendarDays, Beaker, DollarSign, AlertCircle, CheckCircle2, Lightbulb, X } from 'lucide-react'
+import { useState, useMemo, useEffect } from 'react'
+import { useNavigate, Link, useSearchParams } from 'react-router-dom'
+import { ArrowLeft, Save, FlaskConical, CalendarDays, DollarSign, AlertCircle, CheckCircle2, Lightbulb, X, Microscope, Target, Shield, TestTube, Settings, Wine, FileText } from 'lucide-react'
 import { useCreateExperiment, useFormulas } from '@/hooks/useQueries'
 import { Button, Input, Textarea, Card, CardContent, CardHeader, CardTitle, PageHeader, Badge } from '@/components/ui'
 import { cn } from '@/lib/utils'
@@ -12,13 +12,13 @@ import type { ExperimentCreatePayload } from '@/api/experiment'
 
 // ── 实验类型 ──
 const EXPERIMENT_TYPES = [
-  { value: 'stability', label: '稳定性实验', desc: '检测配方在不同条件下的稳定性', icon: '🔬', color: 'from-sky-500 to-blue-600' },
-  { value: 'efficacy', label: '功效验证实验', desc: '验证配方的目标功效', icon: '🎯', color: 'from-primary-500 to-teal-600' },
-  { value: 'safety', label: '安全毒理学', desc: '急性/亚慢性毒性试验', icon: '🛡️', color: 'from-amber-500 to-orange-600' },
-  { value: 'composition', label: '成分分析', desc: '配方成分含量测定', icon: '🧪', color: 'from-violet-500 to-purple-600' },
-  { value: 'process', label: '工艺优化', desc: '制备工艺参数优化', icon: '⚙️', color: 'from-slate-500 to-slate-600' },
-  { value: 'taste', label: '感官评价', desc: '口感/色泽/气味等感官指标', icon: '👅', color: 'from-pink-500 to-rose-600' },
-  { value: 'other', label: '其他', desc: '其他类型的实验', icon: '📝', color: 'from-gray-400 to-gray-500' },
+  { value: 'stability', label: '稳定性实验', desc: '检测配方在不同条件下的稳定性', icon: Microscope, color: 'from-sky-500 to-blue-600' },
+  { value: 'efficacy', label: '功效验证实验', desc: '验证配方的目标功效', icon: Target, color: 'from-primary-500 to-teal-600' },
+  { value: 'safety', label: '安全毒理学', desc: '急性/亚慢性毒性试验', icon: Shield, color: 'from-amber-500 to-orange-600' },
+  { value: 'composition', label: '成分分析', desc: '配方成分含量测定', icon: TestTube, color: 'from-violet-500 to-purple-600' },
+  { value: 'process', label: '工艺优化', desc: '制备工艺参数优化', icon: Settings, color: 'from-slate-500 to-slate-600' },
+  { value: 'taste', label: '感官评价', desc: '口感/色泽/气味等感官指标', icon: Wine, color: 'from-pink-500 to-rose-600' },
+  { value: 'other', label: '其他', desc: '其他类型的实验', icon: FileText, color: 'from-gray-400 to-gray-500' },
 ]
 
 // ── 参数模板 ──
@@ -58,13 +58,16 @@ const PARAM_TEMPLATES: Record<string, { key: string; label: string; default_valu
 
 export default function ExperimentNewPage() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const createMut = useCreateExperiment()
 
+  // 从 URL 参数自动关联配方
+  const preselectedFormulaId = searchParams.get('formula_id')
   const [selectedType, setSelectedType] = useState('')
   const [form, setForm] = useState<ExperimentCreatePayload>({
     title: '',
     description: '',
-    formula_id: undefined,
+    formula_id: preselectedFormulaId ? Number(preselectedFormulaId) : undefined,
     objectives: [],
     methodology: '',
     start_date: '',
@@ -81,7 +84,7 @@ export default function ExperimentNewPage() {
   // 关联配方搜索
   const [formulaSearch, setFormulaSearch] = useState('')
   const { data: formulaData } = useFormulas({ search: formulaSearch, page_size: 10 })
-  const formulas = formulaData?.items ?? []
+  const formulas = (formulaData as any)?.items ?? []
 
   // 预算估算
   const estimatedCost = useMemo(() => {
@@ -155,7 +158,7 @@ export default function ExperimentNewPage() {
         <div className="flex items-center gap-3">
           <Link
             to="/experiments"
-            className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-500"
+            className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors text-neutral-500"
           >
             <ArrowLeft size={18} />
           </Link>
@@ -164,10 +167,10 @@ export default function ExperimentNewPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-20 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-            <div className="h-full bg-violet-500 rounded-full transition-all duration-500" style={{ width: `${formCompleteness.percent}%` }} />
+          <div className="w-20 h-1.5 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
+            <div className="h-full bg-primary-500 rounded-full transition-all duration-500" style={{ width: `${formCompleteness.percent}%` }} />
           </div>
-          <span className="text-xs text-slate-400 font-medium">{formCompleteness.percent}%</span>
+          <span className="text-xs text-neutral-400 font-medium">{formCompleteness.percent}%</span>
         </div>
       </div>
 
@@ -176,14 +179,14 @@ export default function ExperimentNewPage() {
         <Card>
           <CardHeader>
             <CardTitle as="h3" className="flex items-center gap-2">
-              <Beaker size={18} className="text-violet-500" />
+              <FlaskConical size={18} className="text-violet-500" />
               实验类型
-              <span className="text-red-500 text-sm">*</span>
+              <span className="text-error-500 text-sm">*</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
             {errors.type && (
-              <div className="flex items-center gap-2 text-sm text-red-500 mb-3">
+              <div className="flex items-center gap-2 text-sm text-error-500 mb-3">
                 <AlertCircle size={14} />{errors.type}
               </div>
             )}
@@ -196,13 +199,13 @@ export default function ExperimentNewPage() {
                   className={cn(
                     'relative p-3 rounded-xl border text-left transition-all',
                     selectedType === type.value
-                      ? 'border-violet-300 dark:border-violet-700 bg-violet-50 dark:bg-violet-900/20 shadow-sm'
-                      : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600',
+                      ? 'border-primary-300 dark:border-primary-700 bg-primary-50 dark:bg-primary-900/20 shadow-sm'
+                      : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600',
                   )}
                 >
-                  <span className="text-lg">{type.icon}</span>
-                  <p className="text-sm font-medium text-slate-900 dark:text-white mt-1">{type.label}</p>
-                  <p className="text-[11px] text-slate-400 mt-0.5 leading-tight">{type.desc}</p>
+                  <span className="text-lg"><type.icon className="w-5 h-5" /></span>
+                  <p className="text-sm font-medium text-neutral-900 dark:text-white mt-1">{type.label}</p>
+                  <p className="text-[11px] text-neutral-400 mt-0.5 leading-tight">{type.desc}</p>
                   {selectedType === type.value && (
                     <div className="absolute top-2 right-2">
                       <CheckCircle2 size={14} className="text-violet-500" />
@@ -217,11 +220,11 @@ export default function ExperimentNewPage() {
         {/* 基本信息 */}
         <Card>
           <CardContent className="space-y-5">
-            <h2 className="font-semibold text-slate-900 dark:text-white">基本信息</h2>
+            <h2 className="font-semibold text-neutral-900 dark:text-white">基本信息</h2>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                实验标题 <span className="text-red-500">*</span>
+              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+                实验标题 <span className="text-error-500">*</span>
               </label>
               <Input
                 required
@@ -233,7 +236,7 @@ export default function ExperimentNewPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">实验描述</label>
+              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">实验描述</label>
               <Textarea
                 value={form.description}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
@@ -243,7 +246,7 @@ export default function ExperimentNewPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">实验方法</label>
+              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">实验方法</label>
               <Textarea
                 value={form.methodology}
                 onChange={(e) => setForm({ ...form, methodology: e.target.value })}
@@ -259,7 +262,7 @@ export default function ExperimentNewPage() {
           <Card className="!border-violet-200 dark:!border-violet-800/50">
             <CardHeader>
               <CardTitle as="h3" className="flex items-center gap-2 text-sm">
-                <Lightbulb size={16} className="text-amber-500" />
+                <Lightbulb size={16} className="text-warning-500" />
                 {EXPERIMENT_TYPES.find((t) => t.value === selectedType)?.label}参数模板
               </CardTitle>
             </CardHeader>
@@ -267,7 +270,7 @@ export default function ExperimentNewPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {paramTemplate.map((param) => (
                   <div key={param.key}>
-                    <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">{param.label}</label>
+                    <label className="text-xs text-neutral-500 dark:text-neutral-400 mb-1 block">{param.label}</label>
                     <Input
                       value={(form.parameters as Record<string, string>)?.[param.key] || ''}
                       onChange={(e) => updateParam(param.key, e.target.value)}
@@ -284,8 +287,8 @@ export default function ExperimentNewPage() {
         {/* 关联配方 */}
         <Card>
           <CardContent className="space-y-4">
-            <h2 className="font-semibold text-slate-900 dark:text-white">关联配方</h2>
-            <p className="text-sm text-slate-500 dark:text-slate-400">可选：将实验关联到已有配方</p>
+            <h2 className="font-semibold text-neutral-900 dark:text-white">关联配方</h2>
+            <p className="text-sm text-neutral-500 dark:text-neutral-400">可选：将实验关联到已有配方</p>
 
             <Input
               value={formulaSearch}
@@ -295,8 +298,8 @@ export default function ExperimentNewPage() {
             />
 
             {formulaSearch && formulas.length > 0 && (
-              <div className="border border-slate-200 dark:border-slate-600 rounded-lg max-h-40 overflow-auto">
-                {formulas.map((f) => (
+              <div className="border border-neutral-200 dark:border-neutral-600 rounded-lg max-h-40 overflow-auto">
+                {formulas.map((f: any) => (
                   <button
                     key={f.id}
                     type="button"
@@ -305,14 +308,14 @@ export default function ExperimentNewPage() {
                       setFormulaSearch('')
                     }}
                     className={cn(
-                      'w-full text-left px-3 py-2 text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors',
+                      'w-full text-left px-3 py-2 text-sm hover:bg-slate-50 dark:hover:bg-neutral-800 transition-colors',
                       form.formula_id === f.id
                         ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400'
-                        : 'text-slate-700 dark:text-slate-300',
+                        : 'text-neutral-700 dark:text-neutral-300',
                     )}
                   >
                     <span className="font-medium">{f.name}</span>
-                    <span className="ml-2 text-xs text-slate-400">{f.code}</span>
+                    <span className="ml-2 text-xs text-neutral-400">{f.code}</span>
                   </button>
                 ))}
               </div>
@@ -328,7 +331,7 @@ export default function ExperimentNewPage() {
                   variant="ghost"
                   size="sm"
                   onClick={() => setForm({ ...form, formula_id: undefined })}
-                  className="text-red-500 hover:text-red-600"
+                  className="text-error-500 hover:text-error-600"
                 >
                   取消关联
                 </Button>
@@ -340,7 +343,7 @@ export default function ExperimentNewPage() {
         {/* 实验目标 */}
         <Card>
           <CardContent className="space-y-4">
-            <h2 className="font-semibold text-slate-900 dark:text-white">实验目标</h2>
+            <h2 className="font-semibold text-neutral-900 dark:text-white">实验目标</h2>
             <div className="flex gap-2">
               <Input
                 value={objectiveInput}
@@ -361,7 +364,7 @@ export default function ExperimentNewPage() {
                     <button
                       type="button"
                       onClick={() => handleRemoveObjective(i)}
-                      className="ml-1 hover:text-red-500 transition-colors"
+                      className="ml-1 hover:text-error-500 transition-colors"
                     >
                       <X size={12} />
                     </button>
@@ -377,12 +380,12 @@ export default function ExperimentNewPage() {
           <Card>
             <CardContent className="space-y-4">
               <div className="flex items-center gap-2">
-                <CalendarDays size={18} className="text-slate-500" />
-                <h2 className="font-semibold text-slate-900 dark:text-white">时间计划</h2>
+                <CalendarDays size={18} className="text-neutral-500" />
+                <h2 className="font-semibold text-neutral-900 dark:text-white">时间计划</h2>
               </div>
               <div className="space-y-3">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">计划开始日期</label>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">计划开始日期</label>
                   <Input
                     type="date"
                     value={form.start_date}
@@ -390,7 +393,7 @@ export default function ExperimentNewPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">计划结束日期</label>
+                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">计划结束日期</label>
                   <Input
                     type="date"
                     value={form.end_date}
@@ -405,17 +408,17 @@ export default function ExperimentNewPage() {
             <Card className="!border-amber-200 dark:!border-amber-800/50">
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-2">
-                  <DollarSign size={18} className="text-amber-500" />
-                  <h2 className="font-semibold text-slate-900 dark:text-white">预算估算</h2>
+                  <DollarSign size={18} className="text-warning-500" />
+                  <h2 className="font-semibold text-neutral-900 dark:text-white">预算估算</h2>
                 </div>
                 <div className="text-center py-4">
-                  <p className="text-3xl font-bold text-amber-600 dark:text-amber-400">
+                  <p className="text-3xl font-bold text-warning-600 dark:text-warning-400">
                     ¥{estimatedCost.toLocaleString()}
                   </p>
-                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                  <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
                     {EXPERIMENT_TYPES.find((t) => t.value === selectedType)?.label}参考费用
                   </p>
-                  <p className="text-xs text-slate-400 mt-2">实际费用以合同为准，仅供参考</p>
+                  <p className="text-xs text-neutral-400 mt-2">实际费用以合同为准，仅供参考</p>
                 </div>
               </CardContent>
             </Card>
@@ -426,7 +429,7 @@ export default function ExperimentNewPage() {
         <div className="flex items-center justify-between pt-2">
           <Link
             to="/experiments"
-            className="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+            className="px-4 py-2 text-sm font-medium text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors"
           >
             取消
           </Link>
@@ -435,14 +438,14 @@ export default function ExperimentNewPage() {
             icon={<Save size={16} />}
             loading={createMut.isPending}
             disabled={!form.title.trim() || !selectedType}
-            className="bg-violet-600 hover:bg-violet-700 shadow-violet-600/25"
+            className="bg-primary-600 hover:bg-primary-700 shadow-primary-600/25"
           >
             创建实验
           </Button>
         </div>
 
         {createMut.isError && (
-          <div className="px-4 py-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 text-sm">
+          <div className="px-4 py-3 rounded-lg bg-error-50 dark:bg-error-900/20 text-error-700 dark:text-error-400 text-sm">
             创建失败，请检查表单信息后重试
           </div>
         )}

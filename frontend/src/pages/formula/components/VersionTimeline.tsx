@@ -24,8 +24,8 @@ export function VersionTimeline({ versions, currentVersion }: VersionTimelinePro
   if (!versions || versions.length === 0) {
     return (
       <div className="text-center py-8">
-        <GitBranch size={32} className="mx-auto text-slate-300 dark:text-slate-600 mb-2" />
-        <p className="text-sm text-slate-400">暂无版本记录</p>
+        <GitBranch size={32} className="mx-auto text-neutral-300 dark:text-neutral-600 mb-2" />
+        <p className="text-sm text-neutral-400">暂无版本记录</p>
       </div>
     )
   }
@@ -38,7 +38,7 @@ export function VersionTimeline({ versions, currentVersion }: VersionTimelinePro
 
   return (
     <div className="relative">
-      <div className="absolute left-4 top-0 bottom-0 w-px bg-slate-200 dark:bg-slate-700" />
+      <div className="absolute left-4 top-0 bottom-0 w-px bg-neutral-200 dark:bg-neutral-700" />
       <div className="space-y-3">
         {sortedVersions.map((v, index) => {
           const isCurrent = currentVersion !== undefined ? v.version === currentVersion : index === 0
@@ -49,21 +49,21 @@ export function VersionTimeline({ versions, currentVersion }: VersionTimelinePro
               <div
                 className={cn(
                   'absolute left-0 w-8 h-8 rounded-full flex items-center justify-center shrink-0 z-10',
-                  'bg-slate-100 dark:bg-slate-800 border-2',
+                  'bg-neutral-100 dark:bg-neutral-800 border-2',
                   isCurrent
                     ? 'border-primary-400 dark:border-primary-600 bg-primary-50 dark:bg-primary-900/30'
-                    : 'border-slate-200 dark:border-slate-700',
+                    : 'border-neutral-200 dark:border-neutral-700',
                 )}
               >
-                <GitBranch size={14} className={isCurrent ? 'text-primary-500' : 'text-slate-400'} />
+                <GitBranch size={14} className={isCurrent ? 'text-primary-500' : 'text-neutral-400'} />
               </div>
 
               <div
                 className={cn(
-                  'bg-white dark:bg-slate-900 rounded-lg border transition-all cursor-pointer',
+                  'bg-white dark:bg-neutral-900 rounded-lg border transition-all cursor-pointer',
                   isCurrent
                     ? 'border-primary-200 dark:border-primary-800 shadow-sm hover:shadow-md'
-                    : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700',
+                    : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700',
                   isExpanded && 'shadow-md',
                 )}
                 onClick={() => toggleExpand(v.id)}
@@ -74,7 +74,7 @@ export function VersionTimeline({ versions, currentVersion }: VersionTimelinePro
                       <div className="flex items-center gap-2 mb-1">
                         <span className={cn(
                           'text-sm font-semibold',
-                          isCurrent ? 'text-primary-600 dark:text-primary-400' : 'text-slate-900 dark:text-white',
+                          isCurrent ? 'text-primary-600 dark:text-primary-400' : 'text-neutral-900 dark:text-white',
                         )}>
                           v{v.version}
                         </span>
@@ -86,12 +86,12 @@ export function VersionTimeline({ versions, currentVersion }: VersionTimelinePro
                       </div>
 
                       {v.change_summary && (
-                        <p className="text-sm text-slate-600 dark:text-slate-300 line-clamp-2">
+                        <p className="text-sm text-neutral-600 dark:text-neutral-300 line-clamp-2">
                           {v.change_summary}
                         </p>
                       )}
 
-                      <div className="flex items-center gap-3 mt-2 text-xs text-slate-400">
+                      <div className="flex items-center gap-3 mt-2 text-xs text-neutral-400">
                         <span className="flex items-center gap-1">
                           <Clock size={10} />
                           {new Date(v.created_at).toLocaleDateString('zh-CN', {
@@ -111,7 +111,7 @@ export function VersionTimeline({ versions, currentVersion }: VersionTimelinePro
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-1 text-slate-400">
+                    <div className="flex items-center gap-1 text-neutral-400">
                       {isExpanded ? (
                         <ChevronUp size={16} />
                       ) : (
@@ -122,33 +122,33 @@ export function VersionTimeline({ versions, currentVersion }: VersionTimelinePro
                 </div>
 
                 {isExpanded && (
-                  <div className="px-3 pb-3 border-t border-slate-100 dark:border-slate-800 pt-3">
+                  <div className="px-3 pb-3 border-t border-neutral-100 dark:border-neutral-800 pt-3">
                     <div className="space-y-2">
                       <div className="text-xs">
-                        <span className="text-slate-500 dark:text-slate-400">版本号：</span>
-                        <span className="text-slate-700 dark:text-slate-300">v{v.version}</span>
+                        <span className="text-neutral-500 dark:text-neutral-400">版本号：</span>
+                        <span className="text-neutral-700 dark:text-neutral-300">v{v.version}</span>
                       </div>
                       <div className="text-xs">
-                        <span className="text-slate-500 dark:text-slate-400">创建时间：</span>
-                        <span className="text-slate-700 dark:text-slate-300">
+                        <span className="text-neutral-500 dark:text-neutral-400">创建时间：</span>
+                        <span className="text-neutral-700 dark:text-neutral-300">
                           {new Date(v.created_at).toLocaleString('zh-CN')}
                         </span>
                       </div>
                       {v.creator_name && (
                         <div className="text-xs">
-                          <span className="text-slate-500 dark:text-slate-400">创建人ID：</span>
-                          <span className="text-slate-700 dark:text-slate-300">{v.created_by}</span>
+                          <span className="text-neutral-500 dark:text-neutral-400">创建人ID：</span>
+                          <span className="text-neutral-700 dark:text-neutral-300">{v.created_by}</span>
                         </div>
                       )}
                       {v.change_summary && (
                         <div className="text-xs">
-                          <span className="text-slate-500 dark:text-slate-400">变更摘要：</span>
-                          <span className="text-slate-700 dark:text-slate-300">{v.change_summary}</span>
+                          <span className="text-neutral-500 dark:text-neutral-400">变更摘要：</span>
+                          <span className="text-neutral-700 dark:text-neutral-300">{v.change_summary}</span>
                         </div>
                       )}
                       <div className="text-xs">
-                        <span className="text-slate-500 dark:text-slate-400">快照数据：</span>
-                        <pre className="mt-1 p-2 bg-slate-50 dark:bg-slate-800 rounded text-[10px] overflow-auto max-h-32 text-slate-600 dark:text-slate-400">
+                        <span className="text-neutral-500 dark:text-neutral-400">快照数据：</span>
+                        <pre className="mt-1 p-2 bg-slate-50 dark:bg-neutral-800 rounded text-[10px] overflow-auto max-h-32 text-neutral-600 dark:text-neutral-400">
                           {JSON.stringify(v.snapshot, null, 2)}
                         </pre>
                       </div>

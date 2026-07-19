@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from 'react'
-import { getAIConfig, DEFAULTS, TIMEOUTS } from '@/config'
+import { DEFAULTS, TIMEOUTS } from '@/config'
 import { logger } from '@/utils/safeLogger'
 import type { AICandidate } from '@/api/ai'
 
@@ -44,7 +44,7 @@ export function useSavedFormulas() {
     if (savedCandidate) {
       const formulaName = typeof savedCandidate.formula_name === 'string'
         ? savedCandidate.formula_name
-        : DEFAULTS.unknownFormula
+        : DEFAULTS.PLACEHOLDER_TEXTS.UNKNOWN_FORMULA
 
       setSaveSuccess({ formulaId, formulaName })
 

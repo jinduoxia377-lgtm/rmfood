@@ -20,10 +20,10 @@ const SIZE_CONFIG: Record<BadgeSize, { diameter: string; fontSize: string; iconS
 
 function getBadgeColor(count: number): string {
   if (count === 0) {
-    return 'bg-gray-400 text-white dark:bg-gray-500'
+    return 'bg-neutral-400 text-white dark:bg-neutral-500'
   }
   if (count > 0 && count < 5) {
-    return 'bg-blue-500 text-white dark:bg-blue-600'
+    return 'bg-secondary-500 text-white dark:bg-secondary-600'
   }
   return 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white dark:from-emerald-600 dark:to-teal-700'
 }
@@ -136,7 +136,7 @@ const FormulaCounterBadgeComponent = ({
           ${isBouncing ? 'animate-bounce-custom' : ''}
           ${isPulsing ? 'animate-pulse-glow-custom' : ''}
           focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2
-          dark:focus:ring-blue-500 dark:focus:ring-offset-gray-800
+          dark:focus:ring-blue-500 dark:focus:ring-offset-slate-800
           cursor-pointer select-none
           overflow-hidden
         `}
@@ -155,14 +155,14 @@ const FormulaCounterBadgeComponent = ({
         <div
           className="
             absolute z-50 bottom-full mb-2 left-1/2 -translate-x-1/2
-            w-56 bg-gray-900 text-white text-xs rounded-lg shadow-xl p-3
-            border border-gray-700 dark:bg-gray-800 dark:border-gray-600
+            w-56 bg-neutral-900 text-white text-xs rounded-lg shadow-xl p-3
+            border border-neutral-700 dark:bg-neutral-800 dark:border-neutral-600
             animate-fade-in
           "
           role="tooltip"
           aria-label="最近配方列表"
         >
-          <div className="font-semibold mb-2 text-blue-300 flex items-center gap-1.5">
+          <div className="font-semibold mb-2 text-secondary-300 flex items-center gap-1.5">
             <span>📋</span>
             <span>最近配方 ({Math.min(formulas.length, 3)})</span>
           </div>
@@ -175,17 +175,17 @@ const FormulaCounterBadgeComponent = ({
               >
                 <span
                   className="
-                    w-4 h-4 rounded-full bg-blue-500 flex-shrink-0
+                    w-4 h-4 rounded-full bg-secondary-500 flex-shrink-0
                     flex items-center justify-center text-[10px] font-bold
-                    group-hover:bg-blue-400 transition-colors
+                    group-hover:bg-secondary-400 transition-colors
                   "
                 >
                   {idx + 1}
                 </span>
-                <span className="truncate flex-1 text-gray-200 group-hover:text-white transition-colors">
+                <span className="truncate flex-1 text-neutral-200 group-hover:text-white transition-colors">
                   {formula.name}
                 </span>
-                <span className="text-gray-400 ml-auto flex-shrink-0 tabular-nums">
+                <span className="text-neutral-400 ml-auto flex-shrink-0 tabular-nums">
                   {formula.ingredientCount}种
                 </span>
               </li>
@@ -193,7 +193,7 @@ const FormulaCounterBadgeComponent = ({
           </ul>
 
           {formulas.length > 3 && (
-            <div className="mt-2 pt-2 border-t border-gray-700 dark:border-gray-600 text-center text-gray-400 text-[11px]">
+            <div className="mt-2 pt-2 border-t border-neutral-700 dark:border-neutral-600 text-center text-neutral-400 text-[11px]">
               还有 {formulas.length - 3} 个配方...
             </div>
           )}
@@ -201,8 +201,8 @@ const FormulaCounterBadgeComponent = ({
           <div
             className="
               absolute top-full left-1/2 -translate-x-1/2
-              border-8 border-transparent border-t-gray-900
-              dark:border-t-gray-800
+              border-8 border-transparent border-t-slate-900
+              dark:border-t-slate-800
             "
           />
         </div>

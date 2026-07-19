@@ -157,18 +157,18 @@ export default function InferenceChainVisualizer({ chain, autoScrollToActive = t
   const currentStep: InferenceStep | undefined = filteredSteps[currentStepIndex];
 
   return (
-    <div className="flex flex-col h-full bg-white rounded-xl border border-gray-200 overflow-hidden">
+    <div className="flex flex-col h-full bg-white rounded-xl border border-neutral-200 overflow-hidden">
       {/* 头部 */}
-      <div className="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
+      <div className="px-6 py-4 border-b border-neutral-200 bg-gradient-to-r from-slate-50 to-white">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-gray-900">{chain.title}</h2>
+            <h2 className="text-lg font-semibold text-neutral-900">{chain.title}</h2>
             {chain.description && (
-              <p className="text-sm text-gray-500 mt-1">{chain.description}</p>
+              <p className="text-sm text-neutral-500 mt-1">{chain.description}</p>
             )}
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-500">
+            <span className="text-sm text-neutral-500">
               步骤: {filteredSteps.length}/{chain.steps.length}
             </span>
           </div>
@@ -176,20 +176,20 @@ export default function InferenceChainVisualizer({ chain, autoScrollToActive = t
       </div>
 
       {/* 统计信息栏 */}
-      <div className="px-6 py-3 bg-gray-50 border-b border-gray-200">
+      <div className="px-6 py-3 bg-slate-50 border-b border-neutral-200">
         <div className="flex flex-wrap items-center gap-4">
           <StatItem icon={Hash} label="总步骤" value={stats.totalSteps} />
-          <StatItem icon={Lightbulb} label="思考" value={stats.thoughtCount} color="text-amber-600" />
-          <StatItem icon={Cog} label="行动" value={stats.actionCount} color="text-blue-600" />
-          <StatItem icon={Eye} label="观察" value={stats.observationCount} color="text-green-600" />
-          <StatItem icon={CheckCircle} label="成功" value={stats.successCount} color="text-green-500" />
-          <StatItem icon={XCircle} label="失败" value={stats.failedCount} color="text-red-500" />
+          <StatItem icon={Lightbulb} label="思考" value={stats.thoughtCount} color="text-warning-600" />
+          <StatItem icon={Cog} label="行动" value={stats.actionCount} color="text-secondary-600" />
+          <StatItem icon={Eye} label="观察" value={stats.observationCount} color="text-success-600" />
+          <StatItem icon={CheckCircle} label="成功" value={stats.successCount} color="text-success-500" />
+          <StatItem icon={XCircle} label="失败" value={stats.failedCount} color="text-error-500" />
           <StatItem icon={Clock} label="总耗时" value={`${stats.totalExecutionTime}ms`} />
         </div>
       </div>
 
       {/* 工具栏 */}
-      <div className="px-6 py-3 border-b border-gray-100 flex items-center justify-between">
+      <div className="px-6 py-3 border-b border-neutral-100 flex items-center justify-between">
         {/* 导航控制 */}
         <div className="flex items-center gap-2">
           <button
@@ -208,7 +208,7 @@ export default function InferenceChainVisualizer({ chain, autoScrollToActive = t
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
-          <span className="px-3 py-1 bg-gray-100 rounded-full text-sm font-medium text-gray-700 min-w-[80px] text-center">
+          <span className="px-3 py-1 bg-neutral-100 rounded-full text-sm font-medium text-neutral-700 min-w-[80px] text-center">
             {currentStepIndex + 1} / {filteredSteps.length}
           </span>
           <button
@@ -233,13 +233,13 @@ export default function InferenceChainVisualizer({ chain, autoScrollToActive = t
         <div className="flex items-center gap-2">
           {/* 搜索框 */}
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
             <input
               type="text"
               placeholder="搜索步骤..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 pr-4 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-64"
+              className="pl-9 pr-4 py-1.5 text-sm border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-64"
             />
           </div>
 
@@ -249,8 +249,8 @@ export default function InferenceChainVisualizer({ chain, autoScrollToActive = t
             className={clsx(
               'flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border transition-colors',
               showFilter
-                ? 'bg-blue-50 border-blue-300 text-blue-700'
-                : 'border-gray-200 text-gray-600 hover:bg-gray-50',
+                ? 'bg-secondary-50 border-blue-300 text-secondary-700'
+                : 'border-neutral-200 text-neutral-600 hover:bg-slate-50',
             )}
           >
             <Filter className="w-4 h-4" />
@@ -260,14 +260,14 @@ export default function InferenceChainVisualizer({ chain, autoScrollToActive = t
           {/* 展开/折叠按钮 */}
           <button
             onClick={handleExpandAll}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-neutral-200 rounded-lg text-neutral-600 hover:bg-slate-50 transition-colors"
           >
             <ChevronDown className="w-4 h-4" />
             展开全部
           </button>
           <button
             onClick={handleCollapseAll}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-neutral-200 rounded-lg text-neutral-600 hover:bg-slate-50 transition-colors"
           >
             <ChevronUp className="w-4 h-4" />
             折叠全部
@@ -277,11 +277,11 @@ export default function InferenceChainVisualizer({ chain, autoScrollToActive = t
 
       {/* 过滤器面板 */}
       {showFilter && (
-        <div className="px-6 py-3 bg-gray-50 border-b border-gray-200">
+        <div className="px-6 py-3 bg-slate-50 border-b border-neutral-200">
           <div className="flex flex-wrap gap-6">
             {/* 类型过滤 */}
             <div>
-              <label className="text-xs font-medium text-gray-600 mb-1.5 block">步骤类型</label>
+              <label className="text-xs font-medium text-neutral-600 mb-1.5 block">步骤类型</label>
               <div className="flex flex-wrap gap-1.5">
                 {Object.values(InferenceStepType).map(type => (
                   <button
@@ -295,8 +295,8 @@ export default function InferenceChainVisualizer({ chain, autoScrollToActive = t
                     className={clsx(
                       'px-2.5 py-1 text-xs rounded-full border transition-colors',
                       filterOptions.stepTypes.includes(type)
-                        ? 'bg-blue-100 border-blue-300 text-blue-700'
-                        : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50',
+                        ? 'bg-secondary-100 border-blue-300 text-secondary-700'
+                        : 'bg-white border-neutral-200 text-neutral-500 hover:bg-slate-50',
                     )}
                   >
                     {typeLabels[type]}
@@ -307,7 +307,7 @@ export default function InferenceChainVisualizer({ chain, autoScrollToActive = t
 
             {/* 状态过滤 */}
             <div>
-              <label className="text-xs font-medium text-gray-600 mb-1.5 block">步骤状态</label>
+              <label className="text-xs font-medium text-neutral-600 mb-1.5 block">步骤状态</label>
               <div className="flex flex-wrap gap-1.5">
                 {Object.values(InferenceStepStatus).map(status => (
                   <button
@@ -321,8 +321,8 @@ export default function InferenceChainVisualizer({ chain, autoScrollToActive = t
                     className={clsx(
                       'px-2.5 py-1 text-xs rounded-full border transition-colors',
                       filterOptions.statuses.includes(status)
-                        ? 'bg-green-100 border-green-300 text-green-700'
-                        : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50',
+                        ? 'bg-success-100 border-green-300 text-success-700'
+                        : 'bg-white border-neutral-200 text-neutral-500 hover:bg-slate-50',
                     )}
                   >
                     {statusLabels[status]}
@@ -337,7 +337,7 @@ export default function InferenceChainVisualizer({ chain, autoScrollToActive = t
       {/* 步骤列表 */}
       <div
         ref={stepsContainerRef}
-        className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/50"
+        className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50/50"
       >
         {filteredSteps.length > 0 ? (
           filteredSteps.map((step, index) => (
@@ -352,7 +352,7 @@ export default function InferenceChainVisualizer({ chain, autoScrollToActive = t
             />
           ))
         ) : (
-          <div className="flex flex-col items-center justify-center py-12 text-gray-500">
+          <div className="flex flex-col items-center justify-center py-12 text-neutral-500">
             <BarChart3 className="w-12 h-12 mb-3 opacity-50" />
             <p>没有找到匹配的步骤</p>
             <p className="text-sm mt-1">请尝试调整过滤条件或搜索关键词</p>
@@ -362,13 +362,13 @@ export default function InferenceChainVisualizer({ chain, autoScrollToActive = t
 
       {/* 当前步骤信息栏 */}
       {currentStep && (
-        <div className="px-6 py-3 border-t border-gray-200 bg-white">
+        <div className="px-6 py-3 border-t border-neutral-200 bg-white">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <span className="text-sm font-medium text-gray-700">当前步骤:</span>
-              <span className="text-sm text-gray-900">{currentStep.title}</span>
+              <span className="text-sm font-medium text-neutral-700">当前步骤:</span>
+              <span className="text-sm text-neutral-900">{currentStep.title}</span>
             </div>
-            <div className="flex items-center gap-4 text-sm text-gray-500">
+            <div className="flex items-center gap-4 text-sm text-neutral-500">
               <span>类型: {typeLabels[currentStep.type]}</span>
               <span>状态: {statusLabels[currentStep.status]}</span>
               {currentStep.confidence !== undefined && (
@@ -407,11 +407,11 @@ interface StatItemProps {
   color?: string;
 }
 
-function StatItem({ icon: Icon, label, value, color = 'text-gray-600' }: StatItemProps) {
+function StatItem({ icon: Icon, label, value, color = 'text-neutral-600' }: StatItemProps) {
   return (
     <div className="flex items-center gap-1.5">
       <Icon className={clsx('w-4 h-4', color)} />
-      <span className="text-xs text-gray-500">{label}</span>
+      <span className="text-xs text-neutral-500">{label}</span>
       <span className={clsx('text-sm font-semibold', color)}>{value}</span>
     </div>
   );

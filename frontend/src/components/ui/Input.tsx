@@ -31,7 +31,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="relative w-full">
         {prefix && (
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 pointer-events-none">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-neutral-500 pointer-events-none">
             {prefix}
           </span>
         )}
@@ -45,16 +45,18 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             showCount && maxLength && 'pr-16',
             error && 'input-error border-danger-500 focus:ring-danger-500/20 focus:border-danger-500',
             isOverLimit && 'border-danger-500 focus:ring-danger-500/20',
-            disabled && 'bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed',
+            disabled && 'bg-slate-50 dark:bg-neutral-800 text-neutral-400 dark:text-neutral-500 cursor-not-allowed',
             className,
           )}
+          aria-invalid={!!error}
+          aria-describedby={typeof error === "string" && error && props.id ? `${props.id}-error` : undefined}
           disabled={disabled}
           maxLength={maxLength}
           value={value}
           {...props}
         />
         {suffix && !showCount && (
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500">
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-neutral-500">
             {suffix}
           </span>
         )}
@@ -66,14 +68,14 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
                 ? 'text-danger-500 font-medium'
                 : isNearLimit
                   ? 'text-warning-500'
-                  : 'text-slate-400 dark:text-slate-500',
+                  : 'text-neutral-400 dark:text-neutral-500',
             )}
           >
             {currentLength}/{maxLength}
           </span>
         )}
         {typeof error === 'string' && error && (
-          <p className="mt-1 text-xs text-danger-500">{error}</p>
+          <p id={props.id ? `${props.id}-error` : undefined} className="mt-1 text-xs text-danger-500" role="alert">{error}</p>
         )}
       </div>
     )

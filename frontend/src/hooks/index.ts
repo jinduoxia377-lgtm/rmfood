@@ -7,7 +7,8 @@ export { usePerformanceMetrics, useFPSMonitor, useResourceTiming } from './usePe
 // export { useTheme } from './useTheme';
 // useThemePersistence 已废弃 — Zustand store 内置持久化
 // export { useThemePersistence } from './useThemePersistence';
-export { useMemoizedFn, useDebounce, useThrottle, useFormulaCache, usePrevious } from './useMemoOptimization';
+export { useMemoizedFn, useFormulaCache, usePrevious } from './useMemoOptimization';
+export { useDebounce, useThrottle, useDebouncedCallback } from './useDebounce';
 export {
   useSmartPrefetch,
   useBackgroundSync,

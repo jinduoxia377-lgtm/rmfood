@@ -11,13 +11,10 @@
 from datetime import datetime, timezone
 from typing import Optional
 
-from sqlalchemy import Integer, String, Float, DateTime, JSON, ForeignKey, Index, UniqueConstraint
+from sqlalchemy import Integer, String, Float, DateTime, JSON, ForeignKey, Index, UniqueConstraint, BigInteger
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from ..core.database import Base
-
-
-def _now() -> datetime:
-    return datetime.now(timezone.utc).replace(tzinfo=None)
+from .base import Base
+from app.models.utils import now_utc_mapped
 
 
 # 节点类型常量
@@ -55,7 +52,7 @@ class KGNode(Base):
     """
     __tablename__ = "kg_nodes"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
 
     # 节点标识
     node_type: Mapped[str] = mapped_column(
@@ -85,17 +82,17 @@ class KGNode(Base):
 
     # 关联数据库记录（可选）
     tcm_herb_id: Mapped[Optional[int]] = mapped_column(
-        Integer, ForeignKey("tcm_herbs.id", ondelete="SET NULL"), nullable=True,
+        BigInteger, ForeignKey("tcm_herbs.id", ondelete="SET NULL"), nullable=True, index=True,
         comment="关联 TCMSP 药材表"
     )
     bioactive_peptide_id: Mapped[Optional[int]] = mapped_column(
-        Integer, ForeignKey("bioactive_peptides.id", ondelete="SET NULL"), nullable=True,
+        BigInteger, ForeignKey("bioactive_peptides.id", ondelete="SET NULL"), nullable=True, index=True,
         comment="关联 DFBP 活性肽表"
     )
 
     # 元数据
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=_now, nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_now, onupdate=_now, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=now_utc_mapped, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=now_utc_mapped, onupdate=now_utc_mapped, nullable=False)
 
     # 关系
     outgoing_edges: Mapped[list["KGEdge"]] = relationship(
@@ -135,15 +132,15 @@ class KGEdge(Base):
     """
     __tablename__ = "kg_edges"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
 
     # 关系端点
     source_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("kg_nodes.id", ondelete="CASCADE"), nullable=False,
+        BigInteger, ForeignKey("kg_nodes.id", ondelete="CASCADE"), nullable=False, index=True,
         comment="源节点ID"
     )
     target_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("kg_nodes.id", ondelete="CASCADE"), nullable=False,
+        BigInteger, ForeignKey("kg_nodes.id", ondelete="CASCADE"), nullable=False, index=True,
         comment="目标节点ID"
     )
 
@@ -172,8 +169,8 @@ class KGEdge(Base):
     )
 
     # 元数据
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=_now, nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_now, onupdate=_now, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=now_utc_mapped, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=now_utc_mapped, onupdate=now_utc_mapped, nullable=False)
 
     # 关系
     source_node: Mapped["KGNode"] = relationship(

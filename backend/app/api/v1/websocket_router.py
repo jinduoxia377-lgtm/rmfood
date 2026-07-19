@@ -123,7 +123,7 @@ async def websocket_generic_endpoint(
         logger.error(f"通用 WebSocket 错误: {e}")
         try:
             await connection_manager.disconnect(user_id, effective_connection_id)
-            await websocket.close(code=1011, reason=str(e))
+            await websocket.close(code=1011, reason="连接异常")
         except Exception:
             pass
 
@@ -224,7 +224,7 @@ async def websocket_notification_endpoint(
     except Exception as e:
         logger.error(f"WebSocket错误: {e}")
         try:
-            await websocket.close(code=1011, reason=str(e))
+            await websocket.close(code=1011, reason="连接异常")
         except Exception:
             pass
 

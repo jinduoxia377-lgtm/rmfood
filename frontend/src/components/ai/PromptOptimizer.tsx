@@ -236,19 +236,19 @@ export function PromptOptimizer({
     switch (severity) {
       case 'error':
       case 'critical':
-        return <XCircle size={16} className="text-red-600" />
+        return <XCircle size={16} className="text-error-600" />
       case 'warning':
       case 'major':
         return <AlertTriangle size={16} className="text-yellow-600" />
       default:
-        return <Info size={16} className="text-blue-600" />
+        return <Info size={16} className="text-secondary-600" />
     }
   }
 
   const getScoreColor = (score: number) => {
-    if (score >= 90) return 'text-green-600'
+    if (score >= 90) return 'text-success-600'
     if (score >= 70) return 'text-yellow-600'
-    return 'text-red-600'
+    return 'text-error-600'
   }
 
   return (
@@ -257,7 +257,7 @@ export function PromptOptimizer({
       <Card className="p-4">
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
               <FileText size={16} />
               待优化的提示词
             </h3>
@@ -270,7 +270,7 @@ export function PromptOptimizer({
                   className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
                     level === lvl
                       ? `bg-${LEVEL_CONFIG[lvl].color}-100 text-${LEVEL_CONFIG[lvl].color}-700 border border-${LEVEL_CONFIG[lvl].color}-300`
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
                   }`}
                 >
                   {LEVEL_CONFIG[lvl].label}
@@ -289,7 +289,7 @@ export function PromptOptimizer({
           />
 
           <div className="flex items-center justify-between pt-2">
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-neutral-500">
               字符数: {content.length} · 建议长度: 200-1500字符
             </p>
 
@@ -316,22 +316,22 @@ export function PromptOptimizer({
           {/* 总览卡片 */}
           <div className="grid grid-cols-3 gap-4 mb-4 p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg">
             <div className="text-center">
-              <p className="text-xs text-gray-500 mb-1">原始分数</p>
+              <p className="text-xs text-neutral-500 mb-1">原始分数</p>
               <p className={`text-2xl font-bold ${getScoreColor(result.overall_score_before)}`}>
                 {result.overall_score_before.toFixed(0)}
               </p>
             </div>
 
             <div className="text-center">
-              <p className="text-xs text-gray-500 mb-1">优化后预估</p>
+              <p className="text-xs text-neutral-500 mb-1">优化后预估</p>
               <p className={`text-2xl font-bold ${getScoreColor(result.overall_score_after)}`}>
                 {result.overall_score_after.toFixed(0)}
               </p>
             </div>
 
             <div className="text-center">
-              <p className="text-xs text-gray-500 mb-1">提升幅度</p>
-              <p className="text-2xl font-bold text-green-600 flex items-center justify-center gap-1">
+              <p className="text-xs text-neutral-500 mb-1">提升幅度</p>
+              <p className="text-2xl font-bold text-success-600 flex items-center justify-center gap-1">
                 <TrendingUp size={18} />
                 +{result.score_improvement.toFixed(0)}
               </p>
@@ -344,8 +344,8 @@ export function PromptOptimizer({
               onClick={() => setActiveTab('issues')}
               className={`px-3 py-1.5 text-sm font-medium rounded-t transition-colors whitespace-nowrap ${
                 activeTab === 'issues'
-                  ? 'bg-white dark:bg-gray-800 border-b-2 border-blue-600 text-blue-600'
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-white dark:bg-neutral-800 border-b-2 border-blue-600 text-secondary-600'
+                  : 'text-neutral-600 hover:text-neutral-900'
               }`}
             >
               <Bug size={14} className="inline mr-1" />
@@ -356,8 +356,8 @@ export function PromptOptimizer({
               onClick={() => setActiveTab('structure')}
               className={`px-3 py-1.5 text-sm font-medium rounded-t transition-colors whitespace-nowrap ${
                 activeTab === 'structure'
-                  ? 'bg-white dark:bg-gray-800 border-b-2 border-blue-600 text-blue-600'
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-white dark:bg-neutral-800 border-b-2 border-blue-600 text-secondary-600'
+                  : 'text-neutral-600 hover:text-neutral-900'
               }`}
             >
               <Layout size={14} className="inline mr-1" />
@@ -368,8 +368,8 @@ export function PromptOptimizer({
               onClick={() => setActiveTab('effectiveness')}
               className={`px-3 py-1.5 text-sm font-medium rounded-t transition-colors whitespace-nowrap ${
                 activeTab === 'effectiveness'
-                  ? 'bg-white dark:bg-gray-800 border-b-2 border-blue-600 text-blue-600'
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-white dark:bg-neutral-800 border-b-2 border-blue-600 text-secondary-600'
+                  : 'text-neutral-600 hover:text-neutral-900'
               }`}
             >
               <BarChart3 size={14} className="inline mr-1" />
@@ -380,8 +380,8 @@ export function PromptOptimizer({
               onClick={() => setActiveTab('suggestions')}
               className={`px-3 py-1.5 text-sm font-medium rounded-t transition-colors whitespace-nowrap ${
                 activeTab === 'suggestions'
-                  ? 'bg-white dark:bg-gray-800 border-b-2 border-blue-600 text-blue-600'
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-white dark:bg-neutral-800 border-b-2 border-blue-600 text-secondary-600'
+                  : 'text-neutral-600 hover:text-neutral-900'
               }`}
             >
               <Sparkles size={14} className="inline mr-1" />
@@ -395,8 +395,8 @@ export function PromptOptimizer({
             {activeTab === 'issues' && (
               <div className="space-y-2">
                 {result.syntax_issues.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    <CheckCircle2 size={48} className="mx-auto mb-2 text-green-500" />
+                  <div className="text-center py-8 text-neutral-500">
+                    <CheckCircle2 size={48} className="mx-auto mb-2 text-success-500" />
                     <p>未发现语法问题 ✓</p>
                   </div>
                 ) : (
@@ -405,8 +405,8 @@ export function PromptOptimizer({
                       key={`${issue.rule_id}-${index}`}
                       className={`p-3 rounded-lg border cursor-pointer transition-colors ${
                         selectedIssueIndex === index
-                          ? 'bg-blue-50 border-blue-300 dark:bg-blue-900/20'
-                          : 'bg-gray-50 hover:bg-gray-100 border-transparent'
+                          ? 'bg-secondary-50 border-blue-300 dark:bg-secondary-900/20'
+                          : 'bg-slate-50 hover:bg-neutral-100 border-transparent'
                       }`}
                       onClick={() =>
                         setSelectedIssueIndex(selectedIssueIndex === index ? null : index)
@@ -415,14 +415,14 @@ export function PromptOptimizer({
                       <div className="flex items-start gap-3">
                         {getSeverityIcon(issue.severity)}
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                          <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
                             {issue.message}
                           </p>
-                          <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+                          <p className="text-xs text-neutral-500 mt-1 line-clamp-2">
                             第{issue.line_number}行: {issue.snippet}
                           </p>
                           {selectedIssueIndex === index && issue.suggestion && (
-                            <p className="text-xs text-blue-600 mt-2 p-2 bg-blue-50 rounded">
+                            <p className="text-xs text-secondary-600 mt-2 p-2 bg-secondary-50 rounded">
                               💡 {issue.suggestion}
                             </p>
                           )}
@@ -444,14 +444,14 @@ export function PromptOptimizer({
             {activeTab === 'structure' && result.structure_report && (
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="p-3 bg-gray-50 rounded-lg">
-                    <p className="text-xs text-gray-500 mb-1">结构类型</p>
+                  <div className="p-3 bg-slate-50 rounded-lg">
+                    <p className="text-xs text-neutral-500 mb-1">结构类型</p>
                     <p className="text-lg font-semibold capitalize">
                       {result.structure_report.structure_type.replace('_', ' ')}
                     </p>
                   </div>
-                  <div className="p-3 bg-gray-50 rounded-lg">
-                    <p className="text-xs text-gray-500 mb-1">总体得分</p>
+                  <div className="p-3 bg-slate-50 rounded-lg">
+                    <p className="text-xs text-neutral-500 mb-1">总体得分</p>
                     <p className={`text-lg font-semibold ${getScoreColor(result.structure_report.overall_score)}`}>
                       {result.structure_report.overall_score.toFixed(0)}/100
                     </p>
@@ -460,15 +460,15 @@ export function PromptOptimizer({
 
                 <div className="space-y-2">
                   {Object.entries(result.structure_report.sections).map(([name, section]) => (
-                    <div key={name} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                    <div key={name} className="flex items-center justify-between p-2 bg-slate-50 rounded">
                       <span className="text-sm font-medium">{name}</span>
                       <div className="flex items-center gap-2">
                         {section.is_present ? (
-                          <CheckCircle2 size={16} className="text-green-600" />
+                          <CheckCircle2 size={16} className="text-success-600" />
                         ) : (
-                          <XCircle size={16} className="text-red-600" />
+                          <XCircle size={16} className="text-error-600" />
                         )}
-                        <span className="text-sm text-gray-600">
+                        <span className="text-sm text-neutral-600">
                           {section.is_present ? `${(section.quality_score * 100).toFixed(0)}%` : '缺失'}
                         </span>
                       </div>
@@ -478,18 +478,18 @@ export function PromptOptimizer({
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-xs font-semibold text-green-700 mb-2">✅ 优势</p>
+                    <p className="text-xs font-semibold text-success-700 mb-2">✅ 优势</p>
                     <ul className="space-y-1">
                       {result.structure_report.strengths.map((s, i) => (
-                        <li key={i} className="text-xs text-gray-600 pl-2">• {s}</li>
+                        <li key={i} className="text-xs text-neutral-600 pl-2">• {s}</li>
                       ))}
                     </ul>
                   </div>
                   <div>
-                    <p className="text-xs font-semibold text-red-700 mb-2">⚠️ 不足</p>
+                    <p className="text-xs font-semibold text-error-700 mb-2">⚠️ 不足</p>
                     <ul className="space-y-1">
                       {result.structure_report.weaknesses.map((w, i) => (
-                        <li key={i} className="text-xs text-gray-600 pl-2">• {w}</li>
+                        <li key={i} className="text-xs text-neutral-600 pl-2">• {w}</li>
                       ))}
                     </ul>
                   </div>
@@ -501,18 +501,18 @@ export function PromptOptimizer({
             {activeTab === 'effectiveness' && result.effectiveness_prediction && (
               <div className="space-y-4">
                 <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg text-center">
-                  <p className="text-xs text-gray-500 mb-1">综合效果评分</p>
+                  <p className="text-xs text-neutral-500 mb-1">综合效果评分</p>
                   <p className={`text-4xl font-bold ${getScoreColor(result.effectiveness_prediction.score)}`}>
                     {result.effectiveness_prediction.score.toFixed(0)}
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-neutral-500 mt-1">
                     置信区间: [{result.effectiveness_prediction.confidence_interval[0]},{' '}
                     {result.effectiveness_prediction.confidence_interval[1]}]
                   </p>
                 </div>
 
                 <div>
-                  <p className="text-xs font-semibold text-gray-700 mb-2">特征得分详情</p>
+                  <p className="text-xs font-semibold text-neutral-700 mb-2">特征得分详情</p>
                   <div className="space-y-2">
                     {Object.entries(result.effectiveness_prediction.feature_scores).map(([feature, score]) => (
                       <div key={feature}>
@@ -528,10 +528,10 @@ export function PromptOptimizer({
 
                 <div className="grid grid-cols-2 gap-4 p-3 bg-yellow-50 rounded-lg">
                   <div>
-                    <p className="text-xs font-semibold text-green-700 mb-1">✨ 优势特征</p>
+                    <p className="text-xs font-semibold text-success-700 mb-1">✨ 优势特征</p>
                     <ul className="space-y-0.5">
                       {result.effectiveness_prediction.strengths.map((s, i) => (
-                        <li key={i} className="text-xs text-gray-600">• {s}</li>
+                        <li key={i} className="text-xs text-neutral-600">• {s}</li>
                       ))}
                     </ul>
                   </div>
@@ -539,7 +539,7 @@ export function PromptOptimizer({
                     <p className="text-xs font-semibold text-orange-700 mb-1">⚡ 提升空间</p>
                     <ul className="space-y-0.5">
                       {result.effectiveness_prediction.weaknesses.map((w, i) => (
-                        <li key={i} className="text-xs text-gray-600">• {w}</li>
+                        <li key={i} className="text-xs text-neutral-600">• {w}</li>
                       ))}
                     </ul>
                   </div>
@@ -551,14 +551,14 @@ export function PromptOptimizer({
             {activeTab === 'suggestions' && (
               <div className="space-y-3">
                 {result.suggestions.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    <Sparkles size={48} className="mx-auto mb-2 text-gray-400" />
+                  <div className="text-center py-8 text-neutral-500">
+                    <Sparkles size={48} className="mx-auto mb-2 text-neutral-400" />
                     <p>暂无优化建议，您的提示词已经很棒了！</p>
                   </div>
                 ) : (
                   <>
                     <div className="flex items-center justify-between">
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-neutral-600">
                         可自动修复: {result.suggestions.filter((s) => s.is_auto_fixable).length}项
                       </p>
                       <Button
@@ -577,37 +577,37 @@ export function PromptOptimizer({
                         key={suggestion.id}
                         className={`p-3 rounded-lg border ${
                           appliedFixes.has(suggestion.id)
-                            ? 'bg-green-50 border-green-200'
-                            : 'bg-gray-50 border-gray-200'
+                            ? 'bg-success-50 border-green-200'
+                            : 'bg-slate-50 border-neutral-200'
                         }`}
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
                               {getSeverityIcon(suggestion.severity)}
-                              <p className="text-sm font-semibold text-gray-900">
+                              <p className="text-sm font-semibold text-neutral-900">
                                 {suggestion.title}
                               </p>
                               {appliedFixes.has(suggestion.id) && (
                                 <Badge variant="success" size="sm">已修复</Badge>
                               )}
                             </div>
-                            <p className="text-xs text-gray-600 mb-2">{suggestion.description}</p>
+                            <p className="text-xs text-neutral-600 mb-2">{suggestion.description}</p>
 
                             {suggestion.before && suggestion.after && (
                               <div className="text-xs space-y-1">
-                                <div className="p-2 bg-red-50 rounded font-mono line-clamp-2">
-                                  <span className="text-red-600 font-bold">-</span> {suggestion.before}
+                                <div className="p-2 bg-error-50 rounded font-mono line-clamp-2">
+                                  <span className="text-error-600 font-bold">-</span> {suggestion.before}
                                 </div>
-                                <ChevronRight size={14} className="mx-auto text-gray-400" />
-                                <div className="p-2 bg-green-50 rounded font-mono line-clamp-2">
-                                  <span className="text-green-600 font-bold">+</span> {suggestion.after}
+                                <ChevronRight size={14} className="mx-auto text-neutral-400" />
+                                <div className="p-2 bg-success-50 rounded font-mono line-clamp-2">
+                                  <span className="text-success-600 font-bold">+</span> {suggestion.after}
                                 </div>
                               </div>
                             )}
 
                             {suggestion.impact_estimate && (
-                              <p className="text-xs text-blue-600 mt-2">
+                              <p className="text-xs text-secondary-600 mt-2">
                                 📈 预期提升: {suggestion.impact_estimate}
                               </p>
                             )}
@@ -642,7 +642,7 @@ export function PromptOptimizer({
                     onChange={(e) => setShowOptimizedVersion(e.target.checked)}
                     className="rounded"
                   />
-                  <span className="text-sm font-medium text-gray-900">
+                  <span className="text-sm font-medium text-neutral-900">
                     查看LLM优化后的完整版本
                   </span>
                 </label>

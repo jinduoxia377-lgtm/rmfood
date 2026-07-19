@@ -17,7 +17,7 @@ RMFOOD 食品活性肽深度分析引擎 (Food-Active Peptide Deep Analyzer)
 食品配方开发决策。
 
 使用示例:
->>> from backend.app.services.ai_models.food_peptide_analyzer import RMFOODPeptideAnalyzer
+>>> from ..services.ai_models.food_peptide_analyzer import RMFOODPeptideAnalyzer
 >>> analyzer = RMFOODPeptideAnalyzer()
 >>> result = await analyzer.analyze_peptide_deeply("VLGYTKEGN")
 >>> print(f"食品应用评分: {result.overall_scores['food_application_score']}/100")
@@ -36,7 +36,7 @@ logger = logging.getLogger(__name__)
 
 # 导入RMFOOD专用的食品肽分析器
 try:
-    from backend.app.services.peptide_analysis_v2.core_algorithms.food_peptide_analyzer import (
+    from ..peptide_analysis_v2.core_algorithms.food_peptide_analyzer import (
         FoodPeptideAnalyzer,
         FoodPeptideAnalysisResult,
     )
@@ -143,8 +143,8 @@ class RMFOODPeptideAnalyzer:
             return rmfood_result
             
         except Exception as e:
-            logger.error(f"❌ 食品肽分析异常: {e}", exc_info=True)
-            return self._error_result(sequence, str(e))
+            logger.error("食品肽分析异常", exc_info=True)
+            return self._error_result(sequence, "分析服务异常")
     
     async def batch_analyze_for_food(
         self,
@@ -481,7 +481,7 @@ def get_rmfood_analyzer() -> RMFOODPeptideAnalyzer:
     获取RMFOOD食品肽分析器实例 (工厂方法)
     
     Usage:
-    >>> from backend.app.services.ai_models.food_peptide_analyzer import get_rmfood_analyzer
+    >>> from ..services.ai_models.food_peptide_analyzer import get_rmfood_analyzer
     >>> analyzer = get_rmfood_analyzer()
     >>> result = await analyzer.analyze_peptide_deeply("VLGYTKEGN")
     """

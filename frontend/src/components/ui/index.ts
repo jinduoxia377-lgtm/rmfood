@@ -9,6 +9,9 @@ export type { ButtonProps, ButtonVariant, ButtonSize } from './Button'
 export { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from './Card'
 export type { CardProps, CardVariant } from './Card'
 
+export { StatCard } from './StatCard'
+export type { StatCardProps, StatVariant as StatCardVariant } from './StatCard'
+
 export { Input } from './Input'
 export type { InputProps, InputSize } from './Input'
 
@@ -61,10 +64,12 @@ export { LoadingSpinner, ProgressSpinner } from './LoadingSpinner'
 export { LoadingState, FormulaGenerateSkeleton, PanelSkeleton } from './LoadingState'
 
 // 功能组件 - 增强版通知系统 v2.0
-export { Toast, ToastContainer, useToast, ToastProvider } from './Toast'
+export { Toast, useToast, ToastProvider } from './Toast'
+export { ToastContainer } from './ToastContainer'
 export type { FeedbackMessage, FeedbackType } from '@/utils/uiuxEnhancement'
 
 export { default as ErrorBoundary } from './ErrorBoundary'
 
 export { default as NotificationBell } from './NotificationBell'
 export { default as CommandPalette } from './CommandPalette'
+export { PageState } from './PageState'

@@ -29,6 +29,8 @@ import functools
 import logging
 import time
 import traceback
+
+from app.utils.error_sanitize import sanitize_error
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum, auto
@@ -431,12 +433,12 @@ class ServiceDegradationManager:
                 )
                 
             except Exception as e:
-                logger.error(f"❌ 降级服务也失败 | {service_name}: {e}")
+                logger.error("降级服务也失败", exc_info=True)
                 raise AppError(
                     message=f"服务 [{service_name}] 完全不可用",
                     error_code="SERVICE_UNAVAILABLE",
                     status_code=503,
-                    details={"original_error": str(e)},
+                    details={"original_error": sanitize_error(e, "服务不可用")},
                 )
         
         # 尝试主服务
@@ -468,13 +470,13 @@ class ServiceDegradationManager:
                 self._log_degradation(
                     service_name,
                     "automatic_fallback",
-                    str(e)
+                    sanitize_error(e, "服务异常")
                 )
-                
+
                 return FallbackResult(
                     is_fallback=True,
-                    fallback_reason=f"主服务异常: {str(e)[:100]}",
-                    original_error=str(e),
+                    fallback_reason="主服务异常，已切换降级方案",
+                    original_error=sanitize_error(e, "服务异常"),
                     data=fallback_result,
                 )
                 
@@ -489,7 +491,7 @@ class ServiceDegradationManager:
                     message=f"服务 [{service_name}] 不可用且降级失败",
                     error_code="SERVICE_DEGRADATION_FAILED",
                     status_code=503,
-                    details={"primary_error": str(e), "fallback_error": str(fallback_err)},
+                    details={"primary_error": sanitize_error(e, "服务异常"), "fallback_error": sanitize_error(fallback_err, "降级失败")},
                 )
     
     def _log_degradation(

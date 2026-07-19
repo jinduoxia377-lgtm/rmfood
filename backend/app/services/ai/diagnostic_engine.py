@@ -23,6 +23,33 @@ from urllib.parse import urlparse
 import httpx
 
 from app.core.config import settings
+import os
+
+def _get_setting_with_fallback(setting_name: str, default: str = "") -> str:
+    """
+    安全获取配置值，支持多种配置来源
+    优先级: settings直接属性 > 环境变量 > ai_service嵌套配置 > 默认值
+    """
+    # 尝试从settings直接获取
+    value = getattr(settings, setting_name, "")
+    if value:
+        return str(value)
+    
+    # 尝试从环境变量获取（转换为大写并替换下划线）
+    env_name = setting_name.upper()
+    value = os.environ.get(env_name, "")
+    if value:
+        return value
+    
+    # 尝试从ai_service嵌套配置获取
+    ai_service = getattr(settings, "ai_service", None)
+    if ai_service:
+        nested_value = getattr(ai_service, setting_name.replace("openai_", "").replace("llm_", ""), "")
+        if nested_value:
+            return str(nested_value)
+    
+    return default
+
 from app.services.llm_service import (
     LLMConfig,
     LLMMessage,
@@ -112,7 +139,7 @@ class ConfigChecker:
     def _check_api_key() -> CheckResult:
         # 优先读取运行时配置，fallback 到环境变量
         runtime = ConfigChecker._get_runtime_config()
-        api_key = runtime.get('api_key', '') or (settings.openai_api_key or "")
+        api_key = runtime.get('api_key', '') or _get_setting_with_fallback("openai_api_key")
         if not api_key:
             return CheckResult(
                 check_id="C-01",
@@ -151,7 +178,7 @@ class ConfigChecker:
     @staticmethod
     def _check_provider() -> CheckResult:
         runtime = ConfigChecker._get_runtime_config()
-        provider = runtime.get('provider', '') or (settings.llm_provider or "")
+        provider = runtime.get('provider', '') or _get_setting_with_fallback("llm_provider")
         if not provider:
             return CheckResult(
                 check_id="C-02",
@@ -181,7 +208,7 @@ class ConfigChecker:
     @staticmethod
     def _check_base_url() -> CheckResult:
         runtime = ConfigChecker._get_runtime_config()
-        base_url = runtime.get('base_url', '') or (settings.openai_base_url or "")
+        base_url = runtime.get('base_url', '') or _get_setting_with_fallback("openai_base_url")
         if not base_url:
             return CheckResult(
                 check_id="C-03",
@@ -268,13 +295,13 @@ class ConnectivityChecker:
         # 优先使用传入参数，其次运行时配置，最后环境变量
         if not base_url:
             runtime = ConfigChecker._get_runtime_config()
-            base_url = runtime.get('base_url', '') or (settings.openai_base_url or "")
+            base_url = runtime.get('base_url', '') or _get_setting_with_fallback("openai_base_url")
 
         target_url = base_url or ""
         if not target_url:
             # 使用 provider 默认 URL
             runtime = ConfigChecker._get_runtime_config()
-            provider = (runtime.get('provider', '') or settings.llm_provider or "").lower()
+            provider = (runtime.get('provider', '') or _get_setting_with_fallback("llm_provider")).lower()
             from app.services.llm_service import PROVIDER_DEFAULTS
 
             target_url = PROVIDER_DEFAULTS.get(provider, {}).get("base_url", "")
@@ -322,7 +349,7 @@ class ConnectivityChecker:
     @staticmethod
     async def _check_dns(hostname: str) -> CheckResult:
         try:
-            loop = asyncio.get_event_loop()
+            loop = asyncio.new_event_loop()
             ip = await asyncio.wait_for(
                 loop.run_in_executor(None, socket.gethostbyname, hostname),
                 timeout=ConnectivityChecker.TIMEOUT_DNS,

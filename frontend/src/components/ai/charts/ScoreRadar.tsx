@@ -26,10 +26,10 @@ export function ScoreRadar({ scores, size = 160, theme = 'light' }: ScoreRadarPr
   const colors = useMemo(() => {
     const isDark = theme === 'dark' || document.documentElement.classList.contains('dark')
     return {
-      grid: isDark ? '#4B5563' : '#E5E7EB',
-      axis: isDark ? '#9CA3AF' : '#6B7280',
-      fill: isDark ? '#3B82F6' : '#14B8A6',
-      stroke: isDark ? '#60A5FA' : '#14B8A6',
+      grid: isDark ? '#4B5563' : 'var(--border-subtle, rgba(0,0,0,0.06))',
+      axis: isDark ? '#9CA3AF' : 'var(--text-secondary, #6E6E73)',
+      fill: isDark ? '#007AFF' : 'var(--color-primary, #34C759)',
+      stroke: isDark ? '#6ECAFF' : 'var(--color-primary, #34C759)',
       opacity: isDark ? 0.4 : 0.2,
     }
   }, [theme])

@@ -26,7 +26,7 @@ const FORMULA_TEMPLATES = [
     usage: '每日1-2次，每次5g，温水冲服',
     tags: ['热门', '免疫力', '药食同源'],
     usage_count: 328,
-    color: '#059669',
+    color: 'var(--color-primary, #34C759)',
   },
   {
     id: 'sleep-aid',
@@ -42,7 +42,7 @@ const FORMULA_TEMPLATES = [
     usage: '睡前30分钟服用，每次8g，温水冲泡',
     tags: ['睡眠', '安神', '药食同源'],
     usage_count: 256,
-    color: '#7C3AED',
+    color: 'var(--color-tertiary, #AF52DE)',
   },
   {
     id: 'blood-sugar',
@@ -58,7 +58,7 @@ const FORMULA_TEMPLATES = [
     usage: '每日2次，餐后30分钟服用，每次6g',
     tags: ['降血糖', '清热', '慢性病'],
     usage_count: 189,
-    color: '#2563EB',
+    color: 'var(--color-secondary, #0A84FF)',
   },
   {
     id: 'blood-pressure',
@@ -74,7 +74,7 @@ const FORMULA_TEMPLATES = [
     usage: '每日1-2次，每次5g，饭后服用',
     tags: ['降血压', '活血', '慢性病'],
     usage_count: 167,
-    color: '#EF4444',
+    color: 'var(--color-error, #FF3B30)',
   },
   {
     id: 'beauty-skin',
@@ -90,7 +90,7 @@ const FORMULA_TEMPLATES = [
     usage: '每日早晚各一次，每次5g，温水冲服',
     tags: ['美容', '养颜', '女性'],
     usage_count: 412,
-    color: '#EC4899',
+    color: 'var(--color-pink-500, #D946EF)',
   },
   {
     id: 'digestive',
@@ -106,7 +106,7 @@ const FORMULA_TEMPLATES = [
     usage: '每日2次，餐后服用，每次8g',
     tags: ['肠胃', '消食', '祛湿'],
     usage_count: 234,
-    color: '#F59E0B',
+    color: 'var(--color-warning, #FF9F0A)',
   },
   {
     id: 'anti-fatigue',
@@ -122,7 +122,7 @@ const FORMULA_TEMPLATES = [
     usage: '每日1次，运动前30分钟服用，每次6g',
     tags: ['抗疲劳', '补气', '运动'],
     usage_count: 198,
-    color: '#14B8A6',
+    color: 'var(--color-teal-500, #14B8A6)',
   },
   {
     id: 'slimming',
@@ -138,7 +138,7 @@ const FORMULA_TEMPLATES = [
     usage: '每日1-2次，餐后服用，每次5g',
     tags: ['减肥', '清热', '塑身'],
     usage_count: 289,
-    color: '#8B5CF6',
+    color: 'var(--color-tertiary, #AF52DE)',
   },
 ]
 
@@ -214,8 +214,8 @@ export default function FormulaTemplatesPage() {
               className={cn(
                 'p-2 rounded-lg border transition-all',
                 showFavOnly
-                  ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-300 dark:border-amber-700 text-amber-600'
-                  : 'border-slate-200 dark:border-slate-700 text-slate-400 hover:text-slate-600',
+                  ? 'bg-warning-50 dark:bg-warning-900/20 border-amber-300 dark:border-amber-700 text-warning-600'
+                  : 'border-neutral-200 dark:border-neutral-700 text-neutral-400 hover:text-neutral-600',
               )}
             >
               <Star size={18} className={showFavOnly ? 'fill-amber-400' : ''} />
@@ -245,7 +245,7 @@ export default function FormulaTemplatesPage() {
                 'px-3 py-1.5 rounded-lg text-xs font-medium transition-all',
                 category === cat.value
                   ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/40 dark:text-primary-300'
-                  : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800',
+                  : 'text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800',
               )}
             >
               {cat.label}
@@ -255,11 +255,11 @@ export default function FormulaTemplatesPage() {
       </div>
 
       {/* 模板统计 */}
-      <div className="flex items-center gap-4 text-sm text-slate-500">
+      <div className="flex items-center gap-4 text-sm text-neutral-500">
         <span>共 {filteredTemplates.length} 个模板</span>
         {favorites.size > 0 && (
           <span className="flex items-center gap-1">
-            <Star size={12} className="fill-amber-400 text-amber-400" />
+            <Star size={12} className="fill-amber-400 text-warning-400" />
             {favorites.size} 个收藏
           </span>
         )}
@@ -295,27 +295,27 @@ export default function FormulaTemplatesPage() {
                 {/* 头部 */}
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-base font-semibold text-slate-900 dark:text-white group-hover:text-primary-600 transition-colors">
+                    <h3 className="text-base font-semibold text-neutral-900 dark:text-white group-hover:text-primary-600 transition-colors">
                       {template.name}
                     </h3>
-                    <p className="text-xs text-slate-400 mt-0.5 flex items-center gap-1">
-                      <Zap size={10} className="text-amber-500" />
+                    <p className="text-xs text-neutral-400 mt-0.5 flex items-center gap-1">
+                      <Zap size={10} className="text-warning-500" />
                       使用 {template.usage_count} 次
                     </p>
                   </div>
                   <button
                     onClick={() => toggleFavorite(template.id)}
-                    className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                    className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                   >
                     <Star
                       size={16}
-                      className={favorites.has(template.id) ? 'fill-amber-400 text-amber-400' : 'text-slate-300'}
+                      className={favorites.has(template.id) ? 'fill-amber-400 text-warning-400' : 'text-neutral-300'}
                     />
                   </button>
                 </div>
 
                 {/* 描述 */}
-                <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-2 mb-3">
+                <p className="text-sm text-neutral-500 dark:text-neutral-400 line-clamp-2 mb-3">
                   {template.description}
                 </p>
 
@@ -327,30 +327,30 @@ export default function FormulaTemplatesPage() {
                 </div>
 
                 {/* 成分预览 */}
-                <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-2.5 mb-3">
-                  <p className="text-xs text-slate-500 mb-2">成分组成</p>
+                <div className="bg-slate-50 dark:bg-neutral-800/50 rounded-lg p-2.5 mb-3">
+                  <p className="text-xs text-neutral-500 mb-2">成分组成</p>
                   <div className="flex flex-wrap gap-1">
                     {template.ingredients.slice(0, 4).map(ing => (
-                      <span key={ing.name} className="text-xs text-slate-600 dark:text-slate-400">
+                      <span key={ing.name} className="text-xs text-neutral-600 dark:text-neutral-400">
                         {ing.name}
                         {ing.role && <span className="text-primary-500 ml-0.5">({ing.role})</span>}
-                        {ing.dosage && <span className="text-slate-400 ml-0.5">{ing.dosage}</span>}
+                        {ing.dosage && <span className="text-neutral-400 ml-0.5">{ing.dosage}</span>}
                       </span>
                     ))}
                     {template.ingredients.length > 4 && (
-                      <span className="text-xs text-slate-400">+{template.ingredients.length - 4}种</span>
+                      <span className="text-xs text-neutral-400">+{template.ingredients.length - 4}种</span>
                     )}
                   </div>
                 </div>
 
                 {/* 服用方法 */}
-                <p className="text-xs text-slate-400 mb-4 flex items-center gap-1">
+                <p className="text-xs text-neutral-400 mb-4 flex items-center gap-1">
                   <Clock size={10} />
                   {template.usage}
                 </p>
 
                 {/* 操作 */}
-                <div className="flex items-center gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+                <div className="flex items-center gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
                   <Button
                     size="sm"
                     className="flex-1"
@@ -361,7 +361,7 @@ export default function FormulaTemplatesPage() {
                     使用此模板
                   </Button>
                   <button
-                    className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-primary-600 hover:border-primary-300 transition-colors"
+                    className="p-2 rounded-lg border border-neutral-200 dark:border-neutral-700 text-neutral-400 hover:text-primary-600 hover:border-primary-300 transition-colors"
                     title="预览配方详情"
                   >
                     <ArrowRight size={14} />
@@ -374,7 +374,7 @@ export default function FormulaTemplatesPage() {
       )}
 
       {/* 底部提示 */}
-      <div className="text-center py-6 text-sm text-slate-400">
+      <div className="text-center py-6 text-sm text-neutral-400">
         <p>没有找到合适的模板？</p>
         <Link to="/formulas/new" className="text-primary-600 hover:text-primary-700 mt-1 inline-block">
           从空白配方开始创建

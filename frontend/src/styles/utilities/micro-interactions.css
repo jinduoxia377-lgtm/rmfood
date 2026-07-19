@@ -1,0 +1,101 @@
+/*
+ * RMFOOD 设计系统 - 微交互与骨架屏
+ * 卡片/行悬浮、按钮按压、聚焦环、图标旋转、骨架屏
+ * 此文件由 index.css 提取，请勿手动编辑
+ */
+
+/* ═══ 全局微交互系统 ═══ */
+
+/* 卡片悬浮 — Apple 风格: 轻微上抬 + 阴影加深 */
+.card-hover {
+  transition: transform var(--duration-fast) var(--ease-spring),
+              box-shadow var(--duration-fast) var(--ease-standard);
+}
+.card-hover:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-card-hover);
+}
+.card-hover:active {
+  transform: translateY(0) scale(0.99);
+}
+
+/* 行高亮 — 表格/列表行 hover */
+.row-hover:hover {
+  background: var(--hover-bg);
+}
+
+/* 按钮按压 — Apple 风格缩放反馈 */
+.btn-press:active {
+  transform: scale(0.97);
+}
+
+/* 聚焦环 — 全局可见 focus indicator */
+.focus-visible-ring:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--bg-primary), 0 0 0 4px var(--color-primary);
+  border-radius: var(--radius-md);
+}
+
+/* 图标旋转 — 展开/收起指示 */
+.icon-rotate {
+  transition: transform var(--duration-normal) var(--ease-elegant);
+}
+.icon-rotate.rotate-180 {
+  transform: rotate(180deg);
+}
+
+/* ═══ 骨架屏 — 使用 CSS 变量 ═══ */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--skeleton-start, rgba(209, 213, 219, 0.6)) 25%,
+    var(--skeleton-mid, rgba(229, 231, 235, 0.8)) 50%,
+    var(--skeleton-start, rgba(209, 213, 219, 0.6)) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+}
+
+.dark .skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--skeleton-dark-start, rgba(55, 65, 81, 0.4)) 25%,
+    var(--skeleton-dark-mid, rgba(75, 85, 99, 0.5)) 50%,
+    var(--skeleton-dark-start, rgba(55, 65, 81, 0.4)) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+}
+
+/* 骨架屏脉冲动画 */
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.animate-skeleton {
+  animation: skeleton-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* ── Reduced Motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .card-hover:hover,
+  .card-hover:active {
+    transition: none !important;
+    transform: none !important;
+    box-shadow: inherit !important;
+  }
+
+  .btn-press:active {
+    transform: none !important;
+  }
+
+  .skeleton,
+  .dark .skeleton {
+    animation: none !important;
+  }
+
+  .animate-skeleton {
+    animation: none !important;
+  }
+}

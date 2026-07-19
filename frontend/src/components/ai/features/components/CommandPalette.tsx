@@ -89,7 +89,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         id: `quick-${index}`,
         label: question,
         description: '发送快捷问题',
-        icon: <Sparkles className="w-4 h-4 text-amber-500" />,
+        icon: <Sparkles className="w-4 h-4 text-warning-500" />,
         category: COMMAND_CATEGORIES.quick,
         action: () => {
           onQuickQuestion?.(question)
@@ -103,7 +103,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         id: 'generate-report',
         label: '生成专业报告',
         description: '基于当前对话生成学术报告',
-        icon: <FileText className="w-4 h-4 text-blue-500" />,
+        icon: <FileText className="w-4 h-4 text-secondary-500" />,
         category: COMMAND_CATEGORIES.actions,
         shortcut: ['R'],
         action: () => {
@@ -118,7 +118,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         id: 'retry-last',
         label: '重试上一条消息',
         description: '重新发送并获取新的回复',
-        icon: <RotateCcw className="w-4 h-4 text-green-500" />,
+        icon: <RotateCcw className="w-4 h-4 text-success-500" />,
         category: COMMAND_CATEGORIES.actions,
         shortcut: ['Shift', 'R'],
         action: () => {
@@ -178,7 +178,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         id: 'clear-chat',
         label: '清空对话',
         description: '清除当前会话的所有消息',
-        icon: <Trash2 className="w-4 h-4 text-red-500" />,
+        icon: <Trash2 className="w-4 h-4 text-error-500" />,
         category: COMMAND_CATEGORIES.actions,
         shortcut: ['Shift', 'D'],
         action: () => {
@@ -193,7 +193,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         id: 'show-settings',
         label: '打开设置',
         description: '配置对话偏好和模型参数',
-        icon: <Settings className="w-4 h-4 text-gray-500" />,
+        icon: <Settings className="w-4 h-4 text-neutral-500" />,
         category: COMMAND_CATEGORIES.help,
         shortcut: ['S'],
         action: () => {
@@ -208,7 +208,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         id: 'show-help',
         label: '帮助中心',
         description: '查看使用指南和常见问题',
-        icon: <HelpCircle className="w-4 h-4 text-purple-500" />,
+        icon: <HelpCircle className="w-4 h-4 text-accent-500" />,
         category: COMMAND_CATEGORIES.help,
         shortcut: ['?'],
         action: () => {
@@ -353,13 +353,13 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
 
       {/* Command Panel */}
       <div
-        className="relative w-full max-w-xl mx-4 bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden animate-scale-in"
+        className="relative w-full max-w-xl mx-4 bg-white dark:bg-neutral-900 rounded-xl shadow-2xl border border-neutral-200 dark:border-neutral-700 overflow-hidden animate-scale-in"
         style={{ animationDuration: '150ms' }}
         onKeyDown={handleKeyDown}
       >
         {/* Search Input */}
-        <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-100 dark:border-gray-700">
-          <Search className="w-5 h-5 text-gray-400" />
+        <div className="flex items-center gap-3 px-4 py-3 border-b border-neutral-100 dark:border-neutral-700">
+          <Search className="w-5 h-5 text-neutral-400" />
           <input
             type="text"
             value={searchQuery}
@@ -368,10 +368,10 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
               setSelectedIndex(0)
             }}
             placeholder="搜索命令或输入问题..."
-            className="flex-1 bg-transparent text-gray-800 dark:text-gray-200 placeholder-gray-400 outline-none text-sm"
+            className="flex-1 bg-transparent text-neutral-800 dark:text-neutral-200 placeholder-slate-400 outline-none text-sm"
             autoFocus
           />
-          <div className="flex items-center gap-1 px-2 py-1 text-xs text-gray-400 bg-gray-100 dark:bg-gray-800 rounded">
+          <div className="flex items-center gap-1 px-2 py-1 text-xs text-neutral-400 bg-neutral-100 dark:bg-neutral-800 rounded">
             <span>ESC</span>
           </div>
         </div>
@@ -379,7 +379,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         {/* Results */}
         <div className="max-h-[50vh] overflow-y-auto">
           {filteredCommands.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-gray-400">
+            <div className="flex flex-col items-center justify-center py-12 text-neutral-400">
               <Search className="w-12 h-12 mb-4 opacity-50" />
               <p className="text-sm">未找到匹配的命令</p>
               <p className="text-xs mt-1">尝试其他关键词</p>
@@ -389,7 +389,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
               if (items.length === 0) return null
               return (
                 <div key={category} className="py-2">
-                  <div className="px-4 py-2 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <div className="px-4 py-2 text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
                     {category}
                   </div>
                   {items.map((command, index) => {
@@ -402,17 +402,17 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                         className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${
                           isSelected
                             ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400'
-                            : 'hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300'
+                            : 'hover:bg-slate-50 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300'
                         }`}
                         onMouseEnter={() => setSelectedIndex(globalIndex)}
                       >
-                        <span className={`p-2 rounded-lg ${isSelected ? 'bg-primary-100 dark:bg-primary-800/30' : 'bg-gray-100 dark:bg-gray-800'}`}>
+                        <span className={`p-2 rounded-lg ${isSelected ? 'bg-primary-100 dark:bg-primary-800/30' : 'bg-neutral-100 dark:bg-neutral-800'}`}>
                           {command.icon}
                         </span>
                         <div className="flex-1 min-w-0">
                           <div className="text-sm font-medium truncate">{command.label}</div>
                           {command.description && (
-                            <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                            <div className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
                               {command.description}
                             </div>
                           )}
@@ -420,7 +420,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                         {command.shortcut && command.shortcut.length > 0 && (
                           <div className="flex gap-1">
                             {command.shortcut.map((key, i) => (
-                              <span key={i} className="px-1.5 py-0.5 text-xs font-medium text-gray-400 bg-gray-100 dark:bg-gray-800 rounded">
+                              <span key={i} className="px-1.5 py-0.5 text-xs font-medium text-neutral-400 bg-neutral-100 dark:bg-neutral-800 rounded">
                                 {key}
                               </span>
                             ))}
@@ -436,18 +436,18 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-4 py-2 border-t border-gray-100 dark:border-gray-700 text-xs text-gray-400">
+        <div className="flex items-center justify-between px-4 py-2 border-t border-neutral-100 dark:border-neutral-700 text-xs text-neutral-400">
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1">
-              <span className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded">↑↓</span>
+              <span className="px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-800 rounded">↑↓</span>
               导航
             </span>
             <span className="flex items-center gap-1">
-              <span className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded">Enter</span>
+              <span className="px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-800 rounded">Enter</span>
               执行
             </span>
             <span className="flex items-center gap-1">
-              <span className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded">ESC</span>
+              <span className="px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-800 rounded">ESC</span>
               关闭
             </span>
           </div>

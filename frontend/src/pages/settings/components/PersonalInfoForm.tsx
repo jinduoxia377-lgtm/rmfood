@@ -23,7 +23,7 @@ export const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-4">
+        <h3 className="text-sm font-semibold text-neutral-900 dark:text-white mb-4">
           基本信息
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -84,7 +84,7 @@ export const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
       </div>
 
       <div>
-        <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-4">
+        <h3 className="text-sm font-semibold text-neutral-900 dark:text-white mb-4">
           个人简介
         </h3>
         <FormField label="简介" error={errors.bio}>
@@ -97,19 +97,19 @@ export const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
               rows={4}
               maxLength={500}
               className={`
-                w-full px-3 py-2 pr-12 rounded-lg border bg-white dark:bg-slate-900
-                text-slate-900 dark:text-white text-sm
-                placeholder:text-slate-400
+                w-full px-3 py-2 pr-12 rounded-lg border bg-white dark:bg-neutral-900
+                text-neutral-900 dark:text-white text-sm
+                placeholder:text-neutral-400
                 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500
                 disabled:opacity-50 disabled:cursor-not-allowed
                 resize-none
                 ${errors.bio
                   ? 'border-rose-400 focus:ring-rose-500'
-                  : 'border-slate-200 dark:border-slate-700'
+                  : 'border-neutral-200 dark:border-neutral-700'
                 }
               `}
             />
-            <span className="absolute bottom-2 right-3 text-xs text-slate-400">
+            <span className="absolute bottom-2 right-3 text-xs text-neutral-400">
               {data.bio.length}/500
             </span>
           </div>
@@ -117,7 +117,7 @@ export const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
       </div>
 
       <div>
-        <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-4">
+        <h3 className="text-sm font-semibold text-neutral-900 dark:text-white mb-4">
           社交链接
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

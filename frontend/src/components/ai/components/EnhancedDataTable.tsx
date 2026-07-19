@@ -135,7 +135,7 @@ export function EnhancedDataTable({
         id: 'efficacyTags',
         header: '功效标签',
         cell: (info) => {
-          const tags = info.getValue() as EfficacyTag[]
+          const tags = info.getValue<EfficacyTag[]>()
           if (!tags || tags.length === 0) return <span className="text-xs text-neutral-400">—</span>
           return (
             <EfficacyTagList tags={tags} maxVisible={3} size="small" />
@@ -148,7 +148,7 @@ export function EnhancedDataTable({
         id: 'precautions',
         header: '注意事项',
         cell: (info) => {
-          const precautions = info.getValue() as Precaution[]
+          const precautions = info.getValue<Precaution[]>()
           if (!precautions || precautions.length === 0) return <span className="text-xs text-neutral-300">—</span>
           return <PrecautionBadge precautions={precautions} size="sm" />
         },

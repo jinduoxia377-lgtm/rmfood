@@ -62,7 +62,12 @@ async def check_backend_config():
             print(f"\n   ⚠️  未检测到 API Key！")
 
         # 检查 Base URL
-        base_url = config.base_url or settings.openai_base_url or ""
+        import os
+        base_url = config.base_url or \
+                   getattr(settings, "openai_base_url", "") or \
+                   os.environ.get("OPENAI_BASE_URL", "") or \
+                   getattr(settings.ai_service, "base_url", "") or \
+                   ""
         base_url_ok = bool(base_url)
         print_status("Base URL", "OK" if base_url_ok else "WARN", base_url or "(使用默认值)")
 

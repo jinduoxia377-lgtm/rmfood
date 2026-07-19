@@ -30,13 +30,13 @@ const EditToolbar: React.FC<EditToolbarProps> = ({
   onDeleteSelected,
 }) => {
   return (
-    <div className="flex items-center justify-between px-4 py-2 bg-gray-50 border-b border-gray-200">
+    <div className="flex items-center justify-between px-4 py-2 bg-slate-50 border-b border-neutral-200">
       <div className="flex items-center space-x-2">
-        <div className="flex items-center space-x-1 bg-white dark:bg-slate-800 rounded-md shadow-sm border border-gray-200 dark:border-slate-700 p-1">
+        <div className="flex items-center space-x-1 bg-white dark:bg-neutral-800 rounded-md shadow-sm border border-neutral-200 dark:border-neutral-700 p-1">
           <button
             onClick={onUndo}
             disabled={!canUndo}
-            className="p-1.5 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-slate-700 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+            className="p-1.5 text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded disabled:opacity-50 disabled:cursor-not-allowed"
             title="撤销 (Ctrl+Z)"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -46,7 +46,7 @@ const EditToolbar: React.FC<EditToolbarProps> = ({
           <button
             onClick={onRedo}
             disabled={!canRedo}
-            className="p-1.5 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-slate-700 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+            className="p-1.5 text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded disabled:opacity-50 disabled:cursor-not-allowed"
             title="重做 (Ctrl+Y)"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -54,11 +54,11 @@ const EditToolbar: React.FC<EditToolbarProps> = ({
             </svg>
           </button>
 
-          <div className="w-px h-4 bg-gray-300 dark:bg-slate-600 mx-1" />
+          <div className="w-px h-4 bg-neutral-300 dark:bg-neutral-600 mx-1" />
 
           <button
             onClick={onAddRow}
-            className="p-1.5 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-slate-700 rounded"
+            className="p-1.5 text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded"
             title="添加行"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -70,7 +70,7 @@ const EditToolbar: React.FC<EditToolbarProps> = ({
             <>
               <button
                 onClick={() => {}}
-                className="p-1.5 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded"
+                className="p-1.5 text-secondary-600 hover:text-secondary-800 hover:bg-secondary-50 rounded"
                 title="批量编辑选中行"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -79,7 +79,7 @@ const EditToolbar: React.FC<EditToolbarProps> = ({
               </button>
               <button
                 onClick={onDeleteSelected}
-                className="p-1.5 text-red-600 hover:text-red-800 hover:bg-red-50 rounded"
+                className="p-1.5 text-error-600 hover:text-error-800 hover:bg-error-50 rounded"
                 title={`删除选中行 (${selectedCount})`}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -100,7 +100,7 @@ const EditToolbar: React.FC<EditToolbarProps> = ({
         )}
 
         {selectedCount > 0 && (
-          <span className="text-sm text-gray-600">
+          <span className="text-sm text-neutral-600">
             已选 {selectedCount} 行
           </span>
         )}
@@ -109,14 +109,14 @@ const EditToolbar: React.FC<EditToolbarProps> = ({
           <button
             onClick={onDiscard}
             disabled={!hasUnsavedChanges || isSaving}
-            className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-3 py-1.5 text-sm font-medium text-neutral-700 bg-white border border-neutral-300 rounded-md hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             放弃更改
           </button>
           <button
             onClick={onSave}
             disabled={!hasUnsavedChanges || isSaving}
-            className="px-3 py-1.5 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+            className="px-3 py-1.5 text-sm font-medium text-white bg-secondary-600 border border-transparent rounded-md hover:bg-secondary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
           >
             {isSaving ? (
               <>

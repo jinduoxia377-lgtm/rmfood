@@ -294,7 +294,7 @@ class TemplateService:
             )
             
         except Exception as e:
-            result.errors.append(f"渲染过程中发生错误: {str(e)}")
+            result.errors.append("渲染过程中发生错误")
             logger.error(f"❌ 模板渲染失败: {e}")
         
         return result

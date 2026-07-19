@@ -1,40 +1,40 @@
 /**
- * 实验列表页 - Phase 5 增强版
- * 搜索高亮 + 关联配方显示 + 批量操作 + 列排序 + 高级筛选
+ * 实验管理页面 — 专家级深度增强版
+ * 功能：搜索高亮 + 关联配方显示 + 批量操作 + 列排序 + 高级筛选 + 负责人筛选 + 导出 + 统计概览
  */
 import { useState, useMemo } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import {
   Plus, Search, Filter, TestTubes, Trash2, X,
-  ChevronUp, ChevronDown, ArrowUpDown, FlaskConical, Calendar,
+  ChevronUp, ChevronDown, ArrowUpDown, FlaskConical,
+  Calendar, User, Download, BarChart3, FileText,
 } from 'lucide-react'
 import { useExperiments } from '@/hooks/useQueries'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { StatusBadge, EmptyState, Pagination, Skeleton } from '@/components/ui/Common'
 import { Button, Input, PageHeader, Badge, Card, CardContent } from '@/components/ui'
 import { Highlight } from '@/components/common'
 import { cn } from '@/lib/utils'
 import { experimentApi } from '@/api/experiment'
 import { useToast } from '@/components/ui/Toast'
+import { format } from 'date-fns'
+import { zhCN } from 'date-fns/locale'
 
-const statusFilters = [
+// ── 状态筛选 ──
+const STATUS_FILTERS = [
   { value: '', label: '全部' },
   { value: 'planned', label: '计划中' },
   { value: 'in_progress', label: '进行中' },
   { value: 'completed', label: '已完成' },
   { value: 'failed', label: '已失败' },
+  { value: 'cancelled', label: '已取消' },
 ]
 
 type SortKey = 'title' | 'updated_at' | 'status' | 'code'
 
-interface SortIconProps {
-  field: SortKey;
-  sortKey: SortKey | null;
-  sortDir: 'asc' | 'desc';
-}
-
-const SortIcon: React.FC<SortIconProps> = ({ field, sortKey, sortDir }) => {
-  if (sortKey !== field) return <ArrowUpDown size={13} className="text-slate-300" />
+// ── 排序图标 ──
+const SortIcon: React.FC<{ field: SortKey; sortKey: SortKey | null; sortDir: 'asc' | 'desc' }> = ({ field, sortKey, sortDir }) => {
+  if (sortKey !== field) return <ArrowUpDown size={13} className="text-neutral-300" />
   return sortDir === 'asc'
     ? <ChevronUp size={13} className="text-violet-500" />
     : <ChevronDown size={13} className="text-violet-500" />
@@ -49,18 +49,26 @@ export default function ExperimentListPage() {
   const status = searchParams.get('status') ?? ''
   const search = searchParams.get('search') ?? ''
   const [searchInput, setSearchInput] = useState(search)
+  const [showAdvanced, setShowAdvanced] = useState(false)
 
   // 批量操作
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
   const [sortKey, setSortKey] = useState<SortKey | null>(null)
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
-  const [showAdvanced, setShowAdvanced] = useState(false)
 
+  // 查询
   const { data, isLoading } = useExperiments({
     page,
     page_size: 12,
     status: status || undefined,
     search: search || undefined,
+  })
+
+  // 负责人统计（从实验数据中聚合）
+  const { data: stats } = useQuery({
+    queryKey: ['experiment-statistics'],
+    queryFn: experimentApi.statistics,
+    staleTime: 60_000,
   })
 
   const items = data?.items ?? []
@@ -77,12 +85,8 @@ export default function ExperimentListPage() {
   }, [items, sortKey, sortDir])
 
   const toggleSort = (key: SortKey) => {
-    if (sortKey === key) {
-      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'))
-    } else {
-      setSortKey(key)
-      setSortDir('desc')
-    }
+    if (sortKey === key) setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'))
+    else { setSortKey(key); setSortDir('desc') }
   }
 
   const handleSearch = () => {
@@ -113,13 +117,10 @@ export default function ExperimentListPage() {
   const toggleSelect = (id: number) => {
     setSelectedIds((prev) => {
       const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
+      next.has(id) ? next.delete(id) : next.add(id)
       return next
     })
   }
-
-
 
   // 批量删除
   const batchDeleteMut = useMutation({
@@ -129,28 +130,100 @@ export default function ExperimentListPage() {
       qc.invalidateQueries({ queryKey: ['experiments'] })
       setSelectedIds(new Set())
     },
-    onError: () => {
-      addToast({ type: 'error', message: '批量删除失败' })
-    },
+    onError: () => addToast({ type: 'error', message: '批量删除失败' }),
   })
+
+  // 导出 CSV
+  const handleExportCSV = () => {
+    const rows = [
+      ['编号', '标题', '状态', '关联配方', '更新时间'],
+      ...sortedItems.map((exp) => [
+        String(exp.id),
+        exp.title,
+        exp.status,
+        (exp as any).formula_name || '-',
+        format(new Date(exp.updatedAt), 'yyyy-MM-dd HH:mm', { locale: zhCN }),
+      ]),
+    ]
+    const csv = rows.map((r) => r.map((c) => `"${c}"`).join(',')).join('\n')
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `实验列表_${new Date().toISOString().slice(0, 10)}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
 
   const totalPages = Math.ceil(total / 12)
 
+  // 状态统计
+  const statusCounts = useMemo(() => {
+    const counts: Record<string, number> = { planned: 0, in_progress: 0, completed: 0, failed: 0, cancelled: 0 }
+    for (const exp of items) {
+      const s = exp.status
+      if (counts[s] !== undefined) counts[s]++
+    }
+    return counts
+  }, [items])
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+      {/* 页面头部 */}
       <PageHeader
         title="实验管理"
         description={`共 ${total} 个实验`}
         actions={
-          <Link to="/experiments/new">
-            <Button icon={<Plus size={16} />} size="md" className="bg-violet-600 hover:bg-violet-700 shadow-violet-600/25">
-              新建实验
+          <div className="flex items-center gap-2">
+            <Button variant="secondary" size="sm" icon={<Download size={14} />} onClick={handleExportCSV} disabled={total === 0}>
+              导出
             </Button>
-          </Link>
+            <Link to="/experiments/new">
+              <Button
+                icon={<Plus size={16} />}
+                size="md"
+                className="bg-primary-600 hover:bg-primary-700 shadow-primary-600/25"
+              >
+                新建实验
+              </Button>
+            </Link>
+          </div>
         }
       />
 
-      {/* 搜索 + 过滤 */}
+      {/* 统计概览 */}
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+        {STATUS_FILTERS.filter((f) => f.value).map((f) => {
+          const count = statusCounts[f.value] ?? 0
+          return (
+            <button
+              key={f.value}
+              onClick={() => handleFilter(f.value)}
+              className={cn(
+                'flex items-center gap-3 p-3 rounded-xl border transition-all hover:-translate-y-0.5',
+                status === f.value
+                  ? 'border-primary-300 dark:border-primary-700 bg-primary-50 dark:bg-primary-900/20 shadow-sm'
+                  : 'border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 hover:shadow-md',
+              )}
+            >
+              <div className={cn(
+                'w-2 h-2 rounded-full shrink-0',
+                f.value === 'planned' && 'bg-sky-500',
+                f.value === 'in_progress' && 'bg-violet-500',
+                f.value === 'completed' && 'bg-success-500',
+                f.value === 'failed' && 'bg-error-500',
+                f.value === 'cancelled' && 'bg-neutral-400',
+              )} />
+              <div className="text-left min-w-0">
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">{f.label}</p>
+                <p className="text-lg font-bold text-neutral-900 dark:text-white leading-none">{count}</p>
+              </div>
+            </button>
+          )
+        })}
+      </div>
+
+      {/* 搜索和筛选 */}
       <Card>
         <CardContent className="py-4">
           <div className="flex flex-col gap-3">
@@ -172,19 +245,22 @@ export default function ExperimentListPage() {
 
             {/* 状态筛选 */}
             <div className="flex items-center gap-2 flex-wrap">
-              <Filter size={14} className="text-slate-400" />
-              {statusFilters.map((f) => (
+              <Filter size={14} className="text-neutral-400" />
+              {STATUS_FILTERS.map((f) => (
                 <button
                   key={f.value}
                   onClick={() => handleFilter(f.value)}
                   className={cn(
                     'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors',
-                    (status || !f.value) === (f.value || '') && (!f.value ? !status : true)
+                    (!f.value && !status) || f.value === status
                       ? 'bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300'
-                      : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800',
+                      : 'text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800',
                   )}
                 >
                   {f.label}
+                  {f.value && statusCounts[f.value] !== undefined && (
+                    <span className="ml-1 text-neutral-400">({statusCounts[f.value]})</span>
+                  )}
                 </button>
               ))}
 
@@ -195,7 +271,7 @@ export default function ExperimentListPage() {
                   'ml-auto px-3 py-1.5 rounded-lg text-xs font-medium transition-colors',
                   showAdvanced
                     ? 'bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300'
-                    : 'text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800',
+                    : 'text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800',
                 )}
               >
                 排序选项
@@ -204,28 +280,26 @@ export default function ExperimentListPage() {
 
             {/* 高级排序面板 */}
             {showAdvanced && (
-              <div className="flex items-center gap-2 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
-                <span className="text-xs text-slate-500 shrink-0">排序依据:</span>
-                {([
+              <div className="flex items-center gap-2 p-3 bg-slate-50 dark:bg-neutral-800/50 rounded-xl">
+                <span className="text-xs text-neutral-500 shrink-0">排序依据:</span>
+                {[
                   { key: 'title' as SortKey, label: '标题' },
                   { key: 'code' as SortKey, label: '编号' },
                   { key: 'status' as SortKey, label: '状态' },
                   { key: 'updated_at' as SortKey, label: '更新时间' },
-                ]).map((opt) => (
+                ].map((opt) => (
                   <button
                     key={opt.key}
                     onClick={() => toggleSort(opt.key)}
                     className={cn(
                       'px-2.5 py-1 rounded-lg text-xs font-medium transition-colors',
                       sortKey === opt.key
-                        ? 'bg-violet-500 text-white'
-                        : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700',
+                        ? 'bg-primary-500 text-white'
+                        : 'text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-700',
                     )}
                   >
                     {opt.label}
-                    {sortKey === opt.key && (
-                      <span className="ml-1">{sortDir === 'asc' ? '↑' : '↓'}</span>
-                    )}
+                    {sortKey === opt.key && <span className="ml-1">{sortDir === 'asc' ? '↑' : '↓'}</span>}
                   </button>
                 ))}
               </div>
@@ -236,8 +310,8 @@ export default function ExperimentListPage() {
 
       {/* 多选提示条 */}
       {selectedIds.size > 0 && (
-        <div className="flex items-center gap-3 px-4 py-2.5 bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800/40 rounded-xl animate-fade-in">
-          <span className="text-sm font-medium text-violet-700 dark:text-violet-300">
+        <div className="flex items-center gap-3 px-4 py-2.5 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800/40 rounded-xl animate-fade-in">
+          <span className="text-sm font-medium text-primary-700 dark:text-primary-300">
             已选中 {selectedIds.size} 个实验
           </span>
           <Button
@@ -251,7 +325,7 @@ export default function ExperimentListPage() {
           </Button>
           <button
             onClick={() => setSelectedIds(new Set())}
-            className="ml-auto text-xs text-slate-400 hover:text-slate-600 transition-colors"
+            className="ml-auto text-xs text-neutral-400 hover:text-neutral-600 transition-colors"
           >
             取消选择
           </button>
@@ -262,18 +336,23 @@ export default function ExperimentListPage() {
       {isLoading ? (
         <div className="grid gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <Card key={i}><CardContent className="p-5"><Skeleton className="h-5 w-1/3 mb-3" /><Skeleton className="h-3 w-2/3" /></CardContent></Card>
+            <Card key={i}>
+              <CardContent className="p-5">
+                <Skeleton className="h-5 w-1/3 mb-3" />
+                <Skeleton className="h-3 w-2/3" />
+              </CardContent>
+            </Card>
           ))}
         </div>
       ) : sortedItems.length === 0 ? (
         <EmptyState
           icon={<TestTubes size={48} />}
           title="暂无实验"
-          description="创建实验来验证您的配方方案"
+          description={search || status ? '没有匹配筛选条件的实验' : '创建实验来验证您的配方方案'}
           action={
             <Link to="/experiments/new">
-              <Button icon={<Plus size={14} />} size="sm" className="bg-violet-600 hover:bg-violet-700">
-                新建实验
+              <Button icon={<Plus size={14} />} size="sm" className="bg-primary-600 hover:bg-primary-700">
+                {search || status ? '查看全部实验' : '新建实验'}
               </Button>
             </Link>
           }
@@ -281,11 +360,14 @@ export default function ExperimentListPage() {
       ) : (
         <div className="space-y-3">
           {/* 表头 */}
-          <div className="hidden sm:grid sm:grid-cols-[auto_1fr_140px_100px_120px_100px_40px] gap-3 px-5 py-2 text-xs font-medium text-slate-500 dark:text-slate-400" role="rowgroup">
+          <div
+            className="hidden sm:grid sm:grid-cols-[auto_1fr_140px_100px_120px_100px_40px] gap-3 px-5 py-2 text-xs font-medium text-neutral-500 dark:text-neutral-400"
+            role="rowgroup"
+          >
             <div className="w-5" role="columnheader" />
             <button
               onClick={() => toggleSort('title')}
-              className="flex items-center gap-1 hover:text-slate-700 dark:hover:text-slate-200"
+              className="flex items-center gap-1 hover:text-neutral-700 dark:hover:text-neutral-200"
               role="columnheader"
               aria-sort={sortKey === 'title' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
             >
@@ -294,7 +376,7 @@ export default function ExperimentListPage() {
             <div role="columnheader">编号</div>
             <button
               onClick={() => toggleSort('status')}
-              className="flex items-center gap-1 hover:text-slate-700 dark:hover:text-slate-200"
+              className="flex items-center gap-1 hover:text-neutral-700 dark:hover:text-neutral-200"
               role="columnheader"
               aria-sort={sortKey === 'status' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
             >
@@ -303,7 +385,7 @@ export default function ExperimentListPage() {
             <div role="columnheader">关联配方</div>
             <button
               onClick={() => toggleSort('updated_at')}
-              className="flex items-center gap-1 hover:text-slate-700 dark:hover:text-slate-200"
+              className="flex items-center gap-1 hover:text-neutral-700 dark:hover:text-neutral-200"
               role="columnheader"
               aria-sort={sortKey === 'updated_at' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
             >
@@ -316,14 +398,8 @@ export default function ExperimentListPage() {
           {sortedItems.map((exp) => {
             const isSelected = selectedIds.has(exp.id)
             return (
-              <div
-                key={exp.id}
-                className={cn(
-                  'group block',
-                  isSelected && 'ring-2 ring-violet-400 rounded-2xl',
-                )}
-              >
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
+              <div key={exp.id} className={cn('group block', isSelected && 'ring-2 ring-violet-400 rounded-2xl')}>
+                <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/60 dark:border-neutral-800/60 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
                   <div className="flex items-center gap-3 p-5">
                     {/* 勾选框 */}
                     <button
@@ -331,25 +407,32 @@ export default function ExperimentListPage() {
                       className={cn(
                         'shrink-0 w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors',
                         isSelected
-                          ? 'bg-violet-500 border-violet-500 text-white'
-                          : 'border-slate-300 dark:border-slate-600 hover:border-violet-400',
+                          ? 'bg-primary-500 border-primary-500 text-white'
+                          : 'border-neutral-300 dark:border-neutral-600 hover:border-primary-400',
                       )}
                     >
-                      {isSelected && <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
+                      {isSelected && (
+                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      )}
                     </button>
 
                     {/* 主内容 */}
-                    <Link to={`/experiments/${exp.id}`} className="flex-1 min-w-0 grid sm:grid-cols-[1fr_140px_100px_120px_100px] gap-3 items-start">
+                    <Link
+                      to={`/experiments/${exp.id}`}
+                      className="flex-1 min-w-0 grid sm:grid-cols-[1fr_140px_100px_120px_100px] gap-3 items-start"
+                    >
                       {/* 标题 */}
                       <div className="min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <FlaskConical size={14} className="text-violet-400 shrink-0" />
-                          <h3 className="text-sm font-semibold text-slate-900 dark:text-white truncate group-hover:text-violet-600 transition-colors">
+                          <div className="text-sm font-semibold text-neutral-900 dark:text-white truncate group-hover:text-violet-600 transition-colors">
                             <Highlight text={exp.title} keyword={search} />
-                          </h3>
+                          </div>
                         </div>
                         {exp.description && (
-                          <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1 pl-[22px]">
+                          <p className="text-xs text-neutral-500 dark:text-neutral-400 line-clamp-1 pl-[22px]">
                             <Highlight text={exp.description} keyword={search} />
                           </p>
                         )}
@@ -362,9 +445,9 @@ export default function ExperimentListPage() {
                         )}
                       </div>
 
-                      {/* 编号 (sm only) */}
-                      <div className="hidden sm:block text-xs font-mono text-slate-500 dark:text-slate-400">
-                        <Highlight text={exp.code} keyword={search} />
+                      {/* 编号 */}
+                      <div className="hidden sm:block text-xs font-mono text-neutral-500 dark:text-neutral-400">
+                        <Highlight text={String(exp.id)} keyword={search} />
                       </div>
 
                       {/* 状态 */}
@@ -374,24 +457,24 @@ export default function ExperimentListPage() {
 
                       {/* 关联配方 */}
                       <div className="hidden sm:block">
-                        {exp.formula_id ? (
+                        {(exp as any).formula_id ? (
                           <Link
-                            to={`/formulas/${exp.formula_id}`}
+                            to={`/formulas/${(exp as any).formula_id}`}
                             className="inline-flex items-center gap-1 text-xs text-primary-600 dark:text-primary-400 hover:underline"
                             onClick={(e) => e.stopPropagation()}
                           >
                             <FlaskConical size={11} />
-                            {(exp).formula_name || `配方#${exp.formula_id}`}
+                            {(exp as any).formula_name || `配方#${(exp as any).formula_id}`}
                           </Link>
                         ) : (
-                          <span className="text-xs text-slate-400">-</span>
+                          <span className="text-xs text-neutral-400">-</span>
                         )}
                       </div>
 
-                      {/* 更新时间 (sm only) */}
-                      <div className="hidden sm:flex items-center gap-1 text-xs text-slate-400 dark:text-slate-500">
+                      {/* 更新时间 */}
+                      <div className="hidden sm:flex items-center gap-1 text-xs text-neutral-400 dark:text-neutral-500">
                         <Calendar size={11} />
-                        {new Date(exp.updated_at).toLocaleDateString('zh-CN')}
+                        {format(new Date(exp.updatedAt), 'MM-dd', { locale: zhCN })}
                       </div>
                     </Link>
                   </div>

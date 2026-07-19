@@ -32,7 +32,7 @@
     # 2. 订阅事件
     @subscribe("formula.created")
     async def send_notification(event: FormulaCreated):
-        print(f"配方 {event.formula_name} 已创建，发送通知...")
+        logger.info("配方 %s 已创建，发送通知...", event.formula_name)
 
     # 3. 发布事件
     await publish(FormulaCreated(
@@ -299,7 +299,7 @@ class EventHandlerRegistration:
                     )
                 else:
                     # 同步函数 -> 在线程池中运行
-                    result = await asyncio.get_event_loop().run_in_executor(
+                    result = await asyncio.get_running_loop().run_in_executor(
                         None,
                         lambda: self.handler(event),
                     )
@@ -725,11 +725,11 @@ def subscribe(
     使用:
         @subscribe("formula.created")
         async def on_formula_created(event: FormulaCreated):
-            print(f"配方已创建: {event.formula_name}")
+            logger.info("配方已创建: %s", event.formula_name)
 
         @subscribe("*", priority=1)  # 通配符: 订阅所有事件
         async def log_all_events(event: DomainEvent):
-            print(f"收到事件: {event.event_type}")
+            logger.info("收到事件: %s", event.event_type)
     """
     bus_to_use = bus or get_global_bus()
 
@@ -850,37 +850,42 @@ async def run_event_cli() -> None:
     set_global_bus(bus)
     setup_default_handlers()
 
-    print("\n" + "═" * 60)
-    print("🟡 事件驱动架构 - 管理工具")
-    print("═" * 60 + "\n")
+    logger.info("")
+    logger.info("=" * 60)
+    logger.info("🟡 事件驱动架构 - 管理工具")
+    logger.info("=" * 60)
+    logger.info("")
 
     if args.action == "status":
         stats = bus.get_stats()
-        print(f"📊 状态: {stats['backend']}")
-        print(f"   运行时长: {stats['uptime_seconds']:.1f} 秒")
-        print(f"   订阅者数量: {stats['active_subscriptions']}")
-        print(f"   已发布事件: {stats['total_events_published']}")
-        print(f"   失败数: {stats['total_failed']}")
-        print(f"   事件类型: {', '.join(stats['event_types'][:10])}{'...' if len(stats['event_types']) > 10 else ''}")
+        logger.info("📊 状态: %s", stats['backend'])
+        logger.info("   运行时长: %.1f 秒", stats['uptime_seconds'])
+        logger.info("   订阅者数量: %d", stats['active_subscriptions'])
+        logger.info("   已发布事件: %d", stats['total_events_published'])
+        logger.info("   失败数: %d", stats['total_failed'])
+        types_str = ', '.join(stats['event_types'][:10])
+        if len(stats['event_types']) > 10:
+            types_str += '...'
+        logger.info("   事件类型: %s", types_str)
 
     elif args.action == "list":
-        print("📡 当前订阅列表:\n")
+        logger.info("📡 当前订阅列表:")
         for event_type in bus.get_all_event_types():
             subs = bus.get_subscribers(event_type)
-            print(f"  {event_type} ({len(subs)} 订阅者):")
+            logger.info("  %s (%d 订阅者):", event_type, len(subs))
             for reg in subs:
-                print(f"    - {reg.handler_name} (priority={reg.priority})")
+                logger.info("    - %s (priority=%d)", reg.handler_name, reg.priority)
 
     elif args.action == "replay":
         event_store = bus._event_store
         if event_store:
             count = await event_store.replay(event_type=args.event_type, since=args.since)
-            print(f"⏪ 已重放 {count} 个事件")
+            logger.info("⏪ 已重放 %d 个事件", count)
         else:
-            print("❌ 未配置事件存储，无法重放")
+            logger.error("❌ 未配置事件存储，无法重放")
 
     elif args.action == "test":
-        print(f"🧪 测试发布 {args.count} 个事件...\n")
+        logger.info("🧪 测试发布 %d 个事件...", args.count)
         for i in range(args.count):
             await publish(
                 FormulaCreated(
@@ -890,11 +895,13 @@ async def run_event_cli() -> None:
                     priority=EventPriority.NORMAL,
                 )
             )
-            await asyncio.sleep(0.05)  # 小延迟便于观察
-        print(f"\n✅ 已发布 {args.count} 个测试事件")
-        print(f"   统计: {bus.get_stats()['events_by_type']}")
+            await asyncio.sleep(0.05)
+        logger.info("✅ 已发布 %d 个测试事件", args.count)
+        logger.info("   统计: %s", bus.get_stats()['events_by_type'])
 
-    print("\n" + "═" * 60 + "\n")
+    logger.info("")
+    logger.info("=" * 60)
+    logger.info("")
     bus.shutdown()
 
 

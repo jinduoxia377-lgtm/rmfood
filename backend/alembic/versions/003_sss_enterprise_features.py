@@ -24,7 +24,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 revision = '003_sss'
-down_revision = '002_account_security'
+down_revision = '002_formula_deep_integration'
 branch_labels = None
 depends_on = None
 

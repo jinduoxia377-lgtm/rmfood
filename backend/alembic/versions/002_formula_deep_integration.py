@@ -25,8 +25,8 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision: str = '002_formula_deep_integration'
-down_revision: Union[str, None] = '015_tcm_dfbp'
-branch_labels: Union[str, Sequence[str], None] = None
+down_revision: Union[str, None] = '002_account_security'
+branch_labels: Union[str, Sequence[str], None] = ('formula_deep_integration',)
 depends_on: Union[str, Sequence[str], None] = None
 
 

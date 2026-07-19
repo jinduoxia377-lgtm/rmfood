@@ -300,7 +300,7 @@ export function ApiKeyConfigPanel({
             <Shield className="w-5 h-5 text-primary-500" />
             DeepSeek API 密钥配置
           </h2>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-neutral-500 mt-1">
             安全配置你的 API 密钥以启用 AI 智能对话功能
           </p>
         </div>
@@ -345,9 +345,9 @@ export function ApiKeyConfigPanel({
                 </div>
 
                 <div className="text-sm space-y-1">
-                  <p className="text-gray-600 dark:text-gray-400">
+                  <p className="text-neutral-600 dark:text-neutral-400">
                     <span className="font-medium">脱敏显示：</span>
-                    <code className="ml-2 px-2 py-1 bg-white dark:bg-gray-800 rounded text-xs">
+                    <code className="ml-2 px-2 py-1 bg-white dark:bg-neutral-800 rounded text-xs">
                       {configInfo?.maskedKey}
                     </code>
                     <button
@@ -358,7 +358,7 @@ export function ApiKeyConfigPanel({
                     </button>
                   </p>
 
-                  <p className="text-gray-500 text-xs">
+                  <p className="text-neutral-500 text-xs">
                     <span>提供商：</span>{configInfo?.provider || 'deepseek'}
                     {' • '}
                     <span>配置时间：</span>
@@ -405,9 +405,9 @@ export function ApiKeyConfigPanel({
           </div>
 
           {/* 安全说明 */}
-          <div className="flex items-start gap-2 p-3 rounded-lg bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800/40">
-            <Info className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
-            <div className="text-sm text-blue-700 dark:text-blue-300">
+          <div className="flex items-start gap-2 p-3 rounded-lg bg-secondary-50 dark:bg-secondary-900/10 border border-blue-200 dark:border-blue-800/40">
+            <Info className="w-4 h-4 text-secondary-500 mt-0.5 flex-shrink-0" />
+            <div className="text-sm text-secondary-700 dark:text-secondary-300">
               <p className="font-medium">安全提示</p>
               <ul className="mt-1 space-y-1 text-xs list-disc list-inside">
                 <li>API Key 使用 AES-256-GCM 军事级加密存储在本地浏览器中</li>
@@ -422,7 +422,7 @@ export function ApiKeyConfigPanel({
         <div className="space-y-4">
           {/* API Key 输入框 */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1">
+            <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 flex items-center gap-1">
               <Key className="w-4 h-4" />
               API 密钥
               <span className="text-danger-500">*</span>
@@ -446,7 +446,7 @@ export function ApiKeyConfigPanel({
               {/* 显示/隐藏按钮 */}
               <button
                 type="button"
-                className="absolute right-12 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                className="absolute right-12 top-1/2 -translate-y-1/2 p-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
                 onClick={() => setShowApiKey(!showApiKey)}
                 tabIndex={-1}
               >
@@ -516,30 +516,30 @@ export function ApiKeyConfigPanel({
           </div>
 
           {/* 帮助信息 */}
-          <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+          <div className="pt-2 border-t border-neutral-200 dark:border-neutral-700">
             {/* 交叉引导文案 */}
-            <div className="mb-3 p-3 rounded-lg bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800/40">
-              <p className="text-xs text-blue-700 dark:text-blue-300 font-medium mb-1">
+            <div className="mb-3 p-3 rounded-lg bg-secondary-50 dark:bg-secondary-900/10 border border-blue-200 dark:border-blue-800/40">
+              <p className="text-xs text-secondary-700 dark:text-secondary-300 font-medium mb-1">
                 💡 这是<strong>快速配置</strong>入口（推荐大多数用户使用）
               </p>
-              <ul className="text-xs text-blue-600 dark:text-blue-400 space-y-1 list-disc list-inside">
+              <ul className="text-xs text-secondary-600 dark:text-secondary-400 space-y-1 list-disc list-inside">
                 <li>✅ 适合首次配置或只想快速开始使用的用户</li>
                 <li>✅ 使用 AES-256-GCM 军事级加密保护</li>
                 <li>✅ 配置会自动同步到系统所有模块</li>
               </ul>
-              <p className="text-xs text-blue-500 dark:text-blue-400 mt-2">
+              <p className="text-xs text-secondary-500 dark:text-secondary-400 mt-2">
                 📌 如需管理多个模型或调整高级参数（temperature/timeout等），
                 请前往页面顶部的<strong>"配置管理"</strong>标签页。
               </p>
             </div>
 
             <details className="group">
-              <summary className="text-xs text-gray-500 cursor-pointer hover:text-gray-700 dark:hover:text-gray-300">
+              <summary className="text-xs text-neutral-500 cursor-pointer hover:text-neutral-700 dark:hover:text-neutral-300">
                 如何获取 DeepSeek API Key？
               </summary>
 
-              <div className="mt-2 p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 text-xs space-y-2">
-                <ol className="list-decimal list-inside space-y-1 text-gray-600 dark:text-gray-400">
+              <div className="mt-2 p-3 rounded-lg bg-slate-50 dark:bg-neutral-800/50 text-xs space-y-2">
+                <ol className="list-decimal list-inside space-y-1 text-neutral-600 dark:text-neutral-400">
                   <li>访问 <a href="https://platform.deepseek.com/" target="_blank" rel="noopener noreferrer" className="text-primary-500 hover:underline">DeepSeek 开放平台</a></li>
                   <li>注册/登录账号</li>
                   <li>进入左侧菜单 <strong>"API Keys"</strong></li>

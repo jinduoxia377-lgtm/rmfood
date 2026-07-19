@@ -334,7 +334,8 @@ class TCMService extends ProfessionalBaseService {
           englishName: 'Glycyrrhizin',
           molecularFormula: 'C42H62O16',
           molecularWeight: 822.93,
-          smiles: 'CC1C(C(C(C(O1)OC2C(C(C(O2)C)OC3C(C(C(OC3C)OC4C(C(C(OC4C)OC5C(C(C(C(O5)C)O)O)C)O)C)CO)O)C)O)O)C(=O)C(=O)O',
+          smiles:
+            'CC1C(C(C(C(O1)OC2C(C(C(O2)C)OC3C(C(C(OC3C)OC4C(C(C(OC4C)OC5C(C(C(C(O5)C)O)O)C)O)C)CO)O)C)O)O)C(=O)C(=O)O',
           casNumber: '1405-86-3',
           targets: [
             {
@@ -445,9 +446,7 @@ class TCMService extends ProfessionalBaseService {
   }
 
   private mockSearchHerbs(params: TCMSearchParams): any {
-    let results = Array.from(this.mockData.values()).filter(
-      (herb) => herb.id.startsWith('TCM'),
-    );
+    let results = Array.from(this.mockData.values()).filter((herb) => herb.id.startsWith('TCM'));
 
     if (params.keyword) {
       const keyword = params.keyword.toLowerCase();
@@ -460,27 +459,19 @@ class TCMService extends ProfessionalBaseService {
     }
 
     if (params.family) {
-      results = results.filter((herb) =>
-        herb.family.includes(params.family!),
-      );
+      results = results.filter((herb) => herb.family.includes(params.family!));
     }
 
     if (params.nature) {
-      results = results.filter((herb) =>
-        herb.properties.nature.includes(params.nature!),
-      );
+      results = results.filter((herb) => herb.properties.nature.includes(params.nature!));
     }
 
     if (params.flavor && params.flavor.length > 0) {
-      results = results.filter((herb) =>
-        params.flavor!.some((f) => herb.properties.flavor.includes(f)),
-      );
+      results = results.filter((herb) => params.flavor!.some((f) => herb.properties.flavor.includes(f)));
     }
 
     if (params.meridian && params.meridian.length > 0) {
-      results = results.filter((herb) =>
-        params.meridian!.some((m) => herb.properties.meridian.includes(m)),
-      );
+      results = results.filter((herb) => params.meridian!.some((m) => herb.properties.meridian.includes(m)));
     }
 
     const page = params.page || 1;
@@ -568,10 +559,8 @@ class TCMService extends ProfessionalBaseService {
       if (params?.molecularWeight) {
         compounds = compounds.filter((c) => {
           if (!c.molecularWeight) return true;
-          if (params.molecularWeight!.min && c.molecularWeight < params.molecularWeight!.min)
-            return false;
-          if (params.molecularWeight!.max && c.molecularWeight > params.molecularWeight!.max)
-            return false;
+          if (params.molecularWeight!.min && c.molecularWeight < params.molecularWeight!.min) return false;
+          if (params.molecularWeight!.max && c.molecularWeight > params.molecularWeight!.max) return false;
           return true;
         });
       }
@@ -657,9 +646,7 @@ class TCMService extends ProfessionalBaseService {
     return ['Predicted pathway 1', 'Predicted pathway 2', 'Predicted pathway 3'];
   }
 
-  public async getFullPrediction(
-    params: TCMPredictionParams,
-  ): Promise<TCMPredictionResult> {
+  public async getFullPrediction(params: TCMPredictionParams): Promise<TCMPredictionResult> {
     if (this.mockMode) {
       const [targets, diseases, pathways] = await Promise.all([
         this.mockPredictTargets(params),
@@ -679,9 +666,7 @@ class TCMService extends ProfessionalBaseService {
     return this.post<TCMPredictionResult>(`/api/predict/full`, params);
   }
 
-  public async visualizeChemistry(
-    smiles: string,
-  ): Promise<TCMChemistryVisualization> {
+  public async visualizeChemistry(smiles: string): Promise<TCMChemistryVisualization> {
     if (this.mockMode) {
       return this.mockVisualizeChemistry(smiles);
     }
@@ -857,9 +842,7 @@ class TCMService extends ProfessionalBaseService {
     return {
       mockMode: this.mockMode,
       cachedItems: this.getCacheStats().size,
-      availableHerbs: Array.from(this.mockData.values()).filter(
-        (h) => h.id.startsWith('TCM'),
-      ).length,
+      availableHerbs: Array.from(this.mockData.values()).filter((h) => h.id.startsWith('TCM')).length,
     };
   }
 }
@@ -868,16 +851,5 @@ const tcmService = new TCMService();
 
 export default tcmService;
 export { TCMService };
-export type {
-  TCMHerb,
-  TCMChemistry,
-  TCMTarget,
-  TCMDisease,
-  TCMSearchParams,
-  TCMCompoundSearchParams,
-  TCMPredictionParams,
-  TCMPredictionResult,
-  TCMChemistryVisualization,
-};
 
 const organicAtoms = ['B', 'C', 'N', 'O', 'P', 'S', 'F', 'Cl', 'Br', 'I'];

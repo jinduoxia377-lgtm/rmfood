@@ -17,13 +17,10 @@
 from datetime import datetime, timezone
 from typing import Optional
 
-from sqlalchemy import Integer, String, Float, Text, DateTime, JSON, Boolean, ForeignKey, Index, UniqueConstraint, Table, Column
+from sqlalchemy import Integer, String, Float, Text, DateTime, JSON, Boolean, ForeignKey, Index, UniqueConstraint, Table, Column, BigInteger
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from ..core.database import Base
-
-
-def _now() -> datetime:
-    return datetime.now(timezone.utc).replace(tzinfo=None)
+from .base import Base
+from app.models.utils import now_utc_mapped
 
 
 # ═══════════════════════════════════════════
@@ -34,35 +31,35 @@ def _now() -> datetime:
 tcm_herb_compounds = Table(
     "tcm_herb_compounds",
     Base.metadata,
-    Column("herb_id", Integer, ForeignKey("tcm_herbs.id", ondelete="CASCADE"), primary_key=True),
-    Column("compound_id", Integer, ForeignKey("tcm_compounds.id", ondelete="CASCADE"), primary_key=True),
+    Column("herb_id", BigInteger, ForeignKey("tcm_herbs.id", ondelete="CASCADE"), primary_key=True),
+    Column("compound_id", BigInteger, ForeignKey("tcm_compounds.id", ondelete="CASCADE"), primary_key=True),
     Column("content_percent", Float, nullable=True, comment="含量百分比"),
-    Column("created_at", DateTime, default=_now),
+    Column("created_at", DateTime(timezone=True), default=now_utc_mapped),
 )
 
 # 化合物-靶点关联
 tcm_compound_targets = Table(
     "tcm_compound_targets",
     Base.metadata,
-    Column("compound_id", Integer, ForeignKey("tcm_compounds.id", ondelete="CASCADE"), primary_key=True),
-    Column("target_id", Integer, ForeignKey("tcm_targets.id", ondelete="CASCADE"), primary_key=True),
+    Column("compound_id", BigInteger, ForeignKey("tcm_compounds.id", ondelete="CASCADE"), primary_key=True),
+    Column("target_id", BigInteger, ForeignKey("tcm_targets.id", ondelete="CASCADE"), primary_key=True),
     Column("activity_type", String(50), nullable=True, comment="活性类型: inhibitor/activator/binder"),
     Column("activity_value", Float, nullable=True, comment="活性值"),
     Column("activity_unit", String(50), nullable=True, comment="活性单位"),
     Column("evidence_source", String(100), nullable=True, comment="证据来源: TCMSP/Literature/Prediction"),
     Column("confidence", Float, default=0.0, comment="置信度 0-1"),
-    Column("created_at", DateTime, default=_now),
+    Column("created_at", DateTime(timezone=True), default=now_utc_mapped),
 )
 
 # 靶点-疾病关联
 tcm_target_diseases = Table(
     "tcm_target_diseases",
     Base.metadata,
-    Column("target_id", Integer, ForeignKey("tcm_targets.id", ondelete="CASCADE"), primary_key=True),
-    Column("disease_id", Integer, ForeignKey("tcm_diseases.id", ondelete="CASCADE"), primary_key=True),
+    Column("target_id", BigInteger, ForeignKey("tcm_targets.id", ondelete="CASCADE"), primary_key=True),
+    Column("disease_id", BigInteger, ForeignKey("tcm_diseases.id", ondelete="CASCADE"), primary_key=True),
     Column("evidence_type", String(50), nullable=True, comment="证据类型: therapeutic/association/genetic"),
     Column("confidence", Float, default=0.0, comment="置信度 0-1"),
-    Column("created_at", DateTime, default=_now),
+    Column("created_at", DateTime(timezone=True), default=now_utc_mapped),
 )
 
 
@@ -78,7 +75,7 @@ class TCMCompound(Base):
     """
     __tablename__ = "tcm_compounds"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
 
     # 化合物标识
     name: Mapped[str] = mapped_column(String(200), nullable=False, index=True, comment="化合物名称")
@@ -104,8 +101,8 @@ class TCMCompound(Base):
     source: Mapped[str] = mapped_column(String(50), default="tcmsp", comment="数据来源")
 
     # 元数据
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=_now, nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_now, onupdate=_now, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, onupdate=now_utc_mapped, nullable=False)
 
     # 关系
     herbs: Mapped[list["TCMHerb"]] = relationship(
@@ -145,7 +142,7 @@ class TCMTarget(Base):
     """
     __tablename__ = "tcm_targets"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
 
     # 靶点标识
     name: Mapped[str] = mapped_column(String(200), nullable=False, index=True, comment="靶点名称")
@@ -162,8 +159,8 @@ class TCMTarget(Base):
     source: Mapped[str] = mapped_column(String(50), default="tcmsp", comment="数据来源")
 
     # 元数据
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=_now, nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_now, onupdate=_now, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, onupdate=now_utc_mapped, nullable=False)
 
     # 关系
     compounds: Mapped[list["TCMCompound"]] = relationship(
@@ -203,7 +200,7 @@ class TCMDisease(Base):
     """
     __tablename__ = "tcm_diseases"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
 
     # 疾病标识
     name: Mapped[str] = mapped_column(String(200), nullable=False, index=True, comment="疾病名称")
@@ -215,8 +212,8 @@ class TCMDisease(Base):
     source: Mapped[str] = mapped_column(String(50), default="tcmsp", comment="数据来源")
 
     # 元数据
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=_now, nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_now, onupdate=_now, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, onupdate=now_utc_mapped, nullable=False)
 
     # 关系
     targets: Mapped[list["TCMTarget"]] = relationship(

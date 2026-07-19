@@ -647,7 +647,7 @@ class SecureUploadProcessor:
                 status=FileSafetyStatus.BLOCKED,
                 reasons=[UploadValidationError(
                     "PROCESSING_ERROR",
-                    f"文件处理异常: {str(e)}",
+                    "文件处理异常",
                 )],
                 original_filename=original_filename,
                 content_type=content_type,

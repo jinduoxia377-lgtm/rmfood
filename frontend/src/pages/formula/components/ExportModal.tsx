@@ -231,16 +231,16 @@ export function ExportModal({
     >
       <div className="space-y-6">
         {error && (
-          <div className="flex items-start gap-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-            <AlertCircle className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
-            <p className="text-sm text-red-700 dark:text-red-400">{error}</p>
+          <div className="flex items-start gap-2 p-3 bg-error-50 dark:bg-error-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+            <AlertCircle className="w-5 h-5 text-error-500 mt-0.5 flex-shrink-0" />
+            <p className="text-sm text-error-700 dark:text-error-400">{error}</p>
           </div>
         )}
 
         <div>
           <div className="flex items-center gap-2 mb-3">
-            <Package className="w-4 h-4 text-slate-500" />
-            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">导出范围</span>
+            <Package className="w-4 h-4 text-neutral-500" />
+            <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">导出范围</span>
           </div>
 
           <div className="space-y-2">
@@ -250,7 +250,7 @@ export function ExportModal({
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl border-2 cursor-pointer transition-all ${
                   scope === option.value
                     ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 shadow-sm'
-                    : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                    : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600 hover:bg-slate-50 dark:hover:bg-neutral-800/50'
                 }`}
               >
                 <input
@@ -262,8 +262,8 @@ export function ExportModal({
                   disabled={isExporting}
                   className="w-4 h-4 text-primary-600 focus:ring-primary-500"
                 />
-                <span className="text-sm font-medium text-slate-900 dark:text-white">{option.label}</span>
-                <span className="text-xs text-slate-500 ml-auto">
+                <span className="text-sm font-medium text-neutral-900 dark:text-white">{option.label}</span>
+                <span className="text-xs text-neutral-500 ml-auto">
                   ({option.getDescription({ totalCount, currentPageCount, filteredCount, selectedIds })})
                 </span>
               </label>
@@ -273,8 +273,8 @@ export function ExportModal({
 
         <div>
           <div className="flex items-center gap-2 mb-3">
-            <FileSpreadsheet className="w-4 h-4 text-slate-500" />
-            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">导出格式</span>
+            <FileSpreadsheet className="w-4 h-4 text-neutral-500" />
+            <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">导出格式</span>
           </div>
 
           <div className="grid grid-cols-3 gap-3">
@@ -290,7 +290,7 @@ export function ExportModal({
                   className={`relative p-4 rounded-xl border-2 text-left transition-all ${
                     isSelected
                       ? `border-${fmt.color}-500 bg-${fmt.color}-50 dark:bg-${fmt.color}-900/20`
-                      : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                      : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600'
                   }`}
                 >
                   {isSelected && (
@@ -298,11 +298,11 @@ export function ExportModal({
                       <Check className="w-3 h-3 text-white" />
                     </div>
                   )}
-                  <Icon className={`w-7 h-7 mb-2 ${isSelected ? `text-${fmt.color}-600` : 'text-slate-400'}`} />
-                  <div className={`text-sm font-semibold ${isSelected ? 'text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-400'}`}>
+                  <Icon className={`w-7 h-7 mb-2 ${isSelected ? `text-${fmt.color}-600` : 'text-neutral-400'}`} />
+                  <div className={`text-sm font-semibold ${isSelected ? 'text-neutral-900 dark:text-white' : 'text-neutral-600 dark:text-neutral-400'}`}>
                     {fmt.label.split(' ')[0]}
                   </div>
-                  <div className="text-[11px] text-slate-500 mt-0.5">
+                  <div className="text-[11px] text-neutral-500 mt-0.5">
                     {(/\((.*)\)/.exec(fmt.label))?.[1]}
                   </div>
                 </button>
@@ -313,8 +313,8 @@ export function ExportModal({
 
         <div>
           <div className="flex items-center gap-2 mb-3">
-            <Settings className="w-4 h-4 text-slate-500" />
-            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">导出选项</span>
+            <Settings className="w-4 h-4 text-neutral-500" />
+            <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">导出选项</span>
           </div>
 
           <div className="space-y-3">
@@ -345,7 +345,7 @@ export function ExportModal({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+          <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
             文件名
           </label>
           <input
@@ -354,15 +354,15 @@ export function ExportModal({
             onChange={(e) => setFilename(e.target.value)}
             disabled={isExporting}
             placeholder={defaultFilename}
-            className="w-full px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors disabled:opacity-50"
+            className="w-full px-4 py-2.5 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-900 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors disabled:opacity-50"
           />
         </div>
 
         {showProgressBar && (
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
-              <span className="text-slate-600 dark:text-slate-400">{exportMessage}</span>
-              <span className="font-medium text-slate-900 dark:text-white">{exportProgress}%</span>
+              <span className="text-neutral-600 dark:text-neutral-400">{exportMessage}</span>
+              <span className="font-medium text-neutral-900 dark:text-white">{exportProgress}%</span>
             </div>
             <Progress
               value={exportProgress}

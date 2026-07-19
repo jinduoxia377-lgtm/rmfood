@@ -210,18 +210,18 @@ function VersionHistory({
   const diffLines = useMemo(() => computeUnifiedDiff(), [computeUnifiedDiff])
 
   return (
-    <div className={`bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden ${className}`}>
+    <div className={`bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 shadow-sm overflow-hidden ${className}`}>
       {/* 头部工具栏 */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+      <div className="flex items-center justify-between p-4 border-b border-neutral-200 dark:border-neutral-700">
         <div className="flex items-center gap-3">
-          <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+          <h3 className="text-base font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
             <GitCommit className="w-5 h-5 text-primary-500" />
             版本历史
           </h3>
           <Badge variant="info">{versions.length} 个版本</Badge>
 
           {branches.length > 0 && (
-            <span className="text-xs text-gray-500 flex items-center gap-1">
+            <span className="text-xs text-neutral-500 flex items-center gap-1">
               <GitBranch className="w-3.5 h-3.5" />
               {branches.length} 个分支
             </span>
@@ -259,9 +259,9 @@ function VersionHistory({
 
       {/* Diff 视图 */}
       {showDiffView && diffLines.length > 0 && (
-        <div className="border-b border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between px-4 py-2 bg-gray-50 dark:bg-gray-700/50">
-            <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
+        <div className="border-b border-neutral-200 dark:border-neutral-700">
+          <div className="flex items-center justify-between px-4 py-2 bg-slate-50 dark:bg-neutral-700/50">
+            <span className="text-xs font-medium text-neutral-600 dark:text-neutral-400">
               比较: {compareTarget?.hash.slice(0, 7)} → {selectedVersion?.hash.slice(0, 7)}
             </span>
             <div className="flex gap-2">
@@ -270,7 +270,7 @@ function VersionHistory({
                 className={`px-2 py-1 text-xs rounded ${
                   diffType === 'unified'
                     ? 'bg-primary-100 text-primary-700'
-                    : 'hover:bg-gray-200 dark:hover:bg-gray-600'
+                    : 'hover:bg-neutral-200 dark:hover:bg-neutral-600'
                 }`}
               >
                 Unified
@@ -280,7 +280,7 @@ function VersionHistory({
                 className={`px-2 py-1 text-xs rounded ${
                   diffType === 'split'
                     ? 'bg-primary-100 text-primary-700'
-                    : 'hover:bg-gray-200 dark:hover:bg-gray-600'
+                    : 'hover:bg-neutral-200 dark:hover:bg-neutral-600'
                 }`}
               >
                 Split
@@ -288,22 +288,22 @@ function VersionHistory({
             </div>
           </div>
 
-          <div className="overflow-auto max-h-96 p-4 font-mono text-xs bg-gray-900 text-gray-100">
+          <div className="overflow-auto max-h-96 p-4 font-mono text-xs bg-neutral-900 text-neutral-100">
             {diffLines.map((line, idx) => (
               <div
                 key={idx}
                 className={`flex ${
                   line.type === 'added'
-                    ? 'bg-green-500/20 text-green-400'
+                    ? 'bg-success-500/20 text-success-400'
                     : line.type === 'removed'
-                    ? 'bg-red-500/20 text-red-400'
-                    : 'text-gray-400'
+                    ? 'bg-error-500/20 text-error-400'
+                    : 'text-neutral-400'
                 }`}
               >
-                <span className="select-none w-12 text-right pr-4 text-gray-600">
+                <span className="select-none w-12 text-right pr-4 text-neutral-600">
                   {line.oldLine || ''}
                 </span>
-                <span className="select-none w-12 text-right pr-4 text-gray-600">
+                <span className="select-none w-12 text-right pr-4 text-neutral-600">
                   {line.newLine || ''}
                 </span>
                 <span className="flex-1 whitespace-pre-wrap">
@@ -317,7 +317,7 @@ function VersionHistory({
       )}
 
       {/* 版本列表 */}
-      <div className="divide-y divide-gray-200 dark:divide-gray-700 max-h-[500px] overflow-y-auto">
+      <div className="divide-y divide-slate-200 dark:divide-slate-700 max-h-[500px] overflow-y-auto">
         {versions.map((version, idx) => {
           const isSelected = version.id === selectedVersionId
           const isCurrent = version.id === currentVersionId
@@ -328,7 +328,7 @@ function VersionHistory({
           return (
             <div key={version.id}>
               <div
-                className={`p-4 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors cursor-pointer ${
+                className={`p-4 hover:bg-slate-50 dark:hover:bg-neutral-700/30 transition-colors cursor-pointer ${
                   isSelected ? 'bg-primary-50 dark:bg-primary-900/10' : ''
                 } ${isCurrent ? 'border-l-4 border-primary-500' : ''}`}
                 onClick={() => handleVersionClick(version)}
@@ -341,20 +341,20 @@ function VersionHistory({
                         e.stopPropagation()
                         toggleExpand(version.id)
                       }}
-                      className="mt-1 p-0.5 hover:bg-gray-200 dark:hover:bg-gray-600 rounded"
+                      className="mt-1 p-0.5 hover:bg-neutral-200 dark:hover:bg-neutral-600 rounded"
                     >
                       {isExpanded ? (
-                        <ChevronDown className="w-4 h-4 text-gray-400" />
+                        <ChevronDown className="w-4 h-4 text-neutral-400" />
                       ) : (
-                        <ChevronRight className="w-4 h-4 text-gray-400" />
+                        <ChevronRight className="w-4 h-4 text-neutral-400" />
                       )}
                     </button>
 
                     {/* 图标和信息 */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <CheckCircle2 className={`w-4 h-4 ${isCurrent ? 'text-primary-500' : 'text-gray-300'}`} />
-                        <span className="font-mono text-xs text-gray-500">
+                        <CheckCircle2 className={`w-4 h-4 ${isCurrent ? 'text-primary-500' : 'text-neutral-300'}`} />
+                        <span className="font-mono text-xs text-neutral-500">
                           {version.hash.slice(0, 7)}
                         </span>
 
@@ -368,7 +368,7 @@ function VersionHistory({
                         {version.tags?.map(tag => (
                           <span
                             key={tag}
-                            className="px-1.5 py-0.5 text-[10px] font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 rounded"
+                            className="px-1.5 py-0.5 text-[10px] font-medium bg-accent-100 text-accent-700 dark:bg-accent-900/30 dark:text-accent-300 rounded"
                           >
                             <Tag className="w-3 h-3 inline mr-0.5" />
                             {tag}
@@ -380,11 +380,11 @@ function VersionHistory({
                         )}
                       </div>
 
-                      <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                      <h4 className="text-sm font-medium text-neutral-900 dark:text-neutral-100 truncate">
                         {version.message}
                       </h4>
 
-                      <div className="flex items-center gap-3 mt-1.5 text-xs text-gray-500">
+                      <div className="flex items-center gap-3 mt-1.5 text-xs text-neutral-500">
                         <span className="flex items-center gap-1">
                           <User className="w-3.5 h-3.5" />
                           {version.author}
@@ -401,15 +401,15 @@ function VersionHistory({
 
               {/* 展开的详情面板 */}
               {isExpanded && (
-                <div className="px-4 pb-4 pl-16 bg-gray-50 dark:bg-gray-800/50 animate-in slide-in-from-top-2 fade-in duration-200">
-                  <div className="space-y-2 text-xs text-gray-600 dark:text-gray-400">
+                <div className="px-4 pb-4 pl-16 bg-slate-50 dark:bg-neutral-800/50 animate-in slide-in-from-top-2 fade-in duration-200">
+                  <div className="space-y-2 text-xs text-neutral-600 dark:text-neutral-400">
                     <div className="flex items-start gap-2">
                       <MessageSquare className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
                       <pre className="whitespace-pre-wrap font-sans">{version.content.slice(0, 300)}...</pre>
                     </div>
 
                     {version.metadata && Object.keys(version.metadata).length > 0 && (
-                      <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+                      <div className="pt-2 border-t border-neutral-200 dark:border-neutral-700">
                         <span className="font-medium">元数据:</span>{' '}
                         {JSON.stringify(version.metadata, null, 2)}
                       </div>
@@ -441,7 +441,7 @@ function VersionHistory({
 
       {/* 空状态 */}
       {versions.length === 0 && (
-        <div className="p-8 text-center text-gray-500">
+        <div className="p-8 text-center text-neutral-500">
           <GitCommit className="w-12 h-12 mx-auto mb-3 opacity-20" />
           <p className="text-sm">暂无版本记录</p>
           <p className="text-xs mt-1">保存文档后将自动创建版本快照</p>
@@ -450,8 +450,8 @@ function VersionHistory({
 
       {/* 底部提示 */}
       {compareMode && !showDiffView && (
-        <div className="p-3 bg-blue-50 dark:bg-blue-900/10 border-t border-blue-200 dark:border-blue-800">
-          <p className="text-xs text-blue-700 dark:text-blue-300 flex items-center gap-2">
+        <div className="p-3 bg-secondary-50 dark:bg-secondary-900/10 border-t border-blue-200 dark:border-blue-800">
+          <p className="text-xs text-secondary-700 dark:text-secondary-300 flex items-center gap-2">
             <AlertCircle className="w-4 h-4" />
             请点击两个版本进行比较。当前已选: {compareTargetId ? '1 个目标' : '0 个'}
           </p>

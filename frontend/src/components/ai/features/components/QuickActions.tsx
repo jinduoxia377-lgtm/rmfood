@@ -57,7 +57,7 @@ const QuickActions = memo(({
                 onClick={() => handleQuestionClick(q.question)}
                 className="
                   text-xs sm:text-sm px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl
-                  border border-gray-200 dark:border-gray-700
+                  border border-neutral-200 dark:border-neutral-700
                   hover:bg-primary-50 dark:hover:bg-primary-900/20
                   hover:border-primary-300 dark:hover:border-primary-700
                   hover:text-primary-700 dark:hover:text-primary-300

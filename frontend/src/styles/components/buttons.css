@@ -1,0 +1,360 @@
+/*
+ * RMFOOD 设计系统 - 按钮系统 v3.0 (Apple HIG)
+ * 基础按钮、Primary/Secondary/Ghost/Danger/AI、加载态
+ * 此文件由 index.css 导入，请勿手动编辑
+ */
+
+/* ── 按钮基础 ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  user-select: none;
+  border-radius: var(--radius-sm, 4px);
+  font-family: var(--font-sans);
+  letter-spacing: 0.01em;
+  transition: all var(--duration-normal) var(--ease-spring);
+  white-space: nowrap;
+}
+
+.btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.btn > span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: inherit;
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none !important;
+}
+
+/* ── 按钮尺寸 ── */
+.btn-sm {
+  height: 32px;
+  padding: 0.5rem 1rem;
+  font-size: 13px;
+  gap: 6px;
+  border-radius: var(--radius-sm, 4px);
+}
+.btn-md {
+  height: 40px;
+  padding: 0.625rem 1.25rem;
+  font-size: 14px;
+  gap: 8px;
+  border-radius: var(--radius-sm, 4px);
+}
+.btn-lg {
+  height: 48px;
+  padding: 0.75rem 1.5rem;
+  font-size: 15px;
+  gap: 10px;
+  border-radius: var(--radius-sm, 4px);
+  min-width: 120px;
+}
+.btn-xl {
+  height: 56px;
+  padding: 1rem 2rem;
+  font-size: 16px;
+  gap: 10px;
+  border-radius: var(--radius-sm, 4px);
+  min-width: 160px;
+}
+
+/* ── 按钮内图标尺寸标准化 ── */
+.btn .icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+.btn-sm .icon {
+  width: 14px;
+  height: 14px;
+}
+.btn-md .icon {
+  width: 16px;
+  height: 16px;
+}
+.btn-lg .icon {
+  width: 20px;
+  height: 20px;
+}
+.btn-xl .icon {
+  width: 24px;
+  height: 24px;
+}
+
+/* ═══ Primary — Apple HIG 绿色填充按钮 ═══ */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 500;
+  color: white;
+  cursor: pointer;
+  user-select: none;
+  border-radius: var(--radius-sm, 4px);
+  font-family: var(--font-sans);
+  letter-spacing: 0.01em;
+  transition: all var(--duration-normal) var(--ease-spring);
+  background: var(--color-primary, #34C759);
+  border: none;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+.btn-primary:hover {
+  background: var(--color-primary-hover, #30D158);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+.btn-primary:active:not(:disabled) {
+  transform: scale(0.97);
+}
+.btn-primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none !important;
+}
+.dark .btn-primary {
+  background: var(--color-primary, #30D158);
+  color: #000000;
+}
+.dark .btn-primary:hover {
+  background: var(--color-primary-hover, #34C759);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* ═══ Secondary — Apple HIG 蓝色描边按钮 ═══ */
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  user-select: none;
+  border-radius: var(--radius-sm, 4px);
+  background: transparent;
+  color: var(--color-secondary, #007AFF);
+  border: 1.5px solid var(--color-secondary, #007AFF);
+  font-family: var(--font-sans);
+  letter-spacing: 0.01em;
+  transition: all var(--duration-normal) var(--ease-spring);
+}
+.btn-secondary:hover {
+  background: var(--color-secondary-container, rgba(10, 132, 255, 0.08));
+}
+.btn-secondary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none !important;
+}
+.dark .btn-secondary {
+  color: var(--color-secondary, #0A84FF);
+  border-color: var(--color-secondary, #0A84FF);
+}
+.dark .btn-secondary:hover {
+  background: rgba(10, 132, 255, 0.12);
+}
+
+/* ═══ Ghost — Apple HIG 无框按钮 ═══ */
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  user-select: none;
+  border-radius: var(--radius-sm, 4px);
+  background: transparent;
+  color: var(--text-secondary, #6E6E73);
+  font-family: var(--font-sans);
+  letter-spacing: 0.01em;
+  transition: all var(--duration-normal) var(--ease-spring);
+}
+.btn-ghost:hover {
+  background: var(--hover-bg, rgba(0, 0, 0, 0.04));
+  color: var(--text-primary, #1D1D1F);
+}
+.dark .btn-ghost {
+  color: var(--text-secondary, #A1A1A6);
+}
+.dark .btn-ghost:hover {
+  background: var(--hover-bg, rgba(255, 255, 255, 0.06));
+  color: var(--text-primary, #F5F5F7);
+}
+
+/* ═══ Danger — Apple HIG 红色按钮 ═══ */
+.btn-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 500;
+  color: white;
+  cursor: pointer;
+  user-select: none;
+  border-radius: var(--radius-sm, 4px);
+  font-family: var(--font-sans);
+  letter-spacing: 0.01em;
+  transition: all var(--duration-normal) var(--ease-spring);
+  background: var(--color-error, #FF3B30);
+  border: none;
+}
+.btn-danger:hover {
+  background: var(--color-error-hover, #E0302A);
+}
+.btn-danger:active:not(:disabled) {
+  transform: scale(0.97);
+}
+.btn-danger:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none !important;
+}
+.dark .btn-danger {
+  background: var(--color-error, #FF453A);
+}
+.dark .btn-danger:hover {
+  background: var(--color-error-hover, #FF6961);
+}
+
+/* ═══ AI — Purple→Blue 渐变（Apple HIG 提亮） ═══ */
+.btn-ai {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 500;
+  color: white;
+  cursor: pointer;
+  user-select: none;
+  border-radius: var(--radius-sm, 4px);
+  font-family: var(--font-sans);
+  letter-spacing: 0.01em;
+  transition: all var(--duration-normal) var(--ease-spring);
+  background: linear-gradient(135deg, var(--color-tertiary, #AF52DE), var(--color-secondary, #007AFF));
+  border: none;
+}
+.btn-ai:hover {
+  opacity: 0.92;
+}
+.btn-ai:active:not(:disabled) {
+  transform: scale(0.97);
+}
+.btn-ai:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none !important;
+}
+.dark .btn-ai {
+  background: linear-gradient(135deg, var(--color-tertiary, #BF6DE0), var(--color-secondary, #0A84FF));
+}
+
+/* ── 按钮加载态 ── */
+.btn-loading {
+  position: relative;
+  pointer-events: none;
+}
+.btn-loading::after {
+  content: '';
+  position: absolute;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+/* spin keyframe is defined in animations.css — this file imports it */
+
+/* ═══ Glass（毛玻璃按钮） ═══ */
+.btn-glass {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 500;
+  color: white;
+  cursor: pointer;
+  user-select: none;
+  border-radius: var(--radius-sm, 4px);
+  font-family: var(--font-sans);
+  letter-spacing: 0.01em;
+  transition: all var(--duration-normal) var(--ease-spring);
+  background: var(--material-acrylic, rgba(255, 255, 255, 0.72));
+  backdrop-filter: blur(var(--material-acrylic-blur, 20px));
+  -webkit-backdrop-filter: blur(var(--material-acrylic-blur, 20px));
+  border: 1px solid var(--material-acrylic-border, rgba(255, 255, 255, 0.3));
+}
+.btn-glass:hover {
+  background: var(--material-vibrancy, rgba(255, 255, 255, 0.5));
+}
+.btn-glass:active:not(:disabled) {
+  transform: scale(0.97);
+}
+.btn-glass:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none !important;
+}
+.dark .btn-glass {
+  background: var(--material-acrylic, rgba(28, 28, 30, 0.72));
+  border-color: var(--material-acrylic-border, rgba(255, 255, 255, 0.08));
+  color: #F5F5F7;
+}
+.dark .btn-glass:hover {
+  background: var(--material-vibrancy, rgba(44, 44, 46, 0.5));
+}
+
+/* ═══ Outline（描边按钮，通用） ═══ */
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  user-select: none;
+  border-radius: var(--radius-sm, 4px);
+  background: transparent;
+  color: var(--text-secondary, #6E6E73);
+  border: 1.5px solid var(--border-subtle, rgba(0, 0, 0, 0.06));
+  font-family: var(--font-sans);
+  letter-spacing: 0.01em;
+  transition: all var(--duration-normal) var(--ease-spring);
+}
+.btn-outline:hover {
+  background: var(--hover-bg, rgba(0, 0, 0, 0.04));
+  color: var(--text-primary, #1D1D1F);
+  border-color: var(--color-primary, #34C759);
+}
+.dark .btn-outline {
+  color: var(--text-secondary, #A1A1A6);
+  border-color: var(--border-subtle, rgba(255, 255, 255, 0.06));
+}
+.dark .btn-outline:hover {
+  background: var(--hover-bg, rgba(255, 255, 255, 0.06));
+  color: var(--text-primary, #F5F5F7);
+  border-color: var(--color-primary, #30D158);
+}
+
+/* ── Reduced Motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .btn:active:not(:disabled),
+  .btn-primary:active:not(:disabled),
+  .btn-danger:active:not(:disabled),
+  .btn-ai:active:not(:disabled),
+  .btn-glass:active:not(:disabled) {
+    transform: none !important;
+  }
+}

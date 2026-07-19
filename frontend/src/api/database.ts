@@ -4,7 +4,7 @@
  * Phase 4 增强: 添加模拟数据 fallback，支持后端服务不可用时使用
  */
 import api from './client'
-import type { TCMHerb, BioactivePeptide, KnowledgeNode, PaginatedResponse } from '@/types'
+import type { TCMHerb, SymMapHerb, BioactivePeptide, KnowledgeNode, PaginatedResponse } from '@/types'
 import { mockDatabaseApi } from './database.mock'
 import { logger } from '@/utils/safeLogger';
 
@@ -90,6 +90,18 @@ export const databaseApi = {
       () => api.get('/databases/herbs/food-homology/check', { params: { herb_name: herbName } }).then((r) => r.data),
       () => mockDatabaseApi.checkFoodHomology(herbName),
       'checkFoodHomology',
+    ),
+
+  /** SymMap 中药材检索 */
+  searchSymmapHerbs: (params: {
+    keyword?: string
+    page?: number
+    page_size?: number
+  }) =>
+    withFallback(
+      () => api.get<PaginatedResponse<SymMapHerb>>('/databases/herbs/symmap', { params }).then((r) => r.data),
+      () => mockDatabaseApi.searchSymmapHerbs(params) as unknown as Promise<PaginatedResponse<SymMapHerb>>,
+      'searchSymmapHerbs',
     ),
 
   /** DFBP 活性肽检索 */
@@ -361,6 +373,14 @@ export const databaseApi = {
       },
       'getActivePeptideRanking',
     ),
+
+  /** 通用 GET 请求（用于未预定义的路由） */
+  get: (url: string, config?: Record<string, unknown>) =>
+    api.get(url, config).then((r) => r.data),
+
+  /** 通用 POST 请求（用于未预定义的路由） */
+  post: (url: string, data?: unknown, config?: Record<string, unknown>) =>
+    api.post(url, data, config).then((r) => r.data),
 }
 
 // ═══════════════════════════════════════════

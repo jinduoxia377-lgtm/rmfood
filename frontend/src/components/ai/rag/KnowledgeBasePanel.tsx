@@ -1,72 +1,247 @@
 /**
  * KnowledgeBasePanel - RAG 知识库管理面板
  *
- * 展示知识库中文档列表、统计信息，支持上传和删除。
+ * 展示知识库中文档列表、统计信息，支持上传、删除、检索测试和质量指标。
  */
 
-import React, { useState, useEffect, useCallback } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Database, Trash2, FileText, FileSpreadsheet, File, Loader2, RefreshCw } from 'lucide-react'
-import { listDocuments, deleteDocument, getRAGStats, type RAGStats, type DocumentInfo } from '@/api/rag'
-import { DocumentUploader } from './DocumentUploader'
-import { clsx } from 'clsx'
+import React, { useState, useEffect, useCallback } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  Database,
+  Trash2,
+  FileText,
+  FileSpreadsheet,
+  File,
+  Loader2,
+  RefreshCw,
+  Search,
+  Eye,
+  EyeOff,
+  ChevronDown,
+  ChevronUp,
+} from 'lucide-react';
+import {
+  listDocuments,
+  deleteDocument,
+  getRAGStats,
+  searchChunks,
+  type RAGStats,
+  type DocumentInfo,
+  type SearchChunkResult,
+} from '@/api/rag';
+import { DocumentUploader } from './DocumentUploader';
+import { Card, Button } from '@/components/ui';
+import { clsx } from 'clsx';
+
+// ═══════════════════════════════════════════
+// 命名常量（替换魔法数字）
+// ═══════════════════════════════════════════
+
+/** 索引覆盖率目标知识块数 */
+const TARGET_CHUNK_COUNT = 10000;
+/** 质量指标面板刷新间隔（毫秒） */
+const STATS_REFETCH_INTERVAL_MS = 30000;
 
 interface KnowledgeBasePanelProps {
-  /** 嵌入到 AI 页面时可选传递 */
-  isEmbedded?: boolean
+  isEmbedded?: boolean;
 }
 
 const FILE_ICONS: Record<string, React.ReactNode> = {
-  pdf: <FileText className="w-4 h-4 text-red-500" />,
-  txt: <FileText className="w-4 h-4 text-blue-500" />,
-  csv: <FileSpreadsheet className="w-4 h-4 text-green-500" />,
-  md: <FileText className="w-4 h-4 text-purple-500" />,
-}
+  pdf: <FileText className="w-4 h-4 text-error-500" />,
+  txt: <FileText className="w-4 h-4 text-secondary-500" />,
+  csv: <FileSpreadsheet className="w-4 h-4 text-success-500" />,
+  md: <FileText className="w-4 h-4 text-accent-500" />,
+};
 
 function getFileIcon(filename: string): React.ReactNode {
-  const ext = filename.split('.').pop()?.toLowerCase() || ''
-  return FILE_ICONS[ext] || <File className="w-4 h-4 text-gray-400" />
+  const ext = filename.split('.').pop()?.toLowerCase() || '';
+  return FILE_ICONS[ext] || <File className="w-4 h-4 text-neutral-400" />;
+}
+
+/* ─── 质量指标 ─── */
+function QualityMetrics({ stats, docCount }: { stats: RAGStats; docCount: number }) {
+  const coveragePercent = Math.min((stats.total_chunks / TARGET_CHUNK_COUNT) * 100, 100);
+  const lastIndexed = stats.last_updated ? new Date(stats.last_updated).toLocaleDateString('zh-CN') : '从未';
+
+  return (
+    <Card className="p-4 space-y-3">
+      <h3 className="text-sm font-semibold flex items-center gap-2">
+        <Eye className="w-4 h-4 text-primary-500" />
+        质量指标
+      </h3>
+      <div className="grid grid-cols-3 gap-3 text-center">
+        <div>
+          <div className="text-2xl font-bold text-primary-600 dark:text-primary-400">
+            {stats.total_docs ?? docCount}
+          </div>
+          <div className="text-xs text-neutral-500">文档数</div>
+        </div>
+        <div>
+          <div className="text-2xl font-bold text-secondary-600 dark:text-secondary-400">{stats.total_chunks}</div>
+          <div className="text-xs text-neutral-500">知识块</div>
+        </div>
+        <div>
+          <div className="text-2xl font-bold text-accent-600 dark:text-accent-400">{stats.embedding_dim || 768}</div>
+          <div className="text-xs text-neutral-500">维度</div>
+        </div>
+      </div>
+      <div className="space-y-1">
+        <div className="flex justify-between text-xs text-neutral-500">
+          <span>索引覆盖率</span>
+          <span>{coveragePercent.toFixed(1)}%</span>
+        </div>
+        <div className="h-1.5 rounded-full bg-neutral-200 dark:bg-neutral-700 overflow-hidden">
+          <div className="h-full rounded-full bg-primary-500 transition-all" style={{ width: `${coveragePercent}%` }} />
+        </div>
+        <div className="text-xs text-neutral-400">最后索引: {lastIndexed}</div>
+      </div>
+    </Card>
+  );
+}
+
+/* ─── 检索测试 ─── */
+function SearchTester() {
+  const [query, setQuery] = useState('');
+  const [isTesting, setIsTesting] = useState(false);
+  const [results, setResults] = useState<SearchChunkResult[] | null>(null);
+  const [expanded, setExpanded] = useState(false);
+
+  const handleTest = useCallback(async () => {
+    if (!query.trim()) return;
+    setIsTesting(true);
+    try {
+      const data = await searchChunks(query, 5);
+      setResults(data);
+      setExpanded(true);
+    } catch {
+      setResults([]);
+    } finally {
+      setIsTesting(false);
+    }
+  }, [query]);
+
+  if (!expanded) {
+    return (
+      <Card className="p-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-semibold flex items-center gap-2">
+            <Search className="w-4 h-4 text-secondary-500" />
+            检索测试
+          </h3>
+          <button
+            onClick={() => setExpanded(true)}
+            className="text-xs text-neutral-400 hover:text-neutral-600 flex items-center gap-1"
+          >
+            展开 <ChevronDown className="w-3 h-3" />
+          </button>
+        </div>
+        <div className="flex gap-2">
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleTest()}
+            placeholder="输入查询词测试检索效果..."
+            className="flex-1 px-3 py-2 text-sm border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-primary-500"
+          />
+          <Button onClick={handleTest} disabled={isTesting || !query.trim()} className="px-4">
+            {isTesting ? <Loader2 className="w-4 h-4 animate-spin" /> : '测试'}
+          </Button>
+        </div>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="p-4 space-y-3">
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-semibold flex items-center gap-2">
+          <Search className="w-4 h-4 text-secondary-500" />
+          检索测试
+        </h3>
+        <button
+          onClick={() => setExpanded(false)}
+          className="text-xs text-neutral-400 hover:text-neutral-600 flex items-center gap-1"
+        >
+          收起 <ChevronUp className="w-3 h-3" />
+        </button>
+      </div>
+      <div className="flex gap-2">
+        <input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && handleTest()}
+          placeholder="输入查询词测试检索效果..."
+          className="flex-1 px-3 py-2 text-sm border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-primary-500"
+        />
+        <Button onClick={handleTest} disabled={isTesting || !query.trim()} className="px-4">
+          {isTesting ? <Loader2 className="w-4 h-4 animate-spin" /> : '测试'}
+        </Button>
+      </div>
+      {results !== null && (
+        <div className="space-y-2">
+          {results.length === 0 ? (
+            <div className="text-center py-4 text-sm text-neutral-400">未找到匹配结果</div>
+          ) : (
+            results.map((r, i) => (
+              <div key={i} className="p-3 rounded-lg bg-slate-50 dark:bg-neutral-800/50 space-y-1">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-medium text-primary-600 dark:text-primary-400">
+                    相似度: {(r.similarity * 100).toFixed(1)}%
+                  </span>
+                  <span className="text-neutral-400">{r.doc_filename}</span>
+                </div>
+                <p className="text-sm text-neutral-700 dark:text-neutral-300 line-clamp-2">{r.content}</p>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+    </Card>
+  );
 }
 
 export function KnowledgeBasePanel({ isEmbedded = false }: KnowledgeBasePanelProps) {
-  const queryClient = useQueryClient()
-  const [deletingFile, setDeletingFile] = useState<string | null>(null)
+  const queryClient = useQueryClient();
+  const [deletingFile, setDeletingFile] = useState<string | null>(null);
 
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ['rag-stats'],
     queryFn: getRAGStats,
-    refetchInterval: 30000,
-  })
+    refetchInterval: STATS_REFETCH_INTERVAL_MS,
+  });
 
   const { data: documents, isLoading: docsLoading } = useQuery({
     queryKey: ['rag-documents'],
     queryFn: listDocuments,
-  })
+  });
 
   const deleteMutation = useMutation({
     mutationFn: deleteDocument,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['rag-documents'] })
-      queryClient.invalidateQueries({ queryKey: ['rag-stats'] })
+      queryClient.invalidateQueries({ queryKey: ['rag-documents'] });
+      queryClient.invalidateQueries({ queryKey: ['rag-stats'] });
     },
-  })
+  });
 
-  const handleDelete = useCallback(async (filename: string) => {
-    setDeletingFile(filename)
-    try {
-      await deleteMutation.mutateAsync(filename)
-    } finally {
-      setDeletingFile(null)
-    }
-  }, [deleteMutation])
+  const handleDelete = useCallback(
+    async (filename: string) => {
+      setDeletingFile(filename);
+      try {
+        await deleteMutation.mutateAsync(filename);
+      } finally {
+        setDeletingFile(null);
+      }
+    },
+    [deleteMutation],
+  );
 
-  const handleUploadSuccess = useCallback((_doc: DocumentInfo) => {
-    queryClient.invalidateQueries({ queryKey: ['rag-documents'] })
-    queryClient.invalidateQueries({ queryKey: ['rag-stats'] })
-  }, [queryClient])
+  const handleUploadSuccess = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ['rag-documents'] });
+    queryClient.invalidateQueries({ queryKey: ['rag-stats'] });
+  }, [queryClient]);
 
-  const docs = documents || []
-  const isLoading = statsLoading || docsLoading
+  const docs = documents || [];
+  const isLoading = statsLoading || docsLoading;
 
   return (
     <div className={clsx('space-y-4', isEmbedded ? '' : 'p-4')}>
@@ -74,7 +249,7 @@ export function KnowledgeBasePanel({ isEmbedded = false }: KnowledgeBasePanelPro
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Database className="w-5 h-5 text-primary-600 dark:text-primary-400" />
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">知识库</h2>
+          <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">知识库</h2>
           {stats && (
             <span className="px-2 py-0.5 text-xs font-medium bg-primary-50 dark:bg-primary-950/40 text-primary-600 dark:text-primary-400 rounded-full">
               {stats.total_chunks} 个文档块
@@ -83,53 +258,55 @@ export function KnowledgeBasePanel({ isEmbedded = false }: KnowledgeBasePanelPro
         </div>
         <button
           onClick={() => queryClient.invalidateQueries({ queryKey: ['rag-stats'] })}
-          className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
           title="刷新"
         >
-          <RefreshCw className="w-4 h-4 text-gray-400" />
+          <RefreshCw className="w-4 h-4 text-neutral-400" />
         </button>
       </div>
 
       {/* Upload */}
       <DocumentUploader onUploadSuccess={handleUploadSuccess} />
 
+      {/* Quality Metrics */}
+      {stats && <QualityMetrics stats={stats} docCount={docs.length} />}
+
+      {/* Search Tester */}
+      <SearchTester />
+
       {/* Document list */}
       <div className="space-y-1">
-        <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+        <h3 className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
           已导入文档 ({docs.length})
         </h3>
 
         {isLoading ? (
           <div className="flex items-center justify-center py-8">
-            <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />
+            <Loader2 className="w-5 h-5 text-neutral-400 animate-spin" />
           </div>
         ) : docs.length === 0 ? (
-          <div className="text-center py-8 text-sm text-gray-400 dark:text-gray-500">
+          <div className="text-center py-8 text-sm text-neutral-400 dark:text-neutral-500">
             暂无文档，请上传 PDF、TXT、CSV 或 Markdown 文件
           </div>
         ) : (
-          <div className="divide-y divide-gray-100 dark:divide-gray-800">
+          <div className="divide-y divide-slate-100 dark:divide-slate-800">
             {docs.map((doc) => (
-              <div
-                key={doc}
-                className="flex items-center justify-between py-2.5 group"
-              >
+              <div key={doc} className="flex items-center justify-between py-2.5 group">
                 <div className="flex items-center gap-2 min-w-0">
                   {getFileIcon(doc)}
-                  <span className="text-sm text-gray-700 dark:text-gray-300 truncate">
-                    {doc}
-                  </span>
+                  <span className="text-sm text-neutral-700 dark:text-neutral-300 truncate">{doc}</span>
                 </div>
                 <button
                   onClick={() => handleDelete(doc)}
                   disabled={deletingFile === doc}
-                  className="p-1.5 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all"
+                  className="p-1.5 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-error-50 dark:hover:bg-red-950/30 transition-all"
                   title={`删除 ${doc}`}
                 >
-                  {deletingFile === doc
-                    ? <Loader2 className="w-3.5 h-3.5 text-red-500 animate-spin" />
-                    : <Trash2 className="w-3.5 h-3.5 text-red-400 hover:text-red-600" />
-                  }
+                  {deletingFile === doc ? (
+                    <Loader2 className="w-3.5 h-3.5 text-error-500 animate-spin" />
+                  ) : (
+                    <Trash2 className="w-3.5 h-3.5 text-error-400 hover:text-error-600" />
+                  )}
                 </button>
               </div>
             ))}
@@ -137,5 +314,5 @@ export function KnowledgeBasePanel({ isEmbedded = false }: KnowledgeBasePanelPro
         )}
       </div>
     </div>
-  )
+  );
 }

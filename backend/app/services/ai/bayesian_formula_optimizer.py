@@ -134,6 +134,125 @@ _BUILTIN_HERBS: Dict[str, HerbParameter] = {
     "gh": HerbParameter("gh", "葛根", 6, 20, 1,
         {"心血管保护": 0.85, "降血糖": 0.80, "降压": 0.75, "抗氧化": 0.70},
         0.95, 0.12, ["hq", "gz", "jgh"], []),
+    # ── 以下从 HerbKnowledgeService 数据库动态加载 ──
+    # 若数据库不可用，此处为兜底数据。生产环境建议通过 HerbKnowledgeService 注入。
+    "sz": HerbParameter("sz", "山楂", 6, 12, 1,
+        {"降脂": 0.88, "活血": 0.82, "消化系统": 0.75, "心血管保护": 0.70},
+        0.94, 0.10, ["cyh", "gh", "dsz"], []),
+    "dsz": HerbParameter("dsz", "丹参", 9, 15, 1,
+        {"活血": 0.90, "心血管保护": 0.85, "抗氧化": 0.72, "止痛": 0.78},
+        0.88, 0.15, ["sz", "sx"], []),
+    "sx": HerbParameter("sx", "山药", 15, 30, 1,
+        {"健脾": 0.85, "消化系统": 0.80, "补肾": 0.72, "降血糖": 0.68},
+        0.98, 0.05, ["fp", "qs"], []),
+    "jq": HerbParameter("jq", "决明子", 10, 15, 1,
+        {"降压": 0.82, "降脂": 0.78, "明目": 0.75, "消化系统": 0.65},
+        0.93, 0.12, ["sz", "jgh"], []),
+    "lq": HerbParameter("lq", "连翘", 6, 15, 1,
+        {"清热解毒": 0.88, "抗炎": 0.80, "疏散风热": 0.75},
+        0.85, 0.15, ["cyh", "bo"], []),
+    "bo": HerbParameter("bo", "薄荷", 3, 6, 0.5,
+        {"疏散风热": 0.85, "清利头目": 0.78, "理气": 0.70},
+        0.96, 0.08, ["lq", "jgh"], []),
+    "gy": HerbParameter("gy", "桂圆", 10, 15, 1,
+        {"养血": 0.82, "安神": 0.78, "补气": 0.70, "补益心脾": 0.80},
+        0.97, 0.10, ["hz", "ls"], []),
+    "ls": HerbParameter("ls", "莲子", 10, 15, 1,
+        {"安神": 0.80, "健脾": 0.75, "补肾": 0.70, "固精": 0.72},
+        0.96, 0.08, ["gy", "sh"], []),
+    "hd": HerbParameter("hd", "红豆", 15, 30, 1,
+        {"利水": 0.80, "祛湿": 0.75, "解毒": 0.68},
+        0.95, 0.05, ["yyr", "fp"], []),
+    "hhz": HerbParameter("hhz", "黑芝麻", 9, 15, 1,
+        {"补肾": 0.82, "养血": 0.78, "润肠": 0.72, "美容养颜": 0.70},
+        0.96, 0.12, ["ht", "ss"], []),
+    "ht": HerbParameter("ht", "核桃", 6, 12, 1,
+        {"补肾": 0.80, "健脑益智": 0.82, "润肠": 0.72, "温肺": 0.68},
+        0.94, 0.15, ["hhz", "hz"], []),
+    "ss": HerbParameter("ss", "桑椹", 10, 15, 1,
+        {"滋阴补血": 0.85, "补肾": 0.78, "明目": 0.72, "生津润燥": 0.70},
+        0.95, 0.18, ["hhz", "gz"], []),
+    "bh": HerbParameter("bh", "百合", 10, 30, 1,
+        {"润肺": 0.85, "安神": 0.78, "美容养颜": 0.72, "清心安神": 0.80},
+        0.97, 0.10, ["md", "ls"], []),
+    "md": HerbParameter("md", "麦冬", 6, 12, 1,
+        {"润肺": 0.82, "养阴生津": 0.85, "清心除烦": 0.75},
+        0.94, 0.12, ["bh", "ss"], []),
+    "ssn": HerbParameter("ssn", "沙参", 10, 15, 1,
+        {"养阴清肺": 0.82, "益胃生津": 0.78, "润燥": 0.75},
+        0.93, 0.15, ["md", "yz"], []),
+    "yz": HerbParameter("yz", "玉竹", 6, 12, 1,
+        {"养阴润燥": 0.80, "生津止渴": 0.78, "美容": 0.72},
+        0.95, 0.12, ["ssn", "md"], []),
+    "aj": HerbParameter("aj", "阿胶", 3, 9, 0.5,
+        {"补血": 0.90, "养血": 0.85, "美容养颜": 0.78},
+        0.88, 0.30, ["hz", "dg"], []),
+    "sq": HerbParameter("sq", "三七", 3, 9, 0.5,
+        {"活血": 0.92, "散瘀止血": 0.90, "止痛": 0.80},
+        0.82, 0.25, ["dsz", "sz"], []),
+    "tm": HerbParameter("tm", "天麻", 3, 10, 0.5,
+        {"降压": 0.85, "平肝息风": 0.90, "祛风通络": 0.78},
+        0.90, 0.20, ["gt", "cs"], []),
+    "gt": HerbParameter("gt", "钩藤", 3, 12, 1,
+        {"降压": 0.82, "清热平肝": 0.78, "息风定惊": 0.75},
+        0.88, 0.15, ["tm", "jgh"], []),
+    "ypc": HerbParameter("ypc", "鱼腥草", 10, 30, 1,
+        {"清热解毒": 0.88, "消炎": 0.82, "利尿": 0.70},
+        0.92, 0.08, ["cyh", "jj"], []),
+    "pyg": HerbParameter("pyg", "蒲公英", 10, 30, 1,
+        {"清热解毒": 0.85, "消肿散结": 0.80, "利尿": 0.72},
+        0.93, 0.10, ["cyh", "jgh"], []),
+    "mcx": HerbParameter("mcx", "马齿苋", 10, 15, 1,
+        {"清热解毒": 0.80, "凉血止血": 0.75, "降血糖": 0.68},
+        0.94, 0.06, ["pyg", "gh"], []),
+    "hy": HerbParameter("hy", "荷叶", 6, 12, 1,
+        {"降脂": 0.85, "清暑利湿": 0.80, "升发清阳": 0.72},
+        0.95, 0.08, ["sz", "jmz"], []),
+    "sy": HerbParameter("sy", "桑叶", 6, 12, 1,
+        {"疏散风热": 0.80, "清肺润燥": 0.78, "降血糖": 0.75, "明目": 0.70},
+        0.94, 0.10, ["jgh", "gh"], []),
+    "lbm": HerbParameter("lbm", "罗布麻", 6, 12, 1,
+        {"降压": 0.82, "平肝安神": 0.78, "清热利尿": 0.70},
+        0.90, 0.12, ["tm", "jgh"], []),
+    "jgl": HerbParameter("jgl", "绞股蓝", 10, 15, 1,
+        {"免疫调节": 0.80, "益气健脾": 0.78, "降脂": 0.75, "降压": 0.72},
+        0.92, 0.15, ["sz", "gz"], []),
+    "jj": HerbParameter("jj", "金银花", 6, 15, 1,
+        {"清热解毒": 0.92, "抗炎": 0.85, "抗氧化": 0.78, "免疫调节": 0.72},
+        0.94, 0.15, ["jgh", "gq", "lq"], []),
+    "qss": HerbParameter("qss", "枸杞子", 3, 15, 1,
+        {"抗氧化": 0.90, "免疫调节": 0.82, "护肝": 0.78, "明目": 0.75, "抗衰老": 0.85},
+        0.98, 0.15, ["hq", "ds", "jgh"], []),
+    "rq": HerbParameter("rq", "人参", 1, 9, 0.5,
+        {"抗疲劳": 0.95, "免疫调节": 0.90, "认知功能": 0.82, "心血管保护": 0.78},
+        0.85, 0.50, ["hq", "dg"], ["lk", "mld"]),
+    "dq": HerbParameter("dq", "当归", 3, 12, 1,
+        {"补血": 0.92, "调经": 0.88, "抗氧化": 0.75, "免疫调节": 0.70},
+        0.92, 0.18, ["hq", "rs", "cs"], []),
+    "yys": HerbParameter("yys", "薏苡仁", 6, 30, 1,
+        {"利尿": 0.82, "免疫调节": 0.72, "消化系统": 0.70, "利湿": 0.68},
+        0.95, 0.10, ["fp", "bq", "hq"], []),
+    "zz": HerbParameter("zz", "大枣", 6, 30, 1,
+        {"补气": 0.78, "养血": 0.75, "消化系统": 0.68, "免疫调节": 0.72},
+        0.98, 0.05, ["hq", "ds", "gz"], []),
+    "sjg": HerbParameter("sjg", "生姜", 3, 15, 1,
+        {"消化系统": 0.85, "止呕": 0.82, "抗炎": 0.72, "抗氧化": 0.68},
+        0.96, 0.06, ["dcx", "gq", "cx"], []),
+    "bsh": HerbParameter("bsh", "白芍", 6, 15, 1,
+        {"养血": 0.85, "柔肝止痛": 0.82, "敛阴止汗": 0.75},
+        0.93, 0.12, ["dg", "gq"], []),
+    "jgf": HerbParameter("jgf", "桔梗", 3, 10, 1,
+        {"宣肺祛痰": 0.82, "利咽": 0.78, "排脓": 0.70},
+        0.94, 0.08, ["gq", "bx"], []),
+    "bx": HerbParameter("bx", "半夏", 3, 9, 0.5,
+        {"燥湿化痰": 0.85, "降逆止呕": 0.80, "消痞散结": 0.72},
+        0.75, 0.15, ["cx", "sjg"], []),
+    "zs": HerbParameter("zs", "枳实", 3, 10, 1,
+        {"破气消积": 0.80, "化痰散痞": 0.75, "促进消化": 0.70},
+        0.82, 0.10, ["bq", "cx"], []),
+    "hp": HerbParameter("hp", "厚朴", 3, 10, 1,
+        {"燥湿消痰": 0.80, "下气除满": 0.75, "促进消化": 0.72},
+        0.80, 0.12, ["zs", "cx"], []),
 }
 
 # 功效-药材索引 (预计算)
@@ -168,54 +287,47 @@ class BayesianFormulaOptimizer:
     - Mockus, J. (2012). Bayesian approach to global optimization.
     - Snoek, J., et al. (2012). Practical Bayesian Optimization of ML algorithms.
 
-    院士级修复[P0]: 增加 herb_knowledge 参数，支持 HerbKnowledgePort 依赖注入。
-    当提供 herb_knowledge 时，从端口动态加载药材知识（推荐）；
+    支持从 HerbKnowledgeService 动态加载药材知识（推荐），
     否则回退到内置字典（向后兼容）。
     """
 
     def __init__(
         self,
         config: Optional[BayesianConfig] = None,
-        herb_knowledge=None,  # Optional[HerbKnowledgePort]，避免循环导入用 Any
+        herb_knowledge=None,  # Optional[HerbKnowledgeService]，避免循环导入用 Any
     ):
         self.config = config or BayesianConfig()
-        self._herb_knowledge = herb_knowledge  # HerbKnowledgePort 注入点
+        self._herb_knowledge = herb_knowledge  # HerbKnowledgeService 注入点
         self._herbs = dict(_BUILTIN_HERBS)  # 内置兜底（向后兼容）
+        self._efficacy_to_herbs = dict(_EFFICACY_TO_HERBS)
         self._history: List[FormulaCandidate] = []  # 优化历史
 
     async def _ensure_herbs_loaded(self, target_effects: List[str]) -> None:
         """
-        优先从 HerbKnowledgePort 加载药材，不可用时回退内置字典。
-        院士级修复：这是打通 AI 知识库与 TCMSP 数据库的关键桥梁。
+        优先从 HerbKnowledgeService 加载药材，不可用时回退内置字典。
+        这是打通 AI 知识库与 TCMSP 数据库的关键桥梁。
         """
         if self._herb_knowledge is None:
-            return  # 无端口注入，使用内置字典
+            return  # 无服务注入，使用内置字典
 
         try:
-            all_herbs = await self._herb_knowledge.get_all_herbs()
-            if all_herbs:
-                # 将 HerbProfile 转换为 HerbParameter 格式（保持内部一致性）
-                for profile in all_herbs:
-                    self._herbs[profile.herb_id] = HerbParameter(
-                        herb_id=profile.herb_id,
-                        name_cn=profile.name_cn,
-                        dosage_min=profile.dosage_min,
-                        dosage_max=profile.dosage_max,
-                        dosage_step=profile.dosage_step,
-                        efficacy_scores=profile.efficacy_scores,
-                        safety_index=profile.safety_index,
-                        cost_per_gram=profile.cost_per_gram,
-                        synergy_partners=profile.synergy_partners,
-                        antagonistic_pairs=profile.antagonistic_pairs,
-                    )
+            # 从 HerbKnowledgeService 加载药材
+            herbs = await self._herb_knowledge.load_herbs()
+            if herbs:
+                self._herbs = dict(herbs)
+                self._efficacy_to_herbs = self._herb_knowledge.get_efficacy_to_herbs()
                 logger.info(
-                    f"[BayesianOptimizer] 从 HerbKnowledgePort 加载药材 "
-                    f"{len(all_herbs)} 种（覆盖内置字典 {len(_BUILTIN_HERBS)} 种）"
+                    f"[BayesianOptimizer] 从 HerbKnowledgeService 加载药材 "
+                    f"{len(self._herbs)} 种，功效 {len(self._efficacy_to_herbs)} 种"
                 )
             else:
-                logger.warning("[BayesianOptimizer] HerbKnowledgePort 返回空数据，回退内置字典")
+                logger.warning("[BayesianOptimizer] HerbKnowledgeService 返回空数据，回退内置字典")
+                self._herbs = dict(_BUILTIN_HERBS)
+                self._efficacy_to_herbs = dict(_EFFICACY_TO_HERBS)
         except Exception as e:
-            logger.warning(f"[BayesianOptimizer] HerbKnowledgePort 加载失败，回退内置字典: {e}")
+            logger.warning(f"[BayesianOptimizer] HerbKnowledgeService 加载失败，回退内置字典: {e}")
+            self._herbs = dict(_BUILTIN_HERBS)
+            self._efficacy_to_herbs = dict(_EFFICACY_TO_HERBS)
 
     # ── 公共接口 ──
 

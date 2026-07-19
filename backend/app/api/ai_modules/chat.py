@@ -32,7 +32,6 @@ class ChatRequest(BaseModel):
     question: str = Field(..., min_length=1, max_length=2000, description="用户问题")
     history: list[dict[str, str]] | None = Field(None, description="对话历史")
     stream: bool = Field(False, description="是否使用流式输出")
-    api_key: str | None = Field(None, description="API Key（可选，从前端配置传递）")
 
 
 class ChatMessage(BaseModel):
@@ -96,36 +95,17 @@ async def chat(
                 "thinking_steps": thinking_steps,
             }
 
-        # 如果前端传递了 API Key，临时更新 LLM 服务配置
-        if req.api_key:
-            from ...services.llm_service import LLMConfig
-
-            # v7.1: 详细日志记录（诊断401认证失败问题）- 仅开发环境
-            key_length = len(req.api_key)
-            key_prefix = req.api_key[:8] if key_length >= 8 else req.api_key
-            key_suffix = req.api_key[-4:] if key_length >= 4 else req.api_key
-
-            # 仅在开发环境记录API Key相关信息
-            if os.environ.get("ENVIRONMENT") == "development":
-                logger.info(f"🔑 收到前端传递的 API Key: 长度={key_length}, 前缀={key_prefix}..., 后缀=...{key_suffix}")
-
-                # 验证 Key 格式
-                if key_length < 20:
-                    logger.warning(f"⚠️ API Key 长度过短 ({key_length}字符)，可能无效")
-                elif not req.api_key.startswith('sk-') and not req.api_key.startswith('Bearer '):
-                    logger.warning(f"⚠️ API Key 格式异常: 不以 'sk-' 或 'Bearer ' 开头")
-
-            temp_config = LLMConfig(
-                provider=_get_llm_service().config.provider,
-                api_key=req.api_key,
-                base_url=_get_llm_service().config.base_url,
-                model=_get_llm_service().config.model,
-                max_tokens=_get_llm_service().config.max_tokens,
-                temperature=_get_llm_service().config.temperature,
+        # 如果前端传递了 API Key，拒绝并记录安全事件
+        if hasattr(req, 'api_key') and req.api_key:
+            logger.warning("安全事件: 前端尝试传递 API Key，已被拒绝")
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error": "INVALID_REQUEST",
+                    "message": "不支持从前端传递 API Key",
+                    "suggestion": "请在系统设置中配置 API Key"
+                }
             )
-            _get_llm_service().update_config(temp_config)
-            if os.environ.get("ENVIRONMENT") == "development":
-                logger.info("✅ 使用前端传递的 API Key 更新 LLM 配置")
 
         from ...services.llm_service import chat_with_rmfood
         answer = await chat_with_rmfood(
@@ -205,20 +185,17 @@ async def chat_stream(
     try:
         logger.info(f"[chat_stream] 收到流式对话请求, question={req.question[:50]}..., history_count={len(req.history) if req.history else 0}")
 
-        # 如果前端传递了 API Key，临时更新 LLM 服务配置
-        if req.api_key:
-            from ...services.llm_service import LLMConfig
-            temp_config = LLMConfig(
-                provider=_get_llm_service().config.provider,
-                api_key=req.api_key,
-                base_url=_get_llm_service().config.base_url,
-                model=_get_llm_service().config.model,
-                max_tokens=_get_llm_service().config.max_tokens,
-                temperature=_get_llm_service().config.temperature,
+        # 如果前端传递了 API Key，拒绝并记录安全事件
+        if hasattr(req, 'api_key') and req.api_key:
+            logger.warning("安全事件: 前端尝试传递 API Key（流式），已被拒绝")
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error": "INVALID_REQUEST",
+                    "message": "不支持从前端传递 API Key",
+                    "suggestion": "请在系统设置中配置 API Key"
+                }
             )
-            _get_llm_service().update_config(temp_config)
-            if os.environ.get("ENVIRONMENT") == "development":
-                logger.info("使用前端传递的 API Key 更新 LLM 配置（流式）")
 
         logger.info(f"[chat_stream] LLM 配置: provider={_get_llm_service().config.provider}, model={_get_llm_service().config.model}, base_url={_get_llm_service().config.base_url}, is_available={_get_llm_service().is_available}")
 

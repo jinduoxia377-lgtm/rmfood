@@ -199,7 +199,7 @@ class SynergyDataMixin:
                     imported_count += 1
 
             except Exception as e:
-                errors.append(f"处理系数失败 {coeff_data}: {str(e)}")
+                errors.append(f"处理系数失败: 服务异常")
 
         # 5. 更新版本号并保存
         self._current_version = new_version

@@ -23,11 +23,12 @@ reportlab==4.2.5
 openpyxl==3.1.5
 
 # ── 科学计算（协同作用引擎）──
-numpy==2.0.0
+numpy==1.26.4  # 固定 <2.0：chromadb 0.5.0 依赖已被 NumPy 2.0 移除的 np.float_
 scipy==1.14.0
 
 # ── RAG 检索增强生成 ──
 chromadb==0.5.0
+fastembed==0.8.0  # 本地 embedding 模型（EMBEDDING_PROVIDER=local），免 API key、离线可用
 
 # ── 可观测性 ──
 

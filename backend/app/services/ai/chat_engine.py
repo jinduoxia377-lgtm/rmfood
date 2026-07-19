@@ -374,18 +374,48 @@ class AcademicianChatEngine:
         return effects[:5]
 
     def _fallback_response(self, question: str) -> str:
-        """LLM 不可用时的降级回复"""
-        from .bayesian_formula_optimizer import _BUILTIN_HERBS
-        matched = []
-        for hid, herb in _BUILTIN_HERBS.items():
-            if herb.name_cn in question:
-                top = sorted(herb.efficacy_scores.items(), key=lambda x: -x[1])[:4]
-                matched.append(f"**{herb.name_cn}** ({herb.dosage_min}-{herb.dosage_max}g): "
-                              f"{', '.join(f'{k}({v*100:.0f}%)' for k,v in top)}")
-        if matched:
-            return f"📖 **药材知识库匹配结果**\n\n" + "\n".join(matched)
+        """LLM 不可用时的降级回复 — 调用配方引擎生成专业方案"""
+        try:
+            from .bayesian_formula_optimizer import get_bayesian_optimizer
+            effects = self._extract_effects(question)
+            optimizer = get_bayesian_optimizer()
+            candidates = optimizer.generate(target_effects=effects[:3])
+            if candidates:
+                # 格式化最优方案
+                best = candidates[0]
+                lines = [f"## 智能配方方案（离线模式）\n"]
+                lines.append(f"基于「{'、'.join(effects)}」功效需求，为您设计以下配方方案：\n")
+                lines.append("| 角色 | 成分 | 用量 | 功效定位 |\n")
+                lines.append("|:-----|:-----|:-----|:---------|\n")
+                roles = ["君", "臣", "臣", "佐", "佐", "使"]
+                for i, (hid, dosage) in enumerate(best.ingredients.items()):
+                    herb = optimizer._herbs.get(hid)
+                    if herb:
+                        role = roles[i] if i < len(roles) else "佐"
+                        top_effects = list(herb.efficacy_scores.keys())[:2]
+                        lines.append(f"| {role} | {herb.name_cn} | {dosage}g | {'、'.join(top_effects)} |")
+                lines.append(f"\n**综合评分**: {best.overall_score:.2f} | **安全评分**: {best.safety_score:.2f} | **口感评分**: {best.taste_score:.2f}")
+                lines.append(f"\n- 建议在专业中医师指导下使用\n- 孕妇、哺乳期妇女及儿童需特别咨询\n- 如出现不适请立即停用并咨询医师")
+                return "\n".join(lines)
+        except Exception as e:
+            logger.warning(f"[ChatEngine] 降级配方生成失败: {e}")
+
+        # 最后的兜底：药材知识库
+        try:
+            from .bayesian_formula_optimizer import _BUILTIN_HERBS
+            matched = []
+            for hid, herb in _BUILTIN_HERBS.items():
+                if herb.name_cn in question:
+                    top = sorted(herb.efficacy_scores.items(), key=lambda x: -x[1])[:4]
+                    matched.append(f"**{herb.name_cn}** ({herb.dosage_min}-{herb.dosage_max}g): "
+                                  f"{', '.join(f'{k}({v*100:.0f}%)' for k,v in top)}")
+            if matched:
+                return "**药材知识库匹配结果**\n\n" + "\n".join(matched)
+        except Exception:
+            pass
+
         return (
-            f"您好！关于「{question}」，建议在配方生成模块选择功效标签获取专业方案。\n"
+            f"您好！关于「{question}」，建议您在配方生成模块选择功效标签获取专业方案。\n"
             f"当前支持: 免疫调节、抗氧化、抗疲劳、降血糖、降压、护肝、安神等功效。"
         )
 

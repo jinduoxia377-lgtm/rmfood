@@ -45,7 +45,7 @@ import logging
 import time
 from collections import defaultdict
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Set
 
@@ -98,6 +98,10 @@ class MessageType(str, Enum):
     # 错误
     ERROR = "error"
     RATE_LIMITED = "rate_limited"
+
+    # 频道管理
+    SUBSCRIBE = "subscribe"
+    UNSUBSCRIBE = "unsubscribe"
 
 
 # ═════════════════════════════════════════════
@@ -495,6 +499,19 @@ class WebSocketManager:
 
     # ─── 内部方法 ───
 
+    async def _get_redis_client(self):
+        """获取 Redis 客户端（懒加载）"""
+        if not hasattr(self, '_redis'):
+            try:
+                import redis.asyncio as redis
+                from ..core.config import settings
+                url = getattr(settings, 'redis_url', 'redis://localhost:6379')
+                self._redis = redis.from_url(url, encoding='utf-8', decode_responses=False)
+                await self._redis.ping()
+            except Exception:
+                self._redis = None
+        return self._redis
+
     async def _send_to_connection(self, connection_id: str, message: WSMessage) -> bool:
         """向单个连接发送消息"""
         state = self._connections.get(connection_id)
@@ -549,38 +566,65 @@ class WebSocketManager:
 
         handler = handlers.get(message.type)
         if handler:
-            await handler(state, message)
+            await handler(connection_id, state, message)
 
-    async def _handle_heartbeat(self, state: ConnectionState, message: WSMessage) -> None:
+    async def _handle_heartbeat(self, connection_id: str, state: ConnectionState, message: WSMessage) -> None:
         """处理心跳"""
         await self._send_to_connection(
-            list(self._connections.keys())[0] if self._connections else "",
+            connection_id,
             WSMessage(type=MessageType.HEARTBEAT_ACK.value),
         )
 
-    async def _handle_subscribe(self, state: ConnectionState, message: WSMessage) -> None:
+    async def _handle_subscribe(self, connection_id: str, state: ConnectionState, message: WSMessage) -> None:
         """处理频道订阅"""
         channel = message.data.get("channel")
         if channel:
-            await self.subscribe(state.websocket, channel)
+            await self.subscribe(connection_id, channel)
 
-    async def _handle_unsubscribe(self, state: ConnectionState, message: WSMessage) -> None:
+    async def _handle_unsubscribe(self, connection_id: str, state: ConnectionState, message: WSMessage) -> None:
         """处理取消订阅"""
         channel = message.data.get("channel")
         if channel:
-            await self.unsubscribe(state.websocket, channel)
+            await self.unsubscribe(connection_id, channel)
 
-    async def _handle_edit_lock(self, state: ConnectionState, message: WSMessage) -> None:
+    async def _handle_edit_lock(self, connection_id: str, state: ConnectionState, message: WSMessage) -> None:
         """处理编辑锁定"""
         resource_type = message.data.get("resource_type")
         resource_id = message.data.get("resource_id")
 
         # 获取当前锁定状态
         lock_key = f"{resource_type}:{resource_id}"
-        # TODO: 实现分布式锁（使用 Redis）
+
+        # 分布式锁：使用 Redis SET NX
+        try:
+            redis_client = await self._get_redis_client()
+            if redis_client:
+                acquired = await redis_client.set(
+                    f"ws:lock:{lock_key}",
+                    state.user_id,
+                    nx=True,
+                    ex=30,  # 30秒自动过期
+                )
+                if not acquired:
+                    # 锁已被其他用户持有
+                    holder = await redis_client.get(f"ws:lock:{lock_key}")
+                    await self._send_to_connection(
+                        connection_id,
+                        WSMessage(
+                            type=MessageType.EDIT_LOCK_DENIED.value,
+                            data={
+                                "resource_type": resource_type,
+                                "resource_id": resource_id,
+                                "holder": holder.decode() if isinstance(holder, bytes) else holder,
+                            },
+                        ),
+                    )
+                    return
+        except Exception as e:
+            logger.info("Redis 分布式锁不可用，降级为本地模式: %s", e)
 
         await self._send_to_connection(
-            list(self._connections.keys())[0] if self._connections else "",
+            connection_id,
             WSMessage(
                 type=MessageType.EDIT_LOCK_ACQUIRED.value,
                 data={"resource_type": resource_type, "resource_id": resource_id},
@@ -687,16 +731,18 @@ async def websocket_endpoint(websocket: WebSocket):
         await websocket.close(code=4001, reason="缺少认证令牌")
         return
 
-    # 2. 验证 token（实际应使用 jwt.decode）
+    # 2. 验证 token（实际应使用 JWT 解码）
     try:
-        # 简化处理：假设 token 格式为 "user_id:tenant_id"
-        # 实际应使用 JWT 解码
-        # payload = jwt.decode(token, ...)
-        parts = token.split(":")
-        if len(parts) >= 2:
-            user_id, tenant_id = parts[0], parts[1]
-        else:
-            user_id, tenant_id = token, "default"
+        from ...utils.auth import decode_token
+        payload = decode_token(token)
+        if not payload:
+            await websocket.close(code=4002, reason="认证失败")
+            return
+        user_id = str(payload.get("sub", "anonymous"))
+        tenant_id = payload.get("tenant_id", "default")
+        if not payload.get("type") == "access":
+            await websocket.close(code=4002, reason="无效的Token类型")
+            return
     except Exception:
         await websocket.close(code=4002, reason="认证失败")
         return

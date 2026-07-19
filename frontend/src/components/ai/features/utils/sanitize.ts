@@ -1,20 +1,50 @@
-import DOMPurify from 'dompurify'
+import DOMPurify from 'dompurify';
 
 const SANITIZE_CONFIG = {
   ALLOWED_TAGS: [
-    'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-    'p', 'div', 'span', 'br', 'hr',
-    'ul', 'ol', 'li',
-    'strong', 'b', 'em', 'i', 'u',
-    'code', 'pre', 'blockquote',
-    'table', 'thead', 'tbody', 'tr', 'th', 'td',
-    'a', 'img',
+    'h1',
+    'h2',
+    'h3',
+    'h4',
+    'h5',
+    'h6',
+    'p',
+    'div',
+    'span',
+    'br',
+    'hr',
+    'ul',
+    'ol',
+    'li',
+    'strong',
+    'b',
+    'em',
+    'i',
+    'u',
+    'code',
+    'pre',
+    'blockquote',
+    'table',
+    'thead',
+    'tbody',
+    'tr',
+    'th',
+    'td',
+    'a',
+    'img',
   ],
   ALLOWED_ATTR: [
-    'class', 'id', 'style',
-    'href', 'target', 'rel',
-    'src', 'alt', 'title',
-    'colspan', 'rowspan',
+    'class',
+    'id',
+    'style',
+    'href',
+    'target',
+    'rel',
+    'src',
+    'alt',
+    'title',
+    'colspan',
+    'rowspan',
     'data-*',
   ],
   ADD_ATTR: ['target'],
@@ -26,32 +56,32 @@ const SANITIZE_CONFIG = {
   RETURN_DOM: false,
   RETURN_DOM_FRAGMENT: false,
   RETURN_TRUSTED_TYPE: false,
-}
+};
 
-const FILE_NAME_PATTERN = /[<>:"/\\|?*\x00-\x1F]/g
-const FILE_NAME_RESERVED = /^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])$/i
+const FILE_NAME_PATTERN = /[<>:"/\\|?*\x00-\x1F]/g;
+const FILE_NAME_RESERVED = /^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])$/i;
 
-const sanitizeCache = new Map<string, string>()
-const MAX_CACHE_SIZE = 200
+const sanitizeCache = new Map<string, string>();
+const MAX_CACHE_SIZE = 200;
 
-let sanitizeWorker: Worker | null = null
-let workerReady = false
-const pendingSanitizes = new Map<string, { resolve: (value: string) => void; reject: (reason?: any) => void }>()
-let workerFallbackCount = 0
+let sanitizeWorker: Worker | null = null;
+let workerReady = false;
+const pendingSanitizes = new Map<string, { resolve: (value: string) => void; reject: (reason?: any) => void }>();
+let workerFallbackCount = 0;
 
 function supportsWebWorker(): boolean {
   // Blob Worker 中无法通过 importScripts 可靠加载外部 CDN 脚本（CORS 限制），
   // 因此禁用 Web Worker 路径，统一使用主线程同步消毒
-  return false
+  return false;
 }
 
 async function initWorker(): Promise<Worker> {
   if (sanitizeWorker && workerReady) {
-    return sanitizeWorker
+    return sanitizeWorker;
   }
 
   if (!supportsWebWorker()) {
-    throw new Error('Web Worker not supported')
+    throw new Error('Web Worker not supported');
   }
 
   try {
@@ -87,191 +117,194 @@ async function initWorker(): Promise<Worker> {
           });
         }
       };
-    `
+    `;
 
-    const blob = new Blob([workerCode], { type: 'application/javascript' })
-    const workerUrl = URL.createObjectURL(blob)
+    const blob = new Blob([workerCode], { type: 'application/javascript' });
+    const workerUrl = URL.createObjectURL(blob);
 
-    sanitizeWorker = new Worker(workerUrl)
+    sanitizeWorker = new Worker(workerUrl);
 
     sanitizeWorker.onmessage = (event: MessageEvent) => {
-      const { id, sanitized, error, success, duration } = event.data
+      const { id, sanitized, error, success, duration } = event.data;
 
-      const pending = pendingSanitizes.get(id)
+      const pending = pendingSanitizes.get(id);
       if (pending) {
-        pendingSanitizes.delete(id)
+        pendingSanitizes.delete(id);
 
         if (success) {
           if (duration && duration > 50) {
-            console.warn(`[sanitize] Worker Performance warning: sanitization took ${duration.toFixed(2)}ms`)
+            console.warn(`[sanitize] Worker Performance warning: sanitization took ${duration.toFixed(2)}ms`);
           }
-          pending.resolve(sanitized)
+          pending.resolve(sanitized);
         } else {
-          pending.reject(new Error(error))
+          pending.reject(new Error(error));
         }
       }
 
-      URL.revokeObjectURL(workerUrl)
-    }
+      URL.revokeObjectURL(workerUrl);
+    };
 
     sanitizeWorker.onerror = (error: ErrorEvent) => {
-      console.error('[sanitize] Worker error:', error)
-      workerReady = false
-      workerFallbackCount++
+      console.error('[sanitize] Worker error:', error);
+      workerReady = false;
+      workerFallbackCount++;
 
       pendingSanitizes.forEach((pending) => {
-        pending.reject(new Error('Worker failed'))
-      })
-      pendingSanitizes.clear()
-    }
+        pending.reject(new Error('Worker failed'));
+      });
+      pendingSanitizes.clear();
+    };
 
-    workerReady = true
+    workerReady = true;
 
-    return sanitizeWorker
+    return sanitizeWorker;
   } catch (error) {
-    console.warn('[sanitize] Failed to initialize Worker, falling back to main thread:', error)
-    workerFallbackCount++
-    throw error
+    console.warn('[sanitize] Failed to initialize Worker, falling back to main thread:', error);
+    workerFallbackCount++;
+    throw error;
   }
 }
 
 export async function sanitizeHtmlAsync(html: string): Promise<string> {
-  if (!html || typeof html !== 'string') return ''
+  if (!html || typeof html !== 'string') return '';
 
   if (sanitizeCache.has(html)) {
-    return sanitizeCache.get(html)!
+    return sanitizeCache.get(html)!;
   }
 
   // Worker 不可用时静默降级到同步路径，避免不必要的 warn 日志
   if (!supportsWebWorker()) {
-    return sanitizeHtmlSync(html)
+    return sanitizeHtmlSync(html);
   }
 
   try {
-    const worker = await initWorker()
+    const worker = await initWorker();
 
-    const id = Math.random().toString(36).slice(2)
+    const id = Math.random().toString(36).slice(2);
 
     const result = new Promise<string>((resolve, reject) => {
-      pendingSanitizes.set(id, { resolve, reject })
+      pendingSanitizes.set(id, { resolve, reject });
 
       setTimeout(() => {
         if (pendingSanitizes.has(id)) {
-          pendingSanitizes.delete(id)
-          reject(new Error('Worker timeout'))
+          pendingSanitizes.delete(id);
+          reject(new Error('Worker timeout'));
         }
-      }, 10000)
-    })
+      }, 10000);
+    });
 
-    worker.postMessage({ html, id })
+    worker.postMessage({ html, id });
 
-    const sanitized = await result
+    const sanitized = await result;
 
     if (sanitizeCache.size >= MAX_CACHE_SIZE) {
-      const firstKey = sanitizeCache.keys().next().value
-      sanitizeCache.delete(firstKey)
+      const firstKey = sanitizeCache.keys().next().value;
+      if (firstKey !== undefined) sanitizeCache.delete(firstKey);
     }
-    sanitizeCache.set(html, sanitized)
+    sanitizeCache.set(html, sanitized);
 
-    return sanitized
+    return sanitized;
   } catch (error) {
-    console.warn('[sanitize] Worker failed, using main thread fallback:', error)
-    return sanitizeHtmlSync(html)
+    console.warn('[sanitize] Worker failed, using main thread fallback:', error);
+    return sanitizeHtmlSync(html);
   }
 }
 
 export function sanitizeHtml(html: string): string {
-  if (!html || typeof html !== 'string') return ''
+  if (!html || typeof html !== 'string') return '';
 
   if (sanitizeCache.has(html)) {
-    return sanitizeCache.get(html)!
+    return sanitizeCache.get(html)!;
   }
 
   if (workerReady && sanitizeWorker) {
-    sanitizeHtmlAsync(html).then(result => {
-      if (!sanitizeCache.has(html)) {
-        if (sanitizeCache.size >= MAX_CACHE_SIZE) {
-          const firstKey = sanitizeCache.keys().next().value
-          sanitizeCache.delete(firstKey)
+    sanitizeHtmlAsync(html)
+      .then((result) => {
+        if (!sanitizeCache.has(html)) {
+          if (sanitizeCache.size >= MAX_CACHE_SIZE) {
+            const firstKey = sanitizeCache.keys().next().value;
+            sanitizeCache.delete(firstKey!);
+          }
+          sanitizeCache.set(html, result);
         }
-        sanitizeCache.set(html, result)
-      }
-    }).catch(() => {})
+      })
+      .catch(() => {});
   }
 
-  return sanitizeHtmlSync(html)
+  return sanitizeHtmlSync(html);
 }
 
 function sanitizeHtmlSync(html: string): string {
-  const startTime = performance.now()
+  const startTime = performance.now();
 
   const sanitized = DOMPurify.sanitize(html, {
     ...SANITIZE_CONFIG,
-    ALLOWED_URI_REGEXP: /^(?:(?:https?|ftp|mailto|tel|data:image\/(png|jpeg|gif|svg\+xml|webp);base64,[a-zA-Z0-9+/=]+)|#[^ ]*|(?:\/|\.\.\/)[^ ]*)$/,
-  })
+    ALLOWED_URI_REGEXP:
+      /^(?:(?:https?|ftp|mailto|tel|data:image\/(png|jpeg|gif|svg\+xml|webp);base64,[a-zA-Z0-9+/=]+)|#[^ ]*|(?:\/|\.\.\/)[^ ]*)$/,
+  });
 
-  const duration = performance.now() - startTime
+  const duration = performance.now() - startTime;
   if (sanitizeCache.size >= MAX_CACHE_SIZE) {
-    const firstKey = sanitizeCache.keys().next().value
-    sanitizeCache.delete(firstKey)
+    const firstKey = sanitizeCache.keys().next().value;
+    if (firstKey !== undefined) sanitizeCache.delete(firstKey);
   }
-  sanitizeCache.set(html, sanitized)
+  sanitizeCache.set(html, sanitized);
 
-  return sanitized
+  return sanitized;
 }
 
 export function getSanitizeStats(): {
-  cacheSize: number
-  workerReady: boolean
-  fallbackCount: number
+  cacheSize: number;
+  workerReady: boolean;
+  fallbackCount: number;
 } {
   return {
     cacheSize: sanitizeCache.size,
     workerReady,
     fallbackCount: workerFallbackCount,
-  }
+  };
 }
 
 export function clearSanitizeCache(): void {
-  sanitizeCache.clear()
+  sanitizeCache.clear();
 }
 
 export function sanitizeMarkdown(markdown: string): string {
-  if (!markdown || typeof markdown !== 'string') return ''
+  if (!markdown || typeof markdown !== 'string') return '';
 
-  let sanitized = markdown
+  let sanitized = markdown;
 
-  sanitized = sanitized.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-  sanitized = sanitized.replace(/javascript:/gi, '')
-  sanitized = sanitized.replace(/on\w+\s*=/gi, '')
-  sanitized = sanitized.replace(/<iframe[\s\S]*?<\/iframe>/gi, '')
+  sanitized = sanitized.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+  sanitized = sanitized.replace(/javascript:/gi, '');
+  sanitized = sanitized.replace(/on\w+\s*=/gi, '');
+  sanitized = sanitized.replace(/<iframe[\s\S]*?<\/iframe>/gi, '');
 
-  return sanitized
+  return sanitized;
 }
 
 export function sanitizeFileName(name: string): string {
-  if (!name || typeof name !== 'string') return ''
+  if (!name || typeof name !== 'string') return '';
 
-  let sanitized = name.trim()
+  let sanitized = name.trim();
 
-  sanitized = sanitized.replace(FILE_NAME_PATTERN, '_')
+  sanitized = sanitized.replace(FILE_NAME_PATTERN, '_');
 
   if (FILE_NAME_RESERVED.test(sanitized)) {
-    sanitized = `_${sanitized}_`
+    sanitized = `_${sanitized}_`;
   }
 
-  sanitized = sanitized.replace(/^[.]+/, '_').replace(/[.]+$/, '_')
-  sanitized = sanitized.substring(0, 255)
+  sanitized = sanitized.replace(/^[.]+/, '_').replace(/[.]+$/, '_');
+  sanitized = sanitized.substring(0, 255);
 
   if (sanitized === '' || sanitized === '_' || '.') {
-    sanitized = `unnamed_${Date.now()}`
+    sanitized = `unnamed_${Date.now()}`;
   }
 
-  return sanitized
+  return sanitized;
 }
 
 export function isSafeHtml(html: string): boolean {
-  if (!html || typeof html !== 'string') return true
+  if (!html || typeof html !== 'string') return true;
 
   const dangerousPatterns = [
     /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
@@ -283,9 +316,9 @@ export function isSafeHtml(html: string): boolean {
     /expression\s*\(/gi,
     /vbscript\s*:/gi,
     /data:\s*text\/html/gi,
-  ]
+  ];
 
-  return !dangerousPatterns.some(pattern => pattern.test(html))
+  return !dangerousPatterns.some((pattern) => pattern.test(html));
 }
 
-export { DOMPurify, SANITIZE_CONFIG }
+export { DOMPurify, SANITIZE_CONFIG };

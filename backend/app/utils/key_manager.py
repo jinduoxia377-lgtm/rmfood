@@ -252,7 +252,7 @@ class KeyManager:
         except Exception as e:
             return {
                 "success": False,
-                "error": str(e),
+                "error": "密钥管理异常",
                 "message": "密钥轮换失败，系统仍使用旧密钥",
             }
 

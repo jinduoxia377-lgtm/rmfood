@@ -51,10 +51,10 @@ export function FileHistory() {
   }
 
   const statusColor = {
-    pending: 'bg-blue-100 text-blue-700',
+    pending: 'bg-secondary-100 text-secondary-700',
     processing: 'bg-yellow-100 text-yellow-700',
-    completed: 'bg-green-100 text-green-700',
-    failed: 'bg-red-100 text-red-700',
+    completed: 'bg-success-100 text-success-700',
+    failed: 'bg-error-100 text-error-700',
   }
 
   const loadHistory = async () => {
@@ -163,15 +163,15 @@ export function FileHistory() {
                   </div>
                   <div className="grid grid-cols-2 gap-4 mb-3">
                     <div>
-                      <div className="text-xs text-gray-500">格式</div>
+                      <div className="text-xs text-neutral-500">格式</div>
                       <div className="text-sm">{formatName[item.format]}</div>
                     </div>
                     <div>
-                      <div className="text-xs text-gray-500">大小</div>
+                      <div className="text-xs text-neutral-500">大小</div>
                       <div className="text-sm">{(item.size / 1024).toFixed(2)} KB</div>
                     </div>
                     <div className="col-span-2">
-                      <div className="text-xs text-gray-500">创建时间</div>
+                      <div className="text-xs text-neutral-500">创建时间</div>
                       <div className="text-sm">{new Date(item.created_at).toLocaleString('zh-CN')}</div>
                     </div>
                   </div>

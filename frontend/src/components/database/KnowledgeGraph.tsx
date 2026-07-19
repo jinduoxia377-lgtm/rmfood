@@ -37,12 +37,12 @@
  * 5. 智能标签系统 — 字体层级(14-16px/12-13px)、标签背景避障、悬停详情弹窗
  *
  * 色彩体系（v7.0 WCAG 2.1 AA 知识图谱节点色）：
- *   herb     #047857  Emerald-700   — 药材 (contrast 8.59:1)
- *   compound #1D4ED8 Blue-700       — 化合物 (contrast 8.19:1)
- *   target   #B45309 Amber-700     — 靶点   (contrast 7.73:1)
- *   disease  #B91C1C Red-700        — 疾病   (contrast 7.34:1)
- *   peptide  #6D28D9 Violet-700    — 肽     (contrast 7.63:1)
- *   protein  #BE185D Pink-700      — 蛋白质 (contrast 6.84:1)
+ *   herb     #1E8E3E  Emerald-700   — 药材 (contrast 8.59:1)
+ *   compound #0052AE Blue-700       — 化合物 (contrast 8.19:1)
+ *   target   #D97706 Amber-700     — 靶点   (contrast 7.73:1)
+ *   disease  #DC2626 Red-700        — 疾病   (contrast 7.34:1)
+ *   peptide  #8B5CF6 Violet-700    — 肽     (contrast 7.63:1)
+ *   protein  #9D174D Pink-700      — 蛋白质 (contrast 6.84:1)
  *   food     #C2410C Orange-700    — 食物   (contrast 6.97:1)
  */
 import { useRef, useEffect, useCallback, useState, useMemo } from 'react'
@@ -58,6 +58,9 @@ interface GraphNode {
   id: string
   label: string
   type: 'herb' | 'compound' | 'target' | 'disease' | 'peptide' | 'protein' | 'food'
+  x?: number
+  y?: number
+  degree?: number
   properties?: Record<string, unknown>
 }
 
@@ -108,12 +111,12 @@ interface SimEdge {
 
 /** 节点类型配置 — v7.0: WCAG 2.1 AA合规 + 视觉层次增强 */
 export const TYPE_CONFIG = {
-  herb:     { color: '#047857', glow: 'rgba(4,120,87,0.35)',   size: 26, minSize: 18, maxSize: 44, label: '药材',   icon: '🌿', isCore: true },
-  compound: { color: '#1D4ED8', glow: 'rgba(29,78,216,0.35)',   size: 16, minSize: 10, maxSize: 30, label: '化合物', icon: '⚗️', isCore: false },
-  target:   { color: '#B45309', glow: 'rgba(180,83,9,0.35)',    size: 14, minSize: 9,  maxSize: 26, label: '靶点',   icon: '🎯', isCore: false },
-  disease:  { color: '#B91C1C', glow: 'rgba(185,28,28,0.35)',    size: 18, minSize: 12, maxSize: 34, label: '疾病',   icon: '🩺', isCore: true },
-  peptide:  { color: '#6D28D9', glow: 'rgba(109,40,217,0.35)',  size: 18, minSize: 12, maxSize: 34, label: '肽',     icon: '🧬', isCore: true },
-  protein:  { color: '#BE185D', glow: 'rgba(190,24,93,0.35)',  size: 15, minSize: 10, maxSize: 28, label: '蛋白质', icon: '🔬', isCore: false },
+  herb:     { color: '#1E8E3E', glow: 'rgba(4,120,87,0.35)',   size: 26, minSize: 18, maxSize: 44, label: '药材',   icon: '🌿', isCore: true },
+  compound: { color: '#0052AE', glow: 'rgba(29,78,216,0.35)',   size: 16, minSize: 10, maxSize: 30, label: '化合物', icon: '⚗️', isCore: false },
+  target:   { color: '#D97706', glow: 'rgba(180,83,9,0.35)',    size: 14, minSize: 9,  maxSize: 26, label: '靶点',   icon: '🎯', isCore: false },
+  disease:  { color: '#DC2626', glow: 'rgba(185,28,28,0.35)',    size: 18, minSize: 12, maxSize: 34, label: '疾病',   icon: '🩺', isCore: true },
+  peptide:  { color: '#8B5CF6', glow: 'rgba(109,40,217,0.35)',  size: 18, minSize: 12, maxSize: 34, label: '肽',     icon: '🧬', isCore: true },
+  protein:  { color: '#9D174D', glow: 'rgba(190,24,93,0.35)',  size: 15, minSize: 10, maxSize: 28, label: '蛋白质', icon: '🔬', isCore: false },
   food:     { color: '#C2410C', glow: 'rgba(194,65,12,0.35)',   size: 16, minSize: 10, maxSize: 30, label: '食物',   icon: '🍽️', isCore: false },
 }
 
@@ -124,13 +127,13 @@ export const TYPE_ORDER = ['herb', 'compound', 'target', 'disease', 'peptide', '
 
 /** 边类型配色与线型 — v7.0: 分层粗细系统 */
 export const EDGE_COLORS = {
-  contains:    { color: '#1D4ED8', dash: '', animDash: '8 4', width: 2.5, priority: 'core' },
-  targets:     { color: '#B45309', dash: '4,2', animDash: '6 3', width: 2.5, priority: 'core' },
-  treats:      { color: '#B91C1C', dash: '',    animDash: '10 5', width: 3.0, priority: 'core' },
-  synergy:     { color: '#047857', dash: '',    animDash: '',    width: 2.0, priority: 'core' },
-  antagonism:  { color: '#DC2626', dash: '3,2', animDash: '4 4', width: 1.5, priority: 'secondary' },
-  interacts:   { color: '#6D28D9', dash: '5,3', animDash: '8 4', width: 1.5, priority: 'secondary' },
-  relates_to:  { color: '#64748B', dash: '',    animDash: '',    width: 1.0, priority: 'secondary' },
+  contains:    { color: '#0052AE', dash: '', animDash: '8 4', width: 2.5, priority: 'core' },
+  targets:     { color: '#D97706', dash: '4,2', animDash: '6 3', width: 2.5, priority: 'core' },
+  treats:      { color: '#DC2626', dash: '',    animDash: '10 5', width: 3.0, priority: 'core' },
+  synergy:     { color: '#1E8E3E', dash: '',    animDash: '',    width: 2.0, priority: 'core' },
+  antagonism:  { color: '#B91C1C', dash: '3,2', animDash: '4 4', width: 1.5, priority: 'secondary' },
+  interacts:   { color: '#8B5CF6', dash: '5,3', animDash: '8 4', width: 1.5, priority: 'secondary' },
+  relates_to:  { color: 'var(--color-knowledge-text, #6B7280)', dash: '',    animDash: '',    width: 1.0, priority: 'secondary' },
 }
 
 /** v7.2: 边类型中文标签映射 */
@@ -325,75 +328,75 @@ interface ThemeConfig {
 const THEME_PRESETS: ThemeConfig[] = [
   {
     id: 'academic', name: '学术经典', icon: '📚',
-    bgGradient: 'linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%)',
+    bgGradient: 'linear-gradient(135deg, #f0f4f8 0%, #E5E7EB 100%)',
     nodeColors: {
-      herb: { color: '#047857', glow: 'rgba(4,120,87,0.35)' },
-      compound: { color: '#1D4ED8', glow: 'rgba(29,78,216,0.35)' },
-      target: { color: '#B45309', glow: 'rgba(180,83,9,0.35)' },
-      disease: { color: '#B91C1C', glow: 'rgba(185,28,28,0.35)' },
-      peptide: { color: '#6D28D9', glow: 'rgba(109,40,217,0.35)' },
-      protein: { color: '#BE185D', glow: 'rgba(190,24,93,0.35)' },
+      herb: { color: '#1E8E3E', glow: 'rgba(4,120,87,0.35)' },
+      compound: { color: '#0052AE', glow: 'rgba(29,78,216,0.35)' },
+      target: { color: '#D97706', glow: 'rgba(180,83,9,0.35)' },
+      disease: { color: '#DC2626', glow: 'rgba(185,28,28,0.35)' },
+      peptide: { color: '#8B5CF6', glow: 'rgba(109,40,217,0.35)' },
+      protein: { color: '#9D174D', glow: 'rgba(190,24,93,0.35)' },
       food: { color: '#C2410C', glow: 'rgba(194,65,12,0.35)' },
     },
-    edgeBaseColor: '#64748B', canvasBg: '#ffffff', panelBg: 'rgba(255,255,255,0.95)',
-    textPrimary: '#1e293b', textSecondary: '#64748b', accentColor: '#3b82f6',
+    edgeBaseColor: 'var(--color-knowledge-text, #6B7280)', canvasBg: '#ffffff', panelBg: 'rgba(255,255,255,0.95)',
+    textPrimary: '#1F2937', textSecondary: '#6B7280', accentColor: '#007AFF',
   },
   {
     id: 'deepSpace', name: '深空探索', icon: '🌌',
-    bgGradient: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%)',
+    bgGradient: 'linear-gradient(135deg, #111827 0%, #1e1b4b 100%)',
     nodeColors: {
-      herb:     { color: '#34d399', glow: 'rgba(52,211,153,0.40)' },
-      compound: { color: '#60a5fa', glow: 'rgba(96,165,250,0.40)' },
-      target:   { color: '#fbbf24', glow: 'rgba(251,191,36,0.40)' },
-      disease:  { color: '#f87171', glow: 'rgba(248,113,113,0.40)' },
+      herb:     { color: '#4ADE80', glow: 'rgba(52,211,153,0.40)' },
+      compound: { color: '#6ECAFF', glow: 'rgba(96,165,250,0.40)' },
+      target:   { color: '#F59E0B', glow: 'rgba(251,191,36,0.40)' },
+      disease:  { color: '#EF4444', glow: 'rgba(248,113,113,0.40)' },
       peptide:  { color: '#c084fc', glow: 'rgba(192,132,252,0.40)' },
       protein:  { color: '#fb7185', glow: 'rgba(251,113,133,0.40)' },
       food:     { color: '#fb923c', glow: 'rgba(251,146,60,0.40)' },
     },
-    edgeBaseColor: '#475569', canvasBg: '#0f172a', panelBg: 'rgba(15,23,42,0.95)',
-    textPrimary: '#e2e8f0', textSecondary: '#94a3b8', accentColor: '#818cf8',
+    edgeBaseColor: '#4B5563', canvasBg: '#111827', panelBg: 'rgba(15,23,42,0.95)',
+    textPrimary: '#E5E7EB', textSecondary: 'var(--color-knowledge-default, #9CA3AF)', accentColor: '#818cf8',
   },
   {
     id: 'warmSun', name: '暖阳大地', icon: '🌅',
-    bgGradient: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)',
+    bgGradient: 'linear-gradient(135deg, #FFF8E1 0%, #FFF3CD 100%)',
     nodeColors: {
-      herb:     { color: '#15803d', glow: 'rgba(21,128,61,0.30)' },
-      compound: { color: '#1d4ed8', glow: 'rgba(29,78,216,0.30)' },
-      target:   { color: '#b45309', glow: 'rgba(180,83,9,0.30)' },
-      disease:  { color: '#dc2626', glow: 'rgba(220,38,38,0.30)' },
-      peptide:  { color: '#7c3aed', glow: 'rgba(124,58,237,0.30)' },
-      protein:  { color: '#be185d', glow: 'rgba(190,24,93,0.30)' },
+      herb:     { color: '#166534', glow: 'rgba(21,128,61,0.30)' },
+      compound: { color: '#0052AE', glow: 'rgba(29,78,216,0.30)' },
+      target:   { color: '#D97706', glow: 'rgba(180,83,9,0.30)' },
+      disease:  { color: '#B91C1C', glow: 'rgba(220,38,38,0.30)' },
+      peptide:  { color: '#AF52DE', glow: 'rgba(124,58,237,0.30)' },
+      protein:  { color: '#9D174D', glow: 'rgba(190,24,93,0.30)' },
       food:     { color: '#c2410c', glow: 'rgba(194,65,12,0.30)' },
     },
     edgeBaseColor: '#a16207', canvasBg: '#fefce8', panelBg: 'rgba(254,252,232,0.95)',
-    textPrimary: '#451a03', textSecondary: '#854d0e', accentColor: '#ea580c',
+    textPrimary: '#451a03', textSecondary: '#854d0e', accentColor: '#C2410C',
   },
   {
     id: 'forest', name: '森林秘境', icon: '🌲',
-    bgGradient: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)',
+    bgGradient: 'linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%)',
     nodeColors: {
       herb:     { color: '#065f46', glow: 'rgba(6,95,70,0.35)' },
-      compound: { color: '#1e40af', glow: 'rgba(30,64,175,0.35)' },
-      target:   { color: '#92400e', glow: 'rgba(146,64,14,0.35)' },
-      disease:  { color: '#991b1b', glow: 'rgba(153,27,27,0.35)' },
-      peptide:  { color: '#5b21b6', glow: 'rgba(91,33,182,0.35)' },
-      protein:  { color: '#9d174d', glow: 'rgba(157,23,77,0.35)' },
+      compound: { color: '#003E87', glow: 'rgba(30,64,175,0.35)' },
+      target:   { color: '#D97706', glow: 'rgba(146,64,14,0.35)' },
+      disease:  { color: '#DC2626', glow: 'rgba(153,27,27,0.35)' },
+      peptide:  { color: '#7C3AED', glow: 'rgba(91,33,182,0.35)' },
+      protein:  { color: '#831843', glow: 'rgba(157,23,77,0.35)' },
       food:     { color: '#9a3412', glow: 'rgba(154,52,18,0.35)' },
     },
-    edgeBaseColor: '#4d7c0f', canvasBg: '#ecfdf5', panelBg: 'rgba(236,253,245,0.95)',
-    textPrimary: '#064e3b', textSecondary: '#6b8f4a', accentColor: '#059669',
+    edgeBaseColor: '#4d7c0f', canvasBg: '#F0FDF4', panelBg: 'rgba(236,253,245,0.95)',
+    textPrimary: '#064e3b', textSecondary: '#6b8f4a', accentColor: '#28A745',
   },
   {
     id: 'ocean', name: '海洋深邃', icon: '🌊',
-    bgGradient: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
+    bgGradient: 'linear-gradient(135deg, #F0F7FF 0%, #E8F4FD 100%)',
     nodeColors: {
       herb:     { color: '#0d9488', glow: 'rgba(13,148,136,0.35)' },
-      compound: { color: '#2563eb', glow: 'rgba(37,99,235,0.35)' },
-      target:   { color: '#d97706', glow: 'rgba(217,119,6,0.35)' },
-      disease:  { color: '#dc2626', glow: 'rgba(220,38,38,0.35)' },
-      peptide:  { color: '#7c3aed', glow: 'rgba(124,58,237,0.35)' },
-      protein:  { color: '#db2777', glow: 'rgba(219,39,119,0.35)' },
-      food:     { color: '#ea580c', glow: 'rgba(234,88,12,0.35)' },
+      compound: { color: '#007AFF', glow: 'rgba(37,99,235,0.35)' },
+      target:   { color: '#B45309', glow: 'rgba(217,119,6,0.35)' },
+      disease:  { color: '#B91C1C', glow: 'rgba(220,38,38,0.35)' },
+      peptide:  { color: '#AF52DE', glow: 'rgba(124,58,237,0.35)' },
+      protein:  { color: '#BE185D', glow: 'rgba(219,39,119,0.35)' },
+      food:     { color: '#C2410C', glow: 'rgba(234,88,12,0.35)' },
     },
     edgeBaseColor: '#0369a1', canvasBg: '#f0f9ff', panelBg: 'rgba(240,249,255,0.95)',
     textPrimary: '#0c4a6e', textSecondary: '#0369a1', accentColor: '#0284c7',
@@ -532,6 +535,21 @@ interface GraphComparison {
 
 // ═══ v8.2: 协作分享类型定义 ═══
 
+/** 图谱快照 */
+interface GraphSnapshot {
+  id: string
+  timestamp: number
+  label: string
+  nodeCount: number
+  edgeCount?: number
+  selectedNode?: string
+  filterTypes: string[]
+  searchQuery: string
+  layoutType?: string
+  zoomLevel?: number
+  panOffset?: { x: number; y: number }
+}
+
 /** 分享链接信息 */
 interface ShareLink {
   id: string
@@ -560,7 +578,7 @@ interface NodeAnnotation {
 interface HistoryEntry {
   id: string
   timestamp: Date
-  type: 'filter' | 'search' | 'select' | 'layout' | 'theme' | 'zoom' | 'focus' | 'export' | 'annotate' | 'bookmark' | 'import'
+  type: 'filter' | 'search' | 'select' | 'layout' | 'theme' | 'zoom' | 'focus' | 'export' | 'annotate' | 'bookmark' | 'import' | 'share'
   description: string
   detail?: Record<string, unknown>
   reversible: boolean
@@ -681,16 +699,16 @@ const MOCK_EXTERNAL_DB: Record<string, ExternalData> = {
   'Zeaxanthin': { source: 'pubchem', molecularFormula: 'C40H56O2', molecularWeight: 568.88, smiles: 'CC1=C(C(=CC(=C1)C=C2C=CC(=CC2=O)C)C)C=CC=C(C)C=CC=C(C)C=CC=C(C)C=CC=C(C)C=CC=C(C)C=CC(=O)C=C(C)C=C(C)C', inchiKey: 'KBAYPFHRZMSRIC-MDTTDHTOSA-N', targets: ['BCO2', 'RPE65', 'GSTP1'], pathways: ['Carotenoid biosynthesis', 'Visual cycle'], literatureCount: 9870, lastUpdated: '2025-01-03', description: '玉米黄质是一种类胡萝卜素，主要存在于枸杞子中，对眼睛健康有重要保护作用。', properties: {'LogP': 14.2, 'HBA': 2, 'HBD': 0, 'TPSA': 35.5} },
   'Betaine': { source: 'pubchem', molecularFormula: 'C5H11NO2', molecularWeight: 117.15, smiles: 'C[N+](C)(CC(=O)[O-])C', inchiKey: 'ODFYPSNFRUCCIO-UHFFFAOYSA-N', targets: ['BHMT', 'GNMT', 'PEMT'], pathways: ['Methionine cycle', 'One-carbon pool'], literatureCount: 12450, lastUpdated: '2024-12-18', description: '甜菜碱是一种甲基供体化合物，参与同型半胱氨酸代谢，广泛存在于枸杞子和甜菜中。', properties: {'LogP': -3.67, 'HBA': 2, 'HBD': 0, 'TPSA': 37.3} },
   // 药材数据 (TCMSP风格)
-  '人参': { source: 'tcspm', description: '五加科人参属植物人参的干燥根。味甘、微苦，性温。归脾、肺、心经。大补元气，复脉固脱，补脾益肺，生津养血，安神益智。', targets: ['中枢神经系统', '心血管系统', '免疫系统', '内分泌系统'], pathways: ['cAMP-PKA', 'MAPK-ERK', 'PI3K-Akt-mTOR'], diseases: ['疲劳综合征', '免疫力低下', '糖尿病', '高血压'], literatureCount: 15800, lastUpdated: '2024-12-01', properties: {'性味': '甘微苦温', '归经': '脾肺心肾', '功效': '大补元气复脉固脱', '用量': '3-9g'} },
-  '黄芪': { source: 'tcspm', description: '豆科黄芪属植物蒙古黄芪或膜荚黄芪的干燥根。味甘，性微温。归肺、脾经。补气升阳，固表止汗，利水消肿，生津养血，行滞通痹，托毒排脓，敛疮生肌。', targets: ['免疫系统', '心血管系统', '泌尿系统'], pathways: ['TLR-NFκB', 'Nrf2-ARE', 'HIF-1α'], diseases: ['气虚乏力', '慢性肾炎', '糖尿病肾病', '心衰'], literatureCount: 12300, lastUpdated: '2024-11-20', properties: {'性味': '甘微温', '归经': '肺脾', '功效': '补气升阳固表止汗', '用量': '9-30g'} },
-  '当归': { source: 'tcspm', description: '伞形科当归属植物当归的干燥根。味甘、辛，性温。归肝、心、脾经。补血活血，调经止痛，润肠通便。', targets: ['血液系统', '子宫平滑肌', '免疫系统'], pathways: ['cGMP-PKG', 'Estrogen signaling', 'Coagulation cascade'], diseases: ['血虚萎黄', '月经不调', '痛经', '肠燥便秘'], literatureCount: 9850, lastUpdated: '2024-10-15', properties: {'性味': '甘辛温', '归经': '肝心脾', '功效': '补血活血调经止痛', '用量': '6-12g'} },
-  '丹参': { source: 'tcspm', description: '唇形科鼠尾草属植物丹参的干燥根及根茎。味苦，性微寒。归心、肝经。活血祛瘀，通经止痛，清心除烦，凉血消痈。', targets: ['心血管系统', '神经系统', '肝脏'], pathways: ['eNOS-NO-cGMP', 'MAPK', 'PPARγ'], diseases: ['胸痹心痛', '心烦不眠', '痛经闭经', '疮疡肿痛'], literatureCount: 11200, lastUpdated: '2024-12-10', properties: {'性味': '苦微寒', '归经': '心肝', '功效': '活血祛瘀通经止痛', '用量': '10-15g'} },
-  '甘草': { source: 'tcspm', description: '豆科甘草属植物甘草、胀果甘草或光果甘草的干燥根及根茎。味甘，性平。归心、肺、脾、胃经。补脾益气，清热解毒，祛痰止咳，缓急止痛，调和诸药。', targets: ['消化系统', '呼吸系统', '内分泌系统', '免疫系统'], pathways: ['Glucocorticoid', '11β-HSD', 'COX/LOX'], diseases: ['脾胃虚弱', '咳嗽痰多', '脘腹挛急疼痛', '药物中毒'], literatureCount: 14200, lastUpdated: '2024-11-28', properties: {'性味': '甘平', '归经': '心肺脾胃', '功效': '补脾益气清热解毒', '用量': '2-10g'} },
-  '枸杞子': { source: 'tcspm', description: '茄科枸杞属植物宁夏枸杞的成熟果实。味甘，性平。归肝、肾经。滋补肝肾，益精明目。', targets: ['视觉系统', '免疫系统', '生殖系统'], pathways: ['Carotenoid metabolism', 'Antioxidant response', 'Sex hormone'], diseases: ['肝肾阴虚', '视力模糊', '腰膝酸软', '早衰'], literatureCount: 6780, lastUpdated: '2024-12-05', properties: {'性味': '甘平', '归经': '肝肾', '功效': '滋补肝肾益精明目', '用量': '6-12g'} },
-  '茯苓': { source: 'tcspm', description: '多孔菌科茯苓属真菌茯苓的干燥菌核。味甘、淡，性平。归心、肺、脾、肾经。利水渗湿，健脾，宁心。', targets: ['泌尿系统', '消化系统', '神经系统'], pathways: ['Diuretic effect', 'Immune modulation', 'Sedative pathway'], diseases: ['水肿尿少', '痰饮眩悸', '脾虚食少', '便溏泄泻'], literatureCount: 5600, lastUpdated: '2024-10-08', properties: {'性味': '甘淡平', '归经': '心肺脾肾', '功效': '利水渗湿健脾宁心', '用量': '10-15g'} },
-  '三七': { source: 'tcspm', description: '五加科人参属植物三七的干燥根及根茎。味甘、微苦，性温。归肝、胃经。散瘀止血，消肿定痛。', targets: ['血液系统', '心血管系统', '骨骼系统'], pathways: ['Platelet aggregation', 'Collagen synthesis', 'Osteoblast activation'], diseases: ['出血证', '跌打损伤', '胸腹刺痛', '骨折筋伤'], literatureCount: 8900, lastUpdated: '2024-11-12', properties: {'性味': '甘微苦温', '归经': '肝胃', '功效': '散瘀止血消肿定痛', '用量': '3-9g'} },
-  '陈皮': { source: 'tcspm', description: '芸香科柑橘属植物橘及其栽培变种的干燥成熟果皮。味辛、苦，性温。归脾、肺经。理气健脾，燥湿化痰。', targets: ['消化系统', '呼吸系统'], pathways: ['GI motility', 'Bronchial smooth muscle', 'Gastric secretion'], diseases: '脘腹胀满 食少吐泻 咳嗽痰多', literatureCount: 4200, lastUpdated: '2024-09-18', properties: {'性味': '辛苦温', '归经': '脾肺', '功效': '理气健脾燥湿化痰', '用量': '3-10g'} },
-  '山楂': { source: 'tcspm', description: '蔷薇科山楂属植物山里红或山楂的干燥成熟果实。味酸、甘，性微温。归脾、胃、肝经。消食健胃，行气散瘀，化浊降脂。', targets: ['消化系统', '心血管系统', '脂质代谢'], pathways: ['Pepsin secretion', 'Lipase activity', 'LDL receptor'], diseases: ['肉食积滞', '胃脘胀满', '高脂血症', '血瘀痛经'], literatureCount: 3100, lastUpdated: '2024-10-22', properties: {'性味': '酸甘微温', '归经': '脾胃肝', '功效': '消食健胃行气散瘀', '用量': '9-12g'} },
+  '人参': { source: 'tcmsp', description: '五加科人参属植物人参的干燥根。味甘、微苦，性温。归脾、肺、心经。大补元气，复脉固脱，补脾益肺，生津养血，安神益智。', targets: ['中枢神经系统', '心血管系统', '免疫系统', '内分泌系统'], pathways: ['cAMP-PKA', 'MAPK-ERK', 'PI3K-Akt-mTOR'], diseases: ['疲劳综合征', '免疫力低下', '糖尿病', '高血压'], literatureCount: 15800, lastUpdated: '2024-12-01', properties: {'性味': '甘微苦温', '归经': '脾肺心肾', '功效': '大补元气复脉固脱', '用量': '3-9g'} },
+  '黄芪': { source: 'tcmsp', description: '豆科黄芪属植物蒙古黄芪或膜荚黄芪的干燥根。味甘，性微温。归肺、脾经。补气升阳，固表止汗，利水消肿，生津养血，行滞通痹，托毒排脓，敛疮生肌。', targets: ['免疫系统', '心血管系统', '泌尿系统'], pathways: ['TLR-NFκB', 'Nrf2-ARE', 'HIF-1α'], diseases: ['气虚乏力', '慢性肾炎', '糖尿病肾病', '心衰'], literatureCount: 12300, lastUpdated: '2024-11-20', properties: {'性味': '甘微温', '归经': '肺脾', '功效': '补气升阳固表止汗', '用量': '9-30g'} },
+  '当归': { source: 'tcmsp', description: '伞形科当归属植物当归的干燥根。味甘、辛，性温。归肝、心、脾经。补血活血，调经止痛，润肠通便。', targets: ['血液系统', '子宫平滑肌', '免疫系统'], pathways: ['cGMP-PKG', 'Estrogen signaling', 'Coagulation cascade'], diseases: ['血虚萎黄', '月经不调', '痛经', '肠燥便秘'], literatureCount: 9850, lastUpdated: '2024-10-15', properties: {'性味': '甘辛温', '归经': '肝心脾', '功效': '补血活血调经止痛', '用量': '6-12g'} },
+  '丹参': { source: 'tcmsp', description: '唇形科鼠尾草属植物丹参的干燥根及根茎。味苦，性微寒。归心、肝经。活血祛瘀，通经止痛，清心除烦，凉血消痈。', targets: ['心血管系统', '神经系统', '肝脏'], pathways: ['eNOS-NO-cGMP', 'MAPK', 'PPARγ'], diseases: ['胸痹心痛', '心烦不眠', '痛经闭经', '疮疡肿痛'], literatureCount: 11200, lastUpdated: '2024-12-10', properties: {'性味': '苦微寒', '归经': '心肝', '功效': '活血祛瘀通经止痛', '用量': '10-15g'} },
+  '甘草': { source: 'tcmsp', description: '豆科甘草属植物甘草、胀果甘草或光果甘草的干燥根及根茎。味甘，性平。归心、肺、脾、胃经。补脾益气，清热解毒，祛痰止咳，缓急止痛，调和诸药。', targets: ['消化系统', '呼吸系统', '内分泌系统', '免疫系统'], pathways: ['Glucocorticoid', '11β-HSD', 'COX/LOX'], diseases: ['脾胃虚弱', '咳嗽痰多', '脘腹挛急疼痛', '药物中毒'], literatureCount: 14200, lastUpdated: '2024-11-28', properties: {'性味': '甘平', '归经': '心肺脾胃', '功效': '补脾益气清热解毒', '用量': '2-10g'} },
+  '枸杞子': { source: 'tcmsp', description: '茄科枸杞属植物宁夏枸杞的成熟果实。味甘，性平。归肝、肾经。滋补肝肾，益精明目。', targets: ['视觉系统', '免疫系统', '生殖系统'], pathways: ['Carotenoid metabolism', 'Antioxidant response', 'Sex hormone'], diseases: ['肝肾阴虚', '视力模糊', '腰膝酸软', '早衰'], literatureCount: 6780, lastUpdated: '2024-12-05', properties: {'性味': '甘平', '归经': '肝肾', '功效': '滋补肝肾益精明目', '用量': '6-12g'} },
+  '茯苓': { source: 'tcmsp', description: '多孔菌科茯苓属真菌茯苓的干燥菌核。味甘、淡，性平。归心、肺、脾、肾经。利水渗湿，健脾，宁心。', targets: ['泌尿系统', '消化系统', '神经系统'], pathways: ['Diuretic effect', 'Immune modulation', 'Sedative pathway'], diseases: ['水肿尿少', '痰饮眩悸', '脾虚食少', '便溏泄泻'], literatureCount: 5600, lastUpdated: '2024-10-08', properties: {'性味': '甘淡平', '归经': '心肺脾肾', '功效': '利水渗湿健脾宁心', '用量': '10-15g'} },
+  '三七': { source: 'tcmsp', description: '五加科人参属植物三七的干燥根及根茎。味甘、微苦，性温。归肝、胃经。散瘀止血，消肿定痛。', targets: ['血液系统', '心血管系统', '骨骼系统'], pathways: ['Platelet aggregation', 'Collagen synthesis', 'Osteoblast activation'], diseases: ['出血证', '跌打损伤', '胸腹刺痛', '骨折筋伤'], literatureCount: 8900, lastUpdated: '2024-11-12', properties: {'性味': '甘微苦温', '归经': '肝胃', '功效': '散瘀止血消肿定痛', '用量': '3-9g'} },
+  '陈皮': { source: 'tcmsp', description: '芸香科柑橘属植物橘及其栽培变种的干燥成熟果皮。味辛、苦，性温。归脾、肺经。理气健脾，燥湿化痰。', targets: ['消化系统', '呼吸系统'], pathways: ['GI motility', 'Bronchial smooth muscle', 'Gastric secretion'], diseases: ['脘腹胀满', '食少吐泻', '咳嗽痰多'], literatureCount: 4200, lastUpdated: '2024-09-18', properties: {'性味': '辛苦温', '归经': '脾肺', '功效': '理气健脾燥湿化痰', '用量': '3-10g'} },
+  '山楂': { source: 'tcmsp', description: '蔷薇科山楂属植物山里红或山楂的干燥成熟果实。味酸、甘，性微温。归脾、胃、肝经。消食健胃，行气散瘀，化浊降脂。', targets: ['消化系统', '心血管系统', '脂质代谢'], pathways: ['Pepsin secretion', 'Lipase activity', 'LDL receptor'], diseases: ['肉食积滞', '胃脘胀满', '高脂血症', '血瘀痛经'], literatureCount: 3100, lastUpdated: '2024-10-22', properties: {'性味': '酸甘微温', '归经': '脾胃肝', '功效': '消食健胃行气散瘀', '用量': '9-12g'} },
   // 靶点数据 (UniProt风格)
   'TP53': { source: 'uniprot', description: '肿瘤蛋白p53，被称为"基因组守护者"，在细胞周期调控、DNA修复和凋亡中发挥关键作用。是人类癌症中最常发生突变的基因。', targets: [], pathways: ['p53 signaling', 'Cell cycle arrest', 'DNA damage response', 'Apoptosis'], diseases: ['Li-Fraumeni综合征', '多种癌症'], literatureCount: 285000, lastUpdated: '2025-01-04', properties: {'Gene': 'TP53', 'Protein': 'Cellular tumor antigen p53', 'Length': 393, 'Mass': 43653} },
   'AKT1': { source: 'uniprot', description: 'AKT1丝氨酸/苏氨酸激酶1，也称为PKBα，是PI3K/Akt信号通路的核心效应分子，调控细胞生长、存活和代谢。', targets: [], pathways: ['PI3K-Akt', 'mTOR', 'FoxO signaling', 'Insulin signaling'], literatureCount: 128000, lastUpdated: '2024-12-30', properties: {'Gene': 'AKT1', 'Protein': 'RAC-alpha serine/threonine-protein kinase', 'Length': 480, 'Mass': 55758} },
@@ -705,17 +723,17 @@ const MOCK_EXTERNAL_DB: Record<string, ExternalData> = {
 
 function GraphSkeleton({ height }: { height: number }) {
   return (
-    <div className="relative w-full rounded-xl border bg-slate-50/60 dark:bg-slate-900/60 border-slate-200/60 dark:border-slate-700/60 overflow-hidden" style={{ minHeight: height }}>
+    <div className="relative w-full rounded-xl border bg-slate-50/60 dark:bg-neutral-900/60 border-neutral-200/60 dark:border-neutral-700/60 overflow-hidden" style={{ minHeight: height }}>
       <div className="absolute inset-0 flex items-center justify-center">
         <div className="relative">
           {/* 中心脉冲圆 */}
-          <div className="w-20 h-20 rounded-full bg-emerald-500/10 animate-ping" style={{ animationDuration: '2s' }} />
-          <div className="absolute inset-0 m-auto w-12 h-12 rounded-full bg-emerald-500/15 animate-pulse" />
+          <div className="w-20 h-20 rounded-full bg-primary-500/10 animate-ping" style={{ animationDuration: '2s' }} />
+          <div className="absolute inset-0 m-auto w-12 h-12 rounded-full bg-primary-500/15 animate-pulse" />
           {/* 环绕小圆 */}
           {[0, 45, 90, 135, 180, 225, 270, 315].map(deg => (
             <div
               key={deg}
-              className="absolute w-3 h-3 rounded-full bg-emerald-400/25"
+              className="absolute w-3 h-3 rounded-full bg-primary-400/25"
               style={{
                 top: '50%',
                 left: '50%',
@@ -727,8 +745,8 @@ function GraphSkeleton({ height }: { height: number }) {
         </div>
       </div>
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-center">
-        <p className="text-sm text-slate-400 dark:text-slate-500 font-medium">正在构建知识图谱...</p>
-        <p className="text-xs text-slate-300 dark:text-slate-600 mt-1">计算节点关系网络</p>
+        <p className="text-sm text-neutral-400 dark:text-neutral-500 font-medium">正在构建知识图谱...</p>
+        <p className="text-xs text-neutral-300 dark:text-neutral-600 mt-1">计算节点关系网络</p>
       </div>
     </div>
   )
@@ -755,33 +773,33 @@ function ZoomToolbar({
   const pct = `${Math.round(scale * 100)}%`
 
   return (
-    <div className="absolute top-3 right-3 z-40 flex items-center gap-1 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-xl border border-slate-200/70 dark:border-slate-700/60 shadow-lg px-1.5 py-1">
-      <button onClick={onZoomOut} title="缩小" className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+    <div className="absolute top-3 right-3 z-40 flex items-center gap-1 bg-white/95 dark:bg-neutral-800/95 backdrop-blur-md rounded-xl border border-neutral-200/70 dark:border-neutral-700/60 shadow-lg px-1.5 py-1">
+      <button onClick={onZoomOut} title="缩小" className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200"
         aria-label="缩小">
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H4" />
         </svg>
       </button>
 
-      <span className="text-[10px] font-mono font-medium text-slate-500 dark:text-slate-400 w-10 text-center tabular-nums">{pct}</span>
+      <span className="text-[10px] font-mono font-medium text-neutral-500 dark:text-neutral-400 w-10 text-center tabular-nums">{pct}</span>
 
-      <button onClick={onZoomIn} title="放大" className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+      <button onClick={onZoomIn} title="放大" className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200"
         aria-label="放大">
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" />
         </svg>
       </button>
 
-      <div className="w-px h-4 bg-slate-200 dark:bg-slate-600 mx-0.5" />
+      <div className="w-px h-4 bg-neutral-200 dark:bg-neutral-600 mx-0.5" />
 
-      <button onClick={onFit} title="适应画布" className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+      <button onClick={onFit} title="适应画布" className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200"
         aria-label="适应画布">
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
         </svg>
       </button>
 
-      <button onClick={onReset} title="重置视图" className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+      <button onClick={onReset} title="重置视图" className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200"
         aria-label="重置视图">
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -849,7 +867,7 @@ function MinimapCanvas({
       if (!src || !tgt) return
       const [sx, sy] = toScreen(src.x ?? 0, src.y ?? 0)
       const [tx, ty] = toScreen(tgt.x ?? 0, tgt.y ?? 0)
-      ctx.strokeStyle = '#94a3b8'
+      ctx.strokeStyle = 'var(--color-knowledge-default, #9CA3AF)'
       ctx.beginPath()
       ctx.moveTo(sx, sy)
       ctx.lineTo(tx, ty)
@@ -860,7 +878,7 @@ function MinimapCanvas({
     if (pathAnimation) {
       ctx.globalAlpha = 0.9
       ctx.lineWidth = 1.5
-      ctx.strokeStyle = '#8b5cf6'
+      ctx.strokeStyle = '#AF52DE'
       pathAnimation.pathEdges.forEach(([sId, tId]) => {
         const sn = nodes.find(n => (n.id || n.label) === sId)
         const tn = nodes.find(n => (n.id || n.label) === tId)
@@ -878,7 +896,7 @@ function MinimapCanvas({
     nodes.forEach(n => {
       if (n.x == null || n.y == null || !isFinite(n.x) || !isFinite(n.y)) return
       const [sx, sy] = toScreen(n.x, n.y)
-      let fill = TYPE_CONFIG[n.type]?.color || '#94a3b8'
+      let fill = TYPE_CONFIG[n.type]?.color || 'var(--color-knowledge-default, #9CA3AF)'
       if (communities && communities.size > 0 && communityColors) {
         const commId = communities.get(n.id || n.label)
         if (commId !== undefined && communityColors[commId]) fill = communityColors[commId]
@@ -893,11 +911,11 @@ function MinimapCanvas({
       ctx.fill()
 
       if (isSelected) {
-        ctx.strokeStyle = '#fbbf24'
+        ctx.strokeStyle = '#F59E0B'
         ctx.lineWidth = 1.5
         ctx.stroke()
       } else if (isInPath) {
-        ctx.strokeStyle = '#a78bfa'
+        ctx.strokeStyle = '#C090FF'
         ctx.lineWidth = 1
         ctx.stroke()
       }
@@ -905,7 +923,7 @@ function MinimapCanvas({
 
     // Viewport indicator (simple center dot for now)
     ctx.globalAlpha = 0.4
-    ctx.fillStyle = '#3b82f6'
+    ctx.fillStyle = '#007AFF'
     ctx.beginPath()
     ctx.arc(width / 2, height / 2, 4, 0, Math.PI * 2)
     ctx.fill()
@@ -1226,7 +1244,7 @@ export default function KnowledgeGraph({
     for (let iter = 0; iter < 8; iter++) {
       const newLabels = new Map(labels)
       for (const [nodeId] of labels) {
-        const neighbors = new Set<number>()
+        const neighbors = new Set<string>()
         edges.forEach(e => {
           const src = typeof e.source === 'string' ? e.source : (e.source as any)?.id || (e.source as any)?.label
           const tgt = typeof e.target === 'string' ? e.target : (e.target as any)?.id || (e.target as any)?.label
@@ -1783,7 +1801,7 @@ export default function KnowledgeGraph({
 
   const queryExternalData = useCallback((nodeLabel: string) => {
     setExternalLoadingId(nodeLabel)
-    setExternalPanel(true)
+    setShowExternalPanel(true)
     setTimeout(() => {
       const data = MOCK_EXTERNAL_DB[nodeLabel]
       if (data) {
@@ -1836,7 +1854,7 @@ export default function KnowledgeGraph({
               mol.split('\n').forEach(line => {
                 if (line.startsWith('> <')) {
                   const key = line.replace('> <', '').replace('>', '').trim()
-                  return key
+                  record[key] = key
                 }
               })
               parsed.push(record)
@@ -1850,7 +1868,7 @@ export default function KnowledgeGraph({
               status: 'done', fileName: file.name, fileType,
               progress: 100, importedCount: parsed.length,
             })
-            setExportStatus(`📥 成功导入 ${parsed.length} 条记录 (${fileType.toUpperCase()})`)
+            setExportStatus(`📥 成功导入 ${parsed.length} 条记录 (${fileType?.toUpperCase() ?? 'UNKNOWN'})`)
             setTimeout(() => setExportStatus(null), 4000)
           }, 800)
 
@@ -2059,7 +2077,7 @@ export default function KnowledgeGraph({
     if (snap.layoutType && snap.layoutType !== localLayout) setLocalLayout(snap.layoutType as LayoutType)
     if (snap.selectedNode) {
       const node = filteredData.filteredNodes.find(n => n.label === snap.selectedNode)
-      if (node) handleNodeClick(node)
+      if (node) onNodeClick?.(node)
     }
     setShowBookmarkPanel(false)
     addHistoryEntry('bookmark', `加载书签: ${bookmark.name}`, { bookmarkId: bookmark.id })
@@ -2093,10 +2111,10 @@ ${reportConfig.includeStatistics ? `## 📈 图谱统计概览
 |------|------|
 | 总节点数 | ${filteredData.filteredNodes.length} |
 | 总边数 | ${filteredData.filteredEdges.length} |
-| 药材节点 | ${filteredData.filteredNodes.filter(n => n.type === '药材').length} |
-| 化合物节点 | ${filteredData.filteredNodes.filter(n => n.type === '化合物').length} |
-| 靶点节点 | ${filteredData.filteredNodes.filter(n => n.type === '靶点').length} |
-| 疾病节点 | ${filteredData.filteredNodes.filter(n => n.type === '疾病').length} |
+| 药材节点 | ${filteredData.filteredNodes.filter(n => n.type === 'herb').length} |
+| 化合物节点 | ${filteredData.filteredNodes.filter(n => n.type === 'compound').length} |
+| 靶点节点 | ${filteredData.filteredNodes.filter(n => n.type === 'target').length} |
+| 疾病节点 | ${filteredData.filteredNodes.filter(n => n.type === 'disease').length} |
 | 图谱密度 | ${(filteredData.filteredEdges.length / (filteredData.filteredNodes.length * (filteredData.filteredNodes.length - 1) / 2) * 100).toFixed(2)}% |
 ` : ''}
 
@@ -2112,8 +2130,8 @@ ${reportConfig.includeAIInsights ? `## 🤖 AI 分析洞察
 
 ${reportConfig.includeCentrality ? `## 🎯 节点中心性分析 Top 5
 
-${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
-  `${i + 1}. **${n.name}** — 度数: ${n.degree}, 类型: ${n.type}`,
+${centralityData.topByDegree.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
+  `${i + 1}. **${n.node.label}** — 度数: ${n.degree}, 类型: ${n.node.type}`,
 ).join('\n')}
 ` : ''}
 
@@ -2443,7 +2461,7 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
       commMap[commId].push(nodeId)
     })
 
-    const colors = ['#8B5CF6', '#EC4899', '#F59E0B', '#10B981', '#3B82F6', '#EF4444', '#06B6D4', '#84CC16']
+    const colors = ['#AF52DE', '#D946EF', '#D97706', '#34C759', '#007AFF', '#FF3B30', '#0891B2', '#84CC16']
     const communities = Object.entries(commMap).map(([cid, nodes], idx) => ({
       id: Number(cid),
       nodes,
@@ -2567,8 +2585,8 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
         ).join('\n')
         sorted.forEach(n => refNodes.push(n.id || n.label))
       } else if (q.includes('药材') && (q.includes('化合物') || q.includes('靶点'))) {
-        const herbs = filteredData.filteredNodes.filter(n => n.type === '药材').map(n => n.label)
-        const compounds = filteredData.filteredNodes.filter(n => n.type === '化合物').map(n => n.label)
+        const herbs = filteredData.filteredNodes.filter(n => n.type === 'herb').map(n => n.label)
+        const compounds = filteredData.filteredNodes.filter(n => n.type === 'compound').map(n => n.label)
         answer = `🌿 **药材-化合物关系**：\n- 药材节点：${herbs.length}种（${herbs.slice(0, 5).join('、')}...）\n- 化合物节点：${compounds.length}种（${compounds.slice(0, 5).join('、')}...）\n\n典型配伍：人参→Ginsenoside Rb1/Rg1/Re，黄芪→Astragaloside I/Calycosin`
         refNodes.push(...herbs.slice(0, 3), ...compounds.slice(0, 3))
       } else if (q.includes('协同') || q.includes('拮抗')) {
@@ -2696,7 +2714,7 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
       : filteredData.filteredNodes.map(n => n.id || n.label)
     const nodeIdSet = new Set(nodeIds)
     const exportNodes = filteredData.filteredNodes.filter(n => nodeIdSet.has(n.id || n.label))
-    const exportEdges = filteredData.filteredEdges(e =>
+    const exportEdges = filteredData.filteredEdges.filter(e =>
       nodeIdSet.has(e.source as string) && nodeIdSet.has(e.target as string),
     )
 
@@ -3005,8 +3023,8 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
         })
         .attr('stroke', (d: SimNode) => {
           const nodeKey = `${d.label}_${d.type}`
-          if (selectedNodes.has(nodeKey)) return '#3b82f6'
-          return highlightSet.has(d.id) ? '#fbbf24' : 'white'
+          if (selectedNodes.has(nodeKey)) return '#007AFF'
+          return highlightSet.has(d.id) ? '#F59E0B' : 'white'
         })
 
       // v7.5: LOD 控制 — 根据缩放级别显隐装饰元素
@@ -3023,7 +3041,7 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
 
       // 极简模式：进一步简化边线渲染
       if (allLinks && !allLinks.empty()) {
-        allLinks.style('opacity', currentLodLevel === 'minimal' ? 0.3 : null)
+        allLinks.style('opacity', currentLodLevel === 'minimal' ? '0.3' : '1')
       }
 
       return () => {}
@@ -3116,7 +3134,7 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
       .force('link', d3.forceLink<SimNode, SimEdge>(simEdges)
         .id((d: any) => d.id)
         .distance(baseLinkDistance)) // v7.1: 基于最大节点直径的动态距离
-      .force('charge', d3.forceManyBody().strength(
+      .force('charge', d3.forceManyBody<SimNode>().strength(
         localLayout === 'force'
           ? (d: SimNode) => {
             // v7.1: 动态斥力 — 核心节点斥力更强，高密度时整体增强
@@ -3126,12 +3144,12 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
           }
           : -100,
       ))
-      .force('center', d3.forceCenter(centerX, centerY))
+      .force('center', d3.forceCenter<SimNode>(centerX, centerY))
       .force('collision', d3.forceCollide<any>().radius((d: any) => calcNodeRadius(d as SimNode, densityScale) + densityPadding))
 
     if (localLayout === 'force') {
-      simulation.force('x', d3.forceX(centerX).strength(0.02))
-      simulation.force('y', d3.forceY(centerY).strength(0.02))
+      simulation.force('x', d3.forceX<SimNode>(centerX).strength(0.02))
+      simulation.force('y', d3.forceY<SimNode>(centerY).strength(0.02))
 
       // v7.1: 分簇力优化 — 扩大分簇半径 + 降低强度防止过度挤压
       simulation.force('cluster-by-type', () => {
@@ -3252,7 +3270,7 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
     const links = linkSelection.join('path')
       .attr('class', 'edge-link')
       .attr('fill', 'none')
-      .attr('stroke', d => EDGE_COLORS[d.type as keyof typeof EDGE_COLORS]?.color || '#94a3b8')
+      .attr('stroke', d => EDGE_COLORS[d.type as keyof typeof EDGE_COLORS]?.color || 'var(--color-knowledge-default, #9CA3AF)')
       // v7.0: 使用分层粗细系统 — 核心关系2-3px，次要关系1-1.5px
       // v7.9: 边权重可视化 — 强度越高线宽越粗
       .attr('stroke-width', (d) => {
@@ -3342,7 +3360,7 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
       .attr('class', 'edge-label')
       .merge(linkLabelSel)
       .text(d => d.label || '')
-      .attr('fill', '#94a3b8')
+      .attr('fill', 'var(--color-knowledge-default, #9CA3AF)')
       .attr('font-size', 9)
       .attr('font-family', 'system-ui, sans-serif')
       .attr('text-anchor', 'middle')
@@ -3407,8 +3425,8 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
       })
       .attr('stroke', (d: SimNode) => {
         const nodeKey = `${d.label}_${d.type}`
-        if (selectedNodes.has(nodeKey)) return '#3b82f6' // 选中蓝色边框
-        return highlightSet.has(d.id) ? '#fbbf24' : 'white'
+        if (selectedNodes.has(nodeKey)) return '#007AFF' // 选中蓝色边框
+        return highlightSet.has(d.id) ? '#F59E0B' : 'white'
       })
       .attr('stroke-width', (d: SimNode) => {
         const nodeKey = `${d.label}_${d.type}`
@@ -3492,7 +3510,7 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
       .text((d: SimNode) => d.label.length > 10 ? d.label.slice(0, 10) + '...' : d.label)
       .attr('dy', (d: SimNode) => calcNodeRadius(d, densityScale) + 18)
       .attr('text-anchor', 'middle')
-      .attr('fill', '#1e293b')
+      .attr('fill', '#1F2937')
       // v7.1: 字体大小跟随密度缩放后的节点半径
       .attr('font-size', (d: SimNode) => isCoreNode(d)
         ? Math.max(11, Math.min(14, calcNodeRadius(d, densityScale) * 0.42))
@@ -3536,15 +3554,15 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
       .attr('class', 'keyboard-focus-ring')
       .attr('r', 0)
       .attr('fill', 'none')
-      .attr('stroke', '#3b82f6')
+      .attr('stroke', '#007AFF')
       .attr('stroke-width', 2)
       .attr('stroke-dasharray', '4 2')
       .style('pointer-events', 'none')
       .transition().duration(200)
-      .attr('r', (d: SimNode) => calcNodeRadius(d, densityScale) + 8)
+      .attr('r', (d: any) => calcNodeRadius(d as SimNode, densityScale) + 8)
     // 更新现有焦点环
     mergedNodes.selectAll('.keyboard-focus-ring')
-      .attr('r', (d: SimNode, i: number) => i === focusedNodeIndex ? calcNodeRadius(d, densityScale) + 8 : 0)
+      .attr('r', (d: any, i: number) => i === focusedNodeIndex ? calcNodeRadius(d as SimNode, densityScale) + 8 : 0)
 
     // update: 同步更新所有圆的半径（关键！数据变化时大小也要更新）
     mergedNodes.select('.node-glow-outer')
@@ -3568,8 +3586,8 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
       })
       .attr('stroke', (d: SimNode) => {
         const nodeKey = `${d.label}_${d.type}`
-        if (selectedNodes.has(nodeKey)) return '#3b82f6'
-        return highlightSet.has(d.id) ? '#fbbf24' : 'white'
+        if (selectedNodes.has(nodeKey)) return '#007AFF'
+        return highlightSet.has(d.id) ? '#F59E0B' : 'white'
       })
       .attr('stroke-width', (d: SimNode) => {
         const nodeKey = `${d.label}_${d.type}`
@@ -3637,8 +3655,8 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
       // Visual feedback - briefly flash the node
       const sel = d3.select(this)
       sel.select('.node-body')
-        .transition().duration(150).attr('stroke', '#ef4444').attr('stroke-width', 4)
-        .transition().duration(300).attr('stroke', pinnedNodes.has(nodeId) ? '#ef4444' : 'white').attr('stroke-width', pinnedNodes.has(nodeId) ? 3 : 2)
+        .transition().duration(150).attr('stroke', '#FF3B30').attr('stroke-width', 4)
+        .transition().duration(300).attr('stroke', pinnedNodes.has(nodeId) ? '#FF3B30' : 'white').attr('stroke-width', pinnedNodes.has(nodeId) ? 3 : 2)
     })
 
     // hover 效果
@@ -4086,8 +4104,8 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
         className={cn(
           'w-full rounded-xl border transition-all duration-500',
           'bg-gradient-to-br from-slate-50/80 via-white/40 to-blue-50/20',
-          'border-slate-200/70',
-          'dark:from-slate-900/80 dark:via-slate-900/40 dark:to-indigo-950/20 dark:border-slate-700/60',
+          'border-neutral-200/70',
+          'dark:from-slate-900/80 dark:via-slate-900/40 dark:to-indigo-950/20 dark:border-neutral-700/60',
           'hover:shadow-[0_0_40px_rgba(5,150,105,0.10)]',
         )}
         style={{ minHeight: height }}
@@ -4121,44 +4139,44 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
       {/* v8.1: 同步状态指示器 + 导入按钮 + 对比按钮 */}
       <div className="absolute bottom-3 right-3 z-35 flex items-center gap-1.5">
         <button onClick={() => setShowImportDialog(true)}
-          className="w-7 h-7 rounded-lg bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm border border-slate-200/60 dark:border-slate-700/40 flex items-center justify-center hover:scale-110 transition-all shadow-sm"
+          className="w-7 h-7 rounded-lg bg-white/90 dark:bg-neutral-800/90 backdrop-blur-sm border border-neutral-200/60 dark:border-neutral-700/40 flex items-center justify-center hover:scale-110 transition-all shadow-sm"
           title="导入数据 (Shift+I)">
-          <svg className="w-3.5 h-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <svg className="w-3.5 h-3.5 text-neutral-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
           </svg>
         </button>
         <button onClick={runGraphComparison}
-          className="w-7 h-7 rounded-lg bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm border border-slate-200/60 dark:border-slate-700/40 flex items-center justify-center hover:scale-110 transition-all shadow-sm"
+          className="w-7 h-7 rounded-lg bg-white/90 dark:bg-neutral-800/90 backdrop-blur-sm border border-neutral-200/60 dark:border-neutral-700/40 flex items-center justify-center hover:scale-110 transition-all shadow-sm"
           title="图谱对比 (Shift+D)">
-          <span className="text-xs font-bold text-slate-500">⚖</span>
+          <span className="text-xs font-bold text-neutral-500">⚖</span>
         </button>
-        <div className={`w-2 h-2 rounded-full ${syncStatus === 'connected' ? 'bg-emerald-400' : syncStatus === 'syncing' ? 'bg-blue-400 animate-pulse' : 'bg-red-400'} shrink-0`} title={`同步状态: ${syncStatus}`} />
+        <div className={`w-2 h-2 rounded-full ${syncStatus === 'connected' ? 'bg-primary-400' : syncStatus === 'syncing' ? 'bg-secondary-400 animate-pulse' : 'bg-error-400'} shrink-0`} title={`同步状态: ${syncStatus}`} />
       </div>
 
       {/* v8.2: 协作分享工具栏 */}
       <div className="absolute bottom-3 left-3 z-[40] flex items-center gap-1.5">
         <button onClick={() => { generateShareLink(); setShowSharePanel(true); }}
-          className="w-7 h-7 rounded-lg bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm border border-violet-200/60 dark:border-violet-700/40 flex items-center justify-center hover:scale-110 hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-all shadow-sm"
+          className="w-7 h-7 rounded-lg bg-white/90 dark:bg-neutral-800/90 backdrop-blur-sm border border-violet-200/60 dark:border-violet-700/40 flex items-center justify-center hover:scale-110 hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-all shadow-sm"
           title="分享图谱 (Shift+S)">
           <span className="text-xs">🔗</span>
         </button>
         <button onClick={() => setShowAnnotationPanel(!showAnnotationPanel)}
-          className={`w-7 h-7 rounded-lg backdrop-blur-sm border flex items-center justify-center hover:scale-110 transition-all shadow-sm ${showAnnotationPanel ? 'bg-pink-100 dark:bg-pink-900/30 border-pink-300/60 dark:border-pink-600/40' : 'bg-white/90 dark:bg-slate-800/90 border-slate-200/60 dark:border-slate-700/40'}`}
+          className={`w-7 h-7 rounded-lg backdrop-blur-sm border flex items-center justify-center hover:scale-110 transition-all shadow-sm ${showAnnotationPanel ? 'bg-pink-100 dark:bg-pink-900/30 border-pink-300/60 dark:border-pink-600/40' : 'bg-white/90 dark:bg-neutral-800/90 border-neutral-200/60 dark:border-neutral-700/40'}`}
           title="节点批注 (Shift+N)">
           <span className="text-xs">💬</span>
         </button>
         <button onClick={() => setShowReportDialog(true)}
-          className="w-7 h-7 rounded-lg bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm border border-indigo-200/60 dark:border-indigo-700/40 flex items-center justify-center hover:scale-110 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all shadow-sm"
+          className="w-7 h-7 rounded-lg bg-white/90 dark:bg-neutral-800/90 backdrop-blur-sm border border-indigo-200/60 dark:border-indigo-700/40 flex items-center justify-center hover:scale-110 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all shadow-sm"
           title="生成报告 (Shift+R)">
           <span className="text-xs">📄</span>
         </button>
         <button onClick={() => setShowHistoryPanel(!showHistoryPanel)}
-          className={`w-7 h-7 rounded-lg backdrop-blur-sm border flex items-center justify-center hover:scale-110 transition-all shadow-sm ${showHistoryPanel ? 'bg-amber-100 dark:bg-amber-900/30 border-amber-300/60 dark:border-amber-600/40' : 'bg-white/90 dark:bg-slate-800/90 border-slate-200/60 dark:border-slate-700/40'}`}
+          className={`w-7 h-7 rounded-lg backdrop-blur-sm border flex items-center justify-center hover:scale-110 transition-all shadow-sm ${showHistoryPanel ? 'bg-warning-100 dark:bg-warning-900/30 border-amber-300/60 dark:border-amber-600/40' : 'bg-white/90 dark:bg-neutral-800/90 border-neutral-200/60 dark:border-neutral-700/40'}`}
           title="操作历史 (Shift+H)">
           <span className="text-xs">⏱</span>
         </button>
         <button onClick={() => setShowBookmarkPanel(!showBookmarkPanel)}
-          className={`w-7 h-7 rounded-lg backdrop-blur-sm border flex items-center justify-center hover:scale-110 transition-all shadow-sm ${showBookmarkPanel ? 'bg-orange-100 dark:bg-orange-900/30 border-orange-300/60 dark:border-orange-600/40' : 'bg-white/90 dark:bg-slate-800/90 border-slate-200/60 dark:border-slate-700/40'}`}
+          className={`w-7 h-7 rounded-lg backdrop-blur-sm border flex items-center justify-center hover:scale-110 transition-all shadow-sm ${showBookmarkPanel ? 'bg-orange-100 dark:bg-orange-900/30 border-orange-300/60 dark:border-orange-600/40' : 'bg-white/90 dark:bg-neutral-800/90 border-neutral-200/60 dark:border-neutral-700/40'}`}
           title="书签收藏 (Shift+B)">
           <span className="text-xs">⭐</span>
         </button>
@@ -4167,22 +4185,22 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
       {/* v8.3: 数据洞察工具栏 */}
       <div className="absolute bottom-3 left-[200px] z-[40] flex items-center gap-1.5">
         <button onClick={computeGraphStatistics}
-          className="w-7 h-7 rounded-lg bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm border border-emerald-200/60 dark:border-emerald-700/40 flex items-center justify-center hover:scale-110 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-all shadow-sm"
+          className="w-7 h-7 rounded-lg bg-white/90 dark:bg-neutral-800/90 backdrop-blur-sm border border-emerald-200/60 dark:border-emerald-700/40 flex items-center justify-center hover:scale-110 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-all shadow-sm"
           title="统计仪表盘 (Shift+D)">
           <span className="text-xs">📊</span>
         </button>
         <button onClick={() => runCentralityAnalysis()}
-          className={`w-7 h-7 rounded-lg backdrop-blur-sm border flex items-center justify-center hover:scale-110 transition-all shadow-sm ${showCentralityPanel ? 'bg-red-100 dark:bg-red-900/30 border-red-300/60 dark:border-red-600/40' : 'bg-white/90 dark:bg-slate-800/90 border-slate-200/60 dark:border-slate-700/40'}`}
+          className={`w-7 h-7 rounded-lg backdrop-blur-sm border flex items-center justify-center hover:scale-110 transition-all shadow-sm ${showCentralityPanel ? 'bg-error-100 dark:bg-error-900/30 border-red-300/60 dark:border-red-600/40' : 'bg-white/90 dark:bg-neutral-800/90 border-neutral-200/60 dark:border-neutral-700/40'}`}
           title="中心性分析 (Shift+C)">
           <span className="text-xs">🎯</span>
         </button>
         <button onClick={() => { detectCommunitiesLouvain(); }}
-          className="w-7 h-7 rounded-lg bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm border border-purple-200/60 dark:border-purple-700/40 flex items-center justify-center hover:scale-110 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all shadow-sm"
+          className="w-7 h-7 rounded-lg bg-white/90 dark:bg-neutral-800/90 backdrop-blur-sm border border-purple-200/60 dark:border-purple-700/40 flex items-center justify-center hover:scale-110 hover:bg-accent-50 dark:hover:bg-accent-900/20 transition-all shadow-sm"
           title="社区发现 (Shift+L)">
           <span className="text-xs">🧩</span>
         </button>
         <button onClick={() => setShowAIPanel(!showAIPanel)}
-          className={`w-7 h-7 rounded-lg backdrop-blur-sm border flex items-center justify-center hover:scale-110 transition-all shadow-sm ${showAIPanel ? 'bg-blue-100 dark:bg-blue-900/30 border-blue-300/60 dark:border-blue-600/40' : 'bg-white/90 dark:bg-slate-800/90 border-slate-200/60 dark:border-slate-700/40'}`}
+          className={`w-7 h-7 rounded-lg backdrop-blur-sm border flex items-center justify-center hover:scale-110 transition-all shadow-sm ${showAIPanel ? 'bg-secondary-100 dark:bg-secondary-900/30 border-blue-300/60 dark:border-blue-600/40' : 'bg-white/90 dark:bg-neutral-800/90 border-neutral-200/60 dark:border-neutral-700/40'}`}
           title="AI图谱问答 (Shift+Q)">
           <span className="text-xs">🧠</span>
         </button>
@@ -4190,12 +4208,12 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
 
       {/* v8.1: 外部数据增强面板 */}
       {showExternalPanel && selectedNode && (
-        <div className="absolute top-14 left-3 z-45 w-[340px] bg-white/97 dark:bg-slate-900/97 backdrop-blur-xl rounded-2xl shadow-2xl border border-cyan-200/60 dark:border-cyan-700/40 animate-fade-in">
+        <div className="absolute top-14 left-3 z-45 w-[340px] bg-white/97 dark:bg-neutral-900/97 backdrop-blur-xl rounded-2xl shadow-2xl border border-cyan-200/60 dark:border-cyan-700/40 animate-fade-in">
           <div className="flex items-center justify-between px-4 py-2.5 bg-gradient-to-r from-cyan-50 to-teal-50 dark:from-cyan-950/50 dark:to-teal-950/50 border-b border-cyan-100/50 rounded-t-2xl">
             <div className="flex items-center gap-2">
               <span>🔬</span>
               <span className="text-sm font-bold text-cyan-700 dark:text-cyan-300">外部数据库</span>
-              <span className={`px-1.5 py-0.5 rounded-full text-[8px] font-medium ${syncStatus === 'connected' ? 'bg-emerald-100 text-emerald-600' : syncStatus === 'syncing' ? 'bg-blue-100 text-blue-600 animate-pulse' : 'bg-red-100 text-red-600'}`}>
+              <span className={`px-1.5 py-0.5 rounded-full text-[8px] font-medium ${syncStatus === 'connected' ? 'bg-primary-100 text-primary-600' : syncStatus === 'syncing' ? 'bg-secondary-100 text-secondary-600 animate-pulse' : 'bg-error-100 text-error-600'}`}>
                 {syncStatus === 'connected' ? '● 已连接' : syncStatus === 'syncing' ? '◌ 同步中...' : '✕ 断开'}
               </span>
             </div>
@@ -4203,40 +4221,40 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
               <button onClick={() => queryExternalData(selectedNode.label)} disabled={!!externalLoadingId}
                 className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-cyan-500 text-white hover:bg-cyan-600 disabled:opacity-50">刷新</button>
               <button onClick={triggerAutoSync} className="px-1.5 py-0.5 rounded text-[9px] font-medium text-cyan-500 hover:bg-cyan-50 dark:hover:bg-cyan-900/20">同步</button>
-              <button onClick={() => setShowExternalPanel(false)} className="w-5 h-5 rounded flex items-center justify-center hover:bg-cyan-100 dark:hover:bg-cyan-800/30 text-slate-400">✕</button>
+              <button onClick={() => setShowExternalPanel(false)} className="w-5 h-5 rounded flex items-center justify-center hover:bg-cyan-100 dark:hover:bg-cyan-800/30 text-neutral-400">✕</button>
             </div>
           </div>
           <div className="p-3 max-h-[55vh] overflow-y-auto custom-scrollbar">
             {externalLoadingId === selectedNode.label ? (
               <div className="flex flex-col items-center py-6 gap-2">
                 <div className="w-6 h-6 border-2 border-cyan-200 border-t-cyan-500 rounded-full animate-spin" />
-                <p className="text-[10px] text-slate-400">正在查询外部数据库...</p>
+                <p className="text-[10px] text-neutral-400">正在查询外部数据库...</p>
               </div>
             ) : externalDataCache.has(selectedNode.label) ? (() => {
               const data = externalDataCache.get(selectedNode.label)!
               return (
                 <div className="space-y-2.5">
-                  <p className="text-[11px] leading-relaxed text-slate-600 dark:text-slate-400">{data.description}</p>
+                  <p className="text-[11px] leading-relaxed text-neutral-600 dark:text-neutral-400">{data.description}</p>
                   {data.molecularFormula && (
                     <div className="grid grid-cols-2 gap-2">
                       <div className="rounded-lg bg-cyan-50/80 dark:bg-cyan-950/20 p-2">
-                        <div className="text-[9px] text-slate-400">分子式</div>
+                        <div className="text-[9px] text-neutral-400">分子式</div>
                         <div className="text-xs font-mono font-bold text-cyan-700 dark:text-cyan-300">{data.molecularFormula}</div>
                       </div>
                       <div className="rounded-lg bg-cyan-50/80 dark:bg-cyan-950/20 p-2">
-                        <div className="text-[9px] text-slate-400">分子量</div>
+                        <div className="text-[9px] text-neutral-400">分子量</div>
                         <div className="text-xs font-bold text-cyan-700 dark:text-cyan-300">{data.molecularWeight?.toFixed(1)}</div>
                       </div>
                     </div>
                   )}
                   {(data.properties && Object.keys(data.properties).length > 0) && (
-                    <div className="bg-slate-50/80 dark:bg-slate-800/30 rounded-lg p-2">
-                      <span className="text-[10px] font-semibold text-slate-500 mb-1 block">属性</span>
+                    <div className="bg-slate-50/80 dark:bg-neutral-800/30 rounded-lg p-2">
+                      <span className="text-[10px] font-semibold text-neutral-500 mb-1 block">属性</span>
                       <div className="grid grid-cols-2 gap-1">
                         {Object.entries(data.properties).slice(0, 8).map(([k, v]) => (
                           <div key={k} className="flex justify-between text-[10px]">
-                            <span className="text-slate-500 truncate max-w-[70px]" title={k}>{k}</span>
-                            <span className="font-mono text-slate-700 dark:text-slate-300 truncate max-w-[80px]">{String(v)}</span>
+                            <span className="text-neutral-500 truncate max-w-[70px]" title={k}>{k}</span>
+                            <span className="font-mono text-neutral-700 dark:text-neutral-300 truncate max-w-[80px]">{String(v)}</span>
                           </div>
                         ))}
                       </div>
@@ -4244,43 +4262,43 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
                   )}
                   {data.targets && data.targets.length > 0 && (
                     <div>
-                      <span className="text-[10px] font-semibold text-slate-500">靶点 ({data.targets.length})</span>
+                      <span className="text-[10px] font-semibold text-neutral-500">靶点 ({data.targets.length})</span>
                       <div className="flex flex-wrap gap-1 mt-1">
                         {data.targets.map(t => (
-                          <span key={t} className="px-1.5 py-0.5 rounded-md text-[9px] bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-300 font-mono">{t}</span>
+                          <span key={t} className="px-1.5 py-0.5 rounded-md text-[9px] bg-error-50 dark:bg-error-900/20 text-error-600 dark:text-error-300 font-mono">{t}</span>
                         ))}
                       </div>
                     </div>
                   )}
                   {data.pathways && data.pathways.length > 0 && (
                     <div>
-                      <span className="text-[10px] font-semibold text-slate-500">通路 ({data.pathways.length})</span>
+                      <span className="text-[10px] font-semibold text-neutral-500">通路 ({data.pathways.length})</span>
                       <div className="flex flex-wrap gap-1 mt-1">
                         {data.pathways.map(p => (
-                          <span key={p} className="px-1.5 py-0.5 rounded-md text-[9px] bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-300">{p}</span>
+                          <span key={p} className="px-1.5 py-0.5 rounded-md text-[9px] bg-accent-50 dark:bg-accent-900/20 text-accent-600 dark:text-accent-300">{p}</span>
                         ))}
                       </div>
                     </div>
                   )}
                   {data.diseases && data.diseases.length > 0 && (
                     <div>
-                      <span className="text-[10px] font-semibold text-slate-500">相关疾病</span>
+                      <span className="text-[10px] font-semibold text-neutral-500">相关疾病</span>
                       <div className="flex flex-wrap gap-1 mt-1">
                         {data.diseases.map(d => (
-                          <span key={d} className="px-1.5 py-0.5 rounded-md text-[9px] bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-300">{d}</span>
+                          <span key={d} className="px-1.5 py-0.5 rounded-md text-[9px] bg-warning-50 dark:bg-warning-900/20 text-warning-600 dark:text-warning-300">{d}</span>
                         ))}
                       </div>
                     </div>
                   )}
-                  <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-700/30">
-                    <span className="text-[9px] text-slate-400">📚 {data.source.toUpperCase()} · 📄 {data.literatureCount?.toLocaleString()} 文献</span>
-                    <span className="text-[8px] text-slate-400">更新: {data.lastUpdated}</span>
+                  <div className="flex items-center justify-between pt-2 border-t border-neutral-100 dark:border-neutral-700/30">
+                    <span className="text-[9px] text-neutral-400">📚 {data.source.toUpperCase()} · 📄 {data.literatureCount?.toLocaleString()} 文献</span>
+                    <span className="text-[8px] text-neutral-400">更新: {data.lastUpdated}</span>
                   </div>
                 </div>
               )
             })() : (
               <div className="text-center py-6">
-                <p className="text-xs text-slate-400 mb-2">暂无外部数据</p>
+                <p className="text-xs text-neutral-400 mb-2">暂无外部数据</p>
                 <button onClick={() => queryExternalData(selectedNode.label)}
                   className="text-xs text-cyan-500 hover:text-cyan-600 font-medium">查询 PubChem / TCMSP →</button>
               </div>
@@ -4292,14 +4310,14 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
       {/* v8.1: 数据导入对话框 */}
       {showImportDialog && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm" onClick={(e) => e.target === e.currentTarget && setShowImportDialog(false)}>
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-[420px] overflow-hidden animate-fade-in">
+          <div className="bg-white dark:bg-neutral-800 rounded-2xl shadow-2xl w-[420px] overflow-hidden animate-fade-in">
             <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/50 dark:to-amber-950/50 border-b border-orange-100/50">
               <div className="flex items-center gap-2"><span>📥</span><span className="text-sm font-bold text-orange-700 dark:text-orange-300">数据导入</span></div>
-              <button onClick={() => setShowImportDialog(false)} className="w-5 h-5 rounded flex items-center justify-center hover:bg-orange-100 dark:hover:bg-orange-800/30 text-slate-400">✕</button>
+              <button onClick={() => setShowImportDialog(false)} className="w-5 h-5 rounded flex items-center justify-center hover:bg-orange-100 dark:hover:bg-orange-800/30 text-neutral-400">✕</button>
             </div>
             <div className="p-4 space-y-3">
               <div className="space-y-1">
-                <div className="flex justify-between text-[10px] text-slate-500">
+                <div className="flex justify-between text-[10px] text-neutral-500">
                   <span>{importState.status === 'idle' ? '准备就绪' :
                     importState.status === 'dragging' ? '检测到文件...' :
                     importState.status === 'parsing' ? `解析中... (${importState.fileType?.toUpperCase() || ''})` :
@@ -4310,28 +4328,28 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
                   }</span>
                   <span>{importState.progress}%</span>
                 </div>
-                <div className="h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                <div className="h-1.5 bg-neutral-100 dark:bg-neutral-700 rounded-full overflow-hidden">
                   <div className={`h-full rounded-full transition-all duration-300 ${
-                    importState.status === 'error' ? 'bg-red-500 w-full' :
-                    importState.status === 'done' ? 'bg-emerald-500 w-full' :
+                    importState.status === 'error' ? 'bg-error-500 w-full' :
+                    importState.status === 'done' ? 'bg-primary-500 w-full' :
                     'bg-gradient-to-r from-orange-400 to-amber-400'
                   }`} style={{ width: `${importState.progress}%` }} />
                 </div>
               </div>
               {importState.error && (
-                <div className="bg-red-50 dark:bg-red-900/20 rounded-lg px-3 py-2 text-[11px] text-red-600 dark:text-red-300">{importState.error}</div>
+                <div className="bg-error-50 dark:bg-error-900/20 rounded-lg px-3 py-2 text-[11px] text-error-600 dark:text-error-300">{importState.error}</div>
               )}
               {importState.previewRows && importState.previewRows.length > 0 && (
                 <div>
-                  <span className="text-[10px] font-semibold text-slate-500">数据预览 (前{Math.min(importState.previewRows.length, 5)}行)</span>
-                  <div className="mt-1 max-h-[120px] overflow-auto custom-scrollbar rounded-lg border border-slate-200 dark:border-slate-700">
+                  <span className="text-[10px] font-semibold text-neutral-500">数据预览 (前{Math.min(importState.previewRows.length, 5)}行)</span>
+                  <div className="mt-1 max-h-[120px] overflow-auto custom-scrollbar rounded-lg border border-neutral-200 dark:border-neutral-700">
                     <table className="w-full text-[9px]">
-                      <thead className="bg-slate-50 dark:bg-slate-700/50 sticky top-0">
-                        <tr>{Object.keys(importState.previewRows[0]).slice(0, 6).map(k => <th key={k} className="px-2 py-1 text-left text-slate-500 font-medium border-b border-slate-200 dark:border-slate-600">{k}</th>)}</tr>
+                      <thead className="bg-slate-50 dark:bg-neutral-700/50 sticky top-0">
+                        <tr>{Object.keys(importState.previewRows[0]).slice(0, 6).map(k => <th key={k} className="px-2 py-1 text-left text-neutral-500 font-medium border-b border-neutral-200 dark:border-neutral-600">{k}</th>)}</tr>
                       </thead>
                       <tbody>{importState.previewRows.slice(0, 5).map((row, i) => (
-                        <tr key={i} className="hover:bg-slate-50 dark:hover:bg-slate-700/20">{Object.values(row).slice(0, 6).map((v, j) =>
-                          <td key={j} className="px-2 py-1 text-slate-600 dark:text-slate-400 border-b border-slate-100 dark:border-slate-700/30 truncate max-w-[120px]">{String(v)?.slice(0, 25)}</td>,
+                        <tr key={i} className="hover:bg-slate-50 dark:hover:bg-neutral-700/20">{Object.values(row).slice(0, 6).map((v, j) =>
+                          <td key={j} className="px-2 py-1 text-neutral-600 dark:text-neutral-400 border-b border-neutral-100 dark:border-neutral-700/30 truncate max-w-[120px]">{String(v)?.slice(0, 25)}</td>,
                         )}</tr>
                       ))}</tbody>
                     </table>
@@ -4339,26 +4357,26 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
                 </div>
               )}
               {importState.status === 'done' && (
-                <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-lg px-3 py-2 text-[11px] text-emerald-600 dark:text-emerald-300 font-medium">
+                <div className="bg-primary-50 dark:bg-primary-900/20 rounded-lg px-3 py-2 text-[11px] text-primary-600 dark:text-primary-300 font-medium">
                   ✅ 成功导入 {importState.importedCount} 条记录
                 </div>
               )}
               <div className="flex gap-2">
                 <label className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 border-dashed transition-colors cursor-pointer ${
-                  dragOver ? 'border-orange-400 bg-orange-50/50 dark:bg-orange-900/10' : 'border-slate-200 dark:border-slate-600 hover:border-orange-300'
+                  dragOver ? 'border-orange-400 bg-orange-50/50 dark:bg-orange-900/10' : 'border-neutral-200 dark:border-neutral-600 hover:border-orange-300'
                 }`}
                   onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}>
-                  <svg className="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <svg className="w-5 h-5 text-neutral-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 16v-4m0 0V8m0 4h4m-4 0H8m12 4V4a2 2 0 00-2-2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2z" />
                   </svg>
-                  <span className="text-xs text-slate-500">拖拽文件或点击上传</span>
-                  <input type="file" accept=".csv,.json,.sdf" className="hidden" onChange={e => e.target.files[0] && handleFileImport(e.target.files[0])} />
+                  <span className="text-xs text-neutral-500">拖拽文件或点击上传</span>
+                  <input type="file" accept=".csv,.json,.sdf" className="hidden" onChange={e => e.target.files?.[0] && handleFileImport(e.target.files[0])} />
                 </label>
                 <div className="flex flex-col gap-1">
-                  <span className="text-[8px] text-slate-400 text-center">支持格式</span>
+                  <span className="text-[8px] text-neutral-400 text-center">支持格式</span>
                   <div className="flex gap-1">
                     {['CSV', 'JSON', 'SDF'].map(fmt => (
-                      <span key={fmt} className="px-1.5 py-0.5 rounded text-[8px] font-mono bg-slate-100 dark:bg-slate-700 text-slate-500">{fmt}</span>
+                      <span key={fmt} className="px-1.5 py-0.5 rounded text-[8px] font-mono bg-neutral-100 dark:bg-neutral-700 text-neutral-500">{fmt}</span>
                     ))}
                   </div>
                 </div>
@@ -4370,49 +4388,49 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
 
       {/* v8.1: 图谱对比结果面板 */}
       {showCompareMode && compareResult && (
-        <div className="absolute bottom-16 right-3 z-45 w-[360px] bg-white/97 dark:bg-slate-900/97 backdrop-blur-xl rounded-2xl shadow-2xl border border-indigo-200/60 dark:border-indigo-700/40 animate-fade-in">
+        <div className="absolute bottom-16 right-3 z-45 w-[360px] bg-white/97 dark:bg-neutral-900/97 backdrop-blur-xl rounded-2xl shadow-2xl border border-indigo-200/60 dark:border-indigo-700/40 animate-fade-in">
           <div className="flex items-center justify-between px-4 py-2.5 bg-gradient-to-r from-indigo-50 to-violet-50 dark:from-indigo-950/50 dark:to-violet-950/50 border-b border-indigo-100/50 rounded-t-2xl">
             <div className="flex items-center gap-2">
               <span>⚖️</span>
               <span className="text-sm font-bold text-indigo-700 dark:text-indigo-300">图谱对比分析</span>
             </div>
-            <button onClick={() => setShowCompareMode(false)} className="w-5 h-5 rounded flex items-center justify-center hover:bg-indigo-100 dark:hover:bg-indigo-800/30 text-slate-400">✕</button>
+            <button onClick={() => setShowCompareMode(false)} className="w-5 h-5 rounded flex items-center justify-center hover:bg-indigo-100 dark:hover:bg-indigo-800/30 text-neutral-400">✕</button>
           </div>
           <div className="p-3 space-y-2.5">
             <div className="grid grid-cols-3 gap-2 text-center">
               <div className="rounded-lg bg-indigo-50/80 dark:bg-indigo-950/20 p-2">
                 <div className="text-lg font-bold text-indigo-600 dark:text-indigo-400">{compareResult.similarityScore}%</div>
-                <div className="text-[9px] text-slate-400">相似度</div>
+                <div className="text-[9px] text-neutral-400">相似度</div>
               </div>
-              <div className="rounded-lg bg-emerald-50/80 dark:bg-emerald-950/20 p-2">
-                <div className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{compareResult.commonNodes.length}</div>
-                <div className="text-[9px] text-slate-400">共同节点</div>
+              <div className="rounded-lg bg-primary-50/80 dark:bg-emerald-950/20 p-2">
+                <div className="text-lg font-bold text-primary-600 dark:text-primary-400">{compareResult.commonNodes.length}</div>
+                <div className="text-[9px] text-neutral-400">共同节点</div>
               </div>
-              <div className="rounded-lg bg-amber-50/80 dark:bg-amber-950/20 p-2">
-                <div className="text-lg font-bold text-amber-600 dark:text-amber-400">{compareResult.nodesOnlyInA.length + compareResult.nodesOnlyInB.length}</div>
-                <div className="text-[9px] text-slate-400">差异节点</div>
+              <div className="rounded-lg bg-warning-50/80 dark:bg-amber-950/20 p-2">
+                <div className="text-lg font-bold text-warning-600 dark:text-warning-400">{compareResult.nodesOnlyInA.length + compareResult.nodesOnlyInB.length}</div>
+                <div className="text-[9px] text-neutral-400">差异节点</div>
               </div>
             </div>
             {compareResult.nodesOnlyInA.length > 0 && (
-              <div className="bg-blue-50/80 dark:bg-blue-950/20 rounded-lg p-2">
-                <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-300">➕ 新增节点 ({compareResult.nodesOnlyInA.length}):</span>
+              <div className="bg-secondary-50/80 dark:bg-blue-950/20 rounded-lg p-2">
+                <span className="text-[10px] font-semibold text-secondary-600 dark:text-secondary-300">➕ 新增节点 ({compareResult.nodesOnlyInA.length}):</span>
                 <div className="flex flex-wrap gap-1 mt-1">
                   {compareResult.nodesOnlyInA.slice(0, 8).map(nid => {
                     const node = filteredData.filteredNodes.find(no => (no.id || no.label) === nid)
-                    return <span key={nid} className="px-1.5 py-0.5 rounded text-[9px] bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-300">{node?.label?.slice(0, 10) || nid.slice(0, 10)}</span>
+                    return <span key={nid} className="px-1.5 py-0.5 rounded text-[9px] bg-white dark:bg-neutral-700 text-secondary-600 dark:text-secondary-300">{node?.label?.slice(0, 10) || nid.slice(0, 10)}</span>
                   })}
-                  {compareResult.nodesOnlyInA.length > 8 && <span className="text-[9px] text-slate-400">+{compareResult.nodesOnlyInA.length - 8} 更多</span>}
+                  {compareResult.nodesOnlyInA.length > 8 && <span className="text-[9px] text-neutral-400">+{compareResult.nodesOnlyInA.length - 8} 更多</span>}
                 </div>
               </div>
             )}
             {compareResult.nodesOnlyInB.length > 0 && (
-              <div className="bg-red-50/80 dark:bg-red-950/20 rounded-lg p-2">
-                <span className="text-[10px] font-semibold text-red-600 dark:text-red-300">➖ 移除节点 ({compareResult.nodesOnlyInB.length}):</span>
+              <div className="bg-error-50/80 dark:bg-red-950/20 rounded-lg p-2">
+                <span className="text-[10px] font-semibold text-error-600 dark:text-error-300">➖ 移除节点 ({compareResult.nodesOnlyInB.length}):</span>
                 <div className="flex flex-wrap gap-1 mt-1">
                   {compareResult.nodesOnlyInB.slice(0, 8).map(nid => (
-                    <span key={nid} className="px-1.5 py-0.5 rounded text-[9px] bg-white dark:bg-slate-700 text-red-500 line-through">{nid.slice(0, 10)}</span>
+                    <span key={nid} className="px-1.5 py-0.5 rounded text-[9px] bg-white dark:bg-neutral-700 text-error-500 line-through">{nid.slice(0, 10)}</span>
                   ))}
-                  {compareResult.nodesOnlyInB.length > 8 && <span className="text-[9px] text-slate-400">+{compareResult.nodesOnlyInB.length - 8} 更多</span>}
+                  {compareResult.nodesOnlyInB.length > 8 && <span className="text-[9px] text-neutral-400">+{compareResult.nodesOnlyInB.length - 8} 更多</span>}
                 </div>
               </div>
             )}
@@ -4422,37 +4440,37 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
 
       {/* v8.2: 图谱分享面板 */}
       {showSharePanel && shareLink && (
-        <div className="absolute top-14 right-3 z-45 w-[340px] bg-white/97 dark:bg-slate-900/97 backdrop-blur-xl rounded-2xl shadow-2xl border border-violet-200/60 dark:border-violet-700/40 animate-fade-in">
+        <div className="absolute top-14 right-3 z-45 w-[340px] bg-white/97 dark:bg-neutral-900/97 backdrop-blur-xl rounded-2xl shadow-2xl border border-violet-200/60 dark:border-violet-700/40 animate-fade-in">
           <div className="flex items-center justify-between px-4 py-2.5 bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-950/50 dark:to-purple-950/50 border-b border-violet-100/50 rounded-t-2xl">
             <div className="flex items-center gap-2"><span>🔗</span><span className="text-sm font-bold text-violet-700 dark:text-violet-300">分享图谱</span></div>
-            <button onClick={() => setShowSharePanel(false)} className="w-5 h-5 rounded flex items-center justify-center hover:bg-violet-100 dark:hover:bg-violet-800/30 text-slate-400">✕</button>
+            <button onClick={() => setShowSharePanel(false)} className="w-5 h-5 rounded flex items-center justify-center hover:bg-violet-100 dark:hover:bg-violet-800/30 text-neutral-400">✕</button>
           </div>
           <div className="p-3 space-y-2.5">
-            <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-2.5 break-all">
-              <div className="text-[10px] text-slate-400 mb-1">分享链接</div>
+            <div className="bg-slate-50 dark:bg-neutral-800/50 rounded-lg p-2.5 break-all">
+              <div className="text-[10px] text-neutral-400 mb-1">分享链接</div>
               <code className="text-[11px] font-mono text-violet-600 dark:text-violet-300 block">{shareLink.url}</code>
             </div>
             <div className="grid grid-cols-3 gap-2 text-center">
               <div className="rounded-lg bg-violet-50 dark:bg-violet-950/20 p-2">
                 <div className="text-lg font-bold text-violet-600">{shareLink.shortCode}</div>
-                <div className="text-[9px] text-slate-400">短码</div>
+                <div className="text-[9px] text-neutral-400">短码</div>
               </div>
-              <div className="rounded-lg bg-emerald-50 dark:bg-emerald-950/20 p-2">
-                <div className="text-lg font-bold text-emerald-600">{shareLink.viewCount}</div>
-                <div className="text-[9px] text-slate-400">浏览</div>
+              <div className="rounded-lg bg-primary-50 dark:bg-emerald-950/20 p-2">
+                <div className="text-lg font-bold text-primary-600">{shareLink.viewCount}</div>
+                <div className="text-[9px] text-neutral-400">浏览</div>
               </div>
-              <div className="rounded-lg bg-blue-50 dark:bg-blue-950/20 p-2">
-                <div className="text-xs font-bold text-blue-600">7天</div>
-                <div className="text-[9px] text-slate-400">有效</div>
+              <div className="rounded-lg bg-secondary-50 dark:bg-blue-950/20 p-2">
+                <div className="text-xs font-bold text-secondary-600">7天</div>
+                <div className="text-[9px] text-neutral-400">有效</div>
               </div>
             </div>
             <div className="flex gap-2">
               <button onClick={copyShareLink} className="flex-1 px-3 py-1.5 rounded-lg bg-violet-500 text-white text-xs font-medium hover:bg-violet-600 transition-colors">📋 复制链接</button>
               <button onClick={() => { /* QR code */ }} className="flex-1 px-3 py-1.5 rounded-lg border border-violet-200 dark:border-violet-700 text-violet-600 dark:text-violet-300 text-xs font-medium hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-colors">📱 二维码</button>
             </div>
-            <div className="bg-slate-50 dark:bg-slate-800/30 rounded-lg p-2">
-              <span className="text-[10px] font-semibold text-slate-500 block mb-1">嵌入代码</span>
-              <code className="text-[9px] font-mono text-slate-500 block p-1.5 bg-white dark:bg-slate-800 rounded">&lt;iframe src="{shareLink.url}" width="800" height="600"&gt;&lt;/iframe&gt;</code>
+            <div className="bg-slate-50 dark:bg-neutral-800/30 rounded-lg p-2">
+              <span className="text-[10px] font-semibold text-neutral-500 block mb-1">嵌入代码</span>
+              <code className="text-[9px] font-mono text-neutral-500 block p-1.5 bg-white dark:bg-neutral-800 rounded">&lt;iframe src="{shareLink.url}" width="800" height="600"&gt;&lt;/iframe&gt;</code>
             </div>
           </div>
         </div>
@@ -4460,40 +4478,40 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
 
       {/* v8.2: 节点批注面板 */}
       {showAnnotationPanel && selectedNode && (
-        <div className="absolute bottom-16 left-3 z-45 w-[320px] bg-white/97 dark:bg-slate-900/97 backdrop-blur-xl rounded-2xl shadow-2xl border border-pink-200/60 dark:border-pink-700/40 animate-fade-in">
+        <div className="absolute bottom-16 left-3 z-45 w-[320px] bg-white/97 dark:bg-neutral-900/97 backdrop-blur-xl rounded-2xl shadow-2xl border border-pink-200/60 dark:border-pink-700/40 animate-fade-in">
           <div className="flex items-center justify-between px-4 py-2.5 bg-gradient-to-r from-pink-50 to-rose-50 dark:from-pink-950/50 dark:to-rose-950/50 border-b border-pink-100/50 rounded-t-2xl">
             <div className="flex items-center gap-2"><span>💬</span><span className="text-sm font-bold text-pink-700 dark:text-pink-300">节点批注</span>
-              <span className="text-[10px] text-slate-400">[{selectedNode.label}]</span>
+              <span className="text-[10px] text-neutral-400">[{selectedNode.label}]</span>
             </div>
-            <button onClick={() => setShowAnnotationPanel(false)} className="w-5 h-5 rounded flex items-center justify-center hover:bg-pink-100 dark:hover:bg-pink-800/30 text-slate-400">✕</button>
+            <button onClick={() => setShowAnnotationPanel(false)} className="w-5 h-5 rounded flex items-center justify-center hover:bg-pink-100 dark:hover:bg-pink-800/30 text-neutral-400">✕</button>
           </div>
           <div className="p-3 space-y-2 max-h-[40vh] overflow-y-auto custom-scrollbar">
             {(() => {
               const nodeAnns = nodeAnnotations.get(selectedNode.label) || []
               return nodeAnns.length > 0 ? nodeAnns.map(ann => (
-                <div key={ann.id} className={`rounded-lg p-2.5 ${ann.resolved ? 'bg-slate-50/80 dark:bg-slate-800/30 opacity-60' : 'bg-pink-50/50 dark:bg-pink-950/10'}`}>
+                <div key={ann.id} className={`rounded-lg p-2.5 ${ann.resolved ? 'bg-slate-50/80 dark:bg-neutral-800/30 opacity-60' : 'bg-pink-50/50 dark:bg-pink-950/10'}`}>
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-[10px] font-semibold text-pink-600 dark:text-pink-300">{ann.author}</span>
-                    <span className="text-[8px] text-slate-400">{ann.createdAt.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}</span>
+                    <span className="text-[8px] text-neutral-400">{ann.createdAt.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}</span>
                   </div>
-                  <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">{ann.content}</p>
+                  <p className="text-[11px] text-neutral-600 dark:text-neutral-400 leading-relaxed">{ann.content}</p>
                   {ann.mentions && ann.mentions.length > 0 && (
                     <div className="flex gap-1 mt-1.5 flex-wrap">
-                      {ann.mentions.map(m => <span key={m} className="px-1 py-0.5 rounded text-[8px] bg-blue-100 text-blue-600">@{m}</span>)}
+                      {ann.mentions.map(m => <span key={m} className="px-1 py-0.5 rounded text-[8px] bg-secondary-100 text-secondary-600">@{m}</span>)}
                     </div>
                   )}
                 </div>
-              )) : <p className="text-[11px] text-slate-400 text-center py-4">暂无批注，添加第一条吧 ✨</p>
+              )) : <p className="text-[11px] text-neutral-400 text-center py-4">暂无批注，添加第一条吧 ✨</p>
             })()}
           </div>
-          <div className="px-3 pb-3 pt-1 border-t border-slate-100 dark:border-slate-700/30">
+          <div className="px-3 pb-3 pt-1 border-t border-neutral-100 dark:border-neutral-700/30">
             <div className="flex gap-1.5">
               <input
                 value={newAnnotationText}
                 onChange={e => setNewAnnotationText(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && addNodeAnnotation()}
                 placeholder="@提及某人 添加批注..."
-                className="flex-1 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-600 text-[11px] bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-pink-300"
+                className="flex-1 px-2.5 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-600 text-[11px] bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-pink-300"
               />
               <button onClick={addNodeAnnotation} disabled={!newAnnotationText.trim()} className="px-2.5 py-1.5 rounded-lg bg-pink-500 text-white text-[11px] font-medium hover:bg-pink-600 disabled:opacity-40 transition-colors">发送</button>
             </div>
@@ -4503,15 +4521,15 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
 
       {/* v8.2: 操作历史时间线面板 */}
       {showHistoryPanel && (
-        <div className="absolute bottom-16 left-1/2 -translate-x-1/2 z-45 w-[420px] bg-white/97 dark:bg-slate-900/97 backdrop-blur-xl rounded-2xl shadow-2xl border border-amber-200/60 dark:border-amber-700/40 animate-fade-in">
+        <div className="absolute bottom-16 left-1/2 -translate-x-1/2 z-45 w-[420px] bg-white/97 dark:bg-neutral-900/97 backdrop-blur-xl rounded-2xl shadow-2xl border border-amber-200/60 dark:border-amber-700/40 animate-fade-in">
           <div className="flex items-center justify-between px-4 py-2.5 bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-950/50 dark:to-yellow-950/50 border-b border-amber-100/50 rounded-t-2xl">
-            <div className="flex items-center gap-2"><span>⏱️</span><span className="text-sm font-bold text-amber-700 dark:text-amber-300">操作历史</span>
-              <span className="text-[10px] text-slate-400">({historyEntries.length}条)</span>
+            <div className="flex items-center gap-2"><span>⏱️</span><span className="text-sm font-bold text-warning-700 dark:text-warning-300">操作历史</span>
+              <span className="text-[10px] text-neutral-400">({historyEntries.length}条)</span>
             </div>
             <div className="flex items-center gap-1">
-              <button onClick={undoHistory} disabled={historyIndex < 0} className="w-6 h-6 rounded flex items-center justify-center hover:bg-amber-100 dark:hover:bg-amber-800/30 text-slate-500 disabled:opacity-30 text-xs" title="撤销 (Ctrl+Z)">↩</button>
-              <button onClick={redoHistory} disabled={historyIndex >= historyEntries.length - 1} className="w-6 h-6 rounded flex items-center justify-center hover:bg-amber-100 dark:hover:bg-amber-800/30 text-slate-500 disabled:opacity-30 text-xs" title="重做 (Ctrl+Y)">↪</button>
-              <button onClick={() => setShowHistoryPanel(false)} className="w-5 h-5 rounded flex items-center justify-center hover:bg-amber-100 dark:hover:bg-amber-800/30 text-slate-400">✕</button>
+              <button onClick={undoHistory} disabled={historyIndex < 0} className="w-6 h-6 rounded flex items-center justify-center hover:bg-warning-100 dark:hover:bg-warning-800/30 text-neutral-500 disabled:opacity-30 text-xs" title="撤销 (Ctrl+Z)">↩</button>
+              <button onClick={redoHistory} disabled={historyIndex >= historyEntries.length - 1} className="w-6 h-6 rounded flex items-center justify-center hover:bg-warning-100 dark:hover:bg-warning-800/30 text-neutral-500 disabled:opacity-30 text-xs" title="重做 (Ctrl+Y)">↪</button>
+              <button onClick={() => setShowHistoryPanel(false)} className="w-5 h-5 rounded flex items-center justify-center hover:bg-warning-100 dark:hover:bg-warning-800/30 text-neutral-400">✕</button>
             </div>
           </div>
           <div className="p-3 max-h-[35vh] overflow-y-auto custom-scrollbar space-y-1">
@@ -4522,43 +4540,43 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
                 <div key={entry.id} className={`flex items-start gap-2 px-2.5 py-1.5 rounded-lg hover:bg-${typeColors[entry.type] || 'slate'}-50 dark:hover:bg-${typeColors[entry.type] || 'slate'}-800/20 transition-colors ${i === historyEntries.length - 1 - historyIndex ? 'ring-1 ring-amber-300' : ''}`}>
                   <span className="text-sm shrink-0">{typeIcons[entry.type] || '📌'}</span>
                   <div className="min-w-0 flex-1">
-                    <p className="text-[11px] text-slate-700 dark:text-slate-300 truncate">{entry.description}</p>
-                    <span className="text-[8px] text-slate-400">{entry.timestamp.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+                    <p className="text-[11px] text-neutral-700 dark:text-neutral-300 truncate">{entry.description}</p>
+                    <span className="text-[8px] text-neutral-400">{entry.timestamp.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
                   </div>
-                  {!entry.reversible && <span className="text-[8px] px-1 py-0.5 rounded bg-slate-100 text-slate-400 shrink-0">只读</span>}
+                  {!entry.reversible && <span className="text-[8px] px-1 py-0.5 rounded bg-neutral-100 text-neutral-400 shrink-0">只读</span>}
                 </div>
               )
             })}
-            {historyEntries.length === 0 && <p className="text-[11px] text-slate-400 text-center py-4">暂无操作记录</p>}
+            {historyEntries.length === 0 && <p className="text-[11px] text-neutral-400 text-center py-4">暂无操作记录</p>}
           </div>
         </div>
       )}
 
       {/* v8.2: 书签管理面板 */}
       {showBookmarkPanel && (
-        <div className="absolute top-14 right-3 z-45 w-[320px] bg-white/97 dark:bg-slate-900/97 backdrop-blur-xl rounded-2xl shadow-2xl border border-amber-200/60 dark:border-amber-700/40 animate-fade-in">
+        <div className="absolute top-14 right-3 z-45 w-[320px] bg-white/97 dark:bg-neutral-900/97 backdrop-blur-xl rounded-2xl shadow-2xl border border-amber-200/60 dark:border-amber-700/40 animate-fade-in">
           <div className="flex items-center justify-between px-4 py-2.5 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/50 dark:to-orange-950/50 border-b border-amber-100/50 rounded-t-2xl">
-            <div className="flex items-center gap-2"><span>⭐</span><span className="text-sm font-bold text-amber-700 dark:text-amber-300">书签收藏</span>
-              <span className="text-[10px] text-slate-400">({bookmarks.length}/10)</span>
+            <div className="flex items-center gap-2"><span>⭐</span><span className="text-sm font-bold text-warning-700 dark:text-warning-300">书签收藏</span>
+              <span className="text-[10px] text-neutral-400">({bookmarks.length}/10)</span>
             </div>
-            <button onClick={() => setShowBookmarkPanel(false)} className="w-5 h-5 rounded flex items-center justify-center hover:bg-amber-100 dark:hover:bg-amber-800/30 text-slate-400">✕</button>
+            <button onClick={() => setShowBookmarkPanel(false)} className="w-5 h-5 rounded flex items-center justify-center hover:bg-warning-100 dark:hover:bg-warning-800/30 text-neutral-400">✕</button>
           </div>
           <div className="p-3 space-y-1.5 max-h-[40vh] overflow-y-auto custom-scrollbar">
             <button onClick={() => {
               const name = prompt('书签名称:', `视图 ${bookmarks.length + 1}`)
               if (name) addBookmark(name)
-            }} className="w-full px-3 py-2 rounded-lg border-2 border-dashed border-amber-200 dark:border-amber-700 text-[11px] text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/10 transition-colors">+ 保存当前视图为书签</button>
+            }} className="w-full px-3 py-2 rounded-lg border-2 border-dashed border-amber-200 dark:border-amber-700 text-[11px] text-warning-500 hover:bg-warning-50 dark:hover:bg-warning-900/10 transition-colors">+ 保存当前视图为书签</button>
             {bookmarks.map(bm => (
-              <div key={bm.id} className="flex items-center gap-2 px-2.5 py-2 rounded-lg hover:bg-amber-50/50 dark:hover:bg-amber-900/10 group cursor-pointer" onClick={() => loadBookmark(bm)}>
+              <div key={bm.id} className="flex items-center gap-2 px-2.5 py-2 rounded-lg hover:bg-warning-50/50 dark:hover:bg-warning-900/10 group cursor-pointer" onClick={() => loadBookmark(bm)}>
                 <span className="text-base shrink-0">{bm.icon}</span>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[11px] font-medium text-slate-700 dark:text-slate-300 truncate">{bm.name}</p>
-                  <p className="text-[8px] text-slate-400">{bm.createdAt.toLocaleDateString('zh-CN')}</p>
+                  <p className="text-[11px] font-medium text-neutral-700 dark:text-neutral-300 truncate">{bm.name}</p>
+                  <p className="text-[8px] text-neutral-400">{bm.createdAt.toLocaleDateString('zh-CN')}</p>
                 </div>
-                <button onClick={(e) => { e.stopPropagation(); removeBookmark(bm.id); }} className="w-5 h-5 rounded flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-red-100 text-slate-400 text-xs transition-all">✕</button>
+                <button onClick={(e) => { e.stopPropagation(); removeBookmark(bm.id); }} className="w-5 h-5 rounded flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-error-100 text-neutral-400 text-xs transition-all">✕</button>
               </div>
             ))}
-            {bookmarks.length === 0 && <p className="text-[11px] text-slate-400 text-center py-4">暂无书签，点击上方按钮保存</p>}
+            {bookmarks.length === 0 && <p className="text-[11px] text-neutral-400 text-center py-4">暂无书签，点击上方按钮保存</p>}
           </div>
         </div>
       )}
@@ -4566,35 +4584,35 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
       {/* v8.2: 报告生成对话框 */}
       {showReportDialog && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm" onClick={(e) => e.target === e.currentTarget && setShowReportDialog(false)}>
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-[480px] overflow-hidden animate-fade-in">
+          <div className="bg-white dark:bg-neutral-800 rounded-2xl shadow-2xl w-[480px] overflow-hidden animate-fade-in">
             <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/50 dark:to-purple-950/50 border-b border-indigo-100/50">
               <div className="flex items-center gap-2"><span>📄</span><span className="text-sm font-bold text-indigo-700 dark:text-indigo-300">生成分析报告</span></div>
-              <button onClick={() => setShowReportDialog(false)} className="w-5 h-5 rounded flex items-center justify-center hover:bg-indigo-100 dark:hover:bg-indigo-800/30 text-slate-400">✕</button>
+              <button onClick={() => setShowReportDialog(false)} className="w-5 h-5 rounded flex items-center justify-center hover:bg-indigo-100 dark:hover:bg-indigo-800/30 text-neutral-400">✕</button>
             </div>
             <div className="p-4 space-y-3">
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-[10px] font-semibold text-slate-500 block mb-1">报告标题</label>
-                  <input value={reportConfig.title} onChange={e => setReportConfig(prev => ({ ...prev, title: e.target.value }))} className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-600 text-[11px] bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-300" />
+                  <label className="text-[10px] font-semibold text-neutral-500 block mb-1">报告标题</label>
+                  <input value={reportConfig.title} onChange={e => setReportConfig(prev => ({ ...prev, title: e.target.value }))} className="w-full px-2.5 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-600 text-[11px] bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-indigo-300" />
                 </div>
                 <div>
-                  <label className="text-[10px] font-semibold text-slate-500 block mb-1">作者</label>
-                  <input value={reportConfig.author} onChange={e => setReportConfig(prev => ({ ...prev, author: e.target.value }))} className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-600 text-[11px] bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-300" />
+                  <label className="text-[10px] font-semibold text-neutral-500 block mb-1">作者</label>
+                  <input value={reportConfig.author} onChange={e => setReportConfig(prev => ({ ...prev, author: e.target.value }))} className="w-full px-2.5 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-600 text-[11px] bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-indigo-300" />
                 </div>
               </div>
               <div>
-                <label className="text-[10px] font-semibold text-slate-500 block mb-1">导出格式</label>
+                <label className="text-[10px] font-semibold text-neutral-500 block mb-1">导出格式</label>
                 <div className="flex gap-1.5">
                   {(['pdf', 'word', 'html'] as const).map(fmt => (
                     <button key={fmt} onClick={() => setReportConfig(prev => ({ ...prev, format: fmt }))}
-                      className={`flex-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium uppercase transition-colors ${reportConfig.format === fmt ? 'bg-indigo-500 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 hover:bg-slate-200 dark:hover:bg-slate-600'}`}>
+                      className={`flex-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium uppercase transition-colors ${reportConfig.format === fmt ? 'bg-indigo-500 text-white' : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-600 hover:bg-neutral-200 dark:hover:bg-neutral-600'}`}>
                       {fmt}
                     </button>
                   ))}
                 </div>
               </div>
               <div>
-                <span className="text-[10px] font-semibold text-slate-500 block mb-1.5">包含内容</span>
+                <span className="text-[10px] font-semibold text-neutral-500 block mb-1.5">包含内容</span>
                 <div className="space-y-1">
                   {[
                     { key: 'includeScreenshot', label: '📊 图谱截图' },
@@ -4605,8 +4623,8 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
                     <label key={opt.key} className="flex items-center gap-2 cursor-pointer">
                       <input type="checkbox" checked={reportConfig[opt.key as keyof ReportConfig] as boolean}
                         onChange={e => setReportConfig(prev => ({ ...prev, [opt.key]: e.target.checked }))}
-                        className="rounded border-slate-300 text-indigo-500 focus:ring-indigo-300" />
-                      <span className="text-[11px] text-slate-600 dark:text-slate-400">{opt.label}</span>
+                        className="rounded border-neutral-300 text-indigo-500 focus:ring-indigo-300" />
+                      <span className="text-[11px] text-neutral-600 dark:text-neutral-400">{opt.label}</span>
                     </label>
                   ))}
                 </div>
@@ -4622,13 +4640,13 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
 
       {/* v8.3: 统计仪表盘面板 */}
       {showStatsPanel && graphStats && (
-        <div className="absolute top-14 left-1/2 -translate-x-1/2 z-[60] w-[520px] bg-white/98 dark:bg-slate-900/98 backdrop-blur-xl rounded-2xl shadow-2xl border border-emerald-200/60 dark:border-emerald-700/40 animate-fade-in max-h-[70vh] overflow-auto custom-scrollbar">
+        <div className="absolute top-14 left-1/2 -translate-x-1/2 z-[60] w-[520px] bg-white/98 dark:bg-neutral-900/98 backdrop-blur-xl rounded-2xl shadow-2xl border border-emerald-200/60 dark:border-emerald-700/40 animate-fade-in max-h-[70vh] overflow-auto custom-scrollbar">
           <div className="flex items-center justify-between px-4 py-2.5 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/50 dark:to-teal-950/50 border-b border-emerald-100/50 rounded-t-2xl sticky top-0">
             <div className="flex items-center gap-2">
               <span>📊</span>
-              <span className="text-sm font-bold text-emerald-700 dark:text-emerald-300">多维统计仪表盘</span>
+              <span className="text-sm font-bold text-primary-700 dark:text-primary-300">多维统计仪表盘</span>
             </div>
-            <button onClick={() => setShowStatsPanel(false)} className="w-6 h-6 rounded-full hover:bg-emerald-100 dark:hover:bg-emerald-800/30 flex items-center justify-center transition-colors" title="关闭">✕</button>
+            <button onClick={() => setShowStatsPanel(false)} className="w-6 h-6 rounded-full hover:bg-primary-100 dark:hover:bg-primary-800/30 flex items-center justify-center transition-colors" title="关闭">✕</button>
           </div>
           <div className="p-4 space-y-4">
             <div className="grid grid-cols-4 gap-2">
@@ -4640,8 +4658,8 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
               ].map((item) => (
                 <div key={item.label} className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 rounded-xl p-2.5 text-center border border-emerald-100/50">
                   <div className="text-lg">{item.icon}</div>
-                  <div className="text-xs text-slate-500 dark:text-slate-400">{item.label}</div>
-                  <div className="text-sm font-bold text-emerald-700 dark:text-emerald-300">{item.value}</div>
+                  <div className="text-xs text-neutral-500 dark:text-neutral-400">{item.label}</div>
+                  <div className="text-sm font-bold text-primary-700 dark:text-primary-300">{item.value}</div>
                 </div>
               ))}
             </div>
@@ -4652,20 +4670,20 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
                 { label: '连通分量', value: graphStats.componentCount, icon: '🧩' },
                 { label: '最大分量', value: graphStats.largestComponentSize, icon: '🏆' },
               ].map((item) => (
-                <div key={item.label} className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-2.5 text-center border border-slate-100/50">
+                <div key={item.label} className="bg-slate-50 dark:bg-neutral-800/50 rounded-xl p-2.5 text-center border border-neutral-100/50">
                   <div className="text-lg">{item.icon}</div>
-                  <div className="text-xs text-slate-500 dark:text-slate-400">{item.label}</div>
+                  <div className="text-xs text-neutral-500 dark:text-neutral-400">{item.label}</div>
                   <div className="text-sm font-bold">{item.value}</div>
                 </div>
               ))}
             </div>
-            <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100/50">
-              <div className="text-xs font-semibold text-slate-600 dark:text-slate-300 mb-2">📊 节点类型分布</div>
+            <div className="bg-slate-50 dark:bg-neutral-800/30 rounded-xl p-3 border border-neutral-100/50">
+              <div className="text-xs font-semibold text-neutral-600 dark:text-neutral-300 mb-2">📊 节点类型分布</div>
               <div className="space-y-1.5">
                 {graphStats.typeDistribution.map(t => (
                   <div key={t.type} className="flex items-center gap-2">
                     <span className="text-xs w-16 truncate">{t.type}</span>
-                    <div className="flex-1 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                    <div className="flex-1 h-2 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden">
                       <div className="h-full bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full" style={{ width: `${Math.min(t.percentage, 100)}%` }} />
                     </div>
                     <span className="text-xs font-medium w-20 text-right">{t.count} ({t.percentage}%)</span>
@@ -4679,20 +4697,20 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
 
       {/* v8.3: 中心性分析面板 */}
       {showCentralityPanel && centralityMetrics && (
-        <div className="absolute top-14 right-3 z-[60] w-[360px] bg-white/98 dark:bg-slate-900/98 backdrop-blur-xl rounded-2xl shadow-2xl border border-red-200/60 dark:border-red-700/40 animate-fade-in max-h-[65vh] overflow-auto custom-scrollbar">
+        <div className="absolute top-14 right-3 z-[60] w-[360px] bg-white/98 dark:bg-neutral-900/98 backdrop-blur-xl rounded-2xl shadow-2xl border border-red-200/60 dark:border-red-700/40 animate-fade-in max-h-[65vh] overflow-auto custom-scrollbar">
           <div className="flex items-center justify-between px-4 py-2.5 bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-950/50 dark:to-orange-950/50 border-b border-red-100/50 rounded-t-2xl sticky top-0">
             <div className="flex items-center gap-2">
               <span>🎯</span>
-              <span className="text-sm font-bold text-red-700 dark:text-red-300">中心性分析</span>
+              <span className="text-sm font-bold text-error-700 dark:text-error-300">中心性分析</span>
             </div>
             <div className="flex items-center gap-1">
               {(['pageRank', 'betweenness', 'closeness', 'degree'] as const).map(mode => (
                 <button key={mode} onClick={() => { setCentralityMode(mode); runCentralityAnalysis(mode) }}
-                  className={`px-2 py-0.5 rounded-md text-[10px] font-medium transition-colors ${centralityMode === mode ? 'bg-red-500 text-white' : 'hover:bg-red-100 dark:hover:bg-red-800/30 text-slate-600 dark:text-slate-300'}`}>
+                  className={`px-2 py-0.5 rounded-md text-[10px] font-medium transition-colors ${centralityMode === mode ? 'bg-error-500 text-white' : 'hover:bg-error-100 dark:hover:bg-error-800/30 text-neutral-600 dark:text-neutral-300'}`}>
                   {mode === 'pageRank' ? 'PR' : mode === 'betweenness' ? 'BC' : mode === 'closeness' ? 'CC' : 'DEG'}
                 </button>
               ))}
-              <button onClick={() => setShowCentralityPanel(false)} className="w-5 h-5 rounded-full hover:bg-red-100 flex items-center justify-center ml-1" title="关闭">✕</button>
+              <button onClick={() => setShowCentralityPanel(false)} className="w-5 h-5 rounded-full hover:bg-error-100 flex items-center justify-center ml-1" title="关闭">✕</button>
             </div>
           </div>
           <div className="p-3 space-y-1.5">
@@ -4702,43 +4720,43 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
                     const node = filteredData.filteredNodes.find(n => (n.id || n.label) === nodeId)
                     const maxScore = Math.max(...Object.values(centralityMode === 'pageRank' ? centralityMetrics.pageRank : centralityMode === 'betweenness' ? centralityMetrics.betweenness : centralityMode === 'closeness' ? centralityMetrics.closeness : centralityMetrics.degree))
                     return (
-                      <div key={nodeId} className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/10 cursor-pointer transition-colors"
-                        onClick={() => { onNodeClick?.(node!); setSelectedNode(node) }}>
-                        <span className="text-[10px] font-mono text-slate-400 w-4">{i + 1}</span>
+                      <div key={nodeId} className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-error-50 dark:hover:bg-error-900/10 cursor-pointer transition-colors"
+                        onClick={() => { onNodeClick?.(node!); setSelectedNode(node ?? null) }}>
+                        <span className="text-[10px] font-mono text-neutral-400 w-4">{i + 1}</span>
                         <div className="flex-1 min-w-0">
                           <div className="text-xs font-medium truncate">{node?.label || nodeId}</div>
-                          <div className="text-[10px] text-slate-400">{node?.type}</div>
+                          <div className="text-[10px] text-neutral-400">{node?.type}</div>
                         </div>
-                        <div className="w-16 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                        <div className="w-16 h-1.5 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden">
                           <div className="h-full bg-gradient-to-r from-red-400 to-orange-400 rounded-full" style={{ width: `${(score / maxScore) * 100}%` }} />
                         </div>
-                        <span className="text-[10px] font-mono font-bold text-red-600 dark:text-red-400 w-12 text-right">{(score * 100).toFixed(1)}</span>
+                        <span className="text-[10px] font-mono font-bold text-error-600 dark:text-error-400 w-12 text-right">{(score * 100).toFixed(1)}</span>
                       </div>
                     )
                   })
-              : <div className="text-xs text-slate-400 text-center py-4">点击上方按钮计算中心性指标</div>}
+              : <div className="text-xs text-neutral-400 text-center py-4">点击上方按钮计算中心性指标</div>}
           </div>
         </div>
       )}
 
       {/* v8.3: 子图浏览器面板 */}
       {showSubGraphPanel && (communityResult || kcoreResult || savedSubGraphs.length > 0) && (
-        <div className="absolute bottom-16 right-3 z-[60] w-[380px] bg-white/98 dark:bg-slate-900/98 backdrop-blur-xl rounded-2xl shadow-2xl border border-purple-200/60 dark:border-purple-700/40 animate-fade-in max-h-[55vh] overflow-auto custom-scrollbar">
+        <div className="absolute bottom-16 right-3 z-[60] w-[380px] bg-white/98 dark:bg-neutral-900/98 backdrop-blur-xl rounded-2xl shadow-2xl border border-purple-200/60 dark:border-purple-700/40 animate-fade-in max-h-[55vh] overflow-auto custom-scrollbar">
           <div className="flex items-center justify-between px-4 py-2.5 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/50 dark:to-pink-950/50 border-b border-purple-100/50 rounded-t-2xl sticky top-0">
             <div className="flex items-center gap-2">
               <span>🧩</span>
-              <span className="text-sm font-bold text-purple-700 dark:text-purple-300">子图浏览器</span>
-              {(communityResult?.communities.length || 0) > 0 && <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-purple-100 text-purple-600">{communityResult?.communities.length}社区</span>}
+              <span className="text-sm font-bold text-accent-700 dark:text-accent-300">子图浏览器</span>
+              {(communityResult?.communities.length || 0) > 0 && <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-accent-100 text-accent-600">{communityResult?.communities.length}社区</span>}
               {kcoreResult && <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-pink-100 text-pink-600">k={kcoreResult.maxK}</span>}
             </div>
             <div className="flex items-center gap-1">
-              <button onClick={computeKCore} className="px-2 py-0.5 rounded text-[10px] font-medium hover:bg-purple-100 dark:hover:bg-purple-800/30 transition-colors text-purple-600">k-core</button>
-              <button onClick={() => setShowSubGraphPanel(false)} className="w-5 h-5 rounded-full hover:bg-purple-100 flex items-center justify-center" title="关闭">✕</button>
+              <button onClick={computeKCore} className="px-2 py-0.5 rounded text-[10px] font-medium hover:bg-accent-100 dark:hover:bg-accent-800/30 transition-colors text-accent-600">k-core</button>
+              <button onClick={() => setShowSubGraphPanel(false)} className="w-5 h-5 rounded-full hover:bg-accent-100 flex items-center justify-center" title="关闭">✕</button>
             </div>
           </div>
           <div className="p-3 space-y-2">
             {communityResult?.communities.map(comm => (
-              <div key={comm.id} className="rounded-xl p-2.5 border border-slate-100 dark:border-slate-700/50 hover:border-purple-300 dark:hover:border-purple-600 cursor-pointer transition-colors"
+              <div key={comm.id} className="rounded-xl p-2.5 border border-neutral-100 dark:border-neutral-700/50 hover:border-purple-300 dark:hover:border-purple-600 cursor-pointer transition-colors"
                 onClick={() => {
                   const newSub: SubGraphResult = {
                     id: crypto.randomUUID(),
@@ -4755,19 +4773,19 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
                   <div className="flex items-center gap-1.5">
                     <div className="w-3 h-3 rounded-full" style={{ backgroundColor: comm.color }} />
                     <span className="text-xs font-bold">社区 #{comm.id + 1}</span>
-                    <span className="text-[10px] text-slate-400">({comm.nodes.length}节点)</span>
+                    <span className="text-[10px] text-neutral-400">({comm.nodes.length}节点)</span>
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-1">
                   {comm.labels.slice(0, 8).map(l => (
-                    <span key={l} className="px-1.5 py-0.5 rounded text-[10px] bg-slate-100 dark:bg-slate-700/50 truncate max-w-[80px]" title={l}>{l}</span>
+                    <span key={l} className="px-1.5 py-0.5 rounded text-[10px] bg-neutral-100 dark:bg-neutral-700/50 truncate max-w-[80px]" title={l}>{l}</span>
                   ))}
-                  {comm.labels.length > 8 && <span className="text-[10px] text-slate-400">+{comm.labels.length - 8}</span>}
+                  {comm.labels.length > 8 && <span className="text-[10px] text-neutral-400">+{comm.labels.length - 8}</span>}
                 </div>
               </div>
             ))}
             {kcoreResult?.cores.filter(c => c.k >= 2).reverse().slice(0, 5).map(core => (
-              <div key={core.k} className="rounded-xl p-2.5 border border-slate-100 dark:border-slate-700/50 hover:border-pink-300 cursor-pointer transition-colors"
+              <div key={core.k} className="rounded-xl p-2.5 border border-neutral-100 dark:border-neutral-700/50 hover:border-pink-300 cursor-pointer transition-colors"
                 onClick={() => {
                   const newSub: SubGraphResult = {
                     id: crypto.randomUUID(),
@@ -4782,7 +4800,7 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
                 }}>
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-pink-600 dark:text-pink-400">{core.k}-Core</span>
-                  <span className="text-[10px] text-slate-400">{core.nodeIds.length}节点 · {core.labels.slice(0, 4).join(', ')}{core.labels.length > 4 ? '...' : ''}</span>
+                  <span className="text-[10px] text-neutral-400">{core.nodeIds.length}节点 · {core.labels.slice(0, 4).join(', ')}{core.labels.length > 4 ? '...' : ''}</span>
                 </div>
               </div>
             ))}
@@ -4792,21 +4810,21 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
 
       {/* v8.3: AI图谱问答面板 */}
       {showAIPanel && (
-        <div className="absolute bottom-14 left-1/2 -translate-x-1/2 z-[60] w-[480px] bg-white/98 dark:bg-slate-900/98 backdrop-blur-xl rounded-2xl shadow-2xl border border-blue-200/60 dark:border-blue-700/40 animate-fade-in max-h-[60vh] flex flex-col custom-scrollbar">
+        <div className="absolute bottom-14 left-1/2 -translate-x-1/2 z-[60] w-[480px] bg-white/98 dark:bg-neutral-900/98 backdrop-blur-xl rounded-2xl shadow-2xl border border-blue-200/60 dark:border-blue-700/40 animate-fade-in max-h-[60vh] flex flex-col custom-scrollbar">
           <div className="flex items-center justify-between px-4 py-2.5 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/50 dark:to-indigo-950/50 border-b border-blue-100/50 rounded-t-2xl shrink-0">
             <div className="flex items-center gap-2">
               <span>🧠</span>
-              <span className="text-sm font-bold text-blue-700 dark:text-blue-300">AI 图谱问答</span>
-              <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-blue-100 text-blue-600">NL2Graph</span>
+              <span className="text-sm font-bold text-secondary-700 dark:text-secondary-300">AI 图谱问答</span>
+              <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-secondary-100 text-secondary-600">NL2Graph</span>
             </div>
-            <button onClick={() => setShowAIPanel(false)} className="w-6 h-6 rounded-full hover:bg-blue-100 dark:hover:bg-blue-800/30 flex items-center justify-center transition-colors" title="关闭">✕</button>
+            <button onClick={() => setShowAIPanel(false)} className="w-6 h-6 rounded-full hover:bg-secondary-100 dark:hover:bg-secondary-800/30 flex items-center justify-center transition-colors" title="关闭">✕</button>
           </div>
           <div className="flex-1 overflow-auto p-3 space-y-3 min-h-0">
             {aiQAHistory.length > 0 && aiQAHistory.slice().reverse().map(record => (
               <div key={record.id} className="space-y-1.5">
                 <div className="flex items-start gap-2">
                   <span className="text-sm">❓</span>
-                  <div className="flex-1 bg-blue-50 dark:bg-blue-900/20 rounded-xl px-3 py-2 text-xs">{record.question}</div>
+                  <div className="flex-1 bg-secondary-50 dark:bg-secondary-900/20 rounded-xl px-3 py-2 text-xs">{record.question}</div>
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="text-sm">🤖</span>
@@ -4815,12 +4833,12 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
               </div>
             ))}
             {aiQAHistory.length === 0 && (
-              <div className="text-center py-6 text-slate-400 text-xs space-y-2">
+              <div className="text-center py-6 text-neutral-400 text-xs space-y-2">
                 <div className="text-2xl">🧠</div>
                 <div>向AI提问关于图谱的任何问题</div>
                 <div className="space-y-1 text-left max-w-xs mx-auto mt-3">
                   {['哪个节点连接最多？', '药材和化合物的关系？', '有哪些协同关系？'].map(q => (
-                    <div key={q} className="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800/50 cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/20 transition-colors" onClick={() => { setAiQuestion(q); handleAIQuestion() }}>{q}</div>
+                    <div key={q} className="px-3 py-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-800/50 cursor-pointer hover:bg-secondary-100 dark:hover:bg-secondary-900/20 transition-colors" onClick={() => { setAiQuestion(q); handleAIQuestion() }}>{q}</div>
                   ))}
                 </div>
               </div>
@@ -4833,7 +4851,7 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
                 onChange={(e) => setAiQuestion(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleAIQuestion()}
                 placeholder="输入问题，如：哪些节点连接最多？..."
-                className="flex-1 px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800/50 text-xs focus:outline-none focus:ring-2 focus:ring-blue-400/50 border border-transparent"
+                className="flex-1 px-3 py-2 rounded-xl bg-neutral-100 dark:bg-neutral-800/50 text-xs focus:outline-none focus:ring-2 focus:ring-blue-400/50 border border-transparent"
               />
               <button
                 onClick={handleAIQuestion}
@@ -4854,7 +4872,7 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
             left: tooltip.x + 16,
             top: tooltip.y - 12,
             background: 'linear-gradient(135deg, rgba(15,23,42,0.96) 0%, rgba(30,41,59,0.97) 100%)',
-            color: '#f1f5f9',
+            color: '#F3F4F6',
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',
             borderRadius: '12px',
@@ -4870,8 +4888,8 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
       {/* v7.3: 增强搜索栏 */}
       <div className="absolute top-3 left-1/2 -translate-x-1/2 z-40 w-72">
         <div className="relative">
-          <div className="flex items-center gap-1 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-xl border border-slate-200/70 dark:border-slate-700/60 shadow-lg px-3 py-1.5 focus-within:ring-2 focus-within:ring-primary-500/30 focus-within:border-primary-400 transition-all">
-            <svg className="w-3.5 h-3.5 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <div className="flex items-center gap-1 bg-white/95 dark:bg-neutral-800/95 backdrop-blur-md rounded-xl border border-neutral-200/70 dark:border-neutral-700/60 shadow-lg px-3 py-1.5 focus-within:ring-2 focus-within:ring-primary-500/30 focus-within:border-primary-400 transition-all">
+            <svg className="w-3.5 h-3.5 text-neutral-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
             </svg>
             <input
@@ -4885,10 +4903,10 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
                 else if (e.key === 'Escape') { clearSearch(); (e.target as HTMLInputElement).blur() }
               }}
               placeholder="搜索节点..."
-              className="flex-1 bg-transparent text-[11px] text-slate-700 dark:text-slate-300 placeholder-slate-400 outline-none min-w-0"
+              className="flex-1 bg-transparent text-[11px] text-neutral-700 dark:text-neutral-300 placeholder-slate-400 outline-none min-w-0"
             />
             {searchQuery && (
-              <button onClick={clearSearch} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-0.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors shrink-0">
+              <button onClick={clearSearch} className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 p-0.5 rounded hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors shrink-0">
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             )}
@@ -4896,7 +4914,7 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
 
           {/* 搜索结果下拉 */}
           {searchQuery && searchMatches.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-1.5 bg-white/97 dark:bg-slate-900/97 backdrop-blur-xl rounded-xl border border-slate-200/70 dark:border-slate-700/60 shadow-2xl overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-150 max-h-[280px] overflow-y-auto custom-scrollbar">
+            <div className="absolute top-full left-0 right-0 mt-1.5 bg-white/97 dark:bg-neutral-900/97 backdrop-blur-xl rounded-xl border border-neutral-200/70 dark:border-neutral-700/60 shadow-2xl overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-150 max-h-[280px] overflow-y-auto custom-scrollbar">
               {searchMatches.map(({ node, score, matchFields }, idx) => {
                 const tconf = TYPE_CONFIG[node.type]
                 const isFocused = idx === focusedNodeIndex
@@ -4906,44 +4924,44 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
                     onClick={() => handleSearchSelect(node)}
                     onMouseEnter={() => setFocusedNodeIndex(idx)}
                     className={`w-full flex items-center gap-2 px-3 py-2 text-left transition-colors ${
-                      isFocused ? 'bg-primary-50 dark:bg-primary-950/30' : 'hover:bg-slate-50 dark:hover:bg-slate-800/60'
+                      isFocused ? 'bg-primary-50 dark:bg-primary-950/30' : 'hover:bg-slate-50 dark:hover:bg-neutral-800/60'
                     }`}
                   >
-                    <span className="w-2.5 h-2.5 rounded-full shrink-0 ring-1.5 ring-white dark:ring-slate-900" style={{ backgroundColor: tconf?.color || '#94A3B8' }} />
-                    <span className={`flex-1 min-w-0 text-[11px] font-medium truncate ${isFocused ? 'text-primary-700 dark:text-primary-300' : 'text-slate-700 dark:text-slate-300'}`}>
+                    <span className="w-2.5 h-2.5 rounded-full shrink-0 ring-1.5 ring-white dark:ring-slate-900" style={{ backgroundColor: tconf?.color || 'var(--color-knowledge-default, #9CA3AF)' }} />
+                    <span className={`flex-1 min-w-0 text-[11px] font-medium truncate ${isFocused ? 'text-primary-700 dark:text-primary-300' : 'text-neutral-700 dark:text-neutral-300'}`}>
                       {node.label}
                     </span>
-                    <span className="text-[8px] px-1.5 py-0.5 rounded-full font-medium shrink-0" style={{ backgroundColor: `${tconf?.color || '#94A3B8'}15`, color: tconf?.color || '#64748B' }}>
+                    <span className="text-[8px] px-1.5 py-0.5 rounded-full font-medium shrink-0" style={{ backgroundColor: `${tconf?.color || 'var(--color-knowledge-default, #9CA3AF)'}15`, color: tconf?.color || 'var(--color-knowledge-text, #6B7280)' }}>
                       {tconf?.label || node.type}
                     </span>
                     {score >= 80 && (
-                      <span className="text-[8px] font-bold text-amber-500 shrink-0">{score}</span>
+                      <span className="text-[8px] font-bold text-warning-500 shrink-0">{score}</span>
                     )}
                   </button>
                 )
               })}
-              <div className="px-3 py-1.5 border-t border-slate-100 dark:border-slate-700/50 flex items-center justify-between">
-                <span className="text-[9px] text-slate-400">找到 {searchMatches.length} 个匹配</span>
-                <span className="text-[8px] text-slate-400">↑↓ 导航 · Enter 选择</span>
+              <div className="px-3 py-1.5 border-t border-neutral-100 dark:border-neutral-700/50 flex items-center justify-between">
+                <span className="text-[9px] text-neutral-400">找到 {searchMatches.length} 个匹配</span>
+                <span className="text-[8px] text-neutral-400">↑↓ 导航 · Enter 选择</span>
               </div>
             </div>
           )}
 
           {/* 搜索历史（无输入时显示） */}
           {!searchQuery && searchHistory.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-1.5 bg-white/97 dark:bg-slate-900/97 backdrop-blur-xl rounded-xl border border-slate-200/70 dark:border-slate-700/60 shadow-lg overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-150">
-              <div className="px-3 py-1.5 border-b border-slate-100 dark:border-slate-700/50 flex items-center justify-between">
-                <span className="text-[9px] font-semibold text-slate-500 uppercase tracking-wider">搜索历史</span>
-                <button onClick={() => setSearchHistory([])} className="text-[8px] text-slate-400 hover:text-red-500 transition-colors">清空</button>
+            <div className="absolute top-full left-0 right-0 mt-1.5 bg-white/97 dark:bg-neutral-900/97 backdrop-blur-xl rounded-xl border border-neutral-200/70 dark:border-neutral-700/60 shadow-lg overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-150">
+              <div className="px-3 py-1.5 border-b border-neutral-100 dark:border-neutral-700/50 flex items-center justify-between">
+                <span className="text-[9px] font-semibold text-neutral-500 uppercase tracking-wider">搜索历史</span>
+                <button onClick={() => setSearchHistory([])} className="text-[8px] text-neutral-400 hover:text-error-500 transition-colors">清空</button>
               </div>
               {searchHistory.map((term, idx) => (
                 <button
                   key={`${term}-${idx}`}
                   onClick={() => handleSearchChange(term)}
-                  className="w-full flex items-center gap-2 px-3 py-1.5 text-left hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors"
+                  className="w-full flex items-center gap-2 px-3 py-1.5 text-left hover:bg-slate-50 dark:hover:bg-neutral-800/60 transition-colors"
                 >
-                  <svg className="w-3 h-3 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                  <span className="text-[11px] text-slate-600 dark:text-slate-400 truncate">{term}</span>
+                  <svg className="w-3 h-3 text-neutral-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                  <span className="text-[11px] text-neutral-600 dark:text-neutral-400 truncate">{term}</span>
                 </button>
               ))}
             </div>
@@ -4967,58 +4985,58 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
       {/* v7.4: 右键上下文菜单 */}
       {contextMenu && (
         <div
-          className="absolute z-50 min-w-[180px] bg-white/97 dark:bg-slate-900/97 backdrop-blur-xl rounded-xl border border-slate-200/80 dark:border-slate-700/60 shadow-2xl py-1 animate-in fade-in zoom-in-95 duration-150"
+          className="absolute z-50 min-w-[180px] bg-white/97 dark:bg-neutral-900/97 backdrop-blur-xl rounded-xl border border-neutral-200/80 dark:border-neutral-700/60 shadow-2xl py-1 animate-in fade-in zoom-in-95 duration-150"
           style={{ left: contextMenu.x, top: contextMenu.y }}
           onClick={(e) => e.stopPropagation()}
         >
           {contextMenu.node ? (
             <>
-              <div className="px-3 py-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-100 dark:border-slate-700/50">
+              <div className="px-3 py-1.5 text-[10px] font-semibold text-neutral-400 uppercase tracking-wider border-b border-neutral-100 dark:border-neutral-700/50">
                 {contextMenu.node.label}
               </div>
               <button onClick={() => handleContextAction('focus', contextMenu.node)}
                 className="w-full flex items-center gap-2 px-3 py-1.5 text-[11px] hover:bg-primary-50 dark:hover:bg-primary-950/30 transition-colors">
-                <svg className="w-3.5 h-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                <svg className="w-3.5 h-3.5 text-neutral-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                 聚焦此节点
               </button>
               <button onClick={() => handleContextAction('selectNeighbors', contextMenu.node)}
-                className="w-full flex items-center gap-2 px-3 py-1.5 text-[11px] hover:bg-blue-50 dark:hover:bg-blue-950/30 transition-colors">
-                <svg className="w-3.5 h-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" /></svg>
+                className="w-full flex items-center gap-2 px-3 py-1.5 text-[11px] hover:bg-secondary-50 dark:hover:bg-blue-950/30 transition-colors">
+                <svg className="w-3.5 h-3.5 text-neutral-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" /></svg>
                 选中邻居节点
               </button>
               <button onClick={() => handleContextAction('hide', contextMenu.node)}
-                className="w-full flex items-center gap-2 px-3 py-1.5 text-[11px] hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors">
-                <svg className="w-3.5 h-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" /></svg>
+                className="w-full flex items-center gap-2 px-3 py-1.5 text-[11px] hover:bg-error-50 dark:hover:bg-red-950/30 transition-colors">
+                <svg className="w-3.5 h-3.5 text-neutral-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" /></svg>
                 隐藏此类型
               </button>
-              <div className="border-t border-slate-100 dark:border-slate-700/50 my-1" />
+              <div className="border-t border-neutral-100 dark:border-neutral-700/50 my-1" />
             </>
           ) : selectedNodes.size > 0 ? (
             <>
-              <div className="px-3 py-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-100 dark:border-slate-700/50">
+              <div className="px-3 py-1.5 text-[10px] font-semibold text-neutral-400 uppercase tracking-wider border-b border-neutral-100 dark:border-neutral-700/50">
                 已选中 {selectedNodes.size} 个节点
               </div>
               <button onClick={() => handleContextAction('exportSubgraph')}
-                className="w-full flex items-center gap-2 px-3 py-1.5 text-[11px] hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-colors">
-                <svg className="w-3.5 h-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                className="w-full flex items-center gap-2 px-3 py-1.5 text-[11px] hover:bg-primary-50 dark:hover:bg-emerald-950/30 transition-colors">
+                <svg className="w-3.5 h-3.5 text-neutral-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
                 导出子图数据
               </button>
               <button onClick={() => handleContextAction('clearSelection')}
-                className="w-full flex items-center gap-2 px-3 py-1.5 text-[11px] hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors">
-                <svg className="w-3.5 h-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                className="w-full flex items-center gap-2 px-3 py-1.5 text-[11px] hover:bg-neutral-100 dark:hover:bg-neutral-800/60 transition-colors">
+                <svg className="w-3.5 h-3.5 text-neutral-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                 清除选择
               </button>
-              <div className="border-t border-slate-100 dark:border-slate-700/50 my-1" />
+              <div className="border-t border-neutral-100 dark:border-neutral-700/50 my-1" />
             </>
           ) : null}
 
-          <div className="px-3 py-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider border-t border-slate-100 dark:border-slate-700/50">
+          <div className="px-3 py-1.5 text-[10px] font-semibold text-neutral-400 uppercase tracking-wider border-t border-neutral-100 dark:border-neutral-700/50">
             图谱工具
           </div>
           {communities.size > 0 ? (
             <button onClick={() => handleContextAction('clearCommunities')}
-              className="w-full flex items-center gap-2 px-3 py-1.5 text-[11px] hover:bg-amber-50 dark:hover:bg-amber-950/30 transition-colors">
-              <svg className="w-3.5 h-3.5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" /><path strokeLinecap="round" strokeLinejoin="round" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z" /></svg>
+              className="w-full flex items-center gap-2 px-3 py-1.5 text-[11px] hover:bg-warning-50 dark:hover:bg-amber-950/30 transition-colors">
+              <svg className="w-3.5 h-3.5 text-warning-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" /><path strokeLinecap="round" strokeLinejoin="round" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z" /></svg>
               关闭社群着色 ({new Set(communities.values()).size}个社群)
             </button>
           ) : (
@@ -5034,8 +5052,8 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
             setCommunities(new Map())
             setCommunityColors({})
           }}
-            className="w-full flex items-center gap-2 px-3 py-1.5 text-[11px] hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors">
-            <svg className="w-3.5 h-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+            className="w-full flex items-center gap-2 px-3 py-1.5 text-[11px] hover:bg-neutral-100 dark:hover:bg-neutral-800/60 transition-colors">
+            <svg className="w-3.5 h-3.5 text-neutral-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
             重置全部视图
           </button>
         </div>
@@ -5043,32 +5061,32 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
 
       {/* v7.4: 选中节点信息条 */}
       {selectedNodes.size > 0 && (
-        <div className="absolute bottom-14 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3 px-4 py-2 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-xl border border-primary-200/70 dark:border-primary-700/40 shadow-lg">
+        <div className="absolute bottom-14 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3 px-4 py-2 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md rounded-xl border border-primary-200/70 dark:border-primary-700/40 shadow-lg">
           <span className="text-[11px] font-semibold text-primary-600 dark:text-primary-400">
             ✓ 已选择 {selectedNodes.size} 个节点
           </span>
-          <span className="text-[10px] text-slate-400">|</span>
-          <span className="text-[10px] text-slate-500">Ctrl+拖拽 框选 · 右键 菜单</span>
+          <span className="text-[10px] text-neutral-400">|</span>
+          <span className="text-[10px] text-neutral-500">Ctrl+拖拽 框选 · 右键 菜单</span>
           <button onClick={() => setSelectedNodes(new Set())}
-            className="text-[10px] text-slate-400 hover:text-red-500 transition-colors ml-1">清除</button>
+            className="text-[10px] text-neutral-400 hover:text-error-500 transition-colors ml-1">清除</button>
         </div>
       )}
 
       {/* v7.4: 社群图例 */}
       {communities.size > 0 && (
-        <div className="absolute bottom-3 left-3 z-40 flex flex-wrap gap-1.5 p-2 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-lg border border-slate-200/60 dark:border-slate-700/40 shadow-md max-w-xs">
-          <span className="text-[9px] font-semibold text-slate-500 w-full mb-0.5">社群着色 ({new Set(communities.values()).size}个)</span>
+        <div className="absolute bottom-3 left-3 z-40 flex flex-wrap gap-1.5 p-2 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm rounded-lg border border-neutral-200/60 dark:border-neutral-700/40 shadow-md max-w-xs">
+          <span className="text-[9px] font-semibold text-neutral-500 w-full mb-0.5">社群着色 ({new Set(communities.values()).size}个)</span>
           {Object.entries(generatedCommunityColors).slice(0, 10).map(([id, color]) => {
             const count = [...communities.values()].filter(v => v === Number(id)).length
             return (
-              <span key={id} className="inline-flex items-center gap-1 text-[9px] px-1.5 py-0.5 rounded-full bg-white dark:bg-slate-800 shadow-sm">
+              <span key={id} className="inline-flex items-center gap-1 text-[9px] px-1.5 py-0.5 rounded-full bg-white dark:bg-neutral-800 shadow-sm">
                 <span className="w-2 h-2 rounded-full ring-1 ring-white dark:ring-slate-900" style={{ backgroundColor: color }} />
                 社群{Number(id)+1} ×{count}
               </span>
             )
           })}
           {Object.keys(generatedCommunityColors).length > 10 && (
-            <span className="text-[9px] text-slate-400 italic">+{Object.keys(generatedCommunityColors).length - 10}...</span>
+            <span className="text-[9px] text-neutral-400 italic">+{Object.keys(generatedCommunityColors).length - 10}...</span>
           )}
         </div>
       )}
@@ -5084,66 +5102,66 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
 
       {/* v7.5: 实时性能监控面板 */}
       {showPerfPanel && (
-        <div className="absolute top-14 right-3 z-40 w-56 rounded-xl bg-slate-900/95 dark:bg-slate-950/95 backdrop-blur-xl border border-slate-700/50 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-          <div className="px-3 py-2 border-b border-slate-700/40 flex items-center justify-between">
-            <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+        <div className="absolute top-14 right-3 z-40 w-56 rounded-xl bg-neutral-900/95 dark:bg-slate-950/95 backdrop-blur-xl border border-neutral-700/50 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+          <div className="px-3 py-2 border-b border-neutral-700/40 flex items-center justify-between">
+            <span className="text-[10px] font-bold text-primary-400 uppercase tracking-wider flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-primary-400 animate-pulse" />
               性能监控
             </span>
-            <button onClick={() => setShowPerfPanel(false)} className="text-slate-500 hover:text-slate-300 transition-colors p-0.5" aria-label="关闭性能面板">
+            <button onClick={() => setShowPerfPanel(false)} className="text-neutral-500 hover:text-neutral-300 transition-colors p-0.5" aria-label="关闭性能面板">
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
           </div>
           <div className="p-2.5 space-y-2">
             {/* FPS 指示器 */}
             <div className="flex items-center justify-between">
-              <span className="text-[9px] text-slate-400">帧率 FPS</span>
+              <span className="text-[9px] text-neutral-400">帧率 FPS</span>
               <span className={`text-[11px] font-mono font-bold tabular-nums ${
-                perfStats.fps >= 55 ? 'text-emerald-400' : perfStats.fps >= 40 ? 'text-amber-400' : perfStats.fps >= 24 ? 'text-orange-400' : 'text-red-400'
+                perfStats.fps >= 55 ? 'text-primary-400' : perfStats.fps >= 40 ? 'text-warning-400' : perfStats.fps >= 24 ? 'text-orange-400' : 'text-error-400'
               }`}>
-                {perfStats.fps} <span className="text-[8px] font-normal text-slate-500">fps</span>
+                {perfStats.fps} <span className="text-[8px] font-normal text-neutral-500">fps</span>
               </span>
             </div>
             {/* 帧时间 */}
             <div className="flex items-center justify-between">
-              <span className="text-[9px] text-slate-400">帧时间</span>
-              <span className="text-[10px] font-mono text-slate-300 tabular-nums">{perfStats.frameTime} <span className="text-[8px] text-slate-500">ms</span></span>
+              <span className="text-[9px] text-neutral-400">帧时间</span>
+              <span className="text-[10px] font-mono text-neutral-300 tabular-nums">{perfStats.frameTime} <span className="text-[8px] text-neutral-500">ms</span></span>
             </div>
             {/* 性能评级 */}
             <div className="flex items-center justify-between">
-              <span className="text-[9px] text-slate-400">性能评级</span>
+              <span className="text-[9px] text-neutral-400">性能评级</span>
               <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-full ${
-                perfStats.rating === 'excellent' ? 'bg-emerald-500/20 text-emerald-400' :
-                perfStats.rating === 'good' ? 'bg-blue-500/20 text-blue-400' :
-                perfStats.rating === 'fair' ? 'bg-amber-500/20 text-amber-400' :
-                'bg-red-500/20 text-red-400'
+                perfStats.rating === 'excellent' ? 'bg-primary-500/20 text-primary-400' :
+                perfStats.rating === 'good' ? 'bg-secondary-500/20 text-secondary-400' :
+                perfStats.rating === 'fair' ? 'bg-warning-500/20 text-warning-400' :
+                'bg-error-500/20 text-error-400'
               }`}>
                 {perfStats.rating === 'excellent' ? '优秀' : perfStats.rating === 'good' ? '良好' : perfStats.rating === 'fair' ? '一般' : '较差'}
               </span>
             </div>
-            <div className="border-t border-slate-700/30 pt-2 space-y-1.5">
+            <div className="border-t border-neutral-700/30 pt-2 space-y-1.5">
               {/* 节点/边数 */}
               <div className="flex items-center justify-between">
-                <span className="text-[9px] text-slate-400">节点 / 边</span>
-                <span className="text-[9px] font-mono text-slate-300">{filteredData.filteredNodes.length} / {filteredData.filteredEdges.length}</span>
+                <span className="text-[9px] text-neutral-400">节点 / 边</span>
+                <span className="text-[9px] font-mono text-neutral-300">{filteredData.filteredNodes.length} / {filteredData.filteredEdges.length}</span>
               </div>
               {/* LOD 级别 */}
               <div className="flex items-center justify-between">
-                <span className="text-[9px] text-slate-400">渲染级别</span>
+                <span className="text-[9px] text-neutral-400">渲染级别</span>
                 <span className={`text-[9px] font-medium ${
-                  lodLevel === 'full' ? 'text-emerald-400' : lodLevel === 'reduced' ? 'text-amber-400' : 'text-red-400'
+                  lodLevel === 'full' ? 'text-primary-400' : lodLevel === 'reduced' ? 'text-warning-400' : 'text-error-400'
                 }`}>{perfStats.lodLevel}</span>
               </div>
               {/* 内存估算 */}
               <div className="flex items-center justify-between">
-                <span className="text-[9px] text-slate-400">内存估算</span>
-                <span className="text-[9px] font-mono text-slate-300">{perfStats.memoryEst}</span>
+                <span className="text-[9px] text-neutral-400">内存估算</span>
+                <span className="text-[9px] font-mono text-neutral-300">{perfStats.memoryEst}</span>
               </div>
             </div>
             {/* 增量更新状态 */}
-            <div className="border-t border-slate-700/30 pt-2 flex items-center justify-between">
-              <span className="text-[9px] text-slate-400">更新模式</span>
-              <span className={`text-[9px] font-medium ${dataChanged ? 'text-amber-400' : 'text-emerald-400'}`}>
+            <div className="border-t border-neutral-700/30 pt-2 flex items-center justify-between">
+              <span className="text-[9px] text-neutral-400">更新模式</span>
+              <span className={`text-[9px] font-medium ${dataChanged ? 'text-warning-400' : 'text-primary-400'}`}>
                 {dataChanged ? '全量重绘' : '增量更新'}
               </span>
             </div>
@@ -5154,58 +5172,58 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
       {/* v7.5: 性能面板快捷触发按钮（始终可见） */}
       <button
         onClick={() => setShowPerfPanel(prev => !prev)}
-        className="absolute bottom-3 right-3 z-30 w-6 h-6 rounded-lg bg-white/85 dark:bg-slate-800/85 backdrop-blur-sm border border-slate-200/60 dark:border-slate-700/50 shadow-sm hover:shadow-md transition-all flex items-center justify-center group"
+        className="absolute bottom-3 right-3 z-30 w-6 h-6 rounded-lg bg-white/85 dark:bg-neutral-800/85 backdrop-blur-sm border border-neutral-200/60 dark:border-neutral-700/50 shadow-sm hover:shadow-md transition-all flex items-center justify-center group"
         title="性能监控 (Shift+P)"
         aria-label="切换性能监控面板"
       >
-        <svg className={`w-3 h-3 transition-colors ${showPerfPanel ? 'text-emerald-500' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <svg className={`w-3 h-3 transition-colors ${showPerfPanel ? 'text-primary-500' : 'text-neutral-400 group-hover:text-neutral-600 dark:group-hover:text-neutral-300'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
         </svg>
       </button>
 
       {/* v7.6: 导出菜单下拉 */}
       {showExportMenu && (
-        <div className="absolute bottom-14 right-3 z-50 w-52 bg-white/97 dark:bg-slate-900/97 backdrop-blur-xl rounded-xl border border-slate-200/80 dark:border-slate-700/60 shadow-2xl animate-in fade-in zoom-in-95 duration-150 overflow-hidden">
-          <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-700/50 flex items-center justify-between">
-            <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">导出数据</span>
-            <button onClick={() => setShowExportMenu(false)} className="text-slate-400 hover:text-slate-600 p-0.5">
+        <div className="absolute bottom-14 right-3 z-50 w-52 bg-white/97 dark:bg-neutral-900/97 backdrop-blur-xl rounded-xl border border-neutral-200/80 dark:border-neutral-700/60 shadow-2xl animate-in fade-in zoom-in-95 duration-150 overflow-hidden">
+          <div className="px-3 py-2 border-b border-neutral-100 dark:border-neutral-700/50 flex items-center justify-between">
+            <span className="text-[10px] font-semibold text-neutral-500 uppercase tracking-wider">导出数据</span>
+            <button onClick={() => setShowExportMenu(false)} className="text-neutral-400 hover:text-neutral-600 p-0.5">
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
           </div>
           <div className="p-1.5">
             <button onClick={() => exportSubgraphJSON('json')}
-              className="w-full flex items-center gap-2 px-3 py-2 text-[11px] hover:bg-blue-50 dark:hover:bg-blue-950/30 rounded-lg transition-colors">
-              <span className="w-5 h-5 rounded bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center shrink-0">
-                <span className="text-[9px] font-bold text-blue-600">{ }</span>
+              className="w-full flex items-center gap-2 px-3 py-2 text-[11px] hover:bg-secondary-50 dark:hover:bg-blue-950/30 rounded-lg transition-colors">
+              <span className="w-5 h-5 rounded bg-secondary-100 dark:bg-secondary-900/40 flex items-center justify-center shrink-0">
+                <span className="text-[9px] font-bold text-secondary-600">{ }</span>
               </span>
               <div className="text-left">
-                <div className="font-medium text-slate-700 dark:text-slate-300">JSON 格式</div>
-                <div className="text-[8px] text-slate-400">完整数据 + 属性 + 社群</div>
+                <div className="font-medium text-neutral-700 dark:text-neutral-300">JSON 格式</div>
+                <div className="text-[8px] text-neutral-400">完整数据 + 属性 + 社群</div>
               </div>
             </button>
             <button onClick={() => exportSubgraphJSON('gexf')}
-              className="w-full flex items-center gap-2 px-3 py-2 text-[11px] hover:bg-purple-50 dark:hover:bg-purple-950/30 rounded-lg transition-colors">
-              <span className="w-5 h-5 rounded bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center shrink-0">
-                <span className="text-[9px] font-bold text-purple-600">G</span>
+              className="w-full flex items-center gap-2 px-3 py-2 text-[11px] hover:bg-accent-50 dark:hover:bg-purple-950/30 rounded-lg transition-colors">
+              <span className="w-5 h-5 rounded bg-accent-100 dark:bg-accent-900/40 flex items-center justify-center shrink-0">
+                <span className="text-[9px] font-bold text-accent-600">G</span>
               </span>
               <div className="text-left">
-                <div className="font-medium text-slate-700 dark:text-slate-300">GEXF 格式</div>
-                <div className="text-[8px] text-slate-400">Gephi / NetworkX 兼容</div>
+                <div className="font-medium text-neutral-700 dark:text-neutral-300">GEXF 格式</div>
+                <div className="text-[8px] text-neutral-400">Gephi / NetworkX 兼容</div>
               </div>
             </button>
             <button onClick={() => exportSubgraphJSON('svg')}
-              className="w-full flex items-center gap-2 px-3 py-2 text-[11px] hover:bg-emerald-50 dark:hover:bg-emerald-950/30 rounded-lg transition-colors">
-              <span className="w-5 h-5 rounded bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center shrink-0">
-                <svg className="w-3 h-3 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+              className="w-full flex items-center gap-2 px-3 py-2 text-[11px] hover:bg-primary-50 dark:hover:bg-emerald-950/30 rounded-lg transition-colors">
+              <span className="w-5 h-5 rounded bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center shrink-0">
+                <svg className="w-3 h-3 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
               </span>
               <div className="text-left">
-                <div className="font-medium text-slate-700 dark:text-slate-300">SVG 图像</div>
-                <div className="text-[8px] text-slate-400">矢量图形 / 可编辑</div>
+                <div className="font-medium text-neutral-700 dark:text-neutral-300">SVG 图像</div>
+                <div className="text-[8px] text-neutral-400">矢量图形 / 可编辑</div>
               </div>
             </button>
           </div>
           {selectedNodes.size > 0 && (
-            <div className="px-3 py-1.5 bg-primary-50/50 dark:bg-primary-950/20 border-t border-slate-100 dark:border-slate-700/50">
+            <div className="px-3 py-1.5 bg-primary-50/50 dark:bg-primary-950/20 border-t border-neutral-100 dark:border-neutral-700/50">
               <span className="text-[9px] text-primary-600 dark:text-primary-400">将导出选中的 {selectedNodes.size} 个节点</span>
             </div>
           )}
@@ -5214,8 +5232,8 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
 
       {/* v7.6: 导出状态提示 */}
       {exportStatus && (
-        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-xl bg-slate-900/95 dark:bg-slate-950 backdrop-blur-md shadow-2xl animate-in fade-in zoom-in-95 duration-150">
-          <span className="text-[11px] font-medium text-emerald-400">{exportStatus}</span>
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-xl bg-neutral-900/95 dark:bg-slate-950 backdrop-blur-md shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+          <span className="text-[11px] font-medium text-primary-400">{exportStatus}</span>
         </div>
       )}
 
@@ -5233,10 +5251,10 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
 
       {/* v7.6: 小地图导航 */}
       {showMinimap && filteredData.filteredNodes.length > 0 && (
-        <div className="absolute bottom-3 left-3 z-35 bg-white/92 dark:bg-slate-900/92 backdrop-blur-sm rounded-lg border border-slate-200/70 dark:border-slate-700/50 shadow-md overflow-hidden" style={{ width: 160, height: 110 }}>
-          <div className="flex items-center justify-between px-2 py-1 border-b border-slate-100 dark:border-slate-700/40">
-            <span className="text-[8px] font-semibold text-slate-500 uppercase tracking-wider">导航图</span>
-            <button onClick={() => setShowMinimap(false)} className="text-slate-400 hover:text-slate-600 p-0.5" title="关闭小地图">
+        <div className="absolute bottom-3 left-3 z-35 bg-white/92 dark:bg-neutral-900/92 backdrop-blur-sm rounded-lg border border-neutral-200/70 dark:border-neutral-700/50 shadow-md overflow-hidden" style={{ width: 160, height: 110 }}>
+          <div className="flex items-center justify-between px-2 py-1 border-b border-neutral-100 dark:border-neutral-700/40">
+            <span className="text-[8px] font-semibold text-neutral-500 uppercase tracking-wider">导航图</span>
+            <button onClick={() => setShowMinimap(false)} className="text-neutral-400 hover:text-neutral-600 p-0.5" title="关闭小地图">
               <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
           </div>
@@ -5270,10 +5288,10 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
       {!showMinimap && filteredData.filteredNodes.length > 0 && (
         <button
           onClick={() => setShowMinimap(true)}
-          className="absolute bottom-3 left-3 z-30 w-6 h-6 rounded-lg bg-white/85 dark:bg-slate-800/85 backdrop-blur-sm border border-slate-200/60 dark:border-slate-700/50 shadow-sm hover:shadow-md transition-all flex items-center justify-center group"
+          className="absolute bottom-3 left-3 z-30 w-6 h-6 rounded-lg bg-white/85 dark:bg-neutral-800/85 backdrop-blur-sm border border-neutral-200/60 dark:border-neutral-700/50 shadow-sm hover:shadow-md transition-all flex items-center justify-center group"
           title="显示小地图"
         >
-          <svg className={`w-3 h-3 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <svg className={`w-3 h-3 text-neutral-400 group-hover:text-neutral-600 dark:group-hover:text-neutral-300`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V5.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
           </svg>
         </button>
@@ -5282,31 +5300,31 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
       {/* v7.7: 中心性分析面板触发按钮 */}
       <button
         onClick={() => setShowCentralityPanel(prev => !prev)}
-        className="absolute bottom-14 right-3 z-30 w-6 h-6 rounded-lg bg-white/85 dark:bg-slate-800/85 backdrop-blur-sm border border-slate-200/60 dark:border-slate-700/50 shadow-sm hover:shadow-md transition-all flex items-center justify-center group"
+        className="absolute bottom-14 right-3 z-30 w-6 h-6 rounded-lg bg-white/85 dark:bg-neutral-800/85 backdrop-blur-sm border border-neutral-200/60 dark:border-neutral-700/50 shadow-sm hover:shadow-md transition-all flex items-center justify-center group"
         title="中心性分析 (Shift+C)"
         aria-label="切换中心性分析面板"
       >
-        <svg className={`w-3 h-3 transition-colors ${showCentralityPanel ? 'text-violet-500' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <svg className={`w-3 h-3 transition-colors ${showCentralityPanel ? 'text-violet-500' : 'text-neutral-400 group-hover:text-neutral-600 dark:group-hover:text-neutral-300'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
         </svg>
       </button>
 
       {/* v7.7: 中心性分析面板 */}
       {showCentralityPanel && centralityData.stats && (
-        <div className="absolute top-14 right-3 z-40 w-72 rounded-xl bg-white/97 dark:bg-slate-900/97 backdrop-blur-xl border border-slate-200/80 dark:border-slate-700/60 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 max-h-[70vh] overflow-y-auto">
-          <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-700/50 flex items-center justify-between sticky top-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur">
+        <div className="absolute top-14 right-3 z-40 w-72 rounded-xl bg-white/97 dark:bg-neutral-900/97 backdrop-blur-xl border border-neutral-200/80 dark:border-neutral-700/60 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 max-h-[70vh] overflow-y-auto">
+          <div className="px-3 py-2 border-b border-neutral-100 dark:border-neutral-700/50 flex items-center justify-between sticky top-0 bg-white/95 dark:bg-neutral-900/95 backdrop-blur">
             <span className="text-[10px] font-bold text-violet-500 uppercase tracking-wider flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse" />
               中心性分析
             </span>
             <div className="flex items-center gap-1">
               <select value={sortBy} onChange={(e) => setSortBy(e.target.value as 'degree' | 'label' | 'type')}
-                className="text-[8px] bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded px-1 py-0.5">
+                className="text-[8px] bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-600 rounded px-1 py-0.5">
                 <option value="degree">按度数</option>
                 <option value="label">按名称</option>
                 <option value="type">按类型</option>
               </select>
-              <button onClick={() => setShowCentralityPanel(false)} className="text-slate-400 hover:text-slate-600 p-0.5">
+              <button onClick={() => setShowCentralityPanel(false)} className="text-neutral-400 hover:text-neutral-600 p-0.5">
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
@@ -5316,13 +5334,13 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
           <div className="p-2.5 space-y-2">
             <div className="grid grid-cols-3 gap-1.5">
               {[
-                { label: '节点', value: centralityData.stats.totalNodes, color: 'text-blue-500' },
-                { label: '边', value: centralityData.stats.totalEdges, color: 'text-emerald-500' },
-                { label: '密度', value: centralityData.stats.density, color: 'text-purple-500' },
+                { label: '节点', value: centralityData.stats.totalNodes, color: 'text-secondary-500' },
+                { label: '边', value: centralityData.stats.totalEdges, color: 'text-primary-500' },
+                { label: '密度', value: centralityData.stats.density, color: 'text-accent-500' },
               ].map(s => (
-                <div key={s.label} className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-1.5 text-center">
+                <div key={s.label} className="bg-slate-50 dark:bg-neutral-800/50 rounded-lg p-1.5 text-center">
                   <div className={`text-[11px] font-bold tabular-nums ${s.color}`}>{s.value}</div>
-                  <div className="text-[7px] text-slate-400">{s.label}</div>
+                  <div className="text-[7px] text-neutral-400">{s.label}</div>
                 </div>
               ))}
             </div>
@@ -5335,26 +5353,26 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
                 { label: '直径', value: centralityData.stats.diameter },
               ].map(s => (
                 <div key={s.label} className="text-center py-1">
-                  <div className="text-[10px] font-mono font-semibold text-slate-700 dark:text-slate-300">{s.value}</div>
-                  <div className="text-[7px] text-slate-400 leading-tight">{s.label}</div>
+                  <div className="text-[10px] font-mono font-semibold text-neutral-700 dark:text-neutral-300">{s.value}</div>
+                  <div className="text-[7px] text-neutral-400 leading-tight">{s.label}</div>
                 </div>
               ))}
             </div>
 
             {/* 类型分布 */}
-            <div className="border-t border-slate-100 dark:border-slate-700/30 pt-2">
-              <div className="text-[8px] font-semibold text-slate-500 uppercase mb-1.5">类型分布</div>
+            <div className="border-t border-neutral-100 dark:border-neutral-700/30 pt-2">
+              <div className="text-[8px] font-semibold text-neutral-500 uppercase mb-1.5">类型分布</div>
               <div className="space-y-1">
                 {centralityData.stats.typeDistribution.slice(0, 6).map(([type, count]) => {
-                  const conf = TYPE_CONFIG[type]
+                  const conf = TYPE_CONFIG[type as keyof typeof TYPE_CONFIG]
                   const pct = ((count / centralityData.stats.totalNodes) * 100).toFixed(0)
                   return (
                     <div key={type} className="flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: conf?.color || '#94a3b8' }} />
-                      <span className="text-[9px] text-slate-600 dark:text-slate-400 truncate flex-1">{conf?.cnName || type}</span>
-                      <span className="text-[9px] font-mono text-slate-500">{count}</span>
-                      <div className="w-10 h-1.5 bg-slate-100 dark:bg-slate-700/40 rounded-full overflow-hidden">
-                        <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: conf?.color || '#94a3b8' }} />
+                      <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: conf?.color || 'var(--color-knowledge-default, #9CA3AF)' }} />
+                      <span className="text-[9px] text-neutral-600 dark:text-neutral-400 truncate flex-1">{conf?.label || type}</span>
+                      <span className="text-[9px] font-mono text-neutral-500">{count}</span>
+                      <div className="w-10 h-1.5 bg-neutral-100 dark:bg-neutral-700/40 rounded-full overflow-hidden">
+                        <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: conf?.color || 'var(--color-knowledge-default, #9CA3AF)' }} />
                       </div>
                     </div>
                   )
@@ -5363,10 +5381,10 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
             </div>
 
             {/* Top 10 节点排行 */}
-            <div className="border-t border-slate-100 dark:border-slate-700/30 pt-2">
+            <div className="border-t border-neutral-100 dark:border-neutral-700/30 pt-2">
               <div className="flex items-center justify-between mb-1.5">
-                <span className="text-[8px] font-semibold text-slate-500 uppercase">Top 10 关键节点</span>
-                <span className="text-[7px] text-slate-400">点击查看详情</span>
+                <span className="text-[8px] font-semibold text-neutral-500 uppercase">Top 10 关键节点</span>
+                <span className="text-[7px] text-neutral-400">点击查看详情</span>
               </div>
               <div className="space-y-0.5">
                 {sortedNodeList.map((item, idx) => {
@@ -5375,21 +5393,21 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
                   return (
                     <button key={`${item.node.id}_${idx}`}
                       onClick={() => onNodeClick?.(item.node)}
-                      className="w-full flex items-center gap-1 px-1.5 py-1 rounded-md hover:bg-blue-50/70 dark:hover:bg-blue-950/20 transition-colors group text-left">
+                      className="w-full flex items-center gap-1 px-1.5 py-1 rounded-md hover:bg-secondary-50/70 dark:hover:bg-blue-950/20 transition-colors group text-left">
                       <span className={`w-4 h-4 rounded flex items-center justify-center text-[8px] font-bold shrink-0 ${
                         idx === 0 ? 'bg-yellow-100 text-yellow-700' :
-                        idx === 1 ? 'bg-slate-200 text-slate-600' :
+                        idx === 1 ? 'bg-neutral-200 text-neutral-600' :
                         idx === 2 ? 'bg-orange-100 text-orange-700' :
-                        'bg-slate-50 text-slate-400'
+                        'bg-slate-50 text-neutral-400'
                       }`}>
                         {idx + 1}
                       </span>
-                      <span className="w-2 h-2 rounded-full shrink-0 mt-0.5" style={{ backgroundColor: conf?.color || '#94a3b8' }} />
-                      <span className="text-[9px] font-medium text-slate-700 dark:text-slate-300 truncate flex-1 group-hover:text-blue-600 dark:group-hover:text-blue-400">
+                      <span className="w-2 h-2 rounded-full shrink-0 mt-0.5" style={{ backgroundColor: conf?.color || 'var(--color-knowledge-default, #9CA3AF)' }} />
+                      <span className="text-[9px] font-medium text-neutral-700 dark:text-neutral-300 truncate flex-1 group-hover:text-secondary-600 dark:group-hover:text-secondary-400">
                         {item.node.label}
                       </span>
-                      <span className="text-[9px] font-mono font-bold text-slate-500 tabular-nums">{item.degree}</span>
-                      <div className="w-8 h-1 bg-slate-100 dark:bg-slate-700/30 rounded-full overflow-hidden">
+                      <span className="text-[9px] font-mono font-bold text-neutral-500 tabular-nums">{item.degree}</span>
+                      <div className="w-8 h-1 bg-neutral-100 dark:bg-neutral-700/30 rounded-full overflow-hidden">
                         <div className="h-full rounded-full bg-gradient-to-r from-blue-400 to-violet-400 transition-all" style={{ width: `${pct}%` }} />
                       </div>
                     </button>
@@ -5400,8 +5418,8 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
 
             {/* 连通分量警告 */}
             {centralityData.stats.connectedComponents > 1 && (
-              <div className="border-t border-slate-100 dark:border-slate-700/30 pt-2 mt-1">
-                <div className="text-[8px] text-amber-600 dark:text-amber-400 px-2 py-1.5 bg-amber-50 dark:bg-amber-900/15 rounded-lg">
+              <div className="border-t border-neutral-100 dark:border-neutral-700/30 pt-2 mt-1">
+                <div className="text-[8px] text-warning-600 dark:text-warning-400 px-2 py-1.5 bg-warning-50 dark:bg-warning-900/15 rounded-lg">
                   ⚠ 图存在 {centralityData.stats.connectedComponents} 个连通分量，最大分量含 {centralityData.stats.largestComponentSize} 节点
                 </div>
               </div>
@@ -5412,22 +5430,22 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
 
       {/* v7.8: 批量操作工具条（选中节点时显示） */}
       {selectedNodes.size > 0 && (
-        <div className="absolute bottom-14 left-1/2 -translate-x-1/2 z-40 flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gradient-to-r from-slate-900/95 to-slate-800/95 backdrop-blur-md border border-slate-700/50 shadow-xl animate-in fade-in zoom-in-95 duration-150">
+        <div className="absolute bottom-14 left-1/2 -translate-x-1/2 z-40 flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gradient-to-r from-slate-900/95 to-slate-800/95 backdrop-blur-md border border-neutral-700/50 shadow-xl animate-in fade-in zoom-in-95 duration-150">
           <span className="text-[10px] font-semibold text-white">已选 {selectedNodes.size} 项</span>
-          <div className="w-px h-4 bg-slate-600" />
-          <button onClick={() => batchOperationOnSelected('focus')} className="px-2 py-1 text-[9px] bg-blue-600 hover:bg-blue-500 text-white rounded-md transition-colors" title="聚焦首项">
+          <div className="w-px h-4 bg-neutral-600" />
+          <button onClick={() => batchOperationOnSelected('focus')} className="px-2 py-1 text-[9px] bg-secondary-600 hover:bg-secondary-500 text-white rounded-md transition-colors" title="聚焦首项">
             🎯 聚焦
           </button>
-          <button onClick={() => batchOperationOnSelected('highlight')} className="px-2 py-1 text-[9px] bg-amber-600 hover:bg-amber-500 text-white rounded-md transition-colors" title="高亮选中">
+          <button onClick={() => batchOperationOnSelected('highlight')} className="px-2 py-1 text-[9px] bg-warning-600 hover:bg-warning-500 text-white rounded-md transition-colors" title="高亮选中">
             ✨ 高亮
           </button>
-          <button onClick={() => batchOperationOnSelected('hide')} className="px-2 py-1 text-[9px] bg-slate-600 hover:bg-slate-500 text-white rounded-md transition-colors" title="隐藏选中">
+          <button onClick={() => batchOperationOnSelected('hide')} className="px-2 py-1 text-[9px] bg-neutral-600 hover:bg-neutral-500 text-white rounded-md transition-colors" title="隐藏选中">
             🚫 隐藏
           </button>
-          <button onClick={() => batchOperationOnSelected('export')} className="px-2 py-1 text-[9px] bg-emerald-600 hover:bg-emerald-500 text-white rounded-md transition-colors" title="导出子图">
+          <button onClick={() => batchOperationOnSelected('export')} className="px-2 py-1 text-[9px] bg-primary-600 hover:bg-primary-500 text-white rounded-md transition-colors" title="导出子图">
             📤 导出
           </button>
-          <button onClick={() => setSelectedNodes(new Set())} className="px-2 py-1 text-[9px] bg-red-600/80 hover:bg-red-500 text-white rounded-md transition-colors" title="清除选择">
+          <button onClick={() => setSelectedNodes(new Set())} className="px-2 py-1 text-[9px] bg-error-600/80 hover:bg-error-500 text-white rounded-md transition-colors" title="清除选择">
             ✕ 清除
           </button>
         </div>
@@ -5435,16 +5453,16 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
 
       {/* v7.8: 固定节点面板 */}
       {showPinnedPanel && pinnedNodes.size > 0 && (
-        <div className="absolute top-14 left-3 z-40 w-56 rounded-xl bg-white/97 dark:bg-slate-900/97 backdrop-blur-xl border border-slate-200/80 dark:border-slate-700/60 shadow-2xl overflow-hidden animate-in fade-in slide-in-from-left-3 duration-150 max-h-[50vh] overflow-y-auto">
-          <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-700/50 flex items-center justify-between sticky top-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur">
-            <span className="text-[10px] font-bold text-red-500 uppercase tracking-wider flex items-center gap-1.5">
+        <div className="absolute top-14 left-3 z-40 w-56 rounded-xl bg-white/97 dark:bg-neutral-900/97 backdrop-blur-xl border border-neutral-200/80 dark:border-neutral-700/60 shadow-2xl overflow-hidden animate-in fade-in slide-in-from-left-3 duration-150 max-h-[50vh] overflow-y-auto">
+          <div className="px-3 py-2 border-b border-neutral-100 dark:border-neutral-700/50 flex items-center justify-between sticky top-0 bg-white/95 dark:bg-neutral-900/95 backdrop-blur">
+            <span className="text-[10px] font-bold text-error-500 uppercase tracking-wider flex items-center gap-1.5">
               <span>📌</span> 固定节点 ({pinnedNodes.size})
             </span>
             <div className="flex items-center gap-1">
-              <button onClick={clearAllPins} className="text-[8px] px-1.5 py-0.5 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded hover:bg-red-200 transition-colors">
+              <button onClick={clearAllPins} className="text-[8px] px-1.5 py-0.5 bg-error-100 dark:bg-error-900/30 text-error-600 dark:text-error-400 rounded hover:bg-error-200 transition-colors">
                 全部释放
               </button>
-              <button onClick={() => setShowPinnedPanel(false)} className="text-slate-400 hover:text-slate-600 p-0.5">
+              <button onClick={() => setShowPinnedPanel(false)} className="text-neutral-400 hover:text-neutral-600 p-0.5">
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
@@ -5455,13 +5473,13 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
               if (!node) return null
               const conf = TYPE_CONFIG[node.type]
               return (
-                <div key={nodeId} className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 group cursor-pointer"
+                <div key={nodeId} className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-800/50 group cursor-pointer"
                   onClick={() => onNodeClick?.(node)}>
-                  <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: conf?.color || '#94a3b8' }} />
-                  <span className="text-[10px] font-medium text-slate-700 dark:text-slate-300 truncate flex-1">{node.label}</span>
-                  <span className="text-[8px] text-slate-400">{conf?.cnName || node.type}</span>
+                  <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: conf?.color || 'var(--color-knowledge-default, #9CA3AF)' }} />
+                  <span className="text-[10px] font-medium text-neutral-700 dark:text-neutral-300 truncate flex-1">{node.label}</span>
+                  <span className="text-[8px] text-neutral-400">{conf?.label || node.type}</span>
                   <button onClick={(e) => { e.stopPropagation(); togglePinNode(nodeId) }}
-                    className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-500 p-0.5 transition-opacity">
+                    className="opacity-0 group-hover:opacity-100 text-neutral-400 hover:text-error-500 p-0.5 transition-opacity">
                     <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                   </button>
                 </div>
@@ -5475,11 +5493,11 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
       {pinnedNodes.size > 0 && !showPinnedPanel && (
         <button
           onClick={() => setShowPinnedPanel(true)}
-          className="absolute top-14 left-3 z-30 w-6 h-6 rounded-lg bg-white/85 dark:bg-slate-800/85 backdrop-blur-sm border border-red-200/60 dark:border-red-800/30 shadow-sm hover:shadow-md transition-all flex items-center justify-center group"
+          className="absolute top-14 left-3 z-30 w-6 h-6 rounded-lg bg-white/85 dark:bg-neutral-800/85 backdrop-blur-sm border border-red-200/60 dark:border-red-800/30 shadow-sm hover:shadow-md transition-all flex items-center justify-center group"
           title={`固定节点 (${pinnedNodes.size})`}
         >
           <span className="text-xs">📌</span>
-          <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-red-500 text-[7px] font-bold text-white flex items-center justify-center">{pinnedNodes.size}</span>
+          <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-error-500 text-[7px] font-bold text-white flex items-center justify-center">{pinnedNodes.size}</span>
         </button>
       )}
 
@@ -5492,9 +5510,9 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
           {anno.type === 'arrow' ? (
             <svg width="60" height="20" className="overflow-visible">
               <defs><marker id={`arrowhead-${anno.id}`} markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-                <path d="M0,0 L6,3 L0,6 L1.5,3 Z" fill="#ef4444" />
+                <path d="M0,0 L6,3 L0,6 L1.5,3 Z" fill="#FF3B30" />
               </marker></defs>
-              <line x1="0" y1="10" x2="55" y2="10" stroke="#ef4444" strokeWidth="1.5" markerEnd={`url(#arrowhead-${anno.id})`} />
+              <line x1="0" y1="10" x2="55" y2="10" stroke="#FF3B30" strokeWidth="1.5" markerEnd={`url(#arrowhead-${anno.id})`} />
             </svg>
           ) : null}
           <div className="relative">
@@ -5502,7 +5520,7 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
               <span className="text-[10px] font-medium text-yellow-800 dark:text-yellow-200">{anno.text}</span>
             </div>
             <button onClick={() => removeAnnotation(anno.id)}
-              className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full bg-slate-700 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-[7px] leading-none">
+              className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full bg-neutral-700 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-[7px] leading-none">
               ×
             </button>
           </div>
@@ -5512,14 +5530,14 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
       {/* v7.8: 标注模式指示器 + 添加标注按钮 */}
       <div className="absolute top-14 left-1/2 -translate-x-1/2 z-35 flex items-center gap-2">
         {isAddingAnnotation && (
-          <div className="px-3 py-1.5 rounded-lg bg-amber-500 text-white text-[11px] font-semibold shadow-lg animate-pulse flex items-center gap-1.5">
+          <div className="px-3 py-1.5 rounded-lg bg-warning-500 text-white text-[11px] font-semibold shadow-lg animate-pulse flex items-center gap-1.5">
             ✏️ 点击图谱添加标注 — 按 Esc 取消
           </div>
         )}
         {!isAddingAnnotation && (
           <button
             onClick={() => setIsAddingAnnotation(true)}
-            className="w-7 h-7 rounded-lg bg-white/85 dark:bg-slate-800/85 backdrop-blur-sm border border-slate-200/60 dark:border-slate-700/50 shadow-sm hover:shadow-md hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-all flex items-center justify-center group"
+            className="w-7 h-7 rounded-lg bg-white/85 dark:bg-neutral-800/85 backdrop-blur-sm border border-neutral-200/60 dark:border-neutral-700/50 shadow-sm hover:shadow-md hover:bg-warning-50 dark:hover:bg-warning-900/20 transition-all flex items-center justify-center group"
             title="添加标注 (Shift+N)"
           >
             <span className="text-sm group-hover:scale-110 transition-transform">✏️</span>
@@ -5528,7 +5546,7 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
         {annotations.length > 0 && !isAddingAnnotation && (
           <button
             onClick={clearAllAnnotations}
-            className="w-7 h-7 rounded-lg bg-white/85 dark:bg-slate-800/85 backdrop-blur-sm border border-slate-200/60 dark:border-slate-700/50 shadow-sm hover:shadow-md hover:bg-red-50 dark:hover:bg-red-900/20 transition-all flex items-center justify-center group"
+            className="w-7 h-7 rounded-lg bg-white/85 dark:bg-neutral-800/85 backdrop-blur-sm border border-neutral-200/60 dark:border-neutral-700/50 shadow-sm hover:shadow-md hover:bg-error-50 dark:hover:bg-error-900/20 transition-all flex items-center justify-center group"
             title={`清除全部标注 (${annotations.length})`}
           >
             <span className="text-xs">🗑</span>
@@ -5539,7 +5557,7 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
       {/* v7.2: 增强型节点详情面板 — 专业侧边栏 */}
       {selectedNode && (
         <div
-          className="absolute top-14 left-3 z-40 w-80 rounded-2xl border shadow-2xl animate-in fade-in slide-in-from-left-3 duration-250 bg-white/[0.98] dark:bg-slate-900/[0.97] backdrop-blur-xl border-slate-200/80 dark:border-slate-700/60 overflow-hidden"
+          className="absolute top-14 left-3 z-40 w-80 rounded-2xl border shadow-2xl animate-in fade-in slide-in-from-left-3 duration-250 bg-white/[0.98] dark:bg-neutral-900/[0.97] backdrop-blur-xl border-neutral-200/80 dark:border-neutral-700/60 overflow-hidden"
           style={{ boxShadow: '0 25px 70px rgba(0,0,0,0.18), 0 0 0 1px rgba(148,163,184,0.08), inset 0 1px 0 rgba(255,255,255,0.06)' }}
         >
           {/* ══ 面板头部 ══ */}
@@ -5556,19 +5574,19 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
                   <span className="text-[10px] text-white font-bold">{TYPE_CONFIG[selectedNode.type]?.label?.[0]}</span>
                 </div>
                 <div className="min-w-0 flex-1">
-                  <span className="font-semibold text-slate-800 dark:text-slate-100 text-sm leading-tight block truncate" title={selectedNode.label}>
+                  <span className="font-semibold text-neutral-800 dark:text-neutral-100 text-sm leading-tight block truncate" title={selectedNode.label}>
                     {selectedNode.label}
                   </span>
                   <div className="flex items-center gap-1.5 mt-0.5">
                     <Badge
-                      variant={selectedNode.type === 'herb' ? 'primary' : selectedNode.type === 'compound' ? 'info' : selectedNode.type === 'target' ? 'warning' : selectedNode.type === 'disease' ? 'danger' : selectedNode.type === 'peptide' ? 'success' : 'secondary'}
+                      variant={selectedNode.type === 'herb' ? 'primary' : selectedNode.type === 'compound' ? 'info' : selectedNode.type === 'target' ? 'warning' : selectedNode.type === 'disease' ? 'danger' : selectedNode.type === 'peptide' ? 'success' : 'neutral'}
                       size="sm"
                       className="text-[9px] px-1.5 py-0"
                     >
                       {TYPE_CONFIG[selectedNode.type]?.label || selectedNode.type}
                     </Badge>
                     {selectedNode.degree != null && selectedNode.degree > 0 && (
-                      <span className="text-[9px] font-mono tabular-nums text-slate-400 dark:text-slate-500">
+                      <span className="text-[9px] font-mono tabular-nums text-neutral-400 dark:text-neutral-500">
                         度数 {selectedNode.degree}
                       </span>
                     )}
@@ -5577,7 +5595,7 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
               </div>
               <button
                 onClick={() => { setSelectedNode(null); setDetailTab('info') }}
-                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-all p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700/60 shrink-0"
+                className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-all p-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700/60 shrink-0"
                 aria-label="关闭详情面板"
               >
                 <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2 2l11 11M13 2L2 13" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
@@ -5586,17 +5604,17 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
 
             {/* 快速统计条 */}
             <div className="grid grid-cols-3 gap-1.5 mt-3">
-              <div className="rounded-lg bg-slate-50 dark:bg-slate-800/60 px-2 py-1.5 text-center">
-                <div className="text-[11px] font-bold tabular-nums text-slate-700 dark:text-slate-300">{nodeConnections.totalConnections}</div>
-                <div className="text-[8px] text-slate-400 dark:text-slate-500">关联数</div>
+              <div className="rounded-lg bg-slate-50 dark:bg-neutral-800/60 px-2 py-1.5 text-center">
+                <div className="text-[11px] font-bold tabular-nums text-neutral-700 dark:text-neutral-300">{nodeConnections.totalConnections}</div>
+                <div className="text-[8px] text-neutral-400 dark:text-neutral-500">关联数</div>
               </div>
-              <div className="rounded-lg bg-slate-50 dark:bg-slate-800/60 px-2 py-1.5 text-center">
-                <div className="text-[11px] font-bold tabular-nums text-slate-700 dark:text-slate-300">{nodeConnections.neighbors.length}</div>
-                <div className="text-[8px] text-slate-400 dark:text-slate-500">邻居</div>
+              <div className="rounded-lg bg-slate-50 dark:bg-neutral-800/60 px-2 py-1.5 text-center">
+                <div className="text-[11px] font-bold tabular-nums text-neutral-700 dark:text-neutral-300">{nodeConnections.neighbors.length}</div>
+                <div className="text-[8px] text-neutral-400 dark:text-neutral-500">邻居</div>
               </div>
-              <div className="rounded-lg bg-slate-50 dark:bg-slate-800/60 px-2 py-1.5 text-center">
-                <div className="text-[11px] font-bold tabular-nums text-slate-700 dark:text-slate-300">{Object.keys(nodeConnections.neighborTypeCount).length}</div>
-                <div className="text-[8px] text-slate-400 dark:text-slate-500">类型</div>
+              <div className="rounded-lg bg-slate-50 dark:bg-neutral-800/60 px-2 py-1.5 text-center">
+                <div className="text-[11px] font-bold tabular-nums text-neutral-700 dark:text-neutral-300">{Object.keys(nodeConnections.neighborTypeCount).length}</div>
+                <div className="text-[8px] text-neutral-400 dark:text-neutral-500">类型</div>
               </div>
             </div>
 
@@ -5604,9 +5622,9 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
             {nodeConnections.neighbors.length > 0 && (
               <div className="flex flex-wrap gap-1 mt-2">
                 {Object.entries(nodeConnections.neighborTypeCount).slice(0, 5).map(([type, count]) => {
-                  const tconf = TYPE_CONFIG[type]
+                  const tconf = TYPE_CONFIG[type as keyof typeof TYPE_CONFIG]
                   return (
-                    <span key={type} className="inline-flex items-center gap-1 text-[9px] px-1.5 py-0.5 rounded-full font-medium" style={{ backgroundColor: `${tconf?.color || '#94A3B8'}15`, color: tconf?.color || '#64748B' }}>
+                    <span key={type} className="inline-flex items-center gap-1 text-[9px] px-1.5 py-0.5 rounded-full font-medium" style={{ backgroundColor: `${tconf?.color || 'var(--color-knowledge-default, #9CA3AF)'}15`, color: tconf?.color || 'var(--color-knowledge-text, #6B7280)' }}>
                       <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: tconf?.color }} />
                       {tconf?.label || type} ×{count}
                     </span>
@@ -5617,7 +5635,7 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
           </div>
 
           {/* ══ 标签页导航 ══ */}
-          <div className="flex border-b border-slate-200/70 dark:border-slate-700/50 px-1">
+          <div className="flex border-b border-neutral-200/70 dark:border-neutral-700/50 px-1">
             {(['info', 'connections', 'properties'] as const).map(tab => (
               <button
                 key={tab}
@@ -5625,7 +5643,7 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
                 className={`flex-1 px-2 py-2 text-[10px] font-medium transition-all relative ${
                   detailTab === tab
                     ? 'text-primary-600 dark:text-primary-400'
-                    : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-400'
+                    : 'text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-400'
                 }`}
               >
                 {tab === 'info' ? '概览' : tab === 'connections' ? `连接(${nodeConnections.totalConnections})` : `属性${selectedNode.properties ? Object.keys(selectedNode.properties).length : 0}`}
@@ -5643,7 +5661,7 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
               <div className="p-3 space-y-3">
                 {/* 节点ID */}
                 {selectedNode.id && selectedNode.id !== selectedNode.label && (
-                  <div className="text-[10px] text-slate-400 dark:text-slate-500 font-mono bg-slate-50 dark:bg-slate-800/40 rounded-lg px-2 py-1.5 break-all">
+                  <div className="text-[10px] text-neutral-400 dark:text-neutral-500 font-mono bg-slate-50 dark:bg-neutral-800/40 rounded-lg px-2 py-1.5 break-all">
                     ID: {selectedNode.id}
                   </div>
                 )}
@@ -5655,50 +5673,50 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
                     className="flex flex-col items-center gap-0.5 p-2 rounded-xl hover:bg-primary-50 dark:hover:bg-primary-950/30 transition-colors group"
                     title="查看完整详情"
                   >
-                    <svg className="w-4 h-4 text-slate-400 group-hover:text-primary-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                    <svg className="w-4 h-4 text-neutral-400 group-hover:text-primary-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
                       <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
-                    <span className="text-[8px] text-slate-500 group-hover:text-primary-600 transition-colors">详情</span>
+                    <span className="text-[8px] text-neutral-500 group-hover:text-primary-600 transition-colors">详情</span>
                   </button>
                   <button
                     onClick={() => setDetailTab('connections')}
-                    className="flex flex-col items-center gap-0.5 p-2 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-950/30 transition-colors group"
+                    className="flex flex-col items-center gap-0.5 p-2 rounded-xl hover:bg-secondary-50 dark:hover:bg-blue-950/30 transition-colors group"
                     title="查看所有连接"
                   >
-                    <svg className="w-4 h-4 text-slate-400 group-hover:text-blue-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                    <svg className="w-4 h-4 text-neutral-400 group-hover:text-secondary-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
                     </svg>
-                    <span className="text-[8px] text-slate-500 group-hover:text-blue-600 transition-colors">连接</span>
+                    <span className="text-[8px] text-neutral-500 group-hover:text-secondary-600 transition-colors">连接</span>
                   </button>
                   <button
                     onClick={() => {
                       onNodeClick?.({ ...selectedNode, properties: { ...selectedNode.properties, _action: 'highlight_neighbors' } })
                     }}
-                    className="flex flex-col items-center gap-0.5 p-2 rounded-xl hover:bg-amber-50 dark:hover:bg-amber-950/30 transition-colors group"
+                    className="flex flex-col items-center gap-0.5 p-2 rounded-xl hover:bg-warning-50 dark:hover:bg-amber-950/30 transition-colors group"
                     title="高亮邻居节点"
                   >
-                    <svg className="w-4 h-4 text-slate-400 group-hover:text-amber-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                    <svg className="w-4 h-4 text-neutral-400 group-hover:text-warning-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z" />
                     </svg>
-                    <span className="text-[8px] text-slate-500 group-hover:text-amber-600 transition-colors">高亮</span>
+                    <span className="text-[8px] text-neutral-500 group-hover:text-warning-600 transition-colors">高亮</span>
                   </button>
                   <button
                     onClick={() => setSelectedNode(null)}
-                    className="flex flex-col items-center gap-0.5 p-2 rounded-xl hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors group"
+                    className="flex flex-col items-center gap-0.5 p-2 rounded-xl hover:bg-error-50 dark:hover:bg-red-950/30 transition-colors group"
                     title="关闭面板"
                   >
-                    <svg className="w-4 h-4 text-slate-400 group-hover:text-red-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                    <svg className="w-4 h-4 text-neutral-400 group-hover:text-error-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                     </svg>
-                    <span className="text-[8px] text-slate-500 group-hover:text-red-600 transition-colors">关闭</span>
+                    <span className="text-[8px] text-neutral-500 group-hover:text-error-600 transition-colors">关闭</span>
                   </button>
                 </div>
 
                 {/* 邻居预览列表（最多显示8个） */}
                 {nodeConnections.neighbors.length > 0 && (
                   <div className="space-y-1">
-                    <div className="text-[9px] uppercase tracking-wider text-slate-400 dark:text-slate-500 font-semibold px-1">
+                    <div className="text-[9px] uppercase tracking-wider text-neutral-400 dark:text-neutral-500 font-semibold px-1">
                       直接邻居 ({nodeConnections.neighbors.length})
                     </div>
                     <div className="space-y-0.5 max-h-[160px] overflow-y-auto custom-scrollbar pr-1">
@@ -5709,11 +5727,11 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
                           <button
                             key={neighbor.id || neighbor.label}
                             onClick={() => setSelectedNode(neighbor)}
-                            className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors text-left group/item"
+                            className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-800/60 transition-colors text-left group/item"
                           >
-                            <span className="w-2 h-2 rounded-full shrink-0 transition-transform group-hover/item:scale-150" style={{ backgroundColor: nconf?.color || '#94A3B8' }} />
-                            <span className="text-[11px] text-slate-600 dark:text-slate-300 truncate flex-1 font-medium group-hover/item:text-slate-900 dark:group-hover/item:text-slate-100">{neighbor.label}</span>
-                            <span className="text-[8px] text-slate-400 shrink-0">{nconf?.label}</span>
+                            <span className="w-2 h-2 rounded-full shrink-0 transition-transform group-hover/item:scale-150" style={{ backgroundColor: nconf?.color || 'var(--color-knowledge-default, #9CA3AF)' }} />
+                            <span className="text-[11px] text-neutral-600 dark:text-neutral-300 truncate flex-1 font-medium group-hover/item:text-neutral-900 dark:group-hover/item:text-neutral-100">{neighbor.label}</span>
+                            <span className="text-[8px] text-neutral-400 shrink-0">{nconf?.label}</span>
                           </button>
                         )
                       })}
@@ -5733,19 +5751,19 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
               <div className="p-3 space-y-3">
                 {nodeConnections.totalConnections === 0 ? (
                   <div className="text-center py-8 space-y-2">
-                    <div className="w-10 h-10 mx-auto rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                      <svg className="w-5 h-5 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <div className="w-10 h-10 mx-auto rounded-xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
+                      <svg className="w-5 h-5 text-neutral-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
                       </svg>
                     </div>
-                    <p className="text-xs text-slate-400 dark:text-slate-500">该节点暂无连接关系</p>
+                    <p className="text-xs text-neutral-400 dark:text-neutral-500">该节点暂无连接关系</p>
                   </div>
                 ) : (
                   <>
                     {/* 入边（指向此节点） */}
                     {nodeConnections.incoming.length > 0 && (
                       <div className="space-y-1">
-                        <div className="flex items-center gap-1.5 text-[9px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider px-1">
+                        <div className="flex items-center gap-1.5 text-[9px] font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider px-1">
                           <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M19 13l-7 7-7-7m14-8l-7 7-7-7" />
                           </svg>
@@ -5756,13 +5774,13 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
                             const nconf = TYPE_CONFIG[node.type]
                             const econf = EDGE_COLORS[edge.type as keyof typeof EDGE_COLORS]
                             return (
-                              <div key={`in-${idx}`} className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-slate-50/80 dark:bg-slate-800/40 group hover:bg-slate-100 dark:hover:bg-slate-800/70 transition-colors">
+                              <div key={`in-${idx}`} className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-slate-50/80 dark:bg-neutral-800/40 group hover:bg-neutral-100 dark:hover:bg-neutral-800/70 transition-colors">
                                 <button onClick={() => setSelectedNode(node)} className="min-w-0 flex-1 flex items-center gap-1.5 text-left">
-                                  <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: nconf?.color || '#94A3B8' }} />
-                                  <span className="text-[11px] text-slate-700 dark:text-slate-300 truncate font-medium">{node.label}</span>
-                                  <span className="text-[8px] text-slate-400">{nconf?.label}</span>
+                                  <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: nconf?.color || 'var(--color-knowledge-default, #9CA3AF)' }} />
+                                  <span className="text-[11px] text-neutral-700 dark:text-neutral-300 truncate font-medium">{node.label}</span>
+                                  <span className="text-[8px] text-neutral-400">{nconf?.label}</span>
                                 </button>
-                                <span className="text-[9px] px-1.5 py-0.5 rounded-full font-medium shrink-0" style={{ backgroundColor: `${econf?.color || '#94A3B8'}15`, color: econf?.color || '#64748B' }}>
+                                <span className="text-[9px] px-1.5 py-0.5 rounded-full font-medium shrink-0" style={{ backgroundColor: `${econf?.color || 'var(--color-knowledge-default, #9CA3AF)'}15`, color: econf?.color || 'var(--color-knowledge-text, #6B7280)' }}>
                                   {EDGE_TYPE_LABELS[edge.type] || edge.type}
                                 </span>
                               </div>
@@ -5775,7 +5793,7 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
                     {/* 出边（从此节点指出） */}
                     {nodeConnections.outgoing.length > 0 && (
                       <div className="space-y-1">
-                        <div className="flex items-center gap-1.5 text-[9px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider px-1">
+                        <div className="flex items-center gap-1.5 text-[9px] font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider px-1">
                           <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M5 11l7-7 7 7M5 19l7-7 7 7" />
                           </svg>
@@ -5786,13 +5804,13 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
                             const nconf = TYPE_CONFIG[node.type]
                             const econf = EDGE_COLORS[edge.type as keyof typeof EDGE_COLORS]
                             return (
-                              <div key={`out-${idx}`} className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-slate-50/80 dark:bg-slate-800/40 group hover:bg-slate-100 dark:hover:bg-slate-800/70 transition-colors">
+                              <div key={`out-${idx}`} className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-slate-50/80 dark:bg-neutral-800/40 group hover:bg-neutral-100 dark:hover:bg-neutral-800/70 transition-colors">
                                 <button onClick={() => setSelectedNode(node)} className="min-w-0 flex-1 flex items-center gap-1.5 text-left">
-                                  <span className="text-[11px] text-slate-700 dark:text-slate-300 truncate font-medium">{node.label}</span>
-                                  <span className="text-[8px] text-slate-400">{nconf?.label}</span>
-                                  <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: nconf?.color || '#94A3B8' }} />
+                                  <span className="text-[11px] text-neutral-700 dark:text-neutral-300 truncate font-medium">{node.label}</span>
+                                  <span className="text-[8px] text-neutral-400">{nconf?.label}</span>
+                                  <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: nconf?.color || 'var(--color-knowledge-default, #9CA3AF)' }} />
                                 </button>
-                                <span className="text-[9px] px-1.5 py-0.5 rounded-full font-medium shrink-0" style={{ backgroundColor: `${econf?.color || '#94A3B8'}15`, color: econf?.color || '#64748B' }}>
+                                <span className="text-[9px] px-1.5 py-0.5 rounded-full font-medium shrink-0" style={{ backgroundColor: `${econf?.color || 'var(--color-knowledge-default, #9CA3AF)'}15`, color: econf?.color || 'var(--color-knowledge-text, #6B7280)' }}>
                                   {EDGE_TYPE_LABELS[edge.type] || edge.type}
                                 </span>
                               </div>
@@ -5811,13 +5829,13 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
               <div className="p-3">
                 {!selectedNode.properties || Object.keys(selectedNode.properties).length === 0 ? (
                   <div className="text-center py-8 space-y-2">
-                    <div className="w-10 h-10 mx-auto rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                      <svg className="w-5 h-5 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <div className="w-10 h-10 mx-auto rounded-xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
+                      <svg className="w-5 h-5 text-neutral-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.827a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" />
                         <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                       </svg>
                     </div>
-                    <p className="text-xs text-slate-400 dark:text-slate-500">该节点暂无属性数据</p>
+                    <p className="text-xs text-neutral-400 dark:text-neutral-500">该节点暂无属性数据</p>
                   </div>
                 ) : (() => {
                   const priorityKeys = ['category', 'effects', 'ob_percent', 'dl_value', 'ob', 'dl',
@@ -5864,12 +5882,12 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
                         }
 
                         return (
-                          <div key={key} className="flex justify-between items-center text-xs group px-2 py-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
-                            <span className="text-slate-500 dark:text-slate-400 shrink-0" title={key}>
+                          <div key={key} className="flex justify-between items-center text-xs group px-2 py-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-800/40 transition-colors">
+                            <span className="text-neutral-500 dark:text-neutral-400 shrink-0" title={key}>
                               {keyLabelMap[key] || key}
                             </span>
                             <span
-                              className={`font-medium max-w-[180px] truncate transition-colors text-right ${isHighlight ? 'text-primary-600 dark:text-primary-400 font-semibold' : 'text-slate-700 dark:text-slate-200 group-hover:text-primary-600 dark:group-hover:text-primary-400'}`}
+                              className={`font-medium max-w-[180px] truncate transition-colors text-right ${isHighlight ? 'text-primary-600 dark:text-primary-400 font-semibold' : 'text-neutral-700 dark:text-neutral-200 group-hover:text-primary-600 dark:group-hover:text-primary-400'}`}
                               title={String(val)}
                             >
                               {displayVal}
@@ -5878,7 +5896,7 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
                         )
                       })}
                       {sortedProps.length === 0 && (
-                        <p className="text-[10px] text-slate-400 italic text-center py-4">属性值为空</p>
+                        <p className="text-[10px] text-neutral-400 italic text-center py-4">属性值为空</p>
                       )}
                     </div>
                   )
@@ -5888,7 +5906,7 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
           </div>
 
           {/* ══ 面板底部操作栏 ══ */}
-          <div className="px-4 py-2.5 border-t border-slate-200/70 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-800/30 flex gap-2">
+          <div className="px-4 py-2.5 border-t border-neutral-200/70 dark:border-neutral-700/50 bg-slate-50/50 dark:bg-neutral-800/30 flex gap-2">
             <button
               onClick={() => onNodeClick?.(selectedNode)}
               className="flex-1 px-3 py-1.5 rounded-xl bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-700 hover:to-primary-600 text-white text-[11px] font-medium transition-all shadow-sm hover:shadow-md active:scale-[0.98]"
@@ -5897,7 +5915,7 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
             </button>
             <button
               onClick={() => setSelectedNode(null)}
-              className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-600 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 text-[11px] font-medium transition-all active:scale-[0.98]"
+              className="px-3 py-1.5 rounded-xl border border-neutral-200 dark:border-neutral-600 text-neutral-500 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-[11px] font-medium transition-all active:scale-[0.98]"
             >
               关闭
             </button>
@@ -5911,40 +5929,40 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
           {/* 图例触发器（始终可见的小标签条） */}
           <button
             onClick={() => setLegendOpen(!legendOpen)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/93 dark:bg-slate-800/93 backdrop-blur-md border border-slate-200/60 dark:border-slate-700/60 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer group"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/93 dark:bg-neutral-800/93 backdrop-blur-md border border-neutral-200/60 dark:border-neutral-700/60 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer group"
           >
             <div className="flex -space-x-1">
               {legendItems.slice(0, 4).map(({ type, color }) => (
                 <div key={type} className="w-2.5 h-2.5 rounded-full ring-1.5 ring-white dark:ring-slate-800" style={{ backgroundColor: color }} />
               ))}
               {legendItems.length > 4 && (
-                <div className="w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-slate-600 ring-1.5 ring-white dark:ring-slate-800" />
+                <div className="w-2.5 h-2.5 rounded-full bg-neutral-300 dark:bg-neutral-600 ring-1.5 ring-white dark:ring-slate-800" />
               )}
             </div>
-            <span className="text-[10px] font-medium text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-300 transition-colors">
+            <span className="text-[10px] font-medium text-neutral-500 dark:text-neutral-400 group-hover:text-neutral-700 dark:group-hover:text-neutral-300 transition-colors">
               图例 {legendOpen ? '▼' : '▶'}
             </span>
           </button>
 
           {/* 展开的详细图例面板 */}
           {legendOpen && (
-            <div className="mt-2 p-3 rounded-xl bg-white/96 dark:bg-slate-800/96 backdrop-blur-xl border border-slate-200/60 dark:border-slate-700/60 shadow-lg animate-in fade-in zoom-in-95 duration-200 grid gap-2"
+            <div className="mt-2 p-3 rounded-xl bg-white/96 dark:bg-neutral-800/96 backdrop-blur-xl border border-neutral-200/60 dark:border-neutral-700/60 shadow-lg animate-in fade-in zoom-in-95 duration-200 grid gap-2"
                  style={{ minWidth: '200px', maxWidth: '280px' }}>
-              <div className="col-span-full text-[10px] uppercase tracking-wider text-slate-400 dark:text-slate-500 font-bold mb-0.5">
+              <div className="col-span-full text-[10px] uppercase tracking-wider text-neutral-400 dark:text-neutral-500 font-bold mb-0.5">
                 节点类型分布
               </div>
               {legendItems.map(({ type, color, label, icon }) => (
-                <div key={type} className="flex items-center justify-between gap-3 group/item cursor-default rounded-lg px-2 py-1.5 -mx-2 hover:bg-slate-50 dark:hover:bg-slate-700/40 transition-colors">
+                <div key={type} className="flex items-center justify-between gap-3 group/item cursor-default rounded-lg px-2 py-1.5 -mx-2 hover:bg-slate-50 dark:hover:bg-neutral-700/40 transition-colors">
                   <div className="flex items-center gap-2 min-w-0">
                     <div
                       className="w-3.5 h-3.5 rounded-full shadow-sm transition-transform duration-200 group-hover/item:scale-125"
                       style={{ backgroundColor: color, boxShadow: `0 0 10px ${color}50` }}
                     />
-                    <span className="text-xs font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap">{icon} {label}</span>
+                    <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300 whitespace-nowrap">{icon} {label}</span>
                   </div>
                   <div className="flex items-center gap-1.5">
                     {/* 进度条表示占比 */}
-                    <div className="w-16 h-1.5 rounded-full bg-slate-100 dark:bg-slate-700 overflow-hidden">
+                    <div className="w-16 h-1.5 rounded-full bg-neutral-100 dark:bg-neutral-700 overflow-hidden">
                       <div
                         className="h-full rounded-full transition-all duration-500"
                         style={{
@@ -5961,9 +5979,9 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
               ))}
 
               {/* 统计汇总行 */}
-              <div className="col-span-full pt-2 mt-1 border-t border-slate-200/50 dark:border-slate-600/40 flex justify-between text-[10px] text-slate-500 dark:text-slate-400">
-                <span>总计 <strong className="text-slate-700 dark:text-slate-300">{nodes.length}</strong> 节点</span>
-                <span><strong className="text-slate-700 dark:text-slate-300">{edges.length}</strong> 条边</span>
+              <div className="col-span-full pt-2 mt-1 border-t border-neutral-200/50 dark:border-neutral-600/40 flex justify-between text-[10px] text-neutral-500 dark:text-neutral-400">
+                <span>总计 <strong className="text-neutral-700 dark:text-neutral-300">{nodes.length}</strong> 节点</span>
+                <span><strong className="text-neutral-700 dark:text-neutral-300">{edges.length}</strong> 条边</span>
               </div>
             </div>
           )}
@@ -5971,31 +5989,31 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
       )}
 
       {/* 操作提示 */}
-      <div className="absolute bottom-3 right-3 z-30 hidden sm:flex items-center gap-2 text-[10px] text-slate-400 dark:text-slate-500 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-lg px-2.5 py-1.5 border border-slate-100 dark:border-slate-700/40">
-        <kbd className="px-1 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 font-mono text-[9px]">拖拽</kbd>
+      <div className="absolute bottom-3 right-3 z-30 hidden sm:flex items-center gap-2 text-[10px] text-neutral-400 dark:text-neutral-500 bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm rounded-lg px-2.5 py-1.5 border border-neutral-100 dark:border-neutral-700/40">
+        <kbd className="px-1 py-0.5 rounded bg-neutral-100 dark:bg-neutral-700 text-neutral-500 dark:text-neutral-400 font-mono text-[9px]">拖拽</kbd>
         <span>移动</span>
-        <span className="text-slate-300">|</span>
-        <kbd className="px-1 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 font-mono text-[9px]">滚轮</kbd>
+        <span className="text-neutral-300">|</span>
+        <kbd className="px-1 py-0.5 rounded bg-neutral-100 dark:bg-neutral-700 text-neutral-500 dark:text-neutral-400 font-mono text-[9px]">滚轮</kbd>
         <span>缩放</span>
-        <span className="text-slate-300">|</span>
-        <kbd className="px-1 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 font-mono text-[9px]">双击</kbd>
+        <span className="text-neutral-300">|</span>
+        <kbd className="px-1 py-0.5 rounded bg-neutral-100 dark:bg-neutral-700 text-neutral-500 dark:text-neutral-400 font-mono text-[9px]">双击</kbd>
         <span>重置</span>
       </div>
 
       {/* 移动端操作提示 */}
-      <div className="absolute bottom-3 right-3 z-30 sm:hidden flex items-center gap-1.5 text-[10px] text-slate-400 dark:text-slate-500 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-lg px-2 py-1.5 border border-slate-100 dark:border-slate-700/40">
+      <div className="absolute bottom-3 right-3 z-30 sm:hidden flex items-center gap-1.5 text-[10px] text-neutral-400 dark:text-neutral-500 bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm rounded-lg px-2 py-1.5 border border-neutral-100 dark:border-neutral-700/40">
         <span>拖拽</span><span>·</span><span>捏合缩放</span><span>·</span><span>点击查看</span>
       </div>
 
       {/* 布局指示器 + v7.9 布局切换菜单 */}
       <div className="absolute top-3 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5">
-        <div className="px-3 py-1 rounded-full text-[10px] font-medium bg-white/92 dark:bg-slate-800/92 backdrop-blur-md border border-slate-200/60 dark:border-slate-700/60 shadow-sm text-slate-600 dark:text-slate-400 cursor-pointer hover:bg-white dark:hover:bg-slate-700 transition-colors"
+        <div className="px-3 py-1 rounded-full text-[10px] font-medium bg-white/92 dark:bg-neutral-800/92 backdrop-blur-md border border-neutral-200/60 dark:border-neutral-700/60 shadow-sm text-neutral-600 dark:text-neutral-400 cursor-pointer hover:bg-white dark:hover:bg-neutral-700 transition-colors"
           onClick={() => setShowLayoutMenu(!showLayoutMenu)}>
           布局: {localLayout === 'force' ? '力导向' : localLayout === 'radial' ? '放射' : localLayout === 'tree' ? '树形' : localLayout === 'hierarchical' ? '层次化' : localLayout === 'circular' ? '圆形' : '网格'}
           <span className="ml-1 text-[8px]">▾</span>
         </div>
         {showLayoutMenu && (
-          <div className="absolute top-full mt-1 left-1/2 -translate-x-1/2 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200/60 dark:border-slate-700/60 p-1.5 min-w-[140px] z-50 animate-fade-in">
+          <div className="absolute top-full mt-1 left-1/2 -translate-x-1/2 bg-white dark:bg-neutral-800 rounded-xl shadow-xl border border-neutral-200/60 dark:border-neutral-700/60 p-1.5 min-w-[140px] z-50 animate-fade-in">
             {([
               ['force', '力导向', '🧲'],
               ['radial', '放射状', '🎯'],
@@ -6005,7 +6023,7 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
               ['grid', '网格', '▦'],
             ] as [LayoutType, string, string][]).map(([key, label, icon]) => (
               <button key={key} onClick={() => switchLayoutMode(key)}
-                className={`w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${localLayout === key ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300' : 'hover:bg-slate-50 dark:hover:bg-slate-700/50 text-slate-600 dark:text-slate-300'}`}>
+                className={`w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${localLayout === key ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300' : 'hover:bg-slate-50 dark:hover:bg-neutral-700/50 text-neutral-600 dark:text-neutral-300'}`}>
                 <span>{icon}</span><span>{label}</span>
                 {localLayout === key && <span className="ml-auto text-[10px]">✓</span>}
               </button>
@@ -6016,19 +6034,19 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
 
       {/* v7.9: 主题切换按钮 */}
       <button onClick={() => setShowThemePanel(!showThemePanel)}
-        className="absolute top-3 right-14 z-30 w-6 h-6 rounded-lg bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm border border-slate-200/60 dark:border-slate-700/40 flex items-center justify-center hover:scale-110 transition-all shadow-sm"
+        className="absolute top-3 right-14 z-30 w-6 h-6 rounded-lg bg-white/90 dark:bg-neutral-800/90 backdrop-blur-sm border border-neutral-200/60 dark:border-neutral-700/40 flex items-center justify-center hover:scale-110 transition-all shadow-sm"
         title={`主题: ${activeTheme.name}`}>
         <span className="text-xs">{activeTheme.icon}</span>
       </button>
 
       {/* v7.9: 主题选择面板 */}
       {showThemePanel && (
-        <div className="absolute top-12 right-3 z-50 bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl rounded-xl shadow-2xl border border-slate-200/60 dark:border-slate-700/60 p-3 min-w-[220px] animate-fade-in">
-          <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 mb-2 px-1">选择配色主题</div>
+        <div className="absolute top-12 right-3 z-50 bg-white/95 dark:bg-neutral-800/95 backdrop-blur-xl rounded-xl shadow-2xl border border-neutral-200/60 dark:border-neutral-700/60 p-3 min-w-[220px] animate-fade-in">
+          <div className="text-[11px] font-semibold text-neutral-500 dark:text-neutral-400 mb-2 px-1">选择配色主题</div>
           <div className="space-y-1">
             {THEME_PRESETS.map(t => (
               <button key={t.id} onClick={() => applyTheme(t)}
-                className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium transition-all ${activeTheme.id === t.id ? 'ring-2 ring-offset-1 ring-emerald-500 bg-emerald-50/80 dark:bg-emerald-900/20' : 'hover:bg-slate-50 dark:hover:bg-slate-700/40'}`}
+                className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium transition-all ${activeTheme.id === t.id ? 'ring-2 ring-offset-1 ring-emerald-500 bg-primary-50/80 dark:bg-primary-900/20' : 'hover:bg-slate-50 dark:hover:bg-neutral-700/40'}`}
                 style={{ color: activeTheme.id === t.id ? t.accentColor : undefined }}>
                 <span className="text-base">{t.icon}</span>
                 <span className="flex-1 text-left">{t.name}</span>
@@ -6044,10 +6062,10 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
       )}
 
       {/* v7.9: 动画预设控制 */}
-      <div className="absolute top-3 right-28 z-30 flex items-center gap-0.5 bg-white/85 dark:bg-slate-800/85 backdrop-blur-sm rounded-lg border border-slate-200/50 dark:border-slate-700/40 p-0.5 shadow-sm">
+      <div className="absolute top-3 right-28 z-30 flex items-center gap-0.5 bg-white/85 dark:bg-neutral-800/85 backdrop-blur-sm rounded-lg border border-neutral-200/50 dark:border-neutral-700/40 p-0.5 shadow-sm">
         {(Object.entries(ANIMATION_PRESETS) as [AnimationPreset, typeof ANIMATION_PRESETS[AnimationPreset]][]).map(([key, preset]) => (
           <button key={key} onClick={() => switchAnimationPreset(key)}
-            className={`px-1.5 py-0.5 rounded text-[9px] font-medium transition-all ${animationPreset === key ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+            className={`px-1.5 py-0.5 rounded text-[9px] font-medium transition-all ${animationPreset === key ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 shadow-sm' : 'text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300'}`}
             title={preset.label}>
             {preset.icon}
           </button>
@@ -6063,9 +6081,9 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
 
       {/* v8.0: 快照按钮 */}
       <button onClick={takeSnapshot}
-        className="absolute top-3 right-[144px] z-30 w-6 h-6 rounded-lg bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm border border-slate-200/60 dark:border-slate-700/40 flex items-center justify-center hover:scale-110 transition-all shadow-sm"
+        className="absolute top-3 right-[144px] z-30 w-6 h-6 rounded-lg bg-white/90 dark:bg-neutral-800/90 backdrop-blur-sm border border-neutral-200/60 dark:border-neutral-700/40 flex items-center justify-center hover:scale-110 transition-all shadow-sm"
         title="保存快照 (Shift+S)">
-        <svg className="w-3 h-3 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <svg className="w-3 h-3 text-neutral-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
           <path strokeLinecap="round" strokeLinejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
         </svg>
@@ -6073,21 +6091,21 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
 
       {/* v8.0: AI 洞察面板 */}
       {showAIPanel && (
-        <div className="absolute top-14 left-3 z-50 w-[380px] max-h-[65vh] bg-white/97 dark:bg-slate-900/97 backdrop-blur-xl rounded-2xl shadow-2xl border border-purple-200/60 dark:border-purple-700/40 overflow-hidden animate-fade-in">
+        <div className="absolute top-14 left-3 z-50 w-[380px] max-h-[65vh] bg-white/97 dark:bg-neutral-900/97 backdrop-blur-xl rounded-2xl shadow-2xl border border-purple-200/60 dark:border-purple-700/40 overflow-hidden animate-fade-in">
           <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-950/50 dark:to-purple-950/50 border-b border-purple-100/50 dark:border-purple-800/30">
             <div className="flex items-center gap-2">
               <span className="text-base">🤖</span>
-              <span className="text-sm font-bold text-purple-700 dark:text-purple-300">AI 智能洞察</span>
+              <span className="text-sm font-bold text-accent-700 dark:text-accent-300">AI 智能洞察</span>
               {aiInsights.length > 0 && (
-                <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-300">{aiInsights.length} 条发现</span>
+                <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-accent-100 dark:bg-accent-900/40 text-accent-600 dark:text-accent-300">{aiInsights.length} 条发现</span>
               )}
             </div>
             <div className="flex items-center gap-1">
               <button onClick={generateAIInsights} disabled={isGeneratingInsight}
-                className="px-2 py-1 rounded-lg text-[10px] font-medium bg-purple-500 text-white hover:bg-purple-600 disabled:opacity-50 transition-colors flex items-center gap-1">
+                className="px-2 py-1 rounded-lg text-[10px] font-medium bg-accent-500 text-white hover:bg-accent-600 disabled:opacity-50 transition-colors flex items-center gap-1">
                 {isGeneratingInsight ? '⏳ 分析中...' : '🔄 重新分析'}
               </button>
-              <button onClick={() => setShowAIPanel(false)} className="w-5 h-5 rounded flex items-center justify-center hover:bg-purple-100 dark:hover:bg-purple-800/30 text-slate-400">✕</button>
+              <button onClick={() => setShowAIPanel(false)} className="w-5 h-5 rounded flex items-center justify-center hover:bg-accent-100 dark:hover:bg-accent-800/30 text-neutral-400">✕</button>
             </div>
           </div>
 
@@ -6095,19 +6113,19 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
             {isGeneratingInsight ? (
               <div className="flex flex-col items-center py-8 gap-3">
                 <div className="w-8 h-8 border-2 border-purple-200 border-t-purple-500 rounded-full animate-spin" />
-                <p className="text-xs text-slate-400">正在分析图谱拓扑结构...</p>
+                <p className="text-xs text-neutral-400">正在分析图谱拓扑结构...</p>
               </div>
             ) : aiInsights.length === 0 ? (
               <div className="text-center py-8">
-                <p className="text-xs text-slate-400 mb-2">暂无洞察数据</p>
-                <button onClick={generateAIInsights} className="text-xs text-purple-500 hover:text-purple-600 font-medium">点击生成分析报告 →</button>
+                <p className="text-xs text-neutral-400 mb-2">暂无洞察数据</p>
+                <button onClick={generateAIInsights} className="text-xs text-accent-500 hover:text-accent-600 font-medium">点击生成分析报告 →</button>
               </div>
             ) : (
               aiInsights.map(insight => {
                 const severityColors = {
-                  info: 'border-blue-200 bg-blue-50/80 dark:border-blue-800/30 dark:bg-blue-950/20',
-                  warning: 'border-amber-200 bg-amber-50/80 dark:border-amber-800/30 dark:bg-amber-950/20',
-                  critical: 'border-red-200 bg-red-50/80 dark:border-red-800/30 dark:bg-red-950/20',
+                  info: 'border-blue-200 bg-secondary-50/80 dark:border-blue-800/30 dark:bg-blue-950/20',
+                  warning: 'border-amber-200 bg-warning-50/80 dark:border-amber-800/30 dark:bg-amber-950/20',
+                  critical: 'border-red-200 bg-error-50/80 dark:border-red-800/30 dark:bg-red-950/20',
                 }
                 const typeIcons = { summary: '📋', keyFinding: '🔗', anomaly: '⚠️', recommendation: '💡', topology: '🌉' }
                 return (
@@ -6116,18 +6134,18 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
                       <span className="text-sm mt-0.5">{typeIcons[insight.type]}</span>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <h4 className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">{insight.title}</h4>
-                          <span className="shrink-0 px-1.5 py-0.5 rounded-full text-[8px] font-mono font-bold bg-white/70 dark:bg-slate-700/50 text-slate-500">
+                          <h4 className="text-xs font-semibold text-neutral-800 dark:text-neutral-200 truncate">{insight.title}</h4>
+                          <span className="shrink-0 px-1.5 py-0.5 rounded-full text-[8px] font-mono font-bold bg-white/70 dark:bg-neutral-700/50 text-neutral-500">
                             {(insight.confidence * 100).toFixed(0)}%
                           </span>
                         </div>
-                        <p className="text-[11px] leading-relaxed text-slate-600 dark:text-slate-400 line-clamp-3">{insight.description}</p>
+                        <p className="text-[11px] leading-relaxed text-neutral-600 dark:text-neutral-400 line-clamp-3">{insight.description}</p>
                         {insight.actionLabel && insight.relatedNodeIds && (
                           <button onClick={() => {
                             const node = filteredData.filteredNodes.find(n => n.id === insight.relatedNodeIds![0] || n.label === insight.relatedNodeIds![0])
                             if (node) { onNodeClick?.(node); setSelectedNode(node); const analysis = generateNodeAnalysis(node); setNodeAIAnalysis(analysis) }
                           }}
-                            className="mt-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-medium bg-white/70 dark:bg-slate-700/50 text-purple-600 dark:text-purple-350 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors">
+                            className="mt-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-medium bg-white/70 dark:bg-neutral-700/50 text-accent-600 dark:text-purple-350 hover:bg-accent-50 dark:hover:bg-accent-900/20 transition-colors">
                             {insight.actionLabel} →
                           </button>
                         )}
@@ -6143,32 +6161,32 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
 
       {/* v8.0: 智能路径面板 */}
       {showPathPanel && smartPathResult && (
-        <div className="absolute bottom-16 left-1/2 -translate-x-1/2 z-50 w-[420px] bg-white/97 dark:bg-slate-900/97 backdrop-blur-xl rounded-2xl shadow-2xl border border-blue-200/60 dark:border-blue-700/40 animate-fade-in">
+        <div className="absolute bottom-16 left-1/2 -translate-x-1/2 z-50 w-[420px] bg-white/97 dark:bg-neutral-900/97 backdrop-blur-xl rounded-2xl shadow-2xl border border-blue-200/60 dark:border-blue-700/40 animate-fade-in">
           <div className="flex items-center justify-between px-4 py-2.5 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/50 dark:to-cyan-950/50 border-b border-blue-100/50 dark:border-blue-800/30 rounded-t-2xl">
             <div className="flex items-center gap-2">
               <span>🛤️</span>
-              <span className="text-sm font-bold text-blue-700 dark:text-blue-300">智能路径分析</span>
-              <span className="text-[10px] text-slate-400">跳数: {smartPathResult.length}</span>
+              <span className="text-sm font-bold text-secondary-700 dark:text-secondary-300">智能路径分析</span>
+              <span className="text-[10px] text-neutral-400">跳数: {smartPathResult.length}</span>
             </div>
-            <button onClick={() => setShowPathPanel(false)} className="w-5 h-5 rounded flex items-center justify-center hover:bg-blue-100 dark:hover:bg-blue-800/30 text-slate-400">✕</button>
+            <button onClick={() => setShowPathPanel(false)} className="w-5 h-5 rounded flex items-center justify-center hover:bg-secondary-100 dark:hover:bg-secondary-800/30 text-neutral-400">✕</button>
           </div>
           <div className="p-3 space-y-2.5">
             <div className="flex items-center gap-1 flex-wrap">
               {smartPathResult.path.map((nodeId, i) => (
                 <div key={i} className="flex items-center gap-1">
-                  <span className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 max-w-[120px] truncate">
+                  <span className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-secondary-100 dark:bg-secondary-900/30 text-secondary-700 dark:text-secondary-300 max-w-[120px] truncate">
                     {filteredData.filteredNodes.find(n => (n.id || n.label) === nodeId)?.label?.slice(0, 12) || nodeId.slice(0, 10)}
                   </span>
-                  {i < smartPathResult.path.length - 1 && <span className="text-slate-300 text-[10px]">→</span>}
+                  {i < smartPathResult.path.length - 1 && <span className="text-neutral-300 text-[10px]">→</span>}
                 </div>
               ))}
             </div>
             {smartPathResult.keyBridges.length > 0 && (
-              <div className="bg-amber-50/80 dark:bg-amber-950/20 rounded-lg p-2">
-                <span className="text-[10px] font-semibold text-amber-700 dark:text-amber-300">🌉 关键桥梁:</span>
+              <div className="bg-warning-50/80 dark:bg-amber-950/20 rounded-lg p-2">
+                <span className="text-[10px] font-semibold text-warning-700 dark:text-warning-300">🌉 关键桥梁:</span>
                 <div className="flex gap-1 mt-1 flex-wrap">
                   {smartPathResult.keyBridges.map(bid => (
-                    <span key={bid} className="px-1.5 py-0.5 rounded text-[9px] bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-300">
+                    <span key={bid} className="px-1.5 py-0.5 rounded text-[9px] bg-warning-100 dark:bg-warning-900/30 text-warning-600 dark:text-warning-300">
                       {filteredData.filteredNodes.find(n => (n.id || n.label) === bid)?.label?.slice(0, 8)}
                     </span>
                   ))}
@@ -6177,12 +6195,12 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
             )}
             {smartPathResult.alternativePaths.length > 0 && (
               <div className="space-y-1">
-                <span className="text-[10px] font-semibold text-slate-500">替代路径 ({smartPathResult.alternativePaths.length}):</span>
+                <span className="text-[10px] font-semibold text-neutral-500">替代路径 ({smartPathResult.alternativePaths.length}):</span>
                 {smartPathResult.alternativePaths.map((alt, idx) => (
-                  <div key={idx} className="flex items-center gap-1 text-[10px] text-slate-500 dark:text-slate-400">
-                    <span className="font-mono text-blue-400">#{idx + 1}</span>
+                  <div key={idx} className="flex items-center gap-1 text-[10px] text-neutral-500 dark:text-neutral-400">
+                    <span className="font-mono text-secondary-400">#{idx + 1}</span>
                     <span>{alt.path.join(' → ')}</span>
-                    <span className="ml-auto font-mono text-slate-400">{alt.length}跳</span>
+                    <span className="ml-auto font-mono text-neutral-400">{alt.length}跳</span>
                   </div>
                 ))}
               </div>
@@ -6193,37 +6211,37 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
 
       {/* v8.0: 节点AI分析面板（在详情面板旁显示） */}
       {nodeAIAnalysis && selectedNode && (
-        <div className="absolute top-14 right-3 z-45 w-[320px] bg-white/97 dark:bg-slate-900/97 backdrop-blur-xl rounded-2xl shadow-2xl border border-indigo-200/60 dark:border-indigo-700/40 animate-fade-in">
+        <div className="absolute top-14 right-3 z-45 w-[320px] bg-white/97 dark:bg-neutral-900/97 backdrop-blur-xl rounded-2xl shadow-2xl border border-indigo-200/60 dark:border-indigo-700/40 animate-fade-in">
           <div className="flex items-center justify-between px-4 py-2.5 bg-gradient-to-r from-indigo-50 to-violet-50 dark:from-indigo-950/50 dark:to-violet-950/50 border-b border-indigo-100/50 rounded-t-2xl">
             <div className="flex items-center gap-2">
               <span>🧠</span>
               <span className="text-sm font-bold text-indigo-700 dark:text-indigo-300">节点智能分析</span>
             </div>
-            <button onClick={() => setNodeAIAnalysis(null)} className="w-5 h-5 rounded flex items-center justify-center hover:bg-indigo-100 dark:hover:bg-indigo-800/30 text-slate-400">✕</button>
+            <button onClick={() => setNodeAIAnalysis(null)} className="w-5 h-5 rounded flex items-center justify-center hover:bg-indigo-100 dark:hover:bg-indigo-800/30 text-neutral-400">✕</button>
           </div>
           <div className="p-3 space-y-2.5">
-            <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">{nodeAIAnalysis.summary}</p>
+            <p className="text-[11px] text-neutral-600 dark:text-neutral-400 leading-relaxed">{nodeAIAnalysis.summary}</p>
 
             <div className="grid grid-cols-2 gap-2">
               <div className="rounded-lg bg-indigo-50/80 dark:bg-indigo-950/20 p-2 text-center">
                 <div className="text-lg font-bold text-indigo-600 dark:text-indigo-400">{nodeAIAnalysis.synergyScore}</div>
-                <div className="text-[9px] text-slate-400">协同评分</div>
+                <div className="text-[9px] text-neutral-400">协同评分</div>
               </div>
               <div className="rounded-lg bg-violet-50/80 dark:bg-violet-950/20 p-2 text-center">
                 <div className="text-lg font-bold text-violet-600 dark:text-violet-400">{nodeAIAnalysis.relationships.length}</div>
-                <div className="text-[9px] text-slate-400">关系类型</div>
+                <div className="text-[9px] text-neutral-400">关系类型</div>
               </div>
             </div>
 
             {nodeAIAnalysis.relationships.length > 0 && (
               <div>
-                <span className="text-[10px] font-semibold text-slate-500">关系解读:</span>
+                <span className="text-[10px] font-semibold text-neutral-500">关系解读:</span>
                 <div className="mt-1 space-y-1">
                   {nodeAIAnalysis.relationships.map((rel, i) => (
                     <div key={i} className="flex items-start gap-2 text-[10px]">
-                      <span className="shrink-0 px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-700/50 font-medium text-slate-600 dark:text-slate-300">{rel.type}</span>
-                      <span className="text-slate-500 dark:text-slate-400">{rel.interpretation}</span>
-                      <span className="ml-auto font-mono text-slate-400">{rel.count}条</span>
+                      <span className="shrink-0 px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-700/50 font-medium text-neutral-600 dark:text-neutral-300">{rel.type}</span>
+                      <span className="text-neutral-500 dark:text-neutral-400">{rel.interpretation}</span>
+                      <span className="ml-auto font-mono text-neutral-400">{rel.count}条</span>
                     </div>
                   ))}
                 </div>
@@ -6232,10 +6250,10 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
 
             {nodeAIAnalysis.suggestions.length > 0 && (
               <div>
-                <span className="text-[10px] font-semibold text-slate-500">💡 建议:</span>
+                <span className="text-[10px] font-semibold text-neutral-500">💡 建议:</span>
                 <ul className="mt-1 space-y-0.5">
                   {nodeAIAnalysis.suggestions.map((s, i) => (
-                    <li key={i} className="text-[10px] text-slate-500 dark:text-slate-400 pl-3">• {s}</li>
+                    <li key={i} className="text-[10px] text-neutral-500 dark:text-neutral-400 pl-3">• {s}</li>
                   ))}
                 </ul>
               </div>
@@ -6245,42 +6263,42 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
       )}
 
       {/* v8.0: 智能路径搜索工具栏（底部） */}
-      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-35 flex items-center gap-1.5 bg-white/92 dark:bg-slate-800/92 backdrop-blur-md rounded-xl border border-slate-200/60 dark:border-slate-700/60 shadow-lg px-3 py-1.5">
-        <span className="text-[9px] text-slate-400 font-medium">路径</span>
+      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-35 flex items-center gap-1.5 bg-white/92 dark:bg-neutral-800/92 backdrop-blur-md rounded-xl border border-neutral-200/60 dark:border-neutral-700/60 shadow-lg px-3 py-1.5">
+        <span className="text-[9px] text-neutral-400 font-medium">路径</span>
         <select value={pathSourceId} onChange={e => setPathSourceId(e.target.value)}
-          className="w-[110px] h-6 rounded-md text-[10px] border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-1.5 focus:outline-none focus:ring-1 focus:ring-purple-400">
+          className="w-[110px] h-6 rounded-md text-[10px] border border-neutral-200 dark:border-neutral-600 bg-white dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 px-1.5 focus:outline-none focus:ring-1 focus:ring-purple-400">
           <option value="">起点...</option>
           {filteredData.filteredNodes.slice(0, 30).map(n => (
             <option key={n.id || n.label} value={n.id || n.label}>{n.label?.slice(0, 15)}</option>
           ))}
         </select>
-        <span className="text-slate-300 text-[10px]">→</span>
+        <span className="text-neutral-300 text-[10px]">→</span>
         <select value={pathTargetId} onChange={e => setPathTargetId(e.target.value)}
-          className="w-[110px] h-6 rounded-md text-[10px] border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-1.5 focus:outline-none focus:ring-1 focus:ring-purple-400">
+          className="w-[110px] h-6 rounded-md text-[10px] border border-neutral-200 dark:border-neutral-600 bg-white dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 px-1.5 focus:outline-none focus:ring-1 focus:ring-purple-400">
           <option value="">终点...</option>
           {filteredData.filteredNodes.slice(0, 30).map(n => (
             <option key={n.id || n.label} value={n.id || n.label}>{n.label?.slice(0, 15)}</option>
           ))}
         </select>
         <button onClick={runSmartPathSearch} disabled={!pathSourceId || !pathTargetId}
-          className="px-2 h-6 rounded-md text-[10px] font-medium bg-purple-500 text-white hover:bg-purple-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+          className="px-2 h-6 rounded-md text-[10px] font-medium bg-accent-500 text-white hover:bg-accent-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
           🔍 分析
         </button>
       </div>
 
       {/* v8.0: 快照列表（左下角） */}
       {graphSnapshots.length > 0 && (
-        <div className="absolute bottom-3 left-3 z-35 bg-white/92 dark:bg-slate-800/92 backdrop-blur-md rounded-lg border border-slate-200/60 dark:border-slate-700/60 shadow-lg p-2 min-w-[140px]">
+        <div className="absolute bottom-3 left-3 z-35 bg-white/92 dark:bg-neutral-800/92 backdrop-blur-md rounded-lg border border-neutral-200/60 dark:border-neutral-700/60 shadow-lg p-2 min-w-[140px]">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-[9px] font-semibold text-slate-500">📸 快照</span>
-            <span className="text-[8px] text-slate-400">{graphSnapshots.length}个</span>
+            <span className="text-[9px] font-semibold text-neutral-500">📸 快照</span>
+            <span className="text-[8px] text-neutral-400">{graphSnapshots.length}个</span>
           </div>
           <div className="space-y-0.5 max-h-[80px] overflow-y-auto custom-scrollbar">
             {graphSnapshots.slice(-5).reverse().map(snap => (
-              <div key={snap.id} className="flex items-center gap-1.5 px-1.5 py-0.5 rounded hover:bg-slate-50 dark:hover:bg-slate-700/30 cursor-pointer group">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
-                <span className="text-[9px] text-slate-600 dark:text-slate-400 truncate flex-1">{snap.label}</span>
-                <span className="text-[8px] text-slate-400 hidden group-hover:inline">{snap.nodeCount}节点</span>
+              <div key={snap.id} className="flex items-center gap-1.5 px-1.5 py-0.5 rounded hover:bg-slate-50 dark:hover:bg-neutral-700/30 cursor-pointer group">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary-400 shrink-0" />
+                <span className="text-[9px] text-neutral-600 dark:text-neutral-400 truncate flex-1">{snap.label}</span>
+                <span className="text-[8px] text-neutral-400 hidden group-hover:inline">{snap.nodeCount}节点</span>
               </div>
             ))}
           </div>
@@ -6289,17 +6307,17 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
 
       {/* 空状态 */}
       {filteredData.filteredNodes.length === 0 && nodes.length > 0 && (
-        <div className="absolute inset-0 flex items-center justify-center bg-white/40 dark:bg-slate-900/40 backdrop-blur-sm rounded-xl animate-fade-in">
+        <div className="absolute inset-0 flex items-center justify-center bg-white/40 dark:bg-neutral-900/40 backdrop-blur-sm rounded-xl animate-fade-in">
           <div className="text-center space-y-3">
-            <div className="w-14 h-14 mx-auto rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-              <svg className="w-7 h-7 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <div className="w-14 h-14 mx-auto rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
+              <svg className="w-7 h-7 text-neutral-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
               </svg>
             </div>
-            <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">当前筛选条件下无匹配节点</p>
+            <p className="text-neutral-500 dark:text-neutral-400 text-sm font-medium">当前筛选条件下无匹配节点</p>
             <button
               onClick={() => setActiveFilter(null)}
-              className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 text-sm hover:underline font-medium"
+              className="inline-flex items-center gap-1 text-primary-600 dark:text-primary-400 text-sm hover:underline font-medium"
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" />
@@ -6315,14 +6333,14 @@ ${centralityData.sort((a, b) => b.degree - a.degree).slice(0, 5).map((n, i) =>
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center space-y-3">
             <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-emerald-50 to-blue-50 dark:from-emerald-950/40 dark:to-blue-950/40 flex items-center justify-center">
-              <svg className="w-8 h-8 text-emerald-400/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.2}>
+              <svg className="w-8 h-8 text-primary-400/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23.693L5 14.5m14.8.8l1.402 1.402c1.232 1.232.65 3.318-1.067 3.611A48.309 48.309 0 0112 21c-2.773 0-5.491-.235-8.135-.687-1.718-.293-2.3-2.379-1.067-3.61L5 14.5" />
               </svg>
             </div>
-            <p className="text-slate-500 dark:text-slate-400 text-sm font-medium max-w-[240px] mx-auto leading-relaxed">
+            <p className="text-neutral-500 dark:text-neutral-400 text-sm font-medium max-w-[240px] mx-auto leading-relaxed">
               搜索药材或化合物名称以查看知识图谱
             </p>
-            <p className="text-xs text-slate-400 dark:text-slate-500">
+            <p className="text-xs text-neutral-400 dark:text-neutral-500">
               支持药材、化合物、靶点、疾病等多维度检索
             </p>
           </div>

@@ -62,10 +62,10 @@ function EfficacyTagList({
           className="
             inline-flex items-center justify-center
             px-2 py-0.5 rounded-full text-xs font-medium
-            bg-gray-100 dark:bg-gray-700
-            text-gray-600 dark:text-gray-400
-            hover:bg-gray-200 dark:hover:bg-gray-600
-            border border-gray-200 dark:border-gray-600
+            bg-neutral-100 dark:bg-neutral-700
+            text-neutral-600 dark:text-neutral-400
+            hover:bg-neutral-200 dark:hover:bg-neutral-600
+            border border-neutral-200 dark:border-neutral-600
             transition-all duration-200
             hover:scale-105 active:scale-95
             min-w-[28px] h-[22px]

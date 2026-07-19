@@ -31,7 +31,6 @@ class IngredientUpdate(BaseModel):
 class IngredientResponse(IngredientBase):
     """成分响应"""
     id: int
-    created_at: str
 
     model_config = {"from_attributes": True}
 

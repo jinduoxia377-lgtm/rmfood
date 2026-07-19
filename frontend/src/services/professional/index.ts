@@ -6,7 +6,7 @@ export { default as keggService, KEGGService } from './keggService';
 export { default as compatibilityService, CompatibilityService } from './compatibilityService';
 export { default as tcmIntegration } from './tcmServiceExample';
 export { default as ChemistryUtils } from './chemistryUtils';
-export { TCMViewer, TCMSearchComponent } from './tcmServiceComponents';
+export { default as TCMViewer, TCMSearchComponent } from './tcmServiceComponents';
 
 export type {
   TCMHerb,
@@ -28,12 +28,7 @@ export type {
   JournalInfo,
 } from './literatureService';
 
-export type {
-  PeptideAnalysis,
-  PeptideSequence,
-  PeptideFeature,
-  PeptideSearchParams,
-} from './peptideService';
+export type { PeptideAnalysis, Peptide, BioactivityPrediction, StructurePrediction } from './peptideService';
 
 export type {
   KEGGPathway,
@@ -47,8 +42,4 @@ export type {
   KEGGModule,
 } from './keggService';
 
-export type {
-  ChemistryDescriptor,
-  AtomInfo,
-  BondInfo,
-} from './chemistryUtils';
+export type { ChemistryDescriptor, AtomInfo, BondInfo } from './chemistryUtils';

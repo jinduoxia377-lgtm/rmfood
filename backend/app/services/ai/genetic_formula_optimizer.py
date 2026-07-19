@@ -18,6 +18,7 @@
 import logging
 import math
 import random
+import threading
 import time
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
@@ -38,6 +39,7 @@ class GAConfig:
     tournament_size: int = 5        # 锦标赛规模
     target_effects: List[str] = None
     adaptive_mutation: bool = True  # 是否启用自适应变异率
+    seed: Optional[int] = None      # 随机种子（可重复性）
     early_stop_patience: int = 15   # 连续N代无改进则早停(0=不启用)
     early_stop_threshold: float = 0.95  # 达到此fitness阈值则停止(0=不启用)
 
@@ -65,6 +67,10 @@ class Individual:
         self.safety: float = 0.0
         self.taste: float = 0.0
         self.cost: float = 0.0
+        self.synergy: float = 0.0     # 协同效应评分
+        self.stability: float = 0.0   # 稳定性评分
+        self.admet: float = 0.0       # ADMET综合评分
+        self.structural_compliance: float = 0.0  # 君臣佐使结构合规度
 
     def evaluate(self, target_effects: List[str], herb_dict: Optional[Dict] = None):
         """
@@ -84,17 +90,20 @@ class Individual:
             return
 
         # 功效
-        eff_scores = []
-        for effect in target_effects:
-            score = 0.0
-            for hid, dosage in self.genes.items():
-                if hid in herbs:
-                    herb = herbs[hid]
-                    s = herb.efficacy_scores.get(effect, 0)
-                    ratio = (dosage - herb.dosage_min) / max(1, herb.dosage_max - herb.dosage_min)
-                    score += s * (0.5 + 0.5 * ratio)
-            eff_scores.append(score / max(1, len(self.genes)))
-        self.efficacy = (math.prod(max(0.01, s) for s in eff_scores)) ** (1.0 / max(1, len(eff_scores)))
+        if not target_effects:
+            self.efficacy = 0.0
+        else:
+            eff_scores = []
+            for effect in target_effects:
+                score = 0.0
+                for hid, dosage in self.genes.items():
+                    if hid in herbs:
+                        herb = herbs[hid]
+                        s = herb.efficacy_scores.get(effect, 0)
+                        ratio = (dosage - herb.dosage_min) / max(1, herb.dosage_max - herb.dosage_min)
+                        score += s * (0.5 + 0.5 * ratio)
+                eff_scores.append(score / max(1, len(self.genes)))
+            self.efficacy = (math.prod(max(0.01, s) for s in eff_scores)) ** (1.0 / max(1, len(eff_scores)))
 
         # 安全
         safe = 0.0
@@ -105,32 +114,181 @@ class Individual:
                 safe += herb.safety_index * (1 - 0.3 * ratio)
         self.safety = safe / max(1, len(self.genes))
 
-        # 禁忌惩罚
-        hid_list = list(self.genes.keys())
+        # 禁忌惩罚（预计算：构建禁忌对集合 O(1) 查找）
+        antagonistic_pairs_set = set()
+        for hid in self.genes:
+            if hid in herbs:
+                for partner in herbs[hid].antagonistic_pairs:
+                    antagonistic_pairs_set.add(tuple(sorted([hid, partner])))
+
         penalty = 0.0
+        hid_list = list(self.genes.keys())
         for i in range(len(hid_list)):
             for j in range(i + 1, len(hid_list)):
-                h1, h2 = hid_list[i], hid_list[j]
-                if h1 in herbs and h2 in herbs:
-                    if h2 in herbs[h1].antagonistic_pairs:
-                        penalty += 0.15
+                pair = tuple(sorted([hid_list[i], hid_list[j]]))
+                if pair in antagonistic_pairs_set:
+                    penalty += 0.15
         self.safety *= max(0, 1 - penalty)
 
-        # 口感
-        sweet = {"dcx", "gq", "gz", "hq"}
-        bitter = {"lk", "cyh", "cs"}
-        sweet_r = sum(1 for h in self.genes if h in sweet) / max(1, len(self.genes))
-        bitter_r = sum(1 for h in self.genes if h in bitter) / max(1, len(self.genes))
-        self.taste = max(0, min(1, 0.5 + 0.3 * min(1, sweet_r * 2) - 0.3 * min(1, bitter_r * 2)))
+        # ── 特殊人群禁忌检测（院士级修复[P2-B2]）──
+        # 孕妇禁忌药材: 活血破血类（川芎、当归等）
+        pregnancy_contra = {"cs", "dg", "fz", "mld", "lk"}
+        # 儿童慎用: 毒性较强或药性峻烈
+        children_caution = {"fz", "lk", "mld"}
+        # 老年慎用: 大补峻剂
+        elderly_caution = {"rs"}
+
+        # 从 constraints 中读取 target_group
+        target_group = (herb_dict.get("__target_group__") if isinstance(herb_dict, dict) and "__target_group__" in herb_dict
+                        else "adult")
+
+        if target_group == "pregnant":
+            for hid in self.genes:
+                if hid in pregnancy_contra:
+                    self.safety *= 0.5  # 孕妇禁忌减半安全评分
+                    break
+        elif target_group == "children":
+            for hid in self.genes:
+                if hid in children_caution:
+                    self.safety *= 0.7
+                    break
+        elif target_group == "elderly":
+            for hid in self.genes:
+                if hid in elderly_caution:
+                    self.safety *= 0.8
+                    break
+
+        # 口感 — 院士级修复[P1-A5]: 对齐 NSGA-II 的五味调和 MSE 模型
+        # 原实现仅用 4 个 sweet + 3 个 bitter herb ID 做简单比例，
+        # 现改为完整的五味分类 + 理想比例 MSE + 矫味剂奖励
+        total_dosage = sum(self.genes.values())
+        if total_dosage < 0.001:
+            self.taste = 0.5
+        else:
+            _FLAVOR_MAP = {
+                "hq": "sweet", "ds": "sweet", "gz": "sweet", "rs": "sweet",
+                "gq": "sweet", "dcx": "sweet",
+                "lk": "bitter", "cyh": "bitter", "fz": "bitter", "cs": "bitter",
+                "mld": "bitter", "jgh": "bitter", "bq": "bitter",
+                "sj": "pungent", "cx": "pungent",
+                "fp": "neutral", "yq": "neutral",
+                "dg": "other", "gh": "other",
+            }
+            _IDEAL_RATIOS = {"sweet": 0.45, "neutral": 0.20, "bitter": 0.15, "pungent": 0.12, "other": 0.08}
+            flavor_totals = {"sweet": 0.0, "bitter": 0.0, "pungent": 0.0, "neutral": 0.0, "other": 0.0}
+            for hid, dosage in self.genes.items():
+                flavor = _FLAVOR_MAP.get(hid, "other")
+                flavor_totals[flavor] += dosage
+            actual_ratios = {k: v / total_dosage for k, v in flavor_totals.items()}
+            mse = sum((actual_ratios[k] - _IDEAL_RATIOS[k]) ** 2 for k in flavor_totals) / len(flavor_totals)
+            taste_base = max(0.0, 1.0 - mse * 8.0)
+            if actual_ratios["bitter"] > 0.25:
+                taste_base *= max(0.4, 1.0 - (actual_ratios["bitter"] - 0.25) * 2.0)
+            bonus = 0.08 if ("gq" in self.genes or "dcx" in self.genes) else 0.0
+            self.taste = max(0.0, min(1.0, taste_base + bonus))
 
         # 成本
         total_cost = sum(dosage * (herbs[hid].cost_per_gram if hid in herbs else 0.1)
                         for hid, dosage in self.genes.items())
-        self.cost = max(0, 1 - total_cost / 15.0)
+        # 使用 50 元作为合理的成本评分归一化基准（覆盖常见药食同源配方）
+        cost_threshold = 50.0
+        self.cost = max(0, 1 - total_cost / cost_threshold)
 
-        # 综合
-        self.fitness = (self.efficacy * 0.40 + self.safety * 0.25 +
-                        self.taste * 0.15 + self.cost * 0.20)
+        # ── 协同效应评估（三层模型，与 NSGA-II FormulaEvaluator 对齐）──
+        # Layer 1 - 功效互补度 (0~0.4): Jaccard 相似度 + 差异集分析
+        # Layer 2 - 经典配伍加分 (0~0.3): 基于已知经典药对
+        # Layer 3 - 用量比例协调 (0~0.3): 主药:辅药 理想比例 2:1~4:1
+        herb_list = list(self.genes.keys())
+        synergy_total = 0.0
+        pair_count = 0
+        for i in range(len(herb_list)):
+            for j in range(i + 1, len(herb_list)):
+                hid_i = herb_list[i]
+                hid_j = herb_list[j]
+                pair = tuple(sorted([hid_i, hid_j]))
+                hi = herbs.get(hid_i)
+                hj = herbs.get(hid_j)
+                if not hi or not hj:
+                    synergy_total += 0.30  # 缺失数据时给默认分
+                    pair_count += 1
+                    continue
+
+                # Layer 1: 功效互补度
+                e1 = set(hi.efficacy_scores.keys())
+                e2 = set(hj.efficacy_scores.keys())
+                overlap = len(e1 & e2)
+                union = len(e1 | e2)
+                jaccard = overlap / max(union, 1)
+                diff_score = len(e1 ^ e2) / max(union, 1)
+                layer1 = 0.15 * jaccard + 0.25 * diff_score  # 0~0.4
+
+                # Layer 2: 经典配伍加分
+                classic_pairs = {
+                    frozenset({"hq", "ds"}): 0.25,
+                    frozenset({"hq", "bq"}): 0.22,
+                    frozenset({"rs", "hq"}): 0.20,
+                    frozenset({"ds", "bq"}): 0.18,
+                    frozenset({"dg", "cs"}): 0.20,
+                    frozenset({"dg", "gz"}): 0.18,
+                    frozenset({"ds", "dcx"}): 0.15,
+                    frozenset({"jgh", "gz"}): 0.20,
+                    frozenset({"cyh", "jgh"}): 0.18,
+                    frozenset({"cyh", "gq"}): 0.15,
+                    frozenset({"cx", "sj"}): 0.17,
+                    frozenset({"cx", "bq"}): 0.16,
+                    frozenset({"fp", "bq"}): 0.20,
+                    frozenset({"fp", "yq"}): 0.18,
+                    frozenset({"fp", "gq"}): 0.15,
+                    frozenset({"gq", "dcx"}): 0.15,
+                    frozenset({"gq", "hq"}): 0.12,
+                    frozenset({"dcx", "sj"}): 0.13,
+                }
+                layer2 = classic_pairs.get(frozenset(pair), 0.05)
+
+                # Layer 3: 用量比例协调
+                dos_i = self.genes.get(hid_i, 0)
+                dos_j = self.genes.get(hid_j, 0)
+                ratio = max(dos_i, dos_j) / max(min(dos_i, dos_j), 0.001)
+                if 2 <= ratio <= 4:
+                    layer3 = 0.30
+                elif 1 <= ratio < 2 or 4 < ratio <= 6:
+                    layer3 = 0.25
+                elif ratio > 6:
+                    layer3 = max(0.10, 0.30 - (ratio - 6) * 0.03)
+                else:
+                    layer3 = 0.20
+
+                # 用量均衡微调
+                balance = 1 - abs(dos_i - dos_j) / max(dos_i + dos_j, 0.001)
+
+                # 组合三层协同分
+                layer3_base = 0.15
+                base_syn = layer1 + layer2 + layer3_base
+                dynamic_syn = (base_syn - layer3_base) + layer3
+                synergy_total += dynamic_syn * (0.7 + 0.3 * balance)
+                pair_count += 1
+        self.synergy = synergy_total / max(pair_count, 1) if pair_count > 0 else 0.5
+
+        # ── 稳定性评估 ──
+        stability_factors = []
+        for hid, dosage in self.genes.items():
+            herb = herbs.get(hid)
+            if not herb:
+                continue
+            mid_dosage = (herb.dosage_min + herb.dosage_max) / 2
+            dos_norm = abs(dosage - mid_dosage) / max(herb.dosage_max - herb.dosage_min, 0.01)
+            r_factor = 1 - 0.3 * dos_norm
+            stability_factors.append(herb.safety_index * r_factor)
+        self.stability = sum(stability_factors) / max(len(stability_factors), 1) if stability_factors else 0
+
+        # ── 君臣佐使结构合规度 ──
+        self.structural_compliance = self._evaluate_structural_compliance(self, herbs)
+
+        # 综合适应度（扩展为 7 维，权重与 NSGA-II 一致）
+        # 结构合规度作为乘法因子惩罚不合规配方
+        self.fitness = (self.efficacy * 0.30 + self.safety * 0.25 +
+                        self.taste * 0.10 + self.cost * 0.15 +
+                        self.synergy * 0.10 + self.stability * 0.10) * (0.5 + 0.5 * self.structural_compliance)
 
 
 class GeneticFormulaOptimizer:
@@ -147,51 +305,96 @@ class GeneticFormulaOptimizer:
         self._herb_knowledge = herb_knowledge        # HerbKnowledgePort 注入点
         self._herbs = dict(_BUILTIN_HERBS)           # 内置兜底（向后兼容）
         self._efficacy_index = dict(_EFFICACY_TO_HERBS)
+        self._herb_knowledge_loaded = False            # 标记是否已尝试加载 HerbKnowledgeService
 
-    async def _ensure_herbs_loaded(self) -> None:
-        """从 HerbKnowledgePort 加载药材，不可用时回退内置字典"""
-        if self._herb_knowledge is None:
+    def _try_load_herb_knowledge(self) -> None:
+        """惰性加载 HerbKnowledgeService — 在首次 optimize() 时重试，
+        解决模块导入时服务未就绪导致的注入链断裂问题。"""
+        if self._herb_knowledge_loaded:
             return
-        try:
-            from ..bayesian_formula_optimizer import HerbParameter
-            all_herbs = await self._herb_knowledge.get_all_herbs()
-            if all_herbs:
-                new_herbs = {}
-                new_index: dict = {}
-                for profile in all_herbs:
-                    new_herbs[profile.herb_id] = HerbParameter(
-                        herb_id=profile.herb_id,
-                        name_cn=profile.name_cn,
-                        dosage_min=profile.dosage_min,
-                        dosage_max=profile.dosage_max,
-                        dosage_step=profile.dosage_step,
-                        efficacy_scores=profile.efficacy_scores,
-                        safety_index=profile.safety_index,
-                        cost_per_gram=profile.cost_per_gram,
-                        synergy_partners=profile.synergy_partners,
-                        antagonistic_pairs=profile.antagonistic_pairs,
-                    )
-                    for eff in profile.efficacy_scores:
-                        new_index.setdefault(eff, []).append(profile.herb_id)
-                self._herbs = new_herbs
-                self._efficacy_index = new_index
-                logger.info(f"[GeneticOptimizer] 从 HerbKnowledgePort 加载药材 {len(all_herbs)} 种")
-        except Exception as e:
-            logger.warning(f"[GeneticOptimizer] HerbKnowledgePort 加载失败，回退内置字典: {e}")
+        self._herb_knowledge_loaded = True
 
-    async def optimize(self, target_effects: List[str], exclude_herbs: Optional[set] = None) -> Tuple[List[Individual], List[Dict]]:
+        # 如果显式提供了 herb_knowledge，直接使用
+        if self._herb_knowledge is not None:
+            try:
+                from ..bayesian_formula_optimizer import HerbParameter
+                all_herbs = self._herb_knowledge.get_herbs()
+                if all_herbs:
+                    new_herbs = {}
+                    new_index: dict = {}
+                    for herb_id, profile in all_herbs.items():
+                        new_herbs[herb_id] = HerbParameter(
+                            herb_id=profile.herb_id,
+                            name_cn=profile.name_cn,
+                            dosage_min=profile.dosage_min,
+                            dosage_max=profile.dosage_max,
+                            dosage_step=profile.dosage_step,
+                            efficacy_scores=profile.efficacy_scores,
+                            safety_index=profile.safety_index,
+                            cost_per_gram=profile.cost_per_gram,
+                            synergy_partners=profile.synergy_partners,
+                            antagonistic_pairs=profile.antagonistic_pairs,
+                        )
+                        for eff in profile.efficacy_scores:
+                            new_index.setdefault(eff, []).append(profile.herb_id)
+                    self._herbs = new_herbs
+                    self._efficacy_index = new_index
+                    logger.info(f"[GeneticOptimizer] 从 HerbKnowledgePort 加载药材 {len(all_herbs)} 种")
+                return
+            except Exception as e:
+                logger.warning(f"[GeneticOptimizer] HerbKnowledgePort 加载失败: {e}")
+
+        # 惰性尝试自动注入（解决启动时服务未就绪问题）
+        try:
+            from .herb_knowledge_service import get_global_herb_knowledge
+            hk = get_global_herb_knowledge()
+            if hk is not None:
+                self._herb_knowledge = hk
+                all_herbs = hk.get_herbs()
+                if all_herbs:
+                    from ..bayesian_formula_optimizer import HerbParameter
+                    new_herbs = {}
+                    new_index: dict = {}
+                    for herb_id, profile in all_herbs.items():
+                        new_herbs[herb_id] = HerbParameter(
+                            herb_id=profile.herb_id,
+                            name_cn=profile.name_cn,
+                            dosage_min=profile.dosage_min,
+                            dosage_max=profile.dosage_max,
+                            dosage_step=profile.dosage_step,
+                            efficacy_scores=profile.efficacy_scores,
+                            safety_index=profile.safety_index,
+                            cost_per_gram=profile.cost_per_gram,
+                            synergy_partners=profile.synergy_partners,
+                            antagonistic_pairs=profile.antagonistic_pairs,
+                        )
+                        for eff in profile.efficacy_scores:
+                            new_index.setdefault(eff, []).append(profile.herb_id)
+                    self._herbs = new_herbs
+                    self._efficacy_index = new_index
+                    logger.info(f"[GeneticOptimizer] 惰性加载 HerbKnowledgeService: {len(all_herbs)} 种药材")
+                    return
+        except Exception:
+            pass
+
+        logger.debug("[GeneticOptimizer] HerbKnowledgeService 不可用，使用内置字典（21种药材）")
+
+    def optimize(self, target_effects: List[str], exclude_herbs: Optional[set] = None,
+                 _cancel_signal: Optional[threading.Event] = None) -> Tuple[List[Individual], List[Dict]]:
         """执行遗传算法优化，返回 (结果列表, 进化历史)
 
         Args:
             target_effects: 目标功效列表
             exclude_herbs: 可选，需要排除的药材集合
-
-        院士级修复：方法改为 async，优先从 HerbKnowledgePort 加载最新药材知识。
         """
-        # 院士级修复[P0]: 优先从 HerbKnowledgePort 刷新药材知识库
-        await self._ensure_herbs_loaded()
-
+        # 惰性加载 HerbKnowledgeService（解决注入链断裂问题）
+        self._try_load_herb_knowledge()
         self.config.target_effects = target_effects
+
+        # 设置随机种子（可重复性）
+        if self.config.seed is not None:
+            random.seed(self.config.seed)
+            logger.info(f"[GeneticAlgorithm] 设置随机种子: {self.config.seed}")
 
         # Step 1: 选择候选药材（支持排除药材）
         candidates = self._select_herbs(target_effects, exclude_herbs=exclude_herbs)
@@ -222,14 +425,49 @@ class GeneticFormulaOptimizer:
 
         # Step 3: 进化迭代
         for gen in range(self.config.generations):
+            # 计算本代多样性（必须在取消检查之前，供取消处理器使用）
+            diversity = self._compute_diversity(population)
+
+            # ── 取消信号检查 ──
+            if _cancel_signal is not None and _cancel_signal.is_set():
+                logger.info("[GeneticAlgorithm] 收到取消信号，提前终止进化")
+                # 即时计算统计值（取消处理器需要这些变量）
+                fitnesses_now = [ind.fitness for ind in population]
+                avg_fitness_now = sum(fitnesses_now) / len(fitnesses_now)
+                min_fitness_now = min(fitnesses_now)
+                history.append({
+                    "generation": gen + 1,
+                    "best_fitness": round(best_fitness, 6),
+                    "avg_fitness": round(avg_fitness_now, 6),
+                    "min_fitness": round(min_fitness_now, 6),
+                    "diversity": round(diversity, 6),
+                    "stop_reason": "cancelled",
+                })
+                # 院士级修复[P0]: 返回当前最优种群而非空列表，避免用户取消后数据丢失
+                return self._deduplicate(population[:10]), history
             new_population = []
 
             # 精英保留
             n_elite = max(1, int(self.config.population_size * self.config.elite_ratio))
             new_population.extend(population[:n_elite])
 
-            # 计算本代种群多样性（用于自适应变异率）
-            diversity = self._compute_diversity(population)
+            # ── 种群恢复机制（院士级修复[P1-A3]）──
+            # 当多样性持续低于阈值时，注入随机个体打破收敛
+            if diversity < 0.15:
+                recovery_count = max(1, int(self.config.population_size * 0.2))
+                logger.info(f"[GeneticAlgorithm] 多样性过低 ({diversity:.4f})，注入 {recovery_count} 个随机个体")
+                for _ in range(recovery_count):
+                    genes = {}
+                    for hid in candidates:
+                        if hid in self._herbs and random.random() > 0.3:
+                            herb = self._herbs[hid]
+                            dosage = herb.dosage_min + random.random() * (herb.dosage_max - herb.dosage_min)
+                            dosage = round(dosage / herb.dosage_step) * herb.dosage_step
+                            genes[hid] = max(herb.dosage_min, min(herb.dosage_max, dosage))
+                    if len(genes) >= 3:
+                        ind = Individual(genes)
+                        ind.evaluate(target_effects)
+                        new_population.append(ind)
 
             # 自适应变异率：根据种群多样性动态调整实际变异概率
             if self.config.adaptive_mutation:
@@ -327,23 +565,53 @@ class GeneticFormulaOptimizer:
         return self._deduplicate(population[:10]), history
 
     def _compute_diversity(self, population: List[Individual]) -> float:
-        """计算种群中个体基因集合的 Jaccard 平均距离"""
+        """计算种群多样性 — 院士级修复[P0]: 剂量感知欧氏距离
+
+        原实现仅比较药材ID集合（Jaccard），完全忽略了剂量差异。
+        修复后：对每个个体构建归一化剂量向量（覆盖所有药材ID），
+        计算成对欧氏距离的平均值，反映真实的配方差异。
+        """
         if len(population) < 2:
             return 1.0
 
-        gene_sets = [set(ind.genes.keys()) for ind in population]
+        # 收集所有个体的所有药材ID
+        all_herb_ids = set()
+        for ind in population:
+            all_herb_ids.update(ind.genes.keys())
+        herb_ids = sorted(all_herb_ids)
+        n_herbs = len(herb_ids)
+        if n_herbs == 0:
+            return 1.0
+
+        # 构建归一化剂量向量
+        herb_ranges: Dict[str, float] = {}
+        for hid in herb_ids:
+            if hid in self._herbs:
+                herb = self._herbs[hid]
+                herb_ranges[hid] = max(herb.dosage_max - herb.dosage_min, 0.01)
+            else:
+                herb_ranges[hid] = 1.0
+
+        vectors = []
+        for ind in population:
+            vec = []
+            for hid in herb_ids:
+                val = ind.genes.get(hid, 0.0)
+                vec.append(val / herb_ranges.get(hid, 1.0))
+            vectors.append(vec)
+
+        # 成对欧氏距离
         total_dist = 0.0
         count = 0
+        for i in range(len(vectors)):
+            for j in range(i + 1, len(vectors)):
+                sq = sum((a - b) ** 2 for a, b in zip(vectors[i], vectors[j]))
+                total_dist += math.sqrt(sq)
+                count += 1
 
-        for i in range(len(gene_sets)):
-            for j in range(i + 1, len(gene_sets)):
-                intersection = len(gene_sets[i] & gene_sets[j])
-                union = len(gene_sets[i] | gene_sets[j])
-                if union > 0:
-                    total_dist += 1.0 - intersection / union
-                    count += 1
-
-        return total_dist / max(1, count)
+        # 归一化到 [0, 1] 区间
+        max_possible = math.sqrt(n_herbs) * count if count > 0 else 1
+        return total_dist / max_possible
 
     def _select_herbs(self, target_effects: List[str], exclude_herbs: Optional[set] = None) -> List[str]:
         """选择候选药材
@@ -351,20 +619,26 @@ class GeneticFormulaOptimizer:
         Args:
             target_effects: 目标功效列表
             exclude_herbs: 可选，需要排除的药材集合
+
+        院士级修复[P0]: 使用 self._herbs（已注入 HerbKnowledgeService 数据）
+        替代硬编码的 _BUILTIN_HERBS，确保动态药材库参与优化。
         """
+        exclude_herbs = exclude_herbs or set()
         candidate_set: Dict[str, float] = {}
+        herbs = self._herbs  # 使用注入的 herb_db，而非 _BUILTIN_HERBS
+
         for effect in target_effects:
-            if effect in _EFFICACY_TO_HERBS:
-                for hid in _EFFICACY_TO_HERBS[effect]:
-                    if hid in _BUILTIN_HERBS:
-                        score = _BUILTIN_HERBS[hid].efficacy_scores.get(effect, 0)
+            if effect in self._efficacy_index:
+                for hid in self._efficacy_index[effect]:
+                    if hid not in exclude_herbs and hid in herbs:
+                        score = herbs[hid].efficacy_scores.get(effect, 0)
                         candidate_set[hid] = max(candidate_set.get(hid, 0), score)
 
         # 添加协同药材
         for hid in list(candidate_set.keys()):
-            if hid in _BUILTIN_HERBS:
-                for p in _BUILTIN_HERBS[hid].synergy_partners:
-                    if p in _BUILTIN_HERBS and p not in candidate_set:
+            if hid in herbs:
+                for p in herbs[hid].synergy_partners:
+                    if p in herbs and p not in candidate_set:
                         candidate_set[p] = 0.1  # 低权重引入
 
         sorted_h = sorted(candidate_set.keys(), key=lambda x: candidate_set[x], reverse=True)
@@ -376,16 +650,63 @@ class GeneticFormulaOptimizer:
         return sorted_h[:15]
 
     def _init_population(self, candidates: List[str]) -> List[Individual]:
-        """初始化种群 (拉丁超立方 + 随机采样)"""
+        """初始化种群 — 院士级修复[P1-A1]: 加入 TCM 经典方剂种子
+
+        种子个体来源:
+        - 经典方剂（四君子汤、六味地黄丸等）: 代表千年验证的配伍智慧
+        - 功效最佳药材: 按目标功效选取评分最高的药材
+        - 随机采样: 填充剩余种群
+        """
+        herbs = self._herbs
         population = []
         n = len(candidates)
 
-        # 确定性初始: 每个功效选最佳药材
-        for i in range(min(5, n)):
+        # ═══ 种子 1: TCM 经典方剂 ═══
+        # 格式: {herb_id: dosage} — 仅保留候选池中存在的药材
+        classic_formulas = [
+            {"四君子汤": {"ds": 12, "bq": 9, "fp": 9, "gq": 6}},       # 补气基础方
+            {"六味地黄丸": {"gz": 9, "dg": 6, "bq": 6, "fp": 6, "mld": 4, "jgh": 4}},  # 滋阴基础方
+            {"桂枝汤": {"sj": 6, "dcx": 9, "gq": 6, "hq": 9}},          # 解表调和方
+            {"逍遥散": {"ds": 9, "fp": 9, "bq": 9, "dg": 6, "cs": 6, "sj": 3}},  # 疏肝健脾
+            {"银翘散": {"cyh": 9, "jgh": 9, "gq": 6, "sj": 6, "ds": 9}},  # 清热解毒
+        ]
+        for formula_name, formula_herbs in classic_formulas:
             genes = {}
-            for j, hid in enumerate(candidates):
-                if hid in _BUILTIN_HERBS:
-                    herb = _BUILTIN_HERBS[hid]
+            for hid, dosage in formula_herbs.items():
+                if hid in herbs:
+                    # 将经典剂量缩放到 herb 的合法范围内
+                    herb = herbs[hid]
+                    clamped = max(herb.dosage_min, min(herb.dosage_max, dosage))
+                    clamped = round(clamped / herb.dosage_step) * herb.dosage_step
+                    genes[hid] = max(herb.dosage_min, clamped)
+            if len(genes) >= 3:
+                population.append(Individual(genes))
+
+        # ═══ 种子 2: 功效最佳药材 + 随机打乱 ═══
+        for i in range(min(5, n)):
+            shuffled_candidates = list(candidates)
+            random.shuffle(shuffled_candidates)
+            genes = {}
+            for j, hid in enumerate(shuffled_candidates):
+                if hid in herbs:
+                    herb = herbs[hid]
+                    base_ratio = max(0.1, 1.0 - abs(j - i) * 0.15)
+                    dosage = herb.dosage_min + base_ratio * (herb.dosage_max - herb.dosage_min)
+                    dosage = round(dosage / herb.dosage_step) * herb.dosage_step
+                    dosage = max(herb.dosage_min, min(herb.dosage_max, dosage))
+                    if dosage > 0:
+                        genes[hid] = dosage
+            population.append(Individual(genes))
+
+        # ═══ 填充随机采样 ═══
+        for _ in range(self.config.population_size - len(population)):
+            # 随机打乱候选顺序以增加多样性
+            shuffled_candidates = list(candidates)
+            random.shuffle(shuffled_candidates)
+            genes = {}
+            for j, hid in enumerate(shuffled_candidates):
+                if hid in herbs:
+                    herb = herbs[hid]
                     base_ratio = max(0.1, 1.0 - abs(j - i) * 0.15)
                     dosage = herb.dosage_min + base_ratio * (herb.dosage_max - herb.dosage_min)
                     dosage = round(dosage / herb.dosage_step) * herb.dosage_step
@@ -398,8 +719,8 @@ class GeneticFormulaOptimizer:
         for _ in range(self.config.population_size - len(population)):
             genes = {}
             for hid in candidates:
-                if hid in _BUILTIN_HERBS and random.random() > 0.3:
-                    herb = _BUILTIN_HERBS[hid]
+                if hid in herbs and random.random() > 0.3:
+                    herb = herbs[hid]
                     ratio = random.random()
                     dosage = herb.dosage_min + ratio * (herb.dosage_max - herb.dosage_min)
                     dosage = round(dosage / herb.dosage_step) * herb.dosage_step
@@ -410,8 +731,8 @@ class GeneticFormulaOptimizer:
             else:
                 # 强制补充
                 for hid in candidates[:5]:
-                    if hid in _BUILTIN_HERBS:
-                        herb = _BUILTIN_HERBS[hid]
+                    if hid in herbs:
+                        herb = herbs[hid]
                         dosage = herb.dosage_min + random.random() * (herb.dosage_max - herb.dosage_min)
                         dosage = round(dosage / herb.dosage_step) * herb.dosage_step
                         genes[hid] = max(herb.dosage_min, dosage)
@@ -425,7 +746,13 @@ class GeneticFormulaOptimizer:
         return max(contestants, key=lambda x: x.fitness)
 
     def _crossover(self, p1: Individual, p2: Individual) -> Tuple[Individual, Individual]:
-        """算术交叉 (加权平均 + 部分交换)"""
+        """算术交叉 (Blend crossover with alpha)
+
+        院士级修复[P2]: 移除原代码中50%概率的随机继承分支，
+        确保交叉算子在 crossover_rate 触发时始终执行真正的交叉操作。
+        父代基因通过加权平均产生子代，alpha 在 [0,1] 均匀采样。
+        """
+        herbs = self._herbs
         all_herbs = set(p1.genes.keys()) | set(p2.genes.keys())
         alpha = random.random()
 
@@ -433,34 +760,38 @@ class GeneticFormulaOptimizer:
         for hid in all_herbs:
             d1 = p1.genes.get(hid, 0)
             d2 = p2.genes.get(hid, 0)
-            # 父代1权重
-            if random.random() < 0.5:
-                genes1[hid] = alpha * d1 + (1 - alpha) * d2
-                genes2[hid] = (1 - alpha) * d1 + alpha * d2
-            else:
-                genes1[hid] = d1 if random.random() < 0.5 else d2
-                genes2[hid] = d2 if random.random() < 0.5 else d1
+            # 纯算术交叉：无随机继承分支
+            genes1[hid] = alpha * d1 + (1 - alpha) * d2
+            genes2[hid] = (1 - alpha) * d1 + alpha * d2
 
         # 边界裁剪
         for g in [genes1, genes2]:
             for hid in list(g.keys()):
-                if hid in _BUILTIN_HERBS and g[hid] > 0:
-                    herb = _BUILTIN_HERBS[hid]
+                if hid in herbs and g[hid] > 0:
+                    herb = herbs[hid]
                     g[hid] = max(herb.dosage_min, min(herb.dosage_max, g[hid]))
                     g[hid] = round(g[hid] / herb.dosage_step) * herb.dosage_step
 
         return Individual(genes1), Individual(genes2)
 
     def _mutate(self, ind: Individual, candidates: List[str]):
-        """高斯变异 + 添加/删除药材"""
+        """高斯变异 + 添加/删除药材
+
+        院士级修复[P2]: 使用 self._herbs 替代硬编码 _BUILTIN_HERBS。
+        """
+        herbs = self._herbs
         for hid in list(ind.genes.keys()):
-            if random.random() < 0.3 and hid in _BUILTIN_HERBS:
-                herb = _BUILTIN_HERBS[hid]
+            if random.random() < 0.3 and hid in herbs:
+                herb = herbs[hid]
                 mu = ind.genes[hid]
                 sigma = (herb.dosage_max - herb.dosage_min) * 0.2
                 new_d = mu + random.gauss(0, sigma)
                 if new_d <= herb.dosage_min:
-                    del ind.genes[hid]  # 低于下限 → 移除
+                    # 防御：如果删除后只剩少于3味药材，不删除而是设为最小值
+                    if len(ind.genes) <= 3:
+                        ind.genes[hid] = herb.dosage_min
+                    else:
+                        del ind.genes[hid]  # 低于下限 → 移除
                 else:
                     new_d = round(new_d / herb.dosage_step) * herb.dosage_step
                     ind.genes[hid] = min(herb.dosage_max, new_d)
@@ -468,11 +799,20 @@ class GeneticFormulaOptimizer:
         # 小概率添加新药材
         if random.random() < 0.2:
             new_h = random.choice(candidates)
-            if new_h not in ind.genes and new_h in _BUILTIN_HERBS:
-                herb = _BUILTIN_HERBS[new_h]
+            if new_h not in ind.genes and new_h in herbs:
+                herb = herbs[new_h]
                 dosage = herb.dosage_min + random.random() * (herb.dosage_max - herb.dosage_min)
                 dosage = round(dosage / herb.dosage_step) * herb.dosage_step
                 ind.genes[new_h] = max(herb.dosage_min, dosage)
+
+        # 变异后强制检查：至少保留3味药材
+        if len(ind.genes) < 3 and len(candidates) >= 3:
+            for hid in candidates:
+                if hid not in ind.genes and hid in herbs and len(ind.genes) < 3:
+                    herb = herbs[hid]
+                    dosage = herb.dosage_min + random.random() * (herb.dosage_max - herb.dosage_min)
+                    dosage = round(dosage / herb.dosage_step) * herb.dosage_step
+                    ind.genes[hid] = max(herb.dosage_min, dosage)
 
     def _deduplicate(self, individuals: List[Individual]) -> List[Individual]:
         """Jaccard 去重"""
@@ -489,7 +829,82 @@ class GeneticFormulaOptimizer:
                 unique.append(ind)
         return unique
 
-    def generate_with_result(self, target_effects: List[str], constraints: Optional[Dict] = None) -> 'GAResult':
+    # ═════════════════════════════════════════
+    # 君臣佐使结构评估
+    # ═════════════════════════════════════════
+
+    def _evaluate_structural_compliance(self, individual: Individual, herbs: Dict) -> float:
+        """
+        评估配方的君臣佐使结构合规度 (0~1)。
+
+        理想结构:
+        - 君药 1-2 味: 最高剂量, 针对主证
+        - 臣药 2-3 味: 次高剂量, 辅助君药
+        - 佐药 1-2 味: 较低剂量, 减毒/兼治
+        - 使药 1 味: 最低剂量, 引经/调和
+
+        评分规则:
+        - 按剂量降序排序药材
+        - Top 1-2 = 君药, 接下来 2-3 = 臣药, 接下来 1-2 = 佐药, 最后 1 = 使药
+        - 检查每组的剂量递减关系和数量合理性
+        """
+        n = len(individual.genes)
+        if n < 3:
+            return 0.0
+
+        # 按剂量降序排序
+        sorted_herbs = sorted(individual.genes.items(), key=lambda x: x[1], reverse=True)
+
+        # 理想分组
+        jun_end = min(2, n)          # 君药: 1-2味
+        chen_end = min(jun_end + 3, n)  # 臣药: 2-3味
+        zuo_end = min(chen_end + 2, n)  # 佐药: 1-2味
+        # 使药: 剩余
+
+        score = 0.0
+        parts = 0
+
+        # 1. 剂量递减检查: 君药中位剂量 >= 臣药中位剂量 >= 佐药中位剂量
+        groups = [
+            ("君药", sorted_herbs[:jun_end]),
+            ("臣药", sorted_herbs[jun_end:chen_end]),
+            ("佐药", sorted_herbs[chen_end:zuo_end]),
+            ("使药", sorted_herbs[zuo_end:]),
+        ]
+
+        group_medians = []
+        for name, group in groups:
+            if group:
+                dosages = [d for _, d in group]
+                group_medians.append((name, sorted(dosages)[len(dosages) // 2]))
+
+        for i in range(len(group_medians) - 1):
+            if group_medians[i][1] >= group_medians[i + 1][1]:
+                score += 0.25
+            parts += 0.25
+
+        # 2. 数量合理性: 君药1-2, 臣药2-3, 佐药1-2, 使药0-1
+        group_sizes = [(name, len(group)) for name, group in groups]
+        ideal_sizes = [("君药", (1, 2)), ("臣药", (2, 3)), ("佐药", (1, 2)), ("使药", (0, 1))]
+        for (name, size), (ideal_name, (lo, hi)) in zip(group_sizes, ideal_sizes):
+            if lo <= size <= hi:
+                score += 0.15
+            elif abs(size - ((lo + hi) // 2)) <= 1:
+                score += 0.08
+            parts += 0.15
+
+        # 3. 剂量跨度: 君药最高剂量不应超过使药的10倍(过于极端)
+        if sorted_herbs:
+            max_dose = sorted_herbs[0][1]
+            min_dose = sorted_herbs[-1][1]
+            if min_dose > 0 and max_dose / min_dose <= 10:
+                score += 0.15
+            parts += 0.15
+
+        return score / max(parts, 1) if parts > 0 else 0.0
+
+    def generate_with_result(self, target_effects: List[str], constraints: Optional[Dict] = None,
+                             _cancel_signal: Optional[threading.Event] = None) -> 'GAResult':
         """执行遗传算法优化并返回完整结果对象（含历史记录和统计信息）"""
         constraints = constraints or {}
 
@@ -501,7 +916,8 @@ class GeneticFormulaOptimizer:
         # ===== 执行耗时统计开始 =====
         start_time = time.perf_counter()
 
-        candidates, history = self.optimize(target_effects, exclude_herbs=exclude_set)
+        candidates, history = self.optimize(target_effects, exclude_herbs=exclude_set,
+                                            _cancel_signal=_cancel_signal)
 
         elapsed_ms = (time.perf_counter() - start_time) * 1000.0
         # ===== 执行耗时统计结束 =====
@@ -512,7 +928,7 @@ class GeneticFormulaOptimizer:
             filtered = []
             for ind in candidates:
                 total_cost = sum(
-                    dosage * (_BUILTIN_HERBS[hid].cost_per_gram if hid in _BUILTIN_HERBS else 0.1)
+                    dosage * (self._herbs[hid].cost_per_gram if hid in self._herbs else 0.1)
                     for hid, dosage in ind.genes.items()
                 )
                 if total_cost <= max_c:
@@ -528,7 +944,9 @@ class GeneticFormulaOptimizer:
                     convergence_gen = record["generation"]
                     break
 
-        total_evaluations = self.config.population_size * self.config.generations
+        total_evaluations = self.config.population_size * (
+            history[-1]["generation"] if history else self.config.generations
+        )
         best_score = final_best_score
 
         return GAResult(

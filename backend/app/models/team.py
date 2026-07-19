@@ -4,28 +4,25 @@
 支持团队级别的配方共享、权限管理和协作工作流。
 """
 from datetime import datetime, timezone
-from sqlalchemy import Integer, String, Text, Boolean, DateTime, JSON, ForeignKey, Index
+from sqlalchemy import Integer, String, Text, Boolean, DateTime, JSON, ForeignKey, Index, BigInteger
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from ..core.database import Base
-
-
-def _now() -> datetime:
-    return datetime.now(timezone.utc).replace(tzinfo=None)
+from .base import Base
+from app.models.utils import now_utc_mapped
 
 
 class Team(Base):
     __tablename__ = "teams"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     description: Mapped[str | None] = mapped_column(Text)
     owner_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+        BigInteger, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
     )
     settings: Mapped[dict | None] = mapped_column(JSON, default=dict)
     is_archived: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=_now, nullable=False, index=True)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_now, onupdate=_now, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, nullable=False, index=True)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, onupdate=now_utc_mapped, nullable=False)
 
     owner: Mapped["User"] = relationship("User", foreign_keys=[owner_id], back_populates="owned_teams")
     members: Mapped[list["TeamMember"]] = relationship(

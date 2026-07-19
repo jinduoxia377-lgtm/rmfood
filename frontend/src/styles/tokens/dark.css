@@ -1,0 +1,92 @@
+/*
+ * RMFOOD 设计系统 - 暗色主题变量 (.dark)
+ * Apple HIG 风格 — 分层灰度表面，非纯黑反转
+ * 此文件由 index.css 导入，请勿手动编辑
+ */
+
+/* ── 深色模式变量 ── */
+.dark {
+  /* ═══ 品牌色 — Apple 风格明亮 Emerald ═══ */
+  --color-primary: #30D158;
+  --color-primary-rgb: 48, 209, 88;
+  --color-primary-hover: #34D399;
+  --color-primary-container: rgba(48, 209, 88, 0.15);
+  --color-secondary: #0A84FF;
+  --color-secondary-hover: #409CFF;
+  --color-secondary-container: rgba(10, 132, 255, 0.15);
+  --color-tertiary: #BF5AF2;
+  --color-tertiary-hover: #D550F5;
+  --color-tertiary-container: rgba(191, 90, 242, 0.15);
+
+  /* ═══ Apple 系统语义色 (暗色模式提亮) ═══ */
+  --color-success: #30D158;
+  --color-warning: #FF9F0A;
+  --color-info: #0A84FF;
+  --color-error: #FF453A;
+
+  /* ═══ Apple 风格分层深色表面 (非纯黑) ═══ */
+  --bg-canvas:     #000000;
+  --bg-primary:    #000000;
+  --bg-secondary:  #1C1C1E;
+  --bg-tertiary:   #2C2C2E;
+  --card-bg-solid: #1C1C1E;
+  --bg-surface-container: #1C1C1E;
+  --bg-surface-container-low: #000000;
+  --bg-surface-raised: #2C2C2E;
+  --bg-surface-elevated: #3A3A3C;
+
+  /* ═══ Apple 暗色文本 (非纯白，减少刺眼) ═══ */
+  --text-primary:    #F5F5F7;
+  --text-secondary:  #A1A1A6;
+  --text-muted:      #636366;
+  --text-disabled:   #636366;
+
+  /* ═══ 边框 — 暗色模式极 subtle ═══ */
+  --border-color:    rgba(255, 255, 255, 0.08);
+  --border-color-hover: rgba(255, 255, 255, 0.12);
+  --border-subtle:   rgba(255, 255, 255, 0.06);
+  --border-subtle-hover: rgba(255, 255, 255, 0.1);
+
+  /* ═══ 毛玻璃材质 — 暗色 Acrylic ═══ */
+  --material-acrylic:        rgba(28, 28, 30, 0.72);
+  --material-acrylic-blur:   30px;
+  --material-acrylic-border: rgba(255, 255, 255, 0.08);
+  --material-vibrancy:       rgba(44, 44, 46, 0.5);
+  --glass-bg:                rgba(28, 28, 30, 0.65);
+  --glass-border:            rgba(255, 255, 255, 0.08);
+  --glass-shadow:            0 8px 32px rgba(0, 0, 0, 0.4);
+
+  /* ═══ 悬停与头部背景 ═══ */
+  --hover-bg:    rgba(255, 255, 255, 0.04);
+  --header-bg:   rgba(28, 28, 30, 0.82);
+
+  /* ═══ 背景渐变 (暗色) ═══ */
+  --bg-gradient-start: #000000;
+  --bg-gradient-end: #1C1C1E;
+
+  /* ═══ 阴影 — 暗色模式使用彩色辉光替代纯黑 ═══ */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.2);
+  --shadow-elevated: 0 8px 24px rgba(0, 0, 0, 0.35), 0 4px 8px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.4), 0 6px 12px rgba(0, 0, 0, 0.25);
+  --shadow-xl: 0 20px 48px rgba(0, 0, 0, 0.35), 0 8px 16px rgba(0, 0, 0, 0.2);
+  --shadow-modal: 0 24px 64px rgba(0, 0, 0, 0.5), 0 12px 24px rgba(0, 0, 0, 0.3);
+  --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  --shadow-float: 0 12px 28px rgba(0, 0, 0, 0.3), 0 4px 10px rgba(0, 0, 0, 0.2);
+  --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+
+  /* ═══ 布局变量暗色覆盖 ═══ */
+  --bg-surface-container: #1C1C1E;
+  --bg-surface-container-low: #000000;
+  --bg-surface: #1C1C1E;
+  --bg-surface-hover: rgba(255, 255, 255, 0.04);
+  --color-primary-container: rgba(48, 209, 88, 0.15);
+  --color-text-secondary: var(--text-secondary, #A1A1A6);
+  --fill-secondary: #374151;
+
+  /* ═══ 知识图谱默认 fallback（暗色） ═══ */
+  --color-knowledge-default: #94A3B8;
+  --color-knowledge-text: #64748B;
+}

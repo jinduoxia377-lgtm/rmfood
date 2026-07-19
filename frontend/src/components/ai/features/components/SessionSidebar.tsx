@@ -111,7 +111,7 @@ const SessionItem: React.FC<SessionItemProps> = React.memo(({
       className={`group/session flex items-center gap-2 px-3 py-2.5 mx-2 rounded-lg cursor-pointer transition-all duration-150 ${
         isActive
           ? 'bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800'
-          : 'hover:bg-gray-100 dark:hover:bg-gray-700/50 border border-transparent'
+          : 'hover:bg-neutral-100 dark:hover:bg-neutral-700/50 border border-transparent'
       }`}
       onClick={onClick}
       onContextMenu={onContextMenu}
@@ -128,12 +128,12 @@ const SessionItem: React.FC<SessionItemProps> = React.memo(({
           <span className={`text-sm font-medium truncate ${
             isActive
               ? 'text-primary-700 dark:text-primary-300'
-              : 'text-gray-900 dark:text-gray-100'
+              : 'text-neutral-900 dark:text-neutral-100'
           }`}>
             {session.title || '新对话'}
           </span>
         </div>
-        <div className="flex items-center gap-2 mt-0.5 text-[11px] text-gray-400 dark:text-gray-500">
+        <div className="flex items-center gap-2 mt-0.5 text-[11px] text-neutral-400 dark:text-neutral-500">
           <MessageSquare className="w-3 h-3" />
           <span>{session.messageCount} 条消息</span>
           <Clock className="w-3 h-3 ml-1" />
@@ -144,14 +144,14 @@ const SessionItem: React.FC<SessionItemProps> = React.memo(({
       {!isActive && (
         <div className="opacity-0 group-hover/session:opacity-100 transition-opacity">
           <button
-            className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600"
+            className="p-1 rounded hover:bg-neutral-200 dark:hover:bg-neutral-600"
             onClick={(e) => {
               e.stopPropagation()
               onContextMenu?.(e)
             }}
             aria-label="更多操作"
           >
-            <MoreVertical className="w-4 h-4 text-gray-400" />
+            <MoreVertical className="w-4 h-4 text-neutral-400" />
           </button>
         </div>
       )}
@@ -220,7 +220,7 @@ const SessionActionMenu: React.FC<SessionActionMenuProps> = ({
       <div className="fixed inset-0 z-30" onClick={onClose} />
       <div
         ref={menuRef}
-        className="fixed z-40 w-52 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 py-1.5 animate-in fade-in zoom-in-95 duration-100"
+        className="fixed z-40 w-52 bg-white dark:bg-neutral-800 rounded-lg shadow-xl border border-neutral-200 dark:border-neutral-700 py-1.5 animate-in fade-in zoom-in-95 duration-100"
         style={{
           left: Math.min(position.x, window.innerWidth - 220),
           top: Math.min(position.y, window.innerHeight - 300),
@@ -228,7 +228,7 @@ const SessionActionMenu: React.FC<SessionActionMenuProps> = ({
       >
         <button
           onClick={() => { onRename(); onClose() }}
-          className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
         >
           <Pencil className="w-4 h-4" />
           <span>重命名</span>
@@ -236,7 +236,7 @@ const SessionActionMenu: React.FC<SessionActionMenuProps> = ({
 
         <button
           onClick={() => { onTogglePin(); onClose() }}
-          className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
         >
           {session.pinned ? (
             <>
@@ -253,33 +253,33 @@ const SessionActionMenu: React.FC<SessionActionMenuProps> = ({
 
         <button
           onClick={() => { onManageTags(); onClose() }}
-          className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
         >
           <Tag className="w-4 h-4" />
           <span>标签管理</span>
         </button>
 
-        <div className="border-t border-gray-200 dark:border-gray-700 my-1" />
+        <div className="border-t border-neutral-200 dark:border-neutral-700 my-1" />
 
-        <div className="px-3 py-1.5 text-xs font-medium text-gray-400 dark:text-gray-500 uppercase">
+        <div className="px-3 py-1.5 text-xs font-medium text-neutral-400 dark:text-neutral-500 uppercase">
           导出格式
         </div>
         {['json', 'markdown', 'text'].map(format => (
           <button
             key={format}
             onClick={() => { onExport(format); onClose() }}
-            className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors pl-6"
+            className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors pl-6"
           >
             <Download className="w-3.5 h-3.5" />
             <span>{format.toUpperCase()}</span>
           </button>
         ))}
 
-        <div className="border-t border-gray-200 dark:border-gray-700 my-1" />
+        <div className="border-t border-neutral-200 dark:border-neutral-700 my-1" />
 
         <button
           onClick={() => { onDelete(); onClose() }}
-          className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+          className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-error-600 dark:text-error-400 hover:bg-error-50 dark:hover:bg-error-900/20 transition-colors"
         >
           <Trash2 className="w-4 h-4" />
           <span>删除会话</span>
@@ -464,15 +464,15 @@ const SessionSidebar: React.FC<SessionSidebarProps> = ({
   if (collapsed) {
     return (
       <div
-        className={`h-full bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col items-center py-4 transition-all duration-300 ${className}`}
+        className={`h-full bg-white dark:bg-neutral-800 border-r border-neutral-200 dark:border-neutral-700 flex flex-col items-center py-4 transition-all duration-300 ${className}`}
         style={{ width: COLLAPSED_WIDTH }}
       >
         <button
           onClick={onToggleCollapse}
-          className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 mb-4"
+          className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 mb-4"
           title="展开侧边栏"
         >
-          <PanelLeft className="w-5 h-5 text-gray-500" />
+          <PanelLeft className="w-5 h-5 text-neutral-500" />
         </button>
 
         <button
@@ -491,12 +491,12 @@ const SessionSidebar: React.FC<SessionSidebarProps> = ({
               className={`w-full p-2 mb-1 rounded-lg transition-colors ${
                 session.id === activeSessionId
                   ? 'bg-primary-100 dark:bg-primary-900/30'
-                  : 'hover:bg-gray-100 dark:hover:bg-gray-700'
+                  : 'hover:bg-neutral-100 dark:hover:bg-neutral-700'
               }`}
               title={session.title}
             >
               <MessageSquare className={`w-5 h-5 mx-auto ${
-                session.id === activeSessionId ? 'text-primary-600' : 'text-gray-400'
+                session.id === activeSessionId ? 'text-primary-600' : 'text-neutral-400'
               }`} />
               {session.pinned && (
                 <span className="block text-[10px] mt-0.5">📌</span>
@@ -510,21 +510,21 @@ const SessionSidebar: React.FC<SessionSidebarProps> = ({
 
   return (
     <div
-      className={`h-full bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col transition-all duration-300 ${className}`}
+      className={`h-full bg-white dark:bg-neutral-800 border-r border-neutral-200 dark:border-neutral-700 flex flex-col transition-all duration-300 ${className}`}
       style={{ width }}
     >
       {/* 标题栏 */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-        <h2 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-200 dark:border-neutral-700">
+        <h2 className="font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
           <LayoutGrid className="w-5 h-5 text-primary-600" />
           对话历史
         </h2>
         <button
           onClick={onToggleCollapse}
-          className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
           title="折叠侧边栏"
         >
-          <PanelLeftClose className="w-4 h-4 text-gray-500" />
+          <PanelLeftClose className="w-4 h-4 text-neutral-500" />
         </button>
       </div>
 
@@ -539,20 +539,20 @@ const SessionSidebar: React.FC<SessionSidebarProps> = ({
         </button>
 
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="搜索会话..."
-            className="w-full pl-9 pr-8 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
+            className="w-full pl-9 pr-8 py-2 text-sm border border-neutral-200 dark:border-neutral-600 rounded-lg bg-slate-50 dark:bg-neutral-700 text-neutral-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-gray-200 dark:hover:bg-gray-600"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-neutral-200 dark:hover:bg-neutral-600"
             >
-              <X className="w-3.5 h-3.5 text-gray-400" />
+              <X className="w-3.5 h-3.5 text-neutral-400" />
             </button>
           )}
         </div>
@@ -563,7 +563,7 @@ const SessionSidebar: React.FC<SessionSidebarProps> = ({
         {/* 置顶会话 */}
         {pinnedSessions.length > 0 && (
           <div className="px-3 pt-2 pb-1">
-            <div className="text-[11px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1 px-2">
+            <div className="text-[11px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-1 px-2">
               置顶 ({pinnedSessions.length})
             </div>
             {pinnedSessions.map(session => (
@@ -581,13 +581,13 @@ const SessionSidebar: React.FC<SessionSidebarProps> = ({
         {/* 普通会话 */}
         <div className="px-3 py-2">
           {normalSessions.length > 0 && pinnedSessions.length > 0 && (
-            <div className="text-[11px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1 px-2">
+            <div className="text-[11px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mb-1 px-2">
               最近 ({normalSessions.length})
             </div>
           )}
 
           {normalSessions.length === 0 && pinnedSessions.length === 0 && !searchQuery && (
-            <div className="text-center py-12 text-gray-400 dark:text-gray-500">
+            <div className="text-center py-12 text-neutral-400 dark:text-neutral-500">
               <MessageSquare className="w-12 h-12 mx-auto mb-2 opacity-30" />
               <p className="text-sm">暂无会话记录</p>
               <p className="text-xs mt-1">点击上方按钮创建新会话</p>
@@ -595,7 +595,7 @@ const SessionSidebar: React.FC<SessionSidebarProps> = ({
           )}
 
           {normalSessions.length === 0 && searchQuery && (
-            <div className="text-center py-8 text-gray-400 dark:text-gray-500">
+            <div className="text-center py-8 text-neutral-400 dark:text-neutral-500">
               <Search className="w-8 h-8 mx-auto mb-2 opacity-50" />
               <p className="text-sm">未找到匹配的会话</p>
               <p className="text-xs mt-1">尝试其他关键词</p>
@@ -615,8 +615,8 @@ const SessionSidebar: React.FC<SessionSidebarProps> = ({
       </div>
 
       {/* 底部统计 */}
-      <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
-        <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+      <div className="px-4 py-3 border-t border-neutral-200 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-900/50">
+        <div className="flex items-center justify-between text-xs text-neutral-500 dark:text-neutral-400">
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1">
               <LayoutGrid className="w-3.5 h-3.5" />
@@ -628,7 +628,7 @@ const SessionSidebar: React.FC<SessionSidebarProps> = ({
             </span>
           </div>
           {stats.pinnedCount > 0 && (
-            <span className="flex items-center gap-1 text-amber-600 dark:text-amber-400">
+            <span className="flex items-center gap-1 text-warning-600 dark:text-warning-400">
               📌 {stats.pinnedCount}
             </span>
           )}
@@ -657,8 +657,8 @@ const SessionSidebar: React.FC<SessionSidebarProps> = ({
       {/* 重命名对话框 */}
       {isRenaming && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-96 max-w-[90vw]">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          <div className="bg-white dark:bg-neutral-800 rounded-xl shadow-2xl p-6 w-96 max-w-[90vw]">
+            <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4">
               重命名会话
             </h3>
             <input
@@ -667,13 +667,13 @@ const SessionSidebar: React.FC<SessionSidebarProps> = ({
               onChange={(e) => setRenameValue(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleRenameConfirm()}
               autoFocus
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+              className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
               placeholder="输入新名称..."
             />
             <div className="flex justify-end gap-2 mt-4">
               <button
                 onClick={() => setIsRenaming(false)}
-                className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                className="px-4 py-2 text-sm text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition-colors"
               >
                 取消
               </button>
@@ -691,23 +691,23 @@ const SessionSidebar: React.FC<SessionSidebarProps> = ({
       {/* 删除确认对话框 */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-96 max-w-[90vw]">
-            <h3 className="text-lg font-semibold text-red-600 dark:text-red-400 mb-2">
+          <div className="bg-white dark:bg-neutral-800 rounded-xl shadow-2xl p-6 w-96 max-w-[90vw]">
+            <h3 className="text-lg font-semibold text-error-600 dark:text-error-400 mb-2">
               确认删除
             </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+            <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
               确定要删除此会话吗？此操作无法撤销。
             </p>
             <div className="flex justify-end gap-2">
               <button
                 onClick={() => setShowDeleteConfirm(false)}
-                className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                className="px-4 py-2 text-sm text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition-colors"
               >
                 取消
               </button>
               <button
                 onClick={handleDeleteConfirm}
-                className="px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                className="px-4 py-2 text-sm bg-error-600 text-white rounded-lg hover:bg-error-700 transition-colors"
               >
                 删除
               </button>
@@ -719,8 +719,8 @@ const SessionSidebar: React.FC<SessionSidebarProps> = ({
       {/* 标签管理对话框 */}
       {isManagingTags && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-96 max-w-[90vw]">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          <div className="bg-white dark:bg-neutral-800 rounded-xl shadow-2xl p-6 w-96 max-w-[90vw]">
+            <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4">
               标签管理
             </h3>
             <div className="space-y-3">
@@ -730,7 +730,7 @@ const SessionSidebar: React.FC<SessionSidebarProps> = ({
                   value={tagInputValue}
                   onChange={(e) => setTagInputValue(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleAddTag()}
-                  className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none text-sm"
+                  className="flex-1 px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none text-sm"
                   placeholder="输入标签名..."
                 />
                 <button
@@ -744,7 +744,7 @@ const SessionSidebar: React.FC<SessionSidebarProps> = ({
                 {sessions.find(s => s.id === selectedSessionId)?.tags.map(tag => (
                   <span
                     key={tag}
-                    className="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-xs rounded-full"
+                    className="inline-flex items-center gap-1 px-2 py-1 bg-secondary-50 dark:bg-secondary-900/20 text-secondary-700 dark:text-secondary-300 text-xs rounded-full"
                   >
                     {tag}
                     <button
@@ -757,7 +757,7 @@ const SessionSidebar: React.FC<SessionSidebarProps> = ({
                           )
                         }
                       }}
-                      className="ml-0.5 hover:text-red-500"
+                      className="ml-0.5 hover:text-error-500"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -768,7 +768,7 @@ const SessionSidebar: React.FC<SessionSidebarProps> = ({
             <div className="flex justify-end mt-4">
               <button
                 onClick={() => setIsManagingTags(false)}
-                className="px-4 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                className="px-4 py-2 text-sm bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-600 transition-colors"
               >
                 完成
               </button>

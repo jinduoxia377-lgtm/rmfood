@@ -243,9 +243,9 @@ function RecommendationPanel({
   }, [selectedAlgorithm])
 
   return (
-    <div className={`bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden ${className}`}>
+    <div className={`bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 shadow-sm overflow-hidden ${className}`}>
       <div
-        className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+        className="flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-neutral-700/50 transition-colors"
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <div className="flex items-center gap-3">
@@ -253,11 +253,11 @@ function RecommendationPanel({
             <Sliders className="w-5 h-5 text-primary-600 dark:text-primary-400" />
           </div>
           <div>
-            <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">
+            <h3 className="text-base font-semibold text-neutral-900 dark:text-neutral-100">
               推荐参数调节
             </h3>
             {selectedAlgorithm && (
-              <p className="text-xs text-gray-500 dark:text-gray-400">
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">
                 当前算法: {selectedAlgorithm.name}
               </p>
             )}
@@ -271,9 +271,9 @@ function RecommendationPanel({
             </Badge>
           )}
           {isExpanded ? (
-            <ChevronUp className="w-5 h-5 text-gray-400" />
+            <ChevronUp className="w-5 h-5 text-neutral-400" />
           ) : (
-            <ChevronDown className="w-5 h-5 text-gray-400" />
+            <ChevronDown className="w-5 h-5 text-neutral-400" />
           )}
         </div>
       </div>
@@ -281,7 +281,7 @@ function RecommendationPanel({
       {isExpanded && (
         <div className="px-4 pb-4 space-y-4 animate-in slide-in-from-top-2 fade-in duration-200">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
               选择算法
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
@@ -292,16 +292,16 @@ function RecommendationPanel({
                   className={`p-3 rounded-lg border text-left transition-all ${
                     selectedAlgorithmId === algo.id
                       ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 ring-2 ring-primary-500/20'
-                      : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500'
+                      : 'border-neutral-200 dark:border-neutral-600 hover:border-neutral-300 dark:hover:border-neutral-500'
                   }`}
                 >
                   <div className="flex items-center gap-2 mb-1">
                     {algo.icon || <Zap className="w-4 h-4 text-primary-500" />}
-                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                    <span className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
                       {algo.name}
                     </span>
                   </div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400 line-clamp-2">
                     {algo.description}
                   </p>
                 </button>
@@ -311,18 +311,18 @@ function RecommendationPanel({
 
           {selectedAlgorithm?.parameters && selectedAlgorithm.parameters.length > 0 && (
             <div className="space-y-3">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
                 参数设置
               </label>
               {selectedAlgorithm.parameters.map(param => (
-                <div key={param.id} className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+                <div key={param.id} className="bg-slate-50 dark:bg-neutral-700/50 rounded-lg p-3">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                       {param.label}
                     </span>
                     {param.description && (
                       <Tooltip content={param.description}>
-                        <Info className="w-4 h-4 text-gray-400" />
+                        <Info className="w-4 h-4 text-neutral-400" />
                       </Tooltip>
                     )}
                   </div>
@@ -336,9 +336,9 @@ function RecommendationPanel({
                         step={param.step ?? 1}
                         value={(parameters[param.id] as number) ?? param.default}
                         onChange={e => handleParameterChange(param.id, Number(e.target.value))}
-                        className="w-full h-2 bg-gray-200 dark:bg-gray-600 rounded-lg appearance-none cursor-pointer accent-primary-600"
+                        className="w-full h-2 bg-neutral-200 dark:bg-neutral-600 rounded-lg appearance-none cursor-pointer accent-primary-600"
                       />
-                      <div className="flex justify-between text-xs text-gray-500">
+                      <div className="flex justify-between text-xs text-neutral-500">
                         <span>{param.min ?? 0}{param.unit || ''}</span>
                         <span className="font-medium text-primary-600 dark:text-primary-400">
                           {(parameters[param.id] as number)?.toFixed(2) || param.default}{param.unit || ''}
@@ -352,7 +352,7 @@ function RecommendationPanel({
                     <button
                       onClick={() => handleParameterChange(param.id, !(parameters[param.id] as boolean))}
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        parameters[param.id] ? 'bg-primary-600' : 'bg-gray-300 dark:bg-gray-600'
+                        parameters[param.id] ? 'bg-primary-600' : 'bg-neutral-300 dark:bg-neutral-600'
                       }`}
                     >
                       <span
@@ -367,7 +367,7 @@ function RecommendationPanel({
                     <select
                       value={(parameters[param.id] as string) ?? String(param.default)}
                       onChange={e => handleParameterChange(param.id, e.target.value)}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500"
+                      className="w-full px-3 py-2 text-sm border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:ring-2 focus:ring-primary-500"
                     >
                       {param.options?.map(opt => (
                         <option key={opt.value} value={opt.value}>
@@ -388,14 +388,14 @@ function RecommendationPanel({
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-2">
                     <Sparkles className="w-4 h-4 text-primary-500" />
-                    <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                    <span className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
                       AI 推荐
                     </span>
                     <Badge variant={result.score >= 80 ? 'success' : result.score >= 60 ? 'warning' : 'danger'}>
                       置信度: {result.confidence.toFixed(1)}%
                     </Badge>
                   </div>
-                  <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                  <p className="text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed">
                     {result.explanation}
                   </p>
                 </div>
@@ -403,7 +403,7 @@ function RecommendationPanel({
             </div>
           )}
 
-          <div className="flex items-center justify-between pt-2 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between pt-2 border-t border-neutral-200 dark:border-neutral-700">
             <div className="flex gap-2">
               {showPresets && (
                 <React.Fragment>
@@ -424,12 +424,12 @@ function RecommendationPanel({
                       >
                         加载预设 ({presets.length})
                       </Button>
-                      <div className="absolute top-full left-0 mt-1 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
+                      <div className="absolute top-full left-0 mt-1 w-48 bg-white dark:bg-neutral-800 rounded-lg shadow-xl border border-neutral-200 dark:border-neutral-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
                         {presets.map((preset, idx) => (
                           <button
                             key={idx}
                             onClick={() => handleLoadPreset(preset)}
-                            className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 first:rounded-t-lg last:rounded-b-lg"
+                            className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50 dark:hover:bg-neutral-700 first:rounded-t-lg last:rounded-b-lg"
                           >
                             {preset.name}
                           </button>

@@ -75,16 +75,16 @@ export const GenerationInput: React.FC<GenerationInputProps> = ({
     <div className="space-y-6">
       <div className="flex flex-col lg:flex-row gap-4 mb-6">
         <div className="flex items-center gap-3">
-          <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+          <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
             {DEFAULTS.PLACEHOLDER_TEXTS.LABEL_INPUT_MODE}
           </span>
-          <div className="flex bg-gray-100 dark:bg-gray-800 rounded-xl p-1.5 gap-1.5">
+          <div className="flex bg-neutral-100 dark:bg-neutral-800 rounded-xl p-1.5 gap-1.5">
             <button
               onClick={() => onInputModeChange('effects')}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                 inputMode === 'effects'
-                  ? 'bg-white dark:bg-gray-700 shadow-sm text-gray-900 dark:text-gray-100'
-                  : 'text-gray-500 dark:text-gray-400'
+                  ? 'bg-white dark:bg-neutral-700 shadow-sm text-neutral-900 dark:text-neutral-100'
+                  : 'text-neutral-500 dark:text-neutral-400'
               }`}
             >
               <Target className="w-4 h-4 inline mr-1.5" />
@@ -94,8 +94,8 @@ export const GenerationInput: React.FC<GenerationInputProps> = ({
               onClick={() => onInputModeChange('manual')}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                 inputMode === 'manual'
-                  ? 'bg-white dark:bg-gray-700 shadow-sm text-gray-900 dark:text-gray-100'
-                  : 'text-gray-500 dark:text-gray-400'
+                  ? 'bg-white dark:bg-neutral-700 shadow-sm text-neutral-900 dark:text-neutral-100'
+                  : 'text-neutral-500 dark:text-neutral-400'
               }`}
             >
               <FileText className="w-4 h-4 inline mr-1.5" />
@@ -117,7 +117,7 @@ export const GenerationInput: React.FC<GenerationInputProps> = ({
       {inputMode === 'effects' && (
         <>
           <Suspense fallback={
-            <div className="animate-pulse p-6 bg-gray-100 dark:bg-gray-800 rounded-xl">
+            <div className="animate-pulse p-6 bg-neutral-100 dark:bg-neutral-800 rounded-xl">
               {DEFAULTS.PLACEHOLDER_TEXTS.LOADING_TEXT}
             </div>
           }>
@@ -139,7 +139,7 @@ export const GenerationInput: React.FC<GenerationInputProps> = ({
           </Suspense>
 
           <Suspense fallback={
-            <div className="animate-pulse p-6 bg-gray-100 dark:bg-gray-800 rounded-xl">
+            <div className="animate-pulse p-6 bg-neutral-100 dark:bg-neutral-800 rounded-xl">
               {DEFAULTS.PLACEHOLDER_TEXTS.LOADING_TEXT}
             </div>
           }>
@@ -199,7 +199,7 @@ export const GenerationInput: React.FC<GenerationInputProps> = ({
                     {effect.label}
 
                     {effect.popular && !isSelected && (
-                      <span className="ml-2 text-xs px-1.5 py-0.5 rounded-full bg-amber-500/12 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400">
+                      <span className="ml-2 text-xs px-1.5 py-0.5 rounded-full bg-warning-500/12 dark:bg-warning-500/20 text-warning-600 dark:text-warning-400">
                         {DEFAULTS.PLACEHOLDER_TEXTS.BADGE_POPULAR}
                       </span>
                     )}

@@ -4,30 +4,27 @@
 支持内容快照、差异对比和变更追踪，便于回滚和审计。
 """
 from datetime import datetime, timezone
-from sqlalchemy import Integer, String, Text, DateTime, JSON, ForeignKey, Index
+from sqlalchemy import Integer, String, Text, DateTime, JSON, ForeignKey, Index, BigInteger
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from ..core.database import Base
-
-
-def _now() -> datetime:
-    return datetime.now(timezone.utc).replace(tzinfo=None)
+from .base import Base
+from app.models.utils import now_utc_mapped
 
 
 class PromptVersion(Base):
     __tablename__ = "prompt_versions"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     prompt_template_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("prompt_templates.id", ondelete="CASCADE"), nullable=False, index=True
+        BigInteger, ForeignKey("prompt_templates.id", ondelete="CASCADE"), nullable=False, index=True
     )
     version_number: Mapped[int] = mapped_column(Integer, nullable=False)
     content_snapshot: Mapped[str] = mapped_column(Text, nullable=False)
     diff_summary: Mapped[str | None] = mapped_column(Text)
     changelog: Mapped[str | None] = mapped_column(Text)
     created_by: Mapped[int] = mapped_column(
-        Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+        BigInteger, ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True
     )
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=_now, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=now_utc_mapped, nullable=False)
 
     creator: Mapped["User | None"] = relationship("User")
     template: Mapped["PromptTemplate"] = relationship(

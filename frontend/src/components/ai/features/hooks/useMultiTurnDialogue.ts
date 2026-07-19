@@ -48,7 +48,7 @@ interface Reference {
 }
 
 interface DialogueState {
-  activeTopic: Topic | null
+  activeTopic: Topic | undefined
   topicStack: Topic[]
   recentReferences: Map<string, Reference>
   unresolvedReferences: Reference[]
@@ -83,7 +83,7 @@ class MultiTurnDialogueManager {
 
   constructor() {
     this.state = {
-      activeTopic: null,
+      activeTopic: undefined,
       topicStack: [],
       recentReferences: new Map(),
       unresolvedReferences: [],
@@ -474,7 +474,7 @@ class MultiTurnDialogueManager {
 4. 如有不确定性，明确说明`
   }
 
-  getActiveTopic(): Topic | null {
+  getActiveTopic(): Topic | undefined {
     return this.state.activeTopic
   }
 
@@ -547,7 +547,7 @@ class MultiTurnDialogueManager {
 
   clear(): void {
     this.state = {
-      activeTopic: null,
+      activeTopic: undefined,
       topicStack: [],
       recentReferences: new Map(),
       unresolvedReferences: [],
@@ -558,7 +558,7 @@ class MultiTurnDialogueManager {
   }
 
   getStats(): {
-    activeTopic: Topic | null
+    activeTopic: Topic | undefined
     stackDepth: number
     turnsCount: number
     referencesCount: number

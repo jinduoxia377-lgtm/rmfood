@@ -15,6 +15,7 @@ interface CategoryTreeProps {
 interface TreeNode extends Category {
   expanded?: boolean
   children?: TreeNode[]
+  formulaCount?: number
 }
 
 function buildTree(categories: Category[]): TreeNode[] {
@@ -26,8 +27,8 @@ function buildTree(categories: Category[]): TreeNode[] {
   })
 
   map.forEach((node) => {
-    if (node.parent_id && map.has(node.parent_id)) {
-      map.get(node.parent_id)!.children!.push(node)
+    if (node.parentId && map.has(node.parentId)) {
+      map.get(node.parentId)!.children!.push(node)
     } else {
       roots.push(node)
     }
@@ -167,9 +168,9 @@ export function CategoryTree({
   const getIndent = (node: TreeNode): number => {
     let depth = 0
     let current = node
-    while (current.parent_id) {
+    while (current.parentId) {
       depth++
-      current = categories.find((c) => c.id === current.parent_id) || current
+      current = categories.find((c) => c.id === current.parentId) || current
     }
     return depth
   }
@@ -180,14 +181,14 @@ export function CategoryTree({
         type="button"
         onClick={() => setOpen(!open)}
         className={cn(
-          'w-full min-h-[36px] px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700',
-          'bg-white dark:bg-slate-900 text-sm text-left',
+          'w-full min-h-[36px] px-3 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700',
+          'bg-white dark:bg-neutral-900 text-sm text-left',
           'hover:border-primary-400 dark:hover:border-primary-600 transition-colors',
           'flex flex-wrap gap-1.5 items-center',
         )}
       >
         {selectedCategories.length === 0 ? (
-          <span className="text-slate-400 dark:text-slate-500">{placeholder}</span>
+          <span className="text-neutral-400 dark:text-neutral-500">{placeholder}</span>
         ) : (
           selectedCategories.map((cat) => (
             <Badge key={cat.id} variant="primary" size="sm" className="gap-1">
@@ -198,7 +199,7 @@ export function CategoryTree({
                   e.stopPropagation()
                   removeSelected(cat.id)
                 }}
-                className="hover:text-red-500"
+                className="hover:text-error-500"
               >
                 <X size={10} />
               </button>
@@ -208,8 +209,8 @@ export function CategoryTree({
       </button>
 
       {open && (
-        <div className="absolute z-30 mt-1 w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl overflow-hidden">
-          <div className="p-2 border-b border-slate-100 dark:border-slate-800">
+        <div className="absolute z-30 mt-1 w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl shadow-xl overflow-hidden">
+          <div className="p-2 border-b border-neutral-100 dark:border-neutral-800">
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -221,7 +222,7 @@ export function CategoryTree({
                   <button
                     type="button"
                     onClick={() => setSearch('')}
-                    className="hover:text-red-500"
+                    className="hover:text-error-500"
                   >
                     <X size={14} />
                   </button>
@@ -238,11 +239,11 @@ export function CategoryTree({
             onScroll={handleScroll}
           >
             {loading ? (
-              <div className="p-4 text-center text-sm text-slate-400">
+              <div className="p-4 text-center text-sm text-neutral-400">
                 <div className="w-4 h-4 border-2 border-primary-300 border-t-primary-600 rounded-full animate-spin mx-auto" />
               </div>
             ) : flatData.length === 0 ? (
-              <div className="p-4 text-center text-sm text-slate-400">
+              <div className="p-4 text-center text-sm text-neutral-400">
                 {search ? '未找到匹配分类' : '暂无分类数据'}
               </div>
             ) : (
@@ -263,20 +264,20 @@ export function CategoryTree({
                         key={node.id}
                         className={cn(
                           'flex items-center gap-1.5 px-3 py-1.5 text-sm cursor-pointer',
-                          'hover:bg-slate-50 dark:hover:bg-slate-800',
+                          'hover:bg-slate-50 dark:hover:bg-neutral-800',
                           isSelected && 'bg-primary-50 dark:bg-primary-900/20',
                         )}
                         style={{ paddingLeft: `${12 + indent * 16}px`, height: `${ITEM_HEIGHT}px` }}
                         onClick={() => hasChildren ? toggleExpand(node.id) : toggleSelect(node.id)}
                       >
                         {hasChildren ? (
-                          <span className="text-slate-400">
+                          <span className="text-neutral-400">
                             {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
                           </span>
                         ) : (
                           <span className="w-[14px]" />
                         )}
-                        <span className="text-slate-600 dark:text-slate-400">
+                        <span className="text-neutral-600 dark:text-neutral-400">
                           {isExpanded ? <FolderOpen size={14} /> : <Folder size={14} />}
                         </span>
                         <span
@@ -284,13 +285,13 @@ export function CategoryTree({
                             'flex-1 truncate',
                             isSelected
                               ? 'text-primary-700 dark:text-primary-400 font-medium'
-                              : 'text-slate-700 dark:text-slate-300',
+                              : 'text-neutral-700 dark:text-neutral-300',
                           )}
                         >
                           {node.name}
                         </span>
-                        {node.formula_count !== undefined && node.formula_count > 0 && (
-                          <span className="text-xs text-slate-400">{node.formula_count}</span>
+                        {node.formulaCount !== undefined && node.formulaCount > 0 && (
+                          <span className="text-xs text-neutral-400">{node.formulaCount}</span>
                         )}
                         {isSelected && (
                           <span className="w-2 h-2 rounded-full bg-primary-500" />

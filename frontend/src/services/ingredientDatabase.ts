@@ -1,63 +1,148 @@
-import { IngredientSource } from '@/types/ai.types'
-import type { EfficacyTag, Precaution } from '@/types/ai.types'
+import { IngredientSource } from '@/types/ai.types';
+import type { EfficacyTag, Precaution } from '@/types/ai.types';
 
 // 重新导出类型，方便其他模块使用
-export type { IngredientSource, EfficacyTag, Precaution }
+export type { IngredientSource, EfficacyTag, Precaution };
 
 export interface IngredientDatabaseRecord {
-  id: string
-  name: string
-  aliasNames: string[]
-  latinName?: string
-  englishName?: string
-  source: IngredientSource
-  category: string
-  efficacyTags: EfficacyTag[]
-  precautions: Precaution[]
-  dosageRange?: { min: number; max: number; unit: string }
-  description?: string
-  tcmcId?: string
-  dfbpId?: string
+  id: string;
+  name: string;
+  aliasNames: string[];
+  latinName?: string;
+  englishName?: string;
+  source: IngredientSource;
+  category: string;
+  efficacyTags: EfficacyTag[];
+  precautions: Precaution[];
+  dosageRange?: { min: number; max: number; unit: string };
+  description?: string;
+  tcmcId?: string;
+  dfbpId?: string;
 }
 
 export interface EnhancedIngredient {
-  id: string
-  name: string
-  latinName?: string
-  amount: number
-  unit: string
-  percentage: number
-  efficacyTags: EfficacyTag[]
-  precautions: Precaution[]
-  source: IngredientSource
-  role?: string
-  dbMatch?: IngredientDatabaseRecord
-  matchConfidence: number
+  id: string;
+  name: string;
+  latinName?: string;
+  amount: number;
+  unit: string;
+  percentage: number;
+  efficacyTags: EfficacyTag[];
+  precautions: Precaution[];
+  source: IngredientSource;
+  role?: string;
+  dbMatch?: IngredientDatabaseRecord;
+  matchConfidence: number;
 }
 
 const TCM_KEYWORDS = [
-  '酸枣', '茯苓', '人参', '黄芪', '当归', '甘草', '枸杞', '山药',
-  'GABA', 'γ-氨基丁酸', '氨基丁酸', '茶氨酸', 'L-茶氨酸', '褪黑素',
-  '皂苷', '多糖', '黄酮', '生物碱', '苷类', '酚酸', '萜类',
-  '银杏', '灵芝', '冬虫夏草', '西洋参', '丹参', '三七', '川芎',
-  '白芍', '熟地', '麦冬', '五味子', '远志', '石菖蒲', '益智仁',
-  '红景天', '绞股蓝', '玛咖', '鹿茸', '阿胶', '燕窝', '虫草',
-]
+  '酸枣',
+  '茯苓',
+  '人参',
+  '黄芪',
+  '当归',
+  '甘草',
+  '枸杞',
+  '山药',
+  'GABA',
+  'γ-氨基丁酸',
+  '氨基丁酸',
+  '茶氨酸',
+  'L-茶氨酸',
+  '褪黑素',
+  '皂苷',
+  '多糖',
+  '黄酮',
+  '生物碱',
+  '苷类',
+  '酚酸',
+  '萜类',
+  '银杏',
+  '灵芝',
+  '冬虫夏草',
+  '西洋参',
+  '丹参',
+  '三七',
+  '川芎',
+  '白芍',
+  '熟地',
+  '麦冬',
+  '五味子',
+  '远志',
+  '石菖蒲',
+  '益智仁',
+  '红景天',
+  '绞股蓝',
+  '玛咖',
+  '鹿茸',
+  '阿胶',
+  '燕窝',
+  '虫草',
+];
 
 const PEPTIDE_KEYWORDS = [
-  '肽', '胶原肽', '大豆肽', '玉米肽', '鱼肽', '乳清肽', '卵白肽',
-  '多肽', '低聚肽', '寡肽', '活性肽', '食源性肽', '生物活性肽',
-  '胶原蛋白', '弹性蛋白', '角蛋白', '丝蛋白', '谷胱甘肽', '肌肽',
-  '卡尼汀', '肉碱', '精氨酸', '瓜氨酸', '鸟氨酸', '赖氨酸', '亮氨酸',
-]
+  '肽',
+  '胶原肽',
+  '大豆肽',
+  '玉米肽',
+  '鱼肽',
+  '乳清肽',
+  '卵白肽',
+  '多肽',
+  '低聚肽',
+  '寡肽',
+  '活性肽',
+  '食源性肽',
+  '生物活性肽',
+  '胶原蛋白',
+  '弹性蛋白',
+  '角蛋白',
+  '丝蛋白',
+  '谷胱甘肽',
+  '肌肽',
+  '卡尼汀',
+  '肉碱',
+  '精氨酸',
+  '瓜氨酸',
+  '鸟氨酸',
+  '赖氨酸',
+  '亮氨酸',
+];
 
 const EXCIPIENT_KEYWORDS = [
-  '淀粉', '糊精', '纤维素', '微晶', '二氧化硅', '硬脂酸', '滑石粉',
-  '蔗糖', '葡萄糖', '麦芽糖', '木糖醇', '山梨醇', '甘露醇',
-  '明胶', '阿拉伯胶', '黄原胶', '卡拉胶', '果胶', '琼脂',
-  '碳酸钙', '磷酸钙', '硫酸钙', '氧化镁', '二氧化钛', '色素',
-  '防腐剂', '抗氧化剂', '甜味剂', '香精', '香料', '稳定剂', '乳化剂',
-]
+  '淀粉',
+  '糊精',
+  '纤维素',
+  '微晶',
+  '二氧化硅',
+  '硬脂酸',
+  '滑石粉',
+  '蔗糖',
+  '葡萄糖',
+  '麦芽糖',
+  '木糖醇',
+  '山梨醇',
+  '甘露醇',
+  '明胶',
+  '阿拉伯胶',
+  '黄原胶',
+  '卡拉胶',
+  '果胶',
+  '琼脂',
+  '碳酸钙',
+  '磷酸钙',
+  '硫酸钙',
+  '氧化镁',
+  '二氧化钛',
+  '色素',
+  '防腐剂',
+  '抗氧化剂',
+  '甜味剂',
+  '香精',
+  '香料',
+  '稳定剂',
+  '乳化剂',
+];
 
 export const BUILTIN_INGREDIENT_DB: IngredientDatabaseRecord[] = [
   {
@@ -69,7 +154,7 @@ export const BUILTIN_INGREDIENT_DB: IngredientDatabaseRecord[] = [
     source: IngredientSource.TCM,
     category: '安神助眠类',
     efficacyTags: ['改善睡眠', '安神', '保护心血管'],
-    precautions: [{ type: 'warning', content: '实热郁火者慎用', severity: 'low' }],
+    precautions: [{ category: 'warning', content: '实热郁火者慎用', severity: 'low' }],
     dosageRange: { min: 3, max: 15, unit: 'g' },
     description: '传统安神要药，含皂苷、黄酮、三萜等成分。',
     tcmcId: 'T00001',
@@ -83,7 +168,7 @@ export const BUILTIN_INGREDIENT_DB: IngredientDatabaseRecord[] = [
     source: IngredientSource.TCM,
     category: '健脾利湿类',
     efficacyTags: ['增强免疫', '促进消化', '健脾益胃'],
-    precautions: [{ type: 'warning', content: '阴虚而无湿热者不宜单用', severity: 'low' }],
+    precautions: [{ category: 'warning', content: '阴虚而无湿热者不宜单用', severity: 'low' }],
     dosageRange: { min: 5, max: 20, unit: 'g' },
     description: '利水渗湿健脾之要药，含茯苓多糖、三萜类化合物。',
     tcmcId: 'T00002',
@@ -97,7 +182,7 @@ export const BUILTIN_INGREDIENT_DB: IngredientDatabaseRecord[] = [
     source: IngredientSource.TCM,
     category: '神经调节类',
     efficacyTags: ['改善睡眠', '安神', '抗疲劳'],
-    precautions: [{ type: 'warning', content: '孕妇及哺乳期妇女慎用高剂量', severity: 'medium' }],
+    precautions: [{ category: 'warning', content: '孕妇及哺乳期妇女慎用高剂量', severity: 'medium' }],
     dosageRange: { min: 100, max: 500, unit: 'mg' },
     description: '主要抑制性神经递质，具有镇静、抗焦虑、促睡眠作用。',
     tcmcId: 'T00003',
@@ -125,7 +210,7 @@ export const BUILTIN_INGREDIENT_DB: IngredientDatabaseRecord[] = [
     source: IngredientSource.TCM,
     category: '节律调节类',
     efficacyTags: ['改善睡眠', '抗氧化', '延缓衰老'],
-    precautions: [{ type: 'warning', content: '自身免疫性疾病患者、孕妇慎用', severity: 'medium' }],
+    precautions: [{ category: 'warning', content: '自身免疫性疾病患者、孕妇慎用', severity: 'medium' }],
     dosageRange: { min: 1, max: 5, unit: 'mg' },
     description: '松果体分泌的激素，调节睡眠-觉醒周期，强效抗氧化剂。',
     tcmcId: 'T00005',
@@ -139,7 +224,7 @@ export const BUILTIN_INGREDIENT_DB: IngredientDatabaseRecord[] = [
     source: IngredientSource.TCM,
     category: '补气增强类',
     efficacyTags: ['增强免疫', '抗疲劳', '补气养血'],
-    precautions: [{ type: 'warning', content: '高血压患者、发热期间慎用', severity: 'medium' }],
+    precautions: [{ category: 'warning', content: '高血压患者、发热期间慎用', severity: 'medium' }],
     dosageRange: { min: 50, max: 300, unit: 'mg' },
     description: '人参主要活性成分，Rg1/Rb1等单体具有抗疲劳、改善记忆、免疫调节作用。',
     tcmcId: 'T00006',
@@ -225,7 +310,7 @@ export const BUILTIN_INGREDIENT_DB: IngredientDatabaseRecord[] = [
     source: IngredientSource.PEPTIDE,
     category: '美容保健类',
     efficacyTags: ['美容养颜', '抗炎', '补气养血'],
-    precautions: [{ type: 'warning', content: '鱼类过敏者需注意', severity: 'low' }],
+    precautions: [{ category: 'warning', content: '鱼类过敏者需注意', severity: 'low' }],
     dosageRange: { min: 1000, max: 3000, unit: 'mg' },
     description: '深海鱼皮/鳞经酶解制得的I型胶原蛋白肽，分子量小（<1000Da），吸收率高。',
     dfbpId: 'D004',
@@ -304,130 +389,136 @@ export const BUILTIN_INGREDIENT_DB: IngredientDatabaseRecord[] = [
     dosageRange: { min: 2, max: 15, unit: 'mg' },
     description: '最常用的片剂润滑剂，减少颗粒与冲模间的摩擦力。',
   },
-]
+];
 
-const ingredientIndex = new Map<string, IngredientDatabaseRecord>()
-BUILTIN_INGREDIENT_DB.forEach(record => {
-  ingredientIndex.set(record.name.toLowerCase(), record)
-  record.aliasNames.forEach(alias => {
-    ingredientIndex.set(alias.toLowerCase(), record)
-  })
+const ingredientIndex = new Map<string, IngredientDatabaseRecord>();
+BUILTIN_INGREDIENT_DB.forEach((record) => {
+  ingredientIndex.set(record.name.toLowerCase(), record);
+  record.aliasNames.forEach((alias) => {
+    ingredientIndex.set(alias.toLowerCase(), record);
+  });
   if (record.latinName) {
-    ingredientIndex.set(record.latinName.toLowerCase(), record)
+    ingredientIndex.set(record.latinName.toLowerCase(), record);
   }
   if (record.englishName) {
-    ingredientIndex.set(record.englishName.toLowerCase(), record)
+    ingredientIndex.set(record.englishName.toLowerCase(), record);
   }
-})
+});
 
 export function queryIngredientByName(name: string): IngredientDatabaseRecord | null {
-  if (!name) return null
+  if (!name) return null;
 
-  const normalizedName = name.trim().toLowerCase()
-  return ingredientIndex.get(normalizedName) || null
+  const normalizedName = name.trim().toLowerCase();
+  return ingredientIndex.get(normalizedName) || null;
 }
 
-export function fuzzyMatchIngredients(query: string, limit = 10): { record: IngredientDatabaseRecord; score: number }[] {
-  if (!query) return []
+export function fuzzyMatchIngredients(
+  query: string,
+  limit = 10,
+): { record: IngredientDatabaseRecord; score: number }[] {
+  if (!query) return [];
 
-  const normalizedQuery = query.trim().toLowerCase()
-  const results: { record: IngredientDatabaseRecord; score: number }[] = []
+  const normalizedQuery = query.trim().toLowerCase();
+  const results: { record: IngredientDatabaseRecord; score: number }[] = [];
 
   for (const record of BUILTIN_INGREDIENT_DB) {
-    let score = 0
+    let score = 0;
 
     if (record.name.toLowerCase().includes(normalizedQuery)) {
-      score += 100
-      if (record.name.toLowerCase() === normalizedQuery) score += 50
+      score += 100;
+      if (record.name.toLowerCase() === normalizedQuery) score += 50;
     }
 
-    if (record.aliasNames.some(alias => alias.toLowerCase().includes(normalizedQuery))) {
-      score += 80
-      if (record.aliasNames.some(alias => alias.toLowerCase() === normalizedQuery)) score += 40
+    if (record.aliasNames.some((alias) => alias.toLowerCase().includes(normalizedQuery))) {
+      score += 80;
+      if (record.aliasNames.some((alias) => alias.toLowerCase() === normalizedQuery)) score += 40;
     }
 
     if (record.latinName?.toLowerCase().includes(normalizedQuery)) {
-      score += 60
+      score += 60;
     }
 
     if (record.englishName?.toLowerCase().includes(normalizedQuery)) {
-      score += 60
+      score += 60;
     }
 
     if (calculateEditDistance(normalizedQuery, record.name.toLowerCase()) <= 2) {
-      score += 30
+      score += 30;
     }
 
     if (score > 0) {
-      results.push({ record, score })
+      results.push({ record, score });
     }
   }
 
-  results.sort((a, b) => b.score - a.score)
-  return results.slice(0, limit)
+  results.sort((a, b) => b.score - a.score);
+  return results.slice(0, limit);
 }
 
 export function inferSourceType(name: string): IngredientSource {
-  if (!name) return IngredientSource.TCM
+  if (!name) return IngredientSource.TCM;
 
-  const normalizedName = name.toLowerCase()
+  const normalizedName = name.toLowerCase();
 
   for (const keyword of PEPTIDE_KEYWORDS) {
     if (normalizedName.includes(keyword.toLowerCase())) {
-      return IngredientSource.PEPTIDE
+      return IngredientSource.PEPTIDE;
     }
   }
 
   for (const keyword of EXCIPIENT_KEYWORDS) {
     if (normalizedName.includes(keyword.toLowerCase())) {
-      return IngredientSource.EXCIPIENT
+      return IngredientSource.EXCIPIENT;
     }
   }
 
   for (const keyword of TCM_KEYWORDS) {
     if (normalizedName.includes(keyword.toLowerCase())) {
-      return IngredientSource.TCM
+      return IngredientSource.TCM;
     }
   }
 
-  return IngredientSource.TCM
+  return IngredientSource.TCM;
 }
 
-export async function enhanceIngredientData(
-  rawIngredient: { name: string; amount?: number; unit?: string; source?: any },
-): Promise<EnhancedIngredient> {
-  const name = rawIngredient.name || '未知成分'
-  const amount = typeof rawIngredient.amount === 'number' ? rawIngredient.amount : 0
-  const unit = rawIngredient.unit || 'g'
+export async function enhanceIngredientData(rawIngredient: {
+  name: string;
+  amount?: number;
+  unit?: string;
+  source?: any;
+}): Promise<EnhancedIngredient> {
+  const name = rawIngredient.name || '未知成分';
+  const amount = typeof rawIngredient.amount === 'number' ? rawIngredient.amount : 0;
+  const unit = rawIngredient.unit || 'g';
 
-  const dbMatch = queryIngredientByName(name)
+  const dbMatch = queryIngredientByName(name);
 
-  let confidence = 0
-  let source: IngredientSource
-  let efficacyTags: EfficacyTag[] = []
-  let precautions: Precaution[] = []
-  let latinName: string | undefined
+  let confidence = 0;
+  let source: IngredientSource;
+  let efficacyTags: EfficacyTag[] = [];
+  let precautions: Precaution[] = [];
+  let latinName: string | undefined;
 
   if (dbMatch) {
-    confidence = 1.0
-    source = dbMatch.source
-    efficacyTags = dbMatch.efficacyTags
-    precautions = dbMatch.precautions
-    latinName = dbMatch.latinName
+    confidence = 1.0;
+    source = dbMatch.source;
+    efficacyTags = dbMatch.efficacyTags;
+    precautions = dbMatch.precautions;
+    latinName = dbMatch.latinName;
   } else {
-    const fuzzyResults = fuzzyMatchIngredients(name, 1)
+    const fuzzyResults = fuzzyMatchIngredients(name, 1);
     if (fuzzyResults.length > 0 && fuzzyResults[0].score >= 80) {
-      confidence = fuzzyResults[0].score / 100
-      const bestMatch = fuzzyResults[0].record
-      source = bestMatch.source
-      efficacyTags = bestMatch.efficacyTags.slice(0, Math.ceil(bestMatch.efficacyTags.length * confidence))
-      precautions = bestMatch.precautions.filter(p => p.severity !== 'high')
-      latinName = bestMatch.latinName
+      confidence = fuzzyResults[0].score / 100;
+      const bestMatch = fuzzyResults[0].record;
+      source = bestMatch.source;
+      efficacyTags = bestMatch.efficacyTags.slice(0, Math.ceil(bestMatch.efficacyTags.length * confidence));
+      precautions = bestMatch.precautions.filter((p) => p.severity !== 'high');
+      latinName = bestMatch.latinName;
     } else {
-      confidence = 0.3
-      source = inferSourceType(name)
-      efficacyTags = []
-      precautions = []
+      confidence = 0.3;
+      source = inferSourceType(name);
+      efficacyTags = [];
+      precautions = [];
     }
   }
 
@@ -443,41 +534,37 @@ export async function enhanceIngredientData(
     source: rawIngredient.source || source,
     dbMatch: dbMatch || undefined,
     matchConfidence: confidence,
-  }
+  };
 }
 
 export function enhanceFormulaData(
   ingredients: { name: string; amount?: number; unit?: string; source?: any }[],
 ): Promise<EnhancedIngredient[]> {
-  return Promise.all(
-    ingredients.map(ing => enhanceIngredientData(ing)),
-  )
+  return Promise.all(ingredients.map((ing) => enhanceIngredientData(ing)));
 }
 
 function calculateEditDistance(s1: string, s2: string): number {
-  const len1 = s1.length
-  const len2 = s2.length
+  const len1 = s1.length;
+  const len2 = s2.length;
 
-  if (len1 === 0) return len2
-  if (len2 === 0) return len1
+  if (len1 === 0) return len2;
+  if (len2 === 0) return len1;
 
-  const matrix: number[][] = Array(len1 + 1).fill(null).map(() => Array(len2 + 1).fill(0))
+  const matrix: number[][] = Array(len1 + 1)
+    .fill(null)
+    .map(() => Array(len2 + 1).fill(0));
 
-  for (let i = 0; i <= len1; i++) matrix[i][0] = i
-  for (let j = 0; j <= len2; j++) matrix[0][j] = j
+  for (let i = 0; i <= len1; i++) matrix[i][0] = i;
+  for (let j = 0; j <= len2; j++) matrix[0][j] = j;
 
   for (let i = 1; i <= len1; i++) {
     for (let j = 1; j <= len2; j++) {
-      const cost = s1[i - 1] === s2[j - 1] ? 0 : 1
-      matrix[i][j] = Math.min(
-        matrix[i - 1][j] + 1,
-        matrix[i][j - 1] + 1,
-        matrix[i - 1][j - 1] + cost,
-      )
+      const cost = s1[i - 1] === s2[j - 1] ? 0 : 1;
+      matrix[i][j] = Math.min(matrix[i - 1][j] + 1, matrix[i][j - 1] + 1, matrix[i - 1][j - 1] + cost);
     }
   }
 
-  return matrix[len1][len2]
+  return matrix[len1][len2];
 }
 
 export default {
@@ -487,4 +574,4 @@ export default {
   inferSourceType,
   enhanceIngredientData,
   enhanceFormulaData,
-}
+};

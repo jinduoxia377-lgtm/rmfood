@@ -49,3 +49,6 @@ bandit>=1.7.0        # 代码安全静态分析工具
 psutil>=5.9.0
 email-validator>=2.0.0
 pandas>=2.0.0
+
+# ── 错误追踪 ──
+sentry-sdk[fastapi]>=1.44.0

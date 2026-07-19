@@ -8,7 +8,7 @@
  * - Theme-aware styling
  * - Responsive tooltips
  */
-import React, { useMemo } from 'react'
+import React, { useMemo } from 'react';
 import {
   LineChart as RechartsLineChart,
   Line,
@@ -19,41 +19,42 @@ import {
   ResponsiveContainer,
   Legend,
   Brush,
-} from 'recharts'
+} from 'recharts';
 
 interface ChartData {
-  chart_type: string
-  title: string
-  labels: string[]
+  chart_type: string;
+  title: string;
+  labels: string[];
   datasets: {
-    data: number[]
-    label?: string
-    borderColor?: string
-    backgroundColor?: string | string[]
-    tension?: number
-    pointRadius?: number
-    pointHoverRadius?: number
-  }[]
+    data: number[];
+    label?: string;
+    borderColor?: string;
+    backgroundColor?: string | string[];
+    tension?: number;
+    pointRadius?: number;
+    pointHoverRadius?: number;
+  }[];
 }
 
 interface ThemeColors {
-  primary: string
-  secondary: string
-  tertiary: string
-  textPrimary: string
-  textSecondary: string
-  textMuted: string
-  surfaceVariant: string
-  outline: string
-  background: string
+  primary: string;
+  secondary: string;
+  tertiary: string;
+  textPrimary: string;
+  textSecondary: string;
+  textMuted: string;
+  surfaceVariant: string;
+  outline: string;
+  background: string;
+  surface: string;
 }
 
 interface EnhancedLineChartProps {
-  data: ChartData
-  themeColors: ThemeColors
-  height?: number
-  showBrush?: boolean
-  showGrid?: boolean
+  data: ChartData;
+  themeColors: ThemeColors;
+  height?: number;
+  showBrush?: boolean;
+  showGrid?: boolean;
 }
 
 export function EnhancedLineChart({
@@ -63,28 +64,21 @@ export function EnhancedLineChart({
   showBrush = false,
   showGrid = true,
 }: EnhancedLineChartProps) {
-
   const chartData = useMemo(() => {
-    const labels = data.labels || []
+    const labels = data.labels || [];
 
     return labels.map((label, index) => {
-      const point: Record<string, any> = { name: label }
+      const point: Record<string, any> = { name: label };
 
-      (data.datasets || []).forEach((dataset, datasetIndex) => {
-        point[dataset.label || `series_${datasetIndex}`] = dataset.data[index] ?? 0
-      })
+      (data.datasets || []).forEach((dataset: { data: number[]; label?: string }, datasetIndex: number) => {
+        point[dataset.label || `series_${datasetIndex}`] = dataset.data[index] ?? 0;
+      });
 
-      return point
-    })
-  }, [data])
+      return point;
+    });
+  }, [data]);
 
-  const defaultColors = [
-    themeColors.primary,
-    themeColors.secondary,
-    themeColors.tertiary,
-    '#4CAF50',
-    '#FF9800',
-  ]
+  const defaultColors = [themeColors.primary, themeColors.secondary, themeColors.tertiary, 'var(--color-success, #34C759)', 'var(--color-warning, #FF9F0A)'];
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload?.length) {
@@ -103,7 +97,9 @@ export function EnhancedLineChart({
             <div key={index} className="flex items-center justify-between gap-3 mb-1 last:mb-0">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />
-                <span className="text-xs" style={{ color: themeColors.textSecondary }}>{entry.name}</span>
+                <span className="text-xs" style={{ color: themeColors.textSecondary }}>
+                  {entry.name}
+                </span>
               </div>
               <span className="text-sm font-bold tabular-nums" style={{ color: themeColors.textPrimary }}>
                 {entry.value?.toLocaleString()}
@@ -111,36 +107,23 @@ export function EnhancedLineChart({
             </div>
           ))}
         </div>
-      )
+      );
     }
-    return null
-  }
+    return null;
+  };
 
   return (
     <ResponsiveContainer width="100%" height={height}>
-      <RechartsLineChart
-        data={chartData}
-        margin={{ top: 10, right: 30, left: 0, bottom: showBrush ? 50 : 0 }}
-      >
+      <RechartsLineChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: showBrush ? 50 : 0 }}>
         {showGrid && <CartesianGrid strokeDasharray="3 3" stroke={themeColors.surfaceVariant} opacity={0.4} />}
 
-        <XAxis
-          dataKey="name"
-          axisLine={false}
-          tickLine={false}
-          tick={{ fill: themeColors.textMuted, fontSize: 11 }}
-        />
+        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: themeColors.textMuted, fontSize: 11 }} />
 
-        <YAxis
-          axisLine={false}
-          tickLine={false}
-          tick={{ fill: themeColors.textMuted, fontSize: 11 }}
-          width={55}
-        />
+        <YAxis axisLine={false} tickLine={false} tick={{ fill: themeColors.textMuted, fontSize: 11 }} width={55} />
 
         <Tooltip content={<CustomTooltip />} animationDuration={200} />
 
-        {(data.datasets || []).map((dataset, index) => (
+        {(data.datasets || []).map((dataset: { label?: string; tension?: number; pointRadius?: number }, index) => (
           <Line
             key={index}
             type="monotone"
@@ -164,7 +147,6 @@ export function EnhancedLineChart({
             isAnimationActive={true}
             animationDuration={1000}
             animationEasing="ease-in-out"
-            tension={dataset.tension || 0.4}
           />
         ))}
 
@@ -179,7 +161,7 @@ export function EnhancedLineChart({
         )}
       </RechartsLineChart>
     </ResponsiveContainer>
-  )
+  );
 }
 
-export default EnhancedLineChart
+export default EnhancedLineChart;

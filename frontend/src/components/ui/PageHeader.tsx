@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils'
 interface PageHeaderProps {
   title: string
   titleClassName?: string
-  description?: string
+  description?: ReactNode
   descriptionClassName?: string
   actions?: ReactNode
   className?: string
@@ -18,9 +18,9 @@ export function PageHeader({ title, titleClassName, description, descriptionClas
   return (
     <div className={cn('flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4', className)}>
       <div>
-        <h1 className={cn('text-2xl font-bold text-slate-900 dark:text-white tracking-tight', titleClassName)}>{title}</h1>
+        <h1 className={cn('h1', titleClassName)}>{title}</h1>
         {description && (
-          <p className={cn('mt-1 text-sm text-slate-500 dark:text-slate-400', descriptionClassName)}>{description}</p>
+          <p className={cn('mt-1 text-sm text-neutral-500 dark:text-neutral-400', descriptionClassName)}>{description}</p>
         )}
       </div>
       {actions && <div className="flex items-center gap-3 shrink-0">{actions}</div>}

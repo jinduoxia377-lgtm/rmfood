@@ -34,8 +34,8 @@ const AdvancedChartRenderer: React.FC<AdvancedChartRendererProps> = ({
 
   if (!chartDef) {
     return (
-      <div className="flex items-center justify-center bg-gray-100 rounded-lg" style={{ width, height }}>
-        <div className="text-center text-gray-500">
+      <div className="flex items-center justify-center bg-neutral-100 rounded-lg" style={{ width, height }}>
+        <div className="text-center text-neutral-500">
           <p className="text-lg font-medium">未知图表类型</p>
           <p className="text-sm">类型ID: {chartType}</p>
         </div>
@@ -46,7 +46,7 @@ const AdvancedChartRenderer: React.FC<AdvancedChartRendererProps> = ({
   return (
     <div className="advanced-chart-container">
       <div
-        className="relative bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden"
+        className="relative bg-white rounded-lg shadow-sm border border-neutral-200 overflow-hidden"
         style={{ width: mergedOptions.width || width, height: mergedOptions.height || height }}
       >
         <ChartToolbar onExport={handleExport} />
@@ -98,7 +98,7 @@ const ChartToolbar: React.FC<ChartToolbarProps> = ({ onExport }) => (
   <div className="absolute top-2 right-2 flex items-center space-x-1 z-10 opacity-0 hover:opacity-100 transition-opacity">
     <button
       onClick={() => onExport('png')}
-      className="p-1.5 bg-white rounded shadow-sm border border-gray-200 hover:bg-gray-50 text-gray-600"
+      className="p-1.5 bg-white rounded shadow-sm border border-neutral-200 hover:bg-slate-50 text-neutral-600"
       title="导出PNG"
     >
       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -107,7 +107,7 @@ const ChartToolbar: React.FC<ChartToolbarProps> = ({ onExport }) => (
     </button>
     <button
       onClick={() => onExport('svg')}
-      className="p-1.5 bg-white rounded shadow-sm border border-gray-200 hover:bg-gray-50 text-gray-600"
+      className="p-1.5 bg-white rounded shadow-sm border border-neutral-200 hover:bg-slate-50 text-neutral-600"
       title="导出SVG"
     >
       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -115,7 +115,7 @@ const ChartToolbar: React.FC<ChartToolbarProps> = ({ onExport }) => (
       </svg>
     </button>
     <button
-      className="p-1.5 bg-white rounded shadow-sm border border-gray-200 hover:bg-gray-50 text-gray-600"
+      className="p-1.5 bg-white rounded shadow-sm border border-neutral-200 hover:bg-slate-50 text-neutral-600"
       title="全屏"
     >
       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -136,7 +136,7 @@ const BarChartPlaceholder: React.FC<{ data: any[]; options: Record<string, any> 
       const colors = COLOR_SCHEMES[(options.colorScheme as ColorSchemeType) || ColorSchemeType.DEFAULT];
       return (
         <div key={i} className="flex flex-col items-center group cursor-pointer">
-          <span className="text-xs font-medium text-gray-700 opacity-0 group-hover:opacity-100 mb-1 transition-opacity">
+          <span className="text-xs font-medium text-neutral-700 opacity-0 group-hover:opacity-100 mb-1 transition-opacity">
             {value.toFixed(1)}
           </span>
           <div
@@ -147,7 +147,7 @@ const BarChartPlaceholder: React.FC<{ data: any[]; options: Record<string, any> 
               minHeight: '10px',
             }}
           />
-          <span className="text-xs text-gray-600 mt-2 truncate w-16 text-center">{item.name || `项${i + 1}`}</span>
+          <span className="text-xs text-neutral-600 mt-2 truncate w-16 text-center">{item.name || `项${i + 1}`}</span>
         </div>
       );
     })}
@@ -159,7 +159,7 @@ const LineChartPlaceholder: React.FC<{ data: any[]; options: Record<string, any>
     <polyline
       points={data.map((d, i) => `${(i / (data.length - 1)) * 760 + 20},${300 - (d.value || Math.random() * 200 + 50)}`).join(' ')}
       fill="none"
-      stroke="#3b82f6"
+      stroke="#007AFF"
       strokeWidth="2"
       className="transition-all duration-300"
     />
@@ -169,7 +169,7 @@ const LineChartPlaceholder: React.FC<{ data: any[]; options: Record<string, any>
         cx={(i / (data.length - 1)) * 760 + 20}
         cy={300 - (d.value || Math.random() * 200 + 50)}
         r="4"
-        fill="#3b82f6"
+        fill="#007AFF"
         className="hover:r-6 transition-all cursor-pointer"
       />
     ))}
@@ -217,7 +217,7 @@ const ScatterChartPlaceholder: React.FC<{ data: any[]; options: Record<string, a
     {data.map((d, i) => (
       <div
         key={i}
-        className="absolute w-3 h-3 bg-blue-500 rounded-full hover:w-4 hover:h-4 transition-all cursor-pointer"
+        className="absolute w-3 h-3 bg-secondary-500 rounded-full hover:w-4 hover:h-4 transition-all cursor-pointer"
         style={{
           left: `${(d.x || Math.random()) * 90}%`,
           top: `${100 - (d.y || Math.random()) * 80}%`,
@@ -238,7 +238,7 @@ const HeatmapPlaceholder: React.FC<{ data: any[]; options: Record<string, any> }
           className="aspect-square flex items-center justify-center text-xs font-medium rounded"
           style={{
             backgroundColor: `rgba(59, 130, 246, ${val / 100})`,
-            color: val > 50 ? 'white' : '#1e40af',
+            color: val > 50 ? 'white' : '#003E87',
           }}
         >
           {val}
@@ -249,7 +249,7 @@ const HeatmapPlaceholder: React.FC<{ data: any[]; options: Record<string, any> }
 );
 
 const SankeyPlaceholder: React.FC<{ data: any[]; options: Record<string, any> }> = () => (
-  <div className="flex items-center justify-center h-full text-gray-500">
+  <div className="flex items-center justify-center h-full text-neutral-500">
     <div className="text-center">
       <div className="text-4xl mb-2">🔀</div>
       <p className="text-sm">桑基流向图</p>
@@ -274,7 +274,7 @@ const FunnelPlaceholder: React.FC<{ data: any[]; options: Record<string, any> }>
 );
 
 const SunburstPlaceholder: React.FC<{ data: any[]; options: Record<string, any> }> = () => (
-  <div className="flex items-center justify-center h-full text-gray-500">
+  <div className="flex items-center justify-center h-full text-neutral-500">
     <div className="text-center">
       <div className="text-4xl mb-2">☀️</div>
       <p className="text-sm">旭日层级图</p>
@@ -287,11 +287,11 @@ const BoxPlotPlaceholder: React.FC<{ data: any[]; options: Record<string, any> }
   <div className="flex items-end justify-around h-full px-8 pb-8">
     {data.map((_, i) => (
       <div key={i} className="flex flex-col items-center">
-        <div className="w-16 h-32 border-2 border-blue-500 rounded relative bg-blue-50">
-          <div className="absolute left-0 right-0 bg-blue-500" style={{ top: '25%', height: '50%' }} />
-          <div className="absolute left-1/2 transform -translate-x-1/2 w-0.5 bg-blue-500" style={{ top: '10%', height: '80%' }} />
+        <div className="w-16 h-32 border-2 border-blue-500 rounded relative bg-secondary-50">
+          <div className="absolute left-0 right-0 bg-secondary-500" style={{ top: '25%', height: '50%' }} />
+          <div className="absolute left-1/2 transform -translate-x-1/2 w-0.5 bg-secondary-500" style={{ top: '10%', height: '80%' }} />
         </div>
-        <span className="text-xs text-gray-600 mt-2">组{i + 1}</span>
+        <span className="text-xs text-neutral-600 mt-2">组{i + 1}</span>
       </div>
     ))}
   </div>
@@ -302,10 +302,10 @@ const ViolinPlaceholder: React.FC<{ data: any[]; options: Record<string, any> }>
     {data.map((_, i) => (
       <div key={i} className="flex flex-col items-center">
         <svg width="60" height="160" viewBox="0 0 60 160">
-          <ellipse cx="30" cy="80" rx="25" ry="70" fill="#8b5cf6" opacity="0.6" />
-          <rect x="27" y="30" width="6" height="100" fill="#6d28d9" />
+          <ellipse cx="30" cy="80" rx="25" ry="70" fill="#AF52DE" opacity="0.6" />
+          <rect x="27" y="30" width="6" height="100" fill="#8B5CF6" />
         </svg>
-        <span className="text-xs text-gray-600 mt-2">组{i + 1}</span>
+        <span className="text-xs text-neutral-600 mt-2">组{i + 1}</span>
       </div>
     ))}
   </div>
@@ -333,7 +333,7 @@ const RadarPlaceholder: React.FC<{ options: Record<string, any> }> = () => (
         return `${200 + radius * Math.cos(angle)},${200 + radius * Math.sin(angle)}`;
       }).join(' ')}
         fill="rgba(59, 130, 246, 0.3)"
-        stroke="#3b82f6"
+        stroke="#007AFF"
         strokeWidth="2"
     />
   </svg>
@@ -343,8 +343,8 @@ const GanttPlaceholder: React.FC<{ data: any[]; options: Record<string, any> }> 
   <div className="space-y-2 py-4">
     {data.map((task, i) => (
       <div key={i} className="flex items-center">
-        <span className="w-24 text-sm text-gray-700 truncate">{task.name || `任务${i + 1}`}</span>
-        <div className="flex-1 h-6 bg-gray-100 rounded relative ml-4">
+        <span className="w-24 text-sm text-neutral-700 truncate">{task.name || `任务${i + 1}`}</span>
+        <div className="flex-1 h-6 bg-neutral-100 rounded relative ml-4">
           <div
             className="absolute h-full bg-gradient-to-r from-green-400 to-green-500 rounded"
             style={{
@@ -359,7 +359,7 @@ const GanttPlaceholder: React.FC<{ data: any[]; options: Record<string, any> }> 
 );
 
 const GenericChartPlaceholder: React.FC<{ type: string; data: any[]; options: Record<string, any> }> = ({ type }) => (
-  <div className="flex items-center justify-center h-full text-gray-500">
+  <div className="flex items-center justify-center h-full text-neutral-500">
     <div className="text-center">
       <div className="text-4xl mb-2">📊</div>
       <p className="text-sm font-medium">图表类型: {type}</p>

@@ -103,68 +103,69 @@
 /* ============================================================
  *  方案 A: Academic Minimal（学术极简）
  *  风格：干净、克制、高可读性、类似学术论文排版
+ *  升级 v3.0: 映射到项目全局 CSS 变量
  * ============================================================ */
 .chat-theme-academic {
-  /* 背景层级 */
-  --chat-bg: #fafaf9;
-  --chat-surface: #ffffff;
-  --chat-elevated: #f5f5f4;
+  /* 背景层级 → 映射全局 */
+  --chat-bg: var(--bg-primary, #fafaf9);
+  --chat-surface: var(--card-bg-solid, #ffffff);
+  --chat-elevated: var(--bg-secondary, #f5f5f4);
 
-  /* 气泡色彩 */
-  --chat-user-bg: #1a365d;
-  --chat-user-text: #f7fafc;
-  --chat-ai-bg: #fefefe;
-  --chat-ai-text: #1a202c;
+  /* 气泡色彩 → 映射全局 */
+  --chat-user-bg: var(--color-primary-600, #1a365d);
+  --chat-user-text: var(--color-primary-contrast-text, #f7fafc);
+  --chat-ai-bg: var(--card-bg-solid, #fefefe);
+  --chat-ai-text: var(--text-primary, #1a202c);
 
-  /* 语义色 */
-  --chat-primary: #2c5282;
-  --chat-primary-light: #ebf4ff;
-  --chat-success: #10b981;
-  --chat-warning: #f59e0b;
-  --chat-error: #ef4444;
-  --chat-info: #3b82f6;
+  /* 语义色 → 映射全局 */
+  --chat-primary: var(--color-primary-700, #2c5282);
+  --chat-primary-light: var(--color-primary-100, #ebf4ff);
+  --chat-success: var(--color-success-500, #10b981);
+  --chat-warning: var(--color-warning-500, #f59e0b);
+  --chat-error: var(--color-danger-500, #ef4444);
+  --chat-info: var(--color-blue-500, #3b82f6);
 
-  /* 文字层级（WCAG AA >= 4.5:1） */
-  --chat-text-primary: #1a202c;
-  --chat-text-secondary: #4a5568;
-  --chat-text-muted: #a0aec0;
+  /* 文字层级 → 映射全局 (WCAG AA >= 4.5:1) */
+  --chat-text-primary: var(--text-primary, #1a202c);
+  --chat-text-secondary: var(--text-secondary, #4a5568);
+  --chat-text-muted: var(--text-muted, #a0aec0);
   --chat-text-on-accent: #ffffff;
 
-  /* 边框与分割线 */
-  --chat-border: #e2e8f0;
-  --chat-border-light: #edf2f7;
-  --chat-divider: #e2e8f0;
+  /* 边框与分割线 → 映射全局 */
+  --chat-border: var(--border-color, #e2e8f0);
+  --chat-border-light: var(--border-color, #edf2f7);
+  --chat-divider: var(--border-color, #e2e8f0);
 
-  /* 阴影体系（5级） */
-  --chat-shadow-xs: 0 1px 2px rgba(26, 54, 93, 0.05);
-  --chat-shadow-sm: 0 1px 3px rgba(26, 54, 93, 0.08), 0 1px 2px rgba(26, 54, 93, 0.04);
-  --chat-shadow-md: 0 4px 6px -1px rgba(26, 54, 93, 0.08), 0 2px 4px -2px rgba(26, 54, 93, 0.04);
-  --chat-shadow-lg: 0 10px 15px -3px rgba(26, 54, 93, 0.08), 0 4px 6px -4px rgba(26, 54, 93, 0.04);
-  --chat-shadow-xl: 0 20px 25px -5px rgba(26, 54, 93, 0.1), 0 8px 10px -6px rgba(26, 54, 93, 0.04);
+  /* 阴影体系 → 映射全局 */
+  --chat-shadow-xs: var(--shadow-sm, 0 1px 2px rgba(26, 54, 93, 0.05));
+  --chat-shadow-sm: var(--shadow-md, 0 1px 3px rgba(26, 54, 93, 0.08), 0 1px 2px rgba(26, 54, 93, 0.04));
+  --chat-shadow-md: var(--shadow-md, 0 4px 6px -1px rgba(26, 54, 93, 0.08), 0 2px 4px -2px rgba(26, 54, 93, 0.04));
+  --chat-shadow-lg: var(--shadow-lg, 0 10px 15px -3px rgba(26, 54, 93, 0.08), 0 4px 6px -4px rgba(26, 54, 93, 0.04));
+  --chat-shadow-xl: var(--shadow-xl, 0 20px 25px -5px rgba(26, 54, 93, 0.1), 0 8px 10px -6px rgba(26, 54, 93, 0.04));
 
-  /* 圆角体系 */
-  --chat-radius-sm: 6px;
-  --chat-radius-md: 10px;
-  --chat-radius-lg: 16px;
-  --chat-radius-xl: 20px;
-  --chat-radius-full: 9999px;
+  /* 圆角体系 → 映射全局 */
+  --chat-radius-sm: var(--radius-sm, 6px);
+  --chat-radius-md: var(--radius-md, 10px);
+  --chat-radius-lg: var(--radius-lg, 16px);
+  --chat-radius-xl: var(--radius-xl, 20px);
+  --chat-radius-full: var(--radius-full, 9999px);
 
-  /* 过渡时间 */
-  --chat-duration-fast: 120ms;
-  --chat-duration-normal: 200ms;
-  --chat-duration-slow: 350ms;
+  /* 过渡时间 → 映射全局 */
+  --chat-duration-fast: var(--duration-fast, 120ms);
+  --chat-duration-normal: var(--duration-normal, 200ms);
+  --chat-duration-slow: var(--duration-slow, 350ms);
 
   /* 兼容旧变量 */
   --chat-ai-border: var(--chat-border);
   --chat-error-bg: #fff5f5;
   --chat-error-text: #c53030;
-  --chat-avatar-user-bg: #2c5282;
-  --chat-avatar-ai-bg: #f7fafc;
-  --chat-avatar-ai-text: #2c5282;
+  --chat-avatar-user-bg: var(--color-primary-600, #2c5282);
+  --chat-avatar-ai-bg: var(--bg-secondary, #f7fafc);
+  --chat-avatar-ai-text: var(--color-primary-700, #2c5282);
   --chat-shadow-user: var(--chat-shadow-sm);
   --chat-shadow-ai: var(--chat-shadow-xs);
-  --chat-radius-bubble: 10px;
-  --chat-radius-input: 14px;
+  --chat-radius-bubble: var(--chat-radius-md);
+  --chat-radius-input: var(--chat-radius-lg);
 }
 
 /* --- 布局容器 --- */
@@ -433,7 +434,7 @@
  *  风格：毛玻璃、渐变、光效、沉浸式深色体验
  * ============================================================ */
 .chat-theme-glassmorphism {
-  /* 背景层级 */
+  /* 背景层级 — 保持沉浸式深色体验 */
   --chat-bg: linear-gradient(180deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
   --chat-surface: rgba(255, 255, 255, 0.04);
   --chat-elevated: rgba(255, 255, 255, 0.07);
@@ -444,13 +445,13 @@
   --chat-ai-bg: rgba(255, 255, 255, 0.68);
   --chat-ai-text: #1e293b;
 
-  /* 语义色 */
-  --chat-primary: #818cf8;
+  /* 语义色 → 映射全局品牌色 */
+  --chat-primary: var(--color-accent-400, #818cf8);
   --chat-primary-light: rgba(129, 140, 248, 0.15);
-  --chat-success: #34d399;
-  --chat-warning: #fbbf24;
-  --chat-error: #f87171;
-  --chat-info: #60a5fa;
+  --chat-success: var(--color-primary-400, #34d399);
+  --chat-warning: var(--color-warning-400, #fbbf24);
+  --chat-error: var(--color-danger-400, #f87171);
+  --chat-info: var(--color-blue-400, #60a5fa);
 
   /* 文字层级 */
   --chat-text-primary: #f1f5f9;
@@ -470,17 +471,17 @@
   --chat-shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255,255,255,0.1) inset;
   --chat-shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.35), 0 0 20px rgba(99, 102, 241, 0.1);
 
-  /* 圆角体系 */
-  --chat-radius-sm: 8px;
-  --chat-radius-md: 12px;
-  --chat-radius-lg: 18px;
-  --chat-radius-xl: 24px;
-  --chat-radius-full: 9999px;
+  /* 圆角体系 → 映射全局 */
+  --chat-radius-sm: var(--radius-sm, 8px);
+  --chat-radius-md: var(--radius-md, 12px);
+  --chat-radius-lg: var(--radius-lg, 18px);
+  --chat-radius-xl: var(--radius-xl, 24px);
+  --chat-radius-full: var(--radius-full, 9999px);
 
-  /* 过渡时间 */
-  --chat-duration-fast: 120ms;
-  --chat-duration-normal: 220ms;
-  --chat-duration-slow: 380ms;
+  /* 过渡时间 → 映射全局 */
+  --chat-duration-fast: var(--duration-fast, 120ms);
+  --chat-duration-normal: var(--duration-normal, 220ms);
+  --chat-duration-slow: var(--duration-slow, 380ms);
 
   /* 兼容旧变量 */
   --chat-ai-border: rgba(255, 255, 255, 0.45);
@@ -491,8 +492,8 @@
   --chat-avatar-ai-text: #818cf8;
   --chat-shadow-user: 0 4px 16px rgba(99, 102, 241, 0.25), 0 0 0 1px rgba(255,255,255,0.12) inset;
   --chat-shadow-ai: 0 4px 24px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(255,255,255,0.28) inset;
-  --chat-radius-bubble: 18px;
-  --chat-radius-input: 18px;
+  --chat-radius-bubble: var(--chat-radius-lg);
+  --chat-radius-input: var(--chat-radius-lg);
 }
 
 /* --- 布局容器 --- */
@@ -770,66 +771,66 @@
  *  风格：清晰层次、精致阴影、企业级质感
  * ============================================================ */
 .chat-theme-professional {
-  /* 背景层级 */
-  --chat-bg: #f4f6f9;
-  --chat-surface: #ffffff;
-  --chat-elevated: #f8fafc;
+  /* 背景层级 → 映射全局 */
+  --chat-bg: var(--bg-primary, #f4f6f9);
+  --chat-surface: var(--card-bg-solid, #ffffff);
+  --chat-elevated: var(--bg-secondary, #f8fafc);
 
-  /* 气泡色彩 */
-  --chat-user-bg: #1976d2;
-  --chat-user-text: #ffffff;
-  --chat-ai-bg: #f8f9fa;
-  --chat-ai-text: #212529;
+  /* 气泡色彩 → 映射全局 */
+  --chat-user-bg: var(--color-primary-600, #1976d2);
+  --chat-user-text: var(--color-primary-contrast-text, #ffffff);
+  --chat-ai-bg: var(--bg-secondary, #f8f9fa);
+  --chat-ai-text: var(--text-primary, #212529);
 
-  /* 语义色 */
-  --chat-primary: #1976d2;
-  --chat-primary-light: #e3f2fd;
-  --chat-success: #10b981;
-  --chat-warning: #f59e0b;
-  --chat-error: #ef4444;
-  --chat-info: #3b82f6;
+  /* 语义色 → 映射全局 */
+  --chat-primary: var(--color-primary-700, #1976d2);
+  --chat-primary-light: var(--color-primary-100, #e3f2fd);
+  --chat-success: var(--color-success-500, #10b981);
+  --chat-warning: var(--color-warning-500, #f59e0b);
+  --chat-error: var(--color-danger-500, #ef4444);
+  --chat-info: var(--color-blue-500, #3b82f6);
 
-  /* 文字层级 */
-  --chat-text-primary: #212529;
-  --chat-text-secondary: #495057;
-  --chat-text-muted: #adb5bd;
+  /* 文字层级 → 映射全局 */
+  --chat-text-primary: var(--text-primary, #212529);
+  --chat-text-secondary: var(--text-secondary, #495057);
+  --chat-text-muted: var(--text-muted, #adb5bd);
   --chat-text-on-accent: #ffffff;
 
-  /* 边框与分割线 */
-  --chat-border: #dee2e6;
-  --chat-border-light: #e9ecef;
-  --chat-divider: #dee2e6;
+  /* 边框与分割线 → 映射全局 */
+  --chat-border: var(--border-color, #dee2e6);
+  --chat-border-light: var(--border-color, #e9ecef);
+  --chat-divider: var(--border-color, #dee2e6);
 
-  /* 阴影体系 */
-  --chat-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
-  --chat-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.03);
-  --chat-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.03);
-  --chat-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -4px rgba(0, 0, 0, 0.03);
-  --chat-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+  /* 阴影体系 → 映射全局 */
+  --chat-shadow-xs: var(--shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.04));
+  --chat-shadow-sm: var(--shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.03));
+  --chat-shadow-md: var(--shadow-md, 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.03));
+  --chat-shadow-lg: var(--shadow-lg, 0 10px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -4px rgba(0, 0, 0, 0.03));
+  --chat-shadow-xl: var(--shadow-xl, 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04));
 
-  /* 圆角体系 */
-  --chat-radius-sm: 6px;
-  --chat-radius-md: 10px;
-  --chat-radius-lg: 14px;
-  --chat-radius-xl: 18px;
-  --chat-radius-full: 9999px;
+  /* 圆角体系 → 映射全局 */
+  --chat-radius-sm: var(--radius-sm, 6px);
+  --chat-radius-md: var(--radius-md, 10px);
+  --chat-radius-lg: var(--radius-lg, 14px);
+  --chat-radius-xl: var(--radius-xl, 18px);
+  --chat-radius-full: var(--radius-full, 9999px);
 
-  /* 过渡时间 */
-  --chat-duration-fast: 120ms;
-  --chat-duration-normal: 180ms;
-  --chat-duration-slow: 300ms;
+  /* 过渡时间 → 映射全局 */
+  --chat-duration-fast: var(--duration-fast, 120ms);
+  --chat-duration-normal: var(--duration-normal, 180ms);
+  --chat-duration-slow: var(--duration-slow, 300ms);
 
   /* 兼容旧变量 */
   --chat-ai-border: var(--chat-border);
   --chat-error-bg: #fef3cd;
   --chat-error-text: #856404;
-  --chat-avatar-user-bg: #1976d2;
-  --chat-avatar-ai-bg: #f0f2f5;
-  --chat-avatar-ai-text: #1976d2;
+  --chat-avatar-user-bg: var(--color-primary-600, #1976d2);
+  --chat-avatar-ai-bg: var(--bg-secondary, #f0f2f5);
+  --chat-avatar-ai-text: var(--color-primary-600, #1976d2);
   --chat-shadow-user: 0 2px 8px rgba(25, 118, 210, 0.2);
   --chat-shadow-ai: 0 1px 3px rgba(0, 0, 0, 0.05);
-  --chat-radius-bubble: 12px;
-  --chat-radius-input: 14px;
+  --chat-radius-bubble: var(--chat-radius-md);
+  --chat-radius-input: var(--chat-radius-lg);
 }
 
 /* --- 布局容器 --- */
@@ -1568,7 +1569,7 @@
 }
 .chat-custom-scrollbar::-webkit-scrollbar-thumb {
   background: rgba(156, 163, 175, 0.35);
-  border-radius: 10px;
+  border-radius: var(--radius-md, 8px);
   transition: background 0.2s ease;
 }
 .chat-custom-scrollbar::-webkit-scrollbar-thumb:hover {
@@ -1828,78 +1829,69 @@
  * ============================================================ */
 
 /* --- Academic 暗色模式 --- */
-.dark .chat-theme-academic,
-@media (prefers-color-scheme: dark) {
-  .chat-theme-academic {
-    --chat-bg: #1a1a2e;
-    --chat-surface: #232340;
-    --chat-elevated: #2a2a45;
-    --chat-user-bg: #4a7cc9;
-    --chat-ai-bg: #252542;
-    --chat-ai-text: #e8eaf0;
-    --chat-primary: #6b8cce;
-    --chat-primary-light: rgba(107, 140, 206, 0.15);
-    --chat-text-primary: #e8eaf0;
-    --chat-text-secondary: #a0aec0;
-    --chat-text-muted: #5a5a7a;
-    --chat-border: #33335a;
-    --chat-border-light: #3d3d62;
-    --chat-divider: #33335a;
-    --chat-error-bg: rgba(239, 68, 68, 0.1);
-    --chat-error-text: #fca5a5;
-    --chat-avatar-ai-bg: #232340;
-    --chat-avatar-ai-text: #6b8cce;
-    --chat-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.2);
-    --chat-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.25);
-    --chat-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-    --chat-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
-    --chat-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.35);
-  }
+.dark .chat-theme-academic {
+  --chat-bg: #1a1a2e;
+  --chat-surface: #232340;
+  --chat-elevated: #2a2a45;
+  --chat-user-bg: #4a7cc9;
+  --chat-ai-bg: #252542;
+  --chat-ai-text: #e8eaf0;
+  --chat-primary: #6b8cce;
+  --chat-primary-light: rgba(107, 140, 206, 0.15);
+  --chat-text-primary: #e8eaf0;
+  --chat-text-secondary: #a0aec0;
+  --chat-text-muted: #5a5a7a;
+  --chat-border: #33335a;
+  --chat-border-light: #3d3d62;
+  --chat-divider: #33335a;
+  --chat-error-bg: rgba(239, 68, 68, 0.1);
+  --chat-error-text: #fca5a5;
+  --chat-avatar-ai-bg: #232340;
+  --chat-avatar-ai-text: #6b8cce;
+  --chat-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.2);
+  --chat-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.25);
+  --chat-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+  --chat-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+  --chat-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.35);
 }
 
 /* --- Professional 暗色模式 --- */
-.dark .chat-theme-professional,
-@media (prefers-color-scheme: dark) {
-  .chat-theme-professional {
-    --chat-bg: #1a1d23;
-    --chat-surface: #242830;
-    --chat-elevated: #2c303a;
-    --chat-user-bg: #3b82c4;
-    --chat-ai-bg: #262a33;
-    --chat-ai-text: #e4e6ea;
-    --chat-primary: #4a90d9;
-    --chat-primary-light: rgba(74, 144, 217, 0.12);
-    --chat-text-primary: #e4e6ea;
-    --chat-text-secondary: #9aa0ad;
-    --chat-text-muted: #5e6470;
-    --chat-border: #363b46;
-    --chat-border-light: #404550;
-    --chat-divider: #363b46;
-    --chat-error-bg: rgba(239, 68, 68, 0.1);
-    --chat-error-text: #fca5a5;
-    --chat-avatar-ai-bg: #2c303a;
-    --chat-avatar-ai-text: #4a90d9;
-    --chat-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.2);
-    --chat-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.25);
-    --chat-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.28);
-    --chat-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.28);
-    --chat-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.32);
-  }
+.dark .chat-theme-professional {
+  --chat-bg: #1a1d23;
+  --chat-surface: #242830;
+  --chat-elevated: #2c303a;
+  --chat-user-bg: #3b82c4;
+  --chat-ai-bg: #262a33;
+  --chat-ai-text: #e4e6ea;
+  --chat-primary: #4a90d9;
+  --chat-primary-light: rgba(74, 144, 217, 0.12);
+  --chat-text-primary: #e4e6ea;
+  --chat-text-secondary: #9aa0ad;
+  --chat-text-muted: #5e6470;
+  --chat-border: #363b46;
+  --chat-border-light: #404550;
+  --chat-divider: #363b46;
+  --chat-error-bg: rgba(239, 68, 68, 0.1);
+  --chat-error-text: #fca5a5;
+  --chat-avatar-ai-bg: #2c303a;
+  --chat-avatar-ai-text: #4a90d9;
+  --chat-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.2);
+  --chat-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.25);
+  --chat-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.28);
+  --chat-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.28);
+  --chat-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.32);
 }
 
 /* --- Glassmorphism 本身为深色，确保暗色模式下文字对比度 --- */
-.dark .chat-theme-glassmorphism,
-@media (prefers-color-scheme: dark) {
-  .chat-theme-glassmorphism {
-    --chat-ai-bg: rgba(255, 255, 255, 0.58);
-    --chat-ai-text: #1a1f2e;
-    --chat-text-primary: #f1f5f9;
-    --chat-text-secondary: #d1d5db;
-    --chat-text-muted: #788296;
-    --chat-border: rgba(255, 255, 255, 0.08);
-    --chat-border-light: rgba(255, 255, 255, 0.05);
-    --chat-divider: rgba(255, 255, 255, 0.06);
-  }
+.dark .chat-theme-glassmorphism {
+  --chat-ai-bg: rgba(255, 255, 255, 0.58);
+  --chat-ai-text: #1a1f2e;
+  --chat-text-primary: #f1f5f9;
+  --chat-text-secondary: #d1d5db;
+  --chat-text-muted: #788296;
+  --chat-border: rgba(255, 255, 255, 0.08);
+  --chat-border-light: rgba(255, 255, 255, 0.05);
+  --chat-divider: rgba(255, 255, 255, 0.06);
 }
 
 /* ============================================================
@@ -2041,67 +2033,86 @@
 }
 
 /* --- 表格暗色模式适配 --- */
-.dark .chat-theme-academic .chat-md-table-wrapper,
+.dark.chat-theme-academic .chat-md-table-wrapper {
+    border-color: #33335a;
+}
+
 @media (prefers-color-scheme: dark) {
-  .dark .chat-theme-academic .chat-md-table-wrapper,
   .chat-theme-academic .chat-md-table-wrapper {
     border-color: #33335a;
   }
 }
-.dark .chat-theme-academic .chat-md-table thead tr th,
+.dark.chat-theme-academic .chat-md-table thead tr th {
+    background-color: #2a2a45;
+    border-bottom-color: #44446a;
+}
+
 @media (prefers-color-scheme: dark) {
-  .dark .chat-theme-academic .chat-md-table thead tr th,
   .chat-theme-academic .chat-md-table thead tr th {
     background-color: #2a2a45;
     border-bottom-color: #44446a;
   }
 }
-.dark .chat-theme-academic .chat-md-table tbody tr:nth-child(odd),
+.dark.chat-theme-academic .chat-md-table tbody tr:nth-child(odd) {
+    background-color: #232340;
+}
+
 @media (prefers-color-scheme: dark) {
-  .dark .chat-theme-academic .chat-md-table tbody tr:nth-child(odd),
   .chat-theme-academic .chat-md-table tbody tr:nth-child(odd) {
     background-color: #232340;
   }
 }
-.dark .chat-theme-academic .chat-md-table tbody tr:hover,
+.dark.chat-theme-academic .chat-md-table tbody tr:hover {
+    background-color: rgba(107, 140, 206, 0.15);
+}
+
 @media (prefers-color-scheme: dark) {
-  .dark .chat-theme-academic .chat-md-table tbody tr:hover,
   .chat-theme-academic .chat-md-table tbody tr:hover {
     background-color: rgba(107, 140, 206, 0.15);
   }
 }
-.dark .chat-theme-academic .chat-md-table tbody tr td,
+.dark.chat-theme-academic .chat-md-table tbody tr td {
+    border-bottom-color: #33335a;
+}
+
 @media (prefers-color-scheme: dark) {
-  .dark .chat-theme-academic .chat-md-table tbody tr td,
   .chat-theme-academic .chat-md-table tbody tr td {
     border-bottom-color: #33335a;
   }
 }
 
-.dark .chat-theme-professional .chat-md-table-wrapper,
+.dark.chat-theme-professional .chat-md-table-wrapper {
+    border-color: #363b46;
+}
+
 @media (prefers-color-scheme: dark) {
-  .dark .chat-theme-professional .chat-md-table-wrapper,
   .chat-theme-professional .chat-md-table-wrapper {
     border-color: #363b46;
   }
 }
-.dark .chat-theme-professional .chat-md-table thead tr th,
+.dark.chat-theme-professional .chat-md-table thead tr th {
+    background: linear-gradient(180deg, #2c303a, #242830);
+}
+
 @media (prefers-color-scheme: dark) {
-  .dark .chat-theme-professional .chat-md-table thead tr th,
   .chat-theme-professional .chat-md-table thead tr th {
     background: linear-gradient(180deg, #2c303a, #242830);
   }
 }
-.dark .chat-theme-professional .chat-md-table tbody tr:nth-child(odd),
+.dark.chat-theme-professional .chat-md-table tbody tr:nth-child(odd) {
+    background-color: #1a1d23;
+}
+
 @media (prefers-color-scheme: dark) {
-  .dark .chat-theme-professional .chat-md-table tbody tr:nth-child(odd),
   .chat-theme-professional .chat-md-table tbody tr:nth-child(odd) {
     background-color: #1a1d23;
   }
 }
-.dark .chat-theme-professional .chat-md-table tbody tr td,
+.dark.chat-theme-professional .chat-md-table tbody tr td {
+    border-bottom-color: #363b46;
+}
+
 @media (prefers-color-scheme: dark) {
-  .dark .chat-theme-professional .chat-md-table tbody tr td,
   .chat-theme-professional .chat-md-table tbody tr td {
     border-bottom-color: #363b46;
   }
@@ -2178,7 +2189,7 @@
   gap: 12px;
   padding: 12px 16px;
   margin: 12px 0;
-  border-radius: 10px;
+  border-radius: var(--radius-md, 8px);
   border-left: 4px solid;
   line-height: 1.65;
   font-size: 0.9375em;
@@ -2272,49 +2283,67 @@
 }
 
 /* Callout 暗色模式适配 */
-.dark .chat-md-callout-info,
+.dark.chat-md-callout-info {
+    background: rgba(59, 130, 246, 0.12);
+    color: #93c5fd;
+}
+
 @media (prefers-color-scheme: dark) {
-  .dark .chat-md-callout-info,
   .chat-md-callout-info:not(.chat-theme-glassmorphism *) {
     background: rgba(59, 130, 246, 0.12);
     color: #93c5fd;
   }
 }
-.dark .chat-md-callout-warning,
+.dark.chat-md-callout-warning {
+    background: rgba(245, 158, 11, 0.12);
+    color: #fcd34d;
+}
+
 @media (prefers-color-scheme: dark) {
-  .dark .chat-md-callout-warning,
   .chat-md-callout-warning:not(.chat-theme-glassmorphism *) {
     background: rgba(245, 158, 11, 0.12);
     color: #fcd34d;
   }
 }
-.dark .chat-md-callout-success,
+.dark.chat-md-callout-success {
+    background: rgba(34, 197, 94, 0.12);
+    color: #86efac;
+}
+
 @media (prefers-color-scheme: dark) {
-  .dark .chat-md-callout-success,
   .chat-md-callout-success:not(.chat-theme-glassmorphism *) {
     background: rgba(34, 197, 94, 0.12);
     color: #86efac;
   }
 }
-.dark .chat-md-callout-error,
+.dark.chat-md-callout-error {
+    background: rgba(239, 68, 68, 0.12);
+    color: #fca5a5;
+}
+
 @media (prefers-color-scheme: dark) {
-  .dark .chat-md-callout-error,
   .chat-md-callout-error:not(.chat-theme-glassmorphism *) {
     background: rgba(239, 68, 68, 0.12);
     color: #fca5a5;
   }
 }
-.dark .chat-md-callout-tip,
+.dark.chat-md-callout-tip {
+    background: rgba(99, 102, 241, 0.12);
+    color: #a5b4fc;
+}
+
 @media (prefers-color-scheme: dark) {
-  .dark .chat-md-callout-tip,
   .chat-md-callout-tip:not(.chat-theme-glassmorphism *) {
     background: rgba(99, 102, 241, 0.12);
     color: #a5b4fc;
   }
 }
-.dark .chat-md-callout-note,
+.dark.chat-md-callout-note {
+    background: rgba(107, 114, 128, 0.12);
+    color: #d1d5db;
+}
+
 @media (prefers-color-scheme: dark) {
-  .dark .chat-md-callout-note,
   .chat-md-callout-note:not(.chat-theme-glassmorphism *) {
     background: rgba(107, 114, 128, 0.12);
     color: #d1d5db;
@@ -2400,18 +2429,22 @@
 .chat-md-sub { font-size: 0.75em; vertical-align: sub; }
 
 /* kbd 暗色模式 */
-.dark .chat-md-kbd,
+.dark.chat-md-kbd {
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
+}
+
 @media (prefers-color-scheme: dark) {
-  .dark .chat-md-kbd,
   .chat-md-kbd {
     box-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
   }
 }
 
 /* mark 暗色模式 */
-.dark .chat-md-mark,
+.dark.chat-md-mark {
+    background: rgba(250, 204, 21, 0.18);
+}
+
 @media (prefers-color-scheme: dark) {
-  .dark .chat-md-mark,
   .chat-md-mark {
     background: rgba(250, 204, 21, 0.18);
   }
@@ -2458,7 +2491,7 @@
 .chat-md-toc {
   background: var(--chat-surface);
   border: 1px solid var(--chat-border-light);
-  border-radius: 10px;
+  border-radius: var(--radius-md, 8px);
   padding: 12px 16px;
   margin-bottom: 16px;
 }
@@ -2507,9 +2540,11 @@
 }
 
 /* TOC 暗色模式 */
-.dark .chat-md-toc,
+.dark.chat-md-toc {
+    border-color: var(--chat-border);
+}
+
 @media (prefers-color-scheme: dark) {
-  .dark .chat-md-toc,
   .chat-md-toc {
     border-color: var(--chat-border);
   }
@@ -2521,7 +2556,7 @@
 
 .chat-md-img {
   max-width: 100%;
-  border-radius: 10px;
+  border-radius: var(--radius-md, 8px);
   margin: 12px 0;
   box-shadow: var(--chat-shadow-sm);
   transition: transform 0.2s ease;
@@ -2531,9 +2566,11 @@
 }
 
 /* 图片暗色模式阴影调整 */
-.dark .chat-md-img,
+.dark.chat-md-img {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
 @media (prefers-color-scheme: dark) {
-  .dark .chat-md-img,
   .chat-md-img {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   }
@@ -2596,9 +2633,12 @@
 }
 
 /* 代码行号暗色模式 */
-.dark .chat-md-code-line-num,
+.dark.chat-md-code-line-num {
+    color: #6b7280;
+    border-right-color: #4b5563;
+}
+
 @media (prefers-color-scheme: dark) {
-  .dark .chat-md-code-line-num,
   .chat-md-code-line-num {
     color: #6b7280;
     border-right-color: #4b5563;

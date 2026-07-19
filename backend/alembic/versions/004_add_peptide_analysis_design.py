@@ -24,7 +24,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 revision = '004_peptide'
-down_revision = '003_sss'
+down_revision = ('003_sss', '002_formula_deep_integration')
 branch_labels = None
 depends_on = None
 

@@ -124,37 +124,6 @@ _HERBS_PART_05 = [
         "diseases": ["暑热烦渴", "脾虚泄泻"],
     },
     {
-        "name_cn": "熟地黄", "name_latin": "Rehmannia glutinosa praeparata", "name_pinyin": "shu di huang",
-        "category": "补血药", "effects": "补血滋阴，益精填髓",
-        "ob_percent": 2.65, "dl_value": 0.68, "is_food_homology": False,
-        "compounds": [
-            {"name": "Catalpol", "ob": 2.85, "dl": 0.62, "target_count": 20},
-            {"name": "Acteoside", "ob": 3.15, "dl": 0.6, "target_count": 18},
-        ],
-        "targets": ["TNF", "IL6", "ESR1", "AKT1"],
-        "diseases": ["血虚萎黄", "月经不调"],
-    },
-    {
-        "name_cn": "白芍", "name_latin": "Paeonia lactiflora", "name_pinyin": "bai shao",
-        "category": "补血药", "effects": "养血调经，敛阴止汗",
-        "ob_percent": 3.15, "dl_value": 0.68, "is_food_homology": False,
-        "compounds": [
-            {"name": "Paeoniflorin", "ob": 4.25, "dl": 0.72, "target_count": 28},
-        ],
-        "targets": ["PTGS2", "TNF", "IL6", "ESR1"],
-        "diseases": ["血虚萎黄", "自汗盗汗"],
-    },
-    {
-        "name_cn": "阿胶", "name_latin": "Equus Asinus Colla", "name_pinyin": "e jiao",
-        "category": "补血药", "effects": "补血滋阴，润燥止血",
-        "ob_percent": 1.85, "dl_value": 0.52, "is_food_homology": True,
-        "compounds": [
-            {"name": "Collagen peptide", "ob": 2.15, "dl": 0.42, "target_count": 12},
-        ],
-        "targets": ["COL1A1", "TNF", "IL6", "VEGFA"],
-        "diseases": ["血虚萎黄", "眩晕心悸"],
-    },
-    {
         "name_cn": "浮萍", "name_latin": "Lemna minor", "name_pinyin": "fu ping",
         "category": "解表药", "effects": "发汗解表，透疹止痒",
         "ob_percent": 2.35, "dl_value": 0.45, "is_food_homology": False,
@@ -173,36 +142,6 @@ _HERBS_PART_05 = [
         ],
         "targets": ["TNF", "IL6", "PTGS2"],
         "diseases": ["麻疹不透", "饮食不振"],
-    },
-    {
-        "name_cn": "月季花", "name_latin": "Rosa chinensis", "name_pinyin": "yue ji hua",
-        "category": "活血化瘀药", "effects": "活血调经，疏肝解郁",
-        "ob_percent": 2.25, "dl_value": 0.52, "is_food_homology": False,
-        "compounds": [
-            {"name": "Quercitrin", "ob": 3.25, "dl": 0.62, "target_count": 20},
-        ],
-        "targets": ["TNF", "PTGS2", "ESR1"],
-        "diseases": ["月经不齐", "跌打损伤"],
-    },
-    {
-        "name_cn": "泽兰", "name_latin": "Lycopus lucidus", "name_pinyin": "ze lan",
-        "category": "活血化瘀药", "effects": "活血调经，利水消肿",
-        "ob_percent": 2.35, "dl_value": 0.52, "is_food_homology": False,
-        "compounds": [
-            {"name": "Ursolic acid", "ob": 3.95, "dl": 0.75, "target_count": 30},
-        ],
-        "targets": ["TNF", "IL6", "PTGS2"],
-        "diseases": ["月经不调", "水肿"],
-    },
-    {
-        "name_cn": "饴糖", "name_latin": "Maltose", "name_pinyin": "yi tang",
-        "category": "补气药", "effects": "补中益气，缓急止痛",
-        "ob_percent": 1.25, "dl_value": 0.32, "is_food_homology": True,
-        "compounds": [
-            {"name": "Maltose", "ob": 1.05, "dl": 0.22, "target_count": 5},
-        ],
-        "targets": ["TNF", "TRPM8"],
-        "diseases": ["脾胃虚寒", "肺燥咳嗽"],
     },
     {
         "name_cn": "枇杷叶", "name_latin": "Eriobotrya japonica", "name_pinyin": "pi pa ye",

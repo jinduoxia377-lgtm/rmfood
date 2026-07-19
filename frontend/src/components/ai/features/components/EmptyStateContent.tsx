@@ -36,7 +36,7 @@ export const EmptyStateContent = React.forwardRef<HTMLDivElement, EmptyStateCont
       <div
         className={cn(
           'mx-auto mb-6 flex h-12 w-12 items-center justify-center sm:h-14 sm:w-14 md:h-16 md:w-16',
-          'text-slate-300 dark:text-slate-600',
+          'text-neutral-300 dark:text-neutral-600',
           'es-animate-float es-focus-visible',
         )}
         style={{

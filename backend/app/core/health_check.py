@@ -24,8 +24,10 @@ import sys
 import time
 import psutil
 import platform
+
+from app.utils.error_sanitize import sanitize_error
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Annotated, Any, Dict, List, Optional, Tuple
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 
 from sqlalchemy import text
@@ -34,7 +36,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from ..core.config import settings
 from ..core.session import get_db
-from ..api.deps import get_current_active_user, CurrentUser
+from ..api.deps import get_current_active_user, CurrentUser, User
 from ..services.ai.inference_queue import inference_queue
 
 logger = logging.getLogger(__name__)
@@ -84,19 +86,19 @@ async def check_database(db: AsyncSession) -> Dict[str, Any]:
             "database_type": settings.database.url.split(':')[0].split('+')[0],
         }
     except SQLAlchemyError as e:
-        logger.error(f"[Health] 数据库检查失败: {e}")
+        logger.error("[Health] 数据库检查失败", exc_info=True)
         return {
             "status": STATUS_UNHEALTHY,
             "component": "database",
-            "error": str(e),
+            "error": sanitize_error(e, "数据库连接异常"),
             "response_time_ms": 0,
         }
     except Exception as e:
-        logger.error(f"[Health] 数据库检查异常: {e}")
+        logger.error("[Health] 数据库检查异常", exc_info=True)
         return {
             "status": STATUS_UNHEALTHY,
             "component": "database",
-            "error": str(e),
+            "error": sanitize_error(e, "数据库检查异常"),
             "response_time_ms": 0,
         }
 
@@ -134,11 +136,11 @@ async def check_redis() -> Dict[str, Any]:
                 "uptime_seconds": info.get("uptime_in_seconds", 0),
             }
     except Exception as e:
-        logger.error(f"[Health] Redis 检查失败: {e}")
+        logger.error("[Health] Redis 检查失败", exc_info=True)
         return {
             "status": STATUS_UNHEALTHY,
             "component": "redis",
-            "error": str(e),
+            "error": sanitize_error(e, "Redis 连接异常"),
             "response_time_ms": 0,
         }
 
@@ -187,7 +189,7 @@ async def check_ai_service() -> Dict[str, Any]:
         return {
             "status": STATUS_UNHEALTHY,
             "component": "ai_service",
-            "error": str(e),
+            "error": sanitize_error(e, "服务异常"),
             "response_time_ms": 0,
         }
 
@@ -267,7 +269,7 @@ def check_system_resources() -> Dict[str, Any]:
         return {
             "status": STATUS_UNKNOWN,
             "component": "system",
-            "error": str(e),
+            "error": sanitize_error(e, "服务异常"),
         }
 
 
@@ -295,7 +297,7 @@ async def check_inference_queue() -> Dict[str, Any]:
         return {
             "status": STATUS_UNKNOWN,
             "component": "inference_queue",
-            "error": str(e),
+            "error": sanitize_error(e, "服务异常"),
         }
 
 
@@ -330,12 +332,12 @@ async def check_external_dependencies() -> List[Dict[str, Any]]:
                 "response_time_ms": round(response_time, 2),
             })
         except Exception as e:
-            logger.error(f"[Health] SMTP 检查失败: {e}")
+            logger.error("[Health] SMTP 检查失败", exc_info=True)
             results.append({
                 "status": STATUS_DEGRADED,
                 "component": "smtp",
                 "host": settings.smtp_host,
-                "error": str(e),
+                "error": sanitize_error(e, "SMTP 连接异常"),
                 "note": "邮件服务可能不可用，但不影响核心功能",
             })
 
@@ -367,8 +369,8 @@ async def health_check(request: Request):
 
 @router.get("/ready", summary="就绪检查（需要认证）")
 async def readiness_check(
+    current_user: Annotated[User, Depends(get_current_active_user)],
     db: AsyncSession = Depends(get_db),
-    current_user: CurrentUser = Depends(get_current_active_user),
 ):
     """
     🔒 P3-2: 就绪检查 - 用于 Kubernetes readinessProbe
@@ -409,8 +411,8 @@ async def readiness_check(
 
 @router.get("/health/detailed", summary="详细健康报告（需要认证）")
 async def detailed_health_check(
+    current_user: Annotated[User, Depends(get_current_active_user)],
     db: AsyncSession = Depends(get_db),
-    current_user: CurrentUser = Depends(get_current_active_user),
 ):
     """
     🔒 P3-2: 详细健康检查报告 - 包含所有依赖
@@ -483,7 +485,7 @@ async def detailed_health_check(
 
 @router.get("/health/metrics", summary="系统资源指标（需要认证）")
 async def health_metrics(
-    current_user: CurrentUser = Depends(get_current_active_user),
+    current_user: Annotated[User, Depends(get_current_active_user)],
 ):
     """
     🔒 P3-2: 系统资源指标

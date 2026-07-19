@@ -58,33 +58,33 @@ export class ProfessionalBaseComponent<P = {}, S = {}> extends Component<P & Pro
 
   protected getCompatibilityLevelColor(level: string): string {
     const colorMap: Record<string, string> = {
-      excellent: '#10b981',
-      good: '#22c55e',
-      moderate: '#f59e0b',
-      poor: '#f97316',
-      contraindicated: '#ef4444',
+      excellent: '#34C759',
+      good: '#34C759',
+      moderate: '#D97706',
+      poor: '#EA580C',
+      contraindicated: '#FF3B30',
     };
     return colorMap[level] || '#6b7280';
   }
 
   protected getSeverityColor(severity: string): string {
     const colorMap: Record<string, string> = {
-      info: '#3b82f6',
-      warning: '#f59e0b',
-      critical: '#ef4444',
+      info: '#007AFF',
+      warning: '#D97706',
+      critical: '#FF3B30',
     };
     return colorMap[severity] || '#6b7280';
   }
 
   protected getBioactivityColor(bioactivity: string): string {
     const colorMap: Record<string, string> = {
-      antioxidant: '#8b5cf6',
-      'anti-inflammatory': '#ec4899',
+      antioxidant: '#AF52DE',
+      'anti-inflammatory': '#D946EF',
       antimicrobial: '#14b8a6',
-      antihypertensive: '#06b6d4',
-      antidiabetic: '#f59e0b',
-      anticancer: '#ef4444',
-      immunomodulatory: '#22c55e',
+      antihypertensive: '#0891B2',
+      antidiabetic: '#D97706',
+      anticancer: '#FF3B30',
+      immunomodulatory: '#34C759',
       neuroprotective: '#6366f1',
     };
     return colorMap[bioactivity] || '#6b7280';
@@ -94,46 +94,46 @@ export class ProfessionalBaseComponent<P = {}, S = {}> extends Component<P & Pro
     return (
       <div className="flex items-center justify-center p-4">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-2 text-gray-600">{t('common.loading')}</span>
+        <span className="ml-2 text-neutral-600">{t('common.loading')}</span>
       </div>
     );
   }
 
   protected renderError(error: string | null): ReactNode {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4 m-4">
+      <div className="bg-error-50 border border-red-200 rounded-lg p-4 m-4">
         <div className="flex items-center">
-          <svg className="w-5 h-5 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+          <svg className="w-5 h-5 text-error-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
           </svg>
-          <span className="text-red-800 font-medium">{t('common.error')}</span>
+          <span className="text-error-800 font-medium">{t('common.error')}</span>
         </div>
-        <p className="mt-2 text-red-700">{error}</p>
+        <p className="mt-2 text-error-700">{error}</p>
       </div>
     );
   }
 
   protected renderEmptyState(message: string = t('common.noData')): ReactNode {
     return (
-      <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
-        <svg className="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="bg-slate-50 border border-neutral-200 rounded-lg p-8 text-center">
+        <svg className="w-12 h-12 text-neutral-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
         </svg>
-        <p className="text-gray-600">{message}</p>
+        <p className="text-neutral-600">{message}</p>
       </div>
     );
   }
 
   protected renderConfidenceBadge(confidence: number): ReactNode {
     const percentage = Math.round(confidence * 100);
-    let colorClass = 'bg-gray-100 text-gray-800';
+    let colorClass = 'bg-neutral-100 text-neutral-800';
 
     if (percentage >= 80) {
-      colorClass = 'bg-green-100 text-green-800';
+      colorClass = 'bg-success-100 text-success-800';
     } else if (percentage >= 60) {
       colorClass = 'bg-yellow-100 text-yellow-800';
     } else {
-      colorClass = 'bg-red-100 text-red-800';
+      colorClass = 'bg-error-100 text-error-800';
     }
 
     return (
@@ -144,20 +144,20 @@ export class ProfessionalBaseComponent<P = {}, S = {}> extends Component<P & Pro
   }
 
   protected renderToxicityBadge(toxicity: string): ReactNode {
-    let colorClass = 'bg-gray-100 text-gray-800';
+    let colorClass = 'bg-neutral-100 text-neutral-800';
 
     switch (toxicity) {
       case 'none':
-        colorClass = 'bg-green-100 text-green-800';
+        colorClass = 'bg-success-100 text-success-800';
         break;
       case 'low':
-        colorClass = 'bg-blue-100 text-blue-800';
+        colorClass = 'bg-secondary-100 text-secondary-800';
         break;
       case 'moderate':
         colorClass = 'bg-yellow-100 text-yellow-800';
         break;
       case 'high':
-        colorClass = 'bg-red-100 text-red-800';
+        colorClass = 'bg-error-100 text-error-800';
         break;
     }
 
@@ -173,11 +173,11 @@ export class ProfessionalBaseComponent<P = {}, S = {}> extends Component<P & Pro
 
   protected renderPropertyBadge(nature: string): ReactNode {
     const colorMap: Record<string, string> = {
-      cold: 'bg-blue-100 text-blue-800',
+      cold: 'bg-secondary-100 text-secondary-800',
       cool: 'bg-cyan-100 text-cyan-800',
-      neutral: 'bg-gray-100 text-gray-800',
+      neutral: 'bg-neutral-100 text-neutral-800',
       warm: 'bg-orange-100 text-orange-800',
-      hot: 'bg-red-100 text-red-800',
+      hot: 'bg-error-100 text-error-800',
     };
 
     const labelMap: Record<string, string> = {
@@ -197,10 +197,10 @@ export class ProfessionalBaseComponent<P = {}, S = {}> extends Component<P & Pro
 
   protected renderResearchStatusBadge(status: string): ReactNode {
     const colorMap: Record<string, string> = {
-      validated: 'bg-green-100 text-green-800',
+      validated: 'bg-success-100 text-success-800',
       preliminary: 'bg-yellow-100 text-yellow-800',
-      hypothetical: 'bg-blue-100 text-blue-800',
-      discovered: 'bg-purple-100 text-purple-800',
+      hypothetical: 'bg-secondary-100 text-secondary-800',
+      discovered: 'bg-accent-100 text-accent-800',
     };
 
     const labelMap: Record<string, string> = {

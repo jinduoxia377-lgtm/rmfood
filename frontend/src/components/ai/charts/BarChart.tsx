@@ -35,13 +35,13 @@ export function BarChart({ data }: BarChartProps) {
             type="category"
             dataKey="name"
             width={80}
-            tick={{ fill: '#374151', fontSize: 12 }}
+            tick={{ fill: 'var(--text-primary, #1D1D1F)', fontSize: 12 }}
           />
           <Tooltip
             formatter={(value: number) => [`${value.toFixed(1)}%`, '贡献度']}
             contentStyle={{
-              backgroundColor: '#fff',
-              border: '1px solid #e5e7eb',
+              backgroundColor: 'var(--card-bg-solid, #FFFFFF)',
+              border: '1px solid var(--border-subtle, rgba(0,0,0,0.06))',
               borderRadius: '8px',
               padding: '12px',
             }}
@@ -50,7 +50,7 @@ export function BarChart({ data }: BarChartProps) {
           <Bar
             name="贡献度"
             dataKey="contribution"
-            fill="#8b5cf6"
+            fill="var(--color-tertiary, #AF52DE)"
             radius={[0, 4, 4, 0]}
           />
         </RechartsBarChart>

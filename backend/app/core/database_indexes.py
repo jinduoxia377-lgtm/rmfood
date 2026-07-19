@@ -50,9 +50,9 @@ INDEX_RECOMMENDATIONS = [
         "reason": "按创建时间排序"
     },
     {
-        "name": "idx_formulas_user_id",
+        "name": "idx_formulas_creator_id",
         "table": "formulas",
-        "columns": ["user_id"],
+        "columns": ["creator_id"],
         "reason": "查询用户的所有配方"
     },
 
@@ -76,38 +76,44 @@ INDEX_RECOMMENDATIONS = [
         "reason": "按创建时间排序"
     },
 
-    # 配方-实验关系表索引（如果存在）
+    # 配方-实验关系表索引
     {
-        "name": "idx_formula_experiments_formula_id",
-        "table": "formula_experiments",
+        "name": "idx_experiments_formula_id",
+        "table": "experiments",
         "columns": ["formula_id"],
-        "reason": "配方关联查询"
+        "reason": "查询配方的所有实验"
     },
     {
-        "name": "idx_formula_experiments_experiment_id",
-        "table": "formula_experiments",
-        "columns": ["experiment_id"],
-        "reason": "实验关联查询"
-    },
-
-    # 数据库检索表索引
-    {
-        "name": "idx_database_records_name",
-        "table": "database_records",
-        "columns": ["name"],
-        "reason": "数据库记录名称搜索"
+        "name": "idx_experiments_researcher_id",
+        "table": "experiments",
+        "columns": ["researcher_id"],
+        "reason": "查询研究员的所有实验"
     },
     {
-        "name": "idx_database_records_category",
-        "table": "database_records",
-        "columns": ["category"],
-        "reason": "按分类筛选记录"
+        "name": "idx_experiments_status",
+        "table": "experiments",
+        "columns": ["status"],
+        "reason": "按状态筛选实验"
     },
     {
-        "name": "idx_database_records_created_at",
-        "table": "database_records",
+        "name": "idx_experiments_created_at",
+        "table": "experiments",
         "columns": ["created_at"],
         "reason": "按创建时间排序"
+    },
+
+    # 工作流表索引
+    {
+        "name": "idx_workflows_created_by",
+        "table": "workflows",
+        "columns": ["created_by"],
+        "reason": "查询用户的工作流"
+    },
+    {
+        "name": "idx_workflows_status",
+        "table": "workflows",
+        "columns": ["status"],
+        "reason": "按状态筛选工作流"
     },
 ]
 
@@ -159,10 +165,11 @@ async def apply_indexes(session):
                 "reason": idx['reason']
             })
         except Exception as e:
+            logger.error(f"[DBIndexes] 索引检查失败: {idx['name']}", exc_info=True)
             results.append({
                 "index": idx['name'],
                 "status": "error",
-                "error": str(e),
+                "error": "索引检查异常",
                 "reason": idx['reason']
             })
 

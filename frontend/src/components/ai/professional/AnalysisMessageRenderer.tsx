@@ -60,15 +60,15 @@ export const AnalysisMessageRenderer: React.FC<AnalysisMessageRendererProps> = (
     return (
       <div className="flex items-center justify-center py-8">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-2 text-gray-600">正在分析意图...</span>
+        <span className="ml-2 text-neutral-600">正在分析意图...</span>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-        <p className="text-red-800">分析错误: {error}</p>
+      <div className="bg-error-50 border border-red-200 rounded-lg p-4">
+        <p className="text-error-800">分析错误: {error}</p>
       </div>
     );
   }
@@ -89,7 +89,7 @@ export const AnalysisMessageRenderer: React.FC<AnalysisMessageRendererProps> = (
         return (
           <div className="mt-4">
             <div className="flex items-center gap-2 mb-3">
-              <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+              <span className="px-3 py-1 bg-secondary-100 text-secondary-800 rounded-full text-sm font-medium">
                 {INTENT_NAMES[intent]} ({(confidence * 100).toFixed(0)}%)
               </span>
             </div>
@@ -101,7 +101,7 @@ export const AnalysisMessageRenderer: React.FC<AnalysisMessageRendererProps> = (
         return (
           <div className="mt-4">
             <div className="flex items-center gap-2 mb-3">
-              <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-medium">
+              <span className="px-3 py-1 bg-accent-100 text-accent-800 rounded-full text-sm font-medium">
                 {INTENT_NAMES[intent]} ({(confidence * 100).toFixed(0)}%)
               </span>
             </div>

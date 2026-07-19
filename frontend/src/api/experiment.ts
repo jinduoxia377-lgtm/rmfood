@@ -11,8 +11,8 @@ export interface ExperimentCreatePayload {
   objectives?: string[]
   methodology?: string
   parameters?: Record<string, unknown>
-  materials?: unknown[]
-  equipment?: unknown[]
+  materials?: Array<{ name: string; quantity?: string; unit?: string }>
+  equipment?: Array<{ name: string; quantity?: string; unit?: string }>
   start_date?: string
   end_date?: string
 }

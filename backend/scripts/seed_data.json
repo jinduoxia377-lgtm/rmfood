@@ -1,0 +1,197 @@
+[
+  {
+    "name_cn": "黄芪",
+    "name_latin": "Astragali Radix",
+    "name_en": "Milk Vetch Root",
+    "aliases": [
+      "膜荚黄芪",
+      "蒙古黄芪",
+      "北芪",
+      "绵黄芪"
+    ],
+    "category": "中药材",
+    "sub_category": "补气药",
+    "food_homology": true,
+    "toxicity_class": "无毒",
+    "active_ingredients": [
+      "黄芪甲苷",
+      "毛蕊异黄酮",
+      "黄芪多糖",
+      "皂苷类"
+    ],
+    "effects": [
+      "补气升阳",
+      "固表止汗",
+      "利水消肿",
+      "生津养血"
+    ],
+    "indications": "气虚乏力、食少便溏、中气下陷、表虚自汗、水肿、内热消渴",
+    "ob_percent": 0.85,
+    "dl_value": 0.72,
+    "bioavailability_score": 0.65,
+    "safe_dose_min": 9.0,
+    "safe_dose_max": 30.0,
+    "contraindications": [
+      "表实邪盛",
+      "气滞湿阻",
+      "食积内停",
+      "阴虚阳亢"
+    ],
+    "interactions": [
+      "不宜与藜芦同用",
+      "不宜与防风同用"
+    ],
+    "regulatory_status": "approved",
+    "approved_regions": [
+      "CN"
+    ],
+    "max_daily_intake": "30g",
+    "description": "黄芪为豆科植物蒙古黄芪或膜荚黄芪的干燥根。具有补气升阳、固表止汗、利水消肿等功效。广泛用于中药配方和保健食品中。",
+    "source_db": "chinese_pharmacopoeia",
+    "data_quality": 0.95,
+    "review_status": "approved"
+  },
+  {
+    "name_cn": "当归",
+    "name_latin": "Angelicae Sinensis Radix",
+    "name_en": "Chinese Angelic Root",
+    "aliases": [
+      "西当归",
+      "秦归",
+      "云归",
+      "马尾当归"
+    ],
+    "category": "中药材",
+    "sub_category": "补血药",
+    "food_homology": true,
+    "toxicity_class": "无毒",
+    "active_ingredients": [
+      "阿魏酸",
+      "藁本内酯",
+      "挥发油",
+      "多糖类"
+    ],
+    "effects": [
+      "补血活血",
+      "调经止痛",
+      "润肠通便"
+    ],
+    "indications": "血虚萎黄、眩晕心悸、月经不调、经闭痛经、虚寒腹痛、风湿痹痛、跌扑损伤、痈疽疮疡、肠燥便秘",
+    "ob_percent": 0.82,
+    "dl_value": 0.68,
+    "bioavailability_score": 0.6,
+    "safe_dose_min": 6.0,
+    "safe_dose_max": 12.0,
+    "contraindications": [
+      "湿盛中满",
+      "大便溏泄",
+      "孕妇慎用"
+    ],
+    "interactions": [
+      "不宜与藜芦同用"
+    ],
+    "regulatory_status": "approved",
+    "approved_regions": [
+      "CN"
+    ],
+    "max_daily_intake": "12g",
+    "description": "当归为伞形科植物当归的干燥根。具有补血活血、调经止痛、润肠通便功效。被誉为'血中圣药'。",
+    "source_db": "chinese_pharmacopoeia",
+    "data_quality": 0.95,
+    "review_status": "approved"
+  },
+  {
+    "name_cn": "枸杞子",
+    "name_latin": "Lycii Fructus",
+    "name_en": "Goji Berry",
+    "aliases": [
+      "甘枸杞",
+      "红耳坠",
+      "天精子"
+    ],
+    "category": "中药材",
+    "sub_category": "补阴药",
+    "food_homology": true,
+    "toxicity_class": "无毒",
+    "active_ingredients": [
+      "枸杞多糖",
+      "玉米黄素",
+      "β-胡萝卜素",
+      "甜菜碱"
+    ],
+    "effects": [
+      "滋补肝肾",
+      "益精明目"
+    ],
+    "indications": "虚劳精亏、腰膝酸痛、眩晕耳鸣、阳痿遗精、内热消渴、血虚萎黄、目昏不明",
+    "ob_percent": 0.9,
+    "dl_value": 0.8,
+    "bioavailability_score": 0.75,
+    "safe_dose_min": 6.0,
+    "safe_dose_max": 12.0,
+    "contraindications": [
+      "外邪实热",
+      "脾虚泄泻"
+    ],
+    "interactions": [],
+    "regulatory_status": "approved",
+    "approved_regions": [
+      "CN"
+    ],
+    "max_daily_intake": "12g",
+    "description": "枸杞子为茄科植物宁夏枸杞的干燥成熟果实。具有滋补肝肾、益精明目的功效。广泛用于食品和保健品中。",
+    "source_db": "chinese_pharmacopoeia",
+    "data_quality": 0.95,
+    "review_status": "approved"
+  },
+  {
+    "name_cn": "人参",
+    "name_latin": "Ginseng Radix",
+    "name_en": "Ginseng Root",
+    "aliases": [
+      "棒槌",
+      "山参",
+      "园参",
+      "白参"
+    ],
+    "category": "中药材",
+    "sub_category": "补气药",
+    "food_homology": true,
+    "toxicity_class": "无毒",
+    "active_ingredients": [
+      "人参皂苷Rg1",
+      "人参皂苷Rb1",
+      "人参皂苷Re",
+      "人参多糖"
+    ],
+    "effects": [
+      "大补元气",
+      "复脉固脱",
+      "补脾益肺",
+      "生津养血",
+      "安神益智"
+    ],
+    "indications": "大病久病之后、气虚欲脱、脉微欲绝、脾虚食少、肺虚喘咳、津伤口渴、内热消渴、气血不足、心悸失眠、健忘多梦",
+    "ob_percent": 0.88,
+    "dl_value": 0.78,
+    "bioavailability_score": 0.7,
+    "safe_dose_min": 3.0,
+    "safe_dose_max": 9.0,
+    "contraindications": [
+      "实证、热证而正气不虚者忌服",
+      "孕妇慎用"
+    ],
+    "interactions": [
+      "不宜与藜芦、五灵脂同用"
+    ],
+    "regulatory_status": "approved",
+    "approved_regions": [
+      "CN"
+    ],
+    "max_daily_intake": "9g",
+    "description": "人参为五加科植物人参的干燥根和根茎。具有大补元气、复脉固脱、补脾益肺、生津养血、安神益智功效。被誉为'百草之王'。",
+    "source_db": "chinese_pharmacopoeia",
+    "data_quality": 0.95,
+    "review_status": "approved"
+  }
+]

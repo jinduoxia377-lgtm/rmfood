@@ -144,6 +144,7 @@ export function AnalyticsDashboard() {
       const interval = setInterval(fetchDashboardData, refreshInterval * 1000)
       return () => clearInterval(interval)
     }
+    return
   }, [selectedTimeRange, autoRefresh, refreshInterval, filters])
 
   useEffect(() => {
@@ -484,7 +485,7 @@ export function AnalyticsDashboard() {
 
   return (
     <div
-      className={`space-y-6 transition-all duration-300 ${isFullscreen ? 'fixed inset-0 z-50 overflow-auto p-6 bg-white dark:bg-gray-900' : ''}`}
+      className={`space-y-6 transition-all duration-300 ${isFullscreen ? 'fixed inset-0 z-50 overflow-auto p-6 bg-white dark:bg-neutral-900' : ''}`}
       style={{ backgroundColor: isFullscreen ? colors.background : 'transparent' }}
     >
       {/* Notification Toast */}
@@ -569,7 +570,7 @@ export function AnalyticsDashboard() {
                 className="px-3 py-1.5 text-sm rounded-md transition-all duration-200 font-medium"
                 style={{
                   backgroundColor: filters.timeRange === range ? colors.primary : 'transparent',
-                  color: filters.timeRange === range ? '#ffffff' : colors.textSecondary,
+                  color: filters.timeRange === range ? 'var(--card-bg-solid, #FFFFFF)' : colors.textSecondary,
                   boxShadow: filters.timeRange === range ? `0 2px 4px rgba(0,0,0,0.1)` : 'none',
                 }}
               >
@@ -675,10 +676,8 @@ export function AnalyticsDashboard() {
               >
                 <button
                   onClick={() => handleExport('csv')}
-                  className="w-full flex items-center gap-3 px-4 py-3 text-left text-sm hover:bg-opacity-5 transition-colors"
+                  className="w-full flex items-center gap-3 px-4 py-3 text-left text-sm hover:bg-opacity-5 transition-colors hover:bg-[${colors.primary}08]"
                   style={{ color: colors.textPrimary }}
-                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = `${colors.primary}08`}
-                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                 >
                   <Table className="w-4 h-4" style={{ color: colors.success }} />
                   导出 CSV 格式
@@ -686,10 +685,8 @@ export function AnalyticsDashboard() {
 
                 <button
                   onClick={() => handleExport('excel')}
-                  className="w-full flex items-center gap-3 px-4 py-3 text-left text-sm hover:bg-opacity-5 transition-colors"
+                  className="w-full flex items-center gap-3 px-4 py-3 text-left text-sm hover:bg-opacity-5 transition-colors hover:bg-[${colors.primary}08]"
                   style={{ color: colors.textPrimary }}
-                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = `${colors.primary}08`}
-                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                 >
                   <Table className="w-4 h-4" style={{ color: colors.secondary }} />
                   导出 Excel 格式
@@ -697,13 +694,11 @@ export function AnalyticsDashboard() {
 
                 <button
                   onClick={() => handleExport('pdf')}
-                  className="w-full flex items-center gap-3 px-4 py-3 text-left text-sm hover:bg-opacity-5 transition-colors border-t"
+                  className="w-full flex items-center gap-3 px-4 py-3 text-left text-sm hover:bg-opacity-5 transition-colors border-t hover:bg-[${colors.primary}08]"
                   style={{
                     color: colors.textPrimary,
                     borderColor: colors.outlineVariant,
                   }}
-                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = `${colors.primary}08`}
-                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                 >
                   <FileType className="w-4 h-4" style={{ color: colors.error }} />
                   导出 PDF 报告
@@ -881,18 +876,10 @@ export function AnalyticsDashboard() {
           {data.kpi.slice(0, 5).map((kpi, index) => (
             <div
               key={kpi.id}
-              className="group relative rounded-xl p-5 border transition-all duration-300 hover:shadow-xl hover:-translate-y-1 cursor-pointer overflow-hidden"
+              className="group relative rounded-xl p-5 border transition-all duration-300 hover:shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),0_10px_10px_-5px_rgba(0,0,0,0.04)] hover:-translate-y-1 cursor-pointer overflow-hidden hover:border-[${colors.primary}]"
               style={{
                 backgroundColor: colors.surface,
                 borderColor: colors.outline,
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.boxShadow = `0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)`
-                e.currentTarget.style.borderColor = colors.primary
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.boxShadow = ''
-                e.currentTarget.style.borderColor = colors.outline
               }}
             >
               {/* Gradient Background Decoration */}
@@ -1205,15 +1192,9 @@ export function AnalyticsDashboard() {
             {data?.recent_activity?.slice(0, 10).map((activity, idx) => (
               <div
                 key={activity.id || idx}
-                className="group flex items-start gap-3 p-3 rounded-lg transition-all duration-200 hover:shadow-md cursor-pointer"
+                className="group flex items-start gap-3 p-3 rounded-lg transition-all duration-200 hover:shadow-md cursor-pointer hover:bg-[${colors.primary}05]"
                 style={{
                   backgroundColor: 'transparent',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = `${colors.primary}05`
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent'
                 }}
               >
                 <div

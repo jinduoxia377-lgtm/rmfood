@@ -45,9 +45,9 @@ export type SafetyRating = 'low' | 'medium' | 'high' | 'critical'
 
 export const SAFETY_RATING_CONFIG: Record<SafetyRating, { label: string; color: string; emoji: string; description: string }> = {
   low: { label: '低风险', color: '#16a34a', emoji: '🟢', description: '配方安全性良好，可放心使用' },
-  medium: { label: '中风险', color: '#d97706', emoji: '🟡', description: '存在一定注意事项，建议在指导下使用' },
-  high: { label: '高风险', color: '#dc2626', emoji: '🔴', description: '含较高风险成分，需谨慎使用' },
-  critical: { label: '极高风险', color: '#991b1b', emoji: '🚨', description: '存在严重安全隐患，不建议使用' },
+  medium: { label: '中风险', color: '#B45309', emoji: '🟡', description: '存在一定注意事项，建议在指导下使用' },
+  high: { label: '高风险', color: '#B91C1C', emoji: '🔴', description: '含较高风险成分，需谨慎使用' },
+  critical: { label: '极高风险', color: '#DC2626', emoji: '🚨', description: '存在严重安全隐患，不建议使用' },
 }
 
 export interface IngredientAnalysisSection {
@@ -354,10 +354,10 @@ function buildIngredientAnalysis(
 
   // 用量分布统计
   const distributionRanges = [
-    { range: '>30%', min: 30, max: Infinity, color: '#1e40af' },
-    { range: '10-30%', min: 10, max: 30, color: '#3b82f6' },
-    { range: '5-10%', min: 5, max: 10, color: '#60a5fa' },
-    { range: '1-5%', min: 1, max: 5, color: '#93c5fd' },
+    { range: '>30%', min: 30, max: Infinity, color: '#003E87' },
+    { range: '10-30%', min: 10, max: 30, color: '#007AFF' },
+    { range: '5-10%', min: 5, max: 10, color: '#6ECAFF' },
+    { range: '1-5%', min: 1, max: 5, color: '#A8DFFF' },
     { range: '<1%', min: 0, max: 1, color: '#d1d5db' },
   ]
 
@@ -507,9 +507,9 @@ function buildSafetyAssessment(ingredients: EnhancedIngredientForReport[]): Safe
   else if (weightedScore >= 3) overallRating = 'medium'
 
   const precautionGroups: PrecautionGroup[] = [
-    { severity: 'high' as PrecautionSeverity, label: '危险警示', color: '#dc2626', items: dangerList },
-    { severity: 'medium' as PrecautionSeverity, label: '警告提醒', color: '#d97706', items: warningList },
-    { severity: 'low' as PrecautionSeverity, label: '温馨提示', color: '#2563eb', items: infoList },
+    { severity: 'high' as PrecautionSeverity, label: '危险警示', color: '#B91C1C', items: dangerList },
+    { severity: 'medium' as PrecautionSeverity, label: '警告提醒', color: '#B45309', items: warningList },
+    { severity: 'low' as PrecautionSeverity, label: '温馨提示', color: '#007AFF', items: infoList },
     { severity: 'low' as PrecautionSeverity, label: '建议', color: '#16a34a', items: tipList },
   ].filter((g) => g.items.length > 0)
 

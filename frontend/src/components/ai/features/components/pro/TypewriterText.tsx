@@ -8,7 +8,7 @@
  * - Markdown 兼容（逐块渲染）
  * - 跳跃完成（点击加速）
  */
-import React, { useState, useEffect, useRef, useCallback } from 'react'
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import MarkdownRenderer from './MarkdownRenderer'
 
 interface TypewriterTextProps {
@@ -26,9 +26,26 @@ export default function TypewriterText({
   onComplete,
   enabled = true,
 }: TypewriterTextProps) {
+  // Respect user's motion preference
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(() => {
+    if (typeof window !== 'undefined' && window.matchMedia) {
+      return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    }
+    return false
+  })
+
+  // Listen for changes to the reduced motion preference
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const handler = (e: MediaQueryListEvent | MediaQueryList) => setPrefersReducedMotion(e.matches)
+    mq.addEventListener('change', handler as EventListener)
+    return () => mq.removeEventListener('change', handler as EventListener)
+  }, [])
+
   // 长内容自动跳过动画 — 避免不完整 Markdown 渲染导致内容丢失
   const isLongContent = content.length > 800
-  const autoComplete = !enabled || isLongContent
+  const autoComplete = !enabled || isLongContent || prefersReducedMotion
   const [displayedLen, setDisplayedLen] = useState(autoComplete ? content.length : 0)
   const [isComplete, setIsComplete] = useState(autoComplete)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -94,8 +111,8 @@ export default function TypewriterText({
     )
   }
 
-  // 逐字模式：渲染已显示的部分
-  const visibleText = content.slice(0, displayedLen)
+  // 逐字模式：渲染已显示的部分（memoized to avoid recreating on every render）
+  const visibleText = useMemo(() => content.slice(0, displayedLen), [content, displayedLen])
 
   // 计算百分比
   const progress = content.length > 0 ? (displayedLen / content.length) * 100 : 100
@@ -111,7 +128,7 @@ export default function TypewriterText({
 
       {/* 进度条（极简） */}
       {displayedLen < content.length && (
-        <div className="h-0.5 bg-gray-200 dark:bg-gray-700 rounded-full mt-2 overflow-hidden opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="h-0.5 bg-neutral-200 dark:bg-neutral-700 rounded-full mt-2 overflow-hidden opacity-0 group-hover:opacity-100 transition-opacity">
           <div
             className="h-full bg-primary-400 rounded-full transition-all duration-300"
             style={{ width: `${progress}%` }}

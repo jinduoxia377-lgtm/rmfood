@@ -83,14 +83,14 @@ const ERROR_CONFIG: Record<ErrorType, {
   [ErrorType.NetworkUnreachable]: {
     icon: WifiOff,
     title: '无法连接服务',
-    colorClass: 'text-red-600 dark:text-red-400',
-    bgClass: 'bg-red-100 dark:bg-red-900/30',
+    colorClass: 'text-error-600 dark:text-error-400',
+    bgClass: 'bg-error-100 dark:bg-error-900/30',
   },
   [ErrorType.Unauthorized]: {
     icon: Lock,
     title: '会话已过期',
-    colorClass: 'text-red-600 dark:text-red-400',
-    bgClass: 'bg-red-100 dark:bg-red-900/30',
+    colorClass: 'text-error-600 dark:text-error-400',
+    bgClass: 'bg-error-100 dark:bg-error-900/30',
   },
   [ErrorType.RateLimited]: {
     icon: Timer,
@@ -101,20 +101,20 @@ const ERROR_CONFIG: Record<ErrorType, {
   [ErrorType.ServerError]: {
     icon: ServerCrash,
     title: '服务器繁忙',
-    colorClass: 'text-purple-600 dark:text-purple-400',
-    bgClass: 'bg-purple-100 dark:bg-purple-900/30',
+    colorClass: 'text-accent-600 dark:text-accent-400',
+    bgClass: 'bg-accent-100 dark:bg-accent-900/30',
   },
   [ErrorType.StreamInterrupted]: {
     icon: Unplug,
     title: '响应中断',
-    colorClass: 'text-blue-600 dark:text-blue-400',
-    bgClass: 'bg-blue-100 dark:bg-blue-900/30',
+    colorClass: 'text-secondary-600 dark:text-secondary-400',
+    bgClass: 'bg-secondary-100 dark:bg-secondary-900/30',
   },
   [ErrorType.Unknown]: {
     icon: AlertTriangle,
     title: '发生错误',
-    colorClass: 'text-gray-600 dark:text-gray-400',
-    bgClass: 'bg-gray-100 dark:bg-gray-900/30',
+    colorClass: 'text-neutral-600 dark:text-neutral-400',
+    bgClass: 'bg-neutral-100 dark:bg-neutral-900/30',
   },
 }
 
@@ -346,23 +346,23 @@ export function ErrorRecoveryDialog({
 
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between mb-2">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
               {config.title}
             </h3>
             <button
               onClick={handleDismiss}
-              className="flex-shrink-0 ml-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              className="flex-shrink-0 ml-2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
               aria-label="关闭"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
 
-          <p className="text-sm text-gray-700 dark:text-gray-300 mb-3">
+          <p className="text-sm text-neutral-700 dark:text-neutral-300 mb-3">
             {classifiedError.userMessage}
           </p>
 
-          <div className="flex items-start gap-2 mb-4 text-sm text-gray-600 dark:text-gray-400">
+          <div className="flex items-start gap-2 mb-4 text-sm text-neutral-600 dark:text-neutral-400">
             <Lightbulb className="w-4 h-4 mt-0.5 flex-shrink-0" />
             <span>{classifiedError.suggestion}</span>
           </div>
@@ -412,11 +412,11 @@ export function ErrorRecoveryDialog({
 
           {showDetails && (
             <details className="mt-4 text-left">
-              <summary className="cursor-pointer text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 inline-flex items-center gap-1">
+              <summary className="cursor-pointer text-xs font-medium text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 inline-flex items-center gap-1">
                 <Bug className="w-3 h-3" />
                 技术详情
               </summary>
-              <pre className="mt-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg text-xs text-red-600 dark:text-red-400 overflow-auto max-h-40 whitespace-pre-wrap">
+              <pre className="mt-2 p-3 bg-slate-50 dark:bg-neutral-800 rounded-lg text-xs text-error-600 dark:text-error-400 overflow-auto max-h-40 whitespace-pre-wrap">
                 {classifiedError.originalError.message}
                 {'\n\n'}
                 {classifiedError.originalError.stack}

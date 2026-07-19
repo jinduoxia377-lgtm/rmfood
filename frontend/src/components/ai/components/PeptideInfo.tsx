@@ -32,7 +32,7 @@ export function PeptideInfo({ peptideCandidates }: PeptideInfoProps) {
             <span className="text-xs font-mono" style={{ color: 'var(--color-accent-600)' }}>
               {typeof peptide.sequence === 'string' ? peptide.sequence : '未知序列'}
             </span>
-            <span className="text-xs px-2 py-0.5 rounded-md text-gray-500 dark:text-gray-400 bg-accent-500/10 dark:bg-accent-500/16">
+            <span className="text-xs px-2 py-0.5 rounded-md text-neutral-500 dark:text-neutral-400 bg-accent-500/10 dark:bg-accent-500/16">
               {typeof peptide.source === 'string' ? peptide.source : '未知来源'}
             </span>
           </div>

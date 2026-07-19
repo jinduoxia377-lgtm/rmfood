@@ -52,7 +52,7 @@ def _get_redis_blacklist():
             logger.info("✅ Token 黑名单已连接 Redis (db=1)")
             return _redis_blacklist_client
     except Exception as e:
-        logger.warning(f"⚠️ Redis 黑名单不可用，降级到内存存储: {e}")
+        logger.info(f"Redis 黑名单不可用，降级到内存存储: {e}")
 
     return None
 
@@ -595,6 +595,10 @@ def create_secure_cookie_settings(
         "samesite": "strict",  # 🔒 CSRF 防护
         "secure": not settings.debug,  # 🔒 生产环境强制 HTTPS
     }
+
+    # 开发环境: 设置 domain 为 localhost 以便 Vite 代理也能携带 cookie
+    if settings.debug:
+        cookie_config["domain"] = "localhost"
 
     # refresh_token 需要更宽松的 SameSite（跨域刷新）
     if is_refresh_token:

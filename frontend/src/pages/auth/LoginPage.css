@@ -1,613 +1,685 @@
 /* ══════════════════════════════════════════════════════════════
-   RMFOOD 登录页面样式 — v2.0 专业重设计
-   基于 UI/UX Pro Max 设计智能框架
-   设计令牌 · Spring 动画 · 品牌化 · 全响应式 · WCAG AA
+   莱茵分子 (Rhine Molecular) — 登录页面样式 v3.0
+   生物技术启发 · 分子美学 · 全局主题对齐版
+
+   ★ 所有颜色令牌直接使用项目全局 CSS 变量 (--color-*, --text-*, --font-*, --space-*)
+   ★ 品牌主色: Apple Emerald #34C759 via --color-primary-600
+   ★ 品牌辅色: Ocean Blue #2563EB via --color-blue-600
+   ★ WCAG 2.1 AA 合规 (文本对比度 ≥ 4.5:1)
+   ★ 支持 Light / Dark 双模式切换
    ══════════════════════════════════════════════════════════════ */
 
 /* ================================================================
-   1. 设计令牌 (Design Tokens)
+   1. 设计令牌 — 直接使用项目全局变量
    ================================================================ */
+
+/* 亮色模式下的登录页变量 */
 :root {
-  /* ── 品牌色 (Emerald Green) ── */
-  --login-brand-50: #ecfdf5;
-  --login-brand-100: #d1fae5;
-  --login-brand-200: #a7f3d0;
-  --login-brand-300: #6ee7b7;
-  --login-brand-400: #34d399;
-  --login-brand-500: #10b981;
-  --login-brand-600: #059669;
-  --login-brand-700: #047857;
-  --login-brand-800: #065f46;
-  --login-brand-900: #064e3b;
+  /* ── 品牌色 → 直接使用全局变量 ── */
+  --rhine-brand: var(--color-primary-600, #28A745);
+  --rhine-brand-light: var(--color-primary-400, #34D399);
+  --rhine-brand-dark: var(--color-primary-700, #1E8E3E);
+  --rhine-brand-glow: rgba(40, 167, 69, 0.35);
+  --rhine-brand-dim: rgba(40, 167, 69, 0.10);
+  --rhine-brand-micro: rgba(40, 167, 69, 0.05);
 
-  /* ── 辅助色 ── */
-  --login-accent: #2563eb;
-  --login-accent-hover: #1d4ed8;
+  /* ── 辅色 → 直接使用全局变量 ── */
+  --rhine-accent: var(--color-blue-600, #2563EB);
+  --rhine-accent-light: var(--color-blue-400, #60A5FA);
+  --rhine-accent-dark: var(--color-blue-700, #1D4ED8);
+  --rhine-accent-glow: rgba(37, 99, 235, 0.3);
+  --rhine-accent-dim: rgba(37, 99, 235, 0.08);
 
-  /* ── 功能色 ── */
-  --login-error: #ef4444;
-  --login-error-bg: #fef2f2;
-  --login-error-border: #fecaca;
-  --login-success: #22c55e;
-  --login-success-bg: #f0fdf4;
-  --login-success-border: #bbf7d0;
-  --login-warning: #f59e0b;
+  /* ── 功能色 → 直接使用全局变量 ── */
+  --rhine-error: var(--color-danger-500, #EF4444);
+  --rhine-error-dim: rgba(239, 68, 68, 0.1);
+  --rhine-success: var(--color-success-500, #22C55E);
+  --rhine-success-dim: rgba(34, 197, 94, 0.1);
+  --rhine-warning: var(--color-warning-500, #F59E0B);
 
-  /* ── 中性色 (Light) ── */
-  --login-surface: #ffffff;
-  --login-bg: #f8fafc;
-  --login-text-primary: #0f172a;
-  --login-text-secondary: #475569;
-  --login-text-tertiary: #94a3b8;
-  --login-border: #e2e8f0;
-  --login-border-hover: #cbd5e1;
-  --login-divider: #f1f5f9;
+  /* ── 文字色 → 直接使用全局变量 ── */
+  --rhine-text: var(--text-primary, #1E293B);
+  --rhine-text-secondary: var(--text-secondary, #475569);
+  --rhine-text-dim: var(--text-muted, #94A3B8);
+  --rhine-text-faint: var(--text-disabled, #CBD5E1);
 
-  /* ── 阴影 ── */
-  --login-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --login-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
-  --login-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
-  --login-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.06);
-  --login-shadow-glow: 0 0 0 3px rgba(5, 150, 105, 0.15);
+  /* ── 表面/背景色 → 直接使用全局变量 ── */
+  --rhine-surface: var(--card-bg-solid, #FFFFFF);
+  --rhine-surface-variant: var(--bg-secondary, #F8FAFC);
+  --rhine-bg: var(--bg-primary, #F8FAFC);
+  --rhine-bg-elevated: var(--bg-secondary, #FFFFFF);
+  --rhine-border: var(--border-color, rgba(148, 163, 184, 0.2));
+  --rhine-border-focus: var(--color-blue-600, #2563EB);
+  --rhine-divider-color: var(--border-color, rgba(148, 163, 184, 0.1));
 
-  /* ── 圆角 ── */
-  --login-radius-sm: 6px;
-  --login-radius-md: 10px;
-  --login-radius-lg: 16px;
-  --login-radius-xl: 24px;
-  --login-radius-full: 9999px;
+  /* ── 阴影 — 使用项目阴影令牌 ── */
+  --rhine-shadow-sm: var(--shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.05));
+  --rhine-shadow-md: var(--shadow-md, 0 4px 6px -1px rgba(0, 0, 0, 0.1));
+  --rhine-shadow-lg: var(--shadow-lg, 0 10px 15px -3px rgba(0, 0, 0, 0.1));
+  --rhine-shadow-card:
+    0 0 0 0.5px rgba(40, 167, 69, 0.06),
+    0 8px 32px rgba(0, 0, 0, 0.12),
+    0 2px 8px rgba(0, 0, 0, 0.06);
+  --rhine-shadow-card-hover:
+    0 0 0 1px rgba(40, 167, 69, 0.12),
+    0 12px 40px rgba(0, 0, 0, 0.15),
+    0 0 24px rgba(40, 167, 69, 0.06);
+  --rhine-shadow-glow: 0 0 16px rgba(40, 167, 69, 0.12), 0 0 48px rgba(40, 167, 69, 0.04);
+  --rhine-shadow-input: 0 0 0 3px var(--rhine-brand-dim), 0 0 16px rgba(40, 167, 69, 0.15);
 
-  /* ── 间距 ── */
-  --login-space-1: 4px;
-  --login-space-2: 8px;
-  --login-space-3: 12px;
-  --login-space-4: 16px;
-  --login-space-5: 20px;
-  --login-space-6: 24px;
-  --login-space-8: 32px;
-  --login-space-10: 40px;
-  --login-space-12: 48px;
+  /* ── 圆角 → 使用项目圆角令牌 ── */
+  --rhine-radius-xs: var(--radius-xs, 2px);
+  --rhine-radius-sm: var(--radius-sm, 4px);
+  --rhine-radius-md: var(--radius-md, 8px);
+  --rhine-radius-lg: var(--radius-lg, 12px);
+  --rhine-radius-xl: var(--radius-xl, 16px);
 
-  /* ── 字体 ── */
-  --login-font-sans: 'Inter', 'Noto Sans SC', system-ui, -apple-system, sans-serif;
-  --login-font-mono: 'JetBrains Mono', 'Fira Code', monospace;
-  --login-text-xs: 12px;
-  --login-text-sm: 14px;
-  --login-text-base: 16px;
-  --login-text-lg: 18px;
-  --login-text-xl: 20px;
-  --login-text-2xl: 24px;
-  --login-text-3xl: 30px;
-  --login-text-4xl: 36px;
-  --login-leading-tight: 1.25;
-  --login-leading-normal: 1.5;
-  --login-leading-relaxed: 1.625;
+  /* ── 间距 → 使用项目 4pt 间距令牌 ── */
+  --rhine-space-1: var(--space-1, 0.5rem);
+  --rhine-space-2: var(--space-2, 1rem);
+  --rhine-space-3: var(--space-3, 1.5rem);
+  --rhine-space-4: var(--space-4, 2rem);
+  --rhine-space-5: var(--space-5, 2.5rem);
+  --rhine-space-6: var(--space-6, 3rem);
+  --rhine-space-8: var(--space-8, 4rem);
+  --rhine-space-10: var(--space-10, 5rem);
+  --rhine-space-12: var(--space-12, 6rem);
+  --rhine-space-14: 3.5rem;
 
-  /* ── 动画 ── */
-  --login-duration-fast: 150ms;
-  --login-duration-normal: 250ms;
-  --login-duration-slow: 350ms;
-  --login-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-  --login-ease-out: cubic-bezier(0, 0, 0.2, 1);
-  --login-ease-in: cubic-bezier(0.4, 0, 1, 1);
-  --login-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  /* ── 字体 → 使用项目字体令牌 ── */
+  --rhine-font-heading: var(--font-sans, 'Microsoft YaHei', 'PingFang SC', sans-serif);
+  --rhine-font-body: var(--font-sans, 'Microsoft YaHei', 'PingFang SC', sans-serif);
+  --rhine-font-mono: var(--font-mono, 'JetBrains Mono', 'Fira Code', monospace);
+  --rhine-text-xs: 0.75rem;
+  --rhine-text-sm: 0.875rem;
+  --rhine-text-base: 1rem;
+  --rhine-text-xl: 1.5rem;
+  --rhine-text-2xl: 2rem;
+  --rhine-leading-tight: 1.25;
+  --rhine-leading-normal: 1.5;
+  --rhine-weight-bold: 700;
+  --rhine-weight-semibold: 600;
+  --rhine-weight-medium: 500;
 
-  /* ── 过渡 ── */
-  --login-transition-colors: background-color var(--login-duration-normal) var(--login-ease-out),
-                             border-color var(--login-duration-normal) var(--login-ease-out),
-                             color var(--login-duration-normal) var(--login-ease-out);
-  --login-transition-transform: transform var(--login-duration-normal) var(--login-ease-spring);
-  --login-transition-shadow: box-shadow var(--login-duration-normal) var(--login-ease-out);
-}
-
-/* ================================================================
-   2. 深色模式令牌 (Dark Mode Tokens)
-   ================================================================ */
-.dark,
-[data-mode="dark"] {
-  --login-surface: #0f172a;
-  --login-bg: #020617;
-  --login-text-primary: #f1f5f9;
-  --login-text-secondary: #94a3b8;
-  --login-text-tertiary: #64748b;
-  --login-border: #1e293b;
-  --login-border-hover: #334155;
-  --login-divider: #1e293b;
-
-  --login-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --login-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
-  --login-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.3);
-  --login-shadow-glow: 0 0 0 3px rgba(16, 185, 129, 0.25);
-
-  --login-error-bg: #450a0a;
-  --login-error-border: #7f1d1d;
-  --login-success-bg: #052e16;
-  --login-success-border: #14532d;
+  /* ── 动画 → 使用项目动画令牌 ── */
+  --rhine-duration-fast: var(--duration-fast, 100ms);
+  --rhine-duration-normal: var(--duration-normal, 200ms);
+  --rhine-duration-slow: var(--duration-slow, 300ms);
+  --rhine-duration-dna: 50s;
+  --rhine-ease-out: var(--ease-elegant, cubic-bezier(0.16, 1, 0.3, 1));
+  --rhine-ease-spring: var(--ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1));
+  --rhine-ease-in-out: var(--ease-standard, cubic-bezier(0.4, 0, 0.2, 1));
 }
 
 /* ================================================================
-   3. 动画关键帧 (Animation Keyframes)
+   2. 页面容器 — 支持 Light/Dark 双模式
    ================================================================ */
-@keyframes loginFadeInUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes loginFadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-@keyframes loginFadeInScale {
-  from { opacity: 0; transform: scale(0.95); }
-  to   { opacity: 1; transform: scale(1); }
-}
-@keyframes loginSlideInLeft {
-  from { opacity: 0; transform: translateX(-24px); }
-  to   { opacity: 1; transform: translateX(0); }
-}
-@keyframes loginShake {
-  0%, 100% { transform: translateX(0); }
-  10%, 50%, 90% { transform: translateX(-4px); }
-  30%, 70% { transform: translateX(4px); }
-}
-@keyframes loginPulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-@keyframes loginSpin {
-  to { transform: rotate(360deg); }
-}
-@keyframes loginRipple {
-  0% { transform: scale(0); opacity: 0.4; }
-  100% { transform: scale(4); opacity: 0; }
-}
-@keyframes loginBrandFloat {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  25% { transform: translateY(-6px) rotate(1deg); }
-  75% { transform: translateY(6px) rotate(-1deg); }
-}
-@keyframes loginMoleculeDrift {
-  0% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(2px, -3px) scale(1.05); }
-  66% { transform: translate(-2px, 2px) scale(0.95); }
-  100% { transform: translate(0, 0) scale(1); }
-}
 
-/* ================================================================
-   4. 动画应用类 (Animation Utility Classes)
-   ================================================================ */
-.login-anim-fade-in-up {
-  animation: loginFadeInUp 0.5s var(--login-ease-out) forwards;
-  opacity: 0;
-}
-.login-anim-fade-in {
-  animation: loginFadeIn 0.3s var(--login-ease-out) forwards;
-}
-.login-anim-fade-in-scale {
-  animation: loginFadeInScale 0.4s var(--login-ease-spring) forwards;
-  opacity: 0;
-}
-.login-anim-slide-in-left {
-  animation: loginSlideInLeft 0.5s var(--login-ease-out) forwards;
-  opacity: 0;
-}
-.login-anim-shake {
-  animation: loginShake 0.5s var(--login-ease-in-out);
-}
-.login-anim-pulse {
-  animation: loginPulse 2s var(--login-ease-in-out) infinite;
-}
-/* 动画延迟 */
-.login-delay-100 { animation-delay: 0.1s; }
-.login-delay-200 { animation-delay: 0.2s; }
-.login-delay-300 { animation-delay: 0.3s; }
-.login-delay-400 { animation-delay: 0.4s; }
-.login-delay-500 { animation-delay: 0.5s; }
-.login-delay-600 { animation-delay: 0.6s; }
-
-/* ================================================================
-   5. 布局容器 (Layout)
-   ================================================================ */
+/* 亮色模式 */
 .login-page {
-  display: flex;
-  min-height: 100vh;
-  min-height: 100dvh;
-  font-family: var(--login-font-sans);
-  background-color: var(--login-bg);
-  color: var(--login-text-primary);
-}
-
-/* ── Skip Link ── */
-.login-skip-link {
-  position: fixed;
-  top: -48px;
-  left: 16px;
-  z-index: 1000;
-  padding: 10px 20px;
-  background: var(--login-brand-600);
-  color: #ffffff;
-  font-size: var(--login-text-sm);
-  font-weight: 600;
-  border-radius: var(--login-radius-md);
-  text-decoration: none;
-  box-shadow: var(--login-shadow-lg);
-  transition: top var(--login-duration-fast) var(--login-ease-out);
-}
-.login-skip-link:focus {
-  top: 16px;
-  outline: 2px solid #ffffff;
-  outline-offset: 2px;
-}
-
-/* ── 品牌区 (左侧) ── */
-.login-brand-panel {
   position: relative;
-  display: none;
+  width: 100vw;
+  height: 100vh;
   overflow: hidden;
+  background: var(--rhine-bg);
+  font-family: var(--rhine-font-body);
+  color: var(--rhine-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
-@media (min-width: 1024px) {
-  .login-brand-panel {
-    display: flex;
-    width: 55%;
-    min-height: 100vh;
-    min-height: 100dvh;
-    position: sticky;
+
+.login-page .rhine-particle-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.login-page .rhine-hex-grid {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.3;
+}
+
+/* 暗色模式 */
+.dark .login-page {
+  background: var(--bg-canvas, #000000);
+  color: var(--text-primary, #F5F5F7);
+}
+
+.dark .login-page .rhine-hex-grid {
+  opacity: 0.5;
+}
+
+/* ── 渐变叠加层 (仅暗色模式使用) ── */
+.dark .login-page .rhine-gradient-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 80% 60% at 25% 25%, rgba(40, 167, 69, 0.04) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 50% at 70% 55%, rgba(37, 99, 235, 0.03) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 30% at 50% 80%, rgba(245, 158, 11, 0.02) 0%, transparent 70%),
+    linear-gradient(to bottom, transparent 55%, var(--bg-surface-raised, #1C1C1E) 95%, var(--bg-canvas, #000000) 100%);
+}
+
+/* 亮色模式渐变 */
+.login-page .rhine-gradient-overlay {
+  display: none;
+}
+
+/* ================================================================
+   3. DNA 螺旋 — 仅暗色模式可见
+   ================================================================ */
+.dark .login-page .rhine-dna-container {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 56%;
+  height: 100%;
+  z-index: 2;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 1023px) {
+  .dark .login-page .rhine-dna-container {
+    width: 100%;
+    height: 200px;
     top: 0;
   }
 }
 
-.login-brand-gradient {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(160deg, var(--login-brand-900) 0%, var(--login-brand-700) 40%, var(--login-brand-600) 100%);
-}
-.dark .login-brand-gradient {
-  background: linear-gradient(160deg, #020617 0%, var(--login-brand-900) 40%, var(--login-brand-700) 100%);
+@media (max-width: 767px) {
+  .dark .login-page .rhine-dna-container {
+    height: 120px;
+  }
 }
 
-/* ── 品牌区有机纹理 ── */
-.login-brand-texture {
-  position: absolute;
-  inset: 0;
-  opacity: 0.06;
-  background-image:
-    radial-gradient(circle at 20% 30%, var(--login-brand-200) 1px, transparent 1px),
-    radial-gradient(circle at 60% 70%, var(--login-brand-200) 1.5px, transparent 1.5px),
-    radial-gradient(circle at 80% 20%, var(--login-brand-200) 1px, transparent 1px),
-    radial-gradient(circle at 40% 80%, var(--login-brand-200) 2px, transparent 2px);
-  background-size: 80px 80px, 120px 120px, 100px 100px, 90px 90px;
-  background-position: 0 0, 40px 60px, 20px 30px, 60px 10px;
-}
-
-/* ── 品牌区内容 ── */
-.login-brand-content {
+.dark .login-page .rhine-dna-scene {
   position: relative;
-  z-index: 10;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: var(--login-space-12) var(--login-space-10);
-  max-width: 560px;
-  margin: 0 auto;
   width: 100%;
-  color: #ffffff;
+  height: 82%;
+  max-width: 560px;
+  perspective: 900px;
+  transform-style: preserve-3d;
+  animation: rhineDnaRotate 50s linear infinite;
 }
 
-.login-brand-logo {
-  display: flex;
-  align-items: center;
-  gap: var(--login-space-3);
-  margin-bottom: var(--login-space-12);
-}
-.login-brand-logo-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: var(--login-radius-md);
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(10px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-.login-brand-logo-text {
-  font-size: var(--login-text-xl);
-  font-weight: 700;
-  letter-spacing: -0.02em;
+@media (max-width: 1023px) {
+  .dark .login-page .rhine-dna-scene {
+    height: 100%;
+    perspective: 400px;
+  }
 }
 
-.login-brand-tagline {
-  display: inline-block;
-  padding: 6px 14px;
-  font-size: var(--login-text-xs);
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  border-radius: var(--login-radius-full);
-  background: rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  margin-bottom: var(--login-space-6);
-  color: var(--login-brand-200);
+@keyframes rhineDnaRotate {
+  from { transform: rotateY(0deg) rotateX(8deg); }
+  to   { transform: rotateY(360deg) rotateX(8deg); }
 }
 
-.login-brand-headline {
-  font-size: var(--login-text-4xl);
-  font-weight: 800;
-  line-height: var(--login-leading-tight);
-  letter-spacing: -0.03em;
-  margin-bottom: var(--login-space-6);
-  white-space: pre-line;
-}
-.login-brand-headline em {
-  font-style: normal;
-  color: var(--login-brand-300);
+.dark .login-page .rhine-dna-pair {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 0;
+  transition: opacity var(--rhine-duration-slow) var(--rhine-ease-out);
 }
 
-.login-brand-description {
-  font-size: var(--login-text-base);
-  line-height: var(--login-leading-relaxed);
-  color: rgba(255, 255, 255, 0.7);
-  margin-bottom: var(--login-space-10);
-  max-width: 440px;
+.dark .login-page .rhine-dna-node {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: all var(--rhine-duration-normal) var(--rhine-ease-out);
 }
 
-/* ── 品牌支柱 ── */
-.login-brand-pillars {
-  display: flex;
-  flex-direction: column;
-  gap: var(--login-space-5);
-}
-.login-brand-pillar {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--login-space-4);
-  padding: var(--login-space-4);
-  border-radius: var(--login-radius-md);
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  transition: background var(--login-duration-normal) var(--login-ease-out);
-}
-.login-brand-pillar:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-.login-brand-pillar-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: var(--login-radius-sm);
-  background: rgba(255, 255, 255, 0.1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-.login-brand-pillar-text h4 {
-  font-size: var(--login-text-sm);
-  font-weight: 700;
-  margin-bottom: 2px;
-  color: #ffffff;
-}
-.login-brand-pillar-text p {
-  font-size: var(--login-text-xs);
-  color: rgba(255, 255, 255, 0.55);
-  line-height: var(--login-leading-normal);
+.dark .rhine-dna-node::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  background: inherit;
+  opacity: 0.25;
+  filter: blur(4px);
 }
 
-/* ── 品牌区底部版权 ── */
-.login-brand-footer {
-  margin-top: auto;
-  padding-top: var(--login-space-8);
-  font-size: var(--login-text-xs);
-  color: rgba(255, 255, 255, 0.4);
+@media (max-width: 767px) {
+  .dark .login-page .rhine-dna-node {
+    width: 5px;
+    height: 5px;
+  }
+}
+
+.dark .login-page .rhine-dna-rung {
+  position: absolute;
+  height: 1px;
+  top: 0;
+  transform: translateY(-50%);
+  opacity: 0.35;
+}
+
+/* 亮色模式隐藏 DNA */
+.login-page .rhine-dna-container {
+  display: none;
 }
 
 /* ================================================================
-   6. 表单区 (右侧)
+   4. 品牌叠加层 — 仅暗色模式可见
    ================================================================ */
-.login-form-panel {
-  flex: 1;
+.dark .login-page .rhine-brand-overlay {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 56%;
+  z-index: 3;
+  pointer-events: none;
+  padding: var(--rhine-space-14) var(--rhine-space-12) var(--rhine-space-10);
+  background: linear-gradient(to top, var(--bg-surface-raised, #2C2C2E) 0%, rgba(44, 44, 46, 0.85) 40%, transparent 100%);
+}
+
+@media (max-width: 1023px) {
+  .dark .login-page .rhine-brand-overlay {
+    display: none;
+  }
+}
+
+.dark .login-page .rhine-brand-overlay .rhine-brand-logo {
+  display: flex;
+  align-items: center;
+  gap: var(--rhine-space-3);
+  margin-bottom: var(--rhine-space-3);
+}
+
+.dark .login-page .rhine-brand-overlay .rhine-brand-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--rhine-radius-sm);
+  background: linear-gradient(135deg, var(--rhine-brand), var(--color-primary-hover, #28A745));
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--login-space-6);
-  background-color: var(--login-bg);
-  transition: background-color var(--login-duration-normal) var(--login-ease-out);
+  color: var(--color-primary-contrast-text, #ffffff);
+  box-shadow: 0 0 16px var(--rhine-brand-glow);
 }
 
-.login-form-container {
+.dark .login-page .rhine-brand-overlay .rhine-brand-name {
+  font-family: var(--rhine-font-heading);
+  font-size: 22px;
+  font-weight: var(--rhine-weight-bold);
+  letter-spacing: -0.02em;
+  color: var(--text-primary, #F5F5F7);
+}
+
+.dark .login-page .rhine-brand-overlay .rhine-brand-name-en {
+  font-size: 11px;
+  font-weight: var(--rhine-weight-medium);
+  color: var(--text-muted, #94A3B8);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.dark .login-page .rhine-brand-overlay .rhine-brand-tagline {
+  font-size: 13px;
+  font-weight: var(--rhine-weight-medium);
+  color: var(--rhine-brand-light);
+  letter-spacing: 0.06em;
+  margin-bottom: var(--rhine-space-5);
+}
+
+.dark .login-page .rhine-brand-overlay .rhine-brand-desc {
+  font-size: 12.5px;
+  line-height: 1.65;
+  color: var(--text-secondary, #CBD5E1);
+  margin-bottom: var(--rhine-space-8);
+  max-width: 420px;
+}
+
+.dark .login-page .rhine-brand-overlay .rhine-brand-pillars {
+  display: flex;
+  gap: var(--rhine-space-8);
+}
+
+.dark .login-page .rhine-brand-overlay .rhine-brand-pillar {
+  display: flex;
+  align-items: center;
+  gap: var(--rhine-space-2);
+  font-size: 12px;
+  color: var(--text-secondary, #CBD5E1);
+  transition: color var(--rhine-duration-fast) var(--rhine-ease-out);
+}
+
+.dark .login-page .rhine-brand-overlay .rhine-brand-pillar-icon {
+  opacity: 0.65;
+}
+
+/* 亮色模式隐藏品牌叠加层 */
+.login-page .rhine-brand-overlay {
+  display: none;
+}
+
+/* ================================================================
+   5. 登录表单面板 — 双模式适配
+   ================================================================ */
+.rhine-form-panel {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 44%;
+  height: 100%;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--rhine-space-8);
+}
+
+/* ── 亮色模式表单面板 ── */
+.login-page .rhine-form-panel {
+  background: var(--rhine-bg);
   width: 100%;
-  max-width: 440px;
+  justify-content: center;
+  left: 0;
+  right: auto;
+  transform: none;
 }
 
-/* ── 移动端品牌条 ── */
-.login-mobile-brand {
-  display: flex;
-  align-items: center;
+@media (max-width: 1023px) {
+  .login-page .rhine-form-panel {
+    width: 100%;
+    padding-top: 230px;
+    align-items: flex-start;
+    left: 0;
+    right: auto;
+    transform: none;
+  }
+}
+
+@media (max-width: 767px) {
+  .rhine-form-panel {
+    padding: 140px var(--rhine-space-4) var(--rhine-space-4);
+  }
+}
+
+/* 移动端品牌条 */
+.rhine-mobile-brand {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 11;
+  padding: var(--rhine-space-4) var(--rhine-space-5);
   justify-content: space-between;
-  margin-bottom: var(--login-space-8);
+  align-items: center;
+  background: linear-gradient(to bottom, var(--bg-canvas, #000000) 60%, transparent);
 }
-@media (min-width: 1024px) {
-  .login-mobile-brand { display: none; }
+
+/* 亮色模式移动端品牌条 */
+.login-page .rhine-mobile-brand {
+  background: linear-gradient(to bottom, var(--rhine-bg) 60%, transparent);
 }
-.login-mobile-brand-left {
+
+@media (max-width: 1023px) {
+  .rhine-mobile-brand {
+    display: flex;
+  }
+}
+
+.rhine-mobile-logo {
   display: flex;
   align-items: center;
-  gap: var(--login-space-3);
+  gap: var(--rhine-space-2);
 }
-.login-mobile-logo-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: var(--login-radius-sm);
-  background: linear-gradient(135deg, var(--login-brand-500), var(--login-brand-700));
+
+.rhine-mobile-logo-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  background: linear-gradient(135deg, var(--rhine-brand), var(--color-primary-hover, #28A745));
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ffffff;
-  box-shadow: var(--login-shadow-md);
-}
-.login-mobile-logo-text h2 {
-  font-size: var(--login-text-lg);
-  font-weight: 700;
-  color: var(--login-text-primary);
-  line-height: 1.2;
-}
-.login-mobile-logo-text span {
-  font-size: var(--login-text-xs);
-  color: var(--login-text-tertiary);
+  color: var(--color-primary-contrast-text, #ffffff);
+  box-shadow: 0 0 12px var(--rhine-brand-glow);
 }
 
-/* ── 主题切换 ── */
-.login-theme-toggle {
-  width: 40px;
-  height: 40px;
-  border-radius: var(--login-radius-full);
-  border: 1px solid var(--login-border);
-  background: var(--login-surface);
-  color: var(--login-text-secondary);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: var(--login-transition-colors), var(--login-transition-transform);
-}
-.login-theme-toggle:hover {
-  border-color: var(--login-border-hover);
-  color: var(--login-text-primary);
-  transform: scale(1.08);
-}
-.login-theme-toggle:focus-visible {
-  outline: 2px solid var(--login-brand-600);
-  outline-offset: 2px;
+.rhine-mobile-logo-text {
+  font-family: var(--rhine-font-heading);
+  font-size: 17px;
+  font-weight: var(--rhine-weight-bold);
+  color: var(--rhine-text);
 }
 
-/* ── 登录卡片 ── */
-.login-card {
-  background: var(--login-surface);
-  border: 1px solid var(--login-border);
-  border-radius: var(--login-radius-xl);
-  padding: var(--login-space-10);
-  box-shadow: var(--login-shadow-md);
-  transition: var(--login-transition-colors), var(--login-transition-shadow);
+/* ── 亮色模式表单面板 ── */
+.login-page .rhine-form-panel {
+  background: var(--rhine-bg);
 }
+
+/* ── 暗色模式表单面板 ── */
+.dark .login-page .rhine-form-panel {
+  background: var(--bg-canvas, #000000);
+  right: 0;
+  left: auto;
+  width: 44%;
+  justify-content: flex-end;
+}
+
+/* ── 玻璃态卡片 — 暗色模式 ── */
+.dark .login-page .rhine-card {
+  width: 100%;
+  max-width: 430px;
+  background: rgba(var(--color-primary-rgb, 52,199,89), 0.68);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.06));
+  border-radius: var(--rhine-radius-xl);
+  padding: var(--rhine-space-10);
+  box-shadow:
+    0 0 0 0.5px rgba(40, 167, 69, 0.06),
+    0 8px 32px rgba(0, 0, 0, 0.55),
+    0 2px 8px rgba(0, 0, 0, 0.3);
+  position: relative;
+  transition: all var(--rhine-duration-normal) var(--rhine-ease-out);
+}
+
+.dark .login-page .rhine-card::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  border-radius: inherit;
+  background: linear-gradient(160deg, rgba(40, 167, 69, 0.06), transparent 40%, transparent 60%, rgba(37, 99, 235, 0.04));
+  pointer-events: none;
+}
+
+.dark .login-page .rhine-card:hover {
+  background: rgba(var(--bg-surface-rgb, 44, 44, 46), 0.78);
+  border-color: rgba(40, 167, 69, 0.20);
+  box-shadow:
+    0 0 0 1px rgba(40, 167, 69, 0.12),
+    0 12px 40px rgba(0, 0, 0, 0.6),
+    0 0 24px rgba(40, 167, 69, 0.06);
+}
+
 @media (max-width: 639px) {
-  .login-card {
-    padding: var(--login-space-6);
-    border-radius: var(--login-radius-lg);
+  .dark .login-page .rhine-card {
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
     border: none;
+    box-shadow: none;
+    padding: var(--rhine-space-4);
+    max-width: 100%;
+  }
+  .dark .login-page .rhine-card::before {
+    display: none;
+  }
+  .dark .login-page .rhine-card:hover {
     box-shadow: none;
     background: transparent;
   }
 }
 
-.login-card-header {
-  margin-bottom: var(--login-space-8);
+/* ── 亮色模式卡片 ── */
+.login-page .rhine-card {
+  width: 100%;
+  max-width: 430px;
+  background: var(--rhine-surface);
+  border: 1px solid var(--rhine-border);
+  border-radius: var(--rhine-radius-xl);
+  padding: var(--rhine-space-10);
+  box-shadow: var(--rhine-shadow-card);
+  transition: all var(--rhine-duration-normal) var(--rhine-ease-out);
 }
-.login-card-header h2 {
-  font-size: var(--login-text-2xl);
-  font-weight: 700;
-  color: var(--login-text-primary);
-  line-height: var(--login-leading-tight);
-  margin-bottom: var(--login-space-2);
-  letter-spacing: -0.02em;
+
+.login-page .rhine-card:hover {
+  box-shadow: var(--rhine-shadow-card-hover);
+  border-color: rgba(40, 167, 69, 0.2);
 }
-.login-card-header p {
-  font-size: var(--login-text-sm);
-  color: var(--login-text-secondary);
-  line-height: var(--login-leading-normal);
+
+@media (max-width: 639px) {
+  .login-page .rhine-card {
+    padding: var(--rhine-space-4);
+    max-width: 100%;
+  }
+}
+
+/* ── 卡片头部 ── */
+.rhine-card-header {
+  margin-bottom: var(--rhine-space-8);
+}
+
+.rhine-card-header h2 {
+  font-family: var(--rhine-font-heading);
+  font-size: var(--rhine-text-2xl);
+  font-weight: var(--rhine-weight-bold);
+  letter-spacing: -0.03em;
+  margin-bottom: var(--rhine-space-1);
+  color: var(--rhine-text);
+}
+
+.rhine-card-header p {
+  font-size: var(--rhine-text-sm);
+  color: var(--rhine-text-secondary);
+  line-height: var(--rhine-leading-normal);
 }
 
 /* ================================================================
-   7. 表单元素 (Form Elements)
+   6. 表单元素 — 直接使用项目全局变量
    ================================================================ */
-
-/* ── 表单组 ── */
-.login-form-group {
-  margin-bottom: var(--login-space-5);
+.rhine-form-group {
+  margin-bottom: var(--rhine-space-5);
 }
 
-/* ── 标签 ── */
-.login-label {
+.rhine-label {
   display: block;
-  font-size: var(--login-text-sm);
-  font-weight: 600;
-  color: var(--login-text-primary);
-  margin-bottom: var(--login-space-2);
-  line-height: var(--login-leading-normal);
-}
-.login-label-required::after {
-  content: ' *';
-  color: var(--login-error);
-  font-weight: 500;
+  font-size: 13px;
+  font-weight: var(--rhine-weight-semibold);
+  color: var(--rhine-text-secondary);
+  margin-bottom: var(--rhine-space-2);
+  letter-spacing: 0.02em;
+  transition: color var(--rhine-duration-fast) var(--rhine-ease-out);
 }
 
-/* ── 输入框容器 ── */
-.login-input-wrapper {
+.rhine-input-wrap {
   position: relative;
 }
-.login-input-icon {
+
+.rhine-input-icon {
   position: absolute;
-  left: 16px;
+  left: 15px;
   top: 50%;
   transform: translateY(-50%);
-  color: var(--login-text-tertiary);
+  color: var(--rhine-text-dim);
   pointer-events: none;
-  transition: color var(--login-duration-fast) var(--login-ease-out);
+  transition: color var(--rhine-duration-fast) var(--rhine-ease-out);
 }
 
-/* ── 输入框 (5 态: idle / hover / focus / filled / error) ── */
-.login-input {
+/* ── 输入框 (5 态) ── */
+.rhine-input {
   width: 100%;
-  height: 48px;
-  padding: 0 var(--login-space-4) 0 48px;
-  font-size: var(--login-text-base);
-  font-family: var(--login-font-sans);
-  line-height: var(--login-leading-normal);
-  color: var(--login-text-primary);
-  background: var(--login-surface);
-  border: 1.5px solid var(--login-border);
-  border-radius: var(--login-radius-md);
-  transition: var(--login-transition-colors), box-shadow var(--login-duration-fast) var(--login-ease-out);
+  height: 50px;
+  padding: 0 var(--rhine-space-4) 0 46px;
+  font-size: 14.5px;
+  font-family: var(--rhine-font-body);
+  color: var(--rhine-text);
+  background: var(--rhine-surface);
+  border: 1.5px solid var(--rhine-border);
+  border-radius: var(--rhine-radius-md);
   outline: none;
-}
-/* 密码输入框右侧留出切换按钮空间 */
-.login-input[type="password"],
-.login-input[type="text"][id="password"] {
-  padding-right: 48px;
-}
-.login-input:hover {
-  border-color: var(--login-border-hover);
-}
-.login-input:focus {
-  border-color: var(--login-brand-500);
-  box-shadow: var(--login-shadow-glow);
-}
-.login-input.filled {
-  border-color: var(--login-border-hover);
-}
-.login-input.error {
-  border-color: var(--login-error);
-}
-.login-input.error:focus {
-  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+  transition: all var(--rhine-duration-normal) var(--rhine-ease-out);
 }
 
-/* ── 输入框聚焦时图标变色 ── */
-.login-input:focus ~ .login-input-icon,
-.login-input-wrapper:focus-within .login-input-icon {
-  color: var(--login-brand-500);
+.rhine-input::placeholder {
+  color: var(--rhine-text-dim);
 }
-.login-input.error ~ .login-input-icon,
-.login-input-wrapper:has(.login-input.error) .login-input-icon {
-  color: var(--login-error);
+
+.rhine-input:hover {
+  border-color: var(--rhine-border-focus);
+}
+
+.rhine-input:focus {
+  border-color: var(--rhine-brand);
+  box-shadow: var(--rhine-shadow-input);
+}
+
+.rhine-input.filled {
+  border-color: rgba(40, 167, 69, 0.15);
+}
+
+/* 错误态 — 使用项目 error 色 */
+.rhine-input.error {
+  border-color: var(--rhine-error);
+  box-shadow: 0 0 0 3px var(--rhine-error-dim);
+}
+
+.rhine-input.error:focus {
+  box-shadow: 0 0 0 3px var(--rhine-error-dim), 0 0 8px rgba(220, 38, 38, 0.15);
+}
+
+.rhine-input-wrap:focus-within .rhine-input-icon {
+  color: var(--rhine-brand);
+}
+
+.rhine-input-wrap:has(.rhine-input.error) .rhine-input-icon {
+  color: var(--rhine-error);
+}
+
+/* ── 暗色模式输入框 ── */
+.dark .rhine-input {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.07);
+  color: var(--text-primary, #F1F5F9);
+}
+
+.dark .rhine-input::placeholder {
+  color: var(--text-muted, #64748B);
+}
+
+.dark .rhine-input:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.dark .rhine-input:focus {
+  border-color: var(--rhine-brand);
+  background: rgba(255, 255, 255, 0.04);
 }
 
 /* ── 密码切换按钮 ── */
-.login-password-toggle {
+.rhine-password-toggle {
   position: absolute;
-  right: 4px;
+  right: 5px;
   top: 50%;
   transform: translateY(-50%);
-  width: 40px;
-  height: 40px;
+  width: 38px;
+  height: 38px;
   min-width: 44px;
   min-height: 44px;
   display: flex;
@@ -615,473 +687,551 @@
   justify-content: center;
   border: none;
   background: transparent;
-  color: var(--login-text-tertiary);
+  color: var(--rhine-text-dim);
   cursor: pointer;
-  border-radius: var(--login-radius-sm);
-  transition: color var(--login-duration-fast) var(--login-ease-out);
-  padding: 0;
-}
-.login-password-toggle:hover {
-  color: var(--login-text-secondary);
-}
-.login-password-toggle:focus-visible {
-  outline: 2px solid var(--login-brand-600);
-  outline-offset: -2px;
+  border-radius: var(--rhine-radius-xs);
+  transition: color var(--rhine-duration-fast) var(--rhine-ease-out);
 }
 
-/* ── 错误消息 ── */
-.login-error-text {
-  margin-top: var(--login-space-2);
-  font-size: var(--login-text-xs);
-  color: var(--login-error);
-  font-weight: 500;
-  line-height: var(--login-leading-normal);
+.rhine-password-toggle:hover {
+  color: var(--rhine-text-secondary);
+}
+
+/* ── 错误提示 文字对比度 ≥ 4.5:1 ── */
+.rhine-error-text {
+  margin-top: var(--rhine-space-2);
+  font-size: 12px;
+  color: var(--rhine-error);
+  font-weight: var(--rhine-weight-medium);
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 /* ── 密码强度指示器 ── */
-.login-password-strength {
-  margin-top: var(--login-space-3);
+.rhine-password-strength {
+  margin-top: var(--rhine-space-3);
 }
-.login-password-strength-header {
+
+.rhine-strength-header {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  margin-bottom: var(--login-space-2);
+  align-items: center;
+  margin-bottom: 5px;
 }
-.login-password-strength-label {
-  font-size: var(--login-text-xs);
-  color: var(--login-text-secondary);
+
+.rhine-strength-label {
+  font-size: 11.5px;
+  color: var(--rhine-text-dim);
 }
-.login-password-strength-value {
-  font-size: var(--login-text-xs);
-  font-weight: 600;
+
+.rhine-strength-value {
+  font-size: 11.5px;
+  font-weight: var(--rhine-weight-semibold);
 }
-.login-password-strength-bar {
-  height: 4px;
-  background: var(--login-border);
+
+.rhine-strength-bar {
+  height: 3px;
+  background: var(--rhine-border);
   border-radius: 2px;
   overflow: hidden;
 }
-.login-password-strength-fill {
+
+.rhine-strength-fill {
   height: 100%;
   border-radius: 2px;
-  transition: width var(--login-duration-normal) var(--login-ease-out),
-              background-color var(--login-duration-normal) var(--login-ease-out);
+  transition: width var(--rhine-duration-normal) var(--rhine-ease-out),
+              background-color var(--rhine-duration-normal) var(--rhine-ease-out);
 }
 
-/* ── 记住我 & 忘记密码 ── */
-.login-form-options {
+/* ── 暗色模式强度条 ── */
+.dark .rhine-strength-bar {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* ── 选项行 ── */
+.rhine-form-options {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: var(--login-space-6);
+  margin: var(--rhine-space-6) 0;
 }
-.login-remember-me {
+
+.rhine-remember {
   display: flex;
   align-items: center;
-  gap: var(--login-space-2);
+  gap: var(--rhine-space-2);
+  font-size: 13px;
+  color: var(--rhine-text-secondary);
   cursor: pointer;
-  font-size: var(--login-text-sm);
-  color: var(--login-text-secondary);
   user-select: none;
 }
-.login-remember-checkbox {
+
+.rhine-remember-check {
   width: 18px;
   height: 18px;
-  border-radius: 4px;
-  border: 1.5px solid var(--login-border);
-  background: var(--login-surface);
+  border-radius: var(--rhine-radius-xs);
+  border: 1.5px solid var(--border-color, rgba(255, 255, 255, 0.12));
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: var(--login-transition-colors);
   cursor: pointer;
-}
-.login-remember-checkbox.checked {
-  background: var(--login-brand-600);
-  border-color: var(--login-brand-600);
-}
-.login-forgot-link {
-  font-size: var(--login-text-sm);
-  font-weight: 600;
-  color: var(--login-brand-600);
-  text-decoration: none;
-  transition: color var(--login-duration-fast) var(--login-ease-out);
-}
-.login-forgot-link:hover {
-  color: var(--login-brand-700);
-}
-.login-forgot-link:focus-visible {
-  outline: 2px solid var(--login-brand-600);
-  outline-offset: 2px;
-  border-radius: 2px;
+  transition: all var(--rhine-duration-fast) var(--rhine-ease-out);
 }
 
-/* ── 主按钮 ── */
-.login-submit-btn {
+.rhine-remember-check.checked {
+  background: var(--rhine-brand);
+  border-color: var(--rhine-brand);
+}
+
+.rhine-remember-check.checked svg {
+  color: var(--color-primary-contrast-text, #ffffff);
+}
+
+/* 暗色模式复选框 */
+.dark .rhine-remember-check {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.login-page .rhine-remember-check {
+  border-color: var(--rhine-border);
+}
+
+/* 忘记密码链接 — 使用项目辅色 */
+.rhine-forgot-link {
+  font-size: 13px;
+  font-weight: var(--rhine-weight-semibold);
+  color: var(--rhine-accent);
+  text-decoration: none;
+  transition: color var(--rhine-duration-fast) var(--rhine-ease-out);
+}
+
+.rhine-forgot-link:hover {
+  color: var(--rhine-accent-light);
+}
+
+/* ── 主提交按钮 — 品牌色 via --color-primary-600 ── */
+.rhine-submit-btn {
   width: 100%;
-  height: 48px;
-  padding: 0 var(--login-space-6);
-  font-size: var(--login-text-base);
-  font-weight: 600;
-  font-family: var(--login-font-sans);
-  color: #ffffff;
-  background: var(--login-brand-600);
+  height: 50px;
+  font-size: 15px;
+  font-weight: var(--rhine-weight-bold);
+  font-family: var(--rhine-font-body);
+  letter-spacing: 0.06em;
+  color: var(--color-primary-contrast-text, #ffffff);
+  background: linear-gradient(135deg, var(--rhine-brand), var(--color-primary-hover, #28A745));
   border: none;
-  border-radius: var(--login-radius-md);
+  border-radius: var(--rhine-radius-md);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--login-space-2);
+  gap: var(--rhine-space-2);
   position: relative;
   overflow: hidden;
-  transition: var(--login-transition-colors), var(--login-transition-transform), var(--login-transition-shadow);
-}
-.login-submit-btn:hover {
-  background: var(--login-brand-700);
-  box-shadow: var(--login-shadow-md);
-}
-.login-submit-btn:active {
-  transform: scale(0.98);
-}
-.login-submit-btn:focus-visible {
-  outline: 2px solid var(--login-brand-600);
-  outline-offset: 2px;
-}
-.login-submit-btn:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
-  transform: none;
-}
-.login-submit-btn:disabled:hover {
-  background: var(--login-brand-600);
-  box-shadow: none;
+  transition: all var(--rhine-duration-normal) var(--rhine-ease-out);
+  box-shadow: 0 0 18px var(--rhine-brand-glow), 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
-/* ── 按钮涟漪效果 ── */
-.login-ripple {
+.rhine-submit-btn:hover {
+  background: linear-gradient(135deg, var(--color-primary-hover, #28A745), var(--color-primary, #34C759));
+  box-shadow: 0 0 28px rgba(40, 167, 69, 0.45), 0 0 56px rgba(40, 167, 69, 0.15), 0 4px 12px rgba(0, 0, 0, 0.35);
+  transform: translateY(-1px);
+}
+
+.rhine-submit-btn:active {
+  transform: scale(0.985);
+}
+
+.rhine-submit-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: 0 0 8px var(--rhine-brand-dim);
+}
+
+.rhine-submit-btn:disabled:hover {
+  background: linear-gradient(135deg, var(--rhine-brand), var(--color-primary-hover, #28A745));
+  transform: none;
+}
+
+/* ── 涟漪 ── */
+.rhine-btn-ripple {
   position: absolute;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.45);
   transform: scale(0);
-  animation: loginRipple 0.6s linear;
+  animation: rhineRipple 0.65s ease-out forwards;
   pointer-events: none;
 }
 
-/* ── 加载 Spinner ── */
-.login-spinner {
-  width: 20px;
-  height: 20px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: #ffffff;
-  border-radius: 50%;
-  animation: loginSpin 0.7s linear infinite;
+@keyframes rhineRipple {
+  to { transform: scale(4); opacity: 0; }
 }
 
-/* ── 提示框 ── */
-.login-alert {
+/* ── 加载指示器 ── */
+.rhine-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2.5px solid rgba(255, 255, 255, 0.25);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: rhineSpin 0.65s linear infinite;
+}
+
+@keyframes rhineSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── 提示框 — 使用项目功能色 ── */
+.rhine-alert {
   display: flex;
   align-items: flex-start;
-  gap: var(--login-space-3);
-  padding: var(--login-space-4);
-  border-radius: var(--login-radius-md);
-  margin-bottom: var(--login-space-6);
-  font-size: var(--login-text-sm);
-  line-height: var(--login-leading-normal);
+  gap: var(--rhine-space-3);
+  padding: var(--rhine-space-3) var(--rhine-space-4);
+  border-radius: var(--rhine-radius-md);
+  margin-bottom: var(--rhine-space-5);
+  font-size: 13px;
+  line-height: 1.55;
 }
-.login-alert-error {
-  background: var(--login-error-bg);
-  border: 1px solid var(--login-error-border);
-  color: var(--login-error);
+
+.rhine-alert-error {
+  background: var(--rhine-error-dim);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  color: var(--rhine-error);
 }
-.login-alert-success {
-  background: var(--login-success-bg);
-  border: 1px solid var(--login-success-border);
-  color: var(--login-success);
+
+.rhine-alert-success {
+  background: var(--rhine-success-dim);
+  border: 1px solid rgba(22, 163, 74, 0.2);
+  color: var(--rhine-success);
 }
-.login-alert-icon {
+
+.rhine-alert-icon {
   flex-shrink: 0;
   margin-top: 1px;
 }
 
-/* ================================================================
-   8. 社交登录 (Social Login)
-   ================================================================ */
-.login-divider {
+/* ══════════════════════════════════════════════════════════════
+   7. 社交登录
+   ══════════════════════════════════════════════════════════════ */
+.rhine-divider {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: var(--login-space-8) 0;
+  margin: var(--rhine-space-8) 0 var(--rhine-space-6);
 }
-.login-divider::before {
+
+.rhine-divider::before {
   content: '';
   position: absolute;
   top: 50%;
   left: 0;
   right: 0;
   height: 1px;
-  background: var(--login-divider);
+  background: var(--rhine-border);
 }
-.login-divider-text {
+
+.rhine-divider-text {
   position: relative;
-  padding: 0 var(--login-space-4);
-  font-size: var(--login-text-xs);
-  color: var(--login-text-tertiary);
-  background: var(--login-surface);
+  padding: 0 var(--rhine-space-4);
+  font-size: 11.5px;
+  color: var(--rhine-text-dim);
+  background: var(--rhine-surface);
+  letter-spacing: 0.03em;
 }
+
 @media (max-width: 639px) {
-  .login-divider-text {
-    background: var(--login-bg);
+  .rhine-divider-text {
+    background: transparent;
   }
 }
 
-.login-social-buttons {
+.rhine-social-buttons {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: var(--login-space-3);
+  gap: var(--rhine-space-3);
 }
-.login-social-btn {
+
+.rhine-social-btn {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--login-space-2);
-  padding: var(--login-space-3) var(--login-space-2);
-  border: 1.5px solid var(--login-border);
-  border-radius: var(--login-radius-md);
-  background: var(--login-surface);
+  gap: 7px;
+  padding: var(--rhine-space-4) var(--rhine-space-2);
+  border: 1px solid var(--rhine-border);
+  border-radius: var(--rhine-radius-md);
+  background: transparent;
   cursor: pointer;
-  transition: var(--login-transition-colors), var(--login-transition-transform);
-  min-height: 64px;
+  transition: all var(--rhine-duration-normal) var(--rhine-ease-out);
+  min-height: 68px;
+  position: relative;
+  overflow: hidden;
 }
-.login-social-btn:hover {
-  border-color: var(--login-border-hover);
+
+.rhine-social-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity var(--rhine-duration-normal) var(--rhine-ease-out);
+  border-radius: inherit;
+}
+
+.rhine-social-btn:hover {
   transform: translateY(-2px);
-  box-shadow: var(--login-shadow-sm);
 }
-.login-social-btn:focus-visible {
-  outline: 2px solid var(--login-brand-600);
-  outline-offset: 2px;
+
+.rhine-social-btn:active {
+  transform: scale(0.97);
 }
-.login-social-btn-icon {
-  width: 24px;
-  height: 24px;
+
+.rhine-social-btn:disabled {
+  opacity: 0.5;
+  cursor: wait;
+  transform: none;
+}
+
+/* ── 暗色模式社交按钮 ── */
+.dark .rhine-social-btn {
+  border-color: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.015);
+}
+
+.dark .rhine-social-btn:hover {
+  transform: translateY(-2px);
+}
+
+/* 微信 — 品牌绿悬停辉光 */
+.rhine-social-btn.wechat:hover {
+  border-color: rgba(7, 193, 96, 0.35);
+  box-shadow: 0 0 18px rgba(7, 193, 96, 0.15);
+}
+
+.rhine-social-btn.wechat:hover::after {
+  opacity: 1;
+  background: radial-gradient(circle at center, rgba(7, 193, 96, 0.08) 0%, transparent 70%);
+}
+
+/* QQ — 天蓝悬停辉光 */
+.rhine-social-btn.qq:hover {
+  border-color: rgba(18, 183, 245, 0.35);
+  box-shadow: 0 0 18px rgba(18, 183, 245, 0.15);
+}
+
+.rhine-social-btn.qq:hover::after {
+  opacity: 1;
+  background: radial-gradient(circle at center, rgba(18, 183, 245, 0.08) 0%, transparent 70%);
+}
+
+/* GitHub — 白色悬停辉光 */
+.rhine-social-btn.github:hover {
+  border-color: rgba(240, 246, 252, 0.25);
+  box-shadow: 0 0 18px rgba(240, 246, 252, 0.08);
+}
+
+.rhine-social-btn.github:hover::after {
+  opacity: 1;
+  background: radial-gradient(circle at center, rgba(240, 246, 252, 0.05) 0%, transparent 70%);
+}
+
+.rhine-social-icon-wrap {
+  width: 26px;
+  height: 26px;
   display: flex;
   align-items: center;
   justify-content: center;
-}
-.login-social-btn-label {
-  font-size: var(--login-text-xs);
-  font-weight: 500;
-  color: var(--login-text-secondary);
+  transition: transform var(--rhine-duration-fast) var(--rhine-ease-out);
 }
 
-/* ================================================================
-   9. 页脚 (Footer)
-   ================================================================ */
-.login-footer {
-  margin-top: var(--login-space-6);
-  padding-top: var(--login-space-5);
-  border-top: 1px solid var(--login-divider);
+.rhine-social-btn:hover .rhine-social-icon-wrap {
+  transform: scale(1.08);
+}
+
+.rhine-social-label {
+  font-size: 11.5px;
+  color: var(--rhine-text-dim);
+  transition: color var(--rhine-duration-fast) var(--rhine-ease-out);
+  font-weight: var(--rhine-weight-medium);
+}
+
+.rhine-social-btn:hover .rhine-social-label {
+  color: var(--rhine-text-secondary);
+}
+
+.dark .rhine-social-label {
+  color: var(--text-dim, #94A3B8);
+}
+
+.rhine-social-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-top-color: var(--rhine-brand);
+  border-radius: 50%;
+  animation: rhineSpin 0.65s linear infinite;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   8. 页脚
+   ══════════════════════════════════════════════════════════════ */
+.rhine-footer {
+  margin-top: var(--rhine-space-6);
+  padding-top: var(--rhine-space-4);
+  border-top: 1px solid var(--rhine-border);
   text-align: center;
 }
-.login-footer-info {
-  font-size: var(--login-text-xs);
-  color: var(--login-text-tertiary);
-  margin-bottom: var(--login-space-2);
-}
-.login-footer-links {
+
+.rhine-footer-links {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--login-space-4);
-  font-size: var(--login-text-xs);
-}
-.login-footer-links a {
-  color: var(--login-text-tertiary);
-  text-decoration: none;
-  transition: color var(--login-duration-fast) var(--login-ease-out);
-}
-.login-footer-links a:hover {
-  color: var(--login-brand-600);
-}
-.login-footer-links .login-footer-sep {
-  width: 1px;
-  height: 12px;
-  background: var(--login-border);
+  gap: var(--rhine-space-4);
+  font-size: 12px;
 }
 
-/* ── 安全提示 ── */
-.login-security-note {
+.rhine-footer-links a {
+  color: var(--rhine-text-dim);
+  text-decoration: none;
+  transition: color var(--rhine-duration-fast) var(--rhine-ease-out);
+}
+
+.rhine-footer-links a:hover {
+  color: var(--rhine-brand);
+}
+
+.rhine-footer-sep {
+  width: 1px;
+  height: 10px;
+  background: var(--rhine-border);
+}
+
+.rhine-security-note {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--login-space-2);
-  margin-top: var(--login-space-4);
-  font-size: var(--login-text-xs);
-  color: var(--login-text-tertiary);
+  gap: var(--rhine-space-2);
+  margin-bottom: var(--rhine-space-4);
+  font-size: 11px;
+  color: var(--rhine-text-dim);
+}
+
+/* ── 暗色模式页脚 ── */
+.dark .rhine-footer {
+  border-top-color: rgba(255, 255, 255, 0.04);
+}
+
+.dark .rhine-footer-links a:hover {
+  color: var(--rhine-brand-light);
 }
 
 /* ── 默认凭证提示 ── */
-.login-credentials-hint {
-  margin-top: var(--login-space-6);
-  padding: var(--login-space-3) var(--login-space-4);
-  background: var(--login-brand-50);
-  border: 1px solid var(--login-brand-100);
-  border-radius: var(--login-radius-md);
+.rhine-credentials-hint {
+  margin-top: var(--rhine-space-5);
+  padding: var(--rhine-space-3) var(--rhine-space-4);
+  background: var(--rhine-brand-micro);
+  border: 1px solid rgba(40, 167, 69, 0.08);
+  border-radius: var(--rhine-radius-md);
   text-align: center;
+  font-size: 11px;
+  color: rgba(40, 167, 69, 0.6);
 }
-.dark .login-credentials-hint {
-  background: rgba(5, 150, 105, 0.08);
-  border-color: rgba(5, 150, 105, 0.15);
-}
-.login-credentials-hint p {
-  font-size: var(--login-text-xs);
-  color: var(--login-brand-700);
-}
-.dark .login-credentials-hint p {
-  color: var(--login-brand-300);
-}
-.login-credentials-hint code {
-  font-family: var(--login-font-mono);
-  font-size: var(--login-text-xs);
-  background: rgba(5, 150, 105, 0.1);
-  padding: 1px 6px;
+
+.rhine-credentials-hint code {
+  font-family: var(--rhine-font-mono);
+  font-size: 10.5px;
+  background: rgba(40, 167, 69, 0.08);
+  padding: 2px 6px;
   border-radius: 3px;
-  font-weight: 600;
+  font-weight: var(--rhine-weight-semibold);
+  color: var(--rhine-brand-light);
 }
 
-/* ================================================================
-   10. 平板适配 (Tablet: 768px - 1023px)
-   ================================================================ */
-@media (min-width: 768px) and (max-width: 1023px) {
-  .login-brand-panel {
-    display: flex;
-    width: 100%;
-    min-height: auto;
-    height: 200px;
-    position: relative;
-  }
-  .login-brand-content {
-    flex-direction: row;
-    align-items: center;
-    gap: var(--login-space-8);
-    padding: var(--login-space-8);
-    max-width: 100%;
-  }
-  .login-brand-logo {
-    margin-bottom: 0;
-    flex-shrink: 0;
-  }
-  .login-brand-tagline { display: none; }
-  .login-brand-headline {
-    font-size: var(--login-text-xl);
-    white-space: normal;
-    margin-bottom: var(--login-space-2);
-  }
-  .login-brand-description { display: none; }
-  .login-brand-pillars { display: none; }
-  .login-brand-footer { display: none; }
-
-  .login-form-panel {
-    min-height: calc(100vh - 200px);
-    min-height: calc(100dvh - 200px);
+/* ══════════════════════════════════════════════════════════════
+   9. 响应式
+   ══════════════════════════════════════════════════════════════ */
+@media (max-width: 1439px) {
+  .rhine-card {
+    max-width: 410px;
+    padding: var(--rhine-space-8);
   }
 }
 
-/* ================================================================
-   11. 手机适配 (Mobile: < 768px)
-   ================================================================ */
+@media (max-width: 1023px) {
+  .rhine-card {
+    max-width: 460px;
+    margin: 0 auto;
+  }
+}
+
 @media (max-width: 767px) {
-  .login-brand-panel { display: none; }
-
-  .login-form-panel {
-    padding: var(--login-space-4);
-    align-items: flex-start;
-    padding-top: var(--login-space-10);
+  .rhine-form-panel {
+    padding: 150px var(--rhine-space-4) var(--rhine-space-4);
   }
-
-  .login-form-container { max-width: 100%; }
-  .login-card-header h2 { font-size: var(--login-text-xl); }
+  .rhine-card-header h2 {
+    font-size: 22px;
+  }
+  .rhine-card {
+    padding: var(--rhine-space-5) var(--rhine-space-4);
+  }
+  .rhine-social-buttons {
+    gap: var(--rhine-space-2);
+  }
 }
 
-/* ── 小手机 (< 480px) ── */
 @media (max-width: 479px) {
-  .login-form-panel {
-    padding: var(--login-space-3);
-    padding-top: var(--login-space-8);
+  .rhine-input {
+    height: 54px;
+    font-size: 16px;
   }
-  .login-input {
-    height: 52px;
-    font-size: var(--login-text-base);
+  .rhine-submit-btn {
+    height: 54px;
+    font-size: 16px;
   }
-  .login-submit-btn {
-    height: 52px;
-  }
-  .login-social-buttons {
-    grid-template-columns: repeat(3, 1fr);
-    gap: var(--login-space-2);
-  }
-  .login-social-btn {
-    min-height: 56px;
-    padding: var(--login-space-2);
+  .rhine-social-btn {
+    min-height: 60px;
+    padding: var(--rhine-space-3) var(--rhine-space-1);
   }
 }
 
-/* ================================================================
-   12. 可访问性 (Accessibility)
-   ================================================================ */
-
-/* ── 减少动画 ── */
+/* ══════════════════════════════════════════════════════════════
+   10. 可访问性 (WCAG 2.1 AA)
+   ══════════════════════════════════════════════════════════════ */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  .rhine-dna-scene {
+    animation: none !important;
+  }
+  .rhine-particle-canvas {
+    display: none;
+  }
+  *, *::before, *::after {
     animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
 }
 
-/* ── 高对比度 ── */
+/* 高对比度模式 — 增强边框和文字对比度 */
 @media (prefers-contrast: high) {
-  .login-input {
-    border-width: 2px;
-    border-color: var(--login-text-primary);
+  .rhine-input {
+    border: 2px solid var(--rhine-text);
   }
-  .login-input:focus {
-    border-color: var(--login-brand-700);
-    box-shadow: 0 0 0 3px var(--login-brand-700);
-  }
-  .login-submit-btn {
-    border: 2px solid #ffffff;
-    background: var(--login-brand-700);
-  }
-  .login-alert {
-    border-width: 2px;
+  .rhine-card {
+    border: 2px solid var(--rhine-brand);
   }
 }
 
-/* ── 焦点可见 (Focus Visible) ── */
-.login-input:focus-visible,
-.login-submit-btn:focus-visible,
-.login-social-btn:focus-visible,
-.login-theme-toggle:focus-visible,
-.login-password-toggle:focus-visible {
-  outline: 2px solid var(--login-brand-600);
+/* 焦点环 (2px, WCAG 2.4.7) */
+.rhine-input:focus-visible,
+.rhine-submit-btn:focus-visible,
+.rhine-social-btn:focus-visible {
+  outline: 2px solid var(--rhine-brand);
   outline-offset: 2px;
 }
 
-/* 鼠标操作时隐藏焦点环 */
-.login-input:focus:not(:focus-visible),
-.login-submit-btn:focus:not(:focus-visible),
-.login-social-btn:focus:not(:focus-visible) {
-  outline: none;
-}
-
-/* ── 屏幕阅读器专用 ── */
-.login-sr-only {
+/* 屏幕阅读器专用 */
+.rhine-sr-only {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -1093,16 +1243,72 @@
   border-width: 0;
 }
 
-/* ================================================================
-   13. 骨架加载 (Skeleton Loading)
-   ================================================================ */
-.login-skeleton {
-  background: linear-gradient(90deg, var(--login-border) 25%, var(--login-divider) 50%, var(--login-border) 75%);
-  background-size: 200% 100%;
-  animation: loginSkeletonShimmer 1.5s ease-in-out infinite;
-  border-radius: var(--login-radius-sm);
+/* 跳过链接 */
+.rhine-skip-link {
+  position: fixed;
+  top: -48px;
+  left: 16px;
+  z-index: 1000;
+  padding: 10px 20px;
+  background: var(--rhine-brand);
+  color: var(--color-primary-contrast-text, #ffffff);
+  font-size: 13px;
+  font-weight: var(--rhine-weight-bold);
+  border-radius: var(--rhine-radius-md);
+  text-decoration: none;
+  box-shadow: var(--rhine-shadow-card);
+  transition: top var(--rhine-duration-fast) var(--rhine-ease-out);
 }
-@keyframes loginSkeletonShimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+
+.rhine-skip-link:focus {
+  top: 16px;
+  outline: 2px solid var(--color-primary-contrast-text, #ffffff);
+  outline-offset: 2px;
+}
+
+/* ── 入场动画 ── */
+.rhine-anim-fade-up {
+  animation: rhineFadeUp 0.55s var(--rhine-ease-out) forwards;
+  opacity: 0;
+}
+
+.rhine-anim-fade-in {
+  animation: rhineFadeIn 0.35s var(--rhine-ease-out) forwards;
+  opacity: 0;
+}
+
+.rhine-anim-slide-right {
+  animation: rhineSlideRight 0.55s var(--rhine-ease-spring) forwards;
+  opacity: 0;
+}
+
+.rhine-anim-shake {
+  animation: rhineShake 0.45s var(--rhine-ease-in-out);
+}
+
+.rhine-delay-1 { animation-delay: 0.08s; }
+.rhine-delay-2 { animation-delay: 0.16s; }
+.rhine-delay-3 { animation-delay: 0.24s; }
+.rhine-delay-4 { animation-delay: 0.32s; }
+.rhine-delay-5 { animation-delay: 0.40s; }
+
+@keyframes rhineFadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes rhineFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes rhineSlideRight {
+  from { opacity: 0; transform: translateX(36px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes rhineShake {
+  0%, 100% { transform: translateX(0); }
+  15%, 45%, 75% { transform: translateX(-4px); }
+  30%, 60%, 90% { transform: translateX(4px); }
 }

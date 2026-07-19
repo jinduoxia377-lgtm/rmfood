@@ -84,9 +84,9 @@ export function ComplianceDashboard({
   }, [overallComplianceRate, animated])
 
   const getColorByRate = (rate: number) => {
-    if (rate >= 80) return { stroke: '#10B981', text: 'text-green-600', bg: 'bg-green-500' }
-    if (rate >= 50) return { stroke: '#F59E0B', text: 'text-yellow-600', bg: 'bg-yellow-500' }
-    return { stroke: '#EF4444', text: 'text-red-600', bg: 'bg-red-500' }
+    if (rate >= 80) return { stroke: '#34C759', text: 'text-success-600', bg: 'bg-success-500' }
+    if (rate >= 50) return { stroke: '#D97706', text: 'text-yellow-600', bg: 'bg-yellow-500' }
+    return { stroke: '#FF3B30', text: 'text-error-600', bg: 'bg-error-500' }
   }
 
   const mainColor = getColorByRate(animatedRate)
@@ -130,12 +130,12 @@ export function ComplianceDashboard({
             <span className={`font-bold ${mainColor.text}`} style={{ fontSize: config.fontSize }}>
               {animatedRate}%
             </span>
-            <span className="text-xs text-gray-500 mt-1">合规率</span>
+            <span className="text-xs text-neutral-500 mt-1">合规率</span>
           </div>
 
           {!isLoaded && animated && (
-            <div className="absolute inset-0 flex items-center justify-center bg-white/50 dark:bg-gray-900/50 rounded-full">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white" />
+            <div className="absolute inset-0 flex items-center justify-center bg-white/50 dark:bg-neutral-900/50 rounded-full">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-neutral-900 dark:border-white" />
             </div>
           )}
         </div>
@@ -146,13 +146,13 @@ export function ComplianceDashboard({
             return (
               <div
                 key={metric.id}
-                className={`p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-md transition-all cursor-pointer ${onClickMetric ? 'cursor-pointer' : ''}`}
+                className={`p-4 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600 hover:shadow-md transition-all cursor-pointer ${onClickMetric ? 'cursor-pointer' : ''}`}
                 onClick={() => onClickMetric?.(metric.id)}
               >
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
                     <span className="text-lg">{metric.flag}</span>
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                       {metric.label}
                     </span>
                   </div>
@@ -164,18 +164,18 @@ export function ComplianceDashboard({
                   </Badge>
                 </div>
 
-                <div className="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mb-2">
+                <div className="w-full h-1.5 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden mb-2">
                   <div
                     className={`h-full rounded-full transition-all duration-500 ${metricColor.bg}`}
                     style={{ width: `${metric.rate}%` }}
                   />
                 </div>
 
-                <div className="flex items-center justify-between text-xs text-gray-500">
+                <div className="flex items-center justify-between text-xs text-neutral-500">
                   <span>{metric.region}</span>
                   <span className={`flex items-center gap-1 ${
-                    metric.trend === 'up' ? 'text-green-600' :
-                    metric.trend === 'down' ? 'text-red-600' : 'text-gray-600'
+                    metric.trend === 'up' ? 'text-success-600' :
+                    metric.trend === 'down' ? 'text-error-600' : 'text-neutral-600'
                   }`}>
                     {metric.trend === 'up' ? '↑' : metric.trend === 'down' ? '↓' : '='}
                     {Math.abs(metric.changeValue)}%

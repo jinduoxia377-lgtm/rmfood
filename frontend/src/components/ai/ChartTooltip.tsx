@@ -1,4 +1,4 @@
-import { useChartTheme } from './DarkModeChartTheme'
+import { useChartTheme } from '@/utils/chartTheme'
 import { CHART_TYPOGRAPHY } from '../../utils/typography'
 
 interface ChartTooltipProps {
@@ -22,17 +22,17 @@ export function ChartTooltip({ active, payload, label, formatter }: ChartTooltip
   return (
     <div
       style={{
-        background: theme.tooltip.background,
-        border: `1px solid ${theme.tooltip.border}`,
-        borderRadius: '8px',
-        padding: '10px 14px',
-        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+        background: theme.tooltip.contentStyle.backgroundColor,
+        border: `1px solid ${theme.tooltip.contentStyle.border}`,
+        borderRadius: '14px',
+        padding: '14px 18px',
+        boxShadow: theme.tooltip.contentStyle.boxShadow,
       }}
     >
       {label && (
         <p
           style={{
-            color: theme.tooltip.text,
+            color: theme.tooltip.labelStyle.color,
             fontWeight: CHART_TYPOGRAPHY.tooltipTitle.fontWeight,
             fontSize: CHART_TYPOGRAPHY.tooltipTitle.fontSize + 'px',
             marginBottom: '6px',
@@ -47,12 +47,12 @@ export function ChartTooltip({ active, payload, label, formatter }: ChartTooltip
           <p
             key={index}
             style={{
-              color: entry.color || theme.tooltip.text,
+              color: entry.color || theme.colors.text,
               fontSize: CHART_TYPOGRAPHY.tooltipContent.fontSize + 'px',
               margin: '2px 0',
             }}
           >
-            <span style={{ color: theme.legend.text }}>{value[1]}: </span>
+            <span style={{ color: theme.colors.textSecondary }}>{value[1]}: </span>
             <span style={{ fontWeight: CHART_TYPOGRAPHY.dataLabel.fontWeight }}>{value[0]}</span>
           </p>
         )
@@ -64,11 +64,11 @@ export function ChartTooltip({ active, payload, label, formatter }: ChartTooltip
 export function useChartTooltipStyle() {
   const theme = useChartTheme()
   return {
-    backgroundColor: theme.tooltip.background,
-    border: `1px solid ${theme.tooltip.border}`,
-    borderRadius: '8px',
-    color: theme.tooltip.text,
+    backgroundColor: theme.tooltip.contentStyle.backgroundColor,
+    border: `1px solid ${theme.tooltip.contentStyle.border}`,
+    borderRadius: '14px',
+    color: theme.tooltip.contentStyle.color,
     fontSize: CHART_TYPOGRAPHY.tooltipContent.fontSize + 'px',
-    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+    boxShadow: theme.tooltip.contentStyle.boxShadow,
   }
 }

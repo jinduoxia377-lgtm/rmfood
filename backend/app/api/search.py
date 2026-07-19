@@ -47,7 +47,7 @@ async def search_resource(
     resource_type: str,
     q: Optional[str] = Query(None, description="关键词"),
     sort_by: Optional[str] = Query(None, description="排序字段"),
-    order: str = Query("desc", regex="^(asc|desc)$"),
+    order: str = Query("desc", pattern="^(asc|desc)$"),
     status: Optional[str] = Query(None, description="状态筛选"),
     category: Optional[str] = Query(None, description="分类筛选"),
     created_from: Optional[str] = Query(None, description="创建时间起"),

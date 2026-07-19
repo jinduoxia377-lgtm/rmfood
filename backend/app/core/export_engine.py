@@ -209,7 +209,7 @@ class ExcelExporter:
                     val = str(row_data.get(key, ""))
                     if len(val) > max_length:
                         max_length = len(val)
-                ws.column_dimensions[col_letter].width = min(max(max_length + 2, 10), 50
+                ws.column_dimensions[col_letter].width = min(max(max_length + 2, 10), 50)
 
             # 冻结标题行
             ws.freeze_panes = "A2" if include_index else "B2"
@@ -394,7 +394,7 @@ class PDFExporter:
                     # 创建表格
                     pdf_table = self._Table(table_rows)
                     pdf_table.setStyle(self._TableStyle([
-                        ('BACKGROUND', (0, 0), (-1, 0), self._colors.HexColor('#2c5aa0'),
+                        ('BACKGROUND', (0, 0), (-1, 0), self._colors.HexColor('#2c5aa0')),
                         ('TEXTCOLOR', (0, 0), (-1, 0), self._colors.whitesmoke),
                         ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
                         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
@@ -406,10 +406,8 @@ class PDFExporter:
                         ('FONTSIZE', (0, 1), (-1, -1), 9),
                         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
                         ('ROWBACKGROUNDS', (0, 1), (-1, -1),
-                                            [self._colors.whitesmoke, self._colors.HexColor('#f2f2f2')]
-                    ]
-                ]
-                )
+                                            [self._colors.whitesmoke, self._colors.HexColor('#f2f2f2')]),
+                    ]))
 
                 story.append(pdf_table)
                 story.append(self._Spacer(1, 12))

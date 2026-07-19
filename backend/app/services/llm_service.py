@@ -255,12 +255,30 @@ class LLMService:
     @staticmethod
     def _build_config_from_settings() -> LLMConfig:
         """从应用配置构建 LLM 配置"""
-        provider = getattr(settings, "llm_provider", PROVIDER_OPENAI)
-        api_key = settings.openai_api_key or ""
-        base_url = settings.openai_base_url or ""
+        import os
+        
+        # 从嵌套配置读取
+        ai_service = getattr(settings, "ai_service", None)
+        
+        # 获取 provider（支持多种配置方式）
+        provider = os.environ.get("LLM_PROVIDER", "") or \
+                   getattr(settings, "llm_provider", "") or \
+                   getattr(ai_service, "provider", "") or \
+                   PROVIDER_OPENAI
+        
+        # 获取 api_key（支持多种配置方式）
+        api_key = os.environ.get("OPENAI_API_KEY", "") or \
+                  os.environ.get("AI_API_KEY", "") or \
+                  (ai_service.api_key if ai_service else "") or \
+                  getattr(settings, "openai_api_key", "")
+        
+        # 获取 base_url（支持多种配置方式）
+        base_url = os.environ.get("OPENAI_BASE_URL", "") or \
+                   os.environ.get("AI_BASE_URL", "") or \
+                   (ai_service.base_url if ai_service else "") or \
+                   getattr(settings, "openai_base_url", "")
 
         # 如果环境变量中有 DEEPSEEK_API_KEY 且使用 deepseek provider，自动切换
-        import os
         deepseek_api_key = os.environ.get("DEEPSEEK_API_KEY", "")
         if deepseek_api_key and provider == PROVIDER_DEEPSEEK:
             api_key = deepseek_api_key
@@ -301,20 +319,34 @@ class LLMService:
         if not base_url and provider in PROVIDER_DEFAULTS:
             base_url = PROVIDER_DEFAULTS[provider]["base_url"]
 
-        # 默认模型
-        model = getattr(settings, "llm_model", "")
+        # 默认模型（支持多种配置方式）
+        model = os.environ.get("LLM_MODEL", "") or \
+                getattr(settings, "llm_model", "") or \
+                (ai_service.model if ai_service else "")
         if not model and provider in PROVIDER_DEFAULTS:
             model = PROVIDER_DEFAULTS[provider]["model"]
         if not model:
             model = "gpt-4o-mini"
+
+        # 获取 max_tokens（支持多种配置方式）
+        max_tokens = int(os.environ.get("AI_MAX_TOKENS", "0")) or \
+                     getattr(settings, "ai_max_tokens", 0) or \
+                     (ai_service.max_tokens if ai_service else 0) or \
+                     4096
+        
+        # 获取 temperature（支持多种配置方式）
+        temperature = float(os.environ.get("AI_TEMPERATURE", "0")) or \
+                      getattr(settings, "ai_temperature", 0.0) or \
+                      (ai_service.temperature if ai_service else 0.0) or \
+                      0.7
 
         return LLMConfig(
             provider=provider,
             api_key=api_key,
             base_url=base_url,
             model=model,
-            max_tokens=settings.ai_max_tokens,
-            temperature=settings.ai_temperature,
+            max_tokens=max_tokens,
+            temperature=temperature,
         )
 
     @property
@@ -489,7 +521,7 @@ class LLMService:
                         error_body = e.response.json()
                         error_detail = error_body.get("error", {}).get("message", str(error_body))
                     except Exception:
-                        error_detail = e.response.text[:200] if hasattr(e.response, 'text') else str(e)
+                        error_detail = "LLM服务响应异常"
 
                     logger.error(f"[chat_stream] HTTP 状态错误: status={status_code}, detail={error_detail}")
 
@@ -573,6 +605,51 @@ RMFOOD_SYSTEM_PROMPT = """你是 RMFOOD 配方设计平台的 AI 配方顾问，
 - 提供具体用量建议和安全依据
 - 标注可能的禁忌和注意事项
 - 如不确定，明确说明"""
+
+# ── 场景化 System Prompt 扩展 ──
+
+SCENARIO_SYSTEM_PROMPTS: dict[str, str] = {
+    "academician": """
+
+## 当前角色：学者顾问
+- 基于循证医学和营养学原理进行配方架构设计
+- 涉及法规时必须标注具体标准号和条款
+- 所有推荐剂量必须给出范围和单位，并说明依据
+- 任何方案必须包含潜在风险和禁忌人群说明
+- 学术但不晦涩，使用"基于...研究表明"等表述
+- 不做无文献支持的断言，不推荐超出安全阈值的用量""",
+
+    "safety_off": """
+
+## 当前角色：安全专员
+- 任何讨论必须以安全性为首要考量
+- 使用明确的等级（低风险/中等风险/高风险/禁止）+ 具体依据
+- 涉及毒性阈值时尽量引用 NOAEL/LOAEL 数据
+- 当指出某种原料有风险时，必须提供安全的替代选择
+- 严谨、审慎、保守，使用"建议谨慎使用"等限定性措辞
+- 不淡化已知风险，不做"少量无害"之类的非专业判断""",
+
+    "process_eng": """
+
+## 当前角色：工艺工程师
+- 任何建议都必须考虑工业实施的可行性
+- 工艺参数必须给出具体范围（温度/时间/转速/压力等）
+- 预判常见工艺问题并提前给出解决方案
+- 在技术方案中考虑成本因素
+- 务实、精确、工程化思维，常用"建议工艺参数为..."
+- 不给实验室无法实现的理想化方案，不跳过中试验证直接建议量产""",
+
+    "concise_adv": """
+
+## 当前角色：精简顾问
+- 第一句就给出核心答案或建议
+- 除非用户明确要求详细解释，否则控制在 300 字以内
+- 善用表格对比，避免冗长叙述
+- 简洁、直接、不啰嗦，去除客套话和过渡句
+- 用数据和事实说话，不写长篇大论的背景介绍""",
+}
+
+DEFAULT_SCENARIO = "academician"
 
 FORMULA_GENERATION_PROMPT = """请为以下需求设计 {num} 套药食同源功能性食品配方方案。
 
@@ -773,10 +850,10 @@ def get_mock_response(question: str) -> str:
         return f"""您好！我是 RMFOOD AI 配方顾问，专注于药食同源功能性食品研发领域。
 
 **我可以帮助您：**
-- 📖 解答药食同源知识
-- 🧪 设计配方方案
-- 🔬 分析活性肽特性
-- ⚖️ 提供法规合规建议
+- 解答药食同源知识
+- 设计配方方案
+- 分析活性肽特性
+- 提供法规合规建议
 
 **常见问题示例：**
 - "黄芪和党参的配伍禁忌是什么？"
@@ -786,12 +863,13 @@ def get_mock_response(question: str) -> str:
 请告诉我您的具体需求，我将为您提供专业建议！
 
 ---
-💡 *提示：由于当前未配置 LLM API，以上为离线模拟回答。配置真实 API Key 后可获得更精准的智能回复。*"""
+*提示：由于当前未配置 LLM API，以上为离线模拟回答。配置真实 API Key 后可获得更精准的智能回复。*"""
 
 
 async def chat_with_rmfood(
     question: str,
     history: list[dict[str, str]] | None = None,
+    scenario_mode: str | None = None,
 ) -> str:
     """
     RMFOOD 智能对话（非流式）
@@ -799,6 +877,7 @@ async def chat_with_rmfood(
     Args:
         question: 用户问题
         history: 对话历史 [{"role": "user/assistant", "content": "..."}]
+        scenario_mode: 场景模式 (academician/safety_off/process_eng/concursive_adv)
 
     Returns:
         AI 回答文本
@@ -807,10 +886,19 @@ async def chat_with_rmfood(
         RuntimeError: 当 LLM 服务调用失败时抛出异常（由上层处理）
     """
     if not llm_service.is_available:
-        logger.info("LLM服务不可用，使用模拟响应")
-        return get_mock_response(question)
+        # 降级到 Thinking Engine — 基于内置知识库的规则推理
+        logger.info("LLM服务不可用，使用智能推理引擎")
+        from ..services.thinking_engine import thinking_engine
+        final_answer = ""
+        async for chunk in thinking_engine.generate_thinking_stream(question):
+            if chunk["type"] == "text":
+                final_answer = chunk["content"]
+        return final_answer or "感谢您的提问！我是 RMFOOD AI 配方顾问，请告诉我您的具体需求。"
 
-    messages = [LLMMessage(role="system", content=RMFOOD_SYSTEM_PROMPT)]
+    # 合并基础 System Prompt + 场景扩展
+    system_content = RMFOOD_SYSTEM_PROMPT + (SCENARIO_SYSTEM_PROMPTS.get(scenario_mode, "") if scenario_mode else "")
+
+    messages = [LLMMessage(role="system", content=system_content)]
 
     # 加入历史
     if history:
@@ -824,9 +912,6 @@ async def chat_with_rmfood(
         result = await llm_service.chat(messages)
         logger.info(f"AI 对话成功 - 回答长度: {len(result.content)} 字符, 模型: {result.model}")
         return result.content
-    except httpx.ConnectError as e:
-        logger.warning(f"无法连接到LLM服务，使用模拟响应: {e}")
-        return get_mock_response(question)
     except Exception as e:
         logger.error(f"RMFOOD 智能对话失败: {type(e).__name__}: {e}", exc_info=True)
         raise

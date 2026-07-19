@@ -714,42 +714,5 @@ async def optimization_progress_websocket(websocket: WebSocket):
         manager.disconnect(client_id)
 
 
-# ==================== 健康检查端点 ====================
-
-@router.get("/health", tags=["系统"])
-async def health_check():
-    """服务健康检查端点"""
-    modules_status = {}
-    
-    module_names = [
-        ("synergy_engine", "SynergyEngine"),
-        ("ratio_optimizer", "RatioOptimizer"),
-        ("compatibility_checker", "CompatibilityChecker"),
-        ("effect_simulator", "EffectSimulator"),
-        ("safety_alert_system", "SafetyAlertSystem"),
-        ("integration_service", "FormulaIntegrationService"),
-    ]
-    
-    for import_path, class_name in module_names:
-        try:
-            importlib.import_module(f"app.services.formula.{import_path}")
-            modules_status[class_name] = "available"
-        except ImportError:
-            modules_status[class_name] = "unavailable"
-        except Exception:
-            modules_status[class_name] = "error"
-    
-    all_available = all(s == "available" for s in modules_status.values())
-    
-    return {
-        "status": "healthy" if all_available else "degraded",
-        "service": "formula-deep-integration-api",
-        "version": "1.0.0",
-        "modules": modules_status,
-        "websocket_connected": len(manager.active_connections),
-        "timestamp": datetime.now().isoformat()
-    }
-
-
 # 导出路由供主应用注册
 __all__ = ["router"]

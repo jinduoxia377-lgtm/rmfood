@@ -266,7 +266,7 @@ class ConflictDetector:
             return resolved
             
         except Exception as e:
-            conflict.metadata["auto_resolve_error"] = str(e)
+            conflict.metadata["auto_resolve_error"] = "自动解决失败"
             conflict.recommended_strategy = MergeStrategy.MANUAL
             conflict.status = ConflictStatus.PENDING_USER
             self._stats["manual_required"] += 1

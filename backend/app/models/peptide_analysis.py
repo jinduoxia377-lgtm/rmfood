@@ -1,13 +1,10 @@
 """RMFOOD 肽序列分析模型"""
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING, List, Dict, Optional
-from sqlalchemy import Integer, String, Text, DateTime, JSON, Enum as SQLEnum, ForeignKey
+from sqlalchemy import Integer, String, Text, DateTime, JSON, Enum as SQLEnum, ForeignKey, BigInteger
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from ..core.database import Base
-
-
-def _now() -> datetime:
-    return datetime.now(timezone.utc).replace(tzinfo=None)
+from .base import Base
+from app.models.utils import now_utc_mapped
 
 
 class AnalysisMode(str):
@@ -32,9 +29,9 @@ if TYPE_CHECKING:
 class PeptideAnalysis(Base):
     __tablename__ = "peptide_analyses"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     sequence: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
-    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=False)
+    user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"), nullable=False, index=True)
     analysis_mode: Mapped[str] = mapped_column(
         SQLEnum(AnalysisMode.QUICK, AnalysisMode.DEEP, AnalysisMode.CUSTOM, name="analysis_mode"),
         default=AnalysisMode.QUICK,
@@ -43,12 +40,12 @@ class PeptideAnalysis(Base):
     tags: Mapped[Optional[List[str]]] = mapped_column(JSON, default=list)
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     peptide_id: Mapped[Optional[int]] = mapped_column(
-        Integer, ForeignKey("peptides.id", ondelete="SET NULL"), nullable=True
+        BigInteger, ForeignKey("peptides.id", ondelete="SET NULL"), nullable=True, index=True
     )
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=_now, nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_now, onupdate=_now, nullable=False)
-    deleted_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
-    created_by: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, onupdate=now_utc_mapped, nullable=False)
+    deleted_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_by: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"), nullable=False, index=True)
 
     user: Mapped["User"] = relationship(
         "User", 
@@ -75,9 +72,9 @@ class PeptideAnalysis(Base):
 class PeptideAnalysisDetail(Base):
     __tablename__ = "peptide_analysis_details"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     analysis_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("peptide_analyses.id", ondelete="CASCADE"), nullable=False
+        BigInteger, ForeignKey("peptide_analyses.id", ondelete="CASCADE"), nullable=False, index=True
     )
     dimension_type: Mapped[str] = mapped_column(
         SQLEnum(
@@ -92,7 +89,7 @@ class PeptideAnalysisDetail(Base):
         nullable=False
     )
     data: Mapped[Dict] = mapped_column(JSON, nullable=False, default=dict)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=_now, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, nullable=False)
 
     analysis: Mapped["PeptideAnalysis"] = relationship(
         "PeptideAnalysis",

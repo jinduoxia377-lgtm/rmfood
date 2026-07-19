@@ -40,16 +40,8 @@ export function optimizedMemo<T extends React.ComponentType<any>>(
   return memo(Component, comparator as any) as unknown as T;
 }
 
-export function useDebouncedCallback<T extends (...args: any[]) => any>(callback: T, delay = 300): T {
-  const timeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
-  return useCallback(
-    ((...args: any[]) => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      timeoutRef.current = setTimeout(() => callback(...args), delay);
-    }) as unknown as unknown as T,
-    [callback, delay],
-  );
-}
+// NOTE: useDebouncedCallback has been moved to hooks/useDebounce.ts
+// Import from there instead of this file.
 
 export function useThrottledCallback<T extends (...args: any[]) => any>(callback: T, delay = 300): T {
   const lastCallRef = useRef(0);

@@ -4,7 +4,7 @@
 支持历史查询、详情查看和进化过程追溯。
 """
 
-from sqlalchemy import Column, String, Integer, Float, Text, JSON, DateTime, ForeignKey, Index
+from sqlalchemy import Column, Integer, String, BigInteger, Float, Text, JSON, DateTime, ForeignKey, Index
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
 
@@ -15,9 +15,9 @@ class GARunRecord(Base):
     """遗传算法运行记录"""
     __tablename__ = "ga_run_records"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    id = Column(BigInteger, primary_key=True, autoincrement=True)
     run_id = Column(String(64), unique=True, nullable=False, index=True, comment="运行唯一ID")
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True, comment="用户ID")
+    user_id = Column(BigInteger, ForeignKey("users.id"), nullable=False, index=True, comment="用户ID")
 
     # 运行类型
     algorithm_type = Column(String(32), nullable=False, default="genetic", comment="genetic/nsga2")
@@ -63,7 +63,7 @@ class GACandidateRecord(Base):
     """GA 候选方案详细记录"""
     __tablename__ = "ga_candidate_records"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    id = Column(BigInteger, primary_key=True, autoincrement=True)
     run_id = Column(String(64), ForeignKey("ga_run_records.run_id"), nullable=False, index=True)
     rank_in_run = Column(Integer, default=0, comment="本次运行中的排名")
     pareto_rank = Column(Integer, default=0, comment="Pareto秩(0=前沿)")

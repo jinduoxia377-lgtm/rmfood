@@ -93,11 +93,11 @@ export function TeamDashboardShare({ dashboard, onUpdate, className }: TeamDashb
   const getAccessIcon = (accessLevel: AccessLevel) => {
     switch (accessLevel) {
       case 'admin':
-        return <Shield size={16} className="text-blue-600" />
+        return <Shield size={16} className="text-secondary-600" />
       case 'edit':
-        return <Edit size={16} className="text-green-600" />
+        return <Edit size={16} className="text-success-600" />
       case 'view':
-        return <Eye size={16} className="text-slate-600" />
+        return <Eye size={16} className="text-neutral-600" />
     }
   }
 
@@ -115,11 +115,11 @@ export function TeamDashboardShare({ dashboard, onUpdate, className }: TeamDashb
   const getAccessColor = (accessLevel: AccessLevel) => {
     switch (accessLevel) {
       case 'admin':
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400'
+        return 'bg-secondary-100 text-secondary-800 dark:bg-secondary-900/20 dark:text-secondary-400'
       case 'edit':
-        return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+        return 'bg-success-100 text-success-800 dark:bg-success-900/20 dark:text-success-400'
       case 'view':
-        return 'bg-slate-100 text-slate-800 dark:bg-slate-800/50 dark:text-slate-400'
+        return 'bg-neutral-100 text-neutral-800 dark:bg-neutral-800/50 dark:text-neutral-400'
     }
   }
 
@@ -128,7 +128,7 @@ export function TeamDashboardShare({ dashboard, onUpdate, className }: TeamDashb
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Users size={20} className="text-blue-600 dark:text-blue-400" />
+            <Users size={20} className="text-secondary-600 dark:text-secondary-400" />
             <CardTitle as="h3" className="text-sm font-bold">团队共享</CardTitle>
           </div>
           <Badge size="sm">
@@ -139,16 +139,16 @@ export function TeamDashboardShare({ dashboard, onUpdate, className }: TeamDashb
       <CardContent>
         {/* 所有者信息 */}
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
-            <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
+          <div className="w-8 h-8 rounded-full bg-secondary-100 dark:bg-secondary-900 flex items-center justify-center">
+            <span className="text-sm font-medium text-secondary-600 dark:text-secondary-400">
               {dashboard.ownerName.charAt(0)}
             </span>
           </div>
           <div>
             <p className="text-sm font-medium">{dashboard.ownerName}</p>
-            <p className="text-xs text-slate-500">所有者</p>
+            <p className="text-xs text-neutral-500">所有者</p>
           </div>
-          <Badge className="ml-auto bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400">
+          <Badge className="ml-auto bg-secondary-100 text-secondary-800 dark:bg-secondary-900/20 dark:text-secondary-400">
             管理员
           </Badge>
         </div>
@@ -157,8 +157,8 @@ export function TeamDashboardShare({ dashboard, onUpdate, className }: TeamDashb
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300">共享成员</h4>
-              <Badge className="bg-slate-100 text-slate-800 dark:bg-slate-800/50 dark:text-slate-400">
+              <h4 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">共享成员</h4>
+              <Badge className="bg-neutral-100 text-neutral-800 dark:bg-neutral-800/50 dark:text-neutral-400">
                 您的权限: {RBAC.getAccessLevelDescription(currentUserAccessLevel).split(' - ')[0]}
               </Badge>
             </div>
@@ -188,8 +188,8 @@ export function TeamDashboardShare({ dashboard, onUpdate, className }: TeamDashb
 
           {dashboard.shares.length === 0 ? (
             <div className="text-center py-6">
-              <Share2 size={48} className="mx-auto text-slate-300 dark:text-slate-600 mb-2" />
-              <p className="text-sm text-slate-500 dark:text-slate-400">
+              <Share2 size={48} className="mx-auto text-neutral-300 dark:text-neutral-600 mb-2" />
+              <p className="text-sm text-neutral-500 dark:text-neutral-400">
                 此仪表板尚未共享给其他成员
               </p>
             </div>
@@ -198,8 +198,8 @@ export function TeamDashboardShare({ dashboard, onUpdate, className }: TeamDashb
               {dashboard.shares.map((share) => (
                 <div key={share.id} className="py-3 px-4 border-b last:border-b-0">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                      <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                    <div className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
+                      <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
                         {share.userName.charAt(0)}
                       </span>
                     </div>
@@ -213,7 +213,7 @@ export function TeamDashboardShare({ dashboard, onUpdate, className }: TeamDashb
                           </div>
                         </Badge>
                       </div>
-                      <p className="text-xs text-slate-500 truncate">{share.userEmail}</p>
+                      <p className="text-xs text-neutral-500 truncate">{share.userEmail}</p>
                     </div>
                   </div>
                 </div>
@@ -224,12 +224,12 @@ export function TeamDashboardShare({ dashboard, onUpdate, className }: TeamDashb
 
         {/* 共享信息 */}
         {dashboard.isShared && (
-          <div className="mt-6 p-3 rounded-lg bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-800/30">
+          <div className="mt-6 p-3 rounded-lg bg-secondary-50 dark:bg-secondary-900/10 border border-blue-100 dark:border-blue-800/30">
             <div className="flex items-start gap-3">
-              <Share2 size={18} className="text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+              <Share2 size={18} className="text-secondary-600 dark:text-secondary-400 flex-shrink-0 mt-0.5" />
               <div>
-                <h4 className="text-sm font-medium text-blue-800 dark:text-blue-300 mb-1">共享信息</h4>
-                <ul className="text-xs text-blue-600 dark:text-blue-400 space-y-1">
+                <h4 className="text-sm font-medium text-secondary-800 dark:text-secondary-300 mb-1">共享信息</h4>
+                <ul className="text-xs text-secondary-600 dark:text-secondary-400 space-y-1">
                   <li>• 此仪表板已共享给 {dashboard.shares.length} 位成员</li>
                   <li>• 最后更新: {new Date(dashboard.lastModifiedAt).toLocaleString()}</li>
                   <li>• 由 {dashboard.lastModifiedBy} 修改</li>
@@ -242,7 +242,7 @@ export function TeamDashboardShare({ dashboard, onUpdate, className }: TeamDashb
         {/* 邀请成员对话框 */}
         {isShareDialogOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-slate-800 rounded-lg p-6 max-w-md w-full">
+            <div className="bg-white dark:bg-neutral-800 rounded-lg p-6 max-w-md w-full">
               <h3 className="text-lg font-medium mb-4">邀请团队成员</h3>
               <div className="space-y-4">
                 <div>

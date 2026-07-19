@@ -335,7 +335,7 @@ export function usePerformanceMonitor(
           monitorConfig.onMemoryCritical?.(usage)
 
           if (showReportInConsole) {
-            logger.log(monitorRef.current?.generateReport())
+            logger.log(monitorRef.current?.generateReport() || '')
           }
 
           detectAndAddIssue({

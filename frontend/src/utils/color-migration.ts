@@ -38,10 +38,7 @@ export const CSS_VARIABLE_MIGRATION = {
  * @param fallbackValue 回退值（可选）
  * @returns 新版CSS变量字符串
  */
-export function getMigratedVariable(
-  oldVarName: string,
-  fallbackValue?: string,
-): string {
+export function getMigratedVariable(oldVarName: string, fallbackValue?: string): string {
   const newVar = CSS_VARIABLE_MIGRATION[oldVarName as keyof typeof CSS_VARIABLE_MIGRATION];
   if (newVar) {
     return fallbackValue ? `${newVar}, ${fallbackValue}` : newVar;
@@ -83,18 +80,18 @@ export const CHART_THEME_COLORS = {
  */
 export const FORMULA_ROLE_COLORS = {
   light: {
-    '君': 'var(--color-success-main)',
-    '臣': 'var(--color-info-main)',
-    '佐': 'var(--color-purple-500)',
-    '使': 'var(--color-warning-main)',
-    '辅料': 'var(--color-neutral-500)',
+    君: 'var(--color-success-main)',
+    臣: 'var(--color-info-main)',
+    佐: 'var(--color-purple-500)',
+    使: 'var(--color-warning-main)',
+    辅料: 'var(--color-neutral-500)',
   },
   dark: {
-    '君': 'var(--color-success-light)',
-    '臣': 'var(--color-info-light)',
-    '佐': 'var(--color-purple-400)',
-    '使': 'var(--color-warning-light)',
-    '辅料': 'var(--color-neutral-400)',
+    君: 'var(--color-success-light)',
+    臣: 'var(--color-info-light)',
+    佐: 'var(--color-purple-400)',
+    使: 'var(--color-warning-light)',
+    辅料: 'var(--color-neutral-400)',
   },
 } as const;
 
@@ -134,8 +131,9 @@ export const FORMULA_CATEGORY_PALETTE = {
  * @returns 图表颜色配置对象
  */
 export function getChartThemeColors() {
-  const isDark = document.documentElement.classList.contains('dark') ||
-                 document.documentElement.getAttribute('data-mode') === 'dark';
+  const isDark =
+    document.documentElement.classList.contains('dark') ||
+    document.documentElement.getAttribute('data-mode') === 'dark';
 
   return {
     grid: 'var(--color-border-divider)',
@@ -143,11 +141,11 @@ export function getChartThemeColors() {
     tooltipBg: 'var(--color-surface-default)',
     tooltipBorder: 'var(--color-border-default)',
     tooltipText: 'var(--color-text-primary)',
-    line: isDark ? '#60A5FA' : 'var(--color-success-main)',
-    bar: isDark ? '#3B82F6' : 'var(--color-success-main)',
-    pie: isDark
-      ? FORMULA_CATEGORY_PALETTE.dark
-      : FORMULA_CATEGORY_PALETTE.light,
+    line: isDark ? '#6ECAFF' : 'var(--color-success-main)',
+    bar: isDark ? '#007AFF' : 'var(--color-success-main)',
+    pie: isDark ? FORMULA_CATEGORY_PALETTE.dark : FORMULA_CATEGORY_PALETTE.light,
+    axisColor: 'var(--color-text-secondary)',
+    barFill: 'var(--color-primary-main)',
   };
 }
 
@@ -157,8 +155,9 @@ export function getChartThemeColors() {
  * @returns 对应的CSS变量颜色值
  */
 export function getRoleColor(role: string): string {
-  const isDark = document.documentElement.classList.contains('dark') ||
-                 document.documentElement.getAttribute('data-mode') === 'dark';
+  const isDark =
+    document.documentElement.classList.contains('dark') ||
+    document.documentElement.getAttribute('data-mode') === 'dark';
 
   const colors = isDark ? FORMULA_ROLE_COLORS.dark : FORMULA_ROLE_COLORS.light;
   return colors[role as keyof typeof colors] || colors['辅料'];

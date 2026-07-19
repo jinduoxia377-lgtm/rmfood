@@ -94,19 +94,19 @@ export default function ThinkingProcess({ steps, isThinking, onToggle, startTime
       <div className="flex items-center justify-between mb-1.5">
         <button
           onClick={toggleAll}
-          className="flex items-center gap-1.5 text-[11px] text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors group"
+          className="flex items-center gap-1.5 text-[11px] text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors group"
         >
-          <Cpu className={`w-3.5 h-3.5 ${isThinking ? 'text-primary-500 animate-pulse' : 'text-gray-400'}`} />
+          <Cpu className={`w-3.5 h-3.5 ${isThinking ? 'text-primary-500 animate-pulse' : 'text-neutral-400'}`} />
           <span className="font-medium">
             {isThinking ? 'AI 正在思考...' : `AI 思考过程`}
           </span>
           {!isThinking && steps.length > 0 && (
-            <span className="text-[10px] text-gray-400 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded-full ml-1">
+            <span className="text-[10px] text-neutral-400 bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded-full ml-1">
               {steps.filter(s => s.status === 'complete').length}/{steps.length} 步
             </span>
           )}
           {startTime && !isThinking && (
-            <span className="text-[10px] text-gray-400 flex items-center gap-0.5">
+            <span className="text-[10px] text-neutral-400 flex items-center gap-0.5">
               <Clock className="w-3 h-3" />
               {formatDuration(elapsed)}
             </span>
@@ -121,7 +121,7 @@ export default function ThinkingProcess({ steps, isThinking, onToggle, startTime
         {!isThinking && steps.length > 1 && (
           <button
             onClick={toggleAll}
-            className="text-[10px] text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-[10px] text-neutral-400 hover:text-neutral-600 transition-colors"
           >
             {expandedStep === '__all__' ? '收起' : '展开全部'}
           </button>
@@ -131,7 +131,7 @@ export default function ThinkingProcess({ steps, isThinking, onToggle, startTime
       {/* 步骤列表 */}
       <div className="space-y-0.5">
         {steps.slice(0, visibleSteps).map((step, i) => {
-          const cfg = STEP_CONFIG[step.step] || { icon: <Brain className="w-3.5 h-3.5" />, color: 'from-gray-400 to-gray-500' }
+          const cfg = STEP_CONFIG[step.step] || { icon: <Brain className="w-3.5 h-3.5" />, color: 'from-slate-400 to-slate-500' }
           const isComplete = step.status === 'complete'
           const isExpanded = expandedStep === step.step || expandedStep === '__all__'
           const isLast = i === steps.length - 1
@@ -147,7 +147,7 @@ export default function ThinkingProcess({ steps, isThinking, onToggle, startTime
             >
               <button
                 onClick={() => setExpandedStep(isExpanded ? null : step.step)}
-                className="w-full flex items-start gap-2.5 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group"
+                className="w-full flex items-start gap-2.5 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-800/50 transition-colors group"
               >
                 {/* 状态图标 + 连接线 */}
                 <div className="flex flex-col items-center">
@@ -156,7 +156,7 @@ export default function ThinkingProcess({ steps, isThinking, onToggle, startTime
                     transition-all duration-300
                     ${isComplete
                       ? `bg-gradient-to-br ${cfg.color} text-white`
-                      : 'bg-amber-100 dark:bg-amber-900/30 text-amber-500'
+                      : 'bg-warning-100 dark:bg-warning-900/30 text-warning-500'
                     }
                   `}>
                     {isComplete
@@ -165,41 +165,41 @@ export default function ThinkingProcess({ steps, isThinking, onToggle, startTime
                     }
                   </div>
                   {!isLast && (
-                    <div className={`w-0.5 flex-1 min-h-[8px] mt-0.5 ${isComplete ? 'bg-gray-200 dark:bg-gray-700' : 'bg-gray-100 dark:bg-gray-800'}`} />
+                    <div className={`w-0.5 flex-1 min-h-[8px] mt-0.5 ${isComplete ? 'bg-neutral-200 dark:bg-neutral-700' : 'bg-neutral-100 dark:bg-neutral-800'}`} />
                   )}
                 </div>
 
                 {/* 内容 */}
                 <div className="flex-1 min-w-0 text-left">
                   <div className="flex items-center gap-2">
-                    <span className={`text-xs font-medium ${isComplete ? 'text-gray-700 dark:text-gray-300' : 'text-amber-600 dark:text-amber-400'}`}>
+                    <span className={`text-xs font-medium ${isComplete ? 'text-neutral-700 dark:text-neutral-300' : 'text-warning-600 dark:text-warning-400'}`}>
                       {step.step}
                     </span>
                     {isComplete ? (
-                      <span className="text-[10px] text-gray-400">✓</span>
+                      <span className="text-[10px] text-neutral-400">✓</span>
                     ) : (
-                      <span className="text-[10px] text-amber-500 animate-pulse">分析中...</span>
+                      <span className="text-[10px] text-warning-500 animate-pulse">分析中...</span>
                     )}
                     {step.detail && (
                       <span className="ml-auto">
                         {isExpanded
-                          ? <ChevronDown className="w-3 h-3 text-gray-300" />
-                          : <ChevronRight className="w-3 h-3 text-gray-300" />
+                          ? <ChevronDown className="w-3 h-3 text-neutral-300" />
+                          : <ChevronRight className="w-3 h-3 text-neutral-300" />
                         }
                       </span>
                     )}
                   </div>
                   <p className={`text-[11px] leading-relaxed mt-0.5 ${
                     isComplete
-                      ? 'text-gray-500 dark:text-gray-400'
-                      : 'text-amber-600/70 dark:text-amber-400/70 animate-pulse'
+                      ? 'text-neutral-500 dark:text-neutral-400'
+                      : 'text-warning-600/70 dark:text-warning-400/70 animate-pulse'
                   }`}>
                     {step.content}
                   </p>
 
                   {/* 展开详情 */}
                   {isExpanded && step.detail && (
-                    <div className="mt-1.5 p-2 bg-white dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700 text-[11px] text-gray-600 dark:text-gray-400 whitespace-pre-wrap leading-relaxed">
+                    <div className="mt-1.5 p-2 bg-white dark:bg-neutral-800 rounded-lg border border-neutral-100 dark:border-neutral-700 text-[11px] text-neutral-600 dark:text-neutral-400 whitespace-pre-wrap leading-relaxed">
                       {step.detail}
                     </div>
                   )}
@@ -212,10 +212,10 @@ export default function ThinkingProcess({ steps, isThinking, onToggle, startTime
         {/* 思考中占位 */}
         {isThinking && visibleSteps === 0 && (
           <div className="flex items-center gap-2.5 p-2 animate-pulse">
-            <div className="w-5 h-5 rounded-full bg-gray-200 dark:bg-gray-700" />
+            <div className="w-5 h-5 rounded-full bg-neutral-200 dark:bg-neutral-700" />
             <div className="flex-1 space-y-1">
-              <div className="h-2.5 bg-gray-200 dark:bg-gray-700 rounded w-20" />
-              <div className="h-2 bg-gray-100 dark:bg-gray-800 rounded w-40" />
+              <div className="h-2.5 bg-neutral-200 dark:bg-neutral-700 rounded w-20" />
+              <div className="h-2 bg-neutral-100 dark:bg-neutral-800 rounded w-40" />
             </div>
           </div>
         )}

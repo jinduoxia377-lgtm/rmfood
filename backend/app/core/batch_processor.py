@@ -22,6 +22,8 @@ import asyncio
 import logging
 import time
 import uuid
+
+from app.utils.error_sanitize import sanitize_error
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Callable, Dict, List, Optional, Tuple, TypeVar, Generic
@@ -219,19 +221,19 @@ class HighPerformanceBatchProcessor:
                         pass
                         
                 except Exception as e:
-                    logger.error(f"❌ 批次 {batch_idx + 1} 插入失败: {e}")
-                    
+                    logger.error(f"批次 {batch_idx + 1} 插入失败", exc_info=True)
+
                     # 记录失败项
                     for idx, item in enumerate(batch_items):
                         failed_items.append({
                             "index": start_idx + idx,
-                            "error": str(e),
+                            "error": sanitize_error(e, "插入失败"),
                             "data": item_to_dict(item) if not isinstance(item, dict) else item,
                         })
                     progress.failed_count += len(batch_items)
                     progress.errors.append({
                         "batch": batch_idx + 1,
-                        "error": str(e),
+                        "error": sanitize_error(e, "批次处理失败"),
                         "count": len(batch_items)
                     })
                 
@@ -353,7 +355,7 @@ class HighPerformanceBatchProcessor:
                             # 最终失败
                             batch_failures.append({
                                 "data": item if not isinstance(item, dict) else vars(item),
-                                "error": str(e),
+                                "error": sanitize_error(e, "处理失败"),
                                 "retries": retries,
                             })
                             progress.failed_count += 1

@@ -1,0 +1,136 @@
+/*
+ * RMFOOD 设计系统 - 表格/统计卡片/Section标题
+ * 数据表格、统计卡片、章节标题
+ * 此文件由 index.css 提取，请勿手动编辑
+ */
+
+/* ═══ 数据表格 ═══ */
+.data-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 12.5px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--border-color, rgba(148, 163, 184, 0.12));
+}
+.data-table thead th {
+  background: rgba(5, 150, 105, 0.03);
+  color: var(--color-primary-hover, #28A745);
+  padding: 12px 14px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  border-bottom: 1.5px solid var(--color-primary-container, rgba(16, 185, 129, 0.1));
+}
+.data-table thead th:first-child { border-radius: var(--radius-lg) 0 0 0; }
+.data-table thead th:last-child  { border-radius: 0 var(--radius-lg) 0 0; }
+.data-table tbody td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border-color, rgba(0, 0, 0, 0.06));
+  color: var(--text-secondary, #6E6E73);
+  transition: background var(--duration-fast) var(--ease-spring);
+}
+.data-table tbody tr {
+  transition: background var(--duration-fast) var(--ease-spring);
+}
+.data-table tbody tr:hover td {
+  background: var(--color-primary-container, rgba(16, 185, 129, 0.02));
+  color: var(--text-primary, #1D1D1F);
+}
+.data-table tbody tr:last-child td {
+  border-bottom: none;
+}
+.dark .data-table {
+  border-color: var(--border-subtle, rgba(255, 255, 255, 0.06));
+}
+.dark .data-table thead th {
+  background: rgba(48, 209, 88, 0.04);
+  color: var(--color-primary, #30D158);
+  border-bottom-color: rgba(48, 209, 88, 0.08);
+}
+.dark .data-table tbody td {
+  border-bottom-color: rgba(255, 255, 255, 0.04);
+  color: var(--text-secondary, #A1A1A6);
+}
+.dark .data-table tbody tr:hover td {
+  background: rgba(48, 209, 88, 0.03);
+  color: var(--text-primary, #F5F5F7);
+}
+
+/* ═══ 统计卡片 ═══ */
+.stat-card {
+  text-align: center;
+  padding: 24px 20px;
+  background: var(--card-bg-solid, white);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-color, rgba(148, 163, 184, 0.1));
+  box-shadow: var(--shadow-sm);
+  transition: all var(--duration-normal) var(--ease-elegant);
+}
+.stat-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+.stat-value {
+  font-family: var(--font-mono);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-primary, #34C759);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+.stat-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted, #9A9A9F);
+  margin-top: 6px;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+.dark .stat-card {
+  background: var(--bg-surface, #1C1C1E);
+  border-color: var(--border-subtle, rgba(255, 255, 255, 0.06));
+}
+.dark .stat-card:hover {
+  box-shadow: var(--shadow-elevated);
+}
+.dark .stat-value {
+  color: var(--color-primary, #30D158);
+}
+
+/* ═══ Section 标题 ═══ */
+.section-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--color-primary, #34C759);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.section-title {
+  font-family: var(--font-serif, 'Noto Serif SC', serif);
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--text-primary, #1D1D1F);
+  font-size: 1.75rem;
+  margin-bottom: 4px;
+}
+.section-title::after {
+  content: '';
+  display: block;
+  width: 56px;
+  height: 3px;
+  background: var(--color-primary, #34C759);
+  margin-top: 12px;
+  border-radius: 2px;
+}
+.dark .section-title {
+  color: var(--text-primary, #F5F5F7);
+}
+.dark .section-label {
+  color: var(--color-primary, #30D158);
+}

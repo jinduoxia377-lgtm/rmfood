@@ -1,5 +1,6 @@
 """Versions and sharing module - /formula/versions, /share"""
 import logging
+import os
 import datetime
 from datetime import timezone
 from typing import Any
@@ -139,10 +140,12 @@ async def get_shared_formula(
     - 支持密码保护
     - 返回配方详细信息
     """
+    # 读取分享密码配置（从环境变量或系统配置）
+    share_password = os.environ.get("SHARE_FORMULA_PASSWORD", "")
+
     try:
-        if share_id == "protected":
-            if password != "123456":
-                raise HTTPException(status_code=403, detail="密码错误或配方不存在")
+        if share_password and password != share_password:
+            raise HTTPException(status_code=403, detail="密码错误或配方不存在")
 
         shared_formula = {
             "share_id": share_id,

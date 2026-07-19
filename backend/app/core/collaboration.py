@@ -1,15 +1,13 @@
 """
-RMFOOD 协作系统核心
+⚠️ EXPERIMENTAL — 协作系统未完全实现
 
-功能:
-- @提及 (Mention) 用户
-- 评论/讨论系统 (Comments & Threads)
-- 实时光标 (Real-time Cursors)
-- 文件共享与版本管理
-- 活动时间线 (Activity Timeline)
-- 协作权限管理
+此模块中的所有服务均为实验性实现。以下功能尚未持久化到数据库：
+- 评论创建/查询/解决/表情反应
+- 文件共享/版本管理
+- 实时协作会话
 
-作者: RMFOOD Team | SSS Upgrade Phase
+前端不应依赖这些功能作为生产级特性。
+完整实现在后续 Sprint 中逐步推进。
 """
 
 from datetime import datetime, timezone
@@ -145,10 +143,14 @@ class CommentService:
         parent_id: Optional[int] = None,
         attachments: Optional[List[Dict]] = None,
     ) -> Comment:
-        """添加评论（自动解析@提及）"""
+        """添加评论（自动解析@提及）
+
+        NOTE: 协作系统尚在开发中。此方法返回一个内存 Comment 对象，
+        但未持久化到数据库。完整实现在 TODO 列表中。
+        """
         # 解析提及
         raw_mentions = MentionParser.parse(content)
-        
+
         # 验证并解析提及的用户
         resolved_mentions = []
         for mention_str in raw_mentions:
@@ -159,7 +161,7 @@ class CommentService:
                 type=MentionType.USER,
                 display_name=username,
             ))
-        
+
         comment = Comment(
             id=0,  # 由DB生成
             content=content,
@@ -171,15 +173,16 @@ class CommentService:
             mentions=resolved_mentions,
             attachments=attachments or [],
         )
-        
+
         # TODO: 写入数据库
-        
+
         # 发送通知给被提及的用户
         for mention in resolved_mentions:
             await self._send_mention_notification(mention, comment)
-        
+
         logger.info(f"💬 新评论: {resource_type}/{resource_id} by user={author_id}, mentions={len(resolved_mentions)}")
-        
+        logger.warning("⚠️ 协作系统未完全实现 — 评论未持久化到数据库")
+
         return comment
     
     async def get_comments(
@@ -189,23 +192,23 @@ class CommentService:
         include_deleted: bool = False,
         thread_depth: int = 3,
     ) -> List[Comment]:
-        """获取资源的评论列表（支持线程化回复）"""
-        # TODO: 从数据库查询，构建回复树
+        """获取资源的评论列表（支持线程化回复）
+
+        NOTE: 协作系统尚未实现数据库查询。
+        """
+        logger.warning("⚠️ 协作系统未实现 — get_comments 返回空列表")
         return []
-    
+
     async def resolve_comment(self, comment_id: int, resolver_id: int) -> bool:
         """标记评论为已解决/关闭"""
-        # TODO: 更新DB
+        logger.warning("⚠️ 协作系统未实现 — resolve_comment 未持久化")
         return True
-    
+
     async def add_reaction(self, comment_id: int, user_id: int, emoji: str) -> bool:
         """添加表情反应"""
-        allowed_emojis = ['👍', '👎', '❤️', '😄', '😮', '🔥']
-        if emoji not in allowed_emojis:
-            return False
-        # TODO: 更新DB
+        logger.warning("⚠️ 协作系统未实现 — add_reaction 未持久化")
         return True
-    
+
     async def get_activity_timeline(
         self,
         resource_type: str,
@@ -213,9 +216,8 @@ class CommentService:
         limit: int = 50,
     ) -> List[Dict]:
         """获取资源活动时间线"""
-        activities = []
-        # TODO: 聚合评论、修改、状态变更等事件
-        return activities
+        logger.warning("⚠️ 协作系统未实现 — get_activity_timeline 返回空列表")
+        return []
 
 
 # ── 文件共享服务 ──
@@ -231,11 +233,15 @@ class FileSharingService:
         mime_type: str,
         resource_type: str,
         resource_id: int,
-        permissions: Dict[str, List[int]],  # {"view": [user_ids], "download": [user_ids]}
+        permissions: Dict[str, List[int]],
         description: Optional[str] = None,
     ) -> Dict:
-        """上传共享文件"""
-        file_record = {
+        """上传共享文件
+
+        NOTE: 协作系统尚未实现文件持久化。
+        """
+        logger.warning("⚠️ 协作系统未实现 — 文件未保存到存储")
+        return {
             "id": 0,
             "filename": filename,
             "original_name": filename,
@@ -249,13 +255,6 @@ class FileSharingService:
             "version": 1,
             "created_at": datetime.now(timezone.utc).isoformat(),
         }
-        
-        # TODO: 保存文件到存储（本地/S3/OSS）
-        # TODO: 写入DB记录共享关系
-        
-        logger.info(f"📎 文件上传: {filename} ({len(file_data)} bytes)")
-        
-        return file_record
     
     async def list_shared_files(
         self,
@@ -264,7 +263,7 @@ class FileSharingService:
         user_id: int,
     ) -> List[Dict]:
         """列出用户有权限查看的共享文件"""
-        # TODO: 查询权限
+        logger.warning("⚠️ 协作系统未实现 — list_shared_files 返回空列表")
         return []
     
     async def create_file_version(
@@ -275,21 +274,19 @@ class FileSharingService:
         change_description: str = "",
     ) -> Dict:
         """创建新版本"""
-        version_record = {
+        logger.warning("⚠️ 协作系统未实现 — 版本未持久化")
+        return {
             "file_id": file_id,
-            "version_number": 0,  # 自动递增
+            "version_number": 0,
             "uploader_id": uploader_id,
             "size": len(file_data),
             "change_description": change_description,
             "created_at": datetime.now(timezone.utc).isoformat(),
         }
-        
-        # TODO: 保存文件，更新版本号
-        
-        return version_record
     
     async def get_file_versions(self, file_id: int) -> List[Dict]:
         """获取文件的版本历史"""
+        logger.warning("⚠️ 协作系统未实现 — get_file_versions 返回空列表")
         return []
 
 
@@ -373,13 +370,11 @@ class RealtimeCollaborationService:
     
     async def get_active_sessions(self, resource_type: str, resource_id: int) -> List[Dict]:
         """获取资源的活跃协作会话"""
-        sessions = []  # TODO: 从Redis/DB查询
-        return sessions
+        logger.warning("⚠️ 协作系统未实现 — 未查询Redis/DB")
+        return []
 
 
 async def _send_mention_notification(self, mention: Mention, comment: Comment):
     """发送@提及通知"""
-    # TODO: 创建通知记录
-    # TODO: 通过WebSocket实时推送
-    # TODO: 发送邮件通知（如果用户离线）
+    logger.warning("⚠️ 协作系统未实现 — 通知未持久化或未推送")
     pass

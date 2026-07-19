@@ -2,39 +2,39 @@
  * RMFOOD 设计系统 — Textarea 文本域
  * 支持 auto-resize / error / disabled / 字符计数 状态
  */
-import { forwardRef, type TextareaHTMLAttributes, useEffect, useRef } from 'react'
-import { cn } from '@/lib/utils'
+import { forwardRef, type TextareaHTMLAttributes, useEffect, useRef } from 'react';
+import { cn } from '@/lib/utils';
 
 interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
-  autoResize?: boolean
-  error?: string | boolean
+  autoResize?: boolean;
+  error?: string | boolean;
   /** 显示字符计数（需要配合 maxLength 使用） */
-  showCount?: boolean
+  showCount?: boolean;
 }
 
 const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
-  ({ className, autoResize, error, showCount, maxLength, value, ...props }, ref) => {
-    const innerRef = useRef<HTMLTextAreaElement | null>(null)
+  ({ className, autoResize, error, showCount, maxLength, value, defaultValue, ...props }, ref) => {
+    const innerRef = useRef<HTMLTextAreaElement | null>(null);
 
     // 合并外部 ref 和内部 ref
     const setRef = (el: HTMLTextAreaElement | null) => {
-      innerRef.current = el
-      if (typeof ref === 'function') ref(el)
-      else if (ref) (ref).current = el
-    }
+      innerRef.current = el;
+      if (typeof ref === 'function') ref(el);
+      else if (ref) ref.current = el;
+    };
 
     // 自动调整高度
     useEffect(() => {
       if (autoResize && innerRef.current) {
-        const el = innerRef.current
-        el.style.height = 'auto'
-        el.style.height = el.scrollHeight + 'px'
+        const el = innerRef.current;
+        el.style.height = 'auto';
+        el.style.height = el.scrollHeight + 'px';
       }
-    }, [autoResize, props.value, props.defaultValue])
+    }, [autoResize, value, defaultValue]);
 
-    const currentLength = typeof value === 'string' ? value.length : 0
-    const isNearLimit = maxLength !== undefined && currentLength > maxLength * 0.8
-    const isOverLimit = maxLength !== undefined && currentLength > maxLength
+    const currentLength = typeof value === 'string' ? value.length : 0;
+    const isNearLimit = maxLength !== undefined && currentLength > maxLength * 0.8;
+    const isOverLimit = maxLength !== undefined && currentLength > maxLength;
 
     return (
       <div className="relative w-full">
@@ -59,20 +59,18 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
                 ? 'text-danger-500 font-medium'
                 : isNearLimit
                   ? 'text-warning-500'
-                  : 'text-slate-400 dark:text-slate-500',
+                  : 'text-neutral-400 dark:text-neutral-500',
             )}
           >
             {currentLength}/{maxLength}
           </span>
         )}
-        {typeof error === 'string' && error && (
-          <p className="mt-1 text-xs text-danger-500">{error}</p>
-        )}
+        {typeof error === 'string' && error && <p className="mt-1 text-xs text-danger-500">{error}</p>}
       </div>
-    )
+    );
   },
-)
+);
 
-Textarea.displayName = 'Textarea'
-export { Textarea }
-export type { TextareaProps }
+Textarea.displayName = 'Textarea';
+export { Textarea };
+export type { TextareaProps };

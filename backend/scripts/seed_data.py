@@ -698,7 +698,7 @@ class SeedDataInitializer:
                 "ingredient_name": "镁 (Mg)",
                 "unit": "mg/day (补充剂)",
                 "soft_limit": 300,
-                "hard_limit:": 350,
+                "hard_limit": 350,
                 "reference": "EFSA, 2021; 从食物摄入不受此限"
             },
             {
@@ -892,7 +892,7 @@ class SeedDataInitializer:
                 "rule_name": "acid_base_neutralization",
                 "category": "chemical",
                 "condition": {
-                    "ph_difference": {"min": 5, "max": null},
+                    "ph_difference": {"min": 5, "max": None},
                     "both_in_solution": True
                 },
                 "severity": "warning",
@@ -1074,18 +1074,11 @@ def main():
         print("   或者使用 --dry-run 参数先预览操作内容")
         sys.exit(1)
 
-    # 构建数据库 URL
-    db_urls = {
-        'development': os.getenv('DATABASE_URL', 'postgresql+asyncpg://rmfood_dev:dev_pass@localhost:5432/rmfood_dev'),
-        'production': os.getenv('PRODUCTION_DATABASE_URL', ''),
-        'test': os.getenv('TEST_DATABASE_URL', 'postgresql+asyncpg://rmfood_test:test_pass@localhost:5432/rmfood_test')
-    }
-
-    database_url = db_urls[args.env]
-    
+    # 构建数据库 URL — 强制使用环境变量，禁止硬编码凭据
+    database_url = os.getenv('DATABASE_URL')
     if not database_url:
-        print(f"❌ 错误: 未配置 {args.env} 环境的数据库连接字符串")
-        print("   请设置相应的环境变量或在脚本中硬编码")
+        print(f"❌ 错误: 必须设置 DATABASE_URL 环境变量")
+        print("   示例: DATABASE_URL=postgresql+asyncpg://user:pass@host:5432/dbname")
         sys.exit(1)
 
     # 执行初始化

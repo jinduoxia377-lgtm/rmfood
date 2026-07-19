@@ -511,3 +511,174 @@ async def get_key_bridges(
         "total_bridges_returned": len(enriched_bridges),
         "bridges": enriched_bridges,
     }
+
+
+# ═══════════════════════════════════════════
+# 节点搜索与关系遍历（新增）
+# ═══════════════════════════════════════════
+
+@router.get("/nodes/search", summary="搜索图谱节点")
+async def search_graph_nodes(
+    q: str = Query(..., min_length=1, description="搜索关键词"),
+    node_type: Optional[str] = Query(None, description="节点类型过滤"),
+    limit: int = Query(20, ge=1, le=100, description="返回数量"),
+    db: AsyncSession = Depends(get_db_session),
+    current_user: User = Depends(get_current_active_user),
+) -> Dict[str, Any]:
+    """搜索知识图谱中的节点，支持模糊匹配和类型过滤"""
+    from sqlalchemy import func, or_
+
+    stmt = select(KGNode).where(
+        or_(
+            KGNode.node_label.ilike(f"%{q}%"),
+            KGNode.description.ilike(f"%{q}%"),
+        )
+    )
+    if node_type:
+        stmt = stmt.where(KGNode.node_type == node_type)
+    stmt = stmt.limit(limit)
+
+    result = await db.execute(stmt)
+    nodes = result.scalars().all()
+
+    return {
+        "query": q,
+        "node_type_filter": node_type,
+        "total": len(nodes),
+        "nodes": [
+            {
+                "id": n.id,
+                "type": n.node_type,
+                "label": n.node_label,
+                "description": n.description,
+            }
+            for n in nodes
+        ],
+    }
+
+
+@router.get("/nodes/{node_id}/neighbors", summary="获取节点的邻居节点")
+async def get_node_neighbors(
+    node_id: int,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: User = Depends(get_current_active_user),
+) -> Dict[str, Any]:
+    """获取指定节点的所有邻居节点（入边和出边连接的节点）"""
+    from ..models.knowledge_graph import KGEdge
+
+    # 获取节点信息
+    stmt = select(KGNode).where(KGNode.id == node_id)
+    result = await db.execute(stmt)
+    node = result.scalar_one_or_none()
+
+    if not node:
+        raise HTTPException(status_code=404, detail="节点不存在")
+
+    # 获取所有相关边
+    edges_stmt = select(KGEdge).where(
+        or_(KGEdge.source_id == node_id, KGEdge.target_id == node_id)
+    )
+    edges_result = await db.execute(edges_stmt)
+    edges = edges_result.scalars().all()
+
+    neighbor_ids = set()
+    for e in edges:
+        if e.source_id == node_id:
+            neighbor_ids.add(e.target_id)
+        else:
+            neighbor_ids.add(e.source_id)
+
+    # 获取邻居节点详情
+    if neighbor_ids:
+        nodes_stmt = select(KGNode).where(KGNode.id.in_(neighbor_ids))
+        nodes_result = await db.execute(nodes_stmt)
+        neighbors = nodes_result.scalars().all()
+    else:
+        neighbors = []
+
+    return {
+        "node_id": node_id,
+        "node_label": node.node_label,
+        "node_type": node.node_type,
+        "neighbor_count": len(neighbors),
+        "neighbors": [
+            {
+                "id": n.id,
+                "type": n.node_type,
+                "label": n.node_label,
+                "description": n.description,
+            }
+            for n in neighbors
+        ],
+    }
+
+
+@router.get("/nodes/{node_id}/subgraph", summary="获取节点的子图（2跳邻居）")
+async def get_node_subgraph(
+    node_id: int,
+    depth: int = Query(2, ge=1, le=3, description="搜索深度"),
+    db: AsyncSession = Depends(get_db_session),
+    current_user: User = Depends(get_current_active_user),
+) -> Dict[str, Any]:
+    """获取指定节点的子图（多跳邻居 + 连接边）"""
+    from ..models.knowledge_graph import KGEdge
+
+    visited: set = {node_id}
+    current_level = {node_id}
+    all_nodes: set = set()
+    all_edges: list = []
+
+    for _ in range(depth):
+        if not current_level:
+            break
+
+        # 获取当前层所有节点的边
+        stmt = select(KGEdge).where(
+            or_(
+                KGEdge.source_id.in_(current_level),
+                KGEdge.target_id.in_(current_level),
+            )
+        )
+        result = await db.execute(stmt)
+        edges = result.scalars().all()
+
+        next_level: set = set()
+        for e in edges:
+            all_edges.append({
+                "id": e.id,
+                "source_id": e.source_id,
+                "target_id": e.target_id,
+                "type": e.edge_type,
+                "strength": e.strength,
+            })
+            if e.source_id not in visited:
+                next_level.add(e.source_id)
+                all_nodes.add(e.source_id)
+            if e.target_id not in visited:
+                next_level.add(e.target_id)
+                all_nodes.add(e.target_id)
+
+        visited |= next_level
+        current_level = next_level
+
+    # 获取所有节点详情
+    node_stmt = select(KGNode).where(KGNode.id.in_(all_nodes))
+    node_result = await db.execute(node_stmt)
+    nodes = node_result.scalars().all()
+
+    return {
+        "root_node_id": node_id,
+        "depth": depth,
+        "total_nodes": len(nodes) + 1,
+        "total_edges": len(all_edges),
+        "nodes": [
+            {
+                "id": n.id,
+                "type": n.node_type,
+                "label": n.node_label,
+                "description": n.description,
+            }
+            for n in nodes
+        ],
+        "edges": all_edges,
+    }

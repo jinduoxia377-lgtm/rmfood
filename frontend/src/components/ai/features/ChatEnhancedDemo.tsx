@@ -239,7 +239,7 @@ export function ChatEnhancedDemo({
       <h1 className="text-3xl font-bold mb-4 text-center">
         🚀 AI 智能对话 v7.0 完整集成示例
       </h1>
-      <p className="text-center text-gray-600 mb-8">
+      <p className="text-center text-neutral-600 mb-8">
         展示性能监控 · 离线支持 · 智能缓存 · Web Worker
       </p>
 
@@ -247,16 +247,16 @@ export function ChatEnhancedDemo({
       <div className="grid grid-cols-3 gap-4 mb-6">
         {/* 性能状态 */}
         <div className={`p-4 rounded-lg border ${
-          memoryStatus === 'critical' ? 'bg-red-50 border-red-200' :
+          memoryStatus === 'critical' ? 'bg-error-50 border-red-200' :
           memoryStatus === 'warning' ? 'bg-yellow-50 border-yellow-200' :
-          'bg-green-50 border-green-200'
+          'bg-success-50 border-green-200'
         }`}>
           <h3 className="font-semibold mb-2">💾 内存</h3>
           <p className="text-sm">{memoryUsageMB.toFixed(1)} MB</p>
-          <p className="text-xs text-gray-500">FPS: {currentFPS}</p>
+          <p className="text-xs text-neutral-500">FPS: {currentFPS}</p>
           <p className={`text-xs font-medium ${
-            fpsStatus === 'good' ? 'text-green-600' :
-            fpsStatus === 'acceptable' ? 'text-yellow-600' : 'text-red-600'
+            fpsStatus === 'good' ? 'text-success-600' :
+            fpsStatus === 'acceptable' ? 'text-yellow-600' : 'text-error-600'
           }`}>
             {fpsStatus === 'good' ? '✅ 流畅' : fpsStatus === 'acceptable' ? '⚠️ 一般' : '❌ 卡顿'}
           </p>
@@ -264,10 +264,10 @@ export function ChatEnhancedDemo({
 
         {/* 离线状态 */}
         <div className={`p-4 rounded-lg border ${
-          statusColor === 'green' ? 'bg-green-50 border-green-200' :
-          statusColor === 'red' ? 'bg-red-50 border-red-200' :
-          statusColor === 'blue' ? 'bg-blue-50 border-blue-200' :
-          'bg-gray-50 border-gray-200'
+          statusColor === 'green' ? 'bg-success-50 border-green-200' :
+          statusColor === 'red' ? 'bg-error-50 border-red-200' :
+          statusColor === 'blue' ? 'bg-secondary-50 border-blue-200' :
+          'bg-slate-50 border-neutral-200'
         }`}>
           <h3 className="font-semibold mb-2">🌐 网络</h3>
           <p className="text-sm">{statusText}</p>
@@ -279,7 +279,7 @@ export function ChatEnhancedDemo({
           {showSyncButton && (
             <button
               onClick={syncNow}
-              className="mt-2 px-3 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600"
+              className="mt-2 px-3 py-1 bg-secondary-500 text-white rounded text-xs hover:bg-secondary-600"
             >
               {syncButtonText}
             </button>
@@ -287,12 +287,12 @@ export function ChatEnhancedDemo({
         </div>
 
         {/* 缓存统计 */}
-        <div className="p-4 rounded-lg border bg-purple-50 border-purple-200">
+        <div className="p-4 rounded-lg border bg-accent-50 border-purple-200">
           <h3 className="font-semibold mb-2">⚡ 缓存</h3>
           <p className="text-sm">
             命中: {cacheStats.hits} | 未命中: {cacheStats.misses}
           </p>
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-neutral-500">
             命中率: {((cacheStats.hits / Math.max(1, cacheStats.hits + cacheStats.misses)) * 100).toFixed(1)}%
           </p>
         </div>
@@ -301,7 +301,7 @@ export function ChatEnhancedDemo({
       {/* 消息列表 */}
       <div className="border rounded-lg p-4 h-96 overflow-y-auto mb-4 bg-white">
         {messages.length === 0 ? (
-          <div className="text-center text-gray-400 mt-20">
+          <div className="text-center text-neutral-400 mt-20">
             发送一条消息开始对话...
           </div>
         ) : (
@@ -309,13 +309,13 @@ export function ChatEnhancedDemo({
             <div
               key={msg.id}
               className={`mb-3 p-3 rounded-lg ${
-                msg.role === 'user' ? 'bg-blue-100 ml-12' :
-                msg.role === 'assistant' ? 'bg-gray-100 mr-12' :
+                msg.role === 'user' ? 'bg-secondary-100 ml-12' :
+                msg.role === 'assistant' ? 'bg-neutral-100 mr-12' :
                 msg.role === 'system' ? 'bg-yellow-50 mx-12' :
-                'bg-red-50 mx-12'
+                'bg-error-50 mx-12'
               }`}
             >
-              <div className="text-xs font-semibold mb-1 text-gray-600">
+              <div className="text-xs font-semibold mb-1 text-neutral-600">
                 {msg.role === 'user' ? '👤 您' :
                  msg.role === 'assistant' ? '🤖 AI' :
                  msg.role === 'system' ? '💾 系统' : '❌ 错误'}
@@ -340,7 +340,7 @@ export function ChatEnhancedDemo({
         <button
           onClick={handleSendMessage}
           disabled={!inputValue.trim()}
-          className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300"
+          className="px-6 py-2 bg-secondary-500 text-white rounded-lg hover:bg-secondary-600 disabled:bg-neutral-300"
         >
           {isOnline ? '发送' : '保存到队列'}
         </button>
@@ -351,7 +351,7 @@ export function ChatEnhancedDemo({
         {/* 性能报告 */}
         <button
           onClick={() => setShowReportModal(true)}
-          className="px-4 py-2 bg-purple-100 text-purple-700 rounded hover:bg-purple-200"
+          className="px-4 py-2 bg-accent-100 text-accent-700 rounded hover:bg-accent-200"
         >
           📊 性能报告
         </button>
@@ -362,7 +362,7 @@ export function ChatEnhancedDemo({
             <button
               onClick={handleWorkerExport}
               disabled={!workerReady || workerProcessing || messages.length === 0}
-              className="px-4 py-2 bg-green-100 text-green-700 rounded hover:bg-green-200 disabled:opacity-50"
+              className="px-4 py-2 bg-success-100 text-success-700 rounded hover:bg-success-200 disabled:opacity-50"
             >
               ⬇️ Worker 导出 {workerProcessing ? '(处理中...)' : ''}
             </button>
@@ -384,7 +384,7 @@ export function ChatEnhancedDemo({
             formulaCache.clear()
             setCacheStats({ hits: 0, misses: 0 })
           }}
-          className="px-4 py-2 bg-red-100 text-red-700 rounded hover:bg-red-200"
+          className="px-4 py-2 bg-error-100 text-error-700 rounded hover:bg-error-200"
         >
           🗑️ 清空缓存
         </button>
@@ -395,7 +395,7 @@ export function ChatEnhancedDemo({
           className={`px-4 py-2 rounded ${
             isMonitoring
               ? 'bg-orange-100 text-orange-700 hover:bg-orange-200'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
           }`}
         >
           {isMonitoring ? '⏸️ 停止监控' : '▶️ 启动监控'}
@@ -408,7 +408,7 @@ export function ChatEnhancedDemo({
           <div className="bg-white p-6 rounded-lg max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
             <h2 className="text-xl font-bold mb-4">📊 性能监控报告</h2>
 
-            <pre className="bg-gray-900 text-green-400 p-4 rounded text-sm overflow-x-auto">
+            <pre className="bg-neutral-900 text-success-400 p-4 rounded text-sm overflow-x-auto">
               {getReport()}
             </pre>
 
@@ -429,7 +429,7 @@ export function ChatEnhancedDemo({
 
             <button
               onClick={() => setShowReportModal(false)}
-              className="mt-4 w-full px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+              className="mt-4 w-full px-4 py-2 bg-neutral-200 rounded hover:bg-neutral-300"
             >
               关闭
             </button>
@@ -440,7 +440,7 @@ export function ChatEnhancedDemo({
       {/* 功能说明 */}
       <div className="mt-8 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg">
         <h3 className="font-bold mb-2">✨ 已集成的 v7.0 新功能：</h3>
-        <ul className="text-sm space-y-1 text-gray-700">
+        <ul className="text-sm space-y-1 text-neutral-700">
           <li>✅ <strong>性能监控</strong>: 实时追踪内存/FPS/渲染时间，自动告警</li>
           <li>✅ <strong>离线支持</strong>: 断网时自动保存消息，恢复后智能同步</li>
           <li>✅ <strong>智能缓存</strong>: LRU/LFU 混合淘汰算法，减少重复请求</li>

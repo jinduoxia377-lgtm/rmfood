@@ -114,7 +114,8 @@ async def check_read_replica_health() -> dict:
             } if hasattr(_read_replica_engine.pool, "size") else {},
         }
     except Exception as e:
-        return {"status": "unhealthy", "error": str(e)}
+        logger.error("读库健康检查失败", exc_info=True)
+        return {"status": "unhealthy", "error": "读库连接异常"}
 
 
 async def get_read_db() -> AsyncGenerator[AsyncSession, None]:
@@ -250,8 +251,8 @@ async def get_replication_lag() -> dict:
         return {"status": "unknown", "lag_seconds": 0, "lag_ms": 0}
 
     except Exception as e:
-        logger.warning("[ReadReplica] 复制延迟检查失败: %s", e)
-        return {"status": "error", "lag_seconds": 0, "lag_ms": 0, "error": str(e)}
+        logger.warning("[ReadReplica] 复制延迟检查失败", exc_info=True)
+        return {"status": "error", "lag_seconds": 0, "lag_ms": 0, "error": "复制延迟检查异常"}
 
 
 # ──────────── 自动读写判断 ────────────

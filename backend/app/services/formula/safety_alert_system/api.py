@@ -190,13 +190,13 @@ def create_safety_alert_router(safety_system: Optional[SafetyAlertSystem] = None
         except ValueError as e:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail={"error": "NOT_FOUND", "message": str(e)}
+                detail={"error": "NOT_FOUND", "message": sanitize_error(e, "资源未找到")}
             )
         except Exception as e:
-            logger.error(f"更新阈值失败: {e}")
+            logger.error("更新阈值失败", exc_info=True)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail={"error": "UPDATE_FAILED", "message": str(e)}
+                detail={"error": "UPDATE_FAILED", "message": sanitize_error(e, "更新失败，请稍后重试")}
             )
 
     @router.post("/check-safety", summary="实时配方安全检查")
@@ -237,10 +237,10 @@ def create_safety_alert_router(safety_system: Optional[SafetyAlertSystem] = None
             return result.to_dict()
 
         except Exception as e:
-            logger.error(f"安全检查失败: {e}")
+            logger.error("安全检查失败", exc_info=True)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail={"error": "CHECK_FAILED", "message": str(e)}
+                detail={"error": "CHECK_FAILED", "message": sanitize_error(e, "安全检查失败，请稍后重试")}
             )
 
     @router.get("/safety-thresholds/search", summary="搜索成分")

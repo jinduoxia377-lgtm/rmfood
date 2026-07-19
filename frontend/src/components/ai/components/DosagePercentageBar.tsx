@@ -28,14 +28,14 @@ const SIZE_CONFIG = {
 }
 
 function getBarColor(percentage: number): string {
-  if (percentage >= 30) return '#1e40af'
-  if (percentage >= 10) return '#3b82f6'
+  if (percentage >= 30) return '#003E87'
+  if (percentage >= 10) return '#007AFF'
   return '#9ca3af'
 }
 
 function getBarColorDark(percentage: number): string {
-  if (percentage >= 30) return '#60a5fa'
-  if (percentage >= 10) return '#93c5fd'
+  if (percentage >= 30) return '#6ECAFF'
+  if (percentage >= 10) return '#A8DFFF'
   return '#6b7280'
 }
 
@@ -105,7 +105,7 @@ const DosagePercentageBar = memo(({
 
   if (percentage === null) {
     return (
-      <span className={`${SIZE_CONFIG[size].fontSize} text-gray-400 dark:text-gray-500`}>
+      <span className={`${SIZE_CONFIG[size].fontSize} text-neutral-400 dark:text-neutral-500`}>
         —
       </span>
     )
@@ -125,7 +125,7 @@ const DosagePercentageBar = memo(({
         <div
           className={`
             ${config.height} w-full rounded-full overflow-hidden
-            bg-gray-200 dark:bg-gray-700
+            bg-neutral-200 dark:bg-neutral-700
             transition-all duration-500 ease-out
           `}
           role="progressbar"
@@ -149,8 +149,8 @@ const DosagePercentageBar = memo(({
             className="
               absolute bottom-full left-1/2 -translate-x-1/2 mb-2
               px-3 py-2 text-xs
-              bg-gray-900 dark:bg-gray-100
-              text-white dark:text-gray-900
+              bg-neutral-900 dark:bg-neutral-100
+              text-white dark:text-neutral-900
               rounded-lg shadow-lg
               z-50
               whitespace-nowrap
@@ -163,7 +163,7 @@ const DosagePercentageBar = memo(({
               用量占比: {displayPercentage}%
             </div>
             {absoluteAmount && (
-              <div className="text-gray-300 dark:text-gray-600 mt-0.5">
+              <div className="text-neutral-300 dark:text-neutral-600 mt-0.5">
                 绝对用量: {absoluteAmount.value.toFixed(2)} {absoluteAmount.unit}
               </div>
             )}
@@ -171,7 +171,7 @@ const DosagePercentageBar = memo(({
               className="
                 absolute top-full left-1/2 -translate-x-1/2
                 -mt-px border-4 border-transparent
-                border-t-gray-900 dark:border-t-gray-100
+                border-t-slate-900 dark:border-t-slate-100
               "
             />
           </div>
@@ -182,7 +182,7 @@ const DosagePercentageBar = memo(({
         <span
           className={`
             ${config.fontSize} font-mono font-medium
-            text-gray-700 dark:text-gray-300
+            text-neutral-700 dark:text-neutral-300
             tabular-nums
           `}
           style={{ color: colorScheme || barColor }}

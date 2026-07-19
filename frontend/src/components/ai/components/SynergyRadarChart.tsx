@@ -84,10 +84,10 @@ const DIMENSION_CONFIG: Record<
     labelEn: 'Synergy Strength',
     description: '衡量药食同源成分与多肽之间的协同作用强弱程度',
     scoringCriteria: [
-      { range: '85-100', level: '优秀', color: '#10B981' },
-      { range: '70-84', level: '良好', color: '#3B82F6' },
-      { range: '55-69', level: '一般', color: '#F59E0B' },
-      { range: '0-54', level: '需改进', color: '#EF4444' },
+      { range: '85-100', level: '优秀', color: '#34C759' },
+      { range: '70-84', level: '良好', color: '#007AFF' },
+      { range: '55-69', level: '一般', color: '#D97706' },
+      { range: '0-54', level: '需改进', color: '#FF3B30' },
     ],
     mechanism:
       '基于多靶点协同理论，评估成分间的互补增效作用。通过分子对接模拟和体外实验验证协同指数。',
@@ -103,10 +103,10 @@ const DIMENSION_CONFIG: Record<
     labelEn: 'Bioavailability Enhancement',
     description: '成分组合对生物利用度的改善效果',
     scoringCriteria: [
-      { range: '85-100', level: '优秀', color: '#10B981' },
-      { range: '70-84', level: '良好', color: '#3B82F6' },
-      { range: '55-69', level: '一般', color: '#F59E0B' },
-      { range: '0-54', level: '需改进', color: '#EF4444' },
+      { range: '85-100', level: '优秀', color: '#34C759' },
+      { range: '70-84', level: '良好', color: '#007AFF' },
+      { range: '55-69', level: '一般', color: '#D97706' },
+      { range: '0-54', level: '需改进', color: '#FF3B30' },
     ],
     mechanism:
       '评估成分间对吸收、代谢、分布的相互影响。包括P-gp抑制、CYP450酶调控、肠道通透性改善等机制。',
@@ -122,10 +122,10 @@ const DIMENSION_CONFIG: Record<
     labelEn: 'Efficacy Multiplication',
     description: '组合后的功效是否呈现1+1>2的倍增效果',
     scoringCriteria: [
-      { range: '85-100', level: '优秀', color: '#10B981' },
-      { range: '70-84', level: '良好', color: '#3B82F6' },
-      { range: '55-69', level: '一般', color: '#F59E0B' },
-      { range: '0-54', level: '需改进', color: '#EF4444' },
+      { range: '85-100', level: '优秀', color: '#34C759' },
+      { range: '70-84', level: '良好', color: '#007AFF' },
+      { range: '55-69', level: '一般', color: '#D97706' },
+      { range: '0-54', level: '需改进', color: '#FF3B30' },
     ],
     mechanism:
       '基于网络药理学和多通路调控理论，评估成分组合对多个靶点的协同激活或抑制作用。',
@@ -141,10 +141,10 @@ const DIMENSION_CONFIG: Record<
     labelEn: 'Safety Index',
     description: '综合评估成分组合的安全性水平',
     scoringCriteria: [
-      { range: '85-100', level: '优秀', color: '#10B981' },
-      { range: '70-84', level: '良好', color: '#3B82F6' },
-      { range: '55-69', level: '一般', color: '#F59E0B' },
-      { range: '0-54', level: '需改进', color: '#EF4444' },
+      { range: '85-100', level: '优秀', color: '#34C759' },
+      { range: '70-84', level: '良好', color: '#007AFF' },
+      { range: '55-69', level: '一般', color: '#D97706' },
+      { range: '0-54', level: '需改进', color: '#FF3B30' },
     ],
     mechanism:
       '综合毒理学评估、药物相互作用风险、不良反应概率等多维度安全性指标。',
@@ -160,10 +160,10 @@ const DIMENSION_CONFIG: Record<
     labelEn: 'Stability Improvement',
     description: '成分组合对产品稳定性的提升程度',
     scoringCriteria: [
-      { range: '85-100', level: '优秀', color: '#10B981' },
-      { range: '70-84', level: '良好', color: '#3B82F6' },
-      { range: '55-69', level: '一般', color: '#F59E0B' },
-      { range: '0-54', level: '需改进', color: '#EF4444' },
+      { range: '85-100', level: '优秀', color: '#34C759' },
+      { range: '70-84', level: '良好', color: '#007AFF' },
+      { range: '55-69', level: '一般', color: '#D97706' },
+      { range: '0-54', level: '需改进', color: '#FF3B30' },
     ],
     mechanism:
       '评估抗氧化保护、光热稳定性、货架期延长等物理化学稳定性指标。',
@@ -179,10 +179,10 @@ const DIMENSION_CONFIG: Record<
     labelEn: 'Taste Balance',
     description: '最终产品的风味协调性和适口性',
     scoringCriteria: [
-      { range: '85-100', level: '优秀', color: '#10B981' },
-      { range: '70-84', level: '良好', color: '#3B82F6' },
-      { range: '55-69', level: '一般', color: '#F59E0B' },
-      { range: '0-54', level: '需改进', color: '#EF4444' },
+      { range: '85-100', level: '优秀', color: '#34C759' },
+      { range: '70-84', level: '良好', color: '#007AFF' },
+      { range: '55-69', level: '一般', color: '#D97706' },
+      { range: '0-54', level: '需改进', color: '#FF3B30' },
     ],
     mechanism:
       '基于感官科学和味觉掩蔽技术，评估苦味、异味掩盖及整体风味平衡性。',
@@ -195,7 +195,7 @@ const DIMENSION_CONFIG: Record<
   },
 }
 
-const DEFAULT_COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444']
+const DEFAULT_COLORS = ['#007AFF', '#34C759', '#D97706', '#FF3B30']
 
 const DIMENSION_ORDER: SynergyDimension[] = [
   'synergyStrength',
@@ -508,8 +508,8 @@ const SynergyRadarChartComponent: React.FC<SynergyRadarChartProps> = ({
             className="absolute inset-2 rounded-full border-4 animate-spin"
             style={{
               borderColor: themeColors.axisText,
-              borderTopColor: '#3B82F6',
-              borderBottomColor: '#3B82F6',
+              borderTopColor: '#007AFF',
+              borderBottomColor: '#007AFF',
             }}
           />
         </div>
@@ -529,7 +529,7 @@ const SynergyRadarChartComponent: React.FC<SynergyRadarChartProps> = ({
           height: height || 400,
           minHeight: 300,
           backgroundColor: `${themeColors.background}50`,
-          borderColor: '#EF4444',
+          borderColor: '#FF3B30',
         }}
         role="alert"
         aria-label={`错误: ${error}`}
@@ -538,18 +538,18 @@ const SynergyRadarChartComponent: React.FC<SynergyRadarChartProps> = ({
           className="w-12 h-12 mb-3"
           fill="none"
           viewBox="0 0 24 24"
-          stroke="#EF4444"
+          stroke="#FF3B30"
           aria-hidden="true"
         >
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
-        <p className="text-sm font-medium mb-3" style={{ color: '#EF4444' }}>
+        <p className="text-sm font-medium mb-3" style={{ color: 'var(--color-error, #FF3B30)' }}>
           {error || '加载失败'}
         </p>
         {onRetry && (
           <button
             onClick={onRetry}
-            className="px-4 py-2 rounded-lg text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 transition-colors"
+            className="px-4 py-2 rounded-lg text-sm font-medium text-white bg-secondary-500 hover:bg-secondary-600 transition-colors"
             aria-label="重试加载"
           >
             重试
@@ -825,7 +825,7 @@ const SynergyRadarChartComponent: React.FC<SynergyRadarChartProps> = ({
               <ul className="space-y-2">
                 {DIMENSION_CONFIG[selectedDimension].optimizationTips.map((tip, idx) => (
                   <li key={idx} className="flex items-start gap-2 text-sm" style={{ color: themeColors.textSecondary }}>
-                    <span className="mt-1.5 flex-shrink-0 w-1.5 h-1.5 rounded-full bg-blue-500" />
+                    <span className="mt-1.5 flex-shrink-0 w-1.5 h-1.5 rounded-full bg-secondary-500" />
                     <span>{tip}</span>
                   </li>
                 ))}

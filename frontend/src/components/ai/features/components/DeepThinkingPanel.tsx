@@ -25,9 +25,9 @@ const MAX_HISTORY_ITEMS = 5
 
 const KeywordTag: React.FC<{ keyword: string; index: number }> = memo(({ keyword, index }) => {
   const colors = [
-    'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
-    'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
-    'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300',
+    'bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-300',
+    'bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-300',
+    'bg-accent-100 text-accent-700 dark:bg-accent-900/30 dark:text-accent-300',
     'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300',
     'bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300',
   ]
@@ -51,7 +51,7 @@ const IntentBadge: React.FC<{ intent: string }> = memo(({ intent }) => {
   return (
     <div className={`text-center p-2.5 ${colorConfig.bgColor} rounded-lg`}>
       <div className={`text-xs ${colorConfig.color} mb-1 font-medium`}>意图</div>
-      <div className="text-sm font-semibold text-gray-800 dark:text-gray-200">{label}</div>
+      <div className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">{label}</div>
     </div>
   )
 })
@@ -72,13 +72,13 @@ const SentimentIndicator: React.FC<{ sentiment: 'positive' | 'negative' | 'neutr
 
   return (
     <div className={`${config.bgColor} rounded-lg p-2.5`}>
-      <div className="text-xs text-gray-500 dark:text-gray-400 mb-1.5 font-medium">情感</div>
+      <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-1.5 font-medium">情感</div>
       <div className={`text-sm font-semibold mb-2 ${config.color}`}>{config.label}</div>
-      <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-1.5">
+      <div className="w-full bg-neutral-200 dark:bg-neutral-600 rounded-full h-1.5">
         <div
           className={`h-1.5 rounded-full transition-all duration-500 ${
-            sentiment === 'positive' ? 'bg-green-500' :
-            sentiment === 'negative' ? 'bg-red-500' : 'bg-gray-400'
+            sentiment === 'positive' ? 'bg-success-500' :
+            sentiment === 'negative' ? 'bg-error-500' : 'bg-neutral-400'
           }`}
           style={{ width: getProgressWidth() }}
         />
@@ -96,16 +96,16 @@ const ComplexityGauge: React.FC<{ complexity: number }> = memo(({ complexity }) 
   const offset = circumference - (complexity * circumference)
 
   const getColor = () => {
-    if (percentage <= 33) return { stroke: '#22c55e', text: 'text-green-500', bg: 'bg-green-50 dark:bg-green-900/20' }
-    if (percentage <= 66) return { stroke: '#f59e0b', text: 'text-yellow-500', bg: 'bg-yellow-50 dark:bg-yellow-900/20' }
-    return { stroke: '#ef4444', text: 'text-red-500', bg: 'bg-red-50 dark:bg-red-900/20' }
+    if (percentage <= 33) return { stroke: '#34C759', text: 'text-success-500', bg: 'bg-success-50 dark:bg-success-900/20' }
+    if (percentage <= 66) return { stroke: '#D97706', text: 'text-yellow-500', bg: 'bg-yellow-50 dark:bg-yellow-900/20' }
+    return { stroke: '#FF3B30', text: 'text-error-500', bg: 'bg-error-50 dark:bg-error-900/20' }
   }
 
   const colors = getColor()
 
   return (
     <div className={`${colors.bg} rounded-lg p-2.5`}>
-      <div className="text-xs text-gray-500 dark:text-gray-400 mb-1.5 font-medium">复杂度</div>
+      <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-1.5 font-medium">复杂度</div>
       <div className="flex items-center justify-center">
         <div className="relative w-14 h-14">
           <svg className="w-14 h-14 transform -rotate-90" viewBox="0 0 56 56">
@@ -116,7 +116,7 @@ const ComplexityGauge: React.FC<{ complexity: number }> = memo(({ complexity }) 
               stroke="currentColor"
               strokeWidth="4"
               fill="none"
-              className="text-gray-200 dark:text-gray-600"
+              className="text-neutral-200 dark:text-neutral-600"
             />
             <circle
               cx="28"
@@ -149,13 +149,13 @@ const SuggestedQuestionCard: React.FC<{
 }> = memo(({ question, onApply, index }) => (
   <button
     onClick={() => onApply(question)}
-    className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 dark:hover:from-blue-900/20 dark:hover:to-purple-900/20 rounded-lg transition-all duration-200 group border border-transparent hover:border-blue-200 dark:hover:border-blue-800"
+    className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 dark:hover:from-blue-900/20 dark:hover:to-purple-900/20 rounded-lg transition-all duration-200 group border border-transparent hover:border-blue-200 dark:hover:border-blue-800"
   >
     <Zap className="w-3.5 h-3.5 text-yellow-500 flex-shrink-0 group-hover:scale-110 transition-transform" />
-    <span className="flex-1 text-left truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+    <span className="flex-1 text-left truncate group-hover:text-secondary-600 dark:group-hover:text-secondary-400 transition-colors">
       {question}
     </span>
-    <span className="text-[10px] text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity">
+    <span className="text-[10px] text-neutral-400 opacity-0 group-hover:opacity-100 transition-opacity">
       点击应用
     </span>
   </button>
@@ -166,23 +166,23 @@ SuggestedQuestionCard.displayName = 'SuggestedQuestionCard'
 const ShimmerSkeleton: React.FC = memo(() => (
   <div className="space-y-4 animate-pulse">
     <div>
-      <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-16 mb-2"></div>
+      <div className="h-3 bg-neutral-200 dark:bg-neutral-700 rounded w-16 mb-2"></div>
       <div className="flex gap-1.5">
         {[1, 2, 3].map(i => (
-          <div key={i} className="h-7 w-16 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+          <div key={i} className="h-7 w-16 bg-neutral-200 dark:bg-neutral-700 rounded-full"></div>
         ))}
       </div>
     </div>
     <div className="grid grid-cols-3 gap-3">
       {[1, 2, 3].map(i => (
-        <div key={i} className="h-20 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+        <div key={i} className="h-20 bg-neutral-200 dark:bg-neutral-700 rounded-lg"></div>
       ))}
     </div>
     <div>
-      <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-20 mb-2"></div>
+      <div className="h-3 bg-neutral-200 dark:bg-neutral-700 rounded w-20 mb-2"></div>
       <div className="space-y-1.5">
         {[1, 2].map(i => (
-          <div key={i} className="h-10 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+          <div key={i} className="h-10 bg-neutral-200 dark:bg-neutral-700 rounded-lg"></div>
         ))}
       </div>
     </div>
@@ -272,17 +272,17 @@ const DeepThinkingPanel: React.FC<DeepThinkingPanelProps> = ({
   return (
     <div
       id="deep-thinking-panel"
-      className="absolute bottom-full left-4 right-4 sm:left-6 sm:right-6 lg:left-8 lg:right-8 mb-2 bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200/80 dark:border-gray-700/80 overflow-hidden z-50 animate-in slide-in-from-bottom-2 fade-in duration-200 max-h-96"
+      className="absolute bottom-full left-4 right-4 sm:left-6 sm:right-6 lg:left-8 lg:right-8 mb-2 bg-white dark:bg-neutral-800 rounded-2xl shadow-xl border border-neutral-200/80 dark:border-neutral-700/80 overflow-hidden z-50 animate-in slide-in-from-bottom-2 fade-in duration-200 max-h-96"
     >
       {/* Header */}
-      <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-800">
+      <div className="px-4 py-3 border-b border-neutral-100 dark:border-neutral-700 flex items-center justify-between bg-gradient-to-r from-slate-50 to-white dark:from-slate-800 dark:to-slate-800">
         <div className="flex items-center gap-2.5">
           <div className="p-1.5 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg">
             <Brain className="w-4 h-4 text-white" />
           </div>
-          <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">深度分析</span>
+          <span className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">深度分析</span>
           {isAnalyzing && (
-            <div className="flex items-center gap-1.5 text-xs text-blue-500">
+            <div className="flex items-center gap-1.5 text-xs text-secondary-500">
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
               <span>正在分析...</span>
             </div>
@@ -294,63 +294,63 @@ const DeepThinkingPanel: React.FC<DeepThinkingPanelProps> = ({
             <>
               <button
                 onClick={() => setShowHistory(!showHistory)}
-                className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all hover:scale-110"
+                className="p-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition-all hover:scale-110"
                 title="分析历史"
                 aria-label="查看分析历史"
               >
-                <History className="w-4 h-4 text-gray-500 hover:text-blue-500" />
+                <History className="w-4 h-4 text-neutral-500 hover:text-secondary-500" />
               </button>
               <button
                 onClick={handleCopyToClipboard}
-                className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all hover:scale-110"
+                className="p-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition-all hover:scale-110"
                 title="复制分析结果"
                 aria-label="复制到剪贴板"
               >
                 {copied ? (
-                  <Check className="w-4 h-4 text-green-500" />
+                  <Check className="w-4 h-4 text-success-500" />
                 ) : (
-                  <Copy className="w-4 h-4 text-gray-500 hover:text-blue-500" />
+                  <Copy className="w-4 h-4 text-neutral-500 hover:text-secondary-500" />
                 )}
               </button>
               <button
                 onClick={handleExportJSON}
-                className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all hover:scale-110"
+                className="p-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition-all hover:scale-110"
                 title="导出JSON报告"
                 aria-label="导出分析报告"
               >
-                <Download className="w-4 h-4 text-gray-500 hover:text-blue-500" />
+                <Download className="w-4 h-4 text-neutral-500 hover:text-secondary-500" />
               </button>
             </>
           )}
           <button
             onClick={onClose}
-            className="p-1.5 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all hover:scale-110 ml-1"
+            className="p-1.5 hover:bg-error-50 dark:hover:bg-error-900/20 rounded-lg transition-all hover:scale-110 ml-1"
             aria-label="关闭深度分析"
           >
-            <X className="w-4 h-4 text-gray-400 hover:text-red-500" />
+            <X className="w-4 h-4 text-neutral-400 hover:text-error-500" />
           </button>
         </div>
       </div>
 
       {/* Content */}
-      <div className="p-4 space-y-4 max-h-72 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
+      <div className="p-4 space-y-4 max-h-72 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-600">
         {isAnalyzing || !analysis ? (
           <ShimmerSkeleton />
         ) : showHistory && history.length > 0 ? (
           /* History View */
           <div className="space-y-2">
-            <div className="text-xs text-gray-500 dark:text-gray-400 font-medium flex items-center gap-2">
+            <div className="text-xs text-neutral-500 dark:text-neutral-400 font-medium flex items-center gap-2">
               <History className="w-3.5 h-3.5" />
               分析历史（最近{MAX_HISTORY_ITEMS}次）
             </div>
             {history.map((item) => (
               <div
                 key={item.id}
-                className="p-3 bg-gray-50 dark:bg-gray-700/30 rounded-lg border border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-700 transition-colors cursor-pointer"
+                className="p-3 bg-slate-50 dark:bg-neutral-700/30 rounded-lg border border-neutral-200 dark:border-neutral-600 hover:border-blue-300 dark:hover:border-blue-700 transition-colors cursor-pointer"
                 onClick={() => onApplyQuestion(item.analysis.suggestedQuestions[0] || '')}
               >
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-xs text-gray-500">{formatTimestamp(item.timestamp)}</span>
+                  <span className="text-xs text-neutral-500">{formatTimestamp(item.timestamp)}</span>
                   <span className={`text-xs font-medium ${
                     SENTIMENT_LABELS[item.analysis.sentiment].color
                   }`}>
@@ -359,7 +359,7 @@ const DeepThinkingPanel: React.FC<DeepThinkingPanelProps> = ({
                 </div>
                 <div className="flex flex-wrap gap-1">
                   {item.analysis.keywords.slice(0, 3).map((kw, i) => (
-                    <span key={i} className="text-[11px] bg-white dark:bg-gray-600 px-1.5 py-0.5 rounded text-gray-600 dark:text-gray-300">
+                    <span key={i} className="text-[11px] bg-white dark:bg-neutral-600 px-1.5 py-0.5 rounded text-neutral-600 dark:text-neutral-300">
                       {kw}
                     </span>
                   ))}
@@ -372,7 +372,7 @@ const DeepThinkingPanel: React.FC<DeepThinkingPanelProps> = ({
           <>
             {/* Keywords Section */}
             <div>
-              <div className="text-xs text-gray-500 dark:text-gray-400 mb-2.5 font-medium flex items-center gap-1.5">
+              <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-2.5 font-medium flex items-center gap-1.5">
                 <AlertCircle className="w-3.5 h-3.5" />
                 提取关键词
               </div>
@@ -393,10 +393,10 @@ const DeepThinkingPanel: React.FC<DeepThinkingPanelProps> = ({
             {/* Suggested Questions */}
             {analysis.suggestedQuestions.length > 0 && (
               <div>
-                <div className="text-xs text-gray-500 dark:text-gray-400 mb-2.5 font-medium flex items-center gap-1.5">
+                <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-2.5 font-medium flex items-center gap-1.5">
                   <Zap className="w-3.5 h-3.5 text-yellow-500" />
                   推荐问题
-                  <span className="ml-auto text-[10px] bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 px-1.5 py-0.5 rounded-full">
+                  <span className="ml-auto text-[10px] bg-secondary-100 text-secondary-600 dark:bg-secondary-900/30 dark:text-secondary-400 px-1.5 py-0.5 rounded-full">
                     {analysis.suggestedQuestions.length}个
                   </span>
                 </div>
@@ -414,7 +414,7 @@ const DeepThinkingPanel: React.FC<DeepThinkingPanelProps> = ({
             )}
 
             {/* Footer Hint */}
-            <div className="pt-2 border-t border-gray-100 dark:border-gray-700 text-[10px] text-gray-400 text-center flex items-center justify-center gap-3">
+            <div className="pt-2 border-t border-neutral-100 dark:border-neutral-700 text-[10px] text-neutral-400 text-center flex items-center justify-center gap-3">
               <span>点击问题自动填充</span>
               <span>·</span>
               <span>按 ESC 关闭</span>

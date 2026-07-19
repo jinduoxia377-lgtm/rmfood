@@ -76,6 +76,19 @@ from .data_preprocessing_pipeline import (
     PipelineManager,
     PipelineConfig,
 )
+from .knowledge_base import (
+    HERB_KNOWLEDGE_BASE,
+    search_herbs,
+    get_herb,
+    get_food_homology_herbs,
+    get_herbs_by_effect,
+)
+from .intent_analyzer import IntentAnalyzer
+from .knowledge_retriever import KnowledgeRetriever
+from .reasoner import Reasoner
+from .formula_designer import FormulaDesigner
+from .answer_formatter import AnswerFormatter
+from .thinking_engine import ThinkingEngine, thinking_engine
 
 __all__ = [
     "AuthService",
@@ -144,4 +157,16 @@ __all__ = [
     "AutoFeatureEngineer",
     "DataQualityMonitor",
     "PipelineManager",
+    "HERB_KNOWLEDGE_BASE",
+    "search_herbs",
+    "get_herb",
+    "get_food_homology_herbs",
+    "get_herbs_by_effect",
+    "IntentAnalyzer",
+    "KnowledgeRetriever",
+    "Reasoner",
+    "FormulaDesigner",
+    "AnswerFormatter",
+    "ThinkingEngine",
+    "thinking_engine",
 ]

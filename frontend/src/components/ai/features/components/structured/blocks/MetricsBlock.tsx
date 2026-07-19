@@ -20,18 +20,18 @@ const TREND_ICONS = {
 }
 
 const TREND_COLORS = {
-  up: 'text-emerald-500 dark:text-emerald-400',
-  down: 'text-red-500 dark:text-red-400',
-  stable: 'text-gray-400 dark:text-gray-500',
+  up: 'text-primary-500 dark:text-primary-400',
+  down: 'text-error-500 dark:text-error-400',
+  stable: 'text-neutral-400 dark:text-neutral-500',
 }
 
 function getValueColor(value: string | number): string {
   const num = typeof value === 'number' ? value : parseFloat(String(value))
-  if (isNaN(num)) return 'text-gray-800 dark:text-gray-200'
-  if (num >= 0.8) return 'text-emerald-600 dark:text-emerald-400'
-  if (num >= 0.5) return 'text-amber-600 dark:text-amber-400'
-  if (num > 0) return 'text-red-600 dark:text-red-400'
-  return 'text-gray-800 dark:text-gray-200'
+  if (isNaN(num)) return 'text-neutral-800 dark:text-neutral-200'
+  if (num >= 0.8) return 'text-primary-600 dark:text-primary-400'
+  if (num >= 0.5) return 'text-warning-600 dark:text-warning-400'
+  if (num > 0) return 'text-error-600 dark:text-error-400'
+  return 'text-neutral-800 dark:text-neutral-200'
 }
 
 function formatDisplayValue(value: string | number): string {
@@ -47,7 +47,7 @@ function MetricsBlock({ data }: MetricsBlockProps) {
 
   if (items.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-6 text-gray-300 dark:text-gray-600">
+      <div className="flex flex-col items-center justify-center py-6 text-neutral-300 dark:text-neutral-600">
         <BarChart3 className="w-8 h-8 mb-2 opacity-50" />
         <p className="text-xs">暂无指标数据</p>
       </div>
@@ -63,7 +63,7 @@ function MetricsBlock({ data }: MetricsBlockProps) {
     <div className="mb-3 last:mb-0">
       {/* 标题 */}
       {title && (
-        <div className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">
+        <div className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-2">
           {title}
         </div>
       )}
@@ -79,21 +79,21 @@ function MetricsBlock({ data }: MetricsBlockProps) {
           // 背景色：从预设色板循环
           const bgColors = [
             'bg-primary-50/60 dark:bg-primary-950/30',
-            'bg-blue-50/60 dark:bg-blue-950/30',
-            'bg-emerald-50/60 dark:bg-emerald-950/30',
-            'bg-purple-50/60 dark:bg-purple-950/30',
+            'bg-secondary-50/60 dark:bg-blue-950/30',
+            'bg-primary-50/60 dark:bg-emerald-950/30',
+            'bg-accent-50/60 dark:bg-purple-950/30',
           ]
 
           return (
             <div
               key={i}
               className={`${bgColors[i % bgColors.length]} rounded-lg px-3 py-2.5
-                border border-gray-100 dark:border-gray-700/50
+                border border-neutral-100 dark:border-neutral-700/50
                 transition-all duration-200 hover:shadow-sm`}
             >
               {/* 标签行 */}
               <div className="flex items-center justify-between mb-1">
-                <span className="text-[10px] text-gray-500 dark:text-gray-400 font-medium truncate">
+                <span className="text-[10px] text-neutral-500 dark:text-neutral-400 font-medium truncate">
                   {item.label}
                 </span>
                 {TrendIcon && (
@@ -107,7 +107,7 @@ function MetricsBlock({ data }: MetricsBlockProps) {
                   {displayValue}
                 </span>
                 {item.unit && (
-                  <span className="text-[10px] text-gray-400 dark:text-gray-500 font-medium">
+                  <span className="text-[10px] text-neutral-400 dark:text-neutral-500 font-medium">
                     {item.unit}
                   </span>
                 )}

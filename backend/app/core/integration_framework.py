@@ -408,7 +408,7 @@ class WebhookService:
         except Exception as e:
             logger.error(f"❌ Webhook投递失败 ({webhook.name}): {e}")
             delivery.success = False
-            delivery.response_body = str(e)
+            delivery.response_body = sanitize_error(e, "集成失败")
             await self._update_failure_count(webhook.id)
 
         finally:

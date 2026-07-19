@@ -82,7 +82,7 @@ def require_permission(
                 return await func(*args, **kwargs)
 
             try:
-                from app.services.team.team_service import TeamService
+                from app.services.team.team_impl import TeamService
                 team_service = TeamService(db)
                 
                 team_detail = await team_service.get_team(team_id, current_user.id)
@@ -152,7 +152,7 @@ def require_team_role(*allowed_roles: TeamRole):
         db: DbSession,
     ):
         try:
-            from app.services.team.team_service import TeamService
+            from app.services.team.team_impl import TeamService
             team_service = TeamService(db)
             
             team_detail = await team_service.get_team(team_id, current_user.id)

@@ -10,7 +10,7 @@
  * - 桌面端快捷键提示条
  */
 import React, { useRef, useEffect, useState, useCallback } from 'react'
-import { Send, Square, Sparkles, ChevronDown, Code, Table2, Bold, Italic, List, Sigma, Keyboard, Check } from 'lucide-react'
+import { Send, Square, Sparkles, ChevronDown, Code, Table2, Bold, Italic, List, Sigma, Keyboard, Check, AlertTriangle } from 'lucide-react'
 
 interface ChatInputProps {
   value: string
@@ -35,9 +35,9 @@ interface ChatInputProps {
 }
 
 const MODELS = [
-  { id: 'deepseek-chat', label: 'DeepSeek', desc: '深度推理', color: 'text-blue-600' },
-  { id: 'gpt-4o-mini', label: 'GPT-4o Mini', desc: '快速响应', color: 'text-emerald-600' },
-  { id: 'glm-4-flash', label: 'GLM-4 Flash', desc: '本地优化', color: 'text-purple-600' },
+  { id: 'deepseek-chat', label: 'DeepSeek', desc: '深度推理', color: 'text-secondary-600' },
+  { id: 'gpt-4o-mini', label: 'GPT-4o Mini', desc: '快速响应', color: 'text-primary-600' },
+  { id: 'glm-4-flash', label: 'GLM-4 Flash', desc: '本地优化', color: 'text-accent-600' },
 ]
 
 const MIN_HEIGHT = 44
@@ -149,9 +149,9 @@ export default function ChatInput({
 
   // 字数统计颜色可视化
   const ratio = charCount ? charCount / maxLength : 0
-  const countColor = !value || !charCount ? 'text-gray-400' :
-    ratio > 0.95 ? 'text-red-500 font-medium' :
-    ratio > 0.8 ? 'text-amber-500' : 'text-gray-400'
+  const countColor = !value || !charCount ? 'text-neutral-400' :
+    ratio > 0.95 ? 'text-error-500 font-medium' :
+    ratio > 0.8 ? 'text-warning-500' : 'text-neutral-400'
 
   // 发送成功闪烁后恢复
   const handleSend = useCallback(() => {
@@ -169,7 +169,7 @@ export default function ChatInput({
   }, [onInsertFormat, activeFormat])
 
   return (
-    <div className="chat-input-area border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900
+    <div className="chat-input-area border-t border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900
       transition-colors duration-200">
       {/* 焦点时底部渐变线（iOS 风格） */}
       {isFocused && (
@@ -180,7 +180,7 @@ export default function ChatInput({
         <div className="flex items-end gap-2">
           <div className="flex-1 relative">
             {/* 格式化工具栏 — 分组：编辑类 | 插入类 */}
-            <div className="flex items-center gap-0.5 pb-1.5 border-b border-gray-100 dark:border-gray-800 mb-2">
+            <div className="flex items-center gap-0.5 pb-1.5 border-b border-neutral-100 dark:border-neutral-800 mb-2">
               {/* 左侧：编辑类 */}
               {[
                 { icon: Code, label: '代码块', format: 'code' as const },
@@ -194,7 +194,7 @@ export default function ChatInput({
                   className={`p-1.5 rounded-md transition-all duration-150
                     ${activeFormat === item.format
                       ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 shadow-sm'
-                      : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                      : 'text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
                     }`}
                   title={item.label}
                 >
@@ -202,7 +202,7 @@ export default function ChatInput({
                 </button>
               ))}
               {/* 竖线分隔符 */}
-              <div className="w-px h-4 bg-gray-300 dark:bg-gray-600 mx-1.5 self-center" />
+              <div className="w-px h-4 bg-neutral-300 dark:bg-neutral-600 mx-1.5 self-center" />
               {/* 右侧：插入类 */}
               {[
                 { icon: Sigma, label: '公式', format: 'formula' as const },
@@ -214,7 +214,7 @@ export default function ChatInput({
                   className={`p-1.5 rounded-md transition-all duration-150
                     ${activeFormat === item.format
                       ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 shadow-sm'
-                      : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                      : 'text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
                     }`}
                   title={item.label}
                 >
@@ -242,11 +242,11 @@ export default function ChatInput({
                 transition: 'height 0.15s ease, box-shadow 0.15s ease',
               }}
               className={`
-                w-full resize-none bg-gray-50 dark:bg-gray-800/50
-                border border-gray-200 dark:border-gray-700
+                w-full resize-none bg-slate-50 dark:bg-neutral-800/50
+                border border-neutral-200 dark:border-neutral-700
                 rounded-xl px-4 py-3 pr-12
                 text-sm leading-relaxed
-                placeholder:text-gray-400 dark:placeholder:text-gray-500
+                placeholder:text-neutral-400 dark:placeholder:text-neutral-500
                 ${isFocused ? 'placeholder:opacity-30 placeholder:transition-opacity placeholder:duration-200' : ''}
                 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400
                 ${isFocused ? 'shadow-sm shadow-primary-200/40 dark:shadow-primary-900/10' : ''}
@@ -262,14 +262,15 @@ export default function ChatInput({
             onClick={isStreaming ? onStop : handleSend}
             disabled={!canSend && !isStreaming}
             className={`
-              flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center
+              flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center
               transition-all duration-200 relative overflow-hidden
-                ? 'bg-green-500 text-white scale-[1.05] shadow-md shadow-green-200'
+              ${sendSuccess
+                ? 'bg-success-500 text-white scale-[1.05] shadow-md shadow-green-200'
                 : isStreaming
-                  ? 'bg-red-500 hover:bg-red-600 text-white'
+                  ? 'bg-error-500 hover:bg-error-600 text-white'
                   : canSend
                     ? 'bg-primary-500 hover:bg-primary-600 active:scale-95 text-white shadow-sm shadow-primary-200 hover:shadow-md'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-400 cursor-not-allowed opacity-50'
+                    : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-400 cursor-not-allowed opacity-50'
               }
             `}
             aria-label={isStreaming ? '停止' : sendSuccess ? '已发送' : '发送'}
@@ -285,46 +286,46 @@ export default function ChatInput({
         </div>
 
         {/* 快捷键提示条（仅桌面端 >768px 显示） */}
-        <div className="hidden md:flex items-center justify-center py-1.5 px-2 rounded-lg bg-gray-50 dark:bg-gray-800/60 text-[11px] text-gray-400 dark:text-gray-500 gap-3">
-          <Keyboard className="w-3 h-3" />5
-          <span><kbd className="px-1 py-0.5 rounded bg-gray-200 dark:bg-gray-700 font-mono text-[10px]">↵</kbd> 发送</span>
-          <span><kbd className="px-1 py-0.5 rounded bg-gray-200 dark:bg-gray-700 font-mono text-[10px]">⇧↵</kbd> 换行</span>
-          <span><kbd className="px-1 py-0.5 rounded bg-gray-200 dark:bg-gray-700 font-mono text-[10px]">⌃↵</kbd> 强制换行</span>
-          <span><kbd className="px-1 py-0.5 rounded bg-gray-200 dark:bg-gray-700 font-mono text-[10px]">Esc</kbd> 清空</span>
-          <span><kbd className="px-1 py-0.5 rounded bg-gray-200 dark:bg-gray-700 font-mono text-[10px]">↑</kbd> 编辑上条</span>
-          <span><kbd className="px-1 py-0.5 rounded bg-gray-200 dark:bg-gray-700 font-mono text-[10px]">Tab</kbd> AI补全</span>
+        <div className="hidden md:flex items-center justify-center py-1.5 px-2 rounded-lg bg-slate-50 dark:bg-neutral-800/60 text-[11px] text-neutral-400 dark:text-neutral-500 gap-3">
+          <Keyboard className="w-3 h-3" />
+          <span><kbd className="px-1 py-0.5 rounded bg-neutral-200 dark:bg-neutral-700 font-mono text-[10px]">↵</kbd> 发送</span>
+          <span><kbd className="px-1 py-0.5 rounded bg-neutral-200 dark:bg-neutral-700 font-mono text-[10px]">⇧↵</kbd> 换行</span>
+          <span><kbd className="px-1 py-0.5 rounded bg-neutral-200 dark:bg-neutral-700 font-mono text-[10px]">⌃↵</kbd> 强制换行</span>
+          <span><kbd className="px-1 py-0.5 rounded bg-neutral-200 dark:bg-neutral-700 font-mono text-[10px]">Esc</kbd> 清空</span>
+          <span><kbd className="px-1 py-0.5 rounded bg-neutral-200 dark:bg-neutral-700 font-mono text-[10px]">↑</kbd> 编辑上条</span>
+          <span><kbd className="px-1 py-0.5 rounded bg-neutral-200 dark:bg-neutral-700 font-mono text-[10px]">Tab</kbd> AI补全</span>
         </div>
 
         {/* 底部工具栏 */}
-        <div className="flex items-center justify-between text-[11px] text-gray-400 dark:text-gray-500 px-1">
+        <div className="flex items-center justify-between text-[11px] text-neutral-400 dark:text-neutral-500 px-1">
           {/* 模型选择器 */}
           <div className="relative">
             <button
               onClick={() => setShowModelPicker(!showModelPicker)}
-              className="flex items-center gap-1.5 px-2 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              className="flex items-center gap-1.5 px-2 py-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
             >
               <Sparkles className={`w-3 h-3 ${currentModel.color}`} />
-              <span className="text-gray-600 dark:text-gray-400">{currentModel.label}</span>
+              <span className="text-neutral-600 dark:text-neutral-400">{currentModel.label}</span>
               <ChevronDown className="w-3 h-3" />
             </button>
 
             {showModelPicker && (
               <>
                 <div className="fixed inset-0 z-10" onClick={() => setShowModelPicker(false)} aria-hidden="true" />
-                <div className="absolute bottom-full left-0 mb-1 z-20 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-1 min-w-[160px]" role="listbox">
+                <div className="absolute bottom-full left-0 mb-1 z-20 bg-white dark:bg-neutral-800 rounded-xl shadow-lg border border-neutral-200 dark:border-neutral-700 py-1 min-w-[160px]" role="listbox">
                   {MODELS.map(m => (
                     <button
                       key={m.id}
                       onClick={() => { onModelChange?.(m.id); setShowModelPicker(false) }}
                       role="option"
                       aria-selected={m.id === modelName}
-                      className={`w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors
+                      className={`w-full flex items-center gap-2 px-4 py-2.5 text-xs hover:bg-slate-50 dark:hover:bg-neutral-700/50 transition-colors
                         ${m.id === modelName ? 'bg-primary-50 dark:bg-primary-900/20' : ''}`}
                     >
                       <Sparkles className={`w-3 h-3 ${m.color}`} />
                       <div className="text-left">
-                        <div className="text-gray-800 dark:text-gray-200 font-medium">{m.label}</div>
-                        <div className="text-gray-400">{m.desc}</div>
+                        <div className="text-neutral-800 dark:text-neutral-200 font-medium">{m.label}</div>
+                        <div className="text-neutral-400">{m.desc}</div>
                       </div>
                     </button>
                   ))}
@@ -335,12 +336,25 @@ export default function ChatInput({
 
           {/* 字符计数 — 渐变颜色可视化 */}
           {charCount !== undefined && (
-            <span className={`transition-colors duration-200 ${countColor}`}>
+            <span className={`inline-flex items-center gap-0.5 transition-colors duration-200 ${countColor}`}>
               {charCount}/{maxLength}
-              {ratio > 0.95 && <span className="ml-0.5">⚠</span>}
+              {ratio > 0.95 && <AlertTriangle className="w-3 h-3" aria-hidden="true" />}
             </span>
           )}
         </div>
+
+        {/* 字数上限提示 — 屏幕阅读器可感知，避免静默截断 */}
+        {charCount !== undefined && ratio >= 0.9 && (
+          <p
+            role="status"
+            aria-live="polite"
+            className={`px-1 text-[11px] ${isExceeded || ratio >= 1 ? 'text-error-500' : 'text-warning-500'}`}
+          >
+            {ratio >= 1
+              ? `已达字数上限（${maxLength} 字），无法继续输入`
+              : `已接近字数上限（${charCount}/${maxLength}）`}
+          </p>
+        )}
       </div>
     </div>
   )

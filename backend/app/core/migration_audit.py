@@ -18,6 +18,7 @@ RMFOOD 企业级审计与权限表迁移脚本
 
 import asyncio
 import logging
+import re
 from datetime import datetime, timezone
 
 from sqlalchemy import (
@@ -32,43 +33,15 @@ from typing import Any, Dict
 
 from .logging_config import logger
 
-Base = declarative_base()
+# 使用项目主 Base 替代独立 declarative_base
+from app.core.database import Base
 
 # ──────────────────────────────────────────────
 # 表结构定义
 # ──────────────────────────────────────────────
 
-class AuditLog(Base):
-    """HTTP 请求审计日志表"""
-    __tablename__ = "audit_logs"
-
-    id = Column(String(64), primary_key=True)
-    request_id = Column(String(64), index=True)
-    user_id = Column(Integer, nullable=True, index=True)
-    username = Column(String(128), nullable=True)
-    user_role = Column(String(32), nullable=True)
-    method = Column(String(8), nullable=False)
-    path = Column(String(512), nullable=False, index=True)
-    query_params = Column(JSONB, nullable=True)
-    status_code = Column(Integer, nullable=True)
-    duration_ms = Column(Integer, nullable=True)
-    client_ip = Column(String(45), nullable=True)
-    user_agent = Column(String(512), nullable=True)
-    action = Column(String(256), nullable=True)
-    severity = Column(String(16), nullable=False, default="low", index=True)
-    masked_request_body = Column(Text, nullable=True)
-    masked_response_body = Column(Text, nullable=True)
-    checksum_chain = Column(String(64), nullable=True)
-    error = Column(Text, nullable=True)
-    metadata = Column(JSONB, nullable=True, default=dict)
-    created_at = Column(DateTime(timezone=True), nullable=False,
-                        default=lambda: datetime.now(timezone.utc), index=True)
-
-    __table_args__ = (
-        Index("ix_audit_logs_created_severity", "created_at", "severity"),
-        Index("ix_audit_logs_user_created", "user_id", "created_at"),
-        Index("ix_audit_logs_path_created", "path", "created_at"),
-    )
+# AuditLog 已统一到 backend/app/models/system.py
+# PermissionEntry, BackupRecord, DataLineage 保留为扩展表
 
 
 class PermissionEntry(Base):
@@ -76,7 +49,7 @@ class PermissionEntry(Base):
     __tablename__ = "permission_entries"
 
     id = Column(String(64), primary_key=True)
-    user_id = Column(Integer, nullable=False, index=True)
+    user_id = Column(BigInteger, nullable=False, index=True)
     user_name = Column(String(128), nullable=False)
     resource = Column(String(64), nullable=False)
     action = Column(String(32), nullable=False)
@@ -89,13 +62,13 @@ class PermissionEntry(Base):
 
     granted_at = Column(DateTime(timezone=True), nullable=False,
                          default=lambda: datetime.now(timezone.utc))
-    granted_by = Column(Integer, nullable=True)
+    granted_by = Column(BigInteger, nullable=True)
     granted_reason = Column(Text, nullable=True)
     expires_at = Column(DateTime(timezone=True), nullable=True, index=True)
     last_used_at = Column(DateTime(timezone=True), nullable=True)
     auto_expire_hours = Column(Integer, nullable=True)
 
-    metadata = Column(JSONB, nullable=True, default=dict)
+    metadata_ = Column(JSONB, nullable=True, default=dict, name="metadata")
     change_history = Column(JSONB, nullable=True, default=list)
 
     __table_args__ = (
@@ -125,7 +98,7 @@ class BackupRecord(Base):
     created_at = Column(DateTime(timezone=True), nullable=False,
                          default=lambda: datetime.now(timezone.utc), index=True)
     completed_at = Column(DateTime(timezone=True), nullable=True)
-    metadata = Column(JSONB, nullable=True, default=dict)
+    metadata_ = Column(JSONB, nullable=True, default=dict, name="metadata")
 
     __table_args__ = (
         Index("ix_backup_status_created", "status", "created_at"),
@@ -143,10 +116,10 @@ class DataLineage(Base):
     source_type = Column(String(64), nullable=True)
     source_id = Column(String(64), nullable=True)
     transformation = Column(Text, nullable=True)
-    created_by = Column(Integer, nullable=True)
+    created_by = Column(BigInteger, nullable=True)
     created_at = Column(DateTime(timezone=True), nullable=False,
                          default=lambda: datetime.now(timezone.utc), index=True)
-    metadata = Column(JSONB, nullable=True, default=dict)
+    metadata_ = Column(JSONB, nullable=True, default=dict, name="metadata")
 
     __table_args__ = (
         Index("ix_lineage_entity", "entity_type", "entity_id"),
@@ -166,7 +139,7 @@ async def create_tables(session: AsyncSession) -> None:
 
     tables_created = []
 
-    for model in [AuditLog, PermissionEntry, BackupRecord, DataLineage]:
+    for model in [PermissionEntry, BackupRecord, DataLineage]:
         table_name = model.__tablename__
         try:
             # 检查表是否存在
@@ -257,10 +230,15 @@ async def rollback_migration(session: AsyncSession) -> None:
     """回滚迁移（删除所有表）"""
     logger.warning("⚠️ 开始回滚迁移 — 将删除所有企业级表！")
 
-    for model in [DataLineage, BackupRecord, PermissionEntry, AuditLog]:
+    for model in [DataLineage, BackupRecord, PermissionEntry]:
         table_name = model.__tablename__
+        # 安全：表名来自 SQLAlchemy model 元数据，已在模型定义时校验
+        if not re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', table_name):
+            logger.error(f"非法表名: {table_name}，跳过回滚")
+            continue
         try:
-            await session.execute(f"DROP TABLE IF EXISTS {table_name} CASCADE")
+            stmt = text(f"DROP TABLE IF EXISTS \"{table_name}\" CASCADE")
+            await session.execute(stmt)
             logger.info(f"  ✓ 已删除表: {table_name}")
         except Exception as e:
             logger.warning(f"  ⚠️ 表 {table_name} 删除失败: {e}")

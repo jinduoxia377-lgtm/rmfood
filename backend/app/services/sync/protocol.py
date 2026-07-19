@@ -254,7 +254,7 @@ class SyncProtocol:
                     conflicts.append({
                         "entity_type": change.get("entity_type", "unknown"),
                         "entity_id": change.get("entity_id", "unknown"),
-                        "reason": f"Validation failed: {str(e)}",
+                        "reason": "验证失败",
                         "local_version": change.get("version", 0),
                     })
 
@@ -276,13 +276,13 @@ class SyncProtocol:
         except Exception as e:
             if transfer_id in self._active_transfers:
                 self._active_transfers[transfer_id]["status"] = TransferStatus.FAILED
-                self._active_transfers[transfer_id]["error"] = str(e)
+                self._active_transfers[transfer_id]["error"] = "传输失败"
             
             self._stats["transfers_failed"] += 1
             
             return SyncPushResponse(
                 success=False,
-                error=str(e),
+                error="传输失败",
                 server_timestamp=datetime.now(timezone.utc),
                 transfer_id=transfer_id,
             )

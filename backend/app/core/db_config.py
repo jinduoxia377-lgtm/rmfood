@@ -38,7 +38,7 @@ class DatabasePerformanceConfig:
     
     # 查询超时设置（秒）
     STATEMENT_TIMEOUT = 30
-    SLOW_QUERY_THRESHOLD = 1.0  # 慢查询阈值
+    SLOW_QUERY_THRESHOLD = 1.0  # 慢查询阈值（秒）— 已弃用，请使用 settings.logging.slow_query_threshold_ms
     
     # 批量操作配置
     BATCH_SIZE = 1000  # 批量插入/更新的批次大小

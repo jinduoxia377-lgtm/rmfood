@@ -5,130 +5,131 @@ type WorkerMessageType =
   | 'export:error'
   | 'process:text'
   | 'process:complete'
+  | 'error';
 
 interface WorkerMessage<T = any> {
-  type: WorkerMessageType
-  payload: T
-  id?: string
+  type: WorkerMessageType;
+  payload: T;
+  id?: string;
 }
 
 interface ExportTask {
-  data: any[]
-  format: 'json' | 'csv' | 'txt' | 'html' | 'markdown'
+  data: any[];
+  format: 'json' | 'csv' | 'txt' | 'html' | 'markdown';
   options?: {
-    includeHeaders?: boolean
-    delimiter?: string
-    prettyPrint?: boolean
-  }
+    includeHeaders?: boolean;
+    delimiter?: string;
+    prettyPrint?: boolean;
+  };
 }
 
 interface ProcessTextTask {
-  content: string
-  operation: 'markdown-to-html' | 'sanitize' | 'truncate' | 'extract-keywords'
-  options?: Record<string, any>
+  content: string;
+  operation: 'markdown-to-html' | 'sanitize' | 'truncate' | 'extract-keywords';
+  options?: Record<string, any>;
 }
 
 class ChatWorkerManager {
-  private worker: Worker | null = null
-  private taskQueue = new Map<string, { resolve: Function; reject: Function }>()
-  private isInitialized = false
+  private worker: Worker | null = null;
+  private taskQueue = new Map<string, { resolve: Function; reject: Function }>();
+  private isInitialized = false;
 
   async init(): Promise<void> {
-    if (this.isInitialized) return
+    if (this.isInitialized) return;
 
     try {
-      const workerCode = this.getWorkerCode()
-      const blob = new Blob([workerCode], { type: 'application/javascript' })
-      const workerUrl = URL.createObjectURL(blob)
+      const workerCode = this.getWorkerCode();
+      const blob = new Blob([workerCode], { type: 'application/javascript' });
+      const workerUrl = URL.createObjectURL(blob);
 
-      this.worker = new Worker(workerUrl)
-      this.worker.onmessage = this.handleMessage.bind(this)
-      this.worker.onerror = this.handleError.bind(this)
+      this.worker = new Worker(workerUrl);
+      this.worker.onmessage = this.handleMessage.bind(this);
+      this.worker.onerror = this.handleError.bind(this);
 
-      this.isInitialized = true
+      this.isInitialized = true;
     } catch (error) {
-      throw error
+      throw error;
     }
   }
 
   async exportData(task: ExportTask): Promise<string> {
-    await this.init()
+    await this.init();
 
     return new Promise((resolve, reject) => {
-      const taskId = crypto.randomUUID()
-      this.taskQueue.set(taskId, { resolve, reject })
+      const taskId = crypto.randomUUID();
+      this.taskQueue.set(taskId, { resolve, reject });
 
       this.worker!.postMessage({
         type: 'export:start',
         payload: task,
         id: taskId,
-      })
-    })
+      });
+    });
   }
 
   async processText(task: ProcessTextTask): Promise<string> {
-    await this.init()
+    await this.init();
 
     return new Promise((resolve, reject) => {
-      const taskId = crypto.randomUUID()
-      this.taskQueue.set(taskId, { resolve, reject })
+      const taskId = crypto.randomUUID();
+      this.taskQueue.set(taskId, { resolve, reject });
 
       this.worker!.postMessage({
         type: 'process:text',
         payload: task,
         id: taskId,
-      })
-    })
+      });
+    });
   }
 
   cancelTask(taskId?: string): void {
-    if (!this.worker) return
+    if (!this.worker) return;
     if (taskId) {
-      this.taskQueue.delete(taskId)
+      this.taskQueue.delete(taskId);
     } else {
-      this.taskQueue.clear()
+      this.taskQueue.clear();
     }
   }
 
   terminate(): void {
     if (this.worker) {
-      this.worker.terminate()
-      this.worker = null
-      this.isInitialized = false
-      this.taskQueue.clear()
+      this.worker.terminate();
+      this.worker = null;
+      this.isInitialized = false;
+      this.taskQueue.clear();
     }
   }
 
   private handleMessage(event: MessageEvent<WorkerMessage>): void {
-    const { type, payload, id } = event.data
+    const { type, payload, id } = event.data;
 
     switch (type) {
       case 'export:complete':
       case 'process:complete': {
-        const resolver = this.taskQueue.get(id!)
+        const resolver = this.taskQueue.get(id!);
         if (resolver) {
-          resolver.resolve(payload as string)
-          this.taskQueue.delete(id!)
+          resolver.resolve(payload as string);
+          this.taskQueue.delete(id!);
         }
-        break
+        break;
       }
       case 'export:error':
       case 'error': {
-        const rejecter = this.taskQueue.get(id!)
+        const rejecter = this.taskQueue.get(id!);
         if (rejecter) {
-          rejecter.reject(new Error(payload as string))
-          this.taskQueue.delete(id!)
+          rejecter.reject(new Error(payload as string));
+          this.taskQueue.delete(id!);
         }
-        break
+        break;
       }
     }
   }
 
   private handleError(error: ErrorEvent): void {
     this.taskQueue.forEach(({ reject }) => {
-      reject(new Error('Worker error: ' + error.message))
-    })
-    this.taskQueue.clear()
+      reject(new Error('Worker error: ' + error.message));
+    });
+    this.taskQueue.clear();
   }
 
   private getWorkerCode(): string {
@@ -354,83 +355,83 @@ class ChatWorkerManager {
         }
         return result.join(', ');
       }
-    `
+    `;
   }
 }
 
-import { useEffect, useRef, useState, useCallback } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react';
 
 interface UseWorkerOptions {
-  autoInit?: boolean
+  autoInit?: boolean;
 }
 
 interface UseWorkerReturn {
-  isReady: boolean
-  isProcessing: boolean
+  isReady: boolean;
+  isProcessing: boolean;
 
-  exportData: (task: ExportTask) => Promise<string>
-  processText: (task: ProcessTextTask) => Promise<string>
-  cancelCurrentTask: () => void
-  terminate: () => void
+  exportData: (task: ExportTask) => Promise<string>;
+  processText: (task: ProcessTextTask) => Promise<string>;
+  cancelCurrentTask: () => void;
+  terminate: () => void;
 }
 
 export function useChatWorker(options: UseWorkerOptions = {}): UseWorkerReturn {
-  const { autoInit = true } = options
+  const { autoInit = true } = options;
 
-  const workerRef = useRef<ChatWorkerManager | null>(null)
-  const [isReady, setIsReady] = useState(false)
-  const [isProcessing, setIsProcessing] = useState(false)
+  const workerRef = useRef<ChatWorkerManager | null>(null);
+  const [isReady, setIsReady] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
     if (autoInit) {
-      initWorker()
+      initWorker();
     }
 
     return () => {
-      workerRef.current?.terminate()
-    }
-  }, [autoInit])
+      workerRef.current?.terminate();
+    };
+  }, [autoInit]);
 
   const initWorker = useCallback(async () => {
     try {
-      workerRef.current = new ChatWorkerManager()
-      await workerRef.current.init()
-      setIsReady(true)
+      workerRef.current = new ChatWorkerManager();
+      await workerRef.current.init();
+      setIsReady(true);
     } catch (error) {
-      setIsReady(false)
+      setIsReady(false);
     }
-  }, [])
+  }, []);
 
   const exportData = useCallback(async (task: ExportTask): Promise<string> => {
-    if (!workerRef.current) throw new Error('Worker not initialized')
-    setIsProcessing(true)
+    if (!workerRef.current) throw new Error('Worker not initialized');
+    setIsProcessing(true);
     try {
-      return await workerRef.current.exportData(task)
+      return await workerRef.current.exportData(task);
     } finally {
-      setIsProcessing(false)
+      setIsProcessing(false);
     }
-  }, [])
+  }, []);
 
   const processText = useCallback(async (task: ProcessTextTask): Promise<string> => {
-    if (!workerRef.current) throw new Error('Worker not initialized')
-    setIsProcessing(true)
+    if (!workerRef.current) throw new Error('Worker not initialized');
+    setIsProcessing(true);
     try {
-      return await workerRef.current.processText(task)
+      return await workerRef.current.processText(task);
     } finally {
-      setIsProcessing(false)
+      setIsProcessing(false);
     }
-  }, [])
+  }, []);
 
   const cancelCurrentTask = useCallback(() => {
-    workerRef.current?.cancelTask()
-    setIsProcessing(false)
-  }, [])
+    workerRef.current?.cancelTask();
+    setIsProcessing(false);
+  }, []);
 
   const terminate = useCallback(() => {
-    workerRef.current?.terminate()
-    setIsReady(false)
-    setIsProcessing(false)
-  }, [])
+    workerRef.current?.terminate();
+    setIsReady(false);
+    setIsProcessing(false);
+  }, []);
 
   return {
     isReady,
@@ -439,8 +440,8 @@ export function useChatWorker(options: UseWorkerOptions = {}): UseWorkerReturn {
     processText,
     cancelCurrentTask,
     terminate,
-  }
+  };
 }
 
-export { ChatWorkerManager, type ExportTask, type ProcessTextTask }
-export default ChatWorkerManager
+export { ChatWorkerManager, type ExportTask, type ProcessTextTask };
+export default ChatWorkerManager;

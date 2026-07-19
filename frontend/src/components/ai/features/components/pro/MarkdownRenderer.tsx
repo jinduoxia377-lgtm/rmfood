@@ -6,7 +6,7 @@
  *       嵌套列表+任务列表、Callout提示块、增强代码块（行号/文件名/折叠）、
  *       数学公式（行内/块级）、脚注、自动目录、分隔线变体、FormulaCard集成
  */
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import {
   Copy, Check, ChevronDown, ChevronUp,
   Info, AlertTriangle, CheckCircle, XCircle, Lightbulb, MessageSquare,
@@ -45,21 +45,21 @@ const CALLOUT_CONFIG: Record<CalloutType, {
   iconColor: string
   titleColor: string
 }> = {
-  INFO:     { icon: Info,          label: '信息',   bgColor: 'bg-blue-50 dark:bg-blue-950/40', borderColor: 'border-blue-200 dark:border-blue-800', iconColor: 'text-blue-500',    titleColor: 'text-blue-700 dark:text-blue-300' },
-  WARNING:  { icon: AlertTriangle,  label: '警告',   bgColor: 'bg-amber-50 dark:bg-amber-950/40', borderColor: 'border-amber-200 dark:border-amber-800', iconColor: 'text-amber-500',  titleColor: 'text-amber-700 dark:text-amber-300' },
-  SUCCESS:  { icon: CheckCircle,    label: '成功',   bgColor: 'bg-green-50 dark:bg-green-950/40', borderColor: 'border-green-200 dark:border-green-800', iconColor: 'text-green-500',  titleColor: 'text-green-700 dark:text-green-300' },
-  ERROR:    { icon: XCircle,       label: '错误',   bgColor: 'bg-red-50 dark:bg-red-950/40', borderColor: 'border-red-200 dark:border-red-800', iconColor: 'text-red-500',    titleColor: 'text-red-700 dark:text-red-300' },
+  INFO:     { icon: Info,          label: '信息',   bgColor: 'bg-secondary-50 dark:bg-blue-950/40', borderColor: 'border-blue-200 dark:border-blue-800', iconColor: 'text-secondary-500',    titleColor: 'text-secondary-700 dark:text-secondary-300' },
+  WARNING:  { icon: AlertTriangle,  label: '警告',   bgColor: 'bg-warning-50 dark:bg-amber-950/40', borderColor: 'border-amber-200 dark:border-amber-800', iconColor: 'text-warning-500',  titleColor: 'text-warning-700 dark:text-warning-300' },
+  SUCCESS:  { icon: CheckCircle,    label: '成功',   bgColor: 'bg-success-50 dark:bg-green-950/40', borderColor: 'border-green-200 dark:border-green-800', iconColor: 'text-success-500',  titleColor: 'text-success-700 dark:text-success-300' },
+  ERROR:    { icon: XCircle,       label: '错误',   bgColor: 'bg-error-50 dark:bg-red-950/40', borderColor: 'border-red-200 dark:border-red-800', iconColor: 'text-error-500',    titleColor: 'text-error-700 dark:text-error-300' },
   TIP:      { icon: Lightbulb,     label: '提示',   bgColor: 'bg-indigo-50 dark:bg-indigo-950/40', borderColor: 'border-indigo-200 dark:border-indigo-800', iconColor: 'text-indigo-500',  titleColor: 'text-indigo-700 dark:text-indigo-300' },
-  NOTE:     { icon: MessageSquare,  label: '注意',   bgColor: 'bg-gray-50 dark:bg-gray-900/40', borderColor: 'border-gray-200 dark:border-gray-700', iconColor: 'text-gray-500',   titleColor: 'text-gray-700 dark:text-gray-300' },
+  NOTE:     { icon: MessageSquare,  label: '注意',   bgColor: 'bg-slate-50 dark:bg-neutral-900/40', borderColor: 'border-neutral-200 dark:border-neutral-700', iconColor: 'text-neutral-500',   titleColor: 'text-neutral-700 dark:text-neutral-300' },
 }
 
 const LANG_COLORS: Record<string, string> = {
-  python: '#3776ab', javascript: '#f7df1e', typescript: '#3178c6',
-  java: '#ed8b00', go: '#00add8', rust: '#dea584', cpp: '#00599c',
-  c: '#555555', ruby: '#cc342d', php: '#777bb4', swift: '#fa7343',
-  kotlin: '#7f52ff', shell: '#89e051', bash: '#89e051',
-  json: '#292929', sql: '#e38c28', html: '#e34c26', css: '#264de4',
-  yaml: '#cb171e', markdown: '#083fa1', default: '#6b7280',
+  python: 'var(--color-python, #3776AB)', javascript: 'var(--color-js, #F7DF1E)', typescript: 'var(--color-ts, #3178C6)',
+  java: 'var(--color-java, #ED8B00)', go: 'var(--color-go, #00ADD8)', rust: 'var(--color-rust, #DEA584)', cpp: 'var(--color-cpp, #00599C)',
+  c: 'var(--color-c, #555555)', ruby: 'var(--color-ruby, #CC342D)', php: 'var(--color-php, #777BB4)', swift: 'var(--color-swift, #FA7343)',
+  kotlin: 'var(--color-kotlin, #7F52FF)', shell: 'var(--color-shell, #89E051)', bash: 'var(--color-shell, #89E051)',
+  json: 'var(--color-json, #292929)', sql: 'var(--color-sql, #E38C28)', html: 'var(--color-html, #E34C26)', css: 'var(--color-css, #264DE4)',
+  yaml: 'var(--color-yaml, #CB171E)', markdown: 'var(--color-md, #083FA1)', default: 'var(--color-default-lang, #6B7280)',
 }
 
 const BULLET_STYLES = ['\u2022', '\u25CB', '\u25AA'] /* • ◦ ▪ */
@@ -94,11 +94,16 @@ function detectCalloutType(line: string): CalloutType | null {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Main Component                                                     */
+/*  Markdown parsing (pure function, memoized via useMemo)              */
 /* ------------------------------------------------------------------ */
 
-export default function MarkdownRenderer({ content }: MarkdownRendererProps) {
-  if (!content) return null
+interface ParseResult {
+  elements: React.ReactNode[]
+  headings: HeadingInfo[]
+}
+
+function parseMarkdown(content: string): ParseResult {
+  if (!content) return { elements: [], headings: [] }
 
   const lines = content.split('\n')
   const elements: React.ReactNode[] = []
@@ -170,7 +175,6 @@ export default function MarkdownRenderer({ content }: MarkdownRendererProps) {
 
     // ====== 代码块 ======
     if (trimmedLine.startsWith('```')) {
-      // 先关闭其他状态
       if (inTable) { flushTable(); inTable = false }
       if (inBlockquote) { flushBlockquote(); inBlockquote = false }
       if (inCallout) flushCallout()
@@ -188,7 +192,6 @@ export default function MarkdownRenderer({ content }: MarkdownRendererProps) {
       } else {
         inCodeBlock = true
         const langStr = trimmedLine.slice(3).trim()
-        // 支持语言:文件名 语法
         const colonIdx = langStr.indexOf(':')
         if (colonIdx > 0) {
           codeLang = langStr.slice(0, colonIdx).trim()
@@ -241,9 +244,8 @@ export default function MarkdownRenderer({ content }: MarkdownRendererProps) {
       tableRows.push(cells)
       continue
     } else if (inTable) {
-      // 表格结束：检查下一行是否还是表格（处理空行在表格中间的情况）
       if (trimmedLine === '' && i + 1 < lines.length && lines[i + 1].trim().startsWith('|')) {
-        continue // 表格内的空行跳过
+        continue
       }
       flushTable()
       inTable = false
@@ -251,10 +253,8 @@ export default function MarkdownRenderer({ content }: MarkdownRendererProps) {
 
     // ====== 引用块 / Callout ======
     if (trimmedLine.startsWith('>')) {
-      // 检测是否是 callout 起始
       const ct = detectCalloutType(trimmedLine)
       if (ct && !inCallout && !inBlockquote) {
-        // 关闭之前的引用
         if (inBlockquote) flushBlockquote()
         inCallout = true
         calloutType = ct
@@ -265,7 +265,6 @@ export default function MarkdownRenderer({ content }: MarkdownRendererProps) {
       }
 
       if (inCallout) {
-        // callout 内的 > 行作为内容继续
         const contentLine = trimmedLine.replace(/^>\s*/, '')
         calloutLines.push(contentLine)
         continue
@@ -277,7 +276,6 @@ export default function MarkdownRenderer({ content }: MarkdownRendererProps) {
         bqNestLevel = 0
       }
 
-      // 计算嵌套层级
       let lvl = 0
       let rest = trimmedLine
       while (rest.startsWith('>')) { lvl++; rest = rest.slice(1).trimStart() }
@@ -458,7 +456,19 @@ export default function MarkdownRenderer({ content }: MarkdownRendererProps) {
     )
   }
 
-  // ---- 自动目录（>=3 个 h2 时生成） ----
+  return { elements, headings }
+}
+
+/* ------------------------------------------------------------------ */
+/*  Main Component                                                     */
+/* ------------------------------------------------------------------ */
+
+export default function MarkdownRenderer({ content }: MarkdownRendererProps) {
+  const { elements, headings } = useMemo(
+    () => parseMarkdown(content),
+    [content, parseMarkdown],
+  )
+
   const h2Headings = headings.filter(h => h.level === 2)
   const showTOC = h2Headings.length >= 3
 
@@ -487,7 +497,6 @@ export default function MarkdownRenderer({ content }: MarkdownRendererProps) {
   )
 }
 
-/* ================================================================== */
 /*  内联渲染引擎                                                        */
 /* ================================================================== */
 
@@ -707,9 +716,9 @@ interface BlockquoteProps {
 function BlockquoteRenderer({ lines, nestLevel }: BlockquoteProps) {
   // 嵌套颜色递进：每层使用更淡的色调
   const borderColors = [
-    'border-l-blue-400 bg-blue-50/40 dark:bg-blue-950/20',
-    'border-l-purple-400 bg-purple-50/40 dark:bg-purple-950/20',
-    'border-l-emerald-400 bg-emerald-50/40 dark:bg-emerald-950/20',
+    'border-l-blue-400 bg-secondary-50/40 dark:bg-blue-950/20',
+    'border-l-purple-400 bg-accent-50/40 dark:bg-purple-950/20',
+    'border-l-emerald-400 bg-primary-50/40 dark:bg-emerald-950/20',
   ]
   const styleIdx = Math.min(nestLevel - 1, borderColors.length - 1)
 
@@ -816,7 +825,7 @@ function CodeBlockEnhanced({ code, lang, filename }: CodeBlockProps) {
           )}
           <button onClick={handleCopy} className="chat-md-code-btn" title="复制代码">
             {copied
-              ? <Check className="w-3.5 h-3.5 text-green-400" />
+              ? <Check className="w-3.5 h-3.5 text-success-400" />
               : <Copy className="w-3.5 h-3.5" />
             }
           </button>
@@ -866,6 +875,44 @@ function CodeBlockEnhanced({ code, lang, filename }: CodeBlockProps) {
  */
 
 const MDStyles = `
+/* ===== Markdown CSS Variables (mapped to design tokens) ===== */
+.chat-md-root {
+  --md-text-primary: var(--text-primary, #1D1D1F);
+  --md-text-secondary: var(--text-secondary, #6E6E73);
+  --md-text-muted: var(--text-muted, #9A9A9F);
+  --md-surface: var(--card-bg-solid, #FFFFFF);
+  --md-surface-alt: var(--bg-tertiary, #F5F5F7);
+  --md-border: var(--border-color, rgba(0, 0, 0, 0.06));
+  --md-border-strong: rgba(0, 0, 0, 0.12);
+  --md-accent: var(--color-primary, #34C759);
+  --md-accent-soft: rgba(52, 199, 89, 0.12);
+  --md-indigo: #6366F1;
+  --md-indigo-soft: rgba(99, 102, 241, 0.15);
+  --md-warning: #D97706;
+  --md-warning-soft: rgba(217, 119, 6, 0.1);
+  --md-success: #248A3D;
+  --md-success-soft: rgba(36, 138, 61, 0.1);
+  --md-error: #DC2626;
+  --md-error-soft: rgba(220, 38, 38, 0.1);
+  --md-link: #007AFF;
+  --md-code-bg: var(--bg-tertiary, #F5F5F7);
+  --md-code-text: var(--text-primary, #1D1D1F);
+}
+
+.dark .chat-md-root {
+  --md-text-primary: var(--text-primary, #F5F5F7);
+  --md-text-secondary: var(--text-secondary, #A1A1A6);
+  --md-text-muted: var(--text-muted, #636366);
+  --md-surface: var(--bg-surface, #1C1C1E);
+  --md-surface-alt: rgba(44, 44, 46, 0.5);
+  --md-border: var(--border-color, rgba(255, 255, 255, 0.06));
+  --md-border-strong: rgba(255, 255, 255, 0.12);
+  --md-accent: var(--color-primary, #30D158);
+  --md-accent-soft: rgba(48, 209, 88, 0.15);
+  --md-code-bg: rgba(44, 44, 46, 0.8);
+  --md-code-text: #F5F5F7;
+}
+
 /* ===== Root Container ===== */
 .chat-md-root {
   @apply space-y-1;
@@ -879,13 +926,13 @@ const MDStyles = `
   margin-top: 1.25em;
   margin-bottom: 0.65em;
   padding-bottom: 0.35em;
-  color: #111827;
-  border-bottom: 2px solid #e5e7eb;
+  color: var(--md-text-primary);
+  border-bottom: 2px solid var(--md-border);
   scroll-margin-top: 1em;
 }
 .dark .chat-md-h1 {
-  color: #f3f4f6;
-  border-bottom-color: #374151;
+  color: var(--md-text-primary);
+  border-bottom-color: var(--md-border);
 }
 
 .chat-md-h2 {
@@ -895,13 +942,13 @@ const MDStyles = `
   margin-top: 1.15em;
   margin-bottom: 0.55em;
   padding-left: 0.65em;
-  color: #1f2937;
-  border-left: 3.5px solid #6366f1;
+  color: var(--md-text-primary);
+  border-left: 3.5px solid var(--md-indigo);
   scroll-margin-top: 1em;
 }
 .dark .chat-md-h2 {
-  color: #e5e7eb;
-  border-left-color: #818cf8;
+  color: var(--md-text-primary);
+  border-left-color: var(--md-indigo);
 }
 
 .chat-md-h3 {
@@ -1021,12 +1068,12 @@ const MDStyles = `
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   background-color: #f3f4f6;
   border-radius: 0.25em;
-  color: #db2777;
+  color: #BE185D;
   white-space: nowrap;
 }
 .dark .chat-md-inline-code {
   background-color: #1f2937;
-  color: #f472b6;
+  color: #EC4899;
 }
 
 .chat-md-math-inline {
@@ -1242,8 +1289,8 @@ const MDStyles = `
 }
 
 .chat-md-checked {
-  background-color: #22c55e;
-  border-color: #22c55e;
+  background-color: #34C759;
+  border-color: #34C759;
   color: white;
   font-weight: 700;
 }

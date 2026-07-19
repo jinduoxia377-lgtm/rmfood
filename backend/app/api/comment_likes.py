@@ -12,7 +12,7 @@ from ..api.deps import get_db_session
 from pydantic import BaseModel
 from ..models.formula import CommentLike
 
-router = APIRouter(prefix="/comments", tags=["评论点赞"])
+router = APIRouter(prefix="/comments/likes", tags=["评论点赞"])
 
 
 class CommentLikeResponse(BaseModel):

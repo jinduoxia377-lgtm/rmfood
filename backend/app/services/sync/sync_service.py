@@ -297,7 +297,7 @@ class SyncService:
             session.state = SyncState.FAILED
             session.result = SyncResult(
                 success=False,
-                errors=[str(e)],
+                errors=["处理异常"],
             )
             logger.error(f"[SyncService] 同步异常: {e}", exc_info=True)
             

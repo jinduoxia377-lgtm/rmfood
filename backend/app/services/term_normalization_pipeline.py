@@ -315,7 +315,7 @@ class ComprehensiveTermPipeline:
                     self.validation_pipeline.process(normalized_for_validation)
                 except ValueError as e:
                     result["is_valid"] = False
-                    result["errors"].append(str(e))
+                    result["errors"].append("处理异常")
             
             if mode in ["full", "correct"]:
                 input_for_correction = result["normalized"] or term
@@ -327,7 +327,7 @@ class ComprehensiveTermPipeline:
         
         except Exception as e:
             result["is_valid"] = False
-            result["errors"].append(f"处理失败: {str(e)}")
+            result["errors"].append("处理失败")
         
         return result
     

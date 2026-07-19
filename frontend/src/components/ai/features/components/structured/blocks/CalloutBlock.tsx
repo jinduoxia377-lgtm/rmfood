@@ -32,37 +32,37 @@ const CALLOUT_STYLES: Record<string, {
   info: {
     icon: Info,
     label: '信息',
-    containerClass: 'bg-blue-50 dark:bg-blue-950/30',
-    iconColor: 'text-blue-500 dark:text-blue-400',
-    titleColor: 'text-blue-700 dark:text-blue-300',
-    textColor: 'text-blue-600/80 dark:text-blue-300/80',
+    containerClass: 'bg-secondary-50 dark:bg-blue-950/30',
+    iconColor: 'text-secondary-500 dark:text-secondary-400',
+    titleColor: 'text-secondary-700 dark:text-secondary-300',
+    textColor: 'text-secondary-600/80 dark:text-secondary-300/80',
     borderColor: 'border-blue-200 dark:border-blue-800',
   },
   success: {
     icon: CheckCircle,
     label: '分析结果',
-    containerClass: 'bg-emerald-50 dark:bg-emerald-950/30',
-    iconColor: 'text-emerald-500 dark:text-emerald-400',
-    titleColor: 'text-emerald-700 dark:text-emerald-300',
-    textColor: 'text-emerald-600/80 dark:text-emerald-300/80',
+    containerClass: 'bg-primary-50 dark:bg-emerald-950/30',
+    iconColor: 'text-primary-500 dark:text-primary-400',
+    titleColor: 'text-primary-700 dark:text-primary-300',
+    textColor: 'text-primary-600/80 dark:text-primary-300/80',
     borderColor: 'border-emerald-200 dark:border-emerald-800',
   },
   warning: {
     icon: AlertTriangle,
     label: '注意事项',
-    containerClass: 'bg-amber-50 dark:bg-amber-950/30',
-    iconColor: 'text-amber-500 dark:text-amber-400',
-    titleColor: 'text-amber-700 dark:text-amber-300',
-    textColor: 'text-amber-600/80 dark:text-amber-300/80',
+    containerClass: 'bg-warning-50 dark:bg-amber-950/30',
+    iconColor: 'text-warning-500 dark:text-warning-400',
+    titleColor: 'text-warning-700 dark:text-warning-300',
+    textColor: 'text-warning-600/80 dark:text-warning-300/80',
     borderColor: 'border-amber-200 dark:border-amber-800',
   },
   summary: {
     icon: FileText,
     label: '总结',
-    containerClass: 'bg-amber-50/60 dark:bg-amber-950/20',
-    iconColor: 'text-amber-600 dark:text-amber-400',
-    titleColor: 'text-amber-800 dark:text-amber-300',
-    textColor: 'text-gray-600 dark:text-gray-400',
+    containerClass: 'bg-warning-50/60 dark:bg-amber-950/20',
+    iconColor: 'text-warning-600 dark:text-warning-400',
+    titleColor: 'text-warning-800 dark:text-warning-300',
+    textColor: 'text-neutral-600 dark:text-neutral-400',
     borderColor: 'border-amber-200/80 dark:border-amber-800/60',
   },
 }
@@ -93,7 +93,7 @@ function CalloutBlock({ data }: CalloutBlockProps) {
           <button
             onClick={() => setShowDetails(prev => !prev)}
             className="flex items-center gap-1 px-3 py-1.5 w-full text-left
-              text-[10px] text-gray-400 dark:text-gray-500
+              text-[10px] text-neutral-400 dark:text-neutral-500
               hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
           >
             {showDetails ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}

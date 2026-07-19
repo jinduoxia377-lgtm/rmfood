@@ -301,7 +301,7 @@ def require_permission(permission: Permission):
     return decorator
 
 
-def check_ownership(resource_owner_id: int, current_user_id: int, allow_admin: bool = True):
+def check_ownership(resource_owner_id: int, current_user_id: int, allow_admin: bool = True, is_admin: bool = False):
     """
     资源所有权检查
     
@@ -311,9 +311,8 @@ def check_ownership(resource_owner_id: int, current_user_id: int, allow_admin: b
         allow_admin: 是否允许管理员访问他人资源
     """
     if resource_owner_id != current_user_id:
-        if not allow_admin:
+        if not allow_admin or not is_admin:
             raise AuthorizationError(message="您没有权限操作此资源")
-        # TODO: 检查当前用户是否为管理员
 
 
 # ════════════════════════════════════════════

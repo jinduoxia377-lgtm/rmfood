@@ -45,8 +45,6 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App'
 import './index.css'
-import './styles/theme.css'
-import './styles/wcag-component-styles.css'
 
 // 新的专业级主题系统会自动在 ThemeProvider 中初始化
 // 包括：系统偏好检测、持久化配置加载、主题应用等

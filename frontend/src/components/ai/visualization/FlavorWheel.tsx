@@ -148,7 +148,7 @@ export function FlavorWheel({
           fill="#f8f9fa"
           stroke="#e9ecef"
           strokeWidth={2}
-          className="dark:fill-gray-800 dark:stroke-gray-700"
+          className="dark:fill-slate-800 dark:stroke-slate-700"
         />
 
         {/* 六个扇区 */}
@@ -225,7 +225,7 @@ export function FlavorWheel({
           fill="white"
           stroke="#e9ecef"
           strokeWidth={2}
-          className="dark:fill-gray-900 dark:stroke-gray-700"
+          className="dark:fill-slate-900 dark:stroke-slate-700"
         />
 
         {/* 中心文字 */}
@@ -234,7 +234,7 @@ export function FlavorWheel({
           y={center - 10}
           textAnchor="middle"
           dominantBaseline="middle"
-          className="text-sm font-bold fill-gray-700 dark:fill-gray-300"
+          className="text-sm font-bold fill-slate-700 dark:fill-slate-300"
         >
           综合评分
         </text>
@@ -281,8 +281,8 @@ export function FlavorWheel({
       {/* 悬停提示框 */}
       {hoveredTaste && (
         <div
-          className="absolute top-2 left-1/2 -translate-x-1/2 bg-white dark:bg-gray-800
-                     px-4 py-2 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700
+          className="absolute top-2 left-1/2 -translate-x-1/2 bg-white dark:bg-neutral-800
+                     px-4 py-2 rounded-lg shadow-lg border border-neutral-200 dark:border-neutral-700
                      z-10 animate-fade-in pointer-events-none"
         >
           <div className="flex items-center gap-2">
@@ -290,10 +290,10 @@ export function FlavorWheel({
               className="w-3 h-3 rounded-full"
               style={{ backgroundColor: FIVE_TASTES_COLORS[hoveredTaste] }}
             />
-            <span className="font-semibold text-gray-900 dark:text-gray-100">
+            <span className="font-semibold text-neutral-900 dark:text-neutral-100">
               {FIVE_TASTES_LABELS[hoveredTaste]}
             </span>
-            <span className="text-gray-600 dark:text-gray-400">
+            <span className="text-neutral-600 dark:text-neutral-400">
               {data[hoveredTaste]?.toFixed(1) || 0}
             </span>
           </div>

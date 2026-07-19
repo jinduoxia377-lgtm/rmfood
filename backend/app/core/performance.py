@@ -419,7 +419,7 @@ class QueryOptimizer:
     - 慢查询日志
     """
     
-    SLOW_QUERY_THRESHOLD = 1.0  # 秒
+    SLOW_QUERY_THRESHOLD = 1.0  # 秒 — 已弃用，请使用 settings.logging.slow_query_threshold_ms / 1000
     
     def __init__(self, db_session):
         self.db = db_session
@@ -654,9 +654,9 @@ class ConnectionPoolMonitor:
             return stats
             
         except Exception as e:
-            logger.error(f"Pool health check failed: {e}")
+            logger.error("Pool health check failed", exc_info=True)
             return {
-                'error': str(e),
+                'error': '连接池健康检查异常',
                 'status': 'error',
                 'timestamp': datetime.now().isoformat(),
             }

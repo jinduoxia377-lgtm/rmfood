@@ -57,6 +57,7 @@ TAG_OVERRIDES: dict[str, list[str]] = {
     "activity": ["活动日志"],
     "peptide_analysis_routes": ["肽分析"],
     "peptide_design_routes": ["肽设计"],
+    "user_settings": ["用户设置"],
 }
 
 # v1 子路由模块
@@ -66,7 +67,6 @@ V1_MODULES = frozenset({
     "team_dashboard_router",
     "version_router",
     "notification_router",
-    "ai_router",
     "ai_task_router",       # Phase 4-A: AI 推理任务队列
     "quota_router",         # Phase 4-B: 多租户配额管理
     "websocket_router",

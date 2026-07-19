@@ -82,7 +82,6 @@ export interface WidgetConfig {
   position: { x: number; y: number };
 }
 
-
 // ════════════════════════════════════════════
 // 2. 配方 (Formula)
 // ════════════════════════════════════════════
@@ -99,11 +98,11 @@ export interface Formula {
   status: FormulaStatus;
 
   // 配方内容
-  ingredients: IngredientItem[];
+  ingredients: { id: number; name: string; name_cn?: string; category?: string; source?: string; is_food_homology?: boolean; properties?: Record<string, any> }[];
   processSteps?: ProcessStep[];
 
   // 目标指标
-  targetEffects: TargetEffect[];
+  targetEffects: TargetEffect[] | string[];
   nutritionalInfo?: NutritionalInfo;
 
   // 成本与效率
@@ -127,25 +126,44 @@ export interface Formula {
   // 时间戳
   createdAt: string;
   updatedAt: string;
+
+  // 扩展字段（API 响应中可能存在的额外属性）
+  composition?: Record<string, unknown>;
+  safety_check?: Record<string, unknown>;
+  synergy_analysis?: Record<string, unknown>;
+  dosage?: string;
+  processing_method?: string;
+  storage_conditions?: string;
+  shelf_life?: number;
+  notes?: string;
+  code?: string;
+  reviewer_id?: number;
+  reviewed_at?: string;
+  review_notes?: string;
+  creator_name?: string;
+  categories?: { id: number }[]; // 多分类支持
 }
 
 export enum FormulaCategory {
-  FUNCTIONAL_FOOD = 'functional_food',      // 功能性食品
-  DIETARY_SUPPLEMENT = 'dietary_supplement',   // 膳食补充剂
-  BEVERAGE = 'beverage',                       // 饮品
-  SNACK = 'snack',                            // 零食
-  TCM_FORMULA = 'tcm_formula',                // 中药配方
-  SPORTS_NUTRITION = 'sports_nutrition',       // 运动营养
-  CLINICAL_NUTRITION = 'clinical_nutrition',   // 临床营养
+  FUNCTIONAL_FOOD = 'functional_food', // 功能性食品
+  DIETARY_SUPPLEMENT = 'dietary_supplement', // 膳食补充剂
+  BEVERAGE = 'beverage', // 饮品
+  SNACK = 'snack', // 零食
+  TCM_FORMULA = 'tcm_formula', // 中药配方
+  SPORTS_NUTRITION = 'sports_nutrition', // 运动营养
+  CLINICAL_NUTRITION = 'clinical_nutrition', // 临床营养
   OTHER = 'other',
 }
 
 export enum FormulaStatus {
   DRAFT = 'draft',
+  PENDING_REVIEW = 'pending_review',
   IN_REVIEW = 'in_review',
   APPROVED = 'approved',
+  REJECTED = 'rejected',
   ARCHIVED = 'archived',
   DEPRECATED = 'deprecated',
+  CANCELLED = 'cancelled',
 }
 
 export interface IngredientItem {
@@ -156,7 +174,7 @@ export interface IngredientItem {
   amount: number;
   unit: string;
   percentage: number; // 百分比
-  source?: string;    // 来源（如TCMSP）
+  source?: string; // 来源（如TCMSP）
   qualityGrade?: string;
   notes?: string;
 }
@@ -220,7 +238,6 @@ export interface AISuggestion {
   confidence: number; // 0-1
 }
 
-
 // ════════════════════════════════════════════
 // 3. 肽分析 (Peptide Analysis)
 // ════════════════════════════════════════════
@@ -257,26 +274,26 @@ export interface AnalysisDimension {
 }
 
 export enum DimensionType {
-  BASIC = 'basic',           // 基本性质
-  STRUCTURE = 'structure',   // 结构预测
+  BASIC = 'basic', // 基本性质
+  STRUCTURE = 'structure', // 结构预测
   BIOACTIVITY = 'bioactivity', // 生物活性
-  SAFETY = 'safety',         // 安全性评估
-  OVERALL = 'overall',       // 综合评分
+  SAFETY = 'safety', // 安全性评估
+  OVERALL = 'overall', // 综合评分
 }
 
 export interface BasicProperties {
   sequence: string;
   length: number;
   molecularWeight: number;
-  theoreticalPI: number;     // 等电点
-  instabilityIndex: number;  // 不稳定指数
+  theoreticalPI: number; // 等电点
+  instabilityIndex: number; // 不稳定指数
   gravyHydropathyIndex: number; // 亲水性指数
-  aliphaticIndex: number;    // 脂肪族氨基酸指数
-  bomanIndex: number;        // Boman结合指数
+  aliphaticIndex: number; // 脂肪族氨基酸指数
+  bomanIndex: number; // Boman结合指数
   halfLife: {
-    mammalian: string;       // 哺乳动物网织红细胞
-    yeast: string;           // 酵母
-    eColi: string;           // 大肠杆菌
+    mammalian: string; // 哺乳动物网织红细胞
+    yeast: string; // 酵母
+    eColi: string; // 大肠杆菌
   };
   extinctionCoefficient: number;
   solubility: SolubilityPrediction;
@@ -316,8 +333,8 @@ export interface SecondaryStructureContent {
 export interface TertiaryStructureModel {
   pdbContent?: string;
   modelFormat: string;
-  rmsd?: number;             // 与实验结构的偏差
-  tmScore?: number;          // 模型质量评分
+  rmsd?: number; // 与实验结构的偏差
+  tmScore?: number; // 模型质量评分
   validationReport?: string;
 }
 
@@ -487,7 +504,6 @@ export interface RegulatoryInfo {
   unit?: string;
 }
 
-
 // ════════════════════════════════════════════
 // 4. AI 响应
 // ════════════════════════════════════════════
@@ -536,11 +552,11 @@ export interface GenerationParameters {
 
 export interface UserConstraints {
   budget?: { min: number; max: number; currency: string };
-  allergens?: string[];          // 需要避免的过敏原
+  allergens?: string[]; // 需要避免的过敏原
   dietaryRestrictions?: string[]; // 素食、无麸质等
-  targetAudience?: string;        // 儿童、老人、运动员等
-  shelfLife?: number;              // 保质期（月）
-  flavorProfile?: string[];        // 口味偏好
+  targetAudience?: string; // 儿童、老人、运动员等
+  shelfLife?: number; // 保质期（月）
+  flavorProfile?: string[]; // 口味偏好
   regulatoryRequirements?: string[]; // 合规要求
 }
 
@@ -551,7 +567,6 @@ export interface GenerationContext {
   projectGoal?: string;
 }
 
-
 // ════════════════════════════════════════════
 // 5. API 通用类型
 // ════════════════════════════════════════════
@@ -559,6 +574,8 @@ export interface GenerationContext {
 export interface PaginatedResponse<T> {
   success: boolean;
   data: T[];
+  items?: T[];
+  total?: number;
   pagination: PaginationMeta;
   timestamp: string;
 }
@@ -593,7 +610,6 @@ export interface SuccessResponse<T = void> {
   message?: string;
   timestamp: string;
 }
-
 
 // ════════════════════════════════════════════
 // 6. 工具类型
@@ -707,6 +723,36 @@ export interface TCMHerb {
   imageUrl?: string;
   createdAt: string;
   updatedAt: string;
+
+  // 兼容旧字段
+  name_cn?: string;
+  is_food_homology?: boolean;
+  effects?: string;
+}
+
+/** SymMap 中药材知识图谱数据 */
+export interface SymMapHerb {
+  id: number;
+  symmapId: number;
+  nameCn: string;
+  nameLatin?: string;
+  namePinyin?: string;
+  nameEng?: string;
+  natureCn?: string; // 四气
+  natureEng?: string;
+  meridiansCn?: string; // 归经
+  meridiansEng?: string;
+  categoryCn?: string; // 分类
+  categoryEng?: string;
+  usePart?: string; // 药用部位
+  tcmspId?: number; // 交叉引用 TCMSP ID
+  tcmidId?: number; // 交叉引用 TCMID ID
+  tcmid2Id?: number; // 交叉引用 TCM-ID ID
+  herbdbId?: string; // 交叉引用 HERBDB ID
+  alias?: string; // 别名
+  sourceVersion?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface BioactivePeptide {
@@ -772,6 +818,8 @@ export interface Experiment {
 
   // 实验配置
   parameters: ExperimentParameters;
+  materials?: Array<{ name: string; quantity?: string; unit?: string }>;
+  equipment?: Array<{ name: string; quantity?: string; unit?: string }>;
   expectedOutcomes?: string[];
 
   // 结果
@@ -786,6 +834,19 @@ export interface Experiment {
   completedAt?: string;
   createdAt: string;
   updatedAt: string;
+
+  // API 兼容字段
+  code?: string;
+  objectives?: string[];
+  methodology?: string;
+  recommendations?: string;
+  conclusions?: string;
+  start_date?: string;
+  end_date?: string;
+  actual_start?: string;
+  actual_end?: string;
+  formula_id?: number;
+  created_at?: string;
 }
 
 export enum ExperimentType {
@@ -827,6 +888,11 @@ export interface ExperimentData {
   isValidated: boolean;
   validatedBy?: number;
   attachments?: Attachment[];
+
+  // API 兼容字段
+  parameter?: string;
+  value?: string | number | null;
+  recorded_at?: string;
 }
 
 export interface Attachment {
@@ -863,6 +929,7 @@ export interface AICandidate {
   formula_name?: string;
   herb_combination?: { name: string; role: string; dosage: string }[];
   peptide_candidates?: any[];
+  patent_synergy_scores?: any;
   synergy_score?: number;
   safety_passed?: boolean;
   safety_details?: { warnings: string[]; contraindications: string[]; summary: string };
@@ -873,6 +940,10 @@ export interface AICandidate {
   target_population?: string;
   contraindications?: string;
   generated_at?: string;
+  candidateId?: string;
+  effects?: string[];
+  ingredients?: { name: string; dosage: string; unit: string; amount_mg?: number }[];
+  score?: number;
 }
 
 export interface ModelConfiguration {
@@ -891,12 +962,12 @@ export interface SafetyCheckResult {
   summary?: string;
   errors?: string[];
   warnings?: {
-    ingredient?: string
-    level?: 'info' | 'warning' | 'danger'
-    code?: string
-    message: string
-    severity?: string
-    category?: string
+    ingredient?: string;
+    level?: 'info' | 'warning' | 'danger';
+    code?: string;
+    message: string;
+    severity?: string;
+    category?: string;
   }[];
   recommendations?: string[];
   checks?: Record<string, { passed?: boolean }>;
@@ -922,8 +993,8 @@ export interface SynergyResult {
 
   // 兼容旧格式 / fallback 使用的属性
   score?: number;
-  synergy_pairs?: any[];
-  antagonism_warnings?: string[];
+  synergy_pairs?: { a: string; b: string; score: number }[];
+  antagonism_warnings?: { a: string; b: string; reason?: string }[];
   shared_pathways?: string[];
   heat_map?: Record<string, any>;
   summary?: string;
@@ -990,30 +1061,30 @@ export * from './inference';
  * 此接口仅用于向后兼容旧的 snake_case API 响应格式
  */
 export interface LegacyTCMHerb extends TCMHerb {
-  name_cn?: string;        // 兼容旧字段 → name
-  name_latin?: string;     // 兼容旧字段 → latinName
-  name_pinyin?: string;   // 兼容旧字段 → pinyinName
-  effects?: string;       // 兼容旧字段 → efficacy
-  ob_percent?: number;     // 兼容旧字段 → oralBioavailability
-  dl_value?: number;       // 兼容旧字段 → drugLikeness
+  name_cn?: string; // 兼容旧字段 → name
+  name_latin?: string; // 兼容旧字段 → latinName
+  name_pinyin?: string; // 兼容旧字段 → pinyinName
+  effects?: string; // 兼容旧字段 → efficacy
+  ob_percent?: number; // 兼容旧字段 → oralBioavailability
+  dl_value?: number; // 兼容旧字段 → drugLikeness
   compound_count?: number; // 兼容旧字段 → activeCompounds
-  target_count?: number;   // 兼容旧字段 → targetCount
+  target_count?: number; // 兼容旧字段 → targetCount
   is_food_homology?: boolean; // 兼容旧字段 → isFoodHomology
 }
 
 export interface LegacyBioactivePeptide extends Omit<BioactivePeptide, 'sequence' | 'length'> {
-  sequence?: string;      // 兼容旧字段 → 序列本身
-  source_protein?: string;    // 兼容旧字段 → source
-  activity_value?: number;   // 兼容旧字段 → activityScore
-  activity_unit?: string;    // 兼容旧字段 → activityUnit
-  molecular_weight?: number;  // 兼容旧字段 → molecularWeight
+  sequence?: string; // 兼容旧字段 → 序列本身
+  source_protein?: string; // 兼容旧字段 → source
+  activity_value?: number; // 兼容旧字段 → activityScore
+  activity_unit?: string; // 兼容旧字段 → activityUnit
+  molecular_weight?: number; // 兼容旧字段 → molecularWeight
   hydrolysis_enzyme?: string; // 兼容旧字段 → hydrolysisEnzyme
   length?: number;
 }
 
 export interface LegacyKnowledgeNode extends KnowledgeNode {
-  node_label?: string;       // 兼容旧字段 → title
-  node_type?: string;        // 兼容旧字段 → type
+  node_label?: string; // 兼容旧字段 → title
+  node_type?: string; // 兼容旧字段 → type
 }
 
 // ════════════════════════════════════════════

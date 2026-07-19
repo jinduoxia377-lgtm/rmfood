@@ -261,7 +261,7 @@ class CDCListener:
 
             # 如果在异步上下文中，使用异步写入
             # 否则使用同步写入（作为后备）
-            loop = asyncio.get_event_loop()
+            loop = asyncio.new_event_loop()
             if loop.is_running():
                 # 在异步上下文中，创建任务异步写入
                 asyncio.create_task(self._async_persist_events(events))
@@ -390,19 +390,22 @@ class CDCListener:
     async def _publish_to_event_bus(self, events: list):
         """通过事件总线发布 CDC 事件（Phase 3-B: 事件驱动架构）"""
         try:
-            from ..domain.entities import DataChangedEvent
+            from ..core.domain_events import DomainEvent
 
             for event_data in events:
-                # 创建 DataChangedEvent 实例
-                data_changed_event = DataChangedEvent(
-                    entity_type=event_data["entity_type"],
-                    entity_id=event_data["entity_id"],
-                    action=event_data["action"],
-                    changed_fields=event_data.get("changed_fields"),
-                    old_values=event_data.get("old_values"),
-                    new_values=event_data.get("new_values"),
-                    user_id=event_data.get("user_id"),
-                    ip_address=event_data.get("ip_address"),
+                # 创建 CDC 事件（使用通用 DomainEvent）
+                data_changed_event = DomainEvent(
+                    event_type="data.changed",
+                    aggregate_type=event_data["entity_type"],
+                    aggregate_id=str(event_data["entity_id"]),
+                    metadata={
+                        "action": event_data["action"],
+                        "changed_fields": event_data.get("changed_fields"),
+                        "old_values": event_data.get("old_values"),
+                        "new_values": event_data.get("new_values"),
+                        "user_id": event_data.get("user_id"),
+                        "ip_address": event_data.get("ip_address"),
+                    },
                 )
                 # formula_id 使用 field(init=False)，不包含在 __init__ 中
                 # 如果需要设置 formula_id，可以在创建后手动赋值（但 CDC 事件通常不需要）

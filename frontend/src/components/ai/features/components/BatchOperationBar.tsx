@@ -215,10 +215,10 @@ const BatchOperationBar = React.memo<BatchOperationBarProps>(({
 
               {showExportMenu && (
                 <div className={cn(
-                  "bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 py-2 z-20",
+                  "bg-white dark:bg-neutral-800 rounded-lg shadow-xl border border-neutral-200 dark:border-neutral-700 py-2 z-20",
                   "absolute bottom-full mb-2 right-0 sm:min-w-[220px] min-w-[180px]",
                 )}>
-                  <div className="px-3 py-2 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-gray-700">
+                  <div className="px-3 py-2 text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider border-b border-neutral-100 dark:border-neutral-700">
                     选择导出格式
                   </div>
                   {EXPORT_FORMATS.map((format) => (
@@ -227,10 +227,10 @@ const BatchOperationBar = React.memo<BatchOperationBarProps>(({
                       onClick={() => handleExport(format.value)}
                       className="w-full px-3 py-2 text-left hover:bg-primary-50 dark:hover:bg-primary-900/30 transition-colors group"
                     >
-                      <div className={`font-medium text-gray-700 dark:text-gray-300 group-hover:text-primary-700 dark:group-hover:text-primary-300 ${compact ? 'text-sm' : 'text-sm'}`}>
+                      <div className={`font-medium text-neutral-700 dark:text-neutral-300 group-hover:text-primary-700 dark:group-hover:text-primary-300 ${compact ? 'text-sm' : 'text-sm'}`}>
                         {format.label}
                       </div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 hidden sm:block">
+                      <div className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5 hidden sm:block">
                         {format.description}
                       </div>
                     </button>
@@ -253,10 +253,10 @@ const BatchOperationBar = React.memo<BatchOperationBarProps>(({
 
               {showTagPicker && (
                 <div className={cn(
-                  "bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 p-4 z-20",
+                  "bg-white dark:bg-neutral-800 rounded-lg shadow-xl border border-neutral-200 dark:border-neutral-700 p-4 z-20",
                   "absolute bottom-full mb-2 right-0 sm:min-w-[280px] min-w-[260px] max-h-[80vh] overflow-y-auto",
                 )}>
-                  <div className={`font-medium text-gray-700 dark:text-gray-300 mb-3 ${compact ? 'text-sm' : 'text-sm'}`}>
+                  <div className={`font-medium text-neutral-700 dark:text-neutral-300 mb-3 ${compact ? 'text-sm' : 'text-sm'}`}>
                     为选中配方添加标签
                   </div>
 
@@ -267,13 +267,13 @@ const BatchOperationBar = React.memo<BatchOperationBarProps>(({
                     onChange={(e) => setNewTagInput(e.target.value)}
                     onKeyDown={handleKeyDown}
                     placeholder="输入新标签..."
-                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-200 mb-3"
+                    className="w-full px-3 py-2 text-sm border border-neutral-300 dark:border-neutral-600 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-neutral-700 dark:text-neutral-200 mb-3"
                     autoFocus
                   />
 
                   {/* 常用标签列表 */}
                   <div className="mb-3">
-                    <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wider">
+                    <div className="text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-2 uppercase tracking-wider">
                       常用标签
                     </div>
                     <div className="flex flex-wrap gap-1.5">
@@ -290,7 +290,7 @@ const BatchOperationBar = React.memo<BatchOperationBarProps>(({
                   </div>
 
                   {/* 操作按钮 */}
-                  <div className="flex justify-end gap-2 pt-2 border-t border-gray-100 dark:border-gray-700">
+                  <div className="flex justify-end gap-2 pt-2 border-t border-neutral-100 dark:border-neutral-700">
                     <Button
                       variant="ghost"
                       size="sm"
@@ -360,25 +360,25 @@ const BatchOperationBar = React.memo<BatchOperationBarProps>(({
       {/* 删除确认对话框 */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-200">
+          <div className="bg-white dark:bg-neutral-800 rounded-xl shadow-2xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-200">
             <div className="flex items-start gap-4">
-              <div className="flex-shrink-0 w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-                <Trash2 className="w-6 h-6 text-red-600 dark:text-red-400" />
+              <div className="flex-shrink-0 w-12 h-12 rounded-full bg-error-100 dark:bg-error-900/30 flex items-center justify-center">
+                <Trash2 className="w-6 h-6 text-error-600 dark:text-error-400" />
               </div>
               <div className="flex-1">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-2">
                   确认删除
                 </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                  确定要删除选中的 <strong className="text-red-600 dark:text-red-400">{selectedCount}</strong> 个配方吗？
+                <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-1">
+                  确定要删除选中的 <strong className="text-error-600 dark:text-error-400">{selectedCount}</strong> 个配方吗？
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-500">
+                <p className="text-xs text-neutral-500 dark:text-neutral-500">
                   此操作不可撤销，请谨慎操作。
                 </p>
               </div>
             </div>
 
-            <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-neutral-200 dark:border-neutral-700">
               <Button
                 variant="outline"
                 size="sm"

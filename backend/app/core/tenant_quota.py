@@ -229,7 +229,7 @@ class QuotaMeter:
                     await redis.expire(key, self.DAY_SECONDS * 2)
                 return new_val
             except Exception as e:
-                logger.warning("[QuotaMeter] Redis INCRBY 失败，降级到内存: %s", e)
+                logger.info("[QuotaMeter] Redis INCRBY 失败，降级到内存: %s", e)
 
         # 内存回退
         current = self._memory.get(key, 0)
@@ -251,7 +251,7 @@ class QuotaMeter:
                 val = await redis.get(key)
                 return int(val) if val else 0
             except Exception as e:
-                logger.warning("[QuotaMeter] Redis GET 失败，降级到内存: %s", e)
+                logger.info("[QuotaMeter] Redis GET 失败，降级到内存: %s", e)
 
         return self._memory.get(key, 0)
 
@@ -265,7 +265,7 @@ class QuotaMeter:
                 await redis.delete(key)
                 return
             except Exception as e:
-                logger.warning("[QuotaMeter] Redis DELETE 失败: %s", e)
+                logger.info("[QuotaMeter] Redis DELETE 失败: %s", e)
 
         self._memory.pop(key, None)
 

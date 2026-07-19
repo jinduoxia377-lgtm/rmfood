@@ -760,10 +760,10 @@ def setup_enhanced_metrics(app: FastAPI):
                 content={"error": "Invalid JSON"},
             )
         except Exception as e:
-            logger.error(f"[Metrics] 客户端性能上报失败: {e}")
+            logger.error("[Metrics] 客户端性能上报失败", exc_info=True)
             return JSONResponse(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                content={"error": str(e)},
+                content={"error": "指标上报失败"},
             )
 
     logger.info("[Metrics] 增强指标端点已注册: /metrics/prometheus, /api/v1/metrics/*")

@@ -29,13 +29,13 @@ function HeaderBlock({ data }: HeaderBlockProps) {
   return (
     <div className="mb-3 last:mb-0">
       <div
-        className={`${sizeClass} text-gray-900 dark:text-gray-100 border-primary-500 dark:border-primary-400 leading-relaxed`}
+        className={`${sizeClass} text-neutral-900 dark:text-neutral-100 border-primary-500 dark:border-primary-400 leading-relaxed`}
       >
         {title}
       </div>
 
       {description && (
-        <p className="mt-1 text-xs leading-relaxed text-gray-500 dark:text-gray-400">
+        <p className="mt-1 text-xs leading-relaxed text-neutral-500 dark:text-neutral-400">
           {description}
         </p>
       )}
@@ -45,7 +45,7 @@ function HeaderBlock({ data }: HeaderBlockProps) {
           {metadata.map((item, i) => (
             <span
               key={i}
-              className="inline-flex items-center gap-1 text-[10px] text-gray-400 dark:text-gray-500"
+              className="inline-flex items-center gap-1 text-[10px] text-neutral-400 dark:text-neutral-500"
             >
               <Info className="w-2.5 h-2.5" />
               <span className="font-medium">{item.label}:</span>

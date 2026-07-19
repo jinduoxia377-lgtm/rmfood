@@ -13,18 +13,18 @@ interface InferenceStepCardProps {
 }
 
 const typeConfig: Record<InferenceStepType, { icon: typeof Lightbulb; label: string; color: string }> = {
-  [InferenceStepType.THOUGHT]: { icon: Lightbulb, label: '思考', color: 'bg-amber-100 text-amber-800 border-amber-200' },
-  [InferenceStepType.ACTION]: { icon: Cog, label: '行动', color: 'bg-blue-100 text-blue-800 border-blue-200' },
-  [InferenceStepType.OBSERVATION]: { icon: Eye, label: '观察', color: 'bg-green-100 text-green-800 border-green-200' },
-  [InferenceStepType.SUMMARY]: { icon: FileText, label: '总结', color: 'bg-purple-100 text-purple-800 border-purple-200' },
+  [InferenceStepType.THOUGHT]: { icon: Lightbulb, label: '思考', color: 'bg-warning-100 text-warning-800 border-amber-200' },
+  [InferenceStepType.ACTION]: { icon: Cog, label: '行动', color: 'bg-secondary-100 text-secondary-800 border-blue-200' },
+  [InferenceStepType.OBSERVATION]: { icon: Eye, label: '观察', color: 'bg-success-100 text-success-800 border-green-200' },
+  [InferenceStepType.SUMMARY]: { icon: FileText, label: '总结', color: 'bg-accent-100 text-accent-800 border-purple-200' },
 };
 
 const statusConfig: Record<InferenceStepStatus, { icon: typeof CheckCircle; label: string; color: string }> = {
-  [InferenceStepStatus.PENDING]: { icon: ChevronRight, label: '等待', color: 'text-gray-400' },
-  [InferenceStepStatus.RUNNING]: { icon: Loader2, label: '执行中', color: 'text-blue-500 animate-spin' },
-  [InferenceStepStatus.SUCCESS]: { icon: CheckCircle, label: '成功', color: 'text-green-500' },
-  [InferenceStepStatus.FAILED]: { icon: XCircle, label: '失败', color: 'text-red-500' },
-  [InferenceStepStatus.SKIPPED]: { icon: SkipForward, label: '跳过', color: 'text-gray-400' },
+  [InferenceStepStatus.PENDING]: { icon: ChevronRight, label: '等待', color: 'text-neutral-400' },
+  [InferenceStepStatus.RUNNING]: { icon: Loader2, label: '执行中', color: 'text-secondary-500 animate-spin' },
+  [InferenceStepStatus.SUCCESS]: { icon: CheckCircle, label: '成功', color: 'text-success-500' },
+  [InferenceStepStatus.FAILED]: { icon: XCircle, label: '失败', color: 'text-error-500' },
+  [InferenceStepStatus.SKIPPED]: { icon: SkipForward, label: '跳过', color: 'text-neutral-400' },
 };
 
 const toolTypeLabels: Record<ToolType, string> = {
@@ -65,7 +65,7 @@ const MemoizedInferenceStepCard = memo(({
     <div
       className={clsx(
         'group rounded-lg border transition-all duration-200 cursor-pointer',
-        isActive ? 'border-blue-400 bg-blue-50 shadow-md' : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm',
+        isActive ? 'border-blue-400 bg-secondary-50 shadow-md' : 'border-neutral-200 bg-white hover:border-neutral-300 hover:shadow-sm',
         depth > 0 && 'ml-6 border-l-4',
       )}
       onClick={handleClick}
@@ -77,21 +77,21 @@ const MemoizedInferenceStepCard = memo(({
       >
         {/* 折叠/展开指示器 */}
         <button
-          className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+          className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-neutral-100 hover:bg-neutral-200 transition-colors"
           onClick={(e) => {
             e.stopPropagation();
             handleToggle();
           }}
         >
           {isExpanded ? (
-            <ChevronDown className="w-4 h-4 text-gray-600" />
+            <ChevronDown className="w-4 h-4 text-neutral-600" />
           ) : (
-            <ChevronRight className="w-4 h-4 text-gray-600" />
+            <ChevronRight className="w-4 h-4 text-neutral-600" />
           )}
         </button>
 
         {/* 步骤索引 */}
-        <span className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-sm font-medium text-gray-600">
+        <span className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-neutral-100 text-sm font-medium text-neutral-600">
           {index + 1}
         </span>
 
@@ -108,20 +108,20 @@ const MemoizedInferenceStepCard = memo(({
         <StatusIcon className={clsx('w-4 h-4 flex-shrink-0', statusInfo.color)} />
 
         {/* 标题 */}
-        <span className="flex-1 font-medium text-gray-800 truncate group-hover:text-blue-600 transition-colors">
+        <span className="flex-1 font-medium text-neutral-800 truncate group-hover:text-secondary-600 transition-colors">
           {title}
         </span>
 
         {/* 置信度 */}
         {confidence !== undefined && (
-          <span className="flex-shrink-0 text-xs text-gray-500">
+          <span className="flex-shrink-0 text-xs text-neutral-500">
             {(confidence * 100).toFixed(0)}%
           </span>
         )}
 
         {/* 执行耗时 */}
         {executionTime !== undefined && (
-          <span className="flex-shrink-0 text-xs text-gray-400">
+          <span className="flex-shrink-0 text-xs text-neutral-400">
             {executionTime}ms
           </span>
         )}
@@ -136,8 +136,8 @@ const MemoizedInferenceStepCard = memo(({
       >
         <div className="px-4 pb-4 pt-0">
           {/* 内容区域 */}
-          <div className="pl-15 mt-3 p-3 bg-gray-50 rounded-lg">
-            <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
+          <div className="pl-15 mt-3 p-3 bg-slate-50 rounded-lg">
+            <p className="text-sm text-neutral-700 leading-relaxed whitespace-pre-wrap">
               {content}
             </p>
           </div>
@@ -145,28 +145,28 @@ const MemoizedInferenceStepCard = memo(({
           {/* 工具调用信息（仅Action类型） */}
           {type === InferenceStepType.ACTION && toolCall && (
             <div className="mt-3 pl-15">
-              <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
+              <div className="p-3 bg-secondary-50 rounded-lg border border-blue-100">
                 <div className="flex items-center gap-2 mb-2">
-                  <Cog className="w-4 h-4 text-blue-600" />
-                  <span className="text-sm font-medium text-blue-800">工具调用</span>
+                  <Cog className="w-4 h-4 text-secondary-600" />
+                  <span className="text-sm font-medium text-secondary-800">工具调用</span>
                 </div>
-                <div className="text-sm text-gray-700">
+                <div className="text-sm text-neutral-700">
                   <div className="font-medium">{toolCall.toolName}</div>
-                  <div className="text-xs text-gray-500 mt-1">
+                  <div className="text-xs text-neutral-500 mt-1">
                     类型: {toolTypeLabels[toolCall.toolType]}
                   </div>
                   {toolCall.description && (
-                    <div className="text-xs text-gray-600 mt-2">{toolCall.description}</div>
+                    <div className="text-xs text-neutral-600 mt-2">{toolCall.description}</div>
                   )}
                   {/* 参数列表 */}
                   {toolCall.parameters.length > 0 && (
                     <div className="mt-2">
-                      <div className="text-xs font-medium text-gray-600 mb-1">参数:</div>
+                      <div className="text-xs font-medium text-neutral-600 mb-1">参数:</div>
                       <div className="space-y-1">
                         {toolCall.parameters.map((param, idx) => (
                           <div key={idx} className="flex items-start gap-2 text-xs">
-                            <span className="font-medium text-gray-700">{param.name}:</span>
-                            <span className="text-gray-600">
+                            <span className="font-medium text-neutral-700">{param.name}:</span>
+                            <span className="text-neutral-600">
                               {typeof param.value === 'object'
                                 ? JSON.stringify(param.value, null, 2)
                                 : String(param.value)}
@@ -187,38 +187,38 @@ const MemoizedInferenceStepCard = memo(({
               <div className={clsx(
                 'p-3 rounded-lg border',
                 toolResult.success
-                  ? 'bg-green-50 border-green-100'
-                  : 'bg-red-50 border-red-100',
+                  ? 'bg-success-50 border-green-100'
+                  : 'bg-error-50 border-red-100',
               )}>
                 <div className="flex items-center gap-2 mb-2">
                   {toolResult.success ? (
-                    <CheckCircle className="w-4 h-4 text-green-600" />
+                    <CheckCircle className="w-4 h-4 text-success-600" />
                   ) : (
-                    <XCircle className="w-4 h-4 text-red-600" />
+                    <XCircle className="w-4 h-4 text-error-600" />
                   )}
                   <span className={clsx(
                     'text-sm font-medium',
-                    toolResult.success ? 'text-green-800' : 'text-red-800',
+                    toolResult.success ? 'text-success-800' : 'text-error-800',
                   )}>
                     {toolResult.success ? '执行成功' : '执行失败'}
                   </span>
                 </div>
                 {toolResult.message && (
-                  <div className="text-sm text-gray-700">{toolResult.message}</div>
+                  <div className="text-sm text-neutral-700">{toolResult.message}</div>
                 )}
                 {toolResult.error && (
-                  <div className="text-sm text-red-600">{toolResult.error}</div>
+                  <div className="text-sm text-error-600">{toolResult.error}</div>
                 )}
                 {toolResult.data && (
                   <div className="mt-2">
-                    <div className="text-xs font-medium text-gray-600 mb-1">返回数据:</div>
-                    <pre className="text-xs text-gray-700 bg-white p-2 rounded border overflow-x-auto max-h-48 overflow-y-auto">
+                    <div className="text-xs font-medium text-neutral-600 mb-1">返回数据:</div>
+                    <pre className="text-xs text-neutral-700 bg-white p-2 rounded border overflow-x-auto max-h-48 overflow-y-auto">
                       {JSON.stringify(toolResult.data, null, 2)}
                     </pre>
                   </div>
                 )}
                 {toolResult.executionTime && (
-                  <div className="mt-2 text-xs text-gray-500">
+                  <div className="mt-2 text-xs text-neutral-500">
                     执行耗时: {toolResult.executionTime}ms
                   </div>
                 )}

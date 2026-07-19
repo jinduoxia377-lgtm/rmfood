@@ -175,11 +175,11 @@ class MultiLevelCache:
             logger.info(f"✅ Redis连接成功: {self.config.l2_url}")
             
         except ImportError:
-            logger.warning("⚠️ redis库未安装，将仅使用内存缓存")
+            logger.info("⚠️ redis库未安装，将仅使用内存缓存")
             self.config.l2_enabled = False
             
         except Exception as e:
-            logger.error(f"❌ Redis连接失败: {e}，将降级到内存缓存")
+            logger.info(f"Redis连接失败: {e}，将降级到内存缓存")
             self._redis_available = False
             self.config.l2_enabled = False
     

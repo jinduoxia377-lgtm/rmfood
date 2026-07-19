@@ -17,12 +17,12 @@ export function LoadingSpinner({ size = 'md', text, className }: LoadingSpinnerP
     <div className={cn('flex flex-col items-center gap-2', className)}>
       <div
         className={cn(
-          'animate-spin rounded-full border-gray-200 dark:border-gray-700 border-t-primary',
+          'animate-spin rounded-full border-neutral-200 dark:border-neutral-700 border-t-primary',
           sizeClasses[size],
         )}
       />
       {text && (
-        <p className="text-sm text-gray-500 dark:text-gray-400">{text}</p>
+        <p className="text-sm text-neutral-500 dark:text-neutral-400">{text}</p>
       )}
     </div>
   )
@@ -62,7 +62,7 @@ export function ProgressSpinner({ progress = 0, text, size = 'md', className }: 
             fill="none"
             stroke="currentColor"
             strokeWidth={strokeWidth[size]}
-            className="text-gray-200 dark:text-gray-700"
+            className="text-neutral-200 dark:text-neutral-700"
           />
           <circle
             cx="50"
@@ -78,13 +78,13 @@ export function ProgressSpinner({ progress = 0, text, size = 'md', className }: 
           />
         </svg>
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
             {Math.round(progress)}%
           </span>
         </div>
       </div>
       {text && (
-        <p className="text-sm text-gray-500 dark:text-gray-400">{text}</p>
+        <p className="text-sm text-neutral-500 dark:text-neutral-400">{text}</p>
       )}
     </div>
   )

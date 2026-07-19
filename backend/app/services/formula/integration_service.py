@@ -192,7 +192,7 @@ class FormulaIntegrationService:
             
         except Exception as e:
             logger.error(f"管线执行错误: {str(e)}", exc_info=True)
-            response.error_message = f"生成过程出错: {str(e)}"
+            response.error_message = "生成过程出错，请稍后重试"
             response.mode_used = GenerationMode.STANDARD
             
             fallback_response = self._execute_standard_pipeline(request,

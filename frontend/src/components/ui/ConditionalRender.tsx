@@ -24,6 +24,7 @@ export function ConditionalRender({
     } else {
       setIsRendered(false);
     }
+    return
   }, [condition, delay]);
 
   if (!condition) {

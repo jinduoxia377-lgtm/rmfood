@@ -126,8 +126,8 @@ export const PluginSettings: React.FC<PluginSettingsProps> = ({
 
     const baseClassName =
       'w-full px-3 py-2 border rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500' +
-      (readOnly ? ' bg-gray-100 cursor-not-allowed' : '') +
-      (hasError && isTouched ? ' border-red-500' : ' border-gray-300')
+      (readOnly ? ' bg-neutral-100 cursor-not-allowed' : '') +
+      (hasError && isTouched ? ' border-red-500' : ' border-neutral-300')
 
     switch (item.type) {
       case 'string':
@@ -161,12 +161,12 @@ export const PluginSettings: React.FC<PluginSettingsProps> = ({
           <label className="flex items-center space-x-2 cursor-pointer">
             <input
               type="checkbox"
-              className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+              className="w-4 h-4 text-secondary-600 rounded focus:ring-blue-500"
               checked={value as boolean}
               onChange={(e) => handleSettingChange(key, e.target.checked)}
               disabled={readOnly}
             />
-            <span className="text-sm text-gray-700">{value ? '启用' : '禁用'}</span>
+            <span className="text-sm text-neutral-700">{value ? '启用' : '禁用'}</span>
           </label>
         )
 
@@ -188,14 +188,14 @@ export const PluginSettings: React.FC<PluginSettingsProps> = ({
 
       default:
         return (
-          <div className="text-red-500 text-sm">不支持的配置类型: {item.type}</div>
+          <div className="text-error-500 text-sm">不支持的配置类型: {item.type}</div>
         )
     }
   }
 
   if (!schema || Object.keys(schema).length === 0) {
     return (
-      <div className="p-4 text-center text-gray-500">
+      <div className="p-4 text-center text-neutral-500">
         该插件没有可配置的选项
       </div>
     )
@@ -204,11 +204,11 @@ export const PluginSettings: React.FC<PluginSettingsProps> = ({
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-800">插件配置</h3>
+        <h3 className="text-lg font-semibold text-neutral-800">插件配置</h3>
         {!readOnly && (
           <button
             onClick={resetToDefaults}
-            className="px-3 py-1 text-sm text-blue-600 hover:text-blue-800 transition-colors"
+            className="px-3 py-1 text-sm text-secondary-600 hover:text-secondary-800 transition-colors"
           >
             恢复默认
           </button>
@@ -218,27 +218,27 @@ export const PluginSettings: React.FC<PluginSettingsProps> = ({
       <div className="space-y-4">
         {Object.entries(schema).map(([key, item]) => (
           <div key={key} className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-neutral-700">
               {item.label}
-              {item.validation?.required && <span className="text-red-500 ml-1">*</span>}
+              {item.validation?.required && <span className="text-error-500 ml-1">*</span>}
             </label>
 
             {renderSettingItem(key, item)}
 
             {item.description && (
-              <p className="text-xs text-gray-500">{item.description}</p>
+              <p className="text-xs text-neutral-500">{item.description}</p>
             )}
 
             {errors[key] && touched.has(key) && (
-              <p className="text-xs text-red-500 mt-1">{errors[key]}</p>
+              <p className="text-xs text-error-500 mt-1">{errors[key]}</p>
             )}
           </div>
         ))}
       </div>
 
       {!readOnly && (
-        <div className="pt-4 border-t border-gray-200">
-          <p className="text-xs text-gray-400">配置将自动保存到本地存储</p>
+        <div className="pt-4 border-t border-neutral-200">
+          <p className="text-xs text-neutral-400">配置将自动保存到本地存储</p>
         </div>
       )}
     </div>

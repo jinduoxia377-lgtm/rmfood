@@ -217,15 +217,15 @@ export default function AcademicReportPage() {
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      draft: { label: '草稿', className: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300' },
-      'in_review': { label: '审核中', className: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' },
-      published: { label: '已发布', className: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' },
+      draft: { label: '草稿', className: 'bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300' },
+      'in_review': { label: '审核中', className: 'bg-warning-100 text-warning-700 dark:bg-warning-900/30 dark:text-warning-400' },
+      published: { label: '已发布', className: 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400' },
     };
-    return statusConfig[status as keyof typeof statusConfig] || { label: status, className: 'bg-gray-100 text-gray-600' };
+    return statusConfig[status as keyof typeof statusConfig] || { label: status, className: 'bg-neutral-100 text-neutral-600' };
   };
 
   const getSortIcon = (field: SortField) => {
-    if (sortField !== field) return <ArrowUpDown className="w-4 h-4 text-gray-400" />;
+    if (sortField !== field) return <ArrowUpDown className="w-4 h-4 text-neutral-400" />;
     return sortOrder === 'asc' ? <ArrowUp className="w-4 h-4 text-primary" /> : <ArrowDown className="w-4 h-4 text-primary" />;
   };
 
@@ -240,12 +240,12 @@ export default function AcademicReportPage() {
 
   if (viewMode === 'editor') {
     return (
-      <div className="h-screen flex flex-col bg-gray-50 dark:bg-gray-950">
-        <div className="sticky top-0 z-20 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center gap-4 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-white/80 dark:supports-[backdrop-filter]:bg-gray-900/80">
+      <div className="h-screen flex flex-col bg-neutral-50 dark:bg-neutral-900">
+        <div className="sticky top-0 z-20 bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-700 px-6 py-4 flex items-center gap-4 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-white/80 dark:supports-[backdrop-filter]:bg-neutral-900/80">
           <Button
             variant="ghost"
             onClick={() => setViewMode('list')}
-            className="gap-2 text-gray-600 dark:text-gray-400"
+            className="gap-2 text-neutral-600 dark:text-neutral-400"
           >
             <ChevronRight className="w-4 h-4 rotate-180" />
             返回列表
@@ -256,8 +256,8 @@ export default function AcademicReportPage() {
                 <BookOpen className="w-5 h-5 text-primary-600 dark:text-primary-400" />
               </div>
               <div className="min-w-0">
-                <h2 className="font-semibold text-gray-900 dark:text-gray-100 truncate">{selectedReport.title}</h2>
-                <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                <h2 className="font-semibold text-neutral-900 dark:text-neutral-100 truncate">{selectedReport.title}</h2>
+                <div className="flex items-center gap-2 text-sm text-neutral-500 dark:text-neutral-400">
                   <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(selectedReport.status).className}`}>
                     {getStatusBadge(selectedReport.status).label}
                   </span>
@@ -276,7 +276,7 @@ export default function AcademicReportPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-900">
       {/* 删除确认对话框 */}
       <Modal
         open={showDeleteConfirm}
@@ -285,7 +285,7 @@ export default function AcademicReportPage() {
         description={selectedIds.size > 1 ? `确定要删除选中的 ${selectedIds.size} 份报告吗？此操作无法撤销。` : '此操作将永久删除该报告，无法撤销。确定要继续吗？'}
       >
         <div className="flex gap-3 justify-end mt-6">
-          <Button variant="ghost" onClick={() => setShowDeleteConfirm(false)} className="text-gray-600 dark:text-gray-400">
+          <Button variant="ghost" onClick={() => setShowDeleteConfirm(false)} className="text-neutral-600 dark:text-neutral-400">
             取消
           </Button>
           <Button
@@ -319,63 +319,63 @@ export default function AcademicReportPage() {
 
         {/* 统计卡片 - 清晰的视觉层级 */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card hoverable className="border-gray-200 dark:border-gray-700 overflow-hidden">
+          <Card hoverable className="border-neutral-200 dark:border-neutral-700 overflow-hidden">
             <CardContent className="p-5">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">总报告数</p>
-                  <p className="text-3xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">{reports.length}</p>
+                  <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-1">总报告数</p>
+                  <p className="text-3xl font-bold text-neutral-900 dark:text-neutral-100 tracking-tight">{reports.length}</p>
                 </div>
-                <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
-                  <FileTextIcon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                <div className="w-12 h-12 bg-secondary-100 dark:bg-secondary-900/30 rounded-xl flex items-center justify-center">
+                  <FileTextIcon className="w-6 h-6 text-secondary-600 dark:text-secondary-400" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card hoverable className="border-gray-200 dark:border-gray-700 overflow-hidden">
+          <Card hoverable className="border-neutral-200 dark:border-neutral-700 overflow-hidden">
             <CardContent className="p-5">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">草稿报告</p>
-                  <p className="text-3xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">
+                  <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-1">草稿报告</p>
+                  <p className="text-3xl font-bold text-neutral-900 dark:text-neutral-100 tracking-tight">
                     {reports.filter(r => r.status === 'draft').length}
                   </p>
                 </div>
-                <div className="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-xl flex items-center justify-center">
-                  <Edit className="w-6 h-6 text-gray-600 dark:text-gray-400" />
+                <div className="w-12 h-12 bg-neutral-100 dark:bg-neutral-800 rounded-xl flex items-center justify-center">
+                  <Edit className="w-6 h-6 text-neutral-600 dark:text-neutral-400" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card hoverable className="border-gray-200 dark:border-gray-700 overflow-hidden">
+          <Card hoverable className="border-neutral-200 dark:border-neutral-700 overflow-hidden">
             <CardContent className="p-5">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">审核中</p>
-                  <p className="text-3xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">
+                  <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-1">审核中</p>
+                  <p className="text-3xl font-bold text-neutral-900 dark:text-neutral-100 tracking-tight">
                     {reports.filter(r => r.status === 'in_review').length}
                   </p>
                 </div>
-                <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-xl flex items-center justify-center">
-                  <AlertCircle className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+                <div className="w-12 h-12 bg-warning-100 dark:bg-warning-900/30 rounded-xl flex items-center justify-center">
+                  <AlertCircle className="w-6 h-6 text-warning-600 dark:text-warning-400" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card hoverable className="border-gray-200 dark:border-gray-700 overflow-hidden">
+          <Card hoverable className="border-neutral-200 dark:border-neutral-700 overflow-hidden">
             <CardContent className="p-5">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">已发布</p>
-                  <p className="text-3xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">
+                  <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-1">已发布</p>
+                  <p className="text-3xl font-bold text-neutral-900 dark:text-neutral-100 tracking-tight">
                     {reports.filter(r => r.status === 'published').length}
                   </p>
                 </div>
-                <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl flex items-center justify-center">
-                  <CheckCircle className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+                <div className="w-12 h-12 bg-primary-100 dark:bg-primary-900/30 rounded-xl flex items-center justify-center">
+                  <CheckCircle className="w-6 h-6 text-primary-600 dark:text-primary-400" />
                 </div>
               </div>
             </CardContent>
@@ -391,7 +391,7 @@ export default function AcademicReportPage() {
                   <div className="w-8 h-8 bg-primary-100 dark:bg-primary-900/30 rounded-lg flex items-center justify-center">
                     <CheckSquare className="w-4 h-4 text-primary-600 dark:text-primary-400" />
                   </div>
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                     已选择 {selectedIds.size} 份报告
                   </span>
                 </div>
@@ -403,7 +403,7 @@ export default function AcademicReportPage() {
                       setSelectedIds(new Set());
                       setShowBulkActions(false);
                     }}
-                    className="text-gray-600 dark:text-gray-400"
+                    className="text-neutral-600 dark:text-neutral-400"
                   >
                     取消选择
                   </Button>
@@ -423,12 +423,12 @@ export default function AcademicReportPage() {
         )}
 
         {/* 搜索和筛选 - 优化布局 */}
-        <Card className="border-gray-200 dark:border-gray-700">
+        <Card className="border-neutral-200 dark:border-neutral-700">
           <CardContent className="p-5">
             <div className="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center">
               {/* 搜索框 */}
               <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
                 <Input
                   placeholder="搜索报告标题、作者、摘要或关联配方..."
                   value={searchQuery}
@@ -438,9 +438,9 @@ export default function AcademicReportPage() {
                 {searchQuery && (
                   <button
                     onClick={() => setSearchQuery('')}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-full transition-colors"
                   >
-                    <X className="w-4 h-4 text-gray-400" />
+                    <X className="w-4 h-4 text-neutral-400" />
                   </button>
                 )}
               </div>
@@ -448,11 +448,11 @@ export default function AcademicReportPage() {
               <div className="flex items-center gap-3 flex-wrap">
                 {/* 状态筛选 */}
                 <div className="flex items-center gap-2">
-                  <Filter className="w-4 h-4 text-gray-400" />
+                  <Filter className="w-4 h-4 text-neutral-400" />
                   <select
                     value={selectedStatus}
                     onChange={(e) => setSelectedStatus(e.target.value)}
-                    className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 transition-all"
+                    className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 transition-all"
                   >
                     <option value="all">全部状态</option>
                     <option value="draft">草稿</option>
@@ -478,11 +478,11 @@ export default function AcademicReportPage() {
                         className="fixed inset-0 z-10"
                         onClick={() => setShowSortMenu(false)}
                       />
-                      <div className="absolute right-0 top-full mt-2 w-52 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-2 z-20 animate-in fade-in zoom-in-95 duration-200">
-                        <div className="px-3 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">排序方式</div>
+                      <div className="absolute right-0 top-full mt-2 w-52 bg-white dark:bg-neutral-800 rounded-xl shadow-xl border border-neutral-200 dark:border-neutral-700 py-2 z-20 animate-in fade-in zoom-in-95 duration-200">
+                        <div className="px-3 py-2 text-xs font-semibold text-neutral-400 uppercase tracking-wider">排序方式</div>
                         <button
                           onClick={() => handleSort('updatedAt')}
-                          className={`w-full px-4 py-2.5 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-between transition-colors ${sortField === 'updatedAt' ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20' : 'text-gray-700 dark:text-gray-300'}`}
+                          className={`w-full px-4 py-2.5 text-left text-sm hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center justify-between transition-colors ${sortField === 'updatedAt' ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20' : 'text-neutral-700 dark:text-neutral-300'}`}
                         >
                           <span className="flex items-center gap-2">
                             <Calendar className="w-4 h-4" />
@@ -492,7 +492,7 @@ export default function AcademicReportPage() {
                         </button>
                         <button
                           onClick={() => handleSort('createdAt')}
-                          className={`w-full px-4 py-2.5 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-between transition-colors ${sortField === 'createdAt' ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20' : 'text-gray-700 dark:text-gray-300'}`}
+                          className={`w-full px-4 py-2.5 text-left text-sm hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center justify-between transition-colors ${sortField === 'createdAt' ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20' : 'text-neutral-700 dark:text-neutral-300'}`}
                         >
                           <span className="flex items-center gap-2">
                             <Calendar className="w-4 h-4" />
@@ -502,7 +502,7 @@ export default function AcademicReportPage() {
                         </button>
                         <button
                           onClick={() => handleSort('title')}
-                          className={`w-full px-4 py-2.5 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-between transition-colors ${sortField === 'title' ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20' : 'text-gray-700 dark:text-gray-300'}`}
+                          className={`w-full px-4 py-2.5 text-left text-sm hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center justify-between transition-colors ${sortField === 'title' ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20' : 'text-neutral-700 dark:text-neutral-300'}`}
                         >
                           <span className="flex items-center gap-2">
                             <FileTextIcon className="w-4 h-4" />
@@ -512,7 +512,7 @@ export default function AcademicReportPage() {
                         </button>
                         <button
                           onClick={() => handleSort('status')}
-                          className={`w-full px-4 py-2.5 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-between transition-colors ${sortField === 'status' ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20' : 'text-gray-700 dark:text-gray-300'}`}
+                          className={`w-full px-4 py-2.5 text-left text-sm hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center justify-between transition-colors ${sortField === 'status' ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20' : 'text-neutral-700 dark:text-neutral-300'}`}
                         >
                           <span className="flex items-center gap-2">
                             <Badge className="px-2 py-0.5 text-xs">状态</Badge>
@@ -530,7 +530,7 @@ export default function AcademicReportPage() {
                   <Button
                     variant="ghost"
                     onClick={clearFilters}
-                    className="gap-1 text-gray-600 dark:text-gray-400"
+                    className="gap-1 text-neutral-600 dark:text-neutral-400"
                     icon={<X className="w-4 h-4" />}
                   >
                     清除筛选
@@ -543,25 +543,25 @@ export default function AcademicReportPage() {
 
         {/* 报告列表 */}
         {isLoading ? (
-          <Card className="border-gray-200 dark:border-gray-700">
+          <Card className="border-neutral-200 dark:border-neutral-700">
             <CardContent className="p-16 text-center">
               <div className="inline-block animate-spin rounded-full h-10 w-10 border-4 border-primary-200 dark:border-primary-800 border-t-primary-600 dark:border-t-primary-400 mb-5" />
-              <p className="text-gray-500 dark:text-gray-400 font-medium">加载报告列表...</p>
+              <p className="text-neutral-500 dark:text-neutral-400 font-medium">加载报告列表...</p>
             </CardContent>
           </Card>
         ) : error ? (
-          <Card className="border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20">
+          <Card className="border-red-200 dark:border-red-800 bg-error-50 dark:bg-error-900/20">
             <CardContent className="p-8 text-center">
-              <AlertCircle className="w-14 h-14 text-red-500 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-red-700 dark:text-red-400 mb-1">加载报告列表失败</h3>
-              <p className="text-red-500 dark:text-red-400 text-sm mb-4">{error}</p>
+              <AlertCircle className="w-14 h-14 text-error-500 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-error-700 dark:text-error-400 mb-1">加载报告列表失败</h3>
+              <p className="text-error-500 dark:text-error-400 text-sm mb-4">{error}</p>
               <Button onClick={fetchReports} className="gap-2" icon={<RefreshCw className="w-4 h-4" />}>
                 重试
               </Button>
             </CardContent>
           </Card>
         ) : filteredAndSortedReports.length === 0 ? (
-          <Card className="border-gray-200 dark:border-gray-700 overflow-hidden">
+          <Card className="border-neutral-200 dark:border-neutral-700 overflow-hidden">
             <CardContent className="p-0">
               <EmptyStateIllustration
                 type={hasActiveFilters ? 'search-empty' : 'no-data'}
@@ -589,15 +589,15 @@ export default function AcademicReportPage() {
               <div className="flex items-center gap-3">
                 <button
                   onClick={handleSelectAll}
-                  className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                  className="p-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition-colors"
                 >
                   {selectedIds.size === filteredAndSortedReports.length && filteredAndSortedReports.length > 0 ? (
                     <CheckSquare className="w-5 h-5 text-primary" />
                   ) : (
-                    <Square className="w-5 h-5 text-gray-400" />
+                    <Square className="w-5 h-5 text-neutral-400" />
                   )}
                 </button>
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                <span className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
                   {filteredAndSortedReports.length} 份报告
                 </span>
               </div>
@@ -608,7 +608,7 @@ export default function AcademicReportPage() {
               <Card
                 key={report.id}
                 hoverable
-                className={`border-gray-200 dark:border-gray-700 overflow-hidden transition-all duration-300 ${
+                className={`border-neutral-200 dark:border-neutral-700 overflow-hidden transition-all duration-300 ${
                   selectedIds.has(report.id) ? 'ring-2 ring-primary bg-primary-50/50 dark:bg-primary-900/20 border-primary-300 dark:border-primary-700' : ''
                 } animate-in fade-in slide-in-from-bottom-4 duration-500`}
                 style={{ animationDelay: `${index * 50}ms` }}
@@ -620,12 +620,12 @@ export default function AcademicReportPage() {
                       <div className="flex items-start gap-3">
                         <button
                           onClick={() => handleSelectReport(report.id)}
-                          className="mt-1 p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors shrink-0"
+                          className="mt-1 p-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition-colors shrink-0"
                         >
                           {selectedIds.has(report.id) ? (
                             <CheckSquare className="w-5 h-5 text-primary" />
                           ) : (
-                            <Square className="w-5 h-5 text-gray-400" />
+                            <Square className="w-5 h-5 text-neutral-400" />
                           )}
                         </button>
 
@@ -639,34 +639,34 @@ export default function AcademicReportPage() {
                         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                           <div className="min-w-0 flex-1">
                             <h3
-                              className="text-lg font-semibold text-gray-900 dark:text-gray-100 hover:text-primary cursor-pointer transition-colors truncate mb-2"
+                              className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 hover:text-primary cursor-pointer transition-colors truncate mb-2"
                               onClick={() => handleViewReport(report)}
                             >
                               {report.title}
                             </h3>
 
                             {report.abstract && (
-                              <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-3 leading-relaxed">
+                              <p className="text-sm text-neutral-600 dark:text-neutral-400 line-clamp-2 mb-3 leading-relaxed">
                                 {report.abstract}
                               </p>
                             )}
 
-                            <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
+                            <div className="flex flex-wrap items-center gap-3 text-sm text-neutral-500 dark:text-neutral-400">
                               {report.authors.length > 0 && (
                                 <span className="flex items-center gap-1.5">
-                                  <User className="w-3.5 h-3.5 text-gray-400" />
+                                  <User className="w-3.5 h-3.5 text-neutral-400" />
                                   <span className="truncate">{report.authors.join('、')}</span>
                                 </span>
                               )}
                               {report.formulaName && (
                                 <span className="flex items-center gap-1.5">
-                                  <Link2 className="w-3.5 h-3.5 text-gray-400" />
-                                  <span className="truncate font-medium text-gray-600 dark:text-gray-300">{report.formulaName}</span>
+                                  <Link2 className="w-3.5 h-3.5 text-neutral-400" />
+                                  <span className="truncate font-medium text-neutral-600 dark:text-neutral-300">{report.formulaName}</span>
                                 </span>
                               )}
                             </div>
 
-                            <div className="flex flex-wrap items-center gap-4 mt-3 text-xs text-gray-400 dark:text-gray-500">
+                            <div className="flex flex-wrap items-center gap-4 mt-3 text-xs text-neutral-400 dark:text-neutral-500">
                               <span className="flex items-center gap-1.5">
                                 <Calendar className="w-3 h-3" />
                                 创建于 {formatDate(report.createdAt)}
@@ -691,18 +691,18 @@ export default function AcademicReportPage() {
                               <Button
                                 variant="ghost"
                                 onClick={() => handleViewReport(report)}
-                                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                                className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg"
                                 title="查看"
                               >
-                                <Eye className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                                <Eye className="w-4 h-4 text-neutral-600 dark:text-neutral-400" />
                               </Button>
                               <Button
                                 variant="ghost"
                                 onClick={() => handleEditReport(report)}
-                                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                                className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg"
                                 title="编辑"
                               >
-                                <Edit className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                                <Edit className="w-4 h-4 text-neutral-600 dark:text-neutral-400" />
                               </Button>
 
                               {/* 更多菜单 */}
@@ -710,10 +710,10 @@ export default function AcademicReportPage() {
                                 <Button
                                   variant="ghost"
                                   onClick={() => setShowMoreMenu(showMoreMenu === report.id ? null : report.id)}
-                                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                                  className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg"
                                   title="更多操作"
                                 >
-                                  <MoreVertical className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                                  <MoreVertical className="w-4 h-4 text-neutral-600 dark:text-neutral-400" />
                                 </Button>
                                 {showMoreMenu === report.id && (
                                   <>
@@ -721,10 +721,10 @@ export default function AcademicReportPage() {
                                       className="fixed inset-0 z-10"
                                       onClick={() => setShowMoreMenu(null)}
                                     />
-                                    <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-1.5 z-20 animate-in fade-in zoom-in-95 duration-200">
+                                    <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-neutral-800 rounded-xl shadow-xl border border-neutral-200 dark:border-neutral-700 py-1.5 z-20 animate-in fade-in zoom-in-95 duration-200">
                                       <button
                                         onClick={() => handleDuplicateReport(report)}
-                                        className="w-full px-4 py-2.5 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 text-gray-700 dark:text-gray-300"
+                                        className="w-full px-4 py-2.5 text-left text-sm hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center gap-2 text-neutral-700 dark:text-neutral-300"
                                       >
                                         <Copy className="w-4 h-4" />
                                         复制报告
@@ -732,7 +732,7 @@ export default function AcademicReportPage() {
                                       <Divider className="my-1" />
                                       <button
                                         onClick={() => confirmDelete(report.id)}
-                                        className="w-full px-4 py-2.5 text-left text-sm hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2 text-red-600 dark:text-red-400"
+                                        className="w-full px-4 py-2.5 text-left text-sm hover:bg-error-50 dark:hover:bg-error-900/20 flex items-center gap-2 text-error-600 dark:text-error-400"
                                       >
                                         <Trash2 className="w-4 h-4" />
                                         删除报告
@@ -748,9 +748,9 @@ export default function AcademicReportPage() {
                               <Button
                                 variant="ghost"
                                 onClick={() => setShowMoreMenu(showMoreMenu === report.id ? null : report.id)}
-                                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                                className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg"
                               >
-                                <Menu className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                                <Menu className="w-4 h-4 text-neutral-600 dark:text-neutral-400" />
                               </Button>
                               {showMoreMenu === report.id && (
                                 <>
@@ -758,24 +758,24 @@ export default function AcademicReportPage() {
                                     className="fixed inset-0 z-10"
                                     onClick={() => setShowMoreMenu(null)}
                                   />
-                                  <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-1.5 z-20 animate-in fade-in zoom-in-95 duration-200">
+                                  <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-neutral-800 rounded-xl shadow-xl border border-neutral-200 dark:border-neutral-700 py-1.5 z-20 animate-in fade-in zoom-in-95 duration-200">
                                     <button
                                       onClick={() => handleViewReport(report)}
-                                      className="w-full px-4 py-2.5 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 text-gray-700 dark:text-gray-300"
+                                      className="w-full px-4 py-2.5 text-left text-sm hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center gap-2 text-neutral-700 dark:text-neutral-300"
                                     >
                                       <Eye className="w-4 h-4" />
                                       查看
                                     </button>
                                     <button
                                       onClick={() => handleEditReport(report)}
-                                      className="w-full px-4 py-2.5 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 text-gray-700 dark:text-gray-300"
+                                      className="w-full px-4 py-2.5 text-left text-sm hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center gap-2 text-neutral-700 dark:text-neutral-300"
                                     >
                                       <Edit className="w-4 h-4" />
                                       编辑
                                     </button>
                                     <button
                                       onClick={() => handleDuplicateReport(report)}
-                                      className="w-full px-4 py-2.5 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 text-gray-700 dark:text-gray-300"
+                                      className="w-full px-4 py-2.5 text-left text-sm hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center gap-2 text-neutral-700 dark:text-neutral-300"
                                     >
                                       <Copy className="w-4 h-4" />
                                       复制
@@ -783,7 +783,7 @@ export default function AcademicReportPage() {
                                     <Divider className="my-1" />
                                     <button
                                       onClick={() => confirmDelete(report.id)}
-                                      className="w-full px-4 py-2.5 text-left text-sm hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2 text-red-600 dark:text-red-400"
+                                      className="w-full px-4 py-2.5 text-left text-sm hover:bg-error-50 dark:hover:bg-error-900/20 flex items-center gap-2 text-error-600 dark:text-error-400"
                                     >
                                       <Trash2 className="w-4 h-4" />
                                       删除

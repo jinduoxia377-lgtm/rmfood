@@ -131,12 +131,10 @@
 @keyframes shrinkOut {
   from {
     opacity: 1;
-    max-height: 1000px;
     transform: scaleY(1);
   }
   to {
     opacity: 0;
-    max-height: 0;
     transform: scaleY(0.8);
   }
 }
@@ -378,6 +376,13 @@
   }
 
   .hover-scale:hover {
+    transform: none !important;
+  }
+
+  /* Button press animations */
+  .btn-press,
+  .active\:scale-95,
+  .active\:scale-\[0\.98\] {
     transform: none !important;
   }
 

@@ -10,16 +10,16 @@ export function StatisticsCardsSkeleton({ count = 4 }: StatisticsCardsSkeletonPr
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
-          className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-5 space-y-3 hover:shadow-md transition-shadow"
+          className="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-5 space-y-3 hover:shadow-md transition-shadow"
         >
           {/* Header */}
           <div className="flex items-center justify-between">
             <div
               className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                i === 0 ? 'bg-blue-50 dark:bg-blue-900/20' :
-                i === 1 ? 'bg-emerald-50 dark:bg-emerald-900/20' :
-                i === 2 ? 'bg-amber-50 dark:bg-amber-900/20' :
-                'bg-purple-50 dark:bg-purple-900/20'
+                i === 0 ? 'bg-secondary-50 dark:bg-secondary-900/20' :
+                i === 1 ? 'bg-primary-50 dark:bg-primary-900/20' :
+                i === 2 ? 'bg-warning-50 dark:bg-warning-900/20' :
+                'bg-accent-50 dark:bg-accent-900/20'
               }`}
             >
               <Skeleton width={22} height={22} radius={5} animationType="pulse" />

@@ -37,7 +37,7 @@ RMFOOD Peptide Analysis System v2.0 - 食品活性肽核心算法模块
 ✅ 结果直接指导食品配方开发决策
 
 使用示例:
->>> from backend.app.services.peptide_analysis_v2.core_algorithms import FoodPeptideAnalyzer
+>>> from ..services.peptide_analysis_v2.core_algorithms import FoodPeptideAnalyzer
 >>> analyzer = FoodPeptideAnalyzer()
 >>> result = await analyzer.analyze("VLGYTKEGN")
 >>> print(f"应用评分: {result.food_application_score}/100")

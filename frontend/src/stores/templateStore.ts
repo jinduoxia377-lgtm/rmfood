@@ -68,12 +68,12 @@ export const useTemplateStore = create<TemplateState>()(
             },
             styles: {
               fonts: { heading: 'SimSun', body: 'SimSun', caption: 'SimSun', title: 'SimSun' },
-              colors: { primary: '#1e40af', secondary: '#475569', accent: '#0ea5e9' },
+              colors: { primary: '#003E87', secondary: '#4B5563', accent: '#0ea5e9' },
               spacing: { lineHeight: 1.5, paragraphSpacing: 12, marginTop: 18, marginBottom: 12, headingSpacing: 18 },
               headings: {
-                h1: { fontSize: 16, fontWeight: 'bold', color: '#1e40af' },
-                h2: { fontSize: 14, fontWeight: 'bold', color: '#334155' },
-                h3: { fontSize: 12, fontWeight: 'bold', color: '#475569' },
+                h1: { fontSize: 16, fontWeight: 'bold', color: '#003E87' },
+                h2: { fontSize: 14, fontWeight: 'bold', color: '#374151' },
+                h3: { fontSize: 12, fontWeight: 'bold', color: '#4B5563' },
               },
             },
             variables: [],
@@ -110,7 +110,7 @@ export const useTemplateStore = create<TemplateState>()(
             },
             styles: {
               fonts: { heading: 'SimHei', body: 'SimSun', caption: 'SimSun', title: 'SimHei' },
-              colors: { primary: '#1f2937', secondary: '#4b5563', accent: '#3b82f6' },
+              colors: { primary: '#1f2937', secondary: '#4b5563', accent: '#007AFF' },
               spacing: { lineHeight: 1.8, paragraphSpacing: 15, marginTop: 24, marginBottom: 15, headingSpacing: 24 },
               headings: {
                 h1: { fontSize: 20, fontWeight: 'bold', color: '#1f2937' },
@@ -149,12 +149,12 @@ export const useTemplateStore = create<TemplateState>()(
             },
             styles: {
               fonts: { heading: 'SimHei', body: 'SimSun', caption: 'SimSun', title: 'SimHei' },
-              colors: { primary: '#065f46', secondary: '#3f6212', accent: '#10b981' },
+              colors: { primary: '#065f46', secondary: '#3f6212', accent: '#34C759' },
               spacing: { lineHeight: 1.6, paragraphSpacing: 12, marginTop: 20, marginBottom: 12, headingSpacing: 20 },
               headings: {
                 h1: { fontSize: 18, fontWeight: 'bold', color: '#065f46' },
-                h2: { fontSize: 15, fontWeight: 'bold', color: '#047857' },
-                h3: { fontSize: 13, fontWeight: 'bold', color: '#059669' },
+                h2: { fontSize: 15, fontWeight: 'bold', color: '#1E8E3E' },
+                h3: { fontSize: 13, fontWeight: 'bold', color: '#28A745' },
               },
             },
             variables: [],

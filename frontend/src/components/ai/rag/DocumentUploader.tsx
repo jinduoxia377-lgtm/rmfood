@@ -80,7 +80,7 @@ export function DocumentUploader({ onUploadSuccess, maxSizeMB = 20 }: DocumentUp
           'relative border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all duration-200',
           isDragging
             ? 'border-primary-500 bg-primary-50 dark:bg-primary-950/30'
-            : 'border-gray-300 dark:border-gray-600 hover:border-primary-400 hover:bg-gray-50 dark:hover:bg-gray-800/50',
+            : 'border-neutral-300 dark:border-neutral-600 hover:border-primary-400 hover:bg-slate-50 dark:hover:bg-neutral-800/50',
           isUploading && 'pointer-events-none opacity-60',
         )}
       >
@@ -96,22 +96,22 @@ export function DocumentUploader({ onUploadSuccess, maxSizeMB = 20 }: DocumentUp
         {isUploading ? (
           <div className="space-y-2">
             <Loader2 className="w-8 h-8 mx-auto text-primary-500 animate-spin" />
-            <p className="text-sm font-medium text-gray-600 dark:text-gray-400">正在上传并解析...</p>
-            <div className="w-full max-w-xs mx-auto bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+            <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">正在上传并解析...</p>
+            <div className="w-full max-w-xs mx-auto bg-neutral-200 dark:bg-neutral-700 rounded-full h-1.5">
               <div
                 className="bg-primary-500 h-1.5 rounded-full transition-all duration-300"
                 style={{ width: `${progress}%` }}
               />
             </div>
-            <p className="text-xs text-gray-400">{progress}%</p>
+            <p className="text-xs text-neutral-400">{progress}%</p>
           </div>
         ) : (
           <div className="space-y-2">
-            <Upload className="w-8 h-8 mx-auto text-gray-400" />
-            <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+            <Upload className="w-8 h-8 mx-auto text-neutral-400" />
+            <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
               拖拽文件到此处，或 <span className="text-primary-500">点击选择</span>
             </p>
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-neutral-400">
               支持 {ACCEPTED_TYPES_LABEL} 格式，单文件最大 {maxSizeMB}MB
             </p>
           </div>
@@ -123,8 +123,8 @@ export function DocumentUploader({ onUploadSuccess, maxSizeMB = 20 }: DocumentUp
         <div className={clsx(
           'flex items-start gap-2 p-3 rounded-lg text-sm',
           uploadResult.type === 'success'
-            ? 'bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-400'
-            : 'bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400',
+            ? 'bg-success-50 dark:bg-green-950/30 text-success-700 dark:text-success-400'
+            : 'bg-error-50 dark:bg-red-950/30 text-error-700 dark:text-error-400',
         )}>
           {uploadResult.type === 'success'
             ? <CheckCircle className="w-4 h-4 mt-0.5 shrink-0" />

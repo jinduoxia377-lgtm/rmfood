@@ -59,30 +59,30 @@ function SortableList({
           onDragStart={() => handleDragStart(index)}
           onDragOver={(e) => handleDragOver(e, index)}
           onDragEnd={handleDragEnd}
-          className={`flex items-center gap-2 px-2 py-1.5 bg-white dark:bg-gray-750 border rounded cursor-move transition-all ${
+          className={`flex items-center gap-2 px-2 py-1.5 bg-white dark:bg-slate-750 border rounded cursor-move transition-all ${
             dragIndex === index
               ? 'opacity-50 border-blue-400 shadow-lg scale-[1.02]'
-              : 'border-gray-200 dark:border-gray-600 hover:border-blue-300'
+              : 'border-neutral-200 dark:border-neutral-600 hover:border-blue-300'
           }`}
         >
           {/* 拖拽手柄 */}
-          <span className="cursor-grab text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+          <span className="cursor-grab text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300">
             ⠿
           </span>
 
           {/* 列名 */}
-          <span className={`flex-1 text-sm truncate ${!item.visible ? 'text-gray-400 line-through' : ''}`}>
+          <span className={`flex-1 text-sm truncate ${!item.visible ? 'text-neutral-400 line-through' : ''}`}>
             {item.label}
             {!item.visible && <span className="ml-1 text-xs">(隐藏)</span>}
           </span>
 
           {/* 宽度显示 */}
-          <span className="text-xs text-gray-500 dark:text-gray-400 w-16 text-right">
+          <span className="text-xs text-neutral-500 dark:text-neutral-400 w-16 text-right">
             {item.width ? `${item.width}px` : '自动'}
           </span>
 
           {/* 排序指示 */}
-          <span className="text-xs text-gray-400 w-4 text-center">
+          <span className="text-xs text-neutral-400 w-4 text-center">
             #{index + 1}
           </span>
         </div>
@@ -203,16 +203,16 @@ export function ViewManager({
   }, [editingColumns]);
 
   return (
-    <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 ${className}`}>
+    <div className={`bg-white dark:bg-neutral-800 rounded-lg shadow-lg border border-neutral-200 dark:border-neutral-700 ${className}`}>
       {/* 头部 */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-gray-700">
-        <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200">
+      <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-200 dark:border-neutral-700">
+        <h3 className="text-base font-semibold text-neutral-800 dark:text-neutral-200">
           📊 列视图管理
         </h3>
 
         <button
           onClick={() => {} /* 关闭由父组件处理 */}
-          className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+          className="p-1.5 text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-full transition-colors"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -221,13 +221,13 @@ export function ViewManager({
       </div>
 
       {/* 标签页切换 */}
-      <div className="flex border-b border-gray-200 dark:border-gray-700 px-5">
+      <div className="flex border-b border-neutral-200 dark:border-neutral-700 px-5">
         <button
           onClick={() => setActiveTab('edit')}
           className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
             activeTab === 'edit'
-              ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-              : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+              ? 'border-blue-500 text-secondary-600 dark:text-secondary-400'
+              : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
           }`}
         >
           ✏️ 编辑视图
@@ -236,13 +236,13 @@ export function ViewManager({
           onClick={() => setActiveTab('saved')}
           className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors relative ${
             activeTab === 'saved'
-              ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-              : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+              ? 'border-blue-500 text-secondary-600 dark:text-secondary-400'
+              : 'border-transparent text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
           }`}
         >
           💾 已保存 ({savedViews.length})
           {savedViews.length > 0 && (
-            <span className="absolute -top-1 -right-2 w-4 h-4 bg-blue-500 text-white text-xs rounded-full flex items-center justify-center">
+            <span className="absolute -top-1 -right-2 w-4 h-4 bg-secondary-500 text-white text-xs rounded-full flex items-center justify-center">
               {savedViews.length}
             </span>
           )}
@@ -259,24 +259,24 @@ export function ViewManager({
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => handleSelectAll(true)}
-                  className="px-3 py-1.5 text-xs font-medium text-green-600 bg-green-50 hover:bg-green-100 rounded-md transition-colors"
+                  className="px-3 py-1.5 text-xs font-medium text-success-600 bg-success-50 hover:bg-success-100 rounded-md transition-colors"
                 >
                   全部显示
                 </button>
                 <button
                   onClick={() => handleSelectAll(false)}
-                  className="px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-md transition-colors"
+                  className="px-3 py-1.5 text-xs font-medium text-error-600 bg-error-50 hover:bg-error-100 rounded-md transition-colors"
                 >
                   全部隐藏
                 </button>
-                <span className="text-xs text-gray-400">
+                <span className="text-xs text-neutral-400">
                   显示 {stats.visible}/{stats.total} 列
                 </span>
               </div>
 
               <button
                 onClick={handleReset}
-                className="px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-md transition-colors"
+                className="px-3 py-1.5 text-xs font-medium text-neutral-600 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-700 dark:hover:bg-neutral-600 rounded-md transition-colors"
               >
                 ↺ 重置
               </button>
@@ -293,8 +293,8 @@ export function ViewManager({
                     key={col.key}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-lg border transition-colors ${
                       isVisible
-                        ? 'bg-blue-50/30 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800'
-                        : 'bg-gray-50 dark:bg-gray-750 border-gray-200 dark:border-gray-600 opacity-60'
+                        ? 'bg-secondary-50/30 dark:bg-secondary-900/10 border-blue-200 dark:border-blue-800'
+                        : 'bg-slate-50 dark:bg-slate-750 border-neutral-200 dark:border-neutral-600 opacity-60'
                     }`}
                   >
                     {/* Checkbox */}
@@ -302,12 +302,12 @@ export function ViewManager({
                       type="checkbox"
                       checked={isVisible}
                       onChange={() => handleVisibilityToggle(col.key)}
-                      className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                      className="w-4 h-4 text-secondary-600 rounded focus:ring-blue-500"
                     />
 
                     {/* 列名 */}
                     <span className={`flex-1 text-sm font-medium ${
-                      isVisible ? 'text-gray-800 dark:text-gray-200' : 'text-gray-400 line-through'
+                      isVisible ? 'text-neutral-800 dark:text-neutral-200' : 'text-neutral-400 line-through'
                     }`}>
                       {col.label}
                     </span>
@@ -324,9 +324,9 @@ export function ViewManager({
                         placeholder="自动"
                         min={col.minWidth || 40}
                         max={col.maxWidth || 1000}
-                        className="w-20 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700"
+                        className="w-20 px-2 py-1 text-xs border border-neutral-300 dark:border-neutral-600 rounded bg-white dark:bg-neutral-700"
                       />
-                      <span className="text-xs text-gray-400">px</span>
+                      <span className="text-xs text-neutral-400">px</span>
                     </div>
                   </div>
                 );
@@ -334,12 +334,12 @@ export function ViewManager({
             </div>
 
             {/* 拖拽排序预览区 */}
-            <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-750 rounded-lg border border-dashed border-gray-300 dark:border-gray-600">
+            <div className="mt-4 p-4 bg-slate-50 dark:bg-slate-750 rounded-lg border border-dashed border-neutral-300 dark:border-neutral-600">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <span className="text-xs font-medium text-neutral-500 uppercase tracking-wider">
                   列顺序 (拖拽调整)
                 </span>
-                <span className="text-xs text-gray-400">
+                <span className="text-xs text-neutral-400">
                   提示：上下拖拽行来调整列的显示顺序
                 </span>
               </div>
@@ -351,21 +351,21 @@ export function ViewManager({
             </div>
 
             {/* 保存新视图表单 */}
-            <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="pt-4 border-t border-neutral-200 dark:border-neutral-700">
               <div className="flex gap-3 mb-3">
                 <input
                   type="text"
                   placeholder="新视图名称..."
                   value={viewName}
                   onChange={(e) => setViewName(e.target.value)}
-                  className="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500"
+                  className="flex-1 px-3 py-2 text-sm border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 focus:ring-2 focus:ring-blue-500"
                 />
                 <input
                   type="text"
                   placeholder="描述 (可选)"
                   value={viewDesc}
                   onChange={(e) => setViewDesc(e.target.value)}
-                  className="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700"
+                  className="flex-1 px-3 py-2 text-sm border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700"
                 />
               </div>
             </div>
@@ -374,7 +374,7 @@ export function ViewManager({
           /* ====== 已保存标签页 ====== */
           <div className="space-y-2">
             {savedViews.length === 0 ? (
-              <div className="text-center py-8 text-gray-400">
+              <div className="text-center py-8 text-neutral-400">
                 <svg className="w-12 h-12 mx-auto mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                 </svg>
@@ -387,13 +387,13 @@ export function ViewManager({
                   key={view.id}
                   className={`flex items-center justify-between p-3 rounded-lg border transition-colors group ${
                     view.id === currentView.id
-                      ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-700'
-                      : 'bg-white dark:bg-gray-750 border-gray-200 dark:border-gray-600 hover:border-gray-300'
+                      ? 'bg-secondary-50 dark:bg-secondary-900/20 border-blue-300 dark:border-blue-700'
+                      : 'bg-white dark:bg-slate-750 border-neutral-200 dark:border-neutral-600 hover:border-neutral-300'
                   }`}
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="font-medium text-sm text-gray-800 dark:text-gray-200 truncate">
+                      <span className="font-medium text-sm text-neutral-800 dark:text-neutral-200 truncate">
                         📋 {view.name}
                       </span>
 
@@ -404,17 +404,17 @@ export function ViewManager({
                       )}
 
                       {view.id === currentView.id && (
-                        <span className="px-1.5 py-0.5 text-xs bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 rounded">
+                        <span className="px-1.5 py-0.5 text-xs bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-400 rounded">
                           当前
                         </span>
                       )}
                     </div>
 
                     {view.description && (
-                      <p className="text-xs text-gray-500 mt-0.5 truncate">{view.description}</p>
+                      <p className="text-xs text-neutral-500 mt-0.5 truncate">{view.description}</p>
                     )}
 
-                    <p className="text-xs text-gray-400 mt-1">
+                    <p className="text-xs text-neutral-400 mt-1">
                       {view.columns.filter(c => c.visible).length}/{view.columns.length} 列 ·
                       更新于 {new Date(view.updatedAt || view.createdAt).toLocaleDateString()}
                     </p>
@@ -423,7 +423,7 @@ export function ViewManager({
                   <div className="flex items-center gap-1 ml-3">
                     <button
                       onClick={() => onViewChange(view)}
-                      className="px-2.5 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/40 rounded-md transition-colors"
+                      className="px-2.5 py-1.5 text-xs font-medium text-secondary-600 bg-secondary-50 hover:bg-secondary-100 dark:bg-secondary-900/20 dark:hover:bg-secondary-900/40 rounded-md transition-colors"
                     >
                       加载
                     </button>
@@ -431,7 +431,7 @@ export function ViewManager({
                     {!view.isSystem && onSetAsDefault && (
                       <button
                         onClick={() => onSetAsDefault(view.id)}
-                        className="px-2 py-1.5 text-xs text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
+                        className="px-2 py-1.5 text-xs text-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-md transition-colors"
                         title="设为默认视图"
                       >
                         ⭐
@@ -441,7 +441,7 @@ export function ViewManager({
                     {!view.isSystem && onDeleteView && (
                       <button
                         onClick={() => onDeleteView(view.id)}
-                        className="opacity-0 group-hover:opacity-100 p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-all"
+                        className="opacity-0 group-hover:opacity-100 p-1.5 text-neutral-400 hover:text-error-600 hover:bg-error-50 dark:hover:bg-error-900/20 rounded-md transition-all"
                         title="删除此视图"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -458,17 +458,17 @@ export function ViewManager({
       </div>
 
       {/* 底部操作栏 */}
-      <div className="flex items-center justify-end gap-3 px-5 py-4 bg-gray-50 dark:bg-gray-750/50 border-t border-gray-200 dark:border-gray-700 rounded-b-lg">
+      <div className="flex items-center justify-end gap-3 px-5 py-4 bg-slate-50 dark:bg-slate-750/50 border-t border-neutral-200 dark:border-neutral-700 rounded-b-lg">
         <button
           onClick={handleExport}
-          className="px-4 py-2 text-sm font-medium text-gray-600 bg-white hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600 rounded-lg transition-colors"
+          className="px-4 py-2 text-sm font-medium text-neutral-600 bg-white hover:bg-neutral-100 dark:bg-neutral-700 dark:hover:bg-neutral-600 border border-neutral-300 dark:border-neutral-600 rounded-lg transition-colors"
         >
           📤 导出JSON
         </button>
 
         <button
           onClick={handleApply}
-          className="px-5 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition-colors"
+          className="px-5 py-2 text-sm font-medium text-white bg-secondary-600 hover:bg-secondary-700 rounded-lg shadow-sm transition-colors"
         >
           ✓ 应用更改
         </button>
@@ -476,7 +476,7 @@ export function ViewManager({
         {activeTab === 'edit' && viewName.trim() && (
           <button
             onClick={handleSaveAsNew}
-            className="px-4 py-2 text-sm font-medium text-green-600 bg-green-50 hover:bg-green-100 dark:bg-green-900/20 dark:hover:bg-green-900/40 rounded-lg transition-colors"
+            className="px-4 py-2 text-sm font-medium text-success-600 bg-success-50 hover:bg-success-100 dark:bg-success-900/20 dark:hover:bg-success-900/40 rounded-lg transition-colors"
           >
             💾 另存为新视图
           </button>

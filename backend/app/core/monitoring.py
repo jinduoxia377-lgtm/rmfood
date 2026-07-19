@@ -38,6 +38,8 @@ from __future__ import annotations
 import asyncio
 import time
 import uuid
+
+from app.utils.error_sanitize import sanitize_error
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
@@ -293,7 +295,7 @@ class HealthChecker:
                     name=name,
                     status=HealthStatus.UNHEALTHY,
                     latency_ms=(time.time() - start) * 1000,
-                    message=f"检查异常: {str(e)[:100]}",
+                    message=sanitize_error(e, "检查异常"),
                 )
             results[name] = result
 
@@ -345,7 +347,7 @@ class HealthChecker:
                 name="application",
                 status=HealthStatus.UNHEALTHY,
                 latency_ms=(time.time() - start) * 1000,
-                message=str(e)[:100],
+                message=sanitize_error(e, "检查异常"),
             )
 
     async def _check_database(self) -> HealthCheckResult:
@@ -390,7 +392,7 @@ class HealthChecker:
                 name="database",
                 status=HealthStatus.UNHEALTHY,
                 latency_ms=(time.time() - start) * 1000,
-                message=f"数据库错误: {str(e)[:80]}",
+                message=sanitize_error(e, "数据库错误"),
             )
 
     async def _check_redis(self) -> HealthCheckResult:
@@ -430,7 +432,7 @@ class HealthChecker:
                 name="redis",
                 status=HealthStatus.UNHEALTHY,
                 latency_ms=(time.time() - start) * 1000,
-                message=f"Redis 错误: {str(e)[:80]}",
+                message=sanitize_error(e, "Redis错误"),
             )
 
     async def _check_ai_service(self) -> HealthCheckResult:

@@ -65,7 +65,7 @@ export function ExportPanel({ hasData, onExport }: ExportPanelProps) {
         className="w-full justify-start"
         disabled={!hasData}
         onClick={() => {}}
-        leftIcon={<Download className="w-4 h-4" />}
+        icon={<Download className="w-4 h-4" />}
       >
         导出配方数据
       </Button>
@@ -80,22 +80,22 @@ export function ExportPanel({ hasData, onExport }: ExportPanelProps) {
               w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left
               transition-all duration-200
               ${hasData && format.available && !isExporting
-                ? 'hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer'
+                ? 'hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer'
                 : 'opacity-50 cursor-not-allowed'
               }
             `}
           >
-            <format.icon className={`w-4 h-4 ${format.id === 'json' ? 'text-blue-500' : format.id === 'csv' ? 'text-green-500' : 'text-red-500'}`} />
+            <format.icon className={`w-4 h-4 ${format.id === 'json' ? 'text-secondary-500' : format.id === 'csv' ? 'text-success-500' : 'text-error-500'}`} />
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <span className="font-medium text-sm">{format.label}</span>
                 {format.badge && (
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500">
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-500">
                     {format.badge}
                   </span>
                 )}
               </div>
-              <span className="text-xs text-gray-500 truncate">{format.description}</span>
+              <span className="text-xs text-neutral-500 truncate">{format.description}</span>
             </div>
           </button>
         ))}
@@ -107,18 +107,18 @@ export function ExportPanel({ hasData, onExport }: ExportPanelProps) {
             type="checkbox"
             checked={includePatentScores}
             onChange={(e) => setIncludePatentScores(e.target.checked)}
-            className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+            className="w-4 h-4 rounded border-neutral-300 text-primary-600 focus:ring-primary-500"
           />
-          <span className="text-sm text-gray-600 dark:text-gray-300">包含专利协同评分</span>
+          <span className="text-sm text-neutral-600 dark:text-neutral-300">包含专利协同评分</span>
         </label>
         <label className="flex items-center gap-2 cursor-pointer">
           <input
             type="checkbox"
             checked={includeDetailedInfo}
             onChange={(e) => setIncludeDetailedInfo(e.target.checked)}
-            className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+            className="w-4 h-4 rounded border-neutral-300 text-primary-600 focus:ring-primary-500"
           />
-          <span className="text-sm text-gray-600 dark:text-gray-300">包含详细信息</span>
+          <span className="text-sm text-neutral-600 dark:text-neutral-300">包含详细信息</span>
         </label>
       </div>
     </div>

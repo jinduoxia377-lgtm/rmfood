@@ -15,13 +15,10 @@
 from datetime import datetime, timezone
 from typing import Optional
 
-from sqlalchemy import Integer, String, Float, Text, DateTime, JSON, ForeignKey, Index, UniqueConstraint, Table, Column
+from sqlalchemy import Integer, String, Float, Text, DateTime, JSON, ForeignKey, Index, UniqueConstraint, Table, Column, BigInteger
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from ..core.database import Base
-
-
-def _now() -> datetime:
-    return datetime.now(timezone.utc).replace(tzinfo=None)
+from .base import Base
+from app.models.utils import now_utc_mapped
 
 
 # ═══════════════════════════════════════════
@@ -32,11 +29,11 @@ def _now() -> datetime:
 peptide_enzyme_links = Table(
     "peptide_enzyme_links",
     Base.metadata,
-    Column("peptide_id", Integer, ForeignKey("bioactive_peptides.id", ondelete="CASCADE"), primary_key=True),
-    Column("enzyme_id", Integer, ForeignKey("peptide_enzymes.id", ondelete="CASCADE"), primary_key=True),
+    Column("peptide_id", BigInteger, ForeignKey("bioactive_peptides.id", ondelete="CASCADE"), primary_key=True),
+    Column("enzyme_id", BigInteger, ForeignKey("peptide_enzymes.id", ondelete="CASCADE"), primary_key=True),
     Column("hydrolysis_yield", Float, nullable=True, comment="水解产率 (%)"),
     Column("conditions", JSON, nullable=True, comment="水解条件 (pH, 温度, 时间)"),
-    Column("created_at", DateTime, default=_now),
+    Column("created_at", DateTime(timezone=True), default=now_utc_mapped),
 )
 
 
@@ -53,11 +50,11 @@ class PeptideActivity(Base):
     """
     __tablename__ = "peptide_activities"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
 
     # 关联肽
     peptide_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("bioactive_peptides.id", ondelete="CASCADE"),
+        BigInteger, ForeignKey("bioactive_peptides.id", ondelete="CASCADE"),
         nullable=False, index=True, comment="关联肽ID"
     )
 
@@ -82,8 +79,8 @@ class PeptideActivity(Base):
 
     # 元数据
     source: Mapped[str] = mapped_column(String(50), default="dfbp", comment="数据来源")
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=_now, nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_now, onupdate=_now, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, onupdate=now_utc_mapped, nullable=False)
 
     # 关系
     peptide: Mapped["BioactivePeptide"] = relationship(
@@ -120,7 +117,7 @@ class PeptideSourceProtein(Base):
     """
     __tablename__ = "peptide_source_proteins"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
 
     # 蛋白标识
     protein_name: Mapped[str] = mapped_column(
@@ -154,8 +151,8 @@ class PeptideSourceProtein(Base):
     source: Mapped[str] = mapped_column(String(50), default="dfbp", comment="数据来源")
 
     # 元数据
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=_now, nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_now, onupdate=_now, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, onupdate=now_utc_mapped, nullable=False)
 
     def __repr__(self) -> str:
         return f"<PeptideSourceProtein(id={self.id}, name={self.protein_name})>"
@@ -182,7 +179,7 @@ class PeptideEnzyme(Base):
     """
     __tablename__ = "peptide_enzymes"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
 
     # 酶标识
     enzyme_name: Mapped[str] = mapped_column(
@@ -207,8 +204,8 @@ class PeptideEnzyme(Base):
     source: Mapped[str] = mapped_column(String(50), default="dfbp", comment="数据来源")
 
     # 元数据
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=_now, nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_now, onupdate=_now, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, onupdate=now_utc_mapped, nullable=False)
 
     # 关系
     peptides: Mapped[list] = relationship(

@@ -18,21 +18,21 @@ interface StatusBadgeProps {
 
 const statusConfig: Record<string, { label: string; cls: string; dot?: string }> = {
   // 配方状态
-  draft:          { label: '草稿',   cls: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400', dot: 'bg-slate-400' },
-  pending_review: { label: '待审核', cls: 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300', dot: 'bg-amber-500' },
+  draft:          { label: '草稿',   cls: 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400', dot: 'bg-neutral-400' },
+  pending_review: { label: '待审核', cls: 'bg-warning-50 text-warning-700 dark:bg-warning-900/30 dark:text-warning-300', dot: 'bg-warning-500' },
   approved:       { label: '已通过', cls: 'bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300', dot: 'bg-primary-500' },
   rejected:       { label: '已驳回', cls: 'bg-rose-50 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300', dot: 'bg-rose-500' },
-  archived:       { label: '已归档', cls: 'bg-slate-50 text-slate-500 dark:bg-slate-800/60 dark:text-slate-500', dot: 'bg-slate-300' },
+  archived:       { label: '已归档', cls: 'bg-slate-50 text-neutral-500 dark:bg-neutral-800/60 dark:text-neutral-500', dot: 'bg-neutral-300' },
   // 实验状态
   planned:     { label: '计划中', cls: 'bg-sky-50 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300', dot: 'bg-sky-500' },
   in_progress: { label: '进行中', cls: 'bg-violet-50 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300', dot: 'bg-violet-500' },
   completed:   { label: '已完成', cls: 'bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300', dot: 'bg-primary-500' },
   failed:      { label: '已失败', cls: 'bg-rose-50 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300', dot: 'bg-rose-500' },
-  cancelled:   { label: '已取消', cls: 'bg-slate-50 text-slate-500 dark:bg-slate-800/60 dark:text-slate-500', dot: 'bg-slate-300' },
+  cancelled:   { label: '已取消', cls: 'bg-slate-50 text-neutral-500 dark:bg-neutral-800/60 dark:text-neutral-500', dot: 'bg-neutral-300' },
 }
 
 export function StatusBadge({ status, className, size = 'md' }: StatusBadgeProps) {
-  const config = statusConfig[status] ?? { label: status, cls: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400', dot: 'bg-slate-400' }
+  const config = statusConfig[status] ?? { label: status, cls: 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400', dot: 'bg-neutral-400' }
   return (
     <span
       className={cn(
@@ -68,18 +68,18 @@ interface EmptyStateProps {
 
 const VARIANT_CONFIG: Record<EmptyStateVariant, { iconBg: string; iconColor: string; containerClass: string }> = {
   empty: {
-    iconBg: 'bg-slate-100 dark:bg-slate-800',
-    iconColor: 'text-slate-400 dark:text-slate-500',
+    iconBg: 'bg-neutral-100 dark:bg-neutral-800',
+    iconColor: 'text-neutral-400 dark:text-neutral-500',
     containerClass: '',
   },
   error: {
-    iconBg: 'bg-red-100 dark:bg-red-900/20',
-    iconColor: 'text-red-500 dark:text-red-400',
+    iconBg: 'bg-error-100 dark:bg-error-900/20',
+    iconColor: 'text-error-500 dark:text-error-400',
     containerClass: '',
   },
   forbidden: {
-    iconBg: 'bg-amber-100 dark:bg-amber-900/20',
-    iconColor: 'text-amber-600 dark:text-amber-400',
+    iconBg: 'bg-warning-100 dark:bg-warning-900/20',
+    iconColor: 'text-warning-600 dark:text-warning-400',
     containerClass: '',
   },
 }
@@ -106,9 +106,9 @@ export function EmptyState({
       <div className={`mb-4 w-16 h-16 md:w-20 md:h-20 rounded-2xl flex items-center justify-center ${config.iconBg} ${config.iconColor}`}>
         {icon ?? defaultIcon}
       </div>
-      <h3 className={`text-lg md:text-xl font-semibold text-slate-900 dark:text-slate-100 ${titleClassName}`}>{title}</h3>
+      <h3 className={`text-lg md:text-xl font-semibold text-neutral-900 dark:text-neutral-100 ${titleClassName}`}>{title}</h3>
       {description && (
-        <p className={`mt-2 max-w-md text-sm md:text-base text-slate-500 dark:text-slate-400 leading-relaxed ${descriptionClassName}`}>{description}</p>
+        <p className={`mt-2 max-w-md text-sm md:text-base text-neutral-500 dark:text-neutral-400 leading-relaxed ${descriptionClassName}`}>{description}</p>
       )}
       {action && (
         <div className="mt-6 md:mt-8">
@@ -199,8 +199,8 @@ export function Pagination({
   return (
     <nav className={cn('flex items-center justify-between gap-4', className)} aria-label="分页">
       {/* 信息 */}
-      <span className="text-sm text-slate-500 dark:text-slate-400">
-        共 <span className="font-medium text-slate-700 dark:text-slate-300">{total ?? (tp ? _page * 10 : 0)}</span> 条
+      <span className="text-sm text-neutral-500 dark:text-neutral-400">
+        共 <span className="font-medium text-neutral-700 dark:text-neutral-300">{total ?? (tp ? _page * 10 : 0)}</span> 条
       </span>
 
       {/* 页码 */}
@@ -211,8 +211,8 @@ export function Pagination({
           disabled={_page <= 1}
           className={cn(
             'inline-flex items-center justify-center w-8 h-8 rounded-lg text-sm transition-all duration-150',
-            'border border-slate-200 dark:border-slate-700',
-            'hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-600',
+            'border border-neutral-200 dark:border-neutral-700',
+            'hover:bg-slate-50 dark:hover:bg-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-600',
             'disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent',
           )}
           aria-label="上一页"
@@ -223,7 +223,7 @@ export function Pagination({
         {/* 页码按钮 */}
         {pages.map((p, i) =>
           p === '...' ? (
-            <span key={`dots-${i}`} className="w-8 h-8 flex items-center justify-center text-slate-400 text-sm">
+            <span key={`dots-${i}`} className="w-8 h-8 flex items-center justify-center text-neutral-400 text-sm">
               ...
             </span>
           ) : (
@@ -234,7 +234,7 @@ export function Pagination({
                 'w-8 h-8 rounded-lg text-sm font-medium transition-all duration-150',
                 p === _page
                   ? 'bg-primary-600 text-white shadow-sm shadow-primary-600/20'
-                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800',
+                  : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800',
               )}
               aria-current={p === _page ? 'page' : undefined}
             >
@@ -249,8 +249,8 @@ export function Pagination({
           disabled={_page >= totalPages}
           className={cn(
             'inline-flex items-center justify-center w-8 h-8 rounded-lg text-sm transition-all duration-150',
-            'border border-slate-200 dark:border-slate-700',
-            'hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-600',
+            'border border-neutral-200 dark:border-neutral-700',
+            'hover:bg-slate-50 dark:hover:bg-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-600',
             'disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent',
           )}
           aria-label="下一页"

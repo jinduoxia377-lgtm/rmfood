@@ -46,7 +46,7 @@ class UTF8EncodingMiddleware(BaseHTTPMiddleware):
             return response
 
         except Exception as e:
-            logger.error(f"UTF8EncodingMiddleware 错误: {str(e)}")
+            logger.error("UTF8EncodingMiddleware 错误", exc_info=True)
             raise
 
 

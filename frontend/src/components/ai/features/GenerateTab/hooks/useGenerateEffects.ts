@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import { usePersistentState } from '@/hooks/usePersistentState'
-import { getAIConfig, STORAGE_KEYS, VALIDATION } from '@/config'
+import { STORAGE_KEYS, VALIDATION } from '@/config'
 import { logger } from '@/utils/safeLogger'
 
 interface EffectOption {

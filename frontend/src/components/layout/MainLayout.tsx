@@ -8,77 +8,98 @@
  * - 完善响应式设计，支持移动端/平板/桌面端
  * - 增强可访问性，添加完整的 ARIA 属性
  */
-import { useState } from 'react'
-import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
-import { useRealtimeSync } from '@/hooks/useRealtimeSync'
+import { useState } from 'react';
+import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { useRealtimeSync } from '@/hooks/useRealtimeSync';
 import {
-  LayoutDashboard, FlaskConical, TestTubes, Users, Settings,
-  LogOut, Menu, X, ChevronRight, ChevronLeft, Beaker, Brain, Database, Search,
-  Bell, GitBranch, Shield, Keyboard, FileText,
-  BarChart3, Building2, Plug, BellRing,
-} from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { useAuthStore } from '@/stores/auth'
-import type { User } from '@/types'
-import { UserRole } from '@/types'
-import { ThemeSwitcher } from '@/theme'
-import { NotificationBell } from '@/components/ui'
-import CommandPalette from '@/components/ui/CommandPalette'
-import { useShortcutHelp } from '@/hooks/useKeyboardShortcuts.tsx'
-import { useBreakpoint, useSwipe } from '@/hooks/useMobile'
+  LayoutDashboard,
+  FlaskConical,
+  TestTubes,
+  Users,
+  Settings,
+  LogOut,
+  Menu,
+  X,
+  ChevronRight,
+  ChevronLeft,
+  Beaker,
+  Brain,
+  Database,
+  BookOpen,
+  Search,
+  Bell,
+  GitBranch,
+  Shield,
+  Keyboard,
+  FileText,
+  BarChart3,
+  Building2,
+  Plug,
+  BellRing,
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { useAuthStore } from '@/stores/auth';
+import type { User } from '@/types';
+import { UserRole } from '@/types';
+import { ThemeSwitcher } from '@/theme';
+import { NotificationBell } from '@/components/ui';
+import CommandPalette from '@/components/ui/CommandPalette';
+import { useShortcutHelp } from '@/hooks/useKeyboardShortcuts.tsx';
+import { useBreakpoint, useSwipe } from '@/hooks/useMobile';
 
 // SSS 企业级功能组件
-import { NotificationCenter } from '@/components/notification/NotificationCenter'
+import { NotificationCenter } from '@/components/notification/NotificationCenter';
 
-// Material Design 3 设计常量
+// Material Design 3 设计常量 — 参考 DESIGN.md 设计系统
+// 优先使用 CSS 变量，硬编码值为回退
 const MD3 = {
   sidebar: {
-    width: '264px',
-    collapsedWidth: '72px',
+    width: 'var(--sidebar-width, 264px)',
+    collapsedWidth: 'var(--sidebar-collapsed-width, 72px)',
     headerHeight: '64px',
     itemHeight: '48px',
     padding: '16px',
     itemPadding: '0 12px',
   },
   typography: {
-    headlineSmall: '14px',
-    headlineWeight: 700,
-    labelLarge: '14px',
-    labelMedium: '12px',
-    labelSmall: '11px',
-    bodyMedium: '14px',
-    bodySmall: '12px',
-    caption: '11px',
+    headlineSmall: 'var(--text-h4, 15px)',
+    headlineWeight: 600,
+    labelLarge: 'var(--text-overline, 11px)',
+    labelMedium: 'var(--text-caption, 12px)',
+    labelSmall: 'var(--text-tiny, 11px)',
+    bodyMedium: 'var(--text-body-sm, 14px)',
+    bodySmall: 'var(--text-caption, 12px)',
+    caption: 'var(--text-tiny, 11px)',
   },
   elevation: {
-    level1: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
-    level2: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1)',
-    level3: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
-    level4: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1)',
+    level1: 'var(--shadow-sm, 0 1px 2px 0 rgba(0, 0, 0, 0.05))',
+    level2: 'var(--shadow-md, 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1))',
+    level3: 'var(--shadow-md, 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1))',
+    level4: 'var(--shadow-lg, 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1))',
   },
   shape: {
-    cornerSmall: '8px',
-    cornerMedium: '12px',
-    cornerLarge: '16px',
-    cornerExtraLarge: '28px',
+    cornerSmall: 'var(--radius-md, 8px)',
+    cornerMedium: 'var(--radius-lg, 12px)',
+    cornerLarge: 'var(--radius-xl, 16px)',
+    cornerExtraLarge: 'var(--radius-2xl, 24px)',
   },
   animation: {
-    duration: '200ms',
-    durationSlow: '300ms',
-    ease: 'cubic-bezier(0.4, 0, 0.2, 1)',
+    duration: 'var(--duration-normal, 200ms)',
+    durationSlow: 'var(--duration-slow, 300ms)',
+    ease: 'var(--ease-standard, cubic-bezier(0.4, 0, 0.2, 1))',
   },
-}
+};
 
 /**
  * 页面过渡动画组件
  */
 function PageTransition({ children }: { children: React.ReactNode }) {
-  const location = useLocation()
+  const location = useLocation();
   return (
     <div key={location.pathname} className="animate-[page-enter_0.35s_ease-out]">
       {children}
     </div>
-  )
+  );
 }
 
 // ── 跳转链接（无障碍） ──
@@ -87,21 +108,21 @@ function SkipLink() {
     <a href="#main-content" className="skip-link">
       跳转到主要内容
     </a>
-  )
+  );
 }
 
 // ── 导航分组 ──
 interface NavItem {
-  to: string
-  label: string
-  icon: typeof LayoutDashboard
-  adminOnly?: boolean
-  badge?: number
+  to: string;
+  label: string;
+  icon: typeof LayoutDashboard;
+  adminOnly?: boolean;
+  badge?: number;
 }
 
 interface NavGroup {
-  title: string
-  items: NavItem[]
+  title: string;
+  items: NavItem[];
 }
 
 const navGroups: NavGroup[] = [
@@ -119,6 +140,7 @@ const navGroups: NavGroup[] = [
       { to: '/ai', label: 'AI 智能助手', icon: Brain },
       { to: '/academic-report', label: '学术报告', icon: FileText },
       { to: '/databases', label: '数据库检索', icon: Database },
+      { to: '/terminology', label: '术语管理', icon: BookOpen },
       { to: '/workflows', label: '工作流管理', icon: GitBranch },
     ],
   },
@@ -138,7 +160,7 @@ const navGroups: NavGroup[] = [
       { to: '/audit-logs', label: '审计日志', icon: Shield, adminOnly: true },
     ],
   },
-]
+];
 
 // ── 角色显示映射 ──
 const roleLabels: Record<string, string> = {
@@ -148,18 +170,18 @@ const roleLabels: Record<string, string> = {
   formulator: '配方师',
   researcher: '研究员',
   guest: '访客',
-}
+};
 
 // ── 侧边栏 Props ──
 interface SidebarContentProps {
-  sidebarCollapsed: boolean
-  setSidebarCollapsed: (v: boolean) => void
-  setSidebarOpen: (v: boolean) => void
-  filteredGroups: NavGroup[]
-  pathname: string
-  user: User | null
-  handleLogout: () => void
-  navigate: (to: string) => void
+  sidebarCollapsed: boolean;
+  setSidebarCollapsed: (v: boolean) => void;
+  setSidebarOpen: (v: boolean) => void;
+  filteredGroups: NavGroup[];
+  pathname: string;
+  user: User | null;
+  handleLogout: () => void;
+  navigate: (to: string) => void;
 }
 
 /**
@@ -176,7 +198,7 @@ function SidebarContent({
   navigate,
 }: SidebarContentProps) {
   return (
-    <div className="flex h-full flex-col" style={{ width: MD3.sidebar.width }}>
+    <div className="flex h-full flex-col" style={{ width: 'var(--sidebar-width, 264px)' }}>
       {/* Logo 区 - Material Design 3 Top App Bar 规范 */}
       <div
         className="flex items-center gap-3 h-[64px] shrink-0 px-4 transition-all duration-300"
@@ -191,8 +213,8 @@ function SidebarContent({
             width: '40px',
             height: '40px',
             background: 'var(--color-primary)',
-            borderRadius: MD3.shape.cornerLarge,
-            boxShadow: MD3.elevation.level2,
+            borderRadius: 'var(--radius-xl)',
+            boxShadow: 'var(--shadow-md)',
           }}
         >
           <Beaker size={20} strokeWidth={2} />
@@ -201,8 +223,8 @@ function SidebarContent({
           <h1
             className="font-bold tracking-tight leading-none"
             style={{
-              fontSize: MD3.typography.headlineSmall,
-              fontWeight: MD3.typography.headlineWeight,
+              fontSize: 'var(--text-h4, 15px)',
+              fontWeight: 600,
               fontFamily: 'var(--font-sans)',
               color: 'var(--text-primary)',
               letterSpacing: '-0.02em',
@@ -213,7 +235,7 @@ function SidebarContent({
           <p
             className="font-medium leading-tight mt-0.5"
             style={{
-              fontSize: MD3.typography.caption,
+              fontSize: 'var(--text-tiny, 11px)',
               color: 'var(--text-secondary)',
               fontFamily: 'var(--font-sans)',
             }}
@@ -222,21 +244,19 @@ function SidebarContent({
           </p>
         </div>
         <button
-            onClick={() => setSidebarOpen(false)}
-            className="p-2 rounded-lg transition-all duration-200 shrink-0 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-            style={{
-              color: 'var(--text-secondary)',
-              width: '40px',
-              height: '40px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bg-surface-hover)' }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
-            aria-label="关闭菜单"
-            aria-controls="sidebar"
-          >
+          onClick={() => setSidebarOpen(false)}
+          className="p-2 rounded-lg transition-all duration-200 hover:bg-[var(--bg-surface-hover)] shrink-0 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+          style={{
+            color: 'var(--text-secondary)',
+            width: '40px',
+            height: '40px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+          aria-label="关闭菜单"
+          aria-controls="sidebar"
+        >
           <X size={20} strokeWidth={2} />
         </button>
       </div>
@@ -244,7 +264,7 @@ function SidebarContent({
       {/* 导航列表 - Material Design 3 Navigation Rail 规范 */}
       <nav
         className="flex-1 overflow-y-auto transition-all duration-300"
-        style={{ padding: MD3.sidebar.padding }}
+        style={{ padding: 'var(--space-4, 16px)' }}
         aria-label="主导航"
       >
         {filteredGroups.map((group, groupIndex) => (
@@ -253,9 +273,9 @@ function SidebarContent({
             <p
               className="uppercase tracking-wider mb-3"
               style={{
-                fontSize: MD3.typography.labelSmall,
+                fontSize: 'var(--text-tiny, 11px)',
                 fontWeight: 600,
-                color: 'var(--color-text-secondary)',
+                color: 'var(--text-secondary)',
                 fontFamily: 'var(--font-sans)',
                 letterSpacing: '0.1em',
                 padding: '0 12px',
@@ -265,33 +285,24 @@ function SidebarContent({
             </p>
             <div className="space-y-1">
               {group.items.map((item, itemIndex) => {
-                const Icon = item.icon
-                const isActive = pathname.startsWith(item.to)
+                const Icon = item.icon;
+                const isActive = pathname.startsWith(item.to);
                 return (
                   <NavLink
                     key={item.to}
                     to={item.to}
                     end={item.to === '/dashboard'}
                     onClick={() => setSidebarOpen(false)}
-                    className="group flex items-center gap-3 transition-all duration-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface"
+                    className={({ isActive: navActive }) => cn(
+                      'group flex items-center gap-3 transition-all duration-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface',
+                      !navActive && 'hover:bg-[var(--bg-surface-hover)]',
+                    )}
                     style={{
-                      height: MD3.sidebar.itemHeight,
-                      padding: MD3.sidebar.itemPadding,
+                      height: '48px',
+                      padding: '0 12px',
                       color: isActive ? 'var(--color-primary)' : 'var(--text-primary)',
-                      background: isActive
-                        ? 'var(--color-primary-container)'
-                        : 'transparent',
-                      transition: `all ${MD3.animation.duration} ${MD3.animation.ease}`,
-                    }}
-                    onMouseEnter={(e) => {
-                      if (!isActive) {
-                        e.currentTarget.style.background = 'var(--bg-surface-hover)'
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (!isActive) {
-                        e.currentTarget.style.background = 'transparent'
-                      }
+                      background: isActive ? 'var(--color-primary-container)' : 'transparent',
+                      transition: `all var(--duration-normal) var(--ease-standard)`,
                     }}
                     aria-current={isActive ? 'page' : undefined}
                     aria-label={item.label}
@@ -302,7 +313,7 @@ function SidebarContent({
                       style={{
                         width: '40px',
                         height: '40px',
-                        borderRadius: MD3.shape.cornerMedium,
+                        borderRadius: 'var(--radius-lg)',
                         background: isActive ? 'var(--color-primary)' : 'transparent',
                         color: isActive ? 'white' : 'var(--text-secondary)',
                         transform: isActive ? 'scale(1.05)' : 'scale(1)',
@@ -312,7 +323,7 @@ function SidebarContent({
                         size={20}
                         strokeWidth={isActive ? 2 : 1.5}
                         style={{
-                          transition: `all ${MD3.animation.duration} ${MD3.animation.ease}`,
+                          transition: `all var(--duration-normal) var(--ease-standard)`,
                         }}
                       />
                     </div>
@@ -320,7 +331,7 @@ function SidebarContent({
                     <span
                       className="flex-1 font-medium truncate"
                       style={{
-                        fontSize: MD3.typography.bodyMedium,
+                        fontSize: 'var(--text-body-sm, 14px)',
                         fontFamily: 'var(--font-sans)',
                       }}
                     >
@@ -333,12 +344,12 @@ function SidebarContent({
                         style={{
                           minWidth: '20px',
                           height: '20px',
-                          fontSize: MD3.typography.labelSmall,
+                          fontSize: 'var(--text-tiny, 11px)',
                           background: 'var(--color-primary)',
                           color: 'white',
-                          borderRadius: MD3.shape.cornerExtraLarge,
+                          borderRadius: 'var(--radius-full)',
                           padding: '0 6px',
-                          boxShadow: MD3.elevation.level1,
+                          boxShadow: 'var(--shadow-sm)',
                         }}
                       >
                         {item.badge > 99 ? '99+' : item.badge}
@@ -356,7 +367,7 @@ function SidebarContent({
                       />
                     )}
                   </NavLink>
-                )
+                );
               })}
             </div>
           </div>
@@ -368,31 +379,21 @@ function SidebarContent({
         className="shrink-0 transition-all duration-300"
         style={{
           borderTop: '1px solid var(--border-color)',
-          padding: MD3.sidebar.padding,
+          padding: 'var(--space-4, 16px)',
           background: 'var(--bg-surface-container-low)',
         }}
       >
         <div
-          className="flex items-center gap-3 cursor-pointer rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+          className="flex items-center gap-3 cursor-pointer rounded-xl transition-all duration-200 hover:bg-[var(--bg-surface-hover)] hover:border-[var(--color-primary)] hover:shadow-[var(--shadow-md)] focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
           onClick={() => navigate('/settings')}
           style={{
             padding: '12px',
             background: 'var(--bg-surface)',
             border: '1px solid var(--border-color)',
-            boxShadow: MD3.elevation.level1,
-            transition: `all ${MD3.animation.duration} ${MD3.animation.ease}`,
+            boxShadow: 'var(--shadow-sm)',
+            transition: `all var(--duration-normal) var(--ease-standard)`,
           }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'var(--bg-surface-hover)'
-            e.currentTarget.style.borderColor = 'var(--color-primary)'
-            e.currentTarget.style.boxShadow = MD3.elevation.level2
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'var(--bg-surface)'
-            e.currentTarget.style.borderColor = 'var(--border-color)'
-            e.currentTarget.style.boxShadow = MD3.elevation.level1
-          }}
-          aria-label={`${user?.full_name || user?.username || '用户'}的账户菜单`}
+          aria-label={`${user?.fullName || user?.username || '用户'}的账户菜单`}
         >
           {/* 用户头像 */}
           <div
@@ -401,29 +402,29 @@ function SidebarContent({
               width: '40px',
               height: '40px',
               background: 'linear-gradient(135deg, var(--color-primary), var(--color-primary-700))',
-              borderRadius: MD3.shape.cornerLarge,
-              fontSize: MD3.typography.labelLarge,
-              boxShadow: MD3.elevation.level2,
+              borderRadius: 'var(--radius-xl)',
+              fontSize: 'var(--text-overline, 11px)',
+              boxShadow: 'var(--shadow-md)',
             }}
           >
-            {String(user?.full_name || user?.username || 'U')[0]?.toUpperCase() || 'U'}
+            {String(user?.fullName || user?.username || 'U')[0]?.toUpperCase() || 'U'}
           </div>
           {/* 用户信息 */}
           <div className="flex-1 min-w-0">
             <p
               className="font-semibold truncate leading-tight"
               style={{
-                fontSize: MD3.typography.bodyMedium,
+                fontSize: 'var(--text-body-sm, 14px)',
                 color: 'var(--text-primary)',
                 fontFamily: 'var(--font-sans)',
               }}
             >
-              {String(user?.full_name || user?.username || '') || '未登录'}
+              {String(user?.fullName || user?.username || '') || '未登录'}
             </p>
             <p
               className="truncate"
               style={{
-                fontSize: MD3.typography.caption,
+                fontSize: 'var(--text-tiny, 11px)',
                 color: 'var(--text-secondary)',
                 fontFamily: 'var(--font-sans)',
               }}
@@ -433,8 +434,11 @@ function SidebarContent({
           </div>
           {/* 退出按钮 */}
           <button
-            onClick={(e) => { e.stopPropagation(); handleLogout() }}
-            className="p-2 rounded-lg transition-all duration-200 shrink-0 focus:outline-none focus:ring-2 focus:ring-error focus:ring-offset-2"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleLogout();
+            }}
+            className="p-2 rounded-lg transition-all duration-200 shrink-0 hover:bg-[var(--color-error-container)] hover:text-[var(--color-error)] focus:outline-none focus:ring-2 focus:ring-error focus:ring-offset-2"
             style={{
               color: 'var(--text-secondary)',
               width: '40px',
@@ -442,14 +446,6 @@ function SidebarContent({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'var(--color-error-container)'
-              e.currentTarget.style.color = 'var(--color-error)'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'transparent'
-              e.currentTarget.style.color = 'var(--text-secondary)'
             }}
             title="退出登录"
             aria-label="退出登录"
@@ -459,54 +455,56 @@ function SidebarContent({
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 export default function MainLayout() {
-  const [sidebarOpen, setSidebarOpen] = useState(false)
-  const { user, logout } = useAuthStore()
-  const navigate = useNavigate()
-  const location = useLocation()
+  const { user, logout } = useAuthStore();
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  const { openHelp } = useShortcutHelp()
-  const { isMobile, isTablet, isDesktop } = useBreakpoint()
+  const { openHelp } = useShortcutHelp();
+  const { isMobile, isTablet, isDesktop } = useBreakpoint();
 
   // 启用 CDC 实时数据同步
-  useRealtimeSync()
+  useRealtimeSync();
+
+  // 侧边栏默认状态：桌面端展开，移动端/平板隐藏
+  const [sidebarOpen, setSidebarOpen] = useState(isDesktop);
 
   // 侧边栏滑动手势：向左滑动关闭侧边栏
   const sidebarSwipeHandlers = useSwipe({
     onSwipeLeft: () => {
-      if (sidebarOpen) setSidebarOpen(false)
+      if (sidebarOpen) setSidebarOpen(false);
     },
     threshold: 80,
-  })
+  });
 
   const handleLogout = () => {
-    logout()
-    navigate('/login')
-  }
+    logout();
+    navigate('/login');
+  };
 
-  const filteredGroups = navGroups.map((group) => ({
-    ...group,
-    items: group.items.filter((item) => !item.adminOnly || (user?.role as string)?.toUpperCase() === UserRole.ADMIN),
-  })).filter((group) => group.items.length > 0)
+  const filteredGroups = navGroups
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((item) => !item.adminOnly || (user?.role as string)?.toUpperCase() === UserRole.ADMIN),
+    }))
+    .filter((group) => group.items.length > 0);
 
-  const currentPage = navGroups
-    .flatMap((g) => g.items)
-    .find((item) => location.pathname.startsWith(item.to))
-  const pageName = currentPage?.label ?? ''
+  const currentPage = navGroups.flatMap((g) => g.items).find((item) => location.pathname.startsWith(item.to));
+  const pageName = currentPage?.label ?? '';
 
   const sidebarProps: SidebarContentProps = {
-    sidebarCollapsed: false,
-    setSidebarCollapsed: () => {},
+    sidebarCollapsed: isDesktop && sidebarOpen,
+    setSidebarCollapsed: (v: boolean) => { if (isDesktop) setSidebarOpen(v); },
     setSidebarOpen,
     filteredGroups,
     pathname: location.pathname,
     user,
     handleLogout,
     navigate,
-  }
+  };
 
   return (
     <div
@@ -521,32 +519,33 @@ export default function MainLayout() {
           'fixed inset-0 z-40 backdrop-blur-sm transition-all duration-300 ease-in-out',
           sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none',
         )}
-        style={{ background: 'rgba(0,0,0,0.5)' }}
+        style={{ background: 'var(--overlay-bg, rgba(0,0,0,0.5))' }}
         onClick={() => setSidebarOpen(false)}
         aria-hidden={!sidebarOpen}
         aria-label="关闭菜单"
         tabIndex={sidebarOpen ? 0 : -1}
         onKeyDown={(e) => {
           if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') {
-            setSidebarOpen(false)
+            setSidebarOpen(false);
           }
         }}
       />
 
-      {/* 侧边栏 - 统一汉堡菜单模式 (桌面/移动/平板通用) */}
+      {/* 侧边栏 - 桌面端展开时为 relative，移动端/平板端始终为 fixed */}
       <aside
         {...(isMobile || isTablet ? sidebarSwipeHandlers : {})}
         className={cn(
-          'fixed inset-y-0 left-0 z-50 shadow-2xl transform transition-all duration-300 ease-in-out',
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full',
+          'transition-all duration-300 ease-in-out',
+          isDesktop && sidebarOpen ? 'relative z-0 shadow-none' : 'fixed inset-y-0 left-0 z-50 shadow-2xl',
+          sidebarOpen ? 'translate-x-0' : (isDesktop ? '' : '-translate-x-full'),
         )}
         style={{
-          width: MD3.sidebar.width,
+          width: 'var(--sidebar-width, 264px)',
           background: 'var(--bg-surface-container)',
           backdropFilter: 'blur(24px)',
           WebkitBackdropFilter: 'blur(24px)',
           borderRight: '1px solid var(--border-color)',
-          boxShadow: MD3.elevation.level4,
+          boxShadow: 'var(--shadow-xl)',
           position: 'fixed',
           top: '0',
           height: '100vh',
@@ -557,7 +556,7 @@ export default function MainLayout() {
         tabIndex={sidebarOpen ? 0 : -1}
         onKeyDown={(e) => {
           if (e.key === 'Escape') {
-            setSidebarOpen(false)
+            setSidebarOpen(false);
           }
         }}
       >
@@ -570,6 +569,8 @@ export default function MainLayout() {
         <header
           className="sticky top-0 z-20"
           style={{
+            paddingTop: 'var(--safe-area-inset-top, 0px)',
+            paddingBottom: 'var(--safe-area-inset-top, 0px)',
             background: 'var(--header-bg)',
             backdropFilter: 'blur(24px)',
             WebkitBackdropFilter: 'blur(24px)',
@@ -577,17 +578,14 @@ export default function MainLayout() {
             boxShadow: '0 2px 12px rgba(0,0,0,0.04)',
           }}
         >
-          <div className={cn(
-            'flex items-center justify-between h-14',
-            isMobile ? 'px-3' : isTablet ? 'px-4' : 'px-6',
-          )}>
+          <div className={cn('flex items-center justify-between h-14', isMobile ? 'px-3' : isTablet ? 'px-4' : 'px-6')}>
             <div className="flex items-center gap-3">
               {/* 汉堡菜单按钮 - 所有设备通用 */}
               <button
                 onClick={() => setSidebarOpen(!sidebarOpen)}
                 className={cn(
                   'flex items-center justify-center rounded-lg transition-all duration-200 touch-target',
-                  'hover:bg-gray-100 dark:hover:bg-gray-800 active:scale-95',
+                  'hover:bg-neutral-100 dark:hover:bg-neutral-800 active:scale-95',
                   'focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
                   sidebarOpen ? 'bg-primary-50 dark:bg-primary-900/20' : '',
                 )}
@@ -596,7 +594,7 @@ export default function MainLayout() {
                   width: '44px',
                   height: '44px',
                 }}
-                aria-label={sidebarOpen ? "关闭菜单" : "打开菜单"}
+                aria-label={sidebarOpen ? '关闭菜单' : '打开菜单'}
                 aria-expanded={sidebarOpen}
                 aria-haspopup="true"
                 aria-controls="sidebar"
@@ -604,13 +602,14 @@ export default function MainLayout() {
                 {sidebarOpen ? <X size={20} strokeWidth={2} /> : <Menu size={20} strokeWidth={2} />}
               </button>
               {pageName && (
-                <nav className={cn(
-                  'items-center gap-2 text-sm',
-                  isMobile ? 'hidden' : 'flex',
-                )} aria-label="面包屑">
-                  <span className="font-semibold" style={{ color: 'var(--color-primary)' }}>RMFOOD</span>
+                <nav className={cn('items-center gap-2 text-sm', isMobile ? 'hidden' : 'flex')} aria-label="面包屑">
+                  <span className="font-semibold" style={{ color: 'var(--color-primary)' }}>
+                    RMFOOD
+                  </span>
                   <ChevronRight size={12} style={{ color: 'var(--border-color)' }} />
-                  <span className="font-medium" style={{ color: 'var(--text-primary)' }}>{pageName}</span>
+                  <span className="font-medium" style={{ color: 'var(--text-primary)' }}>
+                    {pageName}
+                  </span>
                 </nav>
               )}
             </div>
@@ -621,23 +620,13 @@ export default function MainLayout() {
               <button
                 onClick={() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }))}
                 className={cn(
-                  'hidden items-center gap-2 px-3 py-1.5 rounded-lg text-xs transition-all duration-200',
+                  'hidden items-center gap-2 px-3 py-1.5 rounded-lg text-xs transition-all duration-200 hover:bg-[var(--color-primary-50)] hover:border-[var(--color-primary-200)] hover:text-[var(--color-primary)]',
                   isMobile ? 'hidden' : 'flex',
                 )}
                 style={{
                   background: 'var(--hover-bg)',
                   border: '1px solid var(--border-color)',
                   color: 'var(--text-secondary)',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'var(--color-primary-50)'
-                  e.currentTarget.style.borderColor = 'var(--color-primary-200)'
-                  e.currentTarget.style.color = 'var(--color-primary)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'var(--hover-bg)'
-                  e.currentTarget.style.borderColor = 'var(--border-color)'
-                  e.currentTarget.style.color = 'var(--text-secondary)'
                 }}
                 aria-label="全局搜索"
               >
@@ -660,18 +649,10 @@ export default function MainLayout() {
               <button
                 onClick={() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }))}
                 className={cn(
-                  'p-1.5 rounded-lg transition-all duration-200 touch-target',
+                  'p-1.5 rounded-lg transition-all duration-200 touch-target hover:bg-[var(--color-primary-50)] hover:text-[var(--color-primary)]',
                   isMobile ? 'flex' : 'hidden',
                 )}
                 style={{ color: 'var(--text-secondary)' }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'var(--color-primary-50)'
-                  e.currentTarget.style.color = 'var(--color-primary)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'transparent'
-                  e.currentTarget.style.color = 'var(--text-secondary)'
-                }}
                 aria-label="搜索"
               >
                 <Search size={16} />
@@ -687,7 +668,7 @@ export default function MainLayout() {
               <button
                 onClick={() => navigate('/formulas/new')}
                 className={cn(
-                  'items-center gap-2 text-xs font-semibold text-white transition-all duration-200 active:scale-[0.98]',
+                  'items-center gap-2 text-xs font-semibold text-white transition-all duration-200 active:scale-[0.98] hover:-translate-y-[1px] hover:shadow-[0_6px_20px_rgba(var(--color-primary-rgb),0.4)]',
                   isMobile ? 'hidden' : 'flex',
                 )}
                 style={{
@@ -695,16 +676,6 @@ export default function MainLayout() {
                   borderRadius: 'var(--radius-md)',
                   padding: '7px 14px',
                   boxShadow: '0 4px 16px rgba(var(--color-primary-rgb), 0.3)',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'linear-gradient(135deg, var(--color-primary-700), var(--color-primary-800))'
-                  e.currentTarget.style.boxShadow = '0 6px 20px rgba(var(--color-primary-rgb), 0.4)'
-                  e.currentTarget.style.transform = 'translateY(-1px)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'linear-gradient(135deg, var(--color-primary-600), var(--color-primary-700))'
-                  e.currentTarget.style.boxShadow = '0 4px 16px rgba(var(--color-primary-rgb), 0.3)'
-                  e.currentTarget.style.transform = 'translateY(0)'
                 }}
               >
                 <FlaskConical size={12} strokeWidth={2.2} />
@@ -715,20 +686,12 @@ export default function MainLayout() {
               <button
                 onClick={() => navigate('/formulas/new')}
                 className={cn(
-                  'p-2 rounded-lg text-white transition-all duration-200 active:scale-[0.98] touch-target',
+                  'p-2 rounded-lg text-white transition-all duration-200 active:scale-[0.98] touch-target hover:shadow-[0_6px_20px_rgba(var(--color-primary-rgb),0.4)]',
                   isMobile ? 'flex' : 'hidden',
                 )}
                 style={{
                   background: 'linear-gradient(135deg, var(--color-primary-600), var(--color-primary-700))',
                   boxShadow: '0 4px 16px rgba(var(--color-primary-rgb), 0.3)',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'linear-gradient(135deg, var(--color-primary-700), var(--color-primary-800))'
-                  e.currentTarget.style.boxShadow = '0 6px 20px rgba(var(--color-primary-rgb), 0.4)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'linear-gradient(135deg, var(--color-primary-600), var(--color-primary-700))'
-                  e.currentTarget.style.boxShadow = '0 4px 16px rgba(var(--color-primary-rgb), 0.3)'
                 }}
                 aria-label="新建配方"
               >
@@ -737,16 +700,8 @@ export default function MainLayout() {
 
               <button
                 onClick={() => navigate('/settings')}
-                className="p-1.5 rounded-lg transition-all duration-200 touch-target"
+                className="p-1.5 rounded-lg transition-all duration-200 touch-target hover:bg-[var(--color-primary-50)] hover:text-[var(--color-primary)]"
                 style={{ color: 'var(--text-secondary)' }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'var(--color-primary-50)'
-                  e.currentTarget.style.color = 'var(--color-primary)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'transparent'
-                  e.currentTarget.style.color = 'var(--text-secondary)'
-                }}
                 aria-label="系统设置"
               >
                 <Settings size={16} />
@@ -755,19 +710,8 @@ export default function MainLayout() {
               {/* 快捷键帮助按钮 */}
               <button
                 onClick={openHelp}
-                className={cn(
-                  'p-1.5 rounded-lg transition-all duration-200',
-                  isMobile ? 'hidden' : 'flex',
-                )}
+                className={cn('p-1.5 rounded-lg transition-all duration-200 hover:bg-[var(--color-primary-50)] hover:text-[var(--color-primary)]', isMobile ? 'hidden' : 'flex')}
                 style={{ color: 'var(--text-secondary)' }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'var(--color-primary-50)'
-                  e.currentTarget.style.color = 'var(--color-primary)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'transparent'
-                  e.currentTarget.style.color = 'var(--text-secondary)'
-                }}
                 aria-label="键盘快捷键"
                 title="键盘快捷键 (Ctrl+/)"
               >
@@ -798,5 +742,5 @@ export default function MainLayout() {
       {/* 全局 Command Palette */}
       <CommandPalette />
     </div>
-  )
+  );
 }

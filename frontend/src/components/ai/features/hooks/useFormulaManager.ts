@@ -136,7 +136,7 @@ export interface UseFormulaManagerReturn {
 
   // 导入导出
   importFormulas: (data: ImportedFormula[]) => number
-  exportFormulas: (format?: FormulaExportFormat) => Promise<boolean>
+  exportFormulas: (format?: FormulaExportFormat | string) => Promise<boolean>
   handleImportFromJSON: () => void
 
   // 统计信息
@@ -740,7 +740,7 @@ export function useFormulaManager(options: UseFormulaManagerOptions = {}): UseFo
   }, [addFormula])
 
   const exportFormulas = useCallback(async (
-    format: FormulaExportFormat = 'json',
+    format: FormulaExportFormat | string = 'json',
   ): Promise<boolean> => {
     try {
       if (formulaIndex.size === 0) {
@@ -749,7 +749,7 @@ export function useFormulaManager(options: UseFormulaManagerOptions = {}): UseFo
       }
 
       const success = await exportFormulasUtil(formulaIndex, {
-        format,
+        format: format as FormulaExportFormat,
         includeMetadata: true,
         includeIngredients: true,
         title: `RMFOOD 配方列表 (${formulaIndex.size}个)`,

@@ -28,6 +28,29 @@ from pydantic import BaseModel, ValidationError, Field
 logger = logging.getLogger(__name__)
 
 
+def _clean_surrogates(obj: Any) -> Any:
+    """递归清理 dict/list/string 中的损坏 Unicode surrogate pairs。
+
+    某些中文 docstring 经过 get_openapi() 后可能出现孤立 surrogate pairs
+    （如 \\udc80），导致 json.dumps() 失败。此函数将它们替换为 '?'。
+    """
+    if isinstance(obj, str):
+        import re
+        # 替换所有孤立 surrogate pairs (U+D800..U+DFFF)
+        cleaned = re.sub(
+            r'[\udc00-\udfff]',  # 低位 surrogate 是主要问题来源
+            '?',
+            obj
+        )
+        return cleaned
+    elif isinstance(obj, dict):
+        return {k: _clean_surrogates(v) for k, v in obj.items()}
+    elif isinstance(obj, (list, tuple)):
+        cleaned = [_clean_surrogates(item) for item in obj]
+        return type(obj)(cleaned)
+    return obj
+
+
 # ─────────────────────────────────────────────
 # 🔒 P3-3: 统一响应格式
 # ─────────────────────────────────────────────
@@ -149,7 +172,7 @@ class SchemaValidationMiddleware:
                         content={
                             "code": 40001,
                             "message": "请求体 JSON 格式错误",
-                            "data": {"detail": str(e)},
+                            "data": {"detail": "请求格式无效"},
                             "timestamp": datetime.now(timezone.utc).isoformat(),
                         },
                     )
@@ -524,7 +547,11 @@ def register_api_docs_middleware(app: FastAPI, version: str = "1.0.0"):
     generator = EnhancedOpenAPIGenerator(app, version=version)
 
     def custom_openapi():
-        return generator.generate()
+        schema = generator.generate()
+        # 🔒 清理损坏的 Unicode surrogate pairs（中文 docstring 可能导致）
+        if isinstance(schema, dict):
+            schema = _clean_surrogates(schema)
+        return schema
 
     app.openapi = custom_openapi
     logger.info("[APIDocs] 增强 OpenAPI 生成器已注册")

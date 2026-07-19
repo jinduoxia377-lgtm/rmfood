@@ -38,12 +38,12 @@ function getHighestSeverity(precautions: Precaution[]): PrecautionSeverity | nul
 
 const PrecautionBadge = memo(({ precautions, size = 'sm', onClick }: PrecautionBadgeProps) => {
   if (!precautions || precautions.length === 0) {
-    return <span className="text-gray-300">—</span>
+    return <span className="text-neutral-300">—</span>
   }
 
   const highestSeverity = getHighestSeverity(precautions)
   if (!highestSeverity) {
-    return <span className="text-gray-300">—</span>
+    return <span className="text-neutral-300">—</span>
   }
 
   const config = SIZE_CONFIG[size]

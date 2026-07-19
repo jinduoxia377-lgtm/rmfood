@@ -271,27 +271,27 @@ export function DocumentImport({ onImport, onClose }: DocumentImportProps) {
     const type = detectFileType(file);
     switch (type) {
       case 'markdown':
-        return <FileCode className="w-12 h-12 text-blue-500" />;
+        return <FileCode className="w-12 h-12 text-secondary-500" />;
       case 'html':
         return <FileCode className="w-12 h-12 text-orange-500" />;
       default:
-        return <FileText className="w-12 h-12 text-gray-500" />;
+        return <FileText className="w-12 h-12 text-neutral-500" />;
     }
   };
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
       <div
-        className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-lg mx-4"
+        className="bg-white dark:bg-neutral-800 rounded-lg shadow-xl w-full max-w-lg mx-4"
         onClick={e => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">导入文档</h2>
+        <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-200 dark:border-neutral-700">
+          <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">导入文档</h2>
           <button
             onClick={onClose}
-            className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+            className="p-1 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition-colors"
           >
-            <X className="w-5 h-5 text-gray-500" />
+            <X className="w-5 h-5 text-neutral-500" />
           </button>
         </div>
 
@@ -301,7 +301,7 @@ export function DocumentImport({ onImport, onClose }: DocumentImportProps) {
               'border-2 border-dashed rounded-lg p-8 text-center transition-colors',
               isDragging
                 ? 'border-primary bg-primary/5'
-                : 'border-gray-300 dark:border-gray-600 hover:border-primary',
+                : 'border-neutral-300 dark:border-neutral-600 hover:border-primary',
             )}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
@@ -317,8 +317,8 @@ export function DocumentImport({ onImport, onClose }: DocumentImportProps) {
 
             {importStatus === 'idle' && (
               <>
-                <Upload className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-                <p className="text-gray-600 dark:text-gray-400 mb-2">
+                <Upload className="w-12 h-12 mx-auto mb-4 text-neutral-400" />
+                <p className="text-neutral-600 dark:text-neutral-400 mb-2">
                   拖拽文件到此处，或
                   <button
                     onClick={() => fileInputRef.current?.click()}
@@ -327,7 +327,7 @@ export function DocumentImport({ onImport, onClose }: DocumentImportProps) {
                     点击选择
                   </button>
                 </p>
-                <p className="text-sm text-gray-500 dark:text-gray-500">
+                <p className="text-sm text-neutral-500 dark:text-neutral-500">
                   支持 .md、.txt、.html 格式，文件大小不超过 10MB
                 </p>
               </>
@@ -336,31 +336,31 @@ export function DocumentImport({ onImport, onClose }: DocumentImportProps) {
             {importStatus === 'importing' && selectedFile && (
               <>
                 {getFileIcon(selectedFile)}
-                <p className="mt-4 font-medium text-gray-900 dark:text-gray-100">{selectedFile.name}</p>
+                <p className="mt-4 font-medium text-neutral-900 dark:text-neutral-100">{selectedFile.name}</p>
                 <div className="mt-4">
-                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                  <div className="w-full bg-neutral-200 dark:bg-neutral-700 rounded-full h-2">
                     <div
                       className="bg-primary h-2 rounded-full transition-all duration-300"
                       style={{ width: `${importProgress}%` }}
                     />
                   </div>
-                  <p className="mt-2 text-sm text-gray-500">正在解析文档... {importProgress}%</p>
+                  <p className="mt-2 text-sm text-neutral-500">正在解析文档... {importProgress}%</p>
                 </div>
               </>
             )}
 
             {importStatus === 'success' && selectedFile && (
               <>
-                <CheckCircle className="w-12 h-12 mx-auto mb-4 text-green-500" />
-                <p className="mt-4 font-medium text-gray-900 dark:text-gray-100">导入成功！</p>
-                <p className="text-sm text-gray-500">正在跳转到文档编辑...</p>
+                <CheckCircle className="w-12 h-12 mx-auto mb-4 text-success-500" />
+                <p className="mt-4 font-medium text-neutral-900 dark:text-neutral-100">导入成功！</p>
+                <p className="text-sm text-neutral-500">正在跳转到文档编辑...</p>
               </>
             )}
 
             {importStatus === 'error' && (
               <>
-                <AlertCircle className="w-12 h-12 mx-auto mb-4 text-red-500" />
-                <p className="mt-4 font-medium text-red-600 dark:text-red-400">{errorMessage}</p>
+                <AlertCircle className="w-12 h-12 mx-auto mb-4 text-error-500" />
+                <p className="mt-4 font-medium text-error-600 dark:text-error-400">{errorMessage}</p>
                 <button
                   onClick={() => {
                     setImportStatus('idle');
@@ -375,9 +375,9 @@ export function DocumentImport({ onImport, onClose }: DocumentImportProps) {
             )}
           </div>
 
-          <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
-            <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-2">导入说明</h3>
-            <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+          <div className="mt-6 p-4 bg-slate-50 dark:bg-neutral-900 rounded-lg">
+            <h3 className="font-medium text-neutral-900 dark:text-neutral-100 mb-2">导入说明</h3>
+            <ul className="text-sm text-neutral-600 dark:text-neutral-400 space-y-1">
               <li>• Markdown 文件会根据 # 标题自动解析章节结构</li>
               <li>• 纯文本文件会根据段落自动拆分为章节</li>
               <li>• HTML 文件会根据 h1-h4 标签解析章节</li>
@@ -386,10 +386,10 @@ export function DocumentImport({ onImport, onClose }: DocumentImportProps) {
           </div>
         </div>
 
-        <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
+        <div className="px-6 py-4 border-t border-neutral-200 dark:border-neutral-700 flex justify-end gap-3">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+            className="px-4 py-2 text-sm bg-neutral-200 dark:bg-neutral-700 rounded-lg hover:bg-neutral-300 dark:hover:bg-neutral-600 transition-colors"
           >
             取消
           </button>

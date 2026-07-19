@@ -25,8 +25,8 @@ function resolveSize(size?: AvatarSize): number {
 }
 
 const STATUS_COLORS: Record<AIStatus, string> = {
-  online: '#22c55e',
-  thinking: '#f59e0b',
+  online: '#34C759',
+  thinking: '#D97706',
   offline: '#9ca3af',
 }
 
@@ -36,7 +36,7 @@ const STATUS_STYLES: Record<AIStatus, React.CSSProperties> = {
     animation: 'thinkingPulse 1.5s ease-in-out infinite',
   },
   thinking: {
-    background: 'linear-gradient(135deg, #f59e0b 0%, #3b82f6 100%)',
+    background: 'linear-gradient(135deg, #D97706 0%, #007AFF 100%)',
     animation: 'statusSpin 1s linear infinite',
   },
   offline: {

@@ -1,11 +1,16 @@
 /**
  * Axios API 客户端
- * 自动附加 JWT 令牌、统一错误处理、刷新令牌逻辑
+ * 自动附加 JWT 令牌、统一错误处理、刷新令牌逻辑、CSRF token
  *
  * 🔒 P0 安全修复:
  * - Token 现在通过 HttpOnly Cookie 存储（后端设置）
  * - 前端不再从 localStorage 读写敏感 Token
  * - Authorization 头仅用于向后兼容，新请求依赖 Cookie 自动携带
+ * - CSRF token 自动从 Cookie 读取并注入请求头
+ *
+ * 🔒 竞态修复:
+ * - 登录流程中的 getMe 调用不再触发 token 刷新（_loginFlow 标记）
+ * - 避免登录期间 401 导致重定向回登录页的死循环
  */
 import axios from 'axios'
 import type { Token, User } from '@/types'
@@ -14,10 +19,6 @@ import { envConfig } from '@/config/env'
 
 const API_BASE = envConfig.api.baseUrl
 
-// 🔒 Cookie 名称（与后端一致）
-const ACCESS_TOKEN_COOKIE = 'rmfood_access_token'
-const REFRESH_TOKEN_COOKIE = 'rmfood_refresh_token'
-
 const api = axios.create({
   baseURL: API_BASE,
   timeout: envConfig.api.timeout,
@@ -25,6 +26,25 @@ const api = axios.create({
   // 🔒 启用 credentials，使浏览器自动携带 Cookie
   withCredentials: true,
 })
+
+// ── CSRF Token 工具 ──
+function getCookie(name: string): string | null {
+  const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'))
+  return match ? match[2] : null
+}
+
+// 请求拦截器：自动附加 CSRF token
+api.interceptors.request.use((config) => {
+  const csrfToken = getCookie('csrf_token')
+  if (csrfToken && config.method && ['post', 'put', 'patch', 'delete'].includes(config.method)) {
+    config.headers['X-CSRF-Token'] = csrfToken
+  }
+  return config
+})
+
+// 🔒 Cookie 名称（与后端一致）
+const ACCESS_TOKEN_COOKIE = 'rmfood_access_token'
+const REFRESH_TOKEN_COOKIE = 'rmfood_refresh_token'
 
 // ── Token 刷新状态管理 ──
 let isRefreshing = false
@@ -137,6 +157,14 @@ api.interceptors.response.use(
       // 静默请求（启动时认证检查）不触发 token 刷新和重定向
       if (original.params?._silent) {
         return Promise.resolve({ data: null, status: 401, statusText: 'Unauthorized', headers: {}, config: original })
+      }
+
+      // 🔒 竞态修复：登录流程中的 getMe 调用跳过 token 刷新
+      // 如果请求是登录流程的一部分（post-login getMe），直接拒绝而不是触发刷新
+      // 否则会导致：getMe 401 → refreshToken → 再次 401 → clearAuthState → 重定向回登录页
+      if (original._loginFlow) {
+        if (import.meta.env.DEV) console.warn('[API] 登录流程中 getMe 失败，跳过 token 刷新')
+        return Promise.reject(error)
       }
 
       // 防止无限重试：同一请求最多重试 1 次

@@ -67,25 +67,26 @@ const STAGE_CONFIG: Record<ProgressStage, { label: string; color: string; icon: 
   completed: { label: '完成', color: 'green', icon: <CheckCircle2 className="w-4 h-4" /> },
   failed: { label: '失败', color: 'red', icon: <XCircle className="w-4 h-4" /> },
   cancelled: { label: '已取消', color: 'gray', icon: <XCircle className="w-4 h-4" /> },
+  paused: { label: '已暂停', color: 'amber', icon: <Pause className="w-4 h-4" /> },
 }
 
 const STATUS_ICONS: Record<SubTaskStatus, React.ReactNode> = {
-  pending: <div className="w-3 h-3 rounded-full border-2 border-gray-300 dark:border-gray-600" />,
-  running: <Loader2 className="w-3 h-3 text-blue-500 animate-spin" />,
-  completed: <CheckCircle2 className="w-3 h-3 text-green-500" />,
-  failed: <XCircle className="w-3 h-3 text-red-500" />,
+  pending: <div className="w-3 h-3 rounded-full border-2 border-neutral-300 dark:border-neutral-600" />,
+  running: <Loader2 className="w-3 h-3 text-secondary-500 animate-spin" />,
+  completed: <CheckCircle2 className="w-3 h-3 text-success-500" />,
+  failed: <XCircle className="w-3 h-3 text-error-500" />,
 }
 
 const COLOR_MAP: Record<string, string> = {
-  gray: 'bg-gray-400',
-  blue: 'bg-blue-500',
-  purple: 'bg-purple-500',
+  gray: 'bg-neutral-400',
+  blue: 'bg-secondary-500',
+  purple: 'bg-accent-500',
   cyan: 'bg-cyan-500',
-  amber: 'bg-amber-500',
-  emerald: 'bg-emerald-500',
+  amber: 'bg-warning-500',
+  emerald: 'bg-primary-500',
   teal: 'bg-teal-500',
-  green: 'bg-green-500',
-  red: 'bg-red-500',
+  green: 'bg-success-500',
+  red: 'bg-error-500',
 }
 
 function formatTime(seconds: number): string {
@@ -148,7 +149,7 @@ export function GenerationProgress({
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`rounded-xl border bg-white dark:bg-gray-900 overflow-hidden ${className}`}
+      className={`rounded-xl border bg-white dark:bg-neutral-900 overflow-hidden ${className}`}
       style={{ borderColor: `var(--tw-${stageInfo.color}-200, rgb(229, 231, 235))` } as any}
     >
       {/* 主进度条区域 */}
@@ -156,15 +157,15 @@ export function GenerationProgress({
         {/* 进度头部信息 */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className={`${COLOR_MAP[stageInfo.color] || 'bg-gray-400'} text-white p-1.5 rounded-lg`}>
+            <span className={`${COLOR_MAP[stageInfo.color] || 'bg-neutral-400'} text-white p-1.5 rounded-lg`}>
               {stageInfo.icon}
             </span>
             <div>
-              <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
+              <h4 className="text-sm font-semibold text-neutral-900 dark:text-white">
                 {progress.currentStageName || stageInfo.label}
               </h4>
               {(progress.stage !== 'idle' && progress.stage !== 'completed' && progress.stage !== 'failed' && progress.stage !== 'cancelled') && (
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+                <p className="text-xs text-neutral-500 dark:text-neutral-400">
                   已用时 {formatTime(elapsedTime)}
                   {progress.estimatedRemainingTime != null && (
                     <span className="ml-2">预计剩余 ~{formatTime(progress.estimatedRemainingTime)}</span>
@@ -181,14 +182,14 @@ export function GenerationProgress({
             animate={{ scale: 1 }}
             className="text-right"
           >
-            <span className="text-2xl font-bold text-gray-900 dark:text-white">
+            <span className="text-2xl font-bold text-neutral-900 dark:text-white">
               {Math.round(progress.overallProgress || 0)}%
             </span>
           </motion.div>
         </div>
 
         {/* 总进度条 */}
-        <div className="relative h-3 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+        <div className="relative h-3 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
           <motion.div
             className="absolute inset-y-0 left-0 rounded-full"
             style={{
@@ -221,16 +222,16 @@ export function GenerationProgress({
             {progress.subTasks.map((task) => (
               <div key={task.id} className="flex items-center gap-3 text-sm">
                 <span>{STATUS_ICONS[task.status]}</span>
-                <span className={`flex-1 ${task.status === 'failed' ? 'text-red-600 dark:text-red-400' : task.status === 'completed' ? 'text-gray-500 dark:text-gray-400 line-through' : 'text-gray-700 dark:text-gray-300'}`}>
+                <span className={`flex-1 ${task.status === 'failed' ? 'text-error-600 dark:text-error-400' : task.status === 'completed' ? 'text-neutral-500 dark:text-neutral-400 line-through' : 'text-neutral-700 dark:text-neutral-300'}`}>
                   {task.name}
                 </span>
                 {task.status === 'running' && task.total != null && (
-                  <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">
+                  <span className="text-xs text-secondary-600 dark:text-secondary-400 font-medium">
                     ({task.current || 0}/{task.total})
                   </span>
                 )}
                 {task.status === 'running' && (
-                  <span className="text-xs text-gray-500">{task.progress}%</span>
+                  <span className="text-xs text-neutral-500">{task.progress}%</span>
                 )}
               </div>
             ))}
@@ -238,12 +239,12 @@ export function GenerationProgress({
         )}
 
         {/* 控制按钮组 */}
-        <div className="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-gray-800">
+        <div className="flex items-center justify-between pt-2 border-t border-neutral-100 dark:border-neutral-800">
           <div className="flex gap-2">
             {progress.canPause && progress.stage !== 'paused' && onPause && (
               <button
                 onClick={onPause}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-amber-700 bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/30 rounded-lg transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-warning-700 bg-warning-50 dark:bg-warning-900/20 hover:bg-warning-100 dark:hover:bg-warning-900/30 rounded-lg transition-colors"
               >
                 <Pause className="w-3.5 h-3.5" />
                 暂停
@@ -253,7 +254,7 @@ export function GenerationProgress({
             {progress.stage === 'paused' && onResume && (
               <button
                 onClick={onResume}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-emerald-700 bg-emerald-50 dark:bg-emerald-900/20 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 rounded-lg transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-primary-700 bg-primary-50 dark:bg-primary-900/20 hover:bg-primary-100 dark:hover:bg-primary-900/30 rounded-lg transition-colors"
               >
                 <Play className="w-3.5 h-3.5" />
                 继续
@@ -267,7 +268,7 @@ export function GenerationProgress({
                     onCancel()
                   }
                 }}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-red-700 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-error-700 bg-error-50 dark:bg-error-900/20 hover:bg-error-100 dark:hover:bg-error-900/30 rounded-lg transition-colors"
               >
                 <Square className="w-3.5 h-3.5" />
                 取消
@@ -277,7 +278,7 @@ export function GenerationProgress({
             {progress.stage === 'failed' && onRetry && (
               <button
                 onClick={onRetry}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-700 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-secondary-700 bg-secondary-50 dark:bg-secondary-900/20 hover:bg-secondary-100 dark:hover:bg-secondary-900/30 rounded-lg transition-colors"
               >
                 <Loader2 className="w-3.5 h-3.5" />
                 重试
@@ -289,7 +290,7 @@ export function GenerationProgress({
           {!compact && progress.logs && progress.logs.length > 0 && (
             <button
               onClick={() => setShowLogs(!showLogs)}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
             >
               {showLogs ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
               日志 ({progress.logs.length})
@@ -306,12 +307,12 @@ export function GenerationProgress({
               exit={{ height: 0, opacity: 0 }}
               className="overflow-hidden"
             >
-              <div className="mt-3 p-3 bg-gray-900 dark:bg-black rounded-lg font-mono text-xs max-h-48 overflow-y-auto">
-                <div className="flex items-center justify-between mb-2 pb-2 border-b border-gray-700">
-                  <span className="text-gray-400">实时日志</span>
+              <div className="mt-3 p-3 bg-neutral-900 dark:bg-black rounded-lg font-mono text-xs max-h-48 overflow-y-auto">
+                <div className="flex items-center justify-between mb-2 pb-2 border-b border-neutral-700">
+                  <span className="text-neutral-400">实时日志</span>
                   <button
                     onClick={handleCopyLogs}
-                    className="flex items-center gap-1 text-gray-400 hover:text-white transition-colors"
+                    className="flex items-center gap-1 text-neutral-400 hover:text-white transition-colors"
                   >
                     <Copy className="w-3 h-3" />
                     复制
@@ -323,17 +324,17 @@ export function GenerationProgress({
                       key={index}
                       className={`${
                         log.level === 'ERROR'
-                          ? 'text-red-400'
+                          ? 'text-error-400'
                           : log.level === 'WARN'
                           ? 'text-yellow-400'
-                          : 'text-gray-300'
+                          : 'text-neutral-300'
                       }`}
                     >
-                      <span className="text-gray-500">[{log.timestamp}]</span>{' '}
+                      <span className="text-neutral-500">[{log.timestamp}]</span>{' '}
                       <span
                         className={
                           log.level === 'ERROR'
-                            ? 'text-red-500'
+                            ? 'text-error-500'
                             : log.level === 'WARN'
                             ? 'text-yellow-500'
                             : 'text-cyan-400'

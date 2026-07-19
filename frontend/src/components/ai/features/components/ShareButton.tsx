@@ -71,17 +71,17 @@ const ToolbarButton: React.FC<ToolbarButtonProps> = ({
   variant = 'default',
 }) => {
   const baseClasses =
-    'flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1 dark:focus:ring-offset-gray-800'
+    'flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800'
 
   const variantClasses = {
     default:
-      'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800',
+      'text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800',
     success: isActive
-      ? 'text-green-600 bg-green-50 dark:bg-green-900/20'
-      : 'text-gray-500 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20',
+      ? 'text-success-600 bg-success-50 dark:bg-success-900/20'
+      : 'text-neutral-500 hover:text-success-600 hover:bg-success-50 dark:hover:bg-success-900/20',
     danger: isActive
-      ? 'text-red-600 bg-red-50 dark:bg-red-900/20'
-      : 'text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20',
+      ? 'text-error-600 bg-error-50 dark:bg-error-900/20'
+      : 'text-neutral-500 hover:text-error-600 hover:bg-error-50 dark:hover:bg-error-900/20',
   }
 
   return (
@@ -273,22 +273,22 @@ export function ShareButton({
         </div>
       ) : (
         /* 展开状态：显示完整工具栏 */
-        <div className="relative flex items-center gap-1 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 px-2 py-1.5 animate-scale-in">
+        <div className="relative flex items-center gap-1 bg-white dark:bg-neutral-800 rounded-xl shadow-lg border border-neutral-200 dark:border-neutral-700 px-2 py-1.5 animate-scale-in">
           {/* 左侧指示箭头 */}
-          <div className="absolute -left-1 top-1/2 -translate-y-1/2 w-2 h-2 bg-white dark:bg-gray-800 border-l border-t border-gray-200 dark:border-gray-700 rotate-[-45deg]" />
+          <div className="absolute -left-1 top-1/2 -translate-y-1/2 w-2 h-2 bg-white dark:bg-neutral-800 border-l border-t border-neutral-200 dark:border-neutral-700 rotate-[-45deg]" />
 
           {/* 工具栏按钮组 */}
           <div className="flex items-center gap-0.5">
             {/* 复制 */}
             <ToolbarButton
-              icon={copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+              icon={copied ? <Check className="w-4 h-4 text-success-500" /> : <Copy className="w-4 h-4" />}
               label={copied ? '已复制' : '复制文本'}
               onClick={handleCopy}
               variant={copied ? 'success' : 'default'}
             />
 
             {/* 分隔线 */}
-            <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-1" />
+            <div className="w-px h-5 bg-neutral-200 dark:bg-neutral-700 mx-1" />
 
             {/* 点赞 */}
             {role === 'assistant' && (
@@ -312,7 +312,7 @@ export function ShareButton({
             )}
 
             {/* 分隔线 */}
-            {(role === 'assistant') && <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-1" />}
+            {(role === 'assistant') && <div className="w-px h-5 bg-neutral-200 dark:bg-neutral-700 mx-1" />}
 
             {/* 主分享按钮 */}
             <button
@@ -335,7 +335,7 @@ export function ShareButton({
           </div>
 
           {/* 快捷键提示 */}
-          <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-gray-900 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+          <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-neutral-900 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
             Ctrl+Shift+S 快速分享
           </div>
         </div>

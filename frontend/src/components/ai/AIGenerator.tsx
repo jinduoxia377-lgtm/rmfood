@@ -337,7 +337,7 @@ export function AIGenerator({
           <div className="border-t pt-3">
             <button
               onClick={() => setShowSettings(!showSettings)}
-              className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+              className="flex items-center gap-2 text-sm text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
             >
               <Settings size={16} />
               <span>生成参数</span>
@@ -345,10 +345,10 @@ export function AIGenerator({
             </button>
 
             {showSettings && (
-              <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-4 p-3 bg-slate-50 dark:bg-neutral-800 rounded-lg">
                 {/* 创造性滑块 */}
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1">
                     创造性系数: {params.creativity.toFixed(1)}
                   </label>
                   <input
@@ -362,7 +362,7 @@ export function AIGenerator({
                     }
                     className="w-full accent-blue-600"
                   />
-                  <div className="flex justify-between text-[10px] text-gray-500 mt-1">
+                  <div className="flex justify-between text-[10px] text-neutral-500 mt-1">
                     <span>保守</span>
                     <span>创新</span>
                   </div>
@@ -370,7 +370,7 @@ export function AIGenerator({
 
                 {/* 长度选择 */}
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1">
                     输出长度
                   </label>
                   <select
@@ -381,7 +381,7 @@ export function AIGenerator({
                         length: e.target.value as GenerationParams['length'],
                       }))
                     }
-                    className="w-full px-2 py-1.5 text-sm border rounded-md bg-white dark:bg-gray-700 dark:border-gray-600"
+                    className="w-full px-2 py-1.5 text-sm border rounded-md bg-white dark:bg-neutral-700 dark:border-neutral-600"
                   >
                     {LENGTH_OPTIONS.map((opt) => (
                       <option key={opt.value} value={opt.value}>
@@ -393,7 +393,7 @@ export function AIGenerator({
 
                 {/* 语气选择 */}
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label className="block text-xs font-medium text-neutral-700 dark:text-neutral-300 mb-1">
                     语气风格
                   </label>
                   <select
@@ -404,7 +404,7 @@ export function AIGenerator({
                         tone: e.target.value as GenerationParams['tone'],
                       }))
                     }
-                    className="w-full px-2 py-1.5 text-sm border rounded-md bg-white dark:bg-gray-700 dark:border-gray-600"
+                    className="w-full px-2 py-1.5 text-sm border rounded-md bg-white dark:bg-neutral-700 dark:border-neutral-600"
                   >
                     {TONE_OPTIONS.map((opt) => (
                       <option key={opt.value} value={opt.value}>
@@ -458,7 +458,7 @@ export function AIGenerator({
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setShowHistory(!showHistory)}
-                className="flex items-center gap-1 px-2 py-1 text-xs text-gray-600 hover:text-gray-900 dark:text-gray-400"
+                className="flex items-center gap-1 px-2 py-1 text-xs text-neutral-600 hover:text-neutral-900 dark:text-neutral-400"
               >
                 <History size={14} />
                 历史 ({history.length})
@@ -474,7 +474,7 @@ export function AIGenerator({
 
       {/* 错误提示 */}
       {error && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+        <div className="p-3 bg-error-50 border border-red-200 rounded-lg text-error-700 text-sm">
           ⚠️ 生成失败: {error}
         </div>
       )}
@@ -483,8 +483,8 @@ export function AIGenerator({
       {(result || isGenerating) && (
         <Card className="p-4">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-              <Sparkles size={16} className="text-blue-600" />
+            <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
+              <Sparkles size={16} className="text-secondary-600" />
               生成结果
               {currentTaskId && (
                 <Badge variant="info" size="sm">
@@ -524,11 +524,11 @@ export function AIGenerator({
 
           <div
             ref={resultRef}
-            className="min-h-[120px] max-h-[500px] overflow-y-auto p-3 bg-gray-50 dark:bg-gray-900 rounded-lg text-sm leading-relaxed whitespace-pre-wrap font-mono"
+            className="min-h-[120px] max-h-[500px] overflow-y-auto p-3 bg-slate-50 dark:bg-neutral-900 rounded-lg text-sm leading-relaxed whitespace-pre-wrap font-mono"
           >
             {result || (isGenerating ? '正在生成...' : '')}
             {isStreaming && !result && (
-              <span className="inline-block w-2 h-4 bg-blue-600 animate-pulse ml-1" />
+              <span className="inline-block w-2 h-4 bg-secondary-600 animate-pulse ml-1" />
             )}
           </div>
         </Card>
@@ -538,7 +538,7 @@ export function AIGenerator({
       {showHistory && (
         <Card className="p-4">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
               <History size={16} />
               生成历史
             </h3>
@@ -552,23 +552,23 @@ export function AIGenerator({
           </div>
 
           {history.length === 0 ? (
-            <p className="text-sm text-gray-500 text-center py-8">暂无历史记录</p>
+            <p className="text-sm text-neutral-500 text-center py-8">暂无历史记录</p>
           ) : (
             <div className="space-y-2 max-h-[400px] overflow-y-auto">
               {history.map((item) => (
                 <div
                   key={item.id}
-                  className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
+                  className="p-3 bg-slate-50 dark:bg-neutral-800 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors group"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <button
                       onClick={() => handleLoadFromHistory(item)}
                       className="flex-1 text-left"
                     >
-                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100 line-clamp-2">
+                      <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100 line-clamp-2">
                         {item.description.slice(0, 80)}...
                       </p>
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-xs text-neutral-500 mt-1">
                         {new Date(item.timestamp).toLocaleString('zh-CN')} ·{' '}
                         {item.params.tone} · {item.params.length}
                       </p>
@@ -576,7 +576,7 @@ export function AIGenerator({
 
                     <button
                       onClick={() => handleDeleteHistory(item.id)}
-                      className="opacity-0 group-hover:opacity-100 p-1 hover:text-red-600 transition-opacity"
+                      className="opacity-0 group-hover:opacity-100 p-1 hover:text-error-600 transition-opacity"
                     >
                       <Trash2 size={14} />
                     </button>

@@ -5,28 +5,25 @@
 记录置信度分数和应用状态，便于效果追踪。
 """
 from datetime import datetime, timezone
-from sqlalchemy import Integer, String, Text, Float, Boolean, DateTime, JSON, Enum, ForeignKey, Index
+from sqlalchemy import Integer, String, Text, Float, Boolean, DateTime, JSON, Enum, ForeignKey, Index, BigInteger
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from ..core.database import Base
+from .base import Base
 from .enums import SuggestionType
-
-
-def _now() -> datetime:
-    return datetime.now(timezone.utc).replace(tzinfo=None)
+from app.models.utils import now_utc_mapped
 
 
 class AiSuggestion(Base):
     __tablename__ = "ai_suggestions"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     prompt_id: Mapped[int | None] = mapped_column(
-        Integer, ForeignKey("prompt_versions.id", ondelete="SET NULL"), nullable=True
+        BigInteger, ForeignKey("prompt_versions.id", ondelete="SET NULL"), nullable=True, index=True
     )
     suggestion_type: Mapped[SuggestionType] = mapped_column(Enum(SuggestionType), nullable=False)
     content: Mapped[dict] = mapped_column(JSON, nullable=False)
     confidence_score: Mapped[float | None] = mapped_column(Float)
     is_applied: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=_now, nullable=False, index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=now_utc_mapped, nullable=False, index=True)
 
     prompt_version: Mapped["PromptVersion | None"] = relationship(
         "PromptVersion", back_populates="suggestions"

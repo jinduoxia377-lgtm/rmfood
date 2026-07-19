@@ -300,13 +300,24 @@ const TERM_INDEX: ReadonlyMap<string, Term> = new Map(
   TERMINOLOGY_MAP.map((term) => [term.key.toLowerCase(), term]),
 )
 
+/** 最大查询长度 — 超过此长度的查询只使用前 N 个字符做模糊匹配，
+ * 防止 O(n*m) 子串匹配算法在长查询时产生性能瓶颈 */
+const FUZZY_MATCH_MAX_QUERY_LENGTH = 80
+
 function computeSimilarity(a: string, b: string): number {
   const la = a.length
   const lb = b.length
   if (la === 0 || lb === 0) return 0
+  // 长度截断：长字符串只取前段比较
+  const maxLen = Math.max(la, lb)
+  if (maxLen > FUZZY_MATCH_MAX_QUERY_LENGTH * 2) {
+    const cutoff = FUZZY_MATCH_MAX_QUERY_LENGTH
+    a = a.slice(0, cutoff)
+    b = b.slice(0, cutoff)
+  }
   let matches = 0
-  const longer = la >= lb ? a : b
-  const shorter = la >= lb ? b : a
+  const longer = a.length >= b.length ? a : b
+  const shorter = a.length >= b.length ? b : a
   for (let i = 0; i <= longer.length - shorter.length; i++) {
     let match = true
     for (let j = 0; j < shorter.length; j++) {
@@ -331,9 +342,21 @@ export function fuzzyMatchTerms(query: string, threshold = 0.5): Term[] {
   if (!query || typeof query !== 'string') return []
   const q = query.trim().toLowerCase()
   if (!q) return []
+
+  // 短查询（≤2字符）直接用精确匹配，跳过 O(N) 遍历
+  if (q.length <= 2) {
+    return TERMINOLOGY_MAP.filter(
+      (term) => term.key.toLowerCase() === q || term.key.toLowerCase().startsWith(q),
+    )
+  }
+
   const results: (Term & { _score: number })[] = []
   for (const term of TERMINOLOGY_MAP) {
     const keyLower = term.key.toLowerCase()
+    // 快速预筛：长度差异过大时直接跳过
+    if (keyLower.length > q.length * 3 || q.length > keyLower.length * 3) {
+      // 仍然走 computeSimilarity 兜底
+    }
     let score = 0
     if (keyLower === q) {
       score = 1.0

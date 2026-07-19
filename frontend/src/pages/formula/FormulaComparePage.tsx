@@ -9,6 +9,7 @@ import { useFormulas } from '@/hooks/useQueries'
 import { FormulaCompare } from './components/FormulaCompare'
 import { Button, Input, PageHeader, Card, CardContent } from '@/components/ui'
 import { StatusBadge, Skeleton } from '@/components/ui/Common'
+import type { Formula } from '@/types'
 
 export default function FormulaComparePage() {
   const navigate = useNavigate()
@@ -32,8 +33,8 @@ export default function FormulaComparePage() {
     search: rightSearch || undefined,
   })
 
-  const leftList = leftFormulas?.items || []
-  const rightList = rightFormulas?.items || []
+  const leftList = leftFormulas?.data || []
+  const rightList = rightFormulas?.data || []
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
@@ -43,7 +44,7 @@ export default function FormulaComparePage() {
         actions={
           <button
             onClick={() => navigate('/formulas')}
-            className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors"
+            className="flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors"
           >
             <ArrowLeft size={16} />
             返回列表
@@ -57,11 +58,11 @@ export default function FormulaComparePage() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">配方 A</h3>
+              <h3 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">配方 A</h3>
               {leftId && (
                 <button
                   onClick={() => setLeftId(null)}
-                  className="text-xs text-slate-400 hover:text-red-500 flex items-center gap-1"
+                  className="text-xs text-neutral-400 hover:text-error-500 flex items-center gap-1"
                 >
                   <X size={12} />
                   清除
@@ -78,30 +79,30 @@ export default function FormulaComparePage() {
                   prefix={<Search size={14} />}
                 />
                 {showLeftPicker && (
-                  <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl max-h-64 overflow-y-auto">
+                  <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl shadow-xl max-h-64 overflow-y-auto">
                     {leftLoading ? (
                       <div className="p-3 space-y-2">
                         <Skeleton className="h-8 w-full" />
                         <Skeleton className="h-8 w-full" />
                       </div>
                     ) : leftList.length > 0 ? (
-                      leftList.map(formula => (
+                      leftList.map((formula: Formula) => (
                         <button
                           key={formula.id}
                           onClick={() => { setLeftId(formula.id); setShowLeftPicker(false); setLeftSearch('') }}
-                          className="w-full text-left px-3 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 border-b border-slate-100 dark:border-slate-800 last:border-0 transition-colors"
+                          className="w-full text-left px-3 py-2 hover:bg-slate-50 dark:hover:bg-neutral-800 border-b border-neutral-100 dark:border-neutral-800 last:border-0 transition-colors"
                         >
                           <div className="flex items-center justify-between">
                             <div>
-                              <span className="text-sm font-medium text-slate-900 dark:text-white">{formula.name}</span>
-                              <p className="text-xs text-slate-400">{formula.code}</p>
+                              <span className="text-sm font-medium text-neutral-900 dark:text-white">{formula.name}</span>
+                              <p className="text-xs text-neutral-400">{formula.code}</p>
                             </div>
                             <StatusBadge status={formula.status} />
                           </div>
                         </button>
                       ))
                     ) : (
-                      <div className="p-4 text-center text-sm text-slate-400">未找到配方</div>
+                      <div className="p-4 text-center text-sm text-neutral-400">未找到配方</div>
                     )}
                   </div>
                 )}
@@ -111,10 +112,10 @@ export default function FormulaComparePage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-primary-700 dark:text-primary-300">
-                      {leftList.find(f => f.id === leftId)?.name || `#${leftId}`}
+                      {leftList.find((f: Formula) => f.id === leftId)?.name || `#${leftId}`}
                     </p>
                     <p className="text-xs text-primary-500">
-                      {leftList.find(f => f.id === leftId)?.code}
+                      {leftList.find((f: Formula) => f.id === leftId)?.code}
                     </p>
                   </div>
                   <CheckCircle2 size={18} className="text-primary-500" />
@@ -128,10 +129,10 @@ export default function FormulaComparePage() {
         <Card>
           <CardContent className="p-4 flex items-center justify-center h-full">
             <div className="text-center">
-              <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-2">
-                <ArrowRight size={20} className="text-slate-400" />
+              <div className="w-12 h-12 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mx-auto mb-2">
+                <ArrowRight size={20} className="text-neutral-400" />
               </div>
-              <p className="text-sm text-slate-500">对比</p>
+              <p className="text-sm text-neutral-500">对比</p>
             </div>
           </CardContent>
         </Card>
@@ -140,11 +141,11 @@ export default function FormulaComparePage() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">配方 B</h3>
+              <h3 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">配方 B</h3>
               {rightId && (
                 <button
                   onClick={() => setRightId(null)}
-                  className="text-xs text-slate-400 hover:text-red-500 flex items-center gap-1"
+                  className="text-xs text-neutral-400 hover:text-error-500 flex items-center gap-1"
                 >
                   <X size={12} />
                   清除
@@ -161,30 +162,30 @@ export default function FormulaComparePage() {
                   prefix={<Search size={14} />}
                 />
                 {showRightPicker && (
-                  <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl max-h-64 overflow-y-auto">
+                  <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl shadow-xl max-h-64 overflow-y-auto">
                     {rightLoading ? (
                       <div className="p-3 space-y-2">
                         <Skeleton className="h-8 w-full" />
                         <Skeleton className="h-8 w-full" />
                       </div>
                     ) : rightList.length > 0 ? (
-                      rightList.map(formula => (
+                      rightList.map((formula: Formula) => (
                         <button
                           key={formula.id}
                           onClick={() => { setRightId(formula.id); setShowRightPicker(false); setRightSearch('') }}
-                          className="w-full text-left px-3 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 border-b border-slate-100 dark:border-slate-800 last:border-0 transition-colors"
+                          className="w-full text-left px-3 py-2 hover:bg-slate-50 dark:hover:bg-neutral-800 border-b border-neutral-100 dark:border-neutral-800 last:border-0 transition-colors"
                         >
                           <div className="flex items-center justify-between">
                             <div>
-                              <span className="text-sm font-medium text-slate-900 dark:text-white">{formula.name}</span>
-                              <p className="text-xs text-slate-400">{formula.code}</p>
+                              <span className="text-sm font-medium text-neutral-900 dark:text-white">{formula.name}</span>
+                              <p className="text-xs text-neutral-400">{formula.code}</p>
                             </div>
                             <StatusBadge status={formula.status} />
                           </div>
                         </button>
                       ))
                     ) : (
-                      <div className="p-4 text-center text-sm text-slate-400">未找到配方</div>
+                      <div className="p-4 text-center text-sm text-neutral-400">未找到配方</div>
                     )}
                   </div>
                 )}
@@ -194,10 +195,10 @@ export default function FormulaComparePage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-primary-700 dark:text-primary-300">
-                      {rightList.find(f => f.id === rightId)?.name || `#${rightId}`}
+                      {rightList.find((f: Formula) => f.id === rightId)?.name || `#${rightId}`}
                     </p>
                     <p className="text-xs text-primary-500">
-                      {rightList.find(f => f.id === rightId)?.code}
+                      {rightList.find((f: Formula) => f.id === rightId)?.code}
                     </p>
                   </div>
                   <CheckCircle2 size={18} className="text-primary-500" />

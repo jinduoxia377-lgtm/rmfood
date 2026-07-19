@@ -34,6 +34,11 @@ function getDosageUnit(dosage: string): string {
 
 export function CompositionChart({ ingredients, compact = false }: CompositionChartProps) {
   const colors = useMemo(() => getChartThemeColors(), [])
+  const tooltipBg = colors.tooltipBg || 'var(--card-bg-solid, #FFFFFF)'
+  const tooltipBorder = colors.tooltipBorder || 'var(--border-subtle, rgba(0,0,0,0.06))'
+  const tooltipText = colors.tooltipText || 'var(--text-secondary, #6E6E73)'
+  const axisColor = colors.axisColor || 'var(--text-muted, #9A9A9F)'
+  const barFill = colors.barFill || 'var(--color-secondary, #0A84FF)'
 
   const tooltipStyle = {
     backgroundColor: tooltipBg,
@@ -112,7 +117,7 @@ export function CompositionChart({ ingredients, compact = false }: CompositionCh
             {roleData.map((entry) => (
               <div key={entry.name} className="flex items-center gap-1.5">
                 <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: entry.fill }} />
-                <span className="text-xs text-slate-600 dark:text-slate-400 truncate">
+                <span className="text-xs text-neutral-600 dark:text-neutral-400 truncate">
                   {entry.name} ({entry.value})
                 </span>
               </div>
@@ -127,7 +132,7 @@ export function CompositionChart({ ingredients, compact = false }: CompositionCh
     <div className="space-y-4">
       {roleData.length > 0 && (
         <div>
-          <h5 className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">君臣佐使分布</h5>
+          <h5 className="text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-2">君臣佐使分布</h5>
           <div className="flex items-center gap-4">
             <div className="w-28 h-28 shrink-0">
               <ResponsiveContainer width="100%" height="100%">
@@ -157,11 +162,11 @@ export function CompositionChart({ ingredients, compact = false }: CompositionCh
             <div className="flex-1">
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {roleData.map((entry) => (
-                  <div key={entry.name} className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800/50">
+                  <div key={entry.name} className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-slate-50 dark:bg-neutral-800/50">
                     <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: entry.fill }} />
                     <div className="min-w-0">
-                      <span className="text-xs font-medium text-slate-700 dark:text-slate-300">{entry.name}</span>
-                      <p className="text-[10px] text-slate-400">{entry.value} 种</p>
+                      <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300">{entry.name}</span>
+                      <p className="text-[10px] text-neutral-400">{entry.value} 种</p>
                     </div>
                   </div>
                 ))}
@@ -173,7 +178,7 @@ export function CompositionChart({ ingredients, compact = false }: CompositionCh
 
       {dosageData.length > 0 && (
         <div>
-          <h5 className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">用量分布 (Top {dosageData.length})</h5>
+          <h5 className="text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-2">用量分布 (Top {dosageData.length})</h5>
           <div className="h-32">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={dosageData} layout="vertical" margin={{ left: 50, right: 16 }}>
@@ -192,7 +197,7 @@ export function CompositionChart({ ingredients, compact = false }: CompositionCh
 
       {categoryData.length > 0 && (
         <div>
-          <h5 className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">药材分类分布</h5>
+          <h5 className="text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-2">药材分类分布</h5>
           <div className="flex flex-wrap gap-1.5">
             {categoryData.map((entry) => (
               <div key={entry.name} className="flex items-center gap-1.5 px-2 py-1 rounded-full text-xs" style={{ backgroundColor: `${entry.fill}15`, color: entry.fill }}>

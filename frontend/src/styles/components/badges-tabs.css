@@ -1,0 +1,185 @@
+/*
+ * RMFOOD 设计系统 - 徽章/标签页系统 v3.1 — Apple HIG 风格
+ * 状态徽章、语义徽章、标签、标签页导航
+ */
+
+/* ═══ 徽章系统 v3.1 — Apple 风格柔和胶囊 ═══ */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 9999px;
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1px;
+  transition: all var(--duration-fast) var(--ease-spring);
+  border: 1px solid transparent;
+}
+
+/* 状态徽章 — 使用 CSS 变量替代硬编码 */
+.badge-draft    { background: var(--badge-draft-bg, rgba(148, 163, 184, 0.1)); color: var(--badge-draft-text, var(--text-secondary, #6E6E73)); border-color: var(--badge-draft-border, rgba(148, 163, 184, 0.15)); }
+.badge-pending  { background: var(--badge-pending-bg, rgba(255, 159, 10, 0.08)); color: var(--badge-pending-text, #D97706); border-color: var(--badge-pending-border, rgba(255, 159, 10, 0.15)); }
+.badge-approved { background: var(--badge-approved-bg, rgba(52, 199, 89, 0.08)); color: var(--badge-approved-text, #248A3D); border-color: var(--badge-approved-border, rgba(52, 199, 89, 0.12)); }
+.badge-rejected { background: var(--badge-rejected-bg, rgba(255, 59, 48, 0.08)); color: var(--badge-rejected-text, #D70015); border-color: var(--badge-rejected-border, rgba(255, 59, 48, 0.15)); }
+.badge-revision { background: var(--badge-revision-bg, rgba(255, 149, 0, 0.08)); color: var(--badge-revision-text, #C25E00); border-color: var(--badge-revision-border, rgba(255, 149, 0, 0.12)); }
+.badge-archived { background: var(--badge-archived-bg, rgba(107, 114, 128, 0.08)); color: var(--badge-archived-text, #6B7280); border-color: var(--badge-archived-border, rgba(107, 114, 128, 0.12)); }
+
+.dark .badge-draft    { background: var(--badge-draft-bg-dark, rgba(148, 163, 184, 0.08)); color: var(--badge-draft-text-dark, #94A3B8); border-color: var(--badge-draft-border-dark, rgba(148, 163, 184, 0.12)); }
+.dark .badge-pending  { background: var(--badge-pending-bg-dark, rgba(255, 159, 10, 0.1)); color: var(--badge-pending-text-dark, #FFB84D); border-color: var(--badge-pending-border-dark, rgba(255, 159, 10, 0.15)); }
+.dark .badge-approved { background: var(--badge-approved-bg-dark, rgba(48, 209, 88, 0.1)); color: var(--badge-approved-text-dark, #6EE7B7); border-color: var(--badge-approved-border-dark, rgba(48, 209, 88, 0.15)); }
+.dark .badge-rejected { background: var(--badge-rejected-bg-dark, rgba(255, 69, 58, 0.1)); color: var(--badge-rejected-text-dark, #FF877A); border-color: var(--badge-rejected-border-dark, rgba(255, 69, 58, 0.15)); }
+.dark .badge-revision { background: var(--badge-revision-bg-dark, rgba(255, 149, 0, 0.1)); color: var(--badge-revision-text-dark, #FFB84D); border-color: var(--badge-revision-border-dark, rgba(255, 149, 0, 0.15)); }
+.dark .badge-archived { background: var(--badge-archived-bg-dark, rgba(148, 163, 184, 0.08)); color: var(--badge-archived-text-dark, #9CA3AF); border-color: var(--badge-archived-border-dark, rgba(148, 163, 184, 0.12)); }
+
+.badge-primary {
+  background: var(--color-primary-container, rgba(16, 185, 129, 0.1));
+  color: var(--color-primary-hover, #28A745);
+  border-color: rgba(16, 185, 129, 0.15);
+}
+.dark .badge-primary {
+  background: rgba(48, 209, 88, 0.12);
+  color: var(--color-primary, #30D158);
+  border-color: rgba(48, 209, 88, 0.2);
+}
+.badge-success { background: var(--badge-approved-bg, rgba(52, 199, 89, 0.08)); color: var(--badge-approved-text, #248A3D); border-color: rgba(52, 199, 89, 0.12); }
+.dark .badge-success { background: rgba(48, 209, 88, 0.1); color: #6EE7B7; border-color: rgba(48, 209, 88, 0.15); }
+.badge-warning { background: rgba(255, 159, 10, 0.08); color: #C27800; border-color: rgba(255, 159, 10, 0.12); }
+.dark .badge-warning { background: rgba(255, 159, 10, 0.1); color: #FFB84D; border-color: rgba(255, 159, 10, 0.15); }
+.badge-danger { background: rgba(255, 59, 48, 0.08); color: #C1000F; border-color: rgba(255, 59, 48, 0.12); }
+.dark .badge-danger { background: rgba(255, 69, 58, 0.1); color: #FF877A; border-color: rgba(255, 69, 58, 0.15); }
+.badge-info { background: rgba(0, 122, 255, 0.08); color: #005AC5; border-color: rgba(0, 122, 255, 0.12); }
+.dark .badge-info { background: rgba(10, 132, 255, 0.1); color: #7AB8FF; border-color: rgba(10, 132, 255, 0.15); }
+.badge-neutral { background: rgba(148, 163, 184, 0.1); color: #64748B; border-color: rgba(148, 163, 184, 0.12); }
+.dark .badge-neutral { background: rgba(148, 163, 184, 0.08); color: #9CA3AF; border-color: rgba(148, 163, 184, 0.12); }
+
+/* Tags */
+.tag {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 9999px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.1px;
+  border: 1px solid;
+}
+.tag-green  { background: rgba(52, 199, 89, 0.06); color: var(--color-primary, #34C759); border-color: rgba(52, 199, 89, 0.12); }
+.tag-blue   { background: rgba(0, 122, 255, 0.06); color: #007AFF; border-color: rgba(0, 122, 255, 0.12); }
+.tag-purple { background: rgba(139, 92, 246, 0.06); color: #7C3AED; border-color: rgba(139, 92, 246, 0.12); }
+.tag-amber  { background: rgba(255, 159, 10, 0.06); color: #C27800; border-color: rgba(255, 159, 10, 0.12); }
+.tag-red    { background: rgba(255, 59, 48, 0.06); color: #C1000F; border-color: rgba(255, 59, 48, 0.12); }
+.tag-cyan   { background: rgba(0, 199, 190, 0.06); color: #0891B2; border-color: rgba(0, 199, 190, 0.12); }
+.tag-gray   { background: rgba(148, 163, 184, 0.08); color: #64748B; border-color: rgba(148, 163, 184, 0.12); }
+
+/* Tags dark mode */
+.dark .tag-green  { background: rgba(48, 209, 88, 0.12); color: #6EE7B7; border-color: rgba(48, 209, 88, 0.2); }
+.dark .tag-blue   { background: rgba(10, 132, 255, 0.12); color: #7AB8FF; border-color: rgba(10, 132, 255, 0.2); }
+.dark .tag-purple { background: rgba(175, 82, 222, 0.12); color: #D4A5FF; border-color: rgba(175, 82, 222, 0.2); }
+.dark .tag-amber  { background: rgba(255, 159, 10, 0.12); color: #FFB84D; border-color: rgba(255, 159, 10, 0.2); }
+.dark .tag-red    { background: rgba(255, 69, 58, 0.12); color: #FFA8A2; border-color: rgba(255, 69, 58, 0.2); }
+.dark .tag-cyan   { background: rgba(0, 199, 190, 0.12); color: #5EEAD4; border-color: rgba(0, 199, 190, 0.2); }
+.dark .tag-gray   { background: rgba(148, 163, 184, 0.1); color: #9CA3AF; border-color: rgba(148, 163, 184, 0.15); }
+
+/* ═══ 标签页系统 v3.1 — Apple Segmented Control 风格 ═══ */
+.tabs-list {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  overflow-x: auto;
+  background: var(--bg-tertiary, #F5F5F7);
+  border-radius: var(--radius-md, 14px);
+  padding: 3px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  border: none;
+  box-shadow: none;
+}
+.tabs-list::-webkit-scrollbar { display: none; }
+
+.tabs-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  min-height: 44px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--duration-fast) var(--ease-spring);
+  border-radius: var(--radius-sm, 4px);
+  color: var(--text-secondary, #6E6E73);
+  border: none;
+  position: relative;
+  flex-shrink: 0;
+  background: transparent;
+}
+.tabs-trigger:hover:not(.tabs-trigger-active) {
+  color: var(--text-primary, #1D1D1F);
+  background: rgba(0, 0, 0, 0.03);
+}
+.tabs-trigger .icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.tabs-trigger-active {
+  background: var(--card-bg-solid, #FFFFFF);
+  color: var(--color-primary, #34C759);
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+.tabs-trigger-active .icon {
+  color: var(--color-primary, #34C759);
+}
+.dark .tabs-list {
+  background: rgba(44, 44, 46, 0.5);
+}
+.dark .tabs-trigger {
+  color: var(--text-secondary, #A1A1A6);
+}
+.dark .tabs-trigger:hover:not(.tabs-trigger-active) {
+  color: var(--text-primary, #F5F5F7);
+  background: rgba(255, 255, 255, 0.04);
+}
+.dark .tabs-trigger-active {
+  background: var(--bg-surface-raised, #2C2C2E);
+  color: var(--color-primary, #30D158);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+.dark .tabs-trigger-active .icon {
+  color: var(--color-primary, #30D158);
+}
+
+/* 标签页响应式优化 */
+@media (max-width: 767px) {
+  .tabs-list {
+    gap: 4px;
+    padding: 3px;
+  }
+  .tabs-trigger {
+    padding: 6px 12px;
+    font-size: 13px;
+    gap: 6px;
+  }
+  .tabs-trigger .icon {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+@media (max-width: 1023px) {
+  .tabs-list {
+    justify-content: flex-start;
+  }
+}
+
+@media (min-width: 1024px) {
+  .tabs-list {
+    justify-content: center;
+  }
+}

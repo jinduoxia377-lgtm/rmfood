@@ -525,23 +525,23 @@ export function OptimizationAdvisor({
   return (
     <>
       <Card className="overflow-hidden">
-        <div className="px-4 py-3 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border-b border-gray-100 dark:border-gray-800">
+        <div className="px-4 py-3 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border-b border-neutral-100 dark:border-neutral-800">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Lightbulb className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-              <span className="font-medium text-amber-700 dark:text-amber-300">智能优化建议</span>
-              <span className="text-xs px-1.5 py-0.5 bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 rounded-full">
+              <Lightbulb className="w-4 h-4 text-warning-600 dark:text-warning-400" />
+              <span className="font-medium text-warning-700 dark:text-warning-300">智能优化建议</span>
+              <span className="text-xs px-1.5 py-0.5 bg-warning-100 dark:bg-warning-900/40 text-warning-700 dark:text-warning-400 rounded-full">
                 {suggestions.length}条
               </span>
             </div>
             <div className="flex items-center gap-3">
               {highPriorityCount > 0 && (
-                <span className="text-xs text-red-500">{highPriorityCount}条高优先级</span>
+                <span className="text-xs text-error-500">{highPriorityCount}条高优先级</span>
               )}
               {activeHistoryCount > 0 && (
                 <button
                   onClick={() => setShowHistory(!showHistory)}
-                  className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                  className="flex items-center gap-1 text-xs text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"
                 >
                   <Clock className="w-3 h-3" />
                   历史({activeHistoryCount})
@@ -581,12 +581,12 @@ export function OptimizationAdvisor({
         <div className="max-h-96 overflow-y-auto">
           {suggestions.length === 0 ? (
             <div className="p-6 text-center">
-              <Sparkles className="w-8 h-8 text-amber-400 mx-auto mb-2" />
-              <p className="text-sm text-gray-600 dark:text-gray-400">当前配方已接近最优</p>
-              <p className="text-xs text-gray-500 mt-1">暂无明显的优化空间</p>
+              <Sparkles className="w-8 h-8 text-warning-400 mx-auto mb-2" />
+              <p className="text-sm text-neutral-600 dark:text-neutral-400">当前配方已接近最优</p>
+              <p className="text-xs text-neutral-500 mt-1">暂无明显的优化空间</p>
             </div>
           ) : (
-            <div className="divide-y divide-gray-50 dark:divide-gray-800">
+            <div className="divide-y divide-slate-50 dark:divide-slate-800">
               {suggestions.map((suggestion) => (
                 <SuggestionItem
                   key={suggestion.id}
@@ -603,11 +603,11 @@ export function OptimizationAdvisor({
         </div>
 
         {suggestions.length > 0 && appliedSuggestions.size < suggestions.length && (
-          <div className="p-3 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
+          <div className="p-3 border-t border-neutral-100 dark:border-neutral-800 bg-slate-50 dark:bg-neutral-800/50">
             <button
               onClick={handleApplyAll}
               disabled={appliedSuggestions.size === suggestions.length}
-              className="w-full py-2 flex items-center justify-center gap-2 text-sm bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-2 flex items-center justify-center gap-2 text-sm bg-warning-500 text-white rounded-lg hover:bg-warning-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <CheckCircle className="w-4 h-4" />
               应用全部建议 ({suggestions.length - appliedSuggestions.size}条)
@@ -640,28 +640,28 @@ function SuggestionItem({ suggestion, isExpanded, isApplied, onToggle, onPreview
 
   const TypeColor = {
     ingredient: 'text-rose-500',
-    dosage: 'text-blue-500',
+    dosage: 'text-secondary-500',
     taste: 'text-pink-500',
-    stability: 'text-amber-500',
-    cost: 'text-green-500',
-    safety: 'text-red-500',
+    stability: 'text-warning-500',
+    cost: 'text-success-500',
+    safety: 'text-error-500',
   }[suggestion.type]
 
   const PriorityBadge = {
-    high: { label: '高', class: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400' },
-    medium: { label: '中', class: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400' },
-    low: { label: '低', class: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400' },
+    high: { label: '高', class: 'bg-error-100 text-error-700 dark:bg-error-900/40 dark:text-error-400' },
+    medium: { label: '中', class: 'bg-warning-100 text-warning-700 dark:bg-warning-900/40 dark:text-warning-400' },
+    low: { label: '低', class: 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400' },
   }[suggestion.priority]
 
   return (
-    <div className={`transition-colors ${isApplied ? 'bg-green-50 dark:bg-green-900/10' : ''}`}>
+    <div className={`transition-colors ${isApplied ? 'bg-success-50 dark:bg-success-900/10' : ''}`}>
       <div
-        className="px-4 py-3 flex items-start gap-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50"
+        className="px-4 py-3 flex items-start gap-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-neutral-800/50"
         onClick={onToggle}
       >
-        <div className={`w-8 h-8 rounded-lg ${isApplied ? 'bg-green-100' : 'bg-gray-100 dark:bg-gray-800'} flex items-center justify-center shrink-0`}>
+        <div className={`w-8 h-8 rounded-lg ${isApplied ? 'bg-success-100' : 'bg-neutral-100 dark:bg-neutral-800'} flex items-center justify-center shrink-0`}>
           {isApplied ? (
-            <CheckCircle className="w-4 h-4 text-green-500" />
+            <CheckCircle className="w-4 h-4 text-success-500" />
           ) : (
             <TypeIcon className={`w-4 h-4 ${TypeColor}`} />
           )}
@@ -672,15 +672,15 @@ function SuggestionItem({ suggestion, isExpanded, isApplied, onToggle, onPreview
             <span className={`text-xs px-1.5 py-0.5 rounded ${PriorityBadge.class}`}>
               {PriorityBadge.label}
             </span>
-            <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">{suggestion.title}</h4>
+            <h4 className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{suggestion.title}</h4>
           </div>
 
-          <p className="text-xs text-gray-500 line-clamp-2">{suggestion.description}</p>
+          <p className="text-xs text-neutral-500 line-clamp-2">{suggestion.description}</p>
 
           {suggestion.expectedImprovement && (
             <div className="flex items-center gap-1 mt-1.5">
-              <TrendingUp className="w-3 h-3 text-green-500" />
-              <span className="text-xs text-green-600 dark:text-green-400">
+              <TrendingUp className="w-3 h-3 text-success-500" />
+              <span className="text-xs text-success-600 dark:text-success-400">
                 预期提升: +{(suggestion.expectedImprovement * 100).toFixed(0)}%
               </span>
             </div>
@@ -689,9 +689,9 @@ function SuggestionItem({ suggestion, isExpanded, isApplied, onToggle, onPreview
 
         <div className="flex flex-col items-center gap-2 shrink-0">
           {isExpanded ? (
-            <ChevronUp className="w-4 h-4 text-gray-400" />
+            <ChevronUp className="w-4 h-4 text-neutral-400" />
           ) : (
-            <ChevronDown className="w-4 h-4 text-gray-400" />
+            <ChevronDown className="w-4 h-4 text-neutral-400" />
           )}
 
           {!isApplied && (
@@ -701,7 +701,7 @@ function SuggestionItem({ suggestion, isExpanded, isApplied, onToggle, onPreview
                   e.stopPropagation()
                   onPreview()
                 }}
-                className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors flex items-center gap-1"
+                className="px-2 py-1 text-xs bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300 rounded hover:bg-neutral-200 dark:hover:bg-neutral-600 transition-colors flex items-center gap-1"
               >
                 <Eye className="w-3 h-3" />
                 预览
@@ -711,7 +711,7 @@ function SuggestionItem({ suggestion, isExpanded, isApplied, onToggle, onPreview
                   e.stopPropagation()
                   onApply()
                 }}
-                className="px-2 py-1 text-xs bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 rounded hover:bg-amber-200 dark:hover:bg-amber-900/60 transition-colors"
+                className="px-2 py-1 text-xs bg-warning-100 dark:bg-warning-900/40 text-warning-700 dark:text-warning-400 rounded hover:bg-warning-200 dark:hover:bg-warning-900/60 transition-colors"
               >
                 应用
               </button>
@@ -722,29 +722,29 @@ function SuggestionItem({ suggestion, isExpanded, isApplied, onToggle, onPreview
 
       {isExpanded && (
         <div className="px-4 pb-3 pl-14 animate-fade-in">
-          <div className="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg space-y-2">
+          <div className="p-3 bg-slate-50 dark:bg-neutral-800/50 rounded-lg space-y-2">
             {suggestion.currentValue && suggestion.suggestedValue && (
               <div>
-                <span className="text-xs text-gray-500">调整建议：</span>
+                <span className="text-xs text-neutral-500">调整建议：</span>
                 <div className="flex items-center gap-2 mt-1">
-                  <span className="text-xs text-red-500 line-through">{suggestion.currentValue}</span>
-                  <span className="text-gray-400">→</span>
-                  <span className="text-xs text-green-500 font-medium">{suggestion.suggestedValue}</span>
+                  <span className="text-xs text-error-500 line-through">{suggestion.currentValue}</span>
+                  <span className="text-neutral-400">→</span>
+                  <span className="text-xs text-success-500 font-medium">{suggestion.suggestedValue}</span>
                 </div>
               </div>
             )}
 
             {suggestion.reasoning && (
               <div>
-                <span className="text-xs text-gray-500">优化原理：</span>
-                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">{suggestion.reasoning}</p>
+                <span className="text-xs text-neutral-500">优化原理：</span>
+                <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-1">{suggestion.reasoning}</p>
               </div>
             )}
 
-            <div className="flex items-center justify-between pt-2 border-t border-gray-200 dark:border-gray-700">
-              <span className="text-xs text-gray-500">置信度</span>
+            <div className="flex items-center justify-between pt-2 border-t border-neutral-200 dark:border-neutral-700">
+              <span className="text-xs text-neutral-500">置信度</span>
               <div className="flex items-center gap-2">
-                <div className="w-16 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                <div className="w-16 h-1.5 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-cyan-500 rounded-full"
                     style={{ width: `${suggestion.confidence * 100}%` }}
@@ -772,32 +772,32 @@ interface SuggestionPreviewPanelProps {
 
 function SuggestionPreviewPanel({ suggestion, preview, formula, onConfirm, onCancel }: SuggestionPreviewPanelProps) {
   return (
-    <div className="p-4 border-b border-gray-100 dark:border-gray-800 bg-blue-50 dark:bg-blue-900/20 animate-fade-in">
+    <div className="p-4 border-b border-neutral-100 dark:border-neutral-800 bg-secondary-50 dark:bg-secondary-900/20 animate-fade-in">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <Eye className="w-4 h-4 text-blue-500" />
-          <span className="text-sm font-medium text-blue-700 dark:text-blue-300">效果预览</span>
+          <Eye className="w-4 h-4 text-secondary-500" />
+          <span className="text-sm font-medium text-secondary-700 dark:text-secondary-300">效果预览</span>
         </div>
         <button
           onClick={onCancel}
-          className="p-1 hover:bg-blue-100 dark:hover:bg-blue-900/40 rounded"
+          className="p-1 hover:bg-secondary-100 dark:hover:bg-secondary-900/40 rounded"
         >
-          <X className="w-4 h-4 text-gray-400" />
+          <X className="w-4 h-4 text-neutral-400" />
         </button>
       </div>
 
       <div className="space-y-3">
-        <div className="p-3 bg-white dark:bg-gray-800 rounded-lg">
-          <p className="text-xs text-gray-500 mb-2">将要应用的更改：</p>
+        <div className="p-3 bg-white dark:bg-neutral-800 rounded-lg">
+          <p className="text-xs text-neutral-500 mb-2">将要应用的更改：</p>
           <div className="space-y-2">
             {preview.changes.map((change, idx) => (
               <div key={idx} className="flex items-center gap-2 text-xs">
-                <span className="text-gray-600 dark:text-gray-400 w-24 truncate">{change.field}</span>
-                <span className="text-red-500 line-through">
+                <span className="text-neutral-600 dark:text-neutral-400 w-24 truncate">{change.field}</span>
+                <span className="text-error-500 line-through">
                   {typeof change.before === 'object' ? JSON.stringify(change.before).slice(0, 30) + '...' : typeof change.before === 'string' ? change.before : String(change.before)}
                 </span>
-                <ArrowRight className="w-3 h-3 text-gray-400" />
-                <span className="text-green-500">
+                <ArrowRight className="w-3 h-3 text-neutral-400" />
+                <span className="text-success-500">
                   {typeof change.after === 'object' ? JSON.stringify(change.after).slice(0, 30) + '...' : typeof change.after === 'string' ? change.after : String(change.after)}
                 </span>
               </div>
@@ -805,15 +805,15 @@ function SuggestionPreviewPanel({ suggestion, preview, formula, onConfirm, onCan
           </div>
         </div>
 
-        <div className="p-3 bg-white dark:bg-gray-800 rounded-lg">
-          <p className="text-xs text-gray-500 mb-2">预估评分变化：</p>
+        <div className="p-3 bg-white dark:bg-neutral-800 rounded-lg">
+          <p className="text-xs text-neutral-500 mb-2">预估评分变化：</p>
           <div className="grid grid-cols-2 gap-2">
             {Object.entries(preview.estimatedScoreChange).map(([key, value]) => (
               <div key={key} className="flex items-center justify-between">
-                <span className="text-xs text-gray-600 dark:text-gray-400">
+                <span className="text-xs text-neutral-600 dark:text-neutral-400">
                   {key === 'synergy' ? '协同' : key === 'taste' ? '口感' : key === 'stability' ? '稳定' : '综合'}
                 </span>
-                <span className={`text-xs font-medium ${value && value > 0 ? 'text-green-500' : 'text-red-500'}`}>
+                <span className={`text-xs font-medium ${value && value > 0 ? 'text-success-500' : 'text-error-500'}`}>
                   {value && value > 0 ? '+' : ''}{(value * 100).toFixed(0)}%
                 </span>
               </div>
@@ -824,13 +824,13 @@ function SuggestionPreviewPanel({ suggestion, preview, formula, onConfirm, onCan
         <div className="flex items-center justify-end gap-2">
           <button
             onClick={onCancel}
-            className="px-3 py-1.5 text-xs text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+            className="px-3 py-1.5 text-xs text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded"
           >
             取消
           </button>
           <button
             onClick={onConfirm}
-            className="px-3 py-1.5 text-xs bg-amber-500 text-white rounded hover:bg-amber-600"
+            className="px-3 py-1.5 text-xs bg-warning-500 text-white rounded hover:bg-warning-600"
           >
             确认应用
           </button>
@@ -851,49 +851,49 @@ function SuggestionConfirmDialog({ suggestion, preview, onConfirm, onCancel }: S
   const isSafetyRelated = suggestion.type === 'safety' || suggestion.priority === 'high'
 
   return (
-    <div className="p-4 border-b border-gray-100 dark:border-gray-800 bg-amber-50 dark:bg-amber-900/20 animate-fade-in">
+    <div className="p-4 border-b border-neutral-100 dark:border-neutral-800 bg-warning-50 dark:bg-warning-900/20 animate-fade-in">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <AlertCircle className="w-4 h-4 text-amber-500" />
-          <span className="text-sm font-medium text-amber-700 dark:text-amber-300">确认应用建议</span>
+          <AlertCircle className="w-4 h-4 text-warning-500" />
+          <span className="text-sm font-medium text-warning-700 dark:text-warning-300">确认应用建议</span>
         </div>
         <button
           onClick={onCancel}
-          className="p-1 hover:bg-amber-100 dark:hover:bg-amber-900/40 rounded"
+          className="p-1 hover:bg-warning-100 dark:hover:bg-warning-900/40 rounded"
         >
-          <X className="w-4 h-4 text-gray-400" />
+          <X className="w-4 h-4 text-neutral-400" />
         </button>
       </div>
 
       {isSafetyRelated && (
-        <div className="mb-3 p-2 bg-red-100 dark:bg-red-900/40 rounded-lg flex items-start gap-2">
-          <AlertTriangle className="w-4 h-4 text-red-500 mt-0.5 shrink-0" />
-          <p className="text-xs text-red-700 dark:text-red-300">
+        <div className="mb-3 p-2 bg-error-100 dark:bg-error-900/40 rounded-lg flex items-start gap-2">
+          <AlertTriangle className="w-4 h-4 text-error-500 mt-0.5 shrink-0" />
+          <p className="text-xs text-error-700 dark:text-error-300">
             此建议涉及安全性或高优先级更改，请确认后再应用。
           </p>
         </div>
       )}
 
-      <div className="p-3 bg-white dark:bg-gray-800 rounded-lg mb-3">
-        <p className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">{suggestion.title}</p>
-        <p className="text-xs text-gray-500">{suggestion.description}</p>
+      <div className="p-3 bg-white dark:bg-neutral-800 rounded-lg mb-3">
+        <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100 mb-1">{suggestion.title}</p>
+        <p className="text-xs text-neutral-500">{suggestion.description}</p>
       </div>
 
-      <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400 mb-3">
-        <Check className="w-3 h-3 text-green-500" />
+      <div className="flex items-center gap-2 text-xs text-neutral-600 dark:text-neutral-400 mb-3">
+        <Check className="w-3 h-3 text-success-500" />
         <span>应用后可从历史记录回退</span>
       </div>
 
       <div className="flex items-center justify-end gap-2">
         <button
           onClick={onCancel}
-          className="px-3 py-1.5 text-xs text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+          className="px-3 py-1.5 text-xs text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded"
         >
           取消
         </button>
         <button
           onClick={onConfirm}
-          className="px-3 py-1.5 text-xs bg-green-500 text-white rounded hover:bg-green-600 flex items-center gap-1"
+          className="px-3 py-1.5 text-xs bg-success-500 text-white rounded hover:bg-success-600 flex items-center gap-1"
         >
           <Check className="w-3 h-3" />
           确认应用
@@ -911,17 +911,17 @@ interface SuggestionHistoryPanelProps {
 
 function SuggestionHistoryPanel({ history, onRevert, onClose }: SuggestionHistoryPanelProps) {
   return (
-    <div className="p-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
+    <div className="p-4 border-b border-neutral-100 dark:border-neutral-800 bg-slate-50 dark:bg-neutral-800/50">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <Clock className="w-4 h-4 text-gray-500" />
-          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">建议历史</span>
+          <Clock className="w-4 h-4 text-neutral-500" />
+          <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">建议历史</span>
         </div>
         <button
           onClick={onClose}
-          className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded"
+          className="p-1 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded"
         >
-          <X className="w-4 h-4 text-gray-400" />
+          <X className="w-4 h-4 text-neutral-400" />
         </button>
       </div>
 
@@ -931,30 +931,30 @@ function SuggestionHistoryPanel({ history, onRevert, onClose }: SuggestionHistor
             key={entry.id}
             className={`p-3 rounded-lg ${
               entry.reverted
-                ? 'bg-gray-100 dark:bg-gray-700/50 opacity-60'
-                : 'bg-white dark:bg-gray-800'
+                ? 'bg-neutral-100 dark:bg-neutral-700/50 opacity-60'
+                : 'bg-white dark:bg-neutral-800'
             }`}
           >
             <div className="flex items-start justify-between gap-2">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   {entry.reverted && (
-                    <span className="text-xs px-1.5 py-0.5 bg-gray-200 dark:bg-gray-600 text-gray-500 dark:text-gray-400 rounded">
+                    <span className="text-xs px-1.5 py-0.5 bg-neutral-200 dark:bg-neutral-600 text-neutral-500 dark:text-neutral-400 rounded">
                       已回退
                     </span>
                   )}
                   <span className={`text-xs px-1.5 py-0.5 rounded ${
                     entry.suggestion.priority === 'high'
-                      ? 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400'
+                      ? 'bg-error-100 text-error-700 dark:bg-error-900/40 dark:text-error-400'
                       : entry.suggestion.priority === 'medium'
-                      ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400'
-                      : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
+                      ? 'bg-warning-100 text-warning-700 dark:bg-warning-900/40 dark:text-warning-400'
+                      : 'bg-neutral-100 text-neutral-600 dark:bg-neutral-700 dark:text-neutral-400'
                   }`}>
                     {entry.suggestion.priority === 'high' ? '高' : entry.suggestion.priority === 'medium' ? '中' : '低'}
                   </span>
-                  <span className="text-xs text-gray-500 truncate">{entry.suggestion.title}</span>
+                  <span className="text-xs text-neutral-500 truncate">{entry.suggestion.title}</span>
                 </div>
-                <p className="text-xs text-gray-400 mt-1">
+                <p className="text-xs text-neutral-400 mt-1">
                   {new Date(entry.timestamp).toLocaleString('zh-CN')}
                 </p>
               </div>
@@ -962,7 +962,7 @@ function SuggestionHistoryPanel({ history, onRevert, onClose }: SuggestionHistor
               {!entry.reverted && (
                 <button
                   onClick={() => onRevert(entry.id)}
-                  className="p-1.5 text-xs text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded flex items-center gap-1"
+                  className="p-1.5 text-xs text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded flex items-center gap-1"
                 >
                   <Undo2 className="w-3 h-3" />
                   回退
@@ -991,15 +991,15 @@ export function ScoreInterpretation({ scores }: ScoreInterpretationProps) {
   ] as const
 
   const getScoreLevel = (score: number) => {
-    if (score >= 0.8) return { label: '优秀', class: 'text-green-600 dark:text-green-400' }
-    if (score >= 0.6) return { label: '良好', class: 'text-blue-600 dark:text-blue-400' }
-    if (score >= 0.4) return { label: '一般', class: 'text-amber-600 dark:text-amber-400' }
-    return { label: '需改进', class: 'text-red-600 dark:text-red-400' }
+    if (score >= 0.8) return { label: '优秀', class: 'text-success-600 dark:text-success-400' }
+    if (score >= 0.6) return { label: '良好', class: 'text-secondary-600 dark:text-secondary-400' }
+    if (score >= 0.4) return { label: '一般', class: 'text-warning-600 dark:text-warning-400' }
+    return { label: '需改进', class: 'text-error-600 dark:text-error-400' }
   }
 
   return (
     <Card className="p-4">
-      <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">评分解读</h3>
+      <h3 className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-4">评分解读</h3>
 
       <div className="space-y-3">
         {dimensions.map(({ key, label, icon: Icon, color }) => {
@@ -1014,15 +1014,15 @@ export function ScoreInterpretation({ scores }: ScoreInterpretationProps) {
               </div>
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs text-gray-600 dark:text-gray-400">{label}</span>
+                  <span className="text-xs text-neutral-600 dark:text-neutral-400">{label}</span>
                   <div className="flex items-center gap-2">
                     <span className={`text-xs font-medium ${level.class}`}>{level.label}</span>
-                    <span className="text-xs font-bold text-gray-700 dark:text-gray-300">
+                    <span className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
                       {score.toFixed(2)}
                     </span>
                   </div>
                 </div>
-                <div className="w-full h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                <div className="w-full h-1.5 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
                   <div
                     className={`h-full bg-${color}-500 rounded-full transition-all duration-500`}
                     style={{ width: `${score * 100}%` }}

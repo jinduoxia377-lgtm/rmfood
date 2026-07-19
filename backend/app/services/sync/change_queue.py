@@ -206,10 +206,10 @@ class ChangeQueue:
         
         try:
             batch: List[QueueItem] = []
-            deadline = asyncio.get_event_loop().time() + timeout
+            deadline = asyncio.get_event_loop_policy().get_event_loop().time() + timeout
             
             while len(batch) < batch_size:
-                remaining_time = deadline - asyncio.get_event_loop().time()
+                remaining_time = deadline - asyncio.get_event_loop_policy().get_event_loop().time()
                 
                 if remaining_time <= 0:
                     break

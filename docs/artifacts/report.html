@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>RMFOOD 配方生成模块审查与升级方案</title>
+<style>
+@page {
+    size: A4;
+    margin: 2cm 2.5cm;
+    @bottom-center { content: counter(page); font-size: 9px; color: #999; }
+}
+body {
+    font-family: "Microsoft YaHei", "SimHei", "Noto Sans CJK SC", sans-serif;
+    font-size: 10.5px;
+    line-height: 1.65;
+    color: #222;
+}
+h1 { font-size: 19px; color: #1a1a2e; border-bottom: 3px solid #16213e; padding-bottom: 7px; margin-top: 22px; }
+h2 { font-size: 15px; color: #16213e; border-bottom: 1.5px solid #ccc; padding-bottom: 5px; margin-top: 18px; }
+h3 { font-size: 12.5px; color: #0f3460; margin-top: 14px; }
+h4 { font-size: 11.5px; color: #333; margin-top: 10px; }
+table { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: 9.5px; }
+th { background: #16213e; color: #fff; padding: 5px 7px; text-align: left; font-size: 9px; }
+td { border: 1px solid #ddd; padding: 4px 7px; }
+tr:nth-child(even) { background: #f7f8fc; }
+code { background: #f0f0f0; padding: 1px 4px; border-radius: 3px; font-size: 9px; font-family: Consolas, monospace; }
+pre { background: #1e1e1e; color: #d4d4d4; padding: 10px; border-radius: 5px; overflow-x: auto; font-size: 8.5px; line-height: 1.45; margin: 8px 0; }
+pre code { background: none; color: inherit; padding: 0; }
+blockquote { border-left: 4px solid #16213e; margin: 10px 0; padding: 6px 14px; background: #f0f4f8; }
+ul, ol { padding-left: 18px; margin: 6px 0; }
+li { margin: 2px 0; }
+hr { border: none; border-top: 1px solid #ddd; margin: 16px 0; }
+strong { color: #1a1a2e; }
+</style>
+</head>
+<body>
+<h1 id="rmfood">🏆 RMFOOD 配方生成模块 — 院士级审查报告与专业升级方案</h1>
+<blockquote>
+<p><strong>审查范围</strong>: 项目全部配方生成相关模块（23个核心文件，~5000行代码）
+<strong>审查深度</strong>: 逐行代码审查 + 架构分析 + 算法评估
+<strong>日期</strong>: 2026-06-23</p>
+</blockquote>
+<hr />
+<h2 id="_1">第一部分：配方生成模块全貌</h2>
+<h3 id="11">1.1 模块架构总览</h3>
+<pre><code>配方生成功能模块
+├── API 层 (3个路由文件)
+│   ├── /api/ai.py              — AI配方生成/安全/协同/对话 API
+│   ├── /api/formulas.py        — 配方CRUD API
+│   └── /api/formula_integration.py — 配方集成API
+│
+├── 服务编排层 (2个文件)
+│   ├── services/ai/formula_service.py    — AIService 管线编排
+│   └── services/formula/integration_service.py — 配方集成服务
+│
+├── 算法引擎层 (6个文件) ← 核心
+│   ├── services/ai/bayesian_formula_optimizer.py — 贝叶斯优化
+│   ├── services/ai/genetic_formula_optimizer.py  — 标准GA
+│   ├── services/ai/multi_objective_optimizer.py  — NSGA-II
+│   ├── services/formula/ratio_optimizer.py       — NSGA-III配比优化
+│   ├── services/ai_models/neural_formula_engine.py — 神经网络引擎
+│   └── services/ai_models/mcts_solver.py         — MCTS求解器
+│
+├── 评估管线层 (8个文件)
+│   ├── services/ai_models/synergy_net.py     — 协同分析
+│   ├── services/ai_models/safety_checker.py  — 安全检查
+│   ├── services/ai_models/taste_predictor.py — 口感预测
+│   ├── services/ai_models/stability_model.py — 稳定性预测
+│   ├── services/ai_models/peptide_scorer.py  — 肽评分
+│   ├── services/ai_models/scorer.py          — 综合评分
+│   ├── services/ai_models/diversity_enhancer.py — 多样性增强
+│   └── services/ai_models/constraint_solver.py  — 约束求解
+│
+├── 支撑服务层 (4个文件)
+│   ├── core/nutrition_engine.py    — 营养计算引擎
+│   ├── services/cost_calculator.py — 成本计算
+│   ├── services/constraint_penalty.py — 约束惩罚
+│   └── services/historical_learning.py — 历史学习
+│
+└── 领域层 (3个文件)
+    ├── domain/ports.py    — 端口定义（HerbKnowledgePort等）
+    ├── domain/sensory.py  — 感官评价实体
+    └── domain/entities.py — 领域实体
+</code></pre>
+<h3 id="12">1.2 配方生成管线流程</h3>
+<pre><code>用户请求 (target_effects + constraints)
+    │
+    ▼
+┌─────────────────────────────────────────────────────────┐
+│  API Layer (/ai/generate)                                │
+│  ┌─────────────┐  ┌──────────────┐  ┌───────────────┐  │
+│  │ LLM生成路径  │  │ 规则引擎路径  │  │ PepINVERT路径 │  │
+│  └──────┬──────┘  └──────┬───────┘  └───────┬───────┘  │
+└─────────┼────────────────┼──────────────────┼──────────┘
+          │                │                  │
+          ▼                ▼                  ▼
+┌─────────────────────────────────────────────────────────┐
+│  AIService 管线编排 (formula_service.py)                 │
+│                                                          │
+│  Step 1: FormulaGPT 生成候选方案                         │
+│  Step 2: SynergyNet 协同分析                             │
+│  Step 3: SafetyChecker 安全检查                          │
+│  Step 4: TastePredictor 口感预测                         │
+│  Step 5: StabilityModel 稳定性预测                       │
+│  Step 6: 综合评分 → 排序输出                             │
+└─────────────────────────────────────────────────────────┘
+          │
+          ▼ (可选：算法引擎层)
+┌─────────────────────────────────────────────────────────┐
+│  优化引擎 (GA / Bayesian / NSGA-II / NSGA-III)           │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐  │
+│  │ 标准GA   │ │ 贝叶斯   │ │ NSGA-II  │ │ NSGA-III │  │
+│  │ 实数编码 │ │ GPR+EI  │ │ 7维Pareto│ │ 4维配比  │  │
+│  └──────────┘ └──────────┘ └──────────┘ └──────────┘  │
+└─────────────────────────────────────────────────────────┘
+          │
+          ▼ (支撑服务层)
+┌─────────────────────────────────────────────────────────┐
+│  NutritionEngine (营养计算 + 成本核算 + 合规检查)         │
+└─────────────────────────────────────────────────────────┘
+</code></pre>
+<hr />
+<h2 id="_2">第二部分：核心问题诊断</h2>
+<h3 id="1">问题 1：算法引擎层 — 各自为战，缺乏统一调度</h3>
+<p><strong>现状</strong>：4个优化引擎（GA / Bayesian / NSGA-II / NSGA-III）完全独立，没有统一的调度层。</p>
+<table>
+<thead>
+<tr>
+<th>引擎</th>
+<th>文件</th>
+<th>编码方式</th>
+<th>适应度评估</th>
+<th>约束处理</th>
+<th>与其他引擎的关系</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Bayesian</strong></td>
+<td><code>bayesian_formula_optimizer.py</code></td>
+<td>实数向量 [0,1]^N</td>
+<td>加权求和</td>
+<td>❌ 无</td>
+<td>独立</td>
+</tr>
+<tr>
+<td><strong>GA</strong></td>
+<td><code>genetic_formula_optimizer.py</code></td>
+<td>实数编码 {herb_id: dosage}</td>
+<td>加权求和</td>
+<td>⚠️ 软惩罚</td>
+<td>独立</td>
+</tr>
+<tr>
+<td><strong>NSGA-II</strong></td>
+<td><code>multi_objective_optimizer.py</code></td>
+<td>实数编码 {herb_id: dosage}</td>
+<td>7维Pareto</td>
+<td>⚠️ 软惩罚</td>
+<td>独立</td>
+</tr>
+<tr>
+<td><strong>NSGA-III</strong></td>
+<td><code>formula/ratio_optimizer.py</code></td>
+<td>实数编码 {ingredient: ratio%}</td>
+<td>4维Pareto</td>
+<td>⚠️ 惩罚函数</td>
+<td>独立</td>
+</tr>
+</tbody>
+</table>
+<p><strong>问题</strong>：
+- 用户无法根据场景选择最优引擎
+- 引擎之间无法协作（如GA选原料 + NSGA-III定配比）
+- 重复代码多（每个引擎都有自己的药材选择、适应度评估逻辑）
+- <strong>没有引擎使用 NutritionEngine 进行营养硬约束校验</strong></p>
+<h3 id="2">问题 2：管线层 — 骨架化严重，大量模拟数据</h3>
+<p><strong>现状</strong>：AIService 的评估管线中，多个组件是骨架实现：</p>
+<table>
+<thead>
+<tr>
+<th>组件</th>
+<th>文件</th>
+<th>状态</th>
+<th>问题</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>FormulaGPT</strong></td>
+<td><code>ai_models/formula_gpt.py</code></td>
+<td>⚠️ 骨架</td>
+<td>注释写"接入vLLM端点后即可启用"，当前是规则回退</td>
+</tr>
+<tr>
+<td><strong>SynergyNet</strong></td>
+<td><code>ai_models/synergy_net.py</code></td>
+<td>⚠️ 部分实现</td>
+<td>使用预计算协同矩阵，无真实ML模型</td>
+</tr>
+<tr>
+<td><strong>SafetyChecker</strong></td>
+<td><code>ai_models/safety_checker.py</code></td>
+<td>✅ 较完整</td>
+<td>十八反/十九畏规则完整，但缺少法规数据库对接</td>
+</tr>
+<tr>
+<td><strong>TastePredictor</strong></td>
+<td><code>ai_models/taste_predictor.py</code></td>
+<td>⚠️ 骨架</td>
+<td>基于简单规则，无真实口感预测模型</td>
+</tr>
+<tr>
+<td><strong>StabilityModel</strong></td>
+<td><code>ai_models/stability_model.py</code></td>
+<td>⚠️ 骨架</td>
+<td>基于简单规则，无真实稳定性预测</td>
+</tr>
+<tr>
+<td><strong>PeptideScorer</strong></td>
+<td><code>ai_models/peptide_scorer.py</code></td>
+<td>⚠️ 骨架</td>
+<td>随机评分模拟</td>
+</tr>
+</tbody>
+</table>
+<p><strong>影响</strong>：配方生成的质量高度依赖规则引擎，AI模型的"智能"成分很低。</p>
+<h3 id="3">问题 3：营养引擎 — 与算法引擎完全脱节</h3>
+<p><strong>现状</strong>：<code>NutritionEngine</code> 是一个独立模块，提供营养计算、成本核算、合规检查。但：</p>
+<ul>
+<li><strong>没有任何算法引擎调用 NutritionEngine</strong></li>
+<li>算法引擎的适应度评估使用简化的功效评分，而非真实营养计算</li>
+<li>营养约束（蛋白质≥12%等）无法作为硬约束传入优化过程</li>
+<li>成本计算在适应度函数中是简化的线性估算，而非精确计算</li>
+</ul>
+<p><strong>这是最大的架构缺陷</strong>：营养引擎和算法引擎是"两条平行线"。</p>
+<h3 id="4">问题 4：贝叶斯优化器 — 实现有数学缺陷</h3>
+<p><strong>现状</strong>：<code>BayesianFormulaOptimizer</code> 的自定义GP实现存在以下问题：</p>
+<ol>
+<li><strong>核矩阵求逆使用高斯消元</strong>：O(n³) 复杂度，n&gt;100时性能急剧下降</li>
+<li><strong>无超参数优化</strong>：length_scale 和 sigma_f 是固定值，未通过边际似然优化</li>
+<li><strong>无噪声处理</strong>：sigma_n=0.1 固定，无法处理不同噪声水平</li>
+<li><strong>EI采集函数的随机重启策略过于简单</strong>：仅10次重启，可能错过全局最优</li>
+<li><strong>搜索空间是连续的 [0,1]^N</strong>：N=候选药材数，高维空间GP效果差</li>
+</ol>
+<h3 id="5ga">问题 5：GA引擎 — 搜索空间耦合</h3>
+<p><strong>现状</strong>：<code>GeneticFormulaOptimizer</code> 使用实数编码 <code>{herb_id: dosage}</code>：</p>
+<ul>
+<li>同时优化"选什么"和"放多少"</li>
+<li>搜索空间维度 = 候选药材数 × 用量精度</li>
+<li>变异操作可能产生不合理的用量（如黄芪用0.1g）</li>
+<li>无法保证营养约束满足</li>
+</ul>
+<h3 id="6nsga-ii">问题 6：NSGA-II引擎 — 最完整但仍有缺陷</h3>
+<p><strong>现状</strong>：<code>multi_objective_optimizer.py</code> 是项目中最完整的算法实现：</p>
+<ul>
+<li>✅ 真正的NSGA-II（快速非支配排序 + 拥挤度距离）</li>
+<li>✅ SBX交叉 + 多项式变异</li>
+<li>✅ 7维目标函数（功效/安全/口感/成本/协同/稳定性/ADMET）</li>
+<li>✅ 中医配伍知识库（十八反/十九畏/性味归经）</li>
+<li>❌ 仍然是实数编码，搜索空间耦合</li>
+<li>❌ 无LP/QP层进行精确配比优化</li>
+<li>❌ 与NutritionEngine脱节</li>
+</ul>
+<hr />
+<h2 id="_3">第三部分：专业升级方案</h2>
+<h3 id="_4">方案总览：三层架构重构</h3>
+<pre><code>┌─────────────────────────────────────────────────────────────┐
+│                    统一配方优化引擎                           │
+│                  (Unified Formula Optimizer)                 │
+│                                                              │
+│  ┌─────────────────────────────────────────────────────┐    │
+│  │  Layer 1: 原料组合优化 (离散搜索层)                    │    │
+│  │  ┌──────────┐ ┌──────────┐ ┌──────────────────┐    │    │
+│  │  │ 二进制GA  │ │ 贝叶斯   │ │ 组合优化预筛选    │    │    │
+│  │  │ (选/不选)│ │ (序列决策)│ │ (CSP约束传播)    │    │    │
+│  │  └──────────┘ └──────────┘ └──────────────────┘    │    │
+│  └──────────────────────┬──────────────────────────────┘    │
+│                         │ 原料组合 (二进制向量)               │
+│  ┌──────────────────────▼──────────────────────────────┐    │
+│  │  Layer 2: 精确配比优化 (数学规划层)                    │    │
+│  │  ┌──────────┐ ┌──────────┐ ┌──────────────────┐    │    │
+│  │  │ LP求解器  │ │ QP求解器 │ │ NutritionEngine  │    │    │
+│  │  │ (成本最小)│ │(营养均衡)│ │ (硬约束校验)     │    │    │
+│  │  └──────────┘ └──────────┘ └──────────────────┘    │    │
+│  └──────────────────────┬──────────────────────────────┘    │
+│                         │ 精确配比 + 营养矩阵                │
+│  ┌──────────────────────▼──────────────────────────────┐    │
+│  │  Layer 3: 多目标评估 (Pareto评估层)                    │    │
+│  │  ┌──────────┐ ┌──────────┐ ┌──────────────────┐    │    │
+│  │  │ 协同分析  │ │ 口感预测 │ │ 稳定性/安全评估  │    │    │
+│  │  └──────────┘ └──────────┘ └──────────────────┘    │    │
+│  └─────────────────────────────────────────────────────┘    │
+└─────────────────────────────────────────────────────────────┘
+</code></pre>
+<h3 id="31">3.1 核心创新：统一调度器 + 引擎协作</h3>
+<p><strong>设计思路</strong>：不是替换现有引擎，而是建立一个统一调度层，让各引擎协作。</p>
+<pre><code class="language-python">class UnifiedFormulaOptimizer:
+    &quot;&quot;&quot;
+    统一配方优化调度器
+
+    核心思想：
+    1. 根据问题特征自动选择最优引擎组合
+    2. 引擎之间可以协作（如GA选原料 + LP定配比）
+    3. 统一的适应度评估接口（接入NutritionEngine）
+    &quot;&quot;&quot;
+
+    def __init__(self):
+        self.engines = {
+            'bayesian': BayesianFormulaOptimizer(),
+            'ga': GeneticFormulaOptimizer(),
+            'nsga2': NSGAIIOptimizer(),
+            'nsga3': RatioOptimizer(),
+        }
+        self.nutrition_engine = None  # 注入
+        self.lp_solver = None  # 注入
+
+    async def optimize(self, request: OptimizationRequest) -&gt; OptimizationResult:
+        &quot;&quot;&quot;
+        智能调度：根据问题特征选择最优策略
+        &quot;&quot;&quot;
+        # 策略选择
+        strategy = self._select_strategy(request)
+
+        if strategy == 'ga_lp_hybrid':
+            return await self._ga_lp_optimize(request)
+        elif strategy == 'bayesian_lp_hybrid':
+            return await self._bayesian_lp_optimize(request)
+        elif strategy == 'nsga2_pareto':
+            return await self._nsga2_optimize(request)
+        else:
+            return await self._default_optimize(request)
+
+    def _select_strategy(self, request: OptimizationRequest) -&gt; str:
+        &quot;&quot;&quot;
+        策略选择逻辑：
+        - 候选原料 &gt; 20种 → GA+LP（大规模组合搜索）
+        - 营养约束严格 → GA+LP（硬约束保证）
+        - 需要Pareto前沿 → NSGA-II（多目标权衡）
+        - 实验数据少 → Bayesian+LP（样本效率高）
+        &quot;&quot;&quot;
+        if request.require_pareto:
+            return 'nsga2_pareto'
+        elif len(request.candidate_herbs) &gt; 20:
+            return 'ga_lp_hybrid'
+        elif request.strict_nutrition_constraints:
+            return 'ga_lp_hybrid'
+        elif request.experimental_data_available:
+            return 'bayesian_lp_hybrid'
+        else:
+            return 'ga_lp_hybrid'
+</code></pre>
+<h3 id="32-ga-lp">3.2 GA-LP 混合引擎 — 核心实现</h3>
+<p>这是整个方案的核心，将你的GA-LP思路与项目现有架构深度融合。</p>
+<h4 id="321-ga">3.2.1 外层GA：二进制编码原料选择</h4>
+<pre><code class="language-python">class BinaryGAOptimizer:
+    &quot;&quot;&quot;
+    二进制GA — 决定&quot;用不用&quot;每种原料
+
+    染色体: [1, 0, 1, 1, 0, ...] (0/1向量)
+    基因i = 1 → 选用候选原料i
+    基因i = 0 → 不选用候选原料i
+    &quot;&quot;&quot;
+
+    def __init__(self, config: GAConfig):
+        self.config = config
+        self.candidate_herbs: List[str] = []  # 候选原料列表
+        self.lp_solver = None  # LP求解器注入
+        self.nutrition_engine = None  # 营养引擎注入
+
+    async def optimize(self, target_effects, constraints) -&gt; List[FormulaResult]:
+        # Step 1: 预筛选候选原料池（复用现有 _select_herbs 逻辑）
+        self.candidate_herbs = await self._select_candidate_herbs(
+            target_effects, constraints
+        )
+        # 将候选池压缩到 15-25 种（控制搜索空间 2^15 ~ 2^25）
+        self.candidate_herbs = self.candidate_herbs[:25]
+
+        n = len(self.candidate_herbs)
+
+        # Step 2: 初始化种群（二进制编码）
+        population = self._init_binary_population(n)
+
+        # Step 3: 进化迭代
+        for gen in range(self.config.generations):
+            # 对每个个体：调用LP层求解精确配比
+            for individual in population:
+                # 解码：获取选中的原料列表
+                selected_herbs = [
+                    self.candidate_herbs[i] 
+                    for i in range(n) 
+                    if individual.genes[i] == 1
+                ]
+
+                # LP层：求解精确配比
+                lp_result = await self._solve_lp(selected_herbs, constraints)
+
+                if lp_result.feasible:
+                    # LP可行：获取精确配比、最低成本、营养矩阵
+                    individual.ratios = lp_result.ratios
+                    individual.lp_cost = lp_result.min_cost
+                    individual.nutrition = lp_result.nutrition
+
+                    # 适应度评估（多目标）
+                    individual.fitness = await self._evaluate_fitness(
+                        selected_herbs, lp_result.ratios, target_effects
+                    )
+                else:
+                    # LP不可行：赋予极低适应度
+                    individual.fitness = 0.001
+
+            # 遗传操作：选择 + 交叉 + 变异
+            population = self._evolve(population)
+
+        # Step 4: 返回Top-N结果
+        return self._extract_results(population)
+</code></pre>
+<h4 id="322-lp">3.2.2 内层LP：精确配比求解</h4>
+<pre><code class="language-python">class LPSolver:
+    &quot;&quot;&quot;
+    线性规划求解器 — 决定&quot;放多少&quot;每种原料
+
+    数学模型：
+        min  Cost = Σ(Price_i × X_i)
+        s.t. ΣX_i = 100%                    (配比总和)
+             Σ(Protein_i × X_i) ≥ P_min     (蛋白质下限)
+             Σ(Fat_i × X_i) ≤ F_max         (脂肪上限)
+             Σ(Carb_i × X_i) ∈ [C_min, C_max] (碳水范围)
+             Σ(Sodium_i × X_i) ≤ Na_max     (钠上限)
+             X_i ≥ 0                         (非负)
+             X_i ≤ MaxRatio_i                (单原料上限)
+    &quot;&quot;&quot;
+
+    def __init__(self, nutrition_engine: NutritionEngine):
+        self.nutrition_engine = nutrition_engine
+
+    async def solve(
+        self, 
+        selected_herbs: List[str],
+        nutrition_constraints: Dict[str, Tuple[float, float]],
+        cost_weights: Dict[str, float]
+    ) -&gt; LPResult:
+        &quot;&quot;&quot;
+        求解LP问题
+
+        Returns:
+            LPResult:
+                - feasible: bool (是否可行)
+                - ratios: Dict[str, float] (各原料百分比)
+                - min_cost: float (最低成本)
+                - nutrition: Dict[str, float] (营养成分矩阵)
+        &quot;&quot;&quot;
+        # 使用 scipy.optimize.linprog 或 PuLP
+        # 输入：原料营养数据（从NutritionEngine获取）
+        # 输出：精确配比或不可行判定
+        pass
+</code></pre>
+<h4 id="323">3.2.3 适应度评估：多目标综合</h4>
+<pre><code class="language-python">class MultiObjectiveEvaluator:
+    &quot;&quot;&quot;
+    多目标适应度评估器
+
+    评估维度：
+    1. 成本效率 (来自LP层精确值)
+    2. 营养均衡 (来自NutritionEngine)
+    3. 协同效应 (来自SynergyNet)
+    4. 口感评分 (来自TastePredictor)
+    5. 安全性 (来自SafetyChecker)
+    &quot;&quot;&quot;
+
+    async def evaluate(
+        self,
+        selected_herbs: List[str],
+        ratios: Dict[str, float],
+        target_effects: List[str]
+    ) -&gt; float:
+        # 成本分 (LP精确值)
+        cost_score = 1.0 / (1.0 + lp_result.min_cost)
+
+        # 营养分 (NutritionEngine精确计算)
+        nutrition_score = await self.nutrition_engine.evaluate_balance(
+            selected_herbs, ratios
+        )
+
+        # 协同分 (SynergyNet)
+        synergy_score = await self.synergy_net.evaluate(selected_herbs, ratios)
+
+        # 口感分 (TastePredictor)
+        taste_score = await self.taste_predictor.predict(selected_herbs, ratios)
+
+        # 安全分 (SafetyChecker)
+        safety_score = await self.safety_checker.evaluate(selected_herbs)
+
+        # 加权综合
+        fitness = (
+            w1 * cost_score +
+            w2 * nutrition_score +
+            w3 * synergy_score +
+            w4 * taste_score +
+            w5 * safety_score
+        )
+        return fitness
+</code></pre>
+<h3 id="33-lp">3.3 贝叶斯优化升级：与LP层协作</h3>
+<p><strong>思路</strong>：保留贝叶斯优化的样本效率优势，但将其搜索空间从连续用量空间改为离散原料组合空间。</p>
+<pre><code class="language-python">class BayesianLPHybrid:
+    &quot;&quot;&quot;
+    贝叶斯 + LP 混合引擎
+
+    外层：贝叶斯优化搜索原料组合（离散空间）
+    内层：LP求解精确配比
+
+    优势：
+    - 样本效率高于GA（适合实验成本高的场景）
+    - LP层保证营养硬约束
+    - 可以复用现有BayesianFormulaOptimizer的GP实现
+    &quot;&quot;&quot;
+
+    async def optimize(self, target_effects, constraints):
+        # 候选原料池
+        candidates = self._select_candidates(target_effects)
+
+        # 贝叶斯优化（搜索离散组合空间）
+        for round_idx in range(self.config.n_rounds):
+            # GP建模：原料组合 → 适应度
+            # EI采集：选择下一个最有潜力的原料组合
+            selected_combo = self._ei_select(candidates, gp_model)
+
+            # LP层：求解精确配比
+            lp_result = await self._solve_lp(selected_combo, constraints)
+
+            if lp_result.feasible:
+                fitness = await self._evaluate(selected_combo, lp_result.ratios)
+                # 更新GP模型
+                gp_model.update(selected_combo, fitness)
+
+        return self._extract_best()
+</code></pre>
+<h3 id="34-nsga-iinutritionengine">3.4 NSGA-II升级：接入NutritionEngine</h3>
+<p><strong>思路</strong>：保留NSGA-II的多目标Pareto优势，但将NutritionEngine接入适应度评估。</p>
+<pre><code class="language-python">class EnhancedNSGAIIOptimizer:
+    &quot;&quot;&quot;
+    增强版NSGA-II — 接入NutritionEngine进行精确营养评估
+
+    改进点：
+    1. 适应度评估从简化评分 → 精确营养计算
+    2. 约束处理从软惩罚 → NutritionEngine硬约束校验
+    3. 新增营养偏差目标（最小化与目标营养的偏差）
+    &quot;&quot;&quot;
+
+    def __init__(self, nutrition_engine: NutritionEngine):
+        self.nutrition_engine = nutrition_engine
+
+    async def evaluate_objectives(self, individual):
+        &quot;&quot;&quot;7维目标函数（增强版）&quot;&quot;&quot;
+        # 原有目标（保留）
+        efficacy = self._calc_efficacy(individual)
+        safety = self._calc_safety(individual)
+        taste = self._calc_taste(individual)
+        synergy = self._calc_synergy(individual)
+        stability = self._calc_stability(individual)
+
+        # 新增目标（来自NutritionEngine）
+        nutrition_balance = await self.nutrition_engine.calc_balance_score(
+            individual.genes
+        )
+        cost = await self.nutrition_engine.calc_exact_cost(individual.genes)
+
+        return {
+            'efficacy': efficacy,
+            'safety': safety,
+            'taste': taste,
+            'synergy': synergy,
+            'stability': stability,
+            'nutrition_balance': nutrition_balance,  # 新增
+            'cost': cost,  # 精确成本
+        }
+</code></pre>
+<h3 id="35-nutritionengine">3.5 NutritionEngine集成：从独立到核心</h3>
+<p><strong>思路</strong>：将NutritionEngine从独立服务提升为所有算法引擎的核心依赖。</p>
+<pre><code class="language-python">class NutritionAwareOptimizer:
+    &quot;&quot;&quot;
+    营养感知优化器基类
+
+    所有算法引擎继承此类，自动获得：
+    1. 精确营养计算能力
+    2. 营养硬约束校验
+    3. 成本精确计算
+    4. 合规性预检查
+    &quot;&quot;&quot;
+
+    def __init__(self, nutrition_engine: NutritionEngine):
+        self.nutrition = nutrition_engine
+
+    async def validate_nutrition(
+        self, herbs: List[str], ratios: Dict[str, float]
+    ) -&gt; NutritionValidation:
+        &quot;&quot;&quot;
+        营养硬约束校验
+
+        Returns:
+            NutritionValidation:
+                - is_feasible: bool
+                - violations: List[str] (不满足的约束)
+                - nutrition_matrix: Dict[str, float] (完整营养矩阵)
+        &quot;&quot;&quot;
+        # 调用NutritionEngine计算精确营养
+        nutrition_result = await self.nutrition.calculate_nutrition(
+            formula_id=0,  # 临时配方
+            formula_name=&quot;temp&quot;,
+            ingredients=[
+                {&quot;ingredient_id&quot;: h, &quot;amount_d&quot;: ratios[h]} 
+                for h in herbs
+            ]
+        )
+
+        # 检查约束
+        violations = []
+        for constraint in self.nutrition_constraints:
+            value = nutrition_result.nutrients_per_100g.get(constraint.nutrient)
+            if value is not None:
+                if constraint.min is not None and value &lt; constraint.min:
+                    violations.append(f&quot;{constraint.nutrient}低于下限&quot;)
+                if constraint.max is not None and value &gt; constraint.max:
+                    violations.append(f&quot;{constraint.nutrient}超过上限&quot;)
+
+        return NutritionValidation(
+            is_feasible=len(violations) == 0,
+            violations=violations,
+            nutrition_matrix=nutrition_result.nutrients_per_100g
+        )
+</code></pre>
+<hr />
+<h2 id="_5">第四部分：实施路线图</h2>
+<h3 id="phase-11-2">Phase 1：基础设施搭建（1-2周）</h3>
+<pre><code>目标：建立GA-LP混合引擎的基础设施
+
+Week 1:
+├── 安装LP求解器（PuLP + CBC 或 scipy.optimize.linprog）
+├── 实现 LPSolver 类（LP模型构建 + 求解 + 结果解析）
+├── 实现 NutritionAdapter（将NutritionEngine封装为LP可用格式）
+└── 编写LP求解器单元测试
+
+Week 2:
+├── 实现 BinaryGAOptimizer（二进制编码GA）
+├── 实现 MultiObjectiveEvaluator（多目标评估器）
+├── 集成测试：BinaryGA + LP + NutritionEngine
+└── 性能基准测试
+</code></pre>
+<h3 id="phase-22-3">Phase 2：引擎集成（2-3周）</h3>
+<pre><code>目标：将GA-LP引擎集成到现有管线
+
+Week 3:
+├── 实现 UnifiedFormulaOptimizer（统一调度器）
+├── 修改 AIService 管线：接入GA-LP引擎
+├── 修改 API 层：新增 /ai/generate/optimize 端点
+└── 集成测试：端到端配方生成
+
+Week 4:
+├── 升级 BayesianFormulaOptimizer：接入LP层
+├── 升级 NSGA-II：接入NutritionEngine
+├── 实现 BayesianLPHybrid 引擎
+└── 三大引擎对比测试
+
+Week 5:
+├── 实现 CSP 预筛选器（约束传播剪枝）
+├── 实现 GNN 预筛选器（原料潜力评分）
+├── 引擎协作模式：CSP + GA-LP + NSGA-II
+└── 大规模候选池测试（&gt;30种原料）
+</code></pre>
+<h3 id="phase-32-3">Phase 3：评估管线增强（2-3周）</h3>
+<pre><code>目标：提升评估管线的质量
+
+Week 6:
+├── 升级 TastePredictor：基于五味调和模型
+├── 升级 StabilityModel：基于药材属性
+├── 集成感官评价领域实体（TasteProfile等）
+└── 评估管线集成测试
+
+Week 7:
+├── 实现多引擎结果融合策略
+├── 实现人在回路（Human-in-the-loop）反馈
+├── A/B测试框架
+└── 用户验收测试
+
+Week 8:
+├── 性能优化（LP求解缓存、GP近似加速）
+├── 参数调优（GA种群大小、LP约束松紧度）
+├── 边界案例测试
+└── 文档和API文档更新
+</code></pre>
+<h3 id="phase-41-2">Phase 4：验证与上线（1-2周）</h3>
+<pre><code>目标：验证方案效果并上线
+
+Week 9:
+├── 与现有三大引擎的全面对比测试
+├── 实际配方案例验证（≥10个真实配方）
+├── 性能基准测试（优化时间、解质量、约束满足率）
+└── 回归测试
+
+Week 10:
+├── 灰度发布（10%流量）
+├── 监控和告警配置
+├── 用户反馈收集
+└── 全量发布
+</code></pre>
+<hr />
+<h2 id="_6">第五部分：预期效果</h2>
+<h3 id="_7">量化指标</h3>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>当前</th>
+<th>目标</th>
+<th>提升</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>营养约束满足率</strong></td>
+<td>~70-85%</td>
+<td><strong>100%</strong></td>
+<td>+15-30%</td>
+</tr>
+<tr>
+<td><strong>成本最优性</strong></td>
+<td>近似（±20%）</td>
+<td><strong>精确最优</strong></td>
+<td>质的飞跃</td>
+</tr>
+<tr>
+<td><strong>搜索效率</strong></td>
+<td>低（实数编码）</td>
+<td><strong>高（二进制+LP）</strong></td>
+<td>5-10x</td>
+</tr>
+<tr>
+<td><strong>解的可解释性</strong></td>
+<td>低（黑箱）</td>
+<td><strong>高（精确值）</strong></td>
+<td>质的飞跃</td>
+</tr>
+<tr>
+<td><strong>引擎协作</strong></td>
+<td>❌ 无</td>
+<td>✅ 多引擎协作</td>
+<td>从无到有</td>
+</tr>
+<tr>
+<td><strong>营养计算精度</strong></td>
+<td>简化估算</td>
+<td><strong>精确计算</strong></td>
+<td>质的飞跃</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_8">架构质量提升</h3>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>当前评分</th>
+<th>目标评分</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>模块化程度</td>
+<td>★★★☆☆</td>
+<td>★★★★★</td>
+</tr>
+<tr>
+<td>可扩展性</td>
+<td>★★★☆☆</td>
+<td>★★★★★</td>
+</tr>
+<tr>
+<td>可测试性</td>
+<td>★★★☆☆</td>
+<td>★★★★★</td>
+</tr>
+<tr>
+<td>可维护性</td>
+<td>★★★☆☆</td>
+<td>★★★★☆</td>
+</tr>
+<tr>
+<td>算法严谨性</td>
+<td>★★☆☆☆</td>
+<td>★★★★★</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="_9">第六部分：总结</h2>
+<h3 id="_10">核心建议</h3>
+<ol>
+<li><strong>立即实施</strong>：GA-LP混合引擎（Phase 1-2），这是投入产出比最高的改进</li>
+<li><strong>短期跟进</strong>：NutritionEngine集成到所有算法引擎（Phase 2）</li>
+<li><strong>中期规划</strong>：评估管线增强 + 多引擎协作（Phase 3）</li>
+<li><strong>长期演进</strong>：人在回路 + 历史学习 + RL预筛选（Phase 4+）</li>
+</ol>
+<h3 id="_11">一句话总结</h3>
+<blockquote>
+<p><strong>将NutritionEngine从"独立服务"提升为"算法引擎核心依赖"，用GA-LP混合架构替代现有的实数编码GA，建立统一调度层让多引擎协作。这是从"规则驱动"到"数学规划驱动"的质的飞跃。</strong></p>
+</blockquote>
+<hr />
+<p><em>报告完毕。如需开始实施任何Phase，随时告知。</em></p>
+</body>
+</html>

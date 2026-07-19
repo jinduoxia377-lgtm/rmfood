@@ -852,6 +852,12 @@ class CsrfProtectMiddleware(BaseHTTPMiddleware):
             return response
 
         # POST/PUT/DELETE/PATCH — 验证 CSRF token
+        # 跳过认证相关端点（登录/注册/刷新/忘记密码/重置密码）
+        skip_paths = {"/api/v1/auth/login", "/api/v1/auth/register", "/api/v1/auth/refresh",
+                      "/api/v1/auth/forgot-password", "/api/v1/auth/reset-password"}
+        if request.url.path in skip_paths:
+            return await call_next(request)
+
         cookie_token = request.cookies.get(self.CSRF_COOKIE_NAME)
         header_token = request.headers.get(self.CSRF_HEADER_NAME)
 

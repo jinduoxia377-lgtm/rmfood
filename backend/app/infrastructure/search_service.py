@@ -561,7 +561,7 @@ class ElasticsearchIndexService(SearchIndexService):
                 "indices": stats,
             }
         except Exception as e:
-            return {"backend": "elasticsearch", "status": "error", "error": str(e)}
+            return {"backend": "elasticsearch", "status": "error", "error": "搜索服务异常"}
 
     async def close(self) -> None:
         """关闭 ES 客户端"""

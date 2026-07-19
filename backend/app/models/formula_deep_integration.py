@@ -16,14 +16,10 @@ from datetime import date, datetime, timezone
 from typing import Optional, List
 import enum
 
-from sqlalchemy import Integer, String, Float, Boolean, DateTime, Text, ForeignKey, JSON, Enum as SAEnum, Index
+from sqlalchemy import Integer, String, Float, Boolean, DateTime, Text, ForeignKey, JSON, Enum as SAEnum, Index, BigInteger
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from ..core.database import Base
-
-
-def _now() -> datetime:
-    """获取当前UTC时间"""
-    return datetime.now(timezone.utc).replace(tzinfo=None)
+from .base import Base
+from app.models.utils import now_utc_mapped
 
 
 # ==================== 枚举类型 ====================
@@ -61,9 +57,9 @@ class SynergyRecord(Base):
 
     __tablename__ = 'synergy_records'
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=_now, nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_now, onupdate=_now, nullable=False)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, onupdate=now_utc_mapped, nullable=False)
 
     # 成分对信息
     ingredient_a: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
@@ -81,8 +77,8 @@ class SynergyRecord(Base):
     context_params: Mapped[Optional[dict]] = mapped_column(JSON, default=dict)
 
     # 关联用户和配方
-    user_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey('users.id'), nullable=True)
-    formula_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey('formulas.id'), nullable=True)
+    user_id: Mapped[Optional[int]] = mapped_column(BigInteger, ForeignKey('users.id'), nullable=True, index=True)
+    formula_id: Mapped[Optional[int]] = mapped_column(BigInteger, ForeignKey('formulas.id'), nullable=True, index=True)
 
     # 版本控制
     data_version: Mapped[str] = mapped_column(String(20), default='v1.0')
@@ -103,9 +99,9 @@ class OptimizationResultRecord(Base):
 
     __tablename__ = 'optimization_results'
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=_now, nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_now, onupdate=_now, nullable=False)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, onupdate=now_utc_mapped, nullable=False)
 
     # 关联的配方生成请求
     generation_request_id: Mapped[str] = mapped_column(String(100), unique=True, nullable=False, index=True)
@@ -151,12 +147,12 @@ class CompatibilityReportRecord(Base):
 
     __tablename__ = 'compatibility_reports'
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=_now, nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_now, onupdate=_now, nullable=False)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, onupdate=now_utc_mapped, nullable=False)
 
     # 关联配方
-    formula_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey('formulas.id'), nullable=True)
+    formula_id: Mapped[Optional[int]] = mapped_column(BigInteger, ForeignKey('formulas.id'), nullable=True, index=True)
 
     # 总体评分 (0-100)
     overall_score: Mapped[float] = mapped_column(Float, nullable=False)
@@ -195,12 +191,12 @@ class EffectPredictionRecord(Base):
 
     __tablename__ = 'effect_predictions'
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=_now, nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_now, onupdate=_now, nullable=False)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, onupdate=now_utc_mapped, nullable=False)
 
     # 关联配方
-    formula_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey('formulas.id'), nullable=True)
+    formula_id: Mapped[Optional[int]] = mapped_column(BigInteger, ForeignKey('formulas.id'), nullable=True, index=True)
 
     # 核心指标
     peak_time_tmax: Mapped[float] = mapped_column(Float, nullable=False)  # 小时
@@ -237,13 +233,13 @@ class SafetyAlertLog(Base):
 
     __tablename__ = 'safety_alert_logs'
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=_now, nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_now, onupdate=_now, nullable=False)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, onupdate=now_utc_mapped, nullable=False)
 
     # 关联配方/成分
     ingredient_name: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
-    formula_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey('formulas.id'), nullable=True)
+    formula_id: Mapped[Optional[int]] = mapped_column(BigInteger, ForeignKey('formulas.id'), nullable=True, index=True)
 
     # 预警级别
     alert_level: Mapped[AlertLevel] = mapped_column(SAEnum(AlertLevel), nullable=False, index=True)
@@ -265,7 +261,7 @@ class SafetyAlertLog(Base):
     target_group: Mapped[str] = mapped_column(String(20), default='adult')
 
     # 操作人（管理员更新时）
-    operator_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey('users.id'), nullable=True)
+    operator_id: Mapped[Optional[int]] = mapped_column(BigInteger, ForeignKey('users.id'), nullable=True, index=True)
 
     # 关系
     formula: Mapped[Optional["Formula"]] = relationship("Formula", backref="safety_alert_logs")
@@ -282,15 +278,15 @@ class FormulaGenerationHistory(Base):
 
     __tablename__ = 'formula_generation_history'
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=_now, nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_now, onupdate=_now, nullable=False)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, onupdate=now_utc_mapped, nullable=False)
 
     # 请求标识
     request_id: Mapped[str] = mapped_column(String(100), unique=True, nullable=False, index=True)
 
     # 用户
-    user_id: Mapped[int] = mapped_column(Integer, ForeignKey('users.id'), nullable=False)
+    user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('users.id'), nullable=False, index=True)
 
     # 生成模式
     mode: Mapped[GenerationMode] = mapped_column(SAEnum(GenerationMode), default=GenerationMode.DEEP_INTEGRATION)
@@ -302,10 +298,10 @@ class FormulaGenerationHistory(Base):
     target_population: Mapped[str] = mapped_column(String(20), default='adult')
 
     # 输出结果 (关联各子表ID)
-    synergy_record_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey('synergy_records.id'), nullable=True)
-    optimization_result_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey('optimization_results.id'), nullable=True)
-    compatibility_report_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey('compatibility_reports.id'), nullable=True)
-    effect_prediction_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey('effect_predictions.id'), nullable=True)
+    synergy_record_id: Mapped[Optional[int]] = mapped_column(BigInteger, ForeignKey('synergy_records.id'), nullable=True, index=True)
+    optimization_result_id: Mapped[Optional[int]] = mapped_column(BigInteger, ForeignKey('optimization_results.id'), nullable=True, index=True)
+    compatibility_report_id: Mapped[Optional[int]] = mapped_column(BigInteger, ForeignKey('compatibility_reports.id'), nullable=True, index=True)
+    effect_prediction_id: Mapped[Optional[int]] = mapped_column(BigInteger, ForeignKey('effect_predictions.id'), nullable=True, index=True)
 
     # 性能统计
     total_generation_time_ms: Mapped[float] = mapped_column(Float, nullable=False)
@@ -336,19 +332,19 @@ class LabValidationData(Base):
 
     __tablename__ = 'lab_validation_data'
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=_now, nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_now, onupdate=_now, nullable=False)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, onupdate=now_utc_mapped, nullable=False)
 
     # 关联的配方或成分
     target_type: Mapped[str] = mapped_column(String(20), nullable=False)
-    target_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    target_id: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
     target_name: Mapped[str] = mapped_column(String(200), nullable=False, index=True)
 
     # 实验元数据
     experiment_id: Mapped[str] = mapped_column(String(100), unique=True, nullable=False, index=True)
     lab_name: Mapped[str] = mapped_column(String(200), nullable=False)
-    experiment_date: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    experiment_date: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     researcher_name: Mapped[str] = mapped_column(String(100), nullable=False)
 
     # 验证状态
@@ -372,8 +368,8 @@ class LabValidationData(Base):
 
     # 质量控制
     qc_passed: Mapped[bool] = mapped_column(Boolean, default=False)
-    reviewer_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey('users.id'), nullable=True)
-    reviewed_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    reviewer_id: Mapped[Optional[int]] = mapped_column(BigInteger, ForeignKey('users.id'), nullable=True, index=True)
+    reviewed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
 
     # 关系
     reviewer: Mapped[Optional["User"]] = relationship("User", backref="lab_validations_reviewed")
@@ -393,9 +389,9 @@ class SafetyThresholdChangeLog(Base):
 
     __tablename__ = 'safety_threshold_change_log'
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=_now, nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_now, onupdate=_now, nullable=False)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, onupdate=now_utc_mapped, nullable=False)
 
     # 变更目标
     ingredient_name: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
@@ -406,7 +402,7 @@ class SafetyThresholdChangeLog(Base):
     changes_summary: Mapped[Optional[dict]] = mapped_column(JSON, default=dict)
 
     # 操作信息
-    operator_id: Mapped[int] = mapped_column(Integer, ForeignKey('users.id'), nullable=False)
+    operator_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('users.id'), nullable=False, index=True)
     operation_type: Mapped[str] = mapped_column(String(20), nullable=False)
 
     # 版本管理

@@ -429,14 +429,14 @@ export const PRIORITIES = {
 // ============================================================================
 
 export const FORMULA_CATEGORIES = {
-  IMMUNITY: { id: 'immunity', label: '免疫调节', icon: 'Shield', color: '#10B981', description: '增强免疫力、调节免疫功能' },
-  ANTI_FATIGUE: { id: 'anti_fatigue', label: '抗疲劳', icon: 'Zap', color: '#F59E0B', description: '缓解疲劳、提升精力' },
-  DIGESTION: { id: 'digestion', label: '健脾养胃', icon: 'Apple', color: '#EF4444', description: '调理脾胃、促进消化' },
-  SLEEP: { id: 'sleep', label: '安神助眠', icon: 'Moon', color: '#8B5CF6', description: '改善睡眠、安神定志' },
-  BEAUTY: { id: 'beauty', label: '美容养颜', icon: 'Sparkles', color: '#EC4899', description: '美容护肤、延缓衰老' },
-  CARDIOVASCULAR: { id: 'cardiovascular', label: '心血管健康', icon: 'Heart', color: '#DC2626', description: '保护心血管、调节血脂' },
-  BONE_JOINT: { id: 'bone_joint', label: '骨骼关节', icon: 'Activity', color: '#059669', description: '强健筋骨、关节保健' },
-  VISION: { id: 'vision', label: '明目护眼', icon: 'Eye', color: '#3B82F6', description: '保护视力、缓解眼疲劳' },
+  IMMUNITY: { id: 'immunity', label: '免疫调节', icon: 'Shield', color: '#34C759', description: '增强免疫力、调节免疫功能' },
+  ANTI_FATIGUE: { id: 'anti_fatigue', label: '抗疲劳', icon: 'Zap', color: '#D97706', description: '缓解疲劳、提升精力' },
+  DIGESTION: { id: 'digestion', label: '健脾养胃', icon: 'Apple', color: '#FF3B30', description: '调理脾胃、促进消化' },
+  SLEEP: { id: 'sleep', label: '安神助眠', icon: 'Moon', color: '#AF52DE', description: '改善睡眠、安神定志' },
+  BEAUTY: { id: 'beauty', label: '美容养颜', icon: 'Sparkles', color: '#D946EF', description: '美容护肤、延缓衰老' },
+  CARDIOVASCULAR: { id: 'cardiovascular', label: '心血管健康', icon: 'Heart', color: '#B91C1C', description: '保护心血管、调节血脂' },
+  BONE_JOINT: { id: 'bone_joint', label: '骨骼关节', icon: 'Activity', color: '#28A745', description: '强健筋骨、关节保健' },
+  VISION: { id: 'vision', label: '明目护眼', icon: 'Eye', color: '#007AFF', description: '保护视力、缓解眼疲劳' },
   RESPIRATORY: { id: 'respiratory', label: '呼吸系统', icon: 'Wind', color: '#6366F1', description: '润肺止咳、清咽利喉' },
   METABOLISM: { id: 'metabolism', label: '代谢调节', icon: 'RefreshCw', color: '#14B8A6', description: '调节代谢、控制体重' },
 } as const

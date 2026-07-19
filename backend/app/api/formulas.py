@@ -9,8 +9,10 @@ from ..schemas import (
     FormulaCreate, FormulaUpdate, FormulaResponse, FormulaListResponse,
     FormulaVersionResponse, FormulaReviewRequest,
     AIRecommendationRequest, AIRecommendationResponse,
-    ApiResponse, SuccessResponse, PaginatedResponse
+    ApiResponse, SuccessResponse, PaginatedResponse,
+    PeptideResponse
 )
+from ..schemas.formula import IngredientResponse
 from ..services.formula import FormulaService
 from ..services.auth import get_current_user
 from ..models.user_model import User
@@ -20,7 +22,7 @@ from ..api.deps import get_db_session, PaginationParams, FormulaFilterParams, re
 router = APIRouter(prefix="/formulas", tags=["配方管理"])
 
 
-@router.get("", response_model=FormulaListResponse, summary="获取配方列表")
+@router.get("", summary="获取配方列表")
 async def list_formulas(
     pagination: PaginationParams = Depends(),
     filters: FormulaFilterParams = Depends(),
@@ -36,40 +38,73 @@ async def list_formulas(
         creator_id=filters.creator_id,
         search=filters.search,
     )
-    # 转换为 Pydantic 模型
-    formula_responses = [
-        FormulaResponse(
-            id=f.id,
-            code=f.code,
-            status=f.status.value,
-            version=f.version,
-            creator_id=f.creator_id,
-            reviewer_id=f.reviewer_id,
-            reviewed_at=f.reviewed_at,
-            review_notes=f.review_notes,
-            safety_check=f.safety_check,
-            compliance_status=f.compliance_status,
-            ai_recommendations=f.ai_recommendations,
-            synergy_analysis=f.synergy_analysis,
-            created_at=f.created_at,
-            updated_at=f.updated_at,
-            name=f.name,
-            description=f.description,
-            target_effects=f.target_effects,
-            composition=f.composition,
-            processing_method=f.processing_method,
-            dosage=f.dosage,
-            storage_conditions=f.storage_conditions,
-            shelf_life=f.shelf_life
-        )
-        for f in formulas
-    ]
-    return FormulaListResponse(
-        items=formula_responses,
-        total=total,
-        page=pagination.page,
-        page_size=pagination.page_size
-    )
+    # 手动构造响应，绕过 response_model 验证
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.info(f"[DEBUG] list_formulas: {len(formulas)} formulas returned")
+    for f in formulas[:2]:
+        logger.info(f"[DEBUG]   Formula {f.id}: {f.name}, ingredients={len(f.ingredients)}, peptides={len(f.peptides)}")
+        for ing in f.ingredients[:2]:
+            logger.info(f"[DEBUG]     Ingredient: id={ing.id} name={ing.name} is_food_homology={ing.is_food_homology}")
+    from ..schemas.formula import IngredientResponse as _IngResp, PeptideResponse as _PepResp
+    formula_responses = []
+    for f in formulas:
+        ing_data = []
+        for ing in f.ingredients:
+            ing_data.append({
+                "id": ing.id,
+                "name": ing.name,
+                "name_cn": ing.name_cn,
+                "category": ing.category,
+                "source": ing.source,
+                "is_food_homology": ing.is_food_homology if ing.is_food_homology is not None else False,
+                "properties": ing.properties,
+            })
+        pep_data = []
+        for p in f.peptides:
+            pep_data.append({
+                "id": p.id,
+                "sequence": p.sequence,
+                "source_protein": p.source_protein,
+                "source_organism": p.source_organism,
+                "activity_type": p.activity_type,
+                "activity_value": p.activity_value,
+                "activity_unit": p.activity_unit,
+                "molecular_weight": p.molecular_weight,
+            })
+        formula_responses.append({
+            "id": f.id,
+            "code": f.code,
+            "status": f.status.value,
+            "version": f.version,
+            "creator_id": f.creator_id,
+            "creator_name": f.creator.username if f.creator else None,
+            "reviewer_id": f.reviewer_id,
+            "reviewed_at": f.reviewed_at.isoformat() if f.reviewed_at else None,
+            "review_notes": f.review_notes,
+            "safety_check": f.safety_check,
+            "compliance_status": f.compliance_status,
+            "ai_recommendations": f.ai_recommendations,
+            "synergy_analysis": f.synergy_analysis,
+            "created_at": f.created_at.isoformat() if f.created_at else None,
+            "updated_at": f.updated_at.isoformat() if f.updated_at else None,
+            "name": f.name,
+            "description": f.description,
+            "target_effects": f.target_effects,
+            "composition": f.composition,
+            "processing_method": f.processing_method,
+            "dosage": f.dosage,
+            "storage_conditions": f.storage_conditions,
+            "shelf_life": f.shelf_life,
+            "ingredients": ing_data,
+            "peptides": pep_data,
+        })
+    return {
+        "items": formula_responses,
+        "total": total,
+        "page": pagination.page,
+        "page_size": pagination.page_size,
+    }
 
 
 @router.get("/recommendations", response_model=AIRecommendationResponse, summary="AI 配方推荐")
@@ -120,8 +155,17 @@ async def update_formula(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db_session),
 ):
-    """更新配方（仅草稿和已驳回状态可编辑）"""
+    """更新配方（仅草稿和已驳回状态可编辑，需拥有资源权限）"""
     service = FormulaService(db)
+    # 所有权校验：仅创建者或 ADMIN/FORMULATOR 角色可更新
+    formula = await service.get_formula(formula_id)
+    is_owner = formula.creator_id == current_user.id
+    is_admin = current_user.role in (UserRole.ADMIN, UserRole.FORMULATOR)
+    if not is_owner and not is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="无权编辑此配方，仅创建者或配方师/管理员可编辑",
+        )
     return await service.update_formula(formula_id, data, user_id=current_user.id)
 
 
@@ -197,3 +241,135 @@ async def review_formula(
     """审核配方（审核员/管理员）"""
     service = FormulaService(db)
     return await service.review_formula(formula_id, review, current_user.id)
+
+
+@router.post("/{formula_id}/publish", response_model=FormulaResponse, summary="发布配方")
+async def publish_formula(
+    formula_id: int,
+    current_user: User = Depends(require_role(UserRole.ADMIN)),
+    db: AsyncSession = Depends(get_db_session),
+):
+    """发布配方（仅管理员）"""
+    service = FormulaService(db)
+    return await service.publish_formula(formula_id, current_user.id)
+
+
+@router.post("/{formula_id}/archive", response_model=FormulaResponse, summary="归档配方")
+async def archive_formula(
+    formula_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db_session),
+):
+    """归档配方"""
+    service = FormulaService(db)
+    return await service.archive_formula(formula_id, current_user.id)
+
+
+@router.patch("/batch-status", summary="批量更新配方状态")
+async def batch_update_status(
+    payload: dict,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db_session),
+):
+    """批量更新配方状态"""
+    ids: list[int] = payload.get("ids", [])
+    status: str = payload.get("status", "")
+    if not ids or not status:
+        raise HTTPException(status_code=400, detail="ids 和 status 不能为空")
+    service = FormulaService(db)
+    updated = await service.batch_update_status(ids, status, current_user.id)
+    return {"message": f"成功更新 {updated} 个配方的状态", "updated": updated}
+
+
+# ── 配方成分计算 ──
+
+@router.get("/{formula_id}/nutrition", summary="获取配方营养成分")
+async def get_formula_nutrition(
+    formula_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db_session),
+):
+    """计算并返回配方的营养成分摘要（热量、宏量营养素、过敏原等）"""
+    from ..models.formula import Formula
+    from ..services.formula.nutrition_service import FormulaNutritionService
+
+    result = await db.get(Formula, formula_id)
+    if not result:
+        raise HTTPException(status_code=404, detail="配方不存在")
+
+    # 获取配方成分及其用量
+    ingredients_data = []
+    for ing in result.ingredients:
+        weight_g = ing.properties.get("weight_g", 0) if ing.properties else 0
+        ingredients_data.append({
+            "ingredient_id": ing.id,
+            "name": ing.name,
+            "weight_g": weight_g,
+            "category": ing.category,
+        })
+
+    # 计算总重量
+    total_weight = sum(d["weight_g"] for d in ingredients_data)
+    if total_weight <= 0:
+        return {
+            "formula_id": formula_id,
+            "total_weight_g": 0,
+            "nutrition_per_100g": {},
+            "total_nutrition": {},
+            "allergens": [],
+            "warnings": ["配方成分总重量为 0，无法计算营养成分"],
+        }
+
+    # 使用营养服务计算
+    service = FormulaNutritionService()
+    nutrition = service.calculate(ingredients_data, total_weight)
+
+    return {
+        "formula_id": formula_id,
+        "total_weight_g": round(total_weight, 2),
+        "nutrition_per_100g": nutrition.get("per_100g", {}),
+        "total_nutrition": nutrition.get("total", {}),
+        "calories_per_100g": nutrition.get("calories_per_100g", 0),
+        "total_calories": nutrition.get("total_calories", 0),
+        "allergens": nutrition.get("allergens", []),
+        "compliance": nutrition.get("compliance", {}),
+        "known_ingredients": nutrition.get("known_ingredients", 0),
+        "unknown_ingredients": nutrition.get("unknown_ingredients", 0),
+        "warnings": nutrition.get("warnings", []),
+    }
+
+
+@router.post("/{formula_id}/nutrition/validate", summary="校验配方成分总量")
+async def validate_formula_nutrition(
+    formula_id: int,
+    tolerance_pct: float = Query(5.0, ge=0.1, le=20.0, description="允许偏差百分比"),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db_session),
+):
+    """校验配方成分总重量是否为 100%"""
+    from ..models.formula import Formula
+    from ..services.formula.nutrition_service import FormulaNutritionService
+
+    result = await db.get(Formula, formula_id)
+    if not result:
+        raise HTTPException(status_code=404, detail="配方不存在")
+
+    ingredients_data = []
+    total_weight = 0
+    for ing in result.ingredients:
+        weight_g = ing.properties.get("weight_g", 0) if ing.properties else 0
+        total_weight += weight_g
+        ingredients_data.append({
+            "name": ing.name,
+            "weight_g": weight_g,
+            "total_weight_g": total_weight,
+        })
+
+    service = FormulaNutritionService()
+    validation = service.validate_total_weight(ingredients_data, tolerance_pct)
+
+    return {
+        "formula_id": formula_id,
+        "total_weight_g": round(total_weight, 2),
+        "validation": validation,
+    }

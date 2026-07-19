@@ -324,9 +324,9 @@ export const RealTimeDataUpdater: React.FC<{
 
   // 状态指示器颜色
   const getStatusColor = (mode: string, connected: boolean) => {
-    if (connected && mode === 'websocket') return 'text-green-500 bg-green-50 dark:bg-green-900/20'
-    if (mode === 'polling') return 'text-blue-500 bg-blue-50 dark:bg-blue-900/20'
-    return 'text-red-500 bg-red-50 dark:bg-red-900/20'
+    if (connected && mode === 'websocket') return 'text-success-500 bg-success-50 dark:bg-success-900/20'
+    if (mode === 'polling') return 'text-secondary-500 bg-secondary-50 dark:bg-secondary-900/20'
+    return 'text-error-500 bg-error-50 dark:bg-error-900/20'
   }
 
   return (
@@ -367,7 +367,7 @@ export const RealTimeDataUpdater: React.FC<{
       {children}
 
       {/* 数据流统计面板（可折叠） */}
-      <div className="mt-4 p-4 bg-gray-50 dark:bg-slate-800/50 rounded-lg border border-gray-200 dark:border-slate-700">
+      <div className="mt-4 p-4 bg-slate-50 dark:bg-neutral-800/50 rounded-lg border border-neutral-200 dark:border-neutral-700">
         <h4 className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-3 flex items-center gap-2">
           <Activity className="w-4 h-4" />
           数据流状态
@@ -375,7 +375,7 @@ export const RealTimeDataUpdater: React.FC<{
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
           <div className="flex items-center gap-2">
-            <Clock className="w-4 h-4 text-gray-400" />
+            <Clock className="w-4 h-4 text-neutral-400" />
             <div>
               <div className="font-medium text-text-primary">最后更新</div>
               <div className="text-text-muted text-xs">{formatLastUpdate(status.lastUpdate)}</div>
@@ -383,7 +383,7 @@ export const RealTimeDataUpdater: React.FC<{
           </div>
 
           <div className="flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-gray-400" />
+            <TrendingUp className="w-4 h-4 text-neutral-400" />
             <div>
               <div className="font-medium text-text-primary">接收消息</div>
               <div className="text-text-muted text-xs">{status.messagesReceived.toLocaleString()} 条</div>
@@ -391,7 +391,7 @@ export const RealTimeDataUpdater: React.FC<{
           </div>
 
           <div className="flex items-center gap-2">
-            <Zap className="w-4 h-4 text-gray-400" />
+            <Zap className="w-4 h-4 text-neutral-400" />
             <div>
               <div className="font-medium text-text-primary">网络延迟</div>
               <div className="text-text-muted text-xs">{status.latency} ms</div>
@@ -399,10 +399,10 @@ export const RealTimeDataUpdater: React.FC<{
           </div>
 
           <div className="flex items-center gap-2">
-            <AlertCircle className={`w-4 h-4 ${status.errorsCount > 0 ? 'text-red-500' : 'text-gray-400'}`} />
+            <AlertCircle className={`w-4 h-4 ${status.errorsCount > 0 ? 'text-error-500' : 'text-neutral-400'}`} />
             <div>
               <div className="font-medium text-text-primary">错误次数</div>
-              <div className={`text-xs ${status.errorsCount > 0 ? 'text-red-500' : 'text-text-muted'}`}>
+              <div className={`text-xs ${status.errorsCount > 0 ? 'text-error-500' : 'text-text-muted'}`}>
                 {status.errorsCount}
               </div>
             </div>
@@ -410,7 +410,7 @@ export const RealTimeDataUpdater: React.FC<{
         </div>
 
         {/* 数据缓冲区大小 */}
-        <div className="mt-3 pt-3 border-t border-gray-200 dark:border-slate-700 flex items-center justify-between text-xs text-text-muted">
+        <div className="mt-3 pt-3 border-t border-neutral-200 dark:border-neutral-700 flex items-center justify-between text-xs text-text-muted">
           <span>缓冲区容量: {dataBuffer.length}/{config.dataBufferMaxSize || 1000}</span>
           <span>连接模式: {status.mode.toUpperCase()}</span>
         </div>

@@ -21,7 +21,7 @@ export const FormulaSkeleton = React.memo<FormulaSkeletonProps>(({ count = 5 }) 
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
-          className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4"
+          className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-4"
           style={{ animationDelay: `${i * 100}ms` }}
         >
           {/* 标题行：复选框 + 标题 + 质量等级 */}
@@ -54,7 +54,7 @@ export const FormulaSkeleton = React.memo<FormulaSkeletonProps>(({ count = 5 }) 
           </div>
 
           {/* 底部元信息行 */}
-          <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-700/50">
+          <div className="flex items-center justify-between pt-3 border-t border-neutral-100 dark:border-neutral-700/50">
             <div className="flex items-center gap-2">
               <div className="h-4 w-32 rounded skeleton-shimmer" />
               <div className="h-4 w-24 rounded skeleton-shimmer" />

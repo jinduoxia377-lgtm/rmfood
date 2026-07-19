@@ -14,7 +14,7 @@ from ...services.team.team_impl import TeamService
 from ...services.team.team_dashboard import TeamDashboardService
 from ...services.search.elasticsearch_service import ElasticsearchService, SearchFilters
 
-router = APIRouter(prefix="/teams", tags=["Team Dashboard"])
+router = APIRouter(prefix="/teams/dashboard", tags=["Team Dashboard"])
 
 
 @router.get("/{team_id}/dashboard", summary="团队仪表盘")

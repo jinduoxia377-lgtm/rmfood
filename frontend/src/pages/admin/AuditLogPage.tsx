@@ -14,11 +14,11 @@ import {
 
 const ACTION_COLORS: Record<string, string> = {
   login: 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400',
-  create: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
-  update: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+  create: 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400',
+  update: 'bg-warning-100 text-warning-700 dark:bg-warning-900/30 dark:text-warning-400',
   delete: 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400',
   review: 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400',
-  export: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+  export: 'bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-400',
   status_change: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
 }
 
@@ -90,13 +90,13 @@ export default function AuditLogPage() {
         ].map((stat) => {
           const Icon = stat.icon
           return (
-            <div key={stat.label} className="flex items-center gap-3 px-4 py-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/60">
+            <div key={stat.label} className="flex items-center gap-3 px-4 py-3 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200/60 dark:border-neutral-800/60">
               <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${stat.color} flex items-center justify-center shrink-0`}>
                 <Icon size={16} className="text-white" />
               </div>
               <div>
-                <p className="text-lg font-bold text-slate-900 dark:text-white">{stat.value}</p>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400">{stat.label}</p>
+                <p className="text-lg font-bold text-neutral-900 dark:text-white">{stat.value}</p>
+                <p className="text-[11px] text-neutral-500 dark:text-neutral-400">{stat.label}</p>
               </div>
             </div>
           )
@@ -113,12 +113,12 @@ export default function AuditLogPage() {
             prefix={<Search className="w-4 h-4" />}
           />
         </div>
-        <div className="flex items-center gap-1 p-1 rounded-xl bg-slate-100 dark:bg-slate-800">
+        <div className="flex items-center gap-1 p-1 rounded-xl bg-neutral-100 dark:bg-neutral-800">
           <button
             onClick={() => setActionFilter('')}
             className={cn(
               'px-3 py-1.5 rounded-lg text-xs font-medium transition-all',
-              !actionFilter ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400',
+              !actionFilter ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-sm' : 'text-neutral-500 dark:text-neutral-400',
             )}
           >
             全部
@@ -129,7 +129,7 @@ export default function AuditLogPage() {
               onClick={() => setActionFilter(actionFilter === key ? '' : key)}
               className={cn(
                 'px-3 py-1.5 rounded-lg text-xs font-medium transition-all',
-                actionFilter === key ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400',
+                actionFilter === key ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-sm' : 'text-neutral-500 dark:text-neutral-400',
               )}
             >
               {label}
@@ -139,9 +139,9 @@ export default function AuditLogPage() {
       </div>
 
       {/* 日志列表 */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 overflow-hidden">
+      <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200/60 dark:border-neutral-800/60 overflow-hidden">
         {/* 表头 */}
-        <div className="hidden sm:grid grid-cols-12 gap-4 px-5 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200/60 dark:border-slate-800/60">
+        <div className="hidden sm:grid grid-cols-12 gap-4 px-5 py-3 text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider bg-slate-50 dark:bg-neutral-800/50 border-b border-neutral-200/60 dark:border-neutral-800/60">
           <div className="col-span-2">时间</div>
           <div className="col-span-2">用户</div>
           <div className="col-span-2">操作</div>
@@ -152,13 +152,13 @@ export default function AuditLogPage() {
 
         {isLoading ? (
           Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="px-5 py-3 border-b border-slate-100 dark:border-slate-800/40">
+            <div key={i} className="px-5 py-3 border-b border-neutral-100 dark:border-neutral-800/40">
               <Skeleton className="h-4 w-full" />
             </div>
           ))
         ) : filteredLogs.length === 0 ? (
           <EmptyState
-            icon={<Shield className="w-10 h-10 text-slate-300 dark:text-slate-600" />}
+            icon={<Shield className="w-10 h-10 text-neutral-300 dark:text-neutral-600" />}
             title="暂无审计记录"
             description="系统暂无操作记录"
           />
@@ -166,10 +166,10 @@ export default function AuditLogPage() {
           filteredLogs.map((log) => (
             <div
               key={log.id}
-              className="grid grid-cols-1 sm:grid-cols-12 gap-2 sm:gap-4 px-5 py-3 border-b border-slate-100 dark:border-slate-800/40 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors"
+              className="grid grid-cols-1 sm:grid-cols-12 gap-2 sm:gap-4 px-5 py-3 border-b border-neutral-100 dark:border-neutral-800/40 hover:bg-slate-50 dark:hover:bg-neutral-800/30 transition-colors"
             >
               {/* 时间 */}
-              <div className="col-span-2 text-xs text-slate-500 dark:text-slate-400">
+              <div className="col-span-2 text-xs text-neutral-500 dark:text-neutral-400">
                 {log.created_at
                   ? new Date(log.created_at).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
                   : '-'}
@@ -178,8 +178,8 @@ export default function AuditLogPage() {
               {/* 用户 */}
               <div className="col-span-2">
                 <div className="flex items-center gap-1.5">
-                  <User size={12} className="text-slate-400" />
-                  <span className="text-sm text-slate-700 dark:text-slate-300 font-medium">
+                  <User size={12} className="text-neutral-400" />
+                  <span className="text-sm text-neutral-700 dark:text-neutral-300 font-medium">
                     {log.username || `ID:${log.user_id}`}
                   </span>
                 </div>
@@ -189,19 +189,19 @@ export default function AuditLogPage() {
               <div className="col-span-2">
                 <span className={cn(
                   'inline-flex px-2 py-0.5 rounded-md text-xs font-medium',
-                  ACTION_COLORS[log.action] || 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300',
+                  ACTION_COLORS[log.action] || 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300',
                 )}>
                   {ACTION_LABELS[log.action] || log.action}
                 </span>
               </div>
 
               {/* 实体 */}
-              <div className="col-span-2 text-sm text-slate-600 dark:text-slate-400">
+              <div className="col-span-2 text-sm text-neutral-600 dark:text-neutral-400">
                 {log.entity_type ? `${log.entity_type}${log.entity_id ? ` #${log.entity_id}` : ''}` : '-'}
               </div>
 
               {/* 详情 */}
-              <div className="col-span-2 text-xs text-slate-500 dark:text-slate-400 truncate">
+              <div className="col-span-2 text-xs text-neutral-500 dark:text-neutral-400 truncate">
                 {log.details ? (
                   <span className="font-mono">
                     {Object.entries(log.details).slice(0, 2).map(([k, v]) => `${k}:${typeof v === 'string' ? v.slice(0, 20) : v}`).join(' ')}
@@ -210,7 +210,7 @@ export default function AuditLogPage() {
               </div>
 
               {/* IP */}
-              <div className="col-span-2 text-xs text-slate-400 dark:text-slate-500 font-mono">
+              <div className="col-span-2 text-xs text-neutral-400 dark:text-neutral-500 font-mono">
                 {log.ip_address || '-'}
               </div>
             </div>

@@ -20,7 +20,7 @@
 
     # 2. 获取当前租户
     tenant = get_current_tenant()
-    print(f"当前租户: {tenant.name}")
+    # logger.info("当前租户: %s", tenant.name)
 
     # 3. 租户感知查询
     results = await tenant_query(

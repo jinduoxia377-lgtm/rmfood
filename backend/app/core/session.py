@@ -149,7 +149,7 @@ def _classify_db_error(e: Exception) -> DatabaseError:
         error_msg = str(e).lower()
         if "pool" in error_msg and ("exhausted" in error_msg or "timeout" in error_msg):
             return DatabasePoolExhaustedError(
-                message=f"连接池耗尽: {e}",
+                message="连接池耗尽，请稍后重试",
                 original=e,
             )
         return DatabaseConnectionError(
@@ -275,10 +275,9 @@ def _on_connect(dbapi_conn, connection_record):
     logger.debug(f"[DB] 新连接已建立: {id(dbapi_conn)}")
 
 
-@event.listens_for(engine.sync_engine, "checkout")
-def _on_checkout(dbapi_conn, connection_record, connection_proxy):
-    """连接从池中取出时触发：验证连接有效性"""
-    pass  # pool_pre_ping 已处理
+# NOTE: Removed redundant _on_checkout event listener.
+# pool_pre_ping=True on create_async_engine already handles connection validation
+# on checkout. The empty pass listener was dead code.
 
 
 @event.listens_for(engine.sync_engine, "checkin")
@@ -297,7 +296,7 @@ async def get_db() -> AsyncSession:
     FastAPI 依赖注入：获取数据库会话
 
     增强特性:
-    - 自动 commit/rollback
+    - 条件 commit（仅在存在变更时提交）
     - 异常分类与结构化错误信息
     - 断连检测 + 会话自动回收
     - 详细的错误日志（包含异常分类和原始错误）
@@ -311,7 +310,9 @@ async def get_db() -> AsyncSession:
     async with async_session_factory() as session:
         try:
             yield session
-            await session.commit()
+            # 仅在存在未提交的变更时才 commit（避免无意义的事务提交）
+            if session.dirty or session.new:
+                await session.commit()
         except (OperationalError, InterfaceError, PendingRollbackError) as conn_err:
             # 连接级异常：回滚并标记为可恢复
             await session.rollback()
@@ -506,12 +507,19 @@ async def init_database():
     """
     初始化数据库：创建所有表
 
-    使用 SQLAlchemy 的 metadata.create_all() 自动建表。
-    生产环境建议使用 Alembic 迁移工具替代此方法。
+    注意：此方法使用 metadata.create_all() 作为开发环境兜底。
+    生产环境应使用 Alembic 迁移：
+        cd backend && alembic upgrade head
+
+    如果 Alembic 迁移链断裂（KeyError），请先修复：
+        cd backend && alembic check
     """
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-    logger.info("[DB] 数据库表结构已同步")
+    try:
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+        logger.info("[DB] 数据库表结构已同步（fallback: create_all）")
+    except Exception as e:
+        logger.warning(f"[DB] create_all 失败，请检查 Alembic 迁移: {e}")
 
 
 # ═════════════════════════════════════════════

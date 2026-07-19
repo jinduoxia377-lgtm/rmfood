@@ -14,9 +14,9 @@ export const FORMULA_STATE_COLORS = {
    * 颜色：灰色系 - 代表未完成、待编辑、初始阶段
    */
   draft: {
-    main: '#94a3b8',
-    light: '#cbd5e1',
-    dark: '#64748b',
+    main: '#9CA3AF',
+    light: '#D1D5DB',
+    dark: '#6B7280',
     bg: 'rgba(148,163,184,0.1)',
     border: 'rgba(148,163,184,0.3)',
     label: '草稿',
@@ -28,9 +28,9 @@ export const FORMULA_STATE_COLORS = {
    * 颜色：琥珀色/黄色 - 代表等待、注意、需关注
    */
   pending_review: {
-    main: '#f59e0b',
-    light: '#fcd34d',
-    dark: '#b45309',
+    main: '#D97706',
+    light: '#FFB340',
+    dark: '#D97706',
     bg: 'rgba(245,158,11,0.1)',
     border: 'rgba(245,158,11,0.3)',
     label: '待审核',
@@ -42,9 +42,9 @@ export const FORMULA_STATE_COLORS = {
    * 颜色：绿色系 - 代表通过、成功、可使用
    */
   approved: {
-    main: '#10b981',
-    light: '#6ee7b7',
-    dark: '#047857',
+    main: '#34C759',
+    light: '#86EFAC',
+    dark: '#1E8E3E',
     bg: 'rgba(16,185,129,0.1)',
     border: 'rgba(16,185,129,0.3)',
     label: '已批准',
@@ -56,9 +56,9 @@ export const FORMULA_STATE_COLORS = {
    * 颜色：红色系 - 代表失败、错误、不可用
    */
   rejected: {
-    main: '#ef4444',
-    light: '#fca5a5',
-    dark: '#b91c1c',
+    main: '#FF3B30',
+    light: '#FF8080',
+    dark: '#DC2626',
     bg: 'rgba(239,68,68,0.1)',
     border: 'rgba(239,68,68,0.3)',
     label: '已拒绝',
@@ -70,7 +70,7 @@ export const FORMULA_STATE_COLORS = {
    * 颜色：橙色系 - 代表需要修改、部分问题、改进空间
    */
   revision_required: {
-    main: '#f97316',
+    main: '#EA580C',
     light: '#fdba74',
     dark: '#c2410c',
     bg: 'rgba(249,115,22,0.1)',
@@ -106,7 +106,7 @@ export function getFormulaStateColor(state: keyof typeof FORMULA_STATE_COLORS) {
 /**
  * 根据状态获取对应的CSS类名前缀（用于Tailwind）
  * @param state 状态名称
- * @returns Tailwind颜色类名（如 'text-green-600', 'bg-red-50'）
+ * @returns Tailwind颜色类名（如 'text-success-600', 'bg-error-50'）
  */
 export function getFormulaStateClasses(state: keyof typeof FORMULA_STATE_COLORS) {
   const color = FORMULA_STATE_COLORS[state];

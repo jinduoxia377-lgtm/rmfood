@@ -20,8 +20,8 @@ from app.core.index_optimizer import (
 )
 
 # 在 main.py 启动时
-index_analysis = await run_index_analysis(db_session)
-print("缺失的索引:", index_analysis['missing_indexes'])
+# index_analysis = await run_index_analysis(db_session)
+# logger.info("缺失的索引: %s", index_analysis.get('missing_indexes', []))
 
 # 生成 SQL 供 DBA 审核
 sql = generate_index_creation_sql(index_analysis['missing_indexes'])
@@ -30,6 +30,8 @@ from __future__ import annotations
 
 import time
 import logging
+
+from app.utils.error_sanitize import sanitize_error
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Set, Tuple
 
@@ -575,7 +577,7 @@ class IndexAnalyzer:
             except Exception as e:
                 errors.append({
                     "index": candidate.name,
-                    "error": str(e),
+                    "error": sanitize_error(e, "索引创建失败"),
                 })
                 await self._session.rollback()
                 logger.warning(f"[IndexAnalyzer] 索引创建失败: {candidate.name}: {e}")

@@ -132,13 +132,13 @@ export function TeamOnlineStatus({ dashboardId, className }: TeamOnlineStatusPro
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'online':
-        return 'bg-green-500'
+        return 'bg-success-500'
       case 'away':
-        return 'bg-amber-500'
+        return 'bg-warning-500'
       case 'offline':
-        return 'bg-slate-400'
+        return 'bg-neutral-400'
       default:
-        return 'bg-slate-400'
+        return 'bg-neutral-400'
     }
   }
 
@@ -156,11 +156,11 @@ export function TeamOnlineStatus({ dashboardId, className }: TeamOnlineStatusPro
   }
 
   const getActionIcon = (action: string) => {
-    if (action.includes('编辑')) return <Zap size={16} className="text-blue-600" />
-    if (action.includes('查看')) return <Activity size={16} className="text-slate-600" />
-    if (action.includes('添加')) return <CheckCircle2 size={16} className="text-green-600" />
-    if (action.includes('导出')) return <Clock size={16} className="text-amber-600" />
-    return <User size={16} className="text-slate-500" />
+    if (action.includes('编辑')) return <Zap size={16} className="text-secondary-600" />
+    if (action.includes('查看')) return <Activity size={16} className="text-neutral-600" />
+    if (action.includes('添加')) return <CheckCircle2 size={16} className="text-success-600" />
+    if (action.includes('导出')) return <Clock size={16} className="text-warning-600" />
+    return <User size={16} className="text-neutral-500" />
   }
 
   return (
@@ -168,7 +168,7 @@ export function TeamOnlineStatus({ dashboardId, className }: TeamOnlineStatusPro
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Users size={20} className="text-blue-600 dark:text-blue-400" />
+            <Users size={20} className="text-secondary-600 dark:text-secondary-400" />
             <CardTitle as="h3" className="text-sm font-bold">团队在线状态</CardTitle>
           </div>
           <Badge size="sm">{onlineCount}</Badge>
@@ -181,12 +181,12 @@ export function TeamOnlineStatus({ dashboardId, className }: TeamOnlineStatusPro
             <div key={user.userId} className="py-2">
               <div className="flex items-center gap-3">
                 <div className="relative">
-                  <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                    <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                  <div className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
+                    <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
                       {user.userName.charAt(0)}
                     </span>
                   </div>
-                  <div className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-white dark:border-slate-800 ${getStatusColor(user.status)}`} />
+                  <div className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-white dark:border-neutral-800 ${getStatusColor(user.status)}`} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
@@ -197,7 +197,7 @@ export function TeamOnlineStatus({ dashboardId, className }: TeamOnlineStatusPro
                   </div>
                   <div className="flex items-center gap-2 mt-1">
                     {getActionIcon(user.currentAction)}
-                    <p className="text-xs text-slate-500 truncate">{user.currentAction}</p>
+                    <p className="text-xs text-neutral-500 truncate">{user.currentAction}</p>
                   </div>
                 </div>
               </div>
@@ -207,33 +207,33 @@ export function TeamOnlineStatus({ dashboardId, className }: TeamOnlineStatusPro
 
         {/* 统计信息 */}
         <div className="mt-4 grid grid-cols-3 gap-2">
-          <div className="p-2 rounded-lg bg-green-50 dark:bg-green-900/10 border border-green-100 dark:border-green-800/30">
+          <div className="p-2 rounded-lg bg-success-50 dark:bg-success-900/10 border border-green-100 dark:border-green-800/30">
             <div className="text-center">
-              <p className="text-sm font-bold text-green-800 dark:text-green-400">{users.filter(u => u.status === 'online').length}</p>
-              <p className="text-xs text-green-600 dark:text-green-500">在线</p>
+              <p className="text-sm font-bold text-success-800 dark:text-success-400">{users.filter(u => u.status === 'online').length}</p>
+              <p className="text-xs text-success-600 dark:text-success-500">在线</p>
             </div>
           </div>
-          <div className="p-2 rounded-lg bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-800/30">
+          <div className="p-2 rounded-lg bg-warning-50 dark:bg-warning-900/10 border border-amber-100 dark:border-amber-800/30">
             <div className="text-center">
-              <p className="text-sm font-bold text-amber-800 dark:text-amber-400">{users.filter(u => u.status === 'away').length}</p>
-              <p className="text-xs text-amber-600 dark:text-amber-500">离开</p>
+              <p className="text-sm font-bold text-warning-800 dark:text-warning-400">{users.filter(u => u.status === 'away').length}</p>
+              <p className="text-xs text-warning-600 dark:text-warning-500">离开</p>
             </div>
           </div>
-          <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800/30">
+          <div className="p-2 rounded-lg bg-slate-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-800/30">
             <div className="text-center">
-              <p className="text-sm font-bold text-slate-800 dark:text-slate-400">{users.filter(u => u.status === 'offline').length}</p>
-              <p className="text-xs text-slate-600 dark:text-slate-500">离线</p>
+              <p className="text-sm font-bold text-neutral-800 dark:text-neutral-400">{users.filter(u => u.status === 'offline').length}</p>
+              <p className="text-xs text-neutral-600 dark:text-neutral-500">离线</p>
             </div>
           </div>
         </div>
 
         {/* 协作提示 */}
-        <div className="mt-4 p-3 rounded-lg bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-800/30">
+        <div className="mt-4 p-3 rounded-lg bg-secondary-50 dark:bg-secondary-900/10 border border-blue-100 dark:border-blue-800/30">
           <div className="flex items-start gap-3">
-            <Activity size={18} className="text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+            <Activity size={18} className="text-secondary-600 dark:text-secondary-400 flex-shrink-0 mt-0.5" />
             <div>
-              <h4 className="text-sm font-medium text-blue-800 dark:text-blue-300 mb-1">实时协作提示</h4>
-              <ul className="text-xs text-blue-600 dark:text-blue-400 space-y-1">
+              <h4 className="text-sm font-medium text-secondary-800 dark:text-secondary-300 mb-1">实时协作提示</h4>
+              <ul className="text-xs text-secondary-600 dark:text-secondary-400 space-y-1">
                 <li>• 绿色状态表示用户正在活跃</li>
                 <li>• 黄色状态表示用户暂时离开</li>
                 <li>• 灰色状态表示用户离线</li>

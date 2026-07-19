@@ -1,55 +1,69 @@
 /**
- * 警告组件
+ * 警告组件 - 院士级设计系统版本
  * 用于显示成功、错误、信息等提示信息
+ * 符合 WCAG 2.2 AA 标准
  */
-import * as React from 'react'
+import * as React from 'react';
+import { cn } from '@/lib/utils';
 
 interface AlertProps {
-  children: React.ReactNode
-  variant?: 'default' | 'destructive' | 'success' | 'warning' | 'info'
-  className?: string
+  children: React.ReactNode;
+  variant?: 'default' | 'destructive' | 'success' | 'warning' | 'info';
+  className?: string;
+  role?: string;
+  'aria-live'?: 'polite' | 'assertive' | 'off';
 }
 
 interface AlertTitleProps {
-  children: React.ReactNode
-  className?: string
+  children: React.ReactNode;
+  className?: string;
 }
 
 interface AlertDescriptionProps {
-  children: React.ReactNode
-  className?: string
+  children: React.ReactNode;
+  className?: string;
 }
 
-export function Alert({ children, variant = 'default', className = '' }: AlertProps) {
+export function Alert({
+  children,
+  variant = 'default',
+  className = '',
+  role = 'alert',
+  'aria-live': ariaLive = 'assertive',
+}: AlertProps) {
   const variantClasses = {
-    default: 'bg-primary-50 dark:bg-primary-900/10 border-primary-200 dark:border-primary-800/40 text-primary-700 dark:text-primary-300',
-    destructive: 'bg-danger-50 dark:bg-danger-500/10 border-danger-200 dark:border-danger-500/20 text-danger-600 dark:text-danger-400',
-    success: 'bg-success-50 dark:bg-success-500/10 border-success-200 dark:border-success-500/20 text-success-600 dark:text-success-400',
-    warning: 'bg-warning-50 dark:bg-warning-500/10 border-warning-200 dark:border-warning-500/20 text-warning-600 dark:text-warning-400',
+    default:
+      'bg-primary-50 dark:bg-primary-900/10 border-primary-200 dark:border-primary-800/40 text-primary-700 dark:text-primary-300',
+    destructive:
+      'bg-danger-50 dark:bg-danger-500/10 border-danger-200 dark:border-danger-500/20 text-danger-600 dark:text-danger-400',
+    success:
+      'bg-success-50 dark:bg-success-500/10 border-success-200 dark:border-success-500/20 text-success-600 dark:text-success-400',
+    warning:
+      'bg-warning-50 dark:bg-warning-500/10 border-warning-200 dark:border-warning-500/20 text-warning-600 dark:text-warning-400',
     info: 'bg-info-50 dark:bg-info-500/10 border-info-200 dark:border-info-500/20 text-info-600 dark:text-info-400',
-  }
+  };
 
   return (
-    <div className={`flex items-center p-4 rounded-lg border ${variantClasses[variant]} ${className}`}>
+    <div
+      className={cn(
+        'flex items-center p-4 rounded-lg border transition-normal shadow-sm',
+        variantClasses[variant],
+        className,
+      )}
+      role={role}
+      aria-live={ariaLive}
+    >
       {children}
     </div>
-  )
+  );
 }
 
 export function AlertTitle({ children, className = '' }: AlertTitleProps) {
-  return (
-    <h4 className={`font-medium ${className}`}>
-      {children}
-    </h4>
-  )
+  return <h4 className={cn('font-medium text-md', className)}>{children}</h4>;
 }
 
 export function AlertDescription({ children, className = '' }: AlertDescriptionProps) {
-  return (
-    <div className={`text-sm ${className}`}>
-      {children}
-    </div>
-  )
+  return <div className={cn('text-sm mt-1', className)}>{children}</div>;
 }
 
-export type { AlertProps, AlertTitleProps, AlertDescriptionProps }
+export type { AlertProps, AlertTitleProps, AlertDescriptionProps };

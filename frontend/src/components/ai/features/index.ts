@@ -18,36 +18,8 @@ export { StabilityPredictTab } from './StabilityPredictTab'
 export { useChatMessages } from './hooks/useChatMessages'
 export { useFormulaManager } from './hooks/useFormulaManager'
 export { useReportGenerator } from './hooks/useReportGenerator'
-export { useChatHistory } from './hooks/useChatHistory'
 
 // Components
-export { MessageList } from './components/MessageList'
 export { FormulaPanel } from './components/FormulaPanel'
-export { default as QuickActions } from './components/QuickActions'
 export { default as ChatInputArea } from './components/ChatInputArea'
 export { ErrorBoundary, GlobalErrorBoundary, ModuleErrorBoundary } from './components/ErrorBoundary'
-
-// Utils
-export {
-  generateSingleFormulaReport,
-  generateComprehensiveReport,
-  generateReportId,
-  generateContentHash,
-  calculateMetadata,
-  validateReport,
-} from './utils/reportEngine'
-export { HotkeyManager, useHotkeys } from './utils/hotkeys'
-
-export {
-  normalizeFormula,
-  normalizeFormulas,
-} from './utils/formulaTransformer'
-
-export {
-  formatTimestamp,
-  truncateText,
-  detectMessageType,
-  highlightKeywords,
-  generateMessageId,
-  estimateTokenCount,
-} from './utils/chatHelpers'

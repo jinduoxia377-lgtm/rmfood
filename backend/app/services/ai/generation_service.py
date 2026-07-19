@@ -129,7 +129,7 @@ class AIGenerationService:
             # 返回错误结果
             return AIGenerationResult(
                 task_id=task_id,
-                generated_content=f"生成失败：{str(e)}",
+                generated_content="生成失败，请稍后重试",
                 latency_ms=(time.time() - start_time) * 1000,
                 confidence_score=0.0,
                 quality_score=0.0,
@@ -206,7 +206,7 @@ class AIGenerationService:
             logger.error(f"❌ 流式生成失败: {e}")
             yield {
                 "type": "error",
-                "content": f"生成失败: {str(e)}",
+                "content": "生成失败，请稍后重试",
                 "task_id": task_id,
             }
 

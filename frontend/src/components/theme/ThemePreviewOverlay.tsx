@@ -37,7 +37,7 @@ export function ThemePreviewOverlay({ theme, position, onClose, onApply }: Theme
       }}
     >
       <div
-        className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 p-4 w-80"
+        className="bg-white dark:bg-neutral-900 rounded-xl shadow-2xl border border-neutral-200 dark:border-neutral-700 p-4 w-80"
         style={{ backgroundColor: config.colors?.background || '#fff' }}
       >
         {/* Header */}
@@ -45,7 +45,7 @@ export function ThemePreviewOverlay({ theme, position, onClose, onApply }: Theme
           <span className="text-sm font-semibold" style={{ color: config.colors?.text || '#000' }}>
             {theme.name}
           </span>
-          <button onClick={onClose} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded">
+          <button onClick={onClose} className="p-1 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -53,7 +53,7 @@ export function ThemePreviewOverlay({ theme, position, onClose, onApply }: Theme
         {/* Preview Content */}
         <div
           className="rounded-lg p-3 mb-3 space-y-2"
-          style={{ backgroundColor: config.colors?.surface || '#f9fafb' }}
+          style={{ backgroundColor: config.colors?.surface || '#F5F5F7' }}
         >
           {/* Color Swatches */}
           <div className="flex gap-1">
@@ -61,7 +61,7 @@ export function ThemePreviewOverlay({ theme, position, onClose, onApply }: Theme
               <div
                 key={key}
                 className="w-8 h-8 rounded-md border border-white/20"
-                style={{ backgroundColor: (config.colors as Record<string, string>)?.[key] ?? '#ccc' }}
+                style={{ backgroundColor: (config.colors as Record<string, string>)?.[key] ?? 'var(--color-neutral-400, #9CA3AF)' }}
               />
             ))}
           </div>
@@ -79,7 +79,7 @@ export function ThemePreviewOverlay({ theme, position, onClose, onApply }: Theme
         <button
           onClick={() => onApply(theme)}
           className="w-full py-2 text-white rounded-lg font-medium flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
-          style={{ backgroundColor: config.colors?.primary || '#059669' }}
+          style={{ backgroundColor: config.colors?.primary || 'var(--color-primary, #34C759)' }}
         >
           <Eye className="w-4 h-4" />
           应用此主题

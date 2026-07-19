@@ -93,7 +93,7 @@ const DIMENSION_CONFIG: AnalysisDimension[] = [
     icon: React.createElement(Zap, { className: "w-4 h-4" }),
     score: 0,
     maxScore: 10,
-    color: '#3b82f6',
+    color: '#007AFF',
     description: '基于功效标签的综合评分',
     details: []
   },
@@ -103,7 +103,7 @@ const DIMENSION_CONFIG: AnalysisDimension[] = [
     icon: React.createElement(Shield, { className: "w-4 h-4" }),
     score: 0,
     maxScore: 10,
-    color: '#10b981',
+    color: '#34C759',
     description: '基于注意事项和用量的安全评估',
     details: []
   },
@@ -113,7 +113,7 @@ const DIMENSION_CONFIG: AnalysisDimension[] = [
     icon: React.createElement(Activity, { className: "w-4 h-4" }),
     score: 0,
     maxScore: 10,
-    color: '#8b5cf6',
+    color: '#AF52DE',
     description: '成分在体内的吸收效率预估',
     details: []
   },
@@ -123,7 +123,7 @@ const DIMENSION_CONFIG: AnalysisDimension[] = [
     icon: React.createElement(Thermometer, { className: "w-4 h-4" }),
     score: 0,
     maxScore: 10,
-    color: '#f59e0b',
+    color: '#D97706',
     description: '储存和使用过程中的稳定表现',
     details: []
   },
@@ -133,7 +133,7 @@ const DIMENSION_CONFIG: AnalysisDimension[] = [
     icon: React.createElement(Layers, { className: "w-4 h-4" }),
     score: 0,
     maxScore: 10,
-    color: '#ec4899',
+    color: '#D946EF',
     description: '可应用的场景和人群范围',
     details: []
   },
@@ -143,7 +143,7 @@ const DIMENSION_CONFIG: AnalysisDimension[] = [
     icon: React.createElement(Microscope, { className: "w-4 h-4" }),
     score: 0,
     maxScore: 10,
-    color: '#06b6d4',
+    color: '#0891B2',
     description: '现代科学研究支持程度',
     details: []
   }

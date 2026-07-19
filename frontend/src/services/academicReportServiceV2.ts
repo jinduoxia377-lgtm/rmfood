@@ -1025,27 +1025,27 @@ ${formulaName} 配方组成如下（典型配方示例）：
       body { font-family: SimSun, Times New Roman, serif; font-size: 12pt; line-height: 1.6; color: #1f2937; background: #f3f4f6; padding: 20px; }
       .report-container { max-width: 210mm; margin: 0 auto; background: white; padding: 25mm 25mm 25mm 30mm; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); }
       .title-page { text-align: center; padding: 3em 0; border-bottom: 1px solid #e5e7eb; }
-      .report-title { font-size: 24pt; font-weight: bold; color: #1e40af; margin-bottom: 1.5em; line-height: 1.4; }
+      .report-title { font-size: 24pt; font-weight: bold; color: #003E87; margin-bottom: 1.5em; line-height: 1.4; }
       .metadata-info { margin-top: 2em; }
-      .toc-section { margin: 2em 0; padding: 1.5em 2em; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; }
-      .toc-title { font-size: 16pt; font-weight: bold; color: #1e40af; margin-bottom: 1em; text-align: center; }
+      .toc-section { margin: 2em 0; padding: 1.5em 2em; background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 8px; }
+      .toc-title { font-size: 16pt; font-weight: bold; color: #003E87; margin-bottom: 1em; text-align: center; }
       .toc-list { list-style: none; margin: 0; padding: 0; }
       .toc-level-1 { margin: 0.5em 0; font-weight: bold; }
       .toc-level-2 { margin: 0.3em 0 0.3em 2em; font-size: 0.95em; }
-      .toc-list a { color: #1e40af; text-decoration: none; }
+      .toc-list a { color: #003E87; text-decoration: none; }
       .toc-list a:hover { text-decoration: underline; }
       .abstract-section { margin: 2em 0; padding: 1.5em 2em; border: 1px solid #e5e7eb; border-radius: 8px; background: #f9fafb; }
-      .abstract-title { font-size: 14pt; font-weight: bold; text-align: center; color: #1e40af; margin-bottom: 1em; padding-bottom: 0.5em; border-bottom: 1px dashed #e5e7eb; }
-      .keywords { text-align: right; color: #475569; margin-top: 1em; }
+      .abstract-title { font-size: 14pt; font-weight: bold; text-align: center; color: #003E87; margin-bottom: 1em; padding-bottom: 0.5em; border-bottom: 1px dashed #e5e7eb; }
+      .keywords { text-align: right; color: #4B5563; margin-top: 1em; }
       .module-section { margin: 2em 0; page-break-inside: avoid; }
-      .module-title { font-size: 18pt; font-weight: bold; color: #1e40af; margin: 1.5em 0 1em; padding-bottom: 0.5em; border-bottom: 2px solid #1e40af; }
-      .module-content h3 { font-size: 14pt; font-weight: bold; color: #475569; margin: 1.5em 0 0.8em; padding-left: 0.5em; border-left: 4px solid #0ea5e9; }
-      .module-content h4 { font-size: 13pt; font-weight: bold; color: #475569; margin: 1.2em 0 0.6em; font-style: italic; }
+      .module-title { font-size: 18pt; font-weight: bold; color: #003E87; margin: 1.5em 0 1em; padding-bottom: 0.5em; border-bottom: 2px solid #003E87; }
+      .module-content h3 { font-size: 14pt; font-weight: bold; color: #4B5563; margin: 1.5em 0 0.8em; padding-left: 0.5em; border-left: 4px solid #0ea5e9; }
+      .module-content h4 { font-size: 13pt; font-weight: bold; color: #4B5563; margin: 1.2em 0 0.6em; font-style: italic; }
       .module-content p { text-indent: 2em; text-align: justify; margin-bottom: 1em; }
       .table-container { margin: 1.5em 0; overflow-x: auto; }
-      .table-title { font-size: 11pt; font-weight: bold; text-align: center; color: #475569; margin-bottom: 0.5em; }
+      .table-title { font-size: 11pt; font-weight: bold; text-align: center; color: #4B5563; margin-bottom: 0.5em; }
       .data-table { width: 100%; border-collapse: collapse; background: white; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06); border-radius: 8px; overflow: hidden; }
-      .data-table th { background: linear-gradient(180deg, #1e40af 0%, #475569 100%); color: white; font-weight: bold; padding: 0.75em 1em; text-align: center; vertical-align: middle; }
+      .data-table th { background: linear-gradient(180deg, #003E87 0%, #4B5563 100%); color: white; font-weight: bold; padding: 0.75em 1em; text-align: center; vertical-align: middle; }
       .data-table td { padding: 0.6em 1em; border-bottom: 1px solid #e5e7eb; vertical-align: middle; }
       .data-table tr:nth-child(even) { background-color: #f3f4f6; }
       .data-table tr:hover { background-color: #f9fafb; }

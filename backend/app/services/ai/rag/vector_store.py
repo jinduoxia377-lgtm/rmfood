@@ -31,14 +31,17 @@ class VectorStore:
             settings=Settings(anonymized_telemetry=False),
         )
         self._collection_name = "rag_documents"
+        self._collection_ref = None  # 惰性加载缓存
 
     @property
     def _collection(self):
-        """获取或创建文档集合（惰性加载）"""
-        return self._client.get_or_create_collection(
-            name=self._collection_name,
-            metadata={"hnsw:space": "cosine"},
-        )
+        """获取或创建文档集合（惰性加载 + 缓存）"""
+        if self._collection_ref is None:
+            self._collection_ref = self._client.get_or_create_collection(
+                name=self._collection_name,
+                metadata={"hnsw:space": "cosine"},
+            )
+        return self._collection_ref
 
     def add_chunks(self, chunks: list[DocumentChunk], embeddings: list[list[float]]):
         """批量添加文档块到向量库

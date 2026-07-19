@@ -138,7 +138,7 @@ export function EnhancedAreaChart({
     if (!showLegend || !payload) return null
 
     return (
-      <div className="flex flex-wrap justify-center gap-4 mt-4 pt-4" style={{ borderTop: `1px solid ${themeColors.outlineVariant}20` }}>
+      <div className="flex flex-wrap justify-center gap-4 mt-4 pt-4" style={{ borderTop: `1px solid ${themeColors.outline}20` }}>
         {payload.map((entry: any, index: number) => (
           <div key={index} className="flex items-center gap-2 cursor-pointer group">
             <div
@@ -192,7 +192,7 @@ export function EnhancedAreaChart({
             fontSize: 12,
             fontFamily: 'inherit',
           }}
-          tickFormatter={(value: number) => value >= 1000 ? `${(value / 1000).toFixed(1)}K` : value}
+          tickFormatter={(value: number) => (value >= 1000 ? `${(value / 1000).toFixed(1)}K` : String(value))}
           width={60}
         />
 

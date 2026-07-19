@@ -363,11 +363,11 @@ export function HistorySidebar({
               {config.showCategoryFilter && (
                 <CategoryFilter
                   categories={[
-                    { id: 'all', name: '全部', icon: 'LayoutGrid', count: conversations.length, color: '#64748B' },
-                    { id: 'chat', name: 'AI 对话', icon: 'MessageSquare', count: conversations.filter((c) => c.type === 'chat').length, color: '#059669' },
-                    { id: 'formula', name: '配方设计', icon: 'FlaskConical', count: conversations.filter((c) => c.type === 'formula').length, color: '#2563EB' },
-                    { id: 'report', name: '学术报告', icon: 'FileText', count: conversations.filter((c) => c.type === 'report').length, color: '#7C3AED' },
-                    { id: 'search', name: '检索记录', icon: 'Search', count: conversations.filter((c) => c.type === 'search').length, color: '#F59E0B' },
+                    { id: 'all', name: '全部', icon: 'LayoutGrid', count: conversations.length, color: '#6B7280' },
+                    { id: 'chat', name: 'AI 对话', icon: 'MessageSquare', count: conversations.filter((c) => c.type === 'chat').length, color: '#28A745' },
+                    { id: 'formula', name: '配方设计', icon: 'FlaskConical', count: conversations.filter((c) => c.type === 'formula').length, color: '#007AFF' },
+                    { id: 'report', name: '学术报告', icon: 'FileText', count: conversations.filter((c) => c.type === 'report').length, color: '#AF52DE' },
+                    { id: 'search', name: '检索记录', icon: 'Search', count: conversations.filter((c) => c.type === 'search').length, color: '#D97706' },
                   ]}
                   selectedCategory={filterState.selectedCategory}
                   onSelect={handleCategorySelect}
@@ -406,14 +406,14 @@ export function HistorySidebar({
                     <div className="pl-6">
                       <TagFilter
                         tags={[
-                          { id: 't1', name: '营养配方', color: '#059669', count: conversations.filter((c) => c.tags.includes('t1')).length },
-                          { id: 't2', name: '护肤配方', color: '#2563EB', count: conversations.filter((c) => c.tags.includes('t2')).length },
-                          { id: 't3', name: 'AI生成', color: '#7C3AED', count: conversations.filter((c) => c.tags.includes('t3')).length },
-                          { id: 't4', name: '待审核', color: '#F59E0B', count: conversations.filter((c) => c.tags.includes('t4')).length },
-                          { id: 't5', name: '已完成', color: '#10B981', count: conversations.filter((c) => c.tags.includes('t5')).length },
-                          { id: 't6', name: '研究中', color: '#EC4899', count: conversations.filter((c) => c.tags.includes('t6')).length },
-                          { id: 't7', name: '紧急', color: '#EF4444', count: conversations.filter((c) => c.tags.includes('t7')).length },
-                          { id: 't8', name: '客户需求', color: '#06B6D4', count: conversations.filter((c) => c.tags.includes('t8')).length },
+                          { id: 't1', name: '营养配方', color: '#28A745', count: conversations.filter((c) => c.tags.includes('t1')).length },
+                          { id: 't2', name: '护肤配方', color: '#007AFF', count: conversations.filter((c) => c.tags.includes('t2')).length },
+                          { id: 't3', name: 'AI生成', color: '#AF52DE', count: conversations.filter((c) => c.tags.includes('t3')).length },
+                          { id: 't4', name: '待审核', color: '#D97706', count: conversations.filter((c) => c.tags.includes('t4')).length },
+                          { id: 't5', name: '已完成', color: '#34C759', count: conversations.filter((c) => c.tags.includes('t5')).length },
+                          { id: 't6', name: '研究中', color: '#D946EF', count: conversations.filter((c) => c.tags.includes('t6')).length },
+                          { id: 't7', name: '紧急', color: '#FF3B30', count: conversations.filter((c) => c.tags.includes('t7')).length },
+                          { id: 't8', name: '客户需求', color: '#0891B2', count: conversations.filter((c) => c.tags.includes('t8')).length },
                         ]}
                         selectedTags={filterState.selectedTags}
                         onToggle={handleTagToggle}

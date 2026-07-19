@@ -79,7 +79,7 @@ export function ModelSelector({ modelType, onModelChange, onParamsChange, classN
           </div>
           <div>
             <h3 className="text-sm font-medium">模型选择</h3>
-            <p className="text-xs text-gray-500">选择和配置 AI 模型</p>
+            <p className="text-xs text-neutral-500">选择和配置 AI 模型</p>
           </div>
         </div>
         <Button
@@ -94,7 +94,7 @@ export function ModelSelector({ modelType, onModelChange, onParamsChange, classN
 
       <div className="mt-4 space-y-4">
         <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300 block">模型类型</label>
+          <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 block">模型类型</label>
           <Select value={modelType} onChange={(e) => onModelChange(e.target.value as ModelType)}>
             {modelOptions.map((option) => (
               <option key={option.value} value={option.value}>
@@ -105,11 +105,11 @@ export function ModelSelector({ modelType, onModelChange, onParamsChange, classN
         </div>
 
         {showParams && (
-          <div className="space-y-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <div className="space-y-4 pt-4 border-t border-neutral-200 dark:border-neutral-700">
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">温度 (Temperature)</label>
-                <span className="text-xs text-gray-500">{params.temperature.toFixed(2)}</span>
+                <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">温度 (Temperature)</label>
+                <span className="text-xs text-neutral-500">{params.temperature.toFixed(2)}</span>
               </div>
               <Slider
                 value={params.temperature}
@@ -119,7 +119,7 @@ export function ModelSelector({ modelType, onModelChange, onParamsChange, classN
                 onChange={(value) => handleParamChange('temperature', value)}
                 className="w-full"
               />
-              <div className="flex justify-between text-xs text-gray-500">
+              <div className="flex justify-between text-xs text-neutral-500">
                 <span>0.0 (确定)</span>
                 <span>1.0 (随机)</span>
               </div>
@@ -127,8 +127,8 @@ export function ModelSelector({ modelType, onModelChange, onParamsChange, classN
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">最大 Tokens</label>
-                <span className="text-xs text-gray-500">{params.maxTokens}</span>
+                <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">最大 Tokens</label>
+                <span className="text-xs text-neutral-500">{params.maxTokens}</span>
               </div>
               <Slider
                 value={params.maxTokens}
@@ -138,7 +138,7 @@ export function ModelSelector({ modelType, onModelChange, onParamsChange, classN
                 onChange={(value) => handleParamChange('maxTokens', value)}
                 className="w-full"
               />
-              <div className="flex justify-between text-xs text-gray-500">
+              <div className="flex justify-between text-xs text-neutral-500">
                 <span>100</span>
                 <span>4000</span>
               </div>
@@ -146,8 +146,8 @@ export function ModelSelector({ modelType, onModelChange, onParamsChange, classN
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Top P</label>
-                <span className="text-xs text-gray-500">{params.topP.toFixed(2)}</span>
+                <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">Top P</label>
+                <span className="text-xs text-neutral-500">{params.topP.toFixed(2)}</span>
               </div>
               <Slider
                 value={params.topP}
@@ -157,7 +157,7 @@ export function ModelSelector({ modelType, onModelChange, onParamsChange, classN
                 onChange={(value) => handleParamChange('topP', value)}
                 className="w-full"
               />
-              <div className="flex justify-between text-xs text-gray-500">
+              <div className="flex justify-between text-xs text-neutral-500">
                 <span>0.1</span>
                 <span>1.0</span>
               </div>
@@ -166,8 +166,8 @@ export function ModelSelector({ modelType, onModelChange, onParamsChange, classN
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">频率惩罚</label>
-                  <span className="text-xs text-gray-500">{params.frequencyPenalty.toFixed(2)}</span>
+                  <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">频率惩罚</label>
+                  <span className="text-xs text-neutral-500">{params.frequencyPenalty.toFixed(2)}</span>
                 </div>
                 <Slider
                   value={params.frequencyPenalty}
@@ -181,8 +181,8 @@ export function ModelSelector({ modelType, onModelChange, onParamsChange, classN
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">存在惩罚</label>
-                  <span className="text-xs text-gray-500">{params.presencePenalty.toFixed(2)}</span>
+                  <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">存在惩罚</label>
+                  <span className="text-xs text-neutral-500">{params.presencePenalty.toFixed(2)}</span>
                 </div>
                 <Slider
                   value={params.presencePenalty}

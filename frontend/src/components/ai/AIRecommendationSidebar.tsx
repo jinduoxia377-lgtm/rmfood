@@ -51,9 +51,9 @@ interface RecommendationResponse {
 // ===== 配置常量 =====
 
 const TYPE_ICONS = {
-  template: <Star size={14} className="text-purple-600" />,
-  formula: <Zap size={14} className="text-blue-600" />,
-  tip: <TrendingUp size={14} className="text-green-600" />,
+  template: <Star size={14} className="text-accent-600" />,
+  formula: <Zap size={14} className="text-secondary-600" />,
+  tip: <TrendingUp size={14} className="text-success-600" />,
   article: <Eye size={14} className="text-orange-600" />,
 }
 
@@ -162,10 +162,10 @@ export function AIRecommendationSidebar({
   )
 
   const getConfidenceColor = (score: number) => {
-    if (score >= 0.85) return 'text-green-600 bg-green-50'
-    if (score >= 0.7) return 'text-blue-600 bg-blue-50'
+    if (score >= 0.85) return 'text-success-600 bg-success-50'
+    if (score >= 0.7) return 'text-secondary-600 bg-secondary-50'
     if (score >= 0.5) return 'text-yellow-600 bg-yellow-50'
-    return 'text-gray-600 bg-gray-50'
+    return 'text-neutral-600 bg-slate-50'
   }
 
   const filteredRecommendations =
@@ -177,8 +177,8 @@ export function AIRecommendationSidebar({
     <div className={`space-y-3 ${className}`}>
       {/* 头部 */}
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-          <Sparkles size={16} className="text-purple-600" />
+        <h3 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
+          <Sparkles size={16} className="text-accent-600" />
           为您推荐
           {!isLoading && recommendations.length > 0 && (
             <Badge variant="info" size="sm">
@@ -192,7 +192,7 @@ export function AIRecommendationSidebar({
             <button
               onClick={fetchRecommendations}
               disabled={isLoading}
-              className="p-1.5 hover:bg-gray-100 rounded-md transition-colors"
+              className="p-1.5 hover:bg-neutral-100 rounded-md transition-colors"
             >
               <RefreshCw size={14} className={isLoading ? 'animate-spin' : ''} />
             </button>
@@ -207,8 +207,8 @@ export function AIRecommendationSidebar({
             onClick={() => setTypeFilter('all')}
             className={`px-2 py-1 text-xs font-medium rounded-full whitespace-nowrap transition-colors ${
               typeFilter === 'all'
-                ? 'bg-purple-100 text-purple-700 border border-purple-300'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                ? 'bg-accent-100 text-accent-700 border border-purple-300'
+                : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
             }`}
           >
             全部
@@ -219,8 +219,8 @@ export function AIRecommendationSidebar({
               onClick={() => setTypeFilter(type)}
               className={`px-2 py-1 text-xs font-medium rounded-full whitespace-nowrap flex items-center gap-1 transition-colors ${
                 typeFilter === type
-                  ? 'bg-purple-100 text-purple-700 border border-purple-300'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  ? 'bg-accent-100 text-accent-700 border border-purple-300'
+                  : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
               }`}
             >
               {TYPE_ICONS[type]}
@@ -233,15 +233,15 @@ export function AIRecommendationSidebar({
       {/* 加载状态 */}
       {isLoading && (
         <div className="py-12 text-center">
-          <Loader2 size={32} className="mx-auto animate-spin text-purple-600 mb-3" />
-          <p className="text-sm text-gray-500">正在生成个性化推荐...</p>
+          <Loader2 size={32} className="mx-auto animate-spin text-accent-600 mb-3" />
+          <p className="text-sm text-neutral-500">正在生成个性化推荐...</p>
         </div>
       )}
 
       {/* 错误状态 */}
       {error && !isLoading && (
         <Card className="p-4 text-center">
-          <p className="text-sm text-red-600 mb-2">加载失败</p>
+          <p className="text-sm text-error-600 mb-2">加载失败</p>
           <Button onClick={fetchRecommendations} variant="outline" size="sm">
             重试
           </Button>
@@ -250,7 +250,7 @@ export function AIRecommendationSidebar({
 
       {/* 空状态 */}
       {!isLoading && !error && filteredRecommendations.length === 0 && (
-        <div className="py-8 text-center text-gray-500">
+        <div className="py-8 text-center text-neutral-500">
           <Sparkles size={40} className="mx-auto mb-2 opacity-30" />
           <p className="text-sm">暂无推荐内容</p>
           <p className="text-xs mt-1">继续使用平台后将获得更多个性化推荐</p>
@@ -275,12 +275,12 @@ export function AIRecommendationSidebar({
                 >
                   <div className="flex items-center gap-2 mb-1">
                     {TYPE_ICONS[item.type] || TYPE_ICONS.template}
-                    <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 line-clamp-1 group-hover:text-purple-600 transition-colors">
+                    <h4 className="text-sm font-medium text-neutral-900 dark:text-neutral-100 line-clamp-1 group-hover:text-accent-600 transition-colors">
                       {item.title}
                     </h4>
                   </div>
 
-                  <p className="text-xs text-gray-500 line-clamp-2 mb-2">{item.description}</p>
+                  <p className="text-xs text-neutral-500 line-clamp-2 mb-2">{item.description}</p>
 
                   {/* 推荐理由标签 */}
                   <div className="flex flex-wrap gap-1 mb-2">
@@ -296,14 +296,14 @@ export function AIRecommendationSidebar({
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Badge
-                        variant="default"
+                        variant="neutral"
                         size="sm"
                         className={`text-[10px] ${getConfidenceColor(item.confidence_score)}`}
                       >
                         匹配度 {(item.confidence_score * 100).toFixed(0)}%
                       </Badge>
 
-                      <span className="text-[10px] text-gray-400 flex items-center gap-1">
+                      <span className="text-[10px] text-neutral-400 flex items-center gap-1">
                         <Clock size={10} />
                         {TYPE_LABELS[item.type]}
                       </span>
@@ -311,7 +311,7 @@ export function AIRecommendationSidebar({
 
                     <ChevronRight
                       size={14}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400"
+                      className="opacity-0 group-hover:opacity-100 transition-opacity text-neutral-400"
                     />
                   </div>
                 </button>
@@ -324,10 +324,10 @@ export function AIRecommendationSidebar({
                         e.stopPropagation()
                         handleFeedback(item, 'like')
                       }}
-                      className={`p-1 rounded hover:bg-green-50 transition-colors ${
+                      className={`p-1 rounded hover:bg-success-50 transition-colors ${
                         feedbackState[String(item.id)] === 'like'
-                          ? 'text-green-600 bg-green-50'
-                          : 'text-gray-400'
+                          ? 'text-success-600 bg-success-50'
+                          : 'text-neutral-400'
                       }`}
                     >
                       <ThumbsUp size={14} />
@@ -340,10 +340,10 @@ export function AIRecommendationSidebar({
                         e.stopPropagation()
                         handleFeedback(item, 'dislike')
                       }}
-                      className={`p-1 rounded hover:bg-red-50 transition-colors ${
+                      className={`p-1 rounded hover:bg-error-50 transition-colors ${
                         feedbackState[String(item.id)] === 'dislike'
-                          ? 'text-red-600 bg-red-50'
-                          : 'text-gray-400'
+                          ? 'text-error-600 bg-error-50'
+                          : 'text-neutral-400'
                       }`}
                     >
                       <ThumbsDown size={14} />
@@ -357,7 +357,7 @@ export function AIRecommendationSidebar({
 
       {/* 最后更新时间 */}
       {lastRefreshTime && !isLoading && (
-        <p className="text-[10px] text-gray-400 text-center pt-2">
+        <p className="text-[10px] text-neutral-400 text-center pt-2">
           上次更新: {lastRefreshTime.toLocaleTimeString('zh-CN')}
         </p>
       )}

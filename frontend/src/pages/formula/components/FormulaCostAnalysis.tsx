@@ -54,13 +54,13 @@ export function FormulaCostAnalysis({ ingredients = [], totalWeight = 0 }: Formu
         </CardHeader>
         <CardContent className="text-center py-12">
           <div className="flex flex-col items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-              <Calculator size={24} className="text-slate-400" />
+            <div className="w-16 h-16 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
+              <Calculator size={24} className="text-neutral-400" />
             </div>
-            <h4 className="text-lg font-medium text-slate-700 dark:text-slate-300">
+            <h4 className="text-lg font-medium text-neutral-700 dark:text-neutral-300">
               暂无成分数据
             </h4>
-            <p className="text-sm text-slate-500 max-w-md">
+            <p className="text-sm text-neutral-500 max-w-md">
               请添加配方成分后查看成本与营养分析
             </p>
           </div>
@@ -169,36 +169,36 @@ export function FormulaCostAnalysis({ ingredients = [], totalWeight = 0 }: Formu
       <CardContent className="space-y-6">
         {/* 成本概览 */}
         <div className="grid grid-cols-3 gap-3">
-          <div className="text-center p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
-            <div className="text-xl font-bold text-slate-900 dark:text-white">
+          <div className="text-center p-3 bg-slate-50 dark:bg-neutral-800/50 rounded-xl">
+            <div className="text-xl font-bold text-neutral-900 dark:text-white">
               ¥{Math.round(totalCost * 100) / 100}
             </div>
-            <div className="text-xs text-slate-500">总成本</div>
+            <div className="text-xs text-neutral-500">总成本</div>
           </div>
-          <div className="text-center p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
-            <div className="text-xl font-bold text-slate-900 dark:text-white">
+          <div className="text-center p-3 bg-slate-50 dark:bg-neutral-800/50 rounded-xl">
+            <div className="text-xl font-bold text-neutral-900 dark:text-white">
               ¥{Math.round(avgCost * 1000) / 1000}
             </div>
-            <div className="text-xs text-slate-500">元/克</div>
+            <div className="text-xs text-neutral-500">元/克</div>
           </div>
-          <div className="text-center p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
-            <div className="text-xl font-bold text-slate-900 dark:text-white">
+          <div className="text-center p-3 bg-slate-50 dark:bg-neutral-800/50 rounded-xl">
+            <div className="text-xl font-bold text-neutral-900 dark:text-white">
               {totalWeight}g
             </div>
-            <div className="text-xs text-slate-500">总重量</div>
+            <div className="text-xs text-neutral-500">总重量</div>
           </div>
         </div>
 
         {/* 营养概览 */}
-        <div className="p-4 bg-green-50 dark:bg-green-900/10 rounded-xl border border-green-200 dark:border-green-800">
-          <h4 className="text-sm font-medium text-green-800 dark:text-green-300 mb-3">
+        <div className="p-4 bg-success-50 dark:bg-success-900/10 rounded-xl border border-green-200 dark:border-green-800">
+          <h4 className="text-sm font-medium text-success-800 dark:text-success-300 mb-3">
             营养成分估算
           </h4>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <div className="flex justify-between text-sm mb-1">
-                <span className="text-green-700 dark:text-green-400">热量</span>
-                <span className="font-medium text-green-800 dark:text-green-300">
+                <span className="text-success-700 dark:text-success-400">热量</span>
+                <span className="font-medium text-success-800 dark:text-success-300">
                   {nutritionAnalysis.calories} kcal
                 </span>
               </div>
@@ -206,8 +206,8 @@ export function FormulaCostAnalysis({ ingredients = [], totalWeight = 0 }: Formu
             </div>
             <div>
               <div className="flex justify-between text-sm mb-1">
-                <span className="text-green-700 dark:text-green-400">蛋白质</span>
-                <span className="font-medium text-green-800 dark:text-green-300">
+                <span className="text-success-700 dark:text-success-400">蛋白质</span>
+                <span className="font-medium text-success-800 dark:text-success-300">
                   {nutritionAnalysis.protein}g
                 </span>
               </div>
@@ -215,8 +215,8 @@ export function FormulaCostAnalysis({ ingredients = [], totalWeight = 0 }: Formu
             </div>
             <div>
               <div className="flex justify-between text-sm mb-1">
-                <span className="text-green-700 dark:text-green-400">膳食纤维</span>
-                <span className="font-medium text-green-800 dark:text-green-300">
+                <span className="text-success-700 dark:text-success-400">膳食纤维</span>
+                <span className="font-medium text-success-800 dark:text-success-300">
                   {nutritionAnalysis.fiber}g
                 </span>
               </div>
@@ -224,8 +224,8 @@ export function FormulaCostAnalysis({ ingredients = [], totalWeight = 0 }: Formu
             </div>
             <div>
               <div className="flex justify-between text-sm mb-1">
-                <span className="text-green-700 dark:text-green-400">每100g热量</span>
-                <span className="font-medium text-green-800 dark:text-green-300">
+                <span className="text-success-700 dark:text-success-400">每100g热量</span>
+                <span className="font-medium text-success-800 dark:text-success-300">
                   {nutritionAnalysis.caloriesPer100g} kcal
                 </span>
               </div>
@@ -237,7 +237,7 @@ export function FormulaCostAnalysis({ ingredients = [], totalWeight = 0 }: Formu
         {/* 成本分解 */}
         {breakdown.length > 0 && (
           <div>
-            <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
+            <h4 className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-3">
               成本分解
             </h4>
             <div className="space-y-2 max-h-48 overflow-y-auto">
@@ -245,20 +245,20 @@ export function FormulaCostAnalysis({ ingredients = [], totalWeight = 0 }: Formu
                 <div key={index} className="flex items-center gap-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-slate-900 dark:text-white truncate">
+                      <span className="text-sm font-medium text-neutral-900 dark:text-white truncate">
                         {item.name || '未知成分'}
                       </span>
                       {item.isFoodHomology && (
                         <Badge variant="success" size="sm">药食同源</Badge>
                       )}
                     </div>
-                    <div className="text-xs text-slate-500">{item.dosage || '未知用量'}</div>
+                    <div className="text-xs text-neutral-500">{item.dosage || '未知用量'}</div>
                   </div>
                   <div className="text-right">
-                    <div className="text-sm font-medium text-slate-900 dark:text-white">
+                    <div className="text-sm font-medium text-neutral-900 dark:text-white">
                       ¥{item.estimatedCost.toFixed(2)}
                     </div>
-                    <div className="text-xs text-slate-400">
+                    <div className="text-xs text-neutral-400">
                       {item.costRatio.toFixed(1)}%
                     </div>
                   </div>
@@ -270,19 +270,19 @@ export function FormulaCostAnalysis({ ingredients = [], totalWeight = 0 }: Formu
 
         {/* 优化建议 */}
         {suggestions.length > 0 && (
-          <div className="border-t border-slate-100 dark:border-slate-800 pt-4">
-            <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3 flex items-center gap-2">
-              <Info size={14} className="text-blue-500" />
+          <div className="border-t border-neutral-100 dark:border-neutral-800 pt-4">
+            <h4 className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-3 flex items-center gap-2">
+              <Info size={14} className="text-secondary-500" />
               优化建议
             </h4>
             <div className="space-y-2">
               {suggestions.map((suggestion, index) => (
                 <div
                   key={index}
-                  className="flex items-start gap-2 p-2 bg-blue-50 dark:bg-blue-900/10 rounded-lg text-sm"
+                  className="flex items-start gap-2 p-2 bg-secondary-50 dark:bg-secondary-900/10 rounded-lg text-sm"
                 >
-                  <AlertCircle size={14} className="text-blue-500 mt-0.5 shrink-0" />
-                  <span className="text-blue-700 dark:text-blue-400">{suggestion}</span>
+                  <AlertCircle size={14} className="text-secondary-500 mt-0.5 shrink-0" />
+                  <span className="text-secondary-700 dark:text-secondary-400">{suggestion}</span>
                 </div>
               ))}
             </div>

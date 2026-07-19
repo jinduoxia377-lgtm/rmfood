@@ -45,6 +45,7 @@ interface ThemeColors {
   background: string
   success: string
   warning: string
+  surface: string
 }
 
 interface EnhancedRadarChartProps {
@@ -67,7 +68,7 @@ export function EnhancedRadarChart({
     return labels.map((label, index) => {
       const point: Record<string, any> = { subject: label }
 
-      (data.datasets || []).forEach((dataset, datasetIndex) => {
+      ;(data.datasets || []).forEach((dataset: { data: number[]; label?: string }, datasetIndex: number) => {
         const value = dataset.data[index]
         point[dataset.label || `series_${datasetIndex}`] = typeof value === 'number' ? Math.max(0, Math.min(100, value)) : 0
       })

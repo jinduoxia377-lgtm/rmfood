@@ -102,16 +102,16 @@ async def get_dashboard_data(
     """
     try:
         service = get_analytics_service(db)
-        
+
         # Parse time range
         days_map = {"7d": 7, "30d": 30, "90d": 90}
         days = days_map.get(time_range, 30)
-        
+
         # Parse filter conditions
         category_list = categories.split(",") if categories else []
         status_list = status.split(",") if status else []
         user_list = users.split(",") if users else []
-        
+
         # Build base query conditions
         base_filters = {
             "days": days,
@@ -119,35 +119,58 @@ async def get_dashboard_data(
             "status": status_list,
             "users": user_list,
         }
-        
-        # Sequential fetch to avoid connection pool conflicts (optimized order)
-        logger.debug("Loading dashboard data (sequential mode for stability)...")
-        
-        # 1. KPI metrics (most important)
-        kpi = await service._get_kpi_metrics()
-        logger.debug(f"✓ KPI loaded: {len(kpi)} metrics")
-        
+
+        logger.info("Loading dashboard data...")
+
+        # 1. KPI metrics
+        try:
+            kpi = await service._get_kpi_metrics()
+            logger.info(f"✓ KPI loaded: {len(kpi)} metrics")
+        except Exception as e:
+            logger.error(f"✗ KPI failed: {e}", exc_info=True)
+            kpi = []
+
         # 2. Chart data
-        charts = await service._get_chart_data()
-        logger.debug(f"✓ Charts loaded: {len(charts)} types")
-        
-        # 3. System health (lightweight)
-        system_health = await service._get_system_health()
-        logger.debug("✓ System health loaded")
-        
+        try:
+            charts = await service._get_chart_data()
+            logger.info(f"✓ Charts loaded: {len(charts)} types")
+        except Exception as e:
+            logger.error(f"✗ Charts failed: {e}", exc_info=True)
+            charts = {}
+
+        # 3. System health
+        try:
+            system_health = await service._get_system_health()
+            logger.info("✓ System health loaded")
+        except Exception as e:
+            logger.error(f"✗ System health failed: {e}", exc_info=True)
+            system_health = {}
+
         # 4. Available filters
-        available_filters = await _get_available_filters(db)
-        logger.debug(f"✓ Filters loaded: {list(available_filters.keys())}")
-        
-        # 5. Recent activity (can be slow with large datasets)
-        recent_activity = await service._get_recent_activity()
-        logger.debug(f"✓ Activity loaded: {len(recent_activity)} items")
-        
-        # 6. Top entities (can be slow)
-        top_entities = await service._get_top_entities()
-        logger.debug(f"✓ Top entities loaded: {len(top_entities)} categories")
-        
-        stats = {
+        try:
+            available_filters = await service._get_available_filters(db)
+            logger.info(f"✓ Filters loaded: {list(available_filters.keys())}")
+        except Exception as e:
+            logger.error(f"✗ Filters failed: {e}", exc_info=True)
+            available_filters = {}
+
+        # 5. Recent activity
+        try:
+            recent_activity = await service._get_recent_activity()
+            logger.info(f"✓ Activity loaded: {len(recent_activity)} items")
+        except Exception as e:
+            logger.error(f"✗ Activity failed: {e}", exc_info=True)
+            recent_activity = []
+
+        # 6. Top entities
+        try:
+            top_entities = await service._get_top_entities()
+            logger.info(f"✓ Top entities loaded: {len(top_entities)} categories")
+        except Exception as e:
+            logger.error(f"✗ Top entities failed: {e}", exc_info=True)
+            top_entities = {}
+
+        return {
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "kpi": kpi,
             "charts": charts,
@@ -157,13 +180,12 @@ async def get_dashboard_data(
             "available_filters": available_filters,
             "filters_applied": base_filters,
         }
-        
-        logger.debug(f"Dashboard data loaded successfully (time range: {time_range})")
-        return stats
-        
+
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.error(f"Failed to get dashboard data: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Data fetch failed")
+        logger.error(f"Dashboard failed", exc_info=True)
+        raise HTTPException(status_code=500, detail=sanitize_error(e, "数据获取失败，请稍后重试"))
 
 
 @router.get("/kpi", summary="Get KPI metrics")
@@ -620,7 +642,8 @@ async def get_available_filters(
     current_user: User = Depends(get_current_active_user),
 ):
     """Get all available data filter options"""
-    return await _get_available_filters(db)
+    service = get_analytics_service(db)
+    return await service._get_available_filters(db)
 
 
 @router.post("/aggregate", summary="Custom data aggregation")
@@ -752,59 +775,6 @@ async def custom_aggregation(
 # ============================================================
 # Helper Functions
 # ============================================================
-
-async def _get_available_filters(db: AsyncSession) -> Dict[str, Any]:
-    """Get available filter options from database"""
-    filters = {}
-    
-    try:
-        # Get formula statuses
-        result = await db.execute(text("SELECT DISTINCT status FROM formulas"))
-        filters["formula_status"] = [row.status for row in result.fetchall() if row.status]
-        
-        # Get experiment statuses
-        result = await db.execute(text("SELECT DISTINCT status FROM experiments"))
-        filters["experiment_status"] = [row.status for row in result.fetchall() if row.status]
-        
-        # Get categories
-        result = await db.execute(text("""
-            SELECT DISTINCT c.id, c.name 
-            FROM categories c 
-            ORDER BY c.name
-            LIMIT 50
-        """))
-        filters["categories"] = [{"id": row.id, "name": row.name} for row in result.fetchall()]
-        
-        # Get users list
-        result = await db.execute(text("""
-            SELECT id, username, full_name 
-            FROM users 
-            WHERE is_active = true 
-            ORDER BY username
-            LIMIT 100
-        """))
-        filters["users"] = [
-            {
-                "id": row.id,
-                "username": row.username,
-                "full_name": row.full_name or row.username
-            } for row in result.fetchall()
-        ]
-        
-        # Get time range options
-        filters["time_ranges"] = [
-            {"value": "7d", "label": "Last 7 Days"},
-            {"value": "30d", "label": "Last 30 Days"},
-            {"value": "90d", "label": "Last 90 Days"},
-            {"value": "180d", "label": "Last 180 Days"},
-            {"value": "365d", "label": "Last 1 Year"},
-        ]
-        
-    except Exception as e:
-        logger.warning("获取过滤选项时出错: %s", e, exc_info=True)
-        filters["error"] = "获取过滤选项失败"
-    
-    return filters
 
 
 async def _load_report_config(db: AsyncSession, report_id: str) -> Optional[ReportConfig]:

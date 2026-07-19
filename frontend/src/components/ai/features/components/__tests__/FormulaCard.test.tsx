@@ -193,8 +193,8 @@ describe('FormulaCard - 配方卡片组件', () => {
 
       const badge = screen.getByText('A')
       expect(badge).toBeInTheDocument()
-      expect(badge.className).toContain('bg-green-100')
-      expect(badge.className).toContain('text-green-700')
+      expect(badge.className).toContain('bg-success-100')
+      expect(badge.className).toContain('text-success-700')
     })
 
     it('B级质量应该显示蓝色徽章', () => {
@@ -278,7 +278,7 @@ describe('FormulaCard - 配方卡片组件', () => {
 
       const badge = screen.getByText('B')
       expect(badge).toBeInTheDocument()
-      expect(badge.className).toContain('bg-blue-100')
+      expect(badge.className).toContain('bg-secondary-100')
     })
   })
 
@@ -399,7 +399,7 @@ describe('FormulaCard - 配方卡片组件', () => {
       )
 
       const badge = screen.getByText(/置信度/)
-      expect(badge.className).toContain('text-green-600')
+      expect(badge.className).toContain('text-success-600')
     })
 
     it('中等置信度(70-89%)应该显示黄色', () => {
@@ -417,7 +417,7 @@ describe('FormulaCard - 配方卡片组件', () => {
       )
 
       const badge = screen.getByText(/置信度/)
-      expect(badge.className).toContain('text-red-600')
+      expect(badge.className).toContain('text-error-600')
     })
   })
 

@@ -27,26 +27,28 @@ interface Particle {
 
 interface Props {
   error?: boolean
+  visible?: boolean // 页面可见时传入 true，暂停动画以节省性能
 }
 
 /* ── 常量 ── */
-const COLORS = ['#00c9a7', '#00c9a7', '#00c9a7', '#00c9a7', '#4dabf7', '#4dabf7', '#4dabf7', 'rgba(255,255,255,0.6)', 'rgba(255,255,255,0.6)']
-const ERROR_COLORS = ['#e91e8a', '#e91e8a', '#e91e8a', '#f0a500', '#f0a500', '#4dabf7', 'rgba(255,255,255,0.4)']
+const COLORS = ['var(--color-primary, #34C759)', 'var(--color-primary, #34C759)', 'var(--color-primary, #34C759)', 'var(--color-primary, #34C759)', 'var(--color-blue-400, #6ECAFF)', 'var(--color-blue-400, #6ECAFF)', 'var(--color-blue-400, #6ECAFF)', 'rgba(255,255,255,0.6)', 'rgba(255,255,255,0.6)']
+const ERROR_COLORS = ['var(--color-pink-600, #BE185D)', 'var(--color-pink-600, #BE185D)', 'var(--color-pink-600, #BE185D)', 'var(--color-warning-400, #F59E0B)', 'var(--color-warning-400, #F59E0B)', 'var(--color-blue-400, #6ECAFF)', 'rgba(255,255,255,0.4)']
 const MOUSE_RADIUS = 150
 const CONNECT_DIST = 80
-const PARTICLE_DESKTOP = 150
-const PARTICLE_TABLET = 80
-const PARTICLE_MOBILE = 40
+const PARTICLE_DESKTOP = 80
+const PARTICLE_TABLET = 50
+const PARTICLE_MOBILE = 30
 
 /* ═══════════════════════════════════════════════════════════════
    Component
    ═══════════════════════════════════════════════════════════════ */
-const RhineParticleField: FC<Props> = ({ error = false }) => {
+const RhineParticleField: FC<Props> = ({ error = false, visible = true }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const particlesRef = useRef<Particle[]>([])
   const mouseRef = useRef({ x: -1000, y: -1000 })
   const animRef = useRef<number>(0)
   const errorRef = useRef(false)
+  const visibleRef = useRef(true) // mutable ref for animation loop closure
 
   /* ── 粒子工厂 ── */
   const createParticle = useCallback((w: number, h: number, colors: string[]): Particle => {
@@ -79,6 +81,10 @@ const RhineParticleField: FC<Props> = ({ error = false }) => {
 
   /* ── 动画循环 ── */
   const animate = useCallback(() => {
+    if (!visibleRef.current) {
+      animRef.current = requestAnimationFrame(animate)
+      return
+    }
     const canvas = canvasRef.current
     if (!canvas) return
     const ctx = canvas.getContext('2d')
@@ -164,6 +170,8 @@ const RhineParticleField: FC<Props> = ({ error = false }) => {
 
   /* ── 生命周期 ── */
   useEffect(() => {
+    visibleRef.current = true
+
     const canvas = canvasRef.current
     if (!canvas) return
 
@@ -177,11 +185,23 @@ const RhineParticleField: FC<Props> = ({ error = false }) => {
 
     animRef.current = requestAnimationFrame(animate)
 
+    /* ── 监听页面可见性 ── */
+    const handleVisibility = () => {
+      visibleRef.current = !document.hidden
+    }
+    document.addEventListener('visibilitychange', handleVisibility)
+
     return () => {
       window.removeEventListener('resize', resize)
+      document.removeEventListener('visibilitychange', handleVisibility)
       cancelAnimationFrame(animRef.current)
     }
   }, [animate, initParticles])
+
+  /* ── 同步 visible prop ── */
+  useEffect(() => {
+    visibleRef.current = visible
+  }, [visible])
 
   /* ── 错误状态响应 ── */
   useEffect(() => {

@@ -1262,3 +1262,109 @@ class KnowledgeGraphEngine:
             "total_edges": len(ego_edges),
             "type_distribution": dict(type_counts),
         }
+
+    # ═══════════════════════════════════════════
+    # API 查询方法（供知识图谱查询 API 使用）
+    # ═══════════════════════════════════════════
+
+    async def get_nodes(
+        self,
+        node_type: Optional[str] = None,
+        limit: int = 100,
+        offset: int = 0,
+    ) -> List[Dict[str, Any]]:
+        """获取图谱节点列表（从 TCMSP 数据库）"""
+        from ..data_sources.tcmsp_client import TCMSP_HERB_DATABASE, TCM_COMPOUND_DATABASE, TARGET_DATABASE, DISEASE_DATABASE
+
+        all_nodes: List[Dict[str, Any]] = []
+        type_map = {
+            "herb": TCMSP_HERB_DATABASE,
+            "compound": TCM_COMPOUND_DATABASE,
+            "target": TARGET_DATABASE,
+            "disease": DISEASE_DATABASE,
+        }
+
+        for t, items in type_map.items():
+            if node_type and t != node_type:
+                continue
+            for item in items[offset:offset + limit]:
+                all_nodes.append({
+                    "id": f"{t}_{item.get('name_cn', item.get('name', ''))}",
+                    "node_type": t,
+                    "node_label": item.get("name_cn", item.get("name", "")),
+                    "properties": item,
+                })
+                if len(all_nodes) >= limit:
+                    break
+            if len(all_nodes) >= limit:
+                break
+
+        return all_nodes[:limit]
+
+    async def search_nodes(
+        self,
+        query: str,
+        node_type: Optional[str] = None,
+        limit: int = 20,
+    ) -> List[Dict[str, Any]]:
+        """搜索图谱节点"""
+        service = KnowledgeGraphService()
+        nodes = await service.search_nodes(query, node_type=node_type, limit=limit)
+        return nodes
+
+    async def get_neighbors(
+        self,
+        node_id: str,
+        depth: int = 1,
+    ) -> Dict[str, List[Dict[str, Any]]]:
+        """获取节点邻居关系"""
+        service = KnowledgeGraphService()
+        parts = node_id.split("_", 1)
+        if len(parts) != 2:
+            return {"neighbors": [], "edges": []}
+        node_type, node_label = parts
+        relations = await service.get_node_relations(node_label, node_type, depth=depth)
+        return relations
+
+    async def extract_subgraph(
+        self,
+        seed_nodes: List[str],
+        max_depth: int = 2,
+    ) -> Dict[str, Any]:
+        """提取子图"""
+        service = KnowledgeGraphService()
+        if not seed_nodes:
+            return {"nodes": [], "edges": []}
+        parts = seed_nodes[0].split("_", 1)
+        if len(parts) != 2:
+            return {"nodes": [], "edges": []}
+        node_label = parts[1]
+        node_type = parts[0]
+        relations = await service.get_node_relations(node_label, node_type, depth=max_depth)
+        return relations
+
+    async def compute_pagerank(
+        self,
+        top_n: int = 50,
+    ) -> List[Dict[str, Any]]:
+        """计算 PageRank 中心性排名（简化版：基于连接度）"""
+        from ..data_sources.tcmsp_client import TCMSP_HERB_DATABASE
+
+        compound_counts: Dict[str, int] = {}
+        for herb in TCMSP_HERB_DATABASE:
+            name = herb.get("name_cn", "")
+            compounds = herb.get("compounds", [])
+            compound_counts[name] = len(compounds) if isinstance(compounds, list) else 0
+
+        sorted_herbs = sorted(compound_counts.items(), key=lambda x: x[1], reverse=True)
+        max_count = sorted_herbs[0][1] if sorted_herbs else 1
+        return [
+            {
+                "id": f"herb_{name}",
+                "node_type": "herb",
+                "node_label": name,
+                "pagerank_score": round(count / max(max_count, 1), 4),
+                "compound_count": count,
+            }
+            for name, count in sorted_herbs[:top_n]
+        ]

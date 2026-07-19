@@ -33,7 +33,7 @@ interface UseFocusTrapOptions {
 
 interface UseFocusTrapReturn {
   /** 容器 ref，需要绑定到模态框根元素 */
-  containerRef: React.RefObject<HTMLDivElement>
+  containerRef: React.RefObject<HTMLDivElement | null>
 }
 
 /**

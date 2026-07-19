@@ -117,21 +117,21 @@ class AdvancedPeptideAnalyzer:
                 return await self._compute_basic_properties(seq)
             except Exception as e:
                 logger.error(f"基本属性计算失败: {e}", exc_info=True)
-                return {"error": str(e), "molecular_weight": 0, "logp": 0}
+                return {"error": "分析服务异常", "molecular_weight": 0, "logp": 0}
 
         async def safe_predict_secondary_structure(seq: str):
             try:
                 return await self._predict_secondary_structure(seq)
             except Exception as e:
                 logger.error(f"二级结构预测失败: {e}", exc_info=True)
-                return {"predicted_sequence": "", "percentages": {"alpha_helix": 0, "beta_sheet": 0, "random_coil": 100}, "error": str(e)}
+                return {"predicted_sequence": "", "percentages": {"alpha_helix": 0, "beta_sheet": 0, "random_coil": 100}, "error": "分析服务异常"}
 
         async def safe_analyze_physicochemical_profile(seq: str):
             try:
                 return await self._analyze_physicochemical_profile(seq)
             except Exception as e:
                 logger.error(f"理化特性分析失败: {e}", exc_info=True)
-                return {"net_charge_at_ph7": 0, "isoelectric_point": 7.0, "error": str(e)}
+                return {"net_charge_at_ph7": 0, "isoelectric_point": 7.0, "error": "分析服务异常"}
 
         async def safe_predict_bioactivities(seq: str):
             try:
@@ -145,7 +145,7 @@ class AdvancedPeptideAnalyzer:
                 return await self._assess_safety(seq)
             except Exception as e:
                 logger.error(f"安全性评估失败: {e}", exc_info=True)
-                return {"safety_score": 0.5, "risk_level": "medium", "penalties": ["分析异常"], "error": str(e)}
+                return {"safety_score": 0.5, "risk_level": "medium", "penalties": ["分析异常"], "error": "分析服务异常"}
 
         tasks = [
             safe_compute_basic_properties(sequence),

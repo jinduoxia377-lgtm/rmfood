@@ -28,7 +28,8 @@ logger = logging.getLogger("rmfood.ai.inference_store")
 
 # ── 数据模型（与 inference_queue.py 保持一致）─────────────────────────
 
-class TaskStatus(str, Enum):
+class InferenceTaskStatus(str, Enum):
+    """推理任务状态（inference_store 专用）"""
     PENDING = "pending"
     RUNNING = "running"
     SUCCESS = "success"
@@ -42,7 +43,7 @@ class InferenceResult:
     """AI 推理任务结果（可序列化）"""
 
     task_id: str
-    status: TaskStatus
+    status: InferenceTaskStatus
     result: Optional[Any] = None
     error: Optional[str] = None
     duration_ms: float = 0.0
@@ -71,7 +72,7 @@ class InferenceResult:
     def from_dict(cls, data: Dict[str, Any]) -> "InferenceResult":
         return cls(
             task_id=data["task_id"],
-            status=TaskStatus(data["status"]),
+            status=InferenceTaskStatus(data["status"]),
             result=data.get("result"),
             error=data.get("error"),
             duration_ms=data.get("duration_ms", 0.0),
@@ -112,7 +113,7 @@ class InferenceResultStore(ABC):
     async def update_status(
         self,
         task_id: str,
-        status: TaskStatus,
+        status: InferenceTaskStatus,
         **kwargs,
     ) -> None:
         """原子更新任务状态和相关字段"""
@@ -160,7 +161,7 @@ class MemoryResultStore(InferenceResultStore):
     async def update_status(
         self,
         task_id: str,
-        status: TaskStatus,
+        status: InferenceTaskStatus,
         **kwargs,
     ) -> None:
         result = self._results.get(task_id)
@@ -286,7 +287,7 @@ class RedisResultStore(InferenceResultStore):
     async def update_status(
         self,
         task_id: str,
-        status: TaskStatus,
+        status: InferenceTaskStatus,
         **kwargs,
     ) -> None:
         redis = await self._get_redis()

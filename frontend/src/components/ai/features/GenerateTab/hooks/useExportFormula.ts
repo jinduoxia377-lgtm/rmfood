@@ -98,9 +98,49 @@ export function useExportFormula(generateResult: AICandidate[] | null) {
     downloadBlob(blob, `RMFOOD_配方数据_${getCurrentDate()}.csv`)
   }
 
-  const handlePDFExport = (feedback: ReturnType<typeof useOperationFeedback>) => {
-    feedback.showInfo('功能开发中', 'PDF 导出功能正在开发中，请联系技术支持了解更多', 5000)
-    logger.warn('PDF export feature not implemented')
+  const handlePDFExport = async (feedback: ReturnType<typeof useOperationFeedback>) => {
+    try {
+      const printWindow = window.open('', '_blank')
+      if (!printWindow) {
+        feedback.showError('PDF 导出失败', '请允许弹出窗口以生成 PDF')
+        return
+      }
+
+      const html = `
+        <!DOCTYPE html>
+        <html><head><title>RMFOOD 配方数据导出</title>
+        <style>
+          body { font-family: 'Microsoft YaHei', sans-serif; padding: 40px; }
+          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+          th, td { border: 1px solid #ddd; padding: 8px 12px; text-align: left; }
+          th { background: #f5f5f5; }
+          h1 { color: #333; }
+        </style></head>
+        <body>
+          <h1>RMFOOD 配方数据导出</h1>
+          <p>导出时间: ${new Date().toLocaleString('zh-CN')}</p>
+          <table>
+            <thead><tr>${Object.keys(feedback as any).map(k => `<th>${k}</th>`).join('')}</tr></thead>
+            <tbody>${(generateResult as any[]).map((row: any) =>
+              `<tr>${Object.values(row).map(v => `<td>${v}</td>`).join('')}</tr>`
+            ).join('')}</tbody>
+          </table>
+        </body></html>
+      `
+
+      printWindow.document.write(html)
+      printWindow.document.close()
+      printWindow.focus()
+
+      setTimeout(() => {
+        printWindow.print()
+        printWindow.close()
+        feedback.showSuccess('PDF 导出成功', '请在打印对话框中选择"另存为 PDF"')
+      }, 500)
+    } catch (error) {
+      logger.error('PDF export failed', { error })
+      feedback.showError('PDF 导出失败', '导出过程出错')
+    }
   }
 
   const downloadBlob = (blob: Blob, filename: string) => {

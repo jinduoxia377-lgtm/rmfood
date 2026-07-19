@@ -39,6 +39,8 @@ from .core.http_client import http_client  # 🔒 P4-2: 增强 HTTP 客户端
 from .core.logging_enhanced import init_enhanced_logging  # 🔒 P4-3: 增强日志系统
 from .api import api_router, register_lazy_routers
 from .api.router_registry import registry as router_registry
+from .api import mobile  # 🔒 P2-5: 移动端专用 API
+from .api import search_analytics  # 🔒 Potion AI VFT: 搜索分析
 # 🔒 P1-5: API 版本管理
 from .api.api_version import (
     register_version_routes,
@@ -51,7 +53,9 @@ from .infrastructure.event_bus import RedisStreamsEventBus
 from .core.audit_middleware import create_audit_middleware, AuditMiddleware
 from .core.data_masking import MaskingLogFilter
 from .core.backup_and_recovery import get_backup_manager
-from .core.database_and_bi_engine import get_db_optimizer, get_bi_engine
+
+# 🔒 P5: Sentry 错误追踪
+from .core.sentry_config import sentry_init
 
 
 @asynccontextmanager
@@ -72,6 +76,9 @@ async def lifespan(app: FastAPI):
     # 创建模块级 logger
     logger = get_logger(__name__)
     logger.info("应用启动中...")
+
+    # 初始化 Sentry 错误追踪
+    sentry_init(app)
 
     # ── 启动阶段：验证 PostgreSQL 连接 ──
     from .core.session import ensure_connection, init_database, close_database
@@ -183,8 +190,8 @@ Authorization: Bearer <your_access_token>
 - **文档地址**: /docs (开发环境) | /redoc (生产环境只读)
         """,
         version=settings.app_version,
-        docs_url=None,  # 使用自定义 /docs 路由（本地静态资源）
-        redoc_url="/redoc" if settings.debug else None,
+        docs_url=None,  # 使用自定义 /docs 路由（本地静态资源，不依赖 CDN）
+        redoc_url=None,
         openapi_tags=[
             {
                 "name": "认证管理",
@@ -305,8 +312,22 @@ Authorization: Bearer <your_access_token>
         max_age=86400,  # 24小时缓存预检请求，减少 OPTIONS 开销
     )
 
-    # ── 全局异常处理 (待激活: 需要统一错误码体系) ──
-    # app.add_middleware(GlobalExceptionHandler)
+    # ── 全局异常处理 ──
+    app.add_middleware(GlobalExceptionHandler)
+
+    # 原生 FastAPI 异常处理器（比 middleware 更早捕获异常）
+    from fastapi.exceptions import RequestValidationError
+    from pydantic_core import ValidationError as PydanticValidationError
+
+    @app.exception_handler(RequestValidationError)
+    async def validation_exception_handler(request, exc):
+        from fastapi.responses import JSONResponse
+        return JSONResponse(status_code=422, content={"success": False, "error": "数据验证失败", "detail": exc.errors()})
+
+    @app.exception_handler(PydanticValidationError)
+    async def pydantic_validation_exception_handler(request, exc):
+        from fastapi.responses import JSONResponse
+        return JSONResponse(status_code=422, content={"success": False, "error": "数据验证失败", "detail": str(exc)})
 
     # 🔒 P5-1: 审计中间件 (待激活: 需要 audit_logs 表迁移完成)
     # try:
@@ -397,6 +418,20 @@ Authorization: Bearer <your_access_token>
             exc_info=True,
         )
 
+    # ── 移动端专用 API ──
+    try:
+        app.include_router(mobile.router, prefix="/api/v1")
+        logger.info("[MobileAPI] 移动端专用路由注册成功")
+    except Exception as e:
+        logger.warning(f"[MobileAPI] 移动端路由注册失败（非阻塞）: {e}")
+
+    # ── Potion AI VFT: 搜索分析 API ──
+    try:
+        app.include_router(search_analytics.router, prefix="/api/v1")
+        logger.info("[SearchAnalytics] 搜索分析路由注册成功")
+    except Exception as e:
+        logger.warning(f"[SearchAnalytics] 搜索分析路由注册失败（非阻塞）: {e}")
+
     # ── API v1 根路径 ──
     @app.get("/api/v1", tags=["系统"])
     async def api_v1_root():
@@ -457,20 +492,18 @@ Authorization: Bearer <your_access_token>
     else:
         logger.warning(f"[Static] 静态目录不存在: {static_dir}，跳过挂载")
 
-    # ── 自定义 /docs (仅开发环境暴露) ──
+    # ── 自定义 /docs（使用本地静态资源，不依赖 CDN） ──
     from fastapi.responses import HTMLResponse
 
     @app.get("/docs", tags=["文档"])
     async def swagger_docs():
-        if not settings.debug:
-            raise HTTPException(status_code=404, detail="Documentation not available in production")
         return HTMLResponse(content="""<!DOCTYPE html>
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link type="text/css" rel="stylesheet" href="/static/swagger-ui.css">
 <link rel="shortcut icon" href="https://fastapi.tiangolo.com/img/favicon.png">
-<title>""" + settings.app_name + """ - Swagger UI</title>
+<title>RMFOOD配方平台 - Swagger UI</title>
 </head>
 <body>
 <div id="swagger-ui"></div>
@@ -478,8 +511,8 @@ Authorization: Bearer <your_access_token>
 <script>
 const ui = SwaggerUIBundle({
     url: '/openapi.json',
-    dom_id: "#swagger-ui",
-    layout: "BaseLayout",
+    dom_id: '#swagger-ui',
+    layout: 'BaseLayout',
     deepLinking: true,
     showExtensions: true,
     showCommonExtensions: true,
@@ -488,10 +521,28 @@ const ui = SwaggerUIBundle({
         SwaggerUIBundle.presets.apis,
         SwaggerUIBundle.SwaggerUIStandalonePreset
     ],
-})
+    onComplete: function() {
+        console.log('[Swagger] UI loaded successfully');
+    },
+    onError: function(e) {
+        console.error('[Swagger] Failed to load schema:', e);
+        document.getElementById('swagger-ui').innerHTML = '<p style="color:red;padding:20px;">加载失败：无法获取 API 文档。请检查后端 /openapi.json 是否正常。</p>';
+    }
+});
 </script>
 </body>
 </html>""")
+
+    # ── 手动注册 /openapi.json（docs_url=None 时被 FastAPI 禁用了） ──
+    from fastapi.responses import JSONResponse
+
+    @app.get("/openapi.json", include_in_schema=False)
+    async def custom_openapi_json():
+        if app.openapi_schema:
+            return JSONResponse(app.openapi_schema)
+        openapi_schema = app.openapi()
+        app.openapi_schema = openapi_schema
+        return JSONResponse(openapi_schema)
 
     # ── 根路径 ──
     @app.get("/", tags=["系统"])

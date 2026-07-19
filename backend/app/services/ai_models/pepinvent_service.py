@@ -9,7 +9,7 @@ PepINVENT 肽设计服务层
 - 请求去重
 
 使用方式:
-    from backend.app.services.ai_models.pepinvent_service import PepinventService
+    from ..services.ai_models.pepinvent_service import PepinventService
 
     service = PepinventService()
     peptides = await service.generate_peptides(["ACE抑制"], max_candidates=5)

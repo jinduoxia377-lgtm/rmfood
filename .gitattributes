@@ -1,0 +1,23 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# Force LF line endings for all files (Windows compatibility)
+* eol=lf
+
+# CSS files — text
+*.css text
+
+# Generated CSS — force LF
+frontend/src/styles/generated/*.css text eol=lf
+
+# All source files
+*.ts text
+*.tsx text
+*.js text
+*.json text
+*.md text
+*.py text
+*.yml text
+*.yaml text
+*.sh text
+*.bat text

@@ -24,17 +24,17 @@ const STATUS_CONFIG: Record<SaveStatus, {
   unsaved: {
     icon: CloudOff,
     label: '未保存',
-    className: 'text-slate-500 dark:text-slate-400',
+    className: 'text-neutral-500 dark:text-neutral-400',
   },
   saving: {
     icon: Loader2,
     label: '保存中...',
-    className: 'text-blue-500 dark:text-blue-400',
+    className: 'text-secondary-500 dark:text-secondary-400',
   },
   saved: {
     icon: CheckCircle2,
     label: '已保存',
-    className: 'text-emerald-600 dark:text-emerald-400',
+    className: 'text-primary-600 dark:text-primary-400',
   },
   error: {
     icon: CloudOff,

@@ -1,4 +1,3 @@
-
 /**
  * 数据库检索页面 — Phase 4 专家级增强版
  * 导入独立的 Tab 组件，提供全局搜索和统计概览
@@ -7,170 +6,242 @@
  * eslint-disable @typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-return,@typescript-eslint/strict-boolean-expressions,@typescript-eslint/prefer-nullish-coalescing,react-hooks/set-state-in-effect
  */
 /* eslint-disable @typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-return,@typescript-eslint/strict-boolean-expressions,@typescript-eslint/prefer-nullish-coalescing,react-hooks/set-state-in-effect */
-import { useState, useEffect, useCallback, useRef, useMemo, lazy, Suspense } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useState, useEffect, useCallback, useRef, useMemo, lazy, Suspense } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer,
-} from 'recharts'
-import { databaseApi } from '@/api/database'
+  PieChart,
+  Pie,
+  Cell,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip as RechartsTooltip,
+  ResponsiveContainer,
+} from 'recharts';
+import { databaseApi } from '@/api/database';
+import { PageHeader, Badge, Tabs, Tooltip, TabsList, TabsTrigger, TabsContent, useToast } from '@/components/ui';
 import {
-  PageHeader, Badge, Tabs, Tooltip,
-  TabsList, TabsTrigger, TabsContent, useToast,
-} from '@/components/ui'
-import {
-  Search, BarChart2, TrendingUp,
-  Activity, Database, Zap, Layers,
-  ArrowUpRight, ArrowDownRight, Minus,
-  Download, RefreshCw, Eye,
-  LayoutDashboard, LayoutList, LayoutGrid,
-  ChevronDown, Keyboard, X, Filter,
-  History, Printer, Share2, ShieldCheck,
-  Leaf, Dna, GitBranch,
-} from 'lucide-react'
+  Search,
+  BarChart2,
+  TrendingUp,
+  Activity,
+  Database,
+  Zap,
+  Layers,
+  RefreshCw,
+  Download,
+  Keyboard,
+  X,
+  ShoppingBag,
+  Eye,
+  LayoutDashboard,
+  LayoutList,
+  LayoutGrid,
+  ChevronDown,
+  Filter,
+  History,
+  Printer,
+  Share2,
+  ShieldCheck,
+  Leaf,
+  Dna,
+  GitBranch,
+  ArrowUp,
+  ArrowDown,
+  Minus,
+} from 'lucide-react';
 
 // ─── 模块化 Tab 组件 ───
-import HerbsTab from './tabs/HerbsTab'
-import PeptidesTab from './tabs/PeptidesTab'
-import GraphTab from './tabs/GraphTab'
-import HomologyTab from './tabs/HomologyTab'
-import DataManagementTab from './tabs/DataManagementTab'
+import HerbsTab from './tabs/HerbsTab';
+import PeptidesTab from './tabs/PeptidesTab';
+import GraphTab from './tabs/GraphTab';
+import HomologyTab from './tabs/HomologyTab';
+import DataManagementTab from './tabs/DataManagementTab';
+import FoodMaterialSearchPanel from './tabs/FoodMaterialSearchPanel';
+import RetailProductSearchPanel from './tabs/RetailProductSearchPanel';
+import SearchAnalyticsDashboard from './tabs/SearchAnalyticsDashboard';
 
 // ─── Phase 4 实时仪表盘 ───
-import DashboardOverview from './DashboardOverview'
+import DashboardOverview from './DashboardOverview';
 
 // ─── 图表组件懒加载 ───
-const LazyPieChart = lazy(() => Promise.resolve({
-  default: ({ data, title, icon: Icon, color }: { data: CategoryData[]; title: string; icon: any; color: string }) => (
-    <div className="card p-5">
-      <h3 className="text-base font-semibold text-text-primary dark:text-text-primary mb-4 flex items-center gap-2 leading-[1.25] tracking-tight">
-        <Icon className={`w-4 h-4 ${color}`} />{title}
-      </h3>
-      <ResponsiveContainer width="100%" height={200}>
-        <PieChart>
-          <Pie data={data} cx="50%" cy="50%" outerRadius={80} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} labelLine={false} fontSize={10}>
-            {data.map((entry, index) => (
-              <Cell key={index} fill={entry.fill} strokeWidth={0} />
-            ))}
-          </Pie>
-          <RechartsTooltip formatter={(value: number) => [`${value} 种`, '数量']} contentStyle={{ fontSize: 12 }} />
-        </PieChart>
-      </ResponsiveContainer>
-    </div>
-  ),
-}))
+const LazyPieChart = lazy(() =>
+  Promise.resolve({
+    default: ({
+      data,
+      title,
+      icon: Icon,
+      color,
+    }: {
+      data: CategoryData[];
+      title: string;
+      icon: any;
+      color: string;
+    }) => (
+      <div className="card p-5">
+        <h2 className="text-base font-semibold text-text-primary dark:text-text-primary mb-4 flex items-center gap-2 leading-[1.25] tracking-tight">
+          <Icon className={`w-4 h-4 ${color}`} />
+          {title}
+        </h2>
+        <ResponsiveContainer width="100%" height={200}>
+          <PieChart>
+            <Pie
+              data={data}
+              cx="50%"
+              cy="50%"
+              outerRadius={80}
+              dataKey="value"
+              label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+              labelLine={false}
+              fontSize={10}
+            >
+              {data.map((entry, index) => (
+                <Cell key={index} fill={entry.fill} strokeWidth={0} />
+              ))}
+            </Pie>
+            <RechartsTooltip formatter={(value: number) => [`${value} 种`, '数量']} contentStyle={{ fontSize: 12 }} />
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
+    ),
+  }),
+);
 
-const LazyBarChart = lazy(() => Promise.resolve({
-  default: ({ data, title, icon: Icon, color }: { data: any[]; title: string; icon: any; color: string }) => (
-    <div className="card p-5">
-      <h3 className="text-base font-semibold text-text-primary dark:text-text-primary mb-4 flex items-center gap-2 leading-[1.25] tracking-tight">
-        <Icon className={`w-4 h-4 ${color}`} />{title}
-      </h3>
-      <ResponsiveContainer width="100%" height={200}>
-        <BarChart data={data} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
-          <XAxis dataKey="name" tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />
-          <YAxis tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />
-          <RechartsTooltip formatter={(value: number, name: string, props) => [`${value} 条`, props?.payload?.fullName || name]} contentStyle={{ fontSize: 12 }} />
-          <Bar dataKey="count" radius={[4, 4, 0, 0]}>
-            {data.map((entry, index) => (
-              <Cell key={index} fill={entry.fill} strokeWidth={0} />
-            ))}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
-  ),
-}))
+const LazyBarChart = lazy(() =>
+  Promise.resolve({
+    default: ({ data, title, icon: Icon, color }: { data: any[]; title: string; icon: any; color: string }) => (
+      <div className="card p-5">
+        <h2 className="text-base font-semibold text-text-primary dark:text-text-primary mb-4 flex items-center gap-2 leading-[1.25] tracking-tight">
+          <Icon className={`w-4 h-4 ${color}`} />
+          {title}
+        </h2>
+        <ResponsiveContainer width="100%" height={200}>
+          <BarChart data={data} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
+            <XAxis dataKey="name" tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />
+            <YAxis tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />
+            <RechartsTooltip
+              formatter={(value: number, name: string, props) => [`${value} 条`, props?.payload?.fullName || name]}
+              contentStyle={{ fontSize: 12 }}
+            />
+            <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+              {data.map((entry, index) => (
+                <Cell key={index} fill={entry.fill} strokeWidth={0} />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    ),
+  }),
+);
 
 // ─── 类型定义 ───
-type DbTab = 'dashboard' | 'herbs' | 'peptides' | 'graph' | 'homology' | 'sync'
-type ViewMode = 'overview' | 'compact' | 'detailed'
+type DbTab = 'dashboard' | 'herbs' | 'peptides' | 'graph' | 'homology' | 'food_materials' | 'retail_products' | 'analytics' | 'sync';
+type ViewMode = 'overview' | 'compact' | 'detailed';
 
 interface UnifiedSearchResults {
-  herbs?: { id: number; name_cn: string; name_latin: string | null; category: string | null }[]
-  peptides?: { id: number; sequence: string; source_protein: string | null; activity_type: string | null }[]
-  graph?: { node_label: string; node_type: string }[]
+  herbs?: { id: number; name_cn: string; name_latin: string | null; category: string | null }[];
+  peptides?: { id: number; sequence: string; source_protein: string | null; activity_type: string | null }[];
+  graph?: { node_label: string; node_type: string }[];
 }
 
-interface CategoryData { name: string; value: number; fill: string }
+interface CategoryData {
+  name: string;
+  value: number;
+  fill: string;
+}
 
 interface StatCardConfig {
-  label: string
-  value: number
-  icon: any
-  color: string
-  bg: string
-  border: string
-  tab: DbTab
-  trend?: { value: number; direction: 'up' | 'down' | 'neutral'; label: string }
-  tooltip: string
+  label: string;
+  value: number;
+  icon: any;
+  color: string;
+  bg: string;
+  border: string;
+  tab: DbTab;
+  trend?: { value: number; direction: 'up' | 'down' | 'neutral'; label: string };
+  tooltip: string;
 }
 
 interface SearchHistoryItem {
-  query: string
-  timestamp: number
+  query: string;
+  timestamp: number;
 }
 
 // ─── 常量配置 ───
 const PIE_COLORS = [
-  'var(--color-primary-600, #059669)',
-  'var(--color-info-600, #2563EB)',
-  'var(--color-warning-600, #D97706)',
-  'var(--color-danger-600, #DC2626)',
-  'var(--color-purple-600, #7C3AED)',
-  'var(--color-cyan-600, #06B6D4)',
-  'var(--color-success-500, #10B981)',
-  'var(--color-warning-500, #F59E0B)',
-]
+  'var(--color-primary-600, #28A745)',
+  'var(--color-info-600, #007AFF)',
+  'var(--color-warning-600, #B45309)',
+  'var(--color-danger-600, #B91C1C)',
+  'var(--color-purple-600, #AF52DE)',
+  'var(--color-cyan-600, #0891B2)',
+  'var(--color-success-500, #34C759)',
+  'var(--color-warning-500, #D97706)',
+];
 
 const NODE_TYPE_BADGE: Record<string, 'primary' | 'info' | 'warning' | 'danger' | 'neutral'> = {
-  herb: 'primary', compound: 'info', target: 'warning', disease: 'danger',
-}
+  herb: 'primary',
+  compound: 'info',
+  target: 'warning',
+  disease: 'danger',
+};
 const NODE_TYPE_LABEL: Record<string, string> = {
-  herb: '药材', compound: '化合物', target: '靶点', disease: '疾病',
-}
+  herb: '药材',
+  compound: '化合物',
+  target: '靶点',
+  disease: '疾病',
+};
 
-const SEARCH_DEBOUNCE_MS = 300
-const MAX_SEARCH_HISTORY = 10
-const STORAGE_KEY_SEARCH_HISTORY = 'db_search_history'
-const STORAGE_KEY_TODAY_QUERIES = 'db_today_queries'
-const STORAGE_KEY_VIEW_MODE = 'db_view_mode'
+const SEARCH_DEBOUNCE_MS = 300;
+const MAX_SEARCH_HISTORY = 10;
+const STORAGE_KEY_SEARCH_HISTORY = 'db_search_history';
+const STORAGE_KEY_TODAY_QUERIES = 'db_today_queries';
+const STORAGE_KEY_VIEW_MODE = 'db_view_mode';
 
 // ─── CountUp 动画 Hook ───
 function useCountUp(targetValue: number, duration = 800) {
-  const [displayValue, setDisplayValue] = useState(0)
-  const previousValue = useRef(0)
+  const [displayValue, setDisplayValue] = useState(0);
+  const previousValue = useRef(0);
 
   useEffect(() => {
-    const start = previousValue.current
-    const end = targetValue
-    const startTime = performance.now()
+    const start = previousValue.current;
+    const end = targetValue;
+    const startTime = performance.now();
 
     const animate = (currentTime: number) => {
-      const elapsed = currentTime - startTime
-      const progress = Math.min(elapsed / duration, 1)
-      const easeOutQuart = 1 - Math.pow(1 - progress, 4)
-      const current = Math.round(start + (end - start) * easeOutQuart)
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+      const current = Math.round(start + (end - start) * easeOutQuart);
 
-      setDisplayValue(current)
+      setDisplayValue(current);
 
       if (progress < 1) {
-        requestAnimationFrame(animate)
+        requestAnimationFrame(animate);
       } else {
-        previousValue.current = end
+        previousValue.current = end;
       }
-    }
+    };
 
-    requestAnimationFrame(animate)
-  }, [targetValue, duration])
+    requestAnimationFrame(animate);
+  }, [targetValue, duration]);
 
-  return displayValue
+  return displayValue;
 }
 
 // ─── 统计卡片组件 ───
 function StatCard({ config, onClick }: { config: StatCardConfig; onClick?: () => void }) {
-  const animatedValue = useCountUp(config.value)
-  const TrendIcon = config.trend?.direction === 'up' ? ArrowUpRight : config.trend?.direction === 'down' ? ArrowDownRight : Minus
-  const trendColor = config.trend?.direction === 'up' ? 'text-emerald-600 dark:text-emerald-400' : config.trend?.direction === 'down' ? 'text-red-600 dark:text-red-400' : 'text-gray-400'
+  const animatedValue = useCountUp(config.value);
+  const TrendIcon =
+    config.trend?.direction === 'up' ? ArrowUp : config.trend?.direction === 'down' ? ArrowDown : Minus;
+  const trendColor =
+    config.trend?.direction === 'up'
+      ? 'text-primary-600 dark:text-primary-400'
+      : config.trend?.direction === 'down'
+        ? 'text-error-600 dark:text-error-400'
+        : 'text-neutral-400';
 
   return (
     <Tooltip content={config.tooltip}>
@@ -183,7 +254,9 @@ function StatCard({ config, onClick }: { config: StatCardConfig; onClick?: () =>
         <div className="text-xl font-bold text-text-primary dark:text-text-primary relative z-10 tabular-nums leading-tight tracking-tight">
           {animatedValue.toLocaleString()}
         </div>
-        <div className="text-xs font-semibold text-text-muted dark:text-text-muted mt-1.5 relative z-10 leading-relaxed tracking-tight">{config.label}</div>
+        <div className="text-xs font-semibold text-text-muted dark:text-text-muted mt-1.5 relative z-10 leading-relaxed tracking-tight">
+          {config.label}
+        </div>
 
         {config.trend && (
           <div className={`flex items-center justify-center gap-1 mt-2 ${trendColor} relative z-10`}>
@@ -196,315 +269,349 @@ function StatCard({ config, onClick }: { config: StatCardConfig; onClick?: () =>
         )}
       </button>
     </Tooltip>
-  )
+  );
 }
 
 // ═════════════════════════════════════════
 // 主组件
 // ═════════════════════════════════════════
 export default function DatabasePage() {
-  const [tab, setTab] = useState<DbTab>('dashboard')
-  const [searchInput, setSearchInput] = useState('')
-  const [pendingHerbName, setPendingHerbName] = useState<string | null>(null)
-  const [pendingPeptideSequence, setPendingPeptideSequence] = useState<string | null>(null)
-  const [globalResults, setGlobalResults] = useState<UnifiedSearchResults | null>(null)
-  const [showGlobalResults, setShowGlobalResults] = useState(false)
-  const [dataSource, setDataSource] = useState<'database' | 'fallback' | 'error' | 'loading'>('loading')
-  const [errorMessage, setErrorMessage] = useState<string>('')
+  const [tab, setTab] = useState<DbTab>('dashboard');
+  const [searchInput, setSearchInput] = useState('');
+  const [pendingHerbName, setPendingHerbName] = useState<string | null>(null);
+  const [pendingPeptideSequence, setPendingPeptideSequence] = useState<string | null>(null);
+  const [globalResults, setGlobalResults] = useState<UnifiedSearchResults | null>(null);
+  const [showGlobalResults, setShowGlobalResults] = useState(false);
+  const [dataSource, setDataSource] = useState<'database' | 'fallback' | 'error' | 'loading'>('loading');
+  const [errorMessage, setErrorMessage] = useState<string>('');
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
-    try { return (localStorage.getItem(STORAGE_KEY_VIEW_MODE) as ViewMode) || 'overview' }
-    catch { return 'overview' }
-  })
-  const [showShortcuts, setShowShortcuts] = useState(false)
-  const [showQuickActions, setShowQuickActions] = useState(false)
-  const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>([])
-  const [showSearchHistory, setShowSearchHistory] = useState(false)
+    try {
+      return (localStorage.getItem(STORAGE_KEY_VIEW_MODE) as ViewMode) || 'overview';
+    } catch {
+      return 'overview';
+    }
+  });
+  const [showShortcuts, setShowShortcuts] = useState(false);
+  const [showQuickActions, setShowQuickActions] = useState(false);
+  const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>([]);
+  const [showSearchHistory, setShowSearchHistory] = useState(false);
   const [todayQueries, setTodayQueries] = useState<number>(() => {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY_TODAY_QUERIES)
-      const parsed = stored ? JSON.parse(stored) : { date: new Date().toDateString(), count: 0 }
-      if (parsed.date === new Date().toDateString()) return parsed.count
-      return 0
-    } catch { return 0 }
-  })
-  const searchRef = useRef<HTMLDivElement>(null)
-  const quickActionsRef = useRef<HTMLDivElement>(null)
-  const shortcutsRef = useRef<HTMLDivElement>(null)
-  const queryClient = useQueryClient()
-  const toast = useToast()
+      const stored = localStorage.getItem(STORAGE_KEY_TODAY_QUERIES);
+      const parsed = stored ? JSON.parse(stored) : { date: new Date().toDateString(), count: 0 };
+      if (parsed.date === new Date().toDateString()) return parsed.count;
+      return 0;
+    } catch {
+      return 0;
+    }
+  });
+  const searchRef = useRef<HTMLDivElement>(null);
+  const quickActionsRef = useRef<HTMLDivElement>(null);
+  const shortcutsRef = useRef<HTMLDivElement>(null);
+  const queryClient = useQueryClient();
+  const toast = useToast();
 
   // 加载搜索历史
   useEffect(() => {
     try {
-      const history = localStorage.getItem(STORAGE_KEY_SEARCH_HISTORY)
-      if (history) setSearchHistory(JSON.parse(history))
+      const history = localStorage.getItem(STORAGE_KEY_SEARCH_HISTORY);
+      if (history) setSearchHistory(JSON.parse(history));
     } catch {}
-  }, [])
+  }, []);
 
   // 保存搜索历史
   const saveToSearchHistory = useCallback((query: string) => {
-    if (!query.trim()) return
+    if (!query.trim()) return;
 
-    setSearchHistory(prev => {
-      const filtered = prev.filter(item => item.query !== query)
-      const newItem = { query: query.trim(), timestamp: Date.now() }
-      const updated = [newItem, ...filtered].slice(0, MAX_SEARCH_HISTORY)
+    setSearchHistory((prev) => {
+      const filtered = prev.filter((item) => item.query !== query);
+      const newItem = { query: query.trim(), timestamp: Date.now() };
+      const updated = [newItem, ...filtered].slice(0, MAX_SEARCH_HISTORY);
 
       try {
-        localStorage.setItem(STORAGE_KEY_SEARCH_HISTORY, JSON.stringify(updated))
+        localStorage.setItem(STORAGE_KEY_SEARCH_HISTORY, JSON.stringify(updated));
       } catch {}
 
-      return updated
-    })
+      return updated;
+    });
 
     // 更新今日查询次数
-    setTodayQueries(prev => {
-      const newCount = prev + 1
+    setTodayQueries((prev) => {
+      const newCount = prev + 1;
       try {
-        localStorage.setItem(STORAGE_KEY_TODAY_QUERIES, JSON.stringify({
-          date: new Date().toDateString(),
-          count: newCount,
-        }))
+        localStorage.setItem(
+          STORAGE_KEY_TODAY_QUERIES,
+          JSON.stringify({
+            date: new Date().toDateString(),
+            count: newCount,
+          }),
+        );
       } catch {}
-      return newCount
-    })
-  }, [])
+      return newCount;
+    });
+  }, []);
 
   // 视图模式切换
   const handleViewModeChange = useCallback((mode: ViewMode) => {
-    setViewMode(mode)
-    try { localStorage.setItem(STORAGE_KEY_VIEW_MODE, mode) } catch {}
-  }, [])
+    setViewMode(mode);
+    try {
+      localStorage.setItem(STORAGE_KEY_VIEW_MODE, mode);
+    } catch {}
+  }, []);
 
   const syncStatsQuery = useQuery({
     queryKey: ['db-sync-stats'],
     queryFn: () => databaseApi.getSyncStats(),
-    onSuccess: () => setDataSource('database'),
-    onError: (err: any) => {
-      const status = err?.response?.status
+  });
+
+  useEffect(() => {
+    if (syncStatsQuery.isSuccess) {
+      setDataSource('database');
+    }
+    if (syncStatsQuery.isError) {
+      const err: any = syncStatsQuery.error;
+      const status = err?.response?.status;
       if (status === 401 || status === 403) {
-        setDataSource('error')
-        setErrorMessage(`认证失败 (HTTP ${status})，请先登录`)
+        setDataSource('error');
+        setErrorMessage(`认证失败 (HTTP ${status})，请先登录`);
       } else if (!err?.response || (status >= 500 && status < 600)) {
-        setDataSource('fallback')
-        setErrorMessage('')
+        setDataSource('fallback');
+        setErrorMessage('');
       } else {
-        setDataSource('error')
-        setErrorMessage(err?.message || '数据加载失败')
+        setDataSource('error');
+        setErrorMessage(err?.message || '数据加载失败');
       }
-    },
-  })
+    }
+  }, [syncStatsQuery.isSuccess, syncStatsQuery.isError, syncStatsQuery.error]);
 
   const herbSyncMutation = useMutation({
     mutationFn: () => databaseApi.syncHerbs(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['db-sync-stats'] })
-      queryClient.invalidateQueries({ queryKey: ['db-herbs'] })
+      queryClient.invalidateQueries({ queryKey: ['db-sync-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['db-herbs'] });
     },
-  })
+  });
 
   const peptideSyncMutation = useMutation({
     mutationFn: () => databaseApi.syncPeptides(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['db-sync-stats'] })
-      queryClient.invalidateQueries({ queryKey: ['db-peptides'] })
+      queryClient.invalidateQueries({ queryKey: ['db-sync-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['db-peptides'] });
     },
-  })
+  });
 
   // ─── 数据派生变量（必须在回调函数之前声明，避免 TDZ 错误）────
-  const stats = syncStatsQuery.data
-  const herbCount = stats?.tcmsp?.total_herbs ?? 0
-  const peptideCount = stats?.dfbp?.total_peptides ?? 0
-  const graphNodes = stats?.knowledge_graph ?? { total_herbs: 0, total_compounds: 0, total_targets: 0 }
-  const homologyCount = stats?.tcmsp?.food_homology_count ?? 0
+  const stats = syncStatsQuery.data as Record<string, any> | undefined;
+  const herbCount = stats?.tcmsp?.total_herbs ?? 0;
+  const peptideCount = stats?.dfbp?.total_peptides ?? 0;
+  const graphNodes = stats?.knowledge_graph ?? { total_herbs: 0, total_compounds: 0, total_targets: 0 };
+  const homologyCount = stats?.tcmsp?.food_homology_count ?? 0;
 
   // 药材分类数据（饼图）
   const categoryData = useMemo((): CategoryData[] => {
-    const raw = stats?.tcmsp?.categories
-    if (!raw) return []
-    let entries: [string, number][] = []
+    const raw = stats?.tcmsp?.categories;
+    if (!raw) return [];
+    let entries: [string, number][] = [];
     if (Array.isArray(raw)) {
-      entries = raw.map((c: { category?: string; name?: string; count?: number }) => [c.category || c.name || '', typeof c.count === 'number' ? c.count : 0])
+      entries = raw.map((c: { category?: string; name?: string; count?: number }) => [
+        c.category || c.name || '',
+        typeof c.count === 'number' ? c.count : 0,
+      ]);
     } else if (typeof raw === 'object') {
-      entries = Object.entries(raw as Record<string, number>)
+      entries = Object.entries(raw as Record<string, number>);
     }
     return entries.slice(0, 8).map(([name, value], i) => ({
       name,
       value: typeof value === 'number' ? value : 0,
       fill: PIE_COLORS[i % PIE_COLORS.length],
-    }))
-  }, [stats])
+    }));
+  }, [stats]);
 
   // 活性类型数据（柱状图）
   const activityData = useMemo(() => {
-    const raw = stats?.dfbp?.activity_types
-    if (!raw) return []
-    let entries: [string, number][] = []
+    const raw = stats?.dfbp?.activity_types;
+    if (!raw) return [];
+    let entries: [string, number][] = [];
     if (Array.isArray(raw)) {
-      entries = raw.map((c: { type?: string; name?: string; count?: number }) => [c.type || c.name || '', typeof c.count === 'number' ? c.count : 0])
+      entries = raw.map((c: { type?: string; name?: string; count?: number }) => [
+        c.type || c.name || '',
+        typeof c.count === 'number' ? c.count : 0,
+      ]);
     } else if (typeof raw === 'object') {
-      entries = Object.entries(raw as Record<string, number>)
+      entries = Object.entries(raw as Record<string, number>);
     }
     return entries.slice(0, 6).map(([name, value], i) => ({
       name: name.length > 6 ? name.slice(0, 6) + '...' : name,
       fullName: name,
       count: typeof value === 'number' ? value : 0,
       fill: PIE_COLORS[i % PIE_COLORS.length],
-    }))
-  }, [stats])
+    }));
+  }, [stats]);
 
   // 全局搜索防抖 + 自动补全（可配置化）
-  const [searchTimer, setSearchTimer] = useState<ReturnType<typeof setTimeout> | null>(null)
-  const [suggestions, setSuggestions] = useState<{ label: string; sublabel?: string }[] | null>(null)
-  const [suggestionsLoading, setSuggestionsLoading] = useState(false)
+  const [searchTimer, setSearchTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
+  const [suggestions, setSuggestions] = useState<{ label: string; sublabel?: string }[] | null>(null);
+  const [suggestionsLoading, setSuggestionsLoading] = useState(false);
 
-  const handleGlobalSearch = useCallback((keyword: string) => {
-    if (searchTimer) clearTimeout(searchTimer)
-    if (!keyword.trim()) { setGlobalResults(null); setShowGlobalResults(false); setSuggestions(null); return }
-
-    // 触发自动补全 (直接调用 API, 不使用 disabled query)
-    if (keyword.length >= 1) {
-      setSuggestionsLoading(true)
-      databaseApi.getSearchSuggestions(keyword, 5)
-        .then(data => setSuggestions(data?.herbs?.slice(0, 5) || data?.peptides?.slice(0, 5) || []))
-        .catch(() => setSuggestions(null))
-        .finally(() => setSuggestionsLoading(false))
-    }
-
-    const timer = setTimeout(async () => {
-      try {
-        const results = await databaseApi.unifiedSearch({ keyword, sources: 'herbs,peptides,graph', limit: 10 })
-        setGlobalResults(results)
-        setShowGlobalResults(true)
-        saveToSearchHistory(keyword)
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : '搜索失败，请稍后重试'
-        toast.error(msg)
-        setGlobalResults(null)
-        setShowGlobalResults(false)
+  const handleGlobalSearch = useCallback(
+    (keyword: string) => {
+      if (searchTimer) clearTimeout(searchTimer);
+      if (!keyword.trim()) {
+        setGlobalResults(null);
+        setShowGlobalResults(false);
+        setSuggestions(null);
+        return;
       }
-    }, SEARCH_DEBOUNCE_MS)
-    setSearchTimer(timer)
-  }, [searchTimer, toast, saveToSearchHistory])
+
+      // 触发自动补全 (直接调用 API, 不使用 disabled query)
+      if (keyword.length >= 1) {
+        setSuggestionsLoading(true);
+        databaseApi
+          .getSearchSuggestions(keyword, 5)
+          .then((data) => setSuggestions(data?.herbs?.slice(0, 5) || data?.peptides?.slice(0, 5) || []))
+          .catch(() => setSuggestions(null))
+          .finally(() => setSuggestionsLoading(false));
+      }
+
+      const timer = setTimeout(async () => {
+        try {
+          const results = await databaseApi.unifiedSearch({ keyword, sources: 'herbs,peptides,graph', limit: 10 });
+          setGlobalResults(results);
+          setShowGlobalResults(true);
+          saveToSearchHistory(keyword);
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : '搜索失败，请稍后重试';
+          toast.error(msg);
+          setGlobalResults(null);
+          setShowGlobalResults(false);
+        }
+      }, SEARCH_DEBOUNCE_MS);
+      setSearchTimer(timer);
+    },
+    [searchTimer, toast, saveToSearchHistory],
+  );
 
   // Enter 键直接跳转到第一个结果
-  const handleSearchKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && globalResults) {
-      e.preventDefault()
-      const firstHerb = globalResults.herbs?.[0]
-      const firstPeptide = globalResults.peptides?.[0]
-      const firstGraph = globalResults.graph?.[0]
+  const handleSearchKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === 'Enter' && globalResults) {
+        e.preventDefault();
+        const firstHerb = globalResults.herbs?.[0];
+        const firstPeptide = globalResults.peptides?.[0];
+        const firstGraph = globalResults.graph?.[0];
 
-      if (firstHerb) {
-        setTab('herbs')
-        setShowGlobalResults(false)
-        setSearchInput('')
-      } else if (firstPeptide) {
-        setTab('peptides')
-        setShowGlobalResults(false)
-        setSearchInput('')
-      } else if (firstGraph) {
-        setTab('graph')
-        setShowGlobalResults(false)
-        setSearchInput('')
+        if (firstHerb) {
+          setTab('herbs');
+          setShowGlobalResults(false);
+          setSearchInput('');
+        } else if (firstPeptide) {
+          setTab('peptides');
+          setShowGlobalResults(false);
+          setSearchInput('');
+        } else if (firstGraph) {
+          setTab('graph');
+          setShowGlobalResults(false);
+          setSearchInput('');
+        }
       }
-    }
 
-    // Escape 关闭搜索结果
-    if (e.key === 'Escape') {
-      setShowGlobalResults(false)
-      setShowSearchHistory(false)
-    }
-  }, [globalResults])
+      // Escape 关闭搜索结果
+      if (e.key === 'Escape') {
+        setShowGlobalResults(false);
+        setShowSearchHistory(false);
+      }
+    },
+    [globalResults],
+  );
 
   // 全局快捷键（Ctrl+K / ? / 1-6 / R / E / /）
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       // Ctrl+K 或 Cmd+K 聚焦搜索
       if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-        e.preventDefault()
-        searchRef.current?.querySelector<HTMLInputElement>('input')?.focus()
-        setShowSearchHistory(true)
+        e.preventDefault();
+        searchRef.current?.querySelector<HTMLInputElement>('input')?.focus();
+        setShowSearchHistory(true);
       }
 
       // ? 键显示快捷键帮助
       if (e.key === '?' && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        const target = e.target as HTMLElement
+        const target = e.target as HTMLElement;
         if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA') {
-          e.preventDefault()
-          setShowShortcuts(prev => !prev)
+          e.preventDefault();
+          setShowShortcuts((prev) => !prev);
         }
       }
 
       // 数字键 1-6 切换 Tab
       if (!e.ctrlKey && !e.metaKey && !e.altKey && /^[1-6]$/.test(e.key)) {
-        const target = e.target as HTMLElement
+        const target = e.target as HTMLElement;
         if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA') {
-          const tabs: DbTab[] = ['dashboard', 'herbs', 'peptides', 'graph', 'homology', 'sync']
-          const index = parseInt(e.key) - 1
+          const tabs: DbTab[] = ['dashboard', 'herbs', 'peptides', 'graph', 'homology', 'food_materials', 'retail_products', 'analytics', 'sync'];
+          const index = parseInt(e.key) - 1;
           if (tabs[index]) {
-            setTab(tabs[index])
+            setTab(tabs[index]);
           }
         }
       }
 
       // R 刷新数据
       if (e.key === 'r' && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        const target = e.target as HTMLElement
+        const target = e.target as HTMLElement;
         if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA') {
-          queryClient.invalidateQueries({ queryKey: ['db-sync-stats'] })
-          toast.success('数据已刷新')
+          queryClient.invalidateQueries({ queryKey: ['db-sync-stats'] });
+          toast.success('数据已刷新');
         }
       }
 
       // E 导出数据
       if (e.key === 'e' && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        const target = e.target as HTMLElement
+        const target = e.target as HTMLElement;
         if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA') {
-          handleExportStats()
+          handleExportStats();
         }
       }
 
       // / 聚焦搜索
       if (e.key === '/' && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        const target = e.target as HTMLElement
+        const target = e.target as HTMLElement;
         if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA') {
-          e.preventDefault()
-          searchRef.current?.querySelector<HTMLInputElement>('input')?.focus()
-          setShowSearchHistory(true)
+          e.preventDefault();
+          searchRef.current?.querySelector<HTMLInputElement>('input')?.focus();
+          setShowSearchHistory(true);
         }
       }
 
       // ESC 关闭所有弹层
       if (e.key === 'Escape') {
-        setShowShortcuts(false)
-        setShowQuickActions(false)
-        setShowSearchHistory(false)
-        setShowGlobalResults(false)
+        setShowShortcuts(false);
+        setShowQuickActions(false);
+        setShowSearchHistory(false);
+        setShowGlobalResults(false);
       }
-    }
+    };
 
-    document.addEventListener('keydown', handler)
-    return () => document.removeEventListener('keydown', handler)
-  }, [queryClient, toast])
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [queryClient, toast]);
 
   // 点击外部关闭搜索结果、快捷键面板、快速操作菜单
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
-        setShowGlobalResults(false)
-        setShowSearchHistory(false)
+        setShowGlobalResults(false);
+        setShowSearchHistory(false);
       }
       if (shortcutsRef.current && !shortcutsRef.current.contains(e.target as Node)) {
-        setShowShortcuts(false)
+        setShowShortcuts(false);
       }
       if (quickActionsRef.current && !quickActionsRef.current.contains(e.target as Node)) {
-        setShowQuickActions(false)
+        setShowQuickActions(false);
       }
-    }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
-  }, [])
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
 
   // 数据导出功能
   const handleExportStats = useCallback(() => {
@@ -533,127 +640,141 @@ export default function DatabasePage() {
           generatedBy: 'RMFOOD Database Platform',
           version: '4.0.0',
         },
-      }
+      };
 
-      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' })
-      const url = URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = url
-      link.download = `database-stats-${new Date().toISOString().slice(0, 10)}.json`
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      URL.revokeObjectURL(url)
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `database-stats-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
 
-      toast.success('统计数据已导出为 JSON 文件')
+      toast.success('统计数据已导出为 JSON 文件');
     } catch (err) {
-      toast.error('导出失败，请稍后重试')
+      toast.error('导出失败，请稍后重试');
     }
-  }, [dataSource, herbCount, peptideCount, graphNodes, homologyCount, stats, todayQueries, categoryData, activityData, viewMode, tab, toast])
+  }, [
+    dataSource,
+    herbCount,
+    peptideCount,
+    graphNodes,
+    homologyCount,
+    stats,
+    todayQueries,
+    categoryData,
+    activityData,
+    viewMode,
+    tab,
+    toast,
+  ]);
 
   // 刷新缓存
   const handleRefreshCache = useCallback(async () => {
     try {
-      await queryClient.invalidateQueries({ queryKey: ['db-sync-stats'] })
-      await queryClient.invalidateQueries({ queryKey: ['db-herbs'] })
-      await queryClient.invalidateQueries({ queryKey: ['db-peptides'] })
-      toast.success('所有缓存已刷新')
+      await queryClient.invalidateQueries({ queryKey: ['db-sync-stats'] });
+      await queryClient.invalidateQueries({ queryKey: ['db-herbs'] });
+      await queryClient.invalidateQueries({ queryKey: ['db-peptides'] });
+      toast.success('所有缓存已刷新');
     } catch (err) {
-      toast.error('缓存刷新失败')
+      toast.error('缓存刷新失败');
     }
-  }, [queryClient, toast])
+  }, [queryClient, toast]);
 
   // 数据库健康检查（模拟）
   const handleHealthCheck = useCallback(() => {
-    const healthStatus = dataSource === 'database' ? 'healthy' : dataSource === 'fallback' ? 'degraded' : 'unhealthy'
+    const healthStatus = dataSource === 'database' ? 'healthy' : dataSource === 'fallback' ? 'degraded' : 'unhealthy';
 
-    toast.info(`数据库健康状态: ${healthStatus.toUpperCase()}`, {
-      description: `数据源: ${dataSource} | 响应时间: ${Math.random() * 100 + 20 | 0}ms`,
-      duration: 5000,
-    })
-  }, [dataSource, toast])
+    toast.info(`数据库健康状态: ${healthStatus.toUpperCase()}`);
+  }, [dataSource, toast]);
 
   // 打印/分享报告
   const handlePrintReport = useCallback(() => {
-    window.print()
-  }, [])
+    window.print();
+  }, []);
 
   // 统计卡片配置（6个卡片 + 趋势数据）
-  const statCardsConfig = useMemo((): StatCardConfig[] => [
-    {
-      label: '中药材',
-      value: herbCount,
-      icon: Database,
-      color: 'text-primary-600 dark:text-primary-400',
-      bg: 'bg-primary-50 dark:bg-primary-950/40',
-      border: 'border-primary-100 dark:border-primary-900/30',
-      tab: 'herbs',
-      trend: { value: 12.5, direction: 'up', label: '较上周' },
-      tooltip: `TCMSP 数据库中的中药材总数：${herbCount.toLocaleString()} 种`,
-    },
-    {
-      label: '活性肽',
-      value: peptideCount,
-      icon: Activity,
-      color: 'text-blue-600 dark:text-blue-400',
-      bg: 'bg-blue-50 dark:bg-blue-950/40',
-      border: 'border-blue-100 dark:border-blue-900/30',
-      tab: 'peptides',
-      trend: { value: 8.3, direction: 'up', label: '较上周' },
-      tooltip: `DFBP 数据库中的活性肽总数：${peptideCount.toLocaleString()} 条`,
-    },
-    {
-      label: '图谱节点',
-      value: graphNodes.total_herbs + graphNodes.total_compounds + graphNodes.total_targets,
-      icon: Layers,
-      color: 'text-accent-600 dark:text-accent-400',
-      bg: 'bg-accent-50 dark:bg-accent-950/40',
-      border: 'border-accent-100 dark:border-accent-900/30',
-      tab: 'graph',
-      trend: { value: 5.2, direction: 'up', label: '较上周' },
-      tooltip: `知识图谱总节点数：药材 ${graphNodes.total_herbs} | 化合物 ${graphNodes.total_compounds} | 靶点 ${graphNodes.total_targets}`,
-    },
-    {
-      label: '药食同源',
-      value: homologyCount,
-      icon: Zap,
-      color: 'text-emerald-600 dark:text-emerald-400',
-      bg: 'bg-emerald-50 dark:bg-emerald-950/40',
-      border: 'border-emerald-100 dark:border-emerald-900/30',
-      tab: 'herbs',
-      trend: { value: 2.1, direction: 'neutral', label: '持平' },
-      tooltip: `药食同源目录中的条目数：${homologyCount.toLocaleString()}`,
-    },
-    {
-      label: '配伍关系',
-      value: stats?.knowledge_graph?.herb_interactions ?? 0,
-      icon: TrendingUp,
-      color: 'text-amber-600 dark:text-amber-400',
-      bg: 'bg-amber-50 dark:bg-amber-950/40',
-      border: 'border-amber-100 dark:border-amber-900/30',
-      tab: 'graph',
-      trend: { value: 15.7, direction: 'up', label: '较上周' },
-      tooltip: `已识别的配伍关系数：${(stats?.knowledge_graph?.herb_interactions ?? 0).toLocaleString()}`,
-    },
-    {
-      label: '今日查询',
-      value: todayQueries,
-      icon: Eye,
-      color: 'text-purple-600 dark:text-purple-400',
-      bg: 'bg-purple-50 dark:bg-purple-950/40',
-      border: 'border-purple-100 dark:border-purple-900/30',
-      tab: 'dashboard',
-      trend: { value: 23.4, direction: 'up', label: '较昨日' },
-      tooltip: `今日搜索/查询次数：${todayQueries} 次`,
-    },
-  ], [herbCount, peptideCount, graphNodes, homologyCount, stats, todayQueries])
+  const statCardsConfig = useMemo(
+    (): StatCardConfig[] => [
+      {
+        label: '中药材',
+        value: herbCount,
+        icon: Database,
+        color: 'text-primary-600 dark:text-primary-400',
+        bg: 'bg-primary-50 dark:bg-primary-950/40',
+        border: 'border-primary-100 dark:border-primary-900/30',
+        tab: 'herbs',
+        trend: { value: 12.5, direction: 'up', label: '较上周' },
+        tooltip: `TCMSP 数据库中的中药材总数：${herbCount.toLocaleString()} 种`,
+      },
+      {
+        label: '活性肽',
+        value: peptideCount,
+        icon: Activity,
+        color: 'text-secondary-600 dark:text-secondary-400',
+        bg: 'bg-secondary-50 dark:bg-blue-950/40',
+        border: 'border-blue-100 dark:border-blue-900/30',
+        tab: 'peptides',
+        trend: { value: 8.3, direction: 'up', label: '较上周' },
+        tooltip: `DFBP 数据库中的活性肽总数：${peptideCount.toLocaleString()} 条`,
+      },
+      {
+        label: '图谱节点',
+        value: graphNodes.total_herbs + graphNodes.total_compounds + graphNodes.total_targets,
+        icon: Layers,
+        color: 'text-accent-600 dark:text-accent-400',
+        bg: 'bg-accent-50 dark:bg-accent-950/40',
+        border: 'border-accent-100 dark:border-accent-900/30',
+        tab: 'graph',
+        trend: { value: 5.2, direction: 'up', label: '较上周' },
+        tooltip: `知识图谱总节点数：药材 ${graphNodes.total_herbs} | 化合物 ${graphNodes.total_compounds} | 靶点 ${graphNodes.total_targets}`,
+      },
+      {
+        label: '药食同源',
+        value: homologyCount,
+        icon: Zap,
+        color: 'text-primary-600 dark:text-primary-400',
+        bg: 'bg-primary-50 dark:bg-emerald-950/40',
+        border: 'border-emerald-100 dark:border-emerald-900/30',
+        tab: 'herbs',
+        trend: { value: 2.1, direction: 'neutral', label: '持平' },
+        tooltip: `药食同源目录中的条目数：${homologyCount.toLocaleString()}`,
+      },
+      {
+        label: '配伍关系',
+        value: stats?.knowledge_graph?.herb_interactions ?? 0,
+        icon: TrendingUp,
+        color: 'text-warning-600 dark:text-warning-400',
+        bg: 'bg-warning-50 dark:bg-amber-950/40',
+        border: 'border-amber-100 dark:border-amber-900/30',
+        tab: 'graph',
+        trend: { value: 15.7, direction: 'up', label: '较上周' },
+        tooltip: `已识别的配伍关系数：${(stats?.knowledge_graph?.herb_interactions ?? 0).toLocaleString()}`,
+      },
+      {
+        label: '今日查询',
+        value: todayQueries,
+        icon: Eye,
+        color: 'text-accent-600 dark:text-accent-400',
+        bg: 'bg-accent-50 dark:bg-purple-950/40',
+        border: 'border-purple-100 dark:border-purple-900/30',
+        tab: 'dashboard',
+        trend: { value: 23.4, direction: 'up', label: '较昨日' },
+        tooltip: `今日搜索/查询次数：${todayQueries} 次`,
+      },
+    ],
+    [herbCount, peptideCount, graphNodes, homologyCount, stats, todayQueries],
+  );
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 animate-page-enter">
-
       {/* Header */}
       <div className="space-y-2">
-        <h1 className="font-bold tracking-tight leading-[1.25] text-text-primary dark:text-text-primary" style={{ fontSize: '22px', letterSpacing: '-0.015em' }}>
+        <h1
+          className="font-bold tracking-tight leading-[1.25] text-2xl text-text-primary dark:text-text-primary"
+        >
           数据库检索中心
         </h1>
         <p className="text-[13px] font-normal leading-relaxed text-text-muted dark:text-text-muted">
@@ -664,13 +785,13 @@ export default function DatabasePage() {
       {/* 顶部工具栏 */}
       <div className="flex items-center justify-between gap-4">
         {/* 左侧：视图切换 */}
-        <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
+        <div className="flex items-center gap-1.5 bg-neutral-100 dark:bg-neutral-800 rounded-lg p-1">
           <button
             onClick={() => handleViewModeChange('overview')}
-            className={`flex items-center gap-2 px-3 py-2 text-xs font-semibold rounded-md transition-all leading-relaxed tracking-tight ${
+            className={`flex items-center gap-2 px-3 py-2 text-xs font-semibold rounded-md transition-all leading-relaxed tracking-tight focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none ${
               viewMode === 'overview'
-                ? 'bg-white dark:bg-slate-700 text-primary-600 dark:text-primary-400 shadow-sm'
-                : 'text-gray-600 dark:text-gray-400 hover:text-text-primary'
+                ? 'bg-white dark:bg-neutral-700 text-primary-600 dark:text-primary-400 shadow-sm'
+                : 'text-neutral-600 dark:text-neutral-400 hover:text-text-primary'
             }`}
           >
             <LayoutDashboard className="w-3.5 h-3.5" />
@@ -678,10 +799,10 @@ export default function DatabasePage() {
           </button>
           <button
             onClick={() => handleViewModeChange('compact')}
-            className={`flex items-center gap-2 px-3 py-2 text-xs font-semibold rounded-md transition-all leading-relaxed tracking-tight ${
+            className={`flex items-center gap-2 px-3 py-2 text-xs font-semibold rounded-md transition-all leading-relaxed tracking-tight focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none ${
               viewMode === 'compact'
-                ? 'bg-white dark:bg-slate-700 text-primary-600 dark:text-primary-400 shadow-sm'
-                : 'text-gray-600 dark:text-gray-400 hover:text-text-primary'
+                ? 'bg-white dark:bg-neutral-700 text-primary-600 dark:text-primary-400 shadow-sm'
+                : 'text-neutral-600 dark:text-neutral-400 hover:text-text-primary'
             }`}
           >
             <LayoutList className="w-3.5 h-3.5" />
@@ -689,10 +810,10 @@ export default function DatabasePage() {
           </button>
           <button
             onClick={() => handleViewModeChange('detailed')}
-            className={`flex items-center gap-2 px-3 py-2 text-xs font-semibold rounded-md transition-all leading-relaxed tracking-tight ${
+            className={`flex items-center gap-2 px-3 py-2 text-xs font-semibold rounded-md transition-all leading-relaxed tracking-tight focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none ${
               viewMode === 'detailed'
-                ? 'bg-white dark:bg-slate-700 text-primary-600 dark:text-primary-400 shadow-sm'
-                : 'text-gray-600 dark:text-gray-400 hover:text-text-primary'
+                ? 'bg-white dark:bg-neutral-700 text-primary-600 dark:text-primary-400 shadow-sm'
+                : 'text-neutral-600 dark:text-neutral-400 hover:text-text-primary'
             }`}
           >
             <LayoutGrid className="w-3.5 h-3.5" />
@@ -705,7 +826,7 @@ export default function DatabasePage() {
           {/* 快捷键帮助按钮 */}
           <button
             onClick={() => setShowShortcuts(true)}
-            className="flex items-center gap-2 px-3 py-2 text-xs font-semibold text-gray-600 dark:text-gray-400 bg-slate-100 dark:bg-slate-800 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors leading-relaxed tracking-tight"
+            className="flex items-center gap-2 px-3 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-800 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors leading-relaxed tracking-tight"
             title="查看快捷键 (按 ? 键)"
           >
             <Keyboard className="w-3.5 h-3.5" />
@@ -723,49 +844,61 @@ export default function DatabasePage() {
             </button>
 
             {showQuickActions && (
-              <div className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 z-50 animate-micro-in overflow-hidden">
+              <div className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-neutral-900 rounded-xl shadow-xl border border-neutral-200 dark:border-neutral-700 z-50 animate-micro-in overflow-hidden">
                 <div className="p-1.5 space-y-0.5">
                   <button
-                    onClick={() => { handleExportStats(); setShowQuickActions(false) }}
+                    onClick={() => {
+                      handleExportStats();
+                      setShowQuickActions(false);
+                    }}
                     className="w-full flex items-center gap-3 px-3 py-2 text-left text-sm font-medium text-text-primary dark:text-text-primary hover:bg-primary-50/60 dark:hover:bg-primary-950/20 transition-colors rounded-lg leading-relaxed"
                   >
-                    <Download className="w-4 h-4 text-blue-600" />
+                    <Download className="w-4 h-4 text-secondary-600" />
                     导出统计数据
                     <span className="ml-auto text-[10px] text-text-muted font-normal tabular-nums">E</span>
                   </button>
 
                   <button
-                    onClick={() => { handleRefreshCache(); setShowQuickActions(false) }}
-                    className="w-full flex items-center gap-3 px-3 py-2 text-left text-sm font-medium text-text-primary dark:text-text-primary hover:bg-emerald-50/60 dark:hover:bg-emerald-950/20 transition-colors rounded-lg leading-relaxed"
+                    onClick={() => {
+                      handleRefreshCache();
+                      setShowQuickActions(false);
+                    }}
+                    className="w-full flex items-center gap-3 px-3 py-2 text-left text-sm font-medium text-text-primary dark:text-text-primary hover:bg-primary-50/60 dark:hover:bg-emerald-950/20 transition-colors rounded-lg leading-relaxed"
                   >
-                    <RefreshCw className="w-4 h-4 text-emerald-600" />
+                    <RefreshCw className="w-4 h-4 text-primary-600" />
                     刷新所有缓存
                     <span className="ml-auto text-[10px] text-text-muted font-normal tabular-nums">R</span>
                   </button>
 
                   <button
-                    onClick={() => { handleHealthCheck(); setShowQuickActions(false) }}
-                    className="w-full flex items-center gap-3 px-3 py-2 text-left text-sm font-medium text-text-primary dark:text-text-primary hover:bg-amber-50/60 dark:hover:bg-amber-950/20 transition-colors rounded-lg leading-relaxed"
+                    onClick={() => {
+                      handleHealthCheck();
+                      setShowQuickActions(false);
+                    }}
+                    className="w-full flex items-center gap-3 px-3 py-2 text-left text-sm font-medium text-text-primary dark:text-text-primary hover:bg-warning-50/60 dark:hover:bg-amber-950/20 transition-colors rounded-lg leading-relaxed"
                   >
-                    <ShieldCheck className="w-4 h-4 text-amber-600" />
+                    <ShieldCheck className="w-4 h-4 text-warning-600" />
                     数据库健康检查
                   </button>
 
-                  <div className="border-t border-gray-100 dark:border-gray-800 my-1.5" />
+                  <div className="border-t border-neutral-100 dark:border-neutral-800 my-1.5" />
 
                   <button
-                    onClick={() => { handlePrintReport(); setShowQuickActions(false) }}
-                    className="w-full flex items-center gap-3 px-3 py-2 text-left text-sm font-medium text-text-primary dark:text-text-primary hover:bg-purple-50/60 dark:hover:bg-purple-950/20 transition-colors rounded-lg leading-relaxed"
+                    onClick={() => {
+                      handlePrintReport();
+                      setShowQuickActions(false);
+                    }}
+                    className="w-full flex items-center gap-3 px-3 py-2 text-left text-sm font-medium text-text-primary dark:text-text-primary hover:bg-accent-50/60 dark:hover:bg-purple-950/20 transition-colors rounded-lg leading-relaxed"
                   >
-                    <Printer className="w-4 h-4 text-purple-600" />
+                    <Printer className="w-4 h-4 text-accent-600" />
                     打印报告
                   </button>
 
                   <button
                     onClick={() => {
-                      navigator.clipboard?.writeText(window.location.href)
-                      toast.success('链接已复制到剪贴板')
-                      setShowQuickActions(false)
+                      navigator.clipboard?.writeText(window.location.href);
+                      toast.success('链接已复制到剪贴板');
+                      setShowQuickActions(false);
                     }}
                     className="w-full flex items-center gap-3 px-3 py-2 text-left text-sm font-medium text-text-primary dark:text-text-primary hover:bg-cyan-50/60 dark:hover:bg-cyan-950/20 transition-colors rounded-lg leading-relaxed"
                   >
@@ -783,33 +916,33 @@ export default function DatabasePage() {
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-2 text-xs font-normal leading-relaxed">
           {syncStatsQuery.isLoading && (
-            <div className="flex items-center gap-2 px-3 py-2 bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 rounded-lg border border-blue-200 dark:border-blue-800">
-              <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+            <div className="flex items-center gap-2 px-3 py-2 bg-secondary-50 dark:bg-blue-950/30 text-secondary-700 dark:text-secondary-300 rounded-lg border border-blue-200 dark:border-blue-800">
+              <div className="w-2 h-2 bg-secondary-500 rounded-full animate-pulse" />
               <span className="text-xs font-medium leading-relaxed">正在连接数据库服务器...</span>
             </div>
           )}
           {dataSource === 'database' && !syncStatsQuery.isLoading && (
-            <div className="flex items-center gap-2 px-3 py-2 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 rounded-lg border border-emerald-200 dark:border-emerald-800">
+            <div className="flex items-center gap-2 px-3 py-2 bg-primary-50 dark:bg-emerald-950/30 text-primary-700 dark:text-primary-300 rounded-lg border border-emerald-200 dark:border-emerald-800">
               <Database className="w-3.5 h-3.5" />
               <span className="text-xs font-medium leading-relaxed">已连接真实数据库</span>
             </div>
           )}
           {dataSource === 'fallback' && (
-            <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 rounded-lg border border-amber-200 dark:border-amber-800">
+            <div className="flex items-center gap-2 px-3 py-2 bg-warning-50 dark:bg-amber-950/30 text-warning-700 dark:text-warning-300 rounded-lg border border-amber-200 dark:border-amber-800">
               <Zap className="w-3.5 h-3.5" />
               <span className="text-xs font-medium leading-relaxed">使用内存数据库（后端服务不可用）</span>
             </div>
           )}
           {dataSource === 'error' && (
-            <div className="flex items-center gap-2 px-3 py-2 bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-300 rounded-lg border border-red-200 dark:border-red-800">
+            <div className="flex items-center gap-2 px-3 py-2 bg-error-50 dark:bg-red-950/30 text-error-700 dark:text-error-300 rounded-lg border border-red-200 dark:border-red-800">
               <span className="text-xs font-semibold leading-relaxed">⚠️ {errorMessage || '数据加载失败'}</span>
             </div>
           )}
         </div>
 
-        {(dataSource === 'error') && (errorMessage?.includes('认证') || errorMessage?.includes('登录')) && (
+        {dataSource === 'error' && (errorMessage?.includes('认证') || errorMessage?.includes('登录')) && (
           <button
-            onClick={() => window.location.href = '/login'}
+            onClick={() => (window.location.href = '/login')}
             className="text-xs text-primary-600 hover:text-primary-700 font-semibold leading-relaxed tracking-tight"
           >
             前往登录 →
@@ -820,14 +953,17 @@ export default function DatabasePage() {
       {/* 全局快捷搜索栏（增强版） */}
       <div ref={searchRef} className="relative">
         <div className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500 pointer-events-none" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400 dark:text-neutral-500 pointer-events-none" />
           <input
             type="text"
             value={searchInput}
-            onChange={(e) => { setSearchInput(e.target.value); handleGlobalSearch(e.target.value) }}
+            onChange={(e) => {
+              setSearchInput(e.target.value);
+              handleGlobalSearch(e.target.value);
+            }}
             onFocus={() => {
-              if (globalResults) setShowGlobalResults(true)
-              if (searchHistory.length > 0) setShowSearchHistory(true)
+              if (globalResults) setShowGlobalResults(true);
+              if (searchHistory.length > 0) setShowSearchHistory(true);
             }}
             onKeyDown={handleSearchKeyDown}
             placeholder="搜索药材、活性肽、知识图谱... (Ctrl+K 或 /)"
@@ -837,13 +973,13 @@ export default function DatabasePage() {
             {searchHistory.length > 0 && (
               <button
                 onClick={() => setShowSearchHistory(!showSearchHistory)}
-                className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                className="p-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
                 title="搜索历史"
               >
                 <History className="w-4 h-4" />
               </button>
             )}
-            <kbd className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-mono text-gray-400 dark:text-gray-500 bg-slate-100 dark:bg-slate-800 rounded border border-gray-200 dark:border-gray-700">
+            <kbd className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-mono text-neutral-400 dark:text-neutral-500 bg-neutral-100 dark:bg-neutral-800 rounded border border-neutral-200 dark:border-neutral-700">
               Ctrl+K
             </kbd>
           </div>
@@ -851,30 +987,35 @@ export default function DatabasePage() {
 
         {/* 搜索历史下拉 */}
         {showSearchHistory && !showGlobalResults && searchHistory.length > 0 && (
-          <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 z-50 max-h-60 overflow-y-auto animate-micro-in">
-            <div className="px-4 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider bg-slate-50 dark:bg-slate-800/50 flex items-center justify-between leading-relaxed">
+          <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-neutral-900 rounded-xl shadow-xl border border-neutral-200 dark:border-neutral-700 z-50 max-h-60 overflow-y-auto animate-micro-in">
+            <div className="px-4 py-2 text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider bg-slate-50 dark:bg-neutral-800/50 flex items-center justify-between leading-relaxed">
               搜索历史
               <button
                 onClick={() => {
-                  setSearchHistory([])
-                  localStorage.removeItem(STORAGE_KEY_SEARCH_HISTORY)
-                  setShowSearchHistory(false)
+                  setSearchHistory([]);
+                  localStorage.removeItem(STORAGE_KEY_SEARCH_HISTORY);
+                  setShowSearchHistory(false);
                 }}
-                className="text-red-600 hover:text-red-700 text-xs font-medium leading-relaxed"
+                className="text-error-600 hover:text-error-700 text-xs font-medium leading-relaxed"
               >
                 清空
               </button>
             </div>
             {searchHistory.map((item, i) => (
-              <button key={i} className="w-full px-4 py-2 text-left hover:bg-primary-50/60 dark:hover:bg-primary-950/20 transition-colors flex items-center gap-3 border-b border-gray-100 dark:border-gray-800 last:border-0"
+              <button
+                key={i}
+                className="w-full px-4 py-2 text-left hover:bg-primary-50/60 dark:hover:bg-primary-950/20 transition-colors flex items-center gap-3 border-b border-neutral-100 dark:border-neutral-800 last:border-0"
                 onClick={() => {
-                  setSearchInput(item.query)
-                  handleGlobalSearch(item.query)
-                  setShowSearchHistory(false)
-                }}>
-                <History className="w-4 h-4 text-gray-400" />
+                  setSearchInput(item.query);
+                  handleGlobalSearch(item.query);
+                  setShowSearchHistory(false);
+                }}
+              >
+                <History className="w-4 h-4 text-neutral-400" />
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium text-text-primary dark:text-text-primary truncate leading-relaxed">{item.query}</div>
+                  <div className="text-sm font-medium text-text-primary dark:text-text-primary truncate leading-relaxed">
+                    {item.query}
+                  </div>
                   <div className="text-[10px] text-text-muted font-normal leading-relaxed tabular-nums">
                     {new Date(item.timestamp).toLocaleString('zh-CN')}
                   </div>
@@ -886,18 +1027,34 @@ export default function DatabasePage() {
 
         {/* 搜索结果下拉 */}
         {showGlobalResults && globalResults && (
-          <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 z-50 max-h-80 overflow-y-auto animate-micro-in">
+          <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-neutral-900 rounded-xl shadow-xl border border-neutral-200 dark:border-neutral-700 z-50 max-h-80 overflow-y-auto animate-micro-in">
             {/* 自动补全建议 */}
             {suggestions && suggestions.length > 0 && (
               <div>
-                <div className="px-4 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider bg-primary-50/40 dark:bg-primary-950/20 leading-relaxed">搜索建议</div>
+                <div className="px-4 py-2 text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider bg-primary-50/40 dark:bg-primary-950/20 leading-relaxed">
+                  搜索建议
+                </div>
                 {suggestions.map((s: { label: string; sublabel?: string }, i: number) => (
-                  <button key={`sug-${i}`} className="w-full px-4 py-2 text-left hover:bg-primary-50/60 dark:hover:bg-primary-950/20 transition-colors flex items-center gap-3 border-b border-gray-100 dark:border-gray-800"
-                    onClick={() => { setTab('herbs'); setShowGlobalResults(false); setSearchInput(s.label); setSuggestions(null); }}>
-                    <Leaf className="w-4 h-4 text-emerald-600" />
+                  <button
+                    key={`sug-${i}`}
+                    className="w-full px-4 py-2 text-left hover:bg-primary-50/60 dark:hover:bg-primary-950/20 transition-colors flex items-center gap-3 border-b border-neutral-100 dark:border-neutral-800"
+                    onClick={() => {
+                      setTab('herbs');
+                      setShowGlobalResults(false);
+                      setSearchInput(s.label);
+                      setSuggestions(null);
+                    }}
+                  >
+                    <Leaf className="w-4 h-4 text-primary-600" />
                     <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium text-gray-900 dark:text-gray-100 leading-relaxed">{s.label}</div>
-                      {s.sublabel && <div className="text-[10px] text-gray-500 dark:text-gray-400 italic font-normal leading-relaxed">{s.sublabel}</div>}
+                      <div className="text-sm font-medium text-neutral-900 dark:text-neutral-100 leading-relaxed">
+                        {s.label}
+                      </div>
+                      {s.sublabel && (
+                        <div className="text-[10px] text-neutral-500 dark:text-neutral-400 italic font-normal leading-relaxed">
+                          {s.sublabel}
+                        </div>
+                      )}
                     </div>
                   </button>
                 ))}
@@ -905,146 +1062,230 @@ export default function DatabasePage() {
             )}
             {(globalResults.herbs ?? [])?.length > 0 && (
               <div>
-                <div className="px-4 py-2 text-xs font-semibold text-text-muted uppercase tracking-wider bg-slate-50 dark:bg-slate-800/50 flex items-center justify-between leading-relaxed">
-                  <span>中药材 <span className="tabular-nums">({(globalResults.herbs ?? []).length})</span></span>
+                <div className="px-4 py-2 text-xs font-semibold text-text-muted uppercase tracking-wider bg-slate-50 dark:bg-neutral-800/50 flex items-center justify-between leading-relaxed">
+                  <span>
+                    中药材 <span className="tabular-nums">({(globalResults.herbs ?? []).length})</span>
+                  </span>
                   <button
-                    onClick={() => { setTab('herbs'); setShowGlobalResults(false); setSearchInput(searchInput) }}
+                    onClick={() => {
+                      setTab('herbs');
+                      setShowGlobalResults(false);
+                      setSearchInput(searchInput);
+                    }}
                     className="text-[10px] text-primary-600 hover:text-primary-700 font-medium leading-relaxed flex items-center gap-1"
                   >
                     <Filter className="w-3 h-3" />
                     在此Tab筛选
                   </button>
                 </div>
-                {(globalResults.herbs ?? []).slice(0, 5).map((h: { id: number; name_cn: string; name_latin: string | null; category: string | null }) => (
-                  <button key={h.id} className="w-full px-4 py-3 text-left hover:bg-primary-50/60 dark:hover:bg-primary-950/20 transition-colors flex items-center gap-3 border-b border-[rgba(148,163,184,0.06)] last:border-0"
-                    onClick={() => { setTab('herbs'); setShowGlobalResults(false); setSearchInput('') }}>
-                    <Leaf className="w-5 h-5 text-emerald-600" />
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium text-text-primary dark:text-text-primary leading-relaxed">{h.name_cn}</div>
-                      {h.name_latin && <div className="text-xs text-text-muted italic font-mono leading-relaxed">{h.name_latin}</div>}
-                    </div>
-                    <Badge variant="info" size="sm" className="font-medium leading-normal">{h.category || '未分类'}</Badge>
-                  </button>
-                ))}
+                {(globalResults.herbs ?? [])
+                  .slice(0, 5)
+                  .map((h: { id: number; name_cn: string; name_latin: string | null; category: string | null }) => (
+                    <button
+                      key={h.id}
+                      className="w-full px-4 py-3 text-left hover:bg-primary-50/60 dark:hover:bg-primary-950/20 transition-colors flex items-center gap-3 border-b border-[rgba(148,163,184,0.06)] last:border-0"
+                      onClick={() => {
+                        setTab('herbs');
+                        setShowGlobalResults(false);
+                        setSearchInput('');
+                      }}
+                    >
+                      <Leaf className="w-5 h-5 text-primary-600" />
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium text-text-primary dark:text-text-primary leading-relaxed">
+                          {h.name_cn}
+                        </div>
+                        {h.name_latin && (
+                          <div className="text-xs text-text-muted italic font-mono leading-relaxed">{h.name_latin}</div>
+                        )}
+                      </div>
+                      <Badge variant="info" size="sm" className="font-medium leading-normal">
+                        {h.category || '未分类'}
+                      </Badge>
+                    </button>
+                  ))}
               </div>
             )}
             {(globalResults.peptides ?? [])?.length > 0 && (
               <div>
-                <div className="px-4 py-2 text-xs font-semibold text-text-muted uppercase tracking-wider bg-slate-50 dark:bg-slate-800/50 flex items-center justify-between leading-relaxed">
-                  <span>活性肽 <span className="tabular-nums">({(globalResults.peptides ?? []).length})</span></span>
+                <div className="px-4 py-2 text-xs font-semibold text-text-muted uppercase tracking-wider bg-slate-50 dark:bg-neutral-800/50 flex items-center justify-between leading-relaxed">
+                  <span>
+                    活性肽 <span className="tabular-nums">({(globalResults.peptides ?? []).length})</span>
+                  </span>
                   <button
-                    onClick={() => { setTab('peptides'); setShowGlobalResults(false); setSearchInput(searchInput) }}
+                    onClick={() => {
+                      setTab('peptides');
+                      setShowGlobalResults(false);
+                      setSearchInput(searchInput);
+                    }}
                     className="text-[10px] text-primary-600 hover:text-primary-700 font-medium leading-relaxed flex items-center gap-1"
                   >
                     <Filter className="w-3 h-3" />
                     在此Tab筛选
                   </button>
                 </div>
-                {(globalResults.peptides ?? []).slice(0, 5).map((p: { id: number; sequence: string; source_protein: string | null; activity_type: string | null }) => (
-                  <button key={p.id} className="w-full px-4 py-3 text-left hover:bg-blue-50/60 dark:hover:bg-blue-950/20 transition-colors flex items-center gap-3 border-b border-[rgba(148,163,184,0.06)] last:border-0"
-                    onClick={() => { setTab('peptides'); setShowGlobalResults(false); setSearchInput('') }}>
-                    <Dna className="w-5 h-5 text-blue-600" />
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-mono font-medium text-blue-600 dark:text-blue-400 leading-relaxed tabular-nums">{p.sequence}</div>
-                      <div className="text-xs text-text-muted font-normal leading-relaxed">{p.source_protein}</div>
-                    </div>
-                    <Badge variant="primary" size="sm" className="font-medium leading-normal">{p.activity_type || '-'}</Badge>
-                  </button>
-                ))}
+                {(globalResults.peptides ?? [])
+                  .slice(0, 5)
+                  .map(
+                    (p: {
+                      id: number;
+                      sequence: string;
+                      source_protein: string | null;
+                      activity_type: string | null;
+                    }) => (
+                      <button
+                        key={p.id}
+                        className="w-full px-4 py-3 text-left hover:bg-secondary-50/60 dark:hover:bg-blue-950/20 transition-colors flex items-center gap-3 border-b border-[rgba(148,163,184,0.06)] last:border-0"
+                        onClick={() => {
+                          setTab('peptides');
+                          setShowGlobalResults(false);
+                          setSearchInput('');
+                        }}
+                      >
+                        <Dna className="w-5 h-5 text-secondary-600" />
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-mono font-medium text-secondary-600 dark:text-secondary-400 leading-relaxed tabular-nums">
+                            {p.sequence}
+                          </div>
+                          <div className="text-xs text-text-muted font-normal leading-relaxed">{p.source_protein}</div>
+                        </div>
+                        <Badge variant="primary" size="sm" className="font-medium leading-normal">
+                          {p.activity_type || '-'}
+                        </Badge>
+                      </button>
+                    ),
+                  )}
               </div>
             )}
             {(globalResults.graph ?? [])?.length > 0 && (
               <div>
-                <div className="px-4 py-2 text-xs font-semibold text-text-muted uppercase tracking-wider bg-slate-50 dark:bg-slate-800/50 flex items-center justify-between leading-relaxed">
-                  <span>知识图谱 <span className="tabular-nums">({(globalResults.graph ?? []).length})</span></span>
+                <div className="px-4 py-2 text-xs font-semibold text-text-muted uppercase tracking-wider bg-slate-50 dark:bg-neutral-800/50 flex items-center justify-between leading-relaxed">
+                  <span>
+                    知识图谱 <span className="tabular-nums">({(globalResults.graph ?? []).length})</span>
+                  </span>
                   <button
-                    onClick={() => { setTab('graph'); setShowGlobalResults(false); setSearchInput(searchInput) }}
+                    onClick={() => {
+                      setTab('graph');
+                      setShowGlobalResults(false);
+                      setSearchInput(searchInput);
+                    }}
                     className="text-[10px] text-primary-600 hover:text-primary-700 font-medium leading-relaxed flex items-center gap-1"
                   >
                     <Filter className="w-3 h-3" />
                     在此Tab筛选
                   </button>
                 </div>
-                {(globalResults.graph ?? []).slice(0, 5).map((g: { node_label: string; node_type: string }, i: number) => (
-                  <button key={i} className="w-full px-4 py-3 text-left hover:bg-accent-50/60 dark:hover:bg-accent-950/20 transition-colors flex items-center gap-3 border-b border-[rgba(148,163,184,0.06)] last:border-0"
-                    onClick={() => { setTab('graph'); setShowGlobalResults(false); setSearchInput('') }}>
-                    <GitBranch className="w-5 h-5 text-violet-600" />
-                    <div className="flex-1 text-sm font-medium text-text-primary dark:text-text-primary leading-relaxed">{g.node_label}</div>
-                    <Badge variant={NODE_TYPE_BADGE[g.node_type] || 'neutral'} size="sm" className="font-medium leading-normal">{NODE_TYPE_LABEL[g.node_type] || g.node_type}</Badge>
-                  </button>
-                ))}
+                {(globalResults.graph ?? [])
+                  .slice(0, 5)
+                  .map((g: { node_label: string; node_type: string }, i: number) => (
+                    <button
+                      key={i}
+                      className="w-full px-4 py-3 text-left hover:bg-accent-50/60 dark:hover:bg-accent-950/20 transition-colors flex items-center gap-3 border-b border-[rgba(148,163,184,0.06)] last:border-0"
+                      onClick={() => {
+                        setTab('graph');
+                        setShowGlobalResults(false);
+                        setSearchInput('');
+                      }}
+                    >
+                      <GitBranch className="w-5 h-5 text-violet-600" />
+                      <div className="flex-1 text-sm font-medium text-text-primary dark:text-text-primary leading-relaxed">
+                        {g.node_label}
+                      </div>
+                      <Badge
+                        variant={NODE_TYPE_BADGE[g.node_type] || 'neutral'}
+                        size="sm"
+                        className="font-medium leading-normal"
+                      >
+                        {NODE_TYPE_LABEL[g.node_type] || g.node_type}
+                      </Badge>
+                    </button>
+                  ))}
               </div>
             )}
-            {(globalResults.herbs ?? []).length === 0 && (globalResults.peptides ?? []).length === 0 && (globalResults.graph ?? []).length === 0 && (
-              <div className="p-8 text-center text-text-muted text-sm font-normal leading-relaxed">未找到相关结果</div>
-            )}
+            {(globalResults.herbs ?? []).length === 0 &&
+              (globalResults.peptides ?? []).length === 0 &&
+              (globalResults.graph ?? []).length === 0 && (
+                <div className="p-8 text-center text-text-muted text-sm font-normal leading-relaxed">
+                  未找到相关结果
+                </div>
+              )}
           </div>
         )}
       </div>
 
       {/* 统计概览（6个增强卡片 + 趋势 + 动画） */}
-      <div className={`grid gap-2.5 ${
-        viewMode === 'overview' ? 'grid-cols-2 md:grid-cols-3 lg:grid-cols-6' :
-        viewMode === 'compact' ? 'grid-cols-3 md:grid-cols-6' :
-        'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
-      }`}>
-        {statCardsConfig.map((config) => (
-          <StatCard
-            key={config.label}
-            config={config}
-            onClick={() => setTab(config.tab)}
-          />
-        ))}
+      <div
+        className={`grid gap-2.5 ${
+          viewMode === 'overview'
+            ? 'grid-cols-2 md:grid-cols-3 lg:grid-cols-6'
+            : viewMode === 'compact'
+              ? 'grid-cols-3 md:grid-cols-6'
+              : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
+        }`}
+      >
+        {syncStatsQuery.isLoading
+          ? Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 animate-pulse">
+                <div className="w-8 h-8 rounded-lg bg-neutral-200 dark:bg-neutral-700 mb-3" />
+                <div className="h-4 w-16 bg-neutral-200 dark:bg-neutral-700 rounded mb-2" />
+                <div className="h-6 w-12 bg-neutral-200 dark:bg-neutral-700 rounded" />
+              </div>
+            ))
+          : statCardsConfig.map((config) => (
+            <StatCard key={config.label} config={config} onClick={() => setTab(config.tab)} />
+          ))}
       </div>
 
       {/* 统计图表（懒加载优化） */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
-        <Suspense fallback={
-          <div className="card p-5 flex items-center justify-center h-[280px]">
-            <div className="text-text-muted text-sm font-normal leading-relaxed">加载图表中...</div>
-          </div>
-        }>
+        <Suspense
+          fallback={
+            <div className="card p-5 flex items-center justify-center h-[280px]">
+              <div className="text-text-muted text-sm font-normal leading-relaxed">加载图表中...</div>
+            </div>
+          }
+        >
           {categoryData.length > 0 && (
-            <LazyPieChart
-              data={categoryData}
-              title="药材分类分布"
-              icon={BarChart2}
-              color="text-primary-600"
-            />
+            <LazyPieChart data={categoryData} title="药材分类分布" icon={BarChart2} color="text-primary-600" />
           )}
         </Suspense>
 
-        <Suspense fallback={
-          <div className="card p-5 flex items-center justify-center h-[280px]">
-            <div className="text-text-muted text-sm font-normal leading-relaxed">加载图表中...</div>
-          </div>
-        }>
+        <Suspense
+          fallback={
+            <div className="card p-5 flex items-center justify-center h-[280px]">
+              <div className="text-text-muted text-sm font-normal leading-relaxed">加载图表中...</div>
+            </div>
+          }
+        >
           {activityData.length > 0 && (
-            <LazyBarChart
-              data={activityData}
-              title="活性肽类型分布"
-              icon={Activity}
-              color="text-blue-600"
-            />
+            <LazyBarChart data={activityData} title="活性肽类型分布" icon={Activity} color="text-secondary-600" />
           )}
         </Suspense>
       </div>
 
       {/* 主 Tab 区域（增强版） */}
       <Tabs value={tab} onValueChange={(v) => setTab(v as DbTab)}>
-        <TabsList className="relative p-1 bg-slate-100/90 dark:bg-slate-800/90 rounded-2xl shadow-inner">
+        <TabsList className="relative p-1 bg-neutral-100/90 dark:bg-neutral-800/90 rounded-2xl shadow-inner">
           {[
             { value: 'dashboard' as DbTab, label: '实时概览', icon: LayoutDashboard, badge: null },
             { value: 'herbs' as DbTab, label: '中药材', icon: Database, badge: herbCount },
             { value: 'peptides' as DbTab, label: '活性肽', icon: Activity, badge: peptideCount },
-            { value: 'graph' as DbTab, label: '知识图谱', icon: Layers, badge: graphNodes.total_herbs + graphNodes.total_compounds + graphNodes.total_targets },
+            {
+              value: 'graph' as DbTab,
+              label: '知识图谱',
+              icon: Layers,
+              badge: graphNodes.total_herbs + graphNodes.total_compounds + graphNodes.total_targets,
+            },
             { value: 'homology' as DbTab, label: '药食同源', icon: Zap, badge: homologyCount },
+            { value: 'food_materials' as DbTab, label: '食品原料', icon: Database, badge: null },
+            { value: 'retail_products' as DbTab, label: '零售产品', icon: ShoppingBag, badge: null },
+            { value: 'analytics' as DbTab, label: '搜索分析', icon: BarChart2, badge: null },
             { value: 'sync' as DbTab, label: '数据管理', icon: RefreshCw, badge: null },
           ].map(({ value, label, icon: Icon, badge }) => (
             <TabsTrigger
               key={value}
               value={value}
-              className="relative group data-[state=active]:shadow-sm data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 transition-all duration-200 px-4 py-2.5 rounded-xl gap-2"
+              className="relative group data-[state=active]:shadow-sm data-[state=active]:bg-white dark:data-[state=active]:bg-neutral-700 transition-all duration-200 px-4 py-2.5 rounded-xl gap-2"
             >
               <Icon className="w-[18px] h-[18px] shrink-0" />
               <span className="text-[13.5px] font-semibold leading-none tracking-tight">{label}</span>
@@ -1063,31 +1304,64 @@ export default function DatabasePage() {
 
         <TabsContent value="dashboard" className="animate-fade-in">
           <DashboardOverview
-            onHerbClick={(name) => { setTab('herbs'); setSearchInput(name); setPendingHerbName(name) }}
-            onPeptideClick={(sequence) => { setTab('peptides'); setSearchInput(sequence); setPendingPeptideSequence(sequence) }}
+            onHerbClick={(name) => {
+              setTab('herbs');
+              setSearchInput(name);
+              setPendingHerbName(name);
+            }}
+            onPeptideClick={(sequence) => {
+              setTab('peptides');
+              setSearchInput(sequence);
+              setPendingPeptideSequence(sequence);
+            }}
           />
         </TabsContent>
-        <TabsContent value="herbs" className="animate-fade-in"><HerbsTab initKeyword={searchInput} initialSelectedHerbName={pendingHerbName} onInitKwConsumed={() => {}} onHerbSelectionConsumed={() => setPendingHerbName(null)} /></TabsContent>
-        <TabsContent value="peptides" className="animate-fade-in"><PeptidesTab initKeyword={tab === 'peptides' ? searchInput : ''} initialSelectedSequence={pendingPeptideSequence} onSequenceConsumed={() => setPendingPeptideSequence(null)} /></TabsContent>
-        <TabsContent value="graph" className="animate-fade-in"><GraphTab /></TabsContent>
-        <TabsContent value="homology" className="animate-fade-in"><HomologyTab /></TabsContent>
-        <TabsContent value="sync" className="animate-fade-in">
-          <DataManagementTab
-            stats={stats}
-            onSyncHerbs={() => herbSyncMutation.mutate()}
-            onSyncPeptides={() => peptideSyncMutation.mutate()}
+        <TabsContent value="herbs" className="animate-fade-in">
+          <HerbsTab
+            initKeyword={searchInput}
+            initialSelectedHerbName={pendingHerbName}
+            onInitKwConsumed={() => {}}
+            onHerbSelectionConsumed={() => setPendingHerbName(null)}
           />
+        </TabsContent>
+        <TabsContent value="peptides" className="animate-fade-in">
+          <PeptidesTab
+            initKeyword={tab === 'peptides' ? searchInput : ''}
+            initialSelectedSequence={pendingPeptideSequence}
+            onSequenceConsumed={() => setPendingPeptideSequence(null)}
+          />
+        </TabsContent>
+        <TabsContent value="graph" className="animate-fade-in">
+          <GraphTab />
+        </TabsContent>
+        <TabsContent value="homology" className="animate-fade-in">
+          <HomologyTab />
+        </TabsContent>
+        <TabsContent value="food_materials" className="animate-fade-in">
+          <FoodMaterialSearchPanel />
+        </TabsContent>
+        <TabsContent value="retail_products" className="animate-fade-in">
+          <RetailProductSearchPanel />
+        </TabsContent>
+        <TabsContent value="analytics" className="animate-fade-in">
+          <SearchAnalyticsDashboard />
+        </TabsContent>
+        <TabsContent value="sync" className="animate-fade-in">
+          <DataManagementTab />
         </TabsContent>
       </Tabs>
 
       {/* 键盘快捷键帮助浮层 */}
       {showShortcuts && (
-        <div ref={shortcutsRef} className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 w-full max-w-lg mx-4 overflow-hidden">
+        <div
+          ref={shortcutsRef}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in"
+        >
+          <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-neutral-200 dark:border-neutral-700 w-full max-w-lg mx-4 overflow-hidden">
             <div className="flex items-center justify-between px-6 py-5 bg-gradient-to-r from-primary-600 to-blue-600 text-white">
               <div className="flex items-center gap-3">
                 <Keyboard className="w-6 h-6" />
-                <h2 className="text-xl font-bold tracking-tight leading-[1.25]">键盘快捷键</h2>
+                <h1 className="text-xl font-bold tracking-tight leading-[1.25]">键盘快捷键</h1>
               </div>
               <button
                 onClick={() => setShowShortcuts(false)}
@@ -1107,20 +1381,31 @@ export default function DatabasePage() {
                   { keys: ['3'], description: '切换到「活性肽」Tab', icon: Activity },
                   { keys: ['4'], description: '切换到「知识图谱」Tab', icon: Layers },
                   { keys: ['5'], description: '切换到「药食同源」Tab', icon: Zap },
-                  { keys: ['6'], description: '切换到「数据管理」Tab', icon: RefreshCw },
+                  { keys: ['6'], description: '切换到「食品原料」Tab', icon: Database },
+                  { keys: ['7'], description: '切换到「零售产品」Tab', icon: ShoppingBag },
+                  { keys: ['8'], description: '切换到「搜索分析」Tab', icon: BarChart2 },
+                  { keys: ['9'], description: '切换到「数据管理」Tab', icon: RefreshCw },
                   { keys: ['R'], description: '刷新所有数据缓存', icon: RefreshCw },
                   { keys: ['E'], description: '导出统计数据为 JSON', icon: Download },
                   { keys: ['?'], description: '显示/隐藏此快捷键面板', icon: Keyboard },
                   { keys: ['ESC'], description: '关闭所有弹层/面板', icon: X },
                 ].map(({ keys, description, icon: Icon }, i) => (
-                  <div key={i} className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors group">
+                  <div
+                    key={i}
+                    className="flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-800/50 transition-colors group"
+                  >
                     <div className="flex items-center gap-3">
-                      <Icon className="w-5 h-5 text-gray-400 group-hover:text-primary-600 transition-colors" />
-                      <span className="text-sm font-normal text-text-primary dark:text-text-primary leading-relaxed">{description}</span>
+                      <Icon className="w-5 h-5 text-neutral-400 group-hover:text-primary-600 transition-colors" />
+                      <span className="text-sm font-normal text-text-primary dark:text-text-primary leading-relaxed">
+                        {description}
+                      </span>
                     </div>
                     <div className="flex items-center gap-1">
                       {keys.map((key, j) => (
-                        <kbd key={j} className="px-2 py-1 text-xs font-mono font-semibold bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 rounded border border-gray-300 dark:border-gray-600 shadow-sm tabular-nums leading-relaxed">
+                        <kbd
+                          key={j}
+                          className="px-2 py-1 text-xs font-mono font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded border border-neutral-300 dark:border-neutral-600 shadow-sm tabular-nums leading-relaxed"
+                        >
                           {key}
                         </kbd>
                       ))}
@@ -1129,7 +1414,7 @@ export default function DatabasePage() {
                 ))}
               </div>
 
-              <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+              <div className="pt-4 border-t border-neutral-200 dark:border-neutral-700">
                 <p className="text-xs text-text-muted text-center font-normal leading-relaxed">
                   提示：在输入框中按快捷键不会触发全局操作
                 </p>
@@ -1139,11 +1424,11 @@ export default function DatabasePage() {
         </div>
       )}
     </div>
-  )
+  );
 }
 
 // ═════════════════════════════════════════
 // 导出详情组件供 Tab 组件使用
 // ═════════════════════════════════════════
-export { HerbDetailContent } from './HerbDetailContent'
-export { PeptideDetailContent } from './PeptideDetailContent'
+export { HerbDetailContent } from './HerbDetailContent';
+export { PeptideDetailContent } from './PeptideDetailContent';

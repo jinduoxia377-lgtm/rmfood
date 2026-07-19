@@ -1383,33 +1383,33 @@ private getFormatStyles(format: 'html' | 'word' | 'pdf'): string {
  const styles = {
  html: `
  :root {
- --primary: #1e40af;
- --secondary: #475569;
+ --primary: #003E87;
+ --secondary: #4B5563;
  --accent: #0ea5e9;
  --text-primary: #1f2937;
  --text-secondary: #4b5563;
  --bg-primary: #ffffff;
- --bg-secondary: #f8fafc;
- --bg-tertiary: #f1f5f9;
- --border: #e2e8f0;
+ --bg-secondary: #F9FAFB;
+ --bg-tertiary: #F3F4F6;
+ --border: #E5E7EB;
  }
  `,
  word: `
  :root {
- --primary: #7c3aed;
+ --primary: #AF52DE;
  --secondary: #4338ca;
- --accent: #8b5cf6;
+ --accent: #AF52DE;
  --text-primary: #1e1b4b;
  --text-secondary: #3730a3;
  --bg-primary: #faf5ff;
  --bg-secondary: #f3e8ff;
- --bg-tertiary: #ede9fe;
- --border: #ddd6fe;
+ --bg-tertiary: #F3E8FF;
+ --border: #E8D5FF;
  }
  `,
  pdf: `
  :root {
- --primary: #15803d;
+ --primary: #166534;
  --secondary: #451a03;
  --accent: #78350f;
  --text-primary: #1c1917;
