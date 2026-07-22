@@ -76,6 +76,12 @@ export interface RetailProductSearchResult {
   image_urls: string[];
   effects: string[];
   score: number;
+  // ── 食品安全字段 (Phase 2) ──
+  allergens_tags?: string[];
+  additives_tags?: string[];
+  ecoscore_grade?: string | null;
+  traces_tags?: string[];
+  contaminants?: string[];
 }
 
 export interface RetailProductSearchResponse {
@@ -280,6 +286,135 @@ export async function getSearchSuggestions(
     limit,
     search_types: searchTypes,
   });
+  return response.data;
+}
+
+// ── OFF 实时数据查询 ──
+
+/**
+ * OFF 实时混合搜索 (DB 优先 + API 实时查询)
+ * POST /databases/openfoodfacts/search
+ */
+export interface OFFSearchRequest {
+  query: string;
+  page?: number;
+  page_size?: number;
+  realtime?: boolean;
+}
+
+export interface OFFSearchResponse {
+  items: OFFRawProduct[];
+  total: number;
+  page: number;
+  page_size: number;
+  data_source: string;
+  error?: string;
+}
+
+// OFF 原始数据接口（API 返回的原始格式）
+export interface OFFRawProduct {
+  id: number | string;
+  product_name: string;
+  brand: string;
+  category: string;
+  formulation_type: string | null;
+  price: number | null;
+  avg_rating: number | null;
+  image_urls: string[];
+  effects: string[];
+  score: number;
+  // ── 食品安全字段 (Phase 2) ──
+  allergens_tags?: string[];
+  additives_tags?: string[];
+  ecoscore_grade?: string | null;
+  traces_tags?: string[];
+  contaminants?: string[];
+}
+
+export async function searchOpenFoodFacts(
+  request: OFFSearchRequest,
+): Promise<OFFSearchResponse> {
+  const response = await databaseApi.post('/databases/openfoodfacts/search', request);
+  return response.data;
+}
+
+/**
+ * OFF 按条码查询产品
+ * GET /databases/openfoodfacts/product/barcode/:barcode
+ */
+export async function getOpenFoodFactByBarcode(
+  barcode: string,
+  realtime: boolean = false,
+): Promise<RetailProductSearchResult | null> {
+  const response = await databaseApi.get(`/databases/openfoodfacts/product/barcode/${encodeURIComponent(barcode)}`, {
+    params: { realtime },
+  });
+  return response.data;
+}
+
+/**
+ * OFF 按 ID 查询产品
+ * GET /databases/openfoodfacts/product/:id
+ */
+export async function getOpenFoodFactById(
+  productId: number,
+): Promise<RetailProductSearchResult | null> {
+  const response = await databaseApi.get(`/databases/openfoodfacts/product/${productId}`);
+  return response.data;
+}
+
+/**
+ * OFF 按分类浏览
+ * GET /databases/openfoodfacts/category/:category_tag
+ */
+export interface OFFCategoryResponse {
+  items: RetailProductSearchResult[];
+  total: number;
+  page: number;
+  page_size: number;
+  category: string;
+  category_tag: string;
+  data_source: string;
+}
+
+export async function getProductsByCategory(
+  categoryTag: string,
+  params?: { page?: number; page_size?: number; realtime?: boolean },
+): Promise<OFFCategoryResponse> {
+  const response = await databaseApi.get(`/databases/openfoodfacts/category/${encodeURIComponent(categoryTag)}`, { params });
+  return response.data;
+}
+
+/**
+ * OFF 分类列表
+ * GET /databases/openfoodfacts/categories
+ */
+export interface OFFCategoryInfo {
+  category: string;
+  category_tag?: string;
+  count: number;
+}
+
+export async function getOpenFoodFactsCategories(): Promise<OFFCategoryInfo[]> {
+  const response = await databaseApi.get('/databases/openfoodfacts/categories');
+  return response.data;
+}
+
+/**
+ * OFF 同步状态
+ * GET /databases/openfoodfacts/sync-status
+ */
+export async function getOpenFoodFactsSyncStats(): Promise<Record<string, unknown>> {
+  const response = await databaseApi.get('/databases/openfoodfacts/sync-status');
+  return response.data;
+}
+
+/**
+ * OFF 导入报告
+ * GET /databases/openfoodfacts/report
+ */
+export async function getOpenFoodFactsReport(): Promise<Record<string, unknown>> {
+  const response = await databaseApi.get('/databases/openfoodfacts/report');
   return response.data;
 }
 

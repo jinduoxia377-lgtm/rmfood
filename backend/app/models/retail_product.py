@@ -66,6 +66,13 @@ class RetailProduct(Base):
     reg_type: Mapped[str | None] = mapped_column(String(20), comment="注册类型: 国产/进口")
     approved_region: Mapped[str | None] = mapped_column(String(50), comment="批准地区")
 
+    # ── 食品安全 ──
+    allergens_tags: Mapped[list | None] = mapped_column(ARRAY(Text), default=list, comment="过敏原标签")
+    additives_tags: Mapped[list | None] = mapped_column(ARRAY(Text), default=list, comment="添加剂标签")
+    ecoscore_grade: Mapped[str | None] = mapped_column(String(20), comment="生态评分等级")
+    traces_tags: Mapped[list | None] = mapped_column(ARRAY(Text), default=list, comment="潜在交叉污染物质")
+    contaminants: Mapped[list | None] = mapped_column(ARRAY(Text), default=list, comment="污染物标签")
+
     # ── 相似度 (用于推荐) ──
     # 注: 无 pgvector 时存储为 JSON 数组; 有 pgvector 时可用 VECTOR(768) 类型
     embedding: Mapped[list | None] = mapped_column(JSON, comment="产品嵌入向量 (JSON 数组)")
@@ -111,8 +118,14 @@ class RetailProduct(Base):
             "reg_number": self.reg_number,
             "reg_type": self.reg_type,
             "approved_region": self.approved_region,
+            "allergens_tags": self.allergens_tags or [],
+            "additives_tags": self.additives_tags or [],
+            "ecoscore_grade": self.ecoscore_grade,
+            "traces_tags": self.traces_tags or [],
+            "contaminants": self.contaminants or [],
             "source": self.source,
             "data_quality": self.data_quality,
+            "crawl_timestamp": self.crawl_timestamp.isoformat() if self.crawl_timestamp else None,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }

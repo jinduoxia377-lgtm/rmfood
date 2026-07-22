@@ -66,7 +66,12 @@ async def search_food_materials(
     )
 
     # RRF 融合
-    hybrid_service = HybridSearchService(**request.search_modes)
+    hybrid_weights = {
+        "bm25_weight": request.search_modes.get("bm25", 0.4),
+        "vector_weight": request.search_modes.get("vector", 0.3),
+        "rule_weight": request.search_modes.get("rule", 0.3),
+    }
+    hybrid_service = HybridSearchService(**hybrid_weights)
     fused_results = hybrid_service.search_food_materials(
         bm25_results, vector_results, query=request.query,
     )
@@ -97,7 +102,12 @@ async def stream_search_food_materials(
     nlp = get_nlp_pipeline()
     bm25_service = BM25Searcher(db)
     vector_service = VectorSearcher(db)
-    hybrid_service = HybridSearchService(**request.search_modes)
+    hybrid_weights = {
+        "bm25_weight": request.search_modes.get("bm25", 0.4),
+        "vector_weight": request.search_modes.get("vector", 0.3),
+        "rule_weight": request.search_modes.get("rule", 0.3),
+    }
+    hybrid_service = HybridSearchService(**hybrid_weights)
     stream_service = StreamSearchService(bm25_service, vector_service, hybrid_service, nlp)
 
     return stream_service.create_streaming_response(

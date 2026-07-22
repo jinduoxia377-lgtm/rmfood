@@ -141,15 +141,152 @@ async def unified_search(
     keyword: str = Query(..., min_length=1, description="搜索关键词"),
     sources: str = Query("herbs,peptides,graph", description="数据源，逗号分隔"),
     limit: int = Query(20, ge=1, le=50),
+    db: AsyncSession = Depends(get_db_session),
     current_user: User = Depends(get_current_user),
 ):
-    """跨数据源统一搜索"""
-    logger.warning("unified_search: search_service 尚未实现，返回空结果")
+    """跨数据源统一搜索 — 合并药材/肽/知识图谱/食品原料/零售产品的搜索结果"""
+    from sqlalchemy import select as sa_select
+    from app.models.external_data import TCMHerb, MMIDHerb
+    from app.models.retail_product import RetailProduct
+    from app.models.food_material import FoodMaterial
+    from app.models.knowledge_graph import KGNode
+
+    source_list = [s.strip() for s in sources.split(",") if s.strip()]
+    results = []
+    like_pattern = f"%{keyword}%"
+
+    # 1. TCM 药材搜索
+    if "herbs" in source_list:
+        herbs = await db.execute(
+            sa_select(TCMHerb).where(
+                TCMHerb.name_cn.ilike(like_pattern)
+            ).limit(limit)
+        )
+        for h in herbs.scalars().all():
+            results.append({
+                "source": "herb",
+                "id": h.id,
+                "name": h.name_cn or h.name_latin,
+                "name_latin": h.herb_name_latin,
+                "category": h.category or "中药材",
+                "score": 0.9,
+                "extra": {
+                    "ob_percent": h.ob_percent,
+                    "dl_value": h.dl_value,
+                    "is_food_homology": h.is_food_homology,
+                },
+            })
+
+    # 2. MMID 药材
+    if "mmid_herbs" in source_list:
+        mmid_herbs = await db.execute(
+            sa_select(MMIDHerb).where(
+                MMIDHerb.name_cn.ilike(like_pattern)
+            ).limit(limit)
+        )
+        for h in mmid_herbs.scalars().all():
+            results.append({
+                "source": "mmid_herb",
+                "id": h.id,
+                "name": h.name_cn,
+                "category": "MMID药材",
+                "score": 0.85,
+            })
+
+    # 3. 活性肽搜索
+    if "peptides" in source_list:
+        from app.models.external_data import BioactivePeptide
+        peptides = await db.execute(
+            sa_select(BioactivePeptide).where(
+                BioactivePeptide.sequence.ilike(like_pattern) |
+                BioactivePeptide.source_protein.ilike(like_pattern)
+            ).limit(limit)
+        )
+        for p in peptides.scalars().all():
+            results.append({
+                "source": "peptide",
+                "id": p.id,
+                "name": p.sequence or f"ID:{p.id}",
+                "category": "活性肽",
+                "score": 0.8,
+                "extra": {
+                    "activity_type": p.activity_type,
+                    "source_protein": p.source_protein,
+                },
+            })
+
+    # 4. 食品原料搜索
+    if "food_materials" in source_list:
+        food_materials = await db.execute(
+            sa_select(FoodMaterial).where(
+                FoodMaterial.name_cn.ilike(like_pattern) |
+                FoodMaterial.category.ilike(like_pattern)
+            ).limit(limit)
+        )
+        for fm in food_materials.scalars().all():
+            results.append({
+                "source": "food_material",
+                "id": fm.id,
+                "name": fm.name_cn,
+                "category": fm.category or "食品原料",
+                "score": 0.85,
+                "extra": {
+                    "food_homology": fm.food_homology,
+                    "toxicity_class": fm.toxicity_class,
+                },
+            })
+
+    # 5. 零售产品搜索
+    if "retail_products" in source_list:
+        products = await db.execute(
+            sa_select(RetailProduct).where(
+                RetailProduct.product_name.ilike(like_pattern) |
+                RetailProduct.brand.ilike(like_pattern)
+            ).limit(limit)
+        )
+        for rp in products.scalars().all():
+            results.append({
+                "source": "retail_product",
+                "id": rp.id,
+                "name": rp.product_name,
+                "category": rp.category or "零售产品",
+                "score": 0.75,
+                "extra": {
+                    "brand": rp.brand,
+                    "price": rp.price,
+                    "rating": rp.avg_rating,
+                    "allergens_tags": rp.allergens_tags or [],
+                    "additives_tags": rp.additives_tags or [],
+                    "ecoscore_grade": rp.ecoscore_grade,
+                },
+            })
+
+    # 6. 知识图谱节点搜索
+    if "graph" in source_list:
+        graph_nodes = await db.execute(
+            sa_select(KGNode).where(
+                KGNode.node_label.ilike(like_pattern)
+            ).limit(limit)
+        )
+        for node in graph_nodes.scalars().all():
+            results.append({
+                "source": "graph",
+                "id": node.id,
+                "name": node.node_label,
+                "category": node.node_type or "知识图谱",
+                "score": 0.7,
+                "extra": node.properties or {},
+            })
+
+    # 按 score 降序排列
+    results.sort(key=lambda x: x["score"], reverse=True)
+    results = results[:limit]
+
     return {
         "keyword": keyword,
         "sources": source_list,
-        "results": [],
-        "total": 0,
+        "results": results,
+        "total": len(results),
         "limit": limit,
     }
 
