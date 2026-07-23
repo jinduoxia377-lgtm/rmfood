@@ -22,6 +22,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { ModelClient } from '@/api/modelClient'
 import { logger } from '@/utils/safeLogger'
+import { useScenarioStore } from '@/stores/scenarioStore'
 
 // ===== v11.0: 编排 Hooks =====
 import { useChatTabOrchestrator } from './hooks/useChatTabOrchestrator'
@@ -68,8 +69,6 @@ import type { EnhancedIngredient } from '@/types/ai.types'
 // ===== 图标库 =====
 import {
   AlertTriangle, Play, Pause,
-  Brain, MessageSquare, Palette, Database, FlaskConical,
-  X, GraduationCap, Shield, Wrench, Zap, Loader2,
 } from 'lucide-react'
 
 // ===== 配置 =====
@@ -163,18 +162,13 @@ export function ChatTab({ onBatchExport, onBatchDelete, onBatchTag, onSelectAll:
   // ===== 9. 主题系统 =====
   const { scheme, cycleScheme, schemeInfo } = useChatTheme()
 
-  // ===== 10. 模式状态 =====
-  const [scenarioMode, setScenarioMode] = useState<ScenarioMode>(scenarioSwitcher.getCurrentMode())
-
-  useEffect(() => {
-    ;window.__SCENARIO_MODE__ = scenarioSwitcher.getCurrentMode()
-  }, [])
+  // ===== 10. 模式状态 —— 用 Zustand store 替代 window 全局变量
+  const scenarioMode = useScenarioStore(s => s.mode)
 
   const handleScenarioSwitch = useCallback((mode: ScenarioMode) => {
     const result = scenarioSwitcher.switchTo(mode, 'user_selected')
     if (result) {
-      setScenarioMode(result.newMode)
-      ;window.__SCENARIO_MODE__ = result.newMode
+      useScenarioStore.getState().setMode(result.newMode)
       logger.info(`[ChatTab] 场景切换: ${result.previousMode} → ${result.newMode}`)
     }
   }, [])
@@ -239,7 +233,7 @@ export function ChatTab({ onBatchExport, onBatchDelete, onBatchTag, onSelectAll:
     onImport: importFormulas,
   })
 
-  // ===== 17. JSX 布局 =====
+  // ===== 18. JSX 布局 =====
   return (
     <ErrorBoundary>
       <div className={`flex h-full relative chat-theme-${scheme} chat-area`}>

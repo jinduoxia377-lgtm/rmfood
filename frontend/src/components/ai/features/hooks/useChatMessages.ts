@@ -86,6 +86,14 @@ export function useChatMessages(): UseChatMessagesReturn {
     return unsub
   }, [])
 
+  // ── 组件 unmount 时清理所有 pending SSE 请求 ──
+  useEffect(() => {
+    return () => {
+      logger.info('[useChatMessages] Unmount cleanup: aborting all pending SSE requests')
+      chatService.closeAllPendingRequests()
+    }
+  }, [])
+
   const saveToStorage = useCallback((newMessages: ChatMessage[]) => {
     try {
       if (newMessages.length > MAX_MESSAGES) {
