@@ -16,7 +16,7 @@ from typing import Any, List, Optional
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..openfoodfacts.client import OFFClient
+from ..off_api import OFFClient
 from ..openfoodfacts.mapper import OFFMapper
 from ..openfoodfacts.config import OFFConfig
 
@@ -352,105 +352,76 @@ class OFFDataService:
         page: int,
         page_size: int,
     ) -> dict[str, Any]:
-        """实时调 OFF REST API 搜索 — 多镜像源容错 + 内置词表兜底"""
-        mirrors = [
-            "https://world.openfoodfacts.org",
-            "https://world-en.openfoodfacts.org",
-        ]
-        base_params = {
-            "search_terms_s": keyword,
-            "search_simple": "1",
-            "action": "process",
-            "json": "1",
-            "page_size": min(page_size, 50),
-            "page": page,
-        }
+        """实时调 OFF REST API 搜索 — 直接调用官方 /cgi/search.pl"""
+        try:
+            # 使用新的 OFFClient，完全符合官方 API 规范
+            products = self.client.search_by_keyword(keyword, page=page, page_size=page_size)
+            raw_products = products.get("products", [])
+            total_count = products.get("count", len(raw_products))
 
-        all_products: list[dict] = []
-        total_count = 0
-        last_error: str = ""
+            all_products: list[dict] = []
+            if raw_products:
+                all_products = raw_products
 
-        # OFF API 分页直接传参，不需前端切片（修复 N+1 bug）
-        offset = (page - 1) * page_size
+            # ── 外部 API 全失败 → 内置词表兜底 ──
+            if not all_products:
+                logger.warning("[OFFDataService] OFF API 无结果，启用内置词表兜底")
+                keyword_lower = keyword.lower()
+                matched = [cat for cat in POPULAR_CATEGORIES
+                           if keyword_lower in cat["name_cn"].lower()
+                           or keyword_lower in cat["name_en"].lower()
+                           or keyword_lower in cat["tag"].lower()]
+                if matched:
+                    total_count = len(matched)
+                    all_products = matched[(page - 1) * page_size:page * page_size]
 
-        # ── 并行探测镜像 ──
-        params_str = "&".join(f"{k}={v}" for k, v in base_params.items())
-        mirrors_with_params = {m: params_str for m in mirrors}
-        all_products, total_count, last_error = await self._parallel_probe_mirrors(
-            mirrors, base_params,
-        )
+            # 统一输出格式
+            items = []
+            for raw_product in all_products:
+                mapped = self.mapper.map_product(raw_product) if "product_name" in raw_product else None
+                if mapped:
+                    item = self._map_off_product(mapped)
+                    item["source"] = "openfoodfacts_api"
+                    items.append(item)
+                elif "name_cn" in raw_product and "tag" in raw_product:
+                    items.append({
+                        "id": raw_product["tag"], "sku": None,
+                        "brand": "OpenFoodFacts", "product_name": raw_product["name_cn"],
+                        "product_line": None, "category": raw_product["name_cn"],
+                        "sub_category": None, "formulation_type": "",
+                        "effects": [], "target_population": [],
+                        "full_ingredients": None, "key_ingredients": {},
+                        "price": 0, "currency": "CNY", "package_size": None,
+                        "volume_ml": None, "weight_g": None,
+                        "sales_channels": [], "avg_rating": None,
+                        "review_count": None, "monthly_sales": None,
+                        "image_urls": [], "reg_number": None,
+                        "reg_type": None, "approved_region": None,
+                        "allergens_tags": [], "additives_tags": [],
+                        "ecoscore_grade": None, "traces_tags": [],
+                        "contaminants": [], "source": "openfoodfacts_api",
+                        "data_quality": 0, "crawl_timestamp": None,
+                        "created_at": None, "updated_at": None,
+                    })
 
-        # ── 外部 API 全失败 → 内置词表兜底 ──
-        if not all_products:
-            logger.warning("[OFFDataService] OFF API 全部不可用，启用内置词表兜底")
-            keyword_lower = keyword.lower()
-            matched = [cat for cat in POPULAR_CATEGORIES
-                       if keyword_lower in cat["name_cn"].lower()
-                       or keyword_lower in cat["name_en"].lower()
-                       or keyword_lower in cat["tag"].lower()]
-            if matched:
-                total_count = len(matched)
-                all_products = matched[offset:offset + page_size]
+            data_source = "openfoodfacts_api" if all_products else "empty"
 
-        # 统一输出格式：每个 item 都包含 RetailProductResponse 的所有字段
-        # 避免 response_model=RetailProductResponse 校验失败
-        items = []
-        for raw_product in all_products:
-            mapped = self.mapper.map_product(raw_product) if "product_name" in raw_product else None
-            if mapped:
-                item = self._map_off_product(mapped)
-                item["source"] = "openfoodfacts_api"
-                items.append(item)
-            elif "name_cn" in raw_product and "tag" in raw_product:
-                # 内置词表兜底格式 — 同样补齐全部字段
-                items.append({
-                    "id": raw_product["tag"],
-                    "sku": None,
-                    "brand": "OpenFoodFacts",
-                    "product_name": raw_product["name_cn"],
-                    "product_line": None,
-                    "category": raw_product["name_cn"],
-                    "sub_category": None,
-                    "formulation_type": "",
-                    "effects": [],
-                    "target_population": [],
-                    "full_ingredients": None,
-                    "key_ingredients": {},
-                    "price": 0,
-                    "currency": "CNY",
-                    "package_size": None,
-                    "volume_ml": None,
-                    "weight_g": None,
-                    "sales_channels": [],
-                    "avg_rating": None,
-                    "review_count": None,
-                    "monthly_sales": None,
-                    "image_urls": [],
-                    "reg_number": None,
-                    "reg_type": None,
-                    "approved_region": None,
-                    "allergens_tags": [],
-                    "additives_tags": [],
-                    "ecoscore_grade": None,
-                    "traces_tags": [],
-                    "contaminants": [],
-                    "source": "openfoodfacts_api",
-                    "data_quality": 0,
-                    "crawl_timestamp": None,
-                    "created_at": None,
-                    "updated_at": None,
-                })
+            return {
+                "items": items[:page_size],
+                "total": max(total_count, len(items)),
+                "page": page,
+                "page_size": page_size,
+                "data_source": data_source,
+            }
 
-        data_source = "openfoodfacts_api" if all_products else ("error_network" if mirrors else "empty")
-
-        return {
-            "items": items[:page_size],
-            "total": max(total_count, len(items)),
-            "page": page,
-            "page_size": page_size,
-            "data_source": data_source,
-            **({"error": last_error} if not items and last_error else {}),
-        }
+        except Exception as err:
+            logger.error(f"[OFFDataService] realtime_search error: {err}")
+            return {
+                "items": [], "total": 0,
+                "page": page, "page_size": page_size,
+                "data_source": "error_network",
+                "error": str(err),
+            }
 
     # ── 按条码查询 ──
 

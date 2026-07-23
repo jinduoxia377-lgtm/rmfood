@@ -125,27 +125,8 @@ api.interceptors.response.use(
       return Promise.resolve(silentResponse as any)
     }
 
-    // 🔒 仅开发环境使用模拟数据（条件导入，生产构建不包含 mock 代码）
-    if (import.meta.env.DEV && shouldUseMockData(error)) {
-      const urlPath = original.url?.replace(API_BASE, '') || original.url || ''
-      const { getMockData } = await import('./client.mock')
-      return getMockData(urlPath, original)
-    }
-
-    /**
-     * 判断是否应该使用模拟数据（仅开发环境）
-     */
-    function shouldUseMockData(err: any): boolean {
-      if (!err.response) return true
-      const status = err.response.status
-      if (status === 502 || status === 503 || status === 504) return true
-      if (status === 500) return true
-      if (status === 422) {
-        const urlPath = err.config?.url?.replace(API_BASE, '') || ''
-        if (urlPath.includes('/formulas/statistics') || urlPath.includes('/formulas/logs')) return true
-      }
-      return false
-    }
+    // 移除 mock fallback，始终使用真实 API
+    return Promise.reject(error)
 
     // 处理 404 错误
     if (error.response?.status === 404) {
