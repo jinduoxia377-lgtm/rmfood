@@ -318,6 +318,7 @@ class Settings(BaseSettings):
     security: SecurityConfig = Field(default_factory=SecurityConfig)
     logging: LoggingConfig = Field(default_factory=LoggingConfig)
     ai_service: AIServiceConfig = Field(default_factory=AIServiceConfig)
+    encryption: EncryptionConfig = Field(default_factory=EncryptionConfig)
     server: ServerConfig = Field(default_factory=ServerConfig)
     monitoring: MonitoringConfig = Field(default_factory=MonitoringConfig)
 
@@ -496,8 +497,16 @@ class Settings(BaseSettings):
 
     @property
     def redis_available(self) -> bool:
-        """Redis 是否可用（开发环境默认 False，避免依赖）"""
-        return False
+        """检测 Redis 是否可用"""
+        if not self.redis_url:
+            return False
+        try:
+            import redis
+            client = redis.from_url(self.redis_url, decode_responses=True, db=1)
+            client.ping()
+            return True
+        except Exception:
+            return False
 
     @property
     def database_url(self) -> str:
@@ -602,6 +611,11 @@ class Settings(BaseSettings):
         return result
 
 
+class EncryptionConfig(BaseModel):
+    """加密配置"""
+    encryption_key: Optional[str] = Field(default=None, alias="ENCRYPTION_KEY", description="API Key 加密密钥（生产环境必须设置，不使用 SECRET_KEY）")
+
+
 class AppInfoConfig(BaseModel):
     """应用信息配置"""
     name: str = "RMFOOD配方平台"
@@ -641,9 +655,15 @@ def reload_settings() -> Settings:
 # 使用时: from app.core.config import settings
 try:
     settings = get_settings()
-except Exception as e:
-    logger.warning(f"配置加载失败，使用默认值: {e}")
-    settings = Settings()
+except ValueError as e:
+    logger.critical(f"配置验证失败，无法启动: {e}")
+    raise
+except EnvironmentError as e:
+    logger.critical(f"环境变量加载失败，无法启动: {e}")
+    raise
+except AttributeError as e:
+    logger.critical(f"关键配置项缺失: {e}")
+    raise
 
 
 # ═════════════════════════════════════════════

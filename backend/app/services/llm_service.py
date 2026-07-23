@@ -21,9 +21,13 @@ _CONFIG_DB_KEY = "llm_runtime_config"
 
 
 def _get_encryption_key() -> bytes:
-    """从 SECRET_KEY 派生 API Key 加密密钥（32字节）"""
+    """获取 API Key 加密密钥。优先使用独立 ENCRYPTION_KEY，fallback 到 SECRET_KEY（兼容旧版）"""
     import hashlib
-    raw = settings.secret_key or "rmfood-fallback-key"
+    from ..core.config import settings
+    raw = settings.encryption.encryption_key or settings.secret_key or ""
+    if not raw:
+        logger.error("[LLMConfig] 未设置 ENCRYPTION_KEY 或 SECRET_KEY，API Key 将以明文存储")
+        return b""
     return hashlib.sha256(raw.encode("utf-8")).digest()
 
 

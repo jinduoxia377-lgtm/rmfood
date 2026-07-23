@@ -190,17 +190,9 @@ export class ChatService implements IChatService {
     this.eventBus.emit('message:sending', { content: question, timestamp: Date.now() });
     this.stateMachine.transition(ChatState.Streaming);
 
-    // ── Token 有效性预检（SSE 流式请求无法走 axios 拦截器，需手动检查）──
-    // 注意：这里只做软性警告，不阻断请求。真正的 Token 有效性由后端验证。
-    // 原因：前端只能检查 exp 声明（不验证签名），而后端 SECRET_KEY 可能已变更。
-    const token = this.getAuthToken();
-    if (token && this.isTokenExpired(token)) {
-      logger.warn('[ChatService] 流式请求预检：Token exp 声明已临近过期，仍尝试发送（由后端最终验证）');
-      // 不再阻断！让请求到达后端，由后端返回标准 401 并触发重新登录流程
-    }
-
-    if (!token) {
-      logger.warn('[ChatService] 流式请求预检：无可用 Token');
+    // ── 认证预检（SSE 流式请求使用 fetch，依赖浏览器自动携带 HttpOnly Cookie）──
+    if (!this.isAuthenticated()) {
+      logger.warn('[ChatService] 流式请求预检：用户未认证');
       this.stateMachine.transition(ChatState.Error);
       const noAuthError = new Error('未登录，请先登录后再使用 AI 对话');
       this.handleError(noAuthError, question);
@@ -211,26 +203,20 @@ export class ChatService implements IChatService {
     this.pendingRequest.set(requestId, controller);
 
     try {
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-      };
-
-      if (token) {
-        headers.Authorization = `Bearer ${token}`;
-      }
-
-      // 流式请求使用 STREAM_TIMEOUT_MS（60s），比普通请求更长
-      const streamTimeout = API.STREAM_TIMEOUT_MS ?? 60_000;
+      // 流式请求使用 STREAM_TIMEOUT_MS（180s），普通请求更长以覆盖复杂分析
+      const streamTimeout = API.STREAM_TIMEOUT_MS ?? 180_000;
       const timeoutId = setTimeout(() => controller.abort(), streamTimeout);
 
       const bodyData: Record<string, any> = { question };
       if (history && history.length > 0) {
         bodyData.history = history.slice(-10);
       }
+      // 使用 fetch 但依赖浏览器自动携带 HttpOnly Cookie（不走 localStorage）
       const response = await fetch(API_ENDPOINTS.AI.CHAT_STREAM, {
         method: 'POST',
-        headers,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(bodyData),
+        credentials: 'include',
         signal: controller.signal,
       });
 
@@ -341,20 +327,10 @@ export class ChatService implements IChatService {
 
   setAuthToken(token: string): void {
     this.authToken = token;
-    try {
-      localStorage.setItem('access_token', token);
-    } catch (e) {
-      logger.warn('[ChatService] 保存 Token 到存储失败:', e);
-    }
   }
 
   clearAuthToken(): void {
     this.authToken = null;
-    try {
-      localStorage.removeItem('access_token');
-    } catch (e) {
-      logger.warn('[ChatService] 清除 Token 失败:', e);
-    }
   }
 
   async retryLastMessage(): Promise<AIResponse> {
@@ -441,7 +417,7 @@ export class ChatService implements IChatService {
         // 用户认证失败（JWT 无效/过期/SECRET_KEY 变更）→ 触发重新登录
         logger.warn('[ChatService] 🔒 fetchChatAPI 认证失败 (401)', {
           detail,
-          hasToken: !!this.getAuthToken(),
+          hasToken: !!this.isAuthenticated(),
         });
         this.eventBus.emit('auth:required' as any, {} as any);
         throw new Error(`HTTP 错误 (401): ${detail || '认证失败，Token 可能已过期'}`);
@@ -527,7 +503,7 @@ export class ChatService implements IChatService {
           // 用户认证失败（JWT 无效或过期）
           logger.warn('[ChatService] 🔒 用户认证失败', {
             detail: errorDetail,
-            hasToken: !!this.getAuthToken(),
+            hasToken: !!this.isAuthenticated(),
           });
 
           this.eventBus.emit('auth:required' as any, {} as any);
@@ -711,49 +687,19 @@ export class ChatService implements IChatService {
     };
   }
 
-  private getAuthToken(): string | null {
-    if (this.authToken) return this.authToken;
-
-    try {
-      // 策略1: 从 storageService 读取（兼容 storageService 格式）
-      const storedToken = this.storage.get<string>('access_token');
-      if (storedToken) {
-        this.authToken = storedToken;
-        return storedToken;
-      }
-
-      // 策略2: 直接从 localStorage 读取（兼容 auth store 的纯字符串格式）
-      const rawToken = localStorage.getItem('access_token');
-      if (rawToken) {
-        // 验证是否为有效的 JWT 格式（三段式，用.分隔）
-        if (rawToken.split('.').length === 3) {
-          this.authToken = rawToken;
-          return rawToken;
-        }
-      }
-    } catch (e) {
-      logger.warn('[ChatService] 读取 Token 失败:', e);
-    }
-
-    return null;
-  }
-
   /**
-   * 检查 JWT Token 是否已过期（不验证签名，仅检查 exp 声明）
-   * 用于流式请求的预检，避免携带过期 Token 导致 ERR_ABORTED
+   * 检查是否已认证（用于流式请求预检）
+   * 实际请求依赖浏览器自动携带 HttpOnly Cookie
    */
-  private isTokenExpired(token: string): boolean {
+  private isAuthenticated(): boolean {
+    // 从 auth store 读取认证状态
     try {
-      const payload = token.split('.')[1];
-      if (!payload) return true;
-      const decoded = JSON.parse(atob(payload));
-      const exp = decoded.exp;
-      if (!exp) return false;
-      // 提前 60s 判定过期，留出网络传输余量
-      return Date.now() / 1000 > exp - 60;
+      // 动态导入避免循环依赖
+      const { useAuthStore } = require('@/stores/auth')
+      return useAuthStore.getState().isAuthenticated
     } catch {
-      // 解析失败视为无效 Token
-      return true;
+      // 如果 auth store 不可用，回退到 authToken 检查
+      return !!this.authToken
     }
   }
 
