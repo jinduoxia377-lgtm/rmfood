@@ -20,6 +20,7 @@ from . import (
     User,
 )
 from ...core.resilience import get_ai_rate_limiter
+from ...core.tenant_security import TenantContext, require_tenant
 from ...services.llm_service import LLMMessage
 from ...services.ai.response_cache import ai_cache
 from ...services.ai.observability import ai_observability
@@ -44,6 +45,7 @@ class ChatMessage(BaseModel):
 @router.post("/chat", summary="AI 智能对话（非流式）")
 async def chat(
     req: ChatRequest,
+    tenant: TenantContext = Depends(require_tenant),
     db: AsyncSession = Depends(get_db_session),
     current_user: User = Depends(get_current_user),
 ):
@@ -56,10 +58,11 @@ async def chat(
     try:
         start_time = time.time()
 
-        # 检查缓存
-        cached = ai_cache.get(req.question)
+        # 检查缓存（租户级 key 防止跨租户缓存泄漏）
+        cache_key = f"org:{tenant.org_id}:{req.question}"
+        cached = ai_cache.get(cache_key)
         if cached:
-            logger.info("缓存命中: %s", req.question[:50])
+            logger.info("缓存命中: %s", cache_key[:50])
             ai_observability.track_call("llm", (time.time() - start_time) * 1000, error=False)
             return {
                 "content": cached,
@@ -126,7 +129,7 @@ async def chat(
         }
 
         # 写入缓存 + 记录指标（在 return 之前）
-        ai_cache.set(req.question, answer)
+        ai_cache.set(cache_key, answer)
         ai_observability.track_call("llm", (time.time() - start_time) * 1000, error=False)
         return result
     except RuntimeError as e:
@@ -178,6 +181,7 @@ async def chat(
 async def chat_stream(
     req: ChatRequest,
     background_tasks: BackgroundTasks,
+    tenant: TenantContext = Depends(require_tenant),
     db: AsyncSession = Depends(get_db_session),
     current_user: User = Depends(get_current_user),
 ):
@@ -188,11 +192,11 @@ async def chat_stream(
     try:
         logger.info(f"[chat_stream] 收到流式对话请求, question={req.question[:50]}..., history_count={len(req.history) if req.history else 0}")
 
-        # ── Step 1: Rate Limit 检查 ──
+        # ── Step 1: Rate Limit 检查（租户级） ──
         limiter = get_ai_rate_limiter()
-        allowed, error_msg = await limiter.check_request(current_user.id)
+        allowed, error_msg = await limiter.check_request(tenant.org_id)
         if not allowed:
-            logger.warning(f"[chat_stream] 用户 {current_user.id} 触发限流: {error_msg}")
+            logger.warning(f"[chat_stream] 组织 {tenant.org_id} 触发限流: {error_msg}")
             raise HTTPException(
                 status_code=status.HTTP_429_TOO_MANY_REQUESTS,
                 detail={
@@ -203,17 +207,17 @@ async def chat_stream(
                 headers={"Retry-After": "60"},
             )
 
-        # ── Step 2: SSE 连接数检查 ──
+        # ── Step 2: SSE 连接数检查（租户级） ──
         import uuid
         conn_id = int(uuid.uuid4().hex[:8], 16)
-        connected = await limiter.register_sse_connection(current_user.id)
+        connected = await limiter.register_sse_connection(tenant.org_id)
         if not connected:
-            await limiter.unregister_sse_connection(current_user.id, conn_id)
+            await limiter.unregister_sse_connection(tenant.org_id, conn_id)
             raise HTTPException(
                 status_code=status.HTTP_429_TOO_MANY_REQUESTS,
                 detail={
                     "error": "TOO_MANY_SSE_CONNECTIONS",
-                    "message": f"每个用户最多同时打开 {_get_llm_service().config.model if False else 5} 个流式连接",
+                    "message": f"每个组织最多同时打开 {_get_llm_service().config.model if False else 5} 个流式连接",
                     "retry_after": 30,
                 },
             )
@@ -295,8 +299,8 @@ async def chat_stream(
                 yield "data: [ERROR]\n\n"
 
         logger.info("[chat_stream] 即将返回 StreamingResponse")
-        # 在响应发送完成后，后台清理 SSE 连接计数
-        background_tasks.add_task(limiter.unregister_sse_connection, current_user.id, conn_id)
+        # 在响应发送完成后，后台清理 SSE 连接计数（租户级）
+        background_tasks.add_task(limiter.unregister_sse_connection, tenant.org_id, conn_id)
         return StreamingResponse(
             event_stream(),
             media_type="text/event-stream",

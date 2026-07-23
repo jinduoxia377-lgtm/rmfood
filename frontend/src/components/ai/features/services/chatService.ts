@@ -212,6 +212,7 @@ export class ChatService implements IChatService {
         bodyData.history = history.slice(-10);
       }
       // 使用 fetch 但依赖浏览器自动携带 HttpOnly Cookie（不走 localStorage）
+      // 🔒 与 Axios interceptor 对齐：credentials: 'include' 确保 Cookie 自动携带
       const response = await fetch(API_ENDPOINTS.AI.CHAT_STREAM, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -220,7 +221,7 @@ export class ChatService implements IChatService {
         signal: controller.signal,
       });
 
-      clearTimeout(timeoutId);
+      clearTimeout(timeoutId); // 收到响应后立即清除超时（避免正常完成后的误杀）
 
       if (!response.ok) {
         await this.handleStreamError(response);
