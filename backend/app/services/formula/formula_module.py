@@ -62,6 +62,7 @@ class FormulaService:
         self,
         data: FormulaCreate,
         creator_id: int,
+        organization_id: Optional[int] = None,
     ) -> Formula:
         """创建配方（草稿）"""
         code = await self._generate_formula_code()
@@ -79,35 +80,41 @@ class FormulaService:
             storage_conditions=data.storage_conditions,
             shelf_life=data.shelf_life,
             creator_id=creator_id,
+            organization_id=organization_id,
             safety_check=data.safety_check,
             synergy_analysis=data.synergy_analysis,
         )
         self.db.add(formula)
-        await self.db.flush()
 
-        # 关联成分
-        if data.ingredient_ids:
-            await self._bind_ingredients(formula, data.ingredient_ids)
+        try:
+            await self.db.flush()
 
-        # 关联肽段
-        if data.peptide_ids:
-            await self._bind_peptides(formula, data.peptide_ids)
+            # 关联成分
+            if data.ingredient_ids:
+                await self._bind_ingredients(formula, data.ingredient_ids)
 
-        # 创建初始版本快照
-        await self._create_version_snapshot(formula, "初始版本", creator_id)
+            # 关联肽段
+            if data.peptide_ids:
+                await self._bind_peptides(formula, data.peptide_ids)
 
-        # 自动计算营养成分
-        await self._calculate_nutrition_summary(formula)
+            # 创建初始版本快照
+            await self._create_version_snapshot(formula, "初始版本", creator_id)
 
-        await self._audit_log(
-            action="formula.create",
-            entity_type="formula",
-            entity_id=formula.id,
-            user_id=creator_id,
-        )
+            # 自动计算营养成分
+            await self._calculate_nutrition_summary(formula)
 
-        logger.info(f"创建配方: {code} - {formula.name}")
-        return formula
+            await self._audit_log(
+                action="formula.create",
+                entity_type="formula",
+                entity_id=formula.id,
+                user_id=creator_id,
+            )
+
+            logger.info(f"创建配方: {code} - {formula.name}")
+            return formula
+        except Exception:
+            await self.db.rollback()
+            raise
 
     async def get_formula(self, formula_id: int) -> Formula:
         """获取配方详情（含成分和肽段）"""
@@ -137,6 +144,7 @@ class FormulaService:
         creator_id: Optional[int] = None,
         search: Optional[str] = None,
         include_deleted: bool = False,
+        organization_id: Optional[int] = None,
     ) -> tuple[list[Formula], int]:
         """配方列表（分页 + 过滤 + 搜索）"""
         query = select(Formula).options(
@@ -148,6 +156,10 @@ class FormulaService:
         # 软删除过滤（默认不显示已删除的记录）
         if not include_deleted and hasattr(Formula, 'deleted_at'):
             query = query.where(Formula.deleted_at.is_(None))
+
+        # ── 多租户隔离 ──
+        if organization_id is not None:
+            query = query.where(Formula.organization_id == organization_id)
 
         if status:
             query = query.where(Formula.status == status)
@@ -272,22 +284,26 @@ class FormulaService:
             if field in data:
                 setattr(formula, field, data[field])
 
-        # 恢复成分关联
-        ingredient_ids = data.get("ingredient_ids")
-        if ingredient_ids is not None:
-            await self._bind_ingredients(formula, ingredient_ids)
+        try:
+            # 恢复成分关联
+            ingredient_ids = data.get("ingredient_ids")
+            if ingredient_ids is not None:
+                await self._bind_ingredients(formula, ingredient_ids)
 
-        # 恢复肽段关联
-        peptide_ids = data.get("peptide_ids")
-        if peptide_ids is not None:
-            await self._bind_peptides(formula, peptide_ids)
+            # 恢复肽段关联
+            peptide_ids = data.get("peptide_ids")
+            if peptide_ids is not None:
+                await self._bind_peptides(formula, peptide_ids)
 
-        formula.version += 1
-        await self.db.flush()
+            formula.version += 1
+            await self.db.flush()
 
-        await self._create_version_snapshot(formula, f"从版本 v{version} 恢复", user_id)
+            await self._create_version_snapshot(formula, f"从版本 v{version} 恢复", user_id)
 
-        return formula
+            return formula
+        except Exception:
+            await self.db.rollback()
+            raise
 
     # ── 审核流程 ──
 
@@ -470,15 +486,19 @@ class FormulaService:
     ) -> int:
         """批量更新配方状态"""
         from sqlalchemy import update
-        result = await self.db.execute(
-            update(Formula)
-            .where(Formula.id.in_(ids))
-            .values(status=status, updated_at=datetime.utcnow())
-        )
-        await self.db.commit()
-        updated_count = result.rowcount
-        logger.info(f"批量更新配方状态: {updated_count} 个 -> {status}")
-        return updated_count
+        try:
+            result = await self.db.execute(
+                update(Formula)
+                .where(Formula.id.in_(ids))
+                .values(status=status, updated_at=datetime.utcnow())
+            )
+            await self.db.commit()
+            updated_count = result.rowcount
+            logger.info(f"批量更新配方状态: {updated_count} 个 -> {status}")
+            return updated_count
+        except Exception:
+            await self.db.rollback()
+            raise
 
     # ── AI 辅助功能 ──
 

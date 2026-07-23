@@ -100,4 +100,4 @@ CMD ["uvicorn", "app.main:app", \
      "--access-log", "-", \
      "--error-log", "-", \
      "--proxy-headers", \
-     "--forwarded-allow-ips"]
+     "--forwarded-allow-ips", "*"]

@@ -200,6 +200,9 @@ class UnifiedFormulaOptimizer:
         self._lock = threading.Lock()
 
         # 可用策略列表
+        # 生产就绪: ga, ga_lp_hybrid, nsga2
+        # 实验性: nsga3, bayesian
+        # 待实现: moead, cma_es
         self.available_strategies = [
             "ga", "ga_lp_hybrid", "nsga2", "nsga3",
             "bayesian", "moead", "cma_es",
@@ -250,8 +253,8 @@ class UnifiedFormulaOptimizer:
                     f"历史检索命中: 上次最优策略={cached['strategy']}, "
                     f"best_score={cached['best_score']:.4f}")
 
-        # 6. Bandit推荐
-        bandit_strategy = self.bandit.select(self.available_strategies[:4])
+        # 6. Bandit推荐（仅从已实现策略中选择）
+        bandit_strategy = self.bandit.select(self.implemented_strategies)
         return (bandit_strategy,
                 f"Bandit推荐 + 默认启发式 → {bandit_strategy}")
 
@@ -671,14 +674,23 @@ class UnifiedFormulaOptimizer:
             "ga": self._execute_ga,
             "ga_lp_hybrid": self._execute_ga_lp_hybrid,
             "nsga2": self._execute_nsga2,
-            "nsga3": self._execute_nsga2,  # 暂时复用NSGA-II
-            "bayesian": self._execute_ga,  # 暂时复用GA
-            "moead": self._execute_nsga2,  # 暂时复用NSGA-II
-            "cma_es": self._execute_ga,  # 暂时复用GA
+            "nsga3": self._execute_nsga2,  # NSGA-III 复用 NSGA-II（高维目标场景）
+            # 以下策略暂未实现，使用明确的错误处理
+            "bayesian": None,
+            "moead": None,
+            "cma_es": None,
         }
+
+        # 已实现策略列表（可用于 Bandit 选择）
+        self.implemented_strategies = ["ga", "ga_lp_hybrid", "nsga2", "nsga3"]
 
         executor = executors.get(strategy)
         if not executor:
+            if strategy in ("bayesian", "moead", "cma_es"):
+                raise ValueError(
+                    f"策略 '{strategy}' 尚未实现。"
+                    f"可用策略: {', '.join(self.implemented_strategies)}"
+                )
             logger.warning(f"未知策略: {strategy}, 回退GA")
             executor = self._execute_ga
             strategy = "ga"

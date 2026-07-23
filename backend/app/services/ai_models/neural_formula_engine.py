@@ -1,7 +1,10 @@
 """
-NeuralFormulaEngine - 神经网络配方生成引擎
-基于专利 US 11,742,060 B2 实现
-整合编码器、解码器、评分器，提供完整的配方生成流程
+⚠️ MOCK IMPLEMENTATION - 模拟实现，非真实 AI 模型
+
+基于专利 US 11,742,060 B2 描述的架构，但当前使用 random.sample() 和
+启发式评分模拟配方生成。
+整合了 Encoder、Decoder、Scorer 三个子模块，但均使用规则/随机方法。
+接入真实神经网络模型后替换为推理实现。
 """
 import logging
 import random
@@ -16,8 +19,8 @@ from .scorer import MultiObjectiveScorer, DiversityScorer
 logger = logging.getLogger(__name__)
 
 
-class NeuralFormulaEngine:
-    """神经网络配方生成引擎"""
+class MockNeuralFormulaEngine:
+    """神经网络配方生成引擎（模拟实现）"""
 
     def __init__(self):
         self.encoder = FormulaEncoder()

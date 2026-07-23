@@ -1,7 +1,8 @@
 """
-TastePredictor - 口感预测服务
-XGBoost + 分子描述符，预测甜度/苦味/涩味
-当前为规则模拟实现
+⚠️ MOCK IMPLEMENTATION - 模拟实现，非真实 AI 模型
+
+当前使用药材苦味/甜味字典模拟口感预测。
+接入 XGBoost + 分子描述符后替换为真实推理实现。
 """
 import logging
 from typing import Any
@@ -9,8 +10,8 @@ from typing import Any
 logger = logging.getLogger(__name__)
 
 
-class TastePredictorService:
-    """口感预测服务"""
+class MockTastePredictorService:
+    """口感预测服务（模拟实现）"""
 
     async def predict(
         self,

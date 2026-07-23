@@ -128,3 +128,9 @@ class AIRecommendationResponse(BaseModel):
     """AI推荐响应"""
     recommendations: list[dict]
     total: int
+
+
+class BatchStatusUpdateRequest(BaseModel):
+    """批量更新配方状态请求"""
+    ids: list[int] = Field(..., min_length=1, max_length=100, description="配方ID列表")
+    status: str = Field(..., description="目标状态（draft/submitted/reviewed/approved/rejected/published/archived）")

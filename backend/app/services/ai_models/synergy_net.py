@@ -1,7 +1,8 @@
 """
-SynergyNet - 协同作用分析服务
-GNN + Transformer 架构，预测药材-肽间协同/拮抗关系
-当前为规则模拟实现
+⚠️ MOCK IMPLEMENTATION - 模拟实现，非真实 AI 模型
+
+当前使用硬编码 SYNERGY_PAIRS/ANTAGONISM_PAIRS 模拟协同作用分析。
+接入真实 GNN + Transformer 模型后替换为真实推理实现。
 """
 import logging
 from typing import Any
@@ -9,8 +10,8 @@ from typing import Any
 logger = logging.getLogger(__name__)
 
 
-class SynergyNetService:
-    """协同作用分析服务"""
+class MockSynergyNetService:
+    """协同作用分析服务（模拟实现）"""
 
     async def analyze(
         self,

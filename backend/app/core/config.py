@@ -318,7 +318,7 @@ class Settings(BaseSettings):
     security: SecurityConfig = Field(default_factory=SecurityConfig)
     logging: LoggingConfig = Field(default_factory=LoggingConfig)
     ai_service: AIServiceConfig = Field(default_factory=AIServiceConfig)
-    encryption: EncryptionConfig = Field(default_factory=EncryptionConfig)
+    encryption: "EncryptionConfig" = Field(default_factory=lambda: EncryptionConfig())  # type: ignore[valid-type]
     server: ServerConfig = Field(default_factory=ServerConfig)
     monitoring: MonitoringConfig = Field(default_factory=MonitoringConfig)
 

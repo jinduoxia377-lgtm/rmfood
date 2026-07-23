@@ -13,6 +13,7 @@
 - 支持Token类型区分（access/refresh）
 - 完整的异常处理与日志记录
 """
+import hashlib
 import logging
 import re
 import threading
@@ -243,7 +244,7 @@ def add_token_to_blacklist(token: str) -> bool:
             if redis_client:
                 try:
                     # 使用 JTI 作为 key（更高效），TTL 设为 Token 剩余有效期
-                    redis_key = f"token_blacklist:{jti}" if jti else f"token_blacklist:{hash(token)}"
+                    redis_key = f"token_blacklist:{jti}" if jti else f"token_blacklist:{hashlib.sha256(token.encode()).hexdigest()}"
                     redis_client.setex(redis_key, ttl, "1")
                     logger.debug(f"Token 已加入 Redis 黑名单: {redis_key} (TTL={ttl}s)")
                 except Exception as e:
@@ -280,7 +281,7 @@ def is_token_blacklisted(token: str) -> bool:
         try:
             payload = jwt.get_unverified_claims(token)
             jti = payload.get("jti", "")
-            redis_key = f"token_blacklist:{jti}" if jti else f"token_blacklist:{hash(token)}"
+            redis_key = f"token_blacklist:{jti}" if jti else f"token_blacklist:{hashlib.sha256(token.encode()).hexdigest()}"
             if redis_client.exists(redis_key):
                 # 回填内存黑名单
                 with _blacklist_lock:

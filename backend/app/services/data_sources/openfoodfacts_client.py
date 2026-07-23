@@ -221,8 +221,9 @@ class OFFDataService:
                 where_clauses.append("avg_rating >= :min_r")
                 params["min_r"] = min_rating
             if effects and len(effects) > 0:
-                where_clauses.append(f"effects && ARRAY[:effs]::text[]")
-                params["effs"] = ",".join(effects)
+                # Build array literal safely: '{effect1,effect2}'
+                arr_literal = "{" + ",".join(e.replace('"', '""') for e in effects) + "}"
+                where_clauses.append(f"effects && {arr_literal}")
 
             where_sql = " AND ".join(where_clauses)
 
@@ -295,8 +296,8 @@ class OFFDataService:
                 ilike_where.append("avg_rating >= :min_r2")
                 ilike_params["min_r2"] = min_rating
             if effects and len(effects) > 0:
-                ilike_where.append(f"effects && ARRAY[:effs2]::text[]")
-                ilike_params["effs2"] = ",".join(effects)
+                arr_literal = "{" + ",".join(e.replace('"', '""') for e in effects) + "}"
+                ilike_where.append(f"effects && {arr_literal}")
 
             ilike_where_sql = " AND ".join(ilike_where)
 

@@ -49,7 +49,7 @@ echo     • Bolt协议: bolt://localhost:7687
 echo.
 echo   🔑 登录凭据:
 echo     • 用户名: neo4j
-echo     • 密码:   Rmfood2024Secure!
+echo     • 密码:   %NEO4J_AUTH_PASSWORD%
 echo.
 echo   按 Ctrl+C 停止服务
 echo ══════════════════════════════════════════════════════════════

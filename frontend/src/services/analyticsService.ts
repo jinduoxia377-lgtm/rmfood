@@ -127,7 +127,7 @@ class AnalyticsService {
       if (filters?.categories?.length) params.append('categories', filters.categories.join(','));
 
       const response = await fetch(`${this.baseUrl}/dashboard/kpi?${params}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` },
+        headers: { Authorization: `Bearer ${localStorage.getItem('access_token') || ''}` },
       });
 
       const result = await response.json();
@@ -241,7 +241,7 @@ class AnalyticsService {
 
       const response = await fetch(`${this.baseUrl}/export?${params}`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` },
+        headers: { Authorization: `Bearer ${localStorage.getItem('access_token') || ''}` },
       });
 
       if (!response.ok) {

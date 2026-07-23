@@ -7,7 +7,7 @@
 """
 import functools
 import logging
-from typing import Optional, Callable, Any, List
+from typing import Optional, Callable, Any, List, Dict
 
 from fastapi import Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -79,7 +79,13 @@ def require_permission(
 
             if not team_id:
                 logger.warning(f"无法确定team_id进行权限检查: {func.__name__}")
-                return await func(*args, **kwargs)
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail={
+                        "error_code": "TEAM_ID_REQUIRED",
+                        "message": "无法确定团队上下文，请检查请求参数",
+                    }
+                )
 
             try:
                 from app.services.team.team_impl import TeamService

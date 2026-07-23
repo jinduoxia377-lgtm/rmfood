@@ -47,6 +47,7 @@ from .api.api_version import (
     register_version_middleware,
 )
 from .core.websocket import connection_manager
+from .core.websocket_manager import get_ws_manager
 from .infrastructure.event_bus import RedisStreamsEventBus
 
 # 🔒 P5: 企业级安全与合规模块
@@ -117,10 +118,25 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.error(f"[Startup] AI 服务初始化失败: {e}")
 
+    # 4b. 启动 WebSocket 心跳任务（统一使用 WebSocketManager）
+    try:
+        ws_manager = get_ws_manager()
+        await ws_manager.start_heartbeat()
+        logger.info("[Startup] WebSocket 心跳管理已启动")
+    except Exception as e:
+        logger.warning(f"[Startup] WebSocket 心跳启动失败（非致命）: {e}")
+
     yield
 
     # ── 关闭阶段：释放资源 ──
     logger.info("应用关闭中...")
+    # 4c. 停止 WebSocket 心跳
+    try:
+        ws_manager = get_ws_manager()
+        await ws_manager.stop_heartbeat()
+        logger.info("[Shutdown] WebSocket 心跳已停止")
+    except Exception as e:
+        logger.warning(f"[Shutdown] WebSocket 心跳清理异常: {e}")
     try:
         await close_database()
     except Exception as e:
@@ -267,13 +283,14 @@ Authorization: Bearer <your_access_token>
         ],
     )
 
-    # ── 可观测性中间件 (待激活: 需要 OpenTelemetry collector 部署) ──
-    # from .core.metrics import metrics as metrics_collector
-    # app.add_middleware(
-    #     TelemetryMiddleware,
-    #     metrics_collector=metrics_collector,
-    #     slow_threshold_ms=500,
-    # )
+    # ── 可观测性中间件 ──
+    from .core.metrics import metrics as metrics_collector
+    app.add_middleware(
+        TelemetryMiddleware,
+        metrics_collector=metrics_collector,
+        slow_threshold_ms=500,
+    )
+    logger.info("[TelemetryMiddleware] 可观测性中间件已注册")
 
     # 🔒 P4-3: 增强日志系统 (待激活: 需要 init_enhanced_logging 完成)
     # try:
@@ -292,8 +309,8 @@ Authorization: Bearer <your_access_token>
         requests_per_hour=1000,
     ))
 
-    # 多租户行级安全 (待激活: 需要 TenantMiddleware 实现完成)
-    # app.add_middleware(TenantMiddleware)
+    # ── 多租户行级安全（tenant isolation） ──
+    app.add_middleware(TenantMiddleware)
 
     # ── CORS 中间件 ──
     cors_origins = settings.get_cors_origins()
@@ -329,18 +346,18 @@ Authorization: Bearer <your_access_token>
         from fastapi.responses import JSONResponse
         return JSONResponse(status_code=422, content={"success": False, "error": "数据验证失败", "detail": str(exc)})
 
-    # 🔒 P5-1: 审计中间件 (待激活: 需要 audit_logs 表迁移完成)
-    # try:
-    #     app.add_middleware(AuditMiddleware,
-    #         include_paths=["/api/v1/"],
-    #         exclude_paths=["/health", "/metrics", "/static", "/docs", "/redoc", "/openapi.json"],
-    #         sampling_rate=1.0,
-    #         record_body=False,
-    #         alert_threshold_ms=5000,
-    #     )
-    #     logger.info("[AuditMiddleware] HTTP 审计中间件已注册")
-    # except Exception as e:
-    #     logger.warning(f"[AuditMiddleware] 注册失败（非阻塞）: {e}")
+    # 🔒 P5-1: 审计中间件
+    try:
+        app.add_middleware(AuditMiddleware,
+            include_paths=["/api/v1/"],
+            exclude_paths=["/health", "/metrics", "/static", "/docs", "/redoc", "/openapi.json"],
+            sampling_rate=1.0,
+            record_body=False,
+            alert_threshold_ms=5000,
+        )
+        logger.info("[AuditMiddleware] HTTP 审计中间件已注册")
+    except Exception as e:
+        logger.warning(f"[AuditMiddleware] 注册失败（非阻塞）: {e}")
 
     # ── 监控和错误处理 ──
     # setup_monitoring(app)  # 监控功能已集成到 monitoring.py，可按需启用

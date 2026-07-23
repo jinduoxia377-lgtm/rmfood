@@ -503,8 +503,7 @@ class RBACManager:
                 role = current_user.role.value if hasattr(current_user.role, 'value') else str(current_user.role)
                 
                 if not self.check_permission(role, resource, action):
-                    from fastapi import HTTPException
-                    import status
+                    from fastapi import HTTPException, status
                     raise HTTPException(
                         status_code=status.HTTP_403_FORBIDDEN,
                         detail={

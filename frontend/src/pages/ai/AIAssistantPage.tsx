@@ -17,7 +17,10 @@
  */
 
 import { useState, useEffect, useCallback, lazy, Suspense } from 'react';
-import { AIProvider } from '@/contexts/AIContext';
+// AIContext 已移除（2026-07-22）：经确认，AIProvider 包裹内无任何子组件使用 useAIContext()。
+// 所有状态已由独立 Hooks（useChatMessages、useFormulaManager 等）和 Zustand Stores 管理。
+// 保留 ErrorBoundary 作为全局容错边界。
+
 import { useQuery } from '@tanstack/react-query';
 import { ModelClient } from '@/api/modelClient';
 import type { ModelType } from '@/api/modelClient';
@@ -56,31 +59,19 @@ import { useAISummaryStats } from '@/hooks/useAISummaryStats';
 import { useKeyboardSearch } from '@/hooks/useKeyboardSearch';
 import { SearchModal } from '@/components/ai/SearchModal';
 
-// 懒加载非首屏 Tab 组件
-const GenerateTab = lazy(() => import('@/components/ai/features').then((m) => ({ default: m.GenerateTab })));
-const SafetyTab = lazy(() => import('@/components/ai/features').then((m) => ({ default: m.SafetyTab })));
-const SynergyTab = lazy(() => import('@/components/ai/features').then((m) => ({ default: m.SynergyTab })));
-const TastePredictTab = lazy(() => import('@/components/ai/features').then((m) => ({ default: m.TastePredictTab })));
-const StabilityPredictTab = lazy(() =>
-  import('@/components/ai/features').then((m) => ({ default: m.StabilityPredictTab })),
-);
-const AdvancedPeptideAnalyzer = lazy(() =>
-  import('@/components/ai').then((m) => ({ default: m.AdvancedPeptideAnalyzer })),
-);
-const AdvancedPeptideDesign = lazy(() => import('@/components/ai').then((m) => ({ default: m.AdvancedPeptideDesign })));
-const ModelConfigPanelLazy = lazy(() =>
-  import('@/components/ai/ModelConfigPanel').then((m) => ({ default: m.ModelConfigPanel })),
-);
-const KnowledgeBasePanel = lazy(() => import('@/components/ai/rag').then((m) => ({ default: m.KnowledgeBasePanel })));
-const GeneticAlgorithmPanel = lazy(() =>
-  import('@/components/ai/features/GeneticAlgorithmPanel').then((m) => ({ default: m.GeneticAlgorithmPanel })),
-);
-const MultiObjectivePanel = lazy(() =>
-  import('@/components/ai/features/MultiObjectivePanel').then((m) => ({ default: m.MultiObjectivePanel })),
-);
-const FormulaInputWithOptimization = lazy(() =>
-  import('@/components/ai/features/FormulaInputWithOptimization').then((m) => ({ default: m.FormulaInputWithOptimization })),
-);
+// 懒加载非首屏 Tab 组件 — 使用命名导出模式，兼容各组件的 export 方式
+const GenerateTab = lazy(() => import('@/components/ai/features/GenerateTab').then(m => ({ default: m.GenerateTab })));
+const SafetyTab = lazy(() => import('@/components/ai/features/SafetyTab').then(m => ({ default: m.SafetyTab })));
+const SynergyTab = lazy(() => import('@/components/ai/features/SynergyTab').then(m => ({ default: m.SynergyTab })));
+const TastePredictTab = lazy(() => import('@/components/ai/features/TastePredictTab').then(m => ({ default: m.TastePredictTab })));
+const StabilityPredictTab = lazy(() => import('@/components/ai/features/StabilityPredictTab').then(m => ({ default: m.StabilityPredictTab })));
+const AdvancedPeptideAnalyzer = lazy(() => import('@/components/ai/AdvancedPeptideAnalyzer').then(m => ({ default: m.AdvancedPeptideAnalyzer })));
+const AdvancedPeptideDesign = lazy(() => import('@/components/ai/AdvancedPeptideDesign').then(m => ({ default: m.AdvancedPeptideDesign })));
+const ModelConfigPanelLazy = lazy(() => import('@/components/ai/ModelConfigPanel').then(m => ({ default: m.ModelConfigPanel })));
+const KnowledgeBasePanel = lazy(() => import('@/components/ai/rag/KnowledgeBasePanel').then(m => ({ default: m.KnowledgeBasePanel })));
+const GeneticAlgorithmPanel = lazy(() => import('@/components/ai/features/GeneticAlgorithmPanel').then(m => ({ default: m.GeneticAlgorithmPanel })));
+const MultiObjectivePanel = lazy(() => import('@/components/ai/features/MultiObjectivePanel').then(m => ({ default: m.MultiObjectivePanel })));
+const FormulaInputWithOptimization = lazy(() => import('@/components/ai/features/FormulaInputWithOptimization').then(m => ({ default: m.FormulaInputWithOptimization })));
 
 // Tab 加载骨架屏 — 使用 UI 库 Skeleton 组件
 function TabLoadingSkeleton() {
@@ -394,8 +385,7 @@ export default function AIAssistantPage() {
       {/* Toast Notification Container — 使用独立容器组件 */}
       <ToastContainer />
 
-      <AIProvider>
-        <main
+      <main
           className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 animate-page-enter"
           role="main"
           aria-label="AI智能助手中心主内容区"
@@ -607,7 +597,9 @@ export default function AIAssistantPage() {
             <TabsContent value="generate" id="panel-generate" role="tabpanel" aria-labelledby="tab-generate">
               <div>
                 <Suspense fallback={<TabLoadingSkeleton />}>
-                  <GenerateTab llmAvailable={llmAvailable} modelStatus={modelStatus || {}} />
+                  <ErrorBoundary moduleName="配方生成">
+                    <GenerateTab llmAvailable={llmAvailable} modelStatus={modelStatus || {}} />
+                  </ErrorBoundary>
                 </Suspense>
               </div>
             </TabsContent>
@@ -662,7 +654,9 @@ export default function AIAssistantPage() {
             <TabsContent value="safety" id="panel-safety" role="tabpanel" aria-labelledby="tab-safety">
               <div>
                 <Suspense fallback={<TabLoadingSkeleton />}>
-                  <SafetyTab />
+                  <ErrorBoundary moduleName="安全检查">
+                    <SafetyTab />
+                  </ErrorBoundary>
                 </Suspense>
               </div>
             </TabsContent>
@@ -670,7 +664,9 @@ export default function AIAssistantPage() {
             <TabsContent value="synergy" id="panel-synergy" role="tabpanel" aria-labelledby="tab-synergy">
               <div>
                 <Suspense fallback={<TabLoadingSkeleton />}>
-                  <SynergyTab />
+                  <ErrorBoundary moduleName="协同分析">
+                    <SynergyTab />
+                  </ErrorBoundary>
                 </Suspense>
               </div>
             </TabsContent>
@@ -678,7 +674,9 @@ export default function AIAssistantPage() {
             <TabsContent value="taste" id="panel-taste" role="tabpanel" aria-labelledby="tab-taste">
               <div>
                 <Suspense fallback={<TabLoadingSkeleton />}>
-                  <TastePredictTab />
+                  <ErrorBoundary moduleName="口感预测">
+                    <TastePredictTab />
+                  </ErrorBoundary>
                 </Suspense>
               </div>
             </TabsContent>
@@ -686,7 +684,9 @@ export default function AIAssistantPage() {
             <TabsContent value="stability" id="panel-stability" role="tabpanel" aria-labelledby="tab-stability">
               <div>
                 <Suspense fallback={<TabLoadingSkeleton />}>
-                  <StabilityPredictTab />
+                  <ErrorBoundary moduleName="稳定性评估">
+                    <StabilityPredictTab />
+                  </ErrorBoundary>
                 </Suspense>
               </div>
             </TabsContent>
@@ -699,7 +699,9 @@ export default function AIAssistantPage() {
             >
               <div>
                 <Suspense fallback={<TabLoadingSkeleton />}>
-                  <AdvancedPeptideAnalyzer />
+                  <ErrorBoundary moduleName="肽序列分析">
+                    <AdvancedPeptideAnalyzer />
+                  </ErrorBoundary>
                 </Suspense>
               </div>
             </TabsContent>
@@ -712,7 +714,9 @@ export default function AIAssistantPage() {
             >
               <div>
                 <Suspense fallback={<TabLoadingSkeleton />}>
-                  <AdvancedPeptideDesign />
+                  <ErrorBoundary moduleName="肽设计优化">
+                    <AdvancedPeptideDesign />
+                  </ErrorBoundary>
                 </Suspense>
               </div>
             </TabsContent>
@@ -720,7 +724,9 @@ export default function AIAssistantPage() {
             <TabsContent value="knowledge" id="panel-knowledge" role="tabpanel" aria-labelledby="tab-knowledge">
               <div>
                 <Suspense fallback={<TabLoadingSkeleton />}>
-                  <KnowledgeBasePanel isEmbedded />
+                  <ErrorBoundary moduleName="知识库">
+                    <KnowledgeBasePanel isEmbedded />
+                  </ErrorBoundary>
                 </Suspense>
               </div>
             </TabsContent>
@@ -735,7 +741,6 @@ export default function AIAssistantPage() {
 
         {/* 全局搜索模态框 */}
         <SearchModal isOpen={searchOpen} onClose={closeSearch} />
-      </AIProvider>
     </ErrorBoundary>
   );
 }

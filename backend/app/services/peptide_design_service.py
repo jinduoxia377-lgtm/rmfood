@@ -178,8 +178,12 @@ class PeptideDesignService:
         )
 
         self.db.add(project)
-        await self.db.commit()
-        await self.db.refresh(project)
+        try:
+            await self.db.commit()
+            await self.db.refresh(project)
+        except Exception:
+            await self.db.rollback()
+            raise
 
         logger.info(f"创建设计项目成功: id={project.id}, name={data.project_name}")
         return project
@@ -223,36 +227,40 @@ class PeptideDesignService:
 
         await self.db.flush()
 
-        # 重新查询所有候选（包括新增的）
-        all_candidates_result = await self.db.execute(
-            select(PeptideDesignCandidate)
-            .where(PeptideDesignCandidate.design_id == design_id)
-        )
-        all_candidates = list(all_candidates_result.scalars().all())
+        try:
+            # 重新查询所有候选（包括新增的）
+            all_candidates_result = await self.db.execute(
+                select(PeptideDesignCandidate)
+                .where(PeptideDesignCandidate.design_id == design_id)
+            )
+            all_candidates = list(all_candidates_result.scalars().all())
 
-        # 计算Pareto前沿
-        await self.compute_pareto_frontier(all_candidates)
+            # 计算Pareto前沿
+            await self.compute_pareto_frontier(all_candidates)
 
-        # 更新统计字段
-        pareto_count = sum(1 for c in all_candidates if c.is_pareto_frontier)
-        project.total_candidates = len(all_candidates)
-        project.pareto_size = pareto_count
-        project.updated_at = now
+            # 更新统计字段
+            pareto_count = sum(1 for c in all_candidates if c.is_pareto_frontier)
+            project.total_candidates = len(all_candidates)
+            project.pareto_size = pareto_count
+            project.updated_at = now
 
-        # 首次添加候选 → 自动改为in_progress
-        if project.status == PeptideDesignStatus.DRAFT and len(all_candidates) > 0:
-            project.status = PeptideDesignStatus.IN_PROGRESS
-            project.version += 1  # 版本递增
+            # 首次添加候选 → 自动改为in_progress
+            if project.status == PeptideDesignStatus.DRAFT and len(all_candidates) > 0:
+                project.status = PeptideDesignStatus.IN_PROGRESS
+                project.version += 1  # 版本递增
 
-        await self.db.commit()
-        await self.db.refresh(project)
+            await self.db.commit()
+            await self.db.refresh(project)
 
-        logger.info(
-            f"添加候选方案成功: design_id={design_id}, count={len(new_candidates)}, "
-            f"pareto_size={pareto_count}"
-        )
+            logger.info(
+                f"添加候选方案成功: design_id={design_id}, count={len(new_candidates)}, "
+                f"pareto_size={pareto_count}"
+            )
 
-        return new_candidates
+            return new_candidates
+        except Exception:
+            await self.db.rollback()
+            raise
 
     async def get_project(self, design_id: int, include_candidates: bool = True) -> PeptideDesign:
         """

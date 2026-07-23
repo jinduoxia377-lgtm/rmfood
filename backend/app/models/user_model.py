@@ -25,8 +25,11 @@ class User(Base):
     phone: Mapped[str | None] = mapped_column(String(20))
     avatar_url: Mapped[str | None] = mapped_column(String(500))
     preferences: Mapped[dict | None] = mapped_column(JSON, default=dict)
-    
-    # ── 账号安全字段 (P1-2: 防暴力破解) ──
+
+    # ── 多租户隔离 ──────────────────────────────────────
+    organization_id: Mapped[int | None] = mapped_column(
+        BigInteger, nullable=True, index=True, comment="默认所属组织 ID"
+    )
     last_login: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)  # 最后登录时间
     login_attempts: Mapped[int] = mapped_column(Integer, default=0, nullable=False)  # 登录失败次数
     locked_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)  # 锁定截止时间

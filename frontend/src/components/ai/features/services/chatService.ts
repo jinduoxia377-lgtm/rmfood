@@ -334,6 +334,15 @@ export class ChatService implements IChatService {
     this.authToken = null;
   }
 
+  /** 关闭所有 pending 的流式请求（用于组件 unmount 时的 SSE 连接清理） */
+  closeAllPendingRequests(): void {
+    for (const [requestId, controller] of this.pendingRequest.entries()) {
+      logger.info('[ChatService] Unmount cleanup: aborting pending request:', requestId);
+      controller.abort();
+      this.pendingRequest.delete(requestId);
+    }
+  }
+
   async retryLastMessage(): Promise<AIResponse> {
     if (!this.lastQuestion) {
       throw new Error('没有可重试的消息');

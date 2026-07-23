@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 # 控制方式: 设置环境变量 AI_MOCK_MODE=true/false
 from ...data.mock_ai_responses import get_mock_response, is_mock_enabled
 
-from ..deps import get_db_session, get_current_user
+from ..deps import get_db_session, get_current_user, get_current_active_user
 from ...models import User, FormulaStatus
 from ...services.ai import ai_service
 

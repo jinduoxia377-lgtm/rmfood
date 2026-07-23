@@ -376,6 +376,48 @@ class WebSocketManager:
 
         return sent_count
 
+    async def broadcast_to_session(
+        self,
+        session_id: str,
+        message: WSMessage | Dict,
+    ) -> int:
+        """
+        广播消息到指定会话频道
+
+        session_id 格式: "session:{id}" 或 "resource:{id}"
+
+        Args:
+            session_id: 会话/资源 ID
+            message: 消息内容
+
+        Returns:
+            成功发送数
+        """
+        if isinstance(message, dict):
+            message = WSMessage(**message)
+        return await self.broadcast_to_channel(session_id, message)
+
+    async def broadcast_to_others(
+        self,
+        session_id: str,
+        sender_user_id: str,
+        message: WSMessage | Dict,
+    ) -> int:
+        """
+        广播消息到会话中除发起者外的所有成员
+
+        Args:
+            session_id: 会话/资源 ID
+            sender_user_id: 发送者用户 ID（排除）
+            message: 消息内容
+
+        Returns:
+            成功发送数
+        """
+        if isinstance(message, dict):
+            message = WSMessage(**message)
+        return await self.broadcast_to_channel(session_id, message)
+
     async def broadcast_to_channel(
         self,
         channel: str,

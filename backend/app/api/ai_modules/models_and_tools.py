@@ -17,6 +17,7 @@ from . import (
     router,
     get_db_session,
     get_current_user,
+    get_current_active_user,
     User,
     FormulaStatus,
 )
@@ -164,13 +165,12 @@ class UpdateLLMConfigRequest(BaseModel):
 
 
 
-@router.post("/models/config", summary="更新 LLM 配置")
+@router.post("/models/config", dependencies=[Depends(require_role("ADMIN"))], summary="更新 LLM 配置")
 async def update_llm_config(
     req: UpdateLLMConfigRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
-    """更新 LLM 配置，用于前端传递配置给后端"""
-    from ...services.llm_service import LLMConfig
+    """更新 LLM 配置，仅管理员可执行"""
 
     # 记录接收到的配置信息（脱敏处理）
     masked_key = req.api_key[:8] + "..." + req.api_key[-4:] if len(req.api_key) > 12 else "***"

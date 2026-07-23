@@ -24,6 +24,7 @@ import {
   checkMaterialCompliance,
   type NormalizeResult,
 } from '../../../api/searchNew';
+import { databaseApi } from '@/api/database';
 
 const { Panel } = Collapse;
 
@@ -174,9 +175,13 @@ const FoodMaterialSearchPanel: React.FC<FoodMaterialSearchPanelProps> = ({ class
   }, [query, filters, currentPage, searchModes]);
 
   // 添加到收藏
-  const handleFavorite = useCallback((id: number) => {
-    // TODO: 调用 pantry API
-    console.log('添加到收藏:', id);
+  const handleFavorite = useCallback(async (id: number) => {
+    try {
+      await databaseApi.post(`/search/pantry/food-materials/${id}`);
+      console.log('已添加到收藏:', id);
+    } catch (err) {
+      console.error('添加收藏失败:', err);
+    }
   }, []);
 
   return (

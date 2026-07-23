@@ -258,7 +258,7 @@ export function ModelConfigPanel({ className, onConfigChange }: ModelConfigPanel
       if (modelType === 'formula_gpt' || modelType === 'llm') {
         try {
           // 使用 auth store 的 token，确保获取最新的有效 token
-          const token = isAuthenticated ? localStorage.getItem('access_token') : null;
+          const token = isAuthenticated ? (localStorage.getItem('access_token') || '') : '';
 
           if (!token) {
             logger.warn('[ModelConfigPanel] ⚠️ 未找到认证 token，跳过后端配置更新（前端配置已保存）');
@@ -380,7 +380,7 @@ export function ModelConfigPanel({ className, onConfigChange }: ModelConfigPanel
       // 🔧 修复：对于 LLM 模型，先确保配置已同步到后端
       if (modelType === 'llm') {
         try {
-          const token = isAuthenticated ? localStorage.getItem('access_token') : null;
+          const token = isAuthenticated ? (localStorage.getItem('access_token') || '') : '';
           const config = configs[modelType] || ConfigManager.getModelConfig('llm');
 
           if (token && config?.apiKey) {
@@ -420,7 +420,7 @@ export function ModelConfigPanel({ className, onConfigChange }: ModelConfigPanel
       // 🔧 改进：对于 LLM 模型，发送实际测试请求而不仅仅是检查状态
       if (modelType === 'llm') {
         try {
-          const token = isAuthenticated ? localStorage.getItem('access_token') : null;
+          const token = isAuthenticated ? (localStorage.getItem('access_token') || '') : '';
 
           if (!token || token === 'undefined' || token === 'null') {
             // 无 token 时跳过 chat 测试请求，直接走状态检查

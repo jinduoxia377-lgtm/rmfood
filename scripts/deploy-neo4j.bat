@@ -87,7 +87,7 @@ docker run -d ^
     -p 7474:7474 ^
     -p 7687:7687 ^
     -v "D:\RMFOOD配方平台\data\neo4j:/data" ^
-    -e NEO4J_AUTH=neo4j/Rmfood2024Secure! ^
+    -e NEO4J_AUTH=neo4j/%NEO4J_AUTH_PASSWORD% ^
     -e NEO4J_PLUGINS='["apoc"]' ^
     --restart unless-stopped ^
     neo4j:5-community
@@ -106,7 +106,7 @@ echo     HTTP接口: http://localhost:7474
 echo     Bolt协议: bolt://localhost:7687
 echo.
 echo   默认账号: neo4j
-echo   默认密码: Rmfood2024Secure!
+echo   默认密码: %NEO4J_AUTH_PASSWORD%
 echo.
 goto :configure_backend
 
@@ -171,8 +171,9 @@ echo [✓] Neo4j 安装完成！
 echo.
 echo [信息] 配置 Neo4j 服务...
 
-:: 设置初始密码
-set NEO4J_PASSWORD=Rmfood2024Secure!
+:: 设置初始密码（优先使用环境变量）
+set "NEO4J_PASSWORD=%NEO4J_AUTH_PASSWORD%"
+if not defined NEO4J_PASSWORD set NEO4J_PASSWORD=change-me-please
 
 :: 更新配置文件
 set CONFIG_FILE=%INSTALL_DIR%\conf\neo4j.conf
@@ -226,7 +227,7 @@ if exist "%ENV_FILE%" copy "%ENV_FILE%" "%ENV_FILE%.backup" >nul
     echo # ── 图数据库 ^(Neo4j^) ───────────────────────────────────────
     echo NEO4J_URI=bolt://localhost:7687
     echo NEO4J_USER=neo4j
-    echo NEO4J_PASSWORD=Rmfood2024Secure!
+    echo NEO4J_PASSWORD=%NEO4J_PASSWORD%
 ) >> "%ENV_FILE%"
 
 echo [✓] 后端配置已更新！
@@ -234,7 +235,7 @@ echo.
 echo   配置内容:
 echo     NEO4J_URI=bolt://localhost:7687
 echo     NEO4J_USER=neo4j
-echo     NEO4J_PASSWORD=Rmfood2024Secure!
+echo     NEO4J_PASSWORD=%NEO4J_PASSWORD%
 echo.
 
 echo [步骤 4/5] 验证 Neo4j 连接...
@@ -266,7 +267,7 @@ echo      • Bolt协议: bolt://localhost:7687
 echo.
 echo   🔑 登录凭据:
 echo      • 用户名: neo4j
-echo      • 密码:   Rmfood2024Secure!
+echo      • 密码:   %NEO4J_PASSWORD%
 echo.
 echo   📋 下一步操作:
 echo      1. 打开浏览器访问 http://localhost:7474

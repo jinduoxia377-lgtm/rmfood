@@ -1,6 +1,7 @@
 /**
  * AI 智能服务 API
  */
+import { getCurrentScenarioMode } from '@/stores/scenarioStore';
 import api from './client';
 import { logger } from '@/utils/safeLogger';
 import type { SynergyResult } from '@/types';
@@ -352,7 +353,7 @@ export const aiApi = {
       console.warn('[aiApi.chat] ⚠️ API Key为空，请求可能会被后端拒绝');
     }
 
-    return api.post<{ answer: string }>('/ai/chat', { question, history, scenario_mode: window.__SCENARIO_MODE__ || 'academician' }).then((r) => r.data);
+    return api.post<{ answer: string }>('/ai/chat', { question, history, scenario_mode: getCurrentScenarioMode() }).then((r) => r.data);
   },
 
   /** AI 智能对话（流式） - 返回原始 Response 用于 ReadableStream */
@@ -381,16 +382,10 @@ export const aiApi = {
       console.warn('[aiApi.chatStream] ⚠️ API Key为空，请求可能会被后端拒绝');
     }
 
-    const response = await fetch(`${api.defaults.baseURL}/ai/chat/stream`, {
-      method: 'POST',
-      credentials: 'include', // 自动携带 HttpOnly Cookie
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ question, history, stream: true, scenario_mode: window.__SCENARIO_MODE__ || 'academician' }),
+    const response = await api.post('/ai/chat/stream', { question, history, stream: true, scenario_mode: getCurrentScenarioMode() }, {
+      responseType: 'stream',
     });
-    if (!response.ok) throw new Error(`AI 对话失败: ${response.status}`);
-    return response;
+    return response.data;
   },
 };
 

@@ -132,7 +132,7 @@ export function SynergyFormulaDesigner() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+          'Authorization': `Bearer ${localStorage.getItem('access_token') || localStorage.getItem('auth_token') || ''}`,
         },
         body: JSON.stringify({
           ingredients: ingredients.map(ing => ({

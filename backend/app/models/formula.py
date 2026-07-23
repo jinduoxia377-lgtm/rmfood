@@ -72,6 +72,11 @@ class Tag(Base):
 class Formula(ClassifiedMixin, Base):
     __tablename__ = "formulas"
 
+    # ── 多租户隔离 ──────────────────────────────────────
+    organization_id: Mapped[int | None] = mapped_column(
+        BigInteger, nullable=True, index=True, comment="所属组织 ID，None 表示全局共享"
+    )
+
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(200), nullable=False)
     code: Mapped[str] = mapped_column(String(50), unique=True, index=True, nullable=False)
@@ -143,6 +148,11 @@ class FormulaVersion(Base):
 class Ingredient(Base):
     __tablename__ = "ingredients"
 
+    # ── 多租户隔离 ──────────────────────────────────────
+    organization_id: Mapped[int | None] = mapped_column(
+        BigInteger, nullable=True, index=True, comment="所属组织 ID，None 表示全局共享"
+    )
+
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(200), nullable=False)
     name_cn: Mapped[str | None] = mapped_column(String(200))
@@ -159,6 +169,11 @@ class Ingredient(Base):
 
 class Peptide(Base):
     __tablename__ = "peptides"
+
+    # ── 多租户隔离 ──────────────────────────────────────
+    organization_id: Mapped[int | None] = mapped_column(
+        BigInteger, nullable=True, index=True, comment="所属组织 ID，None 表示全局共享"
+    )
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     sequence: Mapped[str] = mapped_column(String(500), nullable=False)

@@ -334,19 +334,19 @@ export interface OFFRawProduct {
 export async function searchOpenFoodFacts(
   request: OFFSearchRequest,
 ): Promise<OFFSearchResponse> {
-  const response = await databaseApi.post('/databases/openfoodfacts/search', request);
+  const response = await databaseApi.post('/api/v1/databases/openfoodfacts/search', request);
   return response.data;
 }
 
 /**
  * OFF 按条码查询产品
- * GET /databases/openfoodfacts/product/barcode/:barcode
+ * GET /api/v1/databases/openfoodfacts/product/barcode/:barcode
  */
 export async function getOpenFoodFactByBarcode(
   barcode: string,
   realtime: boolean = false,
 ): Promise<RetailProductSearchResult | null> {
-  const response = await databaseApi.get(`/databases/openfoodfacts/product/barcode/${encodeURIComponent(barcode)}`, {
+  const response = await databaseApi.get(`/api/v1/databases/openfoodfacts/product/barcode/${encodeURIComponent(barcode)}`, {
     params: { realtime },
   });
   return response.data;
@@ -354,18 +354,18 @@ export async function getOpenFoodFactByBarcode(
 
 /**
  * OFF 按 ID 查询产品
- * GET /databases/openfoodfacts/product/:id
+ * GET /api/v1/databases/openfoodfacts/product/:id
  */
 export async function getOpenFoodFactById(
   productId: number,
 ): Promise<RetailProductSearchResult | null> {
-  const response = await databaseApi.get(`/databases/openfoodfacts/product/${productId}`);
+  const response = await databaseApi.get(`/api/v1/databases/openfoodfacts/product/${productId}`);
   return response.data;
 }
 
 /**
  * OFF 按分类浏览
- * GET /databases/openfoodfacts/category/:category_tag
+ * GET /api/v1/databases/openfoodfacts/category/:category_tag
  */
 export interface OFFCategoryResponse {
   items: RetailProductSearchResult[];
@@ -381,13 +381,13 @@ export async function getProductsByCategory(
   categoryTag: string,
   params?: { page?: number; page_size?: number; realtime?: boolean },
 ): Promise<OFFCategoryResponse> {
-  const response = await databaseApi.get(`/databases/openfoodfacts/category/${encodeURIComponent(categoryTag)}`, { params });
+  const response = await databaseApi.get(`/api/v1/databases/openfoodfacts/category/${encodeURIComponent(categoryTag)}`, { params });
   return response.data;
 }
 
 /**
  * OFF 分类列表
- * GET /databases/openfoodfacts/categories
+ * GET /api/v1/databases/openfoodfacts/categories
  */
 export interface OFFCategoryInfo {
   category: string;
@@ -396,25 +396,25 @@ export interface OFFCategoryInfo {
 }
 
 export async function getOpenFoodFactsCategories(): Promise<OFFCategoryInfo[]> {
-  const response = await databaseApi.get('/databases/openfoodfacts/categories');
+  const response = await databaseApi.get('/api/v1/databases/openfoodfacts/categories');
   return response.data;
 }
 
 /**
  * OFF 同步状态
- * GET /databases/openfoodfacts/sync-status
+ * GET /api/v1/databases/openfoodfacts/sync-status
  */
 export async function getOpenFoodFactsSyncStats(): Promise<Record<string, unknown>> {
-  const response = await databaseApi.get('/databases/openfoodfacts/sync-status');
+  const response = await databaseApi.get('/api/v1/databases/openfoodfacts/sync-status');
   return response.data;
 }
 
 /**
  * OFF 导入报告
- * GET /databases/openfoodfacts/report
+ * GET /api/v1/databases/openfoodfacts/report
  */
 export async function getOpenFoodFactsReport(): Promise<Record<string, unknown>> {
-  const response = await databaseApi.get('/databases/openfoodfacts/report');
+  const response = await databaseApi.get('/api/v1/databases/openfoodfacts/report');
   return response.data;
 }
 

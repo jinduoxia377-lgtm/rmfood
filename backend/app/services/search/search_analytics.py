@@ -30,13 +30,12 @@ class SearchAnalyticsService:
 
         基于 search_history 表统计最近 N 天的搜索词频率
         """
-        # 统计搜索词频率
         result = await self.db.execute(
             text("""
-                SELECT keyword, COUNT(*) as search_count, MAX(created_at) as last_searched
+                SELECT query, COUNT(*) as search_count, MAX(created_at) as last_searched
                 FROM search_history
                 WHERE created_at >= NOW() - INTERVAL '%(days)s days'
-                GROUP BY keyword
+                GROUP BY query
                 ORDER BY search_count DESC
                 LIMIT %(limit)s
             """),
@@ -69,7 +68,7 @@ class SearchAnalyticsService:
             text("""
                 SELECT DATE(created_at) as search_date, COUNT(*) as search_count
                 FROM search_history
-                WHERE keyword = :keyword
+                WHERE query = :keyword
                   AND created_at >= NOW() - INTERVAL '%(days)s days'
                 GROUP BY DATE(created_at)
                 ORDER BY search_date
@@ -134,18 +133,18 @@ class SearchAnalyticsService:
         total = stats["total_searches"] or 1
         stats["zero_result_rate"] = round(zero_result_count / total * 100, 2)
 
-        # 搜索类型分布
+        # 搜索类型分布 (使用 search_type 列)
         result = await self.db.execute(
             text(f"""
-                SELECT source, COUNT(*) as cnt
+                SELECT search_type, COUNT(*) as cnt
                 FROM search_history
                 WHERE created_at >= NOW() - INTERVAL '{days} days'
-                GROUP BY source
+                GROUP BY search_type
                 ORDER BY cnt DESC
             """)
         )
         rows = result.fetchall()
-        stats["source_distribution"] = {row[0]: row[1] for row in rows}
+        stats["search_type_distribution"] = {row[0]: row[1] for row in rows}
 
         return stats
 

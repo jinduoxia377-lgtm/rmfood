@@ -189,7 +189,7 @@ class OrganizationService {
   private setupInterceptors() {
     this.client.interceptors.request.use(
       (config: InternalAxiosRequestConfig) => {
-        const token = localStorage.getItem('access_token');
+        const token = localStorage.getItem('access_token') || '';
         if (token && config.headers) {
           config.headers.Authorization = `Bearer ${token}`;
         }

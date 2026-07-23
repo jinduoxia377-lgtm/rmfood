@@ -12,18 +12,23 @@ from ..schemas import (
     ApiResponse, SuccessResponse, PaginatedResponse,
     PeptideResponse
 )
-from ..schemas.formula import IngredientResponse
+from ..schemas.formula import (
+    BatchStatusUpdateRequest,
+    IngredientResponse,
+)
 from ..services.formula import FormulaService
 from ..services.auth import get_current_user
 from ..models.user_model import User
 from ..models.enums import UserRole, FormulaStatus
 from ..api.deps import get_db_session, PaginationParams, FormulaFilterParams, require_role
+from ..core.tenant_security import TenantContext, require_tenant
 
 router = APIRouter(prefix="/formulas", tags=["配方管理"])
 
 
 @router.get("", summary="获取配方列表")
 async def list_formulas(
+    tenant: TenantContext = Depends(require_tenant),
     pagination: PaginationParams = Depends(),
     filters: FormulaFilterParams = Depends(),
     current_user: User = Depends(get_current_user),
@@ -37,15 +42,8 @@ async def list_formulas(
         status=FormulaStatus(filters.status) if filters.status else None,
         creator_id=filters.creator_id,
         search=filters.search,
+        organization_id=tenant.org_id,
     )
-    # 手动构造响应，绕过 response_model 验证
-    import logging
-    logger = logging.getLogger(__name__)
-    logger.info(f"[DEBUG] list_formulas: {len(formulas)} formulas returned")
-    for f in formulas[:2]:
-        logger.info(f"[DEBUG]   Formula {f.id}: {f.name}, ingredients={len(f.ingredients)}, peptides={len(f.peptides)}")
-        for ing in f.ingredients[:2]:
-            logger.info(f"[DEBUG]     Ingredient: id={ing.id} name={ing.name} is_food_homology={ing.is_food_homology}")
     from ..schemas.formula import IngredientResponse as _IngResp, PeptideResponse as _PepResp
     formula_responses = []
     for f in formulas:
@@ -129,36 +127,48 @@ async def get_recommendations(
 @router.get("/{formula_id}", response_model=FormulaResponse, summary="获取配方详情")
 async def get_formula(
     formula_id: int,
+    tenant: TenantContext = Depends(require_tenant),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db_session),
 ):
     """获取配方详情（含成分和肽段列表）"""
     service = FormulaService(db)
-    return await service.get_formula(formula_id)
+    result = await service.get_formula(formula_id)
+    # 验证所属组织
+    if result.organization_id is not None and result.organization_id != tenant.org_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="配方不存在",
+        )
+    return result
 
 
 @router.post("", response_model=FormulaResponse, status_code=201, summary="创建配方")
 async def create_formula(
     data: FormulaCreate,
+    tenant: TenantContext = Depends(require_tenant),
     current_user: User = Depends(require_role(UserRole.RESEARCHER, UserRole.FORMULATOR)),
     db: AsyncSession = Depends(get_db_session),
 ):
     """创建新配方（草稿状态）"""
     service = FormulaService(db)
-    return await service.create_formula(data, creator_id=current_user.id)
+    return await service.create_formula(data, creator_id=current_user.id, organization_id=tenant.org_id)
 
 
 @router.put("/{formula_id}", response_model=FormulaResponse, summary="更新配方")
 async def update_formula(
     formula_id: int,
     data: FormulaUpdate,
+    tenant: TenantContext = Depends(require_tenant),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db_session),
 ):
     """更新配方（仅草稿和已驳回状态可编辑，需拥有资源权限）"""
     service = FormulaService(db)
-    # 所有权校验：仅创建者或 ADMIN/FORMULATOR 角色可更新
+    # 所有权校验 + 租户隔离
     formula = await service.get_formula(formula_id)
+    if formula.organization_id is not None and formula.organization_id != tenant.org_id:
+        raise HTTPException(status_code=404, detail="配方不存在")
     is_owner = formula.creator_id == current_user.id
     is_admin = current_user.role in (UserRole.ADMIN, UserRole.FORMULATOR)
     if not is_owner and not is_admin:
@@ -172,11 +182,16 @@ async def update_formula(
 @router.delete("/{formula_id}", response_model=SuccessResponse, summary="删除配方")
 async def delete_formula(
     formula_id: int,
+    tenant: TenantContext = Depends(require_tenant),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db_session),
 ):
     """删除配方（软删除，归档处理）"""
     service = FormulaService(db)
+    # 租户隔离验证
+    formula = await service.get_formula(formula_id)
+    if formula.organization_id is not None and formula.organization_id != tenant.org_id:
+        raise HTTPException(status_code=404, detail="配方不存在")
     await service.delete_formula(formula_id, user_id=current_user.id)
     return SuccessResponse(message="配方已归档删除")
 
@@ -265,20 +280,19 @@ async def archive_formula(
     return await service.archive_formula(formula_id, current_user.id)
 
 
-@router.patch("/batch-status", summary="批量更新配方状态")
+@router.patch("/batch-status", response_model=SuccessResponse, summary="批量更新配方状态")
 async def batch_update_status(
-    payload: dict,
+    request: BatchStatusUpdateRequest,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db_session),
 ):
-    """批量更新配方状态"""
-    ids: list[int] = payload.get("ids", [])
-    status: str = payload.get("status", "")
-    if not ids or not status:
-        raise HTTPException(status_code=400, detail="ids 和 status 不能为空")
+    """批量更新配方状态（带 Pydantic Schema 校验）"""
     service = FormulaService(db)
-    updated = await service.batch_update_status(ids, status, current_user.id)
-    return {"message": f"成功更新 {updated} 个配方的状态", "updated": updated}
+    updated = await service.batch_update_status(request.ids, request.status, current_user.id)
+    return SuccessResponse(
+        message=f"成功更新 {updated} 个配方的状态",
+        data={"updated": updated},
+    )
 
 
 # ── 配方成分计算 ──

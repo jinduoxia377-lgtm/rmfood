@@ -10,6 +10,9 @@ P0 安全修复:
 - ✅ 自动账号锁定/解锁
 - ✅ 安全日志记录
 - ✅ Refresh Token 速率限制和重用检测
+
+注意: 统一认证依赖入口为 api/deps.py（get_current_active_user, require_role）。
+本模块仅保留 AuthService 业务逻辑类。
 """
 import logging
 import os
@@ -521,82 +524,12 @@ class AuthService:
             return None
 
 
-# ── 依赖注入：获取当前用户 ──
-# 注意: 此函数保留在 services/auth.py 中以避免循环导入。
-# api/deps.py 提供 get_current_active_user 作为主要认证依赖。
-# 本模块的 get_current_user 是向后兼容的别名。
+# ── 统一认证依赖入口 ──
+# 注意: 所有认证依赖已统一至 api/deps.py（get_current_active_user, require_role）。
+# 本模块仅提供 AuthService 业务逻辑类。
+# 为保持向后兼容，以下别名供旧代码继续使用。
+# 新代码请直接使用: from ..api.deps import get_current_active_user, require_role
 
-from typing import Optional
-from fastapi import Request, Depends, HTTPException, status
-from fastapi.security import HTTPBearer
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-
-from ..models.user_model import User
-from ..models.enums import UserRole
-from ..utils.auth import decode_token
-from ..core.session import get_db
-
-
-async def get_current_user(
-    request: Request,
-    db: AsyncSession = Depends(get_db),
-) -> User:
-    """从 JWT 令牌获取当前登录用户（支持 Authorization header 和 HttpOnly Cookie）
-
-    注意: 此函数与 deps.py 的 get_current_active_user 功能等价，
-    保留用于向后兼容。新代码建议使用 deps.get_current_active_user。
-    """
-    token: Optional[str] = None
-    auth_header = request.headers.get("authorization", "")
-    if auth_header.startswith("Bearer "):
-        token = auth_header[7:]
-
-    if not token:
-        token = request.cookies.get("rmfood_access_token")
-
-    if not token:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="未提供认证凭据",
-        )
-
-    payload = decode_token(token)
-
-    if payload.get("type") != "access":
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="请使用访问令牌",
-        )
-
-    user_id = payload.get("sub")
-    if not user_id:
-        raise HTTPException(status_code=401, detail="令牌格式无效：缺少用户标识")
-
-    result = await db.execute(select(User).where(User.id == int(user_id)))
-    user = result.scalar_one_or_none()
-
-    if not user:
-        raise HTTPException(status_code=401, detail="用户不存在")
-
-    if not user.is_active:
-        raise HTTPException(status_code=403, detail="账户已被禁用")
-
-    return user
-
-
-def require_role(*roles: UserRole):
-    """角色权限检查装饰器工厂（向后兼容）
-
-    注意: 新代码建议使用 deps.require_role。
-    此函数保留供 users.py / experiments.py 等向后兼容。
-    """
-    async def role_checker(current_user: User = Depends(get_current_user)) -> User:
-        if current_user.role not in roles and current_user.role != UserRole.ADMIN:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"需要以下角色之一: {[r.value for r in roles]}",
-            )
-        return current_user
-
-    return role_checker
+# 向后兼容别名
+from ..api.deps import get_current_active_user as get_current_user  # noqa: F401
+from ..api.deps import require_role  # noqa: F401

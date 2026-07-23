@@ -183,7 +183,7 @@ export function AnalyticsDashboard() {
         ...(filters.users.length > 0 && { users: filters.users.join(',') }),
       })
 
-      const token = localStorage.getItem('access_token')
+      const token = localStorage.getItem('access_token') || ''
       logger.info('🔄 正在获取 Analytics 数据...', {
         hasToken: !!token,
         url: `/api/v1/analytics/dashboard?${queryParams}`,
@@ -344,7 +344,7 @@ export function AnalyticsDashboard() {
     try {
       const response = await fetch(`/api/v1/analytics/export?format=${format}&range=${filters.timeRange}`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+          'Authorization': `Bearer ${localStorage.getItem('access_token') || ''}`,
         },
       })
 

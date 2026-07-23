@@ -162,38 +162,8 @@ class DeepGenerationResponse(BaseModel):
 
 # ==================== WebSocket 连接管理器 ====================
 
-class ConnectionManager:
-    """WebSocket 连接管理器"""
-    
-    def __init__(self):
-        self.active_connections: Dict[str, WebSocket] = {}
-    
-    async def connect(self, websocket: WebSocket, client_id: str):
-        await websocket.accept()
-        self.active_connections[client_id] = websocket
-        logger.info(f"WebSocket 连接建立: {client_id}")
-    
-    def disconnect(self, client_id: str):
-        if client_id in self.active_connections:
-            del self.active_connections[client_id]
-            logger.info(f"WebSocket 断开连接: {client_id}")
-    
-    async def send_personal_message(self, message: dict, client_id: str):
-        if client_id in self.active_connections:
-            try:
-                await self.active_connections[client_id].send_json(message)
-            except Exception as e:
-                logger.error(f"发送消息失败 ({client_id}): {e}")
-    
-    async def broadcast(self, message: dict):
-        for connection in list(self.active_connections.values()):
-            try:
-                await connection.send_json(message)
-            except Exception as e:
-                logger.error(f"广播消息失败: {e}")
-
-
-manager = ConnectionManager()
+# 统一使用 WebSocketManager (core/websocket_manager)
+from ..core.websocket_manager import get_ws_manager as _get_ws_manager
 
 
 # ==================== API 端点实现 ====================
@@ -621,97 +591,92 @@ async def update_safety_threshold(
 @router.websocket("/ws/optimization-progress")
 async def optimization_progress_websocket(websocket: WebSocket):
     """
-    WebSocket 实时进度推送端点
-    
-    事件类型:
-    - started: 开始优化
-    - iteration(n): 第 n 代迭代完成
-    - complete: 优化完成
-    - error: 发生错误
-    
-    心跳机制:
-    - 服务端定期发送 ping
-    - 客户端需回复 pong 保持连接
+    WebSocket 实时进度推送端点（统一使用 WebSocketManager）
+    事件类型: started, iteration(n), complete, error
+    心跳机制: 服务端定期发送 ping，客户端需回复 pong
     """
-    client_id = f"client_{datetime.now().strftime('%Y%m%d%H%M%S%f')}"
-    
-    await manager.connect(websocket, client_id)
-    
+    # JWT 认证
+    token = websocket.query_params.get("token")
+    if not token:
+        await websocket.close(code=4001, reason="Missing authentication token")
+        return
+
     try:
+        from ..utils.auth import decode_token
+        payload = decode_token(token)
+        if not payload or payload.get("type") != "access":
+            await websocket.close(code=4003, reason="Invalid or expired token")
+            return
+        user_id = str(payload["sub"])
+    except Exception:
+        await websocket.close(code=4003, reason="Invalid token")
+        return
+
+    manager = _get_ws_manager()
+    client_id = f"opt_{user_id}_{datetime.now().strftime('%Y%m%d%H%M%S%f')}"
+
+    try:
+        await manager.connect(websocket, user_id, tenant_id="default")
         # 发送欢迎消息
-        await manager.send_personal_message({
+        await manager.send_to_connection(client_id, {
             "type": "connected",
             "client_id": client_id,
             "message": "WebSocket 连接成功",
             "timestamp": datetime.now().isoformat()
-        }, client_id)
-        
+        })
+
         while True:
-            # 接收客户端消息
             data = await websocket.receive_text()
-            
             try:
                 message = json.loads(data)
-                
                 if message.get("type") == "ping":
-                    # 心跳响应
-                    await manager.send_personal_message({
+                    await manager.send_to_connection(client_id, {
                         "type": "pong",
                         "timestamp": datetime.now().isoformat()
-                    }, client_id)
-                
+                    })
                 elif message.get("type") == "start_optimization":
-                    # 启动优化任务（示例）
-                    await manager.send_personal_message({
+                    await manager.send_to_connection(client_id, {
                         "type": "started",
                         "task_id": message.get("task_id"),
                         "message": "开始配比优化...",
                         "timestamp": datetime.now().isoformat()
-                    }, client_id)
-                    
-                    # 模拟优化进度推送
+                    })
                     for i in range(1, 11):
-                        await asyncio.sleep(0.5)  # 模拟计算延迟
-                        
-                        progress_data = {
+                        await asyncio.sleep(0.5)
+                        await manager.send_to_connection(client_id, {
                             "type": "iteration",
                             "generation": i,
                             "total_generations": 10,
                             "progress_percent": i * 10,
-                            "best_fitness": 0.9 - (i * 0.02),  # 示例数据
+                            "best_fitness": 0.9 - (i * 0.02),
                             "timestamp": datetime.now().isoformat()
-                        }
-                        
-                        await manager.send_personal_message(progress_data, client_id)
-                    
-                    # 完成
-                    await manager.send_personal_message({
+                        })
+                    await manager.send_to_connection(client_id, {
                         "type": "complete",
                         "message": "优化完成!",
                         "timestamp": datetime.now().isoformat()
-                    }, client_id)
-                
+                    })
                 else:
-                    await manager.send_personal_message({
+                    await manager.send_to_connection(client_id, {
                         "type": "error",
                         "message": f"未知消息类型: {message.get('type')}",
                         "timestamp": datetime.now().isoformat()
-                    }, client_id)
-                    
+                    })
             except json.JSONDecodeError:
-                await manager.send_personal_message({
+                await manager.send_to_connection(client_id, {
                     "type": "error",
                     "message": "无效的 JSON 格式",
                     "timestamp": datetime.now().isoformat()
-                }, client_id)
-    
+                })
     except WebSocketDisconnect:
-        manager.disconnect(client_id)
         logger.info(f"WebSocket 客户端断开: {client_id}")
-    
     except Exception as e:
         logger.error(f"WebSocket 错误 ({client_id}): {e}")
-        manager.disconnect(client_id)
+    finally:
+        try:
+            await manager.disconnect(client_id, reason="client_disconnect")
+        except Exception:
+            pass
 
 
 # 导出路由供主应用注册

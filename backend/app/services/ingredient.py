@@ -69,9 +69,13 @@ class IngredientService:
         """创建成分"""
         ingredient = Ingredient(**data.model_dump())
         self.db.add(ingredient)
-        await self.db.commit()
-        await self.db.refresh(ingredient)
-        return ingredient
+        try:
+            await self.db.commit()
+            await self.db.refresh(ingredient)
+            return ingredient
+        except Exception:
+            await self.db.rollback()
+            raise
 
     async def update_ingredient(self, ingredient_id: int, data: IngredientUpdate) -> Ingredient:
         """更新成分"""
@@ -81,12 +85,20 @@ class IngredientService:
         for field, value in update_data.items():
             setattr(ingredient, field, value)
 
-        await self.db.commit()
-        await self.db.refresh(ingredient)
-        return ingredient
+        try:
+            await self.db.commit()
+            await self.db.refresh(ingredient)
+            return ingredient
+        except Exception:
+            await self.db.rollback()
+            raise
 
     async def delete_ingredient(self, ingredient_id: int) -> None:
         """删除成分"""
         ingredient = await self.get_ingredient(ingredient_id)
         await self.db.delete(ingredient)
-        await self.db.commit()
+        try:
+            await self.db.commit()
+        except Exception:
+            await self.db.rollback()
+            raise

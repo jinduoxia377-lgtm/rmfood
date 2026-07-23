@@ -1,7 +1,8 @@
 """
-FormulaGPT - 配方生成服务
-基于 LLaMA-3 70B LoRA 微调，生成药材+肽候选组合
-当前为规则模拟实现，接入 vLLM 后替换为真实推理
+⚠️ MOCK IMPLEMENTATION - 模拟实现，非真实 AI 模型
+
+当前使用规则匹配和 random.sample() 模拟配方生成。
+接入 vLLM 或其他真实 LLM 后替换为真实推理实现。
 """
 import logging
 import random
@@ -31,8 +32,8 @@ _MOCK_PEPTIDES = [
 ]
 
 
-class FormulaGPTService:
-    """AI 配方生成服务"""
+class MockFormulaGPTService:
+    """AI 配方生成服务（模拟实现）"""
 
     async def generate_candidates(
         self,

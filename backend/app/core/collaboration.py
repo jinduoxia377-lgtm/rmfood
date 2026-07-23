@@ -184,6 +184,11 @@ class CommentService:
         logger.warning("⚠️ 协作系统未完全实现 — 评论未持久化到数据库")
 
         return comment
+
+    async def _send_mention_notification(self, mention: Mention, comment: Comment):
+        """发送@提及通知"""
+        logger.warning("⚠️ 协作系统未实现 — 通知未持久化或未推送")
+        pass
     
     async def get_comments(
         self,
@@ -294,10 +299,10 @@ class FileSharingService:
 
 class RealtimeCollaborationService:
     """实时协作（基于WebSocket）"""
-    
+
     def __init__(self):
-        from ..core.websocket import connection_manager
-        self.ws_manager = connection_manager
+        from .websocket_manager import get_ws_manager
+        self.ws_manager = get_ws_manager()
     
     async def join_session(
         self,
@@ -373,8 +378,3 @@ class RealtimeCollaborationService:
         logger.warning("⚠️ 协作系统未实现 — 未查询Redis/DB")
         return []
 
-
-async def _send_mention_notification(self, mention: Mention, comment: Comment):
-    """发送@提及通知"""
-    logger.warning("⚠️ 协作系统未实现 — 通知未持久化或未推送")
-    pass
