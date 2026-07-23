@@ -5,7 +5,7 @@ import json
 import os
 import time
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -19,6 +19,7 @@ from . import (
     get_current_user,
     User,
 )
+from ...core.resilience import get_ai_rate_limiter
 from ...services.llm_service import LLMMessage
 from ...services.ai.response_cache import ai_cache
 from ...services.ai.observability import ai_observability
@@ -113,8 +114,8 @@ async def chat(
             history=req.history,
         )
         
-        # 返回前端期望的格式（匹配 AIResponse 接口）
-        return {
+        # 构建返回结果（匹配前端 AIResponse 接口）
+        result = {
             "content": answer,
             "role": "assistant",
             "formulas": [],
@@ -124,9 +125,10 @@ async def chat(
             "cached": False,
         }
 
-        # 缓存响应
+        # 写入缓存 + 记录指标（在 return 之前）
         ai_cache.set(req.question, answer)
         ai_observability.track_call("llm", (time.time() - start_time) * 1000, error=False)
+        return result
     except RuntimeError as e:
         error_msg = str(e)
         logger.error(f"AI 对话运行时错误: {error_msg}", exc_info=True)
@@ -175,6 +177,7 @@ async def chat(
 @router.post("/chat/stream", summary="AI 智能对话（流式）")
 async def chat_stream(
     req: ChatRequest,
+    background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db_session),
     current_user: User = Depends(get_current_user),
 ):
@@ -184,6 +187,36 @@ async def chat_stream(
     """
     try:
         logger.info(f"[chat_stream] 收到流式对话请求, question={req.question[:50]}..., history_count={len(req.history) if req.history else 0}")
+
+        # ── Step 1: Rate Limit 检查 ──
+        limiter = get_ai_rate_limiter()
+        allowed, error_msg = await limiter.check_request(current_user.id)
+        if not allowed:
+            logger.warning(f"[chat_stream] 用户 {current_user.id} 触发限流: {error_msg}")
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail={
+                    "error": "RATE_LIMIT_EXCEEDED",
+                    "message": error_msg,
+                    "retry_after": 60,
+                },
+                headers={"Retry-After": "60"},
+            )
+
+        # ── Step 2: SSE 连接数检查 ──
+        import uuid
+        conn_id = int(uuid.uuid4().hex[:8], 16)
+        connected = await limiter.register_sse_connection(current_user.id)
+        if not connected:
+            await limiter.unregister_sse_connection(current_user.id, conn_id)
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail={
+                    "error": "TOO_MANY_SSE_CONNECTIONS",
+                    "message": f"每个用户最多同时打开 {_get_llm_service().config.model if False else 5} 个流式连接",
+                    "retry_after": 30,
+                },
+            )
 
         # 如果前端传递了 API Key，拒绝并记录安全事件
         if hasattr(req, 'api_key') and req.api_key:
@@ -262,6 +295,8 @@ async def chat_stream(
                 yield "data: [ERROR]\n\n"
 
         logger.info("[chat_stream] 即将返回 StreamingResponse")
+        # 在响应发送完成后，后台清理 SSE 连接计数
+        background_tasks.add_task(limiter.unregister_sse_connection, current_user.id, conn_id)
         return StreamingResponse(
             event_stream(),
             media_type="text/event-stream",
@@ -271,8 +306,10 @@ async def chat_stream(
             },
         )
 
+    except HTTPException:
+        raise  # HTTP 异常已由具体 handler 处理，直接重抛
     except Exception as e:
-        # 捕获 StreamingResponse 创建之前的所有异常，避免被全局处理器吞掉 traceback
+        # 捕获 StreamingResponse 创建之前的所有异常
         logger.error("[chat_stream] 端点级异常（StreamingResponse 创建之前）: %s", e, exc_info=True)
         raise HTTPException(
             status_code=500,

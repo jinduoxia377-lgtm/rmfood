@@ -555,3 +555,111 @@ def get_degradation_manager() -> ServiceDegradationManager:
 
 
 logger.info("⚡ 统一错误处理与降级策略框架初始化完成")
+
+
+# ════════════════════════════════════════════
+# AI 专属限流器 (用户级 + SSE 连接数限制)
+# ════════════════════════════════════════════
+
+from collections import defaultdict
+from contextlib import ExitStack
+
+
+@dataclass
+class AIRateLimitConfig:
+    """AI 接口限流配置"""
+    global_rpm: int = 100           # 全局每分钟允许请求数
+    per_user_rpm: int = 30          # 每用户每分钟允许请求数
+    sse_max_connections: int = 5    # 每个用户同时打开的 SSE 连接数上限
+
+
+class AIRateLimiter:
+    """
+    基于滑动窗口的 AI 接口限流器
+
+    - 全局限流：防止流量突发耗尽 LLM Token 预算
+    - 用户级限流：防止单用户滥用
+    - SSE 连接计数：限制并发流式连接数
+    """
+
+    def __init__(self, config: AIRateLimitConfig = None):
+        self.config = config or AIRateLimitConfig()
+        self._lock = asyncio.Lock()
+        # user_id -> list of timestamps (within current window)
+        self._user_windows: dict[int, list[float]] = defaultdict(list)
+        # global timestamp bucket (minute granularity)
+        self._global_windows: dict[int, int] = defaultdict(int)
+        # user_id -> set of active SSE connection IDs
+        self._sse_connections: dict[int, set] = defaultdict(set)
+
+    async def check_request(self, user_id: int | None) -> tuple[bool, str]:
+        """
+        检查是否允许通过。
+        Returns: (allowed, error_detail)
+        """
+        async with self._lock:
+            # ── 1. 用户级限流 ──
+            if user_id is not None:
+                now = time.time()
+                minute_window_start = int(now // 60) * 60
+                cutoff = minute_window_start
+
+                # 清理过期记录
+                windows = [t for t in self._user_windows[user_id] if t > cutoff]
+                self._user_windows[user_id] = windows
+
+                if len(windows) >= self.config.per_user_rpm:
+                    return False, "请求过于频繁，请 1 分钟后重试"
+
+                self._user_windows[user_id].append(now)
+
+            # ── 2. 全局限流 ──
+            now = time.time()
+            global_bucket = int(now // 60)
+            if self._global_windows.get(global_bucket, 0) >= self.config.global_rpm:
+                return False, "系统繁忙，请稍后重试"
+
+            self._global_windows[global_bucket] = self._global_windows.get(global_bucket, 0) + 1
+
+            return True, ""
+
+    async def register_sse_connection(self, user_id: int) -> bool:
+        """注册一个 SSE 连接，返回是否允许"""
+        async with self._lock:
+            conns = self._sse_connections[user_id]
+            if len(conns) >= self.config.sse_max_connections:
+                return False
+            conns.add(id(conns))
+            return True
+
+    async def unregister_sse_connection(self, user_id: int, conn_id: int):
+        """取消注册 SSE 连接"""
+        async with self._lock:
+            self._sse_connections[user_id].discard(conn_id)
+            if not self._sse_connections[user_id]:
+                del self._sse_connections[user_id]
+
+    async def get_stats(self) -> dict:
+        """获取限流统计"""
+        async with self._lock:
+            return {
+                "tracked_users": len(self._user_windows),
+                "active_sse_connections": sum(len(v) for v in self._sse_connections.values()),
+                "global_requests_current_minute": self._global_windows.get(int(time.time() // 60), 0),
+                "config": {
+                    "per_user_rpm": self.config.per_user_rpm,
+                    "global_rpm": self.config.global_rpm,
+                    "sse_max_connections": self.config.sse_max_connections,
+                },
+            }
+
+
+# 全局单例
+_ai_rate_limiter: Optional[AIRateLimiter] = None
+
+
+def get_ai_rate_limiter() -> AIRateLimiter:
+    global _ai_rate_limiter
+    if _ai_rate_limiter is None:
+        _ai_rate_limiter = AIRateLimiter()
+    return _ai_rate_limiter
