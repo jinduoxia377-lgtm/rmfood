@@ -78,6 +78,7 @@ class OFFClient:
         按条码查询单个产品
 
         官方端点: https://world.openfoodfacts.org/api/v2/{product_code}.json
+        返回完整响应（包含 product 和 status 字段），由调用方决定如何解析。
         """
         url = f"https://world.openfoodfacts.org/api/v2/{barcode}.json"
 
@@ -87,8 +88,8 @@ class OFFClient:
                 return None
             response.raise_for_status()
             data = response.json()
-            product = data.get("product") or data.get("products", [{}])[0]
-            return product if product else None
+            # 返回完整响应，让调用方决定如何处理
+            return data
         except httpx.HTTPError as e:
             logger.warning(f"[OFF] barcode query failed for {barcode}: {e}")
             return None

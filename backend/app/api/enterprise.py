@@ -170,7 +170,7 @@ async def get_user_permissions(
     current_user: User = Depends(admin_route),
 ):
     """获取指定用户的权限列表（含生命周期状态）"""
-    from ..core.permission_lifecycle import get_plm, PermissionStatus
+    from ..core.rbac.permission_lifecycle import get_plm, PermissionStatus
 
     plm = get_plm()
     status_enum = PermissionStatus(status_filter) if status_filter else None
@@ -203,7 +203,7 @@ async def request_permission(
     current_user: User = Depends(admin_route),
 ):
     """申请一个新权限"""
-    from ..core.permission_lifecycle import (
+    from ..core.rbac.permission_lifecycle import (
         get_plm, PermissionType, PermissionStatus, PermissionLifecycleManager
     )
 
@@ -245,7 +245,7 @@ async def approve_permission(
     current_user: User = Depends(admin_route),
 ):
     """审批通过权限申请"""
-    from ..core.permission_lifecycle import get_plm
+    from ..core.rbac.permission_lifecycle import get_plm
 
     plm = get_plm()
     entry = plm.approve(permission_id, current_user.id, current_user.username, comment)
@@ -264,7 +264,7 @@ async def revoke_permission(
     current_user: User = Depends(admin_route),
 ):
     """吊销用户的某个权限"""
-    from ..core.permission_lifecycle import get_plm
+    from ..core.rbac.permission_lifecycle import get_plm
 
     plm = get_plm()
     entry = plm.revoke(permission_id, current_user.id, reason)
@@ -281,7 +281,7 @@ async def run_permission_maintenance(
     current_user: User = Depends(admin_route),
 ):
     """运行定期权限维护（过期清理 + 闲置检测）"""
-    from ..core.permission_lifecycle import get_plm
+    from ..core.rbac.permission_lifecycle import get_plm
 
     plm = get_plm()
     stats = plm.run_maintenance()
@@ -294,7 +294,7 @@ async def get_permission_review_report(
     current_user: User = Depends(admin_route),
 ):
     """生成权限评审报告（用于定期合规审查）"""
-    from ..core.permission_lifecycle import get_plm
+    from ..core.rbac.permission_lifecycle import get_plm
 
     plm = get_plm()
     report = plm.generate_review_report()
@@ -307,7 +307,7 @@ async def get_permission_statistics(
     current_user: User = Depends(admin_route),
 ):
     """获取权限系统统计"""
-    from ..core.permission_lifecycle import get_plm
+    from ..core.rbac.permission_lifecycle import get_plm
 
     plm = get_plm()
     return plm.get_statistics()

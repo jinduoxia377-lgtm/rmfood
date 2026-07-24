@@ -11,7 +11,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, delete
 
-from ...core.session import get_db
+from ...core.database.session import get_db
 from ...models.team import Team
 from ...models.team_member import TeamMember
 from ...models.user_model import User

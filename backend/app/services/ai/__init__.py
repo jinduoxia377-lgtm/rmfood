@@ -44,7 +44,7 @@ async def init_ai_services():
 
     # ── 初始化 HerbKnowledgeService（全局缓存，供优化器注入）──
     try:
-        from app.core.session import async_session_factory
+        from app.core.database.session import async_session_factory
         from .herb_knowledge_service import HerbKnowledgeService
 
         async with async_session_factory() as db_session:

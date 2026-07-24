@@ -111,7 +111,7 @@ class SystemConfig(Base):
         Returns:
             解密后的配置字典
         """
-        from app.core.crypto import decrypt_dict_field
+        from app.core.security.crypto import decrypt_dict_field
         sensitive_keys = self.get_sensitive_keys()
         return decrypt_dict_field(self.config_value, sensitive_keys)
 
@@ -123,7 +123,7 @@ class SystemConfig(Base):
             data: 原始配置字典
             sensitive_keys: 需要加密的键名列表
         """
-        from app.core.crypto import encrypt_dict_field
+        from app.core.security.crypto import encrypt_dict_field
         if sensitive_keys is None:
             sensitive_keys = self.get_sensitive_keys()
         self.config_value = encrypt_dict_field(data, sensitive_keys)

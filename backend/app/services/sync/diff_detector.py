@@ -12,7 +12,7 @@ from typing import Any, Dict, List, Optional, Set
 import asyncio
 import time
 
-from app.core.logging_config import logger
+from app.core.observability.logging_config import logger
 
 
 class ChangeType(str, Enum):

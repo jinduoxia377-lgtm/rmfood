@@ -16,7 +16,7 @@ from pydantic import BaseModel, Field
 
 from ...api.deps import get_current_user
 from ...models import User
-from ...core.tenant_quota import (
+from ...core.multi_tenant.tenant_quota import (
     QuotaType, QuotaUsage, TenantQuota,
     get_quota_checker, get_quota_meter,
     QUOTA_PLANS,

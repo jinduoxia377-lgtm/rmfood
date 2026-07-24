@@ -12,7 +12,7 @@ from datetime import datetime, timezone, timedelta
 from typing import Any, Dict, List, Optional, Tuple
 from dataclasses import dataclass, field
 
-from app.core.logging_config import logger
+from app.core.observability.logging_config import logger
 
 try:
     from cryptography.hazmat.primitives.kdf.hkdf import HKDF

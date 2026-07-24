@@ -16,7 +16,7 @@ from typing import Any, Dict, List, Optional, Tuple
 import hashlib
 import time
 
-from app.core.logging_config import logger
+from app.core.observability.logging_config import logger
 
 
 try:

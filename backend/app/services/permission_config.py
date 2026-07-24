@@ -22,7 +22,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, insert, update, delete
 
 from app.models.enums import UserRole
-from app.core.permission import ROLE_PERMISSIONS, Permission
+from app.core.rbac.permission import ROLE_PERMISSIONS, Permission
 
 logger = logging.getLogger(__name__)
 

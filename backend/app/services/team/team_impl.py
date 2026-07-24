@@ -19,7 +19,7 @@ from app.models.team_member import TeamMember
 from app.models.user_model import User
 from app.models.notification import Notification
 from app.models.enums import TeamRole, NotificationType
-from app.core.exceptions import PermissionDeniedError, NotFoundError
+from app.core.middleware.exceptions import PermissionDeniedError, NotFoundError
 from app.core.audit_system import AuditService
 
 logger = logging.getLogger(__name__)

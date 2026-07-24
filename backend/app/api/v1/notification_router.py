@@ -10,7 +10,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, update, delete
 
-from ...core.session import get_db
+from ...core.database.session import get_db
 from ...models.notification import Notification
 from ...models.enums import NotificationType
 from ...schemas.notification_schemas import (

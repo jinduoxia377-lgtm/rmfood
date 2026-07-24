@@ -65,23 +65,38 @@ export interface RetailProductSearchRequest {
   per_page?: number;
 }
 
-export interface RetailProductSearchResult {
+export interface RetailProductSearchResult extends RetailProductDetail {
+  score?: number;
+}
+
+export interface RetailProductDetail {
   id: number;
   product_name: string;
   brand: string;
-  category: string;
-  formulation_type: string;
-  price: number;
-  avg_rating: number;
-  image_urls: string[];
-  effects: string[];
-  score: number;
-  // ── 食品安全字段 (Phase 2) ──
+  category?: string;
+  sub_category?: string;
+  formulation_type?: string;
+  price?: number | null;
+  currency?: string;
+  package_size?: string;
+  volume_ml?: number | null;
+  weight_g?: number | null;
+  image_urls?: string[];
+  full_ingredients?: string | null;
+  key_ingredients?: Record<string, unknown>;
+  effects?: string[];
+  target_population?: string[];
+  sales_channels?: string[];
+  avg_rating?: number | null;
+  review_count?: number | null;
   allergens_tags?: string[];
   additives_tags?: string[];
   ecoscore_grade?: string | null;
   traces_tags?: string[];
   contaminants?: string[];
+  source?: string;
+  data_quality?: number;
+  [key: string]: unknown;
 }
 
 export interface RetailProductSearchResponse {

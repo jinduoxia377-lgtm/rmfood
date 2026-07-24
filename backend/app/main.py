@@ -9,34 +9,36 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from .core.config import settings
-from .core.init_db import init_db
-from .core.cache_system import init_cache, close_cache
-from .core.logging_config import get_logger, setup_logging
-from .core.error_alert import setup_error_handling
-from .core.security_middleware import (
+from .core.database.init_db import init_db
+from .core.performance.cache_system import init_cache, close_cache
+from .core.observability.logging_config import get_logger, setup_logging
+from .core.middleware.error_alert import setup_error_handling
+from .core.security.security_middleware import (
     SecurityHeadersMiddleware,
     RateLimitMiddleware,
     RequestLoggingMiddleware,
     RateLimitConfig,
     CsrfProtectMiddleware,
 )
-from .core.encoding import UTF8EncodingMiddleware
-from .core.exceptions import GlobalExceptionHandler  # 新增：全局异常处理
-from .core.telemetry import (                         # 院士级修复[P1]: OpenTelemetry 三柱
+from .core.middleware.encoding import UTF8EncodingMiddleware
+from .core.middleware.exceptions import GlobalExceptionHandler
+from .core.observability.telemetry import (
     TelemetryMiddleware, configure_trace_logging, get_trace_summary,
 )
-from .core.tenant_security import (                   # 院士级修复[P1]: 多租户行级安全
+from .core.multi_tenant.tenant_security import (
     TenantMiddleware, tenant_query_guard,
 )
-from .core.health_check import register_health_routes  # 🔒 P3-2: 健康检查
-from .core.api_docs import register_api_docs_middleware  # 🔒 P3-3: API 文档增强
-from .core.metrics_extended import setup_enhanced_metrics  # 🔒 P3-5: Prometheus 指标扩展
-from .core.database_pool import (  # 🔒 P4-1: 连接池监控与查询优化
+from .core.middleware.health_check import register_health_routes
+from .core.api_framework.api_docs import register_api_docs_middleware
+from .core.observability.metrics_extended import setup_enhanced_metrics
+from .core.database.database_pool import (
     pool_monitor_task,
     check_pool_health,
 )
-from .core.http_client import http_client  # 🔒 P4-2: 增强 HTTP 客户端
-from .core.logging_enhanced import init_enhanced_logging  # 🔒 P4-3: 增强日志系统
+from .core.api_framework.http_client import http_client
+from .core.observability.logging_enhanced import init_enhanced_logging
+from .core.realtime.websocket import connection_manager
+from .core.realtime.websocket_manager import get_ws_manager
 from .api import api_router, register_lazy_routers
 from .api.router_registry import registry as router_registry
 from .api import mobile  # 🔒 P2-5: 移动端专用 API
@@ -46,17 +48,11 @@ from .api.api_version import (
     register_version_routes,
     register_version_middleware,
 )
-from .core.websocket import connection_manager
-from .core.websocket_manager import get_ws_manager
 from .infrastructure.event_bus import RedisStreamsEventBus
-
-# 🔒 P5: 企业级安全与合规模块
-from .core.audit_middleware import create_audit_middleware, AuditMiddleware
-from .core.data_masking import MaskingLogFilter
-from .core.backup_and_recovery import get_backup_manager
-
-# 🔒 P5: Sentry 错误追踪
-from .core.sentry_config import sentry_init
+from .core.middleware.audit_middleware import create_audit_middleware, AuditMiddleware
+from .core.database.data_masking import MaskingLogFilter
+from .core.compliance.backup_and_recovery import get_backup_manager
+from .core.security.sentry_config import sentry_init
 
 
 @asynccontextmanager
@@ -82,8 +78,8 @@ async def lifespan(app: FastAPI):
     sentry_init(app)
 
     # ── 启动阶段：验证 PostgreSQL 连接 ──
-    from .core.session import ensure_connection, init_database, close_database
-    from .core.init_db import init_db
+    from .core.database.session import ensure_connection, init_database, close_database
+    from .core.database.init_db import init_db
 
     # 1. 验证数据库连接（指数退避重试，最多5次）
     db_connected = await ensure_connection()
@@ -284,7 +280,7 @@ Authorization: Bearer <your_access_token>
     )
 
     # ── 可观测性中间件 ──
-    from .core.metrics import metrics as metrics_collector
+    from .core.observability.metrics import metrics as metrics_collector
     app.add_middleware(
         TelemetryMiddleware,
         metrics_collector=metrics_collector,
@@ -377,7 +373,7 @@ Authorization: Bearer <your_access_token>
         @app.get("/debug/context", tags=["调试"], summary="查看当前请求 Trace 上下文")
         async def debug_context(request, _=Depends(admin_route)):
             """返回当前请求的 Trace 上下文（用于验证中间件注入正确性）"""
-            from .core.telemetry import get_trace_context
+            from .core.observability.telemetry import get_trace_context
             return get_trace_context()
     elif settings.is_production:
         logger.info("[Debug] 调试端点已禁用（生产环境）")
@@ -599,7 +595,7 @@ const ui = SwaggerUIBundle({
     @app.get("/api/v1/system/modules", tags=["系统"])
     async def system_modules():
         """查询所有懒加载模块的加载状态"""
-        from .core.lazy_module import service_registry
+        from .core.api_framework.lazy_module import service_registry
         return {
             "total": len(service_registry),
             "modules": service_registry.get_status(),
@@ -608,7 +604,7 @@ const ui = SwaggerUIBundle({
     @app.get("/metrics/prometheus", tags=["系统"], include_in_schema=False)
     async def prometheus_metrics():
         """Prometheus 格式指标端点"""
-        from .core.metrics import metrics
+        from .core.observability.metrics import metrics
         from fastapi.responses import PlainTextResponse
         return PlainTextResponse(metrics.expose(), media_type="text/plain; version=0.0.4; charset=utf-8")
 

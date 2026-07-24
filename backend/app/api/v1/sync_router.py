@@ -20,7 +20,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status, Background
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_, or_
 
-from ...core.session import get_db
+from ...core.database.session import get_db
 from ...models.user_device import UserDevice
 from ...models.sync_log import SyncLog
 from ...models.enums import DeviceType, SyncAction, SyncStatus

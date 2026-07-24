@@ -163,7 +163,7 @@ class DeepGenerationResponse(BaseModel):
 # ==================== WebSocket 连接管理器 ====================
 
 # 统一使用 WebSocketManager (core/websocket_manager)
-from ..core.websocket_manager import get_ws_manager as _get_ws_manager
+from ..core.realtime.websocket_manager import get_ws_manager as _get_ws_manager
 
 
 # ==================== API 端点实现 ====================

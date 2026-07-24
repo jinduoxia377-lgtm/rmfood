@@ -11,7 +11,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, desc
 
-from ...core.session import get_db
+from ...core.database.session import get_db
 from ...models.prompt_version import PromptVersion
 from ...schemas.version_schemas import (
     PromptVersionCreate,

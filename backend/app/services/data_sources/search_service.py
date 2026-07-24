@@ -65,7 +65,7 @@ class SearchService:
     async def _search_herbs(self, keyword: str, limit: int) -> list[dict]:
         """从本地数据库搜索药材（供 unified_search 调用）"""
         from sqlalchemy import select, or_
-        from app.core.session import async_session_factory
+        from app.core.database.session import async_session_factory
         from app.models.models import TCMHerb
 
         async with async_session_factory() as session:
@@ -99,7 +99,7 @@ class SearchService:
     async def _search_peptides(self, keyword: str, limit: int) -> list[dict]:
         """从本地数据库搜索肽序列"""
         from sqlalchemy import select, or_
-        from app.core.session import async_session_factory
+        from app.core.database.session import async_session_factory
         from app.models.models import BioactivePeptide
 
         async with async_session_factory() as session:

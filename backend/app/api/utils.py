@@ -238,7 +238,7 @@ async def paginate_query(
 # 3. 权限检查装饰器
 # ════════════════════════════════════════════
 
-from ..core.rbac import RBACManager as RBACEngine, Permission
+from ..core.rbac.rbac import RBACManager as RBACEngine, Permission
 from ..models.enums import UserRole
 from ..core.exceptions import AuthorizationError, AuthenticationError
 

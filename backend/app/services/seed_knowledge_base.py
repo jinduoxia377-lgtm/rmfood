@@ -18,7 +18,7 @@ import logging
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.session import async_session_factory
+from app.core.database.session import async_session_factory
 from app.models.external_data import TCMHerb
 
 logger = logging.getLogger(__name__)

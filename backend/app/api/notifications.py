@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 
 from .deps import get_db_session, get_current_user
-from ..core.notification_center import (
+from ..core.realtime.notification_center import (
     NotificationService,
     UserNotificationPreference,
     NotificationChannel,

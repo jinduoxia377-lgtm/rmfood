@@ -19,8 +19,8 @@ from . import (
     get_current_user,
     User,
 )
-from ...core.resilience import get_ai_rate_limiter
-from ...core.tenant_security import TenantContext, require_tenant
+from ...core.performance.resilience import get_ai_rate_limiter
+from ...core.multi_tenant.tenant_security import TenantContext, require_tenant
 from ...services.llm_service import LLMMessage
 from ...services.ai.response_cache import ai_cache
 from ...services.ai.observability import ai_observability

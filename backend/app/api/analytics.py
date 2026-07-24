@@ -25,9 +25,9 @@ import logging
 import uuid
 
 
-from ..core.session import get_db
+from ..core.database.session import get_db
 from ..api.deps import get_current_active_user
-from ..core.analytics_engine import (
+from ..core.analytics_reports.analytics_engine import (
     AnalyticsService,
     ExportFormat,
     ReportConfig,
@@ -37,7 +37,7 @@ from ..core.analytics_engine import (
     ChartData,
     get_analytics_service,
 )
-from ..core.websocket import connection_manager, WebSocketMessage
+from ..core.realtime.websocket import connection_manager, WebSocketMessage
 from ..models.user_model import User
 from ..models.enums import UserRole
 

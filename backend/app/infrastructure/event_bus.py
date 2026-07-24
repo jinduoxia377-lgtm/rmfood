@@ -15,7 +15,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime, timezone
 from typing import Any, Callable, Coroutine, Optional
 
-from ..core.domain_events import DomainEvent
+from ..core.observability.domain_events import DomainEvent
 
 logger = logging.getLogger(__name__)
 

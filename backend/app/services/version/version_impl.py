@@ -19,7 +19,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, desc, and_
 
 from app.models.prompt_version import PromptVersion
-from app.core.exceptions import NotFoundError as ResourceNotFoundException
+from app.core.middleware.exceptions import NotFoundError as ResourceNotFoundException
 
 try:
     from app.core.audit_system import AuditService

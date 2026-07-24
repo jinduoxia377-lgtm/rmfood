@@ -14,7 +14,7 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query
 from fastapi import Depends
 
 from ...models.user_model import User
-from ...core.websocket_manager import get_ws_manager
+from ...core.realtime.websocket_manager import get_ws_manager
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 

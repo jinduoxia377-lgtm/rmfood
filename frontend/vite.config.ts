@@ -98,7 +98,7 @@ function createEsbuildCompatPlugin(): Plugin {
 
 export default defineConfig(({ mode }) => {
   const isProduction = mode === 'production';
-  const backendUrl = process.env.VITE_BACKEND_URL || 'http://localhost:8000';
+  const backendUrl = process.env.VITE_BACKEND_URL || 'http://localhost:8001';
 
   return {
     define: {

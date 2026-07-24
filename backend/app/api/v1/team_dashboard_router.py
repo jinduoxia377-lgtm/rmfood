@@ -8,7 +8,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ...core.session import get_db
+from ...core.database.session import get_db
 from ...api.deps import get_current_active_user, CurrentUser, DbSession
 from ...services.team.team_impl import TeamService
 from ...services.team.team_dashboard import TeamDashboardService

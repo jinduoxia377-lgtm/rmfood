@@ -36,7 +36,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Body, status
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, validator
 
-from ...core.ray_manager import (
+from ...core.distributed.ray_manager import (
     RayClusterManager,
     RayConfig,
     TaskConfig,

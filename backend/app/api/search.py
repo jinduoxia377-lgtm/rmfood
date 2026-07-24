@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional, List
 
 from ..api.deps import get_db_session, get_current_user
-from ..core.search_engine import SearchEngine, SearchQuery, AdvancedFilter, global_search
+from ..core.analytics_reports.search_engine import SearchEngine, SearchQuery, AdvancedFilter, global_search
 from ..models import User
 
 router = APIRouter(prefix="/search", tags=["搜索服务"])

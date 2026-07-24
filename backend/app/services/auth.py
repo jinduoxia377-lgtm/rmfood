@@ -25,8 +25,8 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..core.config import settings
-from ..core.session import get_db
-from ..core.account_lockout import AccountLockout
+from ..core.database.session import get_db
+from app.core.security.account_lockout import AccountLockout
 from ..models import User, UserRole
 from ..schemas.user import Token, TokenPayload
 

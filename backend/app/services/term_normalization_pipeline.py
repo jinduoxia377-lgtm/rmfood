@@ -7,7 +7,7 @@ import re
 import string
 from collections import OrderedDict
 
-from app.core.logging_config import logger
+from app.core.observability.logging_config import logger
 import logging
 
 logger = logging.getLogger(__name__)

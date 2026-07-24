@@ -91,7 +91,7 @@ def create_safety_alert_router(safety_system: Optional[SafetyAlertSystem] = None
         from fastapi import APIRouter, Depends, HTTPException, Query, status
         from ..api.deps import get_current_user
         from ..models.user_model import User
-        from ..core.rbac import require_role
+        from ..core.rbac.rbac import require_role
         from ..models.enums import UserRole
     except ImportError:
         logger.error("无法导入 FastAPI 依赖，API 路由将不可用")

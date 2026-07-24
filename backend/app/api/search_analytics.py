@@ -95,7 +95,7 @@ async def precompute_hot_searches(
     预计算热门搜索词 (管理后台用)
     POST /api/v1/search/analytics/precompute/hot-searches
     """
-    from app.core.session import redis_client
+    from app.core.database.session import redis_client
     if redis_client:
         cache_service = SearchCacheService(redis_client)
         return await SearchPrecomputeService.precompute_hot_searches(db, cache_service, days)

@@ -9,7 +9,7 @@ import urllib.parse
 
 from ..services.file_generator import file_generator_service, FileFormat
 from ..services.template_manager import get_template_manager
-from ..core.encoding import sanitize_filename
+from ..core.middleware.encoding import sanitize_filename
 
 logger = logging.getLogger(__name__)
 

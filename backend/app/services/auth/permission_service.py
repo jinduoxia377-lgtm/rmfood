@@ -25,7 +25,7 @@ from app.services.auth.permissions import (
 )
 from app.models.team_member import TeamMember
 from app.models.enums import TeamRole
-from app.core.exceptions import PermissionDeniedException
+from app.core.middleware.exceptions import PermissionDeniedException
 
 logger = logging.getLogger(__name__)
 

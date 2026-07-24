@@ -364,6 +364,12 @@ export default function DatabasePage() {
     queryFn: () => databaseApi.getSyncStats(),
   });
 
+  const offSyncQuery = useQuery({
+    queryKey: ['off-sync-stats'],
+    queryFn: () => databaseApi.get('/databases/openfoodfacts/sync-status'),
+    staleTime: 5 * 60 * 1000,
+  });
+
   useEffect(() => {
     if (syncStatsQuery.isSuccess) {
       setDataSource('database');
@@ -406,6 +412,7 @@ export default function DatabasePage() {
   const peptideCount = stats?.dfbp?.total_peptides ?? 0;
   const graphNodes = stats?.knowledge_graph ?? { total_herbs: 0, total_compounds: 0, total_targets: 0 };
   const homologyCount = stats?.tcmsp?.food_homology_count ?? 0;
+  const retailProductCount = offSyncQuery.data?.total_products ?? null;
 
   // 药材分类数据（饼图）
   const categoryData = useMemo((): CategoryData[] => {
@@ -1278,7 +1285,7 @@ export default function DatabasePage() {
             },
             { value: 'homology' as DbTab, label: '药食同源', icon: Zap, badge: homologyCount },
             { value: 'food_materials' as DbTab, label: '食品原料', icon: Database, badge: null },
-            { value: 'retail_products' as DbTab, label: '零售产品', icon: ShoppingBag, badge: null },
+            { value: 'retail_products' as DbTab, label: '零售产品', icon: ShoppingBag, badge: retailProductCount },
             { value: 'analytics' as DbTab, label: '搜索分析', icon: BarChart2, badge: null },
             { value: 'sync' as DbTab, label: '数据管理', icon: RefreshCw, badge: null },
           ].map(({ value, label, icon: Icon, badge }) => (

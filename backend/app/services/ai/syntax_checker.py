@@ -10,7 +10,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Dict, List, Optional, Tuple
 
-from app.core.logging_config import logger
+from app.core.observability.logging_config import logger
 
 
 class SeverityLevel(str, Enum):

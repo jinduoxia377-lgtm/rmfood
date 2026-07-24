@@ -33,7 +33,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-from ..core.session import get_db
+from ..core.database.session import get_db
 from ..utils.auth import decode_token
 from ..models.user_model import User
 from ..models.enums import FormulaStatus, UserRole

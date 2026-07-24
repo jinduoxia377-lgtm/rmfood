@@ -2,6 +2,7 @@
 配方管理路由
 配方 CRUD、版本管理、审核流程、AI 推荐
 """
+from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -17,11 +18,11 @@ from ..schemas.formula import (
     IngredientResponse,
 )
 from ..services.formula import FormulaService
-from ..services.auth import get_current_user
-from ..models.user_model import User
 from ..models.enums import UserRole, FormulaStatus
-from ..api.deps import get_db_session, PaginationParams, FormulaFilterParams, require_role
-from ..core.tenant_security import TenantContext, require_tenant
+from ..models.user_model import User
+from ..services.auth import get_current_user as _required_get_current_user
+from ..api.deps import get_db_session, PaginationParams, FormulaFilterParams, require_role, get_current_user as _optional_get_current_user
+from ..core.multi_tenant.tenant_security import TenantContext, require_tenant
 
 router = APIRouter(prefix="/formulas", tags=["配方管理"])
 
@@ -31,7 +32,7 @@ async def list_formulas(
     tenant: TenantContext = Depends(require_tenant),
     pagination: PaginationParams = Depends(),
     filters: FormulaFilterParams = Depends(),
-    current_user: User = Depends(get_current_user),
+    current_user: Optional[User] = Depends(_optional_get_current_user),
     db: AsyncSession = Depends(get_db_session),
 ):
     """分页获取配方列表，支持状态筛选和关键词搜索"""
@@ -108,7 +109,7 @@ async def list_formulas(
 @router.get("/recommendations", response_model=AIRecommendationResponse, summary="AI 配方推荐")
 async def get_recommendations(
     data: AIRecommendationRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(_required_get_current_user),
     db: AsyncSession = Depends(get_db_session),
 ):
     """基于目标功效获取 AI 成分推荐"""
@@ -128,7 +129,7 @@ async def get_recommendations(
 async def get_formula(
     formula_id: int,
     tenant: TenantContext = Depends(require_tenant),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(_required_get_current_user),
     db: AsyncSession = Depends(get_db_session),
 ):
     """获取配方详情（含成分和肽段列表）"""
@@ -160,7 +161,7 @@ async def update_formula(
     formula_id: int,
     data: FormulaUpdate,
     tenant: TenantContext = Depends(require_tenant),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(_required_get_current_user),
     db: AsyncSession = Depends(get_db_session),
 ):
     """更新配方（仅草稿和已驳回状态可编辑，需拥有资源权限）"""
@@ -183,7 +184,7 @@ async def update_formula(
 async def delete_formula(
     formula_id: int,
     tenant: TenantContext = Depends(require_tenant),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(_required_get_current_user),
     db: AsyncSession = Depends(get_db_session),
 ):
     """删除配方（软删除，归档处理）"""
@@ -201,7 +202,7 @@ async def delete_formula(
 @router.get("/{formula_id}/versions", response_model=list[FormulaVersionResponse], summary="版本历史")
 async def get_version_history(
     formula_id: int,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(_required_get_current_user),
     db: AsyncSession = Depends(get_db_session),
 ):
     """获取配方版本历史"""
@@ -213,7 +214,7 @@ async def get_version_history(
 async def create_version(
     formula_id: int,
     change_summary: str = Query(..., description="变更说明"),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(_required_get_current_user),
     db: AsyncSession = Depends(get_db_session),
 ):
     """创建配方新版本快照"""
@@ -238,7 +239,7 @@ async def restore_version(
 @router.post("/{formula_id}/submit", response_model=FormulaResponse, summary="提交审核")
 async def submit_for_review(
     formula_id: int,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(_required_get_current_user),
     db: AsyncSession = Depends(get_db_session),
 ):
     """提交配方进行审核"""
@@ -272,7 +273,7 @@ async def publish_formula(
 @router.post("/{formula_id}/archive", response_model=FormulaResponse, summary="归档配方")
 async def archive_formula(
     formula_id: int,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(_required_get_current_user),
     db: AsyncSession = Depends(get_db_session),
 ):
     """归档配方"""
@@ -280,10 +281,41 @@ async def archive_formula(
     return await service.archive_formula(formula_id, current_user.id)
 
 
+@router.get("/statistics", summary="配方统计数据")
+async def get_formula_statistics(
+    tenant: TenantContext = Depends(require_tenant),
+    db: AsyncSession = Depends(get_db_session),
+):
+    """返回配方统计数据（总数、状态分布）— 无需认证，匿名可访问"""
+    from sqlalchemy import func, select as sa_select
+
+    query = sa_select(func.count(Formula.id))
+    if tenant.org_id is not None:
+        query = query.where(Formula.organization_id == tenant.org_id)
+    result = await db.execute(query)
+    total = result.scalar() or 0
+
+    status_query = sa_select(Formula.status, func.count(Formula.id)).group_by(Formula.status)
+    if tenant.org_id is not None:
+        status_query = status_query.where(Formula.organization_id == tenant.org_id)
+    status_result = await db.execute(status_query)
+    status_distribution = {}
+    for s, c in status_result.all():
+        key = s.value if hasattr(s, "value") else str(s)
+        status_distribution[key] = c
+
+    return {
+        "total_formulas": total,
+        "status_distribution": status_distribution,
+        "recent_creations": [],
+        "trend_data": [],
+    }
+
+
 @router.patch("/batch-status", response_model=SuccessResponse, summary="批量更新配方状态")
 async def batch_update_status(
     request: BatchStatusUpdateRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(_required_get_current_user),
     db: AsyncSession = Depends(get_db_session),
 ):
     """批量更新配方状态（带 Pydantic Schema 校验）"""
@@ -300,7 +332,7 @@ async def batch_update_status(
 @router.get("/{formula_id}/nutrition", summary="获取配方营养成分")
 async def get_formula_nutrition(
     formula_id: int,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(_required_get_current_user),
     db: AsyncSession = Depends(get_db_session),
 ):
     """计算并返回配方的营养成分摘要（热量、宏量营养素、过敏原等）"""
@@ -357,7 +389,7 @@ async def get_formula_nutrition(
 async def validate_formula_nutrition(
     formula_id: int,
     tolerance_pct: float = Query(5.0, ge=0.1, le=20.0, description="允许偏差百分比"),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(_required_get_current_user),
     db: AsyncSession = Depends(get_db_session),
 ):
     """校验配方成分总重量是否为 100%"""

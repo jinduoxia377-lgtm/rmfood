@@ -16,9 +16,9 @@ from typing import Any, List, Optional
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..off_api import OFFClient
-from ..openfoodfacts.mapper import OFFMapper
-from ..openfoodfacts.config import OFFConfig
+from .off_api import OFFClient
+from .openfoodfacts.mapper import OFFMapper
+from .openfoodfacts.config import OFFConfig
 
 # 延迟导入，避免循环依赖
 _RetailProduct = None
@@ -378,7 +378,8 @@ class OFFDataService:
             # 统一输出格式
             items = []
             for raw_product in all_products:
-                mapped = self.mapper.map_product(raw_product) if "product_name" in raw_product else None
+                # 只要有 code 字段就尝试映射（search_simple 模式可能不含 product_name）
+                mapped = self.mapper.map_product(raw_product) if "code" in raw_product else None
                 if mapped:
                     item = self._map_off_product(mapped)
                     item["source"] = "openfoodfacts_api"
@@ -461,7 +462,9 @@ class OFFDataService:
                 lambda: self.client.search_by_barcode(barcode),
             )
             if raw:
-                mapped = self.mapper.map_product(raw)
+                # 适配新的返回格式：search_by_barcode 现在返回完整响应字典
+                product_data = raw.get("product") or raw
+                mapped = self.mapper.map_product(product_data)
                 if mapped:
                     mapped["_source"] = "openfoodfacts_api"
                     return mapped

@@ -72,7 +72,7 @@ def _decrypt_api_key(encrypted_value) -> str:
 def save_config_to_db(config: "LLMConfig", user_id: int | None = None) -> bool:
     """将 LLM 配置持久化到数据库（API Key 加密存储）"""
     try:
-        from ..core.session import async_session_factory
+        from ..core.database.session import async_session_factory
         from ..models.system import SystemConfig
         import asyncio
 
@@ -120,7 +120,7 @@ def save_config_to_db(config: "LLMConfig", user_id: int | None = None) -> bool:
 async def load_config_from_db() -> "LLMConfig | None":
     """从数据库加载 LLM 运行时配置"""
     try:
-        from ..core.session import async_session_factory
+        from ..core.database.session import async_session_factory
         from ..models.system import SystemConfig
 
         async with async_session_factory() as db:
