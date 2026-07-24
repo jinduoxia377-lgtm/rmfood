@@ -214,8 +214,8 @@ const RetailProductSearchPanel: React.FC<{ className?: string }> = ({ className 
           page_size: 20,
           realtime,
         });
-        if (!response || !Array.isArray(response.items)) {
-          throw new Error('搜索未返回任何结果');
+        if (!response) {
+          throw new Error('搜索请求失败，请稍后重试');
         }
         transformed = (response.items as OFFRawProduct[]).map(mapOFFProduct);
         source = response.data_source || 'unknown';

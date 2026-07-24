@@ -13,7 +13,7 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends, Query
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 from ..core.realtime.websocket import connection_manager, WebSocketMessage
-from ..core.security import decode_access_token
+from ..core._security_compat import decode_access_token
 from .deps import get_current_user
 from ..models import User
 
