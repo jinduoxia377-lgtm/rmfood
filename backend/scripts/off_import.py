@@ -280,9 +280,17 @@ async def upsert_batch(session, products: List[dict]):
                     # 处理 datetime
                     if isinstance(val, datetime):
                         val = val.isoformat()
+                    elif col == "crawl_timestamp" and isinstance(val, str):
+                        try:
+                            val = datetime.fromisoformat(val)
+                        except (ValueError, TypeError):
+                            pass
+                    # jsonb 需要字符串
+                    elif col == "key_ingredients" and isinstance(val, dict):
+                        val = json.dumps(val, ensure_ascii=False)
                     update_fields.append(f"{col} = :v_{col}")
                     params[f"v_{col}"] = val
-                params["now"] = datetime.now(timezone.utc).isoformat()
+                params["now"] = datetime.now(timezone.utc)  # datetime, not string
                 update_fields.append("updated_at = :now")
 
                 sql = f"UPDATE retail_products SET {', '.join(update_fields)} WHERE external_id = :eid"
@@ -297,6 +305,13 @@ async def upsert_batch(session, products: List[dict]):
                     val = product.get(c)
                     if isinstance(val, datetime):
                         val = val.isoformat()
+                    elif c == "key_ingredients" and isinstance(val, dict):
+                        val = json.dumps(val, ensure_ascii=False)  # jsonb needs string
+                    elif c == "crawl_timestamp" and isinstance(val, str):
+                        try:
+                            val = datetime.fromisoformat(val)  # Convert ISO string to datetime
+                        except (ValueError, TypeError):
+                            pass
                     params[f"v_{c}"] = val
                 conflict_cols = [c for c in COLUMNS if c not in ("external_id", "source")]
                 updates = ", ".join(f"{c} = EXCLUDED.{c}" for c in conflict_cols)
