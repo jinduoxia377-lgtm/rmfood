@@ -337,14 +337,22 @@ class OFFDataService:
                         "page_size": page_size,
                         "data_source": "postgresql_ilike",
                     }
-            # 数据库无缓存数据 → 自动走实时搜索
-            logger.warning("[OFFDataService] DB 无缓存数据，自动回退实时 API")
-            return await self._realtime_search(keyword, page, page_size)
+            # 数据库无缓存数据 → 不自动回退实时 API（避免限流）
+            logger.info("[OFFDataService] DB 无缓存数据，返回空结果")
+            return {
+                "items": [], "total": 0,
+                "page": page, "page_size": page_size,
+                "data_source": "postgresql_ilike_empty",
+            }
         except Exception as err:
-            logger.warning("[OFFDataService] DB 搜索失败，回退实时 API: %s", err)
+            logger.warning("[OFFDataService] DB 搜索失败，返回空结果: %s", err)
 
-        # DB 不可用 → 实时 API
-        return await self._realtime_search(keyword, page, page_size)
+        # DB 不可用 → 不再调用实时 API（避免限流）
+        return {
+            "items": [], "total": 0,
+            "page": page, "page_size": page_size,
+            "data_source": "postgresql_error",
+        }
 
     async def _realtime_search(
         self,
@@ -584,9 +592,14 @@ class OFFDataService:
                     "category_tag": category_tag,
                     "data_source": "postgresql",
                 }
-            # 数据库无缓存数据 → 自动走实时搜索
-            logger.warning("[OFFDataService] DB 分类搜索无缓存数据，自动回退实时 API")
-            return await self._realtime_category_search(category_tag, page, page_size)
+            # 数据库无缓存数据 → 不自动回退实时 API（避免限流）
+            logger.info("[OFFDataService] DB 分类搜索无缓存数据，返回空结果")
+            return {
+                "items": [], "total": 0,
+                "page": page, "page_size": page_size,
+                "data_source": "postgresql_ilike_empty",
+                "category_tag": category_tag,
+            }
         except Exception as err:
             logger.warning("[OFFDataService] DB 分类搜索失败: %s", err)
             return await self._realtime_category_search(category_tag, page, page_size)

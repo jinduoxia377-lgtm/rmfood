@@ -38,7 +38,7 @@ DB_URL = "postgresql+asyncpg://postgres:@localhost:5432/rmfood_db"
 API_BASE = "https://world.openfoodfacts.org"
 API_SEARCH = f"{API_BASE}/cgi/search.pl"
 BATCH_SIZE = 500
-RATE_LIMIT_DELAY = 1.5  # 每次请求间隔（秒），避免限流
+RATE_LIMIT_DELAY = 2.5  # 每次请求间隔（秒），避免限流
 
 
 def get_engine():
@@ -459,13 +459,32 @@ async def cmd_bulk():
     sf = get_sf(engine)
 
     CATEGORIES = [
-        "beverages", "dairy", "breakfast cereals", "snacks",
-        "chocolate", "cookies", "juice", "tea", "coffee",
-        "fruit", "vegetables", "nuts", "protein",
-        "baby food", "dietetic foods", "yogurt", "milk",
-        "bread", "soup", "honey", "jam", "pasta",
-        "rice", "oil", "sauce", "vitamin", "supplement",
-        "collagen", "probiotic", "fiber",
+        # 饮料类
+        "beverages", "dairy", "yogurt", "milk", "juice", "tea", "coffee",
+        "water", "mineral water", "energy drinks", "sports drinks", "smoothies",
+        # 零食类
+        "snacks", "chocolate", "cookies", "crackers", "chips", "candy", "gum",
+        "ice cream", "popcorn", "nuts", "seeds",
+        # 谷物早餐
+        "breakfast cereals", "oatmeal", "granola", "muesli", "pasta", "rice",
+        "bread", "crackers",
+        # 蔬果
+        "fruit", "vegetables", "dried fruits", "dried vegetables", "salads",
+        "canned fruits", "canned vegetables",
+        # 调味品酱料
+        "honey", "jam", "sauce", "condiments", "mustard", "ketchup",
+        "soy sauce", "vinegar", "dressings",
+        # 肉类水产
+        "meat", "poultry", "beef", "pork", "sausages", "fish", "seafood",
+        "shrimp", "ready meals", "frozen meals", "pizza",
+        # 保健食品
+        "dietetic foods", "supplements", "vitamin", "minerals", "protein supplement",
+        "probiotic", "fiber", "collagen", "calcium", "iron",
+        # 特殊饮食
+        "vegan", "organic", "gluten free", "baby food", "tofu",
+        # 其他高频搜索词
+        "beer", "wine", "liqueur", "cocoa", "spread", "pudding", "cake",
+        "pastry", "croissant", "donut", "marmalade", "peanut butter",
     ]
 
     total_mapped = 0
@@ -477,7 +496,7 @@ async def cmd_bulk():
 
             for i, category in enumerate(CATEGORIES):
                 logger.info(f"[{i+1}/{len(CATEGORIES)}] 搜索分类: {category}")
-                products_raw = await search_by_category(client, category, max_products=100)
+                products_raw = await search_by_category(client, category, max_products=200)
                 logger.info(f"  获取 {len(products_raw)} 条原始数据")
 
                 batch_mapped = []
