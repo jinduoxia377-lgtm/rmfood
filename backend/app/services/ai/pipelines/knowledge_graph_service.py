@@ -86,7 +86,7 @@ class DBKnowledgeGraphService:
         self.db = db
         self._db_service = None
         if db is not None:
-            from ..kg.graph_query import GraphQueryService as GQS
+            from ...kg.graph_query import GraphQueryService as GQS
             self._db_service = GQS(db)
 
     # ── 核心查询 ──

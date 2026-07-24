@@ -182,7 +182,7 @@ class TenantMiddleware(BaseHTTPMiddleware):
         token = self._extract_bearer_token(request)
         if token:
             try:
-                from .security import decode_access_token
+                from app.utils.auth import decode_token as decode_access_token
                 payload = decode_access_token(token)
                 # JWT payload 应包含 org_id 字段（见 auth_service.create_access_token）
                 raw_org_id = getattr(payload, "org_id", None)

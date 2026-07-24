@@ -5,7 +5,7 @@ LLM 调用指标收集器 — 内存环形缓冲区
 提供滑动窗口聚合统计（成功率/P50-P99 延迟/按 Provider 分组）。
 
 用法:
-    from app.services.ai.metrics_collector import get_metrics, LLMMetricsSnapshot
+    from app.services.ai.shared.metrics_collector import get_metrics, LLMMetricsSnapshot
 
     metrics = get_metrics()
     await metrics.record(LLMMetricsSnapshot(

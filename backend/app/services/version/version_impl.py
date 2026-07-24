@@ -22,7 +22,7 @@ from app.models.prompt_version import PromptVersion
 from app.core.middleware.exceptions import NotFoundError as ResourceNotFoundException
 
 try:
-    from app.core.audit_system import AuditService
+    from app.core.middleware.audit_system import AuditService
     class _AuditLogger:
         def __init__(self, db):
             self._audit = AuditService(db)

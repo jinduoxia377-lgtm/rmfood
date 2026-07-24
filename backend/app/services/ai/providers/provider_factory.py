@@ -401,7 +401,7 @@ _factory_instance: Optional[LLMProviderFactory] = None
 def _get_runtime_config() -> Dict[str, Any]:
     """优先读取 llm_service 运行时配置，fallback 到 settings 环境变量"""
     try:
-        from ..llm_service import llm_service
+        from ...llm_service import llm_service
         if llm_service and hasattr(llm_service, 'config') and llm_service.config:
             return {
                 'api_key': getattr(llm_service.config, 'api_key', None) or '',
@@ -421,7 +421,7 @@ def get_provider_factory() -> LLMProviderFactory:
     global _factory_instance
 
     if _factory_instance is None:
-        from ...core.config import settings
+        from ....core.config import settings
 
         # 优先使用运行时配置（前端配置面板保存的值）
         runtime = _get_runtime_config()

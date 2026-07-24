@@ -17,8 +17,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, AsyncIterator, Dict, List, Optional
 
-from .provider_factory import get_provider_factory, TaskType
-from ...schemas.ai_schemas import AIGenerateParams, OutputLength, Tone
+from ..providers.provider_factory import get_provider_factory, TaskType
+from ....schemas.ai_schemas import AIGenerateParams, OutputLength, Tone
 
 logger = logging.getLogger(__name__)
 

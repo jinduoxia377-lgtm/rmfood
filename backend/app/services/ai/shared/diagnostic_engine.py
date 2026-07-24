@@ -6,7 +6,7 @@ Level 2 ConnectivityChecker: 运行时连通性探测 (<5s)
 Level 3 CapabilityChecker:   能力验证 (<15s)
 
 用法:
-    from app.services.ai.diagnostic_engine import DiagnosticEngine
+    from app.services.ai.shared.diagnostic_engine import DiagnosticEngine
     engine = DiagnosticEngine()
     report = await engine.run_full_diagnosis()
 """

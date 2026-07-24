@@ -40,7 +40,7 @@ from ...schemas.sync_schemas import (
     SyncChangeItem,
 )
 from ...api.deps import get_current_active_user, get_db_session, CurrentUser, DbSession
-from ..middleware.exceptions import NotFoundError, ConflictError
+from app.core.middleware.exceptions import NotFoundError, ConflictError
 from ...services.sync.diff_detector import DiffDetector, SyncChange, ChangeType
 from ...services.sync.change_queue import ChangeQueue, QueueItem
 from ...services.sync.conflict_detector import (

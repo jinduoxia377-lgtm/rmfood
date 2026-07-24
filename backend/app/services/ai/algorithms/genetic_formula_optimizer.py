@@ -317,7 +317,7 @@ class GeneticFormulaOptimizer:
         # 如果显式提供了 herb_knowledge，直接使用
         if self._herb_knowledge is not None:
             try:
-                from ..bayesian_formula_optimizer import HerbParameter
+                from .bayesian_formula_optimizer import HerbParameter
                 all_herbs = self._herb_knowledge.get_herbs()
                 if all_herbs:
                     new_herbs = {}
@@ -352,7 +352,7 @@ class GeneticFormulaOptimizer:
                 self._herb_knowledge = hk
                 all_herbs = hk.get_herbs()
                 if all_herbs:
-                    from ..bayesian_formula_optimizer import HerbParameter
+                    from .bayesian_formula_optimizer import HerbParameter
                     new_herbs = {}
                     new_index: dict = {}
                     for herb_id, profile in all_herbs.items():

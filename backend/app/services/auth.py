@@ -530,6 +530,12 @@ class AuthService:
 # 为保持向后兼容，以下别名供旧代码继续使用。
 # 新代码请直接使用: from ..api.deps import get_current_active_user, require_role
 
-# 向后兼容别名
-from ..api.deps import get_current_active_user as get_current_user  # noqa: F401
-from ..api.deps import require_role  # noqa: F401
+# 向后兼容别名 — 延迟导入避免循环依赖
+def __getattr__(name):
+    if name == "get_current_user":
+        from ..api.deps import get_current_active_user
+        return get_current_active_user
+    if name == "require_role":
+        from ..api.deps import require_role
+        return require_role
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

@@ -240,7 +240,7 @@ async def paginate_query(
 
 from ..core.rbac.rbac import RBACManager as RBACEngine, Permission
 from ..models.enums import UserRole
-from ..middleware.exceptions import AuthorizationError, AuthenticationError
+from app.core.middleware.exceptions import AuthorizationError, AuthenticationError
 
 
 def require_roles(allowed_roles: List[str]):
@@ -360,7 +360,7 @@ def validate_required_fields(data: Dict, required_fields: List[str]):
     Raises:
         ValidationError: 如果缺少必填字段
     """
-    from ..middleware.exceptions import ValidationError
+    from app.core.middleware.exceptions import ValidationError
 
     missing_fields = [field for field in required_fields if field not in data or data[field] is None]
     
@@ -424,7 +424,7 @@ def validate_upload_file(filename: str, file_size: int):
     Raises:
         ValidationError: 如果文件不符合要求
     """
-    from ..middleware.exceptions import ValidationError
+    from app.core.middleware.exceptions import ValidationError
     import os
     
     # 检查扩展名

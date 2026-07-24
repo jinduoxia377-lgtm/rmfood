@@ -17,7 +17,7 @@ import json
 import logging
 from typing import AsyncGenerator
 
-from ..llm_service import llm_service, LLMMessage
+from ...llm_service import llm_service, LLMMessage
 
 logger = logging.getLogger(__name__)
 

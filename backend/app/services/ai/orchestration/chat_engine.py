@@ -14,7 +14,7 @@ import time
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
-from .provider_factory import get_provider_factory, TaskType
+from ..providers.provider_factory import get_provider_factory, TaskType
 
 logger = logging.getLogger(__name__)
 
@@ -159,7 +159,7 @@ class AcademicianChatEngine:
         Returns:
             ChatResult 包含完整回复和相关数据
         """
-        from .provider_factory import get_provider_factory, TaskType
+        from ..providers.provider_factory import get_provider_factory, TaskType
 
         t0 = time.time()
         result = ChatResult(model="deepseek-chat")

@@ -13,7 +13,7 @@ from ..schemas.peptide_design import (
     PeptideDesignCreate, PeptideDesignUpdate,
     PeptideDesignCandidateCreate, VersionInfo, ComparisonResult
 )
-from ..middleware.exceptions import NotFoundError, ConflictError
+from app.core.middleware.exceptions import NotFoundError, ConflictError
 
 logger = logging.getLogger(__name__)
 

@@ -115,7 +115,7 @@ class NutritionAdapter:
 
                 async def _load():
                     # 获取所有药材ID（从内置字典或数据库）
-                    from app.services.ai.bayesian_formula_optimizer import _BUILTIN_HERBS
+                    from app.services.ai.algorithms.bayesian_formula_optimizer import _BUILTIN_HERBS
                     for herb_id, herb_param in _BUILTIN_HERBS.items():
                         self._herb_nutrition_cache[herb_id] = herb_param.efficacy_scores.copy()
                         self._herb_cost_cache[herb_id] = herb_param.cost_per_gram

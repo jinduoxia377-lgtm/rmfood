@@ -8,7 +8,7 @@ AI 服务告警规则引擎
 - 自定义条件函数
 
 用法:
-    from app.services.ai.alerting import get_alerting_engine
+    from app.services.ai.shared.alerting import get_alerting_engine
 
     engine = get_alerting_engine()
     alerts = engine.evaluate(metrics_summary)

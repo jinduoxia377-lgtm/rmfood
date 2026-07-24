@@ -49,7 +49,7 @@ class FormulaDesigner:
         """调用贝叶斯优化器和 NSGA-II 生成配方"""
         # 贝叶斯优化器
         try:
-            from .ai.bayesian_formula_optimizer import get_bayesian_optimizer
+            from .ai.algorithms.bayesian_formula_optimizer import get_bayesian_optimizer
             optimizer = get_bayesian_optimizer()
             candidates = await optimizer.generate(target_effects=effects[:3])
             if candidates:
@@ -77,7 +77,7 @@ class FormulaDesigner:
 
         # NSGA-II 备选
         try:
-            from .ai.multi_objective_optimizer import get_nsga2_optimizer
+            from .ai.algorithms.multi_objective_optimizer import get_nsga2_optimizer
             nsga = get_nsga2_optimizer()
             result = nsga.generate_with_result(target_effects=effects[:3])
             if result.candidates:

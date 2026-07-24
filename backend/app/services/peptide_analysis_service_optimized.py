@@ -31,7 +31,7 @@ from ..schemas.peptide_analysis import (
     PeptideAnalysisCreate, PeptideAnalysisUpdate,
     PeptideAnalysisResponse, PeptideAnalysisListResponse, BatchResult
 )
-from ..middleware.exceptions import (
+from app.core.middleware.exceptions import (
     NotFoundError, AuthorizationError,
     PeptideAnalysisError
 )

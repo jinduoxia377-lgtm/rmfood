@@ -247,7 +247,7 @@ class LLMService:
 
         # 重置 Provider 工厂单例，确保下次调用使用最新配置
         try:
-            from app.services.ai.provider_factory import cleanup_provider_factory
+            from app.services.ai.providers.provider_factory import cleanup_provider_factory
             import asyncio
             asyncio.create_task(cleanup_provider_factory())
         except Exception:

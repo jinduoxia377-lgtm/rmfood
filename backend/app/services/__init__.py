@@ -1,5 +1,5 @@
 """RMFOOD 服务层"""
-from .auth import AuthService, get_current_user
+from .auth import AuthService
 from .user import UserService
 from .formula import FormulaService
 from .experiment import ExperimentService

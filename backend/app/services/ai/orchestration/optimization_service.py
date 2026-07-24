@@ -13,11 +13,11 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from .provider_factory import get_provider_factory, TaskType
-from .syntax_checker import PromptSyntaxChecker, SyntaxIssue, SeverityLevel
-from .structure_analyzer import PromptStructureAnalyzer, StructureReport
-from .effectiveness_predictor import EffectivenessPredictor, EffectivenessPrediction
-from ...schemas.ai_schemas import OptimizationLevel
+from ..providers.provider_factory import get_provider_factory, TaskType
+from ..shared.syntax_checker import PromptSyntaxChecker, SyntaxIssue, SeverityLevel
+from ..shared.structure_analyzer import PromptStructureAnalyzer, StructureReport
+from ..shared.effectiveness_predictor import EffectivenessPredictor, EffectivenessPrediction
+from ....schemas.ai_schemas import OptimizationLevel
 
 logger = logging.getLogger(__name__)
 

@@ -261,7 +261,7 @@ class UnifiedFormulaOptimizer:
     def _estimate_candidate_herbs(self, target_effects: List[str]) -> int:
         """估计候选药材数量"""
         try:
-            from app.services.ai.bayesian_formula_optimizer import _EFFICACY_TO_HERBS
+            from app.services.ai.algorithms.bayesian_formula_optimizer import _EFFICACY_TO_HERBS
             candidate_set = set()
             for effect in target_effects:
                 if effect in _EFFICACY_TO_HERBS:
@@ -349,7 +349,7 @@ class UnifiedFormulaOptimizer:
         try:
             import asyncio
 
-            from app.services.ai.genetic_formula_optimizer import (
+            from app.services.ai.algorithms.genetic_formula_optimizer import (
                 get_genetic_optimizer, GAConfig,
             )
             optimizer = get_genetic_optimizer()
@@ -423,7 +423,7 @@ class UnifiedFormulaOptimizer:
         try:
             import asyncio
 
-            from app.services.ai.genetic_formula_optimizer import (
+            from app.services.ai.algorithms.genetic_formula_optimizer import (
                 get_genetic_optimizer, GAConfig, Individual,
             )
             from app.services.formula.lp_solver import (
@@ -433,7 +433,7 @@ class UnifiedFormulaOptimizer:
             # 构建MILP求解器
             milp_solver = None
             try:
-                from app.services.ai.bayesian_formula_optimizer import _BUILTIN_HERBS
+                from app.services.ai.algorithms.bayesian_formula_optimizer import _BUILTIN_HERBS
                 herb_data = {}
                 for hid, hp in _BUILTIN_HERBS.items():
                     herb_data[hid] = HerbNutritionData(
@@ -459,7 +459,7 @@ class UnifiedFormulaOptimizer:
                 logger.warning(f"[UnifiedOptimizer] MILP求解器初始化回退: {e}")
 
             # 使用BinaryGA+MILP
-            from app.services.ai.binary_ga_optimizer import BinaryGAOptimizer, BinaryGAConfig
+            from app.services.ai.algorithms.binary_ga_optimizer import BinaryGAOptimizer, BinaryGAConfig
             binary_ga = BinaryGAOptimizer(BinaryGAConfig(
                 population_size=request.population_size,
                 generations=request.generations,
@@ -474,7 +474,7 @@ class UnifiedFormulaOptimizer:
             ))
 
             # 获取候选药材
-            from app.services.ai.bayesian_formula_optimizer import _EFFICACY_TO_HERBS
+            from app.services.ai.algorithms.bayesian_formula_optimizer import _EFFICACY_TO_HERBS
             candidate_herbs = []
             for effect in request.target_effects:
                 if effect in _EFFICACY_TO_HERBS:
@@ -567,7 +567,7 @@ class UnifiedFormulaOptimizer:
         start = time.perf_counter()
 
         try:
-            from app.services.ai.multi_objective_optimizer import (
+            from app.services.ai.algorithms.multi_objective_optimizer import (
                 get_nsga2_optimizer, OptimizationConfig, OptimizationObjective,
             )
 

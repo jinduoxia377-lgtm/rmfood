@@ -549,7 +549,7 @@ class RayClusterManager:
 
         if "similarity" in analysis_types:
             try:
-                from ..services.ai.recommendation_engine import RecommendationEngine
+                from ..services.ai.shared.recommendation_engine import RecommendationEngine
                 engine = RecommendationEngine()
                 similar = engine.get_similar(recipe_id, limit=3) if recipe_id else []
                 analysis_results["similarity"] = {

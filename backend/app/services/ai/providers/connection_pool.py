@@ -5,7 +5,7 @@ LLM Provider HTTP 连接池管理
 避免频繁创建/销毁连接的开销。
 
 用法:
-    from app.services.ai.connection_pool import get_connection_pool
+    from app.services.ai.providers.connection_pool import get_connection_pool
 
     pool = get_connection_pool()
     client = pool.get_client("https://api.openai.com/v1")

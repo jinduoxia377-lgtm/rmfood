@@ -26,7 +26,7 @@ def _get_herb_db():
     global _HERB_DB
     if _HERB_DB is None:
         try:
-            from app.services.ai.bayesian_formula_optimizer import _BUILTIN_HERBS
+            from app.services.ai.algorithms.bayesian_formula_optimizer import _BUILTIN_HERBS
             _HERB_DB = _BUILTIN_HERBS
         except ImportError:
             # 兜底：使用最小内置集

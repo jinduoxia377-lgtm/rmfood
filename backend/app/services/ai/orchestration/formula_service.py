@@ -9,13 +9,13 @@ import logging
 from typing import Any
 from dataclasses import dataclass, field
 
-from ..ai_models.formula_gpt import MockFormulaGPTService as FormulaGPTService
-from ..ai_models.synergy_net import MockSynergyNetService as SynergyNetService
-from ..ai_models.peptide_scorer import MockPeptideScorerService as PeptideScorerService
-from ..ai_models.taste_predictor import MockTastePredictorService as TastePredictorService
-from ..ai_models.stability_model import MockStabilityModelService as StabilityModelService
-from ..ai_models.safety_checker import SafetyCheckerService
-from ..ai_models.pepinvent_service import (
+from ...ai_models.formula_gpt import MockFormulaGPTService as FormulaGPTService
+from ...ai_models.synergy_net import MockSynergyNetService as SynergyNetService
+from ...ai_models.peptide_scorer import MockPeptideScorerService as PeptideScorerService
+from ...ai_models.taste_predictor import MockTastePredictorService as TastePredictorService
+from ...ai_models.stability_model import MockStabilityModelService as StabilityModelService
+from ...ai_models.safety_checker import SafetyCheckerService
+from ...ai_models.pepinvent_service import (
     PepinventService,
     get_pepinvent_service,
     ServiceUnavailableError,

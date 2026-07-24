@@ -37,7 +37,7 @@ from enum import Enum, auto
 from typing import Any, Callable, Dict, List, Optional, TypeVar, Union
 from contextlib import asynccontextmanager
 
-from ..middleware.exceptions import (
+from app.core.middleware.exceptions import (
     AppError,
 )
 

@@ -37,7 +37,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from ..config import settings
 from ..database.session import get_db
 from app.api.deps import get_current_active_user, CurrentUser, User
-from app.services.ai.inference_queue import inference_queue
+from app.services.ai.shared.inference_queue import inference_queue
 
 logger = logging.getLogger(__name__)
 

@@ -5,7 +5,7 @@
 确保高优先级请求（如交互式对话）优先执行。
 
 用法:
-    from app.services.ai.request_queue import get_request_queue, Priority
+    from app.services.ai.shared.request_queue import get_request_queue, Priority
 
     queue = get_request_queue()
 

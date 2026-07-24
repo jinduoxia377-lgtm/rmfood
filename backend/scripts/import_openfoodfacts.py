@@ -27,7 +27,7 @@ from pathlib import Path
 # 确保 backend 在 path 中
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from app.core.session import engine
+from app.core.database.session import engine
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 
 logging.basicConfig(
@@ -49,10 +49,28 @@ async def run_sample_import():
     """
     Phase A: 从 REST API 拉取 100 条样本产品，验证整个链路
     """
-    from app.services.openfoodfacts.client import OFFClient
-    from app.services.openfoodfacts.mapper import OFFMapper
-    from app.services.openfoodfacts.localizer import OFFLocalizer
-    from app.services.openfoodfacts.loader import OFFLoader
+    # 直接导入文件避免 services/__init__.py 的循环依赖
+    import importlib.util, os
+    base = os.path.join(os.path.dirname(__file__), "..", "app", "services")
+    spec = importlib.util.spec_from_file_location("off_client_mod", os.path.join(base, "openfoodfacts", "client.py"))
+    off_client_mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(off_client_mod)
+    OFFClient = off_client_mod.OFFClient
+
+    spec2 = importlib.util.spec_from_file_location("off_mapper_mod", os.path.join(base, "openfoodfacts", "mapper.py"))
+    off_mapper_mod = importlib.util.module_from_spec(spec2)
+    spec2.loader.exec_module(off_mapper_mod)
+    OFFMapper = off_mapper_mod.OFFMapper
+
+    spec3 = importlib.util.spec_from_file_location("off_localizer_mod", os.path.join(base, "openfoodfacts", "localizer.py"))
+    off_localizer_mod = importlib.util.module_from_spec(spec3)
+    spec3.loader.exec_module(off_localizer_mod)
+    OFFLocalizer = off_localizer_mod.OFFLocalizer
+
+    spec4 = importlib.util.spec_from_file_location("off_loader_mod", os.path.join(base, "openfoodfacts", "loader.py"))
+    off_loader_mod = importlib.util.module_from_spec(spec4)
+    spec4.loader.exec_module(off_loader_mod)
+    OFFLoader = off_loader_mod.OFFLoader
 
     logger.info("=" * 60)
     logger.info("Phase A: OFF 样本数据验证 (100条)")
@@ -154,10 +172,24 @@ async def run_bulk_import(china_only: bool = True):
 
     通过 REST API 搜索 + 分页拉取，避免一次性下载 2GB TSV。
     """
-    from app.services.openfoodfacts.client import OFFClient
-    from app.services.openfoodfacts.mapper import OFFMapper
-    from app.services.openfoodfacts.localizer import OFFLocalizer
-    from app.services.openfoodfacts.loader import OFFLoader
+    import importlib.util, os
+    base = os.path.join(os.path.dirname(__file__), "..", "app", "services")
+
+    spec = importlib.util.spec_from_file_location("OFFClient", os.path.join(base, "openfoodfacts", "client.py"))
+    OFFClient = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(OFFClient)
+
+    spec2 = importlib.util.spec_from_file_location("OFFMapper", os.path.join(base, "openfoodfacts", "mapper.py"))
+    OFFMapper = importlib.util.module_from_spec(spec2)
+    spec2.loader.exec_module(OFFMapper)
+
+    spec3 = importlib.util.spec_from_file_location("OFFLocalizer", os.path.join(base, "openfoodfacts", "localizer.py"))
+    OFFLocalizer = importlib.util.module_from_spec(spec3)
+    spec3.loader.exec_module(OFFLocalizer)
+
+    spec4 = importlib.util.spec_from_file_location("OFFLoader", os.path.join(base, "openfoodfacts", "loader.py"))
+    OFFLoader = importlib.util.module_from_spec(spec4)
+    spec4.loader.exec_module(OFFLoader)
 
     logger.info("=" * 60)
     logger.info("Phase B: OFF 中国产品批量导入")

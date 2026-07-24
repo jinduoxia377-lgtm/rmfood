@@ -13,7 +13,7 @@ import logging
 from dataclasses import dataclass, field
 from typing import Any
 
-from ..ai_models.safety_checker import SafetyCheckerService
+from ...ai_models.safety_checker import SafetyCheckerService
 
 logger = logging.getLogger(__name__)
 

@@ -7,5 +7,6 @@
 """
 # Backward compat: re-export key functions
 from app.core.security.account_lockout import AccountLockout  # noqa: F401
+from app.utils.auth import decode_token as decode_access_token  # noqa: F401
 
-__all__ = ["AccountLockout"]
+__all__ = ["AccountLockout", "decode_access_token"]

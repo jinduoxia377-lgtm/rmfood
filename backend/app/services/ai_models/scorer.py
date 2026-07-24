@@ -190,7 +190,7 @@ class MultiObjectiveScorer:
     def _load_herb_db(self) -> None:
         """加载药材知识库"""
         try:
-            from app.services.ai.bayesian_formula_optimizer import _BUILTIN_HERBS
+            from app.services.ai.algorithms.bayesian_formula_optimizer import _BUILTIN_HERBS
             self._herb_db = _BUILTIN_HERBS
         except ImportError:
             self._herb_db = {}
