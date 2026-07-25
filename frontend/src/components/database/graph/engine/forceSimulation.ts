@@ -20,7 +20,7 @@ import type { RefObject } from 'react'
 
 // ── Re-export internal types used in the public API ──
 export type { SimNode, SimEdge, LayoutType, ThemeConfig } from '../types'
-import type { SimNode, SimEdge, LayoutType, ThemeConfig, GraphNode } from '../types'
+import type { SimNode, SimEdge, LayoutType, ThemeConfig, GraphNode, GraphEdge } from '../types'
 import {
   TYPE_CONFIG, EDGE_COLORS, TYPE_ORDER,
   getTypeConf, getDensityScale, calcNodeRadius, isCoreNode,
@@ -37,8 +37,8 @@ export interface GraphEngineInput {
   svgRef: RefObject<SVGSVGElement | null>
   width: number
   height: number
-  nodes: Array<{ id?: string; label: string; type: string }>
-  edges: SimEdge[]
+  nodes: GraphNode[]
+  edges: GraphEdge[]
   theme: ThemeConfig
   layout: LayoutType
   lodLevel: 'minimal' | 'reduced' | 'full'
@@ -70,7 +70,7 @@ export class GraphEngine {
   private g: d3.Selection<d3.BaseType, unknown, null, undefined> | null = null
   private defs: d3.Selection<d3.BaseType, unknown, null, undefined> | null = null
   private simulation: d3.Simulation<SimNode, undefined> | null = null
-  private zoomBehavior: d3.ZoomBehavior<SVGSVGElement, unknown> | null = null
+  private zoomBehavior: d3.ZoomBehavior<d3.BaseType, unknown> | null = null
   private rafId: number | null = null
   private ticking = false
   private tickCounter = 0
@@ -172,7 +172,7 @@ export class GraphEngine {
 
   setZoom(transform: d3.ZoomTransform): void {
     if (!this.svg || !this.zoomBehavior) return
-    this.svg.transition().duration(350).call(this.zoomBehavior.transform, transform)
+    ;(this.svg as any).transition().duration(350).call((this.zoomBehavior as any).transform, transform)
   }
 
   // ────────────────────────────────────────
@@ -237,19 +237,19 @@ export class GraphEngine {
       .attr('flood-color', '#000000').attr('flood-opacity', '0.25')
   }
 
-  private setupZoom(g: d3.Selection<SVGGElement, unknown, null, undefined>): void {
-    this.zoomBehavior = d3.zoom<SVGSVGElement, unknown>()
+  private setupZoom(g: d3.Selection<d3.BaseType, unknown, null, undefined>): void {
+    this.zoomBehavior = d3.zoom<d3.BaseType, unknown>()
       .scaleExtent([0.08, 8])
-      .on('zoom', (event: d3.D3ZoomEvent<SVGSVGElement, unknown>) => {
-        g.attr('transform', event.transform)
+      .on('zoom', (event: d3.D3ZoomEvent<d3.BaseType, unknown>) => {
+        g.attr('transform', event.transform as any)
         this.input.onSetZoomTransform?.(event.transform)
       })
 
-    this.svg!.on('touchstart', () => {}, { passive: true })
-    this.svg!.call(this.zoomBehavior)
+    ;(this.svg as any).on('touchstart', () => {}, { passive: true })
+    ;(this.svg as any).call(this.zoomBehavior)
 
-    this.svg!.on('dblclick', () => {
-      this.svg!.transition().duration(600).call(this.zoomBehavior!.transform, d3.zoomIdentity).ease(d3.easeCubicOut)
+    ;(this.svg as any).on('dblclick', () => {
+      ;(this.svg as any).transition().duration(600).call((this.zoomBehavior as any).transform, d3.zoomIdentity).ease(d3.easeCubicOut)
     })
   }
 
@@ -293,7 +293,7 @@ export class GraphEngine {
 
   private renderFull(
     nodes: GraphNode[],
-    edges: SimEdge[],
+    edges: GraphEdge[],
     layout: LayoutType,
     containerWidth: number,
     containerHeight: number,
@@ -309,7 +309,7 @@ export class GraphEngine {
     const highlightSet = new Set(highlightPath || [])
 
     // ── Data preparation ──
-    const nodeMap = new Map<string, { id?: string; label: string; type: string }>()
+    const nodeMap = new Map<string, GraphNode>()
     for (const n of nodes) nodeMap.set(n.id || n.label, n)
 
     // Calculate degree map from original edges
@@ -346,7 +346,7 @@ export class GraphEngine {
         fx: layout !== 'force' ? ix : undefined,
         fy: layout !== 'force' ? iy : undefined,
         degree: degreeMap.get(key) || 0,
-      }
+      } as unknown as SimNode
     })
 
     // Filter and prepare simulation edges
@@ -447,7 +447,7 @@ export class GraphEngine {
           typeBuckets.get(node.type)!.push(node)
         }
 
-        for (const [, typedNodes] of typeBuckets) {
+        for (const [, typedNodes] of Array.from(typeBuckets.values())) {
           const grid = new Map<string, SimNode[]>()
           const getGridKey = (x: number, y: number) =>
             `${Math.floor(x / cellSize)},${Math.floor(y / cellSize)}`
@@ -1021,7 +1021,7 @@ export class GraphEngine {
         .attr('fill-opacity', (n: SimNode) => connectedIds.has(n.id) ? 1 : 0.14)
     }
 
-    const handleHoverOut = (thisContext: SVGGElement) => {
+    const handleHoverOut = (el: SVGGElement) => {
       this.input.onSetTooltip?.(null)
       d3.select(el).select('.node-body')
         .transition().duration(220)
@@ -1045,16 +1045,16 @@ export class GraphEngine {
 
     allNodes
       .on('mouseenter', function (this: SVGGElement, event: MouseEvent | TouchEvent, d: SimNode) {
-        handleHoverIn.call(this, event, d)
+        handleHoverIn(this, event, d)
       })
       .on('mouseleave', function (this: SVGGElement) {
-        handleHoverOut.call(this)
+        handleHoverOut(this)
       })
 
     // Touch support
     allNodes.on('touchstart', function (this: SVGGElement, event: Event, d: SimNode) {
-      handleHoverIn.call({} as any, event as MouseEvent | TouchEvent, d)
-      setTimeout(() => { if ((this as SVGGElement).isConnected) handleHoverOut.call(this) }, 2500)
+      handleHoverIn(this, event as MouseEvent | TouchEvent, d)
+      setTimeout(() => { if ((this as SVGGElement).isConnected) handleHoverOut(this) }, 2500)
     })
   }
 
