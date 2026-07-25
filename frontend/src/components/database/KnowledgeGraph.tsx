@@ -105,7 +105,7 @@ interface SmartPathResult {
   length: number
   intermediateNodes: string[]
   keyBridges: string[] // 中介节点（高betweenness）
-  alternativePaths: { path: string[]; length: number }[]
+  alternativePaths: Array<{ path: string[]; length: number }>
 }
 
 interface NodeAIAnalysis {
@@ -902,164 +902,18 @@ export default function KnowledgeGraph({
   }, [])
 
   // ── v7.4: 社群检测算法（简化版标签传播）──
-  const detectedCommunities = useMemo(() => {
-    if (edges.length === 0 || nodes.length === 0) return new Map<string, number>()
-
-    const nodeMap = new Map<string, string>()
-    nodes.forEach(n => { nodeMap.set(n.id || n.label, n.type) })
-
-    const labels = new Map<string, number>()
-    const labelCounts = new Map<number, number>()
-    const communityId = 0
-
-    nodes.forEach((n, i) => { labels.set(n.id || n.label, i) })
-
-    for (let iter = 0; iter < 8; iter++) {
-      const newLabels = new Map(labels)
-      for (const [nodeId] of labels) {
-        const neighbors = new Set<string>()
-        edges.forEach(e => {
-          const src = typeof e.source === 'string' ? e.source : (e.source as any)?.id || (e.source as any)?.label
-          const tgt = typeof e.target === 'string' ? e.target : (e.target as any)?.id || (e.target as any)?.label
-          if (src === nodeId) neighbors.add(tgt)
-          if (tgt === nodeId) neighbors.add(src)
-        })
-
-        if (neighbors.size > 0) {
-          const counts = new Map<number, number>()
-          neighbors.forEach(neighborId => {
-            const l = labels.get(neighborId) ?? -1
-            counts.set(l, (counts.get(l) || 0) + 1)
-          })
-
-          let maxCount = 0
-          let maxLabel = labels.get(nodeId)!
-          for (const [label, count] of counts) {
-            if (count > maxCount) { maxCount = count; maxLabel = label }
-          }
-          newLabels.set(nodeId, maxLabel)
-        }
-      }
-      labels.clear(); newLabels.forEach((v, k) => labels.set(k, v))
-    }
-
-    const uniqueLabels = [...new Set(labels.values())]
-    const remapped = new Map<string, number>()
-    labels.forEach((oldLabel, nodeId) => {
-      const newLabel = uniqueLabels.indexOf(oldLabel)
-      remapped.set(nodeId, newLabel)
-    })
-
-    return remapped
-  }, [nodes, edges])
+  const detectedCommunities = useMemo(() => detectCommunities(nodes, edges), [nodes, edges])
 
   // 社群颜色生成（使用 HSL 色轮均匀分布）
-  const generatedCommunityColors = useMemo(() => {
-    const numCommunities = new Set(detectedCommunities.values()).size
-    const colors: Record<number, string> = {}
-    for (let i = 0; i < numCommunities; i++) {
-      const hue = Math.round((i * 360 / Math.max(numCommunities, 1)) % 360)
-      colors[i] = `hsl(${hue}, 65%, 52%)`
-    }
-    return colors
-  }, [detectedCommunities])
+  const generatedCommunityColors = useMemo(
+    () => generateCommunityColors(detectedCommunities),
+    [detectedCommunities],
+  )
 
   // ═══ v7.7: 中心性分析计算 ═══
   const centralityData = useMemo(() => {
     if (filteredData.filteredNodes.length === 0) return { degreeMap: new Map<string, number>(), topByDegree: [], stats: null }
-
-    const degreeMap = new Map<string, number>()
-    filteredData.filteredNodes.forEach(n => {
-      const id = n.id || n.label
-      let deg = 0
-      filteredData.filteredEdges.forEach(e => {
-        if ((e.source) === id || (e.target) === id) deg++
-      })
-      degreeMap.set(id, deg)
-    })
-
-    const nodeDegreeList = filteredData.filteredNodes.map(n => ({
-      node: n,
-      degree: degreeMap.get(n.id || n.label) || 0,
-    }))
-
-    nodeDegreeList.sort((a, b) => b.degree - a.degree)
-    const topByDegree = nodeDegreeList.slice(0, 10)
-
-    // Graph statistics
-    const N = filteredData.filteredNodes.length
-    const E = filteredData.filteredEdges.length
-    const maxPossibleEdges = N * (N - 1) / 2
-    const density = maxPossibleEdges > 0 ? E / maxPossibleEdges : 0
-    const avgDegree = N > 0 ? (2 * E) / N : 0
-    const degrees = Array.from(degreeMap.values())
-    const maxDegree = degrees.length > 0 ? Math.max(...degrees) : 0
-    const minDegree = degrees.length > 0 ? Math.min(...degrees) : 0
-
-    // Connected components (BFS-based approximation for undirected graph)
-    const visited = new Set<string>()
-    let components = 0
-    let largestComponentSize = 0
-    filteredData.filteredNodes.forEach(n => {
-      const nid = n.id || n.label
-      if (visited.has(nid)) return
-      components++
-      const queue = [nid]
-      let compSize = 0
-      while (queue.length > 0) {
-        const curr = queue.shift()!
-        if (visited.has(curr)) continue
-        visited.add(curr)
-        compSize++
-        filteredData.filteredEdges.forEach(e => {
-          const s = e.source, t = e.target
-          if (s === curr && !visited.has(t)) queue.push(t)
-          else if (t === curr && !visited.has(s)) queue.push(s)
-        })
-      }
-      largestComponentSize = Math.max(largestComponentSize, compSize)
-    })
-
-    // Approximate diameter via BFS from highest-degree node
-    let diameter = 0
-    if (topByDegree.length > 0) {
-      const startId = topByDegree[0].node.id || topByDegree[0].node.label
-      const distMap = new Map<string, number>()
-      distMap.set(startId, 0)
-      const bfsQueue = [startId]
-      while (bfsQueue.length > 0) {
-        const curr = bfsQueue.shift()!
-        const d = distMap.get(curr) || 0
-        diameter = Math.max(diameter, d)
-        filteredData.filteredEdges.forEach(e => {
-          const s = e.source, t = e.target
-          if (s === curr && !distMap.has(t)) { distMap.set(t, d + 1); bfsQueue.push(t) }
-          else if (t === curr && !distMap.has(s)) { distMap.set(s, d + 1); bfsQueue.push(s) }
-        })
-      }
-    }
-
-    return {
-      degreeMap,
-      topByDegree,
-      stats: {
-        totalNodes: N,
-        totalEdges: E,
-        density: density.toFixed(4),
-        avgDegree: avgDegree.toFixed(1),
-        maxDegree,
-        minDegree,
-        connectedComponents: components,
-        largestComponentSize,
-        diameter,
-        typeDistribution: Object.entries(
-          filteredData.filteredNodes.reduce((acc, n) => {
-            acc[n.type] = (acc[n.type] || 0) + 1
-            return acc
-          }, {} as Record<string, number>),
-        ).sort((a, b) => b[1] - a[1]),
-      },
-    }
+    return computeCentrality(filteredData.filteredNodes, filteredData.filteredEdges)
   }, [filteredData])
 
   // v7.7: 排序后的节点列表（用于中心性面板）
@@ -1142,18 +996,8 @@ export default function KnowledgeGraph({
   }, [])
 
   // ═══ v7.9: 度数映射 / 主题 / 动画 / 布局回调 ═══
-  const nodeDegreeMap = useMemo(() => {
-    const map = new Map<string, number>()
-    filteredData.filteredNodes.forEach(n => map.set(n.id || n.label, 0))
-    filteredData.filteredEdges.forEach(e => {
-      const s = typeof e.source === 'string' ? e.source : (e.source as SimNode).id || ''
-      const t = typeof e.target === 'string' ? e.target : (e.target as SimNode).id || ''
-      map.set(s, (map.get(s) || 0) + 1)
-      map.set(t, (map.get(t) || 0) + 1)
-    })
-    return map
-  }, [filteredData])
-
+  const degreeStats = useMemo(() => computeDegreeStats(filteredData.filteredNodes, filteredData.filteredEdges), [filteredData])
+  const nodeDegreeMap = degreeStats.degreeMap
   const maxDegree = useMemo(() => {
     return Math.max(...Array.from(nodeDegreeMap.values()), 1)
   }, [nodeDegreeMap])
@@ -2471,51 +2315,16 @@ ${centralityData.topByDegree.sort((a, b) => b.degree - a.degree).slice(0, 5).map
   }, [selectedNodes, filteredData, nodes, communities])
 
   // v7.6: BFS 路径查找（用于路径动画高亮）
-  const findPathBFS = useCallback((sourceId: string, targetId: string): string[] | null => {
-    if (sourceId === targetId) return [sourceId]
-    const adjList = new Map<string, string[]>()
-    filteredData.filteredEdges.forEach(e => {
-      const s = typeof e.source === 'string' ? e.source : ''
-      const t = typeof e.target === 'string' ? e.target : ''
-      if (!adjList.has(s)) adjList.set(s, [])
-      if (!adjList.has(t)) adjList.set(t, [])
-      adjList.get(s)!.push(t)
-      adjList.get(t)!.push(s)
-    })
-
-    const visited = new Set<string>()
-    const parent = new Map<string, string>()
-    const queue = [sourceId]
-    visited.add(sourceId)
-
-    while (queue.length > 0) {
-      const current = queue.shift()!
-      if (current === targetId) {
-        const path: string[] = []
-        let node: string | undefined = targetId
-        while (node) {
-          path.unshift(node)
-          node = parent.get(node)
-        }
-        return path
-      }
-      for (const neighbor of adjList.get(current) || []) {
-        if (!visited.has(neighbor)) {
-          visited.add(neighbor)
-          parent.set(neighbor, current)
-          queue.push(neighbor)
-        }
-      }
-    }
-    return null
-  }, [filteredData])
+  const findPathBFSLocal = useCallback((sourceId: string, targetId: string): string[] | null => {
+    return findPathBFS(filteredData.filteredEdges, sourceId, targetId)
+  }, [filteredData.filteredEdges])
 
   // v7.6: 启动路径动画（双击第二个节点时触发）
   const startPathAnimation = useCallback((targetNode: GraphNode) => {
     if (!selectedNode) return
     const sourceId = selectedNode.id || selectedNode.label
     const targetId = targetNode.id || targetNode.label
-    const path = findPathBFS(sourceId, targetId)
+    const path = findPathBFSLocal(sourceId, targetId)
     if (path && path.length >= 2) {
       const pathEdges: [string, string][] = []
       for (let i = 0; i < path.length - 1; i++) {
@@ -2527,19 +2336,11 @@ ${centralityData.topByDegree.sort((a, b) => b.degree - a.degree).slice(0, 5).map
       setExportStatus('⚠ 未找到两节点间的连接路径')
       setTimeout(() => setExportStatus(null), 2500)
     }
-  }, [selectedNode, findPathBFS])
+  }, [selectedNode, findPathBFSLocal])
 
   // ── 图例 & 统计 ──
-  const allTypes = useMemo(() => [...new Set(nodes.map(n => n.type))], [nodes])
-  const legendItems = useMemo(
-    () => allTypes.map(type => ({ type, ...TYPE_CONFIG[type] })),
-    [allTypes],
-  )
-  const typeCounts = useMemo(() =>
-    nodes.reduce((acc, n) => {
-      acc[n.type] = (acc[n.type] || 0) + 1
-      return acc
-    }, {} as Record<string, number>),
+  const { allTypes, legendItems, typeCounts } = useMemo(
+    () => computeLegendData(nodes, TYPE_CONFIG),
     [nodes],
   )
 
