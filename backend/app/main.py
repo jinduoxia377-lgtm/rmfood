@@ -308,6 +308,11 @@ Authorization: Bearer <your_access_token>
     # ── 多租户行级安全（tenant isolation） ──
     app.add_middleware(TenantMiddleware)
 
+    # ── 公开搜索端点限流 (在 TenantMiddleware 之后、CORS 之前注册) ──
+    from .core.middleware.rate_limiter import RateLimitMiddleware as EndpointRateLimiter
+    app.add_middleware(EndpointRateLimiter)
+    logger.info("[EndpointRateLimiter] 公开搜索端点限流已注册")
+
     # ── CORS 中间件 ──
     cors_origins = settings.get_cors_origins()
     # 生产环境禁止空列表（等于拒绝所有 CORS），至少允许自身
