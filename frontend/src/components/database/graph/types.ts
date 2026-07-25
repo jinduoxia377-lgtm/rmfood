@@ -357,3 +357,22 @@ export const THEME_PRESETS: ThemeConfig[] = [
     textPrimary: '#0c4a6e', textSecondary: '#0369a1', accentColor: '#0284c7',
   },
 ]
+
+// Animation presets
+export type AnimationPreset = 'fadeIn' | 'expand' | 'converge' | 'none'
+export interface ThemeConfig { name: string; colors: Record<string, string>; }
+
+// Performance stats types
+export interface PerfStats { fps: number; frameTime: number; memoryEst: string; lodLevel: string; rating: 'excellent' | 'good' | 'fair' | 'poor'; }
+export type LODLevel = 'minimal' | 'reduced' | 'full';
+export interface GraphStats { nodeCount: number; edgeCount: number; density: number; avgDegree: number; maxDegree: number; diameter: number; avgPathLength: number; clusteringCoeff: number; componentCount: number; }
+
+// Edge colors for components
+export type EdgeColors = Record<string, { color: string; dash?: string; width?: number; priority: string; }>;
+
+// AIPanel props
+export interface AIPanelProps { 
+  aiInsights: any[];
+  showAIPanel: boolean;
+  onToggle: () => void;
+}

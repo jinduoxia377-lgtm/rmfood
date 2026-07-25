@@ -29,7 +29,7 @@ import { useCallback } from 'react'
 import * as d3 from 'd3'
 import type { Dispatch } from 'react'
 import type { GraphNode, GraphEdge, LayoutType, ThemeConfig, AnimationPreset } from '../types'
-import type { SmartPathResult } from './analytics'
+import type { SmartPathResult } from '../analytics'
 import type {
   GraphAction, GraphState, NodeAIAnalysis,
   AIInsight, ExternalData, ImportState, ShareLink, NodeAnnotation, HistoryEntry,
@@ -781,7 +781,7 @@ const createSharingHandlers = (
       const node = filteredNodes.find(n => n.label === snap.selectedNode)
       if (node) onNodeClick?.(node)
     }
-    dispatch({ type: 'SET_SHOW_BOOKMARK_PANEL', payload: true })
+    dispatch({ type: 'SET_SHOW_BOOKMARK_PANEL', payload: false })
     dispatch({ type: 'ADD_HISTORY_ENTRY', payload: { type: 'bookmark', description: `加载书签: ${bookmark.name}`, detail: { bookmarkId: bookmark.id } } })
   }, [filteredNodes, state.localLayout, dispatch, onNodeClick])
 
@@ -835,7 +835,7 @@ const createSharingHandlers = (
       URL.revokeObjectURL(url)
 
       dispatch({ type: 'SET_REPORT_GENERATING', payload: false })
-      dispatch({ type: 'SET_SHOW_REPORT_DIALOG', payload: true })
+      dispatch({ type: 'SET_SHOW_REPORT_DIALOG', payload: false })
       dispatch({ type: 'ADD_HISTORY_ENTRY', payload: { type: 'export', description: `导出${rc.format.toUpperCase()}报告` } })
     }, 1500)
   }, [reportConfig, filteredNodes, filteredEdges, centralityTop, dispatch])
@@ -1539,12 +1539,12 @@ const createExportHandlers = (
       dispatch({ type: 'SET_EXPORT_STATUS', payload: `✓ 已导出 SVG 图像` })
     }
 
-    dispatch({ type: 'TOGGLE_EXPORT_MENU' })
+    dispatch({ type: 'SET_SHOW_EXPORT_MENU', payload: false })
     setTimeout(() => dispatch({ type: 'SET_EXPORT_STATUS', payload: null }), 3000)
   }, [state.selectedNodes, filteredNodes, filteredEdges, nodes, communities, svgRef, dispatch])
 
   const handleExportPathClick = useCallback(() => {
-    dispatch({ type: 'TOGGLE_EXPORT_MENU' })
+    dispatch({ type: 'SET_SHOW_EXPORT_MENU', payload: false })
   }, [dispatch])
 
   return { exportSubgraphJSON, handleExportPathClick }
@@ -1872,4 +1872,6 @@ export function useGraphHandlers(deps: UseGraphHandlersDeps): GraphHandlers {
     handleZoomIn: zoom.handleZoomIn,
     handleZoomOut: zoom.handleZoomOut,
     handleFitToCanvas: zoom.handleFitToCanvas,
-    handleResetView: zoom.handle
+    handleResetView: zoom.handleResetView,
+  }
+}
