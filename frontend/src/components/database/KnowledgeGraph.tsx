@@ -1124,93 +1124,9 @@ export default function KnowledgeGraph({
     }, 300) // Simulate AI processing delay
   }, [filteredData])
 
-  // Dijkstra shortest path with bridge detection
-  const findSmartPath = useCallback((sourceId: string, targetId: string): SmartPathResult | null => {
-    const fNodes = filteredData.filteredNodes
-    const fEdges = filteredData.filteredEdges
-
-    // Build adjacency list with weights
-    const adj = new Map<string, { node: string; weight: number }[]>()
-    fNodes.forEach(n => adj.set(n.id || n.label, []))
-    fEdges.forEach(e => {
-      const s = typeof e.source === 'string' ? e.source : String(e.source)
-      const t = typeof e.target === 'string' ? e.target : String(e.target)
-      const w = e.strength ? (1 - e.strength) * 2 + 1 : 1
-      adj.get(s)?.push({ node: t, weight: w })
-      adj.get(t)?.push({ node: s, weight: w })
-    })
-
-    // Dijkstra
-    const dist = new Map<string, number>()
-    const prev = new Map<string, string | null>()
-    const visiting = new Set<string>(fNodes.map(n => n.id || n.label))
-
-    dist.set(sourceId, 0)
-    fNodes.forEach(n => { if ((n.id || n.label) !== sourceId) dist.set(n.id || n.label, Infinity); prev.set(n.id || n.label, null) })
-
-    while (visiting.size > 0) {
-      let minDist = Infinity, minNode = ''
-      visiting.forEach(v => { const d = dist.get(v) || Infinity; if (d < minDist) { minDist = d; minNode = v } })
-      if (minDist === Infinity) break
-      visiting.delete(minNode)
-
-      ;(adj.get(minNode) || []).forEach(({ node: neighbor, weight }) => {
-        const alt = minDist + weight
-        if (alt < (dist.get(neighbor) || Infinity)) { dist.set(neighbor, alt); prev.set(neighbor, minNode) }
-      })
-    }
-
-    if ((dist.get(targetId) || Infinity) === Infinity) return null
-
-    // Reconstruct path
-    const path: string[] = []
-    let curr: string | null = targetId
-    while (curr) { path.unshift(curr); curr = prev.get(curr) || null }
-
-    // Find intermediate nodes and key bridges
-    const intermediateNodes = path.slice(1, -1)
-
-    // Simple betweenness check on this path's intermediates
-    const keyBridges: string[] = []
-    intermediateNodes.forEach(nodeId => {
-      const node = fNodes.find(n => (n.id || n.label) === nodeId)
-      if (node && (node.degree || 0) >= 3) keyBridges.push(nodeId)
-    })
-
-    // Find alternative paths (simple BFS alternative)
-    const altPaths: { path: string[]; length: number }[] = []
-    const altAdj = new Map<string, string[]>()
-    fNodes.forEach(n => altAdj.set(n.id || n.label, []))
-    fEdges.forEach(e => {
-      const s = typeof e.source === 'string' ? e.source : String(e.source)
-      const t = typeof e.target === 'string' ? e.target : String(e.target)
-      altAdj.get(s)?.push(t); altAdj.get(t)?.push(s)
-    })
-
-    // BFS for up to 2 alternatives
-    for (let attempt = 0; attempt < 2; attempt++) {
-      const visited = new Set<string>([sourceId])
-      const queue: string[][] = [[sourceId]]
-      let found = false
-      while (queue.length > 0 && !found) {
-        const p = queue.shift()!
-        const cur = p[p.length - 1]
-        ;(altAdj.get(cur) || []).filter(n => !visited.has(n)).forEach(nbr => {
-          visited.add(nbr)
-          const newPath = [...p, nbr]
-          if (nbr === targetId) {
-            // Verify it's different from main path
-            const pathKey = newPath.join('→')
-            if (pathKey !== path.join('→')) altPaths.push({ path: newPath, length: newPath.length - 1 })
-            found = true
-          } else if (newPath.length < path.length + 3) {
-            queue.push(newPath)
-          }
-        })
-      }
-    }
-
-    return { sourceId, targetId, path, length: path.length - 1, intermediateNodes, keyBridges, alternativePaths: altPaths }
+  // Dijkstra shortest path with bridge detection — extracted to graph/analytics/stats.ts
+  const findSmartPathLocal = useCallback((sourceId: string, targetId: string): SmartPathResult | null => {
+    return findSmartPath(filteredData.filteredNodes, filteredData.filteredEdges, sourceId, targetId)
   }, [filteredData])
 
   // Node-level AI analysis generator
@@ -1309,10 +1225,10 @@ export default function KnowledgeGraph({
 
   const runSmartPathSearch = useCallback(() => {
     if (!pathSourceId || !pathTargetId) return
-    const result = findSmartPath(pathSourceId, pathTargetId)
+    const result = findSmartPathLocal(pathSourceId, pathTargetId)
     setSmartPathResult(result)
     if (result) setShowPathPanel(true)
-  }, [pathSourceId, pathTargetId, findSmartPath])
+  }, [pathSourceId, pathTargetId, findSmartPathLocal])
 
   // ═══ v8.1: 外部数据查询 / 导入 / 对比 回调 ═══
 
