@@ -57,6 +57,11 @@ import {
   PERF_THRESHOLD, THEME_PRESETS, getTypeConf, getDensityScale, calcNodeRadius, isCoreNode,
   calcInitialPosition, curvedLinkPath, calcEdgeWidth,
 } from './graph/types'
+import {
+  detectCommunities, generateCommunityColors, computeCentrality,
+  computeDegreeStats, computeLegendData, findPathBFS, findSmartPath,
+} from './graph/analytics'
+import type { SmartPathResult } from './graph/analytics'
 
 // Props interface (was previously defined locally)
 interface KnowledgeGraphProps {

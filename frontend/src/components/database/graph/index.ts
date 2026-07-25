@@ -7,3 +7,9 @@ export {
   getTypeConf, getDensityScale, calcNodeRadius, isCoreNode,
   calcInitialPosition, curvedLinkPath, calcEdgeWidth,
 } from './types'
+
+// Analytics
+export * as analytics from './analytics'
+export { detectCommunities, generateCommunityColors, computeCentrality,
+  computeDegreeStats, computeLegendData, findPathBFS, findSmartPath } from './analytics'
+export type { CommunityResult, CentralityResult, GraphStats, DegreeStats, LegendData, SmartPathResult } from './analytics'
