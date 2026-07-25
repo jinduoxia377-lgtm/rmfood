@@ -16,11 +16,11 @@
  */
 
 import * as d3 from 'd3'
-import type { React } from 'react'
+import type { RefObject } from 'react'
 
 // ── Re-export internal types used in the public API ──
 export type { SimNode, SimEdge, LayoutType, ThemeConfig } from '../types'
-import type { SimNode, SimEdge, LayoutType, ThemeConfig } from '../types'
+import type { SimNode, SimEdge, LayoutType, ThemeConfig, GraphNode } from '../types'
 import {
   TYPE_CONFIG, EDGE_COLORS, TYPE_ORDER,
   getTypeConf, getDensityScale, calcNodeRadius, isCoreNode,
@@ -33,8 +33,8 @@ import {
 // ═══════════════════════════════════════════
 
 export interface GraphEngineInput {
-  containerRef: React.RefObject<HTMLDivElement | null>
-  svgRef: React.RefObject<SVGSVGElement | null>
+  containerRef: RefObject<HTMLDivElement | null>
+  svgRef: RefObject<SVGSVGElement | null>
   width: number
   height: number
   nodes: Array<{ id?: string; label: string; type: string }>
@@ -66,9 +66,9 @@ export interface GraphEngineInput {
 export class GraphEngine {
   private svgEl: SVGSVGElement | null = null
   private container: HTMLDivElement | null = null
-  private svg: d3.Selection<SVGSVGElement, unknown, null, undefined> | null = null
-  private g: d3.Selection<SVGGElement, unknown, null, undefined> | null = null
-  private defs: d3.Selection<SVGDefsElement, unknown, null, undefined> | null = null
+  private svg: d3.Selection<d3.BaseType, unknown, null, undefined> | null = null
+  private g: d3.Selection<d3.BaseType, unknown, null, undefined> | null = null
+  private defs: d3.Selection<d3.BaseType, unknown, null, undefined> | null = null
   private simulation: d3.Simulation<SimNode, undefined> | null = null
   private zoomBehavior: d3.ZoomBehavior<SVGSVGElement, unknown> | null = null
   private rafId: number | null = null
@@ -179,7 +179,7 @@ export class GraphEngine {
   // Private methods
   // ────────────────────────────────────────
 
-  private buildDefs(defs: d3.Selection<SVGDefsElement, unknown, null, undefined>): void {
+  private buildDefs(defs: d3.Selection<d3.BaseType, unknown, null, undefined>): void {
     Object.entries(EDGE_COLORS).forEach(([etype, config]) => {
       const isCore = config.priority === 'core'
       defs.append('marker')
@@ -292,7 +292,7 @@ export class GraphEngine {
   }
 
   private renderFull(
-    nodes: Array<{ id?: string; label: string; type: string }>,
+    nodes: GraphNode[],
     edges: SimEdge[],
     layout: LayoutType,
     containerWidth: number,
@@ -949,7 +949,7 @@ export class GraphEngine {
     }.bind(this))
 
     // Hover in/out
-    const handleHoverIn = (thisContext: SVGGElement, event: MouseEvent | TouchEvent, d: SimNode) => {
+    const handleHoverIn = (el: SVGGElement, event: MouseEvent | TouchEvent, d: SimNode) => {
       const conf = getTypeConf(d.type)
       const dynamicR = calcNodeRadius(d)
       let connCount = 0
@@ -987,7 +987,7 @@ export class GraphEngine {
           + (propParts.length > 0 ? `\n${propParts.join('  | ')}` : ''),
       })
 
-      d3.select(thisContext).select('.node-body')
+      d3.select(el).select('.node-body')
         .transition().duration(160).ease(d3.easeCubicOut)
         .attr('r', dynamicR + 6)
         .attr('fill-opacity', 1)
@@ -1023,7 +1023,7 @@ export class GraphEngine {
 
     const handleHoverOut = (thisContext: SVGGElement) => {
       this.input.onSetTooltip?.(null)
-      d3.select(thisContext).select('.node-body')
+      d3.select(el).select('.node-body')
         .transition().duration(220)
         .attr('r', (d: any) => calcNodeRadius(d))
         .attr('fill-opacity', 0.92)
@@ -1044,12 +1044,16 @@ export class GraphEngine {
     }
 
     allNodes
-      .on('mouseenter', handleHoverIn)
-      .on('mouseleave', handleHoverOut)
+      .on('mouseenter', function (this: SVGGElement, event: MouseEvent | TouchEvent, d: SimNode) {
+        handleHoverIn.call(this, event, d)
+      })
+      .on('mouseleave', function (this: SVGGElement) {
+        handleHoverOut.call(this)
+      })
 
     // Touch support
-    allNodes.on('touchstart', function (event: Event, d: SimNode) {
-      handleHoverIn(this as SVGGElement, event as MouseEvent | TouchEvent, d)
+    allNodes.on('touchstart', function (this: SVGGElement, event: Event, d: SimNode) {
+      handleHoverIn.call({} as any, event as MouseEvent | TouchEvent, d)
       setTimeout(() => { if ((this as SVGGElement).isConnected) handleHoverOut.call(this) }, 2500)
     })
   }
