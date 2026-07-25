@@ -122,10 +122,26 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning(f"[Startup] WebSocket 心跳启动失败（非致命）: {e}")
 
+    # 5. 启动定时数据同步调度器
+    try:
+        from app.services.data_sources.auto_sync import start_auto_sync
+        start_auto_sync()
+        logger.info("[Startup] 定时数据同步调度器已启动")
+    except Exception as e:
+        logger.warning(f"[Startup] 定时同步调度器启动失败（非致命）: {e}")
+
     yield
 
     # ── 关闭阶段：释放资源 ──
     logger.info("应用关闭中...")
+
+    # 5b. 停止定时同步调度器
+    try:
+        from app.services.data_sources.auto_sync import stop_auto_sync
+        stop_auto_sync()
+        logger.info("[Shutdown] 定时数据同步调度器已停止")
+    except Exception as e:
+        logger.warning(f"[Shutdown] 定时同步调度器清理异常: {e}")
     # 4c. 停止 WebSocket 心跳
     try:
         ws_manager = get_ws_manager()

@@ -59,5 +59,8 @@ factory-boy==3.3.1
 freezegun==1.5.1
 testcontainers[postgres]==4.8.1
 
+# ── 定时调度 ──
+apscheduler==3.10.4
+
 # ── 错误追踪 ──
 sentry-sdk[fastapi]>=1.44.0
