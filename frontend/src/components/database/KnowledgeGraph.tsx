@@ -51,16 +51,12 @@ import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui'
 import { GraphEngine } from './graph/engine/forceSimulation'
 import type { SimNode, SimEdge } from './graph/engine/forceSimulation'
-import type { GraphNode, GraphEdge, LayoutType } from './graph/types'
+import type { GraphNode, GraphEdge, LayoutType, ThemeConfig } from './graph/types'
 import {
   TYPE_CONFIG, DEFAULT_TYPE, TYPE_ORDER, EDGE_COLORS, EDGE_TYPE_LABELS,
   PERF_THRESHOLD, THEME_PRESETS, getTypeConf, getDensityScale, calcNodeRadius, isCoreNode,
   calcInitialPosition, curvedLinkPath, calcEdgeWidth,
 } from './graph/types'
-
-// Re-exported for external consumers — original import path preserved
-export { TYPE_CONFIG, DEFAULT_TYPE, TYPE_ORDER, EDGE_COLORS, EDGE_TYPE_LABELS,
-  PERF_THRESHOLD, THEME_PRESETS }
 
 // Props interface (was previously defined locally)
 interface KnowledgeGraphProps {
@@ -5129,8 +5125,6 @@ ${centralityData.topByDegree.sort((a, b) => b.degree - a.degree).slice(0, 5).map
 // ═══════════════════════════════════════════
 // 导出
 // ═══════════════════════════════════════════
-// Types are available via ./graph/types
+// Types and constants are available via ./graph/types
 export { GraphEngine } from './graph/engine/forceSimulation'
 export type { GraphNode, GraphEdge, LayoutType } from './graph/types'
-export { TYPE_CONFIG, DEFAULT_TYPE, TYPE_ORDER, EDGE_COLORS, EDGE_TYPE_LABELS,
-  PERF_THRESHOLD, THEME_PRESETS }

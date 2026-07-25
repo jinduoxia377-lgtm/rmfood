@@ -66,11 +66,11 @@ export interface GraphEngineInput {
 export class GraphEngine {
   private svgEl: SVGSVGElement | null = null
   private container: HTMLDivElement | null = null
-  private svg: d3.Selection<d3.BaseType, unknown, null, undefined> | null = null
-  private g: d3.Selection<d3.BaseType, unknown, null, undefined> | null = null
-  private defs: d3.Selection<d3.BaseType, unknown, null, undefined> | null = null
+  private svg: d3.Selection<SVGSVGElement, unknown, null, undefined> | null = null
+  private g: d3.Selection<SVGGElement, unknown, null, undefined> | null = null
+  private defs: d3.Selection<SVGElement, unknown, null, undefined> | null = null
   private simulation: d3.Simulation<SimNode, undefined> | null = null
-  private zoomBehavior: d3.ZoomBehavior<d3.BaseType, unknown> | null = null
+  private zoomBehavior: d3.ZoomBehavior<d3.Element, unknown> | null = null
   private rafId: number | null = null
   private ticking = false
   private tickCounter = 0
@@ -84,8 +84,8 @@ export class GraphEngine {
 
   constructor(private input: GraphEngineInput) {}
 
-  getZoomBehavior(): d3.ZoomBehavior<SVGSVGElement, unknown> | null {
-    return this.zoomBehavior
+  getZoomBehavior(): d3.ZoomBehavior<d3.Element, unknown> | null {
+    return this.zoomBehavior as any
   }
 
   init(): void {
@@ -237,10 +237,10 @@ export class GraphEngine {
       .attr('flood-color', '#000000').attr('flood-opacity', '0.25')
   }
 
-  private setupZoom(g: d3.Selection<d3.BaseType, unknown, null, undefined>): void {
-    this.zoomBehavior = d3.zoom<d3.BaseType, unknown>()
+  private setupZoom(g: d3.Selection<SVGGElement, unknown, null, undefined>): void {
+    this.zoomBehavior = d3.zoom<d3.Element, unknown>()
       .scaleExtent([0.08, 8])
-      .on('zoom', (event: d3.D3ZoomEvent<d3.BaseType, unknown>) => {
+      .on('zoom', (event: d3.D3ZoomEvent<d3.Element, unknown>) => {
         g.attr('transform', event.transform as any)
         this.input.onSetZoomTransform?.(event.transform)
       })
@@ -447,7 +447,7 @@ export class GraphEngine {
           typeBuckets.get(node.type)!.push(node)
         }
 
-        for (const [, typedNodes] of Array.from(typeBuckets.values())) {
+        for (const typedNodes of Array.from(typeBuckets.values())) {
           const grid = new Map<string, SimNode[]>()
           const getGridKey = (x: number, y: number) =>
             `${Math.floor(x / cellSize)},${Math.floor(y / cellSize)}`
@@ -458,7 +458,7 @@ export class GraphEngine {
             grid.get(key)!.push(n)
           }
 
-          for (const [key, bucket] of grid) {
+          for (const [key, bucket] of Array.from(grid.entries())) {
             const [gx, gy] = key.split(',').map(Number)
             const neighbors: SimNode[] = []
             for (let dx = -1; dx <= 1; dx++) {
@@ -936,17 +936,17 @@ export class GraphEngine {
     })
 
     // Double-click: toggle pin
-    allNodes.on('dblclick', function (event: MouseEvent, d: SimNode) {
+    allNodes.on('dblclick', (event: MouseEvent, d: SimNode) => {
       event.stopPropagation()
       const nodeId = d.id || d.label
       if (this.input.onTogglePinNode) {
         this.input.onTogglePinNode(nodeId)
       }
-      const sel = d3.select(this)
+      const sel = d3.select(event.currentTarget as SVGGElement)
       sel.select('.node-body')
         .transition().duration(150).attr('stroke', '#FF3B30').attr('stroke-width', 4)
         .transition().duration(300).attr('stroke', 'white').attr('stroke-width', 2)
-    }.bind(this))
+    })
 
     // Hover in/out
     const handleHoverIn = (el: SVGGElement, event: MouseEvent | TouchEvent, d: SimNode) => {
