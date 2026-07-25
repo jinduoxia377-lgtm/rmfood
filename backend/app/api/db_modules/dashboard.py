@@ -311,32 +311,65 @@ async def dashboard_trends(
 async def get_search_suggestions(
     keyword: str = Query(..., min_length=1, description="输入关键词"),
     limit: int = Query(10, ge=1, le=30),
+    context: str = Query("herbs", description="搜索上下文: herbs | peptides | food_material | knowledge_graph | all"),
     db: AsyncSession = Depends(get_db_session),
 ):
-    """实时搜索自动补全建议 — 跨数据源（公开接口）"""
+    """实时搜索自动补全建议 — 跨数据源（公开接口）
+
+    通过 context 参数控制搜索范围:
+    - herbs: 仅中药材 (默认)
+    - peptides: 仅活性肽
+    - food_material: 食品原料
+    - knowledge_graph: 知识图谱节点
+    - all: 全部数据源 (默认行为)
+    """
     kw = keyword.lower()
-    suggestions = {"herbs": [], "peptides": [], "graph": []}
+    suggestions: dict[str, list[dict]] = {
+        "herbs": [], "peptides": [], "graph_nodes": [], "food_materials": []
+    }
+    include_herbs = context in ("herbs", "all")
+    include_peptides = context in ("peptides", "all")
+    include_food = context == "food_material"
+    include_graph = context in ("knowledge_graph", "all")
 
     # ── 药材建议（数据库优先 + 内存补充）──
-    # 先从 DB 查询
-    herbs_db = (await db.execute(
-        select(TCMHerb.name_cn, TCMHerb.name_latin, TCMHerb.name_pinyin, TCMHerb.category)
-        .where(TCMHerb.name_cn.ilike(f"%{keyword}%"))
-        .limit(limit * 2)
-    )).all()
+    if include_herbs:
+        herbs_db = (await db.execute(
+            select(TCMHerb.name_cn, TCMHerb.name_latin, TCMHerb.name_pinyin, TCMHerb.category)
+            .where(TCMHerb.name_cn.ilike(f"%{keyword}%"))
+            .limit(limit * 2)
+        )).all()
 
-    seen_herb_names = set()
-    # 添加 DB 结果
-    for row in herbs_db:
-        name_cn = row[0] or ""
-        if name_cn.lower() not in seen_herb_names and kw in name_cn.lower():
-            suggestions["herbs"].append({
-                "type": "herb",
-                "label": name_cn,
-                "sublabel": row[1] or "",
-                "category": row[3] or "",
-            })
-            seen_herb_names.add(name_cn.lower())
+        seen_herb_names = set()
+        # 添加 DB 结果
+        for row in herbs_db:
+            name_cn = row[0] or ""
+            if name_cn.lower() not in seen_herb_names and kw in name_cn.lower():
+                suggestions["herbs"].append({
+                    "type": "herb",
+                    "label": name_cn,
+                    "sublabel": row[1] or "",
+                    "category": row[3] or "",
+                })
+                seen_herb_names.add(name_cn.lower())
+                if len(suggestions["herbs"]) >= limit:
+                    break
+
+        # 如果 DB 结果不足，从内存补充
+        if len(suggestions["herbs"]) < limit:
+            from ...services.data_sources.tcmsp_client import TCMSP_HERB_DATABASE
+            for h in TCMSP_HERB_DATABASE:
+                if len(suggestions["herbs"]) >= limit:
+                    break
+                name_cn = h.get("name_cn", "")
+                if name_cn.lower() not in seen_herb_names and kw in name_cn.lower():
+                    suggestions["herbs"].append({
+                        "type": "herb",
+                        "label": name_cn,
+                        "sublabel": h.get("name_latin", ""),
+                        "category": h.get("category", ""),
+                    })
+                    seen_herb_names.add(name_cn.lower())
             if len(suggestions["herbs"]) >= limit:
                 break
 
@@ -357,52 +390,56 @@ async def get_search_suggestions(
                 seen_herb_names.add(name_cn.lower())
 
     # ── 活性肽建议（数据库优先 + 内存补充）──
-    peptides_db = (await db.execute(
-        select(BioactivePeptide.sequence, BioactivePeptide.source_protein, BioactivePeptide.activity_type)
-        .where(
-            (BioactivePeptide.sequence.ilike(f"%{keyword}%"))
-            | (BioactivePeptide.source_protein.ilike(f"%{keyword}%"))
-        )
-        .limit(limit * 2)
-    )).all()
+    if include_peptides:
+        peptides_db = (await db.execute(
+            select(BioactivePeptide.sequence, BioactivePeptide.source_protein, BioactivePeptide.activity_type)
+            .where(
+                (BioactivePeptide.sequence.ilike(f"%{keyword}%"))
+                | (BioactivePeptide.source_protein.ilike(f"%{keyword}%"))
+            )
+            .limit(limit * 2)
+        )).all()
 
-    seen_peptide_seqs = set()
-    # 添加 DB 结果
-    for row in peptides_db:
-        seq = row[0] or ""
-        if seq.lower() not in seen_peptide_seqs and (kw in seq.lower() or kw in (row[1] or "").lower()):
-            suggestions["peptides"].append({
-                "type": "peptide",
-                "label": seq,
-                "sublabel": row[1] or "",
-                "activity_type": row[2] or "",
-            })
-            seen_peptide_seqs.add(seq.lower())
-            if len(suggestions["peptides"]) >= limit:
-                break
-
-    # 如果 DB 结果不足，从内存补充
-    if len(suggestions["peptides"]) < limit:
-        from ...services.data_sources.dfbp_client import DFBP_PEPTIDE_DATABASE
-        for p in DFBP_PEPTIDE_DATABASE:
-            if len(suggestions["peptides"]) >= limit:
-                break
-            seq = p.get("sequence", "")
-            if seq.lower() not in seen_peptide_seqs and (kw in seq.lower() or kw in (p.get("source_protein") or "").lower()):
+        seen_peptide_seqs = set()
+        # 添加 DB 结果
+        for row in peptides_db:
+            seq = row[0] or ""
+            if seq.lower() not in seen_peptide_seqs and (kw in seq.lower() or kw in (row[1] or "").lower()):
                 suggestions["peptides"].append({
                     "type": "peptide",
                     "label": seq,
-                    "sublabel": p.get("source_protein", ""),
-                    "activity_type": p.get("activity_type", ""),
+                    "sublabel": row[1] or "",
+                    "activity_type": row[2] or "",
                 })
                 seen_peptide_seqs.add(seq.lower())
+                if len(suggestions["peptides"]) >= limit:
+                    break
 
-    # 知识图谱节点建议（保持原有逻辑）
-    graph_result = await graph_service.search_nodes(kw, None, limit)
-    suggestions["graph"] = [
-        {"type": n.get("type", "node"), "label": n.get("node_label", ""), "sublabel": n.get("type", "")}
-        for n in graph_result[:limit]
-    ]
+        # 如果 DB 结果不足，从内存补充
+        if len(suggestions["peptides"]) < limit:
+            from ...services.data_sources.dfbp_client import DFBP_PEPTIDE_DATABASE
+            for p in DFBP_PEPTIDE_DATABASE:
+                if len(suggestions["peptides"]) >= limit:
+                    break
+                seq = p.get("sequence", "")
+                if seq.lower() not in seen_peptide_seqs and (kw in seq.lower() or kw in (p.get("source_protein") or "").lower()):
+                    suggestions["peptides"].append({
+                        "type": "peptide",
+                        "label": seq,
+                        "sublabel": p.get("source_protein", ""),
+                        "activity_type": p.get("activity_type", ""),
+                    })
+                    seen_peptide_seqs.add(seq.lower())
+
+    # ── 知识图谱节点建议 ──
+    if include_graph:
+        graph_result = await graph_service.search_nodes(kw, None, limit)
+        suggestions["graph_nodes"] = [
+            {"type": n.get("type", "node"), "label": n.get("node_label", ""), "sublabel": n.get("type", "")}
+            for n in graph_result[:limit]
+        ]
+    else:
+        suggestions["graph_nodes"] = []
 
     return suggestions
 
