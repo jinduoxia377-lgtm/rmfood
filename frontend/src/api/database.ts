@@ -327,6 +327,46 @@ export const databaseApi = {
   /** 通用 POST 请求（用于未预定义的路由） */
   post: (url: string, data?: unknown, config?: Record<string, unknown>) =>
     api.post(url, data, config).then((r) => r.data),
+
+  // ═══════════════════════════════════════════
+  // 收藏架 (Pantry) — Phase 2 增强
+  // ═══════════════════════════════════════════
+
+  /** 获取用户收藏列表 */
+  getPantry: (item_type?: string) =>
+    api.get<{ items: any[]; total: number }>(`/databases/pantry`, { params: { item_type } }).then((r) => r.data),
+
+  /** 添加食品原料到收藏 */
+  addToPantryFoodMaterial: (material_id: number) =>
+    api.post(`/databases/pantry/food-materials/${material_id}`).then((r) => r.data),
+
+  /** 从收藏中移除食品原料 */
+  removeFromPantryFoodMaterial: (material_id: number) =>
+    api.delete(`/databases/pantry/food-materials/${material_id}`).then((r) => r.data),
+
+  /** 添加零售产品到收藏 */
+  addToPantryRetailProduct: (product_id: number) =>
+    api.post(`/databases/pantry/retail-products/${product_id}`).then((r) => r.data),
+
+  /** 从收藏中移除零售产品 */
+  removeFromPantryRetailProduct: (product_id: number) =>
+    api.delete(`/databases/pantry/retail-products/${product_id}`).then((r) => r.data),
+
+  /** 添加中药材到收藏 */
+  addToPantryHerb: (herb_id: string) =>
+    api.post(`/databases/pantry/herbs/${herb_id}`).then((r) => r.data),
+
+  /** 从收藏中移除中药材 */
+  removeFromPantryHerb: (herb_id: string) =>
+    api.delete(`/databases/pantry/herbs/${herb_id}`).then((r) => r.data),
+
+  /** 添加活性肽到收藏 */
+  addToPantryPeptide: (peptide_id: number) =>
+    api.post(`/databases/pantry/peptides/${peptide_id}`).then((r) => r.data),
+
+  /** 从收藏中移除活性肽 */
+  removeFromPantryPeptide: (peptide_id: number) =>
+    api.delete(`/databases/pantry/peptides/${peptide_id}`).then((r) => r.data),
 }
 
 // ═══════════════════════════════════════════
