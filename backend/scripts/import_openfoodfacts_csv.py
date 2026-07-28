@@ -9,11 +9,12 @@ OpenFoodFacts CSV 批量导入 retail_products 表
 
 特性:
     - TSV 格式（tab-separated），非逗号分隔
-    - 分批读取（chunk_size=5000），避免内存溢出
-    - 使用 psycopg2 copy 协议批量写入（比 ORM insert 快 10-50x）
+    - 分批读取（chunk_size=10000），避免内存溢出
+    - 使用 asyncpg copy_records_to_table 批量写入（比 ORM insert 快 10-50x）
     - ON CONFLICT (external_id) DO UPDATE 实现幂等导入
     - 自动跳过空 code 行
     - 进度日志 + 统计报告
+    - 导入期间临时 DROP 唯一索引，导入后重建（大幅提升写入性能）
 """
 
 import csv
@@ -22,6 +23,7 @@ import logging
 import os
 import sys
 import time
+import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -84,7 +86,7 @@ COLUMN_MAP: Dict[str, int] = {
     "proteins_100g": 150,       # nutrition.protein
     "salt_100g": 154,           # nutrition.salt
     "sodium_100g": 156,         # nutrition.sodium
-    "added-sugars_100g": 131,   # nutrition.added_sugars
+    "added-sugars_100g": 131,   # nutrition.added_sugars,
 }
 
 # 按类型分组的列索引
@@ -136,7 +138,6 @@ def _parse_tag_list(val: str) -> List[str]:
     if not val or not val.strip():
         return []
     return [t.strip() for t in val.split(",") if t.strip()]
-
 # ── COPY 列名（用于 asyncpg copy_records_to_table） ──
 
 COPY_COLUMNS = [
@@ -155,6 +156,25 @@ COPY_COLUMNS = [
     'allergens_tags', 'additives_tags', 'ecoscore_grade',
     'traces_tags', 'contaminants',
 ]
+
+# ── UTF-8/GBK 自动编码检测 ──
+
+def _detect_encoding(file_path: str, sample_size: int = 1024) -> str:
+    """尝试检测文件编码：先试UTF-8，失败则回退GBK"""
+    # 先读取样本尝试UTF-8
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            f.read(sample_size)
+        return 'utf-8'
+    except UnicodeDecodeError:
+        # UTF-8失败，尝试GBK
+        try:
+            with open(file_path, 'r', encoding='gbk') as f:
+                f.read(sample_size)
+            logger.warning("使用GBK编码检测OpenFoodFacts CSV文件")
+            return 'gbk'
+        except UnicodeDecodeError:
+            raise ValueError(f"无法识别文件编码: {file_path}")
 
 # ── MERGE SQL（ON CONFLICT DO UPDATE） ──
 
@@ -175,7 +195,7 @@ _MERGE_SQL = """
         allergens_tags, additives_tags, ecoscore_grade,
         traces_tags, contaminants
     )
-    SELECT
+    SELECT DISTINCT ON (ib.external_id)
         ib.external_id, ib.sku, ib.brand, ib.product_name, ib.product_line,
         ib.category, ib.sub_category, ib.formulation_type,
         ib.effects, ib.target_population,
@@ -191,6 +211,7 @@ _MERGE_SQL = """
         ib.allergens_tags, ib.additives_tags, ib.ecoscore_grade,
         ib.traces_tags, ib.contaminants
     FROM import_batch ib
+    ORDER BY ib.external_id, ib.ctid DESC
     ON CONFLICT (external_id) DO UPDATE SET
         brand = EXCLUDED.brand,
         product_name = EXCLUDED.product_name,
@@ -244,21 +265,32 @@ def _parse_csv_row(row: List[str]) -> Optional[Dict[str, Any]]:
     product_name = get("product_name")
     brand = get("brands") or "Unknown"
 
+    # Truncate to DB limits
+    if len(product_name) > 500:
+        product_name = product_name[:500]
+    if len(brand) > 200:
+        brand = brand[:200]
+
     # 分类
     categories_en = get("categories_en")
     categories_tags = get("categories_tags")
     category = None
     if categories_en:
         # categories_en 是逗号分隔的人类可读名称，取第一个
-        category = categories_en.split(",")[0].strip()
+        cat = categories_en.split(",")[0].strip()
+        # Truncate to DB limit (VARCHAR(100))
+        category = cat[:100] if len(cat) > 100 else cat
     sub_category = None
     if categories_tags:
         tags = _parse_tag_list(categories_tags)
         if tags:
-            sub_category = tags[0].replace("en:", "").replace("-", " ").title()
+            sub_cat = tags[0].replace("en:", "").replace("-", " ").title()
+            # Truncate to DB limit (VARCHAR(100))
+            sub_category = sub_cat[:100] if len(sub_cat) > 100 else sub_category
 
-    # 规格
-    quantity = get("quantity") or None
+    # 规格 — truncate to DB limit (VARCHAR(50))
+    quantity_raw = get("quantity") or ""
+    quantity = quantity_raw[:50] if len(quantity_raw) > 50 else (quantity_raw or None)
 
     # 成分
     ingredients = get("ingredients_text") or None
@@ -371,18 +403,25 @@ def _parse_csv_row(row: List[str]) -> Optional[Dict[str, Any]]:
 
 def import_csv(
     csv_path: Optional[str] = None,
-    chunk_size: int = 5000,
+    chunk_size: int = 10000,
     dry_run: bool = False,
     test_limit: int = 0,
-):
+    drop_index: bool = True,
+    target_table: str = "retail_products",
+) -> Dict[str, Any]:
     """
     主导入流程。
 
     Args:
         csv_path: CSV 文件路径，默认使用 PROJECT_ROOT/openfoodfacts/...
-        chunk_size: 每批处理的行数
+        chunk_size: 每批处理的行数（默认 10000）
         dry_run: 如果 True，只解析不写入数据库
         test_limit: 如果 > 0，只导入 N 行（用于测试）
+        drop_index: 如果 True，导入前 DROP 唯一索引，导入后重建（大幅提升性能）
+        target_table: 目标表名（默认 retail_products）
+
+    Returns:
+        导入统计报告
     """
     if csv_path is None:
         csv_path = str(CSV_PATH)
@@ -392,18 +431,32 @@ def import_csv(
     logger.info(f"  CSV 文件: {csv_path}")
     logger.info(f"  Chunk size: {chunk_size}")
     logger.info(f"  Dry run: {dry_run}")
+    logger.info(f"  Drop index: {drop_index}")
+    logger.info(f"  Target table: {target_table}")
     logger.info("=" * 60)
 
     if not os.path.exists(csv_path):
         logger.error(f"CSV 文件不存在: {csv_path}")
-        sys.exit(1)
+        return {"error": f"File not found: {csv_path}", "success": False}
 
-    # ── Step 1: 预扫描（仅 dry-run 需要，实际导入时跳过以节省时间） ──
+    # 检测文件编码
+    try:
+        encoding = _detect_encoding(csv_path)
+        logger.info(f"  文件编码: {encoding}")
+    except ValueError as e:
+        logger.error(f"编码检测失败: {e}")
+        return {"error": str(e), "success": False}
+
+    file_size = os.path.getsize(csv_path)
+    task_id = str(uuid.uuid4())
 
     total_rows = 0
     valid_rows = 0
     skipped_empty_code = 0
     skipped_no_name = 0
+    error_rows = 0
+    import_count = 0
+    merge_count = 0
 
     start_time = time.time()
 
@@ -412,7 +465,8 @@ def import_csv(
     if dry_run:
         logger.info("[Step 1] 扫描 CSV 文件，统计有效行数...")
 
-        with open(csv_path, encoding="utf-8") as f:
+        detected_encoding = encoding
+        with open(csv_path, encoding=detected_encoding) as f:
             reader = csv.reader(f, delimiter="\t")
             next(reader)  # skip header
 
@@ -449,9 +503,16 @@ def import_csv(
         logger.info(f"  跳过无名称: {skipped_no_name:,}")
         logger.info(f"  扫描耗时: {elapsed_scan:.1f}s")
 
-        logger.info("[Step 2] DRY RUN — 解析前 5 行验证数据质量")
-        _dry_run_parse(csv_path)
-        return
+        logger.info("[Step 2] DRY RUN — 解析前 100 行验证数据质量")
+        _dry_run_parse(csv_path, encoding)
+        return {
+            "dry_run": True,
+            "total_rows": total_rows,
+            "valid_rows": valid_rows,
+            "skipped_empty_code": skipped_empty_code,
+            "skipped_no_name": skipped_no_name,
+            "scan_time_sec": elapsed_scan,
+        }
 
     # ── Step 2 & 3: 数据库检查 + 批量导入（使用 asyncpg 直连） ──
 
@@ -461,199 +522,294 @@ def import_csv(
         from app.core.config import settings
     except ImportError:
         logger.error("无法导入配置模块，请确保在 backend/ 目录下运行")
-        sys.exit(1)
+        return {"error": "Config import failed", "success": False}
 
-    import_count = 0
-    merge_count = 0
-    error_count = 0
     batch_start = time.time()
 
-    def _run_all():
-        import asyncio
-        from urllib.parse import urlparse, parse_qs
+    import asyncio
+    from urllib.parse import urlparse, parse_qs
+    import asyncpg
+    from datetime import datetime, timezone
 
-        async def _check_and_import():
-            nonlocal import_count, error_count, merge_count
+    async def _import_to_db():
+        nonlocal import_count, error_rows, merge_count, total_rows
 
-            # 从 DATABASE_URL 解析连接参数
-            db_url = settings.database.url
-            parsed = urlparse(db_url)
-            query = parse_qs(parsed.query)
+        # 从 DATABASE_URL 解析连接参数
+        db_url = settings.database.url
+        parsed = urlparse(db_url)
+        query = parse_qs(parsed.query)
 
-            connect_args = {
-                "user": parsed.username or "postgres",
-                "password": parsed.password or "",
-                "host": parsed.hostname or "localhost",
-                "port": parsed.port or 5432,
-                "database": parsed.path.lstrip("/"),
-            }
+        connect_args = {
+            "user": parsed.username or "postgres",
+            "password": parsed.password or "",
+            "host": parsed.hostname or "localhost",
+            "port": parsed.port or 5432,
+            "database": parsed.path.lstrip("/"),
+        }
 
-            # 创建 asyncpg connection pool
-            import asyncpg
-            logger.info("  [DEBUG] Creating asyncpg pool...")
-            pool = await asyncpg.create_pool(**connect_args)
-            logger.info("  [DEBUG] Pool created, acquiring connection...")
+        # 创建 asyncpg connection pool
+        logger.info("  Creating asyncpg pool...")
+        pool = await asyncpg.create_pool(**connect_args)
+        logger.info("  Pool created, acquiring connection...")
 
-            try:
-                async with pool.acquire() as conn:
-                    # Step 2: 检查已有数据
-                    existing_count = await conn.fetchval(
-                        "SELECT COUNT(*) FROM retail_products WHERE source = 'openfoodfacts_csv'"
+        try:
+            async with pool.acquire() as conn:
+                # Step 2.1: 检查已有数据
+                existing_count = await conn.fetchval(
+                    "SELECT COUNT(*) FROM retail_products WHERE source = 'openfoodfacts_csv'"
+                )
+                logger.info(f"  数据库中已有 {existing_count:,} 条 openfoodfacts_csv 记录")
+
+                # Step 2.2: 在 import_tasks 表中创建任务记录
+                await _create_import_task(conn, task_id, user_id=None, file_name=os.path.basename(csv_path),
+                                          file_size=file_size, target_table=target_table)
+                logger.info(f"  导入任务已注册 (task_id: {task_id})")
+
+                # Step 2.3: 可选 DROP 唯一索引以加速导入
+                if drop_index:
+                    logger.info("  [优化] 临时 DROP external_id 唯一索引以加速导入...")
+                    await conn.execute("DROP INDEX IF EXISTS ix_retail_products_external_id")
+                    logger.info("  [优化] 索引已 DROP，开始导入...")
+
+                # Step 2.4: 创建临时表
+                await conn.execute("""
+                    CREATE TEMP TABLE IF NOT EXISTS import_batch (
+                        external_id TEXT, sku TEXT, brand TEXT,
+                        product_name TEXT, product_line TEXT,
+                        category TEXT, sub_category TEXT,
+                        formulation_type TEXT,
+                        effects TEXT[], target_population TEXT[],
+                        full_ingredients TEXT, key_ingredients JSONB,
+                        material_refs BIGINT[], peptide_refs BIGINT[],
+                        compound_refs BIGINT[],
+                        price FLOAT, currency TEXT, package_size TEXT,
+                        volume_ml FLOAT, weight_g FLOAT,
+                        sales_channels TEXT[], avg_rating FLOAT,
+                        review_count BIGINT, monthly_sales BIGINT,
+                        image_urls TEXT[],
+                        reg_type TEXT, approved_region TEXT,
+                        source TEXT, crawl_timestamp TIMESTAMP WITH TIME ZONE,
+                        data_quality FLOAT,
+                        created_at TIMESTAMP WITH TIME ZONE,
+                        updated_at TIMESTAMP WITH TIME ZONE,
+                        created_by BIGINT,
+                        allergens_tags TEXT[], additives_tags TEXT[],
+                        ecoscore_grade TEXT, traces_tags TEXT[],
+                        contaminants TEXT[]
                     )
-                    logger.info(f"  数据库中已有 {existing_count:,} 条 openfoodfacts_csv 记录")
+                """)
+                await conn.execute("TRUNCATE import_batch")
+                logger.info("  Temp table ready, starting CSV read...")
 
-                    # Step 3: 创建临时表
-                    await conn.execute("""
-                        CREATE TEMP TABLE IF NOT EXISTS import_batch (
-                            external_id TEXT, sku TEXT, brand TEXT,
-                            product_name TEXT, product_line TEXT,
-                            category TEXT, sub_category TEXT,
-                            formulation_type TEXT,
-                            effects TEXT[], target_population TEXT[],
-                            full_ingredients TEXT, key_ingredients JSONB,
-                            material_refs BIGINT[], peptide_refs BIGINT[],
-                            compound_refs BIGINT[],
-                            price FLOAT, currency TEXT, package_size TEXT,
-                            volume_ml FLOAT, weight_g FLOAT,
-                            sales_channels TEXT[], avg_rating FLOAT,
-                            review_count BIGINT, monthly_sales BIGINT,
-                            image_urls TEXT[],
-                            reg_type TEXT, approved_region TEXT,
-                            source TEXT, crawl_timestamp TIMESTAMP WITH TIME ZONE,
-                            data_quality FLOAT,
-                            created_at TIMESTAMP WITH TIME ZONE,
-                            updated_at TIMESTAMP WITH TIME ZONE,
-                            created_by BIGINT,
-                            allergens_tags TEXT[], additives_tags TEXT[],
-                            ecoscore_grade TEXT, traces_tags TEXT[],
-                            contaminants TEXT[]
-                        )
-                    """)
-                    await conn.execute("TRUNCATE import_batch")
-                    logger.info("  [DEBUG] Temp table ready, starting CSV read...")
+                # Step 2.5: 预扫描总行数（先确定总数再导入）
+                logger.info("[预扫描阶段] 预扫描 CSV 总行数...")
+                scan_count = 0
+                valid_scan_count = 0
+                empty_code_count = 0
+                no_name_count = 0
 
-                    batch_rows = []
-                    last_log_count = 0
-                    total_scanned = 0
+                with open(csv_path, encoding=encoding) as f:
+                    reader = csv.reader(f, delimiter="\t")
+                    next(reader)  # skip header
+                    for row in reader:
+                        scan_count += 1
+                        code_idx = COLUMN_MAP["code"]
+                        code = row[code_idx].strip() if code_idx < len(row) else ""
+                        if not code:
+                            empty_code_count += 1
+                            continue
+                        name_idx = COLUMN_MAP["product_name"]
+                        name = row[name_idx].strip() if name_idx < len(row) else ""
+                        if not name:
+                            no_name_count += 1
+                            continue
+                        valid_scan_count += 1
 
-                    with open(csv_path, encoding="utf-8") as f:
-                        reader = csv.reader(f, delimiter="\t")
-                        next(reader)  # skip header
+                total_rows = scan_count
+                logger.info(f"  预扫描完成: 总 {total_rows:,} 行，有效 {valid_scan_count:,} (空code {empty_code_count:,}, 无名称 {no_name_count:,})")
 
-                        for row in reader:
-                            total_scanned += 1
-                            if test_limit > 0 and import_count >= test_limit:
-                                logger.info(f"  TEST MODE: 已达到 {test_limit} 行限制")
-                                break
-                            try:
-                                product = _parse_csv_row(row)
-                                if product is None:
-                                    continue
-                                import_count += 1
+                batch_rows = []
+                last_log_count = 0
+                total_scanned = 0
+                errors_logged = 0
 
-                                copy_row = (
-                                    product["external_id"], product["sku"],
-                                    product["brand"], product["product_name"],
-                                    product["product_line"],
-                                    product["category"], product["sub_category"],
-                                    product["formulation_type"],
-                                    product.get("effects") or [],
-                                    product.get("target_population") or [],
-                                    product["full_ingredients"],
-                                    json.dumps(product.get("key_ingredients") or {}, ensure_ascii=False),
-                                    [], [], [],  # material_refs, peptide_refs, compound_refs
-                                    product["price"], product["currency"],
-                                    product["package_size"],
-                                    product["volume_ml"], product["weight_g"],
-                                    product.get("sales_channels") or [],
-                                    product["avg_rating"],
-                                    product["review_count"],
-                                    product["monthly_sales"],
-                                    product.get("image_urls") or [],
-                                    None,  # reg_type
-                                    product["approved_region"],
-                                    product["source"],
-                                    _parse_iso_timestamp(product["crawl_timestamp"]) if product["crawl_timestamp"] else None,
-                                    product["data_quality"],
-                                    _parse_iso_timestamp(product["created_at"]) if product["created_at"] else None,
-                                    _parse_iso_timestamp(product["updated_at"]) if product["updated_at"] else None,
-                                    product["created_by"],
-                                    product.get("allergens_tags") or [],
-                                    product.get("additives_tags") or [],
-                                    product["ecoscore_grade"],
-                                    product.get("traces_tags") or [],
-                                    product.get("contaminants") or [],
-                                )
-                                batch_rows.append(copy_row)
+                with open(csv_path, encoding=encoding) as f:
+                    reader = csv.reader(f, delimiter="\t")
+                    next(reader)  # skip header
 
-                                # 每扫描 20000 行打印一次进度（基于总扫描行数，不依赖有效行数）
-                                if total_scanned - last_log_count >= 20000:
-                                    elapsed = time.time() - start_time
-                                    rate = total_scanned / elapsed
-                                    logger.info(
-                                        f"  [CSV读取中] 已扫描 {total_scanned:,} 行 | "
-                                        f"有效 {import_count:,} | "
-                                        f"速率: {rate:,.0f} rows/s",
-                                        force=True,
-                                    )
-                                    last_log_count = total_scanned
+                    for row_num, row in enumerate(reader, start=2):  # start=2 because header is row 1
+                        total_scanned += 1
+                        if test_limit > 0 and import_count >= test_limit:
+                            logger.info(f"  TEST MODE: 已达到 {test_limit} 行限制")
+                            break
+                        try:
+                            code_idx = COLUMN_MAP["code"]
+                            code = row[code_idx].strip() if code_idx < len(row) else ""
+                            if not code:
+                                error_rows += 1
+                                await _log_import_error(conn, task_id, row_num, str(row)[:200], "empty_code", "validation")
+                                errors_logged += 1
+                                if errors_logged <= 10:
+                                    logger.warning(f"  空code 错误 (行 {row_num})")
+                                elif errors_logged > 10:
+                                    logger.warning("  ... 超过10个错误，后续错误将不再详细记录")
+                                continue
 
-                                # 每 10000 行写入一次（chunk_size 可调大）
-                                if len(batch_rows) >= chunk_size:
-                                    await conn.copy_records_to_table(
-                                        'import_batch', records=batch_rows,
-                                        columns=COPY_COLUMNS,
-                                    )
-                                    await conn.execute(_MERGE_SQL)
-                                    merge_count = import_count
-                                    elapsed = time.time() - batch_start
-                                    rate = import_count / elapsed
-                                    logger.info(
-                                        f"  已处理 {import_count:,} 行 | "
-                                        f"已合并: {merge_count:,} | "
-                                        f"速率: {rate:,.0f} rows/s",
-                                        force=True,
-                                    )
-                                    batch_start = time.time()
-                                    batch_rows.clear()
-                            except Exception as e:
-                                error_count += 1
-                                if error_count <= 10:
-                                    logger.debug(f"  解析错误 (行 {import_count}): {e}")
+                            name_idx = COLUMN_MAP["product_name"]
+                            name = row[name_idx].strip() if name_idx < len(row) else ""
+                            if not name:
+                                error_rows += 1
+                                await _log_import_error(conn, task_id, row_num, str(row)[:200], "missing_name", "validation")
+                                continue
 
-                        # 最后一批
-                        if batch_rows:
-                            await conn.copy_records_to_table(
-                                'import_batch', records=batch_rows,
-                                columns=COPY_COLUMNS,
+                            product = _parse_csv_row(row)
+                            if product is None:
+                                continue
+                            import_count += 1
+
+                            copy_row = (
+                                product["external_id"], product["sku"],
+                                product["brand"], product["product_name"],
+                                product["product_line"],
+                                product["category"], product["sub_category"],
+                                product["formulation_type"],
+                                product.get("effects") or [],
+                                product.get("target_population") or [],
+                                product["full_ingredients"],
+                                json.dumps(product.get("key_ingredients") or {}, ensure_ascii=False),
+                                [], [], [],  # material_refs, peptide_refs, compound_refs
+                                product["price"], product["currency"],
+                                product["package_size"],
+                                product["volume_ml"], product["weight_g"],
+                                product.get("sales_channels") or [],
+                                product["avg_rating"],
+                                product["review_count"],
+                                product["monthly_sales"],
+                                product.get("image_urls") or [],
+                                None,  # reg_type
+                                product["approved_region"],
+                                product["source"],
+                                _parse_iso_timestamp(product["crawl_timestamp"]) if product["crawl_timestamp"] else None,
+                                product["data_quality"],
+                                _parse_iso_timestamp(product["created_at"]) if product["created_at"] else None,
+                                _parse_iso_timestamp(product["updated_at"]) if product["updated_at"] else None,
+                                product["created_by"],
+                                product.get("allergens_tags") or [],
+                                product.get("additives_tags") or [],
+                                product["ecoscore_grade"],
+                                product.get("traces_tags") or [],
+                                product.get("contaminants") or [],
                             )
-                            await conn.execute(_MERGE_SQL)
-                            merge_count = import_count
+                            batch_rows.append(copy_row)
 
-            finally:
-                await pool.close()
+                            # 每扫描 5000 行打印一次进度
+                            if total_scanned - last_log_count >= 5000:
+                                elapsed = time.time() - start_time
+                                rate = total_scanned / elapsed
+                                logger.info(
+                                    f"  [CSV读取中] 已扫描 {total_scanned:,} 行 | "
+                                    f"有效 {import_count:,} | "
+                                    f"速率: {rate:,.0f} rows/s",
+                                )
+                                last_log_count = total_scanned
 
-        return asyncio.run(_check_and_import())
+                            # 每 10000 行写入一次（chunk_size 可调大）
+                            if len(batch_rows) >= chunk_size:
+                                await conn.copy_records_to_table(
+                                    'import_batch', records=batch_rows,
+                                    columns=COPY_COLUMNS,
+                                )
+                                await conn.execute(_MERGE_SQL)
+                                merge_count = import_count
+                                await _update_import_task(conn, task_id, {
+                                    'status': 'running',
+                                    'total_rows': total_rows,
+                                    'processed_rows': total_scanned,
+                                    'inserted_rows': import_count,
+                                    'updated_rows': max(0, merge_count - import_count),
+                                    'error_rows': error_rows,
+                                    'progress_pct': round((import_count / total_rows * 100), 1) if total_rows > 0 else 0,
+                                })
+                                batch_start = time.time()
+                                batch_rows.clear()
+                        except Exception as e:
+                            error_rows += 1
+                            error_msg = str(e)
+                            if errors_logged <= 10:
+                                logger.error(f"  解析错误 (行 {row_num}): {error_msg}")
+                            await _log_import_error(conn, task_id, row_num, str(row)[:200], error_msg, "transform")
+                            errors_logged += 1
+                            if errors_logged > 10:
+                                logger.warning("  ... 超过10个错误，后续错误将不再详细记录")
 
-    _run_all()
+                    # 最后一批
+                    if batch_rows:
+                        await conn.copy_records_to_table(
+                            'import_batch', records=batch_rows,
+                            columns=COPY_COLUMNS,
+                        )
+                        await conn.execute(_MERGE_SQL)
+                        merge_count = import_count
 
-    # 更新统计
-    total_rows = import_count + error_count
-    valid_rows = import_count
+                # Step 3: 重建唯一索引（如果之前 DROP 了）
+                if drop_index:
+                    logger.info("  [优化] 重建 external_id 唯一索引...")
+                    await conn.execute("""
+                        CREATE UNIQUE INDEX IF NOT EXISTS ix_retail_products_external_id
+                        ON retail_products (external_id)
+                    """)
+                    logger.info("  [优化] 索引重建完成")
 
+                # 最终更新任务状态
+                final_progress = round((import_count / total_rows * 100), 1) if total_rows > 0 else 100.0
+                await _update_import_task(conn, task_id, {
+                    'status': 'completed',
+                    'total_rows': total_rows,
+                    'processed_rows': total_rows,
+                    'inserted_rows': import_count,
+                    'updated_rows': max(0, merge_count - import_count),
+                    'error_rows': error_rows,
+                    'progress_pct': final_progress,
+                })
+
+                logger.info(f"  导入完成: {import_count:,} 成功, {error_rows:,} 错误")
+
+            await pool.close()
+        except Exception as e:
+            logger.error(f"Import failed: {e}")
+            raise
+
+    # 执行异步导入
+    asyncio.run(_import_to_db())
+
+    # 计算实际插入和更新数（由于ON CONFLICT DO UPDATE，inserted+updated = 总影响行数）
+    # 这里我们简化处理：所有import_count都视为新插入或更新
+    inserted_rows = import_count
+    updated_rows = 0  # 实际难以区分upsert中的插入和更新，需更精细的监控
+
+    # 更新最终统计
     total_elapsed = time.time() - start_time
     logger.info("")
     logger.info("=" * 60)
     logger.info("导入完成!")
-    if dry_run:
-        logger.info(f"  总行数: {total_rows:,}")
-        logger.info(f"  有效行: {valid_rows:,}")
-    else:
-        logger.info(f"  已导入/更新: {import_count:,}")
-    logger.info(f"  解析错误: {error_count:,}")
+    logger.info(f"  总行数: {total_rows:,}")
+    logger.info(f"  成功导入/更新: {import_count:,}")
+    logger.info(f"  解析错误: {error_rows:,}")
     logger.info(f"  总耗时: {total_elapsed:.1f}s")
     logger.info(f"  平均速率: {import_count/total_elapsed:,.0f} rows/s")
     logger.info("=" * 60)
+
+    return {
+        "task_id": task_id,
+        "total_rows": total_rows,
+        "imported_count": import_count,
+        "error_count": error_rows,
+        "inserted_count": inserted_rows,
+        "updated_count": updated_rows,
+        "success_rate": round((import_count / total_rows * 100), 1) if total_rows > 0 else 0,
+        "total_time_sec": total_elapsed,
+        "success": True,
+    }
 
 
 def _to_pg_array(values: Optional[list]) -> Optional[str]:
@@ -676,6 +832,80 @@ def _parse_iso_timestamp(iso_str: Optional[str]):
         return None
 
 
+# ── 导入任务管理 ──
+
+async def _create_import_task(
+    db_conn,
+    task_id: str,
+    user_id: Optional[int],
+    file_name: str,
+    file_size: int,
+    target_table: str = "retail_products",
+) -> str:
+    """在import_tasks表中创建新任务记录"""
+    now = datetime.now(timezone.utc)
+    await db_conn.execute("""
+        INSERT INTO import_tasks (
+            task_id, user_id, adapter_type, target_table, status,
+            total_rows, processed_rows, inserted_rows, updated_rows, error_rows,
+            progress_pct, file_name, file_size_bytes, mapping_config,
+            created_at, updated_at
+        ) VALUES (
+            $1, $2, 'csv', $3, 'pending',
+            0, 0, 0, 0, 0, 0.0, $4, $5, '{"target_table": $3}',
+            $6, $7
+        )
+    """, (task_id, user_id, target_table, file_name, file_size, now.isoformat(), now.isoformat()))
+    await db_conn.commit()
+    return task_id
+
+
+async def _update_import_task(
+    db_conn,
+    task_id: str,
+    updates: Dict[str, Any],
+) -> None:
+    """更新import_tasks表中的任务状态"""
+    await db_conn.execute("""
+        UPDATE import_tasks SET
+            status = $1,
+            total_rows = $2,
+            processed_rows = $3,
+            inserted_rows = $4,
+            updated_rows = $5,
+            error_rows = $6,
+            progress_pct = $7,
+            updated_at = $8
+        WHERE task_id = $9
+    """, (
+        updates.get('status'),
+        updates.get('total_rows'),
+        updates.get('processed_rows'),
+        updates.get('inserted_rows'),
+        updates.get('updated_rows'),
+        updates.get('error_rows'),
+        updates.get('progress_pct'),
+        datetime.now(timezone.utc).isoformat(),
+        task_id,
+    ))
+    await db_conn.commit()
+
+
+async def _log_import_error(
+    db_conn,
+    task_id: str,
+    row_number: int,
+    raw_data: str,
+    error_msg: str,
+    error_type: str = "validation",
+) -> None:
+    """将错误记录插入import_errors表"""
+    await db_conn.execute("""
+        INSERT INTO import_errors (task_id, row_number, raw_data, error_message, error_type)
+        VALUES ($1, $2, $3, $4, $5)
+    """, (task_id, row_number, raw_data, error_msg, error_type))
+
+
 def _to_pg_jsonb(data: Optional[dict]) -> Optional[str]:
     """Python dict → PostgreSQL JSONB literal"""
     if not data:
@@ -684,7 +914,7 @@ def _to_pg_jsonb(data: Optional[dict]) -> Optional[str]:
     return json.dumps(data, ensure_ascii=False)
 
 
-def _dry_run_parse(csv_path: str):
+def _dry_run_parse(csv_path: str, encoding: str = 'utf-8'):
     """Dry run: 解析前 100 行并打印示例"""
     import io
     # Force UTF-8 stdout for Windows
@@ -693,13 +923,13 @@ def _dry_run_parse(csv_path: str):
 
     csv.field_size_limit(2147483647)
 
-    with open(csv_path, encoding="utf-8") as f:
+    with open(csv_path, encoding=encoding) as f:
         reader = csv.reader(f, delimiter="\t")
         next(reader)  # skip header
 
         parsed_count = 0
         for i, row in enumerate(reader):
-            if parsed_count >= 5:
+            if parsed_count >= 100:
                 break
             try:
                 product = _parse_csv_row(row)
@@ -709,7 +939,7 @@ def _dry_run_parse(csv_path: str):
                 name = product.get('product_name', '')
                 if len(name) > 60:
                     name = name[:60] + '...'
-                print(f"\n--- Row {i+1} ---")
+                print(f"\n--- Row {i+1} (sample {parsed_count}) ---")
                 print(f"  external_id: {product['external_id']}")
                 print(f"  brand: {product['brand']}")
                 print(f"  product_name: {name}")
@@ -719,12 +949,10 @@ def _dry_run_parse(csv_path: str):
                 ki = product.get("key_ingredients", {})
                 if ki.get("nutrition"):
                     print(f"  nutrition keys: {list(ki['nutrition'].keys())}")
-            except UnicodeEncodeError:
-                continue  # Skip rows with unprintable characters
             except Exception as e:
                 print(f"  Parse error on row {i}: {e}")
 
-    print("\n[Dry run complete] 数据格式验证通过")
+    print(f"\n[Dry run complete] 已验证 {parsed_count} 个产品条目，数据格式正常")
 
 
 def main():
@@ -737,8 +965,8 @@ def main():
         help=f"CSV file path (default: {CSV_PATH})",
     )
     parser.add_argument(
-        "--chunk-size", type=int, default=1000,
-        help="Batch size for INSERT (default: 1000)",
+        "--chunk-size", type=int, default=10000,
+        help="Batch size for INSERT (default: 10000)",
     )
     parser.add_argument(
         "--dry-run", action="store_true",
@@ -748,9 +976,19 @@ def main():
         "--test-limit", type=int, default=0,
         help="Import only N valid rows (for testing)",
     )
+    parser.add_argument(
+        "--no-drop-index", action="store_true",
+        help="Do NOT drop/rebuild unique index during import (slower but safer)",
+    )
     args = parser.parse_args()
 
-    import_csv(csv_path=args.csv, chunk_size=args.chunk_size, dry_run=args.dry_run, test_limit=args.test_limit)
+    import_csv(
+        csv_path=args.csv,
+        chunk_size=args.chunk_size,
+        dry_run=args.dry_run,
+        test_limit=args.test_limit,
+        drop_index=not args.no_drop_index,
+    )
 
 
 if __name__ == "__main__":
