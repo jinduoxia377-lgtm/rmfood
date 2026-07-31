@@ -6,12 +6,14 @@
 使用共享 router 实例注册到 /databases 前缀下。
 """
 import logging
+from datetime import datetime, timezone
 from typing import Optional, List
+
 from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 
-from app.api.deps import get_db_session
+from app.api.deps import get_db_session, get_current_user
 from app.models.food_material import FoodMaterial
 from app.models.retail_product import RetailProduct
 
@@ -22,6 +24,7 @@ from . import router
 
 # Lazy import for RetailProduct (avoids circular imports in service layer)
 _RetailProduct = None
+_RetailProductResponse = None
 
 
 @router.get("/food-materials", response_model=List[dict])
@@ -137,6 +140,10 @@ async def delete_food_material(
 
 # ── 零售产品 CRUD ──────────────────────────────────────────────
 
+# Pydantic 模型用于请求体验证（延迟导入避免循环依赖）
+_RetailProductResponse = None
+
+
 @router.get("/retail-products", summary="列出零售产品")
 async def list_retail_products(
     category: Optional[str] = Query(None, description="品类筛选"),
@@ -152,7 +159,7 @@ async def list_retail_products(
         from app.models.retail_product import RetailProduct
         _RetailProduct = RetailProduct
 
-    stmt = select(_RetailProduct).where(_RetailProduct.source == "openfoodfacts")
+    stmt = select(_RetailProduct).where(_RetailProduct.source == source) if source else select(_RetailProduct)
     if category:
         stmt = stmt.where(_RetailProduct.category.ilike(f"%{category}%"))
     if brand:
@@ -165,8 +172,14 @@ async def list_retail_products(
     result = await db.execute(stmt)
     products = result.scalars().all()
 
+    # 延迟加载响应模型
+    global _RetailProductResponse
+    if _RetailProductResponse is None:
+        from app.schemas.retail_product import RetailProductResponse
+        _RetailProductResponse = RetailProductResponse
+
     return {
-        "items": [p.to_dict() if hasattr(p, "to_dict") else dict(p) for p in products],
+        "items": [_RetailProductResponse.model_validate(p).dict(exclude_none=True) for p in products],
         "total": total,
         "page": page,
         "page_size": page_size,
@@ -186,9 +199,190 @@ async def get_retail_product(
         _RetailProduct = RetailProduct
 
     result = await db.execute(
-        select(_RetailProduct).where(_RetailProduct.id == product_id).limit(1)
+        select(_RetailProduct).where(_RetailProduct.id == product_id)
     )
     product = result.scalar_one_or_none()
     if not product:
         raise HTTPException(status_code=404, detail="零售产品不存在")
-    return product.to_dict() if hasattr(product, "to_dict") else dict(product)
+
+    global _RetailProductResponse
+    if _RetailProductResponse is None:
+        from app.schemas.retail_product import RetailProductResponse
+        _RetailProductResponse = RetailProductResponse
+
+    return _RetailProductResponse.model_validate(product).dict(exclude_none=None)
+
+
+@router.post("/retail-products", summary="创建零售产品")
+async def create_retail_product(
+    data: dict,
+    db: AsyncSession = Depends(get_db_session),
+):
+    """
+    创建零售产品（管理后台用，支持多种数据来源）
+
+    需要管理员或配方师权限。
+    """
+    from app.api.deps import get_current_user
+    current_user = await get_current_user(db)
+    if current_user.role not in ("admin", "formulator"):
+        raise HTTPException(status_code=403, detail="权限不足")
+
+    global _RetailProduct
+    if _RetailProduct is None:
+        from app.models.retail_product import RetailProduct
+        _RetailProduct = RetailProduct
+
+    # 检查 external_id 是否已存在
+    ext_id = data.get("external_id") or data.get("sku")
+    if ext_id:
+        check_stmt = select(_RetailProduct).where(
+            (_RetailProduct.external_id == ext_id) | (_RetailProduct.sku == ext_id)
+        )
+        existing = await db.execute(check_stmt)
+        if existing.scalar():
+            raise HTTPException(status_code=400, detail=f"外部标识 {ext_id} 已存在")
+
+    product = _RetailProduct(**data)
+    product.created_by = current_user.id
+    db.add(product)
+    await db.commit()
+    await db.refresh(product)
+
+    global _RetailProductResponse
+    if _RetailProductResponse is None:
+        from app.schemas.retail_product import RetailProductResponse
+        _RetailProductResponse = RetailProductResponse
+
+    return _RetailProductResponse.model_validate(product).dict(exclude_none=True)
+
+
+@router.put("/retail-products/{product_id}", summary="更新零售产品")
+async def update_retail_product(
+    product_id: int,
+    data: dict,
+    db: AsyncSession = Depends(get_db_session),
+):
+    """更新零售产品"""
+    global _RetailProduct
+    if _RetailProduct is None:
+        from app.models.retail_product import RetailProduct
+        _RetailProduct = RetailProduct
+
+    result = await db.execute(
+        select(_RetailProduct).where(_RetailProduct.id == product_id)
+    )
+    product = result.scalar_one_or_none()
+    if not product:
+        raise HTTPException(status_code=404, detail="零售产品不存在")
+
+    for key, value in data.items():
+        if hasattr(product, key):
+            setattr(product, key, value)
+    product.updated_at = datetime.now(timezone.utc)
+
+    await db.commit()
+    await db.refresh(product)
+
+    global _RetailProductResponse
+    if _RetailProductResponse is None:
+        from app.schemas.retail_product import RetailProductResponse
+        _RetailProductResponse = RetailProductResponse
+
+    return _RetailProductResponse.model_validate(product).dict(exclude_none=True)
+
+
+@router.delete("/retail-products/{product_id}", summary="删除零售产品")
+async def delete_retail_product(
+    product_id: int,
+    db: AsyncSession = Depends(get_db_session),
+):
+    """删除零售产品（软删除）"""
+    from app.api.deps import get_current_user
+    current_user = await get_current_user(db)
+    if current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="仅管理员可删除")
+
+    global _RetailProduct
+    if _RetailProduct is None:
+        from app.models.retail_product import RetailProduct
+        _RetailProduct = RetailProduct
+
+    result = await db.execute(
+        select(_RetailProduct).where(_RetailProduct.id == product_id)
+    )
+    product = result.scalar_one_or_none()
+    if not product:
+        raise HTTPException(status_code=404, detail="零售产品不存在")
+
+    await db.delete(product)
+    await db.commit()
+
+    return {"status": "deleted", "id": product_id}
+
+
+@router.get("/retail-products/search", summary="零售产品全文搜索")
+async def search_retail_products(
+    query: str = Query(..., description="搜索关键词"),
+    category: Optional[str] = Query(None, description="品类筛选"),
+    brand: Optional[str] = Query(None, description="品牌筛选"),
+    source: Optional[str] = Query(None, description="数据来源"),
+    formulation_type: Optional[str] = Query(None, description="剂型筛选"),
+    min_price: Optional[float] = Query(None, description="最低价格"),
+    max_price: Optional[float] = Query(None, description="最高价格"),
+    page: int = Query(1, ge=1, description="页码"),
+    page_size: int = Query(20, ge=1, le=200, description="每页数量"),
+    db: AsyncSession = Depends(get_db_session),
+):
+    """
+    零售产品全文搜索（支持关键词匹配名称、品牌、分类等）
+    """
+    global _RetailProduct
+    if _RetailProduct is None:
+        from app.models.retail_product import RetailProduct
+        _RetailProduct = RetailProduct
+
+    # 构建搜索条件
+    stmt = select(_RetailProduct)
+    if source:
+        stmt = stmt.where(_RetailProduct.source == source)
+    if category:
+        stmt = stmt.where(_RetailProduct.category.ilike(f"%{category}%"))
+    if brand:
+        stmt = stmt.where(_RetailProduct.brand.ilike(f"%{brand}%"))
+    if formulation_type:
+        stmt = stmt.where(_RetailProduct.formulation_type.ilike(f"%{formulation_type}%"))
+    if min_price is not None:
+        stmt = stmt.where(_RetailProduct.price >= min_price)
+    if max_price is not None:
+        stmt = stmt.where(_RetailProduct.price <= max_price)
+
+    # 关键词搜索 - 在产品名、品牌、分类中模糊匹配
+    if query:
+        stmt = stmt.where(
+            (ilike(_RetailProduct.product_name, f"%{query}%")) |
+            (ilike(_RetailProduct.brand, f"%{query}%")) |
+            (ilike(_RetailProduct.category, f"%{query}%"))
+        )
+
+    # 计数查询
+    count_stmt = select(func.count()).select_from(stmt.subquery())
+    total = (await db.execute(count_stmt)).scalar() or 0
+
+    # 数据查询
+    stmt = stmt.order_by(_RetailProduct.updated_at.desc()).offset((page - 1) * page_size).limit(page_size)
+    result = await db.execute(stmt)
+    products = result.scalars().all()
+
+    global _RetailProductResponse
+    if _RetailProductResponse is None:
+        from app.schemas.retail_product import RetailProductResponse
+        _RetailProductResponse = RetailProductResponse
+
+    return {
+        "items": [_RetailProductResponse.model_validate(p).dict(exclude_none=True) for p in products],
+        "total": total,
+        "page": page,
+        "page_size": page_size,
+        "data_source": "postgresql",
+    }

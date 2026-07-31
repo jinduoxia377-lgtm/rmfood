@@ -1,5 +1,7 @@
-"""RMFOOD API 路由模块
+"""RMFOOD API 路由模块"""
+__all__ = ["api_router", "register_lazy_routers"]  # 公开接口导出
 
+"""
 路由分两阶段注册:
 1. 关键路由 — 模块导入时立即注册（认证、用户、配方等核心功能）
 2. 非关键路由 — 在 lifespan 启动阶段延迟注册（优化启动速度 + 失败不阻塞）

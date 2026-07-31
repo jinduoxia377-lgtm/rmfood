@@ -1,5 +1,6 @@
 """Chat module - /chat, /chat/stream"""
 import logging
+import status
 import datetime
 import json
 import os
@@ -22,8 +23,8 @@ from . import (
 from ...core.performance.resilience import get_ai_rate_limiter
 from ...core.multi_tenant.tenant_security import TenantContext, require_tenant
 from ...services.llm_service import LLMMessage
-from ...services.ai.response_cache import ai_cache
-from ...services.ai.observability import ai_observability
+from ...services.ai.shared.response_cache import ai_cache
+from ...services.ai.shared.observability import ai_observability
 
 sub_router = APIRouter(tags=["生成"])
 

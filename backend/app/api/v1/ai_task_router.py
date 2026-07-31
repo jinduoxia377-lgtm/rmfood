@@ -19,7 +19,7 @@ from pydantic import BaseModel, Field
 
 from ...api.deps import get_current_user
 from ...models import User
-from ...services.ai.inference_queue import (
+from ...services.ai.shared.inference_queue import (
     inference_queue, QueueFullError, TaskStatus,
 )
 

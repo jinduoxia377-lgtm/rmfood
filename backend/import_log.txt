@@ -1,0 +1,97 @@
+2026-07-29 20:19:13,093 INFO ============================================================
+2026-07-29 20:19:13,093 INFO OpenFoodFacts CSV 导入开始
+2026-07-29 20:19:13,093 INFO   CSV 文件: D:\RMFOOD配方平台\openfoodfacts\en.openfoodfacts.org.products.csv
+2026-07-29 20:19:13,093 INFO   Chunk size: 10000
+2026-07-29 20:19:13,093 INFO   Dry run: False
+2026-07-29 20:19:13,093 INFO   Drop index: False
+2026-07-29 20:19:13,093 INFO   Target table: retail_products
+2026-07-29 20:19:13,093 INFO ============================================================
+2026-07-29 20:19:13,094 INFO   文件编码: utf-8
+2026-07-29 20:19:13,094 INFO [Step 2] 检查数据库中已有的 openfoodfacts 数据...
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\Administrator\AppData\Local\Python\pythoncore-3.14-64\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'gbk' codec can't encode character '\u26a0' in position 32: illegal multibyte sequence
+Call stack:
+  File "D:\RMFOOD配方平台\backend\scripts\import_openfoodfacts_csv.py", line 1012, in <module>
+    main()
+  File "D:\RMFOOD配方平台\backend\scripts\import_openfoodfacts_csv.py", line 1002, in main
+    import_csv(
+  File "D:\RMFOOD配方平台\backend\scripts\import_openfoodfacts_csv.py", line 800, in import_csv
+    asyncio.run(_import_to_db())
+  File "C:\Users\Administrator\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\runners.py", line 204, in run
+    return runner.run(main)
+  File "C:\Users\Administrator\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\runners.py", line 127, in run
+    return self._loop.run_until_complete(task)
+  File "C:\Users\Administrator\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 706, in run_until_complete
+    self.run_forever()
+  File "C:\Users\Administrator\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 677, in run_forever
+    self._run_once()
+  File "C:\Users\Administrator\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 2046, in _run_once
+    handle._run()
+  File "C:\Users\Administrator\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\RMFOOD配方平台\backend\scripts\import_openfoodfacts_csv.py", line 538, in _import_to_db
+    db_url = settings.database.url
+  File "D:\RMFOOD配方平台\backend\app\core\config.py", line 872, in __getattr__
+    return getattr(get_settings(), name)
+  File "D:\RMFOOD配方平台\backend\app\core\config.py", line 752, in get_settings
+    _settings = Settings()
+  File "D:\RMFOOD配方平台\backend\app\core\config.py", line 438, in __init__
+    self._validate_config()      # Now validate after all overrides are applied
+  File "D:\RMFOOD配方平台\backend\app\core\config.py", line 525, in _validate_config
+    logger.warning(
+Message: '\u26a0\ufe0f  开发/测试环境 admin_password 为空，使用随机生成的密码。请设置 ADMIN_PASSWORD 环境变量以固定密码。'
+Arguments: ()
+[DEBUG] Using .env file: D:\RMFOOD配方平台\backend\.env
+2026-07-29 20:19:13,556 INFO [DB] Windows tuning applied: min_size=5, max_size=20, keepalive enabled
+2026-07-29 20:19:13,556 INFO   Creating asyncpg pool...
+Traceback (most recent call last):
+  File "D:\RMFOOD配方平台\backend\scripts\import_openfoodfacts_csv.py", line 1012, in <module>
+    main()
+    ~~~~^^
+  File "D:\RMFOOD配方平台\backend\scripts\import_openfoodfacts_csv.py", line 1002, in main
+    import_csv(
+    ~~~~~~~~~~^
+        csv_path=args.csv,
+        ^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+        drop_index=not args.no_drop_index,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\RMFOOD配方平台\backend\scripts\import_openfoodfacts_csv.py", line 800, in import_csv
+    asyncio.run(_import_to_db())
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\runners.py", line 204, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\runners.py", line 127, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Python\pythoncore-3.14-64\Lib\asyncio\base_events.py", line 719, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "D:\RMFOOD配方平台\backend\scripts\import_openfoodfacts_csv.py", line 569, in _import_to_db
+    pool = await asyncpg.create_pool(**connect_args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\RMFOOD配方平台\.venv\Lib\site-packages\asyncpg\pool.py", line 439, in _async__init__
+    await self._initialize()
+  File "D:\RMFOOD配方平台\.venv\Lib\site-packages\asyncpg\pool.py", line 466, in _initialize
+    await first_ch.connect()
+  File "D:\RMFOOD配方平台\.venv\Lib\site-packages\asyncpg\pool.py", line 153, in connect
+    self._con = await self._pool._get_new_connection()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\RMFOOD配方平台\.venv\Lib\site-packages\asyncpg\pool.py", line 538, in _get_new_connection
+    con = await self._connect(
+                ~~~~~~~~~~~~~^
+        *self._connect_args,
+        ^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+        **self._connect_kwargs,
+        ^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+TypeError: connect() got an unexpected keyword argument 'keepalive_idle'

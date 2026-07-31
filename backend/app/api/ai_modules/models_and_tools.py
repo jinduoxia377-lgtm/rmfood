@@ -7,8 +7,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ...services.ai.observability import ai_observability
-from ...services.ai.response_cache import ai_cache
+from ...services.ai.shared.observability import ai_observability
+from ...services.ai.shared.response_cache import ai_cache
 
 from . import (
     logger,

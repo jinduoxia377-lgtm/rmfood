@@ -315,6 +315,10 @@ export interface OFFSearchRequest {
   page?: number;
   page_size?: number;
   realtime?: boolean;
+  brand?: string;          // Phase 4: 品牌筛选
+  formulation_type?: string;  // Phase 4: 剂型筛选
+  min_price?: number;       // Phase 4: 最低价格
+  max_price?: number;       // Phase 4: 最高价格
 }
 
 export interface OFFSearchResponse {
@@ -431,6 +435,33 @@ export async function getOpenFoodFactsSyncStats(): Promise<Record<string, unknow
 export async function getOpenFoodFactsReport(): Promise<Record<string, unknown>> {
   const response = await databaseApi.get('/databases/openfoodfacts/report');
   return response.data;
+}
+
+// ── 收藏/书架 (Pantry) API ────────────────────────────────
+
+/**
+ * 添加零售产品到收藏（用户书架）
+ * POST /databases/pantry/retail-products/{product_id}
+ */
+export async function addToPantryRetailProduct(product_id: number): Promise<any> {
+  return databaseApi.post(`/pantry/retail-products/${product_id}`).then((r) => r.data);
+}
+
+/**
+ * 从收藏中移除零售产品
+ * DELETE /databases/pantry/retail-products/{product_id}
+ */
+export async function removeFromPantryRetailProduct(product_id: number): Promise<any> {
+  return databaseApi.delete(`/pantry/retail-products/${product_id}`).then((r) => r.data);
+}
+
+/**
+ * 获取用户的收藏零售产品列表
+ * GET /databases/pantry?item_type=retail_product
+ */
+export async function getPantryRetailProducts(): Promise<any[]> {
+  const response = await databaseApi.get('/pantry', { params: { item_type: 'retail_product' } });
+  return response.data.items || [];
 }
 
 // ── 名称标准化 ──

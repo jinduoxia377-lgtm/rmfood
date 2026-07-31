@@ -55,7 +55,17 @@ import type { SearchHistoryPanelProps } from './SearchHistoryPanel'
 import type {
   GraphBookmark, ReportConfig as ReportConfigT, CommunityResult as CommunityResultT,
   KCoreResult as KCoreResultT, AIInsight as AIInsightT, LegendItem,
+  SmartPathResultV80, NodeAIAnalysisData, GraphStatistics, SubGraphResult, HistoryEntry,
+  CentralityMode,
 } from './types'
+// ── Lightweight ad-hoc types for missing component props ──
+interface GraphSnapshotT { time: string; nodes: number; edges: number }
+interface ExternalDataItem { name: string; source: string }
+interface ImportState { progress: number; status: 'idle'|'loading'|'success'|'error'; message?: string }
+interface ShareLink { url: string; shortcode: string; views: number }
+interface NodeAnnotation { id: string; x: number; y: number; text: string; type: string }
+interface ComparisonResult { similarity: number; added: string[]; removed: string[] }
+type ExportFormat = 'json' | 'svg' | 'gexf'
 
 // ── Internal graph types for callbacks ──
 interface SimNode extends GraphNode {
@@ -185,6 +195,83 @@ export interface GraphPanelLayoutProps {
   setNewAnnotationText: (t: string) => void
   setReportConfig: (r: Partial<ReportConfigT>) => void
   setSortBy: (s: SortByOption) => void
+  setFocusedNodeIndex: (v: number) => void
+  setIsSelecting: (v: boolean) => void
+
+  // State values (required by graph engine for rendering)
+  activeFilter: string | null
+  selectedNode: GraphNode | null
+  searchQuery: string
+  focusedNodeIndex: number
+  searchHistory: string[]
+  showPerfPanel: boolean
+  perfStats: any
+  isSelecting: boolean
+  selectionBox: { x1: number; y1: number; x2: number; y2: number } | null
+  selectedNodes: Set<string>
+  contextMenu: { x: number; y: number; node?: GraphNode } | null
+  communities: Map<string, number>
+  communityColors: Record<number, string>
+  showExportMenu: boolean
+  exportStatus: string | null
+  showMinimap: boolean
+  pathAnimation: { source: string; target: string; pathNodes: string[]; pathEdges: [string, string][] } | null
+  collapsedGroups: Set<string>
+  showCentralityPanel: boolean
+  sortBy: string
+  pinnedNodes: Set<string>
+  showPinnedPanel: boolean
+  annotations: Array<{ id: string; x: number; y: number; text: string; type: 'note' | 'arrow'; targetId?: string }>
+  isAddingAnnotation: boolean
+  activeTheme: ThemeConfig
+  showThemePanel: boolean
+  animationPreset: string
+  showLayoutMenu: boolean
+  localLayout: string
+  aiInsights: AIInsightT[]
+  showAIPanel: boolean
+  smartPathResult: SmartPathResultV80 | null
+  showPathPanel: boolean
+  pathSourceId: string
+  pathTargetId: string
+  nodeAIAnalysis: NodeAIAnalysisData | null
+  graphSnapshots: GraphSnapshotT[]
+  isGeneratingInsight: boolean
+  externalDataCache: Record<string, ExternalDataItem>
+  showExternalPanel: boolean
+  externalLoadingId: string | null
+  importState: ImportState
+  showImportDialog: boolean
+  showCompareMode: boolean
+  compareResult: ComparisonResult | null
+  syncStatus: string
+  lastSyncTime: string | null
+  dragOver: boolean
+  shareLink: ShareLink | null
+  showSharePanel: boolean
+  nodeAnnotations: NodeAnnotation[]
+  showAnnotationPanel: boolean
+  newAnnotationText: string
+  historyEntries: HistoryEntry[]
+  historyIndex: number
+  showHistoryPanel: boolean
+  bookmarks: GraphBookmark[]
+  showBookmarkPanel: boolean
+  reportConfig: ReportConfigT
+  showReportDialog: boolean
+  reportGenerating: boolean
+  graphStats: GraphStatistics
+  showStatsPanel: boolean
+  communityResult: CommunityResultT
+  kcoreResult: KCoreResultT
+  centralityMetrics: any
+  centralityMode: CentralityMode
+  savedSubGraphs: SubGraphResult[]
+  activeSubGraph: string | null
+  showSubGraphPanel: boolean
+  aiQAHistory: Array<{ question: string; answer: string }>
+  aiQuestion: string
+  aiAnswering: boolean
 }
 
 /** Main composition component — renders all panels from extracted graph/components/ */

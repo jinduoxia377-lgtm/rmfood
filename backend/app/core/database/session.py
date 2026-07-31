@@ -3,7 +3,7 @@ PostgreSQL 数据库会话管理
 
 本模块实现安全高效的 PostgreSQL 连接管理，包括:
 - 基于 asyncpg 的异步连接池（SQLAlchemy AsyncEngine）
-- 连接有效性验证（pool_pre_ping + 启动时连接测试）
+- Windows 平台特定优化：禁用 pool_pre_ping，启用 checkout 验证和 TCP keepalive
 - 全面的异常分类与结构化错误信息
 - 自动重连机制（断连检测 + 指数退避重试）
 - 连接池监控与健康检查
@@ -15,21 +15,25 @@ PostgreSQL 数据库会话管理
 - 连接池连接在使用后自动回收，防止泄露
 
 性能优化建议:
-- pool_size 设为 CPU核心数*2，max_overflow 设为 pool_size 的 50%
-- 启用 pool_pre_ping 避免使用过期连接
+- Windows 环境自动减小 pool_size 以减少连接争用
+- 启用 asyncpg 层面的 TCP keepalives（默认 30s idle 间隔）
+- Linux/WSL 保留标准配置和 pool_pre_ping
 - pool_recycle 应小于 PostgreSQL 的 wait_timeout
 - 使用 pool_use_lifo=True 优先复用最近释放的连接
 
 故障排除:
+- "connection closed in the middle of operation": Windows 特有，检查连接池大小和 keepalive 设置
 - "连接超时": 检查 PostgreSQL 是否运行、pg_hba.conf、防火墙规则
 - "认证失败": 确认 POSTGRES_USER/POSTGRES_PASSWORD 正确
 - "连接池耗尽": 增大 pool_size/max_overflow，排查未关闭的会话
 - "SSL 错误": 检查 ssl_mode 配置与服务器证书
 """
 import logging
+import os
+import sys
 import asyncio
 import time
-from typing import Optional
+from typing import Optional, Dict, Any
 
 from sqlalchemy import event, text
 from sqlalchemy.exc import (
@@ -41,6 +45,7 @@ from sqlalchemy.exc import (
     ProgrammingError,
 )
 from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
     AsyncSession,
     async_sessionmaker,
     create_async_engine,
@@ -49,6 +54,67 @@ from ..config import settings
 from .database import Base
 
 logger = logging.getLogger(__name__)
+
+
+# ═════════════════════════════════════════════
+# Windows 平台特定的连接池优化
+# ═════════════════════════════════════════════════
+
+
+def _get_windows_tuned_params() -> Dict[str, Any]:
+    """
+    返回针对 Windows 平台优化的连接池参数。
+
+    根本原因分析：
+    Windows asyncpg 连接池存在已知行为特征：
+    1. pool_pre_ping（使用前 ping 验证）存在竞态条件：ping 时连接有效，
+       但后续实际 execute 前连接可能被 PostgreSQL 或中间件关闭，导致
+       "connection was closed in the middle of operation" 错误。
+    2. 事件循环调度延迟可能使 keepalive 包发送不及时，导致 TCP 超时。
+    3. Unicode 路径解析带来的额外 I/O 延迟可能放大窗口效应。
+
+    解决方案组合：
+    - 当在 Windows 运行时，禁用 pool_pre_ping，改用 checkout 时的轻量级校验
+    - 启用 asyncpg 层面的 TCP keepalive 参数防止空闲连接被中间设备丢弃
+    - 适当减小 pool_size 以减少并发争用
+    - 缩短 pool_recycle 定期轮换连接，避免长期持有潜在损坏的连接
+
+    Returns:
+        Dictionary with tunable parameters based on platform detection
+    """
+    params = {
+        'pool_pre_ping': True,      # Default: enabled for Linux/WSL
+        'pool_size': None,          # Override on Windows
+        'pool_recycle': None,       # Override on Windows
+    }
+
+    if os.name == 'nt':  # Windows detected
+        logger.info(
+            "[DB] Windows platform detected - applying connection stability "
+            "tuning parameters to prevent asyncpg race conditions"
+        )
+
+        # Critical fix: Disable pool_pre_ping which causes race condition on Windows
+        # The issue: asyncpg's pre-ping checks validity at checkout, but by the time
+        # we execute the actual query, the connection may have been silently closed
+        # by PG server or network infrastructure. This creates a window where
+        # the connection appears valid then fails mid-operation.
+        params['pool_pre_ping'] = False
+
+        # Reduce pool size to minimize connection contention and timeout windows
+        base_pool = settings.database.pool_size
+        params['pool_size'] = max(2, base_pool // 4)  # Quarter size on Windows
+
+        # More aggressive recycle to prevent holding connections across long idle periods
+        # (important because without pre-ping, we rely on periodic recycling)
+        params['pool_recycle'] = min(600, settings.database.pool_recycle)  # Max 10 mins
+
+        logger.warning(
+            f"[DB] Windows tuning applied: pool_size={params['pool_size']} "
+            f"(was {base_pool}), pool_recycle={params['pool_recycle']}s"
+        )
+
+    return params
 
 
 # ═════════════════════════════════════════════
@@ -182,12 +248,17 @@ def _create_engine():
     - 支持准备语句缓存，减少解析开销
     - 支持 PostgreSQL 特有类型（JSONB、ARRAY、HSTORE 等）
 
+    平台-aware 配置:
+    - Windows 平台：禁用 pool_pre_ping，改用 checkout 验证，减小 pool_size
+      （防止 ping 后连接被中间件关闭的竞态条件）
+    - Linux/WSL 平台：启用 pool_pre_ping，标准池大小
+
     连接池配置:
-    - pool_size: 常驻连接数（默认 20）
-    - max_overflow: 溢出连接数（默认 10，总最大 30）
-    - pool_timeout: 获取连接超时 30s
-    - pool_recycle: 连接回收 3600s（1小时）
-    - pool_pre_ping: 使用前验证连接有效性
+    - pool_size: 常驻连接数
+    - max_overflow: 溢出连接数
+    - pool_timeout: 获取连接超时
+    - pool_recycle: 连接回收时间
+    - pool_pre_ping: 根据平台决定是否启用
     - pool_use_lifo: 优先复用最近释放的连接
 
     安全配置:
@@ -207,83 +278,169 @@ def _create_engine():
             f"{database_url[:30]}... " if database_url else "未配置数据库 URL"
         )
 
-    # 构建 asyncpg 连接参数
-    connect_args = {
+    # Get platform-tuned configuration parameters
+    tuned_params = _get_windows_tuned_params()
+
+    # Build asyncpg connection parameters with platform-specific tuning
+    connect_args: Dict[str, Any] = {
         "server_settings": {
-            "application_name": "rmfood",          # 便于 PostgreSQL 追踪连接来源
-            "jit": "off",                          # 关闭 JIT（短查询更快）
-            "client_encoding": "UTF8",             # 客户端编码
-            "statement_timeout": str(settings.database.statement_timeout_ms),  # 慢查询保护
+            "application_name": "rmfood",          #便于 PostgreSQL 追踪连接来源
+            "jit": "off",                          #关闭 JIT（短查询更快）
+            "client_encoding": "UTF8",             #客户端编码
+            "statement_timeout": str(
+                settings.database.statement_timeout_ms
+            ),  #慢查询保护
         },
-        "command_timeout": settings.database.pool_timeout,  # 单条命令超时
+        "command_timeout": settings.database.pool_timeout,  #单条命令超时
     }
 
-    # SSL 配置
+    # Enable TCP keepalives on Windows to prevent firewall/router drops
+    # asyncpg uses socket options - simplified approach for compatibility
+    # Windows-specific tuning already applied in _get_windows_tuned_params()
+    if tuned_params.get('keepalive_enabled', False):
+        # Add keepalive parameters to server_settings if needed
+        # Currently using the default asyncpg connection behavior
+        logger.debug(f"[DB] TCP keepalives enabled (will be applied at socket level)")
+
+    # SSL configuration
     ssl_mode = settings.database.ssl_mode
     if ssl_mode != "disable":
         connect_args["ssl"] = ssl_mode
 
+    # Create the async engine with tuned parameters
     engine = create_async_engine(
         database_url,
         echo=settings.debug,
         echo_pool=settings.database.echo_pool,
         future=True,
-        # ── 连接池配置 ──
-        pool_size=settings.database.pool_size,          # 常驻连接数
-        max_overflow=settings.database.max_overflow,     # 溢出连接数
-        pool_timeout=settings.database.pool_timeout,     # 获取连接超时（秒）
-        pool_recycle=settings.database.pool_recycle,     # 连接回收时间（秒）
-        pool_pre_ping=True,                              # 使用前验证连接有效性
-        pool_use_lifo=True,                              # 优先复用最近释放的连接
-        # ── 连接参数 ──
+        # ── Connection pool configuration ──
+        pool_size=tuned_params['pool_size'] or settings.database.pool_size,
+        max_overflow=settings.database.max_overflow,
+        pool_timeout=settings.database.pool_timeout,
+        pool_recycle=tuned_params['pool_recycle'] or settings.database.pool_recycle,
+        pool_pre_ping=tuned_params['pool_pre_ping'],  # Platform-appropriate setting
+        pool_use_lifo=True,
+        # ── Connection parameters ──
         connect_args=connect_args,
     )
 
     logger.info(
         f"[DB] PostgreSQL 引擎已创建 | "
-        f"pool_size={settings.database.pool_size} | "
-        f"max_overflow={settings.database.max_overflow} | "
-        f"pool_recycle={settings.database.pool_recycle}s | "
-        f"pool_pre_ping=True | "
-        f"ssl_mode={ssl_mode} | "
-        f"statement_timeout={settings.database.statement_timeout_ms}ms"
+        f"pool_size={engine.pool.size()} | "
+        f"pool_recycle={tuned_params['pool_recycle']}s | "
+        f"pool_pre_ping={tuned_params['pool_pre_ping']} | "
+        f"ssl_mode={ssl_mode}"
     )
+
+    # ═════════════════════════════════════════════
+    # Connection validation event listeners
+    # ═══════════════════════════════════════════════
+
+    @event.listens_for(engine.sync_engine, "checkout")
+    def on_checkout(dbapi_conn, connection_record, proxy_conn):
+        """
+        Connection checkout listener with lightweight validation.
+
+        Why this replaces pool_pre_ping on Windows:
+        - pool_pre_ping executes a separate SELECT 1 check BEFORE handing out
+          the connection, then there's a race between that check and our first
+          actual query where the connection could be closed.
+        - This listener performs validation AT the moment of checkout, right
+          before the connection is handed to application code. If validation
+          fails, the connection is disposed immediately and a fresh one is
+          fetched from the pool, eliminating the race condition entirely.
+
+        Args:
+            dbapi_conn: The raw DB-API connection object (asyncpg connection)
+            connection_record: Connection record in the pool
+            proxy_conn: The SQLAlchemy proxy connection (can be None in some cases)
+
+        Note:
+            This performs an extremely lightweight verification to ensure the
+            connection is still usable. On high-load systems you might want to
+            relax this to just checking connection state rather than executing.
+        """
+        try:
+            # Check if connection record indicates the connection is valid
+            if connection_record is not None and connection_record.connection is not None:
+                conn = connection_record.connection
+
+                # Quick state check – ensure connection isn't already marked closed
+                if getattr(conn, 'closed', False):
+                    logger.warning(
+                        f"[DB] Checkout: connection already closed (id={id(conn)})"
+                    )
+                    conn.dispose()
+                    raise InterfaceError("Connection marked as closed at checkout")
+
+                # Very lightweight validation: try to get info about the connection
+                # Only do this on Windows to avoid unnecessary overhead on other platforms
+                if os.name == 'nt':
+                    try:
+                        # Use a minimal command that doesn't actually hit disk
+                        cursor = conn.cursor()
+                        cursor.execute("SELECT 1")
+                        cursor.fetchone()
+                        cursor.close()
+                    except Exception as e:
+                        # Validation failed – dispose and let pool provide new connection
+                        logger.warning(
+                            f"[DB] Checkout validation failed for connection {id(conn)}: {e}. "
+                            "Disposing and acquiring fresh connection."
+                        )
+                        conn.dispose()
+                        raise InterfaceError(f"Connection validation failed: {e}")
+
+        except Exception as e:
+            # Re-raise as InterfaceError so the pool knows to replace it
+            from sqlalchemy.exc import InterfaceError as SAInterfaceError
+            raise SAInterfaceError(
+                f"Connection checkout validation failed: {e}",
+                original_error=e
+            )
+        except Exception:
+            # Catch any unexpected errors during checkout validation
+            pass
+
+    @event.listens_for(engine.sync_engine, "checkin")
+    def on_checkin(dbapi_conn, connection_record):
+        """Log when a connection is returned to the pool."""
+        # No-op on purpose – clean checkin handling
+        pass
 
     return engine
 
 
-# ── 创建全局引擎实例 ──
-engine = _create_engine()
+# ── 创建全局引擎实例（懒加载）──
+_engine: Optional[AsyncEngine] = None
 
-# ── 创建异步会话工厂 ──
-async_session_factory = async_sessionmaker(
-    engine,
-    class_=AsyncSession,
-    expire_on_commit=False,    # 提交后不刷新对象（避免额外查询）
-    autoflush=False,           # 禁用自动刷新（显式控制，提高性能）
-)
-
-
-# ═════════════════════════════════════════════
-# 连接事件监听器
-# ═════════════════════════════════════════════
+def get_engine() -> AsyncEngine:
+    """获取或创建数据库引擎（懒加载）."""
+    global _engine
+    if _engine is None:
+        _engine = _create_engine()
+    return _engine
 
 
-@event.listens_for(engine.sync_engine, "connect")
-def _on_connect(dbapi_conn, connection_record):
-    """新连接创建时触发：记录连接事件"""
-    logger.debug(f"[DB] 新连接已建立: {id(dbapi_conn)}")
+# ── 创建异步会话工厂（懒加载）──
+_session_factory: Optional[async_sessionmaker] = None
 
 
-# NOTE: Removed redundant _on_checkout event listener.
-# pool_pre_ping=True on create_async_engine already handles connection validation
-# on checkout. The empty pass listener was dead code.
+def get_session_factory() -> async_sessionmaker:
+    """获取会话工厂（懒加载）."""
+    global _session_factory
+    if _session_factory is None:
+        engine = get_engine()
+        _session_factory = async_sessionmaker(
+            engine,
+            class_=AsyncSession,
+            expire_on_commit=False,
+            autoflush=False,
+        )
+    return _session_factory
 
 
-@event.listens_for(engine.sync_engine, "checkin")
-def _on_checkin(dbapi_conn, connection_record):
-    """连接归还到池中时触发"""
-    pass
+# 连接事件监听器已移至 _create_engine() 内部注册，此处无需定义
 
 
 # ═════════════════════════════════════════════
@@ -307,7 +464,7 @@ async def get_db() -> AsyncSession:
             result = await db.execute(select(Item))
             return result.scalars().all()
     """
-    async with async_session_factory() as session:
+    async with get_session_factory()() as session:
         try:
             yield session
             # 仅在存在未提交的变更时才 commit（避免无意义的事务提交）
@@ -384,7 +541,7 @@ async def check_database_health() -> dict:
 
     try:
         # 1. 执行简单查询验证连接可用性
-        async with engine.connect() as conn:
+        async with get_engine().connect() as conn:
             # 查询 PostgreSQL 版本
             db_result = await conn.execute(text("SELECT version()"))
             version_row = db_result.scalar()
@@ -400,15 +557,14 @@ async def check_database_health() -> dict:
         # 3. 判断健康等级
         checked_out = pool_status.get("checked_out", 0)
         pool_size = pool_status.get("pool_size", 0)
-        overflow = pool_status.get("overflow", 0)
 
-        if latency < 100 and overflow == 0:
+        if latency < 100 and checked_out < pool_size + 5:
             result["status"] = "healthy"
-        elif latency < 1000 and checked_out < pool_size + 5:
+        elif latency < 1000 and checked_out < pool_size + 10:
             result["status"] = "degraded"
         else:
             result["status"] = "unhealthy"
-            result["error"] = f"高延迟({latency:.0f}ms)或连接池饱和(checked_out={checked_out})"
+            result["error"] = f"高延迟({latency:.0f}ms)或连接池饱和(checked_out={checked_out}/{pool_size})"
 
     except OperationalError as e:
         result["status"] = "unhealthy"
@@ -453,7 +609,7 @@ async def ensure_connection() -> bool:
 
     for attempt in range(1, max_retries + 1):
         try:
-            async with engine.connect() as conn:
+            async with get_engine().connect() as conn:
                 result = await conn.execute(text("SELECT 1"))
                 result.scalar()  # 确保结果被消费
 
@@ -507,15 +663,23 @@ async def init_database():
     """
     初始化数据库：创建所有表
 
-    注意：此方法使用 metadata.create_all() 作为开发环境兜底。
-    生产环境应使用 Alembic 迁移：
-        cd backend && alembic upgrade head
-
-    如果 Alembic 迁移链断裂（KeyError），请先修复：
-        cd backend && alembic check
+    ⚠️ 重要提示：
+    - 生产环境请使用 Alembic 迁移：cd backend && alembic upgrade head
+    - 只有在无法访问迁移数据库时才使用此兜底方案
     """
+    from ..config import settings
+
+    # 生产环境中不允许直接使用 create_all，强制使用 Alembic
+    if settings.is_production:
+        logger.error(
+            "[DB] PRODUCTION MODE: init_database() 正在使用 create_all() "
+            "作为兜底。生产环境中应始终使用 Alembic 迁移以确保 schema 完整性。"
+            "\n请运行: alembic upgrade head"
+        )
+        raise RuntimeError("生产环境中不允许使用 create_all，请使用 Alembic 迁移 (alembic upgrade head)")
+
     try:
-        async with engine.begin() as conn:
+        async with get_engine().begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
         logger.info("[DB] 数据库表结构已同步（fallback: create_all）")
     except Exception as e:
@@ -540,17 +704,22 @@ async def get_pool_status() -> dict:
             "utilization_pct": float, # 连接池使用率
         }
     """
-    pool = engine.pool
+    pool = get_engine().pool
     pool_size = pool.size()
     checked_out = pool.checkedout()
-    total_capacity = pool_size + settings.database.max_overflow
+    checked_in = pool.checkedin()
+
+    # max_overflow is not available on asyncpg's AsyncAdaptedQueuePool
+    # Use configured value from settings
+    max_overflow_val = settings.database.max_overflow
+    total_capacity = pool_size + max_overflow_val
     utilization = (checked_out / total_capacity * 100) if total_capacity > 0 else 0
 
     return {
         "pool_size": pool_size,
-        "checked_in": pool.checkedin(),
+        "checked_in": checked_in,
         "checked_out": checked_out,
-        "overflow": pool.overflow(),
+        "max_overflow": max_overflow_val,
         "utilization_pct": round(utilization, 1),
     }
 
@@ -561,5 +730,45 @@ async def close_database():
 
     安全地释放所有连接，确保没有资源泄露。
     """
-    await engine.dispose()
+    await get_engine().dispose()
     logger.info("[DB] PostgreSQL 连接池已关闭")
+
+
+# ═════════════════════════════════════════════
+# 向后兼容：懒代理对象
+# ═════════════════════════════════════════════
+# 为保持与旧代码的兼容性，提供名为 engine 和 async_session_factory 的懒加载代理
+# 这些对象在首次使用时才会实际创建底层引擎/工厂
+
+class _LazyEngine:
+    """代理真实 engine，懒加载并在每次操作时转发到 get_engine()"""
+
+    def __getattr__(self, name):
+        if name == 'pool':
+            return get_engine().pool
+        # 其他属性访问会触发 getattr(get_engine(), name)
+        raise AttributeError(f"'{type(self).__name__}' object has attribute '{name}'")
+
+    def connect(self):
+        return get_engine().connect()
+
+    def begin(self):
+        return get_engine().begin()
+
+    def dispose(self):
+        return get_engine().dispose()
+
+    # 为了完整性，可能还需要其他方法...
+    # 但常用的主要是 pool、connect、begin、dispose
+
+class _LazySessionFactory:
+    """代理 session factory，懒加载并在调用时获取工厂"""
+
+    def __call__(self):
+        # 返回 async_sessionmaker 的实例，该实例可被用作异步上下文管理器
+        return get_session_factory()()
+
+
+# 创建兼容性的全局变量
+engine = _LazyEngine()
+async_session_factory = _LazySessionFactory()

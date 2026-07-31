@@ -1,6 +1,7 @@
 /** Shared type exports used by graph UI component files. */
 
-import { GraphNode } from '../types'
+import { GraphNode, AnimationPreset } from '../types'
+export type { AnimationPreset }
 
 export interface LegendItem {
   type: string

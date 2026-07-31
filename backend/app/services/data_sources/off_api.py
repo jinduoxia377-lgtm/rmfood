@@ -36,7 +36,7 @@ class OFFClient:
     # ── 产品搜索 ──────────────────────────────────────────────
 
     def search_by_keyword(self, keyword: str, page: int = 1, page_size: int = 20,
-                          fields: str = None) -> Dict[str, Any]:
+                          fields: str = None, brand: str = None, category_tag: str = None) -> Dict[str, Any]:
         """
         关键词搜索产品
 
@@ -47,8 +47,8 @@ class OFFClient:
         - json: 1 = JSON 响应
         - page / page_size: 分页
         - fields: 指定返回字段，逗号分隔
-        - categories_tags_contains: 按分类过滤
-        - brands: 按品牌过滤
+        - brands: 按品牌过滤 (新增)
+        - categories_tags_contains: 按分类标签过滤 (新增)
         """
         params = {
             "search_terms_s": keyword,
@@ -58,6 +58,10 @@ class OFFClient:
             "page": page,
             "page_size": min(page_size, 100),
         }
+        if brand:
+            params["brands"] = brand
+        if category_tag:
+            params["categories_tags_contains"] = category_tag
         if fields:
             params["fields"] = fields
 

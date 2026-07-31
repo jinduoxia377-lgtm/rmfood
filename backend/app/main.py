@@ -84,10 +84,11 @@ async def lifespan(app: FastAPI):
     # 1. 验证数据库连接（指数退避重试，最多5次）
     db_connected = await ensure_connection()
     if not db_connected:
-        logger.error(
-            "[Startup] PostgreSQL 连接验证失败！应用将以降级模式运行。"
-            "请检查数据库配置和连接状态。"
-        )
+        logger.error("[Startup] PostgreSQL 连接验证失败！")
+        if settings.is_production:
+            # 生产环境中数据库不可用则阻止启动
+            raise SystemExit("Production startup aborted: database connection failed")
+        logger.warning("应用将以降级模式运行。请检查数据库配置和连接状态。")
         # 不直接退出，允许应用启动（降级模式），但数据库操作将失败
     else:
         logger.info("[Startup] PostgreSQL 连接验证通过")
@@ -218,8 +219,8 @@ Authorization: Bearer <your_access_token>
 - **文档地址**: /docs (开发环境) | /redoc (生产环境只读)
         """,
         version=settings.app_version,
-        docs_url=None,  # 使用自定义 /docs 路由（本地静态资源，不依赖 CDN）
-        redoc_url=None,
+        docs_url="/docs",
+        redoc_url="/redoc",
         openapi_tags=[
             {
                 "name": "认证管理",
@@ -499,6 +500,7 @@ Authorization: Bearer <your_access_token>
                 "cloud_sync": "/api/v1/sync",
                 "teams": "/api/v1/teams",
                 "version_control": "/api/v1/prompts",
+                "imports": "/api/v1/imports",
 
                 # 🔒 P5 企业级合规模块端点
                 "enterprise": "/api/v1/enterprise",
@@ -526,59 +528,7 @@ Authorization: Bearer <your_access_token>
     else:
         logger.warning(f"[Static] 静态目录不存在: {static_dir}，跳过挂载")
 
-    # ── 自定义 /docs（使用本地静态资源，不依赖 CDN） ──
-    from fastapi.responses import HTMLResponse
-
-    @app.get("/docs", tags=["文档"])
-    async def swagger_docs():
-        return HTMLResponse(content="""<!DOCTYPE html>
-<html>
-<head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link type="text/css" rel="stylesheet" href="/static/swagger-ui.css">
-<link rel="shortcut icon" href="https://fastapi.tiangolo.com/img/favicon.png">
-<title>RMFOOD配方平台 - Swagger UI</title>
-</head>
-<body>
-<div id="swagger-ui"></div>
-<script src="/static/swagger-ui-bundle.js"></script>
-<script>
-const ui = SwaggerUIBundle({
-    url: '/openapi.json',
-    dom_id: '#swagger-ui',
-    layout: 'BaseLayout',
-    deepLinking: true,
-    showExtensions: true,
-    showCommonExtensions: true,
-    oauth2RedirectUrl: window.location.origin + '/docs/oauth2-redirect',
-    presets: [
-        SwaggerUIBundle.presets.apis,
-        SwaggerUIBundle.SwaggerUIStandalonePreset
-    ],
-    onComplete: function() {
-        console.log('[Swagger] UI loaded successfully');
-    },
-    onError: function(e) {
-        console.error('[Swagger] Failed to load schema:', e);
-        document.getElementById('swagger-ui').innerHTML = '<p style="color:red;padding:20px;">加载失败：无法获取 API 文档。请检查后端 /openapi.json 是否正常。</p>';
-    }
-});
-</script>
-</body>
-</html>""")
-
-    # ── 手动注册 /openapi.json（docs_url=None 时被 FastAPI 禁用了） ──
-    from fastapi.responses import JSONResponse
-
-    @app.get("/openapi.json", include_in_schema=False)
-    async def custom_openapi_json():
-        if app.openapi_schema:
-            return JSONResponse(app.openapi_schema)
-        openapi_schema = app.openapi()
-        app.openapi_schema = openapi_schema
-        return JSONResponse(openapi_schema)
-
-    # ── 根路径 ──
+# ── 根路径 ──
     @app.get("/", tags=["系统"])
     async def root():
         return {

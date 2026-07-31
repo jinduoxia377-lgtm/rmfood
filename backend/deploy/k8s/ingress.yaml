@@ -1,0 +1,32 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: rmfood-ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+spec:
+  rules:
+  - host: rmfood.example.com
+    http:
+      paths:
+      - path: /api/chat
+        pathType: Prefix
+        backend:
+          service:
+            name: ai-conversation-service
+            port:
+              number: 8000
+      - path: /api/calculate
+        pathType: Prefix
+        backend:
+          service:
+            name: formula-calculation-service
+            port:
+              number: 8001
+      - path: /api/auth
+        pathType: Prefix
+        backend:
+          service:
+            name: authz-service
+            port:
+              number: 8002

@@ -171,7 +171,13 @@ class OFFDataService:
         - realtime=True：直接调 OFF REST API，不走本地缓存
         """
         if realtime:
-            return await self._realtime_search(keyword, page, page_size)
+            return await self._realtime_search(
+                keyword,
+                page,
+                page_size,
+                brand=brand,
+                category_tag=category
+            )
         # _db_search 内部已实现多级回退（DB→实时搜索→内置词表），直接返回
         return await self._db_search(keyword, db, page, page_size,
                                      category=category, brand=brand,
@@ -359,11 +365,19 @@ class OFFDataService:
         keyword: str,
         page: int,
         page_size: int,
+        brand: Optional[str] = None,
+        category_tag: Optional[str] = None,
     ) -> dict[str, Any]:
         """实时调 OFF REST API 搜索 — 直接调用官方 /cgi/search.pl"""
         try:
-            # 使用新的 OFFClient，完全符合官方 API 规范
-            products = self.client.search_by_keyword(keyword, page=page, page_size=page_size)
+            # 使用新的 OFFClient，支持品牌和分类筛选
+            products = self.client.search_by_keyword(
+                keyword,
+                page=page,
+                page_size=page_size,
+                brand=brand,
+                category_tag=category_tag
+            )
             raw_products = products.get("products", [])
             total_count = products.get("count", len(raw_products))
 

@@ -20,7 +20,7 @@ from .user_model import User
 from .formula import Formula, FormulaVersion, Ingredient, Peptide, Comment, CommentLike, formula_ingredients, formula_peptides, formula_categories, formula_tags, Category, Tag
 from .experiment import Experiment, ExperimentData
 from .workflow import Workflow, WorkflowTask
-from .notification import Notification
+from .notification import Notification, NotificationPreference
 from .system import AuditLog, Attachment, DataSnapshot, SystemConfig
 from .external_data import TCMHerb, MMIDHerb, SymMapHerb, BioactivePeptide, KnowledgeGraphNode
 from .peptide_design import PeptideDesign, PeptideDesignCandidate, PeptideDesignStatus

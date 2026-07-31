@@ -547,9 +547,33 @@ def import_csv(
             "database": parsed.path.lstrip("/"),
         }
 
-        # 创建 asyncpg connection pool
+        # Windows-specific connection tuning (matching session.py optimization)
+        if os.name == "nt":
+            # Reduce pool size to minimize contention on Windows
+            base_pool = 20  # match default from settings
+            min_size_param = max(2, base_pool // 4)  # Quarter size on Windows
+            # asyncpg.create_pool uses min_size/max_size, not pool_size
+            connect_args["min_size"] = min_size_param
+            connect_args["max_size"] = base_pool  # Keep overflow capacity
+
+            logger.info(f"[DB] Windows tuning applied: min_size={min_size_param}, max_size={base_pool}")
+
+        # Create asyncpg connection pool
         logger.info("  Creating asyncpg pool...")
-        pool = await asyncpg.create_pool(**connect_args)
+
+        # Filter out any invalid parameters that asyncpg doesn't accept
+        valid_asyncpg_keys = {'user', 'password', 'host', 'port', 'database',
+                              'min_size', 'max_size', 'limit', 'echo', 'encoding',
+                              'charset', 'row_factory', 'timeout', 'ssl',
+                              'server_settings', 'command_timeout'}
+        safe_connect_args = {k: v for k, v in connect_args.items() if k in valid_asyncpg_keys}
+
+        # Log filtered parameters for debugging
+        if len(connect_args) != len(safe_connect_args):
+            invalid_keys = set(connect_args.keys()) - set(safe_connect_args.keys())
+            logger.warning(f"  Filtering out invalid asyncpg params: {invalid_keys}")
+
+        pool = await asyncpg.create_pool(**safe_connect_args)
         logger.info("  Pool created, acquiring connection...")
 
         try:

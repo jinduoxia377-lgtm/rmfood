@@ -17,7 +17,7 @@ from .nsga3_optimizer import NSGAIIIOptimizer
 from .moead_cmaes_strategies import MOEADOptimizer
 from .unified_optimizer import UnifiedFormulaOptimizer, OptimizationRequest
 from .herb_peptide_bridge import HerbPeptideSynergy, HerbPeptideSynergyEvaluator
-from .herb_knowledge_service import HerbKnowledgeService, get_herb_knowledge_service, set_global_herb_knowledge
+from .herb_knowledge_service import HerbKnowledgeService, set_global_herb_knowledge
 
 __all__ = [
     "HerbParameter",

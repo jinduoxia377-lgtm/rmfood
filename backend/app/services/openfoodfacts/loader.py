@@ -3,6 +3,7 @@ OFF 数据批量入库加载器
 
 使用原生 SQL INSERT ... ON CONFLICT 实现高效 upsert。
 """
+import asyncio
 import json
 import logging
 from typing import List, Dict, Any
@@ -88,30 +89,63 @@ class OFFLoader:
         """
 
     async def upsert_batch(self, products: List[Dict[str, Any]]) -> Dict[str, int]:
-        """批量 upsert 产品数据"""
+        """批量 upsert 产品数据 - 带事务重试逻辑处理瞬态连接错误"""
         if not products:
             return {"inserted": 0, "updated": 0, "failed": 0}
 
         inserted = 0
         failed = 0
 
-        for product in products:
+        max_retries = 3
+        for attempt in range(max_retries):
             try:
-                sql = self._build_upsert_sql(product)
-                await self.db.execute(text(sql))
-                inserted += 1
+                for product in products:
+                    # Check if we need to retry this product due to connection loss
+                    for prod_attempt in range(3):
+                        try:
+                            sql = self._build_upsert_sql(product)
+                            await self.db.execute(text(sql))
+                            inserted += 1
+                            break  # product succeeded
+                        except Exception as e:
+                            # Check if it's a transient connection error
+                            conn_errors = ["connection", "closed", "timeout", "pool", "reset"]
+                            if any(err in str(e).lower() for err in conn_errors):
+                                if prod_attempt < 2:
+                                    logger.warning(f"  连接错误 (barcode={product.get('external_id', 'UNKNOWN')}, 尝试 {prod_attempt + 1}/3): {e}")
+                                    await asyncio.sleep(0.5 * (2 ** prod_attempt))  # Exponential backoff
+                                else:
+                                    failed += 1
+                                    barcode = product.get("external_id", "UNKNOWN")
+                                    logger.error(f"[Loader] upsert 失败 (最终): barcode={barcode}: {e}")
+                                    raise
+                            else:
+                                failed += 1
+                                barcode = product.get("external_id", "UNKNOWN")
+                                logger.error(f"[Loader] upsert 失败 barcode={barcode}: {e}")
+                                raise
+                # All products succeeded - commit the transaction
+                await self.db.commit()
+                logger.info(f"[Loader] 批次完成: inserted={inserted}, failed={failed}, total={len(products)}")
+                return {"inserted": inserted, "updated": 0, "failed": failed}
+
             except Exception as e:
-                failed += 1
-                barcode = product.get("external_id", "UNKNOWN")
-                logger.error(f"[Loader] upsert 失败 barcode={barcode}: {e}")
+                # Transaction-level failure: rollback and retry entire batch
+                try:
+                    await self.db.rollback()
+                except:
+                    pass  # Ignore rollback errors
 
-        try:
-            await self.db.commit()
-            logger.info(f"[Loader] 批次完成: inserted={inserted}, failed={failed}, total={len(products)}")
-        except Exception as e:
-            await self.db.rollback()
-            logger.error(f"[Loader] 事务回滚: {e}")
+                logger.warning(f"[Loader] 批次提交失败 (尝试 {attempt + 1}/{max_retries}): {e}")
 
+                if attempt >= max_retries - 1:
+                    # Final failure - re-raise all failed products
+                    logger.error(f"[Loader] 批次达到最大重试次数，全部失败")
+                    raise
+
+                await asyncio.sleep(2 ** attempt)  # Exponential backoff for batch retry
+
+        # Should never reach here due to exception above
         return {"inserted": inserted, "updated": 0, "failed": failed}
 
     async def upsert_products_with_progress(
@@ -119,15 +153,28 @@ class OFFLoader:
         products: List[Dict[str, Any]],
         batch_size: int = 500,
     ) -> Dict[str, int]:
-        """分批次 upsert，带进度日志"""
+        """分批次 upsert，带进度重试逻辑"""
         total_inserted = 0
         total_failed = 0
+        max_batch_retries = 3
 
         for i in range(0, len(products), batch_size):
             batch = products[i:i + batch_size]
-            result = await self.upsert_batch(batch)
-            total_inserted += result["inserted"]
-            total_failed += result["failed"]
+            batch_attempt = 0
+
+            while batch_attempt < max_batch_retries:
+                try:
+                    result = await self.upsert_batch(batch)
+                    total_inserted += result["inserted"]
+                    total_failed += result["failed"]
+                    break  # Success, move to next batch
+                except Exception as e:
+                    batch_attempt += 1
+                    if batch_attempt >= max_batch_retries:
+                        logger.error(f"[Loader] 批次提交失败 (达到最大重试次数): {e}")
+                        raise
+                    logger.warning(f"[Loader] 批次尝试 {batch_attempt}/{max_batch_retries} 失败: {e}")
+                    await asyncio.sleep(2 ** batch_attempt)  # Exponential backoff
 
             progress = min(i + batch_size, len(products))
             logger.info(f"[Loader] 进度: {progress}/{len(products)} (已插入={total_inserted}, 失败={total_failed})")

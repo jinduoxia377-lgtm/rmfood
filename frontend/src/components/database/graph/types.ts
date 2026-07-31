@@ -358,8 +358,8 @@ export const THEME_PRESETS: ThemeConfig[] = [
   },
 ]
 
-// Animation presets
-export type AnimationPreset = 'fadeIn' | 'expand' | 'converge' | 'none'
+// Animation presets (already defined above at line 67)
+// export type AnimationPreset = 'fadeIn' | 'expand' | 'converge' | 'none'
 export interface ThemeConfig { name: string; colors: Record<string, string>; }
 
 // Performance stats types

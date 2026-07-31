@@ -26,16 +26,35 @@ from fastapi import APIRouter
 logger = logging.getLogger(__name__)
 
 # 关键路由 — 启动时必须加载，失败则阻塞启动
-CRITICAL_MODULES = frozenset({
-    "auth",
-    "oauth2_auth",
-    "users",
-    "formulas",
-    "databases",
-    "knowledge_graph",
-})
+IMPORTANT_ROUTER_MODULES = [
+    "auth",              # 认证
+    "oauth2_auth",       # OAuth2
+    "users",             # 用户管理
+    "formulas",          # 配方管理
+    "databases",         # 知识数据库
+    "knowledge_graph",   # 图谱查询
+    "experiments",       # 实验管理
+    "notifications",     # 通知系统
+    "analytics",         # 数据分析
+    "dashboard",         # 仪表盘
+    "peptide_analysis_routes",  # 肽分析
+    "peptide_design_routes",    # 肽设计
+]
+CRITICAL_MODULES = frozenset(IMPORTANT_ROUTER_MODULES)
 
-# 路由模块 → 自定义标签映射（无映射则使用模块名）
+# v1 子路由模块 - 使用可变 set 以便后续添加
+V1_MODULES = {
+    "sync_router",
+    "team_router",
+    "team_dashboard_router",
+    "version_router",
+    "notification_router",
+    "ai_task_router",       # Phase 4-A: AI 推理任务队列
+    "quota_router",         # Phase 4-B: 多租户配额管理
+    "websocket_router",
+}
+
+# ====== CQRS Query Routes (NEW) ======
 TAG_OVERRIDES: dict[str, list[str]] = {
     "auth": ["认证管理"],
     "oauth2_auth": ["认证管理"],
@@ -59,6 +78,9 @@ TAG_OVERRIDES: dict[str, list[str]] = {
     "peptide_design_routes": ["肽设计"],
     "user_settings": ["用户设置"],
 }
+# 为 query_routes 添加特殊标签（在定义后追加）
+TAG_OVERRIDES["query_routes"] = ["Query API", "Read-optimized endpoints"]
+V1_MODULES.add("query_routes")  # 现在可以使用 add()，因为 V1_MODULES 是 set 而不是 frozenset
 
 # v1 子路由模块
 V1_MODULES = frozenset({
@@ -100,6 +122,24 @@ class RouterRegistry:
 
         self._loaded = True
         logger.info(f"📦 路由发现完成: {len(self._routers)} 个路由模块")
+
+        # ===== 新增：检测未被标记为关键的模块 =====
+        try:
+            package = importlib.import_module(api_package_path)
+            package_dir = Path(package.__file__).parent
+
+            all_scanned = set()
+            for module_info in pkgutil.iter_modules([str(package_dir)]):
+                if not module_info.name.startswith("_"):
+                    all_scanned.add(module_info.name)
+
+            discovered_important = all_scanned - CRITICAL_MODULES - V1_MODULES
+            if discovered_important:
+                logger.warning(
+                    f"[RouterRegistry] 以下检测到的重要模块未列入关键列表，建议审核: {discovered_important}"
+                )
+        except Exception as e:
+            logger.debug(f"[RouterRegistry] 模块扫描检测失败（非阻塞）: {e}")
 
     def _discover_modules(self, package_path: str, is_v1: bool) -> None:
         """扫描包目录，发现路由模块（关键模块立即导入，非关键延迟）"""

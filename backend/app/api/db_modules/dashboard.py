@@ -370,8 +370,9 @@ async def get_search_suggestions(
                         "category": h.get("category", ""),
                     })
                     seen_herb_names.add(name_cn.lower())
+            # 如果中药材数量已达上限，不需要进一步操作，直接继续到下一个数据源
             if len(suggestions["herbs"]) >= limit:
-                break
+                pass  # Removed invalid 'break' - no enclosing loop exists here
 
     # 如果 DB 结果不足，从内存补充
     if len(suggestions["herbs"]) < limit:
@@ -722,21 +723,6 @@ async def data_quality_report(
         "recommendations": _generate_recommendations(herb_quality_score, peptide_quality_score, herb_health, peptide_health, total_herbs, total_peptides),
     }
 
-
-def _generate_recommendations(hqs, pqs, hh, ph, total_herbs=100, total_peptides=100):
-    """基于质量指标生成优化建议"""
-    recs = []
-    if hqs < 80:
-        recs.append("建议补充药材的拉丁名和拼音字段，提升基础数据完整度")
-    if total_herbs > 0 and hh["with_compounds"] / total_herbs < 0.5:
-        recs.append("部分药材缺少化合物数据，建议从 TCMSP 补充同步")
-    if pqs < 75:
-        recs.append("活性肽数据缺少部分关键字段（活性值/分子量），建议补充文献数据")
-    if total_peptides > 0 and ph["has_enzyme_info"] / total_peptides < 0.3:
-        recs.append("多数活性肽缺少水解酶信息，影响配方开发参考价值")
-    if len(recs) == 0:
-        recs.append("数据质量整体良好，可正常支持配方研发工作流")
-    return recs
 
 def _generate_recommendations(hqs, pqs, hh, ph, total_herbs=100, total_peptides=100):
     """基于质量指标生成优化建议"""
