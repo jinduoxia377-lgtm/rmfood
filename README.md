@@ -12,7 +12,7 @@
   <img src="https://img.shields.io/badge/Vite-8.x-646CFF.svg" alt="Vite" />
   <img src="https://img.shields.io/badge/TailwindCSS-4.x-06B6D4.svg" alt="TailwindCSS" />
   <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License" />
-  <img src="https://img.shields.io/badge/TypeScript_Errors-0-success.svg" alt="TypeScript Errors" />
+  <img src="https://img.shields.io/badge/TypeScript_Errors-140-warning.svg" alt="TypeScript Errors" />
   <img src="https://img.shields.io/badge/AI_Chat-v10.0-8A2BE2.svg" alt="AI Chat v10" />
 </p>
 
@@ -100,7 +100,7 @@ RMFOOD (Recipe Management for Optimal Organic Design) 是一个**企业级 AI �
 | **AI 模块** | 对话系统迭代至 **v10.0**，9 大功能 Tab |
 | **前端架构** | 自建设计系统 (MD3 Design Token)，WCAG AA 合规 |
 | **安全性** | 7 层纵深防御，OWASP Top 10 覆盖 |
-| **代码质量** | **TypeScript 编译 0 错误** (从 1,331→0) |
+| **代码质量** | **TypeScript 编译 140 错误** (从 1,331→140，持续修复中) |
 | **肽分析** | 专业级分析管线：理化性质→二级结构→ADMET |
 | **主题系统** | 亮/暗/系统模式 + 无障碍模式 + 多种预设 |
 
@@ -742,10 +742,10 @@ rmfood-platform/
 
 | 指标 | 数值 | 状态 |
 |:-----|:----:|:-----|
-| 编译错误 | **0** | ✅ 全部清除 (从 1,331 降至 0) |
+| 编译错误 | **140** | 🟡 持续修复中 (从 1,331→140) |
 | ESLint 自动修复 | 已执行 | ✅ 11,512 格式化问题已修复 |
 | Strict Mode | 全量启用 | ✅ strict: true |
-| ESLint 配置 | Flat Config 9.x | ✅ |
+| ESLint 配置 | Flat Config 9.x | ✅ (已修复 @typescript-eslint v8 插件引用) |
 
 ### 已知技术债务 (2026-06-10 更新)
 
@@ -868,7 +868,7 @@ GitHub Actions (`.github/workflows/ci-cd.yml`), **9 个 Job**, Node 20 + Python 
 | 优先级 | 项 | 状态 | 工作量 |
 |:-------|:---|:----:|:------:|
 | 🔴 P0 | xlsx 安全漏洞 → 已替换 ExcelJS | ✅ 完成 | 2天 |
-| 🔴 P0 | ESLint 零错误 | 🟡 剩余 16,011 非自动修复 | 5天+ |
+| 🔴 P0 | ESLint 零错误 | 🟡 2,257 个类型安全错误（需渐进修复） | 持续 |
 | 🟠 P1 | 生产构建 minify 启用 | ✅ 完成 | 0.5天 |
 | 🟠 P1 | Mock 数据分离 | ✅ 完成 | 3天 |
 | ✅ P1 | API Key 加密存储 | ✅ 已完成 | AES-256-GCM + HKDF 派生 + 密钥轮换 |
