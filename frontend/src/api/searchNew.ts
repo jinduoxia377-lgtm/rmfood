@@ -4,7 +4,10 @@
  * 用于 Potion AI VFT x RMFOOD 深度融合方案。
  */
 import { databaseApi } from './database';
+import api from './client';
 
+
+import { logger } from '@/utils/safeLogger';
 // ── 类型定义 ──
 
 export interface FoodMaterialFilter {
@@ -185,7 +188,7 @@ export function searchFoodMaterialsStream(
     })
     .catch((err) => {
       if (err.name !== 'AbortError') {
-        console.error('[FoodMaterialStream] SSE 错误:', err);
+        logger.error('[FoodMaterialStream] SSE 错误:', err);
       }
     });
 
@@ -278,7 +281,7 @@ export function searchRetailProductsStream(
     })
     .catch((err) => {
       if (err.name !== 'AbortError') {
-        console.error('[RetailProductStream] SSE 错误:', err);
+        logger.error('[RetailProductStream] SSE 错误:', err);
       }
     });
 
@@ -452,7 +455,7 @@ export async function addToPantryRetailProduct(product_id: number): Promise<any>
  * DELETE /databases/pantry/retail-products/{product_id}
  */
 export async function removeFromPantryRetailProduct(product_id: number): Promise<any> {
-  return databaseApi.delete(`/pantry/retail-products/${product_id}`).then((r) => r.data);
+  return api.delete(`/pantry/retail-products/${product_id}`).then((r) => r.data);
 }
 
 /**

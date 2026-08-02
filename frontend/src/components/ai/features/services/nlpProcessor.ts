@@ -226,10 +226,10 @@ export class EntityExtractor {
     this.productFormTerms = getTermsByCategory('PRODUCT_FORM');
     this.regulatoryTerms = getTermsByCategory('REGULATORY_STANDARD');
 
-    this.funcFactorTerms.sort((a, b) => b.key.length - a.key.length);
-    this.processTechTerms.sort((a, b) => b.key.length - a.key.length);
-    this.productFormTerms.sort((a, b) => b.key.length - a.key.length);
-    this.regulatoryTerms.sort((a, b) => b.key.length - a.key.length);
+    this.funcFactorTerms.sort((a, b) => b.name.length - a.name.length);
+    this.processTechTerms.sort((a, b) => b.name.length - a.name.length);
+    this.productFormTerms.sort((a, b) => b.name.length - a.name.length);
+    this.regulatoryTerms.sort((a, b) => b.name.length - a.name.length);
 
     this.initializeConfigs();
   }
@@ -326,20 +326,20 @@ export class EntityExtractor {
   private matchDictionaryEntities(
     text: string,
     entityType: EntityType,
-    terms: Term[],
+    terms: (Term & { normalized?: string; confidence?: number })[],
     _entities: ExtractedEntity[],
     addEntity: (entity: ExtractedEntity) => boolean,
   ): void {
     for (const term of terms) {
-      const idx = text.indexOf(term.key);
+      const idx = text.indexOf(term.name);
       if (idx !== -1) {
         const entity: ExtractedEntity = {
           type: entityType,
-          text: term.key,
-          normalized: term.normalized,
-          confidence: term.confidence,
+          text: term.name,
+          normalized: term.normalized ?? '',
+          confidence: term.confidence ?? 0,
           startIdx: idx,
-          endIdx: idx + term.key.length,
+          endIdx: idx + term.name.length,
         };
         addEntity(entity);
       }

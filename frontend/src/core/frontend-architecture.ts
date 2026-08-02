@@ -38,6 +38,7 @@
  * - 渐进式: 可按需启用子模块 (先启用 Worker, 再启用微前端)
  */
 
+import { logger } from '@/utils/safeLogger';
 // ========== 类型定义 (TypeScript JSDoc style) ==========
 
 /**
@@ -138,9 +139,9 @@ class MicroFrontendCore {
 
   _createLogger(): MicroFrontendLogger {
     return {
-      log: (...args: unknown[]) => console.log("%c[MF]", "color:#4f46e5;font-weight:bold;", ...args),
-      warn: (...args: unknown[]) => console.warn("%c[MF]", "color:#D97706;font-weight:bold;", ...args),
-      error: (...args: unknown[]) => console.error("%c[MF]", "color:#FF3B30;font-weight:bold;", ...args),
+      log: (...args: unknown[]) => logger.info("%c[MF]", "color:#4f46e5;font-weight:bold;", ...args.map((a: unknown) => String(a))),
+      warn: (...args: unknown[]) => logger.warn("%c[MF]", "color:#D97706;font-weight:bold;", ...args.map((a: unknown) => String(a))),
+      error: (...args: unknown[]) => logger.error("%c[MF]", "color:#FF3B30;font-weight:bold;", ...args.map((a: unknown) => String(a))),
     };
   }
 
@@ -513,9 +514,9 @@ class WorkerComputeEngine {
 
   _createLogger(): WorkerEngineLogger {
     return {
-      log: (...args: unknown[]) => console.log("%c[WORKER]", "color:#28A745;font-weight:bold;", ...args),
-      warn: (...args: unknown[]) => console.warn("%c[WORKER]", "color:#D97706;font-weight:bold;", ...args),
-      error: (...args: unknown[]) => console.error("%c[WORKER]", "color:#FF3B30;font-weight:bold;", ...args),
+      log: (...args: unknown[]) => logger.info("%c[WORKER]", "color:#28A745;font-weight:bold;", ...args.map((a: unknown) => String(a))),
+      warn: (...args: unknown[]) => logger.warn("%c[WORKER]", "color:#D97706;font-weight:bold;", ...args.map((a: unknown) => String(a))),
+      error: (...args: unknown[]) => logger.error("%c[WORKER]", "color:#FF3B30;font-weight:bold;", ...args.map((a: unknown) => String(a))),
     };
   }
 

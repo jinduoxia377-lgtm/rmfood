@@ -395,7 +395,7 @@ export class IntelligentSuggestionGenerator {
     const suggestionText = `${suggestion.title} ${suggestion.description}`.toLowerCase()
 
     domainTerms.forEach(term => {
-      if (suggestionText.includes(term.key.toLowerCase())) {
+      if (suggestionText.includes(term.term.toLowerCase())) {
         matchCount++
       }
     })

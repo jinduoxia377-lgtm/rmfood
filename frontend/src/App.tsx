@@ -33,6 +33,8 @@ import LoginPage from '@/pages/auth/LoginPage';
 import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage';
 import DashboardPage from '@/pages/dashboard/DashboardPage';
 
+
+import { logger } from '@/utils/safeLogger';
 // 🔒 P3-1: 中等体积页面 - 标准懒加载
 const FormulaListPage = lazyWithPreload(() => import('@/pages/formula/FormulaListPage'));
 const FormulaNewPage = lazyWithPreload(() => import('@/pages/formula/FormulaNewPage'));
@@ -453,7 +455,7 @@ export default function App() {
   // 🔒 P2-4: 错误上报函数（生产环境可接入 Sentry）
   const handleErrorReport = (error: Error, errorInfo: React.ErrorInfo) => {
     // 开发环境输出到控制桌
-    console.error('[App] Uncaught error:', error, errorInfo);
+    logger.error('[App] Uncaught error: %s | %s', String(error), String(errorInfo));
 
     // 生产环境上报（扩展点）
     if (import.meta.env.PROD) {

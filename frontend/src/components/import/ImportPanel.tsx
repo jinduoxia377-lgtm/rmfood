@@ -7,6 +7,8 @@
 
 import { useCallback, useRef, useState } from 'react'
 import { useImportEngine, type ImportStep } from '@/hooks/useImportEngine'
+import type { ImportProgress } from '@/hooks/useImportEngine'
+import type { UploadResponse } from '@/api/import'
 import type { FieldMappingConfig } from '@/api/import'
 
 // ── Step indicators ──────────────────────────────────────────────
@@ -377,7 +379,7 @@ export function ImportPanel({ onClose }: { onClose: () => void }) {
   const [fileType, setFileType] = useState('csv')
 
   // Polling for running imports
-  const pollingRef = useRef<ReturnType<typeof setInterval>>()
+  const pollingRef = useRef<any>(null)
 
   // Start polling when running
   if (step === 'running' && uploadResponse?.task_id) {
@@ -391,7 +393,7 @@ export function ImportPanel({ onClose }: { onClose: () => void }) {
   // Cleanup polling
   if (step !== 'running' && pollingRef.current) {
     clearInterval(pollingRef.current)
-    pollingRef.current = undefined
+    pollingRef.current = null
   }
 
   const handleUpload = useCallback(() => {

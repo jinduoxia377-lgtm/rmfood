@@ -15,16 +15,19 @@ import { logger } from '@/utils/safeLogger';
  */
 const withFallback = async <T>(
   apiCall: () => Promise<T>,
-  _fallback: () => Promise<T>,
-  apiName: string,
+  arg2: (() => Promise<T>) | string,
+  arg3?: string,
 ): Promise<T> => {
+  const apiName = typeof arg2 === 'string' ? arg2 : arg3
+  const fallback = typeof arg2 === 'function' ? arg2 : undefined
   try {
     const result = await apiCall()
-    logger.info(`✅ [Database API] ${apiName} 成功获取真实数据`)
+    if (apiName) logger.info(`✅ [Database API] ${apiName} 成功获取真实数据`)
     return result
   } catch (error: any) {
     const status = error.response?.status
-    logger.error(`❌ [Database API] ${apiName} 请求失败 (HTTP ${status}):`, error.message)
+    if (apiName) logger.error(`❌ [Database API] ${apiName} 请求失败 (HTTP ${status}):`, error.message)
+    if (fallback) return fallback()
     throw error
   }
 }
