@@ -65,11 +65,11 @@ function mapOFFProduct(raw: OFFRawProduct): RetailProductDetail {
     image_urls: Array.isArray(raw.image_urls) ? raw.image_urls : [],
     effects: Array.isArray(raw.effects) ? raw.effects : [],
     score: raw.score != null ? Number(raw.score) : 0,
-    allergens_tags: Array.isArray(allergens_tags) ? raw.allergens_tags : [],
-    additives_tags: Array.isArray(additives_tags) ? raw.additives_tags : [],
+    allergens_tags: Array.isArray(raw.allergens_tags) ? raw.allergens_tags : [],
+    additives_tags: Array.isArray(raw.additives_tags) ? raw.additives_tags : [],
     ecoscore_grade: raw.ecoscore_grade ?? null,
-    traces_tags: Array.isArray(traces_tags) ? raw.traces_tags : [],
-    contaminants: Array.isArray(contaminants) ? raw.contaminants : [],
+    traces_tags: Array.isArray(raw.traces_tags) ? raw.traces_tags : [],
+    contaminants: Array.isArray(raw.contaminants) ? raw.contaminants : [],
   };
 }
 
@@ -104,14 +104,14 @@ const ProductCard: React.FC<{
 
   return (
     <Card size="small" hoverable style={{ marginBottom: 12 }} onClick={onClick} cover={hasImage ? (
-      <img src={product.image_urls[0]} alt={product.product_name} style={{ maxHeight: 120, objectFit: 'contain', padding: 8 }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+      <img src={product.image_urls?.[0]} alt={product.product_name} style={{ maxHeight: 120, objectFit: 'contain', padding: 8 }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
     ) : undefined}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
         <div style={{ flex: 1 }}>
           <div style={{ fontWeight: 600, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
             {product.product_name}
-            <span onClick={(e) => { e.stopPropagation(); onToggleFav(); }} style={{ cursor: 'pointer', fontSize: 16, color: isFav ? '#faad14' : '#d9d9d9', title: isFav ? '取消收藏' : '收藏' }}>{isFav ? '★' : '☆'}</span>
-            <span onClick={(e) => { e.stopPropagation(); onToggleSelect(); }} style={{ marginLeft: 8, cursor: 'pointer', fontSize: 16, color: isSelected ? '#1890ff' : '#ccc', title: isSelected ? '取消选择' : '选择对比' }}>{isSelected ? '✓' : '☐'}</span>
+            <span onClick={(e) => { e.stopPropagation(); onToggleFav(); }} style={{ cursor: 'pointer', fontSize: 16, color: isFav ? '#faad14' : '#d9d9d9', title={String(isFav ? '取消收藏' : '收藏')} }}>{isFav ? '★' : '☆'}</span>
+            <span onClick={(e) => { e.stopPropagation(); onToggleSelect(); }} style={{ marginLeft: 8, cursor: 'pointer', fontSize: 16, color: isSelected ? '#1890ff' : '#ccc', title={String(isSelected ? '取消选择' : '选择对比')} }}>{isSelected ? '✓' : '☐'}</span>
           </div>
           <Space size="small" wrap>
             <Tag color="blue">{product.brand}</Tag>
@@ -138,7 +138,9 @@ const ProductCard: React.FC<{
 // ── 主搜索面板 ──
 
 const RetailProductSearchPanel: React.FC<{ className?: string }> = ({ className }) => {
-  const { toast } = useToast();
+  const { success, error: toastError, warning, info } = useToast()
+  // toast helper alias for compatibility
+  const toast = { success, error: toastError, warning, info };
 
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<RetailProductDetail[]>([]);
@@ -367,7 +369,7 @@ const RetailProductSearchPanel: React.FC<{ className?: string }> = ({ className 
     { title: '选择', key: 'select', width: 60, render: (_, record) => (
       <span onClick={() => toggleSelect(record.id)} style={{ cursor: 'pointer', fontSize: 16, color: selectedProducts.has(record.id) ? '#1890ff' : '#ccc' }} title={selectedProducts.has(record.id) ? '取消选择' : '选择对比'}>{selectedProducts.has(record.id) ? '✓' : '☐'}</span>
     )},
-    { title: '名称', dataIndex: 'product_name', key: 'name', sorter: true, sortField: 'product_name' as SortField, render: (name: string, record) => (<a onClick={() => { setSelectedProduct(record); setDetailVisible(true); }}>{name}</a>)}),
+    { title: '名称', dataIndex: 'product_name', key: 'name', sorter: true, sortField: 'product_name' as SortField, render: (name: string, record) => (<a onClick={() => { setSelectedProduct(record); setDetailVisible(true); }}>{name}</a>) },
     { title: '品牌', dataIndex: 'brand', key: 'brand', sorter: true, width: 150 },
     { title: '分类', dataIndex: 'category', key: 'category', width: 120 },
     { title: '价格', dataIndex: 'price', key: 'price', sorter: true, width: 100, render: (v: number) => v != null ? `¥${Number(v).toFixed(2)}` : '-' },
@@ -403,7 +405,7 @@ const RetailProductSearchPanel: React.FC<{ className?: string }> = ({ className 
             <Input placeholder="搜索零售产品 (如: 胶原蛋白肽口服液、益生菌胶囊)... " size="large" value={query} onChange={(e) => handleInputChange(e.target.value)} onFocus={() => suggestions.length > 0 && setShowSuggestions(true)} onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} onPressEnter={() => { setCurrentPage(1); handleSearch(1); }} prefix={<SearchOutlined />} suffix={<span style={{ cursor: 'pointer', fontSize: 18 }} onClick={() => { setCurrentPage(1); handleSearch(1); }} title="搜索"><SearchOutlined /></span>} style={{ width: '100%' }} allowClear />
             {showSuggestions && suggestions.length > 0 && (
               <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#fff', border: '1px solid #d9d9d9', borderRadius: 4, zIndex: 10, maxHeight: 200, overflow: 'auto' }}>
-                {suggestions.map((s) => (<div key={s.text} style={{ padding: '8px 12px', cursor: 'pointer', fontSize: 14 }} onMouseDown={() => { setQuery(s.text); setShowSuggestions(false); }}>{s.text}</div>}))}
+                {suggestions.map((s) => (<div key={s.text} style={{ padding: '8px 12px', cursor: 'pointer', fontSize: 14 }} onMouseDown={() => { setQuery(s.text); setShowSuggestions(false); }}>{s.text}</div>))}
               </div>
             )}
           </div>
@@ -459,8 +461,8 @@ const RetailProductSearchPanel: React.FC<{ className?: string }> = ({ className 
           {/* 对比操作 */}
           {selectedProducts.size > 0 && (
             <>
-              <Button size="primary" icon={<CheckOutlined}>对比 ({selectedProducts.size})</Button>}
-              <Button size="small" onClick={clearSelection}>清除选择</Button>}
+              <Button size="middle" icon={<CheckOutlined />}>对比 ({selectedProducts.size})</Button>
+              <Button size="small" onClick={clearSelection}>清除选择</Button>
             </>
           )}
 
@@ -475,7 +477,7 @@ const RetailProductSearchPanel: React.FC<{ className?: string }> = ({ className 
           </Space>
 
           {/* 导出 */}
-          <Button size="small" icon={<DownloadOutlined onClick={exportCSV}>导出 CSV</Button>}
+          <Button size="small" icon={<DownloadOutlined />} onClick={exportCSV}>导出 CSV</Button>
         </div>
       )}
 
@@ -493,10 +495,10 @@ const RetailProductSearchPanel: React.FC<{ className?: string }> = ({ className 
           )}
 
           {/* 分页 */}
-          {totalResults > 20 && (<div style={{ textAlign: 'center', marginTop: 16 }}><Pagination current={currentPage} total={totalResults} pageSize={20} onChange={(page) => { setCurrentPage(page); handleSearch(page); }} showSizeChanger={false} /></div></div>)}
+          {totalResults > 20 && (<div style={{ textAlign: 'center', marginTop: 16 }}><Pagination current={currentPage} total={totalResults} pageSize={20} onChange={(page) => { setCurrentPage(page); handleSearch(page); }} showSizeChanger={false} /></div>)}
         </>
       ) : error ? (
-        <Result status="error" title="搜索失败" description={error} extra={[{ key: 'retry', text: '重试', onClick: () => { setCurrentPage(1); handleSearch(1); } }]} />
+        <Result status="error" title="搜索失败" description={error} extra={[<a key='retry' onClick={() => { setCurrentPage(1); handleSearch(1); }}>重试</a>]} />
       ) : query || selectedCategory ? (
         <Empty description="未找到匹配的产品" />
       ) : (

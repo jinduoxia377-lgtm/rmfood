@@ -58,6 +58,48 @@ import type {
   SmartPathResultV80, NodeAIAnalysisData, GraphStatistics, SubGraphResult, HistoryEntry,
   CentralityMode,
 } from './types'
+
+// ── Component default imports ──
+import ZoomToolbar from './ZoomToolbar'
+import SearchBar from './SearchBar'
+import PerformancePanel from './PerformancePanel'
+import ContextMenu from './ContextMenu'
+import SelectionBar from './SelectionBar'
+import CommunityLegend from './CommunityLegend'
+import CentralityPanel from './CentralityPanel'
+import CentralityMetricsPanel from './CentralityMetricsPanel'
+import DetailPanel from './DetailPanel'
+import BatchOperationBar from './BatchOperationBar'
+import PinnedNodesPanel from './PinnedNodesPanel'
+import AnnotationRenderer from './AnnotationRenderer'
+import ExternalDataPanel from './ExternalDataPanel'
+import ImportDialog from './ImportDialog'
+import ComparisonPanel from './ComparisonPanel'
+import SharePanel from './SharePanel'
+import AnnotationPanel from './AnnotationPanel'
+import HistoryPanel from './HistoryPanel'
+import BookmarkPanel from './BookmarkPanel'
+import ReportDialog from './ReportDialog'
+import StatisticsDashboard from './StatisticsDashboard'
+import SubGraphBrowser from './SubGraphBrowser'
+import AIPanel from './AIPanel'
+import NodeAIAnalysis from './NodeAIAnalysis'
+import AIInsightsPanel from './AIInsightsPanel'
+import SPathToolbar from './SPathToolbar'
+import GraphSnapshots from './GraphSnapshots'
+import FilterEmptyState from './FilterEmptyState'
+import DataEmptyState from './DataEmptyState'
+import GraphSkeleton from './GraphSkeleton'
+import MinimapCanvas from './MinimapCanvas'
+import LayoutIndicator from './LayoutIndicator'
+import ThemePanel from './ThemePanel'
+import AnimationPresetsControls from './AnimationPresetsControls'
+import ExportStatusBar from './ExportStatusBar'
+import ExportMenu from './ExportMenu'
+import SearchOverlay from './SearchOverlay'
+import SearchHistoryPanel from './SearchHistoryPanel'
+import AnnotationControls from './AnnotationControls'
+import { THEME_PRESETS } from '../types'
 // ── Lightweight ad-hoc types for missing component props ──
 interface GraphSnapshotT { time: string; nodes: number; edges: number }
 interface ExternalDataItem { name: string; source: string }
@@ -305,6 +347,10 @@ export default function GraphPanelLayout({
   setShowPinnedPanel, setIsAddingAnnotation, setIsGeneratingInsight,
   setCentralityMode, setAiAnswering, setAiQuestion, setNewAnnotationText, setReportConfig,
   setSortBy,
+  // Missing setters
+  setFocusedNodeIndex, setIsSelecting, setSelectionBox, setContextMenu,
+  setSearchHistory, setNodeAIAnalysis, setPathSourceId, setPathTargetId,
+  setDetailTab, isLoading,
   // State values
   activeFilter, selectedNode, searchQuery, focusedNodeIndex, searchHistory,
   showPerfPanel, perfStats, isSelecting, selectionBox, selectedNodes, contextMenu,
