@@ -110,8 +110,8 @@ const ProductCard: React.FC<{
         <div style={{ flex: 1 }}>
           <div style={{ fontWeight: 600, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
             {product.product_name}
-            <span onClick={(e) => { e.stopPropagation(); onToggleFav(); }} style={{ cursor: 'pointer', fontSize: 16, color: isFav ? '#faad14' : '#d9d9d9', title={String(isFav ? '取消收藏' : '收藏')} }}>{isFav ? '★' : '☆'}</span>
-            <span onClick={(e) => { e.stopPropagation(); onToggleSelect(); }} style={{ marginLeft: 8, cursor: 'pointer', fontSize: 16, color: isSelected ? '#1890ff' : '#ccc', title={String(isSelected ? '取消选择' : '选择对比')} }}>{isSelected ? '✓' : '☐'}</span>
+            <span title={isFav ? '取消收藏' : '收藏'} onClick={(e) => { e.stopPropagation(); onToggleFav(); }} style={{ cursor: 'pointer', fontSize: 16, color: isFav ? '#faad14' : '#d9d9d9' }}>{isFav ? '★' : '☆'}</span>
+            <span title={isSelected ? '取消选择' : '选择对比'} onClick={(e) => { e.stopPropagation(); onToggleSelect(); }} style={{ marginLeft: 8, cursor: 'pointer', fontSize: 16, color: isSelected ? '#1890ff' : '#ccc' }}>{isSelected ? '✓' : '☐'}</span>
           </div>
           <Space size="small" wrap>
             <Tag color="blue">{product.brand}</Tag>
@@ -498,7 +498,7 @@ const RetailProductSearchPanel: React.FC<{ className?: string }> = ({ className 
           {totalResults > 20 && (<div style={{ textAlign: 'center', marginTop: 16 }}><Pagination current={currentPage} total={totalResults} pageSize={20} onChange={(page) => { setCurrentPage(page); handleSearch(page); }} showSizeChanger={false} /></div>)}
         </>
       ) : error ? (
-        <Result status="error" title="搜索失败" description={error} extra={[<a key='retry' onClick={() => { setCurrentPage(1); handleSearch(1); }}>重试</a>]} />
+        <div style={{ textAlign: "center", padding: "40px 0", color: "#ff4d4f" }}>搜索失败: {error}</div>
       ) : query || selectedCategory ? (
         <Empty description="未找到匹配的产品" />
       ) : (

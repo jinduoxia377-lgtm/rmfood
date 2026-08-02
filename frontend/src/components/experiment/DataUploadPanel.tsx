@@ -33,7 +33,7 @@ export function DataUploadPanel({ onParseComplete }: Props) {
       const resp = await experimentDataApi.parse(f, { formatType: 'auto', recognizePeaks: true });
       if (resp.success && resp.data) {
         setResult(resp);
-        onParseComplete?.(resp.data!);
+        onParseComplete?.({ success: true, data: resp.data! });
       } else {
         setError('解析结果为空');
       }
@@ -129,7 +129,7 @@ export function DataUploadPanel({ onParseComplete }: Props) {
 
       {/* 解析结果 */}
       {result && (
-        <ParseResultDisplay result={result} loading={loading} error={error ?? undefined} />
+        <ParseResultDisplay result={result!} loading={loading} error={error ?? undefined} />
       )}
     </div>
   );
