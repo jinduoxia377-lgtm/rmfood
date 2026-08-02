@@ -15,6 +15,12 @@ export interface ParseOptions {
   recognizePeaks: boolean
 }
 
+export interface ParseResultDisplayProps {
+  result: ParseResult
+  loading: boolean
+  error: string | undefined
+}
+
 export const experimentDataApi = {
   parse: async (_file: File, _options?: ParseOptions): Promise<ParseResult> => ({
     success: false,
@@ -22,6 +28,6 @@ export const experimentDataApi = {
   }),
 }
 
-export function ParseResultDisplay(_result: ParseResult): React.ReactElement {
+export function ParseResultDisplay(_props: ParseResultDisplayProps): React.ReactElement {
   return React.createElement('div', null, 'Parse Result')
 }
