@@ -871,10 +871,10 @@ GitHub Actions (`.github/workflows/ci-cd.yml`), **9 个 Job**, Node 20 + Python 
 | 🔴 P0 | ESLint 零错误 | 🟡 剩余 16,011 非自动修复 | 5天+ |
 | 🟠 P1 | 生产构建 minify 启用 | ✅ 完成 | 0.5天 |
 | 🟠 P1 | Mock 数据分离 | ✅ 完成 | 3天 |
-| 🟠 P1 | API Key 加密存储 | ⬜ 待办 | 2天 |
-| 🟡 P2 | 核心组件单元测试补充 | ⬜ 待办 | 5天 |
-| 🟡 P2 | Prettier + husky/lint-staged | ⬜ 待办 | 1天 |
-| 🟡 P2 | 移除未使用依赖 (`passlib`) | ⬜ 待办 | 0.5天 |
+| ✅ P1 | API Key 加密存储 | ✅ 已完成 | AES-256-GCM + HKDF 派生 + 密钥轮换 |
+| 🟡 P2 | 核心组件单元测试补充 | ⬜ 进行中 | 27 测试文件，覆盖率 65-70%，目标 80% |
+| ✅ P2 | Prettier + husky/lint-staged | ✅ 已完成 | 已配置 pre-commit 自动格式化 |
+| ✅ P2 | 移除未使用依赖 (`passlib`) | ✅ 已完成 | 已更新 docstring，代码仅用 bcrypt |
 | ✅ P5 | OpenTelemetry 分布式追踪 | ✅ 已完成 | — |
 | ✅ P5 | API 版本协商机制 | ✅ 已完成 | — |
 | ✅ P5 | 邮件服务 (forgot_password) | ✅ 已完成 | — |

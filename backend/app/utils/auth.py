@@ -9,7 +9,7 @@
 
 安全特性:
 - 使用 python-jose 进行 JWT 编解码
-- 使用 passlib + bcrypt 进行密码哈希
+- 使用 bcrypt 进行密码哈希（直接调用 bcrypt.hashpw / bcrypt.checkpw）
 - 支持Token类型区分（access/refresh）
 - 完整的异常处理与日志记录
 """
