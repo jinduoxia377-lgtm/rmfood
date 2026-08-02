@@ -91,9 +91,9 @@ def _get_env_file_path() -> str:
 # Try to get the path, fail early at module import if .env is missing
 try:
     _ENV_FILE_PATH = _get_env_file_path()
-    print(f"[DEBUG] Using .env file: {_ENV_FILE_PATH}")
+    logger.debug("Using .env file: %s", _ENV_FILE_PATH)
 except Exception as e:
-    print(f"[WARN] Could not determine .env path: {e}")
+    logger.warning("Could not determine .env path: %s", e)
     _ENV_FILE_PATH = ".env"  # Fallback (may not work if cwd is wrong)
 
 

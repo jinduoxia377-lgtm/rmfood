@@ -5,9 +5,11 @@ updates the read-optimized query model accordingly.
 """
 
 from typing import Any, Optional
-
+import logging
 from ..queries.service import QueryService
 from ..queries.models import FormulaQueryModel
+
+logger = logging.getLogger(__name__)
 
 
 class FormulaUpdatedEventHandler:
@@ -34,7 +36,7 @@ class FormulaUpdatedEventHandler:
         try:
             query_model = FormulaQueryModel.from_domain_formula(formula_data)
         except Exception as e:
-            print(f"Error converting to query model: {e}")
+            logger.error("Error converting to query model: %s", e, exc_info=True)
             return
         
         # Update query service cache

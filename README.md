@@ -765,10 +765,10 @@ rmfood-platform/
 | devcontainer | ✅ P2 | Python 3.12 + Node 20 开发容器 |
 | 部署脚本 | ✅ P2 | 一键部署 + 数据库备份 |
 | 每日安全扫描 | ✅ P2 | GitHub Actions 定时任务 |
-| 后端 print() 清理 | 🟡 P2 | 503 处, 需替换为 logger |
-| OpenTelemetry 完整集成 | ⬜ P3 | request_context 已就绪, 需 OTel SDK |
-| API 版本管理 | ⬜ P3 | 待增强 |
-| 邮件服务 | ⬜ P3 | 密码重置 TODO |
+| 后端 print() 清理 | ✅ P2 | 生产代码 9 处已替换为 logger，剩余为脚本/测试 |
+| OpenTelemetry 完整集成 | ✅ P3 | TelemetryMiddleware 已注册，自动 HTTP 追踪 |
+| API 版本管理 | ✅ P3 | APIVersionMiddleware 已注册，响应头注入 X-API-Version |
+| 邮件服务 | ✅ P3 | send_password_reset_email 已实现，forgot_password 已调用 |
 
 ---
 
@@ -875,9 +875,9 @@ GitHub Actions (`.github/workflows/ci-cd.yml`), **9 个 Job**, Node 20 + Python 
 | 🟡 P2 | 核心组件单元测试补充 | ⬜ 待办 | 5天 |
 | 🟡 P2 | Prettier + husky/lint-staged | ⬜ 待办 | 1天 |
 | 🟡 P2 | 移除未使用依赖 (`passlib`) | ⬜ 待办 | 0.5天 |
-| ⬜ P5 | OpenTelemetry 分布式追踪 | ⬜ 待办 | — |
-| ⬜ P5 | API 版本协商机制 | ⬜ 待办 | — |
-| ⬜ P5 | 邮件服务 (forgot_password) | ⬜ 待办 | — |
+| ✅ P5 | OpenTelemetry 分布式追踪 | ✅ 已完成 | — |
+| ✅ P5 | API 版本协商机制 | ✅ 已完成 | — |
+| ✅ P5 | 邮件服务 (forgot_password) | ✅ 已完成 | — |
 
 ---
 

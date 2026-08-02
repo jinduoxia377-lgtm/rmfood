@@ -1,6 +1,9 @@
 from typing import Callable, Dict, Any
+import logging
 from app.cqrs.queries.models import FormulaQueryModel
 from app.cqrs.queries.service import QueryService
+
+logger = logging.getLogger(__name__)
 
 class CQRSHandler:
     """Handles domain events that update query-side models."""
@@ -19,8 +22,8 @@ class CQRSHandler:
     
     def on_formula_created(self, event):
         query_model = FormulaQueryModel.from_write_model(event.formula)
-        print(f"CQRS: Created query model for {event.formula.id}")
+        logger.debug("CQRS: Created query model for %s", event.formula.id)
     
     def on_formula_updated(self, event):
         query_model = FormulaQueryModel.from_write_model(event.formula)
-        print(f"CQRS: Updated query model for {event.formula.id}")
+        logger.debug("CQRS: Updated query model for %s", event.formula.id)
