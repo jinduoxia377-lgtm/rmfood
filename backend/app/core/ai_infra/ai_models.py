@@ -45,9 +45,10 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Union
 
+import logging
 from pydantic import BaseModel, Field
 
-logger = __import__("logging").getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 # ═════════════════════════════════════════════
 # 🟡 P4-4: AI 配置与模型定义
