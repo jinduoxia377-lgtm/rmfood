@@ -176,7 +176,7 @@ class RMFOODPeptideAnalyzer:
         if not self._analyzer:
             return {"error": "分析器未可用", "total_processed": 0}
             
-        start_time = __import__('time').time()
+        start_time = time.time()
         
         # 批量分析
         results = await self._analyzer.batch_analyze(sequences)
@@ -205,7 +205,7 @@ class RMFOODPeptideAnalyzer:
             if isinstance(r, FoodPeptideAnalysisResult) and r.safety.risk_level == "low"
         )
         
-        elapsed = (__import__('time').time() - start_time) * 1000
+        elapsed = (time.time() - start_time) * 1000
         
         output = {
             "total_processed": len(sequences),
