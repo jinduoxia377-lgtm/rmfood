@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 [DEPRECATED] 数据库读写分离路由
 
@@ -25,7 +27,6 @@
 │  PgBouncer  │ (连接池)
 └─────────────┘
 """
-from __future__ import annotations
 import logging
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator, Optional, Literal
