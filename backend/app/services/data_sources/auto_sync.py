@@ -103,6 +103,7 @@ def stop_auto_sync():
 
 
 # ── CLI 入口 ────────────────────────────────────────
+# 此入口用于 cron/systemd 独立进程调用，非 FastAPI 事件循环内，asyncio.run() 安全。
 if __name__ == "__main__":
     import asyncio
     

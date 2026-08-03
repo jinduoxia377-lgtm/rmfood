@@ -105,7 +105,7 @@ def save_config_to_db(config: "LLMConfig", user_id: int | None = None) -> bool:
                 await db.commit()
                 logger.info(f"[LLMConfig] 配置已持久化到数据库 (provider={config.provider}, model={config.model})")
 
-        # 在已有事件循环中创建任务，否则新建
+        # 在已有事件循环中创建任务，否则新建（CLI/sync 上下文允许阻塞）
         try:
             loop = asyncio.get_running_loop()
             loop.create_task(_do_save())
@@ -217,6 +217,7 @@ class LLMService:
             self.config = config
         else:
             # 优先级: 尝试从数据库恢复 → fallback 到 settings
+            # LLMService 在模块导入时初始化（startup 前无 event loop），asyncio.run() 允许阻塞
             db_config = None
             try:
                 import asyncio

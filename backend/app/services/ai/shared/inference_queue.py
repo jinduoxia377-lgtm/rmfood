@@ -791,7 +791,8 @@ def _exec_bayesian_generate(payload: dict) -> dict:
     config = BayesianConfig(n_iterations=min(max_iter, 100))
     optimizer = BayesianFormulaOptimizer(config=config)
 
-    # 在同步上下文中运行异步方法（ThreadPoolExecutor 内无 event loop）
+    # 在同步上下文中运行异步方法（ThreadPoolExecutor 内无 event loop，需创建独立循环）
+    # 此函数在隔离线程中运行，不影响 FastAPI 主事件循环
     loop = _asyncio.new_event_loop()
     try:
         candidates = loop.run_until_complete(
@@ -829,6 +830,8 @@ def _exec_genetic_optimize(payload: dict) -> dict:
     config = GAConfig(population_size=pop_size, generations=generations)
     optimizer = GeneticFormulaOptimizer(config=config)
 
+    # 在同步上下文中运行异步方法（ThreadPoolExecutor 内无 event loop，需创建独立循环）
+    # 此函数在隔离线程中运行，不影响 FastAPI 主事件循环
     loop = _asyncio.new_event_loop()
     try:
         individuals, history = loop.run_until_complete(

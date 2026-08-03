@@ -118,10 +118,12 @@ class NutritionAdapter:
                         self._herb_nutrition_cache[herb_id] = herb_param.efficacy_scores.copy()
                         self._herb_cost_cache[herb_id] = herb_param.cost_per_gram
 
+                # 无事件循环时（同步上下文/CLI），创建独立循环；有事件循环时（异步路由），fire-and-forget
                 try:
                     _loop = asyncio.get_running_loop()
                     asyncio.create_task(_load())
                 except RuntimeError:
+                    # CLI/同步调用路径：允许阻塞，数据在首次使用时加载
                     asyncio.run(_load())
             except Exception as e:
                 logger.warning(f"[NutritionAdapter] 懒加载失败: {e}，使用空缓存")
