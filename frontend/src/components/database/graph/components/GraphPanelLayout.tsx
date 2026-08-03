@@ -299,7 +299,7 @@ export interface GraphPanelLayoutProps {
   dragOver: boolean
   shareLink: ShareLink | null
   showSharePanel: boolean
-  nodeAnnotations: NodeAnnotation[]
+  nodeAnnotations: Map<string, NodeAnnotation[]>
   showAnnotationPanel: boolean
   newAnnotationText: string
   historyEntries: HistoryEntry[]
@@ -700,7 +700,7 @@ export default function GraphPanelLayout({
         <FilterEmptyState activeFilter={activeFilter} onClear={() => setActiveFilter(null)} />
       )}
       {nodes.length === 0 && (!isLoading || false) && (
-        <DataEmptyState />
+        <DataEmptyState isLoading={!isLoading || false} />
       )}
 
       {/* Loading Skeleton */}
