@@ -12,7 +12,7 @@
   <img src="https://img.shields.io/badge/Vite-8.x-646CFF.svg" alt="Vite" />
   <img src="https://img.shields.io/badge/TailwindCSS-4.x-06B6D4.svg" alt="TailwindCSS" />
   <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License" />
-  <img src="https://img.shields.io/badge/TypeScript_Errors-140-warning.svg" alt="TypeScript Errors" />
+  <img src="https://img.shields.io/badge/TypeScript_Errors-0-success.svg" alt="TypeScript Errors" />
   <img src="https://img.shields.io/badge/AI_Chat-v10.0-8A2BE2.svg" alt="AI Chat v10" />
 </p>
 
