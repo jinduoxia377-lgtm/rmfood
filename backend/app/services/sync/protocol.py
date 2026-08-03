@@ -531,7 +531,8 @@ class SyncProtocol:
                 import zlib
                 compressed = zlib.compress(data, level=6)
                 return compressed
-            except Exception:
+            except Exception as compress_err:
+                logger.debug("消息压缩失败，使用原始数据: %s", compress_err)
                 return data
         return data
 

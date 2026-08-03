@@ -116,9 +116,9 @@ class ConnectionManager:
                     "message": f"服务器连接数已达上限 {MAX_CONNECTIONS}，请稍后重试",
                 })
                 await websocket.close(code=1013)  # 1013: Try Again Later
-            except Exception:
-                pass
-            return False
+            except Exception as conn_err:
+                logger.warning("连接数检查失败: %s", conn_err)
+                await websocket.close(code=1013)  # 1013: Try Again Later
 
         # ── 检查单用户上限（踢掉最老的连接）──
         if user_id in self.active_connections:
@@ -172,8 +172,8 @@ class ConnectionManager:
                 try:
                     ws = self.active_connections[user_id][connection_id]
                     await ws.close()
-                except Exception:
-                    pass
+                except Exception as close_err:
+                    logger.debug("关闭 WebSocket 连接失败: %s", close_err)
                 del self.active_connections[user_id][connection_id]
                 
                 if not self.active_connections[user_id]:

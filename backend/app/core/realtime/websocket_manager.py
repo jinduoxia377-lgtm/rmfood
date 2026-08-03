@@ -550,7 +550,8 @@ class WebSocketManager:
                 url = getattr(settings, 'redis_url', 'redis://localhost:6379')
                 self._redis = redis.from_url(url, encoding='utf-8', decode_responses=False)
                 await self._redis.ping()
-            except Exception:
+            except Exception as redis_err:
+                logger.warning("Redis 连接失败，使用内存模式: %s", redis_err)
                 self._redis = None
         return self._redis
 
