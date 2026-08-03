@@ -337,7 +337,7 @@ export const aiApi = {
 
       // 仅在开发环境输出存储类型提示（避免生产环境日志污染）
       if (process.env.NODE_ENV === 'development' && keyResult.source === 'configmanager') {
-        console.info('[aiApi.chat] 使用传统存储 (ConfigManager) 的 API Key，建议升级到安全存储');
+        logger.info('[aiApi.chat] 使用传统存储 (ConfigManager) 的 API Key，建议升级到安全存储');
       }
     } catch (e) {
       // 统一管理器失败时仅在开发环境告警，不再降级到 localStorage
@@ -366,7 +366,7 @@ export const aiApi = {
 
       // 仅在开发环境输出存储类型提示
       if (process.env.NODE_ENV === 'development' && keyResult.source === 'configmanager') {
-        console.info('[aiApi.chatStream] 使用传统存储 (ConfigManager) 的 API Key，建议升级到安全存储');
+        logger.info('[aiApi.chatStream] 使用传统存储 (ConfigManager) 的 API Key，建议升级到安全存储');
       }
     } catch (e) {
       // 不再降级到 localStorage，统一由后端管理 API Key
