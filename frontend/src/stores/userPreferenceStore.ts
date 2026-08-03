@@ -217,7 +217,7 @@ export const useUserPreferenceStore = create<UserPreferenceState>()(
         })
 
         return scoredHistory
-          .sort((a, b) => (b as any).matchScore - (a as any).matchScore)
+          .sort((a, b) => ((b as Record<string, unknown>).matchScore as number) - ((a as Record<string, unknown>).matchScore as number))
           .slice(0, 5)
       },
 
