@@ -310,10 +310,10 @@ export interface GraphPanelLayoutProps {
   reportConfig: ReportConfigT
   showReportDialog: boolean
   reportGenerating: boolean
-  graphStats: GraphStatistics
+  graphStats: GraphStatistics | null
   showStatsPanel: boolean
-  communityResult: CommunityResultT
-  kcoreResult: KCoreResultT
+  communityResult: CommunityResultT | null
+  kcoreResult: KCoreResultT | null
   centralityMetrics: any
   centralityMode: CentralityMode
   savedSubGraphs: SubGraphResult[]

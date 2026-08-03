@@ -99,12 +99,6 @@ export default function FormulaDetailPage() {
   const [explainabilityResult, setExplainabilityResult] = useState<any>(null);
   const [loadingExplanation, setLoadingExplanation] = useState(false);
 
-  // ── 合规检查 ──
-  const { result: complianceResult, check: checkCompliance, loading: complianceLoading } = useComplianceCheck(
-    ingredientList.map((i) => ({ name: i.name, dosage_mg: i.dosage || 0 })),
-    'adults',
-  );
-
   // ── 所有 Hooks 必须放在这里（在 early return 之前）──
 
   // 收藏功能 (localStorage) - 必须在 hooks 区域
@@ -1541,7 +1535,7 @@ export default function FormulaDetailPage() {
 
                       {/* 导出报告 */}
                       <ReportExportPanel
-                        report={null}
+                        report={null as any}
                         formulaName={formula.name || '未命名配方'}
                         ingredients={ingredientList.map((i) => ({
                           name: i.name,
