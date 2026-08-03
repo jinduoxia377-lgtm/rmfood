@@ -334,7 +334,8 @@ class DiffDetector:
         """生成缓存键"""
         try:
             return str(hash(json.dumps(data, sort_keys=True, default=str)))[:16]
-        except Exception:
+        except Exception as hash_err:
+            logger.debug("缓存键生成失败，使用 id: %s", hash_err)
             return id(data)
 
     def _update_stats(self, elapsed_ms: float):

@@ -278,7 +278,8 @@ class RedisCache:
         try:
             client = await self._ensure_connection()
             return await client.exists(self._make_key(key)) > 0
-        except Exception:
+        except Exception as cache_err:
+            logger.debug("缓存 exists 检查失败: %s", cache_err)
             return False
 
     async def clear(self) -> int:
