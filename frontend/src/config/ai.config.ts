@@ -185,13 +185,13 @@ function deepMerge<T extends Record<string, any>>(target: T, source: Partial<T>)
       sourceValue !== null &&
       typeof sourceValue === 'object' &&
       !Array.isArray(sourceValue) &&
-      typeof result[key] === 'object' &&
-      result[key] !== null &&
-      !Array.isArray(result[key])
+      typeof (result as Record<string, unknown>)[key as string] === 'object' &&
+      (result as Record<string, unknown>)[key as string] !== null &&
+      !Array.isArray((result as Record<string, unknown>)[key as string])
     ) {
-      (result as Record<string, unknown>)[key] = deepMerge(result[key] as Record<string, unknown>, sourceValue as Record<string, unknown>);
+      (result as Record<string, unknown>)[key as string] = deepMerge((result as Record<string, unknown>)[key as string] as Record<string, unknown>, sourceValue as Record<string, unknown>);
     } else if (sourceValue !== undefined) {
-      (result as Record<string, unknown>)[key] = sourceValue;
+      (result as Record<string, unknown>)[key as string] = sourceValue;
     }
   }
 
