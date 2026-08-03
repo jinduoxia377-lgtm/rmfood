@@ -420,8 +420,7 @@ function sanitizeApiKey(rawKey: string): string {
   // 仅在开发环境和实际清洗发生时记录日志
   if (process.env.NODE_ENV === 'development' && originalLength !== cleanedLength) {
     logger.info(
-      '[sanitizeApiKey] Key 已清洗: %d → %d 字符 (移除 %d 个隐藏字符)',
-      originalLength, cleanedLength, originalLength - cleanedLength,
+      `[sanitizeApiKey] Key 已清洗: ${originalLength} → ${cleanedLength} 字符 (移除 ${originalLength - cleanedLength} 个隐藏字符)`,
     );
   }
 
@@ -430,7 +429,7 @@ function sanitizeApiKey(rawKey: string): string {
     const prefix = cleaned.substring(0, Math.min(8, cleanedLength));
     const suffix = cleaned.substring(Math.max(0, cleanedLength - 4));
 
-    logger.debug('[sanitizeApiKey] Key 验证通过: 长度=%d, 前缀="%s...", 后缀="...%s"', cleanedLength, prefix, suffix);
+    logger.debug(`[sanitizeApiKey] Key 验证通过: 长度=${cleanedLength}, 前缀="${prefix}...", 后缀="...${suffix}"`);
 
     // 检查常见格式问题
     if (!cleaned.startsWith('sk-') && !cleaned.startsWith('Bearer ')) {

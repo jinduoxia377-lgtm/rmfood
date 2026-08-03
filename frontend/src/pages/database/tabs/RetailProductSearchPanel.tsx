@@ -31,6 +31,7 @@ import {
 } from '../../../api/searchNew';
 import RetailProductDetailModal from './RetailProductDetailModal';
 import { useToast } from '@/components/ui';
+import { logger } from '@/utils/safeLogger';
 
 // ── OFF 原始数据 → 前端统一格式 ──
 
