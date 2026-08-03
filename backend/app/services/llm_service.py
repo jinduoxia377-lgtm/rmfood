@@ -74,12 +74,13 @@ def save_config_to_db(config: "LLMConfig", user_id: int | None = None) -> bool:
     try:
         from ..core.database.session import async_session_factory
         from ..models.system import SystemConfig
+        from sqlalchemy import select
         import asyncio
 
         async def _do_save():
             async with async_session_factory() as db:
                 result = await db.execute(
-                    __import__("sqlalchemy", fromlist=["select"]).select(SystemConfig).where(
+                    select(SystemConfig).where(
                         SystemConfig.config_key == _CONFIG_DB_KEY
                     )
                 )
@@ -122,10 +123,11 @@ async def load_config_from_db() -> "LLMConfig | None":
     try:
         from ..core.database.session import async_session_factory
         from ..models.system import SystemConfig
+        from sqlalchemy import select
 
         async with async_session_factory() as db:
             result = await db.execute(
-                __import__("sqlalchemy", fromlist=["select"]).select(SystemConfig).where(
+                select(SystemConfig).where(
                     SystemConfig.config_key == _CONFIG_DB_KEY
                 )
             )
