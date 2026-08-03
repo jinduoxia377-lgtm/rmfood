@@ -304,7 +304,8 @@ class RedisCache:
                 "used_memory_peak_human": info.get("used_memory_peak_human", "N/A"),
                 "maxmemory_human": info.get("maxmemory_human", "N/A"),
             }
-        except Exception:
+        except Exception as info_err:
+            logger.debug("Redis INFO 命令失败: %s", info_err)
             return {}
 
 

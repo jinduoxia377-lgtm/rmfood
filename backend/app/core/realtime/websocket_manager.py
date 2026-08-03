@@ -786,7 +786,8 @@ async def websocket_endpoint(websocket: WebSocket):
         if not payload.get("type") == "access":
             await websocket.close(code=4002, reason="无效的Token类型")
             return
-    except Exception:
+    except Exception as token_err:
+        logger.warning("WebSocket 认证解析失败: %s", token_err)
         await websocket.close(code=4002, reason="认证失败")
         return
 
