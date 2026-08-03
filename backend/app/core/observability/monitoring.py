@@ -51,7 +51,8 @@ from fastapi import APIRouter, Request, Response
 from pydantic import BaseModel
 from starlette.responses import JSONResponse, PlainTextResponse
 
-logger = __import__("logging").getLogger(__name__)
+import logging
+logger = logging.getLogger(__name__)
 
 
 # ═════════════════════════════════════════════

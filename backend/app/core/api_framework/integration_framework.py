@@ -517,7 +517,7 @@ class APIKeyService:
 
         expires_at = None
         if expires_in_days:
-            expires_at = datetime.now(timezone.utc) + __import__("timedelta").timedelta(days=expires_in_days)
+            expires_at = datetime.now(timezone.utc) + timedelta(days=expires_in_days)
 
         api_key = APIKey(
             id=str(uuid.uuid4()),
@@ -721,7 +721,7 @@ class ThirdPartyIntegrationService:
             timestamp = str(round(time.time() * 1000))
             string_to_sign = f'{timestamp}\n{secret}'
             hmac_code = hmac.new(secret.encode(), string_to_sign.encode(), digestmod=hashlib.sha256).digest()
-            sign = __import__("urllib.parse").quote_plus(hmac_code.hex())
+            sign = urllib.parse.quote_plus(hmac_code.hex())
             webhook_url = f"{webhook_url}&timestamp={timestamp}&sign={sign}"
 
         async with aiohttp.ClientSession() as session:

@@ -739,5 +739,6 @@ def _generate_recommendations(hqs, pqs, hh, ph, total_herbs=100, total_peptides=
         recs.append("数据质量整体良好，可正常支持配方研发工作流")
     return recs
 
-logger = __import__("logging").getLogger(__name__)
+import logging
+logger = logging.getLogger(__name__)
 logger.info("dashboard module loaded")
