@@ -64,7 +64,8 @@ from sqlalchemy import Column, String, Integer, Boolean, DateTime, select, and_,
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import DeclarativeBase
 
-logger = __import__("logging").getLogger(__name__)
+import logging
+logger = logging.getLogger(__name__)
 
 # ═════════════════════════════════════════════
 # 🟡 P4-1: 租户隔离模式
