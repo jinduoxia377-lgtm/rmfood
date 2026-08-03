@@ -325,7 +325,7 @@ class AnalyticsService {
       logger.info(
         `[AnalyticsService] Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts})...`,
       );
-      this.connect().catch(console.error);
+      this.connect().catch((e) => logger.error('[AnalyticsService] WS reconnect failed:', e));
     }, delay);
   }
 

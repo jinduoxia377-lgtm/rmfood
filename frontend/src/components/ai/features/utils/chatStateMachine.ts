@@ -507,7 +507,10 @@ export class ChatStateMachine implements IStateMachine<ChatState> {
     if (this._context.length > this.config.maxContextWindow!) {
       const result = this.compressContext();
       if (this.config.enableDebug) {
-        logger.debug('[ChatStateMachine] 上下文已压缩: %d -> %d', result.originalMessageCount, result.compressedMessageCount);
+        logger.debug('[ChatStateMachine] 上下文已压缩', {
+          originalMessageCount: result.originalMessageCount,
+          compressedMessageCount: result.compressedMessageCount,
+        });
       }
     }
 

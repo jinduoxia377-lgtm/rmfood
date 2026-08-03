@@ -52,13 +52,12 @@ export function loggerMiddleware(options: LoggerOptions = {}): void {
       newValue: context.newValue,
     };
 
-    logger.group(`[State Change] ${context.key}`);
+    logger.log('[State Change] %s', context.key);
     logger.log('Previous:', context.oldValue);
     logger.log('Current:', context.newValue);
     if (config.includeStackTrace) {
       logger.log('Stack trace');
     }
-    logger.groupEnd();
 
     next();
   };

@@ -179,7 +179,7 @@ const RetailProductSearchPanel: React.FC<{ className?: string }> = ({ className 
         const favoriteIds = pantryProducts.map((p: any) => p.id);
         setFavorites(new Set(favoriteIds));
       } catch (err) {
-        console.error('加载收藏失败:', err);
+        logger.error('[RetailProductSearch] 加载收藏失败:', err);
         toast.info('收藏列表未加载，请检查网络连接');
       }
     };
@@ -286,7 +286,7 @@ const RetailProductSearchPanel: React.FC<{ className?: string }> = ({ className 
         });
         toast.success('已取消收藏');
       } catch (err) {
-        console.error('取消收藏失败:', err);
+        logger.error('[RetailProductSearch] 取消收藏失败:', err);
         toast.error('取消收藏失败');
       }
     } else {
@@ -299,7 +299,7 @@ const RetailProductSearchPanel: React.FC<{ className?: string }> = ({ className 
         });
         toast.success('已添加到收藏');
       } catch (err) {
-        console.error('收藏失败:', err);
+        logger.error('[RetailProductSearch] 收藏失败:', err);
         toast.error('收藏失败');
       }
     }
