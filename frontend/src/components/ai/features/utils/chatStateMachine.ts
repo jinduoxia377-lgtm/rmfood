@@ -395,7 +395,7 @@ export class ChatStateMachine implements IStateMachine<ChatState> {
   canTransition(to: ChatState): boolean {
     if (this.transitionLock) {
       if (this.config.enableDebug) {
-        console.debug(`[ChatStateMachine] 状态转换被锁定: 当前状态 ${this._state}`);
+        logger.debug('[ChatStateMachine] 状态转换被锁定: 当前状态 %s', this._state);
       }
       return false;
     }
@@ -436,7 +436,7 @@ export class ChatStateMachine implements IStateMachine<ChatState> {
     }
 
     if (this.config.enableDebug) {
-      console.debug(`[ChatStateMachine] 状态转换: ${previousState} -> ${to}`);
+      logger.debug('[ChatStateMachine] 状态转换: %s -> %s', previousState, to);
     }
 
     if (this.onStateChange) {
@@ -465,7 +465,7 @@ export class ChatStateMachine implements IStateMachine<ChatState> {
     this._context = [];
     this._stats = this.createEmptyStats();
     if (this.config.enableDebug) {
-      console.debug(`[ChatStateMachine] 已重置状态`);
+      logger.debug('[ChatStateMachine] 已重置状态');
     }
   }
 
@@ -476,7 +476,7 @@ export class ChatStateMachine implements IStateMachine<ChatState> {
   setTransitionLock(locked: boolean): void {
     this.transitionLock = locked;
     if (this.config.enableDebug) {
-      console.debug(`[ChatStateMachine] 转换锁 ${locked ? '已锁定' : '已解锁'}`);
+      logger.debug('[ChatStateMachine] 转换锁 %s', locked ? '已锁定' : '已解锁');
     }
   }
 
@@ -507,7 +507,7 @@ export class ChatStateMachine implements IStateMachine<ChatState> {
     if (this._context.length > this.config.maxContextWindow!) {
       const result = this.compressContext();
       if (this.config.enableDebug) {
-        console.debug(`[ChatStateMachine] 上下文已压缩: ${result.originalMessageCount} -> ${result.compressedMessageCount}`);
+        logger.debug('[ChatStateMachine] 上下文已压缩: %d -> %d', result.originalMessageCount, result.compressedMessageCount);
       }
     }
 
