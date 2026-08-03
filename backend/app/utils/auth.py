@@ -313,7 +313,8 @@ def cleanup_expired_tokens() -> int:
                 exp = payload.get("exp")
                 if exp and datetime.fromtimestamp(exp, timezone.utc) < current_time:
                     tokens_to_remove.append(token)
-            except Exception:
+            except Exception as token_err:
+                logger.debug("Token 验证失败: %s", token_err)
                 tokens_to_remove.append(token)
 
         for token in tokens_to_remove:

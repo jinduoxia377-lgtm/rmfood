@@ -274,8 +274,8 @@ class NotificationWebSocketHandler:
                         
                         try:
                             await conn_info.websocket.close(code=4001, reason="heartbeat timeout")
-                        except Exception:
-                            pass
+                        except Exception as close_err:
+                            logger.debug("关闭 WebSocket 心跳超时连接失败: %s", close_err)
                         
                         await self.disconnect(conn_info.websocket, team_id, user_id)
 
