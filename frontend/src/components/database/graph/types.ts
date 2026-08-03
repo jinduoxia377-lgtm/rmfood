@@ -360,7 +360,6 @@ export const THEME_PRESETS: ThemeConfig[] = [
 
 // Animation presets (already defined above at line 67)
 // export type AnimationPreset = 'fadeIn' | 'expand' | 'converge' | 'none'
-export interface ThemeConfig { name: string; colors: Record<string, string>; }
 
 // Performance stats types
 export interface PerfStats { fps: number; frameTime: number; memoryEst: string; lodLevel: string; rating: 'excellent' | 'good' | 'fair' | 'poor'; }

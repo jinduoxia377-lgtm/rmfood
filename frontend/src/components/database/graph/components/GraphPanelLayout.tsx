@@ -239,6 +239,14 @@ export interface GraphPanelLayoutProps {
   setSortBy: (s: SortByOption) => void
   setFocusedNodeIndex: (v: number) => void
   setIsSelecting: (v: boolean) => void
+  setSelectionBox: (v: any) => void
+  setContextMenu: (v: any) => void
+  setSearchHistory: (v: any) => void
+  setNodeAIAnalysis: (v: any) => void
+  setPathSourceId: (v: string) => void
+  setPathTargetId: (v: string) => void
+  setDetailTab: (v: string) => void
+  isLoading?: boolean
 
   // State values (required by graph engine for rendering)
   activeFilter: string | null
@@ -380,16 +388,16 @@ export default function GraphPanelLayout({
         if (searchQuery) return
         const visibleNodes = filteredData.filteredNodes
         if (e.key === 'Tab' && !e.shiftKey && focusedNodeIndex < 0) { e.preventDefault(); setFocusedNodeIndex(0) }
-        else if (e.key === 'Tab' && !e.shiftKey && focusedNodeIndex >= 0) { e.preventDefault(); setFocusedNodeIndex(prev => (prev + 1) % Math.max(visibleNodes.length, 1)) }
-        else if (e.key === 'Tab' && e.shiftKey && focusedNodeIndex > 0) { e.preventDefault(); setFocusedNodeIndex(prev => prev - 1) }
+        else if (e.key === 'Tab' && !e.shiftKey && focusedNodeIndex >= 0) { e.preventDefault(); setFocusedNodeIndex((prev: number) => (prev + 1) % Math.max(visibleNodes.length, 1)) }
+        else if (e.key === 'Tab' && e.shiftKey && focusedNodeIndex > 0) { e.preventDefault(); setFocusedNodeIndex((prev: number) => prev - 1) }
         else if (e.key === 'Enter' && focusedNodeIndex >= 0 && visibleNodes[focusedNodeIndex]) { e.preventDefault(); handleSearchSelect(visibleNodes[focusedNodeIndex]) }
         else if ((e.key === 'Escape') && selectedNode) { setSelectedNode(null); setFocusedNodeIndex(-1) }
-        else if (e.key === 'P' && e.shiftKey) { e.preventDefault(); setShowPerfPanel(prev => !prev) }
-        else if (e.key === 'C' && e.shiftKey) { e.preventDefault(); setShowCentralityPanel(prev => !prev) }
-        else if (e.key === 'N' && e.shiftKey) { e.preventDefault(); setIsAddingAnnotation(prev => !prev) }
-        else if (e.key === 'T' && e.shiftKey) { e.preventDefault(); setShowThemePanel(prev => !prev) }
-        else if (e.key === 'L' && e.shiftKey) { e.preventDefault(); setShowLayoutMenu(prev => !prev) }
-        else if (e.key === 'A' && e.shiftKey) { e.preventDefault(); setShowAIPanel(prev => !prev) }
+        else if (e.key === 'P' && e.shiftKey) { e.preventDefault(); setShowPerfPanel((prev: boolean) => !prev) }
+        else if (e.key === 'C' && e.shiftKey) { e.preventDefault(); setShowCentralityPanel((prev: boolean) => !prev) }
+        else if (e.key === 'N' && e.shiftKey) { e.preventDefault(); setIsAddingAnnotation((prev: boolean) => !prev) }
+        else if (e.key === 'T' && e.shiftKey) { e.preventDefault(); setShowThemePanel((prev: boolean) => !prev) }
+        else if (e.key === 'L' && e.shiftKey) { e.preventDefault(); setShowLayoutMenu((prev: boolean) => !prev) }
+        else if (e.key === 'A' && e.shiftKey) { e.preventDefault(); setShowAIPanel((prev: boolean) => !prev) }
         else if ((e.key === 'z' || e.key === 'Z') && e.ctrlKey && !e.shiftKey) { e.preventDefault(); undoHistory() }
         else if ((e.key === 'z' || e.key === 'Z') && e.ctrlKey && e.shiftKey) { e.preventDefault(); redoHistory() }
       }}
@@ -406,7 +414,7 @@ export default function GraphPanelLayout({
         if (isSelecting && selectionBox) {
           const rect = containerRef.current?.getBoundingClientRect()
           if (!rect) return
-          setSelectionBox(prev => prev ? { ...prev, x2: e.clientX - rect.left, y2: e.clientY - rect.top } : null)
+          setSelectionBox((prev: any) => prev ? { ...prev, x2: e.clientX - rect.left, y2: e.clientY - rect.top } : null)
         }
       }}
       onMouseUp={(e) => {
@@ -452,7 +460,7 @@ export default function GraphPanelLayout({
 
       {/* v7.5: Performance Monitor Hook (RAF-based, runs independently) */}
       <div className="absolute bottom-3 right-3 z-30 w-6 h-6">
-        <button onClick={() => setShowPerfPanel(prev => !prev)} title="性能监控 (Shift+P)">
+        <button onClick={() => setShowPerfPanel((prev: boolean) => !prev)} title="性能监控 (Shift+P)">
           <span>📊</span>
         </button>
       </div>
@@ -691,7 +699,7 @@ export default function GraphPanelLayout({
       {filteredData.filteredNodes.length === 0 && nodes.length > 0 && (
         <FilterEmptyState activeFilter={activeFilter} onClear={() => setActiveFilter(null)} />
       )}
-      {nodes.length === 0 && !isLoading && (
+      {nodes.length === 0 && (!isLoading || false) && (
         <DataEmptyState />
       )}
 

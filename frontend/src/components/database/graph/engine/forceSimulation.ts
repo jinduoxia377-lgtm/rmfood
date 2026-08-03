@@ -70,7 +70,7 @@ export class GraphEngine {
   private g: d3.Selection<SVGGElement, unknown, null, undefined> | null = null
   private defs: d3.Selection<SVGElement, unknown, null, undefined> | null = null
   private simulation: d3.Simulation<SimNode, undefined> | null = null
-  private zoomBehavior: d3.ZoomBehavior<d3.Element, unknown> | null = null
+  private zoomBehavior: d3.ZoomBehavior<SVGSVGElement, unknown> | null = null
   private rafId: number | null = null
   private ticking = false
   private tickCounter = 0
@@ -84,7 +84,7 @@ export class GraphEngine {
 
   constructor(private input: GraphEngineInput) {}
 
-  getZoomBehavior(): d3.ZoomBehavior<d3.Element, unknown> | null {
+  getZoomBehavior(): d3.ZoomBehavior<SVGSVGElement, unknown> | null {
     return this.zoomBehavior as any
   }
 
@@ -238,9 +238,9 @@ export class GraphEngine {
   }
 
   private setupZoom(g: d3.Selection<SVGGElement, unknown, null, undefined>): void {
-    this.zoomBehavior = d3.zoom<d3.Element, unknown>()
+    this.zoomBehavior = d3.zoom<SVGSVGElement, unknown>()
       .scaleExtent([0.08, 8])
-      .on('zoom', (event: d3.D3ZoomEvent<d3.Element, unknown>) => {
+      .on('zoom', (event: d3.D3ZoomEvent<SVGSVGElement, unknown>) => {
         g.attr('transform', event.transform as any)
         this.input.onSetZoomTransform?.(event.transform)
       })

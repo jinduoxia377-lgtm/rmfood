@@ -62,6 +62,8 @@ import {
   computeDegreeStats, computeLegendData, findPathBFS, findSmartPath,
 } from './graph/analytics'
 import type { SmartPathResult } from './graph/analytics'
+import { useGraphState } from './graph/hooks/useGraphState'
+import GraphPanelLayout from './graph/components/GraphPanelLayout'
 
 // Props interface (was previously defined locally)
 interface KnowledgeGraphProps {
@@ -98,7 +100,7 @@ interface AIInsight {
   actionLabel?: string
 }
 
-interface SmartPathResult {
+interface SmartPathResultLocal {
   sourceId: string
   targetId: string
   path: string[]

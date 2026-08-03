@@ -44,6 +44,7 @@ import {
   AlertOctagon,
   TestTubes,
   Plus,
+  FileText,
 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useFormula, useFormulaVersions, useSubmitFormula, useReviewFormula } from '@/hooks/useQueries';
@@ -82,6 +83,10 @@ import { ShareFormula } from './components/ShareFormula';
 import { useOperationLogger } from '@/utils/operationLogger';
 import { usePermission, FormulaPermission } from '@/utils/permissions';
 import { FormulaDetailSkeleton } from './components/FormulaDetailSkeleton';
+import { ExplainabilityReport } from '@/components/report/ExplainabilityReport';
+import { ReportExportPanel } from '@/components/report/ReportExportPanel';
+import { useComplianceCheck, complianceApi } from '@/api/compliance';
+import { explainabilityApi } from '@/api/explainability';
 
 export default function FormulaDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -89,6 +94,16 @@ export default function FormulaDetailPage() {
   const user = useAuthStore((s) => s.user);
   const { has } = usePermission();
   const formulaId = Number(id);
+
+  // ── 可解释性报告状态 ──
+  const [explainabilityResult, setExplainabilityResult] = useState<any>(null);
+  const [loadingExplanation, setLoadingExplanation] = useState(false);
+
+  // ── 合规检查 ──
+  const { result: complianceResult, check: checkCompliance, loading: complianceLoading } = useComplianceCheck(
+    ingredientList.map((i) => ({ name: i.name, dosage_mg: i.dosage || 0 })),
+    'adults',
+  );
 
   // ── 所有 Hooks 必须放在这里（在 early return 之前）──
 
@@ -794,6 +809,9 @@ export default function FormulaDetailPage() {
                 <TabsTrigger value="recommendations" icon={<Sparkles size={14} />}>
                   相关推荐
                 </TabsTrigger>
+                <TabsTrigger value="explainability" icon={<FileText size={14} />}>
+                  可解释性
+                </TabsTrigger>
               </TabsList>
 
               {/* ═══════════════ Tab 1: 基本信息 ═══════════════ */}
@@ -1485,6 +1503,56 @@ export default function FormulaDetailPage() {
                   </div>
                 </TabsContent>
               )}
+
+              {/* ═══════════════ Tab: 可解释性 ═══════════════ */}
+              <TabsContent value="explainability">
+                <div className="space-y-4 pt-4">
+                  <div className="flex items-center gap-2">
+                    <FileText size={20} className="text-violet-600" />
+                    <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
+                      配方可解释性报告
+                    </h2>
+                  </div>
+
+                  {!formula?.targetEffects || formula.targetEffects.length === 0 ? (
+                    <div className="p-6 rounded-xl bg-gray-50 dark:bg-gray-800 text-center text-gray-500">
+                      请先设置目标功效以生成解释报告
+                    </div>
+                  ) : (
+                    <>
+                      {/* 实时合规状态 */}
+                      <ComplianceCheckSection
+                        ingredients={ingredientList.map((i) => ({
+                          name: i.name,
+                          dosage_mg: i.dosage || 0,
+                        }))}
+                        targetEffects={formula.targetEffects as string[]}
+                      />
+
+                      {/* 可解释性报告 */}
+                      <ExplainabilityReportSection
+                        formulaName={formula.name || '未命名配方'}
+                        ingredients={ingredientList.map((i) => ({
+                          name: i.name,
+                          dosage_mg: i.dosage || 0,
+                        }))}
+                        targetEffects={formula.targetEffects as string[]}
+                      />
+
+                      {/* 导出报告 */}
+                      <ReportExportPanel
+                        report={null}
+                        formulaName={formula.name || '未命名配方'}
+                        ingredients={ingredientList.map((i) => ({
+                          name: i.name,
+                          dosage_mg: i.dosage || 0,
+                        }))}
+                        targetEffects={formula.targetEffects as string[]}
+                      />
+                    </>
+                  )}
+                </div>
+              </TabsContent>
             </div>
           </Tabs>
         </CardContent>
@@ -1843,6 +1911,134 @@ export default function FormulaDetailPage() {
           <VersionDiffViewer leftVersion={diffLeftVersion} rightVersion={diffRightVersion} />
         )}
       </Modal>
+    </div>
+  );
+}
+
+// ── 子组件：合规检查区块 ──────────────────────────────────
+function ComplianceCheckSection({
+  ingredients,
+  targetEffects,
+}: {
+  ingredients: Array<{ name: string; dosage_mg: number }>;
+  targetEffects: string[];
+}) {
+  const { result, loading, check } = useComplianceCheck(ingredients, 'adults');
+
+  useEffect(() => {
+    check();
+  }, [ingredients, check]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center gap-2 text-sm text-gray-500">
+        <span className="inline-block w-2 h-2 rounded-full bg-violet-500 animate-pulse" />
+        检查合规性...
+      </div>
+    );
+  }
+
+  if (!result) return null;
+
+  const cfg =
+    result.status === 'compliant'
+      ? 'text-green-600 bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
+      : result.status === 'warning'
+      ? 'text-yellow-600 bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800'
+      : 'text-red-600 bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800';
+
+  return (
+    <div className={`rounded-xl border p-4 ${cfg}`}>
+      <div className="flex items-center gap-3">
+        <span className="text-2xl font-bold">{result.score}</span>
+        <div className="flex-1">
+          <div className="font-semibold">合规评分</div>
+          <div className="text-sm opacity-75">
+            {result.violations.length > 0
+              ? `${result.violations.length} 项违规`
+              : '配方合规'}
+          </div>
+        </div>
+        {result.violations.length > 0 && (
+          <div className="text-sm opacity-75">
+            {result.violations[0].message}
+          </div>
+        )}
+        {result.suggestions.length > 0 && (
+          <div className="text-xs opacity-60 mt-1">💡 {result.suggestions[0]}</div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── 子组件：可解释性报告区块 ──────────────────────────────
+function ExplainabilityReportSection({
+  formulaName,
+  ingredients,
+  targetEffects,
+}: {
+  formulaName: string;
+  ingredients: Array<{ name: string; dosage_mg: number }>;
+  targetEffects: string[];
+}) {
+  const [result, setResult] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const generateReport = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const resp = await explainabilityApi.analyze({
+        formula_name: formulaName,
+        ingredients: ingredients.map((i) => ({
+          name: i.name,
+          dosage_mg: i.dosage_mg,
+        })),
+        target_effects: targetEffects,
+      });
+      if (resp.success && resp.data) {
+        setResult(resp.data);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '生成失败');
+    } finally {
+      setLoading(false);
+    }
+  }, [formulaName, ingredients, targetEffects]);
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <h3 className="font-semibold text-gray-900 dark:text-white">
+          成分贡献与相互作用分析
+        </h3>
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={generateReport}
+          loading={loading}
+        >
+          {loading ? '生成中...' : '生成报告'}
+        </Button>
+      </div>
+
+      {error && (
+        <div className="p-3 rounded-xl bg-red-50 dark:bg-red-900/20 text-sm text-red-600 dark:text-red-400">
+          {error}
+        </div>
+      )}
+
+      {result && (
+        <ExplainabilityReport result={result} />
+      )}
+
+      {!result && !loading && (
+        <div className="p-6 rounded-xl bg-gray-50 dark:bg-gray-800 text-center text-sm text-gray-500">
+          点击「生成报告」分析配方可解释性
+        </div>
+      )}
     </div>
   );
 }
