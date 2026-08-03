@@ -288,7 +288,7 @@ async def run_import_task_async(task_id: str, adapter_type: str, target_table: s
                     stats={"total_rows": 0, "inserted": 0, "updated": 0, "error_count": 1, "success_rate": 0.0},
                     message=f"导入失败: {str(e)}"[:2000],
                 )
-            except:
-                pass
+            except Exception as update_err:
+                logger.warning("[Import] 更新任务状态失败 (非致命): %s", update_err)
 
         raise

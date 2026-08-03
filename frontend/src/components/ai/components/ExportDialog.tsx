@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { ExportFormat, ExportScope } from '../../../types/export.types';
 import type { ExportOptions, ExportColumn, ExportProgress, ExportResult } from '../../../types/export.types';
 
+
+import { logger } from '@/utils/safeLogger';
 interface ExportDialogProps {
   isOpen: boolean;
   columns: ExportColumn[];
@@ -84,7 +86,7 @@ const ExportDialog: React.FC<ExportDialogProps> = ({
         }, 2000);
       }
     } catch (error) {
-      console.error('Export failed:', error);
+      logger.error('Export failed:', error);
       setResult({
         success: false,
         fileName: '',

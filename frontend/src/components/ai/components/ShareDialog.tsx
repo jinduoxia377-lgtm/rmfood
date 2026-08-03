@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+
+import { logger } from '@/utils/safeLogger';
 import {
   CollaborationPermission,
 } from '../../../types/collaboration.types';
@@ -49,7 +51,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
       } catch (err) {
-        console.error('Failed to copy:', err);
+        logger.error('Failed to copy:', err);
       }
     }
   };

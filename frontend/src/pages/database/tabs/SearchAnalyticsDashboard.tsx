@@ -21,6 +21,8 @@ import {
 } from 'recharts';
 import { databaseApi } from '@/api/database';
 
+
+import { logger } from '@/utils/safeLogger';
 const { RangePicker } = DatePicker;
 
 // ── 颜色常量 ──
@@ -82,7 +84,7 @@ const SearchAnalyticsDashboard: React.FC = () => {
       setConversionRate(conversionRes);
       setPopularCategories(categoryRes || []);
     } catch (err) {
-      console.error('加载搜索分析数据失败:', err);
+      logger.error('加载搜索分析数据失败:', err);
     } finally {
       setLoading(false);
     }
@@ -97,7 +99,7 @@ const SearchAnalyticsDashboard: React.FC = () => {
       });
       setTrendData(resp || []);
     } catch (err) {
-      console.error('加载趋势数据失败:', err);
+      logger.error('加载趋势数据失败:', err);
     }
   }, []);
 

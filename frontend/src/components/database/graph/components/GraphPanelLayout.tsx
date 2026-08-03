@@ -179,7 +179,7 @@ export interface GraphPanelLayoutProps {
   handleDrop: (e: React.DragEvent) => void
   generateShareLink: () => void
   copyShareLink: () => void
-  addNodeAnnotation: () => void
+  addNodeAnnotation: (text: string) => void
   addHistoryEntry: (type: string, description: string, detail?: Record<string, unknown>) => void
   undoHistory: () => void
   redoHistory: () => void

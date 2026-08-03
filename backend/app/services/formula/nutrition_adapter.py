@@ -110,17 +110,19 @@ class NutritionAdapter:
 
             # 尝试从engine获取药材营养数据
             try:
-                # 如果有 _get_ingredient_nutrition 方法，批量调用
                 import asyncio
 
                 async def _load():
-                    # 获取所有药材ID（从内置字典或数据库）
                     from app.services.ai.algorithms.bayesian_formula_optimizer import _BUILTIN_HERBS
                     for herb_id, herb_param in _BUILTIN_HERBS.items():
                         self._herb_nutrition_cache[herb_id] = herb_param.efficacy_scores.copy()
                         self._herb_cost_cache[herb_id] = herb_param.cost_per_gram
 
-                asyncio.run(_load())
+                try:
+                    _loop = asyncio.get_running_loop()
+                    asyncio.create_task(_load())
+                except RuntimeError:
+                    asyncio.run(_load())
             except Exception as e:
                 logger.warning(f"[NutritionAdapter] 懒加载失败: {e}，使用空缓存")
 

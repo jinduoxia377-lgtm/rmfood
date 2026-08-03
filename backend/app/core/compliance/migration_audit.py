@@ -24,7 +24,7 @@ from datetime import datetime, timezone
 from sqlalchemy import (
     Column, String, Integer, BigInteger, DateTime, Text, Boolean,
     ForeignKey, Index, UniqueConstraint, CheckConstraint,
-    JSON, Enum as SAEnum,
+    JSON, Enum as SAEnum, text,
 )
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -142,10 +142,10 @@ async def create_tables(session: AsyncSession) -> None:
     for model in [PermissionEntry, BackupRecord, DataLineage]:
         table_name = model.__tablename__
         try:
-            # 检查表是否存在
+            # 检查表是否存在 — 使用参数化查询避免 SQL 注入
             result = await session.execute(
-                f"SELECT 1 FROM information_schema.tables "
-                f"WHERE table_name = '{table_name}'"
+                text("SELECT 1 FROM information_schema.tables WHERE table_name = :table_name"),
+                {"table_name": table_name}
             )
             exists = result.scalar() is not None
 
@@ -181,14 +181,14 @@ async def create_indexes(session: AsyncSession) -> None:
     logger.info("📇 开始创建索引...")
     for idx_name, table, cols in indexes:
         try:
-            # 检查索引是否存在
+            # 检查索引是否存在 — 使用参数化查询避免 SQL 注入
             result = await session.execute(
-                f"SELECT 1 FROM pg_indexes WHERE indexname = '{idx_name}'"
+                text("SELECT 1 FROM pg_indexes WHERE indexname = :idx_name"),
+                {"idx_name": idx_name}
             )
             if result.scalar() is None:
                 # 注意: CREATE INDEX CONCURRENTLY 不能在事务中执行
                 # 使用 text() 以避免 SQLAlchemy 的自动参数化问题
-                from sqlalchemy import text
                 await session.execute(
                     text(f"CREATE INDEX CONCURRENTLY {idx_name} ON {table} ({cols})")
                 )

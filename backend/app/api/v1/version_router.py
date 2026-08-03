@@ -310,7 +310,7 @@ async def compare_versions(
         ))
         
         if diff_type != "unchanged":
-            pass
+            pass  # OK: intentional — unchanged diffs are skipped
         line_number += 1
     
     add_count = sum(1 for d in diffs if d.type == "add")

@@ -114,8 +114,8 @@ async def batch_delete_experiments(
         try:
             await service.delete_experiment(int(eid), current_user.id)
             deleted += 1
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning("实验删除失败 id=%s: %s", eid, e)
     return {"message": f"已删除 {deleted} 个实验", "deleted": deleted}
 
 

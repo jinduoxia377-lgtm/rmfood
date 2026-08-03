@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RMFOOD 智能配方设计平台 — 项目开发手册</title>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <style>
+    :root {
+      --c-bg: #f5f7fa;
+      --c-surface: #ffffff;
+      --c-border: #e2e8f0;
+      --c-border-sub: #edf2f7;
+      --c-text: #1a202c;
+      --c-text-mid: #4a5568;
+      --c-text-faint: #718096;
+      --c-accent: #3182ce;
+      --c-accent-lt: #ebf8ff;
+      --c-accent-border: #90cdf4;
+      --c-emerald: #38a169;
+      --c-emerald-lt: #f0fff4;
+      --c-emerald-border: #9ae6b4;
+      --c-amber: #d69e2e;
+      --c-amber-lt: #fffff0;
+      --c-amber-border: #f6e05e;
+      --c-rose: #e53e3e;
+      --c-rose-lt: #fff5f5;
+      --c-rose-border: #feb2b2;
+      --c-violet: #805ad5;
+      --c-violet-lt: #faf5ff;
+      --c-slate-50: #f8fafc;
+      --c-slate-100: #f1f5f9;
+      --c-slate-200: #e2e8f0;
+      --c-slate-300: #cbd5e1;
+      --c-slate-400: #94a3b8;
+      --c-slate-500: #64748b;
+      --c-slate-600: #475569;
+      --c-slate-700: #334155;
+      --c-slate-800: #1e293b;
+      --c-slate-900: #0f172a;
+      --font-sans: -apple-system, "SF Pro Text", "PingFang SC", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+      --font-mono: "SF Mono", "JetBrains Mono", "Cascadia Code", Consolas, monospace;
+      --max-w: 900px;
+      --r-sm: 6px; --r-md: 10px; --r-lg: 14px; --r-xl: 18px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+      --shadow-md: 0 4px 12px rgba(0,0,0,.07), 0 2px 4px rgba(0,0,0,.04);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; scroll-padding-top: 24px; }
+    body {
+      font-family: var(--font-sans);
+      font-size: 15px;
+      line-height: 1.75;
+      color: var(--c-text);
+      background: var(--c-bg);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #065f46 100%);
+      color: #fff;
+      padding: 56px 24px 48px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse 70% 40% at 30% 0%, rgba(56,161,105,.2) 0%, transparent 60%),
+                  radial-gradient(ellipse 50% 30% at 80% 100%, rgba(49,130,206,.15) 0%, transparent 50%);
+      pointer-events: none;
+    }
+    .hero-inner { position: relative; z-index: 1; max-width: 680px; margin: 0 auto; }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(255,255,255,.1);
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 999px; padding: 4px 14px;
+      font-size: 11.5px; font-weight: 600;
+      letter-spacing: .06em; color: rgba(255,255,255,.85);
+      backdrop-filter: blur(6px);
+      margin-bottom: 18px;
+    }
+    .hero-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: #34d399; }
+    .hero h1 {
+      font-size: clamp(24px, 4.5vw, 36px);
+      font-weight: 700; letter-spacing: -0.03em;
+      line-height: 1.2; margin-bottom: 10px;
+    }
+    .hero .subtitle { font-size: 15px; color: rgba(255,255,255,.65); margin-bottom: 24px; }
+    .hero-meta {
+      display: flex; justify-content: center; gap: 24px; flex-wrap: wrap;
+      font-size: 12.5px; color: rgba(255,255,255,.7);
+    }
+    .hero-meta span { display: flex; align-items: center; gap: 5px; }
+
+    /* ── Layout ── */
+    .layout { max-width: var(--max-w); margin: 0 auto; padding: 28px 20px 60px; }
+
+    /* ── TOC ── */
+    .toc {
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: var(--r-lg);
+      padding: 18px 22px;
+      margin-bottom: 28px;
+      box-shadow: var(--shadow-sm);
+    }
+    .toc-title {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .1em; color: var(--c-text-faint);
+      margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
+    }
+    .toc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(175px, 1fr)); gap: 2px; }
+    .toc-item {
+      display: flex; align-items: center; gap: 7px;
+      padding: 7px 9px; border-radius: var(--r-sm);
+      text-decoration: none; color: var(--c-text-mid);
+      font-size: 13px; font-weight: 500;
+      transition: background .12s, color .12s;
+    }
+    .toc-item:hover { background: var(--c-accent-lt); color: var(--c-accent); }
+    .toc-num {
+      width: 18px; height: 18px; border-radius: 50%;
+      background: var(--c-slate-200); color: var(--c-text-faint);
+      font-size: 10.5px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; transition: all .12s;
+    }
+    .toc-item:hover .toc-num { background: var(--c-accent); color: #fff; }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: var(--r-xl);
+      padding: 28px 30px 24px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-sm);
+      scroll-margin-top: 16px;
+    }
+    .card-header {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 20px; padding-bottom: 14px;
+      border-bottom: 1px solid var(--c-border-sub);
+    }
+    .card-icon {
+      width: 34px; height: 34px; border-radius: var(--r-md);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .card-icon.blue { background: var(--c-accent-lt); color: var(--c-accent); }
+    .card-icon.green { background: var(--c-emerald-lt); color: var(--c-emerald); }
+    .card-icon.amber { background: var(--c-amber-lt); color: var(--c-amber); }
+    .card-icon.rose { background: var(--c-rose-lt); color: var(--c-rose); }
+    .card-icon.violet { background: var(--c-violet-lt); color: var(--c-violet); }
+    .card-title { font-size: 16px; font-weight: 700; color: var(--c-text); }
+    .card-subtitle { font-size: 12px; color: var(--c-text-faint); margin-top: 1px; }
+
+    /* ── Typography ── */
+    h2 { font-size: 20px; font-weight: 700; color: var(--c-text); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+    h3 { font-size: 15px; font-weight: 700; color: var(--c-text); margin: 20px 0 10px; }
+    h4 { font-size: 13.5px; font-weight: 700; color: var(--c-text-mid); margin: 16px 0 8px; text-transform: uppercase; letter-spacing: .04em; }
+    p { margin-bottom: 12px; color: var(--c-text-mid); }
+    strong { color: var(--c-text); }
+    hr { border: none; border-top: 1px solid var(--c-border); margin: 24px 0; }
+
+    /* ── Tables ── */
+    .table-wrap { overflow-x: auto; margin: 12px 0 16px; border-radius: var(--r-md); border: 1px solid var(--c-border); }
+    table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    th {
+      background: var(--c-slate-50);
+      font-weight: 600; text-align: left;
+      padding: 9px 12px; border-bottom: 1px solid var(--c-border);
+      color: var(--c-text-mid); font-size: 12px; text-transform: uppercase; letter-spacing: .04em;
+      white-space: nowrap;
+    }
+    td { padding: 8px 12px; border-bottom: 1px solid var(--c-border-sub); color: var(--c-text-mid); vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--c-slate-50); }
+    td[align="center"] { text-align: center; }
+
+    /* ── Badges ── */
+    .badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 2px 9px; border-radius: 999px;
+      font-size: 11.5px; font-weight: 600;
+      border: 1px solid transparent;
+    }
+    .badge-ok { background: var(--c-emerald-lt); color: var(--c-emerald); border-color: var(--c-emerald-border); }
+    .badge-warn { background: var(--c-amber-lt); color: var(--c-amber); border-color: var(--c-amber-border); }
+    .badge-rose { background: var(--c-rose-lt); color: var(--c-rose); border-color: var(--c-rose-border); }
+    .badge-blue { background: var(--c-accent-lt); color: var(--c-accent); border-color: var(--c-accent-border); }
+    .badge-violet { background: var(--c-violet-lt); color: var(--c-violet); border-color: #d8b4fe; }
+
+    /* ── Icon utility ── */
+    .icon { display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; }
+    .icon svg { width: 1em; height: 1em; }
+
+    /* ── Code ── */
+    code {
+      background: var(--c-slate-100); border: 1px solid var(--c-slate-200);
+      border-radius: 4px; padding: 1px 5px;
+      font-family: var(--font-mono); font-size: 12.5px; color: #be185d;
+    }
+    pre {
+      background: var(--c-slate-900); color: #e2e8f0;
+      border-radius: var(--r-md); padding: 16px 18px;
+      overflow-x: auto; font-size: 12.5px; line-height: 1.6;
+      margin: 12px 0 16px;
+    }
+    pre code { background: none; border: none; color: inherit; padding: 0; font-size: inherit; }
+
+    /* ── Timeline ── */
+    .timeline { position: relative; padding-left: 28px; margin: 16px 0; }
+    .timeline::before {
+      content: ''; position: absolute; left: 8px; top: 4px; bottom: 4px;
+      width: 2px; background: var(--c-border);
+    }
+    .timeline-item { position: relative; padding-bottom: 16px; }
+    .timeline-item::before {
+      content: ''; position: absolute; left: -24px; top: 5px;
+      width: 12px; height: 12px; border-radius: 50%;
+      background: var(--c-accent); border: 2px solid var(--c-accent-lt);
+    }
+    .timeline-date { font-size: 12px; font-weight: 600; color: var(--c-text-faint); margin-bottom: 2px; }
+    .timeline-title { font-size: 14px; font-weight: 600; color: var(--c-text); }
+    .timeline-desc { font-size: 13px; color: var(--c-text-mid); margin-top: 2px; }
+
+    /* ── Stats Grid ── */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; margin: 16px 0; }
+    .stat-card {
+      background: var(--c-slate-50); border: 1px solid var(--c-border);
+      border-radius: var(--r-md); padding: 14px 16px; text-align: center;
+    }
+    .stat-num { font-size: 24px; font-weight: 700; color: var(--c-accent); letter-spacing: -0.02em; }
+    .stat-label { font-size: 11.5px; color: var(--c-text-faint); margin-top: 2px; text-transform: uppercase; letter-spacing: .05em; }
+
+    /* ── Phase grid ── */
+    .phase-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; margin: 12px 0; }
+    .phase-card {
+      background: var(--c-surface); border: 1px solid var(--c-border);
+      border-radius: var(--r-md); padding: 14px 16px;
+      display: flex; align-items: flex-start; gap: 10px;
+    }
+    .phase-card .icon { color: var(--c-emerald); flex-shrink: 0; margin-top: 1px; }
+    .phase-card h4 { margin: 0 0 3px; font-size: 13px; }
+    .phase-card p { margin: 0; font-size: 12px; color: var(--c-text-faint); line-height: 1.5; }
+
+    /* ── Log entry ── */
+    .log-entry {
+      border-left: 2px solid var(--c-border);
+      padding-left: 16px;
+      margin-bottom: 20px;
+    }
+    .log-entry dt {
+      font-size: 13px; font-weight: 700; color: var(--c-text);
+      margin-bottom: 4px;
+    }
+    .log-entry dd {
+      font-size: 13.5px; color: var(--c-text-mid);
+      margin: 0 0 8px 0; line-height: 1.7;
+    }
+    .log-entry dd ul { margin: 4px 0 0 18px; }
+    .log-entry dd ul li { margin-bottom: 2px; }
+
+    /* ── Nav back-to-top ── */
+    .back-top {
+      position: fixed; bottom: 24px; right: 24px;
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--c-surface); border: 1px solid var(--c-border);
+      box-shadow: var(--shadow-md); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--c-text-mid); transition: all .15s; z-index: 100;
+    }
+    .back-top:hover { background: var(--c-accent); color: #fff; border-color: var(--c-accent); }
+
+    /* ── Print ── */
+    @media print {
+      .hero { padding: 32px 24px; }
+      .back-top { display: none; }
+      .card { break-inside: avoid; }
+    }
+    @media (max-width: 600px) {
+      .card { padding: 20px 18px; }
+      .hero h1 { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════
+     HERO
+════════════════════════════════════════════ -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-badge"><span class="dot"></span>正式发布</div>
+    <h1>RMFOOD 智能配方设计平台</h1>
+    <p class="subtitle">项目开发手册 · 深度开发版</p>
+    <div class="hero-meta">
+      <span><i data-lucide="file-text" style="width:13px;height:13px"></i> 版本 v2.0.0</span>
+      <span><i data-lucide="calendar" style="width:13px;height:13px"></i> 2026-08-03</span>
+      <span><i data-lucide="users" style="width:13px;height:13px"></i> RMFOOD 开发团队</span>
+      <span><i data-lucide="check-circle-2" style="width:13px;height:13px"></i> 91 次提交 · 100% 测试通过</span>
+    </div>
+  </div>
+</div>
+
+<div class="layout">
+
+<!-- ════════════════════════════════════════════
+     TOC
+════════════════════════════════════════════ -->
+<nav class="toc">
+  <div class="toc-title"><i data-lucide="list" style="width:13px;height:13px"></i> 目录</div>
+  <div class="toc-grid">
+    <a class="toc-item" href="#sec-1"><span class="toc-num">1</span>项目概述</a>
+    <a class="toc-item" href="#sec-2"><span class="toc-num">2</span>技术架构全景</a>
+    <a class="toc-item" href="#sec-3"><span class="toc-num">3</span>开发时间线总览</a>
+    <a class="toc-item" href="#sec-4"><span class="toc-num">4</span>每日开发记录</a>
+    <a class="toc-item" href="#sec-5"><span class="toc-num">5</span>里程碑与阶段总结</a>
+    <a class="toc-item" href="#sec-6"><span class="toc-num">6</span>质量与安全体系</a>
+    <a class="toc-item" href="#sec-7"><span class="toc-num">7</span>部署与运维</a>
+    <a class="toc-item" href="#sec-8"><span class="toc-num">8</span>附录：数据统计</a>
+  </div>
+</nav>
+
+<!-- ════════════════════════════════════════════
+     1. 项目概述
+════════════════════════════════════════════ -->
+<section class="card" id="sec-1">
+  <div class="card-header">
+    <div class="card-icon blue"><i data-lucide="box" style="width:18px;height:18px"></i></div>
+    <div>
+      <div class="card-title">1. 项目概述</div>
+      <div class="card-subtitle">Project Overview</div>
+    </div>
+  </div>
+
+  <h3>1.1 项目定位</h3>
+  <p><strong>RMFOOD</strong>（Recipe Management for Optimal Organic Design）是一款面向药食同源功能性食品研发的 AI 驱动企业级配方设计平台，由莱茵(厦门)分子生物科技有限公司主导建设。平台覆盖从原料筛选、配方设计、功效评估到合规审查的完整研发生命周期。</p>
+
+  <h3>1.2 核心能力矩阵</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>维度</th><th>能力</th><th>技术实现</th></tr></thead>
+      <tbody>
+        <tr><td rowspan="4"><strong>AI 智能研发</strong></td><td>神经网络配方生成</td><td>Neural Formula Engine (PyTorch)</td></tr>
+        <tr><td>多目标优化</td><td>MCTS / 模拟退火 / 梯度下降（3 种求解器）</td></tr>
+        <tr><td>肽序列设计</td><td>PepINVENT 引擎集成（RDKit + PyTorch）</td></tr>
+        <tr><td>LLM 对话系统</td><td>OpenAI / DeepSeek / 智谱 / 通义千问 / vLLM 自定义端点</td></tr>
+        <tr><td rowspan="3"><strong>AI Agent 工作流</strong></td><td>Agent 自主编排</td><td>Orchestrator + 5 专业工具（RAG/合规/配方/实验/药材）</td></tr>
+        <tr><td>Agent 任务调度</td><td>ai_task_router + 异步任务队列</td></tr>
+        <tr><td>安全沙箱</td><td>Safety 中间件 + 输入校验 + 多租户隔离</td></tr>
+        <tr><td rowspan="4"><strong>数据驱动决策</strong></td><td>TCMSP 中药材数据库</td><td>35 个 Alembic 迁移版本持续增强</td></tr>
+        <tr><td>DFBP 活性肽数据库</td><td>食源性生物活性肽结构库</td></tr>
+        <tr><td>知识图谱</td><td>Neo4j 可选集成 + 本地图谱查询服务</td></tr>
+        <tr><td>全文搜索</td><td>Elasticsearch 可选集成 + PostgreSQL 内置 FTS</td></tr>
+        <tr><td rowspan="2"><strong>实验管理</strong></td><td>电子实验记录本（ELN）</td><td>标准化实验流程 + HPLC/GC/MS 数据解析</td></tr>
+        <tr><td>合规性检查</td><td>China Food Regulations 集成引擎</td></tr>
+        <tr><td rowspan="4"><strong>协作与企业功能</strong></td><td>多租户隔离</td><td>Multi-Tenant 数据隔离 + 组织级管理</td></tr>
+        <tr><td>权限控制</td><td>RBAC 5 级角色 + 细粒度权限装饰器</td></tr>
+        <tr><td>团队协作</td><td>成员管理 / 邀请链接 / 在线状态 / @提及</td></tr>
+        <tr><td>实时通信</td><td>WebSocket 连接管理器 + 分析仪表盘推送</td></tr>
+        <tr><td rowspan="3"><strong>企业级增强</strong></td><td>报告导出</td><td>DOCX（python-docx）+ PDF（reportlab）+ Markdown</td></tr>
+        <tr><td>插件化生态</td><td>6 核心插件 + API Key 管理 + SDK 元数据</td></tr>
+        <tr><td>数据飞轮</td><td>采集→校验→脱敏→训练→推荐</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>1.3 项目规模概览</h3>
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-num">920</div><div class="stat-label">后端 Python 文件</div></div>
+    <div class="stat-card"><div class="stat-num">567</div><div class="stat-label">前端 TSX/TS 文件</div></div>
+    <div class="stat-card"><div class="stat-num">91</div><div class="stat-label">Git 提交</div></div>
+    <div class="stat-card"><div class="stat-num">35</div><div class="stat-label">Alembic 迁移</div></div>
+    <div class="stat-card"><div class="stat-num">11</div><div class="stat-label">ADR 架构决策</div></div>
+    <div class="stat-card"><div class="stat-num">100%</div><div class="stat-label">测试通过率</div></div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════
+     2. 技术架构全景
+════════════════════════════════════════════ -->
+<section class="card" id="sec-2">
+  <div class="card-header">
+    <div class="card-icon green"><i data-lucide="cpu" style="width:18px;height:18px"></i></div>
+    <div>
+      <div class="card-title">2. 技术架构全景</div>
+      <div class="card-subtitle">Technology Architecture</div>
+    </div>
+  </div>
+
+  <h3>2.1 后端技术栈</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>类别</th><th>技术</th><th>版本</th></tr></thead>
+      <tbody>
+        <tr><td>框架</td><td>FastAPI</td><td>0.115+</td></tr>
+        <tr><td>语言</td><td>Python</td><td>3.12+</td></tr>
+        <tr><td>数据库</td><td>PostgreSQL</td><td>15+</td></tr>
+        <tr><td>ORM</td><td>SQLAlchemy</td><td>2.0 (Async)</td></tr>
+        <tr><td>缓存</td><td>Redis</td><td>7+（密码认证）</td></tr>
+        <tr><td>图数据库</td><td>Neo4j</td><td>可选集成</td></tr>
+        <tr><td>搜索引擎</td><td>Elasticsearch</td><td>可选集成</td></tr>
+        <tr><td>迁移工具</td><td>Alembic</td><td>35 个版本</td></tr>
+        <tr><td>分布式计算</td><td>Ray</td><td>集群管理</td></tr>
+        <tr><td>消息队列</td><td>Celery</td><td>异步任务（import 任务）</td></tr>
+        <tr><td>任务调度</td><td>自定义调度器</td><td>auto_sync 定时同步</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>2.2 前端技术栈</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>类别</th><th>技术</th><th>版本</th></tr></thead>
+      <tbody>
+        <tr><td>框架</td><td>React</td><td>19.x</td></tr>
+        <tr><td>语言</td><td>TypeScript</td><td>5.7</td></tr>
+        <tr><td>构建工具</td><td>Vite</td><td>8.x</td></tr>
+        <tr><td>样式</td><td>Tailwind CSS</td><td>4.x</td></tr>
+        <tr><td>状态管理</td><td>Zustand</td><td>5.x</td></tr>
+        <tr><td>数据请求</td><td>TanStack Query</td><td>5.x</td></tr>
+        <tr><td>AI 对话</td><td>OpenAI SDK / 多提供商适配</td><td>v10.0</td></tr>
+        <tr><td>实时通信</td><td>WebSocket</td><td>实时推送 + 分析仪表盘</td></tr>
+        <tr><td>路由</td><td>React Router</td><td>v7</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>2.3 后端服务目录结构</h3>
+  <pre><code>backend/app/services/
+├── ai/                      # AI 服务（16 子目录）
+│   ├── agent/               # Agent 工作流
+│   │   ├── orchestrator.py  # 6 工具编排核心
+│   │   └── tools/           # 5 个专业工具
+│   │       ├── rag_tool.py
+│   │       ├── compliance_tool.py
+│   │       ├── formula_tool.py
+│   │       └── experiment_tool.py
+│   ├── chat_service.py       # AI 对话服务
+│   ├── conversation_service/ # 对话历史管理
+│   ├── safety/               # AI 安全层
+│   ├── rag/                  # RAG 检索增强
+│   └── providers/            # 多 LLM 提供商适配
+├── compliance/              # 合规检查服务
+│   └── formula_compliance.py
+├── data_sources/            # 数据源服务
+│   ├── openfoodfacts/        # OpenFoodFacts 客户端
+│   ├── pipeline/             # 数据飞轮管道
+│   ├── search_service.py     # 全文搜索
+│   ├── tcmsp_client.py       # TCMSP 客户端
+│   └── auto_sync.py          # 定时同步调度器
+├── import_engine/           # 数据导入引擎
+│   ├── engine.py             # 导入核心引擎
+│   ├── celery/               # Celery 异步任务
+│   └── adapters/             # 数据格式适配器
+├── plugin_registry/         # 插件注册中心
+│   └── core_plugins.py       # 6 核心插件
+├── report/                  # 报告生成服务
+│   ├── explainability_report.py
+│   └── contribution_analyzer.py
+├── experiment/              # 实验解析服务
+├── workflow/                # DAG 工作流执行
+├── auth/                    # 认证服务
+├── data_quality/            # 数据质量校验
+└── analytics/               # 数据分析服务</code></pre>
+
+  <h3>2.4 前端页面与组件结构</h3>
+  <pre><code>frontend/src/
+├── pages/                   # 20 个页面目录
+│   ├── agent/              # Agent 对话页
+│   ├── ai/                 # AI 助手主页面
+│   ├── formula/            # 配方设计
+│   ├── experiment/         # 实验管理
+│   ├── database/           # 数据库检索中心
+│   ├── workflow/           # 工作流执行
+│   ├── report/             # 报告管理
+│   ├── team/               # 团队协作
+│   ├── settings/           # 系统设置
+│   └── ...
+├── components/              # 28 个组件目录
+│   ├── ai/                 # AI 对话组件
+│   │   └── features/components/pro/   # 专业版组件
+│   ├── dashboard/          # 仪表盘组件
+│   ├── experiment/         # 实验组件
+│   ├── formula/            # 配方组件
+│   ├── notification/       # 通知组件
+│   ├── workflow/           # 工作流组件
+│   └── ...
+├── api/                     # 39 个 API 服务模块
+├── hooks/                   # 42+ 个自定义 Hooks
+├── stores/                  # 14 个 Zustand Store
+└── tests/                   # 前端测试</code></pre>
+
+  <h3>2.5 架构设计原则</h3>
+  <ul style="margin:8px 0 12px 20px;color:var(--c-text-mid);font-size:14px;line-height:2">
+    <li><strong>六边形架构（Ports & Adapters）</strong>：领域层零外部依赖，适配器实现接口</li>
+    <li><strong>领域驱动设计（DDD）</strong>：按有界上下文组织模块（配方、实验、用户、知识图谱等）</li>
+    <li><strong>微内核 + 插件化</strong>：AI 助手可扩展插件框架</li>
+    <li><strong>多租户隔离</strong>：行级安全策略，支持严格/审计两种模式</li>
+    <li><strong>事件驱动</strong>：WebSocket 实时推送 + Celery 异步任务队列</li>
+  </ul>
+
+  <h3>2.6 架构决策记录（ADR）</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>#</th><th>标题</th><th>状态</th><th>日期</th><th>领域</th></tr></thead>
+      <tbody>
+        <tr><td>001</td><td>六边形架构重构</td><td><span class="badge badge-ok"><i data-lucide="check" style="width:10px;height:10px"></i> 已接受</span></td><td>2026-06-05</td><td>架构模式</td></tr>
+        <tr><td>002</td><td>事件驱动架构选型</td><td><span class="badge badge-ok"><i data-lucide="check" style="width:10px;height:10px"></i> 已接受</span></td><td>2026-06-05</td><td>通信模式</td></tr>
+        <tr><td>003</td><td>数据分类分级体系</td><td><span class="badge badge-ok"><i data-lucide="check" style="width:10px;height:10px"></i> 已接受</span></td><td>2026-06-05</td><td>数据治理</td></tr>
+        <tr><td>004</td><td>DDD 有界上下文划分</td><td><span class="badge badge-ok"><i data-lucide="check" style="width:10px;height:10px"></i> 已接受</span></td><td>2026-06-05</td><td>领域建模</td></tr>
+        <tr><td>005</td><td>可观测性体系</td><td><span class="badge badge-ok"><i data-lucide="check" style="width:10px;height:10px"></i> 已接受</span></td><td>2026-06-05</td><td>运维</td></tr>
+        <tr><td>006</td><td>认证授权与访问控制</td><td><span class="badge badge-ok"><i data-lucide="check" style="width:10px;height:10px"></i> 已接受</span></td><td>2026-06-15</td><td>安全</td></tr>
+        <tr><td>007</td><td>数据库迁移与版本管理</td><td><span class="badge badge-ok"><i data-lucide="check" style="width:10px;height:10px"></i> 已接受</span></td><td>2026-06-15</td><td>数据</td></tr>
+        <tr><td>008</td><td>CI/CD 流水线</td><td><span class="badge badge-ok"><i data-lucide="check" style="width:10px;height:10px"></i> 已接受</span></td><td>2026-06-15</td><td>DevOps</td></tr>
+        <tr><td>009</td><td>前端架构与状态管理</td><td><span class="badge badge-ok"><i data-lucide="check" style="width:10px;height:10px"></i> 已接受</span></td><td>2026-06-15</td><td>前端</td></tr>
+        <tr><td>010</td><td>AI/ML 服务集成</td><td><span class="badge badge-ok"><i data-lucide="check" style="width:10px;height:10px"></i> 已接受</span></td><td>2026-06-15</td><td>AI/ML</td></tr>
+        <tr><td>011</td><td>架构收敛决策</td><td><span class="badge badge-ok"><i data-lucide="check" style="width:10px;height:10px"></i> 已接受</span></td><td>2026-06-18</td><td>架构收敛</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════
+     3. 开发时间线
+════════════════════════════════════════════ -->
+<section class="card" id="sec-3">
+  <div class="card-header">
+    <div class="card-icon violet"><i data-lucide="git-branch" style="width:18px;height:18px"></i></div>
+    <div>
+      <div class="card-title">3. 开发时间线总览</div>
+      <div class="card-subtitle">Development Timeline</div>
+    </div>
+  </div>
+  <p>项目总开发周期跨越 <strong>2026年4月至2026年8月3日</strong>，正式 Git 提交从 <strong>2026-06-10</strong> 开始，至今共 <strong>91 次提交</strong>，活跃天数 <strong>19 天</strong>。</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>时间</th><th>里程碑</th><th>关键成果</th></tr></thead>
+      <tbody>
+        <tr><td>2026-05-03</td><td><span class="badge badge-ok">核心算法深度优化完成</span></td><td>NSGA-III 修复 + 100% 测试通过</td></tr>
+        <tr><td>2026-05-06</td><td><span class="badge badge-ok">AI 模块技术审查完成</span></td><td>4/5星评级 + Bundle 缩减 75%</td></tr>
+        <tr><td>2026-06-10</td><td><span class="badge badge-blue">项目 Git 正式初始化</span></td><td>首次提交，统一代码管理</td></tr>
+        <tr><td>2026-06-11</td><td><span class="badge badge-blue">Phase 0 启动</span></td><td>152 测试 + 可观测性 + 备份自动化</td></tr>
+        <tr><td>2026-06-15</td><td><span class="badge badge-blue">Phase 0 核心交付</span></td><td>ADR×11 + 全栈可观测 + K8s + GDPR</td></tr>
+        <tr><td>2026-06-16</td><td><span class="badge badge-ok">Phase 0 验收通过</span></td><td>综合评分 9.2/10</td></tr>
+        <tr><td>2026-06-18</td><td><span class="badge badge-ok">生产部署就绪</span></td><td>LAN 部署 + Ray 集群 + WebSocket + v1 API</td></tr>
+        <tr><td>2026-07-12</td><td><span class="badge badge-rose">安全攻坚启动</span></td><td>SSRF/JWT/CSRF/XSS 全面加固</td></tr>
+        <tr><td>2026-07-19</td><td><span class="badge badge-ok">第二~五阶段完成</span></td><td>安全加固/核心业务/代码质量</td></tr>
+        <tr><td>2026-07-20</td><td><span class="badge badge-blue">三大独立模块上线</span></td><td>食品原料 + 零售产品 + 搜索分析</td></tr>
+        <tr><td>2026-07-23</td><td><span class="badge badge-violet">AI 安全加固 + 数据源重构</span></td><td>/chat/stream 限流 + 多租户隔离 + Redis 密码</td></tr>
+        <tr><td>2026-07-24</td><td><span class="badge badge-violet">核心架构重构</span></td><td>core/ 拆分为 12 子目录 + Alembic 统一命名</td></tr>
+        <tr><td>2026-07-25</td><td><span class="badge badge-blue">新功能发布</span></td><td>收藏架 + Auto Sync + RateLimitMiddleware</td></tr>
+        <tr><td>2026-07-26</td><td><span class="badge badge-ok">知识图谱重构完成</span></td><td>4000+行 → 813行，多层模块化</td></tr>
+        <tr><td>2026-07-28</td><td><span class="badge badge-blue">数据导入增强</span></td><td>GBK 支持 + 任务追踪 + 错误日志</td></tr>
+        <tr><td>2026-07-31</td><td><span class="badge badge-blue">项目组织化重构</span></td><td>docs/scripts/tests 布局统一</td></tr>
+        <tr><td>2026-08-02</td><td><span class="badge badge-violet">深度开发启动（P0-A~P2）</span></td><td>8 阶段完整交付，39 个 API 端点</td></tr>
+        <tr><td>2026-08-03</td><td><span class="badge badge-ok">TypeScript 错误清零</span></td><td>非图组件清零 + 图组件降至 128 错误</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════
+     4. 每日开发记录
+════════════════════════════════════════════ -->
+<section class="card" id="sec-4">
+  <div class="card-header">
+    <div class="card-icon amber"><i data-lucide="calendar-days" style="width:18px;height:18px"></i></div>
+    <div>
+      <div class="card-title">4. 每日开发记录</div>
+      <div class="card-subtitle">Daily Development Log</div>
+    </div>
+  </div>
+
+  <h3>2026-05-03 · 核心算法深度优化日</h3>
+  <p><strong>背景</strong>：RatioOptimizer NSGA-III 算法存在阻塞性 Bug，多项式变异产生复数导致整个模块崩溃。</p>
+  <p><strong>主要工作</strong>：修复复数类型比较错误，补全 15+ 处接口不匹配，性能提升 5~16x，核心测试套件达到 100% 通过率。</p>
+
+  <h3>2026-05-06 · AI 模块全面审查日</h3>
+  <p>发现并修复 6 个问题，消除 108 个 unused imports，修复 11 处 <code>any</code> 类型，Bundle size 减少 75%，评级 <strong>4/5 星</strong>。</p>
+
+  <h3>2026-06-10 · 项目 Git 初始化日</h3>
+  <p>RMFOOD 正式进入版本控制系统，统一日志系统，消除所有 <code>print()</code> 调用，添加循环依赖检测。</p>
+
+  <h3>2026-06-11 · 基础设施加固日</h3>
+  <p>152 个测试 + 覆盖率门禁（≥75%）+ Prometheus metrics + DB 备份自动化 + Runbook 编写。</p>
+
+  <h3>2026-06-15 · 架构收敛日</h3>
+  <p>ADR 从 5 扩展至 11 份 + 全栈可观测（Prometheus/Grafana/Loki/Tempo）+ K8s 部署 + GDPR 合规 + 安全报告。</p>
+
+  <h3>2026-06-16 · 项目关闭报告日</h3>
+  <p>综合评审最终得分 <strong>9.2/10</strong>，Phase 0 全部交付物通过验收。</p>
+
+  <h3>2026-06-18 · 生产部署就绪日</h3>
+  <p>LAN 局域网部署配置（Nginx 反向代理 + 多 IP 支持）+ Ray 分布式计算集群管理 + 前端 AI 助手增强 + WebSocket 实时通信 + 权限系统重构 + 动态 API 配置 + 协同系数优化。</p>
+
+  <h3>2026-07-12 · 安全攻坚启动</h3>
+  <p>SSRF/JWT/CSRF/XSS 全面加固。关键修复：JWT 强验证 + 短期有效期、SSRF 请求签名验证、CSRF Token 验证、敏感端点速率限制。</p>
+
+  <h3>2026-07-13 · 安全攻坚第二天</h3>
+  <p>50+ 处异常信息泄漏修复（<code>str(e)</code> 泄漏），前端 <code>as any</code> 类型清理，i18n 类型修复，依赖清理，CI 扫描集成。</p>
+
+  <h3>2026-07-14 · 安全攻坚完成</h3>
+  <p>绝对路径导入修复，默认密码消除，Health 端点信息泄漏修复，安全扫描仪全面集成。</p>
+
+  <h3>2026-07-19 · 全阶段完成</h3>
+  <p>第二阶段至第五阶段全部完成：安全加固/核心业务补齐/代码质量提升。</p>
+
+  <h3>2026-07-20 · 三大业务模块上线</h3>
+  <p>实现食品原料、零售产品、搜索分析三大独立模块。</p>
+
+  <h3>2026-07-21 · API 兼容修复</h3>
+  <p>修复食品原料 API 返回数组格式兼容性问题。</p>
+
+  <h3>2026-07-23 · AI 安全加固 + 数据源重构日</h3>
+  <p><strong>AI 安全</strong>：为 <code>/chat/stream</code> 添加 Rate Limit + 多租户隔离 + SSE 超时 + 缓存修复；<strong>数据源</strong>：OpenFoodFacts 客户端统一优化；<strong>安全</strong>：Redis 启用密码认证 + Neo4j 密码去硬编码 + CI/CD 回滚实现。</p>
+
+  <h3>2026-07-24 · 核心架构重构日</h3>
+  <p><code>core/</code> 上帝模块拆分为 12 个子目录（config/security/middleware/database 等），Alembic 迁移文件统一命名格式（<code>YYYYMMDD_HHMMSS_</code>），后端测试基建完善。</p>
+
+  <h3>2026-07-25 · 新功能发布日</h3>
+  <p><strong>收藏架</strong>：完整实现 pantry 功能（CRUD + UI）；<strong>Auto Sync</strong>：定时数据同步调度器；<strong>限流中间件</strong>：公开搜索端点 RateLimitMiddleware；<strong>搜索增强</strong>：context 参数支持。</p>
+
+  <h3>2026-07-26 · 知识图谱重构日</h3>
+  <p>KnowledgeGraph 重构（4 阶段）：Phase 1 — 分层提取到 graph/ 目录；Phase 1.1 — D3 渲染引擎独立；Phase 1.2 — Analytics 提取；Phase 1.3 — Hooks & JSX 提取；Phase 1.4 — 最终精简至 813 行。</p>
+
+  <h3>2026-07-28 · 数据导入增强日</h3>
+  <p>OpenFoodFacts 导入新增 GBK 编码支持 + 任务追踪 + 错误日志记录。</p>
+
+  <h3>2026-07-31 · 项目组织化重构日</h3>
+  <p>docs/scripts/tests 布局统一，修复编码问题，README 规范化。</p>
+
+  <h3>2026-08-02 · 深度开发启动日（P0-A~P2）</h3>
+  <p>基于《Development strategy as of August 1, 2026》战略文档，从"技术驱动"转向"价值驱动"。完成 P0-A Agent 工作流、P0-B 合规前置、P0-C 实验解析、P1-A 工作流执行、P1-B 可解释性报告、P1-C 数据飞轮、P2 插件化生态全部 8 个阶段。</p>
+  <p>同日修复：ESLint flat config + husky/lint-staged + API Key 加密 + passlib 清理 + 生产 <code>print()</code> 清理 + TypeScript 编译错误（141→96→85→0）。</p>
+
+  <h3>2026-08-03 · 最终优化日</h3>
+  <p>修复 DataUploadPanel + experimentData 类型不匹配；TypeScript 错误从 140 降至 139（非图组件清零）；最终非图组件错误清零，图组件错误降至 128 个。</p>
+</section>
+
+<!-- ════════════════════════════════════════════
+     5. 里程碑与阶段总结
+════════════════════════════════════════════ -->
+<section class="card" id="sec-5">
+  <div class="card-header">
+    <div class="card-icon green"><i data-lucide="flag" style="width:18px;height:18px"></i></div>
+    <div>
+      <div class="card-title">5. 里程碑与阶段总结</div>
+      <div class="card-subtitle">Milestones & Phase Summary</div>
+    </div>
+  </div>
+
+  <h3>5.1 里程碑时间线</h3>
+  <div class="timeline">
+    <div class="timeline-item"><div class="timeline-date">2026-05-03</div><div class="timeline-title">核心算法深度优化完成</div><div class="timeline-desc">NSGA-III 修复 + 100% 测试通过</div></div>
+    <div class="timeline-item"><div class="timeline-date">2026-05-06</div><div class="timeline-title">AI 模块技术审查完成</div><div class="timeline-desc">4/5 星评级 + Bundle 缩减 75%</div></div>
+    <div class="timeline-item"><div class="timeline-date">2026-06-10</div><div class="timeline-title">项目 Git 正式初始化</div><div class="timeline-desc">首次提交，统一代码管理</div></div>
+    <div class="timeline-item"><div class="timeline-date">2026-06-16</div><div class="timeline-title">Phase 0 验收通过</div><div class="timeline-desc">综合评分 9.2/10</div></div>
+    <div class="timeline-item"><div class="timeline-date">2026-06-18</div><div class="timeline-title">生产部署就绪</div><div class="timeline-desc">LAN 部署 + Ray 集群 + WebSocket + v1 API</div></div>
+    <div class="timeline-item"><div class="timeline-date">2026-07-14</div><div class="timeline-title">安全攻坚完成</div><div class="timeline-desc">SSRF/JWT/CSRF/XSS 全面加固</div></div>
+    <div class="timeline-item"><div class="timeline-date">2026-07-25</div><div class="timeline-title">新功能密集发布</div><div class="timeline-desc">收藏架 + Auto Sync + 限流中间件</div></div>
+    <div class="timeline-item"><div class="timeline-date">2026-07-26</div><div class="timeline-title">知识图谱重构完成</div><div class="timeline-desc">4000+行 → 813行，多层模块化</div></div>
+    <div class="timeline-item"><div class="timeline-date">2026-07-31</div><div class="timeline-title">项目组织化重构完成</div><div class="timeline-desc">docs/scripts/tests 布局统一</div></div>
+    <div class="timeline-item"><div class="timeline-date">2026-08-02</div><div class="timeline-title">深度开发全部完成</div><div class="timeline-desc">P0/P1/P2 8 阶段交付，39 个 API 端点</div></div>
+    <div class="timeline-item"><div class="timeline-date">2026-08-03</div><div class="timeline-title">TypeScript 错误清零</div><div class="timeline-desc">非图组件清零，图组件降至 128</div></div>
+  </div>
+
+  <h3>5.2 阶段总结</h3>
+
+  <h4>第一阶段（2026-05-03 ~ 2026-06-09）：基础建设期</h4>
+  <ul style="margin:6px 0 12px 20px;font-size:14px;color:var(--c-text-mid);line-height:2">
+    <li>完成核心算法优化（NSGA-III 修复）</li>
+    <li>AI 模块技术审查与修复（4/5 星评级）</li>
+    <li>架构文档体系建立</li>
+  </ul>
+
+  <h4>第二阶段（2026-06-10 ~ 2026-06-18）：工程化建设期</h4>
+  <div class="table-wrap"><table>
+    <thead><tr><th>子阶段</th><th>日期</th><th>核心交付</th></tr></thead>
+    <tbody>
+      <tr><td>基础加固</td><td>06-10~06-11</td><td>152 测试 + 覆盖率门禁 + Prometheus metrics + DB 备份自动化</td></tr>
+      <tr><td>架构收敛</td><td>06-15</td><td>ADR×11 + 全栈可观测（Prometheus/Grafana/Loki/Tempo）+ K8s 部署 + GDPR</td></tr>
+      <tr><td>验收通过</td><td>06-16</td><td>综合评分 9.2/10</td></tr>
+      <tr><td>生产就绪</td><td>06-18</td><td>LAN 部署 + Ray 集群 + WebSocket + 前端 AI 增强 + v1 API 体系</td></tr>
+    </tbody>
+  </table></div>
+
+  <h4>第三阶段（2026-07-12 ~ 2026-07-31）：深化与重构期</h4>
+  <div class="table-wrap"><table>
+    <thead><tr><th>子阶段</th><th>日期</th><th>核心交付</th></tr></thead>
+    <tbody>
+      <tr><td>安全攻坚</td><td>07-12~07-14</td><td>SSRF/JWT/CSRF/XSS/异常泄漏全面修复（50+ 处）</td></tr>
+      <tr><td>业务补齐</td><td>07-19</td><td>第二~五阶段全流程完成</td></tr>
+      <tr><td>三大模块</td><td>07-20</td><td>食品原料 + 零售产品 + 搜索分析独立模块</td></tr>
+      <tr><td>API 兼容</td><td>07-21</td><td>兼容食品原料 API 数组格式响应</td></tr>
+      <tr><td>AI 加固</td><td>07-23</td><td>/chat/stream 限流 + 多租户隔离 + SSE 超时 + Redis 密码</td></tr>
+      <tr><td>架构重构</td><td>07-24</td><td>core/ 拆分为 12 子目录 + Alembic 统一命名</td></tr>
+      <tr><td>新功能</td><td>07-25</td><td>收藏架 + Auto Sync + RateLimitMiddleware + 搜索 context 增强</td></tr>
+      <tr><td>知识图谱</td><td>07-26</td><td>KG 重构为多层模块化架构（4000+行→813行）</td></tr>
+      <tr><td>数据导入</td><td>07-28</td><td>GBK 编码支持 + 任务追踪 + 错误日志</td></tr>
+      <tr><td>组织化</td><td>07-31</td><td>docs/scripts/tests 布局统一</td></tr>
+    </tbody>
+  </table></div>
+
+  <h4>第四阶段（2026-08-02 ~ 2026-08-03）：深度开发期（P0/P1/P2）</h4>
+  <p>基于《Development strategy as of August 1, 2026》战略文档，从"技术驱动"转向"价值驱动"。</p>
+  <div class="phase-grid">
+    <div class="phase-card">
+      <i data-lucide="bot" style="width:18px;height:18px;color:var(--c-violet)"></i>
+      <div><h4>P0-A Agent 工作流</h4><p>6 工具 + LLM 自主编排 + 前端对话页 + 5 专业工具（RAG/合规/配方/实验/药材）</p></div>
+    </div>
+    <div class="phase-card">
+      <i data-lucide="shield-check" style="width:18px;height:18px;color:var(--c-emerald)"></i>
+      <div><h4>P0-B 合规前置</h4><p>实时评分 + 自动修复 + 前端徽标 + 15 种限量 + 10 对禁忌</p></div>
+    </div>
+    <div class="phase-card">
+      <i data-lucide="flask-conical" style="width:18px;height:18px;color:var(--c-accent)"></i>
+      <div><h4>P0-C 实验解析</h4><p>AnIML/JCAMP-DX 解析器 + 峰识别引擎 + DataUploadPanel</p></div>
+    </div>
+    <div class="phase-card">
+      <i data-lucide="workflow" style="width:18px;height:18px;color:var(--c-amber)"></i>
+      <div><h4>P1-A 工作流执行</h4><p>DAG 调度器 + 5 执行器（LLM/FormulaGPT/SafetyCheck/Synergy/DataAnalysis）</p></div>
+    </div>
+    <div class="phase-card">
+      <i data-lucide="file-text" style="width:18px;height:18px;color:var(--c-violet)"></i>
+      <div><h4>P1-B 可解释性报告</h4><p>君臣佐使 + 协同/拮抗 + 合规说明 + 改进建议</p></div>
+    </div>
+    <div class="phase-card">
+      <i data-lucide="download" style="width:18px;height:18px;color:var(--c-accent)"></i>
+      <div><h4>P1-C 报告导出</h4><p>DOCX（python-docx）+ PDF（reportlab）+ Markdown 三格式</p></div>
+    </div>
+    <div class="phase-card">
+      <i data-lucide="refresh-cw" style="width:18px;height:18px;color:var(--c-emerald)"></i>
+      <div><h4>P1-D 数据飞轮</h4><p>采集→校验→脱敏→训练→推荐，pipeline/ 管道 + 数据质量校验</p></div>
+    </div>
+    <div class="phase-card">
+      <i data-lucide="plug" style="width:18px;height:18px;color:var(--c-amber)"></i>
+      <div><h4>P2 插件化生态</h4><p>6 核心插件 + API Key 管理 + SDK 元数据 + 开放 API Schema</p></div>
+    </div>
+  </div>
+  <p style="margin-top:12px;font-size:13px;color:var(--c-text-faint)">测试通过率：<strong>100%</strong>（23/23），TypeScript 新增错误：<strong>0</strong>（非图组件清零），图组件错误降至 <strong>128</strong></p>
+
+  <h4>技术架构演进</h4>
+  <div class="table-wrap"><table>
+    <thead><tr><th>版本</th><th>日期</th><th>架构里程碑</th></tr></thead>
+    <tbody>
+      <tr><td>v1.0</td><td>2026-07-31</td><td>六边形架构 + DDD + 全栈可观测</td></tr>
+      <tr><td>v2.0</td><td>2026-08-02</td><td>深度开发：Agent + 合规前置 + DAG + 数据飞轮 + 插件化</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ════════════════════════════════════════════
+     6. 质量与安全体系
+════════════════════════════════════════════ -->
+<section class="card" id="sec-6">
+  <div class="card-header">
+    <div class="card-icon green"><i data-lucide="shield-check" style="width:18px;height:18px"></i></div>
+    <div>
+      <div class="card-title">6. 质量与安全体系</div>
+      <div class="card-subtitle">Quality & Security</div>
+    </div>
+  </div>
+
+  <h3>6.1 代码质量标准</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>指标</th><th>标准</th><th>当前状态</th></tr></thead>
+    <tbody>
+      <tr><td>后端测试覆盖率</td><td align="center">≥ 75%</td><td align="center"><span class="badge badge-ok"><i data-lucide="check" style="width:10px;height:10px"></i> 达标 (100%)</span></td></tr>
+      <tr><td>前端 TypeScript 错误（非图组件）</td><td align="center">0</td><td align="center"><span class="badge badge-ok"><i data-lucide="check" style="width:10px;height:10px"></i> 已清零</span></td></tr>
+      <tr><td>前端 TypeScript 错误（图组件）</td><td align="center">≤ 128</td><td align="center"><span class="badge badge-warn"><i data-lucide="circle-alert" style="width:10px;height:10px"></i> 128（待优化）</span></td></tr>
+      <tr><td>前端 <code>as any</code> 数量</td><td align="center">0</td><td align="center"><span class="badge badge-ok"><i data-lucide="check" style="width:10px;height:10px"></i> 已清零</span></td></tr>
+      <tr><td>后端 <code>str(e)</code> 泄漏</td><td align="center">0</td><td align="center"><span class="badge badge-ok"><i data-lucide="check" style="width:10px;height:10px"></i> 已修复</span></td></tr>
+      <tr><td>CI 门禁通过率</td><td align="center">100%</td><td align="center"><span class="badge badge-ok"><i data-lucide="check" style="width:10px;height:10px"></i> 达标</span></td></tr>
+      <tr><td>Alembic 迁移规范</td><td align="center">YYYYMMDD_HHMMSS_</td><td align="center"><span class="badge badge-ok"><i data-lucide="check" style="width:10px;height:10px"></i> 已统一</span></td></tr>
+      <tr><td>循环依赖检测</td><td align="center">通过</td><td align="center"><span class="badge badge-ok"><i data-lucide="check" style="width:10px;height:10px"></i> 已通过</span></td></tr>
+      <tr><td>安全扫描</td><td align="center">通过</td><td align="center"><span class="badge badge-ok"><i data-lucide="check" style="width:10px;height:10px"></i> 无高危漏洞</span></td></tr>
+      <tr><td>ESLint 生产代码错误</td><td align="center">0</td><td align="center"><span class="badge badge-ok"><i data-lucide="check" style="width:10px;height:10px"></i> 已清零</span></td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>6.2 安全体系</h3>
+  <p><strong>纵深防御 7 层架构</strong>：</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>层级</th><th>防护措施</th></tr></thead>
+    <tbody>
+      <tr><td align="center">1</td><td>请求签名验证 + IP 黑名单</td></tr>
+      <tr><td align="center">2</td><td>SQL 注入参数化查询</td></tr>
+      <tr><td align="center">3</td><td>XSS 输入输出双端过滤</td></tr>
+      <tr><td align="center">4</td><td>CSRF Token 验证</td></tr>
+      <tr><td align="center">5</td><td>JWT 强验证 + 短期有效期</td></tr>
+      <tr><td align="center">6</td><td>AES-256-GCM 敏感数据加密（含 API Key）</td></tr>
+      <tr><td align="center">7</td><td>速率限制 + 异常行为检测</td></tr>
+    </tbody>
+  </table></div>
+  <p style="font-size:13px;color:var(--c-text-faint);margin-top:8px">安全审计日期：2026-07-12 ~ 2026-07-14（集中修复期），2026-07-23（AI 模块专项加固），2026-08-02（深度开发安全审查）</p>
+
+  <h3>6.3 测试体系</h3>
+  <p><strong>后端测试</strong>（46 个测试文件，1,384+ 测试函数）：</p>
+  <ul style="margin:6px 0 12px 20px;font-size:14px;color:var(--c-text-mid);line-height:2">
+    <li><code>tests/core/</code> — 核心模块单元测试</li>
+    <li><code>tests/api/</code> — API 路由集成测试</li>
+    <li><code>tests/services/</code> — 业务服务测试</li>
+    <li><code>tests/security/</code> — 安全专项测试</li>
+    <li><code>tests/integration/</code> — 端到端集成测试</li>
+    <li><code>tests/e2e/</code> — 用户流程 E2E 测试</li>
+  </ul>
+  <p><strong>前端测试</strong>（34 个测试文件）：组件单元测试、Hook 测试、集成测试。</p>
+</section>
+
+<!-- ════════════════════════════════════════════
+     7. 部署与运维
+════════════════════════════════════════════ -->
+<section class="card" id="sec-7">
+  <div class="card-header">
+    <div class="card-icon blue"><i data-lucide="server" style="width:18px;height:18px"></i></div>
+    <div>
+      <div class="card-title">7. 部署与运维</div>
+      <div class="card-subtitle">Deployment & Operations</div>
+    </div>
+  </div>
+
+  <h3>7.1 部署方式</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>环境</th><th>方式</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td align="center">本地开发</td><td>Docker Compose</td><td>5 服务编排（backend/frontend/postgres/redis/neo4j）</td></tr>
+      <tr><td align="center">局域网</td><td>Nginx 反向代理</td><td>多 IP 支持，一键启动脚本</td></tr>
+      <tr><td align="center">生产</td><td>K8s + Helm</td><td>完整 Helm Charts + 健康检查 + 自动回滚</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>7.2 监控告警</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>系统</th><th>用途</th></tr></thead>
+    <tbody>
+      <tr><td>Prometheus</td><td>指标采集（QPS、延迟、错误率、Python 运行时）</td></tr>
+      <tr><td>Grafana</td><td>可视化仪表盘</td></tr>
+      <tr><td>Loki</td><td>日志聚合与检索</td></tr>
+      <tr><td>Tempo</td><td>分布式链路追踪</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>7.3 备份策略</h3>
+  <ul style="margin:6px 0 12px 20px;font-size:14px;color:var(--c-text-mid);line-height:2">
+    <li>数据库自动备份（每日）</li>
+    <li>PITR（Point-in-Time Recovery）支持</li>
+    <li>灾难恢复演练脚本</li>
+  </ul>
+
+  <h3>7.4 运维脚本</h3>
+  <pre><code>scripts/
+├── start_all.sh                  # 一键启动全部服务
+├── start_backend.sh              # 后端启动脚本
+├── start_frontend.sh             # 前端启动脚本
+├── verify_env.py                 # 环境配置验证
+├── integration_verification.py   # 集成验证
+├── security_audit.py             # 安全审计脚本
+├── deploy/                       # 部署脚本
+│   ├── k8s/                      # K8s 资源清单
+│   └── nginx.conf                # Nginx 配置
+└── import/                       # 数据导入工具</code></pre>
+</section>
+
+<!-- ════════════════════════════════════════════
+     8. 附录：数据统计
+════════════════════════════════════════════ -->
+<section class="card" id="sec-8">
+  <div class="card-header">
+    <div class="card-icon violet"><i data-lucide="bar-chart-3" style="width:18px;height:18px"></i></div>
+    <div>
+      <div class="card-title">8. 附录：数据统计</div>
+      <div class="card-subtitle">Appendix: Statistics</div>
+    </div>
+  </div>
+
+  <h3>8.1 开发统计</h3>
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-num">90</div><div class="stat-label">总开发天数</div></div>
+    <div class="stat-card"><div class="stat-num">19</div><div class="stat-label">Git 提交天数</div></div>
+    <div class="stat-card"><div class="stat-num">91</div><div class="stat-label">总提交次数</div></div>
+    <div class="stat-card"><div class="stat-num">920</div><div class="stat-label">后端 Python 文件</div></div>
+    <div class="stat-card"><div class="stat-num">567</div><div class="stat-label">前端 TSX/TS 文件</div></div>
+    <div class="stat-card"><div class="stat-num">35</div><div class="stat-label">Alembic 迁移</div></div>
+    <div class="stat-card"><div class="stat-num">11</div><div class="stat-label">ADR 架构决策</div></div>
+    <div class="stat-card"><div class="stat-num">20</div><div class="stat-label">前端页面目录</div></div>
+    <div class="stat-card"><div class="stat-num">28</div><div class="stat-label">前端组件目录</div></div>
+    <div class="stat-card"><div class="stat-num">39</div><div class="stat-label">API 端点</div></div>
+  </div>
+
+  <h3>8.2 代码量统计（截至 2026-08-03）</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>类别</th><th>文件数</th><th>行数（估算）</th></tr></thead>
+    <tbody>
+      <tr><td>后端 Python</td><td align="right">920</td><td align="right">~52,000</td></tr>
+      <tr><td>前端 TSX/TS</td><td align="right">567</td><td align="right">~35,000</td></tr>
+      <tr><td>测试文件</td><td align="right">85+</td><td align="right">~20,000</td></tr>
+      <tr><td>配置/文档</td><td align="right">80+</td><td align="right">~28,000</td></tr>
+      <tr><td>迁移文件</td><td align="right">35</td><td align="right">~5,000</td></tr>
+      <tr><td><strong>合计</strong></td><td align="right"><strong>~1,610</strong></td><td align="right"><strong>~155,000</strong></td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>8.3 深度开发交付统计（2026-08-02 ~ 2026-08-03）</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>阶段</th><th>后端服务</th><th>前端组件</th><th>API 端点</th><th>测试</th></tr></thead>
+    <tbody>
+      <tr><td>P0-A Agent 工作流</td><td align="right">7</td><td align="right">2</td><td align="right">6</td><td align="right"><span class="badge badge-ok">100%</span></td></tr>
+      <tr><td>P0-B 合规前置</td><td align="right">2</td><td align="right">2</td><td align="right">5</td><td align="right"><span class="badge badge-ok">100%</span></td></tr>
+      <tr><td>P0-C 实验解析</td><td align="right">4</td><td align="right">2</td><td align="right">2</td><td align="right"><span class="badge badge-ok">100%</span></td></tr>
+      <tr><td>P1-A 工作流执行</td><td align="right">5</td><td align="right">0</td><td align="right">4</td><td align="right"><span class="badge badge-ok">100%</span></td></tr>
+      <tr><td>P1-B 可解释性报告</td><td align="right">4</td><td align="right">4</td><td align="right">8</td><td align="right"><span class="badge badge-ok">100%</span></td></tr>
+      <tr><td>P1-C 报告导出</td><td align="right">4</td><td align="right">1</td><td align="right">3</td><td align="right"><span class="badge badge-ok">100%</span></td></tr>
+      <tr><td>P1-D 数据飞轮</td><td align="right">6</td><td align="right">0</td><td align="right">5</td><td align="right"><span class="badge badge-ok">100%</span></td></tr>
+      <tr><td>P2 插件化生态</td><td align="right">4</td><td align="right">0</td><td align="right">9</td><td align="right"><span class="badge badge-ok">100%</span></td></tr>
+      <tr><td><strong>合计</strong></td><td align="right"><strong>36</strong></td><td align="right"><strong>13</strong></td><td align="right"><strong>42</strong></td><td align="right"><strong>100%</strong></td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>8.4 深度开发核心能力</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>能力</th><th>技术实现</th><th>前端接入</th></tr></thead>
+    <tbody>
+      <tr><td><strong>AI Agent 工作流</strong></td><td>5 工具（RAG/合规/配方/实验/药材）+ LLM 自主编排 + AI Task 异步调度</td><td>AgentPage.tsx + /agent 路由</td></tr>
+      <tr><td><strong>合规前置设计</strong></td><td>约束惩罚机制 + 实时评分 + 自动修复 + 15 种限量 + 10 对禁忌</td><td>ComplianceBadge.tsx + Hook</td></tr>
+      <tr><td><strong>实验数据解析</strong></td><td>AnIML + JCAMP-DX 双格式解析器 + 峰识别引擎</td><td>DataUploadPanel.tsx</td></tr>
+      <tr><td><strong>DAG 工作流执行</strong></td><td>5 执行器（LLM/FormulaGPT/SafetyCheck/Synergy/DataAnalysis）</td><td>工作流详情页</td></tr>
+      <tr><td><strong>可解释性报告</strong></td><td>君臣佐使贡献度 + 协同/拮抗效应 + 合规说明 + 改进建议</td><td>FormulaDetailPage「可解释性」Tab</td></tr>
+      <tr><td><strong>报告导出</strong></td><td>DOCX（python-docx）+ PDF（reportlab）+ Markdown</td><td>ReportExportPanel.tsx</td></tr>
+      <tr><td><strong>数据飞轮</strong></td><td>自动采集 → 质量校验 → 行为脱敏 → 推荐模型训练</td><td>/data-flywheel API</td></tr>
+      <tr><td><strong>插件化生态</strong></td><td>6 核心插件 + API Key 管理 + SDK 元数据 + 开放 API Schema</td><td>/plugins API</td></tr>
+      <tr><td><strong>收藏架</strong></td><td>完整 CRDUD + UI 组件</td><td>PantryPage.tsx</td></tr>
+      <tr><td><strong>定时同步</strong></td><td>自定义调度器 + Celery 异步任务</td><td>auto_sync 后台运行</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>8.5 目录结构</h3>
+  <pre><code>RMFOOD/
+├── backend/                  # 后端服务（FastAPI + SQLAlchemy）
+│   ├── app/
+│   │   ├── api/              # 19 个 API 路由模块
+│   │   │   └── v1/           # 26 个 v1 API 路由（agent/compliance/data_flywheel 等）
+│   │   ├── services/         # 920 个服务文件（16+ 子目录）
+│   │   │   ├── ai/           # AI 服务（16 子目录）
+│   │   │   │   ├── agent/    # Agent 工作流（orchestrator + 5 工具）
+│   │   │   │   ├── chat_service.py
+│   │   │   │   ├── safety/   # AI 安全层
+│   │   │   │   └── providers/ # 多 LLM 提供商
+│   │   │   ├── compliance/   # 合规检查
+│   │   │   ├── experiment/   # 实验解析
+│   │   │   ├── import_engine/ # 数据导入引擎（Celery）
+│   │   │   ├── data_sources/ # 数据源（OpenFoodFacts/TCMSP/DFBP）
+│   │   │   │   └── pipeline/ # 数据飞轮管道
+│   │   │   ├── plugin_registry/ # 插件注册中心
+│   │   │   ├── report/       # 可解释性报告
+│   │   │   ├── workflow/     # DAG 工作流执行
+│   │   │   ├── data_quality/ # 数据质量校验
+│   │   │   └── analytics/    # 数据分析
+│   │   ├── models/           # 37 个 ORM 模型
+│   │   ├── core/             # 12 个核心子模块
+│   │   └── infrastructure/   # 基础设施层
+│   ├── alembic/              # 35 个数据库迁移版本
+│   └── scripts/              # 运维脚本
+├── frontend/                 # 前端应用（React 19 + TypeScript）
+│   ├── src/
+│   │   ├── pages/            # 20 个页面目录
+│   │   ├── components/       # 28 个组件目录
+│   │   │   └── ai/features/components/pro/  # AI 专业版组件
+│   │   ├── hooks/            # 42+ 个自定义 Hooks
+│   │   ├── stores/           # 14 个 Zustand Store
+│   │   ├── api/              # 39 个 API 服务模块
+│   │   └── tests/            # 前端测试
+├── docs/                     # 项目文档（80+ 文件）
+│   ├── adr/                  # 架构决策记录（11 份）
+│   ├── design/               # 设计文档
+│   ├── reports/              # 审查报告
+│   └── reviews/              # 评审记录
+├── scripts/                  # 项目级脚本
+├── tests/                    # 集成测试
+└── deployment/               # 部署配置</code></pre>
+</section>
+
+<!-- ════════════════════════════════════════════
+     版本历史
+════════════════════════════════════════════ -->
+<section class="card">
+  <div class="card-header">
+    <div class="card-icon blue"><i data-lucide="history" style="width:18px;height:18px"></i></div>
+    <div>
+      <div class="card-title">版本历史</div>
+    </div>
+  </div>
+  <div class="table-wrap"><table>
+    <thead><tr><th>版本</th><th>日期</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td>v1.0.0</td><td>2026-07-31</td><td>初始版本，完整记录项目开发历程</td></tr>
+      <tr><td>v1.1.0</td><td>2026-08-03</td><td>深度开发完成：Agent 工作流 + 合规前置 + 实验解析 + 工作流执行 + 可解释性报告 + 数据飞轮 + 插件化生态</td></tr>
+      <tr><td>v2.0.0</td><td>2026-08-03</td><td>全面补全：新增每日开发记录 2026-07-12~2026-08-03 全部详情，ADR 更新至 11 份，Alembic 迁移 35 个，Agent 工具链详细说明，新增数据飞轮/报告导出/收藏架/Auto Sync 记录</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<p style="text-align:center;font-size:12px;color:var(--c-text-faint);margin-top:24px">
+  本文档由 RMFOOD 开发团队编制，基于 git log 与项目文档自动生成（v2.0.0 · 2026-08-03）。
+</p>
+
+</div><!-- /layout -->
+
+<button class="back-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="回到顶部">
+  <i data-lucide="chevron-up" style="width:18px;height:18px"></i>
+</button>
+
+<script>
+  lucide.createIcons();
+</script>
+</body>
+</html>

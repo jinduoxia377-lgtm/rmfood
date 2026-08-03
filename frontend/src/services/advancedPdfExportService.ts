@@ -7,6 +7,8 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import type { AcademicReport, AcademicReportSection } from './academicReportService';
 
+
+import { logger } from '@/utils/safeLogger';
 export interface AdvancedPdfOptions {
   filename?: string;
   title?: string;
@@ -485,7 +487,7 @@ export class AdvancedPdfExportService {
         });
       }
     } catch (error) {
-      console.warn('[AdvancedPdfExport] Failed to add bookmarks:', error);
+      logger.warn('[AdvancedPdfExport] Failed to add bookmarks:', error);
     }
   }
 
@@ -519,7 +521,7 @@ export class AdvancedPdfExportService {
       const blob = this.doc.output('blob');
       return blob;
     } catch (error) {
-      console.error('[AdvancedPdfExport] Export failed:', error);
+      logger.error('[AdvancedPdfExport] Export failed:', error);
       throw new Error(`PDF导出失败: ${error instanceof Error ? error.message : '未知错误'}`);
     }
   }

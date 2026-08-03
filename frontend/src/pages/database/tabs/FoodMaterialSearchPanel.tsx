@@ -26,6 +26,8 @@ import {
 } from '../../../api/searchNew';
 import { databaseApi } from '@/api/database';
 
+
+import { logger } from '@/utils/safeLogger';
 const { Panel } = Collapse;
 
 interface FoodMaterialSearchPanelProps {
@@ -168,7 +170,7 @@ const FoodMaterialSearchPanel: React.FC<FoodMaterialSearchPanelProps> = ({ class
       setTotal(response.total);
       setSearchTime(response.search_time_ms);
     } catch (err) {
-      console.error('搜索失败:', err);
+      logger.error('搜索失败:', err);
     } finally {
       setLoading(false);
     }
@@ -178,9 +180,9 @@ const FoodMaterialSearchPanel: React.FC<FoodMaterialSearchPanelProps> = ({ class
   const handleFavorite = useCallback(async (id: number) => {
     try {
       await databaseApi.post(`/search/pantry/food-materials/${id}`);
-      console.log('已添加到收藏:', id);
+      logger.info('已添加到收藏:', id);
     } catch (err) {
-      console.error('添加收藏失败:', err);
+      logger.error('添加收藏失败:', err);
     }
   }, []);
 

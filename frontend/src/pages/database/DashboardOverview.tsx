@@ -61,6 +61,8 @@ import { databaseApi } from '@/api/database';
 import type { FoodHomologyRankItem, ActivePeptideRankItem } from '@/api/database';
 import { useToast } from '@/components/ui';
 
+
+import { logger } from '@/utils/safeLogger';
 // ─── 类型定义 ───
 
 interface DashboardOverviewData {
@@ -1112,7 +1114,7 @@ export default function DashboardOverview({ onHerbClick, onPeptideClick }: Props
         if (fhResult.status === 'fulfilled') setFoodHomologyRanking(fhResult.value.items);
         if (apResult.status === 'fulfilled') setActivePeptideRanking(apResult.value.items);
       } catch (e) {
-        console.error('排行数据加载失败:', e);
+        logger.error('排行数据加载失败:', e);
       } finally {
         setRankingLoading(false);
       }

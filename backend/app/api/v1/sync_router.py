@@ -567,7 +567,7 @@ async def get_sync_history(
             query = query.where(SyncLog.status == sync_status)
             count_query = count_query.where(SyncLog.status == sync_status)
         except ValueError:
-            pass
+            logger.debug(f"无效的同步状态过滤器: {status_filter}")
     
     total_result = await db.execute(count_query)
     total = total_result.scalar() or 0
@@ -643,7 +643,8 @@ async def full_sync(
         try:
             if isinstance(last_sync_ts, str):
                 last_sync_ts = datetime.fromisoformat(last_sync_ts.replace("Z", "+00:00"))
-        except Exception:
+        except Exception as ts_err:
+            logger.warning("时间戳解析失败: %s", ts_err)
             last_sync_ts = None
     
     try:

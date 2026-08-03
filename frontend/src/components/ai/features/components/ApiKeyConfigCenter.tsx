@@ -33,6 +33,7 @@ import {
 import { RefreshCw } from 'lucide-react';
 import { useGlobalStore } from '../state/store';
 import { logger } from '@/utils/safeLogger';
+import { encrypt, decrypt } from '@/utils/cryptoUtils';
 
 type AIProvider = 'openai' | 'deepseek' | 'zhipu' | 'qwen' | 'custom';
 
@@ -69,7 +70,6 @@ interface UsageStats {
 }
 
 const STORAGE_KEY = 'rmfood_ai_keys_v2';
-const ENCRYPTION_KEY = 'rmfood_aes256_2026';
 
 const PROVIDERS: ProviderConfig[] = [
   { id: 'openai', name: 'OpenAI', icon: '🤖', baseUrl: 'https://api.openai.com/v1', keyPattern: /^sk-/ },
@@ -84,54 +84,6 @@ const PROVIDERS: ProviderConfig[] = [
   { id: 'qwen', name: '通义千问', icon: '💬', baseUrl: 'https://dashscope.aliyuncs.com/api/v1', keyPattern: /^sk-/ },
   { id: 'custom', name: '自定义', icon: '⚙️', baseUrl: '', keyPattern: /.+/ },
 ];
-
-async function encrypt(text: string, password: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(text);
-  const salt = crypto.getRandomValues(new Uint8Array(16));
-  const passwordKey = await crypto.subtle.importKey('raw', encoder.encode(password), 'PBKDF2', false, ['deriveKey']);
-  const key = await crypto.subtle.deriveKey(
-    { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
-    passwordKey,
-    { name: 'AES-GCM', length: 256 },
-    false,
-    ['encrypt'],
-  );
-  const iv = crypto.getRandomValues(new Uint8Array(12));
-  const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, data);
-  const combined = new Uint8Array(salt.length + iv.length + encrypted.byteLength);
-  combined.set(salt, 0);
-  combined.set(iv, salt.length);
-  combined.set(new Uint8Array(encrypted), salt.length + iv.length);
-  return btoa(String.fromCharCode(...combined));
-}
-
-async function decrypt(encryptedData: string, password: string): Promise<string> {
-  try {
-    const combined = new Uint8Array(
-      atob(encryptedData)
-        .split('')
-        .map((c) => c.charCodeAt(0)),
-    );
-    const salt = combined.slice(0, 16);
-    const iv = combined.slice(16, 28);
-    const data = combined.slice(28);
-    const encoder = new TextEncoder();
-    const passwordKey = await crypto.subtle.importKey('raw', encoder.encode(password), 'PBKDF2', false, ['deriveKey']);
-    const key = await crypto.subtle.deriveKey(
-      { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
-      passwordKey,
-      { name: 'AES-GCM', length: 256 },
-      false,
-      ['decrypt'],
-    );
-    const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, data);
-    return new TextDecoder().decode(decrypted);
-  } catch (error) {
-    logger.error('[ApiKeyConfigCenter] 解密失败:', error);
-    throw new Error('解密失败');
-  }
-}
 
 function maskKey(key: string): string {
   if (!key || key.length <= 8) return key || '';
@@ -170,7 +122,7 @@ const ApiKeyConfigCenter: React.FC<ApiKeyConfigCenterProps> = ({ className = '',
     try {
       const encrypted = localStorage.getItem(STORAGE_KEY);
       if (encrypted) {
-        const decrypted = await decrypt(encrypted, ENCRYPTION_KEY);
+        const decrypted = await decrypt(encrypted);
         const keys = JSON.parse(decrypted) as APIKeyData[];
         setApiKeys(keys);
       }
@@ -184,7 +136,7 @@ const ApiKeyConfigCenter: React.FC<ApiKeyConfigCenterProps> = ({ className = '',
     async (keys: APIKeyData[]) => {
       setIsSaving(true);
       try {
-        const encrypted = await encrypt(JSON.stringify(keys), ENCRYPTION_KEY);
+        const encrypted = await encrypt(JSON.stringify(keys));
         localStorage.setItem(STORAGE_KEY, encrypted);
         setApiKeys(keys);
         onConfigChange?.(keys);

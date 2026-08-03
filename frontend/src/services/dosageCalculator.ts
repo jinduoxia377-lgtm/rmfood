@@ -1,6 +1,8 @@
 import type { Ingredient, DosageCalculationResult } from '@/types/ai.types'
 import { UNIT_CONVERSION_MAP } from '@/config/dosage.constants'
 
+
+import { logger } from '@/utils/safeLogger';
 interface NormalizedDosage {
   value: number
   unit: string
@@ -49,7 +51,7 @@ export function normalizeUnit(value: string): NormalizedDosage | null {
   const match = /^([\d.]+)\s*([a-zA-Zμ\u03BC\u4E91\u4E24\u65A4]+)$/.exec(trimmed)
 
   if (!match) {
-    console.warn(`[DosageCalculator] 无法解析用量值: "${value}"`)
+    logger.warn(`[DosageCalculator] 无法解析用量值: "${value}"`)
     return null
   }
 
@@ -60,7 +62,7 @@ export function normalizeUnit(value: string): NormalizedDosage | null {
   if (rawUnit === 'μl' || rawUnit === '\u03bcl') rawUnit = 'ul'
 
   if (isNaN(numValue) || numValue < 0) {
-    console.warn(`[DosageCalculator] 无效的数值: "${value}"`)
+    logger.warn(`[DosageCalculator] 无效的数值: "${value}"`)
     return null
   }
 
@@ -76,7 +78,7 @@ export function normalizeUnit(value: string): NormalizedDosage | null {
     convertedValue = convertToBase(numValue, rawUnit, 'volume')
     if (convertedValue === null) return null
   } else {
-    console.warn(`[DosageCalculator] 未知的单位类型: "${rawUnit}" (原始值: "${value}")`)
+    logger.warn(`[DosageCalculator] 未知的单位类型: "${rawUnit}" (原始值: "${value}")`)
     return {
       value: numValue,
       unit: rawUnit,
@@ -104,7 +106,7 @@ function convertToBase(value: number, fromUnit: string, type: 'mass' | 'volume')
       case '两': return value * 50000
       case '斤': return value * 500000
       default:
-        console.warn(`[DosageCalculator] 不支持的质量单位转换: ${fromUnit}`)
+        logger.warn(`[DosageCalculator] 不支持的质量单位转换: ${fromUnit}`)
         return null
     }
   } else {
@@ -113,7 +115,7 @@ function convertToBase(value: number, fromUnit: string, type: 'mass' | 'volume')
       case 'l': return value * 1000
       case 'ul': return value * 0.001
       default:
-        console.warn(`[DosageCalculator] 不支持的体积单位转换: ${fromUnit}`)
+        logger.warn(`[DosageCalculator] 不支持的体积单位转换: ${fromUnit}`)
         return null
     }
   }
@@ -136,7 +138,7 @@ export function calculateTotalAmount(ingredients: Ingredient[]): number {
     if (primaryType === null) {
       primaryType = currentType
     } else if (primaryType !== currentType) {
-      console.warn(`[DosageCalculator] 检测到混合单位类型: ${ing.name} (${normalized.unit}) 与主单位类型不一致`)
+      logger.warn(`[DosageCalculator] 检测到混合单位类型: ${ing.name} (${normalized.unit}) 与主单位类型不一致`)
     }
 
     amounts.push(normalized.value)
@@ -153,7 +155,7 @@ export function calculatePercentage(
   if (!ingredient || totalAmount <= 0) return null
 
   if (typeof ingredient.amount !== 'number' || !ingredient.unit) {
-    console.warn(`[DosageCalculator] 成分缺少必要的用量数据:`, ingredient)
+    logger.warn(`[DosageCalculator] 成分缺少必要的用量数据:`, ingredient)
     return null
   }
 
@@ -168,7 +170,7 @@ export function calculateAllPercentages(
   ingredients: Ingredient[],
 ): BatchCalculationResult | null {
   if (!Array.isArray(ingredients) || ingredients.length === 0) {
-    console.warn('[DosageCalculator] 输入的成分数组为空')
+    logger.warn('[DosageCalculator] 输入的成分数组为空')
     return null
   }
 

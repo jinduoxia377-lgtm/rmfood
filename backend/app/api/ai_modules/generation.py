@@ -118,7 +118,6 @@ async def generate_formula(
                                 )
                             except Exception as e:
                                 logger.warning("安全检查失败: %s", e)
-                                pass
 
                             synergy_result = {}
                             try:
@@ -127,7 +126,6 @@ async def generate_formula(
                                 )
                             except Exception as e:
                                 logger.warning("协同分析失败: %s", e)
-                                pass
 
                             scores = formula.get("scores", {})
                             candidates.append({

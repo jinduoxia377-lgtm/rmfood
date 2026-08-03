@@ -374,7 +374,7 @@ async def list_members(
             role = TeamRole(role_filter)
             query = query.where(TeamMember.role == role)
         except ValueError:
-            pass
+            logger.debug(f"无效的团队角色过滤器: {role_filter}")
     
     query = query.order_by(TeamMember.joined_at.asc())
     

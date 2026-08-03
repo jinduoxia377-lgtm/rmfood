@@ -342,7 +342,7 @@ export const aiApi = {
     } catch (e) {
       // 统一管理器失败时仅在开发环境告警，不再降级到 localStorage
       if (process.env.NODE_ENV === 'development') {
-        console.warn('[aiApi.chat] 统一API Key管理器读取失败:', e);
+        logger.warn('[aiApi.chat] 统一API Key管理器读取失败:', e);
       }
     }
 
@@ -350,7 +350,7 @@ export const aiApi = {
 
     // 最终验证：确保apiKey有效
     if (!apiKey && process.env.NODE_ENV === 'development') {
-      console.warn('[aiApi.chat] ⚠️ API Key为空，请求可能会被后端拒绝');
+      logger.warn('[aiApi.chat] ⚠️ API Key为空，请求可能会被后端拒绝');
     }
 
     return api.post<{ answer: string }>('/ai/chat', { question, history, scenario_mode: getCurrentScenarioMode() }).then((r) => r.data);
@@ -371,7 +371,7 @@ export const aiApi = {
     } catch (e) {
       // 不再降级到 localStorage，统一由后端管理 API Key
       if (process.env.NODE_ENV === 'development') {
-        console.warn('[aiApi.chatStream] 统一API Key管理器读取失败:', e);
+        logger.warn('[aiApi.chatStream] 统一API Key管理器读取失败:', e);
       }
     }
 
@@ -379,7 +379,7 @@ export const aiApi = {
 
     // 最终验证：确保apiKey有效
     if (!apiKey && process.env.NODE_ENV === 'development') {
-      console.warn('[aiApi.chatStream] ⚠️ API Key为空，请求可能会被后端拒绝');
+      logger.warn('[aiApi.chatStream] ⚠️ API Key为空，请求可能会被后端拒绝');
     }
 
     const response = await api.post('/ai/chat/stream', { question, history, stream: true, scenario_mode: getCurrentScenarioMode() }, {
@@ -396,7 +396,7 @@ function sanitizeApiKey(rawKey: string): string {
   if (!rawKey || typeof rawKey !== 'string') {
     // 仅在开发环境输出警告
     if (process.env.NODE_ENV === 'development') {
-      console.warn('[sanitizeApiKey] 输入为空或非字符串');
+      logger.warn('[sanitizeApiKey] 输入为空或非字符串');
     }
     return '';
   }
@@ -433,7 +433,7 @@ function sanitizeApiKey(rawKey: string): string {
 
     // 检查常见格式问题
     if (!cleaned.startsWith('sk-') && !cleaned.startsWith('Bearer ')) {
-      console.warn(`[sanitizeApiKey] Key 格式异常: 不以 "sk-" 或 "Bearer " 开头，前8位="${prefix}"`);
+      logger.warn(`[sanitizeApiKey] Key 格式异常: 不以 "sk-" 或 "Bearer " 开头，前8位="${prefix}"`);
     }
   } else if (cleanedLength === 0 && process.env.NODE_ENV === 'development') {
     logger.error(`[sanitizeApiKey] ❌ 清洗后 Key 为空！原始长度=${originalLength}`);

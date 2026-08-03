@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef, Profiler } from 'react';
 import type { ProfilerOnRenderCallback } from 'react';
 
+
+import { logger } from '@/utils/safeLogger';
 interface WebVitalMetric {
   name: string;
   value: number;
@@ -157,7 +159,7 @@ export function PerformanceMonitor({
 
       vitalsObserver.observe({ entryTypes: ['paint', 'first-input', 'layout-shift', 'navigation'] });
     } catch (error) {
-      console.warn('[PerformanceMonitor] Web Vitals collection failed:', error);
+      logger.warn('[PerformanceMonitor] Web Vitals collection failed:', error);
     }
   }, []);
 
@@ -210,7 +212,7 @@ export function PerformanceMonitor({
 
       setBundleSize(bundles);
     } catch (error) {
-      console.warn('[PerformanceMonitor] Bundle analysis failed:', error);
+      logger.warn('[PerformanceMonitor] Bundle analysis failed:', error);
     }
   }, []);
 

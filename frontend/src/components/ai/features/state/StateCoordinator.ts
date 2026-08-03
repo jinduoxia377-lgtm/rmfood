@@ -1,3 +1,4 @@
+import { logger } from '@/utils/safeLogger';
 import {
   type GlobalState,
   type StateKey,
@@ -164,7 +165,7 @@ class StateCoordinator {
       try {
         listener(newValue, oldValue as GlobalState[K]);
       } catch (error) {
-        console.error(`Error in listener for ${key}:`, error);
+        logger.error(`Error in listener for ${key}:`, error);
       }
     });
   }
@@ -182,7 +183,7 @@ class StateCoordinator {
         try {
           (middleware as MiddlewareFunction<K>)(context, executeNext);
         } catch (error) {
-          console.error(`Error in beforeSet middleware for ${context.key}:`, error);
+          logger.error(`Error in beforeSet middleware for ${context.key}:`, error);
           executeNext();
         }
       }
@@ -199,7 +200,7 @@ class StateCoordinator {
       try {
         (middleware as MiddlewareFunction<K>)(context, () => {});
       } catch (error) {
-        console.error(`Error in afterSet middleware for ${context.key}:`, error);
+        logger.error(`Error in afterSet middleware for ${context.key}:`, error);
       }
     });
   }

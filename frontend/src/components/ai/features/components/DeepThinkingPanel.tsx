@@ -1,4 +1,6 @@
 import React, { memo, useState, useCallback, useMemo } from 'react'
+
+import { logger } from '@/utils/safeLogger';
 import {
   Brain,
   X,
@@ -228,7 +230,7 @@ const DeepThinkingPanel: React.FC<DeepThinkingPanelProps> = ({
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch (err) {
-      console.error('复制失败:', err)
+      logger.error('复制失败:', err)
     }
   }, [analysis])
 

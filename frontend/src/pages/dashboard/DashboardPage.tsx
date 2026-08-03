@@ -55,6 +55,8 @@ import {
 } from '@/components/dashboard/cards'
 import { CardSkeleton as CardSkeletonComp } from '@/components/ui/Skeleton'
 
+
+import { logger } from '@/utils/safeLogger';
 // Card component mapping — replaces the ~440-line switch statement
 const CARD_COMPONENTS: Record<string, React.ComponentType<any>> = {
   'stats-formulas': StatsCards,
@@ -267,7 +269,7 @@ export default function DashboardPage() {
     try {
       return DashboardConfigManager.getCurrentLayout()
     } catch (error) {
-      console.error('Error loading dashboard layout:', error)
+      logger.error('Error loading dashboard layout:', error)
       return {
         id: 'default',
         name: '默认视图',
@@ -288,7 +290,7 @@ export default function DashboardPage() {
     try {
       return DashboardConfigManager.getAllLayouts()
     } catch (error) {
-      console.error('Error loading dashboard layouts:', error)
+      logger.error('Error loading dashboard layouts:', error)
       return [
         {
           id: 'default',

@@ -7,6 +7,7 @@
  * @version 1.0.0
  */
 import { useState, useCallback } from 'react';
+import { encrypt, decrypt } from '@/utils/cryptoUtils';
 import {
   Settings,
   Activity,
@@ -108,11 +109,13 @@ function ApiKeyManagement() {
   const [newKey, setNewKey] = useState('');
 
   const handleSave = useCallback(
-    (keyName: string) => {
+    async (keyName: string) => {
       if (!newKey.trim()) return;
       try {
-        localStorage.setItem(`api_key_${keyName}`, newKey);
-        logger.info(`[ConfigManagement] API Key for ${keyName} updated`);
+        // 🔒 SECURITY: AES-256-GCM encryption via Web Crypto API
+        const encrypted = await encrypt(newKey);
+        localStorage.setItem(`api_key_${keyName}`, encrypted);
+        logger.info(`[ConfigManagement] API Key for ${keyName} saved (AES-GCM)`);
         setNewKey('');
         setEditingKey(null);
       } catch (error) {
@@ -122,10 +125,16 @@ function ApiKeyManagement() {
     [newKey],
   );
 
-  const handleRegenerate = useCallback((keyName: string) => {
+  const handleRegenerate = useCallback(async (keyName: string) => {
     const newKeyVal = `sk-${crypto.randomUUID().replace(/-/g, '').substring(0, 48)}`;
-    localStorage.setItem(`api_key_${keyName}`, newKeyVal);
-    logger.info(`[ConfigManagement] API Key for ${keyName} regenerated`);
+    // 🔒 SECURITY: AES-256-GCM encryption
+    try {
+      const encrypted = await encrypt(newKeyVal);
+      localStorage.setItem(`api_key_${keyName}`, encrypted);
+      logger.info(`[ConfigManagement] API Key for ${keyName} regenerated (AES-GCM)`);
+    } catch (error) {
+      logger.error('[ConfigManagement] Failed to regenerate API Key:', error);
+    }
     setNewKey('');
     setEditingKey(null);
   }, []);

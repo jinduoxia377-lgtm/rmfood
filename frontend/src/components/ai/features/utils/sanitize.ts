@@ -1,5 +1,7 @@
 import DOMPurify from 'dompurify';
 
+
+import { logger } from '@/utils/safeLogger';
 const SANITIZE_CONFIG = {
   ALLOWED_TAGS: [
     'h1',
@@ -133,7 +135,7 @@ async function initWorker(): Promise<Worker> {
 
         if (success) {
           if (duration && duration > 50) {
-            console.warn(`[sanitize] Worker Performance warning: sanitization took ${duration.toFixed(2)}ms`);
+            logger.warn(`[sanitize] Worker Performance warning: sanitization took ${duration.toFixed(2)}ms`);
           }
           pending.resolve(sanitized);
         } else {
@@ -145,7 +147,7 @@ async function initWorker(): Promise<Worker> {
     };
 
     sanitizeWorker.onerror = (error: ErrorEvent) => {
-      console.error('[sanitize] Worker error:', error);
+      logger.error('[sanitize] Worker error:', error);
       workerReady = false;
       workerFallbackCount++;
 
@@ -159,7 +161,7 @@ async function initWorker(): Promise<Worker> {
 
     return sanitizeWorker;
   } catch (error) {
-    console.warn('[sanitize] Failed to initialize Worker, falling back to main thread:', error);
+    logger.warn('[sanitize] Failed to initialize Worker, falling back to main thread:', error);
     workerFallbackCount++;
     throw error;
   }
@@ -205,7 +207,7 @@ export async function sanitizeHtmlAsync(html: string): Promise<string> {
 
     return sanitized;
   } catch (error) {
-    console.warn('[sanitize] Worker failed, using main thread fallback:', error);
+    logger.warn('[sanitize] Worker failed, using main thread fallback:', error);
     return sanitizeHtmlSync(html);
   }
 }

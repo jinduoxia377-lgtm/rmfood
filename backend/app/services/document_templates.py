@@ -1119,5 +1119,221 @@ class DocumentTemplateService:
         self.formula_analysis.generate_docx(str(output_path), **kwargs)
         return str(output_path), output_path.name
 
+    def generate_explainability_report(
+        self,
+        formula_name: str,
+        scores: dict,
+        core_ingredients: list,
+        synergies: list,
+        antagonisms: list,
+        compliance_notes: list,
+        recommendations: list,
+        summary: str,
+    ) -> tuple:
+        """
+        生成配方可解释性报告（DOCX）
+
+        Args:
+            formula_name: 配方名称
+            scores: 评分字典 {overall, efficacy, safety, cost}
+            core_ingredients: 核心成分列表
+            synergies: 协同效应列表
+            antagonisms: 拮抗效应列表
+            compliance_notes: 合规说明列表
+            recommendations: 改进建议列表
+            summary: 报告摘要
+        """
+        output_path = self.temp_dir / f"explainability_{formula_name}_{uuid.uuid4().hex[:8]}.docx"
+        doc = Document()
+
+        # 标题
+        title = doc.add_heading(f"配方可解释性报告", level=0)
+        title.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+        # 副标题
+        sub = doc.add_paragraph()
+        sub.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        run = sub.add_run(f"配方：{formula_name}")
+        run.font.size = Pt(14)
+        run.font.color.rgb = RGBColor(100, 100, 100)
+
+        # 生成时间
+        time_para = doc.add_paragraph()
+        time_para.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+        time_para.add_run(f"生成时间：{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+
+        doc.add_paragraph()
+
+        # 综合评分
+        doc.add_heading("一、综合评分", level=1)
+        score_table = doc.add_table(rows=5, cols=2)
+        score_table.style = 'Light Grid Accent 1'
+        scores_data = [
+            ("综合评分", f"{scores.get('overall', 0):.1f} / 100"),
+            ("功效匹配", f"{scores.get('efficacy', 0):.1f} / 100"),
+            ("安全评分", f"{scores.get('safety', 0):.1f} / 100"),
+            ("成本评分", f"{scores.get('cost', 0):.1f} / 100"),
+        ]
+        for i, (label, value) in enumerate(scores_data):
+            score_table.rows[i].cells[0].text = label
+            score_table.rows[i].cells[1].text = value
+        doc.add_paragraph()
+
+        # 报告摘要
+        doc.add_heading("二、报告摘要", level=1)
+        doc.add_paragraph(summary)
+        doc.add_paragraph()
+
+        # 君臣佐使
+        if core_ingredients:
+            doc.add_heading("三、君臣佐使分析", level=1)
+            table = doc.add_table(rows=len(core_ingredients) + 1, cols=4)
+            table.style = 'Light Grid Accent 1'
+            headers = ["成分", "角色", "作用机制", "证据"]
+            for j, h in enumerate(headers):
+                table.rows[0].cells[j].text = h
+            for i, ing in enumerate(core_ingredients):
+                table.rows[i + 1].cells[0].text = ing.get('name', '')
+                table.rows[i + 1].cells[1].text = '君' if ing.get('role') == 'core' else '臣'
+                table.rows[i + 1].cells[2].text = ing.get('mechanism', '')[:50]
+                table.rows[i + 1].cells[3].text = ing.get('evidence', '')[:30]
+            doc.add_paragraph()
+
+        # 协同效应
+        if synergies:
+            doc.add_heading("四、协同效应", level=1)
+            for s in synergies:
+                p = doc.add_paragraph()
+                p.add_run(f"✓ {s.get('a', '')} + {s.get('b', '')}").bold = True
+                p.add_run(f"（强度 {s.get('strength', 0):.0%}）")
+                p.add_run(f" — {s.get('desc', '')}")
+            doc.add_paragraph()
+
+        # 拮抗/禁忌
+        if antagonisms:
+            doc.add_heading("五、禁忌搭配", level=1)
+            for a in antagonisms:
+                p = doc.add_paragraph()
+                p.add_run(f"✗ {a.get('a', '')} + {a.get('b', '')}").bold = True
+                p.add_run(f"（强度 {a.get('strength', 0):.0%}）")
+            doc.add_paragraph()
+
+        # 合规说明
+        if compliance_notes:
+            doc.add_heading("六、合规性说明", level=1)
+            for note in compliance_notes:
+                p = doc.add_paragraph(note)
+                if '✓' in note:
+                    p.runs[0].font.color.rgb = RGBColor(0, 128, 0)
+                elif '✗' in note:
+                    p.runs[0].font.color.rgb = RGBColor(255, 0, 0)
+                elif '⚠' in note:
+                    p.runs[0].font.color.rgb = RGBColor(255, 165, 0)
+            doc.add_paragraph()
+
+        # 改进建议
+        if recommendations:
+            doc.add_heading("七、改进建议", level=1)
+            for rec in recommendations:
+                doc.add_paragraph(f"• {rec}")
+
+        # 页脚
+        doc.add_page_break()
+        footer_para = doc.add_paragraph()
+        footer_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        footer_para.add_run(f"RMFOOD 配方设计平台 — 可解释性报告 | {datetime.now().year}").font.size = Pt(9)
+        footer_para.add_run("\n本报告由 AI 自动生成，仅供参考，请以实际实验数据为准。").font.size = Pt(9)
+
+        doc.save(str(output_path))
+        return str(output_path), output_path.name
+
+    def generate_explainability_report_pdf(
+        self,
+        formula_name: str,
+        scores: dict,
+        core_ingredients: list,
+        synergies: list,
+        antagonisms: list,
+        compliance_notes: list,
+        recommendations: list,
+        summary: str,
+    ) -> tuple:
+        """生成配方可解释性报告（PDF）"""
+        output_path = self.temp_dir / f"explainability_{formula_name}_{uuid.uuid4().hex[:8]}.pdf"
+
+        from reportlab.lib.pagesizes import A4
+        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak
+        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+        from reportlab.lib import colors
+
+        doc = SimpleDocTemplate(str(output_path), pagesize=A4)
+        styles = getSampleStyleSheet()
+        styles.add(ParagraphStyle(name='Chinese', fontName='HeitiSC-Regular', fontSize=12))
+        styles.add(ParagraphStyle(name='TitleChinese', fontName='HeitiSC-Regular', fontSize=20, alignment=1))
+        styles.add(ParagraphStyle(name='HeadingChinese', fontName='HeitiSC-Regular', fontSize=14, spaceAfter=10))
+
+        story = []
+
+        # 标题
+        story.append(Paragraph(f"配方可解释性报告", styles['TitleChinese']))
+        story.append(Paragraph(f"配方：{formula_name}", styles['Chinese']))
+        story.append(Paragraph(f"生成时间：{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", styles['Chinese']))
+        story.append(Spacer(1, 20))
+
+        # 综合评分
+        story.append(Paragraph("一、综合评分", styles['HeadingChinese']))
+        score_data = [
+            [Paragraph("评分项", styles['Chinese']), Paragraph("分数", styles['Chinese'])],
+            [Paragraph("综合评分", styles['Chinese']), Paragraph(f"{scores.get('overall', 0):.1f} / 100", styles['Chinese'])],
+            [Paragraph("功效匹配", styles['Chinese']), Paragraph(f"{scores.get('efficacy', 0):.1f} / 100", styles['Chinese'])],
+            [Paragraph("安全评分", styles['Chinese']), Paragraph(f"{scores.get('safety', 0):.1f} / 100", styles['Chinese'])],
+            [Paragraph("成本评分", styles['Chinese']), Paragraph(f"{scores.get('cost', 0):.1f} / 100", styles['Chinese'])],
+        ]
+        score_table = Table(score_data, colWidths=[200, 150])
+        score_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#4472C4')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, -1), 'HeitiSC-Regular'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+            ('GRID', (0, 0), (-1, -1), 1, colors.grey),
+        ]))
+        story.append(score_table)
+        story.append(Spacer(1, 20))
+
+        # 摘要
+        story.append(Paragraph("二、报告摘要", styles['HeadingChinese']))
+        story.append(Paragraph(summary, styles['Chinese']))
+        story.append(Spacer(1, 20))
+
+        # 协同效应
+        if synergies:
+            story.append(Paragraph("三、协同效应", styles['HeadingChinese']))
+            for s in synergies:
+                story.append(Paragraph(f"✓ {s.get('a', '')} + {s.get('b', '')} （强度 {s.get('strength', 0):.0%}）— {s.get('desc', '')}", styles['Chinese']))
+            story.append(Spacer(1, 10))
+
+        # 合规说明
+        if compliance_notes:
+            story.append(Paragraph("四、合规性说明", styles['HeadingChinese']))
+            for note in compliance_notes:
+                story.append(Paragraph(note, styles['Chinese']))
+            story.append(Spacer(1, 10))
+
+        # 建议
+        if recommendations:
+            story.append(Paragraph("五、改进建议", styles['HeadingChinese']))
+            for rec in recommendations:
+                story.append(Paragraph(f"• {rec}", styles['Chinese']))
+
+        # 页脚
+        story.append(PageBreak())
+        story.append(Paragraph(f"RMFOOD 配方设计平台 — 可解释性报告 | {datetime.now().year}", styles['Chinese']))
+        story.append(Paragraph("本报告由 AI 自动生成，仅供参考，请以实际实验数据为准。", styles['Chinese']))
+
+        doc.build(story)
+        return str(output_path), output_path.name
+
 
 document_template_service = DocumentTemplateService()

@@ -22,6 +22,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+
+import { logger } from '@/utils/safeLogger';
 // ════════════════════════════════════════════
 // 🔒 P5-2: 存储引擎抽象
 // ════════════════════════════════════════════
@@ -158,7 +160,7 @@ class IndexedDBAdapter implements StorageAdapter {
         tx.onerror = () => reject(tx.error);
       });
     } catch (e) {
-      console.error('[IndexedDB] Write failed:', e);
+      logger.error('[IndexedDB] Write failed:', e);
     }
   }
 
@@ -358,7 +360,7 @@ export function usePersistentState<T>(
           setState(stored);
         }
       } catch (e) {
-        console.warn(`[PersistentState] Failed to load ${key}:`, e);
+        logger.warn(`[PersistentState] Failed to load ${key}:`, e);
       } finally {
         setLoading(false);
       }
@@ -413,16 +415,16 @@ class OfflineManagerClass {
     if ('serviceWorker' in navigator) {
       try {
         const reg = await navigator.serviceWorker.register('/sw.js');
-        console.log('[Offline] Service Worker registered:', reg.scope);
+        logger.info('[Offline] Service Worker registered:', reg.scope);
       } catch (e) {
-        console.warn('[Offline] Service Worker registration failed:', e);
+        logger.warn('[Offline] Service Worker registration failed:', e);
       }
     }
 
     // 定期尝试同步
     setInterval(() => this._trySync(), 30000); // 每 30 秒
 
-    console.log('[Offline] Manager initialized, online:', this.isOnline);
+    logger.info('[Offline] Manager initialized, online:', this.isOnline);
   }
 
   destroy() {
@@ -446,14 +448,14 @@ class OfflineManagerClass {
   private _handleOnline = () => {
     this.isOnline = true;
     this.listeners.forEach((cb) => cb(true));
-    console.log('[Offline] Network online');
+    logger.info('[Offline] Network online');
     this._trySync();
   };
 
   private _handleOffline = () => {
     this.isOnline = false;
     this.listeners.forEach((cb) => cb(false));
-    console.log('[Offline] Network offline');
+    logger.info('[Offline] Network offline');
   };
 
   // ─────────────────────────────────────────────
@@ -473,7 +475,7 @@ class OfflineManagerClass {
     this.syncQueue.push(item);
     await this._saveQueue();
 
-    console.log(`[Offline] Queued: ${method} ${endpoint}`);
+    logger.info(`[Offline] Queued: ${method} ${endpoint}`);
 
     // 如果在线，立即尝试同步
     if (this.isOnline) {
@@ -502,7 +504,7 @@ class OfflineManagerClass {
       return;
     }
 
-    console.log(`[Offline] Attempting sync: ${this.syncQueue.length} items`);
+    logger.info(`[Offline] Attempting sync: ${this.syncQueue.length} items`);
 
     const failedItems: SyncQueueItem[] = [];
 
@@ -521,16 +523,16 @@ class OfflineManagerClass {
           throw new Error(`HTTP ${response.status}`);
         }
 
-        console.log(`[Offline] Synced: ${item.method} ${item.endpoint}`);
+        logger.info(`[Offline] Synced: ${item.method} ${item.endpoint}`);
       } catch (e) {
-        console.warn(`[Offline] Sync failed: ${item.endpoint}`, e);
+        logger.warn(`[Offline] Sync failed: ${item.endpoint}`, e);
         item.retries++;
 
         // 超过 5 次重试则放弃
         if (item.retries < 5) {
           failedItems.push(item);
         } else {
-          console.error(`[Offline] Max retries exceeded for: ${item.endpoint}`);
+          logger.error(`[Offline] Max retries exceeded for: ${item.endpoint}`);
         }
       }
     }
@@ -539,15 +541,15 @@ class OfflineManagerClass {
     await this._saveQueue();
 
     if (failedItems.length === 0) {
-      console.log('[Offline] ✅ All items synced successfully');
+      logger.info('[Offline] ✅ All items synced successfully');
     } else {
-      console.log(`[Offline] ⏳ ${failedItems.length} items pending`);
+      logger.info(`[Offline] ⏳ ${failedItems.length} items pending`);
     }
   }
 
   async syncWhenOnline(): Promise<boolean> {
     if (!this.isOnline) {
-      console.log('[Offline] Cannot sync: offline');
+      logger.info('[Offline] Cannot sync: offline');
       return false;
     }
 
@@ -664,7 +666,7 @@ export function mergeVersionedData<T>(
   strategy: 'local-wins' | 'remote-wins' | 'newer-wins' = 'newer-wins',
 ): T {
   if (!validateVersionedData(remote)) {
-    console.warn('[VersionControl] Remote data checksum mismatch');
+    logger.warn('[VersionControl] Remote data checksum mismatch');
     return local.data;
   }
 

@@ -32,14 +32,14 @@ def _clean_surrogates(obj: Any) -> Any:
     """递归清理 dict/list/string 中的损坏 Unicode surrogate pairs。
 
     某些中文 docstring 经过 get_openapi() 后可能出现孤立 surrogate pairs
-    （如 \\udc80），导致 json.dumps() 失败。此函数将它们替换为 '?'。
+    （如 \udc80），导致 json.dumps() 失败。此函数将它们替换为 ''。
     """
     if isinstance(obj, str):
         import re
-        # 替换所有孤立 surrogate pairs (U+D800..U+DFFF)
+        # 替换所有 surrogate pairs (U+D800..U+DFFF)
         cleaned = re.sub(
-            r'[\udc00-\udfff]',  # 低位 surrogate 是主要问题来源
-            '?',
+            r'[\ud800-\udfff]',  # 完整代理对范围
+            '',
             obj
         )
         return cleaned

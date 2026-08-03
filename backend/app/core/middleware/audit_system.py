@@ -281,6 +281,9 @@ class AuditService:
             conditions.append("(details::text ILIKE :query OR username ILIKE :query OR resource_id ILIKE :query)")
             params["query"] = f"%{search_query}%"
 
+        # SECURITY: where_clause 仅由白名单字段组合构建，禁止直接拼接用户输入。
+        # 允许的过滤字段: resource_types, user_ids, resource_id, severities,
+        #                start_date, end_date, search_query(仅 ILIKE 参数化)
         where_clause = " AND ".join(conditions) if conditions else "1=1"
 
         count_result = await self.db.execute(

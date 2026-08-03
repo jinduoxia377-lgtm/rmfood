@@ -5,6 +5,8 @@
  */
 
 import { useState, useCallback, useEffect } from 'react';
+
+import { logger } from '@/utils/safeLogger';
 import type {
   ColumnView,
   ColumnConfig,
@@ -47,7 +49,7 @@ function loadViewsFromStorage(): ColumnView[] {
 
     // 验证数据格式
     if (!Array.isArray(parsed)) {
-      console.warn('[useColumnView] localStorage 数据格式无效，使用空数组');
+      logger.warn('[useColumnView] localStorage 数据格式无效，使用空数组');
       return [];
     }
 
@@ -55,7 +57,7 @@ function loadViewsFromStorage(): ColumnView[] {
       view && view.id && view.name && Array.isArray(view.columns),
     );
   } catch (error) {
-    console.error('[useColumnView] 加载视图失败:', error);
+    logger.error('[useColumnView] 加载视图失败:', error);
     return [];
   }
 }
@@ -67,7 +69,7 @@ function saveViewsToStorage(views: ColumnView[]): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(views));
   } catch (error) {
-    console.error('[useColumnView] 保存视图失败:', error);
+    logger.error('[useColumnView] 保存视图失败:', error);
     // 可能是存储空间不足
     if (error instanceof DOMException && error.name === 'QuotaExceededError') {
       alert('存储空间不足，请删除部分视图后重试');
@@ -178,7 +180,7 @@ export function useColumnView(
     maxViews: number = MAX_VIEWS_DEFAULT,
   ): boolean => {
     if (!name?.trim()) {
-      console.warn('[useColumnView] 视图名称不能为空');
+      logger.warn('[useColumnView] 视图名称不能为空');
       return false;
     }
 
@@ -187,7 +189,7 @@ export function useColumnView(
     // 检查是否超出最大数量限制
     const existingNonSystem = savedViews.filter(v => !v.isSystem);
     if (existingNonSystem.length >= maxViews && !savedViews.find(v => v.name === trimmedName)) {
-      console.warn(`[useColumnView] 已达到最大视图数限制 (${maxViews})`);
+      logger.warn(`[useColumnView] 已达到最大视图数限制 (${maxViews})`);
       alert(`最多只能保存 ${maxViews} 个自定义视图`);
       return false;
     }
@@ -230,7 +232,7 @@ export function useColumnView(
     // 不允许删除系统内置视图
     const target = savedViews.find(v => v.id === id);
     if (target?.isSystem) {
-      console.warn('[useColumnView] 不能删除系统内置视图');
+      logger.warn('[useColumnView] 不能删除系统内置视图');
       return false;
     }
 
@@ -347,7 +349,7 @@ export function useColumnView(
       return importedView;
 
     } catch (error) {
-      console.error('[useColumnView] 导入视图失败:', error);
+      logger.error('[useColumnView] 导入视图失败:', error);
       alert(`导入失败: ${error instanceof Error ? error.message : '数据格式错误'}`);
       return null;
     }

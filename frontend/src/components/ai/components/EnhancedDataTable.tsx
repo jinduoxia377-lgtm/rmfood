@@ -25,6 +25,8 @@ import EfficacyTagList from './EfficacyTagList'
 import PrecautionBadge from './PrecautionBadge'
 import { exportToCSV, exportToExcel, exportToJSON } from '@/services/exportService'
 
+
+import { logger } from '@/utils/safeLogger';
 interface EnhancedDataTableProps {
   data: EnhancedIngredient[]
   title?: string
@@ -233,7 +235,7 @@ export function EnhancedDataTable({
           exportToJSON(exportData, '配方明细')
           break
         default:
-          console.warn('[EnhancedDataTable] Unsupported export format:', format)
+          logger.warn('[EnhancedDataTable] Unsupported export format:', format)
       }
     },
     [table, onExport],

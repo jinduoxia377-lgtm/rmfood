@@ -364,11 +364,10 @@ class UnifiedFormulaOptimizer:
             )
             optimizer.config = config
 
-            # 使用 asyncio.run 调用异步方法
-            candidates, history = asyncio.run(optimizer.optimize(
+            candidates, history = optimizer.optimize(
                 request.target_effects,
                 exclude_herbs=set(request.exclude_herbs) if request.exclude_herbs else None,
-            ))
+            )
 
             elapsed = (time.perf_counter() - start) * 1000
 

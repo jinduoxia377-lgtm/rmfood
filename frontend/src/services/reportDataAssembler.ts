@@ -1,6 +1,8 @@
 import type { AIRecognizedFormula, Ingredient, EfficacyTag, Precaution, PrecautionSeverity } from '@/types/ai.types'
 import { calculateAllPercentages } from './dosageCalculator'
 
+
+import { logger } from '@/utils/safeLogger';
 /**
  * 专业报告数据接口定义
  */
@@ -255,7 +257,7 @@ export function assembleReportData(
       dataQuality,
     }
   } catch (error) {
-    console.error('[ReportDataAssembler] Failed to assemble report data:', error)
+    logger.error('[ReportDataAssembler] Failed to assemble report data:', error)
     return getFallbackReportData(formula)
   }
 }
@@ -284,7 +286,7 @@ function enhanceIngredients(rawIngredients: any[]): EnhancedIngredientForReport[
   try {
     calculatedResult = calculateAllPercentages(rawIngredients as Ingredient[])
   } catch (e) {
-    console.warn('[ReportDataAssembler] Dosage calculation failed:', e)
+    logger.warn('[ReportDataAssembler] Dosage calculation failed:', e)
   }
 
   return rawIngredients.map((ing, index) => {

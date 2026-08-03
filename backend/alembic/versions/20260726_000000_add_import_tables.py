@@ -16,7 +16,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision: str = '20260726_000000_add_import_tables'
-down_revision: Union[str, None] = '20260723_113212_add_organization_id_to_all'
+down_revision: Union[str, None] = '20260723_113212_add_organization_id'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

@@ -59,6 +59,8 @@ import {
 import { PermissionMatrix } from '@/components/auth/PermissionMatrix';
 import { TeamOnlineStatus } from '@/components/dashboard/TeamOnlineStatus';
 
+
+import { logger } from '@/utils/safeLogger';
 // ── 类型定义 ──
 
 interface TeamMember {
@@ -167,7 +169,7 @@ export function TeamManagement({ className }: { className?: string }) {
         setTeams(response.data.teams || []);
       }
     } catch (error) {
-      console.error('获取团队列表失败:', error);
+      logger.error('获取团队列表失败:', error);
     } finally {
       setLoading(false);
     }
@@ -181,7 +183,7 @@ export function TeamManagement({ className }: { className?: string }) {
         setTeamDetail(response.data);
       }
     } catch (error) {
-      console.error('获取团队详情失败:', error);
+      logger.error('获取团队详情失败:', error);
     }
   };
 

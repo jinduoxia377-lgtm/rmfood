@@ -17,6 +17,8 @@ import { MessageSquare, Search, Trash2, Plus, Clock, FileText, ChevronRight, Fol
 import { clsx } from 'clsx';
 import type { ChatSession } from '@/api/chat';
 
+
+import { logger } from '@/utils/safeLogger';
 // ===== 类型定义 =====
 
 export interface SessionHistoryProps {
@@ -219,7 +221,7 @@ export function SessionHistory({
     try {
       await onLoadSessions();
     } catch (error) {
-      console.error('加载会话列表失败:', error);
+      logger.error('加载会话列表失败:', error);
     } finally {
       setIsLoading(false);
     }

@@ -1,3 +1,4 @@
+import { logger } from '@/utils/safeLogger';
 // RMFOOD 局域网访问配置
 // 支持多 IP 地址访问
 
@@ -55,8 +56,8 @@ export const getWebSocketUrl = () => {
 
 // 日志输出（仅开发环境）
 if (import.meta.env.DEV) {
-  console.log('[RMFOOD 局域网配置]');
-  console.log('当前访问主机:', hostname);
-  console.log('API 基地址:', getApiBaseUrl());
-  console.log('WebSocket URL:', getWebSocketUrl());
+  logger.info('[RMFOOD 局域网配置]');
+  logger.info('当前访问主机:', hostname);
+  logger.info('API 基地址:', getApiBaseUrl());
+  logger.info('WebSocket URL:', getWebSocketUrl());
 }

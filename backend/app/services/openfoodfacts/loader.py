@@ -133,8 +133,8 @@ class OFFLoader:
                 # Transaction-level failure: rollback and retry entire batch
                 try:
                     await self.db.rollback()
-                except:
-                    pass  # Ignore rollback errors
+                except Exception as rollback_err:
+                    logger.warning("[Loader] 回滚失败 (非致命): %s", rollback_err)
 
                 logger.warning(f"[Loader] 批次提交失败 (尝试 {attempt + 1}/{max_retries}): {e}")
 

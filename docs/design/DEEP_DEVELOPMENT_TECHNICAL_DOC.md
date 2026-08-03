@@ -382,9 +382,9 @@ else:
 
 ---
 
-### 2.5 安全防护增强系统 (`security_enhanced.py`)
+### 2.5 安全防护增强系统 (`security_middleware.py`)
 
-**文件位置**: `backend/app/core/security_enhanced.py`
+**文件位置**: `backend/app/core/security/security_middleware.py`
 
 **防护层级**:
 
@@ -400,7 +400,7 @@ else:
 #### 2.5.1 速率限制
 
 ```python
-from app.core.security_enhanced import get_rate_limiter, RateLimitConfig, ClientInfo
+from app.core.security.security_middleware import get_rate_limiter, RateLimitConfig, ClientInfo
 
 limiter = get_rate_limiter(RateLimitConfig(
     requests_per_minute=60,
@@ -422,7 +422,7 @@ if not allowed:
 #### 2.5.2 输入清洗
 
 ```python
-from app.core.security_enhanced import InputSanitizer
+from app.core.security.security_middleware import InputSanitizer
 
 # SQL注入防护
 safe_sql = InputSanitizer.sanitize_sql_input(user_input)
@@ -443,7 +443,7 @@ is_valid_sort = InputSanitizer.validate_sort_field(
 #### 2.5.3 数据脱敏
 
 ```python
-from app.core.security_enhanced import DataMasker
+from app.core.security.security_middleware import DataMasker
 
 # 单字段脱敏
 masked_phone = DataMasker.mask_phone("13812345678")  
@@ -802,7 +802,7 @@ backend/app/core/
 ├── cache_system.py          # 新增: 多级缓存系统
 ├── task_queue.py            # 新增: 异步任务队列
 ├── resilience.py            # 新增: 弹性容错框架
-└── security_enhanced.py     # 新增: 安全防护增强
+└── security_middleware.py     # 新增: 安全防护增强
 
 frontend/src/hooks/
 └── usePeptideAnalysis.ts    # 新增: 统一状态管理Hook

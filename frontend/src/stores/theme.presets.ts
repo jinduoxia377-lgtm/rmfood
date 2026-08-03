@@ -730,7 +730,7 @@ export function mergeThemeOverrides(base: ThemeConfig, overrides: CustomThemeOve
 export function generateCSSVariables(theme: ThemeConfig): Record<string, string> {
   // 防御性检查：如果theme或theme.colors不存在，返回空对象
   if (!theme?.colors) {
-    console.warn('[Theme System] ⚠️ generateCSSVariables 收到无效的主题配置');
+    logger.warn('[Theme System] ⚠️ generateCSSVariables 收到无效的主题配置');
     return {};
   }
 
@@ -796,7 +796,7 @@ export function generateCSSVariables(theme: ThemeConfig): Record<string, string>
 export function applyThemeToDOM(theme: ThemeConfig): void {
   // 防御性检查：如果theme无效，不执行任何操作
   if (!theme?.colors) {
-    console.warn('[Theme System] ⚠️ applyThemeToDOM 收到无效的主题配置，跳过应用');
+    logger.warn('[Theme System] ⚠️ applyThemeToDOM 收到无效的主题配置，跳过应用');
     return;
   }
 

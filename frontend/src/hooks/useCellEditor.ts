@@ -22,6 +22,8 @@ import type {
 import { EditMode } from '@/types/editing.types';
 import axios from 'axios';
 
+
+import { logger } from '@/utils/safeLogger';
 /** 最大撤销/重做步数 */
 const MAX_UNDO_STACK_SIZE = 50;
 
@@ -492,7 +494,7 @@ export function useCellEditor(
    */
   const enterBatchMode = useCallback((columnKey: string) => {
     if (state.selectedRows.size === 0) {
-      console.warn('[useCellEditor] 请先选择要修改的行');
+      logger.warn('[useCellEditor] 请先选择要修改的行');
       return;
     }
     batchColumnKeyRef.current = columnKey;
@@ -585,7 +587,7 @@ export function useCellEditor(
       dispatch({ type: 'SAVE_CHANGES' });
       return true;
     } catch (error: any) {
-      console.error('[useCellEditor] 保存失败:', error);
+      logger.error('[useCellEditor] 保存失败:', error);
       return false;
     }
   }, [state.changes]);

@@ -608,7 +608,8 @@ async def optimization_progress_websocket(websocket: WebSocket):
             await websocket.close(code=4003, reason="Invalid or expired token")
             return
         user_id = str(payload["sub"])
-    except Exception:
+    except Exception as token_err:
+        logger.warning("WebSocket 令牌验证失败: %s", token_err)
         await websocket.close(code=4003, reason="Invalid token")
         return
 
@@ -675,8 +676,8 @@ async def optimization_progress_websocket(websocket: WebSocket):
     finally:
         try:
             await manager.disconnect(client_id, reason="client_disconnect")
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning("WebSocket disconnect 清理失败: %s", e)
 
 
 # 导出路由供主应用注册

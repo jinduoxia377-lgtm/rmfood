@@ -1,3 +1,4 @@
+import { logger } from '@/utils/safeLogger';
 export enum ChatState {
   Idle = 'idle',
   Validating = 'validating',
@@ -414,7 +415,7 @@ export class ChatStateMachine implements IStateMachine<ChatState> {
       }
 
       if (this.config.enableDebug) {
-        console.warn(`[ChatStateMachine] ${errorMessage}`);
+        logger.warn(`[ChatStateMachine] ${errorMessage}`);
       }
       this.onTransitionError?.(this._state, to, new Error(errorMessage));
       return false;
@@ -442,7 +443,7 @@ export class ChatStateMachine implements IStateMachine<ChatState> {
       try {
         this.onStateChange(previousState, to);
       } catch (callbackError) {
-        console.error(`[ChatStateMachine] onStateChange 回调执行失败:`, callbackError);
+        logger.error(`[ChatStateMachine] onStateChange 回调执行失败:`, callbackError);
       }
     }
 

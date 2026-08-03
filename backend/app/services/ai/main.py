@@ -28,7 +28,7 @@ async def chat(request: ChatRequest):
         response = await chat_service.process(request.messages)
         return {"response": response}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="AI 处理失败，请稍后重试")
 
 if __name__ == "__main__":
     import uvicorn

@@ -22,6 +22,8 @@ import { useTranslation } from 'react-i18next';
 // @ts-ignore
 import { SUPPORTED_LANGUAGES } from './index';
 
+
+import { logger } from '@/utils/safeLogger';
 interface LanguageSwitcherProps {
   variant?: 'dropdown' | 'buttons';
   size?: 'sm' | 'md' | 'lg';
@@ -54,7 +56,7 @@ function LanguageSwitcher({
       await i18n.changeLanguage(langCode);
       setIsOpen(false);
     } catch (error) {
-      console.error('[LanguageSwitcher] Failed to change language:', error);
+      logger.error('[LanguageSwitcher] Failed to change language:', error);
     }
   };
 

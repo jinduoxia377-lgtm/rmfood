@@ -4,6 +4,8 @@
 
 import type { FormulaIngredient, ValidationError, FormulaTemplate, IngredientParameter } from './types';
 
+
+import { logger } from '@/utils/safeLogger';
 // 生成唯一ID
 export const generateId = (): string => {
   return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -152,7 +154,7 @@ export const saveToLocalStorage = (data: {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   } catch (error) {
-    console.error('Failed to save to localStorage:', error);
+    logger.error('Failed to save to localStorage:', error);
   }
 };
 
@@ -167,7 +169,7 @@ export const loadFromLocalStorage = (): {
       return JSON.parse(data);
     }
   } catch (error) {
-    console.error('Failed to load from localStorage:', error);
+    logger.error('Failed to load from localStorage:', error);
   }
   return null;
 };
@@ -184,7 +186,7 @@ export const saveTemplate = (template: Omit<FormulaTemplate, 'id' | 'createdAt' 
     };
     localStorage.setItem(TEMPLATES_KEY, JSON.stringify([...existing, newTemplate]));
   } catch (error) {
-    console.error('Failed to save template:', error);
+    logger.error('Failed to save template:', error);
   }
 };
 
@@ -195,7 +197,7 @@ export const loadTemplates = (): FormulaTemplate[] => {
     const custom = customTemplates ? JSON.parse(customTemplates) : [];
     return custom;
   } catch (error) {
-    console.error('Failed to load templates:', error);
+    logger.error('Failed to load templates:', error);
     return [];
   }
 };
@@ -207,7 +209,7 @@ export const deleteTemplate = (templateId: string): void => {
     const filtered = templates.filter((t) => t.id !== templateId);
     localStorage.setItem(TEMPLATES_KEY, JSON.stringify(filtered));
   } catch (error) {
-    console.error('Failed to delete template:', error);
+    logger.error('Failed to delete template:', error);
   }
 };
 

@@ -7,6 +7,8 @@
 
 import DOMPurify from 'dompurify';
 
+
+import { logger } from '@/utils/safeLogger';
 const SANITIZE_CONFIG = {
   ALLOWED_TAGS: [
     'h1',
@@ -95,5 +97,5 @@ self.onmessage = (event: MessageEvent) => {
 };
 
 self.onerror = (event: string | Event) => {
-  console.error('[SanitizeWorker] Error:', event instanceof ErrorEvent ? event.message : String(event));
+  logger.error('[SanitizeWorker] Error:', event instanceof ErrorEvent ? event.message : String(event));
 };

@@ -517,7 +517,7 @@ async def dashboard_overview(
                             "hydrolysis_enzyme": enzyme,
                         })
                 except (ValueError, TypeError):
-                    pass
+                    pass  # non-numeric values are skipped in numeric sort
     else:
         # Fallback: 内存数据
         from ...services.data_sources.dfbp_client import DFBP_PEPTIDE_DATABASE

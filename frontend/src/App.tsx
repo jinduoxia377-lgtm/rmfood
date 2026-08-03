@@ -65,6 +65,7 @@ const UserManagementPage = lazyWithPreload(() => import('@/pages/user/UserManage
 const SettingsPage = lazyWithPreload(() => import('@/pages/settings/SettingsPage'));
 const NotificationPage = lazyWithPreload(() => import('@/pages/notification/NotificationPage'));
 const WorkflowPage = lazyWithPreload(() => import('@/pages/workflow/WorkflowPage'));
+const AgentPage = lazyWithPreload(() => import('@/pages/agent/AgentPage'));
 
 // 🔒 P3-1: 管理员页面 - 大体积（含图表/审计功能）
 const AuditLogPage = lazyWithPreload(() => import('@/pages/admin/AuditLogPage'));
@@ -347,6 +348,14 @@ const router = createBrowserRouter([
         element: (
           <Suspense fallback={<LoadingComponent />}>
             <WorkflowPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'agent',
+        element: (
+          <Suspense fallback={<LoadingComponent />}>
+            <AgentPage />
           </Suspense>
         ),
       },

@@ -63,8 +63,8 @@ class OFFLoaderSync:
         if self.conn:
             try:
                 self.conn.rollback()
-            except:
-                pass
+            except Exception as rollback_err:
+                logger.warning("[OFFLoaderSync] 回滚失败 (非致命): %s", rollback_err)
             self.conn.close()
             logger.info("[OFFLoaderSync] 已关闭 PostgreSQL 连接")
 

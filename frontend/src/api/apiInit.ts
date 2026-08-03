@@ -55,8 +55,8 @@ class DatabaseMockProvider implements IMockDataProvider {
         }
         if (url.includes('/stats')) {
           // 使用类型断言来访问可能不存在的方法
-          const mockApi = mockDatabaseApi as any
-          return mockApi.getGraphStats?.() || { total_nodes: 0, total_edges: 0, node_types: {} }
+          const mockApi = mockDatabaseApi as Record<string, unknown>
+          return (mockApi['getGraphStats'] as (() => unknown) | undefined)?.() || { total_nodes: 0, total_edges: 0, node_types: {} }
         }
         return { items: [], total: 0 }
       }

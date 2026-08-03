@@ -53,7 +53,7 @@ export function lazyWithPreload<P = object>(
         }
       })
       .catch((error) => {
-        console.error(`[LazyLoad] 预加载失败: ${componentName}`, error);
+        logger.error(`[LazyLoad] 预加载失败: ${componentName}`, error);
       });
     return preloadPromise;
   };
@@ -108,7 +108,7 @@ export function LazyLoadWrapper<P = object>(props: {
     // 设置超时警告
     timeoutRef.current = window.setTimeout(() => {
       if (isMountedRef.current) {
-        console.warn(`[LazyLoad] 组件加载超时 (${timeout}ms): ${(LazyComponent as any).displayName || 'Unknown'}`);
+        logger.warn(`[LazyLoad] 组件加载超时 (${timeout}ms): ${(LazyComponent as any).displayName || 'Unknown'}`);
       }
     }, timeout);
 
@@ -176,3 +176,5 @@ export function LazyLoadWrapper<P = object>(props: {
 }
 
 import { ErrorBoundary } from './ErrorBoundary';
+
+import { logger } from '@/utils/safeLogger';

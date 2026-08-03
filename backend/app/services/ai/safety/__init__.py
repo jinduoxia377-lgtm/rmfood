@@ -1,10 +1,37 @@
-"""安全检查服务"""
+"""AI 安全模块"""
 
-from .batch_safety_check import BatchSafetyCheckService, SafetyCheckResult
-from .safety_report_generator import SafetyReportGenerator
+from .batch_safety_check import BatchCheckResult
+from .safety_report_generator import SafetyReportData, SafetyReportGenerator
+from .prompt_guard import PromptGuard, PromptGuardResult, ThreatLevel, check_prompt, get_prompt_guard
+from .output_filter import OutputSafetyChecker, OutputCheckResult, OutputRiskLevel, check_output
+from .instruction_hierarchy import (
+    InstructionHierarchy,
+    ContextLayer,
+    build_safety_context,
+    RETRIEVED_CONTENT_TAG,
+    RETRIEVED_CONTENT_CLOSE,
+)
 
 __all__ = [
-    "BatchSafetyCheckService",
-    "SafetyCheckResult",
+    # 原有模块
+    "BatchCheckResult",
+    "SafetyReportData",
     "SafetyReportGenerator",
+    # Prompt 注入防护
+    "PromptGuard",
+    "PromptGuardResult",
+    "ThreatLevel",
+    "check_prompt",
+    "get_prompt_guard",
+    # 输出侧安全检查
+    "OutputSafetyChecker",
+    "OutputCheckResult",
+    "OutputRiskLevel",
+    "check_output",
+    # 指令层级隔离
+    "InstructionHierarchy",
+    "ContextLayer",
+    "build_safety_context",
+    "RETRIEVED_CONTENT_TAG",
+    "RETRIEVED_CONTENT_CLOSE",
 ]

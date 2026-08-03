@@ -8,6 +8,8 @@ import type { FormulaIngredient } from './types';
 import { DEFAULT_PARAMETERS } from './types';
 import { generateId } from './utils';
 
+
+import { logger } from '@/utils/safeLogger';
 interface IngredientSelectorProps {
   isOpen: boolean;
   onClose: () => void;
@@ -51,7 +53,7 @@ export const IngredientSelector: React.FC<IngredientSelectorProps> = ({
       setIngredients(data.data || []);
       setFilteredIngredients(data.data || []);
     } catch (err) {
-      console.error('Error fetching ingredients:', err);
+      logger.error('Error fetching ingredients:', err);
       setError('无法连接到数据库，使用本地预设数据');
       setIngredients(getMockIngredients());
       setFilteredIngredients(getMockIngredients());

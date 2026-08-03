@@ -7,6 +7,8 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import type { AcademicReport, AcademicReportSection } from './academicReportService';
 
+
+import { logger } from '@/utils/safeLogger';
 export interface ChinesePdfOptions {
   filename?: string;
   title?: string;
@@ -445,7 +447,7 @@ export class ChinesePdfExportService {
       const blob = this.doc.output('blob');
       return blob;
     } catch (error) {
-      console.error('[ChinesePdfExportService] Export failed:', error);
+      logger.error('[ChinesePdfExportService] Export failed:', error);
       throw new Error(`PDF导出失败: ${error instanceof Error ? error.message : '未知错误'}`);
     }
   }

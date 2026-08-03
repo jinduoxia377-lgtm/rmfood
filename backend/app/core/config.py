@@ -529,10 +529,10 @@ class Settings(BaseSettings):
                     "建议使用 require 或 verify-full"
                 )
 
-            if self.admin_password == "admin123":
+            if self.admin_password in ("admin123", "change-this-password-in-production"):
                 errors.append(
-                    "生产环境管理员密码不能使用默认值 admin123，"
-                    "请设置 ADMIN_PASSWORD 环境变量"
+                    "生产环境管理员密码不能使用默认值，"
+                    "请设置 ADMIN_PASSWORD 环境变量为强密码"
                 )
 
         # 开发/测试环境：如果 admin_password 为空，生成随机密码

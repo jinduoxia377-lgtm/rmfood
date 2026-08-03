@@ -11,6 +11,8 @@ import {
 import { useOperationFeedback } from '@/hooks/useOperationFeedback'
 import type { SafetyCheckResult } from '@/types'
 
+
+import { logger } from '@/utils/safeLogger';
 interface ReportSection {
   id: string
   title: string
@@ -335,7 +337,7 @@ export function SafetyReportTemplate({
 
       feedback.showSuccess('报告已生成', `${selectedTemplate.name} PDF 报告生成成功`)
     } catch (error) {
-      console.error('PDF generation error:', error)
+      logger.error('PDF generation error:', error)
       feedback.showError('生成失败', error instanceof Error ? error.message : 'PDF生成过程中出现错误')
     } finally {
       setIsGenerating(false)

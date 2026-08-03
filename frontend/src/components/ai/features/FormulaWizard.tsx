@@ -1,5 +1,7 @@
 import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+
+import { logger } from '@/utils/safeLogger';
 import {
   Target,
   Settings,
@@ -151,7 +153,7 @@ function savePresets(presets: PresetData[]): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(presets));
   } catch (e) {
-    console.warn('Failed to save presets:', e);
+    logger.warn('Failed to save presets:', e);
   }
 }
 

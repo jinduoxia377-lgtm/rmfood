@@ -17,6 +17,8 @@ import type { Token, User } from '@/types'
 import { UserRole } from '@/types'
 import { envConfig } from '@/config/env'
 
+
+import { logger } from '@/utils/safeLogger';
 const API_BASE = envConfig.api.baseUrl
 
 const api = axios.create({
@@ -122,7 +124,7 @@ api.interceptors.response.use(
         request: error.request,
         __aborted: true as const,
       }
-      return Promise.resolve(silentResponse as any)
+      return Promise.resolve(silentResponse as never)
     }
 
     // 移除 mock fallback，始终使用真实 API
@@ -144,7 +146,7 @@ api.interceptors.response.use(
       // 如果请求是登录流程的一部分（post-login getMe），直接拒绝而不是触发刷新
       // 否则会导致：getMe 401 → refreshToken → 再次 401 → clearAuthState → 重定向回登录页
       if (original._loginFlow) {
-        if (import.meta.env.DEV) console.warn('[API] 登录流程中 getMe 失败，跳过 token 刷新')
+        if (import.meta.env.DEV) logger.warn('[API] 登录流程中 getMe 失败，跳过 token 刷新')
         return Promise.reject(error)
       }
 
@@ -168,7 +170,7 @@ api.interceptors.response.use(
       if (isAuthError) {
         // 如果是登录或刷新请求，直接拒绝
         if (original.url?.includes('/auth/login') || original.url?.includes('/auth/refresh')) {
-          if (import.meta.env.DEV) console.warn('[API] 登录或刷新失败:', errorDetail)
+          if (import.meta.env.DEV) logger.warn('[API] 登录或刷新失败:', errorDetail)
           clearAuthState()
           return Promise.reject(error)
         }
@@ -195,7 +197,7 @@ api.interceptors.response.use(
           return api(original)
         } catch (refreshError) {
           isRefreshing = false
-          if (import.meta.env.DEV) console.warn('[API] Token 刷新失败，用户将被登出')
+          if (import.meta.env.DEV) logger.warn('[API] Token 刷新失败，用户将被登出')
           clearAuthState()
           // 重定向到登录页
           if (typeof window !== 'undefined') {
@@ -211,7 +213,7 @@ api.interceptors.response.use(
     // 处理 403 权限不足错误
     if (error.response?.status === 403) {
       const errorDetail = error.response.data?.detail || error.response.data?.message || ''
-      if (import.meta.env.DEV) console.warn(`[API] 权限不足 (403): ${original.url} - ${errorDetail}`)
+      if (import.meta.env.DEV) logger.warn(`[API] 权限不足 (403): ${original.url} - ${errorDetail}`)
       return Promise.reject(error)
     }
 

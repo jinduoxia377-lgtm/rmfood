@@ -86,7 +86,8 @@ class ModelGateway:
             try:
                 adapter = self._registry.get_adapter_instance(provider)
                 result[provider] = adapter.get_supported_models()
-            except:
+            except Exception as provider_err:
+                logger.warning("[ModelGateway] 获取 %s 可用模型失败: %s", provider, provider_err)
                 result[provider] = []
         return result
 

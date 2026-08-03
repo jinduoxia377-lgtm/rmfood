@@ -61,7 +61,7 @@ async def list_notifications(
                 query = query.where(Notification.type == notif_type)
                 count_query = count_query.where(Notification.type == notif_type)
             except ValueError:
-                pass
+                logger.debug(f"无效的通知类型过滤器: {type_filter}")
 
         if is_read is not None:
             query = query.where(Notification.is_read == is_read)
@@ -207,7 +207,7 @@ async def mark_all_as_read(
             notif_type = NotificationType(type_filter)
             query = query.where(Notification.type == notif_type)
         except ValueError:
-            pass
+            logger.warning("无效的通知类型过滤器，已忽略: %s", type_filter)
     
     result = await db.execute(query)
     await db.commit()
@@ -371,7 +371,7 @@ async def clear_all_notifications(
             notif_type = NotificationType(type_filter)
             query = query.where(Notification.type == notif_type)
         except ValueError:
-            pass
+            logger.warning("无效的通知类型过滤器，已忽略: %s", type_filter)
     
     result = await db.execute(query)
     await db.commit()

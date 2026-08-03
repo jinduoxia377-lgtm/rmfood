@@ -6,6 +6,8 @@
 import { useCallback, useState } from 'react'
 import { importApi, type FieldMappingConfig, type ImportTaskDetail, type ImportErrorItem, type UploadResponse } from '@/api/import'
 
+
+import { logger } from '@/utils/safeLogger';
 export type ImportStep = 'idle' | 'upload' | 'preview' | 'mapping' | 'running' | 'done' | 'error'
 
 export interface ImportProgress {
@@ -152,7 +154,7 @@ export function useImportEngine(): UseImportEngineReturn {
         setErrorMessage(detail.error_summary || '导入失败')
       }
     } catch (e: any) {
-      console.warn('[useImportEngine] refresh failed:', e.message)
+      logger.warn('[useImportEngine] refresh failed:', e.message)
     }
   }, [uploadResponse?.task_id])
 

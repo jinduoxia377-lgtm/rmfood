@@ -73,7 +73,7 @@ async def websocket_endpoint(
         try:
             client_info_dict = json.loads(client_info)
         except json.JSONDecodeError:
-            pass
+            logger.debug("WebSocket 客户端信息 JSON 解析失败")
 
     # 连接到管理器（院士级修复: 检查返回值，若超限则已自动拒绝）
     connected = await connection_manager.connect(

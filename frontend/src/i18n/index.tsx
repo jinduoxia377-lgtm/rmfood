@@ -46,6 +46,8 @@
 
 import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
 
+
+import { logger } from '@/utils/safeLogger';
 // ═════════════════════════════════════════════
 // 🟡 P4-5: 类型定义
 // ═════════════════════════════════════════════
@@ -583,7 +585,7 @@ export function TranslationProvider({
       // 简化：使用中文作为占位
       MESSAGES_MAP[targetLocale] = ZH_CN_MESSAGES;
     } catch (error) {
-      console.error(`Failed to load locale: ${targetLocale}`, error);
+      logger.error(`Failed to load locale: ${targetLocale}`, error);
     } finally {
       setIsLoading(false);
     }
@@ -593,7 +595,7 @@ export function TranslationProvider({
   const setLocale = useCallback(
     (newLocale: Locale) => {
       if (!LOCALES[newLocale]) {
-        if (import.meta.env.DEV) console.warn(`Unknown locale: ${newLocale}`);
+        if (import.meta.env.DEV) logger.warn(`Unknown locale: ${newLocale}`);
         return;
       }
 
@@ -634,7 +636,7 @@ export function TranslationProvider({
       // 如果仍找不到，返回 key
       if (translation === undefined) {
         if (import.meta.env.DEV) {
-          console.warn(`Missing translation: ${key}`);
+          logger.warn(`Missing translation: ${key}`);
         }
         return key;
       }

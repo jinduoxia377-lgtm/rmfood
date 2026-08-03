@@ -3,6 +3,8 @@ import tcmService from './tcmService';
 import type { TCMHerb, TCMChemistry, TCMChemistryVisualization } from './tcmService';
 import { sanitizeHTML } from '@/utils/sanitize';
 
+
+import { logger } from '@/utils/safeLogger';
 interface TCMViewerProps {
   herbId: string;
   showChemistry?: boolean;
@@ -233,7 +235,7 @@ export const TCMSearchComponent: React.FC<TCMSearchComponentProps> = ({ onSelect
       const { herbs } = await tcmService.searchHerbs({ keyword, pageSize: 20 });
       setResults(herbs);
     } catch (error) {
-      console.error('Search failed:', error);
+      logger.error('Search failed:', error);
     } finally {
       setSearching(false);
     }

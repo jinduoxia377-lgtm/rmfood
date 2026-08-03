@@ -19,6 +19,7 @@
  *   })
  */
 
+import { logger } from '@/utils/safeLogger';
 // Web Vitals 指标类型
 export type VitalMetric = {
   name: string; // 指标名称
@@ -127,7 +128,7 @@ function observeLCP(callback: (metric: VitalMetric) => void) {
 
     observer.observe({ type: 'largest-contentful-paint', buffered: true });
   } catch (e) {
-    if (config.debug) console.warn('[Perf] LCP observer not supported');
+    if (config.debug) logger.warn('[Perf] LCP observer not supported');
   }
 }
 
@@ -183,7 +184,7 @@ function observeCLS(callback: (metric: VitalMetric) => void) {
 
     observer.observe({ type: 'layout-shift', buffered: true });
   } catch (e) {
-    if (config.debug) console.warn('[Perf] CLS observer not supported');
+    if (config.debug) logger.warn('[Perf] CLS observer not supported');
   }
 }
 
@@ -213,7 +214,7 @@ function observeFID(callback: (metric: VitalMetric) => void) {
 
     observer.observe({ type: 'first-input', buffered: true });
   } catch (e) {
-    if (config.debug) console.warn('[Perf] FID observer not supported');
+    if (config.debug) logger.warn('[Perf] FID observer not supported');
   }
 }
 
@@ -239,7 +240,7 @@ function observeFCP(callback: (metric: VitalMetric) => void) {
 
     observer.observe({ type: 'paint', buffered: true });
   } catch (e) {
-    if (config.debug) console.warn('[Perf] FCP observer not supported');
+    if (config.debug) logger.warn('[Perf] FCP observer not supported');
   }
 }
 
@@ -267,7 +268,7 @@ function collectTTFB(callback: (metric: VitalMetric) => void) {
       });
     }
   } catch (e) {
-    if (config.debug) console.warn('[Perf] TTFB collection failed');
+    if (config.debug) logger.warn('[Perf] TTFB collection failed');
   }
 }
 
@@ -310,7 +311,7 @@ export function startPerfTimer(name: string): () => number {
     customMetrics[name] = elapsed;
 
     if (config.debug) {
-      console.log(`[Perf] ${name}: ${elapsed.toFixed(2)}ms`);
+      logger.info(`[Perf] ${name}: ${elapsed.toFixed(2)}ms`);
     }
 
     // 自动上报自定义指标
@@ -337,7 +338,7 @@ export function markPerfTiming(name: string): void {
     customMetrics[name] = performance.now();
 
     if (config.debug) {
-      console.log(`[Perf] Marked: ${name} at ${performance.now().toFixed(2)}ms`);
+      logger.info(`[Perf] Marked: ${name} at ${performance.now().toFixed(2)}ms`);
     }
   } catch (e) {
     // performance.mark 可能在某些环境失败
@@ -356,7 +357,7 @@ function handleMetric(metric: VitalMetric) {
   metrics.push(metric);
 
   if (config.debug) {
-    console.log(`[Perf] ${metric.name}: ${metric.value.toFixed(2)}ms (${metric.rating})`);
+    logger.info(`[Perf] ${metric.name}: ${metric.value.toFixed(2)}ms (${metric.rating})`);
   }
 
   // 关键指标达到阈值时立即上报
@@ -466,7 +467,7 @@ function getMemoryUsage(): any {
  */
 function sendReport(payload: any) {
   if (!config.endpoint) {
-    if (config.debug) console.log('[Perf] Report (no endpoint):', payload);
+    if (config.debug) logger.info('[Perf] Report (no endpoint):', payload);
     return;
   }
 
@@ -551,12 +552,12 @@ export function initPerformanceMonitoring(userConfig: Partial<PerformanceConfig>
   config = { ...DEFAULT_CONFIG, ...userConfig };
 
   if (!config.enabled) {
-    if (config.debug) console.log('[Perf] Monitoring disabled');
+    if (config.debug) logger.info('[Perf] Monitoring disabled');
     return;
   }
 
   if (config.debug) {
-    console.log('[Perf] Initializing performance monitoring', config);
+    logger.info('[Perf] Initializing performance monitoring', config);
   }
 
   // 初始化观察者

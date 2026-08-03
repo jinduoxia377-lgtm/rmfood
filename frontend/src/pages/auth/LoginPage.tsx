@@ -27,6 +27,8 @@ import { RHINE_BRAND_CONFIG, RHINE_LOGIN_CONFIG } from '@/config'
 import RhineParticleField from './RhineParticleField'
 import RhineDNAHelix from './RhineDNAHelix'
 import RhineHexGrid from './RhineHexGrid'
+
+import { logger } from '@/utils/safeLogger';
 import './LoginPage.css'
 
 /* ═══════════════════════════════════════════════════════════════
@@ -51,7 +53,7 @@ function checkOAuthEnvVars() {
     }
   }
   if (missing.length > 0) {
-    console.warn(
+    logger.warn(
       `[Login] OAuth 未配置（社交登录已自动禁用）：缺少环境变量 ${missing.join(', ')}。` +
       `请在 .env 文件中配置对应的 VITE_* 变量，或在 RHINE_LOGIN_CONFIG.socialLogin 中关闭对应提供商。`
     )

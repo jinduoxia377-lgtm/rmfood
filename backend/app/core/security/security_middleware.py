@@ -181,6 +181,11 @@ class RateLimitConfig:
         "/api/v1/files": 10,
         "/api/v1/ai": 20,
         "/api/v1/peptide-analyses/batch": 10,
+        # 写操作端点 — 防止批量提交滥用
+        "/api/v1/formulas": 10,
+        "/api/v1/experiments": 10,
+        "/api/v1/formula-integration": 5,
+        "/api/v1/chat/stream": 10,
     })
 
 

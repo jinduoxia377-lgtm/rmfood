@@ -48,7 +48,8 @@ async def websocket_generic_endpoint(
             await websocket.close(code=4003, reason="Invalid or expired token")
             return
         user_id = str(payload["sub"])
-    except Exception:
+    except Exception as auth_err:
+        logger.warning("WebSocket 认证失败: %s", auth_err)
         await websocket.close(code=4003, reason="Authentication failed")
         return
 
@@ -58,8 +59,8 @@ async def websocket_generic_endpoint(
         try:
             raw = urllib.parse.unquote(connection_id)
             client_info = json.loads(raw) if raw.startswith("{") else {}
-        except Exception:
-            pass
+        except Exception as parse_err:
+            logger.debug("WebSocket 客户端信息解析失败: %s", parse_err)
 
     manager = get_ws_manager()
     effective_connection_id = await manager.connect(websocket, user_id, tenant_id=payload.get("tenant_id", "default"), metadata=client_info)
@@ -117,7 +118,8 @@ async def websocket_notification_endpoint(
             await websocket.close(code=4003, reason="Invalid or expired token")
             return
         user_id = str(payload["sub"])
-    except Exception:
+    except Exception as auth_err:
+        logger.warning("WebSocket 认证失败: %s", auth_err)
         await websocket.close(code=4003, reason="Authentication failed")
         return
 
@@ -149,7 +151,7 @@ async def websocket_notification_endpoint(
                     "type": "error", "data": {"code": "INVALID_JSON"}
                 })
     except WebSocketDisconnect:
-        pass
+        logger.debug("通用 WebSocket 客户端正常断开连接")
     except Exception as e:
         logger.error(f"WebSocket错误: {e}", exc_info=True)
     finally:
@@ -175,7 +177,8 @@ async def websocket_presence_endpoint(
             await websocket.close(code=4003, reason="Invalid token")
             return
         user_id = str(payload["sub"])
-    except Exception:
+    except Exception as auth_err:
+        logger.warning("WebSocket 认证失败: %s", auth_err)
         await websocket.close(code=4003, reason="Authentication failed")
         return
 
@@ -205,6 +208,6 @@ async def websocket_presence_endpoint(
                 },
             })
     except WebSocketDisconnect:
-        pass
+        logger.debug("Presence WebSocket 客户端正常断开连接")
     except Exception as e:
         logger.error(f"Presence WebSocket错误: {e}")

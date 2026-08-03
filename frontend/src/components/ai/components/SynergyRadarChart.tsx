@@ -36,6 +36,8 @@ import {
 } from 'recharts'
 import html2canvas from 'html2canvas'
 
+
+import { logger } from '@/utils/safeLogger';
 export type SynergyDimension =
   | 'synergyStrength'
   | 'bioavailabilityEnhancement'
@@ -346,7 +348,7 @@ const SynergyRadarChartComponent: React.FC<SynergyRadarChartProps> = ({
           }
         }
       } catch (err) {
-        console.error('导出失败:', err)
+        logger.error('导出失败:', err)
       } finally {
         setIsExporting(false)
       }

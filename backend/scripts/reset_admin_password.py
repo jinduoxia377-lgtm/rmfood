@@ -5,7 +5,7 @@ import sys
 import os
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
-from app.core.security import get_password_hash
+from app.utils.auth import get_password_hash
 
 async def main():
     new_hash = get_password_hash('admin123')
@@ -19,10 +19,10 @@ async def main():
     )
     
     row = await conn.fetchrow("SELECT username, login_attempts FROM users WHERE username='admin'")
-    print(f"✅ 密码已重置: user={row['username']}, attempts={row['login_attempts']}")
-    
+    print(f"[OK] Password reset: user={row['username']}, attempts={row['login_attempts']}")
+
     await conn.close()
-    print("\n✅ 现在可以用 admin / admin123 登录")
+    print("\n[OK] Now you can login with admin / admin123")
 
 if __name__ == '__main__':
     asyncio.run(main())

@@ -29,6 +29,8 @@ import { Button } from '@/components/ui/Button'
 import { Progress } from '@/components/ui/Progress'
 import { Badge } from '@/components/ui/Badge'
 
+
+import { logger } from '@/utils/safeLogger';
 type ImportStep = 'upload' | 'preview' | 'result'
 type ImportMode = 'all' | 'valid_only' | 'skip_errors'
 
@@ -167,7 +169,7 @@ export function ImportModal({ open, onClose, onImportComplete }: ImportModalProp
       const blob = await generateImportTemplate()
       downloadBlob(blob, '配方导入模板.xlsx', { timestamp: false })
     } catch (err) {
-      console.error('下载模板失败:', err)
+      logger.error('下载模板失败:', err)
     }
   }, [])
 

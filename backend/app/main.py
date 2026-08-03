@@ -123,6 +123,15 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning(f"[Startup] WebSocket 心跳启动失败（非致命）: {e}")
 
+    # 4c. 启动异步任务队列
+    try:
+        from app.core.performance.task_queue import get_task_queue
+        _task_queue = get_task_queue()
+        await _task_queue.start()
+        logger.info("[Startup] 异步任务队列已启动")
+    except Exception as e:
+        logger.warning(f"[Startup] 任务队列启动失败（非致命）: {e}")
+
     # 5. 启动定时数据同步调度器
     try:
         from app.services.data_sources.auto_sync import start_auto_sync
@@ -150,6 +159,15 @@ async def lifespan(app: FastAPI):
         logger.info("[Shutdown] WebSocket 心跳已停止")
     except Exception as e:
         logger.warning(f"[Shutdown] WebSocket 心跳清理异常: {e}")
+
+    # 4d. 停止异步任务队列
+    try:
+        from app.core.performance.task_queue import get_task_queue
+        _task_queue = get_task_queue()
+        await _task_queue.stop(wait_for_completion=True)
+        logger.info("[Shutdown] 异步任务队列已停止")
+    except Exception as e:
+        logger.warning(f"[Shutdown] 任务队列清理异常（非致命）: {e}")
     try:
         await close_database()
     except Exception as e:
@@ -460,6 +478,78 @@ Authorization: Bearer <your_access_token>
     except Exception as e:
         logger.warning(f"[MobileAPI] 移动端路由注册失败（非阻塞）: {e}")
 
+    # ── Core system API (cache / tasks / health) ──
+    try:
+        from .api.v1.core_router import router as core_router
+        app.include_router(core_router, prefix="/api")
+        logger.info("[CoreRouter] Core system API registered")
+    except Exception as e:
+        logger.warning(f"[CoreRouter] Core router registration failed (non-blocking): {e}")
+
+    # ── AI Agent API ──
+    try:
+        from .api.v1.agent_router import router as agent_router
+        app.include_router(agent_router, prefix="/api/v1")
+        logger.info("[AgentRouter] AI Agent API registered")
+    except Exception as e:
+        logger.warning(f"[AgentRouter] Agent router registration failed (non-blocking): {e}")
+
+    # ── Data Flywheel API (P1-C: automated collection, validation, ML training) ──
+    try:
+        from .api.v1.data_flywheel_router import router as data_flywheel_router
+        app.include_router(data_flywheel_router, prefix="/api/v1")
+        logger.info("[DataFlywheel] Data flywheel router registered")
+    except Exception as e:
+        logger.warning(f"[DataFlywheel] Router registration failed (non-blocking): {e}")
+
+    # ── 实时合规检查 API ──
+    try:
+        from .api.v1.compliance_router import router as compliance_router
+        app.include_router(compliance_router, prefix="/api/v1")
+        logger.info("[ComplianceRouter] Real-time compliance API registered")
+    except Exception as e:
+        logger.warning(f"[ComplianceRouter] Compliance router registration failed (non-blocking): {e}")
+
+    # ── 实验数据解析 API ──
+    try:
+        from .api.v1.experiment_data_router import router as experiment_data_router
+        app.include_router(experiment_data_router, prefix="/api/v1")
+        logger.info("[ExperimentDataRouter] Experiment data parsing API registered")
+    except Exception as e:
+        logger.warning(f"[ExperimentDataRouter] Experiment data router registration failed (non-blocking): {e}")
+
+    # ── 工作流执行 API ──
+    try:
+        from .api.v1.workflow_exec_router import router as workflow_exec_router
+        app.include_router(workflow_exec_router, prefix="/api/v1")
+        logger.info("[WorkflowExecRouter] Workflow execution API registered")
+    except Exception as e:
+        logger.warning(f"[WorkflowExecRouter] Workflow execution router registration failed (non-blocking): {e}")
+
+    # ── 可解释性报告 API ──
+    try:
+        from .api.v1.explainability_router import router as explainability_router
+        app.include_router(explainability_router, prefix="/api/v1")
+        logger.info("[ExplainabilityRouter] Explainability report API registered")
+    except Exception as e:
+        logger.warning(f"[ExplainabilityRouter] Explainability router registration failed (non-blocking): {e}")
+
+    # ── 报告导出 API ──
+    try:
+        from .api.v1.report_export_router import router as report_export_router
+        app.include_router(report_export_router, prefix="/api/v1")
+        logger.info("[ReportExportRouter] Report export API registered")
+    except Exception as e:
+        logger.warning(f"[ReportExportRouter] Report export router registration failed (non-blocking): {e}")
+
+    # ── 插件管理与开放 API ──
+    try:
+        from .api.v1.plugin_router import router as plugin_router
+        app.include_router(plugin_router, prefix="/api/v1")
+        logger.info("[PluginRouter] Plugin management API registered")
+    except Exception as e:
+        logger.warning(f"[PluginRouter] Plugin router registration failed (non-blocking): {e}")
+
     # ── Potion AI VFT: 搜索分析 API ──
     try:
         app.include_router(search_analytics.router, prefix="/api/v1")
@@ -501,6 +591,7 @@ Authorization: Bearer <your_access_token>
                 "teams": "/api/v1/teams",
                 "version_control": "/api/v1/prompts",
                 "imports": "/api/v1/imports",
+                "data_flywheel": "/api/v1/data-flywheel",
 
                 # 🔒 P5 企业级合规模块端点
                 "enterprise": "/api/v1/enterprise",

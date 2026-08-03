@@ -31,6 +31,8 @@ import type { LanguageCode } from '../services/languageService'
 // 从 useChatInputState 导入接口，避免重复定义
 import type { SmartSuggestion, EnhancedSuggestion } from '../hooks/useChatInputState'
 
+
+import { logger } from '@/utils/safeLogger';
 // SuggestionItem 类型别名
 export type SuggestionItem = SmartSuggestion | EnhancedSuggestion
 
@@ -567,7 +569,7 @@ function EnhancedSuggestionCard({
       setCopied(true)
       setTimeout(() => setCopied(false), COPY_DEBOUNCE_MS)
     } catch (err) {
-      console.warn('Copy failed:', err)
+      logger.warn('Copy failed:', err)
     }
   }
 

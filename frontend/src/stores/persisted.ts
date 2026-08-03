@@ -15,6 +15,8 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { useMemo } from 'react';
 
+
+import { logger } from '@/utils/safeLogger';
 // ═════════════════════════════════════════
 // 🟡 P1-2: 通用状态持久化 Hook
 // ═════════════════════════════════════════
@@ -334,7 +336,7 @@ export function clearAllPersistedState(): void {
       localStorage.removeItem(key);
     });
   } catch (e) {
-    console.error('Failed to clear persisted state:', e);
+    logger.error('Failed to clear persisted state:', e);
   }
 }
 
@@ -371,7 +373,7 @@ export function importPersistedData(data: { [key: string]: any }): void {
       useAppConfigStore.setState(data.appConfig);
     }
   } catch (e) {
-    console.error('Failed to import persisted data:', e);
+    logger.error('Failed to import persisted data:', e);
     throw e;
   }
 }

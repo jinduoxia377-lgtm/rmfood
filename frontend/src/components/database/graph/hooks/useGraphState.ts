@@ -1083,6 +1083,7 @@ export function useGraphState(initialLayout: LayoutType = 'force') {
     setSearchQuery,
     setSearchResults,
     setSearchHistoryItems,
+    setSearchHistory: setSearchHistoryItems,
     setFocusedNodeIndex,
     setIsSelecting,
     setSelectionBox,

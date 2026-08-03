@@ -144,7 +144,7 @@ def upgrade() -> None:
     )
     op.create_index('ix_term_statistics_category_id', 'term_statistics', ['category_id'])
     
-    print("✅ 术语数据库表结构创建完成")
+    print("[OK] 术语数据库表结构创建完成")
 
 
 def downgrade() -> None:
@@ -174,4 +174,4 @@ def downgrade() -> None:
     op.drop_index('ix_term_categories_name', table_name='term_categories')
     op.drop_table('term_categories')
     
-    print("⏪ 术语数据库表结构已回滚")
+    print("[ROLLBACK] 术语数据库表结构已回滚")

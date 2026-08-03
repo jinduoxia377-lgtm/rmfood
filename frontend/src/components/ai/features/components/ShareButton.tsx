@@ -18,6 +18,8 @@
  */
 
 import React, { useState, useCallback, useRef, useEffect } from 'react'
+
+import { logger } from '@/utils/safeLogger';
 import {
   Share2,
   Copy,
@@ -157,7 +159,7 @@ export function ShareButton({
       // 2秒后自动收起
       setTimeout(() => setIsExpanded(false), 1500)
     } catch (err) {
-      console.error('[ShareButton] 复制失败:', err)
+      logger.error('[ShareButton] 复制失败:', err)
     }
   }, [content, onCopy])
 

@@ -269,7 +269,7 @@ async def dashboard_trends(
                     "source": sp,
                 })
             except (ValueError, TypeError):
-                pass
+                pass  # non-numeric values skipped in scatter plot
 
     # ── 分类-功效热力数据 ──
     category_effect_matrix = {}

@@ -72,7 +72,7 @@ class TestCriticalModules:
 
     def test_expected_count(self):
         """Verify the total number of critical modules has not changed accidentally."""
-        assert len(CRITICAL_MODULES) == 6
+        assert len(CRITICAL_MODULES) == 12
 
 
 class TestTagOverrides:
@@ -146,7 +146,7 @@ class TestTagOverrides:
 
     def test_expected_entry_count(self):
         """Verify the total number of tag override entries has not changed accidentally."""
-        assert len(TAG_OVERRIDES) == 18
+        assert len(TAG_OVERRIDES) == 22
 
 
 class TestV1Modules:
@@ -170,14 +170,14 @@ class TestV1Modules:
     def test_contains_notification_router(self):
         assert "notification_router" in V1_MODULES
 
-    def test_contains_ai_router(self):
-        assert "ai_router" in V1_MODULES
+    def test_contains_ai_task_router(self):
+        assert "ai_task_router" in V1_MODULES
 
     def test_contains_websocket_router(self):
         assert "websocket_router" in V1_MODULES
 
     def test_expected_count(self):
-        assert len(V1_MODULES) == 7
+        assert len(V1_MODULES) == 8
 
 
 class TestRouterRegistryClass:

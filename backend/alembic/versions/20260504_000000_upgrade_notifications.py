@@ -67,7 +67,7 @@ def upgrade() -> None:
     )
     op.create_index('ix_notification_preferences_user_id', 'notification_preferences', ['user_id'], unique=True)
     
-    print("✅ 通知系统表结构升级完成")
+    print("[OK] Notification system tables upgraded")
 
 
 def downgrade() -> None:
@@ -85,4 +85,4 @@ def downgrade() -> None:
     op.drop_column('notifications', 'body')
     op.drop_column('notifications', 'subject')
     
-    print("⏪ 通知系统表结构已回滚")
+    print("[ROLLBACK] Notification system tables rolled back")

@@ -1,6 +1,8 @@
 import { ProfessionalBaseService } from './ProfessionalBaseService';
 import type { ProfessionalServiceConfig } from '../../types/professional';
 
+
+import { logger } from '@/utils/safeLogger';
 export interface AminoAcidProperties {
   code: string;
   name: string;
@@ -865,7 +867,7 @@ export class PeptideService extends ProfessionalBaseService {
       const response = await this.post<DFBPSearchResult>('/peptides/search', params);
       return response;
     } catch (error) {
-      console.warn('DFBP API unavailable, falling back to mock data:', error);
+      logger.warn('DFBP API unavailable, falling back to mock data:', error);
       this.useMockData = true;
       return this.mockSearchPeptides(params);
     }
@@ -938,7 +940,7 @@ export class PeptideService extends ProfessionalBaseService {
     try {
       return await this.get<Peptide>(`/peptides/${id}`);
     } catch (error) {
-      console.warn('DFBP API unavailable, falling back to mock data:', error);
+      logger.warn('DFBP API unavailable, falling back to mock data:', error);
       return MOCK_PEPTIDES.find((p) => p.id === id) || null;
     }
   }
@@ -951,7 +953,7 @@ export class PeptideService extends ProfessionalBaseService {
     try {
       return await this.get<Peptide>(`/peptides/sequence/${sequence}`);
     } catch (error) {
-      console.warn('DFBP API unavailable, falling back to mock data:', error);
+      logger.warn('DFBP API unavailable, falling back to mock data:', error);
       return MOCK_PEPTIDES.find((p) => p.sequence.toUpperCase() === sequence.toUpperCase()) || null;
     }
   }

@@ -246,7 +246,7 @@ async def preview_data(
         raise
     except Exception as e:
         logger.exception(f"[{task_id}] Preview failed")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="预览失败，请稍后重试")
 
 
 @router.post("/{task_id}/run", summary="执行导入")
@@ -311,11 +311,11 @@ async def run_import(
         logger.error(f"[{{task_id}}] Failed to start Celery task: {{e}}")
         task.update({
             "status": "failed",
-            "error_summary": f"Failed to start import task: {{str(e)}}",
+            "error_summary": "导入任务启动失败",
         })
         task["updated_at"] = datetime.now(timezone.utc).isoformat()
         await _save_task_to_db(db, task)
-        raise HTTPException(status_code=500, detail=f"Could not start import: {{str(e)}}")
+        raise HTTPException(status_code=500, detail="导入任务启动失败，请稍后重试")
 
 
 @router.get("", summary="列出所有导入任务")
