@@ -206,8 +206,8 @@ class TLSConfig:
         if self.alpn_protocols:
             try:
                 context.set_alpn_protocols(self.alpn_protocols)
-            except Exception:
-                pass
+            except Exception as alpn_err:
+                logger.debug("ALPN 协议配置失败（非致命）: %s", alpn_err)
         
         return context
 

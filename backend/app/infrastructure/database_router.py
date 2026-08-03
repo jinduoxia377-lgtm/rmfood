@@ -126,7 +126,8 @@ class DatabaseRouter:
             try:
                 yield session
                 await session.commit()
-            except Exception:
+            except Exception as db_err:
+                logger.warning("数据库会话提交失败，执行回滚: %s", db_err)
                 await session.rollback()
                 raise
             finally:
@@ -163,7 +164,8 @@ class DatabaseRouter:
             try:
                 yield session
                 await session.commit()
-            except Exception:
+            except Exception as db_err:
+                logger.warning("数据库会话提交失败，执行回滚: %s", db_err)
                 await session.rollback()
                 raise
             finally:

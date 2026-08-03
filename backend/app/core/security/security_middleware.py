@@ -448,8 +448,8 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
                             info["body_preview"] = self._sensitive_filter(body_dict)
                         except (json.JSONDecodeError, UnicodeDecodeError):
                             info["body_size"] = len(body)
-                except Exception:
-                    pass
+                except Exception as extract_err:
+                    logger.debug("请求信息提取失败: %s", extract_err)
         except Exception as e:
             logger.warning(f"提取请求信息失败: {e}")
         return info

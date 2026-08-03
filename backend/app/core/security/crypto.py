@@ -42,10 +42,10 @@ def _get_encryption_key() -> bytes:
         try:
             Fernet(key.encode())
             return key.encode()
-        except Exception:
+        except Exception as key_err:
             raise ValueError(
                 "ENCRYPTION_KEY 格式无效。请使用 Fernet.generate_key() 生成。"
-            )
+            ) from key_err
 
     # 开发环境自动生成
     logger.warning(

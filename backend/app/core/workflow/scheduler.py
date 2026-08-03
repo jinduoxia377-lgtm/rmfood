@@ -299,7 +299,8 @@ class WorkflowScheduler:
                     eval_expr = eval_expr.replace(f"{dep_id}.{key}", str(val))
 
             return bool(eval(eval_expr, {"__builtins__": {}}, {}))
-        except Exception:
+        except Exception as eval_err:
+            logger.debug("条件评估失败，默认通过: %s", eval_err)
             return True  # 条件评估失败时默认通过
 
     def _build_summary(
