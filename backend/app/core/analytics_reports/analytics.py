@@ -38,7 +38,8 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, Field
 
-logger = __import__("logging").getLogger(__name__)
+import logging
+logger = logging.getLogger(__name__)
 
 
 # ═════════════════════════════════════════════

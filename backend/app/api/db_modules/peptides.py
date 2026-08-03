@@ -177,5 +177,6 @@ async def get_peptide_detail(
 # ═══════════════════════════════════════════
 
 
-logger = __import__("logging").getLogger(__name__)
+import logging
+logger = logging.getLogger(__name__)
 logger.info("peptides module loaded")

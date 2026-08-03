@@ -613,5 +613,6 @@ async def dashboard_overview(
 # ═══════════════════════════════════════════
 
 
-logger = __import__("logging").getLogger(__name__)
+import logging
+logger = logging.getLogger(__name__)
 logger.info("search module loaded")
