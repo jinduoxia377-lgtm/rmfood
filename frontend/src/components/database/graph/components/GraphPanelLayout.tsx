@@ -388,16 +388,16 @@ export default function GraphPanelLayout({
         if (searchQuery) return
         const visibleNodes = filteredData.filteredNodes
         if (e.key === 'Tab' && !e.shiftKey && focusedNodeIndex < 0) { e.preventDefault(); setFocusedNodeIndex(0) }
-        else if (e.key === 'Tab' && !e.shiftKey && focusedNodeIndex >= 0) { e.preventDefault(); setFocusedNodeIndex((prev: number) => (prev + 1) % Math.max(visibleNodes.length, 1)) }
-        else if (e.key === 'Tab' && e.shiftKey && focusedNodeIndex > 0) { e.preventDefault(); setFocusedNodeIndex((prev: number) => prev - 1) }
+        else if (e.key === 'Tab' && !e.shiftKey && focusedNodeIndex >= 0) { e.preventDefault(); setFocusedNodeIndex((visibleNodes.length > 0 ? (focusedNodeIndex + 1) % visibleNodes.length : 0)) }
+        else if (e.key === 'Tab' && e.shiftKey && focusedNodeIndex > 0) { e.preventDefault(); setFocusedNodeIndex(focusedNodeIndex - 1) }
         else if (e.key === 'Enter' && focusedNodeIndex >= 0 && visibleNodes[focusedNodeIndex]) { e.preventDefault(); handleSearchSelect(visibleNodes[focusedNodeIndex]) }
         else if ((e.key === 'Escape') && selectedNode) { setSelectedNode(null); setFocusedNodeIndex(-1) }
-        else if (e.key === 'P' && e.shiftKey) { e.preventDefault(); setShowPerfPanel((prev: boolean) => !prev) }
-        else if (e.key === 'C' && e.shiftKey) { e.preventDefault(); setShowCentralityPanel((prev: boolean) => !prev) }
-        else if (e.key === 'N' && e.shiftKey) { e.preventDefault(); setIsAddingAnnotation((prev: boolean) => !prev) }
-        else if (e.key === 'T' && e.shiftKey) { e.preventDefault(); setShowThemePanel((prev: boolean) => !prev) }
-        else if (e.key === 'L' && e.shiftKey) { e.preventDefault(); setShowLayoutMenu((prev: boolean) => !prev) }
-        else if (e.key === 'A' && e.shiftKey) { e.preventDefault(); setShowAIPanel((prev: boolean) => !prev) }
+        else if (e.key === 'P' && e.shiftKey) { e.preventDefault(); setShowPerfPanel(!showPerfPanel) }
+        else if (e.key === 'C' && e.shiftKey) { e.preventDefault(); setShowCentralityPanel(!showCentralityPanel) }
+        else if (e.key === 'N' && e.shiftKey) { e.preventDefault(); setIsAddingAnnotation(!isAddingAnnotation) }
+        else if (e.key === 'T' && e.shiftKey) { e.preventDefault(); setShowThemePanel(!showThemePanel) }
+        else if (e.key === 'L' && e.shiftKey) { e.preventDefault(); setShowLayoutMenu(!showLayoutMenu) }
+        else if (e.key === 'A' && e.shiftKey) { e.preventDefault(); setShowAIPanel(!showAIPanel) }
         else if ((e.key === 'z' || e.key === 'Z') && e.ctrlKey && !e.shiftKey) { e.preventDefault(); undoHistory() }
         else if ((e.key === 'z' || e.key === 'Z') && e.ctrlKey && e.shiftKey) { e.preventDefault(); redoHistory() }
       }}
@@ -460,7 +460,7 @@ export default function GraphPanelLayout({
 
       {/* v7.5: Performance Monitor Hook (RAF-based, runs independently) */}
       <div className="absolute bottom-3 right-3 z-30 w-6 h-6">
-        <button onClick={() => setShowPerfPanel((prev: boolean) => !prev)} title="性能监控 (Shift+P)">
+        <button onClick={() => setShowPerfPanel(!showPerfPanel)} title="性能监控 (Shift+P)">
           <span>📊</span>
         </button>
       </div>

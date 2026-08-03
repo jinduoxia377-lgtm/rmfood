@@ -52,7 +52,7 @@ export default function SubGraphBrowser({
                 edgeIds: [],
                 metadata: { communityId: comm.id, modularity: communityResult.modularity },
               }
-              onSetSavedSubGraphs(prev => [...prev.slice(-9), newSub])
+              onSetSavedSubGraphs([...savedSubGraphs.slice(-9), newSub])
               onSetActiveSubGraph(newSub)
             }}>
             <div className="flex items-center justify-between mb-1.5">
@@ -81,7 +81,7 @@ export default function SubGraphBrowser({
                 edgeIds: [],
                 metadata: { k: core.k },
               }
-              onSetSavedSubGraphs(prev => [...prev.slice(-9), newSub])
+              onSetSavedSubGraphs([...savedSubGraphs.slice(-9), newSub])
               onSetActiveSubGraph(newSub)
             }}>
             <div className="flex items-center justify-between">
