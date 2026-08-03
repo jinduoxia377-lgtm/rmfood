@@ -50,7 +50,7 @@ export function useDeviceInfo(): UseDeviceInfoResult {
     }
 
     const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0
-    const supportsHover = !isTouch || (navigator as any).hover !== undefined
+    const supportsHover = !isTouch || !!(navigator as Navigator & { hover?: unknown }).hover
 
     let orientation: 'portrait' | 'landscape' | 'unknown' = 'unknown'
     if (typeof screen !== 'undefined' && screen.orientation) {
@@ -149,8 +149,8 @@ export interface ResponsiveValue<T> {
 export function useResponsiveValue<T>(values: ResponsiveValue<T>, defaultValue: T): T {
   const { breakpoint } = useBreakpoint()
 
-  if ((values as any)[breakpoint] !== undefined) {
-    return (values as any)[breakpoint] as T
+  if ((values as Record<string, unknown>)[breakpoint] !== undefined) {
+    return (values as Record<string, unknown>)[breakpoint] as T
   }
 
   if (breakpoint === 'xxl' && values.xl !== undefined) return values.xl
