@@ -1,10 +1,11 @@
 import { memo, useCallback } from 'react'
 import { X } from 'lucide-react'
 import { ChatIcon } from './ChatIcon'
+import type { IconName } from './icon-mapping'
 
 export interface ChatTagProps {
   label: string
-  icon?: string
+  icon?: IconName
   size?: 'sm' | 'md' | 'lg'
   variant?: 'default' | 'outline' | 'filled'
   color?: 'primary' | 'success' | 'warning' | 'error' | 'info'
@@ -172,7 +173,7 @@ function ChatTag({
       `}</style>
       <span className="chat-tag-gradient-border absolute inset-0 rounded-full pointer-events-none" />
       {icon && (
-        <ChatIcon name={icon as any} size={sizeConfig.iconSize} />
+        <ChatIcon name={icon} size={sizeConfig.iconSize} />
       )}
       <span className="relative z-10">{label}</span>
       {closable && (
@@ -213,7 +214,7 @@ function ChatTag({
       }}
     >
       {icon && (
-        <ChatIcon name={icon as any} size={sizeConfig.iconSize} />
+        <ChatIcon name={icon} size={sizeConfig.iconSize} />
       )}
       <span>{label}</span>
       {closable && (
@@ -253,7 +254,7 @@ function ChatTag({
       }}
     >
       {icon && (
-        <ChatIcon name={icon as any} size={sizeConfig.iconSize} />
+        <ChatIcon name={icon} size={sizeConfig.iconSize} />
       )}
       <span>{label}</span>
       {closable && (

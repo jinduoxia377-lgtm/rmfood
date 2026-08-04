@@ -138,10 +138,8 @@ class DBKnowledgeGraphService:
                 nodes = await self._db_service.search_nodes(effect_name, node_type="herb", limit=top_n)
                 if nodes:
                     return [{"id": n.get("id", ""), "name": n.get("node_label", ""), "score": 0.5} for n in nodes]
-            except Exception:
-                pass
-
-        # 降级: 内置知识库
+            except Exception as e:
+                logger.debug("Herb 图谱搜索失败（降级到内置库）: %s", e)
         herb_ids = _EFFECT_INDEX.get(effect_name, [])
         return [{"id": hid, "name": _BUILTIN_HERB_DB[hid]["name"],
                  "score": _BUILTIN_HERB_DB[hid]["effects"].get(effect_name, 0.5)}
@@ -159,10 +157,8 @@ class DBKnowledgeGraphService:
                         if info:
                             herbs.append(info)
                             break
-            except Exception:
-                pass
-
-        # 补充内置匹配
+            except Exception as e:
+                logger.debug("Herb 图谱搜索失败: %s", e)
         if not herbs:
             for hid, herb in _BUILTIN_HERB_DB.items():
                 if herb["name"] in question:
@@ -220,8 +216,8 @@ class DBKnowledgeGraphService:
         if self._db_service:
             try:
                 return await self._db_service.get_graph_stats()
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug("图谱统计查询失败，使用内存统计: %s", e)
         return {
             "total_nodes": len(_BUILTIN_HERB_DB),
             "total_edges": 0,

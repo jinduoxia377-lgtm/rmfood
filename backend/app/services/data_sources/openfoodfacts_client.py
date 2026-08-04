@@ -275,8 +275,8 @@ class OFFDataService:
                             "page_size": page_size,
                             "data_source": "postgresql_fts",
                         }
-            except Exception:
-                logger.warning("[OFFDataService] FTS 搜索失败，回退 ILIKE: %s", exc_info=True)
+            except Exception as e:
+                logger.warning("[OFFDataService] FTS 搜索失败，回退 ILIKE: %s", e)
 
             # ILIKE 回退（关键词匹配）
             ilike_where = ["source = 'openfoodfacts'",
@@ -739,8 +739,8 @@ class OFFDataService:
                         "date": str(snap_row[0]) if snap_row[0] else None,
                         "status": snap_row[1],
                     }
-            except Exception:
-                logger.warning("[OFFDataService] off_sync_state 表查询失败")
+            except Exception as e:
+                logger.debug("[OFFDataService] OFF 同步状态查询失败: %s", e)
 
             return {
                 "total_products": total,

@@ -111,5 +111,5 @@ class VectorStore:
         """清空向量库"""
         try:
             self._client.delete_collection(self._collection_name)
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug("向量库删除集合失败: %s", e)

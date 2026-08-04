@@ -411,8 +411,8 @@ def _get_runtime_config() -> Dict[str, Any]:
                 'temperature': getattr(llm_service.config, 'temperature', 0.7),
                 'max_tokens': getattr(llm_service.config, 'max_tokens', 4096),
             }
-    except Exception:
-        pass
+    except Exception as e:
+        logger.debug("LLM 配置获取失败，使用默认值: %s", e)
     return {}
 
 

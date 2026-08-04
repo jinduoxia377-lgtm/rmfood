@@ -108,7 +108,7 @@ export function LazyLoadWrapper<P = object>(props: {
     // 设置超时警告
     timeoutRef.current = window.setTimeout(() => {
       if (isMountedRef.current) {
-        logger.warn(`[LazyLoad] 组件加载超时 (${timeout}ms): ${(LazyComponent as any).displayName || 'Unknown'}`);
+        logger.warn(`[LazyLoad] 组件加载超时 (${timeout}ms): ${((LazyComponent as React.ComponentType<Record<string, unknown>>).displayName || 'Unknown')}`);
       }
     }, timeout);
 

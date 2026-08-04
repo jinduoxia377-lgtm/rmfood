@@ -429,8 +429,8 @@ class AdvancedPeptideAnalyzer:
             try:
                 analysis = await self.analyze_peptide_deeply(seq)
                 peptide_analyses.append(analysis)
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug("肽段深度分析失败: %s", e)
 
         synergy_matrix = []
         for pep_idx, pep_analysis in enumerate(peptide_analyses):

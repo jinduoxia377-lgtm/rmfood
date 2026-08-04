@@ -247,8 +247,8 @@ async def seed_if_needed(rag_service=None):
     try:
         from .rag_service import rag_service as ds
         default_service = ds
-    except Exception:
-        pass
+    except Exception as e:
+        logger.debug("RAG 服务导入失败: %s", e)
 
     svc = rag_service or default_service
     if svc is None:

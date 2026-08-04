@@ -166,7 +166,8 @@ class OutputSafetyChecker:
 
         # 5. 计算风险等级
         risk_level = self._compute_risk_level(findings)
-        is_safe = risk_level in (OutputRiskLevel.LOW, OutputRiskLevel.MEDIUM)
+        # 有 findings 时 medium 风险也算不安全
+        is_safe = len(findings) == 0 or risk_level == OutputRiskLevel.LOW
         action = self._compute_action(risk_level, len(findings))
 
         if risk_level in (OutputRiskLevel.HIGH, OutputRiskLevel.CRITICAL):

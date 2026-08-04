@@ -250,8 +250,8 @@ class PromptCache:
                     # 更新命中计数
                     await self._redis.hincrby(f"{key}:meta", "hit_count", 1)
                     return value
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug("Redis 缓存查询失败，使用内存缓存: %s", e)
 
         # 内存缓存查询
         entry = self._memory_cache.get(key)
@@ -292,8 +292,8 @@ class PromptCache:
                     "hit_count": "0",
                     "tenant_id": tenant_id or "",
                 })
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug("Redis 写入失败，使用内存缓存: %s", e)
 
         # 写入内存缓存
         self._memory_cache[key] = entry
@@ -303,10 +303,8 @@ class PromptCache:
         if self._redis:
             try:
                 await self._redis.delete(key, f"{key}:meta")
-            except Exception:
-                pass
-
-        self._memory_cache.pop(key, None)
+            except Exception as e:
+                logger.debug("Redis 删除失败（非致命）: %s", e)
 
     async def clear_tenant_cache(self, tenant_id: str) -> int:
         """清除租户的所有缓存"""
@@ -328,10 +326,8 @@ class PromptCache:
                 keys = await self._redis.keys(pattern)
                 if keys:
                     count += await self._redis.delete(*keys)
-            except Exception:
-                pass
-
-        return count
+            except Exception as e:
+                logger.debug("Redis 批量删除失败（非致命）: %s", e)
 
     def get_stats(self) -> Dict[str, Any]:
         """获取缓存统计"""

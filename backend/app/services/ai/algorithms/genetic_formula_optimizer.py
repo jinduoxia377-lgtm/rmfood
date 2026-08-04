@@ -374,8 +374,8 @@ class GeneticFormulaOptimizer:
                     self._efficacy_index = new_index
                     logger.info(f"[GeneticOptimizer] 惰性加载 HerbKnowledgeService: {len(all_herbs)} 种药材")
                     return
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug("HerbKnowledgeService 加载失败，使用内置字典: %s", e)
 
         logger.debug("[GeneticOptimizer] HerbKnowledgeService 不可用，使用内置字典（21种药材）")
 

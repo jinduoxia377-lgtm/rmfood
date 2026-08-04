@@ -45,7 +45,7 @@ export const usePersonalInfo = (): UsePersonalInfoReturn => {
       if (response.success && response.data) {
         setProfile(response.data);
         const newFormData = {
-          fullName: (response.data as any).full_name || '',
+          fullName: (response.data as Record<string, unknown>).full_name as string || '',
           email: response.data.email || '',
           phone: response.data.phone || '',
           department: response.data.department || '',

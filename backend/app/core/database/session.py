@@ -398,11 +398,10 @@ def _create_engine():
                 f"Connection checkout validation failed: {e}",
                 original_error=e
             )
-        except Exception:
+        except Exception as e:
+            logger.debug("数据库连接 checkout 验证失败: %s", e)
             # Catch any unexpected errors during checkout validation
             pass
-
-    @event.listens_for(engine.sync_engine, "checkin")
     def on_checkin(dbapi_conn, connection_record):
         """Log when a connection is returned to the pool."""
         # No-op on purpose – clean checkin handling

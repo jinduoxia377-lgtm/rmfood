@@ -158,6 +158,7 @@ def decode_filename_from_request(filename_encoded: str) -> str:
         # 如果失败，尝试 latin-1（某些客户端使用）
         try:
             return filename_encoded.encode('latin-1').decode('utf-8')
-        except Exception:
+        except Exception as e:
+            logger.debug("文件名编码转换失败，使用原始字符串: %s", e)
             # 最后回退到原始字符串
             return filename_encoded

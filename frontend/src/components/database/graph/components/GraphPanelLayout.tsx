@@ -358,7 +358,7 @@ export default function GraphPanelLayout({
   // Missing setters
   setFocusedNodeIndex, setIsSelecting, setSelectionBox, setContextMenu,
   setSearchHistory, setNodeAIAnalysis, setPathSourceId, setPathTargetId,
-  setDetailTab, isLoading,
+  setDetailTab, isLoading, detailTab,
   // State values
   activeFilter, selectedNode, searchQuery, focusedNodeIndex, searchHistory,
   showPerfPanel, perfStats, isSelecting, selectionBox, selectedNodes, contextMenu,
@@ -443,7 +443,7 @@ export default function GraphPanelLayout({
         if (isAddingAnnotation && containerRef.current) {
           const rect = containerRef.current.getBoundingClientRect()
           const text = prompt('输入标注内容:', '📝 标注')
-          if (text) addAnnotation(e.clientX - rect.left, e.clientY - rect.top, text)
+          if (text) addAnnotation(e.clientX - rect.left, e.clientY - rect.top, text, 'note')
         }
       }}
       tabIndex={0}

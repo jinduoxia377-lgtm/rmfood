@@ -208,10 +208,8 @@ class AuditMiddleware(BaseHTTPMiddleware if _STARLETTE_AVAILABLE else object):
         # 将 request_id 写入 request.state 以便下游使用
         try:
             request.state.request_id = request_id
-        except Exception:
-            pass
-        
-        # 路径筛选
+        except Exception as e:
+            logger.debug("写入 request.state 失败（非致命）: %s", e)
         path = request.url.path
         method = request.method
         should_audit = self._should_audit(path, method)

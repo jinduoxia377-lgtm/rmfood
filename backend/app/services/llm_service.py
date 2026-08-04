@@ -228,8 +228,8 @@ class LLMService:
                     # 在事件循环中无法同步等待，跳过 DB 加载（由 startup 事件补充）
                 except RuntimeError:
                     db_config = asyncio.run(load_config_from_db())
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug("LLM 配置初始化失败（非致命）: %s", e)
             self.config = db_config or self._build_config_from_settings()
         self._client: httpx.AsyncClient | None = None
 
@@ -253,8 +253,8 @@ class LLMService:
             from app.services.ai.providers.provider_factory import cleanup_provider_factory
             import asyncio
             asyncio.create_task(cleanup_provider_factory())
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug("Provider factory 清理失败（非致命）: %s", e)
 
         # 持久化到数据库（非阻塞）
         save_config_to_db(config, user_id=user_id)
@@ -441,7 +441,8 @@ class LLMService:
             try:
                 error_body = e.response.json()
                 error_detail = error_body.get("error", {}).get("message", str(error_body))
-            except Exception:
+            except Exception as e:
+                logger.debug("错误响应体解析失败: %s", e)
                 error_detail = e.response.text[:200]
 
             # 针对不同状态码提供清晰的错误信息
@@ -527,7 +528,8 @@ class LLMService:
                     try:
                         error_body = e.response.json()
                         error_detail = error_body.get("error", {}).get("message", str(error_body))
-                    except Exception:
+                    except Exception as e:
+                        logger.debug("错误响应体解析失败: %s", e)
                         error_detail = "LLM服务响应异常"
 
                     logger.error(f"[chat_stream] HTTP 状态错误: status={status_code}, detail={error_detail}")

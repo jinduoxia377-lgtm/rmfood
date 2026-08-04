@@ -155,7 +155,7 @@ export function useAnalyticsData(opts: UseAnalyticsDataOptions = {}) {
       setError(null)
       setLastFetched(new Date())
     } catch (e: unknown) {
-      if (e instanceof Error && (e as any)?.name === 'CanceledError' || (e as any)?.code === 'ERR_CANCELED') return
+      if (e instanceof Error && ((e as {name?: string; code?: string}).name === 'CanceledError' || (e as {code?: string}).code === 'ERR_CANCELED')) return
       logger.error('[useAnalyticsData] fetch failed:', e)
       setError(e instanceof Error ? e.message : 'Unknown error')
     } finally {
@@ -249,7 +249,7 @@ export function useTrendData(entity: 'formulas' | 'experiments' | 'users' | 'ai_
         setLoading(false)
       })
       .catch((e: unknown) => {
-        if (e instanceof Error && ((e as any)?.name === 'CanceledError' || (e as any)?.code === 'ERR_CANCELED')) return
+        if (e instanceof Error && ((e as {name?: string; code?: string}).name === 'CanceledError' || (e as {code?: string}).code === 'ERR_CANCELED')) return
         setError(e instanceof Error ? e.message : 'Unknown')
         setLoading(false)
       })

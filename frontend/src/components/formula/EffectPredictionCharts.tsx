@@ -155,7 +155,7 @@ export function EffectPredictionChart({ data, showConfidenceBand = true, height 
       </div>
 
       {/* 图表切换标签 */}
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'ct' | 'et')}>
         <TabsTrigger value="ct">时效曲线 (C-T)</TabsTrigger>
         <TabsTrigger value="et">效应曲线 (E-T)</TabsTrigger>
       </Tabs>

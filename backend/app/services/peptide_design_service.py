@@ -181,11 +181,10 @@ class PeptideDesignService:
         try:
             await self.db.commit()
             await self.db.refresh(project)
-        except Exception:
+        except Exception as e:
             await self.db.rollback()
+            logger.warning("创建设计项目失败: %s", e)
             raise
-
-        logger.info(f"创建设计项目成功: id={project.id}, name={data.project_name}")
         return project
 
     async def add_candidates(
@@ -258,11 +257,10 @@ class PeptideDesignService:
             )
 
             return new_candidates
-        except Exception:
+        except Exception as e:
             await self.db.rollback()
+            logger.warning("批量创建候选肽段失败: %s", e)
             raise
-
-    async def get_project(self, design_id: int, include_candidates: bool = True) -> PeptideDesign:
         """
         获取项目详情
 

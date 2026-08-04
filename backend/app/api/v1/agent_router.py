@@ -6,6 +6,9 @@ Agent API 路由
 - GET  /api/v1/agent/tools          — 列出可用工具
 - GET  /api/v1/agent/executions/{id} — 查询执行结果
 - POST /api/v1/agent/stream         — 流式执行（SSE）
+- POST /api/v1/agent/workflow/{type}/execute — 执行工作流
+- GET  /api/v1/agent/workflow/executions/{id} — 查询工作流执行结果
+- POST /api/v1/agent/workflow/{type}/execute/stream — 流式执行工作流（SSE）
 """
 import json
 import logging
@@ -16,6 +19,7 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
 from app.services.ai.agent import get_orchestrator, AgentExecution
+from app.services.ai.agent.workflow_engine import get_workflow_engine, WorkflowEngine
 
 logger = logging.getLogger(__name__)
 
@@ -160,3 +164,75 @@ async def delete_execution(execution_id: str):
         raise HTTPException(status_code=404, detail="执行记录不存在")
     del _executions[execution_id]
     return {"success": True, "message": "已删除"}
+
+
+# ════════════════════════════════════════════
+# 工作流端点
+# ════════════════════════════════════════════
+
+
+class WorkflowExecuteRequest(BaseModel):
+    """工作流执行请求"""
+    query: str = Field(..., min_length=1, max_length=2000, description="用户问题")
+    max_steps: int = Field(10, ge=1, le=20, description="最大工具调用次数")
+
+
+@router.post("/workflow/{workflow_type}/execute", summary="执行工作流")
+async def execute_workflow(workflow_type: str, req: WorkflowExecuteRequest):
+    """
+    执行预定义工作流。
+
+    支持的工作流类型：
+    - formula_design: 配方设计全流程
+    - compliance_check: 合规检查
+    - experiment_plan: 实验方案生成
+    - ingredient_lookup: 原料查询
+    - full_pipeline: 全流程自动化
+    """
+    engine = get_workflow_engine()
+    execution = await engine.execute(
+        workflow_type=workflow_type,
+        user_query=req.query,
+        max_steps=req.max_steps,
+    )
+    return {"success": True, "data": execution.to_dict()}
+
+
+@router.get("/workflow/executions/{execution_id}", summary="查询工作流执行结果")
+async def get_workflow_execution(execution_id: str):
+    """查询工作流执行结果"""
+    engine = get_workflow_engine()
+    execution = engine.get_execution(execution_id)
+    if not execution:
+        raise HTTPException(status_code=404, detail=f"执行记录不存在: {execution_id}")
+    return {"success": True, "data": execution.to_dict()}
+
+
+@router.post("/workflow/{workflow_type}/execute/stream", summary="流式执行工作流（SSE）")
+async def execute_workflow_stream(workflow_type: str, req: WorkflowExecuteRequest):
+    """
+    流式执行工作流，通过 SSE 逐步推送中间结果。
+    """
+    engine = get_workflow_engine()
+
+    async def event_stream():
+        yield {"event": "start", "data": json.dumps(
+            {"workflow_type": workflow_type, "query": req.query},
+            ensure_ascii=False
+        )}
+
+        async for event in engine.execute_stream(
+            workflow_type=workflow_type,
+            user_query=req.query,
+            max_steps=req.max_steps,
+        ):
+            yield {"event": event["type"], "data": json.dumps(event, ensure_ascii=False)}
+
+    return StreamingResponse(
+        event_stream(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",
+        },
+    )

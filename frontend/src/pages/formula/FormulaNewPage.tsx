@@ -555,30 +555,30 @@ export default function FormulaNewPage() {
                   ) : recData && Array.isArray(recData) && recData.length > 0 ? (
                     <div className="grid gap-2">
                       {(Array.isArray(recData) ? recData : []).map((rec, i) => {
-                        const recId = (rec as any).ingredient_id ?? `rec-${i}`
+                        const recId = (rec as Record<string, unknown>).ingredient_id as string ?? `rec-${i}`
                         return (
                         <div
                           key={recId}
                           className={cn(
                             'flex items-center justify-between p-2.5 rounded-lg border transition-colors cursor-pointer',
-                            ingredients.some((ing) => ing.id === (rec as any).ingredient_id)
+                            ingredients.some((ing) => ing.id === ((rec as Record<string, unknown>).ingredient_id as string))
                               ? 'bg-primary-50 dark:bg-primary-900/20 border-primary-300 dark:border-primary-700 opacity-60'
                               : 'bg-white dark:bg-neutral-900 border-primary-100 dark:border-primary-800 hover:border-primary-300',
                           )}
                           onClick={() => {
-                            if (!ingredients.some((ing) => ing.id === (rec as any).ingredient_id)) {
+                            if (!ingredients.some((ing) => ing.id === ((rec as Record<string, unknown>).ingredient_id as string))) {
                               addHerbToIngredients({
-                                id: (rec as any).ingredient_id,
-                                name: (rec as any).name ?? rec.name,
-                                category: (rec as any).category,
-                                is_food_homology: (rec as any).is_food_homology,
+                                id: ((rec as Record<string, unknown>).ingredient_id as string) ?? `rec-${i}`,
+                                name: (rec as Record<string, unknown>).name as string ?? rec.name,
+                                category: (rec as Record<string, unknown>).category as string,
+                                is_food_homology: (rec as Record<string, unknown>).is_food_homology as boolean,
                               } as unknown as TCMHerb);
                             }
                           }}
                         >
                           <div>
                             <p className="text-sm font-medium text-neutral-900 dark:text-white">{rec.name ?? rec.name}</p>
-                            <p className="text-xs text-neutral-500">{(rec as any).match_reasons?.join(' · ') || ''}</p>
+                            <p className="text-xs text-neutral-500">{((rec as Record<string, unknown>).match_reasons as string[] | undefined)?.join(' · ') || ''}</p>
                           </div>
                           <span className="text-xs font-medium text-primary-600 dark:text-primary-400">
                             {rec.score}分

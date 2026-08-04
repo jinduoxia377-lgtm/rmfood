@@ -78,11 +78,11 @@ export default function NotificationPage() {
   });
 
   const handleNotifClick = (notif: Notification) => {
-    if ((notif as any).status === 'unread') {
+    if (!notif.isRead) {
       markReadMutation.mutate(notif.id);
     }
-    if ((notif as any).link) {
-      navigate((notif as any).link);
+    if (notif.actionUrl) {
+      navigate(notif.actionUrl);
     }
   };
 
@@ -187,7 +187,7 @@ export default function NotificationPage() {
                 className={cn(
                   'w-full text-left px-5 py-4 transition-colors',
                   'hover:bg-neutral-50 dark:hover:bg-neutral-800/40',
-                  (notif as any).status === 'unread' && 'bg-primary-50/30 dark:bg-primary-900/10',
+                  {!notif.isRead && 'bg-primary-50/30 dark:bg-primary-900/10'},
                 )}
               >
                 <div className="flex items-start gap-3.5">
@@ -203,15 +203,15 @@ export default function NotificationPage() {
                       <p
                         className={cn(
                           'text-sm truncate',
-                          (notif as any).status === 'unread'
+                          !notif.isRead
                             ? 'font-semibold text-neutral-900 dark:text-white'
                             : 'text-neutral-600 dark:text-neutral-300',
                         )}
                       >
                         {notif.title}
                       </p>
-                      {(notif as any).link && <ExternalLink size={12} className="shrink-0 text-neutral-400" />}
-                      {(notif as any).status === 'unread' && (
+                      {notif.actionUrl && <ExternalLink size={12} className="shrink-0 text-neutral-400" />}
+                      {!notif.isRead && (
                         <span className="shrink-0 w-2 h-2 rounded-full bg-primary-500" />
                       )}
                     </div>
@@ -229,7 +229,7 @@ export default function NotificationPage() {
                   </div>
 
                   {/* 单条已读按钮 */}
-                  {(notif as any).status === 'unread' && (
+                  {!notif.isRead && (
                     <button
                       onClick={(e) => {
                         e.stopPropagation();

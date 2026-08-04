@@ -121,8 +121,8 @@ class ConfigChecker:
                     'base_url': getattr(llm_service.config, 'base_url', None) or '',
                     'model': getattr(llm_service.config, 'model', None) or '',
                 }
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug("诊断检查失败: %s", e)
         return {}
 
     @staticmethod

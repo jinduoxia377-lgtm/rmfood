@@ -223,10 +223,8 @@ class SensitiveDataMaskingFilter(logging.Filter):
                     if field in msg.lower():
                         record.msg = self._mask_sensitive(msg)
                         break
-        except Exception:
-            pass
-
-        # 脱敏 extra_data
+        except Exception as e:
+            logger.debug("日志脱敏处理失败（非致命）: %s", e)
         if hasattr(record, "extra_data") and isinstance(record.extra_data, dict):
             masked = {}
             for k, v in record.extra_data.items():
@@ -504,8 +502,8 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
             # 简单提取（实际应解码 JWT）
             try:
                 user_id = f"user_{hash(auth_header) % 100000}"  # 占位
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug("用户ID提取失败（占位）: %s", e)
         RequestContext.set_user_id(user_id)
 
         method = request.method
@@ -744,10 +742,8 @@ def init_enhanced_logging(
     async def _stop_alert_manager():
         try:
             await _alert_manager.stop()
-        except Exception:
-            pass
-
-    # 5. 添加日志统计端点
+        except Exception as e:
+            logger.debug("AlertManager 停止失败（非致命）: %s", e)
     @app.get("/api/v1/admin/log-stats", tags=["系统管理"], summary="日志统计")
     async def get_log_stats():
         return _stats.get_stats()

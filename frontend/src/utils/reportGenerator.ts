@@ -192,10 +192,10 @@ export function calculateStatistics(data: FormulaTableData): ReportStatistics {
   const averagePercentage = data.ingredients.length > 0 ? totalPercentage / data.ingredients.length : 0
 
   const maxIngredient = data.ingredients.reduce((max, ing) =>
-    (!max || ing.percentage > max.percentage) ? ing : max, null as any)
+    (!max || ing.percentage > max.percentage) ? ing : max, null as ReturnType<typeof data.ingredients.reduce>)
 
   const minIngredient = data.ingredients.reduce((min, ing) =>
-    (!min || ing.percentage < min.percentage) ? ing : min, null as any)
+    (!min || ing.percentage < min.percentage) ? ing : min, null as ReturnType<typeof data.ingredients.reduce>)
 
   const categories: Record<string, number> = {}
   data.ingredients.forEach(ing => {

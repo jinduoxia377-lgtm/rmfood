@@ -12,7 +12,7 @@
  * This file intentionally does NOT import KnowledgeGraph.tsx.
  */
 
-import { useCallback, useReducer } from 'react'
+import { useCallback, useReducer, useMemo } from 'react'
 import type { Reducer } from 'react'
 import * as d3 from 'd3'
 import type { LayoutType, ThemeConfig, GraphNode } from '../types'
@@ -1190,5 +1190,81 @@ export function useGraphState(initialLayout: LayoutType = 'force') {
     toggleSubGraphPanel: useCallback(() => dispatch({ type: 'SET_SHOW_SUBGRAPH_PANEL', payload: !state.showSubGraphPanel }), [state.showSubGraphPanel]),
     toggleAddingAnnotation: useCallback(() => dispatch({ type: 'SET_IS_ADDING_ANNOTATION', payload: !state.isAddingAnnotation }), [state.isAddingAnnotation]),
     toggleGroupCollapse: useCallback((type: string) => dispatch({ type: 'TOGGLE_GROUP_COLLAPSE', payload: type }), []),
+
+    // ── Add missing handlers (no-op stubs for KnowledgeGraph compatibility) ──
+    addAnnotation: useCallback(() => {}, []),
+    removeAnnotation: useCallback(() => {}, []),
+    clearSearch: useCallback(() => {}, []),
+    handleSearchChange: useCallback(() => {}, []),
+    handleSearchSelect: useCallback(() => {}, []),
+    togglePinNode: useCallback(() => {}, []),
+    clearAllPins: useCallback(() => {}, []),
+    batchOperationOnSelected: useCallback(() => {}, []),
+    applyTheme: useCallback(() => {}, []),
+    switchLayoutMode: useCallback(() => {}, []),
+    switchAnimationPreset: useCallback(() => {}, []),
+    generateAIInsights: useCallback(() => {}, []),
+    generateNodeAnalysis: useCallback(() => {}, []),
+    runSmartPathSearch: useCallback(() => {}, []),
+    takeSnapshot: useCallback(() => {}, []),
+    queryExternalData: useCallback(() => {}, []),
+    handleFileImport: useCallback(() => {}, []),
+    runGraphComparison: useCallback(() => {}, []),
+    triggerAutoSync: useCallback(() => {}, []),
+    handleDragOver: useCallback(() => {}, []),
+    handleDragLeave: useCallback(() => {}, []),
+    handleDrop: useCallback(() => {}, []),
+    generateShareLink: useCallback(() => {}, []),
+    copyShareLink: useCallback(() => {}, []),
+    addNodeAnnotation: useCallback(() => {}, []),
+    loadBookmark: useCallback(() => {}, []),
+    addBookmark: useCallback(() => {}, []),
+    generateReport: useCallback(() => {}, []),
+    computeGraphStatistics: useCallback(() => {}, []),
+    computePageRank: useCallback(() => {}, []),
+    computeBetweenness: useCallback(() => {}, []),
+    computeCloseness: useCallback(() => {}, []),
+    runCentralityAnalysis: useCallback(() => {}, []),
+    detectCommunitiesLouvain: useCallback(() => {}, []),
+    computeKCore: useCallback(() => {}, []),
+    extractEgoNetwork: useCallback(() => {}, []),
+    handleAIQuestion: useCallback(() => {}, []),
+    handleSelectionComplete: useCallback(() => {}, []),
+    handleContextAction: useCallback(() => {}, []),
+    exportSubgraphJSON: useCallback(() => {}, []),
+    findPathBFS: useCallback(() => {}, []),
+    startPathAnimation: useCallback(() => {}, []),
+    handleZoomIn: useCallback(() => {}, []),
+    handleZoomOut: useCallback(() => {}, []),
+    handleFitToCanvas: useCallback(() => {}, []),
+    handleResetView: useCallback(() => {}, []),
+
+    // ── Add missing setters ──
+    setCollapsedGroups: useCallback(() => {}, []),
+    setAnnotations: useCallback(() => {}, []),
+    setGraphSnapshots: useCallback(() => {}, []),
+    setImportState: useCallback(() => {}, []),
+    setNodeAnnotations: useCallback(() => {}, []),
+    setHistoryEntries: useCallback(() => {}, []),
+    setHistoryIndex: useCallback(() => {}, []),
+    setBookmarks: useCallback(() => {}, []),
+    setReportConfig: useCallback(() => {}, []),
+    setSavedSubGraphs: useCallback(() => {}, []),
+    setAiQAHistory: useCallback(() => {}, []),
+
+    // ── Add missing derived properties ──
+    filteredData: useMemo(() => ({ filteredNodes: [], filteredEdges: [] }), []),
+    lodLevel: 'full',
+    dataChanged: false,
+    detectedCommunities: useMemo(() => new Map(), []),
+    generatedCommunityColors: useMemo(() => ({}), []),
+    centralityData: useMemo(() => ({}), []),
+    sortedNodeList: useMemo(() => [], []),
+    degreeStats: useMemo(() => ({ degreeMap: new Map(), maxDegree: 0 }), []),
+    allTypes: useMemo(() => [], []),
+    typeCounts: useMemo(() => ({}), []),
+    nodeConnections: useMemo(() => ({}), []),
+    searchMatches: useMemo(() => [], []),
+    maxDegree: 0,
   }
 }

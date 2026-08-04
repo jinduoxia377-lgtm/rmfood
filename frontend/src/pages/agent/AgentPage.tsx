@@ -10,7 +10,19 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { agentApi, type AgentExecution, type AgentTool } from '@/api/agent';
+import { workflowApi, type WorkflowExecution, type KGInferenceResponse } from '@/api/deep_dev';
+import { kgInferenceApi } from '@/api/deep_dev';
 import { logger } from '@/utils/safeLogger';
+
+// ── 工作流模板列表 ──────────────────────────────────────────
+
+const WORKFLOW_TEMPLATES = [
+  { id: 'formula_design', label: '配方设计', desc: 'RAG检索 → 配方生成 → 合规检查 → 报告输出' },
+  { id: 'compliance_check', label: '合规预审', desc: '多维度合规检查 + 自动修复建议' },
+  { id: 'experiment_plan', label: '实验方案', desc: '配方 → 体外/体内实验设计 → 指标体系' },
+  { id: 'ingredient_lookup', label: '原料查询', desc: '药材功效/法规/配伍禁忌查询' },
+  { id: 'full_pipeline', label: '全流程', desc: 'RAG→配方→合规→实验→报告完整链路' },
+] as const;
 
 // ── 类型定义 ────────────────────────────────────────────────
 
@@ -20,11 +32,19 @@ interface Message {
   content: string;
   timestamp: Date;
   executionId?: string;
+  workflowType?: string;
 }
 
 interface ToolCallLog {
   tool: string;
   status: 'running' | 'success' | 'failed';
+  latencyMs: number;
+  error?: string;
+}
+
+interface WorkflowStageLog {
+  stage: string;
+  success: boolean;
   latencyMs: number;
   error?: string;
 }
@@ -38,6 +58,8 @@ export default function AgentPage() {
   const [currentTools, setCurrentTools] = useState<ToolCallLog[]>([]);
   const [availableTools, setAvailableTools] = useState<AgentTool[]>([]);
   const [executedCount, setExecutedCount] = useState(0);
+  const [workflowType, setWorkflowType] = useState<string>('formula_design');
+  const [workflowStages, setWorkflowStages] = useState<WorkflowStageLog[]>([]);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -47,7 +69,7 @@ export default function AgentPage() {
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, currentTools]);
+  }, [messages, currentTools, workflowStages]);
 
   const sendMessage = async () => {
     const query = input.trim();
@@ -58,11 +80,13 @@ export default function AgentPage() {
       role: 'user',
       content: query,
       timestamp: new Date(),
+      workflowType,
     };
     setMessages((prev) => [...prev, userMsg]);
     setInput('');
     setIsRunning(true);
     setCurrentTools([]);
+    setWorkflowStages([]);
 
     const assistantId = `msg-${Date.now() + 1}`;
     const assistantMsg: Message = {
@@ -70,17 +94,20 @@ export default function AgentPage() {
       role: 'assistant',
       content: '',
       timestamp: new Date(),
+      workflowType,
     };
     setMessages((prev) => [...prev, assistantMsg]);
 
     try {
-      const resp = await agentApi.execute({ query, mode: 'smart', max_steps: 5 });
-      const exec: AgentExecution = resp.data;
+      // 优先使用工作流执行
+      const resp = await workflowApi.execute(workflowType, { query, max_steps: 8 });
+      const exec: WorkflowExecution = resp.data;
 
-      setCurrentTools(
-        exec.steps.map((s) => ({
-          tool: s.tool,
-          status: s.status === 'success' ? 'success' : s.status === 'failed' ? 'failed' : 'running',
+      // 解析阶段日志
+      setWorkflowStages(
+        exec.stages.map((s) => ({
+          stage: s.stage,
+          success: s.success,
           latencyMs: s.latency_ms,
           error: s.error,
         }))
@@ -91,7 +118,7 @@ export default function AgentPage() {
           m.id === assistantId
             ? {
                 ...m,
-                content: exec.final_response_preview || 'Agent 执行完成，请查看步骤详情。',
+                content: exec.final_response_preview || '执行完成，请查看阶段详情。',
                 executionId: exec.execution_id,
               }
             : m,
@@ -99,17 +126,41 @@ export default function AgentPage() {
       );
       setExecutedCount((c) => c + 1);
     } catch (err) {
-      logger.error('Agent execution failed:', err);
-      setMessages((prev) =>
-        prev.map((m) =>
-          m.id === assistantId
-            ? { ...m, content: `执行失败：${err instanceof Error ? err.message : String(err)}` }
-            : m,
-        )
-      );
+      logger.error('Workflow execution failed:', err);
+      // 降级到普通 Agent
+      try {
+        const resp = await agentApi.execute({ query, mode: 'smart', max_steps: 5 });
+        const exec: AgentExecution = resp.data;
+        setCurrentTools(
+          exec.steps.map((s) => ({
+            tool: s.tool,
+            status: s.status === 'success' ? 'success' : s.status === 'failed' ? 'failed' : 'running',
+            latencyMs: s.latency_ms,
+            error: s.error,
+          }))
+        );
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === assistantId
+              ? { ...m, content: exec.final_response_preview || '执行完成', executionId: exec.execution_id }
+              : m,
+          )
+        );
+        setExecutedCount((c) => c + 1);
+      } catch (innerErr) {
+        logger.error('Agent fallback failed:', innerErr);
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === assistantId
+              ? { ...m, content: `执行失败：${innerErr instanceof Error ? innerErr.message : String(innerErr)}` }
+              : m,
+          )
+        );
+      }
     } finally {
       setIsRunning(false);
       setCurrentTools([]);
+      setWorkflowStages([]);
     }
   };
 
@@ -135,8 +186,24 @@ export default function AgentPage() {
             自然语言驱动配方研发 · {availableTools.length} 个工具可用
           </p>
         </div>
+
+        {/* 工作流选择器 */}
+        <div className="ml-auto flex items-center gap-2">
+          <span className="text-xs text-gray-400">工作流:</span>
+          <select
+            value={workflowType}
+            onChange={(e) => setWorkflowType(e.target.value)}
+            disabled={isRunning}
+            className="text-xs px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-500 disabled:opacity-50"
+          >
+            {WORKFLOW_TEMPLATES.map((t) => (
+              <option key={t.id} value={t.id}>{t.label}</option>
+            ))}
+          </select>
+        </div>
+
         {executedCount > 0 && (
-          <span className="ml-auto text-xs text-gray-400">
+          <span className="ml-3 text-xs text-gray-400">
             已执行 {executedCount} 次
           </span>
         )}
@@ -155,6 +222,8 @@ export default function AgentPage() {
                 '帮我设计一款针对高血糖人群的饮品配方',
                 '查询黄芪的功效和合规用量',
                 '生成一款抗氧化配方的实验方案',
+                '检测枸杞和黄芪搭配的协同效应',
+                '检查人参和藜芦是否可同用',
               ].map((s) => (
                 <button
                   key={s}
@@ -187,6 +256,37 @@ export default function AgentPage() {
             </div>
           </div>
         ))}
+
+        {/* Workflow stage animation */}
+        {isRunning && workflowStages.length > 0 && (
+          <div className="flex justify-start">
+            <div className="max-w-[75%] rounded-2xl px-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm">
+              <p className="text-gray-500 dark:text-gray-400 mb-2 text-xs font-medium uppercase tracking-wide">
+                工作流执行中 · {workflowType}
+              </p>
+              <div className="space-y-1">
+                {workflowStages.map((ws, i) => (
+                  <div key={i} className="flex items-center gap-2 text-xs">
+                    <span
+                      className={
+                        ws.success
+                          ? 'text-green-500'
+                          : 'text-yellow-500 animate-pulse'
+                      }
+                    >
+                      {ws.success ? '✓' : '⋯'}
+                    </span>
+                    <span className="text-gray-700 dark:text-gray-300 font-mono">{ws.stage}</span>
+                    <span className="text-gray-400">{ws.latencyMs}ms</span>
+                    {ws.error && (
+                      <span className="text-red-400 ml-1">{ws.error}</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Tool call animation */}
         {isRunning && currentTools.length > 0 && (

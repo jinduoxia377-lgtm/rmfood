@@ -260,7 +260,8 @@ class AcademicianChatEngine:
         if not content:
             try:
                 content = self._fallback_response(question)
-            except Exception:
+            except Exception as e:
+                logger.debug("回退响应生成失败: %s", e)
                 content = ""
             result.model = "rule-engine-fallback" if content else "error"
 
@@ -411,13 +412,12 @@ class AcademicianChatEngine:
                                   f"{', '.join(f'{k}({v*100:.0f}%)' for k,v in top)}")
             if matched:
                 return "**药材知识库匹配结果**\n\n" + "\n".join(matched)
-        except Exception:
-            pass
-
-        return (
-            f"您好！关于「{question}」，建议您在配方生成模块选择功效标签获取专业方案。\n"
-            f"当前支持: 免疫调节、抗氧化、抗疲劳、降血糖、降压、护肝、安神等功效。"
-        )
+        except Exception as e:
+            logger.debug("知识库匹配失败: %s", e)
+            return (
+                f"您好！关于「{question}」，建议您在配方生成模块选择功效标签获取专业方案。\n"
+                f"当前支持: 免疫调节、抗氧化、抗疲劳、降血糖、降压、护肝、安神等功效。"
+            )
 
     def _complete_content(self, content: str) -> tuple[str, List[str]]:
         """内容完整性补全"""

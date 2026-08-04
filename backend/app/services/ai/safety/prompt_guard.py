@@ -90,6 +90,8 @@ _DATA_EXFIL_PATTERNS: list[tuple[str, str, float]] = [
     (r"(?i)(send|email|forward|transmit|传递|发送)\s+(me|to\s+(you|them))\s+(my\s+)?(api\s*key|secret|password|token|密钥|密码|凭证)", "data_exfil", 0.95),
     (r"(?i)(output|return|show|display|输出|返回|显示).*(all\s+)?(keys|secrets|passwords|tokens|凭据|密钥)", "data_exfil", 0.85),
     (r"(导出|导出|发送出去|传输).*(api\s*key|密钥|密码|token)", "data_exfil", 0.90),
+    # 新增：中文"把...密钥给/发给/发送到"
+    (r"把.*(?:密钥|密码|凭证|token|api.?key).*(?:给|发给|发送给|发送|发给我|传给我)", "data_exfil", 0.90),
     # 数据复制
     (r"(?i)(copy|export|dump)\s+(the\s+)?(full\s+)?(system\s+)?(prompt|instructions|rules|context)", "data_exfil", 0.80),
     (r"(复制|导出|dump).*(完整|所有|全部).*(提示词|指令|规则|上下文)", "data_exfil", 0.80),
@@ -102,6 +104,8 @@ _PRIVILEGE_ESCALATION_PATTERNS: list[tuple[str, str, float]] = [
     (r"(?i)(bypass|circumvent|evade|绕过|逃避|规避).*(security|filter|safeguard|限制|过滤|安全)", "privilege_escalation", 0.85),
     (r"(绕过|规避).*(安全|限制|过滤|防护)", "privilege_escalation", 0.80),
     (r"(?i)(do\s+not\s*(stop|block|prevent|refuse)|不要(停止|阻止|拒绝|屏蔽)).*(this|any|我)", "privilege_escalation", 0.75),
+    # 新增：纯中文"不要+执行/遵守+安全/限制/规则"
+    (r"不要.*(执行|遵守|遵循|遵守).*(安全|限制|规则|防护|控制)", "privilege_escalation", 0.80),
     (r"(不要|别).*(停止|阻止|拒绝|屏蔽)", "privilege_escalation", 0.70),
 ]
 

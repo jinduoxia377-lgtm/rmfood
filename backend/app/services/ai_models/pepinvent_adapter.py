@@ -1002,7 +1002,8 @@ class PepinventAdapter:
             parts = [smiles_map.get(aa, '') for aa in sequence]
             combined = ".".join(filter(None, parts))
             return combined if combined else None
-        except Exception:
+        except Exception as e:
+            logger.debug("SMILES 编码失败: %s", e)
             return None
 
     def _evaluate_objectives(

@@ -44,8 +44,9 @@ class FormulaService:
         try:
             lock_key = hash(f"formula_code_gen_{today}") % 2147483647
             await self.db.execute(text(f"SELECT pg_advisory_xact_lock({lock_key})"))
-        except Exception:
+        except Exception as e:
             # 非 PostgreSQL 或 advisory lock 不可用，静默降级
+            logger.debug("Advisory lock 不可用（降级）: %s", e)
             pass
 
         # 查询今日已有的配方数量
@@ -112,8 +113,9 @@ class FormulaService:
 
             logger.info(f"创建配方: {code} - {formula.name}")
             return formula
-        except Exception:
+        except Exception as e:
             await self.db.rollback()
+            logger.warning("创建配方失败: %s", e)
             raise
 
     async def get_formula(self, formula_id: int) -> Formula:
@@ -301,11 +303,10 @@ class FormulaService:
             await self._create_version_snapshot(formula, f"从版本 v{version} 恢复", user_id)
 
             return formula
-        except Exception:
+        except Exception as e:
             await self.db.rollback()
+            logger.warning("恢复配方版本失败: %s", e)
             raise
-
-    # ── 审核流程 ──
 
     async def submit_for_review(self, formula_id: int, user_id: int) -> Formula:
         """提交审核"""
@@ -496,11 +497,10 @@ class FormulaService:
             updated_count = result.rowcount
             logger.info(f"批量更新配方状态: {updated_count} 个 -> {status}")
             return updated_count
-        except Exception:
+        except Exception as e:
             await self.db.rollback()
+            logger.warning("更新配方状态失败: %s", e)
             raise
-
-    # ── AI 辅助功能 ──
 
     async def get_ai_recommendations(
         self,

@@ -19,6 +19,13 @@ from enum import Enum
 from typing import Any, AsyncIterator, Dict, List, Optional
 
 from app.services.ai.providers.provider_factory import get_provider_factory, TaskType
+from app.services.ai.safety import (
+    PromptGuardResult,
+    ThreatLevel,
+    check_prompt,
+    check_output,
+)
+from app.services.ai.safety.instruction_hierarchy import InstructionHierarchy
 
 from .tools import BaseAgentTool, ToolResult, get_tool_registry
 
@@ -99,7 +106,7 @@ class AgentOrchestrator:
         self._registry = get_tool_registry()
         self._system_prompt = system_prompt or self._default_system_prompt
         self._provider_factory = get_provider_factory()
-
+        self._hierarchy = InstructionHierarchy(system_prompt=self._system_prompt)
     @property
     def _default_system_prompt(self) -> str:
         return (
@@ -179,6 +186,8 @@ class AgentOrchestrator:
         """
         智能模式：让 LLM 自主决定调用哪些工具
         通过 function calling 接口，LLM 动态选择工具。
+
+        🔒 安全增强：用户输入经过 Prompt 注入检测，输出经过安全检查
         """
         execution = AgentExecution(
             execution_id=f"exec-smart-{int(time.time())}",
@@ -186,6 +195,22 @@ class AgentOrchestrator:
             started_at=datetime.now(timezone.utc),
         )
         context = context or {}
+
+        # 🔒 安全检查：Prompt 注入检测
+        guard_result: PromptGuardResult = check_prompt(query)
+        if guard_result.is_blocked:
+            execution.status = "blocked"
+            execution.final_response = (
+                "您的输入包含疑似注入攻击，已被安全系统拦截。"
+                "请修改后重试。"
+            )
+            execution.completed_at = datetime.now(timezone.utc)
+            execution.total_latency_ms = 0.0
+            logger.warning(
+                "[AgentOrchestrator] 用户输入被拦截: score=%.2f",
+                guard_result.security_score,
+            )
+            return execution
 
         messages: List[Dict[str, str]] = [
             {"role": "system", "content": self._system_prompt},
@@ -201,7 +226,14 @@ class AgentOrchestrator:
 
             tool_calls = llm_result.get("tool_calls", [])
             if not tool_calls:
-                execution.final_response = llm_result.get("content", "")
+                raw_answer = llm_result.get("content", "")
+                # 🔒 安全检查：输出侧过滤
+                output_result = check_output(raw_answer)
+                execution.final_response = (
+                    output_result.sanitized_text
+                    if not output_result.is_safe
+                    else raw_answer
+                )
                 break
 
             for tool_call in tool_calls:
@@ -262,6 +294,16 @@ class AgentOrchestrator:
 
         if not execution.final_response:
             execution.final_response = self._build_response(query, execution.steps)
+
+        # 🔒 最终输出安全检查
+        final_output_check = check_output(execution.final_response)
+        if not final_output_check.is_safe:
+            logger.warning(
+                "[AgentOrchestrator] 输出被安全过滤: risk=%s findings=%d",
+                final_output_check.risk_level.value,
+                len(final_output_check.findings),
+            )
+            execution.final_response = final_output_check.sanitized_text
 
         logger.info(
             "Smart execution done: %d tool calls, %dms",
@@ -328,3 +370,67 @@ def get_orchestrator(system_prompt: str = "") -> AgentOrchestrator:
     if _orchestrator is None:
         _orchestrator = AgentOrchestrator(system_prompt)
     return _orchestrator
+
+
+# ── 高危操作确认机制 ──────────────────────────────────────────────────────
+
+@dataclass
+class HighRiskAction:
+    """高危操作定义"""
+    action_type: str       # e.g., "formula.delete", "data.export"
+    requires_confirmation: bool = True
+    allowed_roles: List[str] = field(default_factory=lambda: ["admin", "researcher"])
+    description: str = ""
+
+
+# 高危操作注册表
+_HIGH_RISK_ACTIONS: Dict[str, HighRiskAction] = {
+    "formula.delete": HighRiskAction(
+        action_type="formula.delete",
+        requires_confirmation=True,
+        allowed_roles=["admin"],
+        description="删除配方，不可恢复",
+    ),
+    "data.export": HighRiskAction(
+        action_type="data.export",
+        requires_confirmation=True,
+        allowed_roles=["admin", "researcher"],
+        description="导出敏感数据",
+    ),
+    "compliance.override": HighRiskAction(
+        action_type="compliance.override",
+        requires_confirmation=True,
+        allowed_roles=["admin"],
+        description="强制通过合规检查",
+    ),
+    "system.config.change": HighRiskAction(
+        action_type="system.config.change",
+        requires_confirmation=True,
+        allowed_roles=["admin"],
+        description="修改系统配置",
+    ),
+}
+
+
+def check_high_risk_action(
+    action_type: str,
+    user_roles: List[str] | None = None,
+) -> tuple[bool, str]:
+    """
+    检查高危操作是否需要人工确认
+
+    Returns:
+        (allowed, message) — allowed=True 时可直接执行
+    """
+    action = _HIGH_RISK_ACTIONS.get(action_type)
+    if action is None:
+        return True, "非高危操作，允许执行"
+
+    roles = user_roles or []
+    if not action.requires_confirmation:
+        return True, f"{action.description}（无需确认）"
+
+    if not any(r in roles for r in action.allowed_roles):
+        return False, f"权限不足：{action.description} 仅允许角色 {action.allowed_roles}"
+
+    return True, f"{action.description}（已确认）"

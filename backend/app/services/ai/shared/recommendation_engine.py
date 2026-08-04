@@ -364,7 +364,8 @@ class ContextAnalyzer:
             else:
                 return 0.4  # 经典常青
                 
-        except Exception:
+        except Exception as e:
+            logger.debug("推荐评分计算失败，使用默认值: %s", e)
             return 0.5
 
 

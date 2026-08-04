@@ -189,7 +189,7 @@ export default function FormulaDetailPage() {
     enabled: !!formulaId,
     staleTime: 60_000,
   });
-  const experiments = (experimentsData as any)?.items ?? [];
+  const experiments = experimentsData?.items ?? [];
   const { data: commentsData, isLoading: commentsLoading } = useQuery({
     queryKey: ['comments', 'formula', formulaId],
     queryFn: () => commentApi.list({ formula_id: formulaId, page: 1, page_size: 50 }),
@@ -325,7 +325,7 @@ export default function FormulaDetailPage() {
     EDITABLE_FIELDS.forEach((key) => {
       if (!(key in editedData)) return;
       const editedVal = editedData[key];
-      const originalVal = (formula as any)[key];
+      const originalVal = (formula as Record<string, unknown>)[key];
       if (JSON.stringify(editedVal) !== JSON.stringify(originalVal ?? '')) {
         changed[key] = editedVal;
       }
@@ -339,7 +339,7 @@ export default function FormulaDetailPage() {
     (field: string): boolean => {
       if (!(field in editedData)) return false;
       const editedVal = editedData[field];
-      const originalVal = (formula as any)[field];
+      const originalVal = (formula as Record<string, unknown>)[field];
       return JSON.stringify(editedVal) !== JSON.stringify(originalVal ?? '');
     },
     [editedData, formula],
@@ -503,7 +503,7 @@ export default function FormulaDetailPage() {
       const sanitizedData = Object.entries(data).reduce((acc, [key, value]) => {
         acc[key] = value === null ? undefined : value;
         return acc;
-      }, {} as any);
+      }, {} as Record<string, unknown>);
       const copied = await import('@/api/formula').then((m) =>
         m.formulaApi.create({
           ...sanitizedData,
@@ -527,9 +527,9 @@ export default function FormulaDetailPage() {
       const [safetyRes, synergyRes] = await Promise.all([aiApi.safetyCheck(names), aiApi.synergyAnalysis(names)]);
       await import('@/api/formula').then((m) =>
         m.formulaApi.update(formula.id, {
-          safety_check: safetyRes as any,
-          synergy_analysis: synergyRes as any,
-        } as any),
+          safety_check: safetyRes,
+          synergy_analysis: synergyRes,
+        }),
       );
       qc.invalidateQueries({ queryKey: ['formula', formulaId] });
       addToast({ type: 'success', message: 'AI 分析完成，安全检查和协同分析已更新' });
@@ -880,9 +880,9 @@ export default function FormulaDetailPage() {
                       ) : (
                         <div className="flex flex-wrap gap-2">
                           {formula.targetEffects && formula.targetEffects.length > 0 ? (
-                            formula.targetEffects.map((effect: any) => (
-                              <Badge key={typeof effect === 'string' ? effect : effect.effectName} variant="primary">
-                                {effect as any}
+                            formula.targetEffects.map((effect: string) => (
+                              <Badge key={effect} variant="primary">
+                                {effect}
                               </Badge>
                             ))
                           ) : (
@@ -1535,7 +1535,7 @@ export default function FormulaDetailPage() {
 
                       {/* 导出报告 */}
                       <ReportExportPanel
-                        report={null as any}
+                        report={null}
                         formulaName={formula.name || '未命名配方'}
                         ingredients={ingredientList.map((i) => ({
                           name: i.name,

@@ -542,6 +542,30 @@ Authorization: Bearer <your_access_token>
     except Exception as e:
         logger.warning(f"[ReportExportRouter] Report export router registration failed (non-blocking): {e}")
 
+    # ── 产品方案报告 API ──
+    try:
+        from .api.v1.report_router import router as report_router
+        app.include_router(report_router, prefix="/api/v1")
+        logger.info("[ReportRouter] Product plan report API registered")
+    except Exception as e:
+        logger.warning(f"[ReportRouter] Product plan report router registration failed (non-blocking): {e}")
+
+    # ── 知识图谱推理 API ──
+    try:
+        from .api.v1.kg_router import router as kg_router
+        app.include_router(kg_router, prefix="/api/v1")
+        logger.info("[KGRouter] Knowledge graph reasoning API registered")
+    except Exception as e:
+        logger.warning(f"[KGRouter] Knowledge graph router registration failed (non-blocking): {e}")
+
+    # ── 多租户管理 API ──
+    try:
+        from .api.v1.tenant_router import router as tenant_router
+        app.include_router(tenant_router, prefix="/api/v1")
+        logger.info("[TenantRouter] Multi-tenant management API registered")
+    except Exception as e:
+        logger.warning(f"[TenantRouter] Tenant router registration failed (non-blocking): {e}")
+
     # ── 插件管理与开放 API ──
     try:
         from .api.v1.plugin_router import router as plugin_router

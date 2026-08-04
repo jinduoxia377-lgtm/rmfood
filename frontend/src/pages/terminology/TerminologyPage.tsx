@@ -223,7 +223,7 @@ function CategoryManagementTab() {
                   if (editingCategory) {
                     updateMutation.mutate({ id: editingCategory.id, data: formData })
                   } else {
-                    createMutation.mutate(formData as any)
+                    createMutation.mutate(formData as Record<string, unknown>)
                   }
                 }}
               >

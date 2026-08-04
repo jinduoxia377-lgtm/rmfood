@@ -489,7 +489,8 @@ class SearchEngine:
                 {"keyword": row[0], "searched_at": row[1].isoformat() if row[1] else None, "result_count": row[2]}
                 for row in result.fetchall()
             ]
-        except Exception:
+        except Exception as e:
+            logger.debug("搜索历史查询失败: %s", e)
             return []
 
     async def save_search_history(self, user_id: int, keyword: str, result_count: int) -> None:
@@ -574,10 +575,9 @@ class SearchEngine:
                 {"uid": user_id, "itype": item_type, "iid": item_id}
             )
             return result.scalar_one_or_none() is not None
-        except Exception:
+        except Exception as e:
+            logger.debug("搜索偏好查询失败: %s", e)
             return False
-
-    # ── 最近访问 ──
 
     async def record_view(self, user_id: int, item_type: str, item_id: int) -> None:
         """记录访问历史（保持最近100条）"""
@@ -623,9 +623,10 @@ class SearchEngine:
                 }
                 for row in result.fetchall()
             ]
-        except Exception:
+        except Exception as e:
+            logger.debug("用户活跃度查询失败: %s", e)
             return []
-    
+
     # ── 内部方法 ──
     
     def _get_model_class(self, model_type: str) -> Optional[type]:

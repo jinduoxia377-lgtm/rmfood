@@ -245,7 +245,8 @@ class StructuredJsonFormatter(logging.Formatter):
             try:
                 import socket
                 self._static_fields["hostname"] = socket.gethostname()
-            except Exception:
+            except Exception as e:
+                logger.debug("主机名获取失败（非致命）: %s", e)
                 self._static_fields["hostname"] = "unknown"
 
     def format(self, record: logging.LogRecord) -> str:
@@ -312,8 +313,9 @@ class StructuredJsonFormatter(logging.Formatter):
         # 9. JSON 序列化
         try:
             return json.dumps(log_entry, ensure_ascii=False, default=str)
-        except Exception:
+        except Exception as e:
             # 降级：返回原始消息
+            logger.debug("日志JSON序列化失败（降级）: %s", e)
             return json.dumps({
                 "timestamp": timestamp,
                 "level": record.levelname,
@@ -415,7 +417,8 @@ class AsyncFileHandler(logging.FileHandler):
             # 如果队列过长，同步写入一条（防止内存溢出）
             if len(self._async_queue) > 1000:
                 self.flush()
-        except Exception:
+        except Exception as e:
+            logger.debug("异步日志写入失败: %s", e)
             self.handleError(record)
 
     def _start_worker(self):
@@ -547,7 +550,8 @@ def _get_hostname() -> str:
     try:
         import socket
         return socket.gethostname()
-    except Exception:
+    except Exception as e:
+        logger.debug("主机名获取失败（非致命）: %s", e)
         return "unknown"
 
 

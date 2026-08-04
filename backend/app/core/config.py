@@ -629,7 +629,8 @@ class Settings(BaseSettings):
             client = redis.from_url(self.redis_url, decode_responses=True, db=1)
             client.ping()
             return True
-        except Exception:
+        except Exception as e:
+            logger.debug("Redis 连接验证失败: %s", e)
             return False
 
     @property
@@ -889,7 +890,8 @@ class _LazySettings:
         try:
             # 直接调用同一模块中的 get_settings()，避免循环导入问题
             return repr(get_settings())
-        except Exception:
+        except Exception as e:
+            logger.debug("Settings 序列化失败（非致命）: %s", e)
             return "<LazySettings (Settings not yet initialized)>"
 
 

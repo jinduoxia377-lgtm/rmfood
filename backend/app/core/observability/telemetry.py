@@ -475,8 +475,8 @@ class TelemetryMiddleware(BaseHTTPMiddleware):
             parts = traceparent.split("-")
             if len(parts) == 4 and parts[0] == "00":
                 return parts[1], parts[2]  # trace_id, parent_span_id
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug("Traceparent 解析失败（非致命）: %s", e)
         return None, None
 
 

@@ -25,7 +25,7 @@ export function ThemePreviewOverlay({ theme, position, onClose, onApply }: Theme
     }
   }, [])
 
-  const config = theme.config || {} as any
+  const config = theme.config || ({} as Record<string, unknown>)
 
   return (
     <div

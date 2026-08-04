@@ -21,7 +21,7 @@ export const Icon: React.FC<IconProps> = ({
   color,
   variant,
 }) => {
-  const LucideIcon = (LucideIcons as any)[name]
+  const LucideIcon = (LucideIcons as unknown as Record<string, React.FC<import('lucide-react').LucideProps>>)[name]
 
   if (!LucideIcon || typeof LucideIcon !== 'function') {
     return null

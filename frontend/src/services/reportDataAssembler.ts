@@ -268,7 +268,7 @@ export function assembleReportData(
 function extractMetadata(formula: AIRecognizedFormula, author: string): ReportMetadata {
   return {
     formulaId: formula.id,
-    formulaName: formula.name || (formula as any).title || '未命名配方',
+    formulaName: formula.name || (formula as Record<string, unknown>).title as string || '未命名配方',
     author,
     generatedAt: new Date(),
     analysisVersion: 'v2.0.0',
@@ -304,8 +304,7 @@ function enhanceIngredients(rawIngredients: any[]): EnhancedIngredientForReport[
       source: ing.source,
     }
     if (calcIngredient && 'absoluteAmount' in calcIngredient) {
-      // @ts-ignore: TypeScript 无法正确推断继承接口的可选属性
-      result.absoluteAmount = (calcIngredient as any).absoluteAmount
+      result.absoluteAmount = (calcIngredient as Record<string, unknown>).absoluteAmount as number
     }
     return result as EnhancedIngredientForReport
   })

@@ -236,8 +236,8 @@ class TenantResolver:
             # payload = jwt.decode(token, ...)
             # tenant_id = payload.get("tenant_id")
             pass
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug("租户提取失败（非致命）: %s", e)
 
         return None
 

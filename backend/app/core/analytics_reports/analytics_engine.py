@@ -439,7 +439,8 @@ class AnalyticsService:
                     LIMIT 50
                 """))
                 filters["categories"] = [{"id": str(row.id), "name": str(row.name)} for row in result.fetchall()]
-            except Exception:
+            except Exception as e:
+                logger.debug("分类查询失败: %s", e)
                 filters["categories"] = []
 
             # Get users list

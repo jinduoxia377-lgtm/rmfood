@@ -223,7 +223,7 @@ export const PRESET_SCENARIOS: ScenarioConfig[] = [
     id: 'sleep_improvement',
     name: '睡眠改善配方',
     targetAudience: '失眠人群',
-    primaryGoals: ['改善睡眠', '抗疲劳', '安神', '健脾益胃'] as any,
+    primaryGoals: ['改善睡眠', '抗疲劳', '安神', '健脾益胃'] as string[],
     constraints: {
       maxIngredients: 6,
       maxDailyDosage: 35,
@@ -513,7 +513,7 @@ function generateTimelineEffects(
     mediumTermEffects.push({
       category: '外观改善',
       description: '促进胶原蛋白合成，改善肤质',
-      evidenceLevel: 'emerging' as any,
+      evidenceLevel: 'emerging' as 'emerging' | 'strong' | 'moderate' | 'weak',
       confidence: 68,
     })
   }
@@ -771,7 +771,7 @@ function calculateConfidence(ingredients: Ingredient[], dimensions: SynergyDimen
 
   const researchDepth = ingredients.filter(ing =>
     (ing.efficacyTags || []).some(tag => {
-      const detail = EFFICACY_TAG_DETAILS[tag as any]
+      const detail = EFFICACY_TAG_DETAILS[tag as keyof typeof EFFICACY_TAG_DETAILS]
       return detail?.evidenceLevel === 'strong'
     }),
   ).length / ingredients.length

@@ -259,12 +259,25 @@ class DataQualityChecker:
         return self._check("ingredient", data, target_id)
 
     def _check(self, target_type: str, data: dict, target_id: Optional[str] = None) -> QualityReport:
-        """通用检查"""
+        """通用检查，支持嵌套字段如 ingredients[].quantity"""
         rules = self._rule_sets.get(target_type, [])
         findings: List[QualityFinding] = []
 
         for rule in rules:
-            value = data.get(rule.field.split("[")[0])  # 提取字段名（去掉 [] 索引）
+            field_name = rule.field.split("[")[0]  # 提取字段名（去掉 [] 索引）
+            value = data.get(field_name)
+
+            # 处理嵌套字段（如 ingredients[].quantity）
+            if "[]" in rule.field:
+                items = value if isinstance(value, list) else []
+                for item in items:
+                    nested_field = rule.field.split("[")[1].rstrip("]")  # 提取嵌套字段名
+                    nested_value = item.get(nested_field) if isinstance(item, dict) else None
+                    finding = rule.check(nested_value)
+                    if finding:
+                        findings.append(finding)
+                continue
+
             finding = rule.check(value)
             if finding:
                 findings.append(finding)
@@ -299,3 +312,8 @@ def get_quality_checker() -> DataQualityChecker:
 def check_formula(data: dict, target_id: Optional[str] = None) -> QualityReport:
     """快捷检查配方质量"""
     return get_quality_checker().check_formula(data, target_id)
+
+
+def check_ingredient(data: dict, target_id: Optional[str] = None) -> QualityReport:
+    """快捷检查成分质量"""
+    return get_quality_checker().check_ingredient(data, target_id)

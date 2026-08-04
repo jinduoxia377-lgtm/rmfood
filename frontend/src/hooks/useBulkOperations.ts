@@ -161,7 +161,7 @@ export function useBulkOperations(options: UseBulkOperationsOptions = {}) {
             return result;
           } catch (error: any) {
             return {
-              id: typeof item === 'object' && item !== null && 'id' in item ? (item as any).id : i,
+              id: typeof item === 'object' && item !== null && 'id' in item ? ((item as Record<string, unknown>).id as string) : i,
               success: false,
               error: error.message || 'Unknown error',
               timestamp: Date.now(),

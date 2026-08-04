@@ -15,7 +15,7 @@ export function ToastContainer() {
           key={toast.id}
           message={{
             id: toast.id,
-            type: toast.type as any,
+            type: toast.type,
             title: toast.title || '通知',
             description: toast.message,
           }}

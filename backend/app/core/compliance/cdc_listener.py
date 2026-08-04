@@ -426,17 +426,15 @@ class CDCListener:
         try:
             mapper = inspect(type(obj))
             return mapper.mapped_table.name
-        except Exception:
-            return None
-
-    def _get_entity_id(self, obj) -> Optional[int]:
+        except Exception as e:
+            logger.debug("获取实体表名失败: %s", e)
+            return None(self, obj) -> Optional[int]:
         """获取实体的主键 ID"""
         try:
             return getattr(obj, "id", None)
-        except Exception:
-            return None
-
-    def _get_current_values(self, obj) -> dict:
+        except Exception as e:
+            logger.debug("获取实体ID失败: %s", e)
+            return None(self, obj) -> dict:
         """获取实体当前的所有字段值"""
         values = {}
         try:
@@ -444,9 +442,8 @@ class CDCListener:
             for col in mapper.mapped_table.columns:
                 val = getattr(obj, col.name, None)
                 values[col.name] = self._serialize_value(val)
-        except Exception:
-            pass
-        return values
+        except Exception as e:
+            logger.debug("获取当前值失败: %s", e)
 
     def _serialize_value(self, val: Any) -> Any:
         """序列化值为 JSON 兼容格式"""

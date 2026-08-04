@@ -190,3 +190,35 @@ async def get_audit_log(
     """查询知识库操作审计日志"""
     logs = _version_mgr.get_audit_log(filename, limit)
     return {"logs": logs, "total": len(logs)}
+
+
+@router.post("/search", summary="直接搜索 RAG 知识库")
+async def search_rag(
+    question: str,
+    top_k: int = Query(5, ge=1, le=20, description="返回结果数量"),
+):
+    """
+    直接搜索知识库，不经过 Agent。
+    适合需要快速获取检索结果的场景。
+    """
+    if not question or not question.strip():
+        raise HTTPException(status_code=400, detail="问题不能为空")
+
+    result = await rag_service.augment_query(question.strip(), top_k=top_k)
+    return {
+        "success": True,
+        "data": {
+            "question": question.strip(),
+            "chunks": [
+                {
+                    "content": c.chunk.content,
+                    "source": c.chunk.metadata.get("source", "unknown"),
+                    "score": round(c.score, 4),
+                    "section": c.chunk.metadata.get("section", ""),
+                }
+                for c in result.chunks
+            ],
+            "augmented_prompt": result.augmented_prompt,
+            "total_chunks_indexed": result.total_chunks,
+        },
+    }

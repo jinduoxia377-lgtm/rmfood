@@ -838,10 +838,8 @@ class TCMSPSyncService:
             rows = result.all()
             if rows:
                 return [{"category": row[0] or "未分类", "count": row[1]} for row in rows]
-        except Exception:
-            pass
-
-        # Fallback: 从内存知识库统计分类
+        except Exception as e:
+            logger.debug("TCMSP 分类统计查询失败，使用内存数据: %s", e)
         cat_counts: dict[str, int] = {}
         for herb in TCMSP_HERB_DATABASE:
             cat = herb.get("category") or "未分类"
@@ -901,10 +899,8 @@ class TCMSPSyncService:
                     "page": page,
                     "page_size": page_size,
                 }
-        except Exception:
-            pass
-
-        # Fallback: 从内存知识库过滤药食同源药材
+        except Exception as e:
+            logger.debug("TCMSP 药食同源药材查询失败，使用内存数据: %s", e)
         all_items = [
             {
                 "id": -(idx + 1),  # 负数 ID 表示内存数据

@@ -323,7 +323,7 @@ function createPersistentStore<T = any>(namespace: string, options: PersistentSt
         const plainKey = key.replace(prefix, '');
         const wrapped = await adapter.get(key);
         if (wrapped) {
-          (result as any)[plainKey] = _unwrapData(wrapped);
+          (result as Record<string, unknown>)[plainKey] = _unwrapData(wrapped);
         }
       }
 

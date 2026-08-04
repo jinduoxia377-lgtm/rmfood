@@ -109,19 +109,19 @@ export function useImportEngine(): UseImportEngineReturn {
         updated_rows: (report.stats as Record<string, unknown> | undefined)?.updated as number || 0,
         error_rows: (report.stats as Record<string, unknown> | undefined)?.error_count as number || 0,
         progress_pct: 100,
-        success_rate: (report.stats as any)?.success_rate || 0,
+        success_rate: (report.stats as Record<string, unknown> | undefined)?.success_rate as number || 0,
         error_summary: report.message,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       })
       setProgress({
-        totalRows: (report.stats as any)?.total_rows || 0,
-        processedRows: (report.stats as any)?.valid_rows || 0,
-        insertedRows: (report.stats as any)?.inserted || 0,
-        updatedRows: (report.stats as any)?.updated || 0,
-        errorRows: (report.stats as any)?.error_count || 0,
+        totalRows: (report.stats as Record<string, unknown> | undefined)?.total_rows as number || 0,
+        processedRows: (report.stats as Record<string, unknown> | undefined)?.valid_rows as number || 0,
+        insertedRows: (report.stats as Record<string, unknown> | undefined)?.inserted as number || 0,
+        updatedRows: (report.stats as Record<string, unknown> | undefined)?.updated as number || 0,
+        errorRows: (report.stats as Record<string, unknown> | undefined)?.error_count as number || 0,
         progressPct: 100,
-        successRate: (report.stats as any)?.success_rate || 0,
+        successRate: (report.stats as Record<string, unknown> | undefined)?.success_rate as number || 0,
       })
       setStep(report.status === 'completed' ? 'done' : 'error')
       setErrorMessage(report.status === 'failed' ? report.message : null)

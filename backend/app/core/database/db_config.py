@@ -81,8 +81,8 @@ def configure_engine(engine: Engine) -> Engine:
                 cursor.execute(
                     f"SET STATEMENT_TIMEOUT = {DatabasePerformanceConfig.STATEMENT_TIMEOUT * 1000}"
                 )
-            except Exception:
-                pass  # 不支持此命令的数据库会忽略
+            except Exception as e:
+                logger.debug("STATEMENT_TIMEOUT 设置失败（非致命）: %s", e)
     
     @event.listens_for(engine, "after_cursor_execute")
     def receive_after_cursor_execute(

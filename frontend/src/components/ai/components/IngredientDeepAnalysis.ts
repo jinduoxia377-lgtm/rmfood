@@ -170,7 +170,7 @@ export const EFFICACY_TAG_DETAILS: Partial<Record<EfficacyTag, {
     mechanism: '调节神经递质、舒缓神经系统',
     evidenceLevel: 'moderate',
     relatedTags: ['抗疲劳', '安神'],
-  } as any,
+  } as Record<string, { category: string; mechanism: string; evidenceLevel: string; relatedTags: string[]; }>,
   '护肝': {
     category: '器官保护',
     mechanism: '促进肝细胞再生、解毒功能',

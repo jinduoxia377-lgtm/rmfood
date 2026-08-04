@@ -873,7 +873,7 @@ export default function UserManagementPage() {
               </span>
             )}
             <Button
-              variant={'primary' as any}
+              variant={'primary'}
               size="sm"
               onClick={() => setShowCreateModal(true)}
               className="shadow-sm hover:shadow-md active:scale-[0.97] transition-all duration-200 h-8 px-3 inline-flex items-center"
@@ -956,7 +956,7 @@ export default function UserManagementPage() {
                 </div>
                 <span className="text-[13px] font-medium text-neutral-500 dark:text-neutral-400">已禁用</span>
               </div>
-              <Badge variant={'danger' as any} size="sm">
+              <Badge variant="danger" size="sm">
                 {inactiveCount}
               </Badge>
             </div>
@@ -966,7 +966,7 @@ export default function UserManagementPage() {
             <Progress
               value={users.length > 0 ? Math.round((inactiveCount / users.length) * 100) : 0}
               max={100}
-              variant={'danger' as any}
+              variant={'danger'}
               size="sm"
               className="mt-3"
             />
@@ -1057,7 +1057,7 @@ export default function UserManagementPage() {
                 </div>
                 操作日志与安全监控{' '}
                 {anomalyCount > 0 && (
-                  <Badge variant={'danger' as any} size="sm" className="ml-1 animate-pulse">
+                  <Badge variant="danger" size="sm" className="ml-1 animate-pulse">
                     <AlertTriangle className="w-3 h-3 mr-1" />
                     {anomalyCount} 条异常{' '}
                   </Badge>
@@ -1353,7 +1353,7 @@ export default function UserManagementPage() {
 
           {/* Error State */}
           {error && (
-            <Alert variant={'danger' as any}>
+            <Alert variant="danger">
               <AlertTriangle className="w-4 h-4" />
               <AlertTitle>加载失败</AlertTitle>
               <AlertDescription className="flex items-center gap-2 mt-1.5">
@@ -1810,7 +1810,7 @@ export default function UserManagementPage() {
                       {!isSelf && (
                         <Button
                           size="sm"
-                          variant={'danger' as any}
+                          variant={'danger'}
                           className="flex-1"
                           onClick={() => {
                             requestDeleteUser(detailUser);
@@ -2244,7 +2244,7 @@ lisi,李四,li@example.com,analyst,数据部`}
 
           <div className="flex items-center gap-3 pt-1">
             <Button
-              variant={'primary' as any}
+              variant={'primary'}
               size="md"
               onClick={handleCreateUser}
               disabled={createUserMutation.isPending}

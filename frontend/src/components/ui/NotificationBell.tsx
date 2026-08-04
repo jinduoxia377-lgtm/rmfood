@@ -66,11 +66,11 @@ export default function NotificationBell() {
   }, [open]);
 
   const handleNotificationClick = (notif: Notification) => {
-    if ((notif as any).status === 'unread') {
+    if (!notif.isRead) {
       markReadMutation.mutate(notif.id);
     }
-    if ((notif as any).link) {
-      window.location.href = (notif as any).link;
+    if (notif.actionUrl) {
+      window.location.href = notif.actionUrl;
     }
   };
 
@@ -136,7 +136,7 @@ export default function NotificationBell() {
                   className={cn(
                     'w-full text-left px-4 py-3 border-b border-slate-50 dark:border-neutral-800/50',
                     'hover:bg-slate-50 dark:hover:bg-neutral-800/50 transition-colors',
-                    (notif as any).status === 'unread' && 'bg-primary-50/50 dark:bg-primary-900/10',
+                    {!notif.isRead && 'bg-primary-50/50 dark:bg-primary-900/10'},
                   )}
                 >
                   <div className="flex items-start gap-3">
@@ -155,14 +155,13 @@ export default function NotificationBell() {
                         <p
                           className={cn(
                             'text-sm truncate',
-                            (notif as any).status === 'unread'
                               ? 'font-semibold text-neutral-900 dark:text-white'
                               : 'text-neutral-600 dark:text-neutral-300',
                           )}
                         >
                           {notif.title}
                         </p>
-                        {(notif as any).link && <ExternalLink size={12} className="shrink-0 text-neutral-400" />}
+                        {notif.actionUrl && <ExternalLink size={12} className="shrink-0 text-neutral-400" />}
                       </div>
                       {notif.message && (
                         <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5 line-clamp-2">{notif.message}</p>
@@ -173,7 +172,7 @@ export default function NotificationBell() {
                     </div>
 
                     {/* 未读圆点 */}
-                    {(notif as any).status === 'unread' && (
+                    {!notif.isRead && (
                       <span className="shrink-0 mt-2 w-2 h-2 rounded-full bg-primary-500" />
                     )}
                   </div>

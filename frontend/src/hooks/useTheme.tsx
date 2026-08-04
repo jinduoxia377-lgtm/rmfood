@@ -69,7 +69,7 @@ export const useTheme = () => {
     isDark,
     isAutoMode: store.mode === 'system',
     settings: {
-      mode: store.mode === 'system' ? 'auto' : store.mode as any,
+      mode: store.mode === 'system' ? 'auto' : store.mode,
       animation: !storeFull.motionPreferences?.disableAnimations,
       density: 'comfortable' as const,
       fontSize: 16,
@@ -122,7 +122,7 @@ export const useTheme = () => {
         outline: c.border?.default || '#E5E7EB',
         outlineVariant: c.outlineVariant || '#E5E7EB',
         tertiary: c.tertiary?.main || '#AF52DE',
-      } as any;
+      } as Record<string, string>;
     },
     checkContrast: (c1: string, c2: string) => getContrastRatio(c1, c2),
     meetsWCAGAA: (c1: string, c2: string) => getContrastRatio(c1, c2) >= 4.5,

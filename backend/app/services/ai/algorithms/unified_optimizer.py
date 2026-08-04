@@ -267,7 +267,8 @@ class UnifiedFormulaOptimizer:
                 if effect in _EFFICACY_TO_HERBS:
                     candidate_set.update(_EFFICACY_TO_HERBS[effect])
             return len(candidate_set)
-        except Exception:
+        except Exception as e:
+            logger.debug("候选配方估算失败: %s", e)
             return len(target_effects) * 5  # 粗略估计
 
     def search_history(

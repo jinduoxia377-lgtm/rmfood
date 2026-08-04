@@ -680,8 +680,9 @@ class MaskingLogFilter(logging.Filter):
                         mask_value(arg, level=self.level) if isinstance(arg, str) else arg
                         for arg in record.args
                     )
-        except Exception:
-            pass  # 脱敏失败不影响日志输出
+        except Exception as e:
+            logger.debug("日志脱敏失败（非致命）: %s", e)
+            # 脱敏失败不影响日志输出
         
         return True
 

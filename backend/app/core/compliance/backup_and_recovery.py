@@ -619,9 +619,10 @@ class BackupManager:
                 location=data.get("location", "local"),
                 metadata=data.get("metadata", {}),
             )
-        except Exception:
+        except Exception as e:
+            logger.debug("备份清单加载失败（非致命）: %s", e)
             return None
-    
+
     def _scan_existing_backups(self) -> int:
         """扫描已有备份文件"""
         count = 0
@@ -633,7 +634,8 @@ class BackupManager:
                     if record:
                         self._records[backup_id] = record
                         count += 1
-            except Exception:
+            except Exception as e:
+                logger.debug("备份清单解析失败: %s", e)
                 continue
         if count > 0:
             logger.info(f"💾 已扫描 {count} 个已有备份")

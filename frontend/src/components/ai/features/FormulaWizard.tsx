@@ -671,18 +671,18 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
                           onClick={() =>
                             setAdvanced((prev) => ({
                               ...prev,
-                              sourcePreference: prev.sourcePreference.includes(source.value as any)
+                              sourcePreference: prev.sourcePreference.includes(source.value)
                                 ? prev.sourcePreference.filter((s) => s !== source.value)
-                                : [...prev.sourcePreference, source.value as any],
+                                : [...prev.sourcePreference, source.value],
                             }))
                           }
                           className={`px-3 py-1.5 rounded-lg text-sm transition-all ${
-                            advanced.sourcePreference.includes(source.value as any)
+                            advanced.sourcePreference.includes(source.value)
                               ? 'bg-success-100 dark:bg-success-900/30 text-success-700 dark:text-success-400 border border-green-300 dark:border-green-700'
                               : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-transparent hover:border-neutral-300'
                           }`}
                         >
-                          {advanced.sourcePreference.includes(source.value as any) && (
+                          {advanced.sourcePreference.includes(source.value) && (
                             <Check className="w-3 h-3 inline mr-1" />
                           )}
                           {source.label}
@@ -710,18 +710,18 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
                           onClick={() =>
                             setAdvanced((prev) => ({
                               ...prev,
-                              certifications: prev.certifications.includes(cert.value as any)
+                              certifications: prev.certifications.includes(cert.value)
                                 ? prev.certifications.filter((c) => c !== cert.value)
-                                : [...prev.certifications, cert.value as any],
+                                : [...prev.certifications, cert.value],
                             }))
                           }
                           className={`px-3 py-1.5 rounded-lg text-sm transition-all ${
-                            advanced.certifications.includes(cert.value as any)
+                            advanced.certifications.includes(cert.value)
                               ? 'bg-accent-100 dark:bg-accent-900/30 text-accent-700 dark:text-accent-400 border border-purple-300 dark:border-purple-700'
                               : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-transparent hover:border-neutral-300'
                           }`}
                         >
-                          {advanced.certifications.includes(cert.value as any) && (
+                          {advanced.certifications.includes(cert.value) && (
                             <Check className="w-3 h-3 inline mr-1" />
                           )}
                           {cert.label}
@@ -749,18 +749,18 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
                           onClick={() =>
                             setAdvanced((prev) => ({
                               ...prev,
-                              targetMarket: prev.targetMarket.includes(market.value as any)
+                              targetMarket: prev.targetMarket.includes(market.value)
                                 ? prev.targetMarket.filter((m) => m !== market.value)
-                                : [...prev.targetMarket, market.value as any],
+                                : [...prev.targetMarket, market.value],
                             }))
                           }
                           className={`px-3 py-1.5 rounded-lg text-sm transition-all ${
-                            advanced.targetMarket.includes(market.value as any)
+                            advanced.targetMarket.includes(market.value)
                               ? 'bg-secondary-100 dark:bg-secondary-900/30 text-secondary-700 dark:text-secondary-400 border border-blue-300 dark:border-blue-700'
                               : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-transparent hover:border-neutral-300'
                           }`}
                         >
-                          {advanced.targetMarket.includes(market.value as any) && (
+                          {advanced.targetMarket.includes(market.value) && (
                             <Check className="w-3 h-3 inline mr-1" />
                           )}
                           {market.label}
@@ -786,18 +786,18 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
                           onClick={() =>
                             setAdvanced((prev) => ({
                               ...prev,
-                              specialRestrictions: prev.specialRestrictions.includes(restriction.value as any)
+                              specialRestrictions: prev.specialRestrictions.includes(restriction.value)
                                 ? prev.specialRestrictions.filter((r) => r !== restriction.value)
-                                : [...prev.specialRestrictions, restriction.value as any],
+                                : [...prev.specialRestrictions, restriction.value],
                             }))
                           }
                           className={`px-3 py-1.5 rounded-lg text-sm transition-all ${
-                            advanced.specialRestrictions.includes(restriction.value as any)
+                            advanced.specialRestrictions.includes(restriction.value)
                               ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border border-orange-300 dark:border-orange-700'
                               : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-transparent hover:border-neutral-300'
                           }`}
                         >
-                          {advanced.specialRestrictions.includes(restriction.value as any) && (
+                          {advanced.specialRestrictions.includes(restriction.value) && (
                             <Check className="w-3 h-3 inline mr-1" />
                           )}
                           {restriction.label}

@@ -75,7 +75,8 @@ async def check_database(db: AsyncSession) -> Dict[str, Any]:
                     "pool_size": getattr(pool, 'size', 'unknown'),
                     "max_overflow": getattr(pool, 'max_overflow', 'unknown'),
                 }
-            except Exception:
+            except Exception as e:
+                logger.debug("数据库连接池信息获取失败: %s", e)
                 pool_info = {"status": "not_available"}
 
         return {
@@ -320,8 +321,8 @@ async def check_external_dependencies() -> List[Dict[str, Any]]:
                 try:
                     server.starttls()
                     server.quit()
-                except Exception:
-                    pass
+                except Exception as e:
+                    logger.debug("SMTP 健康检查失败: %s", e)
 
             response_time = (time.time() - start_time) * 1000
             results.append({

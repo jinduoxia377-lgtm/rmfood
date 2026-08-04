@@ -309,9 +309,9 @@ class OpenAIProvider(LLMProvider):
         try:
             error_body = error.response.json()
             error_detail = error_body.get("error", {}).get("message", "")
-        except Exception:
+        except Exception as e:
+            logger.debug("OpenAI 错误响应体解析失败: %s", e)
             error_detail = error.response.text[:200]
-
         if status_code == 401:
             raise RuntimeError(f"OpenAI API认证失败 (401): {error_detail}")
         elif status_code == 429:
@@ -496,9 +496,9 @@ class AnthropicProvider(LLMProvider):
         try:
             error_body = error.response.json()
             error_detail = error_body.get("error", {}).get("message", "")
-        except Exception:
+        except Exception as e:
+            logger.debug("Anthropic 错误响应体解析失败: %s", e)
             error_detail = error.response.text[:200]
-
         if status_code == 401:
             raise RuntimeError(f"Anthropic API认证失败 (401): {error_detail}")
         elif status_code == 429:

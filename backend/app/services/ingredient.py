@@ -73,8 +73,9 @@ class IngredientService:
             await self.db.commit()
             await self.db.refresh(ingredient)
             return ingredient
-        except Exception:
+        except Exception as e:
             await self.db.rollback()
+            logger.warning("创建成分失败: %s", e)
             raise
 
     async def update_ingredient(self, ingredient_id: int, data: IngredientUpdate) -> Ingredient:
@@ -89,8 +90,9 @@ class IngredientService:
             await self.db.commit()
             await self.db.refresh(ingredient)
             return ingredient
-        except Exception:
+        except Exception as e:
             await self.db.rollback()
+            logger.warning("更新成分失败: %s", e)
             raise
 
     async def delete_ingredient(self, ingredient_id: int) -> None:
@@ -99,6 +101,7 @@ class IngredientService:
         await self.db.delete(ingredient)
         try:
             await self.db.commit()
-        except Exception:
+        except Exception as e:
             await self.db.rollback()
+            logger.warning("删除成分失败: %s", e)
             raise

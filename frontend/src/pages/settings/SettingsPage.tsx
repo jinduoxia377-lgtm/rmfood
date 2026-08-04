@@ -295,7 +295,7 @@ export default function SettingsPage() {
 
   // Profile state
   const [form, setForm] = useState({
-    full_name: (user as any)?.full_name || '',
+    full_name: (user as Record<string, unknown>)?.full_name as string || '',
     email: user?.email || '',
     phone: user?.phone || '',
     department: user?.department || '',
@@ -442,7 +442,7 @@ export default function SettingsPage() {
 
         // 4. 应用字体配置（如果存在）
         if (config.font) {
-          const fontConfig = config.font as any
+          const fontConfig = config.font as Record<string, unknown>
           if (fontConfig.fontFamily) {
             setLocalFontFamily(fontConfig.fontFamily)
           }
@@ -1533,7 +1533,7 @@ export default function SettingsPage() {
 
               <CardContent>
                 <div className="space-y-4">
-                  {(loginHistory as any[]).map((session: any) => (
+                  {(loginHistory as unknown[]).map((session: unknown) => (
                     <div key={session.id} className="flex items-center justify-between p-3 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-800 transition-colors" role="listitem">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-neutral-100 dark:bg-neutral-700 flex items-center justify-center" aria-hidden="true">
@@ -1594,7 +1594,7 @@ export default function SettingsPage() {
 
               <CardContent>
                 <div className="space-y-4">
-                  {(devices as any[]).map((device: any) => (
+                  {(devices as unknown[]).map((device: unknown) => (
                     <div key={device.id} className="flex items-center justify-between p-3 border border-neutral-200 dark:border-neutral-700 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-800 transition-colors" role="listitem">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-neutral-100 dark:bg-neutral-700 flex items-center justify-center" aria-hidden="true">
@@ -3523,7 +3523,7 @@ export default function SettingsPage() {
               // ✅ 实现完整的版本回滚逻辑
 
               // 1. 解析版本配置（config 可能是 ThemeStyles 或 ThemeConfig 类型）
-              const versionConfig = config as any
+              const versionConfig = config as Record<string, unknown>
 
               // 2. 应用颜色配置
               if (versionConfig.colors) {
