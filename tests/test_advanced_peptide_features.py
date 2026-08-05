@@ -16,14 +16,14 @@ import asyncio
 import time
 import json
 
-from backend.app.services.ai_models.advanced_peptide_analyzer import (
+from app.services.ai_models.advanced_peptide_analyzer import (
     AdvancedPeptideAnalyzer,
     PeptideAnalysisResult,
     SecondaryStructure,
     ParetoPoint,
     BatchOptimizationResult,
 )
-from backend.app.services.ai_models.performance_optimizer import (
+from app.services.ai_models.performance_optimizer import (
     SmartCache,
     RateLimiter,
     PerformanceMonitor,

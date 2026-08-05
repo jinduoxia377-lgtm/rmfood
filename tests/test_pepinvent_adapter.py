@@ -5,7 +5,7 @@ import pytest
 from unittest.mock import Mock, patch, MagicMock
 import asyncio
 
-from backend.app.services.ai_models.pepinvent_adapter import (
+from app.services.ai_models.pepinvent_adapter import (
     PepinventAdapter,
     ServiceUnavailableError,
     PeptideResult,

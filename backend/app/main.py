@@ -3,6 +3,10 @@
 FastAPI 应用工厂 + 生命周期事件
 """
 import os as _os
+# 确保 DATABASE_URL 环境变量被设置
+if not _os.environ.get('DATABASE_URL'):
+    _os.environ['DATABASE_URL'] = 'postgresql+asyncpg://postgres:password@localhost:5432/rmfood'
+
 # 确保在导入任何其他模块之前加载 .env
 _env_path = _os.path.join(_os.path.dirname(__file__), "..", ".env")
 if _os.path.exists(_env_path):
