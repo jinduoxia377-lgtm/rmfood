@@ -187,7 +187,7 @@ export default function NotificationPage() {
                 className={cn(
                   'w-full text-left px-5 py-4 transition-colors',
                   'hover:bg-neutral-50 dark:hover:bg-neutral-800/40',
-                  {!notif.isRead && 'bg-primary-50/30 dark:bg-primary-900/10'},
+                  notif.isRead === false && 'bg-primary-50/30 dark:bg-primary-900/10',
                 )}
               >
                 <div className="flex items-start gap-3.5">

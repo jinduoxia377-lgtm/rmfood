@@ -50,10 +50,17 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
     create_async_engine,
 )
-from ..config import settings
+from dotenv import load_dotenv
+load_dotenv("d:/RMFOODFP/backend/.env", override=True)
+# from ..config import settings  # Lazy import to avoid early initialization
 from .database import Base
 
 logger = logging.getLogger(__name__)
+
+def _get_settings():
+    """Lazy import settings to ensure dotenv is loaded first"""
+    from ..config import settings
+    return settings
 
 
 # ═════════════════════════════════════════════
@@ -102,12 +109,12 @@ def _get_windows_tuned_params() -> Dict[str, Any]:
         params['pool_pre_ping'] = False
 
         # Reduce pool size to minimize connection contention and timeout windows
-        base_pool = settings.database.pool_size
+        base_pool = _get_settings().database.pool_size
         params['pool_size'] = max(2, base_pool // 4)  # Quarter size on Windows
 
         # More aggressive recycle to prevent holding connections across long idle periods
         # (important because without pre-ping, we rely on periodic recycling)
-        params['pool_recycle'] = min(600, settings.database.pool_recycle)  # Max 10 mins
+        params['pool_recycle'] = min(600, _get_settings().database.pool_recycle)  # Max 10 mins
 
         logger.warning(
             f"[DB] Windows tuning applied: pool_size={params['pool_size']} "
@@ -269,7 +276,15 @@ def _create_engine():
     Raises:
         ValueError: 如果数据库 URL 不是 PostgreSQL 协议
     """
-    database_url = settings.database.url
+    import os
+    # 优先使用 settings，后备环境变量
+    try:
+        _settings = _get_settings()
+        database_url = _settings.database.url
+    except Exception:
+        database_url = os.environ.get('DATABASE_URL', '')
+    
+    logger.debug(f"[DB] database_url: [{database_url}]")
 
     # 安全检查：确保 URL 是 PostgreSQL 协议
     if not database_url or not database_url.startswith(("postgresql", "postgres")):
@@ -288,10 +303,10 @@ def _create_engine():
             "jit": "off",                          #关闭 JIT（短查询更快）
             "client_encoding": "UTF8",             #客户端编码
             "statement_timeout": str(
-                settings.database.statement_timeout_ms
+                _get_settings().database.statement_timeout_ms
             ),  #慢查询保护
         },
-        "command_timeout": settings.database.pool_timeout,  #单条命令超时
+        "command_timeout": _get_settings().database.pool_timeout,  #单条命令超时
     }
 
     # Enable TCP keepalives on Windows to prevent firewall/router drops
@@ -303,21 +318,21 @@ def _create_engine():
         logger.debug(f"[DB] TCP keepalives enabled (will be applied at socket level)")
 
     # SSL configuration
-    ssl_mode = settings.database.ssl_mode
+    ssl_mode = _get_settings().database.ssl_mode
     if ssl_mode != "disable":
         connect_args["ssl"] = ssl_mode
 
     # Create the async engine with tuned parameters
     engine = create_async_engine(
         database_url,
-        echo=settings.debug,
-        echo_pool=settings.database.echo_pool,
+        echo=_get_settings().debug,
+        echo_pool=_get_settings().database.echo_pool,
         future=True,
         # ── Connection pool configuration ──
-        pool_size=tuned_params['pool_size'] or settings.database.pool_size,
-        max_overflow=settings.database.max_overflow,
-        pool_timeout=settings.database.pool_timeout,
-        pool_recycle=tuned_params['pool_recycle'] or settings.database.pool_recycle,
+        pool_size=tuned_params['pool_size'] or _get_settings().database.pool_size,
+        max_overflow=_get_settings().database.max_overflow,
+        pool_timeout=_get_settings().database.pool_timeout,
+        pool_recycle=tuned_params['pool_recycle'] or _get_settings().database.pool_recycle,
         pool_pre_ping=tuned_params['pool_pre_ping'],  # Platform-appropriate setting
         pool_use_lifo=True,
         # ── Connection parameters ──
@@ -614,8 +629,8 @@ async def ensure_connection() -> bool:
 
             logger.info(
                 f"[DB] PostgreSQL 连接验证成功 (第{attempt}次尝试) | "
-                f"host={settings.database_host}:{settings.database_port} | "
-                f"database={settings.database_name}"
+                f"host={_get_settings().database_host}:{_get_settings().database_port} | "
+                f"database={_get_settings().database_name}"
             )
             return True
 
@@ -634,9 +649,9 @@ async def ensure_connection() -> bool:
                     f"故障排除:\n"
                     f"  1. 检查 PostgreSQL 服务是否运行\n"
                     f"  2. 检查 DATABASE_URL 或 POSTGRES_* 环境变量\n"
-                    f"  3. 检查防火墙是否允许 {settings.database_port} 端口\n"
+                    f"  3. 检查防火墙是否允许 {_get_settings().database_port} 端口\n"
                     f"  4. 检查 pg_hba.conf 是否允许应用连接\n"
-                    f"  5. 检查 SSL 配置 (ssl_mode={settings.database.ssl_mode})"
+                    f"  5. 检查 SSL 配置 (ssl_mode={_get_settings().database.ssl_mode})"
                 )
                 return False
 
@@ -666,10 +681,10 @@ async def init_database():
     - 生产环境请使用 Alembic 迁移：cd backend && alembic upgrade head
     - 只有在无法访问迁移数据库时才使用此兜底方案
     """
-    from ..config import settings
+    # from ..config import settings  # Lazy import to avoid early initialization
 
     # 生产环境中不允许直接使用 create_all，强制使用 Alembic
-    if settings.is_production:
+    if _get_settings().is_production:
         logger.error(
             "[DB] PRODUCTION MODE: init_database() 正在使用 create_all() "
             "作为兜底。生产环境中应始终使用 Alembic 迁移以确保 schema 完整性。"
@@ -710,7 +725,7 @@ async def get_pool_status() -> dict:
 
     # max_overflow is not available on asyncpg's AsyncAdaptedQueuePool
     # Use configured value from settings
-    max_overflow_val = settings.database.max_overflow
+    max_overflow_val = _get_settings().database.max_overflow
     total_capacity = pool_size + max_overflow_val
     utilization = (checked_out / total_capacity * 100) if total_capacity > 0 else 0
 

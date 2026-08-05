@@ -150,7 +150,7 @@ class DatabaseConfig(BaseModel):
     - 连接池耗尽: 增大 pool_size / max_overflow，排查长事务或慢查询
     """
 
-    url: str = Field(
+    url: str = Field(alias="DATABASE_URL", 
         default="",
         description=(
             "PostgreSQL 连接 URL，格式: postgresql+asyncpg://user:password@host:port/dbname "
@@ -258,7 +258,7 @@ class DatabaseConfig(BaseModel):
 
 class RedisConfig(BaseModel):
     """Redis 配置"""
-    url: str = Field(default="redis://localhost:6379/0", description="Redis 连接 URL")
+    url: str = Field(alias="DATABASE_URL", default="redis://localhost:6379/0", description="Redis 连接 URL")
     max_connections: int = Field(default=50, ge=1, description="最大连接数")
     socket_timeout: int = Field(default=5, ge=1, description="Socket 超时（秒）")
     socket_connect_timeout: int = Field(default=5, ge=1, description="Socket 连接超时（秒）")
@@ -269,7 +269,7 @@ class RedisConfig(BaseModel):
 
 class CeleryConfig(BaseModel):
     """Celery 异步任务配置"""
-    broker_url: str = Field(
+    broker_url: str = Field(alias="DATABASE_URL", 
         default="redis://localhost:6379/1",
         description="Celery Broker URL (Redis)，需以 redis:// 或 rediss:// 开头"
     )
@@ -365,7 +365,7 @@ class LoggingConfig(BaseModel):
 class AIServiceConfig(BaseModel):
     """AI 服务配置"""
     api_key: str = Field(default="", description="AI 服务 API Key")
-    base_url: str = Field(default="", description="AI 服务 Base URL")
+    base_url: str = Field(alias="DATABASE_URL", default="", description="AI 服务 Base URL")
     model: str = Field(default="gpt-4", description="默认模型")
     max_tokens: int = Field(default=4096, ge=1, description="最大 Token 数")
     temperature: float = Field(default=0.7, ge=0.0, le=2.0, description="Temperature 参数")
@@ -671,7 +671,7 @@ class Settings(BaseSettings):
                 return url.split("/")[-1].split("?")[0]
         except (IndexError, ValueError):
             pass
-        return "rmfood"
+        return "rmfood_db"
 
     @property
     def database_read_replica_url(self) -> Optional[str]:

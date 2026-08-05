@@ -25,6 +25,7 @@ RMFOOD 配方平台 - 数据库种子数据初始化脚本
     - 数据库连接配置在 .env 或 config.py 中
 """
 
+import json
 import argparse
 import logging
 import sys

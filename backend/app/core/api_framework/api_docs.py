@@ -1,5 +1,5 @@
 """
-🔒 P3-3: API 文档与 Schema 校验增强
+[SECURITY] P3-3: API 文档与 Schema 校验增强
 
 提供:
 1. **增强的 OpenAPI 文档生成** — 自动丰富 schema 和示例
@@ -32,7 +32,7 @@ def _clean_surrogates(obj: Any) -> Any:
     """递归清理 dict/list/string 中的损坏 Unicode surrogate pairs。
 
     某些中文 docstring 经过 get_openapi() 后可能出现孤立 surrogate pairs
-    （如 \udc80），导致 json.dumps() 失败。此函数将它们替换为 ''。
+    （如 U+DC80），导致 json.dumps() 失败。此函数将它们替换为 ''。
     """
     if isinstance(obj, str):
         import re
@@ -52,7 +52,7 @@ def _clean_surrogates(obj: Any) -> Any:
 
 
 # ─────────────────────────────────────────────
-# 🔒 P3-3: 统一响应格式
+# [SECURITY] P3-3: 统一响应格式
 # ─────────────────────────────────────────────
 
 class ApiResponse(BaseModel):
@@ -74,7 +74,7 @@ class ApiResponse(BaseModel):
 
 
 # ─────────────────────────────────────────────
-# 🔒 P3-3: API 元数据增强装饰器
+# [SECURITY] P3-3: API 元数据增强装饰器
 # ─────────────────────────────────────────────
 
 def api_metadata(
@@ -85,7 +85,7 @@ def api_metadata(
     response_description: str = "成功响应",
 ):
     """
-    🔒 P3-3: API 元数据装饰器，自动丰富路由文档信息
+    [SECURITY] P3-3: API 元数据装饰器，自动丰富路由文档信息
 
     使用方式:
         @app.get("/api/v1/example")
@@ -113,12 +113,12 @@ def api_metadata(
 
 
 # ─────────────────────────────────────────────
-# 🔒 P3-3: 请求/响应 Schema 校验中间件
+# [SECURITY] P3-3: 请求/响应 Schema 校验中间件
 # ─────────────────────────────────────────────
 
 class SchemaValidationMiddleware:
     """
-    🔒 P3-3: Schema 校验中间件
+    [SECURITY] P3-3: Schema 校验中间件
 
     在请求到达业务逻辑前进行:
     1. Content-Type 校验
@@ -138,7 +138,7 @@ class SchemaValidationMiddleware:
         self.validate_response = validate_response
 
     async def __call__(self, request: Request, call_next):
-        # 🔒 P3-3: 跳过非 API 路径（静态文件、文档等）
+        # [SECURITY] P3-3: 跳过非 API 路径（静态文件、文档等）
         path = request.url.path
         if path.startswith(("/static", "/uploads", "/docs", "/redoc", "/openapi.json", "/health", "/ready", "/metrics")):
             return await call_next(request)
@@ -147,7 +147,7 @@ class SchemaValidationMiddleware:
         start_time = time.time()
 
         try:
-            # 🔒 P3-3: Content-Type 校验（只对有 body 的请求）
+            # [SECURITY] P3-3: Content-Type 校验（只对有 body 的请求）
             if request.method in ("POST", "PUT", "PATCH") and "json" in request.headers.get("content-type", ""):
                 try:
                     # 确保请求体是有效的 JSON（FastAPI 本身也会做此检查，但这里更提前）
@@ -179,11 +179,11 @@ class SchemaValidationMiddleware:
             else:
                 response = await call_next(request)
 
-            # 🔒 P3-3: 响应时间度量
+            # [SECURITY] P3-3: 响应时间度量
             elapsed_ms = (time.time() - start_time) * 1000
             response.headers["X-Response-Time-MS"] = str(round(elapsed_ms, 2))
 
-            # 🔒 P3-3: 注入版本信息
+            # [SECURITY] P3-3: 注入版本信息
             response.headers["X-API-Version"] = "v1.0.0"
 
             return response
@@ -206,12 +206,12 @@ class SchemaValidationMiddleware:
 
 
 # ─────────────────────────────────────────────
-# 🔒 P3-3: 增强 OpenAPI 文档生成
+# [SECURITY] P3-3: 增强 OpenAPI 文档生成
 # ─────────────────────────────────────────────
 
 class EnhancedOpenAPIGenerator:
     """
-    🔒 P3-3: 增强的 OpenAPI 文档生成器
+    [SECURITY] P3-3: 增强的 OpenAPI 文档生成器
 
     提供的增强功能:
     1. 自动添加 X-API-Version 响应头
@@ -247,13 +247,13 @@ class EnhancedOpenAPIGenerator:
             for path, methods in openapi_schema["paths"].items():
                 for method, operation in methods.items():
                     if isinstance(operation, dict):
-                        # 🔒 P3-3: 添加标准响应格式
+                        # [SECURITY] P3-3: 添加标准响应格式
                         self._enhance_responses(operation, path, method)
 
-                        # 🔒 P3-3: 添加 API 元数据（summary、description）
+                        # [SECURITY] P3-3: 添加 API 元数据（summary、description）
                         self._enhance_metadata(operation, path, method)
 
-                        # 🔒 P3-3: 添加请求示例
+                        # [SECURITY] P3-3: 添加请求示例
                         self._enhance_request_examples(operation)
 
         # 3. 添加安全方案（JWT Bearer）
@@ -270,7 +270,7 @@ class EnhancedOpenAPIGenerator:
                 }
             }
 
-        # 🔒 P3-3: 添加全局安全要求（可选，按路由覆盖）
+        # [SECURITY] P3-3: 添加全局安全要求（可选，按路由覆盖）
         # openapi_schema["security"] = [{"BearerAuth": []}]
 
         # 4. 缓存 schema
@@ -282,7 +282,7 @@ class EnhancedOpenAPIGenerator:
         if "responses" not in operation:
             operation["responses"] = {}
 
-        # 🔒 P3-3: 标准错误响应（如果尚未定义）
+        # [SECURITY] P3-3: 标准错误响应（如果尚未定义）
         error_responses = {
             "400": {
                 "description": "请求参数错误 / 验证失败",
@@ -383,7 +383,7 @@ class EnhancedOpenAPIGenerator:
 
     def _enhance_metadata(self, operation: Dict, path: str, method: str):
         """增强操作元数据"""
-        # 🔒 P3-3: 如果没有 summary，自动生成
+        # [SECURITY] P3-3: 如果没有 summary，自动生成
         if "summary" not in operation or not operation["summary"]:
             resource = path.split("/")[-1]
             method_names = {
@@ -395,7 +395,7 @@ class EnhancedOpenAPIGenerator:
             }
             operation["summary"] = f"{method_names.get(method.upper(), method)} {resource}"
 
-        # 🔒 P3-3: 添加操作 ID（便于前端 SDK 生成）
+        # [SECURITY] P3-3: 添加操作 ID（便于前端 SDK 生成）
         if "operationId" not in operation:
             path_id = path.replace("/", "_").replace("{", "_").replace("}", "_").strip("_")
             operation["operationId"] = f"{method}_{path_id}"
@@ -409,7 +409,7 @@ class EnhancedOpenAPIGenerator:
         if isinstance(request_body, dict) and "content" in request_body:
             for content_type, content in request_body["content"].items():
                 if "application/json" in content_type and "example" not in content:
-                    # 🔒 P3-3: 为 JSON 请求体添加占位符示例
+                    # [SECURITY] P3-3: 为 JSON 请求体添加占位符示例
                     if "schema" in content:
                         schema = content["schema"]
                         if "$ref" in schema:
@@ -445,12 +445,12 @@ class EnhancedOpenAPIGenerator:
 
 
 # ─────────────────────────────────────────────
-# 🔒 P3-3: API 使用统计追踪
+# [SECURITY] P3-3: API 使用统计追踪
 # ─────────────────────────────────────────────
 
 class ApiUsageTracker:
     """
-    🔒 P3-3: API 使用统计追踪器
+    [SECURITY] P3-3: API 使用统计追踪器
 
     记录:
     - 每个端点的调用次数
@@ -529,12 +529,12 @@ api_tracker = ApiUsageTracker()
 
 
 # ─────────────────────────────────────────────
-# 🔒 P3-3: 主注册函数
+# [SECURITY] P3-3: 主注册函数
 # ─────────────────────────────────────────────
 
 def register_api_docs_middleware(app: FastAPI, version: str = "1.0.0"):
     """
-    🔒 P3-3: 注册 API 文档增强中间件
+    [SECURITY] P3-3: 注册 API 文档增强中间件
 
     在 create_app() 中调用:
         register_api_docs_middleware(app, version=settings.app_version)
@@ -547,6 +547,15 @@ def register_api_docs_middleware(app: FastAPI, version: str = "1.0.0"):
     generator = EnhancedOpenAPIGenerator(app, version=version)
 
     def custom_openapi():
+        # 先尝试从缓存获取，但始终清理 surrogate 字符
+        if generator.app.openapi_schema:
+            schema = generator.app.openapi_schema
+            # 清理缓存的 schema
+            if isinstance(schema, dict):
+                schema = _clean_surrogates(schema)
+                # 更新缓存
+                generator.app.openapi_schema = schema
+            return schema
         schema = generator.generate()
         # 🔒 清理损坏的 Unicode surrogate pairs（中文 docstring 可能导致）
         if isinstance(schema, dict):
@@ -560,7 +569,7 @@ def register_api_docs_middleware(app: FastAPI, version: str = "1.0.0"):
     @app.get("/api/v1/admin/api-stats", tags=["系统管理"], summary="API 使用统计")
     async def get_api_stats():
         """
-        🔒 P3-3: 获取 API 使用统计
+        [SECURITY] P3-3: 获取 API 使用统计
 
         返回:
         - 总请求数 / 错误数
@@ -579,7 +588,7 @@ def register_api_docs_middleware(app: FastAPI, version: str = "1.0.0"):
         response = await call_next(request)
         elapsed_ms = (time.time() - start_time) * 1000
 
-        # 🔒 P3-3: 记录统计（跳过静态文件和内部路由）
+        # [SECURITY] P3-3: 记录统计（跳过静态文件和内部路由）
         path = request.url.path
         if not path.startswith(("/static", "/uploads", "/docs", "/redoc", "/openapi.json")):
             api_tracker.record_request(
@@ -595,12 +604,12 @@ def register_api_docs_middleware(app: FastAPI, version: str = "1.0.0"):
 
 
 # ─────────────────────────────────────────────
-# 🔒 P3-3: API 变更检测
+# [SECURITY] P3-3: API 变更检测
 # ─────────────────────────────────────────────
 
 class APIVersionComparator:
     """
-    🔒 P3-3: API 版本比较器
+    [SECURITY] P3-3: API 版本比较器
 
     检测两个 OpenAPI schema 之间的差异:
     - 新增端点

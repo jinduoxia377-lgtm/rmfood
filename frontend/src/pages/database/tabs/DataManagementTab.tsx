@@ -636,7 +636,7 @@ export default function DataManagementTab() {
       timeliness: prev.timeliness,
     }));
     setIsFixing(false);
-    addLog({ type: 'fix', target: `${fixable.length} 条问题`, result: 'success' } as any);
+    addLog({ type: 'fix', target: `${fixable.length} 条问题`, result: 'success' });
   }, [qualityIssues, addLog]);
 
   const exportLogs = useCallback(() => {
@@ -811,7 +811,7 @@ export default function DataManagementTab() {
                 </span>
                 <span className="font-mono text-neutral-700 dark:text-neutral-300">{importProgress}%</span>
               </div>
-              <Progress value={importProgress} variant={'primary' as any} />
+              <Progress value={importProgress} variant="primary" />
             </>
           )}
           {importResult && (
@@ -838,7 +838,7 @@ export default function DataManagementTab() {
       )}
 
       <Button
-        variant={'primary' as any}
+        variant="primary"
         onClick={executeImport}
         disabled={!selectedFile || isImporting}
         loading={isImporting}
@@ -930,7 +930,7 @@ export default function DataManagementTab() {
       )}
 
       <Button
-        variant={'secondary' as any}
+        variant="secondary"
         onClick={executeExport}
         disabled={isExporting}
         loading={isExporting}
@@ -957,7 +957,7 @@ export default function DataManagementTab() {
             </div>
           </div>
           <Button
-            variant={'primary' as any}
+            variant="primary"
             onClick={createBackup}
             size="sm"
             fullWidth
@@ -1033,7 +1033,7 @@ export default function DataManagementTab() {
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <Badge variant={'info' as any} size="sm">
+                    <Badge variant="info" size="sm">
                       {b.id.slice(0, 8)}
                     </Badge>
                     <span className="text-xs text-neutral-500">{b.timestamp}</span>
@@ -1047,7 +1047,7 @@ export default function DataManagementTab() {
                   </div>
                 </div>
                 <Button
-                  variant={'danger' as any}
+                  variant="danger"
                   size="sm"
                   onClick={() => setShowRestoreConfirm(b.id)}
                   icon={<RotateCcw className="w-3.5 h-3.5" />}
@@ -1072,7 +1072,7 @@ export default function DataManagementTab() {
           <Button variant="ghost" onClick={() => setShowRestoreConfirm(null)}>
             取消
           </Button>
-          <Button variant={'danger' as any} onClick={() => showRestoreConfirm && restoreBackup(showRestoreConfirm)}>
+          <Button variant="danger" onClick={() => showRestoreConfirm && restoreBackup(showRestoreConfirm)}>
             确认恢复
           </Button>
         </div>
@@ -1094,7 +1094,7 @@ export default function DataManagementTab() {
         </div>
         <div className="flex gap-2">
           <Button
-            variant={'danger' as any}
+            variant="danger"
             size="sm"
             disabled={selectedRows.size === 0}
             onClick={() => setShowDeleteConfirm(true)}
@@ -1130,7 +1130,7 @@ export default function DataManagementTab() {
           />
         </div>
         <Button
-          variant={'secondary' as any}
+          variant="secondary"
           size="sm"
           disabled={selectedRows.size === 0 || (!batchTagInput && !batchCategoryInput)}
           onClick={executeBatchEdit}
@@ -1185,7 +1185,7 @@ export default function DataManagementTab() {
           <Button variant="ghost" onClick={() => setShowDeleteConfirm(false)}>
             取消
           </Button>
-          <Button variant={'danger' as any} onClick={executeBatchDelete}>
+          <Button variant="danger" onClick={executeBatchDelete}>
             确认删除
           </Button>
         </div>
@@ -1217,7 +1217,7 @@ export default function DataManagementTab() {
             问题数据列表 ({qualityIssues.length})
           </h4>
           <Button
-            variant={'warning' as any}
+            variant="warning"
             size="sm"
             disabled={qualityIssues.every((i) => !i.autoFixable) || isFixing}
             loading={isFixing}

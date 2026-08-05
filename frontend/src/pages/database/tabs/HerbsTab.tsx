@@ -121,10 +121,10 @@ export default function HerbsTab({
 
   // 统一获取 items 和 total
   const herbData = dataSource === 'tcmsp' ? herbQuery : symmapQuery;
-  const total = (herbData.data as any)?.total ?? 0;
+  const total = (herbData.data as Record<string, unknown>)?.total as number ?? 0;
 
   const items = useMemo(() => {
-    const rawItems = (herbData.data as any)?.items ?? [];
+    const rawItems = (herbData.data as Record<string, unknown>)?.items as unknown[] ?? [];
     let arr = [...rawItems];
     if (showFavOnly) arr = arr.filter((h: any) => favorites.has(h.id));
     arr.sort((a: any, b: any) => {
@@ -138,14 +138,14 @@ export default function HerbsTab({
 
   // 当从排行组件点击药材名称时，自动选中并打开详情 Modal
   useEffect(() => {
-    if (initialSelectedHerbName && (herbData.data as any)?.items?.length) {
-      const match = (herbData.data as any).items.find((h: any) => h.name_cn === initialSelectedHerbName || h.nameCn === initialSelectedHerbName);
+    if (initialSelectedHerbName && (herbData.data as Record<string, unknown>)?.items?.length) {
+      const match = (herbData.data as Record<string, unknown>).items.find((h: unknown) => (h as Record<string, unknown>).name_cn === initialSelectedHerbName || (h as Record<string, unknown>).nameCn === initialSelectedHerbName);
       if (match) {
         setSelectedHerb(match);
         onHerbSelectionConsumed?.();
       }
     }
-  }, [initialSelectedHerbName, (herbData.data as any)?.items, onHerbSelectionConsumed]);
+  }, [initialSelectedHerbName, (herbData.data as Record<string, unknown>)?.items, onHerbSelectionConsumed]);
 
   const doSearch = () => {
     setPage(1);
@@ -841,7 +841,7 @@ function TcmspHerbDetail({ herb, chartColor }: { herb: any; chartColor: string }
             ].map(({ key, label }) => (
               <button
                 key={key}
-                onClick={() => setActiveTab(key as any)}
+                onClick={() => setActiveTab(key as 'overview' | 'compounds' | 'targets' | 'diseases')}
                 className={`px-4 py-2.5 text-sm font-medium transition-all relative whitespace-nowrap ${activeTab === key ? 'text-primary-600' : 'text-[var(--text-muted,#9A9A9F)] hover:text-[var(--text-secondary,#6E6E73)]'}`}
               >
                 {label}
