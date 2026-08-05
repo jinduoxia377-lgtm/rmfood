@@ -141,13 +141,13 @@ async def main():
     async with async_session_factory() as db:
         stats = await seed_herb_knowledge(db)
 
-    print(f"\n{'=' * 50}")
-    print(f"知识库种子导入完成")
-    print(f"  总计: {stats['total']} 种药材")
-    print(f"  新增: {stats['seeded']}")
-    print(f"  更新: {stats['updated']}")
-    print(f"  跳过: {stats['skipped']}")
-    print(f"{'=' * 50}\n")
+    logger.info(f"\n{'=' * 50}")
+    logger.info(f"知识库种子导入完成")
+    logger.info(f"  总计: {stats['total']} 种药材")
+    logger.info(f"  新增: {stats['seeded']}")
+    logger.info(f"  更新: {stats['updated']}")
+    logger.info(f"  跳过: {stats['skipped']}")
+    logger.info(f"{'=' * 50}\n")
 
 
 if __name__ == "__main__":

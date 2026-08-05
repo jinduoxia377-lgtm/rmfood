@@ -328,7 +328,7 @@ def example_usage():
             logger.info(f"   阻断: {'是' if alert.blocking else '否'}")
         else:
             logger.info(f"[{'SAFE':8s}] {name}: {amount}mg ({group}) - 安全")
-        print()
+        logger.info()
 
     # 示例 3: 配方安全检查
     logger.info("\n--- 示例 3: 配方安全检查 ---\n")
@@ -369,7 +369,7 @@ def example_usage():
     for group in groups:
         result = system.check_formula_safety(test_formula, target_group=group)
         group_names = {"adult": "成人", "pregnant": "孕妇", "children": "儿童", "elderly": "老年人"}
-        print(f"[{group_names[group]}] 风险评分: {result.overall_risk_score:.1f}, "
+        logger.info(f"[{group_names[group]}] 风险评分: {result.overall_risk_score:.1f}, "
               f"预警: {len(result.alerts)}, 阻断: {'是' if result.blocked_by_critical else '否'}")
 
     # 示例 5: 搜索功能

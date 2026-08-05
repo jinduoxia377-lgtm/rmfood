@@ -317,57 +317,57 @@ def run_audit(check_only: bool = False) -> bool:
     Returns:
         bool: 审计是否通过（无严重问题）
     """
-    print("🔒 RMFOOD 数据库迁移审计工具")
-    print("=" * 50)
+    logger.info("🔒 RMFOOD 数据库迁移审计工具")
+    logger.info("=" * 50)
 
     # 扫描迁移
-    print("\n📊 扫描迁移文件...")
+    logger.info("\n📊 扫描迁移文件...")
     scan_result = scan_migrations()
-    print(f"   找到 {len(scan_result['revisions'])} 个迁移文件")
+    logger.info(f"   找到 {len(scan_result['revisions'])} 个迁移文件")
 
     # 检查循环依赖
     if scan_result["cycles"]:
-        print(f"\n🔴 错误: 检测到 {len(scan_result['cycles'])} 个循环依赖!")
+        logger.info(f"\n🔴 错误: 检测到 {len(scan_result['cycles'])} 个循环依赖!")
         for cycle in scan_result["cycles"]:
-            print(f"   {' → '.join(cycle)}")
+            logger.info(f"   {' → '.join(cycle)}")
         return False
 
     # 检查孤立迁移
     if scan_result["orphans"]:
-        print(f"\n⚠️  警告: {len(scan_result['orphans'])} 个孤立迁移（无上游依赖）")
+        logger.info(f"\n⚠️  警告: {len(scan_result['orphans'])} 个孤立迁移（无上游依赖）")
         for orphan in scan_result["orphans"]:
-            print(f"   - {orphan}")
+            logger.info(f"   - {orphan}")
 
     # 检查迁移安全性
-    print("\n🔍 检查迁移安全性...")
+    logger.info("\n🔍 检查迁移安全性...")
     unsafe_count = 0
     for revision, info in scan_result["revisions"].items():
         migration_file = ALEMBIC_VERSIONS / info["file"]
         safety = check_migration_safety(migration_file)
         if not safety["safe"]:
             unsafe_count += 1
-            print(f"\n   ⚠️  {info['file']}:")
+            logger.info(f"\n   ⚠️  {info['file']}:")
             for warning in safety["warnings"]:
-                print(f"      - {warning}")
+                logger.info(f"      - {warning}")
 
     if unsafe_count > 0:
-        print(f"\n⚠️  警告: {unsafe_count} 个迁移存在安全隐患")
+        logger.info(f"\n⚠️  警告: {unsafe_count} 个迁移存在安全隐患")
     else:
-        print(f"\n✅ 所有迁移通过安全检查")
+        logger.info(f"\n✅ 所有迁移通过安全检查")
 
     # Head 版本
-    print(f"\n📌 当前 Head 版本: {', '.join(scan_result['heads'])}")
+    logger.info(f"\n📌 当前 Head 版本: {', '.join(scan_result['heads'])}")
 
     if check_only:
         return unsafe_count == 0
 
     # 生成报告
-    print("\n📝 生成审计报告...")
+    logger.info("\n📝 生成审计报告...")
     report = generate_audit_report()
 
     report_path = PROJECT_ROOT / "backend" / "alembic" / "migration_audit_report.md"
     report_path.write_text(report, encoding="utf-8")
-    print(f"   报告已保存: {report_path}")
+    logger.info(f"   报告已保存: {report_path}")
 
     return unsafe_count == 0
 

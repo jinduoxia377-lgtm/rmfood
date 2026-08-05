@@ -118,7 +118,7 @@ class RMFOODPeptideAnalyzer:
         >>> analyzer = RMFOODPeptideAnalyzer()
         >>> result = await analyzer.analyze_peptide_deeply("VLGYTKEGN")
         >>> if result.safety_assessment['risk_level'] == 'low':
-        ...     print(f"✅ 可用于食品 | 评分: {result.overall_scores['food_application_score']}")
+        ...     logger.info(f"✅ 可用于食品 | 评分: {result.overall_scores['food_application_score']}")
         
         Performance:
         - 快速模式: <100ms

@@ -1,3 +1,5 @@
+import logging
+logger = logging.getLogger(__name__)
 """Main application entry point - initializes microservices infrastructure."""
 
 import asyncio
@@ -13,15 +15,15 @@ async def initialize_services():
     registry = get_adapter_registry()
     registry.load_all()  # Register core adapters
     
-    print("✓ Adapter Registry initialized")
+    logger.info("✓ Adapter Registry initialized")
     
     # 2. Get event bus (Phase 3)
     event_bus = get_event_bus()
-    print("✓ Event Bus initialized")
+    logger.info("✓ Event Bus initialized")
     
     # 3. Create microservice gateway in local mode (can switch to remote later)
     gateway = get_microservice_gateway(mode="local")
-    print("✓ Microservice Gateway initialized (local mode)")
+    logger.info("✓ Microservice Gateway initialized (local mode)")
     
     # Example: Register service endpoints with gateway
     from app.services.ai.conversation_service.main import app as ai_app
@@ -33,7 +35,7 @@ async def initialize_services():
     gateway.register_local_service("formula-calculation", calc_app)
     gateway.register_local_service("auth", auth_app)
     
-    print("✓ Service endpoints registered with gateway")
+    logger.info("✓ Service endpoints registered with gateway")
     
     # Example: Publish domain event
     event = FormulaCreatedEvent(
@@ -42,7 +44,7 @@ async def initialize_services():
         creator="system"
     )
     await event_bus.publish(event)
-    print(f"✓ Domain event published: {event.event_id}")
+    logger.info(f"✓ Domain event published: {event.event_id}")
     
     return gateway, event_bus, registry
 

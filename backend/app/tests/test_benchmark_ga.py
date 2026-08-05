@@ -365,6 +365,6 @@ def run_benchmark(output_file: Optional[str] = None) -> Dict[str, Any]:
 
     # 生成报告
     report = generate_report(results, output_file)
-    print(report)
+    logger.info(report)
 
     return results

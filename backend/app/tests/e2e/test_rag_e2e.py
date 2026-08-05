@@ -1,3 +1,5 @@
+import logging
+logger = logging.getLogger(__name__)
 """
 RAG 全链路端到端验证测试
 
@@ -32,63 +34,63 @@ async def main():
     import services.ai.rag.vector_store as _vs
     import services.ai.rag.embedding_service as _emb
 
-    print("=" * 60)
-    print("RAG 全链路验证测试 (tests/e2e)")
-    print("=" * 60)
+    logger.info("=" * 60)
+    logger.info("RAG 全链路验证测试 (tests/e2e)")
+    logger.info("=" * 60)
 
     emb = _emb.EmbeddingService()
     store = _vs.VectorStore(persist_dir="./data/test_chromadb")
     store.reset()
     proc = _dp.DocumentProcessor()
 
-    print(f"   Embedding: provider={emb.provider}, model={emb.model}")
-    print(f"   Base URL:  {emb.base_url}")
-    print()
+    logger.info(f"   Embedding: provider={emb.provider}, model={emb.model}")
+    logger.info(f"   Base URL:  {emb.base_url}")
+    logger.info()
 
     # Test 1: Document chunking
-    print("[1/5] Document chunking")
+    logger.info("[1/5] Document chunking")
     test_text = ("枸杞子具有滋补肝肾、益精明目的功效。富含枸杞多糖和类胡萝卜素。"
                  "黄芪补气升阳。党参补中益气。甘草调和诸药。当归补血活血。")
     chunks = proc.chunk_text(test_text, "测试文档.txt")
     assert len(chunks) > 0
-    print(f"   PASS: {len(chunks)} chunks")
+    logger.info(f"   PASS: {len(chunks)} chunks")
 
     # Test 2: Embedding
-    print("[2/5] Text embedding")
+    logger.info("[2/5] Text embedding")
     try:
         embeddings = await emb.embed_texts([c.content for c in chunks])
-        print(f"   PASS: dim={len(embeddings[0])}")
+        logger.info(f"   PASS: dim={len(embeddings[0])}")
     except Exception as exc:
-        print(f"   WARN: API failed ({exc}), using fallback")
+        logger.info(f"   WARN: API failed ({exc}), using fallback")
         embeddings = emb._embed_fallback([c.content for c in chunks])
-        print(f"   → Fallback: dim={len(embeddings[0])}")
+        logger.info(f"   → Fallback: dim={len(embeddings[0])}")
 
     # Test 3: Vector store + search
-    print("[3/5] Vector store and search")
+    logger.info("[3/5] Vector store and search")
     store.add_chunks(chunks, embeddings)
     q_vec = (await emb.embed_texts(["枸杞子的功效是什么？"]))[0]
     results = store.search(q_vec, top_k=3)
     assert len(results) > 0
     assert any("枸杞" in r.chunk.content for r in results)
-    print(f"   PASS: {len(results)} matches found")
+    logger.info(f"   PASS: {len(results)} matches found")
 
     # Test 4: Prompt augmentation
-    print("[4/5] Prompt augmentation")
+    logger.info("[4/5] Prompt augmentation")
     context_parts = [f"[{c.chunk.metadata.get('source', '?')}] {c.chunk.content}" for c in results]
     augmented = "参考文档:\n" + "\n".join(context_parts) + "\n问题: 枸杞子的功效"
     assert "枸杞" in augmented
-    print(f"   PASS: prompt length={len(augmented)}")
+    logger.info(f"   PASS: prompt length={len(augmented)}")
 
     # Test 5: File management
-    print("[5/5] File management")
+    logger.info("[5/5] File management")
     assert "测试文档.txt" in store.list_sources()
     store.delete_by_source("测试文档.txt")
     assert store.chunk_count == 0
-    print("   PASS: deletion successful")
+    logger.info("   PASS: deletion successful")
 
     store.reset()
-    print()
-    print("PASS: All 5 RAG end-to-end tests passed!")
+    logger.info()
+    logger.info("PASS: All 5 RAG end-to-end tests passed!")
     return 0
 
 

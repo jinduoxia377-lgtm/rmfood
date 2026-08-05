@@ -1,3 +1,5 @@
+import logging
+logger = logging.getLogger(__name__)
 """CQRS Integration Demo - Shows how query models, cache, search, and event handlers work together."""
 
 from app.cqrs.queries.models import FormulaQueryModel, SearchResultItem, FormulaSearchQuery
@@ -37,9 +39,9 @@ def setup_cQRS_system(use_cache_redis=False):
 def demo_usage():
     """Demonstrate using the CQRS system."""
     
-    print("=" * 60)
-    print("CQRS Architecture Demo")
-    print("=" * 60)
+    logger.info("=" * 60)
+    logger.info("CQRS Architecture Demo")
+    logger.info("=" * 60)
     
     # Setup system (using in-memory cache for demo)
     system = setup_cQRS_system(use_cache_redis=False)
@@ -72,12 +74,12 @@ def demo_usage():
     query = FormulaSearchQuery(target_effects=["补气"])
     results = sserv.search(query)
     
-    print(f"
+    logger.info(f"
 Search returned {len(results)} results")
     if results:
-        print(f"First result: {results[0].name} (score: {results[0].relevance_score})")
+        logger.info(f"First result: {results[0].name} (score: {results[0].relevance_score})")
     
-    print("
+    logger.info("
 Demo complete!")
 
 

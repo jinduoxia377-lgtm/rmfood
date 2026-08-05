@@ -1,3 +1,5 @@
+import logging
+logger = logging.getLogger(__name__)
 """Merge MMID enriched data into the existing herb database.
 
 此脚本用于一次性数据预处理，将 enriched_mmid_herbs.json 与扩展药材数据合并。
@@ -15,14 +17,14 @@ BASEDIR = os.path.dirname(os.path.abspath(__file__))
 # 1. Load MMID enriched data
 enriched_path = os.path.join(BASEDIR, "enriched_mmid_herbs.json")
 if not os.path.exists(enriched_path):
-    print(f"错误: 找不到 {enriched_path}，请先运行 enrich_mmid_details.py")
+    logger.info(f"错误: 找不到 {enriched_path}，请先运行 enrich_mmid_details.py")
     sys.exit(1)
 
 with open(enriched_path, "r", encoding="utf-8") as f:
     enriched_data = json.load(f)
 
 enriched_herbs = enriched_data.get("herbs", [])
-print(f"Loaded {len(enriched_herbs)} enriched MMID herbs")
+logger.info(f"Loaded {len(enriched_herbs)} enriched MMID herbs")
 
 # 2. Load expanded herb names for dedup
 expanded_names = set()
@@ -34,7 +36,7 @@ for i in range(1, 7):
             matches = re.findall(r'"name_cn":\s*"(.+?)"', content)
             expanded_names.update(matches)
 
-print(f"Loaded {len(expanded_names)} expanded herb names")
+logger.info(f"Loaded {len(expanded_names)} expanded herb names")
 
 # 3. Traditional -> Simplified mapping
 TRAD_TO_SIMP = {
@@ -129,7 +131,7 @@ for i in range(1, 7):
                 merged_herbs.append(herb)
                 merged_names.add(name)
 
-print(f"Added {len(merged_herbs)} expanded herbs")
+logger.info(f"Added {len(merged_herbs)} expanded herbs")
 
 # Add MMID-enriched herbs (only if not already in merged)
 for herb in enriched_herbs:
@@ -178,14 +180,14 @@ for herb in enriched_herbs:
     merged_names.add(name)
     merged_pids.add(pid)
 
-print(f"After adding MMID herbs: {len(merged_herbs)} total")
+logger.info(f"After adding MMID herbs: {len(merged_herbs)} total")
 
 # 5. Save merged database
 output_path = os.path.join(BASEDIR, "merged_herb_database_v2.json")
 with open(output_path, "w", encoding="utf-8") as f:
     json.dump(merged_herbs, f, ensure_ascii=False, indent=2)
 
-print(f"\nSaved to: {output_path}")
+logger.info(f"\nSaved to: {output_path}")
 
 # 6. Stats
 nature_counts = {}
@@ -214,19 +216,19 @@ for h in merged_herbs:
     if h.get("botanical_source"):
         has_source += 1
 
-print(f"\nEnrichment stats (MMID-only herbs):")
-print(f"  四氣: {nature_counts}")
-print(f"  功效原文: {has_efficacy}")
-print(f"  產地: {has_origin}")
-print(f"  炮製: {has_processing}")
-print(f"  歸經: {has_meridians}")
-print(f"  植物來源: {has_source}")
+logger.info(f"\nEnrichment stats (MMID-only herbs):")
+logger.info(f"  四氣: {nature_counts}")
+logger.info(f"  功效原文: {has_efficacy}")
+logger.info(f"  產地: {has_origin}")
+logger.info(f"  炮製: {has_processing}")
+logger.info(f"  歸經: {has_meridians}")
+logger.info(f"  植物來源: {has_source}")
 
-print(f"\n五味分佈 (Top 10):")
+logger.info(f"\n五味分佈 (Top 10):")
 for k, v in sorted(flavor_counts.items(), key=lambda x: -x[1])[:10]:
-    print(f"  {k}: {v}")
+    logger.info(f"  {k}: {v}")
 
 if toxicity_counts:
-    print(f"\n毒性分佈:")
+    logger.info(f"\n毒性分佈:")
     for k, v in sorted(toxicity_counts.items(), key=lambda x: -x[1]):
-        print(f"  {k}: {v}")
+        logger.info(f"  {k}: {v}")

@@ -982,55 +982,55 @@ async def run_migration_cli() -> None:
 
     await manager.initialize()
 
-    print("\n" + "═" * 60)
-    print("🟡 数据库迁移管理工具")
-    print("═" * 60 + "\n")
+    logger.info("\n" + "═" * 60)
+    logger.info("🟡 数据库迁移管理工具")
+    logger.info("═" * 60 + "\n")
 
     # 根据 action 执行操作
     if args.action == "status":
         status = manager.get_status_summary()
-        print(f"📊 状态: {'最新' if status['is_up_to_date'] else '有更新'}")
-        print(f"   总迁移数: {status['total_migrations']}")
-        print(f"   已应用: {status['applied_count']}")
-        print(f"   待执行: {status['pending_count']}")
+        logger.info(f"📊 状态: {'最新' if status['is_up_to_date'] else '有更新'}")
+        logger.info(f"   总迁移数: {status['total_migrations']}")
+        logger.info(f"   已应用: {status['applied_count']}")
+        logger.info(f"   待执行: {status['pending_count']}")
         if status["pending_versions"]:
-            print(f"   待执行版本: {', '.join(status['pending_versions'])}")
+            logger.info(f"   待执行版本: {', '.join(status['pending_versions'])}")
 
     elif args.action == "list":
-        print("📋 所有迁移列表:\n")
+        logger.info("📋 所有迁移列表:\n")
         for m in manager.migrations:
             applied_mark = "✅" if m.version in manager._applied_versions else "⬜"
             risk_mark = "⚠️ " if m.risk in [MigrationRisk.HIGH, MigrationRisk.CRITICAL] else ""
-            print(f"  {applied_mark} {m.version} - {m.description} {risk_mark}")
-            print(f"     阶段: {m.phase.value}, 风险: {m.risk.value}, 预估: {m.estimated_duration_min} 分钟")
+            logger.info(f"  {applied_mark} {m.version} - {m.description} {risk_mark}")
+            logger.info(f"     阶段: {m.phase.value}, 风险: {m.risk.value}, 预估: {m.estimated_duration_min} 分钟")
 
     elif args.action == "upgrade":
-        print(f"▶️ 执行升级 (dry_run={args.dry_run})...\n")
+        logger.info(f"▶️ 执行升级 (dry_run={args.dry_run})...\n")
         result = await manager.upgrade(
             target_version=args.target_version,
             dry_run=args.dry_run,
             force=args.force,
         )
-        print(f"\n📊 结果: {'成功' if result['success'] else '失败'}")
-        print(f"   已应用: {result['applied_count']} / {result['total_count']}")
+        logger.info(f"\n📊 结果: {'成功' if result['success'] else '失败'}")
+        logger.info(f"   已应用: {result['applied_count']} / {result['total_count']}")
         if not result["success"] and "reason" in result:
-            print(f"   原因: {result['reason']}")
+            logger.info(f"   原因: {result['reason']}")
 
     elif args.action == "rollback":
-        print(f"⏪ 执行回滚 (dry_run={args.dry_run}, steps={args.steps})...\n")
+        logger.info(f"⏪ 执行回滚 (dry_run={args.dry_run}, steps={args.steps})...\n")
         result = await manager.rollback(
             target_version=args.target_version,
             steps=args.steps,
             dry_run=args.dry_run,
             force=args.force,
         )
-        print(f"\n📊 结果: {result.get('message', '操作完成')}")
-        print(f"   已回滚: {result['rolled_back_count']} / {result['total_count']}")
+        logger.info(f"\n📊 结果: {result.get('message', '操作完成')}")
+        logger.info(f"   已回滚: {result['rolled_back_count']} / {result['total_count']}")
 
     elif args.action == "report":
-        print(manager.generate_markdown_report())
+        logger.info(manager.generate_markdown_report())
 
-    print("\n" + "═" * 60 + "\n")
+    logger.info("\n" + "═" * 60 + "\n")
 
 
 # ═════════════════════════════════════════════
