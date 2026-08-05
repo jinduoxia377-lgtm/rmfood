@@ -51,7 +51,12 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 from dotenv import load_dotenv
-load_dotenv("d:/RMFOODFP/backend/.env", override=True)
+# 确保从正确路径加载 .env
+import os as _os
+_env_path = _os.path.join(_os.path.dirname(__file__), "..", "..", ".env")
+if not _os.path.exists(_env_path):
+    _env_path = "d:/RMFOODFP/backend/.env"
+load_dotenv(_env_path, override=True)
 # from ..config import settings  # Lazy import to avoid early initialization
 from .database import Base
 
@@ -59,8 +64,18 @@ logger = logging.getLogger(__name__)
 
 def _get_settings():
     """Lazy import settings to ensure dotenv is loaded first"""
-    from ..config import settings
-    return settings
+    import os
+    from dotenv import load_dotenv
+    # 使用绝对路径确保 .env 文件被正确加载
+    _env_file = "d:/RMFOODFP/backend/.env"
+    if os.path.exists(_env_file):
+        load_dotenv(_env_file, override=True)
+    elif os.environ.get("DATABASE_URL"):
+        # 如果 .env 文件不存在，但环境变量已设置
+        pass
+    
+    from ..config import get_settings
+    return get_settings()
 
 
 # ═════════════════════════════════════════════

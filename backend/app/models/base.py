@@ -11,8 +11,8 @@ from datetime import datetime
 from typing import Optional
 from sqlalchemy import DateTime, Boolean, select, BigInteger
 from sqlalchemy.orm import Mapped, mapped_column, declared_attr
-from app.core.database import Base
-from app.models.utils import now_utc_mapped
+from ..core.database import Base
+from .utils import now_utc_mapped
 
 
 class BaseModel(Base):

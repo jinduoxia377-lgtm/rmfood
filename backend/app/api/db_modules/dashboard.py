@@ -5,6 +5,7 @@ import json
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select, func
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..deps import get_db_session, get_current_user
@@ -592,7 +593,16 @@ async def cross_database_search(
     }
 
 
-@router.get("/data-quality", summary="数据质量报告")
+@router.get("/data-quality")
+async def data_quality_safe(db: AsyncSession = Depends(get_db_session)):
+    try:
+        return await data_quality(db)
+    except Exception as e:
+        logger.error(f"Data quality error: {e}")
+        return JSONResponse(content={"success": False, "error": "数据库服务暂时不可用"}, status_code=503)
+
+
+@router.get("/data-quality-original", summary="数据质量报告")
 async def data_quality_report(
     db: AsyncSession = Depends(get_db_session),
 ):

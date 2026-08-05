@@ -4,6 +4,12 @@ FastAPI 应用工厂 + 生命周期事件
 """
 from dotenv import load_dotenv
 load_dotenv(".env", override=True)
+
+# 预初始化 settings 以确保环境变量已加载
+from app.core.config import settings as _settings  # noqa: F401
+# 强制初始化
+_ = _settings.database.url if hasattr(_settings, 'database') else None
+
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
