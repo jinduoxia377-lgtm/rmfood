@@ -292,8 +292,10 @@ def _create_engine():
         ValueError: 如果数据库 URL 不是 PostgreSQL 协议
     """
     import os
-    # 优先使用环境变量，其次使用 settings
+    # 优先使用环境变量
     database_url = os.environ.get('DATABASE_URL', '')
+    
+    # 如果环境变量未设置，尝试从 settings 获取
     if not database_url:
         try:
             _settings = _get_settings()
@@ -301,11 +303,12 @@ def _create_engine():
         except Exception:
             database_url = ''
     
-    logger.debug(f"[DB] database_url: [{database_url}]")
-    
-    # 最终检查
+    # 最终保障：使用默认值
     if not database_url:
-        raise ValueError("数据库 URL 未配置。请设置 DATABASE_URL 环境变量或检查 .env 文件")
+        database_url = 'postgresql+asyncpg://postgres:password@localhost:5432/rmfood'
+        logger.warning("[DB] Using default database URL")
+    
+    logger.info(f"[DB] database_url configured")
 
     # 安全检查：确保 URL 是 PostgreSQL 协议
     if not database_url or not database_url.startswith(("postgresql", "postgres")):
