@@ -292,14 +292,20 @@ def _create_engine():
         ValueError: 如果数据库 URL 不是 PostgreSQL 协议
     """
     import os
-    # 优先使用 settings，后备环境变量
-    try:
-        _settings = _get_settings()
-        database_url = _settings.database.url
-    except Exception:
-        database_url = os.environ.get('DATABASE_URL', '')
+    # 优先使用环境变量，其次使用 settings
+    database_url = os.environ.get('DATABASE_URL', '')
+    if not database_url:
+        try:
+            _settings = _get_settings()
+            database_url = _settings.database.url
+        except Exception:
+            database_url = ''
     
     logger.debug(f"[DB] database_url: [{database_url}]")
+    
+    # 最终检查
+    if not database_url:
+        raise ValueError("数据库 URL 未配置。请设置 DATABASE_URL 环境变量或检查 .env 文件")
 
     # 安全检查：确保 URL 是 PostgreSQL 协议
     if not database_url or not database_url.startswith(("postgresql", "postgres")):
