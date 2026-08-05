@@ -116,9 +116,9 @@ if __name__ == "__main__":
             from app.services.data_sources.dfbp_client import dfbp_service
             
             h_result = await tcmsp_service.sync_herbs(db, force=False)
-            print(f"TCMSP sync: {h_result}")
+            logger.info(f"TCMSP sync: {h_result}")
             
             p_result = await dfbp_service.sync_peptides(db, force=False)
-            print(f"DFBP sync: {p_result}")
+            logger.info(f"DFBP sync: {p_result}")
     
     asyncio.run(one_shot_sync())

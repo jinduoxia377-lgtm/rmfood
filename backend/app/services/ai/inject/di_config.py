@@ -37,7 +37,7 @@ async def initialize_formula_services(
     # Register event bus subscriber - when events come in, update query model
     async def handle_domain_event(event: DomainEvent):
         # This would be registered with the event bus to receive published events
-        print(f"Received domain event: {type(event).__name__}")
+        logger.info(f"Received domain event: {type(event).__name__}")
         # The event_handler (already set up in CQRSHandler) would process this
         pass
     

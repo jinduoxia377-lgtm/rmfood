@@ -573,7 +573,7 @@ async def analyze_query_performance(
 
     用法:
         perf = await analyze_query_performance(db, select(Formula).limit(100))
-        print(f"平均耗时: {perf['avg_ms']}ms")
+        logger.info(f"平均耗时: {perf['avg_ms']}ms")
     """
     times: List[float] = []
     rows_returned = 0
