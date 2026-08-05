@@ -122,11 +122,11 @@ export function calculateColumnWidths(
 export function getColumnHeaders(columns?: ColumnDef<any>[]): string[] {
   if (!columns) return []
   return columns.map(col => {
-    if ((col as any).header) {
-      return String((col as any).header)
+    if ((col.header) {
+      return String((col.header)
     }
-    if ((col as any).accessorKey) {
-      return String((col as any).accessorKey)
+    if ((col.accessorKey) {
+      return String((col.accessorKey)
     }
     return ''
   })

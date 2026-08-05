@@ -231,11 +231,11 @@ export function AnalyticsDashboard() {
         logger.info('📊 正在加载Mock数据分析...')
         const mockData = await fetchMockDashboardData(800) // 减少延迟到800ms以提高响应速度
 
-        setData(mockData as any)
+        setData(mockData
         setLastRefresh(new Date())
 
         if (!customLayoutMode) {
-          generateDefaultWidgets(mockData as any)
+          generateDefaultWidgets(mockData
         }
 
         showNotification('info', '当前显示为演示数据（后端API未连接）')

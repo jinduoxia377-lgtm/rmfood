@@ -355,7 +355,7 @@ export function usePersistentState<T>(
   useEffect(() => {
     const loadData = async () => {
       try {
-        const stored = await store.current.get(key as any);
+        const stored = await store.current.get(key;
         if (stored !== null) {
           setState(stored);
         }

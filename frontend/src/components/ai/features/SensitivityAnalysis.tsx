@@ -145,14 +145,14 @@ export function SensitivityAnalysis({
 
   const currentResults = useMemo(() => {
     const results = calculateMockResults(currentParams)
-    results.overall = (calculateMockResults as any).overall(results)
+    results.overall = (calculateMockResults.overall(results)
     return results
   }, [currentParams])
 
   const baselineResults = useMemo(() => {
     const baseline = Object.fromEntries(baseParameters.map(p => [p.id, p.baseValue]))
     const results = calculateMockResults(baseline)
-    results.overall = (calculateMockResults as any).overall(results)
+    results.overall = (calculateMockResults.overall(results)
     return results
   }, [baseParameters])
 
@@ -171,7 +171,7 @@ export function SensitivityAnalysis({
       const value = minVal + i * stepSize
       const testParams = { ...currentParams, [activeParam.id]: value }
       const results = calculateMockResults(testParams)
-      results.overall = (calculateMockResults as any).overall(results)
+      results.overall = (calculateMockResults.overall(results)
 
       data.push({
         value: Number(value.toFixed(2)),
@@ -192,9 +192,9 @@ export function SensitivityAnalysis({
         const lowParams = { ...currentParams, [param.id]: param.baseValue * 0.8 }
 
         const highResult = calculateMockResults(highParams)
-        highResult.overall = (calculateMockResults as any).overall(highResult)
+        highResult.overall = (calculateMockResults.overall(highResult)
         const lowResult = calculateMockResults(lowParams)
-        lowResult.overall = (calculateMockResults as any).overall(lowResult)
+        lowResult.overall = (calculateMockResults.overall(lowResult)
 
         const sensitivity = ((highResult[metric] - lowResult[metric]) / (param.baseValue * 0.4)) * 100
         row[metric] = Number(sensitivity.toFixed(2))

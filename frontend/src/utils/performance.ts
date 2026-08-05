@@ -117,8 +117,8 @@ function observeLCP(callback: (metric: VitalMetric) => void) {
           delta: value,
           rating: rateMetric('LCP', value),
           attribution: {
-            element: (lastEntry as any).element?.tagName || 'unknown',
-            url: (lastEntry as any).url || 'n/a',
+            element: (lastEntry.element?.tagName || 'unknown',
+            url: (lastEntry.url || 'n/a',
             renderTime: 0,
             loadTime: 0,
           },
@@ -147,8 +147,8 @@ function observeCLS(callback: (metric: VitalMetric) => void) {
     const observer = new PerformanceObserver((entryList) => {
       for (const entry of entryList.getEntries()) {
         // 只记录非用户输入的布局偏移
-        if (!(entry as any).hadRecentInput) {
-          const shiftValue = (entry as any).value;
+        if (!(entry.hadRecentInput) {
+          const shiftValue = (entry.value;
           sessionValue += shiftValue;
           sessionEntries.push(entry);
 
@@ -197,7 +197,7 @@ function observeFID(callback: (metric: VitalMetric) => void) {
 
     const observer = new PerformanceObserver((entryList) => {
       for (const entry of entryList.getEntries()) {
-        const delay = (entry as any).processingStart - entry.startTime;
+        const delay = (entry.processingStart - entry.startTime;
         callback({
           name: 'FID',
           value: delay,
@@ -384,14 +384,14 @@ function buildReportPayload(): any {
     screenHeight: window.screen.height,
     colorDepth: window.screen.colorDepth,
     devicePixelRatio: window.devicePixelRatio,
-    connection: (navigator as any).connection
+    connection: (navigator.connection
       ? {
-          effectiveType: (navigator as any).connection.effectiveType,
-          downlink: (navigator as any).connection.downlink,
-          rtt: (navigator as any).connection.rtt,
+          effectiveType: (navigator.connection.effectiveType,
+          downlink: (navigator.connection.downlink,
+          rtt: (navigator.connection.rtt,
         }
       : null,
-    memory: (navigator as any).deviceMemory || null,
+    memory: (navigator.deviceMemory || null,
     hardwareConcurrency: navigator.hardwareConcurrency || null,
   };
 

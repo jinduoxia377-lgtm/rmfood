@@ -85,15 +85,15 @@ export function PeptideDetailContent({ peptide }: { peptide: BioactivePeptide })
       </div>
 
       {/* 文献 DOI */}
-      {(peptide as any).dfbp_id && (
+      {(peptide.dfbp_id && (
         <div className="flex items-center gap-2 p-3 bg-slate-50/60 dark:bg-neutral-800/40 rounded-xl border border-[var(--border-subtle,rgba(0,0,0,0.06))]">
           <ExternalLink className="w-4 h-4 text-[var(--text-muted,#9A9A9F)]" />
           <span className="text-xs text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)]">DFBP ID:</span>
-          <span className="text-xs font-mono text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)]">{(peptide as any).dfbp_id}</span>
-          {(peptide as any).literature_doi && (
+          <span className="text-xs font-mono text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)]">{(peptide.dfbp_id}</span>
+          {(peptide.literature_doi && (
             <>
               <span className="text-xs text-[var(--text-muted,#9A9A9F)] ml-2">DOI:</span>
-              <span className="text-xs font-mono text-secondary-600 dark:text-secondary-400">{(peptide as any).literature_doi}</span>
+              <span className="text-xs font-mono text-secondary-600 dark:text-secondary-400">{(peptide.literature_doi}</span>
             </>
           )}
         </div>

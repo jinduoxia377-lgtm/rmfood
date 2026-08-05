@@ -341,11 +341,11 @@ export class ChinesePdfExportService {
         0: { cellWidth: 'auto' },
       },
       didDrawPage: () => {
-        this.pageState.currentY = (this.doc as any).lastAutoTable.finalY + 10;
+        this.pageState.currentY = (this.doc.lastAutoTable.finalY + 10;
       },
     });
 
-    this.pageState.currentY = (this.doc as any).lastAutoTable.finalY + 10;
+    this.pageState.currentY = (this.doc.lastAutoTable.finalY + 10;
   }
 
   private addReferences(references: AcademicReport['references']): void {

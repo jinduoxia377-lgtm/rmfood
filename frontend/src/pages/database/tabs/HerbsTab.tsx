@@ -864,7 +864,7 @@ function TcmspHerbDetail({ herb, chartColor }: { herb: any; chartColor: string }
           ].map(({ key, label }) => (
             <button
               key={key}
-              onClick={() => setActiveTab(key as any)}
+              onClick={() => setActiveTab(key}
               className={`px-4 py-2.5 text-sm font-medium transition-all relative ${activeTab === key ? 'text-primary-600' : 'text-[var(--text-muted,#9A9A9F)] hover:text-[var(--text-secondary,#6E6E73)]'}`}
             >
               {label}

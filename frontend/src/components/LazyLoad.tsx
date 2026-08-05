@@ -170,7 +170,7 @@ export function LazyLoadWrapper<P = object>(props: {
 
   return (
     <Suspense fallback={fallback || defaultFallback} key={retryKey}>
-      {React.createElement(LazyComponent as React.ComponentType<any>, componentProps as any)}
+      {React.createElement(LazyComponent as React.ComponentType<any>, componentProps}
     </Suspense>
   );
 }

@@ -194,7 +194,7 @@ export function StabilityPredictTab() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-xs text-neutral-600 mb-1 block">光照</label>
-                <Select value={lightExposure} onChange={(e) => setLightExposure(e.target.value as any)}>
+                <Select value={lightExposure} onChange={(e) => setLightExposure(e.target.value}>
                   <option value="dark">避光</option>
                   <option value="ambient">正常</option>
                   <option value="bright">强光</option>
@@ -203,7 +203,7 @@ export function StabilityPredictTab() {
 
               <div>
                 <label className="text-xs text-neutral-600 mb-1 block">包装</label>
-                <Select value={packaging} onChange={(e) => setPackaging(e.target.value as any)}>
+                <Select value={packaging} onChange={(e) => setPackaging(e.target.value}>
                   <option value="sealed">密封</option>
                   <option value="semi-permeable">半透膜</option>
                   <option value="open">开放</option>

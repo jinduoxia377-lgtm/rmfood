@@ -110,7 +110,7 @@ export function AIInsights({ className }: AIInsightsProps) {
           ].map((tab) => (
             <button
               key={tab.key}
-              onClick={() => setActiveTab(tab.key as any)}
+              onClick={() => setActiveTab(tab.key}
               role="tab"
               aria-selected={activeTab === tab.key}
               aria-controls="insights-panel"

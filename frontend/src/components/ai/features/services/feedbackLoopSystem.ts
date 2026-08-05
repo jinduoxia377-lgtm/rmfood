@@ -127,7 +127,7 @@ export class FeedbackTracker {
     })
 
     if (record) {
-      (record as any).metadata.reportReason = reason
+      (record.metadata.reportReason = reason
     }
   }
 

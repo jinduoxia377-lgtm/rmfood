@@ -290,7 +290,7 @@ export function SafetyReportTemplate({
           ing.notes || '-',
         ])
 
-        ;(doc as any).autoTable({
+        ;(doc.autoTable({
           head: [['序号', '成分名称', '浓度', '风险评分', '状态', '备注']],
           body: tableData,
           startY: yPos,

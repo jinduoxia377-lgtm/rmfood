@@ -426,7 +426,7 @@ const SessionSidebar: React.FC<SessionSidebarProps> = ({
     if (!selectedSessionId) return
 
     try {
-      const blob = await exportSession(selectedSessionId, format as any)
+      const blob = await exportSession(selectedSessionId, format
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url

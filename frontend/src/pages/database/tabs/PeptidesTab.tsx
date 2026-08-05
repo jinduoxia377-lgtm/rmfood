@@ -105,7 +105,7 @@ export default function PeptidesTab({
   // 处理初始选中的肽序列（从热门排行点击过来时）
   useEffect(() => {
     if (initialSelectedSequence && peptideQuery.data?.items && !selectedPeptide) {
-      const target = (peptideQuery.data as any).items.find((p: any) => p.sequence === initialSelectedSequence);
+      const target = (peptideQuery.data.items.find((p: any) => p.sequence === initialSelectedSequence);
       if (target) {
         setSelectedPeptide(target);
         onSequenceConsumed?.();

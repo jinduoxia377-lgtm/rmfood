@@ -814,7 +814,7 @@ export class AcademicReportService {
     return [
       herbName,
       herb.role || '辅助',
-      (herb as any).dosage || '1.0-3.0',
+      (herb.dosage || '1.0-3.0',
       `${tcm.flavor}${tcm.channel}`,
       tcm.meridian,
       tcm.effects,
@@ -859,7 +859,7 @@ export class AcademicReportService {
  const headers = ['成分', '药典用量(g)', '设计用量(g)', '标签值(g)', '确定依据'];
  const rows: string[][] = herbs.map(herb => {
     const herbName = typeof herb.name === 'string' ? herb.name : ''
-    const dosage = parseFloat((herb as any)?.dosage?.replace(/[g克]/g, '') || '2');
+    const dosage = parseFloat((herb?.dosage?.replace(/[g克]/g, '') || '2');
     return [
       herbName,
       '6-15',
@@ -932,7 +932,7 @@ export class AcademicReportService {
  const headers = ['原料', '药食同源', '药典收录', '设计用量(g)', '药典规定(g)', '合规判定'];
  const rows: string[][] = herbs.map(herb => {
     const herbName = typeof herb.name === 'string' ? herb.name : ''
-    const dosage = parseFloat((herb as any)?.dosage?.replace(/[g克]/g, '') || '2');
+    const dosage = parseFloat((herb?.dosage?.replace(/[g克]/g, '') || '2');
     return [
       herbName,
       '是',
@@ -1053,10 +1053,10 @@ export class AcademicReportService {
 
 **综合评分：**
 - 协同作用评分：${((this.candidate.synergy_score || 0) * 100).toFixed(1)}分
-- 口感风味评分：${(((this.candidate as any).taste_score || 0.6) * 100).toFixed(1)}分
-- 稳定性评分：${(((this.candidate as any).stability_score || 0.7) * 100).toFixed(1)}分
-- 安全性评估：${(this.candidate as any).safety_passed ? '通过' : '需关注'}
-- 综合评分：${(((this.candidate as any).overall_score || 0) * 100).toFixed(1)}分`,
+- 口感风味评分：${(((this.candidate.taste_score || 0.6) * 100).toFixed(1)}分
+- 稳定性评分：${(((this.candidate.stability_score || 0.7) * 100).toFixed(1)}分
+- 安全性评估：${(this.candidate.safety_passed ? '通过' : '需关注'}
+- 综合评分：${(((this.candidate.overall_score || 0) * 100).toFixed(1)}分`,
  tables: [
  { title: '主要功效类别市场规模', headers: marketData.table[0], rows: marketData.table.slice(1) },
  { title: '目标人群健康状况分布', headers: epidemiologyData.table[0], rows: epidemiologyData.table.slice(1) },

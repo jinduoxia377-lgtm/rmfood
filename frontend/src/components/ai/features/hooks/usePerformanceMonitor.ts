@@ -453,8 +453,8 @@ export function usePerformanceMonitor(
         let clsValue = 0
         const clsObserver = new PerformanceObserver((list) => {
           for (const entry of list.getEntries()) {
-            if (!(entry as any).hadRecentInput) {
-              clsValue += (entry as any).value
+            if (!(entry.hadRecentInput) {
+              clsValue += (entry.value
               setWebVitals(prev => ({ ...prev, cls: clsValue }))
             }
           }

@@ -188,7 +188,7 @@ export async function exportToPNGDynamic(
     options?.onProgress?.(50)
 
     // 截图
-    const html2canvasDefault = (html2canvasModule as any).default || html2canvasModule
+    const html2canvasDefault = (html2canvasModule.default || html2canvasModule
     const canvas = await html2canvasDefault(element, {
       scale: options?.scale || 2,
       backgroundColor: options?.backgroundColor || '#ffffff',

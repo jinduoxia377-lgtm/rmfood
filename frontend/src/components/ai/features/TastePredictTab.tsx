@@ -186,7 +186,7 @@ export function TastePredictTab() {
 
             <div>
               <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5 block">算法模式</label>
-              <Select value={algorithmMode} onChange={(e) => setAlgorithmMode(e.target.value as any)}>
+              <Select value={algorithmMode} onChange={(e) => setAlgorithmMode(e.target.value}>
                 <option value="weighted">加权平均（快速）</option>
                 <option value="synergy">协同分析（中等）</option>
               </Select>

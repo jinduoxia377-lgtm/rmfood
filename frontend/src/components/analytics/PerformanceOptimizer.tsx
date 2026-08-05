@@ -329,7 +329,7 @@ export function MemoryMonitor() {
   useEffect(() => {
     const interval = setInterval(() => {
       if ('memory' in performance) {
-        const memory = (performance as any).memory
+        const memory = (performance.memory
         setMemoryStats({
           usedJSHeapSize: memory.usedJSHeapSize,
           totalJSHeapSize: memory.totalJSHeapSize,

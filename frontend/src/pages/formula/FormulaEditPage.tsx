@@ -720,7 +720,7 @@ export default function FormulaEditPage() {
                     ) : recData && Array.isArray(recData) && recData.length > 0 ? (
                       <div className="grid gap-2">
                         {(Array.isArray(recData) ? recData : []).map((rec, i) => {
-                          const recId = (rec as any).ingredient_id ?? `rec-${i}`
+                          const recId = (rec.ingredient_id ?? `rec-${i}`
                           return (
                           <div
                             key={recId}
@@ -728,7 +728,7 @@ export default function FormulaEditPage() {
                           >
                             <div>
                               <p className="text-sm font-medium text-neutral-900 dark:text-white">{rec.name}</p>
-                              <p className="text-xs text-neutral-500">{(rec as any).match_reasons?.join(' · ') || ''}</p>
+                              <p className="text-xs text-neutral-500">{(rec.match_reasons?.join(' · ') || ''}</p>
                             </div>
                             <span className="text-xs font-medium text-primary-600 dark:text-primary-400">
                               {rec.score}分
