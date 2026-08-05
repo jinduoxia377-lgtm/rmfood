@@ -2,8 +2,16 @@
 # RMFOOD 配方设计平台 - 应用入口
 FastAPI 应用工厂 + 生命周期事件
 """
-from dotenv import load_dotenv
-load_dotenv(".env", override=True)
+import os as _os
+# 确保在导入任何其他模块之前加载 .env
+_env_path = _os.path.join(_os.path.dirname(__file__), "..", ".env")
+if _os.path.exists(_env_path):
+    from dotenv import load_dotenv
+    load_dotenv(_env_path, override=True)
+# 如果 .env 不存在，尝试从当前目录加载
+elif _os.path.exists(".env"):
+    from dotenv import load_dotenv
+    load_dotenv(".env", override=True)
 
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
