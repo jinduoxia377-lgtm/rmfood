@@ -34,7 +34,7 @@ from typing import Any, Dict
 from ..observability.logging_config import logger
 
 # 使用项目主 Base 替代独立 declarative_base
-from app.core.database.database import Base
+from app.core.database import Base
 
 # ──────────────────────────────────────────────
 # 表结构定义

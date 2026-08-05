@@ -8,7 +8,7 @@ from sqlalchemy import Column, Integer, String, BigInteger, Float, Text, JSON, D
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
 
-from app.core.database.database import Base
+from app.core.database import Base
 
 
 class GARunRecord(Base):

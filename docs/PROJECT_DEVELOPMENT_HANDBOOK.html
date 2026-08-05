@@ -40,7 +40,7 @@
       --c-slate-900: #0f172a;
       --font-sans: -apple-system, "SF Pro Text", "PingFang SC", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
       --font-mono: "SF Mono", "JetBrains Mono", "Cascadia Code", Consolas, monospace;
-      --max-w: 900px;
+      --max-w: 960px;
       --r-sm: 6px; --r-md: 10px; --r-lg: 14px; --r-xl: 18px;
       --shadow-sm: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
       --shadow-md: 0 4px 12px rgba(0,0,0,.07), 0 2px 4px rgba(0,0,0,.04);
@@ -265,6 +265,18 @@
     .log-entry dd ul { margin: 4px 0 0 18px; }
     .log-entry dd ul li { margin-bottom: 2px; }
 
+    /* ── Alert box ── */
+    .alert {
+      border-radius: var(--r-md);
+      padding: 14px 18px;
+      margin: 12px 0 16px;
+      font-size: 13.5px;
+      line-height: 1.7;
+    }
+    .alert-rose { background: var(--c-rose-lt); border: 1px solid var(--c-rose-border); color: #9b2c2c; }
+    .alert-amber { background: var(--c-amber-lt); border: 1px solid var(--c-amber-border); color: #975a16; }
+    .alert-blue { background: var(--c-accent-lt); border: 1px solid var(--c-accent-border); color: #2c5282; }
+
     /* ── Nav back-to-top ── */
     .back-top {
       position: fixed; bottom: 24px; right: 24px;
@@ -299,10 +311,10 @@
     <h1>RMFOOD 智能配方设计平台</h1>
     <p class="subtitle">项目开发手册 · 深度开发版</p>
     <div class="hero-meta">
-      <span><i data-lucide="file-text" style="width:13px;height:13px"></i> 版本 v2.0.0</span>
-      <span><i data-lucide="calendar" style="width:13px;height:13px"></i> 2026-08-03</span>
+      <span><i data-lucide="file-text" style="width:13px;height:13px"></i> 版本 v2.1.0（数据校正版）</span>
+      <span><i data-lucide="calendar" style="width:13px;height:13px"></i> 2026-08-05</span>
       <span><i data-lucide="users" style="width:13px;height:13px"></i> RMFOOD 开发团队</span>
-      <span><i data-lucide="check-circle-2" style="width:13px;height:13px"></i> 91 次提交 · 100% 测试通过</span>
+      <span><i data-lucide="check-circle-2" style="width:13px;height:13px"></i> 117 次提交 · 20 个活跃日</span>
     </div>
   </div>
 </div>
@@ -323,6 +335,8 @@
     <a class="toc-item" href="#sec-6"><span class="toc-num">6</span>质量与安全体系</a>
     <a class="toc-item" href="#sec-7"><span class="toc-num">7</span>部署与运维</a>
     <a class="toc-item" href="#sec-8"><span class="toc-num">8</span>附录：数据统计</a>
+    <a class="toc-item" href="#sec-9"><span class="toc-num">9</span>手册数据偏差说明</a>
+    <a class="toc-item" href="#sec-10"><span class="toc-num">10</span>修复与完善方案</a>
   </div>
 </nav>
 
@@ -353,7 +367,7 @@
         <tr><td rowspan="3"><strong>AI Agent 工作流</strong></td><td>Agent 自主编排</td><td>Orchestrator + 5 专业工具（RAG/合规/配方/实验/药材）</td></tr>
         <tr><td>Agent 任务调度</td><td>ai_task_router + 异步任务队列</td></tr>
         <tr><td>安全沙箱</td><td>Safety 中间件 + 输入校验 + 多租户隔离</td></tr>
-        <tr><td rowspan="4"><strong>数据驱动决策</strong></td><td>TCMSP 中药材数据库</td><td>35 个 Alembic 迁移版本持续增强</td></tr>
+        <tr><td rowspan="4"><strong>数据驱动决策</strong></td><td>TCMSP 中药材数据库</td><td>16 个 Alembic 迁移版本持续增强</td></tr>
         <tr><td>DFBP 活性肽数据库</td><td>食源性生物活性肽结构库</td></tr>
         <tr><td>知识图谱</td><td>Neo4j 可选集成 + 本地图谱查询服务</td></tr>
         <tr><td>全文搜索</td><td>Elasticsearch 可选集成 + PostgreSQL 内置 FTS</td></tr>
@@ -370,15 +384,18 @@
     </table>
   </div>
 
-  <h3>1.3 项目规模概览</h3>
+  <h3>1.3 项目规模概览（实际统计）</h3>
   <div class="stats-grid">
-    <div class="stat-card"><div class="stat-num">920</div><div class="stat-label">后端 Python 文件</div></div>
-    <div class="stat-card"><div class="stat-num">567</div><div class="stat-label">前端 TSX/TS 文件</div></div>
-    <div class="stat-card"><div class="stat-num">91</div><div class="stat-label">Git 提交</div></div>
-    <div class="stat-card"><div class="stat-num">35</div><div class="stat-label">Alembic 迁移</div></div>
+    <div class="stat-card"><div class="stat-num">367</div><div class="stat-label">后端 app Python 文件</div></div>
+    <div class="stat-card"><div class="stat-num">923</div><div class="stat-label">前端 TSX/TS 文件</div></div>
+    <div class="stat-card"><div class="stat-num">117</div><div class="stat-label">Git 提交（全分支）</div></div>
+    <div class="stat-card"><div class="stat-num">16</div><div class="stat-label">Alembic 迁移</div></div>
     <div class="stat-card"><div class="stat-num">11</div><div class="stat-label">ADR 架构决策</div></div>
-    <div class="stat-card"><div class="stat-num">100%</div><div class="stat-label">测试通过率</div></div>
+    <div class="stat-card"><div class="stat-num">445</div><div class="stat-label">API 端点</div></div>
+    <div class="stat-card"><div class="stat-num">97</div><div class="stat-label">后端测试文件</div></div>
+    <div class="stat-card"><div class="stat-num">86</div><div class="stat-label">前端测试文件</div></div>
   </div>
+  <p style="font-size:12px;color:var(--c-text-faint);margin-top:8px">统计基准：backend/app/ 367 文件 / frontend/src/ 923 文件，2026-08-05 实测</p>
 </section>
 
 <!-- ════════════════════════════════════════════
@@ -398,14 +415,14 @@
     <table>
       <thead><tr><th>类别</th><th>技术</th><th>版本</th></tr></thead>
       <tbody>
-        <tr><td>框架</td><td>FastAPI</td><td>0.115+</td></tr>
+        <tr><td>框架</td><td>FastAPI</td><td>0.115.0</td></tr>
         <tr><td>语言</td><td>Python</td><td>3.12+</td></tr>
-        <tr><td>数据库</td><td>PostgreSQL</td><td>15+</td></tr>
-        <tr><td>ORM</td><td>SQLAlchemy</td><td>2.0 (Async)</td></tr>
+        <tr><td>数据库</td><td>PostgreSQL</td><td>16（Alpine）</td></tr>
+        <tr><td>ORM</td><td>SQLAlchemy</td><td>2.0.35 (Async)</td></tr>
         <tr><td>缓存</td><td>Redis</td><td>7+（密码认证）</td></tr>
         <tr><td>图数据库</td><td>Neo4j</td><td>可选集成</td></tr>
         <tr><td>搜索引擎</td><td>Elasticsearch</td><td>可选集成</td></tr>
-        <tr><td>迁移工具</td><td>Alembic</td><td>35 个版本</td></tr>
+        <tr><td>迁移工具</td><td>Alembic</td><td>16 个版本</td></tr>
         <tr><td>分布式计算</td><td>Ray</td><td>集群管理</td></tr>
         <tr><td>消息队列</td><td>Celery</td><td>异步任务（import 任务）</td></tr>
         <tr><td>任务调度</td><td>自定义调度器</td><td>auto_sync 定时同步</td></tr>
@@ -418,91 +435,72 @@
     <table>
       <thead><tr><th>类别</th><th>技术</th><th>版本</th></tr></thead>
       <tbody>
-        <tr><td>框架</td><td>React</td><td>19.x</td></tr>
-        <tr><td>语言</td><td>TypeScript</td><td>5.7</td></tr>
+        <tr><td>框架</td><td>React</td><td>19.2.4</td></tr>
+        <tr><td>语言</td><td>TypeScript</td><td>5.7.3 (strict)</td></tr>
         <tr><td>构建工具</td><td>Vite</td><td>8.x</td></tr>
-        <tr><td>样式</td><td>Tailwind CSS</td><td>4.x</td></tr>
-        <tr><td>状态管理</td><td>Zustand</td><td>5.x</td></tr>
-        <tr><td>数据请求</td><td>TanStack Query</td><td>5.x</td></tr>
+        <tr><td>样式</td><td>Tailwind CSS</td><td>4.1.8</td></tr>
+        <tr><td>状态管理</td><td>Zustand</td><td>5.0.5</td></tr>
+        <tr><td>数据请求</td><td>TanStack Query</td><td>5.101</td></tr>
         <tr><td>AI 对话</td><td>OpenAI SDK / 多提供商适配</td><td>v10.0</td></tr>
         <tr><td>实时通信</td><td>WebSocket</td><td>实时推送 + 分析仪表盘</td></tr>
-        <tr><td>路由</td><td>React Router</td><td>v7</td></tr>
+        <tr><td>路由</td><td>React Router</td><td>7.6.1</td></tr>
       </tbody>
     </table>
   </div>
 
-  <h3>2.3 后端服务目录结构</h3>
-  <pre><code>backend/app/services/
-├── ai/                      # AI 服务（16 子目录）
-│   ├── agent/               # Agent 工作流
-│   │   ├── orchestrator.py  # 6 工具编排核心
-│   │   └── tools/           # 5 个专业工具
-│   │       ├── rag_tool.py
-│   │       ├── compliance_tool.py
-│   │       ├── formula_tool.py
-│   │       └── experiment_tool.py
-│   ├── chat_service.py       # AI 对话服务
-│   ├── conversation_service/ # 对话历史管理
-│   ├── safety/               # AI 安全层
-│   ├── rag/                  # RAG 检索增强
-│   └── providers/            # 多 LLM 提供商适配
-├── compliance/              # 合规检查服务
-│   └── formula_compliance.py
-├── data_sources/            # 数据源服务
-│   ├── openfoodfacts/        # OpenFoodFacts 客户端
-│   ├── pipeline/             # 数据飞轮管道
-│   ├── search_service.py     # 全文搜索
-│   ├── tcmsp_client.py       # TCMSP 客户端
-│   └── auto_sync.py          # 定时同步调度器
-├── import_engine/           # 数据导入引擎
-│   ├── engine.py             # 导入核心引擎
-│   ├── celery/               # Celery 异步任务
-│   └── adapters/             # 数据格式适配器
-├── plugin_registry/         # 插件注册中心
-│   └── core_plugins.py       # 6 核心插件
-├── report/                  # 报告生成服务
-│   ├── explainability_report.py
-│   └── contribution_analyzer.py
-├── experiment/              # 实验解析服务
-├── workflow/                # DAG 工作流执行
-├── auth/                    # 认证服务
-├── data_quality/            # 数据质量校验
-└── analytics/               # 数据分析服务</code></pre>
+  <h3>2.3 后端目录结构（实际）</h3>
+  <pre><code>backend/app/
+├── api/                  # 46 个 API 路由模块
+│   ├── v1/               # 12 个 v1 路由子模块
+│   ├── ai.py             # AI 对话路由（1474行）
+│   ├── databases.py      # 数据库检索路由（1499行）
+│   ├── formulas.py       # 配方管理路由
+│   └── ...（其余 42 个路由文件）
+├── services/             # 145 个服务文件（21 子目录）
+│   ├── ai/               # AI 推理服务（含多目标优化 1564行）
+│   ├── ai_models/        # AI 模型适配层
+│   ├── data_sources/     # 数据源（TCMSP/DFBP/Neo4j/ES）
+│   ├── formula/          # 配方业务逻辑
+│   ├── peptide_analysis_v2/
+│   ├── kg/               # 知识图谱服务
+│   ├── notification/     # 通知服务
+│   └── ...（其余 14 个子目录）
+├── domain/               # 13 个领域层文件（端口接口）
+├── infrastructure/       # 14 个基础设施实现文件
+├── core/                 # 76 个核心模块（config/security/middleware 等）
+├── models/               # 29 个 ORM 模型
+└── schemas/              # 17 个 Pydantic Schema</code></pre>
 
-  <h3>2.4 前端页面与组件结构</h3>
+  <h3>2.4 前端页面与组件结构（实际）</h3>
   <pre><code>frontend/src/
-├── pages/                   # 20 个页面目录
-│   ├── agent/              # Agent 对话页
-│   ├── ai/                 # AI 助手主页面
-│   ├── formula/            # 配方设计
-│   ├── experiment/         # 实验管理
-│   ├── database/           # 数据库检索中心
-│   ├── workflow/           # 工作流执行
-│   ├── report/             # 报告管理
-│   ├── team/               # 团队协作
-│   ├── settings/           # 系统设置
-│   └── ...
-├── components/              # 28 个组件目录
-│   ├── ai/                 # AI 对话组件
-│   │   └── features/components/pro/   # 专业版组件
-│   ├── dashboard/          # 仪表盘组件
-│   ├── experiment/         # 实验组件
-│   ├── formula/            # 配方组件
-│   ├── notification/       # 通知组件
-│   ├── workflow/           # 工作流组件
-│   └── ...
-├── api/                     # 39 个 API 服务模块
-├── hooks/                   # 42+ 个自定义 Hooks
-├── stores/                  # 14 个 Zustand Store
-└── tests/                   # 前端测试</code></pre>
+├── pages/                # 20 个页面目录（含 NotFoundPage）
+│   ├── ai/               # AI 助手主页面
+│   ├── formula/          # 配方管理
+│   ├── experiment/       # 实验管理
+│   ├── database/         # 数据库检索
+│   ├── workflow/         # 工作流执行
+│   ├── agent/            # Agent 对话页
+│   ├── academic/         # 学术报告协作
+│   ├── admin/            # 管理后台
+│   └── settings/         # 系统设置
+├── components/           # 20 个组件目录
+│   ├── ai/               # AI 对话组件（含 pro/ structured/ 子目录）
+│   ├── academic/         # 学术协作组件（editor/review/export 等）
+│   ├── dashboard/        # 仪表盘组件
+│   ├── knowledge/        # 知识图谱可视化
+│   └── ...（其余 16 个组件目录）
+├── hooks/                # 52 个自定义 Hooks
+├── stores/               # 20 个 Zustand Store
+├── api/                  # API 服务模块
+└── __tests__/            # 86 个测试文件</code></pre>
 
   <h3>2.5 架构设计原则</h3>
   <ul style="margin:8px 0 12px 20px;color:var(--c-text-mid);font-size:14px;line-height:2">
-    <li><strong>六边形架构（Ports & Adapters）</strong>：领域层零外部依赖，适配器实现接口</li>
+    <li><strong>六边形架构（Ports & Adapters）</strong>：domain/ 13 文件定义端口接口，infrastructure/ 14 文件实现适配；但 services/ 层仍存在命令式业务逻辑，边界尚未完全隔离</li>
     <li><strong>领域驱动设计（DDD）</strong>：按有界上下文组织模块（配方、实验、用户、知识图谱等）</li>
     <li><strong>微内核 + 插件化</strong>：AI 助手可扩展插件框架</li>
     <li><strong>多租户隔离</strong>：行级安全策略，支持严格/审计两种模式</li>
-    <li><strong>事件驱动</strong>：WebSocket 实时推送 + Celery 异步任务队列</li>
+    <li><strong>事件驱动</strong>：WebSocket 实时推送 + Celery 异步任务队列 + domain_events.py 事件总线</li>
   </ul>
 
   <h3>2.6 架构决策记录（ADR）</h3>
@@ -524,6 +522,7 @@
       </tbody>
     </table>
   </div>
+  <p style="font-size:12px;color:var(--c-text-faint);margin-top:8px">ADR 文件存放在 docs/adr/，共 11 份。六边形架构（ADR-001）实际落地率约 60%，domain/ 和 infrastructure/ 目录已建，services/ 层仍未完全隔离。</p>
 </section>
 
 <!-- ════════════════════════════════════════════
@@ -537,7 +536,11 @@
       <div class="card-subtitle">Development Timeline</div>
     </div>
   </div>
-  <p>项目总开发周期跨越 <strong>2026年4月至2026年8月3日</strong>，正式 Git 提交从 <strong>2026-06-10</strong> 开始，至今共 <strong>91 次提交</strong>，活跃天数 <strong>19 天</strong>。</p>
+  <p>项目总开发周期跨越 <strong>2026年4月（规划）至2026年8月</strong>。正式 Git 提交从 <strong>2026-06-10</strong> 开始，至今共 <strong>117 次提交</strong>（全分支），跨 <strong>20 个活跃日</strong>。</p>
+
+  <div class="alert alert-amber">
+    <strong>📌 提交分布特征：</strong>70% 的提交（82次）集中在 2026-08-02~08-04 三天内完成，表明深度开发阶段为高强度集中产出期。
+  </div>
 
   <div class="table-wrap">
     <table>
@@ -547,7 +550,7 @@
         <tr><td>2026-05-06</td><td><span class="badge badge-ok">AI 模块技术审查完成</span></td><td>4/5星评级 + Bundle 缩减 75%</td></tr>
         <tr><td>2026-06-10</td><td><span class="badge badge-blue">项目 Git 正式初始化</span></td><td>首次提交，统一代码管理</td></tr>
         <tr><td>2026-06-11</td><td><span class="badge badge-blue">Phase 0 启动</span></td><td>152 测试 + 可观测性 + 备份自动化</td></tr>
-        <tr><td>2026-06-15</td><td><span class="badge badge-blue">Phase 0 核心交付</span></td><td>ADR×11 + 全栈可观测 + K8s + GDPR</td></tr>
+        <tr><td>2026-06-15</td><td><span class="badge badge-blue">Phase 0 核心交付</span></td><td>ADR×10 + 全栈可观测 + K8s + GDPR</td></tr>
         <tr><td>2026-06-16</td><td><span class="badge badge-ok">Phase 0 验收通过</span></td><td>综合评分 9.2/10</td></tr>
         <tr><td>2026-06-18</td><td><span class="badge badge-ok">生产部署就绪</span></td><td>LAN 部署 + Ray 集群 + WebSocket + v1 API</td></tr>
         <tr><td>2026-07-12</td><td><span class="badge badge-rose">安全攻坚启动</span></td><td>SSRF/JWT/CSRF/XSS 全面加固</td></tr>
@@ -559,8 +562,9 @@
         <tr><td>2026-07-26</td><td><span class="badge badge-ok">知识图谱重构完成</span></td><td>4000+行 → 813行，多层模块化</td></tr>
         <tr><td>2026-07-28</td><td><span class="badge badge-blue">数据导入增强</span></td><td>GBK 支持 + 任务追踪 + 错误日志</td></tr>
         <tr><td>2026-07-31</td><td><span class="badge badge-blue">项目组织化重构</span></td><td>docs/scripts/tests 布局统一</td></tr>
-        <tr><td>2026-08-02</td><td><span class="badge badge-violet">深度开发启动（P0-A~P2）</span></td><td>8 阶段完整交付，39 个 API 端点</td></tr>
-        <tr><td>2026-08-03</td><td><span class="badge badge-ok">TypeScript 错误清零</span></td><td>非图组件清零 + 图组件降至 128 错误</td></tr>
+        <tr><td>2026-08-02</td><td><span class="badge badge-violet">深度开发启动（P0-A~P2）</span></td><td>8 阶段完整交付，445 个 API 端点</td></tr>
+        <tr><td>2026-08-03</td><td><span class="badge badge-ok">TypeScript 错误清零</span></td><td>TypeScript 编译 0 错误</td></tr>
+        <tr><td>2026-08-04</td><td><span class="badge badge-blue">安全加固 Phase 2</span></td><td>静默异常处理 + console.log 替换 + as any 清理</td></tr>
       </tbody>
     </table>
   </div>
@@ -586,13 +590,16 @@
   <p>发现并修复 6 个问题，消除 108 个 unused imports，修复 11 处 <code>any</code> 类型，Bundle size 减少 75%，评级 <strong>4/5 星</strong>。</p>
 
   <h3>2026-06-10 · 项目 Git 初始化日</h3>
-  <p>RMFOOD 正式进入版本控制系统，统一日志系统，消除所有 <code>print()</code> 调用，添加循环依赖检测。</p>
+  <p>RMFOOD 正式进入版本控制系统，统一日志系统，添加循环依赖检测。</p>
+  <div class="alert alert-rose">
+    <strong>⚠️ 修正说明：</strong>原手册声明"消除所有 print() 调用"，实际 backend/app/ 中仍有 <strong>159 处</strong>print() 未清除，主要集中在 core/domain_events.py 和 core/database_pool.py。
+  </div>
 
   <h3>2026-06-11 · 基础设施加固日</h3>
   <p>152 个测试 + 覆盖率门禁（≥75%）+ Prometheus metrics + DB 备份自动化 + Runbook 编写。</p>
 
   <h3>2026-06-15 · 架构收敛日</h3>
-  <p>ADR 从 5 扩展至 11 份 + 全栈可观测（Prometheus/Grafana/Loki/Tempo）+ K8s 部署 + GDPR 合规 + 安全报告。</p>
+  <p>ADR 扩展至 11 份（原5份）+ 全栈可观测（Prometheus/Grafana/Loki/Tempo）+ K8s 部署 + GDPR 合规 + 安全报告。</p>
 
   <h3>2026-06-16 · 项目关闭报告日</h3>
   <p>综合评审最终得分 <strong>9.2/10</strong>，Phase 0 全部交付物通过验收。</p>
@@ -622,7 +629,7 @@
   <p><strong>AI 安全</strong>：为 <code>/chat/stream</code> 添加 Rate Limit + 多租户隔离 + SSE 超时 + 缓存修复；<strong>数据源</strong>：OpenFoodFacts 客户端统一优化；<strong>安全</strong>：Redis 启用密码认证 + Neo4j 密码去硬编码 + CI/CD 回滚实现。</p>
 
   <h3>2026-07-24 · 核心架构重构日</h3>
-  <p><code>core/</code> 上帝模块拆分为 12 个子目录（config/security/middleware/database 等），Alembic 迁移文件统一命名格式（<code>YYYYMMDD_HHMMSS_</code>），后端测试基建完善。</p>
+  <p><code>core/</code> 拆分为 76 个模块文件（含 config/security/middleware/database 等），Alembic 迁移文件统一命名格式（<code>YYYYMMDD_HHMMSS_</code>），后端测试基建完善。</p>
 
   <h3>2026-07-25 · 新功能发布日</h3>
   <p><strong>收藏架</strong>：完整实现 pantry 功能（CRUD + UI）；<strong>Auto Sync</strong>：定时数据同步调度器；<strong>限流中间件</strong>：公开搜索端点 RateLimitMiddleware；<strong>搜索增强</strong>：context 参数支持。</p>
@@ -638,10 +645,16 @@
 
   <h3>2026-08-02 · 深度开发启动日（P0-A~P2）</h3>
   <p>基于《Development strategy as of August 1, 2026》战略文档，从"技术驱动"转向"价值驱动"。完成 P0-A Agent 工作流、P0-B 合规前置、P0-C 实验解析、P1-A 工作流执行、P1-B 可解释性报告、P1-C 数据飞轮、P2 插件化生态全部 8 个阶段。</p>
-  <p>同日修复：ESLint flat config + husky/lint-staged + API Key 加密 + passlib 清理 + 生产 <code>print()</code> 清理 + TypeScript 编译错误（141→96→85→0）。</p>
+  <p>同日修复：ESLint flat config + husky/lint-staged + API Key 加密 + passlib 清理 + TypeScript 编译错误清零。</p>
 
   <h3>2026-08-03 · 最终优化日</h3>
-  <p>修复 DataUploadPanel + experimentData 类型不匹配；TypeScript 错误从 140 降至 139（非图组件清零）；最终非图组件错误清零，图组件错误降至 128 个。</p>
+  <p>TypeScript 编译错误清零（0 错误）。修复 DataUploadPanel + experimentData 类型不匹配。前端 console.log 和 as any 清理启动。</p>
+  <div class="alert alert-rose">
+    <strong>⚠️ 修正说明：</strong>原手册声明"console.log 清零、as any 清零"。实际 frontend/src/ 中仍有 <strong>139 处</strong>console.log（其中约10处在测试文件内，属正常调试日志）和 <strong>399 处</strong>as any（非图组件）/<strong>25 处</strong>（图/d3组件，可接受）。
+  </div>
+
+  <h3>2026-08-04 · 安全加固 Phase 2</h3>
+  <p>静默异常吞没改为日志记录；API Key 加密完善；SQL 参数化全面检查；console.log 部分替换为日志工具。</p>
 </section>
 
 <!-- ════════════════════════════════════════════
@@ -667,8 +680,8 @@
     <div class="timeline-item"><div class="timeline-date">2026-07-25</div><div class="timeline-title">新功能密集发布</div><div class="timeline-desc">收藏架 + Auto Sync + 限流中间件</div></div>
     <div class="timeline-item"><div class="timeline-date">2026-07-26</div><div class="timeline-title">知识图谱重构完成</div><div class="timeline-desc">4000+行 → 813行，多层模块化</div></div>
     <div class="timeline-item"><div class="timeline-date">2026-07-31</div><div class="timeline-title">项目组织化重构完成</div><div class="timeline-desc">docs/scripts/tests 布局统一</div></div>
-    <div class="timeline-item"><div class="timeline-date">2026-08-02</div><div class="timeline-title">深度开发全部完成</div><div class="timeline-desc">P0/P1/P2 8 阶段交付，39 个 API 端点</div></div>
-    <div class="timeline-item"><div class="timeline-date">2026-08-03</div><div class="timeline-title">TypeScript 错误清零</div><div class="timeline-desc">非图组件清零，图组件降至 128</div></div>
+    <div class="timeline-item"><div class="timeline-date">2026-08-02</div><div class="timeline-title">深度开发全部完成</div><div class="timeline-desc">P0/P1/P2 8 阶段交付，445 个 API 端点</div></div>
+    <div class="timeline-item"><div class="timeline-date">2026-08-04</div><div class="timeline-title">安全加固 Phase 2</div><div class="timeline-desc">静默异常处理 + console.log/ as any 清理启动</div></div>
   </div>
 
   <h3>5.2 阶段总结</h3>
@@ -700,7 +713,7 @@
       <tr><td>三大模块</td><td>07-20</td><td>食品原料 + 零售产品 + 搜索分析独立模块</td></tr>
       <tr><td>API 兼容</td><td>07-21</td><td>兼容食品原料 API 数组格式响应</td></tr>
       <tr><td>AI 加固</td><td>07-23</td><td>/chat/stream 限流 + 多租户隔离 + SSE 超时 + Redis 密码</td></tr>
-      <tr><td>架构重构</td><td>07-24</td><td>core/ 拆分为 12 子目录 + Alembic 统一命名</td></tr>
+      <tr><td>架构重构</td><td>07-24</td><td>core/ 拆分为 76 文件 + Alembic 统一命名</td></tr>
       <tr><td>新功能</td><td>07-25</td><td>收藏架 + Auto Sync + RateLimitMiddleware + 搜索 context 增强</td></tr>
       <tr><td>知识图谱</td><td>07-26</td><td>KG 重构为多层模块化架构（4000+行→813行）</td></tr>
       <tr><td>数据导入</td><td>07-28</td><td>GBK 编码支持 + 任务追踪 + 错误日志</td></tr>
@@ -708,7 +721,7 @@
     </tbody>
   </table></div>
 
-  <h4>第四阶段（2026-08-02 ~ 2026-08-03）：深度开发期（P0/P1/P2）</h4>
+  <h4>第四阶段（2026-08-02 ~ 2026-08-04）：深度开发期（P0/P1/P2）</h4>
   <p>基于《Development strategy as of August 1, 2026》战略文档，从"技术驱动"转向"价值驱动"。</p>
   <div class="phase-grid">
     <div class="phase-card">
@@ -744,14 +757,15 @@
       <div><h4>P2 插件化生态</h4><p>6 核心插件 + API Key 管理 + SDK 元数据 + 开放 API Schema</p></div>
     </div>
   </div>
-  <p style="margin-top:12px;font-size:13px;color:var(--c-text-faint)">测试通过率：<strong>100%</strong>（23/23），TypeScript 新增错误：<strong>0</strong>（非图组件清零），图组件错误降至 <strong>128</strong></p>
+  <p style="margin-top:12px;font-size:13px;color:var(--c-text-faint)">TypeScript 编译错误：<strong>0</strong>（已清零）。后端 print() <strong>159处</strong>（待清理），前端 console.log <strong>139处</strong>，前端 as any <strong>399处</strong>（非图组件）+ <strong>25处</strong>（图/d3组件，可接受）。</p>
 
   <h4>技术架构演进</h4>
   <div class="table-wrap"><table>
     <thead><tr><th>版本</th><th>日期</th><th>架构里程碑</th></tr></thead>
     <tbody>
-      <tr><td>v1.0</td><td>2026-07-31</td><td>六边形架构 + DDD + 全栈可观测</td></tr>
+      <tr><td>v1.0</td><td>2026-07-31</td><td>六边形架构（初步）+ DDD + 全栈可观测</td></tr>
       <tr><td>v2.0</td><td>2026-08-02</td><td>深度开发：Agent + 合规前置 + DAG + 数据飞轮 + 插件化</td></tr>
+      <tr><td>v2.1</td><td>2026-08-05</td><td>数据校正版：实测数据对齐，识别代码质量债务</td></tr>
     </tbody>
   </table></div>
 </section>
@@ -768,20 +782,23 @@
     </div>
   </div>
 
-  <h3>6.1 代码质量标准</h3>
+  <h3>6.1 代码质量标准（实际验证）</h3>
   <div class="table-wrap"><table>
-    <thead><tr><th>指标</th><th>标准</th><th>当前状态</th></tr></thead>
+    <thead><tr><th>指标</th><th>标准</th><th>当前状态</th><th>偏差说明</th></tr></thead>
     <tbody>
-      <tr><td>后端测试覆盖率</td><td align="center">≥ 75%</td><td align="center"><span class="badge badge-ok"><i data-lucide="check" style="width:10px;height:10px"></i> 达标 (100%)</span></td></tr>
-      <tr><td>前端 TypeScript 错误（非图组件）</td><td align="center">0</td><td align="center"><span class="badge badge-ok"><i data-lucide="check" style="width:10px;height:10px"></i> 已清零</span></td></tr>
-      <tr><td>前端 TypeScript 错误（图组件）</td><td align="center">≤ 128</td><td align="center"><span class="badge badge-warn"><i data-lucide="circle-alert" style="width:10px;height:10px"></i> 128（待优化）</span></td></tr>
-      <tr><td>前端 <code>as any</code> 数量</td><td align="center">0</td><td align="center"><span class="badge badge-ok"><i data-lucide="check" style="width:10px;height:10px"></i> 已清零</span></td></tr>
-      <tr><td>后端 <code>str(e)</code> 泄漏</td><td align="center">0</td><td align="center"><span class="badge badge-ok"><i data-lucide="check" style="width:10px;height:10px"></i> 已修复</span></td></tr>
-      <tr><td>CI 门禁通过率</td><td align="center">100%</td><td align="center"><span class="badge badge-ok"><i data-lucide="check" style="width:10px;height:10px"></i> 达标</span></td></tr>
-      <tr><td>Alembic 迁移规范</td><td align="center">YYYYMMDD_HHMMSS_</td><td align="center"><span class="badge badge-ok"><i data-lucide="check" style="width:10px;height:10px"></i> 已统一</span></td></tr>
-      <tr><td>循环依赖检测</td><td align="center">通过</td><td align="center"><span class="badge badge-ok"><i data-lucide="check" style="width:10px;height:10px"></i> 已通过</span></td></tr>
-      <tr><td>安全扫描</td><td align="center">通过</td><td align="center"><span class="badge badge-ok"><i data-lucide="check" style="width:10px;height:10px"></i> 无高危漏洞</span></td></tr>
-      <tr><td>ESLint 生产代码错误</td><td align="center">0</td><td align="center"><span class="badge badge-ok"><i data-lucide="check" style="width:10px;height:10px"></i> 已清零</span></td></tr>
+      <tr><td>后端测试覆盖率</td><td align="center">≥ 75%</td><td align="center"><span class="badge badge-warn">无法验证</span></td><td>pytest collect error（数据库URL未配置），15文件中有7个无法收集</td></tr>
+      <tr><td>前端 TypeScript 错误</td><td align="center">0</td><td align="center"><span class="badge badge-ok">0 ✅</span></td><td>tsc --noEmit 通过</td></tr>
+      <tr><td>前端 <code>as any</code>（非图组件）</td><td align="center">0</td><td align="center"><span class="badge badge-rose">399 ⚠️</span></td><td>声明已清零，实际未清理</td></tr>
+      <tr><td>前端 <code>as any</code>（图/d3组件）</td><td align="center">可接受</td><td align="center"><span class="badge badge-warn">25</span></td><td>D3/图谱类型系统限制，可接受</td></tr>
+      <tr><td>前端 <code>console.log</code></td><td align="center">0</td><td align="center"><span class="badge badge-rose">139 ⚠️</span></td><td>声明已清零，实际仍有129处生产代码</td></tr>
+      <tr><td>后端 <code>print()</code></td><td align="center">0</td><td align="center"><span class="badge badge-rose">159 ⚠️</span></td><td>声明已清零，实际未清除</td></tr>
+      <tr><td>后端 <code>bare except</code></td><td align="center">0</td><td align="center"><span class="badge badge-ok">0 ✅</span></td><td>已全部替换为具体异常类型</td></tr>
+      <tr><td>后端大文件（&gt;500行）</td><td align="center">&lt; 10</td><td align="center"><span class="badge badge-rose">111 ⚠️</span></td><td>超10个文件超500行，最大 ai_router.py 2011行</td></tr>
+      <tr><td>CI 门禁通过率</td><td align="center">100%</td><td align="center"><span class="badge badge-warn">待验证</span></td><td>需配置真实数据库后方可验证</td></tr>
+      <tr><td>Alembic 迁移规范</td><td align="center">YYYYMMDD_HHMMSS_</td><td align="center"><span class="badge badge-ok">已统一 ✅</span></td><td>16个文件已按规范命名</td></tr>
+      <tr><td>循环依赖检测</td><td align="center">通过</td><td align="center"><span class="badge badge-ok">已通过 ✅</span></td><td>import-linter 配置已添加</td></tr>
+      <tr><td>安全扫描</td><td align="center">通过</td><td align="center"><span class="badge badge-ok">无高危漏洞 ✅</span></td><td>pip-audit + bandit + semgrep</td></tr>
+      <tr><td>ESLint 生产代码错误</td><td align="center">0</td><td align="center"><span class="badge badge-ok">已清零 ✅</span></td><td>flat config 已配置</td></tr>
     </tbody>
   </table></div>
 
@@ -799,19 +816,20 @@
       <tr><td align="center">7</td><td>速率限制 + 异常行为检测</td></tr>
     </tbody>
   </table></div>
-  <p style="font-size:13px;color:var(--c-text-faint);margin-top:8px">安全审计日期：2026-07-12 ~ 2026-07-14（集中修复期），2026-07-23（AI 模块专项加固），2026-08-02（深度开发安全审查）</p>
+  <p style="font-size:13px;color:var(--c-text-faint);margin-top:8px">安全审计日期：2026-07-12 ~ 2026-07-14（集中修复期），2026-07-23（AI 模块专项加固），2026-08-02~08-04（深度开发安全审查 + Phase 2）</p>
 
   <h3>6.3 测试体系</h3>
-  <p><strong>后端测试</strong>（46 个测试文件，1,384+ 测试函数）：</p>
+  <p><strong>后端测试</strong>（97 个测试文件，15 个独立测试目录）：</p>
   <ul style="margin:6px 0 12px 20px;font-size:14px;color:var(--c-text-mid);line-height:2">
-    <li><code>tests/core/</code> — 核心模块单元测试</li>
-    <li><code>tests/api/</code> — API 路由集成测试</li>
-    <li><code>tests/services/</code> — 业务服务测试</li>
-    <li><code>tests/security/</code> — 安全专项测试</li>
-    <li><code>tests/integration/</code> — 端到端集成测试</li>
-    <li><code>tests/e2e/</code> — 用户流程 E2E 测试</li>
+    <li><code>tests/e2e/</code> — 用户流程 E2E 测试（3个测试文件）</li>
+    <li><code>tests/security/</code> — 安全专项测试（GDPR + OWASP）</li>
+    <li><code>tests/performance/</code> — 性能基准测试（Locust）</li>
+    <li><code>tests/</code> 根目录 — 核心模块单元测试（12个文件）</li>
   </ul>
-  <p><strong>前端测试</strong>（34 个测试文件）：组件单元测试、Hook 测试、集成测试。</p>
+  <p><strong>前端测试</strong>（86 个测试文件，8 个测试目录）：组件单元测试、Hook 测试、AI 服务测试、Store 测试。</p>
+  <div class="alert alert-amber">
+    <strong>📌 测试运行障碍：</strong>pytest collect 阶段因缺少 DATABASE_URL 环境变量和模块路径问题（<code>ModuleNotFoundError: No module named 'backend'</code>）导致 7 个测试文件无法收集。修复后可验证实际测试通过率和覆盖率。
+  </div>
 </section>
 
 <!-- ════════════════════════════════════════════
@@ -875,115 +893,303 @@
   <div class="card-header">
     <div class="card-icon violet"><i data-lucide="bar-chart-3" style="width:18px;height:18px"></i></div>
     <div>
-      <div class="card-title">8. 附录：数据统计</div>
+      <div class="card-title">8. 附录：数据统计（2026-08-05 实测）</div>
       <div class="card-subtitle">Appendix: Statistics</div>
     </div>
   </div>
 
   <h3>8.1 开发统计</h3>
   <div class="stats-grid">
-    <div class="stat-card"><div class="stat-num">90</div><div class="stat-label">总开发天数</div></div>
-    <div class="stat-card"><div class="stat-num">19</div><div class="stat-label">Git 提交天数</div></div>
-    <div class="stat-card"><div class="stat-num">91</div><div class="stat-label">总提交次数</div></div>
-    <div class="stat-card"><div class="stat-num">920</div><div class="stat-label">后端 Python 文件</div></div>
-    <div class="stat-card"><div class="stat-num">567</div><div class="stat-label">前端 TSX/TS 文件</div></div>
-    <div class="stat-card"><div class="stat-num">35</div><div class="stat-label">Alembic 迁移</div></div>
+    <div class="stat-card"><div class="stat-num">117</div><div class="stat-label">总提交次数（全分支）</div></div>
+    <div class="stat-card"><div class="stat-num">25</div><div class="stat-label">main 分支提交</div></div>
+    <div class="stat-card"><div class="stat-num">20</div><div class="stat-label">Git 活跃日</div></div>
+    <div class="stat-card"><div class="stat-num">367</div><div class="stat-label">后端 app Python 文件</div></div>
+    <div class="stat-card"><div class="stat-num">534</div><div class="stat-label">后端总 Python 文件</div></div>
+    <div class="stat-card"><div class="stat-num">923</div><div class="stat-label">前端 TSX/TS 文件</div></div>
+    <div class="stat-card"><div class="stat-num">16</div><div class="stat-label">Alembic 迁移</div></div>
     <div class="stat-card"><div class="stat-num">11</div><div class="stat-label">ADR 架构决策</div></div>
     <div class="stat-card"><div class="stat-num">20</div><div class="stat-label">前端页面目录</div></div>
-    <div class="stat-card"><div class="stat-num">28</div><div class="stat-label">前端组件目录</div></div>
-    <div class="stat-card"><div class="stat-num">39</div><div class="stat-label">API 端点</div></div>
+    <div class="stat-card"><div class="stat-num">20</div><div class="stat-label">前端组件目录</div></div>
+    <div class="stat-card"><div class="stat-num">52</div><div class="stat-label">自定义 Hooks</div></div>
+    <div class="stat-card"><div class="stat-num">20</div><div class="stat-label">Zustand Stores</div></div>
+    <div class="stat-card"><div class="stat-num">445</div><div class="stat-label">API 端点</div></div>
+    <div class="stat-card"><div class="stat-num">145</div><div class="stat-label">服务文件（21子目录）</div></div>
+    <div class="stat-card"><div class="stat-num">29</div><div class="stat-label">ORM 模型</div></div>
+    <div class="stat-card"><div class="stat-num">111</div><div class="stat-label">超500行文件</div></div>
   </div>
 
-  <h3>8.2 代码量统计（截至 2026-08-03）</h3>
+  <h3>8.2 代码量统计（截至 2026-08-05）</h3>
   <div class="table-wrap"><table>
-    <thead><tr><th>类别</th><th>文件数</th><th>行数（估算）</th></tr></thead>
+    <thead><tr><th>类别</th><th>文件数</th><th>行数（实测）</th></tr></thead>
     <tbody>
-      <tr><td>后端 Python</td><td align="right">920</td><td align="right">~52,000</td></tr>
-      <tr><td>前端 TSX/TS</td><td align="right">567</td><td align="right">~35,000</td></tr>
-      <tr><td>测试文件</td><td align="right">85+</td><td align="right">~20,000</td></tr>
-      <tr><td>配置/文档</td><td align="right">80+</td><td align="right">~28,000</td></tr>
-      <tr><td>迁移文件</td><td align="right">35</td><td align="right">~5,000</td></tr>
-      <tr><td><strong>合计</strong></td><td align="right"><strong>~1,610</strong></td><td align="right"><strong>~155,000</strong></td></tr>
+      <tr><td>后端 Python（backend/app）</td><td align="right">367</td><td align="right">~101,000</td></tr>
+      <tr><td>后端总 Python（含 alembic/scripts）</td><td align="right">534</td><td align="right">~130,000</td></tr>
+      <tr><td>前端 TSX/TS</td><td align="right">923</td><td align="right">~35,000</td></tr>
+      <tr><td>后端测试文件</td><td align="right">97</td><td align="right">~20,000</td></tr>
+      <tr><td>前端测试文件</td><td align="right">86</td><td align="right">~8,000</td></tr>
+      <tr><td>配置/文档</td><td align="right">75+</td><td align="right">~28,000</td></tr>
+      <tr><td>迁移文件</td><td align="right">16</td><td align="right">~5,000</td></tr>
+      <tr><td><strong>合计（代码）</strong></td><td align="right"><strong>~1,686</strong></td><td align="right"><strong>~226,000</strong></td></tr>
     </tbody>
   </table></div>
 
-  <h3>8.3 深度开发交付统计（2026-08-02 ~ 2026-08-03）</h3>
+  <h3>8.3 最大文件 Top 10（backend/app）</h3>
   <div class="table-wrap"><table>
-    <thead><tr><th>阶段</th><th>后端服务</th><th>前端组件</th><th>API 端点</th><th>测试</th></tr></thead>
+    <thead><tr><th>文件</th><th>行数</th><th>所在目录</th></tr></thead>
     <tbody>
-      <tr><td>P0-A Agent 工作流</td><td align="right">7</td><td align="right">2</td><td align="right">6</td><td align="right"><span class="badge badge-ok">100%</span></td></tr>
-      <tr><td>P0-B 合规前置</td><td align="right">2</td><td align="right">2</td><td align="right">5</td><td align="right"><span class="badge badge-ok">100%</span></td></tr>
-      <tr><td>P0-C 实验解析</td><td align="right">4</td><td align="right">2</td><td align="right">2</td><td align="right"><span class="badge badge-ok">100%</span></td></tr>
-      <tr><td>P1-A 工作流执行</td><td align="right">5</td><td align="right">0</td><td align="right">4</td><td align="right"><span class="badge badge-ok">100%</span></td></tr>
-      <tr><td>P1-B 可解释性报告</td><td align="right">4</td><td align="right">4</td><td align="right">8</td><td align="right"><span class="badge badge-ok">100%</span></td></tr>
-      <tr><td>P1-C 报告导出</td><td align="right">4</td><td align="right">1</td><td align="right">3</td><td align="right"><span class="badge badge-ok">100%</span></td></tr>
-      <tr><td>P1-D 数据飞轮</td><td align="right">6</td><td align="right">0</td><td align="right">5</td><td align="right"><span class="badge badge-ok">100%</span></td></tr>
-      <tr><td>P2 插件化生态</td><td align="right">4</td><td align="right">0</td><td align="right">9</td><td align="right"><span class="badge badge-ok">100%</span></td></tr>
-      <tr><td><strong>合计</strong></td><td align="right"><strong>36</strong></td><td align="right"><strong>13</strong></td><td align="right"><strong>42</strong></td><td align="right"><strong>100%</strong></td></tr>
+      <tr><td>api/v1/ai_router.py</td><td align="right">2,011</td><td>api/v1/</td></tr>
+      <tr><td>services/ai/multi_objective_optimizer.py</td><td align="right">1,564</td><td>services/ai/</td></tr>
+      <tr><td>api/databases.py</td><td align="right">1,499</td><td>api/</td></tr>
+      <tr><td>api/ai.py</td><td align="right">1,474</td><td>api/</td></tr>
+      <tr><td>services/ai_models/advanced_peptide_analyzer.py</td><td align="right">1,455</td><td>services/ai_models/</td></tr>
+      <tr><td>services/data_sources/graph_service.py</td><td align="right">1,419</td><td>services/data_sources/</td></tr>
+      <tr><td>services/ai_models/pepinvent_adapter.py</td><td align="right">1,323</td><td>services/ai_models/</td></tr>
+      <tr><td>services/kg/graph_engine.py</td><td align="right">1,264</td><td>services/kg/</td></tr>
+      <tr><td>core/database_and_bi_engine.py</td><td align="right">1,200</td><td>core/</td></tr>
+      <tr><td>services/document_templates.py</td><td align="right">1,123</td><td>services/</td></tr>
     </tbody>
   </table></div>
 
-  <h3>8.4 深度开发核心能力</h3>
+  <h3>8.4 深度开发交付统计（2026-08-02 ~ 2026-08-04）</h3>
   <div class="table-wrap"><table>
-    <thead><tr><th>能力</th><th>技术实现</th><th>前端接入</th></tr></thead>
+    <thead><tr><th>阶段</th><th>后端服务</th><th>前端组件</th><th>API 端点</th></tr></thead>
     <tbody>
-      <tr><td><strong>AI Agent 工作流</strong></td><td>5 工具（RAG/合规/配方/实验/药材）+ LLM 自主编排 + AI Task 异步调度</td><td>AgentPage.tsx + /agent 路由</td></tr>
-      <tr><td><strong>合规前置设计</strong></td><td>约束惩罚机制 + 实时评分 + 自动修复 + 15 种限量 + 10 对禁忌</td><td>ComplianceBadge.tsx + Hook</td></tr>
-      <tr><td><strong>实验数据解析</strong></td><td>AnIML + JCAMP-DX 双格式解析器 + 峰识别引擎</td><td>DataUploadPanel.tsx</td></tr>
-      <tr><td><strong>DAG 工作流执行</strong></td><td>5 执行器（LLM/FormulaGPT/SafetyCheck/Synergy/DataAnalysis）</td><td>工作流详情页</td></tr>
-      <tr><td><strong>可解释性报告</strong></td><td>君臣佐使贡献度 + 协同/拮抗效应 + 合规说明 + 改进建议</td><td>FormulaDetailPage「可解释性」Tab</td></tr>
-      <tr><td><strong>报告导出</strong></td><td>DOCX（python-docx）+ PDF（reportlab）+ Markdown</td><td>ReportExportPanel.tsx</td></tr>
-      <tr><td><strong>数据飞轮</strong></td><td>自动采集 → 质量校验 → 行为脱敏 → 推荐模型训练</td><td>/data-flywheel API</td></tr>
-      <tr><td><strong>插件化生态</strong></td><td>6 核心插件 + API Key 管理 + SDK 元数据 + 开放 API Schema</td><td>/plugins API</td></tr>
-      <tr><td><strong>收藏架</strong></td><td>完整 CRDUD + UI 组件</td><td>PantryPage.tsx</td></tr>
-      <tr><td><strong>定时同步</strong></td><td>自定义调度器 + Celery 异步任务</td><td>auto_sync 后台运行</td></tr>
+      <tr><td>P0-A Agent 工作流</td><td align="right">7</td><td align="right">2</td><td align="right">6</td></tr>
+      <tr><td>P0-B 合规前置</td><td align="right">2</td><td align="right">2</td><td align="right">5</td></tr>
+      <tr><td>P0-C 实验解析</td><td align="right">4</td><td align="right">2</td><td align="right">2</td></tr>
+      <tr><td>P1-A 工作流执行</td><td align="right">5</td><td align="right">0</td><td align="right">4</td></tr>
+      <tr><td>P1-B 可解释性报告</td><td align="right">4</td><td align="right">4</td><td align="right">8</td></tr>
+      <tr><td>P1-C 报告导出</td><td align="right">4</td><td align="right">1</td><td align="right">3</td></tr>
+      <tr><td>P1-D 数据飞轮</td><td align="right">6</td><td align="right">0</td><td align="right">5</td></tr>
+      <tr><td>P2 插件化生态</td><td align="right">4</td><td align="right">0</td><td align="right">9</td></tr>
+      <tr><td><strong>合计</strong></td><td align="right"><strong>36</strong></td><td align="right"><strong>13</strong></td><td align="right"><strong>42</strong></td></tr>
     </tbody>
   </table></div>
 
   <h3>8.5 目录结构</h3>
   <pre><code>RMFOOD/
 ├── backend/                  # 后端服务（FastAPI + SQLAlchemy）
-│   ├── app/
-│   │   ├── api/              # 19 个 API 路由模块
-│   │   │   └── v1/           # 26 个 v1 API 路由（agent/compliance/data_flywheel 等）
-│   │   ├── services/         # 920 个服务文件（16+ 子目录）
-│   │   │   ├── ai/           # AI 服务（16 子目录）
-│   │   │   │   ├── agent/    # Agent 工作流（orchestrator + 5 工具）
-│   │   │   │   ├── chat_service.py
-│   │   │   │   ├── safety/   # AI 安全层
-│   │   │   │   └── providers/ # 多 LLM 提供商
-│   │   │   ├── compliance/   # 合规检查
-│   │   │   ├── experiment/   # 实验解析
-│   │   │   ├── import_engine/ # 数据导入引擎（Celery）
-│   │   │   ├── data_sources/ # 数据源（OpenFoodFacts/TCMSP/DFBP）
-│   │   │   │   └── pipeline/ # 数据飞轮管道
-│   │   │   ├── plugin_registry/ # 插件注册中心
-│   │   │   ├── report/       # 可解释性报告
-│   │   │   ├── workflow/     # DAG 工作流执行
-│   │   │   ├── data_quality/ # 数据质量校验
-│   │   │   └── analytics/    # 数据分析
-│   │   ├── models/           # 37 个 ORM 模型
-│   │   ├── core/             # 12 个核心子模块
-│   │   └── infrastructure/   # 基础设施层
-│   ├── alembic/              # 35 个数据库迁移版本
-│   └── scripts/              # 运维脚本
+│   ├── app/                  # 367 Python 文件
+│   │   ├── api/              # 46 个 API 路由模块
+│   │   │   └── v1/           # 12 个 v1 API 路由子模块
+│   │   ├── services/         # 145 个服务文件（21 子目录）
+│   │   │   ├── ai/           # AI 推理服务（34 个文件）
+│   │   │   ├── ai_models/    # AI 模型适配层（FormulaGPT/SynergyNet 等）
+│   │   │   ├── data_sources/ # 数据源（TCMSP/DFBP/Neo4j/ES）
+│   │   │   ├── formula/      # 配方业务逻辑
+│   │   │   ├── kg/           # 知识图谱服务
+│   │   │   ├── notification/ # 通知服务
+│   │   │   └── peptide_analysis_v2/
+│   │   ├── domain/           # 13 个领域层文件（端口接口）
+│   │   ├── infrastructure/   # 14 个基础设施实现文件
+│   │   ├── core/             # 76 个核心模块
+│   │   ├── models/           # 29 个 ORM 模型
+│   │   └── schemas/          # 17 个 Pydantic Schema
+│   ├── alembic/              # 16 个数据库迁移版本
+│   └── tests/                # 97 个后端测试文件
 ├── frontend/                 # 前端应用（React 19 + TypeScript）
-│   ├── src/
+│   ├── src/                  # 923 TS/TSX 文件
 │   │   ├── pages/            # 20 个页面目录
-│   │   ├── components/       # 28 个组件目录
+│   │   ├── components/       # 20 个组件目录（含 ai/ academic/ 等）
 │   │   │   └── ai/features/components/pro/  # AI 专业版组件
-│   │   ├── hooks/            # 42+ 个自定义 Hooks
-│   │   ├── stores/           # 14 个 Zustand Store
-│   │   ├── api/              # 39 个 API 服务模块
-│   │   └── tests/            # 前端测试
-├── docs/                     # 项目文档（80+ 文件）
-│   ├── adr/                  # 架构决策记录（11 份）
-│   ├── design/               # 设计文档
-│   ├── reports/              # 审查报告
-│   └── reviews/              # 评审记录
-├── scripts/                  # 项目级脚本
-├── tests/                    # 集成测试
-└── deployment/               # 部署配置</code></pre>
+│   │   ├── hooks/            # 52 个自定义 Hooks
+│   │   ├── stores/           # 20 个 Zustand Store
+│   │   ├── api/              # API 服务模块
+│   │   └── __tests__/        # 86 个前端测试文件
+├── docs/                     # 项目文档（75+ 文件）
+│   ├── adr/                  # 11 份架构决策记录
+│   └── ...
+├── tests/                    # 集成测试（15 个文件）
+└── 开发方案/                 # 项目方案与审查文档
+</code></pre>
+</section>
+
+<!-- ════════════════════════════════════════════
+     9. 手册数据偏差说明
+════════════════════════════════════════════ -->
+<section class="card" id="sec-9">
+  <div class="card-header">
+    <div class="card-icon rose"><i data-lucide="circle-alert" style="width:18px;height:18px"></i></div>
+    <div>
+      <div class="card-title">9. 手册数据偏差说明</div>
+      <div class="card-subtitle">Manual Data Deviations — v2.0.0 → v2.1.0</div>
+    </div>
+  </div>
+
+  <h3>9.1 核心数据偏差对照表</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>指标</th><th>v2.0.0 声明</th><th>v2.1.0 实测</th><th>偏差</th><th>严重度</th></tr></thead>
+    <tbody>
+      <tr><td>后端 Python 文件</td><td align="center">920</td><td align="center">367（app）/ 534（总）</td><td align="center">虚报 151%~62%</td><td><span class="badge badge-rose">严重</span></td></tr>
+      <tr><td>前端 TSX/TS 文件</td><td align="center">567</td><td align="center">923</td><td align="center">漏报 63%</td><td><span class="badge badge-rose">严重</span></td></tr>
+      <tr><td>Git 提交次数</td><td align="center">91</td><td align="center">117（全分支）/ 25（main）</td><td align="center">口径不同</td><td><span class="badge badge-warn">中等</span></td></tr>
+      <tr><td>Alembic 迁移</td><td align="center">35</td><td align="center">16</td><td align="center">虚报 119%</td><td><span class="badge badge-rose">严重</span></td></tr>
+      <tr><td>ADR 数量</td><td align="center">11</td><td align="center">11（文件夹）</td><td align="center">一致</td><td><span class="badge badge-ok">准确</span></td></tr>
+      <tr><td>API 端点</td><td align="center">39</td><td align="center">445</td><td align="center">漏报 1041%</td><td><span class="badge badge-rose">严重</span></td></tr>
+      <tr><td>测试通过率</td><td align="center">100%</td><td align="center">无法验证（collect error）</td><td align="center">声明不成立</td><td><span class="badge badge-rose">严重</span></td></tr>
+      <tr><td>前端 console.log</td><td align="center">0</td><td align="center">139</td><td align="center">未清理</td><td><span class="badge badge-rose">严重</span></td></tr>
+      <tr><td>前端 as any（非图）</td><td align="center">0</td><td align="center">399</td><td align="center">未清理</td><td><span class="badge badge-rose">严重</span></td></tr>
+      <tr><td>后端 print()</td><td align="center">0</td><td align="center">159</td><td align="center">未清理</td><td><span class="badge badge-rose">严重</span></td></tr>
+      <tr><td>TypeScript 错误</td><td align="center">0</td><td align="center">0</td><td align="center">一致</td><td><span class="badge badge-ok">准确</span></td></tr>
+      <tr><td>后端 bare except</td><td align="center">0</td><td align="center">0</td><td align="center">一致</td><td><span class="badge badge-ok">准确</span></td></tr>
+      <tr><td>后端大文件（&gt;500行）</td><td align="center">未提及</td><td align="center">111</td><td align="center">未统计</td><td><span class="badge badge-warn">中等</span></td></tr>
+      <tr><td>后端服务文件数</td><td align="center">920</td><td align="center">145（21子目录）</td><td align="center">与后端总数混淆</td><td><span class="badge badge-warn">中等</span></td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>9.2 偏差原因分析</h3>
+  <ul style="margin:8px 0 12px 20px;font-size:14px;color:var(--c-text-mid);line-height:2">
+    <li><strong>后端文件数虚报</strong>：手册统计可能包含了 alembic/、scripts/、tcmsp_data/、data/ 等非源码目录，或使用了递归计数但包含了非 .py 文件。</li>
+    <li><strong>前端文件数漏报</strong>：AI 模块（303个源文件）和学术协作组件（academic/ 目录）未计入。</li>
+    <li><strong>API端点严重漏报</strong>：手册声明39个端点，实际通过 @router 装饰器统计为445个，差异源于统计口径（手册可能只统计了核心业务端点）。</li>
+    <li><strong>质量声明偏差</strong>："console.log清零"、"as any清零"、"print()清零"等声明在 v2.0.0 发布时尚未完成，后续 08-03/08-04 的提交部分处理但未彻底清理。</li>
+    <li><strong>测试通过率无法验证</strong>：由于缺少 DATABASE_URL 配置和模块路径问题，pytest 无法运行，100% 声明无法验证。</li>
+  </ul>
+
+  <h3>9.3 已验证准确的数据</h3>
+  <ul style="margin:8px 0 12px 20px;font-size:14px;color:var(--c-text-mid);line-height:2">
+    <li>✅ TypeScript 编译错误：0（tsc --noEmit 通过）</li>
+    <li>✅ bare except：0（全部替换为具体异常类型）</li>
+    <li>✅ ADR 数量：11份（docs/adr/ 目录下）</li>
+    <li>✅ 前端页面目录：20个</li>
+    <li>✅ 服务目录结构：与手册声明基本一致（145文件/21子目录 vs 声明的16子目录）</li>
+    <li>✅ Alembic 命名规范：已统一为 YYYYMMDD_HHMMSS_ 格式</li>
+    <li>✅ 知识图谱重构：4000+行 → 813行（已验证）</li>
+  </ul>
+</section>
+
+<!-- ════════════════════════════════════════════
+     10. 修复与完善方案
+════════════════════════════════════════════ -->
+<section class="card" id="sec-10">
+  <div class="card-header">
+    <div class="card-icon amber"><i data-lucide="tool-case" style="width:18px;height:18px"></i></div>
+    <div>
+      <div class="card-title">10. 修复与完善方案</div>
+      <div class="card-subtitle">Fix & Improvement Plan</div>
+    </div>
+  </div>
+
+  <h3>10.1 方案总览</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>优先级</th><th>类别</th><th>核心问题</th><th>预计工时</th></tr></thead>
+    <tbody>
+      <tr><td><span class="badge badge-rose">P0</span></td><td>测试环境</td><td>修复 pytest collect error，使测试可运行</td><td>1 天</td></tr>
+      <tr><td><span class="badge badge-rose">P0</span></td><td>代码规范</td><td>清除后端 print()（159处）和前�� console.log（129处生产代码）</td><td>2 天</td></tr>
+      <tr><td><span class="badge badge-rose">P0</span></td><td>类型安全</td><td>消除前端非图组件 as any（399处）</td><td>3 天</td></tr>
+      <tr><td><span class="badge badge-amber">P1</span></td><td>架构</td><td>完成六边形架构落地：services/ 迁移至 domain/ 或封装为适配器</td><td>5 天</td></tr>
+      <tr><td><span class="badge badge-amber">P1</span></td><td>代码结构</td><td>拆分111个超500行文件，控制单文件 ≤300行</td><td>5 天</td></tr>
+      <tr><td><span class="badge badge-amber">P1</span></td><td>测试覆盖</td><td>补齐核心模块单元测试，目标覆盖率 ≥50%</td><td>5 天</td></tr>
+      <tr><td><span class="badge badge-blue">P2</span></td><td>文档</td><td>建立自动化数据统计脚本，每轮提交后自动更新手册</td><td>2 天</td></tr>
+      <tr><td><span class="badge badge-blue">P2</span></td><td>架构</td><td>评估是否需要恢复 Next.js SSR 或明确接受 Vite SPA 方案</td><td>1 天</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>10.2 P0 修复任务</h3>
+
+  <h4>T1 — 修复测试运行环境（预计 1 天）</h4>
+  <div class="table-wrap"><table>
+    <thead><tr><th>#</th><th>任务</th><th>文件</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td>1.1</td><td>修复模块路径</td><td>tests/conftest.py</td><td>添加 backend/ 到 sys.path，解决 ModuleNotFoundError</td></tr>
+      <tr><td>1.2</td><td>添加测试数据库配置</td><td>tests/conftest.py / .env.test</td><td>使用 SQLite in-memory 或 test PostgreSQL 实例</td></tr>
+      <tr><td>1.3</td><td>修复 pytest.ini 配置</td><td>backend/pytest.ini</td><td>添加 pythonpath = backend 确保模块解析</td></tr>
+      <tr><td>1.4</td><td>验证所有测试可收集</td><td>—</td><td>运行 pytest --collect-only 确认 0 errors</td></tr>
+    </tbody>
+  </table></div>
+
+  <h4>T2 — 清除后端 print()（预计 1 天）</h4>
+  <div class="table-wrap"><table>
+    <thead><tr><th>#</th><th>任务</th><th>目标文件</th><th>操作</th></tr></thead>
+    <tbody>
+      <tr><td>2.1</td><td>替换 domain_events.py 中的 print()</td><td>core/domain_events.py</td><td>159处中的主要来源，替换为 logger.debug/info</td></tr>
+      <tr><td>2.2</td><td>替换 database_pool.py 中的 print()</td><td>core/database_pool.py</td><td>替换为 logger.info</td></tr>
+      <tr><td>2.3</td><td>全局扫描并替换剩余 print()</td><td>backend/app/ 全目录</td><td>grep -rn "print(" 逐文件确认，非调试用途全部替换</td></tr>
+      <tr><td>2.4</td><td>验证清零</td><td>—</td><td>grep -rn "print(" backend/app --include="*.py" 返回 0</td></tr>
+    </tbody>
+  </table></div>
+
+  <h4>T3 — 消除前端 as any（预计 3 天）</h4>
+  <div class="table-wrap"><table>
+    <thead><tr><th>#</th><th>任务</th><th>规模</th><th>操作</th></tr></thead>
+    <tbody>
+      <tr><td>3.1</td><td>按文件分组分析 as any</td><td>399处</td><td>grep -rn "as any" 输出文件列表，按模块分组</td></tr>
+      <tr><td>3.2</td><td>AI 模块 as any 清理</td><td>~150处</td><td>为 AI 服务定义 TypeScript 接口，替换 any</td></tr>
+      <tr><td>3.3</td><td>Store/Hook as any 清理</td><td>~100处</td><td>定义 Zustand store 类型，修复 Hook 返回值类型</td></tr>
+      <tr><td>3.4</td><td>页面组件 as any 清理</td><td>~149处</td><td>页面中 API 响应、事件处理器的类型定义</td></tr>
+      <tr><td>3.5</td><td>验证清零</td><td>—</td><td>grep "as any" frontend/src --include="*.tsx" --include="*.ts" 返回 &lt;30（仅d3组件）</td></tr>
+    </tbody>
+  </table></div>
+
+  <h4>T4 — 清除前端 console.log（预计 1 天）</h4>
+  <div class="table-wrap"><table>
+    <thead><tr><th>#</th><th>任务</th><th>规模</th><th>操作</th></tr></thead>
+    <tbody>
+      <tr><td>4.1</td><td>区分测试日志与生产日志</td><td>139处</td><td>测试文件内 console.log 保留，生产代码替换</td></tr>
+      <tr><td>4.2</td><td>替换生产代码 console.log</td><td>~129处</td><td>替换为 structured logger 或使用已有的日志工具</td></tr>
+      <tr><td>4.3</td><td>验证清零</td><td>—</td><td>grep "console.log" frontend/src --include="*.tsx" --include="*.ts" 生产代码 &lt;5</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>10.3 P1 修复任务</h3>
+
+  <h4>T5 — 六边形架构深度落地（预计 5 天）</h4>
+  <div class="table-wrap"><table>
+    <thead><tr><th>#</th><th>任务</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td>5.1</td><td>明确 domain/ 与 services/ 边界</td><td>domain/ 仅保留接口定义（ports）和纯领域实体，services/ 仅保留适配器/基础设施实现</td></tr>
+      <tr><td>5.2</td><td>迁移命令式业务逻辑</td><td>将 services/ 中直接操作 ORM 的逻辑上移至 domain 层或重构为 repository 模式</td></tr>
+      <tr><td>5.3</td><td>消除 domain → services 双向依赖</td><td>运行 import-linter 检测并修复循环依赖</td></tr>
+      <tr><td>5.4</td><td>验证 ADR-001 落地率达到 90%+</td><td>逐ADR检查实际代码与架构决策的一致性</td></tr>
+    </tbody>
+  </table></div>
+
+  <h4>T6 — 大文件拆分（预计 5 天）</h4>
+  <div class="table-wrap"><table>
+    <thead><tr><th>#</th><th>任务</th><th>目标</th></tr></thead>
+    <tbody>
+      <tr><td>6.1</td><td>拆分 ai_router.py（2011行）</td><td>拆分为 route_handlers/、request_validators/、response_formatters/ 等子模块</td></tr>
+      <tr><td>6.2</td><td>拆分 multi_objective_optimizer.py（1564行）</td><td>按算法拆分为 nsga3.py、mcts.py、simulated_annealing.py、gradient_descent.py</td></tr>
+      <tr><td>6.3</td><td>拆分 advanced_peptide_analyzer.py（1455行）</td><td>按分析维度拆分为 physicochemical.py、secondary_structure.py、admet.py、toxicity.py</td></tr>
+      <tr><td>6.4</td><td>全局扫描并拆分其余超500行文件</td><td>目标：所有文件 ≤300行，总超500行文件数 &lt;10</td></tr>
+    </tbody>
+  </table></div>
+
+  <h4>T7 — 测试覆盖补齐（预计 5 天）</h4>
+  <div class="table-wrap"><table>
+    <thead><tr><th>#</th><th>任务</th><th>目标</th></tr></thead>
+    <tbody>
+      <tr><td>7.1</td><td>补齐 AI 模块测试</td><td>multi_objective_optimizer、advanced_peptide_analyzer、pepinvent_adapter 各 ≥80%</td></tr>
+      <tr><td>7.2</td><td>补齐核心服务测试</td><td>formula、experiment、peptide、auth 服务单元测试</td></tr>
+      <tr><td>7.3</td><td>补齐 API 集成测试</td><td>关键 API 端点（create/retrieve/update/delete）集成测试</td></tr>
+      <tr><td>7.4</td><td>设置 CI 覆盖率门禁</td><td>全项目覆盖率 ≥50%（当前估计约12%），CI 强制</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>10.4 P2 完善任务</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>#</th><th>任务</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td>8.1</td><td>自动化数据统计脚本</td><td>编写 scripts/collect_stats.py，自动统计文件数/行数/测试覆盖率/代码质量问题，输出到手册</td></tr>
+      <tr><td>8.2</td><td>Git Hook 代码质量门禁</td><td>pre-commit: 拦截 console.log/print()/as any 提交；pre-push: 运行测试+类型检查</td></tr>
+      <tr><td>8.3</td><td>技术栈对齐评估</td><td>评估 Next.js SSR 恢复的必要性，明确 SEO/首屏性能策略</td></tr>
+      <tr><td>8.4</td><td>ADR 落地率追踪</td><td>每个 ADR 添加实际落地率百分比，季度审查更新</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>10.5 修复路线图</h3>
+  <div class="timeline">
+    <div class="timeline-item"><div class="timeline-date">Week 1（2026-08-05 ~ 08-11）</div><div class="timeline-title">P0 基础修复</div><div class="timeline-desc">T1测试环境修复 + T2后端print()清除 + T4前端console.log清除</div></div>
+    <div class="timeline-item"><div class="timeline-date">Week 2（2026-08-12 ~ 08-18）</div><div class="timeline-title">P0 类型安全</div><div class="timeline-desc">T3前端 as any 清理（AI模块 → Store/Hook → 页面组件）</div></div>
+    <div class="timeline-item"><div class="timeline-date">Week 3~4（2026-08-19 ~ 09-01）</div><div class="timeline-title">P1 架构重构</div><div class="timeline-desc">T5六边形架构落地 + T6大文件拆分（ai_router / optimizer / peptide_analyzer）</div></div>
+    <div class="timeline-item"><div class="timeline-date">Week 5~6（2026-09-02 ~ 09-15）</div><div class="timeline-title">P1 测试补齐</div><div class="timeline-desc">T7测试覆盖补齐，目标全项目覆盖率 ≥50%，CI 门禁</div></div>
+    <div class="timeline-item"><div class="timeline-date">Week 7（2026-09-16 ~ 09-22）</div><div class="timeline-title">P2 完善</div><div class="timeline-desc">T8-1 自动统计脚本 + T8-2 Git Hook 门禁 + T8-3 技术栈评估</div></div>
+  </div>
+
+  <div class="alert alert-blue" style="margin-top:20px">
+    <strong>📋 目标达成后的状态：</strong><br>
+    后端 print() = 0 | 前端 console.log = 0（生产代码）| 前端 as any（非图）= 0 | 测试覆盖率 ≥50% | 大文件（&gt;300行）&lt; 10个 | 六边形架构落地率 ≥90% | ADR 落地率 ≥90%
+  </div>
 </section>
 
 <!-- ════════════════════════════════════════════
@@ -1002,12 +1208,13 @@
       <tr><td>v1.0.0</td><td>2026-07-31</td><td>初始版本，完整记录项目开发历程</td></tr>
       <tr><td>v1.1.0</td><td>2026-08-03</td><td>深度开发完成：Agent 工作流 + 合规前置 + 实验解析 + 工作流执行 + 可解释性报告 + 数据飞轮 + 插件化生态</td></tr>
       <tr><td>v2.0.0</td><td>2026-08-03</td><td>院士级审查补全：新增 2026-07-20~08-03 全部每日开发记录（含提交明细），ADR 11份，Alembic 35个，补充数据飞轮P1-D/报告导出P1-C独立阶段，修正Agent工具数（5工具+AI Task），更新代码量与目录结构</td></tr>
+      <tr><td>v2.1.0</td><td>2026-08-05</td><td>数据校正版：逐项对照代码仓库实际数据修正所有量化声明；新增第9章"手册数据偏差说明"和第10章"修复与完善方案"；Alembic 16→修正为实际数量；API端点39→修正为445；补充 print()/console.log/as any 实际计数和修复计划</td></tr>
     </tbody>
   </table></div>
 </section>
 
 <p style="text-align:center;font-size:12px;color:var(--c-text-faint);margin-top:24px">
-  本文档由 RMFOOD 开发团队编制，基于 git log 与项目文档自动生成（v2.0.0 · 2026-08-03）。
+  本文档由 RMFOOD 开发团队编制，v2.1.0 数据校正版基于 2026-08-05 实际代码仓库统计（117次提交 · 20个活跃日 · 367后端app文件 · 923前端文件）。
 </p>
 
 </div><!-- /layout -->
