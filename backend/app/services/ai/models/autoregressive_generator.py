@@ -74,8 +74,8 @@ class AutoregressiveFormulaGenerator:
         self,
         signal: List[float],
         herb_vocab: Optional[List[str]] = None,
-        min_herbs: int = None,
-        max_herbs: int = None,
+        min_herbs: Optional[int] = None,
+        max_herbs: Optional[int] = None,
         exclude_herbs: Optional[List[str]] = None,
         template_prefix: Optional[List[str]] = None,
     ) -> Dict[str, float]:
@@ -99,11 +99,9 @@ class AutoregressiveFormulaGenerator:
         exclude_set = set(exclude_herbs or [])
         vocab = [h for h in vocab if h not in exclude_set]
 
-        if len(vocab) < min_herbs or min_herbs is None:
+        if len(vocab) < (min_herbs or self.min_seq_len):
             min_herbs = min_herbs or self.min_seq_len
         max_herbs = max_herbs or self.max_seq_len
-
-        # 注入模板前缀
         if template_prefix:
             for herb in template_prefix:
                 if herb in vocab:
@@ -143,10 +141,10 @@ class AutoregressiveFormulaGenerator:
     ) -> bool:
         """判断是否应停止生成"""
         # 至少生成 min_seq_len 个成分
-        if len(used_herbs) < self.min_seq_len:
+        if len(used_herbs) < (self.min_seq_len or 3):
             return False
         # 基于步数的软停止
-        if step >= self.max_seq_len - 1:
+        if step >= (self.max_seq_len or 12) - 1:
             return True
         # 基于生成的停止概率（简化实现）
         stop_prob = self._compute_stop_prob(used_herbs, signal)
