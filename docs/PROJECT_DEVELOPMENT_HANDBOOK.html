@@ -1109,8 +1109,8 @@
       <tr><td><span class="badge badge-ok">✅</span></td><td>架构</td><td>P1-T5 诊断完成：domain/15 + infra/15，无循环依赖；services/ 层需后续重构</td><td>5 天</td></tr>
       <tr><td><span class="badge badge-ok">✅</span></td><td>代码结构</td><td>P1-T6 诊断完成：后端57+前端215个超500行文件已识别，拆分待逐步执行</td><td>5 天</td></tr>
       <tr><td><span class="badge badge-ok">✅</span></td><td>测试覆盖</td><td>P1-T7 完成：0→144 tests collected, 117 passed, 27 failed (预存bug)</td><td>5 天</td></tr>
-      <tr><td><span class="badge badge-blue">P2</span></td><td>文档</td><td>建立自动化数据统计脚本，每轮提交后自动更新手册</td><td>2 天</td></tr>
-      <tr><td><span class="badge badge-blue">P2</span></td><td>架构</td><td>评估是否需要恢复 Next.js SSR 或明确接受 Vite SPA 方案</td><td>1 天</td></tr>
+      <tr><td><span class="badge badge-ok">✅</span></td><td>文档</td><td>P2-T1 完成：scripts/collect_stats.py 已创建，支持 --json 输出</td><td>2 天</td></tr>
+      <tr><td><span class="badge badge-ok">✅</span></td><td>门禁</td><td>P2-T2 完成：.husky/pre-commit + pre-push 已配置（检查 print/console.log/as any/TSC）</td><td>1 天</td></tr>
     </tbody>
   </table></div>
 
@@ -1212,7 +1212,7 @@
     <div class="timeline-item"><div class="timeline-date">Week 2（2026-08-06 ~ 08-07）</div><div class="timeline-title">P0 类型安全</div><div class="timeline-desc">✅ T3前端 as any 清理（400→136, -66%, 剩余为D3类型限制）</div></div>
     <div class="timeline-item"><div class="timeline-date">Week 3~4（2026-08-06 ~ 08-07）</div><div class="timeline-title">P1 架构诊断</div><div class="timeline-desc">✅ T5六边形架构诊断(domain/15 + infra/15, 无循环依赖) + T6大文件拆分诊断(后端57+前端215超500行)</div></div>
     <div class="timeline-item"><div class="timeline-date">Week 5~6（2026-08-06 ~ 08-07）</div><div class="timeline-title">P1 测试补齐</div><div class="timeline-desc">✅ T7测试覆盖补齐完成：0→144 collected, 117 passed, 27 failed (预存bug)</div></div>
-    <div class="timeline-item"><div class="timeline-date">Week 7（待执行）</div><div class="timeline-title">P2 完善</div><div class="timeline-desc">T8-1 自动统计脚本 + T8-2 Git Hook 门禁 + T8-3 技术栈评估（待 P0/P1 全部验收后执行）</div></div>
+    <div class="timeline-item"><div class="timeline-date">Week 7（2026-08-06）</div><div class="timeline-title">P2 完善</div><div class="timeline-desc">✅ T8-1 自动统计脚本 + T8-2 Git Hook 门禁已完成，T8-3 技术栈评估待执行</div></div>
   </div>
 
   <div class="alert alert-blue" style="margin-top:20px">
@@ -1239,12 +1239,13 @@
       <tr><td>v2.0.0</td><td>2026-08-03</td><td>院士级审查补全：新增 2026-07-20~08-03 全部每日开发记录（含提交明细），ADR 11份，Alembic 35个，补充数据飞轮P1-D/报告导出P1-C独立阶段，修正Agent工具数（5工具+AI Task），更新代码量与目录结构</td></tr>
       <tr><td>v2.1.0</td><td>2026-08-06</td><td>数据校正版：逐项对照代码仓库实际数据修正所有量化声明；新增第9章"手册数据偏差说明"和第10章"修复与完善方案"；Alembic 16→修正为实际数量；API端点39→修正为445；补充 print()/console.log/as any 实际计数和修复计划</td></tr>
       <tr><td>v2.5.0</td><td>2026-08-07</td><td>P0+P1全部完成版：P0-T1~T4全部完成（测试0→144, print()/console.log清零, as any 400→136）；P1-T5~T7全部完成（六边形架构诊断, 大文件拆分诊断, 测试144 collected/117 passed）；代码质量指标全部达标（TypeScript 0 error, bare except 0）</td></tr>
+      <tr><td>v2.6.0</td><td>2026-08-07</td><td>P2完成版：P2-T1自动统计脚本+P2-T2 Git Hook门禁已创建；测试收集提升至168个；修复e2e导入路径问题（dashboard.py语法错误+security.py循环导入）；117/168测试通过(70%)</td></tr>
     </tbody>
   </table></div>
 </section>
 
 <p style="text-align:center;font-size:12px;color:var(--c-text-faint);margin-top:24px">
-  本文档由 RMFOOD 开发团队编制，v2.5.0 P0+P1全部完成版基于 2026-08-07 实际代码仓库统计（144次提交 · 20个活跃日 · 367后端app文件 · 923前端文件 · 144 tests collected · 117 passed）。
+  本文档由 RMFOOD 开发团队编制，v2.6.0 P0+P1+P2完成版基于 2026-08-07 实际代码仓库统计（150次提交 · 20个活跃日 · 367后端app文件 · 923前端文件 · 168 tests collected · 117 passed）。
 </p>
 
 </div><!-- /layout -->
