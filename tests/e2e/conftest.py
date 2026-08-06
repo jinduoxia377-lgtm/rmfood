@@ -22,6 +22,7 @@ from app.main import app
 from app.core.database import Base
 from app.core.database.session import engine as async_engine
 from app.core.database import async_session_factory
+from app.utils.auth import create_access_token
 from app.core.config import settings
 from app.models.user_model import User
 from app.models.team import Team

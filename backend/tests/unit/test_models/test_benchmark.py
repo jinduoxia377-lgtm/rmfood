@@ -1,11 +1,11 @@
-"""formula_benchmark"""
+"""Formula generation engine performance benchmark"""
 
 import asyncio
 import logging
 import statistics
 import time
-from dataclasses import dataclass, field
-from typing import Any, Dict, List
+from dataclasses import dataclass
+from typing import Any, Dict
 
 logger = logging.getLogger(__name__)
 
@@ -22,14 +22,14 @@ class BenchmarkResult:
 
 
 class FormulaBenchmark:
-    """配方生成引擎基准测试器"""
+    """Formula generation engine benchmark tester"""
 
     def __init__(self, runs: int = 10):
         self.runs = runs
-        self.target_effects = ["免疫调节", "抗氧化", "补气"]
+        self.target_effects = ["immunomodulation", "antioxidant", "qi_nourishing"]
 
     async def benchmark_pytorch(self) -> BenchmarkResult:
-        """benchmark_pytorch"""
+        """Benchmark PyTorch generator"""
         import torch
         from app.services.ai.models import SignalEncoder, PyTorchFormulaGenerator
 
@@ -40,7 +40,7 @@ class FormulaBenchmark:
         signal = encoder.encode(self.target_effects)
         tensor_signal = torch.tensor(signal.raw_vector).unsqueeze(0)
 
-        # 预热
+        # Warmup
         gen.generate(tensor_signal, herb_vocab, None)
 
         times = []
@@ -59,7 +59,7 @@ class FormulaBenchmark:
         )
 
     async def benchmark_traditional(self) -> BenchmarkResult:
-        """测试traditional性能"""
+        """Benchmark traditional engine"""
         from app.services.formula_designer import FormulaDesigner
 
         designer = FormulaDesigner(knowledge_base={})
@@ -80,19 +80,19 @@ class FormulaBenchmark:
         )
 
     async def run_all(self) -> Dict[str, Any]:
-        """run_all_tests"""
+        """Run all benchmarks"""
         logger.info("=" * 50)
-        logger.info("formula_benchmark")
+        logger.info("Formula Generation Benchmark")
         logger.info("=" * 50)
 
         pytorch = await self.benchmark_pytorch()
-        logger.info(f"PyTorch生成器: {pytorch.avg_time_ms:.1f}ms  +/-  {pytorch.std_time_ms:.1f}ms")
+        logger.info("PyTorch: %.1fms +/- %.1fms", pytorch.avg_time_ms, pytorch.std_time_ms)
 
         traditional = await self.benchmark_traditional()
-        logger.info(f"traditional:       {traditional.avg_time_ms:.1f}ms  +/-  {traditional.std_time_ms:.1f}ms)
+        logger.info("Traditional: %.1fms +/- %.1fms", traditional.avg_time_ms, traditional.std_time_ms)
 
         speedup = traditional.avg_time_ms / pytorch.avg_time_ms if pytorch.avg_time_ms > 0 else 0
-        logger.info(f"speedup:       {speedup:.1f}x")
+        logger.info("Speedup: %.1fx", speedup)
 
         return {
             "pytorch": {"avg_ms": pytorch.avg_time_ms, "std_ms": pytorch.std_time_ms},
@@ -102,17 +102,17 @@ class FormulaBenchmark:
 
 
 def test_benchmark_pytorch_speed():
-    """测试PyTorch生成器速度"""
+    """Test PyTorch generator speed"""
     benchmark = FormulaBenchmark(runs=10)
     report = asyncio.run(benchmark.run_all())
 
     assert report["pytorch"]["avg_ms"] > 0
-    assert report["pytorch"]["avg_ms"] < 500, f"PyTorch生成器过慢: {report['pytorch']['avg_ms']:.1f}ms"
-    logger.info(f"PyTorch速度: {report['pytorch']['avg_ms']:.2f}ms ✅")
+    assert report["pytorch"]["avg_ms"] < 500, f"PyTorch too slow: {report['pytorch']['avg_ms']:.1f}ms"
+    logger.info("PyTorch speed: %.2fms PASSED", report["pytorch"]["avg_ms"])
 
 
 def test_benchmark_consistency():
-    """测试生成一致性"""
+    """Test generation consistency"""
     import torch
     from app.services.ai.models import SignalEncoder, PyTorchFormulaGenerator
 
@@ -120,7 +120,7 @@ def test_benchmark_consistency():
     gen = PyTorchFormulaGenerator(input_dim=40, hidden_dim=32, n_layers=2, n_herbs=10)
     herb_vocab = ["hq", "ds", "gz", "rs", "dg"]
 
-    signal = encoder.encode(["补气"])
+    signal = encoder.encode(["qi_nourishing"])
     tensor_signal = torch.tensor(signal.raw_vector).unsqueeze(0)
 
     formulas = []
@@ -129,13 +129,13 @@ def test_benchmark_consistency():
         if result:
             formulas.append(set(result[0].keys()))
 
-    assert len(formulas) > 0, "应生成至少一个配方"
+    assert len(formulas) > 0, "Should generate at least one formula"
     for f in formulas:
-        assert 1 <= len(f) <= 12, f"配方成分数应1-12，实际: {len(f)}"
+        assert 1 <= len(f) <= 12, f"Formula should have 1-12 herbs, got {len(f)}"
 
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     benchmark = FormulaBenchmark(runs=10)
     report = asyncio.run(benchmark.run_all())
-    print(f"\nspeedup: {report['speedup']:.1f}x")
+    print(f"Speedup: {report['speedup']:.1f}x")
