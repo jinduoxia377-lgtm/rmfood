@@ -113,7 +113,7 @@ class BioactivePeptide(Base):
     source_protein: Mapped[str | None] = mapped_column(String(200))
     source_organism: Mapped[str | None] = mapped_column(String(200))
     activity_type: Mapped[str | None] = mapped_column(String(100))
-    activity_value: Mapped[float | None] = mapped_column(Float)
+    activity_value: Mapped[str | None] = mapped_column(String(100))
     activity_unit: Mapped[str | None] = mapped_column(String(50))
     molecular_weight: Mapped[float | None] = mapped_column(Float)
     hydrolysis_enzyme: Mapped[str | None] = mapped_column(String(200))

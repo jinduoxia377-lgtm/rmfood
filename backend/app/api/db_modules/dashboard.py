@@ -5,7 +5,7 @@ import json
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from fastapi.responses import JSONResponse
-from sqlalchemy import select, func
+from sqlalchemy import select, func, text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -611,9 +611,22 @@ async def data_quality_report(
     """数据质量评估报告 — 完整性、一致性、丰富度指标（公开接口）"""
     from datetime import datetime
 
-    # ── 数据库优先：查询药材和活性肽数据 ──
-    herbs_db = (await db.execute(select(TCMHerb).order_by(TCMHerb.id))).scalars().all()
-    peptides_db = (await db.execute(select(BioactivePeptide).order_by(BioactivePeptide.id).limit(5000))).scalars().all()
+    # ── 数据库优先：查询药材和活性肽数据（用 text 查询避免 ORM lazy-load）──
+    r_herbs = await db.execute(text("""
+        SELECT id, name_cn, name_latin, name_pinyin, category, effects,
+               ob_percent, dl_value, is_food_homology, source,
+               compounds, targets, diseases
+        FROM tcm_herbs ORDER BY id
+    """))
+    herbs_db = [dict(row._mapping) for row in r_herbs.fetchall()]
+
+    r_peptides = await db.execute(text("""
+        SELECT id, sequence, source_protein, source_organism, activity_type,
+               activity_value, activity_unit, molecular_weight, hydrolysis_enzyme,
+               dfbp_id, dfbp_version, literature_doi, source_version
+        FROM bioactive_peptides ORDER BY id LIMIT 5000
+    """))
+    peptides_db = [dict(row._mapping) for row in r_peptides.fetchall()]
 
     use_herb_db = len(herbs_db) > 0
     use_peptide_db = len(peptides_db) > 0
@@ -621,7 +634,7 @@ async def data_quality_report(
     # 选择数据源
     if use_herb_db:
         herbs_source = herbs_db
-        is_herb_orm = True
+        is_herb_orm = False
         total_herbs = len(herbs_db)
     else:
         from ...services.data_sources.tcmsp_client import TCMSP_HERB_DATABASE
@@ -631,7 +644,7 @@ async def data_quality_report(
 
     if use_peptide_db:
         peptides_source = peptides_db
-        is_peptide_orm = True
+        is_peptide_orm = False
         total_peptides = len(peptides_db)
     else:
         from ...services.data_sources.dfbp_client import DFBP_PEPTIDE_DATABASE
