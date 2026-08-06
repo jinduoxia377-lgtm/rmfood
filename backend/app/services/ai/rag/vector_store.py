@@ -4,10 +4,21 @@
 实现本地持久化存储。
 """
 
+import logging
 import os
 from typing import Optional
-import chromadb
-from chromadb.config import Settings
+
+logger = logging.getLogger(__name__)
+
+try:
+    import chromadb
+    from chromadb.config import Settings
+    _HAS_CHROMADB = True
+except ImportError:
+    _HAS_CHROMADB = False
+    chromadb = None
+    Settings = None  # type: ignore[assignment]
+
 from .models import DocumentChunk, ChunkResult
 
 
@@ -21,10 +32,16 @@ class VectorStore:
     - 统计信息查询
 
     数据持久化在 data/chromadb 目录。
+    当 chromadb 未安装时，所有操作返回空结果（不报错）。
     """
 
     def __init__(self, persist_dir: str = "data/chromadb"):
         self.persist_dir = persist_dir
+        self._client = None
+        self._collection_name = "rag_documents"
+        self._collection_ref = None
+        if not _HAS_CHROMADB:
+            return
         os.makedirs(persist_dir, exist_ok=True)
         self._client = chromadb.PersistentClient(
             path=persist_dir,
@@ -37,6 +54,8 @@ class VectorStore:
     def _collection(self):
         """获取或创建文档集合（惰性加载 + 缓存）"""
         if self._collection_ref is None:
+            if not _HAS_CHROMADB or self._client is None:
+                return None
             self._collection_ref = self._client.get_or_create_collection(
                 name=self._collection_name,
                 metadata={"hnsw:space": "cosine"},
@@ -44,13 +63,8 @@ class VectorStore:
         return self._collection_ref
 
     def add_chunks(self, chunks: list[DocumentChunk], embeddings: list[list[float]]):
-        """批量添加文档块到向量库
-
-        Args:
-            chunks: 文档块列表
-            embeddings: 对应的向量列表
-        """
-        if not chunks or not embeddings:
+        """批量添加文档块到向量库"""
+        if not chunks or not embeddings or self._collection is None:
             return
         self._collection.add(
             ids=[c.id for c in chunks],
@@ -60,15 +74,9 @@ class VectorStore:
         )
 
     def search(self, query_embedding: list[float], top_k: int = 5) -> list[ChunkResult]:
-        """语义检索最相关的文档块
-
-        Args:
-            query_embedding: 查询向量
-            top_k: 返回 TOP K 结果
-
-        Returns:
-            按相关性排序的 ChunkResult 列表
-        """
+        """语义检索最相关的文档块"""
+        if self._collection is None:
+            return []
         results = self._collection.query(
             query_embeddings=[query_embedding],
             n_results=min(top_k, max(1, self._collection.count())),
@@ -100,15 +108,21 @@ class VectorStore:
 
     def delete_by_source(self, source: str):
         """按来源删除文档块"""
+        if self._collection is None:
+            return
         self._collection.delete(where={"source": source})
 
     @property
     def chunk_count(self) -> int:
         """当前向量库中的文档块总数"""
+        if self._collection is None:
+            return 0
         return self._collection.count()
 
     def reset(self):
         """清空向量库"""
+        if self._client is None:
+            return
         try:
             self._client.delete_collection(self._collection_name)
         except Exception as e:

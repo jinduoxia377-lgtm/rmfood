@@ -102,6 +102,8 @@ class AutoregressiveFormulaGenerator:
         if len(vocab) < (min_herbs or self.min_seq_len):
             min_herbs = min_herbs or self.min_seq_len
         max_herbs = max_herbs or self.max_seq_len
+
+        # 注入模板前缀
         if template_prefix:
             for herb in template_prefix:
                 if herb in vocab:

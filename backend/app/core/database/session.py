@@ -378,54 +378,8 @@ def _create_engine():
 
     # ═════════════════════════════════════════════
     # Connection validation event listeners
-    # ═══════════════════════════════════════════════
-
-    @event.listens_for(engine.sync_engine, "checkout")
-    def on_checkout(dbapi_conn, connection_record, proxy_conn):
-        """
-        Connection checkout listener with lightweight validation.
-
-        Why this replaces pool_pre_ping on Windows:
-        - pool_pre_ping executes a separate SELECT 1 check BEFORE handing out
-          the connection, then there's a race between that check and our first
-          actual query where the connection could be closed.
-        - This listener performs validation AT the moment of checkout, right
-          before the connection is handed to application code. If validation
-          fails, the connection is disposed immediately and a fresh one is
-          fetched from the pool, eliminating the race condition entirely.
-
-        Args:
-            dbapi_conn: The raw DB-API connection object (asyncpg connection)
-            connection_record: Connection record in the pool
-            proxy_conn: The SQLAlchemy proxy connection (can be None in some cases)
-
-        Note:
-            On Windows, we only check the connection closed flag without running
-            a SQL query, since the asyncpg adapter doesn't support cursor-based
-            validation. The pool_pre_ping=False setting handles most stale
-            connection cases; any remaining issues are caught by the query
-            execution itself.
-        """
-        try:
-            if connection_record is not None and connection_record.connection is not None:
-                conn = connection_record.connection
-
-                # Quick state check – ensure connection isn't already marked closed
-                if getattr(conn, 'closed', False):
-                    logger.warning(
-                        f"[DB] Checkout: connection already closed (id={id(conn)})"
-                    )
-                    # Mark the connection record as bad so the pool discards it
-                    if connection_record.invalidated:
-                        return
-                    connection_record.invalidate()
-        except Exception as e:
-            # Log but don't re-raise — let the pool handle it gracefully
-            logger.debug("[DB] Checkout validation: %s", e)
-    def on_checkin(dbapi_conn, connection_record):
-        """Log when a connection is returned to the pool."""
-        # No-op on purpose – clean checkin handling
-        pass
+    # Disabled checkout handler on Windows to avoid asyncpg race conditions.
+    # The pool_pre_ping=False + pool_recycle settings handle stale connections.
 
     return engine
 

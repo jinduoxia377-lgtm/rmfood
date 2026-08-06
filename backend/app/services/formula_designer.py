@@ -34,6 +34,12 @@ class FormulaDesigner:
         if intent.get("is_peptide"):
             return self._design_peptide(effects)
 
+        # 尝试使用统一引擎（新方法）
+        use_new_engine = intent.get("use_new_engine", False)
+
+        if use_new_engine:
+            return await self._new_engine_design(effects, intent, knowledge)
+
         # 调用贝叶斯优化器
         formula_data = await self._optimize_formula(effects, intent)
 
@@ -42,6 +48,60 @@ class FormulaDesigner:
 
         # 降级：基于功效评分手动选择
         return self._manual_formula_design(effects, intent)
+
+    async def _new_engine_design(
+        self,
+        effects: list[str],
+        intent: dict,
+        knowledge: dict,
+    ) -> dict:
+        """使用统一公式引擎生成配方"""
+        try:
+            from .ai.models import get_unified_formula_engine
+            from .ai.algorithms.bayesian_formula_optimizer import _BUILTIN_HERBS
+
+            # 构建 herb_db
+            herb_db = {}
+            for hid, herb in _BUILTIN_HERBS.items():
+                herb_db[herb.herb_id] = {
+                    "name_cn": herb.name_cn,
+                    "efficacy_scores": herb.efficacy_scores,
+                    "safety_index": herb.safety_index,
+                    "cost_per_gram": herb.cost_per_gram,
+                    "tastes": [],
+                    "antagonistic_pairs": herb.antagonistic_pairs,
+                    "synergy_partners": herb.synergy_partners,
+                }
+
+            herb_vocab = list(_BUILTIN_HERBS.keys())
+
+            engine = get_unified_formula_engine(herb_db=herb_db, herb_vocab=herb_vocab)
+
+            constraints = intent.get("constraints") or {}
+            result = await engine.generate(
+                target_effects=effects[:3],
+                constraints=constraints,
+                template_preference=intent.get("template"),
+                n_candidates=intent.get("n_candidates", 10),
+                select_top_k=intent.get("select_top_k", 3),
+                use_rl_tuning=intent.get("use_rl_tuning", False),
+            )
+
+            return {
+                "summary": result.summary,
+                "details": result.details,
+                "data": result.data,
+                "scores": result.scores,
+                "strategy": result.strategy,
+                "execution_time_ms": result.execution_time_ms,
+            }
+        except Exception as e:
+            logger.warning(f"[FormulaDesigner] 新引擎失败，回退到传统引擎: {e}")
+            # 回退到传统引擎
+            formula_data = await self._optimize_formula(effects, intent)
+            if formula_data and len(formula_data) >= 3:
+                return self._build_tcm_structure(formula_data, effects, intent)
+            return self._manual_formula_design(effects, intent)
 
     async def _optimize_formula(
         self, effects: list[str], intent: dict

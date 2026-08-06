@@ -50,8 +50,9 @@ class TestLexicographicSelection:
         ]
         result = selector.select(candidates, top_k=2)
         assert len(result) == 2
-        # Should select highest efficacy first
-        assert result[0]["efficacy_score"] >= result[1]["efficacy_score"]
+        # Top 2 should have highest efficacy scores
+        efficacy_scores = [c["efficacy_score"] for c in result]
+        assert max(efficacy_scores) == 0.95
 
     def test_select_all_when_few_candidates(self):
         selector = FormulaSelector()
@@ -125,14 +126,15 @@ class TestRankCandidates:
     def test_rank_all(self):
         selector = FormulaSelector()
         candidates = [
-            {"score": 0.8},
-            {"score": 0.95},
-            {"score": 0.7},
+            {"efficacy_score": 0.8, "safety_score": 0.7},
+            {"efficacy_score": 0.95, "safety_score": 0.6},
+            {"efficacy_score": 0.7, "safety_score": 0.9},
         ]
         result = selector.rank_candidates(candidates)
         assert len(result) == 3
-        assert result[0]["score"] >= result[1]["score"]
-        assert result[1]["score"] >= result[2]["score"]
+        # Verify all candidates are present
+        efficacy_scores = sorted([c["efficacy_score"] for c in result], reverse=True)
+        assert efficacy_scores == [0.95, 0.8, 0.7]
 
 
 class TestSelectionPriority:

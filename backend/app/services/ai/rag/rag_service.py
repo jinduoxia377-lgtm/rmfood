@@ -57,7 +57,10 @@ class RAGService:
         self._total_docs = 0
 
         # 从向量库获取所有文档
-        all_data = self.vector_store._collection.get(include=["documents", "metadatas"])
+        collection = self.vector_store._collection
+        if collection is None:
+            return
+        all_data = collection.get(include=["documents", "metadatas"])
         if not all_data.get("ids"):
             return
 
