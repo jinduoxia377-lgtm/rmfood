@@ -16,6 +16,7 @@ from ...models import (
 )
 from ...services.data_sources.tcmsp_client import tcmsp_service
 from ...services.data_sources.dfbp_client import DFBP_PEPTIDE_DATABASE
+from ...services.data_sources.graph_service import graph_service
 
 """
 Shared router for dashboard module.

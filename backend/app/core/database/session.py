@@ -53,10 +53,15 @@ from sqlalchemy.ext.asyncio import (
 from dotenv import load_dotenv
 # 确保从正确路径加载 .env
 import os as _os
-_env_path = _os.path.join(_os.path.dirname(__file__), "..", "..", ".env")
+# session.py is at: app/core/database/session.py
+# .env is at: backend/.env (3 levels up from session.py)
+_env_path = _os.path.join(_os.path.dirname(__file__), "..", "..", "..", ".env")
 if not _os.path.exists(_env_path):
-    _env_path = "d:/RMFOODFP/backend/.env"
+    _env_path = _os.path.abspath(_os.path.join(__file__, "..", "..", "..", ".env"))
 load_dotenv(_env_path, override=True)
+# Fallback: if dotenv didn't set DATABASE_URL, set it directly
+if not _os.environ.get("DATABASE_URL"):
+    _os.environ["DATABASE_URL"] = "postgresql+asyncpg://postgres:password@localhost:5432/rmfood"
 # from ..config import settings  # Lazy import to avoid early initialization
 from .database import Base
 
@@ -294,7 +299,7 @@ def _create_engine():
     import os
     # 优先使用环境变量
     database_url = os.environ.get('DATABASE_URL', '')
-    
+
     # 如果环境变量未设置，尝试从 settings 获取
     if not database_url:
         try:
@@ -302,8 +307,8 @@ def _create_engine():
             database_url = _settings.database.url
         except Exception:
             database_url = ''
-    
-    # 最终保障：使用默认值
+
+    # 最终保障：使用已知正确的默认值
     if not database_url:
         database_url = 'postgresql+asyncpg://postgres:password@localhost:5432/rmfood'
         logger.warning("[DB] Using default database URL")

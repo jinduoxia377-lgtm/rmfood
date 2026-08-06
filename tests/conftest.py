@@ -17,9 +17,6 @@ _BACKEND_DIR = os.path.join(_PROJECT_ROOT, "backend")
 # 添加路径（backend 必须在 app 之前，因为 app 是 backend 的子包）
 if _PROJECT_ROOT not in sys.path:
     sys.path.insert(0, _PROJECT_ROOT)
-if _BACKEND_DIR not in sys.path:
-    sys.path.insert(0, _BACKEND_DIR)
-
 # 配置 chromadb 在测试环境中静默
 os.environ.setdefault("CHROMA_NO_TELEMETRY", "1")
 
