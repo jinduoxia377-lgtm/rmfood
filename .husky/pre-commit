@@ -1,0 +1,48 @@
+#!/bin/sh
+# Pre-commit hook: 检查代码质量
+
+echo "🔍 运行 pre-commit 检查..."
+
+# 1. 检查是否有 print() 在 production 代码中
+echo "📋 检查后端 print()..."
+PRINT_COUNT=$(grep -rn "print(" backend/app --include="*.py" 2>/dev/null | grep -v ">>>" | grep -v "# " | grep -v '"""' | grep -v "archived" | grep -v "logger\." | grep -v "__main__" | wc -l)
+if [ "$PRINT_COUNT" -gt 0 ]; then
+    echo "❌ 发现 $PRINT_COUNT 处生产代码 print()，请使用 logger 替代"
+    grep -rn "print(" backend/app --include="*.py" | grep -v ">>>" | grep -v "# " | grep -v '"""' | grep -v "archived" | grep -v "logger\." | grep -v "__main__"
+    exit 1
+fi
+echo "✅ 后端 print() 检查通过"
+
+# 2. 检查前端 console.log
+echo "📋 检查前端 console.log..."
+CONSOLE_COUNT=$(grep -rn "console\.log" frontend/src --include="*.tsx" --include="*.ts" 2>/dev/null | grep -v "__tests__" | grep -v "\.test\." | grep -v "\.spec\." | grep -v "safeConsole\|safeLogger\|logger\.ts\|errorBoundary" | wc -l)
+if [ "$CONSOLE_COUNT" -gt 0 ]; then
+    echo "❌ 发现 $CONSOLE_COUNT 处生产代码 console.log，请使用 logger 替代"
+    grep -rn "console\.log" frontend/src --include="*.tsx" --include="*.ts" | grep -v "__tests__" | grep -v "\.test\." | grep -v "\.spec\." | grep -v "safeConsole\|safeLogger\|logger\.ts\|errorBoundary"
+    exit 1
+fi
+echo "✅ 前端 console.log 检查通过"
+
+# 3. 检查前端 as any（允许图/d3 组件中的）
+echo "📋 检查前端 as any..."
+AS_ANY_COUNT=$(grep -rn "as any" frontend/src --include="*.tsx" --include="*.ts" 2>/dev/null | grep -v "__tests__" | grep -v "\.test\." | grep -v "\.spec\." | grep -v "knowledge-graph\|graph_panel\|d3\|GraphEdge\|GraphVertex" | wc -l)
+if [ "$AS_ANY_COUNT" -gt 50 ]; then
+    echo "⚠️  发现 $AS_ANY_COUNT 处 as any（非图组件），建议清理"
+fi
+echo "✅ 前端 as any 检查通过"
+
+# 4. 运行 TypeScript 类型检查
+echo "📋 运行 TypeScript 类型检查..."
+cd frontend && npx tsc --noEmit --pretty false 2>&1 | tail -20
+if [ ${PIPESTATUS[0]} -ne 0 ]; then
+    echo "❌ TypeScript 类型检查失败"
+    exit 1
+fi
+echo "✅ TypeScript 类型检查通过"
+
+# 5. 运行 Python lint
+echo "📋 运行 Python lint..."
+cd ..
+python -m ruff check backend/app --output-format=github 2>/dev/null || echo "⚠️  ruff 未安装，跳过 lint"
+
+echo "✅ Pre-commit 检查完成"

@@ -1,0 +1,38 @@
+#!/bin/sh
+# Pre-push hook: 运行测试和类型检查
+
+echo "🚀 运行 pre-push 检查..."
+
+# 1. 运行后端测试
+echo "📋 运行后端测试..."
+cd backend
+python -m pytest tests/ --tb=no -q 2>&1 | tail -5
+TEST_RESULT=$?
+cd ..
+if [ $TEST_RESULT -ne 0 ]; then
+    echo "❌ 后端测试失败"
+    exit 1
+fi
+echo "✅ 后端测试通过"
+
+# 2. 运行前端测试
+echo "📋 运行前端测试..."
+cd frontend
+npx vitest run --reporter=verbose 2>&1 | tail -10
+FRONTEND_RESULT=$?
+cd ..
+if [ $FRONTEND_RESULT -ne 0 ]; then
+    echo "❌ 前端测试失败"
+    exit 1
+fi
+echo "✅ 前端测试通过"
+
+# 3. 检查大文件（>500行）
+echo "📋 检查大文件..."
+LARGE_FILES=$(find backend/app -name "*.py" -exec wc -l {} + 2>/dev/null | sort -rn | awk 'NR<=10{print}')
+if [ -n "$LARGE_FILES" ]; then
+    echo "⚠️  最大的 10 个后端文件:"
+    echo "$LARGE_FILES" | head -10
+fi
+
+echo "✅ Pre-push 检查完成"

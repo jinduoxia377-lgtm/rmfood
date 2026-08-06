@@ -1,19 +1,23 @@
 """
 # RMFOOD 配方设计平台 - 仪表盘统计 API
 提供配方、实验、用户的综合统计数据和趋势数据
+
+使用 text() 查询避免 ORM 枚举类型与数据库 varchar 列不匹配问题。
 """
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
+from sqlalchemy import text
 from datetime import datetime, timedelta
 
-from ..models.models import (
-    Formula, Experiment, User,
-    FormulaStatus, ExperimentStatus, UserRole,
-)
+from ..models.models import User
 from ..api.deps import get_db_session, get_current_user
 
 router = APIRouter(prefix="/dashboard", tags=["仪表盘"])
+
+# 默认状态分布（用于填充空值）
+FORMULA_STATUS_DEFAULTS = ["draft", "pending_review", "approved", "published", "rejected", "archived"]
+EXPERIMENT_STATUS_DEFAULTS = ["planned", "in_progress", "completed", "failed", "cancelled"]
+USER_ROLE_DEFAULTS = ["guest", "researcher", "formulator", "reviewer", "admin"]
 
 
 @router.get("/statistics", summary="综合统计数据")
@@ -28,49 +32,40 @@ async def get_statistics(
     - 用户总数及按角色分布
     - 最近30天每日新增配方和实验数量
     """
-    # ── 配方统计 ──
-    formula_total_result = await db.execute(
-        select(func.count(Formula.id))
-    )
+    # ── 配方统计（text 查询避免 ORM 枚举类型问题）──
+    formula_total_result = await db.execute(text("SELECT count(*) FROM formulas"))
     formula_total = formula_total_result.scalar() or 0
 
-    formula_by_status_result = await db.execute(
-        select(Formula.status, func.count(Formula.id)).group_by(Formula.status)
-    )
-    formula_status_map = {s.value: 0 for s in FormulaStatus}
-    for status_val, count in formula_by_status_result.all():
-        key = status_val.value if hasattr(status_val, "value") else status_val
-        formula_status_map[key] = count
+    formula_status_result = await db.execute(text(
+        "SELECT status, count(*) FROM formulas GROUP BY status"
+    ))
+    formula_status_map = {s: 0 for s in FORMULA_STATUS_DEFAULTS}
+    for status_val, count in formula_status_result.all():
+        formula_status_map[str(status_val)] = count
 
     # ── 实验统计 ──
-    experiment_total_result = await db.execute(
-        select(func.count(Experiment.id))
-    )
+    experiment_total_result = await db.execute(text("SELECT count(*) FROM experiments"))
     experiment_total = experiment_total_result.scalar() or 0
 
-    experiment_by_status_result = await db.execute(
-        select(Experiment.status, func.count(Experiment.id)).group_by(Experiment.status)
-    )
-    experiment_status_map = {s.value: 0 for s in ExperimentStatus}
-    for status_val, count in experiment_by_status_result.all():
-        key = status_val.value if hasattr(status_val, "value") else status_val
-        experiment_status_map[key] = count
+    experiment_status_result = await db.execute(text(
+        "SELECT status, count(*) FROM experiments GROUP BY status"
+    ))
+    experiment_status_map = {s: 0 for s in EXPERIMENT_STATUS_DEFAULTS}
+    for status_val, count in experiment_status_result.all():
+        experiment_status_map[str(status_val)] = count
 
     # ── 用户统计 ──
-    user_total_result = await db.execute(
-        select(func.count(User.id))
-    )
+    user_total_result = await db.execute(text("SELECT count(*) FROM users"))
     user_total = user_total_result.scalar() or 0
 
-    user_by_role_result = await db.execute(
-        select(User.role, func.count(User.id)).group_by(User.role)
-    )
-    user_role_map = {r.value: 0 for r in UserRole}
-    for role_val, count in user_by_role_result.all():
-        key = role_val.value if hasattr(role_val, "value") else role_val
-        user_role_map[key] = count
+    user_role_result = await db.execute(text(
+        "SELECT role, count(*) FROM users GROUP BY role"
+    ))
+    user_role_map = {r: 0 for r in USER_ROLE_DEFAULTS}
+    for role_val, count in user_role_result.all():
+        user_role_map[str(role_val)] = count
 
-    # ── 最近30天每日活动数据 ──
+    # ── 最近30天每日活动数据（naive datetime）──
     today = datetime.now().date()
     start_date = today - timedelta(days=29)
     recent_activity = []
@@ -80,20 +75,16 @@ async def get_statistics(
         day_start = datetime.combine(day, datetime.min.time())
         day_end = day_start + timedelta(days=1)
 
-        formula_day_result = await db.execute(
-            select(func.count(Formula.id)).where(
-                Formula.created_at >= day_start,
-                Formula.created_at < day_end,
-            )
-        )
+        formula_day_result = await db.execute(text("""
+            SELECT count(*) FROM formulas
+            WHERE created_at >= :start AND created_at < :end
+        """), {"start": day_start, "end": day_end})
         formula_day_count = formula_day_result.scalar() or 0
 
-        experiment_day_result = await db.execute(
-            select(func.count(Experiment.id)).where(
-                Experiment.created_at >= day_start,
-                Experiment.created_at < day_end,
-            )
-        )
+        experiment_day_result = await db.execute(text("""
+            SELECT count(*) FROM experiments
+            WHERE created_at >= :start AND created_at < :end
+        """), {"start": day_start, "end": day_end})
         experiment_day_count = experiment_day_result.scalar() or 0
 
         recent_activity.append({
@@ -147,29 +138,22 @@ async def get_trends(
         day_start = datetime.combine(day, datetime.min.time())
         day_end = day_start + timedelta(days=1)
 
-        formulas_created_result = await db.execute(
-            select(func.count(Formula.id)).where(
-                Formula.created_at >= day_start,
-                Formula.created_at < day_end,
-            )
-        )
+        formulas_created_result = await db.execute(text("""
+            SELECT count(*) FROM formulas
+            WHERE created_at >= :start AND created_at < :end
+        """), {"start": day_start, "end": day_end})
         formulas_created = formulas_created_result.scalar() or 0
 
-        experiments_created_result = await db.execute(
-            select(func.count(Experiment.id)).where(
-                Experiment.created_at >= day_start,
-                Experiment.created_at < day_end,
-            )
-        )
+        experiments_created_result = await db.execute(text("""
+            SELECT count(*) FROM experiments
+            WHERE created_at >= :start AND created_at < :end
+        """), {"start": day_start, "end": day_end})
         experiments_created = experiments_created_result.scalar() or 0
 
-        formulas_approved_result = await db.execute(
-            select(func.count(Formula.id)).where(
-                Formula.status == FormulaStatus.APPROVED,
-                Formula.created_at >= day_start,
-                Formula.created_at < day_end,
-            )
-        )
+        formulas_approved_result = await db.execute(text("""
+            SELECT count(*) FROM formulas
+            WHERE status = 'approved' AND created_at >= :start AND created_at < :end
+        """), {"start": day_start, "end": day_end})
         formulas_approved = formulas_approved_result.scalar() or 0
 
         data.append({

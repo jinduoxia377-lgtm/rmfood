@@ -37,7 +37,7 @@ from app.models.enums import (
     NotificationType,
     DeviceType,
 )
-from app.core.security import (
+from app.utils.auth import create_access_token
     create_access_token,
     get_password_hash,
 )
