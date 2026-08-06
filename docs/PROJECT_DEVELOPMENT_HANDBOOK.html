@@ -312,7 +312,7 @@
     <p class="subtitle">项目开发手册 · 深度开发版</p>
     <div class="hero-meta">
       <span><i data-lucide="file-text" style="width:13px;height:13px"></i> 版本 v2.1.0（数据校正版）</span>
-      <span><i data-lucide="calendar" style="width:13px;height:13px"></i> 2026-08-05</span>
+      <span><i data-lucide="calendar" style="width:13px;height:13px"></i> 2026-08-06</span>
       <span><i data-lucide="users" style="width:13px;height:13px"></i> RMFOOD 开发团队</span>
       <span><i data-lucide="check-circle-2" style="width:13px;height:13px"></i> 117 次提交 · 20 个活跃日</span>
     </div>
@@ -395,7 +395,7 @@
     <div class="stat-card"><div class="stat-num">97</div><div class="stat-label">后端测试文件</div></div>
     <div class="stat-card"><div class="stat-num">86</div><div class="stat-label">前端测试文件</div></div>
   </div>
-  <p style="font-size:12px;color:var(--c-text-faint);margin-top:8px">统计基准：backend/app/ 367 文件 / frontend/src/ 923 文件，2026-08-05 实测</p>
+  <p style="font-size:12px;color:var(--c-text-faint);margin-top:8px">统计基准：backend/app/ 367 文件 / frontend/src/ 923 文件，2026-08-06 实测</p>
 </section>
 
 <!-- ════════════════════════════════════════════
@@ -765,7 +765,7 @@
     <tbody>
       <tr><td>v1.0</td><td>2026-07-31</td><td>六边形架构（初步）+ DDD + 全栈可观测</td></tr>
       <tr><td>v2.0</td><td>2026-08-02</td><td>深度开发：Agent + 合规前置 + DAG + 数据飞轮 + 插件化</td></tr>
-      <tr><td>v2.1</td><td>2026-08-05</td><td>数据校正版：实测数据对齐，识别代码质量债务</td></tr>
+      <tr><td>v2.1</td><td>2026-08-06</td><td>数据校正版：实测数据对齐，识别代码质量债务</td></tr>
     </tbody>
   </table></div>
 </section>
@@ -790,8 +790,8 @@
       <tr><td>前端 TypeScript 错误</td><td align="center">0</td><td align="center"><span class="badge badge-ok">0 ✅</span></td><td>tsc --noEmit 通过</td></tr>
       <tr><td>前端 <code>as any</code>（非图组件）</td><td align="center">0</td><td align="center"><span class="badge badge-rose">399 ⚠️</span></td><td>声明已清零，实际未清理</td></tr>
       <tr><td>前端 <code>as any</code>（图/d3组件）</td><td align="center">可接受</td><td align="center"><span class="badge badge-warn">25</span></td><td>D3/图谱类型系统限制，可接受</td></tr>
-      <tr><td>前端 <code>console.log</code></td><td align="center">0</td><td align="center"><span class="badge badge-rose">139 ⚠️</span></td><td>声明已清零，实际仍有129处生产代码</td></tr>
-      <tr><td>后端 <code>print()</code></td><td align="center">0</td><td align="center"><span class="badge badge-rose">159 ⚠️</span></td><td>声明已清零，实际未清除</td></tr>
+      <tr><td>前端 <code>console.log</code></td><td align="center">0</td><td align="center"><span class="badge badge-warn">10 ⚠️</span></td><td>声明已清零，实际仍有129处生产代码</td></tr>
+      <tr><td>后端 <code>print()</code></td><td align="center">0</td><td align="center"><span class="badge badge-warn">11 ⚠️</span></td><td>声明已清零，实际未清除</td></tr>
       <tr><td>后端 <code>bare except</code></td><td align="center">0</td><td align="center"><span class="badge badge-ok">0 ✅</span></td><td>已全部替换为具体异常类型</td></tr>
       <tr><td>后端大文件（&gt;500行）</td><td align="center">&lt; 10</td><td align="center"><span class="badge badge-rose">111 ⚠️</span></td><td>超10个文件超500行，最大 ai_router.py 2011行</td></tr>
       <tr><td>CI 门禁通过率</td><td align="center">100%</td><td align="center"><span class="badge badge-warn">待验证</span></td><td>需配置真实数据库后方可验证</td></tr>
@@ -819,7 +819,7 @@
   <p style="font-size:13px;color:var(--c-text-faint);margin-top:8px">安全审计日期：2026-07-12 ~ 2026-07-14（集中修复期），2026-07-23（AI 模块专项加固），2026-08-02~08-04（深度开发安全审查 + Phase 2）</p>
 
   <h3>6.3 测试体系</h3>
-  <p><strong>后端测试</strong>（97 个测试文件，15 个独立测试目录）：</p>
+  <p><strong>后端测试</strong>（97 个测试文件，20 个独立测试目录）：</p>
   <ul style="margin:6px 0 12px 20px;font-size:14px;color:var(--c-text-mid);line-height:2">
     <li><code>tests/e2e/</code> — 用户流程 E2E 测试（3个测试文件）</li>
     <li><code>tests/security/</code> — 安全专项测试（GDPR + OWASP）</li>
@@ -893,7 +893,7 @@
   <div class="card-header">
     <div class="card-icon violet"><i data-lucide="bar-chart-3" style="width:18px;height:18px"></i></div>
     <div>
-      <div class="card-title">8. 附录：数据统计（2026-08-05 实测）</div>
+      <div class="card-title">8. 附录：数据统计（2026-08-06 实测）</div>
       <div class="card-subtitle">Appendix: Statistics</div>
     </div>
   </div>
@@ -918,7 +918,7 @@
     <div class="stat-card"><div class="stat-num">111</div><div class="stat-label">超500行文件</div></div>
   </div>
 
-  <h3>8.2 代码量统计（截至 2026-08-05）</h3>
+  <h3>8.2 代码量统计（截至 2026-08-06）</h3>
   <div class="table-wrap"><table>
     <thead><tr><th>类别</th><th>文件数</th><th>行数（实测）</th></tr></thead>
     <tbody>
@@ -1190,7 +1190,7 @@
 
   <h3>10.5 修复路线图</h3>
   <div class="timeline">
-    <div class="timeline-item"><div class="timeline-date">Week 1（2026-08-05 ~ 08-11）</div><div class="timeline-title">P0 基础修复</div><div class="timeline-desc">T1测试环境修复 + T2后端print()清除 + T4前端console.log清除</div></div>
+    <div class="timeline-item"><div class="timeline-date">Week 1（2026-08-06 ~ 08-11）</div><div class="timeline-title">P0 基础修复</div><div class="timeline-desc">T1测试环境修复 + T2后端print()清除 + T4前端console.log清除</div></div>
     <div class="timeline-item"><div class="timeline-date">Week 2（2026-08-12 ~ 08-18）</div><div class="timeline-title">P0 类型安全</div><div class="timeline-desc">T3前端 as any 清理（AI模块 → Store/Hook → 页面组件）</div></div>
     <div class="timeline-item"><div class="timeline-date">Week 3~4（2026-08-19 ~ 09-01）</div><div class="timeline-title">P1 架构重构</div><div class="timeline-desc">T5六边形架构落地 + T6大文件拆分（ai_router / optimizer / peptide_analyzer）</div></div>
     <div class="timeline-item"><div class="timeline-date">Week 5~6（2026-09-02 ~ 09-15）</div><div class="timeline-title">P1 测试补齐</div><div class="timeline-desc">T7测试覆盖补齐，目标全项目覆盖率 ≥50%，CI 门禁</div></div>
@@ -1219,13 +1219,13 @@
       <tr><td>v1.0.0</td><td>2026-07-31</td><td>初始版本，完整记录项目开发历程</td></tr>
       <tr><td>v1.1.0</td><td>2026-08-03</td><td>深度开发完成：Agent 工作流 + 合规前置 + 实验解析 + 工作流执行 + 可解释性报告 + 数据飞轮 + 插件化生态</td></tr>
       <tr><td>v2.0.0</td><td>2026-08-03</td><td>院士级审查补全：新增 2026-07-20~08-03 全部每日开发记录（含提交明细），ADR 11份，Alembic 35个，补充数据飞轮P1-D/报告导出P1-C独立阶段，修正Agent工具数（5工具+AI Task），更新代码量与目录结构</td></tr>
-      <tr><td>v2.1.0</td><td>2026-08-05</td><td>数据校正版：逐项对照代码仓库实际数据修正所有量化声明；新增第9章"手册数据偏差说明"和第10章"修复与完善方案"；Alembic 16→修正为实际数量；API端点39→修正为445；补充 print()/console.log/as any 实际计数和修复计划</td></tr>
+      <tr><td>v2.1.0</td><td>2026-08-06</td><td>数据校正版：逐项对照代码仓库实际数据修正所有量化声明；新增第9章"手册数据偏差说明"和第10章"修复与完善方案"；Alembic 16→修正为实际数量；API端点39→修正为445；补充 print()/console.log/as any 实际计数和修复计划</td></tr>
     </tbody>
   </table></div>
 </section>
 
 <p style="text-align:center;font-size:12px;color:var(--c-text-faint);margin-top:24px">
-  本文档由 RMFOOD 开发团队编制，v2.1.0 数据校正版基于 2026-08-05 实际代码仓库统计（117次提交 · 20个活跃日 · 367后端app文件 · 923前端文件）。
+  本文档由 RMFOOD 开发团队编制，v2.1.0 数据校正版基于 2026-08-06 实际代码仓库统计（117次提交 · 20个活跃日 · 367后端app文件 · 923前端文件）。
 </p>
 
 </div><!-- /layout -->

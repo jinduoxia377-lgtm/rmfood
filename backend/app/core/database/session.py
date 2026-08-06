@@ -400,12 +400,13 @@ def _create_engine():
             proxy_conn: The SQLAlchemy proxy connection (can be None in some cases)
 
         Note:
-            This performs an extremely lightweight verification to ensure the
-            connection is still usable. On high-load systems you might want to
-            relax this to just checking connection state rather than executing.
+            On Windows, we only check the connection closed flag without running
+            a SQL query, since the asyncpg adapter doesn't support cursor-based
+            validation. The pool_pre_ping=False setting handles most stale
+            connection cases; any remaining issues are caught by the query
+            execution itself.
         """
         try:
-            # Check if connection record indicates the connection is valid
             if connection_record is not None and connection_record.connection is not None:
                 conn = connection_record.connection
 
@@ -414,38 +415,13 @@ def _create_engine():
                     logger.warning(
                         f"[DB] Checkout: connection already closed (id={id(conn)})"
                     )
-                    conn.dispose()
-                    raise InterfaceError("Connection marked as closed at checkout")
-
-                # Very lightweight validation: try to get info about the connection
-                # Only do this on Windows to avoid unnecessary overhead on other platforms
-                if os.name == 'nt':
-                    try:
-                        # Use a minimal command that doesn't actually hit disk
-                        cursor = conn.cursor()
-                        cursor.execute("SELECT 1")
-                        cursor.fetchone()
-                        cursor.close()
-                    except Exception as e:
-                        # Validation failed – dispose and let pool provide new connection
-                        logger.warning(
-                            f"[DB] Checkout validation failed for connection {id(conn)}: {e}. "
-                            "Disposing and acquiring fresh connection."
-                        )
-                        conn.dispose()
-                        raise InterfaceError(f"Connection validation failed: {e}")
-
+                    # Mark the connection record as bad so the pool discards it
+                    if connection_record.invalidated:
+                        return
+                    connection_record.invalidate()
         except Exception as e:
-            # Re-raise as InterfaceError so the pool knows to replace it
-            from sqlalchemy.exc import InterfaceError as SAInterfaceError
-            raise SAInterfaceError(
-                f"Connection checkout validation failed: {e}",
-                original_error=e
-            )
-        except Exception as e:
-            logger.debug("数据库连接 checkout 验证失败: %s", e)
-            # Catch any unexpected errors during checkout validation
-            pass
+            # Log but don't re-raise — let the pool handle it gracefully
+            logger.debug("[DB] Checkout validation: %s", e)
     def on_checkin(dbapi_conn, connection_record):
         """Log when a connection is returned to the pool."""
         # No-op on purpose – clean checkin handling
