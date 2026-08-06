@@ -692,12 +692,12 @@ async def data_quality_report(
     herb_health = {
         "with_ob": sum(1 for h in herbs_source if (h.ob_percent if is_herb_orm else h.get("ob_percent")) is not None),
         "with_dl": sum(1 for h in herbs_source if (h.dl_value if is_herb_orm else h.get("dl_value")) is not None),
-        "with_compounds": sum(1 for h in herbs_source if len((h.compounds if is_herb_orm else h.get("compounds") or []) > 0)),
-        "with_targets": sum(1 for h in herbs_source if len((h.targets if is_herb_orm else h.get("targets") or []) > 0)),
-        "with_diseases": sum(1 for h in herbs_source if len((h.diseases if is_herb_orm else h.get("diseases") or []) > 0)),
+        "with_compounds": sum(1 for h in herbs_source if len(h.compounds if is_herb_orm else (h.get("compounds") or [])) > 0),
+        "with_targets": sum(1 for h in herbs_source if len(h.targets if is_herb_orm else (h.get("targets") or [])) > 0),
+        "with_diseases": sum(1 for h in herbs_source if len(h.diseases if is_herb_orm else (h.get("diseases") or [])) > 0),
         "food_homology": sum(1 for h in herbs_source if (bool(h.is_food_homology) if is_herb_orm else h.get("is_food_homology"))),
-        "avg_compounds": round(sum(len(h.compounds if is_herb_orm else h.get("compounds") or []) for h in herbs_source) / max(total_herbs, 1), 1),
-        "avg_targets": round(sum(len(h.targets if is_herb_orm else h.get("targets") or []) for h in herbs_source) / max(total_herbs, 1), 1),
+        "avg_compounds": round(sum(len(h.compounds if is_herb_orm else (h.get("compounds") or [])) for h in herbs_source) / max(total_herbs, 1), 1),
+        "avg_targets": round(sum(len(h.targets if is_herb_orm else (h.get("targets") or [])) for h in herbs_source) / max(total_herbs, 1), 1),
     }
 
     # ── 数据健康度指标（活性肽）──
@@ -707,7 +707,7 @@ async def data_quality_report(
         "has_enzyme_info": sum(1 for p in peptides_source if (p.hydrolysis_enzyme if is_peptide_orm else p.get("hydrolysis_enzyme"))),
         "ace_inhibitory_count": sum(1 for p in peptides_source if (p.activity_type if is_peptide_orm else p.get("activity_type")) == "ACE inhibitory"),
         "antioxidant_count": sum(1 for p in peptides_source if (p.activity_type if is_peptide_orm else p.get("activity_type")) == "Antioxidant"),
-        "avg_seq_length": round(sum(len(p.sequence or "") if is_peptide_orm else len(p.get("sequence") or "")) for p in peptides_source) / max(total_peptides, 1), 1),
+        "avg_seq_length": round(sum((len(p.sequence or "") if is_peptide_orm else len(p.get("sequence") or "")) for p in peptides_source) / max(total_peptides, 1), 1),
         "avg_mw": round(sum((p.molecular_weight or 0) if is_peptide_orm else (p.get("molecular_weight") or 0) for p in peptides_source) / max(total_peptides, 1), 1),
     }
 

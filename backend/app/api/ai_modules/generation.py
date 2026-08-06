@@ -312,6 +312,100 @@ async def generate_formula_neural(
 
 
 
+# ══════════════════════════════════════════════════════════════════
+# Generate V2 — 统一配方生成引擎（自回归 + 预测-判别 + RL调优）
+# ══════════════════════════════════════════════════════════════════
+
+class FormulaGenerateV2Request(BaseModel):
+    """统一配方生成请求（v2）"""
+    target_effects: list[str] = Field(..., min_length=1, max_length=5,
+                                       description="目标功效，如 ['降血压', '抗氧化']")
+    constraints: dict[str, Any] | None = Field(None, description="约束条件")
+    use_new_engine: bool = Field(True, description="是否使用新统一引擎（True=自回归LSTM，False=传统优化器）")
+    template: str | None = Field(None, description="经典方剂模板名称（如 '四君子汤'）")
+    n_candidates: int = Field(10, ge=3, le=30, description="生成候选数")
+    select_top_k: int = Field(3, ge=1, le=10, description="最终选择数")
+    use_rl_tuning: bool = Field(False, description="是否启用RL调优")
+
+
+@router.post("/generate/v2", summary="统一配方生成（v2）")
+async def generate_formula_v2(
+    req: FormulaGenerateV2Request,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    统一配方生成引擎 v2
+
+    基于专利 US 11,742,060 B2 的自回归生成架构：
+    - Signal Encoder: 需求→信号向量
+    - Autoregressive Generator: LSTM逐个成分生成
+    - Predictor: 实时属性预测
+    - Discriminator: 新颖性检测
+    - Template Subsystem: 经典方剂先验
+    - RL Tuner: 策略梯度调优
+    - Formula Selector: 优先级逐级选择
+
+    请求参数:
+    - target_effects: 目标功效列表
+    - use_new_engine: True=新引擎，False=传统引擎（默认True）
+    - template: 经典方剂模板（可选）
+    - n_candidates: 生成候选数（默认10）
+    - select_top_k: 最终选择数（默认3）
+    - use_rl_tuning: 是否启用RL调优（默认False）
+
+    返回格式与 /generate 一致，新增 strategy 和 execution_time_ms 字段。
+    """
+    logger.info(f"[GenerateV2] 统一引擎请求 - effects={req.target_effects}, "
+                f"new_engine={req.use_new_engine}, template={req.template}")
+
+    try:
+        from ...services.formula_designer import FormulaDesigner
+
+        designer = FormulaDesigner(knowledge_base={})
+        intent = {
+            "target_effects": req.target_effects,
+            "use_new_engine": req.use_new_engine,
+            "template": req.template,
+            "n_candidates": req.n_candidates,
+            "select_top_k": req.select_top_k,
+            "use_rl_tuning": req.use_rl_tuning,
+            "constraints": req.constraints or {},
+        }
+
+        start_time = time.perf_counter()
+        result = await designer.design(intent, {})
+        elapsed_ms = (time.perf_counter() - start_time) * 1000
+
+        # 格式化返回
+        candidates = []
+        for i, item in enumerate(result.get("data", [])):
+            candidates.append({
+                "id": f"v2_candidate_{i}",
+                "role": item.get("role", ""),
+                "name": item.get("name", ""),
+                "dosage": item.get("dosage", ""),
+                "purpose": item.get("purpose", ""),
+                "score": item.get("score", 0),
+            })
+
+        return {
+            "summary": result.get("summary", ""),
+            "details": result.get("details", ""),
+            "candidates": candidates,
+            "total": len(candidates),
+            "scores": result.get("scores", {}),
+            "strategy": result.get("strategy", "unified_engine"),
+            "template_used": result.get("template_used"),
+            "execution_time_ms": round(elapsed_ms, 2),
+            "generator": "unified_engine_v2",
+        }
+
+    except Exception as e:
+        logger.error(f"[GenerateV2] 统一引擎异常: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"统一引擎生成失败: {str(e)[:100]}")
+
+
 
 @router.post("/safety-check", summary="安全合规检查")
 async def safety_check(
