@@ -707,7 +707,7 @@ async def data_quality_report(
         "has_enzyme_info": sum(1 for p in peptides_source if (p.hydrolysis_enzyme if is_peptide_orm else p.get("hydrolysis_enzyme"))),
         "ace_inhibitory_count": sum(1 for p in peptides_source if (p.activity_type if is_peptide_orm else p.get("activity_type")) == "ACE inhibitory"),
         "antioxidant_count": sum(1 for p in peptides_source if (p.activity_type if is_peptide_orm else p.get("activity_type")) == "Antioxidant"),
-        "avg_seq_length": round(sum((len(p.sequence or "") if is_peptide_orm else len(p.get("sequence") or "")) for p in peptides_source) / max(total_peptides, 1), 1),
+        "avg_seq_length": round(sum(len(p.sequence or "") if is_peptide_orm else len(p.get("sequence") or "")) for p in peptides_source) / max(total_peptides, 1), 1),
         "avg_mw": round(sum((p.molecular_weight or 0) if is_peptide_orm else (p.get("molecular_weight") or 0) for p in peptides_source) / max(total_peptides, 1), 1),
     }
 
