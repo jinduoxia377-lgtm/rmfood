@@ -392,4 +392,4 @@ if __name__ == "__main__":
             logger.error(f"错误: {result['errors']}")
         if result['warnings']:
             logger.warning(f"警告: {result['warnings']}")
-        print()
+        logger.debug("")
