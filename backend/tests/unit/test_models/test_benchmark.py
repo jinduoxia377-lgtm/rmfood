@@ -34,7 +34,7 @@ class FormulaBenchmark:
         from app.services.ai.models import SignalEncoder, PyTorchFormulaGenerator
 
         encoder = SignalEncoder()
-        gen = PyTorchFormulaGenerator(input_dim=40, hidden_dim=64, n_layers=2, n_herbs=20)
+        gen = PyTorchFormulaGenerator(input_dim=36, hidden_dim=64, n_layers=2, n_herbs=20)
         herb_vocab = ["hq", "ds", "gz", "rs", "dg", "bq", "fp", "gq", "jgh", "cs"]
 
         signal = encoder.encode(self.target_effects)
@@ -117,7 +117,7 @@ def test_benchmark_consistency():
     from app.services.ai.models import SignalEncoder, PyTorchFormulaGenerator
 
     encoder = SignalEncoder()
-    gen = PyTorchFormulaGenerator(input_dim=40, hidden_dim=32, n_layers=2, n_herbs=10)
+    gen = PyTorchFormulaGenerator(input_dim=36, hidden_dim=32, n_layers=2, n_herbs=10)
     herb_vocab = ["hq", "ds", "gz", "rs", "dg"]
 
     signal = encoder.encode(["qi_nourishing"])
