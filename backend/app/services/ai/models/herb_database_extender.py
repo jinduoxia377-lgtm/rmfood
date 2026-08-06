@@ -98,6 +98,7 @@ class HerbDatabaseExtender:
     def __init__(self):
         self._extended_herbs: Dict[str, HerbEntry] = {}
         self._loaded = False
+        self.load_extended_herbs()
 
     def load_extended_herbs(self) -> Dict[str, HerbEntry]:
         """加载扩展药材数据"""
