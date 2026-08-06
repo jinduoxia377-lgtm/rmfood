@@ -71,6 +71,10 @@ class TestTargetEffectsValidation:
 class TestObjectiveWeightsValidation:
     """目标权重验证测试"""
 
+    def setup_method(self):
+        self.db = MagicMock(spec=AsyncMock)
+        self.service = PeptideDesignService(self.db)
+
     def test_valid_weights_sum_to_one(self):
         """权重总和为1.0应通过"""
         valid_weights = [

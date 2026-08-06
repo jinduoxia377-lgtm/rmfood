@@ -132,10 +132,10 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
                 # 仅允许本地开发服务器的 inline 脚本和 eval
                 csp = (
                     "default-src 'self' 'unsafe-inline' 'unsafe-eval'; "
-                    "script-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:* http://127.0.0.1:*; "
-                    "style-src 'self' 'unsafe-inline' http://localhost:* http://127.0.0.1:*; "
+                    "script-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:* http://127.0.0.1:* https://cdn.jsdelivr.net; "
+                    "style-src 'self' 'unsafe-inline' http://localhost:* http://127.0.0.1:* https://cdn.jsdelivr.net https://fonts.googleapis.com; "
                     "img-src 'self' data: blob: https:; "
-                    "font-src 'self' data: http://localhost:* http://127.0.0.1:*; "
+                    "font-src 'self' data: https://cdn.jsdelivr.net https://fonts.googleapis.com http://localhost:* http://127.0.0.1:*; "
                     "connect-src 'self' ws: wss: http://localhost:* http://127.0.0.1:* https:; "
                     "frame-ancestors 'none'; "
                     "base-uri 'self'; "

@@ -52,7 +52,7 @@ class PeptideDesignService:
 
     def validate_target_effects(self, target_effects: List[str]) -> bool:
         """验证目标活性类型有效性"""
-        return all(effect in VALID_TARGET_EFFECTS for effect in target_effects)
+        return bool(target_effects) and all(effect in VALID_TARGET_EFFECTS for effect in target_effects)
 
     def validate_objective_weights(self, weights: Dict[str, float]) -> bool:
         """
