@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -22,19 +22,20 @@ class FormulaTemplate:
     base_sequence: List[str]            # 基序列（成分 ID 列表）
     role_mapping: Dict[str, str] = None # 成分→角色映射
     description: str = ""               # 描述
-   功效_keywords: List[str] = None      # 功效关键词（用于匹配）
+    effect_keywords: List[str] = None   # 功效关键词（用于匹配）
 
     def __post_init__(self):
         if self.role_mapping is None:
             self.role_mapping = self._default_role_mapping()
-        if self.功效_keywords is None:
-            self.功效_keywords = []
+        if self.effect_keywords is None:
+            self.effect_keywords = []
 
     def _default_role_mapping(self) -> Dict[str, str]:
         """默认角色映射：前1位君，接下来2位臣，其余佐使"""
         roles = ["君", "臣", "臣", "佐", "佐", "使"]
         return {
-            herb: roles[i] for i, herb in enumerate(self.base_sequence)
+            herb: roles[i] if i < len(roles) else "佐"
+            for i, herb in enumerate(self.base_sequence)
         }
 
 
@@ -54,49 +55,49 @@ class TemplateSubsystem:
             name="四君子汤",
             base_sequence=["ds", "bq", "gq", "dcx"],
             description="益气健脾基础方，用于脾胃气虚证",
-            功效_keywords=["补气", "健脾", "消化系统"],
+            effect_keywords=["补气", "健脾", "消化系统"],
         ),
         "六味地黄丸": FormulaTemplate(
             name="六味地黄丸",
             base_sequence=["shd", "sfz", "swd", "ms", "zgy", "fu_ling"],
             description="滋阴补肾基础方",
-            功效_keywords=["补肾", "养血"],
+            effect_keywords=["补肾", "养血"],
         ),
         "桂枝汤": FormulaTemplate(
             name="桂枝汤",
             base_sequence=["gz", "shd", "gq", "dcx", "sj"],
             description="解表调营卫",
-            功效_keywords=["解表", "补气"],
+            effect_keywords=["解表", "补气"],
         ),
         "逍遥散": FormulaTemplate(
             name="逍遥散",
             base_sequence=["chaihu", "dg", "bz", "fp", "gq", "mj", "sj", "mg"],
             description="疏肝健脾调经",
-            功效_keywords=["理气", "养血", "安神"],
+            effect_keywords=["理气", "养血", "安神"],
         ),
         "银翘散": FormulaTemplate(
             name="银翘散",
             base_sequence=["jinhua", "niubang", "jgh", "bohe", "dandufan", "lvgan", "yangjin", "tangsu"],
             description="清热解毒解表",
-            功效_keywords=["清热", "解毒", "解表"],
+            effect_keywords=["清热", "解毒", "解表"],
         ),
         "补中益气汤": FormulaTemplate(
             name="补中益气汤",
             base_sequence=["hq", "ds", "gz", "chenpi", "shengma", "chaihu", "gq"],
             description="补中益气，升阳举陷",
-            功效_keywords=["补气", "免疫调节"],
+            effect_keywords=["补气", "免疫调节"],
         ),
         "桃红四物汤": FormulaTemplate(
             name="桃红四物汤",
             base_sequence=["dg", "cx", "ts", "th", "gq"],
             description="养血活血",
-            功效_keywords=["养血", "活血化瘀"],
+            effect_keywords=["养血", "活血化瘀"],
         ),
         "当归补血汤": FormulaTemplate(
             name="当归补血汤",
             base_sequence=["hqg", "dg"],
             description="补气生血",
-            功效_keywords=["补气", "养血"],
+            effect_keywords=["补气", "养血"],
         ),
     }
 
@@ -164,7 +165,6 @@ class TemplateSubsystem:
         filled = dict(formula)
         for herb_id in template.base_sequence:
             if herb_id not in filled:
-                # 添加模板成分，默认用量
                 filled[herb_id] = 6.0
         return filled
 
@@ -199,12 +199,11 @@ class TemplateSubsystem:
 
         score = 0.0
         for effect in target_effects:
-            for keyword in template.功效_keywords:
+            for keyword in template.effect_keywords:
                 if effect in keyword or keyword in effect:
                     score += 1.0
                     break
-            # 简单相似度
-            if any(e in effect for e in template.功效_keywords):
+            if any(e in effect for e in template.effect_keywords):
                 score += 0.5
 
         return min(1.0, score / max(len(target_effects), 1))
