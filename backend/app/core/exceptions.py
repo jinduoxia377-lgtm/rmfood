@@ -15,3 +15,13 @@ class InvalidStatusTransitionError(Exception):
 class ValidationError(ValidationFailedError):
     """验证异常"""
     pass
+
+
+class PeptideSequenceValidationError(Exception):
+    """肽序列验证异常"""
+    pass
+
+
+class AnalysisPipelineError(Exception):
+    """分析管线异常"""
+    pass
