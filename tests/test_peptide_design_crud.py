@@ -41,7 +41,7 @@ from app.core.api_framework.api_contract import NotFoundError, ValidationError a
 class TestTargetEffectsValidation:
     """目标活性类型验证测试"""
 
-    def setup_method(self):
+    def setup_method(self, method):
         self.db = MagicMock(spec=AsyncSession)
         self.service = PeptideDesignService(self.db)
 
@@ -71,7 +71,7 @@ class TestTargetEffectsValidation:
 class TestObjectiveWeightsValidation:
     """目标权重验证测试"""
 
-    def setup_method(self):
+    def setup_method(self, method):
         self.db = MagicMock(spec=AsyncMock)
         self.service = PeptideDesignService(self.db)
 
