@@ -352,25 +352,42 @@ def _create_engine():
         connect_args["ssl"] = ssl_mode
 
     # Create the async engine with tuned parameters
-    engine = create_async_engine(
-        database_url,
-        echo=_get_settings().debug,
-        echo_pool=_get_settings().database.echo_pool,
-        future=True,
-        # ── Connection pool configuration ──
-        pool_size=tuned_params['pool_size'] or _get_settings().database.pool_size,
-        max_overflow=_get_settings().database.max_overflow,
-        pool_timeout=_get_settings().database.pool_timeout,
-        pool_recycle=tuned_params['pool_recycle'] or _get_settings().database.pool_recycle,
-        pool_pre_ping=tuned_params['pool_pre_ping'],  # Platform-appropriate setting
-        pool_use_lifo=True,
-        # ── Connection parameters ──
-        connect_args=connect_args,
-    )
+    # Use NullPool on Windows to avoid asyncpg connection pool race conditions
+    # that cause "cannot perform operation: another operation is in progress"
+    try:
+        from sqlalchemy.pool import NullPool
+        pool_class = NullPool
+        logger.info("[DB] Using NullPool to avoid Windows asyncpg pool race conditions")
+        # NullPool doesn't accept pool_size/max_overflow/pool_timeout/pool_use_lifo
+        engine = create_async_engine(
+            database_url,
+            echo=_get_settings().debug,
+            echo_pool=_get_settings().database.echo_pool,
+            future=True,
+            poolclass=pool_class,
+            # ── Connection parameters ──
+            connect_args=connect_args,
+        )
+    except ImportError:
+        engine = create_async_engine(
+            database_url,
+            echo=_get_settings().debug,
+            echo_pool=_get_settings().database.echo_pool,
+            future=True,
+            # ── Connection pool configuration ──
+            pool_size=tuned_params['pool_size'] or _get_settings().database.pool_size,
+            max_overflow=_get_settings().database.max_overflow,
+            pool_timeout=_get_settings().database.pool_timeout,
+            pool_recycle=tuned_params['pool_recycle'] or _get_settings().database.pool_recycle,
+            pool_pre_ping=tuned_params['pool_pre_ping'],  # Platform-appropriate setting
+            pool_use_lifo=True,
+            # ── Connection parameters ──
+            connect_args=connect_args,
+        )
 
     logger.info(
         f"[DB] PostgreSQL 引擎已创建 | "
-        f"pool_size={engine.pool.size()} | "
+        f"pool_class={type(engine.pool).__name__} | "
         f"pool_recycle={tuned_params['pool_recycle']}s | "
         f"pool_pre_ping={tuned_params['pool_pre_ping']} | "
         f"ssl_mode={ssl_mode}"
@@ -678,9 +695,16 @@ async def get_pool_status() -> dict:
         }
     """
     pool = get_engine().pool
-    pool_size = pool.size()
-    checked_out = pool.checkedout()
-    checked_in = pool.checkedin()
+    try:
+        pool_size = pool.size()
+    except AttributeError:
+        pool_size = 0  # NullPool has no size
+    try:
+        checked_out = pool.checkedout()
+        checked_in = pool.checkedin()
+    except AttributeError:
+        checked_out = 0
+        checked_in = 0
 
     # max_overflow is not available on asyncpg's AsyncAdaptedQueuePool
     # Use configured value from settings

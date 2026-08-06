@@ -21,6 +21,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from sqlalchemy import text
 from .core.config import settings
 from .core.database.init_db import init_db
 from .core.performance.cache_system import init_cache, close_cache
@@ -86,6 +87,7 @@ async def lifespan(app: FastAPI):
     sentry_init(app)
     # ── 启动阶段：验证 PostgreSQL 连接 ──
     from .core.database.session import ensure_connection, init_database, close_database
+    from .core.database.session import get_engine
     # 1. 验证数据库连接（指数退避重试，最多5次）
     db_connected = await ensure_connection()
     if not db_connected:
@@ -138,6 +140,19 @@ async def lifespan(app: FastAPI):
         logger.info("[Startup] 定时数据同步调度器已启动")
     except Exception as e:
         logger.warning(f"[Startup] 定时同步调度器启动失败（非致命）: {e}")
+    # 6. 启动连接池监控
+    try:
+        await pool_monitor_task.start()
+        logger.info("[Startup] 连接池监控已启动")
+    except Exception as e:
+        logger.warning(f"[Startup] 连接池监控启动失败（非致命）: {e}")
+    # 7. 启动后刷新引擎上下文，消除长时间启动对异步连接的污染
+    try:
+        async with get_engine().connect() as _warmup_conn:
+            await _warmup_conn.execute(text("SELECT 1"))
+        logger.info("[Startup] 引擎上下文刷新完成")
+    except Exception as e:
+        logger.warning(f"[Startup] 引擎上下文刷新失败（非致命）: {e}")
     yield
     # ── 关闭阶段：释放资源 ──
     logger.info("应用关闭中...")

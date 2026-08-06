@@ -5,7 +5,7 @@
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 
 from ..models.models import (
     Formula, Experiment, User,
@@ -71,13 +71,13 @@ async def get_statistics(
         user_role_map[key] = count
 
     # ── 最近30天每日活动数据 ──
-    today = datetime.now(timezone.utc).date()
+    today = datetime.now().date()
     start_date = today - timedelta(days=29)
     recent_activity = []
 
     for i in range(30):
         day = start_date + timedelta(days=i)
-        day_start = datetime.combine(day, datetime.min.time()).replace(tzinfo=timezone.utc)
+        day_start = datetime.combine(day, datetime.min.time())
         day_end = day_start + timedelta(days=1)
 
         formula_day_result = await db.execute(
@@ -138,13 +138,13 @@ async def get_trends(
     days_map = {"7d": 7, "30d": 30, "90d": 90}
     days = days_map.get(period, 30)
 
-    today = datetime.now(timezone.utc).date()
+    today = datetime.now().date()
     start_date = today - timedelta(days=days - 1)
     data = []
 
     for i in range(days):
         day = start_date + timedelta(days=i)
-        day_start = datetime.combine(day, datetime.min.time()).replace(tzinfo=timezone.utc)
+        day_start = datetime.combine(day, datetime.min.time())
         day_end = day_start + timedelta(days=1)
 
         formulas_created_result = await db.execute(
