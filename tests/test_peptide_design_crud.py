@@ -32,7 +32,7 @@ from app.schemas.peptide_design import (
 from app.models.peptide_design import (
     PeptideDesignStatus,
 )
-from app.core.exceptions import (
+from app.core.api_framework.api_contract import NotFoundError, ValidationError as AppValidationError (
     ResourceNotFoundError,
     InvalidStatusTransitionError,
 )

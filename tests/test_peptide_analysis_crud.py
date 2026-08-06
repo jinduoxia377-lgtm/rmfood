@@ -30,7 +30,7 @@ from app.schemas.peptide_analysis import (
     PeptideAnalysisCreate,
     PeptideAnalysisUpdate,
 )
-from app.core.exceptions import (
+from app.core.api_framework.api_contract import NotFoundError, ValidationError as AppValidationError (
     PeptideSequenceValidationError,
     ResourceNotFoundError,
 )

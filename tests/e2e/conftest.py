@@ -19,7 +19,8 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "backend"))
 
 from app.main import app
-from app.core.database import async_engine, Base, async_session_maker
+from app.core.database.session import async_engine, Base
+from app.core.database import async_session_factory
 from app.core.config import settings
 from app.models.user_model import User
 from app.models.team import Team
