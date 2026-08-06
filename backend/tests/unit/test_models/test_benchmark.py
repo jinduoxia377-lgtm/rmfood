@@ -1,4 +1,4 @@
-"""配方生成引擎性能基准测试"""
+"""formula_benchmark"""
 
 import asyncio
 import logging
@@ -29,7 +29,7 @@ class FormulaBenchmark:
         self.target_effects = ["免疫调节", "抗氧化", "补气"]
 
     async def benchmark_pytorch(self) -> BenchmarkResult:
-        """测试PyTorch生成器性能"""
+        """benchmark_pytorch"""
         import torch
         from app.services.ai.models import SignalEncoder, PyTorchFormulaGenerator
 
@@ -59,7 +59,7 @@ class FormulaBenchmark:
         )
 
     async def benchmark_traditional(self) -> BenchmarkResult:
-        """测试传统引擎性能"""
+        """测试traditional性能"""
         from app.services.formula_designer import FormulaDesigner
 
         designer = FormulaDesigner(knowledge_base={})
@@ -80,19 +80,19 @@ class FormulaBenchmark:
         )
 
     async def run_all(self) -> Dict[str, Any]:
-        """运行所有基准测试"""
+        """run_all_tests"""
         logger.info("=" * 50)
-        logger.info("配方生成引擎性能基准测试")
+        logger.info("formula_benchmark")
         logger.info("=" * 50)
 
         pytorch = await self.benchmark_pytorch()
-        logger.info(f"PyTorch生成器: {pytorch.avg_time_ms:.1f}ms ± {pytorch.std_time_ms:.1f}ms")
+        logger.info(f"PyTorch生成器: {pytorch.avg_time_ms:.1f}ms  +/-  {pytorch.std_time_ms:.1f}ms")
 
         traditional = await self.benchmark_traditional()
-        logger.info(f"传统引擎:       {traditional.avg_time_ms:.1f}ms ± {traditional.std_time_ms:.1f}ms)
+        logger.info(f"traditional:       {traditional.avg_time_ms:.1f}ms  +/-  {traditional.std_time_ms:.1f}ms)
 
         speedup = traditional.avg_time_ms / pytorch.avg_time_ms if pytorch.avg_time_ms > 0 else 0
-        logger.info(f"速度提升:       {speedup:.1f}x")
+        logger.info(f"speedup:       {speedup:.1f}x")
 
         return {
             "pytorch": {"avg_ms": pytorch.avg_time_ms, "std_ms": pytorch.std_time_ms},
@@ -138,4 +138,4 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     benchmark = FormulaBenchmark(runs=10)
     report = asyncio.run(benchmark.run_all())
-    print(f"\n速度提升: {report['speedup']:.1f}x")
+    print(f"\nspeedup: {report['speedup']:.1f}x")

@@ -35,12 +35,6 @@ from app.models.enums import (
     SyncAction,
     SyncStatus,
     NotificationType,
-    DeviceType,
-)
-from app.utils.auth import create_access_token
-    create_access_token,
-    get_password_hash,
-)
 
 
 # ════════════════════════════════════════════════
