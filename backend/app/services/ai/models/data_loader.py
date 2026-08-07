@@ -50,6 +50,37 @@ class FormulaSample:
     efficacy_labels: List[int]    # 功效标签
 
 
+@dataclass
+class FormulaDataset:
+    """配方训练数据集"""
+
+    def __init__(
+        self,
+        signals: List[List[float]],
+        target_herbs: List[List[int]],
+        target_dosages: List[List[float]],
+        target_stops: List[List[int]],
+        herb_vocab: List[str],
+    ):
+        self.signals = signals
+        self.target_herbs = target_herbs
+        self.target_dosages = target_dosages
+        self.target_stops = target_stops
+        self.herb_vocab = herb_vocab
+
+    def __len__(self) -> int:
+        return len(self.signals)
+
+    def __getitem__(self, idx: int) -> Dict[str, Any]:
+        import torch
+        return {
+            "signal": torch.tensor(self.signals[idx], dtype=torch.float32),
+            "target_herb": torch.tensor(self.target_herbs[idx], dtype=torch.long),
+            "target_dosage": torch.tensor(self.target_dosages[idx], dtype=torch.float32),
+            "target_stop": torch.tensor(self.target_stops[idx], dtype=torch.float32),
+        }
+
+
 class TCMSPDataLoader:
     """
     TCMSP/DFBP 数据加载器

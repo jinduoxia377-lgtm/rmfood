@@ -17,7 +17,7 @@ import asyncio
 import json
 import re
 
-from conftest import TestHelpers, TEST_USERS
+from tests.e2e.conftest import TestHelpers, TEST_USERS
 
 
 @pytest.mark.e2e
