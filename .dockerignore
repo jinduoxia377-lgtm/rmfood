@@ -19,10 +19,10 @@ build
 .pytest_cache
 .ruff_cache
 
-# 虚拟环境
-.venv
-venv
-env
+# 虚拟环境（后端）
+backend/.venv
+backend/venv
+backend/venv/
 
 # IDE
 .vscode
@@ -31,8 +31,10 @@ env
 *.swo
 
 # 测试（不需要打包到生产镜像）
-tests/
+backend/tests
+backend/tests-reports
 **/test_*.py
+**/test_*.ts
 **/tests/
 coverage/
 htmlcov/
@@ -50,8 +52,8 @@ docs/
 !.env.example
 
 # 临时文件
-tmp/
-temp/
+backend/tmp/
+backend/temp_files/
 *.tmp
 *.bak
 
@@ -59,16 +61,23 @@ temp/
 frontend/node_modules
 frontend/dist
 frontend/build
+frontend/.vite-cache
+frontend/tsconfig.tsbuildinfo
 
 # 数据文件
-data/
+backend/data/
+backend/uploads/
+backend/pg_data/
 *.db
 *.sqlite
 
 # 报告文件
-*.report.html
-*_REPORT.md
-*_report.*
+backend/*.report.*
+backend/*_REPORT.*
+backend/*report.*
+backend/*.json
+backend/*.txt
+backend/*.log
 
 # 部署文档（不需要打包到镜像）
 DEPLOYMENT_*.md
@@ -80,6 +89,10 @@ FINAL_CLOSURE_REPORT.md
 
 # 调试截图
 debug_*.png
+*.png
+*.jpg
+*.jpeg
+*.gif
 
 # 脚本（不需要打包到镜像）
 scripts/
@@ -88,15 +101,23 @@ run_backend_simple.py
 start-lan.bat
 stop-lan.bat
 start_backend.bat
+backend/start*.bat
+backend/stop*.bat
+backend/restart*.bat
+backend/restart*.ps1
+backend/test_*.py
+backend/test_*.ps1
+backend/*.ps1
 
 # Docker compose 文件
 docker-compose*.yml
 !docker-compose.yml
 
-# 前端构建缓存
-frontend/.vite-cache/
-frontend/tsconfig.tsbuildinfo
-
 # Claude 配置
 .claude/
 backend/.claude/
+
+# 其他大目录
+backend/alembic/
+backend/deploy/
+backend/static/
