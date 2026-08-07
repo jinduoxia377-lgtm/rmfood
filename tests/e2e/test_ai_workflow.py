@@ -363,7 +363,7 @@ class TestAISaveAndVersionControl:
     ):
         """测试版本差异对比和回滚功能"""
         owner_token = auth_tokens["owner"]
-        headers = {"Authorization": f"Bearer {owner_token}}"}
+        headers = {"Authorization": f"Bearer {owner_token}"}
 
         # 创建提示词并多次修改（简化版）
         prompt_title = f"Diff测试_{datetime.now().strftime('%H%M%S')}"
@@ -543,7 +543,9 @@ class TestAITeamCollaboration:
         team_id = test_team.id
 
         headers_owner = {"Authorization": f"Bearer {owner_token}"}
-        headers_member = {"Authorization": f"Bearer {member1_token}""
+        headers_member = {"Authorization": f"Bearer {member1_token}"}
+
+
 
         iteration_log = []
 
@@ -722,7 +724,7 @@ class TestAIQualityAndEdgeCases:
     ):
         """测试超长输入的处理"""
         owner_token = auth_tokens["owner"]
-        headers = {"Authorization": f"Bearer {owner_token]}"}
+        headers = {"Authorization": f"Bearer {owner_token}"}
 
         long_description = "这是一个非常长的产品描述。" * 500  # 约15000字符
 
@@ -752,7 +754,7 @@ class TestAIQualityAndEdgeCases:
     ):
         """测试输入中的特殊字符处理"""
         owner_token = auth_tokens["owner"]
-        headers = {"Authorization": f"Bearer {owner_token]}"}
+        headers = {"Authorization": f"Bearer {owner_token}"}
 
         special_inputs = [
             {"requirements": {"target_product": "<script>alert('xss')</script>"}},
