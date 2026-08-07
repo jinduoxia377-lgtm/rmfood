@@ -25,6 +25,7 @@ from .formula_selector import FormulaSelector, SelectionPriority
 from .unified_formula_engine import UnifiedFormulaEngine
 from .device_manager import get_device, is_cuda_available, detect_device
 from .herb_database_extender import HerbDatabaseExtender, get_herb_extender
+from .data_loader import TCMSPDataLoader, get_data_loader
 
 __all__ = [
     "SignalEncoder",
@@ -43,4 +44,6 @@ __all__ = [
     "detect_device",
     "HerbDatabaseExtender",
     "get_herb_extender",
+    "TCMSPDataLoader",
+    "get_data_loader",
 ]
