@@ -117,7 +117,7 @@ class TestPeptideAnalysisCreate:
 
         # 验证结果
         assert analysis.sequence == "VLGYT".upper()
-        assert analysis.analysis_mode.value == "deep"
+        assert analysis.analysis_mode == "deep"
         assert analysis.tags == ["ACE_inhibitory"]
         assert analysis.notes == "测试备注"
 
@@ -142,7 +142,7 @@ class TestPeptideAnalysisCreate:
 
         analysis = await service.create_analysis(data)
 
-        assert analysis.analysis_mode.value == "deep"  # 默认值
+        assert analysis.analysis_mode == "deep"  # 默认值
         assert analysis.tags is None or analysis.tags == []
 
     @pytest.mark.asyncio

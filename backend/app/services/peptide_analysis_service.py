@@ -142,7 +142,7 @@ class PeptideAnalysisService:
         for dim in dimensions:
             detail = PeptideAnalysisDetail(
                 analysis_id=analysis.id,
-                dimension_type=dim.value,
+                dimension_type=dim,
                 data={},  # 初始为空，后续由分析引擎填充
                 created_at=now,
             )
