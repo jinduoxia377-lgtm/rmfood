@@ -177,15 +177,15 @@ const MOCK_UPDATES: RegulationUpdate[] = [
 
 function ComplianceIndicator({ status, summary, onClick }: ComplianceIndicatorProps) {
   const config = {
-    compliant: { icon: '✅', color: 'text-green-600', bg: 'bg-green-100', label: '已通过' },
+    compliant: { icon: '✅', color: 'text-success-600', bg: 'bg-success-100', label: '已通过' },
     pending: { icon: '⏳', color: 'text-yellow-600', bg: 'bg-yellow-100', label: '待审核' },
-    non_compliant: { icon: '❌', color: 'text-red-600', bg: 'bg-red-100', label: '不合规' },
+    non_compliant: { icon: '❌', color: 'text-error-600', bg: 'bg-error-100', label: '不合规' },
   }
 
   const currentConfig = config[status]
 
   return (
-    <Tooltip content={summary || currentConfig.label} placement="top">
+    <Tooltip content={summary || currentConfig.label} position="top">
       <div
         onClick={onClick}
         className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium cursor-pointer hover:opacity-80 transition-opacity ${currentConfig.bg} ${currentConfig.color}`}
@@ -283,7 +283,7 @@ export function RegulationBrowser({
       case 'pending_update':
         return <Badge variant="warning">⚠️ 待更新</Badge>
       case 'deprecated':
-        return <Badge variant="secondary" className="line-through">❌ 已废止</Badge>
+        return <Badge variant="neutral" className="line-through">❌ 已废止</Badge>
       case 'new':
         return <Badge variant="info">🆕 新增</Badge>
       default:
@@ -302,19 +302,19 @@ export function RegulationBrowser({
           <div className="relative">
             <button
               onClick={() => setShowUpdatesPanel(!showUpdatesPanel)}
-              className="relative p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+              className="relative p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
             >
               🔔
               {unreadUpdatesCount > 0 && (
-                <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-[10px] rounded-full flex items-center justify-center">
+                <span className="absolute top-1 right-1 w-4 h-4 bg-error-500 text-white text-[10px] rounded-full flex items-center justify-center">
                   {unreadUpdatesCount}
                 </span>
               )}
             </button>
 
             {showUpdatesPanel && (
-              <div className="absolute right-0 mt-2 w-96 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl z-50 max-h-96 overflow-hidden">
-                <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+              <div className="absolute right-0 mt-2 w-96 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg shadow-xl z-50 max-h-96 overflow-hidden">
+                <div className="p-4 border-b border-neutral-200 dark:border-neutral-700 flex items-center justify-between">
                   <h3 className="font-semibold">法规更新通知</h3>
                   <Button variant="ghost" size="sm" onClick={handleMarkAllAsRead}>
                     全部标记已读
@@ -326,8 +326,8 @@ export function RegulationBrowser({
                     updates.map(update => (
                       <div
                         key={update.id}
-                        className={`p-4 border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer ${
-                          !update.isRead ? 'bg-blue-50 dark:bg-blue-900/10' : ''
+                        className={`p-4 border-b border-neutral-100 dark:border-neutral-800 hover:bg-slate-50 dark:hover:bg-neutral-800 cursor-pointer ${
+                          !update.isRead ? 'bg-secondary-50 dark:bg-secondary-900/10' : ''
                         }`}
                         onClick={() => {
                           onUpdateMarkRead?.([update.id])
@@ -341,16 +341,16 @@ export function RegulationBrowser({
                       >
                         <div className="flex items-start gap-2">
                           {!update.isRead && (
-                            <span className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0" />
+                            <span className="w-2 h-2 bg-secondary-500 rounded-full mt-2 flex-shrink-0" />
                           )}
                           <div className="flex-1 min-w-0">
-                            <h4 className="font-medium text-sm text-gray-900 dark:text-gray-100 truncate">
+                            <h4 className="font-medium text-sm text-neutral-900 dark:text-neutral-100 truncate">
                               {update.regulationName}
                             </h4>
-                            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
+                            <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-1 line-clamp-2">
                               {update.summary}
                             </p>
-                            <div className="flex items-center gap-2 mt-2 text-xs text-gray-500">
+                            <div className="flex items-center gap-2 mt-2 text-xs text-neutral-500">
                               <span>生效日期: {update.effectiveDate}</span>
                               <span>•</span>
                               <span>{Math.floor((Date.now() - update.createdAt) / 86400000)} 天前</span>
@@ -360,7 +360,7 @@ export function RegulationBrowser({
                       </div>
                     ))
                   ) : (
-                    <div className="p-8 text-center text-gray-500">
+                    <div className="p-8 text-center text-neutral-500">
                       暂无更新通知
                     </div>
                   )}
@@ -373,13 +373,13 @@ export function RegulationBrowser({
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           <div className="lg:col-span-1 space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                 地区筛选
               </label>
               <select
                 value={selectedRegion}
                 onChange={(e) => setSelectedRegion(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-sm"
+                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-sm"
               >
                 <option value="all">全部地区</option>
                 {REGIONS.map(region => (
@@ -391,13 +391,13 @@ export function RegulationBrowser({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                 类型筛选
               </label>
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-sm"
+                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-sm"
               >
                 <option value="all">全部类型</option>
                 {CATEGORIES.map(category => (
@@ -409,7 +409,7 @@ export function RegulationBrowser({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                 搜索
               </label>
               <Input
@@ -420,20 +420,20 @@ export function RegulationBrowser({
               />
             </div>
 
-            <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-              <h4 className="text-xs font-semibold text-gray-500 mb-2">快捷统计</h4>
+            <div className="pt-4 border-t border-neutral-200 dark:border-neutral-700">
+              <h4 className="text-xs font-semibold text-neutral-500 mb-2">快捷统计</h4>
               <div className="space-y-1 text-xs">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">有效法规:</span>
+                  <span className="text-neutral-600">有效法规:</span>
                   <span className="font-medium">{regulations.filter(r => r.status === 'active').length}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">待更新:</span>
+                  <span className="text-neutral-600">待更新:</span>
                   <span className="font-medium text-yellow-600">{regulations.filter(r => r.status === 'pending_update').length}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">新增:</span>
-                  <span className="font-medium text-blue-600">{regulations.filter(r => r.status === 'new').length}</span>
+                  <span className="text-neutral-600">新增:</span>
+                  <span className="font-medium text-secondary-600">{regulations.filter(r => r.status === 'new').length}</span>
                 </div>
               </div>
             </div>
@@ -443,14 +443,14 @@ export function RegulationBrowser({
             {!selectedRegulation ? (
               <>
                 <div className="flex items-center justify-between mb-4">
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <p className="text-sm text-neutral-600 dark:text-neutral-400">
                     共找到 {filteredRegulations.length} 条法规
                   </p>
                   <div className="flex gap-2">
                     <select
                       value={sortBy}
                       onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-                      className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded"
+                      className="px-2 py-1 text-xs border border-neutral-300 dark:border-neutral-600 rounded"
                     >
                       <option value="date">按生效日期</option>
                       <option value="name">按编号</option>
@@ -458,35 +458,35 @@ export function RegulationBrowser({
                     </select>
                     <button
                       onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
-                      className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-50"
+                      className="px-2 py-1 text-xs border border-neutral-300 dark:border-neutral-600 rounded hover:bg-slate-50"
                     >
                       {sortOrder === 'asc' ? '↑ 升序' : '↓ 降序'}
                     </button>
                   </div>
                 </div>
 
-                <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                <div className="border border-neutral-200 dark:border-neutral-700 rounded-lg overflow-hidden">
                   <table className="w-full text-sm">
-                    <thead className="bg-gray-50 dark:bg-gray-800">
+                    <thead className="bg-slate-50 dark:bg-neutral-800">
                       <tr>
-                        <th className="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-300">法规编号</th>
-                        <th className="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-300">名称</th>
-                        <th className="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-300">地区</th>
-                        <th className="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-300">生效日期</th>
-                        <th className="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-300">状态</th>
+                        <th className="px-4 py-3 text-left font-medium text-neutral-700 dark:text-neutral-300">法规编号</th>
+                        <th className="px-4 py-3 text-left font-medium text-neutral-700 dark:text-neutral-300">名称</th>
+                        <th className="px-4 py-3 text-left font-medium text-neutral-700 dark:text-neutral-300">地区</th>
+                        <th className="px-4 py-3 text-left font-medium text-neutral-700 dark:text-neutral-300">生效日期</th>
+                        <th className="px-4 py-3 text-left font-medium text-neutral-700 dark:text-neutral-300">状态</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                    <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
                       {filteredRegulations.map(regulation => (
                         <tr
                           key={regulation.id}
-                          className="hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors"
+                          className="hover:bg-slate-50 dark:hover:bg-neutral-800 cursor-pointer transition-colors"
                           onClick={() => {
                             setSelectedRegulation(regulation)
                             onRegulationSelect?.(regulation)
                           }}
                         >
-                          <td className="px-4 py-3 font-mono text-blue-600 dark:text-blue-400">
+                          <td className="px-4 py-3 font-mono text-secondary-600 dark:text-secondary-400">
                             {regulation.number}
                           </td>
                           <td className="px-4 py-3 max-w-xs truncate" title={regulation.fullName}>
@@ -498,7 +498,7 @@ export function RegulationBrowser({
                           <td className="px-4 py-3">
                             {REGIONS.find(r => r.id === regulation.region)?.flag || ''} {REGIONS.find(r => r.id === regulation.region)?.name || ''}
                           </td>
-                          <td className="px-4 py-3 text-gray-600 dark:text-gray-400">
+                          <td className="px-4 py-3 text-neutral-600 dark:text-neutral-400">
                             {regulation.effectiveDate}
                           </td>
                           <td className="px-4 py-3">
@@ -510,7 +510,7 @@ export function RegulationBrowser({
                   </table>
 
                   {filteredRegulations.length === 0 && (
-                    <div className="p-12 text-center text-gray-500">
+                    <div className="p-12 text-center text-neutral-500">
                       未找到匹配的法规，请调整筛选条件或搜索关键词
                     </div>
                   )}
@@ -537,35 +537,35 @@ export function RegulationBrowser({
                   </div>
                 </div>
 
-                <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-6 space-y-6">
+                <div className="border border-neutral-200 dark:border-neutral-700 rounded-lg p-6 space-y-6">
                   <div>
                     <div className="flex items-start justify-between mb-4">
                       <div>
-                        <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+                        <h3 className="text-xl font-bold text-neutral-900 dark:text-neutral-100">
                           {selectedRegulation.fullName}
                         </h3>
-                        <p className="text-lg font-mono text-blue-600 dark:text-blue-400 mt-1">
+                        <p className="text-lg font-mono text-secondary-600 dark:text-secondary-400 mt-1">
                           {selectedRegulation.number}
                         </p>
                       </div>
                       {getStatusBadge(selectedRegulation.status)}
                     </div>
 
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 p-4 bg-slate-50 dark:bg-neutral-800 rounded-lg">
                       <div>
-                        <p className="text-xs text-gray-500">发布机构</p>
+                        <p className="text-xs text-neutral-500">发布机构</p>
                         <p className="text-sm font-medium mt-1">{selectedRegulation.issuingAgency}</p>
                       </div>
                       <div>
-                        <p className="text-xs text-gray-500">生效日期</p>
+                        <p className="text-xs text-neutral-500">生效日期</p>
                         <p className="text-sm font-medium mt-1">{selectedRegulation.effectiveDate}</p>
                       </div>
                       <div>
-                        <p className="text-xs text-gray-500">最新修订</p>
+                        <p className="text-xs text-neutral-500">最新修订</p>
                         <p className="text-sm font-medium mt-1">{selectedRegulation.lastRevised}</p>
                       </div>
                       <div>
-                        <p className="text-xs text-gray-500">适用范围</p>
+                        <p className="text-xs text-neutral-500">适用范围</p>
                         <p className="text-sm font-medium mt-1 line-clamp-2">{selectedRegulation.scope}</p>
                       </div>
                     </div>
@@ -573,12 +573,12 @@ export function RegulationBrowser({
 
                   {selectedRegulation.limits.length > 0 && (
                     <div>
-                      <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2">
+                      <h4 className="font-semibold text-neutral-900 dark:text-neutral-100 mb-3 flex items-center gap-2">
                         📋 限量要求
                       </h4>
-                      <div className="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-lg">
+                      <div className="overflow-x-auto border border-neutral-200 dark:border-neutral-700 rounded-lg">
                         <table className="w-full text-sm">
-                          <thead className="bg-gray-50 dark:bg-gray-800">
+                          <thead className="bg-slate-50 dark:bg-neutral-800">
                             <tr>
                               <th className="px-4 py-2 text-left font-medium">物质名称</th>
                               <th className="px-4 py-2 text-left font-medium">最大使用量</th>
@@ -586,13 +586,13 @@ export function RegulationBrowser({
                               <th className="px-4 py-2 text-left font-medium">备注</th>
                             </tr>
                           </thead>
-                          <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                          <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
                             {selectedRegulation.limits.map((limit, idx) => (
                               <tr key={idx}>
                                 <td className="px-4 py-2 font-medium">{limit.substanceName}</td>
                                 <td className="px-4 py-2">{limit.maxUsage}</td>
-                                <td className="px-4 py-2 text-gray-600 dark:text-gray-400">{limit.conditions || '-'}</td>
-                                <td className="px-4 py-2 text-gray-600 dark:text-gray-400">{limit.remarks || '-'}</td>
+                                <td className="px-4 py-2 text-neutral-600 dark:text-neutral-400">{limit.conditions || '-'}</td>
+                                <td className="px-4 py-2 text-neutral-600 dark:text-neutral-400">{limit.remarks || '-'}</td>
                               </tr>
                             ))}
                           </tbody>
@@ -603,12 +603,12 @@ export function RegulationBrowser({
 
                   {selectedRegulation.testMethods.length > 0 && (
                     <div>
-                      <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-3">
+                      <h4 className="font-semibold text-neutral-900 dark:text-neutral-100 mb-3">
                         🔬 检测方法参考
                       </h4>
                       <div className="flex flex-wrap gap-2">
                         {selectedRegulation.testMethods.map((method, idx) => (
-                          <Badge key={idx} variant="secondary">{method}</Badge>
+                          <Badge key={idx} variant="neutral">{method}</Badge>
                         ))}
                       </div>
                     </div>
@@ -618,8 +618,8 @@ export function RegulationBrowser({
                     <Alert variant="warning">
                       <p className="font-medium">⚠️ 例外情况说明</p>
                       <ul className="mt-2 list-disc list-inside text-sm space-y-1">
-                        {selectedRegulations.map(exception => (
-                          <li key={exception.id}>{exception.scope}</li>
+                        {selectedRegulation.exceptions.map((exception: string, idx: number) => (
+                          <li key={idx}>{exception}</li>
                         ))}
                       </ul>
                     </Alert>
@@ -627,7 +627,7 @@ export function RegulationBrowser({
 
                   {selectedRegulation.relatedRegulations.length > 0 && (
                     <div>
-                      <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-3">
+                      <h4 className="font-semibold text-neutral-900 dark:text-neutral-100 mb-3">
                         🔗 相关法规链接
                       </h4>
                       <div className="flex flex-wrap gap-2">
@@ -642,7 +642,7 @@ export function RegulationBrowser({
                                   onRegulationSelect?.(relatedReg)
                                 }
                               }}
-                              className="px-3 py-1 text-sm text-blue-600 dark:text-blue-400 border border-blue-300 dark:border-blue-700 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                              className="px-3 py-1 text-sm text-secondary-600 dark:text-secondary-400 border border-blue-300 dark:border-blue-700 rounded hover:bg-secondary-50 dark:hover:bg-secondary-900/20 transition-colors"
                             >
                               {relatedId}
                             </button>
@@ -654,17 +654,17 @@ export function RegulationBrowser({
 
                   {selectedRegulation.versionHistory.length > 0 && (
                     <div>
-                      <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-3">
+                      <h4 className="font-semibold text-neutral-900 dark:text-neutral-100 mb-3">
                         📜 历史版本对比
                       </h4>
                       <div className="space-y-3">
                         {selectedRegulation.versionHistory.map((version, idx) => (
-                          <div key={idx} className="p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
+                          <div key={idx} className="p-3 border border-neutral-200 dark:border-neutral-700 rounded-lg">
                             <div className="flex items-center justify-between mb-2">
                               <span className="font-medium text-sm">{version.version}</span>
-                              <span className="text-xs text-gray-500">{version.date}</span>
+                              <span className="text-xs text-neutral-500">{version.date}</span>
                             </div>
-                            <ul className="list-disc list-inside text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                            <ul className="list-disc list-inside text-sm text-neutral-600 dark:text-neutral-400 space-y-1">
                               {version.changes.map((change, changeIdx) => (
                                 <li key={changeIdx}>{change}</li>
                               ))}

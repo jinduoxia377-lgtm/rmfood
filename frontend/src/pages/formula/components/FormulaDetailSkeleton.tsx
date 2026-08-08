@@ -14,7 +14,7 @@ export function FormulaDetailSkeleton({ activeTab = 'basic' }: FormulaDetailSkel
       </div>
 
       {/* Header Section */}
-      <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 space-y-4">
+      <div className="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-6 space-y-4">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 space-y-3">
             <div className="flex items-center gap-3">
@@ -37,7 +37,7 @@ export function FormulaDetailSkeleton({ activeTab = 'basic' }: FormulaDetailSkel
         </div>
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-neutral-100 dark:border-neutral-800">
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="space-y-1.5">
               <Skeleton width={70} height={12} animationType="pulse" />
@@ -48,12 +48,12 @@ export function FormulaDetailSkeleton({ activeTab = 'basic' }: FormulaDetailSkel
       </div>
 
       {/* Tabs Navigation */}
-      <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-2">
+      <div className="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-2">
         <div className="flex items-center gap-1 overflow-x-auto">
           {['basic', 'ingredients', 'process', 'versions', 'recommendations'].map((tab) => (
             <div
               key={tab}
-              className={`px-4 py-2 rounded-lg ${tab === activeTab ? 'bg-slate-100 dark:bg-slate-800' : ''}`}
+              className={`px-4 py-2 rounded-lg ${tab === activeTab ? 'bg-neutral-100 dark:bg-neutral-800' : ''}`}
             >
               <Skeleton
                 width={tab === 'basic' ? 70 : tab === 'ingredients' ? 80 : tab === 'process' ? 80 : tab === 'versions' ? 80 : 100}
@@ -66,7 +66,7 @@ export function FormulaDetailSkeleton({ activeTab = 'basic' }: FormulaDetailSkel
       </div>
 
       {/* Tab Content */}
-      <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 min-h-[400px]">
+      <div className="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-6 min-h-[400px]">
         {activeTab === 'basic' && <BasicInfoSkeleton />}
         {activeTab === 'ingredients' && <IngredientsSkeleton />}
         {activeTab === 'process' && <ProcessSkeleton />}
@@ -91,7 +91,7 @@ function BasicInfoSkeleton() {
       </div>
 
       {/* Description */}
-      <div className="space-y-2 pt-4 border-t border-slate-100 dark:border-slate-800">
+      <div className="space-y-2 pt-4 border-t border-neutral-100 dark:border-neutral-800">
         <Skeleton width={70} height={13} animationType="pulse" />
         <div className="space-y-2">
           {[1, 2, 3].map((i) => (
@@ -101,7 +101,7 @@ function BasicInfoSkeleton() {
       </div>
 
       {/* Meta Info */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-4 border-t border-neutral-100 dark:border-neutral-800">
         {Array.from({ length: 6 }).map((_, i) => (
           <div key={i} className="space-y-1">
             <Skeleton width={60} height={11} animationType="pulse" />
@@ -111,11 +111,11 @@ function BasicInfoSkeleton() {
       </div>
 
       {/* AI Analysis Section */}
-      <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+      <div className="space-y-4 pt-4 border-t border-neutral-100 dark:border-neutral-800">
         <Skeleton width={120} height={18} animationType="pulse" />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {Array.from({ length: 2 }).map((_, i) => (
-            <div key={i} className="rounded-lg border border-slate-200 dark:border-slate-700 p-4 space-y-3">
+            <div key={i} className="rounded-lg border border-neutral-200 dark:border-neutral-700 p-4 space-y-3">
               <Skeleton width={100} height={16} animationType="pulse" />
               <Skeleton width="100%" height={12} animationType="pulse" />
               <Skeleton width="90%" height={12} animationType="pulse" />
@@ -142,9 +142,9 @@ function IngredientsSkeleton() {
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-700">
+      <div className="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-700">
         <table className="w-full text-sm">
-          <thead className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+          <thead className="bg-slate-50 dark:bg-neutral-800 border-b border-neutral-200 dark:border-neutral-700">
             <tr>
               {['#', '成分名称', '用量(g)', '分类', '来源', '药食同源'].map((_, i) => (
                 <th key={i} className="p-3">
@@ -155,7 +155,7 @@ function IngredientsSkeleton() {
           </thead>
           <tbody>
             {Array.from({ length: 6 }).map((_, i) => (
-              <tr key={i} className="border-b border-slate-100 dark:border-slate-800 last:border-0">
+              <tr key={i} className="border-b border-neutral-100 dark:border-neutral-800 last:border-0">
                 {Array.from({ length: 6 }).map((_, j) => (
                   <td key={j} className="p-3">
                     <Skeleton
@@ -189,7 +189,7 @@ function ProcessSkeleton() {
 
       <div className="space-y-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="flex gap-4 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
+          <div key={i} className="flex gap-4 p-4 rounded-lg border border-neutral-200 dark:border-neutral-700">
             <Skeleton width={40} height={40} radius={20} circular animationType="pulse" />
             <div className="flex-1 space-y-2">
               <Skeleton width={120} height={16} animationType="pulse" />
@@ -220,16 +220,16 @@ function VersionsSkeleton() {
 
       <div className="relative pl-8">
         {/* Timeline Line */}
-        <div className="absolute left-[19px] top-4 bottom-4 w-0.5 bg-slate-200 dark:bg-slate-700" />
+        <div className="absolute left-[19px] top-4 bottom-4 w-0.5 bg-neutral-200 dark:bg-neutral-700" />
 
         <div className="space-y-4">
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="relative flex gap-4">
               {/* Version Node */}
-              <div className="absolute left-[-28px] top-0 w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800" />
+              <div className="absolute left-[-28px] top-0 w-10 h-10 rounded-full bg-neutral-100 dark:bg-neutral-800" />
 
               {/* Content */}
-              <div className="flex-1 rounded-lg border border-slate-200 dark:border-slate-700 p-4 space-y-3 ml-2">
+              <div className="flex-1 rounded-lg border border-neutral-200 dark:border-neutral-700 p-4 space-y-3 ml-2">
                 <div className="flex items-center justify-between">
                   <Skeleton width={100} height={16} animationType="pulse" />
                   <Skeleton width={110} height={13} animationType="pulse" />
@@ -263,7 +263,7 @@ function RecommendationsSkeleton() {
         {Array.from({ length: 4 }).map((_, i) => (
           <div
             key={i}
-            className="rounded-lg border border-slate-200 dark:border-slate-700 p-4 space-y-3 hover:border-primary-300 transition-colors"
+            className="rounded-lg border border-neutral-200 dark:border-neutral-700 p-4 space-y-3 hover:border-primary-300 transition-colors"
           >
             <div className="flex items-start justify-between">
               <Skeleton width={140} height={18} animationType="pulse" />
@@ -275,8 +275,8 @@ function RecommendationsSkeleton() {
                 <Skeleton key={j} width={50 + (j * 10)} height={22} radius={11} animationType="pulse" />
               ))}
             </div>
-            <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
-              <p className="text-xs text-slate-500 mb-1.5">关键成分:</p>
+            <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800">
+              <p className="text-xs text-neutral-500 mb-1.5">关键成分:</p>
               <div className="flex flex-wrap gap-1">
                 {Array.from({ length: 4 }).map((_, k) => (
                   <Skeleton key={k} width={45 + (k * 8)} height={20} radius={4} animationType="pulse" />

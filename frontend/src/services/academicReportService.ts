@@ -814,7 +814,7 @@ export class AcademicReportService {
     return [
       herbName,
       herb.role || '辅助',
-      (herb as any).dosage || '1.0-3.0',
+      (herb.dosage || '1.0-3.0',
       `${tcm.flavor}${tcm.channel}`,
       tcm.meridian,
       tcm.effects,
@@ -859,7 +859,7 @@ export class AcademicReportService {
  const headers = ['成分', '药典用量(g)', '设计用量(g)', '标签值(g)', '确定依据'];
  const rows: string[][] = herbs.map(herb => {
     const herbName = typeof herb.name === 'string' ? herb.name : ''
-    const dosage = parseFloat((herb as any)?.dosage?.replace(/[g克]/g, '') || '2');
+    const dosage = parseFloat((herb?.dosage?.replace(/[g克]/g, '') || '2');
     return [
       herbName,
       '6-15',
@@ -932,7 +932,7 @@ export class AcademicReportService {
  const headers = ['原料', '药食同源', '药典收录', '设计用量(g)', '药典规定(g)', '合规判定'];
  const rows: string[][] = herbs.map(herb => {
     const herbName = typeof herb.name === 'string' ? herb.name : ''
-    const dosage = parseFloat((herb as any)?.dosage?.replace(/[g克]/g, '') || '2');
+    const dosage = parseFloat((herb?.dosage?.replace(/[g克]/g, '') || '2');
     return [
       herbName,
       '是',
@@ -1053,10 +1053,10 @@ export class AcademicReportService {
 
 **综合评分：**
 - 协同作用评分：${((this.candidate.synergy_score || 0) * 100).toFixed(1)}分
-- 口感风味评分：${(((this.candidate as any).taste_score || 0.6) * 100).toFixed(1)}分
-- 稳定性评分：${(((this.candidate as any).stability_score || 0.7) * 100).toFixed(1)}分
-- 安全性评估：${(this.candidate as any).safety_passed ? '通过' : '需关注'}
-- 综合评分：${(((this.candidate as any).overall_score || 0) * 100).toFixed(1)}分`,
+- 口感风味评分：${(((this.candidate.taste_score || 0.6) * 100).toFixed(1)}分
+- 稳定性评分：${(((this.candidate.stability_score || 0.7) * 100).toFixed(1)}分
+- 安全性评估：${(this.candidate.safety_passed ? '通过' : '需关注'}
+- 综合评分：${(((this.candidate.overall_score || 0) * 100).toFixed(1)}分`,
  tables: [
  { title: '主要功效类别市场规模', headers: marketData.table[0], rows: marketData.table.slice(1) },
  { title: '目标人群健康状况分布', headers: epidemiologyData.table[0], rows: epidemiologyData.table.slice(1) },
@@ -1383,33 +1383,33 @@ private getFormatStyles(format: 'html' | 'word' | 'pdf'): string {
  const styles = {
  html: `
  :root {
- --primary: #1e40af;
- --secondary: #475569;
+ --primary: #003E87;
+ --secondary: #4B5563;
  --accent: #0ea5e9;
  --text-primary: #1f2937;
  --text-secondary: #4b5563;
  --bg-primary: #ffffff;
- --bg-secondary: #f8fafc;
- --bg-tertiary: #f1f5f9;
- --border: #e2e8f0;
+ --bg-secondary: #F9FAFB;
+ --bg-tertiary: #F3F4F6;
+ --border: #E5E7EB;
  }
  `,
  word: `
  :root {
- --primary: #7c3aed;
+ --primary: #AF52DE;
  --secondary: #4338ca;
- --accent: #8b5cf6;
+ --accent: #AF52DE;
  --text-primary: #1e1b4b;
  --text-secondary: #3730a3;
  --bg-primary: #faf5ff;
  --bg-secondary: #f3e8ff;
- --bg-tertiary: #ede9fe;
- --border: #ddd6fe;
+ --bg-tertiary: #F3E8FF;
+ --border: #E8D5FF;
  }
  `,
  pdf: `
  :root {
- --primary: #15803d;
+ --primary: #166534;
  --secondary: #451a03;
  --accent: #78350f;
  --text-primary: #1c1917;

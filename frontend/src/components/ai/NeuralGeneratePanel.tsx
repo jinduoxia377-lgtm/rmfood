@@ -1,82 +1,67 @@
-import { useState, useRef, useEffect } from 'react'
-import { useMutation } from '@tanstack/react-query'
-import { aiApi } from '@/api/ai'
-import type { AICandidate } from '@/types'
-import { useGenerationProgress } from '@/hooks/useGenerationProgress'
-import { GenerationProgressPanel } from './GenerationProgressPanel'
-import {
-  Card,
-  Input,
-  Button,
-  Slider,
-  Badge,
-  Tabs,
-  TabsList,
-  TabsTrigger,
-  TabsContent,
-} from '@/components/ui'
-import {
-  Brain,
-  Sparkles,
-  Sliders,
-  Tag,
-  Shield,
-  Cherry,
-  AlertTriangle,
-  CheckCircle,
-  X,
-} from 'lucide-react'
+import { useState, useRef, useEffect } from 'react';
+import { useMutation } from '@tanstack/react-query';
+import { aiApi } from '@/api/ai';
+import type { AICandidate } from '@/api/ai';
+import { useGenerationProgress } from '@/hooks/useGenerationProgress';
+import { GenerationProgressPanel } from './GenerationProgressPanel';
+import { Card, Input, Button, Slider, Badge, Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui';
+import { Brain, Sparkles, Sliders, Tag, Shield, Cherry, AlertTriangle, CheckCircle, X } from 'lucide-react';
 
-const EFFECT_OPTIONS = ['降血压', '抗氧化', '降血糖', '补气养阴', '抗疲劳', '改善睡眠', '增强免疫']
+const EFFECT_OPTIONS = ['降血压', '抗氧化', '降血糖', '补气养阴', '抗疲劳', '改善睡眠', '增强免疫'];
 
-const INGREDIENT_TYPE_OPTIONS = ['药食同源', '活性肽']
+const INGREDIENT_TYPE_OPTIONS = ['药食同源', '活性肽'];
 
-const TASTE_OPTIONS = ['甜', '苦', '涩', '鲜']
+const TASTE_OPTIONS = ['甜', '苦', '涩', '鲜'];
 
-const SAFETY_LEVEL_OPTIONS = ['常规', '孕妇可用', '儿童可用', '老年适用']
+const SAFETY_LEVEL_OPTIONS = ['常规', '孕妇可用', '儿童可用', '老年适用'];
 
 interface Constraints {
-  maxIngredients?: number
-  excludedIngredients?: string[]
-  ingredientTypes?: string[]
-  tastePreferences?: string[]
-  safetyLevel?: string
+  maxIngredients?: number;
+  excludedIngredients?: string[];
+  ingredientTypes?: string[];
+  tastePreferences?: string[];
+  safetyLevel?: string;
 }
 
 interface NeuralGeneratePanelProps {
-  onCandidatesGenerated?: (candidates: AICandidate[]) => void
-  className?: string
+  onCandidatesGenerated?: (candidates: AICandidate[]) => void;
+  className?: string;
 }
 
 export function NeuralGeneratePanel({ onCandidatesGenerated, className }: NeuralGeneratePanelProps) {
-  const [inputMode, setInputMode] = useState<'direct' | 'tag'>('tag')
-  const [directInput, setDirectInput] = useState('')
-  const [selectedEffects, setSelectedEffects] = useState<string[]>([])
-  const [selectedIngredientTypes, setSelectedIngredientTypes] = useState<string[]>([])
-  const [selectedTastes, setSelectedTastes] = useState<string[]>([])
-  const [selectedSafetyLevel, setSelectedSafetyLevel] = useState<string>('')
-  const [excludedIngredients, setExcludedIngredients] = useState<string[]>([])
-  const [excludedInput, setExcludedInput] = useState('')
-  const [maxIngredients, setMaxIngredients] = useState(10)
-  const [candidates, setCandidates] = useState<AICandidate[] | null>(null)
+  const [inputMode, setInputMode] = useState<'direct' | 'tag'>('tag');
+  const [directInput, setDirectInput] = useState('');
+  const [selectedEffects, setSelectedEffects] = useState<string[]>([]);
+  const [selectedIngredientTypes, setSelectedIngredientTypes] = useState<string[]>([]);
+  const [selectedTastes, setSelectedTastes] = useState<string[]>([]);
+  const [selectedSafetyLevel, setSelectedSafetyLevel] = useState<string>('');
+  const [excludedIngredients, setExcludedIngredients] = useState<string[]>([]);
+  const [excludedInput, setExcludedInput] = useState('');
+  const [maxIngredients, setMaxIngredients] = useState(10);
+  const [candidates, setCandidates] = useState<AICandidate[] | null>(null);
   const [priorityValues, setPriorityValues] = useState<Record<string, number>>({
     synergy: 0.7,
     taste: 0.5,
     stability: 0.6,
     safety: 0.8,
-  })
+  });
 
-  const { progress, startProgress, updateProgress, completeProgress, errorProgress, resetProgress } = useGenerationProgress()
-  const [announcement, setAnnouncement] = useState('')
-  const generateButtonRef = useRef<HTMLButtonElement>(null)
+  const { progress, startProgress, updateProgress, completeProgress, errorProgress, resetProgress } =
+    useGenerationProgress();
+  const [announcement, setAnnouncement] = useState('');
+  const generateButtonRef = useRef<HTMLButtonElement>(null);
 
   const mutation = useMutation({
     mutationFn: async () => {
-      startProgress('正在准备生成参数...')
+      startProgress('正在准备生成参数...');
 
-      const targetEffects = inputMode === 'direct'
-        ? directInput.split(/[,，]/).map(s => s.trim()).filter(Boolean)
-        : selectedEffects
+      const targetEffects =
+        inputMode === 'direct'
+          ? directInput
+              .split(/[,，]/)
+              .map((s) => s.trim())
+              .filter(Boolean)
+          : selectedEffects;
 
       const constraints: Constraints = {
         maxIngredients,
@@ -84,113 +69,109 @@ export function NeuralGeneratePanel({ onCandidatesGenerated, className }: Neural
         ingredientTypes: selectedIngredientTypes.length > 0 ? selectedIngredientTypes : undefined,
         tastePreferences: selectedTastes.length > 0 ? selectedTastes : undefined,
         safetyLevel: selectedSafetyLevel || undefined,
-      }
+      };
 
-      updateProgress('generating', 30, '神经网络正在生成配方方案...', 15)
+      updateProgress('generating', 30, '神经网络正在生成配方方案...', 15);
 
-      const result = await aiApi.generateNeural(targetEffects, priorityValues, constraints, 5)
+      const result = await aiApi.generateNeural(targetEffects, priorityValues, constraints, 5);
 
-      updateProgress('optimizing', 60, '正在优化配方参数...', 10)
+      updateProgress('optimizing', 60, '正在优化配方参数...', 10);
 
-      updateProgress('validating', 80, '正在进行安全性验证...', 5)
+      updateProgress('validating', 80, '正在进行安全性验证...', 5);
 
-      return result
+      return result;
     },
     onSuccess: (data) => {
-      completeProgress()
-      setCandidates(data.candidates)
-      onCandidatesGenerated?.(data.candidates)
+      completeProgress();
+      setCandidates(data.candidates);
+      onCandidatesGenerated?.(data.candidates);
     },
     onError: (error) => {
-      const errorMessage = typeof (error as any)?.message === 'string' ? (error as any).message : '配方生成失败，请稍后重试'
-      errorProgress(errorMessage)
+      const errorMessage =
+        error instanceof Error && typeof error.message === 'string' ? error.message : '配方生成失败，请稍后重试';
+      errorProgress(errorMessage);
     },
-  })
+  });
 
   useEffect(() => {
     if (mutation.isPending) {
-      setAnnouncement('开始生成配方，请稍候...')
+      setAnnouncement('开始生成配方，请稍候...');
     }
-  }, [mutation.isPending])
+  }, [mutation.isPending]);
 
   useEffect(() => {
     if (mutation.isSuccess) {
-      setAnnouncement('配方生成成功')
+      setAnnouncement('配方生成成功');
     } else if (mutation.isError) {
-      setAnnouncement('配方生成失败，请检查输入后重试')
+      setAnnouncement('配方生成失败，请检查输入后重试');
     }
-  }, [mutation.isSuccess, mutation.isError])
+  }, [mutation.isSuccess, mutation.isError]);
 
   const toggleEffect = (effect: string) => {
-    setSelectedEffects(prev =>
-      prev.includes(effect) ? prev.filter(e => e !== effect) : [...prev, effect],
-    )
-  }
+    setSelectedEffects((prev) => (prev.includes(effect) ? prev.filter((e) => e !== effect) : [...prev, effect]));
+  };
 
   const handleEffectKeyDown = (e: React.KeyboardEvent, effect: string) => {
     if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault()
-      toggleEffect(effect)
+      e.preventDefault();
+      toggleEffect(effect);
     }
-  }
+  };
 
   const handleIngredientTypeKeyDown = (e: React.KeyboardEvent, type: string) => {
     if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault()
-      toggleIngredientType(type)
+      e.preventDefault();
+      toggleIngredientType(type);
     }
-  }
+  };
 
   const handleTasteKeyDown = (e: React.KeyboardEvent, taste: string) => {
     if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault()
-      toggleTaste(taste)
+      e.preventDefault();
+      toggleTaste(taste);
     }
-  }
+  };
 
   const handleSafetyLevelKeyDown = (e: React.KeyboardEvent, level: string) => {
     if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault()
-      setSelectedSafetyLevel(level === selectedSafetyLevel ? '' : level)
+      e.preventDefault();
+      setSelectedSafetyLevel(level === selectedSafetyLevel ? '' : level);
     }
-  }
+  };
 
   const toggleIngredientType = (type: string) => {
-    setSelectedIngredientTypes(prev =>
-      prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type],
-    )
-  }
+    setSelectedIngredientTypes((prev) => (prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]));
+  };
 
   const toggleTaste = (taste: string) => {
-    setSelectedTastes(prev =>
-      prev.includes(taste) ? prev.filter(t => t !== taste) : [...prev, taste],
-    )
-  }
+    setSelectedTastes((prev) => (prev.includes(taste) ? prev.filter((t) => t !== taste) : [...prev, taste]));
+  };
 
   const addExcludedIngredient = () => {
-    const items = excludedInput.split(/[,，]/).map(s => s.trim()).filter(Boolean)
+    const items = excludedInput
+      .split(/[,，]/)
+      .map((s) => s.trim())
+      .filter(Boolean);
     if (items.length > 0) {
-      setExcludedIngredients(prev => [...new Set([...prev, ...items])])
-      setExcludedInput('')
+      setExcludedIngredients((prev) => [...new Set([...prev, ...items])]);
+      setExcludedInput('');
     }
-  }
+  };
 
   const removeExcludedIngredient = (item: string) => {
-    setExcludedIngredients(prev => prev.filter(i => i !== item))
-  }
+    setExcludedIngredients((prev) => prev.filter((i) => i !== item));
+  };
 
   const handlePriorityChange = (key: string, value: number) => {
-    setPriorityValues(prev => ({ ...prev, [key]: value }))
-  }
+    setPriorityValues((prev) => ({ ...prev, [key]: value }));
+  };
 
   const handleCancel = () => {
-    mutation.reset()
-    resetProgress()
-  }
+    mutation.reset();
+    resetProgress();
+  };
 
-  const canGenerate = inputMode === 'direct'
-    ? directInput.trim().length > 0
-    : selectedEffects.length > 0
+  const canGenerate = inputMode === 'direct' ? directInput.trim().length > 0 : selectedEffects.length > 0;
 
   return (
     <Card className={`p-6 ${className}`}>
@@ -206,28 +187,28 @@ export function NeuralGeneratePanel({ onCandidatesGenerated, className }: Neural
         </div>
         <div>
           <h2 className="text-lg font-semibold">神经网络配方生成</h2>
-          <p className="text-sm text-gray-500">基于深度学习模型智能生成配方方案</p>
+          <p className="text-sm text-neutral-500">基于深度学习模型智能生成配方方案</p>
         </div>
       </div>
 
       <Tabs value={inputMode} onValueChange={(v) => setInputMode(v as 'direct' | 'tag')}>
         <TabsList className="mb-6">
-          <TabsTrigger value="tag" icon={<Tag className="w-4 h-4" />}>标签选择</TabsTrigger>
-          <TabsTrigger value="direct" icon={<Sliders className="w-4 h-4" />}>直接输入</TabsTrigger>
+          <TabsTrigger value="tag" icon={<Tag className="w-4 h-4" />}>
+            标签选择
+          </TabsTrigger>
+          <TabsTrigger value="direct" icon={<Sliders className="w-4 h-4" />}>
+            直接输入
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="tag" className="space-y-6">
           <div className="space-y-5">
             <div>
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-3">
+              <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 block mb-3">
                 功效标签（可多选）
               </label>
-              <div
-                className="flex flex-wrap gap-2"
-                role="group"
-                aria-label="功效标签选择"
-              >
-                {EFFECT_OPTIONS.map(effect => (
+              <div className="flex flex-wrap gap-2" role="group" aria-label="功效标签选择">
+                {EFFECT_OPTIONS.map((effect) => (
                   <button
                     key={effect}
                     onClick={() => toggleEffect(effect)}
@@ -239,7 +220,7 @@ export function NeuralGeneratePanel({ onCandidatesGenerated, className }: Neural
                     className={`px-3 py-1.5 rounded-lg text-sm transition-all focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${
                       selectedEffects.includes(effect)
                         ? 'bg-primary-500 text-white shadow-sm shadow-primary-500/20'
-                        : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                        : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-600'
                     }`}
                   >
                     {effect}
@@ -249,15 +230,9 @@ export function NeuralGeneratePanel({ onCandidatesGenerated, className }: Neural
             </div>
 
             <div>
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-3">
-                成分类型
-              </label>
-              <div
-                className="flex flex-wrap gap-2"
-                role="group"
-                aria-label="成分类型选择"
-              >
-                {INGREDIENT_TYPE_OPTIONS.map(type => (
+              <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 block mb-3">成分类型</label>
+              <div className="flex flex-wrap gap-2" role="group" aria-label="成分类型选择">
+                {INGREDIENT_TYPE_OPTIONS.map((type) => (
                   <button
                     key={type}
                     onClick={() => toggleIngredientType(type)}
@@ -269,7 +244,7 @@ export function NeuralGeneratePanel({ onCandidatesGenerated, className }: Neural
                     className={`px-3 py-1.5 rounded-lg text-sm transition-all focus:outline-none focus:ring-2 focus:ring-accent-500 focus:ring-offset-2 ${
                       selectedIngredientTypes.includes(type)
                         ? 'bg-accent-500 text-white shadow-sm shadow-accent-500/20'
-                        : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                        : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-600'
                     }`}
                   >
                     {type}
@@ -279,15 +254,9 @@ export function NeuralGeneratePanel({ onCandidatesGenerated, className }: Neural
             </div>
 
             <div>
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-3">
-                口感偏好
-              </label>
-              <div
-                className="flex flex-wrap gap-2"
-                role="group"
-                aria-label="口感偏好选择"
-              >
-                {TASTE_OPTIONS.map(taste => (
+              <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 block mb-3">口感偏好</label>
+              <div className="flex flex-wrap gap-2" role="group" aria-label="口感偏好选择">
+                {TASTE_OPTIONS.map((taste) => (
                   <button
                     key={taste}
                     onClick={() => toggleTaste(taste)}
@@ -299,7 +268,7 @@ export function NeuralGeneratePanel({ onCandidatesGenerated, className }: Neural
                     className={`px-3 py-1.5 rounded-lg text-sm transition-all focus:outline-none focus:ring-2 focus:ring-warning-500 focus:ring-offset-2 ${
                       selectedTastes.includes(taste)
                         ? 'bg-warning-500 text-white shadow-sm shadow-warning-500/20'
-                        : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                        : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-600'
                     }`}
                   >
                     <Cherry className="w-3 h-3 inline mr-1" />
@@ -310,15 +279,9 @@ export function NeuralGeneratePanel({ onCandidatesGenerated, className }: Neural
             </div>
 
             <div>
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-3">
-                安全等级
-              </label>
-              <div
-                className="flex flex-wrap gap-2"
-                role="group"
-                aria-label="安全等级选择"
-              >
-                {SAFETY_LEVEL_OPTIONS.map(level => (
+              <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 block mb-3">安全等级</label>
+              <div className="flex flex-wrap gap-2" role="group" aria-label="安全等级选择">
+                {SAFETY_LEVEL_OPTIONS.map((level) => (
                   <button
                     key={level}
                     onClick={() => setSelectedSafetyLevel(level === selectedSafetyLevel ? '' : level)}
@@ -330,7 +293,7 @@ export function NeuralGeneratePanel({ onCandidatesGenerated, className }: Neural
                     className={`px-3 py-1.5 rounded-lg text-sm transition-all focus:outline-none focus:ring-2 focus:ring-success-500 focus:ring-offset-2 ${
                       selectedSafetyLevel === level
                         ? 'bg-success-500 text-white shadow-sm shadow-success-500/20'
-                        : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                        : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-600'
                     }`}
                   >
                     <Shield className="w-3 h-3 inline mr-1" />
@@ -345,7 +308,7 @@ export function NeuralGeneratePanel({ onCandidatesGenerated, className }: Neural
         <TabsContent value="direct">
           <div className="space-y-4">
             <div>
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-2">
+              <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 block mb-2">
                 输入目标功效描述
               </label>
               <textarea
@@ -355,19 +318,17 @@ export function NeuralGeneratePanel({ onCandidatesGenerated, className }: Neural
                 className="input resize-none w-full"
                 rows={3}
               />
-              <p className="text-xs text-gray-500 mt-1">多个功效用逗号分隔</p>
+              <p className="text-xs text-neutral-500 mt-1">多个功效用逗号分隔</p>
             </div>
           </div>
         </TabsContent>
       </Tabs>
 
-      <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700 space-y-5">
+      <div className="mt-6 pt-6 border-t border-neutral-200 dark:border-neutral-700 space-y-5">
         <div>
           <div className="flex items-center justify-between mb-3">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              优先级权重调节
-            </label>
-            <span className="text-xs text-gray-500">调整各项权重影响配方生成倾向</span>
+            <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">优先级权重调节</label>
+            <span className="text-xs text-neutral-500">调整各项权重影响配方生成倾向</span>
           </div>
           <div className="space-y-4">
             {[
@@ -375,11 +336,11 @@ export function NeuralGeneratePanel({ onCandidatesGenerated, className }: Neural
               { key: 'taste', label: '口感偏好', color: 'accent' },
               { key: 'stability', label: '稳定性', color: 'warning' },
               { key: 'safety', label: '安全性', color: 'success' },
-            ].map(item => (
+            ].map((item) => (
               <div key={item.key} className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">{item.label}</span>
-                  <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                  <span className="text-sm text-neutral-600 dark:text-neutral-400">{item.label}</span>
+                  <span className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
                     {(priorityValues[item.key] * 100).toFixed(0)}%
                   </span>
                 </div>
@@ -397,14 +358,12 @@ export function NeuralGeneratePanel({ onCandidatesGenerated, className }: Neural
         </div>
 
         <div>
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-3">
-            约束条件
-          </label>
+          <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 block mb-3">约束条件</label>
           <div className="space-y-4">
             <div>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-gray-600 dark:text-gray-400">最大成分数</span>
-                <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{maxIngredients}</span>
+                <span className="text-sm text-neutral-600 dark:text-neutral-400">最大成分数</span>
+                <span className="text-sm font-medium text-neutral-800 dark:text-neutral-200">{maxIngredients}</span>
               </div>
               <Slider
                 value={maxIngredients}
@@ -417,9 +376,7 @@ export function NeuralGeneratePanel({ onCandidatesGenerated, className }: Neural
             </div>
 
             <div>
-              <label className="text-sm text-gray-600 dark:text-gray-400 block mb-2">
-                排除成分
-              </label>
+              <label className="text-sm text-neutral-600 dark:text-neutral-400 block mb-2">排除成分</label>
               <div className="flex gap-2">
                 <Input
                   value={excludedInput}
@@ -428,8 +385,8 @@ export function NeuralGeneratePanel({ onCandidatesGenerated, className }: Neural
                   className="flex-1"
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
-                      e.preventDefault()
-                      addExcludedIngredient()
+                      e.preventDefault();
+                      addExcludedIngredient();
                     }
                   }}
                 />
@@ -439,7 +396,7 @@ export function NeuralGeneratePanel({ onCandidatesGenerated, className }: Neural
               </div>
               {excludedIngredients.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {excludedIngredients.map(item => (
+                  {excludedIngredients.map((item) => (
                     <Badge key={item} variant="danger" className="flex items-center gap-1">
                       {item}
                       <X
@@ -457,11 +414,7 @@ export function NeuralGeneratePanel({ onCandidatesGenerated, className }: Neural
 
       <div className="mt-6">
         {progress.stage !== 'idle' && (
-          <GenerationProgressPanel
-            progress={progress}
-            onCancel={handleCancel}
-            showCancelButton={progress.canCancel}
-          />
+          <GenerationProgressPanel progress={progress} onCancel={handleCancel} showCancelButton={progress.canCancel} />
         )}
         <Button
           ref={generateButtonRef}
@@ -481,20 +434,22 @@ export function NeuralGeneratePanel({ onCandidatesGenerated, className }: Neural
 
       {mutation.isError && (
         <div className="mt-4 p-4 bg-danger-50 dark:bg-danger-500/10 border border-danger-200 dark:border-danger-500/20 rounded-lg">
-            <div className="flex items-center gap-2 text-danger-600 dark:text-danger-400">
-              <AlertTriangle className="w-4 h-4" />
-              <span className="text-sm">生成失败：{typeof (mutation.error as any)?.message === 'string' ? (mutation.error as any).message : '请检查输入后重试'}</span>
-            </div>
+          <div className="flex items-center gap-2 text-danger-600 dark:text-danger-400">
+            <AlertTriangle className="w-4 h-4" />
+            <span className="text-sm">
+              生成失败：
+              {mutation.error instanceof Error && typeof mutation.error.message === 'string'
+                ? mutation.error.message
+                : '请检查输入后重试'}
+            </span>
           </div>
+        </div>
       )}
 
       {candidates && candidates.length > 0 && (
-        <section
-          className="mt-6 space-y-4"
-          aria-labelledby="candidates-heading"
-        >
+        <section className="mt-6 space-y-4" aria-labelledby="candidates-heading">
           <div className="flex items-center justify-between">
-            <h3 id="candidates-heading" className="text-base font-semibold text-gray-900 dark:text-gray-100">
+            <h3 id="candidates-heading" className="text-base font-semibold text-neutral-900 dark:text-neutral-100">
               生成 {candidates.length} 个候选方案
             </h3>
             <Badge variant="primary">神经网络生成</Badge>
@@ -502,33 +457,37 @@ export function NeuralGeneratePanel({ onCandidatesGenerated, className }: Neural
           <ul className="space-y-4" role="list" aria-label="配方候选方案列表">
             {candidates.map((candidate, index) => (
               <li key={index}>
-                <Card hoverable className="p-4 border border-gray-100 dark:border-gray-700">
+                <Card hoverable className="p-4 border border-neutral-100 dark:border-neutral-700">
                   <div className="flex items-start justify-between mb-3">
                     <div>
-                      <h4 className="font-semibold text-gray-900 dark:text-gray-100">
+                      <h4 className="font-semibold text-neutral-900 dark:text-neutral-100">
                         {typeof candidate.formula_name === 'string' ? candidate.formula_name : '未知配方'}
                       </h4>
-                      <p className="text-xs text-gray-500 mt-1">
-                        协同 {(candidate.synergy_score ?? 0).toFixed(2)} |
-                        口感 {(candidate.taste_score ?? 0).toFixed(2)} |
-                        稳定性 {(candidate.stability_score ?? 0).toFixed(2)}
+                      <p className="text-xs text-neutral-500 mt-1">
+                        协同 {(candidate.synergy_score ?? 0).toFixed(2)} | 口感{' '}
+                        {(candidate.taste_score ?? 0).toFixed(2)} | 稳定性 {(candidate.stability_score ?? 0).toFixed(2)}
                       </p>
                     </div>
                     <div className="text-right">
-                      <div className={`text-xl font-bold ${
-                        (candidate.overall_score ?? 0) >= 0.8 ? 'text-success-500' :
-                        (candidate.overall_score ?? 0) >= 0.6 ? 'text-warning-500' : 'text-danger-500'
-                      }`}>
+                      <div
+                        className={`text-xl font-bold ${
+                          (candidate.overall_score ?? 0) >= 0.8
+                            ? 'text-success-500'
+                            : (candidate.overall_score ?? 0) >= 0.6
+                              ? 'text-warning-500'
+                              : 'text-danger-500'
+                        }`}
+                      >
                         {(candidate.overall_score ?? 0).toFixed(2)}
                       </div>
-                      <div className="text-xs text-gray-500">综合评分</div>
+                      <div className="text-xs text-neutral-500">综合评分</div>
                     </div>
                   </div>
 
                   <div className="mb-3">
-                    <span className="text-xs font-medium text-gray-500">药材组成：</span>
+                    <span className="text-xs font-medium text-neutral-500">药材组成：</span>
                     <div className="flex flex-wrap gap-1 mt-1">
-                      {candidate.herb_combination.map((herb, i) => (
+                      {candidate.herb_combination?.map((herb, i) => (
                         <Badge key={i} variant="neutral" size="sm">
                           {typeof herb.name === 'string' ? herb.name : '未知药材'}
                         </Badge>
@@ -556,7 +515,7 @@ export function NeuralGeneratePanel({ onCandidatesGenerated, className }: Neural
         </section>
       )}
     </Card>
-  )
+  );
 }
 
-export default NeuralGeneratePanel
+export default NeuralGeneratePanel;

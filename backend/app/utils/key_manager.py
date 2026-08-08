@@ -12,7 +12,7 @@ from datetime import datetime, timezone, timedelta
 from typing import Any, Dict, List, Optional, Tuple
 from dataclasses import dataclass, field
 
-from app.core.logging_config import logger
+from app.core.observability.logging_config import logger
 
 try:
     from cryptography.hazmat.primitives.kdf.hkdf import HKDF
@@ -252,7 +252,7 @@ class KeyManager:
         except Exception as e:
             return {
                 "success": False,
-                "error": str(e),
+                "error": "密钥管理异常",
                 "message": "密钥轮换失败，系统仍使用旧密钥",
             }
 

@@ -755,7 +755,7 @@ export const useReviewStore = create<ReviewState>()(
         onRehydrateStorage: () => (state) => {
           if (state) {
             // 将数组转换回 Map
-            state.reviews = new Map(state.reviews as any);
+            state.reviews = new Map(Array.from(state.reviews as unknown as [string, Review][]));
             reviewLogger.info('状态恢复成功');
           }
         },

@@ -3,9 +3,8 @@ import { chatService } from '../services/chatService'
 import { storageService } from '../services/storageService'
 import { eventBus } from '../services/eventBus'
 import { logger } from '@/utils/safeLogger'
-import { empathyEngine } from '../services/empathyEngine'
-import { sentimentEngine } from '../services/sentimentEngine'
-import { userProfileManager } from '../services/userProfileService'
+import { sanitizeChatMessages } from '../utils/sanitizeChatMessages'
+import { toFriendlyErrorMessage } from '../utils/friendlyError'
 import type { ChatMessage } from '../types'
 export type { ChatMessage } from '../types'
 
@@ -19,6 +18,7 @@ interface UseChatMessagesReturn {
   setChatError: (error: Error | null) => void
   addMessage: (message: ChatMessage) => void
   updateMessage: (id: string, updates: Partial<ChatMessage>) => void
+  removeMessage: (id: string) => void
   clearMessages: () => void
   /** 替换所有消息（用于会话切换恢复） */
   replaceMessages: (messages: ChatMessage[]) => void
@@ -43,7 +43,23 @@ export function useChatMessages(): UseChatMessagesReturn {
   const [messages, setMessages] = useState<ChatMessage[]>(() => {
     try {
       const stored = storageService.get<ChatMessage[]>(STORAGE_KEY)
-      return stored || []
+      if (!stored) return []
+
+      // 一次性清理 v12 精简前遗留的脚手架污染消息（系统提示词/意图分析/报错气泡等）
+      const { messages: cleaned, removedCount } = sanitizeChatMessages(stored)
+      if (removedCount > 0) {
+        logger.info(`[useChatMessages] 已清理 ${removedCount} 条历史污染消息`)
+        try {
+          if (cleaned.length > 0) {
+            storageService.set(STORAGE_KEY, cleaned)
+          } else {
+            storageService.remove(STORAGE_KEY)
+          }
+        } catch (writeError) {
+          logger.warn('[useChatMessages] 清理后写回存储失败:', writeError)
+        }
+      }
+      return cleaned
     } catch (error) {
       logger.warn('[useChatMessages] Failed to load messages from storage:', error)
       return []
@@ -68,6 +84,14 @@ export function useChatMessages(): UseChatMessagesReturn {
       chatService.clearAuthToken()
     })
     return unsub
+  }, [])
+
+  // ── 组件 unmount 时清理所有 pending SSE 请求 ──
+  useEffect(() => {
+    return () => {
+      logger.info('[useChatMessages] Unmount cleanup: aborting all pending SSE requests')
+      chatService.closeAllPendingRequests()
+    }
   }, [])
 
   const saveToStorage = useCallback((newMessages: ChatMessage[]) => {
@@ -106,6 +130,10 @@ export function useChatMessages(): UseChatMessagesReturn {
     storageService.remove(STORAGE_KEY)
     logger.info('[useChatMessages] Messages cleared')
   }, [])
+
+  const removeMessage = useCallback((id: string) => {
+    updateMessages(prev => prev.filter(m => m.id !== id))
+  }, [updateMessages])
 
   /** 替换所有消息（会话切换时从隔离存储恢复） */
   const replaceMessages = useCallback((newMessages: ChatMessage[]) => {
@@ -179,16 +207,14 @@ export function useChatMessages(): UseChatMessagesReturn {
       let hasError = false
       let errorMessage = ''
 
-      // ── 移除指定消息的辅助函数 ──
-      const removeMessage = useCallback((id: string) => {
-        updateMessages(prev => prev.filter(m => m.id !== id))
-      }, [updateMessages])
-
       // ── 尝试 1: 流式 SSE ──
       try {
         for await (const chunk of chatService.sendMessageStream(content.trim(), history)) {
           if (chunk.done) break
-          fullContent += chunk.content
+          // 思考步骤事件不追加到对话内容（仅转发到侧栏）
+          if (!chunk.step) {
+            fullContent += chunk.content
+          }
 
           // 累积配方数据（后端通过 type=formula 事件发送）
           if (chunk.formula) {
@@ -218,13 +244,15 @@ export function useChatMessages(): UseChatMessagesReturn {
         }
 
         // ── 尝试 2: 非流式降级（非认证类错误才降级）──
+        // 保留流式已收到的内容，追加而非替换
         logger.warn('[useChatMessages] Stream failed, falling back to non-streaming:', streamErrMsg)
         try {
           const response = await chatService.sendMessage(content.trim(), history)
-          fullContent = response.content
+          // 追加到已收到的流式内容后面
+          fullContent = fullContent + (fullContent ? '\n\n' : '') + response.content
           updateMessage(assistantMessageId, {
-            content: response.content,
-            formulas: response.formulas,
+            content: fullContent,
+            formulas: response.formulas || accumulatedFormulas.length > 0 ? [...accumulatedFormulas] : undefined,
             isLoading: false,
           })
         } catch (fallbackError) {
@@ -248,34 +276,7 @@ export function useChatMessages(): UseChatMessagesReturn {
 
       // 统一处理结果
       if (!hasError) {
-        // Phase 4 Step 3: 共情引擎后处理 — 在用户画像启用时对 AI 回复包裹情感适配层
-        let finalContent = fullContent
-        try {
-          const domainPrefs = userProfileManager.getDomain()
-          if (domainPrefs.empathyEnabled && fullContent.length > 20) {
-            const sentimentResult = sentimentEngine.analyze(userMessage.content)
-            const empathyConfig = empathyEngine.generateResponse(sentimentResult, {
-              turnCount: messagesRef.current.filter(m => m.role === 'user').length,
-              hasErrorOccurred: false,
-            })
-            if (empathyConfig.strategy !== 'none' && empathyConfig.strategy !== 'neutral') {
-              finalContent = empathyEngine.applyEmpathy(fullContent, empathyConfig)
-              logger.info('[useChatMessages] 🎭 Empathy applied:', {
-                strategy: empathyConfig.strategy,
-                emotion: sentimentResult.primary,
-                intensity: sentimentResult.intensity,
-                originalLength: fullContent.length,
-                wrappedLength: finalContent.length,
-              })
-            }
-          }
-        } catch (empathyError) {
-          // 共情处理失败不阻断主流程，静默降级为原始内容
-          logger.warn('[useChatMessages] Empathy processing failed, using original content:', empathyError)
-        }
-
         updateMessage(assistantMessageId, {
-          content: finalContent,
           isLoading: false,
           formulas: accumulatedFormulas.length > 0 ? accumulatedFormulas : undefined,
         })
@@ -283,15 +284,16 @@ export function useChatMessages(): UseChatMessagesReturn {
       } else {
         // 双重失败：清理占位消息，标记用户消息为失败状态
         updateMessage(userMessage.id, { sendStatus: 'failed' })
+        const friendly = toFriendlyErrorMessage(errorMessage)
         const errorMsg: ChatMessage = {
           id: `error-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
           role: 'assistant',
           content: '',
           timestamp: Date.now(),
-          error: errorMessage,
+          error: friendly,
         }
         addMessage(errorMsg)
-        setChatError(new Error(errorMessage))
+        setChatError(new Error(friendly))
       }
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err))
@@ -305,16 +307,17 @@ export function useChatMessages(): UseChatMessagesReturn {
       updateMessage(userMessage.id, { sendStatus: 'failed' })
       logger.warn('[useChatMessages] ⚠️ User message status updated to failed:', { messageId: userMessage.id })
 
+      const friendly = toFriendlyErrorMessage(error)
       const errorMessage: ChatMessage = {
         id: `error-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
         role: 'assistant',
         content: '',
         timestamp: Date.now(),
-        error: error.message,
+        error: friendly,
       }
 
       addMessage(errorMessage)
-      setChatError(error)
+      setChatError(new Error(friendly))
       logger.error('[useChatMessages] 💥 Error state updated, UI should show error message')
     } finally {
       setIsStreaming(false)
@@ -458,6 +461,7 @@ export function useChatMessages(): UseChatMessagesReturn {
     setChatError,
     addMessage,
     updateMessage,
+    removeMessage,
     clearMessages,
     replaceMessages,
     sendMessage,

@@ -7,6 +7,8 @@ SynergyEngine 统一分析接口模块
 import logging
 from typing import Any, Dict, List, Optional
 
+from app.utils.error_sanitize import sanitize_error
+
 try:
     import numpy as np
     HAS_SCIPY = True
@@ -93,12 +95,12 @@ class SynergyAnalysisMixin:
                 ingredient_b=ingredient_b,
             ))
         except Exception as e:
-            logger.warning(f"Bliss Independence 计算失败: {e}")
+            logger.warning("Bliss Independence 计算失败", exc_info=True)
             mechanisms.append(SynergyScore(
                 mechanism_type=MechanismType.BLISS_INDEPENDENCE,
                 score=0.0,
                 confidence=0.0,
-                details=f"计算失败: {str(e)}",
+                details=sanitize_error(e, "计算失败"),
             ))
 
         # Mechanism-2: PK Interaction
@@ -117,12 +119,12 @@ class SynergyAnalysisMixin:
                 ingredient_b=ingredient_b,
             ))
         except Exception as e:
-            logger.warning(f"PK Interaction 计算失败: {e}")
+            logger.warning("PK Interaction 计算失败", exc_info=True)
             mechanisms.append(SynergyScore(
                 mechanism_type=MechanismType.PK_INTERACTION,
                 score=0.0,
                 confidence=0.0,
-                details=f"计算失败: {str(e)}",
+                details=sanitize_error(e, "计算失败"),
             ))
 
         # Mechanism-3: Gibbs Stability
@@ -139,12 +141,12 @@ class SynergyAnalysisMixin:
                 ingredient_b=ingredient_b,
             ))
         except Exception as e:
-            logger.warning(f"Gibbs Stability 计算失败: {e}")
+            logger.warning("Gibbs Stability 计算失败", exc_info=True)
             mechanisms.append(SynergyScore(
                 mechanism_type=MechanismType.GIBBS_STABILITY,
                 score=0.0,
                 confidence=0.0,
-                details=f"计算失败: {str(e)}",
+                details=sanitize_error(e, "计算失败"),
             ))
 
         # Mechanism-4: Network Pharmacology
@@ -170,12 +172,12 @@ class SynergyAnalysisMixin:
                     details="缺少靶点数据",
                 ))
         except Exception as e:
-            logger.warning(f"Network Pharmacology 计算失败: {e}")
+            logger.warning("Network Pharmacology 计算失败", exc_info=True)
             mechanisms.append(SynergyScore(
                 mechanism_type=MechanismType.NETWORK_PHARMACOLOGY,
                 score=0.0,
                 confidence=0.0,
-                details=f"计算失败: {str(e)}",
+                details=sanitize_error(e, "计算失败"),
             ))
 
         # Mechanism-5: Taste Matrix
@@ -222,12 +224,12 @@ class SynergyAnalysisMixin:
                     details="使用默认味觉特征",
                 ))
         except Exception as e:
-            logger.warning(f"Taste Matrix 计算失败: {e}")
+            logger.warning("Taste Matrix 计算失败", exc_info=True)
             mechanisms.append(SynergyScore(
                 mechanism_type=MechanismType.TASTE_MATRIX,
                 score=0.5,
                 confidence=0.0,
-                details=f"计算失败: {str(e)}",
+                details=sanitize_error(e, "计算失败"),
             ))
 
         # 计算综合协同指数 SI

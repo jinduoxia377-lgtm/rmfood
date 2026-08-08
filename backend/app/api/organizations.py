@@ -18,8 +18,8 @@ from typing import Any, Dict, List, Optional
 logger = logging.getLogger(__name__)
 
 
-from app.api.deps import get_db_session, get_current_user
-from app.core.multi_tenant_service import (
+from .deps import get_db_session, get_current_user
+from ..core.multi_tenant.multi_tenant_service import (
     OrganizationService,
     OrganizationRole,
     OrganizationPlan,
@@ -103,9 +103,11 @@ async def create_organization(
         }
         
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error("创建组织失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=400, detail="参数无效")
     except PermissionError as e:
-        raise HTTPException(status_code=403, detail=str(e))
+        logger.error("创建组织权限不足: %s", e, exc_info=True)
+        raise HTTPException(status_code=403, detail="权限不足")
 
 
 @router.get("", summary="获取我的组织列表")
@@ -205,7 +207,8 @@ async def update_organization(
         return {"success": True, "organization": org.__dict__}
         
     except PermissionError as e:
-        raise HTTPException(status_code=403, detail=str(e))
+        logger.error("更新组织权限不足: %s", e, exc_info=True)
+        raise HTTPException(status_code=403, detail="权限不足")
 
 
 @router.delete("/{org_id}", summary="删除组织")
@@ -223,7 +226,8 @@ async def delete_organization(
         return {"success": success}
         
     except PermissionError as e:
-        raise HTTPException(status_code=403, detail=str(e))
+        logger.error("删除组织权限不足: %s", e, exc_info=True)
+        raise HTTPException(status_code=403, detail="权限不足")
 
 
 # ============================================================
@@ -287,7 +291,7 @@ async def invite_member(
             team_ids=request.team_ids,
         )
 
-        from app.core.notification_center import notify_mention
+        from ..core.realtime.notification_center import notify_mention
         
         await notify_mention(
             db=db,
@@ -305,7 +309,8 @@ async def invite_member(
         }
 
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error("邀请成员失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=400, detail="参数无效")
 
 
 @router.delete("/{org_id}/members/{user_id}", summary="移除成员")
@@ -324,7 +329,8 @@ async def remove_member(
         return {"success": success}
         
     except PermissionError as e:
-        raise HTTPException(status_code=403, detail=str(e))
+        logger.error("移除成员权限不足: %s", e, exc_info=True)
+        raise HTTPException(status_code=403, detail="权限不足")
 
 
 @router.put("/{org_id}/members/{user_id}/role", summary="修改成员角色")
@@ -349,7 +355,8 @@ async def change_member_role(
         return {"success": success}
         
     except PermissionError as e:
-        raise HTTPException(status_code=403, detail=str(e))
+        logger.error("修改成员角色权限不足: %s", e, exc_info=True)
+        raise HTTPException(status_code=403, detail="权限不足")
 
 
 # ============================================================
@@ -377,9 +384,11 @@ async def create_team(
         return {"success": True, "team": team.__dict__}
         
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error("创建团队失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=400, detail="参数无效")
     except PermissionError as e:
-        raise HTTPException(status_code=403, detail=str(e))
+        logger.error("创建团队权限不足: %s", e, exc_info=True)
+        raise HTTPException(status_code=403, detail="权限不足")
 
 
 @router.get("/{org_id}/teams", summary="获取团队列表")

@@ -44,7 +44,7 @@ export class FormulaGeneticOptimizer {
     if (sel.length === 0) return { efficacy:0, safety:0, taste:0, stability:0, cost:0, compatibility:0, overall:0 }
     let eff=0, safe=0, taste=0, stab=0, cost=0, compat=0
     for (let i = 0; i < sel.length; i++) {
-      const ing = sel[i]; const p = ing.properties as any
+      const ing = sel[i]; const p = ing.properties as Record<string, unknown>
       const edges = knowledgeGraph.getEdgesFrom(ing.id).filter(e => e.type === EdgeType.HAS_EFFECT)
       // v2.1: 目标功效加权 — 匹配目标功效的边权重加倍
       const targetEffects = this.cachedEffects || []
@@ -64,7 +64,7 @@ export class FormulaGeneticOptimizer {
     }
     const n = sel.length
     eff = Math.min(1, eff/n); safe = safe/n
-    taste = Math.max(0.1, Math.min(1, taste/n - sel.filter(i => (i.properties as any).flavor?.includes('苦')).length*0.08))
+    taste = Math.max(0.1, Math.min(1, taste/n - sel.filter(i => (i.properties as Record<string, unknown>).flavor?.includes('苦') as boolean).length*0.08))
     stab = stab/n; cost = Math.max(0.1, 1 - cost/n)
     const pairs = new Set<string>()
     for (let i = 0; i < n; i++) {
@@ -131,7 +131,7 @@ export class FormulaGeneticOptimizer {
     const sel: boolean[] = []; const dos: number[] = []
     for (let i = 0; i < n; i++) {
       sel.push(set.has(i))
-      const p = this.ingredients[i].properties as any; const [mn,mx] = p.dosageRange || [3,9]
+      const p = this.ingredients[i].properties as Record<string, unknown>; const [mn,mx] = (p.dosageRange as [number,number]) || [3,9]
       dos.push(+(mn + Math.random()*(mx-mn)).toFixed(1))
     }
     return { selection:sel, dosages:dos }
@@ -144,7 +144,7 @@ export class FormulaGeneticOptimizer {
     const sel: boolean[] = []; const dos: number[] = []
     for (let i = 0; i < n; i++) {
       sel.push(set.has(i))
-      const p = this.ingredients[i].properties as any; const [mn,mx] = p.dosageRange || [3,9]
+      const p = this.ingredients[i].properties as Record<string, unknown>; const [mn,mx] = (p.dosageRange as [number,number]) || [3,9]
       dos.push(+(mn + Math.random()*(mx-mn)).toFixed(1))
     }
     return { selection:sel, dosages:dos }

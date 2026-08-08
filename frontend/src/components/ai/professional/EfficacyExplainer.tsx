@@ -55,16 +55,14 @@ export class EfficacyExplainer extends ProfessionalBaseComponent<EfficacyExplain
   }
 
   private async loadHerbData(herbName: string) {
-    this.setLoading(true);
     try {
       const herb = await tcmService.getHerbByName(herbName);
       if (herb) {
         this.setState({ herb });
       }
     } catch (error) {
-      this.handleError(error);
+      this.handleError(error instanceof Error ? error : new Error(String(error)));
     } finally {
-      this.setLoading(false);
       if (this.props.onAnalysisComplete) {
         this.props.onAnalysisComplete();
       }
@@ -180,9 +178,9 @@ export class EfficacyExplainer extends ProfessionalBaseComponent<EfficacyExplain
 
   private renderEvidenceBadge(level: string) {
     const styles: Record<string, string> = {
-      strong: 'bg-green-100 text-green-800',
+      strong: 'bg-success-100 text-success-800',
       moderate: 'bg-yellow-100 text-yellow-800',
-      weak: 'bg-gray-100 text-gray-600',
+      weak: 'bg-neutral-100 text-neutral-600',
     };
 
     const labels: Record<string, string> = {
@@ -206,18 +204,18 @@ export class EfficacyExplainer extends ProfessionalBaseComponent<EfficacyExplain
       <div key={category.id} className="mb-4">
         <button
           onClick={() => this.toggleSection(category.id)}
-          className="w-full flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow"
+          className="w-full flex items-center justify-between p-4 bg-white dark:bg-neutral-800 rounded-xl shadow-sm border border-neutral-100 dark:border-neutral-700 hover:shadow-md transition-shadow"
         >
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center text-white">
               {category.icon}
             </div>
             <div className="text-left">
-              <h3 className="font-semibold text-gray-900 dark:text-white">{category.name}</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400">{category.description}</p>
+              <h3 className="font-semibold text-neutral-900 dark:text-white">{category.name}</h3>
+              <p className="text-sm text-neutral-500 dark:text-neutral-400">{category.description}</p>
             </div>
           </div>
-          <div className="text-gray-400">
+          <div className="text-neutral-400">
             {isExpanded ? (
               <ChevronUp className="w-5 h-5" />
             ) : (
@@ -231,25 +229,25 @@ export class EfficacyExplainer extends ProfessionalBaseComponent<EfficacyExplain
             {category.items.map((item) => (
               <div
                 key={item.id}
-                className="bg-gray-50 dark:bg-gray-850 rounded-lg p-4 border border-gray-100 dark:border-gray-700"
+                className="bg-slate-50 dark:bg-slate-850 rounded-lg p-4 border border-neutral-100 dark:border-neutral-700"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <h4 className="font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                    <h4 className="font-medium text-neutral-900 dark:text-white flex items-center gap-2">
                       {item.name}
                       {this.renderEvidenceBadge(item.evidenceLevel)}
                     </h4>
-                    <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
+                    <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
                       {item.description}
                     </p>
                     {item.targets && item.targets.length > 0 && (
                       <div className="mt-3">
-                        <p className="text-xs text-gray-500 mb-1">相关靶点：</p>
+                        <p className="text-xs text-neutral-500 mb-1">相关靶点：</p>
                         <div className="flex flex-wrap gap-2">
                           {item.targets.map((target) => (
                             <span
                               key={target.uniprotId}
-                              className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded text-xs"
+                              className="px-2 py-1 bg-secondary-100 dark:bg-secondary-900/30 text-secondary-700 dark:text-secondary-300 rounded text-xs"
                             >
                               {target.geneSymbol}
                             </span>
@@ -259,12 +257,12 @@ export class EfficacyExplainer extends ProfessionalBaseComponent<EfficacyExplain
                     )}
                     {item.diseases && item.diseases.length > 0 && (
                       <div className="mt-3">
-                        <p className="text-xs text-gray-500 mb-1">相关疾病：</p>
+                        <p className="text-xs text-neutral-500 mb-1">相关疾病：</p>
                         <div className="flex flex-wrap gap-2">
                           {item.diseases.map((disease) => (
                             <span
                               key={disease.diseaseId}
-                              className="px-2 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded text-xs"
+                              className="px-2 py-1 bg-accent-100 dark:bg-accent-900/30 text-accent-700 dark:text-accent-300 rounded text-xs"
                             >
                               {disease.diseaseName}
                             </span>
@@ -285,11 +283,11 @@ export class EfficacyExplainer extends ProfessionalBaseComponent<EfficacyExplain
   render() {
     const { herb } = this.state;
 
-    if (this.isLoading) {
+    if (this.props.loading) {
       return (
         <div className="flex items-center justify-center py-12">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600"></div>
-          <span className="ml-3 text-gray-600 dark:text-gray-400">正在分析功效...</span>
+          <span className="ml-3 text-neutral-600 dark:text-neutral-400">正在分析功效...</span>
         </div>
       );
     }
@@ -297,8 +295,8 @@ export class EfficacyExplainer extends ProfessionalBaseComponent<EfficacyExplain
     if (!herb) {
       return (
         <div className="text-center py-12">
-          <Leaf className="w-12 h-12 mx-auto text-gray-300 mb-4" />
-          <p className="text-gray-500 dark:text-gray-400">请选择或搜索中药成分</p>
+          <Leaf className="w-12 h-12 mx-auto text-neutral-300 mb-4" />
+          <p className="text-neutral-500 dark:text-neutral-400">请选择或搜索中药成分</p>
         </div>
       );
     }
@@ -306,7 +304,7 @@ export class EfficacyExplainer extends ProfessionalBaseComponent<EfficacyExplain
     const efficacyCategories = this.getEfficacyCategories();
 
     return (
-      <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+      <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-sm border border-neutral-100 dark:border-neutral-800 overflow-hidden">
         <div className="bg-gradient-to-r from-teal-500 to-teal-600 px-6 py-5">
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-xl bg-white/20 flex items-center justify-center">
@@ -321,7 +319,7 @@ export class EfficacyExplainer extends ProfessionalBaseComponent<EfficacyExplain
 
         <div className="p-6">
           <div className="flex flex-wrap gap-2 mb-6">
-            <span className="px-3 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded-full text-sm">
+            <span className="px-3 py-1 bg-error-100 dark:bg-error-900/30 text-error-700 dark:text-error-300 rounded-full text-sm">
               药性：{herb.properties.nature}
             </span>
             {herb.properties.flavor.map((flavor, index) => (
@@ -335,26 +333,26 @@ export class EfficacyExplainer extends ProfessionalBaseComponent<EfficacyExplain
             {herb.properties.meridian.map((meridian, index) => (
               <span
                 key={index}
-                className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-sm"
+                className="px-3 py-1 bg-secondary-100 dark:bg-secondary-900/30 text-secondary-700 dark:text-secondary-300 rounded-full text-sm"
               >
                 归{meridian}经
               </span>
             ))}
           </div>
 
-          <p className="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
+          <p className="text-neutral-600 dark:text-neutral-300 mb-6 leading-relaxed">
             {herb.description}
           </p>
 
           {efficacyCategories.map((category) => this.renderCategory(category))}
 
-          <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-850 rounded-lg border border-gray-100 dark:border-gray-700">
-            <h4 className="font-medium text-gray-900 dark:text-white mb-2">使用注意</h4>
+          <div className="mt-6 p-4 bg-slate-50 dark:bg-slate-850 rounded-lg border border-neutral-100 dark:border-neutral-700">
+            <h4 className="font-medium text-neutral-900 dark:text-white mb-2">使用注意</h4>
             <div className="space-y-2">
               {herb.contraindications.length > 0 && (
                 <div>
-                  <p className="text-sm font-medium text-red-600 dark:text-red-400">禁忌：</p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <p className="text-sm font-medium text-error-600 dark:text-error-400">禁忌：</p>
+                  <p className="text-sm text-neutral-600 dark:text-neutral-400">
                     {herb.contraindications.join('；')}
                   </p>
                 </div>
@@ -364,7 +362,7 @@ export class EfficacyExplainer extends ProfessionalBaseComponent<EfficacyExplain
                   <p className="text-sm font-medium text-yellow-600 dark:text-yellow-400">
                     不良反应：
                   </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <p className="text-sm text-neutral-600 dark:text-neutral-400">
                     {herb.sideEffects.join('；')}
                   </p>
                 </div>

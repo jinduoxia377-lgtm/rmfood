@@ -71,7 +71,7 @@ def _mark_reset_token_used(token: str) -> bool:
             del _used_reset_tokens[k]
 
     if token in _used_reset_tokens:
-        logger.warning(f"⚠️ 检测到 reset token 重用攻击: token={token[:20]}...")
+        logger.warning(f"⚠️ 检测到 reset token 重用攻击: email={to_email}")
         return False
 
     _used_reset_tokens[token] = current_time

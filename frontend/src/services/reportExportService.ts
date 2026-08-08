@@ -31,10 +31,10 @@ class ReportExportService {
   private createPrintableHTML(data: RenderedReportData): string {
     const { candidate, effects } = data
     const herbs = candidate.herb_combination || []
-    const warnings = (candidate.safety_details as any)?.warnings || []
-    const safetyScore = ((candidate as any).safety_score || (candidate.safety_passed ? 0.85 : 0.6)) * 100
-    const tasteScore = ((candidate as any).taste_score || 0.6) * 100
-    const stabilityScore = ((candidate as any).stability_score || 0.7) * 100
+    const warnings = candidate.safety_details?.warnings || []
+    const safetyScore = ((candidate as { safety_score?: number }).safety_score || (candidate.safety_passed ? 0.85 : 0.6)) * 100
+    const tasteScore = ((candidate as { taste_score?: number }).taste_score || 0.6) * 100
+    const stabilityScore = ((candidate as { stability_score?: number }).stability_score || 0.7) * 100
     const synergyScore = (candidate.synergy_score || 0) * 100
     const overallScore = (candidate.overall_score || 0) * 100
 
@@ -47,7 +47,7 @@ class ReportExportService {
     `).join('')
 
     const effectBadges = effects.length > 0
-      ? effects.map(e => `<span style="display: inline-block; padding: 4px 12px; background-color: #dbeafe; color: #1e40af; border-radius: 4px; margin: 2px; font-size: 12px; font-family: 'Noto Sans SC', 'Microsoft YaHei', sans-serif;">${e}</span>`).join('')
+      ? effects.map(e => `<span style="display: inline-block; padding: 4px 12px; background-color: #E8F4FD; color: #003E87; border-radius: 4px; margin: 2px; font-size: 12px; font-family: 'Noto Sans SC', 'Microsoft YaHei', sans-serif;">${e}</span>`).join('')
       : '<span style="color: #9ca3af; font-family: \'Noto Sans SC\', \'Microsoft YaHei\', sans-serif;">暂无功效说明</span>'
 
     const warningItems = warnings.length > 0
@@ -56,7 +56,7 @@ class ReportExportService {
 
     const safetyStatus = candidate.safety_passed
       ? `<span style="color: #16a34a; font-weight: bold; font-family: 'Noto Sans SC', 'Microsoft YaHei', sans-serif;">✓ 安全评估通过 - 适合人群使用</span>`
-      : `<span style="color: #dc2626; font-weight: bold; font-family: 'Noto Sans SC', 'Microsoft YaHei', sans-serif;">⚠ 需要关注的安全问题 - 建议在专业人员指导下使用</span>`
+      : `<span style="color: #B91C1C; font-weight: bold; font-family: 'Noto Sans SC', 'Microsoft YaHei', sans-serif;">⚠ 需要关注的安全问题 - 建议在专业人员指导下使用</span>`
 
     return `
 <!DOCTYPE html>
@@ -93,7 +93,7 @@ class ReportExportService {
     .header h1 {
       font-size: 28px;
       font-weight: 700;
-      color: #2563eb;
+      color: #007AFF;
       margin-bottom: 10px;
     }
     .header .subtitle {
@@ -124,7 +124,7 @@ class ReportExportService {
     }
     .score-card.purple { background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%); }
     .score-card.yellow { background: linear-gradient(135deg, #fef9c3 0%, #fef08a 100%); }
-    .score-card.blue { background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); }
+    .score-card.blue { background: linear-gradient(135deg, #E8F4FD 0%, #D2EFFF 100%); }
     .score-card.green { background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%); }
     .score-card .label {
       font-size: 12px;
@@ -137,7 +137,7 @@ class ReportExportService {
     }
     .score-card.purple .value { color: #9333ea; }
     .score-card.yellow .value { color: #ca8a04; }
-    .score-card.blue .value { color: #2563eb; }
+    .score-card.blue .value { color: #007AFF; }
     .score-card.green .value { color: #16a34a; }
     .score-bar {
       width: 100%;
@@ -153,7 +153,7 @@ class ReportExportService {
     }
     .score-card.purple .score-bar-fill { background-color: #9333ea; }
     .score-card.yellow .score-bar-fill { background-color: #ca8a04; }
-    .score-card.blue .score-bar-fill { background-color: #2563eb; }
+    .score-card.blue .score-bar-fill { background-color: #007AFF; }
     .score-card.green .score-bar-fill { background-color: #16a34a; }
     table {
       width: 100%;
@@ -177,14 +177,14 @@ class ReportExportService {
     }
     .safety-passed {
       background-color: #dcfce7;
-      border: 1px solid #86efac;
+      border: 1px solid #4ADE80;
       padding: 15px;
       border-radius: 8px;
       margin-bottom: 10px;
     }
     .safety-warning {
-      background-color: #fef3c7;
-      border: 1px solid #fcd34d;
+      background-color: #FFF3CD;
+      border: 1px solid #FFB340;
       padding: 15px;
       border-radius: 8px;
       margin-bottom: 10px;
@@ -265,7 +265,7 @@ class ReportExportService {
       <div class="${candidate.safety_passed ? 'safety-passed' : 'safety-warning'}">
         ${safetyStatus}
       </div>
-      ${warningItems ? `<div style="margin-top: 10px;"><strong style="color: #d97706;">注意事项：</strong><ul style="margin-left: 20px; color: #92400e;">${warningItems}</ul></div>` : ''}
+      ${warningItems ? `<div style="margin-top: 10px;"><strong style="color: #B45309;">注意事项：</strong><ul style="margin-left: 20px; color: #D97706;">${warningItems}</ul></div>` : ''}
     </div>
 
     <div class="section">

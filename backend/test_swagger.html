@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Swagger Test</title>
+<script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
+</head>
+<body>
+<div id="swagger-ui"></div>
+<script>
+const ui = SwaggerUIBundle({
+    url: 'http://localhost:8000/openapi.json',
+    dom_id: '#swagger-ui',
+    layout: 'BaseLayout',
+    onComplete: function() {
+        console.log('[SUCCESS] Swagger loaded!');
+    },
+    onError: function(err) {
+        console.error('[ERROR]', err);
+        document.getElementById('swagger-ui').innerHTML = '<p style="color:red; padding:20px;">加载失败: ' + JSON.stringify(err) + '</p>';
+    }
+});
+</script>
+</body>
+</html>

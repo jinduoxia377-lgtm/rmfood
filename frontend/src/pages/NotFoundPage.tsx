@@ -12,7 +12,7 @@ export default function NotFoundPage() {
       <div className="max-w-lg w-full text-center space-y-6 animate-fade-in">
         {/* 装饰 */}
         <div className="relative inline-block">
-          <div className="text-[120px] sm:text-[150px] font-black text-slate-200 dark:text-slate-800 leading-none select-none">
+          <div className="text-[120px] sm:text-[150px] font-black text-neutral-200 dark:text-neutral-800 leading-none select-none">
             404
           </div>
           <div className="absolute inset-0 flex items-center justify-center">
@@ -24,8 +24,8 @@ export default function NotFoundPage() {
 
         {/* 文字 */}
         <div className="space-y-2">
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">页面未找到</h1>
-          <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
+          <h1 className="h1 text-neutral-900 dark:text-white">页面未找到</h1>
+          <p className="text-neutral-500 dark:text-neutral-400 text-sm leading-relaxed">
             你访问的页面不存在或已被移除。
             <br />请检查地址是否正确，或从下方快捷入口前往。
           </p>
@@ -52,8 +52,8 @@ export default function NotFoundPage() {
           {[
             { to: '/formulas', icon: FlaskConical, label: '配方', color: 'text-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20' },
             { to: '/experiments', icon: TestTubes, label: '实验', color: 'text-violet-500 hover:bg-violet-50 dark:hover:bg-violet-900/20' },
-            { to: '/ai', icon: Sparkles, label: 'AI', color: 'text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20' },
-            { to: '/databases', icon: Database, label: '数据库', color: 'text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20' },
+            { to: '/ai', icon: Sparkles, label: 'AI', color: 'text-warning-500 hover:bg-warning-50 dark:hover:bg-warning-900/20' },
+            { to: '/databases', icon: Database, label: '数据库', color: 'text-secondary-500 hover:bg-secondary-50 dark:hover:bg-secondary-900/20' },
           ].map((item) => (
             <Link
               key={item.to}

@@ -75,11 +75,11 @@ export function ColorEditor({ config, onChange }: ColorEditorProps) {
   return (
     <div className="space-y-4">
       {/* Sync Toggle */}
-      <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">同步调整</span>
+      <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-neutral-800 rounded-lg">
+        <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">同步调整</span>
         <button
           onClick={() => setSyncEnabled(!syncEnabled)}
-          className={`relative w-11 h-6 rounded-full transition-colors ${syncEnabled ? 'bg-primary-600' : 'bg-gray-300'}`}
+          className={`relative w-11 h-6 rounded-full transition-colors ${syncEnabled ? 'bg-primary-600' : 'bg-neutral-300'}`}
         >
           <span
             className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${syncEnabled ? 'left-6' : 'left-1'}`}
@@ -94,15 +94,15 @@ export function ColorEditor({ config, onChange }: ColorEditorProps) {
           const currentValue = config.colors?.[key as keyof NonNullable<typeof config.colors>] ?? '#000000'
 
           return (
-            <div key={key} className="p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 space-y-2">
+            <div key={key} className="p-3 bg-white dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700 space-y-2">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-medium text-gray-600 dark:text-gray-400">{label}</label>
+                <label className="text-xs font-medium text-neutral-600 dark:text-neutral-400">{label}</label>
                 {lockable && (
                   <button onClick={() => toggleLock(key)} title={isLocked ? '已锁定' : '点击锁定'}>
                     {isLocked ? (
                       <Lock className="w-3.5 h-3.5 text-primary-600" />
                     ) : (
-                      <Unlock className="w-3.5 h-3.5 text-gray-400" />
+                      <Unlock className="w-3.5 h-3.5 text-neutral-400" />
                     )}
                   </button>
                 )}
@@ -114,14 +114,14 @@ export function ColorEditor({ config, onChange }: ColorEditorProps) {
                   value={currentValue}
                   onChange={(e) => !isLocked && handleColorChange(key, e.target.value)}
                   disabled={isLocked}
-                  className="w-10 h-10 rounded cursor-pointer border-2 border-gray-200 dark:border-gray-600"
+                  className="w-10 h-10 rounded cursor-pointer border-2 border-neutral-200 dark:border-neutral-600"
                 />
                 <input
                   type="text"
                   value={currentValue}
                   onChange={(e) => /^#[0-9A-Fa-f]{0,6}$/.test(e.target.value) && !isLocked && handleColorChange(key, e.target.value)}
                   disabled={isLocked}
-                  className="flex-1 px-2 py-1 text-xs bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded font-mono"
+                  className="flex-1 px-2 py-1 text-xs bg-slate-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded font-mono"
                 />
               </div>
             </div>

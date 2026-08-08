@@ -27,6 +27,7 @@ const sizeClasses = {
 
 export function Modal({ open, onClose, title, description, children, className, size = 'md', maxWidth }: ModalProps) {
   const closeButtonRef = useRef<HTMLButtonElement>(null)
+  const modalRef = useRef<HTMLDivElement>(null)
   const previousActiveElement = useRef<HTMLElement | null>(null)
   const [mounted, setMounted] = useState(false)
 
@@ -39,10 +40,32 @@ export function Modal({ open, onClose, title, description, children, className, 
     previousActiveElement.current = document.activeElement as HTMLElement
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
+      // Focus trap: Tab / Shift+Tab within modal
+      if (e.key === 'Tab') {
+        const focusable = modalRef.current?.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        )
+        if (focusable?.length) {
+          const first = focusable[0]
+          const last = focusable[focusable.length - 1]
+          if (e.shiftKey && document.activeElement === first) {
+            e.preventDefault()
+            last.focus()
+          } else if (!e.shiftKey && document.activeElement === last) {
+            e.preventDefault()
+            first.focus()
+          }
+        }
+      }
     }
     document.addEventListener('keydown', handler)
     document.body.style.overflow = 'hidden'
-    closeButtonRef.current?.focus()
+    // 优先聚焦关闭按钮（如果有），否则聚焦 modal 容器
+    if (title || description) {
+      closeButtonRef.current?.focus()
+    } else {
+      modalRef.current?.focus()
+    }
     return () => {
       document.removeEventListener('keydown', handler)
       document.body.style.overflow = ''
@@ -53,16 +76,18 @@ export function Modal({ open, onClose, title, description, children, className, 
   if (!open || !mounted) return null
 
   return createPortal(
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[var(--z-modal-backdrop,9999)] flex items-center justify-center p-4">
       <div
         className="absolute inset-0 bg-black/65 backdrop-blur-sm transition-opacity animate-fade-in"
         onClick={onClose}
         aria-hidden="true"
       />
       <div
+        ref={modalRef}
+        tabIndex={-1}
         className={cn(
-          'relative w-full rounded-2xl bg-white dark:bg-slate-900 shadow-xl',
-          'border border-slate-200 dark:border-slate-800',
+          'relative w-full rounded-2xl bg-white dark:bg-neutral-900 shadow-xl',
+          'border border-neutral-200 dark:border-neutral-800',
           'animate-scale-in',
           maxWidth ?? sizeClasses[size],
           className,
@@ -75,13 +100,13 @@ export function Modal({ open, onClose, title, description, children, className, 
         {(title || description) && (
           <div className="flex items-start justify-between p-6 pb-0">
             <div>
-              {title && <h2 id="modal-title" className="text-lg font-semibold text-slate-900 dark:text-white">{title}</h2>}
-              {description && <p id="modal-description" className="mt-1 text-sm text-slate-500 dark:text-slate-400">{description}</p>}
+              {title && <h2 id="modal-title" className="text-lg font-semibold text-neutral-900 dark:text-white">{title}</h2>}
+              {description && <p id="modal-description" className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">{description}</p>}
             </div>
             <button
               ref={closeButtonRef}
               onClick={onClose}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors -mr-1.5 -mt-1.5 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+              className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors -mr-1.5 -mt-1.5 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
               aria-label="关闭对话框"
             >
               <X size={18} />

@@ -38,6 +38,7 @@
  * - 渐进式: 可按需启用子模块 (先启用 Worker, 再启用微前端)
  */
 
+import { logger } from '@/utils/safeLogger';
 // ========== 类型定义 (TypeScript JSDoc style) ==========
 
 /**
@@ -61,21 +62,73 @@
 
 // ========== 1. 微前端核心 (轻量级 Module Federation 模拟) ==========
 
+interface MicroFrontendOptions {
+  rootSelector: string;
+  defaultVersion: string;
+  enableStyleSandbox: boolean;
+  enableEventSandbox: boolean;
+  enableCache: boolean;
+}
+
+interface MicroFrontendAppConfig {
+  name: string;
+  url: string;
+  routes: string[];
+  version: string;
+  lazy: boolean;
+  permissions: string[];
+  props: Record<string, unknown>;
+  stylePrefix: string;
+}
+
+interface MicroFrontendGlobalState {
+  user: unknown;
+  permissions: Set<string>;
+  theme: string;
+  i18n: string;
+}
+
+interface MicroFrontendLogger {
+  log: (...args: unknown[]) => void;
+  warn: (...args: unknown[]) => void;
+  error: (...args: unknown[]) => void;
+}
+
+interface MicroFrontendAppInstance {
+  bootstrap?: () => Promise<void>;
+  mount?: (ctx: Record<string, unknown>) => Promise<void>;
+  unmount?: () => Promise<void>;
+  [key: string]: unknown;
+}
+
+declare global {
+  interface Window {
+    MF_APPS?: Record<string, MicroFrontendAppInstance>;
+  }
+}
+
 class MicroFrontendCore {
-  constructor(options = {}) {
+  private options: MicroFrontendOptions;
+  private registeredApps: Map<string, MicroFrontendAppConfig>;
+  private activeApps: Map<string, MicroFrontendAppInstance>;
+  private globalState: MicroFrontendGlobalState;
+  private mountCounter: number;
+  private logger: MicroFrontendLogger;
+
+  constructor(options: Record<string, unknown> = {}) {
     this.options = {
-      rootSelector: options.rootSelector || "#rmfood-root",
-      defaultVersion: options.defaultVersion || "1.0.0",
-      enableStyleSandbox: options.enableStyleSandbox !== false,
-      enableEventSandbox: options.enableEventSandbox !== false,
-      enableCache: options.enableCache !== false,
+      rootSelector: (options.rootSelector as string) || "#rmfood-root",
+      defaultVersion: (options.defaultVersion as string) || "1.0.0",
+      enableStyleSandbox: (options.enableStyleSandbox as boolean) !== false,
+      enableEventSandbox: (options.enableEventSandbox as boolean) !== false,
+      enableCache: (options.enableCache as boolean) !== false,
     };
 
     this.registeredApps = new Map(); // name -> config
     this.activeApps = new Map(); // name -> instance
     this.globalState = {
       user: null,
-      permissions: new Set(),
+      permissions: new Set<string>(),
       theme: "light",
       i18n: "zh-CN",
     };
@@ -84,55 +137,55 @@ class MicroFrontendCore {
     this.logger = this._createLogger();
   }
 
-  _createLogger() {
+  _createLogger(): MicroFrontendLogger {
     return {
-      log: (...args) => console.log("%c[MF]", "color:#4f46e5;font-weight:bold;", ...args),
-      warn: (...args) => console.warn("%c[MF]", "color:#f59e0b;font-weight:bold;", ...args),
-      error: (...args) => console.error("%c[MF]", "color:#ef4444;font-weight:bold;", ...args),
+      log: (...args: unknown[]) => logger.info("%c[MF]", "color:#4f46e5;font-weight:bold;", ...args.map((a: unknown) => String(a))),
+      warn: (...args: unknown[]) => logger.warn("%c[MF]", "color:#D97706;font-weight:bold;", ...args.map((a: unknown) => String(a))),
+      error: (...args: unknown[]) => logger.error("%c[MF]", "color:#FF3B30;font-weight:bold;", ...args.map((a: unknown) => String(a))),
     };
   }
 
   // ───────── 注册 / 发现 ─────────
 
-  register(config) {
+  register(config: Record<string, unknown>): MicroFrontendAppConfig {
     if (!config || !config.name || !config.url) {
       throw new Error("[MF] 子应用注册失败: 缺少 name 或 url");
     }
 
-    if (this.registeredApps.has(config.name)) {
+    if (this.registeredApps.has(config.name as string)) {
       this.logger.warn(`子应用已存在, 覆盖注册: ${config.name}`);
     }
 
-    const normalized = {
-      name: config.name,
-      url: config.url,
-      routes: config.routes || ["/"],
-      version: config.version || this.options.defaultVersion,
-      lazy: config.lazy !== false,
-      permissions: config.permissions || [],
-      props: config.props || {},
+    const normalized: MicroFrontendAppConfig = {
+      name: config.name as string,
+      url: config.url as string,
+      routes: (config.routes as string[]) || ["/"],
+      version: (config.version as string) || this.options.defaultVersion,
+      lazy: (config.lazy as boolean) !== false,
+      permissions: (config.permissions as string[]) || [],
+      props: (config.props as Record<string, unknown>) || {},
       stylePrefix: `mf-${config.name}`,
     };
 
-    this.registeredApps.set(config.name, normalized);
+    this.registeredApps.set(config.name as string, normalized);
     this.logger.log(`已注册子应用: ${config.name} v${normalized.version}`);
     return normalized;
   }
 
-  registerBatch(configs) {
-    return configs.map(config => this.register(config));
+  registerBatch(configs: Record<string, unknown>[]): MicroFrontendAppConfig[] {
+    return configs.map((config: Record<string, unknown>) => this.register(config));
   }
 
   // ───────── 加载 / 挂载 / 卸载 ─────────
 
-  async loadApp(name) {
+  async loadApp(name: string): Promise<MicroFrontendAppInstance> {
     const config = this.registeredApps.get(name);
     if (!config) {
       throw new Error(`[MF] 未找到子应用: ${name}`);
     }
 
     if (this.activeApps.has(name)) {
-      return this.activeApps.get(name);
+      return this.activeApps.get(name)!;
     }
 
     try {
@@ -146,7 +199,7 @@ class MicroFrontendCore {
     }
   }
 
-  async mount(name, mountOptions = {}) {
+  async mount(name: string, mountOptions: Record<string, unknown> = {}): Promise<{ success: boolean; instance?: MicroFrontendAppInstance; reason?: string; error?: string }> {
     const config = this.registeredApps.get(name);
     if (!config) {
       throw new Error(`[MF] 未找到子应用: ${name}`);
@@ -184,11 +237,11 @@ class MicroFrontendCore {
       return { success: true, instance };
     } catch (err) {
       this.logger.error(`✗ 挂载子应用失败: ${name}`, err);
-      return { success: false, error: err.message };
+      return { success: false, error: (err as Error).message };
     }
   }
 
-  async unmount(name) {
+  async unmount(name: string): Promise<{ success: boolean; reason?: string; error?: string }> {
     const instance = this.activeApps.get(name);
     if (!instance) {
       return { success: false, reason: "not_found" };
@@ -215,21 +268,21 @@ class MicroFrontendCore {
       return { success: true };
     } catch (err) {
       this.logger.error(`✗ 卸载失败: ${name}`, err);
-      return { success: false, error: err.message };
+      return { success: false, error: (err as Error).message };
     }
   }
 
   // ───────── 内部实现: 动态模块加载 ─────────
 
-  async _loadRemoteModule(config) {
+  async _loadRemoteModule(config: MicroFrontendAppConfig): Promise<MicroFrontendAppInstance> {
     // 方案 1: 如果是 ES Module, 直接 import()
     if (config.url.endsWith(".js") || config.url.includes(".js?")) {
       try {
         // eslint-disable-next-line no-undef
         const module = await import(/* webpackIgnore: true */ config.url);
-        return module.default || module;
+        return (module.default || module) as MicroFrontendAppInstance;
       } catch (err) {
-        this.logger.warn(`import() 方式失败, 回退到 <script>: ${err.message}`);
+        this.logger.warn(`import() 方式失败, 回退到 <script>: ${(err as Error).message}`);
       }
     }
 
@@ -261,15 +314,15 @@ class MicroFrontendCore {
         } else {
           // 宽松模式: 没有找到暴露, 也返回一个空对象避免阻塞
           resolve({
-            mount: (ctx) => {
+            mount: async (ctx: Record<string, unknown>) => {
               const container = ctx.container;
               if (container) {
-                container.innerHTML = `<div style="padding:20px;color:#666;">
+                (container as HTMLElement).innerHTML = `<div style="padding:20px;color:#666;">
                   子应用已加载 (${config.name}) - 请提供 mount 钩子
                 </div>`;
               }
             },
-            unmount: () => {},
+            unmount: async () => {},
           });
         }
       };
@@ -283,7 +336,7 @@ class MicroFrontendCore {
     });
   }
 
-  _getContainer(name) {
+  _getContainer(name: string): HTMLElement {
     let el = document.getElementById(`mf-container-${name}`);
     if (!el) {
       el = document.createElement("div");
@@ -297,49 +350,49 @@ class MicroFrontendCore {
     return el;
   }
 
-  _checkAppPermissions(config) {
+  _checkAppPermissions(config: MicroFrontendAppConfig): boolean {
     if (!config.permissions || config.permissions.length === 0) {
       return true;
     }
-    return config.permissions.every((perm) => this.globalState.permissions.has(perm));
+    return config.permissions.every((perm: string) => this.globalState.permissions.has(perm));
   }
 
-  _buildRouterBridge(name) {
+  _buildRouterBridge(name: string) {
     // 简化版路由桥: 子应用可访问当前路径, 并通过主应用的事件广播
     return {
       get currentPath() {
         return window.location.pathname;
       },
-      navigate: (path) => {
+      navigate: (path: string) => {
         window.history.pushState({}, "", path);
         window.dispatchEvent(new CustomEvent("mf:route-change", { detail: { app: name, path } }));
       },
-      on: (event, handler) => window.addEventListener(`mf:${event}`, handler),
-      off: (event, handler) => window.removeEventListener(`mf:${event}`, handler),
+      on: (event: string, handler: EventListener) => window.addEventListener(`mf:${event}`, handler),
+      off: (event: string, handler: EventListener) => window.removeEventListener(`mf:${event}`, handler),
     };
   }
 
-  _buildEventBus(name) {
+  _buildEventBus(name: string) {
     return {
-      emit: (event, payload) => {
+      emit: (event: string, payload: unknown) => {
         window.dispatchEvent(new CustomEvent(`mf:${name}:${event}`, { detail: payload }));
       },
-      on: (event, handler) => window.addEventListener(`mf:${name}:${event}`, handler),
-      off: (event, handler) => window.removeEventListener(`mf:${name}:${event}`, handler),
-      broadcast: (event, payload) => {
+      on: (event: string, handler: EventListener) => window.addEventListener(`mf:${name}:${event}`, handler),
+      off: (event: string, handler: EventListener) => window.removeEventListener(`mf:${name}:${event}`, handler),
+      broadcast: (event: string, payload: unknown) => {
         window.dispatchEvent(new CustomEvent(`mf:*:${event}`, { detail: { source: name, payload } }));
       },
     };
   }
 
-  _cleanupAppStyles(name) {
+  _cleanupAppStyles(name: string): void {
     const selector = `style[data-mf-name="${name}"], link[data-mf-name="${name}"]`;
-    document.querySelectorAll(selector).forEach((el) => el.remove());
+    document.querySelectorAll(selector).forEach((el: Element) => (el as HTMLElement).remove());
   }
 
   // ───────── 全局状态管理 ─────────
 
-  setGlobalState(partial) {
+  setGlobalState(partial: Partial<MicroFrontendGlobalState>): void {
     this.globalState = { ...this.globalState, ...partial };
     if (partial.permissions instanceof Set) {
       this.globalState.permissions = partial.permissions;
@@ -373,13 +426,65 @@ class MicroFrontendCore {
 
 // ========== 2. Web Worker 计算引擎 ==========
 
+interface WorkerEngineOptions {
+  poolSize: number;
+  taskTimeoutMs: number;
+  maxQueueSize: number;
+  enableAutoScale: boolean;
+}
+
+interface WorkerEngineStats {
+  totalTasks: number;
+  completedTasks: number;
+  failedTasks: number;
+  timedOutTasks: number;
+  retriedTasks: number;
+  avgWaitTimeMs: number;
+  avgExecTimeMs: number;
+  currentQueueSize: number;
+}
+
+interface WorkerEngineLogger {
+  log: (...args: unknown[]) => void;
+  warn: (...args: unknown[]) => void;
+  error: (...args: unknown[]) => void;
+}
+
+interface WorkerTask {
+  id: string;
+  type: string;
+  payload: unknown;
+  priority: number;
+  timeoutMs: number;
+  retry: number;
+  submitTime: number;
+  resolve?: (value: unknown) => void;
+  reject?: (reason?: unknown) => void;
+}
+
+interface ExtendedWorker extends Worker {
+  _url?: string;
+  _index: number;
+  _busy: boolean;
+  _lastUsed: number;
+  _taskCount: number;
+  _lastAssigned?: number;
+}
+
 class WorkerComputeEngine {
-  constructor(options = {}) {
+  private options: WorkerEngineOptions;
+  private pool: ExtendedWorker[];
+  private taskQueue: WorkerTask[];
+  private pendingTasks: Map<string, { task: WorkerTask; type: string; resolve: (value: unknown) => void; reject: (reason?: unknown) => void; timeoutId: ReturnType<typeof setTimeout>; retry: number }>;
+  private stats: WorkerEngineStats;
+  private logger: WorkerEngineLogger;
+
+  constructor(options: Record<string, unknown> = {}) {
     this.options = {
-      poolSize: options.poolSize || Math.min(4, Math.max(1, (navigator.hardwareConcurrency || 2) - 1)),
-      taskTimeoutMs: options.taskTimeoutMs || 30000,
-      maxQueueSize: options.maxQueueSize || 1000,
-      enableAutoScale: options.enableAutoScale !== false,
+      poolSize: (options.poolSize as number) || Math.min(4, Math.max(1, (navigator.hardwareConcurrency || 2) - 1)),
+      taskTimeoutMs: (options.taskTimeoutMs as number) || 30000,
+      maxQueueSize: (options.maxQueueSize as number) || 1000,
+      enableAutoScale: (options.enableAutoScale as boolean) !== false,
     };
 
     this.pool = []; // 活跃的 Worker 实例
@@ -407,43 +512,43 @@ class WorkerComputeEngine {
     });
   }
 
-  _createLogger() {
+  _createLogger(): WorkerEngineLogger {
     return {
-      log: (...args) => console.log("%c[WORKER]", "color:#059669;font-weight:bold;", ...args),
-      warn: (...args) => console.warn("%c[WORKER]", "color:#f59e0b;font-weight:bold;", ...args),
-      error: (...args) => console.error("%c[WORKER]", "color:#ef4444;font-weight:bold;", ...args),
+      log: (...args: unknown[]) => logger.info("%c[WORKER]", "color:#28A745;font-weight:bold;", ...args.map((a: unknown) => String(a))),
+      warn: (...args: unknown[]) => logger.warn("%c[WORKER]", "color:#D97706;font-weight:bold;", ...args.map((a: unknown) => String(a))),
+      error: (...args: unknown[]) => logger.error("%c[WORKER]", "color:#FF3B30;font-weight:bold;", ...args.map((a: unknown) => String(a))),
     };
   }
 
   // ───────── 线程池管理 ─────────
 
-  _initPool() {
+  _initPool(): void {
     for (let i = 0; i < this.options.poolSize; i++) {
       this.pool.push(this._createWorker(i));
     }
     this.logger.log(`线程池初始化: ${this.pool.length} 个 Worker`);
   }
 
-  _createWorker(index) {
+  _createWorker(index: number): ExtendedWorker {
     // 使用 Blob 创建内联 Worker (无需额外文件)
     const workerScript = this._getWorkerScript();
     const blob = new Blob([workerScript], { type: "application/javascript" });
     const url = URL.createObjectURL(blob);
 
-    const worker = new Worker(url);
+    const worker = new Worker(url) as ExtendedWorker;
     worker._url = url;
     worker._index = index;
     worker._busy = false;
     worker._lastUsed = Date.now();
     worker._taskCount = 0;
 
-    worker.onmessage = (event) => this._handleMessage(worker, event.data);
-    worker.onerror = (event) => this._handleError(worker, event);
+    worker.onmessage = (event: MessageEvent) => this._handleMessage(worker, event.data);
+    worker.onerror = (event: ErrorEvent) => this._handleError(worker, event);
 
     return worker;
   }
 
-  _getWorkerScript() {
+  _getWorkerScript(): string {
     // 内置 Worker 代码: 支持多种计算任务
     return `
       // ============== Worker 内部脚本 ==============
@@ -624,7 +729,7 @@ class WorkerComputeEngine {
     `;
   }
 
-  _handleMessage(worker, data) {
+  _handleMessage(worker: ExtendedWorker, data: Record<string, unknown>): void {
     const { taskId, status, result, error } = data || {};
 
     if (taskId === "__ready__") {
@@ -632,21 +737,21 @@ class WorkerComputeEngine {
       return;
     }
 
-    const pending = this.pendingTasks.get(taskId);
+    const pending = this.pendingTasks.get(taskId as string);
     if (!pending) {
       this.logger.warn(`收到未知任务响应: ${taskId}`);
       return;
     }
 
     clearTimeout(pending.timeoutId);
-    this.pendingTasks.delete(taskId);
+    this.pendingTasks.delete(taskId as string);
     worker._busy = false;
     worker._lastUsed = Date.now();
     worker._taskCount++;
 
     if (status === "success") {
       this.stats.completedTasks++;
-      this.stats.avgExecTimeMs = (this.stats.avgExecTimeMs * (this.stats.completedTasks - 1) + (data.durationMs || 0)) / this.stats.completedTasks;
+      this.stats.avgExecTimeMs = (this.stats.avgExecTimeMs * (this.stats.completedTasks - 1) + ((data.durationMs as number) || 0)) / this.stats.completedTasks;
       pending.resolve(result);
     } else {
       // 是否重试
@@ -658,14 +763,14 @@ class WorkerComputeEngine {
         return;
       }
       this.stats.failedTasks++;
-      pending.reject(new Error(error || "worker_error"));
+      pending.reject(new Error((error as string) || "worker_error"));
     }
 
     // 尝试执行排队的任务
     this._processQueue();
   }
 
-  _handleError(worker, event) {
+  _handleError(worker: ExtendedWorker, event: ErrorEvent): void {
     this.logger.error(`Worker #${worker._index} 发生错误:`, event.message);
     // 标记错误, 尝试重启
     try { worker.terminate(); } catch {}
@@ -680,14 +785,14 @@ class WorkerComputeEngine {
 
   // ───────── 任务调度 ─────────
 
-  async run(type, payload, options = {}) {
-    const task = {
+  async run(type: string, payload: unknown, options: Record<string, unknown> = {}): Promise<unknown> {
+    const task: WorkerTask = {
       id: `task-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
       type,
       payload,
-      priority: options.priority || 5,
-      timeoutMs: options.timeoutMs || this.options.taskTimeoutMs,
-      retry: options.retry || 1,
+      priority: (options.priority as number) || 5,
+      timeoutMs: (options.timeoutMs as number) || this.options.taskTimeoutMs,
+      retry: (options.retry as number) || 1,
       submitTime: Date.now(),
     };
 
@@ -709,13 +814,15 @@ class WorkerComputeEngine {
       // 超出最大队列: 拒绝
       if (this.taskQueue.length > this.options.maxQueueSize) {
         const dropped = this.taskQueue.pop();
-        dropped.reject(new Error("队列已满, 任务被丢弃"));
-        this.stats.currentQueueSize--;
+        if (dropped && dropped.reject) {
+          dropped.reject(new Error("队列已满, 任务被丢弃"));
+          this.stats.currentQueueSize--;
+        }
       }
     });
   }
 
-  _getIdleWorker() {
+  _getIdleWorker(): ExtendedWorker | null {
     const idle = this.pool.find((w) => !w._busy);
     if (idle) return idle;
 
@@ -729,7 +836,7 @@ class WorkerComputeEngine {
     return null;
   }
 
-  _assignToWorker(task, worker) {
+  _assignToWorker(task: WorkerTask, worker: ExtendedWorker): Promise<unknown> {
     return new Promise((resolve, reject) => {
       worker._busy = true;
       worker._lastAssigned = Date.now();
@@ -758,7 +865,7 @@ class WorkerComputeEngine {
     });
   }
 
-  _processQueue() {
+  _processQueue(): void {
     if (this.taskQueue.length === 0) return;
     const idleWorker = this._getIdleWorker();
     if (!idleWorker) return;
@@ -766,15 +873,13 @@ class WorkerComputeEngine {
     const next = this.taskQueue.shift();
     if (!next) return;
     this.stats.currentQueueSize--;
-
-    const waitMs = Date.now() - next.submitTime;
-    this.stats.avgWaitTimeMs = (this.stats.avgWaitTimeMs * (this.stats.totalTasks - this.taskQueue.length - 1) + waitMs) /
+    this.stats.avgWaitTimeMs = (this.stats.avgWaitTimeMs * (this.stats.totalTasks - this.taskQueue.length - 1) + (Date.now() - next.submitTime)) /
       Math.max(1, this.stats.totalTasks - this.taskQueue.length);
 
     this._assignToWorker(next, idleWorker).then(next.resolve).catch(next.reject);
   }
 
-  _scaleDown(targetSize) {
+  _scaleDown(targetSize: number): void {
     while (this.pool.length > targetSize) {
       const victim = this.pool.pop();
       if (victim && !victim._busy) {
@@ -786,19 +891,19 @@ class WorkerComputeEngine {
 
   // ───────── 便捷 API ─────────
 
-  optimizeFormula(payload) {
+  optimizeFormula(payload: unknown): Promise<unknown> {
     return this.run("formula-optimization", payload, { priority: 8, timeoutMs: 60000 });
   }
 
-  analyzeStats(datasets, operations = ["summary", "correlation"]) {
+  analyzeStats(datasets: unknown, operations: string[] = ["summary", "correlation"]): Promise<unknown> {
     return this.run("statistical-analysis", { datasets, operations });
   }
 
-  aggregate(data, groupBy, aggregations) {
+  aggregate(data: unknown, groupBy: unknown, aggregations: unknown): Promise<unknown> {
     return this.run("data-aggregation", { data, groupBy, aggregations });
   }
 
-  sortLarge(data, field, options = {}) {
+  sortLarge(data: unknown, field: string, options: Record<string, unknown> = {}): Promise<unknown> {
     return this.run("large-sort", { data, field, ...options });
   }
 
@@ -818,7 +923,7 @@ class WorkerComputeEngine {
     };
   }
 
-  destroy() {
+  destroy(): void {
     this.pool.forEach((w) => {
       try {
         w.terminate();
@@ -834,12 +939,27 @@ class WorkerComputeEngine {
 
 // ========== 3. 前端性能监控 ==========
 
+interface FrontendMonitorOptions {
+  reportUrl: string | null;
+  reportIntervalMs: number;
+  sampleRate: number;
+}
+
+interface FrontendMonitorMetrics {
+  vitals: Record<string, number>;
+  custom: Record<string, { value: unknown; timestamp: number }>;
+  errors: Array<Record<string, unknown>>;
+}
+
 class FrontendMonitor {
-  constructor(options = {}) {
+  private options: FrontendMonitorOptions;
+  private metrics: FrontendMonitorMetrics;
+
+  constructor(options: Record<string, unknown> = {}) {
     this.options = {
-      reportUrl: options.reportUrl || null,
-      reportIntervalMs: options.reportIntervalMs || 30000,
-      sampleRate: options.sampleRate || 1.0, // 100% 采样
+      reportUrl: (options.reportUrl as string | null) || null,
+      reportIntervalMs: (options.reportIntervalMs as number) || 30000,
+      sampleRate: (options.sampleRate as number) || 1.0, // 100% 采样
     };
     this.metrics = {
       vitals: {},  // LCP, FID, CLS, TTFB
@@ -850,7 +970,7 @@ class FrontendMonitor {
     this._setupErrorTracking();
   }
 
-  _setupVitals() {
+  _setupVitals(): void {
     // LCP (Largest Contentful Paint)
     try {
       const lcpObserver = new PerformanceObserver((list) => {
@@ -865,8 +985,8 @@ class FrontendMonitor {
     try {
       const fidObserver = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
-          if (entry.processingStart) {
-            const fid = entry.processingStart - entry.startTime;
+          if ((entry as PerformanceEventTiming).processingStart) {
+            const fid = (entry as PerformanceEventTiming).processingStart - entry.startTime;
             this.metrics.vitals.FID = Math.round(fid);
             break;
           }
@@ -880,7 +1000,7 @@ class FrontendMonitor {
     try {
       const clsObserver = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
-          if (!entry.hadRecentInput) clsValue += entry.value;
+          if (!(entry as LayoutShift).hadRecentInput) clsValue += (entry as LayoutShift).value;
         }
         this.metrics.vitals.CLS = Number(clsValue.toFixed(4));
       });
@@ -898,8 +1018,8 @@ class FrontendMonitor {
     });
   }
 
-  _setupErrorTracking() {
-    window.addEventListener("error", (event) => {
+  _setupErrorTracking(): void {
+    window.addEventListener("error", (event: ErrorEvent) => {
       this.metrics.errors.push({
         type: "js",
         message: event.message,
@@ -912,7 +1032,7 @@ class FrontendMonitor {
       if (this.metrics.errors.length > 50) this.metrics.errors.shift();
     });
 
-    window.addEventListener("unhandledrejection", (event) => {
+    window.addEventListener("unhandledrejection", (event: PromiseRejectionEvent) => {
       this.metrics.errors.push({
         type: "promise",
         message: String(event.reason),
@@ -922,7 +1042,7 @@ class FrontendMonitor {
   }
 
   // 自定义性能标记
-  mark(name, value) {
+  mark(name: string, value: unknown): void {
     this.metrics.custom[name] = {
       value,
       timestamp: Date.now(),
@@ -930,7 +1050,7 @@ class FrontendMonitor {
   }
 
   getReport() {
-    const memory = (performance && performance.memory) || {};
+    const memory = (performance as unknown as Record<string, unknown>).memory as Record<string, number> | undefined || {};
     return {
       timestamp: Date.now(),
       url: location.href,
@@ -956,13 +1076,13 @@ class FrontendMonitor {
 
 // ========== 4. 组件级权限控制 (简版) ==========
 
-function createPermissionChecker(userRole, permissions = []) {
+function createPermissionChecker(userRole: string, permissions: string[] = []) {
   const permSet = new Set(permissions);
   return {
-    can: (permission) => permSet.has(permission) || userRole === "admin",
-    hasRole: (role) => userRole === role || userRole === "admin",
+    can: (permission: string) => permSet.has(permission) || userRole === "admin",
+    hasRole: (role: string) => userRole === role || userRole === "admin",
     // React 辅助: renderIf(<Component/>, "perm:xxx")
-    renderIf: (node, permission) => (permSet.has(permission) || userRole === "admin" ? node : null),
+    renderIf: (node: unknown, permission: string) => (permSet.has(permission) || userRole === "admin" ? node : null),
   };
 }
 

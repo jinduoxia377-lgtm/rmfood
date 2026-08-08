@@ -20,7 +20,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status, Background
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_, or_
 
-from ...core.session import get_db
+from ...core.database.session import get_db
 from ...models.user_device import UserDevice
 from ...models.sync_log import SyncLog
 from ...models.enums import DeviceType, SyncAction, SyncStatus
@@ -40,7 +40,7 @@ from ...schemas.sync_schemas import (
     SyncChangeItem,
 )
 from ...api.deps import get_current_active_user, get_db_session, CurrentUser, DbSession
-from ...core.exceptions import NotFoundError, ConflictError
+from app.core.middleware.exceptions import NotFoundError, ConflictError
 from ...services.sync.diff_detector import DiffDetector, SyncChange, ChangeType
 from ...services.sync.change_queue import ChangeQueue, QueueItem
 from ...services.sync.conflict_detector import (
@@ -202,10 +202,10 @@ async def push_changes(
         )
         
     except Exception as e:
-        logger.error(f"[Sync] 推送失败: {e}", exc_info=True)
+        logger.error("[Sync] 推送失败: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"同步推送失败: {str(e)}",
+            detail="服务器内部错误，请稍后重试",
         )
 
 
@@ -426,10 +426,10 @@ async def resolve_conflict(
         )
         
     except Exception as e:
-        logger.error(f"[Sync] 冲突解决失败: {e}", exc_info=True)
+        logger.error("[Sync] 冲突解决失败: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"冲突解决失败: {str(e)}",
+            detail="服务器内部错误，请稍后重试",
         )
 
 
@@ -567,7 +567,7 @@ async def get_sync_history(
             query = query.where(SyncLog.status == sync_status)
             count_query = count_query.where(SyncLog.status == sync_status)
         except ValueError:
-            pass
+            logger.debug(f"无效的同步状态过滤器: {status_filter}")
     
     total_result = await db.execute(count_query)
     total = total_result.scalar() or 0
@@ -643,7 +643,8 @@ async def full_sync(
         try:
             if isinstance(last_sync_ts, str):
                 last_sync_ts = datetime.fromisoformat(last_sync_ts.replace("Z", "+00:00"))
-        except Exception:
+        except Exception as ts_err:
+            logger.warning("时间戳解析失败: %s", ts_err)
             last_sync_ts = None
     
     try:
@@ -679,10 +680,10 @@ async def full_sync(
         }
         
     except Exception as e:
-        logger.error(f"[Sync] 完整同步失败: {e}", exc_info=True)
+        logger.error("[Sync] 完整同步失败: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"同步失败: {str(e)}",
+            detail="服务器内部错误，请稍后重试",
         )
 
 
@@ -736,10 +737,10 @@ async def incremental_sync(
         }
         
     except Exception as e:
-        logger.error(f"[Sync] 增量同步失败: {e}", exc_info=True)
+        logger.error("[Sync] 增量同步失败: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"增量同步失败: {str(e)}",
+            detail="服务器内部错误，请稍后重试",
         )
 
 
@@ -810,10 +811,10 @@ async def encrypt_sensitive_data(
         }
         
     except Exception as e:
-        logger.error(f"[Sync] 数据加密失败: {e}", exc_info=True)
+        logger.error("[Sync] 数据加密失败: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"数据加密失败: {str(e)}",
+            detail="服务器内部错误，请稍后重试",
         )
 
 
@@ -845,8 +846,8 @@ async def decrypt_sensitive_data(
         }
         
     except Exception as e:
-        logger.error(f"[Sync] 数据解密失败: {e}", exc_info=True)
+        logger.error("[Sync] 数据解密失败: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"数据解密失败: {str(e)}",
+            detail="服务器内部错误，请稍后重试",
         )

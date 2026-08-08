@@ -149,8 +149,8 @@ export function TagMultiSelect({
         aria-labelledby="tag-select-label"
         aria-describedby="tag-select-desc"
         className={cn(
-          'w-full min-h-[36px] px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700',
-          'bg-white dark:bg-slate-900 text-sm text-left',
+          'w-full min-h-[36px] px-3 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700',
+          'bg-white dark:bg-neutral-900 text-sm text-left',
           'hover:border-primary-400 dark:hover:border-primary-600 transition-colors',
           'flex flex-wrap gap-1.5 items-center',
           'focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
@@ -161,7 +161,7 @@ export function TagMultiSelect({
           {open ? '已打开标签选择下拉菜单' : '点击打开标签选择下拉菜单'}
         </span>
         {selectedTags.length === 0 ? (
-          <span className="text-slate-400 dark:text-slate-500">{placeholder}</span>
+          <span className="text-neutral-400 dark:text-neutral-500">{placeholder}</span>
         ) : (
           selectedTags.map((tag) => (
             <Badge
@@ -178,7 +178,7 @@ export function TagMultiSelect({
                   e.stopPropagation()
                   removeTag(tag.id)
                 }}
-                className="hover:text-red-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 rounded"
+                className="hover:text-error-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 rounded"
                 aria-label={`移除标签 ${tag.name}`}
               >
                 <X size={10} />
@@ -190,13 +190,13 @@ export function TagMultiSelect({
 
       {open && (
         <div
-          className="absolute z-30 mt-1 w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl overflow-hidden"
+          className="absolute z-30 mt-1 w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl shadow-xl overflow-hidden"
           role="listbox"
           aria-multiselectable="true"
           aria-label="标签选择列表"
           aria-activedescendant={selectedTags.length > 0 ? `tag-item-${selectedTags[0].id}` : undefined}
         >
-          <div className="p-2 border-b border-slate-100 dark:border-slate-800">
+          <div className="p-2 border-b border-neutral-100 dark:border-neutral-800">
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -208,7 +208,7 @@ export function TagMultiSelect({
                   <button
                     type="button"
                     onClick={() => setSearch('')}
-                    className="hover:text-red-500"
+                    className="hover:text-error-500"
                     aria-label="清除搜索"
                   >
                     <X size={14} />
@@ -226,11 +226,11 @@ export function TagMultiSelect({
             onScroll={handleScroll}
           >
             {loading ? (
-              <div className="p-4 text-center text-sm text-slate-400">
+              <div className="p-4 text-center text-sm text-neutral-400">
                 <div className="w-4 h-4 border-2 border-primary-300 border-t-primary-600 rounded-full animate-spin mx-auto" />
               </div>
             ) : tags.length === 0 ? (
-              <div className="p-4 text-center text-sm text-slate-400">
+              <div className="p-4 text-center text-sm text-neutral-400">
                 {search ? '未找到匹配标签' : '暂无标签数据'}
               </div>
             ) : (
@@ -250,7 +250,7 @@ export function TagMultiSelect({
                         id={`tag-item-${tag.id}`}
                         role="option"
                         aria-selected={isSelected}
-                        aria-disabled={tag.usage_count === 0}
+                        aria-disabled={(tag.usageCount ?? 0) === 0}
                         onClick={() => toggleTag(tag.id)}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' || e.key === ' ') {
@@ -263,7 +263,7 @@ export function TagMultiSelect({
                         tabIndex={isSelected ? 0 : -1}
                         className={cn(
                           'flex items-center gap-2 px-3 py-2 text-sm cursor-pointer',
-                          'hover:bg-slate-50 dark:hover:bg-slate-800',
+                          'hover:bg-slate-50 dark:hover:bg-neutral-800',
                           isSelected && 'bg-primary-50 dark:bg-primary-900/20',
                         )}
                         style={{ height: `${ITEM_HEIGHT}px` }}
@@ -272,19 +272,19 @@ export function TagMultiSelect({
                           className={cn(
                             'w-2 h-2 rounded-full',
                             tagVariant === 'primary' && 'bg-primary-500',
-                            tagVariant === 'success' && 'bg-emerald-500',
-                            tagVariant === 'warning' && 'bg-amber-500',
+                            tagVariant === 'success' && 'bg-primary-500',
+                            tagVariant === 'warning' && 'bg-warning-500',
                             tagVariant === 'info' && 'bg-sky-500',
-                            tagVariant === 'neutral' && 'bg-slate-400',
+                            tagVariant === 'neutral' && 'bg-neutral-400',
                           )}
                         />
-                        <TagIcon size={12} className="text-slate-400" />
+                        <TagIcon size={12} className="text-neutral-400" />
                         <span
                           className={cn(
                             'flex-1 truncate',
                             isSelected
                               ? 'text-primary-700 dark:text-primary-400 font-medium'
-                              : 'text-slate-700 dark:text-slate-300',
+                              : 'text-neutral-700 dark:text-neutral-300',
                           )}
                         >
                           {tag.name}
@@ -294,9 +294,9 @@ export function TagMultiSelect({
                             ✓
                           </span>
                         )}
-                        {tag.usage_count > 0 && (
-                          <span className="text-xs text-slate-400">
-                            {tag.usage_count}次
+                        {(tag.usageCount ?? 0) > 0 && (
+                          <span className="text-xs text-neutral-400">
+                            {(tag.usageCount ?? 0)}次
                           </span>
                         )}
                       </div>
@@ -307,7 +307,7 @@ export function TagMultiSelect({
             )}
 
             {search && !tags.some((t) => t.name.toLowerCase() === search.toLowerCase()) && (
-              <div className="p-2 border-t border-slate-100 dark:border-slate-800">
+              <div className="p-2 border-t border-neutral-100 dark:border-neutral-800">
                 <div className="flex items-center gap-2">
                   <Input
                     value={creatingName || search}

@@ -148,7 +148,8 @@ class DataMasker:
             if matched_rule:
                 try:
                     result[key] = matched_rule.mask_func(value, context=context)
-                except Exception:
+                except Exception as mask_err:
+                    logger.debug("掩码规则应用失败，使用原始值: %s", mask_err)
                     result[key] = value
             elif isinstance(value, (dict, list)):
                 result[key] = self.mask(value, context)
@@ -354,8 +355,8 @@ class SyncDataMaskingMiddleware:
                                 }
                         except (_json.JSONDecodeError, UnicodeDecodeError):
                             pass
-                except Exception:
-                    pass
+                except Exception as resp_err:
+                    logger.debug("响应掩码处理失败: %s", resp_err)
                     
             await send(message)
 

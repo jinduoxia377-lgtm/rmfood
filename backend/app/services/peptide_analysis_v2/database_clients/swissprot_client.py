@@ -33,8 +33,8 @@ class SwissProtClient(UniProtClient):
     >>> client = SwissProtClient()
     >>> entry = await client.get_expert_annotation("P01308")
     >>> if entry.get("is_swiss_prot"):
-    ...     print("这是高质量的Swiss-Prot条目")
-    ...     print(f"可靠性评分: {entry['reliability_score']}")
+    ...     logger.info("这是高质量的Swiss-Prot条目")
+    ...     logger.info(f"可靠性评分: {entry['reliability_score']}")
     """
     
     # Swiss-Prot专用的额外字段
@@ -64,8 +64,8 @@ class SwissProtClient(UniProtClient):
             >>> client = SwissProtClient()
             >>> expert_info = await client.get_expert_annotation("P01308")
             >>> if expert_info.get("is_swiss_prot"):
-            ...     print(f"可靠性评分: {expert_info['reliability_score']}/5")
-            ...     print(f"证据类型数: {len(expert_info['evidence_tags'])}")
+            ...     logger.info(f"可靠性评分: {expert_info['reliability_score']}/5")
+            ...     logger.info(f"证据类型数: {len(expert_info['evidence_tags'])}")
         """
         base_entry = await self.get_protein_by_accession(accession)
         
@@ -302,7 +302,7 @@ async def test_swissprot_real_data():
             logger.info(f"      - 注释质量分: {quality['annotation_score']}")
         else:
             logger.warning(f"   ⚠️ 不是Swiss-Prot条目: {expert_info.get('warning')}")
-        print()
+        logger.info()
         
     logger.info("="*80)
     logger.info("🎉 Swiss-Prot真实数据验证测试通过！")

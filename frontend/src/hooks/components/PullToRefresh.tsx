@@ -78,7 +78,7 @@ export default function PullToRefresh({
           opacity: pullDistance > 20 ? 1 : 0,
         }}
       >
-        <div className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400">
+        <div className="flex items-center gap-2 text-sm text-secondary-600 dark:text-secondary-400">
           {isRefreshing ? (
             <>
               <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />

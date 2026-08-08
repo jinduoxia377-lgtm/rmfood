@@ -181,8 +181,8 @@ export function useChatSessions(): UseChatSessionsReturn {
   })
 
   // Refs（避免闭包问题）
-  const sessionsRef = useRef<ChatSession>(sessions)
-  sessionsRef.current = sessions as any
+  const sessionsRef = useRef<ChatSession[]>(sessions)
+  sessionsRef.current = sessions
 
   /**
    * 持久化会话列表到 localStorage

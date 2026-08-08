@@ -12,23 +12,23 @@ import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, us
 import type { DragEndEvent } from '@dnd-kit/core'
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import {
-  FlaskConical, TestTubes, TrendingUp, Clock, BarChart3, Plus,
-  ArrowRight, Brain, Database, Sparkles, ClipboardList, CheckCircle2,
-  AlertTriangle, Activity, Download, Settings,
+  Sparkles, Download, Settings, AlertTriangle,
 } from 'lucide-react'
 import { useDashboardStatistics, useDashboardTrends, useFormulas, useExperiments } from '@/hooks/useQueries'
 import { useAuthStore } from '@/stores/auth'
-import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from '@/components/ui'
+import { Card, CardHeader, CardTitle, CardContent, Button, Badge, StatCard } from '@/components/ui'
 import { StatusBadge, Skeleton, EmptyState } from '@/components/ui/Common'
 import { activityApi, type TimelineEvent, type TodoItem, type ReviewQueueItem } from '@/api/activity'
 import { notificationApi } from '@/api/notifications'
 import { useQuery } from '@tanstack/react-query'
-import { cn } from '@/lib/utils'
 import { STATUS_CONFIG, DASHBOARD_CONFIG } from '@/config'
+
+const STATUS_LABELS = STATUS_CONFIG.labels
 import DashboardConfigManager, { CARD_CATALOG, DEFAULT_CARDS, type CardConfig, type DashboardLayout } from '@/config/dashboard'
 import { DraggableCard, DashboardLayout as GridLayout, LayoutEditor, LayoutSwitcher } from '@/pages/formula/components/DashboardLayout'
 import { NotificationCenter, NotificationBadge } from '@/pages/formula/components/NotificationCenter'
 import { AIInsights, KPIDashboard } from '@/pages/formula/components/AIInsights'
+import { subscribeToChannel } from '@/services/websocket'
 
 // 懒加载非首屏组件
 const RealTimeSync = lazy(() => import('@/components/dashboard/RealTimeSync').then(m => ({ default: m.RealTimeSync })))
@@ -41,614 +41,197 @@ const ApiIntegrationManager = lazy(() => import('@/components/dashboard/ApiInteg
 const AIAnalysisPanel = lazy(() => import('@/components/dashboard/AIAnalysisPanel').then(m => ({ default: m.AIAnalysisPanel })))
 const WebSocketStatus = lazy(() => import('@/components/ui/WebSocketStatus').then(m => ({ default: m.WebSocketStatus })))
 
-const STATUS_COLORS = STATUS_CONFIG.colors
-const STATUS_LABELS = STATUS_CONFIG.labels
+import {
+  StatsCards,
+  TrendChart,
+  FormulaPieChart,
+  ExperimentBarChart,
+  QuickActions,
+  RecentFormulas,
+  RecentExperiments,
+  TodosList,
+  ReviewQueueList,
+  ActivityTimeline,
+} from '@/components/dashboard/cards'
+import { CardSkeleton as CardSkeletonComp } from '@/components/ui/Skeleton'
 
-import { CHART_TYPOGRAPHY } from '../../utils/typography';
+
 import { logger } from '@/utils/safeLogger';
-
-// 懒加载骨架屏占位
-function CardSkeleton() {
-  return (
-    <Card className="shadow-md">
-      <CardContent className="p-6 space-y-3 animate-pulse">
-        <div className="h-5 w-1/3 rounded bg-slate-200 dark:bg-slate-700" />
-        <div className="h-4 w-2/3 rounded bg-slate-200 dark:bg-slate-700" />
-        <div className="h-20 w-full rounded bg-slate-200 dark:bg-slate-700" />
+// Card component mapping — replaces the ~440-line switch statement
+const CARD_COMPONENTS: Record<string, React.ComponentType<any>> = {
+  'stats-formulas': StatsCards,
+  'stats-experiments': StatsCards,
+  'stats-in-progress': StatsCards,
+  'stats-completed': StatsCards,
+  'chart-trends': TrendChart,
+  'chart-formula-pie': FormulaPieChart,
+  'chart-experiment-bar': ExperimentBarChart,
+  'quick-actions': QuickActions,
+  'recent-formulas': RecentFormulas,
+  'recent-experiments': RecentExperiments,
+  'todos': TodosList,
+  'review-queue': ReviewQueueList,
+  'activity-timeline': ActivityTimeline,
+  'kpi-dashboard': () => <KPIDashboard />,
+  'team-activity': () => (
+    <Card>
+      <CardHeader className="px-6 pt-6 pb-4">
+        <CardTitle as="h3" className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>团队活动</CardTitle>
+      </CardHeader>
+      <CardContent className="px-6 pb-6 pt-0">
+        <EmptyState icon={<Sparkles size={48} />} title="即将上线" description="团队协作功能开发中，敬请期待" />
       </CardContent>
     </Card>
-  )
+  ),
+  'ai-insights': () => <AIInsights />,
+  'websocket-status': () => <Suspense fallback={<CardSkeletonComp className="h-32" />}><WebSocketStatus /></Suspense>,
+  'real-time-sync': () => <Suspense fallback={<CardSkeletonComp className="h-32" />}><RealTimeSync /></Suspense>,
+  'export-manager': () => <Suspense fallback={<CardSkeletonComp className="h-32" />}><ExportManager /></Suspense>,
+  'api-integration': () => <Suspense fallback={<CardSkeletonComp className="h-32" />}><ApiIntegrationManager /></Suspense>,
+  'ai-analysis': () => <Suspense fallback={<CardSkeletonComp className="h-32" />}><AIAnalysisPanel /></Suspense>,
 }
 
-const tooltipStyle = {
-  contentStyle: {
-    backgroundColor: 'rgba(255,255,255,0.98)',
-    backdropFilter: 'blur(16px)',
-    borderRadius: '14px',
-    border: '1px solid rgba(226,232,240,0.9)',
-    boxShadow: '0 12px 40px rgba(0,0,0,0.12)',
-    padding: '14px 18px',
-    fontSize: CHART_TYPOGRAPHY.tooltipContent.fontSize + 'px',
-  },
-  itemStyle: { padding: '4px 0' },
-  labelStyle: {
-    fontWeight: CHART_TYPOGRAPHY.tooltipTitle.fontWeight,
-    marginBottom: 6,
-    color: 'var(--color-text-primary, #1E293B)',
-  },
+// Lazy components that need layout props — rendered inline in renderCard
+function renderTeamDashboardShare(currentLayout: DashboardLayout, setCurrentLayout: (layout: DashboardLayout) => void) {
+  return <Suspense fallback={<CardSkeletonComp className="h-32" />}><TeamDashboardShare dashboard={currentLayout} onUpdate={setCurrentLayout} /></Suspense>
 }
-
-interface DashboardData {
-  formulas: {
-    total: number
-    by_status: Record<string, number>
-  }
-  experiments: {
-    total: number
-    by_status: Record<string, number>
-  }
+function renderTeamOnlineStatus(dashboardId: string) {
+  return <Suspense fallback={<CardSkeletonComp className="h-32" />}><TeamOnlineStatus dashboardId={dashboardId} /></Suspense>
 }
-
-interface TrendsData {
-  data: {
-    date: string
-    formulas_created: number
-    experiments_created: number
-    formulas_approved: number
-  }[]
+function renderChangeHistory(dashboardId: string) {
+  return <Suspense fallback={<CardSkeletonComp className="h-32" />}><ChangeHistory dashboardId={dashboardId} /></Suspense>
 }
-
-interface FormulaData {
-  id: number
-  name: string
-  code: string
-  status: string
-  created_at: string
-  creator_name: string
-}
-
-interface ExperimentData {
-  id: number
-  title: string
-  code: string
-  formula_id: number
-  formula_name: string
-  status: string
-  created_at: string
+function renderTemplateManager(currentLayout: DashboardLayout, setCurrentLayout: (layout: DashboardLayout) => void) {
+  return <Suspense fallback={<CardSkeletonComp className="h-32" />}><TemplateManager currentLayout={currentLayout} onUpdate={setCurrentLayout} /></Suspense>
 }
 
 interface CardRenderProps {
   card: CardConfig
-  data: DashboardData | null
-  trendsData: TrendsData | null
-  formulasData: { items: FormulaData[] } | null
-  experimentsData: { items: ExperimentData[] } | null
-  todos: TodoItem[]
-  reviewQueue: ReviewQueueItem[]
-  timeline: TimelineEvent[]
+  data: { formulas: { total: number; by_status: Record<string, number> }; experiments: { total: number; by_status: Record<string, number> } } | null
+  trendsData: { data: { date: string; formulas_created: number; experiments_created: number; formulas_approved: number }[] } | null
+  formulasData: { data: { id: number; name: string; code: string; status: string; created_at: string; creator_name: string }[] } | null
+  experimentsData: { data: { id: number; title: string; code: string; formula_id: number; formula_name: string; status: string; created_at: string }[] } | null
+  todos: { type: string; id: number | string; title: string; detail: string; priority: 'high' | 'medium' | 'low' }[]
+  reviewQueue: { id: number | string; name: string; code: string; creator_name: string; target_effects: string[] }[]
+  timeline: { type: string; id: number | string; event: string; title: string; created_at: string; status: string }[]
   navigate: (url: string) => void
   currentLayout: DashboardLayout
   setCurrentLayout: (layout: DashboardLayout) => void
 }
 
-interface PieData {
-  name: string
-  value: number
-  key: string
-}
-
-interface BarData {
-  name: string
-  count: number
-  key: string
-}
-
 function renderCard({ card, data, trendsData, formulasData, experimentsData, todos, reviewQueue, timeline, navigate, currentLayout, setCurrentLayout }: CardRenderProps) {
-  const statCards = [
-    { label: DASHBOARD_CONFIG.statCardLabels.formulas, value: data?.formulas?.total ?? 0, icon: FlaskConical, variant: 'primary' as const, iconBg: 'bg-primary-100 dark:bg-primary-900/30', iconColor: 'var(--color-primary)' },
-    { label: DASHBOARD_CONFIG.statCardLabels.experiments, value: data?.experiments?.total ?? 0, icon: TestTubes, variant: 'secondary' as const, iconBg: 'bg-secondary-100 dark:bg-secondary-900/30', iconColor: 'var(--color-secondary)' },
-    { label: DASHBOARD_CONFIG.statCardLabels.inProgressExperiments, value: data?.experiments?.by_status?.in_progress ?? 0, icon: TrendingUp, variant: 'info' as const, iconBg: 'bg-blue-100 dark:bg-blue-900/30', iconColor: 'var(--color-info)' },
-    { label: DASHBOARD_CONFIG.statCardLabels.completedExperiments, value: data?.experiments?.by_status?.completed ?? 0, icon: CheckCircle2, variant: 'success' as const, iconBg: 'bg-green-100 dark:bg-green-900/30', iconColor: 'var(--color-success)' },
-  ]
+  // Lazy-access to currentLayout/setCurrentLayout for the components that need them
+  const lazyLayout = { currentLayout, setCurrentLayout }
 
-  const formulaPieData: PieData[] = data?.formulas?.by_status
-    ? Object.entries(data.formulas.by_status).filter(([, value]) => value > 0).map(([status, value]) => ({ name: (STATUS_LABELS as any)[status] ?? status, value, key: status }))
-    : []
-
-  const experimentBarData: BarData[] = data?.experiments?.by_status
-    ? Object.entries(data.experiments.by_status).filter(([, value]) => value > 0).map(([status, value]) => ({ name: (STATUS_LABELS as any)[status] ?? status, count: value, key: status }))
-    : []
-
-  const trendChartData = trendsData?.data?.map((d) => ({
-    date: d.date.slice(5),
-    [DASHBOARD_CONFIG.chartLabels.newFormulas]: d.formulas_created,
-    [DASHBOARD_CONFIG.chartLabels.newExperiments]: d.experiments_created,
-    [DASHBOARD_CONFIG.chartLabels.approvedFormulas]: d.formulas_approved,
-  })) ?? []
-
-  const quickActions = [
-    { to: '/formulas/new', icon: Plus, title: '新建配方', desc: '药食同源配方', color: 'from-primary-500 to-primary-600' },
-    { to: '/experiments', icon: TestTubes, title: '实验管理', desc: '查看所有实验', color: 'from-violet-500 to-purple-600' },
-    { to: '/formulas?status=pending_review', icon: Clock, title: '待审核配方', desc: '审核配方方案', color: 'from-amber-500 to-orange-500' },
-    { to: '/ai', icon: Brain, title: 'AI智能助手', desc: '配方生成/分析', color: 'from-primary-500 to-teal-600' },
-    { to: '/databases', icon: Database, title: '数据库检索', desc: 'TCMSP / DFBP', color: 'from-sky-500 to-blue-600' },
-  ]
-
-  switch (card.type) {
-    case 'stats-formulas': {
-      const stat1 = statCards[0]
-      const Icon1 = stat1.icon
-      return (
-        <Card hoverable className="h-full px-6 py-4 shadow-md transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
-          <div className="flex flex-col h-full">
-            <p className="text-sm font-semibold mb-4 text-gray-600 dark:text-gray-400">{stat1.label}</p>
-            <div className="flex items-center justify-between flex-1">
-              <div className="flex items-center gap-4">
-                <p className="text-3xl font-extrabold text-gray-900 dark:text-gray-100">{stat1.value}</p>
-                <div className={`w-10 h-10 rounded-xl ${stat1.iconBg} flex items-center justify-center transition-all duration-300`} style={{ minWidth: '2.5rem', backgroundColor: stat1.iconBg.includes('primary') ? 'var(--color-primary-container)' : undefined }}>
-                  <Icon1 size={20} style={{ color: stat1.iconColor }} />
-                </div>
-              </div>
-            </div>
-          </div>
-        </Card>
-      )
-    }
-
-    case 'stats-experiments': {
-      const stat2 = statCards[1]
-      const Icon2 = stat2.icon
-      return (
-        <Card hoverable className="h-full px-6 py-4 shadow-md transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
-          <div className="flex flex-col h-full">
-            <p className="text-sm font-semibold mb-4 text-gray-600 dark:text-gray-400">{stat2.label}</p>
-            <div className="flex items-center justify-between flex-1">
-              <div className="flex items-center gap-4">
-                <p className="text-3xl font-extrabold text-gray-900 dark:text-gray-100">{stat2.value}</p>
-                <div className={`w-10 h-10 rounded-xl ${stat2.iconBg} flex items-center justify-center transition-all duration-300`} style={{ minWidth: '2.5rem' }}>
-                  <Icon2 size={20} style={{ color: stat2.iconColor }} />
-                </div>
-              </div>
-            </div>
-          </div>
-        </Card>
-      )
-    }
-
-    case 'stats-in-progress': {
-      const stat3 = statCards[2]
-      const Icon3 = stat3.icon
-      return (
-        <Card hoverable className="h-full px-6 py-4 shadow-md transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
-          <div className="flex flex-col h-full">
-            <p className="text-sm font-semibold mb-4 text-gray-600 dark:text-gray-400">{stat3.label}</p>
-            <div className="flex items-center justify-between flex-1">
-              <div className="flex items-center gap-4">
-                <p className="text-3xl font-extrabold text-gray-900 dark:text-gray-100">{stat3.value}</p>
-                <div className={`w-10 h-10 rounded-xl ${stat3.iconBg} flex items-center justify-center transition-all duration-300`} style={{ minWidth: '2.5rem' }}>
-                  <Icon3 size={20} style={{ color: stat3.iconColor }} />
-                </div>
-              </div>
-            </div>
-          </div>
-        </Card>
-      )
-    }
-
-    case 'stats-completed': {
-      const stat4 = statCards[3]
-      const Icon4 = stat4.icon
-      return (
-        <Card hoverable className="h-full px-6 py-4 shadow-md transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
-          <div className="flex flex-col h-full">
-            <p className="text-sm font-semibold mb-4 text-gray-600 dark:text-gray-400">{stat4.label}</p>
-            <div className="flex items-center justify-between flex-1">
-              <div className="flex items-center gap-4">
-                <p className="text-3xl font-extrabold text-gray-900 dark:text-gray-100">{stat4.value}</p>
-                <div className={`w-10 h-10 rounded-xl ${stat4.iconBg} flex items-center justify-center transition-all duration-300`} style={{ minWidth: '2.5rem' }}>
-                  <Icon4 size={20} style={{ color: stat4.iconColor }} />
-                </div>
-              </div>
-            </div>
-          </div>
-        </Card>
-      )
-    }
-
-    case 'chart-trends':
-      return (
-        <Card className="shadow-md hover:shadow-lg transition-all duration-300">
-          <CardContent className="px-6 pt-6 pb-6">
-            <div className="flex items-center gap-3 mb-4">
-              <BarChart3 size={20} className="text-slate-500 dark:text-slate-400" />
-              <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100">研发趋势</h3>
-            </div>
-            {trendChartData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={200}>
-                <AreaChart data={trendChartData} margin={{ top: 10, right: 10, left: 0, bottom: 10 }}>
-                  <defs>
-                    <linearGradient id="colorFormula" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="var(--color-success)" stopOpacity={0.18} />
-                      <stop offset="95%" stopColor="var(--color-success)" stopOpacity={0} />
-                    </linearGradient>
-                    <linearGradient id="colorExp" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="var(--color-purple-500, #8B5CF6)" stopOpacity={0.18} />
-                      <stop offset="95%" stopColor="var(--color-purple-500, #8B5CF6)" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color, #E2E8F0)" opacity={0.8} />
-                  <XAxis dataKey="date" tick={{ fontSize: 12, fill: 'var(--text-muted, #475569)' }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 12, fill: 'var(--text-muted, #475569)' }} axisLine={false} tickLine={false} width={40} />
-                  <Tooltip {...tooltipStyle} />
-                  <Legend wrapperStyle={{ paddingTop: 16, fontSize: 12 }} iconType="circle" iconSize={8} />
-                  <Area type="monotone" dataKey="新增配方" stroke="var(--color-success)" fill="url(#colorFormula)" strokeWidth={2} />
-                  <Area type="monotone" dataKey="新增实验" stroke="var(--color-purple-500, #8B5CF6)" fill="url(#colorExp)" strokeWidth={2} />
-                  <Area type="monotone" dataKey="批准配方" stroke="var(--color-info)" fill="none" strokeWidth={1.5} strokeDasharray="5 5" />
-                </AreaChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="h-[200px] flex items-center justify-center text-slate-500 dark:text-slate-400 text-sm">暂无趋势数据</div>
-            )}
-          </CardContent>
-        </Card>
-      )
-
-    case 'chart-formula-pie':
-      return (
-        <Card className="shadow-md hover:shadow-lg transition-all duration-300">
-          <CardHeader className="px-6 pt-6 pb-4">
-            <CardTitle as="h3" className="text-sm font-bold" style={{ color: 'var(--text-primary, #1e293b)' }}>配方状态分布</CardTitle>
-          </CardHeader>
-          <CardContent className="px-6 pb-6 pt-0">
-            {formulaPieData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={200}>
-                <PieChart>
-                  <Pie data={formulaPieData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={3} dataKey="value"
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                    labelLine={{ stroke: 'var(--text-muted, #64748B)', strokeWidth: 1.2 }}>
-                    {formulaPieData.map((entry) => (
-                      <Cell key={entry.key} fill={(STATUS_COLORS as any)[entry.key] ?? 'var(--color-neutral-500, #64748B)'} />
-                    ))}
-                  </Pie>
-                  <Tooltip {...tooltipStyle} />
-                </PieChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="h-[200px] flex items-center justify-center text-slate-500 dark:text-slate-400 text-sm">暂无配方数据</div>
-            )}
-          </CardContent>
-        </Card>
-      )
-
-    case 'chart-experiment-bar':
-      return (
-        <Card className="shadow-md hover:shadow-lg transition-all duration-300">
-          <CardHeader className="px-6 pt-6 pb-4">
-            <CardTitle as="h3" className="text-sm font-bold" style={{ color: 'var(--text-primary, #1e293b)' }}>实验状态统计</CardTitle>
-          </CardHeader>
-          <CardContent className="px-6 pb-6 pt-0">
-            {experimentBarData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={experimentBarData} layout="vertical" margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color, #E2E8F0)" horizontal={false} opacity={0.8} />
-                  <XAxis type="number" tick={{ fontSize: 12, fill: 'var(--text-muted, #475569)' }} axisLine={false} tickLine={false} />
-                  <YAxis type="category" dataKey="name" tick={{ fontSize: 12, fill: 'var(--text-muted, #475569)' }} axisLine={false} tickLine={false} width={70} />
-                  <Tooltip {...tooltipStyle} />
-                  <Bar dataKey="count" radius={[0, 6, 6, 0]} barSize={28}>
-                    {experimentBarData.map((entry) => (
-                      <Cell key={entry.key} fill={(STATUS_COLORS as any)[entry.key] ?? 'var(--color-neutral-500, #64748B)'} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="h-[200px] flex items-center justify-center text-slate-500 dark:text-slate-400 text-sm">暂无实验数据</div>
-            )}
-          </CardContent>
-        </Card>
-      )
-
-    case 'quick-actions':
-      return (
-        <Card className="shadow-md hover:shadow-lg transition-all duration-300">
-          <CardHeader className="px-6 pt-6 pb-4">
-            <CardTitle as="h3" className="text-sm font-bold" style={{ color: 'var(--text-primary, #1e293b)' }}>快捷操作</CardTitle>
-          </CardHeader>
-          <CardContent className="px-6 pb-6 pt-0">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {quickActions.map((action) => (
-                <Link
-                  key={action.to}
-                  to={action.to}
-                  className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 dark:border-slate-800 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group cursor-pointer hover:border-primary-200 dark:hover:border-primary-800/60 bg-white dark:bg-slate-900"
-                >
-                  <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${action.color} flex items-center justify-center shadow-md transition-all duration-300 hover:scale-110 text-white`}>
-                    <action.icon size={16} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-slate-900 dark:text-white text-sm">{action.title}</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{action.desc}</p>
-                  </div>
-                  <ArrowRight size={14} className="text-slate-400 dark:text-slate-500 group-hover:text-primary-500 transition-all duration-300" />
-                </Link>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )
-
-    case 'recent-formulas':
-      return (
-        <Card className="overflow-hidden shadow-md hover:shadow-lg transition-all duration-300">
-          <CardHeader className="px-6 pt-6 pb-4">
-            <div className="flex items-center justify-between">
-              <CardTitle as="h3" className="text-sm font-bold" style={{ color: 'var(--text-primary, #1e293b)' }}>最近配方</CardTitle>
-              <Link to="/formulas" className="text-xs text-primary-600 hover:text-primary-700 dark:text-primary-400 font-semibold flex items-center gap-1 transition-colors">
-                查看全部 <ArrowRight size={14} />
-              </Link>
-            </div>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="divide-y divide-slate-100 dark:divide-slate-800/40">
-              {!formulasData ? (
-                Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="px-6 py-3"><Skeleton className="h-5 w-3/4 mb-2" /><Skeleton className="h-3 w-1/2" /></div>
-                ))
-              ) : (formulasData?.items?.length ?? 0) === 0 ? (
-                <div className="px-6 py-10 text-center text-slate-500 dark:text-slate-400 text-sm">暂无配方数据</div>
-              ) : (
-                (formulasData?.items ?? []).slice(0, 5).map((f) => (
-                  <Link key={f.id} to={`/formulas/${f.id}`} className="block px-6 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors duration-200 cursor-pointer">
-                    <div className="flex items-center justify-between">
-                      <div className="min-w-0">
-                        <p className="text-xs font-semibold text-slate-900 dark:text-white truncate">{f.name}</p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{f.code}</p>
-                      </div>
-                      <StatusBadge status={f.status} />
-                    </div>
-                  </Link>
-                ))
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )
-
-    case 'recent-experiments':
-      return (
-        <Card className="overflow-hidden shadow-md hover:shadow-lg transition-all duration-300">
-          <CardHeader className="px-6 pt-6 pb-4">
-            <div className="flex items-center justify-between">
-              <CardTitle as="h3" className="text-sm font-bold" style={{ color: 'var(--text-primary, #1e293b)' }}>最近实验</CardTitle>
-              <Link to="/experiments" className="text-xs text-primary-600 hover:text-primary-700 dark:text-primary-400 font-semibold flex items-center gap-1 transition-colors">
-                查看全部 <ArrowRight size={14} />
-              </Link>
-            </div>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="divide-y divide-slate-100 dark:divide-slate-800/40">
-              {!experimentsData ? (
-                Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="px-6 py-3"><Skeleton className="h-5 w-3/4 mb-2" /><Skeleton className="h-3 w-1/2" /></div>
-                ))
-              ) : (experimentsData?.items?.length ?? 0) === 0 ? (
-                <div className="px-6 py-10 text-center text-slate-500 dark:text-slate-400 text-sm">暂无实验数据</div>
-              ) : (
-                (experimentsData?.items ?? []).slice(0, 5).map((e) => (
-                  <Link key={e.id} to={`/experiments/${e.id}`} className="block px-6 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors duration-200 cursor-pointer">
-                    <div className="flex items-center justify-between">
-                      <div className="min-w-0">
-                        <p className="text-xs font-semibold text-slate-900 dark:text-white truncate">{e.title}</p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{e.code}</p>
-                      </div>
-                      <StatusBadge status={e.status} />
-                    </div>
-                  </Link>
-                ))
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )
-
-    case 'todos':
-      return (
-        <Card className="overflow-hidden shadow-md hover:shadow-lg transition-all duration-300">
-          <CardHeader className="px-6 pt-6 pb-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <ClipboardList size={18} className="text-amber-500" />
-                <CardTitle as="h3" className="text-sm font-bold" style={{ color: 'var(--text-primary, #1e293b)' }}>待办事项</CardTitle>
-              </div>
-              <Badge variant="neutral" size="sm">{todos.length}</Badge>
-            </div>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="divide-y divide-slate-100 dark:divide-slate-800/40">
-              {todos.length === 0 ? (
-                <div className="px-6 py-10 text-center text-slate-500 dark:text-slate-400 text-sm">暂无待办事项</div>
-              ) : (
-                todos.slice(0, 6).map((todo: TodoItem) => (
-                  <Link
-                    key={`${todo.type}-${todo.id}`}
-                    to={
-                      todo.type === 'review_formula' ? `/formulas/${todo.id}` :
-                      `/experiments/${todo.id}`
-                    }
-                    className="block px-6 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors duration-200 cursor-pointer"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className={cn(
-                        'w-2 h-2 rounded-full shrink-0',
-                        todo.priority === 'high' ? 'bg-amber-500' :
-                        todo.priority === 'medium' ? 'bg-blue-500' : 'bg-slate-300',
-                      )} />
-                      <div className="min-w-0 flex-1">
-                        <p className="text-xs font-semibold text-slate-900 dark:text-white truncate">{todo.title}</p>
-                        <p className="text-xs text-slate-400 mt-1">{todo.detail}</p>
-                      </div>
-                      <ArrowRight size={14} className="text-slate-400 dark:text-slate-500 shrink-0" />
-                    </div>
-                  </Link>
-                ))
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )
-
-    case 'review-queue':
-      return (
-        <Card className="overflow-hidden shadow-md hover:shadow-lg transition-all duration-300">
-          <CardHeader className="px-6 pt-6 pb-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <AlertTriangle size={18} className="text-amber-500" />
-                <CardTitle as="h3" className="text-sm font-bold" style={{ color: 'var(--text-primary, #1e293b)' }}>待审核配方</CardTitle>
-              </div>
-              <Badge variant="neutral" size="sm">{reviewQueue.length}</Badge>
-            </div>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="divide-y divide-slate-100 dark:divide-slate-800/40">
-              {reviewQueue.length === 0 ? (
-                <div className="px-6 py-10 text-center text-slate-500 dark:text-slate-400 text-sm">暂无待审核配方</div>
-              ) : (
-                reviewQueue.slice(0, 6).map((item: ReviewQueueItem) => (
-                  <Link
-                    key={item.id}
-                    to={`/formulas/${item.id}`}
-                    className="block px-6 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors duration-200 cursor-pointer"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="min-w-0">
-                        <p className="text-xs font-semibold text-slate-900 dark:text-white truncate">{item.name}</p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="text-xs text-slate-400">{item.code}</span>
-                          <span className="text-xs text-slate-300 dark:text-slate-600">·</span>
-                          <span className="text-xs text-slate-400">{item.creator_name}</span>
-                        </div>
-                        {item.target_effects.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-1.5">
-                            {item.target_effects.slice(0, 3).map((e: string) => (
-                              <Badge key={e} variant="primary" size="sm">{e}</Badge>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                      <ArrowRight size={14} className="text-slate-400 dark:text-slate-500 shrink-0" />
-                    </div>
-                  </Link>
-                ))
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )
-
-    case 'activity-timeline':
-      return (
-        <Card className="overflow-hidden shadow-md hover:shadow-lg transition-all duration-300">
-          <CardHeader className="px-6 pt-6 pb-4">
-            <div className="flex items-center gap-3">
-              <Activity size={18} className="text-primary-500" />
-              <CardTitle as="h3" className="text-sm font-bold" style={{ color: 'var(--text-primary, #1e293b)' }}>最近动态</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="divide-y divide-slate-100 dark:divide-slate-800/40">
-              {timeline.length === 0 ? (
-                <div className="px-6 py-10 text-center text-slate-500 dark:text-slate-400 text-sm">暂无动态</div>
-              ) : (
-                timeline.slice(0, 8).map((event: TimelineEvent) => (
-                  <Link
-                    key={`${event.type}-${event.id}-${event.created_at}`}
-                    to={event.type === 'formula' ? `/formulas/${event.id}` : `/experiments/${event.id}`}
-                    className="block px-6 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors duration-200 cursor-pointer"
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className={cn(
-                        'w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5',
-                        event.type === 'formula' ? 'bg-primary-50 dark:bg-primary-900/20' : 'bg-blue-50 dark:bg-blue-900/20',
-                      )}>
-                        {event.type === 'formula' ? (
-                          <FlaskConical size={12} className="text-primary-600" />
-                        ) : (
-                          <TestTubes size={12} className="text-blue-600" />
-                        )}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-xs text-slate-700 dark:text-slate-300">
-                          <span className="font-semibold">{event.event}</span>: {event.title}
-                        </p>
-                        <p className="text-xs text-slate-400 mt-1">
-                          {new Date(event.created_at).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                        </p>
-                      </div>
-                      <StatusBadge status={event.status} />
-                    </div>
-                  </Link>
-                ))
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )
-
-    case 'kpi-dashboard':
-      return <KPIDashboard />
-
-    case 'team-activity':
-      return (
-        <Card className="shadow-md hover:shadow-lg transition-all duration-300">
-          <CardHeader className="px-6 pt-6 pb-4">
-            <CardTitle as="h3" className="text-sm font-bold" style={{ color: 'var(--text-primary, #1e293b)' }}>团队活动</CardTitle>
-          </CardHeader>
-          <CardContent className="px-6 pb-6 pt-0">
-            <EmptyState icon={<Sparkles size={48} />} title="即将上线" description="团队协作功能开发中，敬请期待" />
-          </CardContent>
-        </Card>
-      )
-
-    case 'ai-insights':
-      return <AIInsights />
-
-    case 'websocket-status':
-      return <Suspense fallback={<CardSkeleton />}><WebSocketStatus /></Suspense>
-
-    case 'real-time-sync':
-      return <Suspense fallback={<CardSkeleton />}><RealTimeSync /></Suspense>
-
-    case 'team-dashboard-share':
-      return <Suspense fallback={<CardSkeleton />}><TeamDashboardShare dashboard={currentLayout} onUpdate={setCurrentLayout} /></Suspense>
-
-    case 'team-online-status':
-      return <Suspense fallback={<CardSkeleton />}><TeamOnlineStatus dashboardId={currentLayout.id} /></Suspense>
-
-    case 'change-history':
-      return <Suspense fallback={<CardSkeleton />}><ChangeHistory dashboardId={currentLayout.id} /></Suspense>
-
-    case 'template-manager':
-      return <Suspense fallback={<CardSkeleton />}><TemplateManager currentLayout={currentLayout} onUpdate={setCurrentLayout} /></Suspense>
-
-    case 'export-manager':
-      return <Suspense fallback={<CardSkeleton />}><ExportManager /></Suspense>
-
-    case 'api-integration':
-      return <Suspense fallback={<CardSkeleton />}><ApiIntegrationManager /></Suspense>
-
-    case 'ai-analysis':
-      return <Suspense fallback={<CardSkeleton />}><AIAnalysisPanel /></Suspense>
-
-    default:
-      return (
-        <Card className="shadow-md hover:shadow-lg transition-all duration-300">
-          <CardContent className="p-6">
-            <EmptyState icon={<Sparkles size={48} />} title={card.title} description="此卡片功能即将上线" />
-          </CardContent>
-        </Card>
-      )
+  // Data preparation moved into individual card components
+  const statIndexMap: Record<string, number> = {
+    'stats-formulas': 0, 'stats-experiments': 1, 'stats-in-progress': 2, 'stats-completed': 3,
   }
+
+  // Prepare data for each card type
+  const props: Record<string, any> = {
+    card, data, trendsData, formulasData, experimentsData, todos, reviewQueue, timeline, navigate, currentLayout, setCurrentLayout,
+  }
+
+  // Stats cards — idx 0=formulas total, 1=experiments total, 2=in-progress experiments, 3=completed experiments
+  if (statIndexMap[card.type] !== undefined) {
+    const idx = statIndexMap[card.type]
+    const formulasTotal = (data?.formulas?.total ?? 0) as number
+    const experimentsTotal = (data?.experiments?.total ?? 0) as number
+    const experimentsByStatus = (data?.experiments?.by_status || {}) as Record<string, number>
+
+    if (idx === 0) {
+      props.total = formulasTotal
+    } else if (idx === 1) {
+      props.total = experimentsTotal
+    } else if (idx === 2) {
+      props.total = experimentsByStatus['in_progress'] ?? 0
+    } else {
+      props.total = experimentsByStatus['completed'] ?? 0
+    }
+  }
+
+  // Trend chart
+  if (card.type === 'chart-trends') {
+    props.data = trendsData?.data ?? []
+  }
+
+  // Pie chart
+  if (card.type === 'chart-formula-pie') {
+    const byStatus = data?.formulas?.by_status
+    const entries = byStatus
+      ? Object.entries(byStatus).filter(([, value]) => typeof value === 'number' && value > 0).map(([status, value]) => ({
+          name: (STATUS_LABELS as Record<string, string>)[status] ?? status, value, key: status,
+        }))
+      : []
+    props.data = entries
+  }
+
+  // Bar chart
+  if (card.type === 'chart-experiment-bar') {
+    const byStatus = data?.experiments?.by_status
+    const entries = byStatus
+      ? Object.entries(byStatus).filter(([, value]) => typeof value === 'number' && value > 0).map(([status, value]) => ({
+          name: (STATUS_LABELS as Record<string, string>)[status] ?? status, count: value, key: status,
+        }))
+      : []
+    props.data = entries
+  }
+
+  // Recent formulas
+  if (card.type === 'recent-formulas') {
+    props.items = formulasData?.data ?? null
+    props.loading = !formulasData
+  }
+
+  // Recent experiments
+  if (card.type === 'recent-experiments') {
+    props.items = experimentsData?.data ?? null
+    props.loading = !experimentsData
+  }
+
+  // Todos
+  if (card.type === 'todos') {
+    props.items = todos
+  }
+
+  // Review queue
+  if (card.type === 'review-queue') {
+    props.items = reviewQueue
+  }
+
+  // Activity timeline
+  if (card.type === 'activity-timeline') {
+    props.items = timeline
+  }
+
+  // Layout-dependent lazy components
+  if (card.type === 'team-dashboard-share') {
+    return renderTeamDashboardShare(currentLayout, setCurrentLayout)
+  }
+  if (card.type === 'team-online-status') {
+    return renderTeamOnlineStatus(currentLayout.id)
+  }
+  if (card.type === 'change-history') {
+    return renderChangeHistory(currentLayout.id)
+  }
+  if (card.type === 'template-manager') {
+    return renderTemplateManager(currentLayout, setCurrentLayout)
+  }
+
+  const Component = CARD_COMPONENTS[card.type]
+  if (Component) {
+    return <Component {...props} />
+  }
+
+  // Fallback for unknown card types
+  return (
+    <Card>
+      <CardContent className="p-6">
+        <EmptyState icon={<Sparkles size={48} />} title={card.title} description="此卡片功能即将上线" />
+      </CardContent>
+    </Card>
+  )
 }
 
 export default function DashboardPage() {
@@ -660,21 +243,21 @@ export default function DashboardPage() {
   const { data: formulasData } = useFormulas({ page: 1, page_size: 5 })
   const { data: experimentsData } = useExperiments({ page: 1, page_size: 5 })
 
-  // 活动数据
+  // 活动数据 — 延迟加载（staleTime 5 分钟，不阻塞首屏）
   const { data: timelineData } = useQuery({
     queryKey: ['activity-timeline'],
     queryFn: ({ signal }) => activityApi.timeline(7, signal),
-    staleTime: 60_000,
+    staleTime: 5 * 60_000,
   })
   const { data: todosData } = useQuery({
     queryKey: ['activity-todos'],
     queryFn: ({ signal }) => activityApi.todos(signal),
-    staleTime: 60_000,
+    staleTime: 5 * 60_000,
   })
   const { data: reviewQueueData } = useQuery({
     queryKey: ['activity-review-queue'],
     queryFn: ({ signal }) => activityApi.reviewQueue(signal),
-    staleTime: 60_000,
+    staleTime: 5 * 60_000,
   })
 
   const todos = todosData?.items ?? []
@@ -736,6 +319,18 @@ export default function DashboardPage() {
     notificationApi.unreadCount()
       .then((data) => setNotificationCount(data.count))
       .catch(() => setNotificationCount(0))
+  }, [])
+
+  // WebSocket 推送更新通知计数
+  useEffect(() => {
+    const unsubscribe = subscribeToChannel('notifications', (msg) => {
+      if (msg.type === 'notification.created' || msg.type === 'notification.marked_read') {
+        notificationApi.unreadCount()
+          .then((data) => setNotificationCount(data.count))
+          .catch(() => {})
+      }
+    })
+    return unsubscribe
   }, [])
   const [layoutColumns, setLayoutColumns] = useState(4)
   const [layoutGap, setLayoutGap] = useState(16)
@@ -835,16 +430,17 @@ export default function DashboardPage() {
     if (stats?.formulas && stats.experiments) {
       rows.push(['配方', '总数', String(stats.formulas.total ?? 0)])
       Object.entries(stats.formulas.by_status || {}).forEach(([k, v]) => {
-        if (v > 0) rows.push(['配方', (STATUS_LABELS as any)[k] ?? k, String(v)])
+        if (v > 0) rows.push(['配方', (STATUS_LABELS as Record<string, string>)[k] ?? k, String(v)])
       })
       rows.push(['实验', '总数', String(stats.experiments.total ?? 0)])
       Object.entries(stats.experiments.by_status || {}).forEach(([k, v]) => {
-        if (v > 0) rows.push(['实验', (STATUS_LABELS as any)[k] ?? k, String(v)])
+        if (v > 0) rows.push(['实验', (STATUS_LABELS as Record<string, string>)[k] ?? k, String(v)])
       })
     }
     const csv = rows.map((r) => r.map((c) => `"${c}"`).join(',')).join('\n')
-    const BOM = '\ufeff'
-    const blob = new Blob([BOM + csv], { type: 'text/csv;charset=utf-8' })
+    // macOS Excel \u4e0d\u9700\u8981 BOM\uff0cWindows Excel \u9700\u8981
+    const isMac = /Mac/.test(navigator.userAgent)
+    const blob = new Blob([isMac ? csv : '\ufeff' + csv], { type: 'text/csv;charset=utf-8' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
@@ -858,30 +454,24 @@ export default function DashboardPage() {
   return (
     <div className="space-y-4 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       {/* 欢迎横幅 */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-primary-600 via-primary-700 to-primary-800 p-8 text-white shadow-xl">
-        <div className="absolute inset-0">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-primary-400/10 rounded-full -translate-y-1/2 translate-x-1/4 blur-3xl" />
-          <div className="absolute bottom-0 left-1/3 w-72 h-72 bg-primary-300/10 rounded-full translate-y-1/2 blur-3xl" />
-        </div>
-        <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+      <div className="rounded-2xl bg-gradient-to-r from-primary-600 to-primary-700 p-6 text-white shadow-lg">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex-1">
-            <h1 className="text-2xl font-extrabold tracking-tight leading-tight">
-              {DASHBOARD_CONFIG.messages.welcomeBack}, {user?.full_name ?? user?.username}
+            <h1 className="text-xl font-bold leading-snug">
+              {DASHBOARD_CONFIG.messages.welcomeBack}, {user?.fullName ?? user?.username}
             </h1>
-            <p className="mt-2 text-white/95 text-base leading-relaxed">{DASHBOARD_CONFIG.messages.startWork}</p>
+            <p className="mt-1 text-white/90 text-sm">{DASHBOARD_CONFIG.messages.startWork}</p>
           </div>
-          <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
             <Button
               variant="secondary"
               size="sm"
-              icon={<Sparkles size={18} />}
+              icon={<Sparkles size={16} />}
               onClick={() => navigate('/ai')}
-              className="bg-white/12 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 hover:border-white/30 transition-all duration-200"
             >
               {DASHBOARD_CONFIG.messages.aiReady}
             </Button>
 
-            {/* 布局切换器 */}
             <LayoutSwitcher
               currentId={currentLayout.id}
               layouts={layouts}
@@ -911,17 +501,15 @@ export default function DashboardPage() {
               }}
             />
 
-            {/* 通知徽章 */}
             <NotificationBadge
               count={notificationCount}
               onClick={() => setShowNotifications(true)}
             />
 
-            {/* 编辑模式按钮 */}
             <Button
               variant={isEditMode ? 'primary' : 'secondary'}
               size="sm"
-              icon={<Settings size={16} />}
+              icon={<Settings size={14} />}
               onClick={() => setIsEditMode(!isEditMode)}
               className={isEditMode ? 'bg-primary-500' : ''}
             >
@@ -931,9 +519,8 @@ export default function DashboardPage() {
             <Button
               variant="ghost"
               size="sm"
-              icon={<Download size={16} />}
+              icon={<Download size={14} />}
               onClick={handleExportDashboard}
-              className="!text-white hover:!text-white hover:!bg-white/18 border border-white/25 transition-all duration-200"
             >
               {DASHBOARD_CONFIG.messages.exportData}
             </Button>
@@ -943,11 +530,11 @@ export default function DashboardPage() {
 
       {/* 编辑模式提示 */}
       {isEditMode && (
-        <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/30">
+        <div className="p-4 rounded-xl bg-warning-50 dark:bg-warning-900/10 border border-amber-200 dark:border-amber-800/30">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <AlertTriangle size={18} className="text-amber-600" />
-              <p className="text-sm text-amber-800 dark:text-amber-400">
+              <AlertTriangle size={18} className="text-warning-600" />
+              <p className="text-sm text-warning-800 dark:text-warning-400">
                 编辑模式已开启 - 拖拽卡片调整位置，点击卡片右上角按钮进行配置
               </p>
             </div>
@@ -991,8 +578,8 @@ export default function DashboardPage() {
                   card,
                   data: stats ? { formulas: { total: stats.formulas?.total ?? 0, by_status: stats.formulas?.by_status || {} }, experiments: { total: stats.experiments?.total ?? 0, by_status: stats.experiments?.by_status || {} } } : null,
                   trendsData: trendsData || null,
-                  formulasData: formulasData ? { items: formulasData.items as any } : null,
-                  experimentsData: experimentsData ? { items: experimentsData.items as any } : null,
+                  formulasData: formulasData ? { data: formulasData.data as any } : null,
+                  experimentsData: experimentsData ? { data: experimentsData.data as any } : null,
                   todos,
                   reviewQueue,
                   timeline,

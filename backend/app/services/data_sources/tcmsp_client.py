@@ -696,6 +696,7 @@ class TCMSPSyncService:
         """
         将内置知识库数据同步到本地数据库。
         支持增量同步（同名药材更新，新增药材插入）。
+        优化：批量加载 + UPSERT 替代 N+1 查询。
         """
         from app.models.models import TCMHerb, DataSnapshot
         import json
@@ -712,13 +713,16 @@ class TCMSPSyncService:
             .values(is_active=False)
         )
 
+        # ── 批量加载现有药材（解决 N+1 问题）──
+        all_existing = (await db.execute(select(TCMHerb))).scalars().all()
+        herb_map: dict[str, TCMHerb] = {h.name_cn: h for h in all_existing if h.name_cn}
+
         inserted = 0
         updated = 0
 
         for herb_data in TCMSP_HERB_DATABASE:
-            existing = (await db.execute(
-                select(TCMHerb).where(TCMHerb.name_cn == herb_data["name_cn"])
-            )).scalar_one_or_none()
+            name = herb_data["name_cn"]
+            existing = herb_map.get(name)
 
             if existing:
                 # 增量更新
@@ -737,7 +741,7 @@ class TCMSPSyncService:
                 updated += 1
             else:
                 new_herb = TCMHerb(
-                    name_cn=herb_data["name_cn"],
+                    name_cn=name,
                     name_latin=herb_data["name_latin"],
                     name_pinyin=herb_data["name_pinyin"],
                     category=herb_data["category"],
@@ -834,10 +838,8 @@ class TCMSPSyncService:
             rows = result.all()
             if rows:
                 return [{"category": row[0] or "未分类", "count": row[1]} for row in rows]
-        except Exception:
-            pass
-
-        # Fallback: 从内存知识库统计分类
+        except Exception as e:
+            logger.debug("TCMSP 分类统计查询失败，使用内存数据: %s", e)
         cat_counts: dict[str, int] = {}
         for herb in TCMSP_HERB_DATABASE:
             cat = herb.get("category") or "未分类"
@@ -889,6 +891,7 @@ class TCMSPSyncService:
                             "ob_percent": h.ob_percent,
                             "dl_value": h.dl_value,
                             "compound_count": len(h.compounds) if h.compounds else 0,
+                            "source_version": h.source_version,
                         }
                         for h in items
                     ],
@@ -896,10 +899,8 @@ class TCMSPSyncService:
                     "page": page,
                     "page_size": page_size,
                 }
-        except Exception:
-            pass
-
-        # Fallback: 从内存知识库过滤药食同源药材
+        except Exception as e:
+            logger.debug("TCMSP 药食同源药材查询失败，使用内存数据: %s", e)
         all_items = [
             {
                 "id": -(idx + 1),  # 负数 ID 表示内存数据

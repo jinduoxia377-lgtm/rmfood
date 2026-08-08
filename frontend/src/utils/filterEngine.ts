@@ -8,6 +8,8 @@
 import { FilterOperator } from '@/types/filter.types'
 import type { FilterGroup, FilterCondition, FilterResult, FilterConfig } from '@/types/filter.types'
 
+
+import { logger } from '@/utils/safeLogger';
 /**
  * 生成简单的唯一ID (UUID v4 的简化版)
  */
@@ -290,7 +292,7 @@ function evaluateCondition<T>(
       return fieldValue != value;
 
     default:
-      console.warn(`未知的筛选操作符: ${operator}`);
+      logger.warn(`未知的筛选操作符: ${operator}`);
       return true;
   }
 }

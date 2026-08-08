@@ -325,7 +325,7 @@ class ApiIntegrationService {
         break
       case 'basic':
         if (integration.authConfig.username && integration.authConfig.password) {
-          (options.headers as Record<string, string>).Authorization = `Basic ${(window as any).btoa(`${integration.authConfig.username}:${integration.authConfig.password}`)}`
+          (options.headers as Record<string, string>).Authorization = `Basic ${btoa(`${integration.authConfig.username}:${integration.authConfig.password}`)}`
         }
         break
       case 'bearer':

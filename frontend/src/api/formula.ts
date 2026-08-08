@@ -39,6 +39,7 @@ import type {
   FormulaVersion,
   VersionDiffResult,
   FormulaStatistics,
+  IngredientConfig,
 } from '@/types/formula'
 
 import type { Formula } from '@/types/index'
@@ -77,15 +78,10 @@ export async function optimizeRatio(
 
 // 快速优化（使用默认参数）
 export async function quickOptimizeRatio(
-  ingredients: {
-    name: string
-    min_ratio?: number
-    max_ratio?: number
-    cost_per_gram?: number
-  }[],
+  ingredients: Omit<IngredientConfig, 'efficacy_base' | 'safety_score' | 'stability_score'>[],
 ): Promise<RatioOptimizationResponse> {
   return optimizeRatio({
-    ingredients: ingredients as any,
+    ingredients,
     population_size: 80,
     max_generations: 40,
   })
@@ -382,6 +378,10 @@ export const formulaApi = {
 
   // ===== 新增：统计数据 =====
   getStatistics: getFormulaStatistics,
+
+  // ===== 新增：批量状态变更 =====
+  batchUpdateStatus: (ids: number[], status: string) =>
+    api.patch(`${FORMULA_BASE_URL}/batch-status`, { ids, status }).then((r) => r.data),
 }
 
 // ==================== 9. 实验室验证 API ====================
@@ -656,6 +656,39 @@ export async function getUserPermissions(): Promise<FormulaPermission[]> {
 
 export async function getFormulaStatistics(): Promise<FormulaStatistics> {
   const response = await api.get(`${FORMULA_BASE_URL}/statistics`)
+  return response.data
+}
+
+// ==================== 20. 营养成分计算 API ====================
+
+export interface NutritionSummary {
+  formula_id: number
+  total_weight_g: number
+  nutrition_per_100g: Record<string, number>
+  total_nutrition: Record<string, number>
+  allergens: string[]
+  compliance: {
+    passed: string[]
+    issues: string[]
+    is_compliant: boolean
+  }
+  warnings: string[]
+}
+
+export async function getFormulaNutrition(formulaId: number): Promise<NutritionSummary> {
+  const response = await api.get(`${FORMULA_BASE_URL}/${formulaId}/nutrition`)
+  return response.data
+}
+
+// ==================== 21. 配方发布 API ====================
+
+export async function publishFormula(formulaId: number): Promise<any> {
+  const response = await api.post(`${FORMULA_BASE_URL}/${formulaId}/publish`)
+  return response.data
+}
+
+export async function archiveFormula(formulaId: number): Promise<any> {
+  const response = await api.post(`${FORMULA_BASE_URL}/${formulaId}/archive`)
   return response.data
 }
 

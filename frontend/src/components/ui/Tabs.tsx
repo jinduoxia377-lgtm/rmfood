@@ -1,8 +1,9 @@
 /**
  * RMFOOD 设计系统 — Tabs 标签页
  * 受控 / 非受控模式，胶囊风格切换
+ * WCAG 2.2: Arrow key navigation per tablist pattern
  */
-import { useState, createContext, useContext, type ReactNode, type HTMLAttributes } from 'react'
+import { useState, createContext, useContext, type ReactNode, type HTMLAttributes, type KeyboardEvent } from 'react'
 import { cn } from '@/lib/utils'
 
 /* ── Context ── */
@@ -10,9 +11,10 @@ import { cn } from '@/lib/utils'
 interface TabsCtx {
   value: string
   onChange: (v: string) => void
+  orientation?: 'horizontal' | 'vertical'
 }
 
-const CTX = createContext<TabsCtx>({ value: '', onChange: () => {} })
+const CTX = createContext<TabsCtx>({ value: '', onChange: () => {}, orientation: 'horizontal' })
 function useTabs() { return useContext(CTX) }
 
 /* ── Tabs ── */
@@ -23,9 +25,10 @@ interface TabsProps {
   onValueChange?: (v: string) => void
   children: ReactNode
   className?: string
+  orientation?: 'horizontal' | 'vertical'
 }
 
-export function Tabs({ defaultValue = '', value: controlledValue, onValueChange, children, className }: TabsProps) {
+export function Tabs({ defaultValue = '', value: controlledValue, onValueChange, children, className, orientation = 'horizontal' }: TabsProps) {
   const [internal, setInternal] = useState(defaultValue)
   const value = controlledValue ?? internal
   const onChange = (v: string) => {
@@ -34,10 +37,40 @@ export function Tabs({ defaultValue = '', value: controlledValue, onValueChange,
   }
 
   return (
-    <CTX.Provider value={{ value, onChange }}>
-      <div className={className}>{children}</div>
+    <CTX.Provider value={{ value, onChange, orientation }}>
+      <div className={className} onKeyDown={(e) => handleTabKeydown(e, value, onChange, orientation)}>
+        {children}
+      </div>
     </CTX.Provider>
   )
+}
+
+function handleTabKeydown(e: KeyboardEvent<HTMLDivElement>, active: string, onChange: (v: string) => void, orientation: 'horizontal' | 'vertical') {
+  const tablist = e.currentTarget
+  const tabs = Array.from(tablist.querySelectorAll('[role="tab"]')) as HTMLButtonElement[]
+  if (!tabs.length) return
+
+  const currentIndex = tabs.findIndex(t => t.getAttribute('aria-selected') === 'true')
+  if (currentIndex === -1) return
+
+  let nextIndex = currentIndex
+  if (orientation === 'horizontal') {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = currentIndex + 1
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = currentIndex - 1
+  } else {
+    if (e.key === 'ArrowDown') nextIndex = currentIndex + 1
+    else if (e.key === 'ArrowUp') nextIndex = currentIndex - 1
+  }
+
+  if (nextIndex < 0) nextIndex = tabs.length - 1
+  if (nextIndex >= tabs.length) nextIndex = 0
+
+  const nextTab = tabs[nextIndex]
+  if (nextTab) {
+    e.preventDefault()
+    nextTab.focus()
+    onChange(nextTab.value)
+  }
 }
 
 /* ── TabsList ── */
@@ -48,7 +81,7 @@ interface TabsListProps extends HTMLAttributes<HTMLDivElement> {
 
 export function TabsList({ className, children, ...props }: TabsListProps) {
   return (
-    <div className={cn('tabs-list', className)} role="tablist" {...props}>
+    <div className={cn('tabs-list', className)} role="tablist" aria-orientation="horizontal" {...props}>
       {children}
     </div>
   )
@@ -68,8 +101,12 @@ export function TabsTrigger({ className, value, icon, children, ...props }: Tabs
 
   return (
     <button
+      type="button"
       role="tab"
       aria-selected={isActive}
+      aria-controls={`panel-${value}`}
+      tabIndex={isActive ? 0 : -1}
+      value={value}
       className={cn('tabs-trigger', isActive && 'tabs-trigger-active', className)}
       onClick={() => onChange(value)}
       {...props}
@@ -92,7 +129,13 @@ export function TabsContent({ className, value, children, ...props }: TabsConten
   if (active !== value) return null
 
   return (
-    <div role="tabpanel" className={cn('mt-4 animate-fade-in', className)} {...props}>
+    <div
+      id={`panel-${value}`}
+      role="tabpanel"
+      className={cn('mt-4 animate-fade-in', className)}
+      tabIndex={0}
+      {...props}
+    >
       {children}
     </div>
   )

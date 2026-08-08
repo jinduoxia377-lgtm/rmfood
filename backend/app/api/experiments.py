@@ -114,8 +114,8 @@ async def batch_delete_experiments(
         try:
             await service.delete_experiment(int(eid), current_user.id)
             deleted += 1
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning("实验删除失败 id=%s: %s", eid, e)
     return {"message": f"已删除 {deleted} 个实验", "deleted": deleted}
 
 
@@ -187,4 +187,63 @@ async def delete_data_point(
     """删除指定数据点"""
     service = ExperimentService(db)
     await service.delete_data_point(data_point_id)
+
+
+# ═══════════════════════════════════════════
+# 实验结果回写配方
+# ═══════════════════════════════════════════
+
+@router.post("/{experiment_id}/writeback", summary="实验结果回写配方")
+async def writeback_experiment_result(
+    experiment_id: int,
+    payload: dict,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db_session),
+):
+    """
+    将实验结果回写到关联的配方。
+
+    更新配方的：
+    - safety_check: 安全性评分
+    - compliance_status: 合规性状态
+    - synergy_analysis: 协同效应评分
+    """
+    from ..models.formula import Formula
+
+    service = ExperimentService(db)
+    experiment = await service.get_experiment(experiment_id)
+    if not experiment:
+        raise HTTPException(status_code=404, detail="实验不存在")
+
+    if not experiment.formula_id:
+        raise HTTPException(status_code=400, detail="实验未关联配方")
+
+    # 获取关联配方
+    formula = await db.get(Formula, experiment.formula_id)
+    if not formula:
+        raise HTTPException(status_code=404, detail="关联配方不存在")
+
+    # 回写安全性评分
+    safety_score = payload.get("safety_score")
+    if safety_score is not None:
+        if not formula.safety_check:
+            formula.safety_check = {}
+        formula.safety_check["experiment_score"] = safety_score
+        formula.safety_check["last_updated"] = experiment.updated_at.isoformat() if experiment.updated_at else None
+
+    # 回写协同效应评分
+    synergy_score = payload.get("synergy_score")
+    if synergy_score is not None:
+        if not formula.synergy_analysis:
+            formula.synergy_analysis = {}
+        formula.synergy_analysis["experiment_score"] = synergy_score
+
+    await db.flush()
+
+    return {
+        "success": True,
+        "formula_id": formula.id,
+        "code": formula.code,
+        "updated_fields": [k for k, v in [("safety_score", safety_score), ("synergy_score", synergy_score)] if v is not None],
+    }
     return {"message": "数据点已删除"}

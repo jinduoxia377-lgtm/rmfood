@@ -1,5 +1,7 @@
-"""RMFOOD API 路由模块
+"""RMFOOD API 路由模块"""
+__all__ = ["api_router", "register_lazy_routers"]  # 公开接口导出
 
+"""
 路由分两阶段注册:
 1. 关键路由 — 模块导入时立即注册（认证、用户、配方等核心功能）
 2. 非关键路由 — 在 lifespan 启动阶段延迟注册（优化启动速度 + 失败不阻塞）
@@ -44,6 +46,7 @@ _LAZY_ROUTER_MODULES = [
     'tags',
     'file_generator',
     'chat',
+    'food_peptide_routes',  # RMFOOD食品活性肽分析
 
     # SSS 企业级功能模块
     'analytics',
@@ -89,7 +92,7 @@ def register_lazy_routers():
             else:
                 logger.warning(f"  ⚠️ {module_name}: no 'router' attribute")
         except Exception as e:
-            failed.append((module_name, str(e)))
+            failed.append((module_name, "模块加载失败"))
             logger.warning(f"⚠️ 路由模块加载失败 {module_name}: {e}")
 
     _lazy_loaded = True

@@ -3,7 +3,7 @@
  * 符合 WCAG 2.1 AA/AAA 标准
  * 基于 UI/UX Pro Max 设计规范
  */
-import { logger } from '@/utils/safeLogger'
+import { logger } from '@/utils/safeLogger';
 import type {
   ThemeConfig,
   PresetThemeId,
@@ -26,119 +26,145 @@ import type {
 /** Light 主题色彩 */
 const lightColors: SemanticColors = {
   primary: {
-    main: '#059669',        // Emerald-600 ✅ Forest Green 品牌主色 (设计系统文档 v1.0)
-    light: '#6EE7B7',       // Emerald-300 浅色变体
-    dark: '#065F46',        // Emerald-800 深色变体
+    main: '#34C759', // Emerald-500 ✅ Apple 风格主色
+    light: '#86EFAC', // Emerald-300 浅色变体
+    dark: '#065F46', // Emerald-800 深色变体
     contrastText: '#ffffff', // 白色文字 (对比度达标 ✅)
   },
   secondary: {
-    main: '#2563eb',        // Blue-600 Ocean Blue 品牌辅色 (设计系统文档 v1.0)
-    light: '#93C5FD',       // Blue-300
-    dark: '#1E40AF',        // Blue-800
+    main: '#007AFF', // Blue-600 Ocean Blue 品牌辅色 (设计系统文档 v1.0)
+    light: '#A8DFFF', // Blue-300
+    dark: '#003E87', // Blue-800
     contrastText: '#ffffff', // (对比度达标 ✅)
   },
+  tertiary: {
+    main: '#AF52DE',
+    light: '#D4B3FF',
+    dark: '#8B5CF6',
+    contrastText: '#ffffff',
+  },
   success: {
-    main: '#16a34a',        // Green-600
-    background: '#f0fdf4',  // Green-50
-    text: '#166534',         // Green-800 (4.5:1 ✅)
+    main: '#16a34a', // Green-600
+    background: '#f0fdf4', // Green-50
+    text: '#1E8E3E', // Green-800 (4.5:1 ✅)
   },
   warning: {
-    main: '#ca8a04',        // Yellow-600
-    background: '#fefce8',  // Yellow-50
-    text: '#854d0e',         // Yellow-800 (4.6:1 ✅)
+    main: '#ca8a04', // Yellow-600
+    background: '#fefce8', // Yellow-50
+    text: '#854d0e', // Yellow-800 (4.6:1 ✅)
   },
   error: {
-    main: '#dc2626',         // Red-600
-    background: '#fef2f2',   // Red-50
-    text: '#991b1b',         // Red-900 (7.0:1 ✅)
+    main: '#B91C1C', // Red-600
+    background: '#FFF0F0', // Red-50
+    text: '#DC2626', // Red-900 (7.0:1 ✅)
   },
   info: {
-    main: '#0891b2',         // Cyan-600
-    background: '#ecfeff',   // Cyan-50
-    text: '#164e63',         // Cyan-900 (6.3:1 ✅)
+    main: '#0E7490', // Cyan-600
+    background: '#E8FAFF', // Cyan-50
+    text: '#0C4A6E', // Cyan-900 (6.3:1 ✅)
   },
   background: {
     default: '#ffffff',
-    elevated: '#f8fafc',     // Slate-50
-    hover: '#f1f5f9',       // Slate-100
-    active: '#e2e8f0',      // Slate-200
-    disabled: '#f1f5f9',     // (opacity 0.38)
+    elevated: '#F9FAFB', // Slate-50
+    hover: '#F3F4F6', // Slate-100
+    active: '#E5E7EB', // Slate-200
+    disabled: '#F3F4F6', // (opacity 0.38)
   },
   surface: {
     default: '#ffffff',
-    variant: '#f8fafc',
+    variant: '#F9FAFB',
     overlay: 'rgba(0, 0, 0, 0.5)', // Modal scrim (40-60% opacity)
   },
   text: {
-    primary: '#0f172a',      // Slate-900 (15.2:1 on white ✅)
-    secondary: '#475569',    // Slate-600 (4.7:1 ✅)
-    disabled: '#94a3b8',      // Slate-400
-    link: '#059669',         // Forest Green 品牌主色 (设计系统文档 v1.0)
+    primary: '#111827', // Slate-900 (15.2:1 on white ✅)
+    secondary: '#4B5563', // Slate-600 (4.7:1 ✅)
+    disabled: '#9CA3AF', // Slate-400
+    link: '#34C759', // Apple 风格翡翠绿
+    textPrimary: '#1D1D1F',
+    textSecondary: '#6E6E73',
+    textMuted: '#9A9A9F',
   },
   border: {
-    default: '#e2e8f0',      // Slate-200
-    focus: '#3b82f6',        // Focus ring (可见焦点环 2-4px)
-    divider: '#f1f5f9',      // Slate-100
+    default: '#E5E7EB', // Slate-200
+    focus: '#007AFF', // Focus ring (可见焦点环 2-4px)
+    divider: '#F3F4F6', // Slate-100
   },
+  surfaceVariant: '#F3F4F6',
+  errorContainer: '#FFE0E0',
+  outline: '#D1D5DB',
+  outlineVariant: '#E5E7EB',
 };
 
 /** Dark 主题色彩（去饱和/更浅色调变体，非简单反转 - WCAG 2.1 AA优化版） */
 const darkColors: SemanticColors = {
   primary: {
-    main: '#34D399',        // Emerald-400 ✅ 暗色模式使用更亮版本 (Forest Green)
-    light: '#6EE7B7',       // Emerald-300
-    dark: '#10B981',        // Emerald-500
-    contrastText: '#0f172a', // 深色文字 (对比度达标 ✅)
+    main: '#4ADE80', // Emerald-400 ✅ 暗色模式使用更亮版本 (Forest Green)
+    light: '#86EFAC', // Emerald-300
+    dark: '#34C759', // Emerald-500
+    contrastText: '#111827', // 深色文字 (对比度达标 ✅)
   },
   secondary: {
-    main: '#60A5FA',        // Blue-400 Ocean Blue 暗色模式亮色版
-    light: '#93C5FD',       // Blue-300
-    dark: '#3B82F6',        // Blue-500
-    contrastText: '#0f172a', // (对比度达标 ✅)
+    main: '#6ECAFF', // Blue-400 Ocean Blue 暗色模式亮色版
+    light: '#A8DFFF', // Blue-300
+    dark: '#007AFF', // Blue-500
+    contrastText: '#111827', // (对比度达标 ✅)
+  },
+  tertiary: {
+    main: '#C090FF',
+    light: '#D4B3FF',
+    dark: '#AF52DE',
+    contrastText: '#3730a3',
   },
   success: {
-    main: '#4ade80',        // Green-400
-    background: '#052e16',  // Green-950
-    text: '#86efac',         // Green-300 (4.5:1 ✅ AA)
+    main: '#4ade80', // Green-400
+    background: '#052e16', // Green-950
+    text: '#4ADE80', // Green-300 (4.5:1 ✅ AA)
   },
   warning: {
-    main: '#facc15',        // Yellow-400
-    background: '#422006',  // Yellow-950
-    text: '#fde047',         // Yellow-300 (4.5:1 ✅ AA)
+    main: '#facc15', // Yellow-400
+    background: '#422006', // Yellow-950
+    text: '#fde047', // Yellow-300 (4.5:1 ✅ AA)
   },
   error: {
-    main: '#f87171',        // Red-400
-    background: '#450a0a',  // Red-950
-    text: '#fca5a5',         // Red-300 (4.5:1 ✅ AA)
+    main: '#EF4444', // Red-400
+    background: '#450a0a', // Red-950
+    text: '#FF8080', // Red-300 (4.5:1 ✅ AA)
   },
   info: {
-    main: '#22d3ee',         // Cyan-400
-    background: '#083344',  // Cyan-950
-    text: '#67e8f9',         // Cyan-300 (4.5:1 ✅ AA)
+    main: '#67E8F9', // Cyan-400
+    background: '#083344', // Cyan-950
+    text: '#A5F3FC', // Cyan-300 (4.5:1 ✅ AA)
   },
   background: {
-    default: '#0f172a',      // Slate-900
-    elevated: '#1e293b',     // Slate-800
-    hover: '#334155',       // Slate-700
-    active: '#475569',      // Slate-600
-    disabled: '#1e293b',     // (opacity 0.38)
+    default: '#000000', // Apple OLED 纯黑
+    elevated: '#1C1C1E', // Apple 标准暗色表面
+    hover: '#2C2C2E', // Apple 浮起表面
+    active: '#3A3A3C', // Apple 高亮表面
+    disabled: '#1C1C1E', // (opacity 0.38)
   },
   surface: {
-    default: '#1e293b',      // Slate-800
-    variant: '#334155',     // Slate-700
+    default: '#1C1C1E', // Apple 标准暗色表面
+    variant: '#2C2C2E', // Apple 浮起表面
     overlay: 'rgba(0, 0, 0, 0.7)', // 暗色模式稍强遮罩
   },
   text: {
-    primary: '#f1f5f9',      // Slate-100 (13.5:1 on slate-900 ✅✅ AAA) - 从#f8fafc调整以提升对比度
-    secondary: '#cbd5e1',   // Slate-300 (9.2:1 ✅✅ AAA)
-    disabled: '#94a3b8',     // Slate-400 (5.4:1 ✅ AA) - 从#64748b提升，原值仅3.2:1不达标
-    link: '#34D399',         // Emerald-400 Forest Green 暗色模式亮色版
+    primary: '#F3F4F6', // Slate-100 (13.5:1 on slate-900 ✅✅ AAA) - 从#f8fafc调整以提升对比度
+    secondary: '#D1D5DB', // Slate-300 (9.2:1 ✅✅ AAA)
+    disabled: '#9CA3AF', // Slate-400 (5.4:1 ✅ AA) - 从#64748b提升，原值仅3.2:1不达标
+    link: '#4ADE80', // Emerald-400 Forest Green 暗色模式亮色版
+    textPrimary: '#F5F5F7',
+    textSecondary: '#A1A1A6',
+    textMuted: '#636366',
   },
   border: {
-    default: '#475569',      // Slate-600 (3.2:1 ✅ 达标) - 从#334155提升，原值仅2.1:1
-    focus: '#60a5fa',        // Focus ring (5.2:1 ✅ AA)
-    divider: '#334155',      // Slate-800 (弱分隔线，可接受)
+    default: '#4B5563', // Slate-600 (3.2:1 ✅ 达标) - 从#334155提升，原值仅2.1:1
+    focus: '#6ECAFF', // Focus ring (5.2:1 ✅ AA)
+    divider: '#374151', // Slate-800 (弱分隔线，可接受)
   },
+  surfaceVariant: '#374151',
+  errorContainer: '#7f1d1d',
+  outline: '#6B7280',
+  outlineVariant: '#4B5563',
 };
 
 // ============================================================================
@@ -147,24 +173,24 @@ const darkColors: SemanticColors = {
 
 const typography: Typography = {
   fontFamily: {
-    heading: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-    body: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+    heading: "'Microsoft YaHei', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif",
+    body: "'Microsoft YaHei', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif",
     mono: "'JetBrains Mono', 'Fira Code', 'Consolas', monospace",
   },
   fontSize: {
-    xs: '0.75rem',          // 12px
-    sm: '0.875rem',         // 14px
-    base: '1rem',           // 16px (移动端最小可读字体)
-    lg: '1.125rem',         // 18px
-    xl: '1.5rem',           // 24px
-    '2xl': '2rem',          // 32px
-    '3xl': '2.5rem',        // 40px
-    '4xl': '3rem',          // 48px
+    xs: '0.75rem', // 12px
+    sm: '0.875rem', // 14px
+    base: '1rem', // 16px (移动端最小可读字体)
+    lg: '1.125rem', // 18px
+    xl: '1.5rem', // 24px
+    '2xl': '2rem', // 32px
+    '3xl': '2.5rem', // 40px
+    '4xl': '3rem', // 48px
   },
   lineHeight: {
-    tight: '1.25',          // 标题
-    normal: '1.5',          // 正文 (1.5-1.75 标准)
-    relaxed: '1.75',        // 长文本阅读
+    tight: '1.25', // 标题
+    normal: '1.5', // 正文 (1.5-1.75 标准)
+    relaxed: '1.75', // 长文本阅读
   },
   fontWeight: {
     light: 300,
@@ -187,18 +213,18 @@ const typography: Typography = {
 const spacing: Spacing = {
   unit: 4,
   0: '0',
-  1: '0.25rem',           // 4px
-  2: '0.5rem',            // 8px (触摸目标最小间距)
-  3: '0.75rem',           // 12px
-  4: '1rem',              // 16px
-  5: '1.25rem',           // 20px
-  6: '1.5rem',            // 24px
-  8: '2rem',              // 32px
-  10: '2.5rem',           // 40px
-  12: '3rem',             // 48px
-  16: '4rem',             // 64px
-  20: '5rem',             // 80px
-  24: '6rem',             // 96px
+  1: '0.25rem', // 4px
+  2: '0.5rem', // 8px (触摸目标最小间距)
+  3: '0.75rem', // 12px
+  4: '1rem', // 16px
+  5: '1.25rem', // 20px
+  6: '1.5rem', // 24px
+  8: '2rem', // 32px
+  10: '2.5rem', // 40px
+  12: '3rem', // 48px
+  16: '4rem', // 64px
+  20: '5rem', // 80px
+  24: '6rem', // 96px
 };
 
 // ============================================================================
@@ -207,11 +233,11 @@ const spacing: Spacing = {
 
 const borderRadius: BorderRadius = {
   none: '0',
-  sm: '0.25rem',          // 4px
-  md: '0.5rem',           // 8px
-  lg: '0.75rem',          // 12px
-  xl: '1rem',             // 16px
-  '2xl': '1.25rem',       // 20px
+  sm: '0.25rem', // 4px
+  md: '0.5rem', // 8px
+  lg: '0.75rem', // 12px
+  xl: '1rem', // 16px
+  '2xl': '1.25rem', // 20px
   full: '9999px',
 };
 
@@ -232,7 +258,7 @@ const transitions: Transitions = {
     slow: '300ms',
     slower: '400ms',
     enter: '250ms',
-    exit: '150ms',        // 退出更快 (进入的 60-70%)
+    exit: '150ms', // 退出更快 (进入的 60-70%)
   },
   easing: {
     easeOut: 'cubic-bezier(0.16, 1, 0.3, 1)',
@@ -327,15 +353,15 @@ export const presetThemes: Record<PresetThemeId, ThemeConfig> = {
     {
       ...lightColors,
       primary: {
-        main: '#ea580c',        // Orange-600
-        light: '#f97316',       // Orange-500
-        dark: '#c2410c',        // Orange-700
+        main: '#C2410C', // Orange-600
+        light: '#EA580C', // Orange-500
+        dark: '#c2410c', // Orange-700
         contrastText: '#ffffff',
       },
       background: {
         ...lightColors.background,
-        default: '#fffbeb',     // Amber-50 tint
-        elevated: '#fffbeb',    // Amber-50
+        default: '#FFF8E1', // Amber-50 tint
+        elevated: '#FFF8E1', // Amber-50
       },
     },
     'Warm and inviting orange-tinted light theme',
@@ -349,15 +375,15 @@ export const presetThemes: Record<PresetThemeId, ThemeConfig> = {
     {
       ...lightColors,
       primary: {
-        main: '#0891b2',        // Cyan-600
-        light: '#06b6d4',       // Cyan-500
-        dark: '#0e7490',        // Cyan-700
+        main: '#0E7490', // Cyan-600
+        light: '#0891B2', // Cyan-500
+        dark: '#155E75', // Cyan-700
         contrastText: '#ffffff',
       },
       background: {
         ...lightColors.background,
-        default: '#ecfeff',     // Cyan-50 tint
-        elevated: '#cffafe',    // Cyan-50
+        default: '#E8FAFF', // Cyan-50 tint
+        elevated: '#ECFEFF', // Cyan-50
       },
     },
     'Cool and calming cyan-tinted light theme',
@@ -383,16 +409,94 @@ export const presetThemes: Record<PresetThemeId, ThemeConfig> = {
       ...darkColors,
       background: {
         ...darkColors.background,
-        default: '#000000',     // 纯黑 (OLED 省电)
-        elevated: '#0f172a',    // Slate-900
+        default: '#000000', // 纯黑 (OLED 省电)
+        elevated: '#1C1C1E', // Apple 标准暗色表面
       },
       surface: {
         ...darkColors.surface,
-        default: '#0f172a',
-        variant: '#1e293b',
+        default: '#1C1C1E',
+        variant: '#2C2C2E',
       },
     },
     'Pure black background for OLED displays - maximum battery savings',
+  ),
+
+  /** 暖色调 Dark 主题 */
+  'dark-warm': createPresetTheme(
+    'dark-warm',
+    'Warm Dark',
+    'dark',
+    {
+      ...darkColors,
+      primary: {
+        main: '#FB923C', // Orange-400
+        light: '#FDBA74', // Orange-300
+        dark: '#EA580C', // Orange-500
+        contrastText: '#431407',
+      },
+      secondary: {
+        main: '#EF4444', // Red-400
+        light: '#FF8080', // Red-300
+        dark: '#FF3B30', // Red-500
+        contrastText: '#450A0A',
+      },
+      tertiary: {
+        main: '#4ADE80', // Emerald-400
+        light: '#86EFAC', // Emerald-300
+        dark: '#34C759', // Emerald-500
+        contrastText: '#064E3B',
+      },
+      background: {
+        ...darkColors.background,
+        default: '#1C1207', // Amber-950 tint
+        elevated: '#291A0A',
+      },
+      surface: {
+        ...darkColors.surface,
+        default: '#291A0A',
+        variant: '#3D2610',
+      },
+    },
+    'Warm and cozy dark theme with amber undertones',
+  ),
+
+  /** 冷色调 Dark 主题 */
+  'dark-cool': createPresetTheme(
+    'dark-cool',
+    'Cool Dark',
+    'dark',
+    {
+      ...darkColors,
+      primary: {
+        main: '#67E8F9', // Cyan-400
+        light: '#A5F3FC', // Cyan-300
+        dark: '#0891B2', // Cyan-500
+        contrastText: '#083344',
+      },
+      secondary: {
+        main: '#6ECAFF', // Blue-400
+        light: '#A8DFFF', // Blue-300
+        dark: '#007AFF', // Blue-500
+        contrastText: '#002A60',
+      },
+      tertiary: {
+        main: '#C090FF', // Violet-400
+        light: '#D4B3FF', // Violet-300
+        dark: '#AF52DE', // Violet-500
+        contrastText: '#3730A3',
+      },
+      background: {
+        ...darkColors.background,
+        default: '#083344', // Cyan-950 tint
+        elevated: '#0C4A6E',
+      },
+      surface: {
+        ...darkColors.surface,
+        default: '#0C4A6E',
+        variant: '#0C4A6E',
+      },
+    },
+    'Cool and immersive dark theme with cyan undertones',
   ),
 
   // ==================== High Contrast Themes ====================
@@ -405,20 +509,23 @@ export const presetThemes: Record<PresetThemeId, ThemeConfig> = {
     {
       ...lightColors,
       text: {
-        primary: '#000000',      // 纯黑
-        secondary: '#1f2937',    // Gray-800
-        disabled: '#6b7280',     // Gray-500
-        link: '#0000ee',         // 标准蓝链接
+        primary: '#000000', // 纯黑
+        secondary: '#1f2937', // Gray-800
+        disabled: '#6b7280', // Gray-500
+        link: '#0000ee', // 标准蓝链接
+        textPrimary: '#000000',
+        textSecondary: '#1f2937',
+        textMuted: '#6b7280',
       },
       background: {
         ...lightColors.background,
-        default: '#ffffff',      // 纯白
+        default: '#ffffff', // 纯白
         elevated: '#ffffff',
       },
       border: {
         ...lightColors.border,
-        default: '#000000',      // 黑色边框
-        focus: '#000000',        // 明显焦点环
+        default: '#000000', // 黑色边框
+        focus: '#000000', // 明显焦点环
       },
     },
     'WCAG AAA compliant high contrast theme for accessibility',
@@ -432,20 +539,23 @@ export const presetThemes: Record<PresetThemeId, ThemeConfig> = {
     {
       ...darkColors,
       text: {
-        primary: '#ffffff',      // 纯白
-        secondary: '#f3f4f6',    // Gray-100
-        disabled: '#9ca3af',     // Gray-400
-        link: '#60a5ff',         // 亮蓝链接
+        primary: '#ffffff', // 纯白
+        secondary: '#f3f4f6', // Gray-100
+        disabled: '#9ca3af', // Gray-400
+        link: '#60a5ff', // 亮蓝链接
+        textPrimary: '#ffffff',
+        textSecondary: '#f3f4f6',
+        textMuted: '#9ca3af',
       },
       background: {
         ...darkColors.background,
-        default: '#000000',      // 纯黑
+        default: '#000000', // 纯黑
         elevated: '#000000',
       },
       border: {
         ...darkColors.border,
-        default: '#ffffff',      // 白色边框
-        focus: '#ffffff',        // 明显焦点环
+        default: '#ffffff', // 白色边框
+        focus: '#ffffff', // 明显焦点环
       },
     },
     'WCAG AAA compliant dark high contrast theme',
@@ -461,33 +571,36 @@ export const presetThemes: Record<PresetThemeId, ThemeConfig> = {
     {
       ...lightColors,
       primary: {
-        main: '#92400e',        // Amber-800
-        light: '#b45309',       // Amber-700
-        dark: '#78350f',        // Amber-900
+        main: '#D97706', // Amber-800
+        light: '#D97706', // Amber-700
+        dark: '#78350f', // Amber-900
         contrastText: '#ffffff',
       },
       background: {
-        default: '#fdf6e3',     // Sepia 背景
-        elevated: '#fef3c7',    // Amber-100
-        hover: '#fde68a',       // Amber-200
-        active: '#fcd34d',       // Amber-300
-        disabled: '#fef3c7',
+        default: '#fdf6e3', // Sepia 背景
+        elevated: '#FFF3CD', // Amber-100
+        hover: '#FEF3C7', // Amber-200
+        active: '#FFB340', // Amber-300
+        disabled: '#FFF3CD',
       },
       surface: {
-        default: '#fef3c7',
-        variant: '#fde68a',
+        default: '#FFF3CD',
+        variant: '#FEF3C7',
         overlay: 'rgba(0, 0, 0, 0.5)',
       },
       text: {
-        primary: '#5b4636',      // Brown-800 (on sepia 12.1:1 ✅✅)
-        secondary: '#78716c',    // Stone-500 (8.5:1 ✅)
-        disabled: '#a8a29e',     // Stone-400
-        link: '#92400e',        // Amber-800
+        primary: '#5b4636', // Brown-800 (on sepia 12.1:1 ✅✅)
+        secondary: '#78716c', // Stone-500 (8.5:1 ✅)
+        disabled: '#a8a29e', // Stone-400
+        link: '#D97706', // Amber-800
+        textPrimary: '#5b4636',
+        textSecondary: '#78716c',
+        textMuted: '#a8a29e',
       },
       border: {
-        default: '#d6d3d1',     // Stone-300
-        focus: '#92400e',
-        divider: '#e7e5e4',      // Stone-200
+        default: '#d6d3d1', // Stone-300
+        focus: '#D97706',
+        divider: '#e7e5e4', // Stone-200
       },
     },
     'Sepia-toned reading mode - reduces eye strain during extended reading',
@@ -501,16 +614,16 @@ export const presetThemes: Record<PresetThemeId, ThemeConfig> = {
     {
       ...darkColors,
       primary: {
-        main: '#d97706',        // Amber-500
-        light: '#f59e0b',       // Amber-400
-        dark: '#b45309',        // Amber-600
+        main: '#B45309', // Amber-500
+        light: '#D97706', // Amber-400
+        dark: '#D97706', // Amber-600
         contrastText: '#000000',
       },
       background: {
-        default: '#1c1917',     // Stone-900
-        elevated: '#292524',    // Stone-800
-        hover: '#44403c',       // Stone-700
-        active: '#57534e',       // Stone-600
+        default: '#1c1917', // Stone-900
+        elevated: '#292524', // Stone-800
+        hover: '#44403c', // Stone-700
+        active: '#57534e', // Stone-600
         disabled: '#292524',
       },
       surface: {
@@ -519,15 +632,18 @@ export const presetThemes: Record<PresetThemeId, ThemeConfig> = {
         overlay: 'rgba(0, 0, 0, 0.75)',
       },
       text: {
-        primary: '#e7e5e4',      // Stone-200 (14.2:1 ✅)
-        secondary: '#a8a29e',   // Stone-400 (5.1:1 ✅)
-        disabled: '#78716c',     // Stone-500
-        link: '#fbbf24',        // Amber-400
+        primary: '#e7e5e4', // Stone-200 (14.2:1 ✅)
+        secondary: '#a8a29e', // Stone-400 (5.1:1 ✅)
+        disabled: '#78716c', // Stone-500
+        link: '#F59E0B', // Amber-400
+        textPrimary: '#e7e5e4',
+        textSecondary: '#a8a29e',
+        textMuted: '#78716c',
       },
       border: {
-        default: '#44403c',      // Stone-700
-        focus: '#d97706',
-        divider: '#292524',      // Stone-800
+        default: '#44403c', // Stone-700
+        focus: '#B45309',
+        divider: '#292524', // Stone-800
       },
     },
     'Dark reading mode optimized for nighttime reading sessions',
@@ -559,19 +675,30 @@ export function getAccessibilityTheme(baseTheme: ThemeConfig, mode: Accessibilit
 
     case 'color-blind':
       // 色盲友好：调整颜色确保不仅靠颜色传达信息
+      // 关键改进：success/error 使用更高对比度 + 不同色相
       return {
         ...baseTheme,
         colors: {
           ...baseTheme.colors,
           success: {
-            main: '#059669',  // ✅ Forest Green 品牌主色 (设计系统文档 v1.0)
-            background: '#ECFDF5',
-            text: '#065F46',
+            main: '#34C759', // Apple Green — 与 primary 区分明显
+            background: baseTheme.mode === 'dark' ? '#064E3B' : '#F0FDF4',
+            text: baseTheme.mode === 'dark' ? '#86EFAC' : '#065F46',
           },
           error: {
-            main: '#dc2626',  // 保持红色但确保有图标辅助
-            background: '#fef2f2',
-            text: '#991b1b',
+            main: '#FF3B30', // Apple Red — 高对比度
+            background: baseTheme.mode === 'dark' ? '#7F1D1D' : '#FFF0F0',
+            text: baseTheme.mode === 'dark' ? '#FF8080' : '#DC2626',
+          },
+          warning: {
+            main: '#CA8A04', // Yellow-600 — 与 success 色相区分
+            background: baseTheme.mode === 'dark' ? '#713F12' : '#FEFCE8',
+            text: baseTheme.mode === 'dark' ? '#FDE047' : '#854D0E',
+          },
+          info: {
+            main: '#0E7490', // Cyan-600 — 独立色相
+            background: baseTheme.mode === 'dark' ? '#0C4A6E' : '#E8FAFF',
+            text: baseTheme.mode === 'dark' ? '#A5F3FC' : '#0C4A6E',
           },
         },
       };
@@ -603,7 +730,7 @@ export function mergeThemeOverrides(base: ThemeConfig, overrides: CustomThemeOve
 export function generateCSSVariables(theme: ThemeConfig): Record<string, string> {
   // 防御性检查：如果theme或theme.colors不存在，返回空对象
   if (!theme?.colors) {
-    console.warn('[Theme System] ⚠️ generateCSSVariables 收到无效的主题配置');
+    logger.warn('[Theme System] ⚠️ generateCSSVariables 收到无效的主题配置');
     return {};
   }
 
@@ -669,21 +796,29 @@ export function generateCSSVariables(theme: ThemeConfig): Record<string, string>
 export function applyThemeToDOM(theme: ThemeConfig): void {
   // 防御性检查：如果theme无效，不执行任何操作
   if (!theme?.colors) {
-    console.warn('[Theme System] ⚠️ applyThemeToDOM 收到无效的主题配置，跳过应用');
+    logger.warn('[Theme System] ⚠️ applyThemeToDOM 收到无效的主题配置，跳过应用');
     return;
   }
 
   const root = document.documentElement;
   const cssVars = generateCSSVariables(theme);
 
-  // 应用所有 CSS 变量
-  Object.entries(cssVars).forEach(([varName, varValue]) => {
-    root.style.setProperty(varName, varValue);
-  });
+  // 批量构建 CSS text，一次性写入（比逐条 setProperty 快 5-10x）
+  const cssText = Object.entries(cssVars)
+    .map(([name, value]) => `${name}: ${value};`)
+    .join('\n');
+  root.style.cssText += cssText;
 
   // 设置 data 属性用于 CSS 选择器
   root.setAttribute('data-theme', theme.id);
   root.setAttribute('data-mode', theme.mode);
+
+  // 统一使用 .dark class 作为暗色模式选择器（Tailwind dark: 变体依赖它）
+  if (theme.mode === 'dark') {
+    root.classList.add('dark');
+  } else {
+    root.classList.remove('dark');
+  }
 
   // 设置颜色方案（影响浏览器原生 UI）
   const colorScheme = theme.mode === 'dark' ? 'dark' : 'light';

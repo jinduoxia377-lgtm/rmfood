@@ -90,14 +90,14 @@ const SCENES: Record<EmptyStateType, SceneConfig> = {
     title: '未找到结果',
     description: '尝试更换关键词或调整搜索条件',
     bgGradient: 'from-slate-50 to-gray-50 dark:from-slate-900/30 dark:to-gray-900/20',
-    iconColor: 'text-slate-300 dark:text-slate-600',
+    iconColor: 'text-neutral-300 dark:text-neutral-600',
   },
   'no-notifications': {
     icon: <Bell size={40} strokeWidth={1.3} />,
     title: '没有新通知',
     description: '所有消息都已处理完毕',
     bgGradient: 'from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/20',
-    iconColor: 'text-amber-300 dark:text-amber-500',
+    iconColor: 'text-warning-300 dark:text-warning-500',
   },
   'no-workflows': {
     icon: <GitBranch size={40} strokeWidth={1.3} />,
@@ -111,14 +111,14 @@ const SCENES: Record<EmptyStateType, SceneConfig> = {
     title: '暂无评论',
     description: '成为第一个发表评论的人',
     bgGradient: 'from-emerald-50 to-green-50 dark:from-emerald-950/30 dark:to-green-950/20',
-    iconColor: 'text-emerald-400 dark:text-emerald-500',
+    iconColor: 'text-primary-400 dark:text-primary-500',
   },
   'no-data': {
     icon: <Database size={40} strokeWidth={1.3} />,
     title: '暂无数据',
     description: '该模块暂时没有任何数据',
     bgGradient: 'from-slate-50 to-gray-100 dark:from-slate-900/30 dark:to-gray-900/20',
-    iconColor: 'text-slate-300 dark:text-slate-600',
+    iconColor: 'text-neutral-300 dark:text-neutral-600',
   },
   'network-error': {
     icon: <WifiOff size={40} strokeWidth={1.3} />,
@@ -132,7 +132,7 @@ const SCENES: Record<EmptyStateType, SceneConfig> = {
     title: '内容为空',
     description: '当前筛选条件下没有匹配的内容',
     bgGradient: 'from-slate-50 to-gray-50 dark:from-slate-900/30 dark:to-gray-900/20',
-    iconColor: 'text-slate-300 dark:text-slate-600',
+    iconColor: 'text-neutral-300 dark:text-neutral-600',
   },
   'no-permission': {
     icon: <Shield size={40} strokeWidth={1.3} />,
@@ -146,7 +146,7 @@ const SCENES: Record<EmptyStateType, SceneConfig> = {
     title: '暂无审计日志',
     description: '系统操作记录将在这里显示',
     bgGradient: 'from-slate-50 to-gray-50 dark:from-slate-900/30 dark:to-gray-900/20',
-    iconColor: 'text-slate-300 dark:text-slate-600',
+    iconColor: 'text-neutral-300 dark:text-neutral-600',
   },
   'no-users': {
     icon: <Users size={40} strokeWidth={1.3} />,
@@ -160,14 +160,14 @@ const SCENES: Record<EmptyStateType, SceneConfig> = {
     title: 'AI 助手就绪',
     description: '输入你的问题，AI 将为你提供专业分析',
     bgGradient: 'from-amber-50 to-yellow-50 dark:from-amber-950/30 dark:to-yellow-950/20',
-    iconColor: 'text-amber-400 dark:text-amber-500',
+    iconColor: 'text-warning-400 dark:text-warning-500',
   },
   'no-attachments': {
     icon: <PackageOpen size={40} strokeWidth={1.3} />,
     title: '暂无附件',
     description: '上传文件以关联到此项目',
     bgGradient: 'from-slate-50 to-gray-50 dark:from-slate-900/30 dark:to-gray-900/20',
-    iconColor: 'text-slate-300 dark:text-slate-600',
+    iconColor: 'text-neutral-300 dark:text-neutral-600',
   },
   'no-versions': {
     icon: <Clock size={40} strokeWidth={1.3} />,
@@ -181,7 +181,7 @@ const SCENES: Record<EmptyStateType, SceneConfig> = {
     title: '暂无内容',
     description: '',
     bgGradient: 'from-slate-50 to-gray-50 dark:from-slate-900/30 dark:to-gray-900/20',
-    iconColor: 'text-slate-300 dark:text-slate-600',
+    iconColor: 'text-neutral-300 dark:text-neutral-600',
   },
 }
 
@@ -232,7 +232,7 @@ export function EmptyStateIllustration({
 
       {/* 文字 */}
       <h3 className={cn(
-        'font-semibold text-slate-900 dark:text-slate-100',
+        'font-semibold text-neutral-900 dark:text-neutral-100',
         isSmall ? 'text-sm' : 'text-base',
       )}>
         {displayTitle}
@@ -240,7 +240,7 @@ export function EmptyStateIllustration({
 
       {displayDescription && (
         <p className={cn(
-          'mt-1.5 text-slate-500 dark:text-slate-400 leading-relaxed',
+          'mt-1.5 text-neutral-500 dark:text-neutral-400 leading-relaxed',
           isSmall ? 'text-xs max-w-xs' : 'text-sm max-w-sm',
         )}>
           {displayDescription}

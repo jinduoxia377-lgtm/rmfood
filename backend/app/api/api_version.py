@@ -103,7 +103,6 @@ async def api_root() -> Dict[str, Any]:
             "token_type": "Access Token (30min) + Refresh Token (7d)",
         },
         "server_time": datetime.now(timezone.utc).isoformat(),
-        "environment": "development" if settings.debug else "production",
     }
 
 
@@ -118,14 +117,7 @@ async def api_info() -> Dict[str, Any]:
         "api_version": CURRENT_API_VERSION,
         "app_version": settings.app_version,
         "app_name": settings.app_name,
-        "environment": "development" if settings.debug else "production",
         "features": API_MATRIX["v1"]["features"],
-        "rate_limits": {
-            "auth_login": "5 requests / minute per IP",
-            "password_reset": "5 requests / minute per email",
-            "general": "60 requests / minute per user",
-            "ai_generation": "20 requests / minute per user",
-        },
         "authentication_required": True,
         "pagination": {
             "default_page_size": 20,

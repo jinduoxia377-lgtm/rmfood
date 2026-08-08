@@ -33,7 +33,7 @@ export const PersonalInfoSection: React.FC = () => {
     selectImage,
     uploadAvatar,
     removeAvatar,
-  } = useAvatarUpload(profile?.avatar_url || null);
+  } = useAvatarUpload(profile?.avatarUrl || null);
 
   const handleEdit = useCallback(() => {
     setMode('edit');
@@ -107,7 +107,7 @@ export const PersonalInfoSection: React.FC = () => {
           <div className={cn(
             'lg:col-span-1',
             'flex lg:flex-col items-center lg:items-start gap-4',
-            'p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg',
+            'p-4 bg-slate-50 dark:bg-neutral-800/50 rounded-lg',
           )}>
             <AvatarUpload
               avatarUrl={avatarUrl}

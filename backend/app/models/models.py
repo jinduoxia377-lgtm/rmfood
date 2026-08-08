@@ -27,7 +27,7 @@ from .experiment import Experiment, ExperimentData
 from .workflow import Workflow, WorkflowTask
 from .notification import Notification
 from .system import AuditLog, Attachment, DataSnapshot
-from .external_data import TCMHerb, BioactivePeptide, KnowledgeGraphNode
+from .external_data import TCMHerb, MMIDHerb, SymMapHerb, BioactivePeptide, KnowledgeGraphNode
 
 __all__ = [
     "UserRole",
@@ -54,6 +54,8 @@ __all__ = [
     "Attachment",
     "DataSnapshot",
     "TCMHerb",
+    "MMIDHerb",
+    "SymMapHerb",
     "BioactivePeptide",
     "KnowledgeGraphNode",
 ]

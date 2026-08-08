@@ -34,7 +34,7 @@ from logging.config import fileConfig
 from typing import Any, Optional
 
 from alembic import context
-from sqlalchemy import pool
+from sqlalchemy import pool, text
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
@@ -144,12 +144,7 @@ def do_run_migrations(connection: Connection) -> None:
 
 async def run_async_migrations() -> None:
     """
-    在'在线'模式下运行异步迁移
-    
-    适用场景:
-    - 开发环境日常开发
-    - 生产环境部署
-    - Docker容器启动时自动迁移
+    在在线模式下运行异步迁移
     
     创建异步引擎并执行迁移
     """
@@ -166,6 +161,7 @@ async def run_async_migrations() -> None:
         await connection.run_sync(do_run_migrations)
 
     await connectable.dispose()
+
 
 
 def include_object(object, name, type_, reflected, compare_to):

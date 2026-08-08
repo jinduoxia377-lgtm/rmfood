@@ -22,13 +22,13 @@ interface ActivityTimelineProps {
 }
 
 const ACTIVITY_CONFIG = {
-  created: { icon: Plus, color: 'text-green-500 bg-green-50 dark:bg-green-900/20', label: '创建配方' },
-  updated: { icon: Edit3, color: 'text-blue-500 bg-blue-50 dark:bg-blue-900/20', label: '更新配方' },
-  submitted: { icon: Send, color: 'text-amber-500 bg-amber-50 dark:bg-amber-900/20', label: '提交审核' },
-  approved: { icon: CheckCircle2, color: 'text-green-500 bg-green-50 dark:bg-green-900/20', label: '审核通过' },
-  rejected: { icon: XCircle, color: 'text-red-500 bg-red-50 dark:bg-red-900/20', label: '审核驳回' },
-  archived: { icon: Archive, color: 'text-slate-500 bg-slate-50 dark:bg-slate-800', label: '归档配方' },
-  commented: { icon: MessageSquare, color: 'text-purple-500 bg-purple-50 dark:bg-purple-900/20', label: '发表评论' },
+  created: { icon: Plus, color: 'text-success-500 bg-success-50 dark:bg-success-900/20', label: '创建配方' },
+  updated: { icon: Edit3, color: 'text-secondary-500 bg-secondary-50 dark:bg-secondary-900/20', label: '更新配方' },
+  submitted: { icon: Send, color: 'text-warning-500 bg-warning-50 dark:bg-warning-900/20', label: '提交审核' },
+  approved: { icon: CheckCircle2, color: 'text-success-500 bg-success-50 dark:bg-success-900/20', label: '审核通过' },
+  rejected: { icon: XCircle, color: 'text-error-500 bg-error-50 dark:bg-error-900/20', label: '审核驳回' },
+  archived: { icon: Archive, color: 'text-neutral-500 bg-slate-50 dark:bg-neutral-800', label: '归档配方' },
+  commented: { icon: MessageSquare, color: 'text-accent-500 bg-accent-50 dark:bg-accent-900/20', label: '发表评论' },
   ai_analysis: { icon: Sparkles, color: 'text-primary-500 bg-primary-50 dark:bg-primary-900/20', label: 'AI 分析' },
 }
 
@@ -36,15 +36,15 @@ export function ActivityTimeline({ activities }: ActivityTimelineProps) {
   if (!activities || activities.length === 0) {
     return (
       <div className="text-center py-8">
-        <Clock size={32} className="mx-auto text-slate-300 dark:text-slate-600 mb-2" />
-        <p className="text-sm text-slate-400">暂无活动记录</p>
+        <Clock size={32} className="mx-auto text-neutral-300 dark:text-neutral-600 mb-2" />
+        <p className="text-sm text-neutral-400">暂无活动记录</p>
       </div>
     )
   }
 
   return (
     <div className="relative">
-      <div className="absolute right-4 top-0 bottom-0 w-px bg-slate-200 dark:bg-slate-700" />
+      <div className="absolute right-4 top-0 bottom-0 w-px bg-neutral-200 dark:bg-neutral-700" />
       <div className="space-y-3">
         {activities.map((activity, index) => {
           const actConfig = ACTIVITY_CONFIG[activity.type]
@@ -61,22 +61,22 @@ export function ActivityTimeline({ activities }: ActivityTimelineProps) {
                 <Icon size={12} />
               </div>
               <div className={cn(
-                'bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 p-3',
+                'bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 p-3',
                 'hover:shadow-md transition-shadow',
                 isFirst && 'ring-2 ring-primary-200 dark:ring-primary-800/50',
               )}>
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0 flex-1 text-right">
                     <div className="flex items-center gap-2 mb-1 justify-end">
-                      <span className="text-sm font-medium text-slate-900 dark:text-white">{activity.description}</span>
+                      <span className="text-sm font-medium text-neutral-900 dark:text-white">{activity.description}</span>
                       {isFirst && (
                         <span className="px-1.5 py-0.5 text-[10px] font-medium bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 rounded order-first">最新</span>
                       )}
                     </div>
                     {activity.details && (
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mb-1.5 line-clamp-2">{activity.details}</p>
+                      <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-1.5 line-clamp-2">{activity.details}</p>
                     )}
-                    <div className="flex items-center gap-2 text-xs text-slate-400 justify-end">
+                    <div className="flex items-center gap-2 text-xs text-neutral-400 justify-end">
                       {activity.actor && (
                         <span className="flex items-center gap-1">{activity.actor}<User size={9} /></span>
                       )}

@@ -14,12 +14,12 @@ const typeLabels: Record<ReferenceType, string> = {
 };
 
 const typeColors: Record<ReferenceType, string> = {
-  article: 'bg-blue-100 text-blue-700',
-  book: 'bg-green-100 text-green-700',
+  article: 'bg-secondary-100 text-secondary-700',
+  book: 'bg-success-100 text-success-700',
   conference: 'bg-pink-100 text-pink-700',
   thesis: 'bg-indigo-100 text-indigo-700',
   website: 'bg-orange-100 text-orange-700',
-  patent: 'bg-amber-100 text-amber-700',
+  patent: 'bg-warning-100 text-warning-700',
 };
 
 export function ReferenceLibrary() {
@@ -124,11 +124,11 @@ export function ReferenceLibrary() {
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
           <input
             type="text"
             placeholder="搜索文献..."
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+            className="w-full pl-10 pr-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100"
             value={searchQuery}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => useReferenceStore.getState().searchReferences(e.target.value)}
           />
@@ -144,19 +144,19 @@ export function ReferenceLibrary() {
           <div className="relative">
             <button
               onClick={() => setShowTypeDropdown(!showTypeDropdown)}
-              className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+              className="flex items-center gap-2 px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-slate-50 dark:hover:bg-neutral-700"
             >
               筛选
               <ChevronDown className="w-4 h-4" />
             </button>
             {showTypeDropdown && (
-              <div className="absolute top-full right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-10 min-w-[150px]">
+              <div className="absolute top-full right-0 mt-1 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg shadow-lg z-10 min-w-[150px]">
                 <button
                   onClick={() => {
                     useReferenceStore.getState().setTypeFilter('all');
                     setShowTypeDropdown(false);
                   }}
-                  className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+                  className="w-full text-left px-3 py-2 text-sm hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300"
                 >
                   全部类型
                 </button>
@@ -167,7 +167,7 @@ export function ReferenceLibrary() {
                       useReferenceStore.getState().setTypeFilter(value as ReferenceType);
                       setShowTypeDropdown(false);
                     }}
-                    className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+                    className="w-full text-left px-3 py-2 text-sm hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300"
                   >
                     {label}
                   </button>
@@ -193,7 +193,7 @@ export function ReferenceLibrary() {
             </button>
             <button
               onClick={handleBatchExport}
-              className="flex items-center gap-1 px-3 py-1.5 text-xs bg-white dark:bg-gray-800 text-primary border border-primary rounded-lg hover:bg-primary-50"
+              className="flex items-center gap-1 px-3 py-1.5 text-xs bg-white dark:bg-neutral-800 text-primary border border-primary rounded-lg hover:bg-primary-50"
             >
               <Download className="w-3 h-3" />
               导出
@@ -203,10 +203,10 @@ export function ReferenceLibrary() {
       )}
 
       {showAddForm && (
-        <div className="border rounded-lg p-4 bg-white dark:bg-gray-800">
-          <div className="flex items-center justify-between mb-4">
+        <div className="border rounded-lg p-4 bg-white dark:bg-neutral-800">
+            <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold">添加新文献</h3>
-            <button onClick={() => setShowAddForm(false)} className="p-1 hover:bg-gray-100 rounded">
+            <button onClick={() => setShowAddForm(false)} className="p-1 hover:bg-neutral-100 rounded">
               <X className="w-4 h-4" />
             </button>
           </div>
@@ -218,7 +218,7 @@ export function ReferenceLibrary() {
                 value={newReference.title}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewReference(prev => ({ ...prev, title: e.target.value }))}
                 placeholder="输入文献标题"
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800"
+                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800"
               />
             </div>
             <div>
@@ -228,7 +228,7 @@ export function ReferenceLibrary() {
                 value={newReference.authors}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewReference(prev => ({ ...prev, authors: e.target.value }))}
                 placeholder="作者1, 作者2, 作者3"
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800"
+                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800"
               />
             </div>
             <div>
@@ -238,7 +238,7 @@ export function ReferenceLibrary() {
                 value={newReference.year}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewReference(prev => ({ ...prev, year: e.target.value }))}
                 placeholder="2024"
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800"
+                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800"
               />
             </div>
             <div>
@@ -248,7 +248,7 @@ export function ReferenceLibrary() {
                 value={newReference.journal}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewReference(prev => ({ ...prev, journal: e.target.value }))}
                 placeholder="期刊名称"
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800"
+                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800"
               />
             </div>
             <div>
@@ -258,7 +258,7 @@ export function ReferenceLibrary() {
                 value={newReference.volume}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewReference(prev => ({ ...prev, volume: e.target.value }))}
                 placeholder="卷号"
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800"
+                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800"
               />
             </div>
             <div>
@@ -268,7 +268,7 @@ export function ReferenceLibrary() {
                 value={newReference.pages}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewReference(prev => ({ ...prev, pages: e.target.value }))}
                 placeholder="123-145"
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800"
+                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800"
               />
             </div>
             <div>
@@ -278,13 +278,13 @@ export function ReferenceLibrary() {
                 value={newReference.doi}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewReference(prev => ({ ...prev, doi: e.target.value }))}
                 placeholder="10.1000/xyz123"
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800"
+                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800"
               />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">类型</label>
               <select
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100"
                 value={newReference.type}
                 onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setNewReference(prev => ({ ...prev, type: e.target.value as ReferenceType }))}
               >
@@ -297,7 +297,7 @@ export function ReferenceLibrary() {
           <div className="flex justify-end gap-2 mt-4">
             <button
               onClick={() => setShowAddForm(false)}
-              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+              className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-700"
             >
               取消
             </button>
@@ -311,15 +311,15 @@ export function ReferenceLibrary() {
         </div>
       )}
 
-      <div className="flex items-center gap-3 px-2 py-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+      <div className="flex items-center gap-3 px-2 py-2 bg-slate-50 dark:bg-neutral-800/50 rounded-lg">
         <input
           type="checkbox"
           checked={selectedIds.size === displayedReferences.length && displayedReferences.length > 0}
           onChange={handleSelectAll}
-          className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+          className="w-4 h-4 rounded border-neutral-300 text-primary focus:ring-primary"
         />
-        <span className="text-sm text-gray-600 dark:text-gray-400">全选</span>
-        <span className="text-sm text-gray-400 dark:text-gray-500 ml-auto">
+        <span className="text-sm text-neutral-600 dark:text-neutral-400">全选</span>
+        <span className="text-sm text-neutral-400 dark:text-neutral-500 ml-auto">
           共 {displayedReferences.length} 条文献
         </span>
       </div>
@@ -329,7 +329,7 @@ export function ReferenceLibrary() {
           <div
             key={ref.id}
             className={cn(
-              'border rounded-lg p-4 hover:shadow-md transition-shadow bg-white dark:bg-gray-800',
+              'border rounded-lg p-4 hover:shadow-md transition-shadow bg-white dark:bg-neutral-800',
               selectedIds.has(ref.id) ? 'border-primary ring-1 ring-primary/20' : '',
             )}
           >
@@ -338,26 +338,26 @@ export function ReferenceLibrary() {
                 type="checkbox"
                 checked={selectedIds.has(ref.id)}
                 onChange={() => handleToggleSelect(ref.id)}
-                className="mt-1 w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                className="mt-1 w-4 h-4 rounded border-neutral-300 text-primary focus:ring-primary"
               />
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between mb-2">
-                  <span className={cn('px-2 py-1 text-xs rounded', typeColors[ref.type as ReferenceType] || 'bg-gray-100 text-gray-700')}>
+                  <span className={cn('px-2 py-1 text-xs rounded', typeColors[ref.type as ReferenceType] || 'bg-neutral-100 text-neutral-700')}>
                     {typeLabels[ref.type as ReferenceType] || ref.type}
                   </span>
                   <button
                     onClick={() => deleteReference(ref.id)}
-                    className="p-1 hover:bg-red-50 rounded text-gray-400 hover:text-red-500"
+                    className="p-1 hover:bg-error-50 rounded text-neutral-400 hover:text-error-500"
                   >
                     <X className="w-4 h-4" />
                   </button>
                 </div>
-                <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-1 line-clamp-2">{ref.title}</h3>
-                <div className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 mb-2">
+                <h3 className="font-semibold text-neutral-900 dark:text-neutral-100 mb-1 line-clamp-2">{ref.title}</h3>
+                <div className="flex items-center gap-1 text-sm text-neutral-500 dark:text-neutral-400 mb-2">
                   <User className="w-3 h-3" />
                   <span className="line-clamp-1">{ref.authors.join('、')}</span>
                 </div>
-                <div className="flex flex-wrap gap-3 text-sm text-gray-400">
+                <div className="flex flex-wrap gap-3 text-sm text-neutral-400">
                   {ref.year && (
                     <span className="flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
@@ -383,8 +383,8 @@ export function ReferenceLibrary() {
                     </span>
                   )}
                 </div>
-                <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
-                  <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">
+                <div className="mt-3 pt-3 border-t border-neutral-100 dark:border-neutral-700">
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400 line-clamp-2">
                     {`${ref.authors.join(', ')} (${ref.year}). ${ref.title}.`}
                   </p>
                 </div>
@@ -396,11 +396,11 @@ export function ReferenceLibrary() {
 
       {displayedReferences.length === 0 && (
         <div className="text-center py-12">
-          <BookOpen className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-          <p className="text-gray-400">暂无文献</p>
+          <BookOpen className="w-12 h-12 mx-auto mb-4 text-neutral-300" />
+          <p className="text-neutral-400">暂无文献</p>
           <button
             onClick={() => setShowAddForm(true)}
-            className="mt-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+            className="mt-2 px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-700"
           >
             添加第一篇文献
           </button>

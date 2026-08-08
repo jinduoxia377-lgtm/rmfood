@@ -39,6 +39,7 @@ export function ThemeSwitcher({
       document.addEventListener('mousedown', handleClickOutside);
       return () => document.removeEventListener('mousedown', handleClickOutside);
     }
+    return;
   }, [isOpen]);
 
   // ESC关闭
@@ -53,6 +54,7 @@ export function ThemeSwitcher({
       document.addEventListener('keydown', handleEscape);
       return () => document.removeEventListener('keydown', handleEscape);
     }
+    return;
   }, [isOpen]);
 
   const sizeClasses = {

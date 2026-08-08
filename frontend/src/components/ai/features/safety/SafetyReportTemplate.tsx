@@ -11,6 +11,8 @@ import {
 import { useOperationFeedback } from '@/hooks/useOperationFeedback'
 import type { SafetyCheckResult } from '@/types'
 
+
+import { logger } from '@/utils/safeLogger';
 interface ReportSection {
   id: string
   title: string
@@ -288,7 +290,7 @@ export function SafetyReportTemplate({
           ing.notes || '-',
         ])
 
-        ;(doc as any).autoTable({
+        ;(doc.autoTable({
           head: [['序号', '成分名称', '浓度', '风险评分', '状态', '备注']],
           body: tableData,
           startY: yPos,
@@ -335,7 +337,7 @@ export function SafetyReportTemplate({
 
       feedback.showSuccess('报告已生成', `${selectedTemplate.name} PDF 报告生成成功`)
     } catch (error) {
-      console.error('PDF generation error:', error)
+      logger.error('PDF generation error:', error)
       feedback.showError('生成失败', error instanceof Error ? error.message : 'PDF生成过程中出现错误')
     } finally {
       setIsGenerating(false)
@@ -357,15 +359,15 @@ export function SafetyReportTemplate({
         return (
           <div className="space-y-6 p-8 bg-white rounded-lg shadow-sm">
             <div className="text-center space-y-4">
-              <h1 className="text-3xl font-bold text-gray-900">
+              <h1 className="text-3xl font-bold text-neutral-900">
                 {selectedTemplate.name}
               </h1>
-              <p className="text-lg text-gray-600">{selectedTemplate.description}</p>
+              <p className="text-lg text-neutral-600">{selectedTemplate.description}</p>
             </div>
 
             <div className="grid grid-cols-2 gap-4 max-w-xl mx-auto mt-8">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">产品名称 *</label>
+                <label className="block text-sm font-medium text-neutral-700 mb-1">产品名称 *</label>
                 <Input
                   value={reportData.productName}
                   onChange={(e) => updateReportData('productName', e.target.value)}
@@ -374,7 +376,7 @@ export function SafetyReportTemplate({
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">编制人 *</label>
+                <label className="block text-sm font-medium text-neutral-700 mb-1">编制人 *</label>
                 <Input
                   value={reportData.preparer}
                   onChange={(e) => updateReportData('preparer', e.target.value)}
@@ -383,7 +385,7 @@ export function SafetyReportTemplate({
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">日期 *</label>
+                <label className="block text-sm font-medium text-neutral-700 mb-1">日期 *</label>
                 <Input
                   type="date"
                   value={reportData.date}
@@ -392,7 +394,7 @@ export function SafetyReportTemplate({
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">版本号</label>
+                <label className="block text-sm font-medium text-neutral-700 mb-1">版本号</label>
                 <Input
                   value={reportData.version}
                   onChange={(e) => updateReportData('version', e.target.value)}
@@ -402,7 +404,7 @@ export function SafetyReportTemplate({
             </div>
 
             <div className="max-w-xl mx-auto">
-              <label className="block text-sm font-medium text-gray-700 mb-1">水印文字</label>
+              <label className="block text-sm font-medium text-neutral-700 mb-1">水印文字</label>
               <Input
                 value={reportData.watermark}
                 onChange={(e) => updateReportData('watermark', e.target.value)}
@@ -423,7 +425,7 @@ export function SafetyReportTemplate({
               value={reportData.executiveSummary}
               onChange={(e) => updateReportData('executiveSummary', e.target.value)}
               placeholder="请输入关键发现和建议的简要总结..."
-              className="w-full h-48 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg resize-none focus:ring-2 focus:ring-blue-500"
+              className="w-full h-48 px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-lg resize-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
         )
@@ -437,21 +439,21 @@ export function SafetyReportTemplate({
             </h3>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">检测方法</label>
+              <label className="block text-sm font-medium text-neutral-700 mb-2">检测方法</label>
               <textarea
                 value={reportData.testMethods}
                 onChange={(e) => updateReportData('testMethods', e.target.value)}
                 placeholder="描述采用的检测方法和标准..."
-                className="w-full h-32 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg resize-none"
+                className="w-full h-32 px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-lg resize-none"
               />
             </div>
 
             {initialData.ingredients && initialData.ingredients.length > 0 && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">原料清单及检测结果</label>
-                <div className="overflow-x-auto border border-gray-300 rounded-lg">
+                <label className="block text-sm font-medium text-neutral-700 mb-2">原料清单及检测结果</label>
+                <div className="overflow-x-auto border border-neutral-300 rounded-lg">
                   <table className="w-full text-sm">
-                    <thead className="bg-gray-50">
+                    <thead className="bg-slate-50">
                       <tr>
                         <th className="px-4 py-2 text-left">序号</th>
                         <th className="px-4 py-2 text-left">成分名称</th>
@@ -461,7 +463,7 @@ export function SafetyReportTemplate({
                         <th className="px-4 py-2 text-left">备注</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200">
+                    <tbody className="divide-y divide-slate-200">
                       {initialData.ingredients.map((ing, idx) => (
                         <tr key={idx}>
                           <td className="px-4 py-2">{idx + 1}</td>
@@ -484,7 +486,7 @@ export function SafetyReportTemplate({
                                ing.status === 'warning' ? '⚠ 警告' : '✗ 不合规'}
                             </Badge>
                           </td>
-                          <td className="px-4 py-2 text-gray-500">{ing.notes || '-'}</td>
+                          <td className="px-4 py-2 text-neutral-500">{ing.notes || '-'}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -505,7 +507,7 @@ export function SafetyReportTemplate({
               value={reportData.riskAssessment}
               onChange={(e) => updateReportData('riskAssessment', e.target.value)}
               placeholder="详细的风险评估分析和矩阵..."
-              className="w-full h-48 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg resize-none"
+              className="w-full h-48 px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-lg resize-none"
             />
           </div>
         )
@@ -520,7 +522,7 @@ export function SafetyReportTemplate({
               value={reportData.improvementActions}
               onChange={(e) => updateReportData('improvementActions', e.target.value)}
               placeholder="列出具体的改进建议和实施计划..."
-              className="w-full h-48 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg resize-none"
+              className="w-full h-48 px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-lg resize-none"
             />
           </div>
         )
@@ -531,19 +533,19 @@ export function SafetyReportTemplate({
             <h3 className="text-lg font-semibold">结论与签名</h3>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">结论</label>
+              <label className="block text-sm font-medium text-neutral-700 mb-2">结论</label>
               <textarea
                 value={reportData.conclusion}
                 onChange={(e) => updateReportData('conclusion', e.target.value)}
                 placeholder="总结性结论和声明..."
-                className="w-full h-32 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg resize-none"
+                className="w-full h-32 px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-lg resize-none"
               />
             </div>
 
             <div className="border-t pt-6 mt-6">
               <div className="grid grid-cols-2 gap-8 max-w-md">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">审核人签名</label>
+                  <label className="block text-sm font-medium text-neutral-700 mb-2">审核人签名</label>
                   <Input
                     value={reportData.signature}
                     onChange={(e) => updateReportData('signature', e.target.value)}
@@ -551,7 +553,7 @@ export function SafetyReportTemplate({
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">签署日期</label>
+                  <label className="block text-sm font-medium text-neutral-700 mb-2">签署日期</label>
                   <Input
                     type="date"
                     value={new Date().toISOString().split('T')[0]}
@@ -565,7 +567,7 @@ export function SafetyReportTemplate({
 
       default:
         return (
-          <div className="p-6 bg-white rounded-lg shadow-sm text-center text-gray-500 py-12">
+          <div className="p-6 bg-white rounded-lg shadow-sm text-center text-neutral-500 py-12">
             <p>{selectedTemplate.sections.find(s => s.id === sectionId)?.title}</p>
             <p className="text-sm mt-2">该章节内容待完善</p>
           </div>
@@ -590,7 +592,7 @@ export function SafetyReportTemplate({
         </div>
 
         {showTemplateSelector && (
-          <div className="mb-6 p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800">
+          <div className="mb-6 p-4 border border-neutral-200 dark:border-neutral-700 rounded-lg bg-slate-50 dark:bg-neutral-800">
             <h3 className="font-medium mb-3">选择报告模板</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {REPORT_TEMPLATES.map(template => (
@@ -604,20 +606,20 @@ export function SafetyReportTemplate({
                   }}
                   className={`p-4 border rounded-lg text-left transition-all hover:border-blue-400 hover:shadow-md ${
                     selectedTemplate.id === template.id
-                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 ring-2 ring-blue-500'
-                      : 'border-gray-200 dark:border-gray-700 hover:bg-white dark:hover:bg-gray-700'
+                      ? 'border-blue-500 bg-secondary-50 dark:bg-secondary-900/20 ring-2 ring-blue-500'
+                      : 'border-neutral-200 dark:border-neutral-700 hover:bg-white dark:hover:bg-neutral-700'
                   }`}
                 >
                   <div className="flex items-start gap-3">
                     <span className="text-2xl">{template.icon}</span>
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-medium text-sm text-gray-900 dark:text-gray-100 truncate">
+                      <h4 className="font-medium text-sm text-neutral-900 dark:text-neutral-100 truncate">
                         {template.name}
                       </h4>
-                      <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+                      <p className="text-xs text-neutral-500 mt-1 line-clamp-2">
                         {template.description}
                       </p>
-                      <Badge variant="secondary" className="mt-2 text-[10px]">
+                      <Badge variant="neutral" className="mt-2 text-[10px]">
                         {template.category}
                       </Badge>
                     </div>
@@ -638,12 +640,12 @@ export function SafetyReportTemplate({
                     onClick={() => setActiveSection(section.id)}
                     className={`px-4 py-2 text-sm font-medium whitespace-nowrap rounded-lg transition-colors ${
                       activeSection === section.id
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                        ? 'bg-secondary-600 text-white'
+                        : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700'
                     }`}
                   >
                     {section.title}
-                    {section.required && <span className="ml-1 text-red-400">*</span>}
+                    {section.required && <span className="ml-1 text-error-400">*</span>}
                   </button>
                 ))}
               </div>
@@ -661,13 +663,13 @@ export function SafetyReportTemplate({
 
             {isGenerating && (
               <div className="mb-4">
-                <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
+                <div className="flex items-center justify-between text-sm text-neutral-600 mb-2">
                   <span>正在生成报告...</span>
                   <span>{generationProgress}%</span>
                 </div>
-                <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                <div className="w-full h-2 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-blue-600 transition-all duration-300"
+                    className="h-full bg-secondary-600 transition-all duration-300"
                     style={{ width: `${generationProgress}%` }}
                   />
                 </div>
@@ -711,7 +713,7 @@ export function SafetyReportTemplate({
               报告已成功生成！您可以预览、下载或导出为其他格式。
             </Alert>
 
-            <div className="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden bg-white" style={{ height: '800px' }}>
+            <div className="border border-neutral-300 dark:border-neutral-600 rounded-lg overflow-hidden bg-white" style={{ height: '800px' }}>
               <iframe
                 src={previewUrl}
                 className="w-full h-full"

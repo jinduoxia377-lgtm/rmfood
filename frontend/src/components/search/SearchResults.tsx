@@ -10,18 +10,18 @@ import { clsx } from 'clsx';
 
 // 类型图标配置
 const TYPE_ICON_CONFIG: Record<SearchResultType, { icon: React.ReactNode; color: string }> = {
-  formula: { icon: <FileText className="w-5 h-5" />, color: 'bg-blue-100 text-blue-600' },
-  experiment: { icon: <FlaskConical className="w-5 h-5" />, color: 'bg-purple-100 text-purple-600' },
-  herb: { icon: <Leaf className="w-5 h-5" />, color: 'bg-green-100 text-green-600' },
+  formula: { icon: <FileText className="w-5 h-5" />, color: 'bg-secondary-100 text-secondary-600' },
+  experiment: { icon: <FlaskConical className="w-5 h-5" />, color: 'bg-accent-100 text-accent-600' },
+  herb: { icon: <Leaf className="w-5 h-5" />, color: 'bg-success-100 text-success-600' },
   peptide: { icon: <Dna className="w-5 h-5" />, color: 'bg-orange-100 text-orange-600' },
   knowledge: { icon: <Lightbulb className="w-5 h-5" />, color: 'bg-pink-100 text-pink-600' },
 };
 
 // 类型标签配置
 const TYPE_LABEL_CONFIG: Record<SearchResultType, { label: string; color: string }> = {
-  formula: { label: '配方', color: 'bg-blue-500' },
-  experiment: { label: '实验', color: 'bg-purple-500' },
-  herb: { label: '中药', color: 'bg-green-500' },
+  formula: { label: '配方', color: 'bg-secondary-500' },
+  experiment: { label: '实验', color: 'bg-accent-500' },
+  herb: { label: '中药', color: 'bg-success-500' },
   peptide: { label: '肽', color: 'bg-orange-500' },
   knowledge: { label: '知识', color: 'bg-pink-500' },
 };
@@ -123,7 +123,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
   // 渲染错误状态
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 text-red-500">
+      <div className="flex flex-col items-center justify-center py-16 text-error-500">
         <div className="text-4xl mb-4">Error</div>
         <p>{error}</p>
       </div>
@@ -133,7 +133,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
   // 渲染无结果状态
   if (results.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 text-gray-500">
+      <div className="flex flex-col items-center justify-center py-16 text-neutral-500">
         <div className="text-4xl mb-4">No results</div>
         <p>未找到与"{query}"相关的内容</p>
         <p className="text-sm mt-2">请尝试其他关键词或调整筛选条件</p>
@@ -145,14 +145,14 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
     <div className="space-y-4">
       {/* 结果统计和选择控制 */}
       <div className="flex items-center justify-between">
-        <div className="text-sm text-gray-600">
-          找到 <span className="font-semibold text-gray-800">{total || results.length}</span> 个结果
+        <div className="text-sm text-neutral-600">
+          找到 <span className="font-semibold text-neutral-800">{total || results.length}</span> 个结果
           {query && <span className="ml-2">关于 "{query}"</span>}
         </div>
         {results.length > 1 && (
           <button
             onClick={selectAll}
-            className="text-sm text-blue-500 hover:text-blue-600 transition-colors"
+            className="text-sm text-secondary-500 hover:text-secondary-600 transition-colors"
           >
             {selectedItems.size === results.length ? '取消全选' : '全选'}
           </button>
@@ -178,8 +178,8 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
                 className={clsx(
                   'mt-1 flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors',
                   selectedItems.has(item.id)
-                    ? 'bg-blue-500 border-blue-500 text-white'
-                    : 'border-gray-300 hover:border-blue-400',
+                    ? 'bg-secondary-500 border-blue-500 text-white'
+                    : 'border-neutral-300 hover:border-blue-400',
                 )}
               >
                 {selectedItems.has(item.id) && <Check className="w-3 h-3" />}
@@ -194,7 +194,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
             {/* 内容区域 */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <h3 className="font-semibold text-gray-800 group-hover:text-blue-600 transition-colors truncate">
+                <h3 className="font-semibold text-neutral-800 group-hover:text-secondary-600 transition-colors truncate">
                   {item.title}
                 </h3>
                 <span className={clsx('flex-shrink-0 px-2 py-0.5 text-xs text-white rounded-full', TYPE_LABEL_CONFIG[item.type].color)}>
@@ -203,35 +203,35 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
               </div>
 
               {item.subtitle && (
-                <p className="text-sm text-gray-500 mb-2 truncate">{item.subtitle}</p>
+                <p className="text-sm text-neutral-500 mb-2 truncate">{item.subtitle}</p>
               )}
 
               {item.description && (
-                <p className="text-sm text-gray-600 line-clamp-2 mb-2">{item.description}</p>
+                <p className="text-sm text-neutral-600 line-clamp-2 mb-2">{item.description}</p>
               )}
 
               {/* 标签和日期 */}
               <div className="flex flex-wrap items-center gap-2">
                 {item.tags.length > 0 && (
                   <>
-                    <div className="flex items-center gap-1 text-xs text-gray-400">
+                    <div className="flex items-center gap-1 text-xs text-neutral-400">
                       <Tag className="w-3 h-3" />
                     </div>
                     {item.tags.slice(0, 3).map((tag) => (
                       <span
                         key={tag}
-                        className="px-2 py-0.5 text-xs bg-gray-100 text-gray-600 rounded-full"
+                        className="px-2 py-0.5 text-xs bg-neutral-100 text-neutral-600 rounded-full"
                       >
                         {tag}
                       </span>
                     ))}
                     {item.tags.length > 3 && (
-                      <span className="text-xs text-gray-400">+{item.tags.length - 3}</span>
+                      <span className="text-xs text-neutral-400">+{item.tags.length - 3}</span>
                     )}
                   </>
                 )}
 
-                <div className="flex items-center gap-1 text-xs text-gray-400 ml-auto">
+                <div className="flex items-center gap-1 text-xs text-neutral-400 ml-auto">
                   <Clock className="w-3 h-3" />
                   {formatDate(item.createdAt)}
                 </div>
@@ -243,7 +243,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
               {onQuickReuse && (
                 <button
                   onClick={(e) => handleQuickReuse(item, e)}
-                  className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                  className="p-2 text-neutral-400 hover:text-success-600 hover:bg-success-50 rounded-lg transition-colors"
                   title="快速复用"
                 >
                   <Copy className="w-4 h-4" />
@@ -255,8 +255,8 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
                   className={clsx(
                     'p-2 rounded-lg transition-colors',
                     copiedId === item.id
-                      ? 'text-green-600 bg-green-50'
-                      : 'text-gray-400 hover:text-blue-600 hover:bg-blue-50',
+                      ? 'text-success-600 bg-success-50'
+                      : 'text-neutral-400 hover:text-secondary-600 hover:bg-secondary-50',
                   )}
                   title={copiedId === item.id ? '已复制' : '复制标题'}
                 >
@@ -268,7 +268,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
                   e.stopPropagation();
                   onSelect(item);
                 }}
-                className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                className="p-2 text-neutral-400 hover:text-secondary-600 hover:bg-secondary-50 rounded-lg transition-colors"
                 title="查看详情"
               >
                 <ExternalLink className="w-4 h-4" />
@@ -279,13 +279,13 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
             {item.relevance !== undefined && (
               <div className="absolute top-4 right-4">
                 <div className="flex items-center gap-1">
-                  <div className="w-16 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                  <div className="w-16 h-1.5 bg-neutral-200 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-blue-500 rounded-full transition-all"
+                      className="h-full bg-secondary-500 rounded-full transition-all"
                       style={{ width: `${(item.relevance || 0) * 100}%` }}
                     />
                   </div>
-                  <span className="text-xs text-gray-400">{Math.round((item.relevance || 0) * 100)}%</span>
+                  <span className="text-xs text-neutral-400">{Math.round((item.relevance || 0) * 100)}%</span>
                 </div>
               </div>
             )}
@@ -295,8 +295,8 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
 
       {/* 批量操作提示 */}
       {selectedItems.size > 0 && (
-        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-4 px-6 py-3 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
-          <span className="text-sm text-gray-600">
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-4 px-6 py-3 bg-white border border-neutral-200 rounded-lg shadow-lg z-50">
+          <span className="text-sm text-neutral-600">
             已选择 <span className="font-semibold">{selectedItems.size}</span> 项
           </span>
           {onQuickReuse && (
@@ -305,14 +305,14 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
                 const selected = results.filter((r) => selectedItems.has(r.id));
                 selected.forEach((item) => onQuickReuse(item));
               }}
-              className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+              className="px-4 py-2 bg-success-500 text-white rounded-lg hover:bg-success-600 transition-colors"
             >
               批量复用
             </button>
           )}
           <button
             onClick={() => setSelectedItems(new Set())}
-            className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+            className="px-4 py-2 text-neutral-600 hover:bg-neutral-100 rounded-lg transition-colors"
           >
             取消选择
           </button>

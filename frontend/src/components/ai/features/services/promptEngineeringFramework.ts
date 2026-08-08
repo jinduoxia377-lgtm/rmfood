@@ -850,11 +850,11 @@ export class PromptEngineeringFramework {
   }): GeneratedPrompt {
     const startTime = performance.now()
 
-    const detection = options.forceScenario
-      ? { primary: options.forceScenario, confidence: 1.0, detectedKeywords: [] as string[], suggestedTier: options.forceTier || this.config.defaultTier, reasoning: '手动指定' }
+    const detection = options?.forceScenario
+      ? { primary: options?.forceScenario, confidence: 1.0, detectedKeywords: [] as string[], suggestedTier: options?.forceTier || this.config.defaultTier, reasoning: '手动指定' }
       : this.detectScenarioInternal(userInput)
 
-    const tier = options.forceTier || detection.suggestedTier || this.config.defaultTier
+    const tier = options?.forceTier || detection.suggestedTier || this.config.defaultTier
     const template = this.getTemplate(detection.primary, tier)
 
     if (!template) {
@@ -865,7 +865,7 @@ export class PromptEngineeringFramework {
 
     let appliedExamples: FewShotExample[] = []
     if (this.config.enableFewShotLearning) {
-      const examples = this.selectRelevantExamples(detection.primary, options.maxExamples || 1)
+      const examples = this.selectRelevantExamples(detection.primary, options?.maxExamples || 1)
       const exampleStr = this.formatExamplesCompact(examples)
       if (basePrompt.length + exampleStr.length <= this.config.maxLength - userInput.length - 20) {
         basePrompt = exampleStr + basePrompt

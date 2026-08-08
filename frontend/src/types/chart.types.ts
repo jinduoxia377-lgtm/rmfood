@@ -126,14 +126,14 @@ export enum ColorSchemeType {
 }
 
 export const COLOR_SCHEMES: Record<ColorSchemeType, string[]> = {
-  [ColorSchemeType.DEFAULT]: ['#1e40af', '#3b82f6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'],
-  [ColorSchemeType.BRAND]: ['#2563eb', '#1d4ed8', '#3b82f6', '#60a5fa', '#93c5fd', '#bfdbfe', '#dbeafe', '#eff6ff'],
-  [ColorSchemeType.PASTEL]: ['#fecaca', '#fed7aa', '#fef08a', '#bbf7d0', '#a5f3fc', '#c7d2fe', '#ddd6fe', '#fbcfe8'],
+  [ColorSchemeType.DEFAULT]: ['#003E87', '#007AFF', '#0891B2', '#34C759', '#D97706', '#FF3B30', '#AF52DE', '#D946EF'],
+  [ColorSchemeType.BRAND]: ['#007AFF', '#0052AE', '#007AFF', '#6ECAFF', '#A8DFFF', '#D2EFFF', '#E8F4FD', '#F0F7FF'],
+  [ColorSchemeType.PASTEL]: ['#FFD0D0', '#fed7aa', '#fef08a', '#bbf7d0', '#CFFAFE', '#c7d2fe', '#E8D5FF', '#F9A8D4'],
   [ColorSchemeType.VIBRANT]: ['#ff006e', '#fb5607', '#ffbe0b', '#8338ec', '#3a86ff', '#06d6a0', '#ef476f', '#ffd166'],
   [ColorSchemeType.MONOCHROME]: ['#1f2937', '#374151', '#4b5563', '#6b7280', '#9ca3af', '#d1d5db', '#e5e7eb', '#f3f4f6'],
   [ColorSchemeType.COLORBLIND_SAFE]: ['#0072b2', '#d55e00', '#009e73', '#cc79a7', '#f0e442', '#56b4e9', '#e69f00', '#000000'],
   [ColorSchemeType.PRINT_FRIENDLY]: ['#000000', '#333333', '#666666', '#999999', '#cccccccc', '#e0e0e0', '#f0f0f0', '#ffffff'],
-  [ColorSchemeType.DARK]: ['#60a5fa', '#34d399', '#fbbf24', '#f87171', '#a78bfa', '#f472b6', '#22d3ee', '#4ade80'],
+  [ColorSchemeType.DARK]: ['#6ECAFF', '#4ADE80', '#F59E0B', '#EF4444', '#C090FF', '#EC4899', '#67E8F9', '#4ade80'],
 };
 
 export const CHART_TYPE_DEFINITIONS: ChartTypeDefinition[] = [

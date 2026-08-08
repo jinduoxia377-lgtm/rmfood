@@ -60,9 +60,9 @@ interface EnhancedPieChartProps {
 }
 
 const defaultPalette = [
-  '#4CAF50', '#2196F3', '#FF9800', '#9C27B0',
-  '#00BCD4', '#FF5722', '#795548', '#607D8B',
-  '#E91E63', '#8BC34A', '#FFC107', '#03A9F4',
+  'var(--color-success, #34C759)', 'var(--color-secondary, #0A84FF)', 'var(--color-warning, #FF9F0A)', 'var(--color-tertiary, #AF52DE)',
+  'var(--color-info, #007AFF)', 'var(--color-error, #FF3B30)', 'var(--color-neutral-600, #4B5563)', 'var(--color-neutral-500, #6B7280)',
+  'var(--color-pink-500, #D946EF)', 'var(--color-success-400, #4ADE80)', 'var(--color-warning-400, #F59E0B)', 'var(--color-info-400, #67E8F9)',
 ]
 
 export function EnhancedPieChart({

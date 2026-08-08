@@ -223,7 +223,7 @@ async def unlock_user_account(
     
     权限要求: ADMIN 角色
     """
-    from ..core.account_lockout import AccountLockout
+    from ..core.security.account_lockout import AccountLockout
     
     # 检查目标用户是否存在
     target_user = (await db.execute(select(User).where(User.id == user_id))).scalar_one_or_none()
@@ -262,7 +262,7 @@ async def get_account_lock_status(
     - 锁定剩余时间（如已锁定）
     - 最后登录时间
     """
-    from ..core.account_lockout import AccountLockout
+    from ..core.security.account_lockout import AccountLockout
     from datetime import datetime, timezone
     
     # 查询目标用户

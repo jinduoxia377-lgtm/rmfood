@@ -28,7 +28,7 @@ import {
 import { cn } from '@/lib/utils'
 import { Button, Card, Modal, Badge, Input, Textarea, Select } from '@/components/ui'
 import { useToast } from '@/components/ui/Toast'
-import type { Workflow, WorkflowTask } from '@/api/workflow'
+import type { Workflow, WorkflowDetail, WorkflowTask } from '@/api/workflow'
 
 // ── 类型定义 ──
 
@@ -158,59 +158,71 @@ const NODE_STYLES = {
     width: 140,
     height: 50,
     radius: 25,
-    fill: '#10b981',
-    stroke: '#059669',
-    textColor: '#ffffff',
+    fill: 'var(--color-primary, #34C759)',
+    stroke: 'var(--color-primary-hover, #28A745)',
+    textColor: 'var(--card-bg-solid, #FFFFFF)',
+    darkFill: 'var(--color-primary, #34C759)',
+    darkStroke: 'var(--color-primary-hover, #28A745)',
+    darkTextColor: 'var(--card-bg-solid, #FFFFFF)',
   },
   end: {
     width: 140,
     height: 50,
     radius: 25,
-    fill: '#ef4444',
-    stroke: '#dc2626',
-    textColor: '#ffffff',
+    fill: 'var(--color-error, #FF3B30)',
+    stroke: 'var(--color-danger-600, #B91C1C)',
+    textColor: 'var(--card-bg-solid, #FFFFFF)',
+    darkFill: 'var(--color-error, #FF3B30)',
+    darkStroke: 'var(--color-danger-600, #B91C1C)',
+    darkTextColor: 'var(--card-bg-solid, #FFFFFF)',
   },
   task: {
     width: 180,
     height: 70,
     radius: 8,
-    fill: '#ffffff',
-    stroke: '#3b82f6',
-    textColor: '#1f2937',
-    darkFill: '#1e293b',
-    darkStroke: '#60a5fa',
-    darkTextColor: '#f1f5f9',
+    fill: 'var(--card-bg-solid, #FFFFFF)',
+    stroke: 'var(--color-secondary, #0A84FF)',
+    textColor: 'var(--text-primary, #1D1D1F)',
+    darkFill: 'var(--bg-surface, #1C1C1E)',
+    darkStroke: 'var(--color-blue-400, #6ECAFF)',
+    darkTextColor: 'var(--text-primary, #F5F5F7)',
   },
   condition: {
     width: 100,
     height: 100,
     radius: 4,
-    fill: '#fbbf24',
-    stroke: '#f59e0b',
-    textColor: '#78350f',
+    fill: 'var(--color-warning-400, #F59E0B)',
+    stroke: 'var(--color-warning, #FF9F0A)',
+    textColor: 'var(--color-warning-900, #78350F)',
+    darkFill: 'var(--color-warning-400, #F59E0B)',
+    darkStroke: 'var(--color-warning, #FF9F0A)',
+    darkTextColor: 'var(--color-warning-900, #78350F)',
     transform: 'rotate(45deg)',
   },
   parallel: {
     width: 160,
     height: 60,
     radius: 4,
-    fill: '#8b5cf6',
-    stroke: '#7c3aed',
-    textColor: '#ffffff',
+    fill: 'var(--color-tertiary, #AF52DE)',
+    stroke: 'var(--color-tertiary-hover, #8B5CF6)',
+    textColor: 'var(--card-bg-solid, #FFFFFF)',
+    darkFill: 'var(--color-tertiary, #AF52DE)',
+    darkStroke: 'var(--color-tertiary-hover, #8B5CF6)',
+    darkTextColor: 'var(--card-bg-solid, #FFFFFF)',
   },
 }
 
 const STATUS_COLORS = {
-  pending: { bg: '#f3f4f6', border: '#9ca3af', text: '#6b7280' },
-  in_progress: { bg: '#dbeafe', border: '#3b82f6', text: '#1d4ed8' },
-  completed: { bg: '#d1fae5', border: '#10b981', text: '#065f46' },
-  failed: { bg: '#fee2e2', border: '#ef4444', text: '#991b1b' },
+  pending: { bg: 'var(--bg-tertiary, #F5F5F7)', border: 'var(--text-muted, #9A9A9F)', text: 'var(--text-secondary, #6E6E73)' },
+  in_progress: { bg: 'var(--color-secondary-container, #E8F4FD)', border: 'var(--color-secondary, #0A84FF)', text: 'var(--color-blue-700, #0052AE)' },
+  completed: { bg: 'var(--color-success-container, #DCFCE7)', border: 'var(--color-primary, #34C759)', text: 'var(--color-primary-800, #065F46)' },
+  failed: { bg: 'var(--color-error-container, #FFE0E0)', border: 'var(--color-error, #FF3B30)', text: 'var(--color-danger-900, #7F1D1D)' },
 }
 
 // ── 主组件 ──
 
 interface WorkflowVisualEditorProps {
-  workflow?: Workflow | null
+  workflow?: WorkflowDetail | null
   onSave?: (config: { nodes: WorkflowNode[], edges: WorkflowEdge[], metadata: Record<string, any> }) => Promise<void>
   readOnly?: boolean
   className?: string
@@ -239,8 +251,8 @@ export function WorkflowVisualEditor({
   // 从现有工作流初始化节点
   useEffect(() => {
     if (workflow?.config?.nodes) {
-      setNodes(workflow.config.nodes)
-      setEdges(workflow.config.edges || [])
+      setNodes(workflow.config.nodes as WorkflowNode[])
+      setEdges((workflow.config.edges || []) as WorkflowEdge[])
     }
   }, [workflow])
 
@@ -350,7 +362,7 @@ export function WorkflowVisualEditor({
             height="100"
             rx="4"
             fill={isDark ? style.darkFill || style.fill : style.fill}
-            stroke={selectedNode?.id === node.id ? '#3b82f6' : isDark ? style.darkStroke || style.stroke : style.stroke}
+            stroke={selectedNode?.id === node.id ? 'var(--color-secondary, #0A84FF)' : isDark ? style.darkStroke || style.stroke : style.stroke}
             strokeWidth={selectedNode?.id === node.id ? 3 : 2}
             transform="rotate(45)"
             className="cursor-pointer transition-all hover:opacity-80"
@@ -395,7 +407,7 @@ export function WorkflowVisualEditor({
             statusColor?.bg ||
             (isDark && style.darkFill ? style.darkFill : style.fill)
           }
-          stroke={selectedNode?.id === node.id ? '#3b82f6' : statusColor?.border || (isDark && style.darkStroke ? style.darkStroke : style.stroke)}
+          stroke={selectedNode?.id === node.id ? 'var(--color-secondary, #0A84FF)' : statusColor?.border || (isDark && style.darkStroke ? style.darkStroke : style.stroke)}
           strokeWidth={selectedNode?.id === node.id ? 3 : 2}
           className="transition-all"
           filter={node.data.status === 'in_progress' ? 'url(#pulse)' : undefined}
@@ -443,7 +455,7 @@ export function WorkflowVisualEditor({
             y={18}
             textAnchor="middle"
             dominantBaseline="middle"
-            fill={isDark ? '#94a3b8' : '#6b7280'}
+            fill={isDark ? 'var(--text-muted, #9A9A9F)' : 'var(--text-secondary, #6E6E73)'}
             fontSize="10"
             pointerEvents="none"
           >
@@ -474,7 +486,7 @@ export function WorkflowVisualEditor({
         <path
           d={pathD}
           fill="none"
-          stroke={isDark ? '#475569' : '#cbd5e1'}
+          stroke={isDark ? 'var(--text-secondary, #6E6E73)' : 'var(--border-subtle, rgba(0,0,0,0.06))'}
           strokeWidth="2"
           markerEnd="url(#arrowhead)"
           className="transition-all hover:stroke-blue-500"
@@ -484,7 +496,7 @@ export function WorkflowVisualEditor({
           <text
             x={(startX + endX) / 2 + 10}
             y={midY}
-            fill={isDark ? '#94a3b8' : '#64748b'}
+            fill={isDark ? 'var(--text-muted, #9A9A9F)' : 'var(--text-secondary, #6E6E73)'}
             fontSize="11"
             fontWeight="500"
           >
@@ -504,11 +516,11 @@ export function WorkflowVisualEditor({
   }, [nodes])
 
   return (
-    <div className={cn('flex flex-col h-full bg-slate-50 dark:bg-slate-900 rounded-xl overflow-hidden', className)}>
+    <div className={cn('flex flex-col h-full bg-slate-50 dark:bg-neutral-900 rounded-xl overflow-hidden', className)}>
       {/* ── 工具栏 ── */}
-      <div className="flex items-center justify-between px-4 py-3 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+      <div className="flex items-center justify-between px-4 py-3 bg-white dark:bg-neutral-800 border-b border-neutral-200 dark:border-neutral-700">
         <div className="flex items-center gap-3">
-          <GitBranch size={20} className="text-blue-600" />
+          <GitBranch size={20} className="text-secondary-600" />
           <Input
             value={workflowName}
             onChange={(e) => setWorkflowName(e.target.value)}
@@ -535,7 +547,7 @@ export function WorkflowVisualEditor({
           {/* 缩放控制 */}
           <div className="flex items-center gap-1 mr-2">
             <Button size="sm" variant="ghost" onClick={zoomOut}><ZoomOut size={16} /></Button>
-            <span className="text-xs text-slate-600 dark:text-slate-400 w-12 text-center">
+            <span className="text-xs text-neutral-600 dark:text-neutral-400 w-12 text-center">
               {Math.round(scale * 100)}%
             </span>
             <Button size="sm" variant="ghost" onClick={zoomIn}><ZoomIn size={16} /></Button>
@@ -587,7 +599,7 @@ export function WorkflowVisualEditor({
             width={canvasSize.width * scale}
             height={canvasSize.height * scale}
             viewBox={`0 0 ${canvasSize.width} ${canvasSize.height}`}
-            className="bg-white dark:bg-slate-900"
+            className="bg-white dark:bg-neutral-900"
             style={{ minWidth: '100%', minHeight: '100%' }}
           >
             <defs>
@@ -600,7 +612,7 @@ export function WorkflowVisualEditor({
                 refY="3.5"
                 orient="auto"
               >
-                <polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8" />
+                <polygon points="0 0, 10 3.5, 0 7" fill="#9CA3AF" />
               </marker>
 
               {/* 脉冲动画滤镜 */}
@@ -627,7 +639,7 @@ export function WorkflowVisualEditor({
             {/* 网格背景 */}
             <defs>
               <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
-                <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#e2e8f0" strokeWidth="0.5" className="dark:stroke-slate-700" />
+                <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#E5E7EB" strokeWidth="0.5" className="dark:stroke-slate-700" />
               </pattern>
             </defs>
             <rect width="100%" height="100%" fill="url(#grid)" opacity="0.5" />
@@ -643,11 +655,11 @@ export function WorkflowVisualEditor({
           {nodes.length === 0 && (
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="text-center space-y-4">
-                <GitBranch size={64} className="mx-auto text-slate-300 dark:text-slate-600" />
-                <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300">
+                <GitBranch size={64} className="mx-auto text-neutral-300 dark:text-neutral-600" />
+                <h3 className="text-lg font-semibold text-neutral-700 dark:text-neutral-300">
                   开始构建工作流
                 </h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400 max-w-md">
+                <p className="text-sm text-neutral-500 dark:text-neutral-400 max-w-md">
                   选择一个预设模板或从头开始创建自定义工作流
                 </p>
                 <Button onClick={() => setShowTemplateModal(true)}>
@@ -660,19 +672,19 @@ export function WorkflowVisualEditor({
 
         {/* ── 右侧属性面板 ── */}
         {(selectedNode || showConfigPanel) && (
-          <div className="w-72 bg-white dark:bg-slate-800 border-l border-slate-200 dark:border-slate-700 p-4 overflow-y-auto">
+          <div className="w-72 bg-white dark:bg-neutral-800 border-l border-neutral-200 dark:border-neutral-700 p-4 overflow-y-auto">
             {selectedNode ? (
               <div className="space-y-4">
-                <h3 className="font-semibold text-slate-900 dark:text-white flex items-center justify-between">
+                <h3 className="font-semibold text-neutral-900 dark:text-white flex items-center justify-between">
                   节点属性
-                  <Button size="sm" variant="ghost" onClick={() => deleteNode(selectedNode.id)} className="text-red-500">
+                  <Button size="sm" variant="ghost" onClick={() => deleteNode(selectedNode.id)} className="text-error-500">
                     <Trash2 size={14} />
                   </Button>
                 </h3>
 
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">名称</label>
+                    <label className="block text-xs font-medium text-neutral-600 dark:text-neutral-400 mb-1">名称</label>
                     <Input
                       value={selectedNode.data.label}
                       onChange={(e) =>
@@ -690,7 +702,7 @@ export function WorkflowVisualEditor({
 
                   {selectedNode.type === 'task' && (
                     <div>
-                      <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">任务类型</label>
+                      <label className="block text-xs font-medium text-neutral-600 dark:text-neutral-400 mb-1">任务类型</label>
                       <Select
                         value={selectedNode.data.taskType || ''}
                         onChange={(e) =>
@@ -702,27 +714,26 @@ export function WorkflowVisualEditor({
                             ),
                           )
                         }
-                        options={[
-                          { value: '', label: '选择类型...' },
-                          { value: 'user_input', label: '用户输入' },
-                          { value: 'llm_analysis', label: 'LLM 分析' },
-                          { value: 'neural_generate', label: '神经网络生成' },
-                          { value: 'multi_optimize', label: '多目标优化' },
-                          { value: 'safety_check', label: '安全性检查' },
-                          { value: 'expert_review', label: '专家审核' },
-                          { value: 'auto_validate', label: '自动验证' },
-                          { value: 'save_result', label: '保存结果' },
-                          { value: 'notify', label: '发送通知' },
-                          { value: 'custom', label: '自定义任务' },
-                        ]}
                         disabled={readOnly}
-                      />
+                      >
+                        <option value="">选择类型...</option>
+                        <option value="user_input">用户输入</option>
+                        <option value="llm_analysis">LLM 分析</option>
+                        <option value="neural_generate">神经网络生成</option>
+                        <option value="multi_optimize">多目标优化</option>
+                        <option value="safety_check">安全性检查</option>
+                        <option value="expert_review">专家审核</option>
+                        <option value="auto_validate">自动验证</option>
+                        <option value="save_result">保存结果</option>
+                        <option value="notify">发送通知</option>
+                        <option value="custom">自定义任务</option>
+                      </Select>
                     </div>
                   )}
 
                   <div>
-                    <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">位置</label>
-                    <div className="text-xs text-slate-500 dark:text-slate-400 font-mono">
+                    <label className="block text-xs font-medium text-neutral-600 dark:text-neutral-400 mb-1">位置</label>
+                    <div className="text-xs text-neutral-500 dark:text-neutral-400 font-mono">
                       X: {Math.round(selectedNode.position.x)}, Y: {Math.round(selectedNode.position.y)}
                     </div>
                   </div>
@@ -730,18 +741,18 @@ export function WorkflowVisualEditor({
               </div>
             ) : (
               <div className="space-y-4">
-                <h3 className="font-semibold text-slate-900 dark:text-white">工作流信息</h3>
+                <h3 className="font-semibold text-neutral-900 dark:text-white">工作流信息</h3>
                 <div className="space-y-3 text-sm">
                   <div>
-                    <span className="text-slate-500 dark:text-slate-400">节点数:</span>{' '}
+                    <span className="text-neutral-500 dark:text-neutral-400">节点数:</span>{' '}
                     <span className="font-medium">{nodes.length}</span>
                   </div>
                   <div>
-                    <span className="text-slate-500 dark:text-slate-400">连接数:</span>{' '}
+                    <span className="text-neutral-500 dark:text-neutral-400">连接数:</span>{' '}
                     <span className="font-medium">{edges.length}</span>
                   </div>
                   <div>
-                    <span className="text-slate-500 dark:text-slate-400">类型:</span>{' '}
+                    <span className="text-neutral-500 dark:text-neutral-400">类型:</span>{' '}
                     <span className="font-medium capitalize">{workflow?.workflow_type || '自定义'}</span>
                   </div>
                 </div>
@@ -757,7 +768,6 @@ export function WorkflowVisualEditor({
           title="选择工作流模板"
           open={showTemplateModal}
           onClose={() => setShowTemplateModal(false)}
-          footer={null}
         >
           <div className="space-y-3 mt-4">
             {WORKFLOW_TEMPLATES.map((template) => (
@@ -770,17 +780,17 @@ export function WorkflowVisualEditor({
                 <div className="flex items-start gap-3">
                   <span className="text-2xl">{template.icon}</span>
                   <div className="flex-1">
-                    <h4 className="font-semibold text-slate-900 dark:text-white">
+                    <h4 className="font-semibold text-neutral-900 dark:text-white">
                       {template.name}
                     </h4>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                    <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
                       {template.description}
                     </p>
                     <Badge size="sm" className="mt-2">
                       {template.category.replace('_', ' ')}
                     </Badge>
                   </div>
-                  <ChevronRight size={18} className="text-slate-400 mt-1" />
+                  <ChevronRight size={18} className="text-neutral-400 mt-1" />
                 </div>
               </Card>
             ))}

@@ -1,4 +1,5 @@
 // Jest transformations for ESM modules like D3
+/// <reference types="jest" />
 
 export const mockD3 = {
   select: jest.fn(),
@@ -55,7 +56,18 @@ export const mockD3 = {
   treemap: jest.fn(),
   hierarchy: jest.fn(),
   stratify: jest.fn(),
-  schemeCategory10: ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'],
-}
+  schemeCategory10: [
+    '#1f77b4',
+    '#ff7f0e',
+    '#2ca02c',
+    '#d62728',
+    '#9467bd',
+    '#8c564b',
+    '#e377c2',
+    '#7f7f7f',
+    '#bcbd22',
+    '#17becf',
+  ],
+};
 
-export default mockD3
+export default mockD3;

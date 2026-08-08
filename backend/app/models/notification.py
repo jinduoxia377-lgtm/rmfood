@@ -5,36 +5,35 @@
 包含丰富的元数据和已读状态追踪。
 """
 from datetime import datetime, timezone
-from sqlalchemy import Integer, String, Text, DateTime, JSON, Enum, Boolean, ForeignKey, Index
+from sqlalchemy import Integer, String, Text, DateTime, JSON, Enum, Boolean, ForeignKey, Index, BigInteger
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from ..core.database import Base
+from .base import Base
 from .enums import NotificationType, NotificationStatus
-
-
-def _now() -> datetime:
-    return datetime.now(timezone.utc).replace(tzinfo=None)
+from app.models.utils import now_utc_mapped
 
 
 class Notification(Base):
     __tablename__ = "notifications"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     user_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+        BigInteger, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
     )
     type: Mapped[NotificationType] = mapped_column(
         Enum(NotificationType), default=NotificationType.SYSTEM, nullable=False
     )
+    # ── 已读状态（双字段同步） ──
+    # status 枚举是权威来源，is_read 是派生字段用于查询性能
     status: Mapped[NotificationStatus] = mapped_column(
         Enum(NotificationStatus), default=NotificationStatus.UNREAD, nullable=False
     )
+    is_read: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    read_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     title: Mapped[str] = mapped_column(String(200), nullable=False)
     content: Mapped[str | None] = mapped_column(Text)
     link: Mapped[str | None] = mapped_column(String(500))
     metadata_: Mapped[dict | None] = mapped_column("metadata", JSON, default=dict)
-    is_read: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
-    read_at: Mapped[datetime | None] = mapped_column(DateTime)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=_now, nullable=False, index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, nullable=False, index=True)
 
     user: Mapped["User"] = relationship("User", back_populates="notifications")
 
@@ -47,3 +46,17 @@ class Notification(Base):
 
 
 from .user_model import User
+
+
+class NotificationPreference(Base):
+    """User notification preferences"""
+    __tablename__ = "notification_preferences"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(BigInteger, unique=True, nullable=False, index=True)
+    email_enabled: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    in_app_enabled: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    webhook_enabled: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    settings: Mapped[dict] = mapped_column(JSON, default=dict)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, onupdate=now_utc_mapped, nullable=False)

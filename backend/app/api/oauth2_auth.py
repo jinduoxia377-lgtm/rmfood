@@ -23,7 +23,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..core.config import settings
-from ..core.session import get_db
+from ..core.database.session import get_db
 from ..models.user_model import User
 from ..models.enums import UserRole
 from ..schemas.user import Token
@@ -38,7 +38,7 @@ from ..utils.auth import (
     check_rate_limit,
     clear_rate_limit,
 )
-from ..core.account_lockout import AccountLockout
+from ..core.security.account_lockout import AccountLockout
 
 logger = logging.getLogger(__name__)
 

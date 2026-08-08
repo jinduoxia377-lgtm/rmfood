@@ -39,9 +39,9 @@ export function useFormulaVersions() {
       })),
       scores: {
         synergy: topCandidate.synergy_score || 0,
-        taste: (topCandidate as any).taste_score || DEFAULTS.DEFAULT_TASTE_SCORE,
-        stability: (topCandidate as any).stability_score || DEFAULTS.DEFAULT_STABILITY_SCORE,
-        overall: (topCandidate as any).overall_score || (topCandidate.synergy_score || 0),
+        taste: (topCandidate as Record<string, unknown>).taste_score as number || DEFAULTS.DEFAULT_TASTE_SCORE,
+        stability: (topCandidate as Record<string, unknown>).stability_score as number || DEFAULTS.DEFAULT_STABILITY_SCORE,
+        overall: (topCandidate as Record<string, unknown>).overall_score as number || (topCandidate.synergy_score || 0),
       },
       createdAt: Date.now(),
       remark: `${DEFAULTS.PLACEHOLDER_TEXTS.VERSION_REMARK_PREFIX} [${effects.join(', ')}] ${DEFAULTS.PLACEHOLDER_TEXTS.VERSION_REMARK_SUFFIX}`,

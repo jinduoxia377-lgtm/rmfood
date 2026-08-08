@@ -45,6 +45,8 @@ interface ThemeColors {
   background: string
   success: string
   warning: string
+  surface: string
+  outlineVariant: string
 }
 
 interface EnhancedBarChartProps {
@@ -71,7 +73,7 @@ export function EnhancedBarChart({
     return labels.map((label, index) => {
       const point: Record<string, any> = { name: label }
 
-      (data.datasets || []).forEach((dataset, datasetIndex) => {
+      ;(data.datasets || []).forEach((dataset: { data: number[]; label?: string }, datasetIndex: number) => {
         point[dataset.label || `series_${datasetIndex}`] = dataset.data[index] ?? 0
       })
 
@@ -84,7 +86,7 @@ export function EnhancedBarChart({
     themeColors.secondary,
     themeColors.success,
     themeColors.warning,
-    '#9C27B0',
+    'var(--color-tertiary, #AF52DE)',
   ]
 
   const CustomTooltip = ({ active, payload, label }: any) => {

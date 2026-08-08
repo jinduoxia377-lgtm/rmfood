@@ -19,7 +19,7 @@ export function FormulaListSkeleton() {
       <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
         {/* Left Sidebar - Filter Panel */}
         <div className="space-y-6">
-          <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-5 space-y-5">
+          <div className="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-5 space-y-5">
             <div className="flex items-center justify-between">
               <Skeleton width={80} height={20} animationType="pulse" />
               <Skeleton width={60} height={24} radius={12} animationType="pulse" />
@@ -75,7 +75,7 @@ export function FormulaListSkeleton() {
         {/* Right Content Area */}
         <div className="space-y-6">
           {/* Toolbar */}
-          <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
+          <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900">
             <div className="flex items-center gap-3">
               <Skeleton width={140} height={36} radius={8} animationType="pulse" />
               <Skeleton width={100} height={36} radius={8} animationType="pulse" />
@@ -91,9 +91,9 @@ export function FormulaListSkeleton() {
           <StatisticsCardsSkeleton />
 
           {/* Table Skeleton */}
-          <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 overflow-hidden">
+          <div className="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 overflow-hidden">
             <table className="w-full">
-              <thead className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+              <thead className="bg-slate-50 dark:bg-neutral-800 border-b border-neutral-200 dark:border-neutral-700">
                 <tr>
                   {[40, 150, 100, 100, 100, 120, 140].map((w, i) => (
                     <th key={i} className="px-4 py-3">
@@ -104,7 +104,7 @@ export function FormulaListSkeleton() {
               </thead>
               <tbody>
                 {Array.from({ length: 8 }).map((_, i) => (
-                  <tr key={i} className="border-b border-slate-100 dark:border-slate-800 last:border-0">
+                  <tr key={i} className="border-b border-neutral-100 dark:border-neutral-800 last:border-0">
                     <td className="px-4 py-3">
                       <Skeleton width={20} height={14} animationType="pulse" />
                     </td>
@@ -153,7 +153,7 @@ function StatisticsCardsSkeleton() {
       {Array.from({ length: 4 }).map((_, i) => (
         <div
           key={i}
-          className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-4 space-y-3"
+          className="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-4 space-y-3"
         >
           <div className="flex items-center justify-between">
             <Skeleton width={24} height={24} radius={6} animationType="pulse" />

@@ -95,13 +95,13 @@ function EfficacyTagChip({
         invisible group-hover:visible opacity-0 group-hover:opacity-100
         absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2
         px-3 py-2 rounded-lg shadow-lg
-        bg-gray-900/95 dark:bg-gray-800/95 backdrop-blur-sm
+        bg-neutral-900/95 dark:bg-neutral-800/95 backdrop-blur-sm
         text-white text-xs whitespace-normal
         transition-all duration-200 pointer-events-none
         w-64
       ">
         <div className="space-y-1.5">
-          <div className="flex items-center justify-between border-b border-gray-600 pb-1.5">
+          <div className="flex items-center justify-between border-b border-neutral-600 pb-1.5">
             <span className="font-bold text-sm">{meta.name}</span>
             <span
               className="inline-block w-2 h-2 rounded-full"
@@ -110,39 +110,39 @@ function EfficacyTagChip({
             />
           </div>
 
-          <div className="text-gray-300 leading-relaxed">
+          <div className="text-neutral-300 leading-relaxed">
             {meta.description}
           </div>
 
-          <div className="grid grid-cols-2 gap-x-3 gap-y-1 pt-1.5 border-t border-gray-600/50">
+          <div className="grid grid-cols-2 gap-x-3 gap-y-1 pt-1.5 border-t border-neutral-600/50">
             <div>
-              <span className="text-gray-400">分类：</span>
-              <span className="text-gray-200">
+              <span className="text-neutral-400">分类：</span>
+              <span className="text-neutral-200">
                 {efficacyTagService.getTagCategories().find(c => c.category === category)?.name || category}
               </span>
             </div>
             <div>
-              <span className="text-gray-400">可信度：</span>
+              <span className="text-neutral-400">可信度：</span>
               <span className="text-yellow-400 ml-1">
                 {EVIDENCE_STARS[meta.evidenceLevel]}
               </span>
-              <span className="text-gray-400 ml-1 text-[10px]">
+              <span className="text-neutral-400 ml-1 text-[10px]">
                 ({EvidencenLabel[meta.evidenceLevel]})
               </span>
             </div>
           </div>
 
           {meta.relatedIngredients.length > 0 && (
-            <div className="pt-1 border-t border-gray-600/50">
-              <span className="text-gray-400">相关成分：</span>
+            <div className="pt-1 border-t border-neutral-600/50">
+              <span className="text-neutral-400">相关成分：</span>
               <div className="flex flex-wrap gap-1 mt-1">
                 {meta.relatedIngredients.slice(0, 4).map((ing, idx) => (
-                  <span key={idx} className="bg-gray-700 px-1.5 py-0.5 rounded text-[10px]">
+                  <span key={idx} className="bg-neutral-700 px-1.5 py-0.5 rounded text-[10px]">
                     {ing}
                   </span>
                 ))}
                 {meta.relatedIngredients.length > 4 && (
-                  <span className="text-gray-500 text-[10px]">+{meta.relatedIngredients.length - 4}</span>
+                  <span className="text-neutral-500 text-[10px]">+{meta.relatedIngredients.length - 4}</span>
                 )}
               </div>
             </div>
@@ -150,8 +150,8 @@ function EfficacyTagChip({
 
           {meta.contraindications && meta.contraindications.length > 0 && (
             <div className="pt-1 border-t border-red-900/50">
-              <span className="text-red-400 text-[10px] font-medium">⚠️ 注意：</span>
-              <span className="text-red-300/80 text-[10px] ml-1">
+              <span className="text-error-400 text-[10px] font-medium">⚠️ 注意：</span>
+              <span className="text-error-300/80 text-[10px] ml-1">
                 {meta.contraindications.join('；')}
               </span>
             </div>
@@ -159,7 +159,7 @@ function EfficacyTagChip({
         </div>
 
         <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-px">
-          <div className="border-4 border-transparent border-t-gray-900/95" />
+          <div className="border-4 border-transparent border-t-slate-900/95" />
         </div>
       </div>
     </div>

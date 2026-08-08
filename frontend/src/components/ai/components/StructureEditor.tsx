@@ -105,37 +105,37 @@ const StructureEditor: React.FC<StructureEditorProps> = ({
   };
 
   return (
-    <div className="flex h-[600px] bg-white rounded-lg shadow-sm border border-gray-200">
-      <div className="w-64 border-r border-gray-200 p-4 overflow-y-auto">
-        <h3 className="text-sm font-semibold text-gray-900 mb-3">章节库</h3>
+    <div className="flex h-[600px] bg-white rounded-lg shadow-sm border border-neutral-200">
+      <div className="w-64 border-r border-neutral-200 p-4 overflow-y-auto">
+        <h3 className="text-sm font-semibold text-neutral-900 mb-3">章节库</h3>
         <div className="space-y-1">
           {availableSections.map((section) => (
             <button
               key={section.type}
               onClick={() => handleAddFromLibrary(section.type)}
-              className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors group"
+              className="w-full text-left px-3 py-2 rounded-lg hover:bg-neutral-100 transition-colors group"
             >
               <div className="flex items-center space-x-2">
                 <span className="text-lg">{section.icon}</span>
-                <span className="text-sm text-gray-700 group-hover:text-gray-900">{section.title}</span>
+                <span className="text-sm text-neutral-700 group-hover:text-neutral-900">{section.title}</span>
               </div>
-              <p className="text-xs text-gray-500 mt-0.5 ml-7">{section.description}</p>
+              <p className="text-xs text-neutral-500 mt-0.5 ml-7">{section.description}</p>
             </button>
           ))}
         </div>
       </div>
 
       <div className="flex-1 flex flex-col">
-        <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-gray-900">报告结构</h3>
+        <div className="px-4 py-3 border-b border-neutral-200 flex items-center justify-between">
+          <h3 className="text-sm font-semibold text-neutral-900">报告结构</h3>
           <div className="flex items-center space-x-2">
             <button
               onClick={() => structure.resetToTemplate(initialSections)}
-              className="px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+              className="px-3 py-1.5 text-xs font-medium text-neutral-700 bg-neutral-100 rounded-md hover:bg-neutral-200"
             >
               重置模板
             </button>
-            <span className="text-xs text-gray-500">
+            <span className="text-xs text-neutral-500">
               共 {structure.getVisibleSections().length} 个可见章节
             </span>
           </div>
@@ -143,7 +143,7 @@ const StructureEditor: React.FC<StructureEditorProps> = ({
 
         <div className="flex-1 overflow-y-auto p-4">
           {structure.sections.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-gray-400">
+            <div className="flex flex-col items-center justify-center h-full text-neutral-400">
               <svg className="w-16 h-16 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
@@ -161,31 +161,31 @@ const StructureEditor: React.FC<StructureEditorProps> = ({
                   onClick={() => setSelectedSectionId(section.id)}
                   className={`group relative flex items-center px-3 py-2.5 rounded-lg border-2 cursor-pointer transition-all ${
                     selectedSectionId === section.id
-                      ? 'border-blue-500 bg-blue-50'
+                      ? 'border-blue-500 bg-secondary-50'
                       : section.visible
-                      ? 'border-gray-200 hover:border-gray-300 bg-white'
-                      : 'border-gray-100 bg-gray-50 opacity-60'
+                      ? 'border-neutral-200 hover:border-neutral-300 bg-white'
+                      : 'border-neutral-100 bg-slate-50 opacity-60'
                   } ${draggedId === section.id ? 'opacity-50' : ''}`}
                   style={{ paddingLeft: `${(section.level || 0) * 20 + 12}px` }}
                 >
-                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 rounded-l-lg opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-secondary-500 rounded-l-lg opacity-0 group-hover:opacity-100 transition-opacity" />
 
                   <div className="flex items-center space-x-3 flex-1 min-w-0">
-                    <svg className="w-4 h-4 text-gray-400 cursor-grab active:cursor-grabbing" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 text-neutral-400 cursor-grab active:cursor-grabbing" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" />
                     </svg>
 
-                    <span className={`font-medium truncate ${!section.visible ? 'line-through text-gray-400' : 'text-gray-900'}`}>
+                    <span className={`font-medium truncate ${!section.visible ? 'line-through text-neutral-400' : 'text-neutral-900'}`}>
                       {section.title}
                     </span>
 
                     {!section.required && (
-                      <span className="px-1.5 py-0.5 bg-gray-100 text-gray-500 text-xs rounded">
+                      <span className="px-1.5 py-0.5 bg-neutral-100 text-neutral-500 text-xs rounded">
                         可选
                       </span>
                     )}
 
-                    <span className="px-1.5 py-0.5 bg-blue-50 text-blue-600 text-xs rounded ml-auto">
+                    <span className="px-1.5 py-0.5 bg-secondary-50 text-secondary-600 text-xs rounded ml-auto">
                       {getDetailLevelLabel(section.detailLevel)}
                     </span>
                   </div>
@@ -196,7 +196,7 @@ const StructureEditor: React.FC<StructureEditorProps> = ({
                         e.stopPropagation();
                         structure.toggleSectionVisibility(section.id);
                       }}
-                      className="p-1 text-gray-500 hover:text-blue-600 rounded"
+                      className="p-1 text-neutral-500 hover:text-secondary-600 rounded"
                       title={section.visible ? '隐藏' : '显示'}
                     >
                       {section.visible ? (
@@ -217,7 +217,7 @@ const StructureEditor: React.FC<StructureEditorProps> = ({
                         if (index > 0) structure.moveSection(section.id, 'up');
                       }}
                       disabled={index === 0}
-                      className="p-1 text-gray-500 hover:text-blue-600 rounded disabled:opacity-30"
+                      className="p-1 text-neutral-500 hover:text-secondary-600 rounded disabled:opacity-30"
                       title="上移"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -231,7 +231,7 @@ const StructureEditor: React.FC<StructureEditorProps> = ({
                         if (index < structure.sections.length - 1) structure.moveSection(section.id, 'down');
                       }}
                       disabled={index === structure.sections.length - 1}
-                      className="p-1 text-gray-500 hover:text-blue-600 rounded disabled:opacity-30"
+                      className="p-1 text-neutral-500 hover:text-secondary-600 rounded disabled:opacity-30"
                       title="下移"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -244,7 +244,7 @@ const StructureEditor: React.FC<StructureEditorProps> = ({
                         e.stopPropagation();
                         structure.duplicateSection(section.id);
                       }}
-                      className="p-1 text-gray-500 hover:text-green-600 rounded"
+                      className="p-1 text-neutral-500 hover:text-success-600 rounded"
                       title="复制"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -259,7 +259,7 @@ const StructureEditor: React.FC<StructureEditorProps> = ({
                           structure.removeSection(section.id);
                           setSelectedSectionId(null);
                         }}
-                        className="p-1 text-gray-500 hover:text-red-600 rounded"
+                        className="p-1 text-neutral-500 hover:text-error-600 rounded"
                         title="删除"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -275,7 +275,7 @@ const StructureEditor: React.FC<StructureEditorProps> = ({
         </div>
 
         {selectedSectionId && (
-          <div className="border-t border-gray-200 p-4 bg-gray-50">
+          <div className="border-t border-neutral-200 p-4 bg-slate-50">
             <SectionPropertyPanel
               section={structure.getSectionById(selectedSectionId)!}
               onUpdate={(updates) => structure.updateSection(selectedSectionId, updates)}
@@ -295,24 +295,24 @@ interface SectionPropertyPanelProps {
 const SectionPropertyPanel: React.FC<SectionPropertyPanelProps> = ({ section, onUpdate }) => {
   return (
     <div className="space-y-4">
-      <h4 className="text-sm font-semibold text-gray-900">章节属性</h4>
+      <h4 className="text-sm font-semibold text-neutral-900">章节属性</h4>
 
       <div>
-        <label className="block text-xs font-medium text-gray-700 mb-1">标题</label>
+        <label className="block text-xs font-medium text-neutral-700 mb-1">标题</label>
         <input
           type="text"
           value={section.title}
           onChange={(e) => onUpdate({ title: e.target.value })}
-          className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="w-full px-2 py-1.5 text-sm border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
         />
       </div>
 
       <div>
-        <label className="block text-xs font-medium text-gray-700 mb-1">详细程度</label>
+        <label className="block text-xs font-medium text-neutral-700 mb-1">详细程度</label>
         <select
           value={section.detailLevel}
           onChange={(e) => onUpdate({ detailLevel: e.target.value as DetailLevel })}
-          className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="w-full px-2 py-1.5 text-sm border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
         >
           <option value={DetailLevel.BRIEF}>简略</option>
           <option value={DetailLevel.STANDARD}>标准</option>
@@ -327,9 +327,9 @@ const SectionPropertyPanel: React.FC<SectionPropertyPanelProps> = ({ section, on
             type="checkbox"
             checked={section.visible}
             onChange={(e) => onUpdate({ visible: e.target.checked })}
-            className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+            className="w-4 h-4 text-secondary-600 rounded focus:ring-blue-500"
           />
-          <span className="text-sm text-gray-700">可见</span>
+          <span className="text-sm text-neutral-700">可见</span>
         </label>
 
         <label className="flex items-center space-x-2 cursor-pointer">
@@ -339,9 +339,9 @@ const SectionPropertyPanel: React.FC<SectionPropertyPanelProps> = ({ section, on
             onChange={(e) => onUpdate({
               config: { ...section.config, includeTables: e.target.checked },
             })}
-            className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+            className="w-4 h-4 text-secondary-600 rounded focus:ring-blue-500"
           />
-          <span className="text-sm text-gray-700">包含表格</span>
+          <span className="text-sm text-neutral-700">包含表格</span>
         </label>
 
         <label className="flex items-center space-x-2 cursor-pointer">
@@ -351,14 +351,14 @@ const SectionPropertyPanel: React.FC<SectionPropertyPanelProps> = ({ section, on
             onChange={(e) => onUpdate({
               config: { ...section.config, includeCharts: e.target.checked },
             })}
-            className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+            className="w-4 h-4 text-secondary-600 rounded focus:ring-blue-500"
           />
-          <span className="text-sm text-gray-700">包含图表</span>
+          <span className="text-sm text-neutral-700">包含图表</span>
         </label>
       </div>
 
       <div>
-        <label className="block text-xs font-medium text-gray-700 mb-1">最大字数（可选）</label>
+        <label className="block text-xs font-medium text-neutral-700 mb-1">最大字数（可选）</label>
         <input
           type="number"
           value={section.config?.maxWords || ''}
@@ -366,7 +366,7 @@ const SectionPropertyPanel: React.FC<SectionPropertyPanelProps> = ({ section, on
             config: { ...section.config, maxWords: e.target.value ? Number(e.target.value) : undefined },
           })}
           placeholder="不限"
-          className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="w-full px-2 py-1.5 text-sm border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
         />
       </div>
     </div>

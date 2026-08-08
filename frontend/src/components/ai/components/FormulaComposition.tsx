@@ -35,7 +35,7 @@ export function FormulaComposition({ herbCombination }: FormulaCompositionProps)
           return (
             <div
               key={i}
-              className="flex items-center justify-between py-2 px-3 rounded-xl transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-800/50 group"
+              className="flex items-center justify-between py-2 px-3 rounded-xl transition-all duration-200 hover:bg-slate-50 dark:hover:bg-neutral-800/50 group"
               style={{ backgroundColor: roleColor.bg }}
             >
               <div className="flex items-center gap-2">

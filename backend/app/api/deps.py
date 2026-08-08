@@ -33,7 +33,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-from ..core.session import get_db
+from ..core.database.session import get_db
 from ..utils.auth import decode_token
 from ..models.user_model import User
 from ..models.enums import FormulaStatus, UserRole
@@ -279,8 +279,8 @@ def _get_user_permissions(user: User) -> List[str]:
     return base_permissions
 
 
-class PaginationParams:
-    """分页参数"""
+class DepsPaginationParams:
+    """分页参数（deps 专用，避免与 schemas.base.PaginationParams 冲突）"""
     def __init__(
         self,
         page: int = Query(1, ge=1, description="页码"),
@@ -288,6 +288,9 @@ class PaginationParams:
     ):
         self.page = page
         self.page_size = page_size
+
+# 向后兼容别名
+PaginationParams = DepsPaginationParams
 
 
 class FormulaFilterParams:

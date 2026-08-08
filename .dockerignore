@@ -1,12 +1,12 @@
 # ═══════════════════════════════════════════════
-# RMFOOD Docker 构建排除文件
+# RMFOOD Docker 构建排除文件 - 统一配置
 # ═══════════════════════════════════════════════
 
-# Git
+# ─── Git ───
 .git
 .gitignore
 
-# Python
+# ─── Python ───
 __pycache__
 *.pyc
 *.pyo
@@ -18,85 +18,251 @@ build
 .mypy_cache
 .pytest_cache
 .ruff_cache
+*.py[cod]
+*$py.class
 
-# 虚拟环境
+# ─── 虚拟环境 ───
 .venv
 venv
 env
+ENV/
+.env.local
+.env.production
 
-# IDE
+# ─── IDE ───
 .vscode
 .idea
 *.swp
 *.swo
+*~
+.trae
 
-# 测试（不需要打包到生产镜像）
-tests/
+# ─── 测试 ───
+tests
+tests-reports
 **/test_*.py
+**/test_*.ts
 **/tests/
 coverage/
 htmlcov/
 .coverage
 *.xml
+junit*.xml
+.hypothesis/
 
-# 文档
+# ─── 文档 ───
 docs/
 *.md
 !README.md
+!app/**/*.md
 
-# 环境文件
+# ─── 环境文件 ───
 .env
 .env.*
 !.env.example
 
-# 临时文件
+# ─── 临时文件 ───
 tmp/
 temp/
 *.tmp
 *.bak
 
-# 前端构建产物（由 Dockerfile.frontend 单独构建）
-frontend/node_modules
-frontend/dist
-frontend/build
-
-# 数据文件
+# ─── 数据文件 ───
 data/
+uploads/
+pg_data/
 *.db
 *.sqlite
+*.sqlite3
 
-# 报告文件
+# ─── 报告文件 ───
 *.report.html
 *_REPORT.md
 *_report.*
+*.json
+*.txt
+*.log
 
-# 部署文档（不需要打包到镜像）
+# ─── 部署文档 ───
 DEPLOYMENT_*.md
 LAN_*.md
 PRODUCTION_*.md
 NETWORK_*.md
 QUICK_START.md
 FINAL_CLOSURE_REPORT.md
+RAY_CLUSTER_MANAGER_GUIDE.md
+OAUTH2_TEST_GUIDE.md
+IMPORT_GUIDE.md
+INTEGRATION_REPORT.md
+REPORT_IMPLEMENTATION_COMPLETE.md
+AI_MODULE_IMPLEMENTATION_SUMMARY.md
+SECURITY.md
+TESTING_GUIDE.md
+UI-DESIGN-SYSTEM.md
+PERFORMANCE_OPTIMIZATION_REPORT.md
+SECURITY_AUDIT_REPORT.md
+MAINTENANCE_GUIDE.md
 
-# 调试截图
+# ─── 调试截图 ───
 debug_*.png
+*.png
+*.jpg
+*.jpeg
+*.gif
+ai-page.png
+screenshot-*.png
 
-# 脚本（不需要打包到镜像）
+# ─── 脚本 ───
 scripts/
 run_backend.py
 run_backend_simple.py
 start-lan.bat
 stop-lan.bat
 start_backend.bat
+start_backend.ps1
+restart_backend.bat
+restart_backend.ps1
+start_services.bat
+stop_services.bat
+start_all.bat
+start_server.bat
+start_server.py
+start_backend.py
+start_clean.py
+start_frontend.bat
+execute_import.py
+final_import_runner.py
+import_runner.py
+fix_alembic.sh
+fix_surrogates.py
+gen_mo_stream.py
+db_check_importer.py
+db_sync_test.py
+clear_openapi_cache.py
+check_cols.py
+check_db.py
+check_predeploy.py
+check_tables.py
+decode_jwt.ps1
+fix_precise.py
+fix_batch2.py
+fix_final.py
+fix_all.py
+fix_all_final.py
+fix_all_templates.py
+fix_templates2.py
+fix_ts_errors.py
+check_parser_state.py
+count_backticks.py
 
-# Docker compose 文件
+# ─── 测试脚本 ───
+test_*.py
+test_*.ps1
+test_*.ts
+test_asyncpg.py
+test_asyncpg_detailed.py
+test_asyncpg_direct.py
+test_asyncpg_v2.py
+test_conn.py
+test_conn2.py
+test_db.py
+test_db_connection.py
+test_direct.py
+test_engine.py
+test_generate_fix.py
+test_import_flow.py
+test_import_quick.py
+test_loader_sync.py
+test_minimal_psycopg2.py
+test_moga_evaluation.py
+test_offloader.py
+test_payloads.py
+test_psycopg2.py
+test_recipe_generation.py
+test_results.txt
+test_results_full.txt
+test_routes.py
+test_save_path.py
+test_schema.py
+test_schema_output.txt
+test_schema_result.txt
+test_schema2.py
+test_sqlalchemy_connection.py
+test_swagger.html
+test_sync.py
+test_sync_sqlalchemy.py
+test_api_endpoints.ps1
+test_api_quick.py
+test_login.ps1
+
+# ─── Docker 文件 ───
 docker-compose*.yml
-!docker-compose.yml
+Dockerfile*
+.dockerignore
 
-# 前端构建缓存
-frontend/.vite-cache/
+# ─── 前端专用 ───
+frontend/node_modules
+frontend/dist
+frontend/build
+frontend/.vite-cache
 frontend/tsconfig.tsbuildinfo
+frontend/playwright.config.ts
+frontend/vitest.config.ts
+frontend/eslint.config.js
+frontend/eslint.fix.config.js
+frontend/jest.config.js
+frontend/tsconfig.test.json
+frontend/tsconfig.build.json
+frontend/frontend.log
+frontend/D:devoff_test.json
+frontend/test_domain.ts
+frontend/test_domain2.ts
+frontend/test_minimal.ts
+frontend/test_template.ts
+frontend/test_template2.ts
+frontend/test_template3.ts
+frontend/temp_files
+frontend/coverage
+frontend/htmlcov
+frontend/.coverage
+frontend/test-results
+frontend/playwright-report
+frontend/tests-reports
+frontend/design-system
+frontend/benchmarks
+frontend/performance-*.md
+frontend/security-*.md
+frontend/MAINTENANCE.md
+frontend/testing-*.md
+frontend/*.report.*
+frontend/_*REPORT.*
+frontend/D:devoff_test.json
+frontend/test_*.ts
+frontend/fix_*.py
+frontend/fix_*.ts
+frontend/count_backticks.py
+frontend/check_parser_state.py
 
-# Claude 配置
+# ─── Claude 配置 ───
 .claude/
 backend/.claude/
+
+# ─── 大文件/目录 ───
+backend/alembic/
+backend/deploy/
+backend/static/
+backend/pg_data_backup*
+backend/uv.lock
+backend/=1.44.0
+backend/backend_output.log
+backend/chat_*.txt
+backend/import_*.log
+backend/import_*.txt
+backend/pg_log.txt
+backend/openapi_*.json
+backend/rmfood.db
+backend/server*.log
+
+# ─── Windows ───
+Thumbs.db
+.DS_Store

@@ -296,13 +296,13 @@ export const ChartThemes = {
   light: {
     name: 'Light',
     colors: {
-      primary: ['#2563eb', '#16a34a', '#d97706', '#dc2626', '#9333ea'],
-      secondary: ['#60a5fa', '#4ade80', '#fbbf24', '#f87171', '#c084fc'],
+      primary: ['#007AFF', '#16a34a', '#B45309', '#B91C1C', '#9333ea'],
+      secondary: ['#6ECAFF', '#4ade80', '#F59E0B', '#EF4444', '#c084fc'],
       semantic: {
         success: '#16a34a',
-        warning: '#d97706',
-        error: '#dc2626',
-        info: '#2563eb',
+        warning: '#B45309',
+        error: '#B91C1C',
+        info: '#007AFF',
       },
       grayscale: ['#374151', '#6b7280', '#9ca3af', '#d1d5db', '#e5e7eb'],
     },
@@ -339,13 +339,13 @@ export const ChartThemes = {
   dark: {
     name: 'Dark',
     colors: {
-      primary: ['#3b82f6', '#22c55e', '#f59e0b', '#ef4444', '#a855f7'],
-      secondary: ['#60a5fa', '#4ade80', '#fbbf24', '#f87171', '#c084fc'],
+      primary: ['#007AFF', '#34C759', '#D97706', '#FF3B30', '#a855f7'],
+      secondary: ['#6ECAFF', '#4ade80', '#F59E0B', '#EF4444', '#c084fc'],
       semantic: {
-        success: '#22c55e',
-        warning: '#f59e0b',
-        error: '#ef4444',
-        info: '#3b82f6',
+        success: '#34C759',
+        warning: '#D97706',
+        error: '#FF3B30',
+        info: '#007AFF',
       },
       grayscale: ['#d1d5db', '#9ca3af', '#6b7280', '#4b5563', '#374151'],
     },
@@ -382,13 +382,13 @@ export const ChartThemes = {
   professional: {
     name: 'Professional',
     colors: {
-      primary: ['#1e40af', '#047857', '#b45309', '#be123c', '#6b21a8'],
-      secondary: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'],
+      primary: ['#003E87', '#1E8E3E', '#D97706', '#be123c', '#6b21a8'],
+      secondary: ['#007AFF', '#34C759', '#D97706', '#FF3B30', '#AF52DE'],
       semantic: {
-        success: '#059669',
-        warning: '#d97706',
-        error: '#dc2626',
-        info: '#2563eb',
+        success: '#28A745',
+        warning: '#B45309',
+        error: '#B91C1C',
+        info: '#007AFF',
       },
       grayscale: ['#1f2937', '#4b5563', '#9ca3af', '#d1d5db', '#f3f4f6'],
     },

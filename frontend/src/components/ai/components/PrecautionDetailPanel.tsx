@@ -73,7 +73,7 @@ const PrecautionDetailPanel = memo(({ precautions, visible, onClose }: Precautio
       {/* Panel */}
       <div
         className={`
-          fixed right-0 top-0 h-full w-full sm:w-[400px] bg-white dark:bg-gray-900 shadow-2xl z-50
+          fixed right-0 top-0 h-full w-full sm:w-[400px] bg-white dark:bg-neutral-900 shadow-2xl z-50
           transform transition-transform duration-300 ease-out overflow-y-auto
           ${isVisible ? 'translate-x-0' : 'translate-x-full'}
         `}
@@ -82,21 +82,21 @@ const PrecautionDetailPanel = memo(({ precautions, visible, onClose }: Precautio
         aria-modal="true"
       >
         {/* Header */}
-        <div className="sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center justify-between z-10">
+        <div className="sticky top-0 bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-700 px-6 py-4 flex items-center justify-between z-10">
           <div>
-            <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">
+            <h2 className="text-lg font-bold text-neutral-900 dark:text-neutral-100">
               注意事项详情
             </h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+            <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
               共 {precautions.length} 条提醒
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
             aria-label="关闭面板"
           >
-            <X className="w-5 h-5 text-gray-500" />
+            <X className="w-5 h-5 text-neutral-500" />
           </button>
         </div>
 
@@ -148,7 +148,7 @@ const PrecautionCard = memo(({ precaution }: { precaution: Precaution }) => {
   const color = getPrecautionColor(precaution.severity)
 
   return (
-    <div className="relative bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-md transition-shadow">
+    <div className="relative bg-white dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700 overflow-hidden hover:shadow-md transition-shadow">
       {/* Left colored bar */}
       <div
         className="absolute left-0 top-0 bottom-0 w-1"
@@ -159,15 +159,15 @@ const PrecautionCard = memo(({ precaution }: { precaution: Precaution }) => {
         {/* Title */}
         <div className="flex items-start gap-2 mb-2">
           <span className="text-base">{getPrecautionIcon(precaution.severity)}</span>
-          <h4 className="font-bold text-sm text-gray-900 dark:text-gray-100 flex-1 leading-tight">
+          <h4 className="font-bold text-sm text-neutral-900 dark:text-neutral-100 flex-1 leading-tight">
             {precaution.content}
           </h4>
         </div>
 
         {/* Recommendation */}
         {precaution.recommendation && (
-          <div className="mt-2 p-2 rounded bg-blue-50 dark:bg-blue-900/20 border-l-2" style={{ borderColor: color }}>
-            <p className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed">
+          <div className="mt-2 p-2 rounded bg-secondary-50 dark:bg-secondary-900/20 border-l-2" style={{ borderColor: color }}>
+            <p className="text-xs text-neutral-700 dark:text-neutral-300 leading-relaxed">
               <span className="font-medium">建议：</span>
               {precaution.recommendation}
             </p>
@@ -176,7 +176,7 @@ const PrecautionCard = memo(({ precaution }: { precaution: Precaution }) => {
 
         {/* Reference */}
         {precaution.reference && (
-          <div className="mt-2 flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+          <div className="mt-2 flex items-center gap-1 text-xs text-neutral-500 dark:text-neutral-400">
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
             </svg>
@@ -188,11 +188,11 @@ const PrecautionCard = memo(({ precaution }: { precaution: Precaution }) => {
         {precaution.triggerConditions && precaution.triggerConditions.length > 0 && (
           <div className="mt-2 space-y-1">
             {precaution.triggerConditions.map((condition, idx) => (
-              <div key={idx} className="flex items-start gap-1.5 text-xs text-gray-600 dark:text-gray-400">
-                <span className={`mt-0.5 w-1.5 h-1.5 rounded-full ${condition.isHardLimit ? 'bg-red-500' : 'bg-yellow-500'}`} />
+              <div key={idx} className="flex items-start gap-1.5 text-xs text-neutral-600 dark:text-neutral-400">
+                <span className={`mt-0.5 w-1.5 h-1.5 rounded-full ${condition.isHardLimit ? 'bg-error-500' : 'bg-yellow-500'}`} />
                 <span>{condition.description}</span>
                 {condition.isHardLimit && (
-                  <span className="px-1.5 py-0.5 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded text-[10px] font-medium">
+                  <span className="px-1.5 py-0.5 bg-error-50 dark:bg-error-900/20 text-error-600 dark:text-error-400 rounded text-[10px] font-medium">
                     硬性限制
                   </span>
                 )}

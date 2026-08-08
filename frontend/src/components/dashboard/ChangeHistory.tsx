@@ -117,34 +117,34 @@ export function ChangeHistory({ dashboardId, className }: ChangeHistoryProps) {
   const getActionIcon = (action: string) => {
     switch (action) {
       case 'create':
-        return <Plus size={16} className="text-green-600" />
+        return <Plus size={16} className="text-success-600" />
       case 'update':
-        return <Edit size={16} className="text-blue-600" />
+        return <Edit size={16} className="text-secondary-600" />
       case 'delete':
-        return <Trash2 size={16} className="text-red-600" />
+        return <Trash2 size={16} className="text-error-600" />
       case 'share':
-        return <Share2 size={16} className="text-purple-600" />
+        return <Share2 size={16} className="text-accent-600" />
       case 'permission':
-        return <User size={16} className="text-amber-600" />
+        return <User size={16} className="text-warning-600" />
       default:
-        return <Edit size={16} className="text-slate-600" />
+        return <Edit size={16} className="text-neutral-600" />
     }
   }
 
   const getActionColor = (action: string) => {
     switch (action) {
       case 'create':
-        return 'text-green-600 dark:text-green-400'
+        return 'text-success-600 dark:text-success-400'
       case 'update':
-        return 'text-blue-600 dark:text-blue-400'
+        return 'text-secondary-600 dark:text-secondary-400'
       case 'delete':
-        return 'text-red-600 dark:text-red-400'
+        return 'text-error-600 dark:text-error-400'
       case 'share':
-        return 'text-purple-600 dark:text-purple-400'
+        return 'text-accent-600 dark:text-accent-400'
       case 'permission':
-        return 'text-amber-600 dark:text-amber-400'
+        return 'text-warning-600 dark:text-warning-400'
       default:
-        return 'text-slate-600 dark:text-slate-400'
+        return 'text-neutral-600 dark:text-neutral-400'
     }
   }
 
@@ -196,7 +196,7 @@ export function ChangeHistory({ dashboardId, className }: ChangeHistoryProps) {
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <History size={20} className="text-blue-600 dark:text-blue-400" />
+            <History size={20} className="text-secondary-600 dark:text-secondary-400" />
             <CardTitle as="h3" className="text-sm font-bold">变更历史</CardTitle>
           </div>
           <Badge size="sm">{events.length}</Badge>
@@ -245,7 +245,7 @@ export function ChangeHistory({ dashboardId, className }: ChangeHistoryProps) {
         <div className="max-h-80 overflow-y-auto border rounded-lg">
           {filteredEvents.length === 0 ? (
             <div className="py-4">
-              <p className="text-sm text-slate-500 dark:text-slate-400 text-center">
+              <p className="text-sm text-neutral-500 dark:text-neutral-400 text-center">
                 暂无变更记录
               </p>
             </div>
@@ -261,19 +261,19 @@ export function ChangeHistory({ dashboardId, className }: ChangeHistoryProps) {
                       <span className={`text-sm font-medium ${getActionColor(event.action)}`}>
                         {event.userName}
                       </span>
-                      <span className="text-xs text-slate-500">{formatTimestamp(event.timestamp)}</span>
+                      <span className="text-xs text-neutral-500">{formatTimestamp(event.timestamp)}</span>
                       <Badge className={`${getActionColor(event.action)} bg-opacity-10`} size="sm">
                         {getActionText(event.action)}
                       </Badge>
                     </div>
-                    <p className="text-sm text-slate-700 dark:text-slate-300 mt-1">
+                    <p className="text-sm text-neutral-700 dark:text-neutral-300 mt-1">
                       {event.description}
                     </p>
-                    <div className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                    <div className="mt-2 text-xs text-neutral-500 dark:text-neutral-400">
                       <span>{event.entityName}</span>
                     </div>
                     {Object.keys(event.details).length > 0 && (
-                      <div className="mt-2 p-2 rounded-lg bg-slate-50 dark:bg-slate-800/50 text-xs text-slate-600 dark:text-slate-400">
+                      <div className="mt-2 p-2 rounded-lg bg-slate-50 dark:bg-neutral-800/50 text-xs text-neutral-600 dark:text-neutral-400">
                         <pre className="whitespace-pre-wrap">
                           {JSON.stringify(event.details, null, 2)}
                         </pre>
@@ -288,34 +288,34 @@ export function ChangeHistory({ dashboardId, className }: ChangeHistoryProps) {
 
         {/* 统计信息 */}
         <div className="mt-4 grid grid-cols-5 gap-2">
-          <div className="p-2 rounded-lg bg-green-50 dark:bg-green-900/10 border border-green-100 dark:border-green-800/30">
+          <div className="p-2 rounded-lg bg-success-50 dark:bg-success-900/10 border border-green-100 dark:border-green-800/30">
             <div className="text-center">
-              <p className="text-sm font-bold text-green-800 dark:text-green-400">{events.filter(e => e.action === 'create').length}</p>
-              <p className="text-xs text-green-600 dark:text-green-500">创建</p>
+              <p className="text-sm font-bold text-success-800 dark:text-success-400">{events.filter(e => e.action === 'create').length}</p>
+              <p className="text-xs text-success-600 dark:text-success-500">创建</p>
             </div>
           </div>
-          <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-800/30">
+          <div className="p-2 rounded-lg bg-secondary-50 dark:bg-secondary-900/10 border border-blue-100 dark:border-blue-800/30">
             <div className="text-center">
-              <p className="text-sm font-bold text-blue-800 dark:text-blue-400">{events.filter(e => e.action === 'update').length}</p>
-              <p className="text-xs text-blue-600 dark:text-blue-500">更新</p>
+              <p className="text-sm font-bold text-secondary-800 dark:text-secondary-400">{events.filter(e => e.action === 'update').length}</p>
+              <p className="text-xs text-secondary-600 dark:text-secondary-500">更新</p>
             </div>
           </div>
-          <div className="p-2 rounded-lg bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-800/30">
+          <div className="p-2 rounded-lg bg-error-50 dark:bg-error-900/10 border border-red-100 dark:border-red-800/30">
             <div className="text-center">
-              <p className="text-sm font-bold text-red-800 dark:text-red-400">{events.filter(e => e.action === 'delete').length}</p>
-              <p className="text-xs text-red-600 dark:text-red-500">删除</p>
+              <p className="text-sm font-bold text-error-800 dark:text-error-400">{events.filter(e => e.action === 'delete').length}</p>
+              <p className="text-xs text-error-600 dark:text-error-500">删除</p>
             </div>
           </div>
-          <div className="p-2 rounded-lg bg-purple-50 dark:bg-purple-900/10 border border-purple-100 dark:border-purple-800/30">
+          <div className="p-2 rounded-lg bg-accent-50 dark:bg-accent-900/10 border border-purple-100 dark:border-purple-800/30">
             <div className="text-center">
-              <p className="text-sm font-bold text-purple-800 dark:text-purple-400">{events.filter(e => e.action === 'share').length}</p>
-              <p className="text-xs text-purple-600 dark:text-purple-500">共享</p>
+              <p className="text-sm font-bold text-accent-800 dark:text-accent-400">{events.filter(e => e.action === 'share').length}</p>
+              <p className="text-xs text-accent-600 dark:text-accent-500">共享</p>
             </div>
           </div>
-          <div className="p-2 rounded-lg bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-800/30">
+          <div className="p-2 rounded-lg bg-warning-50 dark:bg-warning-900/10 border border-amber-100 dark:border-amber-800/30">
             <div className="text-center">
-              <p className="text-sm font-bold text-amber-800 dark:text-amber-400">{events.filter(e => e.action === 'permission').length}</p>
-              <p className="text-xs text-amber-600 dark:text-amber-500">权限</p>
+              <p className="text-sm font-bold text-warning-800 dark:text-warning-400">{events.filter(e => e.action === 'permission').length}</p>
+              <p className="text-xs text-warning-600 dark:text-warning-500">权限</p>
             </div>
           </div>
         </div>

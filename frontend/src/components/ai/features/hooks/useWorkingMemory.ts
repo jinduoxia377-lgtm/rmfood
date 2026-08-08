@@ -1,6 +1,8 @@
 import { useState, useCallback } from 'react'
 import { unifiedEntityExtractor } from '../services/unifiedEntityExtractor'
 
+
+import { logger } from '@/utils/safeLogger';
 // ===== 内联类型定义（避免 ai.types.ts 导出问题）=====
 interface ChatMessage {
   id: string
@@ -341,7 +343,7 @@ class WorkingMemoryManager {
       }
     } catch (err) {
       // 统一抽取失败时降级到下方 regex 兜底
-      console.warn('[WorkingMemory] UnifiedEntityExtractor 异常，降级到 regex:', err)
+      logger.warn('[WorkingMemory] UnifiedEntityExtractor 异常，降级到 regex:', err)
     }
 
     // ===== 兜底：原有 regex 模式（仅当统一抽取结果不足时）=====

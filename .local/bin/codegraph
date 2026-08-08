@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# codegraph wrapper for Windows (WSL) environment
+
+# Directly invoke PowerShell with the codegraph command
+CMD="${1:-"--version"}"; shift 2>/dev/null || true
+
+powershell -Command "& 'C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\codegraph-win32-x64\\node.exe' --liftoff-only --disable-warning=ExperimentalWarning 'C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\codegraph-win32-x64\\lib\\dist\\bin\\codegraph.js' $*" 2>&1

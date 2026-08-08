@@ -257,56 +257,89 @@ class MCTSOptimizer:
     def _generate_candidate_children(
         self, node: MCTSNode
     ) -> list[dict[str, Any]]:
-        """生成候选子节点"""
+        """生成候选子节点 — 修复版：从知识库按功效匹配生成"""
         candidates = []
         current_ingredients = set(node.ingredients)
-        max_ingredients = min(8, 3 + node.depth)
+        max_ingredients = min(12, 3 + node.depth)
 
         if len(node.ingredients) >= max_ingredients:
             return []
 
-        for effect, ingredients in self.ingredient_pool.items():
-            for ing in ingredients:
-                if ing in current_ingredients:
+        # 收集当前已覆盖的功效
+        current_effs = set()
+        for ing in node.ingredients:
+            current_effs.update(self._infer_efficacy(ing))
+
+        # 从知识库筛选候选药材
+        herb_names = []
+        if self._herb_db:
+            for hid, hp in self._herb_db.items():
+                if hp.name_cn in current_ingredients:
                     continue
-
-                if self._check_constraint(ing):
+                # 检查禁忌对
+                has_antagonism = False
+                for antagonist_id in hp.antagonistic_pairs:
+                    for a_hid, a_hp in self._herb_db.items():
+                        if a_hp.name_cn in current_ingredients and a_hid == antagonist_id:
+                            has_antagonism = True
+                            break
+                    if has_antagonism:
+                        break
+                if has_antagonism:
                     continue
+                # 计算该药材能覆盖的新功效数
+                hp_effs = set(hp.efficacy_scores.keys())
+                new_coverage = len(hp_effs - current_effs)
+                if new_coverage > 0:
+                    herb_names.append((new_coverage, hp.name_cn, hp))
 
-                new_ingredients = node.ingredients + [ing]
-                role = self._assign_role(len(new_ingredients))
-                dosage_range = self.DOSAGE_RANGES.get(role, (5.0, 15.0))
-                dosage = random.uniform(*dosage_range)
-                new_dosages = node.dosages + [dosage]
+        # 按覆盖能力排序（仅按整数和字符串排序，避免HerbParameter比较）
+        herb_names.sort(key=lambda x: (x[0], x[1]), reverse=True)
 
-                state = {
-                    "type": "formula",
-                    "ingredients": new_ingredients,
-                    "dosages": new_dosages,
-                    "depth": node.depth + 1,
-                }
+        for _, name, hp in herb_names[:10]:  # 取前10个最有价值的候选
+            new_ingredients = node.ingredients + [name]
+            role = self._assign_role(len(new_ingredients))
+            dosage = round(random.uniform(hp.dosage_min, hp.dosage_max), 2)
+            new_dosages = node.dosages + [dosage]
 
-                candidates.append({
-                    "state": state,
-                    "ingredients": new_ingredients,
-                    "dosages": new_dosages,
-                })
+            state = {
+                "type": "formula",
+                "ingredients": new_ingredients,
+                "dosages": new_dosages,
+                "depth": node.depth + 1,
+            }
 
-        if not candidates:
-            for _ in range(3):
-                new_ingredients = node.ingredients + ["辅助成分"]
-                new_dosages = node.dosages + [5.0]
-                state = {
-                    "type": "formula",
-                    "ingredients": new_ingredients,
-                    "dosages": new_dosages,
-                    "depth": node.depth + 1,
-                }
-                candidates.append({
-                    "state": state,
-                    "ingredients": new_ingredients,
-                    "dosages": new_dosages,
-                })
+            candidates.append({
+                "state": state,
+                "ingredients": new_ingredients,
+                "dosages": new_dosages,
+            })
+
+        # 兜底：如果知识库没找到合适候选，用旧映射表
+        if not candidates and self.ingredient_pool:
+            for effect, ingredients in self.ingredient_pool.items():
+                for ing in ingredients:
+                    if ing in current_ingredients:
+                        continue
+                    exclude_set = set(self.constraints.get("exclude_ingredients", []))
+                    if ing in exclude_set:
+                        continue
+                    new_ingredients = node.ingredients + [ing]
+                    role = self._assign_role(len(new_ingredients))
+                    dosage_range = self.DOSAGE_RANGES.get(role, (5.0, 15.0))
+                    dosage = random.uniform(*dosage_range)
+                    new_dosages = node.dosages + [dosage]
+                    state = {
+                        "type": "formula",
+                        "ingredients": new_ingredients,
+                        "dosages": new_dosages,
+                        "depth": node.depth + 1,
+                    }
+                    candidates.append({
+                        "state": state,
+                        "ingredients": new_ingredients,
+                        "dosages": new_dosages,
+                    })
 
         return candidates
 
@@ -362,7 +395,12 @@ class MCTSOptimizer:
         return reward
 
     def _infer_efficacy(self, ingredient_name: str) -> list[str]:
-        """推断成分功效"""
+        """推断成分功效 — 修复版：从知识库查找"""
+        if self._herb_db:
+            for hid, hp in self._herb_db.items():
+                if hp.name_cn == ingredient_name:
+                    return list(hp.efficacy_scores.keys())
+        # 兜底：小映射表
         efficacy_map = {
             "人参": ["补气", "提高免疫"],
             "黄芪": ["补气", "利湿"],
@@ -382,28 +420,26 @@ class MCTSOptimizer:
             "山药": ["健脾", "补气"],
             "白术": ["健脾", "利湿"],
         }
-        return efficacy_map.get(ingredient_name, ["清热"])
+        return efficacy_map.get(ingredient_name, [])
 
     def _infer_taste(self, ingredient_name: str) -> str:
-        """推断成分味道"""
+        """推断成分味道 — 修复版：从知识库查找"""
+        if self._herb_db:
+            for hid, hp in self._herb_db.items():
+                if hp.name_cn == ingredient_name:
+                    # 从功效名称推断味道（补气→甘，清热→苦等）
+                    effs = set(hp.efficacy_scores.keys())
+                    if any("清热" in e or "解毒" in e for e in effs):
+                        return "苦"
+                    if any("活血" in e or "止痛" in e for e in effs):
+                        return "辛"
+                    return "甘"
         taste_map = {
-            "人参": "甘",
-            "黄芪": "甘",
-            "党参": "甘",
-            "西洋参": "甘",
-            "红枣": "甘",
-            "枸杞子": "甘",
-            "当归": "甘",
-            "菊花": "甘",
-            "金银花": "甘",
-            "茯苓": "甘",
-            "薏苡仁": "甘",
-            "酸枣仁": "酸",
-            "远志": "苦",
-            "百合": "甘",
-            "沙参": "甘",
-            "山药": "甘",
-            "白术": "甘",
+            "人参": "甘", "黄芪": "甘", "党参": "甘", "西洋参": "甘",
+            "红枣": "甘", "枸杞子": "甘", "当归": "甘", "菊花": "甘",
+            "金银花": "甘", "茯苓": "甘", "薏苡仁": "甘",
+            "酸枣仁": "酸", "远志": "苦", "百合": "甘", "沙参": "甘",
+            "山药": "甘", "白术": "甘",
         }
         return taste_map.get(ingredient_name, "甘")
 
@@ -420,14 +456,6 @@ class MCTSOptimizer:
         elif ingredient_count <= 5:
             return "佐药"
         return "使药"
-
-    def _check_constraint(self, ingredient_name: str) -> bool:
-        """检查成分约束"""
-        exclude_set = set(self.constraints.get("exclude_ingredients", []))
-        if ingredient_name in exclude_set:
-            return True
-
-        return False
 
     def _backpropagate(self, node: MCTSNode, reward: float) -> None:
         """

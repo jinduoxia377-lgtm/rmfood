@@ -36,19 +36,19 @@ export function LineChart({ data }: LineChartProps) {
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis
             dataKey="month"
-            tick={{ fill: '#6b7280', fontSize: 11 }}
-            label={{ value: '月份', position: 'bottom', offset: 0, fill: '#6b7280' }}
+            tick={{ fill: 'var(--text-secondary, #6E6E73)', fontSize: 11 }}
+            label={{ value: '月份', position: 'bottom', offset: 0, fill: 'var(--text-secondary, #6E6E73)' }}
           />
           <YAxis
             domain={[0, 100]}
-            tick={{ fill: '#6b7280', fontSize: 11 }}
-            label={{ value: '稳定性 (%)', angle: -90, position: 'left', fill: '#6b7280' }}
+            tick={{ fill: 'var(--text-secondary, #6E6E73)', fontSize: 11 }}
+            label={{ value: '稳定性 (%)', angle: -90, position: 'left', fill: 'var(--text-secondary, #6E6E73)' }}
           />
           <Tooltip
             formatter={(value: number) => [`${value.toFixed(1)}%`, '稳定性']}
             contentStyle={{
-              backgroundColor: '#fff',
-              border: '1px solid #e5e7eb',
+              backgroundColor: 'var(--card-bg-solid, #FFFFFF)',
+              border: '1px solid var(--border-subtle, rgba(0,0,0,0.06))',
               borderRadius: '8px',
               padding: '12px',
             }}
@@ -56,21 +56,21 @@ export function LineChart({ data }: LineChartProps) {
           <Legend />
           <ReferenceLine
             y={stableThreshold}
-            stroke="#10b981"
+            stroke="var(--color-primary, #34C759)"
             strokeDasharray="3 3"
-            label={{ value: '稳定阈值', position: 'right', fill: '#10b981' }}
+            label={{ value: '稳定阈值', position: 'right', fill: 'var(--color-primary, #34C759)' }}
           />
           <ReferenceLine
             y={warningThreshold}
-            stroke="#f59e0b"
+            stroke="var(--color-warning, #FF9F0A)"
             strokeDasharray="3 3"
-            label={{ value: '警告阈值', position: 'right', fill: '#f59e0b' }}
+            label={{ value: '警告阈值', position: 'right', fill: 'var(--color-warning, #FF9F0A)' }}
           />
           <Line
             name="实际稳定性"
             type="monotone"
             dataKey="stability"
-            stroke="#3b82f6"
+            stroke="var(--color-secondary, #0A84FF)"
             strokeWidth={2}
             dot={{ r: 4 }}
             activeDot={{ r: 6 }}
@@ -80,10 +80,10 @@ export function LineChart({ data }: LineChartProps) {
               name="预测趋势"
               type="monotone"
               dataKey="prediction"
-              stroke="#8b5cf6"
+              stroke="var(--color-tertiary, #AF52DE)"
               strokeWidth={2}
               strokeDasharray="5 5"
-              dot={{ r: 3, stroke: '#8b5cf6' }}
+              dot={{ r: 3, stroke: 'var(--color-tertiary, #AF52DE)' }}
             />
           )}
         </RechartsLineChart>

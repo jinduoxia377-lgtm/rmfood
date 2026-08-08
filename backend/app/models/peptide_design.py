@@ -20,13 +20,10 @@ from datetime import datetime, timezone
 from typing import Optional
 import enum
 
-from sqlalchemy import Integer, String, DateTime, JSON, Enum, ForeignKey, Boolean, Float
+from sqlalchemy import Integer, String, DateTime, JSON, Enum, ForeignKey, Boolean, Float, BigInteger
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from ..core.database import Base
-
-
-def _now() -> datetime:
-    return datetime.now(timezone.utc).replace(tzinfo=None)
+from .base import Base
+from app.models.utils import now_utc_mapped
 
 
 class PeptideDesignStatus(str, enum.Enum):
@@ -39,9 +36,9 @@ class PeptideDesignStatus(str, enum.Enum):
 class PeptideDesign(Base):
     __tablename__ = "peptide_designs"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     project_name: Mapped[str] = mapped_column(String(200), nullable=False)
-    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), index=True)
+    user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"), index=True)
     target_effects: Mapped[list | None] = mapped_column(JSON, default=list)
     objective_weights: Mapped[dict | None] = mapped_column(JSON, default=dict)
     constraints: Mapped[dict | None] = mapped_column(JSON, nullable=True)
@@ -54,13 +51,13 @@ class PeptideDesign(Base):
     )
     version: Mapped[int] = mapped_column(Integer, default=1)
     parent_version_id: Mapped[int | None] = mapped_column(
-        Integer, ForeignKey("peptide_designs.id"), nullable=True
+        BigInteger, ForeignKey("peptide_designs.id"), nullable=True, index=True
     )
     total_candidates: Mapped[int] = mapped_column(Integer, default=0)
     pareto_size: Mapped[int] = mapped_column(Integer, default=0)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=_now)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_now, onupdate=_now)
-    archived_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, onupdate=now_utc_mapped)
+    archived_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     user: Mapped["User"] = relationship("User", back_populates="peptide_designs")
     candidates: Mapped[list["PeptideDesignCandidate"]] = relationship(
@@ -82,9 +79,9 @@ class PeptideDesign(Base):
 class PeptideDesignCandidate(Base):
     __tablename__ = "peptide_design_candidates"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     design_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("peptide_designs.id", ondelete="CASCADE"), index=True
+        BigInteger, ForeignKey("peptide_designs.id", ondelete="CASCADE"), index=True
     )
     sequence: Mapped[str] = mapped_column(String(50), nullable=False)
     objectives_scores: Mapped[dict | None] = mapped_column(JSON, default=dict)
@@ -92,10 +89,10 @@ class PeptideDesignCandidate(Base):
     is_pareto_frontier: Mapped[bool] = mapped_column(Boolean, default=False)
     dominated_by_count: Mapped[int] = mapped_column(Integer, default=0)
     peptide_id: Mapped[int | None] = mapped_column(
-        Integer, ForeignKey("peptides.id"), nullable=True
+        BigInteger, ForeignKey("peptides.id"), nullable=True, index=True
     )
     additional_data: Mapped[dict | None] = mapped_column(JSON, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=_now)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped)
 
     design: Mapped["PeptideDesign"] = relationship(
         "PeptideDesign", back_populates="candidates"

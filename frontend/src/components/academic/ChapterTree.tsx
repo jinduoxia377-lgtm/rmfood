@@ -188,8 +188,8 @@ function ChapterItem({
           isSelected
             ? 'bg-primary/10 text-primary'
             : isItemSelected
-            ? 'bg-blue-50 dark:bg-blue-900/20'
-            : 'hover:bg-gray-100 text-gray-700',
+            ? 'bg-secondary-50 dark:bg-secondary-900/20'
+            : 'hover:bg-neutral-100 text-neutral-700',
         )}
         style={{ paddingLeft: `${depth * 16 + 12}px` }}
         onClick={() => !showBatchToolbar && onSelect(chapter.id)}
@@ -198,12 +198,12 @@ function ChapterItem({
           <button
             type="button"
             onClick={handleCheckboxClick}
-            className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors flex-shrink-0"
+            className="p-1 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded transition-colors flex-shrink-0"
           >
             {isItemSelected ? (
-              <CheckSquare className="w-4 h-4 text-blue-500" />
+              <CheckSquare className="w-4 h-4 text-secondary-500" />
             ) : (
-              <Square className="w-4 h-4 text-gray-400" />
+              <Square className="w-4 h-4 text-neutral-400" />
             )}
           </button>
         )}
@@ -215,7 +215,7 @@ function ChapterItem({
               e.stopPropagation();
               onExpand(chapter.id);
             }}
-            className="p-1 hover:bg-gray-200 rounded transition-colors"
+            className="p-1 hover:bg-neutral-200 rounded transition-colors"
           >
             {isExpanded ? (
               <ChevronDown className="w-4 h-4" />
@@ -246,7 +246,7 @@ function ChapterItem({
             />
           ) : (
             <span className="truncate flex items-center gap-2">
-              <span className="text-gray-400 text-xs">{chapter.order}.</span>
+              <span className="text-neutral-400 text-xs">{chapter.order}.</span>
               {chapter.title}
             </span>
           )}
@@ -260,7 +260,7 @@ function ChapterItem({
                 e.stopPropagation();
                 onStartEdit(chapter);
               }}
-              className="p-1 hover:bg-gray-200 rounded transition-colors"
+              className="p-1 hover:bg-neutral-200 rounded transition-colors"
               title="编辑"
             >
               <Edit2 className="w-4 h-4" />
@@ -272,7 +272,7 @@ function ChapterItem({
                   e.stopPropagation();
                   onAddSection(chapter.id);
                 }}
-                className="p-1 hover:bg-gray-200 rounded transition-colors"
+                className="p-1 hover:bg-neutral-200 rounded transition-colors"
                 title="添加子章节"
               >
                 <Plus className="w-4 h-4" />
@@ -284,7 +284,7 @@ function ChapterItem({
                 e.stopPropagation();
                 onDelete(chapter.id);
               }}
-              className="p-1 hover:bg-red-100 hover:text-red-600 rounded transition-colors"
+              className="p-1 hover:bg-error-100 hover:text-error-600 rounded transition-colors"
               title="删除"
             >
               <Trash2 className="w-4 h-4" />
@@ -302,7 +302,7 @@ function ChapterItem({
                 'flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer transition-colors',
                 selectedChapterId === section.id
                   ? 'bg-primary/5 text-primary'
-                  : 'hover:bg-gray-50 text-gray-600',
+                  : 'hover:bg-slate-50 text-neutral-600',
               )}
               style={{ paddingLeft: `${depth * 16 + 24}px` }}
               onClick={() => onSelect(section.id)}

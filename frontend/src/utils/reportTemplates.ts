@@ -2,16 +2,16 @@ import { ReportTemplateType, SectionType, DetailLevel, ReportLanguage } from '..
 import type { ReportTemplate, TemplateConfig, ColorScheme } from '../types/report.types'
 
 export const defaultColorScheme: ColorScheme = {
-  primary: '#1e40af',
-  secondary: '#3b82f6',
-  accent: '#06b6d4',
+  primary: '#003E87',
+  secondary: '#007AFF',
+  accent: '#0891B2',
   text: '#1f2937',
   textSecondary: '#6b7280',
   background: '#ffffff',
   headerBg: '#f3f4f6',
   tableHeaderBg: '#e5e7eb',
   tableBorder: '#d1d5db',
-  linkColor: '#2563eb',
+  linkColor: '#007AFF',
 };
 
 export const defaultTemplateConfig: TemplateConfig = {
@@ -410,8 +410,8 @@ export const businessTemplate: ReportTemplate = {
     ...defaultTemplateConfig,
     colors: {
       ...defaultColorScheme,
-      primary: '#059669',
-      secondary: '#10b981',
+      primary: '#28A745',
+      secondary: '#34C759',
     },
   },
   metadata: {
@@ -576,8 +576,8 @@ export const experimentTemplate: ReportTemplate = {
     ...defaultTemplateConfig,
     colors: {
       ...defaultColorScheme,
-      primary: '#7c3aed',
-      secondary: '#8b5cf6',
+      primary: '#AF52DE',
+      secondary: '#AF52DE',
     },
   },
   metadata: {
@@ -729,8 +729,8 @@ export const patentTemplate: ReportTemplate = {
     ...defaultTemplateConfig,
     colors: {
       ...defaultColorScheme,
-      primary: '#dc2626',
-      secondary: '#ef4444',
+      primary: '#B91C1C',
+      secondary: '#FF3B30',
     },
   },
   metadata: {
@@ -873,8 +873,8 @@ export const regulatoryTemplate: ReportTemplate = {
     ...defaultTemplateConfig,
     colors: {
       ...defaultColorScheme,
-      primary: '#0891b2',
-      secondary: '#06b6d4',
+      primary: '#0E7490',
+      secondary: '#0891B2',
     },
   },
   metadata: {

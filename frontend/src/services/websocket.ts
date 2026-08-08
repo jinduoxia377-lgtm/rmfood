@@ -12,7 +12,7 @@ import { logger } from '@/utils/safeLogger'
 import { authApi } from '@/api/auth'
 
 
-interface WebSocketMessage {
+export interface WebSocketMessage {
   type: string
   data: Record<string, unknown>
   timestamp: string
@@ -29,8 +29,8 @@ interface WebSocketOptions {
   batchInterval?: number
 }
 
-type MessageHandler = (message: WebSocketMessage) => void
-type BatchMessageHandler = (messages: WebSocketMessage[]) => void
+export type MessageHandler = (message: WebSocketMessage) => void
+export type BatchMessageHandler = (messages: WebSocketMessage[]) => void
 
 interface ChannelSubscription {
   channel: string

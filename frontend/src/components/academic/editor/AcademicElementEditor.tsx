@@ -160,12 +160,12 @@ function hello() {
   return (
     <div className="space-y-3">
       {elements.map((element, index) => (
-        <div key={element.id} className="bg-white border border-gray-200 rounded-lg p-4">
-          <div className="flex items-center gap-2 mb-3 pb-3 border-b border-gray-100">
-            {element.type === 'formula' && <Variable className="w-5 h-5 text-blue-500" />}
-            {element.type === 'table' && <Table className="w-5 h-5 text-green-500" />}
-            {element.type === 'code' && <Code2 className="w-5 h-5 text-purple-500" />}
-            <span className="font-medium text-gray-700">
+        <div key={element.id} className="bg-white border border-neutral-200 rounded-lg p-4">
+          <div className="flex items-center gap-2 mb-3 pb-3 border-b border-neutral-100">
+            {element.type === 'formula' && <Variable className="w-5 h-5 text-secondary-500" />}
+            {element.type === 'table' && <Table className="w-5 h-5 text-success-500" />}
+            {element.type === 'code' && <Code2 className="w-5 h-5 text-accent-500" />}
+            <span className="font-medium text-neutral-700">
               {element.type === 'formula' && '公式'}
               {element.type === 'table' && '表格'}
               {element.type === 'code' && '代码块'}
@@ -175,7 +175,7 @@ function hello() {
                 type="button"
                 onClick={() => handleMoveUp(index)}
                 disabled={index === 0}
-                className="p-1 hover:bg-gray-100 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                className="p-1 hover:bg-neutral-100 rounded disabled:opacity-50 disabled:cursor-not-allowed"
                 title="上移"
               >
                 <MoveUp className="w-4 h-4" />
@@ -184,7 +184,7 @@ function hello() {
                 type="button"
                 onClick={() => handleMoveDown(index)}
                 disabled={index === elements.length - 1}
-                className="p-1 hover:bg-gray-100 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                className="p-1 hover:bg-neutral-100 rounded disabled:opacity-50 disabled:cursor-not-allowed"
                 title="下移"
               >
                 <MoveDown className="w-4 h-4" />
@@ -192,7 +192,7 @@ function hello() {
               <button
                 type="button"
                 onClick={() => handleDeleteElement(element.id)}
-                className="p-1 hover:bg-red-100 hover:text-red-600 rounded"
+                className="p-1 hover:bg-error-100 hover:text-error-600 rounded"
                 title="删除"
               >
                 <Trash2 className="w-4 h-4" />
@@ -203,22 +203,22 @@ function hello() {
           {element.type === 'formula' && (
             <div className="space-y-3">
               <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1">公式内容</label>
+                <label className="block text-sm font-medium text-neutral-600 mb-1">公式内容</label>
                 <textarea
                   value={element.content}
                   onChange={(e) => handleUpdateFormula(element.id, e.target.value, element.label || '')}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
                   rows={3}
                   placeholder="输入公式，如: E = mc^2"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1">公式标签（可选）</label>
+                <label className="block text-sm font-medium text-neutral-600 mb-1">公式标签（可选）</label>
                 <input
                   type="text"
                   value={element.label || ''}
                   onChange={(e) => handleUpdateFormula(element.id, element.content, e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
                   placeholder="公式标签"
                 />
               </div>
@@ -237,11 +237,11 @@ function hello() {
           {element.type === 'code' && (
             <div className="space-y-3">
               <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1">语言</label>
+                <label className="block text-sm font-medium text-neutral-600 mb-1">语言</label>
                 <select
                   value={element.language}
                   onChange={(e) => handleUpdateCode(element.id, e.target.value, element.code, element.caption || '')}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
                 >
                   {LANGUAGES.map(lang => (
                     <option key={lang.value} value={lang.value}>{lang.label}</option>
@@ -249,21 +249,21 @@ function hello() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1">代码</label>
+                <label className="block text-sm font-medium text-neutral-600 mb-1">代码</label>
                 <textarea
                   value={element.code}
                   onChange={(e) => handleUpdateCode(element.id, element.language, e.target.value, element.caption || '')}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
                   rows={6}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1">标题（可选）</label>
+                <label className="block text-sm font-medium text-neutral-600 mb-1">标题（可选）</label>
                 <input
                   type="text"
                   value={element.caption || ''}
                   onChange={(e) => handleUpdateCode(element.id, element.language, element.code, e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
                   placeholder="代码标题"
                 />
               </div>
@@ -288,35 +288,35 @@ function hello() {
         </Button>
 
         {showInsertMenu && (
-          <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+          <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-neutral-200 rounded-lg shadow-lg z-10">
             <button
               type="button"
               onClick={handleInsertFormula}
-              className="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center gap-2"
+              className="w-full px-4 py-2 text-left hover:bg-slate-50 flex items-center gap-2"
             >
-              <Variable className="w-4 h-4 text-blue-500" />
+              <Variable className="w-4 h-4 text-secondary-500" />
               插入公式
             </button>
             <button
               type="button"
               onClick={handleInsertTable}
-              className="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center gap-2"
+              className="w-full px-4 py-2 text-left hover:bg-slate-50 flex items-center gap-2"
             >
-              <Table className="w-4 h-4 text-green-500" />
+              <Table className="w-4 h-4 text-success-500" />
               插入表格
             </button>
             <button
               type="button"
               onClick={handleInsertCode}
-              className="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center gap-2"
+              className="w-full px-4 py-2 text-left hover:bg-slate-50 flex items-center gap-2"
             >
-              <Code2 className="w-4 h-4 text-purple-500" />
+              <Code2 className="w-4 h-4 text-accent-500" />
               插入代码块
             </button>
             <button
               type="button"
               onClick={() => setShowInsertMenu(false)}
-              className="w-full px-4 py-2 text-left hover:bg-gray-50 text-gray-500 flex items-center gap-2"
+              className="w-full px-4 py-2 text-left hover:bg-slate-50 text-neutral-500 flex items-center gap-2"
             >
               <X className="w-4 h-4" />
               取消
@@ -364,7 +364,7 @@ function TableEditor({ headers, rows, caption, onUpdate }: TableEditorProps) {
         type="text"
         value={caption}
         onChange={(e) => onUpdate(headers, rows, e.target.value)}
-        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary/20"
+        className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm font-medium text-neutral-700 focus:outline-none focus:ring-2 focus:ring-primary/20"
         placeholder="表格标题"
       />
       <div className="overflow-x-auto">
@@ -372,7 +372,7 @@ function TableEditor({ headers, rows, caption, onUpdate }: TableEditorProps) {
           <thead>
             <tr>
               {headers.map((header, index) => (
-                <th key={index} className="border border-gray-300 px-3 py-2 bg-gray-50">
+                <th key={index} className="border border-neutral-300 px-3 py-2 bg-slate-50">
                   <input
                     type="text"
                     value={header}
@@ -387,14 +387,14 @@ function TableEditor({ headers, rows, caption, onUpdate }: TableEditorProps) {
                     <button
                       type="button"
                       onClick={() => deleteColumn(index)}
-                      className="ml-1 text-red-500 hover:text-red-700"
+                      className="ml-1 text-error-500 hover:text-error-700"
                     >
                       <X className="w-3 h-3" />
                     </button>
                   )}
                 </th>
               ))}
-              <th className="border border-gray-300 px-2 py-2 bg-gray-50">
+              <th className="border border-neutral-300 px-2 py-2 bg-slate-50">
                 <button
                   type="button"
                   onClick={addColumn}
@@ -410,7 +410,7 @@ function TableEditor({ headers, rows, caption, onUpdate }: TableEditorProps) {
             {rows.map((row, rowIndex) => (
               <tr key={rowIndex}>
                 {row.map((cell, cellIndex) => (
-                  <td key={cellIndex} className="border border-gray-300 px-3 py-2">
+                  <td key={cellIndex} className="border border-neutral-300 px-3 py-2">
                     <input
                       type="text"
                       value={cell}
@@ -425,11 +425,11 @@ function TableEditor({ headers, rows, caption, onUpdate }: TableEditorProps) {
                     />
                   </td>
                 ))}
-                <td className="border border-gray-300 px-2 py-2">
+                <td className="border border-neutral-300 px-2 py-2">
                   <button
                     type="button"
                     onClick={() => deleteRow(rowIndex)}
-                    className="text-red-500 hover:text-red-700"
+                    className="text-error-500 hover:text-error-700"
                     title="删除行"
                   >
                     <X className="w-4 h-4" />

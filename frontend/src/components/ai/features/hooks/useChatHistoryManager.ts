@@ -117,9 +117,9 @@ export function useChatHistoryManager(): UseChatHistoryManagerReturn {
   const deleteSession = useCallback(async (id: string) => {
     try {
       await chatHistoryStorage.deleteSession(id)
-      setSessions(prev => prev.filter(s => s.id !== id))
+      setSessions(prev => prev.filter((s: any) => s.id !== id))
       if (currentSessionId === id) {
-        setCurrentSessionId(prev => prev.filter(s => s.id !== id)[0]?.id || null)
+        setCurrentSessionId(sessions.filter((s: any) => s.id !== id)[0]?.id || null)
       }
       await refreshStatistics()
       logger.info(`[useChatHistoryManager] 删除会话成功: ${id}`)

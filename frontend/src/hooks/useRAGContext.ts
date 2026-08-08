@@ -3,10 +3,11 @@
  *
  * 管理 RAG 开关状态、检索结果缓存，
  * 提供消息发送时的 RAG 增强注入功能。
+ * v2.0: 添加种子注入状态检查
  */
 
-import { useState, useCallback, useRef } from 'react'
-import { queryRAG, type RAGChunkResult } from '@/api/rag'
+import { useState, useCallback, useRef, useEffect } from 'react'
+import { queryRAG, seedKnowledgeBase, getSeedStatus, type RAGChunkResult } from '@/api/rag'
 import { logger } from '@/utils/safeLogger'
 
 export interface RAGContextState {
@@ -28,6 +29,14 @@ export interface RAGContextState {
   hasActiveChunks: boolean
   /** 最后一次检索是否成功 */
   lastQuerySuccess: boolean
+  /** 知识库是否已注入种子数据 */
+  isSeeded: boolean
+  /** 种子注入是否进行中 */
+  isSeeding: boolean
+  /** 知识库当前文档块总数（未 seed 时为 0） */
+  totalChunks: number
+  /** 触发种子注入 */
+  triggerSeed: () => Promise<void>
 }
 
 export function useRAGContext(): RAGContextState {
@@ -36,6 +45,47 @@ export function useRAGContext(): RAGContextState {
   const [hasActiveChunks, setHasActiveChunks] = useState(false)
   const [lastSources, setLastSources] = useState<string[]>([])
   const [lastQuerySuccess, setLastQuerySuccess] = useState(false)
+  const [isSeeded, setIsSeeded] = useState(false)
+  const [isSeeding, setIsSeeding] = useState(false)
+  const [totalChunks, setTotalChunks] = useState(0)
+
+  // 启动时检查种子注入状态
+  useEffect(() => {
+    const checkSeedStatus = async () => {
+      try {
+        const status = await getSeedStatus()
+        setIsSeeded(status.is_seeded)
+        setTotalChunks(status.total_chunks ?? 0)
+        if (!status.is_seeded) {
+          logger.info('[useRAGContext] 知识库尚未注入种子数据，建议手动触发')
+        }
+      } catch (error) {
+        logger.warn('[useRAGContext] 检查种子状态失败:', error)
+      }
+    }
+    checkSeedStatus()
+  }, [])
+
+  const triggerSeed = useCallback(async () => {
+    setIsSeeding(true)
+    try {
+      const result = await seedKnowledgeBase()
+      setIsSeeded(result.seeded)
+      // 注入后刷新真实块数
+      try {
+        const status = await getSeedStatus()
+        setIsSeeded(status.is_seeded)
+        setTotalChunks(status.total_chunks ?? 0)
+      } catch {
+        /* 状态刷新失败不影响注入结果 */
+      }
+      logger.info('[useRAGContext] 种子注入完成:', result)
+    } catch (error) {
+      logger.error('[useRAGContext] 种子注入失败:', error)
+    } finally {
+      setIsSeeding(false)
+    }
+  }, [])
 
   const augment = useCallback(async (question: string): Promise<string> => {
     if (!isEnabled || !question.trim()) return question
@@ -105,5 +155,9 @@ export function useRAGContext(): RAGContextState {
     clearChunks,
     hasActiveChunks,
     lastQuerySuccess,
+    isSeeded,
+    isSeeding,
+    totalChunks,
+    triggerSeed,
   }
 }

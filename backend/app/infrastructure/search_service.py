@@ -552,7 +552,8 @@ class ElasticsearchIndexService(SearchIndexService):
                 try:
                     count = await client.count(index=index_name)
                     stats[idx_type.value] = {"document_count": count.get("count", 0)}
-                except Exception:
+                except Exception as count_err:
+                    logger.debug("ES 索引 %s 计数失败: %s", index_name, count_err)
                     stats[idx_type.value] = {"document_count": 0}
             return {
                 "backend": "elasticsearch",
@@ -561,7 +562,7 @@ class ElasticsearchIndexService(SearchIndexService):
                 "indices": stats,
             }
         except Exception as e:
-            return {"backend": "elasticsearch", "status": "error", "error": str(e)}
+            return {"backend": "elasticsearch", "status": "error", "error": "搜索服务异常"}
 
     async def close(self) -> None:
         """关闭 ES 客户端"""

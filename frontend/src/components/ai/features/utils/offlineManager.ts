@@ -257,7 +257,7 @@ class OfflineManager {
         await this.syncAction(item.payload)
         break
       default:
-        throw new Error(`未知队列项类型: ${(item as any).type}`)
+        throw new Error(`未知队列项类型: ${(item.type}`)
     }
   }
 
@@ -266,7 +266,7 @@ class OfflineManager {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+        Authorization: `Bearer ${localStorage.getItem('access_token') || ''}`,
       },
       body: JSON.stringify({ question: payload.question }),
     })
@@ -311,7 +311,7 @@ class OfflineManager {
     } catch (error) {
       logger.error('[OfflineManager] 持久化队列失败:', error)
 
-      if ((error as any).name === 'QuotaExceededError') {
+      if ((error.name === 'QuotaExceededError') {
         this.handleQuotaExceeded()
       }
     }

@@ -1,0 +1,126 @@
+/**
+ * 报告导出组件
+ *
+ * 提供报告格式选择和一键下载功能
+ */
+'use client';
+
+import React from 'react';
+import { useReportExport, type ExportOptions } from '@/api/reportExport';
+import { type ExplainabilityResult } from '@/api/explainability';
+import { logger } from '@/utils/safeLogger';
+
+interface Props {
+  report: ExplainabilityResult;
+  formulaName: string;
+  ingredients: Array<{ name: string; dosage_mg: number }>;
+  targetEffects: string[];
+}
+
+type Format = 'docx' | 'pdf' | 'markdown';
+
+const FORMAT_CONFIG: Record<Format, { label: string; icon: string; desc: string }> = {
+  docx: { label: 'Word 文档', icon: '📄', desc: '可编辑的 Word 格式' },
+  pdf: { label: 'PDF 文档', icon: '📕', desc: '标准 PDF 格式' },
+  markdown: { label: 'Markdown', icon: '📝', desc: '源代码格式' },
+};
+
+export function ReportExportPanel({ report, formulaName, ingredients, targetEffects }: Props) {
+  const { exportReport, exporting, error } = useReportExport();
+  const [selectedFormat, setSelectedFormat] = React.useState<Format>('docx');
+  const [exportedUrl, setExportedUrl] = React.useState<string | null>(null);
+
+  const handleExport = async () => {
+    try {
+      const result = await exportReport({
+        formula_name: formulaName,
+        ingredients,
+        target_effects: targetEffects,
+        format: selectedFormat,
+      }, selectedFormat);
+
+      if (selectedFormat === 'markdown') {
+        // Markdown 直接返回内容，保存到剪贴板
+        const result = await exportReport({
+          formula_name: formulaName,
+          ingredients,
+          target_effects: targetEffects,
+          format: selectedFormat,
+        }, selectedFormat) as { data?: { markdown?: string } };
+        if (result.data?.markdown) {
+          await navigator.clipboard.writeText(result.data.markdown);
+          alert('Markdown 内容已复制到剪贴板');
+        }
+      } else {
+        const result = await exportReport({
+          formula_name: formulaName,
+          ingredients,
+          target_effects: targetEffects,
+          format: selectedFormat,
+        }, selectedFormat) as { url: string; filename: string };
+        if (result.url) setExportedUrl(result.url);
+      }
+    } catch (err) {
+      logger.error('报告导出失败:', err);
+    }
+  };
+
+  return (
+    <div className="rounded-2xl border border-gray-200 dark:border-gray-700 p-5 bg-white dark:bg-gray-800">
+      <div className="flex items-center gap-2 mb-4">
+        <span className="text-xl">📊</span>
+        <h3 className="font-semibold text-gray-900 dark:text-gray-100">导出报告</h3>
+      </div>
+
+      {/* 格式选择 */}
+      <div className="grid grid-cols-3 gap-3 mb-4">
+        {(Object.keys(FORMAT_CONFIG) as Format[]).map((fmt) => (
+          <button
+            key={fmt}
+            onClick={() => setSelectedFormat(fmt)}
+            className={`p-3 rounded-xl border-2 transition-all text-center ${
+              selectedFormat === fmt
+                ? 'border-violet-500 bg-violet-50 dark:bg-violet-900/20'
+                : 'border-gray-200 dark:border-gray-700 hover:border-violet-300'
+            }`}
+          >
+            <div className="text-2xl mb-1">{FORMAT_CONFIG[fmt].icon}</div>
+            <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+              {FORMAT_CONFIG[fmt].label}
+            </div>
+            <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+              {FORMAT_CONFIG[fmt].desc}
+            </div>
+          </button>
+        ))}
+      </div>
+
+      {/* 导出按钮 */}
+      <button
+        onClick={handleExport}
+        disabled={exporting}
+        className="w-full py-3 rounded-xl bg-violet-600 hover:bg-violet-700 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white font-medium transition-colors disabled:cursor-not-allowed"
+      >
+        {exporting ? '⏳ 生成中...' : `📥 导出 ${FORMAT_CONFIG[selectedFormat].label}`}
+      </button>
+
+      {/* 错误提示 */}
+      {error && (
+        <div className="mt-3 p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-sm text-red-600 dark:text-red-400">
+          {error}
+        </div>
+      )}
+
+      {/* 导出结果 */}
+      {exportedUrl && (
+        <a
+          href={exportedUrl}
+          download
+          className="mt-3 flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-green-300 dark:border-green-700 text-green-700 dark:text-green-400 font-medium hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
+        >
+          <span>✅</span> 下载报告
+        </a>
+      )}
+    </div>
+  );
+}

@@ -1,6 +1,8 @@
 import { ProfessionalBaseService } from './ProfessionalBaseService';
 import type { ProfessionalServiceConfig } from '../../types/professional';
 
+
+import { logger } from '@/utils/safeLogger';
 export interface AminoAcidProperties {
   code: string;
   name: string;
@@ -142,26 +144,186 @@ export interface DFBPSearchResult {
 }
 
 const AMINO_ACID_DATA: Record<string, AminoAcidProperties> = {
-  A: { code: 'A', name: 'Alanine', molecularWeight: 89.09, pI: 6.00, hydrophobicity: 1.8, charge: 0, pKa: { carboxyl: 2.35, amino: 9.87 } },
-  R: { code: 'R', name: 'Arginine', molecularWeight: 174.20, pI: 10.76, hydrophobicity: -4.5, charge: 1, pKa: { carboxyl: 2.18, amino: 8.99, sideChain: 12.48 } },
-  N: { code: 'N', name: 'Asparagine', molecularWeight: 132.12, pI: 5.41, hydrophobicity: -3.5, charge: 0, pKa: { carboxyl: 2.14, amino: 8.72 } },
-  D: { code: 'D', name: 'Aspartic acid', molecularWeight: 133.10, pI: 2.77, hydrophobicity: -3.5, charge: -1, pKa: { carboxyl: 1.88, amino: 9.60, sideChain: 3.65 } },
-  C: { code: 'C', name: 'Cysteine', molecularWeight: 121.15, pI: 5.07, hydrophobicity: 2.5, charge: 0, pKa: { carboxyl: 1.96, amino: 10.28, sideChain: 8.18 } },
-  E: { code: 'E', name: 'Glutamic acid', molecularWeight: 147.13, pI: 3.22, hydrophobicity: -3.5, charge: -1, pKa: { carboxyl: 2.19, amino: 9.67, sideChain: 4.25 } },
-  Q: { code: 'Q', name: 'Glutamine', molecularWeight: 146.15, pI: 5.65, hydrophobicity: -3.5, charge: 0, pKa: { carboxyl: 2.17, amino: 9.13 } },
-  G: { code: 'G', name: 'Glycine', molecularWeight: 75.07, pI: 5.97, hydrophobicity: -0.4, charge: 0, pKa: { carboxyl: 2.35, amino: 9.78 } },
-  H: { code: 'H', name: 'Histidine', molecularWeight: 155.16, pI: 7.59, hydrophobicity: -3.2, charge: 0.1, pKa: { carboxyl: 1.82, amino: 9.17, sideChain: 6.00 } },
-  I: { code: 'I', name: 'Isoleucine', molecularWeight: 131.17, pI: 6.02, hydrophobicity: 4.5, charge: 0, pKa: { carboxyl: 2.32, amino: 9.76 } },
-  L: { code: 'L', name: 'Leucine', molecularWeight: 131.17, pI: 5.98, hydrophobicity: 3.8, charge: 0, pKa: { carboxyl: 2.36, amino: 9.60 } },
-  K: { code: 'K', name: 'Lysine', molecularWeight: 146.19, pI: 9.74, hydrophobicity: -3.9, charge: 1, pKa: { carboxyl: 2.18, amino: 8.95, sideChain: 10.53 } },
-  M: { code: 'M', name: 'Methionine', molecularWeight: 149.21, pI: 5.74, hydrophobicity: 1.9, charge: 0, pKa: { carboxyl: 2.28, amino: 9.21 } },
-  F: { code: 'F', name: 'Phenylalanine', molecularWeight: 165.19, pI: 5.48, hydrophobicity: 2.8, charge: 0, pKa: { carboxyl: 2.58, amino: 9.24 } },
-  P: { code: 'P', name: 'Proline', molecularWeight: 115.13, pI: 6.30, hydrophobicity: -1.6, charge: 0, pKa: { carboxyl: 2.05, amino: 10.60 } },
-  S: { code: 'S', name: 'Serine', molecularWeight: 105.09, pKa: { carboxyl: 2.21, amino: 9.15 }, pI: 5.68, hydrophobicity: -0.8, charge: 0 },
-  T: { code: 'T', name: 'Threonine', molecularWeight: 119.12, pI: 5.60, hydrophobicity: -0.7, charge: 0, pKa: { carboxyl: 2.09, amino: 9.10 } },
-  W: { code: 'W', name: 'Tryptophan', molecularWeight: 204.23, pI: 5.89, hydrophobicity: -0.9, charge: 0, pKa: { carboxyl: 2.38, amino: 9.39 } },
-  Y: { code: 'Y', name: 'Tyrosine', molecularWeight: 181.19, pI: 5.66, hydrophobicity: -1.3, charge: 0, pKa: { carboxyl: 2.20, amino: 9.11, sideChain: 10.07 } },
-  V: { code: 'V', name: 'Valine', molecularWeight: 117.15, pI: 5.96, hydrophobicity: 4.2, charge: 0, pKa: { carboxyl: 2.29, amino: 9.72 } },
+  A: {
+    code: 'A',
+    name: 'Alanine',
+    molecularWeight: 89.09,
+    pI: 6.0,
+    hydrophobicity: 1.8,
+    charge: 0,
+    pKa: { carboxyl: 2.35, amino: 9.87 },
+  },
+  R: {
+    code: 'R',
+    name: 'Arginine',
+    molecularWeight: 174.2,
+    pI: 10.76,
+    hydrophobicity: -4.5,
+    charge: 1,
+    pKa: { carboxyl: 2.18, amino: 8.99, sideChain: 12.48 },
+  },
+  N: {
+    code: 'N',
+    name: 'Asparagine',
+    molecularWeight: 132.12,
+    pI: 5.41,
+    hydrophobicity: -3.5,
+    charge: 0,
+    pKa: { carboxyl: 2.14, amino: 8.72 },
+  },
+  D: {
+    code: 'D',
+    name: 'Aspartic acid',
+    molecularWeight: 133.1,
+    pI: 2.77,
+    hydrophobicity: -3.5,
+    charge: -1,
+    pKa: { carboxyl: 1.88, amino: 9.6, sideChain: 3.65 },
+  },
+  C: {
+    code: 'C',
+    name: 'Cysteine',
+    molecularWeight: 121.15,
+    pI: 5.07,
+    hydrophobicity: 2.5,
+    charge: 0,
+    pKa: { carboxyl: 1.96, amino: 10.28, sideChain: 8.18 },
+  },
+  E: {
+    code: 'E',
+    name: 'Glutamic acid',
+    molecularWeight: 147.13,
+    pI: 3.22,
+    hydrophobicity: -3.5,
+    charge: -1,
+    pKa: { carboxyl: 2.19, amino: 9.67, sideChain: 4.25 },
+  },
+  Q: {
+    code: 'Q',
+    name: 'Glutamine',
+    molecularWeight: 146.15,
+    pI: 5.65,
+    hydrophobicity: -3.5,
+    charge: 0,
+    pKa: { carboxyl: 2.17, amino: 9.13 },
+  },
+  G: {
+    code: 'G',
+    name: 'Glycine',
+    molecularWeight: 75.07,
+    pI: 5.97,
+    hydrophobicity: -0.4,
+    charge: 0,
+    pKa: { carboxyl: 2.35, amino: 9.78 },
+  },
+  H: {
+    code: 'H',
+    name: 'Histidine',
+    molecularWeight: 155.16,
+    pI: 7.59,
+    hydrophobicity: -3.2,
+    charge: 0.1,
+    pKa: { carboxyl: 1.82, amino: 9.17, sideChain: 6.0 },
+  },
+  I: {
+    code: 'I',
+    name: 'Isoleucine',
+    molecularWeight: 131.17,
+    pI: 6.02,
+    hydrophobicity: 4.5,
+    charge: 0,
+    pKa: { carboxyl: 2.32, amino: 9.76 },
+  },
+  L: {
+    code: 'L',
+    name: 'Leucine',
+    molecularWeight: 131.17,
+    pI: 5.98,
+    hydrophobicity: 3.8,
+    charge: 0,
+    pKa: { carboxyl: 2.36, amino: 9.6 },
+  },
+  K: {
+    code: 'K',
+    name: 'Lysine',
+    molecularWeight: 146.19,
+    pI: 9.74,
+    hydrophobicity: -3.9,
+    charge: 1,
+    pKa: { carboxyl: 2.18, amino: 8.95, sideChain: 10.53 },
+  },
+  M: {
+    code: 'M',
+    name: 'Methionine',
+    molecularWeight: 149.21,
+    pI: 5.74,
+    hydrophobicity: 1.9,
+    charge: 0,
+    pKa: { carboxyl: 2.28, amino: 9.21 },
+  },
+  F: {
+    code: 'F',
+    name: 'Phenylalanine',
+    molecularWeight: 165.19,
+    pI: 5.48,
+    hydrophobicity: 2.8,
+    charge: 0,
+    pKa: { carboxyl: 2.58, amino: 9.24 },
+  },
+  P: {
+    code: 'P',
+    name: 'Proline',
+    molecularWeight: 115.13,
+    pI: 6.3,
+    hydrophobicity: -1.6,
+    charge: 0,
+    pKa: { carboxyl: 2.05, amino: 10.6 },
+  },
+  S: {
+    code: 'S',
+    name: 'Serine',
+    molecularWeight: 105.09,
+    pKa: { carboxyl: 2.21, amino: 9.15 },
+    pI: 5.68,
+    hydrophobicity: -0.8,
+    charge: 0,
+  },
+  T: {
+    code: 'T',
+    name: 'Threonine',
+    molecularWeight: 119.12,
+    pI: 5.6,
+    hydrophobicity: -0.7,
+    charge: 0,
+    pKa: { carboxyl: 2.09, amino: 9.1 },
+  },
+  W: {
+    code: 'W',
+    name: 'Tryptophan',
+    molecularWeight: 204.23,
+    pI: 5.89,
+    hydrophobicity: -0.9,
+    charge: 0,
+    pKa: { carboxyl: 2.38, amino: 9.39 },
+  },
+  Y: {
+    code: 'Y',
+    name: 'Tyrosine',
+    molecularWeight: 181.19,
+    pI: 5.66,
+    hydrophobicity: -1.3,
+    charge: 0,
+    pKa: { carboxyl: 2.2, amino: 9.11, sideChain: 10.07 },
+  },
+  V: {
+    code: 'V',
+    name: 'Valine',
+    molecularWeight: 117.15,
+    pI: 5.96,
+    hydrophobicity: 4.2,
+    charge: 0,
+    pKa: { carboxyl: 2.29, amino: 9.72 },
+  },
 };
 
 const MOCK_PEPTIDES: Peptide[] = [
@@ -212,7 +374,13 @@ const MOCK_PEPTIDES: Peptide[] = [
     dosage: { min: 5, max: 20, unit: 'mg', form: 'capsule' },
     researchStatus: 'validated',
     patents: [
-      { number: 'US1234567A', title: 'Whey-derived ACE inhibitory peptide', holder: 'Dairy Research Institute', year: 2023, status: 'active' },
+      {
+        number: 'US1234567A',
+        title: 'Whey-derived ACE inhibitory peptide',
+        holder: 'Dairy Research Institute',
+        year: 2023,
+        status: 'active',
+      },
     ],
     references: ['PMID: 23456789', 'DOI: 10.1234/peptides.2023.015'],
     doi: '10.1234/peptides.2023.015',
@@ -287,7 +455,13 @@ const MOCK_PEPTIDES: Peptide[] = [
     dosage: { min: 50, max: 200, unit: 'mg', form: 'tablet' },
     researchStatus: 'validated',
     patents: [
-      { number: 'CN101234567A', title: 'Soy-derived antimicrobial peptide', holder: 'SoyTech Corp', year: 2024, status: 'pending' },
+      {
+        number: 'CN101234567A',
+        title: 'Soy-derived antimicrobial peptide',
+        holder: 'SoyTech Corp',
+        year: 2024,
+        status: 'pending',
+      },
     ],
     references: ['PMID: 56789012'],
     doi: '10.1234/peptides.2024.025',
@@ -520,9 +694,24 @@ export class PeptideService extends ProfessionalBaseService {
   public calculateInstabilityIndex(sequence: string): number {
     this.validateSequence(sequence);
     const dipeptideWeights: Record<string, number> = {
-      'WW': 1.0, 'WC': 1.0, 'WM': 24.68, 'WH': 24.68, 'WY': 1.0, 'WF': 1.0,
-      'WQ': 1.0, 'WN': 13.34, 'WI': 1.0, 'WR': 1.0, 'WD': 1.0, 'WP': 1.0,
-      'WT': -14.03, 'WK': 1.0, 'WS': 1.0, 'WV': 1.0, 'WG': -9.37, 'WA': 1.0,
+      WW: 1.0,
+      WC: 1.0,
+      WM: 24.68,
+      WH: 24.68,
+      WY: 1.0,
+      WF: 1.0,
+      WQ: 1.0,
+      WN: 13.34,
+      WI: 1.0,
+      WR: 1.0,
+      WD: 1.0,
+      WP: 1.0,
+      WT: -14.03,
+      WK: 1.0,
+      WS: 1.0,
+      WV: 1.0,
+      WG: -9.37,
+      WA: 1.0,
     };
 
     let sum = 0;
@@ -545,8 +734,8 @@ export class PeptideService extends ProfessionalBaseService {
     const ileContent = (counts.I || 0) / length;
     const leuContent = (counts.L || 0) / length;
 
-    const index = alaContent * 100 + valContent * 100 + ileContent * 100 + leuContent * 100
-                + ileContent * ileContent * 100;
+    const index =
+      alaContent * 100 + valContent * 100 + ileContent * 100 + leuContent * 100 + ileContent * ileContent * 100;
 
     return Math.round(index * 100) / 100;
   }
@@ -568,7 +757,9 @@ export class PeptideService extends ProfessionalBaseService {
     const sheetFormers = new Set(['V', 'I', 'Y', 'C', 'F', 'W', 'N']);
     const coilFormers = new Set(['G', 'P', 'S', 'D', 'T']);
 
-    let helix = 0, sheet = 0, coil = 0;
+    let helix = 0,
+      sheet = 0,
+      coil = 0;
 
     for (const aa of sequence) {
       const upperAA = aa.toUpperCase();
@@ -676,7 +867,7 @@ export class PeptideService extends ProfessionalBaseService {
       const response = await this.post<DFBPSearchResult>('/peptides/search', params);
       return response;
     } catch (error) {
-      console.warn('DFBP API unavailable, falling back to mock data:', error);
+      logger.warn('DFBP API unavailable, falling back to mock data:', error);
       this.useMockData = true;
       return this.mockSearchPeptides(params);
     }
@@ -686,53 +877,43 @@ export class PeptideService extends ProfessionalBaseService {
     let filtered = [...MOCK_PEPTIDES];
 
     if (params.sequence) {
-      filtered = filtered.filter(p =>
-        p.sequence.toLowerCase().includes(params.sequence.toLowerCase()),
-      );
+      filtered = filtered.filter((p) => p.sequence.toLowerCase().includes(params.sequence!.toLowerCase()));
     }
 
     if (params.name) {
-      filtered = filtered.filter(p =>
-        p.name.toLowerCase().includes(params.name.toLowerCase()),
-      );
+      filtered = filtered.filter((p) => p.name.toLowerCase().includes(params.name!.toLowerCase()));
     }
 
     if (params.bioactivity) {
-      filtered = filtered.filter(p =>
-        p.bioactivities.some(b =>
-          b.type.toLowerCase().includes(params.bioactivity.toLowerCase()),
-        ),
+      filtered = filtered.filter((p) =>
+        p.bioactivities.some((b) => b.type.toLowerCase().includes(params.bioactivity!.toLowerCase())),
       );
     }
 
     if (params.foodSource) {
-      filtered = filtered.filter(p =>
-        p.foodSources.some(s =>
-          s.toLowerCase().includes(params.foodSource.toLowerCase()),
-        ),
+      filtered = filtered.filter((p) =>
+        p.foodSources.some((s) => s.toLowerCase().includes(params.foodSource!.toLowerCase())),
       );
     }
 
     if (params.minLength !== undefined) {
-      filtered = filtered.filter(p => p.length >= params.minLength);
+      filtered = filtered.filter((p) => p.length >= params.minLength!);
     }
 
     if (params.maxLength !== undefined) {
-      filtered = filtered.filter(p => p.length <= params.maxLength);
+      filtered = filtered.filter((p) => p.length <= params.maxLength!);
     }
 
     if (params.minMW !== undefined) {
-      filtered = filtered.filter(p => p.molecularWeight >= params.minMW);
+      filtered = filtered.filter((p) => p.molecularWeight >= params.minMW!);
     }
 
     if (params.maxMW !== undefined) {
-      filtered = filtered.filter(p => p.molecularWeight <= params.maxMW);
+      filtered = filtered.filter((p) => p.molecularWeight <= params.maxMW!);
     }
 
     if (params.researchStatus) {
-      filtered = filtered.filter(p =>
-        p.researchStatus.toLowerCase() === params.researchStatus.toLowerCase(),
-      );
+      filtered = filtered.filter((p) => p.researchStatus.toLowerCase() === params.researchStatus!.toLowerCase());
     }
 
     const page = params.page || 1;
@@ -753,31 +934,27 @@ export class PeptideService extends ProfessionalBaseService {
 
   public async getPeptideById(id: string): Promise<Peptide | null> {
     if (this.useMockData) {
-      return MOCK_PEPTIDES.find(p => p.id === id) || null;
+      return MOCK_PEPTIDES.find((p) => p.id === id) || null;
     }
 
     try {
       return await this.get<Peptide>(`/peptides/${id}`);
     } catch (error) {
-      console.warn('DFBP API unavailable, falling back to mock data:', error);
-      return MOCK_PEPTIDES.find(p => p.id === id) || null;
+      logger.warn('DFBP API unavailable, falling back to mock data:', error);
+      return MOCK_PEPTIDES.find((p) => p.id === id) || null;
     }
   }
 
   public async getPeptideBySequence(sequence: string): Promise<Peptide | null> {
     if (this.useMockData) {
-      return MOCK_PEPTIDES.find(p =>
-        p.sequence.toUpperCase() === sequence.toUpperCase(),
-      ) || null;
+      return MOCK_PEPTIDES.find((p) => p.sequence.toUpperCase() === sequence.toUpperCase()) || null;
     }
 
     try {
       return await this.get<Peptide>(`/peptides/sequence/${sequence}`);
     } catch (error) {
-      console.warn('DFBP API unavailable, falling back to mock data:', error);
-      return MOCK_PEPTIDES.find(p =>
-        p.sequence.toUpperCase() === sequence.toUpperCase(),
-      ) || null;
+      logger.warn('DFBP API unavailable, falling back to mock data:', error);
+      return MOCK_PEPTIDES.find((p) => p.sequence.toUpperCase() === sequence.toUpperCase()) || null;
     }
   }
 
@@ -817,13 +994,15 @@ export class PeptideService extends ProfessionalBaseService {
       },
       {
         type: 'opioid',
-        conditions: (_a) => ['Y', 'F', 'W'].some(aa => analysis.aminoAcidComposition[aa] > 0),
+        conditions: (_a) => ['Y', 'F', 'W'].some((aa) => analysis.aminoAcidComposition[aa] > 0),
         mechanism: 'Aromatic residues at N-terminus enable opioid receptor binding',
         evidence: 'Typical opioid peptide motif with aromatic residue',
       },
       {
         type: 'collagen synthesis',
-        conditions: (a) => a.proline + (analysis.aminoAcidComposition.P || 0) > 2 && a.glycine > 1,
+        conditions: (a) =>
+          (analysis.aminoAcidComposition.P || 0) + (analysis.aminoAcidComposition.P || 0) > 2 &&
+          (analysis.aminoAcidComposition.G || 0) > 1,
         mechanism: 'Proline-hydroxyproline sequence stimulates collagen synthesis',
         evidence: 'Collagen-like peptides with repeating Pro-Hyp-Gly motif',
       },
@@ -884,10 +1063,9 @@ export class PeptideService extends ProfessionalBaseService {
   }
 
   private findSimilarPeptides(sequence: string, bioactivityType: string): string[] {
-    return MOCK_PEPTIDES
-      .filter(p => p.bioactivities.some(b => b.type === bioactivityType))
+    return MOCK_PEPTIDES.filter((p) => p.bioactivities.some((b) => b.type === bioactivityType))
       .slice(0, 3)
-      .map(p => p.id);
+      .map((p) => p.id);
   }
 
   private estimateIC50(analysis: PeptideAnalysis, bioactivityType: string): number {
@@ -928,9 +1106,7 @@ export class PeptideService extends ProfessionalBaseService {
     }
 
     const surfaceAccessibility = sequence.split('').map((_char, _index) => {
-      const nearbyHydrophobic = ['A', 'V', 'I', 'L', 'M', 'F', 'W'].filter(
-        aa => sequence.includes(aa),
-      ).length;
+      const nearbyHydrophobic = ['A', 'V', 'I', 'L', 'M', 'F', 'W'].filter((aa) => sequence.includes(aa)).length;
       return Math.min(1, nearbyHydrophobic / sequence.length);
     });
 
@@ -944,9 +1120,10 @@ export class PeptideService extends ProfessionalBaseService {
       predictedStructure,
       confidence: 0.75 + Math.random() * 0.2,
       secondaryStructure: {
-        helix: 'H'.repeat(Math.floor(secondaryStructure.helix / 10)) +
-               'E'.repeat(Math.floor(secondaryStructure.sheet / 10)) +
-               'C'.repeat(Math.floor(secondaryStructure.coil / 10)),
+        helix:
+          'H'.repeat(Math.floor(secondaryStructure.helix / 10)) +
+          'E'.repeat(Math.floor(secondaryStructure.sheet / 10)) +
+          'C'.repeat(Math.floor(secondaryStructure.coil / 10)),
         sheet: 'E'.repeat(Math.floor(secondaryStructure.sheet / 10)),
         coil: 'C'.repeat(Math.floor(secondaryStructure.coil / 10)),
       },
@@ -967,11 +1144,15 @@ export class PeptideService extends ProfessionalBaseService {
   }
 
   public getCacheStats(): {
+    size: number;
+    keys: string[];
     analysisCacheSize: number;
     sequenceCacheSize: number;
     baseCacheSize: number;
   } {
     return {
+      size: this.cache.size,
+      keys: Array.from(this.cache.keys()),
       analysisCacheSize: this.analysisCache.size,
       sequenceCacheSize: this.sequenceCache.size,
       baseCacheSize: this.cache.size,
@@ -983,9 +1164,7 @@ export class PeptideService extends ProfessionalBaseService {
   }
 
   public getMockPeptideBySequence(sequence: string): Peptide | undefined {
-    return MOCK_PEPTIDES.find(p =>
-      p.sequence.toUpperCase() === sequence.toUpperCase(),
-    );
+    return MOCK_PEPTIDES.find((p) => p.sequence.toUpperCase() === sequence.toUpperCase());
   }
 
   public addCustomPeptide(peptide: Peptide): void {

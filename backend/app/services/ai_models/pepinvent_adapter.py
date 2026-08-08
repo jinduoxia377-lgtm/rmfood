@@ -16,7 +16,7 @@ PepINVENT 肽设计引擎适配器层 - 企业级增强版
 支持优雅降级：当 PepINVENT 依赖不可用时自动切换到模拟模式。
 
 使用方式:
-    from backend.app.services.ai_models.pepinvent_adapter import PepinventAdapter, ServiceUnavailableError
+    from ..services.ai_models.pepinvent_adapter import PepinventAdapter, ServiceUnavailableError
 
     adapter = PepinventAdapter()
     if await adapter.initialize():
@@ -39,7 +39,7 @@ try:
     import torch
 
     TORCH_AVAILABLE = True
-except ImportError:
+except (ImportError, OSError):
     TORCH_AVAILABLE = False
     torch = None  # type: ignore
 
@@ -70,7 +70,7 @@ try:
     )
 except ImportError:
     try:
-        from backend.config.pepinvent_config import (
+        from ..pepinvent_config import (
             PepinventConfig,
             get_pepinvent_config,
             check_dependencies,
@@ -1002,7 +1002,8 @@ class PepinventAdapter:
             parts = [smiles_map.get(aa, '') for aa in sequence]
             combined = ".".join(filter(None, parts))
             return combined if combined else None
-        except Exception:
+        except Exception as e:
+            logger.debug("SMILES 编码失败: %s", e)
             return None
 
     def _evaluate_objectives(

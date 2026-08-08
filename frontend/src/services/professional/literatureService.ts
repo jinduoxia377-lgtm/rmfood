@@ -102,8 +102,10 @@ class LiteratureService extends ProfessionalBaseService {
         id: 'PMID-12345678',
         title: '人参皂苷Rg1对糖尿病大鼠胰岛素敏感性的影响',
         titleEn: 'Effects of Ginsenoside Rg1 on Insulin Sensitivity in Diabetic Rats',
-        abstract: '目的：探讨人参皂苷Rg1对2型糖尿病大鼠胰岛素敏感性的影响及其机制。方法：采用链脲佐菌素诱导的糖尿病大鼠模型，随机分为对照组、模型组和人参皂苷Rg1处理组。结果：人参皂苷Rg1处理组大鼠血糖水平显著降低，胰岛素敏感性指数明显升高。结论：人参皂苷Rg1通过激活PI3K/AKT信号通路改善胰岛素敏感性。',
-        abstractEn: 'Objective: To investigate the effects of Ginsenoside Rg1 on insulin sensitivity in type 2 diabetic rats and its mechanism. Methods: Diabetic rat models induced by streptozotocin were randomly divided into control group, model group and Ginsenoside Rg1 treatment group. Results: Blood glucose levels were significantly reduced and insulin sensitivity index was significantly increased in the Ginsenoside Rg1 treatment group. Conclusion: Ginsenoside Rg1 improves insulin sensitivity by activating the PI3K/AKT signaling pathway.',
+        abstract:
+          '目的：探讨人参皂苷Rg1对2型糖尿病大鼠胰岛素敏感性的影响及其机制。方法：采用链脲佐菌素诱导的糖尿病大鼠模型，随机分为对照组、模型组和人参皂苷Rg1处理组。结果：人参皂苷Rg1处理组大鼠血糖水平显著降低，胰岛素敏感性指数明显升高。结论：人参皂苷Rg1通过激活PI3K/AKT信号通路改善胰岛素敏感性。',
+        abstractEn:
+          'Objective: To investigate the effects of Ginsenoside Rg1 on insulin sensitivity in type 2 diabetic rats and its mechanism. Methods: Diabetic rat models induced by streptozotocin were randomly divided into control group, model group and Ginsenoside Rg1 treatment group. Results: Blood glucose levels were significantly reduced and insulin sensitivity index was significantly increased in the Ginsenoside Rg1 treatment group. Conclusion: Ginsenoside Rg1 improves insulin sensitivity by activating the PI3K/AKT signaling pathway.',
         authors: ['张伟', '李明', '王芳', '刘洋'],
         affiliations: ['中国医学科学院药物研究所', '北京中医药大学'],
         journal: '中国中药杂志',
@@ -127,8 +129,10 @@ class LiteratureService extends ProfessionalBaseService {
         id: 'PMID-87654321',
         title: '黄芪甲苷通过调节肠道菌群改善小鼠肥胖',
         titleEn: 'Astragaloside IV Improves Obesity in Mice by Regulating Gut Microbiota',
-        abstract: '研究黄芪甲苷对高脂饮食诱导肥胖小鼠肠道菌群的调节作用。结果表明黄芪甲苷能够显著改变肠道菌群结构，增加有益菌丰度，减少有害菌，从而改善肥胖相关代谢紊乱。',
-        abstractEn: 'This study investigated the regulatory effect of Astragaloside IV on gut microbiota in mice with obesity induced by high-fat diet. The results showed that Astragaloside IV significantly altered gut microbiota structure, increased beneficial bacteria abundance, and reduced harmful bacteria, thereby improving obesity-related metabolic disorders.',
+        abstract:
+          '研究黄芪甲苷对高脂饮食诱导肥胖小鼠肠道菌群的调节作用。结果表明黄芪甲苷能够显著改变肠道菌群结构，增加有益菌丰度，减少有害菌，从而改善肥胖相关代谢紊乱。',
+        abstractEn:
+          'This study investigated the regulatory effect of Astragaloside IV on gut microbiota in mice with obesity induced by high-fat diet. The results showed that Astragaloside IV significantly altered gut microbiota structure, increased beneficial bacteria abundance, and reduced harmful bacteria, thereby improving obesity-related metabolic disorders.',
         authors: ['陈静', '赵强', '孙丽'],
         affiliations: ['上海交通大学医学院', '中科院上海生命科学研究院'],
         journal: '中草药',
@@ -152,8 +156,10 @@ class LiteratureService extends ProfessionalBaseService {
         id: 'PMID-11223344',
         title: '当归多糖的免疫调节作用研究进展',
         titleEn: 'Advances in Immunomodulatory Effects of Angelica Polysaccharides',
-        abstract: '当归是传统中药中重要的补血药。本文综述了当归多糖的免疫调节作用及其机制的研究进展，包括对免疫细胞活化、细胞因子分泌、信号通路调控等方面的影响。',
-        abstractEn: 'Angelica sinensis is an important blood-nourishing herb in traditional Chinese medicine. This article reviews the research progress on the immunomodulatory effects and mechanisms of Angelica polysaccharides, including effects on immune cell activation, cytokine secretion, and signaling pathway regulation.',
+        abstract:
+          '当归是传统中药中重要的补血药。本文综述了当归多糖的免疫调节作用及其机制的研究进展，包括对免疫细胞活化、细胞因子分泌、信号通路调控等方面的影响。',
+        abstractEn:
+          'Angelica sinensis is an important blood-nourishing herb in traditional Chinese medicine. This article reviews the research progress on the immunomodulatory effects and mechanisms of Angelica polysaccharides, including effects on immune cell activation, cytokine secretion, and signaling pathway regulation.',
         authors: ['王丽', '周涛', '吴敏'],
         affiliations: ['广州中医药大学', '广东省中医药科学院'],
         journal: '中国免疫学杂志',
@@ -176,10 +182,15 @@ class LiteratureService extends ProfessionalBaseService {
         id: 'PMID-55667788',
         title: 'Ginsenoside Rg3 inhibits tumor growth through targeting angiogenesis',
         titleEn: 'Ginsenoside Rg3 inhibits tumor growth through targeting angiogenesis',
-        abstract: 'Ginsenoside Rg3, a major active component of Panax ginseng, has been shown to possess anti-tumor activity. This study demonstrates that Rg3 inhibits tumor angiogenesis by suppressing VEGF expression and endothelial cell proliferation.',
-        abstractEn: 'Ginsenoside Rg3, a major active component of Panax ginseng, has been shown to possess anti-tumor activity. This study demonstrates that Rg3 inhibits tumor angiogenesis by suppressing VEGF expression and endothelial cell proliferation.',
+        abstract:
+          'Ginsenoside Rg3, a major active component of Panax ginseng, has been shown to possess anti-tumor activity. This study demonstrates that Rg3 inhibits tumor angiogenesis by suppressing VEGF expression and endothelial cell proliferation.',
+        abstractEn:
+          'Ginsenoside Rg3, a major active component of Panax ginseng, has been shown to possess anti-tumor activity. This study demonstrates that Rg3 inhibits tumor angiogenesis by suppressing VEGF expression and endothelial cell proliferation.',
         authors: ['Li M', 'Zhang W', 'Wang Y', 'Chen L'],
-        affiliations: ['Department of Pharmacology, Peking University Health Science Center', 'Key Laboratory of Molecular Oncology'],
+        affiliations: [
+          'Department of Pharmacology, Peking University Health Science Center',
+          'Key Laboratory of Molecular Oncology',
+        ],
         journal: 'Phytomedicine',
         journalAbbreviation: 'Phytomedicine',
         year: 2023,
@@ -201,8 +212,10 @@ class LiteratureService extends ProfessionalBaseService {
         id: 'PMID-99887766',
         title: 'Salvia miltiorrhiza Bunge in cardiovascular diseases: A systematic review',
         titleEn: 'Salvia miltiorrhiza Bunge in cardiovascular diseases: A systematic review',
-        abstract: 'Salvia miltiorrhiza Bunge (Danshen) is widely used in traditional Chinese medicine for treating cardiovascular diseases. This systematic review summarizes the pharmacological effects, clinical applications, and safety profile of Danshen.',
-        abstractEn: 'Salvia miltiorrhiza Bunge (Danshen) is widely used in traditional Chinese medicine for treating cardiovascular diseases. This systematic review summarizes the pharmacological effects, clinical applications, and safety profile of Danshen.',
+        abstract:
+          'Salvia miltiorrhiza Bunge (Danshen) is widely used in traditional Chinese medicine for treating cardiovascular diseases. This systematic review summarizes the pharmacological effects, clinical applications, and safety profile of Danshen.',
+        abstractEn:
+          'Salvia miltiorrhiza Bunge (Danshen) is widely used in traditional Chinese medicine for treating cardiovascular diseases. This systematic review summarizes the pharmacological effects, clinical applications, and safety profile of Danshen.',
         authors: ['Wang Q', 'Liu Y', 'Chen H'],
         affiliations: ['School of Chinese Medicine, Hong Kong Baptist University', 'Institute of Chinese Medicine'],
         journal: 'Journal of Ethnopharmacology',
@@ -225,8 +238,10 @@ class LiteratureService extends ProfessionalBaseService {
         id: 'PMID-22334455',
         title: '甘草酸的抗炎机制及其在自身免疫性疾病中的应用',
         titleEn: 'Anti-inflammatory mechanisms of glycyrrhizin and its application in autoimmune diseases',
-        abstract: '甘草酸是甘草的主要活性成分，具有显著的抗炎作用。本文探讨了甘草酸通过抑制NF-κB信号通路发挥抗炎效应的机制，以及其在类风湿关节炎、系统性红斑狼疮等自身免疫性疾病中的应用前景。',
-        abstractEn: 'Glycyrrhizin is the main active component of Glycyrrhiza uralensis with significant anti-inflammatory effects. This article explores the mechanisms by which glycyrrhizin exerts anti-inflammatory effects through inhibiting the NF-κB signaling pathway, and its application prospects in autoimmune diseases such as rheumatoid arthritis and systemic lupus erythematosus.',
+        abstract:
+          '甘草酸是甘草的主要活性成分，具有显著的抗炎作用。本文探讨了甘草酸通过抑制NF-κB信号通路发挥抗炎效应的机制，以及其在类风湿关节炎、系统性红斑狼疮等自身免疫性疾病中的应用前景。',
+        abstractEn:
+          'Glycyrrhizin is the main active component of Glycyrrhiza uralensis with significant anti-inflammatory effects. This article explores the mechanisms by which glycyrrhizin exerts anti-inflammatory effects through inhibiting the NF-κB signaling pathway, and its application prospects in autoimmune diseases such as rheumatoid arthritis and systemic lupus erythematosus.',
         authors: ['赵雪', '孙伟', '周杰'],
         affiliations: ['南京中医药大学', '江苏省中医药研究院'],
         journal: '中国药理学通报',
@@ -302,9 +317,7 @@ class LiteratureService extends ProfessionalBaseService {
     this.mockMode = enable;
   }
 
-  public async searchArticles(
-    params: LiteratureSearchParams,
-  ): Promise<LiteratureSearchResult> {
+  public async searchArticles(params: LiteratureSearchParams): Promise<LiteratureSearchResult> {
     const cacheKey = this.getCacheKey('/literature/search', params);
     const cached = this.getFromCache(cacheKey);
     if (cached) return cached;
@@ -317,6 +330,7 @@ class LiteratureService extends ProfessionalBaseService {
   }
 
   private mockSearchArticles(params: LiteratureSearchParams): LiteratureSearchResult {
+    const cacheKey = `/literature/search/${JSON.stringify(params)}`;
     let results = [...this.mockArticles];
 
     if (params.query) {
@@ -332,46 +346,40 @@ class LiteratureService extends ProfessionalBaseService {
 
     if (params.keywords && params.keywords.length > 0) {
       const keywordSet = new Set(params.keywords.map((k) => k.toLowerCase()));
-      results = results.filter((article) =>
-        article.keywords.some((k) => keywordSet.has(k.toLowerCase())),
-      );
+      results = results.filter((article) => article.keywords.some((k) => keywordSet.has(k.toLowerCase())));
     }
 
     if (params.authors && params.authors.length > 0) {
       const authorSet = new Set(params.authors.map((a) => a.toLowerCase()));
-      results = results.filter((article) =>
-        article.authors.some((a) => authorSet.has(a.toLowerCase())),
-      );
+      results = results.filter((article) => article.authors.some((a) => authorSet.has(a.toLowerCase())));
     }
 
     if (params.journals && params.journals.length > 0) {
       const journalSet = new Set(params.journals.map((j) => j.toLowerCase()));
-      results = results.filter((article) =>
-        journalSet.has(article.journal.toLowerCase()),
-      );
+      results = results.filter((article) => journalSet.has(article.journal.toLowerCase()));
     }
 
     if (params.yearRange) {
       results = results.filter(
-        (article) =>
-          article.year >= (params.yearRange.min || 1900) &&
-          article.year <= (params.yearRange.max || 2100),
+        (article) => article.year >= (params.yearRange!.min || 1900) && article.year <= (params.yearRange!.max || 2100),
       );
     }
 
     if (params.sources && params.sources.length > 0) {
       const sourceSet = new Set(params.sources);
-      results = results.filter((article) => sourceSet.has(article.source));
+      results = results.filter((article) =>
+        sourceSet.has(article.source as 'pubmed' | 'cnki' | 'wanfang' | 'vip' | 'scopus'),
+      );
     }
 
     if (params.languages && params.languages.length > 0) {
       const langSet = new Set(params.languages);
-      results = results.filter((article) => langSet.has(article.language));
+      results = results.filter((article) => langSet.has(article.language as 'zh' | 'en'));
     }
 
     if (params.publicationTypes && params.publicationTypes.length > 0) {
       const typeSet = new Set(params.publicationTypes);
-      results = results.filter((article) => typeSet.has(article.publicationType));
+      results = results.filter((article) => typeSet.has(article.publicationType as 'article' | 'review' | 'letter'));
     }
 
     if (params.openAccess !== undefined) {
@@ -471,9 +479,7 @@ class LiteratureService extends ProfessionalBaseService {
 
       const relatedArticles = this.mockArticles
         .filter((a) => a.id !== articleId)
-        .filter((a) =>
-          a.keywords.some((k) => article.keywords.includes(k)),
-        )
+        .filter((a) => a.keywords.some((k) => article.keywords.includes(k)))
         .slice(0, 5);
 
       return {
@@ -523,10 +529,7 @@ class LiteratureService extends ProfessionalBaseService {
     return this.get<JournalInfo[]>('/api/literature/journals/search', { query });
   }
 
-  public async exportArticles(
-    articleIds: string[],
-    format: 'bibtex' | 'ris' | 'csv' | 'json',
-  ): Promise<string> {
+  public async exportArticles(articleIds: string[], format: 'bibtex' | 'ris' | 'csv' | 'json'): Promise<string> {
     if (this.mockMode) {
       const articles = this.mockArticles.filter((a) => articleIds.includes(a.id));
 
@@ -549,11 +552,13 @@ class LiteratureService extends ProfessionalBaseService {
   private generateBibTeX(articles: LiteratureArticle[]): string {
     return articles
       .map((article) => {
-        const authors = article.authors.map((a) => {
-          const parts = a.split(' ');
-          if (parts.length === 1) return `{${a}}`;
-          return `{${parts.slice(1).join(' ')}, ${parts[0]}}`;
-        }).join(' and ');
+        const authors = article.authors
+          .map((a) => {
+            const parts = a.split(' ');
+            if (parts.length === 1) return `{${a}}`;
+            return `{${parts.slice(1).join(' ')}, ${parts[0]}}`;
+          })
+          .join(' and ');
 
         return `@article{${article.id},
   title = {${article.title}},
@@ -613,7 +618,9 @@ ER  -
       });
 
       const queryLower = query.toLowerCase();
-      return Array.from(allKeywords).filter((k) => k.toLowerCase().includes(queryLower)).slice(0, 10);
+      return Array.from(allKeywords)
+        .filter((k) => k.toLowerCase().includes(queryLower))
+        .slice(0, 10);
     }
 
     return this.get<string[]>('/api/literature/suggest/keywords', { query });
@@ -658,4 +665,3 @@ const literatureService = new LiteratureService();
 
 export default literatureService;
 export { LiteratureService };
-export type { LiteratureArticle, LiteratureSearchParams, LiteratureSearchResult, CitationMetrics, JournalInfo };

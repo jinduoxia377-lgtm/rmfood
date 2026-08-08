@@ -8,12 +8,9 @@ import {
   XIANGSHENG,
   COMPATIBILITY_GROUPS,
   getCompatibilityRulesByHerb,
-} from '../../types/compatibility.types';
-import {
-  checkCompatibilityBatch,
-  isCompatible,
-  getHerbConflicts,
+  checkCompatibility,
 } from '../../data/compatibilityKnowledge';
+import { checkCompatibilityBatch, isCompatible, getHerbConflicts } from '../../data/compatibilityKnowledge';
 
 export interface CompatibilityCheckResult {
   compatible: boolean;
@@ -133,10 +130,7 @@ class CompatibilityService extends ProfessionalBaseService {
 
   private findEnhanceRule(herb1: string, herb2: string): CompatibilityRule | null {
     for (const rule of XIANGSHENG.rules) {
-      if (
-        (rule.herb1 === herb1 && rule.herb2 === herb2) ||
-        (rule.herb1 === herb2 && rule.herb2 === herb1)
-      ) {
+      if ((rule.herb1 === herb1 && rule.herb2 === herb2) || (rule.herb1 === herb2 && rule.herb2 === herb1)) {
         return rule;
       }
     }
@@ -145,22 +139,22 @@ class CompatibilityService extends ProfessionalBaseService {
 
   private getAlternativeHerb(conflict: CompatibilityRule): string | undefined {
     const alternatives: Record<string, string> = {
-      '甘遂': '大戟',
-      '大戟': '甘遂',
-      '芫花': '大戟',
-      '海藻': '昆布',
-      '半夏': '陈皮',
-      '瓜蒌': '贝母',
-      '贝母': '瓜蒌',
-      '白蔹': '白及',
-      '白及': '白蔹',
-      '人参': '党参',
-      '沙参': '麦冬',
-      '丹参': '川芎',
-      '玄参': '生地',
-      '苦参': '黄连',
-      '细辛': '白芷',
-      '芍药': '当归',
+      甘遂: '大戟',
+      大戟: '甘遂',
+      芫花: '大戟',
+      海藻: '昆布',
+      半夏: '陈皮',
+      瓜蒌: '贝母',
+      贝母: '瓜蒌',
+      白蔹: '白及',
+      白及: '白蔹',
+      人参: '党参',
+      沙参: '麦冬',
+      丹参: '川芎',
+      玄参: '生地',
+      苦参: '黄连',
+      细辛: '白芷',
+      芍药: '当归',
     };
     return alternatives[conflict.herb1] || alternatives[conflict.herb2];
   }
@@ -259,7 +253,9 @@ class CompatibilityService extends ProfessionalBaseService {
       return rule;
     }
 
-    const result = await this.get<CompatibilityRule | null>(`/api/compatibility/check/${encodeURIComponent(herb1)}/${encodeURIComponent(herb2)}`);
+    const result = await this.get<CompatibilityRule | null>(
+      `/api/compatibility/check/${encodeURIComponent(herb1)}/${encodeURIComponent(herb2)}`,
+    );
     this.setCache(cacheKey, result);
     return result;
   }
@@ -299,7 +295,9 @@ class CompatibilityService extends ProfessionalBaseService {
       return suggestions;
     }
 
-    const result = await this.get<CompatibilitySuggestion[]>(`/api/compatibility/recommendations/${encodeURIComponent(herbName)}`);
+    const result = await this.get<CompatibilitySuggestion[]>(
+      `/api/compatibility/recommendations/${encodeURIComponent(herbName)}`,
+    );
     this.setCache(cacheKey, result);
     return result;
   }
@@ -363,4 +361,3 @@ const compatibilityService = new CompatibilityService();
 
 export default compatibilityService;
 export { CompatibilityService };
-export type { CompatibilityCheckResult, CompatibilitySuggestion, CompatibilityReport, HerbCompatibilityInfo };

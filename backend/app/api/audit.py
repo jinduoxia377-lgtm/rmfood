@@ -53,8 +53,8 @@ async def list_audit_logs(
             user = await user_service.get_user(uid)
             if user:
                 user_map[uid] = user.username
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning("用户查询失败 uid=%s: %s", uid, e)
 
     return {
         "items": [

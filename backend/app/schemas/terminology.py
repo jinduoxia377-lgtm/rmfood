@@ -37,7 +37,7 @@ class TermCategoryOut(BaseModel):
     updated_at: datetime
     
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class TermCreate(BaseModel):
@@ -107,7 +107,7 @@ class TermOut(BaseModel):
     updated_at: datetime
     
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class TermVariantCreate(BaseModel):
@@ -129,7 +129,7 @@ class TermVariantOut(BaseModel):
     created_at: datetime
     
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class TermValidationRequest(BaseModel):
@@ -180,7 +180,7 @@ class TermNormalizationRuleOut(BaseModel):
     updated_at: datetime
     
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class TermSearchRequest(BaseModel):
@@ -203,7 +203,7 @@ class TermStatisticsOut(BaseModel):
     updated_at: datetime
     
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class TermSuggestionRequest(BaseModel):

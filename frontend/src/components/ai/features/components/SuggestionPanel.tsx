@@ -30,8 +30,9 @@ import type { LanguageCode } from '../services/languageService'
 
 // 从 useChatInputState 导入接口，避免重复定义
 import type { SmartSuggestion, EnhancedSuggestion } from '../hooks/useChatInputState'
-export type { SmartSuggestion, EnhancedSuggestion }
 
+
+import { logger } from '@/utils/safeLogger';
 // SuggestionItem 类型别名
 export type SuggestionItem = SmartSuggestion | EnhancedSuggestion
 
@@ -67,12 +68,12 @@ const ICON_MAP: Record<string, React.ComponentType<any>> = {
 }
 
 const STYLE_MAP: Record<string, string> = {
-  history: 'bg-gray-100 dark:bg-gray-700 text-gray-500',
+  history: 'bg-neutral-100 dark:bg-neutral-700 text-neutral-500',
   trending: 'bg-orange-100 dark:bg-orange-900/30 text-orange-500',
-  ai: 'bg-purple-100 dark:bg-purple-900/30 text-purple-500',
-  language: 'bg-blue-100 dark:bg-blue-900/30 text-blue-500',
-  context: 'bg-blue-100 dark:bg-blue-900/30 text-blue-500',
-  optimization: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-500',
+  ai: 'bg-accent-100 dark:bg-accent-900/30 text-accent-500',
+  language: 'bg-secondary-100 dark:bg-secondary-900/30 text-secondary-500',
+  context: 'bg-secondary-100 dark:bg-secondary-900/30 text-secondary-500',
+  optimization: 'bg-primary-100 dark:bg-primary-900/30 text-primary-500',
   expert: 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-500',
   expert_formula: 'bg-violet-100 dark:bg-violet-900/30 text-violet-500',
   expert_targeting: 'bg-pink-100 dark:bg-pink-900/30 text-pink-500',
@@ -94,16 +95,16 @@ const CATEGORY_GROUPS: Record<string, CategoryGroup> = {
     id: 'mechanism',
     label: '技术深化',
     icon: Microscope,
-    color: 'text-purple-600 dark:text-purple-400',
-    bgColor: 'bg-purple-50 dark:bg-purple-900/20',
+    color: 'text-accent-600 dark:text-accent-400',
+    bgColor: 'bg-accent-50 dark:bg-accent-900/20',
     priority: 1,
   },
   '⚖️ 法规路径': {
     id: 'regulatory',
     label: '法规合规',
     icon: Scale,
-    color: 'text-blue-600 dark:text-blue-400',
-    bgColor: 'bg-blue-50 dark:bg-blue-900/20',
+    color: 'text-secondary-600 dark:text-secondary-400',
+    bgColor: 'bg-secondary-50 dark:bg-secondary-900/20',
     priority: 2,
   },
   '⚙️ 工艺路线': {
@@ -126,8 +127,8 @@ const CATEGORY_GROUPS: Record<string, CategoryGroup> = {
     id: 'ingredient',
     label: '原料策略',
     icon: FlaskConical,
-    color: 'text-green-600 dark:text-green-400',
-    bgColor: 'bg-green-50 dark:bg-green-900/20',
+    color: 'text-success-600 dark:text-success-400',
+    bgColor: 'bg-success-50 dark:bg-success-900/20',
     priority: 5,
   },
   '📊 验证路径': {
@@ -158,8 +159,8 @@ const CATEGORY_GROUPS: Record<string, CategoryGroup> = {
     id: 'risk',
     label: '风险预警',
     icon: AlertTriangle,
-    color: 'text-red-600 dark:text-red-400',
-    bgColor: 'bg-red-50 dark:bg-red-900/20',
+    color: 'text-error-600 dark:text-error-400',
+    bgColor: 'bg-error-50 dark:bg-error-900/20',
     priority: 9,
   },
   '🚀 开发路线图': {
@@ -174,8 +175,8 @@ const CATEGORY_GROUPS: Record<string, CategoryGroup> = {
     id: 'matrix',
     label: '成分推荐',
     icon: FlaskConical,
-    color: 'text-emerald-600 dark:text-emerald-400',
-    bgColor: 'bg-emerald-50 dark:bg-emerald-900/20',
+    color: 'text-primary-600 dark:text-primary-400',
+    bgColor: 'bg-primary-50 dark:bg-primary-900/20',
     priority: 11,
   },
   '⚖️ 合规自检': {
@@ -190,8 +191,8 @@ const CATEGORY_GROUPS: Record<string, CategoryGroup> = {
     id: 'info-guide',
     label: '信息引导',
     icon: Info,
-    color: 'text-gray-600 dark:text-gray-400',
-    bgColor: 'bg-gray-50 dark:bg-gray-900/20',
+    color: 'text-neutral-600 dark:text-neutral-400',
+    bgColor: 'bg-slate-50 dark:bg-neutral-900/20',
     priority: 13,
   },
 }
@@ -224,10 +225,10 @@ const LegacySuggestionCard = memo<LegacySuggestionCardProps>(({
       data-index={index}
       onClick={onApply}
       onMouseEnter={onSelect}
-      className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-all duration-150 border-b border-gray-100 dark:border-gray-700 last:border-0 ${
+      className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-all duration-150 border-b border-neutral-100 dark:border-neutral-700 last:border-0 ${
         isSelected
           ? 'bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 shadow-sm'
-          : 'hover:bg-gray-50 dark:hover:bg-gray-700'
+          : 'hover:bg-slate-50 dark:hover:bg-neutral-700'
       }`}
       role="option"
       aria-selected={isSelected}
@@ -238,15 +239,15 @@ const LegacySuggestionCard = memo<LegacySuggestionCardProps>(({
         <Icon className="w-5 h-5" />
       </div>
       <div className="flex-1 text-left">
-        <div className="text-gray-800 dark:text-gray-200 font-medium text-sm leading-tight">
+        <div className="text-neutral-800 dark:text-neutral-200 font-medium text-sm leading-tight">
           {suggestion.text}
         </div>
         {suggestion.category && (
-          <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 flex items-center gap-1">
-            <span className="inline-block w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-gray-600" />
+          <div className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5 flex items-center gap-1">
+            <span className="inline-block w-1.5 h-1.5 rounded-full bg-neutral-300 dark:bg-neutral-600" />
             {suggestion.category}
             {suggestion.score > 0 && (
-              <span className="text-[10px] text-gray-400 ml-1">
+              <span className="text-[10px] text-neutral-400 ml-1">
                 (相关度: {Math.round(suggestion.score * 100)}%)
               </span>
             )}
@@ -254,7 +255,7 @@ const LegacySuggestionCard = memo<LegacySuggestionCardProps>(({
         )}
       </div>
       <div className="flex items-center gap-1.5">
-        <ChevronRight className="w-4 h-4 text-gray-400" />
+        <ChevronRight className="w-4 h-4 text-neutral-400" />
       </div>
     </button>
   )
@@ -401,19 +402,19 @@ const SuggestionPanel = memo<SuggestionPanelProps>(({
   return (
     <div
       ref={panelRef}
-      className="absolute bottom-full left-4 right-4 sm:left-6 sm:right-6 lg:left-8 lg:right-8 mb-2 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden z-50 animate-in slide-in-from-bottom-2 fade-in duration-200"
+      className="absolute bottom-full left-4 right-4 sm:left-6 sm:right-6 lg:left-8 lg:right-8 mb-2 bg-white dark:bg-neutral-800 rounded-xl shadow-xl border border-neutral-200 dark:border-neutral-700 overflow-hidden z-50 animate-in slide-in-from-bottom-2 fade-in duration-200"
       role="listbox"
       aria-label="专业级智能建议"
       style={{ maxHeight: '400px' }}
     >
       {/* 标题栏 */}
-      <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700 bg-gradient-to-r from-gray-50/50 to-transparent dark:from-gray-700/30 flex items-center justify-between">
+      <div className="px-4 py-3 border-b border-neutral-100 dark:border-neutral-700 bg-gradient-to-r from-slate-50/50 to-transparent dark:from-slate-700/30 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <div className="flex items-center gap-1.5">
-            <div className={`p-1.5 rounded-lg ${isUpdating ? 'bg-blue-100 dark:bg-blue-900/30' : 'bg-yellow-100 dark:bg-yellow-900/30'}`}>
-              <Lightbulb className={`w-4 h-4 ${isUpdating ? 'text-blue-500 animate-pulse' : 'text-yellow-600 dark:text-yellow-400'}`} />
+            <div className={`p-1.5 rounded-lg ${isUpdating ? 'bg-secondary-100 dark:bg-secondary-900/30' : 'bg-yellow-100 dark:bg-yellow-900/30'}`}>
+              <Lightbulb className={`w-4 h-4 ${isUpdating ? 'text-secondary-500 animate-pulse' : 'text-yellow-600 dark:text-yellow-400'}`} />
             </div>
-            <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+            <span className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">
               专业级智能建议
             </span>
           </div>
@@ -421,13 +422,13 @@ const SuggestionPanel = memo<SuggestionPanelProps>(({
             {languageLabel}
           </Badge>
           {isUpdating && (
-            <Badge className="text-[10px] h-5 bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400 border-blue-200 dark:border-blue-800">
+            <Badge className="text-[10px] h-5 bg-secondary-100 text-secondary-600 dark:bg-secondary-900/50 dark:text-secondary-400 border-blue-200 dark:border-blue-800">
               <RefreshCw className="w-3 h-3 mr-1 animate-spin" />
               实时更新中...
             </Badge>
           )}
           {hasEnhanced && !isUpdating && (
-            <Badge className="text-[10px] h-5 bg-purple-100 text-purple-600 dark:bg-purple-900/50 dark:text-purple-400 border-purple-200 dark:border-purple-800">
+            <Badge className="text-[10px] h-5 bg-accent-100 text-accent-600 dark:bg-accent-900/50 dark:text-accent-400 border-purple-200 dark:border-purple-800">
               <Star className="w-3 h-3 mr-1" />
               AI Engine v2.0
             </Badge>
@@ -435,10 +436,10 @@ const SuggestionPanel = memo<SuggestionPanelProps>(({
         </div>
         <button
           onClick={onClose}
-          className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+          className="p-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition-colors"
           aria-label="关闭建议"
         >
-          <X className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+          <X className="w-4 h-4 text-neutral-500 dark:text-neutral-400" />
         </button>
       </div>
 
@@ -452,20 +453,20 @@ const SuggestionPanel = memo<SuggestionPanelProps>(({
             .reduce((sum, g) => sum + g.items.length, 0)
 
           return (
-            <div key={group.category} className="border-b border-gray-100 dark:border-gray-700 last:border-0">
+            <div key={group.category} className="border-b border-neutral-100 dark:border-neutral-700 last:border-0">
               {/* 分类标题 */}
               <button
                 onClick={() => toggleGroup(group.category)}
                 className={`w-full flex items-center gap-2 px-4 py-2 text-xs font-medium transition-colors ${
-                  group.config?.bgColor || 'bg-gray-50 dark:bg-gray-800'
+                  group.config?.bgColor || 'bg-slate-50 dark:bg-neutral-800'
                 } hover:opacity-80`}
               >
                 <ChevronDown className={`w-3.5 h-3.5 transition-transform ${isCollapsed ? '-rotate-90' : ''}`} />
-                <GroupIcon className={`w-3.5 h-3.5 ${group.config?.color || 'text-gray-600'}`} />
-                <span className={group.config?.color || 'text-gray-700 dark:text-gray-300'}>
+                <GroupIcon className={`w-3.5 h-3.5 ${group.config?.color || 'text-neutral-600'}`} />
+                <span className={group.config?.color || 'text-neutral-700 dark:text-neutral-300'}>
                   {group.category}
                 </span>
-                <span className="ml-auto text-[10px] text-gray-400 bg-white dark:bg-gray-700 px-1.5 py-0.5 rounded-full">
+                <span className="ml-auto text-[10px] text-neutral-400 bg-white dark:bg-neutral-700 px-1.5 py-0.5 rounded-full">
                   {group.items.length}
                 </span>
               </button>
@@ -515,7 +516,7 @@ const SuggestionPanel = memo<SuggestionPanelProps>(({
         })}
       </div>
 
-      <div className="px-4 py-2 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between text-[11px] text-gray-400">
+      <div className="px-4 py-2 border-t border-neutral-100 dark:border-neutral-700 flex items-center justify-between text-[11px] text-neutral-400">
         <span>
           ↑↓ 选择 · Enter 应用 · Esc 关闭 · [ 折叠全部 ] 展开全部
         </span>
@@ -525,7 +526,7 @@ const SuggestionPanel = memo<SuggestionPanelProps>(({
             共 {suggestions.length} 条建议
             {' '}·{' '}
             {groupedSuggestions.length} 个分类
-            {avgQScore > 0 && <> | 平均质量分: <strong className="text-gray-500">{avgQScore}</strong></>}
+            {avgQScore > 0 && <> | 平均质量分: <strong className="text-neutral-500">{avgQScore}</strong></>}
           </span>
         )}
       </div>
@@ -568,7 +569,7 @@ function EnhancedSuggestionCard({
       setCopied(true)
       setTimeout(() => setCopied(false), COPY_DEBOUNCE_MS)
     } catch (err) {
-      console.warn('Copy failed:', err)
+      logger.warn('Copy failed:', err)
     }
   }
 
@@ -587,10 +588,10 @@ function EnhancedSuggestionCard({
       data-index={index}
       onClick={() => { onSelect(); onApply() }}
       onMouseEnter={onSelect}
-      className={`group w-full p-4 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-0 transition-all duration-200 ${
+      className={`group w-full p-4 cursor-pointer border-b border-neutral-100 dark:border-neutral-700 last:border-0 transition-all duration-200 ${
         isSelected
           ? 'bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 shadow-md ring-1 ring-purple-200 dark:ring-purple-800'
-          : 'hover:bg-gray-50 dark:hover:bg-gray-750'
+          : 'hover:bg-slate-50 dark:hover:bg-slate-750'
       }`}
       role="option"
       aria-selected={isSelected}
@@ -599,7 +600,7 @@ function EnhancedSuggestionCard({
       {/* Header */}
       <div className="flex items-start justify-between mb-2">
         <div className="flex-1 min-w-0 pr-3">
-          <h4 className="font-semibold text-sm text-gray-800 dark:text-gray-200 leading-tight line-clamp-2">
+          <h4 className="font-semibold text-sm text-neutral-800 dark:text-neutral-200 leading-tight line-clamp-2">
             {formatSuggestionTitle(suggestion.title)}
           </h4>
         </div>
@@ -607,19 +608,19 @@ function EnhancedSuggestionCard({
         <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
           <button
             onClick={(e) => { e.stopPropagation(); handleCopy() }}
-            className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors"
+            className="p-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-600 rounded-lg transition-colors"
             title="复制标题"
           >
-            {copied ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5 text-gray-400" />}
+            {copied ? <Check className="w-3.5 h-3.5 text-success-500" /> : <Copy className="w-3.5 h-3.5 text-neutral-400" />}
           </button>
 
           {onRegenerate && (
             <button
               onClick={(e) => { e.stopPropagation(); onRegenerate(suggestion.id) }}
-              className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors"
+              className="p-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-600 rounded-lg transition-colors"
               title="重新生成"
             >
-              <RefreshCw className="w-3.5 h-3.5 text-gray-400" />
+              <RefreshCw className="w-3.5 h-3.5 text-neutral-400" />
             </button>
           )}
         </div>
@@ -627,14 +628,14 @@ function EnhancedSuggestionCard({
 
       {/* Sections Preview */}
       {suggestion.sections.slice(0, 2).map((section, idx) => (
-        <div key={idx} className="mb-2 pl-2 border-l-2 border-gray-200 dark:border-gray-600">
-          <p className="text-xs font-medium text-gray-600 dark:text-gray-300 mb-0.5">{section.heading}</p>
-          <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">{section.content}</p>
+        <div key={idx} className="mb-2 pl-2 border-l-2 border-neutral-200 dark:border-neutral-600">
+          <p className="text-xs font-medium text-neutral-600 dark:text-neutral-300 mb-0.5">{section.heading}</p>
+          <p className="text-xs text-neutral-500 dark:text-neutral-400 line-clamp-2">{section.content}</p>
         </div>
       ))}
 
       {/* Footer */}
-      <div className="mt-3 pt-2 border-t border-gray-100 dark:border-gray-600 flex items-center justify-between">
+      <div className="mt-3 pt-2 border-t border-neutral-100 dark:border-neutral-600 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Badge variant="outline" className={`text-[9px] px-1.5 py-0 ${qScoreColor} border`}>
             {qualityLabel}
@@ -648,17 +649,17 @@ function EnhancedSuggestionCard({
           <div className="flex items-center gap-1">
             <button
               onClick={(e) => { e.stopPropagation(); handleFeedback('HELPFUL') }}
-              className="p-1 hover:bg-green-50 dark:hover:bg-green-900/20 rounded transition-colors"
+              className="p-1 hover:bg-success-50 dark:hover:bg-success-900/20 rounded transition-colors"
               title="有帮助"
             >
-              <ThumbsUp className="w-3.5 h-3.5 text-gray-400 hover:text-green-500" />
+              <ThumbsUp className="w-3.5 h-3.5 text-neutral-400 hover:text-success-500" />
             </button>
             <button
               onClick={(e) => { e.stopPropagation(); handleFeedback('NOT_HELPFUL') }}
-              className="p-1 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+              className="p-1 hover:bg-error-50 dark:hover:bg-error-900/20 rounded transition-colors"
               title="无帮助"
             >
-              <ThumbsDown className="w-3.5 h-3.5 text-gray-400 hover:text-red-500" />
+              <ThumbsDown className="w-3.5 h-3.5 text-neutral-400 hover:text-error-500" />
             </button>
           </div>
         )}
@@ -669,10 +670,10 @@ function EnhancedSuggestionCard({
 
 // Helper functions
 function getQualityScoreColor(score: number): string {
-  if (score >= 90) return 'border-green-300 text-green-600 dark:border-green-700 dark:text-green-400'
-  if (score >= 75) return 'border-blue-300 text-blue-600 dark:border-blue-700 dark:text-blue-400'
+  if (score >= 90) return 'border-green-300 text-success-600 dark:border-green-700 dark:text-success-400'
+  if (score >= 75) return 'border-blue-300 text-secondary-600 dark:border-blue-700 dark:text-secondary-400'
   if (score >= 60) return 'border-yellow-300 text-yellow-600 dark:border-yellow-700 dark:text-yellow-400'
-  return 'border-gray-300 text-gray-600 dark:border-gray-700 dark:text-gray-400'
+  return 'border-neutral-300 text-neutral-600 dark:border-neutral-700 dark:text-neutral-400'
 }
 
 function formatQualityLabel(score: number): string {

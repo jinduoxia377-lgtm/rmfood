@@ -178,7 +178,7 @@ export const usePerformanceMonitor = () => {
 
     const measure = performance.getEntriesByName(componentName)[0]
     if (measure && measure.duration > 16.67) {
-      console.warn(`[Performance] ⚠️ ${componentName} 渲染耗时 ${measure.duration.toFixed(2)}ms (>16.67ms)`)
+      logger.warn(`[Performance] ⚠️ ${componentName} 渲染耗时 ${measure.duration.toFixed(2)}ms (>16.67ms)`)
     }
 
     performance.clearMarks(startMark)
@@ -365,3 +365,5 @@ export const useFeedbackSystem = () => {
 }
 
 import { useState } from 'react'
+
+import { logger } from '@/utils/safeLogger';

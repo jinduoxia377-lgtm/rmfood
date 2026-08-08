@@ -38,6 +38,53 @@ ALLOWED_IMAGE_MIME_TYPES = {
     },
 }
 
+# 通用文件类型白名单（用于附件上传）
+ALLOWED_FILE_TYPES: dict[str, dict] = {
+    # 图片
+    "image/jpeg": {"extensions": [".jpg", ".jpeg"], "max_size": 10 * 1024 * 1024},
+    "image/png": {"extensions": [".png"], "max_size": 10 * 1024 * 1024},
+    "image/gif": {"extensions": [".gif"], "max_size": 10 * 1024 * 1024},
+    "image/webp": {"extensions": [".webp"], "max_size": 10 * 1024 * 1024},
+    # PDF 文档
+    "application/pdf": {"extensions": [".pdf"], "max_size": 50 * 1024 * 1024},
+    # Microsoft Office 文档
+    "application/msword": {"extensions": [".doc"], "max_size": 50 * 1024 * 1024},
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document": {"extensions": [".docx"], "max_size": 50 * 1024 * 1024},
+    "application/vnd.ms-excel": {"extensions": [".xls"], "max_size": 50 * 1024 * 1024},
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": {"extensions": [".xlsx"], "max_size": 50 * 1024 * 1024},
+    # CSV
+    "text/csv": {"extensions": [".csv"], "max_size": 10 * 1024 * 1024},
+    # 纯文本
+    "text/plain": {"extensions": [".txt"], "max_size": 5 * 1024 * 1024},
+}
+
+# 文件魔数签名表（按检测优先级排序）
+FILE_MAGIC_SIGNS: list[tuple[bytes, str]] = [
+    # PDF
+    (b"%PDF", "application/pdf"),
+    # ZIP/DOCX/XLSX (ZIP 格式)
+    (b"PK\x03\x04", "application/zip"),
+    # JPEG
+    (b"\xff\xd8\xff", "image/jpeg"),
+    # PNG
+    (b"\x89PNG", "image/png"),
+    # GIF
+    (b"GIF8", "image/gif"),
+    # WebP (RIFF....WEBP)
+    (b"RIFF", "image/webp"),  # 需要额外检查偏移 8 处的 "WEBP"
+    # BMP
+    (b"BM", "image/bmp"),
+    # TIFF
+    (b"II\x2a\x00", "image/tiff"),
+    (b"MM\x00\x2a", "image/tiff"),
+    # Microsoft Office (OLE/CFBF)
+    (b"\xd0\xcf\x11\xe0", "application/msword"),
+    # CSV / plain text — 通过内容检测
+]
+
+# 最大附件文件大小（50MB）
+MAX_ATTACHMENT_SIZE = 50 * 1024 * 1024
+
 # 文件大小限制（字节）
 DEFAULT_MAX_FILE_SIZE = 50 * 1024 * 1024  # 50MB
 IMAGE_MAX_FILE_SIZE = 2 * 1024 * 1024  # 2MB（头像）
@@ -131,6 +178,47 @@ def detect_mime_from_content(file_content: bytes) -> Optional[str]:
         # SVG 可能包含恶意脚本，严格限制
         logger.warning("⚠️ 检测到 SVG 文件，已拒绝（SVG 可能包含恶意脚本）")
         return None
+
+    return None
+
+
+def detect_file_mime_from_content(file_content: bytes) -> Optional[str]:
+    """
+    通过文件魔数（文件签名）检测真实 MIME 类型
+
+    此方法比信任客户端的 Content-Type 头更安全，
+    因为攻击者可以轻易伪造 HTTP 请求的 Content-Type。
+
+    支持检测：PDF、JPEG、PNG、GIF、WebP、BMP、TIFF、Office 文档、ZIP 等。
+
+    Args:
+        file_content: 文件内容的开头字节（至少 16 字节）
+
+    Returns:
+        Optional[str]: 检测到的 MIME 类型，如果无法识别返回 None
+    """
+    if len(file_content) < 4:
+        return None
+
+    # 按魔数签名表逐一匹配
+    for magic, mime_type in FILE_MAGIC_SIGNS:
+        if file_content[:len(magic)] == magic:
+            # WebP 需要额外检查 RIFF 偏移处的 "WEBP"
+            if mime_type == "image/webp" and len(file_content) >= 12:
+                if file_content[8:12] != b"WEBP":
+                    continue
+            return mime_type
+
+    # 检查 CSV / 纯文本
+    preview_text = file_content[:2048].decode("utf-8", errors="ignore")
+    # 如果内容不包含二进制控制字符且符合 CSV 特征
+    has_commas = "," in preview_text
+    has_newlines = "\n" in preview_text
+    has_binary_null = b"\x00" in file_content[:8192]
+    if has_commas and has_newlines and not has_binary_null:
+        return "text/csv"
+    if not has_binary_null:
+        return "text/plain"
 
     return None
 

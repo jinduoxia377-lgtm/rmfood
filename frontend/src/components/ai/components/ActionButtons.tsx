@@ -1,19 +1,19 @@
-import { X, Check, Edit2, FileText, Save } from 'lucide-react'
-import { CheckCircle } from 'lucide-react'
-import { Button } from '@/components/ui'
-import type { AICandidate } from '@/types'
+import { X, Check, Edit2, FileText, Save } from 'lucide-react';
+import { CheckCircle } from 'lucide-react';
+import { Button } from '@/components/ui';
+import type { AICandidate } from '@/api/ai';
 
 interface ActionButtonsProps {
-  isEditing: boolean
-  hasUnsavedChanges: boolean
-  isSaving: boolean
-  isAlreadySaved: boolean
-  candidate: AICandidate
-  onEnterEdit: () => void
-  onExitEdit: () => void
-  onSaveEdit: () => void
-  onViewReport?: (candidate: AICandidate) => void
-  onSaveToManager: () => void
+  isEditing: boolean;
+  hasUnsavedChanges: boolean;
+  isSaving: boolean;
+  isAlreadySaved: boolean;
+  candidate: AICandidate;
+  onEnterEdit: () => void;
+  onExitEdit: () => void;
+  onSaveEdit: () => void;
+  onViewReport?: (candidate: AICandidate) => void;
+  onSaveToManager: () => void;
 }
 
 export function ActionButtons({
@@ -86,15 +86,15 @@ export function ActionButtons({
               {isSaving ? '保存中...' : '保存配方'}
             </Button>
           ) : (
-            <div className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-emerald-500/10 dark:bg-emerald-500/16">
-              <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-              <span className="text-sm font-medium text-emerald-600 dark:text-emerald-400">已保存</span>
+            <div className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-primary-500/10 dark:bg-primary-500/16">
+              <CheckCircle className="w-4 h-4 text-primary-600 dark:text-primary-400" />
+              <span className="text-sm font-medium text-primary-600 dark:text-primary-400">已保存</span>
             </div>
           )}
         </>
       )}
     </div>
-  )
+  );
 }
 
-export default ActionButtons
+export default ActionButtons;

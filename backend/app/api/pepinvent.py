@@ -160,22 +160,21 @@ async def generate_peptides(
         }
 
     except ValueError as e:
-        logger.warning(f"参数验证失败: {e}")
-        raise HTTPException(status_code=422, detail=str(e))
+        logger.warning("参数验证失败: %s", e)
+        raise HTTPException(status_code=422, detail="参数无效")
     except ServiceUnavailableError as e:
-        logger.error(f"PepINVERT 服务不可用: {e}")
+        logger.error("PepINVERT 服务不可用: %s", e)
         raise HTTPException(
             status_code=503,
             detail={
                 "error": "PepINVERT 服务暂时不可用",
-                "message": str(e),
-                "missing_dependencies": e.missing_deps,
+                "missing_dependencies": getattr(e, "missing_deps", []),
                 "suggestion": "请检查依赖安装或稍后重试。当前将回退到规则引擎模式。",
             },
         )
     except Exception as e:
-        logger.error(f"肽生成失败: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"肽生成服务异常: {str(e)}")
+        logger.error("肽生成失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="肽生成服务异常，请稍后重试")
 
 
 @router.post("/optimize", summary="使用 RL 优化肽序列")
@@ -241,14 +240,14 @@ async def optimize_peptide(
         }
 
     except ValueError as e:
-        logger.warning(f"参数验证失败: {e}")
-        raise HTTPException(status_code=422, detail=str(e))
+        logger.warning("参数验证失败: %s", e)
+        raise HTTPException(status_code=422, detail="参数无效")
     except ServiceUnavailableError as e:
-        logger.error(f"PepINVERT 服务不可用: {e}")
-        raise HTTPException(status_code=503, detail=f"服务不可用: {str(e)}")
+        logger.error("PepINVERT 服务不可用: %s", e)
+        raise HTTPException(status_code=503, detail="服务不可用，请稍后重试")
     except Exception as e:
-        logger.error(f"RL 优化失败: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"优化服务异常: {str(e)}")
+        logger.error("RL 优化失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="优化服务异常，请稍后重试")
 
 
 @router.post("/sample", summary="探索性多样化采样")
@@ -305,14 +304,14 @@ async def sample_diverse_peptides(
         }
 
     except ValueError as e:
-        logger.warning(f"参数验证失败: {e}")
-        raise HTTPException(status_code=422, detail=str(e))
+        logger.warning("参数验证失败: %s", e)
+        raise HTTPException(status_code=422, detail="参数无效")
     except ServiceUnavailableError as e:
-        logger.error(f"PepINVERT 服务不可用: {e}")
-        raise HTTPException(status_code=503, detail=f"服务不可用: {str(e)}")
+        logger.error("PepINVERT 服务不可用: %s", e)
+        raise HTTPException(status_code=503, detail="服务不可用，请稍后重试")
     except Exception as e:
-        logger.error(f"探索性采样失败: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"采样服务异常: {str(e)}")
+        logger.error("探索性采样失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="采样服务异常，请稍后重试")
 
 
 @router.get("/status", summary="查看 PepINVERT 服务状态")
@@ -346,9 +345,9 @@ async def get_pepinvent_status(
         }
 
     except Exception as e:
-        logger.error(f"获取状态失败: {e}", exc_info=True)
+        logger.error("获取状态失败: %s", e, exc_info=True)
         return {
-            "error": f"无法获取服务状态: {str(e)}",
+            "error": "无法获取服务状态，请稍后重试",
             "available": False,
             "simulation_mode": True,
         }
@@ -364,4 +363,5 @@ async def clear_cache(
         service.clear_cache()
         return {"success": True, "message": "缓存已清除"}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"清除缓存失败: {str(e)}")
+        logger.error("清除缓存失败: %s", e)
+        raise HTTPException(status_code=500, detail="清除缓存失败，请稍后重试")

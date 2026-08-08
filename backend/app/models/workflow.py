@@ -1,19 +1,16 @@
 """RMFOOD 工作流模型"""
 from datetime import datetime, timezone
-from sqlalchemy import Integer, String, Text, DateTime, JSON, Enum, ForeignKey
+from sqlalchemy import Integer, String, Text, DateTime, JSON, Enum, ForeignKey, BigInteger
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from ..core.database import Base
+from .base import Base
 from .enums import WorkflowStatus, TaskStatus
-
-
-def _now() -> datetime:
-    return datetime.now(timezone.utc).replace(tzinfo=None)
+from app.models.utils import now_utc_mapped
 
 
 class Workflow(Base):
     __tablename__ = "workflows"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(200), nullable=False)
     workflow_type: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
     status: Mapped[WorkflowStatus] = mapped_column(
@@ -23,9 +20,9 @@ class Workflow(Base):
     config: Mapped[dict | None] = mapped_column(JSON, default=dict)
     result: Mapped[dict | None] = mapped_column(JSON, default=dict)
     error_message: Mapped[str | None] = mapped_column(Text)
-    created_by: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"))
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=_now)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_now, onupdate=_now)
+    created_by: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"), index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, onupdate=now_utc_mapped)
 
     tasks: Mapped[list["WorkflowTask"]] = relationship(
         "WorkflowTask", back_populates="workflow", order_by="WorkflowTask.step_order"
@@ -35,8 +32,8 @@ class Workflow(Base):
 class WorkflowTask(Base):
     __tablename__ = "workflow_tasks"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    workflow_id: Mapped[int] = mapped_column(Integer, ForeignKey("workflows.id", ondelete="CASCADE"))
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    workflow_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("workflows.id", ondelete="CASCADE"), index=True)
     step_order: Mapped[int] = mapped_column(Integer, nullable=False)
     name: Mapped[str] = mapped_column(String(200), nullable=False)
     task_type: Mapped[str] = mapped_column(String(50), nullable=False)
@@ -46,10 +43,10 @@ class WorkflowTask(Base):
     input_data: Mapped[dict | None] = mapped_column(JSON, default=dict)
     output_data: Mapped[dict | None] = mapped_column(JSON, default=dict)
     error_message: Mapped[str | None] = mapped_column(Text)
-    started_at: Mapped[datetime | None] = mapped_column(DateTime)
-    completed_at: Mapped[datetime | None] = mapped_column(DateTime)
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     duration_ms: Mapped[int | None] = mapped_column(Integer)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=_now)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped)
 
     workflow: Mapped["Workflow"] = relationship("Workflow", back_populates="tasks")
 

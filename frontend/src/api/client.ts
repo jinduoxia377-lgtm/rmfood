@@ -1,22 +1,25 @@
 /**
  * Axios API 客户端
- * 自动附加 JWT 令牌、统一错误处理、刷新令牌逻辑
+ * 自动附加 JWT 令牌、统一错误处理、刷新令牌逻辑、CSRF token
  *
  * 🔒 P0 安全修复:
  * - Token 现在通过 HttpOnly Cookie 存储（后端设置）
  * - 前端不再从 localStorage 读写敏感 Token
  * - Authorization 头仅用于向后兼容，新请求依赖 Cookie 自动携带
+ * - CSRF token 自动从 Cookie 读取并注入请求头
+ *
+ * 🔒 竞态修复:
+ * - 登录流程中的 getMe 调用不再触发 token 刷新（_loginFlow 标记）
+ * - 避免登录期间 401 导致重定向回登录页的死循环
  */
 import axios from 'axios'
 import type { Token, User } from '@/types'
 import { UserRole } from '@/types'
 import { envConfig } from '@/config/env'
 
-const API_BASE = envConfig.api.baseUrl
 
-// 🔒 Cookie 名称（与后端一致）
-const ACCESS_TOKEN_COOKIE = 'rmfood_access_token'
-const REFRESH_TOKEN_COOKIE = 'rmfood_refresh_token'
+import { logger } from '@/utils/safeLogger';
+const API_BASE = envConfig.api.baseUrl
 
 const api = axios.create({
   baseURL: API_BASE,
@@ -26,29 +29,24 @@ const api = axios.create({
   withCredentials: true,
 })
 
-// 模拟数据（仅开发环境使用）
-const mockToken: Token = {
-  accessToken: 'mock_access_token_123456',
-  refreshToken: 'mock_refresh_token_123456',
-  tokenType: 'Bearer',
-  expiresIn: 3600,
-  expiresAt: new Date(Date.now() + 3600 * 1000),
+// ── CSRF Token 工具 ──
+function getCookie(name: string): string | null {
+  const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'))
+  return match ? match[2] : null
 }
 
-const mockUser: User = {
-  id: 1,
-  username: 'admin',
-  email: 'admin@example.com',
-  fullName: '管理员',
-  role: UserRole.ADMIN,
-  isActive: true,
-  createdAt: new Date().toISOString(),
-  department: '',
-  phone: '',
-  avatarUrl: '',
-  loginAttempts: 0,
-  updatedAt: new Date().toISOString(),
-}
+// 请求拦截器：自动附加 CSRF token
+api.interceptors.request.use((config) => {
+  const csrfToken = getCookie('csrf_token')
+  if (csrfToken && config.method && ['post', 'put', 'patch', 'delete'].includes(config.method)) {
+    config.headers['X-CSRF-Token'] = csrfToken
+  }
+  return config
+})
+
+// 🔒 Cookie 名称（与后端一致）
+const ACCESS_TOKEN_COOKIE = 'rmfood_access_token'
+const REFRESH_TOKEN_COOKIE = 'rmfood_refresh_token'
 
 // ── Token 刷新状态管理 ──
 let isRefreshing = false
@@ -70,38 +68,6 @@ const notifyTokenRefresh = (token: string) => {
 }
 
 /**
- * 🔒 P0 安全修复: 检查是否应该使用模拟数据
- * 仅开发环境允许 mock 数据，生产环境直接拒绝
- */
-const shouldUseMockData = (error: any): boolean => {
-  // 🔒 生产环境禁止使用 mock 数据
-  if (import.meta.env.PROD) {
-    return false
-  }
-
-  if (!error.response) return true
-  const status = error.response.status
-  if (status === 502 || status === 503 || status === 504) return true
-  if (status === 500) return true
-  if (status === 422) {
-    const urlPath = error.config?.url?.replace(envConfig.api.baseUrl, '') || ''
-    if (urlPath.includes('/formulas/statistics') || urlPath.includes('/formulas/logs')) return true
-  }
-  return false
-}
-
-/**
- * 生成模拟响应（仅开发环境）
- */
-const createMockResponse = (original: any, data: any) => ({
-  data,
-  status: 200,
-  statusText: 'OK',
-  headers: {},
-  config: original,
-})
-
-/**
  * 🔒 P0 安全修复: 刷新 Token
  * 现在完全依赖后端 HttpOnly Cookie，刷新成功后自动续期
  */
@@ -115,7 +81,7 @@ const refreshToken = async (): Promise<string> => {
     )
 
     // 🔒 Token 现在存储在后端设置的 HttpOnly Cookie 中，前端不再需要处理
-    return response.data.access_token
+    return response.data.accessToken
   } catch (error) {
     // 🔒 刷新失败时，Cookie 会被后端清除或过期
     // 重定向到登录页
@@ -131,8 +97,11 @@ const refreshToken = async (): Promise<string> => {
  */
 const clearAuthState = () => {
   if (typeof window !== 'undefined') {
-    localStorage.removeItem('access_token')
-    localStorage.removeItem('refresh_token')
+    // 清除 HttpOnly Cookie（后端 set-cookie with empty value）
+    fetch(`${api.defaults.baseURL}/auth/logout`, {
+      method: 'POST',
+      credentials: 'include',
+    }).catch(() => { /* 静默失败，不影响用户体验 */ })
     localStorage.removeItem('remember_me')
     localStorage.removeItem('username')
   }
@@ -155,88 +124,11 @@ api.interceptors.response.use(
         request: error.request,
         __aborted: true as const,
       }
-      return Promise.resolve(silentResponse as any)
+      return Promise.resolve(silentResponse as never)
     }
 
-    // 🔒 仅开发环境使用模拟数据
-    if (shouldUseMockData(error)) {
-      const urlPath = original.url?.replace(API_BASE, '') || original.url || ''
-
-      // 登录请求（开发环境自动成功）
-      if (urlPath.includes('/auth/login')) {
-        return createMockResponse(original, mockToken)
-      }
-
-      // 获取用户信息
-      if (urlPath.includes('/auth/me')) {
-        return createMockResponse(original, mockUser)
-      }
-
-      // 用户列表
-      if (urlPath.includes('/users')) {
-        return createMockResponse(original, {
-          data: [mockUser],
-          total: 1,
-          page: 1,
-          page_size: 10,
-        })
-      }
-
-      // 配方列表
-      if (urlPath.includes('/formulas')) {
-        if (urlPath.includes('/statistics')) {
-          return createMockResponse(original, {
-            total: 0,
-            approved: 0,
-            pending: 0,
-            draft: 0,
-            archived: 0,
-            this_month: 0,
-          })
-        }
-        if (urlPath.includes('/logs')) {
-          return createMockResponse(original, {
-            data: [],
-            total: 0,
-            page: 1,
-            page_size: 20,
-          })
-        }
-        return createMockResponse(original, {
-          data: [],
-          total: 0,
-          page: 1,
-          page_size: 10,
-        })
-      }
-
-      // AI 生成请求
-      if (urlPath.includes('/ai/generate')) {
-        const mockCandidates = [
-          {
-            id: 'mock_' + Date.now(),
-            name: '配方示例（Mock）',
-            formula_name: '配方示例',
-            ingredients: [
-              { name: '黄芪', dosage: '10g', unit: 'g' },
-              { name: '枸杞子', dosage: '5g', unit: 'g' },
-            ],
-            score: 0.85,
-            effects: ['增强免疫'],
-            generated_by: 'mock',
-            generated_at: new Date().toISOString(),
-          },
-        ]
-        return createMockResponse(original, {
-          candidates: mockCandidates,
-          total: mockCandidates.length,
-          generator: 'mock',
-        })
-      }
-
-      // 默认返回空数据
-      return createMockResponse(original, {})
-    }
+    // 移除 mock fallback，始终使用真实 API
+    return Promise.reject(error)
 
     // 处理 404 错误
     if (error.response?.status === 404) {
@@ -248,6 +140,14 @@ api.interceptors.response.use(
       // 静默请求（启动时认证检查）不触发 token 刷新和重定向
       if (original.params?._silent) {
         return Promise.resolve({ data: null, status: 401, statusText: 'Unauthorized', headers: {}, config: original })
+      }
+
+      // 🔒 竞态修复：登录流程中的 getMe 调用跳过 token 刷新
+      // 如果请求是登录流程的一部分（post-login getMe），直接拒绝而不是触发刷新
+      // 否则会导致：getMe 401 → refreshToken → 再次 401 → clearAuthState → 重定向回登录页
+      if (original._loginFlow) {
+        if (import.meta.env.DEV) logger.warn('[API] 登录流程中 getMe 失败，跳过 token 刷新')
+        return Promise.reject(error)
       }
 
       // 防止无限重试：同一请求最多重试 1 次
@@ -270,7 +170,7 @@ api.interceptors.response.use(
       if (isAuthError) {
         // 如果是登录或刷新请求，直接拒绝
         if (original.url?.includes('/auth/login') || original.url?.includes('/auth/refresh')) {
-          console.warn('[API] 登录或刷新失败:', errorDetail)
+          if (import.meta.env.DEV) logger.warn('[API] 登录或刷新失败:', errorDetail)
           clearAuthState()
           return Promise.reject(error)
         }
@@ -297,7 +197,7 @@ api.interceptors.response.use(
           return api(original)
         } catch (refreshError) {
           isRefreshing = false
-          console.warn('[API] Token 刷新失败，用户将被登出')
+          if (import.meta.env.DEV) logger.warn('[API] Token 刷新失败，用户将被登出')
           clearAuthState()
           // 重定向到登录页
           if (typeof window !== 'undefined') {
@@ -313,7 +213,7 @@ api.interceptors.response.use(
     // 处理 403 权限不足错误
     if (error.response?.status === 403) {
       const errorDetail = error.response.data?.detail || error.response.data?.message || ''
-      console.warn(`[API] 权限不足 (403): ${original.url} - ${errorDetail}`)
+      if (import.meta.env.DEV) logger.warn(`[API] 权限不足 (403): ${original.url} - ${errorDetail}`)
       return Promise.reject(error)
     }
 

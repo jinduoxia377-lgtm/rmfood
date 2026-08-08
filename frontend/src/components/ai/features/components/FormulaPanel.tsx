@@ -425,15 +425,15 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
            if (e.target === e.currentTarget) onClose()
          }}>
       <div
-        className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-hidden
+        className="bg-white dark:bg-neutral-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-hidden
                    flex flex-col animate-in-from-right"
         onClick={e => e.stopPropagation()}
       >
         {/* ===== 面板头部区域 - 移动端自适应 ===== */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-900">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4 border-b border-neutral-200 dark:border-neutral-700 bg-gradient-to-r from-slate-50 to-white dark:from-slate-800 dark:to-slate-900">
           <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
             <FlaskConical className="w-5 h-5 sm:w-6 sm:h-6 text-primary-600 shrink-0" />
-            <h2 className="text-base sm:text-xl font-bold text-gray-900 dark:text-white">
+            <h2 className="text-base sm:text-xl font-bold text-neutral-900 dark:text-white">
               已识别的配方
             </h2>
             <span className="px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm font-semibold bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300">
@@ -454,7 +454,7 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
             {/* 平板端视图切换按钮 */}
             <button
               onClick={() => setIsTabletView(!isTabletView)}
-              className="hidden md:flex lg:hidden items-center justify-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors min-h-[44px]"
+              className="hidden md:flex lg:hidden items-center justify-center gap-2 px-3 py-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors min-h-[44px]"
               title={isTabletView ? '切换到单列视图' : '切换到双列视图'}
             >
               <LayoutGrid className="w-4 h-4" />
@@ -463,38 +463,38 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
 
             <button
               onClick={onClose}
-              className="self-end sm:self-auto p-2 -mr-2 sm:mr-0 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
+              className="self-end sm:self-auto p-2 -mr-2 sm:mr-0 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
               aria-label="关闭面板"
             >
-              <X className="w-5 h-5 text-gray-500" />
+              <X className="w-5 h-5 text-neutral-500" />
             </button>
           </div>
         </div>
 
         {/* 提示文本区域 */}
-        <div className="px-6 py-2 text-sm text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/20 border-b border-blue-100 dark:border-blue-900/30">
+        <div className="px-6 py-2 text-sm text-secondary-700 dark:text-secondary-300 bg-secondary-50 dark:bg-secondary-900/20 border-b border-blue-100 dark:border-blue-900/30">
           支持中文/拼音/英文智能搜索 · 多条件组合筛选 · 多维度排序
         </div>
 
         {/* ===== 搜索框区域 ===== */}
-        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+        <div className="p-4 border-b border-neutral-200 dark:border-neutral-700">
           <div className="flex items-center gap-2">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-neutral-400" />
               <input
                 ref={searchInputRef}
                 type="text"
                 placeholder="🔍 搜索配方（支持拼音/中文/英文）..."
                 value={localSearchQuery}
                 onChange={(e) => handleSearchChange(e.target.value)}
-                className="w-full pl-10 pr-10 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg
-                         bg-gray-50 dark:bg-gray-900 text-sm focus:ring-2 focus:ring-blue-500
+                className="w-full pl-10 pr-10 py-2.5 border border-neutral-300 dark:border-neutral-600 rounded-lg
+                         bg-slate-50 dark:bg-neutral-900 text-sm focus:ring-2 focus:ring-blue-500
                          focus:border-transparent outline-none transition-all"
               />
               {localSearchQuery && (
                 <button
                   onClick={handleClearSearch}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
                 >
                   ✕
                 </button>
@@ -511,7 +511,7 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
               <span className="hidden sm:inline">高级筛选</span>
               <span className="sm:hidden">筛选</span>
               {activeFilterCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-error-500 text-white text-xs rounded-full flex items-center justify-center">
                   {activeFilterCount}
                 </span>
               )}
@@ -519,7 +519,7 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
           </div>
 
           {localSearchQuery && (
-            <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+            <div className="mt-2 text-xs text-neutral-500 dark:text-neutral-400">
               🔍 搜索 "<strong>{localSearchQuery}</strong>" · 找到 <strong>{filteredAndSortedFormulas.length}</strong> 个匹配结果
             </div>
           )}
@@ -540,8 +540,8 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
         </MobileBottomSheet>
 
         {/* ===== 排序控制栏 ===== */}
-        <div className="flex items-center gap-4 px-6 py-3 bg-gray-50 dark:bg-gray-800 text-sm border-b border-gray-200 dark:border-gray-700">
-          <span className="text-gray-500 flex items-center gap-1">
+        <div className="flex items-center gap-4 px-6 py-3 bg-slate-50 dark:bg-neutral-800 text-sm border-b border-neutral-200 dark:border-neutral-700">
+          <span className="text-neutral-500 flex items-center gap-1">
             <ArrowUpDown size={14} />
             排序:
           </span>
@@ -549,7 +549,7 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
           <select
             value={localSortBy}
             onChange={(e) => handleSortChange(e.target.value as FormulaSortField)}
-            className="px-3 py-1.5 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+            className="px-3 py-1.5 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
           >
             <option value="createdAt">创建时间</option>
             <option value="updatedAt">更新时间</option>
@@ -561,12 +561,12 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
 
           <button
             onClick={toggleSortOrder}
-            className="px-3 py-1.5 rounded-md border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-1"
+            className="px-3 py-1.5 rounded-md border border-neutral-300 dark:border-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center gap-1"
           >
             {localSortOrder === 'asc' ? '↑ 升序' : '↓ 降序'}
           </button>
 
-          <span className="ml-auto text-gray-400">
+          <span className="ml-auto text-neutral-400">
             共 {filteredAndSortedFormulas.length} 条结果
           </span>
         </div>
@@ -621,21 +621,21 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
               )}
 
                   {filteredAndSortedFormulas.length > ITEMS_PER_PAGE && (
-                    <div className="flex items-center justify-center gap-4 py-4 border-t border-gray-200 dark:border-gray-700 mt-4">
+                    <div className="flex items-center justify-center gap-4 py-4 border-t border-neutral-200 dark:border-neutral-700 mt-4">
                       <button
                         onClick={loadPrevPage}
                         disabled={currentPage === 1}
-                        className="px-3 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600
-                                 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed
+                        className="px-3 py-1.5 text-sm rounded-lg border border-neutral-300 dark:border-neutral-600
+                                 hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed
                                  transition-colors"
                       >
                         ⬅️ 上一页
                       </button>
 
-                      <span className="text-sm text-gray-600 dark:text-gray-400">
-                        第 <strong className="text-blue-600 dark:text-blue-400">{currentPage}</strong> /
+                      <span className="text-sm text-neutral-600 dark:text-neutral-400">
+                        第 <strong className="text-secondary-600 dark:text-secondary-400">{currentPage}</strong> /
                         共 <strong>{totalPages}</strong> 页
-                        <span className="ml-2 text-xs text-gray-400">
+                        <span className="ml-2 text-xs text-neutral-400">
                           (共 {filteredAndSortedFormulas.length} 个配方)
                         </span>
                       </span>
@@ -643,8 +643,8 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
                       <button
                         onClick={loadNextPage}
                         disabled={currentPage === totalPages}
-                        className="px-3 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600
-                                 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed
+                        className="px-3 py-1.5 text-sm rounded-lg border border-neutral-300 dark:border-neutral-600
+                                 hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed
                                  transition-colors"
                       >
                         下一页 ➡️
@@ -657,8 +657,8 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
               <FlaskConical className="w-16 h-16 mx-auto mb-4 opacity-30" />
               {localSearchQuery || externalFilters ? (
                 <>
-                  <p className="text-lg font-medium text-gray-600 dark:text-gray-400">未找到匹配的配方</p>
-                  <p className="text-sm mt-2 text-gray-500 dark:text-gray-500">
+                  <p className="text-lg font-medium text-neutral-600 dark:text-neutral-400">未找到匹配的配方</p>
+                  <p className="text-sm mt-2 text-neutral-500 dark:text-neutral-500">
                     尝试调整搜索关键词或筛选条件...
                   </p>
                   <Button
@@ -672,8 +672,8 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
                 </>
               ) : (
                 <>
-                  <p className="text-lg font-medium text-gray-600 dark:text-gray-400">暂未识别到任何配方</p>
-                  <p className="text-sm mt-2 text-gray-500 dark:text-gray-500 max-w-sm mx-auto">
+                  <p className="text-lg font-medium text-neutral-600 dark:text-neutral-400">暂未识别到任何配方</p>
+                  <p className="text-sm mt-2 text-neutral-500 dark:text-neutral-500 max-w-sm mx-auto">
                     继续对话并请求AI提供配方信息<br/>
                     <span className="text-primary-600 dark:text-primary-400 font-medium">
                       （如："请给我一个抗氧化配方"）
@@ -686,13 +686,13 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
         </div>
 
         {/* ===== 底部操作工具栏 ===== */}
-        <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 flex flex-col gap-3">
+        <div className="p-4 border-t border-neutral-200 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-900/50 flex flex-col gap-3">
           <div className="flex items-center justify-between text-xs">
-            <span className="text-gray-500">
+            <span className="text-neutral-500">
               共 {formulaCount} 个配方{localSearchQuery || externalFilters ? ` | 显示 ${filteredAndSortedFormulas.length} 个` : ''} |
-              <span className="text-green-600 ml-1">💾 已自动保存</span>
+              <span className="text-success-600 ml-1">💾 已自动保存</span>
             </span>
-            <span className="text-gray-400">
+            <span className="text-neutral-400">
               v8.0 高级筛选版
             </span>
           </div>
@@ -723,23 +723,23 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
                       className="fixed inset-0 z-40"
                       onClick={() => setShowMoreMenu(false)}
                     />
-                    <div className="absolute bottom-full right-0 mb-2 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 py-2 min-w-[200px] z-50">
+                    <div className="absolute bottom-full right-0 mb-2 bg-white dark:bg-neutral-800 rounded-lg shadow-xl border border-neutral-200 dark:border-neutral-700 py-2 min-w-[200px] z-50">
                       <button
                         onClick={() => { onClearMemory(); setShowMoreMenu(false); }}
-                        className="w-full px-4 py-2.5 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3 min-h-[44px]"
+                        className="w-full px-4 py-2.5 text-left text-sm hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center gap-3 min-h-[44px]"
                       >
                         🔄 清空内存缓存
                       </button>
                       <button
                         onClick={() => { onImport(); setShowMoreMenu(false); }}
-                        className="w-full px-4 py-2.5 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3 min-h-[44px]"
+                        className="w-full px-4 py-2.5 text-left text-sm hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center gap-3 min-h-[44px]"
                       >
                         📥 导入数据
                       </button>
-                      <hr className="my-1 border-gray-200 dark:border-gray-700" />
+                      <hr className="my-1 border-neutral-200 dark:border-neutral-700" />
                       <button
                         onClick={() => { onClearStorage(); setShowMoreMenu(false); }}
-                        className="w-full px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-3 min-h-[44px]"
+                        className="w-full px-4 py-2.5 text-left text-sm text-error-600 hover:bg-error-50 dark:hover:bg-error-900/20 flex items-center gap-3 min-h-[44px]"
                         disabled={formulaCount === 0}
                       >
                         🗑 清空存储
@@ -772,41 +772,41 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
                   size="sm"
                   title="选择导出格式"
                   disabled={formulaCount === 0}
-                  className="group-hover:bg-gray-100"
+                  className="group-hover:bg-neutral-100"
                 >
                   📤 导出 ▼
                 </Button>
 
-                <div className="absolute right-0 top-full mt-1 w-36 bg-white dark:bg-gray-800
-                            rounded-lg shadow-xl border border-gray-200 dark:border-gray-700
+                <div className="absolute right-0 top-full mt-1 w-36 bg-white dark:bg-neutral-800
+                            rounded-lg shadow-xl border border-neutral-200 dark:border-neutral-700
                             opacity-0 invisible group-hover:opacity-100 group-hover:visible
                             transition-all duration-200 z-50">
                   <div className="py-1">
                     <button
                       onClick={() => onExport('json')}
-                      className="w-full px-4 py-2 text-left text-sm hover:bg-blue-50
-                               dark:hover:bg-blue-900/20 flex items-center gap-2"
+                      className="w-full px-4 py-2 text-left text-sm hover:bg-secondary-50
+                               dark:hover:bg-secondary-900/20 flex items-center gap-2"
                     >
                       📄 JSON 格式
                     </button>
                     <button
                       onClick={() => onExport('csv')}
-                      className="w-full px-4 py-2 text-left text-sm hover:bg-blue-50
-                               dark:hover:bg-blue-900/20 flex items-center gap-2"
+                      className="w-full px-4 py-2 text-left text-sm hover:bg-secondary-50
+                               dark:hover:bg-secondary-900/20 flex items-center gap-2"
                     >
                       📊 CSV 表格
                     </button>
                     <button
                       onClick={() => onExport('txt')}
-                      className="w-full px-4 py-2 text-left text-sm hover:bg-blue-50
-                               dark:hover:bg-blue-900/20 flex items-center gap-2"
+                      className="w-full px-4 py-2 text-left text-sm hover:bg-secondary-50
+                               dark:hover:bg-secondary-900/20 flex items-center gap-2"
                     >
                       📝 纯文本
                     </button>
                     <button
                       onClick={() => onExport('html')}
-                      className="w-full px-4 py-2 text-left text-sm hover:bg-blue-50
-                               dark:hover:bg-blue-900/20 flex items-center gap-2"
+                      className="w-full px-4 py-2 text-left text-sm hover:bg-secondary-50
+                               dark:hover:bg-secondary-900/20 flex items-center gap-2"
                     >
                       🌐 HTML 网页
                     </button>
@@ -819,7 +819,7 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
                 size="sm"
                 onClick={onClearStorage}
                 title="清除本地保存的所有配方数据"
-                className="text-red-500 hover:text-red-600 hover:bg-red-50 hidden md:flex"
+                className="text-error-500 hover:text-error-600 hover:bg-error-50 hidden md:flex"
                 disabled={formulaCount === 0}
               >
                 🗑️ 清除存储
@@ -837,7 +837,7 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
             onClick={handleCloseContextMenu}
           />
           <div
-            className="fixed z-50 bg-white dark:bg-gray-800 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 py-2 min-w-[180px]"
+            className="fixed z-50 bg-white dark:bg-neutral-800 rounded-lg shadow-2xl border border-neutral-200 dark:border-neutral-700 py-2 min-w-[180px]"
             style={{
               left: Math.min(contextMenu.position.x, window.innerWidth - 200),
               top: Math.min(contextMenu.position.y, window.innerHeight - 250),
@@ -845,28 +845,28 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
           >
             <button
               onClick={() => handleContextAction('viewDetail')}
-              className="w-full px-4 py-2.5 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3 min-h-[44px]"
+              className="w-full px-4 py-2.5 text-left text-sm hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center gap-3 min-h-[44px]"
             >
               <Eye className="w-4 h-4" />
               查看详情
             </button>
             <button
               onClick={() => handleContextAction('generateReport')}
-              className="w-full px-4 py-2.5 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3 min-h-[44px]"
+              className="w-full px-4 py-2.5 text-left text-sm hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center gap-3 min-h-[44px]"
             >
               <FileText className="w-4 h-4" />
               生成报告
             </button>
             <button
               onClick={() => handleContextAction('export')}
-              className="w-full px-4 py-2.5 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3 min-h-[44px]"
+              className="w-full px-4 py-2.5 text-left text-sm hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center gap-3 min-h-[44px]"
             >
               📤 导出数据
             </button>
-            <hr className="my-1 border-gray-200 dark:border-gray-700" />
+            <hr className="my-1 border-neutral-200 dark:border-neutral-700" />
             <button
               onClick={() => handleContextAction('delete')}
-              className="w-full px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-3 min-h-[44px]"
+              className="w-full px-4 py-2.5 text-left text-sm text-error-600 hover:bg-error-50 dark:hover:bg-error-900/20 flex items-center gap-3 min-h-[44px]"
             >
               🗑 删除配方
             </button>

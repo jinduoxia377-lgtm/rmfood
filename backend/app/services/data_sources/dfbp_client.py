@@ -242,8 +242,9 @@ class DFBPSyncService:
                 "last_sync": latest_snapshot.created_at.isoformat() if latest_snapshot else None,
                 "snapshot_id": latest_snapshot.snapshot_id if latest_snapshot else None,
             }
-        except Exception:
+        except Exception as e:
             # DB 不可用时，返回知识库统计
+            logger.debug("DFBP 数据库查询失败，使用内存数据: %s", e)
             act_counts: dict[str, int] = {}
             for pep in DFBP_PEPTIDE_DATABASE:
                 act = pep.get("activity_type") or "未分类"

@@ -1,19 +1,19 @@
-import React from 'react'
-import * as LucideIcons from 'lucide-react'
-import { ICON_MAP, ICON_SIZES, IconName, IconSize } from './icon-mapping'
+import React from 'react';
+import * as LucideIcons from 'lucide-react';
+import { ICON_MAP, ICON_SIZES, IconName, IconSize } from './icon-mapping';
 
 interface ChatIconProps {
-  name: IconName
-  size?: IconSize | number
-  color?: string
-  strokeWidth?: number
-  ariaLabel?: string
-  className?: string
-  onClick?: () => void
-  disabled?: boolean
+  name: IconName;
+  size?: IconSize | number;
+  color?: string;
+  strokeWidth?: number;
+  ariaLabel?: string;
+  className?: string;
+  onClick?: () => void;
+  disabled?: boolean;
 }
 
-const IconComponent = LucideIcons as Record<string, React.FC<LucideIcons.LucideProps>>
+const IconComponent = LucideIcons as unknown as Record<string, React.FC<LucideIcons.LucideProps>>;
 
 export const ChatIcon: React.FC<ChatIconProps> = ({
   name,
@@ -25,21 +25,21 @@ export const ChatIcon: React.FC<ChatIconProps> = ({
   onClick,
   disabled = false,
 }) => {
-  const iconName = ICON_MAP[name]
-  const Component = IconComponent[iconName]
+  const iconName = ICON_MAP[name];
+  const Component = IconComponent[iconName];
 
   if (!Component) {
-    return null
+    return null;
   }
 
-  const resolvedSize = typeof size === 'string' ? ICON_SIZES[size] : size
-  const role = onClick ? 'button' : 'img'
+  const resolvedSize = typeof size === 'string' ? ICON_SIZES[size] : size;
+  const role = onClick ? 'button' : 'img';
 
   const style: React.CSSProperties = {
     color,
     opacity: disabled ? 0.5 : 1,
     pointerEvents: disabled ? 'none' : undefined,
-  }
+  };
 
   return (
     <Component
@@ -53,7 +53,7 @@ export const ChatIcon: React.FC<ChatIconProps> = ({
       onClick={disabled ? undefined : onClick}
       tabIndex={onClick && !disabled ? 0 : undefined}
     />
-  )
-}
+  );
+};
 
-export default ChatIcon
+export default ChatIcon;

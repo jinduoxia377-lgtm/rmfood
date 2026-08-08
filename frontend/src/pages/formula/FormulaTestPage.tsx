@@ -73,7 +73,7 @@ export function FormulaTestPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
+                <div className="p-4 bg-slate-50 dark:bg-neutral-800/50 rounded-lg">
                   <h4 className="font-medium mb-2">测试配方</h4>
                   <p>配方ID: {testFormula.id}</p>
                   <p>配方名称: {testFormula.name}</p>
@@ -98,7 +98,7 @@ export function FormulaTestPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
+                <div className="p-4 bg-slate-50 dark:bg-neutral-800/50 rounded-lg">
                   <h4 className="font-medium mb-2">测试配方</h4>
                   <p>配方ID: {testFormula.id}</p>
                   <p>配方名称: {testFormula.name}</p>
@@ -123,7 +123,7 @@ export function FormulaTestPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
+                <div className="p-4 bg-slate-50 dark:bg-neutral-800/50 rounded-lg">
                   <h4 className="font-medium mb-2">测试配方</h4>
                   <p>配方ID: {testFormula.id}</p>
                   <p>配方名称: {testFormula.name}</p>
@@ -161,10 +161,10 @@ export function FormulaTestPage() {
 
                 <div>
                   <h4 className="font-medium mb-3">评分系统边界测试</h4>
-                  <p className="text-sm text-slate-500 mb-4">
+                  <p className="text-sm text-neutral-500 mb-4">
                     测试评分系统在各种边界条件下的表现，包括：
                   </p>
-                  <ul className="list-disc list-inside text-sm text-slate-600 dark:text-slate-400 space-y-1">
+                  <ul className="list-disc list-inside text-sm text-neutral-600 dark:text-neutral-400 space-y-1">
                     <li>首次评分</li>
                     <li>修改评分</li>
                     <li>添加/修改评价内容</li>
@@ -176,10 +176,10 @@ export function FormulaTestPage() {
 
                 <div>
                   <h4 className="font-medium mb-3">分享功能边界测试</h4>
-                  <p className="text-sm text-slate-500 mb-4">
+                  <p className="text-sm text-neutral-500 mb-4">
                     测试分享功能在各种边界条件下的表现，包括：
                   </p>
-                  <ul className="list-disc list-inside text-sm text-slate-600 dark:text-slate-400 space-y-1">
+                  <ul className="list-disc list-inside text-sm text-neutral-600 dark:text-neutral-400 space-y-1">
                     <li>二维码加载失败</li>
                     <li>剪贴板复制失败</li>
                     <li>不同平台分享</li>

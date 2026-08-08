@@ -1,35 +1,34 @@
-import { useReducer, useCallback, useRef } from 'react'
-import api from '@/api/client'
+import { useReducer, useCallback, useRef } from 'react';
+import api from '@/api/client';
 import { logger } from '@/utils/safeLogger';
 
-
-export type ExportFormat = 'csv' | 'excel' | 'json' | 'pdf'
+export type ExportFormat = 'csv' | 'excel' | 'json' | 'pdf';
 
 export interface Permission {
-  id: number
-  name: string
-  description?: string
-  resource: string
-  actions: string[]
+  id: number;
+  name: string;
+  description?: string;
+  resource: string;
+  actions: string[];
 }
 
 export interface OperationResult {
-  id: number
-  success: boolean
-  error?: string
-  data?: Record<string, unknown>
-  timestamp: number
+  id: number;
+  success: boolean;
+  error?: string;
+  data?: Record<string, unknown>;
+  timestamp: number;
 }
 
 interface BulkOperationState {
-  isProcessing: boolean
-  progress: number
-  totalItems: number
-  processedItems: number
-  results: OperationResult[]
-  currentOperation: string | null
-  error: Error | null
-  rollbackData: Map<number, unknown>
+  isProcessing: boolean;
+  progress: number;
+  totalItems: number;
+  processedItems: number;
+  results: OperationResult[];
+  currentOperation: string | null;
+  error: Error | null;
+  rollbackData: Map<number, unknown>;
 }
 
 type BulkOperationAction =
@@ -39,7 +38,7 @@ type BulkOperationAction =
   | { type: 'SET_ERROR'; payload: Error }
   | { type: 'CLEAR_RESULTS' }
   | { type: 'STORE_ROLLBACK_DATA'; payload: { id: number; data: unknown } }
-  | { type: 'CLEAR_ROLLBACK_DATA' }
+  | { type: 'CLEAR_ROLLBACK_DATA' };
 
 const initialState: BulkOperationState = {
   isProcessing: false,
@@ -50,7 +49,7 @@ const initialState: BulkOperationState = {
   currentOperation: null,
   error: null,
   rollbackData: new Map(),
-}
+};
 
 function bulkOperationReducer(state: BulkOperationState, action: BulkOperationAction): BulkOperationState {
   switch (action.type) {
@@ -64,19 +63,19 @@ function bulkOperationReducer(state: BulkOperationState, action: BulkOperationAc
         progress: 0,
         results: [],
         error: null,
-      }
+      };
 
     case 'PROGRESS_UPDATE': {
-      const newProcessed = state.processedItems + 1
-      const newProgress = Math.round((newProcessed / state.totalItems) * 100)
-      const newResults = action.payload.result ? [...state.results, action.payload.result] : state.results
+      const newProcessed = state.processedItems + 1;
+      const newProgress = Math.round((newProcessed / state.totalItems) * 100);
+      const newResults = action.payload.result ? [...state.results, action.payload.result] : state.results;
 
       return {
         ...state,
         processedItems: newProcessed,
         progress: newProgress,
         results: newResults,
-      }
+      };
     }
 
     case 'COMPLETE_OPERATION':
@@ -84,14 +83,14 @@ function bulkOperationReducer(state: BulkOperationState, action: BulkOperationAc
         ...state,
         isProcessing: false,
         progress: 100,
-      }
+      };
 
     case 'SET_ERROR':
       return {
         ...state,
         error: action.payload,
         isProcessing: false,
-      }
+      };
 
     case 'CLEAR_RESULTS':
       return {
@@ -99,47 +98,41 @@ function bulkOperationReducer(state: BulkOperationState, action: BulkOperationAc
         results: [],
         error: null,
         rollbackData: new Map(),
-      }
+      };
 
     case 'STORE_ROLLBACK_DATA': {
-      const newRollbackData = new Map(state.rollbackData)
-      newRollbackData.set(action.payload.id, action.payload.data)
+      const newRollbackData = new Map(state.rollbackData);
+      newRollbackData.set(action.payload.id, action.payload.data);
       return {
         ...state,
         rollbackData: newRollbackData,
-      }
+      };
     }
 
     case 'CLEAR_ROLLBACK_DATA':
       return {
         ...state,
         rollbackData: new Map(),
-      }
+      };
 
     default:
-      return state
+      return state;
   }
 }
 
 interface UseBulkOperationsOptions {
-  batchSize?: number
-  enableRollback?: boolean
-  onProgress?: (progress: number) => void
-  onComplete?: (results: OperationResult[]) => void
-  onError?: (error: Error) => void
+  batchSize?: number;
+  enableRollback?: boolean;
+  onProgress?: (progress: number) => void;
+  onComplete?: (results: OperationResult[]) => void;
+  onError?: (error: Error) => void;
 }
 
 export function useBulkOperations(options: UseBulkOperationsOptions = {}) {
-  const {
-    batchSize = 10,
-    enableRollback = true,
-    onProgress,
-    onComplete,
-    onError,
-  } = options
+  const { batchSize = 10, enableRollback = true, onProgress, onComplete, onError } = options;
 
-  const [state, dispatch] = useReducer(bulkOperationReducer, initialState)
-  const mountedRef = useRef(true)
+  const [state, dispatch] = useReducer(bulkOperationReducer, initialState);
+  const mountedRef = useRef(true);
 
   const processBatch = useCallback(
     async <T>(
@@ -147,60 +140,58 @@ export function useBulkOperations(options: UseBulkOperationsOptions = {}) {
       processor: (item: T) => Promise<OperationResult>,
       operationName: string,
     ): Promise<OperationResult[]> => {
-      if (!mountedRef.current || items.length === 0) return []
+      if (!mountedRef.current || items.length === 0) return [];
 
       dispatch({
         type: 'START_OPERATION',
         payload: { operation: operationName, totalItems: items.length },
-      })
+      });
 
-      const results: OperationResult[] = []
-      let hasError = false
+      const results: OperationResult[] = [];
+      let hasError = false;
 
       for (let i = 0; i < items.length; i += batchSize) {
-        if (!mountedRef.current) break
+        if (!mountedRef.current) break;
 
-        const batch = items.slice(i, i + batchSize)
+        const batch = items.slice(i, i + batchSize);
         const batchPromises = batch.map(async (item) => {
           try {
-            const result = await processor(item)
-            onProgress?.(state.progress)
-            return result
+            const result = await processor(item);
+            onProgress?.(state.progress);
+            return result;
           } catch (error: any) {
             return {
-              id: typeof item === 'object' && item !== null && 'id' in item
-                ? (item as any).id
-                : i,
+              id: typeof item === 'object' && item !== null && 'id' in item ? ((item as Record<string, unknown>).id as string) : i,
               success: false,
               error: error.message || 'Unknown error',
               timestamp: Date.now(),
-            }
+            };
           }
-        })
+        });
 
-        const batchResults = await Promise.all(batchPromises)
-        results.push(...batchResults)
+        const batchResults = await Promise.all(batchPromises);
+        results.push(...batchResults);
 
         for (const result of batchResults) {
-          dispatch({ type: 'PROGRESS_UPDATE', payload: { result } })
+          dispatch({ type: 'PROGRESS_UPDATE', payload: { processed: 1, result } });
         }
 
         if (batchResults.some((r) => !r.success)) {
-          hasError = true
+          hasError = true;
         }
       }
 
       if (hasError && enableRollback) {
-        logger.warn('Some operations failed. Rollback data available for recovery.')
+        logger.warn('Some operations failed. Rollback data available for recovery.');
       }
 
-      dispatch({ type: 'COMPLETE_OPERATION' })
-      onComplete?.(results)
+      dispatch({ type: 'COMPLETE_OPERATION' });
+      onComplete?.(results);
 
-      return results
+      return results;
     },
     [batchSize, enableRollback, onProgress, onComplete, state.progress],
-  )
+  );
 
   const bulkChangePermissions = useCallback(
     async (ids: number[], permissions: Partial<Permission>): Promise<void> => {
@@ -209,29 +200,28 @@ export function useBulkOperations(options: UseBulkOperationsOptions = {}) {
         async (id): Promise<OperationResult> => {
           if (enableRollback) {
             try {
-              const currentPerm = await api.get(`/organizations/permissions/${id}`)
+              const currentPerm = await api.get(`/organizations/permissions/${id}`);
               dispatch({
                 type: 'STORE_ROLLBACK_DATA',
                 payload: { id, data: currentPerm.data },
-              })
-            } catch {
-            }
+              });
+            } catch {}
           }
 
-          await api.patch(`/organizations/permissions/${id}`, permissions)
+          await api.patch(`/organizations/permissions/${id}`, permissions);
 
           return {
             id,
             success: true,
             data: permissions,
             timestamp: Date.now(),
-          }
+          };
         },
         'bulk_change_permissions',
-      )
+      );
     },
     [processBatch, enableRollback],
-  )
+  );
 
   const bulkExport = useCallback(
     async (ids: number[], format: ExportFormat): Promise<void> => {
@@ -241,20 +231,20 @@ export function useBulkOperations(options: UseBulkOperationsOptions = {}) {
           const response = await api.get(`/organizations/${id}/export`, {
             params: { format },
             responseType: format === 'csv' || format === 'excel' ? 'blob' : 'json',
-          })
+          });
 
           if (format === 'csv' || format === 'excel') {
             const blob = new Blob([response.data], {
               type: format === 'csv' ? 'text/csv' : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            })
-            const url = window.URL.createObjectURL(blob)
-            const link = document.createElement('a')
-            link.href = url
-            link.download = `organizations_export_${Date.now()}.${format === 'excel' ? 'xlsx' : 'csv'}`
-            document.body.appendChild(link)
-            link.click()
-            document.body.removeChild(link)
-            window.URL.revokeObjectURL(url)
+            });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `organizations_export_${Date.now()}.${format === 'excel' ? 'xlsx' : 'csv'}`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
           }
 
           return {
@@ -262,13 +252,13 @@ export function useBulkOperations(options: UseBulkOperationsOptions = {}) {
             success: true,
             data: { format, exportedAt: Date.now() },
             timestamp: Date.now(),
-          }
+          };
         },
         'bulk_export',
-      )
+      );
     },
     [processBatch],
-  )
+  );
 
   const bulkArchive = useCallback(
     async (ids: number[]): Promise<void> => {
@@ -277,29 +267,28 @@ export function useBulkOperations(options: UseBulkOperationsOptions = {}) {
         async (id): Promise<OperationResult> => {
           if (enableRollback) {
             try {
-              const currentOrg = await api.get(`/organizations/${id}`)
+              const currentOrg = await api.get(`/organizations/${id}`);
               dispatch({
                 type: 'STORE_ROLLBACK_DATA',
                 payload: { id, data: currentOrg.data },
-              })
-            } catch {
-            }
+              });
+            } catch {}
           }
 
-          await api.patch(`/organizations/${id}/archive`, { isActive: false })
+          await api.patch(`/organizations/${id}/archive`, { isActive: false });
 
           return {
             id,
             success: true,
             data: { archived: true },
             timestamp: Date.now(),
-          }
+          };
         },
         'bulk_archive',
-      )
+      );
     },
     [processBatch, enableRollback],
-  )
+  );
 
   const bulkDelete = useCallback(
     async (ids: number[]): Promise<void> => {
@@ -308,58 +297,57 @@ export function useBulkOperations(options: UseBulkOperationsOptions = {}) {
         async (id): Promise<OperationResult> => {
           if (enableRollback) {
             try {
-              const currentOrg = await api.get(`/organizations/${id}`)
+              const currentOrg = await api.get(`/organizations/${id}`);
               dispatch({
                 type: 'STORE_ROLLBACK_DATA',
                 payload: { id, data: currentOrg.data },
-              })
-            } catch {
-            }
+              });
+            } catch {}
           }
 
-          await api.delete(`/organizations/${id}`)
+          await api.delete(`/organizations/${id}`);
 
           return {
             id,
             success: true,
             data: { deleted: true },
             timestamp: Date.now(),
-          }
+          };
         },
         'bulk_delete',
-      )
+      );
     },
     [processBatch, enableRollback],
-  )
+  );
 
   const rollbackFailedOperations = useCallback(async (): Promise<boolean> => {
-    if (!enableRollback || state.rollbackData.size === 0) return false
+    if (!enableRollback || state.rollbackData.size === 0) return false;
 
-    const failedResults = state.results.filter((r) => !r.success)
-    let allRolledBack = true
+    const failedResults = state.results.filter((r) => !r.success);
+    let allRolledBack = true;
 
     for (const result of failedResults) {
-      const rollbackInfo = state.rollbackData.get(result.id)
+      const rollbackInfo = state.rollbackData.get(result.id);
       if (rollbackInfo) {
         try {
-          await api.put(`/organizations/${result.id}/restore`, rollbackInfo)
+          await api.put(`/organizations/${result.id}/restore`, rollbackInfo);
         } catch {
-          allRolledBack = false
+          allRolledBack = false;
         }
       }
     }
 
-    dispatch({ type: 'CLEAR_ROLLBACK_DATA' })
-    return allRolledBack
-  }, [enableRollback, state.rollbackData, state.results])
+    dispatch({ type: 'CLEAR_ROLLBACK_DATA' });
+    return allRolledBack;
+  }, [enableRollback, state.rollbackData, state.results]);
 
   const clearResults = useCallback(() => {
-    dispatch({ type: 'CLEAR_RESULTS' })
-  }, [])
+    dispatch({ type: 'CLEAR_RESULTS' });
+  }, []);
 
-  const successCount = state.results.filter((r) => r.success).length
-  const failureCount = state.results.filter((r) => !r.success).length
-  const isComplete = !state.isProcessing && state.results.length > 0
+  const successCount = state.results.filter((r) => r.success).length;
+  const failureCount = state.results.filter((r) => !r.success).length;
+  const isComplete = !state.isProcessing && state.results.length > 0;
 
   return {
     isProcessing: state.isProcessing,
@@ -381,7 +369,7 @@ export function useBulkOperations(options: UseBulkOperationsOptions = {}) {
     isComplete,
     totalItems: state.totalItems,
     processedItems: state.processedItems,
-  }
+  };
 }
 
-export type UseBulkOperationsReturn = ReturnType<typeof useBulkOperations>
+export type UseBulkOperationsReturn = ReturnType<typeof useBulkOperations>;

@@ -1,0 +1,57 @@
+/*
+ * RMFOOD 设计系统 - 焦点与滚动条 v3.1 — Apple HIG 风格
+ * 全局焦点环、输入框焦点、按钮焦点、滚动条
+ */
+
+/* ═══ 焦点状态（全局）— Apple 风格单环焦点 ═══ */
+*:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-primary, #34C759);
+  transition: box-shadow var(--duration-fast) var(--ease-spring);
+}
+.dark *:focus-visible {
+  box-shadow: 0 0 0 3px var(--color-primary, #30D158);
+}
+
+/* 输入框焦点环 — 柔和 */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  box-shadow: 0 0 0 3px var(--color-primary-container, rgba(52, 199, 89, 0.12)), 0 0 0 1px var(--color-primary, #34C759);
+}
+.dark input:focus-visible,
+.dark textarea:focus-visible,
+.dark select:focus-visible {
+  box-shadow: 0 0 0 3px rgba(48, 209, 88, 0.15), 0 0 0 1px var(--color-primary, #30D158);
+}
+
+/* 按钮焦点环 — 与全局一致 */
+button:focus-visible {
+  box-shadow: 0 0 0 3px var(--color-primary, #34C759);
+}
+.dark button:focus-visible {
+  box-shadow: 0 0 0 3px var(--color-primary, #30D158);
+}
+
+/* ═══ 滚动条系统 v3.0 — Apple 风格 ═══ */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb, rgba(148, 163, 184, 0.2));
+  border-radius: 9999px;
+  transition: background var(--duration-fast) var(--ease-spring);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover, rgba(148, 163, 184, 0.35));
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb-dark, rgba(148, 163, 184, 0.12));
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover-dark, rgba(148, 163, 184, 0.25));
+}

@@ -1,7 +1,8 @@
 """
-PeptideScorer - 活性肽活性预测服务
-基于 ESM-2 蛋白语言模型 + MLP Head
-当前为规则模拟实现
+⚠️ MOCK IMPLEMENTATION - 模拟实现，非真实 AI 模型
+
+当前使用基于序列长度和氨基酸组成的启发式评分模拟活性预测。
+接入 ESM-2 + MLP Head 后替换为真实推理实现。
 """
 import logging
 from typing import Any
@@ -9,8 +10,8 @@ from typing import Any
 logger = logging.getLogger(__name__)
 
 
-class PeptideScorerService:
-    """活性肽活性预测服务"""
+class MockPeptideScorerService:
+    """活性肽活性预测服务（模拟实现）"""
 
     async def predict(
         self,

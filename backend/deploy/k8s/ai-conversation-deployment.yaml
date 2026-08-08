@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ai-conversation-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ai-conversation-service
+  template:
+    metadata:
+      labels:
+        app: ai-conversation-service
+    spec:
+      containers:
+      - name: ai-conversation
+        image: rmfood/ai-conversation-service:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: APP_ENV
+          value: "production"
+        - name: EVENT_BUS_URL
+          valueFrom:
+            configMapKeyRef:
+              name: configmap-event-bus
+              key: url
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ai-conversation-service
+spec:
+  type: ClusterIP
+  selector:
+    app: ai-conversation-service
+  ports:
+  - port: 8000
+    targetPort: 8000

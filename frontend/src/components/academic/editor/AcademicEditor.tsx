@@ -78,25 +78,25 @@ export function AcademicEditor() {
   const charCount = editorState.content.replace(/\s/g, '').length;
 
   return (
-    <div className="h-full flex flex-col border rounded-lg bg-white dark:bg-gray-800">
-      <div className="flex items-center gap-1 p-2 border-b border-gray-200 dark:border-gray-700 flex-wrap">
+    <div className="h-full flex flex-col border rounded-lg bg-white dark:bg-neutral-800">
+      <div className="flex items-center gap-1 p-2 border-b border-neutral-200 dark:border-neutral-700 flex-wrap">
         {toolbarButtons.map((btn, index) => (
           btn.type === 'divider' ? (
-            <div key={index} className="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-1" />
+            <div key={index} className="w-px h-6 bg-neutral-300 dark:bg-neutral-600 mx-1" />
           ) : (
             <button
               key={index}
               onClick={btn.action}
               title={btn.title}
-              className="h-8 w-8 flex items-center justify-center rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              className="h-8 w-8 flex items-center justify-center rounded hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
             >
               {btn.icon}
             </button>
           )
         ))}
-        <div className="ml-auto flex items-center gap-2 text-xs text-gray-400">
+        <div className="ml-auto flex items-center gap-2 text-xs text-neutral-400">
           <span>{wordCount} 字</span>
-          <span className="text-gray-300">|</span>
+          <span className="text-neutral-300">|</span>
           <span>{charCount} 字符</span>
         </div>
       </div>
@@ -105,7 +105,7 @@ export function AcademicEditor() {
         <textarea
           value={editorState.content}
           onChange={handleContentChange}
-          className="w-full h-full min-h-[400px] resize-none border-none outline-none bg-transparent text-gray-900 dark:text-gray-100 font-mono text-sm"
+          className="w-full h-full min-h-[400px] resize-none border-none outline-none bg-transparent text-neutral-900 dark:text-neutral-100 font-mono text-sm"
           placeholder="开始编写您的学术报告...
 
 支持 Markdown 格式：
@@ -117,13 +117,13 @@ export function AcademicEditor() {
         />
       </div>
 
-      <div className="flex items-center justify-between p-3 border-t border-gray-200 dark:border-gray-700">
+      <div className="flex items-center justify-between p-3 border-t border-neutral-200 dark:border-neutral-700">
         <div className="flex items-center gap-2">
-          <button className="flex items-center gap-1 px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-50 dark:hover:bg-gray-700">
+          <button className="flex items-center gap-1 px-3 py-1.5 text-sm border border-neutral-300 dark:border-neutral-600 rounded hover:bg-slate-50 dark:hover:bg-neutral-700">
             <Undo className="w-4 h-4" />
             撤销
           </button>
-          <button className="flex items-center gap-1 px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-50 dark:hover:bg-gray-700">
+          <button className="flex items-center gap-1 px-3 py-1.5 text-sm border border-neutral-300 dark:border-neutral-600 rounded hover:bg-slate-50 dark:hover:bg-neutral-700">
             <Redo className="w-4 h-4" />
             重做
           </button>

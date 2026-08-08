@@ -52,11 +52,11 @@ interface RadarDataPoint {
 }
 
 const DEFAULT_COLORS = [
-  '#3B82F6',
-  '#10B981',
-  '#F59E0B',
-  '#EF4444',
-  '#8B5CF6',
+  '#007AFF',
+  '#34C759',
+  '#D97706',
+  '#FF3B30',
+  '#AF52DE',
 ]
 
 export function TasteRadarChart({
@@ -91,9 +91,9 @@ export function TasteRadarChart({
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload?.length) {
       return (
-        <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-xl border
-                       border-gray-200 dark:border-gray-700 text-sm">
-          <p className="font-bold text-gray-900 dark:text-gray-100 mb-2">
+        <div className="bg-white dark:bg-neutral-800 p-3 rounded-lg shadow-xl border
+                       border-neutral-200 dark:border-neutral-700 text-sm">
+          <p className="font-bold text-neutral-900 dark:text-neutral-100 mb-2">
             {label}
           </p>
           {payload.map((entry: any, index: number) => (
@@ -121,7 +121,7 @@ export function TasteRadarChart({
           {showGrid && (
             <PolarGrid
               stroke="#e5e7eb"
-              className="dark:stroke-gray-700"
+              className="dark:stroke-slate-700"
             />
           )}
 
@@ -132,7 +132,7 @@ export function TasteRadarChart({
               fontSize: 13,
               fontWeight: 500,
             }}
-            className="dark:text-gray-400"
+            className="dark:text-neutral-400"
           />
 
           <PolarRadiusAxis
@@ -143,18 +143,18 @@ export function TasteRadarChart({
               fontSize: 11,
             }}
             axisLine={false}
-            className="dark:text-gray-500"
+            className="dark:text-neutral-500"
           />
 
           {/* 主数据 */}
           <Radar
             name="当前配方"
             dataKey="primary"
-            stroke="#3B82F6"
-            fill="#3B82F6"
+            stroke="#007AFF"
+            fill="#007AFF"
             fillOpacity={0.25}
             strokeWidth={2.5}
-            dot={{ r: 4, fill: '#3B82F6', strokeWidth: 2 }}
+            dot={{ r: 4, fill: '#007AFF', strokeWidth: 2 }}
           />
 
           {/* 对比数据 1 */}

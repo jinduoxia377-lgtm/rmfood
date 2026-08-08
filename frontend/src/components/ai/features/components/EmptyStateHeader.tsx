@@ -36,7 +36,7 @@ export const EmptyStateHeader = React.forwardRef<HTMLDivElement, EmptyStateHeade
         />
         <h1
           id="empty-state-title"
-          className="text-xl font-semibold text-slate-800 dark:text-slate-100 sm:text-lg es-high-contrast-text"
+          className="text-xl font-semibold text-neutral-800 dark:text-neutral-100 sm:text-lg es-high-contrast-text"
         >
           智能对话
         </h1>
@@ -54,7 +54,7 @@ export const EmptyStateHeader = React.forwardRef<HTMLDivElement, EmptyStateHeade
             <button
               type="button"
               onClick={onClose}
-              className="ml-1 flex h-4 w-4 items-center justify-center rounded-full transition-colors hover:bg-red-100 hover:text-red-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-1 es-focus-ring"
+              className="ml-1 flex h-4 w-4 items-center justify-center rounded-full transition-colors hover:bg-error-100 hover:text-error-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-1 es-focus-ring"
               aria-label={`关闭 ${chatName}`}
             >
               <X className="h-3 w-3" aria-hidden="true" />
@@ -69,17 +69,17 @@ export const EmptyStateHeader = React.forwardRef<HTMLDivElement, EmptyStateHeade
           className={cn(
             'relative flex h-10 w-10 items-center justify-center rounded-full',
             'transition-colors duration-150',
-            'hover:bg-gray-100 dark:hover:bg-gray-800',
+            'hover:bg-neutral-100 dark:hover:bg-neutral-800',
             'focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary-500 es-focus-visible',
-            'dark:focus:ring-offset-gray-900',
+            'dark:focus:ring-offset-slate-900',
           )}
           aria-label={`消息${messageCount ? ` (${messageCount > 99 ? '99+' : messageCount})` : ''}`}
           aria-live="polite"
         >
-          <MessageSquare className="h-5 w-5 text-slate-600 dark:text-slate-400" aria-hidden="true" />
+          <MessageSquare className="h-5 w-5 text-neutral-600 dark:text-neutral-400" aria-hidden="true" />
           {messageCount !== undefined && messageCount > 0 && (
             <span
-              className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white"
+              className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-error-500 text-[10px] font-bold text-white"
               role="status"
               aria-label={`${messageCount} 条未读消息`}
             >
@@ -94,15 +94,15 @@ export const EmptyStateHeader = React.forwardRef<HTMLDivElement, EmptyStateHeade
           className={cn(
             'relative flex h-10 w-10 items-center justify-center rounded-full',
             'transition-colors duration-150',
-            'hover:bg-gray-100 dark:hover:bg-gray-800',
+            'hover:bg-neutral-100 dark:hover:bg-neutral-800',
             'focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary-500 es-focus-visible',
-            'dark:focus:ring-offset-gray-900',
+            'dark:focus:ring-offset-slate-900',
           )}
           aria-label="通知，有新通知"
         >
-          <Bell className="h-5 w-5 text-slate-600 dark:text-slate-400" aria-hidden="true" />
+          <Bell className="h-5 w-5 text-neutral-600 dark:text-neutral-400" aria-hidden="true" />
           <span
-            className="absolute right-0 top-0 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white dark:ring-gray-900"
+            className="absolute right-0 top-0 h-2 w-2 rounded-full bg-error-500 ring-2 ring-white dark:ring-slate-900"
             role="presentation"
             aria-hidden="true"
           />
@@ -114,11 +114,11 @@ export const EmptyStateHeader = React.forwardRef<HTMLDivElement, EmptyStateHeade
             onClick={onNewChatClick}
             className={cn(
               'flex items-center gap-2 rounded-xl px-4 py-2',
-              'bg-green-600 text-sm font-medium text-white shadow-sm',
+              'bg-success-600 text-sm font-medium text-white shadow-sm',
               'transition-all duration-200',
-              'hover:bg-green-700 hover:shadow-md',
+              'hover:bg-success-700 hover:shadow-md',
               'focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-green-500 es-focus-visible',
-              'dark:focus:ring-offset-gray-900',
+              'dark:focus:ring-offset-slate-900',
             )}
             aria-label="创建新对话"
           >

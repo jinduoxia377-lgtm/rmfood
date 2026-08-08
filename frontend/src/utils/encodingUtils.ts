@@ -6,6 +6,8 @@
 
 import { EXCEL } from '@/constants/businessRules'
 
+
+import { logger } from '@/utils/safeLogger';
 export const UTF8_BOM = '\uFEFF'
 
 export function addBOM(content: string): string {
@@ -322,7 +324,7 @@ export class ExportHistoryManager {
         this.maxHistory = data.maxHistory || 50
       }
     } catch (e) {
-      console.warn('[ExportHistory] Failed to load history from storage:', e)
+      logger.warn('[ExportHistory] Failed to load history from storage:', e)
     }
   }
 
@@ -333,7 +335,7 @@ export class ExportHistoryManager {
         maxHistory: this.maxHistory,
       }))
     } catch (e) {
-      console.warn('[ExportHistory] Failed to save history to storage:', e)
+      logger.warn('[ExportHistory] Failed to save history to storage:', e)
     }
   }
 

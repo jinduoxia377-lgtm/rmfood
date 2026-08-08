@@ -64,7 +64,7 @@ export class HotkeyManager {
    */
   register(keyCombo: string, handler: (e: KeyboardEvent) => void, options: HotkeyOptions): void {
     if (this.isDestroyed) {
-      console.warn('[HotkeyManager] ⚠️ 无法在已销毁的实例上注册快捷键')
+      logger.warn('[HotkeyManager] ⚠️ 无法在已销毁的实例上注册快捷键')
       return
     }
 
@@ -72,11 +72,11 @@ export class HotkeyManager {
 
     // 冲突检测
     if (BROWSER_RESERVED_KEYS.has(normalizedKey)) {
-      console.warn(`[HotkeyManager] ⚠️ 快捷键 "${normalizedKey}" 与浏览器保留快捷键冲突`)
+      logger.warn(`[HotkeyManager] ⚠️ 快捷键 "${normalizedKey}" 与浏览器保留快捷键冲突`)
     }
 
     if (this.bindings.has(normalizedKey)) {
-      console.warn(`[HotkeyManager] ⚠️ 快捷键 "${normalizedKey}" 已存在，将被覆盖`)
+      logger.warn(`[HotkeyManager] ⚠️ 快捷键 "${normalizedKey}" 已存在，将被覆盖`)
     }
 
     this.bindings.set(normalizedKey, {
@@ -188,7 +188,7 @@ export class HotkeyManager {
 
       binding.handler(e)
     } catch (error) {
-      console.error('[HotkeyManager] ❌ 快捷键处理器执行失败:', error)
+      logger.error('[HotkeyManager] ❌ 快捷键处理器执行失败:', error)
     }
   }
 
@@ -211,6 +211,8 @@ export class HotkeyManager {
 
 import { useEffect, useRef } from 'react'
 
+
+import { logger } from '@/utils/safeLogger';
 interface UseHotkeysReturn {
   register: (keyCombo: string, handler: (e: KeyboardEvent) => void, options?: HotkeyOptions) => void
   unregister: (keyCombo: string) => void

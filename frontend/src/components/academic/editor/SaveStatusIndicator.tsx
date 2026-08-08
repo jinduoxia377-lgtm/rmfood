@@ -24,29 +24,29 @@ export function SaveStatusIndicator({
         return {
           icon: <Save className="w-4 h-4" />,
           text: '未保存',
-          color: 'text-gray-500',
-          bgColor: 'bg-gray-100 dark:bg-gray-800',
+          color: 'text-neutral-500',
+          bgColor: 'bg-neutral-100 dark:bg-neutral-800',
         };
       case 'saving':
         return {
           icon: <Loader2 className="w-4 h-4 animate-spin" />,
           text: '保存中...',
-          color: 'text-blue-500',
-          bgColor: 'bg-blue-100 dark:bg-blue-900/30',
+          color: 'text-secondary-500',
+          bgColor: 'bg-secondary-100 dark:bg-secondary-900/30',
         };
       case 'saved':
         return {
           icon: <Check className="w-4 h-4" />,
           text: '已保存',
-          color: 'text-green-600',
-          bgColor: 'bg-green-100 dark:bg-green-900/30',
+          color: 'text-success-600',
+          bgColor: 'bg-success-100 dark:bg-success-900/30',
         };
       case 'error':
         return {
           icon: <AlertCircle className="w-4 h-4" />,
           text: '保存失败',
-          color: 'text-red-600',
-          bgColor: 'bg-red-100 dark:bg-red-900/30',
+          color: 'text-error-600',
+          bgColor: 'bg-error-100 dark:bg-error-900/30',
         };
       case 'conflict':
         return {
@@ -79,7 +79,7 @@ export function SaveStatusIndicator({
         <span className={config.color}>{config.icon}</span>
         <span className={cn('text-sm font-medium', config.color)}>{config.text}</span>
         {status === 'saved' && lastSavedAt && (
-          <span className="text-xs text-gray-500 dark:text-gray-400">
+          <span className="text-xs text-neutral-500 dark:text-neutral-400">
             {formatLastSavedTime(lastSavedAt)}
           </span>
         )}
@@ -87,11 +87,11 @@ export function SaveStatusIndicator({
 
       {status === 'error' && error && (
         <div className="flex items-center gap-2">
-          <span className="text-sm text-red-600 dark:text-red-400">{error}</span>
+          <span className="text-sm text-error-600 dark:text-error-400">{error}</span>
           {onRetry && (
             <button
               onClick={onRetry}
-              className="px-3 py-1 text-sm bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-full hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors"
+              className="px-3 py-1 text-sm bg-error-100 dark:bg-error-900/30 text-error-600 dark:text-error-400 rounded-full hover:bg-error-200 dark:hover:bg-error-900/50 transition-colors"
             >
               重试
             </button>
@@ -142,19 +142,19 @@ export function AutoSaveIndicator({
         className={cn(
           'flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-colors',
           enabled
-            ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
-            : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400',
+            ? 'bg-success-100 dark:bg-success-900/30 text-success-700 dark:text-success-400'
+            : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400',
         )}
       >
         <div className={cn(
           'w-2 h-2 rounded-full',
-          enabled ? 'bg-green-500 animate-pulse' : 'bg-gray-400',
+          enabled ? 'bg-success-500 animate-pulse' : 'bg-neutral-400',
         )} />
         自动保存 {enabled ? '已开启' : '已关闭'}
       </button>
 
       {enabled && (
-        <span className="text-xs text-gray-500 dark:text-gray-400">
+        <span className="text-xs text-neutral-500 dark:text-neutral-400">
           每 {formatInterval(interval)} 自动保存
         </span>
       )}

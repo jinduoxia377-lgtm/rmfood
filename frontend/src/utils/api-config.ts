@@ -1,3 +1,4 @@
+import { logger } from '@/utils/safeLogger';
 // 动态后端地址配置
 // 自动根据访问地址配置后端 URL
 
@@ -64,9 +65,9 @@ export const getWebSocketUrl = () => {
 
 // 日志输出（开发环境）
 if (process.env.NODE_ENV === 'development') {
-  console.log('[API Config]');
-  console.log('  Host:', window.location.hostname);
-  console.log('  Backend URL:', getBackendUrl());
-  console.log('  API Base URL:', getApiUrl());
-  console.log('  WebSocket URL:', getWebSocketUrl());
+  logger.info('[API Config]');
+  logger.info('  Host:', window.location.hostname);
+  logger.info('  Backend URL:', getBackendUrl());
+  logger.info('  API Base URL:', getApiUrl());
+  logger.info('  WebSocket URL:', getWebSocketUrl());
 }

@@ -2,8 +2,8 @@
 from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from app.models.terminology import Term, TermCategory, TermVariant, TermNormalizationRule
-from app.schemas.terminology import (
+from ..models.terminology import Term, TermCategory, TermVariant, TermNormalizationRule
+from ..schemas.terminology import (
     TermCreate, TermUpdate, TermOut,
     TermCategoryCreate, TermCategoryUpdate, TermCategoryOut,
     TermVariantCreate, TermVariantOut,
@@ -13,9 +13,9 @@ from app.schemas.terminology import (
     TermSuggestionRequest, TermSuggestionResponse,
     TermNormalizationRuleCreate, TermNormalizationRuleOut
 )
-from app.schemas.base import ApiResponse, PaginatedResponse
-from app.api.deps import get_db
-from app.services.terminology_service import TerminologyService
+from ..schemas.base import ApiResponse, PaginatedResponse
+from .deps import get_db
+from ..services.terminology_service import TerminologyService
 
 router = APIRouter(prefix="/api/terminology", tags=["术语管理"])
 
@@ -462,3 +462,60 @@ def get_statistics(db: Session = Depends(get_db)):
         "total_validations": total_validations,
         "category_stats": category_stats
     })
+
+
+# ═══════════════════════════════════════════
+# 配方输入术语校验 API
+# ═══════════════════════════════════════════
+
+@router.post("/validate-input", response_model=ApiResponse[TermValidationResponse])
+def validate_term_input(
+    request: TermValidationRequest,
+    db: Session = Depends(get_db),
+):
+    """
+    验证配方输入中的术语是否标准。
+
+    返回：
+    - is_valid: 是否是标准术语
+    - standard_name: 标准名称（如果是别名）
+    - suggestions: 相似术语建议
+    - category: 所属分类
+    """
+    service = TerminologyService(db)
+    result = service.validate_term(request.term)
+    return ApiResponse(data=TermValidationResponse(**result))
+
+
+@router.post("/batch-validate", response_model=ApiResponse)
+def batch_validate_terms(
+    request: BatchTermValidationRequest,
+    db: Session = Depends(get_db),
+):
+    """批量验证术语"""
+    service = TerminologyService(db)
+    results = []
+    for term_text in request.terms:
+        result = service.validate_term(term_text)
+        results.append({
+            "term": term_text,
+            **result,
+        })
+    return ApiResponse(data={"results": results, "total": len(results)})
+
+
+@router.get("/suggest", response_model=ApiResponse)
+def suggest_terms(
+    query: str = Query(..., min_length=1, description="搜索关键词"),
+    category: Optional[str] = Query(None, description="分类过滤"),
+    limit: int = Query(10, ge=1, le=50, description="返回数量"),
+    db: Session = Depends(get_db),
+):
+    """
+    术语建议（用于配方输入时的自动补全）。
+
+    支持模糊匹配和拼音首字母匹配。
+    """
+    service = TerminologyService(db)
+    suggestions = service.search_terms(query, category=category, limit=limit)
+    return ApiResponse(data=suggestions)

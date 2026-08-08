@@ -149,6 +149,11 @@ export const useThemeStore = create<ThemeStore>()(
             isInitialized: true,
           });
 
+          // 6.5 应用 reduced-motion 到 DOM（初始化时）
+          if (motionPrefs.reducedMotion || motionPrefs.disableAnimations) {
+            document.documentElement.classList.add('reduce-motion');
+          }
+
           // 7. 应用到 DOM
           await applyThemeWithTransition(baseTheme, state.transitionType);
 

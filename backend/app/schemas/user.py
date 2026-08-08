@@ -15,7 +15,7 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     """用户创建"""
-    password: str = Field(..., min_length=6, max_length=100)
+    password: str = Field(..., min_length=8, max_length=100)
 
 
 class UserUpdate(BaseModel):
@@ -65,4 +65,4 @@ class LoginRequest(BaseModel):
 class PasswordChange(BaseModel):
     """密码修改"""
     old_password: str
-    new_password: str = Field(..., min_length=6, max_length=100)
+    new_password: str = Field(..., min_length=8, max_length=100)

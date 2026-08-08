@@ -1,18 +1,20 @@
 """RMFOOD WebSocket通知路由
 
 提供实时通知推送的WebSocket端点。
+统一使用 WebSocketManager (core/websocket_manager) 作为唯一管理器。
 """
 import json
 import logging
 import asyncio
-from typing import Optional
+import urllib.parse
+from datetime import datetime, timezone
+from typing import Optional, Any, Dict
 
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query, Depends
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query
+from fastapi import Depends
 
-from ...websockets.notification_handler import ws_handler, NotificationPayload
-from ...api.deps import get_current_active_user
 from ...models.user_model import User
-from ...core.websocket import connection_manager
+from ...core.realtime.websocket_manager import get_ws_manager
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
@@ -28,103 +30,73 @@ async def websocket_generic_endpoint(
     connection_id: Optional[str] = Query(None, description="Connection ID"),
 ):
     """
-    通用 WebSocket 连接端点（匹配前端 WebSocketService 的连接路径）
-
-    前端连接格式: ws://host/api/v1/ws?token=xxx&connection_id=xxx&client_info=xxx
-
-    功能：
-    - JWT Token 认证
-    - 心跳检测 (ping/pong)
-    - 连接状态管理
-    - 广播消息支持
+    通用 WebSocket 连接端点（统一使用 WebSocketManager）
     """
-    await websocket.accept()
+    # 从 query 参数或 Cookie 获取 JWT token
+    ws_token = token
+    if not ws_token:
+        ws_token = websocket.cookies.get("rmfood_access_token")
+
+    if not ws_token:
+        await websocket.close(code=4001, reason="Missing authentication token")
+        return
 
     try:
-        from app.utils.auth import decode_token
-
-        # 支持 URL token 和 HttpOnly Cookie 认证
-        ws_token = token
-        if not ws_token:
-            ws_token = websocket.cookies.get("rmfood_access_token")
-
-        if not ws_token:
-            await websocket.close(code=4001, reason="Missing authentication token")
-            return
-
+        from ...utils.auth import decode_token
         payload = decode_token(ws_token)
-
         if not payload or payload.get("type") != "access":
             await websocket.close(code=4003, reason="Invalid or expired token")
             return
-
         user_id = str(payload["sub"])
+    except Exception as auth_err:
+        logger.warning("WebSocket 认证失败: %s", auth_err)
+        await websocket.close(code=4003, reason="Authentication failed")
+        return
 
-        # 解析客户端信息
-        client_info = {}
-        if connection_id:
-            try:
-                import urllib.parse
-                raw_client_info = urllib.parse.unquote(connection_id)
-                client_info = json.loads(raw_client_info) if raw_client_info.startswith("{") else {}
-            except Exception:
-                pass
+    # 解析客户端信息
+    client_info: Dict[str, Any] = {}
+    if connection_id:
+        try:
+            raw = urllib.parse.unquote(connection_id)
+            client_info = json.loads(raw) if raw.startswith("{") else {}
+        except Exception as parse_err:
+            logger.debug("WebSocket 客户端信息解析失败: %s", parse_err)
 
-        effective_connection_id = connection_id or f"conn_{user_id}_{id(websocket)}"
+    manager = get_ws_manager()
+    effective_connection_id = await manager.connect(websocket, user_id, tenant_id=payload.get("tenant_id", "default"), metadata=client_info)
 
-        # 注册到连接管理器
-        await connection_manager.connect(
-            websocket=websocket,
-            user_id=user_id,
-            connection_id=effective_connection_id,
-            client_info=client_info,
-        )
+    logger.info(f"通用 WebSocket 客户端已连接: user={user_id} conn={effective_connection_id}")
 
-        logger.info(f"通用 WebSocket 客户端已连接: user={user_id} conn={effective_connection_id}")
-
-        # 消息循环
+    # 消息循环 - 使用统一的 handle_message
+    try:
         while True:
             data = await websocket.receive_text()
-
             try:
                 message = json.loads(data)
                 msg_type = message.get("type")
-
-                if msg_type == "ping":
-                    connection_manager.update_ping(effective_connection_id)
-                    await websocket.send_json({
-                        "type": "pong",
-                        "timestamp": __import__('datetime').datetime.now(__import__('datetime').timezone.utc).isoformat(),
-                    })
-
-                elif msg_type == "heartbeat":
-                    connection_manager.update_ping(effective_connection_id)
-                    await websocket.send_json({
-                        "type": "heartbeat_ack",
-                        "timestamp": __import__('datetime').datetime.now(__import__('datetime').timezone.utc).isoformat(),
-                    })
-
+                if msg_type in ("ping", "heartbeat"):
+                    await manager.handle_message(effective_connection_id, data)
+                elif msg_type == "subscribe":
+                    channel = message.get("channel")
+                    if channel:
+                        await manager.subscribe(effective_connection_id, channel)
+                elif msg_type == "unsubscribe":
+                    channel = message.get("channel")
+                    if channel:
+                        await manager.unsubscribe(effective_connection_id, channel)
                 else:
-                    logger.debug(f"收到未知消息类型: {msg_type}")
-
+                    await manager.handle_message(effective_connection_id, data)
             except json.JSONDecodeError:
-                logger.warning(f"无效的JSON消息: {data[:100]}")
-                await websocket.send_json({
+                await manager.send_to_connection(effective_connection_id, {
                     "type": "error",
-                    "message": "Invalid JSON format",
+                    "data": {"code": "INVALID_JSON", "message": "Invalid JSON format"},
                 })
-
     except WebSocketDisconnect:
         logger.info(f"通用 WebSocket 断开: user={user_id} conn={effective_connection_id}")
-        await connection_manager.disconnect(user_id, effective_connection_id)
-
     except Exception as e:
-        logger.error(f"通用 WebSocket 错误: {e}")
-        try:
-            await connection_manager.disconnect(user_id, effective_connection_id)
-            await websocket.close(code=1011, reason=str(e))
-        except Exception:
-            pass
+        logger.error(f"通用 WebSocket 错误: {e}", exc_info=True)
+    finally:
+        await manager.disconnect(effective_connection_id, reason="client_disconnect")
 
 
 @router.websocket("/ws/notifications/{team_id}")
@@ -133,99 +105,57 @@ async def websocket_notification_endpoint(
     team_id: int,
     token: Optional[str] = Query(None, description="JWT Token"),
 ):
-    """
-    WebSocket通知连接端点
-    
-    用于接收团队的实时通知推送。
-    
-    连接流程：
-    1. 验证Token获取用户信息
-    2. 加入团队房间
-    3. 接收心跳消息保持连接
-    4. 接收实时通知推送
-    
-    Args:
-        websocket: WebSocket连接
-        team_id: 团队ID
-        token: JWT认证令牌
-    """
-    await websocket.accept()
+    """WebSocket通知端点（统一使用 WebSocketManager）"""
+    ws_token = token or websocket.cookies.get("rmfood_access_token")
+    if not ws_token:
+        await websocket.close(code=4001, reason="Missing authentication token")
+        return
 
     try:
-        from app.utils.auth import decode_token
-        
-        if not token:
-            await websocket.close(code=4001, reason="Missing authentication token")
-            return
-
-        payload = decode_token(token)
-
+        from ...utils.auth import decode_token
+        payload = decode_token(ws_token)
         if not payload or payload.get("type") != "access":
             await websocket.close(code=4003, reason="Invalid or expired token")
             return
+        user_id = str(payload["sub"])
+    except Exception as auth_err:
+        logger.warning("WebSocket 认证失败: %s", auth_err)
+        await websocket.close(code=4003, reason="Authentication failed")
+        return
 
-        user_id = int(payload["sub"])
+    manager = get_ws_manager()
+    connection_id = await manager.connect(websocket, user_id, tenant_id=str(team_id), metadata={"team_id": team_id})
 
-        async with ws_handler.db_context() as db:
-            result = await db.execute(select(User).where(User.id == user_id))
-            user = result.scalar_one_or_none()
+    logger.info(f"WebSocket已连接: user={user_id} team={team_id}")
 
-            if not user or not user.is_active:
-                await websocket.close(code=4003, reason="User not found or inactive")
-                return
-
-            username = user.username or f"User_{user_id}"
-
-            connection = await ws_handler.connect(
-                websocket=websocket,
-                team_id=team_id,
-                user_id=user_id,
-                username=username,
-            )
-
-        logger.info(f"🔌 WebSocket客户端已连接: {username} ({user_id}) → team {team_id}")
-
+    try:
         while True:
             data = await websocket.receive_text()
-            
             try:
                 message = json.loads(data)
-                
                 msg_type = message.get("type")
-
-                if msg_type == "heartbeat":
-                    await ws_handler.handle_heartbeat(websocket, team_id, user_id)
-                    await websocket.send_json({
-                        "type": "heartbeat_ack",
-                        "timestamp": __import__('datetime').datetime.now(__import__('datetime').timezone.utc).isoformat(),
-                    })
-
-                elif msg_type == "ping":
-                    await websocket.send_json({
-                        "type": "pong",
-                        "timestamp": __import__('datetime').datetime.now(__import__('datetime').timezone.utc).isoformat(),
-                    })
-
+                if msg_type in ("ping", "heartbeat"):
+                    await manager.handle_message(connection_id, data)
+                elif msg_type == "subscribe":
+                    channel = message.get("channel")
+                    if channel:
+                        await manager.subscribe(connection_id, channel)
+                elif msg_type == "unsubscribe":
+                    channel = message.get("channel")
+                    if channel:
+                        await manager.unsubscribe(connection_id, channel)
                 else:
-                    logger.debug(f"收到未知消息类型: {msg_type}")
-
+                    await manager.handle_message(connection_id, data)
             except json.JSONDecodeError:
-                logger.warning(f"无效的JSON消息: {data[:100]}")
-                await websocket.send_json({
-                    "type": "error",
-                    "message": "Invalid JSON format",
+                await manager.send_to_connection(connection_id, {
+                    "type": "error", "data": {"code": "INVALID_JSON"}
                 })
-
     except WebSocketDisconnect:
-        logger.info(f"WebSocket断开: user {user_id} from team {team_id}")
-        await ws_handler.disconnect(websocket, team_id, user_id)
-
+        logger.debug("通用 WebSocket 客户端正常断开连接")
     except Exception as e:
-        logger.error(f"WebSocket错误: {e}")
-        try:
-            await websocket.close(code=1011, reason=str(e))
-        except Exception:
-            pass
+        logger.error(f"WebSocket错误: {e}", exc_info=True)
+    finally:
+        await manager.disconnect(connection_id, reason="client_disconnect")
 
 
 @router.websocket("/ws/presence/{team_id}")
@@ -234,71 +164,50 @@ async def websocket_presence_endpoint(
     team_id: int,
     token: Optional[str] = Query(None),
 ):
-    """
-    WebSocket在线状态端点
-    
-    专门用于查询和管理团队成员在线状态。
-    """
-    await websocket.accept()
+    """WebSocket在线状态端点（统一使用 WebSocketManager）"""
+    ws_token = token or websocket.cookies.get("rmfood_access_token")
+    if not ws_token:
+        await websocket.close(code=4001, reason="Missing token")
+        return
 
     try:
-        if not token:
-            await websocket.close(code=4001, reason="Missing token")
-            return
-
-        from app.utils.auth import decode_token
-        payload = decode_token(token)
-
-        if not payload:
+        from ...utils.auth import decode_token
+        payload = decode_token(ws_token)
+        if not payload or payload.get("type") != "access":
             await websocket.close(code=4003, reason="Invalid token")
             return
+        user_id = str(payload["sub"])
+    except Exception as auth_err:
+        logger.warning("WebSocket 认证失败: %s", auth_err)
+        await websocket.close(code=4003, reason="Authentication failed")
+        return
 
-        user_id = int(payload["sub"])
+    manager = get_ws_manager()
 
-        online_users = []
-        
-        if team_id in ws_handler.rooms:
-            online_users = [
-                {
-                    "user_id": uid,
-                    "username": conn.username,
-                    "connected_at": conn.connected_at.isoformat(),
-                }
-                for uid, conn in ws_handler.rooms[team_id].items()
-            ]
+    # 发送初始在线列表
+    online_users = manager.get_online_users(str(team_id))
+    await websocket.send_json({
+        "type": "presence_list",
+        "data": {
+            "team_id": team_id,
+            "online_users": [{"user_id": uid} for uid in online_users],
+            "online_count": len(online_users),
+        },
+    })
 
-        await websocket.send_json({
-            "type": "presence_list",
-            "data": {
-                "team_id": team_id,
-                "online_users": online_users,
-                "online_count": len(online_users),
-            },
-        })
-
+    try:
         while True:
             await asyncio.sleep(30)
-            
-            if team_id in ws_handler.rooms:
-                current_online = [
-                    {
-                        "user_id": uid,
-                        "username": conn.username,
-                    }
-                    for uid, conn in ws_handler.rooms[team_id].items()
-                ]
-                
-                await websocket.send_json({
-                    "type": "presence_update",
-                    "data": {
-                        "online_count": len(current_online),
-                    },
-                })
-            else:
-                break
-
+            current_users = manager.get_online_users(str(team_id))
+            await websocket.send_json({
+                "type": "presence_update",
+                "data": {
+                    "team_id": team_id,
+                    "online_count": len(current_users),
+                    "online_users": [{"user_id": uid} for uid in current_users],
+                },
+            })
     except WebSocketDisconnect:
-        pass
-
+        logger.debug("Presence WebSocket 客户端正常断开连接")
     except Exception as e:
         logger.error(f"Presence WebSocket错误: {e}")

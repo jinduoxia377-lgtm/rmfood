@@ -7,7 +7,7 @@ import re
 import string
 from collections import OrderedDict
 
-from app.core.logging_config import logger
+from app.core.observability.logging_config import logger
 import logging
 
 logger = logging.getLogger(__name__)
@@ -315,7 +315,7 @@ class ComprehensiveTermPipeline:
                     self.validation_pipeline.process(normalized_for_validation)
                 except ValueError as e:
                     result["is_valid"] = False
-                    result["errors"].append(str(e))
+                    result["errors"].append("处理异常")
             
             if mode in ["full", "correct"]:
                 input_for_correction = result["normalized"] or term
@@ -327,7 +327,7 @@ class ComprehensiveTermPipeline:
         
         except Exception as e:
             result["is_valid"] = False
-            result["errors"].append(f"处理失败: {str(e)}")
+            result["errors"].append("处理失败")
         
         return result
     
@@ -392,4 +392,4 @@ if __name__ == "__main__":
             logger.error(f"错误: {result['errors']}")
         if result['warnings']:
             logger.warning(f"警告: {result['warnings']}")
-        print()
+        logger.debug("")

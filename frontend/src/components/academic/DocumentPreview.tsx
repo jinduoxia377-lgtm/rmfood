@@ -61,8 +61,8 @@ export function DocumentPreview({ document }: DocumentPreviewProps) {
 
   if (!document) {
     return (
-      <div className="h-full flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <div className="text-center text-gray-500 dark:text-gray-400">
+      <div className="h-full flex items-center justify-center bg-slate-50 dark:bg-neutral-900">
+        <div className="text-center text-neutral-500 dark:text-neutral-400">
           <FileText className="w-16 h-16 mx-auto mb-4 opacity-50" />
           <p>暂无文档</p>
         </div>
@@ -71,17 +71,17 @@ export function DocumentPreview({ document }: DocumentPreviewProps) {
   }
 
   return (
-    <div className="flex flex-col h-full bg-gray-100 dark:bg-gray-900">
+    <div className="flex flex-col h-full bg-neutral-100 dark:bg-neutral-900">
       {/* 工具栏 */}
-      <div className="flex items-center justify-between p-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+      <div className="flex items-center justify-between p-3 border-b border-neutral-200 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-800">
         <div className="flex items-center gap-2">
-          <Eye className="w-4 h-4 text-gray-500" />
-          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">预览</span>
+          <Eye className="w-4 h-4 text-neutral-500" />
+          <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">预览</span>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={handlePrint}
-            className="flex items-center gap-1 px-3 py-1.5 text-sm bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+            className="flex items-center gap-1 px-3 py-1.5 text-sm bg-neutral-200 dark:bg-neutral-700 rounded-lg hover:bg-neutral-300 dark:hover:bg-neutral-600 transition-colors"
           >
             <Printer className="w-4 h-4" />
             打印
@@ -91,27 +91,27 @@ export function DocumentPreview({ document }: DocumentPreviewProps) {
 
       {/* 预览内容 - 使用专业学术排版样式 */}
       <div className="flex-1 overflow-y-auto p-6">
-        <div className="max-w-4xl mx-auto bg-white dark:bg-gray-900 rounded-lg shadow-lg p-8 print:shadow-none print:bg-white academic-preview">
+        <div className="max-w-4xl mx-auto bg-white dark:bg-neutral-900 rounded-lg shadow-lg p-8 print:shadow-none print:bg-white academic-preview">
           {/* 封面 */}
           {document.title && (
             <div className="cover-page text-center mb-12 mt-8">
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-8 tracking-widest">
+              <h1 className="h1 text-neutral-900 dark:text-neutral-100 mb-8 tracking-widest">
                 {document.title}
               </h1>
               {document.authors && document.authors.length > 0 && (
-                <p className="text-base text-gray-700 dark:text-gray-300 mb-2">
+                <p className="text-base text-neutral-700 dark:text-neutral-300 mb-2">
                   <span className="font-medium">作者：</span>
                   {document.authors.join('，')}
                 </p>
               )}
               {document.institution && (
-                <p className="text-base text-gray-700 dark:text-gray-300 mb-2">
+                <p className="text-base text-neutral-700 dark:text-neutral-300 mb-2">
                   <span className="font-medium">单位：</span>
                   {document.institution}
                 </p>
               )}
               {document.date && (
-                <p className="text-base text-gray-700 dark:text-gray-300">
+                <p className="text-base text-neutral-700 dark:text-neutral-300">
                   <span className="font-medium">日期：</span>
                   {document.date}
                 </p>
@@ -121,24 +121,24 @@ export function DocumentPreview({ document }: DocumentPreviewProps) {
 
           {/* 页眉（从目录开始显示） */}
           <div className="header-section">
-            <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-gray-700 mb-6">
-              <span className="text-xs text-gray-500 dark:text-gray-400">{document.title}</span>
-              <span className="text-xs text-gray-500 dark:text-gray-400">学术报告</span>
-              <span className="text-xs text-gray-500 dark:text-gray-400">第 页</span>
+            <div className="flex justify-between items-center py-2 border-b border-neutral-200 dark:border-neutral-700 mb-6">
+              <span className="text-xs text-neutral-500 dark:text-neutral-400">{document.title}</span>
+              <span className="text-xs text-neutral-500 dark:text-neutral-400">学术报告</span>
+              <span className="text-xs text-neutral-500 dark:text-neutral-400">第 页</span>
             </div>
           </div>
 
           {/* 中文摘要 */}
           {document.abstractChinese && (
             <div className="abstract-section mb-8">
-              <h2 className="text-lg font-bold text-center mb-4 text-gray-900 dark:text-gray-100">
+              <h2 className="text-lg font-bold text-center mb-4 text-neutral-900 dark:text-neutral-100">
                 摘要
               </h2>
-              <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-justify indent-8">
+              <p className="text-neutral-700 dark:text-neutral-300 leading-relaxed text-justify indent-8">
                 {document.abstractChinese}
               </p>
               {document.keywords && document.keywords.length > 0 && (
-                <p className="text-gray-700 dark:text-gray-300 mt-4 indent-8">
+                <p className="text-neutral-700 dark:text-neutral-300 mt-4 indent-8">
                   <span className="font-medium">关键词：</span>
                   {document.keywords.join('；')}
                 </p>
@@ -149,10 +149,10 @@ export function DocumentPreview({ document }: DocumentPreviewProps) {
           {/* 英文摘要 */}
           {document.abstractEnglish && (
             <div className="abstract-section mb-8">
-              <h2 className="text-lg font-bold text-center mb-4 text-gray-900 dark:text-gray-100">
+              <h2 className="text-lg font-bold text-center mb-4 text-neutral-900 dark:text-neutral-100">
                 Abstract
               </h2>
-              <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-justify indent-8">
+              <p className="text-neutral-700 dark:text-neutral-300 leading-relaxed text-justify indent-8">
                 {document.abstractEnglish}
               </p>
             </div>
@@ -160,18 +160,18 @@ export function DocumentPreview({ document }: DocumentPreviewProps) {
 
           {/* 目录 */}
           <div className="toc-section mb-12">
-            <h2 className="text-lg font-bold text-center mb-4 text-gray-900 dark:text-gray-100">
+            <h2 className="text-lg font-bold text-center mb-4 text-neutral-900 dark:text-neutral-100">
               目录
             </h2>
             <ul className="space-y-2">
               {document.chapters
                 .filter(ch => ch.type !== 'cover' && ch.type !== 'abstract' && ch.type !== 'toc')
                 .map((chapter, index) => (
-                  <li key={chapter.id} className="flex justify-between items-center py-1 border-b border-gray-200 dark:border-gray-700">
-                    <span className={`text-gray-800 dark:text-gray-200 ${chapter.level === 1 ? 'font-medium' : chapter.level === 2 ? 'ml-4' : 'ml-8'}`}>
+                  <li key={chapter.id} className="flex justify-between items-center py-1 border-b border-neutral-200 dark:border-neutral-700">
+                    <span className={`text-neutral-800 dark:text-neutral-200 ${chapter.level === 1 ? 'font-medium' : chapter.level === 2 ? 'ml-4' : 'ml-8'}`}>
                       {chapter.title}
                     </span>
-                    <span className="text-gray-500 dark:text-gray-400 text-sm ml-4">
+                    <span className="text-neutral-500 dark:text-neutral-400 text-sm ml-4">
                       {index + 1}
                     </span>
                   </li>
@@ -181,7 +181,7 @@ export function DocumentPreview({ document }: DocumentPreviewProps) {
 
           {/* 章节内容 */}
           {document.chapters.length === 0 ? (
-            <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+            <div className="text-center py-12 text-neutral-500 dark:text-neutral-400">
               <FileText className="w-16 h-16 mx-auto mb-4 opacity-50" />
               <p>暂无内容</p>
             </div>
@@ -191,13 +191,13 @@ export function DocumentPreview({ document }: DocumentPreviewProps) {
               .map((chapter, chapterIndex) => (
                 <div key={chapter.id} className="chapter mb-8">
                   {/* 一级标题：居中加粗 */}
-                  <h2 className="text-xl font-bold text-center mb-6 text-gray-900 dark:text-gray-100">
+                  <h2 className="text-xl font-bold text-center mb-6 text-neutral-900 dark:text-neutral-100">
                     {chapter.title}
                   </h2>
 
                   {/* 章节内容 */}
                   {chapter.content && (
-                    <div className="chapter-content text-gray-700 dark:text-gray-300 leading-loose">
+                    <div className="chapter-content text-neutral-700 dark:text-neutral-300 leading-loose">
                       {renderContent(chapter.content)}
                     </div>
                   )}
@@ -208,11 +208,11 @@ export function DocumentPreview({ document }: DocumentPreviewProps) {
                       {chapter.children.map(child => (
                         <div key={child.id} className="subsection">
                           {/* 二级标题：左对齐加粗 */}
-                          <h3 className="text-lg font-semibold text-left mb-3 text-gray-900 dark:text-gray-100">
+                          <h3 className="text-lg font-semibold text-left mb-3 text-neutral-900 dark:text-neutral-100">
                             {child.title}
                           </h3>
                           {child.content && (
-                            <div className="text-gray-700 dark:text-gray-300 leading-loose">
+                            <div className="text-neutral-700 dark:text-neutral-300 leading-loose">
                               {renderContent(child.content)}
                             </div>
                           )}
@@ -226,7 +226,7 @@ export function DocumentPreview({ document }: DocumentPreviewProps) {
                     <div className="figures mt-6 space-y-6">
                       {chapter.figures.map(figure => (
                         <figure key={figure.id} className="text-center">
-                          <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 inline-block">
+                          <div className="bg-neutral-100 dark:bg-neutral-800 rounded-lg p-4 inline-block">
                             {figure.data ? (
                               <img
                                 src={figure.data}
@@ -234,13 +234,13 @@ export function DocumentPreview({ document }: DocumentPreviewProps) {
                                 className="max-w-full h-auto"
                               />
                             ) : (
-                              <div className="w-64 h-32 bg-gray-200 dark:bg-gray-700 rounded flex items-center justify-center">
-                                <span className="text-gray-400">图片占位</span>
+                              <div className="w-64 h-32 bg-neutral-200 dark:bg-neutral-700 rounded flex items-center justify-center">
+                                <span className="text-neutral-400">图片占位</span>
                               </div>
                             )}
                           </div>
-                          <figcaption className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                            <span className="font-medium text-blue-600 dark:text-blue-400">
+                          <figcaption className="mt-2 text-sm text-neutral-600 dark:text-neutral-400">
+                            <span className="font-medium text-secondary-600 dark:text-secondary-400">
                               {figure.number || `图${chapterIndex + 1}-1`}
                             </span>
                             {' '}{figure.caption}
@@ -255,11 +255,11 @@ export function DocumentPreview({ document }: DocumentPreviewProps) {
                     <div className="tables mt-6 space-y-6">
                       {chapter.tables.map(table => (
                         <div key={table.id} className="text-center">
-                          <table className="w-full border-collapse border border-gray-300 dark:border-gray-600 mx-auto max-w-2xl">
+                          <table className="w-full border-collapse border border-neutral-300 dark:border-neutral-600 mx-auto max-w-2xl">
                             <thead>
-                              <tr className="bg-gray-100 dark:bg-gray-800">
+                              <tr className="bg-neutral-100 dark:bg-neutral-800">
                                 {table.headers?.map((header, i) => (
-                                  <th key={i} className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-center font-medium">
+                                  <th key={i} className="border border-neutral-300 dark:border-neutral-600 px-4 py-2 text-center font-medium">
                                     {header}
                                   </th>
                                 ))}
@@ -269,7 +269,7 @@ export function DocumentPreview({ document }: DocumentPreviewProps) {
                               {table.rows?.map((row, i) => (
                                 <tr key={i}>
                                   {row.map((cell, j) => (
-                                    <td key={j} className="border border-gray-300 dark:border-gray-600 px-4 py-2">
+                                    <td key={j} className="border border-neutral-300 dark:border-neutral-600 px-4 py-2">
                                       {cell}
                                     </td>
                                   ))}
@@ -277,8 +277,8 @@ export function DocumentPreview({ document }: DocumentPreviewProps) {
                               ))}
                             </tbody>
                           </table>
-                          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                            <span className="font-medium text-blue-600 dark:text-blue-400">
+                          <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-400">
+                            <span className="font-medium text-secondary-600 dark:text-secondary-400">
                               {table.number || `表${chapterIndex + 1}-1`}
                             </span>
                             {' '}{table.caption}
@@ -293,17 +293,17 @@ export function DocumentPreview({ document }: DocumentPreviewProps) {
 
           {/* 参考文献 */}
           {references.length > 0 && (
-            <div className="references-section mt-12 pt-8 border-t border-gray-200 dark:border-gray-700">
-              <h2 className="text-xl font-bold text-center mb-6 text-gray-900 dark:text-gray-100">
+            <div className="references-section mt-12 pt-8 border-t border-neutral-200 dark:border-neutral-700">
+              <h2 className="text-xl font-bold text-center mb-6 text-neutral-900 dark:text-neutral-100">
                 参考文献
               </h2>
               <div className="space-y-3">
                 {references.map((ref, index) => (
                   <p
                     key={index}
-                    className="text-sm text-gray-700 dark:text-gray-300 text-justify pl-8 -indent-8"
+                    className="text-sm text-neutral-700 dark:text-neutral-300 text-justify pl-8 -indent-8"
                   >
-                    <span className="text-blue-600 dark:text-blue-400 font-medium">[{index + 1}]</span>
+                    <span className="text-secondary-600 dark:text-secondary-400 font-medium">[{index + 1}]</span>
                     {' '}{ref}
                   </p>
                 ))}
@@ -312,8 +312,8 @@ export function DocumentPreview({ document }: DocumentPreviewProps) {
           )}
 
           {/* 页脚 */}
-          <div className="footer-section mt-12 pt-4 border-t border-gray-200 dark:border-gray-700">
-            <div className="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400">
+          <div className="footer-section mt-12 pt-4 border-t border-neutral-200 dark:border-neutral-700">
+            <div className="flex justify-between items-center text-xs text-neutral-500 dark:text-neutral-400">
               <span>© {new Date().getFullYear()} 学术报告系统</span>
               <span>第 {currentPage} / {totalPages} 页</span>
               <span>版本 1.0</span>
@@ -323,21 +323,21 @@ export function DocumentPreview({ document }: DocumentPreviewProps) {
       </div>
 
       {/* 分页导航 */}
-      <div className="flex items-center justify-center gap-4 p-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+      <div className="flex items-center justify-center gap-4 p-3 border-t border-neutral-200 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-800">
         <button
           onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
           disabled={currentPage === 1}
-          className="px-3 py-1 text-sm bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-3 py-1 text-sm bg-neutral-200 dark:bg-neutral-700 rounded-lg hover:bg-neutral-300 dark:hover:bg-neutral-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           上一页
         </button>
-        <span className="text-sm text-gray-600 dark:text-gray-400">
+        <span className="text-sm text-neutral-600 dark:text-neutral-400">
           第 {currentPage} / {totalPages} 页
         </span>
         <button
           onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
           disabled={currentPage === totalPages}
-          className="px-3 py-1 text-sm bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-3 py-1 text-sm bg-neutral-200 dark:bg-neutral-700 rounded-lg hover:bg-neutral-300 dark:hover:bg-neutral-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           下一页
         </button>
@@ -394,7 +394,7 @@ function renderContent(content: string): React.ReactNode {
     if (currentParagraph.length > 0) {
       const text = currentParagraph.join('\n');
       elements.push(
-        <p key={elements.length} className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4 text-justify">
+        <p key={elements.length} className="text-neutral-700 dark:text-neutral-300 leading-relaxed mb-4 text-justify">
           {renderInlineFormatting(text)}
         </p>,
       );
@@ -425,8 +425,8 @@ function renderContent(content: string): React.ReactNode {
     if (line.startsWith('```')) {
       if (inCodeBlock) {
         elements.push(
-          <pre key={elements.length} className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg overflow-x-auto mb-4">
-            <code className="text-sm text-gray-800 dark:text-gray-200 font-mono">
+          <pre key={elements.length} className="bg-neutral-100 dark:bg-neutral-800 p-4 rounded-lg overflow-x-auto mb-4">
+            <code className="text-sm text-neutral-800 dark:text-neutral-200 font-mono">
               {codeBlockContent.join('\n')}
             </code>
           </pre>,
@@ -449,7 +449,7 @@ function renderContent(content: string): React.ReactNode {
     if (line.startsWith('#### ')) {
       flushParagraph();
       elements.push(
-        <h4 key={elements.length} className="text-base font-semibold text-gray-900 dark:text-gray-100 mt-6 mb-2">
+        <h4 key={elements.length} className="text-base font-semibold text-neutral-900 dark:text-neutral-100 mt-6 mb-2">
           {line.slice(5)}
         </h4>,
       );
@@ -458,7 +458,7 @@ function renderContent(content: string): React.ReactNode {
     if (line.startsWith('### ')) {
       flushParagraph();
       elements.push(
-        <h3 key={elements.length} className="text-lg font-semibold text-gray-900 dark:text-gray-100 mt-6 mb-2">
+        <h3 key={elements.length} className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mt-6 mb-2">
           {line.slice(4)}
         </h3>,
       );
@@ -467,7 +467,7 @@ function renderContent(content: string): React.ReactNode {
     if (line.startsWith('## ')) {
       flushParagraph();
       elements.push(
-        <h2 key={elements.length} className="text-xl font-bold text-gray-900 dark:text-gray-100 mt-8 mb-3">
+        <h2 key={elements.length} className="text-xl font-bold text-neutral-900 dark:text-neutral-100 mt-8 mb-3">
           {line.slice(3)}
         </h2>,
       );
@@ -476,7 +476,7 @@ function renderContent(content: string): React.ReactNode {
     if (line.startsWith('# ')) {
       flushParagraph();
       elements.push(
-        <h1 key={elements.length} className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-10 mb-4">
+        <h1 key={elements.length} className="text-2xl font-bold text-neutral-900 dark:text-neutral-100 mt-10 mb-4">
           {line.slice(2)}
         </h1>,
       );
@@ -488,7 +488,7 @@ function renderContent(content: string): React.ReactNode {
       flushParagraph();
       const items = lines.filter(l => l.startsWith('- ')).map(l => l.slice(2));
       elements.push(
-        <ul key={elements.length} className="list-disc list-inside space-y-1 mb-4 text-gray-700 dark:text-gray-300">
+        <ul key={elements.length} className="list-disc list-inside space-y-1 mb-4 text-neutral-700 dark:text-neutral-300">
           {items.map((item, i) => <li key={i}>{renderInlineFormatting(item)}</li>)}
         </ul>,
       );
@@ -500,7 +500,7 @@ function renderContent(content: string): React.ReactNode {
       flushParagraph();
       const items = lines.filter(l => /^\d+\.\s/.exec(l)).map(l => l.replace(/^\d+\.\s/, ''));
       elements.push(
-        <ol key={elements.length} className="list-decimal list-inside space-y-1 mb-4 text-gray-700 dark:text-gray-300">
+        <ol key={elements.length} className="list-decimal list-inside space-y-1 mb-4 text-neutral-700 dark:text-neutral-300">
           {items.map((item, i) => <li key={i}>{renderInlineFormatting(item)}</li>)}
         </ol>,
       );
@@ -511,7 +511,7 @@ function renderContent(content: string): React.ReactNode {
     if (line.startsWith('> ')) {
       flushParagraph();
       elements.push(
-        <blockquote key={elements.length} className="border-l-4 border-blue-500 pl-4 italic text-gray-600 dark:text-gray-400 my-4">
+        <blockquote key={elements.length} className="border-l-4 border-blue-500 pl-4 italic text-neutral-600 dark:text-neutral-400 my-4">
           {line.slice(2)}
         </blockquote>,
       );
@@ -530,9 +530,9 @@ function renderContent(content: string): React.ReactNode {
         elements.push(
           <table key={elements.length} className="w-full border-collapse my-4">
             <thead>
-              <tr className="bg-gray-100 dark:bg-gray-800">
+              <tr className="bg-neutral-100 dark:bg-neutral-800">
                 {headers.map((header, i) => (
-                  <th key={i} className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left font-medium text-gray-700 dark:text-gray-300">
+                  <th key={i} className="border border-neutral-300 dark:border-neutral-600 px-4 py-2 text-left font-medium text-neutral-700 dark:text-neutral-300">
                     {header}
                   </th>
                 ))}
@@ -540,9 +540,9 @@ function renderContent(content: string): React.ReactNode {
             </thead>
             <tbody>
               {bodyRows.map((row, i) => (
-                <tr key={i} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                <tr key={i} className="hover:bg-slate-50 dark:hover:bg-neutral-800">
                   {row.map((cell, j) => (
-                    <td key={j} className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-gray-700 dark:text-gray-300">
+                    <td key={j} className="border border-neutral-300 dark:border-neutral-600 px-4 py-2 text-neutral-700 dark:text-neutral-300">
                       {cell}
                     </td>
                   ))}

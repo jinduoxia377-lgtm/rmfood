@@ -82,7 +82,7 @@ class FormulaAgent(BaseAgent):
             logger.error(f"FormulaAgent 执行失败: {e}")
             return AgentResult(
                 task_id=task.id, success=False,
-                output={}, error=str(e),
+                output={}, error="任务执行失败",
                 processing_time_ms=int((time.time() - start) * 1000),
             )
 
@@ -216,7 +216,7 @@ class KnowledgeAgent(BaseAgent):
             )
         except Exception as e:
             return AgentResult(
-                task_id=task.id, success=False, output={}, error=str(e),
+                task_id=task.id, success=False, output={}, error="任务执行失败",
                 processing_time_ms=int((time.time() - start) * 1000),
             )
 
@@ -324,7 +324,7 @@ class SafetyAgent(BaseAgent):
             )
         except Exception as e:
             return AgentResult(
-                task_id=task.id, success=False, output={}, error=str(e),
+                task_id=task.id, success=False, output={}, error="任务执行失败",
                 processing_time_ms=int((time.time() - start) * 1000),
             )
 

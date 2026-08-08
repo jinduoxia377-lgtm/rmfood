@@ -90,8 +90,8 @@ export default function ForgotPasswordPage() {
               <Icon name="Beaker" size={24} />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-slate-900 dark:text-white">{BRAND_CONFIG.name}</h1>
-              <p className="text-xs text-slate-500 dark:text-slate-400">{BRAND_CONFIG.fullName}</p>
+              <h1 className="text-xl font-bold text-neutral-900 dark:text-white">{BRAND_CONFIG.name}</h1>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">{BRAND_CONFIG.fullName}</p>
             </div>
           </div>
 
@@ -100,13 +100,13 @@ export default function ForgotPasswordPage() {
               <div className="flex items-center gap-2 mb-4">
                 <Link
                   to="/login"
-                  className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                  className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                 >
                   <Icon name="ArrowLeft" size={16} />
                 </Link>
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">忘记密码</h2>
+                <h2 className="h2 text-neutral-900 dark:text-white">忘记密码</h2>
               </div>
-              <p className="text-slate-500 dark:text-slate-400 text-sm">
+              <p className="text-neutral-500 dark:text-neutral-400 text-sm">
                 请输入您的邮箱地址，我们将发送密码重置链接到您的邮箱
               </p>
             </div>
@@ -119,9 +119,9 @@ export default function ForgotPasswordPage() {
             )}
 
             {success ? (
-              <div className="mb-6 p-4 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/60 text-emerald-700 dark:text-emerald-400 text-sm flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center shrink-0">
-                  <Check size={16} className="text-emerald-600 dark:text-emerald-400" />
+              <div className="mb-6 p-4 rounded-xl bg-primary-50 dark:bg-primary-900/20 border border-emerald-200 dark:border-emerald-800/60 text-primary-700 dark:text-primary-400 text-sm flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center shrink-0">
+                  <Check size={16} className="text-primary-600 dark:text-primary-400" />
                 </div>
                 <div>
                   <p className="font-medium">密码重置邮件已发送</p>
@@ -131,11 +131,11 @@ export default function ForgotPasswordPage() {
             ) : (
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                  <label htmlFor="email" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
                     邮箱地址
                   </label>
                   <div className="relative">
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400">
                       <Mail size={16} />
                     </div>
                     <Input
@@ -163,7 +163,7 @@ export default function ForgotPasswordPage() {
               </form>
             )}
 
-            <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-700/60 text-center">
+            <div className="mt-8 pt-6 border-t border-neutral-200 dark:border-neutral-700/60 text-center">
               <Link
                 to="/login"
                 className="text-sm text-primary hover:text-primary-hover transition-colors"
@@ -174,7 +174,7 @@ export default function ForgotPasswordPage() {
           </div>
 
           {/* 底部版权 */}
-          <p className="mt-6 text-center text-xs text-slate-400 dark:text-slate-600" dangerouslySetInnerHTML={{ __html: BRAND_CONFIG.copyright }} />
+          <p className="mt-6 text-center text-xs text-neutral-400 dark:text-neutral-600">{BRAND_CONFIG.copyright}</p>
         </div>
       </div>
     </div>

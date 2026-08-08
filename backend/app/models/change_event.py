@@ -9,14 +9,11 @@
 使用 SQLAlchemy 事件监听器自动捕获变更。
 """
 from datetime import datetime, timezone
-from sqlalchemy import Integer, String, Text, DateTime, JSON, Enum as SQLEnum, ForeignKey, Index
+from sqlalchemy import Integer, String, Text, DateTime, JSON, Enum as SQLEnum, ForeignKey, Index, BigInteger
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from ..core.database import Base
+from .base import Base
+from app.models.utils import now_utc_mapped
 import enum
-
-
-def _now() -> datetime:
-    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
 class ChangeAction(str, enum.Enum):
@@ -38,7 +35,7 @@ class ChangeEvent(Base):
     """
     __tablename__ = "change_events"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
 
     # 变更实体信息
     entity_type: Mapped[str] = mapped_column(
@@ -46,7 +43,7 @@ class ChangeEvent(Base):
         comment="变更实体类型（表名）"
     )
     entity_id: Mapped[int] = mapped_column(
-        Integer, nullable=False, index=True,
+        BigInteger, nullable=False, index=True,
         comment="变更实体ID"
     )
 
@@ -72,7 +69,7 @@ class ChangeEvent(Base):
 
     # 操作人信息
     user_id: Mapped[int | None] = mapped_column(
-        Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True,
+        BigInteger, ForeignKey("users.id", ondelete="SET NULL"), nullable=True,
         comment="操作人ID"
     )
     ip_address: Mapped[str | None] = mapped_column(
@@ -88,7 +85,7 @@ class ChangeEvent(Base):
 
     # 时间戳
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=_now, nullable=False, index=True,
+        DateTime(timezone=True), default=now_utc_mapped, nullable=False, index=True,
         comment="变更时间"
     )
 

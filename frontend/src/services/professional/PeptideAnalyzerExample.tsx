@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { PeptideService, Peptide, PeptideAnalysis, BioactivityPrediction } from '../services/professional/peptideService';
+import { PeptideService, Peptide, PeptideAnalysis, BioactivityPrediction } from './peptideService';
 
 interface PeptideAnalyzerProps {
   initialSequence?: string;

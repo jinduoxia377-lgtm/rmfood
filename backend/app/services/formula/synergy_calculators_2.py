@@ -114,7 +114,8 @@ class SynergyCalculatorMixin2:
                     if HAS_SCIPY:
                         try:
                             pvalue = stats.hypergeom.sf(k - 1, N, K, n)
-                        except Exception:
+                        except Exception as e:
+                            logger.debug("超几何检验失败，返回默认 p-value: %s", e)
                             pvalue = 1.0
                     else:
                         pvalue = self._hypergeometric_test(N, K, n, k)

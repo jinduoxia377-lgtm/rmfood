@@ -38,46 +38,46 @@ export function TemplateEditor({ initialTemplate, onSave, onCancel }: TemplateEd
 
   return (
     <div className="space-y-6">
-      <div className="border-b border-gray-200 dark:border-gray-700 pb-4">
+      <div className="border-b border-neutral-200 dark:border-neutral-700 pb-4">
         <h2 className="text-xl font-semibold">模板编辑</h2>
-        <p className="text-sm text-gray-500 mt-1">创建和编辑学术报告模板</p>
+        <p className="text-sm text-neutral-500 mt-1">创建和编辑学术报告模板</p>
       </div>
 
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
             模板名称
           </label>
           <input
             type="text"
             value={template.name || ''}
             onChange={(e) => setTemplate({ ...template, name: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800"
+            className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800"
             placeholder="输入模板名称"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
             模板描述
           </label>
           <textarea
             value={template.description || ''}
             onChange={(e) => setTemplate({ ...template, description: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800"
+            className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800"
             placeholder="输入模板描述"
             rows={3}
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
             模板分类
           </label>
           <select
             value={template.category || 'research_report'}
             onChange={(e) => setTemplate({ ...template, category: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+            className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100"
           >
             {categories.map((cat) => (
               <option key={cat.value} value={cat.value}>{cat.label}</option>
@@ -86,26 +86,26 @@ export function TemplateEditor({ initialTemplate, onSave, onCancel }: TemplateEd
         </div>
       </div>
 
-      <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+      <div className="border-t border-neutral-200 dark:border-neutral-700 pt-4">
         <h3 className="font-medium mb-3">模板章节</h3>
         {template.sections && template.sections.length > 0 ? (
           <div className="space-y-2">
             {template.sections.map((section: any, index: number) => (
-              <div key={section.id || index} className="p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
+              <div key={section.id || index} className="p-3 border border-neutral-200 dark:border-neutral-700 rounded-lg">
                 <div className="font-medium">{section.name || `章节 ${index + 1}`}</div>
-                <div className="text-sm text-gray-500">{section.type}</div>
+                <div className="text-sm text-neutral-500">{section.type}</div>
               </div>
             ))}
           </div>
         ) : (
-          <p className="text-sm text-gray-400">暂无章节</p>
+          <p className="text-sm text-neutral-400">暂无章节</p>
         )}
       </div>
 
       <div className="flex justify-end gap-3 pt-4">
         <button
           onClick={onCancel}
-          className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+          className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-700"
         >
           取消
         </button>

@@ -3,27 +3,24 @@
 用于云端同步模块，记录用户的设备信息，支持多设备同步和冲突检测。
 """
 from datetime import datetime, timezone
-from sqlalchemy import Integer, String, Boolean, DateTime, Enum, ForeignKey, Index
+from sqlalchemy import Integer, String, Boolean, DateTime, Enum, ForeignKey, Index, BigInteger
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from ..core.database import Base
+from .base import Base
 from .enums import DeviceType
-
-
-def _now() -> datetime:
-    return datetime.now(timezone.utc).replace(tzinfo=None)
+from app.models.utils import now_utc_mapped
 
 
 class UserDevice(Base):
     __tablename__ = "user_devices"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     device_id: Mapped[str] = mapped_column(String(100), unique=True, index=True, nullable=False)
-    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     device_type: Mapped[DeviceType] = mapped_column(Enum(DeviceType), nullable=False)
     device_name: Mapped[str] = mapped_column(String(100), nullable=False)
-    last_sync_at: Mapped[datetime | None] = mapped_column(DateTime)
+    last_sync_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=_now, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, nullable=False)
 
     user: Mapped["User"] = relationship("User", back_populates="devices")
     sync_logs: Mapped[list["SyncLog"]] = relationship(

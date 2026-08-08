@@ -44,7 +44,7 @@ import {
 
 // 使用统一配置系统
 import {
-  getAIConfig,
+  config as getAIConfig,
   STORAGE_KEYS,
   LIMITS,
   DEFAULTS,
@@ -160,8 +160,8 @@ function useSafetyCheckInput() {
 }
 
 function useSafetyCheckMutation(
-  onSafetyComplete?: (result: SafetyCheckResult) => oid
-,)  {
+  onSafetyComplete?: (result: SafetyCheckResult) => void
+) {
   const feedback = useOperationFeedback()
 
   const [safetyResult, setSafetyResult] = useState<SafetyCheckResult | null>(null)
@@ -222,8 +222,8 @@ function useSafetyCheckMutation(
 
   const handleCheck = useCallback((
     ingredients: string[],
-    onSuccess?: () => oid
-,  )  => {
+    onSuccess?: () => void
+  ) => {
     if (ingredients.length === 0) {
       feedback.showWarning(
         DEFAULTS.PLACEHOLDER_TEXTS.SAFETY_NO_INPUT_TITLE || '输入为空',
@@ -332,7 +332,7 @@ function ComplianceRateDisplay({ complianceRate, passed }: ComplianceRateDisplay
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between text-sm">
-        <span className="text-gray-500 dark:text-gray-400">
+        <span className="text-neutral-500 dark:text-neutral-400">
           {DEFAULTS.PLACEHOLDER_TEXTS.LABEL_COMPLIANCE_RATE || '合规率'}
         </span>
         <span className={`font-medium ${
@@ -344,7 +344,7 @@ function ComplianceRateDisplay({ complianceRate, passed }: ComplianceRateDisplay
         </span>
       </div>
 
-      <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+      <div className="w-full h-2 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden">
         <div
           className={`h-full rounded-full transition-all duration-500 ${
             passed ? 'bg-success-500' : `bg-${riskLevel.color}-500`
@@ -666,7 +666,7 @@ export function SafetyTab({
           />
 
           {/* 操作按钮 */}
-          <div className="flex gap-3 mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex gap-3 mt-6 pt-4 border-t border-neutral-200 dark:border-neutral-700">
             <Button
               variant="secondary"
               size="sm"
@@ -697,7 +697,7 @@ export function SafetyTab({
 
       {/* 历史记录（可选显示） */}
       {historyCount > 0 && config.features.multiSession && (
-        <div className="border-t border-gray-100 dark:border-gray-800 pt-6 mt-6">
+        <div className="border-t border-neutral-100 dark:border-neutral-800 pt-6 mt-6">
           <div className="flex items-center justify-between mb-4">
             <h4 className="text-sm font-semibold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
               <Clock className="w-4 h-4" style={{ color: 'var(--color-primary-500)' }} />
@@ -723,7 +723,7 @@ export function SafetyTab({
             {history.slice(0, 5).map(entry => (
               <div
                 key={entry.id}
-                className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                className="flex items-center justify-between p-3 bg-slate-50 dark:bg-neutral-800 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
                 onClick={() => {
                   setSafetyResult(entry.result)
                   window.scrollTo({ top: 0, behavior: 'smooth' })

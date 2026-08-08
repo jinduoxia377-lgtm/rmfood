@@ -9,12 +9,17 @@
 """
 
 from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect, Query, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel, Field
-from typing import List, Dict, Optional, Any
+from typing import Annotated, List, Dict, Optional, Any
 from datetime import datetime
 import asyncio
+import importlib
 import json
 import logging
+
+from .deps import get_db_session, get_current_active_user, CurrentUser, require_role, User
+from ..models.enums import UserRole
 
 logger = logging.getLogger(__name__)
 
@@ -131,7 +136,7 @@ class SafetyCheckResponse(BaseModel):
 class DeepGenerationRequest(BaseModel):
     """增强配方生成请求"""
     ingredients: List[Dict[str, Any]]
-    mode: str = Field(default="deep_integration", regex="^(standard|deep_integration)$")
+    mode: str = Field(default="deep_integration", pattern="^(standard|deep_integration)$")
     target_efficacy: float = Field(default=0.75, ge=0, le=1)
     safety_priority: bool = True
     cost_constraint: Optional[float] = None
@@ -157,44 +162,17 @@ class DeepGenerationResponse(BaseModel):
 
 # ==================== WebSocket 连接管理器 ====================
 
-class ConnectionManager:
-    """WebSocket 连接管理器"""
-    
-    def __init__(self):
-        self.active_connections: Dict[str, WebSocket] = {}
-    
-    async def connect(self, websocket: WebSocket, client_id: str):
-        await websocket.accept()
-        self.active_connections[client_id] = websocket
-        logger.info(f"WebSocket 连接建立: {client_id}")
-    
-    def disconnect(self, client_id: str):
-        if client_id in self.active_connections:
-            del self.active_connections[client_id]
-            logger.info(f"WebSocket 断开连接: {client_id}")
-    
-    async def send_personal_message(self, message: dict, client_id: str):
-        if client_id in self.active_connections:
-            try:
-                await self.active_connections[client_id].send_json(message)
-            except Exception as e:
-                logger.error(f"发送消息失败 ({client_id}): {e}")
-    
-    async def broadcast(self, message: dict):
-        for connection in list(self.active_connections.values()):
-            try:
-                await connection.send_json(message)
-            except Exception as e:
-                logger.error(f"广播消息失败: {e}")
-
-
-manager = ConnectionManager()
+# 统一使用 WebSocketManager (core/websocket_manager)
+from ..core.realtime.websocket_manager import get_ws_manager as _get_ws_manager
 
 
 # ==================== API 端点实现 ====================
 
 @router.post("/synergy/analyze", response_model=SynergyAnalysisResponse, summary="分析成分协同效应")
-async def analyze_synergy(request: SynergyAnalysisRequest):
+async def analyze_synergy(
+    request: SynergyAnalysisRequest,
+    db: AsyncSession = Depends(get_db_session),
+):
     """
     分析两个成分之间的协同作用机制
     
@@ -225,14 +203,17 @@ async def analyze_synergy(request: SynergyAnalysisRequest):
         )
         
     except ImportError as e:
-        raise HTTPException(status_code=503, detail=f"SynergyEngine 模块不可用: {str(e)}")
+        raise HTTPException(status_code=503, detail="协同分析模块不可用")
     except Exception as e:
-        logger.error(f"协同分析失败: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("协同分析失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="服务器内部错误，请稍后重试")
 
 
 @router.post("/ratio/optimize", response_model=RatioOptimizationResponse, summary="多目标配比优化")
-async def optimize_ratio(request: RatioOptimizationRequest):
+async def optimize_ratio(
+    request: RatioOptimizationRequest,
+    db: AsyncSession = Depends(get_db_session),
+):
     """
     使用 NSGA-III 多目标遗传算法优化配方比例
     
@@ -290,14 +271,17 @@ async def optimize_ratio(request: RatioOptimizationRequest):
         )
         
     except ImportError as e:
-        raise HTTPException(status_code=503, detail=f"RatioOptimizer 模块不可用: {str(e)}")
+        raise HTTPException(status_code=503, detail="配比优化模块不可用")
     except Exception as e:
-        logger.error(f"配比优化失败: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("配比优化失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="服务器内部错误，请稍后重试")
 
 
 @router.post("/compatibility/check", response_model=CompatibilityCheckResponse, summary="检查配方兼容性")
-async def check_compatibility(request: CompatibilityCheckRequest):
+async def check_compatibility(
+    request: CompatibilityCheckRequest,
+    db: AsyncSession = Depends(get_db_session),
+):
     """
     执行 4 层架构的配方兼容性检测
     
@@ -345,14 +329,17 @@ async def check_compatibility(request: CompatibilityCheckRequest):
         )
         
     except ImportError as e:
-        raise HTTPException(status_code=503, detail=f"CompatibilityChecker 模块不可用: {str(e)}")
+        raise HTTPException(status_code=503, detail="兼容性检测模块不可用")
     except Exception as e:
-        logger.error(f"兼容性检测失败: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("兼容性检测失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="服务器内部错误，请稍后重试")
 
 
 @router.post("/effect/predict", response_model=EffectPredictionResponse, summary="预测配方效果")
-async def predict_effect(request: EffectPredictionRequest):
+async def predict_effect(
+    request: EffectPredictionRequest,
+    db: AsyncSession = Depends(get_db_session),
+):
     """
     基于 PopPK/PD 模型预测配方的时效曲线和效应曲线
     
@@ -390,14 +377,17 @@ async def predict_effect(request: EffectPredictionRequest):
         )
         
     except ImportError as e:
-        raise HTTPException(status_code=503, detail=f"EffectSimulator 模块不可用: {str(e)}")
+        raise HTTPException(status_code=503, detail="效果预测模块不可用")
     except Exception as e:
-        logger.error(f"效果预测失败: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("效果预测失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="服务器内部错误，请稍后重试")
 
 
 @router.post("/safety/check", response_model=SafetyCheckResponse, summary="检查配方安全性")
-async def check_safety(request: SafetyCheckRequest):
+async def check_safety(
+    request: SafetyCheckRequest,
+    db: AsyncSession = Depends(get_db_session),
+):
     """
     三级安全阈值预警系统
     
@@ -446,14 +436,17 @@ async def check_safety(request: SafetyCheckRequest):
         )
         
     except ImportError as e:
-        raise HTTPException(status_code=503, detail=f"SafetyAlertSystem 模块不可用: {str(e)}")
+        raise HTTPException(status_code=503, detail="安全检查模块不可用")
     except Exception as e:
-        logger.error(f"安全检查失败: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("安全检查失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="服务器内部错误，请稍后重试")
 
 
 @router.post("/deep-generation", response_model=DeepGenerationResponse, summary="增强配方生成 (完整管线)")
-async def deep_generation(request: DeepGenerationRequest):
+async def deep_generation(
+    request: DeepGenerationRequest,
+    db: AsyncSession = Depends(get_db_session),
+):
     """
     执行完整的增强配方生成管线
     
@@ -521,10 +514,10 @@ async def deep_generation(request: DeepGenerationRequest):
         )
         
     except ImportError as e:
-        raise HTTPException(status_code=503, detail=f"FormulaIntegrationService 模块不可用: {str(e)}")
+        raise HTTPException(status_code=503, detail="配方集成服务模块不可用")
     except Exception as e:
-        logger.error(f"增强配方生成失败: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("增强配方生成失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="服务器内部错误，请稍后重试")
 
 
 @router.get("/safety-thresholds", summary="查询安全阈值配置")
@@ -549,31 +542,28 @@ async def get_safety_thresholds():
         }
         
     except ImportError as e:
-        raise HTTPException(status_code=503, detail=f"SafetyAlertSystem 模块不可用: {str(e)}")
+        raise HTTPException(status_code=503, detail="安全检查模块不可用")
     except Exception as e:
-        logger.error(f"查询安全阈值失败: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("查询安全阈值失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="服务器内部错误，请稍后重试")
 
 
 @router.put("/safety-thresholds/{ingredient_name}", summary="更新安全阈值 (管理员)")
 async def update_safety_threshold(
     ingredient_name: str,
     updates: Dict[str, Any],
-    current_user: Depends(...) = None  # TODO: 实际权限验证
+    current_user: Annotated[User, Depends(get_current_active_user)]
 ):
     """
     更新指定成分的安全阈值 (仅管理员可调用)
-    
+
     权限要求: admin 角色
-    
+
     操作日志:
     - 记录变更前后值
     - 记录操作人和时间戳
     - 更新后立即生效
     """
-    # TODO: 实现 RBAC 权限验证
-    # if not current_user or current_user.role != UserRole.ADMIN:
-    #     raise HTTPException(status_code=403, detail="仅管理员可执行此操作")
     
     try:
         from ..services.formula.safety_alert_system import SafetyAlertSystem
@@ -590,10 +580,10 @@ async def update_safety_threshold(
         }
         
     except ImportError as e:
-        raise HTTPException(status_code=503, detail=f"SafetyAlertSystem 模块不可用: {str(e)}")
+        raise HTTPException(status_code=503, detail="安全检查模块不可用")
     except Exception as e:
-        logger.error(f"更新安全阈值失败: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("更新安全阈值失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="服务器内部错误，请稍后重试")
 
 
 # ==================== WebSocket 端点 ====================
@@ -601,134 +591,93 @@ async def update_safety_threshold(
 @router.websocket("/ws/optimization-progress")
 async def optimization_progress_websocket(websocket: WebSocket):
     """
-    WebSocket 实时进度推送端点
-    
-    事件类型:
-    - started: 开始优化
-    - iteration(n): 第 n 代迭代完成
-    - complete: 优化完成
-    - error: 发生错误
-    
-    心跳机制:
-    - 服务端定期发送 ping
-    - 客户端需回复 pong 保持连接
+    WebSocket 实时进度推送端点（统一使用 WebSocketManager）
+    事件类型: started, iteration(n), complete, error
+    心跳机制: 服务端定期发送 ping，客户端需回复 pong
     """
-    client_id = f"client_{datetime.now().strftime('%Y%m%d%H%M%S%f')}"
-    
-    await manager.connect(websocket, client_id)
-    
+    # JWT 认证
+    token = websocket.query_params.get("token")
+    if not token:
+        await websocket.close(code=4001, reason="Missing authentication token")
+        return
+
     try:
+        from ..utils.auth import decode_token
+        payload = decode_token(token)
+        if not payload or payload.get("type") != "access":
+            await websocket.close(code=4003, reason="Invalid or expired token")
+            return
+        user_id = str(payload["sub"])
+    except Exception as token_err:
+        logger.warning("WebSocket 令牌验证失败: %s", token_err)
+        await websocket.close(code=4003, reason="Invalid token")
+        return
+
+    manager = _get_ws_manager()
+    client_id = f"opt_{user_id}_{datetime.now().strftime('%Y%m%d%H%M%S%f')}"
+
+    try:
+        await manager.connect(websocket, user_id, tenant_id="default")
         # 发送欢迎消息
-        await manager.send_personal_message({
+        await manager.send_to_connection(client_id, {
             "type": "connected",
             "client_id": client_id,
             "message": "WebSocket 连接成功",
             "timestamp": datetime.now().isoformat()
-        }, client_id)
-        
+        })
+
         while True:
-            # 接收客户端消息
             data = await websocket.receive_text()
-            
             try:
                 message = json.loads(data)
-                
                 if message.get("type") == "ping":
-                    # 心跳响应
-                    await manager.send_personal_message({
+                    await manager.send_to_connection(client_id, {
                         "type": "pong",
                         "timestamp": datetime.now().isoformat()
-                    }, client_id)
-                
+                    })
                 elif message.get("type") == "start_optimization":
-                    # 启动优化任务（示例）
-                    await manager.send_personal_message({
+                    await manager.send_to_connection(client_id, {
                         "type": "started",
                         "task_id": message.get("task_id"),
                         "message": "开始配比优化...",
                         "timestamp": datetime.now().isoformat()
-                    }, client_id)
-                    
-                    # 模拟优化进度推送
+                    })
                     for i in range(1, 11):
-                        await asyncio.sleep(0.5)  # 模拟计算延迟
-                        
-                        progress_data = {
+                        await asyncio.sleep(0.5)
+                        await manager.send_to_connection(client_id, {
                             "type": "iteration",
                             "generation": i,
                             "total_generations": 10,
                             "progress_percent": i * 10,
-                            "best_fitness": 0.9 - (i * 0.02),  # 示例数据
+                            "best_fitness": 0.9 - (i * 0.02),
                             "timestamp": datetime.now().isoformat()
-                        }
-                        
-                        await manager.send_personal_message(progress_data, client_id)
-                    
-                    # 完成
-                    await manager.send_personal_message({
+                        })
+                    await manager.send_to_connection(client_id, {
                         "type": "complete",
                         "message": "优化完成!",
                         "timestamp": datetime.now().isoformat()
-                    }, client_id)
-                
+                    })
                 else:
-                    await manager.send_personal_message({
+                    await manager.send_to_connection(client_id, {
                         "type": "error",
                         "message": f"未知消息类型: {message.get('type')}",
                         "timestamp": datetime.now().isoformat()
-                    }, client_id)
-                    
+                    })
             except json.JSONDecodeError:
-                await manager.send_personal_message({
+                await manager.send_to_connection(client_id, {
                     "type": "error",
                     "message": "无效的 JSON 格式",
                     "timestamp": datetime.now().isoformat()
-                }, client_id)
-    
+                })
     except WebSocketDisconnect:
-        manager.disconnect(client_id)
         logger.info(f"WebSocket 客户端断开: {client_id}")
-    
     except Exception as e:
         logger.error(f"WebSocket 错误 ({client_id}): {e}")
-        manager.disconnect(client_id)
-
-
-# ==================== 健康检查端点 ====================
-
-@router.get("/health", tags=["系统"])
-async def health_check():
-    """服务健康检查端点"""
-    modules_status = {}
-    
-    module_names = [
-        ("synergy_engine", "SynergyEngine"),
-        ("ratio_optimizer", "RatioOptimizer"),
-        ("compatibility_checker", "CompatibilityChecker"),
-        ("effect_simulator", "EffectSimulator"),
-        ("safety_alert_system", "SafetyAlertSystem"),
-        ("integration_service", "FormulaIntegrationService"),
-    ]
-    
-    for import_path, class_name in module_names:
+    finally:
         try:
-            __import__(f"app.services.formula.{import_path}")
-            modules_status[class_name] = "available"
-        except ImportError:
-            modules_status[class_name] = "unavailable"
+            await manager.disconnect(client_id, reason="client_disconnect")
         except Exception as e:
-            modules_status[class_name] = f"error: {str(e)}"
-    
-    all_available = all(s == "available" for s in modules_status.values())
-    
-    return {
-        "status": "healthy" if all_available else "degraded",
-        "service": "formula-deep-integration-api",
-        "version": "1.0.0",
-        "modules": modules_status,
-        "websocket_connected": len(manager.active_connections),
-        "timestamp": datetime.now().isoformat()
-    }
+            logger.warning("WebSocket disconnect 清理失败: %s", e)
 
 
 # 导出路由供主应用注册

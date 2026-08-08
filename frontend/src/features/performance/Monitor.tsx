@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef, Profiler } from 'react';
 import type { ProfilerOnRenderCallback } from 'react';
 
+
+import { logger } from '@/utils/safeLogger';
 interface WebVitalMetric {
   name: string;
   value: number;
@@ -140,12 +142,12 @@ export function PerformanceMonitor({
             name: entry.entryType.toUpperCase(),
             value:
               entry.entryType === 'cls'
-                ? (entry as any).value
+                ? (entry as PerformanceEntry & { value?: number }).value
                 : entry.startTime + (entry.duration || 0),
             rating: getRating(
               entry.entryType.toUpperCase(),
               entry.entryType === 'cls'
-                ? (entry as any).value
+                ? (entry as PerformanceEntry & { value?: number }).value
                 : entry.startTime + (entry.duration || 0),
             ),
             timestamp: Date.now(),
@@ -157,7 +159,7 @@ export function PerformanceMonitor({
 
       vitalsObserver.observe({ entryTypes: ['paint', 'first-input', 'layout-shift', 'navigation'] });
     } catch (error) {
-      console.warn('[PerformanceMonitor] Web Vitals collection failed:', error);
+      logger.warn('[PerformanceMonitor] Web Vitals collection failed:', error);
     }
   }, []);
 
@@ -210,7 +212,7 @@ export function PerformanceMonitor({
 
       setBundleSize(bundles);
     } catch (error) {
-      console.warn('[PerformanceMonitor] Bundle analysis failed:', error);
+      logger.warn('[PerformanceMonitor] Bundle analysis failed:', error);
     }
   }, []);
 
@@ -283,7 +285,7 @@ export function PerformanceMonitor({
         maxHeight: '80vh',
         overflowY: 'auto',
         background: 'rgba(15, 23, 42, 0.95)',
-        color: '#e2e8f0',
+        color: '#E5E7EB',
         borderRadius: '12px',
         padding: '16px',
         fontFamily: 'monospace',
@@ -300,7 +302,7 @@ export function PerformanceMonitor({
           <section style={{ marginBottom: '16px' }}>
             <h4 style={{ margin: '0 0 8px 0', fontSize: '12px', opacity: 0.7 }}>📊 FPS</h4>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-              <span style={{ fontSize: '24px', fontWeight: 'bold', color: avgFPS >= 55 ? '#22c55e' : avgFPS >= 30 ? '#eab308' : '#ef4444' }}>
+              <span style={{ fontSize: '24px', fontWeight: 'bold', color: avgFPS >= 55 ? '#34C759' : avgFPS >= 30 ? '#eab308' : '#FF3B30' }}>
                 {avgFPS}
               </span>
               <span style={{ opacity: 0.6 }}>avg</span>
@@ -321,7 +323,7 @@ export function PerformanceMonitor({
                   style={{
                     flex: 1,
                     height: `${Math.min(100, (d.fps / 60) * 100)}%`,
-                    background: d.fps >= 55 ? '#22c55e' : d.fps >= 30 ? '#eab308' : '#ef4444',
+                    background: d.fps >= 55 ? '#34C759' : d.fps >= 30 ? '#eab308' : '#FF3B30',
                     borderRadius: '1px',
                     minWidth: '2px',
                     transition: 'height 0.1s ease',
@@ -359,7 +361,7 @@ export function PerformanceMonitor({
                 }}>
                   <span style={{ maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis' }}>{m.id}</span>
                   <span style={{
-                    color: m.actualDuration > 16 ? '#ef4444' : m.actualDuration > 8 ? '#eab308' : '#22c55e',
+                    color: m.actualDuration > 16 ? '#FF3B30' : m.actualDuration > 8 ? '#eab308' : '#34C759',
                   }}>
                     {formatDuration(m.actualDuration)}
                   </span>
@@ -385,7 +387,7 @@ export function PerformanceMonitor({
                   <span>{v.name}</span>
                   <span style={{
                     fontWeight: 600,
-                    color: v.rating === 'good' ? '#22c55e' : v.rating === 'needs-improvement' ? '#eab308' : '#ef4444',
+                    color: v.rating === 'good' ? '#34C759' : v.rating === 'needs-improvement' ? '#eab308' : '#FF3B30',
                   }}>
                     {v.name === 'CLS' ? v.value.toFixed(3) : formatDuration(v.value)}
                   </span>
@@ -401,7 +403,7 @@ export function PerformanceMonitor({
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span>Used:</span>
-                <span style={{ color: '#f97316' }}>{formatBytes(memoryInfo.usedJSHeapSize)}</span>
+                <span style={{ color: '#EA580C' }}>{formatBytes(memoryInfo.usedJSHeapSize)}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span>Total:</span>
@@ -417,7 +419,7 @@ export function PerformanceMonitor({
                 <div style={{
                   width: `${(memoryInfo.usedJSHeapSize / memoryInfo.jsHeapSizeLimit) * 100}%`,
                   height: '100%',
-                  background: memoryInfo.usedJSHeapSize > memoryInfo.jsHeapSizeLimit * 0.7 ? '#ef4444' : '#22c55e',
+                  background: memoryInfo.usedJSHeapSize > memoryInfo.jsHeapSizeLimit * 0.7 ? '#FF3B30' : '#34C759',
                   borderRadius: '3px',
                   transition: 'width 0.5s ease',
                 }} />

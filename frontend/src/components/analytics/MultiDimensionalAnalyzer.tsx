@@ -216,7 +216,7 @@ export const MultiDimensionalAnalyzer: React.FC<{
             className={`px-3 py-1.5 text-sm rounded-lg border transition-all flex items-center gap-2 ${
               showConfigPanel
                 ? 'bg-primary-50 dark:bg-primary-940/40 border-primary-300 text-primary-700 dark:text-primary-300'
-                : 'bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-700 text-text-primary hover:bg-gray-50 dark:hover:bg-slate-800'
+                : 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-700 text-text-primary hover:bg-slate-50 dark:hover:bg-neutral-800'
             }`}
           >
             <Layers className="w-4 h-4" />
@@ -227,10 +227,10 @@ export const MultiDimensionalAnalyzer: React.FC<{
           {drillDownPath.length > 0 && (
             <div className="flex items-center gap-2 text-sm">
               <span className="text-text-muted">钻取路径:</span>
-              <div className="flex items-center gap-1 bg-gray-100 dark:bg-slate-800 px-3 py-1 rounded-lg">
+              <div className="flex items-center gap-1 bg-neutral-100 dark:bg-neutral-800 px-3 py-1 rounded-lg">
                 {drillDownPath.map((path, index) => (
                   <React.Fragment key={index}>
-                    {index > 0 && <ChevronRight className="w-3 h-3 text-gray-400" />}
+                    {index > 0 && <ChevronRight className="w-3 h-3 text-neutral-400" />}
                     <button
                       onClick={() => setDrillDownPath(drillDownPath.slice(0, index + 1))}
                       className="text-primary-600 hover:text-primary-700 font-medium"
@@ -241,7 +241,7 @@ export const MultiDimensionalAnalyzer: React.FC<{
                 ))}
                 <button
                   onClick={drillUp}
-                  className="ml-2 text-xs px-2 py-0.5 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded hover:bg-gray-50"
+                  className="ml-2 text-xs px-2 py-0.5 bg-white dark:bg-neutral-700 border border-neutral-200 dark:border-neutral-600 rounded hover:bg-slate-50"
                 >
                   返回
                 </button>
@@ -255,7 +255,7 @@ export const MultiDimensionalAnalyzer: React.FC<{
           <button
             onClick={() => refetch()}
             disabled={isLoading}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+            className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
           >
             <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
           </button>
@@ -273,7 +273,7 @@ export const MultiDimensionalAnalyzer: React.FC<{
           {/* 重置按钮 */}
           <button
             onClick={resetConfig}
-            className="px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors flex items-center gap-2"
+            className="px-3 py-1.5 text-sm text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200 transition-colors flex items-center gap-2"
           >
             <RotateCcw className="w-4 h-4" />
             重置
@@ -283,7 +283,7 @@ export const MultiDimensionalAnalyzer: React.FC<{
 
       {/* 维度配置面板 */}
       {showConfigPanel && (
-        <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl p-6 animate-micro-in">
+        <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl p-6 animate-micro-in">
           <h3 className="font-bold text-base mb-4">多维度分析配置</h3>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -292,13 +292,13 @@ export const MultiDimensionalAnalyzer: React.FC<{
               <label className="block text-sm font-semibold mb-2 flex items-center gap-2">
                 <ChevronRight className="w-4 h-4 rotate-0" /> 行维度
               </label>
-              <div className="space-y-2 min-h-[120px] p-3 bg-gray-50 dark:bg-slate-800/50 rounded-lg border border-gray-200 dark:border-slate-700">
+              <div className="space-y-2 min-h-[120px] p-3 bg-slate-50 dark:bg-neutral-800/50 rounded-lg border border-neutral-200 dark:border-neutral-700">
                 {config.rows.map(dim => (
-                  <div key={dim} className="flex items-center justify-between py-1.5 px-2 bg-white dark:bg-slate-700 rounded text-sm group">
+                  <div key={dim} className="flex items-center justify-between py-1.5 px-2 bg-white dark:bg-neutral-700 rounded text-sm group">
                     <span>{config.dimensions.find(d => d.key === dim)?.label || dim}</span>
                     <button
                       onClick={() => removeRowDimension(dim)}
-                      className="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-600 transition-opacity"
+                      className="opacity-0 group-hover:opacity-100 text-error-500 hover:text-error-600 transition-opacity"
                     >
                       <Minus className="w-3.5 h-3.5" />
                     </button>
@@ -327,13 +327,13 @@ export const MultiDimensionalAnalyzer: React.FC<{
               <label className="block text-sm font-semibold mb-2 flex items-center gap-2">
                 <ChevronDown className="w-4 h-4" /> 列维度
               </label>
-              <div className="space-y-2 min-h-[120px] p-3 bg-gray-50 dark:bg-slate-800/50 rounded-lg border border-gray-200 dark:border-slate-700">
+              <div className="space-y-2 min-h-[120px] p-3 bg-slate-50 dark:bg-neutral-800/50 rounded-lg border border-neutral-200 dark:border-neutral-700">
                 {config.columns.map(dim => (
-                  <div key={dim} className="flex items-center justify-between py-1.5 px-2 bg-white dark:bg-slate-700 rounded text-sm group">
+                  <div key={dim} className="flex items-center justify-between py-1.5 px-2 bg-white dark:bg-neutral-700 rounded text-sm group">
                     <span>{config.dimensions.find(d => d.key === dim)?.label || dim}</span>
                     <button
                       onClick={() => removeColumnDimension(dim)}
-                      className="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-600 transition-opacity"
+                      className="opacity-0 group-hover:opacity-100 text-error-500 hover:text-error-600 transition-opacity"
                     >
                       <Minus className="w-3.5 h-3.5" />
                     </button>
@@ -361,13 +361,13 @@ export const MultiDimensionalAnalyzer: React.FC<{
               <label className="block text-sm font-semibold mb-2 flex items-center gap-2">
                 <BarChart3 className="w-4 h-4" /> 度量值
               </label>
-              <div className="space-y-2 min-h-[120px] p-3 bg-gray-50 dark:bg-slate-800/50 rounded-lg border border-gray-200 dark:border-slate-700">
+              <div className="space-y-2 min-h-[120px] p-3 bg-slate-50 dark:bg-neutral-800/50 rounded-lg border border-neutral-200 dark:border-neutral-700">
                 {config.values.map(measure => (
-                  <div key={measure} className="flex items-center justify-between py-1.5 px-2 bg-white dark:bg-slate-700 rounded text-sm group">
+                  <div key={measure} className="flex items-center justify-between py-1.5 px-2 bg-white dark:bg-neutral-700 rounded text-sm group">
                     <span>{config.measures.find(m => m.key === measure)?.label || measure}</span>
                     <button
                       onClick={() => setConfig(p => ({ ...p, values: p.values.filter(v => v !== measure) }))}
-                      className="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-600 transition-opacity"
+                      className="opacity-0 group-hover:opacity-100 text-error-500 hover:text-error-600 transition-opacity"
                     >
                       <Minus className="w-3.5 h-3.5" />
                     </button>
@@ -394,37 +394,37 @@ export const MultiDimensionalAnalyzer: React.FC<{
       )}
 
       {/* 透视表格展示区 */}
-      <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 overflow-hidden">
+      <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-700 overflow-hidden">
         {isLoading ? (
           <div className="flex items-center justify-center h-96">
             <RefreshCw className="w-8 h-8 animate-spin text-primary-500" />
           </div>
         ) : error ? (
-          <div className="flex items-center justify-center h-96 text-red-500">
+          <div className="flex items-center justify-center h-96 text-error-500">
             分析失败，请重试
           </div>
         ) : pivotData.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-96 text-gray-400">
+          <div className="flex flex-col items-center justify-center h-96 text-neutral-400">
             <Table2 className="w-16 h-16 mb-3 opacity-50" />
             <p>请配置维度和度量以开始分析</p>
           </div>
         ) : (
           <div className="overflow-auto max-h-[600px]">
             <table className="w-full text-sm">
-              <thead className="bg-gray-50 dark:bg-slate-800 sticky top-0 z-10">
+              <thead className="bg-slate-50 dark:bg-neutral-800 sticky top-0 z-10">
                 <tr>
-                  <th className="px-4 py-3 text-left font-semibold text-text-muted border-b border-r border-gray-200 dark:border-slate-700">
+                  <th className="px-4 py-3 text-left font-semibold text-text-muted border-b border-r border-neutral-200 dark:border-neutral-700">
                     {config.rows.map(r => config.dimensions.find(d => d.key === r)?.label).join(' / ')}
                   </th>
                   {Array.from(new Set(pivotData.map(d => d.colLabel))).map(col => (
                     <th
                       key={col}
-                      className="px-4 py-3 text-right font-semibold text-text-muted border-b border-r border-gray-200 dark:border-slate-700 whitespace-nowrap"
+                      className="px-4 py-3 text-right font-semibold text-text-muted border-b border-r border-neutral-200 dark:border-neutral-700 whitespace-nowrap"
                     >
                       {col}
                     </th>
                   ))}
-                  <th className="px-4 py-3 text-right font-semibold text-text-muted border-b border-gray-200 dark:border-slate-700">
+                  <th className="px-4 py-3 text-right font-semibold text-text-muted border-b border-neutral-200 dark:border-neutral-700">
                     合计
                   </th>
                 </tr>
@@ -436,9 +436,9 @@ export const MultiDimensionalAnalyzer: React.FC<{
                 }, []).map(rowLabel => (
                   <tr
                     key={rowLabel}
-                    className="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors"
+                    className="hover:bg-slate-50 dark:hover:bg-neutral-800/50 transition-colors"
                   >
-                    <td className="px-4 py-3 font-medium text-text-primary border-r border-gray-200 dark:border-slate-700">
+                    <td className="px-4 py-3 font-medium text-text-primary border-r border-neutral-200 dark:border-neutral-700">
                       <button
                         onClick={() => drillDown([rowLabel])}
                         className="hover:text-primary-600 transition-colors flex items-center gap-1"
@@ -455,7 +455,7 @@ export const MultiDimensionalAnalyzer: React.FC<{
                       return (
                         <td
                           key={`${rowLabel}-${colLabel}`}
-                          className={`px-4 py-3 text-right border-r border-gray-200 dark:border-slate-700 cursor-pointer transition-all ${
+                          className={`px-4 py-3 text-right border-r border-neutral-200 dark:border-neutral-700 cursor-pointer transition-all ${
                             cell?.isSelected ? 'bg-primary-50 dark:bg-primary-940/30 font-bold' : ''
                           }`}
                           onClick={() => cell && toggleCellSelection(cell)}
@@ -466,7 +466,7 @@ export const MultiDimensionalAnalyzer: React.FC<{
                     })}
 
                     {/* 行合计 */}
-                    <td className="px-4 py-3 text-right font-bold text-text-primary border-t border-gray-200 dark:border-slate-700">
+                    <td className="px-4 py-3 text-right font-bold text-text-primary border-t border-neutral-200 dark:border-neutral-700">
                       {pivotData
                         .filter(d => d.rowLabel === rowLabel)
                         .reduce((sum, d) => sum + (d.value || 0), 0)
@@ -476,15 +476,15 @@ export const MultiDimensionalAnalyzer: React.FC<{
                   </tr>
                 ))}
               </tbody>
-              <tfoot className="bg-gray-50 dark:bg-slate-800">
+              <tfoot className="bg-slate-50 dark:bg-neutral-800">
                 <tr>
-                  <td className="px-4 py-3 font-bold text-text-primary border-t border-r border-gray-200 dark:border-slate-700">
+                  <td className="px-4 py-3 font-bold text-text-primary border-t border-r border-neutral-200 dark:border-neutral-700">
                     总计
                   </td>
                   {Array.from(new Set(pivotData.map(d => d.colLabel))).map(colLabel => (
                     <td
                       key={colLabel}
-                      className="px-4 py-3 text-right font-bold text-text-primary border-t border-r border-gray-200 dark:border-slate-700"
+                      className="px-4 py-3 text-right font-bold text-text-primary border-t border-r border-neutral-200 dark:border-neutral-700"
                     >
                       {pivotData
                         .filter(d => d.colLabel === colLabel)
@@ -493,7 +493,7 @@ export const MultiDimensionalAnalyzer: React.FC<{
                       }
                     </td>
                   ))}
-                  <td className="px-4 py-3 text-right font-bold text-primary-600 border-t border-gray-200 dark:border-slate-700">
+                  <td className="px-4 py-3 text-right font-bold text-primary-600 border-t border-neutral-200 dark:border-neutral-700">
                     {pivotData.reduce((sum, d) => sum + (d.value || 0), 0).toLocaleString()}
                   </td>
                 </tr>
@@ -504,7 +504,7 @@ export const MultiDimensionalAnalyzer: React.FC<{
 
         {/* 统计信息栏 */}
         {pivotData.length > 0 && (
-          <div className="px-4 py-3 bg-gray-50 dark:bg-slate-800/50 border-t border-gray-200 dark:border-slate-700 flex items-center justify-between text-xs text-text-muted">
+          <div className="px-4 py-3 bg-slate-50 dark:bg-neutral-800/50 border-t border-neutral-200 dark:border-neutral-700 flex items-center justify-between text-xs text-text-muted">
             <span>
               共 {pivotData.length} 个数据点 · {new Set(pivotData.map(d => d.rowLabel)).size} 行 × {new Set(pivotData.map(d => d.colLabel)).size} 列
             </span>
@@ -524,8 +524,8 @@ function generatePivotData(config: AnalysisConfig): Promise<PivotCell[]> {
     setTimeout(() => {
       const data: PivotCell[] = []
 
-      const rowValues = getDimensionValues(config.dimensions, config.rows[0])
-      const colValues = getDimensionValues(config.dimensions, config.columns[0])
+      const rowValues = getDimensionValues(config.dimensions, [config.rows[0]])
+      const colValues = getDimensionValues(config.dimensions, [config.columns[0]])
 
       let rowIdx = 0
       for (const rowVal of rowValues) {

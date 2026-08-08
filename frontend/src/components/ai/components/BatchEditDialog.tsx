@@ -59,50 +59,50 @@ const BatchEditDialog: React.FC<BatchEditDialogProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">批量编辑</h3>
-          <p className="mt-1 text-sm text-gray-600">
+        <div className="px-6 py-4 border-b border-neutral-200">
+          <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">批量编辑</h3>
+          <p className="mt-1 text-sm text-neutral-600">
             将修改 {selectedCount} 行数据的「{columnLabel}」字段
           </p>
         </div>
 
         <div className="px-6 py-4 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-neutral-700 mb-2">
               新值
             </label>
             {renderBatchInput(config, value, handleValueChange)}
           </div>
 
           {previewData.length > 0 && (
-            <div className="p-3 bg-blue-50 rounded-lg">
-              <h4 className="text-sm font-medium text-blue-800 mb-2">预览</h4>
+            <div className="p-3 bg-secondary-50 rounded-lg">
+              <h4 className="text-sm font-medium text-secondary-800 mb-2">预览</h4>
               <div className="space-y-1">
                 {previewData.map((preview, index) => (
                   <div key={index} className="flex justify-between text-sm">
-                    <span className="text-blue-700">{preview.field}</span>
-                    <span className="font-medium text-blue-900">{String(preview.newValue)}</span>
+                    <span className="text-secondary-700">{preview.field}</span>
+                    <span className="font-medium text-secondary-900">{String(preview.newValue)}</span>
                   </div>
                 ))}
               </div>
-              <p className="mt-2 text-xs text-blue-600">
+              <p className="mt-2 text-xs text-secondary-600">
                 将影响 {selectedCount} 行数据
               </p>
             </div>
           )}
         </div>
 
-        <div className="px-6 py-4 bg-gray-50 rounded-b-lg flex justify-end space-x-3">
+        <div className="px-6 py-4 bg-slate-50 rounded-b-lg flex justify-end space-x-3">
           <button
             onClick={handleCancel}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="px-4 py-2 text-sm font-medium text-neutral-700 bg-white border border-neutral-300 rounded-md hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
             取消
           </button>
           <button
             onClick={handleApply}
             disabled={!value && value !== false}
-            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-300 disabled:cursor-not-allowed"
+            className="px-4 py-2 text-sm font-medium text-white bg-secondary-600 border border-transparent rounded-md hover:bg-secondary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-neutral-300 disabled:cursor-not-allowed"
           >
             应用更改
           </button>
@@ -117,7 +117,7 @@ function renderBatchInput(
   value: any,
   onChange: (value: any) => void,
 ): React.ReactNode {
-  const baseClasses = "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500";
+  const baseClasses = "w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500";
 
   switch (config.editorType) {
     case 'select':
@@ -167,9 +167,9 @@ function renderBatchInput(
             type="checkbox"
             checked={Boolean(value)}
             onChange={(e) => onChange(e.target.checked)}
-            className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+            className="w-4 h-4 text-secondary-600 rounded focus:ring-2 focus:ring-blue-500"
           />
-          <span className="text-sm text-gray-700">
+          <span className="text-sm text-neutral-700">
             {value ? '是' : '否'}
           </span>
         </div>

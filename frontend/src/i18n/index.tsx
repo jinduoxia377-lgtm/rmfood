@@ -46,6 +46,8 @@
 
 import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
 
+
+import { logger } from '@/utils/safeLogger';
 // ═════════════════════════════════════════════
 // 🟡 P4-5: 类型定义
 // ═════════════════════════════════════════════
@@ -180,7 +182,7 @@ const ZH_CN_MESSAGES = {
     delete: '删除配方',
     name: '配方名称',
     category: '分类',
-    status: '状态',
+    status_label: '状态',
     creator: '创建人',
     created_at: '创建时间',
     updated_at: '更新时间',
@@ -357,7 +359,7 @@ const EN_US_MESSAGES: TranslationMessages = {
     delete: 'Delete Formula',
     name: 'Formula Name',
     category: 'Category',
-    status: 'Status',
+    status_label: 'Status',
     creator: 'Creator',
     created_at: 'Created At',
     updated_at: 'Updated At',
@@ -481,8 +483,14 @@ const MESSAGES_MAP: Record<Locale, TranslationMessages> = {
 /**
  * 获取嵌套对象属性（安全访问）
  */
-function getNestedValue(obj: any, path: string): any {
-  return path.split('.').reduce((current, key) => current?.[key], obj);
+function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
+  const parts = path.split('.');
+  let current: unknown = obj;
+  for (const key of parts) {
+    if (current == null || typeof current !== 'object') return undefined;
+    current = (current as Record<string, unknown>)[key];
+  }
+  return current;
 }
 
 /**
@@ -577,7 +585,7 @@ export function TranslationProvider({
       // 简化：使用中文作为占位
       MESSAGES_MAP[targetLocale] = ZH_CN_MESSAGES;
     } catch (error) {
-      console.error(`Failed to load locale: ${targetLocale}`, error);
+      logger.error(`Failed to load locale: ${targetLocale}`, error);
     } finally {
       setIsLoading(false);
     }
@@ -587,7 +595,7 @@ export function TranslationProvider({
   const setLocale = useCallback(
     (newLocale: Locale) => {
       if (!LOCALES[newLocale]) {
-        console.warn(`Unknown locale: ${newLocale}`);
+        if (import.meta.env.DEV) logger.warn(`Unknown locale: ${newLocale}`);
         return;
       }
 
@@ -627,14 +635,14 @@ export function TranslationProvider({
 
       // 如果仍找不到，返回 key
       if (translation === undefined) {
-        if (process.env.NODE_ENV === 'development') {
-          console.warn(`Missing translation: ${key}`);
+        if (import.meta.env.DEV) {
+          logger.warn(`Missing translation: ${key}`);
         }
         return key;
       }
 
       // 插值
-      return interpolate(translation, params, locale);
+      return interpolate(typeof translation === 'string' ? translation : key, params, locale);
     },
     [locale, fallbackLocale],
   );
@@ -727,7 +735,7 @@ export function tf(key: string, params?: Record<string, any>): string {
     return key;
   }
 
-  return interpolate(translation, params, _currentLocale);
+  return interpolate(typeof translation === 'string' ? translation : key, params, _currentLocale);
 }
 
 // ═════════════════════════════════════════════
@@ -767,4 +775,4 @@ export function LocaleSwitcher({ className }: LocaleSwitcherProps) {
 // 🟡 P4-5: 导出
 // ═════════════════════════════════════════════
 
-export { LOCALES };
+// LOCALES is exported at line 83 above — no duplicate export needed.

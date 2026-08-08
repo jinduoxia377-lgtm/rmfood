@@ -175,7 +175,7 @@ export function TemplateManager({ currentLayout, onUpdate, className }: Template
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <FileText size={20} className="text-blue-600 dark:text-blue-400" />
+            <FileText size={20} className="text-secondary-600 dark:text-secondary-400" />
             <CardTitle as="h3" className="text-sm font-bold">模板管理</CardTitle>
           </div>
           <Badge size="sm">{templates.length}</Badge>
@@ -214,7 +214,7 @@ export function TemplateManager({ currentLayout, onUpdate, className }: Template
         <div className="mt-4 border rounded-lg">
           {templates.length === 0 ? (
             <div className="py-4">
-              <p className="text-sm text-slate-500 dark:text-slate-400 text-center">
+              <p className="text-sm text-neutral-500 dark:text-neutral-400 text-center">
                 暂无保存的模板
               </p>
             </div>
@@ -223,7 +223,7 @@ export function TemplateManager({ currentLayout, onUpdate, className }: Template
               <div key={template.id} className="py-3 px-4 border-b last:border-b-0 flex items-center justify-between">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium text-slate-900 dark:text-white truncate">
+                    <p className="text-sm font-medium text-neutral-900 dark:text-white truncate">
                       {template.name}
                     </p>
                     <Badge size="sm">
@@ -231,16 +231,16 @@ export function TemplateManager({ currentLayout, onUpdate, className }: Template
                     </Badge>
                   </div>
                   {template.description && (
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
                       {template.description}
                     </p>
                   )}
                   <div className="flex items-center gap-2 mt-2">
-                    <span className="text-xs text-slate-400">
+                    <span className="text-xs text-neutral-400">
                       卡片数量: {template.layout.cards.length}
                     </span>
-                    <span className="text-xs text-slate-300 dark:text-slate-600">·</span>
-                    <span className="text-xs text-slate-400">
+                    <span className="text-xs text-neutral-300 dark:text-neutral-600">·</span>
+                    <span className="text-xs text-neutral-400">
                       最后更新: {new Date(template.updatedAt).toLocaleTimeString()}
                     </span>
                   </div>
@@ -279,16 +279,16 @@ export function TemplateManager({ currentLayout, onUpdate, className }: Template
         {/* 导入模板对话框 */}
         {isImportDialogOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-slate-800 rounded-lg p-6 max-w-md w-full">
+            <div className="bg-white dark:bg-neutral-800 rounded-lg p-6 max-w-md w-full">
               <h3 className="text-lg font-medium mb-4">导入模板</h3>
               {importError && (
-                <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800/30 mb-4">
-                  <h4 className="text-sm font-medium text-red-800 dark:text-red-300 mb-1">导入失败</h4>
-                  <p className="text-xs text-red-600 dark:text-red-400">{importError}</p>
+                <div className="p-3 rounded-lg bg-error-50 dark:bg-error-900/10 border border-red-200 dark:border-red-800/30 mb-4">
+                  <h4 className="text-sm font-medium text-error-800 dark:text-error-300 mb-1">导入失败</h4>
+                  <p className="text-xs text-error-600 dark:text-error-400">{importError}</p>
                 </div>
               )}
               <div className="space-y-4">
-                <p className="text-sm text-slate-600 dark:text-slate-400">
+                <p className="text-sm text-neutral-600 dark:text-neutral-400">
                   选择JSON格式的模板文件进行导入
                 </p>
                 <input
@@ -296,7 +296,7 @@ export function TemplateManager({ currentLayout, onUpdate, className }: Template
                   type="file"
                   accept=".json"
                   onChange={handleImportTemplate}
-                  className="w-full p-3 border border-slate-200 dark:border-slate-700 rounded-lg"
+                  className="w-full p-3 border border-neutral-200 dark:border-neutral-700 rounded-lg"
                 />
               </div>
               <div className="flex gap-2 mt-6 justify-end">
@@ -311,20 +311,20 @@ export function TemplateManager({ currentLayout, onUpdate, className }: Template
         {/* 导出当前布局对话框 */}
         {isExportDialogOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-slate-800 rounded-lg p-6 max-w-md w-full">
+            <div className="bg-white dark:bg-neutral-800 rounded-lg p-6 max-w-md w-full">
               <h3 className="text-lg font-medium mb-4">导出当前布局</h3>
               <div className="space-y-4">
-                <p className="text-sm text-slate-600 dark:text-slate-400">
+                <p className="text-sm text-neutral-600 dark:text-neutral-400">
                   将当前仪表板布局导出为JSON模板文件
                 </p>
-                <div className="p-4 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+                <div className="p-4 rounded-lg bg-slate-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700">
                   <div className="flex items-center gap-3">
-                    <FileText size={24} className="text-blue-600 dark:text-blue-400" />
+                    <FileText size={24} className="text-secondary-600 dark:text-secondary-400" />
                     <div>
-                      <p className="text-sm font-medium text-slate-900 dark:text-white">
+                      <p className="text-sm font-medium text-neutral-900 dark:text-white">
                         {currentLayout.name}
                       </p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                      <p className="text-xs text-neutral-500 dark:text-neutral-400">
                         包含 {currentLayout.cards.length} 个卡片
                       </p>
                     </div>
@@ -346,7 +346,7 @@ export function TemplateManager({ currentLayout, onUpdate, className }: Template
         {/* 保存为模板对话框 */}
         {isSaveDialogOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-slate-800 rounded-lg p-6 max-w-md w-full">
+            <div className="bg-white dark:bg-neutral-800 rounded-lg p-6 max-w-md w-full">
               <h3 className="text-lg font-medium mb-4">保存为模板</h3>
               <div className="space-y-4">
                 <div>
@@ -365,14 +365,14 @@ export function TemplateManager({ currentLayout, onUpdate, className }: Template
                     onChange={(e) => setTemplateDescription(e.target.value)}
                   />
                 </div>
-                <div className="p-4 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+                <div className="p-4 rounded-lg bg-slate-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700">
                   <div className="flex items-center gap-3">
-                    <Share2 size={24} className="text-blue-600 dark:text-blue-400" />
+                    <Share2 size={24} className="text-secondary-600 dark:text-secondary-400" />
                     <div>
-                      <p className="text-sm font-medium text-slate-900 dark:text-white">
+                      <p className="text-sm font-medium text-neutral-900 dark:text-white">
                         当前布局
                       </p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                      <p className="text-xs text-neutral-500 dark:text-neutral-400">
                         包含 {currentLayout.cards.length} 个卡片
                       </p>
                     </div>
@@ -396,12 +396,12 @@ export function TemplateManager({ currentLayout, onUpdate, className }: Template
         )}
 
         {/* 使用提示 */}
-        <div className="mt-4 p-3 rounded-lg bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-800/30">
+        <div className="mt-4 p-3 rounded-lg bg-secondary-50 dark:bg-secondary-900/10 border border-blue-100 dark:border-blue-800/30">
           <div className="flex items-start gap-3">
-            <FileText size={18} className="text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+            <FileText size={18} className="text-secondary-600 dark:text-secondary-400 flex-shrink-0 mt-0.5" />
             <div>
-              <h4 className="text-sm font-medium text-blue-800 dark:text-blue-300 mb-1">模板管理提示</h4>
-              <ul className="text-xs text-blue-600 dark:text-blue-400 space-y-1">
+              <h4 className="text-sm font-medium text-secondary-800 dark:text-secondary-300 mb-1">模板管理提示</h4>
+              <ul className="text-xs text-secondary-600 dark:text-secondary-400 space-y-1">
                 <li>• 保存当前布局为模板，方便后续快速应用</li>
                 <li>• 导入/导出模板，实现布局的备份和分享</li>
                 <li>• 应用模板会覆盖当前仪表板布局</li>

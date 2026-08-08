@@ -1,0 +1,142 @@
+/*
+ * RMFOOD 设计系统 - 卡片系统 v3.0 — Apple HIG 风格
+ * 标准卡片、玻璃态卡片、可交互卡片、边框卡片、渐变卡片
+ */
+
+/* 标准卡片 -- Apple 风格: subtle border + 轻量阴影 */
+.card {
+  background: var(--card-bg-solid, #FFFFFF);
+  border-radius: var(--radius-md, 14px);
+  border: 1px solid var(--border-subtle, rgba(0, 0, 0, 0.06));
+  box-shadow: var(--shadow-card, 0 1px 3px rgba(0, 0, 0, 0.06));
+  transition: all var(--duration-normal) var(--ease-spring);
+  padding: var(--space-lg);
+  position: relative;
+  overflow: hidden;
+}
+
+.card:hover {
+  border-color: var(--border-subtle-hover, rgba(0, 0, 0, 0.08));
+  box-shadow: var(--shadow-card-hover, 0 4px 12px rgba(0, 0, 0, 0.08));
+}
+
+.dark .card {
+  background: var(--card-bg-solid, #1C1C1E);
+  border-color: var(--border-subtle, rgba(255, 255, 255, 0.06));
+  box-shadow: var(--shadow-card, 0 1px 3px rgba(0, 0, 0, 0.3));
+}
+.dark .card:hover {
+  border-color: var(--border-subtle-hover, rgba(255, 255, 255, 0.1));
+  box-shadow: var(--shadow-card-hover, 0 4px 12px rgba(0, 0, 0, 0.4));
+}
+
+/* 玻璃态卡片 -- Apple Acrylic 材质 */
+.glass-card {
+  background: var(--glass-bg, var(--material-acrylic, rgba(255, 255, 255, 0.72)));
+  backdrop-filter: blur(var(--material-acrylic-blur, 20px)) saturate(1.2);
+  -webkit-backdrop-filter: blur(var(--material-acrylic-blur, 20px)) saturate(1.2);
+  border-radius: var(--radius-lg, 20px);
+  border: 1px solid var(--glass-border, var(--material-acrylic-border, rgba(255, 255, 255, 0.3)));
+  box-shadow: var(--shadow-glass, 0 8px 32px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.1));
+  transition: all var(--duration-normal) var(--ease-spring);
+  padding: var(--space-xl);
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-card:hover {
+  border-color: var(--material-vibrancy, rgba(255, 255, 255, 0.5));
+}
+
+.dark .glass-card {
+  background: var(--glass-bg, var(--material-acrylic, rgba(28, 28, 30, 0.72)));
+  backdrop-filter: blur(var(--material-acrylic-blur, 30px)) saturate(1.1);
+  -webkit-backdrop-filter: blur(var(--material-acrylic-blur, 30px)) saturate(1.1);
+  border: 1px solid var(--glass-border, var(--material-acrylic-border, rgba(255, 255, 255, 0.08)));
+  box-shadow: var(--shadow-glass, 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05));
+}
+.dark .glass-card:hover {
+  border-color: var(--material-vibrancy, rgba(44, 44, 46, 0.5));
+}
+
+/* 可交互卡片 -- 带悬浮提升 */
+.card-interactive {
+  background: var(--card-bg-solid, #FFFFFF);
+  border-radius: var(--radius-md, 14px);
+  border: 1px solid var(--border-subtle, rgba(0, 0, 0, 0.06));
+  box-shadow: var(--shadow-card, 0 1px 3px rgba(0, 0, 0, 0.06));
+  cursor: pointer;
+  transition: all var(--duration-normal) var(--ease-spring);
+  padding: var(--space-lg);
+  position: relative;
+}
+.card-interactive:hover {
+  border-color: var(--border-subtle-hover, rgba(0, 0, 0, 0.08));
+  box-shadow: var(--shadow-card-hover, 0 4px 12px rgba(0, 0, 0, 0.08));
+  transform: translateY(-1px);
+}
+.card-interactive:active {
+  transform: scale(0.99);
+}
+.dark .card-interactive {
+  background: var(--card-bg-solid, #1C1C1E);
+  border-color: var(--border-subtle, rgba(255, 255, 255, 0.06));
+  box-shadow: var(--shadow-card, 0 1px 3px rgba(0, 0, 0, 0.3));
+}
+.dark .card-interactive:hover {
+  border-color: var(--border-subtle-hover, rgba(255, 255, 255, 0.1));
+  box-shadow: var(--shadow-card-hover, 0 4px 12px rgba(0, 0, 0, 0.4));
+}
+
+/* 边框卡片 -- 极简线框 */
+.card-outlined {
+  background: transparent;
+  border-radius: var(--radius-md, 14px);
+  border: 1.5px solid var(--border-subtle, rgba(0, 0, 0, 0.06));
+  transition: all var(--duration-normal) var(--ease-spring);
+  padding: var(--space-lg);
+}
+.card-outlined:hover {
+  border-color: var(--color-primary, #34C759);
+  background: var(--color-primary-container, rgba(16, 185, 129, 0.04));
+}
+.dark .card-outlined {
+  border-color: var(--border-subtle, rgba(255, 255, 255, 0.06));
+}
+.dark .card-outlined:hover {
+  border-color: var(--color-primary, #30D158);
+  background: var(--color-primary-container, rgba(48, 209, 88, 0.06));
+}
+
+/* 渐变卡片 -- Apple 风格品牌色 */
+.card-gradient {
+  border-radius: var(--radius-lg, 20px);
+  padding: var(--space-xl);
+  position: relative;
+  overflow: hidden;
+  color: white;
+  background: linear-gradient(135deg, var(--color-primary, #34C759), var(--color-primary-hover, #28A745));
+  transition: all var(--duration-normal) var(--ease-spring);
+}
+.card-gradient:hover {
+  background: linear-gradient(135deg, var(--color-primary-hover, #28A745), var(--color-primary, #34C759));
+}
+.dark .card-gradient {
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.15);
+}
+
+/* ── Reduced Motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .card:hover,
+  .glass-card:hover,
+  .card-interactive:hover,
+  .card-gradient:hover {
+    transition: none !important;
+    transform: none !important;
+    box-shadow: inherit !important;
+  }
+
+  .card-interactive:active {
+    transform: none !important;
+  }
+}

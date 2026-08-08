@@ -22,6 +22,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+
+import { logger } from '@/utils/safeLogger';
 // ════════════════════════════════════════════
 // 🔒 P5-2: 存储引擎抽象
 // ════════════════════════════════════════════
@@ -35,6 +37,7 @@ interface StorageAdapter {
   clear(): Promise<void>;
   keys(): Promise<string[]>;
   size(): Promise<number>;
+  _evictOldData?: () => void;
 }
 
 // ─────────────────────────────────────────────
@@ -57,7 +60,7 @@ const LocalStorageAdapter: StorageAdapter = {
       localStorage.setItem(key, JSON.stringify(value));
     } catch (e) {
       // 存储配额不足，尝试清理旧数据
-      this._evictOldData();
+      this._evictOldData?.();
       localStorage.setItem(key, JSON.stringify(value));
     }
   },
@@ -86,8 +89,8 @@ const LocalStorageAdapter: StorageAdapter = {
 
   _evictOldData(): void {
     // 清理带 _persist_ 标记的旧数据
-    const keys = Object.keys(localStorage).filter(k => k.startsWith('_evict_'));
-    keys.forEach(k => localStorage.removeItem(k));
+    const keys = Object.keys(localStorage).filter((k) => k.startsWith('_evict_'));
+    keys.forEach((k) => localStorage.removeItem(k));
   },
 };
 
@@ -157,7 +160,7 @@ class IndexedDBAdapter implements StorageAdapter {
         tx.onerror = () => reject(tx.error);
       });
     } catch (e) {
-      console.error('[IndexedDB] Write failed:', e);
+      logger.error('[IndexedDB] Write failed:', e);
     }
   }
 
@@ -201,7 +204,7 @@ class IndexedDBAdapter implements StorageAdapter {
         const store = tx.objectStore(this.storeName);
         const request = store.getAllKeys();
 
-        request.onsuccess = () => resolve(request.result);
+        request.onsuccess = () => resolve(request.result as string[]);
         request.onerror = () => reject(request.error);
       });
     } catch {
@@ -234,16 +237,8 @@ interface PersistentStoreOptions {
   onVersionMismatch?: (oldData: any, newData: any) => any;
 }
 
-function createPersistentStore<T = any>(
-  namespace: string,
-  options: PersistentStoreOptions = {}
-) {
-  const {
-    storage = 'localStorage',
-    version = 1,
-    ttl,
-    onVersionMismatch,
-  } = options;
+function createPersistentStore<T = any>(namespace: string, options: PersistentStoreOptions = {}) {
+  const { storage = 'localStorage', version = 1, ttl, onVersionMismatch } = options;
 
   const prefix = `${namespace}:`;
   let adapter: StorageAdapter;
@@ -289,11 +284,11 @@ function createPersistentStore<T = any>(
   return {
     async get<K extends keyof T>(key: K): Promise<T[K] | null> {
       const wrapped = await adapter.get(_wrapKey(key as string));
-      return wrapped ? _unwrapData(wrapped) : null;
+      return wrapped ? (_unwrapData(wrapped) as T[K]) : null;
     },
 
     async set<K extends keyof T>(key: K, value: T[K]): Promise<void> {
-      await adapter.set(_wrapKey(key as string), _wrapData(value));
+      await adapter.set(_wrapKey(key as string), _wrapData(value as T));
     },
 
     async delete(key: string): Promise<void> {
@@ -302,7 +297,7 @@ function createPersistentStore<T = any>(
 
     async clear(): Promise<void> {
       const allKeys = await adapter.keys();
-      const myKeys = allKeys.filter(k => k.startsWith(prefix));
+      const myKeys = allKeys.filter((k) => k.startsWith(prefix));
       for (const key of myKeys) {
         await adapter.delete(key);
       }
@@ -315,20 +310,20 @@ function createPersistentStore<T = any>(
 
     async size(): Promise<number> {
       const allKeys = await adapter.keys();
-      const myKeys = allKeys.filter(k => k.startsWith(prefix));
+      const myKeys = allKeys.filter((k) => k.startsWith(prefix));
       return myKeys.length;
     },
 
     async getAll(): Promise<Partial<T>> {
       const allKeys = await adapter.keys();
-      const myKeys = allKeys.filter(k => k.startsWith(prefix));
+      const myKeys = allKeys.filter((k) => k.startsWith(prefix));
       const result: Partial<T> = {};
 
       for (const key of myKeys) {
         const plainKey = key.replace(prefix, '');
         const wrapped = await adapter.get(key);
         if (wrapped) {
-          (result as any)[plainKey] = _unwrapData(wrapped);
+          (result as Record<string, unknown>)[plainKey] = _unwrapData(wrapped);
         }
       }
 
@@ -336,9 +331,7 @@ function createPersistentStore<T = any>(
     },
 
     async batchSet(data: Partial<T>): Promise<void> {
-      const promises = Object.entries(data).map(([key, value]) =>
-        adapter.set(_wrapKey(key), _wrapData(value))
-      );
+      const promises = Object.entries(data).map(([key, value]) => adapter.set(_wrapKey(key), _wrapData(value as T)));
       await Promise.all(promises);
     },
   };
@@ -352,7 +345,7 @@ export function usePersistentState<T>(
   key: string,
   namespace: string,
   defaultValue: T,
-  options: PersistentStoreOptions = {}
+  options: PersistentStoreOptions = {},
 ) {
   const store = useRef(createPersistentStore(namespace, options));
   const [state, setState] = useState<T>(defaultValue);
@@ -362,12 +355,12 @@ export function usePersistentState<T>(
   useEffect(() => {
     const loadData = async () => {
       try {
-        const stored = await store.current.get(key as any);
+        const stored = await store.current.get(key;
         if (stored !== null) {
           setState(stored);
         }
       } catch (e) {
-        console.warn(`[PersistentState] Failed to load ${key}:`, e);
+        logger.warn(`[PersistentState] Failed to load ${key}:`, e);
       } finally {
         setLoading(false);
       }
@@ -379,14 +372,12 @@ export function usePersistentState<T>(
   // 设置值
   const setValue = useCallback(
     async (value: T | ((prev: T) => T)) => {
-      const newValue = typeof value === 'function'
-        ? (value as (prev: T) => T)(state)
-        : value;
+      const newValue = typeof value === 'function' ? (value as (prev: T) => T)(state) : value;
 
       setState(newValue);
       await store.current.set(key as any, newValue);
     },
-    [key, state]
+    [key, state],
   );
 
   return [state, setValue, loading] as const;
@@ -424,16 +415,16 @@ class OfflineManagerClass {
     if ('serviceWorker' in navigator) {
       try {
         const reg = await navigator.serviceWorker.register('/sw.js');
-        console.log('[Offline] Service Worker registered:', reg.scope);
+        logger.info('[Offline] Service Worker registered:', reg.scope);
       } catch (e) {
-        console.warn('[Offline] Service Worker registration failed:', e);
+        logger.warn('[Offline] Service Worker registration failed:', e);
       }
     }
 
     // 定期尝试同步
     setInterval(() => this._trySync(), 30000); // 每 30 秒
 
-    console.log('[Offline] Manager initialized, online:', this.isOnline);
+    logger.info('[Offline] Manager initialized, online:', this.isOnline);
   }
 
   destroy() {
@@ -456,26 +447,22 @@ class OfflineManagerClass {
 
   private _handleOnline = () => {
     this.isOnline = true;
-    this.listeners.forEach(cb => cb(true));
-    console.log('[Offline] Network online');
+    this.listeners.forEach((cb) => cb(true));
+    logger.info('[Offline] Network online');
     this._trySync();
   };
 
   private _handleOffline = () => {
     this.isOnline = false;
-    this.listeners.forEach(cb => cb(false));
-    console.log('[Offline] Network offline');
+    this.listeners.forEach((cb) => cb(false));
+    logger.info('[Offline] Network offline');
   };
 
   // ─────────────────────────────────────────────
   // 队列管理
   // ─────────────────────────────────────────────
 
-  async queueOperation(
-    endpoint: string,
-    method: 'POST' | 'PUT' | 'DELETE',
-    payload?: any
-  ): Promise<string> {
+  async queueOperation(endpoint: string, method: 'POST' | 'PUT' | 'DELETE', payload?: any): Promise<string> {
     const item: SyncQueueItem = {
       id: `sync_${Date.now()}_${Math.random().toString(36).slice(2)}`,
       endpoint,
@@ -488,7 +475,7 @@ class OfflineManagerClass {
     this.syncQueue.push(item);
     await this._saveQueue();
 
-    console.log(`[Offline] Queued: ${method} ${endpoint}`);
+    logger.info(`[Offline] Queued: ${method} ${endpoint}`);
 
     // 如果在线，立即尝试同步
     if (this.isOnline) {
@@ -517,7 +504,7 @@ class OfflineManagerClass {
       return;
     }
 
-    console.log(`[Offline] Attempting sync: ${this.syncQueue.length} items`);
+    logger.info(`[Offline] Attempting sync: ${this.syncQueue.length} items`);
 
     const failedItems: SyncQueueItem[] = [];
 
@@ -536,16 +523,16 @@ class OfflineManagerClass {
           throw new Error(`HTTP ${response.status}`);
         }
 
-        console.log(`[Offline] Synced: ${item.method} ${item.endpoint}`);
+        logger.info(`[Offline] Synced: ${item.method} ${item.endpoint}`);
       } catch (e) {
-        console.warn(`[Offline] Sync failed: ${item.endpoint}`, e);
+        logger.warn(`[Offline] Sync failed: ${item.endpoint}`, e);
         item.retries++;
 
         // 超过 5 次重试则放弃
         if (item.retries < 5) {
           failedItems.push(item);
         } else {
-          console.error(`[Offline] Max retries exceeded for: ${item.endpoint}`);
+          logger.error(`[Offline] Max retries exceeded for: ${item.endpoint}`);
         }
       }
     }
@@ -554,15 +541,15 @@ class OfflineManagerClass {
     await this._saveQueue();
 
     if (failedItems.length === 0) {
-      console.log('[Offline] ✅ All items synced successfully');
+      logger.info('[Offline] ✅ All items synced successfully');
     } else {
-      console.log(`[Offline] ⏳ ${failedItems.length} items pending`);
+      logger.info(`[Offline] ⏳ ${failedItems.length} items pending`);
     }
   }
 
   async syncWhenOnline(): Promise<boolean> {
     if (!this.isOnline) {
-      console.log('[Offline] Cannot sync: offline');
+      logger.info('[Offline] Cannot sync: offline');
       return false;
     }
 
@@ -642,7 +629,7 @@ function computeChecksum(data: any): string {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
     const char = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
+    hash = (hash << 5) - hash + char;
     hash = hash & hash;
   }
   return Math.abs(hash).toString(36);
@@ -658,10 +645,7 @@ export function createVersionedData<T>(data: T, version: number = 1): VersionedD
   };
 }
 
-export function updateVersionedData<T>(
-  current: VersionedData<T>,
-  newData: T
-): VersionedData<T> {
+export function updateVersionedData<T>(current: VersionedData<T>, newData: T): VersionedData<T> {
   return {
     ...current,
     data: newData,
@@ -679,10 +663,10 @@ export function validateVersionedData<T>(data: VersionedData<T>): boolean {
 export function mergeVersionedData<T>(
   local: VersionedData<T>,
   remote: VersionedData<T>,
-  strategy: 'local-wins' | 'remote-wins' | 'newer-wins' = 'newer-wins'
+  strategy: 'local-wins' | 'remote-wins' | 'newer-wins' = 'newer-wins',
 ): T {
   if (!validateVersionedData(remote)) {
-    console.warn('[VersionControl] Remote data checksum mismatch');
+    logger.warn('[VersionControl] Remote data checksum mismatch');
     return local.data;
   }
 
@@ -702,9 +686,6 @@ export function mergeVersionedData<T>(
 // ════════════════════════════════════════════
 
 export {
-  createPersistentStore,
-  usePersistentState,
-  OfflineManager,
   LocalStorageAdapter,
   IndexedDBAdapter,
   type StorageAdapter,

@@ -9,7 +9,7 @@ export interface ValidationRule {
   validator?: (value: string) => boolean
 }
 
-export interface DialogInputProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+export interface DialogInputProps extends Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, 'value' | 'defaultValue' | 'onChange'> {
   value: string
   onChange: (value: string) => void
   onSend?: () => void
@@ -180,10 +180,10 @@ const DialogInput = memo(
         <div className="flex flex-col w-full">
           <div
             className={cn(
-              'flex items-center bg-gray-50 dark:bg-gray-800 rounded-full border-2 transition-all duration-300 overflow-hidden shadow-sm',
+              'flex items-center bg-slate-50 dark:bg-neutral-800 rounded-full border-2 transition-all duration-300 overflow-hidden shadow-sm',
               isFocused
                 ? 'border-primary-500 dark:border-primary-500 shadow-lg shadow-primary-500/15'
-                : 'border-gray-200 dark:border-gray-700',
+                : 'border-neutral-200 dark:border-neutral-700',
               hasError
                 ? 'border-red-500 dark:border-red-500 shadow-lg shadow-red-500/15'
                 : '',
@@ -205,7 +205,7 @@ const DialogInput = memo(
               disabled={disabled || isLoading}
               placeholder={placeholder}
               maxLength={maxLength}
-              className="flex-1 resize-none text-base sm:text-sm leading-[1.6] tracking-[0.01em] px-4 py-3 bg-transparent border-0 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-0 transition-all duration-200 min-h-[44px]"
+              className="flex-1 resize-none text-base sm:text-sm leading-[1.6] tracking-[0.01em] px-4 py-3 bg-transparent border-0 text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 focus:outline-none focus:ring-0 transition-all duration-200 min-h-[44px]"
               style={{ height: `${inputHeight}px`, maxHeight: '180px' }}
               spellCheck={false}
               autoComplete="off"
@@ -221,33 +221,33 @@ const DialogInput = memo(
                 className={cn(
                   'text-xs transition-colors',
                   isExceeded
-                    ? 'text-red-500 dark:text-red-400 font-semibold'
+                    ? 'text-error-500 dark:text-error-400 font-semibold'
                     : isOverLimit
                     ? 'text-orange-500'
-                    : 'text-gray-400',
+                    : 'text-neutral-400',
                 )}
               >
                 {charCount}/{maxLength}
                 {isOverLimit && !isExceeded && (
-                  <span className="ml-1 text-gray-400">即将达到限制</span>
+                  <span className="ml-1 text-neutral-400">即将达到限制</span>
                 )}
               </div>
             )}
 
-            <div className="flex items-center gap-2 text-xs text-gray-400">
+            <div className="flex items-center gap-2 text-xs text-neutral-400">
               <span className="hidden sm:inline-flex items-center gap-1">
-                <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-[10px] font-mono border border-gray-200 dark:border-gray-700">
+                <kbd className="px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-800 rounded text-[10px] font-mono border border-neutral-200 dark:border-neutral-700">
                   Shift
                 </kbd>
                 <span>+</span>
-                <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-[10px] font-mono border border-gray-200 dark:border-gray-700">
+                <kbd className="px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-800 rounded text-[10px] font-mono border border-neutral-200 dark:border-neutral-700">
                   Enter
                 </kbd>
                 <span className="ml-1">换行</span>
               </span>
-              <span className="hidden sm:inline text-gray-300">·</span>
+              <span className="hidden sm:inline text-neutral-300">·</span>
               <span className="hidden sm:inline-flex items-center gap-1">
-                <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-[10px] font-mono border border-gray-200 dark:border-gray-700">
+                <kbd className="px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-800 rounded text-[10px] font-mono border border-neutral-200 dark:border-neutral-700">
                   Enter
                 </kbd>
                 <span className="ml-1">发送</span>
@@ -260,7 +260,7 @@ const DialogInput = memo(
               {errors.map((error, index) => (
                 <div
                   key={index}
-                  className="flex items-center gap-2 text-red-500 dark:text-red-400 text-xs"
+                  className="flex items-center gap-2 text-error-500 dark:text-error-400 text-xs"
                   role="alert"
                   aria-live="polite"
                 >

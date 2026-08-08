@@ -457,7 +457,7 @@ export function validateReport(report: ProfessionalReport): { valid: boolean; er
     const requiredSections = ['cover', 'executive-summary']
     const existingTypes = report.sections.map(s => s.type)
     requiredSections.forEach(requiredType => {
-      if (!existingTypes.includes(requiredType as any)) {
+      if (!existingTypes.includes(requiredType) {
         errors.push('缺少必需章节: ' + requiredType)
       }
     })

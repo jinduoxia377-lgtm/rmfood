@@ -56,12 +56,12 @@ interface FlavorWheel3DProps {
 // ===== 常量配置 =====
 
 const DEFAULT_DIMENSIONS: Omit<FlavorDimension, 'value'>[] = [
-  { id: 'sour', label: '酸', color: '#fbbf24' },
-  { id: 'sweet', label: '甜', color: '#ec4899' },
-  { id: 'bitter', label: '苦', color: '#8b5cf6' },
-  { id: 'spicy', label: '辣', color: '#ef4444' },
-  { id: 'umami', label: '鲜', color: '#10b981' },
-  { id: 'astringent', label: '涩', color: '#6366f1' },
+  { id: 'sour', label: '酸', color: 'var(--color-yellow-400, #F59E0B)' },
+  { id: 'sweet', label: '甜', color: 'var(--color-pink-500, #D946EF)' },
+  { id: 'bitter', label: '苦', color: 'var(--color-violet-500, #AF52DE)' },
+  { id: 'spicy', label: '辣', color: 'var(--color-error, #FF3B30)' },
+  { id: 'umami', label: '鲜', color: 'var(--color-primary, #34C759)' },
+  { id: 'astringent', label: '涩', color: 'var(--color-indigo-500, #6366F1)' },
 ]
 
 const ROTATION_SPEED = 0.5
@@ -299,7 +299,7 @@ const FlavorWheel3D = memo(({
                   y={y - 12}
                   textAnchor="middle"
                   fontSize={10}
-                  fill="#374151"
+                  fill="var(--color-gray-700, #374151)"
                 >
                   {dim.value.toFixed(0)}
                 </text>
@@ -319,26 +319,26 @@ const FlavorWheel3D = memo(({
         <div className="absolute top-4 right-4 z-10 flex flex-col gap-2">
           <button
             onClick={handleZoomIn}
-            className="p-2 bg-white dark:bg-gray-800 rounded-lg shadow-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            className="p-2 bg-white dark:bg-neutral-800 rounded-lg shadow-md hover:bg-slate-50 dark:hover:bg-neutral-700 transition-colors"
             title="放大"
           >
-            <ZoomIn className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+            <ZoomIn className="w-4 h-4 text-neutral-600 dark:text-neutral-300" />
           </button>
           <button
             onClick={handleZoomOut}
-            className="p-2 bg-white dark:bg-gray-800 rounded-lg shadow-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            className="p-2 bg-white dark:bg-neutral-800 rounded-lg shadow-md hover:bg-slate-50 dark:hover:bg-neutral-700 transition-colors"
             title="缩小"
           >
-            <ZoomOut className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+            <ZoomOut className="w-4 h-4 text-neutral-600 dark:text-neutral-300" />
           </button>
           <button
             onClick={handleReset}
-            className="p-2 bg-white dark:bg-gray-800 rounded-lg shadow-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            className="p-2 bg-white dark:bg-neutral-800 rounded-lg shadow-md hover:bg-slate-50 dark:hover:bg-neutral-700 transition-colors"
             title="重置视图"
           >
-            <RotateCcw className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+            <RotateCcw className="w-4 h-4 text-neutral-600 dark:text-neutral-300" />
           </button>
-          <div className="text-xs text-center text-gray-500 dark:text-gray-400 mt-1">
+          <div className="text-xs text-center text-neutral-500 dark:text-neutral-400 mt-1">
             {(zoom * 100).toFixed(0)}%
           </div>
         </div>
@@ -347,7 +347,7 @@ const FlavorWheel3D = memo(({
       {/* 3D 容器 */}
       <div
         ref={containerRef}
-        className="relative overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
+        className="relative overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900"
         style={{
           perspective: '1000px',
           width: `${width}px`,
@@ -386,7 +386,7 @@ const FlavorWheel3D = memo(({
               dominantBaseline="middle"
               fontSize={14}
               fontWeight={700}
-              fill="#374151"
+              fill="var(--color-gray-700, #374151)"
             >
               {data[0].name}
             </text>
@@ -398,7 +398,7 @@ const FlavorWheel3D = memo(({
               {data.map((d, i) => (
                 <g key={i} transform={`translate(0, ${i * 18})`}>
                   <rect width={12} height={12} fill={`hsl(${i * 60}, 70%, 50%)`} rx={2} />
-                  <text x={16} y={10} fontSize={10} fill="#374151">{d.name}</text>
+                  <text x={16} y={10} fontSize={10} fill="var(--color-gray-700, #374151)">{d.name}</text>
                 </g>
               ))}
             </g>
@@ -407,7 +407,7 @@ const FlavorWheel3D = memo(({
 
         {/* 交互提示 */}
         {interactive && !isDragging && (
-          <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 text-xs text-gray-400 pointer-events-none select-none">
+          <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 text-xs text-neutral-400 pointer-events-none select-none">
             拖拽旋转 · 滚轮缩放 · 点击查看详情
           </div>
         )}
@@ -422,7 +422,7 @@ const FlavorWheel3D = memo(({
             </div>
             <div className="text-sm">强度值: {hoveredDimension.value.toFixed(1)}</div>
             {hoveredDimension.description && (
-              <div className="text-xs text-gray-400">{hoveredDimension.description}</div>
+              <div className="text-xs text-neutral-400">{hoveredDimension.description}</div>
             )}
           </div>
         }>

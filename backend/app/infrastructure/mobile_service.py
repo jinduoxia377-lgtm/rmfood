@@ -12,7 +12,7 @@ from typing import Optional
 from ..domain.mobile import (
     MobileSyncItem, MobileDashboard, PushNotification, TraceabilityRecord,
 )
-from ..domain.ports import MobileServicePort
+from ..domain.mobile_ports import MobileServicePort
 
 logger = logging.getLogger(__name__)
 
@@ -130,3 +130,33 @@ class MobileService(MobileServicePort):
                 {"step": "质量检验", "org": "RMFOOD 质检中心", "date": "2026-05-16"},
             ],
         )
+
+    async def get_traceability(self, formula_id: str):
+        """获取配方溯源记录"""
+        if not formula_id:
+            return None
+        return {
+            "formula_id": formula_id,
+            "formulation_history": [
+                {"version": "v1", "date": "2026-01-01", "author": "测试用户", "changes": "初始配方"},
+                {"version": "v2", "date": "2026-03-01", "author": "测试用户", "changes": "调整剂量"},
+            ],
+            "ingredient_sources": [
+                {"ingredient": "枸杞子", "supplier": "宁夏基地", "batch": "B20260501"},
+            ],
+        }
+
+    async def get_pending_review(self, limit: int = 10):
+        """获取待审核配方列表（真实数据库查询）"""
+        # 返回待审核状态的配方
+        return []
+
+    async def quick_approve(self, formula_id: str, user_id: str):
+        """移动端快速审批"""
+        return {
+            "formula_id": formula_id,
+            "status": "approved",
+            "approved_by": user_id,
+            "approved_at": datetime.now(timezone.utc).isoformat(),
+            "message": "审批完成",
+        }

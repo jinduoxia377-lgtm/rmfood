@@ -118,26 +118,26 @@ export function RealTimeSync({ className }: RealTimeSyncProps) {
   const getActionIcon = (type: string) => {
     switch (type) {
       case 'create':
-        return <Database size={16} className="text-green-600" />
+        return <Database size={16} className="text-success-600" />
       case 'update':
-        return <RefreshCw size={16} className="text-blue-600" />
+        return <RefreshCw size={16} className="text-secondary-600" />
       case 'delete':
-        return <Database size={16} className="text-red-600" />
+        return <Database size={16} className="text-error-600" />
       default:
-        return <Activity size={16} className="text-slate-500" />
+        return <Activity size={16} className="text-neutral-500" />
     }
   }
 
   const getActionColor = (type: string) => {
     switch (type) {
       case 'create':
-        return 'text-green-600 dark:text-green-400'
+        return 'text-success-600 dark:text-success-400'
       case 'update':
-        return 'text-blue-600 dark:text-blue-400'
+        return 'text-secondary-600 dark:text-secondary-400'
       case 'delete':
-        return 'text-red-600 dark:text-red-400'
+        return 'text-error-600 dark:text-error-400'
       default:
-        return 'text-slate-600 dark:text-slate-400'
+        return 'text-neutral-600 dark:text-neutral-400'
     }
   }
 
@@ -169,8 +169,8 @@ export function RealTimeSync({ className }: RealTimeSyncProps) {
         {/* 同步状态 */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <Clock size={16} className="text-slate-500" />
-            <span className="text-sm text-slate-600 dark:text-slate-400">
+            <Clock size={16} className="text-neutral-500" />
+            <span className="text-sm text-neutral-600 dark:text-neutral-400">
               最后同步: {lastUpdate || '从未'}
             </span>
           </div>
@@ -187,11 +187,11 @@ export function RealTimeSync({ className }: RealTimeSyncProps) {
 
         {/* 同步历史 */}
         <div className="space-y-2">
-          <h4 className="text-xs font-semibold text-slate-700 dark:text-slate-300">同步历史</h4>
+          <h4 className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">同步历史</h4>
           <div className="max-h-64 overflow-y-auto border rounded-lg">
             {syncHistory.length === 0 ? (
               <div className="py-4">
-                <p className="text-sm text-slate-500 dark:text-slate-400 text-center">暂无同步记录</p>
+                <p className="text-sm text-neutral-500 dark:text-neutral-400 text-center">暂无同步记录</p>
               </div>
             ) : (
               syncHistory.map((item) => (
@@ -205,9 +205,9 @@ export function RealTimeSync({ className }: RealTimeSyncProps) {
                         <span className={`text-sm font-medium ${getActionColor(item.type)}`}>
                           {getActionText(item.type)} {item.entity}
                         </span>
-                        <span className="text-xs text-slate-400">{item.timestamp}</span>
+                        <span className="text-xs text-neutral-400">{item.timestamp}</span>
                       </div>
-                      <p className="text-xs text-slate-500 mt-1 truncate">
+                      <p className="text-xs text-neutral-500 mt-1 truncate">
                         {item.entity === 'formula' && item.data.name}
                         {item.entity === 'experiment' && item.data.title}
                         {item.entity === 'user' && item.data.name}
@@ -221,12 +221,12 @@ export function RealTimeSync({ className }: RealTimeSyncProps) {
         </div>
 
         {/* 同步说明 */}
-        <div className="mt-4 p-3 rounded-lg bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-800/30">
+        <div className="mt-4 p-3 rounded-lg bg-secondary-50 dark:bg-secondary-900/10 border border-blue-100 dark:border-blue-800/30">
           <div className="flex items-start gap-3">
-            <RefreshCw size={18} className="text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+            <RefreshCw size={18} className="text-secondary-600 dark:text-secondary-400 flex-shrink-0 mt-0.5" />
             <div>
-              <h4 className="text-sm font-medium text-blue-800 dark:text-blue-300 mb-1">实时同步说明</h4>
-              <ul className="text-xs text-blue-600 dark:text-blue-400 space-y-1">
+              <h4 className="text-sm font-medium text-secondary-800 dark:text-secondary-300 mb-1">实时同步说明</h4>
+              <ul className="text-xs text-secondary-600 dark:text-secondary-400 space-y-1">
                 <li>• 系统会自动同步数据变更</li>
                 <li>• 数据变更后500ms内推送更新</li>
                 <li>• 支持离线操作和自动重连</li>

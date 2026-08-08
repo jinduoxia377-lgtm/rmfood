@@ -99,7 +99,7 @@ export const LOGIN_PAGE_CONFIG = {
   // 密码强度等级
   passwordStrength: {
     levels: ['非常弱', '弱', '中等', '强', '非常强'] as string[],
-    colors: ['#ef4444', '#f97316', '#eab308', '#22c55e', '#059669'] as string[],
+    colors: ['#FF3B30', '#EA580C', '#eab308', '#34C759', '#28A745'] as string[],
   },
   // 凭证 — 🔒 P0 安全修复: 移除默认凭据硬编码
   // 生产环境不显示默认凭据，仅开发环境可选启用
@@ -110,12 +110,12 @@ export const LOGIN_PAGE_CONFIG = {
   // 颜色令牌
   colors: {
     brand: {
-      primary: '#059669',
-      secondary: '#2563EB',
-      accent: '#7C3AED',
+      primary: '#28A745',
+      secondary: '#007AFF',
+      accent: '#AF52DE',
     },
     loginForm: {
-      background: '#f8fafc',
+      background: '#F9FAFB',
       cardBackground: '#ffffff',
     },
   },
@@ -282,16 +282,16 @@ export const DASHBOARD_CONFIG = {
 // ========== 状态配置 ==========
 export const STATUS_CONFIG = {
   colors: {
-    draft: 'var(--color-neutral-500, #475569)',
-    pending_review: 'var(--color-warning, #D97706)',
-    approved: 'var(--color-success, #059669)',
-    rejected: 'var(--color-danger-600, #DC2626)',
-    archived: 'var(--color-neutral-600, #475569)',
+    draft: 'var(--color-neutral-500, #4B5563)',
+    pending_review: 'var(--color-warning, #B45309)',
+    approved: 'var(--color-success, #28A745)',
+    rejected: 'var(--color-danger-600, #B91C1C)',
+    archived: 'var(--color-neutral-600, #4B5563)',
     planned: 'var(--color-info, #0284C7)',
-    in_progress: 'var(--color-purple-600, #7C3AED)',
-    completed: 'var(--color-success, #059669)',
-    failed: 'var(--color-danger-600, #DC2626)',
-    cancelled: 'var(--color-neutral-600, #475569)',
+    in_progress: 'var(--color-purple-600, #AF52DE)',
+    completed: 'var(--color-success, #28A745)',
+    failed: 'var(--color-danger-600, #B91C1C)',
+    cancelled: 'var(--color-neutral-600, #4B5563)',
   },
   labels: {
     draft: '草稿',
@@ -345,7 +345,7 @@ export const CHART_CONFIG = {
     labelStyle: {
       fontWeight: CHART_TYPOGRAPHY.tooltipTitle.fontWeight,
       marginBottom: 6,
-      color: 'var(--color-text-primary, #1e293b)',
+      color: 'var(--color-text-primary, #1F2937)',
     },
   },
   pie: {
@@ -429,14 +429,29 @@ export const RHINE_LOGIN_CONFIG = {
     defaultAdmin: '默认管理员',
   },
   socialLogin: {
-    wechat: { enabled: true, label: '微信登录', color: '#07C160', oauthUrl: 'https://open.weixin.qq.com/connect/qrconnect' },
-    qq: { enabled: true, label: 'QQ登录', color: '#12B7F5', oauthUrl: 'https://graph.qq.com/oauth2.0/authorize' },
-    github: { enabled: true, label: 'GitHub', color: '#f0f6fc', oauthUrl: 'https://github.com/login/oauth/authorize' },
+    wechat: {
+      enabled: !!(import.meta.env.VITE_WECHAT_APPID && !import.meta.env.VITE_WECHAT_APPID.startsWith('YOUR_')),
+      label: '微信登录',
+      color: '#07C160',
+      oauthUrl: 'https://open.weixin.qq.com/connect/qrconnect',
+    },
+    qq: {
+      enabled: !!(import.meta.env.VITE_QQ_APPID && !import.meta.env.VITE_QQ_APPID.startsWith('YOUR_')),
+      label: 'QQ登录',
+      color: '#12B7F5',
+      oauthUrl: 'https://graph.qq.com/oauth2.0/authorize',
+    },
+    github: {
+      enabled: !!(import.meta.env.VITE_GITHUB_CLIENT_ID && !import.meta.env.VITE_GITHUB_CLIENT_ID.startsWith('YOUR_')),
+      label: 'GitHub',
+      color: '#f0f6fc',
+      oauthUrl: 'https://github.com/login/oauth/authorize',
+    },
   },
   passwordStrength: {
     levels: ['非常弱', '弱', '中等', '强', '非常强'] as string[],
-    // 使用项目功能色: error #dc2626 → warning #ca8a04 → success #16a34a → primary #059669
-    colors: ['#dc2626', '#ca8a04', '#ca8a04', '#16a34a', '#059669'] as string[],
+    // 使用项目功能色: error #B91C1C → warning #ca8a04 → success #16a34a → primary #28A745
+    colors: ['#B91C1C', '#ca8a04', '#ca8a04', '#16a34a', '#28A745'] as string[],
   },
   credentials: {
     defaultUsername: import.meta.env?.DEV ? 'admin' : undefined,

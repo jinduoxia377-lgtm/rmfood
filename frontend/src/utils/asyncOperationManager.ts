@@ -1,3 +1,4 @@
+import { logger } from '@/utils/safeLogger';
 export interface AsyncOperationOptions {
   debounceMs?: number
   leadingEdge?: boolean
@@ -434,7 +435,7 @@ export class AsyncOperationManager<T = any> {
       try {
         cancel()
       } catch (error) {
-        console.warn('Failed to cancel operation:', error)
+        logger.warn('Failed to cancel operation:', error)
       }
     })
     this.activeOperations.clear()

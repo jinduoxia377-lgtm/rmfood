@@ -1,3 +1,4 @@
+import type { User } from './index'
 /**
  * 统一 API 类型定义
  * 用于减少代码中的 `any` 使用，提高类型安全性

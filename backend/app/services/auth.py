@@ -10,6 +10,9 @@ P0 安全修复:
 - ✅ 自动账号锁定/解锁
 - ✅ 安全日志记录
 - ✅ Refresh Token 速率限制和重用检测
+
+注意: 统一认证依赖入口为 api/deps.py（get_current_active_user, require_role）。
+本模块仅保留 AuthService 业务逻辑类。
 """
 import logging
 import os
@@ -22,8 +25,8 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..core.config import settings
-from ..core.session import get_db
-from ..core.account_lockout import AccountLockout
+from ..core.database.session import get_db
+from app.core.security.account_lockout import AccountLockout
 from ..models import User, UserRole
 from ..schemas.user import Token, TokenPayload
 
@@ -521,65 +524,18 @@ class AuthService:
             return None
 
 
-# ── 依赖注入：获取当前用户 ──
+# ── 统一认证依赖入口 ──
+# 注意: 所有认证依赖已统一至 api/deps.py（get_current_active_user, require_role）。
+# 本模块仅提供 AuthService 业务逻辑类。
+# 为保持向后兼容，以下别名供旧代码继续使用。
+# 新代码请直接使用: from ..api.deps import get_current_active_user, require_role
 
-async def get_current_user(
-    request: Request,
-    db: AsyncSession = Depends(get_db),
-) -> User:
-    """从 JWT 令牌获取当前登录用户（支持 Authorization header 和 HttpOnly Cookie）"""
-    # 优先从 Authorization header 获取 token
-    token: Optional[str] = None
-    auth_header = request.headers.get("authorization", "")
-    if auth_header.startswith("Bearer "):
-        token = auth_header[7:]
-
-    # 如果 header 中没有，从 Cookie 中获取
-    if not token:
-        token = request.cookies.get("rmfood_access_token")
-
-    if not token:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="未提供认证凭据",
-        )
-
-    payload = decode_token(token)
-
-    if payload.type != "access":
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="请使用访问令牌",
-        )
-
-    result = await db.execute(
-        select(User).where(User.id == int(payload.sub))
-    )
-    user = result.scalar_one_or_none()
-
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="用户不存在",
-        )
-
-    if not user.is_active:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="账户已被禁用",
-        )
-
-    return user
-
-
-def require_role(*roles: UserRole):
-    """角色权限检查装饰器工厂"""
-    async def role_checker(current_user: User = Depends(get_current_user)) -> User:
-        if current_user.role not in roles and current_user.role != UserRole.ADMIN:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"需要以下角色之一: {[r.value for r in roles]}",
-            )
-        return current_user
-
-    return role_checker
+# 向后兼容别名 — 延迟导入避免循环依赖
+def __getattr__(name):
+    if name == "get_current_user":
+        from ..api.deps import get_current_active_user
+        return get_current_active_user
+    if name == "require_role":
+        from ..api.deps import require_role
+        return require_role
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

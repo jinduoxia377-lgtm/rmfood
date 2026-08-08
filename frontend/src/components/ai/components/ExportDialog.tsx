@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { ExportFormat, ExportScope } from '../../../types/export.types';
 import type { ExportOptions, ExportColumn, ExportProgress, ExportResult } from '../../../types/export.types';
 
+
+import { logger } from '@/utils/safeLogger';
 interface ExportDialogProps {
   isOpen: boolean;
   columns: ExportColumn[];
@@ -84,7 +86,7 @@ const ExportDialog: React.FC<ExportDialogProps> = ({
         }, 2000);
       }
     } catch (error) {
-      console.error('Export failed:', error);
+      logger.error('Export failed:', error);
       setResult({
         success: false,
         fileName: '',
@@ -128,15 +130,15 @@ const ExportDialog: React.FC<ExportDialogProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-hidden flex flex-col">
-        <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+        <div className="px-6 py-4 border-b border-neutral-200 flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">导出数据</h3>
-            <p className="mt-1 text-sm text-gray-600">选择导出格式和选项</p>
+            <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">导出数据</h3>
+            <p className="mt-1 text-sm text-neutral-600">选择导出格式和选项</p>
           </div>
           <button
             onClick={onClose}
             disabled={isExporting}
-            className="text-gray-400 hover:text-gray-600 disabled:opacity-50"
+            className="text-neutral-400 hover:text-neutral-600 disabled:opacity-50"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -146,9 +148,9 @@ const ExportDialog: React.FC<ExportDialogProps> = ({
 
         <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
           {result && (
-            <div className={`p-4 rounded-lg ${result.success ? 'bg-green-50' : 'bg-red-50'}`}>
+            <div className={`p-4 rounded-lg ${result.success ? 'bg-success-50' : 'bg-error-50'}`}>
               <div className="flex items-start">
-                <div className={`flex-shrink-0 ${result.success ? 'text-green-400' : 'text-red-400'}`}>
+                <div className={`flex-shrink-0 ${result.success ? 'text-success-400' : 'text-error-400'}`}>
                   {result.success ? (
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
@@ -160,10 +162,10 @@ const ExportDialog: React.FC<ExportDialogProps> = ({
                   )}
                 </div>
                 <div className="ml-3">
-                  <p className={`text-sm font-medium ${result.success ? 'text-green-800' : 'text-red-800'}`}>
+                  <p className={`text-sm font-medium ${result.success ? 'text-success-800' : 'text-error-800'}`}>
                     {result.success ? '导出成功！' : '导出失败'}
                   </p>
-                  <p className={`mt-1 text-sm ${result.success ? 'text-green-700' : 'text-red-700'}`}>
+                  <p className={`mt-1 text-sm ${result.success ? 'text-success-700' : 'text-error-700'}`}>
                     {result.success
                       ? `${result.fileName} (${(result.fileSize! / 1024).toFixed(1)} KB)`
                       : result.error
@@ -175,7 +177,7 @@ const ExportDialog: React.FC<ExportDialogProps> = ({
           )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">
+            <label className="block text-sm font-medium text-neutral-700 mb-3">
               导出格式
             </label>
             <div className="grid grid-cols-4 gap-3">
@@ -186,14 +188,14 @@ const ExportDialog: React.FC<ExportDialogProps> = ({
                   disabled={isExporting}
                   className={`relative p-4 rounded-lg border-2 text-center transition-all ${
                     format === fmt
-                      ? 'border-blue-500 bg-blue-50 text-blue-700'
-                      : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                      ? 'border-blue-500 bg-secondary-50 text-secondary-700'
+                      : 'border-neutral-200 hover:border-neutral-300 text-neutral-700'
                   } disabled:opacity-50`}
                 >
                   <span className="text-2xl mb-2 block">{getFormatIcon(fmt)}</span>
                   <span className="text-sm font-medium">{fmt.toUpperCase()}</span>
                   {format === fmt && (
-                    <span className="absolute top-2 right-2 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
+                    <span className="absolute top-2 right-2 w-4 h-4 bg-secondary-500 rounded-full flex items-center justify-center">
                       <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
@@ -205,7 +207,7 @@ const ExportDialog: React.FC<ExportDialogProps> = ({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">
+            <label className="block text-sm font-medium text-neutral-700 mb-3">
               导出范围
             </label>
             <div className="space-y-2">
@@ -219,10 +221,10 @@ const ExportDialog: React.FC<ExportDialogProps> = ({
                   key={option.value}
                   className={`flex items-center p-3 rounded-lg border cursor-pointer transition-all ${
                     scope === option.value
-                      ? 'border-blue-500 bg-blue-50'
+                      ? 'border-blue-500 bg-secondary-50'
                       : option.available
-                      ? 'border-gray-200 hover:border-gray-300'
-                      : 'border-gray-100 opacity-50 cursor-not-allowed'
+                      ? 'border-neutral-200 hover:border-neutral-300'
+                      : 'border-neutral-100 opacity-50 cursor-not-allowed'
                   }`}
                 >
                   <input
@@ -232,11 +234,11 @@ const ExportDialog: React.FC<ExportDialogProps> = ({
                     checked={scope === option.value}
                     onChange={() => option.available && setScope(option.value)}
                     disabled={!option.available || isExporting}
-                    className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                    className="w-4 h-4 text-secondary-600 focus:ring-blue-500"
                   />
                   <div className="ml-3 flex-1">
-                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{option.label}</span>
-                    <span className="ml-2 text-xs text-gray-500">{option.desc}</span>
+                    <span className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{option.label}</span>
+                    <span className="ml-2 text-xs text-neutral-500">{option.desc}</span>
                   </div>
                 </label>
               ))}
@@ -245,7 +247,7 @@ const ExportDialog: React.FC<ExportDialogProps> = ({
 
           <div>
             <div className="flex items-center justify-between mb-3">
-              <label className="text-sm font-medium text-gray-700">
+              <label className="text-sm font-medium text-neutral-700">
                 选择列 ({selectedColumns.length}/{columns.length})
               </label>
               <div className="space-x-2">
@@ -253,27 +255,27 @@ const ExportDialog: React.FC<ExportDialogProps> = ({
                   type="button"
                   onClick={handleSelectAllColumns}
                   disabled={isExporting}
-                  className="text-xs text-blue-600 hover:text-blue-800"
+                  className="text-xs text-secondary-600 hover:text-secondary-800"
                 >
                   全选
                 </button>
-                <span className="text-gray-300">|</span>
+                <span className="text-neutral-300">|</span>
                 <button
                   type="button"
                   onClick={handleDeselectAllColumns}
                   disabled={isExporting}
-                  className="text-xs text-blue-600 hover:text-blue-800"
+                  className="text-xs text-secondary-600 hover:text-secondary-800"
                 >
                   全不选
                 </button>
               </div>
             </div>
-            <div className="max-h-40 overflow-y-auto border border-gray-200 rounded-md p-2 space-y-1">
+            <div className="max-h-40 overflow-y-auto border border-neutral-200 rounded-md p-2 space-y-1">
               {columns.map((col) => (
                 <label
                   key={col.key}
-                  className={`flex items-center px-2 py-1.5 rounded cursor-pointer hover:bg-gray-50 ${
-                    selectedColumns.includes(col.key) ? 'bg-blue-50' : ''
+                  className={`flex items-center px-2 py-1.5 rounded cursor-pointer hover:bg-slate-50 ${
+                    selectedColumns.includes(col.key) ? 'bg-secondary-50' : ''
                   }`}
                 >
                   <input
@@ -281,9 +283,9 @@ const ExportDialog: React.FC<ExportDialogProps> = ({
                     checked={selectedColumns.includes(col.key)}
                     onChange={() => handleColumnToggle(col.key)}
                     disabled={isExporting}
-                    className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                    className="w-4 h-4 text-secondary-600 rounded focus:ring-blue-500"
                   />
-                  <span className="ml-2 text-sm text-gray-700">{col.label}</span>
+                  <span className="ml-2 text-sm text-neutral-700">{col.label}</span>
                 </label>
               ))}
             </div>
@@ -291,7 +293,7 @@ const ExportDialog: React.FC<ExportDialogProps> = ({
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-neutral-700 mb-2">
                 文件名
               </label>
               <input
@@ -299,7 +301,7 @@ const ExportDialog: React.FC<ExportDialogProps> = ({
                 value={fileName}
                 onChange={(e) => setFileName(e.target.value)}
                 disabled={isExporting}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="输入文件名..."
               />
             </div>
@@ -310,9 +312,9 @@ const ExportDialog: React.FC<ExportDialogProps> = ({
                   checked={includeHeader}
                   onChange={(e) => setIncludeHeader(e.target.checked)}
                   disabled={isExporting}
-                  className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                  className="w-4 h-4 text-secondary-600 rounded focus:ring-blue-500"
                 />
-                <span className="ml-2 text-sm text-gray-700">包含表头</span>
+                <span className="ml-2 text-sm text-neutral-700">包含表头</span>
               </label>
               <label className="flex items-center">
                 <input
@@ -320,43 +322,43 @@ const ExportDialog: React.FC<ExportDialogProps> = ({
                   checked={includeIndex}
                   onChange={(e) => setIncludeIndex(e.target.checked)}
                   disabled={isExporting}
-                  className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                  className="w-4 h-4 text-secondary-600 rounded focus:ring-blue-500"
                 />
-                <span className="ml-2 text-sm text-gray-700">包含序号列</span>
+                <span className="ml-2 text-sm text-neutral-700">包含序号列</span>
               </label>
             </div>
           </div>
         </div>
 
         {isExporting && progress && (
-          <div className="px-6 py-3 bg-blue-50 border-t border-blue-100">
+          <div className="px-6 py-3 bg-secondary-50 border-t border-blue-100">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-blue-700">{progress.currentStep}</span>
-              <span className="text-sm text-blue-600">
+              <span className="text-sm font-medium text-secondary-700">{progress.currentStep}</span>
+              <span className="text-sm text-secondary-600">
                 {progress.progress}/{progress.totalSteps}
               </span>
             </div>
-            <div className="w-full bg-blue-200 rounded-full h-2">
+            <div className="w-full bg-secondary-200 rounded-full h-2">
               <div
-                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                className="bg-secondary-600 h-2 rounded-full transition-all duration-300"
                 style={{ width: `${(progress.progress / progress.totalSteps) * 100}%` }}
               />
             </div>
           </div>
         )}
 
-        <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end space-x-3">
+        <div className="px-6 py-4 bg-slate-50 border-t border-neutral-200 flex justify-end space-x-3">
           <button
             onClick={onClose}
             disabled={isExporting}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+            className="px-4 py-2 text-sm font-medium text-neutral-700 bg-white border border-neutral-300 rounded-md hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
           >
             取消
           </button>
           <button
             onClick={handleExport}
             disabled={isExporting || selectedColumns.length === 0}
-            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+            className="px-4 py-2 text-sm font-medium text-white bg-secondary-600 border border-transparent rounded-md hover:bg-secondary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
           >
             {isExporting ? (
               <>

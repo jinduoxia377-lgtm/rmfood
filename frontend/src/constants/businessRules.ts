@@ -19,7 +19,7 @@ export const API = {
   TIMEOUT_MS: 30_000,
 
   /** 流式请求超时时间（毫秒）- 默认 60 秒 */
-  STREAM_TIMEOUT_MS: 60_000,
+  STREAM_TIMEOUT_MS: 180_000,  // 180秒 — 复杂推理可能超过60s
 
   /** 最大重试次数 */
   MAX_RETRY_COUNT: 3,

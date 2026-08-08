@@ -1,13 +1,16 @@
+from __future__ import annotations
+
 """
-数据库读写分离路由（ADR-003 / M1.5）
+[DEPRECATED] 数据库读写分离路由
 
-支持主库（写）+ 从库（读）的自动路由。
-基于操作类型（SELECT vs INSERT/UPDATE/DELETE）自动选择数据源。
+此模块已在 Sprint 2.2 中标记为废弃。
+统一数据库会话管理已迁移至 core/session.py。
 
-架构：
-┌──────────────┐
-│  Application │
-└──────┬───────┘
+保留此文件以防未来需要重新引入读写分离。
+如需使用，请先删除 core/session.py 中的 engine 定义。
+"""
+# ── 以下为原始内容（已废弃） ──
+"""
        │
 ┌──────▼────────────────┐
 │  DatabaseRouter       │
@@ -24,7 +27,6 @@
 │  PgBouncer  │ (连接池)
 └─────────────┘
 """
-from __future__ import annotations
 import logging
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator, Optional, Literal
@@ -125,7 +127,8 @@ class DatabaseRouter:
             try:
                 yield session
                 await session.commit()
-            except Exception:
+            except Exception as db_err:
+                logger.warning("数据库会话提交失败，执行回滚: %s", db_err)
                 await session.rollback()
                 raise
             finally:
@@ -162,7 +165,8 @@ class DatabaseRouter:
             try:
                 yield session
                 await session.commit()
-            except Exception:
+            except Exception as db_err:
+                logger.warning("数据库会话提交失败，执行回滚: %s", db_err)
                 await session.rollback()
                 raise
             finally:

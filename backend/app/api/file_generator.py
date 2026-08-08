@@ -1,4 +1,5 @@
 """文件生成服务API接口"""
+import logging
 from fastapi import APIRouter, HTTPException, BackgroundTasks
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
@@ -6,9 +7,11 @@ from typing import Optional, Dict, Any
 import os
 import urllib.parse
 
-from app.services.file_generator import file_generator_service, FileFormat
-from app.services.template_manager import get_template_manager
-from app.core.encoding import sanitize_filename
+from ..services.file_generator import file_generator_service, FileFormat
+from ..services.template_manager import get_template_manager
+from ..core.middleware.encoding import sanitize_filename
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/file-generator", tags=["file-generator"])
 
@@ -55,7 +58,8 @@ def generate_file(request: FileGenerationRequest):
         
         return {"file_path": file_path, "file_name": file_name}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("文件生成失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="文件生成失败，请稍后重试")
 
 
 @router.post("/generate-async")
@@ -82,7 +86,8 @@ async def generate_file_async(request: FileGenerationRequest):
         
         return {"task_id": task_id}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("文件生成失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="文件生成失败，请稍后重试")
 
 
 @router.get("/task/{task_id}")
@@ -97,7 +102,8 @@ def get_task_status(task_id: str):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("文件生成失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="文件生成失败，请稍后重试")
 
 
 @router.get("/download/{task_id}")
@@ -131,7 +137,8 @@ def download_file(task_id: str):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("文件生成失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="文件生成失败，请稍后重试")
 
 
 @router.post("/convert-markdown")
@@ -145,7 +152,8 @@ def convert_markdown(request: MarkdownConversionRequest):
         )
         return content
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("文件生成失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="文件生成失败，请稍后重试")
 
 
 @router.get("/templates")
@@ -161,7 +169,8 @@ def get_templates():
             })
         return {"templates": templates}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("文件生成失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="文件生成失败，请稍后重试")
 
 
 @router.post("/generate-from-template")
@@ -177,4 +186,5 @@ def generate_from_template(request: TemplateGenerationRequest):
         )
         return {"file_path": file_path, "file_name": file_name}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("文件生成失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="文件生成失败，请稍后重试")

@@ -18,8 +18,8 @@ from typing import Any, Dict, List, Optional
 logger = logging.getLogger(__name__)
 
 
-from app.api.deps import get_db_session, get_current_user
-from app.core.integration_framework import (
+from .deps import get_db_session, get_current_user
+from ..core.api_framework.integration_framework import (
     WebhookService,
     APIKeyService,
     ThirdPartyIntegrationService,
@@ -115,7 +115,7 @@ async def create_webhook(
         }
 
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=f"无效的事件类型: {e}")
 
 
 @router.get("/webhooks", summary="获取Webhook列表")
@@ -224,21 +224,66 @@ async def test_webhook(
 ):
     """
     发送测试请求到指定URL
-    
+
     - 验证连通性
     - 返回响应状态和耗时
+    - SSRF 防护: 协议白名单 + DNS 预解析锁定 + 内网 IP 阻断
     """
-    import aiohttp
+    import ipaddress
+    import json
+    import datetime
+    from urllib.parse import urlparse
 
+    # ── SSRF 防护 Layer 1: 协议白名单 ──
+    parsed = urlparse(request.url)
+    if parsed.scheme not in ("http", "https"):
+        return {
+            "success": False,
+            "error": "仅允许 http 和 https 协议",
+        }
+
+    hostname = parsed.hostname
+    if not hostname:
+        return {"success": False, "error": "无效的 URL，缺少主机名"}
+
+    # ── SSRF 防护 Layer 2: 内网/保留 IP 阻断 ──
+    try:
+        host_ip = ipaddress.ip_address(hostname)
+        if host_ip.is_private or host_ip.is_loopback or host_ip.is_reserved or host_ip.is_unspecified:
+            return {"success": False, "error": "不允许访问内网或保留地址"}
+    except ValueError:
+        pass  # 域名，进入 DNS 预解析锁定
+
+    # ── SSRF 防护 Layer 3: DNS 预解析锁定（防 DNS 重绑定） ──
+    import socket
+
+    resolved_addrs = socket.getaddrinfo(hostname, None, socket.AF_UNSPEC, socket.SOCK_STREAM)
+    if not resolved_addrs:
+        return {"success": False, "error": "DNS 解析失败，主机名无法解析"}
+
+    for addr_info in resolved_addrs:
+        try:
+            ip_str = addr_info[4][0]
+            resolved_ip = ipaddress.ip_address(ip_str)
+            if resolved_ip.is_private or resolved_ip.is_loopback or resolved_ip.is_reserved or resolved_ip.is_unspecified:
+                logger.warning(
+                    "SSRF 拦截: 域名 %s 解析到内网 IP %s",
+                    hostname, ip_str,
+                )
+                return {"success": False, "error": "目标地址不允许访问（内网 IP）"}
+        except (ValueError, IndexError):
+            continue
+
+    # ── 构造测试请求体 ──
     test_payload = {
         "test": True,
         "event": "test.event",
-        "timestamp": __import__("datetime").datetime.now().isoformat(),
+        "timestamp": datetime.datetime.now().isoformat(),
         "message": "来自RMFOOD平台的测试消息",
     }
 
     try:
-        body = __import__("json").dumps(test_payload).encode('utf-8')
+        body = json.dumps(test_payload).encode("utf-8")
 
         headers = {
             "Content-Type": "application/json",
@@ -246,16 +291,22 @@ async def test_webhook(
         }
 
         if request.secret:
-            from app.core.integration_framework import WebhookService
+            from ..core.api_framework.integration_framework import WebhookService
             sig = WebhookService._generate_signature(body, request.secret)
             headers["X-Webhook-Signature"] = f"sha256={sig}"
 
-        start_time = __import__("datetime").datetime.now()
+        start_time = datetime.datetime.now()
 
         async with aiohttp.ClientSession() as session:
-            async with session.post(request.url, data=body, headers=headers, timeout=aiohttp.ClientTimeout(total=15)) as resp:
+            async with session.post(
+                request.url,
+                data=body,
+                headers=headers,
+                timeout=aiohttp.ClientTimeout(total=15),
+                allow_redirects=False,  # 禁止重定向（防重定向 SSRF）
+            ) as resp:
                 response_body = await resp.text()
-                duration_ms = (__import__("datetime").datetime.now() - start_time).total_seconds() * 1000
+                duration_ms = (datetime.datetime.now() - start_time).total_seconds() * 1000
 
         return {
             "success": 200 <= resp.status < 300,
@@ -264,11 +315,12 @@ async def test_webhook(
             "response_body": response_body[:500],
         }
 
+    except aiohttp.ClientError as e:
+        logger.warning("Webhook 测试请求失败: %s", e)
+        return {"success": False, "error": "网络连接失败，请检查目标 URL 是否正确"}
     except Exception as e:
-        return {
-            "success": False,
-            "error": str(e),
-        }
+        logger.error("Webhook 测试异常: %s", e)
+        return {"success": False, "error": "测试请求失败"}
 
 
 @router.get("/webhooks/events", summary="列出支持的事件类型")

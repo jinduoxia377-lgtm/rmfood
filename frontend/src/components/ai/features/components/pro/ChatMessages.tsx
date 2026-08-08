@@ -13,7 +13,8 @@
  * - 消息类型差异化渲染（文本/链接/代码/图片/文件）
  * - 发送状态指示器（sending/sent/failed）+ 失败重试
  */
-import React, { useEffect, useRef, useCallback, useState, useMemo } from 'react'
+import React, { useEffect, useLayoutEffect, useRef, useCallback, useState, useMemo } from 'react'
+import { useVirtualizer } from '@tanstack/react-virtual'
 import type { ChatMessage } from '../../hooks/useChatMessages'
 import { useNetworkStatus } from '../../hooks/useNetworkStatus'
 import { logger } from '@/utils/safeLogger'
@@ -97,7 +98,7 @@ function LinkMessageCard({ url }: { url: string }) {
         <Link className="w-4 h-4 text-primary-500 flex-shrink-0" />
         {domain && (
           <span
-            className="w-4 h-4 rounded-sm flex items-center justify-center text-[10px] font-bold bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
+            className="w-4 h-4 rounded-sm flex items-center justify-center text-[10px] font-bold bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300"
             title={domain}
           >
             {domainInitial}
@@ -276,18 +277,18 @@ function renderMessageContent(
               sc[`score${i+1}`] = item.value ?? null
             })
             chartEl = (
-              <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-700">
-                <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+              <div className="mt-4 p-4 bg-slate-50 dark:bg-neutral-800/50 rounded-xl border border-neutral-100 dark:border-neutral-700">
+                <h4 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-3">
                   {parsed.chartJson.title || '评分概览'}
                 </h4>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {parsed.chartJson.items.map((item: any, i: number) => (
-                    <div key={i} className="bg-white dark:bg-gray-800 rounded-lg p-3 text-center
-                      border border-gray-100 dark:border-gray-700 shadow-sm">
+                    <div key={i} className="bg-white dark:bg-neutral-800 rounded-lg p-3 text-center
+                      border border-neutral-100 dark:border-neutral-700 shadow-sm">
                       <div className="text-2xl font-bold text-primary-600 dark:text-primary-400">
                         {item.value}{item.unit || ''}
                       </div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 truncate">
+                      <div className="text-xs text-neutral-500 dark:text-neutral-400 mt-1 truncate">
                         {item.label}
                       </div>
                     </div>
@@ -343,9 +344,9 @@ export interface ChatMessagesProps {
 }
 
 const QUICK_ACTIONS = [
-  { Icon: Leaf, title: '补气药材', desc: '药食同源目录里有哪些常用的补气药材？', color: 'text-emerald-500' },
-  { Icon: Handshake, title: '配伍协同', desc: '黄芪和党参配伍有什么协同作用？', color: 'text-blue-500' },
-  { Icon: Dna, title: '活性肽', desc: '功能性食品中常用的活性肽有哪些来源？', color: 'text-purple-500' },
+  { Icon: Leaf, title: '补气药材', desc: '药食同源目录里有哪些常用的补气药材？', color: 'text-primary-500' },
+  { Icon: Handshake, title: '配伍协同', desc: '黄芪和党参配伍有什么协同作用？', color: 'text-secondary-500' },
+  { Icon: Dna, title: '活性肽', desc: '功能性食品中常用的活性肽有哪些来源？', color: 'text-accent-500' },
   { Icon: Shield, title: '抗氧化', desc: '设计一款抗氧化保健食品需要注意什么？', color: 'text-rose-500' },
 ]
 
@@ -399,6 +400,28 @@ export default function ChatMessages(props: ChatMessagesProps) {
   // "稍后重试"队列：离线或慢速时暂存失败消息
   const [retryQueue, setRetryQueue] = useState<Array<{ id: string; content: string; timestamp: number }>>([])
 
+  // ===== 消息列表虚拟化（长对话性能优化）=====
+  // 仅当消息数超过阈值时启用，避免影响常规短对话的既有交互体验
+  const VIRTUALIZE_THRESHOLD = 40
+  const shouldVirtualize = messages.length > VIRTUALIZE_THRESHOLD
+  const listContainerRef = useRef<HTMLDivElement>(null)
+  const [scrollMargin, setScrollMargin] = useState(0)
+  const rowVirtualizer = useVirtualizer({
+    count: messages.length,
+    getScrollElement: () => scrollRef.current,
+    estimateSize: () => 140,
+    overscan: 10,
+    scrollMargin,
+    getItemKey: (index) => messages[index]?.id ?? index,
+  })
+
+  // 虚拟化容器相对滚动区顶部的偏移（受顶部横幅/报告按钮显隐影响，需动态测量）
+  useLayoutEffect(() => {
+    if (shouldVirtualize && listContainerRef.current) {
+      setScrollMargin(listContainerRef.current.offsetTop)
+    }
+  }, [shouldVirtualize, isOnline, isSlowConnection, showReportButton, selectedMessageIds])
+
   /** 将失败消息加入重试队列 */
   const enqueueRetry = useCallback((msg: ChatMessage) => {
     if (msg.role !== 'user') return
@@ -423,8 +446,14 @@ export default function ChatMessages(props: ChatMessagesProps) {
 
   // Auto scroll
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages, isStreaming])
+    if (shouldVirtualize) {
+      // 虚拟化模式下 bottomRef 不在可视区，改用虚拟滚动定位到末尾
+      rowVirtualizer.scrollToIndex(Math.max(0, messages.length - 1), { align: 'end' })
+    } else {
+      bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messages, isStreaming, shouldVirtualize])
 
   // Track scroll position for "jump to bottom" button
   const handleScroll = useCallback(() => {
@@ -495,11 +524,11 @@ export default function ChatMessages(props: ChatMessagesProps) {
             <div className="flex flex-col items-end gap-2 flex-1 max-w-[75%]">
               <div className="skeleton-bubble skeleton-user h-10 w-[70%] rounded-2xl rounded-br-sm" />
             </div>
-            <div className="skeleton-avatar w-9 h-9 rounded-full bg-gray-300 dark:bg-gray-600 animate-pulse" />
+            <div className="skeleton-avatar w-9 h-9 rounded-full bg-neutral-300 dark:bg-neutral-600 animate-pulse" />
           </div>
           {/* 头像 + 气泡骨架：AI */}
           <div className="flex items-start gap-3">
-            <div className="skeleton-avatar w-9 h-9 rounded-full bg-gray-300 dark:bg-gray-600 animate-pulse" />
+            <div className="skeleton-avatar w-9 h-9 rounded-full bg-neutral-300 dark:bg-neutral-600 animate-pulse" />
             <div className="flex flex-col gap-2 flex-1 max-w-[80%]">
               <div className="skeleton-bubble skeleton-ai h-16 w-full rounded-2xl rounded-tl-sm" />
               <div className="skeleton-bubble skeleton-ai h-8 w-[60%] rounded-2xl rounded-tl-sm" />
@@ -510,7 +539,7 @@ export default function ChatMessages(props: ChatMessagesProps) {
             <div className="flex flex-col items-end gap-2 flex-1 max-w-[65%]">
               <div className="skeleton-bubble skeleton-user h-7 w-[90%] rounded-2xl rounded-br-sm" />
             </div>
-            <div className="skeleton-avatar w-9 h-9 rounded-full bg-gray-300 dark:bg-gray-600 animate-pulse" />
+            <div className="skeleton-avatar w-9 h-9 rounded-full bg-neutral-300 dark:bg-neutral-600 animate-pulse" />
           </div>
         </div>
       </div>
@@ -528,14 +557,14 @@ export default function ChatMessages(props: ChatMessagesProps) {
             flex items-center justify-center animate-pulse-slow">
             <Sparkles className="w-10 h-10 text-white drop-shadow-sm" />
           </div>
-          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">开始新对话</h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400 max-w-md">输入您的问题或需求，AI 将为您提供专业的配方建议和分析。</p>
+          <h3 className="text-lg font-semibold text-neutral-800 dark:text-neutral-200">开始新对话</h3>
+          <p className="text-sm text-neutral-500 dark:text-neutral-400 max-w-md">输入您的问题或需求，AI 将为您提供专业的配方建议和分析。</p>
         </div>
         {/* 快捷操作卡片 — SVG 图标 + 悬停微交互 */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-lg">
           {QUICK_ACTIONS.map((action, i) => (
             <button key={i}
-              className="group relative flex items-start gap-3 p-4 rounded-xl border border-gray-200 dark:border-gray-700
+              className="group relative flex items-start gap-3 p-4 rounded-xl border border-neutral-200 dark:border-neutral-700
                 hover:border-primary-300 dark:hover:border-primary-600
                 hover:bg-gradient-to-br hover:from-primary-50/60 hover:to-transparent
                 dark:hover:from-primary-900/15 dark:hover:to-transparent
@@ -544,13 +573,13 @@ export default function ChatMessages(props: ChatMessagesProps) {
                 active:scale-[0.98]"
             >
               <div className={`flex-shrink-0 mt-0.5 w-9 h-9 rounded-lg flex items-center justify-center
-                bg-gray-100 dark:bg-gray-800 group-hover:bg-white dark:group-hover:bg-gray-750
+                bg-neutral-100 dark:bg-neutral-800 group-hover:bg-white dark:group-hover:bg-slate-750
                 transition-colors duration-200`}>
                 <action.Icon className={`w-5 h-5 ${action.color} transition-transform duration-200 group-hover:scale-110`} />
               </div>
               <div className="min-w-0">
-                <div className="text-xs font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-gray-100 transition-colors">{action.title}</div>
-                <div className="text-[11px] text-gray-500 dark:text-gray-500 line-clamp-2 mt-0.5">{action.desc}</div>
+                <div className="text-xs font-medium text-neutral-700 dark:text-neutral-300 group-hover:text-neutral-900 dark:group-hover:text-neutral-100 transition-colors">{action.title}</div>
+                <div className="text-[11px] text-neutral-500 dark:text-neutral-500 line-clamp-2 mt-0.5">{action.desc}</div>
               </div>
             </button>
           ))}
@@ -571,14 +600,14 @@ export default function ChatMessages(props: ChatMessagesProps) {
       {/* 离线状态横幅（任务4） */}
       {!isOnline && (
         <div className="sticky top-0 z-30 flex items-center gap-2 px-3 py-2 mb-2 rounded-lg
-          bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800
-          text-amber-800 dark:text-amber-200 text-xs font-medium animate-fade-in"
+          bg-warning-50 dark:bg-warning-900/20 border border-amber-200 dark:border-amber-800
+          text-warning-800 dark:text-warning-200 text-xs font-medium animate-fade-in"
           role="status" aria-live="polite"
         >
           <WifiOff className="w-3.5 h-3.5 flex-shrink-0" />
           <span>当前离线 — 消息将在网络恢复后自动发送</span>
           {retryQueue.length > 0 && (
-            <span className="ml-auto text-amber-600 dark:text-amber-400">
+            <span className="ml-auto text-warning-600 dark:text-warning-400">
               {retryQueue.length} 条待发送
             </span>
           )}
@@ -588,7 +617,7 @@ export default function ChatMessages(props: ChatMessagesProps) {
       {/* 慢速网络提示 */}
       {isOnline && isSlowConnection && (
         <div className="flex items-center gap-1.5 px-3 py-1.5 mb-1 rounded-md
-          bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-[11px]"
+          bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 text-[11px]"
           role="status"
         >
           <RotateCcw className="w-3 h-3 animate-spin" style={{ animationDuration: '2s' }} />
@@ -617,14 +646,15 @@ export default function ChatMessages(props: ChatMessagesProps) {
       )}
 
       {/* 消息列表 */}
-      {messages.map((msg, i) => {
+      {(() => {
+        const renderMessageInner = useCallback((msg: ChatMessage, i: number) => {
         const showDateSep = i === 0 || isNewDay(messages[i-1].timestamp, msg.timestamp)
         const reaction = reactions[msg.id]
         const hl = isHL(msg.id)
         const sel = isSel(msg.id)
 
         return (
-          <div key={msg.id}>
+          <React.Fragment key={msg.id}>
             {/* 日期分隔线 */}
             {showDateSep && (
               <div className="chat-date-separator" role="separator" aria-label="日期分隔">
@@ -663,8 +693,8 @@ export default function ChatMessages(props: ChatMessagesProps) {
                       value={editContent}
                       onChange={(e) => setEditContent(e.target.value)}
                       aria-label="编辑消息"
-                      className="w-full min-h-[60px] max-h-[200px] px-3 py-2 rounded-lg bg-white dark:bg-gray-900
-                        border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-200 text-sm
+                      className="w-full min-h-[60px] max-h-[200px] px-3 py-2 rounded-lg bg-white dark:bg-neutral-900
+                        border border-neutral-300 dark:border-neutral-600 text-neutral-800 dark:text-neutral-200 text-sm
                         resize-y focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
                       autoFocus
                       onKeyDown={(e) => {
@@ -692,7 +722,7 @@ export default function ChatMessages(props: ChatMessagesProps) {
                       </div>
                     ) : /* 发送状态：failed — 红色边框 + 警告图标 + 重试按钮（在气泡内部） */ msg.sendStatus === 'failed' && msg.role === 'user' && !msg.error ? (
                       <div className="space-y-2.5 py-0.5">
-                        <div className="flex items-center gap-1.5 text-sm font-medium text-red-100">
+                        <div className="flex items-center gap-1.5 text-sm font-medium text-error-100">
                           <AlertTriangle className="w-4 h-4 flex-shrink-0" />
                           <span>发送失败</span>
                           <span className="text-[11px] font-normal opacity-70 ml-auto">
@@ -703,7 +733,7 @@ export default function ChatMessages(props: ChatMessagesProps) {
                           <button
                             onClick={() => onRetryMessage(msg.id)}
                             className="inline-flex items-center gap-1.5 text-[11px] px-3 py-1.5 rounded-lg
-                              bg-red-500/30 ring-1 ring-red-300 dark:ring-red-700 hover:bg-red-400/30 text-red-100 transition-colors"
+                              bg-error-500/30 ring-1 ring-red-300 dark:ring-red-700 hover:bg-error-400/30 text-error-100 transition-colors"
                           >
                             <RefreshCw className="w-3 h-3" /> 重新发送
                           </button>
@@ -751,7 +781,7 @@ export default function ChatMessages(props: ChatMessagesProps) {
                       </button>
                     )}
                     <button onClick={() => handleCopy(msg.id, msg.content)} className="chat-action-btn" title="复制" aria-label="复制消息">
-                      {copiedId === msg.id ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
+                      {copiedId === msg.id ? <Check className="w-3.5 h-3.5 text-success-500" /> : <Copy className="w-3.5 h-3.5" />}
                     </button>
                     {onReferenceMessage && (
                       <button onClick={() => onReferenceMessage(msg)} className="chat-action-btn" title="引用" aria-label="引用消息">
@@ -760,10 +790,10 @@ export default function ChatMessages(props: ChatMessagesProps) {
                     )}
                     {msg.role === 'assistant' && (
                       <>
-                        <button onClick={() => handleReaction(msg.id, 'like')} className={`chat-action-btn ${reaction === 'like' ? 'text-blue-500' : ''}`} title="有用" aria-label="点赞">
+                        <button onClick={() => handleReaction(msg.id, 'like')} className={`chat-action-btn ${reaction === 'like' ? 'text-secondary-500' : ''}`} title="有用" aria-label="点赞">
                           <ThumbsUp className="w-3.5 h-3.5" />
                         </button>
-                        <button onClick={() => handleReaction(msg.id, 'dislike')} className={`chat-action-btn ${reaction === 'dislike' ? 'text-red-500' : ''}`} title="没用">
+                        <button onClick={() => handleReaction(msg.id, 'dislike')} className={`chat-action-btn ${reaction === 'dislike' ? 'text-error-500' : ''}`} title="没用" aria-label="点踩">
                           <ThumbsDown className="w-3.5 h-3.5" />
                         </button>
                         {onRegenerate && (
@@ -787,9 +817,38 @@ export default function ChatMessages(props: ChatMessagesProps) {
                 )}
               </div>
             </div>
-          </div>
+          </React.Fragment>
         )
-      })}
+        }, [messages, reactions, isHL, isSel, editingId, editContent, setEditContent, confirmEdit, cancelEdit, startEdit, handleCopy, handleReaction, copiedId, thinkingSteps, isStreaming, onRetryMessage, onRetry, onReferenceMessage, onRegenerate, onDeleteMessage, onEditMessage, onRetractMessage])
+
+        if (shouldVirtualize) {
+          return (
+            <div
+              ref={listContainerRef}
+              style={{ height: rowVirtualizer.getTotalSize(), width: '100%', position: 'relative' }}
+            >
+              {rowVirtualizer.getVirtualItems().map((vi) => (
+                <div
+                  key={vi.key}
+                  data-index={vi.index}
+                  ref={rowVirtualizer.measureElement}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    transform: `translateY(${vi.start - rowVirtualizer.options.scrollMargin}px)`,
+                  }}
+                >
+                  {renderMessageInner(messages[vi.index], vi.index)}
+                </div>
+              ))}
+            </div>
+          )
+        }
+
+        return messages.map((msg, i) => renderMessageInner(msg, i))
+      })()}
 
       {/* 流式加载指示器 */}
       {isStreaming && messages.length > 0 && !messages[messages.length - 1]?.isLoading && (
@@ -813,13 +872,13 @@ export default function ChatMessages(props: ChatMessagesProps) {
         <button onClick={scrollToBottom}
           className="sticky bottom-3 left-1/2 -translate-x-1/2
             min-h-[36px] px-4 py-2 rounded-full
-            bg-white/80 dark:bg-gray-800/80 backdrop-blur-md
-            border border-gray-200/60 dark:border-gray-700/60
-            shadow-lg shadow-gray-200/50 dark:shadow-black/20
-            text-xs font-medium text-gray-600 dark:text-gray-300
+            bg-white/80 dark:bg-neutral-800/80 backdrop-blur-md
+            border border-neutral-200/60 dark:border-neutral-700/60
+            shadow-lg shadow-slate-200/50 dark:shadow-black/20
+            text-xs font-medium text-neutral-600 dark:text-neutral-300
             flex items-center gap-2
             transition-all duration-200 ease-out
-            hover:-translate-y-0.5 hover:shadow-xl hover:bg-white dark:hover:bg-gray-800
+            hover:-translate-y-0.5 hover:shadow-xl hover:bg-white dark:hover:bg-neutral-800
             hover:border-primary-300/60 dark:hover:border-primary-600/40
             active:translate-y-0 animate-fade-in"
         >

@@ -1,5 +1,7 @@
-import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+import { logger } from '@/utils/safeLogger';
 import {
   Target,
   Settings,
@@ -23,51 +25,51 @@ import {
   Ban,
   Sparkles,
   Eye,
-} from 'lucide-react'
+} from 'lucide-react';
 
 export interface EfficacyType {
-  id: string
-  label: string
-  category: string
-  icon?: React.ReactNode
+  id: string;
+  label: string;
+  category: string;
+  icon?: React.ReactNode;
 }
 
 export interface ConstraintConfig {
-  phRange: [number, number]
-  temperature: 'room' | 'heated' | 'refrigerated'
-  viscosity: 'watery' | 'lotion' | 'cream' | 'solid'
-  irritationLevel: 'none' | 'low' | 'acceptable'
-  excludedAllergens: string[]
-  maxCostPerKg: number | null
+  phRange: [number, number];
+  temperature: 'room' | 'heated' | 'refrigerated';
+  viscosity: 'watery' | 'lotion' | 'cream' | 'solid';
+  irritationLevel: 'none' | 'low' | 'acceptable';
+  excludedAllergens: string[];
+  maxCostPerKg: number | null;
 }
 
 export interface AdvancedOptions {
-  sourcePreference: ('natural' | 'synthetic' | 'fermented' | 'plant_extract')[]
-  certifications: ('organic' | 'gmp' | 'iso' | 'halal' | 'kosher')[]
-  targetMarket: ('china' | 'eu' | 'usa' | 'japan' | 'global')[]
-  specialRestrictions: ('no_preservative' | 'no_fragrance' | 'no_colorant')[]
+  sourcePreference: ('natural' | 'synthetic' | 'fermented' | 'plant_extract')[];
+  certifications: ('organic' | 'gmp' | 'iso' | 'halal' | 'kosher')[];
+  targetMarket: ('china' | 'eu' | 'usa' | 'japan' | 'global')[];
+  specialRestrictions: ('no_preservative' | 'no_fragrance' | 'no_colorant')[];
 }
 
 export interface WizardConfig {
-  efficacies: { id: string; weight: number }[]
-  constraints: ConstraintConfig
-  advanced: AdvancedOptions
+  efficacies: { id: string; weight: number }[];
+  constraints: ConstraintConfig;
+  advanced: AdvancedOptions;
 }
 
 export interface PresetData {
-  id: string
-  name: string
-  description: string
-  config: WizardConfig
-  createdAt: number
-  updatedAt: number
+  id: string;
+  name: string;
+  description: string;
+  config: WizardConfig;
+  createdAt: number;
+  updatedAt: number;
 }
 
 interface FormulaWizardProps {
-  onComplete: (config: WizardConfig) => void
-  onCancel?: () => void
-  initialConfig?: Partial<WizardConfig>
-  className?: string
+  onComplete: (config: WizardConfig) => void;
+  onCancel?: () => void;
+  initialConfig?: Partial<WizardConfig>;
+  className?: string;
 }
 
 const EFFICACY_TYPES: EfficacyType[] = [
@@ -83,7 +85,7 @@ const EFFICACY_TYPES: EfficacyType[] = [
   { id: 'firming', label: '紧致', category: '抗衰老', icon: <Gauge className="w-4 h-4" /> },
   { id: 'brightening', label: '提亮', category: '美白祛斑', icon: <Sparkles className="w-4 h-4" /> },
   { id: 'soothing', label: '舒缓', category: '敏感肌', icon: <Leaf className="w-4 h-4" /> },
-]
+];
 
 const PRESET_CONFIGS: { id: string; name: string; description: string; config: Partial<WizardConfig> }[] = [
   {
@@ -125,7 +127,7 @@ const PRESET_CONFIGS: { id: string; name: string; description: string; config: P
       } as ConstraintConfig,
     },
   },
-]
+];
 
 const ALLERGEN_OPTIONS = [
   { id: 'nuts', label: '坚果类' },
@@ -134,32 +136,30 @@ const ALLERGEN_OPTIONS = [
   { id: 'soy', label: '大豆' },
   { id: 'seafood', label: '海鲜' },
   { id: 'eggs', label: '蛋类' },
-]
+];
 
-const STORAGE_KEY = 'formula_wizard_presets'
+const STORAGE_KEY = 'formula_wizard_presets';
 
 function loadPresets(): PresetData[] {
   try {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    return stored ? JSON.parse(stored) : []
+    const stored = localStorage.getItem(STORAGE_KEY);
+    return stored ? JSON.parse(stored) : [];
   } catch {
-    return []
+    return [];
   }
 }
 
 function savePresets(presets: PresetData[]): void {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(presets))
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(presets));
   } catch (e) {
-    console.warn('Failed to save presets:', e)
+    logger.warn('Failed to save presets:', e);
   }
 }
 
 export function FormulaWizard({ onComplete, onCancel, initialConfig, className = '' }: FormulaWizardProps) {
-  const [currentStep, setCurrentStep] = useState(0)
-  const [efficacies, setEfficacies] = useState<{ id: string; weight: number }[]>(
-    initialConfig?.efficacies || [],
-  )
+  const [currentStep, setCurrentStep] = useState(0);
+  const [efficacies, setEfficacies] = useState<{ id: string; weight: number }[]>(initialConfig?.efficacies || []);
   const [constraints, setConstraints] = useState<ConstraintConfig>(
     initialConfig?.constraints || {
       phRange: [5.5, 7.0],
@@ -169,7 +169,7 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
       excludedAllergens: [],
       maxCostPerKg: null,
     },
-  )
+  );
   const [advanced, setAdvanced] = useState<AdvancedOptions>(
     initialConfig?.advanced || {
       sourcePreference: [],
@@ -177,126 +177,134 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
       targetMarket: [],
       specialRestrictions: [],
     },
-  )
-  const [presets, setPresets] = useState<PresetData[]>(loadPresets)
-  const [showPresetManager, setShowPresetManager] = useState(false)
-  const [showPreview, setShowPreview] = useState(true)
+  );
+  const [presets, setPresets] = useState<PresetData[]>(loadPresets);
+  const [showPresetManager, setShowPresetManager] = useState(false);
+  const [showPreview, setShowPreview] = useState(true);
 
   const steps = [
     { title: '目标功效', icon: <Target className="w-5 h-5" />, description: '选择主要功效类型和权重' },
     { title: '约束条件', icon: <Settings className="w-5 h-5" />, description: '配置物理化学约束' },
     { title: '高级选项', icon: <Sliders className="w-5 h-5" />, description: '原料来源与认证要求' },
-  ]
+  ];
 
   const toggleEfficacy = useCallback((efficacyId: string) => {
-    setEfficacies(prev => {
-      const exists = prev.find(e => e.id === efficacyId)
+    setEfficacies((prev) => {
+      const exists = prev.find((e) => e.id === efficacyId);
       if (exists) {
-        return prev.filter(e => e.id !== efficacyId)
+        return prev.filter((e) => e.id !== efficacyId);
       }
-      return [...prev, { id: efficacyId, weight: 50 }]
-    })
-  }, [])
+      return [...prev, { id: efficacyId, weight: 50 }];
+    });
+  }, []);
 
   const updateEfficacyWeight = useCallback((efficacyId: string, weight: number) => {
-    setEfficacies(prev =>
-      prev.map(e => (e.id === efficacyId ? { ...e, weight: Math.max(0, Math.min(100, weight)) } : e)),
-    )
-  }, [])
+    setEfficacies((prev) =>
+      prev.map((e) => (e.id === efficacyId ? { ...e, weight: Math.max(0, Math.min(100, weight)) } : e)),
+    );
+  }, []);
 
-  const applyPreset = useCallback((presetId: string) => {
-    const preset = [...PRESET_CONFIGS, ...presets].find(p => p.id === presetId)
-    if (!preset?.config) return
+  const applyPreset = useCallback(
+    (presetId: string) => {
+      const preset = [...PRESET_CONFIGS, ...presets].find((p) => p.id === presetId);
+      if (!preset?.config) return;
 
-    if (preset.config.efficacies) {
-      setEfficacies(preset.config.efficacies)
-    }
-    if (preset.config.constraints) {
-      setConstraints(prev => ({ ...prev, ...preset.config.constraints }))
-    }
-    if (preset.config.advanced) {
-      setAdvanced(prev => ({ ...prev, ...preset.config.advanced }))
-    }
-  }, [presets])
+      if (preset.config.efficacies) {
+        setEfficacies(preset.config.efficacies);
+      }
+      if (preset.config.constraints) {
+        setConstraints((prev) => ({ ...prev, ...preset.config.constraints }));
+      }
+      if (preset.config.advanced) {
+        setAdvanced((prev) => ({ ...prev, ...preset.config.advanced }));
+      }
+    },
+    [presets],
+  );
 
-  const saveCurrentAsPreset = useCallback((name: string) => {
-    const newPreset: PresetData = {
-      id: `custom_${Date.now()}`,
-      name,
-      description: `自定义预设 - ${new Date().toLocaleDateString('zh-CN')}`,
-      config: { efficacies, constraints, advanced },
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-    }
+  const saveCurrentAsPreset = useCallback(
+    (name: string) => {
+      const newPreset: PresetData = {
+        id: `custom_${Date.now()}`,
+        name,
+        description: `自定义预设 - ${new Date().toLocaleDateString('zh-CN')}`,
+        config: { efficacies, constraints, advanced },
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      };
 
-    setPresets(prev => {
-      const updated = [...prev, newPreset]
-      savePresets(updated)
-      return updated
-    })
-  }, [efficacies, constraints, advanced])
+      setPresets((prev) => {
+        const updated = [...prev, newPreset];
+        savePresets(updated);
+        return updated;
+      });
+    },
+    [efficacies, constraints, advanced],
+  );
 
   const deletePreset = useCallback((presetId: string) => {
-    setPresets(prev => {
-      const updated = prev.filter(p => p.id !== presetId)
-      savePresets(updated)
-      return updated
-    })
-  }, [])
+    setPresets((prev) => {
+      const updated = prev.filter((p) => p.id !== presetId);
+      savePresets(updated);
+      return updated;
+    });
+  }, []);
 
   const handleNext = useCallback(() => {
     if (currentStep < steps.length - 1) {
-      setCurrentStep(prev => prev + 1)
+      setCurrentStep((prev) => prev + 1);
     } else {
-      onComplete({ efficacies, constraints, advanced })
+      onComplete({ efficacies, constraints, advanced });
     }
-  }, [currentStep, steps.length, onComplete, efficacies, constraints, advanced])
+  }, [currentStep, steps.length, onComplete, efficacies, constraints, advanced]);
 
   const handlePrev = useCallback(() => {
     if (currentStep > 0) {
-      setCurrentStep(prev => prev - 1)
+      setCurrentStep((prev) => prev - 1);
     }
-  }, [currentStep])
+  }, [currentStep]);
 
   const handleSkip = useCallback(() => {
     if (currentStep < steps.length - 1) {
-      setCurrentStep(prev => prev + 1)
+      setCurrentStep((prev) => prev + 1);
     } else {
-      onComplete({ efficacies, constraints, advanced })
+      onComplete({ efficacies, constraints, advanced });
     }
-  }, [currentStep, steps.length, onComplete, efficacies, constraints, advanced])
+  }, [currentStep, steps.length, onComplete, efficacies, constraints, advanced]);
 
   const canProceed = useMemo(() => {
     switch (currentStep) {
       case 0:
-        return efficacies.length > 0
+        return efficacies.length > 0;
       case 1:
       case 2:
-        return true
+        return true;
       default:
-        return false
+        return false;
     }
-  }, [currentStep, efficacies.length])
+  }, [currentStep, efficacies.length]);
 
-  const totalWeight = useMemo(() => efficacies.reduce((sum, e) => sum + e.weight, 0), [efficacies])
+  const totalWeight = useMemo(() => efficacies.reduce((sum, e) => sum + e.weight, 0), [efficacies]);
 
   const previewData = useMemo(
     () => ({
-      selectedEfficacies: efficacies.map(e => {
-        const type = EFFICACY_TYPES.find(t => t.id === e.id)
-        return { ...type, weight: e.weight }
+      selectedEfficacies: efficacies.map((e) => {
+        const type = EFFICACY_TYPES.find((t) => t.id === e.id);
+        return { ...type, weight: e.weight };
       }),
       constraints,
       advanced,
       totalWeight,
     }),
     [efficacies, constraints, advanced, totalWeight],
-  )
+  );
 
   return (
-    <div className={`bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800 overflow-hidden ${className}`}>
+    <div
+      className={`bg-white dark:bg-neutral-900 rounded-2xl shadow-xl border border-neutral-200 dark:border-neutral-800 overflow-hidden ${className}`}
+    >
       {/* 步骤指示器 */}
-      <div className="px-8 pt-6 pb-4 bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 border-b border-gray-100 dark:border-gray-800">
+      <div className="px-8 pt-6 pb-4 bg-gradient-to-r from-slate-50 to-white dark:from-slate-800 dark:to-slate-900 border-b border-neutral-100 dark:border-neutral-800">
         <div className="flex items-center justify-between max-w-2xl mx-auto">
           {steps.map((step, index) => (
             <React.Fragment key={step.title}>
@@ -308,14 +316,14 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
                   }}
                   transition={{ duration: 0.3 }}
                   className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm shadow-md ${
-                    index <= currentStep ? 'bg-emerald-500' : 'bg-gray-200 dark:bg-gray-700'
+                    index <= currentStep ? 'bg-primary-500' : 'bg-neutral-200 dark:bg-neutral-700'
                   }`}
                 >
                   {index < currentStep ? <Check className="w-5 h-5" /> : index + 1}
                 </motion.div>
                 <span
                   className={`text-xs font-medium ${
-                    index === currentStep ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-500'
+                    index === currentStep ? 'text-primary-600 dark:text-primary-400' : 'text-neutral-500'
                   }`}
                 >
                   {step.title}
@@ -348,30 +356,28 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
               {currentStep === 0 && (
                 <div className="space-y-6">
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                      选择目标功效
-                    </h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                    <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2">选择目标功效</h3>
+                    <p className="text-sm text-neutral-500 dark:text-neutral-400">
                       选择一个或多个功效类型，并调整各功效的权重（总和可超过100%）
                     </p>
                   </div>
 
                   {/* 快捷预设 */}
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">快捷预设</label>
+                    <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">快捷预设</label>
                     <div className="flex flex-wrap gap-2">
-                      {[...PRESET_CONFIGS, ...presets].map(preset => (
+                      {[...PRESET_CONFIGS, ...presets].map((preset) => (
                         <button
                           key={preset.id}
                           onClick={() => applyPreset(preset.id)}
-                          className="px-3 py-1.5 text-xs rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors border border-transparent hover:border-emerald-200 dark:hover:border-emerald-800"
+                          className="px-3 py-1.5 text-xs rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:text-primary-600 dark:hover:text-primary-400 transition-colors border border-transparent hover:border-emerald-200 dark:hover:border-emerald-800"
                         >
                           {preset.name}
                         </button>
                       ))}
                       <button
                         onClick={() => setShowPresetManager(!showPresetManager)}
-                        className="px-3 py-1.5 text-xs rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
+                        className="px-3 py-1.5 text-xs rounded-lg bg-secondary-50 dark:bg-secondary-900/20 text-secondary-600 dark:text-secondary-400 hover:bg-secondary-100 dark:hover:bg-secondary-900/30 transition-colors"
                       >
                         <FolderOpen className="w-3 h-3 inline mr-1" />
                         管理预设
@@ -400,8 +406,8 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
 
                   {/* 功效选择网格 */}
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-                    {EFFICACY_TYPES.map(type => {
-                      const selected = efficacies.find(e => e.id === type.id)
+                    {EFFICACY_TYPES.map((type) => {
+                      const selected = efficacies.find((e) => e.id === type.id);
                       return (
                         <motion.button
                           key={type.id}
@@ -410,13 +416,15 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
                           onClick={() => toggleEfficacy(type.id)}
                           className={`p-3 rounded-xl border-2 transition-all text-left ${
                             selected
-                              ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 shadow-md'
-                              : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                              ? 'border-emerald-500 bg-primary-50 dark:bg-primary-900/20 shadow-md'
+                              : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600'
                           }`}
                         >
                           <div className="flex items-center gap-2 mb-2">
-                            <span className={selected ? 'text-emerald-600' : 'text-gray-500'}>{type.icon}</span>
-                            <span className={`text-sm font-medium ${selected ? 'text-emerald-700 dark:text-emerald-300' : 'text-gray-700 dark:text-gray-300'}`}>
+                            <span className={selected ? 'text-primary-600' : 'text-neutral-500'}>{type.icon}</span>
+                            <span
+                              className={`text-sm font-medium ${selected ? 'text-primary-700 dark:text-primary-300' : 'text-neutral-700 dark:text-neutral-300'}`}
+                            >
                               {type.label}
                             </span>
                           </div>
@@ -429,22 +437,22 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
                                 value={selected.weight}
                                 onChange={(e) => updateEfficacyWeight(type.id, Number(e.target.value))}
                                 onClick={(e) => e.stopPropagation()}
-                                className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                                className="w-full h-1.5 bg-neutral-200 rounded-lg appearance-none cursor-pointer accent-emerald-500"
                               />
-                              <span className="text-xs text-emerald-600 font-medium">{selected.weight}%</span>
+                              <span className="text-xs text-primary-600 font-medium">{selected.weight}%</span>
                             </div>
                           )}
                         </motion.button>
-                      )
+                      );
                     })}
                   </div>
 
                   {/* 权重汇总 */}
                   {efficacies.length > 0 && (
-                    <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                    <div className="p-3 bg-slate-50 dark:bg-neutral-800 rounded-lg">
+                      <span className="text-sm text-neutral-600 dark:text-neutral-400">
                         已选 {efficacies.length} 种功效，总权重：
-                        <span className="font-semibold text-emerald-600">{totalWeight}%</span>
+                        <span className="font-semibold text-primary-600">{totalWeight}%</span>
                       </span>
                     </div>
                   )}
@@ -455,17 +463,13 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
               {currentStep === 1 && (
                 <div className="space-y-6">
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                      约束条件配置
-                    </h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      设置配方的物理化学约束和安全限制
-                    </p>
+                    <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2">约束条件配置</h3>
+                    <p className="text-sm text-neutral-500 dark:text-neutral-400">设置配方的物理化学约束和安全限制</p>
                   </div>
 
                   {/* pH 范围 */}
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                    <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 flex items-center gap-2">
                       <Droplets className="w-4 h-4" />
                       pH 范围: {constraints.phRange[0].toFixed(1)} - {constraints.phRange[1].toFixed(1)}
                     </label>
@@ -477,7 +481,7 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
                         step="0.1"
                         value={constraints.phRange[0]}
                         onChange={(e) =>
-                          setConstraints(prev => ({
+                          setConstraints((prev) => ({
                             ...prev,
                             phRange: [Math.min(Number(e.target.value), prev.phRange[1]), prev.phRange[1]],
                           }))
@@ -491,7 +495,7 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
                         step="0.1"
                         value={constraints.phRange[1]}
                         onChange={(e) =>
-                          setConstraints(prev => ({
+                          setConstraints((prev) => ({
                             ...prev,
                             phRange: [prev.phRange[0], Math.max(Number(e.target.value), prev.phRange[0])],
                           }))
@@ -503,19 +507,19 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
 
                   {/* 温度范围 */}
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                    <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 flex items-center gap-2">
                       <Thermometer className="w-4 h-4" />
                       温度要求
                     </label>
                     <div className="flex gap-2">
-                      {(['room', 'heated', 'refrigerated'] as const).map(temp => (
+                      {(['room', 'heated', 'refrigerated'] as const).map((temp) => (
                         <button
                           key={temp}
-                          onClick={() => setConstraints(prev => ({ ...prev, temperature: temp }))}
+                          onClick={() => setConstraints((prev) => ({ ...prev, temperature: temp }))}
                           className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                             constraints.temperature === temp
-                              ? 'bg-emerald-500 text-white shadow-md'
-                              : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                              ? 'bg-primary-500 text-white shadow-md'
+                              : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700'
                           }`}
                         >
                           {{ room: '常温', heated: '加热', refrigerated: '冷藏' }[temp]}
@@ -526,19 +530,19 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
 
                   {/* 粘度类型 */}
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                    <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 flex items-center gap-2">
                       <Gauge className="w-4 h-4" />
                       粘度类型
                     </label>
                     <div className="grid grid-cols-4 gap-2">
-                      {(['watery', 'lotion', 'cream', 'solid'] as const).map(visc => (
+                      {(['watery', 'lotion', 'cream', 'solid'] as const).map((visc) => (
                         <button
                           key={visc}
-                          onClick={() => setConstraints(prev => ({ ...prev, viscosity: visc }))}
+                          onClick={() => setConstraints((prev) => ({ ...prev, viscosity: visc }))}
                           className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${
                             constraints.viscosity === visc
-                              ? 'bg-emerald-500 text-white shadow-md'
-                              : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                              ? 'bg-primary-500 text-white shadow-md'
+                              : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700'
                           }`}
                         >
                           {{ watery: '水状', lotion: '乳液', cream: '膏体', solid: '固体' }[visc]}
@@ -549,23 +553,25 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
 
                   {/* 刺激性限制 */}
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                    <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 flex items-center gap-2">
                       <Shield className="w-4 h-4" />
                       刺激性限制
                     </label>
                     <div className="flex gap-2">
-                      {([
-                        { value: 'none', label: '无刺激' },
-                        { value: 'low', label: '低刺激' },
-                        { value: 'acceptable', label: '可接受' },
-                      ] as const).map(level => (
+                      {(
+                        [
+                          { value: 'none', label: '无刺激' },
+                          { value: 'low', label: '低刺激' },
+                          { value: 'acceptable', label: '可接受' },
+                        ] as const
+                      ).map((level) => (
                         <button
                           key={level.value}
-                          onClick={() => setConstraints(prev => ({ ...prev, irritationLevel: level.value }))}
+                          onClick={() => setConstraints((prev) => ({ ...prev, irritationLevel: level.value }))}
                           className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                             constraints.irritationLevel === level.value
-                              ? 'bg-emerald-500 text-white shadow-md'
-                              : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                              ? 'bg-primary-500 text-white shadow-md'
+                              : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700'
                           }`}
                         >
                           {level.label}
@@ -576,29 +582,31 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
 
                   {/* 过敏原排除 */}
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                    <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 flex items-center gap-2">
                       <AlertTriangle className="w-4 h-4" />
                       排除过敏原
                     </label>
                     <div className="flex flex-wrap gap-2">
-                      {ALLERGEN_OPTIONS.map(allergen => (
+                      {ALLERGEN_OPTIONS.map((allergen) => (
                         <button
                           key={allergen.id}
                           onClick={() =>
-                            setConstraints(prev => ({
+                            setConstraints((prev) => ({
                               ...prev,
                               excludedAllergens: prev.excludedAllergens.includes(allergen.id)
-                                ? prev.excludedAllergens.filter(a => a !== allergen.id)
+                                ? prev.excludedAllergens.filter((a) => a !== allergen.id)
                                 : [...prev.excludedAllergens, allergen.id],
                             }))
                           }
                           className={`px-3 py-1.5 rounded-lg text-sm transition-all ${
                             constraints.excludedAllergens.includes(allergen.id)
-                              ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-300 dark:border-red-700'
-                              : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-transparent hover:border-gray-300'
+                              ? 'bg-error-100 dark:bg-error-900/30 text-error-700 dark:text-error-400 border border-red-300 dark:border-red-700'
+                              : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-transparent hover:border-neutral-300'
                           }`}
                         >
-                          {constraints.excludedAllergens.includes(allergen.id) && <Ban className="w-3 h-3 inline mr-1" />}
+                          {constraints.excludedAllergens.includes(allergen.id) && (
+                            <Ban className="w-3 h-3 inline mr-1" />
+                          )}
                           {allergen.label}
                         </button>
                       ))}
@@ -607,7 +615,7 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
 
                   {/* 成本上限 */}
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                    <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 flex items-center gap-2">
                       <DollarSign className="w-4 h-4" />
                       成本上限{constraints.maxCostPerKg ? `: ¥${constraints.maxCostPerKg}/kg` : ': 不限'}
                     </label>
@@ -619,7 +627,7 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
                         step="10"
                         value={constraints.maxCostPerKg || 0}
                         onChange={(e) =>
-                          setConstraints(prev => ({
+                          setConstraints((prev) => ({
                             ...prev,
                             maxCostPerKg: Number(e.target.value) || null,
                           }))
@@ -627,8 +635,8 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
                         className="flex-1 accent-yellow-500"
                       />
                       <button
-                        onClick={() => setConstraints(prev => ({ ...prev, maxCostPerKg: null }))}
-                        className="text-xs text-gray-500 hover:text-gray-700 underline"
+                        onClick={() => setConstraints((prev) => ({ ...prev, maxCostPerKg: null }))}
+                        className="text-xs text-neutral-500 hover:text-neutral-700 underline"
                       >
                         清除
                       </button>
@@ -641,17 +649,13 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
               {currentStep === 2 && (
                 <div className="space-y-6">
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                      高级选项
-                    </h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      配置原料来源偏好、认证要求和特殊工艺限制
-                    </p>
+                    <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2">高级选项</h3>
+                    <p className="text-sm text-neutral-500 dark:text-neutral-400">配置原料来源偏好、认证要求和特殊工艺限制</p>
                   </div>
 
                   {/* 原料来源 */}
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                    <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 flex items-center gap-2">
                       <Leaf className="w-4 h-4" />
                       原料来源偏好
                     </label>
@@ -661,24 +665,26 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
                         { value: 'synthetic', label: '合成' },
                         { value: 'fermented', label: '发酵' },
                         { value: 'plant_extract', label: '植物提取' },
-                      ].map(source => (
+                      ].map((source) => (
                         <button
                           key={source.value}
                           onClick={() =>
-                            setAdvanced(prev => ({
+                            setAdvanced((prev) => ({
                               ...prev,
-                              sourcePreference: prev.sourcePreference.includes(source.value as any)
-                                ? prev.sourcePreference.filter(s => s !== source.value)
-                                : [...prev.sourcePreference, source.value as any],
+                              sourcePreference: prev.sourcePreference.includes(source.value)
+                                ? prev.sourcePreference.filter((s) => s !== source.value)
+                                : [...prev.sourcePreference, source.value],
                             }))
                           }
                           className={`px-3 py-1.5 rounded-lg text-sm transition-all ${
-                            advanced.sourcePreference.includes(source.value as any)
-                              ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-300 dark:border-green-700'
-                              : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-transparent hover:border-gray-300'
+                            advanced.sourcePreference.includes(source.value)
+                              ? 'bg-success-100 dark:bg-success-900/30 text-success-700 dark:text-success-400 border border-green-300 dark:border-green-700'
+                              : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-transparent hover:border-neutral-300'
                           }`}
                         >
-                          {advanced.sourcePreference.includes(source.value as any) && <Check className="w-3 h-3 inline mr-1" />}
+                          {advanced.sourcePreference.includes(source.value) && (
+                            <Check className="w-3 h-3 inline mr-1" />
+                          )}
                           {source.label}
                         </button>
                       ))}
@@ -687,7 +693,7 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
 
                   {/* 认证要求 */}
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                    <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 flex items-center gap-2">
                       <Award className="w-4 h-4" />
                       认证要求
                     </label>
@@ -698,24 +704,26 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
                         { value: 'iso', label: 'ISO' },
                         { value: 'halal', label: 'Halal' },
                         { value: 'kosher', label: 'Kosher' },
-                      ].map(cert => (
+                      ].map((cert) => (
                         <button
                           key={cert.value}
                           onClick={() =>
-                            setAdvanced(prev => ({
+                            setAdvanced((prev) => ({
                               ...prev,
-                              certifications: prev.certifications.includes(cert.value as any)
-                                ? prev.certifications.filter(c => c !== cert.value)
-                                : [...prev.certifications, cert.value as any],
+                              certifications: prev.certifications.includes(cert.value)
+                                ? prev.certifications.filter((c) => c !== cert.value)
+                                : [...prev.certifications, cert.value],
                             }))
                           }
                           className={`px-3 py-1.5 rounded-lg text-sm transition-all ${
-                            advanced.certifications.includes(cert.value as any)
-                              ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 border border-purple-300 dark:border-purple-700'
-                              : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-transparent hover:border-gray-300'
+                            advanced.certifications.includes(cert.value)
+                              ? 'bg-accent-100 dark:bg-accent-900/30 text-accent-700 dark:text-accent-400 border border-purple-300 dark:border-purple-700'
+                              : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-transparent hover:border-neutral-300'
                           }`}
                         >
-                          {advanced.certifications.includes(cert.value as any) && <Check className="w-3 h-3 inline mr-1" />}
+                          {advanced.certifications.includes(cert.value) && (
+                            <Check className="w-3 h-3 inline mr-1" />
+                          )}
                           {cert.label}
                         </button>
                       ))}
@@ -724,7 +732,7 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
 
                   {/* 目标市场 */}
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                    <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 flex items-center gap-2">
                       <Globe className="w-4 h-4" />
                       目标市场
                     </label>
@@ -735,24 +743,26 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
                         { value: 'usa', label: '美国' },
                         { value: 'japan', label: '日本' },
                         { value: 'global', label: '全球' },
-                      ].map(market => (
+                      ].map((market) => (
                         <button
                           key={market.value}
                           onClick={() =>
-                            setAdvanced(prev => ({
+                            setAdvanced((prev) => ({
                               ...prev,
-                              targetMarket: prev.targetMarket.includes(market.value as any)
-                                ? prev.targetMarket.filter(m => m !== market.value)
-                                : [...prev.targetMarket, market.value as any],
+                              targetMarket: prev.targetMarket.includes(market.value)
+                                ? prev.targetMarket.filter((m) => m !== market.value)
+                                : [...prev.targetMarket, market.value],
                             }))
                           }
                           className={`px-3 py-1.5 rounded-lg text-sm transition-all ${
-                            advanced.targetMarket.includes(market.value as any)
-                              ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-300 dark:border-blue-700'
-                              : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-transparent hover:border-gray-300'
+                            advanced.targetMarket.includes(market.value)
+                              ? 'bg-secondary-100 dark:bg-secondary-900/30 text-secondary-700 dark:text-secondary-400 border border-blue-300 dark:border-blue-700'
+                              : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-transparent hover:border-neutral-300'
                           }`}
                         >
-                          {advanced.targetMarket.includes(market.value as any) && <Check className="w-3 h-3 inline mr-1" />}
+                          {advanced.targetMarket.includes(market.value) && (
+                            <Check className="w-3 h-3 inline mr-1" />
+                          )}
                           {market.label}
                         </button>
                       ))}
@@ -761,7 +771,7 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
 
                   {/* 特殊工艺限制 */}
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                    <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 flex items-center gap-2">
                       <Ban className="w-4 h-4" />
                       特殊工艺限制
                     </label>
@@ -770,24 +780,26 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
                         { value: 'no_preservative', label: '无防腐剂' },
                         { value: 'no_fragrance', label: '无香精' },
                         { value: 'no_colorant', label: '无色素' },
-                      ].map(restriction => (
+                      ].map((restriction) => (
                         <button
                           key={restriction.value}
                           onClick={() =>
-                            setAdvanced(prev => ({
+                            setAdvanced((prev) => ({
                               ...prev,
-                              specialRestrictions: prev.specialRestrictions.includes(restriction.value as any)
-                                ? prev.specialRestrictions.filter(r => r !== restriction.value)
-                                : [...prev.specialRestrictions, restriction.value as any],
+                              specialRestrictions: prev.specialRestrictions.includes(restriction.value)
+                                ? prev.specialRestrictions.filter((r) => r !== restriction.value)
+                                : [...prev.specialRestrictions, restriction.value],
                             }))
                           }
                           className={`px-3 py-1.5 rounded-lg text-sm transition-all ${
-                            advanced.specialRestrictions.includes(restriction.value as any)
+                            advanced.specialRestrictions.includes(restriction.value)
                               ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border border-orange-300 dark:border-orange-700'
-                              : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-transparent hover:border-gray-300'
+                              : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-transparent hover:border-neutral-300'
                           }`}
                         >
-                          {advanced.specialRestrictions.includes(restriction.value as any) && <Check className="w-3 h-3 inline mr-1" />}
+                          {advanced.specialRestrictions.includes(restriction.value) && (
+                            <Check className="w-3 h-3 inline mr-1" />
+                          )}
                           {restriction.label}
                         </button>
                       ))}
@@ -806,17 +818,14 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
               initial={{ width: 0, opacity: 0 }}
               animate={{ width: 280, opacity: 1 }}
               exit={{ width: 0, opacity: 0 }}
-              className="border-l border-gray-200 dark:border-gray-700 bg-gradient-to-b from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 p-4 overflow-hidden"
+              className="border-l border-neutral-200 dark:border-neutral-700 bg-gradient-to-b from-slate-50 to-white dark:from-slate-800 dark:to-slate-900 p-4 overflow-hidden"
             >
               <div className="flex items-center justify-between mb-4">
-                <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                <h4 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-2">
                   <Eye className="w-4 h-4" />
                   配置预览
                 </h4>
-                <button
-                  onClick={() => setShowPreview(false)}
-                  className="text-gray-400 hover:text-gray-600"
-                >
+                <button onClick={() => setShowPreview(false)} className="text-neutral-400 hover:text-neutral-600">
                   ✕
                 </button>
               </div>
@@ -829,20 +838,20 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
         {!showPreview && (
           <button
             onClick={() => setShowPreview(true)}
-            className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-white dark:bg-gray-800 shadow-lg rounded-l-lg border border-r-0 border-gray-200 dark:border-gray-700 hover:bg-gray-50"
+            className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-white dark:bg-neutral-800 shadow-lg rounded-l-lg border border-r-0 border-neutral-200 dark:border-neutral-700 hover:bg-slate-50"
           >
-            <Eye className="w-4 h-4 text-gray-500" />
+            <Eye className="w-4 h-4 text-neutral-500" />
           </button>
         )}
       </div>
 
       {/* 底部操作栏 */}
-      <div className="px-8 py-4 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
+      <div className="px-8 py-4 bg-slate-50 dark:bg-neutral-800/50 border-t border-neutral-200 dark:border-neutral-700 flex items-center justify-between">
         <div className="flex items-center gap-3">
           {currentStep > 0 && (
             <button
               onClick={handlePrev}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition-colors"
             >
               <ChevronLeft className="w-4 h-4" />
               上一步
@@ -852,7 +861,7 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
           {currentStep < steps.length - 1 && (
             <button
               onClick={handleSkip}
-              className="text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 underline"
+              className="text-sm text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 underline"
             >
               跳过此步
             </button>
@@ -863,7 +872,7 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
           {onCancel && (
             <button
               onClick={onCancel}
-              className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              className="px-4 py-2 text-sm font-medium text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition-colors"
             >
               取消
             </button>
@@ -877,7 +886,7 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
             className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold text-white shadow-lg transition-all ${
               canProceed || currentStep === steps.length - 1
                 ? 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600'
-                : 'bg-gray-300 dark:bg-gray-600 cursor-not-allowed'
+                : 'bg-neutral-300 dark:bg-neutral-600 cursor-not-allowed'
             }`}
           >
             {currentStep === steps.length - 1 ? (
@@ -895,7 +904,7 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 function ConfigPreview({ data, currentStep }: { data: any; currentStep: number }) {
@@ -903,16 +912,16 @@ function ConfigPreview({ data, currentStep }: { data: any; currentStep: number }
     <div className="space-y-4 text-sm">
       {currentStep >= 0 && data.selectedEfficacies?.length > 0 && (
         <div>
-          <h5 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">目标功效</h5>
+          <h5 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2">目标功效</h5>
           <div className="space-y-1.5">
             {data.selectedEfficacies.slice(0, 5).map((e: any) => (
               <div key={e.id} className="flex items-center justify-between">
-                <span className="text-gray-700 dark:text-gray-300">{e.label}</span>
-                <span className="text-emerald-600 font-medium">{e.weight}%</span>
+                <span className="text-neutral-700 dark:text-neutral-300">{e.label}</span>
+                <span className="text-primary-600 font-medium">{e.weight}%</span>
               </div>
             ))}
             {data.selectedEfficacies.length > 5 && (
-              <div className="text-xs text-gray-400">+{data.selectedEfficacies.length - 5} 更多...</div>
+              <div className="text-xs text-neutral-400">+{data.selectedEfficacies.length - 5} 更多...</div>
             )}
           </div>
         </div>
@@ -920,11 +929,21 @@ function ConfigPreview({ data, currentStep }: { data: any; currentStep: number }
 
       {currentStep >= 1 && (
         <div>
-          <h5 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">约束条件</h5>
-          <div className="space-y-1 text-gray-600 dark:text-gray-400">
-            <div>pH: {data.constraints?.phRange?.[0]}-{data.constraints?.phRange?.[1]}</div>
-            <div>温度: {{ room: '常温', heated: '加热', refrigerated: '冷藏' }[data.constraints?.temperature]}</div>
-            <div>粘度: {{ watery: '水状', lotion: '乳液', cream: '膏体', solid: '固体' }[data.constraints?.viscosity]}</div>
+          <h5 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2">约束条件</h5>
+          <div className="space-y-1 text-neutral-600 dark:text-neutral-400">
+            <div>
+              pH: {data.constraints?.phRange?.[0]}-{data.constraints?.phRange?.[1]}
+            </div>
+            <div>
+              温度:{' '}
+              {{ room: '常温', heated: '加热', refrigerated: '冷藏' }[data.constraints?.temperature as string] ?? '-'}
+            </div>
+            <div>
+              粘度:{' '}
+              {{ watery: '水状', lotion: '乳液', cream: '膏体', solid: '固体' }[
+                data.constraints?.viscosity as string
+              ] ?? '-'}
+            </div>
             {data.constraints?.maxCostPerKg && <div>成本上限: ¥{data.constraints.maxCostPerKg}/kg</div>}
           </div>
         </div>
@@ -932,22 +951,18 @@ function ConfigPreview({ data, currentStep }: { data: any; currentStep: number }
 
       {currentStep >= 2 && (
         <div>
-          <h5 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">高级选项</h5>
-          <div className="space-y-1 text-gray-600 dark:text-gray-400">
+          <h5 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2">高级选项</h5>
+          <div className="space-y-1 text-neutral-600 dark:text-neutral-400">
             {data.advanced?.sourcePreference?.length > 0 && (
               <div>原料: {data.advanced.sourcePreference.join(', ')}</div>
             )}
-            {data.advanced?.certifications?.length > 0 && (
-              <div>认证: {data.advanced.certifications.join(', ')}</div>
-            )}
-            {data.advanced?.targetMarket?.length > 0 && (
-              <div>市场: {data.advanced.targetMarket.join(', ')}</div>
-            )}
+            {data.advanced?.certifications?.length > 0 && <div>认证: {data.advanced.certifications.join(', ')}</div>}
+            {data.advanced?.targetMarket?.length > 0 && <div>市场: {data.advanced.targetMarket.join(', ')}</div>}
           </div>
         </div>
       )}
     </div>
-  )
+  );
 }
 
 function PresetManager({
@@ -956,18 +971,18 @@ function PresetManager({
   onDelete,
   onClose,
 }: {
-  presets: PresetData[]
-  onSave: (name: string) => void
-  onDelete: (id: string) => void
-  onClose: () => void
+  presets: PresetData[];
+  onSave: (name: string) => void;
+  onDelete: (id: string) => void;
+  onClose: () => void;
 }) {
-  const [newPresetName, setNewPresetName] = useState('')
+  const [newPresetName, setNewPresetName] = useState('');
 
   return (
-    <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-xl space-y-3">
+    <div className="p-4 bg-slate-50 dark:bg-neutral-800 rounded-xl space-y-3">
       <div className="flex items-center justify-between">
-        <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300">管理自定义预设</h4>
-        <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-sm">
+        <h4 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">管理自定义预设</h4>
+        <button onClick={onClose} className="text-neutral-400 hover:text-neutral-600 text-sm">
           ✕
         </button>
       </div>
@@ -978,38 +993,35 @@ function PresetManager({
           value={newPresetName}
           onChange={(e) => setNewPresetName(e.target.value)}
           placeholder="输入预设名称..."
-          className="flex-1 px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          className="flex-1 px-3 py-1.5 text-sm border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
         />
         <button
           onClick={() => {
             if (newPresetName.trim()) {
-              onSave(newPresetName.trim())
-              setNewPresetName('')
+              onSave(newPresetName.trim());
+              setNewPresetName('');
             }
           }}
           disabled={!newPresetName.trim()}
-          className="px-3 py-1.5 bg-emerald-500 text-white text-sm rounded-lg hover:bg-emerald-600 disabled:opacity-50"
+          className="px-3 py-1.5 bg-primary-500 text-white text-sm rounded-lg hover:bg-primary-600 disabled:opacity-50"
         >
           <Save className="w-4 h-4" />
         </button>
       </div>
 
       {presets.length === 0 ? (
-        <p className="text-xs text-gray-500 text-center py-2">暂无自定义预设</p>
+        <p className="text-xs text-neutral-500 text-center py-2">暂无自定义预设</p>
       ) : (
         <div className="space-y-2 max-h-40 overflow-y-auto">
-          {presets.map(preset => (
-            <div
-              key={preset.id}
-              className="flex items-center justify-between p-2 bg-white dark:bg-gray-700 rounded-lg"
-            >
+          {presets.map((preset) => (
+            <div key={preset.id} className="flex items-center justify-between p-2 bg-white dark:bg-neutral-700 rounded-lg">
               <div>
-                <div className="text-sm font-medium text-gray-700 dark:text-gray-300">{preset.name}</div>
-                <div className="text-xs text-gray-500">{preset.description}</div>
+                <div className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{preset.name}</div>
+                <div className="text-xs text-neutral-500">{preset.description}</div>
               </div>
               <button
                 onClick={() => onDelete(preset.id)}
-                className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
+                className="p-1 text-error-500 hover:bg-error-50 dark:hover:bg-error-900/20 rounded"
               >
                 <Trash2 className="w-4 h-4" />
               </button>
@@ -1018,7 +1030,7 @@ function PresetManager({
         </div>
       )}
     </div>
-  )
+  );
 }
 
-export default FormulaWizard
+export default FormulaWizard;

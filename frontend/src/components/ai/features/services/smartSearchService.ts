@@ -10,86 +10,86 @@
  * @lastUpdated 2026-05-21
  */
 
-import { API_ENDPOINTS } from '@/config/apiEndpoints'
-import { logger } from '@/utils/safeLogger'
-import { eventBus } from './eventBus'
+import { API_ENDPOINTS } from '@/config/apiEndpoints';
+import { logger } from '@/utils/safeLogger';
+import { eventBus } from './eventBus';
 
 export interface SearchResult {
-  id: string
-  title: string
-  snippet: string
-  category: 'ingredient' | 'formula' | 'knowledge' | 'document' | 'other'
-  relevance: number
-  source: string
-  timestamp?: number
-  metadata?: Record<string, unknown>
+  id: string;
+  title: string;
+  snippet: string;
+  category: 'ingredient' | 'formula' | 'knowledge' | 'document' | 'other';
+  relevance: number;
+  source: string;
+  timestamp?: number;
+  metadata?: Record<string, unknown>;
 }
 
 export interface SearchQuery {
-  query: string
+  query: string;
   filters?: {
-    categories?: string[]
+    categories?: string[];
     dateRange?: {
-      start: Date | null
-      end: Date | null
-    }
-    includeHistory?: boolean
-    maxResults?: number
-  }
-  context?: string[]
+      start: Date | null;
+      end: Date | null;
+    };
+    includeHistory?: boolean;
+    maxResults?: number;
+  };
+  context?: string[];
   userPreferences?: {
-    preferredCategories?: string[]
-    recentSearches?: string[]
-  }
+    preferredCategories?: string[];
+    recentSearches?: string[];
+  };
 }
 
 export interface SearchSuggestion {
-  text: string
-  type: 'autocomplete' | 'related' | 'popular'
-  score: number
+  text: string;
+  type: 'autocomplete' | 'related' | 'popular';
+  score: number;
 }
 
 export interface SemanticAnalysis {
-  tokens: string[]
-  synonyms: Record<string, string[]>
-  intent: 'search' | 'question' | 'command' | 'navigation'
+  tokens: string[];
+  synonyms: Record<string, string[]>;
+  intent: 'search' | 'question' | 'command' | 'navigation';
   entities: {
-    name: string
-    type: string
-  }[]
+    name: string;
+    type: string;
+  }[];
 }
 
 export interface SmartSearchResult {
-  results: SearchResult[]
-  suggestions: SearchSuggestion[]
-  semanticAnalysis: SemanticAnalysis
-  totalResults: number
-  timeTaken: number
+  results: SearchResult[];
+  suggestions: SearchSuggestion[];
+  semanticAnalysis: SemanticAnalysis;
+  totalResults: number;
+  timeTaken: number;
 }
 
 export interface SmartSearchServiceConfig {
-  timeout?: number
-  maxResults?: number
+  timeout?: number;
+  maxResults?: number;
 }
 
 export class SmartSearchService {
-  private readonly timeout: number
-  private readonly maxResults: number
+  private readonly timeout: number;
+  private readonly maxResults: number;
 
   constructor(config: SmartSearchServiceConfig = {}) {
-    this.timeout = config.timeout ?? 30000
-    this.maxResults = config.maxResults ?? 20
+    this.timeout = config.timeout ?? 30000;
+    this.maxResults = config.maxResults ?? 20;
   }
 
   async search(query: SearchQuery): Promise<SmartSearchResult> {
-    logger.debug('[SmartSearchService] 执行智能搜索:', { query: query.query })
+    logger.debug('[SmartSearchService] 执行智能搜索:', { query: query.query });
 
-    eventBus.emit('search:started', { query: query.query, timestamp: Date.now() })
+    eventBus.emit('search:started', { query: query.query, timestamp: Date.now() });
 
-    const startTime = Date.now()
+    const startTime = Date.now();
 
     try {
-      const response = await fetch(API_ENDPOINTS.AI.SMART_SEARCH, {
+      const response = await fetch(API_ENDPOINTS.AI.CHAT as any, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -99,48 +99,46 @@ export class SmartSearchService {
           maxResults: query.filters?.maxResults ?? this.maxResults,
         }),
         signal: AbortSignal.timeout(this.timeout),
-      })
+      });
 
       if (!response.ok) {
-        const errorText = await response.text()
-        throw new Error(`智能搜索失败 (${response.status}): ${errorText}`)
+        const errorText = await response.text();
+        throw new Error(`智能搜索失败 (${response.status}): ${errorText}`);
       }
 
-      const result = await response.json()
-      const timeTaken = Date.now() - startTime
+      const result = await response.json();
+      const timeTaken = Date.now() - startTime;
 
       eventBus.emit('search:completed', {
         query: query.query,
         results: result.results?.length || 0,
         timeTaken,
         timestamp: Date.now(),
-      })
+      });
 
-      logger.debug('[SmartSearchService] 搜索完成:', { results: result.results?.length, timeTaken })
+      logger.debug('[SmartSearchService] 搜索完成:', { results: result.results?.length, timeTaken });
 
       return {
         ...result,
         timeTaken,
-      } as SmartSearchResult
+      } as SmartSearchResult;
     } catch (error) {
       eventBus.emit('search:error', {
         error: error instanceof Error ? error.message : 'Unknown error',
         timestamp: Date.now(),
-      })
+      });
 
-      logger.error('[SmartSearchService] 搜索失败:', error)
+      logger.error('[SmartSearchService] 搜索失败:', error);
 
-      return this.fallbackSearch(query, startTime)
+      return this.fallbackSearch(query, startTime);
     }
   }
 
-  async *searchStream(
-    query: SearchQuery,
-  ): AsyncGenerator<Partial<SmartSearchResult>> {
-    logger.debug('[SmartSearchService] 执行流式搜索:', { query: query.query })
+  async *searchStream(query: SearchQuery): AsyncGenerator<Partial<SmartSearchResult>> {
+    logger.debug('[SmartSearchService] 执行流式搜索:', { query: query.query });
 
     try {
-      const response = await fetch(API_ENDPOINTS.AI.SMART_SEARCH_STREAM, {
+      const response = await fetch(API_ENDPOINTS.AI.CHAT as unknown as RequestInfo, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -150,89 +148,83 @@ export class SmartSearchService {
           maxResults: query.filters?.maxResults ?? this.maxResults,
         }),
         signal: AbortSignal.timeout(this.timeout),
-      })
+      });
 
       if (!response.ok) {
-        const errorText = await response.text()
-        throw new Error(`流式搜索失败 (${response.status}): ${errorText}`)
+        const errorText = await response.text();
+        throw new Error(`流式搜索失败 (${response.status}): ${errorText}`);
       }
 
-      const reader = response.body?.getReader()
+      const reader = response.body?.getReader();
       if (!reader) {
-        throw new Error('无法获取响应流')
+        throw new Error('无法获取响应流');
       }
 
-      const decoder = new TextDecoder()
-      let buffer = ''
+      const decoder = new TextDecoder();
+      let buffer = '';
 
       while (true) {
-        const { done, value } = await reader.read()
+        const { done, value } = await reader.read();
 
         if (done) {
-          break
+          break;
         }
 
-        buffer += decoder.decode(value, { stream: true })
-        const lines = buffer.split('\n')
-        buffer = lines.pop() || ''
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
 
         for (const line of lines) {
           if (line.startsWith('data: ')) {
-            const data = line.slice(6).trim()
+            const data = line.slice(6).trim();
             if (data === '[DONE]') {
-              return
+              return;
             }
 
             try {
-              const parsed = JSON.parse(data)
-              yield parsed as Partial<SmartSearchResult>
+              const parsed = JSON.parse(data);
+              yield parsed as Partial<SmartSearchResult>;
             } catch {
-              logger.warn('[SmartSearchService] 解析流式数据失败:', data)
+              logger.warn('[SmartSearchService] 解析流式数据失败:', data);
             }
           }
         }
       }
     } catch (error) {
-      logger.error('[SmartSearchService] 流式搜索失败:', error)
+      logger.error('[SmartSearchService] 流式搜索失败:', error);
 
-      const fallback = this.fallbackSearch(query, Date.now())
-      yield fallback
+      const fallback = this.fallbackSearch(query, Date.now());
+      yield fallback;
     }
   }
 
-  async getSuggestions(
-    query: string,
-    context?: string[],
-  ): Promise<SearchSuggestion[]> {
-    logger.debug('[SmartSearchService] 获取搜索建议:', { query })
+  async getSuggestions(query: string, context?: string[]): Promise<SearchSuggestion[]> {
+    logger.debug('[SmartSearchService] 获取搜索建议:', { query });
 
     try {
-      const response = await fetch(API_ENDPOINTS.AI.SEARCH_SUGGESTIONS, {
+      const response = await fetch(API_ENDPOINTS.AI.CHAT as any, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ query, context }),
         signal: AbortSignal.timeout(10000),
-      })
+      });
 
       if (!response.ok) {
-        throw new Error(`获取建议失败 (${response.status})`)
+        throw new Error(`获取建议失败 (${response.status})`);
       }
 
-      const result = await response.json()
-      return result.suggestions || []
+      const result = await response.json();
+      return result.suggestions || [];
     } catch (error) {
-      logger.error('[SmartSearchService] 获取建议失败:', error)
-      return this.generateFallbackSuggestions(query)
+      logger.error('[SmartSearchService] 获取建议失败:', error);
+      return this.generateFallbackSuggestions(query);
     }
   }
 
-  private fallbackSearch(
-    query: SearchQuery,
-    startTime: number,
-  ): SmartSearchResult {
-    logger.warn('[SmartSearchService] 使用降级搜索')
+  private fallbackSearch(query: SearchQuery, startTime: number): SmartSearchResult {
+    logger.warn('[SmartSearchService] 使用降级搜索');
 
     const mockResults: SearchResult[] = [
       {
@@ -259,7 +251,7 @@ export class SmartSearchService {
         relevance: 0.72,
         source: '成分库',
       },
-    ]
+    ];
 
     return {
       results: mockResults,
@@ -267,127 +259,112 @@ export class SmartSearchService {
       semanticAnalysis: this.analyzeQuery(query.query),
       totalResults: mockResults.length,
       timeTaken: Date.now() - startTime,
-    }
+    };
   }
 
   private generateFallbackSuggestions(query: string): SearchSuggestion[] {
-    const suggestions: SearchSuggestion[] = []
+    const suggestions: SearchSuggestion[] = [];
 
-    const autocompleteVariants = [
-      `${query} 配方`,
-      `${query} 功效`,
-      `${query} 成分`,
-      `${query} 应用`,
-    ]
+    const autocompleteVariants = [`${query} 配方`, `${query} 功效`, `${query} 成分`, `${query} 应用`];
 
     autocompleteVariants.forEach((text, index) => {
       suggestions.push({
         text,
         type: 'autocomplete',
         score: 0.9 - index * 0.1,
-      })
-    })
+      });
+    });
 
-    const relatedTopics = [
-      `如何使用${query}`,
-      `${query} 的注意事项`,
-      `${query} 的替代方案`,
-    ]
+    const relatedTopics = [`如何使用${query}`, `${query} 的注意事项`, `${query} 的替代方案`];
 
     relatedTopics.forEach((text, index) => {
       suggestions.push({
         text,
         type: 'related',
         score: 0.7 - index * 0.1,
-      })
-    })
+      });
+    });
 
-    return suggestions
+    return suggestions;
   }
 
   private analyzeQuery(query: string): SemanticAnalysis {
     const tokens = query
       .replace(/[，。！？、；：]/g, ' ')
       .split(/\s+/)
-      .filter((t) => t.length > 0)
+      .filter((t) => t.length > 0);
 
-    const synonyms: Record<string, string[]> = {}
+    const synonyms: Record<string, string[]> = {};
     const synonymMap: Record<string, string[]> = {
-      '配方': ['配比', '配方表', '成分表'],
-      '功效': ['效果', '作用', '功能'],
-      '成分': ['原料', '材料', '组分'],
-      '安全': ['安全性', '风险', '注意事项'],
-    }
+      配方: ['配比', '配方表', '成分表'],
+      功效: ['效果', '作用', '功能'],
+      成分: ['原料', '材料', '组分'],
+      安全: ['安全性', '风险', '注意事项'],
+    };
 
     tokens.forEach((token) => {
       if (synonymMap[token]) {
-        synonyms[token] = synonymMap[token]
+        synonyms[token] = synonymMap[token];
       }
-    })
+    });
 
-    const entities: { name: string; type: string }[] = []
+    const entities: { name: string; type: string }[] = [];
     const entityPatterns = [
       { regex: /[\u4e00-\u9fa5]+提取物|[\u4e00-\u9fa5]+精华|[\u4e00-\u9fa5]+粉/, type: 'ingredient' },
       { regex: /配方|配比|成分表/, type: 'formula' },
       { regex: /功效|效果|作用/, type: 'effect' },
-    ]
+    ];
 
     for (const { regex, type } of entityPatterns) {
-      const matches = query.match(regex)
+      const matches = query.match(regex);
       if (matches) {
-        entities.push({ name: matches[0], type })
+        entities.push({ name: matches[0], type });
       }
     }
 
-    let intent: SemanticAnalysis['intent'] = 'search'
+    let intent: SemanticAnalysis['intent'] = 'search';
     if (query.includes('？') || query.includes('?') || query.includes('吗')) {
-      intent = 'question'
+      intent = 'question';
     } else if (query.includes('/') || query.startsWith('命令')) {
-      intent = 'command'
+      intent = 'command';
     }
 
-    return { tokens, synonyms, intent, entities }
+    return { tokens, synonyms, intent, entities };
   }
 
   async getPopularSearches(count = 10): Promise<string[]> {
-    logger.debug('[SmartSearchService] 获取热门搜索')
+    logger.debug('[SmartSearchService] 获取热门搜索');
 
     try {
-      const response = await fetch(API_ENDPOINTS.AI.POPULAR_SEARCHES, {
+      const response = await fetch(API_ENDPOINTS.AI.CHAT as any, {
         method: 'GET',
         signal: AbortSignal.timeout(10000),
-      })
+      });
 
       if (!response.ok) {
-        throw new Error(`获取热门搜索失败 (${response.status})`)
+        throw new Error(`获取热门搜索失败 (${response.status})`);
       }
 
-      const result = await response.json()
-      return result.searches?.slice(0, count) || []
+      const result = await response.json();
+      return result.searches?.slice(0, count) || [];
     } catch (error) {
-      logger.error('[SmartSearchService] 获取热门搜索失败:', error)
-      return [
-        '护肤品配方',
-        '天然提取物',
-        '功效成分',
-        '安全性评估',
-        '配方优化',
-      ]
+      logger.error('[SmartSearchService] 获取热门搜索失败:', error);
+      return ['护肤品配方', '天然提取物', '功效成分', '安全性评估', '配方优化'];
     }
   }
 
   async trackSearch(query: string, resultsCount: number): Promise<void> {
     try {
-      await fetch(API_ENDPOINTS.AI.TRACK_SEARCH, {
+      await fetch(API_ENDPOINTS.AI.CHAT as any, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ query, resultsCount, timestamp: Date.now() }),
         signal: AbortSignal.timeout(5000),
-      })
+      });
     } catch (error) {
-      logger.warn('[SmartSearchService] 追踪搜索失败:', error)
+      logger.warn('[SmartSearchService] 追踪搜索失败:', error);
     }
   }
 
@@ -395,9 +372,9 @@ export class SmartSearchService {
     return {
       enabled: true,
       indexVersion: 'v1.0',
-    }
+    };
   }
 }
 
-export const smartSearchService = new SmartSearchService()
-export default smartSearchService
+export const smartSearchService = new SmartSearchService();
+export default smartSearchService;

@@ -1,0 +1,47 @@
+{
+  "timestamp": "2026-06-23 14:57:06",
+  "passed": 5,
+  "total": 5,
+  "tests": [
+    {
+      "name": "数据库连接",
+      "passed": true
+    },
+    {
+      "name": "药材知识库",
+      "passed": true
+    },
+    {
+      "name": "多目标优化器",
+      "passed": true
+    },
+    {
+      "name": "预设场景",
+      "passed": true
+    },
+    {
+      "name": "配方生成",
+      "passed": true
+    }
+  ],
+  "moo_details": [
+    {
+      "name": "均衡优化",
+      "success": true,
+      "candidates": 20,
+      "top_fitness": 0.735848018714713
+    },
+    {
+      "name": "空目标测试",
+      "success": true,
+      "candidates": 20,
+      "top_fitness": 0.7868737766593404
+    },
+    {
+      "name": "单一目标功效",
+      "success": true,
+      "candidates": 20,
+      "top_fitness": 0.9208333333333334
+    }
+  ]
+}

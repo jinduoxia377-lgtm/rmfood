@@ -19,8 +19,8 @@ from datetime import datetime
 logger = logging.getLogger(__name__)
 
 
-from app.api.deps import get_db_session, get_current_user
-from app.core.notification_center import (
+from .deps import get_db_session, get_current_user
+from ..core.realtime.notification_center import (
     NotificationService,
     UserNotificationPreference,
     NotificationChannel,
@@ -32,7 +32,7 @@ from app.core.notification_center import (
 )
 
 
-router = APIRouter(prefix="/notifications", tags=["notifications"])
+router = APIRouter(prefix="/notifications/v2", tags=["notifications"])
 
 
 # ============================================================
@@ -139,8 +139,8 @@ async def get_notifications(
 
         return result
     except Exception as e:
-        logger.error(f"❌ [NotificationAPI] 获取通知失败: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"通知服务内部错误: {str(e)}")
+        logger.error("获取通知失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="服务器内部错误，请稍后重试")
 
 
 @router.get("/unread-count", summary="获取未读数量")
@@ -323,8 +323,8 @@ async def send_test_notification(
             "template_id": request.template_id,
         }
     except Exception as e:
-        logger.error(f"发送测试通知失败: {e}")
-        raise HTTPException(status_code=500, detail=f"发送失败: {str(e)}")
+        logger.error("发送测试通知失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="服务器内部错误，请稍后重试")
 
 
 @router.post("/bulk-send", summary="批量发送通知（管理员）")
@@ -372,8 +372,8 @@ async def bulk_send_notifications(
             "details": total_results.get("details", []),
         }
     except Exception as e:
-        logger.error(f"批量发送通知失败: {e}")
-        raise HTTPException(status_code=500, detail=f"批量发送失败: {str(e)}")
+        logger.error("批量发送通知失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="服务器内部错误，请稍后重试")
 
 
 @router.delete("/clear-all", summary="清空所有通知")

@@ -50,6 +50,54 @@ logger = logging.getLogger(__name__)
 
 
 # ═════════════════════════════════════════════
+# Helper: robust .env file path calculation
+# ═════════════════════════════════════════════
+
+
+def _get_env_file_path() -> str:
+    """
+    Get absolute path to .env file.
+
+    This function handles the edge case where project paths contain
+    non-ASCII characters (Chinese etc.) by using Path.resolve() which
+    works reliably on Windows even with Unicode paths.
+
+    Returns:
+        Absolute path string to the .env file located in the project root.
+    """
+    from pathlib import Path
+
+    # __file__ is this config.py's absolute path
+    # Go up 2 levels to get to backend/ directory
+    base_dir = Path(__file__).parents[2]
+    env_path = base_dir / ".env"
+
+    # Verify it exists (Path with Chinese chars should work fine with resolve())
+    if env_path.exists():
+        return str(env_path.resolve())
+
+    # Fallback: try different locations
+    fallbacks = [
+        Path.cwd() / ".env",
+        Path(os.getcwd()) / ".env",
+    ]
+    for fp in fallbacks:
+        if fp.exists():
+            return str(fp.resolve())
+
+    raise RuntimeError(f"Cannot find .env file at expected location: {env_path}")
+
+
+# Try to get the path, fail early at module import if .env is missing
+try:
+    _ENV_FILE_PATH = _get_env_file_path()
+    logger.debug("Using .env file: %s", _ENV_FILE_PATH)
+except Exception as e:
+    logger.warning("Could not determine .env path: %s", e)
+    _ENV_FILE_PATH = ".env"  # Fallback (may not work if cwd is wrong)
+
+
+# ═════════════════════════════════════════════
 # 🟡 P3-5: 环境枚举
 # ═════════════════════════════════════════════
 
@@ -102,7 +150,7 @@ class DatabaseConfig(BaseModel):
     - 连接池耗尽: 增大 pool_size / max_overflow，排查长事务或慢查询
     """
 
-    url: str = Field(
+    url: str = Field(alias="DATABASE_URL", 
         default="",
         description=(
             "PostgreSQL 连接 URL，格式: postgresql+asyncpg://user:password@host:port/dbname "
@@ -146,14 +194,39 @@ class DatabaseConfig(BaseModel):
         验证并构建 PostgreSQL 连接 URL
 
         优先级:
-        1. 直接传入的 url 值（最高优先级）
-        2. DATABASE_URL 环境变量
-        3. POSTGRES_* 组合环境变量构建
+        1. DATABASE_URL 环境变量（最高优先级）
+        2. POSTGRES_* 组合环境变量构建
+        3. 直接传入的 url 值（仅当环境变量未设置时使用）
 
         安全: 拒绝任何非 PostgreSQL 的连接 URL（如 sqlite、mysql）
         """
-        if v:
-            # 拒绝非 PostgreSQL URL
+        # 首先检查环境变量（最高优先级）- ALWAYS check env vars first!
+        db_url = os.environ.get("DATABASE_URL")
+        if db_url:
+            if db_url.startswith("sqlite"):
+                raise ValueError(
+                    "SQLite 连接已被禁用。DATABASE_URL 不能使用 sqlite:// 协议。"
+                    "请设置 DATABASE_URL=postgresql+asyncpg://user:password@host:port/dbname"
+                )
+            if not db_url.startswith(("postgresql", "postgres")):
+                raise ValueError(
+                    f"不支持的数据库类型: {db_url.split('://')[0] if '://' in db_url else db_url}。"
+                    "本项目仅支持 PostgreSQL。"
+                )
+            return db_url
+
+        # 其次检查 POSTGRES_* 组合环境变量
+        host = os.environ.get("POSTGRES_HOST")
+        port = os.environ.get("POSTGRES_PORT", "5432")
+        user = os.environ.get("POSTGRES_USER")
+        password = os.environ.get("POSTGRES_PASSWORD")
+        db = os.environ.get("POSTGRES_DB")
+
+        if host and user and password and db:
+            return f"postgresql+asyncpg://{user}:{password}@{host}:{port}/{db}"
+
+        # 最后使用直接传入的值（如果提供了有效的值）
+        if v and v != "" and v != "None":
             if v.startswith("sqlite"):
                 raise ValueError(
                     "SQLite 连接已被禁用。本项目仅支持 PostgreSQL。"
@@ -166,31 +239,12 @@ class DatabaseConfig(BaseModel):
                 )
             return v
 
-        # 优先检查 DATABASE_URL 环境变量
-        db_url = os.environ.get("DATABASE_URL")
-        if db_url:
-            if db_url.startswith("sqlite"):
-                raise ValueError(
-                    "SQLite 连接已被禁用。DATABASE_URL 不能使用 sqlite:// 协议。"
-                    "请设置 DATABASE_URL=postgresql+asyncpg://user:password@host:port/dbname"
-                )
-            return db_url
-
-        # 从 POSTGRES_* 环境变量组合构建
-        host = os.environ.get("POSTGRES_HOST")
-        port = os.environ.get("POSTGRES_PORT", "5432")
-        user = os.environ.get("POSTGRES_USER")
-        password = os.environ.get("POSTGRES_PASSWORD")
-        db = os.environ.get("POSTGRES_DB")
-
-        if not all([host, user, password, db]):
-            raise ValueError(
-                "PostgreSQL 连接配置不完整。请设置以下任一方式:\n"
-                "  方式1: DATABASE_URL=postgresql+asyncpg://user:password@host:port/dbname\n"
-                "  方式2: POSTGRES_HOST, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB"
-            )
-
-        return f"postgresql+asyncpg://{user}:{password}@{host}:{port}/{db}"
+        raise ValueError(
+            "未找到有效的 PostgreSQL 数据库连接配置。\n"
+            "请设置以下任一方式:\n"
+            "  方式1 (推荐): 设置环境变量 DATABASE_URL=postgresql+asyncpg://user:password@host:port/dbname\n"
+            "  方式2: 设置 POSTGRES_HOST, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB 环境变量"
+        )
 
     @field_validator("ssl_mode", mode="after")
     @classmethod
@@ -204,7 +258,7 @@ class DatabaseConfig(BaseModel):
 
 class RedisConfig(BaseModel):
     """Redis 配置"""
-    url: str = Field(default="redis://localhost:6379/0", description="Redis 连接 URL")
+    url: str = Field(alias="DATABASE_URL", default="redis://localhost:6379/0", description="Redis 连接 URL")
     max_connections: int = Field(default=50, ge=1, description="最大连接数")
     socket_timeout: int = Field(default=5, ge=1, description="Socket 超时（秒）")
     socket_connect_timeout: int = Field(default=5, ge=1, description="Socket 连接超时（秒）")
@@ -213,24 +267,83 @@ class RedisConfig(BaseModel):
     cache_ttl: int = Field(default=3600, ge=0, description="默认缓存 TTL（秒）")
 
 
+class CeleryConfig(BaseModel):
+    """Celery 异步任务配置"""
+    broker_url: str = Field(alias="DATABASE_URL", 
+        default="redis://localhost:6379/1",
+        description="Celery Broker URL (Redis)，需以 redis:// 或 rediss:// 开头"
+    )
+    result_backend: str = Field(
+        default="redis://localhost:6379/1",
+        description="Celery Result Backend，与 broker 可相同或不同"
+    )
+    task_default_queue: str = Field(
+        default="import_queue",
+        description="默认任务队列名"
+    )
+    task_serializer: str = Field(
+        default="json",
+        description="任务数据序列化格式（仅支持 json）"
+    )
+    accept_content: List[str] = Field(
+        default_factory=lambda: ["json"],
+        description="接受的序列化格式列表"
+    )
+    task_track_started: bool = Field(
+        default=True,
+        description="跟踪任务开始状态"
+    )
+    task_time_limit: int = Field(
+        default=3600,
+        description="单任务最大运行时间（秒），大文件导入建议调高"
+    )
+    task_soft_time_limit: int = Field(
+        default=3000,
+        description="软时间提前警告时间（秒），应小于 task_time_limit"
+    )
+
+    @field_validator("broker_url", "result_backend")
+    def validate_redis_url(cls, v: str) -> str:
+        """验证 Redis URL 必须以 redis:// 或 rediss:// 开头"""
+        if not (v.startswith("redis://") or v.startswith("rediss://")):
+            raise ValueError("URL 必须以 redis:// 或 rediss:// 开头")
+        return v
+
+
 class SecurityConfig(BaseModel):
     """安全配置"""
     secret_key: str = Field(default="", description="JWT 签名密钥")
     jwt_algorithm: str = Field(default="HS256", description="JWT 算法")
-    jwt_expire_minutes: int = Field(default=480, ge=1, description="JWT 过期时间（分钟）")
+    jwt_expire_minutes: int = Field(default=60, ge=1, description="JWT 过期时间（分钟）")
     jwt_refresh_expire_days: int = Field(default=30, ge=1, description="刷新令牌过期时间（天）")
+    jwt_issuer: str = Field(default="rmfood", description="JWT 签发者")
+    jwt_audience: str = Field(default="rmfood-api", description="JWT 受众")
     password_min_length: int = Field(default=8, ge=4, description="密码最小长度")
     password_require_uppercase: bool = Field(default=True, description="密码是否需要大写字母")
     password_require_number: bool = Field(default=True, description="密码是否需要数字")
     cors_origins: List[str] = Field(default_factory=list, description="CORS 允许的源")
     cors_allow_credentials: bool = Field(default=True, description="是否允许携带凭证")
+    csrf_secret: str = Field(default="", description="CSRF double-submit secret")
 
     @field_validator("secret_key", mode="before")
     @classmethod
     def ensure_secret_key(cls, v: str) -> str:
+        from ..config import settings  # 延迟导入避免循环依赖
+
         if not v:
-            logger.warning("⚠️ SECRET_KEY 未设置，使用随机密钥（仅用于开发！）")
+            env = getattr(settings, 'app_env', None)
+            # 生产环境禁止使用随机 SECRET_KEY
+            if not env or env != Environment.DEVELOPMENT:
+                raise ValueError(
+                    "生产环境中必须设置 SECRET_KEY 环境变量。"
+                    "请通过环境变量 SECRET_KEY 设置强密钥（至少 32 字符）"
+                )
+            logger.warning(
+                "⚠️ SECRET_KEY 未设置（开发环境），仅用于调试，"
+                "在生产环境中此行为会被阻止"
+            )
             return secrets.token_urlsafe(32)
+
         if len(v) < 32:
             raise ValueError("SECRET_KEY 长度必须 >= 32 字符")
         return v
@@ -252,7 +365,7 @@ class LoggingConfig(BaseModel):
 class AIServiceConfig(BaseModel):
     """AI 服务配置"""
     api_key: str = Field(default="", description="AI 服务 API Key")
-    base_url: str = Field(default="", description="AI 服务 Base URL")
+    base_url: str = Field(alias="DATABASE_URL", default="", description="AI 服务 Base URL")
     model: str = Field(default="gpt-4", description="默认模型")
     max_tokens: int = Field(default=4096, ge=1, description="最大 Token 数")
     temperature: float = Field(default=0.7, ge=0.0, le=2.0, description="Temperature 参数")
@@ -295,8 +408,8 @@ class Settings(BaseSettings):
 
     使用示例:
         settings = Settings()  # 自动加载
-        print(settings.app.env)  # development
-        print(settings.database.url)  # postgresql://...
+        # print(settings.app.env)  # development
+        # print(settings.database.url)  # postgresql://...
     """
 
     # ─── 环境配置 ───
@@ -305,7 +418,7 @@ class Settings(BaseSettings):
 
     # ─── 初始管理员账号 ───
     admin_username: str = Field(default="admin", alias="ADMIN_USERNAME", description="初始管理员用户名")
-    admin_password: str = Field(default="admin123", alias="ADMIN_PASSWORD", description="初始管理员密码")
+    admin_password: str = Field(default="", alias="ADMIN_PASSWORD", description="初始管理员密码（生产环境必须通过环境变量设置）")
     admin_email: str = Field(default="admin@rmfood.com", alias="ADMIN_EMAIL", description="初始管理员邮箱")
 
     # ─── 子配置 ───
@@ -315,24 +428,27 @@ class Settings(BaseSettings):
     security: SecurityConfig = Field(default_factory=SecurityConfig)
     logging: LoggingConfig = Field(default_factory=LoggingConfig)
     ai_service: AIServiceConfig = Field(default_factory=AIServiceConfig)
+    encryption: "EncryptionConfig" = Field(default_factory=lambda: EncryptionConfig())  # type: ignore[valid-type]
     server: ServerConfig = Field(default_factory=ServerConfig)
     monitoring: MonitoringConfig = Field(default_factory=MonitoringConfig)
 
+    celery: CeleryConfig = Field(default_factory=CeleryConfig)
+
     model_config = SettingsConfigDict(
-        env_file=".env",
+        # Use the robustly calculated .env file path
+        env_file=_ENV_FILE_PATH,
         env_file_encoding="utf-8",
         extra="ignore",
         case_sensitive=False,
     )
 
     def __init__(self, **data):
-        # Pydantic-settings v2 需要显式加载 .env 文件
-        from dotenv import load_dotenv
-        load_dotenv(".env", override=False)
+        # Pydantic-settings v2 已自动处理 .env 文件加载 (通过 model_config env_file 配置)
+        # 不再需要手动调用 load_dotenv，避免工作目录相关问题
         super().__init__(**data)
         self._fix_nested_config()
-        self._validate_config()
-        self._apply_env_overrides()
+        self._apply_env_overrides()  # Apply env overrides BEFORE validation
+        self._validate_config()      # Now validate after all overrides are applied
 
     def _fix_nested_config(self) -> None:
         """
@@ -358,6 +474,12 @@ class Settings(BaseSettings):
         if os.environ.get("DATABASE__SSL_MODE"):
             self.database.ssl_mode = os.environ["DATABASE__SSL_MODE"]
 
+        # Celery 相关环境变量覆盖
+        if os.environ.get("CELERY__BROKER_URL"):
+            self.celery.broker_url = os.environ["CELERY__BROKER_URL"]
+        if os.environ.get("CELERY__RESULT_BACKEND"):
+            self.celery.result_backend = os.environ["CELERY__RESULT_BACKEND"]
+
         if os.environ.get("SECURITY__SECRET_KEY"):
             self.security.secret_key = os.environ["SECURITY__SECRET_KEY"]
         if os.environ.get("SECURITY__CORS_ORIGINS"):
@@ -379,6 +501,11 @@ class Settings(BaseSettings):
         """
         errors = []
 
+        # ===== 新增：生产环境 SECRET_KEY 强制性检查 =====
+        if self.app_env == Environment.PRODUCTION:
+            if not self.security.secret_key:
+                raise ValueError("生产环境中 SECRET_KEY 是必需的（通过环境变量 SECRET_KEY 设置）")
+
         # 数据库 URL 协议检查
         if self.database.url:
             if self.database.url.startswith("sqlite"):
@@ -393,9 +520,6 @@ class Settings(BaseSettings):
 
         # 生产环境检查
         if self.app_env == Environment.PRODUCTION:
-            if not self.security.secret_key or self.security.secret_key == "":
-                errors.append("生产环境必须设置 SECRET_KEY")
-
             if self.logging.level == "DEBUG":
                 errors.append("生产环境日志级别不能为 DEBUG")
 
@@ -405,33 +529,60 @@ class Settings(BaseSettings):
                     "建议使用 require 或 verify-full"
                 )
 
-            if self.admin_password == "admin123":
+            if self.admin_password in ("admin123", "change-this-password-in-production"):
                 errors.append(
-                    "生产环境管理员密码不能使用默认值 admin123，"
-                    "请设置 ADMIN_PASSWORD 环境变量"
+                    "生产环境管理员密码不能使用默认值，"
+                    "请设置 ADMIN_PASSWORD 环境变量为强密码"
                 )
+
+        # 开发/测试环境：如果 admin_password 为空，生成随机密码
+        if self.app_env != Environment.PRODUCTION and not self.admin_password:
+            logger.warning(
+                "Admin password is empty in development/test environment. Using randomly generated password."
+            )
+            import secrets
+            self.admin_password = secrets.token_urlsafe(16)
 
         if errors:
             error_msg = "\n".join(f"  - {e}" for e in errors)
             raise ValueError(f"配置校验失败:\n{error_msg}")
 
     def _apply_env_overrides(self) -> None:
-        """应用环境变量覆盖"""
-        # 特殊处理：在 Settings 级别设置的变量会覆盖子配置
+        """应用环境变量覆盖，使用安全的 URL 解析方法."""
+        from urllib.parse import urlparse, urlunparse, parse_qs
+
         for env_key, value in os.environ.items():
             if env_key.startswith("APP_"):
-                continue  # 跳过应用级配置
+                continue
 
-            # 自动映射常见的环境变量到对应配置
-            mappings = {
-                "POSTGRES_HOST": ("database.url", "host"),
-                "POSTGRES_PORT": ("database.url", "port"),
-                "REDIS_HOST": ("redis.url", "host"),
-                "SECRET_KEY": ("security.secret_key",),
-                "LOG_LEVEL": ("logging.level",),
-            }
+            # POSTGRES_HOST - 安全替换主机名
+            if env_key == "POSTGRES_HOST" and self.database.url:
+                parsed = urlparse(self.database.url)
+                if parsed.hostname:
+                    self.database.url = urlunparse(
+                        (parsed.scheme, parsed.username, value, parsed.port, parsed.path, parsed.query)
+                    )
 
-            # ... 实际实现应解析 dotted path 并更新嵌套配置
+            # POSTGRES_PORT - 安全替换端口
+            elif env_key == "POSTGRES_PORT" and self.database.url:
+                parsed = urlparse(self.database.url)
+                port_int = int(value) if value.isdigit() else parsed.port or 5432
+                self.database.url = urlunparse(
+                    (parsed.scheme, parsed.username, parsed.hostname, port_int, parsed.path, parsed.query)
+                )
+
+            # REDIS_HOST - 安全替换 Redis 主机名
+            elif env_key == "REDIS_HOST" and self.redis.url:
+                parsed = urlparse(self.redis.url)
+                self.redis.url = urlunparse((parsed.scheme, value, parsed.hostname, parsed.port, parsed.path, parsed.query))
+
+            # SECRET_KEY - 直接赋值
+            elif env_key == "SECRET_KEY":
+                self.security.secret_key = value
+
+            # LOG_LEVEL - 直接赋值
+            elif env_key == "LOG_LEVEL":
+                self.logging.level = value.upper()
 
     @computed_field
     @property
@@ -470,8 +621,17 @@ class Settings(BaseSettings):
 
     @property
     def redis_available(self) -> bool:
-        """Redis 是否可用（开发环境默认 False，避免依赖）"""
-        return False
+        """检测 Redis 是否可用"""
+        if not self.redis_url:
+            return False
+        try:
+            import redis
+            client = redis.from_url(self.redis_url, decode_responses=True, db=1)
+            client.ping()
+            return True
+        except Exception as e:
+            logger.debug("Redis 连接验证失败: %s", e)
+            return False
 
     @property
     def database_url(self) -> str:
@@ -511,7 +671,7 @@ class Settings(BaseSettings):
                 return url.split("/")[-1].split("?")[0]
         except (IndexError, ValueError):
             pass
-        return "rmfood"
+        return "rmfood_db"
 
     @property
     def database_read_replica_url(self) -> Optional[str]:
@@ -576,6 +736,11 @@ class Settings(BaseSettings):
         return result
 
 
+class EncryptionConfig(BaseModel):
+    """加密配置"""
+    encryption_key: Optional[str] = Field(default=None, alias="ENCRYPTION_KEY", description="API Key 加密密钥（生产环境必须设置，不使用 SECRET_KEY）")
+
+
 class AppInfoConfig(BaseModel):
     """应用信息配置"""
     name: str = "RMFOOD配方平台"
@@ -611,13 +776,13 @@ def reload_settings() -> Settings:
     return _settings
 
 
-# 为了方便，创建一个全局 settings 实例
-# 使用时: from app.core.config import settings
-try:
-    settings = get_settings()
-except Exception as e:
-    logger.warning(f"配置加载失败，使用默认值: {e}")
-    settings = Settings()
+# 注意：不再自动创建全局 settings 实例
+# 请显式调用 get_settings() 获取配置单例：
+#   from app.core.config import get_settings
+#   settings = get_settings()
+#
+# 这种延迟初始化方式避免在模块导入时抛出异常，
+# 使测试和其他模块可以更灵活地处理配置错误。
 
 
 # ═════════════════════════════════════════════
@@ -702,3 +867,33 @@ __all__ = [
     # 实例
     "settings",
 ]
+
+
+# ═════════════════════════════════════════════
+# 🟡 P3-5: 全局懒代理设置对象（向后兼容）
+# ═════════════════════════════════════════════
+
+
+class _LazySettings:
+    """懒代理 settings，首次访问属性时才初始化 Settings 实例。
+
+    这个对象提供与直接导入 settings 完全相同的接口，但延迟创建
+    actual Settings 实例，直到第一次属性访问发生。这避免了模块
+   导入时的潜在异常，并保持了向后兼容性。
+    """
+
+    def __getattr__(self, name):
+        # 直接调用同一模块中的 get_settings()，避免循环导入问题
+        return getattr(get_settings(), name)
+
+    def __repr__(self):
+        try:
+            # 直接调用同一模块中的 get_settings()，避免循环导入问题
+            return repr(get_settings())
+        except Exception as e:
+            logger.debug("Settings 序列化失败（非致命）: %s", e)
+            return "<LazySettings (Settings not yet initialized)>"
+
+
+# 创建懒代理实例，供 backward-compatible 导入使用
+settings = _LazySettings()

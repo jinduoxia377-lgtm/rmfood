@@ -32,7 +32,7 @@ from app.schemas.peptide_design import (
 from app.models.peptide_design import (
     PeptideDesignStatus,
 )
-from app.core.exceptions import (
+from app.core.api_framework.api_contract import NotFoundError, ValidationError as AppValidationError (
     ResourceNotFoundError,
     InvalidStatusTransitionError,
 )
@@ -41,7 +41,7 @@ from app.core.exceptions import (
 class TestTargetEffectsValidation:
     """目标活性类型验证测试"""
 
-    def setup_method(self):
+    def setup_method(self, method):
         self.db = MagicMock(spec=AsyncSession)
         self.service = PeptideDesignService(self.db)
 
@@ -70,6 +70,10 @@ class TestTargetEffectsValidation:
 
 class TestObjectiveWeightsValidation:
     """目标权重验证测试"""
+
+    def setup_method(self, method):
+        self.db = MagicMock(spec=AsyncMock)
+        self.service = PeptideDesignService(self.db)
 
     def test_valid_weights_sum_to_one(self):
         """权重总和为1.0应通过"""

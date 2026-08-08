@@ -39,23 +39,23 @@ const DEFAULT_FORMAT_OPTIONS: FormatOptions = {
 // 样式主题配置
 const STYLE_THEMES = {
   journal: {
-    primaryColor: '#1e40af',
-    secondaryColor: '#475569',
+    primaryColor: '#003E87',
+    secondaryColor: '#4B5563',
     accentColor: '#0ea5e9',
     fontFamily: 'SimSun',
     fontSize: 12,
     lineSpacing: 1.6,
   },
   thesis: {
-    primaryColor: '#7c3aed',
+    primaryColor: '#AF52DE',
     secondaryColor: '#4338ca',
-    accentColor: '#8b5cf6',
+    accentColor: '#AF52DE',
     fontFamily: 'SimSun',
     fontSize: 12,
     lineSpacing: 1.6,
   },
   research_report: {
-    primaryColor: '#15803d',
+    primaryColor: '#166534',
     secondaryColor: '#451a03',
     accentColor: '#78350f',
     fontFamily: 'SimSun',
@@ -329,7 +329,7 @@ export class AcademicReportFormatter {
 
       .keywords {
         text-align: right;
-        color: #475569;
+        color: #4B5563;
         margin-top: 1em;
       }
 
@@ -460,7 +460,7 @@ export class AcademicReportFormatter {
 
       .figure-description {
         font-size: 10pt;
-        color: #475569;
+        color: #4B5563;
         margin-top: 0.5em;
       }
 

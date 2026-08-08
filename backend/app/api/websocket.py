@@ -12,8 +12,8 @@ from typing import Dict, Any
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends, Query
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
-from ..core.websocket import connection_manager, WebSocketMessage
-from ..core.security import decode_access_token
+from ..core.realtime.websocket import connection_manager, WebSocketMessage
+from ..core._security_compat import decode_access_token
 from .deps import get_current_user
 from ..models import User
 
@@ -36,67 +36,70 @@ async def get_user_from_token(token: HTTPAuthorizationCredentials = Depends(secu
 @router.websocket("/ws")
 async def websocket_endpoint(
     websocket: WebSocket,
-    token: str = Query(None),
-    connection_id: str = Query(...),
-    client_info: str = Query(None)
+    connection_id: str = Query(..., description="唯一连接ID"),
+    client_info: str = Query(None, description="客户端信息JSON字符串")
 ):
-    """WebSocket连接端点（支持 URL token 和 HttpOnly Cookie 认证）"""
-    await websocket.accept()
+    """WebSocket连接端点（强制认证 — 仅允许 Cookie 传递 Token）
+
+    安全说明: 不再接受 query 参数中的 token，防止 Token 泄露到服务器日志、
+    代理日志和浏览器历史记录中。Token 必须通过 HttpOnly Cookie 传递。
+    """
+    # ── 仅允许 Cookie 认证 ──
+    ws_token = websocket.cookies.get("rmfood_access_token")
+
+    if not ws_token:
+        await websocket.close(code=4001, reason="Authentication required: no token provided")
+        logger.warning("WebSocket: 拒绝匿名连接 — 未提供认证凭据")
+        return
 
     user_data = None
     user_id = None
-
     try:
-        # 验证token：优先 URL 参数，其次 Cookie
-        ws_token = token
-        if not ws_token:
-            ws_token = websocket.cookies.get("rmfood_access_token")
+        payload = decode_access_token(ws_token)
+        user_data = payload
+        user_id = str(payload.get("sub", ""))
+        if not user_id:
+            raise ValueError("Token missing 'sub' field")
+    except Exception as e:
+        await websocket.close(code=4001, reason="Authentication required: invalid token")
+        logger.warning(f"WebSocket: 拒绝连接 — 无效token: {e}")
+        return
 
-        if ws_token:
-            try:
-                payload = decode_access_token(ws_token)
-                user_data = payload
-                user_id = payload.sub
-            except Exception as e:
-                logger.warning(f"无效的token，使用匿名连接: {e}")
-                user_data = None
-                user_id = f"anonymous_{connection_id[:8]}"
-        else:
-            logger.warning("WebSocket: 未提供认证凭据，使用匿名连接")
-            user_id = f"anonymous_{connection_id[:8]}"
-        
-        # 解析客户端信息
-        client_info_dict = {}
-        if client_info:
-            try:
-                client_info_dict = json.loads(client_info)
-            except json.JSONDecodeError:
-                pass
-        
-        # 连接到管理器（院士级修复: 检查返回值，若超限则已自动拒绝）
-        connected = await connection_manager.connect(
-            websocket=websocket,
-            user_id=user_id,
-            connection_id=connection_id,
-            client_info=client_info_dict
-        )
-        if not connected:
-            return  # 连接已被拒绝，管理器已发送错误消息并关闭
-        
-        # 发送用户在线状态
-        await connection_manager.broadcast(
-            WebSocketMessage.user_status(user_id, "online")
-        )
-        
-        # 处理消息
+    await websocket.accept()
+
+    # 解析客户端信息
+    client_info_dict = {}
+    if client_info:
+        try:
+            client_info_dict = json.loads(client_info)
+        except json.JSONDecodeError:
+            logger.debug("WebSocket 客户端信息 JSON 解析失败")
+
+    # 连接到管理器（院士级修复: 检查返回值，若超限则已自动拒绝）
+    connected = await connection_manager.connect(
+        websocket=websocket,
+        user_id=user_id,
+        connection_id=connection_id,
+        client_info=client_info_dict
+    )
+    if not connected:
+        return  # 连接已被拒绝，管理器已发送错误消息并关闭
+
+    # 发送用户在线状态
+    await connection_manager.broadcast(
+        WebSocketMessage.user_status(user_id, "online")
+    )
+
+    # 处理消息
+    try:
         while True:
             # 接收消息
             data = await websocket.receive_text()
-            
+
             try:
                 message = json.loads(data)
                 message_type = message.get("type")
-                
+
                 # 处理不同类型的消息
                 if message_type == "ping":
                     # 更新活跃时间（客户端主动 ping）
@@ -111,32 +114,32 @@ async def websocket_endpoint(
                     # 院士级修复[P1]: 处理服务端 ping 的 pong 响应
                     connection_manager.handle_pong(connection_id)
                     # 不回复，仅更新连接状态
-                
+
                 elif message_type == "subscribe":
                     # 处理订阅请求
                     await websocket.send_json(WebSocketMessage.success(
                         "订阅成功",
                         {"channels": message.get("channels", [])}
                     ))
-                
+
                 elif message_type == "unsubscribe":
                     # 处理取消订阅
                     await websocket.send_json(WebSocketMessage.success(
                         "取消订阅成功",
                         {"channels": message.get("channels", [])}
                     ))
-                
+
                 else:
                     # 其他消息类型
                     logger.info(f"收到消息: {message}")
                     await websocket.send_json(WebSocketMessage.success("消息已收到"))
-                    
+
             except json.JSONDecodeError:
                 await websocket.send_json(WebSocketMessage.error("无效的JSON格式"))
             except Exception as e:
                 logger.error(f"处理消息时出错: {e}")
-                await websocket.send_json(WebSocketMessage.error(f"处理消息时出错: {str(e)}"))
-                
+                await websocket.send_json(WebSocketMessage.error("处理消息时出错，请稍后重试"))
+
     except WebSocketDisconnect:
         logger.info(f"WebSocket连接断开: {user_id}")
     except Exception as e:

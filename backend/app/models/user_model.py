@@ -1,23 +1,23 @@
 """RMFOOD 用户模型"""
+import logging
 from datetime import datetime, timezone
 from typing import Optional
-from sqlalchemy import Integer, String, Boolean, DateTime, JSON, Enum
+from sqlalchemy import Integer, String, Text, Boolean, DateTime, JSON, Enum, BigInteger
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from ..core.database import Base
+from .base import Base
 from .enums import UserRole
+from app.models.utils import now_utc_mapped
 
-
-def _now() -> datetime:
-    return datetime.now(timezone.utc).replace(tzinfo=None)
+logger = logging.getLogger(__name__)
 
 
 class User(Base):
     __tablename__ = "users"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     username: Mapped[str] = mapped_column(String(50), unique=True, index=True, nullable=False)
     email: Mapped[str] = mapped_column(String(100), unique=True, index=True, nullable=False)
-    hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
+    hashed_password: Mapped[str] = mapped_column(Text, nullable=False)
     full_name: Mapped[str | None] = mapped_column(String(100))
     role: Mapped[UserRole] = mapped_column(Enum(UserRole), default=UserRole.RESEARCHER, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
@@ -25,14 +25,17 @@ class User(Base):
     phone: Mapped[str | None] = mapped_column(String(20))
     avatar_url: Mapped[str | None] = mapped_column(String(500))
     preferences: Mapped[dict | None] = mapped_column(JSON, default=dict)
-    
-    # ── 账号安全字段 (P1-2: 防暴力破解) ──
-    last_login: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)  # 最后登录时间
+
+    # ── 多租户隔离 ──────────────────────────────────────
+    organization_id: Mapped[int | None] = mapped_column(
+        BigInteger, nullable=True, index=True, comment="默认所属组织 ID"
+    )
+    last_login: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)  # 最后登录时间
     login_attempts: Mapped[int] = mapped_column(Integer, default=0, nullable=False)  # 登录失败次数
-    locked_until: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)  # 锁定截止时间
-    
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=_now)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_now, onupdate=_now)
+    locked_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)  # 锁定截止时间
+
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, onupdate=now_utc_mapped)
 
     created_formulas: Mapped[list["Formula"]] = relationship(
         "Formula", back_populates="creator", foreign_keys="[Formula.creator_id]"

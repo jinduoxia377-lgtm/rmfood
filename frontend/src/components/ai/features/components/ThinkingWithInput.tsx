@@ -128,11 +128,11 @@ const ThinkingStepItem: React.FC<{
 
   const getStatusColor = (status: ThinkingStep['status']) => {
     switch (status) {
-      case 'pending': return 'text-gray-400 border-gray-200 dark:text-gray-500 dark:border-gray-700'
-      case 'processing': return 'text-blue-500 border-blue-300 dark:text-blue-400 dark:border-blue-600'
-      case 'completed': return 'text-green-500 border-green-300 dark:text-green-400 dark:border-green-600'
-      case 'error': return 'text-red-500 border-red-300 dark:text-red-400 dark:border-red-600'
-      default: return 'text-gray-500 border-gray-300'
+      case 'pending': return 'text-neutral-400 border-neutral-200 dark:text-neutral-500 dark:border-neutral-700'
+      case 'processing': return 'text-secondary-500 border-blue-300 dark:text-secondary-400 dark:border-blue-600'
+      case 'completed': return 'text-success-500 border-green-300 dark:text-success-400 dark:border-green-600'
+      case 'error': return 'text-error-500 border-red-300 dark:text-error-400 dark:border-red-600'
+      default: return 'text-neutral-500 border-neutral-300'
     }
   }
 
@@ -144,8 +144,8 @@ const ThinkingStepItem: React.FC<{
   return (
     <div className={`
       p-4 rounded-xl border transition-all duration-300
-      ${isActive ? 'bg-blue-50/50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800 shadow-sm scale-[1.01]' : 'bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800'}
-      ${step.status === 'error' ? 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800' : ''}
+      ${isActive ? 'bg-secondary-50/50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800 shadow-sm scale-[1.01]' : 'bg-white dark:bg-neutral-900 border-neutral-100 dark:border-neutral-800'}
+      ${step.status === 'error' ? 'bg-error-50 dark:bg-red-950/20 border-red-200 dark:border-red-800' : ''}
     `}>
       {/* 标题行 */}
       <div className="flex items-start justify-between gap-3 mb-2">
@@ -161,10 +161,10 @@ const ThinkingStepItem: React.FC<{
             {step.status === 'error' && <XCircle className="w-4 h-4" />}
           </div>
           <div>
-            <h4 className="font-semibold text-gray-900 dark:text-white">
+            <h4 className="font-semibold text-neutral-900 dark:text-white">
               {step.title}
             </h4>
-            <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+            <div className="flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400">
               {showTimestamp && (
                 <span className="flex items-center gap-1">
                   <Clock className="w-3 h-3" />
@@ -182,24 +182,24 @@ const ThinkingStepItem: React.FC<{
         <Button
           variant="ghost"
           size="sm"
-          className="h-8 px-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+          className="h-8 px-2 text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200"
           onClick={() => copy(step.content)}
         >
-          {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+          {copied ? <Check className="w-4 h-4 text-success-500" /> : <Copy className="w-4 h-4" />}
         </Button>
       </div>
 
       {/* 内容区域 */}
       <div className="ml-11">
-        <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
+        <p className="text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed whitespace-pre-wrap">
           {displayContent}
         </p>
 
         {/* 代码块（如果有） */}
         {step.code && (
           <div className="mt-3 relative">
-            <div className="flex items-center justify-between bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-t-lg border border-b-0 border-gray-200 dark:border-gray-700">
-              <span className="text-xs font-mono text-gray-600 dark:text-gray-400">
+            <div className="flex items-center justify-between bg-neutral-100 dark:bg-neutral-800 px-3 py-1.5 rounded-t-lg border border-b-0 border-neutral-200 dark:border-neutral-700">
+              <span className="text-xs font-mono text-neutral-600 dark:text-neutral-400">
                 {step.language || 'code'}
               </span>
               <Button
@@ -212,7 +212,7 @@ const ThinkingStepItem: React.FC<{
                 复制
               </Button>
             </div>
-            <pre className="bg-gray-900 text-gray-100 p-4 rounded-b-lg text-sm font-mono overflow-x-auto border border-gray-700">
+            <pre className="bg-neutral-900 text-neutral-100 p-4 rounded-b-lg text-sm font-mono overflow-x-auto border border-neutral-700">
               <code>{step.code}</code>
             </pre>
           </div>
@@ -261,24 +261,24 @@ export const ThinkingWithInput: React.FC<ThinkingWithInputProps> = ({
   const isOverLimit = maxLength && charCount > maxLength
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-gray-950">
+    <div className="flex flex-col h-full bg-white dark:bg-slate-950">
       {/* ========== AI思考过程展示区 ========== */}
       {isThinkingVisible && (
-        <div className="border-b border-gray-200 dark:border-gray-800 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-950">
+        <div className="border-b border-neutral-200 dark:border-neutral-800 bg-gradient-to-b from-slate-50 to-white dark:from-slate-900 dark:to-slate-950">
           {/* 标题栏 */}
           <div
-            className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800/50 transition-colors"
+            className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-800/50 transition-colors"
             onClick={onToggleThinking}
           >
             <div className="flex items-center gap-2">
               <div className={`
                 w-2 h-2 rounded-full
-                ${isThinking ? 'bg-blue-500 animate-pulse' : 'bg-gray-400'}
+                ${isThinking ? 'bg-secondary-500 animate-pulse' : 'bg-neutral-400'}
               `} />
-              <h3 className="font-semibold text-gray-800 dark:text-gray-200">
+              <h3 className="font-semibold text-neutral-800 dark:text-neutral-200">
                 {isThinking ? 'AI正在思考...' : 'AI思考过程'}
               </h3>
-              <span className="text-xs text-gray-500 dark:text-gray-400">
+              <span className="text-xs text-neutral-500 dark:text-neutral-400">
                 ({thinkingSteps.length} 个步骤)
               </span>
             </div>
@@ -290,7 +290,7 @@ export const ThinkingWithInput: React.FC<ThinkingWithInputProps> = ({
             className="max-h-64 overflow-y-auto px-4 pb-4 space-y-3"
           >
             {thinkingSteps.length === 0 ? (
-              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+              <div className="text-center py-8 text-neutral-500 dark:text-neutral-400">
                 <p>发送消息后，AI的思考过程将在这里显示</p>
               </div>
             ) : (
@@ -310,17 +310,17 @@ export const ThinkingWithInput: React.FC<ThinkingWithInputProps> = ({
 
       {/* ========== 错误提示区 ========== */}
       {error && (
-        <div className="px-4 py-3 bg-red-50 dark:bg-red-950/30 border-b border-red-200 dark:border-red-900/50">
+        <div className="px-4 py-3 bg-error-50 dark:bg-red-950/30 border-b border-red-200 dark:border-red-900/50">
           <div className="flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+            <AlertCircle className="w-5 h-5 text-error-500 shrink-0 mt-0.5" />
             <div className="flex-1">
-              <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
+              <p className="text-sm text-error-800 dark:text-error-200">{error}</p>
             </div>
             {onClearError && (
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-8 px-2 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/50"
+                className="h-8 px-2 text-error-500 hover:bg-error-100 dark:hover:bg-error-900/50"
                 onClick={onClearError}
               >
                 <XCircle className="w-4 h-4" />
@@ -350,18 +350,18 @@ export const ThinkingWithInput: React.FC<ThinkingWithInputProps> = ({
       </div>
 
       {/* ========== 底部状态条（可选，可增强版本） ========== */}
-      <div className="px-4 py-2 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800">
-        <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+      <div className="px-4 py-2 bg-slate-50 dark:bg-neutral-900 border-t border-neutral-200 dark:border-neutral-800">
+        <div className="flex items-center justify-between text-xs text-neutral-500 dark:text-neutral-400">
           <div className="flex items-center gap-4">
             <span>字数: {charCount}/{maxLength}</span>
             {isOverLimit && (
-              <span className="text-red-500 flex items-center gap-1">
+              <span className="text-error-500 flex items-center gap-1">
                 <AlertCircle className="w-3 h-3" />
                 超出字数限制
               </span>
             )}
           </div>
-          <div className="text-gray-400">
+          <div className="text-neutral-400">
             按 Enter 发送，Shift+Enter 换行
           </div>
         </div>

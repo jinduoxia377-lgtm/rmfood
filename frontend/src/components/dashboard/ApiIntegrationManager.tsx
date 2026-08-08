@@ -161,11 +161,11 @@ export function ApiIntegrationManager({ className }: ApiIntegrationManagerProps)
   const getStatusColor = (status: IntegrationStatus) => {
     switch (status) {
       case 'active':
-        return 'text-green-600 dark:text-green-400'
+        return 'text-success-600 dark:text-success-400'
       case 'inactive':
-        return 'text-slate-500 dark:text-slate-400'
+        return 'text-neutral-500 dark:text-neutral-400'
       case 'error':
-        return 'text-red-600 dark:text-red-400'
+        return 'text-error-600 dark:text-error-400'
     }
   }
 
@@ -198,7 +198,7 @@ export function ApiIntegrationManager({ className }: ApiIntegrationManagerProps)
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Settings size={20} className="text-blue-600 dark:text-blue-400" />
+            <Settings size={20} className="text-secondary-600 dark:text-secondary-400" />
             <CardTitle as="h3" className="text-sm font-bold">API集成管理</CardTitle>
           </div>
           <Button
@@ -223,7 +223,7 @@ export function ApiIntegrationManager({ className }: ApiIntegrationManagerProps)
             <div className="max-h-96 overflow-y-auto border rounded-lg">
               {integrations.length === 0 ? (
                 <div className="py-8 text-center">
-                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                  <p className="text-sm text-neutral-500 dark:text-neutral-400">
                     暂无API集成，请点击右上角添加
                   </p>
                 </div>
@@ -233,33 +233,33 @@ export function ApiIntegrationManager({ className }: ApiIntegrationManagerProps)
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="text-lg">{getTypeIcon(integration.type)}</span>
-                        <p className="text-sm font-medium text-slate-900 dark:text-white truncate">
+                        <p className="text-sm font-medium text-neutral-900 dark:text-white truncate">
                           {integration.name}
                         </p>
                         <Badge className={getStatusColor(integration.status)} size="sm">
                           {getStatusText(integration.status)}
                         </Badge>
                       </div>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-1">
+                      <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate mt-1">
                         {integration.baseUrl}
                       </p>
                       {integration.errorMessage && (
-                        <p className="text-xs text-red-500 mt-1">
+                        <p className="text-xs text-error-500 mt-1">
                           错误: {integration.errorMessage}
                         </p>
                       )}
                       <div className="flex items-center gap-2 mt-2">
-                        <span className="text-xs text-slate-400">
+                        <span className="text-xs text-neutral-400">
                           认证: {integration.authType}
                         </span>
-                        <span className="text-xs text-slate-300 dark:text-slate-600">·</span>
-                        <span className="text-xs text-slate-400">
+                        <span className="text-xs text-neutral-300 dark:text-neutral-600">·</span>
+                        <span className="text-xs text-neutral-400">
                           同步: {integration.syncConfig.enabled ? `${integration.syncConfig.interval}分钟` : '禁用'}
                         </span>
                         {integration.syncConfig.lastSync && (
                           <>
-                            <span className="text-xs text-slate-300 dark:text-slate-600">·</span>
-                            <span className="text-xs text-slate-400">
+                            <span className="text-xs text-neutral-300 dark:text-neutral-600">·</span>
+                            <span className="text-xs text-neutral-400">
                               上次同步: {new Date(integration.syncConfig.lastSync).toLocaleString()}
                             </span>
                           </>
@@ -327,21 +327,21 @@ export function ApiIntegrationManager({ className }: ApiIntegrationManagerProps)
                       </div>
                       <div className="flex items-center gap-2">
                         {integration.syncConfig.enabled && (
-                          <span className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                          <span className="text-xs text-neutral-500 dark:text-neutral-400 flex items-center gap-1">
                             <Clock size={12} />
                             下次同步: {integration.syncConfig.nextSync ? new Date(integration.syncConfig.nextSync).toLocaleTimeString() : '计算中'}
                           </span>
                         )}
                       </div>
                     </div>
-                    <div className="text-xs text-slate-500 dark:text-slate-400 space-y-1">
+                    <div className="text-xs text-neutral-500 dark:text-neutral-400 space-y-1">
                       <p>URL: {integration.baseUrl}</p>
                       <p>认证: {integration.authType}</p>
                       {integration.syncConfig.lastSync && (
                         <p>上次同步: {new Date(integration.syncConfig.lastSync).toLocaleString()}</p>
                       )}
                       {integration.errorMessage && (
-                        <p className="text-red-500">错误: {integration.errorMessage}</p>
+                        <p className="text-error-500">错误: {integration.errorMessage}</p>
                       )}
                     </div>
                   </div>
@@ -354,7 +354,7 @@ export function ApiIntegrationManager({ className }: ApiIntegrationManagerProps)
         {/* 创建集成对话框 */}
         {isCreateDialogOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-slate-800 rounded-lg p-6 max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="bg-white dark:bg-neutral-800 rounded-lg p-6 max-w-3xl w-full max-h-[90vh] overflow-y-auto">
               <h3 className="text-lg font-medium mb-4">添加API集成</h3>
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -414,7 +414,7 @@ export function ApiIntegrationManager({ className }: ApiIntegrationManagerProps)
 
               {/* 认证配置 */}
               {newIntegration.authType === 'api_key' && (
-                <div className="p-4 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+                <div className="p-4 rounded-lg bg-slate-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700">
                   <h4 className="text-sm font-medium mb-2">API Key 配置</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
@@ -442,7 +442,7 @@ export function ApiIntegrationManager({ className }: ApiIntegrationManagerProps)
               )}
 
               {newIntegration.authType === 'basic' && (
-                <div className="p-4 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+                <div className="p-4 rounded-lg bg-slate-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700">
                   <h4 className="text-sm font-medium mb-2">Basic Auth 配置</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
@@ -471,7 +471,7 @@ export function ApiIntegrationManager({ className }: ApiIntegrationManagerProps)
               )}
 
               {newIntegration.authType === 'bearer' && (
-                <div className="p-4 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+                <div className="p-4 rounded-lg bg-slate-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700">
                   <h4 className="text-sm font-medium mb-2">Bearer Token 配置</h4>
                   <div>
                     <label>Token</label>
@@ -487,7 +487,7 @@ export function ApiIntegrationManager({ className }: ApiIntegrationManagerProps)
               )}
 
               {newIntegration.authType === 'oauth2' && (
-                <div className="p-4 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+                <div className="p-4 rounded-lg bg-slate-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700">
                   <h4 className="text-sm font-medium mb-2">OAuth 2.0 配置</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
@@ -535,7 +535,7 @@ export function ApiIntegrationManager({ className }: ApiIntegrationManagerProps)
                 </div>
               )}
 
-              <div className="border-t border-slate-200 dark:border-slate-700 my-4" />
+              <div className="border-t border-neutral-200 dark:border-neutral-700 my-4" />
 
               {/* 同步配置 */}
               <div>
@@ -567,7 +567,7 @@ export function ApiIntegrationManager({ className }: ApiIntegrationManagerProps)
                 )}
               </div>
 
-              <div className="border-t border-slate-200 dark:border-slate-700 my-4" />
+              <div className="border-t border-neutral-200 dark:border-neutral-700 my-4" />
 
               {/* 数据映射 */}
               <div>
@@ -638,7 +638,7 @@ export function ApiIntegrationManager({ className }: ApiIntegrationManagerProps)
         {/* 编辑集成对话框 */}
         {isEditDialogOpen && editingIntegration && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-slate-800 rounded-lg p-6 max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="bg-white dark:bg-neutral-800 rounded-lg p-6 max-w-3xl w-full max-h-[90vh] overflow-y-auto">
               <h3 className="text-lg font-medium mb-4">编辑API集成</h3>
             {editingIntegration && (
               <div className="space-y-4">
@@ -699,7 +699,7 @@ export function ApiIntegrationManager({ className }: ApiIntegrationManagerProps)
 
                 {/* 认证配置 */}
                 {editingIntegration.authType === 'api_key' && (
-                  <div className="p-4 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+                  <div className="p-4 rounded-lg bg-slate-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700">
                     <h4 className="text-sm font-medium mb-2">API Key 配置</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
@@ -728,7 +728,7 @@ export function ApiIntegrationManager({ className }: ApiIntegrationManagerProps)
 
                 {/* 其他认证类型配置... */}
 
-                <div className="border-t border-slate-200 dark:border-slate-700 my-4" />
+                <div className="border-t border-neutral-200 dark:border-neutral-700 my-4" />
 
                 {/* 同步配置 */}
                 <div>
@@ -760,7 +760,7 @@ export function ApiIntegrationManager({ className }: ApiIntegrationManagerProps)
                   )}
                 </div>
 
-                <div className="border-t border-slate-200 dark:border-slate-700 my-4" />
+                <div className="border-t border-neutral-200 dark:border-neutral-700 my-4" />
 
                 {/* 数据映射 */}
                 <div>
@@ -838,35 +838,35 @@ export function ApiIntegrationManager({ className }: ApiIntegrationManagerProps)
         {/* 测试结果对话框 */}
         {testResult && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-slate-800 rounded-lg p-6 max-w-md w-full">
+            <div className="bg-white dark:bg-neutral-800 rounded-lg p-6 max-w-md w-full">
               <h3 className="text-lg font-medium mb-4">测试结果</h3>
               <div className="space-y-4">
-                <div className={`p-4 rounded-lg border ${testResult.success ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'}`}>
+                <div className={`p-4 rounded-lg border ${testResult.success ? 'bg-success-50 dark:bg-success-900/20 border-green-200 dark:border-green-800' : 'bg-error-50 dark:bg-error-900/20 border-red-200 dark:border-red-800'}`}>
                   <div className="flex items-center gap-2">
                     {testResult.success ? (
-                      <CheckCircle2 size={24} className="text-green-600 dark:text-green-400" />
+                      <CheckCircle2 size={24} className="text-success-600 dark:text-success-400" />
                     ) : (
-                      <AlertCircle size={24} className="text-red-600 dark:text-red-400" />
+                      <AlertCircle size={24} className="text-error-600 dark:text-error-400" />
                     )}
-                    <h4 className={`text-lg font-medium ${testResult.success ? 'text-green-800 dark:text-green-300' : 'text-red-800 dark:text-red-300'}`}>
+                    <h4 className={`text-lg font-medium ${testResult.success ? 'text-success-800 dark:text-success-300' : 'text-error-800 dark:text-error-300'}`}>
                       {testResult.success ? '测试成功' : '测试失败'}
                     </h4>
                   </div>
-                  <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+                  <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-400">
                     {testResult.message}
                   </p>
                   {testResult.responseTime && (
-                    <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                    <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
                       响应时间: {testResult.responseTime}ms
                     </p>
                   )}
                   {testResult.statusCode && (
-                    <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                    <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
                       状态码: {testResult.statusCode}
                     </p>
                   )}
                   {testResult.error && (
-                    <p className="mt-1 text-xs text-red-500 dark:text-red-400">
+                    <p className="mt-1 text-xs text-error-500 dark:text-error-400">
                       错误: {testResult.error}
                     </p>
                   )}

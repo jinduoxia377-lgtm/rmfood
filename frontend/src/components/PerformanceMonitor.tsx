@@ -63,11 +63,11 @@ export const PerformanceBadge = ({ metrics }: { metrics: PerformanceMetrics }) =
   const getStatusColor = (value: number, target: number, reverse = false) => {
     const isGood = reverse ? value >= target : value <= target;
     const isWarning = reverse ? value >= target * 0.8 : value <= target * 1.5;
-    return isGood ? 'text-green-500' : isWarning ? 'text-yellow-500' : 'text-red-500';
+    return isGood ? 'text-success-500' : isWarning ? 'text-yellow-500' : 'text-error-500';
   };
 
   return (
-    <div className="fixed bottom-4 right-4 bg-gray-900/90 text-white p-4 rounded-lg shadow-xl z-50 text-sm">
+    <div className="fixed bottom-4 right-4 bg-neutral-900/90 text-white p-4 rounded-lg shadow-xl z-50 text-sm">
       <h3 className="font-bold mb-2 text-cyan-400">⚡ 性能监控</h3>
       <div className="space-y-1">
         <div className={getStatusColor(metrics.fps, 30, true)}>

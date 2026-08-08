@@ -12,7 +12,8 @@ import {
 } from 'recharts'
 import { aiApi } from '@/api/ai'
 import type { GeneticGenerateResponse } from '@/api/ai'
-import { EFFECT_OPTIONS } from '@/config/ai/effects'
+import { EFFECT_OPTIONS, DEFAULT_EFFECT } from '@/config/ai/effects'
+import { getAuthToken } from '@/hooks/useSSEAuth'
 import {
   Card,
   Button,
@@ -47,7 +48,25 @@ import {
   Download,
   Wifi,
   WifiOff,
+  SlidersHorizontal,
 } from 'lucide-react'
+
+// ─── 权重选项 ───
+
+interface WeightOption {
+  key: string
+  label: string
+  default: number
+}
+
+const WEIGHT_OPTIONS: WeightOption[] = [
+  { key: 'efficacy', label: '功效', default: 0.30 },
+  { key: 'safety', label: '安全', default: 0.25 },
+  { key: 'taste', label: '口感', default: 0.10 },
+  { key: 'cost', label: '成本', default: 0.15 },
+  { key: 'synergy', label: '协同', default: 0.10 },
+  { key: 'stability', label: '稳定', default: 0.10 },
+]
 
 // ─── 类型定义 ───
 
@@ -130,6 +149,23 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
   const [excludedInput, setExcludedInput] = useState('')
   const [maxCost, setMaxCost] = useState<number | null>(null)
 
+  // ── 权重调节 ──
+  const [adjustedWeights, setAdjustedWeights] = useState<Record<string, number>>({})
+
+  // ── 混合模式 ──
+  const [hybridMode, setHybridMode] = useState(true)
+  const [warmStartEnabled, setWarmStartEnabled] = useState(true)
+  const [totalDosage, setTotalDosage] = useState(100)
+  const [nutritionConstraints, setNutritionConstraints] = useState<Array<{
+    nutrient: string
+    min_value: number | null
+    max_value: number | null
+  }>>([
+    { nutrient: 'protein', min_value: 5, max_value: null },
+    { nutrient: 'fat', min_value: null, max_value: 30 },
+    { nutrient: 'sodium', min_value: null, max_value: 400 },
+  ])
+
   // ── 流式模式 ──
   const [isStreamingMode, setIsStreamingMode] = useState(true)
   const [liveHistory, setLiveHistory] = useState<GenerationRecord[]>([])
@@ -175,20 +211,33 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
         constraints.max_cost = maxCost
       }
 
-      addLog(`📊 种群大小=${params.populationSize}, 代数=${params.generations}, 变异率=${params.mutationRate}`, 'info')
+      addLog(`📊 种群大小=${params.populationSize}, 代数=${params.generations}, 模式=${hybridMode ? 'BinaryGA+MILP' : '标准GA'}`, 'info')
 
-      return await aiApi.generateGenetic(
-        {
-          targetEffects: selectedEffects,
-          ...params,
-          constraints: Object.keys(constraints).length > 0 ? constraints : undefined,
-        },
-        controller.signal,
-      )
+      if (hybridMode) {
+        return await aiApi.generateGeneticHybrid(
+          {
+            targetEffects: selectedEffects,
+            ...params,
+            constraints: Object.keys(constraints).length > 0 ? constraints : undefined,
+            totalDosage,
+            warmStartEnabled,
+          },
+          controller.signal,
+        )
+      } else {
+        return await aiApi.generateGenetic(
+          {
+            targetEffects: selectedEffects,
+            ...params,
+            constraints: Object.keys(constraints).length > 0 ? constraints : undefined,
+          },
+          controller.signal,
+        )
+      }
     },
     onSuccess: (data) => {
-      addLog(`✅ 进化完成！共 ${data.total_generations} 代，最佳得分 ${data.best_score.toFixed(4)}`, 'info')
-      setResult(data)
+      addLog(`进化完成！共 ${data.total_generations} 代，最佳得分 ${data.best_score.toFixed(4)}`, 'info')
+      setResult(data as any)
       abortRef.current = null
     },
     onError: (error) => {
@@ -215,8 +264,12 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
       target_effects: selectedEffects,
       ...params,
       constraints: Object.keys(constraints).length > 0 ? constraints : undefined,
+      hybrid_mode: hybridMode,
+      total_dosage: hybridMode ? totalDosage : undefined,
+      nutrition_constraints: hybridMode ? nutritionConstraints : undefined,
+      warm_start_enabled: warmStartEnabled,
     }
-  }, [selectedEffects, params, excludeHerbs, maxCost])
+  }, [selectedEffects, params, excludeHerbs, maxCost, hybridMode, totalDosage, nutritionConstraints, warmStartEnabled])
 
   // ── SSE 流式执行 ──
   const executeStreaming = useCallback(async () => {
@@ -233,10 +286,12 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
     addLog(`📊 种群大小=${params.populationSize}, 代数=${params.generations}, 变异率=${params.mutationRate}`, 'info')
 
     try {
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token') || ''
+      const token = getAuthToken()
       const requestBody = buildRequestBody()
 
-      const response = await fetch('/api/v1/ai/generate/genetic/stream', {
+      const response = await fetch(hybridMode
+        ? '/api/v1/ai/generate/genetic/hybrid/stream'
+        : '/api/v1/ai/generate/genetic/stream', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -244,6 +299,8 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
         },
         body: JSON.stringify(requestBody),
         signal: controller.signal,
+        // 🔒 关键修复：启用 credentials 使浏览器自动携带 HttpOnly Cookie
+        credentials: 'include',
       })
 
       if (!response.ok) {
@@ -316,6 +373,9 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
         addLog(`❌ 服务端错误：${errMsg}`, 'error')
         break
       }
+      case 'done':
+        addLog('🔌 服务端连接已关闭', 'info')
+        break
       default:
         break
     }
@@ -351,6 +411,21 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
   const removeExcludedIngredient = useCallback((item: string) => {
     setExcludeHerbs(prev => prev.filter(i => i !== item))
   }, [])
+
+  // ── 权重调节 ──
+  const handleWeightChange = useCallback((key: string, value: number) => {
+    setAdjustedWeights(prev => ({ ...prev, [key]: value }))
+  }, [])
+
+  const normalizeWeights = useCallback(() => {
+    const total = Object.values(adjustedWeights).reduce((a, b) => a + b, 0)
+    if (total <= 0) return
+    const normalized: Record<string, number> = {}
+    Object.entries(adjustedWeights).forEach(([k, v]) => {
+      normalized[k] = v / total
+    })
+    setAdjustedWeights(normalized)
+  }, [adjustedWeights])
 
   // ── 参数合理性校验 ──
   const validateParams = useCallback(() => {
@@ -442,11 +517,16 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
     setIsStreaming(false)
     setParamWarning(null)
     setParamError(null)
+    setWarmStartEnabled(true)
   }
 
   // ── 计算属性 ──
-  const canRun = selectedEffects.length > 0 && !mutation.isPending && !isStreaming
+  // 允许不选功效：后端 GAConfig.__post_init__ 会兜底 ["免疫调节"]
+  const canRun = !mutation.isPending && !isStreaming
   const isRunning = mutation.isPending || isStreaming
+  const effectsHint = selectedEffects.length === 0
+    ? '未选择功效，将使用默认值（免疫调节）'
+    : `已选择 ${selectedEffects.length} 个功效`
 
   // ── 图表数据准备（流式模式使用 liveHistory，非流式使用 result.history）──
   const chartData = isStreamingMode && liveHistory.length > 0 ? liveHistory : result?.history ?? []
@@ -467,14 +547,14 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
             <Dna className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">遗传算法配方生成</h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400">基于进化计算智能搜索最优配方组合</p>
+            <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">遗传算法配方生成</h2>
+            <p className="text-sm text-neutral-500 dark:text-neutral-400">基于进化计算智能搜索最优配方组合</p>
           </div>
         </div>
 
         {/* --- 目标功效选择 --- */}
         <section aria-labelledby="ga-effects-heading" className="mb-6">
-          <h3 id="ga-effects-heading" className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2 mb-3">
+          <h3 id="ga-effects-heading" className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-2 mb-3">
             <Target className="w-4 h-4 text-violet-500" />
             目标功效
             <Badge variant="neutral" size="sm">{selectedEffects.length} 已选</Badge>
@@ -493,21 +573,27 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
                 aria-checked={selectedEffects.includes(effect.id)}
                 aria-label={`功效: ${effect.label}`}
                 tabIndex={0}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 ${
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 dark:focus:ring-offset-slate-800 ${
                   selectedEffects.includes(effect.id)
                     ? 'bg-violet-500 text-white shadow-sm shadow-violet-500/25'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                    : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'
                 }`}
               >
                 {effect.label}
               </button>
             ))}
           </div>
+          {selectedEffects.length === 0 && (
+            <p className="text-xs text-warning-600 dark:text-warning-400 mt-2 flex items-center gap-1">
+              <Info className="w-3 h-3" />
+              未选择功效时将使用默认值（免疫调节），建议至少选择一个目标
+            </p>
+          )}
         </section>
 
         {/* --- 预设按钮 --- */}
         <div className="mb-5">
-          <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">快速预设</span>
+          <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">快速预设</span>
           <div className="flex flex-wrap gap-2 mt-2" role="group" aria-label="算法参数预设">
             {PRESETS.map(preset => (
               <Button
@@ -525,7 +611,7 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
 
         {/* --- 算法参数网格 --- */}
         <section aria-labelledby="ga-params-heading" className="mb-6">
-          <h3 id="ga-params-heading" className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2 mb-4">
+          <h3 id="ga-params-heading" className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-2 mb-4">
             <Settings2 className="w-4 h-4 text-violet-500" />
             算法参数
           </h3>
@@ -606,17 +692,122 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
           </div>
         </section>
 
+        {/* --- 混合模式开关 --- */}
+        <section aria-labelledby="ga-hybrid-heading" className="mb-6">
+          <h3 id="ga-hybrid-heading" className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-2 mb-3">
+            <Dna className="w-4 h-4 text-violet-500" />
+            混合优化模式
+            <Badge variant={hybridMode ? "success" : "neutral"} size="sm">
+              {hybridMode ? 'BinaryGA+MILP' : '标准GA'}
+            </Badge>
+          </h3>
+          <div className="flex items-center gap-3 mb-3">
+            <Switch
+              checked={hybridMode}
+              onCheckedChange={setHybridMode}
+              label={hybridMode ? '已开启' : '已关闭'}
+              disabled={isRunning}
+            />
+            <span className="text-xs text-neutral-500 dark:text-neutral-400">
+              {hybridMode
+                ? '外层BinaryGA选择药材 + 内层MILP精确配比'
+                : '标准实数编码遗传算法'}
+            </span>
+          </div>
+
+          {hybridMode && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+              {/* 总剂量 */}
+              <div>
+                <label htmlFor="ga-total-dosage" className="text-sm text-neutral-600 dark:text-neutral-400 block mb-2">
+                  总剂量 (g)
+                </label>
+                <Input
+                  id="ga-total-dosage"
+                  type="number"
+                  value={totalDosage}
+                  onChange={(e) => setTotalDosage(Number(e.target.value))}
+                  placeholder="100"
+                  min={10}
+                  max={500}
+                  aria-label="总剂量"
+                />
+              </div>
+
+              {/* Warm Start */}
+              <div className="flex items-end">
+                <label className="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400">
+                  <input
+                    type="checkbox"
+                    checked={warmStartEnabled}
+                    onChange={(e) => setWarmStartEnabled(e.target.checked)}
+                    disabled={isRunning}
+                    className="rounded border-neutral-300"
+                  />
+                  启用Warm Start (上代最优配比初值)
+                </label>
+              </div>
+            </div>
+          )}
+        </section>
+
+        {/* --- 营养约束（可选）--- */}
+        {hybridMode && (
+          <section aria-labelledby="ga-nutrition-heading" className="mb-6">
+            <h3 id="ga-nutrition-heading" className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-2 mb-3">
+              <FlaskConical className="w-4 h-4 text-success-500" />
+              营养约束
+              <span className="text-xs font-normal text-neutral-400">(每100g)</span>
+            </h3>
+            <div className="space-y-2">
+              {nutritionConstraints.map((constraint, idx) => (
+                <div key={idx} className="flex items-center gap-3 p-2 rounded-lg bg-slate-50 dark:bg-neutral-800/50">
+                  <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400 w-24">
+                    {constraint.nutrient}
+                  </span>
+                  <span className="text-xs text-neutral-400">≥</span>
+                  <Input
+                    type="number"
+                    value={constraint.min_value ?? ''}
+                    onChange={(e) => {
+                      const newConstraints = [...nutritionConstraints]
+                      newConstraints[idx].min_value = e.target.value ? Number(e.target.value) : null
+                      setNutritionConstraints(newConstraints)
+                    }}
+                    placeholder="下限"
+                    className="w-24"
+                    aria-label={`${constraint.nutrient} 下限`}
+                  />
+                  <span className="text-xs text-neutral-400">≤</span>
+                  <Input
+                    type="number"
+                    value={constraint.max_value ?? ''}
+                    onChange={(e) => {
+                      const newConstraints = [...nutritionConstraints]
+                      newConstraints[idx].max_value = e.target.value ? Number(e.target.value) : null
+                      setNutritionConstraints(newConstraints)
+                    }}
+                    placeholder="上限"
+                    className="w-24"
+                    aria-label={`${constraint.nutrient} 上限`}
+                  />
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
         {/* --- 约束条件（可选）--- */}
         <section aria-labelledby="ga-constraints-heading">
-          <h3 id="ga-constraints-heading" className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2 mb-4">
+          <h3 id="ga-constraints-heading" className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-2 mb-4">
             <Shield className="w-4 h-4 text-violet-500" />
             约束条件
-            <span className="text-xs font-normal text-gray-400">(可选)</span>
+            <span className="text-xs font-normal text-neutral-400">(可选)</span>
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* 排除药材 */}
             <div>
-              <label className="text-sm text-gray-600 dark:text-gray-400 block mb-2">排除药材</label>
+              <label className="text-sm text-neutral-600 dark:text-neutral-400 block mb-2">排除药材</label>
               <div className="flex gap-2">
                 <Input
                   value={excludedInput}
@@ -631,12 +822,12 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
               {excludeHerbs.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 mt-2" role="list" aria-label="已排除的药材列表">
                   {excludeHerbs.map(item => (
-                    <Badge key={item} variant="danger" size="sm" className="flex items-center gap-1 cursor-pointer" role="listitem">
+                    <Badge key={item} variant="warning" size="sm" className="flex items-center gap-1 cursor-pointer" role="listitem">
                       {item}
                       <button
                         onClick={() => removeExcludedIngredient(item)}
                         aria-label={`移除排除项: ${item}`}
-                        className="hover:text-red-700 focus:outline-none focus:ring-1 focus:ring-red-400 rounded"
+                        className="hover:text-error-700 focus:outline-none focus:ring-1 focus:ring-red-400 rounded"
                       >
                         ×
                       </button>
@@ -647,7 +838,7 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
             </div>
             {/* 最大成本 */}
             <div>
-              <label htmlFor="ga-max-cost" className="text-sm text-gray-600 dark:text-gray-400 block mb-2">最大成本（元）</label>
+              <label htmlFor="ga-max-cost" className="text-sm text-neutral-600 dark:text-neutral-400 block mb-2">最大成本（元）</label>
               <Input
                 id="ga-max-cost"
                 type="number"
@@ -663,6 +854,47 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
             </div>
           </div>
         </section>
+
+        {/* ═══ 权重微调 ═══ */}
+        <details className="group rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 overflow-hidden mt-4">
+          <summary className="flex items-center gap-2 cursor-pointer px-5 py-4 hover:bg-slate-50 dark:hover:bg-neutral-800/50 transition-colors select-none list-none [&::-webkit-details-marker]:hidden">
+            <SlidersHorizontal className="w-4 h-4 text-violet-500 flex-shrink-0" aria-hidden="true" />
+            <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">权重微调</span>
+            <span className="ml-auto text-xs text-muted-foreground group-open:rotate-180 transition-transform duration-200">▼</span>
+          </summary>
+          <div className="px-5 pb-5 space-y-3 border-t border-neutral-100 dark:border-neutral-800 pt-4">
+            {WEIGHT_OPTIONS.map((opt) => {
+              const currentWeight = adjustedWeights[opt.key] ?? opt.default
+              return (
+                <div key={opt.key} className="flex items-center gap-3">
+                  <span className="w-20 text-sm truncate text-neutral-600 dark:text-neutral-400">{opt.label}</span>
+                  <Slider
+                    value={currentWeight}
+                    min={0.01}
+                    max={1.0}
+                    step={0.01}
+                    onChange={(v) => handleWeightChange(opt.key, v)}
+                    className="flex-1"
+                  />
+                  <span className="w-14 text-right text-sm font-mono tabular-nums text-neutral-700 dark:text-neutral-300">
+                    {currentWeight.toFixed(2)}
+                  </span>
+                </div>
+              )
+            })}
+            <div className="flex justify-between items-center pt-2 border-t border-neutral-100 dark:border-neutral-800">
+              <span className="text-xs text-muted-foreground">
+                权重总和:{' '}
+                {Object.values(adjustedWeights).length > 0
+                  ? Object.values(adjustedWeights).reduce((a, b) => a + b, 0).toFixed(2)
+                  : WEIGHT_OPTIONS.reduce((a, o) => a + o.default, 0).toFixed(2)}
+              </span>
+              <Button variant="ghost" size="sm" onClick={normalizeWeights}>
+                自动归一化
+              </Button>
+            </div>
+          </div>
+        </details>
       </Card>
 
       {/* ══════════════════════════════
@@ -670,14 +902,14 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
          ══════════════════════════════ */}
       <Card className="p-6">
         {/* 流式模式开关 */}
-        <div className="flex items-center justify-between mb-5 pb-4 border-b border-gray-100 dark:border-gray-800">
+        <div className="flex items-center justify-between mb-5 pb-4 border-b border-neutral-100 dark:border-neutral-800">
           <div className="flex items-center gap-2">
             {isStreamingMode ? (
               <Wifi className="w-4 h-4 text-violet-500" aria-hidden="true" />
             ) : (
-              <WifiOff className="w-4 h-4 text-gray-400" aria-hidden="true" />
+              <WifiOff className="w-4 h-4 text-neutral-400" aria-hidden="true" />
             )}
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">实时流式模式</span>
+            <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">实时流式模式</span>
           </div>
           <Switch
             checked={isStreamingMode}
@@ -689,7 +921,7 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
 
         {/* 参数合理性警告/错误 */}
         {paramError && (
-          <Alert variant="danger" className="mb-4">
+          <Alert variant="warning" className="mb-4">
             <AlertTriangle className="w-4 h-4" aria-hidden="true" />
             <AlertTitle>参数校验不通过</AlertTitle>
             <AlertDescription>{paramError}</AlertDescription>
@@ -710,7 +942,8 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
                 icon={<Play className="w-4 h-4" />}
                 disabled={!canRun}
                 onClick={handleStart}
-                aria-label={canRun ? '开始遗传算法进化' : '请先选择至少一个目标功效'}
+                aria-label={canRun ? '开始遗传算法进化' : '未知'}
+                title={effectsHint}
               >
                 开始进化
               </Button>
@@ -751,7 +984,7 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
               </Badge>
             )}
             {mutation.isError && (
-              <Badge variant="danger" className="flex items-center gap-1">
+              <Badge variant="warning" className="flex items-center gap-1">
                 <AlertTriangle className="w-3 h-3" aria-hidden="true" />
                 运行失败
               </Badge>
@@ -761,7 +994,7 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
 
         {/* 错误提示 */}
         {mutation.isError && !isRunning && (
-          <Alert variant="danger" className="mb-4">
+          <Alert variant="warning" className="mb-4">
             <AlertTriangle className="w-4 h-4" aria-hidden="true" />
             <AlertTitle>运行失败</AlertTitle>
             <AlertDescription>
@@ -773,13 +1006,13 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
         {/* 实时日志区域 */}
         <div
           ref={logContainerRef}
-          className="bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700 p-3 h-40 overflow-y-auto font-mono text-xs space-y-1"
+          className="bg-slate-50 dark:bg-neutral-900/50 rounded-lg border border-neutral-200 dark:border-neutral-700 p-3 h-40 overflow-y-auto font-mono text-xs space-y-1"
           role="log"
           aria-label="遗传算法运行日志"
           aria-live="polite"
         >
           {logs.length === 0 ? (
-            <div className="text-gray-400 dark:text-gray-500 flex items-center gap-2 h-full justify-center">
+            <div className="text-neutral-400 dark:text-neutral-500 flex items-center gap-2 h-full justify-center">
               <Info className="w-4 h-4" aria-hidden="true" />
               <span>日志将在运行时显示...</span>
             </div>
@@ -788,12 +1021,12 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
               <div
                 key={i}
                 className={`${
-                  log.level === 'error' ? 'text-red-500 dark:text-red-400' :
-                  log.level === 'warn' ? 'text-amber-500 dark:text-amber-400' :
-                  'text-gray-600 dark:text-gray-400'
+                  log.level === 'error' ? 'text-error-500 dark:text-error-400' :
+                  log.level === 'warn' ? 'text-warning-500 dark:text-warning-400' :
+                  'text-neutral-600 dark:text-neutral-400'
                 }`}
               >
-                <span className="text-gray-400 dark:text-gray-600 mr-2" aria-hidden="true">{log.time}</span>
+                <span className="text-neutral-400 dark:text-neutral-600 mr-2" aria-hidden="true">{log.time}</span>
                 {log.message}
               </div>
             ))
@@ -808,7 +1041,7 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
         <section aria-labelledby="ga-results-heading" className="space-y-6">
           {/* 导出报告 + 统计摘要 */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 flex-1">
+            <div className="grid grid-cols-2 md:grid-cols-6 gap-4 flex-1">
             <StatCard
               icon={<Dna className="w-5 h-5" />}
               label="总代数"
@@ -826,6 +1059,18 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
               label="最佳适应度"
               value={result ? result.best_score.toFixed(4) : (liveHistory.length > 0 ? liveHistory[liveHistory.length - 1].best_fitness.toFixed(4) : '--')}
               color="green"
+            />
+            <StatCard
+              icon={<Zap className="w-5 h-5" />}
+              label="耗时(ms)"
+              value={`${result?.execution_time_ms?.toFixed(0) ?? '--'}`}
+              color="amber"
+            />
+            <StatCard
+              icon={<Target className="w-5 h-5" />}
+              label="收敛代"
+              value={`${result?.convergence_generation ?? '--'}`}
+              color="teal"
             />
             <StatCard
               icon={<Sparkles className="w-5 h-5" />}
@@ -862,7 +1107,7 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
 
           {/* --- 进化曲线图 --- */}
           <Card className="p-6">
-            <h3 id="ga-results-heading" className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2 mb-4">
+            <h3 id="ga-results-heading" className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-2 mb-4">
               <BarChart3 className="w-4 h-4 text-violet-500" />
               进化曲线
             </h3>
@@ -898,16 +1143,16 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
                       type="monotone"
                       dataKey="best_fitness"
                       name="最佳适应度"
-                      stroke="#22c55e"
+                      stroke="#34C759"
                       strokeWidth={2}
                       dot={false}
-                      activeDot={{ r: 4, fill: '#22c55e' }}
+                      activeDot={{ r: 4, fill: '#34C759' }}
                     />
                     <Line
                       type="monotone"
                       dataKey="avg_fitness"
                       name="平均适应度"
-                      stroke="#3b82f6"
+                      stroke="#007AFF"
                       strokeWidth={1.5}
                       dot={false}
                       strokeDasharray="5 5"
@@ -916,7 +1161,7 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
                       type="monotone"
                       dataKey="min_fitness"
                       name="最低适应度"
-                      stroke="#ef4444"
+                      stroke="#FF3B30"
                       strokeWidth={1.5}
                       dot={false}
                       strokeDasharray="3 3"
@@ -925,15 +1170,15 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
                 </ResponsiveContainer>
               </div>
             ) : (
-              <div className="flex items-center justify-center py-12 text-gray-400" role="status">
+              <div className="flex items-center justify-center py-12 text-neutral-400" role="status">
                 暂无进化曲线数据
               </div>
             )}
 
             {/* 多样性曲线（第二图表） */}
             {chartData.length > 0 && (
-              <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-800">
-                <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-3 flex items-center gap-1.5">
+              <div className="mt-6 pt-6 border-t border-neutral-100 dark:border-neutral-800">
+                <h4 className="text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-3 flex items-center gap-1.5">
                   <Zap className="w-3.5 h-3.5" />
                   种群多样性变化
                 </h4>
@@ -956,7 +1201,7 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
                         type="monotone"
                         dataKey="diversity"
                         name="多样性"
-                        stroke="#8b5cf6"
+                        stroke="#AF52DE"
                         strokeWidth={1.5}
                         dot={false}
                       />
@@ -970,7 +1215,7 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
           {/* --- 推荐方案卡片列表（仅流式完成后显示）--- */}
           {result && (
           <div>
-            <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2 mb-4">
+            <h3 className="text-base font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-2 mb-4">
               <Sparkles className="w-5 h-5 text-violet-500" aria-hidden="true" />
               推荐方案
               <Badge variant="primary" size="sm">Top-{result.candidates.length}</Badge>
@@ -1016,7 +1261,7 @@ function ParamSlider({ label, value, min, max, step, onChange, displayFormat, de
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <label className="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">{label}</label>
+        <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 whitespace-nowrap">{label}</label>
         <span className="text-sm font-semibold tabular-nums text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/20 px-2 py-0.5 rounded-md">
           {displayValue}
         </span>
@@ -1030,7 +1275,7 @@ function ParamSlider({ label, value, min, max, step, onChange, displayFormat, de
         aria-label={`${label}，当前值 ${displayValue}，范围 ${min}-${max}`}
       />
       {description && (
-        <p className="text-xs text-gray-400 dark:text-gray-500">{description}</p>
+        <p className="text-xs text-neutral-400 dark:text-neutral-500">{description}</p>
       )}
     </div>
   )
@@ -1042,26 +1287,27 @@ interface StatCardProps {
   icon: React.ReactNode
   label: string
   value: string
-  color: 'violet' | 'blue' | 'green' | 'amber'
+  color: 'violet' | 'blue' | 'green' | 'amber' | 'teal'
 }
 
 const COLOR_MAP: Record<StatCardProps['color'], { bg: string; text: string; iconBg: string }> = {
   violet: { bg: 'bg-violet-50 dark:bg-violet-900/15', text: 'text-violet-600 dark:text-violet-400', iconBg: 'bg-violet-100 dark:bg-violet-900/30' },
-  blue:   { bg: 'bg-blue-50 dark:bg-blue-900/15',   text: 'text-blue-600 dark:text-blue-400',   iconBg: 'bg-blue-100 dark:bg-blue-900/30' },
-  green:  { bg: 'bg-green-50 dark:bg-green-900/15',  text: 'text-green-600 dark:text-green-400',  iconBg: 'bg-green-100 dark:bg-green-900/30' },
-  amber:  { bg: 'bg-amber-50 dark:bg-amber-900/15',  text: 'text-amber-600 dark:text-amber-400',  iconBg: 'bg-amber-100 dark:bg-amber-900/30' },
+  blue:   { bg: 'bg-secondary-50 dark:bg-secondary-900/15',   text: 'text-secondary-600 dark:text-secondary-400',   iconBg: 'bg-secondary-100 dark:bg-secondary-900/30' },
+  green:  { bg: 'bg-success-50 dark:bg-success-900/15',  text: 'text-success-600 dark:text-success-400',  iconBg: 'bg-success-100 dark:bg-success-900/30' },
+  amber:  { bg: 'bg-warning-50 dark:bg-warning-900/15',  text: 'text-warning-600 dark:text-warning-400',  iconBg: 'bg-warning-100 dark:bg-warning-900/30' },
+  teal:   { bg: 'bg-teal-50 dark:bg-teal-900/15',   text: 'text-teal-600 dark:text-teal-400',   iconBg: 'bg-teal-100 dark:bg-teal-900/30' },
 }
 
 function StatCard({ icon, label, value, color }: StatCardProps) {
   const c = COLOR_MAP[color]
   return (
-    <div className={`${c.bg} rounded-xl border border-gray-100 dark:border-gray-800 p-4`}>
+    <div className={`${c.bg} rounded-xl border border-neutral-100 dark:border-neutral-800 p-4`}>
       <div className="flex items-center gap-3">
         <div className={`w-9 h-9 rounded-lg ${c.iconBg} flex items-center justify-center ${c.text}`}>
           {icon}
         </div>
         <div>
-          <p className="text-xs text-gray-500 dark:text-gray-400">{label}</p>
+          <p className="text-xs text-neutral-500 dark:text-neutral-400">{label}</p>
           <p className={`text-lg font-bold tabular-nums ${c.text}`}>{value}</p>
         </div>
       </div>
@@ -1080,20 +1326,20 @@ interface CandidateCardProps {
 
 function CandidateCard({ candidate, rank, isExpanded, onToggleExpand }: CandidateCardProps) {
   const scoreColor =
-    candidate.overall_score >= 0.85 ? 'text-green-500' :
-    candidate.overall_score >= 0.70 ? 'text-amber-500' :
-    'text-red-500'
+    candidate.overall_score >= 0.85 ? 'text-success-500' :
+    candidate.overall_score >= 0.70 ? 'text-warning-500' :
+    'text-error-500'
 
   const scoreLabels = [
-    { key: 'efficacy_score', label: '药效', value: candidate.efficacy_score, icon: <FlaskConical className="w-3.5 h-3.5" />, color: 'text-green-500' },
-    { key: 'safety_score',   label: '安全', value: candidate.safety_score,   icon: <Shield className="w-3.5 h-3.5" />,       color: 'text-blue-500' },
-    { key: 'taste_score',    label: '口感', value: candidate.taste_score,    icon: <Zap className="w-3.5 h-3.5" />,          color: 'text-amber-500' },
-    { key: 'cost_score',     label: '成本', value: candidate.cost_score,     icon: <DollarSign className="w-3.5 h-3.5" />,   color: 'text-purple-500' },
+    { key: 'efficacy_score', label: '药效', value: candidate.efficacy_score, icon: <FlaskConical className="w-3.5 h-3.5" />, color: 'text-success-500' },
+    { key: 'safety_score',   label: '安全', value: candidate.safety_score,   icon: <Shield className="w-3.5 h-3.5" />,       color: 'text-secondary-500' },
+    { key: 'taste_score',    label: '口感', value: candidate.taste_score,    icon: <Zap className="w-3.5 h-3.5" />,          color: 'text-warning-500' },
+    { key: 'cost_score',     label: '成本', value: candidate.cost_score,     icon: <DollarSign className="w-3.5 h-3.5" />,   color: 'text-accent-500' },
   ]
 
   return (
     <article
-      className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm hover:shadow-md hover:border-violet-200 dark:hover:border-violet-800 transition-all duration-200 overflow-hidden"
+      className="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 shadow-sm hover:shadow-md hover:border-violet-200 dark:hover:border-violet-800 transition-all duration-200 overflow-hidden"
       aria-label={`候选方案第 ${rank} 名，综合分 ${(candidate.overall_score * 100).toFixed(1)} 分`}
     >
       {/* 卡片头部 */}
@@ -1110,9 +1356,9 @@ function CandidateCard({ candidate, rank, isExpanded, onToggleExpand }: Candidat
               <span
                 className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold text-white ${
                   rank === 1 ? 'bg-gradient-to-br from-yellow-400 to-amber-500' :
-                  rank === 2 ? 'bg-gradient-to-br from-gray-300 to-gray-400' :
+                  rank === 2 ? 'bg-gradient-to-br from-slate-300 to-slate-400' :
                   rank === 3 ? 'bg-gradient-to-br from-amber-600 to-amber-700' :
-                  'bg-gray-400 dark:bg-gray-600'
+                  'bg-neutral-400 dark:bg-neutral-600'
                 }`}
                 aria-label={`排名第 ${rank}`}
               >
@@ -1120,7 +1366,7 @@ function CandidateCard({ candidate, rank, isExpanded, onToggleExpand }: Candidat
               </span>
               <div className={`text-2xl font-bold tabular-nums ${scoreColor}`}>
                 {(candidate.overall_score * 100).toFixed(1)}
-                <span className="text-sm font-normal text-gray-400 ml-1">分</span>
+                <span className="text-sm font-normal text-neutral-400 ml-1">分</span>
               </div>
               <Badge variant="neutral" size="sm">
                 置信度 {(candidate.confidence * 100).toFixed(0)}%
@@ -1132,10 +1378,10 @@ function CandidateCard({ candidate, rank, isExpanded, onToggleExpand }: Candidat
               {candidate.ingredients.map((ing) => (
                 <span
                   key={ing.id}
-                  className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded-md text-xs text-gray-700 dark:text-gray-300"
+                  className="inline-flex items-center gap-1 px-2 py-0.5 bg-neutral-100 dark:bg-neutral-800 rounded-md text-xs text-neutral-700 dark:text-neutral-300"
                 >
                   {ing.name_cn}
-                  <span className="text-gray-400 dark:text-gray-500">{ing.dosage}g</span>
+                  <span className="text-neutral-400 dark:text-neutral-500">{ing.dosage}g</span>
                 </span>
               ))}
             </div>
@@ -1149,13 +1395,13 @@ function CandidateCard({ candidate, rank, isExpanded, onToggleExpand }: Candidat
                   className={`w-3 rounded-t-sm ${color.replace('text-', 'bg-')} opacity-80`}
                   style={{ height: `${Math.max(value * 48, 4)}px` }}
                 />
-                <span className="text-[10px] text-gray-400 dark:text-gray-500 whitespace-nowrap">{label}</span>
+                <span className="text-[10px] text-neutral-400 dark:text-neutral-500 whitespace-nowrap">{label}</span>
               </div>
             ))}
           </div>
 
           {/* 展开/收起图标 */}
-          <div className="flex-shrink-0 self-center text-gray-400" aria-hidden="true">
+          <div className="flex-shrink-0 self-center text-neutral-400" aria-hidden="true">
             {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
           </div>
         </div>
@@ -1165,15 +1411,15 @@ function CandidateCard({ candidate, rank, isExpanded, onToggleExpand }: Candidat
       {isExpanded && (
         <div
           id={`candidate-detail-${rank}`}
-          className="px-5 pb-5 border-t border-gray-100 dark:border-gray-800 pt-4 animate-in slide-in-from-top-2 duration-200"
+          className="px-5 pb-5 border-t border-neutral-100 dark:border-neutral-800 pt-4 animate-in slide-in-from-top-2 duration-200"
         >
           {/* 四维评分详情 */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
             {scoreLabels.map(({ label, value, icon, color }) => (
-              <div key={label} className="flex items-center gap-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg px-3 py-2">
+              <div key={label} className="flex items-center gap-2 bg-slate-50 dark:bg-neutral-800/50 rounded-lg px-3 py-2">
                 <span className={color}>{icon}</span>
                 <div>
-                  <p className="text-[10px] text-gray-400 dark:text-gray-500">{label}评分</p>
+                  <p className="text-[10px] text-neutral-400 dark:text-neutral-500">{label}评分</p>
                   <p className={`text-sm font-semibold tabular-nums ${color}`}>{(value * 100).toFixed(1)}</p>
                 </div>
               </div>
@@ -1187,7 +1433,7 @@ function CandidateCard({ candidate, rank, isExpanded, onToggleExpand }: Candidat
                 <Info className="w-3.5 h-3.5" aria-hidden="true" />
                 方案解析
               </h5>
-              <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
+              <p className="text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed whitespace-pre-wrap">
                 {candidate.explanation}
               </p>
             </div>

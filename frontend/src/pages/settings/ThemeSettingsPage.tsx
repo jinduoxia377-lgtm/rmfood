@@ -238,7 +238,7 @@ const ThemeSettingsPage: React.FC = () => {
                   {/* 标签 */}
                   <div className="flex gap-2 mt-3 flex-wrap">
                     {theme.mode === 'dark' && (
-                      <span className="px-2 py-0.5 text-xs rounded-full bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-900">
+                      <span className="px-2 py-0.5 text-xs rounded-full bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900">
                         Dark
                       </span>
                     )}
@@ -248,7 +248,7 @@ const ThemeSettingsPage: React.FC = () => {
                       </span>
                     )}
                     {id.includes('reading') && (
-                      <span className="px-2 py-0.5 text-xs rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-100">
+                      <span className="px-2 py-0.5 text-xs rounded-full bg-warning-100 text-warning-800 dark:bg-warning-900 dark:text-warning-100">
                         阅读
                       </span>
                     )}
@@ -341,8 +341,8 @@ const ThemeSettingsPage: React.FC = () => {
               onClick={exportThemeConfig}
               className="flex flex-col items-center justify-center p-6 rounded-xl border-2 border-border-default hover:border-primary-main hover:bg-primary-main/5 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-main/50"
             >
-              <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mb-3">
-                <Download size={24} className="text-blue-600 dark:text-blue-400" />
+              <div className="w-12 h-12 rounded-full bg-secondary-100 dark:bg-secondary-900/30 flex items-center justify-center mb-3">
+                <Download size={24} className="text-secondary-600 dark:text-secondary-400" />
               </div>
               <span className="font-semibold text-text-primary">导出配置</span>
               <span className="text-xs text-text-secondary mt-1">保存为 JSON 文件</span>
@@ -353,8 +353,8 @@ const ThemeSettingsPage: React.FC = () => {
               onClick={() => fileInputRef.current?.click()}
               className="flex flex-col items-center justify-center p-6 rounded-xl border-2 border-border-default hover:border-primary-main hover:bg-primary-main/5 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-main/50"
             >
-              <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mb-3">
-                <Upload size={24} className="text-green-600 dark:text-green-400" />
+              <div className="w-12 h-12 rounded-full bg-success-100 dark:bg-success-900/30 flex items-center justify-center mb-3">
+                <Upload size={24} className="text-success-600 dark:text-success-400" />
               </div>
               <span className="font-semibold text-text-primary">导入配置</span>
               <span className="text-xs text-text-secondary mt-1">从文件恢复设置</span>
@@ -376,8 +376,8 @@ const ThemeSettingsPage: React.FC = () => {
               }}
               className="flex flex-col items-center justify-center p-6 rounded-xl border-2 border-border-default hover:border-primary-main hover:bg-primary-main/5 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-main/50"
             >
-              <div className="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mb-3">
-                <Share2 size={24} className="text-purple-600 dark:text-purple-400" />
+              <div className="w-12 h-12 rounded-full bg-accent-100 dark:bg-accent-900/30 flex items-center justify-center mb-3">
+                <Share2 size={24} className="text-accent-600 dark:text-accent-400" />
               </div>
               <span className="font-semibold text-text-primary">分享页面</span>
               <span className="text-xs text-text-secondary mt-1">复制当前链接</span>

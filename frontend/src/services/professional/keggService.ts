@@ -103,11 +103,41 @@ class KEGGService extends ProfessionalBaseService {
 
   private initializeMockData(): void {
     this.mockOrganisms = [
-      { code: 'hsa', name: '人类', scientificName: 'Homo sapiens', taxonomy: 'Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Mammalia; Eutheria; Euarchontoglires; Primates; Haplorrhini; Catarrhini; Hominidae; Homo' },
-      { code: 'mmu', name: '小鼠', scientificName: 'Mus musculus', taxonomy: 'Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Mammalia; Eutheria; Euarchontoglires; Glires; Rodentia; Myomorpha; Muridae; Murinae; Mus' },
-      { code: 'rno', name: '大鼠', scientificName: 'Rattus norvegicus', taxonomy: 'Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Mammalia; Eutheria; Euarchontoglires; Glires; Rodentia; Myomorpha; Muridae; Murinae; Rattus' },
-      { code: 'dme', name: '果蝇', scientificName: 'Drosophila melanogaster', taxonomy: 'Eukaryota; Metazoa; Ecdysozoa; Arthropoda; Hexapoda; Insecta; Pterygota; Neoptera; Holometabola; Diptera; Brachycera; Muscomorpha; Ephydroidea; Drosophilidae; Drosophila' },
-      { code: 'sce', name: '酵母', scientificName: 'Saccharomyces cerevisiae', taxonomy: 'Eukaryota; Fungi; Dikarya; Ascomycota; Saccharomycotina; Saccharomycetes; Saccharomycetales; Saccharomycetaceae; Saccharomyces' },
+      {
+        code: 'hsa',
+        name: '人类',
+        scientificName: 'Homo sapiens',
+        taxonomy:
+          'Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Mammalia; Eutheria; Euarchontoglires; Primates; Haplorrhini; Catarrhini; Hominidae; Homo',
+      },
+      {
+        code: 'mmu',
+        name: '小鼠',
+        scientificName: 'Mus musculus',
+        taxonomy:
+          'Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Mammalia; Eutheria; Euarchontoglires; Glires; Rodentia; Myomorpha; Muridae; Murinae; Mus',
+      },
+      {
+        code: 'rno',
+        name: '大鼠',
+        scientificName: 'Rattus norvegicus',
+        taxonomy:
+          'Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Mammalia; Eutheria; Euarchontoglires; Glires; Rodentia; Myomorpha; Muridae; Murinae; Rattus',
+      },
+      {
+        code: 'dme',
+        name: '果蝇',
+        scientificName: 'Drosophila melanogaster',
+        taxonomy:
+          'Eukaryota; Metazoa; Ecdysozoa; Arthropoda; Hexapoda; Insecta; Pterygota; Neoptera; Holometabola; Diptera; Brachycera; Muscomorpha; Ephydroidea; Drosophilidae; Drosophila',
+      },
+      {
+        code: 'sce',
+        name: '酵母',
+        scientificName: 'Saccharomyces cerevisiae',
+        taxonomy:
+          'Eukaryota; Fungi; Dikarya; Ascomycota; Saccharomycotina; Saccharomycetes; Saccharomycetales; Saccharomycetaceae; Saccharomyces',
+      },
     ];
 
     const mapkPathway: KEGGPathway = {
@@ -116,22 +146,54 @@ class KEGGService extends ProfessionalBaseService {
       nameEn: 'MAPK signaling pathway',
       organism: 'hsa',
       class: 'Signal transduction',
-      description: '丝裂原活化蛋白激酶（MAPK）信号通路是真核生物中保守的信号传导系统，参与细胞增殖、分化、凋亡等多种生物学过程。',
+      description:
+        '丝裂原活化蛋白激酶（MAPK）信号通路是真核生物中保守的信号传导系统，参与细胞增殖、分化、凋亡等多种生物学过程。',
       entries: [],
       genes: [
-        { geneId: 'hsa:3912', symbol: 'MAPK1', name: 'mitogen-activated protein kinase 1', pathways: ['hsa04010', 'hsa04014'] },
-        { geneId: 'hsa:5594', symbol: 'MAPK3', name: 'mitogen-activated protein kinase 3', pathways: ['hsa04010', 'hsa04014'] },
-        { geneId: 'hsa:1432', symbol: 'MAP2K1', name: 'mitogen-activated protein kinase kinase 1', pathways: ['hsa04010'] },
-        { geneId: 'hsa:5604', symbol: 'MAP2K2', name: 'mitogen-activated protein kinase kinase 2', pathways: ['hsa04010'] },
-        { geneId: 'hsa:3694', symbol: 'RAF1', name: 'RAF proto-oncogene, serine/threonine kinase', pathways: ['hsa04010'] },
+        {
+          geneId: 'hsa:3912',
+          symbol: 'MAPK1',
+          name: 'mitogen-activated protein kinase 1',
+          pathways: ['hsa04010', 'hsa04014'],
+        },
+        {
+          geneId: 'hsa:5594',
+          symbol: 'MAPK3',
+          name: 'mitogen-activated protein kinase 3',
+          pathways: ['hsa04010', 'hsa04014'],
+        },
+        {
+          geneId: 'hsa:1432',
+          symbol: 'MAP2K1',
+          name: 'mitogen-activated protein kinase kinase 1',
+          pathways: ['hsa04010'],
+        },
+        {
+          geneId: 'hsa:5604',
+          symbol: 'MAP2K2',
+          name: 'mitogen-activated protein kinase kinase 2',
+          pathways: ['hsa04010'],
+        },
+        {
+          geneId: 'hsa:3694',
+          symbol: 'RAF1',
+          name: 'RAF proto-oncogene, serine/threonine kinase',
+          pathways: ['hsa04010'],
+        },
       ],
       compounds: [
         { compoundId: 'C00044', name: 'ATP', formula: 'C10H16N5O13P3', mass: 507.18, pathways: ['hsa04010'] },
-        { compoundId: 'C00002', name: 'ADP', formula: 'C10H15N5O10P2', mass: 427.20, pathways: ['hsa04010'] },
+        { compoundId: 'C00002', name: 'ADP', formula: 'C10H15N5O10P2', mass: 427.2, pathways: ['hsa04010'] },
         { compoundId: 'C00001', name: '水', formula: 'H2O', mass: 18.02, pathways: ['hsa04010'] },
       ],
       reactions: [
-        { reactionId: 'R00100', name: 'ATP hydrolysis', equation: 'ATP + H2O = ADP + Pi', substrates: ['C00044', 'C00001'], products: ['C00002'] },
+        {
+          reactionId: 'R00100',
+          name: 'ATP hydrolysis',
+          equation: 'ATP + H2O = ADP + Pi',
+          substrates: ['C00044', 'C00001'],
+          products: ['C00002'],
+        },
       ],
       imageUrl: 'https://www.genome.jp/kegg/pathway/hsa/hsa04010.png',
       mapUrl: 'https://www.genome.jp/kegg-bin/show_pathway?hsa04010',
@@ -146,11 +208,26 @@ class KEGGService extends ProfessionalBaseService {
       description: '磷脂酰肌醇3-激酶（PI3K）-Akt信号通路在细胞存活、增殖、代谢和血管生成中发挥关键作用。',
       entries: [],
       genes: [
-        { geneId: 'hsa:5290', symbol: 'AKT1', name: 'AKT serine/threonine kinase 1', pathways: ['hsa04151', 'hsa04010'] },
+        {
+          geneId: 'hsa:5290',
+          symbol: 'AKT1',
+          name: 'AKT serine/threonine kinase 1',
+          pathways: ['hsa04151', 'hsa04010'],
+        },
         { geneId: 'hsa:5291', symbol: 'AKT2', name: 'AKT serine/threonine kinase 2', pathways: ['hsa04151'] },
         { geneId: 'hsa:5292', symbol: 'AKT3', name: 'AKT serine/threonine kinase 3', pathways: ['hsa04151'] },
-        { geneId: 'hsa:5294', symbol: 'PIK3CA', name: 'phosphatidylinositol-4,5-bisphosphate 3-kinase catalytic subunit alpha', pathways: ['hsa04151'] },
-        { geneId: 'hsa:5289', symbol: 'PIK3R1', name: 'phosphoinositide-3-kinase regulatory subunit 1', pathways: ['hsa04151'] },
+        {
+          geneId: 'hsa:5294',
+          symbol: 'PIK3CA',
+          name: 'phosphatidylinositol-4,5-bisphosphate 3-kinase catalytic subunit alpha',
+          pathways: ['hsa04151'],
+        },
+        {
+          geneId: 'hsa:5289',
+          symbol: 'PIK3R1',
+          name: 'phosphoinositide-3-kinase regulatory subunit 1',
+          pathways: ['hsa04151'],
+        },
       ],
       compounds: [
         { compoundId: 'C00044', name: 'ATP', formula: 'C10H16N5O13P3', mass: 507.18, pathways: ['hsa04151'] },
@@ -158,7 +235,13 @@ class KEGGService extends ProfessionalBaseService {
         { compoundId: 'C01147', name: 'Phosphatidylinositol 3,4,5-trisphosphate', pathways: ['hsa04151'] },
       ],
       reactions: [
-        { reactionId: 'R00100', name: 'ATP hydrolysis', equation: 'ATP + H2O = ADP + Pi', substrates: ['C00044', 'C00001'], products: ['C00002'] },
+        {
+          reactionId: 'R00100',
+          name: 'ATP hydrolysis',
+          equation: 'ATP + H2O = ADP + Pi',
+          substrates: ['C00044', 'C00001'],
+          products: ['C00002'],
+        },
       ],
       imageUrl: 'https://www.genome.jp/kegg/pathway/hsa/hsa04151.png',
       mapUrl: 'https://www.genome.jp/kegg-bin/show_pathway?hsa04151',
@@ -176,7 +259,12 @@ class KEGGService extends ProfessionalBaseService {
         { geneId: 'hsa:3415', symbol: 'INSR', name: 'insulin receptor', pathways: ['hsa04910'] },
         { geneId: 'hsa:3417', symbol: 'IRS1', name: 'insulin receptor substrate 1', pathways: ['hsa04910'] },
         { geneId: 'hsa:3418', symbol: 'IRS2', name: 'insulin receptor substrate 2', pathways: ['hsa04910'] },
-        { geneId: 'hsa:5290', symbol: 'AKT1', name: 'AKT serine/threonine kinase 1', pathways: ['hsa04910', 'hsa04151'] },
+        {
+          geneId: 'hsa:5290',
+          symbol: 'AKT1',
+          name: 'AKT serine/threonine kinase 1',
+          pathways: ['hsa04910', 'hsa04151'],
+        },
         { geneId: 'hsa:5578', symbol: 'SLC2A4', name: 'solute carrier family 2 member 4', pathways: ['hsa04910'] },
       ],
       compounds: [
@@ -199,7 +287,12 @@ class KEGGService extends ProfessionalBaseService {
       entries: [],
       genes: [
         { geneId: 'hsa:7124', symbol: 'TNF', name: 'tumor necrosis factor', pathways: ['hsa04668'] },
-        { geneId: 'hsa:7132', symbol: 'TNFR1', name: 'tumor necrosis factor receptor superfamily member 1A', pathways: ['hsa04668'] },
+        {
+          geneId: 'hsa:7132',
+          symbol: 'TNFR1',
+          name: 'tumor necrosis factor receptor superfamily member 1A',
+          pathways: ['hsa04668'],
+        },
         { geneId: 'hsa:5970', symbol: 'NFKB1', name: 'nuclear factor kappa B subunit 1', pathways: ['hsa04668'] },
         { geneId: 'hsa:3551', symbol: 'CASP8', name: 'caspase 8', pathways: ['hsa04668'] },
         { geneId: 'hsa:3554', symbol: 'CASP3', name: 'caspase 3', pathways: ['hsa04668'] },
@@ -224,7 +317,12 @@ class KEGGService extends ProfessionalBaseService {
         { geneId: 'hsa:2308', symbol: 'FOXO1', name: 'forkhead box O1', pathways: ['hsa04068'] },
         { geneId: 'hsa:2309', symbol: 'FOXO3', name: 'forkhead box O3', pathways: ['hsa04068'] },
         { geneId: 'hsa:2310', symbol: 'FOXO4', name: 'forkhead box O4', pathways: ['hsa04068'] },
-        { geneId: 'hsa:5290', symbol: 'AKT1', name: 'AKT serine/threonine kinase 1', pathways: ['hsa04068', 'hsa04151'] },
+        {
+          geneId: 'hsa:5290',
+          symbol: 'AKT1',
+          name: 'AKT serine/threonine kinase 1',
+          pathways: ['hsa04068', 'hsa04151'],
+        },
         { geneId: 'hsa:5594', symbol: 'MAPK3', name: 'mitogen-activated protein kinase 3', pathways: ['hsa04068'] },
       ],
       compounds: [
@@ -309,9 +407,7 @@ class KEGGService extends ProfessionalBaseService {
     if (cached) return cached;
 
     if (this.mockMode) {
-      const pathways = Array.from(this.mockPathways.values()).filter(
-        (p) => p.organism === organism,
-      );
+      const pathways = Array.from(this.mockPathways.values()).filter((p) => p.organism === organism);
       this.setCache(cacheKey, pathways);
       return pathways;
     }
@@ -456,11 +552,7 @@ class KEGGService extends ProfessionalBaseService {
     return organisms;
   }
 
-  public async enrichPathways(
-    geneList: string[],
-    organism = 'hsa',
-    minGenes = 2,
-  ): Promise<PathwayEnrichmentResult[]> {
+  public async enrichPathways(geneList: string[], organism = 'hsa', minGenes = 2): Promise<PathwayEnrichmentResult[]> {
     if (this.mockMode) {
       const results: PathwayEnrichmentResult[] = [];
       const geneSymbols = new Set(geneList.map((g) => g.toUpperCase()));
@@ -468,9 +560,7 @@ class KEGGService extends ProfessionalBaseService {
       for (const pathway of this.mockPathways.values()) {
         if (pathway.organism !== organism) continue;
 
-        const matchedGenes = pathway.genes.filter((g) =>
-          geneSymbols.has(g.symbol.toUpperCase()),
-        );
+        const matchedGenes = pathway.genes.filter((g) => geneSymbols.has(g.symbol.toUpperCase()));
 
         if (matchedGenes.length >= minGenes) {
           const pValue = Math.random() * 0.05;
@@ -536,8 +626,7 @@ class KEGGService extends ProfessionalBaseService {
       const results = Array.from(allGenes)
         .filter(
           (g) =>
-            g.symbol.toLowerCase().includes(query.toLowerCase()) ||
-            g.name.toLowerCase().includes(query.toLowerCase()),
+            g.symbol.toLowerCase().includes(query.toLowerCase()) || g.name.toLowerCase().includes(query.toLowerCase()),
         )
         .map((g) => ({
           id: g.geneId,
@@ -652,14 +741,3 @@ const keggService = new KEGGService();
 
 export default keggService;
 export { KEGGService };
-export type {
-  KEGGPathway,
-  KEGGEntry,
-  KEGGGene,
-  KEGGCompound,
-  KEGGReaction,
-  KEGGOrganism,
-  KEGGSearchResult,
-  PathwayEnrichmentResult,
-  KEGGModule,
-};

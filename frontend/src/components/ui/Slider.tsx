@@ -25,7 +25,7 @@ export function Slider({ value, min, max, step = 1, onChange, className = '', di
   return (
     <div className={`relative w-full ${className}`}>
       <div
-        className="absolute top-1/2 left-0 h-2 w-full -translate-y-1/2 rounded-full bg-gray-200 dark:bg-gray-700"
+        className="absolute top-1/2 left-0 h-2 w-full -translate-y-1/2 rounded-full bg-neutral-200 dark:bg-neutral-700"
         style={{ width: '100%' }}
       />
       <div

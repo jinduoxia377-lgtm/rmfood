@@ -11,7 +11,7 @@
  * - 响应式设计
  */
 
-import React, { useEffect, useCallback, useRef } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { X, CheckCircle, AlertCircle, AlertTriangle, Info, Loader2 } from 'lucide-react'
 import { type FeedbackMessage, type FeedbackType } from '@/utils/uiuxEnhancement'
 
@@ -21,19 +21,19 @@ interface ToastProps {
 }
 
 const iconMap: Record<FeedbackType, React.ReactNode> = {
-  success: <CheckCircle className="w-5 h-5 text-emerald-500" />,
-  error: <AlertCircle className="w-5 h-5 text-red-500" />,
-  warning: <AlertTriangle className="w-5 h-5 text-amber-500" />,
-  info: <Info className="w-5 h-5 text-blue-500" />,
-  loading: <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />,
+  success: <CheckCircle className="w-5 h-5 text-primary-500" />,
+  error: <AlertCircle className="w-5 h-5 text-error-500" />,
+  warning: <AlertTriangle className="w-5 h-5 text-warning-500" />,
+  info: <Info className="w-5 h-5 text-secondary-500" />,
+  loading: <Loader2 className="w-5 h-5 text-secondary-500 animate-spin" />,
 }
 
 const colorMap: Record<FeedbackType, string> = {
-  success: 'border-l-emerald-500 bg-emerald-50 dark:bg-emerald-950/30',
-  error: 'border-l-red-500 bg-red-50 dark:bg-red-950/30',
-  warning: 'border-l-amber-500 bg-amber-50 dark:bg-amber-950/30',
-  info: 'border-l-blue-500 bg-blue-50 dark:bg-blue-950/30',
-  loading: 'border-l-blue-500 bg-blue-50 dark:bg-blue-950/30',
+  success: 'border-l-emerald-500 bg-primary-50 dark:bg-emerald-950/30',
+  error: 'border-l-red-500 bg-error-50 dark:bg-red-950/30',
+  warning: 'border-l-amber-500 bg-warning-50 dark:bg-amber-950/30',
+  info: 'border-l-blue-500 bg-secondary-50 dark:bg-blue-950/30',
+  loading: 'border-l-blue-500 bg-secondary-50 dark:bg-blue-950/30',
 }
 
 export const Toast: React.FC<ToastProps> = ({ message, onClose }) => {
@@ -55,14 +55,16 @@ export const Toast: React.FC<ToastProps> = ({ message, onClose }) => {
   }, [message.id, onClose])
 
   useEffect(() => {
-    if (message.duration && message.duration > 0) {
-      const timer = setTimeout(handleClose, message.duration)
+    const duration = message.duration ?? (message.type === 'loading' ? 0 : 5000)
+    if (duration > 0) {
+      const timer = setTimeout(handleClose, duration)
       return () => clearTimeout(timer)
     }
-  }, [message.duration, handleClose])
+    return undefined
+  }, [message.duration, message.type, handleClose])
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'Escape' || e.key === 'Enter') {
+    if (e.key === 'Escape') {
       handleClose()
     }
   }, [handleClose])
@@ -90,11 +92,11 @@ export const Toast: React.FC<ToastProps> = ({ message, onClose }) => {
 
       {/* Content */}
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+        <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
           {message.title}
         </p>
         {message.description && (
-          <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+          <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-400">
             {message.description}
           </p>
         )}
@@ -106,7 +108,7 @@ export const Toast: React.FC<ToastProps> = ({ message, onClose }) => {
               message.action?.onClick()
               handleClose()
             }}
-            className="mt-2 text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 underline focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
+            className="mt-2 text-sm font-medium text-secondary-600 hover:text-secondary-700 dark:text-secondary-400 dark:hover:text-secondary-300 underline focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
           >
             {message.action.label}
           </button>
@@ -117,7 +119,7 @@ export const Toast: React.FC<ToastProps> = ({ message, onClose }) => {
       <button
         onClick={handleClose}
         onKeyDown={handleKeyDown}
-        className="flex-shrink-0 p-1 rounded-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
+        className="flex-shrink-0 p-1 rounded-md text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
         aria-label="关闭通知"
       >
         <X className="w-4 h-4" />
@@ -125,7 +127,7 @@ export const Toast: React.FC<ToastProps> = ({ message, onClose }) => {
 
       {/* Progress Bar (for auto-dismiss) */}
       {message.duration && message.duration > 0 && (
-        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-200 dark:bg-gray-700 rounded-b-lg overflow-hidden">
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-neutral-200 dark:bg-neutral-700 rounded-b-lg overflow-hidden">
           <div
             className="h-full bg-current opacity-30"
             style={{
@@ -138,66 +140,21 @@ export const Toast: React.FC<ToastProps> = ({ message, onClose }) => {
   )
 }
 
-interface ToastContainerProps {
-  messages: FeedbackMessage[]
-  onRemove: (id: string) => void
-  position?: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left' | 'top-center' | 'bottom-center'
-  maxToasts?: number
+// CSS Animation for progress bar — inject once into <head>
+const SHRINK_ANIMATION_STYLE_ID = 'rmfood-toast-shrink-keyframes'
+
+function ensureShrinkAnimationInjected() {
+  if (typeof document === 'undefined') return
+  if (document.getElementById(SHRINK_ANIMATION_STYLE_ID)) return
+  const style = document.createElement('style')
+  style.id = SHRINK_ANIMATION_STYLE_ID
+  style.textContent = `@keyframes shrink{from{width:100%}to{width:0%}}`
+  document.head.appendChild(style)
 }
 
-export const ToastContainer: React.FC<ToastContainerProps> = ({
-  messages,
-  onRemove,
-  position = 'top-right',
-  maxToasts = 3,
-}) => {
-  const positionClasses: Record<string, string> = {
-    'top-right': 'top-4 right-4',
-    'top-left': 'top-4 left-4',
-    'bottom-right': 'bottom-4 right-4',
-    'bottom-left': 'bottom-4 left-4',
-    'top-center': 'top-4 left-1/2 -translate-x-1/2',
-    'bottom-center': 'bottom-4 left-1/2 -translate-x-1/2',
-  }
+// Auto-inject on first module load
+ensureShrinkAnimationInjected()
 
-  const visibleMessages = messages.slice(-maxToasts)
-
-  if (visibleMessages.length === 0) return null
-
-  return (
-    <div
-      className={`fixed z-[9999] ${positionClasses[position]} pointer-events-none`}
-      aria-label="通知区域"
-      role="region"
-    >
-      <div className="pointer-events-auto w-full max-w-sm space-y-2">
-        {visibleMessages.map((message) => (
-          <Toast key={message.id} message={message} onClose={onRemove} />
-        ))}
-      </div>
-    </div>
-  )
-}
-
-import { useState } from 'react'
-
-// CSS Animation for progress bar
-const styles = `
-@keyframes shrink {
-  from {
-    width: 100%;
-  }
-  to {
-    width: 0%;
-  }
-}
-`
-
-if (typeof document !== 'undefined') {
-  const styleSheet = document.createElement('style')
-  styleSheet.textContent = styles
-  document.head.appendChild(styleSheet)
-}
 
 // ============================================================================
 // 向后兼容层 - 支持原有的 useToast 和 ToastProvider API
@@ -208,7 +165,7 @@ import type { ReactNode } from 'react'
 
 /**
  * ToastProvider - 向后兼容组件
- * 在新系统中作为空壳，实际功能由ToastContainer提供
+ * 在新系统中作为空壳，实际功能由 ToastContainer 提供
  */
 export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   return <>{children}</>
@@ -221,15 +178,20 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 export const useToast = () => {
   const { addToast, removeToast, clearAll, toasts } = useToastStore()
 
+  interface ToastOptions {
+    duration?: number
+    title?: string
+  }
+
   return {
     addToast,
     removeToast,
     clearAll,
     toasts,
-    success: (message: string) => addToast({ type: 'success', message }),
-    error: (message: string) => addToast({ type: 'error', message }),
-    warning: (message: string) => addToast({ type: 'warning', message }),
-    info: (message: string) => addToast({ type: 'info', message }),
+    success: (message: string, options?: ToastOptions) => addToast({ type: 'success', message, ...options }),
+    error: (message: string, options?: ToastOptions) => addToast({ type: 'error', message, ...options }),
+    warning: (message: string, options?: ToastOptions) => addToast({ type: 'warning', message, ...options }),
+    info: (message: string, options?: ToastOptions) => addToast({ type: 'info', message, ...options }),
   }
 }
 

@@ -296,7 +296,7 @@ function renderFormulaDetailsPDF(
 
   // 成分表格
   if (formulaData.ingredients && formulaData.ingredients.length > 0) {
-    const tableData = formulaData.ingredients.map((ing: any) => [
+    const tableData = formulaData.ingredients.map((ing: Record<string, unknown>) => [
       ing.name || '-',
       ing.dosage || '-',
       ing.unit || '-',
@@ -313,7 +313,7 @@ function renderFormulaDetailsPDF(
       headStyles: { fillColor: [59, 130, 246] },
     })
 
-    y = (doc as any).lastAutoTable.finalY + 10
+    y = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10
   }
 
   return y
@@ -334,7 +334,7 @@ function renderIngredientAnalysisPDF(
     return y + 10
   }
 
-  const tableData = ingredients.map((ing: any) => [
+  const tableData = ingredients.map((ing: Record<string, unknown>) => [
     ing.name || '-',
     ing.source || '-',
     ing.category || '-',
@@ -351,7 +351,7 @@ function renderIngredientAnalysisPDF(
     headStyles: { fillColor: [16, 185, 129] },
   })
 
-  return (doc as any).lastAutoTable.finalY + 10
+  return (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10
 }
 
 function renderSynergyAssessmentPDF(
@@ -564,7 +564,7 @@ function addWordSectionContent(children: any[], section: ReportSection): void {
 
     case 'formula-details':
       if (section.content?.formulaData?.ingredients) {
-        section.content.formulaData.ingredients.forEach((ing: any) => {
+        section.content.formulaData.ingredients.forEach((ing: Record<string, unknown>) => {
           children.push(
             new Paragraph({
               children: [
@@ -657,7 +657,7 @@ async function exportToExcel(
       { header: '安全性', key: 'safety', width: 12 },
       { header: '备注', key: 'notes', width: 20 },
     ]
-    wsFormula.addRows(formulaSection.content.formulaData.ingredients.map((ing: any) => ({
+    wsFormula.addRows(formulaSection.content.formulaData.ingredients.map((ing: Record<string, unknown>) => ({
       name: ing.name || '-',
       dosage: ing.dosage || '-',
       unit: ing.unit || '-',
@@ -687,7 +687,7 @@ async function exportToExcel(
       { header: '生物利用度', key: 'bio', width: 12 },
       { header: '作用机制', key: 'mechanism', width: 25 },
     ]
-    wsAnalysis.addRows(analysisSection.content.ingredients.map((ing: any) => ({
+    wsAnalysis.addRows(analysisSection.content.ingredients.map((ing: Record<string, unknown>) => ({
       name: ing.name || '-',
       source: ing.source || '-',
       category: ing.category || '-',

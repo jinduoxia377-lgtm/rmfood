@@ -4,8 +4,7 @@
  * Phase 4 增强: 添加模拟数据 fallback，支持后端服务不可用时使用
  */
 import api from './client'
-import type { TCMHerb, BioactivePeptide, KnowledgeNode, PaginatedResponse } from '@/types'
-import { mockDatabaseApi } from './database.mock'
+import type { TCMHerb, SymMapHerb, BioactivePeptide, KnowledgeNode, PaginatedResponse } from '@/types'
 import { logger } from '@/utils/safeLogger';
 
 
@@ -16,31 +15,19 @@ import { logger } from '@/utils/safeLogger';
  */
 const withFallback = async <T>(
   apiCall: () => Promise<T>,
-  fallback: () => Promise<T>,
-  apiName: string,
+  arg2: (() => Promise<T>) | string,
+  arg3?: string,
 ): Promise<T> => {
+  const apiName = typeof arg2 === 'string' ? arg2 : arg3
+  const fallback = typeof arg2 === 'function' ? arg2 : undefined
   try {
     const result = await apiCall()
-    logger.info(`✅ [Database API] ${apiName} 成功获取真实数据`)
+    if (apiName) logger.info(`✅ [Database API] ${apiName} 成功获取真实数据`)
     return result
   } catch (error: any) {
     const status = error.response?.status
-    const isNetworkError = !error.response
-    const isServerError = status >= 500 && status < 600
-    const isNotFound = status === 404
-
-    // 网络错误 / 服务端错误 / 路由不存在(404) → 均降级到内存/mock数据
-    if (isNetworkError || isServerError || isNotFound) {
-      logger.warn(
-        `⚠️ [Database API] ${apiName} ` +
-        (isNetworkError ? '网络错误' : isServerError ? `HTTP ${status}(服务端)` : `HTTP ${status}(路由未注册)`) +
-        `，使用内存数据库作为降级方案`,
-      )
-      return fallback()
-    }
-
-    // 401/403/422 等业务错误 → 向上抛出，由调用方或拦截器处理
-    logger.error(`❌ [Database API] ${apiName} 请求失败 (HTTP ${status}):`, error.message)
+    if (apiName) logger.error(`❌ [Database API] ${apiName} 请求失败 (HTTP ${status}):`, error.message)
+    if (fallback) return fallback()
     throw error
   }
 }
@@ -56,7 +43,6 @@ export const databaseApi = {
   }) =>
     withFallback(
       () => api.get<PaginatedResponse<TCMHerb>>('/databases/herbs', { params }).then((r) => r.data),
-      () => mockDatabaseApi.searchHerbs(params) as unknown as Promise<PaginatedResponse<TCMHerb>>,
       'searchHerbs',
     ),
 
@@ -64,7 +50,6 @@ export const databaseApi = {
   getHerb: (id: number) =>
     withFallback(
       () => api.get<TCMHerb>(`/databases/herbs/${id}`).then((r) => r.data),
-      () => mockDatabaseApi.getHerb(id),
       'getHerb',
     ),
 
@@ -72,7 +57,6 @@ export const databaseApi = {
   getCategories: () =>
     withFallback(
       () => api.get<{ categories: { category: string; count: number }[] }>('/databases/herbs/categories').then((r) => r.data),
-      () => mockDatabaseApi.getCategories(),
       'getCategories',
     ),
 
@@ -80,7 +64,6 @@ export const databaseApi = {
   getFoodHomologyHerbs: (params: { keyword?: string; page?: number; page_size?: number }) =>
     withFallback(
       () => api.get<PaginatedResponse<TCMHerb>>('/databases/herbs/food-homology', { params }).then((r) => r.data),
-      () => mockDatabaseApi.getFoodHomologyHerbs(params) as unknown as Promise<PaginatedResponse<TCMHerb>>,
       'getFoodHomologyHerbs',
     ),
 
@@ -88,8 +71,18 @@ export const databaseApi = {
   checkFoodHomology: (herbName: string) =>
     withFallback(
       () => api.get('/databases/herbs/food-homology/check', { params: { herb_name: herbName } }).then((r) => r.data),
-      () => mockDatabaseApi.checkFoodHomology(herbName),
       'checkFoodHomology',
+    ),
+
+  /** SymMap 中药材检索 */
+  searchSymmapHerbs: (params: {
+    keyword?: string
+    page?: number
+    page_size?: number
+  }) =>
+    withFallback(
+      () => api.get<PaginatedResponse<SymMapHerb>>('/databases/herbs/symmap', { params }).then((r) => r.data),
+      'searchSymmapHerbs',
     ),
 
   /** DFBP 活性肽检索 */
@@ -101,7 +94,6 @@ export const databaseApi = {
   }) =>
     withFallback(
       () => api.get<PaginatedResponse<BioactivePeptide>>('/databases/peptides', { params }).then((r) => r.data),
-      () => mockDatabaseApi.searchPeptides(params) as unknown as Promise<PaginatedResponse<BioactivePeptide>>,
       'searchPeptides',
     ),
 
@@ -109,7 +101,6 @@ export const databaseApi = {
   getPeptide: (id: number) =>
     withFallback(
       () => api.get<BioactivePeptide>(`/databases/peptides/${id}`).then((r) => r.data),
-      () => mockDatabaseApi.getPeptide(id),
       'getPeptide',
     ),
 
@@ -117,7 +108,6 @@ export const databaseApi = {
   getActivityTypes: () =>
     withFallback(
       () => api.get<{ activity_types: { type_en: string; type_cn: string; count: number }[] }>('/databases/peptides/activity-types').then((r) => r.data),
-      () => mockDatabaseApi.getActivityTypes(),
       'getActivityTypes',
     ),
 
@@ -125,7 +115,6 @@ export const databaseApi = {
   searchKnowledge: (params: { keyword: string; node_type?: string; limit?: number }) =>
     withFallback(
       () => api.get<{ items: KnowledgeNode[]; total: number }>('/databases/knowledge-graph/search', { params }).then((r) => r.data),
-      () => mockDatabaseApi.searchKnowledge(params) as Promise<{ items: KnowledgeNode[]; total: number }>,
       'searchKnowledge',
     ),
 
@@ -245,7 +234,6 @@ export const databaseApi = {
   unifiedSearch: (params: { keyword: string; sources?: string; limit?: number }) =>
     withFallback(
       () => api.get('/databases/unified-search', { params }).then((r) => r.data),
-      () => mockDatabaseApi.unifiedSearch(params),
       'unifiedSearch',
     ),
 
@@ -269,7 +257,6 @@ export const databaseApi = {
   getSyncStats: () =>
     withFallback(
       () => api.get('/databases/sync/stats').then((r) => r.data),
-      () => mockDatabaseApi.getSyncStats(),
       'getSyncStats',
     ),
 
@@ -289,7 +276,6 @@ export const databaseApi = {
   getDashboardOverview: () =>
     withFallback(
       () => api.get('/databases/dashboard/overview').then((r) => r.data as DashboardOverview),
-      () => mockDatabaseApi.getDashboardOverview(),
       'getDashboardOverview',
     ),
 
@@ -297,7 +283,6 @@ export const databaseApi = {
   getDashboardTrends: () =>
     withFallback(
       () => api.get('/databases/dashboard/trends').then((r) => r.data as DashboardTrends),
-      () => mockDatabaseApi.getDashboardTrends(),
       'getDashboardTrends',
     ),
 
@@ -305,7 +290,6 @@ export const databaseApi = {
   getSearchSuggestions: (keyword: string, limit?: number) =>
     withFallback(
       () => api.get('/databases/suggestions', { params: { keyword, limit } }).then((r) => r.data),
-      () => mockDatabaseApi.getSearchSuggestions(keyword, limit),
       'getSearchSuggestions',
     ),
 
@@ -313,7 +297,6 @@ export const databaseApi = {
   crossSearch: (herbName: string) =>
     withFallback(
       () => api.get('/databases/cross-search', { params: { herb_name: herbName } }).then((r) => r.data as CrossSearchResult),
-      () => mockDatabaseApi.crossSearch(herbName),
       'crossSearch',
     ),
 
@@ -321,7 +304,6 @@ export const databaseApi = {
   getDataQuality: () =>
     withFallback(
       () => api.get('/databases/data-quality').then((r) => r.data as DataQualityReport),
-      () => mockDatabaseApi.getDataQuality(),
       'getDataQuality',
     ),
 
@@ -329,15 +311,7 @@ export const databaseApi = {
   getFoodHomologyRanking: () =>
     withFallback(
       () => api.get<FoodHomologyRankingResponse>('/databases/ranking/food-homology').then((r) => r.data),
-      async () => {
-        const mockData = await mockDatabaseApi.getDashboardOverview()
-        const herbs = (mockData.top_herbs_by_ob || []).filter((h: any) => h.is_food_homology)
-        return {
-          items: herbs.map((h: any, i: number) => ({ ...h, rank: i + 1, heat_score: (h.ob_percent || 0) * 0.4 + (h.compound_count || 0) * 2 })),
-          total: herbs.length,
-          generated_at: new Date().toISOString(),
-        }
-      },
+      () => Promise.resolve({ items: [], total: 0, generated_at: new Date().toISOString() }),
       'getFoodHomologyRanking',
     ),
 
@@ -345,22 +319,57 @@ export const databaseApi = {
   getActivePeptideRanking: () =>
     withFallback(
       () => api.get<ActivePeptideRankingResponse>('/databases/ranking/active-peptides').then((r) => r.data),
-      async () => {
-        const mockData = await mockDatabaseApi.getDashboardOverview()
-        const peptides = mockData.top_active_peptides || []
-        return {
-          items: peptides.map((p: any, i: number) => ({
-            ...p,
-            rank: i + 1,
-            seq_length: (p.sequence || '').length,
-            activity_score: p.activity_value ? Math.round(1000 / (Number(p.activity_value) + 0.01)) : 0,
-          })),
-          total: peptides.length,
-          generated_at: new Date().toISOString(),
-        }
-      },
+      () => Promise.resolve({ items: [], total: 0, generated_at: new Date().toISOString() }),
       'getActivePeptideRanking',
     ),
+
+  /** 通用 GET 请求（用于未预定义的路由） */
+  get: (url: string, config?: Record<string, unknown>) =>
+    api.get(url, config).then((r) => r.data),
+
+  /** 通用 POST 请求（用于未预定义的路由） */
+  post: (url: string, data?: unknown, config?: Record<string, unknown>) =>
+    api.post(url, data, config).then((r) => r.data),
+
+  // ═══════════════════════════════════════════
+  // 收藏架 (Pantry) — Phase 2 增强
+  // ═══════════════════════════════════════════
+
+  /** 获取用户收藏列表 */
+  getPantry: (item_type?: string) =>
+    api.get<{ items: any[]; total: number }>(`/databases/pantry`, { params: { item_type } }).then((r) => r.data),
+
+  /** 添加食品原料到收藏 */
+  addToPantryFoodMaterial: (material_id: number) =>
+    api.post(`/databases/pantry/food-materials/${material_id}`).then((r) => r.data),
+
+  /** 从收藏中移除食品原料 */
+  removeFromPantryFoodMaterial: (material_id: number) =>
+    api.delete(`/databases/pantry/food-materials/${material_id}`).then((r) => r.data),
+
+  /** 添加零售产品到收藏 */
+  addToPantryRetailProduct: (product_id: number) =>
+    api.post(`/databases/pantry/retail-products/${product_id}`).then((r) => r.data),
+
+  /** 从收藏中移除零售产品 */
+  removeFromPantryRetailProduct: (product_id: number) =>
+    api.delete(`/databases/pantry/retail-products/${product_id}`).then((r) => r.data),
+
+  /** 添加中药材到收藏 */
+  addToPantryHerb: (herb_id: string) =>
+    api.post(`/databases/pantry/herbs/${herb_id}`).then((r) => r.data),
+
+  /** 从收藏中移除中药材 */
+  removeFromPantryHerb: (herb_id: string) =>
+    api.delete(`/databases/pantry/herbs/${herb_id}`).then((r) => r.data),
+
+  /** 添加活性肽到收藏 */
+  addToPantryPeptide: (peptide_id: number) =>
+    api.post(`/databases/pantry/peptides/${peptide_id}`).then((r) => r.data),
+
+  /** 从收藏中移除活性肽 */
+  removeFromPantryPeptide: (peptide_id: number) =>
+    api.delete(`/databases/pantry/peptides/${peptide_id}`).then((r) => r.data),
 }
 
 // ═══════════════════════════════════════════

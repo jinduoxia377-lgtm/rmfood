@@ -6,14 +6,33 @@
  */
 
 // 环境配置
-export { envConfig, getCurrentEnv, isDevelopment, isProduction, isStaging, type Environment, type EnvConfig, type ApiConfig, type WebSocketConfig, type AppConfig } from './env'
+export {
+  envConfig,
+  getCurrentEnv,
+  isDevelopment,
+  isProduction,
+  isStaging,
+  type Environment,
+  type EnvConfig,
+  type ApiConfig,
+  type WebSocketConfig,
+  type AppConfig,
+} from './env';
 
 // API 端点配置
-export { API_ENDPOINTS, getApiBaseUrl, type ApiEndpoint } from './apiEndpoints'
+export { API_ENDPOINTS, getApiBaseUrl, type ApiEndpoint } from './apiEndpoints';
 
 // AI 模块配置
-export { createAIConfig, getAIConfig, resetAIConfig, validateConfig, type AIConfig, type Environment } from './ai.config'
-export { AIIcons, StandardIcon, getAIIcon, renderIcon, type AIIconName, type IconProps, type IconSize, type IconVariant } from './ai.icons'
+export {
+  AIIcons,
+  StandardIcon,
+  getAIIcon,
+  renderIcon,
+  type AIIconName,
+  type IconProps,
+  type IconSize,
+  type IconVariant,
+} from './ai.icons';
 export {
   STORAGE_KEYS,
   LIMITS,
@@ -26,7 +45,7 @@ export {
   ROLES,
   FORMULA_CATEGORIES,
   type FormulaCategory,
-} from './ai.constants'
+} from './ai.constants';
 
 // GenerateTab 配置
 export {
@@ -46,17 +65,23 @@ export {
   type HerbRole,
   type InputMode,
   type ViewMode,
-  type FormulaCategory,
-} from '@/components/ai/features/GenerateTab/config/generateTabConfig'
+} from '@/components/ai/features/GenerateTab/config/generateTabConfig';
 
 // 应用核心配置
-export { BRAND_CONFIG, LOGIN_PAGE_CONFIG, RHINE_BRAND_CONFIG, RHINE_LOGIN_CONFIG, DASHBOARD_CONFIG, STATUS_CONFIG } from './app.config'
+export {
+  BRAND_CONFIG,
+  LOGIN_PAGE_CONFIG,
+  RHINE_BRAND_CONFIG,
+  RHINE_LOGIN_CONFIG,
+  DASHBOARD_CONFIG,
+  STATUS_CONFIG,
+} from './app.config';
 
-// 主题配置
-export { PROFESSIONAL_THEMES } from './theme.config'
+// 主题配置已迁移到 @/theme (Zustand 系统)
+// export { PROFESSIONAL_THEMES } from './theme.config';
 
 // 便捷导入
-export { getAIConfig as config } from './ai.config'
-export { LIMITS as limits } from './ai.constants'
-export { DEFAULTS as defaults } from './ai.constants'
-export { ERROR_MESSAGES as errors } from './ai.constants'
+export { getAIConfig as config } from './ai.config';
+export { LIMITS as limits } from './ai.constants';
+export { DEFAULTS as defaults } from './ai.constants';
+export { ERROR_MESSAGES as errors } from './ai.constants';

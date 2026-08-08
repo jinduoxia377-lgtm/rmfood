@@ -69,12 +69,25 @@ function createProcessPolyfillPlugin(): Plugin {
  * 该模式在 debug 等库中出现，esbuild 的 ESM 模式不允许 bare identifier delete
  */
 function createEsbuildCompatPlugin(): Plugin {
+  const fixDeleteUndefined = (code: string): string => {
+    return code.replace(/delete undefined/g, 'undefined = void 0');
+  };
   return {
     name: 'esbuild-compat-plugin',
+    enforce: 'pre',
     transform(code) {
       if (code.includes('delete undefined')) {
         return {
-          code: code.replace(/delete undefined/g, 'undefined = void 0'),
+          code: fixDeleteUndefined(code),
+          map: null,
+        };
+      }
+      return null;
+    },
+    renderChunk(code) {
+      if (code.includes('delete undefined')) {
+        return {
+          code: fixDeleteUndefined(code),
           map: null,
         };
       }
@@ -103,13 +116,14 @@ export default defineConfig(({ mode }) => {
         jsxRuntime: 'automatic',
       }),
       tailwindcss(),
-      isProduction && visualizer({
-        open: false,
-        filename: 'dist/stats.html',
-        template: 'treemap',
-        gzipSize: true,
-        brotliSize: true,
-      }),
+      isProduction &&
+        visualizer({
+          open: false,
+          filename: 'dist/stats.html',
+          template: 'treemap',
+          gzipSize: true,
+          brotliSize: true,
+        }),
     ].filter(Boolean),
 
     resolve: {
@@ -153,136 +167,164 @@ export default defineConfig(({ mode }) => {
       // 🔒 P3-1: esbuild 压缩增强（生产环境）
       // - 删除 console.log / debugger
       // - 更激进的 tree-shaking
-      esbuildOptions: isProduction ? {
-        drop: ['console', 'debugger'],
-        legalComments: 'none',
-        treeShaking: true,
-        // 🔒 P3-1: 目标浏览器版本（支持 Chrome 110+ / Edge 110+ / Firefox 110+ / Safari 16+）
-        target: ['chrome110', 'edge110', 'firefox110', 'safari16'],
-        // 更小的标识符 + 更激进的压缩
-        minifyWhitespace: true,
-        minifyIdentifiers: true,
-        minifySyntax: true,
-      } : undefined,
+      esbuildOptions: isProduction
+        ? {
+            drop: ['console', 'debugger'],
+            legalComments: 'none',
+            treeShaking: true,
+            // 🔒 P3-1: 目标浏览器版本（支持 Chrome 110+ / Edge 110+ / Firefox 110+ / Safari 16+）
+            target: ['chrome110', 'edge110', 'firefox110', 'safari16'],
+            // 更小的标识符 + 更激进的压缩
+            minifyWhitespace: true,
+            minifyIdentifiers: true,
+            minifySyntax: true,
+          }
+        : undefined,
 
       rollupOptions: {
         output: {
-          chunkFileNames: isProduction
-            ? 'assets/js/[name]-[hash:8].js'
-            : 'assets/js/[name].js',
-          entryFileNames: isProduction
-            ? 'assets/js/[name]-[hash:8].js'
-            : 'assets/js/[name].js',
-          assetFileNames: isProduction
-            ? 'assets/[ext]/[name]-[hash:8].[ext]'
-            : 'assets/[ext]/[name].[ext]',
+          chunkFileNames: isProduction ? 'assets/js/[name]-[hash:8].js' : 'assets/js/[name].js',
+          entryFileNames: isProduction ? 'assets/js/[name]-[hash:8].js' : 'assets/js/[name].js',
+          assetFileNames: isProduction ? 'assets/[ext]/[name]-[hash:8].[ext]' : 'assets/[ext]/[name].[ext]',
 
           // 🔒 P3-1: enhanced manualChunks 策略
           manualChunks: (id, { moduleIds }) => {
             // ── Vendor chunks ──
             if (id.includes('node_modules')) {
               // 🔒 P3-1: React 生态（核心框架 - 稳定版本）
-              if (id.includes('react') || id.includes('react-dom') || id.includes('scheduler') || id.includes('react-router')) {
-                return 'vendor-react'
+              if (
+                id.includes('react') ||
+                id.includes('react-dom') ||
+                id.includes('scheduler') ||
+                id.includes('react-router')
+              ) {
+                return 'vendor-react';
               }
               // 🔒 P3-1: UI 组件库
-              if (id.includes('lucide-react') || id.includes('@radix-ui') || id.includes('@tanstack') || id.includes('headlessui')) {
-                return 'vendor-ui'
+              if (
+                id.includes('lucide-react') ||
+                id.includes('@radix-ui') ||
+                id.includes('@tanstack') ||
+                id.includes('headlessui')
+              ) {
+                return 'vendor-ui';
               }
               // 🔒 P3-1: Markdown 渲染（体积较大，独立 chunk）
-              if (id.includes('remark') || id.includes('rehype') || id.includes('dompurify') || id.includes('markdown')) {
-                return 'vendor-markdown'
+              if (
+                id.includes('remark') ||
+                id.includes('rehype') ||
+                id.includes('dompurify') ||
+                id.includes('markdown')
+              ) {
+                return 'vendor-markdown';
               }
               // 🔒 P3-1: 图表库（大型依赖 - 懒加载）
               if (id.includes('recharts') || id.includes('d3')) {
-                return 'vendor-charts'
+                return 'vendor-charts';
               }
               // 🔒 P3-1: 文件导出（体积最大 - 动态加载）
               if (id.includes('docx') || id.includes('jspdf') || id.includes('exceljs') || id.includes('html2canvas')) {
-                return 'vendor-export'
+                return 'vendor-export';
               }
               // 🔒 P3-1: 状态管理 & HTTP 客户端
               if (id.includes('axios') || id.includes('zustand') || id.includes('@tanstack/react-query')) {
-                return 'vendor-core'
+                return 'vendor-core';
               }
               // 🔒 P3-1: 日期/时间工具（统一分组）
               if (id.includes('dayjs') || id.includes('date-fns') || id.includes('timeago')) {
-                return 'vendor-date'
+                return 'vendor-date';
               }
               // 🔒 P3-1: i18n 国际化（如需要多语言支持）
               if (id.includes('i18n') || id.includes('intl')) {
-                return 'vendor-i18n'
+                return 'vendor-i18n';
               }
               // 🔒 P3-1: 其他 node_modules 依赖（避免大 vendor 文件）
-              return 'vendor-other'
+              return 'vendor-other';
             }
 
             // ── 功能模块分割 ──
             // 🔒 P3-1: AI Chat（用户高活跃路径，优先级高）
-            if (id.includes('/components/ai/features/ChatTab') ||
-                id.includes('/components/ai/features/hooks/useChatMessages') ||
-                id.includes('/components/ai/features/services/chatService')) {
-              return 'feature-ai-chat'
+            if (
+              id.includes('/components/ai/features/ChatTab') ||
+              id.includes('/components/ai/features/hooks/useChatMessages') ||
+              id.includes('/components/ai/features/services/chatService')
+            ) {
+              return 'feature-ai-chat';
             }
-            if (id.includes('/components/ai/features/components/SimpleMarkdown') ||
-                id.includes('/components/ai/features/utils/sanitize')) {
-              return 'feature-ai-chat-render'
+            if (
+              id.includes('/components/ai/features/components/SimpleMarkdown') ||
+              id.includes('/components/ai/features/utils/sanitize')
+            ) {
+              return 'feature-ai-chat-render';
             }
             // 🔒 P3-1: AI 生成（高价值功能，独立 chunk）
-            if (id.includes('/components/ai/features/GenerateTab') ||
-                id.includes('/components/ai/features/components/FormulaCard') ||
-                id.includes('/components/ai/features/hooks/useFormulaManager')) {
-              return 'feature-ai-generate'
+            if (
+              id.includes('/components/ai/features/GenerateTab') ||
+              id.includes('/components/ai/features/components/FormulaCard') ||
+              id.includes('/components/ai/features/hooks/useFormulaManager')
+            ) {
+              return 'feature-ai-generate';
             }
             // 🔒 P3-1: AI 肽段分析（专业功能）
-            if (id.includes('/components/ai/features/Peptide') ||
-                id.includes('/components/ai/features/services/peptide') ||
-                id.includes('/components/ai/professional/Peptide')) {
-              return 'feature-ai-peptide'
+            if (
+              id.includes('/components/ai/features/Peptide') ||
+              id.includes('/components/ai/features/services/peptide') ||
+              id.includes('/components/ai/professional/Peptide')
+            ) {
+              return 'feature-ai-peptide';
             }
             // 🔒 P3-1: AI 安全分析（专业功能）
-            if (id.includes('/components/ai/features/SafetyTab') ||
-                id.includes('/components/ai/features/services/safety')) {
-              return 'feature-ai-safety'
+            if (
+              id.includes('/components/ai/features/SafetyTab') ||
+              id.includes('/components/ai/features/services/safety')
+            ) {
+              return 'feature-ai-safety';
             }
             // 🔒 P3-1: 配方管理（核心功能）
-            if (id.includes('/pages/formula/') ||
-                id.includes('/components/formula/')) {
-              return 'feature-formula'
+            if (id.includes('/pages/formula/') || id.includes('/components/formula/')) {
+              return 'feature-formula';
             }
             // 🔒 P3-1: 数据库查询（数据密集型）
-            if (id.includes('/pages/database/') ||
-                id.includes('/components/database/') ||
-                id.includes('/api/database')) {
-              return 'feature-database'
+            if (
+              id.includes('/pages/database/') ||
+              id.includes('/components/database/') ||
+              id.includes('/api/database')
+            ) {
+              return 'feature-database';
             }
             // 🔒 P3-1: 数据分析（图表 + 计算）
-            if (id.includes('/pages/analytics/') ||
-                id.includes('/components/analytics/')) {
-              return 'feature-analytics'
+            if (id.includes('/pages/analytics/') || id.includes('/components/analytics/')) {
+              return 'feature-analytics';
             }
             // 🔒 P3-1: 组织管理
-            if (id.includes('/pages/organizations/') ||
-                id.includes('/components/academic/')) {
-              return 'feature-orgs'
+            if (id.includes('/pages/organizations/') || id.includes('/components/academic/')) {
+              return 'feature-orgs';
             }
             // 🔒 P3-1: 系统设置
             if (id.includes('/pages/settings/')) {
-              return 'feature-settings'
+              return 'feature-settings';
             }
             // 🔒 P3-1: 实验管理
             if (id.includes('/pages/experiment/')) {
-              return 'feature-experiment'
+              return 'feature-experiment';
             }
             // 🔒 P3-1: 用户管理
             if (id.includes('/pages/user/') || id.includes('/components/user/')) {
-              return 'feature-user'
+              return 'feature-user';
             }
           },
-        }
+        },
       },
       optimizeDeps: {
-        include: ['react', 'react-dom', 'react-router-dom', '@tanstack/react-query', 'axios', 'zustand', 'lucide-react'],
+        include: [
+          'react',
+          'react-dom',
+          'react-router-dom',
+          '@tanstack/react-query',
+          'axios',
+          'zustand',
+          'lucide-react',
+        ],
         exclude: ['recharts', 'd3', 'docx', 'jspdf', 'html2canvas', 'exceljs'],
       },
     },

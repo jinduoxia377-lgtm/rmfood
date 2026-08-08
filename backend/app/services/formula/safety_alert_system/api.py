@@ -91,7 +91,7 @@ def create_safety_alert_router(safety_system: Optional[SafetyAlertSystem] = None
         from fastapi import APIRouter, Depends, HTTPException, Query, status
         from ..api.deps import get_current_user
         from ..models.user_model import User
-        from ..core.rbac import require_role
+        from ..core.rbac.rbac import require_role
         from ..models.enums import UserRole
     except ImportError:
         logger.error("无法导入 FastAPI 依赖，API 路由将不可用")
@@ -190,13 +190,13 @@ def create_safety_alert_router(safety_system: Optional[SafetyAlertSystem] = None
         except ValueError as e:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail={"error": "NOT_FOUND", "message": str(e)}
+                detail={"error": "NOT_FOUND", "message": sanitize_error(e, "资源未找到")}
             )
         except Exception as e:
-            logger.error(f"更新阈值失败: {e}")
+            logger.error("更新阈值失败", exc_info=True)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail={"error": "UPDATE_FAILED", "message": str(e)}
+                detail={"error": "UPDATE_FAILED", "message": sanitize_error(e, "更新失败，请稍后重试")}
             )
 
     @router.post("/check-safety", summary="实时配方安全检查")
@@ -237,10 +237,10 @@ def create_safety_alert_router(safety_system: Optional[SafetyAlertSystem] = None
             return result.to_dict()
 
         except Exception as e:
-            logger.error(f"安全检查失败: {e}")
+            logger.error("安全检查失败", exc_info=True)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail={"error": "CHECK_FAILED", "message": str(e)}
+                detail={"error": "CHECK_FAILED", "message": sanitize_error(e, "安全检查失败，请稍后重试")}
             )
 
     @router.get("/safety-thresholds/search", summary="搜索成分")
@@ -328,7 +328,7 @@ def example_usage():
             logger.info(f"   阻断: {'是' if alert.blocking else '否'}")
         else:
             logger.info(f"[{'SAFE':8s}] {name}: {amount}mg ({group}) - 安全")
-        print()
+        logger.info()
 
     # 示例 3: 配方安全检查
     logger.info("\n--- 示例 3: 配方安全检查 ---\n")
@@ -369,7 +369,7 @@ def example_usage():
     for group in groups:
         result = system.check_formula_safety(test_formula, target_group=group)
         group_names = {"adult": "成人", "pregnant": "孕妇", "children": "儿童", "elderly": "老年人"}
-        print(f"[{group_names[group]}] 风险评分: {result.overall_risk_score:.1f}, "
+        logger.info(f"[{group_names[group]}] 风险评分: {result.overall_risk_score:.1f}, "
               f"预警: {len(result.alerts)}, 阻断: {'是' if result.blocked_by_critical else '否'}")
 
     # 示例 5: 搜索功能

@@ -17,6 +17,7 @@
  * @lastUpdated 2026-05-12
  */
 
+import { logger } from '@/utils/safeLogger';
 // ===== 类型定义 =====
 
 export type TemplateContext = Record<string, unknown>;
@@ -276,7 +277,7 @@ class TemplateEngine {
       return this.renderAST(ast, context)
     } catch (error) {
       const err = error as TemplateError
-      console.error(`[TemplateEngine] 渲染错误 (${err.type}): ${err.message}`, err)
+      logger.error(`[TemplateEngine] 渲染错误 (${err.type}): ${err.message}`, err)
       return `[模板错误: ${err.message}]`
     }
   }

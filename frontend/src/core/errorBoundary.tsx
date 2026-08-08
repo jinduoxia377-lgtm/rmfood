@@ -37,7 +37,7 @@ import {
 const DEFAULT_CONFIG: Required<Omit<ErrorHandlerConfig, 'onError' | 'getUserInfo' | 'filter'>> & ErrorHandlerConfig = {
   onError: undefined,
   logToConsole: true,
-  reportToSentry: false,
+  reportToSentry: !!import.meta.env.VITE_SENTRY_DSN,
   maxErrors: 200,
   fuseThreshold: 5,
   filter: undefined,
@@ -330,6 +330,8 @@ interface ErrorBoundaryProps {
   onReset?: () => void;
   /** 错误发生回调（用于上报等） */
   onError?: (error: Error, info: ErrorInfo) => void;
+  /** 模块名称（用于错误追踪） */
+  moduleName?: string;
 }
 
 /**
@@ -426,14 +428,14 @@ function DefaultFallback({ error, resetErrorBoundary, errorDetails, safeRefresh 
         alignItems: 'center',
         justifyContent: 'center',
         padding: '20px',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        background: 'linear-gradient(135deg, var(--color-tertiary, #AF52DE) 0%, #7C3AED 100%)',
         fontFamily:
           '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", sans-serif',
       }}
     >
       <div
         style={{
-          background: 'white',
+          background: 'var(--bg-surface, #FFFFFF)',
           borderRadius: '16px',
           boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
           maxWidth: '560px',
@@ -454,7 +456,7 @@ function DefaultFallback({ error, resetErrorBoundary, errorDetails, safeRefresh 
           style={{
             margin: '0 0 12px 0',
             fontSize: '24px',
-            color: '#333',
+            color: 'var(--text-primary, #1D1D1F)',
             fontWeight: 600,
           }}
         >
@@ -463,7 +465,7 @@ function DefaultFallback({ error, resetErrorBoundary, errorDetails, safeRefresh 
         <p
           style={{
             margin: '0 0 24px 0',
-            color: '#666',
+            color: 'var(--text-secondary, #6E6E73)',
             fontSize: '14px',
             lineHeight: 1.6,
           }}
@@ -504,7 +506,7 @@ function DefaultFallback({ error, resetErrorBoundary, errorDetails, safeRefresh 
             onClick={resetErrorBoundary}
             style={{
               padding: '10px 24px',
-              background: '#667eea',
+              background: 'var(--color-secondary, #007AFF)',
               color: 'white',
               border: 'none',
               borderRadius: '8px',
@@ -514,7 +516,7 @@ function DefaultFallback({ error, resetErrorBoundary, errorDetails, safeRefresh 
               transition: 'background 0.2s',
             }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.background = '#5a67d8';
+              (e.currentTarget as HTMLButtonElement).style.background = '#5B6ABF';
             }}
             onMouseLeave={(e) => {
               (e.currentTarget as HTMLButtonElement).style.background = '#667eea';
@@ -526,9 +528,9 @@ function DefaultFallback({ error, resetErrorBoundary, errorDetails, safeRefresh 
             onClick={safeRefresh}
             style={{
               padding: '10px 24px',
-              background: '#f7fafc',
-              color: '#4a5568',
-              border: '1px solid #e2e8f0',
+              background: 'var(--bg-surface, #FFFFFF)',
+              color: 'var(--text-secondary, #6E6E73)',
+              border: `1px solid var(--border-color, rgba(0,0,0,0.06))`,
               borderRadius: '8px',
               cursor: 'pointer',
               fontSize: '14px',
@@ -544,7 +546,7 @@ function DefaultFallback({ error, resetErrorBoundary, errorDetails, safeRefresh 
           style={{
             background: 'transparent',
             border: 'none',
-            color: '#667eea',
+            color: 'var(--color-secondary, #007AFF)',
             fontSize: '12px',
             cursor: 'pointer',
             textDecoration: 'underline',
@@ -559,7 +561,7 @@ function DefaultFallback({ error, resetErrorBoundary, errorDetails, safeRefresh 
               marginTop: '16px',
               padding: '16px',
               background: '#1a202c',
-              color: '#e2e8f0',
+              color: 'var(--border-color, rgba(0,0,0,0.06))',
               borderRadius: '8px',
               fontSize: '12px',
               textAlign: 'left',
@@ -805,3 +807,6 @@ export function initErrorSystem(config: ErrorHandlerConfig = {}): void {
 // ═════════════════════════════════════════
 
 export { DefaultFallback };
+
+// 别名导出 — 向后兼容（GlobalErrorBoundary / ModuleErrorBoundary 就是 ErrorBoundary 的别名）
+export { ErrorBoundary as GlobalErrorBoundary, ErrorBoundary as ModuleErrorBoundary };

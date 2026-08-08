@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: formula-calculation-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: formula-calculation-service
+  template:
+    metadata:
+      labels:
+        app: formula-calculation-service
+    spec:
+      containers:
+      - name: formula-calc
+        image: rmfood/formula-calculation-service:latest
+        ports:
+        - containerPort: 8001
+        env:
+        - name: APP_ENV
+          value: "production"
+        - name: RAY_ADDRESS
+          value: "ray-head.default.svc.cluster.local"
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: formula-calculation-service
+spec:
+  type: ClusterIP
+  selector:
+    app: formula-calculation-service
+  ports:
+  - port: 8001
+    targetPort: 8001

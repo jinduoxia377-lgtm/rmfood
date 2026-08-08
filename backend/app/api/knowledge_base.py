@@ -10,12 +10,12 @@ from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
-from app.api.deps import get_db_session
-from app.core.cache_system import get_cache, MultiLevelCache
-from app.services.data_sources.tcmsp_client import tcmsp_service
-from app.services.data_sources.dfbp_client import dfbp_service
-from app.services.data_sources.china_food_regulations import regulation_service
-from app.services.intent_recognition import (
+from .deps import get_db_session
+from ..core.performance.cache_system import get_cache, MultiLevelCache
+from ..services.data_sources.tcmsp_client import tcmsp_service
+from ..services.data_sources.dfbp_client import dfbp_service
+from ..services.data_sources.china_food_regulations import regulation_service
+from ..services.intent_recognition import (
     intent_recognition_service,
     KnowledgeBaseType,
     IntentType,
@@ -84,7 +84,8 @@ async def smart_query(
                 ],
             }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"查询失败: {str(e)}")
+        logger.error("查询失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="服务器内部错误，请稍后重试")
     
     # 缓存结果（有效期5分钟）
     await cache.set(cache_key, result, ttl=300)
@@ -574,3 +575,144 @@ async def clear_knowledge_base_cache(
     """清除知识库相关缓存"""
     await cache.clear_all()
     return {"status": "success", "message": "知识库缓存已清除"}
+
+
+# ═══════════════════════════════════════════
+# 知识图谱查询 API
+# ═══════════════════════════════════════════
+
+@router.get("/graph/nodes", summary="获取图谱节点列表")
+async def get_graph_nodes(
+    node_type: Optional[str] = Query(None, description="节点类型过滤: herb/compound/target/disease"),
+    limit: int = Query(100, ge=1, le=1000, description="返回数量"),
+    offset: int = Query(0, ge=0, description="偏移量"),
+    cache: MultiLevelCache = Depends(get_cache),
+):
+    """获取知识图谱节点列表，支持类型过滤和分页"""
+    cache_key = f"graph_nodes:{node_type}:{limit}:{offset}"
+    cached = await cache.get(cache_key)
+    if cached:
+        return cached
+
+    from ..services.kg.graph_engine import KnowledgeGraphEngine
+    engine = KnowledgeGraphEngine()
+
+    nodes = await engine.get_nodes(node_type=node_type, limit=limit, offset=offset)
+    result = {
+        "nodes": nodes,
+        "total": len(nodes),
+        "limit": limit,
+        "offset": offset,
+    }
+
+    await cache.set(cache_key, result, ttl=300)
+    return result
+
+
+@router.get("/graph/search", summary="搜索图谱节点")
+async def search_graph_nodes(
+    q: str = Query(..., min_length=1, description="搜索关键词"),
+    node_type: Optional[str] = Query(None, description="节点类型过滤"),
+    limit: int = Query(20, ge=1, le=200, description="返回数量"),
+    cache: MultiLevelCache = Depends(get_cache),
+):
+    """搜索知识图谱中的节点（支持模糊匹配）"""
+    cache_key = f"graph_search:{q}:{node_type}:{limit}"
+    cached = await cache.get(cache_key)
+    if cached:
+        return cached
+
+    from ..services.kg.graph_engine import KnowledgeGraphEngine
+    engine = KnowledgeGraphEngine()
+
+    nodes = await engine.search_nodes(q, node_type=node_type, limit=limit)
+    result = {
+        "query": q,
+        "nodes": nodes,
+        "total": len(nodes),
+    }
+
+    await cache.set(cache_key, result, ttl=300)
+    return result
+
+
+@router.get("/graph/neighbors", summary="获取节点邻居关系")
+async def get_node_neighbors(
+    node_id: str = Query(..., description="节点ID"),
+    depth: int = Query(1, ge=1, le=3, description="搜索深度"),
+    cache: MultiLevelCache = Depends(get_cache),
+):
+    """获取节点的邻居关系（支持多跳搜索）"""
+    cache_key = f"graph_neighbors:{node_id}:{depth}"
+    cached = await cache.get(cache_key)
+    if cached:
+        return cached
+
+    from ..services.kg.graph_engine import KnowledgeGraphEngine
+    engine = KnowledgeGraphEngine()
+
+    neighbors = await engine.get_neighbors(node_id, depth=depth)
+    result = {
+        "node_id": node_id,
+        "depth": depth,
+        "neighbors": neighbors,
+        "total_edges": sum(len(v) for v in neighbors.values()),
+    }
+
+    await cache.set(cache_key, result, ttl=300)
+    return result
+
+
+@router.get("/graph/subgraph", summary="提取子图")
+async def get_subgraph(
+    seed_nodes: str = Query(..., description="种子节点ID列表，逗号分隔"),
+    max_depth: int = Query(2, ge=1, le=5, description="最大搜索深度"),
+    cache: MultiLevelCache = Depends(get_cache),
+):
+    """从种子节点出发提取连通子图"""
+    node_ids = [nid.strip() for nid in seed_nodes.split(",") if nid.strip()]
+    if not node_ids:
+        raise HTTPException(status_code=400, detail="至少提供一个种子节点ID")
+
+    cache_key = f"graph_subgraph:{','.join(node_ids)}:{max_depth}"
+    cached = await cache.get(cache_key)
+    if cached:
+        return cached
+
+    from ..services.kg.graph_engine import KnowledgeGraphEngine
+    engine = KnowledgeGraphEngine()
+
+    subgraph = await engine.extract_subgraph(node_ids, max_depth=max_depth)
+    result = {
+        "seed_nodes": node_ids,
+        "max_depth": max_depth,
+        "subgraph": subgraph,
+    }
+
+    await cache.set(cache_key, result, ttl=300)
+    return result
+
+
+@router.get("/graph/pagerank", summary="PageRank 中心性排名")
+async def get_page_rank(
+    top_n: int = Query(50, ge=1, le=500, description="返回前N个节点"),
+    cache: MultiLevelCache = Depends(get_cache),
+):
+    """计算知识图谱的 PageRank 中心性排名"""
+    cache_key = f"graph_pagerank:{top_n}"
+    cached = await cache.get(cache_key)
+    if cached:
+        return cached
+
+    from ..services.kg.graph_engine import KnowledgeGraphEngine
+    engine = KnowledgeGraphEngine()
+
+    scores = await engine.compute_pagerank(top_n=top_n)
+    result = {
+        "algorithm": "PageRank",
+        "top_n": top_n,
+        "scores": scores,
+    }
+
+    await cache.set(cache_key, result, ttl=600)
+    return result

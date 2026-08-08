@@ -633,7 +633,7 @@ async def test_feature_extractor():
         logger.info(f"   ✅ 性能达标! (目标: <50ms)")
     else:
         logger.info(f"   ⚠️ 性能未达标 (目标: <50ms)")
-    print()
+    logger.info()
     
     logger.info("="*80)
     logger.info(f"🎉 特征提取引擎测试完成! | 总维度: {FeatureVector().total_dimensions}")

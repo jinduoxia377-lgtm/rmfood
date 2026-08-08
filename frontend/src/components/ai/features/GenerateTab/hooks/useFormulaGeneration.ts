@@ -4,7 +4,7 @@ import { aiApi } from '@/api/ai'
 import type { AICandidate } from '@/api/ai'
 import { useGenerationProgress } from '@/hooks/useGenerationProgress'
 import { useOperationFeedback } from '@/hooks/useOperationFeedback'
-import { getAIConfig, DEFAULTS, ERROR_MESSAGES } from '@/config'
+import { DEFAULTS, ERROR_MESSAGES } from '@/config'
 import { logger } from '@/utils/safeLogger'
 import { AppError, ErrorFactory } from '@/utils/errorHandler'
 import { getUserMessage } from '@/constants/errorCodes'
@@ -147,12 +147,12 @@ export function useFormulaGeneration({
           } else if (errorStr.includes('500') || errorStr.includes('Internal Server Error')) {
             enhancedError = ErrorFactory.serverError()
           } else {
-            enhancedError = new AppError({ code: 0, message: errorStr, originalError: error })
+            enhancedError = new AppError({ code: 'COMMON_UNKNOWN', message: errorStr, originalError: error })
           }
         } else if (typeof error === 'object' && error !== null) {
           const errorObj = error as Record<string, unknown>
-          const message = String(errorObj.message || errorObj.detail || errorObj.error || getUserMessage(0))
-          enhancedError = new AppError({ code: 0, message, originalError: error })
+          const message = String(errorObj.message || errorObj.detail || errorObj.error || getUserMessage('COMMON_UNKNOWN'))
+          enhancedError = new AppError({ code: 'COMMON_UNKNOWN', message, originalError: error })
         } else {
           enhancedError = ErrorFactory.ai.generationFailed()
         }
@@ -193,7 +193,7 @@ export function useFormulaGeneration({
 
       let errorMsg: string = ERROR_MESSAGES.FORMULA_GENERATION_FAILED
       let recoverySuggestion = ''
-      let errorCode: number | null = null
+      let errorCode: string | number | null = null
 
       const appError = error instanceof AppError ? error : ErrorFactory.ai.generationFailed()
 
@@ -204,8 +204,8 @@ export function useFormulaGeneration({
       if (error instanceof AppError) {
         switch (error.category) {
           case 'COMMON':
-            if (error.code === 1002) recoverySuggestion = '请检查网络后重试'
-            else if (error.code === 1003) recoverySuggestion = '请稍后重试'
+            if (error.code === 'COMMON_NETWORK_ERROR') recoverySuggestion = '请检查网络后重试'
+            else if (error.code === 'COMMON_TIMEOUT') recoverySuggestion = '请稍后重试'
             break
           case 'AUTH':
             recoverySuggestion = '请重新登录后再试'

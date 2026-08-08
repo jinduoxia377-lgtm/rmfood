@@ -627,20 +627,29 @@ const enUS = {
 
 // ===== 初始化 i18n =====
 
-i18n.use(initReactI18next).init({
-  resources: {
-    'zh-CN': zhCN,
-    'en-US': enUS,
-  },
-  lng: localStorage.getItem('rmfood-language') || DEFAULT_LANGUAGE,
-  fallbackLng: DEFAULT_LANGUAGE,
-  interpolation: {
-    escapeValue: false,
-  },
-  react: {
-    useSuspense: false,
-  },
-})
+// 全局 i18n 实例已在 src/i18n/index.ts 完成初始化（含 ai.* 命名空间）。
+// 若在此处再次调用 init() 会覆盖全局 resources，导致 ai.chat.chatTab.* 等键丢失。
+// 因此：未初始化时才 init 兜底；已初始化时以非覆盖方式合并本模块的扁平键，
+// 保留全局的 ai.* 命名空间。
+if (!i18n.isInitialized) {
+  i18n.use(initReactI18next).init({
+    resources: {
+      'zh-CN': zhCN,
+      'en-US': enUS,
+    },
+    lng: localStorage.getItem('rmfood-language') || DEFAULT_LANGUAGE,
+    fallbackLng: DEFAULT_LANGUAGE,
+    interpolation: {
+      escapeValue: false,
+    },
+    react: {
+      useSuspense: false,
+    },
+  })
+} else {
+  i18n.addResourceBundle('zh-CN', 'translation', zhCN.translation, true, false)
+  i18n.addResourceBundle('en-US', 'translation', enUS.translation, true, false)
+}
 
 // 监听语言变更并持久化
 i18n.on('languageChanged', (lng) => {

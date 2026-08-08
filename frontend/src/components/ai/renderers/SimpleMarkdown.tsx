@@ -99,9 +99,9 @@ function renderInline(text: string): string {
     .replace(/"/g, '&quot;')
 
   return escapedText
-    .replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold text-gray-900 dark:text-gray-100">$1</strong>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold text-neutral-900 dark:text-neutral-100">$1</strong>')
     .replace(/\*(.+?)\*/g, '<em class="italic">$1</em>')
-    .replace(/`([^`]+)`/g, '<code class="bg-slate-100 dark:bg-slate-800 text-primary-600 dark:text-primary-400 px-1 py-0.5 rounded text-xs font-mono">$1</code>')
+    .replace(/`([^`]+)`/g, '<code class="bg-neutral-100 dark:bg-neutral-800 text-primary-600 dark:text-primary-400 px-1 py-0.5 rounded text-xs font-mono">$1</code>')
 }
 
 function renderTable(tableContent: string): string {
@@ -115,7 +115,7 @@ function renderTable(tableContent: string): string {
 
   const hasRoleColumn = headerCells.some(h => /角色|组分类型|组方位置/i.test(h))
 
-  let html = '<div class="overflow-x-auto my-4 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm bg-white dark:bg-gray-800">'
+  let html = '<div class="overflow-x-auto my-4 rounded-lg border border-neutral-200 dark:border-neutral-700 shadow-sm bg-white dark:bg-neutral-800">'
   html += '<table class="w-full border-collapse min-w-[600px] md:min-w-0">'
   html += '<thead><tr class="bg-gradient-to-r from-primary-50 to-primary-100 dark:from-primary-900/40 dark:to-primary-800/30">'
   headerCells.forEach((cell, idx) => {
@@ -126,7 +126,7 @@ function renderTable(tableContent: string): string {
   html += '</tr></thead><tbody>'
   bodyRows.forEach((row, idx) => {
     const cells = parseCells(row)
-    const zebraClass = idx % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50/70 dark:bg-gray-900/30'
+    const zebraClass = idx % 2 === 0 ? 'bg-white dark:bg-neutral-800' : 'bg-slate-50/70 dark:bg-neutral-900/30'
     html += `<tr class="${zebraClass} hover:bg-primary-50/40 dark:hover:bg-primary-900/20 transition-colors duration-150">`
     cells.forEach((cell, cIdx) => {
       const isCenter = cIdx === 0 || /用量|剂量/.test(headerCells[cIdx] ?? '')
@@ -134,9 +134,9 @@ function renderTable(tableContent: string): string {
       const isHighlight = /君|臣|佐|使/i.test(cell)
       const cellClass = isHighlight
         ? 'font-semibold text-primary-700 dark:text-primary-300'
-        : 'text-gray-700 dark:text-gray-300'
+        : 'text-neutral-700 dark:text-neutral-300'
       const bgClass = isHighlight ? 'bg-primary-50/50 dark:bg-primary-900/20' : ''
-      html += `<td class="px-3 py-2.5 text-sm ${isCenter ? 'text-center' : 'text-left'} ${cellClass} ${bgClass} ${cIdx < cells.length - 1 ? 'border-r border-gray-100 dark:border-gray-700/50' : ''} ${isSticky ? 'sticky left-0 z-10 ' + zebraClass : ''}">${renderInline(cell)}</td>`
+      html += `<td class="px-3 py-2.5 text-sm ${isCenter ? 'text-center' : 'text-left'} ${cellClass} ${bgClass} ${cIdx < cells.length - 1 ? 'border-r border-neutral-100 dark:border-neutral-700/50' : ''} ${isSticky ? 'sticky left-0 z-10 ' + zebraClass : ''}">${renderInline(cell)}</td>`
     })
     html += '</tr>'
   })
@@ -168,17 +168,17 @@ export function SimpleMarkdown({ content, className = '' }: SimpleMarkdownProps)
     return blocks.map((block) => {
       switch (block.type) {
         case 'h1':
-          return `<h1 class="text-[26px] font-bold text-gray-900 dark:text-gray-100 pb-3 mb-4 border-b-2 border-primary-200 dark:border-primary-800 leading-tight">${renderInline(block.content)}</h1>`
+          return `<h1 class="text-[26px] font-bold text-neutral-900 dark:text-neutral-100 pb-3 mb-4 border-b-2 border-primary-200 dark:border-primary-800 leading-tight">${renderInline(block.content)}</h1>`
         case 'h2':
-          return `<h2 class="text-[20px] font-bold text-gray-900 dark:text-gray-100 mt-6 mb-3 pl-3 border-l-4 border-primary-500 leading-snug">${renderInline(block.content)}</h2>`
+          return `<h2 class="text-[20px] font-bold text-neutral-900 dark:text-neutral-100 mt-6 mb-3 pl-3 border-l-4 border-primary-500 leading-snug">${renderInline(block.content)}</h2>`
         case 'h3':
-          return `<h3 class="text-[16px] font-bold text-gray-800 dark:text-gray-200 mt-4 mb-2 leading-snug">${renderInline(block.content)}</h3>`
+          return `<h3 class="text-[16px] font-bold text-neutral-800 dark:text-neutral-200 mt-4 mb-2 leading-snug">${renderInline(block.content)}</h3>`
         case 'h4':
-          return `<h4 class="text-[14px] font-medium text-gray-700 dark:text-gray-300 mt-3 mb-1 leading-snug">${renderInline(block.content)}</h4>`
+          return `<h4 class="text-[14px] font-medium text-neutral-700 dark:text-neutral-300 mt-3 mb-1 leading-snug">${renderInline(block.content)}</h4>`
         case 'separator':
-          return `<div class="my-5 border-t-2 border-dashed border-gray-200 dark:border-gray-700"></div>`
+          return `<div class="my-5 border-t-2 border-dashed border-neutral-200 dark:border-neutral-700"></div>`
         case 'quote':
-          return `<blockquote class="my-3 pl-4 pr-3 py-2 border-l-4 border-primary-400 bg-primary-50/50 dark:bg-primary-900/10 rounded-r-lg italic text-gray-700 dark:text-gray-300 text-sm leading-relaxed">${renderInline(block.content.replace(/\n/g, '<br />'))}</blockquote>`
+          return `<blockquote class="my-3 pl-4 pr-3 py-2 border-l-4 border-primary-400 bg-primary-50/50 dark:bg-primary-900/10 rounded-r-lg italic text-neutral-700 dark:text-neutral-300 text-sm leading-relaxed">${renderInline(block.content.replace(/\n/g, '<br />'))}</blockquote>`
         case 'table':
           return renderTable(block.content)
         case 'list': {
@@ -186,20 +186,20 @@ export function SimpleMarkdown({ content, className = '' }: SimpleMarkdownProps)
           const listClass = /^\d/.exec(items[0]) ? 'list-decimal' : 'list-disc'
           const listItems = items.map(item => {
             const text = item.replace(/^[-*] /, '').replace(/^\d+\. /, '')
-            return `<li class="ml-6 mb-1 text-gray-700 dark:text-gray-300 leading-relaxed">${renderInline(text)}</li>`
+            return `<li class="ml-6 mb-1 text-neutral-700 dark:text-neutral-300 leading-relaxed">${renderInline(text)}</li>`
           }).join('')
           return `<ul class="my-3 space-y-1 ${listClass} text-sm">${listItems}</ul>`
         }
         case 'paragraph': {
           const field = isFieldLine(block.content)
           if (field.isField) {
-            return `<div class="my-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-100 dark:border-gray-700/50">
+            return `<div class="my-3 p-3 bg-slate-50 dark:bg-neutral-800/50 rounded-lg border border-neutral-100 dark:border-neutral-700/50">
               <span class="text-sm font-semibold text-primary-600 dark:text-primary-400">${field.fieldName}</span>
-              <span class="text-gray-400 mx-1">:</span>
-              <span class="text-sm text-gray-800 dark:text-gray-200">${renderInline(field.fieldValue)}</span>
+              <span class="text-neutral-400 mx-1">:</span>
+              <span class="text-sm text-neutral-800 dark:text-neutral-200">${renderInline(field.fieldValue)}</span>
             </div>`
           }
-          return `<p class="my-3 text-sm text-gray-700 dark:text-gray-300 leading-[1.7]">${renderInline(block.content)}</p>`
+          return `<p class="my-3 text-sm text-neutral-700 dark:text-neutral-300 leading-[1.7]">${renderInline(block.content)}</p>`
         }
         default:
           return ''
@@ -248,7 +248,7 @@ export function SimpleMarkdown({ content, className = '' }: SimpleMarkdownProps)
 
   if (isSanitizing && !sanitizedHtml) {
     return (
-      <div className={`animate-pulse bg-gray-100 dark:bg-gray-800 rounded-lg h-32 ${className}`} />
+      <div className={`animate-pulse bg-neutral-100 dark:bg-neutral-800 rounded-lg h-32 ${className}`} />
     )
   }
 
@@ -258,7 +258,7 @@ export function SimpleMarkdown({ content, className = '' }: SimpleMarkdownProps)
     // 消毒失败时返回安全占位符，不显示可能包含恶意脚本的内容
     return (
       <div className={`text-sm leading-[1.7] space-y-1 ${className}`}>
-        <span className="text-gray-500 italic">[内容已过滤]</span>
+        <span className="text-neutral-500 italic">[内容已过滤]</span>
       </div>
     )
   }

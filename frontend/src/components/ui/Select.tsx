@@ -29,7 +29,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
           'input w-full appearance-none pr-9 cursor-pointer transition-all duration-200',
           sizeClasses[size],
           error && 'input-error border-danger-500 focus:ring-danger-500/20 focus:border-danger-500',
-          props.disabled && 'bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed',
+          props.disabled && 'bg-slate-50 dark:bg-neutral-800 text-neutral-400 dark:text-neutral-500 cursor-not-allowed',
           className,
         )}
         {...props}
@@ -43,7 +43,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
       </select>
       <ChevronDown
         size={size === 'sm' ? 14 : 16}
-        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 pointer-events-none"
+        className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-neutral-500 pointer-events-none"
       />
     </div>
   ),

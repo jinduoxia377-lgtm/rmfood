@@ -39,6 +39,14 @@ export interface SemanticColors {
     contrastText: string;
   };
 
+  // 第三色调
+  tertiary: {
+    main: string;
+    light?: string;
+    dark?: string;
+    contrastText?: string;
+  };
+
   // 功能性颜色（必须包含图标/文字，不能仅靠颜色传达）
   success: {
     main: string;
@@ -82,13 +90,23 @@ export interface SemanticColors {
     secondary: string;   // 次要文字（≥3:1 大文字）
     disabled: string;    // 禁用文字
     link: string;        // 链接颜色
+    textPrimary: string; // 主文本色（兼容旧版）
+    textSecondary: string; // 次文本色（兼容旧版）
+    textMuted: string; // 弱化文本色（兼容旧版）
   };
 
+  // 边框
   border: {
     default: string;     // 默认边框
     focus: string;       // 焦点环（2-4px 可见）
     divider: string;     // 分割线
   };
+
+  // 兼容旧版字段名（别名）
+  surfaceVariant: string;
+  errorContainer: string;
+  outline: string;
+  outlineVariant: string;
 }
 
 // ============================================================================
@@ -405,6 +423,8 @@ export type PresetThemeId =
   | 'light-warm'
   | 'light-cool'
   | 'dark-default'
+  | 'dark-warm'
+  | 'dark-cool'
   | 'dark-oled'
   | 'high-contrast-light'
   | 'high-contrast-dark'
@@ -512,4 +532,114 @@ export interface ThemeProviderProps {
   storageKey?: string;
   /** 主题切换时的回调 */
   onThemeChange?: (theme: ThemeConfig) => void;
+}
+
+// ============================================================================
+// 自定义主题（SettingsPage 使用）
+// 与 theme-mode.ts 中的 CustomTheme 结构对齐
+// ============================================================================
+
+/** 自定义主题配置（用户保存的主题） */
+export interface UserCustomTheme {
+  /** 主题唯一标识符 */
+  id: string;
+  /** 主题显示名称 */
+  name: string;
+  /** 主题描述 */
+  description?: string;
+  /** 创建时间戳 */
+  createdAt: number;
+  /** 最后更新时间戳 */
+  updatedAt: number;
+  /** 主题样式配置 */
+  config: ThemeStyles;
+  /** 是否为系统预设主题 */
+  isPreset: boolean;
+  /** 主题标签 */
+  tags: string[];
+}
+
+/** 完整的主题样式配置接口 */
+export interface ThemeStyles {
+  colors?: ThemeColors;
+  font?: ThemeFont;
+  spacing?: ThemeSpacing;
+  animation?: ThemeAnimation;
+}
+
+/** 主题颜色配置 */
+export interface ThemeColors {
+  primary?: string;
+  secondary?: string;
+  tertiary?: string;
+  background?: string;
+  surface?: string;
+  text?: string;
+  onBackground?: string;
+  onPrimary?: string;
+  error?: string;
+  onError?: string;
+  success?: string;
+  warning?: string;
+  info?: string;
+  border?: string;
+  focusRing?: string;
+}
+
+/** 主题字体配置 */
+export interface ThemeFont {
+  fontFamily?: string;
+  fontSize?: {
+    xs?: string;
+    sm?: string;
+    base?: string;
+    lg?: string;
+    xl?: string;
+    '2xl'?: string;
+    '3xl'?: string;
+  };
+  lineHeight?: {
+    tight?: string;
+    normal?: string;
+    relaxed?: string;
+  };
+  fontWeight?: {
+    light?: number;
+    regular?: number;
+    medium?: number;
+    semibold?: number;
+    bold?: number;
+  };
+}
+
+/** 主题间距配置 */
+export interface ThemeSpacing {
+  spacing?: Record<string, string>;
+  borderRadius?: Record<string, string>;
+  shadowIntensity?: Record<string, string>;
+}
+
+/** 主题动画配置 */
+export interface ThemeAnimation {
+  transitionDuration?: Record<string, string>;
+  easingFunction?: Record<string, string>;
+}
+
+/** 主题版本记录 */
+export interface ThemeVersion {
+  id: string;
+  timestamp: number;
+  summary: string;
+  snapshot: ThemeStyles;
+}
+
+/** 主题事件类型 */
+export type ThemeEventType = 'theme-change' | 'mode-switch' | 'custom-theme-update';
+
+/** 主题事件载荷 */
+export interface ThemeEventPayload {
+  type: ThemeEventType;
+  timestamp: number;
+  changes?: { key: string; oldValue: unknown; newValue: unknown }[];
+  data?: Record<string, unknown>;
 }

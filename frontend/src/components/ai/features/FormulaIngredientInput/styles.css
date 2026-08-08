@@ -1,0 +1,582 @@
+.formula-ingredient-input {
+  padding: 20px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 768px) {
+  .formula-ingredient-input {
+    padding: 12px;
+  }
+}
+
+.input-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.input-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+  color: #1f1f1f;
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.total-weight-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: #fafafa;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.total-weight-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+  color: #666;
+}
+
+.total-weight-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.total-weight-input {
+  width: 120px;
+}
+
+.total-weight-unit {
+  font-weight: 500;
+  color: #333;
+}
+
+.total-ratio-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.ratio-label {
+  color: #666;
+  font-size: 14px;
+}
+
+.ratio-value {
+  font-weight: 600;
+  font-size: 16px;
+  min-width: 80px;
+  text-align: right;
+}
+
+.ratio-value.valid {
+  color: #52c41a;
+}
+
+.ratio-value.invalid {
+  color: #ff4d4f;
+}
+
+.ratio-icon.valid {
+  color: #52c41a;
+}
+
+.ratio-icon.invalid {
+  color: #ff4d4f;
+}
+
+.unit-switch-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.unit-label {
+  color: #666;
+  font-size: 14px;
+}
+
+.unit-switch {
+  display: flex;
+  background: #f0f0f0;
+  border-radius: 6px;
+  padding: 4px;
+}
+
+.unit-btn {
+  padding: 6px 16px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  color: #666;
+  transition: all 0.2s;
+}
+
+.unit-btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.unit-btn.active {
+  background: #1890ff;
+  color: #fff;
+}
+
+.unit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.error-list {
+  margin: 8px 0 0;
+  padding-left: 20px;
+}
+
+.error-list li {
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+.error-message {
+  color: #ff4d4f;
+}
+
+.error-suggestion {
+  color: #999;
+  font-size: 12px;
+}
+
+.ingredients-section {
+  margin-bottom: 20px;
+}
+
+.ingredients-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ingredients-count {
+  font-weight: 500;
+  color: #666;
+}
+
+.ingredients-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.ingredients-list {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+}
+
+.empty-state {
+  padding: 40px 0;
+}
+
+.submit-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #e8e8e8;
+}
+
+.submit-hint {
+  font-size: 14px;
+  color: #999;
+}
+
+.ingredient-row {
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.ingredient-row:last-child {
+  border-bottom: none;
+}
+
+.ingredient-row-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: #fafafa;
+  transition: background 0.2s;
+}
+
+.ingredient-row-header:hover {
+  background: #f5f5f5;
+}
+
+.expand-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: #999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ingredient-info {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.ingredient-name-input {
+  min-width: 150px;
+  flex: 1;
+  max-width: 200px;
+}
+
+.ratio-display {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ratio-input {
+  width: 80px;
+}
+
+.ratio-unit {
+  color: #999;
+  font-size: 14px;
+}
+
+.dosage-display {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #666;
+}
+
+.dosage-input {
+  width: 80px;
+}
+
+.dosage-unit {
+  color: #999;
+  font-size: 14px;
+}
+
+.ingredient-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.ingredient-params {
+  padding: 16px;
+  background: #fff;
+  border-top: 1px solid #e8e8e8;
+}
+
+.params-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.param-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.param-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #666;
+}
+
+.required-star {
+  color: #ff4d4f;
+  margin-left: 4px;
+}
+
+.param-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.param-input {
+  flex: 1;
+  max-width: 120px;
+}
+
+.param-unit {
+  font-size: 13px;
+  color: #999;
+}
+
+.param-description {
+  font-size: 12px;
+  color: #bbb;
+}
+
+.ingredient-selector-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.ingredient-selector {
+  background: #fff;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.selector-header {
+  padding: 16px;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.selector-title {
+  margin: 0 0 12px;
+  font-size: 16px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.search-input {
+  width: 100%;
+}
+
+.selector-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  padding: 40px;
+}
+
+.error-message {
+  padding: 20px;
+}
+
+.ingredient-item {
+  cursor: pointer;
+  padding: 12px;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.ingredient-item:hover {
+  background: #f5f5f5;
+}
+
+.ingredient-item-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ingredient-name {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.name-cn {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.name-en {
+  font-size: 14px;
+  color: #999;
+  font-style: italic;
+}
+
+.ingredient-desc {
+  margin: 0;
+  font-size: 13px;
+  color: #666;
+}
+
+.ingredient-properties {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.property-tag {
+  font-size: 12px;
+  padding: 2px 8px;
+  background: #f0f0f0;
+  border-radius: 4px;
+  color: #666;
+}
+
+.template-selector {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.template-section {
+  margin-bottom: 24px;
+}
+
+.section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.template-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 12px;
+  border: 1px solid #e8e8e8;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  transition: border-color 0.2s;
+}
+
+.template-item:hover {
+  border-color: #1890ff;
+}
+
+.template-info {
+  flex: 1;
+  margin-right: 16px;
+}
+
+.template-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.template-name {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.template-desc {
+  margin: 0;
+  font-size: 13px;
+  color: #666;
+}
+
+.template-meta {
+  font-size: 12px;
+  color: #999;
+}
+
+.template-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.save-template-section {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #e8e8e8;
+}
+
+.save-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.save-form h4 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.form-input {
+  padding: 8px 12px;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.form-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+@media (max-width: 480px) {
+  .ingredient-row-header {
+    flex-wrap: wrap;
+  }
+  
+  .ingredient-info {
+    width: 100%;
+  }
+  
+  .ingredient-actions {
+    margin-left: auto;
+  }
+  
+  .params-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .total-weight-section {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .total-ratio-status {
+    margin-left: 0;
+    margin-top: 8px;
+  }
+}

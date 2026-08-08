@@ -117,36 +117,28 @@ export const useCollaborationStore = create<CollaborationState>()(
         set({ isConnecting: true, error: null });
 
         try {
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          // ──────────────────────────────────────────────
+          // TODO [P1]: Replace this dev stub with real WebSocket connection.
+          //
+          // Current implementation is a development-time mock only.
+          // It simulates a WebSocket connection with hardcoded participants
+          // and does NOT establish any real-time sync with the backend.
+          //
+          // Implementation plan:
+          //   1. Call POST /api/v1/ws/collaboration/connect with documentId
+          //   2. Receive sessionId from response
+          //   3. Open WebSocket to wss://<host>/api/v1/ws/collaboration/{sessionId}
+          //   4. Subscribe to document events (operation/position/sync)
+          //   5. Handle reconnection on disconnect
+          // ──────────────────────────────────────────────
 
-          const mockAuthor1: Author = { id: 'user-1', name: '张三', email: 'zhangsan@example.com', affiliation: '示例大学' };
-          const mockAuthor2: Author = { id: 'user-2', name: '李四', email: 'lisi@example.com', affiliation: '示例研究所' };
-
-          const mockParticipants: CollaborationParticipant[] = [
-            {
-              id: 'part-1',
-              user: mockAuthor1,
-              role: 'editor',
-              joinedAt: new Date(),
-              cursor: { userId: 'user-1', paragraphIndex: 5, offset: 10 },
-              isOnline: true,
-              lastActivity: new Date(),
-            },
-            {
-              id: 'part-2',
-              user: mockAuthor2,
-              role: 'editor',
-              joinedAt: new Date(Date.now() - 300000),
-              cursor: { userId: 'user-2', paragraphIndex: 12, offset: 20 },
-              isOnline: true,
-              lastActivity: new Date(Date.now() - 60000),
-            },
-          ];
+          // Simulate connection latency
+          await new Promise(resolve => setTimeout(resolve, 300));
 
           const newSession = {
-            id: `session-${Date.now()}`,
+            id: `dev-session-${Date.now()}`,
             documentId,
-            participants: mockParticipants.map(p => p.id),
+            participants: [],
             createdAt: new Date().toISOString(),
           };
 
@@ -155,7 +147,7 @@ export const useCollaborationStore = create<CollaborationState>()(
 
           set({
             session: newSession,
-            participants: [...mockParticipants, {
+            participants: [{
               id: 'part-current',
               user: { id: get().currentUser.id, name: get().currentUser.name, email: '', affiliation: '' },
               role: 'owner',

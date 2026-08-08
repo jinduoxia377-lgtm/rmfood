@@ -52,10 +52,10 @@ export function FileDelivery({ taskId, filename, format, onClose }: FileDelivery
   }
 
   const statusColor = {
-    pending: 'bg-blue-100 text-blue-700',
+    pending: 'bg-secondary-100 text-secondary-700',
     processing: 'bg-yellow-100 text-yellow-700',
-    completed: 'bg-green-100 text-green-700',
-    failed: 'bg-red-100 text-red-700',
+    completed: 'bg-success-100 text-success-700',
+    failed: 'bg-error-100 text-error-700',
   }
 
   useEffect(() => {
@@ -138,9 +138,9 @@ export function FileDelivery({ taskId, filename, format, onClose }: FileDelivery
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-medium">{filename}</p>
-            <p className="text-xs text-gray-500">{formatName[format]} 格式</p>
+            <p className="text-xs text-neutral-500">{formatName[format]} 格式</p>
           </div>
-          <Badge className={status ? statusColor[status.status] : 'bg-gray-100 text-gray-700'}>
+          <Badge className={status ? statusColor[status.status] : 'bg-neutral-100 text-neutral-700'}>
             {status ? (
               <div className="flex items-center gap-1">
                 {statusIcon[status.status]}
@@ -155,7 +155,7 @@ export function FileDelivery({ taskId, filename, format, onClose }: FileDelivery
         {status && status.status !== 'completed' && status.status !== 'failed' && (
           <div>
             <Progress value={status.progress} className="w-full" />
-            <p className="text-xs text-gray-500 mt-2">
+            <p className="text-xs text-neutral-500 mt-2">
               处理进度: {status.progress}%
             </p>
           </div>
@@ -215,8 +215,8 @@ export function FileDelivery({ taskId, filename, format, onClose }: FileDelivery
                 title="PDF Preview"
               />
             ) : (
-              <div className="p-4 bg-gray-50 rounded-lg">
-                <p className="text-sm text-gray-500">
+              <div className="p-4 bg-slate-50 rounded-lg">
+                <p className="text-sm text-neutral-500">
                   此文件格式不支持在线预览，请下载后查看
                 </p>
                 <Button

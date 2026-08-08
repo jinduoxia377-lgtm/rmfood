@@ -1,0 +1,136 @@
+/*
+ * RMFOOD 设计系统 - 输入框系统 v3.1 — Apple HIG 风格
+ * 基础输入框、错误/成功/禁用状态、尺寸、前后缀
+ */
+
+.input {
+  width: 100%;
+  font-size: 0.9375rem;
+  transition: all var(--duration-normal) var(--ease-spring);
+  height: 40px;
+  padding: 0 14px;
+  border-radius: var(--radius-sm, 4px);
+  border: 1.5px solid var(--border-subtle, rgba(0, 0, 0, 0.08));
+  background: var(--bg-tertiary, #F5F5F7);
+  color: var(--text-primary, #1D1D1F);
+  font-family: var(--font-sans);
+  position: relative;
+}
+
+.input::placeholder {
+  color: var(--text-muted, #9A9A9F);
+  transition: color var(--duration-fast) var(--ease-spring);
+}
+
+.input:focus {
+  border-color: var(--color-primary, #34C759);
+  background: var(--card-bg-solid, #FFFFFF);
+}
+.input:focus::placeholder {
+  opacity: 0.5;
+}
+
+/* 错误状态 */
+.input-error {
+  border-color: var(--color-error, #FF3B30);
+  box-shadow: 0 0 0 3px rgba(255, 59, 48, 0.1);
+}
+.input-error:focus {
+  border-color: var(--color-error-hover, #E0302A);
+  box-shadow: 0 0 0 3px rgba(255, 59, 48, 0.15);
+}
+.dark .input-error {
+  border-color: var(--color-error, #FF453A);
+  box-shadow: 0 0 0 3px rgba(255, 69, 58, 0.2);
+}
+.dark .input-error:focus {
+  border-color: #FF6961;
+  box-shadow: 0 0 0 3px rgba(255, 69, 58, 0.25);
+}
+
+/* 成功状态 */
+.input-success {
+  border-color: var(--color-success, #34C759);
+}
+.input-success:focus {
+  box-shadow: 0 0 0 3px rgba(52, 199, 89, 0.12);
+}
+.dark .input-success {
+  border-color: var(--color-success, #30D158);
+}
+.dark .input-success:focus {
+  box-shadow: 0 0 0 3px rgba(48, 209, 88, 0.2);
+}
+
+/* 禁用状态 */
+.input:disabled {
+  background: var(--bg-tertiary, #F5F5F7);
+  color: var(--text-disabled, #C7C7CC);
+  cursor: not-allowed;
+  opacity: 0.7;
+  border-color: transparent;
+}
+.dark .input:disabled {
+  background: rgba(44, 44, 46, 0.5);
+  color: var(--text-disabled, #48484A);
+}
+
+/* 输入框尺寸 */
+.input-sm {
+  height: 34px;
+  font-size: 13px;
+  padding: 0 10px;
+  border-radius: var(--radius-xs, 6px);
+}
+.input-lg {
+  height: 44px;
+  font-size: 15px;
+  padding: 0 16px;
+  border-radius: var(--radius-sm, 4px);
+}
+
+/* 带前缀/后缀 */
+.input-with-prefix,
+.input-with-suffix {
+  position: relative;
+}
+.input-with-prefix .input { padding-left: 40px; }
+.input-with-suffix .input { padding-right: 40px; }
+
+.input-with-prefix .prefix,
+.input-with-suffix .suffix {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted, #9A9A9F);
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+  font-size: 14px;
+}
+.input-with-prefix .prefix { left: 12px; }
+.input-with-suffix .suffix { right: 12px; cursor: pointer; }
+.input-with-suffix .suffix:hover { color: var(--text-primary, #1D1D1F); }
+.dark .input-with-suffix .suffix:hover { color: var(--text-primary, #F5F5F7); }
+
+.input-with-prefix .prefix .icon,
+.input-with-suffix .suffix .icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+/* Dark mode */
+.dark .input {
+  background: var(--bg-tertiary, #2C2C2E);
+  border-color: var(--border-subtle, rgba(255, 255, 255, 0.06));
+  color: var(--text-primary, #F5F5F7);
+}
+.dark .input:focus {
+  border-color: var(--color-primary, #30D158);
+  background: var(--card-bg-solid, #1C1C1E);
+  box-shadow: 0 0 0 3px rgba(48, 209, 88, 0.15);
+}
+.dark .input::placeholder {
+  color: var(--text-muted, #636366);
+}

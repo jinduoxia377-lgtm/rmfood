@@ -1,198 +1,191 @@
 /**
- * RMFOOD 登录页 — v2.0 专业重设计
+ * RMFOOD — 登录页面
  *
- * 设计系统: UI/UX Pro Max 智能框架
- * 风格: 专业极简 + 有机自然
- * 布局: 桌面端 55:45 非对称分栏 / 移动端全宽
- *
- * 核心改进:
- * - 品牌区常驻 (移动端不隐藏)
- * - 三段式品牌故事 (传承 · 科学 · 创新)
- * - blur 时内联验证 (替代 setTimeout)
- * - 5 级密码强度可视化
- * - 社交登录品牌色标识
- * - 错误时自动聚焦首个错误字段
- * - 按钮涟漪点击反馈
- * - 完整 WCAG 2.1 AA 可访问性
+ * 生物技术启发的沉浸式登录体验
+ * - Canvas 交互式分子粒子场 (鼠标引力/斥力/点击爆发)
+ * - CSS 3D DNA 双螺旋 (50s 自转 + X轴微倾)
+ * - SVG 六边形晶格叠加层
+ * - 多层玻璃态浮动登录卡片 (backdrop-filter + 渐变边框)
+ * - 第三方登录 (微信/QQ/GitHub OAuth)
+ * - 品牌色悬停辉光 + 加载反馈
+ * - WCAG 2.1 AA 完整可访问性
  */
 import {
-  useState,
-  useCallback,
-  useRef,
-  useEffect,
-  type FC,
-  type FormEvent,
-  type ChangeEvent,
-  type FocusEvent,
-  type KeyboardEvent,
+  useState, useCallback, useRef, useEffect,
+  type FC, type FormEvent, type ChangeEvent,
+  type FocusEvent, type MouseEvent as RMouseEvent,
 } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import {
-  Leaf,
-  Shield,
-  Cpu,
-  Sun,
-  Moon,
-  Eye,
-  EyeOff,
-  User,
-  Lock,
-  Check,
-  AlertCircle,
-  CheckCircle2,
-  ExternalLink,
-  type LucideIcon,
+  Dna, BoxSelect, BrainCircuit, Hexagon,
+  Eye, EyeOff, User, Lock, AlertCircle, CheckCircle2,
+  Shield, type LucideIcon,
 } from 'lucide-react'
 import { useAuthStore } from '@/stores/auth'
-import { LOGIN_PAGE_CONFIG, BRAND_CONFIG } from '@/config'
-import { useTheme, useIsDarkMode } from '@/theme'
+import { useIsDarkMode } from '@/stores/ThemeProvider'
+import { RHINE_BRAND_CONFIG, RHINE_LOGIN_CONFIG } from '@/config'
+import RhineParticleField from './RhineParticleField'
+import RhineDNAHelix from './RhineDNAHelix'
+import RhineHexGrid from './RhineHexGrid'
+
+import { logger } from '@/utils/safeLogger';
 import './LoginPage.css'
-import './LoginPage.theme-bridge.css'
+
+/* ═══════════════════════════════════════════════════════════════
+   Startup Validation — OAuth credentials
+   NOTE: This must NOT throw at module scope — it would crash the
+   entire SPA. Instead, warn in console and let the config layer
+   auto-disable providers that lack credentials.
+   ═══════════════════════════════════════════════════════════════ */
+
+const OAUTH_CHECK: Record<string, string> = {
+  VITE_WECHAT_APPID: '微信 OAuth (VITE_WECHAT_APPID)',
+  VITE_QQ_APPID: 'QQ OAuth (VITE_QQ_APPID)',
+  VITE_GITHUB_CLIENT_ID: 'GitHub OAuth (VITE_GITHUB_CLIENT_ID)',
+}
+
+function checkOAuthEnvVars() {
+  const missing: string[] = []
+  for (const [key, label] of Object.entries(OAUTH_CHECK)) {
+    const val = import.meta.env[key]
+    if (!val || val.startsWith('YOUR_')) {
+      missing.push(label)
+    }
+  }
+  if (missing.length > 0) {
+    logger.warn(
+      `[Login] OAuth 未配置（社交登录已自动禁用）：缺少环境变量 ${missing.join(', ')}。` +
+      `请在 .env 文件中配置对应的 VITE_* 变量，或在 RHINE_LOGIN_CONFIG.socialLogin 中关闭对应提供商。`
+    )
+  }
+}
+
+checkOAuthEnvVars()
 
 /* ═══════════════════════════════════════════════════════════════
    Types
    ═══════════════════════════════════════════════════════════════ */
-interface BrandPillar {
-  icon: string
-  title: string
-  subtitle: string
-  description: string
-}
-
-interface SocialLoginProvider {
-  enabled: boolean
-  label: string
-  color: string
+interface SocialProvider {
+  enabled: boolean; label: string; color: string; oauthUrl: string
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   Brand Panel (Desktop Left Side)
+   Brand Overlay — 桌面端左下品牌区
    ═══════════════════════════════════════════════════════════════ */
-const BrandPanel: FC<{ pillars: BrandPillar[]; isDark: boolean }> = ({ pillars }) => {
-  const iconMap: Record<string, LucideIcon> = { Leaf, Cpu, Shield }
+const BrandOverlay: FC = () => {
+  const iconMap: Record<string, LucideIcon> = { Dna, BoxSelect, BrainCircuit }
 
   return (
-    <div className="login-brand-panel" role="banner" aria-label="品牌展示区">
-      {/* 渐变背景 */}
-      <div className="login-brand-gradient" aria-hidden="true" />
-      {/* 有机纹理 */}
-      <div className="login-brand-texture" aria-hidden="true" />
-
-      <div className="login-brand-content">
-        {/* Logo */}
-        <div className="login-brand-logo login-anim-fade-in-up">
-          <div className="login-brand-logo-icon" aria-hidden="true">
-            <Leaf size={24} />
-          </div>
-          <span className="login-brand-logo-text">{BRAND_CONFIG.name}</span>
+    <div className="rhine-brand-overlay">
+      <div className="rhine-brand-logo rhine-anim-fade-up">
+        <div className="rhine-brand-icon" aria-hidden="true"><Hexagon size={19} /></div>
+        <div>
+          <div className="rhine-brand-name">{RHINE_BRAND_CONFIG.name}</div>
+          <div className="rhine-brand-name-en">{RHINE_BRAND_CONFIG.nameEn}</div>
         </div>
-
-        {/* 标签 */}
-        <div className="login-anim-fade-in-up login-delay-100">
-          <span className="login-brand-tagline">{LOGIN_PAGE_CONFIG.brandStory.tagline}</span>
-        </div>
-
-        {/* 标题 */}
-        <h1 className="login-brand-headline login-anim-fade-in-up login-delay-200">
-          {LOGIN_PAGE_CONFIG.brandStory.headline}
-        </h1>
-
-        {/* 描述 */}
-        <p className="login-brand-description login-anim-fade-in-up login-delay-300">
-          {LOGIN_PAGE_CONFIG.brandStory.description}
-        </p>
-
-        {/* 三大支柱 */}
-        <div className="login-brand-pillars login-anim-fade-in-up login-delay-400">
-          {pillars.map((pillar, i) => {
-            const IconComponent = iconMap[pillar.icon] || Leaf
-            return (
-              <div
-                key={pillar.title}
-                className="login-brand-pillar"
-                style={{ animationDelay: `${0.4 + i * 0.15}s` }}
-              >
-                <div className="login-brand-pillar-icon" aria-hidden="true">
-                  <IconComponent size={20} />
-                </div>
-                <div className="login-brand-pillar-text">
-                  <h4>{pillar.title}<span style={{fontWeight:400,opacity:0.6,marginLeft:6,fontSize:12}}>{pillar.subtitle}</span></h4>
-                  <p>{pillar.description}</p>
-                </div>
-              </div>
-            )
-          })}
-        </div>
-
-        {/* 版权 */}
-        <div
-          className="login-brand-footer login-anim-fade-in login-delay-600"
-          dangerouslySetInnerHTML={{ __html: BRAND_CONFIG.copyright }}
-        />
+      </div>
+      <div className="rhine-brand-tagline rhine-anim-fade-up rhine-delay-1">
+        {RHINE_BRAND_CONFIG.tagline}
+      </div>
+      <p className="rhine-brand-desc rhine-anim-fade-up rhine-delay-2">
+        {RHINE_BRAND_CONFIG.description}
+      </p>
+      <div className="rhine-brand-pillars rhine-anim-fade-up rhine-delay-3">
+        {RHINE_BRAND_CONFIG.pillars.map((p: { icon: string; title: string; subtitle: string }) => {
+          const Icon = iconMap[p.icon] || Dna
+          return (
+            <div key={p.title} className="rhine-brand-pillar">
+              <Icon size={13} className="rhine-brand-pillar-icon" aria-hidden="true" />
+              <span>{p.title}</span>
+            </div>
+          )
+        })}
       </div>
     </div>
   )
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   Password Strength Bar
+   Social Login Section — 第三方登录 (完整功能版)
    ═══════════════════════════════════════════════════════════════ */
-const PasswordStrengthBar: FC<{ strength: number }> = ({ strength }) => {
-  const levels = LOGIN_PAGE_CONFIG.passwordStrength.levels
-  const colors = LOGIN_PAGE_CONFIG.passwordStrength.colors
-  const idx = Math.min(strength, levels.length - 1)
+const SocialLoginSection: FC = () => {
+  const socials = RHINE_LOGIN_CONFIG.socialLogin
+  const [loadingProvider, setLoadingProvider] = useState<string | null>(null)
 
-  return (
-    <div className="login-password-strength" aria-live="polite">
-      <div className="login-password-strength-header">
-        <span className="login-password-strength-label">密码强度</span>
-        <span
-          className="login-password-strength-value"
-          style={{ color: strength > 0 ? colors[idx] : undefined }}
-        >
-          {strength > 0 ? levels[idx] : '未输入'}
-        </span>
-      </div>
-      <div className="login-password-strength-bar">
-        <div
-          className="login-password-strength-fill"
-          style={{
-            width: `${((strength + 1) / levels.length) * 100}%`,
-            backgroundColor: strength > 0 ? colors[idx] : undefined,
-          }}
-        />
-      </div>
-    </div>
+  /* ── 通用 OAuth 跳转 ── */
+  const handleOAuthLogin = useCallback((provider: string, cfg: SocialProvider) => {
+    setLoadingProvider(provider)
+
+    const state = Math.random().toString(36).substring(2) + Date.now().toString(36)
+    sessionStorage.setItem(`rhine_${provider}_state`, state)
+
+    let authUrl = ''
+    const redirectUri = encodeURIComponent(`${window.location.origin}/api/auth/${provider}/callback`)
+
+    switch (provider) {
+      case 'wechat':
+        authUrl = `${cfg.oauthUrl}?appid=${import.meta.env.VITE_WECHAT_APPID}&redirect_uri=${redirectUri}&response_type=code&scope=snsapi_login&state=${state}#wechat_redirect`
+        break
+      case 'qq':
+        authUrl = `${cfg.oauthUrl}?response_type=code&client_id=${import.meta.env.VITE_QQ_APPID}&redirect_uri=${redirectUri}&state=${state}&scope=get_user_info`
+        break
+      case 'github':
+        authUrl = `${cfg.oauthUrl}?client_id=${import.meta.env.VITE_GITHUB_CLIENT_ID}&redirect_uri=${redirectUri}&scope=user:email&state=${state}`
+        break
+    }
+
+    if (authUrl) {
+      // 短暂延迟让用户看到 loading 反馈
+      setTimeout(() => window.location.href = authUrl, 400)
+    } else {
+      setLoadingProvider(null)
+    }
+  }, [])
+
+  /* ── 微信图标 ── */
+  const WechatIcon = () => (
+    <svg width="26" height="26" viewBox="0 0 24 24" fill={socials.wechat.color} aria-hidden="true">
+      <path d="M8.691 2.188C3.891 2.188 0 5.476 0 9.53c0 2.212 1.17 4.203 3.002 5.55a.59.59 0 0 1 .213.665l-.39 1.48c-.019.07-.048.141-.048.213 0 .163.13.295.29.295a.325.325 0 0 0 .167-.054l1.903-1.114a.864.864 0 0 1 .717-.098 10.16 10.16 0 0 0 2.837.403c.276 0 .543-.027.811-.05-.857-2.578.157-4.972 1.932-6.446 1.703-1.415 3.882-1.98 5.853-1.838-.576-3.583-4.196-6.348-8.596-6.348zM5.785 5.991c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178A1.17 1.17 0 0 1 4.623 7.17c0-.651.52-1.18 1.162-1.18zm5.813 0c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178 1.17 1.17 0 0 1-1.162-1.178c0-.651.52-1.18 1.162-1.18z"/>
+    </svg>
   )
-}
 
-/* ═══════════════════════════════════════════════════════════════
-   Social Login Buttons
-   ═══════════════════════════════════════════════════════════════ */
-const SocialLoginButtons: FC<{ onWechatLogin: () => void }> = ({ onWechatLogin }) => {
-  const socials = LOGIN_PAGE_CONFIG.socialLogin
+  /* ── QQ 企鹅图标 ── */
+  const QQIcon = () => (
+    <svg width="26" height="26" viewBox="0 0 24 24" fill={socials.qq.color} aria-hidden="true">
+      <path d="M12.003 2c-2.265 0-4.346 1.09-5.707 2.793-.403.505-.75 1.056-1.024 1.64C4.088 8.41 4 10.428 4 12c0 3.52 1.187 6.477 3.033 8.308.487.483 1.108.926 1.837 1.252.536.24 1.148.397 1.796.428.11.005.223.012.334.012.111 0 .225-.007.334-.012.648-.031 1.26-.188 1.796-.428.729-.326 1.35-.77 1.837-1.252C18.813 18.477 20 15.52 20 12c0-1.572-.088-3.59-1.27-5.567-.273-.584-.62-1.135-1.023-1.64C16.35 3.09 14.268 2 12.003 2z"/>
+      <ellipse cx="8.5" cy="11" rx="1.5" ry="2" fill="#fff" opacity="0.9"/>
+      <ellipse cx="15.5" cy="11" rx="1.5" ry="2" fill="#fff" opacity="0.9"/>
+      <path d="M10 13.5c0 .8.9 1.5 2 1.5s2-.7 2-1.5" fill="none" stroke="#fff" strokeWidth="0.8" opacity="0.7"/>
+    </svg>
+  )
+
+  /* ── GitHub 图标 ── */
+  const GitHubIcon = () => (
+    <svg width="26" height="26" viewBox="0 0 24 24" fill={socials.github.color} aria-hidden="true">
+      <path fillRule="evenodd" clipRule="evenodd" d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+    </svg>
+  )
 
   return (
     <>
-      <div className="login-divider" aria-hidden="true">
-        <span className="login-divider-text">{LOGIN_PAGE_CONFIG.messages.orContinueWith}</span>
+      <div className="rhine-divider" aria-hidden="true">
+        <span className="rhine-divider-text">{RHINE_LOGIN_CONFIG.messages.orContinueWith}</span>
       </div>
 
-      <div className="login-social-buttons">
+      <div className="rhine-social-buttons">
         {/* 微信 */}
         {socials.wechat.enabled && (
           <button
             type="button"
-            className="login-social-btn"
-            onClick={onWechatLogin}
-            aria-label={`使用${socials.wechat.label}登录`}
+            className={`rhine-social-btn wechat ${loadingProvider === 'wechat' ? 'loading' : ''}`}
+            onClick={() => handleOAuthLogin('wechat', socials.wechat)}
+            disabled={loadingProvider !== null}
+            aria-label={socials.wechat.label}
           >
-            <span className="login-social-btn-icon">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill={socials.wechat.color} aria-hidden="true">
-                <path d="M8.691 2.188C3.891 2.188 0 5.476 0 9.53c0 2.212 1.17 4.203 3.002 5.55a.59.59 0 0 1 .213.665l-.39 1.48c-.019.07-.048.141-.048.213 0 .163.13.295.29.295a.325.325 0 0 0 .167-.054l1.903-1.114a.864.864 0 0 1 .717-.098 10.16 10.16 0 0 0 2.837.403c.276 0 .543-.027.811-.05-.857-2.578.157-4.972 1.932-6.446 1.703-1.415 3.882-1.98 5.853-1.838-.576-3.583-4.196-6.348-8.596-6.348zM5.785 5.991c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178A1.17 1.17 0 0 1 4.623 7.17c0-.651.52-1.18 1.162-1.18zm5.813 0c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178 1.17 1.17 0 0 1-1.162-1.178c0-.651.52-1.18 1.162-1.18zm5.34 2.867c-1.797-.052-3.746.512-5.28 1.786-1.72 1.428-2.687 3.72-1.78 6.22.942 2.453 3.666 4.229 6.884 4.229.826 0 1.622-.12 2.361-.336a.722.722 0 0 1 .598.082l1.584.926a.272.272 0 0 0 .14.047c.134 0 .24-.111.24-.247 0-.06-.023-.12-.038-.177l-.327-1.233a.49.49 0 0 1 .178-.554C23.028 18.48 24 16.82 24 14.98c0-3.21-2.931-5.952-7.062-6.122zm-2.18 2.962c.535 0 .969.44.969.982a.976.976 0 0 1-.969.983.976.976 0 0 1-.969-.983c0-.542.434-.982.97-.982zm4.844 0c.535 0 .969.44.969.982a.976.976 0 0 1-.969.983.976.976 0 0 1-.969-.983c0-.542.434-.982.97-.982z"/>
-              </svg>
+            <span className="rhine-social-icon-wrap">
+              {loadingProvider === 'wechat' ? <span className="rhine-social-spinner" /> : <WechatIcon />}
             </span>
-            <span className="login-social-btn-label">{socials.wechat.label}</span>
+            <span className="rhine-social-label">{socials.wechat.label}</span>
           </button>
         )}
 
@@ -200,15 +193,15 @@ const SocialLoginButtons: FC<{ onWechatLogin: () => void }> = ({ onWechatLogin }
         {socials.qq.enabled && (
           <button
             type="button"
-            className="login-social-btn"
-            aria-label={`使用${socials.qq.label}登录`}
+            className={`rhine-social-btn qq ${loadingProvider === 'qq' ? 'loading' : ''}`}
+            onClick={() => handleOAuthLogin('qq', socials.qq)}
+            disabled={loadingProvider !== null}
+            aria-label={socials.qq.label}
           >
-            <span className="login-social-btn-icon">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill={socials.qq.color} aria-hidden="true">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1.5 14.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm3 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
-              </svg>
+            <span className="rhine-social-icon-wrap">
+              {loadingProvider === 'qq' ? <span className="rhine-social-spinner" /> : <QQIcon />}
             </span>
-            <span className="login-social-btn-label">{socials.qq.label}</span>
+            <span className="rhine-social-label">{socials.qq.label}</span>
           </button>
         )}
 
@@ -216,15 +209,15 @@ const SocialLoginButtons: FC<{ onWechatLogin: () => void }> = ({ onWechatLogin }
         {socials.github.enabled && (
           <button
             type="button"
-            className="login-social-btn"
-            aria-label={`使用${socials.github.label}登录`}
+            className={`rhine-social-btn github ${loadingProvider === 'github' ? 'loading' : ''}`}
+            onClick={() => handleOAuthLogin('github', socials.github)}
+            disabled={loadingProvider !== null}
+            aria-label={socials.github.label}
           >
-            <span className="login-social-btn-icon">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill={socials.github.color} aria-hidden="true">
-                <path fillRule="evenodd" clipRule="evenodd" d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
-              </svg>
+            <span className="rhine-social-icon-wrap">
+              {loadingProvider === 'github' ? <span className="rhine-social-spinner" /> : <GitHubIcon />}
             </span>
-            <span className="login-social-btn-label">{socials.github.label}</span>
+            <span className="rhine-social-label">{socials.github.label}</span>
           </button>
         )}
       </div>
@@ -233,390 +226,237 @@ const SocialLoginButtons: FC<{ onWechatLogin: () => void }> = ({ onWechatLogin }
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   Main LoginPage Component
+   Main Component
    ═══════════════════════════════════════════════════════════════ */
-export default function LoginPage() {
+export default function RhineLoginPage() {
   const navigate = useNavigate()
   const login = useAuthStore((s) => s.login)
-  const { setThemeMode } = useTheme()
+  const msg = RHINE_LOGIN_CONFIG.messages
   const isDark = useIsDarkMode()
+  const [isIntersecting, setIsIntersecting] = useState(true)
 
-  /* ── Refs ── */
-  const usernameRef = useRef<HTMLInputElement>(null)
-  const passwordRef = useRef<HTMLInputElement>(null)
+  /* ── IntersectionObserver 检测页面可见 ── */
+  useEffect(() => {
+    const el = document.querySelector('.login-page')
+    if (!el) return
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsIntersecting(entry.isIntersecting),
+      { threshold: 0.1 }
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
 
-  /* ── Form State ── */
+  const userRef = useRef<HTMLInputElement>(null)
+  const passRef = useRef<HTMLInputElement>(null)
+
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
-  const [rememberMe, setRememberMe] = useState(false)
+  const [showPw, setShowPw] = useState(false)
+  const [remember, setRemember] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
-  const [usernameError, setUsernameError] = useState('')
-  const [passwordError, setPasswordError] = useState('')
-  const [passwordStrength, setPasswordStrength] = useState(0)
-  const [isPasswordFocused, setIsPasswordFocused] = useState(false)
-  const [pageReady, setPageReady] = useState(false)
+  const [userErr, setUserErr] = useState('')
+  const [passErr, setPassErr] = useState('')
 
-  /* ── Page Mount Animation ── */
-  useEffect(() => {
-    const timer = setTimeout(() => setPageReady(true), 50)
-    return () => clearTimeout(timer)
+  /* ── Validation ── */
+  const validateUser = useCallback((v: string) => {
+    if (!v.trim()) return '请输入用户名'
+    if (v.trim().length < 3) return '用户名至少需要 3 个字符'
+    return ''
   }, [])
-
-  /* ═════════════════════════════════════════════════════════════
-     Validation (blur-based, not keystroke)
-     ═════════════════════════════════════════════════════════════ */
-  const validateUsername = useCallback((value: string): string => {
-    if (!value.trim()) return '请输入用户名'
-    if (value.trim().length < 3) return '用户名至少需要 3 个字符'
+  const validatePass = useCallback((v: string) => {
+    if (!v) return '请输入密码'
+    if (v.length < 6) return '密码至少需要 6 个字符'
     return ''
   }, [])
 
-  const checkPasswordStrength = useCallback((value: string): number => {
-    let score = 0
-    if (value.length >= 6) score++
-    if (value.length >= 10) score++
-    if (/[A-Z]/.test(value)) score++
-    if (/[a-z]/.test(value)) score++
-    if (/[0-9]/.test(value)) score++
-    if (/[^A-Za-z0-9]/.test(value)) score++
-    return Math.min(score, 4) // 0-4 scale
-  }, [])
-
-  const validatePassword = useCallback((value: string): string => {
-    if (!value) return '请输入密码'
-    if (value.length < 6) return '密码至少需要 6 个字符'
-    return ''
-  }, [])
-
-  /* ── Event Handlers ── */
-  const handleUsernameChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-    setUsername(value)
-    if (usernameError) setUsernameError('')
-  }, [usernameError])
-
-  const handleUsernameBlur = useCallback((_e: FocusEvent<HTMLInputElement>) => {
-    setUsernameError(validateUsername(username))
-  }, [username, validateUsername])
-
-  const handlePasswordChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-    setPassword(value)
-    setPasswordStrength(checkPasswordStrength(value))
-    if (passwordError) setPasswordError('')
-  }, [passwordError, checkPasswordStrength])
-
-  const handlePasswordBlur = useCallback((_e: FocusEvent<HTMLInputElement>) => {
-    setPasswordError(validatePassword(password))
-    setIsPasswordFocused(false)
-  }, [password, validatePassword])
-
-  const handlePasswordFocus = useCallback(() => {
-    setIsPasswordFocused(true)
-  }, [])
-
-  const toggleTheme = useCallback(() => {
-    setThemeMode(isDark ? 'light' : 'dark')
-  }, [isDark, setThemeMode])
+  /* ── Handlers ── */
+  const handleUserChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    setUsername(e.target.value); if (userErr) setUserErr('')
+  }, [userErr])
+  const handleUserBlur = useCallback((_: FocusEvent<HTMLInputElement>) => {
+    setUserErr(validateUser(username))
+  }, [username, validateUser])
+  const handlePassChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    setPassword(e.target.value)
+    if (passErr) setPassErr('')
+  }, [passErr])
+  const handlePassBlur = useCallback((_: FocusEvent<HTMLInputElement>) => {
+    setPassErr(validatePass(password))
+  }, [password, validatePass])
 
   /* ── Submit ── */
   const handleSubmit = useCallback(async (e: FormEvent) => {
     e.preventDefault()
-
-    const uErr = validateUsername(username)
-    const pErr = validatePassword(password)
-    setUsernameError(uErr)
-    setPasswordError(pErr)
-
-    // 聚焦第一个错误字段
-    if (uErr) {
-      usernameRef.current?.focus()
-      return
-    }
-    if (pErr) {
-      passwordRef.current?.focus()
-      return
-    }
-
-    setError('')
-    setLoading(true)
-
+    const ue = validateUser(username); const pe = validatePass(password)
+    setUserErr(ue); setPassErr(pe)
+    if (ue) { userRef.current?.focus(); return }
+    if (pe) { passRef.current?.focus(); return }
+    setError(''); setLoading(true)
     try {
       await login(username, password)
-
-      if (rememberMe) {
-        localStorage.setItem('remember_me', 'true')
-        localStorage.setItem('username', username)
-      } else {
-        localStorage.removeItem('remember_me')
-        localStorage.removeItem('username')
-      }
-
-      setSuccess(LOGIN_PAGE_CONFIG.messages.loginSuccess)
+      if (remember) { sessionStorage.setItem('rhine_remember', '1'); sessionStorage.setItem('rhine_user', username) }
+      else { sessionStorage.removeItem('rhine_remember'); sessionStorage.removeItem('rhine_user') }
+      setSuccess(msg.loginSuccess)
       setTimeout(() => navigate('/dashboard'), 800)
     } catch (err: unknown) {
-      const status =
-        typeof err === 'object' && err !== null &&
-        'response' in err && typeof err.response === 'object' &&
-        err.response !== null && 'status' in err.response
-          ? (err.response as { status: number }).status
-          : null
+      const s = (typeof err === 'object' && err !== null && 'response' in err &&
+        typeof err.response === 'object' && err.response !== null && 'status' in err.response)
+        ? (err.response as { status: number }).status : null
+      setError(s === 401 ? msg.errorAuth : s === 429 ? msg.errorRateLimit : msg.errorNetwork)
+    } finally { setLoading(false) }
+  }, [username, password, remember, validateUser, validatePass, login, navigate, msg])
 
-      if (status === 401) {
-        setError(LOGIN_PAGE_CONFIG.messages.errorMessage)
-      } else if (status === 429) {
-        setError(LOGIN_PAGE_CONFIG.messages.rateLimitError)
-      } else {
-        setError(LOGIN_PAGE_CONFIG.messages.networkError)
-      }
-    } finally {
-      setLoading(false)
-    }
-  }, [username, password, rememberMe, validateUsername, validatePassword, login, navigate])
-
-  /* ── WeChat Login ── */
-  const handleWechatLogin = useCallback(() => {
-    const appId = 'YOUR_WECHAT_APPID'
-    const redirectUri = encodeURIComponent(window.location.origin + '/api/auth/wechat/callback')
-    const state = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
-    localStorage.setItem('wechat_state', state)
-    window.location.href = `https://open.weixin.qq.com/connect/qrconnect?appid=${appId}&redirect_uri=${redirectUri}&response_type=code&scope=snsapi_login&state=${state}#wechat_redirect`
-  }, [])
-
-  /* ── Ripple Effect ── */
-  const handleButtonClick = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
+  /* ── Ripple ── */
+  const handleBtnClick = useCallback((e: RMouseEvent<HTMLButtonElement>) => {
     const btn = e.currentTarget
-    const ripple = document.createElement('span')
-    const rect = btn.getBoundingClientRect()
-    const size = Math.max(rect.width, rect.height)
-    ripple.className = 'login-ripple'
-    ripple.style.width = ripple.style.height = `${size}px`
-    ripple.style.left = `${e.clientX - rect.left - size / 2}px`
-    ripple.style.top = `${e.clientY - rect.top - size / 2}px`
-    btn.appendChild(ripple)
-    ripple.addEventListener('animationend', () => ripple.remove())
+    const r = document.createElement('span'); const rect = btn.getBoundingClientRect()
+    const s = Math.max(rect.width, rect.height)
+    r.className = 'rhine-btn-ripple'; r.style.width = r.style.height = `${s}px`
+    r.style.left = `${e.clientX - rect.left - s / 2}px`
+    r.style.top = `${e.clientY - rect.top - s / 2}px`
+    btn.appendChild(r); r.addEventListener('animationend', () => r.remove())
   }, [])
-
-  /* ── Keyboard: Enter to submit ── */
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if (e.key === 'Enter' && !loading) {
-      const form = (e.target as HTMLElement).closest('form')
-      if (form) form.requestSubmit()
-    }
-  }, [loading])
 
   /* ═════════════════════════════════════════════════════════════
      Render
      ═════════════════════════════════════════════════════════════ */
-  const { brandStory, messages, credentials } = LOGIN_PAGE_CONFIG
-
   return (
     <>
-      {/* Skip to main content */}
-      <a href="#login-form" className="login-skip-link">
-        跳转到登录表单
-      </a>
+      <a href="#rhine-login-form" className="rhine-skip-link">跳转到登录表单</a>
 
-      <div className="login-page" role="main" aria-label="登录页面">
-        {/* ── 品牌区 (Desktop + Tablet) ── */}
-        <BrandPanel pillars={brandStory.pillars} isDark={isDark} />
+      <div className="login-page" role="main" aria-label="莱茵分子登录页面">
+        {/* 背景层 */}
+        <RhineParticleField error={!!error} visible={isIntersecting} />
+        <RhineHexGrid />
+        <div className="rhine-gradient-overlay" aria-hidden="true" />
 
-        {/* ── 表单区 ── */}
-        <div className="login-form-panel">
-          <div className="login-form-container">
-            {/* 移动端品牌标识 */}
-            <div className="login-mobile-brand login-anim-fade-in-up">
-              <div className="login-mobile-brand-left">
-                <div className="login-mobile-logo-icon" aria-hidden="true">
-                  <Leaf size={22} />
-                </div>
-                <div className="login-mobile-logo-text">
-                  <h2>{BRAND_CONFIG.name}</h2>
-                  <span>{BRAND_CONFIG.fullName}</span>
-                </div>
-              </div>
-              <button
-                onClick={toggleTheme}
-                className="login-theme-toggle"
-                aria-label={isDark ? '切换到浅色模式' : '切换到深色模式'}
-              >
-                {isDark ? <Sun size={18} /> : <Moon size={18} />}
-              </button>
+        {/* DNA 螺旋 — 仅暗色模式渲染 */}
+        {isDark && <RhineDNAHelix />}
+
+        {/* 品牌叠加层 (桌面端) */}
+        <BrandOverlay />
+
+        {/* 移动端品牌条 */}
+        <div className="rhine-mobile-brand">
+          <div className="rhine-mobile-logo">
+            <div className="rhine-mobile-logo-icon" aria-hidden="true"><Hexagon size={17} /></div>
+            <span className="rhine-mobile-logo-text">{RHINE_BRAND_CONFIG.name}</span>
+          </div>
+        </div>
+
+        {/* 登录表单面板 */}
+        <div className="rhine-form-panel">
+          <div id="rhine-login-form" className="rhine-card rhine-anim-slide-right rhine-delay-3">
+
+            {/* 卡片头部 */}
+            <div className="rhine-card-header">
+              <h1>{RHINE_BRAND_CONFIG.name}</h1>
+              <h2>{msg.welcome}</h2>
+              <p>{msg.prompt}</p>
             </div>
 
-            {/* 登录卡片 */}
-            <div
-              id="login-form"
-              className="login-card login-anim-fade-in-scale login-delay-200"
-            >
-              {/* 标题 */}
-              <div className="login-card-header">
-                <h2>{messages.welcome}</h2>
-                <p>{messages.prompt}</p>
+            {/* 错误提示 */}
+            {error && (
+              <div className="rhine-alert rhine-alert-error rhine-anim-shake" role="alert">
+                <AlertCircle size={16} className="rhine-alert-icon" aria-hidden="true" />
+                <span>{error}</span>
+              </div>
+            )}
+
+            {/* 成功提示 */}
+            {success && (
+              <div className="rhine-alert rhine-alert-success" role="status" aria-live="polite">
+                <CheckCircle2 size={16} className="rhine-alert-icon" aria-hidden="true" />
+                <span>{success}</span>
+              </div>
+            )}
+
+            {/* 表单 */}
+            <form onSubmit={handleSubmit} noValidate aria-label="登录表单">
+              {/* 用户名 */}
+              <div className="rhine-form-group">
+                <label htmlFor="rhine-username" className="rhine-label">{msg.usernameLabel}</label>
+                <div className="rhine-input-wrap">
+                  <User size={18} className="rhine-input-icon" aria-hidden="true" />
+                  <input ref={userRef} id="rhine-username" type="text"
+                    className={`rhine-input${username ? ' filled' : ''}${userErr ? ' error' : ''}`}
+                    value={username} onChange={handleUserChange} onBlur={handleUserBlur}
+                    placeholder={msg.usernamePlaceholder}
+                    autoComplete="username" autoFocus
+                    aria-required="true" aria-invalid={!!userErr}
+                    aria-describedby={userErr ? 'rhine-user-err' : undefined} />
+                </div>
+                {userErr && <p id="rhine-user-err" className="rhine-error-text" role="alert">{userErr}</p>}
               </div>
 
-              {/* 错误提示 */}
-              {error && (
-                <div className="login-alert login-alert-error login-anim-shake" role="alert">
-                  <AlertCircle size={18} className="login-alert-icon" aria-hidden="true" />
-                  <span>{error}</span>
+              {/* 密码 */}
+              <div className="rhine-form-group">
+                <label htmlFor="rhine-password" className="rhine-label">{msg.passwordLabel}</label>
+                <div className="rhine-input-wrap">
+                  <Lock size={18} className="rhine-input-icon" aria-hidden="true" />
+                  <input ref={passRef} id="rhine-password"
+                    type={showPw ? 'text' : 'password'}
+                    className={`rhine-input${password ? ' filled' : ''}${passErr ? ' error' : ''}`}
+                    value={password} onChange={handlePassChange} onBlur={handlePassBlur}
+                    placeholder={msg.passwordPlaceholder}
+                    autoComplete="current-password"
+                    aria-required="true" aria-invalid={!!passErr}
+                    aria-describedby={passErr ? 'rhine-pass-err' : undefined} />
+                  <button type="button" className="rhine-password-toggle"
+                    onClick={() => setShowPw(!showPw)}
+                    aria-label={showPw ? '隐藏密码' : '显示密码'}>
+                    {showPw ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
                 </div>
-              )}
+                {passErr && <p id="rhine-pass-err" className="rhine-error-text" role="alert">{passErr}</p>}
+              </div>
 
-              {/* 成功提示 */}
-              {success && (
-                <div className="login-alert login-alert-success" role="status" aria-live="polite">
-                  <CheckCircle2 size={18} className="login-alert-icon" aria-hidden="true" />
-                  <span>{success}</span>
-                </div>
-              )}
-
-              {/* 表单 */}
-              <form onSubmit={handleSubmit} noValidate aria-label="登录表单">
-                {/* 用户名 */}
-                <div className="login-form-group">
-                  <label htmlFor="username" className="login-label login-label-required">
-                    {messages.usernameLabel}
-                  </label>
-                  <div className="login-input-wrapper">
-                    <User size={20} className="login-input-icon" aria-hidden="true" />
-                    <input
-                      ref={usernameRef}
-                      id="username"
-                      type="text"
-                      className={`login-input${username ? ' filled' : ''}${usernameError ? ' error' : ''}`}
-                      value={username}
-                      onChange={handleUsernameChange}
-                      onBlur={handleUsernameBlur}
-                      onKeyDown={handleKeyDown}
-                      placeholder={messages.usernamePlaceholder}
-                      autoComplete="username"
-                      autoFocus
-                      aria-required="true"
-                      aria-invalid={!!usernameError}
-                      aria-describedby={usernameError ? 'username-error' : undefined}
-                    />
+              {/* 选项行 */}
+              <div className="rhine-form-options">
+                <label className="rhine-remember">
+                  <div className={`rhine-remember-check${remember ? ' checked' : ''}`}
+                    onClick={() => setRemember(!remember)}
+                    role="checkbox" aria-checked={remember} tabIndex={0}
+                    onKeyDown={(e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); setRemember(!remember) } }}>
+                    {remember && <CheckCircle2 size={14} />}
                   </div>
-                  {usernameError && (
-                    <p id="username-error" className="login-error-text" role="alert">
-                      {usernameError}
-                    </p>
-                  )}
-                </div>
-
-                {/* 密码 */}
-                <div className="login-form-group">
-                  <label htmlFor="password" className="login-label login-label-required">
-                    {messages.passwordLabel}
-                  </label>
-                  <div className="login-input-wrapper">
-                    <Lock size={20} className="login-input-icon" aria-hidden="true" />
-                    <input
-                      ref={passwordRef}
-                      id="password"
-                      type={showPassword ? 'text' : 'password'}
-                      className={`login-input${password ? ' filled' : ''}${passwordError ? ' error' : ''}`}
-                      value={password}
-                      onChange={handlePasswordChange}
-                      onFocus={handlePasswordFocus}
-                      onBlur={handlePasswordBlur}
-                      onKeyDown={handleKeyDown}
-                      placeholder={messages.passwordPlaceholder}
-                      autoComplete="current-password"
-                      aria-required="true"
-                      aria-invalid={!!passwordError}
-                      aria-describedby={passwordError ? 'password-error' : undefined}
-                    />
-                    <button
-                      type="button"
-                      className="login-password-toggle"
-                      onClick={() => setShowPassword(!showPassword)}
-                      aria-label={showPassword ? '隐藏密码' : '显示密码'}
-                      aria-pressed={showPassword}
-                      tabIndex={-1}
-                    >
-                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                    </button>
-                  </div>
-                  {passwordError && (
-                    <p id="password-error" className="login-error-text" role="alert">
-                      {passwordError}
-                    </p>
-                  )}
-                  {(isPasswordFocused || password) && (
-                    <PasswordStrengthBar strength={passwordStrength} />
-                  )}
-                </div>
-
-                {/* 记住我 & 忘记密码 */}
-                <div className="login-form-options">
-                  <label className="login-remember-me">
-                    <div
-                      className={`login-remember-checkbox${rememberMe ? ' checked' : ''}`}
-                      onClick={() => setRememberMe(!rememberMe)}
-                      role="checkbox"
-                      aria-checked={rememberMe}
-                      aria-label={messages.rememberMe}
-                      tabIndex={0}
-                      onKeyDown={(e) => { if (e.key === ' ') { e.preventDefault(); setRememberMe(!rememberMe) } }}
-                    >
-                      {rememberMe && <Check size={14} color="#fff" />}
-                    </div>
-                    <span>{messages.rememberMe}</span>
-                  </label>
-                  <Link to="/forgot-password" className="login-forgot-link">
-                    {messages.forgotPassword}
-                  </Link>
-                </div>
-
-                {/* 登录按钮 */}
-                <button
-                  type="submit"
-                  className="login-submit-btn"
-                  disabled={loading}
-                  onClick={handleButtonClick}
-                  aria-label={loading ? messages.loggingIn : messages.loginButton}
-                >
-                  {loading ? (
-                    <>
-                      <span className="login-spinner" aria-hidden="true" />
-                      <span>{messages.loggingIn}</span>
-                    </>
-                  ) : (
-                    messages.loginButton
-                  )}
-                </button>
-              </form>
-
-              {/* 社交登录 */}
-              <SocialLoginButtons onWechatLogin={handleWechatLogin} />
-
-              {/* 安全提示 */}
-              <div className="login-security-note">
-                <Shield size={14} aria-hidden="true" />
-                <span>{messages.securityNote}</span>
+                  <span>{msg.rememberMe}</span>
+                </label>
+                <Link to="/forgot-password" className="rhine-forgot-link">{msg.forgotPassword}</Link>
               </div>
 
-              {/* 页脚链接 */}
-              <div className="login-footer">
-                <div className="login-footer-links">
-                  <Link to="/privacy-policy">{messages.privacyPolicy}</Link>
-                  <span className="login-footer-sep" aria-hidden="true" />
-                  <Link to="/terms">{messages.termsOfService}</Link>
-                </div>
-              </div>
+              {/* 主提交按钮 ✨ 辉光效果 */}
+              <button type="submit" className="rhine-submit-btn"
+                disabled={loading} onClick={handleBtnClick}
+                aria-label={loading ? msg.loggingIn : msg.loginButton}>
+                {loading ? (
+                  <><span className="rhine-spinner" aria-hidden="true" /><span>{msg.loggingIn}</span></>
+                ) : msg.loginButton}
+              </button>
+            </form>
 
-              {/* 🔒 P0 安全修复: 仅开发环境显示默认账号，不显示明文密码 */}
-              {import.meta.env?.DEV && credentials.defaultUsername && (
-                <div className="login-credentials-hint">
-                  <p>
-                    {messages.defaultAdmin}：<code>{credentials.defaultUsername}</code> / <code>******</code>
-                  </p>
-                </div>
-              )}
+            {/* 社交登录 — 完整功能版 */}
+            <SocialLoginSection />
+
+            {/* 安全提示 */}
+            <div className="rhine-security-note">
+              <Shield size={12} aria-hidden="true" /><span>{msg.securityNote}</span>
+            </div>
+
+            {/* 页脚链接 */}
+            <div className="rhine-footer">
+              <div className="rhine-footer-links">
+                <Link to="/privacy-policy">{msg.privacyPolicy}</Link>
+                <span className="rhine-footer-sep" aria-hidden="true" />
+                <Link to="/terms">{msg.termsOfService}</Link>
+              </div>
+              {/* 注册状态提示 */}
+              <p className="mt-3 text-xs text-neutral-400 dark:text-neutral-500 text-center">
+                平台暂未开放自助注册，请联系管理员开通账号
+              </p>
             </div>
           </div>
         </div>

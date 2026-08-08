@@ -297,7 +297,7 @@ export default function ApiKeyDiagnosticTool() {
       <Card className="w-full">
         <CardContent className="flex items-center justify-center py-12">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          <span className="ml-3 text-gray-600">正在分析 API Key...</span>
+          <span className="ml-3 text-neutral-600">正在分析 API Key...</span>
         </CardContent>
       </Card>
     )
@@ -310,7 +310,7 @@ export default function ApiKeyDiagnosticTool() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg flex items-center gap-2">
-              <Bug className="w-5 h-5 text-blue-600" />
+              <Bug className="w-5 h-5 text-secondary-600" />
               API Key 诊断工具 v7.1
             </CardTitle>
             <Button variant="outline" size="sm" onClick={runDiagnostic} disabled={loading}>
@@ -325,31 +325,31 @@ export default function ApiKeyDiagnosticTool() {
       <Card>
         <CardContent className="pt-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-              <p className="text-xs text-gray-500 mb-1">存储来源</p>
+            <div className="p-3 bg-slate-50 dark:bg-neutral-800 rounded-lg">
+              <p className="text-xs text-neutral-500 mb-1">存储来源</p>
               <Badge variant={diagnostic.source === 'none' ? 'danger' : 'neutral'}>
                 {diagnostic.source || '未配置'}
               </Badge>
             </div>
 
-            <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-              <p className="text-xs text-gray-500 mb-1">原始长度</p>
+            <div className="p-3 bg-slate-50 dark:bg-neutral-800 rounded-lg">
+              <p className="text-xs text-neutral-500 mb-1">原始长度</p>
               <p className="text-lg font-bold">{diagnostic.keyLength} 字符</p>
             </div>
 
-            <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-              <p className="text-xs text-gray-500 mb-1">隐藏字符</p>
-              <p className={`text-lg font-bold ${diagnostic.hiddenCharsRemoved > 0 ? 'text-red-600' : 'text-green-600'}`}>
+            <div className="p-3 bg-slate-50 dark:bg-neutral-800 rounded-lg">
+              <p className="text-xs text-neutral-500 mb-1">隐藏字符</p>
+              <p className={`text-lg font-bold ${diagnostic.hiddenCharsRemoved > 0 ? 'text-error-600' : 'text-success-600'}`}>
                 {diagnostic.hiddenCharsRemoved} 个
               </p>
             </div>
 
-            <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-              <p className="text-xs text-gray-500 mb-1">格式有效性</p>
+            <div className="p-3 bg-slate-50 dark:bg-neutral-800 rounded-lg">
+              <p className="text-xs text-neutral-500 mb-1">格式有效性</p>
               {diagnostic.isValidFormat ? (
-                <CheckCircle2 className="w-6 h-6 text-green-600" />
+                <CheckCircle2 className="w-6 h-6 text-success-600" />
               ) : (
-                <XCircle className="w-6 h-6 text-red-600" />
+                <XCircle className="w-6 h-6 text-error-600" />
               )}
             </div>
           </div>
@@ -369,7 +369,7 @@ export default function ApiKeyDiagnosticTool() {
             <div className="space-y-3">
               {/* 原始 Key */}
               <div>
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 flex items-center gap-2">
                   原始值（可能包含隐藏字符）
                   <Button
                     variant="ghost"
@@ -380,7 +380,7 @@ export default function ApiKeyDiagnosticTool() {
                     {showRawKey ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
                   </Button>
                 </label>
-                <div className="mt-1 p-3 bg-gray-900 text-green-400 rounded-md font-mono text-sm break-all relative group">
+                <div className="mt-1 p-3 bg-neutral-900 text-success-400 rounded-md font-mono text-sm break-all relative group">
                   {showRawKey ? diagnostic.rawKey : maskKey(diagnostic.rawKey)}
                   <Button
                     variant="ghost"
@@ -396,10 +396,10 @@ export default function ApiKeyDiagnosticTool() {
               {/* 清洗后 Key */}
               {diagnostic.hiddenCharsRemoved > 0 && (
                 <div>
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                     清洗后值（已移除隐藏字符）
                   </label>
-                  <div className="mt-1 p-3 bg-green-900 text-green-300 rounded-md font-mono text-sm break-all">
+                  <div className="mt-1 p-3 bg-success-900 text-success-300 rounded-md font-mono text-sm break-all">
                     {maskKey(diagnostic.cleanedKey)}
                   </div>
                 </div>
@@ -461,8 +461,8 @@ export default function ApiKeyDiagnosticTool() {
           </h4>
           <ul className="space-y-2">
             {diagnostic.suggestions.map((suggestion, idx) => (
-              <li key={idx} className="text-sm text-gray-700 dark:text-gray-300 flex items-start gap-2">
-                <span className="text-blue-500 mt-1">•</span>
+              <li key={idx} className="text-sm text-neutral-700 dark:text-neutral-300 flex items-start gap-2">
+                <span className="text-secondary-500 mt-1">•</span>
                 <span>{suggestion}</span>
               </li>
             ))}
@@ -483,7 +483,7 @@ export default function ApiKeyDiagnosticTool() {
       )}
 
       {/* 诊断时间戳 */}
-      <p className="text-xs text-gray-500 text-right">
+      <p className="text-xs text-neutral-500 text-right">
         最后诊断时间: {new Date(diagnostic.timestamp).toLocaleString()}
       </p>
     </div>

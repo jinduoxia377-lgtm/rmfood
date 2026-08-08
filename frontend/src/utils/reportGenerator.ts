@@ -1,3 +1,4 @@
+import { logger } from '@/utils/safeLogger';
 export type ReportSectionType = 'cover' | 'executive-summary' | 'formula-details' | 'ingredient-analysis' | 'synergy-assessment' | 'recommendations' | 'appendix'
 
 export type ExportFormat = 'pdf' | 'word' | 'excel' | 'html'
@@ -191,10 +192,10 @@ export function calculateStatistics(data: FormulaTableData): ReportStatistics {
   const averagePercentage = data.ingredients.length > 0 ? totalPercentage / data.ingredients.length : 0
 
   const maxIngredient = data.ingredients.reduce((max, ing) =>
-    (!max || ing.percentage > max.percentage) ? ing : max, null as any)
+    (!max || ing.percentage > max.percentage) ? ing : max, null as ReturnType<typeof data.ingredients.reduce>)
 
   const minIngredient = data.ingredients.reduce((min, ing) =>
-    (!min || ing.percentage < min.percentage) ? ing : min, null as any)
+    (!min || ing.percentage < min.percentage) ? ing : min, null as ReturnType<typeof data.ingredients.reduce>)
 
   const categories: Record<string, number> = {}
   data.ingredients.forEach(ing => {
@@ -987,7 +988,7 @@ export function generateReport(data: ReportInputData, template?: ReportTemplate)
 
       if (sectionConfig.type === 'synergy-assessment' && !data.synergyAnalysis) {
         if (sectionConfig.required) {
-          console.warn(`Required section '${sectionConfig.type}' skipped due to missing data`)
+          logger.warn(`Required section '${sectionConfig.type}' skipped due to missing data`)
         }
         return
       }
@@ -1004,7 +1005,7 @@ export function generateReport(data: ReportInputData, template?: ReportTemplate)
         })
       }
     } catch (error) {
-      console.error(`Error rendering section ${sectionConfig.type}:`, error)
+      logger.error(`Error rendering section ${sectionConfig.type}:`, error)
 
       if (sectionConfig.required) {
         renderedSections.push({
@@ -1323,7 +1324,7 @@ export function parseReportFromJSON(jsonString: string): ProfessionalReport | nu
 
     return data as ProfessionalReport
   } catch (error) {
-    console.error('Failed to parse report JSON:', error)
+    logger.error('Failed to parse report JSON:', error)
     return null
   }
 }

@@ -2,7 +2,8 @@ import React, { useState } from 'react'
 import { Sparkles, Wand2 } from 'lucide-react'
 import { Button } from '@/components/ui'
 import { GenerationProgressPanel } from '@/components/ai/GenerationProgressPanel'
-import { EFFECT_OPTIONS, DEFAULTS, VALIDATION } from '@/config'
+import { DEFAULTS, VALIDATION } from '@/config'
+import { EFFECT_OPTIONS } from '@/config/ai/effects'
 import { usePersistentState } from '@/hooks/usePersistentState'
 import type { AICandidate } from '@/api/ai'
 import type { GenerationProgress } from '@/hooks/useGenerationProgress'
@@ -79,7 +80,7 @@ export function GenerationPanel({
             </div>
 
             <div className="flex flex-wrap gap-2.5">
-              {EFFECT_OPTIONS.map((effect) => {
+              {EFFECT_OPTIONS.map((effect: any) => {
                 const isSelected = selectedEffects.some(e => e.id === effect.id)
 
                 return (
@@ -113,7 +114,7 @@ export function GenerationPanel({
                   >
                     {effect.label}
                     {effect.popular && !isSelected && (
-                      <span className="ml-2 text-xs px-1.5 py-0.5 rounded-full bg-amber-500/12 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400">
+                      <span className="ml-2 text-xs px-1.5 py-0.5 rounded-full bg-warning-500/12 dark:bg-warning-500/20 text-warning-600 dark:text-warning-400">
                         {DEFAULTS.PLACEHOLDER_TEXTS.BADGE_POPULAR}
                       </span>
                     )}

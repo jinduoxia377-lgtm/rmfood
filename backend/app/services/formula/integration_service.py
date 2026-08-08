@@ -192,7 +192,7 @@ class FormulaIntegrationService:
             
         except Exception as e:
             logger.error(f"管线执行错误: {str(e)}", exc_info=True)
-            response.error_message = f"生成过程出错: {str(e)}"
+            response.error_message = "生成过程出错，请稍后重试"
             response.mode_used = GenerationMode.STANDARD
             
             fallback_response = self._execute_standard_pipeline(request,
@@ -504,8 +504,8 @@ def quick_test():
     response_cached = service.orchestrate_deep_generation(test_request)
     logger.info(f"第二次调用缓存命中: {'✅ 是' if response_cached.cache_hit else '❌ 否'}")
     cache_stats = service.get_cache_stats()
-    print(f"缓存统计: 当前大小={cache_stats['current_size']}/{cache_stats['max_size']}, "
-          f"利用率={cache_stats['utilization']:.1f}%")
+    logger.info("缓存统计: 当前大小=%d/%d, 利用率=%.1f%%",
+                cache_stats['current_size'], cache_stats['max_size'], cache_stats['utilization'])
     
     logger.info("\n" + "=" * 70)
     logger.info("验证标准检查:")

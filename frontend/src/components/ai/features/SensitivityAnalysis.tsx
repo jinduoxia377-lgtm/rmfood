@@ -79,15 +79,15 @@ const METRIC_LABELS: Record<keyof MetricResult, string> = {
 }
 
 const METRIC_COLORS: Record<keyof MetricResult, string> = {
-  efficacy: '#10b981',
-  stability: '#3b82f6',
-  cost: '#f59e0b',
-  safety: '#ef4444',
-  sensory: '#8b5cf6',
-  overall: '#ec4899',
+  efficacy: 'var(--color-primary, #34C759)',
+  stability: 'var(--color-secondary, #0A84FF)',
+  cost: 'var(--color-warning, #FF9F0A)',
+  safety: 'var(--color-error, #FF3B30)',
+  sensory: 'var(--color-violet-500, #AF52DE)',
+  overall: 'var(--color-pink-500, #D946EF)',
 }
 
-const SCENARIO_COLORS = ['#10b981', '#3b82f6', '#f59e0b']
+const SCENARIO_COLORS = ['var(--color-primary, #34C759)', 'var(--color-secondary, #0A84FF)', 'var(--color-warning, #FF9F0A)']
 
 function calculateMockResults(parameters: Record<string, number>): MetricResult {
   const ph = parameters.ph || 6.5
@@ -145,14 +145,14 @@ export function SensitivityAnalysis({
 
   const currentResults = useMemo(() => {
     const results = calculateMockResults(currentParams)
-    results.overall = (calculateMockResults as any).overall(results)
+    results.overall = (calculateMockResults.overall(results)
     return results
   }, [currentParams])
 
   const baselineResults = useMemo(() => {
     const baseline = Object.fromEntries(baseParameters.map(p => [p.id, p.baseValue]))
     const results = calculateMockResults(baseline)
-    results.overall = (calculateMockResults as any).overall(results)
+    results.overall = (calculateMockResults.overall(results)
     return results
   }, [baseParameters])
 
@@ -171,7 +171,7 @@ export function SensitivityAnalysis({
       const value = minVal + i * stepSize
       const testParams = { ...currentParams, [activeParam.id]: value }
       const results = calculateMockResults(testParams)
-      results.overall = (calculateMockResults as any).overall(results)
+      results.overall = (calculateMockResults.overall(results)
 
       data.push({
         value: Number(value.toFixed(2)),
@@ -192,9 +192,9 @@ export function SensitivityAnalysis({
         const lowParams = { ...currentParams, [param.id]: param.baseValue * 0.8 }
 
         const highResult = calculateMockResults(highParams)
-        highResult.overall = (calculateMockResults as any).overall(highResult)
+        highResult.overall = (calculateMockResults.overall(highResult)
         const lowResult = calculateMockResults(lowParams)
-        lowResult.overall = (calculateMockResults as any).overall(lowResult)
+        lowResult.overall = (calculateMockResults.overall(lowResult)
 
         const sensitivity = ((highResult[metric] - lowResult[metric]) / (param.baseValue * 0.4)) * 100
         row[metric] = Number(sensitivity.toFixed(2))
@@ -205,7 +205,7 @@ export function SensitivityAnalysis({
   }, [parameters, currentParams])
 
   const getHeatmapColor = useCallback((value: number): string => {
-    if (Math.abs(value) < 0.5) return 'bg-gray-200 dark:bg-gray-700'
+    if (Math.abs(value) < 0.5) return 'bg-neutral-200 dark:bg-neutral-700'
     if (value > 0) {
       const intensity = Math.min(1, value / 10)
       return `rgba(16, 185, 129, ${0.3 + intensity * 0.7})`
@@ -293,15 +293,15 @@ export function SensitivityAnalysis({
       {/* 标题 */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-            <Sliders className="w-5 h-5 text-purple-500" />
+          <h3 className="text-lg font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
+            <Sliders className="w-5 h-5 text-accent-500" />
             What-if 敏感性分析
           </h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
             调整参数观察对配方指标的影响（±20% 变化范围）
           </p>
         </div>
-        <button onClick={resetToBaseline} className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
+        <button onClick={resetToBaseline} className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors">
           <RotateCcw className="w-4 h-4" />
           重置基准
         </button>
@@ -313,9 +313,9 @@ export function SensitivityAnalysis({
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-5"
+          className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 p-5"
         >
-          <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">参数调整</h4>
+          <h4 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-4">参数调整</h4>
 
           <div className="space-y-5">
             {parameters.map(param => {
@@ -323,13 +323,13 @@ export function SensitivityAnalysis({
               const isActive = param.id === activeParamId
 
               return (
-                <div key={param.id} className={`space-y-2 rounded-xl p-3 transition-colors cursor-pointer ${isActive ? 'bg-purple-50 dark:bg-purple-900/20' : 'hover:bg-gray-50 dark:hover:bg-gray-800/50'}`} onClick={() => setActiveParamId(param.id)}>
+                <div key={param.id} className={`space-y-2 rounded-xl p-3 transition-colors cursor-pointer ${isActive ? 'bg-accent-50 dark:bg-accent-900/20' : 'hover:bg-slate-50 dark:hover:bg-neutral-800/50'}`} onClick={() => setActiveParamId(param.id)}>
                   <div className="flex items-center justify-between">
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{param.name}</label>
+                    <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{param.name}</label>
                     <span className={`text-xs font-mono px-2 py-0.5 rounded ${
-                      Math.abs(deviation) < 1 ? 'bg-gray-100 dark:bg-gray-800 text-gray-600' :
-                      deviation > 0 ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600' :
-                      'bg-red-100 dark:bg-red-900/30 text-red-600'
+                      Math.abs(deviation) < 1 ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600' :
+                      deviation > 0 ? 'bg-secondary-100 dark:bg-secondary-900/30 text-secondary-600' :
+                      'bg-error-100 dark:bg-error-900/30 text-error-600'
                     }`}>
                       {param.currentValue}{param.unit}
                       {Math.abs(deviation) >= 1 && (
@@ -350,9 +350,9 @@ export function SensitivityAnalysis({
                     className={`w-full h-2 rounded-full appearance-none cursor-pointer accent-purple-500`}
                   />
 
-                  <div className="flex justify-between text-xs text-gray-400">
+                  <div className="flex justify-between text-xs text-neutral-400">
                     <span>{param.minValue}{param.unit}</span>
-                    <span className="font-medium text-purple-600">基准: {param.baseValue}{param.unit}</span>
+                    <span className="font-medium text-accent-600">基准: {param.baseValue}{param.unit}</span>
                     <span>{param.maxValue}{param.unit}</span>
                   </div>
                 </div>
@@ -361,19 +361,19 @@ export function SensitivityAnalysis({
           </div>
 
           {/* 当前结果摘要 */}
-          <div className="mt-6 pt-4 border-t border-gray-100 dark:border-gray-800">
-            <h5 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">实时计算结果</h5>
+          <div className="mt-6 pt-4 border-t border-neutral-100 dark:border-neutral-800">
+            <h5 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-3">实时计算结果</h5>
             <div className="grid grid-cols-2 gap-3">
               {(Object.keys(METRIC_LABELS) as (keyof MetricResult)[]).slice(0, 4).map(metric => {
                 const diff = currentResults[metric] - baselineResults[metric]
                 const Icon = diff > 0.5 ? TrendingUp : diff < -0.5 ? TrendingDown : Minus
-                const color = diff > 0.5 ? 'text-green-600' : diff < -0.5 ? 'text-red-600' : 'text-gray-600'
+                const color = diff > 0.5 ? 'text-success-600' : diff < -0.5 ? 'text-error-600' : 'text-neutral-600'
 
                 return (
-                  <div key={metric} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                    <span className="text-xs text-gray-500">{METRIC_LABELS[metric]}</span>
+                  <div key={metric} className="flex items-center justify-between p-2 bg-slate-50 dark:bg-neutral-800 rounded-lg">
+                    <span className="text-xs text-neutral-500">{METRIC_LABELS[metric]}</span>
                     <div className="flex items-center gap-1">
-                      <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                      <span className="text-sm font-semibold text-neutral-900 dark:text-white">
                         {currentResults[metric]}
                       </span>
                       <Icon className={`w-3 h-3 ${color}`} />
@@ -389,16 +389,16 @@ export function SensitivityAnalysis({
         <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-5"
+          className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 p-5"
         >
-          <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">
+          <h4 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-4">
             参数影响曲线 - {parameters.find(p => p.id === activeParamId)?.name || ''}
           </h4>
 
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={sensitivityData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-slate-100, #F0F0F0)" />
                 <XAxis
                   dataKey="value"
                   tick={{ fontSize: 11 }}
@@ -413,7 +413,7 @@ export function SensitivityAnalysis({
                 <Tooltip
                   contentStyle={{
                     backgroundColor: 'rgba(255,255,255,0.95)',
-                    border: '1px solid #e5e7eb',
+                    border: '1px solid var(--color-slate-200, #E5E7EB)',
                     borderRadius: '8px',
                     fontSize: '12px',
                   }}
@@ -433,7 +433,7 @@ export function SensitivityAnalysis({
 
                 <ReferenceLine
                   x={parameters.find(p => p.id === activeParamId)?.baseValue}
-                  stroke="#8b5cf6"
+                  stroke="var(--color-violet-500, #AF52DE)"
                   strokeWidth={2}
                   strokeDasharray="5 5"
                   label={{ value: '基准', position: 'top', fontSize: 11 }}
@@ -447,7 +447,7 @@ export function SensitivityAnalysis({
             {(Object.keys(METRIC_LABELS) as (keyof MetricResult)[]).slice(0, 5).map(metric => (
               <div key={metric} className="flex items-center gap-1.5">
                 <div className="w-3 h-0.5" style={{ backgroundColor: METRIC_COLORS[metric] }} />
-                <span className="text-xs text-gray-500">{METRIC_LABELS[metric]}</span>
+                <span className="text-xs text-neutral-500">{METRIC_LABELS[metric]}</span>
               </div>
             ))}
           </div>
@@ -458,17 +458,17 @@ export function SensitivityAnalysis({
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-5"
+        className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 p-5"
       >
-        <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">参数影响热力图</h4>
+        <h4 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-4">参数影响热力图</h4>
 
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr>
-                <th className="py-2 px-3 text-left font-medium text-gray-500">参数 \\ 指标</th>
+                <th className="py-2 px-3 text-left font-medium text-neutral-500">参数 \\ 指标</th>
                 {(Object.keys(METRIC_LABELS) as (keyof MetricResult)[]).map(metric => (
-                  <th key={metric} className="py-2 px-3 text-center font-medium text-gray-500">
+                  <th key={metric} className="py-2 px-3 text-center font-medium text-neutral-500">
                     {METRIC_LABELS[metric]}
                   </th>
                 ))}
@@ -477,7 +477,7 @@ export function SensitivityAnalysis({
             <tbody>
               {heatmapData.map((row, idx) => (
                 <tr key={idx}>
-                  <td className="py-2 px-3 font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                  <td className="py-2 px-3 font-medium text-neutral-700 dark:text-neutral-300 whitespace-nowrap">
                     {row.parameter}
                   </td>
                   {(Object.keys(METRIC_LABELS) as (keyof MetricResult)[]).map(metric => {
@@ -504,17 +504,17 @@ export function SensitivityAnalysis({
         </div>
 
         {/* 热力图说明 */}
-        <div className="mt-3 flex items-center justify-center gap-6 text-xs text-gray-500">
+        <div className="mt-3 flex items-center justify-center gap-6 text-xs text-neutral-500">
           <div className="flex items-center gap-1.5">
-            <div className="w-4 h-4 bg-green-500/70 rounded" />
+            <div className="w-4 h-4 bg-success-500/70 rounded" />
             <span>正向影响</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="w-4 h-4 bg-gray-300 dark:bg-gray-600 rounded" />
+            <div className="w-4 h-4 bg-neutral-300 dark:bg-neutral-600 rounded" />
             <span>无影响</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="w-4 h-4 bg-red-500/70 rounded" />
+            <div className="w-4 h-4 bg-error-500/70 rounded" />
             <span>负向影响</span>
           </div>
         </div>
@@ -535,20 +535,20 @@ export function SensitivityAnalysis({
               animate={{ scale: 1 }}
               exit={{ scale: 0.9 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white dark:bg-gray-900 rounded-2xl p-6 max-w-md shadow-2xl"
+              className="bg-white dark:bg-neutral-900 rounded-2xl p-6 max-w-md shadow-2xl"
             >
               <div className="flex items-start gap-3 mb-4">
-                <Info className="w-5 h-5 text-blue-500 mt-0.5" />
+                <Info className="w-5 h-5 text-secondary-500 mt-0.5" />
                 <div>
-                  <h4 className="font-semibold text-gray-900 dark:text-white">
+                  <h4 className="font-semibold text-neutral-900 dark:text-white">
                     {showHeatmapDetail.param} → {showHeatmapDetail.metric}
                   </h4>
-                  <p className="text-sm text-gray-500 mt-1">
+                  <p className="text-sm text-neutral-500 mt-1">
                     该参数的变化对目标指标的影响程度和方向
                   </p>
                 </div>
               </div>
-              <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+              <div className="space-y-2 text-sm text-neutral-600 dark:text-neutral-400">
                 <p>• 正值表示参数增加时，该指标上升</p>
                 <p>• 负值表示参数增加时，该指标下降</p>
                 <p>• 绝对值越大，敏感性越强</p>
@@ -556,7 +556,7 @@ export function SensitivityAnalysis({
               </div>
               <button
                 onClick={() => setShowHeatmapDetail(null)}
-                className="mt-4 w-full py-2 bg-gray-100 dark:bg-gray-800 rounded-lg text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                className="mt-4 w-full py-2 bg-neutral-100 dark:bg-neutral-800 rounded-lg text-sm font-medium hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
               >
                 关闭
               </button>
@@ -569,11 +569,11 @@ export function SensitivityAnalysis({
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-5"
+        className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 p-5"
       >
         <div className="flex items-center justify-between mb-4">
-          <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-            <Zap className="w-4 h-4 text-amber-500" />
+          <h4 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-2">
+            <Zap className="w-4 h-4 text-warning-500" />
             场景对比（最多 3 个）
           </h4>
           {scenarios.length < 3 && (
@@ -582,7 +582,7 @@ export function SensitivityAnalysis({
                 const name = prompt('输入场景名称：')
                 if (name) saveAsScenario(name)
               }}
-              className="px-3 py-1.5 text-xs font-medium text-purple-600 bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/30 rounded-lg transition-colors"
+              className="px-3 py-1.5 text-xs font-medium text-accent-600 bg-accent-50 dark:bg-accent-900/20 hover:bg-accent-100 dark:hover:bg-accent-900/30 rounded-lg transition-colors"
             >
               + 新增场景
             </button>
@@ -590,7 +590,7 @@ export function SensitivityAnalysis({
         </div>
 
         {scenarios.length === 0 ? (
-          <p className="text-sm text-gray-500 text-center py-4">暂无对比场景</p>
+          <p className="text-sm text-neutral-500 text-center py-4">暂无对比场景</p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {scenarios.map((scenario, idx) => {
@@ -605,11 +605,11 @@ export function SensitivityAnalysis({
                   className={`relative p-4 rounded-xl border-2 cursor-pointer transition-all ${
                     isActive
                       ? 'border-purple-500 shadow-lg'
-                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
+                      : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300'
                   } ${isBest ? 'ring-2 ring-amber-400 ring-offset-2' : ''}`}
                 >
                   {isBest && (
-                    <div className="absolute -top-2 -right-2 bg-amber-400 text-white text-xs px-2 py-0.5 rounded-full font-medium">
+                    <div className="absolute -top-2 -right-2 bg-warning-400 text-white text-xs px-2 py-0.5 rounded-full font-medium">
                       推荐
                     </div>
                   )}
@@ -619,24 +619,24 @@ export function SensitivityAnalysis({
                       className="w-3 h-3 rounded-full"
                       style={{ backgroundColor: scenario.color }}
                     />
-                    <h5 className="font-semibold text-gray-900 dark:text-white">{scenario.name}</h5>
+                    <h5 className="font-semibold text-neutral-900 dark:text-white">{scenario.name}</h5>
                   </div>
 
                   {scenario.results ? (
                     <div className="space-y-2">
-                      <div className="text-center pb-2 border-b border-gray-100 dark:border-gray-800">
-                        <span className="text-2xl font-bold text-gray-900 dark:text-white">
+                      <div className="text-center pb-2 border-b border-neutral-100 dark:border-neutral-800">
+                        <span className="text-2xl font-bold text-neutral-900 dark:text-white">
                           {scenario.results.overall}
                         </span>
-                        <span className="text-xs text-gray-500 ml-1">分</span>
+                        <span className="text-xs text-neutral-500 ml-1">分</span>
                       </div>
 
                       {(Object.keys(METRIC_LABELS) as (keyof MetricResult)[])
                         .filter(m => m !== 'overall')
                         .map(metric => (
                           <div key={metric} className="flex items-center justify-between text-sm">
-                            <span className="text-gray-500">{METRIC_LABELS[metric]}</span>
-                            <span className="font-medium text-gray-900 dark:text-white">
+                            <span className="text-neutral-500">{METRIC_LABELS[metric]}</span>
+                            <span className="font-medium text-neutral-900 dark:text-white">
                               {scenario.results?.[metric] || '-'}
                             </span>
                           </div>
@@ -647,14 +647,14 @@ export function SensitivityAnalysis({
                           e.stopPropagation()
                           applyScenario(scenario)
                         }}
-                        className="w-full mt-2 py-1.5 text-xs font-medium text-purple-600 bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 rounded-lg transition-colors flex items-center justify-center gap-1"
+                        className="w-full mt-2 py-1.5 text-xs font-medium text-accent-600 bg-accent-50 dark:bg-accent-900/20 hover:bg-accent-100 rounded-lg transition-colors flex items-center justify-center gap-1"
                       >
                         <CheckCircle2 className="w-3 h-3" />
                         应用此场景
                       </button>
                     </div>
                   ) : (
-                    <div className="text-center py-4 text-gray-400 text-sm">
+                    <div className="text-center py-4 text-neutral-400 text-sm">
                       点击保存当前配置为场景
                     </div>
                   )}
@@ -679,7 +679,7 @@ export function SensitivityAnalysis({
                     return bar
                   })}
               >
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-slate-100, #F0F0F0)" />
                 <XAxis dataKey="name" tick={{ fontSize: 11 }} />
                 <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} />
                 <Tooltip />

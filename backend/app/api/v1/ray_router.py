@@ -26,15 +26,17 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import os
 import uuid
 from datetime import datetime, timezone, timedelta
 from typing import Any, Dict, List, Optional, Union
 
+from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import APIRouter, Depends, HTTPException, Query, Body, status
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, validator
 
-from ...core.ray_manager import (
+from ...core.distributed.ray_manager import (
     RayClusterManager,
     RayConfig,
     TaskConfig,
@@ -45,8 +47,9 @@ from ...core.ray_manager import (
     ResourceUsage,
     get_ray_manager
 )
-from ...api.deps import get_current_active_user, CurrentUser, DbSession
-from ...core.db_config import get_redis_client_async
+from ...api.deps import get_current_active_user, get_db_session
+from ...models import User
+from ...models.enums import UserRole
 
 # 创建路由实例
 router = APIRouter(prefix="/ray", tags=["Ray集群管理"])
@@ -76,7 +79,7 @@ class TaskSubmitRequest(BaseModel):
     """提交任务请求"""
     task_type: str = Field(
         description="任务类型: recipe_analysis | batch_analysis | model_training | data_processing",
-        regex="^(recipe_analysis|batch_analysis|model_training|data_processing)$"
+        pattern="^(recipe_analysis|batch_analysis|model_training|data_processing)$"
     )
     payload: Dict[str, Any] = Field(default_factory=dict, description="任务载荷")
     priority: int = Field(default=5, ge=1, le=10, description="优先级(1-10)")
@@ -176,37 +179,36 @@ class BatchAnalysisRequest(BaseModel):
 # ═════════════════════════════════════════════
 
 
-async def get_ray_manager_dep(user: CurrentUser = Depends(get_current_active_user)):
+async def get_ray_manager_dep(user: User = Depends(get_current_active_user)):
     """获取Ray管理器依赖"""
     try:
         return get_ray_manager()
     except Exception as e:
-        logger.error("获取Ray管理器失败: %s", str(e))
+        logger.error("获取Ray管理器失败: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=f"Ray服务不可用: {str(e)}"
+            detail="服务暂时不可用，请稍后重试"
         )
 
 
-async def rate_limit_check(user: CurrentUser = Depends(get_current_active_user)):
+async def rate_limit_check(user: User = Depends(get_current_active_user)):
     """速率限制检查"""
-    # TODO: 实现基于用户的速率限制
-    # 临时实现：简单的频率限制
     user_id = user.id if hasattr(user, 'id') else 'anonymous'
-
+    # TODO: 实现基于用户的速率限制（Redis 滑动窗口）
+    # 临时实现：简单的频率限制
     return user_id
 
 
-def require_admin(user: CurrentUser = Depends(get_current_active_user)):
+def require_admin(user: User = Depends(get_current_active_user)):
     """要求管理员权限"""
-    # TODO: 实现实际的权限检查
-    # 临时实现：检查用户角色
-    if not hasattr(user, 'is_admin') or not user.is_admin:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="需要管理员权限"
-        )
-    return user
+    from ...models.enums import UserRole
+    # ADMIN 角色拥有所有权限
+    if hasattr(user, 'role') and user.role == UserRole.ADMIN:
+        return user
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail="需要管理员权限"
+    )
 
 
 # ═════════════════════════════════════════════
@@ -217,7 +219,7 @@ def require_admin(user: CurrentUser = Depends(get_current_active_user)):
 @router.post("/cluster/start", response_model=ClusterStartResponse)
 async def start_cluster(
     request: ClusterStartRequest = Body(...),
-    user: CurrentUser = Depends(require_admin),
+    user: User = Depends(require_admin),
     ray_manager: RayClusterManager = Depends(get_ray_manager_dep)
 ) -> ClusterStartResponse:
     """启动Ray集群
@@ -248,16 +250,16 @@ async def start_cluster(
         )
 
     except Exception as e:
-        logger.error("启动集群失败: %s", str(e), exc_info=True)
+        logger.error("启动集群失败: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"启动集群失败: {str(e)}"
+            detail="服务器内部错误，请稍后重试"
         )
 
 
 @router.post("/cluster/stop", response_model=ClusterStartResponse)
 async def stop_cluster(
-    user: CurrentUser = Depends(require_admin),
+    user: User = Depends(require_admin),
     ray_manager: RayClusterManager = Depends(get_ray_manager_dep)
 ) -> ClusterStartResponse:
     """停止Ray集群
@@ -277,16 +279,16 @@ async def stop_cluster(
         )
 
     except Exception as e:
-        logger.error("停止集群失败: %s", str(e), exc_info=True)
+        logger.error("停止集群失败: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"停止集群失败: {str(e)}"
+            detail="服务器内部错误，请稍后重试"
         )
 
 
 @router.get("/cluster/status", response_model=ClusterStatus)
 async def get_cluster_status(
-    user: CurrentUser = Depends(get_current_active_user),
+    user: User = Depends(get_current_active_user),
     ray_manager: RayClusterManager = Depends(get_ray_manager_dep)
 ) -> ClusterStatus:
     """获取集群状态
@@ -296,10 +298,10 @@ async def get_cluster_status(
     try:
         return await ray_manager.get_cluster_status()
     except Exception as e:
-        logger.error("获取集群状态失败: %s", str(e), exc_info=True)
+        logger.error("获取集群状态失败: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"获取集群状态失败: {str(e)}"
+            detail="服务器内部错误，请稍后重试"
         )
 
 
@@ -311,9 +313,9 @@ async def get_cluster_status(
 @router.post("/tasks/submit", response_model=TaskSubmitResponse)
 async def submit_task(
     request: TaskSubmitRequest = Body(...),
-    user: CurrentUser = Depends(get_current_active_user),
+    user: User = Depends(get_current_active_user),
     ray_manager: RayClusterManager = Depends(get_ray_manager_dep),
-    db: DbSession = Depends(),
+    db: AsyncSession = Depends(get_db_session),
     rate_limit: str = Depends(rate_limit_check)
 ) -> TaskSubmitResponse:
     """提交任务
@@ -344,6 +346,9 @@ async def submit_task(
             max_retries=request.max_retries,
             retry_delay_seconds=request.retry_delay_seconds
         )
+        # 将 user_id 存入 metadata 以便后续所有权验证
+        task_config.metadata["user_id"] = user_id
+        task_config.metadata["task_type"] = request.task_type
 
         # 提交任务
         task_id = await ray_manager.submit_task(task_config)
@@ -368,17 +373,17 @@ async def submit_task(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error("提交任务失败: %s", str(e), exc_info=True)
+        logger.error("提交任务失败: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"提交任务失败: {str(e)}"
+            detail="服务器内部错误，请稍后重试"
         )
 
 
 @router.get("/tasks/{task_id}", response_model=TaskStatusResponse)
 async def get_task_status(
     task_id: str,
-    user: CurrentUser = Depends(get_current_active_user),
+    user: User = Depends(get_current_active_user),
     ray_manager: RayClusterManager = Depends(get_ray_manager_dep)
 ) -> TaskStatusResponse:
     """获取任务状态
@@ -393,14 +398,13 @@ async def get_task_status(
                 detail="任务不存在"
             )
 
-        # TODO: 验证用户是否拥有此任务
-        # 临时实现：检查任务载荷中的用户ID
+        # 验证用户是否拥有此任务
         user_id = getattr(user, 'id', 'anonymous')
-        task_user_id = task_status.result.get("user_id") if task_status.result else None
+        task_user_id = task_status.metadata.get("user_id") or (task_status.result.get("user_id") if task_status.result else None)
 
         # 如果是自己的任务或管理员，允许查看
-        is_admin = getattr(user, 'is_admin', False)
-        if task_user_id != user_id and not is_admin:
+        is_admin = getattr(user, 'role', None) == UserRole.ADMIN if hasattr(user, 'role') else False
+        if task_user_id != str(user_id) and not is_admin:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="无权访问此任务"
@@ -414,17 +418,17 @@ async def get_task_status(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error("获取任务状态失败: %s", str(e), exc_info=True)
+        logger.error("获取任务状态失败: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"获取任务状态失败: {str(e)}"
+            detail="服务器内部错误，请稍后重试"
         )
 
 
 @router.post("/tasks/{task_id}/cancel")
 async def cancel_task(
     task_id: str,
-    user: CurrentUser = Depends(get_current_active_user),
+    user: User = Depends(get_current_active_user),
     ray_manager: RayClusterManager = Depends(get_ray_manager_dep)
 ) -> Dict[str, Any]:
     """取消任务
@@ -432,8 +436,17 @@ async def cancel_task(
     用户可以取消自己提交的任务。
     """
     try:
-        # TODO: 验证用户是否拥有此任务
-        # 临时实现：允许所有认证用户取消任何任务
+        # 验证用户是否拥有此任务
+        user_id = getattr(user, 'id', 'anonymous')
+        task_status_obj = await ray_manager.get_task_status(task_id)
+        if task_status_obj:
+            task_user_id = task_status_obj.metadata.get("user_id") or (task_status_obj.result.get("user_id") if task_status_obj.result else None)
+            is_admin = getattr(user, 'role', None) == UserRole.ADMIN if hasattr(user, 'role') else False
+            if task_user_id != str(user_id) and not is_admin:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="无权取消此任务"
+                )
 
         success = await ray_manager.cancel_task(task_id)
         if not success:
@@ -451,10 +464,10 @@ async def cancel_task(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error("取消任务失败: %s", str(e), exc_info=True)
+        logger.error("取消任务失败: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"取消任务失败: {str(e)}"
+            detail="服务器内部错误，请稍后重试"
         )
 
 
@@ -464,7 +477,7 @@ async def list_tasks(
     offset: int = Query(0, ge=0),
     state: Optional[TaskState] = Query(None),
     task_type: Optional[str] = Query(None),
-    user: CurrentUser = Depends(get_current_active_user),
+    user: User = Depends(get_current_active_user),
     ray_manager: RayClusterManager = Depends(get_ray_manager_dep)
 ) -> TaskListResponse:
     """列出任务
@@ -480,20 +493,17 @@ async def list_tasks(
 
         if not is_admin:
             # 非管理员只能看到自己的任务
-            # TODO: 实现更精确的用户任务过滤
-            # 临时实现：基于任务结果中的用户ID过滤
+            # 优先使用 metadata 中的 user_id（提交时已存储）
             filtered_tasks = []
             for task in all_tasks:
-                task_user_id = task.result.get("user_id") if task.result else None
+                task_user_id = task.metadata.get("user_id") or (task.result.get("user_id") if task.result else None)
                 if task_user_id == user_id:
                     filtered_tasks.append(task)
             all_tasks = filtered_tasks
 
         # 按任务类型过滤
         if task_type:
-            # TODO: 基于任务类型过滤
-            # 临时实现：简单的类型过滤逻辑
-            pass
+            all_tasks = [t for t in all_tasks if t.metadata.get("task_type") == task_type or t.task_id.endswith(task_type)]
 
         # 应用分页
         total = len(all_tasks)
@@ -507,10 +517,10 @@ async def list_tasks(
         )
 
     except Exception as e:
-        logger.error("列出任务失败: %s", str(e), exc_info=True)
+        logger.error("列出任务失败: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"列出任务失败: {str(e)}"
+            detail="服务器内部错误，请稍后重试"
         )
 
 
@@ -521,7 +531,7 @@ async def list_tasks(
 
 @router.get("/resources", response_model=ResourceUsageResponse)
 async def get_resource_usage(
-    user: CurrentUser = Depends(get_current_active_user),
+    user: User = Depends(get_current_active_user),
     ray_manager: RayClusterManager = Depends(get_ray_manager_dep)
 ) -> ResourceUsageResponse:
     """获取资源使用情况
@@ -552,16 +562,16 @@ async def get_resource_usage(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error("获取资源使用情况失败: %s", str(e), exc_info=True)
+        logger.error("获取资源使用情况失败: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"获取资源使用情况失败: {str(e)}"
+            detail="服务器内部错误，请稍后重试"
         )
 
 
 @router.get("/health", response_model=HealthCheckResponse)
 async def health_check(
-    user: CurrentUser = Depends(get_current_active_user),
+    user: User = Depends(get_current_active_user),
     ray_manager: RayClusterManager = Depends(get_ray_manager_dep)
 ) -> HealthCheckResponse:
     """健康检查
@@ -598,10 +608,10 @@ async def health_check(
         )
 
     except Exception as e:
-        logger.error("健康检查失败: %s", str(e), exc_info=True)
+        logger.error("健康检查失败: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"健康检查失败: {str(e)}"
+            detail="服务器内部错误，请稍后重试"
         )
 
 
@@ -613,7 +623,7 @@ async def health_check(
 @router.post("/analysis/recipe", response_model=TaskSubmitResponse)
 async def analyze_recipe(
     request: RecipeAnalysisRequest = Body(...),
-    user: CurrentUser = Depends(get_current_active_user),
+    user: User = Depends(get_current_active_user),
     ray_manager: RayClusterManager = Depends(get_ray_manager_dep)
 ) -> TaskSubmitResponse:
     """分析配方（便捷接口）
@@ -647,17 +657,17 @@ async def analyze_recipe(
         )
 
     except Exception as e:
-        logger.error("提交配方分析任务失败: %s", str(e), exc_info=True)
+        logger.error("提交配方分析任务失败: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"提交配方分析任务失败: {str(e)}"
+            detail="服务器内部错误，请稍后重试"
         )
 
 
 @router.post("/analysis/batch", response_model=TaskSubmitResponse)
 async def analyze_batch(
     request: BatchAnalysisRequest = Body(...),
-    user: CurrentUser = Depends(get_current_active_user),
+    user: User = Depends(get_current_active_user),
     ray_manager: RayClusterManager = Depends(get_ray_manager_dep)
 ) -> TaskSubmitResponse:
     """批量分析配方（便捷接口）
@@ -695,10 +705,10 @@ async def analyze_batch(
         )
 
     except Exception as e:
-        logger.error("提交批量分析任务失败: %s", str(e), exc_info=True)
+        logger.error("提交批量分析任务失败: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"提交批量分析任务失败: {str(e)}"
+            detail="服务器内部错误，请稍后重试"
         )
 
 
@@ -709,7 +719,7 @@ async def analyze_batch(
 
 @router.get("/stats")
 async def get_statistics(
-    user: CurrentUser = Depends(get_current_active_user),
+    user: User = Depends(get_current_active_user),
     ray_manager: RayClusterManager = Depends(get_ray_manager_dep)
 ) -> Dict[str, Any]:
     """获取统计信息
@@ -730,7 +740,9 @@ async def get_statistics(
 
         # 按任务类型统计
         type_counts = {}
-        # TODO: 基于任务类型统计
+        for task in all_tasks:
+            ttype = task.metadata.get("task_type", "unknown")
+            type_counts[ttype] = type_counts.get(ttype, 0) + 1
 
         # 性能统计
         total_processing_time = 0
@@ -765,10 +777,10 @@ async def get_statistics(
         }
 
     except Exception as e:
-        logger.error("获取统计信息失败: %s", str(e), exc_info=True)
+        logger.error("获取统计信息失败: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"获取统计信息失败: {str(e)}"
+            detail="服务器内部错误，请稍后重试"
         )
 
 
@@ -780,7 +792,7 @@ async def get_statistics(
 @router.post("/maintenance/cleanup")
 async def cleanup_tasks(
     days: int = Query(7, ge=1, le=365, description="保留天数"),
-    user: CurrentUser = Depends(require_admin),
+    user: User = Depends(require_admin),
     ray_manager: RayClusterManager = Depends(get_ray_manager_dep)
 ) -> Dict[str, Any]:
     """清理旧任务
@@ -806,16 +818,16 @@ async def cleanup_tasks(
         }
 
     except Exception as e:
-        logger.error("清理任务失败: %s", str(e), exc_info=True)
+        logger.error("清理任务失败: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"清理任务失败: {str(e)}"
+            detail="服务器内部错误，请稍后重试"
         )
 
 
 @router.get("/dashboard/url")
 async def get_dashboard_url(
-    user: CurrentUser = Depends(require_admin),
+    user: User = Depends(require_admin),
     ray_manager: RayClusterManager = Depends(get_ray_manager_dep)
 ) -> Dict[str, str]:
     """获取Ray Dashboard URL
@@ -840,10 +852,10 @@ async def get_dashboard_url(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error("获取Dashboard URL失败: %s", str(e), exc_info=True)
+        logger.error("获取Dashboard URL失败: %s", e, exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"获取Dashboard URL失败: {str(e)}"
+            detail="服务器内部错误，请稍后重试"
         )
 
 

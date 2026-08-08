@@ -1,0 +1,235 @@
+{
+  "timestamp": "2026-06-23 14:24:02",
+  "preset_tests": [
+    {
+      "preset": "balanced",
+      "valid": true,
+      "objectives": [
+        "efficacy",
+        "safety",
+        "taste",
+        "cost_efficiency",
+        "synergy",
+        "stability"
+      ],
+      "population_size": 60,
+      "generations": 50
+    },
+    {
+      "preset": "cost_first",
+      "valid": true,
+      "objectives": [
+        "efficacy",
+        "safety",
+        "taste",
+        "cost_efficiency",
+        "synergy",
+        "stability"
+      ],
+      "population_size": 60,
+      "generations": 50
+    },
+    {
+      "preset": "efficacy_first",
+      "valid": true,
+      "objectives": [
+        "efficacy",
+        "safety",
+        "taste",
+        "cost_efficiency",
+        "synergy",
+        "stability"
+      ],
+      "population_size": 60,
+      "generations": 50
+    },
+    {
+      "preset": "safety_first",
+      "valid": true,
+      "objectives": [
+        "efficacy",
+        "safety",
+        "taste",
+        "cost_efficiency",
+        "synergy",
+        "stability"
+      ],
+      "population_size": 60,
+      "generations": 50
+    },
+    {
+      "preset": "synergy_focused",
+      "valid": true,
+      "objectives": [
+        "efficacy",
+        "safety",
+        "taste",
+        "cost_efficiency",
+        "synergy",
+        "stability"
+      ],
+      "population_size": 60,
+      "generations": 50
+    },
+    {
+      "preset": "comprehensive",
+      "valid": true,
+      "objectives": [
+        "efficacy",
+        "safety",
+        "taste",
+        "cost_efficiency",
+        "synergy",
+        "stability",
+        "admet"
+      ],
+      "population_size": 80,
+      "generations": 70
+    }
+  ],
+  "execution_tests": [
+    {
+      "name": "均衡优化(Pareto)",
+      "success": true,
+      "execution_time_ms": 467.8018999984488,
+      "total_generations": 20,
+      "total_evaluations": 600,
+      "convergence_generation": 18,
+      "stop_reason": "completed",
+      "candidate_count": 5,
+      "history_length": 20,
+      "min_fitness": 0.7129729019209956,
+      "max_fitness": 0.7347419802406064,
+      "avg_fitness": 0.7204751449988726,
+      "fitness_std": 0.007908325149191531,
+      "top_fitness": 0.7347419802406064,
+      "pareto_front_size": 5,
+      "objectives_found": [
+        "cost_efficiency",
+        "safety",
+        "efficacy",
+        "synergy",
+        "taste"
+      ],
+      "herb_diversity": 10,
+      "top_herbs": [
+        [
+          "hq",
+          5
+        ],
+        [
+          "rs",
+          5
+        ],
+        [
+          "dg",
+          4
+        ],
+        [
+          "cyh",
+          3
+        ],
+        [
+          "cs",
+          2
+        ]
+      ]
+    },
+    {
+      "name": "功效优先(Weighted)",
+      "success": true,
+      "execution_time_ms": 860.1551000028849,
+      "total_generations": 30,
+      "total_evaluations": 1200,
+      "convergence_generation": 0,
+      "stop_reason": "completed",
+      "candidate_count": 5,
+      "history_length": 30,
+      "min_fitness": 0.8688125,
+      "max_fitness": 0.8688125,
+      "avg_fitness": 0.8688125,
+      "fitness_std": 0.0,
+      "top_fitness": 0.8688125,
+      "pareto_front_size": 5,
+      "objectives_found": [
+        "efficacy",
+        "safety",
+        "cost_efficiency"
+      ],
+      "herb_diversity": 1,
+      "top_herbs": [
+        [
+          "gz",
+          5
+        ]
+      ]
+    },
+    {
+      "name": "成本优先(Weighted)",
+      "success": true,
+      "execution_time_ms": 284.71540001919493,
+      "total_generations": 20,
+      "total_evaluations": 600,
+      "convergence_generation": 12,
+      "stop_reason": "completed",
+      "candidate_count": 5,
+      "history_length": 20,
+      "min_fitness": 0.8111645833333334,
+      "max_fitness": 0.8191916666666668,
+      "avg_fitness": 0.8159795833333334,
+      "fitness_std": 0.003034836909859304,
+      "top_fitness": 0.8191916666666668,
+      "pareto_front_size": 5,
+      "objectives_found": [
+        "efficacy",
+        "safety",
+        "cost_efficiency"
+      ],
+      "herb_diversity": 4,
+      "top_herbs": [
+        [
+          "hqg",
+          5
+        ],
+        [
+          "ds",
+          5
+        ],
+        [
+          "gz",
+          3
+        ],
+        [
+          "hq",
+          1
+        ]
+      ]
+    }
+  ],
+  "edge_tests": [
+    {
+      "name": "空目标功效",
+      "success": false,
+      "error": "cannot access local variable 'math' where it is not associated with a value"
+    },
+    {
+      "name": "极小数种群",
+      "success": true,
+      "candidates": 3,
+      "evaluations": 15
+    },
+    {
+      "name": "单代进化",
+      "success": true,
+      "candidates": 5,
+      "evaluations": 20
+    }
+  ],
+  "summary": {
+    "preset_pass_rate": 1.0,
+    "execution_pass_rate": 1.0,
+    "edge_pass_rate": 0.6666666666666666,
+    "avg_execution_time_ms": 537.5574666735096,
+    "avg_top_fitness": 0.807582048969091
+  }
+}

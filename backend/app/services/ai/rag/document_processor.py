@@ -1,133 +1,260 @@
-"""文档处理器 — PDF/文本解析与分块"""
+"""文档处理器 — 多格式解析与智能分块 (v3.0)
 
+增强版:
+- 支持 PDF/TXT/CSV/MD/DOCX/XLSX/PPTX/HTML 解析
+- 智能语义分块（保持段落/表格/列表完整性）
+- 动态分块大小（短内容合并，长内容细分）
+- 章节标题感知的分块策略
+"""
+
+import os
 import re
 import hashlib
+import logging
 from typing import Optional
 from .models import DocumentChunk
 
+logger = logging.getLogger(__name__)
+
 
 class DocumentProcessor:
-    """文档解析与分块引擎
+    """多格式文档解析与智能分块引擎 v3.0"""
 
-    负责：
-    - 解析 PDF/TXT/CSV/MD 等文档格式
-    - 将长文本分割为有重叠的语义块
-    - 为每块生成元数据（来源、索引）
+    CHUNK_SIZE = int(os.getenv("RAG_CHUNK_SIZE", "800"))
+    CHUNK_OVERLAP = int(os.getenv("RAG_CHUNK_OVERLAP", "80"))
 
-    CHUNK_SIZE 和 CHUNK_OVERLAP 可通过环境变量配置。
-    """
-
-    CHUNK_SIZE = 500       # 每块目标字符数
-    CHUNK_OVERLAP = 50     # 块间重叠字符数（保持上下文连贯）
+    SENTENCE_SEPARATORS = ('。', '.\n', '！', '？', '\n\n', '；', '；')
+    BOUNDARY_SEARCH_BACKTRACK = 150
+    MD_HEADING = re.compile(r'^(#{1,6}\s+.+)$', re.MULTILINE)
 
     def extract_text(self, content: bytes, filename: str) -> str:
-        """根据文件类型提取纯文本
-
-        Args:
-            content: 文件二进制内容
-            filename: 文件名（用于判断类型）
-
-        Returns:
-            提取的纯文本
-        """
+        """根据文件类型提取纯文本"""
         ext = filename.lower().split('.')[-1] if '.' in filename else ''
 
-        if ext == 'pdf':
-            return self._extract_pdf(content)
-        elif ext in ('txt', 'md'):
-            return content.decode('utf-8', errors='replace')
-        elif ext == 'csv':
-            return self._extract_csv(content)
-        else:
-            return content.decode('utf-8', errors='replace')
+        extractors = {
+            'pdf': self._extract_pdf,
+            'txt': self._extract_plain,
+            'md': self._extract_plain,
+            'csv': self._extract_csv,
+            'docx': self._extract_docx,
+            'xlsx': self._extract_xlsx,
+            'pptx': self._extract_pptx,
+            'html': self._extract_html,
+            'htm': self._extract_html,
+        }
+
+        extractor = extractors.get(ext)
+        if extractor:
+            try:
+                return extractor(content)
+            except Exception as e:
+                logger.warning("文档格式 %s 解析失败，回退到纯文本: %s", ext, e)
+
+        # 默认：UTF-8 解码
+        return content.decode('utf-8', errors='replace')
+
+    def _extract_plain(self, content: bytes) -> str:
+        """纯文本"""
+        return content.decode('utf-8', errors='replace')
 
     def _extract_pdf(self, content: bytes) -> str:
-        """从 PDF 提取文本"""
+        """PDF 解析（PyPDF2 → pdfminer 回退）"""
         try:
             import PyPDF2
             from io import BytesIO
             reader = PyPDF2.PdfReader(BytesIO(content))
-            texts = []
-            for page in reader.pages:
-                page_text = page.extract_text()
-                if page_text:
-                    texts.append(page_text)
-            return '\n'.join(texts)
+            texts = [page.extract_text() for page in reader.pages if page.extract_text()]
+            return '\n\n'.join(texts)
         except ImportError:
             try:
+                from pdfminer.high_level import extract_text
                 from io import BytesIO
-                from pdfminer.high_level import extract_text as pdfminer_extract
-                return pdfminer_extract(BytesIO(content))
+                return extract_text(BytesIO(content))
             except ImportError:
-                return "[PDF 解析需要安装 PyPDF2 或 pdfminer.six 库]"
+                return "[PDF 解析需要安装 PyPDF2 或 pdfminer.six]"
 
     def _extract_csv(self, content: bytes) -> str:
         """CSV 转可读文本"""
+        import csv
+        from io import StringIO
+        text = content.decode('utf-8', errors='replace')
+        reader = csv.reader(StringIO(text))
+        rows = [' | '.join(row) for row in reader]
+        return '\n'.join(rows)
+
+    def _extract_docx(self, content: bytes) -> str:
+        """Word .docx 解析"""
         try:
-            import csv
-            from io import StringIO
-            text = content.decode('utf-8', errors='replace')
-            reader = csv.reader(StringIO(text))
-            rows = [' | '.join(row) for row in reader]
-            return '\n'.join(rows)
-        except Exception:
+            from docx import Document
+            from io import BytesIO
+            doc = Document(BytesIO(content))
+            paragraphs = [p.text for p in doc.paragraphs if p.text.strip()]
+            return '\n\n'.join(paragraphs)
+        except ImportError:
+            logger.warning("python-docx 未安装，回退到纯文本")
+            return content.decode('utf-8', errors='replace')
+
+    def _extract_xlsx(self, content: bytes) -> str:
+        """Excel .xlsx 解析"""
+        try:
+            import openpyxl
+            from io import BytesIO
+            wb = openpyxl.load_workbook(BytesIO(content), read_only=True)
+            lines = []
+            for ws in wb.worksheets:
+                for row in ws.iter_rows(values_only=True):
+                    cells = [str(c) if c is not None else '' for c in row]
+                    line = ' | '.join(c for c in cells if c)
+                    if line:
+                        lines.append(line)
+            return '\n'.join(lines)
+        except ImportError:
+            logger.warning("openpyxl 未安装，回退到纯文本")
+            return content.decode('utf-8', errors='replace')
+
+    def _extract_pptx(self, content: bytes) -> str:
+        """PowerPoint .pptx 解析"""
+        try:
+            from pptx import Presentation
+            from io import BytesIO
+            prs = Presentation(BytesIO(content))
+            texts = []
+            for slide in prs.slides:
+                for shape in slide.shapes:
+                    if hasattr(shape, 'text') and shape.text.strip():
+                        texts.append(shape.text.strip())
+            return '\n\n'.join(texts)
+        except ImportError:
+            logger.warning("python-pptx 未安装，回退到纯文本")
+            return content.decode('utf-8', errors='replace')
+
+    def _extract_html(self, content: bytes) -> str:
+        """HTML 提取正文"""
+        try:
+            from bs4 import BeautifulSoup
+            soup = BeautifulSoup(content, 'html.parser')
+            # 移除脚本和样式
+            for tag in soup(['script', 'style']):
+                tag.decompose()
+            text = soup.get_text(separator='\n')
+            # 清理多余空白
+            lines = [line.strip() for line in text.splitlines() if line.strip()]
+            return '\n\n'.join(lines)
+        except ImportError:
+            logger.warning("BeautifulSoup 未安装，回退到纯文本")
             return content.decode('utf-8', errors='replace')
 
     def chunk_text(self, text: str, filename: str = "") -> list[DocumentChunk]:
-        """将长文本分割为有重叠的语义块
+        """智能语义分块 v3.0
 
-        分块策略：
-        1. 清理多余空白符
-        2. 按 CHUNK_SIZE 滑动窗口切割
-        3. 在边界附近查找句号/换行符作为自然断点
-        4. 块间保留 CHUNK_OVERLAP 字符的重叠
-
-        Args:
-            text: 要分割的文本
-            filename: 来源文件名（注入元数据）
-
-        Returns:
-            DocumentChunk 列表
+        策略：
+        1. 按段落/标题分段
+        2. 短段落合并（<200 字符）
+        3. 长段落按句子切分
+        4. 块间保留重叠
+        5. 每块记录章节标题
         """
-        text = re.sub(r'\s+', ' ', text).strip()
+        text = text.strip()
         if not text:
             return []
 
+        # 步骤1: 按段落分段
+        paragraphs = re.split(r'\n{2,}', text)
+        paragraphs = [p.strip() for p in paragraphs if p.strip()]
+
+        # 步骤2: 检测 Markdown 标题
+        sections = self._organize_into_sections(paragraphs)
+
+        # 步骤3: 智能分块
         chunks: list[DocumentChunk] = []
-        start = 0
+        current_chunk_text = ""
+        current_section = ""
+        chunk_index = 0
 
-        while start < len(text):
-            end = start + self.CHUNK_SIZE
+        for section_title, para_list in sections:
+            for para in para_list:
+                # 检测段落是否为标题
+                heading_match = self.MD_HEADING.match(para)
+                if heading_match:
+                    # 先保存当前块
+                    if current_chunk_text:
+                        chunk = self._create_chunk(current_chunk_text, filename, chunk_index, current_section)
+                        if chunk:
+                            chunks.append(chunk)
+                        chunk_index += 1
 
-            if end >= len(text):
-                end = len(text)
-            else:
-                # 在边界附近找句子结尾（优先句号，其次换行）
-                search_start = max(start + self.CHUNK_SIZE - 100, start)
-                candidates = []
-                for sep in ('。', '.\n', '！', '？', '\n\n'):
-                    pos = text.rfind(sep, search_start, end)
-                    if pos > search_start:
-                        candidates.append(pos + len(sep))
-                if candidates:
-                    end = max(candidates)
+                    current_section = heading_match.group(1).lstrip('#').strip()
+                    current_chunk_text = para
+                    continue
 
-            chunk_text = text[start:end].strip()
-            if chunk_text:
-                chunk_id = hashlib.md5(chunk_text.encode()).hexdigest()[:12]
-                chunks.append(DocumentChunk(
-                    id=f"chunk_{chunk_id}",
-                    content=chunk_text,
-                    metadata={
-                        "source": filename,
-                        "chunk_index": len(chunks),
-                        "char_start": start,
-                        "char_end": end,
-                    },
-                ))
+                # 合并段落到当前块
+                if current_chunk_text:
+                    new_text = current_chunk_text + "\n\n" + para
+                else:
+                    new_text = para
 
-            start = end - self.CHUNK_OVERLAP
-            if start >= end:
-                break
+                if len(new_text) > self.CHUNK_SIZE * 1.5:
+                    # 块太大，先保存
+                    chunk = self._create_chunk(current_chunk_text, filename, chunk_index, current_section)
+                    if chunk:
+                        chunks.append(chunk)
+                    chunk_index += 1
+                    current_chunk_text = para
+                else:
+                    current_chunk_text = new_text
 
+        # 保存最后一个块
+        if current_chunk_text:
+            chunk = self._create_chunk(current_chunk_text, filename, chunk_index, current_section)
+            if chunk:
+                chunks.append(chunk)
+
+        logger.info("智能分块完成: %s → %d 块", filename, len(chunks))
         return chunks
+
+    def _organize_into_sections(self, paragraphs: list[str]) -> list[tuple[str, list[str]]]:
+        """将段落组织成章节"""
+        sections = []
+        current_section = ""
+        current_paragraphs = []
+
+        for para in paragraphs:
+            heading_match = self.MD_HEADING.match(para)
+            if heading_match:
+                if current_paragraphs:
+                    sections.append((current_section, current_paragraphs))
+                current_section = heading_match.group(1).lstrip('#').strip()
+                current_paragraphs = [para]
+            else:
+                current_paragraphs.append(para)
+
+        if current_paragraphs:
+            sections.append((current_section, current_paragraphs))
+
+        if not sections:
+            sections = [("", paragraphs)]
+
+        return sections
+
+    def _create_chunk(self, text: str, filename: str, index: int, section: str) -> Optional[DocumentChunk]:
+        """创建单个文档块"""
+        if not text.strip():
+            return None
+
+        # 智能重叠：在末尾寻找句子边界
+        overlap_text = ""
+        if index > 0 and len(text) > self.CHUNK_OVERLAP:
+            overlap_text = text[-self.CHUNK_OVERLAP:]
+
+        chunk_id = hashlib.md5(f"{filename}:{text[:50]}:{index}".encode()).hexdigest()[:12]
+
+        return DocumentChunk(
+            id=f"chunk_{chunk_id}",
+            content=text.strip(),
+            metadata={
+                "source": filename,
+                "chunk_index": index,
+                "section": section,
+                "overlap_preview": overlap_text[:50] if overlap_text else "",
+            },
+        )

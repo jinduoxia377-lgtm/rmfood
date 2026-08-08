@@ -12,9 +12,9 @@ interface DividerBlockProps {
 }
 
 const BORDER_STYLES: Record<string, string> = {
-  solid: 'border-t border-gray-200 dark:border-gray-700',
-  dashed: 'border-t border-dashed border-gray-200 dark:border-gray-700',
-  dotted: 'border-t border-dotted border-gray-200 dark:border-gray-700',
+  solid: 'border-t border-neutral-200 dark:border-neutral-700',
+  dashed: 'border-t border-dashed border-neutral-200 dark:border-neutral-700',
+  dotted: 'border-t border-dotted border-neutral-200 dark:border-neutral-700',
 }
 
 function DividerBlock({ data }: DividerBlockProps) {
@@ -24,7 +24,7 @@ function DividerBlock({ data }: DividerBlockProps) {
     return (
       <div className="flex items-center gap-3 my-3">
         <div className={`flex-1 ${BORDER_STYLES[variant] || BORDER_STYLES.solid}`} />
-        <span className="text-[10px] text-gray-400 dark:text-gray-500 whitespace-nowrap uppercase tracking-wider font-medium">
+        <span className="text-[10px] text-neutral-400 dark:text-neutral-500 whitespace-nowrap uppercase tracking-wider font-medium">
           {label}
         </span>
         <div className={`flex-1 ${BORDER_STYLES[variant] || BORDER_STYLES.solid}`} />

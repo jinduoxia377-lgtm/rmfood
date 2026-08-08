@@ -3,13 +3,10 @@
 用于存储AI对话历史记录，支持会话管理、消息存储和导出功能。
 """
 from datetime import datetime, timezone
-from sqlalchemy import Integer, String, Text, DateTime, JSON, ForeignKey, Boolean
+from sqlalchemy import Integer, String, Text, DateTime, JSON, ForeignKey, Boolean, BigInteger
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from ..core.database import Base
-
-
-def _now() -> datetime:
-    return datetime.now(timezone.utc).replace(tzinfo=None)
+from .base import Base
+from app.models.utils import now_utc_mapped
 
 
 class ChatSession(Base):
@@ -19,15 +16,15 @@ class ChatSession(Base):
     """
     __tablename__ = "chat_sessions"
     
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     message_count: Mapped[int] = mapped_column(Integer, default=0)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     tags: Mapped[list[str] | None] = mapped_column(JSON, default=[])
     metadata_: Mapped[dict | None] = mapped_column("metadata", JSON, default=dict)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=_now, nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_now, onupdate=_now, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, onupdate=now_utc_mapped, nullable=False)
     
     # 关系
     messages = relationship("ChatMessage", back_populates="session", cascade="all, delete-orphan", order_by="ChatMessage.timestamp")
@@ -54,20 +51,20 @@ class ChatMessage(Base):
     """
     __tablename__ = "chat_messages"
     
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    session_id: Mapped[int] = mapped_column(Integer, ForeignKey("chat_sessions.id", ondelete="CASCADE"), nullable=False, index=True)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    session_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("chat_sessions.id", ondelete="CASCADE"), nullable=False, index=True)
     role: Mapped[str] = mapped_column(String(20), nullable=False, index=True)  # user, assistant, system
     content: Mapped[str] = mapped_column(Text, nullable=False)
-    timestamp: Mapped[datetime] = mapped_column(DateTime, default=_now, nullable=False, index=True)
-    
+    timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, nullable=False, index=True)
+
     # v7.1 新增字段
     is_edited: Mapped[bool] = mapped_column(Boolean, default=False)
-    edited_at: Mapped[datetime | None] = mapped_column(DateTime)
+    edited_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     original_content: Mapped[str | None] = mapped_column(Text)
     is_withdrawn: Mapped[bool] = mapped_column(Boolean, default=False)
-    withdrawn_at: Mapped[datetime | None] = mapped_column(DateTime)
+    withdrawn_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     withdraw_reason: Mapped[str | None] = mapped_column(String(255))
-    reply_to: Mapped[int | None] = mapped_column(Integer, ForeignKey("chat_messages.id"))
+    reply_to: Mapped[int | None] = mapped_column(BigInteger, ForeignKey("chat_messages.id"), index=True)
     quote_content: Mapped[str | None] = mapped_column(Text)
     rating: Mapped[str | None] = mapped_column(String(10))  # up, down
     feedback: Mapped[str | None] = mapped_column(Text)

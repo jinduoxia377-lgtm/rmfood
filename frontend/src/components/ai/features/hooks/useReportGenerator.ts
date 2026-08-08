@@ -390,7 +390,7 @@ export function useReportGenerator(
         if (allFormulas.length === 0) {
           // ✅ 友好的错误提示
           const userFriendlyError = new Error('没有可用的配方数据')
-          ;(userFriendlyError as any).userMessage = '请先创建或选择一个配方，然后再生成报告。\n\n您可以：\n1. 在智能对话中输入配方描述\n2. 从配方列表中选择已有配方\n3. 使用配方生成功能创建新配方'
+          ;(userFriendlyError.userMessage = '请先创建或选择一个配方，然后再生成报告。\n\n您可以：\n1. 在智能对话中输入配方描述\n2. 从配方列表中选择已有配方\n3. 使用配方生成功能创建新配方'
           throw userFriendlyError
         }
 

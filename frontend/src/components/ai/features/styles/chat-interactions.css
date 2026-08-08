@@ -1,0 +1,113 @@
+/* ═══════════════════════════════════════════════════════
+   RMFOOD AI Chat — 交互与动画
+   合并自: chat-animations, streaming-styles, empty-state-animations
+   ═══════════════════════════════════════════════════════ */
+
+/* ── Chat 消息入场 ── */
+@keyframes chatFadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes chatScaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes chatShimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes typingBounce {
+  0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+  40% { transform: translateY(-6px); opacity: 1; }
+}
+
+/* ── Empty State 动画 ── */
+@keyframes gentleFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes iconPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); transform: scale(1); }
+  50% { box-shadow: 0 0 0 14px rgba(99, 102, 241, 0); transform: scale(1.05); }
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* ── 动画工具类 ── */
+.animate-chat-fade-in-up { animation: chatFadeInUp 0.3s ease-out both; }
+.animate-chat-scale-in { animation: chatScaleIn 0.2s ease-out both; }
+.animate-chat-shimmer { animation: chatShimmer 1.8s ease-in-out infinite; background-size: 200% 100%; }
+.animate-typing-bounce { animation: typingBounce 1.4s infinite; }
+.animate-float { animation: gentleFloat 3s ease-in-out infinite; }
+.animate-icon-pulse { animation: iconPulse 2s infinite; }
+.animate-gradient { animation: gradientShift 6s ease infinite; background-size: 200% 200%; }
+.animate-fade-in-up { animation: fadeInUp 0.4s ease-out both; }
+.animate-scale-in { animation: scaleIn 0.25s ease-out both; }
+
+/* ── 打字指示器 ── */
+.typing-dot {
+  animation: typingBounce 1.4s infinite;
+}
+.typing-dot:nth-child(2) { animation-delay: 0.16s; }
+.typing-dot:nth-child(3) { animation-delay: 0.32s; }
+
+/* ── 骨架屏 ── */
+.skeleton-chat {
+  background: linear-gradient(90deg, var(--empty-state-slate-200) 25%, var(--empty-state-slate-100) 50%, var(--empty-state-slate-200) 75%);
+  background-size: 200% 100%;
+  animation: chatShimmer 1.8s ease-in-out infinite;
+  border-radius: var(--empty-state-radius-sm);
+}
+
+.dark .skeleton-chat {
+  background: linear-gradient(90deg, var(--empty-state-slate-700) 25%, var(--empty-state-slate-600) 50%, var(--empty-state-slate-700) 75%);
+  background-size: 200% 100%;
+  animation: chatShimmer 1.8s ease-in-out infinite;
+}
+
+/* ── 触摸设备触点尺寸（WCAG 2.1 / 移动端 ≥44px）── */
+/* 悬停显现的消息操作按钮在桌面保持紧凑，触摸设备放大点击区至 44px */
+@media (pointer: coarse) {
+  .chat-theme-academic .chat-action-btn,
+  .chat-theme-glassmorphism .chat-action-btn,
+  .chat-theme-professional .chat-action-btn {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 10px;
+  }
+}
+
+/* ── 减少动画 ── */
+@media (prefers-reduced-motion: reduce) {
+  .es-animate-float,
+  .es-animate-pulse,
+  .es-animate-gradient,
+  .es-animate-fade-in-up,
+  .es-animate-scale-in,
+  .animate-chat-fade-in-up,
+  .animate-chat-scale-in {
+    animation: none !important;
+    transition-duration: 0ms !important;
+  }
+  * {
+    transition-duration: 75ms !important;
+  }
+}

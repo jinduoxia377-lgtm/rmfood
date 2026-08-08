@@ -181,13 +181,13 @@ export function usePromptOptimizer(initialConfig?: Partial<PromptOptimizerConfig
 
   const getGradeColor = useCallback((grade: string): string => {
     const colors: Record<string, string> = {
-      'A+': 'text-emerald-600 bg-emerald-50 border-emerald-200',
-      'A': 'text-green-600 bg-green-50 border-green-200',
-      'B+': 'text-blue-600 bg-blue-50 border-blue-200',
+      'A+': 'text-primary-600 bg-primary-50 border-emerald-200',
+      'A': 'text-success-600 bg-success-50 border-green-200',
+      'B+': 'text-secondary-600 bg-secondary-50 border-blue-200',
       'B': 'text-cyan-600 bg-cyan-50 border-cyan-200',
       'C': 'text-yellow-600 bg-yellow-50 border-yellow-200',
       'D': 'text-orange-600 bg-orange-50 border-orange-200',
-      'F': 'text-red-600 bg-red-50 border-red-200',
+      'F': 'text-error-600 bg-error-50 border-red-200',
     }
     return colors[grade] || colors.C || 'text-yellow-600 bg-yellow-50 border-yellow-200'
   }, [])

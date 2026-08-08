@@ -1,6 +1,6 @@
 import axios from 'axios';
 import type { AxiosInstance } from 'axios';
-import { apiClient } from '../api/client';
+import apiClient from '../api/client';
 
 export type KnowledgeBaseType = 'tcm' | 'peptide' | 'regulation' | 'general' | 'unknown';
 
@@ -109,29 +109,53 @@ export interface KnowledgeBaseSummary {
 class KnowledgeBaseService {
   private client: AxiosInstance;
   private cache: Map<string, { data: any; timestamp: number }>;
-  private cacheDuration: number;
 
   constructor() {
     this.client = apiClient;
     this.cache = new Map();
-    this.cacheDuration = 5 * 60 * 1000; // 5分钟
+  }
+
+  /** 规范化参数对象为稳定 key 字符串（sortKeys=true） */
+  private normalizeParams(params?: Record<string, any>): string {
+    if (!params || Object.keys(params).length === 0) return '';
+    const sorted = Object.keys(params).sort().reduce((acc, k) => {
+      acc[k] = params[k];
+      return acc;
+    }, {} as Record<string, any>);
+    return JSON.stringify(sorted);
   }
 
   private getCacheKey(endpoint: string, params?: Record<string, any>): string {
-    const paramsStr = params ? JSON.stringify(params) : '';
-    return `${endpoint}:${paramsStr}`;
+    return `${endpoint}:${this.normalizeParams(params)}`;
+  }
+
+  /** 按接口类型返回差异化 TTL（毫秒） */
+  private getTTLByEndpoint(endpoint: string): number {
+    if (endpoint.includes('/summary') || endpoint.includes('/standards') || endpoint.includes('/homology') || endpoint.includes('/new-food') || endpoint.includes('/additives')) {
+      return 10 * 60 * 1000; // 10 分钟：统计数据变化慢
+    }
+    return 5 * 60 * 1000; // 5 分钟：查询类数据
   }
 
   private getFromCache<T>(key: string): T | null {
     const cached = this.cache.get(key);
-    if (cached && Date.now() - cached.timestamp < this.cacheDuration) {
+    if (cached && Date.now() - cached.timestamp < this.getTTLByEndpoint(key)) {
       return cached.data;
     }
+    this.cache.delete(key); // 淘汰过期项
     return null;
   }
 
   private setCache<T>(key: string, data: T): void {
     this.cache.set(key, { data, timestamp: Date.now() });
+    // LRU 上限保护：缓存超过 200 项时淘汰最旧的 50%
+    if (this.cache.size > 200) {
+      const entries = Array.from(this.cache.entries());
+      entries.sort((a, b) => a[1].timestamp - b[1].timestamp);
+      for (let i = 0; i < Math.floor(entries.length / 2); i++) {
+        this.cache.delete(entries[i][0]);
+      }
+    }
   }
 
   public async smartQuery(query: string): Promise<IntentRecognitionResult> {
@@ -148,11 +172,7 @@ class KnowledgeBaseService {
     return response.data;
   }
 
-  public async getTCMHerbs(
-    keyword?: string,
-    page = 1,
-    pageSize = 20,
-  ): Promise<TCMHerbListResponse> {
+  public async getTCMHerbs(keyword?: string, page = 1, pageSize = 20): Promise<TCMHerbListResponse> {
     const cacheKey = this.getCacheKey('/knowledge-base/tcm/herbs', { keyword, page, pageSize });
     const cached = this.getFromCache<TCMHerbListResponse>(cacheKey);
     if (cached) return cached;
@@ -191,9 +211,7 @@ class KnowledgeBaseService {
     const cached = this.getFromCache<any>(cacheKey);
     if (cached) return cached;
 
-    const response = await this.client.get<any>(
-      `/knowledge-base/tcm/homology/${encodeURIComponent(herbName)}`,
-    );
+    const response = await this.client.get<any>(`/knowledge-base/tcm/homology/${encodeURIComponent(herbName)}`);
     this.setCache(cacheKey, response.data);
     return response.data;
   }
@@ -240,10 +258,7 @@ class KnowledgeBaseService {
     return response.data;
   }
 
-  public async getSimilarPeptides(
-    sequence: string,
-    minLength = 2,
-  ): Promise<{ similar_peptides: Peptide[] }> {
+  public async getSimilarPeptides(sequence: string, minLength = 2): Promise<{ similar_peptides: Peptide[] }> {
     const cacheKey = this.getCacheKey('/knowledge-base/peptide/similar', { sequence, minLength });
     const cached = this.getFromCache<{ similar_peptides: Peptide[] }>(cacheKey);
     if (cached) return cached;
@@ -256,18 +271,14 @@ class KnowledgeBaseService {
     return response.data;
   }
 
-  public async getRegulationStandards(
-    category?: string,
-    keyword?: string,
-  ): Promise<{ standards: any[] }> {
+  public async getRegulationStandards(category?: string, keyword?: string): Promise<{ standards: any[] }> {
     const cacheKey = this.getCacheKey('/knowledge-base/regulation/standards', { category, keyword });
     const cached = this.getFromCache<{ standards: any[] }>(cacheKey);
     if (cached) return cached;
 
-    const response = await this.client.get<{ standards: any[] }>(
-      '/knowledge-base/regulation/standards',
-      { params: { category, keyword } },
-    );
+    const response = await this.client.get<{ standards: any[] }>('/knowledge-base/regulation/standards', {
+      params: { category, keyword },
+    });
     this.setCache(cacheKey, response.data);
     return response.data;
   }
@@ -277,10 +288,9 @@ class KnowledgeBaseService {
     const cached = this.getFromCache<{ materials: any[] }>(cacheKey);
     if (cached) return cached;
 
-    const response = await this.client.get<{ materials: any[] }>(
-      '/knowledge-base/regulation/homology',
-      { params: { name } },
-    );
+    const response = await this.client.get<{ materials: any[] }>('/knowledge-base/regulation/homology', {
+      params: { name },
+    });
     this.setCache(cacheKey, response.data);
     return response.data;
   }
@@ -290,18 +300,14 @@ class KnowledgeBaseService {
     const cached = this.getFromCache<{ materials: any[] }>(cacheKey);
     if (cached) return cached;
 
-    const response = await this.client.get<{ materials: any[] }>(
-      '/knowledge-base/regulation/new-food-materials',
-      { params: { name } },
-    );
+    const response = await this.client.get<{ materials: any[] }>('/knowledge-base/regulation/new-food-materials', {
+      params: { name },
+    });
     this.setCache(cacheKey, response.data);
     return response.data;
   }
 
-  public async searchAdditives(
-    keyword?: string,
-    functionType?: string,
-  ): Promise<{ additives: any[] }> {
+  public async searchAdditives(keyword?: string, functionType?: string): Promise<{ additives: any[] }> {
     const cacheKey = this.getCacheKey('/knowledge-base/regulation/additives', {
       keyword,
       functionType,
@@ -309,18 +315,14 @@ class KnowledgeBaseService {
     const cached = this.getFromCache<{ additives: any[] }>(cacheKey);
     if (cached) return cached;
 
-    const response = await this.client.get<{ additives: any[] }>(
-      '/knowledge-base/regulation/additives',
-      { params: { keyword, function: functionType } },
-    );
+    const response = await this.client.get<{ additives: any[] }>('/knowledge-base/regulation/additives', {
+      params: { keyword, function: functionType },
+    });
     this.setCache(cacheKey, response.data);
     return response.data;
   }
 
-  public async checkAdditiveUsage(
-    additiveName: string,
-    foodCategory = '糕点',
-  ): Promise<any> {
+  public async checkAdditiveUsage(additiveName: string, foodCategory = '糕点'): Promise<any> {
     const cacheKey = this.getCacheKey('/knowledge-base/regulation/additive-check', {
       additiveName,
       foodCategory,
@@ -328,10 +330,9 @@ class KnowledgeBaseService {
     const cached = this.getFromCache<any>(cacheKey);
     if (cached) return cached;
 
-    const response = await this.client.get<any>(
-      '/knowledge-base/regulation/additive-check',
-      { params: { additive_name: additiveName, food_category: foodCategory } },
-    );
+    const response = await this.client.get<any>('/knowledge-base/regulation/additive-check', {
+      params: { additive_name: additiveName, food_category: foodCategory },
+    });
     this.setCache(cacheKey, response.data);
     return response.data;
   }
@@ -343,10 +344,7 @@ class KnowledgeBaseService {
     const cached = this.getFromCache<any>(cacheKey);
     if (cached) return cached;
 
-    const response = await this.client.post<any>(
-      '/knowledge-base/regulation/validate-formula',
-      ingredients,
-    );
+    const response = await this.client.post<any>('/knowledge-base/regulation/validate-formula', ingredients);
     this.setCache(cacheKey, response.data);
     return response.data;
   }
@@ -375,15 +373,3 @@ const knowledgeBaseService = new KnowledgeBaseService();
 
 export default knowledgeBaseService;
 export { KnowledgeBaseService };
-export type {
-  KnowledgeBaseType,
-  IntentType,
-  ParsedEntity,
-  IntentRecognitionResult,
-  TCMHerb,
-  TCMHerbListResponse,
-  Peptide,
-  PeptideSearchResponse,
-  PeptideActivityType,
-  KnowledgeBaseSummary,
-};

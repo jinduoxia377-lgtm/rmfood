@@ -18,15 +18,16 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
 from pydantic import BaseModel
 from typing import Any, Dict, List, Optional
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+import asyncio
 import json
 import logging
-import asyncio
+import uuid
 
 
-from app.core.session import get_db
-from app.api.deps import get_current_user
-from app.core.analytics_engine import (
+from ..core.database.session import get_db
+from ..api.deps import get_current_active_user
+from ..core.analytics_reports.analytics_engine import (
     AnalyticsService,
     ExportFormat,
     ReportConfig,
@@ -36,8 +37,9 @@ from app.core.analytics_engine import (
     ChartData,
     get_analytics_service,
 )
-from app.core.websocket import connection_manager, WebSocketMessage
-from app.core.encoding import sanitize_filename
+from ..core.realtime.websocket import connection_manager, WebSocketMessage
+from ..models.user_model import User
+from ..models.enums import UserRole
 
 
 logger = logging.getLogger(__name__)
@@ -78,12 +80,12 @@ class DashboardFilters(BaseModel):
 
 @router.get("/dashboard", summary="Get dashboard data")
 async def get_dashboard_data(
-    range: str = Query("30d", description="Time range: 7d/30d/90d"),
+    time_range: str = Query("30d", description="Time range: 7d/30d/90d"),
     categories: str = Query(None, description="Category filter (comma-separated)"),
     status: str = Query(None, description="Status filter (comma-separated)"),
     users: str = Query(None, description="User filter (comma-separated)"),
     db: AsyncSession = Depends(get_db),
-    current_user: dict = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """
     Get complete dashboard data (real database queries)
@@ -100,16 +102,16 @@ async def get_dashboard_data(
     """
     try:
         service = get_analytics_service(db)
-        
+
         # Parse time range
         days_map = {"7d": 7, "30d": 30, "90d": 90}
-        days = days_map.get(range, 30)
-        
+        days = days_map.get(time_range, 30)
+
         # Parse filter conditions
         category_list = categories.split(",") if categories else []
         status_list = status.split(",") if status else []
         user_list = users.split(",") if users else []
-        
+
         # Build base query conditions
         base_filters = {
             "days": days,
@@ -117,36 +119,59 @@ async def get_dashboard_data(
             "status": status_list,
             "users": user_list,
         }
-        
-        # Sequential fetch to avoid connection pool conflicts (optimized order)
-        logger.info("Loading dashboard data (sequential mode for stability)...")
-        
-        # 1. KPI metrics (most important)
-        kpi = await service._get_kpi_metrics()
-        logger.debug(f"✓ KPI loaded: {len(kpi)} metrics")
-        
+
+        logger.info("Loading dashboard data...")
+
+        # 1. KPI metrics
+        try:
+            kpi = await service._get_kpi_metrics()
+            logger.info(f"✓ KPI loaded: {len(kpi)} metrics")
+        except Exception as e:
+            logger.error(f"✗ KPI failed: {e}", exc_info=True)
+            kpi = []
+
         # 2. Chart data
-        charts = await service._get_chart_data()
-        logger.debug(f"✓ Charts loaded: {len(charts)} types")
-        
-        # 3. System health (lightweight)
-        system_health = await service._get_system_health()
-        logger.debug("✓ System health loaded")
-        
+        try:
+            charts = await service._get_chart_data()
+            logger.info(f"✓ Charts loaded: {len(charts)} types")
+        except Exception as e:
+            logger.error(f"✗ Charts failed: {e}", exc_info=True)
+            charts = {}
+
+        # 3. System health
+        try:
+            system_health = await service._get_system_health()
+            logger.info("✓ System health loaded")
+        except Exception as e:
+            logger.error(f"✗ System health failed: {e}", exc_info=True)
+            system_health = {}
+
         # 4. Available filters
-        available_filters = await _get_available_filters(db)
-        logger.debug(f"✓ Filters loaded: {list(available_filters.keys())}")
-        
-        # 5. Recent activity (can be slow with large datasets)
-        recent_activity = await service._get_recent_activity()
-        logger.debug(f"✓ Activity loaded: {len(recent_activity)} items")
-        
-        # 6. Top entities (can be slow)
-        top_entities = await service._get_top_entities()
-        logger.debug(f"✓ Top entities loaded: {len(top_entities)} categories")
-        
-        stats = {
-            "timestamp": datetime.utcnow().isoformat(),
+        try:
+            available_filters = await service._get_available_filters(db)
+            logger.info(f"✓ Filters loaded: {list(available_filters.keys())}")
+        except Exception as e:
+            logger.error(f"✗ Filters failed: {e}", exc_info=True)
+            available_filters = {}
+
+        # 5. Recent activity
+        try:
+            recent_activity = await service._get_recent_activity()
+            logger.info(f"✓ Activity loaded: {len(recent_activity)} items")
+        except Exception as e:
+            logger.error(f"✗ Activity failed: {e}", exc_info=True)
+            recent_activity = []
+
+        # 6. Top entities
+        try:
+            top_entities = await service._get_top_entities()
+            logger.info(f"✓ Top entities loaded: {len(top_entities)} categories")
+        except Exception as e:
+            logger.error(f"✗ Top entities failed: {e}", exc_info=True)
+            top_entities = {}
+
+        return {
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "kpi": kpi,
             "charts": charts,
             "recent_activity": recent_activity,
@@ -155,19 +180,18 @@ async def get_dashboard_data(
             "available_filters": available_filters,
             "filters_applied": base_filters,
         }
-        
-        logger.info(f"Dashboard data loaded successfully (time range: {range})")
-        return stats
-        
+
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.error(f"Failed to get dashboard data: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Data fetch failed: {str(e)}")
+        logger.error(f"Dashboard failed", exc_info=True)
+        raise HTTPException(status_code=500, detail=sanitize_error(e, "数据获取失败，请稍后重试"))
 
 
 @router.get("/kpi", summary="Get KPI metrics")
 async def get_kpi_metrics(
     db: AsyncSession = Depends(get_db),
-    current_user: dict = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """Quick access to core KPI metric list"""
     try:
@@ -175,13 +199,13 @@ async def get_kpi_metrics(
         kpi = await service._get_kpi_metrics()
         
         return {
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "metrics": kpi,
             "total_metrics": len(kpi),
         }
     except Exception as e:
-        logger.error(f"Failed to get KPI metrics: {e}")
-        raise HTTPException(status_code=500, detail=f"KPI fetch failed: {str(e)}")
+        logger.error("获取KPI指标失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="服务器内部错误，请稍后重试")
 
 
 @router.get("/trends/{entity}", summary="Get trend data")
@@ -190,7 +214,7 @@ async def get_trend_data(
     days: int = Query(30, ge=1, le=365),
     granularity: str = Query("daily", description="hourly/daily/weekly/monthly"),
     db: AsyncSession = Depends(get_db),
-    current_user: dict = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """
     Get trend data for an entity (real database query)
@@ -218,17 +242,17 @@ async def get_trend_data(
             "granularity": granularity,
             "data_points": len(trend_data),
             "data": trend_data,
-            "generated_at": datetime.utcnow().isoformat(),
+            "generated_at": datetime.now(timezone.utc).isoformat(),
         }
     except Exception as e:
-        logger.error(f"Failed to get trend data ({entity}): {e}")
-        raise HTTPException(status_code=500, detail=f"Trend data fetch failed: {str(e)}")
+        logger.error("获取趋势数据失败 (%s): %s", entity, e, exc_info=True)
+        raise HTTPException(status_code=500, detail="服务器内部错误，请稍后重试")
 
 
 @router.get("/system-health", summary="System health status")
 async def get_system_health(
     db: AsyncSession = Depends(get_db),
-    current_user: dict = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """Get system runtime health status (real-time)"""
     try:
@@ -238,12 +262,12 @@ async def get_system_health(
         # Add additional system info
         health["websocket_connections"] = connection_manager.get_connection_count()
         health["api_status"] = "operational"
-        health["last_check"] = datetime.utcnow().isoformat()
+        health["last_check"] = datetime.now(timezone.utc).isoformat()
         
         return health
     except Exception as e:
-        logger.error(f"Failed to get system health: {e}")
-        raise HTTPException(status_code=500, detail=f"System status fetch failed: {str(e)}")
+        logger.error("获取系统健康状态失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="服务器内部错误，请稍后重试")
 
 
 # ============================================================
@@ -251,35 +275,51 @@ async def get_system_health(
 # ============================================================
 
 @router.websocket("/ws/dashboard")
-async def websocket_dashboard_endpoint(websocket: WebSocket):
+async def websocket_dashboard_endpoint(
+    websocket: WebSocket,
+    token: str = Query(None),
+    connection_id: str = Query(None, description="Connection ID"),
+):
     """
-    WebSocket endpoint - Real-time dashboard data push
-    
+    WebSocket endpoint - Real-time dashboard data push (requires authentication)
+
     Features:
     - Real-time KPI updates
     - Chart data refresh
     - System event notifications
     - Heartbeat detection
-    
-    Message format:
-    - Subscribe: {"type": "subscribe", "channels": ["kpi_updates", "chart_refresh"]}
-    - Unsubscribe: {"type": "unsubscribe", "channels": ["kpi_updates"]}
-    - Heartbeat response: {"type": "pong"}
     """
+    # ── 强制认证 ──────────────────────────────────────────────
+    ws_token = token
+    if not ws_token:
+        ws_token = websocket.cookies.get("rmfood_access_token")
+
+    if not ws_token:
+        await websocket.close(code=4001, reason="Authentication required")
+        logger.warning("Analytics WebSocket: 拒绝匿名连接")
+        return
+
+    user_id = None
+    try:
+        from app.utils.auth import decode_token as decode_access_token
+        payload = decode_access_token(ws_token)
+        user_id = str(payload.get("sub", "unknown"))
+    except Exception as e:
+        await websocket.close(code=4001, reason="Invalid token")
+        logger.warning(f"Analytics WebSocket: 无效token: {e}")
+        return
+
     await websocket.accept()
-    
-    user_id = f"user_{id(websocket)}"
-    connection_id = f"conn_{datetime.utcnow().strftime('%Y%m%d%H%M%S%f')}"
     
     # Connection info
     client_info = {
         "type": "dashboard",
         "user_agent": websocket.headers.get("user-agent", "unknown"),
-        "connected_at": datetime.utcnow().isoformat(),
+        "connected_at": datetime.now(timezone.utc).isoformat(),
     }
     
     # Register connection
-    await connection_manager.connect(websocket, user_id, connection_id, client_info)
+    await connection_manager.connect(websocket, user_id, connection_id or f"anon_{id(websocket)}", client_info)
     
     logger.info(f"Analytics WebSocket connection established: {connection_id}")
     
@@ -313,7 +353,7 @@ async def websocket_dashboard_endpoint(websocket: WebSocket):
                     connection_manager.update_ping(connection_id)
                     await websocket.send_json({
                         "type": "pong",
-                        "timestamp": datetime.utcnow().isoformat()
+                        "timestamp": datetime.now(timezone.utc).isoformat()
                     })
                 
                 elif msg_type == "request_data":
@@ -365,7 +405,7 @@ async def broadcast_analytics_update(update_type: str, data: Dict[str, Any]):
         data={
             "update_type": update_type,
             "payload": data,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
         }
     )
     
@@ -381,7 +421,7 @@ async def broadcast_analytics_update(update_type: str, data: Dict[str, Any]):
 async def create_report(
     request: CreateReportRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: dict = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """
     Generate custom report (real database data)
@@ -392,37 +432,37 @@ async def create_report(
     """
     try:
         config = ReportConfig(
-            id=str(__import__("uuid").uuid4()),
+            id=str(uuid.uuid4()),
             name=request.name,
             description=request.description,
             widgets=request.widgets,
             filters=request.filters or {},
             export_format=request.export_format,
-            created_by=current_user.get("id", 0),
+            created_by=current_user.id,
         )
         
         service = get_analytics_service(db)
         report_data = await service.generate_custom_report(config)
         
-        logger.info(f"Report generated successfully: {config.name} (ID: {config.id})")
+        logger.debug(f"Report generated successfully: {config.name} (ID: {config.id})")
         
         return {
             "success": True,
             "report": report_data,
             "config_id": config.id,
-            "generated_at": datetime.utcnow().isoformat(),
+            "generated_at": datetime.now(timezone.utc).isoformat(),
         }
         
     except Exception as e:
-        logger.error(f"Report generation failed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Report generation failed: {str(e)}")
+        logger.error("报告生成失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="报告生成失败，请稍后重试")
 
 
 @router.post("/export", summary="Export data")
 async def export_data(
     request: ExportRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: dict = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """
     Export data in specified format (real data)
@@ -454,7 +494,7 @@ async def export_data(
             file_name=request.file_name,
         )
         
-        logger.info(f"Data exported successfully: {export_result.file_name} ({export_result.format.value})")
+        logger.debug(f"Data exported successfully: {export_result.file_name} ({export_result.format.value})")
         
         # 规范化文件名并使用 RFC 5987 编码
         safe_filename = sanitize_filename(export_result.file_name)
@@ -474,8 +514,8 @@ async def export_data(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Export failed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Export failed: {str(e)}")
+        logger.error("数据导出失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="数据导出失败，请稍后重试")
 
 
 @router.get("/reports/templates", summary="Get report templates")
@@ -588,7 +628,7 @@ async def get_report_templates():
     return {
         "templates": templates,
         "total_templates": len(templates),
-        "updated_at": datetime.utcnow().isoformat(),
+        "updated_at": datetime.now(timezone.utc).isoformat(),
     }
 
 
@@ -599,21 +639,22 @@ async def get_report_templates():
 @router.get("/filters", summary="Get available filters")
 async def get_available_filters(
     db: AsyncSession = Depends(get_db),
-    current_user: dict = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """Get all available data filter options"""
-    return await _get_available_filters(db)
+    service = get_analytics_service(db)
+    return await service._get_available_filters(db)
 
 
 @router.post("/aggregate", summary="Custom data aggregation")
 async def custom_aggregation(
     request: Dict[str, Any],
     db: AsyncSession = Depends(get_db),
-    current_user: dict = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """
-    Custom data aggregation query
-    
+    Custom data aggregation query (safe, identifier-whitelisted)
+
     Supported aggregation operations:
     - count: Count
     - sum: Sum
@@ -626,133 +667,114 @@ async def custom_aggregation(
         operations = request.get("operations", [])
         group_by = request.get("group_by")
         filters = request.get("filters", {})
-        
+
         if not entity:
             raise HTTPException(status_code=400, detail="Entity must be specified (entity)")
-        
+
         if entity not in ["formulas", "experiments", "users", "ingredients"]:
             raise HTTPException(status_code=400, detail=f"Unsupported entity: {entity}")
-        
-        # Build SQL query
-        query_parts = [f"SELECT "]
-        select_parts = []
-        
+
+        # ── Identifier whitelist validation ──────────────────────────
+        # Column names allowed per entity — prevents SQL injection via
+        # field, alias, and group_by identifiers.
+        ENTITY_COLUMNS: Dict[str, List[str]] = {
+            "formulas": ["id", "name", "code", "status", "version",
+                         "creator_id", "created_at", "updated_at",
+                         "target_effects", "description"],
+            "experiments": ["id", "title", "code", "status", "formula_id",
+                            "researcher_id", "start_date", "end_date",
+                            "created_at", "updated_at"],
+            "users": ["id", "username", "email", "role", "is_active",
+                      "created_at", "updated_at"],
+            "ingredients": ["id", "name", "name_cn", "category", "source",
+                            "is_food_homology", "created_at"],
+        }
+        allowed_columns = ENTITY_COLUMNS.get(entity, [])
+
+        def _validate_identifier(value: Any, name: str) -> str:
+            """Validate an identifier against the column whitelist."""
+            if not isinstance(value, str) or not value.strip():
+                raise HTTPException(status_code=400, detail=f"{name} must be a non-empty string")
+            if value not in allowed_columns:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Invalid {name}: '{value}'. Allowed values: {allowed_columns}",
+                )
+            return value
+
+        # Validate operations
+        VALID_OPERATIONS = {"count", "sum", "avg", "max", "min"}
+        validated_ops = []
         for op in operations:
-            field = op.get("field")
             operation = op.get("operation", "count")
-            alias = op.get("alias", f"{operation}_{field}")
-            
+            if operation not in VALID_OPERATIONS:
+                raise HTTPException(status_code=400, detail=f"Unsupported operation: {operation}")
+            field = _validate_identifier(op.get("field", "*"), "field")
+            alias = _validate_identifier(op.get("alias", f"{operation}_{field}"), "alias")
+            validated_ops.append((field, operation, alias))
+
+        # Validate group_by
+        validated_group_by: Optional[str] = None
+        if group_by:
+            validated_group_by = _validate_identifier(group_by, "group_by")
+
+        # ── Build safe query using SQLAlchemy ColumnElement ──────────
+        from sqlalchemy import column, func, select as sa_select
+
+        select_clauses = []
+        for field, operation, alias in validated_ops:
+            col = column(field)
             if operation == "count":
-                select_parts.append(f"COUNT(*) as {alias}")
+                select_clauses.append(func.count().label(alias))
             elif operation == "sum":
-                select_parts.append(f"SUM({field}) as {alias}")
+                select_clauses.append(func.sum(col).label(alias))
             elif operation == "avg":
-                select_parts.append(f"AVG({field}) as {alias}")
+                select_clauses.append(func.avg(col).label(alias))
             elif operation == "max":
-                select_parts.append(f"MAX({field}) as {alias}")
+                select_clauses.append(func.max(col).label(alias))
             elif operation == "min":
-                select_parts.append(f"MIN({field}) as {alias}")
-        
-        if group_by:
-            select_parts.insert(0, group_by)
-        
-        query_parts.append(", ".join(select_parts))
-        query_parts.append(f" FROM {entity}")
-        
-        # Add WHERE conditions
-        where_conditions = []
-        params = {}
-        
-        for key, value in filters.items():
-            where_conditions.append(f"{key} = :{key}")
-            params[key] = value
-        
-        if where_conditions:
-            query_parts.append(f" WHERE {' AND '.join(where_conditions)}")
-        
-        if group_by:
-            query_parts.append(f" GROUP BY {group_by}")
-        
-        query_parts.append(" LIMIT 1000")
-        
-        final_query = "".join(query_parts)
-        
-        result = await db.execute(text(final_query), params)
+                select_clauses.append(func.min(col).label(alias))
+
+        if validated_group_by:
+            select_clauses.insert(0, column(validated_group_by))
+
+        stmt = sa_select(*select_clauses).limit(1000)
+
+        # Add WHERE conditions using bound parameters
+        if filters:
+            for key, value in filters.items():
+                if key not in allowed_columns:
+                    raise HTTPException(
+                        status_code=400,
+                        detail=f"Invalid filter column: '{key}'. Allowed: {allowed_columns}",
+                    )
+                stmt = stmt.where(column(key) == value)
+
+        if validated_group_by:
+            stmt = stmt.group_by(column(validated_group_by))
+
+        result = await db.execute(stmt)
         rows = result.fetchall()
-        
+
         return {
             "entity": entity,
-            "operations": operations,
-            "group_by": group_by,
+            "operations": validated_ops,
+            "group_by": validated_group_by,
             "result_count": len(rows),
             "data": [dict(row._mapping) for row in rows],
-            "query": final_query,
-            "generated_at": datetime.utcnow().isoformat(),
+            "generated_at": datetime.now(timezone.utc).isoformat(),
         }
         
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Custom aggregation query failed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Aggregation query failed: {str(e)}")
+        logger.error("自定义聚合查询失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="服务器内部错误，请稍后重试")
 
 
 # ============================================================
 # Helper Functions
 # ============================================================
-
-async def _get_available_filters(db: AsyncSession) -> Dict[str, Any]:
-    """Get available filter options from database"""
-    filters = {}
-    
-    try:
-        # Get formula statuses
-        result = await db.execute(text("SELECT DISTINCT status FROM formulas"))
-        filters["formula_status"] = [row.status for row in result.fetchall() if row.status]
-        
-        # Get experiment statuses
-        result = await db.execute(text("SELECT DISTINCT status FROM experiments"))
-        filters["experiment_status"] = [row.status for row in result.fetchall() if row.status]
-        
-        # Get categories
-        result = await db.execute(text("""
-            SELECT DISTINCT c.id, c.name 
-            FROM categories c 
-            ORDER BY c.name
-            LIMIT 50
-        """))
-        filters["categories"] = [{"id": row.id, "name": row.name} for row in result.fetchall()]
-        
-        # Get users list
-        result = await db.execute(text("""
-            SELECT id, username, full_name 
-            FROM users 
-            WHERE is_active = true 
-            ORDER BY username
-            LIMIT 100
-        """))
-        filters["users"] = [
-            {
-                "id": row.id,
-                "username": row.username,
-                "full_name": row.full_name or row.username
-            } for row in result.fetchall()
-        ]
-        
-        # Get time range options
-        filters["time_ranges"] = [
-            {"value": "7d", "label": "Last 7 Days"},
-            {"value": "30d", "label": "Last 30 Days"},
-            {"value": "90d", "label": "Last 90 Days"},
-            {"value": "180d", "label": "Last 180 Days"},
-            {"value": "365d", "label": "Last 1 Year"},
-        ]
-        
-    except Exception as e:
-        logger.warning(f"Error getting filter options: {e}")
-        filters["error"] = str(e)
-    
-    return filters
 
 
 async def _load_report_config(db: AsyncSession, report_id: str) -> Optional[ReportConfig]:

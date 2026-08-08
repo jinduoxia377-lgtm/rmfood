@@ -24,7 +24,7 @@ export function useExportFormulas() {
     const opts = { ...DEFAULT_OPTIONS, ...options }
     const filename = opts.filename || `formulas_${Date.now()}.json`
 
-    let data: any[] = formulas.map(f => ({
+    let data: Array<Record<string, unknown>> = formulas.map(f => ({
       id: f.id,
       name: f.name,
       formula_name: f.formula_name,
@@ -46,11 +46,11 @@ export function useExportFormulas() {
       data = formulas.map(f => ({
         ...data.find(d => d.id === f.id),
         synergy_score: f.synergy_score,
-        taste_score: (f as any).taste_score,
-        stability_score: (f as any).stability_score,
-        overall_score: (f as any).overall_score,
+        taste_score: f.taste_score,
+        stability_score: f.stability_score,
+        overall_score: f.overall_score,
         patent_synergy_scores: f.patent_synergy_scores,
-        safety_passed: (f as any).safety_passed,
+        safety_passed: f.safety_passed,
       }))
     }
 
@@ -94,10 +94,10 @@ export function useExportFormulas() {
 
       if (opts.includeScores) {
         row.push(
-          csvEscape(String((f as any).synergy_score || '')),
-          csvEscape(String((f as any).taste_score || '')),
-          csvEscape(String((f as any).stability_score || '')),
-          csvEscape(String((f as any).overall_score || '')),
+          csvEscape(String(f.synergy_score || '')),
+          csvEscape(String(f.taste_score || '')),
+          csvEscape(String(f.stability_score || '')),
+          csvEscape(String(f.overall_score || '')),
         )
       }
 

@@ -1,3 +1,5 @@
+import { useAuthStore } from './auth';
+
 /**
  * 🟡 P1-2: Zustand 状态持久化系统
  *
@@ -11,7 +13,10 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import { useMemo } from 'react';
 
+
+import { logger } from '@/utils/safeLogger';
 // ═════════════════════════════════════════
 // 🟡 P1-2: 通用状态持久化 Hook
 // ═════════════════════════════════════════
@@ -32,26 +37,18 @@ interface PersistedState<T> {
 export function usePersistedState<T>(
   key: string,
   initial: T,
-  storage: 'localStorage' | 'sessionStorage' = 'localStorage'
+  storage: 'localStorage' | 'sessionStorage' = 'localStorage',
 ): [T, (val: T) => void, () => void] {
   const store = useMemoStore<T>(key, initial, storage);
 
-  return [
-    store.value,
-    store.setValue,
-    store.reset,
-  ];
+  return [store.value, store.setValue, store.reset];
 }
 
 /**
  * 内部实现：使用 zustand 管理持久化状态
  * （使用 create() 创建一个 store 实例
  */
-function useMemoStore<T>(
-  key: string,
-  initial: T,
-  storageType: 'localStorage' | 'sessionStorage'
-): PersistedState<T> {
+function useMemoStore<T>(key: string, initial: T, storageType: 'localStorage' | 'sessionStorage'): PersistedState<T> {
   const useStore = useMemo(() => {
     // 延迟到运行时创建（避免 SSR 问题
     // 通过 closure 捕获的方式，使用动态创建的
@@ -64,12 +61,10 @@ function useMemoStore<T>(
         }),
         {
           name: key,
-          storage: createJSONStorage(
-            () => (storageType === 'localStorage' ? localStorage : sessionStorage),
-          ),
-          partialize: (state) => ({ value: state.value }),
-        }
-      )
+          storage: createJSONStorage(() => (storageType === 'localStorage' ? localStorage : sessionStorage)),
+          partialize: (state) => ({ value: (state as PersistedState<T>).value }),
+        },
+      ) as unknown as import('zustand').StateCreator<PersistedState<T>, [], []>,
     );
   }, [key]);
 
@@ -103,81 +98,6 @@ interface AuthState {
   // 刷新 Token
   refreshToken: (token: string) => void;
 }
-
-/**
- * 认证状态 store（支持 localStorage 持久化
- */
-export const useAuthStore = create<AuthState>()(
-  persist(
-    (set, get) => ({
-      token: null,
-      user: null,
-      lastLoginAt: null,
-      sessionId: null,
-      permissions: [],
-
-      // 登录
-      login: (token, user, permissions = []) => {
-        set({
-          token,
-          user,
-          lastLoginAt: Date.now(),
-          sessionId: `sess_${Date.now()}_${Math.random().toString(36).slice(2)}`,
-          permissions,
-        });
-      },
-
-      // 登出
-      logout: () => {
-        set({
-          token: null,
-          user: null,
-          lastLoginAt: null,
-          sessionId: null,
-          permissions: [],
-        });
-      },
-
-      // 更新用户信息
-      updateUser: (updates) => {
-        const { user } = get();
-        if (!user) return;
-        set({ user: { ...user, ...updates } });
-      },
-
-      // 权限管理
-      addPermission: (perm) => {
-        set((s) => ({ permissions: [...s.permissions, perm] }));
-      },
-
-      removePermission: (perm) => {
-        set((s) => ({ permissions: s.permissions.filter((p) => p !== perm) }));
-      },
-
-      hasPermission: (perm) => {
-        const { user, permissions } = get();
-        // 超级管理员
-        if (user?.role === 'admin') return true;
-        return permissions.includes(perm);
-      },
-
-      refreshToken: (token) => {
-        set({ token });
-      },
-    }),
-    {
-      name: 'rmfood:auth',
-      // 使用 sessionStorage 存储认证（安全性考虑
-      storage: createJSONStorage(() => sessionStorage),
-      partialize: (state) => ({
-        token: state.token,
-        user: state.user,
-        lastLoginAt: state.lastLoginAt,
-        permissions: state.permissions,
-      }),
-    }
-  )
-);
 
 // ═════════════════════════════════════════
 // 🟡 P1-2: UI 偏好持久化
@@ -264,8 +184,8 @@ export const useUIStore = create<UIState>()(
     {
       name: 'rmfood:ui',
       storage: createJSONStorage(() => localStorage),
-    }
-  )
+    },
+  ),
 );
 
 // ═════════════════════════════════════════
@@ -333,8 +253,8 @@ export const useSearchHistoryStore = create<SearchHistory>()(
         keywords: state.keywords,
         advanced: state.advanced,
       }),
-    }
-  )
+    },
+  ),
 );
 
 // ═════════════════════════════════════════
@@ -375,11 +295,11 @@ export const useAppConfigStore = create<AppConfigState>()(
       storage: createJSONStorage(() => localStorage),
       // 开发环境持久化，生产环境不持久化（防止用户误修改
       partialize: (state) => {
-        if (process.env.NODE_ENV === 'production') return {};
+        if (import.meta.env.PROD) return {};
         return state;
       },
-    }
-  )
+    },
+  ),
 );
 
 // ═════════════════════════════════════════
@@ -390,13 +310,11 @@ export const useAppConfigStore = create<AppConfigState>()(
  * 获取认证信息的便捷方法
  */
 export function getAuthInfo() {
-  const { token, user, role, permissions } = useAuthStore.getState();
+  const { user, isAuthenticated } = useAuthStore.getState();
   return {
-    token,
     user,
     role: user?.role || 'guest',
-    isAuthenticated: !!token,
-    permissions,
+    isAuthenticated,
   };
 }
 
@@ -406,18 +324,19 @@ export function getAuthInfo() {
 export function clearAllPersistedState(): void {
   try {
     // 使用 zustand persistence API 清除
-    // 手动清除 localStorage 中的项目
+    // 手动清除持久化状态
     const keysToRemove = [
       'rmfood:auth',
       'rmfood:search-history',
-      // UI 状态保留，不随登录清除
+      'rmfood:ui',
+      'rmfood:app-config',
     ];
 
     keysToRemove.forEach((key) => {
-      sessionStorage.removeItem(key);
+      localStorage.removeItem(key);
     });
   } catch (e) {
-    console.error('Failed to clear persisted state:', e);
+    logger.error('Failed to clear persisted state:', e);
   }
 }
 
@@ -430,7 +349,7 @@ export function exportPersistedData(): { [key: string]: any } {
     searchHistory: useSearchHistoryStore.getState(),
     appConfig: useAppConfigStore.getState(),
     exportedAt: new Date().toISOString(),
-    version: process.env.REACT_APP_VERSION || 'unknown',
+    version: import.meta.env.VITE_APP_VERSION || 'unknown',
   };
 }
 
@@ -454,7 +373,7 @@ export function importPersistedData(data: { [key: string]: any }): void {
       useAppConfigStore.setState(data.appConfig);
     }
   } catch (e) {
-    console.error('Failed to import persisted data:', e);
+    logger.error('Failed to import persisted data:', e);
     throw e;
   }
 }
@@ -467,15 +386,13 @@ export function importPersistedData(data: { [key: string]: any }): void {
  * 认证便捷 Hook
  */
 export function useAuth() {
-  const { token, user, login, logout, lastLoginAt } = useAuthStore();
+  const { user, isAuthenticated, login, logout } = useAuthStore();
   return {
-    isAuthenticated: !!token,
-    token,
+    isAuthenticated,
     user,
     role: user?.role || 'guest',
     login,
     logout,
-    lastLoginAt,
   };
 }
 
@@ -483,13 +400,34 @@ export function useAuth() {
  * UI 偏好便捷 Hook
  */
 export function useUI() {
-  const { theme, setTheme, toggleTheme, primaryColor, setPrimaryColor, collapsed, toggleSidebar, locale, setLocale, filters, setFilter, clearAllFilters } = useUIStore();
+  const {
+    theme,
+    setTheme,
+    toggleTheme,
+    primaryColor,
+    setPrimaryColor,
+    collapsed,
+    toggleSidebar,
+    locale,
+    setLocale,
+    filters,
+    setFilter,
+    clearAllFilters,
+  } = useUIStore();
 
   return {
-    theme, primaryColor, locale, collapsed, filters,
-    setTheme, toggleTheme,
-    setPrimaryColor, setLocale, toggleSidebar,
-    setFilter, clearAllFilters,
+    theme,
+    primaryColor,
+    locale,
+    collapsed,
+    filters,
+    setTheme,
+    toggleTheme,
+    setPrimaryColor,
+    setLocale,
+    toggleSidebar,
+    setFilter,
+    clearAllFilters,
   };
 }
 
@@ -513,7 +451,7 @@ export function useAppConfig() {
 // ═════════════════════════════════════════
 
 export default {
-  useAuthStore,
+  useAuthStore: useAuthStore,
   useUIStore,
   useSearchHistoryStore,
   useAppConfigStore,

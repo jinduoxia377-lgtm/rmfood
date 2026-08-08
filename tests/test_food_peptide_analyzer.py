@@ -34,7 +34,7 @@ from dataclasses import dataclass
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 # 导入核心模块
-from backend.app.services.peptide_analysis_v2.core_algorithms.food_peptide_analyzer import (
+from app.services.peptide_analysis_v2.core_algorithms.food_peptide_analyzer import (
     FoodPeptideAnalyzer,
     FoodPeptideAnalysisResult,
 )

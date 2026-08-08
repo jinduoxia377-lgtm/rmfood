@@ -13,13 +13,13 @@ interface GenerationProgressPanelProps {
 const STAGE_CONFIG = {
   idle: {
     label: '等待中',
-    color: 'bg-gray-400',
-    gradient: 'from-gray-400 to-gray-500',
+    color: 'bg-neutral-400',
+    gradient: 'from-slate-400 to-slate-500',
     icon: null,
   },
   preparing: {
     label: '准备中',
-    color: 'bg-blue-500',
+    color: 'bg-secondary-500',
     gradient: 'from-blue-400 to-blue-600',
     icon: Loader2,
   },
@@ -37,19 +37,19 @@ const STAGE_CONFIG = {
   },
   validating: {
     label: '验证安全',
-    color: 'bg-purple-500',
+    color: 'bg-accent-500',
     gradient: 'from-purple-400 to-purple-600',
     icon: Loader2,
   },
   complete: {
     label: '生成完成',
-    color: 'bg-green-500',
+    color: 'bg-success-500',
     gradient: 'from-green-400 to-green-600',
     icon: CheckCircle2,
   },
   error: {
     label: '生成失败',
-    color: 'bg-red-500',
+    color: 'bg-error-500',
     gradient: 'from-red-400 to-red-600',
     icon: AlertCircle,
   },
@@ -108,8 +108,8 @@ export function GenerationProgressPanel({
   return (
     <div
       className={cn(
-        'relative overflow-hidden rounded-xl border bg-white dark:bg-gray-800 shadow-lg',
-        'border-gray-200 dark:border-gray-700',
+        'relative overflow-hidden rounded-xl border bg-white dark:bg-neutral-800 shadow-lg',
+        'border-neutral-200 dark:border-neutral-700',
         className,
       )}
       role="region"
@@ -142,11 +142,11 @@ export function GenerationProgressPanel({
               </div>
             )}
             <div>
-              <span className="font-semibold text-gray-900 dark:text-gray-100">
+              <span className="font-semibold text-neutral-900 dark:text-neutral-100">
                 {config.label}
               </span>
               {progress.message && (
-                <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">
+                <span className="ml-2 text-sm text-neutral-500 dark:text-neutral-400">
                   {progress.message}
                 </span>
               )}
@@ -155,7 +155,7 @@ export function GenerationProgressPanel({
 
           <div className="flex items-center gap-3">
             {progress.estimatedTimeRemaining && isActive && (
-              <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
+              <div className="flex items-center gap-1.5 text-xs text-neutral-500 dark:text-neutral-400">
                 <Clock className="w-3.5 h-3.5" />
                 <span>约剩余 {formatTime(progress.estimatedTimeRemaining)}</span>
               </div>
@@ -168,7 +168,7 @@ export function GenerationProgressPanel({
                 onKeyDown={handleCancelKeyDown}
                 className={cn(
                   'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium',
-                  'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300',
+                  'bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300',
                   'hover:bg-danger-100 dark:hover:bg-danger-900/30 hover:text-danger-600 dark:hover:text-danger-400',
                   'transition-colors duration-200',
                   'focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
@@ -184,7 +184,7 @@ export function GenerationProgressPanel({
 
         <div className="relative">
           <div
-            className="h-3 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden"
+            className="h-3 bg-neutral-100 dark:bg-neutral-700 rounded-full overflow-hidden"
             role="progressbar"
             aria-valuenow={progress.progress}
             aria-valuemin={0}
@@ -201,13 +201,13 @@ export function GenerationProgressPanel({
             />
           </div>
 
-          <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+          <div className="flex justify-between text-xs text-neutral-500 dark:text-neutral-400">
             <span>{progress.message}</span>
             <span className="font-medium text-primary-600 dark:text-primary-400">{progress.progress}%</span>
           </div>
 
           <div className="flex justify-between mt-1.5">
-            <span className="text-xs text-gray-500 dark:text-gray-400">
+            <span className="text-xs text-neutral-500 dark:text-neutral-400">
               {progress.progress < 100 ? `${progress.progress}%` : '100%'}
             </span>
             <div className="flex gap-1">
@@ -223,8 +223,8 @@ export function GenerationProgressPanel({
                 const dotColorClass = isComplete
                   ? isCurrent
                     ? config.color
-                    : 'bg-gray-400'
-                  : 'bg-gray-300 dark:bg-gray-600'
+                    : 'bg-neutral-400'
+                  : 'bg-neutral-300 dark:bg-neutral-600'
                 return (
                   <div
                     key={stage}
@@ -240,14 +240,14 @@ export function GenerationProgressPanel({
         </div>
 
         {progress.stage === 'complete' && (
-          <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
+          <div className="flex items-center gap-2 text-sm text-success-600 dark:text-success-400">
             <CheckCircle2 className="w-4 h-4" />
             <span>{progress.message || '配方生成成功'}</span>
           </div>
         )}
 
         {progress.stage === 'error' && (
-          <div className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400">
+          <div className="flex items-center gap-2 text-sm text-error-600 dark:text-error-400">
             <AlertCircle className="w-4 h-4" />
             <span>{progress.message || '生成失败，请重试'}</span>
           </div>

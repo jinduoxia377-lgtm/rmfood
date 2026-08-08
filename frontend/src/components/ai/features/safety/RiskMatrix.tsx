@@ -39,10 +39,10 @@ const DEFAULT_HAZARD_TYPES: HazardType[] = [
 ]
 
 const COLOR_CONFIG = {
-  unknown: { fill: '#E5E7EB', text: '#6B7280' },
-  low: { fill: '#10B981', text: '#065F46' },
-  medium: { fill: '#F59E0B', text: '#92400E' },
-  high: { fill: '#EF4444', text: '#991B1B' },
+  unknown: { fill: 'var(--color-slate-200, #E5E7EB)', text: 'var(--color-slate-500, #6B7280)' },
+  low: { fill: 'var(--color-primary, #34C759)', text: 'var(--color-green-900, #065F46)' },
+  medium: { fill: 'var(--color-warning, #FF9F0A)', text: 'var(--color-amber-800, #D97706)' },
+  high: { fill: 'var(--color-error, #FF3B30)', text: 'var(--color-red-800, #DC2626)' },
 }
 
 const CELL_SIZE = 60
@@ -118,35 +118,35 @@ export function RiskMatrix({
 
     return (
       <div className="space-y-2 min-w-[250px] p-3">
-        <div className="font-semibold text-gray-900 dark:text-gray-100 border-b pb-2">
+        <div className="font-semibold text-neutral-900 dark:text-neutral-100 border-b pb-2">
           {ingredient.name} - {hazardType?.label}
         </div>
         <div className="grid grid-cols-2 gap-2 text-sm">
           <div>
-            <span className="text-gray-500">风险等级:</span>
+            <span className="text-neutral-500">风险等级:</span>
             <span className={`ml-2 font-medium`} style={{ color: colorConfig.text }}>
               {hazard.level === 'low' ? '低' : hazard.level === 'medium' ? '中' : hazard.level === 'high' ? '高' : '未检测'}
             </span>
           </div>
           <div>
-            <span className="text-gray-500">评分:</span>
+            <span className="text-neutral-500">评分:</span>
             <span className="ml-2 font-bold">{hazard.score}</span>
           </div>
         </div>
         {hazard.regulation && (
           <div className="text-sm">
-            <span className="text-gray-500">法规依据:</span>
+            <span className="text-neutral-500">法规依据:</span>
             <span className="ml-2">{hazard.regulation}</span>
           </div>
         )}
         {hazard.limit !== undefined && hazard.actual !== undefined && (
           <div className="text-sm">
-            <span className="text-gray-500">限值/实测:</span>
+            <span className="text-neutral-500">限值/实测:</span>
             <span className="ml-2">{hazard.limit} / {hazard.actual}</span>
           </div>
         )}
         {hazard.suggestion && (
-          <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-900/20 rounded text-sm text-blue-800 dark:text-blue-200">
+          <div className="mt-2 p-2 bg-secondary-50 dark:bg-secondary-900/20 rounded text-sm text-secondary-800 dark:text-secondary-200">
             <span className="font-medium">建议: </span>{hazard.suggestion}
           </div>
         )}
@@ -165,7 +165,7 @@ export function RiskMatrix({
       .attr('width', matrixWidth)
       .attr('height', matrixHeight)
       .attr('fill', 'white')
-      .attr('stroke', '#E5E7EB')
+      .attr('stroke', 'var(--color-slate-200, #E5E7EB)')
 
     hazardTypes.forEach((hazard, colIndex) => {
       const x = HEADER_WIDTH + colIndex * (CELL_SIZE + CELL_PADDING)
@@ -176,7 +176,7 @@ export function RiskMatrix({
         .attr('dominant-baseline', 'middle')
         .attr('font-size', '11px')
         .attr('font-weight', '600')
-        .attr('fill', '#374151')
+        .attr('fill', 'var(--color-gray-700, #374151)')
         .attr('transform', `rotate(-45, ${x + CELL_SIZE / 2}, ${HEADER_HEIGHT / 2})`)
         .text(hazard.label)
     })
@@ -190,7 +190,7 @@ export function RiskMatrix({
         .attr('text-anchor', 'end')
         .attr('dominant-baseline', 'middle')
         .attr('font-size', '11px')
-        .attr('fill', '#374151')
+        .attr('fill', 'var(--color-gray-700, #374151)')
         .text(ingredient.name.length > 8 ? ingredient.name.substring(0, 8) + '...' : ingredient.name)
 
       hazardTypes.forEach((hazard, colIndex) => {
@@ -253,7 +253,7 @@ export function RiskMatrix({
   }, [displayData, hazardTypes, transform, hoveredCell, onCellClick, getOpacityByScore, matrixWidth, matrixHeight])
 
   return (
-    <div ref={containerRef} className={`relative overflow-hidden border border-gray-200 dark:border-gray-700 rounded-lg ${className}`}>
+    <div ref={containerRef} className={`relative overflow-hidden border border-neutral-200 dark:border-neutral-700 rounded-lg ${className}`}>
       <svg
         ref={svgRef}
         width={matrixWidth}
@@ -267,12 +267,12 @@ export function RiskMatrix({
       />
 
       {hoveredCell && (
-        <Tooltip content={tooltipContent} placement="right" visible>
+        <Tooltip content={tooltipContent} position="right">
           <div className="absolute top-0 left-0 w-0 h-0" />
         </Tooltip>
       )}
 
-      <div className="absolute bottom-2 right-2 flex gap-2 bg-white/90 dark:bg-gray-800/90 p-2 rounded-lg shadow-md text-xs">
+      <div className="absolute bottom-2 right-2 flex gap-2 bg-white/90 dark:bg-neutral-800/90 p-2 rounded-lg shadow-md text-xs">
         {Object.entries(COLOR_CONFIG).map(([level, config]) => (
           <div key={level} className="flex items-center gap-1">
             <div
@@ -286,7 +286,7 @@ export function RiskMatrix({
         ))}
       </div>
 
-      <div className="absolute top-2 left-2 text-xs text-gray-500 dark:text-gray-400 bg-white/80 dark:bg-gray-800/80 px-2 py-1 rounded">
+      <div className="absolute top-2 left-2 text-xs text-neutral-500 dark:text-neutral-400 bg-white/80 dark:bg-neutral-800/80 px-2 py-1 rounded">
         缩放: {(transform.k * 100).toFixed(0)}% | 拖拽移动 | 滚轮缩放
       </div>
     </div>

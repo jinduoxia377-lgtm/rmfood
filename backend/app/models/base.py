@@ -1,17 +1,23 @@
 """RMFOOD 基础模型
 
 所有模型的基类，提供通用字段和方法
+
+架构说明:
+  BaseModel 继承自 app.core.database.Base（SQLAlchemy DeclarativeBase）。
+  领域模型依赖持久化机制在此项目中是有意为之——详见 ADR-004。
 """
-from datetime import datetime, timezone
+import sqlalchemy as sa
+from datetime import datetime
 from typing import Optional
-from sqlalchemy import DateTime, Boolean, select
+from sqlalchemy import DateTime, Boolean, select, BigInteger
 from sqlalchemy.orm import Mapped, mapped_column, declared_attr
-from app.core.database import Base
+from ..core.database import Base
+from sqlalchemy.orm import declarative_base
 
 
-def _now() -> datetime:
-    """获取当前UTC时间"""
-    return datetime.now(timezone.utc).replace(tzinfo=None)
+# 创建扩展性 Base，允许表定义重复
+ExtendedBase = declarative_base(cls=_BaseWithExtendExisting) if False else Base
+from .utils import now_utc_mapped
 
 
 class BaseModel(Base):
@@ -26,15 +32,15 @@ class BaseModel(Base):
 
     @declared_attr
     def id(cls) -> Mapped[int]:
-        return mapped_column(primary_key=True, autoincrement=True)
+        return mapped_column(BigInteger, primary_key=True, autoincrement=True)
 
     @declared_attr
     def created_at(cls) -> Mapped[datetime]:
-        return mapped_column(DateTime, default=_now, nullable=False)
+        return mapped_column(DateTime(timezone=True), default=now_utc_mapped, nullable=False)
 
     @declared_attr
     def updated_at(cls) -> Mapped[datetime]:
-        return mapped_column(DateTime, default=_now, onupdate=_now, nullable=False)
+        return mapped_column(DateTime(timezone=True), default=now_utc_mapped, onupdate=now_utc_mapped, nullable=False)
 
     def to_dict(self) -> dict:
         """将模型转换为字典"""
@@ -65,7 +71,7 @@ class SoftDeleteMixin:
 
     @declared_attr
     def deleted_at(cls) -> Mapped[Optional[datetime]]:
-        return mapped_column(DateTime, nullable=True, default=None, index=True)
+        return mapped_column(DateTime(timezone=True), nullable=True, default=None, index=True)
 
     @property
     def is_deleted(self) -> bool:
@@ -74,7 +80,7 @@ class SoftDeleteMixin:
 
     def soft_delete(self) -> None:
         """软删除（设置 deleted_at 时间戳）"""
-        self.deleted_at = _now()
+        self.deleted_at = now_utc_mapped()
 
     def restore(self) -> None:
         """恢复已删除的记录"""
@@ -179,6 +185,18 @@ class ClassifiedMixin:
         if owner is not None:
             self.data_owner = owner
 
+    def should_expire(self, reference_date: datetime = None) -> bool:
+        """检查数据是否已过保留期"""
+        if self.data_retention_days is None:
+            return False
+        if reference_date is None:
+            from datetime import timezone
+            reference_date = datetime.now(timezone.utc)
+        if not hasattr(self, 'created_at') or self.created_at is None:
+            return False
+        expiration_date = self.created_at.replace(tzinfo=None) if self.created_at.tzinfo else self.created_at
+        from datetime import timedelta
+        return reference_date - expiration_date > timedelta(days=self.data_retention_days)
 
-# 在模块底部添加 sa 导入
-import sqlalchemy as sa
+
+# sa imported at top of file

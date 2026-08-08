@@ -1,0 +1,84 @@
+version: "3.8"
+
+services:
+  # API Gateway (Nginx)
+  gateway:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - ai-conversation
+      - formula-calculation
+      - auth
+      - event-bus
+
+  # Event Bus (using Redis as simple message broker for dev mode)
+  event-bus:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+
+  # AI Conversation Service
+  ai-conversation:
+    build:
+      context: ../docker_configs
+      dockerfile: ai_conversation_service.Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_ENV=development
+      - EVENT_BUS_URL=redis://event-bus:6379
+    depends_on:
+      - event-bus
+    restart: unless-stopped
+
+  # Formula Calculation Service (with Ray cluster head)
+  formula-calculation:
+    build:
+      context: ../docker_configs
+      dockerfile: formula_calculation_service.Dockerfile
+    ports:
+      - "8001:8001"
+    environment:
+      - APP_ENV=development
+      - RAY_ADDRESS=http://ray-head:10001
+    depends_on:
+      - ray-head
+      - event-bus
+    restart: unless-stopped
+
+  # Ray Head (distributed compute coordination)
+  ray-head:
+    image: rayproject/ray:latest
+    command: ray start --head --port=10001
+    ports:
+      - "10001:10001"
+      - "8265:8265"  # Ray dashboard
+    environment:
+      - RAY_address=http://ray-head:10001
+    deploy:
+      resources:
+        reservations:
+          cpus: '2.0'
+          memory: 4G
+
+  # Authentication Service
+  auth:
+    build:
+      context: ../docker_configs
+      dockerfile: auth_service.Dockerfile
+    ports:
+      - "8002:8002"
+    environment:
+      - APP_ENV=development
+      - JWT_SECRET=change-in-production
+    depends_on:
+      - event-bus
+    restart: unless-stopped
+
+volumes:
+  redis-data:

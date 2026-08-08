@@ -12,12 +12,12 @@ export const ResultsViewSwitcher: React.FC<ResultsViewSwitcherProps> = ({
   onViewModeChange,
 }) => {
   return (
-    <div className="flex bg-gray-100 dark:bg-gray-800 rounded-xl p-1 gap-1">
+    <div className="flex bg-neutral-100 dark:bg-neutral-800 rounded-xl p-1 gap-1">
       <button
         onClick={() => onViewModeChange('card')}
         className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 flex items-center gap-1.5 ${
           viewMode === 'card'
-            ? 'bg-white dark:bg-gray-700 shadow-sm'
+            ? 'bg-white dark:bg-neutral-700 shadow-sm'
             : ''
         }`}
         style={{
@@ -33,7 +33,7 @@ export const ResultsViewSwitcher: React.FC<ResultsViewSwitcherProps> = ({
         onClick={() => onViewModeChange('compare')}
         className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 flex items-center gap-1.5 ${
           viewMode === 'compare'
-            ? 'bg-white dark:bg-gray-700 shadow-sm'
+            ? 'bg-white dark:bg-neutral-700 shadow-sm'
             : ''
         }`}
         style={{

@@ -9,12 +9,14 @@ import {
   ArrowLeft, Play, CheckCircle, Edit3, Plus, Trash2, TrendingUp,
   FileText, Target, FlaskConical, Calendar, BarChart3, XCircle,
   Download, Paperclip, Upload, Save, X, Clock, Table, ClipboardPaste,
+  ChevronRight, BarChart3 as Chart3, Eye, EyeOff,
 } from 'lucide-react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, Legend,
 } from 'recharts'
+import type { ExperimentData } from '@/types'
 import { experimentApi } from '@/api/experiment'
 import { StatusBadge, Skeleton } from '@/components/ui/Common'
 import { cn } from '@/lib/utils'
@@ -55,16 +57,16 @@ function DataEntryForm({
   })
 
   return (
-    <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-4 space-y-3 animate-slide-down">
+    <div className="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-4 space-y-3 animate-slide-down">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-slate-900 dark:text-white">录入数据点</h3>
-        <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
+        <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">录入数据点</h3>
+        <button onClick={onClose} className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors">
           <XCircle size={16} />
         </button>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div>
-          <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">参数名 *</label>
+          <label className="text-xs text-neutral-500 dark:text-neutral-400 mb-1 block">参数名 *</label>
           <Input
             value={parameter}
             onChange={(e) => setParameter(e.target.value)}
@@ -73,7 +75,7 @@ function DataEntryForm({
           />
         </div>
         <div>
-          <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">数值</label>
+          <label className="text-xs text-neutral-500 dark:text-neutral-400 mb-1 block">数值</label>
           <Input
             value={value}
             onChange={(e) => setValue(e.target.value)}
@@ -82,7 +84,7 @@ function DataEntryForm({
           />
         </div>
         <div>
-          <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">单位</label>
+          <label className="text-xs text-neutral-500 dark:text-neutral-400 mb-1 block">单位</label>
           <Input
             value={unit}
             onChange={(e) => setUnit(e.target.value)}
@@ -92,7 +94,7 @@ function DataEntryForm({
         </div>
       </div>
       <div>
-        <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">备注</label>
+        <label className="text-xs text-neutral-500 dark:text-neutral-400 mb-1 block">备注</label>
         <Input
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
@@ -119,9 +121,11 @@ function DataEntryForm({
 function DataTable({
   data,
   experimentId,
+  colors,
 }: {
-  data: { id: number; parameter: string; value: string | number | null; unit: string | null; notes: string | null; recorded_at: string }[]
+  data: ExperimentData[]
   experimentId: number
+  colors: string[]
 }) {
   const qc = useQueryClient()
   const deleteMut = useMutation({
@@ -132,9 +136,9 @@ function DataTable({
   if (data.length === 0) {
     return (
       <div className="text-center py-8">
-        <BarChart3 size={32} className="mx-auto text-slate-300 dark:text-slate-600 mb-2" />
-        <p className="text-sm text-slate-500 dark:text-slate-400">暂无实验数据</p>
-        <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">点击「录入数据」开始记录实验数据</p>
+        <BarChart3 size={32} className="mx-auto text-neutral-300 dark:text-neutral-600 mb-2" />
+        <p className="text-sm text-neutral-500 dark:text-neutral-400">暂无实验数据</p>
+        <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1">点击「录入数据」开始记录实验数据</p>
       </div>
     )
   }
@@ -143,24 +147,29 @@ function DataTable({
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-slate-200 dark:border-slate-700">
-            <th className="text-left py-2.5 px-3 text-xs font-semibold text-slate-500 dark:text-slate-400">参数</th>
-            <th className="text-left py-2.5 px-3 text-xs font-semibold text-slate-500 dark:text-slate-400">数值</th>
-            <th className="text-left py-2.5 px-3 text-xs font-semibold text-slate-500 dark:text-slate-400">单位</th>
-            <th className="text-left py-2.5 px-3 text-xs font-semibold text-slate-500 dark:text-slate-400">备注</th>
-            <th className="text-left py-2.5 px-3 text-xs font-semibold text-slate-500 dark:text-slate-400">时间</th>
+          <tr className="border-b border-neutral-200 dark:border-neutral-700">
+            <th className="text-left py-2.5 px-3 text-xs font-semibold text-neutral-500 dark:text-neutral-400">参数</th>
+            <th className="text-left py-2.5 px-3 text-xs font-semibold text-neutral-500 dark:text-neutral-400">数值</th>
+            <th className="text-left py-2.5 px-3 text-xs font-semibold text-neutral-500 dark:text-neutral-400">单位</th>
+            <th className="text-left py-2.5 px-3 text-xs font-semibold text-neutral-500 dark:text-neutral-400">备注</th>
+            <th className="text-left py-2.5 px-3 text-xs font-semibold text-neutral-500 dark:text-neutral-400">时间</th>
             <th className="w-10"></th>
           </tr>
         </thead>
         <tbody>
           {data.map((d) => (
-            <tr key={d.id} className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-              <td className="py-2.5 px-3 font-medium text-slate-900 dark:text-white">{d.parameter}</td>
-              <td className="py-2.5 px-3 text-slate-700 dark:text-slate-300 font-mono">{d.value ?? '-'}</td>
-              <td className="py-2.5 px-3 text-slate-500 dark:text-slate-400">{d.unit ?? '-'}</td>
-              <td className="py-2.5 px-3 text-slate-500 dark:text-slate-400 max-w-[200px] truncate">{d.notes ?? '-'}</td>
-              <td className="py-2.5 px-3 text-xs text-slate-400">
-                {format(new Date(d.recorded_at), 'MM-dd HH:mm', { locale: zhCN })}
+            <tr key={d.id} className="border-b border-neutral-100 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors">
+              <td className="py-2.5 px-3 font-medium text-neutral-900 dark:text-white">
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: colors[data.indexOf(d) % colors.length] }} />
+                  {d.parameter ?? d.measurementType ?? '-'}
+                </span>
+              </td>
+              <td className="py-2.5 px-3 text-neutral-700 dark:text-neutral-300 font-mono">{d.value ?? '-'}</td>
+              <td className="py-2.5 px-3 text-neutral-500 dark:text-neutral-400">{d.unit ?? '-'}</td>
+              <td className="py-2.5 px-3 text-neutral-500 dark:text-neutral-400 max-w-[200px] truncate">{d.notes ?? '-'}</td>
+              <td className="py-2.5 px-3 text-xs text-neutral-400">
+                {format(new Date(d.recorded_at ?? d.timestamp), 'MM-dd HH:mm', { locale: zhCN })}
               </td>
               <td className="py-2.5 px-3">
                 <Button
@@ -168,7 +177,7 @@ function DataTable({
                   size="sm"
                   onClick={() => deleteMut.mutate(d.id)}
                   disabled={deleteMut.isPending}
-                  className="!p-1 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
+                  className="!p-1 text-neutral-400 hover:text-error-500 hover:bg-error-50 dark:hover:bg-error-900/20"
                 >
                   <Trash2 size={14} />
                 </Button>
@@ -185,7 +194,7 @@ function DataTable({
 function DataView({
   data,
 }: {
-  data: { parameter: string; value: string | number | null; recorded_at: string }[]
+  data: ExperimentData[]
 }) {
   const [chartType, setChartType] = useState<'line' | 'bar'>('line')
 
@@ -194,10 +203,10 @@ function DataView({
     for (const d of data) {
       const numVal = Number(d.value)
       if (isNaN(numVal) || d.value === null) continue
-      if (!paramValues[d.parameter]) paramValues[d.parameter] = []
-      paramValues[d.parameter].push({
+      const paramKey = d.parameter ?? d.measurementType; if (!paramKey) continue; if (!paramValues[paramKey]) paramValues[paramKey] = []
+      paramValues[paramKey].push({
         value: numVal,
-        time: format(new Date(d.recorded_at), 'MM-dd HH:mm'),
+        time: format(new Date(d.recorded_at ?? d.timestamp), 'MM-dd HH:mm'),
       })
     }
     const params = Object.keys(paramValues)
@@ -222,22 +231,20 @@ function DataView({
   if (!hasNumericData) {
     return (
       <div className="text-center py-8">
-        <TrendingUp size={32} className="mx-auto text-slate-300 dark:text-slate-600 mb-2" />
-        <p className="text-sm text-slate-500 dark:text-slate-400">暂无可视化数据</p>
-        <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">录入数值型数据后将自动生成图表</p>
+        <TrendingUp size={32} className="mx-auto text-neutral-300 dark:text-neutral-600 mb-2" />
+        <p className="text-sm text-neutral-500 dark:text-neutral-400">暂无可视化数据</p>
+        <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1">录入数值型数据后将自动生成图表</p>
       </div>
     )
   }
-
-  const COLORS = ['#14b8a6', '#6366f1', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899']
 
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-500 dark:text-slate-400">{parameters.length} 个参数</span>
-          <span className="text-xs text-slate-400 dark:text-slate-500">|</span>
-          <span className="text-xs text-slate-500 dark:text-slate-400">{numericData.length} 个数据点</span>
+          <span className="text-xs text-neutral-500 dark:text-neutral-400">{parameters.length} 个参数</span>
+          <span className="text-xs text-neutral-400 dark:text-neutral-500">|</span>
+          <span className="text-xs text-neutral-500 dark:text-neutral-400">{numericData.length} 个数据点</span>
         </div>
         <div className="flex gap-1">
           {(['line', 'bar'] as const).map((type) => (
@@ -248,7 +255,7 @@ function DataView({
                 'px-2.5 py-1 rounded-lg text-xs font-medium transition-colors',
                 chartType === type
                   ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300'
-                  : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300',
+                  : 'text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300',
               )}
             >
               {type === 'line' ? '折线图' : '柱状图'}
@@ -261,7 +268,7 @@ function DataView({
         <ResponsiveContainer width="100%" height="100%">
           {chartType === 'line' ? (
             <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" opacity={0.3} />
               <XAxis dataKey="time" tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />
               <YAxis tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />
               <Tooltip
@@ -275,12 +282,12 @@ function DataView({
               />
               <Legend wrapperStyle={{ fontSize: 11 }} />
               {parameters.map((p, i) => (
-                <Line key={p} type="monotone" dataKey={p} stroke={COLORS[i % COLORS.length]} strokeWidth={2} dot={{ r: 3 }} />
+                <Line key={p} type="monotone" dataKey={p} stroke={COLORS[i % COLORS.length]} strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
               ))}
             </LineChart>
           ) : (
             <BarChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" opacity={0.3} />
               <XAxis dataKey="time" tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />
               <YAxis tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />
               <Tooltip
@@ -305,7 +312,7 @@ function DataView({
 }
 
 // ── 实验进度时间线 ──
-function ExperimentTimeline({ experiment }: { experiment: any }) {
+function ExperimentTimeline({ experiment, progress }: { experiment: any; progress: number }) {
   const statusFlow = [
     { key: 'planned', label: '计划中', icon: Clock },
     { key: 'in_progress', label: '进行中', icon: Play },
@@ -319,14 +326,14 @@ function ExperimentTimeline({ experiment }: { experiment: any }) {
   if (isFailed || isCancelled) {
     const Icon = experiment.status === 'failed' ? XCircle : Clock
     return (
-      <div className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
-        <Icon size={20} className={experiment.status === 'failed' ? 'text-red-500' : 'text-slate-400'} />
+      <div className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-neutral-800/50 rounded-xl">
+        <Icon size={20} className={experiment.status === 'failed' ? 'text-error-500' : 'text-neutral-400'} />
         <div>
-          <p className="text-sm font-medium text-slate-900 dark:text-white">
+          <p className="text-sm font-medium text-neutral-900 dark:text-white">
             {experiment.status === 'failed' ? '实验已失败' : '实验已取消'}
           </p>
           {experiment.actual_start && (
-            <p className="text-xs text-slate-500 mt-0.5">
+            <p className="text-xs text-neutral-500 mt-0.5">
               开始于 {format(new Date(experiment.actual_start), 'yyyy-MM-dd HH:mm', { locale: zhCN })}
               {experiment.actual_end && ` · 结束于 ${format(new Date(experiment.actual_end), 'yyyy-MM-dd HH:mm', { locale: zhCN })}`}
             </p>
@@ -338,6 +345,21 @@ function ExperimentTimeline({ experiment }: { experiment: any }) {
 
   return (
     <div className="flex items-center gap-2">
+      <div className="flex-1">
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400">进度</span>
+          <span className="text-xs font-bold text-primary-600 dark:text-primary-400">{progress}%</span>
+        </div>
+        <div className="h-1.5 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
+          <div
+            className={cn(
+              'h-full rounded-full transition-all duration-700',
+              progress >= 100 ? 'bg-success-500' : progress >= 50 ? 'bg-primary-500' : 'bg-warning-500',
+            )}
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      </div>
       {statusFlow.map((step, i) => {
         const isActive = i === currentIndex
         const isDone = i < currentIndex
@@ -347,19 +369,19 @@ function ExperimentTimeline({ experiment }: { experiment: any }) {
             <div className={cn(
               'flex items-center gap-2 px-3 py-2 rounded-lg transition-colors',
               isActive && 'bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800',
-              isDone && 'bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800/50',
-              !isActive && !isDone && 'bg-slate-50 dark:bg-slate-800/30 border border-slate-200 dark:border-slate-700',
+              isDone && 'bg-success-50 dark:bg-success-900/10 border border-green-200 dark:border-green-800/50',
+              !isActive && !isDone && 'bg-slate-50 dark:bg-neutral-800/30 border border-neutral-200 dark:border-neutral-700',
             )}>
               <Icon size={14} className={cn(
-                isDone ? 'text-green-500' : isActive ? 'text-primary-500' : 'text-slate-300 dark:text-slate-600',
+                isDone ? 'text-success-500' : isActive ? 'text-primary-500' : 'text-neutral-300 dark:text-neutral-600',
               )} />
               <span className={cn(
                 'text-xs font-medium',
-                isDone ? 'text-green-700 dark:text-green-400' : isActive ? 'text-primary-700 dark:text-primary-400' : 'text-slate-400',
+                isDone ? 'text-success-700 dark:text-success-400' : isActive ? 'text-primary-700 dark:text-primary-400' : 'text-neutral-400',
               )}>{step.label}</span>
             </div>
             {i < statusFlow.length - 1 && (
-              <div className={cn('w-6 h-0.5 rounded', isDone ? 'bg-green-300 dark:bg-green-700' : 'bg-slate-200 dark:bg-slate-700')} />
+              <div className={cn('w-6 h-0.5 rounded', isDone ? 'bg-success-300 dark:bg-success-700' : 'bg-neutral-200 dark:bg-neutral-700')} />
             )}
           </div>
         )
@@ -407,28 +429,28 @@ function BatchImportForm({
   }
 
   return (
-    <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-4 space-y-3 animate-slide-down">
+    <div className="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-4 space-y-3 animate-slide-down">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+        <h3 className="text-sm font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
           <ClipboardPaste size={14} className="text-primary-500" />
           批量导入数据
         </h3>
-        <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
+        <button onClick={onClose} className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors">
           <X size={16} />
         </button>
       </div>
-      <p className="text-xs text-slate-500">粘贴 CSV 数据，格式：参数名,数值,单位,备注（首行为标题）</p>
+      <p className="text-xs text-neutral-500">粘贴 CSV 数据，格式：参数名,数值,单位,备注（首行为标题）</p>
       <textarea
         value={csvText}
         onChange={(e) => setCsvText(e.target.value)}
         placeholder={"参数,数值,单位,备注\npH值,7.2,,\n温度,25,°C,水浴\n浓度,0.5,mg/mL,"}
         rows={5}
-        className="w-full text-xs font-mono p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 resize-none focus:outline-none focus:ring-2 focus:ring-primary-500"
+        className="w-full text-xs font-mono p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-800 resize-none focus:outline-none focus:ring-2 focus:ring-primary-500"
       />
       {result && (
         <div className="flex items-center gap-3 text-xs">
-          <span className="text-green-600">{result.success} 条成功</span>
-          {result.errors > 0 && <span className="text-red-500">{result.errors} 条失败</span>}
+          <span className="text-success-600">{result.success} 条成功</span>
+          {result.errors > 0 && <span className="text-error-500">{result.errors} 条失败</span>}
         </div>
       )}
       <div className="flex justify-end gap-2">
@@ -445,6 +467,8 @@ function BatchImportForm({
 // 主页面
 // ═══════════════════════════════════════
 
+const COLORS = ['#8b5cf6', '#06b6d4', '#f59e0b', '#ef4444', '#10b981', '#ec4899', '#6366f1']
+
 export default function ExperimentDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
@@ -458,6 +482,41 @@ export default function ExperimentDetailPage() {
   const [recommendText, setRecommendText] = useState('')
 
   const { data: experiment, isLoading } = useExperiment(experimentId)
+
+  // ── 进度计算 ──
+  const progress = useMemo(() => {
+    if (!experiment) return 0
+    if (experiment.status === 'completed') return 100
+    if (experiment.status === 'cancelled') return 0
+    if (experiment.status !== 'in_progress') return 0
+
+    // 基于时间线的进度
+    const now = new Date()
+    const startDate = experiment.start_date ? new Date(experiment.start_date) : null
+    const endDate = experiment.end_date ? new Date(experiment.end_date) : null
+    const actualStart = experiment.actual_start ? new Date(experiment.actual_start) : null
+
+    if (!startDate || !endDate) return 50 // 无日期则给默认进度
+
+    const totalMs = endDate.getTime() - startDate.getTime()
+    if (totalMs <= 0) return 50
+    const elapsedMs = now.getTime() - startDate.getTime()
+    return Math.min(99, Math.max(5, Math.round((elapsedMs / totalMs) * 100)))
+  }, [experiment])
+
+  const { data: dataPoints = [] } = useQuery({
+    queryKey: ['experiment-data', experimentId],
+    queryFn: () => experimentApi.getData(experimentId),
+    enabled: !!experimentId,
+  })
+
+  // ── 数据点统计 ──
+  const dataStats = useMemo(() => {
+    if (!dataPoints || dataPoints.length === 0) return { total: 0, params: 0, numeric: 0 }
+    const params = new Set(dataPoints.map((d) => d.parameter ?? d.measurementType))
+    const numeric = dataPoints.filter((d) => d.value !== null && !isNaN(Number(d.value))).length
+    return { total: dataPoints.length, params: params.size, numeric }
+  }, [dataPoints])
 
   // 附件
   const { data: attachments = [] } = useQuery({
@@ -474,12 +533,6 @@ export default function ExperimentDetailPage() {
   const deleteAttachMut = useMutation({
     mutationFn: (id: number) => attachmentApi.delete(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['attachments', 'experiment', experimentId] }),
-  })
-
-  const { data: dataPoints = [] } = useQuery({
-    queryKey: ['experiment-data', experimentId],
-    queryFn: () => experimentApi.getData(experimentId),
-    enabled: !!experimentId,
   })
 
   const startMut = useMutation({
@@ -501,7 +554,7 @@ export default function ExperimentDetailPage() {
       String(d.value ?? ''),
       d.unit ?? '',
       d.notes ?? '',
-      format(new Date(d.recorded_at), 'yyyy-MM-dd HH:mm', { locale: zhCN }),
+      format(new Date(d.recorded_at ?? d.timestamp), 'yyyy-MM-dd HH:mm', { locale: zhCN }),
     ])
     const csv = [headers, ...rows].map((row) => row.map((cell) => `"${cell}"`).join(',')).join('\n')
     const BOM = '\uFEFF'
@@ -524,6 +577,29 @@ export default function ExperimentDetailPage() {
     },
   })
 
+  // ── 实验报告导出 ──
+  const handleExportReport = () => {
+    if (!experiment) return
+    const rows = dataPoints.map((d) => [
+      d.parameter,
+      String(d.value ?? ''),
+      d.unit ?? '',
+      d.notes ?? '',
+      format(new Date(d.recorded_at ?? d.timestamp), 'yyyy-MM-dd HH:mm', { locale: zhCN }),
+    ])
+    const csv = [
+      ['参数', '数值', '单位', '备注', '记录时间'],
+      ...rows,
+    ].map((r) => r.map((c) => `"${c}"`).join(',')).join('\n')
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${experiment.code || '实验'}_数据报告_${new Date().toISOString().slice(0, 10)}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
   if (isLoading) {
     return (
       <div className="max-w-5xl mx-auto space-y-4">
@@ -537,7 +613,7 @@ export default function ExperimentDetailPage() {
   if (!experiment) {
     return (
       <div className="max-w-5xl mx-auto text-center py-20">
-        <p className="text-slate-500">实验不存在</p>
+        <p className="text-neutral-500">实验不存在</p>
         <Link to="/experiments" className="text-primary-600 text-sm mt-2 inline-block">返回列表</Link>
       </div>
     )
@@ -551,7 +627,7 @@ export default function ExperimentDetailPage() {
       <div className="flex flex-wrap items-center justify-between gap-2">
         <button
           onClick={() => navigate('/experiments')}
-          className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors"
+          className="flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors"
         >
           <ArrowLeft size={16} />
           返回列表
@@ -593,11 +669,11 @@ export default function ExperimentDetailPage() {
           <div className="flex items-start justify-between mb-4">
             <div>
               <div className="flex items-center gap-3 mb-1">
-                <h1 className="text-2xl font-bold text-slate-900 dark:text-white">{experiment.title}</h1>
+                <h1 className="h1 text-neutral-900 dark:text-white">{experiment.title}</h1>
                 <StatusBadge status={experiment.status} />
               </div>
-              <p className="text-sm text-slate-500 dark:text-slate-400">
-                {experiment.code} · 创建于 {format(new Date(experiment.created_at), 'yyyy-MM-dd', { locale: zhCN })}
+              <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                {experiment.code} · 创建于 {format(new Date(experiment.created_at ?? experiment.createdAt), 'yyyy-MM-dd', { locale: zhCN })}
               </p>
             </div>
             {experiment.formula_id && (
@@ -612,15 +688,54 @@ export default function ExperimentDetailPage() {
           </div>
 
           {experiment.description && (
-            <p className="text-slate-600 dark:text-slate-300 leading-relaxed mb-4 text-sm">{experiment.description}</p>
+            <p className="text-neutral-600 dark:text-neutral-300 leading-relaxed mb-4 text-sm">{experiment.description}</p>
           )}
 
           {/* 进度时间线 */}
-          <div className="py-3 border-t border-slate-200 dark:border-slate-700">
-            <ExperimentTimeline experiment={experiment} />
+          <div className="py-3 border-t border-neutral-200 dark:border-neutral-700">
+            <ExperimentTimeline experiment={experiment} progress={progress} />
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+          {/* 进度条 */}
+          <div className="py-3 border-t border-neutral-200 dark:border-neutral-700">
+            <div className="flex items-center gap-3">
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400">实验进度</span>
+                  <span className="text-xs font-bold text-primary-600 dark:text-primary-400">{progress}%</span>
+                </div>
+                <div className="h-2 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
+                  <div
+                    className={cn(
+                      'h-full rounded-full transition-all duration-700',
+                      progress >= 100 ? 'bg-success-500' : progress >= 50 ? 'bg-primary-500' : 'bg-warning-500',
+                    )}
+                    style={{ width: `${progress}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 数据统计 */}
+          <div className="py-3 border-t border-neutral-200 dark:border-neutral-700">
+            <div className="flex items-center gap-4 text-xs text-neutral-500 dark:text-neutral-400">
+              <span className="flex items-center gap-1">
+                <Table size={12} />
+                {dataStats.total} 条数据
+              </span>
+              <span className="flex items-center gap-1">
+                <BarChart3 size={12} />
+                {dataStats.params} 个参数
+              </span>
+              <span className="flex items-center gap-1">
+                <Chart3 size={12} />
+                {dataStats.numeric} 个数值点
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 border-t border-neutral-200 dark:border-neutral-700">
             {[
               { icon: Calendar, label: '计划开始', value: experiment.start_date ? format(new Date(experiment.start_date), 'MM-dd', { locale: zhCN }) : '-' },
               { icon: Calendar, label: '计划结束', value: experiment.end_date ? format(new Date(experiment.end_date), 'MM-dd', { locale: zhCN }) : '-' },
@@ -628,12 +743,12 @@ export default function ExperimentDetailPage() {
               { icon: CheckCircle, label: '实际结束', value: experiment.actual_end ? format(new Date(experiment.actual_end), 'MM-dd HH:mm', { locale: zhCN }) : '-' },
             ].map(({ icon: Icon, label, value }) => (
               <div key={label} className="flex items-start gap-2">
-                <div className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0 mt-0.5">
-                  <Icon size={14} className="text-slate-400" />
+                <div className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center shrink-0 mt-0.5">
+                  <Icon size={14} className="text-neutral-400" />
                 </div>
                 <div>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">{label}</p>
-                  <p className="text-sm font-medium text-slate-900 dark:text-white">{value}</p>
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400">{label}</p>
+                  <p className="text-sm font-medium text-neutral-900 dark:text-white">{value}</p>
                 </div>
               </div>
             ))}
@@ -656,8 +771,8 @@ export default function ExperimentDetailPage() {
               </CardHeader>
               <CardContent>
                 <ul className="space-y-2">
-                  {experiment.objectives.map((obj, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-slate-600 dark:text-slate-300">
+                  {experiment.objectives.map((obj: string, i: number) => (
+                    <li key={i} className="flex items-start gap-2 text-sm text-neutral-600 dark:text-neutral-300">
                       <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-primary-500 shrink-0" />
                       {obj}
                     </li>
@@ -677,7 +792,7 @@ export default function ExperimentDetailPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-slate-600 dark:text-slate-300 whitespace-pre-wrap leading-relaxed">{experiment.methodology}</p>
+                <p className="text-sm text-neutral-600 dark:text-neutral-300 whitespace-pre-wrap leading-relaxed">{experiment.methodology}</p>
               </CardContent>
             </Card>
           )}
@@ -699,12 +814,12 @@ export default function ExperimentDetailPage() {
             </div>
             <div className="flex items-center gap-2">
               {/* 视图切换 */}
-              <div className="flex bg-slate-100 dark:bg-slate-800 rounded-lg p-0.5">
+              <div className="flex bg-neutral-100 dark:bg-neutral-800 rounded-lg p-0.5">
                 <button
                   onClick={() => setDataView('table')}
                   className={cn(
                     'px-2.5 py-1 rounded-md text-xs font-medium transition-colors',
-                    dataView === 'table' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500',
+                    dataView === 'table' ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-sm' : 'text-neutral-500',
                   )}
                 >
                   数据表
@@ -713,7 +828,7 @@ export default function ExperimentDetailPage() {
                   onClick={() => setDataView('chart')}
                   className={cn(
                     'px-2.5 py-1 rounded-md text-xs font-medium transition-colors',
-                    dataView === 'chart' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500',
+                    dataView === 'chart' ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-sm' : 'text-neutral-500',
                   )}
                 >
                   图表
@@ -743,9 +858,9 @@ export default function ExperimentDetailPage() {
                   variant="ghost"
                   size="sm"
                   icon={<Download size={12} />}
-                  onClick={handleExportCSV}
+                  onClick={handleExportReport}
                 >
-                  导出 CSV
+                  导出数据
                 </Button>
               )}
             </div>
@@ -766,7 +881,7 @@ export default function ExperimentDetailPage() {
           )}
 
           {dataView === 'table' ? (
-            <DataTable data={dataPoints} experimentId={experimentId} />
+            <DataTable data={dataPoints} experimentId={experimentId} colors={COLORS} />
           ) : (
             <DataView data={dataPoints} />
           )}
@@ -793,7 +908,7 @@ export default function ExperimentDetailPage() {
           {editingConclusions ? (
             <div className="space-y-4">
               <div>
-                <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">实验结论</label>
+                <label className="text-xs text-neutral-500 dark:text-neutral-400 mb-1 block">实验结论</label>
                 <Textarea
                   value={conclusionText}
                   onChange={(e) => setConclusionText(e.target.value)}
@@ -802,7 +917,7 @@ export default function ExperimentDetailPage() {
                 />
               </div>
               <div>
-                <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block">改进建议</label>
+                <label className="text-xs text-neutral-500 dark:text-neutral-400 mb-1 block">改进建议</label>
                 <Textarea
                   value={recommendText}
                   onChange={(e) => setRecommendText(e.target.value)}
@@ -826,18 +941,18 @@ export default function ExperimentDetailPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {experiment.conclusions && (
                 <div>
-                  <h4 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">实验结论</h4>
-                  <p className="text-sm text-slate-600 dark:text-slate-300 whitespace-pre-wrap leading-relaxed">{experiment.conclusions}</p>
+                  <h4 className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-2">实验结论</h4>
+                  <p className="text-sm text-neutral-600 dark:text-neutral-300 whitespace-pre-wrap leading-relaxed">{experiment.conclusions}</p>
                 </div>
               )}
               {experiment.recommendations && (
                 <div>
-                  <h4 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">改进建议</h4>
-                  <p className="text-sm text-slate-600 dark:text-slate-300 whitespace-pre-wrap leading-relaxed">{experiment.recommendations}</p>
+                  <h4 className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-2">改进建议</h4>
+                  <p className="text-sm text-neutral-600 dark:text-neutral-300 whitespace-pre-wrap leading-relaxed">{experiment.recommendations}</p>
                 </div>
               )}
               {!experiment.conclusions && !experiment.recommendations && (
-                <div className="col-span-2 py-4 text-center text-sm text-slate-400">暂无结论和建议</div>
+                <div className="col-span-2 py-4 text-center text-sm text-neutral-400">暂无结论和建议</div>
               )}
             </div>
           )}
@@ -849,8 +964,8 @@ export default function ExperimentDetailPage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                <Paperclip size={16} className="text-slate-400" />
+              <div className="w-8 h-8 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
+                <Paperclip size={16} className="text-neutral-400" />
               </div>
               <CardTitle as="h2">附件</CardTitle>
               <Badge variant="neutral" size="sm">{attachments.length}</Badge>
@@ -877,17 +992,17 @@ export default function ExperimentDetailPage() {
           {attachments.length > 0 ? (
             <div className="space-y-2">
               {attachments.map((att: Attachment) => (
-                <div key={att.id} className="flex items-center justify-between px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-800/50 group">
+                <div key={att.id} className="flex items-center justify-between px-3 py-2 rounded-lg bg-slate-50 dark:bg-neutral-800/50 group">
                   <div className="flex items-center gap-2 min-w-0">
-                    <Paperclip size={14} className="text-slate-400 shrink-0" />
-                    <span className="text-sm text-slate-700 dark:text-slate-300 truncate">{att.file_name}</span>
-                    <span className="text-xs text-slate-400 shrink-0">
+                    <Paperclip size={14} className="text-neutral-400 shrink-0" />
+                    <span className="text-sm text-neutral-700 dark:text-neutral-300 truncate">{att.file_name}</span>
+                    <span className="text-xs text-neutral-400 shrink-0">
                       {(att.file_size / 1024).toFixed(1)} KB
                     </span>
                   </div>
                   <button
                     onClick={() => deleteAttachMut.mutate(att.id)}
-                    className="p-1 rounded text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
+                    className="p-1 rounded text-neutral-400 hover:text-error-500 opacity-0 group-hover:opacity-100 transition-all"
                   >
                     <X size={14} />
                   </button>
@@ -895,7 +1010,7 @@ export default function ExperimentDetailPage() {
               ))}
             </div>
           ) : (
-            <div className="py-6 text-center text-sm text-slate-400">暂无附件</div>
+            <div className="py-6 text-center text-sm text-neutral-400">暂无附件</div>
           )}
         </CardContent>
       </Card>

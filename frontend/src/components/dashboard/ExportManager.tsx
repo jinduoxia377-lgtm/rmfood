@@ -19,7 +19,7 @@ interface ExportManagerProps {
 
 export function ExportManager({ data, className }: ExportManagerProps) {
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false)
-  const [exportFormat, setExportFormat] = useState<ExportFormat>('csv')
+  const [exportFormat, setExportFormat] = useState<string>('csv')
   const [exportFilename, setExportFilename] = useState(`导出数据_${new Date().toISOString().slice(0, 10)}`)
   const [exportTasks, setExportTasks] = useState<ExportTask[]>([])
   const [activeTab, setActiveTab] = useState('export')
@@ -71,23 +71,22 @@ export function ExportManager({ data, className }: ExportManagerProps) {
   useEffect(() => {
     // 定期更新任务状态
     const interval = setInterval(() => {
-      setExportTasks(exportService.getAllTasks())
+      setExportTasks(exportService.getHistory() as unknown as ExportTask[])
     }, 1000)
 
     return () => clearInterval(interval)
   }, [])
 
   const handleExport = async () => {
-    const options: ExportOptions = {
-      format: exportFormat,
+    const options = {
+      format: exportFormat as ExportFormat,
       filename: `${exportFilename}.${exportFormat}`,
-      data: mockData,
-      columns,
+      columns: columns as any,
       ...exportOptions,
-    }
+    } as ExportOptions
 
     try {
-      await exportService.exportData(options)
+      await exportService.export(mockData, options)
       setIsExportDialogOpen(false)
       // 重置表单
       setExportFormat('csv')
@@ -98,11 +97,11 @@ export function ExportManager({ data, className }: ExportManagerProps) {
   }
 
   const handleClearTasks = () => {
-    exportService.clearTasks()
+    exportService.clearHistory()
     setExportTasks([])
   }
 
-  const getFormatIcon = (format: ExportFormat) => {
+  const getFormatIcon = (format: string) => {
     switch (format) {
       case 'csv':
         return <FileText size={16} />
@@ -114,36 +113,40 @@ export function ExportManager({ data, className }: ExportManagerProps) {
         return <FileJson size={16} />
       case 'png':
         return <Image size={16} />
+      default:
+        return <FileText size={16} />
     }
   }
 
-  const getFormatColor = (format: ExportFormat) => {
+  const getFormatColor = (format: string) => {
     switch (format) {
       case 'csv':
-        return 'text-green-600 dark:text-green-400'
+        return 'text-success-600 dark:text-success-400'
       case 'xlsx':
-        return 'text-blue-600 dark:text-blue-400'
+        return 'text-secondary-600 dark:text-secondary-400'
       case 'pdf':
-        return 'text-red-600 dark:text-red-400'
+        return 'text-error-600 dark:text-error-400'
       case 'json':
-        return 'text-amber-600 dark:text-amber-400'
+        return 'text-warning-600 dark:text-warning-400'
       case 'png':
-        return 'text-purple-600 dark:text-purple-400'
+        return 'text-accent-600 dark:text-accent-400'
+      default:
+        return 'text-neutral-600 dark:text-neutral-400'
     }
   }
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed':
-        return 'text-green-600 dark:text-green-400'
+        return 'text-success-600 dark:text-success-400'
       case 'processing':
-        return 'text-blue-600 dark:text-blue-400'
+        return 'text-secondary-600 dark:text-secondary-400'
       case 'failed':
-        return 'text-red-600 dark:text-red-400'
+        return 'text-error-600 dark:text-error-400'
       case 'pending':
-        return 'text-amber-600 dark:text-amber-400'
+        return 'text-warning-600 dark:text-warning-400'
       default:
-        return 'text-slate-600 dark:text-slate-400'
+        return 'text-neutral-600 dark:text-neutral-400'
     }
   }
 
@@ -167,7 +170,7 @@ export function ExportManager({ data, className }: ExportManagerProps) {
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Download size={20} className="text-blue-600 dark:text-blue-400" />
+            <Download size={20} className="text-secondary-600 dark:text-secondary-400" />
             <CardTitle as="h3" className="text-sm font-bold">数据导出</CardTitle>
           </div>
           <Badge size="sm">{exportTasks.length}</Badge>
@@ -185,7 +188,7 @@ export function ExportManager({ data, className }: ExportManagerProps) {
             <div className="space-y-4">
               <div>
                 <label>导出格式</label>
-                <Select value={exportFormat} onChange={(e) => setExportFormat(e.target.value as ExportFormat)}>
+                <Select value={exportFormat} onChange={(e) => setExportFormat(e.target.value)}>
                   <option value="csv">CSV (逗号分隔值)</option>
                   <option value="xlsx">Excel (.xlsx)</option>
                   <option value="pdf">PDF (文档)</option>
@@ -205,7 +208,7 @@ export function ExportManager({ data, className }: ExportManagerProps) {
 
               {/* 格式特定选项 */}
               {exportFormat === 'csv' && (
-                <div className="p-4 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+                <div className="p-4 rounded-lg bg-slate-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700">
                   <h4 className="text-sm font-medium mb-2">CSV 选项</h4>
                   <div className="space-y-2">
                     <div>
@@ -227,7 +230,7 @@ export function ExportManager({ data, className }: ExportManagerProps) {
               )}
 
               {exportFormat === 'xlsx' && (
-                <div className="p-4 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+                <div className="p-4 rounded-lg bg-slate-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700">
                   <h4 className="text-sm font-medium mb-2">Excel 选项</h4>
                   <div className="space-y-2">
                     <div>
@@ -245,7 +248,7 @@ export function ExportManager({ data, className }: ExportManagerProps) {
               )}
 
               {exportFormat === 'pdf' && (
-                <div className="p-4 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+                <div className="p-4 rounded-lg bg-slate-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700">
                   <h4 className="text-sm font-medium mb-2">PDF 选项</h4>
                   <div className="space-y-2">
                     <div>
@@ -279,7 +282,7 @@ export function ExportManager({ data, className }: ExportManagerProps) {
               )}
 
               {exportFormat === 'png' && (
-                <div className="p-4 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+                <div className="p-4 rounded-lg bg-slate-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700">
                   <h4 className="text-sm font-medium mb-2">PNG 选项</h4>
                   <div className="space-y-2">
                     <div>
@@ -302,7 +305,7 @@ export function ExportManager({ data, className }: ExportManagerProps) {
               )}
 
               {exportFormat === 'json' && (
-                <div className="p-4 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+                <div className="p-4 rounded-lg bg-slate-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700">
                   <h4 className="text-sm font-medium mb-2">JSON 选项</h4>
                   <div className="space-y-2">
                     <div>
@@ -355,7 +358,7 @@ export function ExportManager({ data, className }: ExportManagerProps) {
               <div className="max-h-64 overflow-y-auto border rounded-lg">
                 {exportTasks.length === 0 ? (
                   <div className="py-4">
-                    <p className="text-sm text-slate-500 dark:text-slate-400 text-center">
+                    <p className="text-sm text-neutral-500 dark:text-neutral-400 text-center">
                       暂无导出任务
                     </p>
                   </div>
@@ -367,7 +370,7 @@ export function ExportManager({ data, className }: ExportManagerProps) {
                           <div className={getFormatColor(task.format)}>
                             {getFormatIcon(task.format)}
                           </div>
-                          <p className="text-sm font-medium text-slate-900 dark:text-white truncate">
+                          <p className="text-sm font-medium text-neutral-900 dark:text-white truncate">
                             {task.filename}
                           </p>
                           <Badge className={getStatusColor(task.status)} size="sm">
@@ -375,21 +378,21 @@ export function ExportManager({ data, className }: ExportManagerProps) {
                           </Badge>
                         </div>
                         <div className="flex items-center gap-2 mt-1">
-                          <Clock size={14} className="text-slate-400" />
-                          <span className="text-xs text-slate-500 dark:text-slate-400">
+                          <Clock size={14} className="text-neutral-400" />
+                          <span className="text-xs text-neutral-500 dark:text-neutral-400">
                             {new Date(task.createdAt).toLocaleString()}
                           </span>
                           {task.completedAt && (
                             <>
-                              <span className="text-xs text-slate-300 dark:text-slate-600">·</span>
-                              <span className="text-xs text-slate-500 dark:text-slate-400">
+                              <span className="text-xs text-neutral-300 dark:text-neutral-600">·</span>
+                              <span className="text-xs text-neutral-500 dark:text-neutral-400">
                                 完成于 {new Date(task.completedAt).toLocaleTimeString()}
                               </span>
                             </>
                           )}
                         </div>
                         {task.error && (
-                          <p className="text-xs text-red-500 mt-1">
+                          <p className="text-xs text-error-500 mt-1">
                             错误: {task.error}
                           </p>
                         )}
@@ -422,25 +425,25 @@ export function ExportManager({ data, className }: ExportManagerProps) {
         {/* 导出确认对话框 */}
         {isExportDialogOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-slate-800 rounded-lg p-6 max-w-md w-full">
+            <div className="bg-white dark:bg-neutral-800 rounded-lg p-6 max-w-md w-full">
               <h3 className="text-lg font-medium mb-4">确认导出</h3>
               <div className="space-y-4">
-                <div className="p-4 rounded-lg bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600">
+                <div className="p-4 rounded-lg bg-slate-50 dark:bg-neutral-700 border border-neutral-200 dark:border-neutral-600">
                   <div className="flex items-center gap-3">
                     <div className={getFormatColor(exportFormat)}>
                       {getFormatIcon(exportFormat)}
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-slate-900 dark:text-white">
+                      <p className="text-sm font-medium text-neutral-900 dark:text-white">
                         {exportFilename}.{exportFormat}
                       </p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                      <p className="text-xs text-neutral-500 dark:text-neutral-400">
                         包含 {mockData.length} 条记录
                       </p>
                     </div>
                   </div>
                 </div>
-                <p className="text-sm text-slate-600 dark:text-slate-400">
+                <p className="text-sm text-neutral-600 dark:text-neutral-400">
                   确定要导出数据吗？
                 </p>
               </div>

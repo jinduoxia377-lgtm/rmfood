@@ -1,5 +1,5 @@
 """专业术语数据库模型"""
-from sqlalchemy import Column, String, Text, JSON, ForeignKey, Boolean, Float, Integer
+from sqlalchemy import Column, String, Text, JSON, ForeignKey, Boolean, Float, Integer, BigInteger
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import BaseModel
 from typing import Optional, List
@@ -12,7 +12,7 @@ class TermCategory(BaseModel):
     name: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
     name_en: Mapped[str] = mapped_column(String(100), nullable=True)
     description: Mapped[str] = mapped_column(Text, nullable=True)
-    parent_id: Mapped[Optional[int]] = mapped_column(ForeignKey("term_categories.id"))
+    parent_id: Mapped[Optional[int]] = mapped_column(BigInteger, ForeignKey("term_categories.id"), index=True)
     level: Mapped[int] = mapped_column(Integer, default=1)
     sort_order: Mapped[int] = mapped_column(Integer, default=0)
     
@@ -35,7 +35,7 @@ class Term(BaseModel):
     abbreviation: Mapped[str] = mapped_column(String(50), nullable=True)
     definition: Mapped[str] = mapped_column(Text, nullable=False)
     definition_en: Mapped[str] = mapped_column(Text, nullable=True)
-    category_id: Mapped[int] = mapped_column(ForeignKey("term_categories.id"))
+    category_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("term_categories.id"), index=True)
     subcategory: Mapped[str] = mapped_column(String(100), nullable=True)
     unit: Mapped[str] = mapped_column(String(50), nullable=True)
     examples: Mapped[Optional[List[str]]] = mapped_column(JSON, nullable=True)
@@ -57,7 +57,7 @@ class TermVariant(BaseModel):
     __tablename__ = "term_variants"
     
     variant: Mapped[str] = mapped_column(String(200), nullable=False, unique=True)
-    term_id: Mapped[int] = mapped_column(ForeignKey("terms.id"))
+    term_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("terms.id"), index=True)
     similarity: Mapped[float] = mapped_column(Float, default=0.8)
     variant_type: Mapped[str] = mapped_column(String(50), default="synonym")  # synonym, typo, abbreviation
     
@@ -72,7 +72,7 @@ class TermValidation(BaseModel):
     __tablename__ = "term_validations"
     
     input_term: Mapped[str] = mapped_column(String(200), nullable=False)
-    matched_term_id: Mapped[Optional[int]] = mapped_column(ForeignKey("terms.id"))
+    matched_term_id: Mapped[Optional[int]] = mapped_column(BigInteger, ForeignKey("terms.id"), index=True)
     is_valid: Mapped[bool] = mapped_column(Boolean, nullable=False)
     confidence: Mapped[float] = mapped_column(Float, nullable=True)
     suggested_term: Mapped[str] = mapped_column(String(200), nullable=True)
@@ -104,7 +104,7 @@ class TermStatistics(BaseModel):
     """术语统计信息"""
     __tablename__ = "term_statistics"
     
-    category_id: Mapped[Optional[int]] = mapped_column(ForeignKey("term_categories.id"))
+    category_id: Mapped[Optional[int]] = mapped_column(BigInteger, ForeignKey("term_categories.id"), index=True)
     total_terms: Mapped[int] = mapped_column(Integer, default=0)
     validation_count: Mapped[int] = mapped_column(Integer, default=0)
     correction_count: Mapped[int] = mapped_column(Integer, default=0)

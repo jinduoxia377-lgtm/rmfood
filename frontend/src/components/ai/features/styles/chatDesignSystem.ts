@@ -154,7 +154,7 @@ const academicColors: ColorTokens = {
   // AI 消息 — 米白底，纸张质感
   aiBubbleBg: '#fefefe',
   aiBubbleText: '#1a202c',
-  aiBubbleBorder: '#e2e8f0',
+  aiBubbleBorder: '#E5E7EB',
 
   // 错误 — 暖红，不刺眼
   errorBg: '#fff5f5',
@@ -162,7 +162,7 @@ const academicColors: ColorTokens = {
   errorBorder: '#feb2b2',
 
   // 背景
-  pageBg: '#fafaf9',          // warm gray-50
+  pageBg: '#fafaf9',          // warm slate-50
   chatAreaBg: '#ffffff',
   inputAreaBg: '#ffffff',
 
@@ -179,9 +179,9 @@ const academicColors: ColorTokens = {
   textMuted: '#a0aec0',
 
   // 边框
-  border: '#e2e8f0',
+  border: '#E5E7EB',
   borderLight: '#edf2f7',
-  divider: '#e2e8f0',
+  divider: '#E5E7EB',
 
   // 头像
   avatarUserBg: '#2c5282',
@@ -255,30 +255,30 @@ const glassColors: ColorTokens = {
 
   // AI 消息 — 毛玻璃
   aiBubbleBg: 'rgba(255, 255, 255, 0.65)',
-  aiBubbleText: '#1e293b',
+  aiBubbleText: '#1F2937',
   aiBubbleBorder: 'rgba(255, 255, 255, 0.5)',
 
   // 错误
   errorBg: 'rgba(239, 68, 68, 0.08)',
-  errorText: '#dc2626',
+  errorText: '#B91C1C',
   errorBorder: 'rgba(239, 68, 68, 0.2)',
 
   // 背景 — 渐变
-  pageBg: '#0f172a',
-  chatAreaBg: 'linear-gradient(180deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)',
+  pageBg: '#111827',
+  chatAreaBg: 'linear-gradient(180deg, #111827 0%, #1e1b4b 50%, #111827 100%)',
   inputAreaBg: 'rgba(255, 255, 255, 0.06)',
 
   // 强调色 — 电光紫
   primary: '#818cf8',
   primaryLight: 'rgba(129, 140, 248, 0.15)',
   primaryDark: '#6366f1',
-  accent: '#34d399',              // 荧光绿
+  accent: '#4ADE80',              // 荧光绿
 
   // 文字层级
-  textPrimary: '#f1f5f9',
-  textSecondary: '#cbd5e1',
-  textTertiary: '#94a3b8',
-  textMuted: '#64748b',
+  textPrimary: '#F3F4F6',
+  textSecondary: '#D1D5DB',
+  textTertiary: '#9CA3AF',
+  textMuted: '#6B7280',
 
   // 边框
   border: 'rgba(255, 255, 255, 0.1)',
@@ -286,7 +286,7 @@ const glassColors: ColorTokens = {
   divider: 'rgba(255, 255, 255, 0.08)',
 
   // 头像
-  avatarUserBg: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+  avatarUserBg: 'linear-gradient(135deg, #6366f1, #AF52DE)',
   avatarUserText: '#ffffff',
   avatarAiBg: 'rgba(255, 255, 255, 0.1)',
   avatarAiText: '#818cf8',
@@ -606,9 +606,9 @@ export function getAvatarSpec(scheme: DesignScheme): AvatarSpec {
         },
         statusIndicator: {
           size: 10,
-          online: '#34d399',
-          thinking: '#fbbf24',
-          offline: '#475569',
+          online: '#4ADE80',
+          thinking: '#F59E0B',
+          offline: '#4B5563',
           position: 'bottom-right',
         },
       }
@@ -625,8 +625,8 @@ export function getAvatarSpec(scheme: DesignScheme): AvatarSpec {
         },
         statusIndicator: {
           size: 8,
-          online: '#10b981',
-          thinking: '#f59e0b',
+          online: '#34C759',
+          thinking: '#D97706',
           offline: '#d1d5db',
           position: 'bottom-right',
         },
@@ -664,7 +664,7 @@ export function getTypographyRules(scheme: DesignScheme): TypograpyRules {
       fontSize: '12.5px',
       lineHeight: '1.6',
       background: scheme === 'glassmorphism' ? 'rgba(0,0,0,0.25)' : '#f1f3f5',
-      color: scheme === 'glassmorphism' ? '#e2e8f0' : '#1a202c',
+      color: scheme === 'glassmorphism' ? '#E5E7EB' : '#1a202c',
       padding: '12px 16px',
       borderRadius: '8px',
       overflowX: 'auto',

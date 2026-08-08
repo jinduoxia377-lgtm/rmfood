@@ -1,10 +1,11 @@
 import { memo, useCallback } from 'react'
 import { X } from 'lucide-react'
 import { ChatIcon } from './ChatIcon'
+import type { IconName } from './icon-mapping'
 
 export interface ChatTagProps {
   label: string
-  icon?: string
+  icon?: IconName
   size?: 'sm' | 'md' | 'lg'
   variant?: 'default' | 'outline' | 'filled'
   color?: 'primary' | 'success' | 'warning' | 'error' | 'info'
@@ -61,38 +62,38 @@ const COLOR_MAP: Record<TagColor, {
 }> = {
   primary: {
     gradient: 'linear-gradient(135deg, #667eea, #764ba2)',
-    lightBg: '#eef2ff',
-    darkText: '#4c51bf',
+    lightBg: 'var(--color-indigo-50, #EEF2FF)',
+    darkText: 'var(--color-indigo-700, #4C51BF)',
     border: '#a5b4fc',
     shadowColor: '#667eea',
   },
   success: {
-    gradient: 'linear-gradient(135deg, #10b981, #059669)',
-    lightBg: '#ecfdf5',
-    darkText: '#047857',
-    border: '#6ee7b7',
-    shadowColor: '#10b981',
+    gradient: 'linear-gradient(135deg, #34C759, #28A745)',
+    lightBg: 'var(--color-green-50, #F0FDF4)',
+    darkText: 'var(--color-primary-hover, #28A745)',
+    border: 'var(--color-primary-300, #86EFAC)',
+    shadowColor: 'var(--color-primary, #34C759)',
   },
   warning: {
-    gradient: 'linear-gradient(135deg, #f59e0b, #d97706)',
-    lightBg: '#fffbeb',
-    darkText: '#b45309',
-    border: '#fcd34d',
-    shadowColor: '#f59e0b',
+    gradient: 'linear-gradient(135deg, #D97706, #B45309)',
+    lightBg: 'var(--color-amber-50, #FFF8E1)',
+    darkText: 'var(--color-warning-700, #D97706)',
+    border: 'var(--color-warning-300, #FFB340)',
+    shadowColor: 'var(--color-warning, #FF9F0A)',
   },
   error: {
-    gradient: 'linear-gradient(135deg, #ef4444, #dc2626)',
-    lightBg: '#fef2f2',
-    darkText: '#b91c1c',
-    border: '#fca5a5',
-    shadowColor: '#ef4444',
+    gradient: 'linear-gradient(135deg, #FF3B30, #B91C1C)',
+    lightBg: 'var(--color-red-50, #FFF0F0)',
+    darkText: 'var(--color-danger-700, #DC2626)',
+    border: 'var(--color-danger-300, #FF8080)',
+    shadowColor: 'var(--color-error, #FF3B30)',
   },
   info: {
-    gradient: 'linear-gradient(135deg, #3b82f6, #2563eb)',
-    lightBg: '#eff6ff',
-    darkText: '#1d4ed8',
-    border: '#93c5fd',
-    shadowColor: '#3b82f6',
+    gradient: 'linear-gradient(135deg, #007AFF, #007AFF)',
+    lightBg: 'var(--color-blue-50, #F0F7FF)',
+    darkText: 'var(--color-blue-700, #0052AE)',
+    border: 'var(--color-blue-300, #A8DFFF)',
+    shadowColor: 'var(--color-secondary, #0A84FF)',
   },
 }
 
@@ -172,7 +173,7 @@ function ChatTag({
       `}</style>
       <span className="chat-tag-gradient-border absolute inset-0 rounded-full pointer-events-none" />
       {icon && (
-        <ChatIcon name={icon as any} size={sizeConfig.iconSize} />
+        <ChatIcon name={icon} size={sizeConfig.iconSize} />
       )}
       <span className="relative z-10">{label}</span>
       {closable && (
@@ -181,9 +182,9 @@ function ChatTag({
           onClick={handleClose}
           className="
             relative z-10 ml-1 rounded-full p-0.5
-            text-gray-400 hover:text-gray-600 hover:bg-gray-100/80
+            text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100/80
             transition-all duration-150 ease-out
-            focus:outline-none focus:ring-2 focus:ring-gray-300
+            focus:outline-none focus:ring-2 focus:ring-slate-300
             opacity-0 group-hover:opacity-100
           "
           aria-label={`移除 ${label}`}
@@ -213,7 +214,7 @@ function ChatTag({
       }}
     >
       {icon && (
-        <ChatIcon name={icon as any} size={sizeConfig.iconSize} />
+        <ChatIcon name={icon} size={sizeConfig.iconSize} />
       )}
       <span>{label}</span>
       {closable && (
@@ -253,7 +254,7 @@ function ChatTag({
       }}
     >
       {icon && (
-        <ChatIcon name={icon as any} size={sizeConfig.iconSize} />
+        <ChatIcon name={icon} size={sizeConfig.iconSize} />
       )}
       <span>{label}</span>
       {closable && (

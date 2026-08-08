@@ -52,16 +52,16 @@ declare global {
 }
 
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
-  collaboration: <MessageSquare className="w-4 h-4 text-blue-500" />,
-  workflow: <Workflow className="w-4 h-4 text-amber-500" />,
-  security: <Shield className="w-4 h-4 text-red-500" />,
+  collaboration: <MessageSquare className="w-4 h-4 text-secondary-500" />,
+  workflow: <Workflow className="w-4 h-4 text-warning-500" />,
+  security: <Shield className="w-4 h-4 text-error-500" />,
   billing: <AlertCircle className="w-4 h-4 text-yellow-500" />,
-  ai_generation: <Sparkles className="w-4 h-4 text-purple-500" />,
-  system: <Globe className="w-4 h-4 text-gray-500" />,
+  ai_generation: <Sparkles className="w-4 h-4 text-accent-500" />,
+  system: <Globe className="w-4 h-4 text-neutral-500" />,
 }
 
 const PRIORITY_COLORS: Record<string, string> = {
-  low: 'border-l-gray-300',
+  low: 'border-l-slate-300',
   normal: 'border-l-blue-400',
   high: 'border-l-amber-500',
   urgent: 'border-l-red-500',
@@ -92,6 +92,20 @@ export function NotificationCenter() {
   /* 修复: 移除未使用的状态变量 (preference - 预留的用户偏好功能尚未实现) */
 
   const panelRef = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<HTMLButtonElement>(null)
+
+  // Keyboard trap: Escape closes, Tab moves within panel
+  useEffect(() => {
+    if (!isOpen) return
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsOpen(false)
+        triggerRef.current?.focus()
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [isOpen])
 
   useEffect(() => {
     fetchNotifications()
@@ -212,12 +226,16 @@ export function NotificationCenter() {
     <div className="relative" ref={panelRef}>
       {/* Trigger Button */}
       <button
+        ref={triggerRef}
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+        className="relative p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+        aria-label="通知中心"
+        aria-expanded={isOpen}
+        aria-haspopup="true"
       >
-        <Bell className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+        <Bell className="w-5 h-5 text-neutral-600 dark:text-neutral-300" />
         {unreadCount > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
+          <span className="absolute -top-0.5 -right-0.5 bg-error-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
             {unreadCount > 99 ? '99+' : unreadCount}
           </span>
         )}
@@ -225,15 +243,16 @@ export function NotificationCenter() {
 
       {/* Notification Panel */}
       {isOpen && (
-        <div className="absolute right-0 top-full mt-2 w-[420px] bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 z-50 overflow-hidden">
+        <div className="absolute right-0 top-full mt-2 w-[420px] bg-white dark:bg-neutral-900 rounded-xl shadow-2xl border border-neutral-200 dark:border-neutral-700 z-[100] overflow-hidden"
+             style={{ paddingBottom: 'var(--safe-area-inset-bottom, 0px)' }}>
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-            <h3 className="font-semibold text-gray-900 dark:text-white">通知中心</h3>
+          <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-200 dark:border-neutral-700">
+            <h3 className="font-semibold text-neutral-900 dark:text-white">通知中心</h3>
             <div className="flex items-center gap-2">
               {unreadCount > 0 && (
                 <button
                   onClick={markAllAsRead}
-                  className="flex items-center gap-1 px-2 py-1 text-sm text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
+                  className="flex items-center gap-1 px-2 py-1 text-sm text-secondary-600 hover:bg-secondary-50 dark:hover:bg-secondary-900/20 rounded transition-colors"
                 >
                   <CheckCheck className="w-4 h-4" />
                   全部已读
@@ -242,65 +261,65 @@ export function NotificationCenter() {
               <button
                 onClick={() => setShowSettings(!showSettings)}
                 className={`p-1.5 rounded-lg transition-colors ${
-                  showSettings ? 'bg-gray-100 dark:bg-gray-800' : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                  showSettings ? 'bg-neutral-100 dark:bg-neutral-800' : 'hover:bg-neutral-100 dark:hover:bg-neutral-800'
                 }`}
               >
-                <Settings className="w-4 h-4 text-gray-500" />
+                <Settings className="w-4 h-4 text-neutral-500" />
               </button>
               <button
                 onClick={() => setIsOpen(false)}
-                className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+                className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800"
               >
-                <X className="w-4 h-4 text-gray-500" />
+                <X className="w-4 h-4 text-neutral-500" />
               </button>
             </div>
           </div>
 
           {/* Settings Panel */}
           {showSettings && (
-            <div className="p-4 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700">
-              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">通知设置</h4>
+            <div className="p-4 bg-slate-50 dark:bg-neutral-800/50 border-b border-neutral-200 dark:border-neutral-700">
+              <h4 className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-3">通知设置</h4>
               <div className="space-y-2">
-                <label className="flex items-center gap-2 text-sm">
+                <label className="flex items-center gap-2 text-sm cursor-pointer">
                   <input type="checkbox" defaultChecked className="rounded" />
                   <span>启用通知</span>
                 </label>
-                <label className="flex items-center gap-2 text-sm">
+                <label className="flex items-center gap-2 text-sm cursor-pointer">
                   <input type="checkbox" defaultChecked className="rounded" />
                   <span>邮件通知</span>
                 </label>
-                <label className="flex items-center gap-2 text-sm">
+                <label className="flex items-center gap-2 text-sm cursor-pointer">
                   <input type="checkbox" defaultChecked className="rounded" />
                   <span>实时推送</span>
                 </label>
                 <div className="flex items-center gap-2 pt-2">
-                  <Clock className="w-4 h-4 text-gray-400" />
+                  <Clock className="w-4 h-4 text-neutral-400" />
                   <input
                     type="time"
                     defaultValue="22:00"
                     className="text-sm border rounded px-2 py-1 w-28"
                   />
-                  <span className="text-sm text-gray-500">至</span>
+                  <span className="text-sm text-neutral-500">至</span>
                   <input
                     type="time"
                     defaultValue="08:00"
                     className="text-sm border rounded px-2 py-1 w-28"
                   />
-                  <span className="text-xs text-gray-400">免打扰时段</span>
+                  <span className="text-xs text-neutral-400">免打扰时段</span>
                 </div>
               </div>
             </div>
           )}
 
           {/* Tabs & Filters */}
-          <div className="flex items-center gap-2 px-4 py-2 border-b border-gray-100 dark:border-gray-800">
-            <div className="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5">
+          <div className="flex items-center gap-2 px-4 py-2 border-b border-neutral-100 dark:border-neutral-800">
+            <div className="flex bg-neutral-100 dark:bg-neutral-800 rounded-lg p-0.5">
               <button
                 onClick={() => setActiveTab('all')}
                 className={`px-3 py-1 text-sm rounded-md transition-colors ${
                   activeTab === 'all'
-                    ? 'bg-white dark:bg-gray-700 shadow-sm font-medium'
-                    : 'text-gray-600 dark:text-gray-400'
+                    ? 'bg-white dark:bg-neutral-700 shadow-sm font-medium'
+                    : 'text-neutral-600 dark:text-neutral-400'
                 }`}
               >
                 全部
@@ -309,13 +328,13 @@ export function NotificationCenter() {
                 onClick={() => setActiveTab('unread')}
                 className={`px-3 py-1 text-sm rounded-md transition-colors relative ${
                   activeTab === 'unread'
-                    ? 'bg-white dark:bg-gray-700 shadow-sm font-medium'
-                    : 'text-gray-600 dark:text-gray-400'
+                    ? 'bg-white dark:bg-neutral-700 shadow-sm font-medium'
+                    : 'text-neutral-600 dark:text-neutral-400'
                 }`}
               >
                 未读
                 {unreadCount > 0 && (
-                  <span className="ml-1 bg-red-500 text-white text-xs rounded-full px-1.5 min-w-[18px] text-center">
+                  <span className="ml-1 bg-error-500 text-white text-xs rounded-full px-1.5 min-w-[18px] text-center">
                     {unreadCount}
                   </span>
                 )}
@@ -324,7 +343,7 @@ export function NotificationCenter() {
 
             {categories.length > 0 && (
               <div className="relative">
-                <button className="flex items-center gap-1 px-2 py-1 text-sm text-gray-500 hover:text-gray-700 rounded hover:bg-gray-100">
+                <button className="flex items-center gap-1 px-2 py-1 text-sm text-neutral-500 hover:text-neutral-700 rounded hover:bg-neutral-100">
                   <Filter className="w-3 h-3" />
                   筛选
                 </button>
@@ -337,26 +356,26 @@ export function NotificationCenter() {
             {loading ? (
               <div className="flex flex-col items-center justify-center py-12 space-y-3">
                 <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-                <span className="text-sm text-gray-500">加载中...</span>
+                <span className="text-sm text-neutral-500">加载中...</span>
               </div>
             ) : notifications.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 text-gray-400">
+              <div className="flex flex-col items-center justify-center py-12 text-neutral-400">
                 <Bell className="w-12 h-12 mb-3 opacity-50" />
                 <p className="text-sm">暂无{activeTab === 'unread' ? '未读' : ''}通知</p>
               </div>
             ) : (
-              <div className="divide-y divide-gray-100 dark:divide-gray-800">
+              <div className="divide-y divide-slate-100 dark:divide-slate-800">
                 {notifications.map((notification) => (
                   <div
                     key={notification.id}
-                    className={`group relative px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors border-l-2 ${
-                      notification.is_read ? PRIORITY_COLORS[normalizePriority(notification)] + ' bg-gray-50/50 dark:bg-gray-800/30' : PRIORITY_COLORS[normalizePriority(notification)] + ' bg-blue-50/30 dark:bg-blue-900/10'
+                    className={`group relative px-4 py-3 hover:bg-slate-50 dark:hover:bg-neutral-800/50 transition-colors border-l-2 ${
+                      notification.is_read ? PRIORITY_COLORS[normalizePriority(notification)] + ' bg-slate-50/50 dark:bg-neutral-800/30' : PRIORITY_COLORS[normalizePriority(notification)] + ' bg-secondary-50/30 dark:bg-secondary-900/10'
                     }`}
                   >
                     <div className="flex gap-3">
                       {/* Icon - 修复: 添加category的空值保护，防止undefined作为索引类型 */}
                         <div className="mt-0.5 flex-shrink-0">
-                          {CATEGORY_ICONS[notification.metadata?.category ?? 'general'] || <Bell className="w-4 h-4 text-gray-400" />}
+                          {CATEGORY_ICONS[notification.metadata?.category ?? 'general'] || <Bell className="w-4 h-4 text-neutral-400" />}
                       </div>
 
                       {/* Content */}
@@ -364,29 +383,29 @@ export function NotificationCenter() {
                         <div className="flex items-start justify-between gap-2">
                           <h4 className={`text-sm font-medium line-clamp-1 ${
                             notification.is_read
-                              ? 'text-gray-600 dark:text-gray-400'
-                              : 'text-gray-900 dark:text-white'
+                              ? 'text-neutral-600 dark:text-neutral-400'
+                              : 'text-neutral-900 dark:text-white'
                           }`}>
                             {notification.subject || '无标题'}
                           </h4>
                           {!notification.is_read && (
-                            <span className="flex-shrink-0 w-2 h-2 bg-blue-500 rounded-full mt-1.5" />
+                            <span className="flex-shrink-0 w-2 h-2 bg-secondary-500 rounded-full mt-1.5" />
                           )}
                         </div>
 
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
+                        <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1 line-clamp-2">
                           {stripHtml(notification.body) || '无内容'}
                         </p>
 
                         <div className="flex items-center gap-3 mt-2">
-                          <span className="text-xs text-gray-400 flex items-center gap-1">
+                          <span className="text-xs text-neutral-400 flex items-center gap-1">
                             <Clock className="w-3 h-3" />
                             {formatTimeAgo(notification.created_at)}
                           </span>
 
                           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                 {CHANNEL_ICONS[notification.channel || 'in_app']}
-                                <span className="text-xs text-gray-400">{getChannelLabel(notification.channel || 'in_app')}</span>
+                                <span className="text-xs text-neutral-400">{getChannelLabel(notification.channel || 'in_app')}</span>
                               </div>
                         </div>
 
@@ -398,7 +417,7 @@ export function NotificationCenter() {
                                 e.stopPropagation()
                                 markAsRead(notification.id)
                               }}
-                              className="flex items-center gap-1 px-2 py-1 text-xs text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                              className="flex items-center gap-1 px-2 py-1 text-xs text-secondary-600 hover:bg-secondary-50 rounded transition-colors"
                             >
                               <Check className="w-3 h-3" />
                               标记已读
@@ -410,7 +429,7 @@ export function NotificationCenter() {
                               href={`/${notification.metadata.reference_type}/${notification.metadata.reference_id}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="flex items-center gap-1 px-2 py-1 text-xs text-green-600 hover:bg-green-50 rounded transition-colors"
+                              className="flex items-center gap-1 px-2 py-1 text-xs text-success-600 hover:bg-success-50 rounded transition-colors"
                               onClick={(e) => e.stopPropagation()}
                             >
                               <ExternalLink className="w-3 h-3" />
@@ -423,7 +442,7 @@ export function NotificationCenter() {
                               e.stopPropagation()
                               deleteNotification(notification.id)
                             }}
-                            className="flex items-center gap-1 px-2 py-1 text-xs text-red-600 hover:bg-red-50 rounded transition-colors ml-auto"
+                            className="flex items-center gap-1 px-2 py-1 text-xs text-error-600 hover:bg-error-50 rounded transition-colors ml-auto"
                           >
                             <Trash2 className="w-3 h-3" />
                             删除
@@ -439,22 +458,22 @@ export function NotificationCenter() {
 
           {/* Footer with Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
-              <span className="text-xs text-gray-500">
+            <div className="flex items-center justify-between px-4 py-3 border-t border-neutral-200 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-800/50">
+              <span className="text-xs text-neutral-500">
                 第 {page} / {totalPages} 页
               </span>
               <div className="flex gap-2">
                 <button
                   onClick={() => setPage(p => Math.max(1, p - 1))}
                   disabled={page <= 1}
-                  className="px-3 py-1 text-sm bg-white dark:bg-gray-700 border rounded disabled:opacity-50 hover:bg-gray-100 dark:hover:bg-gray-600"
+                  className="px-3 py-1 text-sm bg-white dark:bg-neutral-700 border rounded disabled:opacity-50 hover:bg-neutral-100 dark:hover:bg-neutral-600"
                 >
                   上一页
                 </button>
                 <button
                   onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                   disabled={page >= totalPages}
-                  className="px-3 py-1 text-sm bg-white dark:bg-gray-700 border rounded disabled:opacity-50 hover:bg-gray-100 dark:hover:bg-gray-600"
+                  className="px-3 py-1 text-sm bg-white dark:bg-neutral-700 border rounded disabled:opacity-50 hover:bg-neutral-100 dark:hover:bg-neutral-600"
                 >
                   下一页
                 </button>
@@ -463,10 +482,10 @@ export function NotificationCenter() {
           )}
 
           {/* Quick Link to Full Page */}
-          <div className="px-4 py-2 bg-gray-50 dark:bg-gray-800/30 border-t border-gray-200 dark:border-gray-700">
+          <div className="px-4 py-2 bg-slate-50 dark:bg-neutral-800/30 border-t border-neutral-200 dark:border-neutral-700">
             <a
               href="/notifications"
-              className="block text-center text-sm text-blue-600 hover:text-blue-700 py-1"
+              className="block text-center text-sm text-secondary-600 hover:text-secondary-700 py-1"
               onClick={() => setIsOpen(false)}
             >
               查看所有通知 →

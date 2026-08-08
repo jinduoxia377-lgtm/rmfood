@@ -57,14 +57,14 @@ const ALGORITHM_CONFIG: Record<AlgorithmType, {
   'hybrid-nlp': {
     label: 'HybridNLP',
     icon: <Activity className="w-3 h-3" />,
-    color: 'text-blue-600 dark:text-blue-400',
-    bgColor: 'bg-blue-100 dark:bg-blue-900/30',
+    color: 'text-secondary-600 dark:text-secondary-400',
+    bgColor: 'bg-secondary-100 dark:bg-secondary-900/30',
   },
   'rule-engine': {
     label: '规则引擎',
     icon: <Cpu className="w-3 h-3" />,
-    color: 'text-slate-600 dark:text-slate-400',
-    bgColor: 'bg-slate-100 dark:bg-slate-900/30',
+    color: 'text-neutral-600 dark:text-neutral-400',
+    bgColor: 'bg-neutral-100 dark:bg-neutral-900/30',
   },
   'llm': {
     label: 'LLM',
@@ -75,14 +75,14 @@ const ALGORITHM_CONFIG: Record<AlgorithmType, {
   'bayesian': {
     label: '贝叶斯优化',
     icon: <Sigma className="w-3 h-3" />,
-    color: 'text-emerald-600 dark:text-emerald-400',
-    bgColor: 'bg-emerald-100 dark:bg-emerald-900/30',
+    color: 'text-primary-600 dark:text-primary-400',
+    bgColor: 'bg-primary-100 dark:bg-primary-900/30',
   },
   'knowledge-graph': {
     label: '知识图谱',
     icon: <GitBranch className="w-3 h-3" />,
-    color: 'text-amber-600 dark:text-amber-400',
-    bgColor: 'bg-amber-100 dark:bg-amber-900/30',
+    color: 'text-warning-600 dark:text-warning-400',
+    bgColor: 'bg-warning-100 dark:bg-warning-900/30',
   },
   'semantic-search': {
     label: '语义搜索',
@@ -141,14 +141,14 @@ function AlgorithmBadge({ algorithm, confidence }: {
 
 function ConfidenceBar({ value }: { value: number }) {
   const pct = Math.round(value * 100)
-  const color = pct >= 80 ? 'bg-emerald-500' : pct >= 60 ? 'bg-amber-500' : 'bg-slate-400'
+  const color = pct >= 80 ? 'bg-primary-500' : pct >= 60 ? 'bg-warning-500' : 'bg-neutral-400'
   return (
     <div className="flex items-center gap-1.5 mt-1">
-      <div className="flex-1 h-1 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+      <div className="flex-1 h-1 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden">
         <div className={`h-full ${color} rounded-full transition-all duration-500`}
           style={{ width: `${pct}%` }} />
       </div>
-      <span className="text-[10px] text-gray-400 w-6 text-right">{pct}%</span>
+      <span className="text-[10px] text-neutral-400 w-6 text-right">{pct}%</span>
     </div>
   )
 }
@@ -174,7 +174,7 @@ function StepCard({
       {!isLast && (
         <div className={`absolute left-3 top-7 bottom-0 w-0.5
           ${isComplete ? 'bg-gradient-to-b from-primary-300 to-primary-100 dark:from-primary-700 dark:to-primary-900'
-                       : 'bg-gray-200 dark:bg-gray-700'}`}
+                       : 'bg-neutral-200 dark:bg-neutral-700'}`}
         />
       )}
 
@@ -186,7 +186,7 @@ function StepCard({
           ${isComplete ? 'bg-gradient-to-br from-primary-500 to-primary-600 text-white ring-primary-200 dark:ring-primary-800'
             : isProcessing ? 'bg-gradient-to-br from-amber-400 to-amber-500 text-white ring-amber-200 dark:ring-amber-800 animate-pulse'
             : isError ? 'bg-gradient-to-br from-red-400 to-red-500 text-white ring-red-200 dark:ring-red-800'
-            : 'bg-gray-200 dark:bg-gray-700 text-gray-400 ring-gray-200 dark:ring-gray-700'}
+            : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-400 ring-slate-200 dark:ring-slate-700'}
         `}>
           {isComplete ? <CheckCircle2 className="w-3.5 h-3.5" />
             : isProcessing ? <Loader2 className="w-3 h-3 animate-spin" />
@@ -198,19 +198,19 @@ function StepCard({
         <div className="flex-1 min-w-0 pb-3">
           <div className="flex items-center gap-1.5 flex-wrap">
             <button onClick={onToggle}
-              className="text-xs font-semibold text-gray-800 dark:text-gray-200 hover:text-primary-600 transition-colors"
+              className="text-xs font-semibold text-neutral-800 dark:text-neutral-200 hover:text-primary-600 transition-colors"
             >
               {step.step}
             </button>
             {/* 算法标签 */}
             <AlgorithmBadge algorithm={algorithm} confidence={step.confidence} />
             {isProcessing && (
-              <span className="text-[10px] text-amber-500 font-medium animate-pulse">思考中...</span>
+              <span className="text-[10px] text-warning-500 font-medium animate-pulse">思考中...</span>
             )}
             {step.detail && (
               <button onClick={onToggle} className="ml-auto">
-                {isExpanded ? <ChevronDown className="w-3 h-3 text-gray-400" />
-                            : <ChevronRight className="w-3 h-3 text-gray-400" />}
+                {isExpanded ? <ChevronDown className="w-3 h-3 text-neutral-400" />
+                            : <ChevronRight className="w-3 h-3 text-neutral-400" />}
               </button>
             )}
           </div>
@@ -220,7 +220,7 @@ function StepCard({
             <ConfidenceBar value={step.confidence} />
           )}
 
-          <p className={`text-[11px] text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2
+          <p className={`text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5 line-clamp-2
             ${isProcessing ? 'animate-pulse' : ''}`}
           >
             {step.content}
@@ -228,8 +228,8 @@ function StepCard({
 
           {/* 展开详情 */}
           {isExpanded && step.detail && (
-            <div className="mt-1.5 p-2 bg-white dark:bg-gray-800 rounded-lg border border-gray-100
-              dark:border-gray-700 text-[11px] text-gray-600 dark:text-gray-400 whitespace-pre-wrap"
+            <div className="mt-1.5 p-2 bg-white dark:bg-neutral-800 rounded-lg border border-neutral-100
+              dark:border-neutral-700 text-[11px] text-neutral-600 dark:text-neutral-400 whitespace-pre-wrap"
             >
               {step.detail}
             </div>
@@ -237,22 +237,22 @@ function StepCard({
 
           {/* 子步骤 */}
           {step.subSteps && step.subSteps.length > 0 && (
-            <div className="mt-2 ml-2 pl-2 border-l-2 border-gray-200 dark:border-gray-700 space-y-1">
+            <div className="mt-2 ml-2 pl-2 border-l-2 border-neutral-200 dark:border-neutral-700 space-y-1">
               {step.subSteps.map((sub, j) => (
                 <div key={j} className="flex items-start gap-1.5">
                   <span className={`mt-0.5 w-1.5 h-1.5 rounded-full flex-shrink-0
-                    ${sub.status === 'complete' ? 'bg-emerald-400'
-                      : sub.status === 'thinking' ? 'bg-amber-400 animate-pulse'
-                      : 'bg-gray-300'}`}
+                    ${sub.status === 'complete' ? 'bg-primary-400'
+                      : sub.status === 'thinking' ? 'bg-warning-400 animate-pulse'
+                      : 'bg-neutral-300'}`}
                   />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1 flex-wrap">
-                      <span className="text-[11px] font-medium text-gray-700 dark:text-gray-300">
+                      <span className="text-[11px] font-medium text-neutral-700 dark:text-neutral-300">
                         {sub.step}
                       </span>
                       {sub.algorithm && <AlgorithmBadge algorithm={sub.algorithm} />}
                     </div>
-                    <p className="text-[10px] text-gray-400 line-clamp-1">{sub.content}</p>
+                    <p className="text-[10px] text-neutral-400 line-clamp-1">{sub.content}</p>
                   </div>
                 </div>
               ))}
@@ -304,19 +304,19 @@ export default function ChatSidebarV4({
   ]
 
   return (
-    <div className="border-l border-gray-200 dark:border-gray-700 bg-gray-50/50
-      dark:bg-gray-900/50 w-80 flex-shrink-0 overflow-y-auto
+    <div className="border-l border-neutral-200 dark:border-neutral-700 bg-slate-50/50
+      dark:bg-neutral-900/50 w-80 flex-shrink-0 overflow-y-auto
       transition-all duration-300 hidden xl:block"
     >
       <div className="p-3 space-y-3">
         {/* 头部 */}
         <div className="flex items-center justify-between">
-          <button onClick={onToggle} className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+          <button onClick={onToggle} className="flex items-center gap-2 text-sm font-medium text-neutral-700 dark:text-neutral-300">
             <Cpu className="w-4 h-4 text-primary-500" />
             <span>AI 思考过程</span>
             {isThinking && <Loader2 className="w-3.5 h-3.5 text-primary-500 animate-spin" />}
           </button>
-          <span className="text-[10px] text-gray-400 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded font-mono">
+          <span className="text-[10px] text-neutral-400 bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded font-mono">
             {stepCounts.complete}/{stepCounts.total}
           </span>
         </div>
@@ -330,7 +330,7 @@ export default function ChatSidebarV4({
                 className={`px-2 py-0.5 rounded text-[10px] font-medium transition-colors
                   ${filterAlgorithm === a.key
                     ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
+                    : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'}`}
               >
                 {a.label}
               </button>
@@ -343,10 +343,10 @@ export default function ChatSidebarV4({
           <div className="space-y-2.5 animate-pulse">
             {[1, 2, 3].map(i => (
               <div key={i} className="flex items-center gap-2.5">
-                <div className="w-6 h-6 rounded-full bg-gray-200 dark:bg-gray-700" />
+                <div className="w-6 h-6 rounded-full bg-neutral-200 dark:bg-neutral-700" />
                 <div className="flex-1 space-y-1.5">
-                  <div className="h-2.5 bg-gray-200 dark:bg-gray-700 rounded w-16" />
-                  <div className="h-2 bg-gray-100 dark:bg-gray-800 rounded w-32" />
+                  <div className="h-2.5 bg-neutral-200 dark:bg-neutral-700 rounded w-16" />
+                  <div className="h-2 bg-neutral-100 dark:bg-neutral-800 rounded w-32" />
                 </div>
               </div>
             ))}
@@ -355,8 +355,8 @@ export default function ChatSidebarV4({
 
         {steps.length === 0 && !isThinking && (
           <div className="text-center py-8">
-            <Brain className="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
-            <p className="text-xs text-gray-400">AI 思考过程将在此显示</p>
+            <Brain className="w-8 h-8 text-neutral-300 dark:text-neutral-600 mx-auto mb-2" />
+            <p className="text-xs text-neutral-400">AI 思考过程将在此显示</p>
           </div>
         )}
 
@@ -375,8 +375,8 @@ export default function ChatSidebarV4({
 
         {/* 算法统计 */}
         {steps.length > 0 && (
-          <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
-            <div className="text-[10px] text-gray-400 font-medium mb-1">算法使用统计</div>
+          <div className="pt-2 border-t border-neutral-200 dark:border-neutral-700">
+            <div className="text-[10px] text-neutral-400 font-medium mb-1">算法使用统计</div>
             <div className="flex flex-wrap gap-1">
               {Object.entries(ALGORITHM_CONFIG).map(([key, cfg]) => {
                 const count = steps.filter(s =>

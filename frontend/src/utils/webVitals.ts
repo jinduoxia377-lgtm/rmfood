@@ -241,11 +241,11 @@ class WebVitalsMonitor {
   getStatusColor(status: 'good' | 'needs-improvement' | 'poor'): string {
     switch (status) {
       case 'good':
-        return '#22c55e'
+        return '#34C759'
       case 'needs-improvement':
-        return '#f59e0b'
+        return '#D97706'
       case 'poor':
-        return '#ef4444'
+        return '#FF3B30'
     }
   }
 }

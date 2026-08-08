@@ -244,7 +244,7 @@ class EncryptionUtils:
                     }
                 except Exception as e:
                     result[field_name] = value
-                    result[f"{field_name}_encrypt_error"] = str(e)
+                    result[f"{field_name}_encrypt_error"] = "加密失败"
             elif isinstance(value, dict):
                 result[field_name] = EncryptionUtils.encrypt_dict(value, key, encrypt_all)
             elif isinstance(value, list):
@@ -296,7 +296,7 @@ class EncryptionUtils:
                         
                 except Exception as e:
                     result[field_name] = value
-                    result[f"{field_name}_decrypt_error"] = str(e)
+                    result[f"{field_name}_decrypt_error"] = "解密失败"
             elif isinstance(value, dict):
                 result[field_name] = EncryptionUtils.decrypt_dict(value, key)
             elif isinstance(value, list):

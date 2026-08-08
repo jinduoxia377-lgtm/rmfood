@@ -92,18 +92,18 @@ export const BulkOperationsPanel: React.FC<BulkOperationsPanelProps> = memo(({
   if (count === 0 && !isProcessing) return null
 
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-full max-w-3xl bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-gray-200 dark:border-slate-700 animate-in slide-in-from-bottom-4">
+    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-full max-w-3xl bg-white dark:bg-neutral-900 rounded-xl shadow-2xl border border-neutral-200 dark:border-neutral-700 animate-in slide-in-from-bottom-4">
       {/* 头部 */}
-      <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 dark:border-slate-800">
+      <div className="flex items-center justify-between px-5 py-3 border-b border-neutral-100 dark:border-neutral-800">
         <div className="flex items-center gap-3">
           <CheckCircle2 className="w-5 h-5 text-primary-600" />
-          <span className="font-medium text-gray-900 dark:text-white">
+          <span className="font-medium text-neutral-900 dark:text-white">
             已选择 <span className="text-primary-600 font-bold">{count}</span> 个组织
           </span>
         </div>
         <button
           onClick={onClearSelection}
-          className="text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 flex items-center gap-1"
+          className="text-sm text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 flex items-center gap-1"
         >
           <X className="w-4 h-4" />
           取消选择
@@ -111,11 +111,11 @@ export const BulkOperationsPanel: React.FC<BulkOperationsPanelProps> = memo(({
       </div>
 
       {/* 操作按钮 */}
-      <div className="px-5 py-3 flex items-center gap-3 border-b border-gray-100 dark:border-slate-800">
+      <div className="px-5 py-3 flex items-center gap-3 border-b border-neutral-100 dark:border-neutral-800">
         <button
           onClick={() => setShowPermissionModal(true)}
           disabled={isProcessing}
-          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 rounded-lg transition-colors disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-lg transition-colors disabled:opacity-50"
         >
           <Shield className="w-4 h-4" />
           修改权限
@@ -124,7 +124,7 @@ export const BulkOperationsPanel: React.FC<BulkOperationsPanelProps> = memo(({
         <button
           onClick={() => setShowExportModal(true)}
           disabled={isProcessing}
-          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 rounded-lg transition-colors disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-lg transition-colors disabled:opacity-50"
         >
           <Download className="w-4 h-4" />
           导出数据
@@ -142,7 +142,7 @@ export const BulkOperationsPanel: React.FC<BulkOperationsPanelProps> = memo(({
         <button
           onClick={() => setShowDeleteConfirm(true)}
           disabled={isProcessing}
-          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 border border-red-300 rounded-lg transition-colors disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-error-600 bg-error-50 hover:bg-error-100 border border-red-300 rounded-lg transition-colors disabled:opacity-50"
         >
           <Trash2 className="w-4 h-4" />
           删除
@@ -153,12 +153,12 @@ export const BulkOperationsPanel: React.FC<BulkOperationsPanelProps> = memo(({
       {isProcessing && (
         <div className="px-5 pb-4 space-y-2">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-500">处理进度...</span>
-            <span className="font-medium text-gray-900 dark:text-white">
+            <span className="text-neutral-500">处理进度...</span>
+            <span className="font-medium text-neutral-900 dark:text-white">
               {processedCount || 0}/{totalCount || count}
             </span>
           </div>
-          <div className="h-2 bg-gray-200 dark:bg-slate-800 rounded-full overflow-hidden">
+          <div className="h-2 bg-neutral-200 dark:bg-neutral-800 rounded-full overflow-hidden">
             <div
               className="h-full bg-primary-600 rounded-full transition-all duration-300 ease-out"
               style={{ width: `${Math.min(progress || 0, 100)}%` }}
@@ -171,8 +171,8 @@ export const BulkOperationsPanel: React.FC<BulkOperationsPanelProps> = memo(({
       {operationResult && (
         <div className={`mx-5 mb-4 p-3 rounded-lg flex items-start gap-3 ${
           operationResult.type === 'success'
-            ? 'bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-200'
-            : 'bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200'
+            ? 'bg-success-50 dark:bg-success-900/20 text-success-800 dark:text-success-200'
+            : 'bg-error-50 dark:bg-error-900/20 text-error-800 dark:text-error-200'
         }`}>
           {operationResult.type === 'success' ? (
             <CheckCircle2 className="w-5 h-5 flex-shrink-0 mt-0.5" />
@@ -211,20 +211,20 @@ export const PermissionSelectModal: React.FC<{
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="bg-white dark:bg-slate-900 rounded-xl shadow-2xl max-w-md w-full mx-4 overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-slate-700">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">批量修改权限</h3>
+      <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-2xl max-w-md w-full mx-4 overflow-hidden">
+        <div className="px-6 py-4 border-b border-neutral-200 dark:border-neutral-700">
+          <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">批量修改权限</h3>
         </div>
 
         <div className="p-6 space-y-3">
-          <p className="text-sm text-gray-500">为选中的组织选择新的角色级别：</p>
+          <p className="text-sm text-neutral-500">为选中的组织选择新的角色级别：</p>
           {roles.map(r => (
             <label
               key={r.value}
               className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
                 role === r.value
                   ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
-                  : 'border-gray-200 dark:border-slate-700 hover:border-gray-300'
+                  : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300'
               }`}
             >
               <input
@@ -236,17 +236,17 @@ export const PermissionSelectModal: React.FC<{
                 className="mt-1"
               />
               <div>
-                <p className="font-medium text-gray-900 dark:text-white">{r.label}</p>
-                <p className="text-xs text-gray-500">{r.desc}</p>
+                <p className="font-medium text-neutral-900 dark:text-white">{r.label}</p>
+                <p className="text-xs text-neutral-500">{r.desc}</p>
               </div>
             </label>
           ))}
         </div>
 
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-200 dark:border-slate-700">
+        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-neutral-200 dark:border-neutral-700">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 dark:hover:text-gray-300"
+            className="px-4 py-2 text-sm text-neutral-600 hover:text-neutral-800 dark:hover:text-neutral-300"
           >
             取消
           </button>
@@ -274,18 +274,18 @@ export const DeleteConfirmModal: React.FC<{
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="bg-white dark:bg-slate-900 rounded-xl shadow-2xl max-w-md w-full mx-4 overflow-hidden">
+      <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-2xl max-w-md w-full mx-4 overflow-hidden">
         <div className="p-6 text-center">
-          <div className="w-16 h-16 mx-auto mb-4 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center">
-            <Trash2 className="w-8 h-8 text-red-600" />
+          <div className="w-16 h-16 mx-auto mb-4 bg-error-100 dark:bg-error-900/30 rounded-full flex items-center justify-center">
+            <Trash2 className="w-8 h-8 text-error-600" />
           </div>
 
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+          <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-2">
             确定要永久删除这些组织吗？
           </h3>
 
-          <p className="text-gray-500 dark:text-gray-400 mb-6 text-sm leading-relaxed">
-            此操作<span className="font-bold text-red-600">不可逆</span>！
+          <p className="text-neutral-500 dark:text-neutral-400 mb-6 text-sm leading-relaxed">
+            此操作<span className="font-bold text-error-600">不可逆</span>！
             所有数据将永久丢失，包括成员、团队、配方、实验等。
           </p>
 
@@ -298,21 +298,21 @@ export const DeleteConfirmModal: React.FC<{
               value={confirmText}
               onChange={(e) => setConfirmText(e.target.value.toUpperCase())}
               placeholder="DELETE"
-              className="mt-2 w-full px-3 py-2 border border-yellow-400 rounded-md bg-white dark:bg-slate-900 text-gray-900 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+              className="mt-2 w-full px-3 py-2 border border-yellow-400 rounded-md bg-white dark:bg-neutral-900 text-neutral-900 focus:outline-none focus:ring-2 focus:ring-yellow-500"
             />
           </div>
 
           <div className="flex items-center justify-end gap-3">
             <button
               onClick={onClose}
-              className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800"
+              className="px-4 py-2 text-sm text-neutral-600 hover:text-neutral-800"
             >
               取消
             </button>
             <button
               onClick={() => confirmText === 'DELETE' ? onConfirm() : null}
               disabled={confirmText !== 'DELETE'}
-              className="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 bg-error-600 text-white text-sm font-medium rounded-lg hover:bg-error-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               🗑️ 永久删除
             </button>

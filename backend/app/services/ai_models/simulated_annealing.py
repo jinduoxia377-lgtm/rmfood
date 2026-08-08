@@ -72,11 +72,17 @@ class SimulatedAnnealingOptimizer:
         self.best_score: float = float('-inf')
         self.iteration_history: list[dict[str, float]] = []
 
-        self.herbs_pool = [
-            "黄芪", "党参", "茯苓", "山药", "枸杞子", "菊花", "红枣", "甘草",
-            "当归", "川芎", "白芍", "熟地黄", "人参", "白术", "炙甘草", "陈皮",
-            "半夏", "生姜", "大枣", "桂枝", "芍药", "麻黄", "杏仁", "石膏",
-        ]
+        # 药材知识库 — 从 bayesian_formula_optimizer 导入真实数据
+        self._herb_db = None
+        self._load_herb_db()
+
+    def _load_herb_db(self) -> None:
+        """加载药材知识库"""
+        try:
+            from app.services.ai.algorithms.bayesian_formula_optimizer import _BUILTIN_HERBS
+            self._herb_db = _BUILTIN_HERBS
+        except ImportError:
+            self._herb_db = {}
 
     def optimize(
         self,
@@ -152,42 +158,38 @@ class SimulatedAnnealingOptimizer:
 
     def get_neighbor(self, solution: dict[str, Any]) -> dict[str, Any]:
         """
-        生成邻域解
+        生成邻域解 — 修复版：知识库感知
 
-        支持的邻域操作:
-        - 成分剂量微小扰动
-        - 成分替换
-        - 成分添加/删除
-
-        Args:
-            solution: 当前解
-
-        Returns:
-            邻域解
+        修复: 不再从硬编码 herbs_pool 随机选择，
+        而是从 _BUILTIN_HERBS 知识库中按功效匹配选择
         """
         neighbor = self._deep_copy(solution)
         ingredients = neighbor.get("ingredients", [])
 
         if not ingredients:
-            return self._add_random_ingredient(neighbor)
+            return self._add_knowledge_aware_ingredient(neighbor)
 
-        operation = random.choice(list(NeighborhoodOperation))
+        operation = random.choices(
+            list(NeighborhoodOperation),
+            weights=[0.4, 0.2, 0.2, 0.2],
+            k=1
+        )[0]
 
         if operation == NeighborhoodOperation.PERTURB_DOSAGE:
             neighbor = self._perturb_dosage(neighbor)
         elif operation == NeighborhoodOperation.REPLACE_INGREDIENT:
-            neighbor = self._replace_ingredient(neighbor)
+            neighbor = self._replace_knowledge_aware(neighbor)
         elif operation == NeighborhoodOperation.ADD_INGREDIENT and len(ingredients) < 15:
-            neighbor = self._add_random_ingredient(neighbor)
+            neighbor = self._add_knowledge_aware_ingredient(neighbor)
         elif operation == NeighborhoodOperation.REMOVE_INGREDIENT and len(ingredients) > 3:
-            neighbor = self._remove_random_ingredient(neighbor)
+            neighbor = self._remove_redundant(neighbor)
         else:
             neighbor = self._perturb_dosage(neighbor)
 
         return neighbor
 
     def _perturb_dosage(self, solution: dict[str, Any]) -> dict[str, Any]:
-        """剂量扰动"""
+        """剂量扰动 — 修复版：在药材安全范围内扰动"""
         ingredients = solution.get("ingredients", [])
         if not ingredients:
             return solution
@@ -197,9 +199,27 @@ class SimulatedAnnealingOptimizer:
 
         idx = random.randint(0, len(pert_ingredients) - 1)
         current_dosage = pert_ingredients[idx].get("dosage", 10.0)
+        herb_name = pert_ingredients[idx].get("name", "")
 
-        adjustment = random.uniform(1 - self.perturbation_scale, 1 + self.perturbation_scale)
-        new_dosage = max(0.1, current_dosage * adjustment)
+        # 从知识库查找安全剂量范围
+        herb_param = None
+        if self._herb_db:
+            for hid, hp in self._herb_db.items():
+                if hp.name_cn == herb_name:
+                    herb_param = hp
+                    break
+
+        if herb_param:
+            # 在药材安全范围内高斯扰动
+            min_d = herb_param.dosage_min
+            max_d = herb_param.dosage_max
+            range_size = max_d - min_d
+            perturbation = random.gauss(0, range_size * 0.15)
+            new_dosage = max(min_d, min(max_d, current_dosage + perturbation))
+        else:
+            # 兜底：保守扰动
+            adjustment = random.uniform(1 - self.perturbation_scale, 1 + self.perturbation_scale)
+            new_dosage = max(0.1, current_dosage * adjustment)
 
         pert_ingredients[idx]["dosage"] = round(new_dosage, 2)
         perturbed["ingredients"] = pert_ingredients
@@ -207,68 +227,154 @@ class SimulatedAnnealingOptimizer:
         return perturbed
 
     def _replace_ingredient(self, solution: dict[str, Any]) -> dict[str, Any]:
-        """成分替换"""
-        ingredients = solution.get("ingredients", [])
-        if not ingredients:
-            return solution
+        """成分替换 — 已废弃，使用 _replace_knowledge_aware 代替"""
+        return self._replace_knowledge_aware(solution)
 
+    def _replace_knowledge_aware(self, solution: dict[str, Any]) -> dict[str, Any]:
+        """知识感知成分替换 — 从同功效类别中选择替代药材"""
         replaced = self._deep_copy(solution)
         rep_ingredients = replaced.get("ingredients", [])
+        if not rep_ingredients:
+            return replaced
 
         idx = random.randint(0, len(rep_ingredients) - 1)
         current_name = rep_ingredients[idx].get("name", "")
+        current_effs = set(rep_ingredients[idx].get("efficacy", []))
 
-        available_herbs = [h for h in self.herbs_pool if h != current_name]
-        if not available_herbs:
+        if not self._herb_db:
+            # 兜底：从旧 herbs_pool 随机替换
+            available_herbs = [h for h in self.herbs_pool if h != current_name]
+            if not available_herbs:
+                return replaced
+            new_herb = random.choice(available_herbs)
+            rep_ingredients[idx]["name"] = new_herb
             return replaced
 
-        new_herb = random.choice(available_herbs)
-        new_dosage = random.uniform(5.0, 20.0)
+        # 从知识库找功效最匹配的替代药材
+        candidates = []
+        for hid, hp in self._herb_db.items():
+            if hp.name_cn == current_name:
+                continue
+            hp_effs = set(hp.efficacy_scores.keys())
+            overlap = len(hp_effs & current_effs)
+            if overlap >= 1:
+                candidates.append((overlap, hp))
 
-        rep_ingredients[idx] = {
-            "name": new_herb,
-            "dosage": round(new_dosage, 2),
-            "unit": "g",
-        }
+        if candidates:
+            candidates.sort(reverse=True)
+            top_overlap = candidates[0][0]
+            top_candidates = [c for c in candidates if c[0] == top_overlap]
+            chosen = random.choice(top_candidates)[1]
+            rep_ingredients[idx] = {
+                "name": chosen.name_cn,
+                "dosage": round(random.uniform(chosen.dosage_min, chosen.dosage_max), 2),
+                "unit": "g",
+                "efficacy": list(chosen.efficacy_scores.keys()),
+            }
+        else:
+            # 无匹配时随机选一个不同药材
+            all_names = {hp.name_cn for hp in self._herb_db.values()}
+            available = [n for n in all_names if n != current_name]
+            if available:
+                new_name = random.choice(available)
+                for hid, hp in self._herb_db.items():
+                    if hp.name_cn == new_name:
+                        rep_ingredients[idx] = {
+                            "name": hp.name_cn,
+                            "dosage": round(random.uniform(hp.dosage_min, hp.dosage_max), 2),
+                            "unit": "g",
+                            "efficacy": list(hp.efficacy_scores.keys()),
+                        }
+                        break
+
         replaced["ingredients"] = rep_ingredients
-
         return replaced
 
     def _add_random_ingredient(self, solution: dict[str, Any]) -> dict[str, Any]:
-        """添加随机成分"""
+        """添加成分 — 已废弃，使用 _add_knowledge_aware 代替"""
+        return self._add_knowledge_aware_ingredient(solution)
+
+    def _add_knowledge_aware_ingredient(self, solution: dict[str, Any]) -> dict[str, Any]:
+        """知识感知添加 — 从功效互补角度选择新药材"""
         added = self._deep_copy(solution)
         ingredients = added.get("ingredients", [])
 
-        existing_names = [ing.get("name", "") for ing in ingredients]
-        available_herbs = [h for h in self.herbs_pool if h not in existing_names]
+        existing_names = {ing.get("name", "") for ing in ingredients}
+        existing_effs = set()
+        for ing in ingredients:
+            for eff in ing.get("efficacy", []):
+                existing_effs.add(eff)
 
-        if not available_herbs:
-            return solution
+        if not self._herb_db:
+            # 兜底：从旧 herbs_pool 添加
+            available_herbs = [h for h in self.herbs_pool if h not in existing_names]
+            if not available_herbs:
+                return solution
+            new_herb = random.choice(available_herbs)
+            ingredients.append({
+                "name": new_herb,
+                "dosage": round(random.uniform(5.0, 15.0), 2),
+                "unit": "g",
+            })
+            added["ingredients"] = ingredients
+            return added
 
-        new_herb = random.choice(available_herbs)
-        new_dosage = random.uniform(5.0, 15.0)
+        # 找能覆盖最多未达成功效的药材
+        best_herb = None
+        best_coverage = 0
+        for hid, hp in self._herb_db.items():
+            if hp.name_cn in existing_names:
+                continue
+            hp_effs = set(hp.efficacy_scores.keys())
+            coverage = len(hp_effs - existing_effs)
+            if coverage > best_coverage:
+                best_coverage = coverage
+                best_herb = hp
 
-        new_ingredient = {
-            "name": new_herb,
-            "dosage": round(new_dosage, 2),
-            "unit": "g",
-        }
-        ingredients.append(new_ingredient)
+        if best_herb and best_coverage > 0:
+            ingredients.append({
+                "name": best_herb.name_cn,
+                "dosage": round(random.uniform(best_herb.dosage_min, best_herb.dosage_max), 2),
+                "unit": "g",
+                "efficacy": list(best_herb.efficacy_scores.keys()),
+            })
+        elif best_herb:
+            # 无互补时添加一个已知好药材
+            ingredients.append({
+                "name": best_herb.name_cn,
+                "dosage": round(random.uniform(best_herb.dosage_min, best_herb.dosage_max), 2),
+                "unit": "g",
+                "efficacy": list(best_herb.efficacy_scores.keys()),
+            })
+
         added["ingredients"] = ingredients
-
         return added
 
-    def _remove_random_ingredient(self, solution: dict[str, Any]) -> dict[str, Any]:
-        """删除随机成分"""
+    def _remove_redundant(self, solution: dict[str, Any]) -> dict[str, Any]:
+        """移除冗余成分 — 功效重叠最多的"""
         removed = self._deep_copy(solution)
         ingredients = removed.get("ingredients", [])
 
         if len(ingredients) <= 3:
             return solution
 
-        idx = random.randint(0, len(ingredients) - 1)
-        ingredients.pop(idx)
-        removed["ingredients"] = ingredients
+        # 找功效重叠最多的成分
+        best_overlap_idx = 0
+        best_overlap = 0
+        for i, ing in enumerate(ingredients):
+            ing_effs = set(ing.get("efficacy", []))
+            overlap = 0
+            for j, other in enumerate(ingredients):
+                if i != j:
+                    other_effs = set(other.get("efficacy", []))
+                    overlap += len(ing_effs & other_effs)
+            if overlap > best_overlap:
+                best_overlap = overlap
+                best_overlap_idx = i
+
+        if best_overlap > 0:
+            ingredients.pop(best_overlap_idx)
+            removed["ingredients"] = ingredients
 
         return removed
 

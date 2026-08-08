@@ -31,12 +31,12 @@ from ..schemas.peptide_analysis import (
     PeptideAnalysisCreate, PeptideAnalysisUpdate,
     PeptideAnalysisResponse, PeptideAnalysisListResponse, BatchResult
 )
-from ..core.exceptions import (
+from app.core.middleware.exceptions import (
     NotFoundError, AuthorizationError,
     PeptideAnalysisError
 )
-from ..core.batch_processor import get_batch_processor, BatchConfig
-from ..core.cache_system import get_cache, CacheConfig
+from ..core.performance.batch_processor import get_batch_processor, BatchConfig
+from ..core.performance.cache_system import get_cache, CacheConfig
 
 logger = logging.getLogger(__name__)
 

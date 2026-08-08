@@ -9,6 +9,7 @@
 - ✅ 登录成功后同时返回 Token（兼容）和设置 Cookie
 """
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, status, Response, Request
+from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..schemas import (
@@ -192,26 +193,34 @@ async def update_me(
     return await service.update_user(current_user.id, data)
 
 
+class ForgotPasswordRequest(BaseModel):
+    email: str = Field(..., description="用户邮箱")
+
+
+class ResetPasswordRequest(BaseModel):
+    token: str = Field(..., description="重置令牌")
+    new_password: str = Field(..., min_length=8, description="新密码")
+
+
 @router.post("/forgot-password", response_model=SuccessResponse, summary="忘记密码")
 async def forgot_password(
-    email: str,
+    req: ForgotPasswordRequest,
     db: AsyncSession = Depends(get_db_session),
 ):
-    """发送密码重置邮件"""
+    """发送密码重置邮件（通过 POST body 传递参数，避免 URL 日志泄露）"""
     service = AuthService(db)
-    await service.forgot_password(email)
+    await service.forgot_password(req.email)
     return SuccessResponse(message="密码重置邮件已发送")
 
 
 @router.post("/reset-password", response_model=SuccessResponse, summary="重置密码")
 async def reset_password(
-    token: str,
-    new_password: str,
+    req: ResetPasswordRequest,
     db: AsyncSession = Depends(get_db_session),
 ):
-    """使用令牌重置密码"""
+    """使用令牌重置密码（通过 POST body 传递参数，避免 URL 日志泄露）"""
     service = AuthService(db)
-    await service.reset_password(token, new_password)
+    await service.reset_password(req.token, req.new_password)
     return SuccessResponse(message="密码重置成功")
 
 

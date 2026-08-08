@@ -37,20 +37,13 @@ export const userService = {
       const formData = new FormData();
       formData.append('avatar', file);
 
-      const response = await fetch('/api/v1/auth/me/avatar', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-        },
-        body: formData,
+      // 使用集中式 API 客户端，由 Axios 自动处理 multipart/form-data boundary
+      const api = (await import('@/api/client')).default;
+      const response = await api.post('/auth/me/avatar', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
 
-      if (!response.ok) {
-        throw new Error('头像上传失败');
-      }
-
-      const data = await response.json();
-      return { success: true, data: { avatarUrl: data.avatarUrl } };
+      return { success: true, data: response.data };
     } catch (error) {
       return {
         success: false,

@@ -5,7 +5,7 @@ import pytest
 from unittest.mock import Mock, patch, AsyncMock
 from datetime import datetime, timezone
 
-from backend.app.services.ai_models.pepinvent_service import (
+from app.services.ai_models.pepinvent_service import (
     PepinventService,
     GenerateRequest,
     OptimizeRequest,

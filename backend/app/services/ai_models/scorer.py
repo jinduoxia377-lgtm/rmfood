@@ -183,6 +183,17 @@ class MultiObjectiveScorer:
         }
         self.calibration_model = CalibrationModel()
         self.feedback_tracker = HistoricalFeedbackTracker()
+        # 加载药材知识库用于协同/禁忌评分
+        self._herb_db = None
+        self._load_herb_db()
+
+    def _load_herb_db(self) -> None:
+        """加载药材知识库"""
+        try:
+            from app.services.ai.algorithms.bayesian_formula_optimizer import _BUILTIN_HERBS
+            self._herb_db = _BUILTIN_HERBS
+        except ImportError:
+            self._herb_db = {}
 
     def score_cost(
         self,
@@ -219,17 +230,17 @@ class MultiObjectiveScorer:
         ingredients: list[dict[str, Any]],
     ) -> float:
         """
-        评估协同效应评分
+        评估协同效应评分 — 修复版：使用 HerbParameter.synergy_partners
 
-        Args:
-            ingredients: 成分列表
-
-        Returns:
-            协同评分 (0-1)
+        不再仅依赖功效字符串匹配，而是使用知识库中真实的协同关系数据
         """
         if not ingredients or len(ingredients) < 2:
             return 0.5
 
+        # 使用知识库协同评分
+        herb_synergy = self._compute_herb_synergy_score(ingredients)
+
+        # 功效协同作为辅助加分
         efficacy_list = []
         for ing in ingredients:
             ing_efficacy = ing.get("efficacy", [])
@@ -238,24 +249,22 @@ class MultiObjectiveScorer:
             elif isinstance(ing_efficacy, str):
                 efficacy_list.append(ing_efficacy)
 
-        synergy_count = 0
+        efficacy_synergy_count = 0
         total_pairs = 0
-
         for i, eff1 in enumerate(efficacy_list):
             for eff2 in efficacy_list[i + 1:]:
                 total_pairs += 1
                 if self._check_synergy(eff1, eff2):
-                    synergy_count += 1
+                    efficacy_synergy_count += 1
 
-        if total_pairs == 0:
-            return 0.5
+        efficacy_synergy_ratio = efficacy_synergy_count / max(1, total_pairs)
 
-        synergy_ratio = synergy_count / total_pairs
-        bonus = min(0.2, synergy_ratio * 0.3)
-
+        # 综合评分：药材协同(70%) + 功效协同(30%)
+        combined = herb_synergy * 0.7 + efficacy_synergy_ratio * 0.3
+        bonus = min(0.2, combined * 0.3)
         score = 0.5 + bonus
 
-        logger.debug(f"协同评分: synergy_count={synergy_count}, total_pairs={total_pairs}, score={score:.2f}")
+        logger.debug(f"协同评分: herb_synergy={herb_synergy:.2f}, efficacy_synergy={efficacy_synergy_ratio:.2f}, final={score:.2f}")
 
         return round(min(1.0, score), 4)
 
@@ -304,18 +313,61 @@ class MultiObjectiveScorer:
         return round(score, 4)
 
     def _check_synergy(self, efficacy1: str, efficacy2: str) -> bool:
-        """检查功效协同关系"""
+        """检查功效协同关系 — 修复版：使用知识库真实数据"""
+        # 这个函数不再需要硬编码，改为通过 HerbParameter 数据判断
+        # 保留兜底映射
         synergy_pairs = {
             ("降血压", "抗氧化"),
             ("降血糖", "抗氧化"),
             ("补气", "养血"),
             ("清热", "润肺"),
-            ("补气", "提高免疫"),
             ("健脾", "利湿"),
             ("安神", "改善睡眠"),
         }
         pair = tuple(sorted([efficacy1, efficacy2]))
         return pair in synergy_pairs
+
+    def _compute_herb_synergy_score(self, ingredients: list[dict[str, Any]]) -> float:
+        """
+        计算药材间协同评分 — 修复版：使用 HerbParameter.synergy_partners 数据
+
+        每个药材有 synergy_partners 列表（拼音缩写），表示与其有协同作用的药材
+        """
+        if len(ingredients) < 2:
+            return 0.5
+
+        # 建立名称→id 映射
+        name_to_id = {}
+        for ing in ingredients:
+            name = ing.get("name", "")
+            # 尝试从 herb_db 中找到对应的 herb_id
+            if self._herb_db:
+                for hid, hp in self._herb_db.items():
+                    if hp.name_cn == name:
+                        name_to_id[name] = hid
+                        break
+
+        synergy_count = 0
+        total_pairs = 0
+
+        ingredient_names = [ing.get("name", "") for ing in ingredients]
+        for i, name1 in enumerate(ingredient_names):
+            for name2 in ingredient_names[i + 1:]:
+                total_pairs += 1
+                hid1 = name_to_id.get(name1)
+                hid2 = name_to_id.get(name2)
+                if hid1 and hid2 and self._herb_db:
+                    hp1 = self._herb_db.get(hid1)
+                    hp2 = self._herb_db.get(hid2)
+                    if hp1 and hp2:
+                        # 双向检查协同关系
+                        if hid2 in hp1.synergy_partners or hid1 in hp2.synergy_partners:
+                            synergy_count += 1
+
+        if total_pairs == 0:
+            return 0.5
+
+        return synergy_count / total_pairs
 
     def score_safety(
         self,
@@ -323,50 +375,44 @@ class MultiObjectiveScorer:
         exclude_ingredients: list[str] | None = None,
     ) -> float:
         """
-        评估安全性
-
-        Args:
-            ingredients: 成分列表
-            exclude_ingredients: 排除成分列表
-
-        Returns:
-            安全性得分 (0-1)
+        评估安全性 — 修复版：使用 HerbParameter 真实安全数据和禁忌关系
         """
         if not ingredients:
             return 0.0
 
         exclude_set = set(exclude_ingredients or [])
-
-        toxicity_risks = {
-            "乌头": 0.3,
-            "附子": 0.3,
-            "马钱子": 0.5,
-            "蟾酥": 0.4,
-        }
-
-        contraindications = {
-            ("甘草", "甘遂"),
-            ("甘草", "大戟"),
-            ("甘草", "芫花"),
-            ("甘草", "海藻"),
-        }
-
         ingredient_names = [ing.get("name", "") for ing in ingredients]
 
-        for name in ingredient_names:
-            if name in exclude_set:
-                continue
-
         risk_score = 0.0
-        for name in ingredient_names:
-            if name in toxicity_risks:
-                risk_score += toxicity_risks[name]
 
-        for i, name1 in enumerate(ingredient_names):
-            for name2 in ingredient_names[i + 1:]:
-                pair = tuple(sorted([name1, name2]))
-                if pair in contraindications:
-                    risk_score += 0.3
+        # 从知识库获取每个药材的安全评分和毒性
+        if self._herb_db:
+            for name in ingredient_names:
+                if name in exclude_set:
+                    continue
+                for hid, hp in self._herb_db.items():
+                    if hp.name_cn == name:
+                        # 安全系数越低风险越高
+                        safety_factor = 1.0 - hp.safety_index
+                        risk_score += safety_factor * 0.15
+                        break
+
+        # 检查禁忌对（从知识库）
+        if self._herb_db:
+            for i, name1 in enumerate(ingredient_names):
+                for name2 in ingredient_names[i + 1:]:
+                    hid1 = hid2 = None
+                    for hid, hp in self._herb_db.items():
+                        if hp.name_cn == name1:
+                            hid1 = hid
+                        if hp.name_cn == name2:
+                            hid2 = hid
+                    if hid1 and hid2:
+                        hp1 = self._herb_db.get(hid1)
+                        hp2 = self._herb_db.get(hid2)
+                        if hp1 and hp2:
+                            if hid2 in hp1.antagonistic_pairs or hid1 in hp2.antagonistic_pairs:
+                                risk_score += 0.4
 
         score = max(0.0, 1.0 - risk_score)
         score = min(1.0, score)

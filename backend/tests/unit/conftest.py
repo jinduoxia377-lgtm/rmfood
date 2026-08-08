@@ -76,6 +76,10 @@ def pytest_collection_modifyitems(items):
         "test_not_found_error_handling",
         "test_authentication_error_handling",
         "test_authorization_error_handling",
+
+        # ─── 已修复，可移除 ───
+        # "test_admin_has_all_permissions",  # 已修复
+        # "test_researcher_limited_permissions",  # 已修复
     }
 
     for item in items:

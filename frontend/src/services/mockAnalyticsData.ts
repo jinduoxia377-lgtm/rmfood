@@ -193,7 +193,7 @@ export function getMockAnalyticsData(): MockDashboardData {
         {
           data: [234, 267, 298, 312, 345, 378, 401, 389, 423, 456, 489, 512],
           label: '新实验',
-          borderColor: '#2563EB',
+          borderColor: '#007AFF',
           fill: true,
           tension: 0.4,
         },
@@ -214,7 +214,7 @@ export function getMockAnalyticsData(): MockDashboardData {
       labels: ['草稿', '审核中', '已发布', '已归档'],
       datasets: [{
         data: [2341, 1876, 7234, 1396],
-        backgroundColor: ['#94A3B8', '#F59E0B', '#16A34A', '#6B7280'],
+        backgroundColor: ['#9CA3AF', '#D97706', '#16A34A', '#6B7280'],
       }],
     }
 
@@ -225,7 +225,7 @@ export function getMockAnalyticsData(): MockDashboardData {
       labels: ['功能性食品', '保健品', '营养补充剂', '药食同源', '特医食品', '其他'],
       datasets: [{
         data: [3456, 2789, 2134, 1890, 1567, 1011],
-        backgroundColor: ['#16A34A', '#2563EB', '#9333EA', '#F59E0B', '#EF4444', '#6B7280'],
+        backgroundColor: ['#16A34A', '#007AFF', '#9333EA', '#D97706', '#FF3B30', '#6B7280'],
       }],
     }
 

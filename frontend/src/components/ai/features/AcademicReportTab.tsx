@@ -242,10 +242,10 @@ export function AcademicReportTab({
               <FileText className="w-6 h-6 text-primary-600" />
             </div>
             <div>
-              <h3 className="font-semibold text-gray-900">
+              <h3 className="font-semibold text-neutral-900">
                 {DEFAULTS.PLACEHOLDER_TEXTS.ACADEMIC_REPORT_GENERATOR_TITLE || '学术报告生成器'}
               </h3>
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-sm text-neutral-500 mt-1">
                 {DEFAULTS.PLACEHOLDER_TEXTS.ACADEMIC_REPORT_GENERATOR_SUBTITLE || '基于配方数据自动生成专业学术报告'}
               </p>
             </div>
@@ -258,7 +258,7 @@ export function AcademicReportTab({
               onChange={(e) =>
                 setSelectedCitationStyle(e.target.value as CitationStyle)
               }
-              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
             >
               {CITATION_STYLES.map((style) => (
                 <option key={style.value} value={style.value}>
@@ -291,7 +291,7 @@ export function AcademicReportTab({
             >
               {syncSuccess ? (
                 <>
-                  <CheckCircle className="w-4 h-4 text-green-500" />
+                  <CheckCircle className="w-4 h-4 text-success-500" />
                   {DEFAULTS.PLACEHOLDER_TEXTS.BUTTON_SYNCED || '已同步'}
                 </>
               ) : (
@@ -360,12 +360,12 @@ export function AcademicReportTab({
               <div className="text-center mb-8">
                 <h1 className="text-2xl font-bold mb-4">{report.title}</h1>
                 {report.authors && (
-                  <p className="text-gray-600">
+                  <p className="text-neutral-600">
                     {DEFAULTS.PLACEHOLDER_TEXTS.LABEL_AUTHORS || '作者'}：{report.authors.join('、')}
                   </p>
                 )}
                 {report.keywords && (
-                  <p className="text-sm mt-2 text-gray-500">
+                  <p className="text-sm mt-2 text-neutral-500">
                     {DEFAULTS.PLACEHOLDER_TEXTS.LABEL_KEYWORDS || '关键词'}：{report.keywords.join('、')}
                   </p>
                 )}
@@ -376,7 +376,7 @@ export function AcademicReportTab({
                 <h3 className="font-semibold mb-2">
                   {DEFAULTS.PLACEHOLDER_TEXTS.SECTION_ABSTRACT || '摘要'}
                 </h3>
-                <p className="text-gray-700">{report.abstract}</p>
+                <p className="text-neutral-700">{report.abstract}</p>
               </div>
 
               {/* 章节内容 */}
@@ -389,7 +389,7 @@ export function AcademicReportTab({
                     {expandedSections.has(index) ? (
                       <ChevronDown className="w-5 h-5 text-primary-600" />
                     ) : (
-                      <ChevronRight className="w-5 h-5 text-gray-400" />
+                      <ChevronRight className="w-5 h-5 text-neutral-400" />
                     )}
                     <h2 className="text-xl font-semibold">
                       {index + 1}. {section.title}
@@ -398,7 +398,7 @@ export function AcademicReportTab({
 
                   {expandedSections.has(index) && (
                     <div className="pl-7">
-                      <p className="leading-relaxed whitespace-pre-wrap text-gray-700">
+                      <p className="leading-relaxed whitespace-pre-wrap text-neutral-700">
                         {section.content}
                       </p>
                     </div>
@@ -408,7 +408,7 @@ export function AcademicReportTab({
 
               {/* 参考文献 */}
               {report.references && report.references.length > 0 && (
-                <div className="mt-8 pt-6 border-t border-gray-200">
+                <div className="mt-8 pt-6 border-t border-neutral-200">
                   <h2 className="text-xl font-semibold mb-4">
                     {DEFAULTS.PLACEHOLDER_TEXTS.SECTION_REFERENCES || '参考文献'}
                   </h2>
@@ -416,7 +416,7 @@ export function AcademicReportTab({
                     {report.references.map((ref, index) => (
                       <p
                         key={index}
-                        className="text-sm pl-4 border-l-2 border-gray-300 text-gray-600"
+                        className="text-sm pl-4 border-l-2 border-neutral-300 text-neutral-600"
                       >
                         {index + 1}. {ref.authors} ({ref.year}). {ref.title}.{' '}
                         {ref.journal || ''}.
@@ -434,24 +434,24 @@ export function AcademicReportTab({
           <Card className="p-6">
             <div className="space-y-6">
               <div>
-                <label className="block text-sm font-medium mb-2 text-gray-700">
+                <label className="block text-sm font-medium mb-2 text-neutral-700">
                   {DEFAULTS.PLACEHOLDER_TEXTS.LABEL_REPORT_TITLE || '报告标题'}
                 </label>
                 <input
                   type="text"
                   defaultValue={report.title}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2 text-gray-700">
+                <label className="block text-sm font-medium mb-2 text-neutral-700">
                   {DEFAULTS.PLACEHOLDER_TEXTS.LABEL_AUTHORS || '作者'}
                 </label>
                 <input
                   type="text"
                   defaultValue={report.authors?.join('、')}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
                   placeholder={
                     DEFAULTS.PLACEHOLDER_TEXTS.PLACEHOLDER_AUTHORS ||
                     '多个作者用顿号分隔'
@@ -460,13 +460,13 @@ export function AcademicReportTab({
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2 text-gray-700">
+                <label className="block text-sm font-medium mb-2 text-neutral-700">
                   {DEFAULTS.PLACEHOLDER_TEXTS.LABEL_KEYWORDS || '关键词'}
                 </label>
                 <input
                   type="text"
                   defaultValue={report.keywords?.join('、')}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
                   placeholder={
                     DEFAULTS.PLACEHOLDER_TEXTS.PLACEHOLDER_KEYWORDS ||
                     '多个关键词用顿号分隔'
@@ -475,34 +475,34 @@ export function AcademicReportTab({
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2 text-gray-700">
+                <label className="block text-sm font-medium mb-2 text-neutral-700">
                   {DEFAULTS.PLACEHOLDER_TEXTS.LABEL_ABSTRACT || '摘要'}
                 </label>
                 <textarea
                   defaultValue={report.abstract}
                   rows={6}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
+                  className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
                 />
               </div>
 
-              <hr className="my-4 border-gray-200" />
+              <hr className="my-4 border-neutral-200" />
 
               <div>
-                <label className="block text-sm font-medium mb-3 text-gray-700">
+                <label className="block text-sm font-medium mb-3 text-neutral-700">
                   {DEFAULTS.PLACEHOLDER_TEXTS.LABEL_CHAPTERS || '章节内容'}
                 </label>
                 <div className="space-y-4">
                   {report.chapters?.map((section, index) => (
-                    <div key={index} className="bg-gray-50 rounded-lg p-4">
+                    <div key={index} className="bg-slate-50 rounded-lg p-4">
                       <input
                         type="text"
                         defaultValue={section.title}
-                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 mb-2"
+                        className="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 mb-2"
                       />
                       <textarea
                         defaultValue={section.content}
                         rows={4}
-                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
+                        className="w-full px-3 py-2 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
                       />
                     </div>
                   ))}
@@ -515,7 +515,7 @@ export function AcademicReportTab({
         {/* 学术元素Tab */}
         <TabsContent value="elements" className="mt-0">
           <Card className="p-6">
-            <h3 className="font-semibold mb-4 text-gray-900">
+            <h3 className="font-semibold mb-4 text-neutral-900">
               {DEFAULTS.PLACEHOLDER_TEXTS.TITLE_INSERT_ELEMENTS || '插入学术元素'}
             </h3>
             <AcademicElementEditor

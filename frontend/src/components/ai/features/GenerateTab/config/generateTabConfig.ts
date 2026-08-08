@@ -146,16 +146,16 @@ export const FORMULA_CATEGORY_LIST: {
   label: string
   color: string
 }[] = [
-  { id: 'IMMUNITY', label: '免疫力', color: '#10b981' },
-  { id: 'ANTI_FATIGUE', label: '抗疲劳', color: '#f59e0b' },
+  { id: 'IMMUNITY', label: '免疫力', color: '#34C759' },
+  { id: 'ANTI_FATIGUE', label: '抗疲劳', color: '#D97706' },
   { id: 'DIGESTION', label: '消化', color: '#84cc16' },
   { id: 'SLEEP', label: '睡眠', color: '#6366f1' },
-  { id: 'BEAUTY', label: '美容', color: '#ec4899' },
-  { id: 'CARDIOVASCULAR', label: '心血管', color: '#ef4444' },
-  { id: 'BONE_JOINT', label: '骨关节', color: '#06b6d4' },
-  { id: 'VISION', label: '视力', color: '#8b5cf6' },
+  { id: 'BEAUTY', label: '美容', color: '#D946EF' },
+  { id: 'CARDIOVASCULAR', label: '心血管', color: '#FF3B30' },
+  { id: 'BONE_JOINT', label: '骨关节', color: '#0891B2' },
+  { id: 'VISION', label: '视力', color: '#AF52DE' },
   { id: 'RESPIRATORY', label: '呼吸', color: '#14b8a6' },
-  { id: 'METABOLISM', label: '代谢', color: '#f97316' },
+  { id: 'METABOLISM', label: '代谢', color: '#EA580C' },
 ] as const
 
 // 配方分类配置（用于UI展示）
@@ -212,5 +212,4 @@ export const INPUT_MODE = {
   MANUAL: 'manual' as InputMode,
 } as const
 
-// 类型导出
-export type { HerbRole }
+// 类型导出（HerbRole 已在第12行通过 `export type HerbRole = typeof HERB_ROLES[number]` 导出）

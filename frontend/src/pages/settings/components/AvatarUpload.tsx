@@ -80,7 +80,7 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
         aria-label="上传头像"
       >
         {uploading ? (
-          <div className="absolute inset-0 flex items-center justify-center bg-slate-100 dark:bg-slate-800">
+          <div className="absolute inset-0 flex items-center justify-center bg-neutral-100 dark:bg-neutral-800">
             <Loader2 className="w-8 h-8 animate-spin text-primary-500" />
           </div>
         ) : avatarUrl ? (
@@ -95,7 +95,7 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
             </div>
           </>
         ) : (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-400">
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-neutral-100 dark:bg-neutral-800 text-neutral-400">
             {isDragging ? (
               <Upload className="w-8 h-8 mb-1 text-primary-500" />
             ) : (
@@ -124,7 +124,7 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
             e.stopPropagation();
             onRemove();
           }}
-          className="mt-2 flex items-center gap-1 text-xs text-slate-500 hover:text-rose-500 transition-colors"
+          className="mt-2 flex items-center gap-1 text-xs text-neutral-500 hover:text-rose-500 transition-colors"
         >
           <X className="w-3 h-3" />
           移除图片
@@ -135,7 +135,7 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
         <p className="mt-2 text-sm text-rose-500 text-center">{error}</p>
       )}
 
-      <p className="mt-2 text-xs text-slate-400">
+      <p className="mt-2 text-xs text-neutral-400">
         支持 JPG、PNG、WebP，不超过 2MB
       </p>
     </div>

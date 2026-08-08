@@ -22,6 +22,7 @@
  * 4. 版本化持久化 — localStorage 存储带版本号，支持迁移
  */
 
+import { logger } from '@/utils/safeLogger';
 // ===== 类型定义 =====
 
 /** UI 层偏好（委托给 userPreferencesService） */
@@ -448,7 +449,7 @@ class UnifiedUserProfileManager {
       }
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
     } catch (error) {
-      console.warn('[UnifiedUserProfile] 持久化失败:', error)
+      logger.warn('[UnifiedUserProfile] 持久化失败:', error)
     }
   }
 
@@ -459,7 +460,7 @@ class UnifiedUserProfileManager {
 
       const data = JSON.parse(raw)
       if (data.version !== PROFILE_VERSION) {
-        console.warn(`[UserProfile] 版本不匹配(${data.version} vs ${PROFILE_VERSION})，使用默认值`)
+        logger.warn(`[UserProfile] 版本不匹配(${data.version} vs ${PROFILE_VERSION})，使用默认值`)
         return { ...DEFAULT_PROFILE }
       }
 

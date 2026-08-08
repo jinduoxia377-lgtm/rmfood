@@ -7,13 +7,10 @@ from datetime import datetime, timezone
 from typing import Optional
 import enum
 
-from sqlalchemy import Integer, String, Float, Boolean, DateTime, JSON, Enum as SAEnum
+from sqlalchemy import Integer, String, Float, Boolean, DateTime, JSON, Enum as SAEnum, BigInteger
 from sqlalchemy.orm import Mapped, mapped_column
-from ..core.database import Base
-
-
-def _now() -> datetime:
-    return datetime.now(timezone.utc).replace(tzinfo=None)
+from .base import Base
+from app.models.utils import now_utc_mapped
 
 
 class DataSourceStatus(str, enum.Enum):
@@ -48,7 +45,7 @@ class DataSourceHealth(Base):
     """
     __tablename__ = "data_source_health"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
 
     # 数据源标识
     source_type: Mapped[DataSourceType] = mapped_column(
@@ -70,11 +67,11 @@ class DataSourceHealth(Base):
         comment="当前健康状态"
     )
     last_check_at: Mapped[Optional[datetime]] = mapped_column(
-        DateTime, nullable=True,
+        DateTime(timezone=True), nullable=True,
         comment="最后检查时间"
     )
     last_healthy_at: Mapped[Optional[datetime]] = mapped_column(
-        DateTime, nullable=True,
+        DateTime(timezone=True), nullable=True,
         comment="最后健康时间"
     )
 
@@ -90,7 +87,7 @@ class DataSourceHealth(Base):
 
     # 同步统计
     last_sync_at: Mapped[Optional[datetime]] = mapped_column(
-        DateTime, nullable=True,
+        DateTime(timezone=True), nullable=True,
         comment="最后同步时间"
     )
     sync_success_count: Mapped[int] = mapped_column(
@@ -123,8 +120,8 @@ class DataSourceHealth(Base):
     )
 
     # 时间戳
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=_now, nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_now, onupdate=_now, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, onupdate=now_utc_mapped, nullable=False)
 
     @property
     def is_available(self) -> bool:

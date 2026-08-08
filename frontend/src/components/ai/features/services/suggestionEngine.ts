@@ -2,6 +2,8 @@ import { TextCleaner, EntityExtractor, IntentClassifier, type ExtractedEntity, t
 import { getTemplatesByIntent, renderTemplate, type SuggestionTemplate, type FrameworkType, type RenderedSection } from './suggestionTemplates'
 import { getBestPracticesByIntent, type BestPractice } from './bestPractices'
 
+
+import { logger } from '@/utils/safeLogger';
 export interface EnhancedSuggestion {
   id: string
   title: string
@@ -241,7 +243,7 @@ export class SuggestionEngine {
       return suggestions
 
     } catch (error) {
-      console.warn('[SuggestionEngine] Error:', error)
+      logger.warn('[SuggestionEngine] Error:', error)
       if (this.enableFallback) {
         return this.generateFallback(rawInput)
       }

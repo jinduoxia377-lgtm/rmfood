@@ -44,44 +44,8 @@ export function usePerformanceMonitor() {
   };
 }
 
-export function useDebounce<T extends (...args: unknown[]) => void>(
-  callback: T,
-  delay: number,
-): T {
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  return useCallback(
-    (...args: unknown[]) => {
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-      }
-      timerRef.current = setTimeout(() => {
-        callback(...args);
-      }, delay);
-    },
-    [callback, delay],
-  ) as T;
-}
-
-export function useThrottle<T extends (...args: unknown[]) => void>(
-  callback: T,
-  limit: number,
-): T {
-  const inThrottle = useRef(false);
-
-  return useCallback(
-    (...args: unknown[]) => {
-      if (!inThrottle.current) {
-        callback(...args);
-        inThrottle.current = true;
-        setTimeout(() => {
-          inThrottle.current = false;
-        }, limit);
-      }
-    },
-    [callback, limit],
-  ) as T;
-}
+// NOTE: useDebounce has been moved to hooks/useDebounce.ts
+// NOTE: useThrottle has been moved to hooks/useDebounce.ts
 
 export function useIntersectionObserver<T extends HTMLElement>(
   callback: (isIntersecting: boolean) => void,

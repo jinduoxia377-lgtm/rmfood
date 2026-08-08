@@ -3,6 +3,7 @@
  * 提供性能指标收集、用户行为分析和体验优化建议
  */
 
+import { logger } from '@/utils/safeLogger';
 export interface PerformanceMetrics {
   // 解析性能
   parseTime: number          // 平均解析时间 (ms)
@@ -197,7 +198,7 @@ class PerformanceMonitor {
    * 定期记录快照（用于长期分析）
    */
   private recordSnapshot(): void {
-    console.log('[PerformanceMonitor] 📊 快照:', {
+    logger.info('[PerformanceMonitor] 📊 快照:', {
       timestamp: new Date().toISOString(),
       ...this.getMetrics(),
     })
@@ -209,7 +210,7 @@ class PerformanceMonitor {
   reset(): void {
     this.metrics = this.getInitialMetrics()
     this.startTime = Date.now()
-    console.log('[PerformanceMonitor] 🔄 已重置所有指标')
+    logger.info('[PerformanceMonitor] 🔄 已重置所有指标')
   }
 }
 
@@ -270,7 +271,7 @@ export async function copyToClipboard(text: string): Promise<boolean> {
     await navigator.clipboard.writeText(text)
     return true
   } catch (e) {
-    console.error('[Utils] ❌ 复制失败:', e)
+    logger.error('[Utils] ❌ 复制失败:', e)
 
     // 降级方案
     try {
@@ -282,7 +283,7 @@ export async function copyToClipboard(text: string): Promise<boolean> {
       document.body.removeChild(textarea)
       return true
     } catch (err) {
-      console.error('[Utils] ❌ 降级复制也失败:', err)
+      logger.error('[Utils] ❌ 降级复制也失败:', err)
       return false
     }
   }

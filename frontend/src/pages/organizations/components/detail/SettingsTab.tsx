@@ -77,20 +77,20 @@ const SettingsTab = memo(({ organization, onArchive, onDelete }: SettingsTabProp
     <div className="p-6 space-y-8">
       {/* Header */}
       <div>
-        <h2 className="text-lg font-semibold text-slate-900 dark:text-white">组织设置</h2>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">管理组织的基本信息和配置</p>
+        <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">组织设置</h2>
+        <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">管理组织的基本信息和配置</p>
       </div>
 
       {/* Basic Information */}
-      <section aria-label="基本信息" className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6 space-y-6">
-        <h3 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-          <Info className="w-5 h-5 text-blue-500" />
+      <section aria-label="基本信息" className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-6 space-y-6">
+        <h3 className="font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
+          <Info className="w-5 h-5 text-secondary-500" />
           基本信息
         </h3>
 
         {/* Avatar Upload */}
         <div>
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+          <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
             组织头像
           </label>
           <div className="flex items-center gap-5">
@@ -110,10 +110,10 @@ const SettingsTab = memo(({ organization, onArchive, onDelete }: SettingsTabProp
               </button>
             </div>
             <div>
-              <p className="text-sm text-slate-600 dark:text-slate-400">
+              <p className="text-sm text-neutral-600 dark:text-neutral-400">
                 点击头像上传新的组织 Logo
               </p>
-              <p className="text-xs text-slate-400 mt-1">
+              <p className="text-xs text-neutral-400 mt-1">
                 支持 JPG、PNG 格式，建议尺寸 200×200px，最大 2MB
               </p>
             </div>
@@ -122,8 +122,8 @@ const SettingsTab = memo(({ organization, onArchive, onDelete }: SettingsTabProp
 
         {/* Organization Name */}
         <div>
-          <label htmlFor="org-name" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-            组织名称 <span className="text-red-500">*</span>
+          <label htmlFor="org-name" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
+            组织名称 <span className="text-error-500">*</span>
           </label>
           <input
             id="org-name"
@@ -132,15 +132,15 @@ const SettingsTab = memo(({ organization, onArchive, onDelete }: SettingsTabProp
             onChange={(e) => handleNameChange(e.target.value)}
             placeholder="输入组织名称"
             maxLength={50}
-            className="w-full max-w-md px-3 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+            className="w-full max-w-md px-3 py-2.5 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
           />
-          <p className="mt-1 text-xs text-slate-400">{name.length}/50</p>
+          <p className="mt-1 text-xs text-neutral-400">{name.length}/50</p>
         </div>
 
         {/* Slug / URL Identifier */}
         <div>
           <div className="flex items-center gap-2 mb-1.5">
-            <label htmlFor="org-slug" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+            <label htmlFor="org-slug" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
               URL 标识符（Slug）
             </label>
             <button
@@ -148,15 +148,15 @@ const SettingsTab = memo(({ organization, onArchive, onDelete }: SettingsTabProp
               className={cn(
                 'text-xs px-2 py-0.5 rounded-full transition-colors',
                 autoSlug
-                  ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-                  : 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400',
+                  ? 'bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-400'
+                  : 'bg-neutral-100 text-neutral-600 dark:bg-neutral-700 dark:text-neutral-400',
               )}
             >
               {autoSlug ? '自动生成' : '自定义'}
             </button>
           </div>
           <div className="flex items-center max-w-md">
-            <span className="px-3 py-2.5 border border-r-0 border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 text-slate-500 text-sm rounded-l-lg select-none">
+            <span className="px-3 py-2.5 border border-r-0 border-neutral-300 dark:border-neutral-600 bg-slate-50 dark:bg-neutral-800 text-neutral-500 text-sm rounded-l-lg select-none">
               @
             </span>
             <input
@@ -170,19 +170,19 @@ const SettingsTab = memo(({ organization, onArchive, onDelete }: SettingsTabProp
               placeholder="url-friendly-identifier"
               disabled={autoSlug}
               className={cn(
-                'flex-1 px-3 py-2.5 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm rounded-r-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors',
+                'flex-1 px-3 py-2.5 border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white text-sm rounded-r-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors',
                 autoSlug && 'opacity-60 cursor-not-allowed',
               )}
             />
           </div>
-          <p className="mt-1 text-xs text-slate-400">
+          <p className="mt-1 text-xs text-neutral-400">
             用于 URL 和 API 引用，仅支持小写字母、数字和连字符
           </p>
         </div>
 
         {/* Description */}
         <div>
-          <label htmlFor="org-desc" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+          <label htmlFor="org-desc" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
             描述
           </label>
           <textarea
@@ -192,9 +192,9 @@ const SettingsTab = memo(({ organization, onArchive, onDelete }: SettingsTabProp
             placeholder="简要描述组织的用途和目标..."
             rows={4}
             maxLength={500}
-            className="w-full max-w-lg px-3 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm resize-y focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+            className="w-full max-w-lg px-3 py-2.5 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white text-sm resize-y focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
           />
-          <p className="mt-1 text-xs text-slate-400">{description.length}/500</p>
+          <p className="mt-1 text-xs text-neutral-400">{description.length}/500</p>
         </div>
 
         {/* Save Button */}
@@ -205,8 +205,8 @@ const SettingsTab = memo(({ organization, onArchive, onDelete }: SettingsTabProp
             className={cn(
               'inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all',
               saving || !isModified
-                ? 'bg-slate-200 dark:bg-slate-700 text-slate-400 cursor-not-allowed'
-                : 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm shadow-blue-500/25 hover:shadow-md',
+                ? 'bg-neutral-200 dark:bg-neutral-700 text-neutral-400 cursor-not-allowed'
+                : 'bg-secondary-600 text-white hover:bg-secondary-700 shadow-sm shadow-blue-500/25 hover:shadow-md',
             )}
           >
             {saving ? (
@@ -222,7 +222,7 @@ const SettingsTab = memo(({ organization, onArchive, onDelete }: SettingsTabProp
             )}
           </button>
           {!isModified && !saving && (
-            <span className="flex items-center gap-1.5 text-sm text-green-600 dark:text-green-400">
+            <span className="flex items-center gap-1.5 text-sm text-success-600 dark:text-success-400">
               <CheckCircle className="w-4 h-4" />
               已保存
             </span>
@@ -231,24 +231,24 @@ const SettingsTab = memo(({ organization, onArchive, onDelete }: SettingsTabProp
       </section>
 
       {/* Danger Zone */}
-      <section aria-label="危险操作" className="rounded-xl border-2 border-red-200 dark:border-red-900/50 p-6 space-y-5 bg-red-50/30 dark:bg-red-900/10">
+      <section aria-label="危险操作" className="rounded-xl border-2 border-red-200 dark:border-red-900/50 p-6 space-y-5 bg-error-50/30 dark:bg-error-900/10">
         <div className="flex items-center gap-2.5">
-          <AlertTriangle className="w-5 h-5 text-red-500" />
-          <h3 className="font-semibold text-red-800 dark:text-red-300">危险操作</h3>
+          <AlertTriangle className="w-5 h-5 text-error-500" />
+          <h3 className="font-semibold text-error-800 dark:text-error-300">危险操作</h3>
         </div>
-        <p className="text-sm text-red-700/80 dark:text-red-400/80">
+        <p className="text-sm text-error-700/80 dark:text-error-400/80">
           以下操作不可逆或需要谨慎处理，请确认后再操作。
         </p>
 
         <div className="space-y-3">
           {/* Archive */}
-          <div className="flex items-start justify-between gap-4 p-4 bg-white dark:bg-slate-800 rounded-xl border border-red-100 dark:border-red-900/30">
+          <div className="flex items-start justify-between gap-4 p-4 bg-white dark:bg-neutral-800 rounded-xl border border-red-100 dark:border-red-900/30">
             <div className="space-y-1 min-w-0">
-              <h4 className="font-medium text-slate-900 dark:text-white flex items-center gap-2">
+              <h4 className="font-medium text-neutral-900 dark:text-white flex items-center gap-2">
                 <Archive className="w-4 h-4 text-yellow-500" />
                 归档此组织
               </h4>
-              <p className="text-sm text-slate-500 dark:text-slate-400">
+              <p className="text-sm text-neutral-500 dark:text-neutral-400">
                 归档后所有数据保留但无法访问，可随时恢复。
               </p>
             </div>
@@ -261,19 +261,19 @@ const SettingsTab = memo(({ organization, onArchive, onDelete }: SettingsTabProp
           </div>
 
           {/* Delete */}
-          <div className="flex items-start justify-between gap-4 p-4 bg-white dark:bg-slate-800 rounded-xl border border-red-200 dark:border-red-900/40">
+          <div className="flex items-start justify-between gap-4 p-4 bg-white dark:bg-neutral-800 rounded-xl border border-red-200 dark:border-red-900/40">
             <div className="space-y-1 min-w-0">
-              <h4 className="font-medium text-red-700 dark:text-red-400 flex items-center gap-2">
+              <h4 className="font-medium text-error-700 dark:text-error-400 flex items-center gap-2">
                 <Trash2 className="w-4 h-4" />
                 删除此组织
               </h4>
-              <p className="text-sm text-slate-500 dark:text-slate-400">
+              <p className="text-sm text-neutral-500 dark:text-neutral-400">
                 ⚠️ 此操作不可逆！删除后所有数据将永久丢失。
               </p>
             </div>
             <button
               onClick={onDelete}
-              className="shrink-0 px-4 py-2 text-sm font-medium bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors shadow-sm shadow-red-500/25"
+              className="shrink-0 px-4 py-2 text-sm font-medium bg-error-600 text-white rounded-lg hover:bg-error-700 transition-colors shadow-sm shadow-red-500/25"
             >
               确认删除
             </button>

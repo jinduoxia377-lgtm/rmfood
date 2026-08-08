@@ -100,35 +100,35 @@ export function BatchOperations({
   }, [flatChapters, selectedIds]);
 
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 p-4 z-50 min-w-[600px]">
+    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white dark:bg-neutral-800 rounded-xl shadow-2xl border border-neutral-200 dark:border-neutral-700 p-4 z-50 min-w-[600px]">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-4">
           <button
             onClick={handleToggleAll}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
           >
             {selectedIds.size === flatChapters.length && flatChapters.length > 0 ? (
               <CheckSquare className="w-5 h-5 text-primary" />
             ) : (
-              <Square className="w-5 h-5 text-gray-400" />
+              <Square className="w-5 h-5 text-neutral-400" />
             )}
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
               {selectedIds.size === flatChapters.length ? '取消全选' : '全选'}
             </span>
           </button>
 
-          <div className="h-6 w-px bg-gray-300 dark:bg-gray-600" />
+          <div className="h-6 w-px bg-neutral-300 dark:bg-neutral-600" />
 
-          <span className="text-sm text-gray-600 dark:text-gray-400">
+          <span className="text-sm text-neutral-600 dark:text-neutral-400">
             已选择 <span className="font-semibold text-primary">{selectedIds.size}</span> 个章节
           </span>
         </div>
 
         <button
           onClick={onClose}
-          className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+          className="p-1 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition-colors"
         >
-          <X className="w-5 h-5 text-gray-500" />
+          <X className="w-5 h-5 text-neutral-500" />
         </button>
       </div>
 
@@ -139,8 +139,8 @@ export function BatchOperations({
           className={cn(
             'flex items-center gap-2 px-4 py-2 rounded-lg transition-colors',
             selectedIds.size === 0
-              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              : 'bg-red-50 text-red-600 hover:bg-red-100',
+              ? 'bg-neutral-100 text-neutral-400 cursor-not-allowed'
+              : 'bg-error-50 text-error-600 hover:bg-error-100',
           )}
         >
           <Trash2 className="w-4 h-4" />
@@ -154,8 +154,8 @@ export function BatchOperations({
             className={cn(
               'flex items-center gap-2 px-4 py-2 rounded-lg transition-colors',
               selectedIds.size === 0
-                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                : 'bg-blue-50 text-blue-600 hover:bg-blue-100',
+                ? 'bg-neutral-100 text-neutral-400 cursor-not-allowed'
+                : 'bg-secondary-50 text-secondary-600 hover:bg-secondary-100',
             )}
           >
             <Move className="w-4 h-4" />
@@ -163,13 +163,13 @@ export function BatchOperations({
           </button>
 
           {showMoveMenu && availableTargets.length > 0 && (
-            <div className="absolute bottom-full left-0 mb-2 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 py-2 w-64 max-h-64 overflow-y-auto">
-              <div className="px-3 py-2 text-xs text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
+            <div className="absolute bottom-full left-0 mb-2 bg-white dark:bg-neutral-800 rounded-lg shadow-xl border border-neutral-200 dark:border-neutral-700 py-2 w-64 max-h-64 overflow-y-auto">
+              <div className="px-3 py-2 text-xs text-neutral-500 dark:text-neutral-400 border-b border-neutral-200 dark:border-neutral-700">
                 选择目标位置
               </div>
               <button
                 onClick={() => handleMove(null)}
-                className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                className="w-full px-3 py-2 text-left text-sm hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
               >
                 移动到根级别
               </button>
@@ -177,7 +177,7 @@ export function BatchOperations({
                 <button
                   key={chapter.id}
                   onClick={() => handleMove(chapter.id)}
-                  className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center gap-2"
+                  className="w-full px-3 py-2 text-left text-sm hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors flex items-center gap-2"
                 >
                   <span style={{ paddingLeft: chapter.level * 12 }} />
                   <span className="truncate">{chapter.title}</span>
@@ -193,8 +193,8 @@ export function BatchOperations({
           className={cn(
             'flex items-center gap-2 px-4 py-2 rounded-lg transition-colors',
             selectedIds.size === 0
-              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              : 'bg-green-50 text-green-600 hover:bg-green-100',
+              ? 'bg-neutral-100 text-neutral-400 cursor-not-allowed'
+              : 'bg-success-50 text-success-600 hover:bg-success-100',
           )}
         >
           <Download className="w-4 h-4" />
@@ -203,7 +203,7 @@ export function BatchOperations({
       </div>
 
       {selectedIds.size > 0 && (
-        <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="mt-4 pt-4 border-t border-neutral-200 dark:border-neutral-700">
           <div className="flex flex-wrap gap-2">
             {Array.from(selectedIds).slice(0, 5).map(id => {
               const chapter = flatChapters.find(c => c.id === id);
@@ -223,7 +223,7 @@ export function BatchOperations({
               ) : null;
             })}
             {selectedIds.size > 5 && (
-              <span className="inline-flex items-center px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 text-xs rounded-full">
+              <span className="inline-flex items-center px-2 py-1 bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-400 text-xs rounded-full">
                 +{selectedIds.size - 5} 更多
               </span>
             )}

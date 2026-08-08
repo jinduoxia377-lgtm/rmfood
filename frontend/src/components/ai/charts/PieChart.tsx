@@ -19,7 +19,7 @@ interface PieChartProps {
 }
 
 export function PieChart({ data }: PieChartProps) {
-  const COLORS = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444', '#ec4899']
+  const COLORS = ['var(--color-secondary, #0A84FF)', 'var(--color-tertiary, #AF52DE)', 'var(--color-primary, #34C759)', 'var(--color-warning, #FF9F0A)', 'var(--color-error, #FF3B30)', 'var(--color-pink-500, #D946EF)']
 
   const total = data.reduce((sum, item) => sum + item.value, 0)
 
@@ -47,8 +47,8 @@ export function PieChart({ data }: PieChartProps) {
           <Tooltip
             formatter={(value: number) => [`${((value / total) * 100).toFixed(1)}%`, '比例']}
             contentStyle={{
-              backgroundColor: '#fff',
-              border: '1px solid #e5e7eb',
+              backgroundColor: 'var(--card-bg-solid, #FFFFFF)',
+              border: '1px solid var(--border-subtle, rgba(0,0,0,0.06))',
               borderRadius: '8px',
               padding: '12px',
             }}

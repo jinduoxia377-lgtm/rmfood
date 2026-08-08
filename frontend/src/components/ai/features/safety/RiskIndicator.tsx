@@ -36,30 +36,30 @@ export function RiskIndicator({
   const [isHovered, setIsHovered] = useState(false)
 
   const riskLevel = useMemo(() => {
-    if (score >= thresholds.low) return { level: 'low', color: '#10B981', label: '低风险', bgClass: 'bg-green-500' }
-    if (score >= thresholds.medium) return { level: 'medium', color: '#F59E0B', label: '中风险', bgClass: 'bg-yellow-500' }
-    return { level: 'high', color: '#EF4444', label: '高风险', bgClass: 'bg-red-500' }
+    if (score >= thresholds.low) return { level: 'low', color: '#34C759', label: '低风险', bgClass: 'bg-success-500' }
+    if (score >= thresholds.medium) return { level: 'medium', color: '#D97706', label: '中风险', bgClass: 'bg-yellow-500' }
+    return { level: 'high', color: '#FF3B30', label: '高风险', bgClass: 'bg-error-500' }
   }, [score, thresholds])
 
   const dimensions = SIZE_MAP[size]
 
   const tooltipContent = useMemo(() => (
     <div className="space-y-2 min-w-[200px]">
-      <div className="font-semibold text-gray-900 dark:text-gray-100">
+      <div className="font-semibold text-neutral-900 dark:text-neutral-100">
         风险等级: {riskLevel.label}
       </div>
-      <div className="text-sm text-gray-600 dark:text-gray-400">
+      <div className="text-sm text-neutral-600 dark:text-neutral-400">
         风险评分: {score}/100
       </div>
       {riskFactors.length > 0 && (
-        <div className="border-t border-gray-200 dark:border-gray-700 pt-2">
-          <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">风险因子:</div>
+        <div className="border-t border-neutral-200 dark:border-neutral-700 pt-2">
+          <div className="text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1">风险因子:</div>
           {riskFactors.map((factor, index) => (
             <div key={index} className="flex justify-between items-center text-sm py-0.5">
               <span>{factor.name}</span>
               <span className={`font-medium ${
-                factor.value >= 80 ? 'text-green-600' :
-                factor.value >= 50 ? 'text-yellow-600' : 'text-red-600'
+                factor.value >= 80 ? 'text-success-600' :
+                factor.value >= 50 ? 'text-yellow-600' : 'text-error-600'
               }`}>
                 {factor.value}%
               </span>
@@ -97,7 +97,7 @@ export function RiskIndicator({
   }
 
   return (
-    <Tooltip content={tooltipContent} placement="top">
+    <Tooltip content={tooltipContent} position="top">
       {indicator}
     </Tooltip>
   )

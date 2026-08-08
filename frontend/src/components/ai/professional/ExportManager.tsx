@@ -142,11 +142,46 @@ class ExportManager extends Component<ExportManagerProps, ExportManagerState> {
   }
 
   private exportAsPDF(data: any, filename: string): void {
-    logger.log('PDF export not implemented yet', data);
+    const printWindow = window.open('', '_blank')
+    if (!printWindow) return
+
+    const html = `
+      <!DOCTYPE html><html><head><title>${filename}</title>
+      <style>body{font-family:'Microsoft YaHei',sans-serif;padding:40px}
+      table{width:100%;border-collapse:collapse;margin-top:20px}
+      th,td{border:1px solid #ddd;padding:8px 12px;text-align:left}
+      th{background:#f5f5f5}</style></head>
+      <body><h1>${filename}</h1><p>导出时间: ${new Date().toLocaleString('zh-CN')}</p>
+      <pre>${JSON.stringify(data, null, 2)}</pre></body></html>
+    `
+    printWindow.document.write(html)
+    printWindow.document.close()
+    printWindow.focus()
+    setTimeout(() => { printWindow.print(); printWindow.close() }, 500)
   }
 
   private exportAsExcel(data: any, filename: string): void {
-    logger.log('Excel export not implemented yet', data);
+    const flatten = (obj: any, prefix = ''): string[] => {
+      const rows: string[] = []
+      const keys = Object.keys(obj)
+      rows.push(keys.join(','))
+      if (Array.isArray(obj)) {
+        obj.forEach(item => rows.push(Object.values(item).join(',')))
+      } else {
+        Object.values(obj).forEach(v => {
+          if (typeof v === 'object' && v !== null) {
+            rows.push(...flatten(v, prefix))
+          } else {
+            rows.push(String(v))
+          }
+        })
+      }
+      return rows
+    }
+
+    const csvContent = '﻿' + flatten(data).join('\n')
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    this.downloadFile(blob, `${filename}.csv`)
   }
 
   private downloadFile(blob: Blob, filename: string): void {
@@ -166,7 +201,7 @@ class ExportManager extends Component<ExportManagerProps, ExportManagerState> {
 
     return (
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-neutral-700 mb-2">
           选择导出格式
         </label>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
@@ -176,8 +211,8 @@ class ExportManager extends Component<ExportManagerProps, ExportManagerState> {
               onClick={() => this.handleFormatChange(format)}
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 selectedFormat === format
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'bg-secondary-600 text-white'
+                  : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
               }`}
             >
               {format.toUpperCase()}
@@ -195,7 +230,7 @@ class ExportManager extends Component<ExportManagerProps, ExportManagerState> {
       <div className="mt-4">
         <button
           onClick={() => this.setState({ showAdvanced: !showAdvanced })}
-          className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-gray-900 mb-2"
+          className="flex items-center gap-2 text-sm font-medium text-neutral-700 hover:text-neutral-900 mb-2"
         >
           <svg
             className={`w-4 h-4 transition-transform ${showAdvanced ? 'rotate-90' : ''}`}
@@ -209,7 +244,7 @@ class ExportManager extends Component<ExportManagerProps, ExportManagerState> {
         </button>
 
         {showAdvanced && (
-          <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+          <div className="bg-slate-50 rounded-lg p-4 space-y-3">
             <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"
@@ -217,9 +252,9 @@ class ExportManager extends Component<ExportManagerProps, ExportManagerState> {
                 onChange={(e) => this.setState({
                   exportOptions: { ...exportOptions, includeMetadata: e.target.checked },
                 })}
-                className="w-4 h-4 text-blue-600 rounded"
+                className="w-4 h-4 text-secondary-600 rounded"
               />
-              <span className="text-sm text-gray-700">包含元数据</span>
+              <span className="text-sm text-neutral-700">包含元数据</span>
             </label>
 
             <label className="flex items-center gap-2 cursor-pointer">
@@ -229,9 +264,9 @@ class ExportManager extends Component<ExportManagerProps, ExportManagerState> {
                 onChange={(e) => this.setState({
                   exportOptions: { ...exportOptions, includeTimestamp: e.target.checked },
                 })}
-                className="w-4 h-4 text-blue-600 rounded"
+                className="w-4 h-4 text-secondary-600 rounded"
               />
-              <span className="text-sm text-gray-700">包含时间戳</span>
+              <span className="text-sm text-neutral-700">包含时间戳</span>
             </label>
 
             <label className="flex items-center gap-2 cursor-pointer">
@@ -241,9 +276,9 @@ class ExportManager extends Component<ExportManagerProps, ExportManagerState> {
                 onChange={(e) => this.setState({
                   exportOptions: { ...exportOptions, prettyPrint: e.target.checked },
                 })}
-                className="w-4 h-4 text-blue-600 rounded"
+                className="w-4 h-4 text-secondary-600 rounded"
               />
-              <span className="text-sm text-gray-700">格式化输出</span>
+              <span className="text-sm text-neutral-700">格式化输出</span>
             </label>
           </div>
         )}
@@ -256,19 +291,19 @@ class ExportManager extends Component<ExportManagerProps, ExportManagerState> {
 
     return (
       <div className="bg-white rounded-lg shadow-lg p-6">
-        <h3 className="text-lg font-semibold mb-4 text-gray-900">导出数据</h3>
+        <h3 className="text-lg font-semibold mb-4 text-neutral-900">导出数据</h3>
 
         {this.renderFormatSelector()}
 
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-neutral-700 mb-2">
             文件名
           </label>
           <input
             type="text"
             value={customFilename}
             onChange={(e) => this.setState({ customFilename: e.target.value })}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="输入文件名"
           />
         </div>
@@ -277,7 +312,7 @@ class ExportManager extends Component<ExportManagerProps, ExportManagerState> {
 
         <button
           onClick={this.handleExport}
-          className="w-full mt-4 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+          className="w-full mt-4 px-6 py-3 bg-secondary-600 text-white rounded-lg hover:bg-secondary-700 transition-colors font-medium"
         >
           导出
         </button>

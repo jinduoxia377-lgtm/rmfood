@@ -18,15 +18,13 @@ export default defineConfig([
   {
     files: ['**/*.{ts,tsx}'],
     extends: [
-      js.configs.recommended,
-      tseslint.configs.recommendedTypeChecked,
-      tseslint.configs.stylisticTypeChecked,
+      ...tseslint.plugin.configs['flat/recommended-type-checked'],
+      ...tseslint.plugin.configs['flat/stylistic-type-checked'],
       reactHooks.configs.flat.recommended,
       reactRefresh.configs.vite,
     ],
     plugins: {
       i18next,
-      '@typescript-eslint': tseslint.plugin,
     },
     languageOptions: {
       ecmaVersion: 2023,

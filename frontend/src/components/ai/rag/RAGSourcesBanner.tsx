@@ -36,20 +36,20 @@ export function RAGSourcesBanner({
     <div className="mx-4 mt-2">
       <div className={clsx(
         'rounded-lg border text-sm transition-all duration-200',
-        'bg-emerald-50/80 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-900/30',
+        'bg-primary-50/80 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-900/30',
       )}>
         {/* 头部信息栏 */}
         <div className="flex items-center justify-between px-3 py-2">
           <div className="flex items-center gap-2 min-w-0">
-            <Database className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-            <span className="text-xs font-medium text-emerald-700 dark:text-emerald-300">
+            <Database className="w-3.5 h-3.5 text-primary-600 dark:text-primary-400 shrink-0" />
+            <span className="text-xs font-medium text-primary-700 dark:text-primary-300">
               知识库参考
             </span>
-            <span className="px-1.5 py-0.5 text-[10px] font-medium bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 rounded">
+            <span className="px-1.5 py-0.5 text-[10px] font-medium bg-primary-100 dark:bg-primary-900/40 text-primary-600 dark:text-primary-400 rounded">
               {chunks.length} 个片段
             </span>
             {sources.length > 0 && (
-              <span className="text-[10px] text-emerald-500 dark:text-emerald-500 hidden sm:inline truncate">
+              <span className="text-[10px] text-primary-500 dark:text-primary-500 hidden sm:inline truncate">
                 来自 {sources.length} 个文档
               </span>
             )}
@@ -59,22 +59,22 @@ export function RAGSourcesBanner({
             {sources.length > 0 && (
               <button
                 onClick={() => setExpanded(v => !v)}
-                className="p-1 rounded hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors"
+                className="p-1 rounded hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors"
                 title={expanded ? '收起详情' : '查看来源'}
               >
                 {expanded
-                  ? <ChevronUp className="w-3.5 h-3.5 text-emerald-500" />
-                  : <ChevronDown className="w-3.5 h-3.5 text-emerald-500" />
+                  ? <ChevronUp className="w-3.5 h-3.5 text-primary-500" />
+                  : <ChevronDown className="w-3.5 h-3.5 text-primary-500" />
                 }
               </button>
             )}
             {onDismiss && (
               <button
                 onClick={onDismiss}
-                className="p-1 rounded hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors"
+                className="p-1 rounded hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors"
                 title="关闭"
               >
-                <X className="w-3.5 h-3.5 text-emerald-400" />
+                <X className="w-3.5 h-3.5 text-primary-400" />
               </button>
             )}
           </div>
@@ -87,9 +87,9 @@ export function RAGSourcesBanner({
               const matchCount = chunks.filter(c => c.source === source).length
               return (
                 <div key={i} className="flex items-center gap-2 text-[11px]">
-                  <FileText className="w-3 h-3 text-emerald-500 shrink-0" />
-                  <span className="text-emerald-700 dark:text-emerald-300 truncate">{source}</span>
-                  <span className="text-emerald-400 dark:text-emerald-500 shrink-0 ml-auto">
+                  <FileText className="w-3 h-3 text-primary-500 shrink-0" />
+                  <span className="text-primary-700 dark:text-primary-300 truncate">{source}</span>
+                  <span className="text-primary-400 dark:text-primary-500 shrink-0 ml-auto">
                     {matchCount} 个匹配
                   </span>
                 </div>

@@ -124,9 +124,9 @@ export function FormulaCompare({ leftId, rightId }: FormulaCompareProps) {
   if (!leftId && !rightId) {
     return (
       <div className="text-center py-12">
-        <Sparkles size={48} className="mx-auto text-slate-300 dark:text-slate-600 mb-3" />
-        <p className="text-slate-500">请从配方列表中选择两个配方进行对比</p>
-        <p className="text-xs text-slate-400 mt-1">点击配方卡片上的对比按钮，或在配方详情页点击「对比」</p>
+        <Sparkles size={48} className="mx-auto text-neutral-300 dark:text-neutral-600 mb-3" />
+        <p className="text-neutral-500">请从配方列表中选择两个配方进行对比</p>
+        <p className="text-xs text-neutral-400 mt-1">点击配方卡片上的对比按钮，或在配方详情页点击「对比」</p>
       </div>
     )
   }
@@ -148,15 +148,15 @@ export function FormulaCompare({ leftId, rightId }: FormulaCompareProps) {
             ) : left ? (
               <>
                 <div className="flex items-center gap-2 mb-1">
-                  <Link to={`/formulas/${left.id}`} className="font-semibold text-slate-900 dark:text-white hover:text-primary-600">
+                  <Link to={`/formulas/${left.id}`} className="font-semibold text-neutral-900 dark:text-white hover:text-primary-600">
                     {left.name}
                   </Link>
                   <StatusBadge status={left.status} />
                 </div>
-                <p className="text-sm text-slate-500">{left.code}</p>
+                <p className="text-sm text-neutral-500">{left.code}</p>
               </>
             ) : (
-              <p className="text-slate-400">选择配方 A</p>
+              <p className="text-neutral-400">选择配方 A</p>
             )}
           </CardContent>
         </Card>
@@ -168,15 +168,15 @@ export function FormulaCompare({ leftId, rightId }: FormulaCompareProps) {
             ) : right ? (
               <>
                 <div className="flex items-center gap-2 mb-1">
-                  <Link to={`/formulas/${right.id}`} className="font-semibold text-slate-900 dark:text-white hover:text-primary-600">
+                  <Link to={`/formulas/${right.id}`} className="font-semibold text-neutral-900 dark:text-white hover:text-primary-600">
                     {right.name}
                   </Link>
                   <StatusBadge status={right.status} />
                 </div>
-                <p className="text-sm text-slate-500">{right.code}</p>
+                <p className="text-sm text-neutral-500">{right.code}</p>
               </>
             ) : (
-              <p className="text-slate-400">选择配方 B</p>
+              <p className="text-neutral-400">选择配方 B</p>
             )}
           </CardContent>
         </Card>
@@ -184,32 +184,32 @@ export function FormulaCompare({ leftId, rightId }: FormulaCompareProps) {
 
       {/* 指标对比 */}
       <div className="grid grid-cols-3 gap-2">
-        <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-3 text-center">
-          <p className="text-xs text-slate-500 mb-1.5">安全检查</p>
+        <div className="bg-slate-50 dark:bg-neutral-800/50 rounded-lg p-3 text-center">
+          <p className="text-xs text-neutral-500 mb-1.5">安全检查</p>
           <div className="flex justify-center gap-3">
-            <span className={leftSafety.passed === true ? 'text-green-500' : leftSafety.passed === false ? 'text-red-500' : 'text-slate-400'}>
+            <span className={leftSafety.passed === true ? 'text-success-500' : leftSafety.passed === false ? 'text-error-500' : 'text-neutral-400'}>
               {leftSafety.passed === null ? '-' : leftSafety.passed ? '通过' : '未通过'}
             </span>
-            <span className="text-slate-300">vs</span>
-            <span className={rightSafety.passed === true ? 'text-green-500' : rightSafety.passed === false ? 'text-red-500' : 'text-slate-400'}>
+            <span className="text-neutral-300">vs</span>
+            <span className={rightSafety.passed === true ? 'text-success-500' : rightSafety.passed === false ? 'text-error-500' : 'text-neutral-400'}>
               {rightSafety.passed === null ? '-' : rightSafety.passed ? '通过' : '未通过'}
             </span>
           </div>
         </div>
-        <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-3 text-center">
-          <p className="text-xs text-slate-500 mb-1.5">协同评分</p>
+        <div className="bg-slate-50 dark:bg-neutral-800/50 rounded-lg p-3 text-center">
+          <p className="text-xs text-neutral-500 mb-1.5">协同评分</p>
           <div className="flex justify-center gap-3">
             <span className="text-lg font-semibold text-primary-600">{leftSynergy ?? '-'}</span>
-            <span className="text-slate-300">vs</span>
+            <span className="text-neutral-300">vs</span>
             <span className="text-lg font-semibold text-primary-600">{rightSynergy ?? '-'}</span>
           </div>
         </div>
-        <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-3 text-center">
-          <p className="text-xs text-slate-500 mb-1.5">成分数量</p>
+        <div className="bg-slate-50 dark:bg-neutral-800/50 rounded-lg p-3 text-center">
+          <p className="text-xs text-neutral-500 mb-1.5">成分数量</p>
           <div className="flex justify-center gap-3">
-            <span className="text-lg font-semibold text-slate-700 dark:text-slate-300">{left?.ingredients.length ?? 0}</span>
-            <span className="text-slate-300">vs</span>
-            <span className="text-lg font-semibold text-slate-700 dark:text-slate-300">{right?.ingredients.length ?? 0}</span>
+            <span className="text-lg font-semibold text-neutral-700 dark:text-neutral-300">{left?.ingredients.length ?? 0}</span>
+            <span className="text-neutral-300">vs</span>
+            <span className="text-lg font-semibold text-neutral-700 dark:text-neutral-300">{right?.ingredients.length ?? 0}</span>
           </div>
         </div>
       </div>
@@ -223,7 +223,7 @@ export function FormulaCompare({ leftId, rightId }: FormulaCompareProps) {
           {ingredientsComparison.shared.length > 0 && (
             <div>
               <div className="flex items-center gap-2 mb-1.5">
-                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">共同成分</span>
+                <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">共同成分</span>
                 <Badge variant="primary" size="sm">{ingredientsComparison.shared.length}</Badge>
               </div>
               <div className="flex flex-wrap gap-1.5">
@@ -238,7 +238,7 @@ export function FormulaCompare({ leftId, rightId }: FormulaCompareProps) {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <div className="flex items-center gap-2 mb-1.5">
-                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">配方 A 独有</span>
+                  <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">配方 A 独有</span>
                   <Badge variant="info" size="sm">{ingredientsComparison.onlyLeft.length}</Badge>
                 </div>
                 <div className="flex flex-wrap gap-1.5">
@@ -249,7 +249,7 @@ export function FormulaCompare({ leftId, rightId }: FormulaCompareProps) {
               </div>
               <div>
                 <div className="flex items-center gap-2 mb-1.5">
-                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">配方 B 独有</span>
+                  <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">配方 B 独有</span>
                   <Badge variant="warning" size="sm">{ingredientsComparison.onlyRight.length}</Badge>
                 </div>
                 <div className="flex flex-wrap gap-1.5">
@@ -262,21 +262,21 @@ export function FormulaCompare({ leftId, rightId }: FormulaCompareProps) {
           )}
 
           {/* 成分可视化 */}
-          <div className="grid grid-cols-2 gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+          <div className="grid grid-cols-2 gap-3 pt-3 border-t border-neutral-100 dark:border-neutral-800">
             <div>
-              <p className="text-xs text-slate-500 mb-2">配方 A 成分分布</p>
+              <p className="text-xs text-neutral-500 mb-2">配方 A 成分分布</p>
               {left && left.ingredients.length > 0 ? (
                 <CompositionChart ingredients={left.ingredients} compact />
               ) : (
-                <p className="text-sm text-slate-400">暂无数据</p>
+                <p className="text-sm text-neutral-400">暂无数据</p>
               )}
             </div>
             <div>
-              <p className="text-xs text-slate-500 mb-2">配方 B 成分分布</p>
+              <p className="text-xs text-neutral-500 mb-2">配方 B 成分分布</p>
               {right && right.ingredients.length > 0 ? (
                 <CompositionChart ingredients={right.ingredients} compact />
               ) : (
-                <p className="text-sm text-slate-400">暂无数据</p>
+                <p className="text-sm text-neutral-400">暂无数据</p>
               )}
             </div>
           </div>
@@ -291,27 +291,27 @@ export function FormulaCompare({ leftId, rightId }: FormulaCompareProps) {
         <CardContent className="p-3">
           <div className="grid grid-cols-3 gap-3">
             <div>
-              <p className="text-xs text-slate-500 mb-1.5">配方 A 独有</p>
+              <p className="text-xs text-neutral-500 mb-1.5">配方 A 独有</p>
               <div className="flex flex-wrap gap-1">
                 {effectsComparison.onlyLeft.length > 0 ? effectsComparison.onlyLeft.map(e => (
                   <Badge key={e} variant="info" size="sm">{e}</Badge>
-                )) : <span className="text-xs text-slate-400">无</span>}
+                )) : <span className="text-xs text-neutral-400">无</span>}
               </div>
             </div>
             <div>
-              <p className="text-xs text-slate-500 mb-1.5">共同功效</p>
+              <p className="text-xs text-neutral-500 mb-1.5">共同功效</p>
               <div className="flex flex-wrap gap-1">
                 {effectsComparison.shared.length > 0 ? effectsComparison.shared.map(e => (
                   <Badge key={e} variant="primary" size="sm">{e}</Badge>
-                )) : <span className="text-xs text-slate-400">无</span>}
+                )) : <span className="text-xs text-neutral-400">无</span>}
               </div>
             </div>
             <div>
-              <p className="text-xs text-slate-500 mb-1.5">配方 B 独有</p>
+              <p className="text-xs text-neutral-500 mb-1.5">配方 B 独有</p>
               <div className="flex flex-wrap gap-1">
                 {effectsComparison.onlyRight.length > 0 ? effectsComparison.onlyRight.map(e => (
                   <Badge key={e} variant="warning" size="sm">{e}</Badge>
-                )) : <span className="text-xs text-slate-400">无</span>}
+                )) : <span className="text-xs text-neutral-400">无</span>}
               </div>
             </div>
           </div>
@@ -326,13 +326,13 @@ export function FormulaCompare({ leftId, rightId }: FormulaCompareProps) {
           </CardHeader>
           <CardContent className="p-3">
             <div className="grid grid-cols-2 gap-3">
-              <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-2.5">
-                <p className="text-xs text-slate-500 mb-1">{left.name}</p>
-                <p className="text-sm text-slate-700 dark:text-slate-300">{left.description}</p>
+              <div className="bg-slate-50 dark:bg-neutral-800/50 rounded-lg p-2.5">
+                <p className="text-xs text-neutral-500 mb-1">{left.name}</p>
+                <p className="text-sm text-neutral-700 dark:text-neutral-300">{left.description}</p>
               </div>
-              <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-2.5">
-                <p className="text-xs text-slate-500 mb-1">{right.name}</p>
-                <p className="text-sm text-slate-700 dark:text-slate-300">{right.description}</p>
+              <div className="bg-slate-50 dark:bg-neutral-800/50 rounded-lg p-2.5">
+                <p className="text-xs text-neutral-500 mb-1">{right.name}</p>
+                <p className="text-sm text-neutral-700 dark:text-neutral-300">{right.description}</p>
               </div>
             </div>
           </CardContent>

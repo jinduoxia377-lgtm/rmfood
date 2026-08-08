@@ -291,7 +291,7 @@ export function ChartSkeleton({ hasLegend = true, className }: ChartSkeletonProp
           ))}
         </div>
         {/* 柱状图模拟 */}
-        <div className="ml-10 h-[200px] flex items-end gap-3 pb-6 border-b border-slate-200 dark:border-slate-700">
+        <div className="ml-10 h-[200px] flex items-end gap-3 pb-6 border-t border-[var(--border-subtle,#e5e7eb)] dark:border-[var(--border-subtle,#374151)]">
           {Array.from({ length: 7 }).map((_, i) => (
             <div
               key={i}
@@ -322,16 +322,16 @@ export function ChartSkeleton({ hasLegend = true, className }: ChartSkeletonProp
 
 export function FormulaCardSkeleton() {
   return (
-    <div className="animate-pulse p-4 bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-100 dark:border-gray-700">
-      <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-4"></div>
+    <div className="animate-pulse p-4 bg-[var(--card-bg-solid,#fff)] dark:bg-[var(--bg-surface,#1c1c1e)] rounded-lg shadow border border-[var(--border-subtle,#f5f5f7)] dark:border-[var(--border-subtle,#374151)]">
+      <div className="h-6 bg-[var(--fill-secondary,#e5e7eb)] dark:bg-[var(--fill-secondary,#374151)] rounded w-1/3 mb-4"></div>
       <div className="space-y-2">
-        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
-        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-5/6"></div>
-        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-4/6"></div>
+        <div className="h-4 bg-[var(--fill-secondary,#e5e7eb)] dark:bg-[var(--fill-secondary,#374151)] rounded"></div>
+        <div className="h-4 bg-[var(--fill-secondary,#e5e7eb)] dark:bg-[var(--fill-secondary,#374151)] rounded w-5/6"></div>
+        <div className="h-4 bg-[var(--fill-secondary,#e5e7eb)] dark:bg-[var(--fill-secondary,#374151)] rounded w-4/6"></div>
       </div>
       <div className="flex gap-2 mt-4">
-        <div className="h-8 w-20 bg-gray-200 dark:bg-gray-700 rounded"></div>
-        <div className="h-8 w-20 bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="h-8 w-20 bg-[var(--fill-secondary,#e5e7eb)] dark:bg-[var(--fill-secondary,#374151)] rounded"></div>
+        <div className="h-8 w-20 bg-[var(--fill-secondary,#e5e7eb)] dark:bg-[var(--fill-secondary,#374151)] rounded"></div>
       </div>
     </div>
   )

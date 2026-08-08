@@ -29,7 +29,7 @@ function StructuredMessageRenderer({ content }: StructuredMessageRendererProps) 
 
   if (blocks.length === 0) {
     return (
-      <div className="py-6 text-center text-xs text-gray-400 dark:text-gray-500">
+      <div className="py-6 text-center text-xs text-neutral-400 dark:text-neutral-500">
         暂无内容
       </div>
     )

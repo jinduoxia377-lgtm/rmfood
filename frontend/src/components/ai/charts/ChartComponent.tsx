@@ -38,7 +38,7 @@ export function ChartComponent({ type, data, options }: ChartComponentProps) {
   switch (type) {
     case 'line':
       return (
-        <div className="my-4 p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+        <div className="my-4 p-4 bg-white dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700">
           <h4 className="text-sm font-medium mb-3">{options.title || '折线图'}</h4>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={data}>
@@ -50,13 +50,13 @@ export function ChartComponent({ type, data, options }: ChartComponentProps) {
             </LineChart>
           </ResponsiveContainer>
           {options.source && (
-            <p className="text-xs text-gray-500 mt-2 text-right">数据来源: {options.source}</p>
+            <p className="text-xs text-neutral-500 mt-2 text-right">数据来源: {options.source}</p>
           )}
         </div>
       )
     case 'bar':
       return (
-        <div className="my-4 p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+        <div className="my-4 p-4 bg-white dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700">
           <h4 className="text-sm font-medium mb-3">{options.title || '柱状图'}</h4>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={data}>
@@ -68,13 +68,13 @@ export function ChartComponent({ type, data, options }: ChartComponentProps) {
             </BarChart>
           </ResponsiveContainer>
           {options.source && (
-            <p className="text-xs text-gray-500 mt-2 text-right">数据来源: {options.source}</p>
+            <p className="text-xs text-neutral-500 mt-2 text-right">数据来源: {options.source}</p>
           )}
         </div>
       )
     case 'pie':
       return (
-        <div className="my-4 p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+        <div className="my-4 p-4 bg-white dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700">
           <h4 className="text-sm font-medium mb-3">{options.title || '饼图'}</h4>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
@@ -96,7 +96,7 @@ export function ChartComponent({ type, data, options }: ChartComponentProps) {
             </PieChart>
           </ResponsiveContainer>
           {options.source && (
-            <p className="text-xs text-gray-500 mt-2 text-right">数据来源: {options.source}</p>
+            <p className="text-xs text-neutral-500 mt-2 text-right">数据来源: {options.source}</p>
           )}
         </div>
       )

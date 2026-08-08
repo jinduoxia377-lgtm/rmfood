@@ -580,7 +580,7 @@ ${sections.join('\n')}
                 },
               });
 
-              currentY = (doc as any).lastAutoTable.finalY + 10;
+              currentY = (doc.lastAutoTable.finalY + 10;
             });
           }
 

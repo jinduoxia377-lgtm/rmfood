@@ -797,8 +797,8 @@ function enrichMetadata(base: FormulaMetadata, raw: any): FormulaMetadata {
     batchNumber: base.batchNumber || raw.batchNumber || raw.batch_no,
     supplier: base.supplier || raw.supplier || raw.vendor,
     manufacturer: base.manufacturer || raw.manufacturer,
-    productionDate: base.productionDate || (parseDate(raw.productionDate) as any).toISOString(),
-    expiryDate: base.expiryDate || (parseDate(raw.expiryDate) as any).toISOString(),
+    productionDate: base.productionDate || (parseDate(raw.productionDate) as Date | null)?.toISOString(),
+    expiryDate: base.expiryDate || (parseDate(raw.expiryDate) as Date | null)?.toISOString(),
     approvalNumber: base.approvalNumber || raw.approvalNo || raw.registration_number,
     notes: base.notes || raw.notes || raw.remarks,
   }

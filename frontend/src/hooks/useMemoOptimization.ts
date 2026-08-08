@@ -39,46 +39,6 @@ export function useTimedMemo<T>({ value, key, maxAge = 60000 }: MemoOptions<T>):
   return useMemo(() => value, [value])
 }
 
-export function useDebounce<T>(value: T, delay: number): T {
-  const [debouncedValue, setDebouncedValue] = useState(value)
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value)
-    }, delay)
-
-    return () => {
-      clearTimeout(handler)
-    }
-  }, [value, delay])
-
-  return debouncedValue
-}
-
-export function useThrottle<T>(value: T, interval: number): T {
-  const [throttledValue, setThrottledValue] = useState(value)
-  const lastExecuted = useRef(Date.now())
-
-  useEffect(() => {
-    const now = Date.now()
-    const timeSinceLastExecution = now - lastExecuted.current
-
-    if (timeSinceLastExecution >= interval) {
-      lastExecuted.current = now
-      setThrottledValue(value)
-    } else {
-      const timeoutId = setTimeout(() => {
-        lastExecuted.current = Date.now()
-        setThrottledValue(value)
-      }, interval - timeSinceLastExecution)
-
-      return () => clearTimeout(timeoutId)
-    }
-  }, [value, interval])
-
-  return throttledValue
-}
-
 export function useComputed<T>(compute: () => T, deps: React.DependencyList): T {
   return useMemo(compute, deps)
 }
@@ -138,40 +98,7 @@ export function useFormulaCache() {
   }
 }
 
-export function useIntersectionObserver(
-  callback: (entries: IntersectionObserverEntry[]) => void,
-  options?: IntersectionObserverInit,
-) {
-  const observer = useRef<IntersectionObserver | null>(null)
-
-  const observe = useCallback((element: Element) => {
-    if (observer.current) {
-      observer.current.observe(element)
-    }
-  }, [])
-
-  const unobserve = useCallback((element: Element) => {
-    if (observer.current) {
-      observer.current.unobserve(element)
-    }
-  }, [])
-
-  const disconnect = useCallback(() => {
-    if (observer.current) {
-      observer.current.disconnect()
-    }
-  }, [])
-
-  useEffect(() => {
-    observer.current = new IntersectionObserver(callback, options)
-
-    return () => {
-      disconnect()
-    }
-  }, [callback, options, disconnect])
-
-  return { observe, unobserve, disconnect }
-}
+// NOTE: useIntersectionObserver has been moved to hooks/usePerformance.ts
 
 export function usePrevious<T>(value: T): T | undefined {
   const ref = useRef<T>(null)

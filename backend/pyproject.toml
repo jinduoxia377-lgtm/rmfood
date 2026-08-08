@@ -65,7 +65,7 @@ omit = [
 branch = true
 
 [tool.coverage.report]
-fail_under = 70  # 🔒 低于 70% 覆盖率则 CI 失败
+fail_under = 80  # 🔒 低于 80% 覆盖率则 CI 失败
 show_missing = true
 precision = 2
 skip_covered = false
@@ -73,7 +73,7 @@ exclude_lines = [
     "pragma: no cover",
     "def __repr__",
     "raise NotImplementedError",
-    "if __name__ == .__main__.:",
+    "if __name__ == \"__main__\":",
     "if TYPE_CHECKING:",
     "@abstractmethod",
     "@asynccontextmanager",

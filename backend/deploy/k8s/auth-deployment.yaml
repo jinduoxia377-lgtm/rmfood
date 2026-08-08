@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: authz-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: authz-service
+  template:
+    metadata:
+      labels:
+        app: authz-service
+    spec:
+      containers:
+      - name: auth-service
+        image: rmfood/auth-service:latest
+        ports:
+        - containerPort: 8002
+        env:
+        - name: APP_ENV
+          value: "production"
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: auth-secrets
+              key: jwt-secret
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "250m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: authz-service
+spec:
+  type: ClusterIP
+  selector:
+    app: authz-service
+  ports:
+  - port: 8002
+    targetPort: 8002

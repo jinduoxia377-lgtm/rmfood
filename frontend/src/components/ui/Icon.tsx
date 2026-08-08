@@ -7,7 +7,7 @@ export type IconName = keyof typeof LucideIcons
 export type IconVariant = 'primary' | 'secondary' | 'tertiary' | 'success' | 'warning' | 'error' | 'info' | 'text' | 'muted'
 
 interface IconProps {
-  name: string
+  name: IconName
   size?: number
   className?: string
   color?: string
@@ -21,7 +21,7 @@ export const Icon: React.FC<IconProps> = ({
   color,
   variant,
 }) => {
-  const LucideIcon = (LucideIcons as any)[name]
+  const LucideIcon = (LucideIcons as unknown as Record<string, React.FC<import('lucide-react').LucideProps>>)[name]
 
   if (!LucideIcon || typeof LucideIcon !== 'function') {
     return null
@@ -68,6 +68,7 @@ export const Icon: React.FC<IconProps> = ({
       size={size}
       className={className}
       style={iconColor ? { color: iconColor } : undefined}
+      aria-hidden="true"
     />
   )
 }

@@ -18,8 +18,8 @@ interface TemplatePreviewProps {
 export function TemplatePreview({ template, onEdit, onDuplicate }: TemplatePreviewProps) {
   if (!template) {
     return (
-      <div className="flex items-center justify-center h-64 border rounded-lg bg-gray-50 dark:bg-gray-800">
-        <p className="text-gray-400">选择一个模板进行预览</p>
+      <div className="flex items-center justify-center h-64 border rounded-lg bg-slate-50 dark:bg-neutral-800">
+        <p className="text-neutral-400">选择一个模板进行预览</p>
       </div>
     );
   }
@@ -29,12 +29,12 @@ export function TemplatePreview({ template, onEdit, onDuplicate }: TemplatePrevi
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-semibold">{template.name || '未命名模板'}</h2>
-          <p className="text-sm text-gray-500 mt-1">{template.description || '暂无描述'}</p>
+          <p className="text-sm text-neutral-500 mt-1">{template.description || '暂无描述'}</p>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={onDuplicate}
-            className="flex items-center gap-2 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+            className="flex items-center gap-2 px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-700"
           >
             <Copy className="w-4 h-4" />
             复制
@@ -49,12 +49,12 @@ export function TemplatePreview({ template, onEdit, onDuplicate }: TemplatePrevi
         </div>
       </div>
 
-      <div className="border rounded-lg p-6 bg-white dark:bg-gray-800">
+      <div className="border rounded-lg p-6 bg-white dark:bg-neutral-800">
         <h3 className="font-medium mb-4">模板章节结构</h3>
         {template.sections && template.sections.length > 0 ? (
           <div className="space-y-2">
             {template.sections.map((section, index) => (
-              <div key={section.id || index} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+              <div key={section.id || index} className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-neutral-700 rounded-lg">
                 <span className="w-8 h-8 flex items-center justify-center bg-primary/10 rounded-full text-sm font-medium">
                   {index + 1}
                 </span>
@@ -63,12 +63,12 @@ export function TemplatePreview({ template, onEdit, onDuplicate }: TemplatePrevi
             ))}
           </div>
         ) : (
-          <p className="text-sm text-gray-400">暂无章节</p>
+          <p className="text-sm text-neutral-400">暂无章节</p>
         )}
       </div>
 
       <div className="flex justify-end">
-        <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
+        <button className="flex items-center gap-2 px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-700">
           <Download className="w-4 h-4" />
           导出模板
         </button>

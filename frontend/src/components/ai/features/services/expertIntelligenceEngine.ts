@@ -11,30 +11,50 @@
  * @lastUpdated 2026-05-30
  */
 
-import { logger } from '@/utils/safeLogger'
-import type { SmartSuggestion } from '../../types'
+import { logger } from '@/utils/safeLogger';
+
+// ===== 智能建议类型 =====
+export interface SmartSuggestion {
+  id: string;
+  text: string;
+  type:
+    | 'context'
+    | 'history'
+    | 'trending'
+    | 'ai'
+    | 'language'
+    | 'expert'
+    | 'expert_formula'
+    | 'expert_targeting'
+    | 'expert_process'
+    | 'optimization'
+    | 'info';
+  score: number;
+  category: string;
+  source: string;
+}
 
 // ===== 上下文分析结果 =====
 export interface ParsedContext {
-  productType: string | null
-  functionGoals: string[]
-  constraints: string[]
-  technicalParams: { param: string; value: string; unit?: string }[]
-  targetUsers: string[]
-  regulatoryContext: string | null
-  processStage: string | null
-  ingredientMentions: string[]
-  confidence: number
-  rawInput: string
+  productType: string | null;
+  functionGoals: string[];
+  constraints: string[];
+  technicalParams: { param: string; value: string; unit?: string }[];
+  targetUsers: string[];
+  regulatoryContext: string | null;
+  processStage: string | null;
+  ingredientMentions: string[];
+  confidence: number;
+  rawInput: string;
 }
 
 // ===== 专业维度定义 =====
 export interface SuggestionDimension {
-  id: string
-  label: string
-  icon: string
-  description: string
-  relevanceWeight: number
+  id: string;
+  label: string;
+  icon: string;
+  description: string;
+  relevanceWeight: number;
 }
 
 export const PROFESSIONAL_DIMENSIONS: SuggestionDimension[] = [
@@ -46,19 +66,19 @@ export const PROFESSIONAL_DIMENSIONS: SuggestionDimension[] = [
   { id: 'cost_value', label: '成本价值', icon: '💰', description: '成本结构和价值分析', relevanceWeight: 0.8 },
   { id: 'market_diff', label: '市场差异', icon: '🎯', description: '市场定位和差异化', relevanceWeight: 0.75 },
   { id: 'risk_alert', label: '风险预警', icon: '⚠️', description: '潜在风险和注意事项', relevanceWeight: 0.85 },
-]
+];
 
 // ===== 产品形态库 =====
 const PRODUCT_TYPES: Record<string, RegExp> = {
-  '固体饮料': /固体饮料|粉剂|速溶粉|冲剂|代餐粉/g,
-  '口服液': /口服液|饮品|饮料|精华液|浓缩液/g,
-  '片剂': /片剂|压片糖果|咀嚼片|含片|泡腾片/g,
-  '胶囊': /胶囊|软胶囊|硬胶囊|凝胶糖果/g,
-  '功能性食品': /功能性食品|特膳食品|保健食品|特殊医学用途/g,
-  '普通食品': /普通食品|休闲食品|零食|糕点/g,
-  '化妆品': /化妆品|护肤品|面膜|精华/g,
-  '宠物食品': /宠物食品|猫粮|狗粮|宠物营养/g,
-}
+  固体饮料: /固体饮料|粉剂|速溶粉|冲剂|代餐粉/g,
+  口服液: /口服液|饮品|饮料|精华液|浓缩液/g,
+  片剂: /片剂|压片糖果|咀嚼片|含片|泡腾片/g,
+  胶囊: /胶囊|软胶囊|硬胶囊|凝胶糖果/g,
+  功能性食品: /功能性食品|特膳食品|保健食品|特殊医学用途/g,
+  普通食品: /普通食品|休闲食品|零食|糕点/g,
+  化妆品: /化妆品|护肤品|面膜|精华/g,
+  宠物食品: /宠物食品|猫粮|狗粮|宠物营养/g,
+};
 
 // ===== 功能目标库 =====
 const FUNCTION_GOALS: { pattern: RegExp; goal: string; category: string }[] = [
@@ -76,10 +96,13 @@ const FUNCTION_GOALS: { pattern: RegExp; goal: string; category: string }[] = [
   { pattern: /女性|经期|更年期|雌激素|孕/g, goal: '女性健康', category: 'specific' },
   { pattern: /儿童|成长|发育|身高|智力|视力.*儿童/g, goal: '儿童成长', category: 'specific' },
   { pattern: /老年|银发|延缓衰老|长寿|肌少症/g, goal: '老年康养', category: 'specific' },
-]
+];
 
 // ===== 技术参数提取模式 =====
-const TECH_PARAM_PATTERNS: { pattern: RegExp; extractParam: (match: RegExpMatchArray) => { param: string; value: string; unit?: string } }[] = [
+const TECH_PARAM_PATTERNS: {
+  pattern: RegExp;
+  extractParam: (match: RegExpMatchArray) => { param: string; value: string; unit?: string };
+}[] = [
   {
     pattern: /(\d+(?:\.\d+)?)\s*(%|mg\/g|mg\/mL|g\/kg|CFU\/g|IU\/g|Da|kDa)/gi,
     extractParam: (m) => ({ param: '浓度/含量', value: m[1], unit: m[2] }),
@@ -108,7 +131,7 @@ const TECH_PARAM_PATTERNS: { pattern: RegExp; extractParam: (match: RegExpMatchA
     pattern: /(GB\s*\/?\s*\d+|GB\/T\s*\d+|ISO\s*\d+)/gi,
     extractParam: (m) => ({ param: '标准引用', value: m[1].trim() }),
   },
-]
+];
 
 // ===== 目标人群模式 =====
 const TARGET_USER_PATTERNS: { pattern: RegExp; user: string }[] = [
@@ -121,7 +144,7 @@ const TARGET_USER_PATTERNS: { pattern: RegExp; user: string }[] = [
   { pattern: /健身|运动|运动员|健身房|跑步/g, user: '运动健身人群' },
   { pattern: /术后|康复|病后|恢复期|住院/g, user: '术后/康复人群' },
   { pattern: /孕妇|产妇|哺乳期|孕期/g, user: '孕产期女性' },
-]
+];
 
 // ===== 法规上下文模式 =====
 const REGULATORY_PATTERNS: { pattern: RegExp; context: string }[] = [
@@ -132,7 +155,7 @@ const REGULATORY_PATTERNS: { pattern: RegExp; context: string }[] = [
   { pattern: /有机|绿色|无公害|地理标志/g, context: '有机/绿色认证' },
   { pattern: /出口|美国FDA|欧盟EFSA|日本/g, context: '国际法规合规' },
   { pattern: /标签|配料表|营养成分表|声称|广告/g, context: '标签标识合规' },
-]
+];
 
 // ===== 工艺阶段模式 =====
 const PROCESS_STAGE_PATTERNS: { pattern: RegExp; stage: string }[] = [
@@ -141,7 +164,7 @@ const PROCESS_STAGE_PATTERNS: { pattern: RegExp; stage: string }[] = [
   { pattern: /中试|放大|中试生产| pilot/g, stage: '中试放大阶段' },
   { pattern: /量产|生产|工业化|大规模|OEM/g, stage: '量产阶段' },
   { pattern: /上市| launch |发布|推广|营销/g, stage: '上市推广阶段' },
-]
+];
 
 // ===== 常见原料库（用于识别） =====
 const INGREDIENT_PATTERNS: { pattern: RegExp; name: string; category: string }[] = [
@@ -161,31 +184,35 @@ const INGREDIENT_PATTERNS: { pattern: RegExp; name: string; category: string }[]
   { pattern: /麦芽糊精|糊精|DE值/g, name: '麦芽糊精', category: '载体类' },
   { pattern: /赤藓糖醇|罗汉果苷|甜菊糖苷|木糖醇/g, name: '功能性甜味剂', category: '甜味剂' },
   { pattern: /微囊化|包埋|包合|喷雾干燥|冷冻干燥/g, name: '(工艺相关)', category: '工艺技术' },
-]
-
+];
 
 class ContextAwareEngine {
-
   parse(input: string): ParsedContext {
     if (!input || input.trim().length < 2) {
-      return this.emptyContext(input)
+      return this.emptyContext(input);
     }
 
-    const trimmed = input.trim()
+    const trimmed = input.trim();
 
-    const productType = this.detectProductType(trimmed)
-    const functionGoals = this.detectFunctionGoals(trimmed)
-    const constraints = this.detectConstraints(trimmed)
-    const technicalParams = this.extractTechnicalParams(trimmed)
-    const targetUsers = this.detectTargetUsers(trimmed)
-    const regulatoryContext = this.detectRegulatoryContext(trimmed)
-    const processStage = this.detectProcessStage(trimmed)
-    const ingredientMentions = this.detectIngredients(trimmed)
+    const productType = this.detectProductType(trimmed);
+    const functionGoals = this.detectFunctionGoals(trimmed);
+    const constraints = this.detectConstraints(trimmed);
+    const technicalParams = this.extractTechnicalParams(trimmed);
+    const targetUsers = this.detectTargetUsers(trimmed);
+    const regulatoryContext = this.detectRegulatoryContext(trimmed);
+    const processStage = this.detectProcessStage(trimmed);
+    const ingredientMentions = this.detectIngredients(trimmed);
 
     const confidence = this.calculateConfidence({
-      productType, functionGoals, constraints, technicalParams,
-      targetUsers, regulatoryContext, processStage, ingredientMentions,
-    })
+      productType,
+      functionGoals,
+      constraints,
+      technicalParams,
+      targetUsers,
+      regulatoryContext,
+      processStage,
+      ingredientMentions,
+    });
 
     return {
       productType,
@@ -198,103 +225,115 @@ class ContextAwareEngine {
       ingredientMentions,
       confidence,
       rawInput: trimmed,
-    }
+    };
   }
 
   private detectProductType(input: string): string | null {
     for (const [type, pattern] of Object.entries(PRODUCT_TYPES)) {
-      if (pattern.test(input)) return type
+      if (pattern.test(input)) return type;
     }
-    return null
+    return null;
   }
 
   private detectFunctionGoals(input: string): string[] {
-    const goals: string[] = []
+    const goals: string[] = [];
     for (const { pattern, goal } of FUNCTION_GOALS) {
-      if (pattern.test(input)) goals.push(goal)
+      if (pattern.test(input)) goals.push(goal);
     }
-    return goals
+    return goals;
   }
 
   private detectConstraints(input: string): string[] {
-    const constraints: string[] = []
+    const constraints: string[] = [];
 
-    if (/成本|预算|便宜|性价比|BOM/g.test(input)) constraints.push('成本敏感')
-    if (/清洁标签| clean label |天然|无添加|0添加/g.test(input)) constraints.push('清洁标签要求')
-    if (/素食|植物基| vegan |素/g.test(input)) constraints.push('素食/植物基')
-    if (/无糖|低糖|减糖|0蔗糖/g.test(input)) constraints.push('控糖需求')
-    if (/过敏|无麸质| gluten |坚果过敏/g.test(input)) constraints.push('过敏原控制')
-    if (/有机|organic/g.test(input)) constraints.push('有机认证要求')
-    if (/快速|即时|方便|便捷/g.test(input)) constraints.push('便携/即食需求')
-    if (/口感|风味|味道|口味|好喝/g.test(input)) constraints.push('口感优先')
-    if (/稳定|货架期|保质期|贮藏/g.test(input)) constraints.push('稳定性要求')
-    if (/专利|创新|差异化|独特/g.test(input)) constraints.push('创新/差异化需求')
+    if (/成本|预算|便宜|性价比|BOM/g.test(input)) constraints.push('成本敏感');
+    if (/清洁标签| clean label |天然|无添加|0添加/g.test(input)) constraints.push('清洁标签要求');
+    if (/素食|植物基| vegan |素/g.test(input)) constraints.push('素食/植物基');
+    if (/无糖|低糖|减糖|0蔗糖/g.test(input)) constraints.push('控糖需求');
+    if (/过敏|无麸质| gluten |坚果过敏/g.test(input)) constraints.push('过敏原控制');
+    if (/有机|organic/g.test(input)) constraints.push('有机认证要求');
+    if (/快速|即时|方便|便捷/g.test(input)) constraints.push('便携/即食需求');
+    if (/口感|风味|味道|口味|好喝/g.test(input)) constraints.push('口感优先');
+    if (/稳定|货架期|保质期|贮藏/g.test(input)) constraints.push('稳定性要求');
+    if (/专利|创新|差异化|独特/g.test(input)) constraints.push('创新/差异化需求');
 
-    return constraints
+    return constraints;
   }
 
   private extractTechnicalParams(input: string): { param: string; value: string; unit?: string }[] {
-    const params: { param: string; value: string; unit?: string }[] = []
+    const params: { param: string; value: string; unit?: string }[] = [];
 
     for (const { pattern, extractParam } of TECH_PARAM_PATTERNS) {
-      let match: RegExpExecArray | null
-      const regex = new RegExp(pattern.source, pattern.flags)
+      let match: RegExpExecArray | null;
+      const regex = new RegExp(pattern.source, pattern.flags);
       while ((match = regex.exec(input)) !== null) {
-        params.push(extractParam(match))
+        params.push(extractParam(match));
       }
     }
 
-    return params.slice(0, 8)
+    return params.slice(0, 8);
   }
 
   private detectTargetUsers(input: string): string[] {
-    const users: string[] = []
+    const users: string[] = [];
     for (const { pattern, user } of TARGET_USER_PATTERNS) {
-      if (pattern.test(input)) users.push(user)
+      if (pattern.test(input)) users.push(user);
     }
-    return users
+    return users;
   }
 
   private detectRegulatoryContext(input: string): string | null {
     for (const { pattern, context } of REGULATORY_PATTERNS) {
-      if (pattern.test(input)) return context
+      if (pattern.test(input)) return context;
     }
-    return null
+    return null;
   }
 
   private detectProcessStage(input: string): string | null {
     for (const { pattern, stage } of PROCESS_STAGE_PATTERNS) {
-      if (pattern.test(input)) return stage
+      if (pattern.test(input)) return stage;
     }
-    return null
+    return null;
   }
 
   private detectIngredients(input: string): string[] {
-    const ingredients: string[] = []
+    const ingredients: string[] = [];
     for (const { pattern, name } of INGREDIENT_PATTERNS) {
-      if (pattern.test(input)) ingredients.push(name)
+      if (pattern.test(input)) ingredients.push(name);
     }
-    return [...new Set(ingredients)].slice(0, 6)
+    return [...new Set(ingredients)].slice(0, 6);
   }
 
   private calculateConfidence(parts: Partial<ParsedContext>): number {
-    let score = 0
-    let totalChecks = 0
+    let score = 0;
+    let totalChecks = 0;
 
-    if (parts.productType) { score += 2; totalChecks++ }
-    score += Math.min(parts.functionGoals?.length || 0, 3) * 1.5
-    totalChecks += 3
-    score += Math.min(parts.constraints?.length || 0, 2) * 1
-    totalChecks += 2
-    score += Math.min(parts.technicalParams?.length || 0, 3) * 2
-    totalChecks += 3
-    if (parts.targetUsers?.length) { score += 1; totalChecks++ }
-    if (parts.regulatoryContext) { score += 1.5; totalChecks++ }
-    if (parts.processStage) { score += 1; totalChecks++ }
-    score += Math.min(parts.ingredientMentions?.length || 0, 3) * 1
-    totalChecks += 3
+    if (parts.productType) {
+      score += 2;
+      totalChecks++;
+    }
+    score += Math.min(parts.functionGoals?.length || 0, 3) * 1.5;
+    totalChecks += 3;
+    score += Math.min(parts.constraints?.length || 0, 2) * 1;
+    totalChecks += 2;
+    score += Math.min(parts.technicalParams?.length || 0, 3) * 2;
+    totalChecks += 3;
+    if (parts.targetUsers?.length) {
+      score += 1;
+      totalChecks++;
+    }
+    if (parts.regulatoryContext) {
+      score += 1.5;
+      totalChecks++;
+    }
+    if (parts.processStage) {
+      score += 1;
+      totalChecks++;
+    }
+    score += Math.min(parts.ingredientMentions?.length || 0, 3) * 1;
+    totalChecks += 3;
 
-    return Math.min(0.98, score / Math.max(totalChecks, 1))
+    return Math.min(0.98, score / Math.max(totalChecks, 1));
   }
 
   private emptyContext(input: string): ParsedContext {
@@ -309,35 +348,38 @@ class ContextAwareEngine {
       ingredientMentions: [],
       confidence: 0,
       rawInput: input,
-    }
+    };
   }
 
   generateContextSummary(ctx: ParsedContext): string {
-    const parts: string[] = []
+    const parts: string[] = [];
 
-    if (ctx.productType) parts.push(`产品:${ctx.productType}`)
-    if (ctx.functionGoals.length > 0) parts.push(`目标:${ctx.functionGoals.join('+')}`)
-    if (ctx.targetUsers.length > 0) parts.push(`人群:${ctx.targetUsers[0]}`)
-    if (ctx.regulatoryContext) parts.push(`法规:${ctx.regulatoryContext}`)
-    if (ctx.processStage) parts.push(`阶段:${ctx.processStage}`)
-    if (ctx.ingredientMentions.length > 0) parts.push(`原料:${ctx.ingredientMentions.slice(0, 3).join(',')}`)
+    if (ctx.productType) parts.push(`产品:${ctx.productType}`);
+    if (ctx.functionGoals.length > 0) parts.push(`目标:${ctx.functionGoals.join('+')}`);
+    if (ctx.targetUsers.length > 0) parts.push(`人群:${ctx.targetUsers[0]}`);
+    if (ctx.regulatoryContext) parts.push(`法规:${ctx.regulatoryContext}`);
+    if (ctx.processStage) parts.push(`阶段:${ctx.processStage}`);
+    if (ctx.ingredientMentions.length > 0) parts.push(`原料:${ctx.ingredientMentions.slice(0, 3).join(',')}`);
     if (ctx.technicalParams.length > 0) {
-      parts.push(`参数:${ctx.technicalParams.slice(0, 2).map(p => `${p.param}=${p.value}${p.unit||''}`).join(',')}`)
+      parts.push(
+        `参数:${ctx.technicalParams
+          .slice(0, 2)
+          .map((p) => `${p.param}=${p.value}${p.unit || ''}`)
+          .join(',')}`,
+      );
     }
-    if (ctx.constraints.length > 0) parts.push(`约束:${ctx.constraints.slice(0, 2).join(',')}`)
+    if (ctx.constraints.length > 0) parts.push(`约束:${ctx.constraints.slice(0, 2).join(',')}`);
 
-    return parts.join(' | ') || '通用咨询'
+    return parts.join(' | ') || '通用咨询';
   }
 }
 
-
 class ProSuggestionGenerator {
-
   generateProfessionalSuggestions(ctx: ParsedContext): SmartSuggestion[] {
-    const suggestions: SmartSuggestion[] = []
+    const suggestions: SmartSuggestion[] = [];
 
     if (ctx.confidence < 0.15 && ctx.rawInput.length < 6) {
-      return suggestions
+      return suggestions;
     }
 
     const dimensionGenerators: ((ctx: ParsedContext) => SmartSuggestion[])[] = [
@@ -350,37 +392,37 @@ class ProSuggestionGenerator {
       this.generateMarketDiffSuggestions.bind(this),
       this.generateRiskAlertSuggestions.bind(this),
       this.generateSmartCompositeSuggestions.bind(this),
-    ]
+    ];
 
     for (const generator of dimensionGenerators) {
       try {
-        const dims = generator(ctx)
+        const dims = generator(ctx);
         if (dims.length > 0) {
-          suggestions.push(...dims)
+          suggestions.push(...dims);
         }
       } catch (e) {
         // skip failed dimension
       }
     }
 
-    return this.applyQualityGate(suggestions, ctx).slice(0, 10)
+    return this.applyQualityGate(suggestions, ctx).slice(0, 10);
   }
 
   private generateTechDeepSuggestions(ctx: ParsedContext): SmartSuggestion[] {
-    const suggestions: SmartSuggestion[] = []
+    const suggestions: SmartSuggestion[] = [];
 
     if (ctx.functionGoals.length > 0 && ctx.ingredientMentions.length > 0) {
-      const goal = ctx.functionGoals[0]
-      const ingred = ctx.ingredientMentions[0]
+      const goal = ctx.functionGoals[0];
+      const ingred = ctx.ingredientMentions[0];
 
       const mechanismHints: Record<string, string> = {
         '代谢调节(三高)': `${ingred}的${goal}机制：ACE抑制肽(IC50<0.5mg/mL)阻断AngI转化→舒张血管；PPARα激活促进脂代谢`,
-        '免疫调节': `${ingred}免疫增强路径：①IgA/IgG抗体滴度↑30-50% ②NK细胞活性↑25% ③Th1/Th2平衡恢复`,
-        '肠道健康': `${ingred}肠道作用：短链脂肪酸(SCFA)浓度↑(丁酸>20mM)→肠屏障修复+免疫调节双通路`,
-        '睡眠改善': `${ingred}助眠机制：GABA-A受体激动(结合常数Kd<100nM)→神经抑制性传递↑→入睡潜伏期↓40%`,
-        '美容抗衰': `${ingred}抗衰路径：MMP-1抑制率>60%(胶原降解阻遏)+Pro-I型胶原合成↑35%→真皮层增厚`,
-        '体重管理': `${ingred}减脂机制：LPL(脂蛋白脂肪酶)抑制+UCP1(解偶联蛋白)激活→白色脂肪褐变→能量消耗↑15%`,
-      }
+        免疫调节: `${ingred}免疫增强路径：①IgA/IgG抗体滴度↑30-50% ②NK细胞活性↑25% ③Th1/Th2平衡恢复`,
+        肠道健康: `${ingred}肠道作用：短链脂肪酸(SCFA)浓度↑(丁酸>20mM)→肠屏障修复+免疫调节双通路`,
+        睡眠改善: `${ingred}助眠机制：GABA-A受体激动(结合常数Kd<100nM)→神经抑制性传递↑→入睡潜伏期↓40%`,
+        美容抗衰: `${ingred}抗衰路径：MMP-1抑制率>60%(胶原降解阻遏)+Pro-I型胶原合成↑35%→真皮层增厚`,
+        体重管理: `${ingred}减脂机制：LPL(脂蛋白脂肪酶)抑制+UCP1(解偶联蛋白)激活→白色脂肪褐变→能量消耗↑15%`,
+      };
 
       if (mechanismHints[goal]) {
         suggestions.push({
@@ -390,7 +432,7 @@ class ProSuggestionGenerator {
           score: 0.94,
           category: '🔬 作用机制',
           source: 'expert-engine',
-        })
+        });
       }
     }
 
@@ -402,7 +444,7 @@ class ProSuggestionGenerator {
         score: 0.91,
         category: '🔬 技术规格',
         source: 'expert-engine',
-      })
+      });
     }
 
     if (ctx.rawInput.includes('复配') || ctx.rawInput.includes('协同')) {
@@ -413,25 +455,29 @@ class ProSuggestionGenerator {
         score: 0.92,
         category: '🔬 协同评价',
         source: 'expert-engine',
-      })
+      });
     }
 
-    return suggestions
+    return suggestions;
   }
 
   private generateRegulatorySuggestions(ctx: ParsedContext): SmartSuggestion[] {
-    const suggestions: SmartSuggestion[] = []
+    const suggestions: SmartSuggestion[] = [];
 
     if (ctx.regulatoryContext) {
       const regHints: Record<string, string> = {
-        '新资源食品申报': '新资源食品申报材料：①安全性评估报告(毒理学+耐受性) ②营养成分/功能成分测定 ③生产工艺详细说明 ④国内外使用历史文献',
-        '保健食品注册/备案': '保健食品路径：备案制(维生素/矿物质等目录内原料，6个月) vs 注册制(新功能/新原料，2-3年)，需提供功能学评价报告',
-        '特殊医学用途配方食品': '特医食品分类：全营养(1岁以上全替代)→特定全营养(糖尿病/肿瘤等)→非全营养(组件)。需临床验证+GMP车间',
-        '普通食品合规': '普通食品底线：GB2760添加剂使用+GB7718标签标识+GB28050营养标签。不得涉及疾病治疗/功能声称',
+        新资源食品申报:
+          '新资源食品申报材料：①安全性评估报告(毒理学+耐受性) ②营养成分/功能成分测定 ③生产工艺详细说明 ④国内外使用历史文献',
+        '保健食品注册/备案':
+          '保健食品路径：备案制(维生素/矿物质等目录内原料，6个月) vs 注册制(新功能/新原料，2-3年)，需提供功能学评价报告',
+        特殊医学用途配方食品:
+          '特医食品分类：全营养(1岁以上全替代)→特定全营养(糖尿病/肿瘤等)→非全营养(组件)。需临床验证+GMP车间',
+        普通食品合规: '普通食品底线：GB2760添加剂使用+GB7718标签标识+GB28050营养标签。不得涉及疾病治疗/功能声称',
         '有机/绿色认证': '有机认证流程：申请→转换期(2-3年)→获证→年审。绿色食品：产地环境监测+投入品管控+产品检测',
-        '国际法规合规': '出口合规要点：美国(FDA GRAS通知/NDI) |欧盟(EFSA Novel Food) | 日本(现有/新添加物名单)。周期6-18月不等',
-        '标签标识合规': '标签雷区：①不得暗示治疗功效 ②营养声称需有数据支撑 ③过敏原必标 ④成分排序按递减量',
-      }
+        国际法规合规:
+          '出口合规要点：美国(FDA GRAS通知/NDI) |欧盟(EFSA Novel Food) | 日本(现有/新添加物名单)。周期6-18月不等',
+        标签标识合规: '标签雷区：①不得暗示治疗功效 ②营养声称需有数据支撑 ③过敏原必标 ④成分排序按递减量',
+      };
 
       if (regHints[ctx.regulatoryContext]) {
         suggestions.push({
@@ -441,16 +487,17 @@ class ProSuggestionGenerator {
           score: 0.93,
           category: '⚖️ 法规路径',
           source: 'expert-engine',
-        })
+        });
       }
     }
 
     if (ctx.productType && !ctx.regulatoryContext) {
       const defaultRegMap: Record<string, string> = {
-        '固体饮料': '固体饮料执行标准：GB/T29602(植物固体饮料)或企业标准。配料表按加入量递减排列，食品添加剂需在GB2760允许范围内',
-        '口服液': '口服液注意：防腐剂限量(苯甲酸≤1.0g/kg)，pH范围3.0-6.0防腐败，需做稳定性试验(加速6月+长期12-24月)',
-        '片剂': '片剂特殊要求：压片糖果vs片剂界限(是否含药食同源)，崩解时限(压片糖果≤30min)，硬度2-8kg适宜',
-      }
+        固体饮料:
+          '固体饮料执行标准：GB/T29602(植物固体饮料)或企业标准。配料表按加入量递减排列，食品添加剂需在GB2760允许范围内',
+        口服液: '口服液注意：防腐剂限量(苯甲酸≤1.0g/kg)，pH范围3.0-6.0防腐败，需做稳定性试验(加速6月+长期12-24月)',
+        片剂: '片剂特殊要求：压片糖果vs片剂界限(是否含药食同源)，崩解时限(压片糖果≤30min)，硬度2-8kg适宜',
+      };
 
       if (defaultRegMap[ctx.productType]) {
         suggestions.push({
@@ -460,28 +507,28 @@ class ProSuggestionGenerator {
           score: 0.89,
           category: '⚖️ 合规要点',
           source: 'expert-engine',
-        })
+        });
       }
     }
 
-    return suggestions
+    return suggestions;
   }
 
   private generateProcessSuggestions(ctx: ParsedContext): SmartSuggestion[] {
-    const suggestions: SmartSuggestion[] = []
+    const suggestions: SmartSuggestion[] = [];
 
     if (ctx.productType === '固体饮料') {
       suggestions.push({
         id: `proc-solid-${Date.now()}`,
         text: '固体饮料典型工艺：配料预处理→混合(三维混合机，15min)→制粒(湿法/干法)→干燥(流化床，进风70℃)→整粒→包装(铝箔袋，充氮)',
         type: 'expert',
-        score: 0.90,
+        score: 0.9,
         category: '⚙️ 工艺路线',
         source: 'expert-engine',
-      })
+      });
     }
 
-    if (ctx.ingredientMentions.some(i => i.includes('肽') || i.includes('蛋白'))) {
+    if (ctx.ingredientMentions.some((i) => i.includes('肽') || i.includes('蛋白'))) {
       suggestions.push({
         id: `proc-peptide-${Date.now()}`,
         text: '肽类原料工艺要点：酶解温度50-60℃ | pH依酶种而定(碱性蛋白酶pH8-9) | 时间4-8h | 酶灭活(85℃,10min) | 膜分离纯化(MWCO:1-5kDa)',
@@ -489,10 +536,10 @@ class ProSuggestionGenerator {
         score: 0.92,
         category: '⚙️ 关键工序',
         source: 'expert-engine',
-      })
+      });
     }
 
-    if (ctx.ingredientMentions.some(i => i.includes('益生菌'))) {
+    if (ctx.ingredientMentions.some((i) => i.includes('益生菌'))) {
       suggestions.push({
         id: `proc-probio-${Date.now()}`,
         text: '益生菌存活保障：①微囊包埋(海藻酸钠/壳聚糖双层) ②冻干保护剂(脱脂乳10%+海藻糖5%) ③储运冷链(2-8℃) ④水分活度aw<0.2',
@@ -500,7 +547,7 @@ class ProSuggestionGenerator {
         score: 0.91,
         category: '⚙️ 活菌保持',
         source: 'expert-engine',
-      })
+      });
     }
 
     if (ctx.processStage === '中试放大阶段' || ctx.rawInput.includes('放大')) {
@@ -511,14 +558,14 @@ class ProSuggestionGenerator {
         score: 0.93,
         category: '⚙️ 放大策略',
         source: 'expert-engine',
-      })
+      });
     }
 
-    return suggestions
+    return suggestions;
   }
 
   private generateIngredientSuggestions(ctx: ParsedContext): SmartSuggestion[] {
-    const suggestions: SmartSuggestion[] = []
+    const suggestions: SmartSuggestion[] = [];
 
     if (ctx.functionGoals.length > 0 && ctx.ingredientMentions.length < 2) {
       const goalIngredientMap: Record<string, { name: string; reason: string }[]> = {
@@ -527,28 +574,28 @@ class ProSuggestionGenerator {
           { name: '苦瓜提取物', reason: '苦瓜皂甙(Charantin)模拟胰岛素作用' },
           { name: '桑叶提取物(DNJ>1%)', reason: 'α-葡萄糖苷酶抑制，餐后血糖↓' },
         ],
-        '免疫调节': [
+        免疫调节: [
           { name: '酵母β-葡聚糖(β-1,3/1,6)', reason: 'CR3受体激活，NK细胞活性↑' },
           { name: '乳铁蛋白(>95%)', reason: '铁依赖性抗菌+免疫调控双效' },
           { name: '接骨木莓提取物', reason: '血凝素阻断，病毒感染率↓' },
         ],
-        '肠道健康': [
+        肠道健康: [
           { name: '益生菌(LGG/Bb-12/HN001)', reason: '定植能力强的菌株组合' },
           { name: '低聚果糖(FOS,DP2-7)', reason: '选择性增殖双歧杆菌' },
           { name: 'L-谷氨酰胺', reason: '肠黏膜细胞主要能源，修复紧密连接' },
         ],
-        '睡眠改善': [
+        睡眠改善: [
           { name: 'GABA(γ-氨基丁酸,>99%)', reason: '抑制性神经递质，剂量100-300mg有效' },
           { name: '酸枣仁提取物(皂苷A+B>0.3%)', reason: '传统药食同源，调节5-HT' },
           { name: '留兰香提取物', reason: 'GABA转氨酶抑制，内源性GABA↑' },
         ],
-      }
+      };
 
-      const goal = ctx.functionGoals[0]
-      const candidates = goalIngredientMap[goal]
+      const goal = ctx.functionGoals[0];
+      const candidates = goalIngredientMap[goal];
 
       if (candidates) {
-        const top2 = candidates.slice(0, 2)
+        const top2 = candidates.slice(0, 2);
         top2.forEach((c, i) => {
           suggestions.push({
             id: `ing-cand-${i}-${Date.now()}`,
@@ -557,8 +604,8 @@ class ProSuggestionGenerator {
             score: 0.92 - i * 0.03,
             category: '🧪 原料推荐',
             source: 'expert-engine',
-          })
-        })
+          });
+        });
       }
     }
 
@@ -570,7 +617,7 @@ class ProSuggestionGenerator {
         score: 0.89,
         category: '🧪 清洁标签方案',
         source: 'expert-engine',
-      })
+      });
     }
 
     if (ctx.ingredientMentions.length >= 2) {
@@ -581,24 +628,28 @@ class ProSuggestionGenerator {
         score: 0.88,
         category: '🧪 复配验证',
         source: 'expert-engine',
-      })
+      });
     }
 
-    return suggestions
+    return suggestions;
   }
 
   private generateEfficacySuggestions(ctx: ParsedContext): SmartSuggestion[] {
-    const suggestions: SmartSuggestion[] = []
+    const suggestions: SmartSuggestion[] = [];
 
     if (ctx.functionGoals.length > 0) {
       const efficacyMap: Record<string, string> = {
-        '代谢调节(三高)': '功效验证路径：①体外(α-葡萄糖苷酶/ACE抑制IC50) → ②动物(STZ糖尿病大鼠, 4周) → ③人体(RCT, n≥30, 12周, HbA1c/FBG为终点)',
-        '免疫调节': '免疫评价体系：①体外(PBMC培养, 细胞因子谱) → ②动物(环磷酰胺免疫抑制模型) → ③人体(流感疫苗接种抗体滴度, IgA/IgG定量)',
-        '肠道健康': '肠道功效证据链：①体外(粪便发酵SCFA产量) → ②动物(DSS结肠炎模型, 组织病理) → ③人体(Bristol评分, 16S rRNA菌群测序)',
-        '睡眠改善': '睡眠验证金标准：①PSG多导睡眠监测(睡眠潜伏期/WASO/REM比例) → ②唾液皮质醇节律 → ③主观量表(PSQI, Epworth嗜睡量表)',
-      }
+        '代谢调节(三高)':
+          '功效验证路径：①体外(α-葡萄糖苷酶/ACE抑制IC50) → ②动物(STZ糖尿病大鼠, 4周) → ③人体(RCT, n≥30, 12周, HbA1c/FBG为终点)',
+        免疫调节:
+          '免疫评价体系：①体外(PBMC培养, 细胞因子谱) → ②动物(环磷酰胺免疫抑制模型) → ③人体(流感疫苗接种抗体滴度, IgA/IgG定量)',
+        肠道健康:
+          '肠道功效证据链：①体外(粪便发酵SCFA产量) → ②动物(DSS结肠炎模型, 组织病理) → ③人体(Bristol评分, 16S rRNA菌群测序)',
+        睡眠改善:
+          '睡眠验证金标准：①PSG多导睡眠监测(睡眠潜伏期/WASO/REM比例) → ②唾液皮质醇节律 → ③主观量表(PSQI, Epworth嗜睡量表)',
+      };
 
-      const path = efficacyMap[ctx.functionGoals[0]]
+      const path = efficacyMap[ctx.functionGoals[0]];
       if (path) {
         suggestions.push({
           id: `eff-path-${Date.now()}`,
@@ -607,7 +658,7 @@ class ProSuggestionGenerator {
           score: 0.93,
           category: '📊 验证路径',
           source: 'expert-engine',
-        })
+        });
       }
     }
 
@@ -616,26 +667,27 @@ class ProSuggestionGenerator {
         id: `eff-method-${Date.now()}`,
         text: '实验设计要素：样本量计算(G*Power, power=0.8, α=0.05) | 随机化分组(区组随机) | 盲法(单盲/双盲) | 统计计划(ITT+PPS分析集)',
         type: 'expert',
-        score: 0.90,
+        score: 0.9,
         category: '📊 实验设计',
         source: 'expert-engine',
-      })
+      });
     }
 
-    return suggestions
+    return suggestions;
   }
 
   private generateCostValueSuggestions(ctx: ParsedContext): SmartSuggestion[] {
-    const suggestions: SmartSuggestion[] = []
+    const suggestions: SmartSuggestion[] = [];
 
     if (ctx.productType && !ctx.rawInput.includes('成本')) {
       const costMap: Record<string, string> = {
-        '固体饮料': '参考成本结构：原料45-55%(功能成分占60-70%原料费) | 包材15-20%(镀铝PET/PE复合袋) | OEM加工12-18% | 检测3-5%',
-        '口服液': '口服液成本特点：瓶材占比高(玻璃瓶/PET瓶占20-25%) | 灌装线折旧大 | 防腐体系成本不可忽视',
-        '片剂': '片剂成本优势：单位成本低(规模化后原料成本可压缩30%) | 包装紧凑(铝塑泡罩) | 但模具开模费较高(5-15万/套)',
-      }
+        固体饮料:
+          '参考成本结构：原料45-55%(功能成分占60-70%原料费) | 包材15-20%(镀铝PET/PE复合袋) | OEM加工12-18% | 检测3-5%',
+        口服液: '口服液成本特点：瓶材占比高(玻璃瓶/PET瓶占20-25%) | 灌装线折旧大 | 防腐体系成本不可忽视',
+        片剂: '片剂成本优势：单位成本低(规模化后原料成本可压缩30%) | 包装紧凑(铝塑泡罩) | 但模具开模费较高(5-15万/套)',
+      };
 
-      const costInfo = costMap[ctx.productType]
+      const costInfo = costMap[ctx.productType];
       if (costInfo) {
         suggestions.push({
           id: `cost-ref-${Date.now()}`,
@@ -644,7 +696,7 @@ class ProSuggestionGenerator {
           score: 0.87,
           category: '💰 成本参考',
           source: 'expert-engine',
-        })
+        });
       }
     }
 
@@ -656,17 +708,17 @@ class ProSuggestionGenerator {
         score: 0.89,
         category: '💰 降本策略',
         source: 'expert-engine',
-      })
+      });
     }
 
-    return suggestions
+    return suggestions;
   }
 
   private generateMarketDiffSuggestions(ctx: ParsedContext): SmartSuggestion[] {
-    const suggestions: SmartSuggestion[] = []
+    const suggestions: SmartSuggestion[] = [];
 
     if (ctx.functionGoals.length > 0 && ctx.targetUsers.length > 0) {
-      const diffHint = `差异化切入点[${ctx.targetUsers[0]}+${ctx.functionGoals[0]}]: 避免"泛功能"定位，聚焦单一强诉求+可量化效果(如"14天睡眠质量提升32%"而非"改善睡眠")`
+      const diffHint = `差异化切入点[${ctx.targetUsers[0]}+${ctx.functionGoals[0]}]: 避免"泛功能"定位，聚焦单一强诉求+可量化效果(如"14天睡眠质量提升32%"而非"改善睡眠")`;
       suggestions.push({
         id: `mkt-diff-${Date.now()}`,
         text: diffHint,
@@ -674,7 +726,7 @@ class ProSuggestionGenerator {
         score: 0.88,
         category: '🎯 差异化',
         source: 'expert-engine',
-      })
+      });
     }
 
     if (ctx.productType === '固体饮料' && !ctx.rawInput.includes('竞品')) {
@@ -685,31 +737,33 @@ class ProSuggestionGenerator {
         score: 0.86,
         category: '🎯 竞品分析',
         source: 'expert-engine',
-      })
+      });
     }
 
-    return suggestions
+    return suggestions;
   }
 
   private generateRiskAlertSuggestions(ctx: ParsedContext): SmartSuggestion[] {
-    const suggestions: SmartSuggestion[] = []
+    const suggestions: SmartSuggestion[] = [];
 
-    const risks: string[] = []
+    const risks: string[] = [];
 
     if (ctx.ingredientMentions.length >= 3) {
-      risks.push('多原料复配风险：相互作用未知(建议先做两两兼容性试验) | 稳定性挑战增加 | 成本叠加效应')
+      risks.push('多原料复配风险：相互作用未知(建议先做两两兼容性试验) | 稳定性挑战增加 | 成本叠加效应');
     }
 
     if (ctx.functionGoals.includes('代谢调节(三高)') && ctx.productType?.includes('普通食品')) {
-      risks.push('⛔ 普通食品不能声称降三高！若涉及功效需走保健食品或特医食品路径，否则涉嫌违法宣传(食品安全法第73条)')
+      risks.push('⛔ 普通食品不能声称降三高！若涉及功效需走保健食品或特医食品路径，否则涉嫌违法宣传(食品安全法第73条)');
     }
 
-    if (ctx.constraints.includes('口感优先') && ctx.ingredientMentions.some(i => i.includes('肽'))) {
-      risks.push('肽类苦味问题：MW<500Da的寡肽苦味显著。解决方案：①环糊精包埋 ②与麦芽糊精共混掩苦 ③风味补偿(柠檬/薄荷)')
+    if (ctx.constraints.includes('口感优先') && ctx.ingredientMentions.some((i) => i.includes('肽'))) {
+      risks.push(
+        '肽类苦味问题：MW<500Da的寡肽苦味显著。解决方案：①环糊精包埋 ②与麦芽糊精共混掩苦 ③风味补偿(柠檬/薄荷)',
+      );
     }
 
     if (!ctx.regulatoryContext && ctx.functionGoals.length > 0) {
-      risks.push('法规路径未明确：功能导向产品需尽早确定合规路线(普食/保健/特医)，影响配方设计和原料选择')
+      risks.push('法规路径未明确：功能导向产品需尽早确定合规路线(普食/保健/特医)，影响配方设计和原料选择');
     }
 
     risks.forEach((risk, i) => {
@@ -720,17 +774,17 @@ class ProSuggestionGenerator {
         score: 0.95 - i * 0.03,
         category: '⚠️ 风险提示',
         source: 'expert-engine',
-      })
-    })
+      });
+    });
 
-    return suggestions
+    return suggestions;
   }
 
   private generateSmartCompositeSuggestions(ctx: ParsedContext): SmartSuggestion[] {
-    const suggestions: SmartSuggestion[] = []
+    const suggestions: SmartSuggestion[] = [];
 
     if (ctx.productType && ctx.functionGoals.length > 0) {
-      const quickStartHint = `💡 快速启动建议: 明确${ctx.productType}的${ctx.functionGoals[0]}配方开发，建议按以下顺序推进：①目标人群画像(年龄/性别/健康状态) → ②核心功效成分筛选(文献+专利检索) → ③配比优化(正交/响应面设计) → ④中试验证(稳定性+感官) → ⑤合规性审查(标签+声称)`
+      const quickStartHint = `💡 快速启动建议: 明确${ctx.productType}的${ctx.functionGoals[0]}配方开发，建议按以下顺序推进：①目标人群画像(年龄/性别/健康状态) → ②核心功效成分筛选(文献+专利检索) → ③配比优化(正交/响应面设计) → ④中试验证(稳定性+感官) → ⑤合规性审查(标签+声称)`;
       suggestions.push({
         id: `smart-start-${Date.now()}`,
         text: quickStartHint,
@@ -738,28 +792,33 @@ class ProSuggestionGenerator {
         score: 0.91,
         category: '🚀 开发路线图',
         source: 'expert-engine',
-      })
+      });
     }
 
     if (ctx.confidence >= 0.4 && ctx.ingredientMentions.length === 0 && ctx.functionGoals.length > 0) {
       const ingredientRecMap: Record<string, string> = {
-        '代谢调节(三高)': '热门成分推荐：①大豆肽(ACE抑制/调脂双效) ②苦瓜提取物(植物胰岛素模拟) ③桑叶DNJ(α-糖苷酶抑制) ④红曲(天然他汀,注意桔霉素控制<50ppb)',
-        '免疫调节': '免疫增强方案：①酵母β-葡聚糖(CR3激活) ②乳铁蛋白(抗菌+免疫调控) ③接骨木莓(抗病毒) ④维生素C+锌(协同抗氧化)',
-        '肠道健康': '肠道调理组合：①益生菌(LGG+Bb-12双菌株) ②益生元(FOS+GOS合生元) ③L-谷氨酰胺(肠黏膜修复) ④膳食纤维(菊粉/聚葡萄糖)',
-        '睡眠改善': '助眠成分矩阵：①GABA(100-300mg/d) ②酸枣仁皂苷(传统验证) ③留兰香(GABA转氨酶抑制) ④褪黑素(短期使用<4周)',
-        '美容抗衰': '美容口服方案：①胶原蛋白肽(2.5-10g/d,>12周见效) ②维生素C(胶原合成辅因子) ③多酚类(抗氧化) ④神经酰胺(皮肤屏障)',
-      }
+        '代谢调节(三高)':
+          '热门成分推荐：①大豆肽(ACE抑制/调脂双效) ②苦瓜提取物(植物胰岛素模拟) ③桑叶DNJ(α-糖苷酶抑制) ④红曲(天然他汀,注意桔霉素控制<50ppb)',
+        免疫调节:
+          '免疫增强方案：①酵母β-葡聚糖(CR3激活) ②乳铁蛋白(抗菌+免疫调控) ③接骨木莓(抗病毒) ④维生素C+锌(协同抗氧化)',
+        肠道健康:
+          '肠道调理组合：①益生菌(LGG+Bb-12双菌株) ②益生元(FOS+GOS合生元) ③L-谷氨酰胺(肠黏膜修复) ④膳食纤维(菊粉/聚葡萄糖)',
+        睡眠改善:
+          '助眠成分矩阵：①GABA(100-300mg/d) ②酸枣仁皂苷(传统验证) ③留兰香(GABA转氨酶抑制) ④褪黑素(短期使用<4周)',
+        美容抗衰:
+          '美容口服方案：①胶原蛋白肽(2.5-10g/d,>12周见效) ②维生素C(胶原合成辅因子) ③多酚类(抗氧化) ④神经酰胺(皮肤屏障)',
+      };
 
-      const rec = ingredientRecMap[ctx.functionGoals[0]]
+      const rec = ingredientRecMap[ctx.functionGoals[0]];
       if (rec) {
         suggestions.push({
           id: `smart-ingrec-${Date.now()}`,
           text: rec,
           type: 'expert',
-          score: 0.90,
+          score: 0.9,
           category: '🧪 成分矩阵',
           source: 'expert-engine',
-        })
+        });
       }
     }
 
@@ -771,7 +830,7 @@ class ProSuggestionGenerator {
         score: 0.88,
         category: '⚖️ 合规自检',
         source: 'expert-engine',
-      })
+      });
     }
 
     if (ctx.confidence < 0.3 && ctx.rawInput.length >= 8) {
@@ -782,153 +841,165 @@ class ProSuggestionGenerator {
         score: 0.84,
         category: '💡 信息补充引导',
         source: 'expert-engine',
-      })
+      });
     }
 
-    return suggestions
+    return suggestions;
   }
 
   private applyQualityGate(suggestions: SmartSuggestion[], ctx: ParsedContext): SmartSuggestion[] {
-
     const TRULY_GENERIC_PATTERNS = [
       /^(请|建议|可以|需要|应该)(更多|进一步)?(信息|细节|内容)$/,
       /^(根据|按照)(具体情况|实际需要)?(具体)?分析$/,
       /^(关注|注意|考虑|了解)(相关|具体|详细)?(信息|细节)?$/,
       /^(视|看)(具体|实际)?情况(而定|分析)$/,
-    ]
+    ];
 
-    return suggestions.filter(s => {
-      if (s.text.length < 6) return false
-      if (s.text.length > 200) return false
+    return suggestions
+      .filter((s) => {
+        if (s.text.length < 6) return false;
+        if (s.text.length > 200) return false;
 
-      if (s.score >= 0.90) {
-        return true
-      }
-
-      if (s.score >= 0.85 && s.source === 'expert-engine') {
-        const isTrulyGeneric = TRULY_GENERIC_PATTERNS.some(p => p.test(s.text))
-        if (isTrulyGeneric) {
-          logger.log('[QualityGate V2] ❌ 真正空泛:', s.text.slice(0, 40))
-          return false
+        if (s.score >= 0.9) {
+          return true;
         }
-        return true
-      }
 
-      const isGeneric = TRULY_GENERIC_PATTERNS.some(p => p.test(s.text))
-      if (isGeneric) {
-        logger.log('[QualityGate V2] ❌ 过滤空泛:', s.text.slice(0, 40))
-        return false
-      }
+        if (s.score >= 0.85 && s.source === 'expert-engine') {
+          const isTrulyGeneric = TRULY_GENERIC_PATTERNS.some((p) => p.test(s.text));
+          if (isTrulyGeneric) {
+            logger.log('[QualityGate V2] ❌ 真正空泛:', s.text.slice(0, 40));
+            return false;
+          }
+          return true;
+        }
 
-      const hasSubstance = /[\d]+|[A-Z]{2,}|GB\s*\/?|IC50|EC50|CFU|HACCP|CCP|MW<|pH|Da|℃|%|→|↓|↑|±|①|②|③|：|；/.test(s.text)
-      const hasProfessionalTerms = /机制|路径|工艺|配方|法规|标准|指标|参数|评价|验证|合规|申报|备案|检测|实验|临床|剂量|纯度|活性|稳定性|溶解性|吸湿性|崩解|硬度|黏度|粒度|水分|灰分|蛋白|脂肪|碳水|纤维|微量|菌落|大肠|霉菌|酵母|重金属|农残|溶剂残留|过氧化值|酸价|皂化值|碘值|羰基值|总酚|黄酮|多糖|皂苷|生物碱|萜类|甾醇|花青素|原花青素|番茄红素|叶绿素|胡萝卜素|虾青素|玉米黄质|花椰菜素|硫辛酸|辅酶Q10|褪黑素|GABA|茶氨酸|乳铁蛋白|免疫球蛋白|溶菌酶|壳聚糖|几丁质|甲壳素|海藻酸钠|卡拉胶|琼脂|果胶|黄原胶|瓜尔胶|阿拉伯胶/i.test(s.text)
+        const isGeneric = TRULY_GENERIC_PATTERNS.some((p) => p.test(s.text));
+        if (isGeneric) {
+          logger.log('[QualityGate V2] ❌ 过滤空泛:', s.text.slice(0, 40));
+          return false;
+        }
 
-      if (!hasSubstance && !hasProfessionalTerms && s.score < 0.82) {
-        logger.log('[QualityGate V2] ⚠️ 低实质:', s.text.slice(0, 40), `score=${s.score}`)
-        return false
-      }
+        const hasSubstance = /[\d]+|[A-Z]{2,}|GB\s*\/?|IC50|EC50|CFU|HACCP|CCP|MW<|pH|Da|℃|%|→|↓|↑|±|①|②|③|：|；/.test(
+          s.text,
+        );
+        const hasProfessionalTerms =
+          /机制|路径|工艺|配方|法规|标准|指标|参数|评价|验证|合规|申报|备案|检测|实验|临床|剂量|纯度|活性|稳定性|溶解性|吸湿性|崩解|硬度|黏度|粒度|水分|灰分|蛋白|脂肪|碳水|纤维|微量|菌落|大肠|霉菌|酵母|重金属|农残|溶剂残留|过氧化值|酸价|皂化值|碘值|羰基值|总酚|黄酮|多糖|皂苷|生物碱|萜类|甾醇|花青素|原花青素|番茄红素|叶绿素|胡萝卜素|虾青素|玉米黄质|花椰菜素|硫辛酸|辅酶Q10|褪黑素|GABA|茶氨酸|乳铁蛋白|免疫球蛋白|溶菌酶|壳聚糖|几丁质|甲壳素|海藻酸钠|卡拉胶|琼脂|果胶|黄原胶|瓜尔胶|阿拉伯胶/i.test(
+            s.text,
+          );
 
-      return true
-    }).sort((a, b) => b.score - a.score).slice(0, 10)
+        if (!hasSubstance && !hasProfessionalTerms && s.score < 0.82) {
+          logger.log('[QualityGate V2] ⚠️ 低实质:', s.text.slice(0, 40), `score=${s.score}`);
+          return false;
+        }
+
+        return true;
+      })
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 10);
   }
 }
 
-
 class IntelligentPromptBuilder {
-
   buildPrompt(ctx: ParsedContext, maxLength = 180): string {
-    const contextSummary = new ContextAwareEngine().generateContextSummary(ctx)
+    const contextSummary = new ContextAwareEngine().generateContextSummary(ctx);
 
-    const rolePart = this.selectRole(ctx)
-    const instructionPart = this.buildInstruction(ctx)
-    const constraintPart = this.buildConstraintHint(ctx)
+    const rolePart = this.selectRole(ctx);
+    const instructionPart = this.buildInstruction(ctx);
+    const constraintPart = this.buildConstraintHint(ctx);
 
-    let prompt = `[${rolePart}] ${instructionPart}`
+    let prompt = `[${rolePart}] ${instructionPart}`;
 
     if (constraintPart) {
-      prompt += ` | ${constraintPart}`
+      prompt += ` | ${constraintPart}`;
     }
 
-    prompt += ` | 输出:[{"text":"与"${contextSummary}"高度相关的专业建议(含参数/标准)","category":"类别","score":0.9}]`
+    prompt += ` | 输出:[{"text":"与"${contextSummary}"高度相关的专业建议(含参数/标准)","category":"类别","score":0.9}]`;
 
     if (prompt.length <= maxLength) {
-      return prompt
+      return prompt;
     }
 
-    return this.compressPrompt(prompt, maxLength, contextSummary)
+    return this.compressPrompt(prompt, maxLength, contextSummary);
   }
 
   private selectRole(ctx: ParsedContext): string {
-    if (ctx.regulatoryContext) return '食品法规专家'
-    if (ctx.processStage?.includes('中试') || ctx.processStage?.includes('量产')) return '食品工艺总工'
-    if (ctx.functionGoals.length > 0 && ctx.ingredientMentions.length > 0) return '配方研发专家'
-    if (ctx.rawInput.includes('成本') || ctx.rawInput.includes('价格')) return '食品财务分析师'
-    if (ctx.rawInput.includes('市场') || ctx.rawInput.includes('竞品')) return '品牌战略顾问'
-    return '食品科学顾问'
+    if (ctx.regulatoryContext) return '食品法规专家';
+    if (ctx.processStage?.includes('中试') || ctx.processStage?.includes('量产')) return '食品工艺总工';
+    if (ctx.functionGoals.length > 0 && ctx.ingredientMentions.length > 0) return '配方研发专家';
+    if (ctx.rawInput.includes('成本') || ctx.rawInput.includes('价格')) return '食品财务分析师';
+    if (ctx.rawInput.includes('市场') || ctx.rawInput.includes('竞品')) return '品牌战略顾问';
+    return '食品科学顾问';
   }
 
   private buildInstruction(ctx: ParsedContext): string {
-    const instructions: string[] = []
+    const instructions: string[] = [];
 
     if (ctx.productType) {
-      instructions.push(`针对${ctx.productType}`)
+      instructions.push(`针对${ctx.productType}`);
     }
 
     if (ctx.functionGoals.length > 0) {
-      instructions.push(`${ctx.functionGoals.join('/')}方向`)
+      instructions.push(`${ctx.functionGoals.join('/')}方向`);
     }
 
     if (ctx.ingredientMentions.length > 0) {
-      instructions.push(`涉及${ctx.ingredientMentions.slice(0, 3).join('、')}`)
+      instructions.push(`涉及${ctx.ingredientMentions.slice(0, 3).join('、')}`);
     }
 
     if (instructions.length === 0) {
-      return '提供专业建议'
+      return '提供专业建议';
     }
 
-    return instructions.join('，') + '，给出具体参数或实施方案'
+    return instructions.join('，') + '，给出具体参数或实施方案';
   }
 
   private buildConstraintHint(ctx: ParsedContext): string {
-    const hints: string[] = []
+    const hints: string[] = [];
 
     if (ctx.constraints.length > 0) {
-      hints.push(`约束:${ctx.constraints.slice(0, 2).join(',')}`)
+      hints.push(`约束:${ctx.constraints.slice(0, 2).join(',')}`);
     }
 
     if (ctx.technicalParams.length > 0) {
-      hints.push(`已知:${ctx.technicalParams.slice(0, 2).map(p => p.param).join(',')}`)
+      hints.push(
+        `已知:${ctx.technicalParams
+          .slice(0, 2)
+          .map((p) => p.param)
+          .join(',')}`,
+      );
     }
 
-    return hints.join(' ')
+    return hints.join(' ');
   }
 
   private compressPrompt(prompt: string, maxLength: number, _contextSummary: string): string {
-    let compressed = prompt
+    let compressed = prompt;
 
-    compressed = compressed.replace(/输出:\[{"text":"[^"]*","category":"[^"]*","score":[\d.]+\}]/g, '输:JSON[{text,category,score}]')
+    compressed = compressed.replace(
+      /输出:\[{"text":"[^"]*","category":"[^"]*","score":[\d.]+\}]/g,
+      '输:JSON[{text,category,score}]',
+    );
 
-    if (compressed.length <= maxLength) return compressed
+    if (compressed.length <= maxLength) return compressed;
 
-    const roleMatch = /\[[^\]]+\]/.exec(compressed)
+    const roleMatch = /\[[^\]]+\]/.exec(compressed);
     if (roleMatch && roleMatch[0].length > 15) {
       const shortRoles: Record<string, string> = {
-        '食品法规专家': '[法规专家]',
-        '食品工艺总工': '[工艺总工]',
-        '配方研发专家': '[研发专家]',
-        '食品财务分析师': '[财务分析师]',
-        '品牌战略顾问': '[战略顾问]',
-        '食品科学顾问': '[科学顾问]',
-      }
-      compressed = compressed.replace(roleMatch[0], shortRoles[roleMatch[0].slice(1, -1)] || '[专家]')
+        食品法规专家: '[法规专家]',
+        食品工艺总工: '[工艺总工]',
+        配方研发专家: '[研发专家]',
+        食品财务分析师: '[财务分析师]',
+        品牌战略顾问: '[战略顾问]',
+        食品科学顾问: '[科学顾问]',
+      };
+      compressed = compressed.replace(roleMatch[0], shortRoles[roleMatch[0].slice(1, -1)] || '[专家]');
     }
 
-    if (compressed.length <= maxLength) return compressed
+    if (compressed.length <= maxLength) return compressed;
 
-    return compressed.slice(0, maxLength - 20) + '...'
+    return compressed.slice(0, maxLength - 20) + '...';
   }
 }
-
 
 export const expertEngine = {
   contextAware: new ContextAwareEngine(),
@@ -936,13 +1007,13 @@ export const expertEngine = {
   promptBuilder: new IntelligentPromptBuilder(),
 
   analyzeAndGenerate(input: string): {
-    context: ParsedContext
-    professionalSuggestions: SmartSuggestion[]
-    optimizedPrompt: string
+    context: ParsedContext;
+    professionalSuggestions: SmartSuggestion[];
+    optimizedPrompt: string;
   } {
-    const context = this.contextAware.parse(input)
-    const suggestions = this.suggestionGenerator.generateProfessionalSuggestions(context)
-    const prompt = this.promptBuilder.buildPrompt(context)
+    const context = this.contextAware.parse(input);
+    const suggestions = this.suggestionGenerator.generateProfessionalSuggestions(context);
+    const prompt = this.promptBuilder.buildPrompt(context);
 
     logger.log('[ExpertEngine V3] 分析完成:', {
       输入长度: input.length,
@@ -953,24 +1024,22 @@ export const expertEngine = {
       专业建议数: suggestions.length,
       Prompt长度: prompt.length,
       上下文摘要: this.contextAware.generateContextSummary(context),
-    })
+    });
 
     return {
       context,
       professionalSuggestions: suggestions,
       optimizedPrompt: prompt,
-    }
+    };
   },
 
   generateQuickSuggestions(input: string): SmartSuggestion[] {
-    const context = this.contextAware.parse(input)
-    return this.suggestionGenerator.generateProfessionalSuggestions(context)
+    const context = this.contextAware.parse(input);
+    return this.suggestionGenerator.generateProfessionalSuggestions(context);
   },
 
   buildOptimizedPrompt(input: string, maxLength?: number): string {
-    const context = this.contextAware.parse(input)
-    return this.promptBuilder.buildPrompt(context, maxLength)
+    const context = this.contextAware.parse(input);
+    return this.promptBuilder.buildPrompt(context, maxLength);
   },
-}
-
-export type { ParsedContext }
+};

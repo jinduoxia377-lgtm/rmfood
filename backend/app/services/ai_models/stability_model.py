@@ -1,7 +1,8 @@
 """
-StabilityModel - 稳定性预测服务
-LSTM + Attention，预测 12 月保质期稳定性曲线
-当前为规则模拟实现
+⚠️ MOCK IMPLEMENTATION - 模拟实现，非真实 AI 模型
+
+当前使用线性退化公式模拟 12 月稳定性预测。
+接入 LSTM + Attention 模型后替换为真实推理实现。
 """
 import logging
 from typing import Any
@@ -9,8 +10,8 @@ from typing import Any
 logger = logging.getLogger(__name__)
 
 
-class StabilityModelService:
-    """稳定性预测服务"""
+class MockStabilityModelService:
+    """稳定性预测服务（模拟实现）"""
 
     async def predict(
         self,

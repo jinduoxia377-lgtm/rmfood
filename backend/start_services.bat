@@ -45,7 +45,7 @@ if %errorlevel% neq 0 (
 )
 
 echo 正在启动 Neo4j 服务...
-docker run --name rmfood-neo4j -d -p 7474:7474 -p 7687:7687 -e "NEO4J_AUTH=neo4j/rmfood123" neo4j:4.4
+docker run --name rmfood-neo4j -d -p 7474:7474 -p 7687:7687 -e "NEO4J_AUTH=neo4j/%NEO4J_AUTH_PASSWORD%" neo4j:4.4
 if %errorlevel% neq 0 (
     echo 警告: Neo4j 服务启动失败
 ) else (
@@ -60,7 +60,7 @@ echo 依赖服务启动完成
 echo 服务访问地址：
 echo Redis: redis://localhost:6379
  echo ElasticSearch: http://localhost:9200
-echo Neo4j: http://localhost:7474 (用户名: neo4j, 密码: rmfood123)
+echo Neo4j: http://localhost:7474 (用户名: neo4j, 密码: %NEO4J_AUTH_PASSWORD%)
 echo =========================================
 
 echo 正在更新 .env 文件，配置依赖服务连接信息...
@@ -83,7 +83,7 @@ if exist ".env" (
     echo NEO4J_URI=bolt://localhost:7687 >> ".env.tmp3"
     
     findstr /v "NEO4J_PASSWORD" ".env.tmp3" > ".env.tmp4"
-    echo NEO4J_PASSWORD=rmfood123 >> ".env.tmp4"
+    echo NEO4J_PASSWORD=%NEO4J_AUTH_PASSWORD% >> ".env.tmp4"
     
     REM 替换原文件
     move ".env.tmp4" ".env" >nul 2>&1

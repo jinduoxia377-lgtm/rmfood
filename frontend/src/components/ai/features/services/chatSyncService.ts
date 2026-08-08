@@ -205,14 +205,20 @@ class ChatSyncService {
     logger.info(`[ChatSync] Syncing ${pending.length} sessions to cloud...`)
 
     try {
-      // TODO: 接入实际云端 API
-      // const response = await fetch('/api/v1/chat/sync', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      //   body: JSON.stringify({ sessions: pending }),
-      // })
+      const token = localStorage.getItem('auth_token') || ''
+      const response = await fetch('/api/v1/chat/sync', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ sessions: pending }),
+      })
 
-      // 模拟成功
+      if (!response.ok) {
+        throw new Error(`Sync failed: ${response.status} ${response.statusText}`)
+      }
+
       pending.forEach(s => {
         s.syncStatus = 'synced'
         this.sessions.set(s.id, s)

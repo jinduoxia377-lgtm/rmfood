@@ -13,7 +13,7 @@ from ..schemas.peptide_design import (
     PeptideDesignCreate, PeptideDesignUpdate,
     PeptideDesignCandidateCreate, VersionInfo, ComparisonResult
 )
-from ..core.exceptions import NotFoundError, ConflictError
+from app.core.middleware.exceptions import NotFoundError, ConflictError
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +52,7 @@ class PeptideDesignService:
 
     def validate_target_effects(self, target_effects: List[str]) -> bool:
         """验证目标活性类型有效性"""
-        return all(effect in VALID_TARGET_EFFECTS for effect in target_effects)
+        return bool(target_effects) and all(effect in VALID_TARGET_EFFECTS for effect in target_effects)
 
     def validate_objective_weights(self, weights: Dict[str, float]) -> bool:
         """
@@ -178,10 +178,13 @@ class PeptideDesignService:
         )
 
         self.db.add(project)
-        await self.db.commit()
-        await self.db.refresh(project)
-
-        logger.info(f"创建设计项目成功: id={project.id}, name={data.project_name}")
+        try:
+            await self.db.commit()
+            await self.db.refresh(project)
+        except Exception as e:
+            await self.db.rollback()
+            logger.warning("创建设计项目失败: %s", e)
+            raise
         return project
 
     async def add_candidates(
@@ -223,38 +226,41 @@ class PeptideDesignService:
 
         await self.db.flush()
 
-        # 重新查询所有候选（包括新增的）
-        all_candidates_result = await self.db.execute(
-            select(PeptideDesignCandidate)
-            .where(PeptideDesignCandidate.design_id == design_id)
-        )
-        all_candidates = list(all_candidates_result.scalars().all())
+        try:
+            # 重新查询所有候选（包括新增的）
+            all_candidates_result = await self.db.execute(
+                select(PeptideDesignCandidate)
+                .where(PeptideDesignCandidate.design_id == design_id)
+            )
+            all_candidates = list(all_candidates_result.scalars().all())
 
-        # 计算Pareto前沿
-        await self.compute_pareto_frontier(all_candidates)
+            # 计算Pareto前沿
+            await self.compute_pareto_frontier(all_candidates)
 
-        # 更新统计字段
-        pareto_count = sum(1 for c in all_candidates if c.is_pareto_frontier)
-        project.total_candidates = len(all_candidates)
-        project.pareto_size = pareto_count
-        project.updated_at = now
+            # 更新统计字段
+            pareto_count = sum(1 for c in all_candidates if c.is_pareto_frontier)
+            project.total_candidates = len(all_candidates)
+            project.pareto_size = pareto_count
+            project.updated_at = now
 
-        # 首次添加候选 → 自动改为in_progress
-        if project.status == PeptideDesignStatus.DRAFT and len(all_candidates) > 0:
-            project.status = PeptideDesignStatus.IN_PROGRESS
-            project.version += 1  # 版本递增
+            # 首次添加候选 → 自动改为in_progress
+            if project.status == PeptideDesignStatus.DRAFT and len(all_candidates) > 0:
+                project.status = PeptideDesignStatus.IN_PROGRESS
+                project.version += 1  # 版本递增
 
-        await self.db.commit()
-        await self.db.refresh(project)
+            await self.db.commit()
+            await self.db.refresh(project)
 
-        logger.info(
-            f"添加候选方案成功: design_id={design_id}, count={len(new_candidates)}, "
-            f"pareto_size={pareto_count}"
-        )
+            logger.info(
+                f"添加候选方案成功: design_id={design_id}, count={len(new_candidates)}, "
+                f"pareto_size={pareto_count}"
+            )
 
-        return new_candidates
-
-    async def get_project(self, design_id: int, include_candidates: bool = True) -> PeptideDesign:
+            return new_candidates
+        except Exception as e:
+            await self.db.rollback()
+            logger.warning("批量创建候选肽段失败: %s", e)
+            raise
         """
         获取项目详情
 

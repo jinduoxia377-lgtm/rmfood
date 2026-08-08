@@ -11,7 +11,7 @@ from ..models import Category
 from ..services.auth import get_current_user
 from ..models.user_model import User
 from ..api.deps import get_db_session
-from ..core.cache_system import cache_async, cache_service
+from ..core.performance.cache_system import cache_async, cache_service
 
 router = APIRouter(prefix="/categories", tags=["分类管理"])
 

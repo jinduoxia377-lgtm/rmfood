@@ -11,7 +11,7 @@ from ..schemas.peptide_analysis import (
     PeptideAnalysisCreate, PeptideAnalysisUpdate,
     PeptideAnalysisResponse, PeptideAnalysisListResponse, BatchResult
 )
-from ..core.exceptions import (
+from app.core.middleware.exceptions import (
     NotFoundError, AuthorizationError,
     PeptideAnalysisError
 )
@@ -358,7 +358,7 @@ class PeptideAnalysisService:
                 except Exception as e:
                     failed_items.append({
                         "index": idx,
-                        "error": str(e),
+                        "error": "处理异常",
                         "sequence": item.sequence
                     })
 

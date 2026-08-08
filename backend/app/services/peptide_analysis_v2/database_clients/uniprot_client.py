@@ -231,9 +231,9 @@ class UniProtClient:
             >>> client = UniProtClient()
             >>> entry = await client.get_protein_by_accession("P01308")
             >>> if entry:
-            ...     print(entry.protein_name)
-            ...     print(f"序列长度: {entry.length} AA")
-            ...     print(f"分子量: {entry.mass:.2f} Da")
+            ...     logger.info(entry.protein_name)
+            ...     logger.info(f"序列长度: {entry.length} AA")
+            ...     logger.info(f"分子量: {entry.mass:.2f} Da")
             
         真实数据验证（必须通过）:
         - P01308 (Insulin): 
@@ -308,7 +308,7 @@ class UniProtClient:
         Example:
             >>> results = await client.search_by_sequence("VLGYTKEGNHIVGKKISAR")
             >>> for hit in results[:5]:
-            ...     print(f"{hit['primaryAccession']}: {hit['identity']:.1%} identity")
+            ...     logger.info(f"{hit['primaryAccession']}: {hit['identity']:.1%} identity")
         """
         query_parts = []
         
@@ -381,9 +381,9 @@ class UniProtClient:
             >>> results = await client.batch_get_proteins(accessions)
             >>> for acc, entry in results.items():
             ...     if entry:
-            ...         print(f"{acc}: {entry.protein_name}")
+            ...         logger.info(f"{acc}: {entry.protein_name}")
             ...     else:
-            ...         print(f"{acc}: 未找到")
+            ...         logger.info(f"{acc}: 未找到")
             
         Performance:
             100个accessions: ~5-15s (取决于网络)
@@ -631,7 +631,7 @@ async def test_uniprot_real_data():
             top_hit = search_results[0]
             logger.info(f"   ✅ 最佳匹配: {top_hit['primaryAccession']}")
             logger.info(f"   ✅ 序列长度: {top_hit['sequence']['length']} AA")
-        print()
+        logger.info()
         
         # 测试4: 批量查询
         logger.info("📌 测试4: 批量查询 (混合有效和无效ID)")
@@ -655,7 +655,7 @@ async def test_uniprot_real_data():
             logger.info(f"      - 长度: {p.length} AA")
             logger.info(f"      - GO术语数: {len(p.go_terms)}")
             logger.info(f"      - 关键词: {', '.join(p.keywords[:5])}")
-        print()
+        logger.info()
         
     logger.info("="*80)
     logger.info("🎉 所有UniProt真实数据验证测试通过！")

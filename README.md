@@ -100,7 +100,7 @@ RMFOOD (Recipe Management for Optimal Organic Design) 是一个**企业级 AI �
 | **AI 模块** | 对话系统迭代至 **v10.0**，9 大功能 Tab |
 | **前端架构** | 自建设计系统 (MD3 Design Token)，WCAG AA 合规 |
 | **安全性** | 7 层纵深防御，OWASP Top 10 覆盖 |
-| **代码质量** | **TypeScript 编译 0 错误** (从 1,331→0) |
+| **代码质量** | **TypeScript 编译 140 错误** (从 1,331→140，持续修复中) |
 | **肽分析** | 专业级分析管线：理化性质→二级结构→ADMET |
 | **主题系统** | 亮/暗/系统模式 + 无障碍模式 + 多种预设 |
 
@@ -550,11 +550,12 @@ npm run dev                  # http://localhost:3000
 ```bash
 cp .env.example .env         # 必填: SECRET_KEY, ADMIN_PASSWORD, POSTGRES_PASSWORD
 
-# 开发环境 (含代码热挂载)
-docker compose up -d
+# 开发环境
+cd backend && uvicorn app.main:app --reload --port 8000
+cd frontend && npm run dev
 
-# 生产环境 (DEBUG=false)
-docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+# 生产环境
+# 请参考 docs/deployment/ 下的部署指南
 ```
 
 | 服务 | 基础镜像 | 端口 | 资源限制 |
@@ -679,9 +680,6 @@ rmfood-platform/
 ├── 📂 tests/ (14 文件): e2e/performance/security
 ├── 📂 docs/ (74+ 资产): 28 文档 + 27 截图 + 22 报告
 ├── 📂 .github/workflows/ci-cd.yml (9 Job)
-├── docker-compose*.yml (3 套)
-├── Dockerfile.backend / Dockerfile.frontend
-├── DOCKER.md (341 行部署手册)
 ├── .env.example (50+ 变量)
 └── README.md
 ```
@@ -744,10 +742,10 @@ rmfood-platform/
 
 | 指标 | 数值 | 状态 |
 |:-----|:----:|:-----|
-| 编译错误 | **0** | ✅ 全部清除 (从 1,331 降至 0) |
+| 编译错误 | **140** | 🟡 持续修复中 (从 1,331→140) |
 | ESLint 自动修复 | 已执行 | ✅ 11,512 格式化问题已修复 |
 | Strict Mode | 全量启用 | ✅ strict: true |
-| ESLint 配置 | Flat Config 9.x | ✅ |
+| ESLint 配置 | Flat Config 9.x | ✅ (已修复 @typescript-eslint v8 插件引用) |
 
 ### 已知技术债务 (2026-06-10 更新)
 
@@ -767,10 +765,10 @@ rmfood-platform/
 | devcontainer | ✅ P2 | Python 3.12 + Node 20 开发容器 |
 | 部署脚本 | ✅ P2 | 一键部署 + 数据库备份 |
 | 每日安全扫描 | ✅ P2 | GitHub Actions 定时任务 |
-| 后端 print() 清理 | 🟡 P2 | 503 处, 需替换为 logger |
-| OpenTelemetry 完整集成 | ⬜ P3 | request_context 已就绪, 需 OTel SDK |
-| API 版本管理 | ⬜ P3 | 待增强 |
-| 邮件服务 | ⬜ P3 | 密码重置 TODO |
+| 后端 print() 清理 | ✅ P2 | 生产代码 9 处已替换为 logger，剩余为脚本/测试 |
+| OpenTelemetry 完整集成 | ✅ P3 | TelemetryMiddleware 已注册，自动 HTTP 追踪 |
+| API 版本管理 | ✅ P3 | APIVersionMiddleware 已注册，响应头注入 X-API-Version |
+| 邮件服务 | ✅ P3 | send_password_reset_email 已实现，forgot_password 已调用 |
 
 ---
 
@@ -870,16 +868,16 @@ GitHub Actions (`.github/workflows/ci-cd.yml`), **9 个 Job**, Node 20 + Python 
 | 优先级 | 项 | 状态 | 工作量 |
 |:-------|:---|:----:|:------:|
 | 🔴 P0 | xlsx 安全漏洞 → 已替换 ExcelJS | ✅ 完成 | 2天 |
-| 🔴 P0 | ESLint 零错误 | 🟡 剩余 16,011 非自动修复 | 5天+ |
+| 🔴 P0 | ESLint 零错误 | 🟡 2,257 个类型安全错误（需渐进修复） | 持续 |
 | 🟠 P1 | 生产构建 minify 启用 | ✅ 完成 | 0.5天 |
 | 🟠 P1 | Mock 数据分离 | ✅ 完成 | 3天 |
-| 🟠 P1 | API Key 加密存储 | ⬜ 待办 | 2天 |
-| 🟡 P2 | 核心组件单元测试补充 | ⬜ 待办 | 5天 |
-| 🟡 P2 | Prettier + husky/lint-staged | ⬜ 待办 | 1天 |
-| 🟡 P2 | 移除未使用依赖 (`passlib`) | ⬜ 待办 | 0.5天 |
-| ⬜ P5 | OpenTelemetry 分布式追踪 | ⬜ 待办 | — |
-| ⬜ P5 | API 版本协商机制 | ⬜ 待办 | — |
-| ⬜ P5 | 邮件服务 (forgot_password) | ⬜ 待办 | — |
+| ✅ P1 | API Key 加密存储 | ✅ 已完成 | AES-256-GCM + HKDF 派生 + 密钥轮换 |
+| 🟡 P2 | 核心组件单元测试补充 | ⬜ 进行中 | 27 测试文件，覆盖率 65-70%，目标 80% |
+| ✅ P2 | Prettier + husky/lint-staged | ✅ 已完成 | 已配置 pre-commit 自动格式化 |
+| ✅ P2 | 移除未使用依赖 (`passlib`) | ✅ 已完成 | 已更新 docstring，代码仅用 bcrypt |
+| ✅ P5 | OpenTelemetry 分布式追踪 | ✅ 已完成 | — |
+| ✅ P5 | API 版本协商机制 | ✅ 已完成 | — |
+| ✅ P5 | 邮件服务 (forgot_password) | ✅ 已完成 | — |
 
 ---
 

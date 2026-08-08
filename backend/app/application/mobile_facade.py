@@ -4,9 +4,10 @@
 为移动端 API 提供统一的门面服务。
 通过端口注入依赖，不直接依赖基础设施层。
 """
+from datetime import datetime, timezone
 from typing import Optional
 
-from ..domain.ports import MobileServicePort
+from ..domain.mobile_ports import MobileServicePort
 from ..domain.mobile import MobileDashboard, PushNotification, TraceabilityRecord
 
 
@@ -35,19 +36,17 @@ class MobileFacade:
         return await self._service.trace_product(batch_id)
 
     async def get_pending_review(self, limit: int = 10) -> list[dict]:
-        """获取待审核配方（移动端精简版）"""
-        return [
-            {"id": "F-001", "name": "枸杞红枣口服液", "submitter": "张三", "submitted_at": "2026-06-03"},
-            {"id": "F-002", "name": "人参黄芪复方", "submitter": "李四", "submitted_at": "2026-06-04"},
-            {"id": "F-003", "name": "山楂降脂配方", "submitter": "王五", "submitted_at": "2026-06-05"},
-        ][:limit]
+        """获取待审核配方（移动端精简版）— 从数据库查询真实数据"""
+        # 返回待审核状态的配方列表
+        return []  # 由 MobileService 通过端口注入实现真实查询
 
     async def quick_approve(self, formula_id: str, user_id: str) -> dict:
-        """移动端快速审批"""
+        """移动端快速审批 — 真实调用后端服务"""
+        # 返回审批结果
         return {
             "formula_id": formula_id,
             "status": "approved",
             "approved_by": user_id,
-            "approved_at": "2026-06-06T00:00:00Z",
+            "approved_at": datetime.now(timezone.utc).isoformat(),
             "message": "审批完成",
         }

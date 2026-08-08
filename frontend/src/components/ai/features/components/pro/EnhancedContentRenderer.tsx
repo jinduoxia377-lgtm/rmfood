@@ -79,10 +79,10 @@ export function EnhancedRatioChart({ content }: { content: string }) {
   const maxVal = Math.max(...data.values, 1)
 
   return (
-    <div className="mt-4 p-4 bg-white dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+    <div className="mt-4 p-4 bg-white dark:bg-neutral-800/50 rounded-xl border border-neutral-200 dark:border-neutral-700 shadow-sm">
       <div className="flex items-center gap-2 mb-4">
         <PieChart className="w-5 h-5 text-primary-500" />
-        <h4 className="text-sm font-bold text-gray-800 dark:text-gray-200">功效成分占比分析</h4>
+        <h4 className="text-sm font-bold text-neutral-800 dark:text-neutral-200">功效成分占比分析</h4>
       </div>
 
       {/* 条形图 */}
@@ -93,10 +93,10 @@ export function EnhancedRatioChart({ content }: { content: string }) {
           return (
             <div key={i}>
               <div className="flex justify-between text-xs mb-1">
-                <span className="font-medium text-gray-700 dark:text-gray-300 truncate mr-2">{label}</span>
+                <span className="font-medium text-neutral-700 dark:text-neutral-300 truncate mr-2">{label}</span>
                 <span className="text-primary-600 dark:text-primary-400 font-bold">{pct}%</span>
               </div>
-              <div className="w-full h-3 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+              <div className="w-full h-3 bg-neutral-100 dark:bg-neutral-700 rounded-full overflow-hidden">
                 <div
                   className="h-full rounded-full bg-gradient-to-r from-primary-400 to-primary-600 transition-all duration-700"
                   style={{ width: `${barWidth}%` }}
@@ -110,11 +110,11 @@ export function EnhancedRatioChart({ content }: { content: string }) {
       {/* 卡片汇总 */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-4">
         {data.labels.map((label, i) => (
-          <div key={i} className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-2.5 text-center">
+          <div key={i} className="bg-slate-50 dark:bg-neutral-700/50 rounded-lg p-2.5 text-center">
             <div className="text-lg font-bold text-primary-600 dark:text-primary-400">
               {data.values[i]}%
             </div>
-            <div className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5 truncate">{label}</div>
+            <div className="text-[10px] text-neutral-500 dark:text-neutral-400 mt-0.5 truncate">{label}</div>
           </div>
         ))}
       </div>
@@ -129,23 +129,23 @@ export function EnhancedFeatureCards({ content }: { content: string }) {
   return (
     <div className="mt-4 space-y-3">
       <div className="flex items-center gap-2">
-        <Award className="w-5 h-5 text-amber-500" />
-        <h4 className="text-sm font-bold text-gray-800 dark:text-gray-200">配方特色总结</h4>
+        <Award className="w-5 h-5 text-warning-500" />
+        <h4 className="text-sm font-bold text-neutral-800 dark:text-neutral-200">配方特色总结</h4>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {features.slice(0, 6).map((text, i) => {
           const Icon = FEATURE_ICONS[i % FEATURE_ICONS.length]
           const grad = FEATURE_COLORS[i % FEATURE_COLORS.length]
           return (
-            <div key={i} className="group relative overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700
-              bg-white dark:bg-gray-800/50 hover:shadow-md transition-all duration-300"
+            <div key={i} className="group relative overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-700
+              bg-white dark:bg-neutral-800/50 hover:shadow-md transition-all duration-300"
             >
               <div className="flex gap-3 p-3">
                 <div className={`flex-shrink-0 w-9 h-9 rounded-lg bg-gradient-to-br ${grad} flex items-center justify-center shadow-sm`}>
                   <Icon className="w-4 h-4 text-white" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed line-clamp-3">
+                  <p className="text-xs text-neutral-600 dark:text-neutral-300 leading-relaxed line-clamp-3">
                     {text}
                   </p>
                 </div>
@@ -198,18 +198,18 @@ export function EnhancedRoleCards({ content }: { content: string }) {
     <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
       {rows.map((row, i) => {
         const firstChar = row.role.charAt(0)
-        const grad = roleColors[firstChar] || 'from-gray-400 to-gray-500'
+        const grad = roleColors[firstChar] || 'from-slate-400 to-slate-500'
         return (
-          <div key={i} className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden
-            bg-white dark:bg-gray-800/50 hover:shadow-md transition-all duration-300"
+          <div key={i} className="rounded-xl border border-neutral-200 dark:border-neutral-700 overflow-hidden
+            bg-white dark:bg-neutral-800/50 hover:shadow-md transition-all duration-300"
           >
             <div className={`bg-gradient-to-r ${grad} px-3 py-1.5 flex items-center justify-between`}>
               <span className="text-xs font-bold text-white">{row.role}</span>
               <span className="text-[10px] text-white/80">{row.pct}</span>
             </div>
             <div className="p-3">
-              <div className="text-sm font-bold text-gray-800 dark:text-gray-200 truncate">{row.name}</div>
-              <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">{row.effect}</p>
+              <div className="text-sm font-bold text-neutral-800 dark:text-neutral-200 truncate">{row.name}</div>
+              <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-1 line-clamp-2">{row.effect}</p>
             </div>
           </div>
         )

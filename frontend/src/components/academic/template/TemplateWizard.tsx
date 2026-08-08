@@ -43,12 +43,12 @@ export function TemplateWizard({ onComplete, onCancel }: TemplateWizardProps) {
         {[1, 2, 3].map((s) => (
           <div key={s} className="flex items-center">
             <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-              step >= s ? 'bg-primary text-white' : 'bg-gray-200 text-gray-500'
+              step >= s ? 'bg-primary text-white' : 'bg-neutral-200 text-neutral-500'
             }`}>
               {step > s ? <Check className="w-4 h-4" /> : s}
             </div>
             {s < 3 && (
-              <div className={`w-16 h-0.5 ${step > s ? 'bg-primary' : 'bg-gray-200'}`} />
+              <div className={`w-16 h-0.5 ${step > s ? 'bg-primary' : 'bg-neutral-200'}`} />
             )}
           </div>
         ))}
@@ -63,7 +63,7 @@ export function TemplateWizard({ onComplete, onCancel }: TemplateWizardProps) {
               type="text"
               value={templateData.name}
               onChange={(e) => setTemplateData({ ...templateData, name: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800"
+              className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800"
               placeholder="输入模板名称"
             />
           </div>
@@ -72,7 +72,7 @@ export function TemplateWizard({ onComplete, onCancel }: TemplateWizardProps) {
             <textarea
               value={templateData.description}
               onChange={(e) => setTemplateData({ ...templateData, description: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800"
+              className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800"
               placeholder="输入模板描述"
               rows={3}
             />
@@ -82,7 +82,7 @@ export function TemplateWizard({ onComplete, onCancel }: TemplateWizardProps) {
             <select
               value={templateData.category}
               onChange={(e) => setTemplateData({ ...templateData, category: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800"
+              className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800"
             >
               {categories.map((cat) => (
                 <option key={cat.value} value={cat.value}>{cat.label}</option>
@@ -95,9 +95,9 @@ export function TemplateWizard({ onComplete, onCancel }: TemplateWizardProps) {
       {step === 2 && (
         <div className="space-y-4">
           <h2 className="text-xl font-semibold">章节结构</h2>
-          <div className="p-4 border border-dashed border-gray-300 rounded-lg text-center">
-            <FileText className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-            <p className="text-sm text-gray-500">选择预设章节模板或自定义章节</p>
+          <div className="p-4 border border-dashed border-neutral-300 rounded-lg text-center">
+            <FileText className="w-8 h-8 mx-auto mb-2 text-neutral-400" />
+            <p className="text-sm text-neutral-500">选择预设章节模板或自定义章节</p>
           </div>
         </div>
       )}
@@ -105,7 +105,7 @@ export function TemplateWizard({ onComplete, onCancel }: TemplateWizardProps) {
       {step === 3 && (
         <div className="space-y-4">
           <h2 className="text-xl font-semibold">确认信息</h2>
-          <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+          <div className="p-4 bg-slate-50 dark:bg-neutral-800 rounded-lg">
             <p><strong>名称：</strong>{templateData.name}</p>
             <p><strong>分类：</strong>{categories.find(c => c.value === templateData.category)?.label}</p>
           </div>
@@ -115,7 +115,7 @@ export function TemplateWizard({ onComplete, onCancel }: TemplateWizardProps) {
       <div className="flex justify-between pt-4">
         <button
           onClick={onCancel}
-          className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+          className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-700"
         >
           取消
         </button>
@@ -123,7 +123,7 @@ export function TemplateWizard({ onComplete, onCancel }: TemplateWizardProps) {
           {step > 1 && (
             <button
               onClick={handleBack}
-              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+              className="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-700"
             >
               上一步
             </button>

@@ -8,20 +8,8 @@
 // 1. Basic Service Initialization
 // ============================================
 
-import { tcmService } from './tcmService'
-import { logger } from '@/utils/safeLogger'
-
-function initializeService() {
-  tcmService.configure({
-    apiBaseUrl: '/api/v1',
-    timeout: 30000,
-    retryAttempts: 3,
-  })
-}
-
-// ============================================
-// 2. Herb Search Examples
-// ============================================
+import tcmService from './tcmService';
+import { logger } from '@/utils/safeLogger';
 
 async function searchHerbs() {
   // Basic search
@@ -29,16 +17,14 @@ async function searchHerbs() {
     keyword: '人参',
     page: 1,
     pageSize: 10,
-  })
+  });
 
   // Advanced search with filters
   const filtered = await tcmService.searchHerbs({
-    keyword: '清热解毒',
-    category: '清热药',
-    efficacy: ['清热解毒'],
+    keyword: '人参',
     page: 1,
     pageSize: 20,
-  })
+  });
 }
 
 // ============================================
@@ -46,13 +32,14 @@ async function searchHerbs() {
 // ============================================
 
 async function getHerbDetails() {
-  const herbId = 'TCM001'
+  const herbId = 'TCM001';
 
-  const detail = await tcmService.getHerbDetail(herbId)
+  const detail = await tcmService.getHerbById(herbId);
 
-  logger.log('Herb name:', detail.name)
-  logger.log('Latin name:', detail.latinName)
-  logger.log('Efficacy:', detail.efficacy)
+  if (detail) {
+    logger.log('Herb name:', detail.name);
+    logger.log('Latin name:', detail.latinName);
+  }
 }
 
 // ============================================
@@ -60,13 +47,13 @@ async function getHerbDetails() {
 // ============================================
 
 async function analyzeChemicalComposition() {
-  const herbId = 'TCM001'
+  const herbId = 'TCM001';
 
-  const chemistry = await tcmService.getHerbChemistry(herbId)
+  const chemistry = await tcmService.getHerbCompounds(herbId);
 
-  chemistry.components.forEach(component => {
-    logger.log(`${component.name}: ${component.content}%`)
-  })
+  chemistry.compounds.forEach((component) => {
+    logger.log(`${component.name}: ${component.molecularWeight}`);
+  });
 }
 
 // ============================================
@@ -74,12 +61,12 @@ async function analyzeChemicalComposition() {
 // ============================================
 
 async function analyzeNetworks() {
-  const herbId = 'TCM001'
+  const herbId = 'TCM001';
 
-  const network = await tcmService.getHerbNetwork(herbId)
+  const network = await tcmService.getHerbNetwork(herbId);
 
-  logger.log('Target proteins:', network.targets.length)
-  logger.log('Related herbs:', network.relatedHerbs)
+  logger.log('Target proteins:', network.nodes.length);
+  logger.log('Related edges:', network.edges.length);
 }
 
 // ============================================
@@ -87,56 +74,38 @@ async function analyzeNetworks() {
 // ============================================
 
 async function compareHerbs() {
-  const herbIds = ['TCM001', 'TCM002', 'TCM003']
+  const herbIds = ['TCM001', 'TCM002', 'TCM003'];
 
-  const comparison = await tcmService.compareHerbs(herbIds)
+  const herbs = await Promise.all(herbIds.map((id) => tcmService.getHerbById(id)));
+  const validHerbs = herbs.filter((h): h is NonNullable<typeof h> => h !== null);
 
-  logger.log('Common components:', comparison.commonComponents)
-  logger.log('Differences:', comparison.differences)
+  logger.log(
+    'Common components:',
+    validHerbs.map((h) => h.chemistry.name),
+  );
+  logger.log(
+    'Differences:',
+    validHerbs.map((h) => h.properties.nature),
+  );
 }
 
 // ============================================
-// 7. Mock Data Mode
-// ============================================
-
-function configureMockMode() {
-  tcmService.enableMockMode(true)
-  tcmService.setMockDelay(1000)
-}
-
-// ============================================
-// 8. React Component Usage
-// ============================================
-
-function ReactComponentExample() {
-  return null
-}
-
-// ============================================
-// 9. Data Types
+// 8. Data Types
 // ============================================
 
 interface HerbDetail {
-  id: string
-  name: string
-  latinName: string
-  category: string
-  efficacy: string[]
-  description: string
+  id: string;
+  name: string;
+  latinName: string;
+  category: string;
+  efficacy: string[];
+  description: string;
 }
 
 interface ChemicalComponent {
-  name: string
-  content: number
-  molecularFormula: string
+  name: string;
+  content: number;
+  molecularFormula: string;
 }
 
-export {
-  initializeService,
-  searchHerbs,
-  getHerbDetails,
-  analyzeChemicalComposition,
-  analyzeNetworks,
-  compareHerbs,
-  configureMockMode,
-}
+export { searchHerbs, getHerbDetails, analyzeChemicalComposition, analyzeNetworks, compareHerbs };

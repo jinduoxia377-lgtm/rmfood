@@ -56,7 +56,7 @@ export function Skeleton({
     <div
       className={cn(
         animationClass,
-        !animate && 'bg-slate-200 dark:bg-slate-700',
+        !animate && 'bg-neutral-200 dark:bg-neutral-700',
         className,
       )}
       style={{
@@ -126,7 +126,7 @@ export function CardSkeleton({
   animationType?: SkeletonAnimationType
 }) {
   return (
-    <div className={cn('p-4 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 space-y-3', className)}>
+    <div className={cn('p-4 bg-white dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700 space-y-3', className)}>
       {/* 标题 */}
       <div className="flex items-center gap-3">
         <AvatarSkeleton size={40} animationType={animationType} />
@@ -211,7 +211,7 @@ export function DashboardSkeleton({
       {/* 统计卡片区 */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
+          <div key={i} className="bg-white dark:bg-neutral-800 rounded-lg p-4 border border-neutral-200 dark:border-neutral-700">
             <div className="flex items-center justify-between mb-3">
               <Skeleton height="2em" width="2em" radius={8} animationType={animationType} />
               <Skeleton height="1em" width="4em" animationType={animationType} />
@@ -223,13 +223,13 @@ export function DashboardSkeleton({
 
       {/* 图表区域 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700 h-80">
+        <div className="bg-white dark:bg-neutral-800 rounded-lg p-4 border border-neutral-200 dark:border-neutral-700 h-80">
           <Skeleton height="1em" width="8em" className="mb-4" animationType={animationType} />
           <div className="h-[calc(100%-2.5rem)]">
             <Skeleton height="100%" width="100%" radius={8} animationType={animationType} />
           </div>
         </div>
-        <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700 h-80">
+        <div className="bg-white dark:bg-neutral-800 rounded-lg p-4 border border-neutral-200 dark:border-neutral-700 h-80">
           <Skeleton height="1em" width="10em" className="mb-4" animationType={animationType} />
           <div className="h-[calc(100%-2.5rem)]">
             <Skeleton height="100%" width="100%" radius={8} animationType={animationType} />
@@ -294,7 +294,7 @@ export function DetailSkeleton({
       {/* 内容区 */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white dark:bg-slate-800 rounded-lg p-6 border border-slate-200 dark:border-slate-700">
+          <div className="bg-white dark:bg-neutral-800 rounded-lg p-6 border border-neutral-200 dark:border-neutral-700">
             <Skeleton height="1rem" width="80" className="mb-4" animationType={animationType} />
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               {Array.from({ length: 6 }).map((_, i) => (
@@ -306,7 +306,7 @@ export function DetailSkeleton({
             </div>
           </div>
 
-          <div className="bg-white dark:bg-slate-800 rounded-lg p-6 border border-slate-200 dark:border-slate-700">
+          <div className="bg-white dark:bg-neutral-800 rounded-lg p-6 border border-neutral-200 dark:border-neutral-700">
             <Skeleton height="1rem" width="80" className="mb-4" animationType={animationType} />
             <Skeleton height="1rem" width="100%" className="mb-2" animationType={animationType} />
             <Skeleton height="1rem" width="100%" className="mb-2" animationType={animationType} />
@@ -315,13 +315,13 @@ export function DetailSkeleton({
         </div>
 
         <div className="space-y-6">
-          <div className="bg-white dark:bg-slate-800 rounded-lg p-6 border border-slate-200 dark:border-slate-700">
+          <div className="bg-white dark:bg-neutral-800 rounded-lg p-6 border border-neutral-200 dark:border-neutral-700">
             <Skeleton height="1rem" width="80" className="mb-4" animationType={animationType} />
             <Skeleton height="1rem" width="100%" className="mb-2" animationType={animationType} />
             <Skeleton height="1rem" width="100%" className="mb-2" animationType={animationType} />
             <Skeleton height="1rem" width="75%" animationType={animationType} />
           </div>
-          <div className="bg-white dark:bg-slate-800 rounded-lg p-6 border border-slate-200 dark:border-slate-700">
+          <div className="bg-white dark:bg-neutral-800 rounded-lg p-6 border border-neutral-200 dark:border-neutral-700">
             <Skeleton height="1rem" width="80" className="mb-4" animationType={animationType} />
             {Array.from({ length: 4 }).map((_, i) => (
               <div key={i} className="flex items-center gap-3 py-2">
@@ -367,6 +367,7 @@ export function LoadingWrapper({
     } else {
       setShowLoading(true)
     }
+    return
   }, [loading, minDuration])
 
   if (showLoading) {

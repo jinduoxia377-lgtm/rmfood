@@ -14,6 +14,7 @@
  * @version 1.0.0
  */
 
+import { logger } from '@/utils/safeLogger';
 // ===== 类型定义 =====
 
 /** 统一实体类型（合并 WM 和 CM 的类型体系） */
@@ -487,7 +488,7 @@ export class UnifiedEntityExtractor {
 
       return result
     } catch (error) {
-      console.warn('[UnifiedEntityExtractor] 实体抽取异常，返回空结果:', error)
+      logger.warn('[UnifiedEntityExtractor] 实体抽取异常，返回空结果:', error)
       return { entities: [], unknownSegments: [], processingTimeMs: Math.round((performance.now() - startTime) * 100) / 100 }
     }
   }

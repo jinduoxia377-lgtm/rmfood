@@ -1,0 +1,26 @@
+name: Architecture Integrity Check
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  check-layer-dependencies:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+          
+      - name: Install dependencies
+        run: pip install importlinter 2>/dev/null || echo "importlinter unavailable"
+      
+      - name: Run layer dependency check
+        run: |
+          cd backend
+          python scripts/check_layer_dependencies.py

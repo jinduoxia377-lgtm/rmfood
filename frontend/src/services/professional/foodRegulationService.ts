@@ -112,10 +112,7 @@ class FoodRegulationService extends ProfessionalBaseService {
     this.mockMode = enable;
   }
 
-  public async getStandards(
-    category?: string,
-    keyword?: string,
-  ): Promise<{ standards: FoodStandard[] }> {
+  public async getStandards(category?: string, keyword?: string): Promise<{ standards: FoodStandard[] }> {
     const cacheKey = this.getCacheKey('/standards', { category, keyword });
     const cached = this.getFromCache(cacheKey);
     if (cached) return cached;
@@ -290,10 +287,7 @@ class FoodRegulationService extends ProfessionalBaseService {
     return { materials: results };
   }
 
-  public async searchAdditives(
-    keyword?: string,
-    functionType?: string,
-  ): Promise<{ additives: FoodAdditive[] }> {
+  public async searchAdditives(keyword?: string, functionType?: string): Promise<{ additives: FoodAdditive[] }> {
     const cacheKey = this.getCacheKey('/additives', { keyword, functionType });
     const cached = this.getFromCache(cacheKey);
     if (cached) return cached;
@@ -311,10 +305,7 @@ class FoodRegulationService extends ProfessionalBaseService {
     return result;
   }
 
-  private mockSearchAdditives(
-    keyword?: string,
-    functionType?: string,
-  ): { additives: FoodAdditive[] } {
+  private mockSearchAdditives(keyword?: string, functionType?: string): { additives: FoodAdditive[] } {
     const mockAdditives: FoodAdditive[] = [
       {
         code: 'INS 200',
@@ -362,10 +353,7 @@ class FoodRegulationService extends ProfessionalBaseService {
     return { additives: results };
   }
 
-  public async checkAdditiveUsage(
-    additiveName: string,
-    foodCategory = '糕点',
-  ): Promise<AdditiveCheckResult> {
+  public async checkAdditiveUsage(additiveName: string, foodCategory = '糕点'): Promise<AdditiveCheckResult> {
     const cacheKey = this.getCacheKey('/additive-check', { additiveName, foodCategory });
     const cached = this.getFromCache(cacheKey);
     if (cached) return cached;
@@ -593,13 +581,3 @@ const foodRegulationService = new FoodRegulationService();
 
 export default foodRegulationService;
 export { FoodRegulationService };
-export type {
-  FoodStandard,
-  FoodHomologyMaterial,
-  NewFoodMaterial,
-  FoodAdditive,
-  AdditiveCheckResult,
-  HomologyCheckResult,
-  FormulaValidationResult,
-  RegulationSummary,
-};

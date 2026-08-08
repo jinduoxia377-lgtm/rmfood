@@ -9,11 +9,13 @@ logger = logging.getLogger(__name__)
 
 
 class AuditService:
-    """审计日志服务（简化版）
+    """审计日志服务（实验性 — 未持久化）
 
-    注意：完整实现需要独立的audit_logs表，
-    此版本提供接口定义和基础日志记录功能。
-    可根据需要扩展为数据库持久化或集成外部日志系统。
+    NOTE: audit_logs 表尚未创建。当前实现仅记录到应用日志。
+    完整实现需要：
+    1. 创建 audit_logs 表的数据库迁移
+    2. 添加 AuditLog ORM model
+    3. 取消注释数据库写入代码
     """
 
     def __init__(self, db: AsyncSession = None):
@@ -58,9 +60,13 @@ class AuditService:
             f"by_user={user_id}"
         )
 
-        # TODO: 如果有audit_logs表，在此处插入数据库记录
+        # NOTE: audit_logs 表尚未创建。完整实现需要：
+        # 1. 创建 audit_logs 表的迁移
+        # 2. 添加 AuditLog ORM model
+        # 3. 取消下面代码的注释
         # if self.db:
         #     await self.db.execute(insert(AuditLog).values(audit_record))
+        #     await self.db.flush()
 
     async def query_audit_logs(
         self,
@@ -77,9 +83,10 @@ class AuditService:
         查询审计日志
 
         返回分页的审计记录列表
+
+        NOTE: audit_logs 表尚未创建，当前返回空结果。
+        完整实现需要添加 AuditLog ORM model 和数据库迁移。
         """
-        # TODO: 从audit_logs表查询
-        # 当前返回空结果（待实现）
         return {
             "items": [],
             "total": 0,

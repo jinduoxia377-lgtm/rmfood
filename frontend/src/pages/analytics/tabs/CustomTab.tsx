@@ -113,7 +113,7 @@ export default function CustomTab({ filters }: Props) {
             className={`px-4 py-2 text-sm rounded-lg transition-all flex items-center gap-2 ${
               isEditMode
                 ? 'bg-primary-600 text-white shadow-md'
-                : 'bg-gray-100 dark:bg-slate-800 text-text-primary hover:bg-gray-200 dark:hover:bg-slate-700'
+                : 'bg-neutral-100 dark:bg-neutral-800 text-text-primary hover:bg-neutral-200 dark:hover:bg-neutral-700'
             }`}
           >
             {isEditMode ? <Check className="w-4 h-4" /> : <LayoutGrid className="w-4 h-4" />}
@@ -153,7 +153,7 @@ export default function CustomTab({ filters }: Props) {
           {isEditMode && selectedWidgets.length > 0 && (
             <button
               onClick={() => setShowSaveDialog(true)}
-              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm rounded-lg transition-colors flex items-center gap-2"
+              className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm rounded-lg transition-colors flex items-center gap-2"
             >
               <Save className="w-4 h-4" />
               保存布局
@@ -162,7 +162,7 @@ export default function CustomTab({ filters }: Props) {
 
           {/* 分享按钮 */}
           {!isEditMode && selectedWidgets.length > 0 && (
-            <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors flex items-center gap-2">
+            <button className="px-4 py-2 bg-secondary-600 hover:bg-secondary-700 text-white text-sm rounded-lg transition-colors flex items-center gap-2">
               <Share2 className="w-4 h-4" />
               分享
             </button>
@@ -173,12 +173,12 @@ export default function CustomTab({ filters }: Props) {
       {/* 组件选择面板 */}
       {showWidgetPicker && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[80vh] overflow-hidden animate-micro-in">
-            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+          <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[80vh] overflow-hidden animate-micro-in">
+            <div className="flex items-center justify-between p-6 border-b border-neutral-200 dark:border-neutral-700">
               <h3 className="text-lg font-bold text-text-primary">选择要添加的组件</h3>
               <button
                 onClick={() => setShowWidgetPicker(false)}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
+                className="text-neutral-400 hover:text-neutral-600 transition-colors"
               >
                 <X className="w-6 h-6" />
               </button>
@@ -197,19 +197,19 @@ export default function CustomTab({ filters }: Props) {
                       disabled={!!isSelected}
                       className={`p-6 rounded-xl border-2 transition-all text-left ${
                         isSelected
-                          ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/20 cursor-not-allowed opacity-60'
-                          : 'border-gray-200 dark:border-gray-700 hover:border-primary-500 hover:shadow-md cursor-pointer'
+                          ? 'border-emerald-500 bg-primary-50 dark:bg-emerald-950/20 cursor-not-allowed opacity-60'
+                          : 'border-neutral-200 dark:border-neutral-700 hover:border-primary-500 hover:shadow-md cursor-pointer'
                       }`}
                     >
                       <div className="flex items-start justify-between mb-3">
-                        <div className={`p-3 rounded-lg ${isSelected ? 'bg-emerald-100 dark:bg-emerald-900/40' : 'bg-primary-50 dark:bg-primary-950/40'}`}>
-                          <Icon className={`w-6 h-6 ${isSelected ? 'text-emerald-600' : 'text-primary-600'}`} />
+                        <div className={`p-3 rounded-lg ${isSelected ? 'bg-primary-100 dark:bg-primary-900/40' : 'bg-primary-50 dark:bg-primary-950/40'}`}>
+                          <Icon className={`w-6 h-6 ${isSelected ? 'text-primary-600' : 'text-primary-600'}`} />
                         </div>
-                        {isSelected && <Check className="w-5 h-5 text-emerald-600" />}
+                        {isSelected && <Check className="w-5 h-5 text-primary-600" />}
                       </div>
                       <h4 className="font-bold text-text-primary mb-1">{widget.title}</h4>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs px-2 py-0.5 bg-gray-100 dark:bg-slate-800 text-text-muted rounded">
+                        <span className="text-xs px-2 py-0.5 bg-neutral-100 dark:bg-neutral-800 text-text-muted rounded">
                           {widget.type.replace('_', ' ')}
                         </span>
                         <span className="text-xs text-text-muted">{widget.size}</span>
@@ -226,7 +226,7 @@ export default function CustomTab({ filters }: Props) {
       {/* 保存确认对话框 */}
       {showSaveDialog && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-md w-full p-6 animate-micro-in">
+          <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl max-w-md w-full p-6 animate-micro-in">
             <h3 className="text-lg font-bold text-text-primary mb-4">保存当前布局</h3>
             <p className="text-sm text-text-muted mb-6">
               确定要保存包含 {selectedWidgets.length} 个组件的布局吗？保存后可以随时加载。
@@ -234,13 +234,13 @@ export default function CustomTab({ filters }: Props) {
             <div className="flex items-center justify-end gap-3">
               <button
                 onClick={() => setShowSaveDialog(false)}
-                className="px-4 py-2 text-sm text-text-primary hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                className="px-4 py-2 text-sm text-text-primary hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
               >
                 取消
               </button>
               <button
                 onClick={handleSaveLayout}
-                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm rounded-lg transition-colors flex items-center gap-2"
+                className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm rounded-lg transition-colors flex items-center gap-2"
               >
                 <Save className="w-4 h-4" />
                 确认保存
@@ -254,9 +254,9 @@ export default function CustomTab({ filters }: Props) {
       <div className="min-h-[600px]">
         {selectedWidgets.length === 0 ? (
           /* 空状态提示 */
-          <div className="h-full flex items-center justify-center bg-gradient-to-br from-gray-50 to-blue-50 dark:from-slate-900 dark:to-blue-950/20 rounded-2xl border-2 border-dashed border-gray-300 dark:border-gray-700">
+          <div className="h-full flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-blue-950/20 rounded-2xl border-2 border-dashed border-neutral-300 dark:border-neutral-700">
             <div className="text-center max-w-md">
-              <LayoutGrid className="w-20 h-20 text-gray-300 dark:text-gray-600 mx-auto mb-6" />
+              <LayoutGrid className="w-20 h-20 text-neutral-300 dark:text-neutral-600 mx-auto mb-6" />
               <h3 className="text-2xl font-bold text-text-primary mb-3">开始构建您的仪表盘</h3>
               <p className="text-text-muted mb-6">
                 从左侧选择组件，拖拽到画布上，创建专属的数据分析视图。
@@ -280,23 +280,23 @@ export default function CustomTab({ filters }: Props) {
               return (
                 <div
                   key={widget.id}
-                  className={`bg-white dark:bg-slate-900 rounded-xl border p-6 transition-all group relative ${
+                  className={`bg-white dark:bg-neutral-900 rounded-xl border p-6 transition-all group relative ${
                     isEditMode
                       ? 'border-dashed border-primary-300 dark:border-primary-700 hover:border-primary-500'
-                      : 'border-gray-200 dark:border-gray-700 hover:shadow-lg'
+                      : 'border-neutral-200 dark:border-neutral-700 hover:shadow-lg'
                   }`}
                 >
                   {/* 编辑模式下的控制按钮 */}
                   {isEditMode && (
                     <div className="absolute top-3 right-3 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button className="p-1.5 bg-gray-100 dark:bg-slate-800 rounded hover:bg-gray-200 dark:hover:bg-slate-700">
-                        <GripVertical className="w-4 h-4 text-gray-500" />
+                      <button className="p-1.5 bg-neutral-100 dark:bg-neutral-800 rounded hover:bg-neutral-200 dark:hover:bg-neutral-700">
+                        <GripVertical className="w-4 h-4 text-neutral-500" />
                       </button>
                       <button
                         onClick={() => handleRemoveWidget(widget.id)}
-                        className="p-1.5 bg-red-100 dark:bg-red-900/40 rounded hover:bg-red-200 dark:hover:bg-red-900/60"
+                        className="p-1.5 bg-error-100 dark:bg-error-900/40 rounded hover:bg-error-200 dark:hover:bg-error-900/60"
                       >
-                        <X className="w-4 h-4 text-red-600" />
+                        <X className="w-4 h-4 text-error-600" />
                       </button>
                     </div>
                   )}
@@ -310,9 +310,9 @@ export default function CustomTab({ filters }: Props) {
                   </div>
 
                   {/* 组件内容占位符 */}
-                  <div className="h-48 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-900 rounded-lg flex items-center justify-center">
+                  <div className="h-48 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 rounded-lg flex items-center justify-center">
                     <div className="text-center">
-                      <Icon className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
+                      <Icon className="w-12 h-12 text-neutral-300 dark:text-neutral-600 mx-auto mb-2" />
                       <p className="text-xs text-text-muted">组件内容将在此渲染</p>
                     </div>
                   </div>

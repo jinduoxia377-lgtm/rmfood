@@ -9,10 +9,11 @@
 
 安全特性:
 - 使用 python-jose 进行 JWT 编解码
-- 使用 passlib + bcrypt 进行密码哈希
+- 使用 bcrypt 进行密码哈希（直接调用 bcrypt.hashpw / bcrypt.checkpw）
 - 支持Token类型区分（access/refresh）
 - 完整的异常处理与日志记录
 """
+import hashlib
 import logging
 import re
 import threading
@@ -52,7 +53,7 @@ def _get_redis_blacklist():
             logger.info("✅ Token 黑名单已连接 Redis (db=1)")
             return _redis_blacklist_client
     except Exception as e:
-        logger.warning(f"⚠️ Redis 黑名单不可用，降级到内存存储: {e}")
+        logger.info(f"Redis 黑名单不可用，降级到内存存储: {e}")
 
     return None
 
@@ -81,6 +82,8 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
         **data,
         "exp": expire,
         "iat": datetime.now(timezone.utc),
+        "iss": settings.security.jwt_issuer,
+        "aud": settings.security.jwt_audience,
         "type": "access",
         "jti": _generate_jti(),  # JWT ID，用于唯一标识和撤销
     }
@@ -105,6 +108,8 @@ def create_refresh_token(user_id: str) -> str:
         "sub": user_id,
         "exp": expire,
         "iat": datetime.now(timezone.utc),
+        "iss": settings.security.jwt_issuer,
+        "aud": settings.security.jwt_audience,
         "type": "refresh",
         "jti": _generate_jti(),
     }
@@ -141,6 +146,8 @@ def decode_token(token: str) -> dict:
             token,
             settings.secret_key,
             algorithms=[settings.security.jwt_algorithm],
+            issuer=settings.security.jwt_issuer,
+            audience=settings.security.jwt_audience,
         )
         return payload
 
@@ -237,7 +244,7 @@ def add_token_to_blacklist(token: str) -> bool:
             if redis_client:
                 try:
                     # 使用 JTI 作为 key（更高效），TTL 设为 Token 剩余有效期
-                    redis_key = f"token_blacklist:{jti}" if jti else f"token_blacklist:{hash(token)}"
+                    redis_key = f"token_blacklist:{jti}" if jti else f"token_blacklist:{hashlib.sha256(token.encode()).hexdigest()}"
                     redis_client.setex(redis_key, ttl, "1")
                     logger.debug(f"Token 已加入 Redis 黑名单: {redis_key} (TTL={ttl}s)")
                 except Exception as e:
@@ -274,7 +281,7 @@ def is_token_blacklisted(token: str) -> bool:
         try:
             payload = jwt.get_unverified_claims(token)
             jti = payload.get("jti", "")
-            redis_key = f"token_blacklist:{jti}" if jti else f"token_blacklist:{hash(token)}"
+            redis_key = f"token_blacklist:{jti}" if jti else f"token_blacklist:{hashlib.sha256(token.encode()).hexdigest()}"
             if redis_client.exists(redis_key):
                 # 回填内存黑名单
                 with _blacklist_lock:
@@ -306,7 +313,8 @@ def cleanup_expired_tokens() -> int:
                 exp = payload.get("exp")
                 if exp and datetime.fromtimestamp(exp, timezone.utc) < current_time:
                     tokens_to_remove.append(token)
-            except Exception:
+            except Exception as token_err:
+                logger.debug("Token 验证失败: %s", token_err)
                 tokens_to_remove.append(token)
 
         for token in tokens_to_remove:
@@ -589,6 +597,10 @@ def create_secure_cookie_settings(
         "samesite": "strict",  # 🔒 CSRF 防护
         "secure": not settings.debug,  # 🔒 生产环境强制 HTTPS
     }
+
+    # 开发环境: 设置 domain 为 localhost 以便 Vite 代理也能携带 cookie
+    if settings.debug:
+        cookie_config["domain"] = "localhost"
 
     # refresh_token 需要更宽松的 SameSite（跨域刷新）
     if is_refresh_token:

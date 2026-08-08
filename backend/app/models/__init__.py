@@ -20,9 +20,9 @@ from .user_model import User
 from .formula import Formula, FormulaVersion, Ingredient, Peptide, Comment, CommentLike, formula_ingredients, formula_peptides, formula_categories, formula_tags, Category, Tag
 from .experiment import Experiment, ExperimentData
 from .workflow import Workflow, WorkflowTask
-from .notification import Notification
+from .notification import Notification, NotificationPreference
 from .system import AuditLog, Attachment, DataSnapshot, SystemConfig
-from .external_data import TCMHerb, BioactivePeptide, KnowledgeGraphNode
+from .external_data import TCMHerb, MMIDHerb, SymMapHerb, BioactivePeptide, KnowledgeGraphNode
 from .peptide_design import PeptideDesign, PeptideDesignCandidate, PeptideDesignStatus
 
 # 云端同步模块
@@ -77,6 +77,10 @@ from .dfbp_schema import PeptideActivity, PeptideSourceProtein, PeptideEnzyme, p
 # GA/NSGA-II 优化结果持久化模块
 from .ga_optimization import GARunRecord, GACandidateRecord
 
+# Potion AI VFT 融合模块：食品原料 + 零售产品搜索
+from .food_material import FoodMaterial
+from .retail_product import RetailProduct
+
 __all__ = [
     # 枚举
     "UserRole",
@@ -115,6 +119,8 @@ __all__ = [
     "DataSnapshot",
     "SystemConfig",
     "TCMHerb",
+    "MMIDHerb",
+    "SymMapHerb",
     "BioactivePeptide",
     "KnowledgeGraphNode",
     "PeptideDesign",
@@ -177,4 +183,7 @@ __all__ = [
     # GA/NSGA-II 优化结果持久化模块
     "GARunRecord",
     "GACandidateRecord",
+    # Potion AI VFT 融合模块
+    "FoodMaterial",
+    "RetailProduct",
 ]

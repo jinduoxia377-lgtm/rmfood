@@ -169,11 +169,11 @@ export class ConfigManager {
               try {
                 decryptedConfigs[key as ModelType] = {
                   ...(config as object),
-                  apiKey: decrypt((config as any).apiKey || ''),
-                  baseUrl: (config as any).baseUrl || '',
-                  timeout: (config as any).timeout || 30000,
-                  maxRetries: (config as any).maxRetries || 3,
-                  concurrencyLimit: (config as any).concurrencyLimit || 5,
+                  apiKey: decrypt((config as Record<string, unknown>).apiKey as string || ''),
+                  baseUrl: (config as Record<string, unknown>).baseUrl as string || '',
+                  timeout: (config as Record<string, unknown>).timeout as number || 30000,
+                  maxRetries: (config as Record<string, unknown>).maxRetries as number || 3,
+                  concurrencyLimit: (config as Record<string, unknown>).concurrencyLimit as number || 5,
                 };
               } catch (error) {
                 logger.error(`Failed to decrypt config for ${key}:`, error);
@@ -300,7 +300,7 @@ export class ConfigManager {
           Object.entries(targetVersion.config.modelConfigs).forEach(([key, modelConfig]) => {
             encryptedConfigs[key as ModelType] = {
               ...(modelConfig as object),
-              apiKey: encrypt((modelConfig as any).apiKey),
+              apiKey: encrypt((modelConfig as Record<string, unknown>).apiKey as string),
             };
           });
           localStorage.setItem(STORAGE_KEYS.MODEL_CONFIGS, JSON.stringify(encryptedConfigs));
@@ -347,7 +347,7 @@ export class ConfigManager {
         Object.entries(config.modelConfigs).forEach(([key, modelConfig]) => {
           encryptedConfigs[key as ModelType] = {
             ...(modelConfig as object),
-            apiKey: encrypt((modelConfig as any).apiKey),
+            apiKey: encrypt((modelConfig as Record<string, unknown>).apiKey as string),
           };
         });
         localStorage.setItem(STORAGE_KEYS.MODEL_CONFIGS, JSON.stringify(encryptedConfigs));

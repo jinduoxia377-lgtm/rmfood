@@ -145,13 +145,13 @@ export function ParameterAdjustPanel({
         className="w-full px-4 py-3 flex items-center justify-between bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 hover:from-purple-100 dark:hover:from-purple-900/30 hover:to-pink-100 dark:hover:to-pink-900/30 transition-colors"
       >
         <div className="flex items-center gap-2">
-          <Sliders className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-          <span className="font-medium text-purple-700 dark:text-purple-300">多维度参数调整</span>
+          <Sliders className="w-4 h-4 text-accent-600 dark:text-accent-400" />
+          <span className="font-medium text-accent-700 dark:text-accent-300">多维度参数调整</span>
         </div>
         {expanded ? (
-          <ChevronUp className="w-4 h-4 text-gray-400" />
+          <ChevronUp className="w-4 h-4 text-neutral-400" />
         ) : (
-          <ChevronDown className="w-4 h-4 text-gray-400" />
+          <ChevronDown className="w-4 h-4 text-neutral-400" />
         )}
       </button>
 
@@ -159,7 +159,7 @@ export function ParameterAdjustPanel({
         <div className="p-4 space-y-6 animate-fade-in">
           {/* 口感偏好 */}
           <div>
-            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">口感偏好</h4>
+            <h4 className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-3">口感偏好</h4>
             <div className="grid grid-cols-2 gap-4">
               <TasteSlider
                 label="甜度"
@@ -186,16 +186,16 @@ export function ParameterAdjustPanel({
                 color="blue"
               />
             </div>
-            <div className="mt-3 p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
+            <div className="mt-3 p-2 bg-slate-50 dark:bg-neutral-800 rounded-lg">
               <div className="flex items-center justify-between text-xs">
-                <span className="text-gray-500">综合口感评分</span>
-                <span className="font-medium text-purple-600 dark:text-purple-400">
+                <span className="text-neutral-500">综合口感评分</span>
+                <span className="font-medium text-accent-600 dark:text-accent-400">
                   {tasteScore.toFixed(2)}
                 </span>
               </div>
-              <div className="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full mt-1">
+              <div className="w-full h-1.5 bg-neutral-200 dark:bg-neutral-700 rounded-full mt-1">
                 <div
-                  className="h-full bg-purple-500 rounded-full transition-all duration-300"
+                  className="h-full bg-accent-500 rounded-full transition-all duration-300"
                   style={{ width: `${tasteScore * 100}%` }}
                 />
               </div>
@@ -204,23 +204,23 @@ export function ParameterAdjustPanel({
 
           {/* 安全性偏好 */}
           <div>
-            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">安全性偏好</h4>
+            <h4 className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-3">安全性偏好</h4>
             <div className="space-y-3">
               <SafetySlider
                 label="安全等级"
                 value={safety.level}
                 onChange={(v) => handleSafetyChange({ level: v })}
               />
-              <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 cursor-pointer">
+              <label className="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={safety.excludeRestricted}
                   onChange={(e) => handleSafetyChange({ excludeRestricted: e.target.checked })}
-                  className="rounded border-gray-300 text-red-500 focus:ring-red-500"
+                  className="rounded border-neutral-300 text-error-500 focus:ring-red-500"
                 />
                 <span>排除受限制成分</span>
               </label>
-              <div className="flex items-center gap-2 text-xs text-gray-500">
+              <div className="flex items-center gap-2 text-xs text-neutral-500">
                 <span>最低安全评分：</span>
                 <span className="font-medium">{safety.minSafetyScore.toFixed(1)}</span>
               </div>
@@ -229,7 +229,7 @@ export function ParameterAdjustPanel({
 
           {/* 成本控制 */}
           <div>
-            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">成本控制</h4>
+            <h4 className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-3">成本控制</h4>
             <div className="space-y-3">
               <div className="flex items-center gap-3">
                 <input
@@ -237,24 +237,24 @@ export function ParameterAdjustPanel({
                   value={cost.minCost}
                   onChange={(e) => handleCostChange({ minCost: parseFloat(e.target.value) || 0 })}
                   placeholder="最低"
-                  className="w-24 px-2 py-1.5 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-24 px-2 py-1.5 text-sm border border-neutral-200 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 />
-                <span className="text-gray-400">-</span>
+                <span className="text-neutral-400">-</span>
                 <input
                   type="number"
                   value={cost.maxCost}
                   onChange={(e) => handleCostChange({ maxCost: parseFloat(e.target.value) || 1000 })}
                   placeholder="最高"
-                  className="w-24 px-2 py-1.5 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-24 px-2 py-1.5 text-sm border border-neutral-200 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 />
-                <span className="text-gray-500 text-sm">元/kg</span>
+                <span className="text-neutral-500 text-sm">元/kg</span>
               </div>
-              <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 cursor-pointer">
+              <label className="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={cost.optimizeCost}
                   onChange={(e) => handleCostChange({ optimizeCost: e.target.checked })}
-                  className="rounded border-gray-300 text-purple-500 focus:ring-purple-500"
+                  className="rounded border-neutral-300 text-accent-500 focus:ring-purple-500"
                 />
                 <span>优化成本（保持功效下降低成本）</span>
               </label>
@@ -262,17 +262,17 @@ export function ParameterAdjustPanel({
           </div>
 
           {/* 操作按钮 */}
-          <div className="flex items-center gap-2 pt-2 border-t border-gray-100 dark:border-gray-800">
+          <div className="flex items-center gap-2 pt-2 border-t border-neutral-100 dark:border-neutral-800">
             <button
               onClick={handleReset}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               重置
             </button>
             <button
               onClick={handleSaveTemplate}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-lg transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-accent-600 dark:text-accent-400 hover:bg-accent-50 dark:hover:bg-accent-900/20 rounded-lg transition-colors"
             >
               <Save className="w-3.5 h-3.5" />
               保存模板
@@ -283,7 +283,7 @@ export function ParameterAdjustPanel({
                   const template = savedTemplates[parseInt(e.target.value)]
                   if (template) handleLoadTemplate(template)
                 }}
-                className="ml-auto px-2 py-1.5 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800"
+                className="ml-auto px-2 py-1.5 text-sm border border-neutral-200 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800"
               >
                 <option value="">加载模板...</option>
                 {savedTemplates.map((t, i) => (
@@ -309,17 +309,17 @@ interface TasteSliderProps {
 
 function TasteSlider({ label, value, onChange, color }: TasteSliderProps) {
   const colorClasses = {
-    emerald: 'bg-emerald-500',
-    amber: 'bg-amber-500',
+    emerald: 'bg-primary-500',
+    amber: 'bg-warning-500',
     orange: 'bg-orange-500',
-    blue: 'bg-blue-500',
+    blue: 'bg-secondary-500',
   }
 
   return (
     <div>
       <div className="flex items-center justify-between mb-1">
-        <span className="text-xs text-gray-600 dark:text-gray-400">{label}</span>
-        <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{value.toFixed(1)}</span>
+        <span className="text-xs text-neutral-600 dark:text-neutral-400">{label}</span>
+        <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300">{value.toFixed(1)}</span>
       </div>
       <input
         type="range"
@@ -328,7 +328,7 @@ function TasteSlider({ label, value, onChange, color }: TasteSliderProps) {
         step="0.1"
         value={value}
         onChange={(e) => onChange(parseFloat(e.target.value))}
-        className="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full appearance-none cursor-pointer accent-purple-500"
+        className="w-full h-1.5 bg-neutral-200 dark:bg-neutral-700 rounded-full appearance-none cursor-pointer accent-purple-500"
         style={{
           background: `linear-gradient(to right, ${colorClasses[color]} 0%, ${colorClasses[color]} ${value * 100}%, #d1d5db ${value * 100}%, #d1d5db 100%)`,
         }}
@@ -347,8 +347,8 @@ function SafetySlider({ label, value, onChange }: SafetySliderProps) {
   return (
     <div>
       <div className="flex items-center justify-between mb-1">
-        <span className="text-xs text-gray-600 dark:text-gray-400">{label}</span>
-        <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
+        <span className="text-xs text-neutral-600 dark:text-neutral-400">{label}</span>
+        <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
           {value < 0.4 ? '低' : value < 0.7 ? '中' : '高'}
         </span>
       </div>
@@ -359,9 +359,9 @@ function SafetySlider({ label, value, onChange }: SafetySliderProps) {
         step="0.1"
         value={value}
         onChange={(e) => onChange(parseFloat(e.target.value))}
-        className="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full appearance-none cursor-pointer accent-red-500"
+        className="w-full h-1.5 bg-neutral-200 dark:bg-neutral-700 rounded-full appearance-none cursor-pointer accent-red-500"
         style={{
-          background: `linear-gradient(to right, #ef4444 0%, #f59e0b 50%, #22c55e ${value * 100}%, #d1d5db ${value * 100}%, #d1d5db 100%)`,
+          background: `linear-gradient(to right, #FF3B30 0%, #D97706 50%, #34C759 ${value * 100}%, #d1d5db ${value * 100}%, #d1d5db 100%)`,
         }}
       />
     </div>

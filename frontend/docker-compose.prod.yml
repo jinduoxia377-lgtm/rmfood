@@ -1,0 +1,101 @@
+# ============================================
+# RMFOOD 配方平台 - Docker Compose 生产配置
+# ============================================
+
+version: '3.8'
+
+services:
+  # 前端应用
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.prod
+    container_name: rmfood-frontend
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - VITE_BACKEND_URL=${VITE_BACKEND_URL:-http://backend:8000}
+      - NODE_ENV=production
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - rmfood-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # 后端 API 服务
+  backend:
+    image: python:3.11-slim
+    container_name: rmfood-backend
+    working_dir: /app
+    volumes:
+      - ../backend:/app
+    command: >
+      sh -c "pip install -r requirements.txt && uvicorn main:app --host 0.0.0.0 --port 8000"
+    environment:
+      - DATABASE_URL=${DATABASE_URL:-postgresql://rmfood:rmfood@db:5432/rmfood}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
+      - SECRET_KEY=${SECRET_KEY:-change-me-in-production}
+      - DEBUG=False
+    depends_on:
+      - db
+      - redis
+    restart: unless-stopped
+    networks:
+      - rmfood-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # PostgreSQL 数据库
+  db:
+    image: postgres:16-alpine
+    container_name: rmfood-db
+    environment:
+      - POSTGRES_DB=rmfood
+      - POSTGRES_USER=rmfood
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-rmfood_password}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - rmfood-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rmfood"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis 缓存
+  redis:
+    image: redis:7-alpine
+    container_name: rmfood-redis
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    networks:
+      - rmfood-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  rmfood-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local

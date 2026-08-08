@@ -152,7 +152,7 @@ describe('AdvancedFilter - 高级筛选组件', () => {
       )
 
       const selectedButton = screen.getByText('A级')
-      expect(selectedButton.className).toContain('text-green-600')
+      expect(selectedButton.className).toContain('text-success-600')
     })
   })
 

@@ -2,100 +2,108 @@
  * 跨平台配方分享组件
  * 支持分享链接生成、二维码和隐私控制
  */
-import { useState, useCallback, useMemo } from 'react'
-import { Card } from '@/components/ui'
-import { Share2, Link, QrCode, Lock, Eye, EyeOff, Copy, Check, Download, Trash2, BarChart3 } from 'lucide-react'
-import { FONT_SIZES, FONT_WEIGHTS } from '../../types/design-tokens'
+import { useState, useCallback, useMemo } from 'react';
+import { Card } from '@/components/ui';
+import { Share2, Link, QrCode, Lock, Eye, EyeOff, Copy, Check, Download, Trash2, BarChart3 } from 'lucide-react';
+import { FONT_SIZES, FONT_WEIGHTS } from '../../types/design-tokens';
 import { logger } from '@/utils/safeLogger';
-
+import { sanitizeHTML } from '@/utils/sanitize';
 
 export interface SharedFormula {
-  shareId: string
-  formulaName: string
-  effects: string[]
+  shareId: string;
+  formulaName: string;
+  effects: string[];
   ingredients: {
-    name: string
-    dosage: string
-    role: string
-  }[]
+    name: string;
+    dosage: string;
+    role: string;
+  }[];
   scores: {
-    synergy: number
-    taste: number
-    stability: number
-    overall: number
-  }
-  creatorName?: string
-  createdAt: number
-  expiresAt?: number
-  viewCount: number
+    synergy: number;
+    taste: number;
+    stability: number;
+    overall: number;
+  };
+  creatorName?: string;
+  createdAt: number;
+  expiresAt?: number;
+  viewCount: number;
 }
 
-export type SharePermission = 'public' | 'private' | 'password'
+export type SharePermission = 'public' | 'private' | 'password';
 
 interface ShareConfig {
-  permission: SharePermission
-  password?: string
-  expiresInDays?: number
-  includeScores?: boolean
-  includeIngredients?: boolean
-  template?: 'compact' | 'detailed' | 'card'
+  permission: SharePermission;
+  password?: string;
+  expiresInDays?: number;
+  includeScores?: boolean;
+  includeIngredients?: boolean;
+  template?: 'compact' | 'detailed' | 'card';
 }
 
 interface FormulaSharePanelProps {
   formula: {
-    formulaName: string
-    effects: string[]
-    ingredients: { name: string; dosage: string; role: string }[]
-    scores: { synergy: number; taste: number; stability: number; overall: number }
-  }
-  onShare?: (shareData: SharedFormula) => void
-  onImport?: (shareId: string) => void
+    formulaName: string;
+    effects: string[];
+    ingredients: { name: string; dosage: string; role: string }[];
+    scores: { synergy: number; taste: number; stability: number; overall: number };
+  };
+  onClose?: () => void;
+  onShare?: (shareData: SharedFormula) => void;
+  onImport?: (shareId: string) => void;
 }
 
-export function FormulaSharePanel({ formula, onShare, onImport }: FormulaSharePanelProps) {
+export function FormulaSharePanel({ formula, onClose, onShare, onImport }: FormulaSharePanelProps) {
   const [config, setConfig] = useState<ShareConfig>({
     permission: 'public',
     expiresInDays: 30,
     includeScores: true,
     includeIngredients: true,
     template: 'card',
-  })
-  const [password, setPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
-  const [generatedLink, setGeneratedLink] = useState<string | null>(null)
-  const [showQRCode, setShowQRCode] = useState(false)
-  const [copied, setCopied] = useState(false)
-  const [accessPassword, setAccessPassword] = useState('')
-  const [showImportDialog, setShowImportDialog] = useState(false)
-  const [importLink, setImportLink] = useState('')
+  });
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [generatedLink, setGeneratedLink] = useState<string | null>(null);
+  const [showQRCode, setShowQRCode] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [accessPassword, setAccessPassword] = useState('');
+  const [showImportDialog, setShowImportDialog] = useState(false);
+  const [importLink, setImportLink] = useState('');
 
   const generateShareId = useCallback(() => {
-    return `sf_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`
-  }, [])
+    return `sf_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
+  }, []);
 
   const handleGenerateLink = useCallback(() => {
-    const shareId = generateShareId()
-    const baseUrl = window.location.origin
+    const shareId = generateShareId();
+    const baseUrl = window.location.origin;
     const params = new URLSearchParams({
       f: typeof formula.formulaName === 'string' ? formula.formulaName : '未知配方',
-      e: (Array.isArray(formula.effects) ? formula.effects : []).map((e) => typeof e === 'string' ? e : '未知功效').join(','),
+      e: (Array.isArray(formula.effects) ? formula.effects : [])
+        .map((e) => (typeof e === 'string' ? e : '未知功效'))
+        .join(','),
       s: config.includeScores ? formula.scores.overall.toString() : '',
-      i: config.includeIngredients ? (Array.isArray(formula.ingredients) ? formula.ingredients : []).map((ing) => typeof ing.name === 'string' ? ing.name : '未知药材').join(',') : '',
+      i: config.includeIngredients
+        ? (Array.isArray(formula.ingredients) ? formula.ingredients : [])
+            .map((ing) => (typeof ing.name === 'string' ? ing.name : '未知药材'))
+            .join(',')
+        : '',
       p: config.permission,
       t: config.template || 'card',
-    })
+    });
 
     if (config.permission === 'password' && password) {
-      params.set('pwd', btoa(password))
+      // 不使用 base64 编码密码（可轻易逆转），改为在服务端验证
+      params.set('pwd_hint', 'true');
     }
 
     if (config.expiresInDays) {
-      const expiresAt = Date.now() + config.expiresInDays * 24 * 60 * 60 * 1000
-      params.set('exp', expiresAt.toString())
+      const expiresAt = Date.now() + config.expiresInDays * 24 * 60 * 60 * 1000;
+      params.set('exp', expiresAt.toString());
     }
 
-    const link = `${baseUrl}/share/formula/${shareId}?${params.toString()}`
-    setGeneratedLink(link)
+    const link = `${baseUrl}/share/formula/${shareId}?${params.toString()}`;
+    setGeneratedLink(link);
 
     const sharedFormula: SharedFormula = {
       shareId,
@@ -106,35 +114,35 @@ export function FormulaSharePanel({ formula, onShare, onImport }: FormulaSharePa
       createdAt: Date.now(),
       expiresAt: config.expiresInDays ? Date.now() + config.expiresInDays * 24 * 60 * 60 * 1000 : undefined,
       viewCount: 0,
-    }
-    onShare?.(sharedFormula)
-  }, [formula, config, password, generateShareId, onShare])
+    };
+    onShare?.(sharedFormula);
+  }, [formula, config, password, generateShareId, onShare]);
 
   const handleCopyLink = useCallback(async () => {
     if (generatedLink) {
       try {
-        await navigator.clipboard.writeText(generatedLink)
-        setCopied(true)
-        setTimeout(() => setCopied(false), 2000)
+        await navigator.clipboard.writeText(generatedLink);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
       } catch (err) {
-        logger.error('复制失败:', err)
+        logger.error('复制失败:', err);
       }
     }
-  }, [generatedLink])
+  }, [generatedLink]);
 
   const handleImport = useCallback(() => {
     if (importLink) {
-      onImport?.(importLink)
-      setShowImportDialog(false)
-      setImportLink('')
+      onImport?.(importLink);
+      setShowImportDialog(false);
+      setImportLink('');
     }
-  }, [importLink, onImport])
+  }, [importLink, onImport]);
 
   const QRCodeDataUrl = useMemo(() => {
-    if (!generatedLink || !showQRCode) return null
-    const qrData = generatedLink
-    return `data:text/plain;base64,${btoa(qrData)}`
-  }, [generatedLink, showQRCode])
+    if (!generatedLink || !showQRCode) return null;
+    const qrData = generatedLink;
+    return `data:text/plain;base64,${btoa(qrData)}`;
+  }, [generatedLink, showQRCode]);
 
   const previewHtml = useMemo(() => {
     const scoresHtml = config.includeScores
@@ -144,13 +152,13 @@ export function FormulaSharePanel({ formula, onShare, onImport }: FormulaSharePa
           <span>稳定性:${formula.scores.stability.toFixed(2)}</span>
           <span><b>综合:${formula.scores.overall.toFixed(2)}</b></span>
         </div>`
-      : ''
+      : '';
 
     const ingredientsHtml = config.includeIngredients
       ? `<div style="font-size:${FONT_SIZES['label-sm']};color:var(--color-text-secondary);">
           ${(Array.isArray(formula.ingredients) ? formula.ingredients : []).map((ing) => `${typeof ing.name === 'string' ? ing.name : '未知药材'}(${typeof ing.dosage === 'string' ? ing.dosage : '未知剂量'})`).join(' + ')}
         </div>`
-      : ''
+      : '';
 
     return `
       <div style="padding:16px;background:linear-gradient(135deg,var(--color-primary-main) 0%,var(--color-secondary-dark) 100%);border-radius:12px;color:var(--color-primary-contrast-text);max-width:280px;">
@@ -161,8 +169,8 @@ export function FormulaSharePanel({ formula, onShare, onImport }: FormulaSharePa
         ${scoresHtml}
         ${ingredientsHtml}
       </div>
-    `
-  }, [formula, config.includeScores, config.includeIngredients])
+    `;
+  }, [formula, config.includeScores, config.includeIngredients]);
 
   return (
     <Card className="p-4">
@@ -171,15 +179,15 @@ export function FormulaSharePanel({ formula, onShare, onImport }: FormulaSharePa
           <Share2 className="w-4 h-4 text-white" />
         </div>
         <div>
-          <h3 className="font-semibold text-gray-900 dark:text-gray-100">分享配方</h3>
-          <p className="text-xs text-gray-500">生成链接或二维码分享配方</p>
+          <h3 className="font-semibold text-neutral-900 dark:text-neutral-100">分享配方</h3>
+          <p className="text-xs text-neutral-500">生成链接或二维码分享配方</p>
         </div>
       </div>
 
       <div className="space-y-4">
         {/* 隐私权限 */}
         <div>
-          <label className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2 block">隐私权限</label>
+          <label className="text-xs font-medium text-neutral-600 dark:text-neutral-400 mb-2 block">隐私权限</label>
           <div className="flex gap-2">
             <PermissionButton
               active={config.permission === 'public'}
@@ -210,12 +218,12 @@ export function FormulaSharePanel({ formula, onShare, onImport }: FormulaSharePa
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="设置访问密码"
-              className="w-full px-3 py-2 pr-10 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+              className="w-full px-3 py-2 pr-10 text-sm border border-neutral-200 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
             >
               {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
@@ -224,11 +232,13 @@ export function FormulaSharePanel({ formula, onShare, onImport }: FormulaSharePa
 
         {/* 有效期 */}
         <div>
-          <label className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2 block">链接有效期</label>
+          <label className="text-xs font-medium text-neutral-600 dark:text-neutral-400 mb-2 block">链接有效期</label>
           <select
             value={config.expiresInDays || ''}
-            onChange={(e) => setConfig({ ...config, expiresInDays: e.target.value ? parseInt(e.target.value) : undefined })}
-            className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800"
+            onChange={(e) =>
+              setConfig({ ...config, expiresInDays: e.target.value ? parseInt(e.target.value) : undefined })
+            }
+            className="w-full px-3 py-2 text-sm border border-neutral-200 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800"
           >
             <option value="">永久有效</option>
             <option value="7">7天</option>
@@ -240,23 +250,23 @@ export function FormulaSharePanel({ formula, onShare, onImport }: FormulaSharePa
 
         {/* 分享内容 */}
         <div>
-          <label className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2 block">分享内容</label>
+          <label className="text-xs font-medium text-neutral-600 dark:text-neutral-400 mb-2 block">分享内容</label>
           <div className="space-y-2">
-            <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 cursor-pointer">
+            <label className="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400 cursor-pointer">
               <input
                 type="checkbox"
                 checked={config.includeScores}
                 onChange={(e) => setConfig({ ...config, includeScores: e.target.checked })}
-                className="rounded border-gray-300 text-cyan-500 focus:ring-cyan-500"
+                className="rounded border-neutral-300 text-cyan-500 focus:ring-cyan-500"
               />
               包含评分信息
             </label>
-            <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 cursor-pointer">
+            <label className="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400 cursor-pointer">
               <input
                 type="checkbox"
                 checked={config.includeIngredients}
                 onChange={(e) => setConfig({ ...config, includeIngredients: e.target.checked })}
-                className="rounded border-gray-300 text-cyan-500 focus:ring-cyan-500"
+                className="rounded border-neutral-300 text-cyan-500 focus:ring-cyan-500"
               />
               包含原料信息
             </label>
@@ -265,7 +275,7 @@ export function FormulaSharePanel({ formula, onShare, onImport }: FormulaSharePa
 
         {/* 卡片样式 */}
         <div>
-          <label className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2 block">卡片样式</label>
+          <label className="text-xs font-medium text-neutral-600 dark:text-neutral-400 mb-2 block">卡片样式</label>
           <div className="flex gap-2">
             {['compact', 'detailed', 'card'].map((t) => (
               <button
@@ -274,7 +284,7 @@ export function FormulaSharePanel({ formula, onShare, onImport }: FormulaSharePa
                 className={`flex-1 px-3 py-2 text-xs rounded-lg border transition-colors ${
                   config.template === t
                     ? 'border-cyan-500 bg-cyan-50 dark:bg-cyan-900/20 text-cyan-600 dark:text-cyan-400'
-                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                    : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600'
                 }`}
               >
                 {t === 'compact' ? '简洁' : t === 'detailed' ? '详细' : '卡片'}
@@ -293,24 +303,24 @@ export function FormulaSharePanel({ formula, onShare, onImport }: FormulaSharePa
 
         {/* 生成的链接和二维码 */}
         {generatedLink && (
-          <div className="space-y-3 pt-4 border-t border-gray-100 dark:border-gray-800">
+          <div className="space-y-3 pt-4 border-t border-neutral-100 dark:border-neutral-800">
             <div className="flex items-center gap-2">
               <Link className="w-4 h-4 text-cyan-500" />
-              <span className="text-xs font-medium text-gray-600 dark:text-gray-400">分享链接</span>
+              <span className="text-xs font-medium text-neutral-600 dark:text-neutral-400">分享链接</span>
             </div>
             <div className="flex items-center gap-2">
               <input
                 type="text"
                 value={generatedLink}
                 readOnly
-                className="flex-1 px-3 py-2 text-xs border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800"
+                className="flex-1 px-3 py-2 text-xs border border-neutral-200 dark:border-neutral-700 rounded-lg bg-slate-50 dark:bg-neutral-800"
               />
               <button
                 onClick={handleCopyLink}
                 className={`p-2 rounded-lg transition-colors ${
                   copied
-                    ? 'bg-green-100 text-green-600 dark:bg-green-900/40'
-                    : 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700'
+                    ? 'bg-success-100 text-success-600 dark:bg-success-900/40'
+                    : 'bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700'
                 }`}
               >
                 {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
@@ -323,7 +333,7 @@ export function FormulaSharePanel({ formula, onShare, onImport }: FormulaSharePa
                 className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm rounded-lg border transition-colors ${
                   showQRCode
                     ? 'border-cyan-500 bg-cyan-50 dark:bg-cyan-900/20 text-cyan-600 dark:text-cyan-400'
-                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                    : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600'
                 }`}
               >
                 <QrCode className="w-4 h-4" />
@@ -332,15 +342,15 @@ export function FormulaSharePanel({ formula, onShare, onImport }: FormulaSharePa
             </div>
 
             {showQRCode && QRCodeDataUrl && (
-              <div className="flex flex-col items-center p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700">
+              <div className="flex flex-col items-center p-4 bg-white dark:bg-neutral-800 rounded-lg border border-neutral-100 dark:border-neutral-700">
                 <img src={QRCodeDataUrl} alt="二维码" className="w-48 h-48" />
-                <p className="text-xs text-gray-500 mt-2">扫描二维码访问配方</p>
+                <p className="text-xs text-neutral-500 mt-2">扫描二维码访问配方</p>
                 <button
                   onClick={() => {
-                    const link = document.createElement('a')
-                    link.href = QRCodeDataUrl
-                    link.download = `${formula.formulaName}_qrcode.png`
-                    link.click()
+                    const link = document.createElement('a');
+                    link.href = QRCodeDataUrl;
+                    link.download = `${formula.formulaName}_qrcode.png`;
+                    link.click();
                   }}
                   className="mt-2 flex items-center gap-1 text-xs text-cyan-600 dark:text-cyan-400 hover:text-cyan-700"
                 >
@@ -351,18 +361,18 @@ export function FormulaSharePanel({ formula, onShare, onImport }: FormulaSharePa
             )}
 
             {/* 预览 */}
-            <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-              <p className="text-xs text-gray-500 mb-2">分享预览</p>
-              <div dangerouslySetInnerHTML={{ __html: previewHtml }} />
+            <div className="p-4 bg-slate-50 dark:bg-neutral-800 rounded-lg">
+              <p className="text-xs text-neutral-500 mb-2">分享预览</p>
+              <div dangerouslySetInnerHTML={{ __html: sanitizeHTML(previewHtml) }} />
             </div>
 
             {/* 分享数据 */}
-            <div className="flex items-center justify-between text-xs text-gray-500">
+            <div className="flex items-center justify-between text-xs text-neutral-500">
               <div className="flex items-center gap-1">
                 <BarChart3 className="w-3.5 h-3.5" />
                 <span>访问次数: 0</span>
               </div>
-              <button className="flex items-center gap-1 text-red-500 hover:text-red-600">
+              <button className="flex items-center gap-1 text-error-500 hover:text-error-600">
                 <Trash2 className="w-3.5 h-3.5" />
                 删除分享
               </button>
@@ -371,10 +381,10 @@ export function FormulaSharePanel({ formula, onShare, onImport }: FormulaSharePa
         )}
 
         {/* 导入功能 */}
-        <div className="pt-4 border-t border-gray-100 dark:border-gray-800">
+        <div className="pt-4 border-t border-neutral-100 dark:border-neutral-800">
           <button
             onClick={() => setShowImportDialog(!showImportDialog)}
-            className="w-full py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors"
+            className="w-full py-2 text-sm text-neutral-600 dark:text-neutral-400 hover:bg-slate-50 dark:hover:bg-neutral-800 rounded-lg transition-colors"
           >
             导入他人分享的配方
           </button>
@@ -386,7 +396,7 @@ export function FormulaSharePanel({ formula, onShare, onImport }: FormulaSharePa
                 value={importLink}
                 onChange={(e) => setImportLink(e.target.value)}
                 placeholder="粘贴分享链接或输入分享ID"
-                className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                className="w-full px-3 py-2 text-sm border border-neutral-200 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
               />
               {importLink.startsWith('http') && importLink.includes('pwd=') && (
                 <input
@@ -394,7 +404,7 @@ export function FormulaSharePanel({ formula, onShare, onImport }: FormulaSharePa
                   value={accessPassword}
                   onChange={(e) => setAccessPassword(e.target.value)}
                   placeholder="输入访问密码"
-                  className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800"
+                  className="w-full px-3 py-2 text-sm border border-neutral-200 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800"
                 />
               )}
               <button
@@ -408,7 +418,7 @@ export function FormulaSharePanel({ formula, onShare, onImport }: FormulaSharePa
         </div>
       </div>
     </Card>
-  )
+  );
 }
 
 function PermissionButton({
@@ -417,10 +427,10 @@ function PermissionButton({
   icon,
   label,
 }: {
-  active: boolean
-  onClick: () => void
-  icon: React.ReactNode
-  label: string
+  active: boolean;
+  onClick: () => void;
+  icon: React.ReactNode;
+  label: string;
 }) {
   return (
     <button
@@ -428,13 +438,13 @@ function PermissionButton({
       className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-xs rounded-lg border transition-colors ${
         active
           ? 'border-cyan-500 bg-cyan-50 dark:bg-cyan-900/20 text-cyan-600 dark:text-cyan-400'
-          : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-600 dark:text-gray-400'
+          : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600 text-neutral-600 dark:text-neutral-400'
       }`}
     >
       {icon}
       {label}
     </button>
-  )
+  );
 }
 
 export function ImportShareDialog({
@@ -442,34 +452,44 @@ export function ImportShareDialog({
   onClose,
   onImport,
 }: {
-  open: boolean
-  onClose: () => void
-  onImport: (shareData: SharedFormula) => void
+  open: boolean;
+  onClose: () => void;
+  onImport: (shareData: SharedFormula) => void;
 }) {
-  const [link, setLink] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
+  const [link, setLink] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const handleImport = async () => {
-    if (!link) return
+    if (!link) return;
 
-    setLoading(true)
-    setError(null)
+    setLoading(true);
+    setError(null);
 
     try {
-      const url = new URL(link)
-      const params = url.searchParams
+      const url = new URL(link);
+      const params = url.searchParams;
 
       const shareData: SharedFormula = {
         shareId: typeof url.pathname.split('/').pop() === 'string' ? url.pathname.split('/').pop() || '' : '',
         formulaName: typeof params.get('f') === 'string' ? params.get('f') || '未知配方' : '未知配方',
-        effects: params.get('e')?.split(',').filter((e) => typeof e === 'string' && e).map((e) => typeof e === 'string' ? e : '未知功效') || [],
-        ingredients: params.get('i')?.split(',').filter((name) => typeof name === 'string' && name).map((name) => ({
-          name: typeof name === 'string' ? name : '未知药材',
-          dosage: '-',
-          role: '-',
-        })) || [],
+        effects:
+          params
+            .get('e')
+            ?.split(',')
+            .filter((e) => typeof e === 'string' && e)
+            .map((e) => (typeof e === 'string' ? e : '未知功效')) || [],
+        ingredients:
+          params
+            .get('i')
+            ?.split(',')
+            .filter((name) => typeof name === 'string' && name)
+            .map((name) => ({
+              name: typeof name === 'string' ? name : '未知药材',
+              dosage: '-',
+              role: '-',
+            })) || [],
         scores: {
           synergy: parseFloat(params.get('s') || '0') || 0,
           taste: 0,
@@ -479,23 +499,23 @@ export function ImportShareDialog({
         createdAt: Date.now(),
         expiresAt: params.get('exp') ? parseInt(params.get('exp')!) : undefined,
         viewCount: 0,
-      }
+      };
 
-      onImport(shareData)
-      onClose()
+      onImport(shareData);
+      onClose();
     } catch (err) {
-      setError('无效的分享链接')
+      setError('无效的分享链接');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
-  if (!open) return null
+  if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
       <Card className="w-full max-w-md p-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">导入配方</h3>
+        <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-4">导入配方</h3>
 
         <div className="space-y-4">
           <input
@@ -503,7 +523,7 @@ export function ImportShareDialog({
             value={link}
             onChange={(e) => setLink(e.target.value)}
             placeholder="粘贴分享链接"
-            className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-neutral-200 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
           />
 
           {link.includes('pwd=') && (
@@ -512,14 +532,14 @@ export function ImportShareDialog({
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="输入访问密码"
-              className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800"
+              className="w-full px-3 py-2 border border-neutral-200 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800"
             />
           )}
 
-          {error && <p className="text-sm text-red-500">{error}</p>}
+          {error && <p className="text-sm text-error-500">{error}</p>}
 
           <div className="flex justify-end gap-2">
-            <button onClick={onClose} className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg">
+            <button onClick={onClose} className="px-4 py-2 text-sm text-neutral-600 hover:bg-neutral-100 rounded-lg">
               取消
             </button>
             <button
@@ -533,5 +553,5 @@ export function ImportShareDialog({
         </div>
       </Card>
     </div>
-  )
+  );
 }

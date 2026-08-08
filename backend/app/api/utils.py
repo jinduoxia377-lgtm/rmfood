@@ -171,7 +171,7 @@ class PaginationParams(BaseModel):
     page: int = Query(1, ge=1, description="页码 (从1开始)")
     page_size: int = Query(20, ge=1, le=100, description="每页数量")
     sort_by: Optional[str] = Query(None, description="排序字段")
-    sort_order: str = Query("desc", regex="^(asc|desc)$", description="排序方向")
+    sort_order: str = Query("desc", pattern="^(asc|desc)$", description="排序方向")
 
 
 def get_pagination_params(
@@ -238,9 +238,9 @@ async def paginate_query(
 # 3. 权限检查装饰器
 # ════════════════════════════════════════════
 
-from app.core.rbac import RBACManager as RBACEngine, Permission
-from app.models.enums import UserRole
-from app.core.exceptions import AuthorizationError, AuthenticationError
+from ..core.rbac.rbac import RBACManager as RBACEngine, Permission
+from ..models.enums import UserRole
+from app.core.middleware.exceptions import AuthorizationError, AuthenticationError
 
 
 def require_roles(allowed_roles: List[str]):
@@ -301,7 +301,7 @@ def require_permission(permission: Permission):
     return decorator
 
 
-def check_ownership(resource_owner_id: int, current_user_id: int, allow_admin: bool = True):
+def check_ownership(resource_owner_id: int, current_user_id: int, allow_admin: bool = True, is_admin: bool = False):
     """
     资源所有权检查
     
@@ -311,9 +311,8 @@ def check_ownership(resource_owner_id: int, current_user_id: int, allow_admin: b
         allow_admin: 是否允许管理员访问他人资源
     """
     if resource_owner_id != current_user_id:
-        if not allow_admin:
+        if not allow_admin or not is_admin:
             raise AuthorizationError(message="您没有权限操作此资源")
-        # TODO: 检查当前用户是否为管理员
 
 
 # ════════════════════════════════════════════
@@ -335,7 +334,7 @@ class RequestLogger:
     @staticmethod
     async def log_request(request: Request, response_time_ms: float):
         """记录API请求日志"""
-        from app.core.logger import logger
+        from ..core.logger import logger
         
         logger.info(
             f"{request.method} {request.url.path}",
@@ -361,8 +360,8 @@ def validate_required_fields(data: Dict, required_fields: List[str]):
     Raises:
         ValidationError: 如果缺少必填字段
     """
-    from app.core.exceptions import ValidationError
-    
+    from app.core.middleware.exceptions import ValidationError
+
     missing_fields = [field for field in required_fields if field not in data or data[field] is None]
     
     if missing_fields:
@@ -425,7 +424,7 @@ def validate_upload_file(filename: str, file_size: int):
     Raises:
         ValidationError: 如果文件不符合要求
     """
-    from app.core.exceptions import ValidationError
+    from app.core.middleware.exceptions import ValidationError
     import os
     
     # 检查扩展名

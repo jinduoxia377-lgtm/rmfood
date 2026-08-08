@@ -2,7 +2,7 @@
  * RMFOOD 主题系统 - 模块导出索引
  * 专业级 UI/UX 主题管理解决方案
  *
- * 功能特性：
+ * 基于 Zustand 状态管理，支持 Light/Dark 两套主题
  * - ✅ 多模式支持（Light / Dark / System）
  * - ✅ WCAG 2.1 AA/AAA 无障碍标准
  * - ✅ 高对比度模式
@@ -30,7 +30,7 @@ export type {
 } from '../types/theme.types';
 
 // ==================== Store & Provider ====================
-export { useThemeStore, default as themeStore } from '../stores/themeStore';
+export { useThemeStore } from '../stores/themeStore';
 export { ThemeProvider, useTheme, useThemeColors, useTypography, useSpacing, useIsDarkMode, useThemedValue, useCSSVariable } from '../stores/ThemeProvider';
 
 // ==================== 预设主题 ====================
@@ -40,12 +40,4 @@ export { presetThemes, getDefaultTheme, getAccessibilityTheme, mergeThemeOverrid
 export { themeStorage, ThemeStorage } from '../stores/theme.storage';
 
 // ==================== UI 组件 ====================
-export { ThemeSwitcher, default as themeSwitcher } from '../components/theme/ThemeSwitcher';
-
-// ==================== CSS 样式文件路径 ====================
-/**
- * 使用方法：
- * 在 main.tsx 或 App.tsx 中导入：
- * import './styles/theme.css';
- */
-export const THEME_CSS_PATH = './styles/theme.css';
+export { ThemeSwitcher } from '../components/theme/ThemeSwitcher';

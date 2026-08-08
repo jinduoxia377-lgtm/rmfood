@@ -139,7 +139,7 @@ export function Pagination({
   }, [inputPage, currentPage, totalPages, onPageChange])
 
   return (
-    <div className="flex items-center justify-between px-4 py-3 bg-white dark:bg-slate-900 border-t border-gray-200 dark:border-slate-700">
+    <div className="flex items-center justify-between px-4 py-3 bg-white dark:bg-neutral-900 border-t border-neutral-200 dark:border-neutral-700">
       {/* 左侧：信息 */}
       <div className="flex items-center gap-4 text-sm text-text-muted">
         <span>共 {totalItems.toLocaleString()} 条记录</span>
@@ -164,7 +164,7 @@ export function Pagination({
         <button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage <= 1}
-          className="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="p-1.5 rounded hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           <ChevronLeft className="w-4 h-4" />
         </button>
@@ -180,7 +180,7 @@ export function Pagination({
               className={`px-3 py-1.5 rounded text-sm transition-colors ${
                 currentPage === pageNum
                   ? 'bg-primary-600 text-white font-medium'
-                  : 'hover:bg-gray-100 dark:hover:bg-slate-800 text-text-primary'
+                  : 'hover:bg-neutral-100 dark:hover:bg-neutral-800 text-text-primary'
               }`}
             >
               {pageNum}
@@ -192,7 +192,7 @@ export function Pagination({
         <button
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage >= totalPages}
-          className="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="p-1.5 rounded hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           <ChevronRight className="w-4 h-4" />
         </button>
@@ -212,7 +212,7 @@ export function Pagination({
         />
         <button
           onClick={handleJumpToPage}
-          className="px-3 py-1 bg-gray-100 dark:bg-slate-800 rounded text-text-primary hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors"
+          className="px-3 py-1 bg-neutral-100 dark:bg-neutral-800 rounded text-text-primary hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
         >
           Go
         </button>
@@ -329,7 +329,7 @@ export function MemoryMonitor() {
   useEffect(() => {
     const interval = setInterval(() => {
       if ('memory' in performance) {
-        const memory = (performance as any).memory
+        const memory = (performance.memory
         setMemoryStats({
           usedJSHeapSize: memory.usedJSHeapSize,
           totalJSHeapSize: memory.totalJSHeapSize,
@@ -349,12 +349,12 @@ export function MemoryMonitor() {
 
   return (
     <div className={`fixed bottom-4 right-4 p-3 rounded-lg shadow-lg border z-50 transition-all ${
-      isCritical ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800' :
+      isCritical ? 'bg-error-50 dark:bg-error-900/20 border-red-200 dark:border-red-800' :
       isWarning ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800' :
-      'bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-700'
+      'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-700'
     }`}>
       <div className="flex items-center gap-2 mb-2">
-        <MemoryStick className={`w-4 h-4 ${isCritical ? 'text-red-500' : isWarning ? 'text-yellow-500' : 'text-green-500'}`} />
+        <MemoryStick className={`w-4 h-4 ${isCritical ? 'text-error-500' : isWarning ? 'text-yellow-500' : 'text-success-500'}`} />
         <span className="text-xs font-semibold">内存使用</span>
       </div>
 
@@ -364,10 +364,10 @@ export function MemoryMonitor() {
           <span>{(memoryStats.usedJSHeapSize / 1024 / 1024).toFixed(1)} MB</span>
         </div>
 
-        <div className="w-full h-2 bg-gray-200 dark:bg-slate-700 rounded-full overflow-hidden">
+        <div className="w-full h-2 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden">
           <div
             className={`h-full transition-all ${
-              isCritical ? 'bg-red-500' : isWarning ? 'bg-yellow-500' : 'bg-green-500'
+              isCritical ? 'bg-error-500' : isWarning ? 'bg-yellow-500' : 'bg-success-500'
             }`}
             style={{ width: `${Math.min(usagePercent, 100)}%` }}
           />
@@ -379,7 +379,7 @@ export function MemoryMonitor() {
       </div>
 
       {isCritical && (
-        <p className="text-[10px] text-red-600 mt-2 font-medium">
+        <p className="text-[10px] text-error-600 mt-2 font-medium">
           ⚠️ 内存使用过高，建议刷新页面或关闭部分标签页
         </p>
       )}
@@ -405,7 +405,7 @@ export function useDataPrefetch<T>(
   const [data, setData] = useState<T | undefined>()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<Error | null>(null)
-  const timerRef = useRef<NodeJS.Timeout>()
+  const timerRef = useRef<NodeJS.Timeout | undefined>(undefined)
 
   const fetchData = useCallback(async () => {
     try {
@@ -493,4 +493,4 @@ export function deepClone<T>(obj: T): T {
   return JSON.parse(JSON.stringify(obj))
 }
 
-export default PerformanceOptimizer
+export default VirtualizedList

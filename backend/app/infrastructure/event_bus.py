@@ -15,8 +15,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime, timezone
 from typing import Any, Callable, Coroutine, Optional
 
-from ..domain.entities import DomainEvent
-from ..domain.ports import EventPublisher
+from ..core.observability.domain_events import DomainEvent
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +60,7 @@ EventHandler = Callable[[dict], Coroutine[Any, Any, None]]
 # ──────────── InMemory 适配器（测试用） ────────────
 
 
-class InMemoryEventBus(EventPublisher):
+class InMemoryEventBus(ABC):
     """
     内存事件总线（测试/开发用）
 
@@ -128,7 +127,7 @@ class InMemoryEventBus(EventPublisher):
 # ──────────── Redis Streams 适配器（生产用） ────────────
 
 
-class RedisStreamsEventBus(EventPublisher):
+class RedisStreamsEventBus(ABC):
     """
     基于 Redis Streams 的事件总线（生产用）
 
@@ -279,7 +278,7 @@ class RedisStreamsEventBus(EventPublisher):
                 "original_stream": stream_key,
                 "original_id": msg_id,
                 "data": msg_data.get("data", "{}"),
-                "error": str(e),
+                "error": "事件总线异常",
             }, maxlen=1000)
             # ACK 原始消息（避免阻塞队列）
             await self._redis.xack(stream_key, self.CONSUMER_GROUP, msg_id)

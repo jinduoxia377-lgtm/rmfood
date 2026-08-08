@@ -57,26 +57,26 @@ export interface ThinkingVisualizerProps {
 const stepTypeConfig = {
   analysis: {
     icon: Brain,
-    color: 'bg-blue-500',
-    bgColor: 'bg-blue-50',
+    color: 'bg-secondary-500',
+    bgColor: 'bg-secondary-50',
     borderColor: 'border-blue-200',
-    textColor: 'text-blue-700',
+    textColor: 'text-secondary-700',
     label: '语义分析',
   },
   retrieval: {
     icon: Search,
-    color: 'bg-green-500',
-    bgColor: 'bg-green-50',
+    color: 'bg-success-500',
+    bgColor: 'bg-success-50',
     borderColor: 'border-green-200',
-    textColor: 'text-green-700',
+    textColor: 'text-success-700',
     label: '信息检索',
   },
   reasoning: {
     icon: GitBranch,
-    color: 'bg-purple-500',
-    bgColor: 'bg-purple-50',
+    color: 'bg-accent-500',
+    bgColor: 'bg-accent-50',
     borderColor: 'border-purple-200',
-    textColor: 'text-purple-700',
+    textColor: 'text-accent-700',
     label: '逻辑推理',
   },
   decision: {
@@ -99,20 +99,20 @@ const stepTypeConfig = {
 
 const ConfidenceBar: React.FC<{ confidence: number }> = ({ confidence }) => {
   const getColor = () => {
-    if (confidence >= 0.8) return 'bg-green-500'
+    if (confidence >= 0.8) return 'bg-success-500'
     if (confidence >= 0.5) return 'bg-yellow-500'
-    return 'bg-red-500'
+    return 'bg-error-500'
   }
 
   return (
     <div className="flex items-center gap-2">
-      <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+      <div className="flex-1 h-2 bg-neutral-200 rounded-full overflow-hidden">
         <div
           className={`h-full ${getColor()} transition-all duration-500 ease-out`}
           style={{ width: `${confidence * 100}%` }}
         />
       </div>
-      <span className="text-xs font-medium text-gray-600 w-12 text-right">
+      <span className="text-xs font-medium text-neutral-600 w-12 text-right">
         {Math.round(confidence * 100)}%
       </span>
     </div>
@@ -136,7 +136,7 @@ const ThinkingStepCard: React.FC<{
     >
       {step.status === 'processing' && (
         <div className="absolute inset-0 bg-white/50 rounded-xl flex items-center justify-center z-10">
-          <div className="flex items-center gap-2 text-gray-600">
+          <div className="flex items-center gap-2 text-neutral-600">
             <Clock className="w-4 h-4 animate-spin" />
             <span className="text-sm font-medium">处理中...</span>
           </div>
@@ -155,35 +155,35 @@ const ThinkingStepCard: React.FC<{
                 {config.label}
               </span>
               {step.status === 'completed' && (
-                <CheckCircle2 className="w-4 h-4 text-green-500" />
+                <CheckCircle2 className="w-4 h-4 text-success-500" />
               )}
             </div>
             <button
               onClick={onToggle}
-              className="p-1 hover:bg-gray-200 rounded transition-colors"
+              className="p-1 hover:bg-neutral-200 rounded transition-colors"
             >
               {isExpanded ? (
-                <ChevronDown className="w-4 h-4 text-gray-500" />
+                <ChevronDown className="w-4 h-4 text-neutral-500" />
               ) : (
-                <ChevronRight className="w-4 h-4 text-gray-500" />
+                <ChevronRight className="w-4 h-4 text-neutral-500" />
               )}
             </button>
           </div>
 
-          <h4 className="font-semibold text-gray-800 mb-1">{step.title}</h4>
-          <p className="text-sm text-gray-600 mb-3 line-clamp-2">{step.description}</p>
+          <h4 className="font-semibold text-neutral-800 mb-1">{step.title}</h4>
+          <p className="text-sm text-neutral-600 mb-3 line-clamp-2">{step.description}</p>
 
           <ConfidenceBar confidence={step.confidence} />
 
           {isExpanded && step.details && (
-            <div className="mt-4 pt-4 border-t border-gray-200">
-              <p className="text-sm text-gray-700">{step.details}</p>
+            <div className="mt-4 pt-4 border-t border-neutral-200">
+              <p className="text-sm text-neutral-700">{step.details}</p>
             </div>
           )}
 
           {isExpanded && step.relatedData && step.relatedData.length > 0 && (
-            <div className="mt-4 pt-4 border-t border-gray-200">
-              <div className="text-xs font-semibold text-gray-500 mb-2 flex items-center gap-1">
+            <div className="mt-4 pt-4 border-t border-neutral-200">
+              <div className="text-xs font-semibold text-neutral-500 mb-2 flex items-center gap-1">
                 <Database className="w-3 h-3" />
                 相关资料
               </div>
@@ -191,18 +191,18 @@ const ThinkingStepCard: React.FC<{
                 {step.relatedData.map((item, index) => (
                   <div
                     key={index}
-                    className="flex items-start gap-2 p-2 bg-white rounded-lg border border-gray-100"
+                    className="flex items-start gap-2 p-2 bg-white rounded-lg border border-neutral-100"
                   >
-                    <FileText className="w-4 h-4 text-gray-400 shrink-0 mt-0.5" />
+                    <FileText className="w-4 h-4 text-neutral-400 shrink-0 mt-0.5" />
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-gray-800 truncate">{item.title}</p>
+                      <p className="text-sm font-medium text-neutral-800 truncate">{item.title}</p>
                       {item.snippet && (
-                        <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">
+                        <p className="text-xs text-neutral-500 mt-0.5 line-clamp-2">
                           {item.snippet}
                         </p>
                       )}
                       {item.source && (
-                        <p className="text-xs text-gray-400 mt-1">来源: {item.source}</p>
+                        <p className="text-xs text-neutral-400 mt-1">来源: {item.source}</p>
                       )}
                     </div>
                   </div>
@@ -239,7 +239,7 @@ export const ThinkingVisualizer: React.FC<ThinkingVisualizerProps> = ({
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+    <div className="bg-white rounded-2xl shadow-lg border border-neutral-100 overflow-hidden">
       {/* Header */}
       <div
         className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 cursor-pointer"
@@ -272,7 +272,7 @@ export const ThinkingVisualizer: React.FC<ThinkingVisualizerProps> = ({
       {isVisible && (
         <div ref={containerRef} className="p-4 space-y-3 max-h-96 overflow-y-auto">
           {steps.length === 0 ? (
-            <div className="text-center py-8 text-gray-400">
+            <div className="text-center py-8 text-neutral-400">
               <Zap className="w-12 h-12 mx-auto mb-3 opacity-50" />
               <p>AI正在准备思考...</p>
             </div>
@@ -292,14 +292,14 @@ export const ThinkingVisualizer: React.FC<ThinkingVisualizerProps> = ({
 
       {/* Progress Indicator */}
       {isVisible && steps.length > 0 && (
-        <div className="px-4 py-3 bg-gray-50 border-t border-gray-100">
-          <div className="flex items-center justify-between text-xs text-gray-500">
+        <div className="px-4 py-3 bg-slate-50 border-t border-neutral-100">
+          <div className="flex items-center justify-between text-xs text-neutral-500">
             <span>思考进度</span>
             <span>
               {steps.filter(s => s.status === 'completed').length} / {steps.length}
             </span>
           </div>
-          <div className="mt-2 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+          <div className="mt-2 h-1.5 bg-neutral-200 rounded-full overflow-hidden">
             <div
               className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-500"
               style={{

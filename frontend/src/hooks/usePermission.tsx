@@ -124,7 +124,7 @@ function getRolePermissions(role: string): string[] {
 /**
  * 检查用户是否具有所需权限
  */
-export function hasPermission(required: string | string[], user: any = getCurrentUser()): boolean {
+export function hasPermission(required: string, user: any = getCurrentUser()): boolean {
   const { role, permissions } = user || getCurrentUser();
 
   // 获取用户的角色权限
@@ -171,7 +171,7 @@ export function PermissionGuard({
   requireAll = true, // 是否需要所有权限
   children, // 受保护的子组件
 }: {
-  required: string | string[];
+  required: string;
   fallback?: React.ReactNode;
   redirect?: string;
   requireAll?: boolean;
@@ -202,7 +202,7 @@ export function ProtectedRoute({
   redirect = '/login',
   children,
 }: {
-  required?: string | string[];
+  required?: string;
   redirect?: string;
   children: React.ReactNode;
 }) {
@@ -239,7 +239,7 @@ export function PermissionButton({
   className = '',
   ...props
 }: {
-  required: string | string[];
+  required: string;
   children: React.ReactNode;
   className?: string;
 } & React.ButtonHTMLAttributes<HTMLButtonElement>) {
@@ -268,7 +268,7 @@ export function PermissionMenuItem({
   children,
   onClick,
 }: {
-  required: string | string[];
+  required: string;
   children: React.ReactNode;
   onClick?: () => void;
 }) {
@@ -289,7 +289,7 @@ export function WithPermission({
   required,
   children,
 }: {
-  required: string | string[];
+  required: string;
   children: React.ReactNode;
 }) {
   const { can } = usePermission();
@@ -398,7 +398,7 @@ export function PermissionDebugInfo() {
 /**
  * 🔒 P1-1: 权限检查工具（页面级权限检查快速方法
  */
-export function checkPagePermission(required: string | string[]): boolean {
+export function checkPagePermission(required: string): boolean {
   const { can, canAny } = usePermission();
   if (Array.isArray(required)) {
     return required.every((p) => can(p));

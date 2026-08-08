@@ -45,22 +45,22 @@ function DataTableBlock({ data }: DataTableBlockProps) {
   }
 
   const renderCell = (value: unknown, type?: string): React.ReactNode => {
-    if (value == null) return <span className="text-gray-300 dark:text-gray-600">—</span>
+    if (value == null) return <span className="text-neutral-300 dark:text-neutral-600">—</span>
 
     switch (type) {
       case 'number':
         return (
-          <span className="font-mono text-xs tabular-nums text-gray-800 dark:text-gray-200">
+          <span className="font-mono text-xs tabular-nums text-neutral-800 dark:text-neutral-200">
             {typeof value === 'number' ? value.toLocaleString() : String(value)}
           </span>
         )
       case 'percentage': {
         const num = typeof value === 'number' ? value : parseFloat(String(value))
-        if (isNaN(num)) return <span className='text-gray-300 dark:text-gray-600'>{String(value)}</span>
+        if (isNaN(num)) return <span className='text-neutral-300 dark:text-neutral-600'>{String(value)}</span>
         const pct = (num * 100).toFixed(1)
-        const color = num >= 0.8 ? 'text-emerald-600 dark:text-emerald-400'
-          : num >= 0.5 ? 'text-amber-600 dark:text-amber-400'
-          : 'text-red-600 dark:text-red-400'
+        const color = num >= 0.8 ? 'text-primary-600 dark:text-primary-400'
+          : num >= 0.5 ? 'text-warning-600 dark:text-warning-400'
+          : 'text-error-600 dark:text-error-400'
         return (
           <span className={`font-mono text-xs tabular-nums ${color}`}>
             {pct}%
@@ -76,7 +76,7 @@ function DataTableBlock({ data }: DataTableBlockProps) {
         )
       default:
         return (
-          <span className="text-xs text-gray-700 dark:text-gray-300">
+          <span className="text-xs text-neutral-700 dark:text-neutral-300">
             {String(value)}
           </span>
         )
@@ -86,7 +86,7 @@ function DataTableBlock({ data }: DataTableBlockProps) {
   // 空状态
   if (columns.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-8 text-gray-300 dark:text-gray-600">
+      <div className="flex flex-col items-center justify-center py-8 text-neutral-300 dark:text-neutral-600">
         <Table className="w-8 h-8 mb-2 opacity-50" />
         <p className="text-xs">无表格数据</p>
       </div>
@@ -100,13 +100,13 @@ function DataTableBlock({ data }: DataTableBlockProps) {
         <button
           onClick={() => setCollapsed(prev => !prev)}
           className="flex items-center gap-1.5 mb-2 text-xs font-semibold
-            text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100
+            text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-neutral-100
             transition-colors cursor-pointer"
         >
           {collapsed ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
           <Table className="w-3 h-3 text-primary-500" />
           <span>{title}</span>
-          <span className="text-[10px] font-normal text-gray-400 dark:text-gray-500 ml-1">
+          <span className="text-[10px] font-normal text-neutral-400 dark:text-neutral-500 ml-1">
             ({rows.length} 行)
           </span>
         </button>
@@ -115,22 +115,22 @@ function DataTableBlock({ data }: DataTableBlockProps) {
       {!collapsed && (
         <>
           {/* 表格容器 — 响应式滚动 */}
-          <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+          <div className="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-700">
             <table className="w-full border-collapse text-xs">
               {/* 表头 */}
               <thead>
-                <tr className="bg-gray-50 dark:bg-gray-800/60">
+                <tr className="bg-slate-50 dark:bg-neutral-800/60">
                   {columns.map((col, i) => (
                     <th
                       key={col.key || i}
                       onClick={() => handleSort(col.key)}
                       className={`
-                        px-3 py-2 text-xs font-semibold text-gray-600 dark:text-gray-400
-                        border-b border-gray-200 dark:border-gray-700
+                        px-3 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-400
+                        border-b border-neutral-200 dark:border-neutral-700
                         whitespace-nowrap select-none
                         ${col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : 'text-left'}
                         ${col.width ? `w-[${col.width}]` : ''}
-                        cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700/40 transition-colors
+                        cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-700/40 transition-colors
                       `}
                     >
                       <span className="inline-flex items-center gap-1">
@@ -150,7 +150,7 @@ function DataTableBlock({ data }: DataTableBlockProps) {
                   <tr>
                     <td
                       colSpan={columns.length}
-                      className="px-3 py-8 text-center text-gray-300 dark:text-gray-600"
+                      className="px-3 py-8 text-center text-neutral-300 dark:text-neutral-600"
                     >
                       暂无数据
                     </td>
@@ -160,9 +160,9 @@ function DataTableBlock({ data }: DataTableBlockProps) {
                     <tr
                       key={ri}
                       className={`
-                        border-b border-gray-100 dark:border-gray-700/50
-                        ${ri % 2 === 1 ? 'bg-gray-50/50 dark:bg-gray-800/20' : 'bg-white dark:bg-transparent'}
-                        hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors
+                        border-b border-neutral-100 dark:border-neutral-700/50
+                        ${ri % 2 === 1 ? 'bg-slate-50/50 dark:bg-neutral-800/20' : 'bg-white dark:bg-transparent'}
+                        hover:bg-slate-50 dark:hover:bg-neutral-800/30 transition-colors
                       `}
                     >
                       {columns.map((col, ci) => (
@@ -185,7 +185,7 @@ function DataTableBlock({ data }: DataTableBlockProps) {
 
           {/* 摘要 */}
           {summary && (
-            <p className="mt-1.5 text-[10px] text-gray-400 dark:text-gray-500 italic leading-relaxed">
+            <p className="mt-1.5 text-[10px] text-neutral-400 dark:text-neutral-500 italic leading-relaxed">
               {summary}
             </p>
           )}

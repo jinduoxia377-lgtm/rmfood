@@ -242,8 +242,8 @@ class FoodPeptideAnalyzer:
     >>> analyzer = FoodPeptideAnalyzer()
     >>> result = await analyzer.analyze("VLGYTKEGN")
     >>> if result.safety.risk_level == "low":
-    ...     print(f"✅ 可作为食品配料 | 应用评分: {result.food_application_score:.1f}")
-    ...     print(f"建议用途: {', '.join(result.application_suggestions[:3])}")
+    ...     logger.info(f"✅ 可作为食品配料 | 应用评分: {result.food_application_score:.1f}")
+    ...     logger.info(f"建议用途: {', '.join(result.application_suggestions[:3])}")
     """
     
     def __init__(self):
@@ -964,12 +964,12 @@ async def test_food_peptide_analyzer():
         result = await analyzer.analyze(peptide)
         status = "✅" if result.validation.is_valid else "❌"
         logger.info(f"   {status} {peptide:<15} ({source})")
-        print(f"      安全等级: {result.safety.risk_level} | "
+        logger.info(f"      安全等级: {result.safety.risk_level} | "
               f"ACE抑制: {result.bioactivity.ace_inhibition['score']:.2f} | "
               f"应用评分: {result.food_application_score:.1f}/100")
         if result.application_suggestions:
             logger.info(f"      建议: {result.application_suggestions[0]}")
-    print()
+    logger.info()
     
     # 测试用例2: 安全性边界测试
     logger.info("📌 测试2: 安全性边界检测")
@@ -986,10 +986,10 @@ async def test_food_peptide_analyzer():
         safe = result.safety.risk_level == "low"
         icon = "✅" if safe else "⚠️"
         logger.info(f"   {icon} {peptide:<20} ({description})")
-        print(f"      风险等级: {result.safety.risk_level} | "
+        logger.info(f"      风险等级: {result.safety.risk_level} | "
               f"安全分: {result.safety.safety_score:.2f} | "
               f"毒性标志: {result.safety.toxicity_flags if result.safety.toxicity_flags else '无'}")
-    print()
+    logger.info()
     
     # 测试用例3: 性能基准
     logger.info("📌 测试3: 性能基准 (>500 seq/s)")
@@ -1018,7 +1018,7 @@ async def test_food_peptide_analyzer():
         logger.info(f"   ✅ 性能达标! (>500 seq/s)")
     else:
         logger.info(f"   ⚠️ 性能待优化 (目标: >500 seq/s)")
-    print()
+    logger.info()
     
     # 测试用例4: PTM位点检测
     logger.info("📌 测试4: 食品相关PTM位点检测")
@@ -1035,9 +1035,9 @@ async def test_food_peptide_analyzer():
         logger.info(f"   序列: {peptide:<15} ({desc})")
         logger.info(f"      PTM位点数: {len(result.ptm_sites)} | 类型: {ptm_types if ptm_types else '无'}")
         for site in result.ptm_sites[:3]:
-            print(f"      • {site.modified_residue}{site.position} ({site.ptm_type}) "
+            logger.info(f"      • {site.modified_residue}{site.position} ({site.ptm_type}) "
                   f"| 置信度: {site.confidence:.2f} | {site.food_relevance}")
-    print()
+    logger.info()
     
     logger.info("="*80)
     logger.info("🎉 RMFOOD 食品活性肽分析器核心功能验证完成!")

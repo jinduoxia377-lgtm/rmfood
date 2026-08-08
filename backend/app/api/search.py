@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional, List
 
 from ..api.deps import get_db_session, get_current_user
-from ..core.search_engine import SearchEngine, SearchQuery, AdvancedFilter, global_search
+from ..core.analytics_reports.search_engine import SearchEngine, SearchQuery, AdvancedFilter, global_search
 from ..models import User
 
 router = APIRouter(prefix="/search", tags=["搜索服务"])
@@ -47,7 +47,7 @@ async def search_resource(
     resource_type: str,
     q: Optional[str] = Query(None, description="关键词"),
     sort_by: Optional[str] = Query(None, description="排序字段"),
-    order: str = Query("desc", regex="^(asc|desc)$"),
+    order: str = Query("desc", pattern="^(asc|desc)$"),
     status: Optional[str] = Query(None, description="状态筛选"),
     category: Optional[str] = Query(None, description="分类筛选"),
     created_from: Optional[str] = Query(None, description="创建时间起"),

@@ -25,18 +25,18 @@ const STATUS_ICONS = {
 } as const
 
 const STATUS_COLORS = {
-  positive: 'text-emerald-500 dark:text-emerald-400',
-  negative: 'text-red-500 dark:text-red-400',
-  neutral: 'text-gray-400 dark:text-gray-500',
-  info: 'text-blue-500 dark:text-blue-400',
+  positive: 'text-primary-500 dark:text-primary-400',
+  negative: 'text-error-500 dark:text-error-400',
+  neutral: 'text-neutral-400 dark:text-neutral-500',
+  info: 'text-secondary-500 dark:text-secondary-400',
 } as const
 
 const BULLET_COLORS = [
   'text-primary-500',
-  'text-blue-500',
-  'text-emerald-500',
-  'text-amber-500',
-  'text-purple-500',
+  'text-secondary-500',
+  'text-primary-500',
+  'text-warning-500',
+  'text-accent-500',
 ]
 
 function ListBlock({ data }: ListBlockProps) {
@@ -44,7 +44,7 @@ function ListBlock({ data }: ListBlockProps) {
 
   if (items.length === 0) {
     return (
-      <div className="py-3 text-center text-xs text-gray-300 dark:text-gray-600">
+      <div className="py-3 text-center text-xs text-neutral-300 dark:text-neutral-600">
         暂无列表数据
       </div>
     )
@@ -54,7 +54,7 @@ function ListBlock({ data }: ListBlockProps) {
     <div className="mb-3 last:mb-0">
       {/* 标题 */}
       {title && (
-        <div className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">
+        <div className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-2">
           {title}
         </div>
       )}
@@ -69,17 +69,17 @@ function ListBlock({ data }: ListBlockProps) {
               <div key={i} className="flex items-start gap-2">
                 <span className={`flex-shrink-0 mt-0.5 w-1.5 h-1.5 rounded-full ${color} bg-current`} />
                 <div className="min-w-0 flex-1">
-                  <span className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed">
+                  <span className="text-xs text-neutral-700 dark:text-neutral-300 leading-relaxed">
                     {item.label}
                   </span>
                   {item.description && (
-                    <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5 leading-relaxed">
+                    <p className="text-[10px] text-neutral-400 dark:text-neutral-500 mt-0.5 leading-relaxed">
                       {item.description}
                     </p>
                   )}
                 </div>
                 {item.value && (
-                  <span className="flex-shrink-0 text-[10px] font-mono text-gray-400 dark:text-gray-500">
+                  <span className="flex-shrink-0 text-[10px] font-mono text-neutral-400 dark:text-neutral-500">
                     {item.value}
                   </span>
                 )}
@@ -91,16 +91,16 @@ function ListBlock({ data }: ListBlockProps) {
           if (variant === 'number') {
             return (
               <div key={i} className="flex items-start gap-2.5">
-                <span className="flex-shrink-0 w-5 h-5 rounded-md bg-gray-100 dark:bg-gray-800
-                  flex items-center justify-center text-[10px] font-bold text-gray-500 dark:text-gray-400">
+                <span className="flex-shrink-0 w-5 h-5 rounded-md bg-neutral-100 dark:bg-neutral-800
+                  flex items-center justify-center text-[10px] font-bold text-neutral-500 dark:text-neutral-400">
                   {i + 1}
                 </span>
                 <div className="min-w-0 flex-1 pt-0.5">
-                  <span className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed">
+                  <span className="text-xs text-neutral-700 dark:text-neutral-300 leading-relaxed">
                     {item.label}
                   </span>
                   {item.description && (
-                    <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5 leading-relaxed">
+                    <p className="text-[10px] text-neutral-400 dark:text-neutral-500 mt-0.5 leading-relaxed">
                       {item.description}
                     </p>
                   )}
@@ -116,21 +116,21 @@ function ListBlock({ data }: ListBlockProps) {
             const statusColor = STATUS_COLORS[status] || STATUS_COLORS.neutral
             return (
               <div key={i} className="flex items-start gap-2 px-2.5 py-2 rounded-lg
-                bg-gray-50 dark:bg-gray-800/40 border border-gray-100 dark:border-gray-700/50">
+                bg-slate-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-700/50">
                 <StatusIcon className={`flex-shrink-0 w-3.5 h-3.5 mt-0.5 ${statusColor}`} />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-baseline justify-between gap-2">
-                    <span className="text-xs font-medium text-gray-800 dark:text-gray-200">
+                    <span className="text-xs font-medium text-neutral-800 dark:text-neutral-200">
                       {item.label}
                     </span>
                     {item.value && (
-                      <span className="flex-shrink-0 text-[10px] font-mono text-gray-400 dark:text-gray-500">
+                      <span className="flex-shrink-0 text-[10px] font-mono text-neutral-400 dark:text-neutral-500">
                         {item.value}
                       </span>
                     )}
                   </div>
                   {item.description && (
-                    <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5 leading-relaxed">
+                    <p className="text-[10px] text-neutral-400 dark:text-neutral-500 mt-0.5 leading-relaxed">
                       {item.description}
                     </p>
                   )}
@@ -146,13 +146,13 @@ function ListBlock({ data }: ListBlockProps) {
               <div key={i} className="flex items-start gap-2">
                 <CheckCircle2 className={`flex-shrink-0 w-3.5 h-3.5 mt-0.5 ${
                   isPositive
-                    ? 'text-emerald-500 dark:text-emerald-400'
-                    : 'text-gray-300 dark:text-gray-600'
+                    ? 'text-primary-500 dark:text-primary-400'
+                    : 'text-neutral-300 dark:text-neutral-600'
                 }`} />
                 <span className={`text-xs leading-relaxed ${
                   isPositive
-                    ? 'text-gray-700 dark:text-gray-300'
-                    : 'text-gray-400 dark:text-gray-500 line-through'
+                    ? 'text-neutral-700 dark:text-neutral-300'
+                    : 'text-neutral-400 dark:text-neutral-500 line-through'
                 }`}>
                   {item.label}
                 </span>

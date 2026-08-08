@@ -637,7 +637,7 @@ async def test_preprocessor():
         assert result.is_valid, f"❌ 应该通过: {seq[:30]}..."
         assert result.quality_score > 0.7, f"❌ 质量分数过低: {result.quality_score}"
         logger.warning(f"   ✅ 长度:{len(seq):4d} | 质量:{result.quality_score:.3f} | 警告数:{len(result.warnings)}")
-    print()
+    logger.info()
     
     # 测试2: 无效序列检测
     logger.info("📌 测试2: 无效序列检测")
@@ -655,7 +655,7 @@ async def test_preprocessor():
         assert not result.is_valid, f"❌ 应该失败: {desc}"
         assert len(result.errors) > 0, f"❌ 应该有错误信息: {desc}"
         logger.error(f"   ✅ {desc:15s} | 错误数: {len(result.errors)} | {result.errors[0].message[:50]}")
-    print()
+    logger.info()
     
     # 测试3: 序列标准化
     logger.info("📌 测试3: 序列标准化")
@@ -670,7 +670,7 @@ async def test_preprocessor():
     for seq, desc in standardize_cases:
         std_result = await preprocessor.standardize(seq)
         logger.info(f"   ✅ {desc:20s} | 原始:'{seq}' → 标准化:'{std_result.value}' | 修饰:{len(std_result.modifications_detected)}处")
-    print()
+    logger.info()
     
     # 测试4: 质量评估
     logger.info("📌 测试4: 质量评估")
@@ -718,7 +718,7 @@ async def test_preprocessor():
         logger.info(f"   ✅ 性能达标! (目标: >10,000 seq/s)")
     else:
         logger.info(f"   ⚠️ 性能未达标 (目标: >10,000 seq/s)")
-    print()
+    logger.info()
     
     logger.info("="*80)
     logger.info("🎉 序列预处理引擎测试完成！")
