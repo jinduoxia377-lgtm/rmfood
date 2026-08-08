@@ -27,10 +27,7 @@ services:
 
   # ─── 后端 API ───
   backend:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: backend-production
+    image: rmfood-backend:latest
     container_name: rmfood_backend
     environment:
       DATABASE_URL: postgresql+asyncpg://postgres:password@postgres:5432/rmfood
@@ -60,9 +57,7 @@ services:
 
   # ─── 前端 (Nginx + Vite 构建产物) ───
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: docker/Dockerfile.prod
+    image: rmfood-frontend:latest
     container_name: rmfood_frontend
     ports:
       - "3000:80"

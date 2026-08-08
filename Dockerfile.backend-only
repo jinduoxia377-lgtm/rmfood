@@ -1,0 +1,59 @@
+# ═══════════════════════════════════════════════
+# RMFOOD 后端精简 Dockerfile（含 jieba）
+# ═══════════════════════════════════════════════
+
+FROM python:3.11-slim AS backend-builder
+
+WORKDIR /app
+
+# 安装构建依赖
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc libpq-dev g++ && rm -rf /var/lib/apt/lists/*
+
+# 复制 requirements 文件
+COPY backend/requirements.txt .
+
+# 安装依赖（包含 jieba）
+RUN pip install --no-cache-dir --user \
+    --prefix=/install -r requirements.txt 2>/dev/null || \
+    pip install --no-cache-dir --user -r requirements.txt
+
+# ─── 后端生产镜像 ───
+FROM python:3.11-slim AS backend-production
+
+# 创建用户
+RUN groupadd --gid 1000 appgroup && \
+    useradd --uid 1000 --gid appgroup --shell /bin/bash --create-home appuser
+
+WORKDIR /app
+
+# 安装运行时依赖
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq5 curl && rm -rf /var/lib/apt/lists/*
+
+# 复制已安装的包
+COPY --from=backend-builder /root/.local /home/appuser/.local
+COPY --from=backend-builder /usr/local/lib/python3.11/site-packages \
+    /usr/local/lib/python3.11/site-packages
+
+ENV PATH=/home/appuser/.local/bin:$PATH
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+
+# 只复制必要的应用文件
+COPY backend/app/ ./app/
+COPY backend/docker-healthcheck.py /usr/local/bin/healthcheck.py
+COPY backend/.env .env
+
+RUN chmod +x /usr/local/bin/healthcheck.py && \
+    mkdir -p /app/temp_files /app/uploads /app/logs /app/data/chromadb && \
+    chown -R appuser:appgroup /app
+
+USER appuser
+
+EXPOSE 8000
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD python /usr/local/bin/healthcheck.py || exit 1
+
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]

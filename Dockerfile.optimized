@@ -44,8 +44,12 @@ ENV PYTHONDONTWRITEBYTECODE=1
 # 只复制必要的应用文件
 COPY backend/app/ ./app/
 COPY backend/docker-healthcheck.py /usr/local/bin/healthcheck.py
+COPY backend/.env .env
 
-RUN chmod +x /usr/local/bin/healthcheck.py
+RUN chmod +x /usr/local/bin/healthcheck.py && \
+    mkdir -p /app/temp_files /app/uploads /app/logs && \
+    chown -R appuser:appgroup /app/temp_files /app/uploads /app/logs
+
 USER appuser
 
 EXPOSE 8000
