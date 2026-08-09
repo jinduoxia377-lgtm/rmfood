@@ -13,8 +13,8 @@ logger = logging.getLogger(__name__)
 
 async def _seed_tcmsp_herbs(session) -> int:
     """将内存中的TCMSP药材数据导入PostgreSQL，返回导入条数"""
-    from ..models.external_data import TCMHerb
-    from ..services.data_sources.tcmsp_client import TCMSP_HERB_DATABASE
+    from app.models.external_data import TCMHerb
+    from app.services.data_sources.tcmsp_client import TCMSP_HERB_DATABASE
 
     # 检查是否已有数据
     result = await session.execute(select(TCMHerb).limit(1))
@@ -54,7 +54,7 @@ async def _seed_mmid_herbs(session) -> int:
     注意：已有数据库会通过 alembic 迁移自动从 tcm_herbs 转移数据，
     此函数仅用于首次初始化（此时 tcm_herbs 中可能已有 MMID 数据）。
     """
-    from ..models.external_data import MMIDHerb
+    from app.models.external_data import MMIDHerb
 
     # 检查是否已有数据
     result = await session.execute(select(MMIDHerb).limit(1))
@@ -114,8 +114,8 @@ async def _seed_mmid_herbs(session) -> int:
 
 async def _seed_dfbp_peptides(session) -> int:
     """将内存中的DFBP活性肽数据导入PostgreSQL，返回导入条数"""
-    from ..models.external_data import BioactivePeptide
-    from ..services.data_sources.dfbp_client import DFBP_PEPTIDE_DATABASE
+    from app.models.external_data import BioactivePeptide
+    from app.services.data_sources.dfbp_client import DFBP_PEPTIDE_DATABASE
 
     result = await session.execute(select(BioactivePeptide).limit(1))
     if result.scalar_one_or_none() is not None:
@@ -160,7 +160,7 @@ async def init_db():
         admin = result.scalar_one_or_none()
 
         if admin is None:
-            from ..services.auth import get_password_hash
+            from ...utils.auth import get_password_hash
 
             admin = User(
                 username=settings.admin_username,

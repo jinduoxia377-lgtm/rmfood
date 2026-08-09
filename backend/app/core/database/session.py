@@ -51,18 +51,8 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 from dotenv import load_dotenv
-# 确保从正确路径加载 .env
-import os as _os
-# session.py is at: app/core/database/session.py
-# .env is at: backend/.env (3 levels up from session.py)
-_env_path = _os.path.join(_os.path.dirname(__file__), "..", "..", "..", ".env")
-if not _os.path.exists(_env_path):
-    _env_path = _os.path.abspath(_os.path.join(__file__, "..", "..", "..", ".env"))
-load_dotenv(_env_path, override=True)
-# Fallback: if dotenv didn't set DATABASE_URL, set it directly
-if not _os.environ.get("DATABASE_URL"):
-    _os.environ["DATABASE_URL"] = "postgresql+asyncpg://postgres:password@localhost:5432/rmfood"
-# from ..config import settings  # Lazy import to avoid early initialization
+# NOTE: DATABASE_URL is provided via Docker environment variables.
+# Do NOT call load_dotenv here to avoid overwriting container env vars.
 from .database import Base
 
 logger = logging.getLogger(__name__)
@@ -70,15 +60,7 @@ logger = logging.getLogger(__name__)
 def _get_settings():
     """Lazy import settings to ensure dotenv is loaded first"""
     import os
-    from dotenv import load_dotenv
-    # 使用绝对路径确保 .env 文件被正确加载
-    _env_file = "d:/RMFOODFP/backend/.env"
-    if os.path.exists(_env_file):
-        load_dotenv(_env_file, override=True)
-    elif os.environ.get("DATABASE_URL"):
-        # 如果 .env 文件不存在，但环境变量已设置
-        pass
-    
+    # Docker environment already provides DATABASE_URL via compose
     from ..config import get_settings
     return get_settings()
 
@@ -307,13 +289,6 @@ def _create_engine():
             database_url = _settings.database.url
         except Exception:
             database_url = ''
-
-    # 最终保障：使用已知正确的默认值
-    if not database_url:
-        database_url = 'postgresql+asyncpg://postgres:password@localhost:5432/rmfood'
-        logger.warning("[DB] Using default database URL")
-    
-    logger.info(f"[DB] database_url configured")
 
     # 安全检查：确保 URL 是 PostgreSQL 协议
     if not database_url or not database_url.startswith(("postgresql", "postgres")):

@@ -78,7 +78,8 @@ async def check_redis() -> tuple[bool, str]:
     try:
         try:
             import redis.asyncio as redis
-            redis_url = os.environ.get("REDIS_URL", "redis://localhost:6379/0")
+            # Use REDIS_URL from env (set in docker-compose as redis://redis:6379/0)
+            redis_url = os.environ.get("REDIS_URL", "redis://redis:6379/0")
             client = await redis.from_url(redis_url, socket_timeout=TIMEOUT)
             await client.ping()
             await client.close()

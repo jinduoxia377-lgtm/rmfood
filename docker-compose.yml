@@ -36,6 +36,7 @@ services:
       PORT: "8000"
       CORS_ORIGINS: '["http://localhost:3000","http://127.0.0.1:3000","http://localhost:80"]'
       SECRET_KEY: rmfood-dev-secret-key-min-32-chars-for-testing
+      ADMIN_PASSWORD: rmfood2024!@#
       REDIS_URL: redis://redis:6379/0
     ports:
       - "8000:8000"

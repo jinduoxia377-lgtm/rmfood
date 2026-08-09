@@ -42,6 +42,6 @@ def utc_timestamp_col(default=True, onupdate=False, nullable=True, index=False) 
 def audit_json_check_constraint(table_name: str = "audit_logs") -> CheckConstraint:
     """审计日志 JSON 格式校验约束"""
     return CheckConstraint(
-        f"jsonb_typeof(details) = 'object'::text",
+        f"json_typeof(details) = 'object'::text",
         name=f"ck_{table_name}_details_json",
     )

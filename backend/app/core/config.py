@@ -85,7 +85,7 @@ def _get_env_file_path() -> str:
         if fp.exists():
             return str(fp.resolve())
 
-    raise RuntimeError(f"Cannot find .env file at expected location: {env_path}")
+    raise RuntimeError(f"Cannot find .env file at expected location: {env_path} (using env vars only)")
 
 
 # Try to get the path, fail early at module import if .env is missing
@@ -94,7 +94,7 @@ try:
     logger.debug("Using .env file: %s", _ENV_FILE_PATH)
 except Exception as e:
     logger.warning("Could not determine .env path: %s", e)
-    _ENV_FILE_PATH = ".env"  # Fallback (may not work if cwd is wrong)
+    _ENV_FILE_PATH = None  # Use env vars only (set via docker-compose)
 
 
 # ═════════════════════════════════════════════

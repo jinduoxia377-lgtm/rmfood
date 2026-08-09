@@ -388,7 +388,7 @@ class TestPeptideBatchOperations:
 
         items = [
             PeptideAnalysisCreate(sequence="VALID"),  # 合法
-            PeptideAnalysisCreate(sequence="X"),  # 太短
+            PeptideAnalysisCreate(sequence="AB"),  # 太短
             PeptideAnalysisCreate(sequence="ALSOVALID"),  # 合法
         ]
 

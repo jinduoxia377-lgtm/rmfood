@@ -42,11 +42,15 @@ class VectorStore:
         self._collection_ref = None
         if not _HAS_CHROMADB:
             return
-        os.makedirs(persist_dir, exist_ok=True)
-        self._client = chromadb.PersistentClient(
-            path=persist_dir,
-            settings=Settings(anonymized_telemetry=False),
-        )
+        try:
+            os.makedirs(persist_dir, exist_ok=True)
+            self._client = chromadb.PersistentClient(
+                path=persist_dir,
+                settings=Settings(anonymized_telemetry=False),
+            )
+        except Exception as e:
+            logger.warning("ChromaDB initialization failed, RAG features will be unavailable: %s", e)
+            self._client = None
         self._collection_name = "rag_documents"
         self._collection_ref = None  # 惰性加载缓存
 

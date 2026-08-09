@@ -34,7 +34,7 @@ class AuditLog(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, nullable=False, index=True)
 
     __table_args__ = (
-        CheckConstraint("jsonb_typeof(details) = 'object'::text", name="ck_audit_log_details_json"),
+        CheckConstraint("json_typeof(details) = 'object'::text", name="ck_audit_log_details_json"),
         Index("ix_audit_logs_created_severity", "created_at", "severity"),
         Index("ix_audit_logs_user_created", "user_id", "created_at"),
         Index("ix_audit_logs_path_created", "path", "created_at"),

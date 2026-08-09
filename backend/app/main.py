@@ -2,20 +2,8 @@
 # RMFOOD 配方设计平台 - 应用入口
 FastAPI 应用工厂 + 生命周期事件
 """
-import os as _os
-# 确保 DATABASE_URL 环境变量被设置
-if not _os.environ.get('DATABASE_URL'):
-    _os.environ['DATABASE_URL'] = 'postgresql+asyncpg://postgres:password@localhost:5432/rmfood'
-
-# 确保在导入任何其他模块之前加载 .env
-_env_path = _os.path.join(_os.path.dirname(__file__), "..", ".env")
-if _os.path.exists(_env_path):
-    from dotenv import load_dotenv
-    load_dotenv(_env_path, override=True)
-# 如果 .env 不存在，尝试从当前目录加载
-elif _os.path.exists(".env"):
-    from dotenv import load_dotenv
-    load_dotenv(".env", override=True)
+# NOTE: DATABASE_URL is provided via Docker environment variables.
+# Do NOT call load_dotenv here to avoid overwriting container env vars.
 
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
@@ -85,6 +73,36 @@ async def lifespan(app: FastAPI):
     logger.info("应用启动中...")
     # 初始化 Sentry 错误追踪
     sentry_init(app)
+
+    # ── 导入所有模型，确保 Base.metadata 包含所有表定义 ──
+    from .models import (  # noqa: F401
+        user_model,
+        models,
+        system,
+        chat,
+        formula,
+        peptide_design,
+        peptide_analysis,
+        workflow,
+        team,
+        team_member,
+        notification,
+        prompt_template,
+        prompt_version,
+        experiment,
+        knowledge_graph,
+        external_data,
+        change_event,
+        seed_data,
+        sync_log,
+        tcm_schema,
+        dfbp_schema,
+        ai_suggestion,
+        food_material,
+        retail_product,
+        data_source_health,
+        user_device,
+    )
     # ── 启动阶段：验证 PostgreSQL 连接 ──
     from .core.database.session import ensure_connection, init_database, close_database
     from .core.database.session import get_engine

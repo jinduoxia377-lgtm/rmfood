@@ -43,7 +43,7 @@ ENV PYTHONDONTWRITEBYTECODE=1
 # 只复制必要的应用文件
 COPY backend/app/ ./app/
 COPY backend/docker-healthcheck.py /usr/local/bin/healthcheck.py
-COPY backend/.env .env
+# DATABASE_URL is provided via Docker Compose environment variables; do not bake .env into image
 
 RUN chmod +x /usr/local/bin/healthcheck.py && \
     mkdir -p /app/temp_files /app/uploads /app/logs /app/data/chromadb && \
