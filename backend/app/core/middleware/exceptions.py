@@ -245,7 +245,11 @@ class ValidationError(Exception):
 
 class NotFoundError(Exception):
     """资源不存在"""
-    pass
+    def __init__(self, resource=None, resource_id=None, message=None, **kwargs):
+        message = message or f"{resource or '资源'}不存在"
+        super().__init__(message)
+        self.resource = resource
+        self.resource_id = resource_id
 
 class ConflictError(Exception):
     """资源冲突"""
@@ -261,7 +265,11 @@ class ServiceUnavailableError(Exception):
 
 class PeptideAnalysisError(Exception):
     """肽分析错误"""
-    pass
+    def __init__(self, detail=None, errors=None, **kwargs):
+        message = detail or kwargs.get('message', '肽分析错误')
+        super().__init__(message)
+        self.detail = detail
+        self.errors = errors
 
 class FormulaAnalysisError(Exception):
     """配方分析错误"""

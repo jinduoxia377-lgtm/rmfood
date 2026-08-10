@@ -394,6 +394,25 @@ class PeptideDesignService:
                 detail=f"无效的状态值: {new_status}"
             ) from e
 
+    async def get_project(self, design_id: int, include_candidates: bool = True):
+        """获取设计项目详情"""
+        from sqlalchemy import select
+        from sqlalchemy.orm import selectinload
+        from app.models.peptide_design import PeptideDesign
+        
+        query = select(PeptideDesign).where(PeptideDesign.id == design_id)
+        if include_candidates:
+            query = query.options(selectinload(PeptideDesign.candidates))
+        
+        result = await self.db.execute(query)
+        project = result.scalar_one_or_none()
+        
+        if not project:
+            from app.core.middleware.exceptions import NotFoundError
+            raise NotFoundError(resource="PeptideDesign", resource_id=design_id)
+        
+        return project
+
     async def archive_project(self, design_id: int) -> None:
         """
         归档项目（软归档）
