@@ -386,12 +386,12 @@ function buildReportPayload(): any {
     devicePixelRatio: window.devicePixelRatio,
     connection: (navigator.connection
       ? {
-          effectiveType: (navigator.connection.effectiveType,
-          downlink: (navigator.connection.downlink,
-          rtt: (navigator.connection.rtt,
+          effectiveType: (navigator.connection.effectiveType || null),
+          downlink: (navigator.connection.downlink || null),
+          rtt: (navigator.connection.rtt || null),
         }
-      : null,
-    memory: (navigator.deviceMemory || null,
+      : null),
+    memory: (navigator.deviceMemory || null),
     hardwareConcurrency: navigator.hardwareConcurrency || null,
   };
 
