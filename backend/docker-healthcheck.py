@@ -58,13 +58,19 @@ async def check_database() -> tuple[bool, str]:
             db_url = os.environ.get("DATABASE_URL", "")
             if db_url:
                 # 解析并连接
-                conn = await asyncpg.connect(
-                    database_url.replace("postgresql+asyncpg://", "postgres://")
+                conn = await asyncio.wait_for(
+                    asyncpg.connect(
+                        db_url.replace("postgresql+asyncpg://", "postgres://")
+                    ),
+                    timeout=TIMEOUT
                 )
                 await conn.fetchval("SELECT 1")
                 await conn.close()
                 return True, "OK (direct)"
-        except:
+        except asyncio.TimeoutError:
+            return False, f"DB timeout ({TIMEOUT}s)"
+        except Exception as e:
+            # 静默忽略错误，降级为 skipped
             pass
 
         return True, "skipped"
@@ -78,13 +84,16 @@ async def check_redis() -> tuple[bool, str]:
     try:
         try:
             import redis.asyncio as redis
-            # Use REDIS_URL from env (set in docker-compose as redis://redis:6379/0)
             redis_url = os.environ.get("REDIS_URL", "redis://redis:6379/0")
             client = await redis.from_url(redis_url, socket_timeout=TIMEOUT)
-            await client.ping()
+            await asyncio.wait_for(client.ping(), timeout=TIMEOUT)
             await client.close()
             return True, "OK"
         except ImportError:
+            pass
+        except asyncio.TimeoutError:
+            return False, f"Redis timeout ({TIMEOUT}s)"
+        except Exception:
             pass
 
         # 备选：使用 httpx
@@ -107,21 +116,25 @@ async def check_redis() -> tuple[bool, str]:
 
 async def main() -> int:
     """执行所有健康检查"""
+    # 使用 asyncio.gather 并行执行所有检查
+    api_result, db_result, redis_result = await asyncio.gather(
+        check_api_health(),
+        check_database(),
+        check_redis(),
+    )
+
     checks = {
-        "API": check_api_health(),
-        "Database": check_database(),
-        "Redis": check_redis(),
+        "API": api_result,
+        "Database": db_result,
+        "Redis": redis_result,
     }
 
-    results = {}
     all_passed = True
 
     print("🔍 健康检查开始...")
     print("=" * 50)
 
-    for name, coro in checks.items():
-        ok, detail = await coro
-        results[name] = (ok, detail)
+    for name, (ok, detail) in checks.items():
         status = "✅" if ok else "❌"
         print(f"  {status} {name}: {detail}")
         if not ok:
@@ -133,7 +146,7 @@ async def main() -> int:
         print("✅ 所有检查通过")
         return 0
     else:
-        failed = [k for k, (ok, _) in results.items() if not ok]
+        failed = [k for k, (ok, _) in checks.items() if not ok]
         print(f"❌ 检查失败: {', '.join(failed)}")
         return 1
 
