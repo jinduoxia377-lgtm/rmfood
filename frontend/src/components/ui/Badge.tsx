@@ -1,67 +1,58 @@
 /**
- * RMFOOD 设计系统 — Badge 徽章
- * 支持 variant / size / dot indicator
+ * RMFOOD 设计系统 — Badge (shadcn/ui 兼容层)
+ *
+ * Phase 6: 保留 variant/size/dot/icon API，使用 CVA 统一样式
  */
-import { type HTMLAttributes, type ReactNode } from 'react';
-import { cn } from '@/lib/utils';
+import { type HTMLAttributes, type ReactNode } from 'react'
+import { cva, type VariantProps } from 'class-variance-authority'
+import { cn } from '@/lib/utils'
 
-type BadgeVariant = 'primary' | 'success' | 'warning' | 'danger' | 'info' | 'neutral';
-type BadgeSize = 'sm' | 'md';
+const badgeVariants = cva(
+  'inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
+  {
+    variants: {
+      variant: {
+        primary: 'border-transparent bg-primary text-primary-foreground',
+        success: 'border-transparent bg-success text-success-foreground',
+        warning: 'border-transparent bg-warning text-warning-foreground',
+        danger: 'border-transparent bg-destructive text-destructive-foreground',
+        info: 'border-transparent bg-secondary text-secondary-foreground',
+        neutral: 'border-border bg-background text-foreground',
+      },
+      size: {
+        sm: 'px-2 py-px text-[11px]',
+        md: 'px-2.5 py-0.5 text-xs',
+      },
+    },
+    defaultVariants: {
+      variant: 'primary',
+      size: 'md',
+    },
+  }
+)
 
-interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
-  variant?: BadgeVariant;
-  size?: BadgeSize;
-  dot?: boolean;
-  icon?: ReactNode;
+export type BadgeVariant = 'primary' | 'success' | 'warning' | 'danger' | 'info' | 'neutral'
+export type BadgeSize = 'sm' | 'md'
+
+export interface BadgeProps extends HTMLAttributes<HTMLSpanElement>, VariantProps<typeof badgeVariants> {
+  dot?: boolean
+  icon?: ReactNode
 }
 
-const variantClasses: Record<BadgeVariant, string> = {
-  primary: 'badge-primary',
-  success: 'badge-success',
-  warning: 'badge-warning',
-  danger: 'badge-danger',
-  info: 'badge-info',
-  neutral: 'badge-neutral',
-};
-
-const sizeClasses: Record<BadgeSize, string> = {
-  sm: 'px-2 py-px text-[11px]',
-  md: 'px-2.5 py-0.5 text-xs',
-};
-
-export function Badge({
-  className,
-  variant = 'primary',
-  size = 'md',
-  dot = false,
-  icon,
-  children,
-  ...props
-}: BadgeProps) {
+export function Badge({ className, variant = 'primary', size = 'md', dot = false, icon, children, ...props }: BadgeProps) {
   return (
     <span
-      className={cn('badge', variantClasses[variant], sizeClasses[size], className)}
+      className={cn(badgeVariants({ variant, size, className }))}
       role="status"
       aria-label={typeof children === 'string' ? children : undefined}
       {...props}
     >
-      {dot && (
-        <span
-          className={cn(
-            'inline-block w-1.5 h-1.5 rounded-full mr-1.5',
-            variant === 'primary' && 'bg-primary-500',
-            variant === 'success' && 'bg-primary-500',
-            variant === 'warning' && 'bg-warning-500',
-            variant === 'danger' && 'bg-rose-500',
-            variant === 'info' && 'bg-sky-500',
-            variant === 'neutral' && 'bg-neutral-400',
-          )}
-        />
-      )}
+      {dot && <span className="mr-1.5 h-1.5 w-1.5 rounded-full bg-current opacity-70" />}
       {icon && <span className="mr-1">{icon}</span>}
       {children}
     </span>
-  );
+  )
 }
 
-export type { BadgeProps, BadgeVariant, BadgeSize };
+export { badgeVariants }
+export type { BadgeProps, BadgeVariant, BadgeSize }

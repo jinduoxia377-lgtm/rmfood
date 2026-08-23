@@ -1,6 +1,8 @@
 /**
- * RMFOOD 设计系统 — Input 输入框
- * 支持 size / error / prefix / suffix / disabled / 字符计数 状态
+ * RMFOOD 设计系统 — Input (shadcn/ui 兼容层)
+ *
+ * Phase 6: 保留 size/error/prefix/suffix/showCount API
+ * 底层样式使用 shadcn input + CSS 变量，确保 light/dark 一致
  */
 import { forwardRef, type InputHTMLAttributes, type ReactNode } from 'react'
 import { cn } from '@/lib/utils'
@@ -12,7 +14,6 @@ interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size' 
   error?: string | boolean
   prefix?: ReactNode
   suffix?: ReactNode
-  /** 显示字符计数（需要配合 maxLength 使用） */
   showCount?: boolean
 }
 
@@ -31,51 +32,49 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="relative w-full">
         {prefix && (
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-neutral-500 pointer-events-none">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-disabled pointer-events-none">
             {prefix}
           </span>
         )}
         <input
           ref={ref}
           className={cn(
-            'input w-full transition-all duration-200',
+            'input w-full appearance-none transition-all duration-200',
             sizeClasses[size],
             prefix && 'pl-9',
             suffix && 'pr-9',
             showCount && maxLength && 'pr-16',
             error && 'input-error border-danger-500 focus:ring-danger-500/20 focus:border-danger-500',
             isOverLimit && 'border-danger-500 focus:ring-danger-500/20',
-            disabled && 'bg-slate-50 dark:bg-neutral-800 text-neutral-400 dark:text-neutral-500 cursor-not-allowed',
+            disabled && 'bg-neutral-700 text-text-disabled cursor-not-allowed',
             className,
           )}
           aria-invalid={!!error}
-          aria-describedby={typeof error === "string" && error && props.id ? `${props.id}-error` : undefined}
+          aria-describedby={typeof error === 'string' && error && props.id ? `${props.id}-error` : undefined}
           disabled={disabled}
           maxLength={maxLength}
           value={value}
           {...props}
         />
         {suffix && !showCount && (
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-neutral-500">
-            {suffix}
-          </span>
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-text-disabled">{suffix}</span>
         )}
         {showCount && maxLength !== undefined && (
           <span
             className={cn(
               'absolute right-3 top-1/2 -translate-y-1/2 text-xs tabular-nums',
-              isOverLimit
-                ? 'text-danger-500 font-medium'
-                : isNearLimit
-                  ? 'text-warning-500'
-                  : 'text-neutral-400 dark:text-neutral-500',
+              isOverLimit ? 'text-danger-500 font-medium'
+                : isNearLimit ? 'text-warning-500'
+                : 'text-text-disabled',
             )}
           >
             {currentLength}/{maxLength}
           </span>
         )}
         {typeof error === 'string' && error && (
-          <p id={props.id ? `${props.id}-error` : undefined} className="mt-1 text-xs text-danger-500" role="alert">{error}</p>
+          <p id={props.id ? `${props.id}-error` : undefined} className="mt-1 text-xs text-danger-500" role="alert">
+            {error}
+          </p>
         )}
       </div>
     )

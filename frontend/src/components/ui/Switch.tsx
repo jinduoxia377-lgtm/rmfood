@@ -1,11 +1,12 @@
 /**
- * RMFOOD 设计系统 — 开关切换组件 (Switch)
+ * RMFOOD 设计系统 — Switch (Radix 兼容层)
  *
- * 用于二进制状态切换（开/关、启用/禁用等）
- * 符合 WAI-ARIA 规范，支持键盘操作
+ * Phase 6: 使用 @radix-ui/react-switch 替代手撸实现
+ * 保留 checked/onCheckedChange/label/disabled API
  */
 import * as React from 'react'
 import { cn } from '@/lib/utils'
+import * as SwitchPrimitives from '@radix-ui/react-switch'
 
 export interface SwitchProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'onChange'> {
   checked?: boolean
@@ -15,64 +16,39 @@ export interface SwitchProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonE
 }
 
 const Switch = React.forwardRef<HTMLButtonElement, SwitchProps>(
-  (
-    {
-      className,
-      checked = false,
-      onCheckedChange,
-      disabled = false,
-      label,
-      id,
-      ...props
-    },
-    ref,
-  ) => {
-    const handleClick = () => {
-      if (!disabled && onCheckedChange) {
-        onCheckedChange(!checked)
-      }
-    }
-
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault()
-        handleClick()
-      }
+  ({ className, checked = false, onCheckedChange, disabled = false, label, id, ...props }, ref) => {
+    const handleChange = (nextChecked: boolean) => {
+      onCheckedChange?.(nextChecked)
     }
 
     return (
       <div className="flex items-center gap-2">
-        <button
-          type="button"
-          role="switch"
-          aria-checked={checked}
-          aria-label={label}
-          id={id}
+        <SwitchPrimitives.Root
           ref={ref}
-          disabled={disabled}
-          onClick={handleClick}
-          onKeyDown={handleKeyDown}
+          id={id}
           className={cn(
-            'relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full',
-            'border-2 border-transparent transition-colors duration-200 ease-in-out',
+            'relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2',
             'disabled:cursor-not-allowed disabled:opacity-50',
             checked ? 'bg-primary-600' : 'bg-neutral-200 dark:bg-neutral-700',
             className,
           )}
+          checked={checked}
+          onCheckedChange={handleChange}
+          disabled={disabled}
           {...props}
         >
-          <span
+          <SwitchPrimitives.Thumb
             className={cn(
-              'pointer-events-none inline-block h-[18px] w-[18px] rounded-full bg-white shadow-lg ring-0 transition-transform duration-200 ease-in-out',
+              'pointer-events-none inline-block h-[18px] w-[18px] rounded-full bg-background shadow-card-hover ring-0 transition-transform duration-200 ease-in-out',
               checked ? 'translate-x-5' : 'translate-x-0',
             )}
           />
-        </button>
+        </SwitchPrimitives.Root>
         {label && (
           <span
             className={cn(
-              'text-sm font-medium text-neutral-700 dark:text-neutral-300 select-none',
+              'text-sm font-medium text-text-secondary select-none',
               disabled && 'opacity-50 cursor-not-allowed',
             )}
           >
@@ -85,5 +61,5 @@ const Switch = React.forwardRef<HTMLButtonElement, SwitchProps>(
 )
 
 Switch.displayName = 'Switch'
-
 export { Switch }
+export type { SwitchProps }
