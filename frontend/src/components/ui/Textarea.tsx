@@ -1,22 +1,19 @@
-/**
- * RMFOOD 设计系统 — Textarea (shadcn/ui 兼容层)
- *
- * Phase 6: 保留 autoResize/error/showCount API
- */
-import { forwardRef, type TextareaHTMLAttributes, useEffect, useRef } from 'react'
+import * as React from 'react'
 import { cn } from '@/lib/utils'
 
-interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
+export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   autoResize?: boolean
   error?: string | boolean
   showCount?: boolean
 }
 
-const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
+const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
   ({ className, autoResize, error, showCount, maxLength, value, defaultValue, ...props }, ref) => {
-    const innerRef = useRef<HTMLTextAreaElement | null>(null)
+    const innerRef = React.useRef<HTMLTextAreaElement | null>(null)
 
-    useEffect(() => {
+    React.useImperativeHandle(ref, () => innerRef.current as HTMLTextAreaElement)
+
+    React.useEffect(() => {
       if (autoResize && innerRef.current) {
         const el = innerRef.current
         el.style.height = 'auto'
@@ -33,10 +30,10 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
         <textarea
           ref={innerRef}
           className={cn(
-            'input w-full min-h-[80px] resize-y transition-all duration-200',
+            'flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 transition-colors resize-y',
             showCount && maxLength && 'pb-7',
-            error && 'input-error border-danger-500 focus:ring-danger-500/20 focus:border-danger-500',
-            isOverLimit && 'border-danger-500 focus:ring-danger-500/20',
+            error && 'border-destructive focus-visible:ring-destructive',
+            isOverLimit && 'border-destructive focus-visible:ring-destructive',
             className,
           )}
           maxLength={maxLength}
@@ -47,22 +44,21 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           <span
             className={cn(
               'absolute bottom-2 right-3 text-xs tabular-nums pointer-events-none',
-              isOverLimit ? 'text-danger-500 font-medium'
-                : isNearLimit ? 'text-warning-500'
-                : 'text-text-disabled',
+              isOverLimit ? 'text-destructive font-medium'
+                : isNearLimit ? 'text-warning'
+                : 'text-muted-foreground',
             )}
           >
             {currentLength}/{maxLength}
           </span>
         )}
         {typeof error === 'string' && error && (
-          <p className="mt-1 text-xs text-danger-500">{error}</p>
+          <p className="mt-1 text-xs text-destructive">{error}</p>
         )}
       </div>
     )
-  },
+  }
 )
-
 Textarea.displayName = 'Textarea'
+
 export { Textarea }
-export type { TextareaProps }

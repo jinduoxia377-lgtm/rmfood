@@ -1,69 +1,98 @@
-/**
- * 警告组件 - 院士级设计系统版本
- * 用于显示成功、错误、信息等提示信息
- * 符合 WCAG 2.2 AA 标准
- */
-import * as React from 'react';
-import { cn } from '@/lib/utils';
+import * as React from 'react'
+import { cva, type VariantProps } from 'class-variance-authority'
+import { cn } from '@/lib/utils'
+import { AlertCircle, CheckCircle2, Info, WarningTriangle, X } from 'lucide-react'
+import { Button } from './button'
 
-interface AlertProps {
-  children: React.ReactNode;
-  variant?: 'default' | 'destructive' | 'success' | 'warning' | 'info';
-  className?: string;
-  role?: string;
-  'aria-live'?: 'polite' | 'assertive' | 'off';
+const alertVariants = cva(
+  'relative w-full rounded-lg border p-4 [&>svg~*]:pl-7 [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:text-foreground',
+  {
+    variants: {
+      variant: {
+        default: 'bg-background text-foreground',
+        destructive: 'border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive',
+        success: 'border-success/50 text-success dark:border-success [&>svg]:text-success',
+        warning: 'border-warning/50 text-warning dark:border-warning [&>svg]:text-warning',
+        info: 'border-blue-500/50 text-blue-700 dark:border-blue-500 dark:text-blue-300 [&>svg]:text-blue-500',
+      },
+    },
+    defaultVariants: {
+      variant: 'default',
+    },
+  }
+)
+
+const alertIcons = {
+  default: null,
+  destructive: AlertCircle,
+  success: CheckCircle2,
+  warning: WarningTriangle,
+  info: Info,
 }
 
-interface AlertTitleProps {
-  children: React.ReactNode;
-  className?: string;
+export interface AlertProps
+  extends React.HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof alertVariants> {
+  title?: string
+  description?: string
+  dismissible?: boolean
+  onDismiss?: () => void
 }
 
-interface AlertDescriptionProps {
-  children: React.ReactNode;
-  className?: string;
-}
+const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
+  ({ className, variant, title, description, dismissible = false, onDismiss, children, ...props }, ref) => {
+    const IconComponent = alertIcons[variant ?? 'default']
+    const [dismissed, setDismissed] = React.useState(false)
 
-export function Alert({
-  children,
-  variant = 'default',
-  className = '',
-  role = 'alert',
-  'aria-live': ariaLive = 'assertive',
-}: AlertProps) {
-  const variantClasses = {
-    default:
-      'bg-primary-50 dark:bg-primary-900/10 border-primary-200 dark:border-primary-800/40 text-primary-700 dark:text-primary-300',
-    destructive:
-      'bg-danger-50 dark:bg-danger-500/10 border-danger-200 dark:border-danger-500/20 text-danger-600 dark:text-danger-400',
-    success:
-      'bg-success-50 dark:bg-success-500/10 border-success-200 dark:border-success-500/20 text-success-600 dark:text-success-400',
-    warning:
-      'bg-warning-50 dark:bg-warning-500/10 border-warning-200 dark:border-warning-500/20 text-warning-600 dark:text-warning-400',
-    info: 'bg-info-50 dark:bg-info-500/10 border-info-200 dark:border-info-500/20 text-info-600 dark:text-info-400',
-  };
+    const handleDismiss = () => {
+      setDismissed(true)
+      onDismiss?.()
+    }
 
-  return (
-    <div
-      className={cn(
-        'flex items-center p-4 rounded-lg border transition-normal shadow-sm',
-        variantClasses[variant],
-        className,
-      )}
-      role={role}
-      aria-live={ariaLive}
-    >
-      {children}
-    </div>
-  );
-}
+    if (dismissed) return null
 
-export function AlertTitle({ children, className = '' }: AlertTitleProps) {
-  return <h4 className={cn('font-medium text-md', className)}>{children}</h4>;
-}
+    return (
+      <div
+        ref={ref}
+        role="alert"
+        className={cn(alertVariants({ variant }), className)}
+        {...props}
+      >
+        {IconComponent && <IconComponent className="h-5 w-5" />}
+        <div className={dismissible ? 'pr-9' : ''}>
+          {title && <div className="text-sm font-semibold">{title}</div>}
+          {description && <div className="text-sm opacity-90">{description}</div>}
+          {children}
+        </div>
+        {dismissible && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute right-4 top-4 h-6 w-6 rounded-full"
+            onClick={handleDismiss}
+          >
+            <X className="h-3 w-3" />
+            <span className="sr-only">Close</span>
+          </Button>
+        )}
+      </div>
+    )
+  }
+)
+Alert.displayName = 'Alert'
 
-export function AlertDescription({ children, className = '' }: AlertDescriptionProps) {
-  return <div className={cn('text-sm mt-1', className)}>{children}</div>;
-}
+const AlertTitle = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLParagraphElement>>(
+  ({ className, ...props }, ref) => (
+    <h5 ref={ref} className={cn('mb-1 font-medium leading-none tracking-tight', className)} {...props} />
+  )
+)
+AlertTitle.displayName = 'AlertTitle'
 
-export type { AlertProps, AlertTitleProps, AlertDescriptionProps };
+const AlertDescription = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLParagraphElement>>(
+  ({ className, ...props }, ref) => (
+    <div ref={ref} className={cn('text-sm [&_p]:leading-relaxed', className)} {...props} />
+  )
+)
+AlertDescription.displayName = 'AlertDescription'
+
+export { Alert, AlertTitle, AlertDescription }

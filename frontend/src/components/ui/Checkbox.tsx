@@ -1,39 +1,18 @@
-/**
- * RMFOOD 设计系统 — Checkbox (Radix 兼容层)
- *
- * Phase 6: 使用 @radix-ui/react-checkbox 替代原生 input
- * 保留 id/checked/onCheckedChange/label/indeterminate API
- */
-import { useRef, useEffect } from 'react'
-import { cn } from '@/lib/utils'
+'use client'
+
+import * as React from 'react'
 import * as CheckboxPrimitive from '@radix-ui/react-checkbox'
 import { Check } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
-export interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type'> {
-  onCheckedChange?: (checked: boolean) => void
-  label?: string
-  indeterminate?: boolean
-}
-
-export function Checkbox({
-  id,
-  checked,
-  onCheckedChange,
-  onChange,
-  className,
-  disabled = false,
-  label,
-  indeterminate = false,
-  ...props
-}: CheckboxProps) {
-  const inputRef = useRef<HTMLInputElement>(null)
-
-  useEffect(() => {
-    if (inputRef.current) {
-      inputRef.current.indeterminate = indeterminate
-    }
-  }, [indeterminate])
-
+const Checkbox = React.forwardRef<
+  React.ElementRef<typeof CheckboxPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof CheckboxPrimitive.Root> & {
+    onCheckedChange?: (checked: boolean) => void
+    label?: string
+    id?: string
+  }
+>(({ className, checked, onCheckedChange, label, id, ...props }, ref) => {
   const handleChange = (nextChecked: boolean) => {
     onCheckedChange?.(nextChecked)
   }
@@ -41,33 +20,33 @@ export function Checkbox({
   return (
     <div className="flex items-center gap-2">
       <CheckboxPrimitive.Root
-        ref={inputRef}
+        ref={ref}
         id={id}
         checked={checked}
         onCheckedChange={handleChange}
-        disabled={disabled}
         className={cn(
-          'peer h-4 w-4 shrink-0 rounded-sm border border-neutral-300 bg-background shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary-600 data-[state=checked]:text-white transition-colors',
-          className,
+          'peer h-4 w-4 shrink-0 rounded-sm border border-primary shadow focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground',
+          className
         )}
         {...props}
       >
-        <CheckboxPrimitive.Indicator className="flex items-center justify-center text-current">
+        <CheckboxPrimitive.Indicator
+          className={cn('flex items-center justify-center text-current')}
+        >
           <Check className="h-3 w-3" />
         </CheckboxPrimitive.Indicator>
       </CheckboxPrimitive.Root>
       {label && (
         <label
           htmlFor={id}
-          className={cn(
-            'text-sm font-medium text-text-secondary cursor-pointer select-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70',
-          )}
+          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
         >
           {label}
         </label>
       )}
     </div>
   )
-}
+})
+Checkbox.displayName = CheckboxPrimitive.Root.displayName
 
-export type { CheckboxProps }
+export { Checkbox }

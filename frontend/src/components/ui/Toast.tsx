@@ -1,197 +1,124 @@
-/**
- * Toast Notification System v2.0
- *
- * 基于 UI/UX Pro Max 规范的专业通知系统
- *
- * 特性:
- * - WCAG 2.1 AA 可访问性
- * - 自动消失与手动关闭
- * - 堆叠管理（最多3条）
- * - 动画效果（进入/退出）
- * - 响应式设计
- */
+'use client'
 
-import React, { useState, useEffect, useCallback, useRef } from 'react'
-import { X, CheckCircle, AlertCircle, AlertTriangle, Info, Loader2 } from 'lucide-react'
-import { type FeedbackMessage, type FeedbackType } from '@/utils/uiuxEnhancement'
+import * as React from 'react'
+import * as ToastPrimitives from '@radix-ui/react-toast'
+import { cva, type VariantProps } from 'class-variance-authority'
+import { X } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
-interface ToastProps {
-  message: FeedbackMessage
-  onClose: (id: string) => void
-}
+const ToastProvider = ToastPrimitives.Provider
 
-const iconMap: Record<FeedbackType, React.ReactNode> = {
-  success: <CheckCircle className="w-5 h-5 text-primary-500" />,
-  error: <AlertCircle className="w-5 h-5 text-error-500" />,
-  warning: <AlertTriangle className="w-5 h-5 text-warning-500" />,
-  info: <Info className="w-5 h-5 text-secondary-500" />,
-  loading: <Loader2 className="w-5 h-5 text-secondary-500 animate-spin" />,
-}
+const ToastViewport = React.forwardRef<
+  React.ElementRef<typeof ToastPrimitives.Viewport>,
+  React.ComponentPropsWithoutRef<typeof ToastPrimitives.Viewport>
+>(({ className, ...props }, ref) => (
+  <ToastPrimitives.Viewport
+    ref={ref}
+    className={cn(
+      'fixed top-0 z-[100] flex max-h-screen w-full flex-col-reverse p-4 sm:bottom-0 sm:right-0 sm:top-auto sm:flex-col md:max-w-[420px]',
+      className,
+    )}
+    {...props}
+  />
+))
+ToastViewport.displayName = ToastPrimitives.Viewport.displayName
 
-const colorMap: Record<FeedbackType, string> = {
-  success: 'border-l-emerald-500 bg-primary-50 dark:bg-emerald-950/30',
-  error: 'border-l-red-500 bg-error-50 dark:bg-red-950/30',
-  warning: 'border-l-amber-500 bg-warning-50 dark:bg-amber-950/30',
-  info: 'border-l-blue-500 bg-secondary-50 dark:bg-blue-950/30',
-  loading: 'border-l-blue-500 bg-secondary-50 dark:bg-blue-950/30',
-}
+const toastVariants = cva(
+  'group pointer-events-auto relative flex w-full items-center justify-between space-x-4 overflow-hidden rounded-md border p-4 pr-8 shadow-lg transition-all data-[swipe=cancel]:translate-x-0 data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)] data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[swipe=move]:transition-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[swipe=end]:animate-out data-[state=closed]:fade-out-80 data-[state=closed]:slide-out-to-right-full data-[state=open]:slide-in-from-top-full data-[state=open]:sm:slide-in-from-bottom-full',
+  {
+    variants: {
+      variant: {
+        default: 'border bg-background text-foreground',
+        destructive: 'destructive group border-destructive bg-destructive text-destructive-foreground',
+        success: 'border-success bg-success text-success-foreground',
+        warning: 'border-warning bg-warning text-warning-foreground',
+      },
+    },
+    defaultVariants: {
+      variant: 'default',
+    },
+  }
+)
 
-export const Toast: React.FC<ToastProps> = ({ message, onClose }) => {
-  const toastRef = useRef<HTMLDivElement>(null)
-  const [isVisible, setIsVisible] = useState(false)
-  const [isExiting, setIsExiting] = useState(false)
-
-  useEffect(() => {
-    requestAnimationFrame(() => {
-      setIsVisible(true)
-    })
-  }, [])
-
-  const handleClose = useCallback(() => {
-    setIsExiting(true)
-    setTimeout(() => {
-      onClose(message.id)
-    }, 300)
-  }, [message.id, onClose])
-
-  useEffect(() => {
-    const duration = message.duration ?? (message.type === 'loading' ? 0 : 5000)
-    if (duration > 0) {
-      const timer = setTimeout(handleClose, duration)
-      return () => clearTimeout(timer)
-    }
-    return undefined
-  }, [message.duration, message.type, handleClose])
-
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      handleClose()
-    }
-  }, [handleClose])
-
+const Toast = React.forwardRef<
+  React.ElementRef<typeof ToastPrimitives.Root>,
+  React.ComponentPropsWithoutRef<typeof ToastPrimitives.Root> & VariantProps<typeof toastVariants>
+>(({ className, variant, ...props }, ref) => {
   return (
-    <div
-      ref={toastRef}
-      role="alert"
-      aria-live="assertive"
-      aria-atomic="true"
-      className={`
-        relative flex items-start gap-3 p-4 mb-2 rounded-lg border-l-4 shadow-lg
-        backdrop-blur-sm transition-all duration-300 ease-out
-        max-w-md w-full
-        ${colorMap[message.type]}
-        ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-full'}
-        ${isExiting ? 'opacity-0 translate-x-full' : ''}
-      `}
-      style={{ animationDuration: '300ms' }}
-    >
-      {/* Icon */}
-      <div className="flex-shrink-0 mt-0.5">
-        {iconMap[message.type]}
-      </div>
-
-      {/* Content */}
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
-          {message.title}
-        </p>
-        {message.description && (
-          <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-400">
-            {message.description}
-          </p>
-        )}
-
-        {message.action && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation()
-              message.action?.onClick()
-              handleClose()
-            }}
-            className="mt-2 text-sm font-medium text-secondary-600 hover:text-secondary-700 dark:text-secondary-400 dark:hover:text-secondary-300 underline focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
-          >
-            {message.action.label}
-          </button>
-        )}
-      </div>
-
-      {/* Close Button */}
-      <button
-        onClick={handleClose}
-        onKeyDown={handleKeyDown}
-        className="flex-shrink-0 p-1 rounded-md text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
-        aria-label="关闭通知"
-      >
-        <X className="w-4 h-4" />
-      </button>
-
-      {/* Progress Bar (for auto-dismiss) */}
-      {message.duration && message.duration > 0 && (
-        <div className="absolute bottom-0 left-0 right-0 h-1 bg-neutral-200 dark:bg-neutral-700 rounded-b-lg overflow-hidden">
-          <div
-            className="h-full bg-current opacity-30"
-            style={{
-              animation: `shrink ${message.duration}ms linear forwards`,
-            }}
-          />
-        </div>
-      )}
-    </div>
+    <ToastPrimitives.Root
+      ref={ref}
+      className={cn(toastVariants({ variant }), className)}
+      {...props}
+    />
   )
+})
+Toast.displayName = ToastPrimitives.Root.displayName
+
+const ToastAction = React.forwardRef<
+  React.ElementRef<typeof ToastPrimitives.Action>,
+  React.ComponentPropsWithoutRef<typeof ToastPrimitives.Action>
+>(({ className, ...props }, ref) => (
+  <ToastPrimitives.Action
+    ref={ref}
+    className={cn(
+      'inline-flex h-8 shrink-0 items-center justify-center rounded-md border bg-transparent px-3 text-sm font-medium transition-colors hover:bg-secondary focus:outline-none focus:ring-1 focus:ring-ring disabled:pointer-events-none disabled:opacity-50 group-[.destructive]:border-muted/40 group-[.destructive]:hover:border-destructive/30 group-[.destructive]:hover:bg-destructive group-[.destructive]:hover:text-destructive-foreground group-[.destructive]:focus:ring-destructive',
+      className,
+    )}
+    {...props}
+  />
+))
+ToastAction.displayName = ToastPrimitives.Action.displayName
+
+const ToastClose = React.forwardRef<
+  React.ElementRef<typeof ToastPrimitives.Close>,
+  React.ComponentPropsWithoutRef<typeof ToastPrimitives.Close>
+>(({ className, ...props }, ref) => (
+  <ToastPrimitives.Close
+    ref={ref}
+    className={cn(
+      'absolute right-2 top-2 rounded-md p-1 text-foreground/50 opacity-0 transition-opacity hover:text-foreground focus:opacity-100 focus:outline-none focus:ring-1 group-hover:opacity-100 group-[.destructive]:text-red-300 group-[.destructive]:hover:text-red-50 group-[.destructive]:focus:ring-red-400 group-[.destructive]:focus:ring-offset-red-600',
+      className,
+    )}
+    toast-close=""
+    {...props}
+  >
+    <X className="h-4 w-4" />
+  </ToastPrimitives.Close>
+))
+ToastClose.displayName = ToastPrimitives.Close.displayName
+
+const ToastTitle = React.forwardRef<
+  React.ElementRef<typeof ToastPrimitives.Title>,
+  React.ComponentPropsWithoutRef<typeof ToastPrimitives.Title>
+>(({ className, ...props }, ref) => (
+  <ToastPrimitives.Title ref={ref} className={cn('text-sm font-semibold', className)} {...props} />
+))
+ToastTitle.displayName = ToastPrimitives.Title.displayName
+
+const ToastDescription = React.forwardRef<
+  React.ElementRef<typeof ToastPrimitives.Description>,
+  React.ComponentPropsWithoutRef<typeof ToastPrimitives.Description>
+>(({ className, ...props }, ref) => (
+  <ToastPrimitives.Description
+    ref={ref}
+    className={cn('text-sm opacity-90', className)}
+    {...props}
+  />
+))
+ToastDescription.displayName = ToastPrimitives.Description.displayName
+
+type ToastProps = React.ComponentPropsWithoutRef<typeof Toast>
+
+type ToastActionElement = React.ReactElement<typeof ToastAction>
+
+export {
+  type ToastProps,
+  type ToastActionElement,
+  ToastProvider,
+  ToastViewport,
+  Toast,
+  ToastTitle,
+  ToastDescription,
+  ToastClose,
+  ToastAction,
 }
-
-// CSS Animation for progress bar — inject once into <head>
-const SHRINK_ANIMATION_STYLE_ID = 'rmfood-toast-shrink-keyframes'
-
-function ensureShrinkAnimationInjected() {
-  if (typeof document === 'undefined') return
-  if (document.getElementById(SHRINK_ANIMATION_STYLE_ID)) return
-  const style = document.createElement('style')
-  style.id = SHRINK_ANIMATION_STYLE_ID
-  style.textContent = `@keyframes shrink{from{width:100%}to{width:0%}}`
-  document.head.appendChild(style)
-}
-
-// Auto-inject on first module load
-ensureShrinkAnimationInjected()
-
-
-// ============================================================================
-// 向后兼容层 - 支持原有的 useToast 和 ToastProvider API
-// ============================================================================
-
-import { useToastStore } from '@/stores/toastStore'
-import type { ReactNode } from 'react'
-
-/**
- * ToastProvider - 向后兼容组件
- * 在新系统中作为空壳，实际功能由 ToastContainer 提供
- */
-export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  return <>{children}</>
-}
-
-/**
- * useToast - 向后兼容Hook
- * 连接原有的toastStore到新的反馈系统
- */
-export const useToast = () => {
-  const { addToast, removeToast, clearAll, toasts } = useToastStore()
-
-  interface ToastOptions {
-    duration?: number
-    title?: string
-  }
-
-  return {
-    addToast,
-    removeToast,
-    clearAll,
-    toasts,
-    success: (message: string, options?: ToastOptions) => addToast({ type: 'success', message, ...options }),
-    error: (message: string, options?: ToastOptions) => addToast({ type: 'error', message, ...options }),
-    warning: (message: string, options?: ToastOptions) => addToast({ type: 'warning', message, ...options }),
-    info: (message: string, options?: ToastOptions) => addToast({ type: 'info', message, ...options }),
-  }
-}
-

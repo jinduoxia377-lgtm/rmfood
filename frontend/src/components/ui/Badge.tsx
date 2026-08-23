@@ -1,9 +1,4 @@
-/**
- * RMFOOD 设计系统 — Badge (shadcn/ui 兼容层)
- *
- * Phase 6: 保留 variant/size/dot/icon API，使用 CVA 统一样式
- */
-import { type HTMLAttributes, type ReactNode } from 'react'
+import * as React from 'react'
 import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 
@@ -12,37 +7,32 @@ const badgeVariants = cva(
   {
     variants: {
       variant: {
-        primary: 'border-transparent bg-primary text-primary-foreground',
+        default: 'border-transparent bg-primary text-primary-foreground',
+        secondary: 'border-transparent bg-secondary text-secondary-foreground',
+        destructive: 'border-transparent bg-destructive text-destructive-foreground',
+        outline: 'border-border text-foreground',
         success: 'border-transparent bg-success text-success-foreground',
         warning: 'border-transparent bg-warning text-warning-foreground',
-        danger: 'border-transparent bg-destructive text-destructive-foreground',
-        info: 'border-transparent bg-secondary text-secondary-foreground',
-        neutral: 'border-border bg-background text-foreground',
-      },
-      size: {
-        sm: 'px-2 py-px text-[11px]',
-        md: 'px-2.5 py-0.5 text-xs',
+        info: 'border-transparent bg-blue-500 text-white',
       },
     },
     defaultVariants: {
-      variant: 'primary',
-      size: 'md',
+      variant: 'default',
     },
   }
 )
 
-export type BadgeVariant = 'primary' | 'success' | 'warning' | 'danger' | 'info' | 'neutral'
-export type BadgeSize = 'sm' | 'md'
-
-export interface BadgeProps extends HTMLAttributes<HTMLSpanElement>, VariantProps<typeof badgeVariants> {
+export interface BadgeProps
+  extends React.HTMLAttributes<HTMLSpanElement>,
+    VariantProps<typeof badgeVariants> {
   dot?: boolean
-  icon?: ReactNode
+  icon?: React.ReactNode
 }
 
-export function Badge({ className, variant = 'primary', size = 'md', dot = false, icon, children, ...props }: BadgeProps) {
+function Badge({ className, variant, dot = false, icon, children, ...props }: BadgeProps) {
   return (
     <span
-      className={cn(badgeVariants({ variant, size, className }))}
+      className={cn(badgeVariants({ variant }), className)}
       role="status"
       aria-label={typeof children === 'string' ? children : undefined}
       {...props}
@@ -54,5 +44,4 @@ export function Badge({ className, variant = 'primary', size = 'md', dot = false
   )
 }
 
-export { badgeVariants }
-export type { BadgeProps, BadgeVariant, BadgeSize }
+export { Badge, badgeVariants }

@@ -1,40 +1,36 @@
-/**
- * RMFOOD 设计系统 — Tooltip 提示框 (shadcn/ui Radix 兼容层)
- *
- * Phase 5: 保留 content/children/position/delay API
- * 底层使用 Radix Tooltip，自动处理 ARIA 和键盘交互
- */
-import { type ReactNode } from 'react'
+'use client'
+
+import * as React from 'react'
+import * as TooltipPrimitive from '@radix-ui/react-tooltip'
 import { cn } from '@/lib/utils'
-import {
-  Tooltip as ShadcnTooltip,
-  TooltipTrigger as ShadcnTooltipTrigger,
-  TooltipContent as ShadcnTooltipContent,
-  TooltipProvider as ShadcnTooltipProvider,
-} from './shadcn/tooltip'
 
-type TooltipPosition = 'top' | 'bottom' | 'left' | 'right'
+const TooltipProvider = TooltipPrimitive.Provider
 
-interface TooltipProps {
-  content: ReactNode
-  children: ReactNode
-  position?: TooltipPosition
-  delay?: number
-  className?: string
-}
+const Tooltip = TooltipPrimitive.Root
 
-export function Tooltip({ content, children, position = 'top', delay = 300, className = '' }: TooltipProps) {
-  return (
-    <ShadcnTooltipProvider delayDuration={delay}>
-      <ShadcnTooltip>
-        <ShadcnTooltipTrigger asChild>{children}</ShadcnTooltipTrigger>
-        <ShadcnTooltipContent side={position} className={className}>
-          {content}
-        </ShadcnTooltipContent>
-      </ShadcnTooltip>
-    </ShadcnTooltipProvider>
-  )
-}
+const TooltipTrigger = TooltipPrimitive.Trigger
 
-export { ShadcnTooltipProvider as TooltipProvider }
-export type { TooltipProps, TooltipPosition }
+const TooltipContent = React.forwardRef<
+  React.ElementRef<typeof TooltipPrimitive.Content>,
+  React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Content> & {
+    position?: 'top' | 'bottom' | 'left' | 'right'
+    delay?: number
+  }
+>(({ className, side = 'top', align = 'center', sideOffset = 4, ...props }, ref) => (
+  <TooltipPrimitive.Portal>
+    <TooltipPrimitive.Content
+      ref={ref}
+      side={side}
+      align={align}
+      sideOffset={sideOffset}
+      className={cn(
+        'z-50 overflow-hidden rounded-md bg-popover px-3 py-1.5 text-sm text-popover-foreground shadow-md animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2',
+        className,
+      )}
+      {...props}
+    />
+  </TooltipPrimitive.Portal>
+))
+TooltipContent.displayName = TooltipPrimitive.Content.displayName
+
+export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider }
