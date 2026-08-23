@@ -1,4 +1,5 @@
 export interface BatchOperationBarProps {
+  
   selectedNodesCount: number
   onFocus: () => void
   onHighlight: () => void

@@ -231,11 +231,11 @@ export function AnalyticsDashboard() {
         logger.info('📊 正在加载Mock数据分析...')
         const mockData = await fetchMockDashboardData(800) // 减少延迟到800ms以提高响应速度
 
-        setData(mockData
+        setData(mockData as any)
         setLastRefresh(new Date())
 
         if (!customLayoutMode) {
-          generateDefaultWidgets(mockData
+          generateDefaultWidgets(mockData as any)
         }
 
         showNotification('info', '当前显示为演示数据（后端API未连接）')
@@ -1054,7 +1054,7 @@ export function AnalyticsDashboard() {
               <div className="h-[320px]">
                 <AreaChart
                   data={data.charts.monthly_creation_trend}
-                  themeColors={colors}
+                  themeColors={colors as any}
                 />
               </div>
             </div>
@@ -1090,7 +1090,7 @@ export function AnalyticsDashboard() {
               <div className="h-[320px] flex items-center justify-center">
                 <PieChart
                   data={data.charts.formula_status_distribution}
-                  themeColors={colors}
+                  themeColors={colors as any}
                 />
               </div>
             </div>

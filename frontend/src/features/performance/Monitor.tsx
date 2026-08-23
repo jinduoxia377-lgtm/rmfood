@@ -142,12 +142,12 @@ export function PerformanceMonitor({
             name: entry.entryType.toUpperCase(),
             value:
               entry.entryType === 'cls'
-                ? (entry as PerformanceEntry & { value?: number }).value
+                ? ((entry as PerformanceEntry & { value?: number }).value ?? 0)
                 : entry.startTime + (entry.duration || 0),
             rating: getRating(
               entry.entryType.toUpperCase(),
               entry.entryType === 'cls'
-                ? (entry as PerformanceEntry & { value?: number }).value
+                ? ((entry as PerformanceEntry & { value?: number }).value ?? 0)
                 : entry.startTime + (entry.duration || 0),
             ),
             timestamp: Date.now(),

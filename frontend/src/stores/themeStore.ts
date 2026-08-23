@@ -45,23 +45,13 @@ function getValidThemeId(currentId: string): PresetThemeId {
     return currentId as PresetThemeId;
   }
 
-  // 旧版本主题ID映射表（用于平滑迁移）
-  const legacyThemeMap: Record<string, PresetThemeId> = {
-    'google-light': 'light-default',
-    'google-dark': 'dark-default',
-    'material-light': 'light-warm',
-    'material-dark': 'dark-default',
-    'apple-light': 'light-cool',
-    'apple-dark': 'dark-oled',
-  };
+  // 旧版本主题ID回退到默认（已删除的预设主题 ID 映射）
+  const legacyFallbackIds = new Set(['light-warm', 'light-cool', 'dark-warm', 'dark-cool', 'dark-oled', 'high-contrast-light', 'high-contrast-dark', 'reading-sepia', 'reading-dark']);
 
   // 检查是否是旧版主题ID
-  if (currentId in legacyThemeMap) {
-    const mappedId = legacyThemeMap[currentId];
-    if (mappedId) {
-      logger.log(`[Theme System] 🔄 迁移旧主题ID: ${currentId} → ${mappedId}`);
-      return mappedId;
-    }
+  if (legacyFallbackIds.has(currentId)) {
+    logger.log(`[Theme System] 🔄 迁移旧主题ID: ${currentId} → light-default`);
+    return 'light-default';
   }
 
   // 完全无效，使用默认主题
@@ -189,17 +179,8 @@ export const useThemeStore = create<ThemeStore>()(
 
         // 根据新模式确定基础主题 ID
         let newBaseThemeId = state.activeThemeId;
-
-        // 如果当前是预设主题且不是 system 相关的，需要映射到对应模式的版本
         if (!newBaseThemeId.includes('custom')) {
-          // 映射逻辑：保持主题类型，只改变明暗模式
-          const currentType = state.activeThemeId.split('-').slice(1).join('-');
-          newBaseThemeId = `${effectiveMode}-${currentType}`;
-
-          // 如果该模式+类型组合不存在，回退到默认
-          if (!presetThemes[newBaseThemeId as PresetThemeId]) {
-            newBaseThemeId = effectiveMode === 'dark' ? 'dark-default' : 'light-default';
-          }
+          newBaseThemeId = effectiveMode === 'dark' ? 'dark-default' : 'light-default';
         }
 
         // 获取基础主题
@@ -277,14 +258,11 @@ export const useThemeStore = create<ThemeStore>()(
       setAccessibilityMode: (mode: AccessibilityMode) => {
         const state = get();
 
-        // 获取当前基础主题（非辅助功能版本）
-        let baseTheme = presetThemes[state.activeThemeId as PresetThemeId] || state.activeTheme;
-
-        // 如果已经是辅助功能主题，尝试找到原始版本
-        if (baseTheme.id.startsWith('high-contrast-') || baseTheme.id.startsWith('reading-')) {
-          // 找到对应的基础主题
-          const baseId = state.activeThemeId.replace(/^(high-contrast|reading)-/, '') as PresetThemeId;
-          baseTheme = presetThemes[baseId] || presetThemes['light-default'];
+        // 获取基础主题：优先从 presetThemes 查找，否则使用当前 activeTheme
+        let baseTheme = presetThemes[state.activeThemeId as PresetThemeId];
+        if (!baseTheme) {
+          // custom/imported 主题直接作为 base
+          baseTheme = state.activeTheme;
         }
 
         // 应用辅助功能变体

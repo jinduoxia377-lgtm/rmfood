@@ -232,3 +232,13 @@ debug_*.png
 # ---- TypeScript 增量构建 ----
 *.tsbuildinfo
 .gstack/
+
+# ---- 整理后新增规则 ----
+# 后端冗余虚拟环境
+backend/venv/
+
+
+# 测试 ChromaDB 数据已由 tests/fixtures/ 管理
+data/test_chromadb
+data/test_chromadb2
+data/chromadb_selftest

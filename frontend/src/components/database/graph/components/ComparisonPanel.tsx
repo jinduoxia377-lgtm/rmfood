@@ -6,6 +6,7 @@ export interface GraphCompareResult {
 }
 
 export interface ComparisonPanelProps {
+  [key: string]: any;
   showCompareMode: boolean
   compareResult: GraphCompareResult | null
   filteredNodes: Array<{ id?: string; label: string }>

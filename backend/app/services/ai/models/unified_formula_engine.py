@@ -78,7 +78,8 @@ class UnifiedFormulaEngine:
 
         try:
             from .signal_encoder import get_signal_encoder
-            from .autoregressive_generator import get_autoregressive_generator
+            # ★ 关键修复：优先使用真正的 PyTorch LSTM 生成器
+            from .pytorch_generator import get_pytorch_generator
             from .formula_predictor import get_formula_predictor
             from .formula_discriminator import get_formula_discriminator
             from .template_subsystem import get_template_subsystem
@@ -86,18 +87,43 @@ class UnifiedFormulaEngine:
             from .formula_selector import get_formula_selector
 
             self._signal_encoder = get_signal_encoder()
-            self._generator = get_autoregressive_generator(herb_vocab=self.herb_vocab)
+            # 使用真正的 PyTorch LSTM 生成器（而非启发式版本）
+            self._generator = get_pytorch_generator(
+                n_herbs=len(self.herb_vocab),
+                input_dim=self._signal_encoder.output_dim,
+            )
             self._predictor = get_formula_predictor(herb_db=self.herb_db)
             self._discriminator = get_formula_discriminator()
             self._template_subsystem = get_template_subsystem()
-            self._rl_tuner = get_rl_tuner()
+            # 将生成器引用传入 RL 调优器，使其能执行梯度回传
+            self._rl_tuner = get_rl_tuner(generator=self._generator)
             self._selector = get_formula_selector()
 
             self._initialized = True
-            logger.info("[UnifiedEngine] 组件初始化完成")
+            logger.info("[UnifiedEngine] 组件初始化完成 (PyTorch LSTM Generator)")
         except ImportError as e:
-            logger.warning(f"[UnifiedEngine] 组件导入失败，使用降级模式: {e}")
+            logger.warning(f"[UnifiedEngine] PyTorch 组件导入失败，降级到启发式: {e}")
+            self._fallback_to_heuristic()
             self._initialized = True
+
+    def _fallback_to_heuristic(self):
+        """降级到启发式生成器（当 PyTorch 不可用时）"""
+        from .signal_encoder import get_signal_encoder
+        from .autoregressive_generator import get_autoregressive_generator
+        from .formula_predictor import get_formula_predictor
+        from .formula_discriminator import get_formula_discriminator
+        from .template_subsystem import get_template_subsystem
+        from .rl_tuner import get_rl_tuner
+        from .formula_selector import get_formula_selector
+
+        self._signal_encoder = get_signal_encoder()
+        self._generator = get_autoregressive_generator(herb_vocab=self.herb_vocab)
+        self._predictor = get_formula_predictor(herb_db=self.herb_db)
+        self._discriminator = get_formula_discriminator()
+        self._template_subsystem = get_template_subsystem()
+        self._rl_tuner = get_rl_tuner()
+        self._selector = get_formula_selector()
+        logger.info("[UnifiedEngine] 已降级到启发式生成器")
 
     async def generate(
         self,
@@ -191,7 +217,7 @@ class UnifiedFormulaEngine:
                 f["novelty_score"] = disc.novelty_score
                 f["is_generated_prob"] = disc.is_generated
 
-            # Step 6: RL 调优（可选）
+            # Step 7: RL 调优（可选）— 修复：传入生成器引用
             if use_rl_tuning and self._rl_tuner:
                 for f in scored_formulas[:5]:
                     pred_result = next(
@@ -199,13 +225,23 @@ class UnifiedFormulaEngine:
                         None
                     )
                     if pred_result:
-                        from dataclasses import asdict
-                        pred_cls = type('Pred', (), {
-                            'efficacy': pred_result.get('efficacy_score', 0),
-                            'safety': pred_result.get('safety_score', 0),
-                            'taste': pred_result.get('taste_score', 0),
-                        })()
-                        self._rl_tuner.train_step(formula=f, predictor_result=pred_cls)
+                        from dataclasses import dataclass
+                        @dataclass
+                        class PredCls:
+                            efficacy: float
+                            safety: float
+                            taste: float
+                        pred_cls = PredCls(
+                            efficacy=pred_result.get('efficacy_score', 0),
+                            safety=pred_result.get('safety_score', 0),
+                            taste=pred_result.get('taste_score', 0),
+                        )
+                        # 更新生成器的 log_probs 供 RL 使用
+                        if hasattr(self._generator, '_current_log_probs'):
+                            self._generator._current_log_probs = None
+                        self._rl_tuner.train_step(
+                            formula=f, predictor_result=pred_cls
+                        )
 
             # Step 7: 选择器优选
             selected = self._selector.select(

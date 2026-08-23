@@ -2,13 +2,13 @@
  * 配方对比组件
  * 左右对比两个配方的成分、功效、参数等差异
  */
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Sparkles } from 'lucide-react'
-import { useQuery } from '@tanstack/react-query'
+import { Sparkles, RefreshCw, FlaskConical } from 'lucide-react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { formulaApi } from '@/api/formula'
 import { StatusBadge, Skeleton } from '@/components/ui/Common'
-import { Badge, Card, CardHeader, CardTitle, CardContent } from '@/components/ui'
+import { Badge, Button, Card, CardHeader, CardTitle, CardContent } from '@/components/ui'
 import { CompositionChart } from './CompositionChart'
 import { cn } from '@/lib/utils'
 
@@ -85,6 +85,11 @@ function parseSynergy(formula: ParsedFormula | null): number | null {
 }
 
 export function FormulaCompare({ leftId, rightId }: FormulaCompareProps) {
+  const qc = useQueryClient()
+  const [leftAnalysisRunning, setLeftAnalysisRunning] = useState(false)
+  const [rightAnalysisRunning, setRightAnalysisRunning] = useState(false)
+  const [showAnalysis, setShowAnalysis] = useState(false)
+
   const { data: leftRaw, isLoading: leftLoading } = useQuery({
     queryKey: ['formula', leftId],
     queryFn: () => formulaApi.get(leftId!),
@@ -98,6 +103,68 @@ export function FormulaCompare({ leftId, rightId }: FormulaCompareProps) {
 
   const left = parseFormula(leftRaw)
   const right = parseFormula(rightRaw)
+
+  // 加载分析缓存
+  const { data: leftSynergyData } = useQuery({
+    queryKey: ['formula-analysis', leftId, 'synergy'],
+    queryFn: () => formulaApi.analyzeFormulaSynergy(leftId!),
+    enabled: !!leftId && showAnalysis,
+    staleTime: 5 * 60 * 1000,
+  })
+  const { data: rightSynergyData } = useQuery({
+    queryKey: ['formula-analysis', rightId, 'synergy'],
+    queryFn: () => formulaApi.analyzeFormulaSynergy(rightId!),
+    enabled: !!rightId && showAnalysis,
+    staleTime: 5 * 60 * 1000,
+  })
+  const { data: leftStabilityData } = useQuery({
+    queryKey: ['formula-analysis', leftId, 'stability'],
+    queryFn: () => formulaApi.predictFormulaStability(leftId!),
+    enabled: !!leftId && showAnalysis,
+    staleTime: 5 * 60 * 1000,
+  })
+  const { data: rightStabilityData } = useQuery({
+    queryKey: ['formula-analysis', rightId, 'stability'],
+    queryFn: () => formulaApi.predictFormulaStability(rightId!),
+    enabled: !!rightId && showAnalysis,
+    staleTime: 5 * 60 * 1000,
+  })
+  const { data: leftTasteData } = useQuery({
+    queryKey: ['formula-analysis', leftId, 'taste'],
+    queryFn: () => formulaApi.predictFormulaTaste(leftId!),
+    enabled: !!leftId && showAnalysis,
+    staleTime: 5 * 60 * 1000,
+  })
+  const { data: rightTasteData } = useQuery({
+    queryKey: ['formula-analysis', rightId, 'taste'],
+    queryFn: () => formulaApi.predictFormulaTaste(rightId!),
+    enabled: !!rightId && showAnalysis,
+    staleTime: 5 * 60 * 1000,
+  })
+  const { data: leftCompatData } = useQuery({
+    queryKey: ['formula-analysis', leftId, 'compat'],
+    queryFn: () => formulaApi.checkFormulaCompatibility(leftId!),
+    enabled: !!leftId && showAnalysis,
+    staleTime: 5 * 60 * 1000,
+  })
+  const { data: rightCompatData } = useQuery({
+    queryKey: ['formula-analysis', rightId, 'compat'],
+    queryFn: () => formulaApi.checkFormulaCompatibility(rightId!),
+    enabled: !!rightId && showAnalysis,
+    staleTime: 5 * 60 * 1000,
+  })
+  const { data: leftSafetyData } = useQuery({
+    queryKey: ['formula-analysis', leftId, 'safety'],
+    queryFn: () => formulaApi.checkFormulaSafety(leftId!, { daily_dosage_g: 10, target_group: 'adult' }),
+    enabled: !!leftId && showAnalysis,
+    staleTime: 5 * 60 * 1000,
+  })
+  const { data: rightSafetyData } = useQuery({
+    queryKey: ['formula-analysis', rightId, 'safety'],
+    queryFn: () => formulaApi.checkFormulaSafety(rightId!, { daily_dosage_g: 10, target_group: 'adult' }),
+    enabled: !!rightId && showAnalysis,
+    staleTime: 5 * 60 * 1000,
+  })
 
   // 成分对比分析
   const ingredientsComparison = useMemo(() => {
@@ -181,6 +248,174 @@ export function FormulaCompare({ leftId, rightId }: FormulaCompareProps) {
           </CardContent>
         </Card>
       </div>
+
+      {/* 深度分析切换 */}
+      {leftId && rightId && (
+        <div className="flex items-center justify-between">
+          <button
+            type="button"
+            onClick={() => setShowAnalysis((v) => !v)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              showAnalysis
+                ? 'bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 border border-violet-200 dark:border-violet-800'
+                : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700 hover:border-violet-300 dark:hover:border-violet-700'
+            }`}
+          >
+            <FlaskConical size={14} />
+            {showAnalysis ? '隐藏深度分析' : '运行深度分析对比'}
+          </button>
+        </div>
+      )}
+
+      {/* 深度分析对比 */}
+      {showAnalysis && leftId && rightId && (
+        <div className="space-y-4">
+          {/* 协同效应对比 */}
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              { data: leftSynergyData, label: left?.name ?? 'A', loading: false },
+              { data: rightSynergyData, label: right?.name ?? 'B', loading: false },
+            ].map(({ data, label, loading: _ }) => (
+              <div key={label} className="rounded-xl border border-neutral-200 dark:border-neutral-700 p-4 bg-white dark:bg-neutral-900">
+                <p className="text-xs font-medium text-neutral-500 mb-2">{label} · 协同效应</p>
+                {data ? (
+                  <div>
+                    <p className="text-2xl font-bold text-violet-600 dark:text-violet-400">
+                      {data.overall_si?.toFixed(2) ?? '—'}
+                    </p>
+                    <p className="text-xs text-neutral-400 mt-1">{data.pairs?.length ?? 0} 个成分对</p>
+                  </div>
+                ) : (
+                  <Skeleton className="h-6 w-16" />
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* 稳定性对比 */}
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              { data: leftStabilityData, label: left?.name ?? 'A' },
+              { data: rightStabilityData, label: right?.name ?? 'B' },
+            ].map(({ data, label }) => (
+              <div key={label} className="rounded-xl border border-neutral-200 dark:border-neutral-700 p-4 bg-white dark:bg-neutral-900">
+                <p className="text-xs font-medium text-neutral-500 mb-2">{label} · 稳定性</p>
+                {data ? (
+                  <div className="space-y-1">
+                    <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
+                      {data.stability_score?.toFixed(0) ?? '—'}/100
+                    </p>
+                    <p className="text-xs text-neutral-400">
+                      预测货架期: {data.predicted_shelf_life_months?.toFixed(0) ?? '—'} 月
+                    </p>
+                    {((data as any)?.risk_factors?.length ?? 0) > 0 && (
+                      <p className="text-xs text-amber-600 dark:text-amber-400">
+                        ⚠ {(data as any)?.risk_factors?.length} 个风险因素
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <Skeleton className="h-6 w-20" />
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* 风味对比 */}
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              { data: leftTasteData, label: left?.name ?? 'A' },
+              { data: rightTasteData, label: right?.name ?? 'B' },
+            ].map(({ data, label }) => (
+              <div key={label} className="rounded-xl border border-neutral-200 dark:border-neutral-700 p-4 bg-white dark:bg-neutral-900">
+                <p className="text-xs font-medium text-neutral-500 mb-2">{label} · 风味</p>
+                {data ? (
+                  <div className="space-y-1">
+                    <div className="flex gap-1">
+                      {(['bitter', 'sweet', 'umami', 'astringent', 'sour'] as const).map((k) => {
+                        const val = data.taste_profile?.[k] ?? 0
+                        const colors: Record<string, string> = {
+                          bitter: 'bg-rose-400', sweet: 'bg-pink-400', umami: 'bg-amber-400',
+                          astringent: 'bg-purple-400', sour: 'bg-lime-400',
+                        }
+                        const labels: Record<string, string> = { bitter: '苦', sweet: '甜', umami: '鲜', astringent: '涩', sour: '酸' }
+                        return (
+                          <div key={k} className="flex-1 text-center">
+                            <div className={`h-2 rounded ${colors[k]} opacity-60`} style={{ height: `${Math.max(4, val * 24)}px` }} />
+                            <p className="text-[10px] text-neutral-400 mt-0.5">{labels[k]}</p>
+                          </div>
+                        )
+                      })}
+                    </div>
+                    <p className="text-xs text-neutral-400">
+                      平衡度: {data.balance_score?.toFixed(2) ?? '—'} · 接受度: {data.acceptability?.toFixed(2) ?? '—'}
+                    </p>
+                  </div>
+                ) : (
+                  <Skeleton className="h-6 w-20" />
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* 兼容性对比 */}
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              { data: leftCompatData, label: left?.name ?? 'A' },
+              { data: rightCompatData, label: right?.name ?? 'B' },
+            ].map(({ data, label }) => (
+              <div key={label} className="rounded-xl border border-neutral-200 dark:border-neutral-700 p-4 bg-white dark:bg-neutral-900">
+                <p className="text-xs font-medium text-neutral-500 mb-2">{label} · 兼容性</p>
+                {data ? (
+                  <div>
+                    <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                      {data.overall_score?.toFixed(0) ?? '—'}/100
+                    </p>
+                    <p className="text-xs text-neutral-400 mt-1">
+                      {(data as any)?.passed_checks ?? 0}/{(data as any)?.total_checks ?? 0} 项通过
+                      {(data as any)?.error_count > 0 && <span className="text-rose-500 ml-1">({(data as any)?.error_count} 错误)</span>}
+                    </p>
+                  </div>
+                ) : (
+                  <Skeleton className="h-6 w-20" />
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* 安全检查对比 */}
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              { data: leftSafetyData, label: left?.name ?? 'A' },
+              { data: rightSafetyData, label: right?.name ?? 'B' },
+            ].map(({ data, label }) => (
+              <div key={label} className={`rounded-xl border p-4 bg-white dark:bg-neutral-900 ${
+                data?.is_safe ? 'border-emerald-200 dark:border-emerald-800' : 'border-rose-200 dark:border-rose-800'
+              }`}>
+                <p className="text-xs font-medium text-neutral-500 mb-2">{label} · 安全性</p>
+                {data ? (
+                  <div className="flex items-center gap-2">
+                    {data.is_safe ? (
+                      <>
+                        <span className="text-emerald-500">✓</span>
+                        <span className="text-sm font-medium text-emerald-700 dark:text-emerald-300">安全</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-rose-500">⚠</span>
+                        <span className="text-sm font-medium text-rose-700 dark:text-rose-300">有风险</span>
+                      </>
+                    )}
+                    <span className="text-xs text-neutral-400 ml-auto">风险评分: {data.overall_risk_score?.toFixed(0) ?? '—'}</span>
+                  </div>
+                ) : (
+                  <Skeleton className="h-5 w-16" />
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* 指标对比 */}
       <div className="grid grid-cols-3 gap-2">

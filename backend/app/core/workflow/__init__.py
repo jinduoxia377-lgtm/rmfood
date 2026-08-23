@@ -26,6 +26,7 @@ def _ensure_registered():
     if not _ensure_executors_registered_called:
         _ensure_executors_registered_called = True
         from .executors import built_in  # noqa: F401 (side-effect)
+        from .executors import agent_executors  # noqa: F401 (side-effect)
 
 # 初始化时注册
 _ensure_registered()

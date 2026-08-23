@@ -352,7 +352,7 @@ export default function FormulaListPage() {
   });
 
   // ── 数据提取 ──
-  const items = listData?.data ?? [];
+  const items = listData?.items ?? [];
   const total = listData?.total ?? 0;
   const totalPages = listData?.total_pages ?? 0;
 
@@ -361,7 +361,7 @@ export default function FormulaListPage() {
     const map = new Map<string, number>();
     items.forEach((f) => {
       const name = f.creator_name || `ID:${f.creatorId}`;
-      map.set(name, f.creatorId);
+      map.set(name, f.creatorId as number);
     });
     return Array.from(map.entries()).map(([label, value]) => ({ label, value: String(value) }));
   }, [items]);
@@ -559,9 +559,9 @@ export default function FormulaListPage() {
       deletedItemsRef.current.delete(id);
       qc.setQueryData(
         ['formulas-list', queryParams],
-        (old: { data: Formula[]; total: number; total_pages: number } | undefined) => {
+        (old: { items: Formula[]; total: number; total_pages?: number } | undefined) => {
           if (!old) return old;
-          return { ...old, data: [deleted.data, ...old.data], total: old.total + 1 };
+          return { ...old, items: [deleted.data, ...old.items], total: old.total + 1 };
         },
       );
       qc.invalidateQueries({ queryKey: ['formula-statistics'] });
@@ -598,9 +598,9 @@ export default function FormulaListPage() {
       deletedItemsRef.current.set(id, { data: formula, timer });
       qc.setQueryData(
         ['formulas-list', queryParams],
-        (old: { data: Formula[]; total: number; total_pages: number } | undefined) => {
+        (old: { items: Formula[]; total: number; total_pages?: number } | undefined) => {
           if (!old) return old;
-          return { ...old, data: old.data.filter((f) => f.id !== id), total: Math.max(0, old.total - 1) };
+          return { ...old, items: old.items.filter((f) => f.id !== id), total: Math.max(0, old.total - 1) };
         },
       );
       setDeleteConfirmId(null);
@@ -638,11 +638,11 @@ export default function FormulaListPage() {
     });
     qc.setQueryData(
       ['formulas-list', queryParams],
-      (old: { data: Formula[]; total: number; total_pages: number } | undefined) => {
+      (old: { items: Formula[]; total: number; total_pages?: number } | undefined) => {
         if (!old) return old;
         return {
           ...old,
-          data: old.data.filter((f) => !selectedIds.has(f.id)),
+          items: old.items.filter((f) => !selectedIds.has(f.id)),
           total: Math.max(0, old.total - selectedIds.size),
         };
       },

@@ -1,6 +1,5 @@
 """Chat module - /chat, /chat/stream"""
 import logging
-import status
 import datetime
 import json
 import os

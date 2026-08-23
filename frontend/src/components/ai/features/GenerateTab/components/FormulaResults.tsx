@@ -119,11 +119,11 @@ export const FormulaResults: React.FC<FormulaResultsProps> = ({
       })),
       scores: {
         synergy: candidate.synergy_score || 0,
-        taste: (candidate as Record<string, unknown>).taste_score as number || DEFAULTS.DEFAULT_TASTE_SCORE,
-        stability: (candidate as Record<string, unknown>).stability_score as number || DEFAULTS.DEFAULT_STABILITY_SCORE,
-        safety: (candidate as Record<string, unknown>).safety_score as number || DEFAULTS.DEFAULT_SAFETY_SCORE,
-        cost: (candidate as Record<string, unknown>).cost_score as number || DEFAULTS.DEFAULT_COST_SCORE,
-        overall: (candidate as Record<string, unknown>).overall_score as number || candidate.synergy_score || 0,
+        taste: ((candidate as unknown) as Record<string, unknown>).taste_score as number || DEFAULTS.DEFAULT_TASTE_SCORE,
+        stability: ((candidate as unknown) as Record<string, unknown>).stability_score as number || DEFAULTS.DEFAULT_STABILITY_SCORE,
+        safety: ((candidate as unknown) as Record<string, unknown>).safety_score as number || DEFAULTS.DEFAULT_SAFETY_SCORE,
+        cost: ((candidate as unknown) as Record<string, unknown>).cost_score as number || DEFAULTS.DEFAULT_COST_SCORE,
+        overall: ((candidate as unknown) as Record<string, unknown>).overall_score as number || candidate.synergy_score || 0,
       },
     };
   }, []);

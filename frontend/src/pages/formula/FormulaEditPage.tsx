@@ -23,6 +23,7 @@ import {
   RefreshCw,
   AlertCircle,
   CheckCircle2,
+  FlaskConical,
 } from 'lucide-react';
 import { useFormula, useUpdateFormula, useAIRecommendations } from '@/hooks/useQueries';
 import {
@@ -127,6 +128,13 @@ export default function FormulaEditPage() {
     shelfLife: '',
   });
   const previewTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // ── 深度分析状态 ──
+  const [analysisSynergy, setAnalysisSynergy] = useState<any>(null);
+  const [analysisStability, setAnalysisStability] = useState<any>(null);
+  const [analysisTaste, setAnalysisTaste] = useState<any>(null);
+  const [analysisSafety, setAnalysisSafety] = useState<any>(null);
+  const [isRunningAnalysis, setIsRunningAnalysis] = useState(false);
 
   // ── 加载现有配方数据填充表单 ──
   useEffect(() => {
@@ -245,6 +253,29 @@ export default function FormulaEditPage() {
     initialized,
     triggerAutoSaveDraft,
   ]);
+
+  // ── 深度分析 ──
+  useEffect(() => {
+    if (ingredients.length < 2 || !formulaId || isNaN(formulaId)) return;
+    const timer = setTimeout(async () => {
+      setIsRunningAnalysis(true);
+      try {
+        const { formulaApi } = await import('@/api/formula');
+        const [s, st, t, sa] = await Promise.all([
+          formulaApi.analyzeFormulaSynergy(formulaId).catch(() => null),
+          formulaApi.predictFormulaStability(formulaId).catch(() => null),
+          formulaApi.predictFormulaTaste(formulaId).catch(() => null),
+          formulaApi.checkFormulaSafety(formulaId, { daily_dosage_g: 10 }).catch(() => null),
+        ]);
+        setAnalysisSynergy(s);
+        setAnalysisStability(st);
+        setAnalysisTaste(t);
+        setAnalysisSafety(sa);
+      } catch (e) { console.error('Analysis error:', e); }
+      finally { setIsRunningAnalysis(false); }
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [ingredients, formulaId]);
 
   // ── 构建验证数据 ──
   const buildValidationData = () => ({
@@ -720,7 +751,7 @@ export default function FormulaEditPage() {
                     ) : recData && Array.isArray(recData) && recData.length > 0 ? (
                       <div className="grid gap-2">
                         {(Array.isArray(recData) ? recData : []).map((rec, i) => {
-                          const recId = (rec.ingredient_id ?? `rec-${i}`
+                          const recId = (rec as any).ingredient_id ?? `rec-${i}`;
                           return (
                           <div
                             key={recId}
@@ -728,7 +759,7 @@ export default function FormulaEditPage() {
                           >
                             <div>
                               <p className="text-sm font-medium text-neutral-900 dark:text-white">{rec.name}</p>
-                              <p className="text-xs text-neutral-500">{(rec.match_reasons?.join(' · ') || ''}</p>
+                              <p className="text-xs text-neutral-500">{((rec as any).match_reasons?.join(' · ') || '')}</p>
                             </div>
                             <span className="text-xs font-medium text-primary-600 dark:text-primary-400">
                               {rec.score}分
@@ -1047,6 +1078,52 @@ export default function FormulaEditPage() {
                 </div>
               </CardContent>
             </Card>
+          </div>
+
+          {/* 深度分析 */}
+          <div className="mt-4">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-xs font-medium text-neutral-500 dark:text-neutral-400 flex items-center gap-1">
+                <FlaskConical size={12} className="text-violet-500" />
+                深度分析
+              </h3>
+              {isRunningAnalysis && (
+                <span className="text-[10px] text-violet-500 flex items-center gap-0.5">
+                  <RefreshCw size={10} className="animate-spin" /> 分析中...
+                </span>
+              )}
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {analysisSynergy && (
+                <div className="p-2 rounded-lg bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800">
+                  <p className="text-[10px] text-violet-600 dark:text-violet-400">协同指数 SI</p>
+                  <p className="text-sm font-bold text-violet-700 dark:text-violet-300">{analysisSynergy.overall_si?.toFixed(2) ?? '—'}</p>
+                </div>
+              )}
+              {analysisStability && (
+                <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
+                  <p className="text-[10px] text-emerald-600 dark:text-emerald-400">货架期</p>
+                  <p className="text-sm font-bold text-emerald-700 dark:text-emerald-300">{analysisStability.predicted_shelf_life_months?.toFixed(0) ?? '—'}月</p>
+                </div>
+              )}
+              {analysisTaste && (
+                <div className="p-2 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
+                  <p className="text-[10px] text-amber-600 dark:text-amber-400">风味接受度</p>
+                  <p className="text-sm font-bold text-amber-700 dark:text-amber-300">{analysisTaste.acceptability?.toFixed(2) ?? '—'}</p>
+                </div>
+              )}
+              {analysisSafety && (
+                <div className={`p-2 rounded-lg border ${analysisSafety.is_safe ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800' : 'bg-rose-50 dark:bg-rose-900/20 border-rose-200 dark:border-rose-800'}`}>
+                  <p className={`text-[10px] ${analysisSafety.is_safe ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>安全性</p>
+                  <p className={`text-sm font-bold ${analysisSafety.is_safe ? 'text-emerald-700 dark:text-emerald-300' : 'text-rose-700 dark:text-rose-300'}`}>
+                    {analysisSafety.is_safe ? '✓ 安全' : '⚠ 风险'}
+                  </p>
+                </div>
+              )}
+            </div>
+            {(!analysisSynergy && !analysisStability && !analysisTaste && !analysisSafety) && ingredients.length >= 2 && (
+              <p className="text-[10px] text-neutral-400 text-center py-1">保存配方后将自动运行分析</p>
+            )}
           </div>
         </div>
       </form>

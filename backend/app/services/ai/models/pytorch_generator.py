@@ -76,7 +76,16 @@ class PyTorchFormulaGenerator(nn.Module):
         # 停止标记输出头
         self.stop_head = nn.Linear(hidden_dim, 1)
 
+        # 成分嵌入层（替代 torch.randn，使用可学习嵌入）
+        self.herb_embed = nn.Embedding(n_herbs, hidden_dim)
+
         self._init_weights()
+
+        # ★ 关键修复：添加优化器，供 RL 调优器使用
+        self.optimizer = torch.optim.Adam(self.parameters(), lr=1e-3)
+
+        # ★ 用于 RL 训练的记录：保存当前批次的 log_probs
+        self._current_log_probs: Optional[torch.Tensor] = None
 
     def _init_weights(self):
         """Xavier 初始化"""
@@ -90,8 +99,19 @@ class PyTorchFormulaGenerator(nn.Module):
         self,
         signal: torch.Tensor,
         max_seq_len: int = None,
+        return_log_probs: bool = False,
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-        """前向传播"""
+        """前向传播
+
+        Args:
+            signal: 输入信号 (batch, input_dim)
+            max_seq_len: 最大序列长度
+            return_log_probs: 是否返回 log 概率（供 RL 训练使用）
+
+        Returns:
+            (herb_logits, dosage_logits, stop_logits)
+            当 return_log_probs=True 时，额外设置 self._current_log_probs
+        """
         max_seq_len = max_seq_len or 12
 
         # 投影输入
@@ -105,6 +125,7 @@ class PyTorchFormulaGenerator(nn.Module):
         herb_logits_list = []
         dosage_logits_list = []
         stop_logits_list = []
+        herb_log_probs_list = []  # 记录每步的 log prob
 
         for t in range(max_seq_len):
             output, (hn, cn) = self.lstm(x, (h0, c0))
@@ -118,21 +139,31 @@ class PyTorchFormulaGenerator(nn.Module):
             dosage_logits_list.append(dosage_logits)
             stop_logits_list.append(stop_logits)
 
+            # 计算 log prob（供 RL 使用）
+            herb_log_probs = F.log_softmax(herb_logits, dim=-1)
+            herb_log_probs_list.append(herb_log_probs)
+
             # 采样下一个成分
             herb_probs = F.softmax(herb_logits, dim=-1)
             herb_idx = torch.multinomial(herb_probs, 1).squeeze(-1)
 
             h0, c0 = hn, cn
 
-            # 成分嵌入
-            herb_emb = torch.randn(herb_idx.shape[0], self.hidden_dim, device=self.device)
+            # ★ 使用可学习嵌入替代随机噪声
+            herb_emb = self.herb_embed(herb_idx)
             x = herb_emb.unsqueeze(1)
 
-        return (
+        result = (
             torch.stack(herb_logits_list, dim=1),
             torch.stack(dosage_logits_list, dim=1),
             torch.stack(stop_logits_list, dim=1),
         )
+
+        # 保存 log probs 供 RL 调优器使用
+        if return_log_probs:
+            self._current_log_probs = torch.stack(herb_log_probs_list, dim=1)  # (batch, seq_len, n_herbs)
+
+        return result
 
     def generate(
         self,
@@ -190,14 +221,28 @@ class PyTorchFormulaGenerator(nn.Module):
         target_herbs: torch.Tensor,
         target_dosages: torch.Tensor,
         target_stop: torch.Tensor,
-        optimizer: torch.optim.Optimizer,
+        optimizer: torch.optim.Optimizer = None,
     ) -> Dict[str, float]:
-        """训练一步"""
+        """训练一步
+
+        Args:
+            signal: 输入信号
+            target_herbs: 目标药材索引 (batch, seq_len)
+            target_dosages: 目标剂量索引 (batch, seq_len)
+            target_stop: 目标停止标记 (batch, seq_len)
+            optimizer: 可选，自定义优化器；默认使用 self.optimizer
+        """
+        use_custom_optimizer = optimizer is not None
+        if use_custom_optimizer:
+            self.optimizer = optimizer
+
         self.train()
-        optimizer.zero_grad()
+        self.optimizer.zero_grad()
 
         seq_len = target_herbs.shape[1]
-        herb_logits, dosage_logits, stop_logits = self.forward(signal, max_seq_len=seq_len)
+        herb_logits, dosage_logits, stop_logits = self.forward(
+            signal, max_seq_len=seq_len
+        )
 
         herb_loss = nn.CrossEntropyLoss()(
             herb_logits.reshape(-1, self.n_herbs), target_herbs.reshape(-1)
@@ -212,7 +257,7 @@ class PyTorchFormulaGenerator(nn.Module):
         total_loss = herb_loss + dosage_loss + stop_loss
         total_loss.backward()
         torch.nn.utils.clip_grad_norm_(self.parameters(), max_norm=1.0)
-        optimizer.step()
+        self.optimizer.step()
 
         return {
             "total_loss": total_loss.item(),

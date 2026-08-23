@@ -48,4 +48,4 @@ class FormulaSearchQuery:
     min_relevance: float = 0.5
     max_results: int = 20
     status_filter: Optional[str] = None
-    sort_by: str = "relevance
+    sort_by: str = "relevance"

@@ -386,14 +386,6 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   render(): ReactNode {
     if (this.state.hasError && this.state.error) {
       const { fallback } = this.props;
-      const defaultFallback = DefaultFallback({
-        error: this.state.error,
-        resetErrorBoundary: this.resetErrorBoundary,
-        errorDetails:
-          this.state.capturedError ||
-          buildCapturedError(this.state.error, { type: 'component' }),
-        safeRefresh: this.safeRefresh,
-      });
 
       if (typeof fallback === 'function') {
         return fallback({
@@ -406,11 +398,80 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
         });
       }
 
-      return fallback || defaultFallback;
+      return this.defaultFallback();
     }
 
     return this.props.children;
   }
+
+  // 将 Fallback UI 提取为类方法，避免在 render 中调用函数组件
+  private defaultFallback = (): ReactNode => {
+    const error = this.state.error;
+    const errorDetails = this.state.capturedError || buildCapturedError(error, { type: 'component' });
+
+    return (
+      <div
+        style={{
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px',
+          background: 'linear-gradient(135deg, #AF52DE 0%, #7C3AED 100%)',
+          fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", sans-serif',
+        }}
+      >
+        <div
+          style={{
+            background: '#FFFFFF',
+            borderRadius: '16px',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+            maxWidth: '560px',
+            width: '100%',
+            padding: '40px',
+            textAlign: 'center',
+          }}
+        >
+          <div style={{ fontSize: '56px', marginBottom: '16px' }}>⚠️</div>
+          <h1 style={{ margin: '0 0 12px 0', fontSize: '24px', color: '#1D1D1F', fontWeight: 600 }}>
+            页面出现问题
+          </h1>
+          <p style={{ margin: '0 0 24px 0', color: '#6E6E73', fontSize: '14px', lineHeight: 1.6 }}>
+            很抱歉，您当前访问的页面出现了问题。我们已记录此错误并会尽快修复。
+          </p>
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+            <button
+              onClick={this.resetErrorBoundary}
+              style={{
+                padding: '10px 24px',
+                borderRadius: '8px',
+                border: 'none',
+                background: '#7C3AED',
+                color: '#fff',
+                cursor: 'pointer',
+                fontSize: '14px',
+              }}
+            >
+              重试
+            </button>
+            <button
+              onClick={this.safeRefresh}
+              style={{
+                padding: '10px 24px',
+                borderRadius: '8px',
+                border: '1px solid #d1d5db',
+                background: '#fff',
+                cursor: 'pointer',
+                fontSize: '14px',
+              }}
+            >
+              刷新页面
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
 }
 
 // ═════════════════════════════════════════════

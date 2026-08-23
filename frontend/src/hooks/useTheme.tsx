@@ -104,7 +104,7 @@ export const useTheme = () => {
       const idMap: Record<string, PresetThemeId> = {
         'professional-green': 'light-default',
         'medical-blue': 'light-default',
-        'warm-orange': 'light-warm',
+        'warm-orange': 'light-default',
         'google-light': 'light-default',
       };
       const mappedId = idMap[presetId] || 'light-default';
@@ -122,7 +122,7 @@ export const useTheme = () => {
         outline: c.border?.default || '#E5E7EB',
         outlineVariant: c.outlineVariant || '#E5E7EB',
         tertiary: c.tertiary?.main || '#AF52DE',
-      } as Record<string, string>;
+      } as unknown as Record<string, string>;
     },
     checkContrast: (c1: string, c2: string) => getContrastRatio(c1, c2),
     meetsWCAGAA: (c1: string, c2: string) => getContrastRatio(c1, c2) >= 4.5,
@@ -339,109 +339,6 @@ export const FONT_COLOR_PRESETS = [
   { id: 'amber', name: '琥珀', color: '#B45309' },
 ];
 
-// ==================== 主题预设（旧版） ====================
-
-export const THEME_PRESETS = [
-  { id: 'forest', name: '森林绿', accentColor: '#34C759', description: '自然、健康，专业' },
-  { id: 'ocean', name: '海洋蓝', accentColor: '#007AFF', description: '科技、清晰、信任' },
-  { id: 'purple', name: '生物紫', accentColor: '#AF52DE', description: '创新、智能、前沿' },
-  { id: 'teal', name: '科技青', accentColor: '#0E7490', description: '现代、活力' },
-  { id: 'google-light', name: 'Google 浅色', accentColor: '#4285F4', description: '现代、简洁、专业' },
-];
-
-// ==================== 专业主题（空对象，旧版兼容） ====================
-
-export const PROFESSIONAL_THEMES: Record<string, unknown> = {};
-
-// ==================== 登录页专用配色 ====================
-
-export const LOGIN_THEME = {
-  light: {
-    background: 'var(--bg-canvas, #F5F5F7)',
-    cardBackground: 'var(--card-bg-solid, #FFFFFF)',
-    brandGradient: 'linear-gradient(135deg, var(--color-primary, #34C759) 0%, var(--color-primary-hover, #28A745) 50%, var(--color-primary-800, #065F46) 100%)',
-    textPrimary: 'var(--text-primary, #1D1D1F)',
-    textSecondary: 'var(--text-secondary, #6E6E73)',
-    border: 'var(--border-color, rgba(0, 0, 0, 0.06))',
-    inputBackground: 'var(--bg-tertiary, #F5F5F7)',
-    inputBorder: 'var(--border-subtle, rgba(0, 0, 0, 0.06))',
-    buttonBackground: 'var(--color-primary, #34C759)',
-    buttonHover: 'var(--color-primary-hover, #28A745)',
-    errorBackground: 'var(--color-error-container, #FFF0F0)',
-    errorBorder: 'var(--color-error-container, #FFD0D0)',
-    errorText: 'var(--color-error, #FF3B30)',
-  },
-  'google-light': {
-    background: '#FFFFFF',
-    cardBackground: '#F8F9FA',
-    brandGradient: 'linear-gradient(135deg, #4285F4 0%, #3367D6 50%, #1A3A78 100%)',
-    textPrimary: '#202124',
-    textSecondary: '#5F6368',
-    border: 'rgba(218, 220, 224, 0.5)',
-  },
-  dark: {
-    background: 'var(--bg-canvas, #000000)',
-    cardBackground: 'var(--bg-surface, #1C1C1E)',
-    brandGradient: 'linear-gradient(135deg, var(--color-primary, #30D158) 0%, var(--color-primary-hover, #34C759) 50%, var(--color-primary-800, #065F46) 100%)',
-    textPrimary: '#F9FAFB',
-    textSecondary: '#9CA3AF',
-    border: 'rgba(148, 163, 184, 0.2)',
-  },
-};
-
-// ==================== WCAG 对比度 ====================
-
-export const WCAG_CONTRAST = {
-  AA: { normal: 4.5, large: 3 },
-  AAA: { normal: 7, large: 4.5 },
-};
-
-export const VERIFIED_COLOR_COMBOS = [];
-
-// ==================== 排版/间距/圆角/阴影系统 ====================
-
-export const TYPOGRAPHY = {
-  display: {
-    '2xl': { fontSize: '3rem', lineHeight: '3.5rem', fontWeight: 700 },
-    xl: { fontSize: '2.25rem', lineHeight: '2.75rem', fontWeight: 700 },
-    lg: { fontSize: '1.875rem', lineHeight: '2.375rem', fontWeight: 600 },
-  },
-  heading: {
-    h1: { fontSize: '1.875rem', lineHeight: '2.375rem', fontWeight: 700 },
-    h2: { fontSize: '1.5rem', lineHeight: '2rem', fontWeight: 600 },
-    h3: { fontSize: '1.25rem', lineHeight: '1.75rem', fontWeight: 600 },
-    h4: { fontSize: '1.125rem', lineHeight: '1.5rem', fontWeight: 600 },
-  },
-  body: {
-    lg: { fontSize: '1.125rem', lineHeight: '1.75rem', fontWeight: 400 },
-    base: { fontSize: '1rem', lineHeight: '1.5rem', fontWeight: 400 },
-    sm: { fontSize: '0.875rem', lineHeight: '1.25rem', fontWeight: 400 },
-    xs: { fontSize: '0.75rem', lineHeight: '1rem', fontWeight: 400 },
-  },
-};
-
-export const SPACING_SYSTEM = {
-  xs: '0.25rem', sm: '0.5rem', md: '1rem', lg: '1.5rem', xl: '2rem', '2xl': '3rem', '3xl': '4rem',
-};
-
-export const BORDER_RADIUS = {
-  none: '0', sm: '0.375rem', md: '0.5rem', lg: '0.75rem', xl: '1rem', '2xl': '1.5rem', '3xl': '2rem', full: '9999px',
-};
-
-export const SHADOW_SYSTEM = {
-  sm: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
-  md: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-  lg: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
-  xl: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-  '2xl': '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-};
-
-// ==================== 默认值（旧版兼容占位） ====================
-
-export const DEFAULT_THEME = {};
-export const DEFAULT_SETTINGS = {};
-export const THEME_PROVIDER = {};
-
 // ==================== 颜色工具（真实实现） ====================
 
 function hexToRgbFn(hex: string): { r: number; g: number; b: number } | null {
@@ -475,9 +372,6 @@ export function checkWCAGAACompliance(ratio: number, largeText = false): boolean
 
 export const colorUtils = {
   hexToRgb: hexToRgbFn,
-  rgbToHsl: () => ({ h: 0, s: 0, l: 0 }),
   getContrastRatio,
   checkWCAGAACompliance,
-  generateColorVariants: () => ({}),
-}
-export const generateColorVariants = () => ({})
+} as const

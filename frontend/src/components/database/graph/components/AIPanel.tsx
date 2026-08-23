@@ -5,6 +5,7 @@ export interface AIPanelEntry {
 }
 
 export interface AIPanelProps {
+  [key: string]: any;
   showAIPanel: boolean
   aiQAHistory: AIPanelEntry[]
   aiQuestion: string

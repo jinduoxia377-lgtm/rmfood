@@ -206,6 +206,7 @@ const router = createBrowserRouter([
       </AuthGuard>
     ),
     children: [
+      { path: 'formula', element: <Navigate to="/formulas" replace /> },
       { index: true, element: <Navigate to="/dashboard" replace /> },
       {
         path: 'dashboard',

@@ -3,7 +3,7 @@
 配方 CRUD、版本管理、审核流程、AI 推荐、协同效应分析
 """
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional
 
 from fastapi import HTTPException, status
@@ -15,6 +15,7 @@ from app.models import (
     User, Formula, FormulaVersion, Ingredient, Peptide,
     UserRole, FormulaStatus, AuditLog, NotificationType,
     formula_ingredients, formula_peptides,
+    Category, Tag,
 )
 from app.schemas.formula import FormulaCreate, FormulaUpdate, FormulaReviewRequest
 
@@ -145,14 +146,35 @@ class FormulaService:
         status: Optional[FormulaStatus] = None,
         creator_id: Optional[int] = None,
         search: Optional[str] = None,
-        include_deleted: bool = False,
+        tags: Optional[list[int]] = None,
+        category: Optional[list[int]] = None,
+        created_start: Optional[str] = None,
+        created_end: Optional[str] = None,
+        updated_start: Optional[str] = None,
+        updated_end: Optional[str] = None,
+        sort_field: str = "updated_at",
+        sort_order: str = "desc",
+        sort_field2: Optional[str] = None,
+        sort_order2: str = "asc",
         organization_id: Optional[int] = None,
+        include_deleted: bool = False,
     ) -> tuple[list[Formula], int]:
-        """配方列表（分页 + 过滤 + 搜索）"""
+        """配方列表（分页 + 过滤 + 搜索 + 排序）"""
+        # 排序字段映射
+        sort_map: dict[str, object] = {
+            "name": Formula.name,
+            "status": Formula.status,
+            "created_at": Formula.created_at,
+            "updated_at": Formula.updated_at,
+            "version": Formula.version,
+        }
+
         query = select(Formula).options(
             selectinload(Formula.creator),
             selectinload(Formula.ingredients),
             selectinload(Formula.peptides),
+            selectinload(Formula.tags),
+            selectinload(Formula.categories),
         )
 
         # 软删除过滤（默认不显示已删除的记录）
@@ -175,12 +197,54 @@ class FormulaService:
                 | Formula.description.ilike(pattern)
             )
 
+        # 标签过滤（多值 OR）
+        if tags and len(tags) > 0:
+            query = query.join(Formula.tags).where(Tag.id.in_(tags))
+
+        # 分类过滤（多值 OR）
+        if category and len(category) > 0:
+            query = query.join(Formula.categories).where(Category.id.in_(category))
+
+        # 创建日期范围
+        if created_start:
+            start_dt = datetime.fromisoformat(created_start.replace("Z", "+00:00"))
+            if start_dt.tzinfo is None:
+                start_dt = start_dt.replace(tzinfo=datetime.timezone.utc)
+            query = query.where(Formula.created_at >= start_dt)
+        if created_end:
+            end_dt = datetime.fromisoformat(created_end.replace("Z", "+00:00")) + timedelta(days=1)
+            if end_dt.tzinfo is None:
+                end_dt = end_dt.replace(tzinfo=datetime.timezone.utc)
+            query = query.where(Formula.created_at < end_dt)
+
+        # 更新日期范围
+        if updated_start:
+            start_dt = datetime.fromisoformat(updated_start.replace("Z", "+00:00"))
+            if start_dt.tzinfo is None:
+                start_dt = start_dt.replace(tzinfo=datetime.timezone.utc)
+            query = query.where(Formula.updated_at >= start_dt)
+        if updated_end:
+            end_dt = datetime.fromisoformat(updated_end.replace("Z", "+00:00")) + timedelta(days=1)
+            if end_dt.tzinfo is None:
+                end_dt = end_dt.replace(tzinfo=datetime.timezone.utc)
+            query = query.where(Formula.updated_at < end_dt)
+
         # 总数
         count_q = select(func.count()).select_from(query.subquery())
         total = (await self.db.execute(count_q)).scalar() or 0
 
-        # 分页排序
-        query = query.order_by(Formula.updated_at.desc())
+        # 排序
+        primary_col = sort_map.get(sort_field, Formula.updated_at)
+        primary_order = primary_col.desc() if sort_order == "desc" else primary_col.asc()
+
+        if sort_field2 and sort_field2 in sort_map:
+            secondary_col = sort_map[sort_field2]
+            secondary_order = secondary_col.desc() if sort_order2 == "desc" else secondary_col.asc()
+            query = query.order_by(primary_order, secondary_order)
+        else:
+            query = query.order_by(primary_order)
+
+        # 分页
         query = query.offset((page - 1) * page_size).limit(page_size)
         result = await self.db.execute(query)
 

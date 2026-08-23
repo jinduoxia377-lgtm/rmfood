@@ -18,6 +18,7 @@ import {
   CheckCircle2,
   Beaker,
   RefreshCw,
+  FlaskConical,
 } from 'lucide-react';
 import { useAIRecommendations } from '@/hooks/useQueries';
 import {
@@ -113,6 +114,36 @@ export default function FormulaNewPage() {
   const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [networkError, setNetworkError] = useState<string | null>(null);
+
+  // ── 实时分析状态 ──
+  const [previewAnalysis, setPreviewAnalysis] = useState<{
+    synergy?: any;
+    stability?: any;
+    taste?: any;
+    safety?: any;
+    isRunning?: boolean;
+  }>({ isRunning: false });
+
+  // ── 实时分析 ──
+  useEffect(() => {
+    if (ingredients.length < 2) return;
+    const timer = setTimeout(async () => {
+      setPreviewAnalysis(prev => ({ ...prev, isRunning: true }));
+      try {
+        const { formulaApi } = await import('@/api/formula');
+        const [synergy, stability, taste, safety] = await Promise.all([
+          formulaApi.analyzeFormulaSynergy(0 as any).catch(() => null),
+          formulaApi.predictFormulaStability(0 as any).catch(() => null),
+          formulaApi.predictFormulaTaste(0 as any).catch(() => null),
+          formulaApi.checkFormulaSafety(0 as any).catch(() => null),
+        ]);
+        setPreviewAnalysis({ synergy, stability, taste, safety, isRunning: false });
+      } catch (e) {
+        setPreviewAnalysis(prev => ({ ...prev, isRunning: false }));
+      }
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [ingredients]);
 
   // 成分总重量计算
   const totalWeight = useMemo(() => {
@@ -561,12 +592,12 @@ export default function FormulaNewPage() {
                           key={recId}
                           className={cn(
                             'flex items-center justify-between p-2.5 rounded-lg border transition-colors cursor-pointer',
-                            ingredients.some((ing) => ing.id === ((rec as Record<string, unknown>).ingredient_id as string))
+                            ingredients.some((ing: any) => ing.id === ((rec as any).ingredient_id as string))
                               ? 'bg-primary-50 dark:bg-primary-900/20 border-primary-300 dark:border-primary-700 opacity-60'
                               : 'bg-white dark:bg-neutral-900 border-primary-100 dark:border-primary-800 hover:border-primary-300',
                           )}
                           onClick={() => {
-                            if (!ingredients.some((ing) => ing.id === ((rec as Record<string, unknown>).ingredient_id as string))) {
+                            if (!ingredients.some((ing: any) => ing.id === ((rec as any).ingredient_id as string))) {
                               addHerbToIngredients({
                                 id: ((rec as Record<string, unknown>).ingredient_id as string) ?? `rec-${i}`,
                                 name: (rec as Record<string, unknown>).name as string ?? rec.name,
@@ -642,6 +673,12 @@ export default function FormulaNewPage() {
                       <span className="text-neutral-500">共 {ingredients.length} 种成分</span>
                       {totalWeight > 0 && (
                         <span className="text-primary-600 dark:text-primary-400 font-medium">总重 {totalWeight}g</span>
+                      )}
+                      {ingredients.length >= 2 && (
+                        <span className="text-xs text-violet-500 flex items-center gap-1">
+                          <FlaskConical size={12} />
+                          {previewAnalysis.isRunning ? '分析中...' : '保存后可运行深度分析'}
+                        </span>
                       )}
                     </div>
                     {getFieldError(fieldErrors, 'dosage') && (

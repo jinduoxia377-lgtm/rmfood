@@ -3,7 +3,7 @@
  * 配方信息、AI分析、评论区、导出、版本历史、审核、活动时间线、成分可视化
  * 新增: 5个Tab布局、内联编辑、版本对比/回滚、相关推荐、增强删除确认
  */
-import { useMemo, useState, useEffect, useCallback, useRef } from 'react';
+import React, { useMemo, useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -70,6 +70,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/Tabs';
 import { commentApi, type Comment } from '@/api/comment';
 import { aiApi } from '@/api/ai';
 import { formulaApi } from '@/api/formula';
+import { calculateNutritionLabel } from '@/api/formula';
 import { experimentApi } from '@/api/experiment';
 import { validateFormulaName } from '@/utils/formulaValidator';
 import { cn } from '@/lib/utils';
@@ -77,6 +78,8 @@ import { logger } from '@/utils/safeLogger';
 import { ActivityTimeline, generateMockTimeline } from './components/ActivityTimeline';
 import { CommentItem } from './components/CommentItem';
 import { CompositionChart } from './components/CompositionChart';
+import { NutritionLabel, NutritionNRVChart, NutritionClaimBadges } from '@/components/nutrition';
+import { FormulaCostAnalysis } from './components/FormulaCostAnalysis';
 import { FormulaCompare } from './components/FormulaCompare';
 import { VersionDiffViewer } from './components/VersionDiffViewer';
 import { ShareFormula } from './components/ShareFormula';
@@ -85,6 +88,9 @@ import { usePermission, FormulaPermission } from '@/utils/permissions';
 import { FormulaDetailSkeleton } from './components/FormulaDetailSkeleton';
 import { ExplainabilityReport } from '@/components/report/ExplainabilityReport';
 import { ReportExportPanel } from '@/components/report/ReportExportPanel';
+import { EffectCurveChart } from '@/components/formula/EffectCurveChart';
+import { ParetoFrontierChart } from '@/components/formula/ParetoFrontierChart';
+import { TemplateEditor } from '@/components/formula/TemplateEditor';
 import { useComplianceCheck, complianceApi } from '@/api/compliance';
 import { explainabilityApi } from '@/api/explainability';
 
@@ -127,6 +133,10 @@ export default function FormulaDetailPage() {
 
   // 版本对比
   const [showVersionDiff, setShowVersionDiff] = useState(false);
+
+  // 营养标签数据
+  const [nutritionLabelData, setNutritionLabelData] = useState<any>(null);
+  const [nutritionLoading, setNutritionLoading] = useState(false);
   const [diffLeftVersion, setDiffLeftVersion] = useState<{
     id: number;
     version: string;
@@ -166,9 +176,23 @@ export default function FormulaDetailPage() {
   >([]);
   const [loadingRecommendations, setLoadingRecommendations] = useState(false);
 
+  // ── 深度分析状态 ──
+  const [analysisSynergy, setAnalysisSynergy] = useState<any>(null);
+  const [analysisStability, setAnalysisStability] = useState<any>(null);
+  const [analysisTaste, setAnalysisTaste] = useState<any>(null);
+  const [analysisEffect, setAnalysisEffect] = useState<any>(null);
+  const [analysisCompat, setAnalysisCompat] = useState<any>(null);
+  const [analysisSafety, setAnalysisSafety] = useState<any>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isOptimizing, setIsOptimizing] = useState(false);
+  const [optimizationResult, setOptimizationResult] = useState<any>(null);
+  const [isExporting, setIsExporting] = useState(false);
+  const [analysisHistory, setAnalysisHistory] = useState<any>(null);
+  const [showTemplateEditor, setShowTemplateEditor] = useState(false);
+
   // Tab 懒加载控制
   const [activeTab, setActiveTab] = useState('basic');
-  const renderedTabs = useRef(new Set(['basic']));
+  const renderedTabs = useRef(new Set(['basic', 'nutrition']));
 
   // 成分展开/折叠状态（Tab 2）
   const [expandedIngredients, setExpandedIngredients] = useState<Set<string>>(new Set());
@@ -181,6 +205,22 @@ export default function FormulaDetailPage() {
 
   // 数据获取
   const { data: formula, isLoading } = useFormula(formulaId);
+  // 加载营养标签数据
+  useEffect(() => {
+    const fetchNutrition = async () => {
+      if (!formulaId || isNaN(formulaId)) return;
+      setNutritionLoading(true);
+      try {
+        const result = await calculateNutritionLabel(formulaId, { serving_size_g: 100 });
+        setNutritionLabelData(result);
+      } catch (e) {
+        logger.error('Failed to load nutrition label', e);
+      } finally {
+        setNutritionLoading(false);
+      }
+    };
+    fetchNutrition();
+  }, [formulaId]);
   const { data: versions } = useFormulaVersions(formulaId);
   // 关联实验列表
   const { data: experimentsData } = useQuery({
@@ -225,7 +265,7 @@ export default function FormulaDetailPage() {
       passed: sc.passed ?? sc.is_passed ?? null,
       summary: (sc.summary ?? '') as string,
       items: Array.isArray(sc.items || sc.checks)
-        ? ((sc.items || sc.checks) as Record<string, unknown>[]).map((item) => ({
+        ? ((sc.items || sc.checks) as Record<string, unknown>[]).map((item: Record<string, unknown>) => ({
             name: (item.name ?? item.check ?? '') as string,
             status: (item.status ?? item.result ?? '') as string,
             detail: (item.detail ?? item.message ?? '') as string,
@@ -325,7 +365,7 @@ export default function FormulaDetailPage() {
     EDITABLE_FIELDS.forEach((key) => {
       if (!(key in editedData)) return;
       const editedVal = editedData[key];
-      const originalVal = (formula as Record<string, unknown>)[key];
+      const originalVal = (formula as unknown as Record<string, unknown>)[key];
       if (JSON.stringify(editedVal) !== JSON.stringify(originalVal ?? '')) {
         changed[key] = editedVal;
       }
@@ -339,7 +379,7 @@ export default function FormulaDetailPage() {
     (field: string): boolean => {
       if (!(field in editedData)) return false;
       const editedVal = editedData[field];
-      const originalVal = (formula as Record<string, unknown>)[field];
+      const originalVal = (formula as unknown as Record<string, unknown>)[field];
       return JSON.stringify(editedVal) !== JSON.stringify(originalVal ?? '');
     },
     [editedData, formula],
@@ -529,7 +569,7 @@ export default function FormulaDetailPage() {
         m.formulaApi.update(formula.id, {
           safety_check: safetyRes,
           synergy_analysis: synergyRes,
-        }),
+        } as any),
       );
       qc.invalidateQueries({ queryKey: ['formula', formulaId] });
       addToast({ type: 'success', message: 'AI 分析完成，安全检查和协同分析已更新' });
@@ -539,6 +579,410 @@ export default function FormulaDetailPage() {
       setAiAnalyzing(false);
     }
   };
+
+  // ── 深度分析处理函数 ──
+  const runAllAnalyses = useCallback(async () => {
+    if (!formula || !ingredientList.length) return;
+    setIsAnalyzing(true);
+    try {
+      const {
+        analyzeFormulaSynergy,
+        predictFormulaStability,
+        predictFormulaTaste,
+        predictFormulaEffect,
+        checkFormulaCompatibility,
+        checkFormulaSafety,
+      } = await import('@/api/formula');
+
+      const [{ temperature_c, humidity_pct, light_exposure }] = [{ temperature_c: 25, humidity_pct: 60, light_exposure: 'normal' }] as any[];
+
+      const [synergy, stability, taste, effect, compat, safety] = await Promise.all([
+        analyzeFormulaSynergy(formulaId),
+        predictFormulaStability(formulaId, { temperature_c, humidity_pct, light_exposure }),
+        predictFormulaTaste(formulaId),
+        predictFormulaEffect(formulaId, { body_weight_kg: 70, simulation_hours: 24 }),
+        checkFormulaCompatibility(formulaId),
+        checkFormulaSafety(formulaId, { daily_dosage_g: 10, target_group: 'adult' }),
+      ]);
+
+      setAnalysisSynergy(synergy);
+      setAnalysisStability(stability);
+      setAnalysisTaste(taste);
+      setAnalysisEffect(effect);
+      setAnalysisCompat(compat);
+      setAnalysisSafety(safety);
+      addToast({ type: 'success', message: '所有深度分析完成' });
+    } catch (err) {
+      console.error('深度分析失败:', err);
+      addToast({ type: 'error', message: '深度分析失败，请稍后重试' });
+    } finally {
+      setIsAnalyzing(false);
+    }
+  }, [formulaId, formula, ingredientList, qc, addToast]);
+
+  const runOptimizeLP = useCallback(async () => {
+    if (!formula) return;
+    setIsOptimizing(true);
+    setOptimizationResult(null);
+    try {
+      const { optimizeLP } = await import('@/api/formula');
+      const result = await optimizeLP(formulaId, { total_dosage_g: 100 });
+      setOptimizationResult(result);
+      addToast({ type: 'success', message: '配比优化完成' });
+    } catch (err) {
+      console.error('配比优化失败:', err);
+      addToast({ type: 'error', message: '配比优化失败' });
+    } finally {
+      setIsOptimizing(false);
+    }
+  }, [formulaId, addToast]);
+
+  const runExportFormula = useCallback(async (format: 'pdf' | 'excel') => {
+    setIsExporting(true);
+    try {
+      const { exportFormulaPDF, exportFormulaExcel } = await import('@/api/formula');
+      let blob: Blob;
+      if (format === 'pdf') {
+        const data = await exportFormulaPDF(formulaId);
+        // Create a simple text representation for PDF
+        const content = JSON.stringify(data, null, 2);
+        blob = new Blob([content], { type: 'application/json' });
+      } else {
+        blob = await exportFormulaExcel(formulaId);
+      }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `formula_${formulaId}.${format === 'pdf' ? 'json' : 'xlsx'}`;
+      a.click();
+      URL.revokeObjectURL(url);
+      addToast({ type: 'success', message: `已导出为 ${format.toUpperCase()}` });
+    } catch (err) {
+      console.error('导出失败:', err);
+      addToast({ type: 'error', message: '导出失败' });
+    } finally {
+      setIsExporting(false);
+    }
+  }, [formulaId, addToast]);
+
+  const runApplyOptimization = useCallback(async () => {
+    if (!optimizationResult?.ratios?.length) return;
+    setIsOptimizing(true);
+    try {
+      const { applyOptimization } = await import('@/api/formula');
+      const result = await applyOptimization(formulaId, { ratios: optimizationResult.ratios });
+      addToast({ type: 'success', message: result.message || '优化结果已应用到配方' });
+      setOptimizationResult(null);
+    } catch (err) {
+      console.error('应用优化失败:', err);
+      addToast({ type: 'error', message: '应用优化失败' });
+    } finally {
+      setIsOptimizing(false);
+    }
+  }, [formulaId, optimizationResult, addToast]);
+
+  const runSaveAnalysis = useCallback(async (type: string, result: any) => {
+    try {
+      const { saveAnalysisResult } = await import('@/api/formula');
+      await saveAnalysisResult(formulaId, type, result);
+      addToast({ type: 'success', message: '分析结果已保存' });
+    } catch (err) {
+      console.error('保存分析失败:', err);
+    }
+  }, [formulaId, addToast]);
+
+  const runAnalysis = useCallback(async (type: 'synergy' | 'stability' | 'taste' | 'effect' | 'compat' | 'safety') => {
+    try {
+      const {
+        analyzeFormulaSynergy,
+        predictFormulaStability,
+        predictFormulaTaste,
+        predictFormulaEffect,
+        checkFormulaCompatibility,
+        checkFormulaSafety,
+      } = await import('@/api/formula');
+      switch (type) {
+        case 'synergy': {
+          const r = await analyzeFormulaSynergy(formulaId);
+          setAnalysisSynergy(r);
+          break;
+        }
+        case 'stability': {
+          const r = await predictFormulaStability(formulaId);
+          setAnalysisStability(r);
+          break;
+        }
+        case 'taste': {
+          const r = await predictFormulaTaste(formulaId);
+          setAnalysisTaste(r);
+          break;
+        }
+        case 'effect': {
+          const r = await predictFormulaEffect(formulaId);
+          setAnalysisEffect(r);
+          break;
+        }
+        case 'compat': {
+          const r = await checkFormulaCompatibility(formulaId);
+          setAnalysisCompat(r);
+          break;
+        }
+        case 'safety': {
+          const r = await checkFormulaSafety(formulaId, { daily_dosage_g: 10, target_group: 'adult' });
+          setAnalysisSafety(r);
+          break;
+        }
+      }
+      addToast({ type: 'success', message: `${type} 分析完成` });
+    } catch (err) {
+      console.error(`分析失败 [${type}]:`, err);
+      addToast({ type: 'error', message: `${type} 分析失败，请稍后重试` });
+    }
+  }, [formulaId, addToast]);
+
+  const renderSynergyResult = (r: any) => (
+    <div className="space-y-4">
+      {r.overall_si !== null && r.overall_si !== undefined && (
+        <div className="grid grid-cols-3 gap-3">
+          <div className="p-4 rounded-xl bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800">
+            <p className="text-xs text-violet-600 dark:text-violet-400 mb-1">综合协同指数 SI</p>
+            <p className="text-2xl font-bold text-violet-700 dark:text-violet-300">{r.overall_si.toFixed(2)}</p>
+          </div>
+          <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+            <p className="text-xs text-blue-600 dark:text-blue-400 mb-1">成分对数量</p>
+            <p className="text-2xl font-bold text-blue-700 dark:text-blue-300">{r.pairs?.length ?? 0}</p>
+          </div>
+          <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
+            <p className="text-xs text-emerald-600 dark:text-emerald-400 mb-1">成分总数</p>
+            <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">{r.ingredient_count ?? 0}</p>
+          </div>
+        </div>
+      )}
+      {r.pairs?.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">成分对分析详情</p>
+          {r.pairs.map((p: any, i: number) => (
+            <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-neutral-50 dark:bg-neutral-800/50">
+              <span className="text-sm font-medium">{p.pair}</span>
+              <div className="flex items-center gap-3">
+                {p.dominant_mechanism && (
+                  <span className="text-xs text-neutral-500 dark:text-neutral-400 max-w-[120px] truncate" title={p.dominant_mechanism}>
+                    {p.dominant_mechanism.replace(/_/g, ' ')}
+                  </span>
+                )}
+                {p.overall_si !== undefined && (
+                  <span className={`text-sm font-semibold ${
+                    p.overall_si > 0.7 ? 'text-emerald-600' : p.overall_si > 0.4 ? 'text-amber-600' : 'text-neutral-500'
+                  }`}>
+                    SI: {p.overall_si.toFixed(2)}
+                  </span>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
+  const renderStabilityResult = (r: any) => (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-3">
+        <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
+          <p className="text-xs text-emerald-600 dark:text-emerald-400 mb-1">预测货架期</p>
+          <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">{r.predicted_shelf_life_months?.toFixed(0) ?? '—'} 月</p>
+        </div>
+        <div className="p-4 rounded-xl bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800">
+          <p className="text-xs text-violet-600 dark:text-violet-400 mb-1">稳定性评分</p>
+          <p className="text-2xl font-bold text-violet-700 dark:text-violet-300">{r.stability_score?.toFixed(1) ?? '—'}/100</p>
+        </div>
+      </div>
+      {r.risk_factors?.length > 0 && (
+        <div>
+          <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">风险因素 ({r.risk_factors.length})</p>
+          {r.risk_factors.map((f: any, i: number) => (
+            <div key={i} className="flex items-start gap-2 p-2 rounded bg-amber-50 dark:bg-amber-900/20 mb-1">
+              <AlertTriangle size={14} className="text-amber-500 mt-0.5 shrink-0" />
+              <span className="text-sm text-neutral-700 dark:text-neutral-300">{f.description || f.factor}</span>
+            </div>
+          ))}
+        </div>
+      )}
+      {r.storage_recommendations?.length > 0 && (
+        <div>
+          <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">储存建议</p>
+          {r.storage_recommendations.map((s: string, i: number) => (
+            <p key={i} className="text-sm text-neutral-600 dark:text-neutral-400 ml-4">• {s}</p>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
+  const renderTasteResult = (r: any) => {
+    const tp = r.taste_profile || {};
+    const max = Math.max(tp.bitter, tp.sweet, tp.umami, tp.astringent, tp.sour, 0.01);
+    return (
+      <div className="space-y-4">
+        <div className="grid grid-cols-5 gap-2">
+          {(['bitter', 'sweet', 'umami', 'astringent', 'sour'] as const).map((key) => {
+            const labels: Record<string, string> = { bitter: '苦', sweet: '甜', umami: '鲜', astringent: '涩', sour: '酸' };
+            const colors: Record<string, string> = { bitter: 'bg-rose-400', sweet: 'bg-pink-400', umami: 'bg-amber-400', astringent: 'bg-purple-400', sour: 'bg-lime-400' };
+            const val = tp[key] ?? 0;
+            return (
+              <div key={key} className="text-center">
+                <div className={`h-16 rounded-lg ${colors[key]} opacity-70`} style={{ height: `${Math.max(8, val * 64)}px`, marginTop: 'auto' }} />
+                <p className="text-xs font-medium mt-1 text-neutral-700 dark:text-neutral-300">{labels[key]}</p>
+                <p className="text-xs text-neutral-500">{val.toFixed(2)}</p>
+              </div>
+            );
+          })}
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-900/20">
+            <p className="text-xs text-emerald-600 dark:text-emerald-400">风味平衡度</p>
+            <p className="text-xl font-bold text-emerald-700 dark:text-emerald-300">{r.balance_score?.toFixed(2) ?? '—'}</p>
+          </div>
+          <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20">
+            <p className="text-xs text-blue-600 dark:text-blue-400">接受度</p>
+            <p className="text-xl font-bold text-blue-700 dark:text-blue-300">{r.acceptability?.toFixed(2) ?? '—'}</p>
+          </div>
+        </div>
+        {r.optimization_suggestions?.length > 0 && (
+          <div>
+            <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">优化建议</p>
+            {r.optimization_suggestions.slice(0, 3).map((s: any, i: number) => (
+              <p key={i} className="text-sm text-neutral-600 dark:text-neutral-400">• {s.description || s.action}</p>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const renderEffectResult = (r: any) => (
+    <div className="space-y-4">
+      <div className="grid grid-cols-4 gap-3">
+        {[
+          { label: 'Tmax (h)', value: r.peak_time?.toFixed(1) ?? '—', color: 'violet' },
+          { label: 'Cmax (μg/mL)', value: r.peak_concentration?.toFixed(2) ?? '—', color: 'blue' },
+          { label: 'Emax', value: r.max_effect?.toFixed(3) ?? '—', color: 'emerald' },
+          { label: '效应持续时间 (h)', value: r.effect_duration?.toFixed(1) ?? '—', color: 'amber' },
+        ].map((m) => (
+          <div key={m.label} className={`p-3 rounded-lg bg-${m.color}-50 dark:bg-${m.color}-900/20 border border-${m.color}-200 dark:border-${m.color}-800`}>
+            <p className={`text-xs text-${m.color}-600 dark:text-${m.color}-400 mb-1`}>{m.label}</p>
+            <p className={`text-lg font-bold text-${m.color}-700 dark:text-${m.color}-300`}>{m.value}</p>
+          </div>
+        ))}
+      </div>
+      {r.optimal_window?.length === 2 && (
+        <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
+          <p className="text-sm font-medium text-emerald-700 dark:text-emerald-300">最佳服用时间窗口</p>
+          <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+            {r.optimal_window[0]?.toFixed(1)} ~ {r.optimal_window[1]?.toFixed(1)} 小时
+          </p>
+        </div>
+      )}
+      <div className="p-3 rounded-lg bg-neutral-50 dark:bg-neutral-800/50">
+        <p className="text-sm text-neutral-600 dark:text-neutral-400">AUC (曲线下面积): <span className="font-semibold text-neutral-800 dark:text-neutral-200">{r.auc?.toFixed(2) ?? '—'}</span></p>
+      </div>
+    </div>
+  );
+
+  const renderCompatResult = (r: any) => (
+    <div className="space-y-4">
+      <div className="grid grid-cols-3 gap-3">
+        <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
+          <p className="text-xs text-emerald-600 dark:text-emerald-400 mb-1">兼容分数</p>
+          <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">{r.overall_score?.toFixed(0) ?? '—'}/100</p>
+        </div>
+        <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+          <p className="text-xs text-blue-600 dark:text-blue-400 mb-1">通过检测</p>
+          <p className="text-2xl font-bold text-blue-700 dark:text-blue-300">{r.passed_checks ?? 0}/{r.total_checks ?? 0}</p>
+        </div>
+        <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800">
+          <p className="text-xs text-rose-600 dark:text-rose-400 mb-1">问题数</p>
+          <p className="text-2xl font-bold text-rose-700 dark:text-rose-300">{r.error_count ?? 0} 错误 / {r.warning_count ?? 0} 警告</p>
+        </div>
+      </div>
+      {r.issues?.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">检测问题 ({r.issues.length})</p>
+          {r.issues.slice(0, 5).map((issue: any, i: number) => (
+            <div key={i} className={`p-3 rounded-lg border ${
+              issue.level === 'ERROR' ? 'bg-rose-50 dark:bg-rose-900/20 border-rose-200 dark:border-rose-800' :
+              issue.level === 'WARNING' ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800' :
+              'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
+            }`}>
+              <div className="flex items-start justify-between gap-2">
+                <p className={`text-sm font-medium ${
+                  issue.level === 'ERROR' ? 'text-rose-700 dark:text-rose-300' :
+                  issue.level === 'WARNING' ? 'text-amber-700 dark:text-amber-300' :
+                  'text-blue-700 dark:text-blue-300'
+                }`}>{issue.category || issue.level}</p>
+                <span className={`text-xs px-2 py-0.5 rounded-full ${
+                  issue.level === 'ERROR' ? 'bg-rose-200 dark:bg-rose-800 text-rose-800 dark:text-rose-200' :
+                  issue.level === 'WARNING' ? 'bg-amber-200 dark:bg-amber-800 text-amber-800 dark:text-amber-200' :
+                  'bg-blue-200 dark:bg-blue-800 text-blue-800 dark:text-blue-200'
+                }`}>{issue.level}</span>
+              </div>
+              <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">{issue.description}</p>
+              {issue.suggestion && <p className="text-xs text-neutral-500 dark:text-neutral-500 mt-1">💡 {issue.suggestion}</p>}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
+  const renderSafetyResult = (r: any) => (
+    <div className="space-y-4">
+      <div className={`p-4 rounded-xl border ${
+        r.is_safe
+          ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800'
+          : 'bg-rose-50 dark:bg-rose-900/20 border-rose-200 dark:border-rose-800'
+      }`}>
+        <div className="flex items-center gap-3">
+          {r.is_safe
+            ? <CheckCircle2 size={24} className="text-emerald-500" />
+            : <AlertTriangle size={24} className="text-rose-500" />
+          }
+          <div>
+            <p className={`text-lg font-bold ${r.is_safe ? 'text-emerald-700 dark:text-emerald-300' : 'text-rose-700 dark:text-rose-300'}`}>
+              {r.is_safe ? '配方安全' : '存在安全风险'}
+            </p>
+            <p className="text-sm text-neutral-600 dark:text-neutral-400">
+              风险评分: {r.overall_risk_score?.toFixed(1) ?? '—'} / 100
+              {r.blocked_by_critical && <span className="ml-2 text-rose-600 font-medium">⚠️ 已被关键问题阻断</span>}
+            </p>
+          </div>
+        </div>
+      </div>
+      {r.alerts?.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">安全告警 ({r.alerts.length})</p>
+          {r.alerts.map((a: any, i: number) => (
+            <div key={i} className={`p-3 rounded-lg border ${
+              a.level === 'CRITICAL' ? 'bg-rose-50 dark:bg-rose-900/20 border-rose-200 dark:border-rose-800' :
+              a.level === 'WARNING' ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800' :
+              'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
+            }`}>
+              <div className="flex items-start justify-between gap-2">
+                <span className="text-sm font-medium">{a.ingredient || '未知成分'}</span>
+                <span className={`text-xs px-2 py-0.5 rounded-full ${
+                  a.level === 'CRITICAL' ? 'bg-rose-200 dark:bg-rose-800 text-rose-800 dark:text-rose-200' :
+                  a.level === 'WARNING' ? 'bg-amber-200 dark:bg-amber-800 text-amber-800 dark:text-amber-200' :
+                  'bg-blue-200 dark:bg-blue-800 text-blue-800 dark:text-blue-200'
+                }`}>{a.level}</span>
+              </div>
+              <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">{a.message}</p>
+              {a.recommendation && <p className="text-xs text-neutral-500 mt-1">💡 {a.recommendation}</p>}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 
   const toggleReplies = (commentId: number) => {
     setExpandedReplies((prev) => {
@@ -806,6 +1250,12 @@ export default function FormulaDetailPage() {
                 <TabsTrigger value="explainability" icon={<FileText size={14} />}>
                   可解释性
                 </TabsTrigger>
+                <TabsTrigger value="analysis" icon={<FlaskConical size={14} />}>
+                  深度分析
+                </TabsTrigger>
+                <TabsTrigger value="nutrition" icon={<Leaf size={14} />}>
+                  营养成分
+                </TabsTrigger>
               </TabsList>
 
               {/* ═══════════════ Tab 1: 基本信息 ═══════════════ */}
@@ -880,7 +1330,7 @@ export default function FormulaDetailPage() {
                       ) : (
                         <div className="flex flex-wrap gap-2">
                           {formula.targetEffects && formula.targetEffects.length > 0 ? (
-                            formula.targetEffects.map((effect: string) => (
+                            (formula.targetEffects as string[]).map((effect: string) => (
                               <Badge key={effect} variant="primary">
                                 {effect}
                               </Badge>
@@ -1193,7 +1643,7 @@ export default function FormulaDetailPage() {
                           </table>
                         </div>
 
-                        {/* 成分可视化图表（保留）*/}
+                        {/* 成分可视化图表 */}
                         <div className="pt-4">
                           <CompositionChart ingredients={ingredientList} />
                         </div>
@@ -1202,6 +1652,67 @@ export default function FormulaDetailPage() {
                       <div className="py-12 text-center text-neutral-400">
                         <BarChart3 size={48} className="mx-auto mb-3 opacity-50" />
                         <p>暂无成分数据</p>
+                      </div>
+                    )}
+                  </div>
+                </TabsContent>
+              )}
+
+              {/* ═══════════════ Tab: 营养成分 ═══════════════ */}
+              {renderedTabs.current.has("nutrition") && (
+                <TabsContent value="nutrition">
+                  <div className="space-y-6 pt-4">
+                    <h2 className="text-lg font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
+                      <Leaf size={20} />
+                      营养成分表
+                      <Badge variant="neutral" size="sm">GB 28050-2011</Badge>
+                    </h2>
+                    
+                    {/* 营养标签 */}
+                    {nutritionLoading ? (
+                      <div className="flex items-center justify-center py-12">
+                        <span className="text-sm text-neutral-500">加载营养数据中...</span>
+                      </div>
+                    ) : nutritionLabelData ? (
+                      <>
+                        <NutritionLabel data={nutritionLabelData} showServing />
+                        
+                        {/* NRV环形图 */}
+                        {nutritionLabelData.label_items && nutritionLabelData.label_items.length > 0 && (
+                          <NutritionNRVChart
+                            items={nutritionLabelData.label_items
+                              .filter((item: {nutrient: string; nrv_percent: number | null; unit: string}) => item.nrv_percent != null && item.nrv_percent! > 0)
+                              .map((item: {nutrient: string; nrv_percent: number | null; unit: string}) => ({
+                                nutrient: item.nutrient,
+                                nrv_percent: item.nrv_percent,
+                                unit: item.unit,
+                              }))}
+                            size={100}
+                            className="mt-6"
+                          />
+                        )}
+                        
+                        {/* 营养声称 */}
+                        {nutritionLabelData.claims && nutritionLabelData.claims.length > 0 && (
+                          <NutritionClaimBadges claims={nutritionLabelData.claims} className="mt-4" />
+                        )}
+                        
+                        {/* 合规提示 */}
+                        {nutritionLabelData.warnings && nutritionLabelData.warnings.length > 0 && (
+                          <div className="mt-4 p-3 bg-warning-50 dark:bg-warning-900/10 rounded-lg">
+                            {nutritionLabelData.warnings.map((w: string, i: number) => (
+                              <p key={i} className="text-sm text-warning-700 dark:text-warning-400">
+                                ⚠ {w}
+                              </p>
+                            ))}
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <div className="py-12 text-center text-neutral-400">
+                        <Leaf size={48} className="mx-auto mb-3 opacity-50" />
+                        <p>暂无营养数据</p>
+                        <p className="text-xs mt-1">请确保配方包含已知药材</p>
                       </div>
                     )}
                   </div>
@@ -1535,7 +2046,7 @@ export default function FormulaDetailPage() {
 
                       {/* 导出报告 */}
                       <ReportExportPanel
-                        report={null}
+                        report={null as any}
                         formulaName={formula.name || '未命名配方'}
                         ingredients={ingredientList.map((i) => ({
                           name: i.name,
@@ -1544,6 +2055,182 @@ export default function FormulaDetailPage() {
                         targetEffects={formula.targetEffects as string[]}
                       />
                     </>
+                  )}
+                </div>
+              </TabsContent>
+              {/* ═══════════════ Tab: 深度分析 ═══════════════ */}
+              <TabsContent value="analysis">
+                <div className="space-y-4 pt-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <FlaskConical size={20} className="text-violet-600" />
+                      <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
+                        配方深度分析
+                      </h2>
+                    </div>
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      icon={<RefreshCw size={14} />}
+                      disabled={isAnalyzing || !ingredientList.length}
+                      onClick={runAllAnalyses}
+                    >
+                      {isAnalyzing ? '分析中...' : '运行所有分析'}
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      icon={<Zap size={14} />}
+                      disabled={isOptimizing || !ingredientList.length}
+                      onClick={runOptimizeLP}
+                    >
+                      {isOptimizing ? '优化中...' : '配比优化'}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      icon={<Download size={14} />}
+                      disabled={isExporting}
+                      onClick={() => runExportFormula('pdf')}
+                    >
+                      导出 PDF
+                    </Button>
+                  </div>
+
+                  {!ingredientList.length && (
+                    <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
+                      <p className="text-sm text-amber-700 dark:text-amber-300">
+                        请先添加成分后运行深度分析
+                      </p>
+                    </div>
+                  )}
+
+                  {/* 协同效应 */}
+                  <AnalysisCard
+                    title="协同效应分析"
+                    icon={<TestTubes size={16} />}
+                    result={analysisSynergy}
+                    loading={isAnalyzing}
+                    onRun={() => {
+                      runAnalysis('synergy');
+                    }}
+                  >
+                    {analysisSynergy && renderSynergyResult(analysisSynergy)}
+                  </AnalysisCard>
+
+                  {/* 稳定性预测 */}
+                  <AnalysisCard
+                    title="稳定性预测"
+                    icon={<Thermometer size={16} />}
+                    result={analysisStability}
+                    loading={isAnalyzing}
+                    onRun={() => runAnalysis('stability')}
+                  >
+                    {analysisStability && renderStabilityResult(analysisStability)}
+                  </AnalysisCard>
+
+                  {/* 风味预测 */}
+                  <AnalysisCard
+                    title="风味预测"
+                    icon={<Zap size={16} />}
+                    result={analysisTaste}
+                    loading={isAnalyzing}
+                    onRun={() => runAnalysis('taste')}
+                  >
+                    {analysisTaste && renderTasteResult(analysisTaste)}
+                  </AnalysisCard>
+
+                  {/* 效果预测 */}
+                  <AnalysisCard
+                    title="效果预测 (PK/PD)"
+                    icon={<Activity size={16} />}
+                    result={analysisEffect}
+                    loading={isAnalyzing}
+                    onRun={() => runAnalysis('effect')}
+                  >
+                    {analysisEffect && renderEffectResult(analysisEffect)}
+                  </AnalysisCard>
+
+                  {/* 兼容性检测 */}
+                  <AnalysisCard
+                    title="兼容性检测"
+                    icon={<CheckCircle2 size={16} />}
+                    result={analysisCompat}
+                    loading={isAnalyzing}
+                    onRun={() => runAnalysis('compat')}
+                  >
+                    {analysisCompat && renderCompatResult(analysisCompat)}
+                  </AnalysisCard>
+
+                  {/* 安全检查 */}
+                  <AnalysisCard
+                    title="安全检查"
+                    icon={<Shield size={16} />}
+                    result={analysisSafety}
+                    loading={isAnalyzing}
+                    onRun={() => runAnalysis('safety')}
+                  >
+                    {analysisSafety && renderSafetyResult(analysisSafety)}
+                  </AnalysisCard>
+
+                  {/* 配比优化结果 */}
+                  {optimizationResult && (
+                    <div className="mt-4 p-4 rounded-xl bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800">
+                      <h3 className="text-sm font-medium text-violet-700 dark:text-violet-300 mb-3">
+                        配比优化结果
+                      </h3>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                        <div>
+                          <span className="text-violet-500">总成本:</span>
+                          <span className="font-bold ml-1">{optimizationResult.min_cost?.toFixed(2)} 元</span>
+                        </div>
+                        <div>
+                          <span className="text-violet-500">求解时间:</span>
+                          <span className="font-bold ml-1">{optimizationResult.solve_time_ms?.toFixed(0)} ms</span>
+                        </div>
+                        <div>
+                          <span className="text-violet-500">可行解:</span>
+                          <span className={`font-bold ml-1 ${optimizationResult.feasible ? 'text-emerald-600' : 'text-error-600'}`}>
+                            {optimizationResult.feasible ? '是' : '否'}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-violet-500">成分数:</span>
+                          <span className="font-bold ml-1">{optimizationResult.ratios?.length ?? 0}</span>
+                        </div>
+                      </div>
+                      {optimizationResult.ratios?.length > 0 && (
+                        <div className="mt-3 space-y-1">
+                          <p className="text-xs text-violet-600 dark:text-violet-400">最优配比:</p>
+                          {optimizationResult.ratios.slice(0, 5).map((r: any, i: number) => (
+                            <div key={i} className="flex items-center gap-2 text-xs">
+                              <span className="w-24 truncate">{r.ingredient}</span>
+                              <span className="text-violet-600 dark:text-violet-400">{r.dosage_g?.toFixed(1)}g</span>
+                              <span className="text-violet-500">({r.percentage?.toFixed(1)}%)</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      <div className="mt-3 flex gap-2">
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          icon={<CheckCircle2 size={14} />}
+                          disabled={isOptimizing}
+                          onClick={runApplyOptimization}
+                        >
+                          {isOptimizing ? '应用中...' : '应用到配方'}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          icon={<Save size={14} />}
+                          onClick={() => runSaveAnalysis('optimization', optimizationResult)}
+                        >
+                          保存结果
+                        </Button>
+                      </div>
+                    </div>
                   )}
                 </div>
               </TabsContent>
@@ -2035,4 +2722,56 @@ function ExplainabilityReportSection({
       )}
     </div>
   );
+}
+
+// ── 深度分析卡片组件 ──
+function AnalysisCard({
+  title,
+  icon,
+  result,
+  loading,
+  onRun,
+  children,
+}: {
+  title: string
+  icon: React.ReactNode
+  result: any
+  loading: boolean
+  onRun: () => void
+  children?: React.ReactNode
+}) {
+  const [expanded, setExpanded] = useState(!!result)
+  if (!expanded && !result) return null
+  return (
+    <div className="rounded-xl border border-neutral-200 dark:border-neutral-700 overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setExpanded((v) => !v)}
+        className="w-full flex items-center justify-between p-4 bg-neutral-50 dark:bg-neutral-800/50 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+      >
+        <div className="flex items-center gap-2">
+          <span className="text-violet-500">{icon}</span>
+          <span className="font-medium text-neutral-900 dark:text-white text-sm">{title}</span>
+          {result && <span className="text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 px-2 py-0.5 rounded-full">已完成</span>}
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="sm" icon={<RefreshCw size={12} />} onClick={(e) => { e.stopPropagation(); onRun() }} disabled={loading}>
+            重新分析
+          </Button>
+          <ChevronDown size={14} className={`text-neutral-400 transition-transform ${expanded ? 'rotate-180' : ''}`} />
+        </div>
+      </button>
+      {expanded && (
+        <div className="p-4 border-t border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900">
+          {loading && !result ? (
+            <div className="flex items-center gap-2 text-sm text-neutral-500">
+              <RefreshCw size={14} className="animate-spin" /> 正在分析...
+            </div>
+          ) : (
+            children
+          )}
+        </div>
+      )}
+    </div>
+  )
 }

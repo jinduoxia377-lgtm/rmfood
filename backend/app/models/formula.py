@@ -136,9 +136,9 @@ class FormulaVersion(Base):
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     formula_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("formulas.id", ondelete="CASCADE"), index=True)
-    version: Mapped[int] = mapped_column(Integer, nullable=False)
-    snapshot: Mapped[dict] = mapped_column(JSON, nullable=False)
-    change_summary: Mapped[str | None] = mapped_column(Text)
+    version: Mapped[int] = mapped_column("version_number", Integer, nullable=False)
+    snapshot: Mapped[dict] = mapped_column("snapshot_data", JSON, nullable=False)
+    change_summary: Mapped[str | None] = mapped_column("changes_description", Text)
     created_by: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"), index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped)
 

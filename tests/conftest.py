@@ -22,3 +22,44 @@ os.environ.setdefault("CHROMA_NO_TELEMETRY", "1")
 
 # 在导入任何模型前先加载 base，确保 SQLAlchemy metadata 唯一
 import app.models.base  # noqa: F401
+
+# ── 共享测试夹具 ───────────────────────────────────────────────────
+import pytest
+from unittest.mock import AsyncMock, MagicMock
+from fastapi.testclient import TestClient
+
+from app.main import create_app
+
+
+@pytest.fixture()
+def client():
+    """创建 FastAPI TestClient，不启动实际服务器。"""
+    app = create_app()
+    with TestClient(app) as test_client:
+        yield test_client
+
+
+@pytest.fixture()
+def async_client():
+    """创建异步 FastAPI TestClient。"""
+    from httpx import AsyncClient, ASGITransport
+    app = create_app()
+    return AsyncClient(transport=ASGITransport(app=app), base_url="http://test")
+
+
+@pytest.fixture()
+def app():
+    """返回未绑定的 FastAPI app 实例。"""
+    return create_app()
+
+
+@pytest.fixture()
+def researcher_headers():
+    """研究者角色的认证头。"""
+    return {"Authorization": "Bearer researcher_test_token"}
+
+
+@pytest.fixture()
+def admin_headers():
+    """管理员角色的认证头。"""
+    return {"Authorization": "Bearer admin_test_token"}

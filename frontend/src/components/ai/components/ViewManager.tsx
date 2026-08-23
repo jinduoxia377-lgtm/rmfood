@@ -15,6 +15,7 @@ import type {
   ColumnConfig,
   ColumnView,
 } from '@/types/columnView.types';
+import { useToast } from '@/components/ui'
 
 /**
  * 简单的拖拽排序实现 (不依赖 @dnd-kit 的 fallback 版本)
@@ -105,6 +106,7 @@ export function ViewManager({
   maxViews = 20,
   className = '',
 }: ViewManagerProps) {
+  const { error: toastError, warning: toastWarning, success: toastSuccess } = useToast();
   // 内部状态
   const [viewName, setViewName] = useState('');
   const [viewDesc, setViewDesc] = useState('');
@@ -151,7 +153,7 @@ export function ViewManager({
   // 保存为新视图
   const handleSaveAsNew = useCallback(() => {
     if (!viewName.trim()) {
-      alert('请输入视图名称');
+      toastError('请输入视图名称');
       return;
     }
 

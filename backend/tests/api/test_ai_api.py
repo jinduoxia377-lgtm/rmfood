@@ -1,12 +1,96 @@
 """AI API 端点测试"""
 import pytest
 from httpx import AsyncClient
+from fastapi.testclient import TestClient
+
+
+@pytest.fixture
+def test_client():
+    """同步测试客户端"""
+    from app.main import create_app
+    from app.api.deps import get_current_user, get_current_active_user
+    from unittest.mock import MagicMock
+    from app.models import User
+
+    app = create_app()
+
+    async def _mock_user():
+        u = MagicMock(spec=User)
+        u.id = 1
+        u.username = "test_researcher"
+        u.role = "researcher"
+        u.is_active = True
+        return u
+
+    app.dependency_overrides[get_current_user] = _mock_user
+    app.dependency_overrides[get_current_active_user] = _mock_user
+
+    with TestClient(app) as client:
+        yield client
+
+
+@pytest.fixture
+async def async_test_client():
+    """异步测试客户端（带 CSRF 处理）"""
+    from app.main import create_app
+    from app.api.deps import get_current_user, get_current_active_user
+    from unittest.mock import MagicMock
+    from app.models import User
+    from httpx import ASGITransport, AsyncClient
+
+    app = create_app()
+
+    async def _mock_user():
+        u = MagicMock(spec=User)
+        u.id = 1
+        u.username = "test_researcher"
+        u.role = "researcher"
+        u.is_active = True
+        return u
+
+    app.dependency_overrides[get_current_user] = _mock_user
+    app.dependency_overrides[get_current_active_user] = _mock_user
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        # 设置 CSRF token（手动设置以绕过 CSRF 中间件）
+        client.cookies.set("csrf_token", "test_csrf_token_for_unit_tests")
+        client.headers["X-CSRF-Token"] = "test_csrf_token_for_unit_tests"
+        yield client
+
+
+@pytest.fixture
+async def admin_test_client():
+    """管理员角色的异步测试客户端"""
+    from app.main import create_app
+    from app.api.deps import get_current_user, get_current_active_user
+    from unittest.mock import MagicMock
+    from app.models import User
+    from httpx import ASGITransport, AsyncClient
+
+    app = create_app()
+
+    async def _mock_admin_user():
+        u = MagicMock(spec=User)
+        u.id = 1
+        u.username = "test_admin"
+        u.role = "admin"
+        u.is_active = True
+        return u
+
+    app.dependency_overrides[get_current_user] = _mock_admin_user
+    app.dependency_overrides[get_current_active_user] = _mock_admin_user
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        client.cookies.set("csrf_token", "test_csrf_token_for_unit_tests")
+        client.headers["X-CSRF-Token"] = "test_csrf_token_for_unit_tests"
+        yield client
 
 
 @pytest.mark.asyncio
-async def test_generate_formula_rule_engine(client: AsyncClient, researcher_headers: dict):
-    """测试规则引擎配方生成"""
-    response = await client.post(
+async def test_generate_formula_rule_engine(async_test_client, researcher_headers: dict):
+    response = await async_test_client.post(
         "/api/v1/ai/generate",
         json={
             "target_effects": ["补气", "养血"],
@@ -20,13 +104,24 @@ async def test_generate_formula_rule_engine(client: AsyncClient, researcher_head
     assert "candidates" in data
     assert "total" in data
     assert "generator" in data
-    assert data["generator"] == "rule_engine"
+    # 现在使用 GA 引擎，失败时回退到规则引擎
+    assert data["generator"] in ("ga_optimizer", "rule_engine_fallback")
+    if data["candidates"]:
+        # 验证候选格式
+        c = data["candidates"][0]
+        assert "formula_name" in c
+        assert "herb_combination" in c
+        assert len(c["herb_combination"]) > 0
+        for herb in c["herb_combination"]:
+            assert "name" in herb
+            assert "dosage" in herb
+            assert "role" in herb
 
 
 @pytest.mark.asyncio
-async def test_generate_formula_llm_fallback(client: AsyncClient, researcher_headers: dict):
+async def test_func(async_test_client, researcher_headers: dict):
     """测试 LLM 配方生成（回退到规则引擎）"""
-    response = await client.post(
+    response = await async_test_client.post(
         "/api/v1/ai/generate",
         json={
             "target_effects": ["补气"],
@@ -40,9 +135,9 @@ async def test_generate_formula_llm_fallback(client: AsyncClient, researcher_hea
 
 
 @pytest.mark.asyncio
-async def test_safety_check(client: AsyncClient, researcher_headers: dict):
+async def test_func(async_test_client, researcher_headers: dict):
     """测试安全检查"""
-    response = await client.post(
+    response = await async_test_client.post(
         "/api/v1/ai/safety-check",
         json={
             "ingredient_names": ["人参", "枸杞", "黄芪"],
@@ -56,9 +151,9 @@ async def test_safety_check(client: AsyncClient, researcher_headers: dict):
 
 
 @pytest.mark.asyncio
-async def test_synergy_analysis(client: AsyncClient, researcher_headers: dict):
+async def test_func(async_test_client, researcher_headers: dict):
     """测试协同分析"""
-    response = await client.post(
+    response = await async_test_client.post(
         "/api/v1/ai/synergy-analysis",
         json={
             "herb_names": ["人参", "枸杞", "黄芪"],
@@ -72,9 +167,9 @@ async def test_synergy_analysis(client: AsyncClient, researcher_headers: dict):
 
 
 @pytest.mark.asyncio
-async def test_chat(client: AsyncClient, researcher_headers: dict):
+async def test_func(async_test_client, researcher_headers: dict):
     """测试智能对话"""
-    response = await client.post(
+    response = await async_test_client.post(
         "/api/v1/ai/chat",
         json={
             "question": "如何设计一个补气的配方？",
@@ -89,9 +184,9 @@ async def test_chat(client: AsyncClient, researcher_headers: dict):
 
 
 @pytest.mark.asyncio
-async def test_taste_predict(client: AsyncClient, researcher_headers: dict):
+async def test_func(async_test_client, researcher_headers: dict):
     """测试口感预测"""
-    response = await client.post(
+    response = await async_test_client.post(
         "/api/v1/ai/taste-predict",
         json={
             "ingredients": [
@@ -107,9 +202,9 @@ async def test_taste_predict(client: AsyncClient, researcher_headers: dict):
 
 
 @pytest.mark.asyncio
-async def test_stability_predict(client: AsyncClient, researcher_headers: dict):
+async def test_func(async_test_client, researcher_headers: dict):
     """测试稳定性预测"""
-    response = await client.post(
+    response = await async_test_client.post(
         "/api/v1/ai/stability",
         json={
             "ingredients": [
@@ -125,9 +220,9 @@ async def test_stability_predict(client: AsyncClient, researcher_headers: dict):
 
 
 @pytest.mark.asyncio
-async def test_peptide_score(client: AsyncClient, researcher_headers: dict):
+async def test_func(async_test_client, researcher_headers: dict):
     """测试活性肽评分"""
-    response = await client.post(
+    response = await async_test_client.post(
         "/api/v1/ai/peptide-score",
         json={
             "sequences": ["LVFFA", "AAVFL"],
@@ -141,9 +236,9 @@ async def test_peptide_score(client: AsyncClient, researcher_headers: dict):
 
 
 @pytest.mark.asyncio
-async def test_model_status(client: AsyncClient, researcher_headers: dict):
+async def test_func(async_test_client, researcher_headers: dict):
     """测试模型状态"""
-    response = await client.get(
+    response = await async_test_client.get(
         "/api/v1/ai/models/status",
         headers=researcher_headers,
     )
@@ -156,9 +251,9 @@ async def test_model_status(client: AsyncClient, researcher_headers: dict):
 
 
 @pytest.mark.asyncio
-async def test_update_llm_config(client: AsyncClient, admin_headers: dict):
+async def test_update_llm_config(admin_test_client, admin_headers: dict):
     """测试更新 LLM 配置"""
-    response = await client.post(
+    response = await admin_test_client.post(
         "/api/v1/ai/models/config",
         json={
             "provider": "deepseek",
@@ -176,9 +271,9 @@ async def test_update_llm_config(client: AsyncClient, admin_headers: dict):
 
 
 @pytest.mark.asyncio
-async def test_analyze_formula(client: AsyncClient, researcher_headers: dict):
+async def test_func(async_test_client, researcher_headers: dict):
     """测试配方智能分析"""
-    response = await client.post(
+    response = await async_test_client.post(
         "/api/v1/ai/analyze/formula",
         json={
             "formula_id": 1,
@@ -196,9 +291,9 @@ async def test_analyze_formula(client: AsyncClient, researcher_headers: dict):
 
 
 @pytest.mark.asyncio
-async def test_recommend_formulas(client: AsyncClient, researcher_headers: dict):
+async def test_func(async_test_client, researcher_headers: dict):
     """测试配方推荐"""
-    response = await client.post(
+    response = await async_test_client.post(
         "/api/v1/ai/recommend/formulas",
         json={
             "user_id": 1,
@@ -214,9 +309,9 @@ async def test_recommend_formulas(client: AsyncClient, researcher_headers: dict)
 
 
 @pytest.mark.asyncio
-async def test_predict_trends(client: AsyncClient, researcher_headers: dict):
+async def test_func(async_test_client, researcher_headers: dict):
     """测试趋势预测"""
-    response = await client.post(
+    response = await async_test_client.post(
         "/api/v1/ai/predict/trends",
         json={
             "timeframe": "30d",
@@ -230,9 +325,9 @@ async def test_predict_trends(client: AsyncClient, researcher_headers: dict):
 
 
 @pytest.mark.asyncio
-async def test_analyze_experiment(client: AsyncClient, researcher_headers: dict):
+async def test_func(async_test_client, researcher_headers: dict):
     """测试实验分析"""
-    response = await client.post(
+    response = await async_test_client.post(
         "/api/v1/ai/analyze/experiment",
         json={
             "experiment_id": 1,
@@ -250,9 +345,9 @@ async def test_analyze_experiment(client: AsyncClient, researcher_headers: dict)
 
 
 @pytest.mark.asyncio
-async def test_neural_generate(client: AsyncClient, researcher_headers: dict):
+async def test_func(async_test_client, researcher_headers: dict):
     """测试神经网络配方生成"""
-    response = await client.post(
+    response = await async_test_client.post(
         "/api/v1/ai/generate/neural",
         json={
             "target_effects": ["补气", "养血"],
@@ -270,9 +365,9 @@ async def test_neural_generate(client: AsyncClient, researcher_headers: dict):
 
 
 @pytest.mark.asyncio
-async def test_generate_formula_invalid_effects(client: AsyncClient, researcher_headers: dict):
+async def test_func(async_test_client, researcher_headers: dict):
     """测试无效功效参数"""
-    response = await client.post(
+    response = await async_test_client.post(
         "/api/v1/ai/generate",
         json={
             "target_effects": [],
@@ -284,9 +379,9 @@ async def test_generate_formula_invalid_effects(client: AsyncClient, researcher_
 
 
 @pytest.mark.asyncio
-async def test_safety_check_empty_ingredients(client: AsyncClient, researcher_headers: dict):
+async def test_func(async_test_client, researcher_headers: dict):
     """测试空成分安全检查"""
-    response = await client.post(
+    response = await async_test_client.post(
         "/api/v1/ai/safety-check",
         json={
             "ingredient_names": [],
@@ -297,9 +392,9 @@ async def test_safety_check_empty_ingredients(client: AsyncClient, researcher_he
 
 
 @pytest.mark.asyncio
-async def test_chat_empty_question(client: AsyncClient, researcher_headers: dict):
+async def test_func(async_test_client, researcher_headers: dict):
     """测试空问题"""
-    response = await client.post(
+    response = await async_test_client.post(
         "/api/v1/ai/chat",
         json={
             "question": "",

@@ -95,6 +95,7 @@ def _get_windows_tuned_params() -> Dict[str, Any]:
         'pool_pre_ping': True,      # Default: enabled for Linux/WSL
         'pool_size': None,          # Override on Windows
         'pool_recycle': None,       # Override on Windows
+        'keepalive_enabled': True,  # TCP keepalive for Windows stability
     }
 
     if os.name == 'nt':  # Windows detected

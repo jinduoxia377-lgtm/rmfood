@@ -1,4 +1,5 @@
 export interface SelectionBarProps {
+  [key: string]: any;
   selectedNodesCount: number
   onClear: () => void
 }

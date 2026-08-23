@@ -8,6 +8,7 @@ export interface SmartPathData {
 }
 
 export interface SPathToolbarProps {
+  [key: string]: any;
   showPathPanel: boolean
   smartPathResult: SmartPathData | null
   filteredNodes: GraphNode[]

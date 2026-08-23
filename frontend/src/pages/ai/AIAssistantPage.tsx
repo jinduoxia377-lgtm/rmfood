@@ -72,6 +72,7 @@ const KnowledgeBasePanel = lazy(() => import('@/components/ai/rag/KnowledgeBaseP
 const GeneticAlgorithmPanel = lazy(() => import('@/components/ai/features/GeneticAlgorithmPanel').then(m => ({ default: m.GeneticAlgorithmPanel })));
 const MultiObjectivePanel = lazy(() => import('@/components/ai/features/MultiObjectivePanel').then(m => ({ default: m.MultiObjectivePanel })));
 const FormulaInputWithOptimization = lazy(() => import('@/components/ai/features/FormulaInputWithOptimization').then(m => ({ default: m.FormulaInputWithOptimization })));
+const AgentWorkflowTab = lazy(() => import('@/components/ai/features/AgentWorkflowTab').then(m => ({ default: m.AgentWorkflowTab })));
 
 // Tab 加载骨架屏 — 使用 UI 库 Skeleton 组件
 function TabLoadingSkeleton() {
@@ -99,7 +100,8 @@ type AITab =
   | 'peptide-analyze'
   | 'peptide-design'
   | 'knowledge'
-  | 'config';
+  | 'config'
+  | 'agent';
 
 export default function AIAssistantPage() {
   const [tab, setTab] = useState<AITab>('chat');
@@ -195,6 +197,7 @@ export default function AIAssistantPage() {
 
   const getTabLabel = (tab: AITab): string => {
     const labels: Record<AITab, string> = {
+      agent: 'Agent 工作流',
       chat: '智能对话',
       generate: '配方生成',
       genetic: '遗传优化',
@@ -225,6 +228,13 @@ export default function AIAssistantPage() {
       label: '核心功能',
       icon: Zap,
       tabs: [
+        {
+          value: 'agent' as AITab,
+          label: 'Agent 工作流',
+          icon: Bot,
+          badge: undefined,
+          badgeVariant: 'primary' as const,
+        },
         {
           value: 'chat' as AITab,
           label: '智能对话',
@@ -588,6 +598,16 @@ export default function AIAssistantPage() {
             </nav>
 
             {/* Tab Panels - Enhanced with Error Boundaries and Lazy Loading */}
+            <TabsContent value="agent" id="panel-agent" role="tabpanel" aria-labelledby="tab-agent">
+              <div className="h-[calc(100vh-12rem)]">
+                <Suspense fallback={<TabLoadingSkeleton />}>
+                  <ErrorBoundary moduleName="Agent 工作流">
+                    <AgentWorkflowTab />
+                  </ErrorBoundary>
+                </Suspense>
+              </div>
+            </TabsContent>
+
             <TabsContent value="chat" id="panel-chat" role="tabpanel" aria-labelledby="tab-chat">
               <div>
                 <ChatTab />

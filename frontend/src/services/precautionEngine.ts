@@ -35,11 +35,11 @@ const SEVERITY_ORDER: Record<PrecautionSeverity, number> = {
 
 export function loadPresetPrecautions(): Precaution[] {
   return PRECAUTIONS_DATA.filter((p) => {
-    const isActive = (p as Record<string, unknown>).isActive !== false
+    const isActive = (p as unknown as Record<string, unknown>).isActive !== false
     return isActive
   }).sort((a, b) => {
-    const priorityA = (a as Record<string, unknown>).priority as number ?? 0
-    const priorityB = (b as Record<string, unknown>).priority as number ?? 0
+    const priorityA = Number((a as unknown as Record<string, unknown>).priority ?? 0) ?? 0
+    const priorityB = Number((b as unknown as Record<string, unknown>).priority ?? 0) ?? 0
     return priorityB - priorityA
   })
 }
@@ -165,7 +165,7 @@ function evaluateTriggerConditions(
     }
 
     // Default to OR logic unless specified otherwise
-    const logic = (precaution as Record<string, unknown>).logic as string || 'OR'
+    const logic = (precaution as unknown as Record<string, unknown>).logic as string || 'OR'
     const shouldInclude = logic === 'AND' ? allMatched : anyMatched
 
     if (shouldInclude) {
@@ -192,8 +192,8 @@ export function evaluatePrecautions(
     const severityDiff = SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity]
     if (severityDiff !== 0) return severityDiff
 
-    const priorityA = (a as Record<string, unknown>).priority as number ?? 0
-    const priorityB = (b as Record<string, unknown>).priority as number ?? 0
+    const priorityA = Number((a as unknown as Record<string, unknown>).priority ?? 0) ?? 0
+    const priorityB = Number((b as unknown as Record<string, unknown>).priority ?? 0) ?? 0
     return priorityB - priorityA
   })
 

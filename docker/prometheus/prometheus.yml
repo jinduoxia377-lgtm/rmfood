@@ -12,7 +12,7 @@ scrape_configs:
       - targets: ["rmfood_backend:8000"]
         labels:
           service: rmfood-backend
-          environment: docker
+          environment: production
 
   - job_name: "rmfood-frontend"
     metrics_path: /
@@ -24,6 +24,12 @@ scrape_configs:
   - job_name: "prometheus"
     static_configs:
       - targets: ["localhost:9090"]
+
+  - job_name: "alertmanager"
+    static_configs:
+      - targets: ["alertmanager:9093"]
+        labels:
+          service: alertmanager
 
   - job_name: "node-exporter"
     static_configs:

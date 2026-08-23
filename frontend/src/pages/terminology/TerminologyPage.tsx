@@ -17,7 +17,7 @@ import {
   StatCard, Alert,
 } from '@/components/ui'
 import * as terminologyApi from '@/api/terminology'
-import type { Term, TermCategory, TermStatistics, TermValidationResponse } from '@/api/terminology'
+import type { Term, TermCategory, TermCategoryCreate, TermStatistics, TermValidationResponse } from '@/api/terminology'
 import {
   BookOpen, Search, Tag, Settings, BarChart3, Plus, Trash2, Edit2, X, Check,
   FileText, List, Database, RefreshCw,
@@ -223,7 +223,7 @@ function CategoryManagementTab() {
                   if (editingCategory) {
                     updateMutation.mutate({ id: editingCategory.id, data: formData })
                   } else {
-                    createMutation.mutate(formData as Record<string, unknown>)
+                    createMutation.mutate(formData as unknown as TermCategoryCreate)
                   }
                 }}
               >

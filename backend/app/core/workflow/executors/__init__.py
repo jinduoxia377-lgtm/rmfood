@@ -6,6 +6,10 @@ from .built_in import (
     SynergyAnalysisExecutor,
     DataAnalysisExecutor,
 )
+from .agent_executors import (
+    AgentSmartExecutor,
+    AgentFastExecutor,
+)
 
 __all__ = [
     "LLMExecutor",
@@ -13,4 +17,6 @@ __all__ = [
     "SafetyCheckExecutor",
     "SynergyAnalysisExecutor",
     "DataAnalysisExecutor",
+    "AgentSmartExecutor",
+    "AgentFastExecutor",
 ]

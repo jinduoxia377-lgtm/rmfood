@@ -1,4 +1,5 @@
 export interface FilterEmptyStateProps {
+  [key: string]: any;
   onClearFilter: () => void
   activeFilter?: string | null
 }

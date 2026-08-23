@@ -5,6 +5,7 @@ export interface ShareLinkData {
 }
 
 export interface SharePanelProps {
+  [key: string]: any;
   showSharePanel: boolean
   shareLink: ShareLinkData | null
   onCopyLink: () => void

@@ -608,7 +608,7 @@ export class BertModelManager {
 
   private estimateMemoryUsage(): void {
     try {
-      const perfMemory = (performance.memory
+      const perfMemory = (performance as any).memory;
       if (perfMemory) {
         this.metrics.memoryUsageMB = perfMemory.usedJSHeapSize / (1024 * 1024)
       } else {

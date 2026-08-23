@@ -255,7 +255,7 @@ class NutritionCache:
                 nutrients_per_100g=dict(nutrition),
                 total_cost_per_100g=herb_costs.get(hid, 0.0),
                 allergens=herb_allergens.get(hid, []) if herb_allergens else [],
-                total_dosage_used=1.0,
+                total_dosage_used=float(len(herb_list)) if herb_list else 1.0,
                 computed_at=time.monotonic(),
             )
             with self._lock:
@@ -292,14 +292,14 @@ class NutritionCache:
 
         # 取平均值（每100g）
         n = max(len(herb_list), 1)
-        avg_nutrients = {k: round(v / n, 4) for k, v in nutrients.items()}
+        weighted_nutrients = {k: round(v / n, 4) for k, v in nutrients.items()}
 
         return NutritionSnapshot(
             herb_ids_frozen=key,
-            nutrients_per_100g=avg_nutrients,
+            nutrients_per_100g=weighted_nutrients,
             total_cost_per_100g=round(total_cost / n, 4),
             allergens=all_allergens,
-            total_dosage_used=1.0,
+            total_dosage_used=float(len(herb_list)) if herb_list else 1.0,
             computed_at=time.monotonic(),
         )
 

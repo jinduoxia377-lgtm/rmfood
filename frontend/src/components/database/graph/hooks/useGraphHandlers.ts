@@ -286,8 +286,8 @@ const createAIInsightHandlers = (
 
       const synergyEdges = fEdges.filter(e => e.type === 'synergy')
       synergyEdges.slice(0, 3).forEach(e => {
-        const sName = typeof e.source === 'string' ? e.source : (e.source?.label || ''
-        const tName = typeof e.target === 'string' ? e.target : (e.target?.label || ''
+        const sName = typeof e.source === 'string' ? e.source : ((e.source as any)?.label || '')
+        const tName = typeof e.target === 'string' ? e.target : ((e.target as any)?.label || '')
         if (sName && tName) insights.push(insig.synergyPair(sName, tName, e.type))
       })
 
@@ -585,14 +585,14 @@ const createExternalDataHandlers = (
     dispatch({ type: 'SET_SHOW_COMPARE_MODE', payload: true })
     const currentNodes = new Set(nodes.map(n => n.id || n.label))
     const currentEdges = new Set(edges.map(e =>
-      `${typeof e.source === 'string' ? e.source : (e.source?.id || ''}-${typeof e.target === 'string' ? e.target : (e.target?.id || ''}`,
+      `${typeof e.source === 'string' ? e.source : ((e.source as any)?.id || '')}-${typeof e.target === 'string' ? e.target : ((e.target as any)?.id || '')}`,
     ))
 
     const prevNodeCount = Math.floor(nodes.length * 0.85)
     const prevNodes = nodes.slice(0, prevNodeCount).map(n => n.id || n.label)
     const prevEdgeCount = Math.floor(edges.length * 0.9)
     const prevEdges = edges.slice(0, prevEdgeCount).map(e =>
-      `${typeof e.source === 'string' ? e.source : (e.source?.id || ''}-${typeof e.target === 'string' ? e.target : (e.target?.id || ''}`,
+      `${typeof e.source === 'string' ? e.source : ((e.source as any)?.id || '')}-${typeof e.target === 'string' ? e.target : ((e.target as any)?.id || '')}`,
     )
 
     const nodesOnlyInA = [...currentNodes].filter(n => !prevNodes.includes(n))
@@ -1486,7 +1486,7 @@ const createExportHandlers = (
         edgeCount: exportEdges.length,
         nodes: exportNodes.map(n => ({
           id: n.id, label: n.label, type: n.type,
-          degree: (n.degree || 0,
+          degree: (n.degree || 0),
           properties: n.properties || {},
         })),
         edges: exportEdges.map(e => ({
@@ -1508,7 +1508,7 @@ const createExportHandlers = (
       let gexf = `<?xml version="1.0" encoding="UTF-8"?>\n<gexf xmlns="http://www.gexf.net/1.3draft" xmlns:viz="http://www.gexf.net/1.3draft/viz" version="1.3">\n  <meta lastmodifieddate="${new Date().toISOString()}">\n    <creator>RMFOOD Knowledge Graph v7.6</creator>\n    <description>${exportNodes.length} nodes, ${exportEdges.length} edges</description>\n  </meta>\n  <graph mode="static" defaultedgetype="directed">\n    <nodes>\n`
       exportNodes.forEach(n => {
         const conf = typeConfig?.[n.type] || { color: '#888888' }
-        gexf += `      <node id="${n.id || n.label}" label="${n.label}">\n        <attvalues><attvalue for="type" value="${n.type}"/></attvalues>\n        <viz:color r="${parseInt(conf.color?.slice(1, 3) || '88', 16)}" g="${parseInt(conf.color?.slice(3, 5) || '88', 16)}" b="${parseInt(conf.color?.slice(5, 7) || '88', 16)}"/>\n        <viz:size value="${Math.max(8, Math.min(30, ((n.degree || 0) * 2 + 10))}"/>\n      </node>\n`
+        gexf += `      <node id="${n.id || n.label}" label="${n.label}">\n        <attvalues><attvalue for="type" value="${n.type}"/></attvalues>\n        <viz:color r="${parseInt(conf.color?.slice(1, 3) || '88', 16)}" g="${parseInt(conf.color?.slice(3, 5) || '88', 16)}" b="${parseInt(conf.color?.slice(5, 7) || '88', 16)}"/>\n        <viz:size value="${Math.max(8, Math.min(30, ((n.degree || 0) * 2 + 10)))}"/>\n      </node>\n`
       })
       gexf += `    </nodes>\n    <edges>\n`
       exportEdges.forEach((e, i) => {

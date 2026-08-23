@@ -56,8 +56,8 @@ export function useExportFormula(generateResult: AICandidate[] | null) {
             ...baseData,
             肽候选: (candidate.peptide_candidates || []).map((p: any) => p.name).join(', '),
             安全性: candidate.safety_passed ? '通过' : '未通过',
-            口感评分: (candidate.taste_score || '',
-            稳定性评分: (candidate.stability_score || '',
+            口感评分: (candidate.taste_score || ''),
+            稳定性评分: (candidate.stability_score || ''),
             创建时间: candidate.generated_at || '',
           }
         }
@@ -120,7 +120,7 @@ export function useExportFormula(generateResult: AICandidate[] | null) {
           <h1>RMFOOD 配方数据导出</h1>
           <p>导出时间: ${new Date().toLocaleString('zh-CN')}</p>
           <table>
-            <thead><tr>${Object.keys(feedback.map(k => `<th>${k}</th>`).join('')}</tr></thead>
+            <thead><tr>${Object.keys(feedback).map(k => `<th>${k}</th>`).join('')}</tr></thead>
             <tbody>${(generateResult as any[]).map((row: any) =>
               `<tr>${Object.values(row).map(v => `<td>${v}</td>`).join('')}</tr>`
             ).join('')}</tbody>

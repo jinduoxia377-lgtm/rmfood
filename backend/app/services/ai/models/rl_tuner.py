@@ -3,9 +3,13 @@
 奖励函数设计：
 R = α·PredictorScore + β·(1 - DiscriminatorProb) + γ·TemplateBonus - δ·SafetyPenalty
 
-采用简化版 REINFORCE + 基线，避免引入完整 PyTorch 依赖：
-- 使用规则引擎计算奖励
-- 基于奖励梯度调整生成策略
+采用 REINFORCE + 基线（Baseline）策略梯度方法：
+- 动作：生成器生成的配方序列
+- 奖励：预测器分数 + 判别器惩罚 + 安全惩罚
+- 基线：指数移动平均（EMA）
+
+关键修复：添加完整的梯度回传回路（loss.backward() + optimizer.step()），
+使 RL 调优真正可执行。
 """
 
 from __future__ import annotations
@@ -42,13 +46,15 @@ class RLFormulaTuner:
     """
     配方生成器 RL 调优器
 
-    使用简化版 REINFORCE 策略梯度：
+    使用 REINFORCE 策略梯度方法：
     - 动作：生成器生成的配方序列
-    - 奖励：预测器分数 + 判别器惩罚 + 模板 bonus
-    - 基线：指数移动平均
+    - 奖励：预测器分数 + 判别器惩罚 + 模板 bonus - 安全惩罚
+    - 基线：指数移动平均（EMA）
+    - 梯度回传：通过 torch.autograd 实现
 
-    注意：本实现采用规则基线，避免强制依赖 PyTorch。
-    生产环境可替换为完整 PyTorch 实现。
+    与生成器联动方式：
+    - 生成器需提供 optimizer 属性和 _current_log_probs 属性
+    - tuner 调用 generator.optimizer.zero_grad() → loss.backward() → generator.optimizer.step()
     """
 
     def __init__(
@@ -56,10 +62,12 @@ class RLFormulaTuner:
         reward_weights: Optional[RewardWeights] = None,
         baseline_decay: float = 0.99,
         lr: float = 1e-3,
+        generator=None,  # 生成器引用（PyTorchFormulaGenerator 实例）
     ):
         self.reward_weights = reward_weights or RewardWeights()
         self.baseline_decay = baseline_decay
         self.lr = lr
+        self.generator = generator  # 生成器引用，用于梯度回传
 
         self.baseline: float = 0.5
         self._history: List[TrainingRecord] = []
@@ -144,12 +152,15 @@ class RLFormulaTuner:
         safety_penalty: float = 0.0,
     ) -> Dict[str, float]:
         """
-        单步训练
+        单步训练 — 完整梯度回传
+
+        修复前：loss = -advantage * lr（仅数值计算，无梯度）
+        修复后：通过生成器的 optimizer 执行完整的梯度回传
 
         Returns:
             训练统计信息
         """
-        # 计算奖励
+        # 1. 计算奖励
         rewards = self.compute_reward(
             formula=formula,
             predictor_result=predictor_result,
@@ -160,17 +171,51 @@ class RLFormulaTuner:
 
         total_reward = rewards["total"]
 
-        # 更新基线
+        # 2. 更新基线
         self.update_baseline(total_reward)
 
-        # 计算优势
+        # 3. 计算优势
         advantage = self.compute_advantage(total_reward)
 
-        # 简化策略梯度更新：调整生成策略参数
-        # 实际实现应使用 PyTorch autograd
-        loss = -advantage * self.lr  # 简化损失
+        # 4. 梯度回传（关键修复）
+        loss = 0.0
+        if self.generator is not None and hasattr(self.generator, 'optimizer'):
+            try:
+                import torch
 
-        # 记录
+                # 尝试从生成器获取当前 log_prob
+                log_probs = getattr(self.generator, '_current_log_probs', None)
+                if log_probs is not None and isinstance(log_probs, torch.Tensor):
+                    # REINFORCE: loss = -log_prob * advantage
+                    loss_tensor = -log_probs * advantage
+                    loss = loss_tensor.mean().item()
+
+                    # 完整梯度回传
+                    self.generator.optimizer.zero_grad()
+                    loss_tensor.mean().backward()
+                    torch.nn.utils.clip_grad_norm_(
+                        self.generator.parameters(), max_norm=1.0
+                    )
+                    self.generator.optimizer.step()
+                    logger.debug(
+                        f"[RLTuner] 梯度回传成功: loss={loss:.6f}, "
+                        f"advantage={advantage:.6f}"
+                    )
+                else:
+                    # 无 log_prob 时，仅记录奖励（无法更新权重）
+                    logger.debug(
+                        f"[RLTuner] 生成器无 log_prob，跳过梯度更新: "
+                        f"reward={total_reward:.4f}"
+                    )
+                    loss = -advantage * self.lr  # 仅记录，不更新
+            except Exception as e:
+                logger.warning(f"[RLTuner] 梯度回传失败: {e}")
+                loss = -advantage * self.lr
+        else:
+            # 无生成器引用，仅记录奖励
+            loss = -advantage * self.lr
+
+        # 5. 记录
         record = TrainingRecord(
             step=len(self._history),
             reward=total_reward,
@@ -186,6 +231,7 @@ class RLFormulaTuner:
             "baseline": self.baseline,
             "loss": loss,
             "breakdown": {k: v for k, v in rewards.items() if k != "total"},
+            "gradient_updated": self.generator is not None and loss > 0,
         }
 
     def get_stats(self) -> Dict[str, Any]:
@@ -217,8 +263,12 @@ _tuner: Optional[RLFormulaTuner] = None
 
 def get_rl_tuner(
     reward_weights: Optional[RewardWeights] = None,
+    generator=None,
 ) -> RLFormulaTuner:
     global _tuner
     if _tuner is None:
-        _tuner = RLFormulaTuner(reward_weights=reward_weights)
+        _tuner = RLFormulaTuner(
+            reward_weights=reward_weights,
+            generator=generator,
+        )
     return _tuner

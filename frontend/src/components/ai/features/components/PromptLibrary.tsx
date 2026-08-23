@@ -23,6 +23,7 @@ import {
   PromptRecommendation,
 } from '../hooks/types/prompt'
 import { cn } from '@/lib/utils'
+import { useToast } from '@/components/ui'
 import {
   Search,
   Star,
@@ -67,6 +68,7 @@ export const PromptLibrary: React.FC<PromptLibraryProps> = ({
   visible = true,
 }) => {
   const promptManager = usePromptManager()
+  const { error: toastError, warning: toastWarning, success: toastSuccess } = useToast()
 
   const [showEditor, setShowEditor] = useState(false)
   const [editingTemplate, setEditingTemplate] = useState<PromptTemplate | null>(null)
@@ -167,7 +169,7 @@ export const PromptLibrary: React.FC<PromptLibraryProps> = ({
     const validation = promptManager.validateVariables(editingTemplate.id, variableValues)
 
     if (!validation.isValid) {
-      alert('请填写所有必填项')
+      toastError('请填写所有必填项')
       return
     }
 
@@ -210,9 +212,9 @@ export const PromptLibrary: React.FC<PromptLibraryProps> = ({
         const result = promptManager.importPrompts(content)
 
         if (result.success) {
-          alert(`成功导入 ${result.count} 个模板`)
+          toastSuccess(`成功导入 ${result.count} 个模板`)
         } else {
-          alert(`导入完成：${result.count} 个成功，${result.errors.length} 个失败`)
+          toastWarning(`导入完成：${result.count} 成功，${result.errors.length} 失败`)
         }
 
         setShowImportExport(false)

@@ -35,7 +35,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
     const timer = setTimeout(async () => {
       setIsSearching(true);
       try {
-        const response = await fetch(`/api/ai/search?q=${encodeURIComponent(query)}`);
+        const response = await fetch(`/api/v1/ai/search?q=${encodeURIComponent(query)}`);
         if (response.ok) {
           const data = await response.json();
           setResults(data.results as SearchResult[]);

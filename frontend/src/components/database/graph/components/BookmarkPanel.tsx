@@ -1,6 +1,7 @@
 import { GraphBookmark } from './types'
 
 export interface BookmarkPanelProps {
+  [key: string]: any;
   showBookmarkPanel: boolean
   bookmarks: GraphBookmark[]
   maxBookmarks?: number

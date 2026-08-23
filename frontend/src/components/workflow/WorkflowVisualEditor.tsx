@@ -29,6 +29,7 @@ import { cn } from '@/lib/utils'
 import { Button, Card, Modal, Badge, Input, Textarea, Select } from '@/components/ui'
 import { useToast } from '@/components/ui/Toast'
 import type { Workflow, WorkflowDetail, WorkflowTask } from '@/api/workflow'
+import { workflowApi } from '@/api/deep_dev'
 
 // ── 类型定义 ──
 
@@ -246,6 +247,8 @@ export function WorkflowVisualEditor({
   const [showConfigPanel, setShowConfigPanel] = useState(false)
   const [workflowName, setWorkflowName] = useState(workflow?.name || '')
   const [workflowDesc, setWorkflowDesc] = useState(workflow?.description || '')
+  const [templates, setTemplates] = useState<WorkflowTemplate[]>([])
+  const [templatesLoading, setTemplatesLoading] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
 
   // 从现有工作流初始化节点
@@ -255,6 +258,15 @@ export function WorkflowVisualEditor({
       setEdges((workflow.config.edges || []) as WorkflowEdge[])
     }
   }, [workflow])
+
+  // 从 API 加载模板列表
+  useEffect(() => {
+    setTemplatesLoading(true)
+    workflowApi.listTemplates()
+      .then((res) => setTemplates(res.items as any || []))
+      .catch(() => setTemplates([]))
+      .finally(() => setTemplatesLoading(false))
+  }, [])
 
   // 应用模板
   const applyTemplate = useCallback((template: WorkflowTemplate) => {
@@ -770,30 +782,40 @@ export function WorkflowVisualEditor({
           onClose={() => setShowTemplateModal(false)}
         >
           <div className="space-y-3 mt-4">
-            {WORKFLOW_TEMPLATES.map((template) => (
-              <Card
-                key={template.id}
-                hoverable
-                className="p-4 cursor-pointer"
-                onClick={() => applyTemplate(template)}
-              >
-                <div className="flex items-start gap-3">
-                  <span className="text-2xl">{template.icon}</span>
-                  <div className="flex-1">
-                    <h4 className="font-semibold text-neutral-900 dark:text-white">
-                      {template.name}
-                    </h4>
-                    <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
-                      {template.description}
-                    </p>
-                    <Badge size="sm" className="mt-2">
-                      {template.category.replace('_', ' ')}
-                    </Badge>
+            {templatesLoading ? (
+              <div className="text-center py-8 text-neutral-400 text-sm">加载中...</div>
+            ) : templates.length > 0 ? (
+              templates.map((template) => (
+                <Card
+                  key={(template as any).template_id}
+                  hoverable
+                  className="p-4 cursor-pointer"
+                  onClick={() => applyTemplate(template as WorkflowTemplate)}
+                >
+                  <div className="flex items-start gap-3">
+                    <span className="text-2xl">{(template as any).icon || '📋'}</span>
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-neutral-900 dark:text-white">
+                        {template.name}
+                      </h4>
+                      <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
+                        {template.description}
+                      </p>
+                      <div className="flex items-center gap-3 mt-2 text-xs text-neutral-400">
+                        <span>{(template as any).node_count} 个节点</span>
+                        <span>·</span>
+                        <span>{(template as any).estimated_duration || '未知'}</span>
+                        <span>·</span>
+                        <Badge size="sm" className="mt-0">{template.category.replace('_', ' ')}</Badge>
+                      </div>
+                    </div>
+                    <ChevronRight size={18} className="text-neutral-400 mt-1" />
                   </div>
-                  <ChevronRight size={18} className="text-neutral-400 mt-1" />
-                </div>
-              </Card>
-            ))}
+                </Card>
+              ))
+            ) : (
+              <div className="text-center py-8 text-neutral-400 text-sm">暂无可用模板</div>
+            )}
           </div>
         </Modal>
       )}

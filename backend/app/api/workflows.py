@@ -8,58 +8,52 @@ from sqlalchemy import select, func, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..api.deps import get_db_session, get_current_user
-from ..models.models import Workflow, WorkflowTask, User, WorkflowStatus, TaskStatus
+from ..models.models import Workflow, WorkflowTask, WorkflowTemplate, User, WorkflowStatus, TaskStatus
 
 router = APIRouter(prefix="/workflows", tags=["工作流"])
 
 
-@router.get("", summary="工作流列表")
-async def list_workflows(
-    page: int = Query(1, ge=1),
-    page_size: int = Query(20, ge=1, le=50),
-    status: str | None = Query(None, description="工作流状态"),
-    workflow_type: str | None = Query(None, description="工作流类型"),
+@router.get("/templates", summary="获取工作流模板列表")
+async def list_workflow_templates(
+    category: str | None = Query(None, description="模板分类"),
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
 ):
-    """获取工作流列表"""
-    query = select(Workflow)
-    count_query = select(func.count()).select_from(Workflow)
+    """
+    获取数据库中的工作流模板列表。
 
-    if status:
-        query = query.where(Workflow.status == status)
-        count_query = count_query.where(Workflow.status == status)
-    if workflow_type:
-        query = query.where(Workflow.workflow_type == workflow_type)
-        count_query = count_query.where(Workflow.workflow_type == workflow_type)
+    模板分类:
+    - ai_generation: AI 配方生成
+    - review: 审核流程
+    - data_sync: 数据同步
+    - analysis: 数据分析
+    - custom: 自定义
+    """
+    query = select(WorkflowTemplate).where(WorkflowTemplate.is_active == 1)
+    if category:
+        query = query.where(WorkflowTemplate.category == category)
+    query = query.order_by(WorkflowTemplate.id)
 
-    total = (await db.execute(count_query)).scalar() or 0
-    items = (await db.execute(
-        query.order_by(Workflow.created_at.desc())
-        .offset((page - 1) * page_size)
-        .limit(page_size)
-    )).scalars().all()
+    result = await db.execute(query)
+    templates = [t.to_dict() for t in result.scalars().all()]
 
-    return {
-        "items": [
-            {
-                "id": w.id,
-                "name": w.name,
-                "workflow_type": w.workflow_type,
-                "status": w.status.value if hasattr(w.status, "value") else str(w.status),
-                "description": w.description,
-                "error_message": w.error_message,
-                "created_by": w.created_by,
-                "created_at": w.created_at.isoformat() if w.created_at else None,
-                "updated_at": w.updated_at.isoformat() if w.updated_at else None,
-                "task_count": len(w.tasks) if w.tasks else 0,
-            }
-            for w in items
-        ],
-        "total": total,
-        "page": page,
-        "page_size": page_size,
-    }
+    return {"items": templates, "total": len(templates)}
+
+
+@router.get("/templates/{template_id}", summary="获取模板详情")
+async def get_workflow_template(
+    template_id: str,
+    db: AsyncSession = Depends(get_db_session),
+):
+    """获取指定模板的完整节点和边配置"""
+    result = await db.execute(
+        select(WorkflowTemplate).where(WorkflowTemplate.template_id == template_id)
+    )
+    template = result.scalar_one_or_none()
+
+    if not template:
+        raise HTTPException(404, detail="模板不存在")
+
+    return template.to_dict()
 
 
 @router.get("/{workflow_id}", summary="工作流详情")
@@ -207,109 +201,8 @@ async def retry_workflow(
 
 
 # ═══════════════════════════════════════
-# 工作流模板与可视化编辑 (Phase 2 新增)
+# 工作流模板（数据库驱动）
 # ═══════════════════════════════════════
-
-@router.get("/templates", summary="获取工作流模板列表")
-async def list_workflow_templates(
-    category: str | None = Query(None, description="模板分类"),
-):
-    """
-    获取预设的工作流模板
-    
-    模板分类:
-    - ai_generation: AI 配方生成
-    - review: 审核流程
-    - data_sync: 数据同步
-    - analysis: 数据分析
-    - custom: 自定义
-    """
-    templates = [
-        {
-            "id": "ai-formula-gen",
-            "name": "AI 配方生成流水线",
-            "description": "从需求分析到配方生成的完整AI驱动流程",
-            "category": "ai_generation",
-            "icon": "🤖",
-            "node_count": 10,
-            "estimated_duration": "5-15 分钟",
-        },
-        {
-            "id": "review-process",
-            "name": "配方审核流程",
-            "description": "标准化的配方审核与批准流程",
-            "category": "review",
-            "icon": "✅",
-            "node_count": 8,
-            "estimated_duration": "1-3 天",
-        },
-        {
-            "id": "data-sync",
-            "name": "数据同步流水线",
-            "description": "外部数据库同步与知识图谱更新",
-            "category": "data_sync",
-            "icon": "🔄",
-            "node_count": 7,
-            "estimated_duration": "30-60 分钟",
-        },
-        {
-            "id": "batch-analysis",
-            "name": "批量分析流程",
-            "description": "批量配方的安全性、稳定性、协同效应分析",
-            "category": "analysis",
-            "icon": "📊",
-            "node_count": 9,
-            "estimated_duration": "10-30 分钟",
-        },
-    ]
-    
-    if category:
-        templates = [t for t in templates if t["category"] == category]
-    
-    return {"items": templates, "total": len(templates)}
-
-
-@router.get("/templates/{template_id}", summary="获取模板详情")
-async def get_workflow_template(
-    template_id: str,
-):
-    """获取指定模板的完整节点和边配置"""
-    
-    template_configs = {
-        "ai-formula-gen": {
-            "nodes": [
-                {"id": "start", "type": "start", "position": {"x": 400, "y": 0}, "data": {"label": "开始"}},
-                {"id": "input", "type": "task", "position": {"x": 350, "y": 100}, "data": {"label": "需求输入", "taskType": "user_input"}},
-                {"id": "analyze", "type": "task", "position": {"x": 350, "y": 200}, "data": {"label": "需求分析", "taskType": "llm_analysis"}},
-                {"id": "generate", "type": "task", "position": {"x": 350, "y": 300}, "data": {"label": "AI 生成候选", "taskType": "neural_generate"}},
-                {"id": "optimize", "type": "task", "position": {"x": 350, "y": 400}, "data": {"label": "多目标优化", "taskType": "multi_optimize"}},
-                {"id": "safety", "type": "task", "position": {"x": 350, "y": 500}, "data": {"label": "安全性检查", "taskType": "safety_check"}},
-                {"id": "condition", "type": "condition", "position": {"x": 350, "y": 600}, "data": {"label": "通过?"}},
-                {"id": "output", "type": "task", "position": {"x": 200, "y": 720}, "data": {"label": "输出结果", "taskType": "save_result"}},
-                {"id": "regenerate", "type": "task", "position": {"x": 500, "y": 720}, "data": {"label": "重新生成", "taskType": "regenerate"}},
-                {"id": "end", "type": "end", "position": {"x": 400, "y": 840}, "data": {"label": "结束"}},
-            ],
-            "edges": [
-                {"id": "e1", "source": "start", "target": "input"},
-                {"id": "e2", "source": "input", "target": "analyze"},
-                {"id": "e3", "source": "analyze", "target": "generate"},
-                {"id": "e4", "source": "generate", "target": "optimize"},
-                {"id": "e5", "source": "optimize", "target": "safety"},
-                {"id": "e6", "source": "safety", "target": "condition"},
-                {"id": "e7", "source": "condition", "target": "output", "label": "是"},
-                {"id": "e8", "source": "condition", "target": "regenerate", "label": "否"},
-                {"id": "e9", "source": "output", "target": "end"},
-                {"id": "e10", "source": "regenerate", "target": "generate"},
-            ],
-        },
-        # 其他模板配置...
-    }
-    
-    if template_id not in template_configs:
-        raise HTTPException(404, detail="模板不存在")
-    
-    return template_configs[template_id]
-
 
 @router.post("", summary="创建工作流（支持可视化编辑器）")
 async def create_workflow_from_editor(
@@ -405,11 +298,8 @@ async def update_workflow_config(
     nodes = config_data.get("nodes", [])
     
     # 删除旧任务
-    await db.execute(
-        select(WorkflowTask).where(WorkflowTask.workflow_id == workflow_id)
-    )
-    # 注意：这里需要使用delete语句，简化处理
-    
+    await db.execute(delete(WorkflowTask).where(WorkflowTask.workflow_id == workflow_id))
+
     # 创建新任务
     for idx, node in enumerate(nodes):
         if node["type"] not in ("task",):

@@ -267,7 +267,7 @@ class UnifiedFormulaOptimizer:
                 if effect in _EFFICACY_TO_HERBS:
                     candidate_set.update(_EFFICACY_TO_HERBS[effect])
             return len(candidate_set)
-        except Exception as e:
+        except (RuntimeError, ValueError, TypeError) as e:
             logger.debug("候选配方估算失败: %s", e)
             return len(target_effects) * 5  # 粗略估计
 
@@ -403,7 +403,7 @@ class UnifiedFormulaOptimizer:
                 strategy_explanation="标准遗传算法（实数编码）",
                 nutrition_constraints_met=True,
             )
-        except Exception as e:
+        except (RuntimeError, ValueError, TypeError) as e:
             logger.error(f"[UnifiedOptimizer] GA执行失败: {e}")
             return OptimizationResult(
                 strategy_used="ga",
@@ -455,7 +455,7 @@ class UnifiedFormulaOptimizer:
                         max_value=nc.max_value,
                     ))
                 milp_solver.nutrition_constraints = lp_constraints
-            except Exception as e:
+            except (RuntimeError, ValueError, TypeError) as e:
                 logger.warning(f"[UnifiedOptimizer] MILP求解器初始化回退: {e}")
 
             # 使用BinaryGA+MILP
@@ -557,7 +557,7 @@ class UnifiedFormulaOptimizer:
                     mr.feasible for mr in milp_results if mr
                 ) if milp_results else True,
             )
-        except Exception as e:
+        except (RuntimeError, ValueError, TypeError) as e:
             logger.error(f"[UnifiedOptimizer] GA-LP混合执行失败: {e}")
             # 回退到标准GA
             return self._execute_ga(request)
@@ -640,7 +640,7 @@ class UnifiedFormulaOptimizer:
                 strategy_explanation="NSGA-II多目标优化（Pareto前沿）",
                 nutrition_constraints_met=True,
             )
-        except Exception as e:
+        except (RuntimeError, ValueError, TypeError) as e:
             logger.error(f"[UnifiedOptimizer] NSGA-II执行失败: {e}")
             return OptimizationResult(
                 strategy_used="nsga2",

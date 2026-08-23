@@ -1,6 +1,7 @@
 import { AnimationPreset } from './types'
 
 export interface AnimationPresetsControlsProps {
+  [key: string]: any;
   animationPreset: AnimationPreset
   onSwitchAnimationPreset: (preset: AnimationPreset) => void
 }

@@ -1,6 +1,7 @@
 import { ReportConfig } from './types'
 
 export interface ReportDialogProps {
+  [key: string]: any;
   showReportDialog: boolean
   reportConfig: ReportConfig
   reportGenerating: boolean

@@ -9,6 +9,7 @@ export interface NodeAnnotationEntry {
 }
 
 export interface AnnotationPanelProps {
+  [key: string]: any;
   showAnnotationPanel: boolean
   selectedNodeLabel: string
   nodeAnnotations: NodeAnnotationEntry[]

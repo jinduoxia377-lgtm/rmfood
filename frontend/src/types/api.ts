@@ -93,6 +93,7 @@ export interface UpdateFormulaRequest extends Partial<CreateFormulaRequest> {}
 // ============ 实验相关 ============
 
 export interface Experiment {
+  formula_name?: string;
   id: string
   formulaId: string
   name: string

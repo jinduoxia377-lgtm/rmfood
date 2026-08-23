@@ -36,9 +36,9 @@ class QueryService:
     
     def _simulate_search(self, query) -> List[SearchResultItem]:
         # Simulate search results
-        return [SearchResultItem(formula_id="form_001", name="Sample", relevance_score=0.95, 
-                                 ingredients_summary="Simulated", efficacy_summary={})]"
+        return [SearchResultItem(formula_id="form_001", name="Sample", relevance_score=0.95,
+                                 ingredients_summary="Simulated", efficacy_summary={})]
 
 # Service setup function
 def create_query_service():
-    return QueryService()"
+    return QueryService()

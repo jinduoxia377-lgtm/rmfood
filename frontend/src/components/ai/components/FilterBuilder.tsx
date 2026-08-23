@@ -18,6 +18,7 @@ import {
   OPERATOR_LABELS,
   DEFAULT_OPERATORS_BY_TYPE,
 } from '@/types/filter.types';
+import { useToast } from '@/components/ui'
 
 function generateFilterId(): string {
   return `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
@@ -394,6 +395,7 @@ export function FilterBuilder({
   maxHeight = 400,
   className = '',
 }: FilterBuilderProps) {
+  const { error: toastError, warning: toastWarning, success: toastSuccess } = useToast();
   const [filterName, setFilterName] = useState('');
   const [showSavedPanel, setShowSavedPanel] = useState(false);
 
@@ -431,7 +433,7 @@ export function FilterBuilder({
 
   const handleSaveCurrentFilter = useCallback(() => {
     if (!filterName.trim()) {
-      alert('请输入筛选方案名称');
+      toastError('请输入筛选方案名称');
       return;
     }
 

@@ -146,7 +146,7 @@ class PerformanceMonitor {
   }
 
   private getMemoryUsage(): PerformanceMetrics['memoryUsage'] {
-    const memory = (performance.memory;
+    const memory = (performance as any).memory;
 
     if (!memory) {
       return {

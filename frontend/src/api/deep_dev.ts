@@ -2,13 +2,12 @@
  * 工作流 API 客户端
  *
  * 封装 Agent 工作流相关后端接口:
- * - 执行工作流
- * - 查询执行结果
- * - 流式执行（SSE）
- * - 图谱推理
+ *  - 执行工作流
+ *  - 查询执行结果
+ *  - 流式执行（SSE）
+ *  - WebSocket 实时进度
+ *  - 图谱推理
  */
-
-const BASE_URL = '/api/v1/agent';
 
 export interface WorkflowExecuteRequest {
   query: string;
@@ -31,6 +30,20 @@ export interface WorkflowExecution {
   stages: WorkflowStageResult[];
   final_response_preview: string;
   error?: string;
+}
+
+export interface WorkflowTemplate {
+  id: string;
+  template_id: string;
+  name: string;
+  description: string | null;
+  category: string;
+  icon: string | null;
+  node_count: number | null;
+  estimated_duration: string | null;
+  nodes: Record<string, unknown>[];
+  edges: Record<string, unknown>[];
+  preset_config: Record<string, unknown>;
 }
 
 export interface WorkflowExecuteResponse {
@@ -103,11 +116,62 @@ export interface TenantAIConfig {
 
 const API_BASE = '/api/v1';
 
+// ── CSRF Token 管理 ──
+let _csrfToken: string | null = null;
+let _csrfLoading = false;
+
+async function ensureCsrfToken(): Promise<string | null> {
+  if (_csrfToken) return _csrfToken;
+  if (_csrfLoading) {
+    // 等待已有的请求完成
+    return new Promise((resolve) => {
+      const check = () => {
+        if (_csrfToken || !_csrfLoading) resolve(_csrfToken);
+        else setTimeout(check, 50);
+      };
+      check();
+    });
+  }
+  _csrfLoading = true;
+  try {
+    // 先发一个 GET 请求获取 CSRF cookie
+    const resp = await fetch(`${API_BASE}/agent/csrf-token`, {
+      method: 'GET',
+      credentials: 'include',
+    });
+    if (resp.ok) {
+      const data = await resp.json();
+      if (data.token) _csrfToken = data.token;
+    }
+  } catch {
+    // 忽略错误
+  } finally {
+    _csrfLoading = false;
+  }
+  return _csrfToken;
+}
+
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
+  // 确保有 CSRF token
+  const csrfToken = await ensureCsrfToken();
+
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...(options?.headers as Record<string, string> || {}),
+  };
+
+  // POST/PUT/PATCH/DELETE 需要携带 CSRF token
+  const method = (options?.method || 'GET').toUpperCase();
+  if (csrfToken && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
+    headers['X-CSRF-Token'] = csrfToken;
+  }
+
   const res = await fetch(`${API_BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    headers,
+    credentials: 'include',
     ...options,
   });
+
   if (!res.ok) {
     const text = await res.text();
     throw new Error(`API ${res.status}: ${text}`);
@@ -119,14 +183,14 @@ export const workflowApi = {
   /** 执行工作流 */
   execute: (workflowType: string, body: WorkflowExecuteRequest) =>
     request<WorkflowExecuteResponse>(
-      `${BASE_URL}/agent/workflow/${workflowType}/execute`,
+      `/agent/workflow/${workflowType}/execute`,
       { method: 'POST', body: JSON.stringify(body) }
     ),
 
   /** 查询工作流执行结果 */
   getExecution: (executionId: string) =>
     request<{ success: boolean; data: WorkflowExecution }>(
-      `${BASE_URL}/agent/workflow/executions/${executionId}`
+      `/agent/workflow/executions/${executionId}`
     ),
 
   /** 流式执行工作流（SSE） */
@@ -139,7 +203,7 @@ export const workflowApi = {
   ): () => void {
     const controller = new AbortController();
 
-    fetch(`${API_BASE}${BASE_URL}/agent/workflow/${workflowType}/execute/stream`, {
+    fetch(`${API_BASE}/agent/workflow/${workflowType}/execute/stream`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
@@ -186,7 +250,11 @@ export const workflowApi = {
 
   /** 列出可用工作流模板 */
   listTemplates: () =>
-    request<{ success: boolean; templates: string[] }>('/agent/workflow/templates'),
+    request<{ items: WorkflowTemplate[]; total: number }>('/workflows/templates'),
+
+  /** 获取单个模板详情 */
+  getTemplate: (templateId: string) =>
+    request<WorkflowTemplate>(`/workflows/templates/${templateId}`),
 };
 
 /**

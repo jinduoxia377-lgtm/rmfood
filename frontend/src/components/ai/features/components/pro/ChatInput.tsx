@@ -164,7 +164,7 @@ export default function ChatInput({
 
   // 格式按钮点击 — 带活跃状态追踪
   const handleFormatInsert = useCallback((format: string) => {
-    onInsertFormat?.(format
+    onInsertFormat?.(format as Parameters<typeof onInsertFormat>[0])
     setActiveFormat(format === activeFormat ? null : format)
   }, [onInsertFormat, activeFormat])
 

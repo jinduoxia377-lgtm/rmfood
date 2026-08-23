@@ -32,7 +32,7 @@ export interface EventPayloadMap {
   'state:changed': { newState: string; previousState?: string };
   'auth:required': Record<string, never>;
   'ai:config_error': { type: string; message: string; suggestion?: string };
-  'thinking:step': { step: string; content: string; status: string; detail?: string };
+  'thinking:step': { step?: string; content?: string; status?: string; detail?: string; question?: string; result?: unknown; error?: string; timestamp: number };
   'search:started': { query: string; timestamp: number };
   'search:completed': { query: string; results: number; timeTaken: number; timestamp: number };
   'search:error': { error: string; timestamp: number };

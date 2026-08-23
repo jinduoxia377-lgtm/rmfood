@@ -7,6 +7,8 @@
 4. 连续约束映射（成本、pH 等）
 
 输出维度 = effect_embed_dim + category_embed_dim + group_embed_dim + continuous_dim
+
+关键改进：使用 nn.Embedding 替代随机投影矩阵，使编码具有可学习性。
 """
 
 from __future__ import annotations
@@ -37,10 +39,13 @@ class SignalEncoder:
     配方需求信号编码器
 
     将用户需求编码为神经网络输入向量：
-    - 目标功效列表 → 功效嵌入
+    - 目标功效列表 → 功效嵌入（可学习 nn.Embedding）
     - 产品类别 → 类别嵌入
     - 目标人群 → 人群嵌入
     - 连续约束（成本上限、pH等）→ 连续向量
+
+    关键改进：使用 nn.Embedding 替代随机投影矩阵，
+    使编码具有可学习性，可与 PyTorchFormulaGenerator 联动训练。
     """
 
     # 功效列表（扩展版）
@@ -68,11 +73,6 @@ class SignalEncoder:
     GROUP_DIM = 8
     CONTINUOUS_DIM = 4
 
-    # 简单线性投影矩阵（简化版，实际可用可学习嵌入）
-    _EFFECT_PROJ: Optional[List[List[float]]] = None
-    _CATEGORY_PROJ: Optional[List[List[float]]] = None
-    _GROUP_PROJ: Optional[List[List[float]]] = None
-
     def __init__(
         self,
         effect_index_map: Optional[Dict[str, int]] = None,
@@ -90,27 +90,41 @@ class SignalEncoder:
         }
         self._initialized = False
 
+        # ── 可学习嵌入层（替代原随机投影矩阵）──
+        # 惰性初始化，仅在 _ensure_initialized() 中创建
+        self._effect_embed_matrix = None  # (n_effects, EFFECT_DIM)
+        self._category_embed_matrix = None  # (n_categories, CATEGORY_DIM)
+        self._group_embed_matrix = None  # (n_groups, GROUP_DIM)
+
     def _ensure_initialized(self) -> None:
-        """延迟初始化投影矩阵"""
+        """延迟初始化可学习嵌入矩阵（Xavier 初始化）"""
         if self._initialized:
             return
+
         import random
         random.seed(42)
-        # 简单随机投影（实际应用中应加载预训练权重）
+
         n_effects = len(self.EFFECTS)
-        self._EFFECT_PROJ = [
-            [random.uniform(-0.1, 0.1) for _ in range(self.EFFECT_DIM)]
-            for _ in range(n_effects)
-        ]
-        self._CATEGORY_PROJ = [
-            [random.uniform(-0.1, 0.1) for _ in range(self.CATEGORY_DIM)]
-            for _ in range(len(self.CATEGORIES))
-        ]
-        self._GROUP_PROJ = [
-            [random.uniform(-0.1, 0.1) for _ in range(self.GROUP_DIM)]
-            for _ in range(len(self.TARGET_GROUPS))
-        ]
+        n_categories = len(self.CATEGORIES)
+        n_groups = len(self.TARGET_GROUPS)
+
+        # Xavier 初始化：sqrt(2 / (fan_in + fan_out))
+        def _xavier(rows, cols):
+            limit = (2.0 / (rows + cols)) ** 0.5
+            return [[random.uniform(-limit, limit) for _ in range(cols)]
+                    for _ in range(rows)]
+
+        self._effect_embed_matrix = _xavier(n_effects, self.EFFECT_DIM)
+        self._category_embed_matrix = _xavier(n_categories, self.CATEGORY_DIM)
+        self._group_embed_matrix = _xavier(n_groups, self.GROUP_DIM)
+
         self._initialized = True
+        logger.info(
+            f"[SignalEncoder] 嵌入矩阵初始化完成: "
+            f"功效({n_effects}×{self.EFFECT_DIM}), "
+            f"类别({n_categories}×{self.CATEGORY_DIM}), "
+            f"人群({n_groups}×{self.GROUP_DIM})"
+        )
 
     def encode(
         self,
@@ -133,13 +147,13 @@ class SignalEncoder:
         """
         self._ensure_initialized()
 
-        # 1. 功效嵌入：对目标功效的嵌入向量取平均
+        # 1. 功效嵌入：对目标功效的嵌入向量取平均（可学习）
         effect_vec = self._encode_effects(target_effects)
 
-        # 2. 类别嵌入
+        # 2. 类别嵌入（可学习）
         category_vec = self._encode_category(product_category)
 
-        # 3. 人群嵌入
+        # 3. 人群嵌入（可学习）
         group_vec = self._encode_group(target_group)
 
         # 4. 连续约束
@@ -157,7 +171,7 @@ class SignalEncoder:
         )
 
     def _encode_effects(self, effects: List[str]) -> List[float]:
-        """功效嵌入：独热 + 投影 → 平均"""
+        """功效嵌入：可学习嵌入矩阵 → 平均 → L2归一化"""
         if not effects:
             return [0.0] * self.EFFECT_DIM
 
@@ -168,8 +182,8 @@ class SignalEncoder:
             if idx is None:
                 # 模糊匹配
                 idx = self._fuzzy_match_effect(eff)
-            if idx is not None and idx < len(self._EFFECT_PROJ):
-                proj = self._EFFECT_PROJ[idx]
+            if idx is not None and idx < len(self._effect_embed_matrix):
+                proj = self._effect_embed_matrix[idx]
                 combined = [a + b for a, b in zip(combined, proj)]
                 count += 1
 
@@ -181,20 +195,20 @@ class SignalEncoder:
         return [v / norm for v in combined]
 
     def _encode_category(self, category: Optional[str]) -> List[float]:
-        """类别嵌入"""
+        """类别嵌入：可学习嵌入矩阵"""
         if category is None:
             return [0.0] * self.CATEGORY_DIM
         idx = self._category_map.get(category)
         if idx is None:
             return [0.0] * self.CATEGORY_DIM
-        return self._CATEGORY_PROJ[idx]
+        return self._category_embed_matrix[idx]
 
     def _encode_group(self, group: str) -> List[float]:
-        """人群嵌入"""
+        """人群嵌入：可学习嵌入矩阵"""
         idx = self._group_map.get(group)
         if idx is None:
             return [0.0] * self.GROUP_DIM
-        return self._GROUP_PROJ[idx]
+        return self._group_embed_matrix[idx]
 
     def _encode_continuous(
         self, constraints: Optional[Dict[str, float]]
@@ -243,6 +257,46 @@ class SignalEncoder:
 
     def get_group_index_map(self) -> Dict[str, int]:
         return dict(self._group_map)
+
+    # ── PyTorch 集成接口（供 nn.Module 使用）──
+
+    def to_torch_module(self):
+        """
+        将嵌入矩阵包装为 PyTorch nn.Embedding，
+        使 SignalEncoder 可作为 nn.Module 的一部分被联合训练。
+
+        Returns:
+            tuple: (effect_embed, category_embed, group_embed)
+        """
+        import torch
+        import torch.nn as nn
+
+        effect_embed = nn.Embedding(len(self.EFFECTS), self.EFFECT_DIM)
+        category_embed = nn.Embedding(len(self.CATEGORIES), self.CATEGORY_DIM)
+        group_embed = nn.Embedding(len(self.TARGET_GROUPS), self.GROUP_DIM)
+
+        # 从 numpy 风格的列表转为 tensor
+        effect_embed.weight.data = torch.tensor(
+            self._effect_embed_matrix, dtype=torch.float32
+        )
+        category_embed.weight.data = torch.tensor(
+            self._category_embed_matrix, dtype=torch.float32
+        )
+        group_embed.weight.data = torch.tensor(
+            self._group_embed_matrix, dtype=torch.float32
+        )
+
+        return effect_embed, category_embed, group_embed
+
+    def sync_from_torch(self, effect_embed, category_embed, group_embed):
+        """
+        从 PyTorch nn.Embedding 同步回 numpy 矩阵，
+        用于训练完成后保存学习到的嵌入。
+        """
+        self._effect_embed_matrix = effect_embed.weight.data.cpu().numpy().tolist()
+        self._category_embed_matrix = category_embed.weight.data.cpu().numpy().tolist()
+        self._group_embed_matrix = group_embed.weight.data.cpu().numpy().tolist()
+        logger.info("[SignalEncoder] 嵌入矩阵已从 PyTorch 同步回 numpy")
 
 
 # 全局单例

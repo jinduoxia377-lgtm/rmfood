@@ -24,7 +24,7 @@ from .formula import (
     formula_peptides,
 )
 from .experiment import Experiment, ExperimentData
-from .workflow import Workflow, WorkflowTask
+from .workflow import Workflow, WorkflowTask, WorkflowTemplate
 from .notification import Notification
 from .system import AuditLog, Attachment, DataSnapshot
 from .external_data import TCMHerb, MMIDHerb, SymMapHerb, BioactivePeptide, KnowledgeGraphNode
@@ -49,6 +49,7 @@ __all__ = [
     "ExperimentData",
     "Workflow",
     "WorkflowTask",
+    "WorkflowTemplate",
     "Notification",
     "AuditLog",
     "Attachment",

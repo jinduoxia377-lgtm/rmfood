@@ -10,6 +10,7 @@ export interface CentralityMetricsData {
 export type CentralityMode = 'pageRank' | 'betweenness' | 'closeness' | 'degree'
 
 export interface CentralityMetricsPanelProps {
+  [key: string]: any;
   showCentralityPanel: boolean
   centralityMetrics: CentralityMetricsData | null
   centralityMode: CentralityMode

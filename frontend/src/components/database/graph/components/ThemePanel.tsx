@@ -1,6 +1,7 @@
 import { ThemeConfig, THEME_PRESETS } from '../types'
 
 export interface ThemePanelProps {
+  [key: string]: any;
   showThemePanel: boolean
   activeTheme: ThemeConfig
   onApplyTheme: (theme: ThemeConfig) => void

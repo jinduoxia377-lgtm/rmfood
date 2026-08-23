@@ -34,7 +34,7 @@ function ModelHealthCards() {
   const { data, isLoading, refetch } = useQuery<ModelHealth[]>({
     queryKey: ['model-health'],
     queryFn: async () => {
-      const response = await fetch('/api/ai/models/health');
+      const response = await fetch('/api/v1/ai/models/health');
       if (!response.ok) {
         throw new Error('模型健康数据加载失败');
       }
@@ -216,7 +216,7 @@ function RateLimitPanel() {
   const { data } = useQuery<RateLimitInfo>({
     queryKey: ['rate-limit'],
     queryFn: async () => {
-      const response = await fetch('/api/ai/rate-limit');
+      const response = await fetch('/api/v1/ai/rate-limit');
       if (!response.ok) throw new Error('速率限制数据加载失败');
       return response.json() as Promise<RateLimitInfo>;
     },

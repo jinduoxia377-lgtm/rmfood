@@ -17,62 +17,8 @@ from typing import Any, Dict, List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
-# ═════════════════════════════════════════════
-# 营养数据库（每 100g 含量）
-# ═════════════════════════════════════════════
-
-HERB_NUTRITION_DB: Dict[str, Dict[str, float]] = {
-    "黄芪": {
-        "protein": 20.7, "fat": 0.8, "carbohydrate": 58.7,
-        "dietary_fiber": 10.5, "sodium": 15.0, "calcium": 364.0,
-        "iron": 7.3, "zinc": 3.35, "vitamin_a": 0, "vitamin_c": 0,
-    },
-    "党参": {
-        "protein": 11.2, "fat": 0.5, "carbohydrate": 68.3,
-        "dietary_fiber": 8.8, "sodium": 20.0, "calcium": 128.0,
-        "iron": 5.7, "zinc": 2.80, "vitamin_a": 0, "vitamin_c": 0,
-    },
-    "枸杞": {
-        "protein": 13.9, "fat": 1.0, "carbohydrate": 62.9,
-        "dietary_fiber": 10.5, "sodium": 92.0, "calcium": 19.0,
-        "iron": 6.8, "zinc": 1.90, "vitamin_a": 64, "vitamin_c": 4.0,
-    },
-    "当归": {
-        "protein": 9.5, "fat": 3.5, "carbohydrate": 55.3,
-        "dietary_fiber": 15.0, "sodium": 10.0, "calcium": 280.0,
-        "iron": 28.9, "zinc": 1.50, "vitamin_a": 0, "vitamin_c": 0,
-    },
-    "甘草": {
-        "protein": 20.3, "fat": 1.3, "carbohydrate": 56.7,
-        "dietary_fiber": 12.0, "sodium": 10.0, "calcium": 294.0,
-        "iron": 8.1, "zinc": 3.00, "vitamin_a": 0, "vitamin_c": 0,
-    },
-    "人参": {
-        "protein": 16.1, "fat": 1.4, "carbohydrate": 71.6,
-        "dietary_fiber": 10.0, "sodium": 15.0, "calcium": 26.0,
-        "iron": 8.4, "zinc": 2.70, "vitamin_a": 0, "vitamin_c": 0,
-    },
-    "红枣": {
-        "protein": 3.4, "fat": 0.5, "carbohydrate": 73.3,
-        "dietary_fiber": 10.9, "sodium": 0.5, "calcium": 64.0,
-        "iron": 2.3, "zinc": 0.70, "vitamin_a": 0, "vitamin_c": 43.0,
-    },
-    "山药": {
-        "protein": 1.3, "fat": 0.1, "carbohydrate": 26.5,
-        "dietary_fiber": 1.6, "sodium": 2.5, "calcium": 10.0,
-        "iron": 0.5, "zinc": 0.40, "vitamin_a": 0, "vitamin_c": 0,
-    },
-    "茯苓": {
-        "protein": 8.8, "fat": 1.1, "carbohydrate": 69.9,
-        "dietary_fiber": 5.0, "sodium": 5.0, "calcium": 10.0,
-        "iron": 1.2, "zinc": 0.80, "vitamin_a": 0, "vitamin_c": 0,
-    },
-    "白术": {
-        "protein": 9.7, "fat": 2.2, "carbohydrate": 62.5,
-        "dietary_fiber": 8.0, "sodium": 10.0, "calcium": 56.0,
-        "iron": 3.2, "zinc": 1.50, "vitamin_a": 0, "vitamin_c": 0,
-    },
-}
+# 统一使用新模块的营养数据库，消除双数据源
+from app.services.formula.nutrition_database import HERB_NUTRITION_DB
 
 # ═════════════════════════════════════════════
 # 过敏原映射
@@ -111,12 +57,7 @@ CALORIC_VALUES: Dict[str, float] = {
     "dietary_fiber": 2.0,  # 膳食纤维部分可代谢
 }
 
-# ═════════════════════════════════════════════
-# 数据模型
-# ═════════════════════════════════════════════
 
-
-@dataclass
 class IngredientWeight:
     """成分重量（带单位）"""
     name: str
@@ -208,6 +149,8 @@ class FormulaNutritionService:
             known_count += 1
             portions = weight_g / 100.0
             for nutrient, value in nutrition.items():
+                if not isinstance(value, (int, float)):
+                    continue
                 weighted_totals[nutrient] = weighted_totals.get(nutrient, 0) + value * portions
 
             # 过敏原检测

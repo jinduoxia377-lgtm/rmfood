@@ -1353,7 +1353,7 @@ export default function UserManagementPage() {
 
           {/* Error State */}
           {error && (
-            <Alert variant="danger">
+            <Alert variant="destructive">
               <AlertTriangle className="w-4 h-4" />
               <AlertTitle>加载失败</AlertTitle>
               <AlertDescription className="flex items-center gap-2 mt-1.5">

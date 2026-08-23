@@ -92,7 +92,7 @@ export const DataExportDialog: React.FC<DataExportDialogProps> = memo(({
     return filteredOrganizations.slice(0, 5).map(org => {
       const row: Record<string, string> = {}
       visibleFields.forEach(field => {
-        let value = (org[field.key]
+        let value = (org as any)[field.key]
         if (field.formatter) {
           value = field.formatter(value)
         }
@@ -124,7 +124,7 @@ export const DataExportDialog: React.FC<DataExportDialogProps> = memo(({
 
     filteredOrganizations.forEach(org => {
       const rowData = visibleFields.map(field => {
-        let value = (org[field.key]
+        let value = (org as any)[field.key]
         if (field.formatter) value = field.formatter(value)
         if (value === null || value === undefined) return '""'
         if (typeof value === 'string') {

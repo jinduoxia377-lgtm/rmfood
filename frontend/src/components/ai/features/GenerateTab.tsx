@@ -8,6 +8,7 @@ import { Card } from '@/components/ui';
 import { logger } from '@/utils/safeLogger';
 import type { AICandidate } from '@/api/ai';
 import type { InputMode, ViewMode, FormulaCategory } from './GenerateTab/config/generateTabConfig';
+import { AcademicReportEnhanced } from '@/components/ai/AcademicReportEnhanced';
 
 // Hooks
 import { useGenerateEffects } from './GenerateTab/hooks/useGenerateEffects';
@@ -246,27 +247,21 @@ export function GenerateTab({ llmAvailable, modelStatus, onGenerateSuccess }: Ge
         )}
       </div>
 
-      {/* Academic Report Modal (simplified) */}
+      {/* Academic Report Modal */}
       {selectedReport && (
         <div
           className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
           onClick={() => setSelectedReport(null)}
         >
           <div
-            className="bg-white dark:bg-neutral-800 p-6 rounded-xl max-w-3xl w-full mx-4"
+            className="bg-white dark:bg-neutral-800 rounded-xl max-w-3xl w-full mx-4 overflow-hidden shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-xl font-bold mb-4">
-              {selectedReport.formula_name || t('ai.formula.generateTab.formulaDetails')}
-            </h3>
-            <div className="flex justify-end">
-              <button
-                onClick={() => setSelectedReport(null)}
-                className="px-4 py-2 bg-neutral-200 dark:bg-neutral-700 rounded-lg"
-              >
-                {t('ai.formula.generateTab.close')}
-              </button>
-            </div>
+            <AcademicReportEnhanced
+              candidate={selectedReport}
+              effects={effectsHook.effectLabels}
+              onClose={() => setSelectedReport(null)}
+            />
           </div>
         </div>
       )}

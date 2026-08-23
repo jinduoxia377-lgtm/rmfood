@@ -222,31 +222,35 @@ export function ThemeSwitcher({
               </div>
             )}
 
-            {/* 快速预设预览 */}
+            {/* 快速预设切换 */}
             <div>
-              <h3 className="text-sm font-semibold text-text-primary mb-3">快速切换</h3>
+              <h3 className="text-sm font-semibold text-text-primary mb-3">主题</h3>
               <div className="grid grid-cols-2 gap-2">
-                {(Object.entries(presetThemes) as [PresetThemeId, ThemeConfig][]).slice(0, 6).map(([id, theme]) => (
-                  <button
-                    key={id}
-                    onClick={() => setPresetTheme(id)}
-                    className={`
-                      flex items-center gap-2 p-2.5 rounded-lg border transition-all text-left
-                      ${theme.id === presetThemes[mode === 'dark' ? 'dark-default' : 'light-default']?.id
-                        ? 'border-primary-main ring-1 ring-primary-main/30'
-                        : 'border-border-default hover:border-border-hover'}
-                    `}
-                  >
-                    <div
-                      className="w-6 h-6 rounded-md shrink-0"
-                      style={{ backgroundColor: theme.colors.primary.main }}
-                    />
-                    <div className="min-w-0 flex-1">
-                      <div className="text-xs font-medium text-text-primary truncate">{theme.name}</div>
-                      <div className="text-[10px] text-text-secondary">{theme.mode}</div>
-                    </div>
-                  </button>
-                ))}
+                {(['light-default', 'dark-default'] as PresetThemeId[]).map((id) => {
+                  const theme = presetThemes[id];
+                  const isActive = mode === 'dark' && id === 'dark-default' || mode === 'light' && id === 'light-default';
+                  return (
+                    <button
+                      key={id}
+                      onClick={() => setPresetTheme(id)}
+                      className={`
+                        flex items-center gap-2 p-2.5 rounded-lg border transition-all text-left
+                        ${isActive
+                          ? 'border-primary-main ring-1 ring-primary-main/30'
+                          : 'border-border-default hover:border-border-hover'}
+                      `}
+                    >
+                      <div
+                        className="w-6 h-6 rounded-md shrink-0"
+                        style={{ backgroundColor: theme.colors.primary.main }}
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="text-xs font-medium text-text-primary truncate">{theme.name}</div>
+                        <div className="text-[10px] text-text-secondary">{theme.mode}</div>
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>

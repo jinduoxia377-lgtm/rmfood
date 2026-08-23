@@ -7,6 +7,7 @@ export interface SearchMatch {
 }
 
 export interface SearchOverlayProps {
+  [key: string]: any;
   searchMatches: SearchMatch[]
   focusedNodeIndex: number
   onSelectMatch: (node: GraphNode) => void

@@ -65,9 +65,21 @@ export function StabilityPredictTab() {
           time: c.month,
           timeUnit: 'month',
           potency: c.stability,
-          impurities: 0,
+          // 根据稳定性得分推算杂质含量 (100 - potency) * 0.8
+          impurities: Math.min(100, (100 - c.stability) * 80),
         })),
-        factorContributions: [],
+        // 用本地预测器补全 factorContributions
+        ...(() => {
+          const condition: StorageCondition = { temperature, humidity, lightExposure, packaging };
+          const inputNames = stabilityInput.split(/[,，\n]/).map((s) => s.trim()).filter(Boolean);
+          const localResult = stabilityPredictor.predict({
+            initialPotency: 100,
+            targetPotency: 90,
+            storageCondition: condition,
+            ingredients: inputNames,
+          });
+          return { factorContributions: localResult.factorContributions };
+        })(),
       };
       setStabilityResult(mapped);
     },
@@ -194,7 +206,7 @@ export function StabilityPredictTab() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-xs text-neutral-600 mb-1 block">光照</label>
-                <Select value={lightExposure} onChange={(e) => setLightExposure(e.target.value}>
+                <Select value={lightExposure} onChange={(e) => setLightExposure(e.target.value as 'dark' | 'ambient' | 'bright')}>
                   <option value="dark">避光</option>
                   <option value="ambient">正常</option>
                   <option value="bright">强光</option>
@@ -203,7 +215,7 @@ export function StabilityPredictTab() {
 
               <div>
                 <label className="text-xs text-neutral-600 mb-1 block">包装</label>
-                <Select value={packaging} onChange={(e) => setPackaging(e.target.value}>
+                <Select value={packaging} onChange={(e) => setPackaging(e.target.value as 'sealed' | 'semi-permeable' | 'open')}>
                   <option value="sealed">密封</option>
                   <option value="semi-permeable">半透膜</option>
                   <option value="open">开放</option>

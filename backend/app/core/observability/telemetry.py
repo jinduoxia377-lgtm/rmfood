@@ -27,6 +27,41 @@ from starlette.types import ASGIApp
 
 logger = logging.getLogger("rmfood.telemetry")
 
+# ─── OTel SDK 切换开关（P2-1: 自研实现 → 官方 SDK 可降级） ───
+_USE_OTEL_SDK: bool = False
+
+try:
+    from opentelemetry import trace as otel_trace
+    from opentelemetry.sdk.trace import TracerProvider
+    from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExporter
+    _USE_OTEL_SDK = True
+except ImportError:
+    pass
+
+
+def enable_otel_sdk(endpoint: str = "") -> None:
+    """
+    启用官方 OpenTelemetry SDK（替代自研 Tracer）
+
+    生产环境推荐：在 main.py lifespan 中调用此函数
+    - 需安装: pip install opentelemetry-sdk opentelemetry-api
+    - 端点为空时输出到控制台，可替换为 HTTP/GRPC exporter
+    """
+    global _USE_OTEL_SDK
+    if not _USE_OTEL_SDK:
+        logger.warning("[Telemetry] opentelemetry-sdk 未安装，无法切换至官方 SDK")
+        return
+
+    provider = TracerProvider()
+    if endpoint:
+        from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+        processor = BatchSpanProcessor(OTLPSpanExporter(endpoint=endpoint))
+    else:
+        processor = BatchSpanProcessor(ConsoleSpanExporter())
+    provider.add_span_processor(processor)
+    otel_trace.set_tracer_provider(provider)
+    logger.info(f"[Telemetry] 已切换至官方 OpenTelemetry SDK (endpoint={endpoint or 'console'})")
+
 # ════════════════════════════════════════════════════════════════
 # Context Variables — 跨 async 边界传播的 Trace 上下文
 # ════════════════════════════════════════════════════════════════

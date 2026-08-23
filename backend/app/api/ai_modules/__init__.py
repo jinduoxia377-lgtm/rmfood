@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 # 控制方式: 设置环境变量 AI_MOCK_MODE=true/false
 from ...data.mock_ai_responses import get_mock_response, is_mock_enabled
 
-from ..deps import get_db_session, get_current_user, get_current_active_user
+from ..deps import get_db_session, get_current_user, get_current_active_user, require_role
 from ...models import User, FormulaStatus
 from ...services.ai import ai_service
 
@@ -34,13 +34,14 @@ def _get_llm_service():
 router = APIRouter(prefix="/ai", tags=["AI智能服务"])
 
 # Sub-routers
-from .generation import sub_router as generation_router
+from .generation_v2 import router as generation_router
 from .chat import sub_router as chat_router
 from .models_and_tools import sub_router as models_router
 from .recommendations import sub_router as recommendations_router
 from .optimization import sub_router as optimization_router
 from .versions import sub_router as versions_router
 from .experiment import sub_router as experiment_router
+from .genetic import sub_router as genetic_router
 
 
 router.include_router(generation_router)
@@ -50,3 +51,4 @@ router.include_router(recommendations_router)
 router.include_router(optimization_router)
 router.include_router(versions_router)
 router.include_router(experiment_router)
+router.include_router(genetic_router)

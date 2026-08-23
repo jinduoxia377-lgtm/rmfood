@@ -54,6 +54,7 @@ _LAZY_ROUTER_MODULES = [
     'integrations',
     'pepinvent',
     'advanced_peptide',
+    'formula_integration',  # 配方深度集成（协同/兼容性/稳定性/风味/效果预测）
 
     # 知识库模块
     'knowledge_base',

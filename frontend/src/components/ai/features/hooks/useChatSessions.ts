@@ -49,7 +49,7 @@ export interface ChatSession {
 }
 
 /** 导出格式类型 */
-type SessionExportFormat = 'json' | 'markdown' | 'text'
+export type SessionExportFormat = 'json' | 'markdown' | 'text'
 
 /**
  * useChatSessions 返回值接口

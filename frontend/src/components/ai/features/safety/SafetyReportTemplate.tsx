@@ -206,7 +206,7 @@ export function SafetyReportTemplate({
     setGenerationProgress(0)
 
     try {
-      const doc = new jsPDF('p', 'mm', 'a4')
+      const doc = new (require("jspdf").default || jsPDF)('p', 'mm', 'a4')
       const pageWidth = doc.internal.pageSize.getWidth()
       const pageHeight = doc.internal.pageSize.getHeight()
       let yPos = 20
@@ -297,7 +297,7 @@ export function SafetyReportTemplate({
           margin: { top: 10 },
           styles: { fontSize: 8 },
           headStyles: { fillColor: [59, 130, 246] },
-        })
+        }))
       }
 
       setGenerationProgress(85)

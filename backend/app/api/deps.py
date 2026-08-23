@@ -140,23 +140,29 @@ async def get_current_active_user(
     return current_user
 
 
-def require_role(*required_roles: UserRole):
+def require_role(*required_roles):
     """
     角色权限装饰器工厂
 
     用于限制特定角色才能访问的端点
 
     Args:
-        *required_roles: 允许的角色列表
+        *required_roles: 允许的角色列表（支持 UserRole 枚举或字符串）
 
     Returns:
         依赖注入函数
-
-    示例:
-        @router.get("/admin-only")
-        async def admin_route(user: User = Depends(require_role(UserRole.ADMIN))):
-            ...
     """
+    # Normalize string roles to enum values
+    normalized = []
+    for r in required_roles:
+        if isinstance(r, str):
+            try:
+                normalized.append(UserRole(r))
+            except ValueError:
+                normalized.append(r)
+        else:
+            normalized.append(r)
+
     async def role_checker(
         current_user: Annotated[User, Depends(get_current_active_user)]
     ) -> User:
@@ -164,13 +170,21 @@ def require_role(*required_roles: UserRole):
         if current_user.role == UserRole.ADMIN:
             return current_user
 
-        if current_user.role not in required_roles:
+        user_role = current_user.role
+        if isinstance(user_role, str):
+            try:
+                user_role = UserRole(user_role)
+            except ValueError:
+                pass
+
+        if user_role not in normalized:
+            role_names = [r.value if hasattr(r, 'value') else str(r) for r in normalized]
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail={
                     "error_code": "INSUFFICIENT_ROLE",
-                    "message": f"权限不足，需要以下角色之一: {', '.join([r.value for r in required_roles])}",
-                    "current_role": current_user.role.value,
+                    "message": f"权限不足，需要以下角色之一: {', '.join(role_names)}",
+                    "current_role": user_role.value if hasattr(user_role, 'value') else str(user_role),
                 }
             )
         return current_user
@@ -294,16 +308,42 @@ PaginationParams = DepsPaginationParams
 
 
 class FormulaFilterParams:
-    """配方筛选参数"""
+    """配方筛选参数（扩展版）"""
     def __init__(
         self,
         status: Optional[str] = Query(None, description="配方状态"),
         creator_id: Optional[int] = Query(None, description="创建者ID"),
-        search: Optional[str] = Query(None, description="搜索关键词")
+        researcher_id: Optional[int] = Query(None, description="研究员ID（兼容别名）"),
+        search: Optional[str] = Query(None, description="搜索关键词"),
+        tags: Optional[str] = Query(None, description="标签ID逗号分隔"),
+        category: Optional[str] = Query(None, description="分类ID逗号分隔"),
+        effect_category: Optional[str] = Query(None, description="功效分类"),
+        created_start: Optional[str] = Query(None, description="创建开始日期"),
+        created_end: Optional[str] = Query(None, description="创建结束日期"),
+        updated_start: Optional[str] = Query(None, description="更新开始日期"),
+        updated_end: Optional[str] = Query(None, description="更新结束日期"),
+        sort_field: Optional[str] = Query("updated_at", description="排序字段"),
+        sort_order: Optional[str] = Query("desc", description="排序方向"),
+        sort_field2: Optional[str] = Query(None, description="次排序字段"),
+        sort_order2: Optional[str] = Query("asc", description="次排序方向"),
+        favorites_only: Optional[bool] = Query(False, description="仅收藏"),
     ):
         self.status = status
-        self.creator_id = creator_id
+        self.creator_id = creator_id or researcher_id
+        self.researcher_id = researcher_id
         self.search = search
+        self.tags = tags
+        self.category = category
+        self.effect_category = effect_category
+        self.created_start = created_start
+        self.created_end = created_end
+        self.updated_start = updated_start
+        self.updated_end = updated_end
+        self.sort_field = sort_field
+        self.sort_order = sort_order
+        self.sort_field2 = sort_field2
+        self.sort_order2 = sort_order2
+        self.favorites_only = favorites_only
 
 
 class ExperimentFilterParams:

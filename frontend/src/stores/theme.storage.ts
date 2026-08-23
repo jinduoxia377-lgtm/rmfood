@@ -11,6 +11,7 @@ const STORAGE_KEYS = {
   THEME_STATE: 'rmfood-theme-state',
   CUSTOM_THEMES: 'rmfood-custom-themes',
   USER_PREFERENCES: 'rmfood-theme-preferences',
+  THEME_VERSIONS: 'rmfood-theme-versions',
 };
 
 // ============================================================================
@@ -28,6 +29,18 @@ interface ThemeStateSnapshot {
   mode: 'light' | 'dark' | 'system';
   accessibilityMode: string;
   transitionType: string;
+}
+
+// ============================================================================
+// 主题版本历史记录
+// ============================================================================
+
+export interface ThemeVersion {
+  id: string;
+  timestamp: number;
+  summary: string;
+  /** 快照为 themeState 的简化颜色摘要 */
+  snapshot: ThemeStateSnapshot;
 }
 
 // ============================================================================
@@ -152,13 +165,65 @@ export class ThemeStorage {
   // ============================================================================
   // 私有方法：版本迁移
   // ============================================================================
+  // 版本历史记录
+  // ============================================================================
+
+  private getVersions(): ThemeVersion[] {
+    try {
+      const raw = this.storage.getItem(STORAGE_KEYS.THEME_VERSIONS);
+      return raw ? JSON.parse(raw) : [];
+    } catch { return []; }
+  }
+
+  private saveVersions(versions: ThemeVersion[]): void {
+    try {
+      this.storage.setItem(STORAGE_KEYS.THEME_VERSIONS, JSON.stringify(versions));
+    } catch (error) {
+      logger.error('❌ [Theme Storage] Failed to save versions:', error);
+    }
+  }
+
+  createVersion(summary = '手动保存'): ThemeVersion | null {
+    const state = this.loadThemeState();
+    if (!state) return null;
+    const versions = this.getVersions();
+    const version: ThemeVersion = {
+      id: crypto.randomUUID(),
+      timestamp: Date.now(),
+      summary,
+      snapshot: { colors: { primary: state.activeThemeId || 'light-default' } },
+    };
+    versions.unshift(version);
+    const MAX = 10;
+    if (versions.length > MAX) versions.splice(MAX);
+    this.saveVersions(versions);
+    return version;
+  }
+
+  getVersionHistory(): ThemeVersion[] {
+    return this.getVersions();
+  }
+
+  clearVersionHistory(): void {
+    this.storage.removeItem(STORAGE_KEYS.THEME_VERSIONS);
+  }
+
+  rollbackVersion(versionId: string): ThemeVersion | null {
+    const versions = this.getVersions();
+    const version = versions.find((v) => v.id === versionId);
+    return version ?? null;
+  }
+
+  // ============================================================================
+  // 私有方法：版本迁移
+  // ============================================================================
 
   private migrateFromV1(v1Data: any): ThemeStateSnapshot {
     logger.info('🔄 [Theme Storage] Migrating from v1 to v2...');
 
     // V1 到 V2 的迁移逻辑
     const migrated: ThemeStateSnapshot = {
-      activeThemeId: v1Data.themeId || v1Data.activeThemeId || 'light-default',
+      activeThemeId: v1Data.activeThemeId || v1Data.themeId || 'light-default',
       mode: v1Data.mode || 'light',
       accessibilityMode: v1Data.accessibilityMode || 'normal',
       transitionType: v1Data.transitionType || 'fade',
@@ -170,9 +235,5 @@ export class ThemeStorage {
     return migrated;
   }
 }
-
-// ============================================================================
-// 导出单例实例
-// ============================================================================
 
 export const themeStorage = new ThemeStorage();

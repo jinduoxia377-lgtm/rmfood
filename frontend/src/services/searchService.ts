@@ -83,7 +83,7 @@ export class SearchService {
         title: f.name,
         subtitle: f.description,
         description: f.description,
-        tags: f.tags,
+        tags: f.tags ?? [],
         category: f.category?.toString() || '',
         createdAt: f.createdAt,
         updatedAt: f.updatedAt,

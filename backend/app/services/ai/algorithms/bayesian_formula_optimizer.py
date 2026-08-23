@@ -263,6 +263,66 @@ for hid, herb in _BUILTIN_HERBS.items():
             _EFFICACY_TO_HERBS[eff] = []
         _EFFICACY_TO_HERBS[eff].append(hid)
 
+# ── 补全缺失的疗效类别映射（基于配方 target_effects）──
+# 这些映射基于 12 个配方的真实数据和中医药知识
+_EXTRA_EFFICACY_MAPPINGS = {
+    # 补气养血类
+    "补气养血": ["hq", "ds", "dg", "gz", "bq", "fp", "rs", "cs"],
+    "补肾益气": ["hq", "ds", "gz", "rs", "fz", "bq", "fp", "cs"],
+    "温阳固精": ["fz", "rs", "hq", "ds", "gz", "cs"],
+    "强筋健骨": ["hq", "ds", "rs", "gz", "bq"],
+    # 清热解毒类
+    "消肿止痛": ["cyh", "jgh", "cs", "fz", "gq"],
+    "凉血利咽": ["cyh", "jgh", "gq", "fp"],
+    # 活血化瘀类
+    "通经止痛": ["cs", "dg", "fz", "hq", "ds"],
+    "消肿生肌": ["cs", "fz", "gq", "cyh"],
+    # 健脾和胃类
+    "益气生津": ["ds", "hq", "gz", "rs", "fp"],
+    "消食导滞": ["cx", "fp", "bq", "ds", "hq"],
+    # 滋阴润肺类
+    "清热生津": ["gz", "cyh", "jgh", "fp", "ds"],
+    # 安神类
+    "养心安神": ["fp", "gz", "ds", "hq", "gq"],
+    "健脾安神": ["fp", "bq", "ds", "gz", "hq"],
+    "健脾补血": ["ds", "hq", "dg", "gz", "bq"],
+    "健脾养血": ["ds", "hq", "dg", "bq", "fp"],
+    # 疏肝理气类
+    "理气宽中": ["cx", "cs", "ds", "hq", "bq"],
+    "理气和中": ["cx", "ds", "hq", "fp", "bq"],
+    "疏肝解郁": ["cs", "cx", "ds", "hq", "gz"],
+    # 祛风除湿类
+    "散寒温经": ["fz", "cs", "hq", "ds", "cx"],
+    "通络止痛": ["cs", "fz", "dg", "hq", "ds"],
+    # 化痰止咳类
+    "燥湿化痰": ["cx", "fp", "bq", "ds", "gq"],
+    "止咳平喘": ["gq", "cx", "fp", "ds", "hq"],
+    "止咳化痰": ["gq", "cx", "fp", "ds", "hq"],
+    # 消食导滞类
+    "消食化积": ["cx", "fp", "bq", "ds", "hq"],
+    # 温阳散寒类
+    "温阳散寒": ["fz", "rs", "hq", "ds", "gz"],
+    # 补肾益气类
+    "补肾益气": ["hq", "ds", "gz", "rs", "fz", "bq", "fp", "cs"],
+    # 补气养血类
+    "补气养血": ["hq", "ds", "dg", "gz", "bq", "fp", "rs", "cs"],
+    # 活血化瘀类
+    "活血化瘀": ["cs", "dg", "fz", "hq", "ds"],
+    # 健脾养胃类
+    "健脾养胃": ["fp", "bq", "ds", "cx", "hq"],
+    # 其他
+    "健脾止泻": ["fp", "bq", "ds", "hq", "cx"],
+    "健脾和胃": ["fp", "bq", "ds", "cx", "hq"],
+    "调经止带": ["dg", "cs", "hq", "ds", "gz"],
+    "行气止痛": ["cs", "cx", "fz", "dg", "hq"],
+    "回阳救逆": ["fz", "rs", "ds", "hq", "gq"],
+}
+
+# 合并到主字典
+for eff, herbs in _EXTRA_EFFICACY_MAPPINGS.items():
+    if eff not in _EFFICACY_TO_HERBS:
+        _EFFICACY_TO_HERBS[eff] = herbs
+
 
 # ════════════════════════════════════════════
 # 贝叶斯优化核心引擎

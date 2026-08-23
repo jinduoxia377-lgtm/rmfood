@@ -811,7 +811,7 @@ export default function DataManagementTab() {
                 </span>
                 <span className="font-mono text-neutral-700 dark:text-neutral-300">{importProgress}%</span>
               </div>
-              <Progress value={importProgress} variant="primary" />
+              <Progress value={importProgress} variant="success" />
             </>
           )}
           {importResult && (

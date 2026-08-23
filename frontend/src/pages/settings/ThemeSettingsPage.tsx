@@ -196,8 +196,9 @@ const ThemeSettingsPage: React.FC = () => {
           isExpanded={expandedSections.presets}
           onToggle={toggleSection}
         >
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {(Object.entries(presetThemes) as [PresetThemeId, ThemeConfig][]).map(([id, theme]) => {
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {(['light-default', 'dark-default'] as PresetThemeId[]).map((id) => {
+              const theme = presetThemes[id];
               const isActive = selectedPreset === id;
               const primaryColor = theme.colors.primary.main;
 
@@ -236,20 +237,10 @@ const ThemeSettingsPage: React.FC = () => {
                   </div>
 
                   {/* 标签 */}
-                  <div className="flex gap-2 mt-3 flex-wrap">
+                  <div className="flex gap-2 mt-3">
                     {theme.mode === 'dark' && (
                       <span className="px-2 py-0.5 text-xs rounded-full bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900">
                         Dark
-                      </span>
-                    )}
-                    {id.includes('high-contrast') && (
-                      <span className="px-2 py-0.5 text-xs rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100">
-                        AAA
-                      </span>
-                    )}
-                    {id.includes('reading') && (
-                      <span className="px-2 py-0.5 text-xs rounded-full bg-warning-100 text-warning-800 dark:bg-warning-900 dark:text-warning-100">
-                        阅读
                       </span>
                     )}
                   </div>

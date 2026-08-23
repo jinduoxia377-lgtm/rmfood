@@ -7,6 +7,9 @@
 import { useState, useCallback, useEffect } from 'react';
 
 import { logger } from '@/utils/safeLogger';
+import { useToast } from '@/components/ui';
+const { error: toastError, warning: toastWarning, success: toastSuccess } = useToast();
+
 import type {
   ColumnView,
   ColumnConfig,
@@ -72,7 +75,7 @@ function saveViewsToStorage(views: ColumnView[]): void {
     logger.error('[useColumnView] 保存视图失败:', error);
     // 可能是存储空间不足
     if (error instanceof DOMException && error.name === 'QuotaExceededError') {
-      alert('存储空间不足，请删除部分视图后重试');
+      toastError('存储空间不足，请删除部分视图后重试');
     }
   }
 }
@@ -190,7 +193,7 @@ export function useColumnView(
     const existingNonSystem = savedViews.filter(v => !v.isSystem);
     if (existingNonSystem.length >= maxViews && !savedViews.find(v => v.name === trimmedName)) {
       logger.warn(`[useColumnView] 已达到最大视图数限制 (${maxViews})`);
-      alert(`最多只能保存 ${maxViews} 个自定义视图`);
+      toastWarning(`最多只能保存 ${maxViews} 个自定义视图`);
       return false;
     }
 
@@ -350,7 +353,7 @@ export function useColumnView(
 
     } catch (error) {
       logger.error('[useColumnView] 导入视图失败:', error);
-      alert(`导入失败: ${error instanceof Error ? error.message : '数据格式错误'}`);
+      toastError(`导入失败: ${error instanceof Error ? error.message : '数据格式错误'}`);
       return null;
     }
   }, [savedViews]);

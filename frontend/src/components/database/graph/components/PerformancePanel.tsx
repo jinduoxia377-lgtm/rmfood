@@ -2,6 +2,7 @@ import { PERF_THRESHOLD } from '../types'
 import type { PerfStats, LODLevel } from '../types'
 
 export interface PerformancePanelProps {
+  
   showPerfPanel: boolean
   perfStats: PerfStats
   lodLevel: LODLevel

@@ -223,7 +223,7 @@ export const PRESET_SCENARIOS: ScenarioConfig[] = [
     id: 'sleep_improvement',
     name: '睡眠改善配方',
     targetAudience: '失眠人群',
-    primaryGoals: ['改善睡眠', '抗疲劳', '安神', '健脾益胃'] as string[],
+    primaryGoals: ['改善睡眠', '抗疲劳', '安神', '健脾益胃'] as EfficacyTag[],
     constraints: {
       maxIngredients: 6,
       maxDailyDosage: 35,
@@ -513,7 +513,7 @@ function generateTimelineEffects(
     mediumTermEffects.push({
       category: '外观改善',
       description: '促进胶原蛋白合成，改善肤质',
-      evidenceLevel: 'emerging' as 'emerging' | 'strong' | 'moderate' | 'weak',
+      evidenceLevel: 'theoretical',
       confidence: 68,
     })
   }

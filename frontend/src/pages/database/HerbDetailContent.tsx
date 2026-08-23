@@ -73,7 +73,7 @@ export function HerbDetailContent({ herb }: { herb: any }) {
           { key: 'targets', label: `靶点 (${targets.length})` },
           { key: 'diseases', label: `疾病 (${diseases.length})` },
         ].map(({ key, label }) => (
-          <button key={key} onClick={() => setActiveTab(key}
+          <button key={key} onClick={() => setActiveTab(key as any)}
             className={`px-4 py-2.5 text-sm font-medium transition-all relative ${activeTab === key ? 'text-primary-600' : 'text-[var(--text-muted,#9A9A9F)] hover:text-[var(--text-secondary,#6E6E73)]'}`}>
             {label}
             {activeTab === key && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-500 rounded-full" />}

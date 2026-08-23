@@ -93,6 +93,17 @@ class CsvAdapter(BaseAdapter):
         encoding = self._encoding or _detect_encoding(self.file_path)
         delimiter = self._resolve_delimiter()
 
+        # Read header for column names
+        header_row_list: List[str] = []
+        with open(self.file_path, "r", encoding=encoding, errors="replace") as f:
+            reader = csv.reader(f, delimiter=delimiter)
+            for i, row in enumerate(reader):
+                if i == self._header_row:
+                    header_row_list = [c.strip() for c in row]
+                    break
+
+        has_header = bool(header_row_list)
+
         with open(self.file_path, "r", encoding=encoding, errors="replace") as f:
             reader = csv.reader(f, delimiter=delimiter)
             for i, row in enumerate(reader):
@@ -102,7 +113,11 @@ class CsvAdapter(BaseAdapter):
                     continue
                 if len(results) >= limit:
                     break
-                results.append({str(j): v for j, v in enumerate(row)})
+                if has_header:
+                    mapped = {header_row_list[int(idx)]: val for idx, val in enumerate(row) if int(idx) < len(header_row_list)}
+                    results.append(mapped)
+                else:
+                    results.append({str(j): v for j, v in enumerate(row)})
         return results
 
     async def iterate(self) -> AsyncIterator[Dict[str, Any]]:
@@ -148,6 +163,7 @@ class CsvAdapter(BaseAdapter):
             if not rows:
                 break
             for row_dict in rows:
+                self.stats.valid_rows += 1
                 if has_header:
                     # Map index-based keys to header names
                     mapped = {}

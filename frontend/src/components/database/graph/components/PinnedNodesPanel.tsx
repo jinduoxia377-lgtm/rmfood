@@ -1,6 +1,7 @@
 import { GraphNode, TYPE_CONFIG } from '../types'
 
 export interface PinnedNodesPanelProps {
+  
   pinnedNodes: Set<string>
   showPinnedPanel: boolean
   filteredNodes: GraphNode[]

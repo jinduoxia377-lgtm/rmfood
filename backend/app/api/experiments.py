@@ -2,6 +2,7 @@
 实验管理路由
 实验 CRUD、数据管理、状态流转
 """
+from typing import Optional
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -9,10 +10,10 @@ from ..schemas.experiment import (
     ExperimentCreate, ExperimentUpdate, ExperimentResponse,
     ExperimentDataResponse,
 )
-from ..services.experiment import ExperimentService
-from ..services.auth import get_current_user, require_role
+from ..services.experiment_service import ExperimentService
+from ..services.auth import require_role
 from ..models.models import User, UserRole, ExperimentStatus
-from ..api.deps import get_db_session, PaginationParams, ExperimentFilterParams
+from ..api.deps import get_db_session, PaginationParams, ExperimentFilterParams, get_current_user, get_current_user
 
 router = APIRouter(prefix="/experiments", tags=["实验管理"])
 
@@ -21,7 +22,7 @@ router = APIRouter(prefix="/experiments", tags=["实验管理"])
 async def list_experiments(
     pagination: PaginationParams = Depends(),
     filters: ExperimentFilterParams = Depends(),
-    current_user: User = Depends(get_current_user),
+    current_user: Optional[User] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db_session),
 ):
     """分页获取实验列表"""

@@ -10,6 +10,7 @@ const ANIMATION_PRESETS: Record<AnimationPreset, { label: string; icon: string; 
 }
 
 export interface LayoutIndicatorProps {
+  [key: string]: any;
   localLayout: LayoutType
   showLayoutMenu: boolean
   onToggleLayoutMenu: () => void

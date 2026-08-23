@@ -1,0 +1,5 @@
+{
+  "devDependencies": {
+    "stream-json": "^3.5.0"
+  }
+}

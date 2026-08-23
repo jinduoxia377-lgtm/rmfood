@@ -40,6 +40,8 @@ import type {
   VersionDiffResult,
   FormulaStatistics,
   IngredientConfig,
+  MultiAlgorithmRequest,
+  MultiAlgorithmResponse,
 } from '@/types/formula'
 
 import type { Formula } from '@/types/index'
@@ -85,6 +87,40 @@ export async function quickOptimizeRatio(
     population_size: 80,
     max_generations: 40,
   })
+}
+
+// MILP 配比优化（基于营养约束的精确求解）
+export interface OptimizeLPRequest {
+  total_dosage_g: number
+  max_cost?: number
+}
+
+export interface MILPSolution {
+  formula_id: number
+  formula_name: string
+  total_dosage_g: number
+  feasible: boolean
+  min_cost: number
+  ratios: Array<{
+    ingredient: string
+    dosage_g: number
+    percentage: number
+  }>
+  nutrition_matrix: Record<string, number>
+  violation?: Record<string, number>
+  solve_time_ms: number
+}
+
+export async function optimizeLP(
+  formulaId: number,
+  options?: OptimizeLPRequest,
+): Promise<MILPSolution> {
+  const response = await api.post(
+    `${FORMULA_BASE_URL}/${formulaId}/optimize/lp`,
+    null,
+    { params: options },
+  )
+  return response.data
 }
 
 // ==================== 3. 兼容性检测 API ====================
@@ -382,6 +418,31 @@ export const formulaApi = {
   // ===== 新增：批量状态变更 =====
   batchUpdateStatus: (ids: number[], status: string) =>
     api.patch(`${FORMULA_BASE_URL}/batch-status`, { ids, status }).then((r) => r.data),
+
+  // ===== 新增：配比优化 =====
+  optimizeLP,
+  optimizeMultiAlgorithm,
+
+  // ===== 新增：配方深度分析 =====
+  analyzeFormulaSynergy,
+  predictFormulaStability,
+  predictFormulaTaste,
+  checkFormulaSafety,
+  checkFormulaCompatibility,
+  predictFormulaEffect,
+
+  // ===== 新增：模板管理 =====
+  createFormulaTemplate,
+  updateFormulaTemplate,
+  deleteFormulaTemplate,
+
+  // ===== 新增：配方复制 =====
+  copyFormula,
+  exportFormulaPDF,
+  exportFormulaExcel,
+  applyOptimization,
+  saveAnalysisResult,
+  getAnalysisHistory,
 }
 
 // ==================== 9. 实验室验证 API ====================
@@ -680,7 +741,74 @@ export async function getFormulaNutrition(formulaId: number): Promise<NutritionS
   return response.data
 }
 
-// ==================== 21. 配方发布 API ====================
+// ==================== 21. 营养成分表（GB 28050）====================
+
+export interface NutritionLabelItem {
+  nutrient: string
+  unit: string
+  is_mandatory: boolean
+  per_100g: number
+  per_serving: number | null
+  nrv_percent: number | null
+  claim?: string
+}
+
+export interface ServingInfo {
+  serving_size_g: number
+  servings_per_container: number
+  package_size_g: number
+}
+
+export interface EnergyCheck {
+  calculated_kj: number
+  listed_kj: number
+  diff_kj: number
+  match: boolean
+}
+
+export interface ComplianceResult {
+  is_compliant: boolean
+  standard: string
+  violations: any[]
+  warnings: any[]
+}
+
+export interface NutritionLabelResult {
+  formula_id: number
+  formula_name: string
+  serving_info: ServingInfo
+  per_100g: Record<string, number>
+  per_serving: Record<string, number>
+  nrv_percentages: Record<string, number>
+  label_items: NutritionLabelItem[]
+  energy_check: EnergyCheck
+  claims: string[]
+  compliance: ComplianceResult
+  unknown_ingredients: string[]
+  warnings: string[]
+  generated_at: string
+  unit_system?: string
+  display_unit?: string
+}
+
+export interface CalculateNutritionLabelRequest {
+  serving_size_g?: number
+  servings_per_container?: number
+  unit_system?: string
+}
+
+export async function calculateNutritionLabel(
+  formulaId: number,
+  params: CalculateNutritionLabelRequest = {},
+): Promise<NutritionLabelResult> {
+  const response = await api.get<NutritionLabelResult>(
+    `${FORMULA_BASE_URL}/${formulaId}/nutrition`,
+    { params },
+  )
+  return response.data
+}
+
+// ==================== 22. 配方发布 API ====================
 
 export async function publishFormula(formulaId: number): Promise<any> {
   const response = await api.post(`${FORMULA_BASE_URL}/${formulaId}/publish`)
@@ -693,3 +821,198 @@ export async function archiveFormula(formulaId: number): Promise<any> {
 }
 
 export default formulaApi
+
+// ==================== 23. 多算法融合优化 API ====================
+
+export async function optimizeMultiAlgorithm(
+  request: MultiAlgorithmRequest,
+): Promise<MultiAlgorithmResponse> {
+  const response = await api.post(`${FORMULA_BASE_URL}/optimize/multi-algorithm`, request)
+  return response.data
+}
+
+// ==================== 24. 配方深度分析 API ====================
+
+export interface FormulaSynergyResult {
+  formula_id: number
+  overall_si?: number
+  pairs?: any[]
+}
+
+export interface FormulaStabilityResult {
+  formula_id: number
+  predicted_shelf_life_months?: number
+  stability_score?: number
+  risk_factors?: any[]
+}
+
+export interface FormulaTasteResult {
+  formula_id: number
+  taste_profile?: { bitter: number; sweet: number; umami: number; astringent: number; sour: number }
+  balance_score?: number
+  acceptability?: number
+}
+
+export interface FormulaSafetyResult {
+  formula_id: number
+  is_safe?: boolean
+  overall_risk_score?: number
+  alerts?: any[]
+}
+
+export interface FormulaCompatibilityResult {
+  formula_id: number
+  overall_score?: number
+  error_count?: number
+  warning_count?: number
+  issues?: any[]
+}
+
+export async function analyzeFormulaSynergy(formulaId: number): Promise<FormulaSynergyResult> {
+  const response = await api.post(`${FORMULA_BASE_URL}/${formulaId}/synergy/analyze`)
+  return response.data
+}
+
+export async function predictFormulaStability(
+  formulaId: number,
+  options?: { temperature_c?: number; humidity_pct?: number; light_exposure?: string },
+): Promise<FormulaStabilityResult> {
+  const response = await api.post(`${FORMULA_BASE_URL}/${formulaId}/stability/predict`, null, { params: options })
+  return response.data
+}
+
+export async function predictFormulaTaste(formulaId: number): Promise<FormulaTasteResult> {
+  const response = await api.post(`${FORMULA_BASE_URL}/${formulaId}/taste/predict`)
+  return response.data
+}
+
+export async function checkFormulaSafety(
+  formulaId: number,
+  options?: { daily_dosage_g?: number; target_group?: string },
+): Promise<FormulaSafetyResult> {
+  const response = await api.post(`${FORMULA_BASE_URL}/${formulaId}/safety/check`, null, { params: options })
+  return response.data
+}
+
+export async function checkFormulaCompatibility(formulaId: number): Promise<FormulaCompatibilityResult> {
+  const response = await api.post(`${FORMULA_BASE_URL}/${formulaId}/compatibility/check`)
+  return response.data
+}
+
+export async function predictFormulaEffect(formulaId: number, options?: any): Promise<any> {
+  const response = await api.post(`${FORMULA_BASE_URL}/${formulaId}/effect/predict`)
+  return response.data
+}
+
+// ==================== 25. 模板管理 API ====================
+
+export interface FormulaTemplate {
+  id: number
+  code: string
+  name: string
+  description?: string
+  category?: string
+  effects: string[]
+  usage_count: number
+  is_featured: boolean
+}
+
+export async function createFormulaTemplate(data: Partial<FormulaTemplate>): Promise<FormulaTemplate> {
+  const response = await api.post(`${FORMULA_BASE_URL}/templates`, data)
+  return response.data
+}
+
+export async function updateFormulaTemplate(code: string, data: Partial<FormulaTemplate>): Promise<FormulaTemplate> {
+  const response = await api.put(`${FORMULA_BASE_URL}/templates/${code}`, data)
+  return response.data
+}
+
+export async function deleteFormulaTemplate(code: string): Promise<any> {
+  const response = await api.delete(`${FORMULA_BASE_URL}/templates/${code}`)
+  return response.data
+}
+
+// ==================== 26. 配方复制 API ====================
+
+export async function copyFormula(formulaId: number): Promise<Formula> {
+  const response = await api.post(`${FORMULA_BASE_URL}/${formulaId}/copy`)
+  return response.data
+}
+
+// ==================== 27. 配方导出 API ====================
+
+export interface ExportedFormula {
+  id: number
+  code: string
+  name: string
+  description: string
+  status: string
+  version: number
+  target_effects: string[]
+  dosage: string
+  processing_method: string
+  storage_conditions: string
+  shelf_life: string
+  ingredients: any[]
+  peptides: any[]
+  created_at: string
+  updated_at: string
+  format?: string
+  generated_at?: string
+}
+
+export async function exportFormulaPDF(formulaId: number): Promise<ExportedFormula> {
+  const response = await api.get(`${FORMULA_BASE_URL}/${formulaId}/export`, {
+    params: { format_type: 'pdf' },
+  })
+  return response.data
+}
+
+export async function exportFormulaExcel(formulaId: number): Promise<Blob> {
+  const response = await api.get(`${FORMULA_BASE_URL}/${formulaId}/export`, {
+    params: { format_type: 'excel' },
+    responseType: 'blob',
+  })
+  return response.data
+}
+
+// ==================== 28. 优化结果应用 API ====================
+
+export interface OptimizeApplyRequest {
+  ratios: Array<{
+    ingredient: string
+    dosage_g: number
+    percentage: number
+  }>
+}
+
+export interface OptimizeApplyResult {
+  success: boolean
+  formula_id: number
+  message: string
+  applied_ratios: any[]
+}
+
+export async function applyOptimization(
+  formulaId: number,
+  request: OptimizeApplyRequest,
+): Promise<OptimizeApplyResult> {
+  const response = await api.post(`${FORMULA_BASE_URL}/${formulaId}/optimize/apply`, request)
+  return response.data
+}
+
+// ==================== 29. 分析结果持久化 API ====================
+
+export async function saveAnalysisResult(
+  formulaId: number,
+  type: string,
+  result: any,
+): Promise<any> {
+  const response = await api.post(`${FORMULA_BASE_URL}/${formulaId}/analysis/save`, { type, result })
+  return response.data
+}
+
+export async function getAnalysisHistory(formulaId: number): Promise<any> {
+  const response = await api.get(`${FORMULA_BASE_URL}/${formulaId}/analysis/history`)
+  return response.data
+}

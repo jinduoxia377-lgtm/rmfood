@@ -1,4 +1,5 @@
 export interface AnnotationControlsProps {
+  [key: string]: any;
   isAddingAnnotation: boolean
   annotationsCount: number
   onToggleAddAnnotation: () => void

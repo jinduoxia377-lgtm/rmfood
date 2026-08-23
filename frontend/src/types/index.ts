@@ -93,8 +93,8 @@ export interface Formula {
   version: number;
 
   // 分类
-  category: FormulaCategory;
-  tags: string[];
+  category?: FormulaCategory;
+  tags?: string[];
   status: FormulaStatus;
 
   // 配方内容
@@ -102,7 +102,7 @@ export interface Formula {
   processSteps?: ProcessStep[];
 
   // 目标指标
-  targetEffects: TargetEffect[] | string[];
+  targetEffects?: TargetEffect[] | string[];
   nutritionalInfo?: NutritionalInfo;
 
   // 成本与效率
@@ -110,7 +110,7 @@ export interface Formula {
   productionTime?: string;
 
   // 关联数据
-  creatorId: number;
+  creatorId?: number;
   creator?: User;
   projectId?: number;
   experimentIds?: number[];
@@ -119,7 +119,7 @@ export interface Formula {
   aiSuggestions?: AISuggestion[];
 
   // 审批流程
-  approvalStatus: ApprovalStatus;
+  approvalStatus?: ApprovalStatus;
   approvedBy?: number;
   approvedAt?: string;
 
@@ -774,6 +774,9 @@ export interface BioactivePeptide {
   references?: string[];
   createdAt: string;
   updatedAt: string;
+  // Added for compatibility with PeptideDetailContent
+  dfbp_id?: string;
+  literature_doi?: string;
 }
 
 export interface KnowledgeNode {

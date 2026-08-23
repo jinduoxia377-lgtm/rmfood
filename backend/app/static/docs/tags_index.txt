@@ -1,0 +1,13 @@
+Traceback (most recent call last):
+  File "<string>", line 14, in <module>
+UnicodeEncodeError: 'gbk' codec can't encode character '\U0001f512' in position 1: illegal multibyte sequence
+0 'Db Modules' 53
+1 '数据库检索' 53
+2 '配方管理' 34
+3 '知识数据库' 33
+4 '实验管理' 26
+5 'Terminology' 26
+6 '术语管理' 26
+7 '用户设置' 24
+8 'Enterprise' 23
+9 

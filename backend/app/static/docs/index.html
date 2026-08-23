@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RMFOOD API Reference</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui.css">
+    <style>
+        :root {
+            --bg-primary: #0f1117;
+            --bg-secondary: #1a1d27;
+            --bg-tertiary: #232734;
+            --bg-card: #1e2230;
+            --bg-hover: #282d3e;
+            --border: #2e3347;
+            --border-light: #363b50;
+            --text-primary: #e8eaf0;
+            --text-secondary: #9ba1b5;
+            --text-muted: #636a82;
+            --accent-blue: #4f8ef7;
+            --accent-blue-dim: rgba(79,142,247,0.12);
+            --accent-green: #34d399;
+            --accent-green-dim: rgba(52,211,153,0.10);
+            --accent-amber: #fbbf24;
+            --accent-amber-dim: rgba(251,191,36,0.10);
+            --accent-purple: #a78bfa;
+            --accent-purple-dim: rgba(167,139,250,0.10);
+            --accent-rose: #fb7185;
+            --accent-rose-dim: rgba(251,113,133,0.10);
+            --get-color: #34d399;
+            --post-color: #4f8ef7;
+            --put-color: #fbbf24;
+            --delete-color: #fb7185;
+            --patch-color: #a78bfa;
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 16px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        /* ===== HEADER ===== */
+        .docs-header {
+            background: linear-gradient(135deg, #0f1117 0%, #1a1d27 100%);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-inner {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+        }
+
+        .header-brand { display: flex; align-items: center; gap: 14px; }
+
+        .brand-logo {
+            width: 40px; height: 40px;
+            background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);
+            border-radius: var(--radius-md);
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .brand-logo svg { width: 22px; height: 22px; }
+
+        .brand-text h1 {
+            font-size: 16px; font-weight: 700;
+            letter-spacing: -0.02em; color: var(--text-primary); line-height: 1.2;
+        }
+        .brand-text span { font-size: 12px; color: var(--text-muted); font-weight: 400; }
+
+        .header-meta { display: flex; align-items: center; gap: 16px; }
+
+        .server-badge {
+            display: flex; align-items: center; gap: 6px;
+            padding: 5px 12px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            font-size: 12px; color: var(--text-secondary);
+        }
+        .server-badge .dot {
+            width: 6px; height: 6px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+        .version-badge {
+            padding: 4px 10px;
+            background: var(--accent-blue-dim);
+            border: 1px solid rgba(79,142,247,0.25);
+            border-radius: 20px;
+            font-size: 11px; font-weight: 600;
+            color: var(--accent-blue); letter-spacing: 0.03em;
+        }
+
+        /* ===== DASHBOARD ===== */
+        .dashboard {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 24px 32px 0;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 16px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            transition: border-color 0.15s;
+        }
+        .stat-card:hover { border-color: var(--border-light); }
+
+        .stat-label {
+            font-size: 11px; font-weight: 500;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .stat-label svg { width: 13px; height: 13px; opacity: 0.7; }
+
+        .stat-value { font-size: 28px; font-weight: 700; letter-spacing: -0.03em; line-height: 1; }
+        .stat-value.blue { color: var(--accent-blue); }
+        .stat-value.green { color: var(--accent-green); }
+        .stat-value.amber { color: var(--accent-amber); }
+        .stat-value.rose { color: var(--accent-rose); }
+        .stat-value.purple { color: var(--accent-purple); }
+        .stat-sub { font-size: 11px; color: var(--text-muted); }
+
+        /* ===== CHARTS ROW ===== */
+        .charts-row {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .chart-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 20px;
+        }
+        .chart-title {
+            font-size: 12px; font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 16px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .chart-title svg { width: 14px; height: 14px; opacity: 0.6; }
+
+        /* Bar chart */
+        .bar-chart {
+            display: flex; align-items: flex-end;
+            gap: 6px; height: 140px; padding-top: 8px;
+        }
+        .bar-group {
+            flex: 1; display: flex; flex-direction: column;
+            align-items: center; gap: 6px; height: 100%;
+        }
+        .bar-stack {
+            flex: 1; width: 100%;
+            display: flex; flex-direction: column;
+            justify-content: flex-end; gap: 2px;
+        }
+        .bar-segment {
+            width: 100%; border-radius: 3px;
+            min-height: 2px; transition: opacity 0.15s;
+            cursor: pointer;
+        }
+        .bar-segment:hover { opacity: 0.8; }
+        .bar-label {
+            font-size: 10px; color: var(--text-muted);
+            text-align: center; white-space: nowrap;
+            overflow: hidden; text-overflow: ellipsis; max-width: 100%;
+        }
+
+        /* Donut chart */
+        .donut-wrap {
+            display: flex; flex-direction: column;
+            align-items: center; gap: 16px;
+        }
+        .donut-svg { transform: rotate(-90deg); }
+        .donut-legend { width: 100%; display: flex; flex-direction: column; gap: 6px; }
+        .legend-item {
+            display: flex; align-items: center;
+            justify-content: space-between; font-size: 12px;
+        }
+        .legend-left { display: flex; align-items: center; gap: 8px; color: var(--text-secondary); }
+        .legend-dot { width: 8px; height: 8px; border-radius: 2px; }
+        .legend-value { font-weight: 600; color: var(--text-primary); font-variant-numeric: tabular-nums; }
+
+        /* ===== METHOD BADGES ===== */
+        .method-row {
+            display: flex; gap: 8px;
+            margin-bottom: 20px; flex-wrap: wrap;
+        }
+        .method-chip {
+            display: flex; align-items: center; gap: 7px;
+            padding: 7px 14px; border-radius: var(--radius-sm);
+            font-size: 12px; font-weight: 600;
+            letter-spacing: 0.02em;
+            cursor: pointer; transition: all 0.15s;
+            border: 1px solid transparent;
+        }
+        .method-chip:hover { transform: translateY(-1px); }
+        .method-chip.active { ring: 1px solid; }
+        .method-chip.get  { background: var(--accent-green-dim); color: var(--accent-green); border-color: rgba(52,211,153,0.2); }
+        .method-chip.post { background: var(--accent-blue-dim);  color: var(--accent-blue);  border-color: rgba(79,142,247,0.2); }
+        .method-chip.put  { background: var(--accent-amber-dim); color: var(--accent-amber); border-color: rgba(251,191,36,0.2); }
+        .method-chip.delete { background: var(--accent-rose-dim); color: var(--accent-rose); border-color: rgba(251,113,133,0.2); }
+        .method-chip.patch  { background: var(--accent-purple-dim); color: var(--accent-purple); border-color: rgba(167,139,250,0.2); }
+        .method-chip .count { font-size: 11px; font-weight: 500; opacity: 0.8; }
+
+        /* ===== SECTION NAV ===== */
+        .section-nav {
+            display: flex; gap: 4px; margin-bottom: 20px;
+            padding-bottom: 16px; border-bottom: 1px solid var(--border);
+            overflow-x: auto;
+        }
+        .section-nav::-webkit-scrollbar { height: 0; }
+        .nav-tab {
+            padding: 7px 14px; font-size: 12px; font-weight: 500;
+            color: var(--text-muted); border-radius: var(--radius-sm);
+            white-space: nowrap; cursor: pointer;
+            transition: all 0.15s; border: 1px solid transparent; background: none;
+        }
+        .nav-tab:hover { color: var(--text-secondary); background: var(--bg-tertiary); }
+        .nav-tab.active { color: var(--accent-blue); background: var(--accent-blue-dim); border-color: rgba(79,142,247,0.2); }
+        .nav-tab .tab-count { margin-left: 5px; font-size: 10px; opacity: 0.6; }
+
+        /* ===== SEARCH ===== */
+        .search-bar { position: relative; margin-bottom: 16px; }
+        .search-bar input {
+            width: 100%; padding: 10px 14px 10px 38px;
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius-md); color: var(--text-primary);
+            font-size: 13px; outline: none; transition: border-color 0.15s;
+        }
+        .search-bar input:focus { border-color: var(--accent-blue); }
+        .search-bar input::placeholder { color: var(--text-muted); }
+        .search-bar svg {
+            position: absolute; left: 12px; top: 50%;
+            transform: translateY(-50%); width: 16px; height: 16px;
+            color: var(--text-muted);
+        }
+
+        /* ===== SWAGGER CONTAINER ===== */
+        .swagger-wrapper {
+            max-width: 1440px; margin: 0 auto;
+            padding: 0 32px 40px;
+        }
+        .swagger-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        .swagger-ui { background: transparent !important; }
+        .swagger-ui .topbar { display: none; }
+        .swagger-ui .info { display: none; }
+        .swagger-ui .scheme-container {
+            background: var(--bg-tertiary) !important;
+            border: none !important; border-radius: var(--radius-md) !important;
+            padding: 12px 16px !important; margin-bottom: 16px !important;
+        }
+        .swagger-ui .scheme-container .scheme {
+            background: var(--bg-secondary) !important;
+            border-radius: var(--radius-sm) !important;
+        }
+        .swagger-ui .opblock-tag {
+            background: transparent !important;
+            border-bottom: 1px solid var(--border) !important;
+            padding: 12px 16px !important;
+            font-size: 14px !important; font-weight: 600 !important;
+            color: var(--text-primary) !important;
+            display: flex !important; align-items: center; gap: 8px;
+        }
+        .swagger-ui .opblock-tag:hover { background: var(--bg-hover) !important; }
+        .swagger-ui .opblock-tag-section { background: transparent !important; }
+        .swagger-ui .opblock {
+            background: var(--bg-secondary) !important;
+            border: 1px solid var(--border) !important;
+            border-radius: var(--radius-md) !important;
+            margin: 8px 0 !important;
+        }
+        .swagger-ui .opblock:hover { border-color: var(--border-light) !important; }
+        .swagger-ui .opblock-summary-method {
+            font-size: 11px !important; font-weight: 700 !important;
+            padding: 4px 8px !important; border-radius: 4px !important;
+        }
+        .swagger-ui .opblock-summary-path { font-size: 13px !important; font-weight: 500 !important; }
+        .swagger-ui .opblock-summary-description { font-size: 11px !important; }
+
+        /* Method colors */
+        .swagger-ui .opblock.opblock-get .opblock-summary-method { background: rgba(52,211,153,0.15) !important; color: var(--accent-green) !important; }
+        .swagger-ui .opblock.opblock-post .opblock-summary-method { background: rgba(79,142,247,0.15) !important; color: var(--accent-blue) !important; }
+        .swagger-ui .opblock.opblock-put .opblock-summary-method { background: rgba(251,191,36,0.15) !important; color: var(--accent-amber) !important; }
+        .swagger-ui .opblock.opblock-delete .opblock-summary-method { background: rgba(251,113,133,0.15) !important; color: var(--accent-rose) !important; }
+        .swagger-ui .opblock.opblock-patch .opblock-summary-method { background: rgba(167,139,250,0.15) !important; color: var(--accent-purple) !important; }
+
+        .swagger-ui .opblock-body { background: var(--bg-primary) !important; }
+        .swagger-ui .opblock-body .opblock-section-header {
+            background: var(--bg-tertiary) !important; border-color: var(--border) !important;
+        }
+        .swagger-ui .opblock-body .execute-wrapper { padding: 16px !important; }
+        .swagger-ui .btn.execute {
+            background: linear-gradient(135deg, var(--accent-blue) 0%, #6366f1 100%) !important;
+            border: none !important; border-radius: var(--radius-sm) !important;
+            font-weight: 600 !important;
+        }
+        .swagger-ui .try-out__btn {
+            background: var(--accent-blue-dim) !important;
+            border: 1px solid rgba(79,142,247,0.3) !important;
+            color: var(--accent-blue) !important; border-radius: var(--radius-sm) !important;
+        }
+        .swagger-ui .cta { display: none; }
+        .swagger-ui .highlight-code {
+            background: var(--bg-primary) !important;
+            border: 1px solid var(--border) !important;
+            border-radius: var(--radius-md) !important;
+        }
+        .swagger-ui .mic.off { color: var(--accent-rose) !important; }
+        .swagger-ui .select-icon { border-color: var(--text-muted) !important; }
+        .swagger-ui .property { color: var(--text-secondary) !important; }
+        .swagger-ui .model .icon.enumeration { display: none; }
+        .swagger-ui .responses-wrapper h4 { color: var(--text-secondary) !important; }
+        .swagger-ui .response-col_status { color: var(--text-secondary) !important; }
+        .swagger-ui .opblock-section-header label { color: var(--text-muted) !important; }
+        .swagger-ui .param__name { color: var(--text-primary) !important; }
+        .swagger-ui .param__description { color: var(--text-secondary) !important; }
+        .swagger-ui input[type="text"],
+        .swagger-ui input[type="email"],
+        .swagger-ui input[type="password"],
+        .swagger-ui textarea {
+            background: var(--bg-primary) !important;
+            border: 1px solid var(--border) !important;
+            color: var(--text-primary) !important;
+            border-radius: var(--radius-sm) !important;
+        }
+        .swagger-ui input:focus, .swagger-ui textarea:focus {
+            border-color: var(--accent-blue) !important; outline: none !important;
+        }
+        .swagger-ui .btn { border-radius: var(--radius-sm) !important; }
+        .swagger-ui .arrow { border-color: var(--text-muted) !important; }
+
+        /* ===== FOOTER ===== */
+        .docs-footer {
+            max-width: 1440px; margin: 0 auto;
+            padding: 16px 32px 24px;
+            display: flex; align-items: center;
+            justify-content: space-between;
+            font-size: 11px; color: var(--text-muted);
+        }
+        .docs-footer a { color: var(--accent-blue); text-decoration: none; }
+
+        /* ===== LOADING ===== */
+        .loading-overlay {
+            display: flex; align-items: center; justify-content: center;
+            height: 200px; color: var(--text-muted);
+        }
+        .spinner {
+            width: 24px; height: 24px;
+            border: 2px solid var(--border);
+            border-top-color: var(--accent-blue);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 12px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 1024px) {
+            .charts-row { grid-template-columns: 1fr; }
+            .stats-row { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (max-width: 640px) {
+            .stats-row { grid-template-columns: repeat(2, 1fr); }
+            .header-inner { padding: 12px 16px; }
+            .dashboard, .swagger-wrapper { padding-left: 16px; padding-right: 16px; }
+            .header-meta { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="docs-header">
+    <div class="header-inner">
+        <div class="header-brand">
+            <div class="brand-logo">
+                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4"/>
+                    <circle cx="16" cy="16" r="3"/>
+                    <path d="M16 14v2l1 1"/>
+                </svg>
+            </div>
+            <div class="brand-text">
+                <h1 id="headerTitle">Loading API Reference...</h1>
+                <span>Medical Food Formula Platform &middot; OpenAPI 3.1</span>
+            </div>
+        </div>
+        <div class="header-meta">
+            <div class="server-badge">
+                <span class="dot"></span>
+                localhost:8000
+            </div>
+            <span class="version-badge" id="versionBadge">v--</span>
+        </div>
+    </div>
+</header>
+
+<!-- Dashboard -->
+<div class="dashboard" id="dashboard" style="display:none;">
+    <!-- Stats -->
+    <div class="stats-row" id="statsRow">
+        <div class="stat-card">
+            <div class="stat-label">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                Total Endpoints
+            </div>
+            <div class="stat-value blue" id="totalEndpoints">--</div>
+            <div class="stat-sub" id="moduleCount">-- modules</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                GET Requests
+            </div>
+            <div class="stat-value green" id="getCount">--</div>
+            <div class="stat-sub">Read operations</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+                POST Requests
+            </div>
+            <div class="stat-value blue" id="postCount">--</div>
+            <div class="stat-sub">Create / invoke</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 14L4 9l5-5"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>
+                PUT / PATCH
+            </div>
+            <div class="stat-value amber" id="putPatchCount">--</div>
+            <div class="stat-sub">Update operations</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                DELETE
+            </div>
+            <div class="stat-value rose" id="deleteCount">--</div>
+            <div class="stat-sub">Removal operations</div>
+        </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="charts-row">
+        <div class="chart-card">
+            <div class="chart-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="10"/></svg>
+                Endpoints by Module
+            </div>
+            <div class="bar-chart" id="barChart"><div class="loading-overlay"><div class="spinner"></div>Loading...</div></div></div>
+        </div>
+        <div class="chart-card">
+            <div class="chart-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+                Method Distribution
+            </div>
+            <div class="donut-wrap">
+                <svg class="donut-svg" width="120" height="120" viewBox="0 0 120 120">
+                    <circle cx="60" cy="60" r="48" fill="none" stroke="var(--border)" stroke-width="16"/>
+                    <g id="donutSegments"></g>
+                </svg>
+                <div class="donut-legend" id="donutLegend"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Method filter chips -->
+    <div class="method-row">
+        <button class="method-chip get" onclick="filterMethod('get')">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            GET <span class="count" id="chipGet">--</span>
+        </button>
+        <button class="method-chip post" onclick="filterMethod('post')">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+            POST <span class="count" id="chipPost">--</span>
+        </button>
+        <button class="method-chip put" onclick="filterMethod('put')">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 14L4 9l5-5"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>
+            PUT <span class="count" id="chipPut">--</span>
+        </button>
+        <button class="method-chip delete" onclick="filterMethod('delete')">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+            DELETE <span class="count" id="chipDelete">--</span>
+        </button>
+        <button class="method-chip patch" onclick="filterMethod('patch')">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 20h16"/><path d="M4 20l4-8h8l4 8"/><path d="M10 12V4h4v8"/></svg>
+            PATCH <span class="count" id="chipPatch">--</span>
+        </button>
+        <button class="method-chip get" style="background:var(--bg-tertiary);color:var(--text-secondary);border-color:var(--border);margin-left:auto;" onclick="clearFilter()">Reset</button>
+    </div>
+
+    <!-- Search -->
+    <div class="search-bar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" id="searchInput" placeholder="Search endpoints by path, operationId, or description..." oninput="searchEndpoints(this.value)">
+    </div>
+
+    <!-- Section tabs -->
+    <div class="section-nav" id="sectionNav"></div>
+</div>
+
+<!-- Swagger UI -->
+<div class="swagger-wrapper">
+    <div class="swagger-container">
+        <div id="swagger-ui"><div class="loading-overlay"><div class="spinner"></div>Loading Swagger UI...</div></div></div>
+    </div>
+</div>
+
+<!-- Footer -->
+<div class="docs-footer">
+    <span id="footerInfo">Loading...</span>
+    <span>Bearer Token authentication required for write operations</span>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-standalone-preset.js"></script>
+<script>
+// ─── Color palette for modules ───
+const MODULE_COLORS = [
+    '#34d399','#4f8ef7','#fbbf24','#a78bfa','#fb7185',
+    '#22d3ee','#f472b6','#38bdf8','#a3e635','#c084fc',
+    '#fb923c','#2dd4bf','#e879f9','#facc15','#4ade80',
+    '#38bdf8','#e879f9','#34d399','#fbbf24','#4f8ef7'
+];
+
+// ─── State ───
+let apiData = null;
+let moduleMap = [];
+let currentFilter = null;
+
+// ─── Load and parse OpenAPI spec ───
+async function loadSpec() {
+    try {
+        const res = await fetch('/openapi.json');
+        apiData = await res.json();
+        initDashboard();
+        initSwagger();
+    } catch(e) {
+        document.getElementById('headerTitle').textContent = 'Failed to load API spec';
+        console.error('Failed to load OpenAPI spec:', e);
+    }
+}
+
+// ─── Analyze spec data ───
+function analyzeSpec(data) {
+    const paths = data.paths || {};
+    const tags = data.tags || [];
+    const info = data.info || {};
+
+    // Count endpoints per tag and method
+    const tagMethods = {};
+    let methodCounts = { GET: 0, POST: 0, PUT: 0, DELETE: 0, PATCH: 0 };
+    let totalEndpoints = 0;
+
+    for (const [path, methods] of Object.entries(paths)) {
+        for (const [method, spec] of Object.entries(methods)) {
+            if (typeof spec !== 'object') continue;
+            const m = method.toUpperCase();
+            if (!['GET','POST','PUT','DELETE','PATCH'].includes(m)) continue;
+            totalEndpoints++;
+            methodCounts[m]++;
+            const tagList = spec.tags || ['Untagged'];
+            for (const tag of tagList) {
+                if (!tagMethods[tag]) tagMethods[tag] = { GET:0, POST:0, PUT:0, DELETE:0, PATCH:0 };
+                tagMethods[tag][m]++;
+            }
+        }
+    }
+
+    // Build module list sorted by count
+    const modules = Object.entries(tagMethods)
+        .map(([name, m]) => ({
+            name,
+            short: name.length > 10 ? name.slice(0,8)+'...' : name,
+            count: m.GET + m.POST + m.PUT + m.DELETE + m.PATCH,
+            methods: m,
+            color: MODULE_COLORS[Object.keys(tagMethods).indexOf(name) % MODULE_COLORS.length]
+        }))
+        .sort((a,b) => b.count - a.count);
+
+    // Tag descriptions map
+    const tagDesc = {};
+    for (const t of tags) tagDesc[t.name] = t.description || '';
+
+    return { modules, methodCounts, totalEndpoints, tagDesc, info };
+}
+
+// ─── Init dashboard ───
+function initDashboard() {
+    const { modules, methodCounts, totalEndpoints, tagDesc, info } = analyzeSpec(apiData);
+    moduleMap = modules;
+
+    // Update header
+    document.getElementById('headerTitle').textContent = info.title || 'API Reference';
+    document.getElementById('versionBadge').textContent = 'v' + (info.version || '--');
+    document.getElementById('footerInfo').textContent =
+        `${info.title || 'API'} &middot; OpenAPI ${apiData.openapi || '3.1'} &middot; <a href="/openapi.json">Raw Schema</a>`;
+
+    // Stats
+    document.getElementById('totalEndpoints').textContent = totalEndpoints;
+    document.getElementById('moduleCount').textContent = modules.length + ' module groups';
+    document.getElementById('getCount').textContent = methodCounts.GET;
+    document.getElementById('postCount').textContent = methodCounts.POST;
+    document.getElementById('putPatchCount').textContent = methodCounts.PUT + methodCounts.PATCH;
+    document.getElementById('deleteCount').textContent = methodCounts.DELETE;
+    document.getElementById('chipGet').textContent = methodCounts.GET;
+    document.getElementById('chipPost').textContent = methodCounts.POST;
+    document.getElementById('chipPut').textContent = methodCounts.PUT;
+    document.getElementById('chipDelete').textContent = methodCounts.DELETE;
+    document.getElementById('chipPatch').textContent = methodCounts.PATCH;
+
+    // Charts
+    renderBarChart(modules);
+    renderDonut(methodCounts);
+    renderSectionNav(modules);
+
+    // Show dashboard
+    document.getElementById('dashboard').style.display = 'block';
+}
+
+// ─── Bar Chart ───
+function renderBarChart(modules) {
+    const container = document.getElementById('barChart');
+    const topModules = modules.slice(0, 12);
+    const maxCount = Math.max(...topModules.map(m => m.count), 1);
+
+    container.innerHTML = topModules.map(m => {
+        const h = (m.count / maxCount) * 100;
+        const total = m.methods.GET + m.methods.POST + m.methods.PUT + m.methods.DELETE;
+        const gH = total ? (m.methods.GET / total) * h : 0;
+        const pH = total ? (m.methods.POST / total) * h : 0;
+        const uH = total ? (m.methods.PUT / total) * h : 0;
+        const dH = total ? (m.methods.DELETE / total) * h : 0;
+        return `
+            <div class="bar-group">
+                <div class="bar-stack">
+                    ${dH > 0 ? `<div class="bar-segment" style="height:${dH}%;background:var(--accent-rose)" title="DELETE: ${m.methods.DELETE}"></div>` : ''}
+                    ${uH > 0 ? `<div class="bar-segment" style="height:${uH}%;background:var(--accent-amber)" title="PUT: ${m.methods.PUT}"></div>` : ''}
+                    ${pH > 0 ? `<div class="bar-segment" style="height:${pH}%;background:var(--accent-blue)" title="POST: ${m.methods.POST}"></div>` : ''}
+                    ${gH > 0 ? `<div class="bar-segment" style="height:${gH}%;background:var(--accent-green)" title="GET: ${m.methods.GET}"></div>` : ''}
+                </div>
+                <div class="bar-label" title="${m.name}">${m.short}</div>
+            </div>`;
+    }).join('');
+}
+
+// ─── Donut Chart ───
+function renderDonut(methodCounts) {
+    const g = document.getElementById('donutSegments');
+    const legend = document.getElementById('donutLegend');
+    const methods = [
+        { key: 'GET',  label: 'GET',    count: methodCounts.GET,  color: '#34d399' },
+        { key: 'POST', label: 'POST',   count: methodCounts.POST, color: '#4f8ef7' },
+        { key: 'DELETE',label: 'DELETE', count: methodCounts.DELETE, color: '#fb7185' },
+        { key: 'PUT',  label: 'PUT',    count: methodCounts.PUT,  color: '#fbbf24' },
+        { key: 'PATCH',label: 'PATCH',  count: methodCounts.PATCH, color: '#a78bfa' },
+    ].filter(m => m.count > 0);
+
+    const total = methods.reduce((s, m) => s + m.count, 0);
+    const r = 48, c = 2 * Math.PI * r;
+    let offset = 0;
+
+    g.innerHTML = methods.map(m => {
+        const pct = m.count / total;
+        const dash = pct * c;
+        const gap = c - dash;
+        const seg = `<circle cx="60" cy="60" r="${r}" fill="none" stroke="${m.color}" stroke-width="16"
+            stroke-dasharray="${dash.toFixed(2)} ${gap.toFixed(2)}" stroke-dashoffset="${-offset}" stroke-linecap="butt"/>`;
+        offset += dash;
+        return seg;
+    }).join('');
+
+    legend.innerHTML = methods.map(m => `
+        <div class="legend-item">
+            <div class="legend-left">
+                <span class="legend-dot" style="background:${m.color}"></span>
+                ${m.label}
+            </div>
+            <span class="legend-value">${m.count}</span>
+        </div>`).join('');
+}
+
+// ─── Section Nav ───
+function renderSectionNav(modules) {
+    const nav = document.getElementById('sectionNav');
+    nav.innerHTML = modules.map((m, i) =>
+        `<button class="nav-tab" data-module="${i}" onclick="scrollToModule(${i})">${m.name}<span class="tab-count">${m.count}</span></button>`
+    ).join('') + '<button class="nav-tab" onclick="clearSearch()">Show All</button>';
+}
+
+function scrollToModule(idx) {
+    const tag = document.querySelector(`.opblock-tag[data-module-idx="${idx}"]`);
+    if (tag) tag.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ─── Search & Filter ───
+function filterMethod(method) {
+    const chips = document.querySelectorAll('.method-chip');
+    chips.forEach(c => c.classList.remove('active'));
+    if (currentFilter === method) { currentFilter = null; clearFilter(); return; }
+    event.currentTarget.classList.add('active');
+    currentFilter = method.toUpperCase();
+    document.querySelectorAll('.opblock').forEach(el => {
+        el.style.display = (el.getAttribute('data-method') === currentFilter) ? '' : 'none';
+    });
+}
+
+function clearFilter() {
+    currentFilter = null;
+    document.querySelectorAll('.opblock').forEach(el => el.style.display = '');
+    document.querySelectorAll('.method-chip').forEach(c => c.classList.remove('active'));
+}
+
+function clearSearch() {
+    document.getElementById('searchInput').value = '';
+    searchEndpoints('');
+}
+
+function searchEndpoints(query) {
+    const q = query.toLowerCase().trim();
+    document.querySelectorAll('.opblock').forEach(el => {
+        el.style.display = (!q || el.textContent.toLowerCase().includes(q)) ? '' : 'none';
+    });
+    moduleMap.forEach((m, i) => {
+        const tag = document.querySelector(`.opblock-tag[data-module-idx="${i}"]`);
+        if (tag) tag.style.display = (!q || m.name.toLowerCase().includes(q)) ? '' : 'none';
+    });
+}
+
+// ─── Init Swagger UI ───
+function initSwagger() {
+    const ui = SwaggerUIBundle({
+        url: '/openapi.json',
+        dom_id: '#swagger-ui',
+        deepLinking: true,
+        showExtensions: true,
+        showCommonExtensions: true,
+        presets: [
+            SwaggerUIBundle.presets.apis,
+            SwaggerUIBundle.SwaggerUIStandalonePreset
+        ],
+        plugins: [SwaggerUIBundle.plugins.DownloadUrl],
+        layout: 'StandaloneLayout',
+        requestInterceptor: (req) => {
+            req.headers['X-API-Version'] = '1.0.0';
+            return req;
+        }
+    });
+
+    // Post-init: add module index and colors to tags
+    setTimeout(() => {
+        const tags = document.querySelectorAll('.opblock-tag');
+        tags.forEach((tag, i) => {
+            tag.setAttribute('data-module-idx', i);
+            if (moduleMap[i]) {
+                tag.style.borderLeft = `3px solid ${moduleMap[i].color}`;
+                tag.style.paddingLeft = '12px';
+            }
+        });
+        // Also set data-method on opblocks
+        document.querySelectorAll('.opblock').forEach(el => {
+            const method = el.className.match(/opblock-(get|post|put|delete|patch)/);
+            if (method) el.setAttribute('data-method', method[1].toUpperCase());
+        });
+    }, 1000);
+}
+
+// ─── Boot ───
+loadSpec();
+</script>
+</body>
+</html>

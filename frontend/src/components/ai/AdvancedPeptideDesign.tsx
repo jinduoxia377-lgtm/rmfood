@@ -3,6 +3,7 @@ import { Sparkles, Atom, Zap, RefreshCw, CheckCircle, AlertCircle, Loader2, Chev
 import { peptideDesignApi } from '@/api/ai'
 import type { PeptideResult, OptimizedPeptide, PepinventStatusResponse, PeptideDesignData } from '@/api/ai'
 import { logger } from '@/utils/safeLogger'
+import { useToast } from '@/components/ui'
 
 
 interface AdvancedPeptideDesignProps {
@@ -11,11 +12,11 @@ interface AdvancedPeptideDesignProps {
 }
 
 const TARGET_EFFECTS = [
-  { id: 'ACE抑制', label: 'ACE 抑制', description: '降血压活性', color: 'blue' },
-  { id: '抗氧化', label: '抗氧化', description: '清除自由基', color: 'green' },
-  { id: 'DPP-IV抑制', label: 'DPP-IV 抑制', description: '降血糖活性', color: 'purple' },
-  { id: '增强渗透性', label: '膜渗透性', description: '提高生物利用度', color: 'orange' },
-  { id: '提高稳定性', label: '结构稳定', description: '增强热稳定性', color: 'red' },
+  { id: 'ACE抑制', label: 'ACE 抑制', message: '降血压活性', color: 'blue' },
+  { id: '抗氧化', label: '抗氧化', message: '清除自由基', color: 'green' },
+  { id: 'DPP-IV抑制', label: 'DPP-IV 抑制', message: '降血糖活性', color: 'purple' },
+  { id: '增强渗透性', label: '膜渗透性', message: '提高生物利用度', color: 'orange' },
+  { id: '提高稳定性', label: '结构稳定', message: '增强热稳定性', color: 'red' },
 ]
 
 const OPTIMIZATION_GOALS = [
@@ -26,6 +27,7 @@ const OPTIMIZATION_GOALS = [
 ]
 
 export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: AdvancedPeptideDesignProps) {
+  const { addToast } = useToast()
   const [activeTab, setActiveTab] = useState<'generate' | 'optimize' | 'sample'>('generate')
   const [mainView, setMainView] = useState<'design' | 'projects'>('design')  // 新增：主视图切换
   const [selectedEffects, setSelectedEffects] = useState<string[]>(['ACE抑制'])
@@ -79,7 +81,7 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
   // 保存当前设计为项目
   const handleSaveProject = async () => {
     if (!results) {
-      alert('请先生成或优化肽序列')
+      addToast({ type: 'warning', title: '提示', message: '请先生成或优化肽序列' })
       return
     }
 
@@ -124,11 +126,11 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
       }
 
       setCurrentProjectId(projectId)
-      alert(`✅ 项目已保存！ID: ${projectId}\n包含 ${candidates.length} 个候选方案`)
+      addToast({ type: 'success', title: '保存成功', message: `项目已保存！ID: ${projectId}，包含 ${candidates.length} 个候选方案` })
       await loadProjects(1)
     } catch (err: any) {
       logger.error('保存项目失败:', err)
-      alert('❌ 保存失败: ' + (err.message || '未知错误'))
+      addToast({ type: 'error', title: '保存失败', message: err.message || '未知错误' })
     } finally {
       setSavingProject(false)
     }
@@ -158,7 +160,7 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
       }
     } catch (err: any) {
       logger.error('加载项目失败:', err)
-      alert('❌ 加载失败')
+      addToast({ type: 'error', title: '加载失败', message: '请重试' })
     }
   }
 
@@ -168,14 +170,14 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
 
     try {
       await peptideDesignApi.archiveProject(id)
-      alert('✅ 已归档')
+      addToast({ type: 'success', title: '归档成功', message: '项目已归档' })
       await loadProjects(projectPage, statusFilter)
       if (selectedProject?.id === id) {
         setSelectedProject(null)
       }
     } catch (err: any) {
       logger.error('归档失败:', err)
-      alert('❌ 归档失败')
+      addToast({ type: 'error', title: '归档失败', message: '请重试' })
     }
   }
 
@@ -648,7 +650,7 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
                     }`}
                   >
                     <div className="font-medium text-sm">{effect.label}</div>
-                    <div className="text-xs text-neutral-500 mt-1">{effect.description}</div>
+                    <div className="text-xs text-neutral-500 mt-1">{effect.message}</div>
                   </button>
                 ))}
               </div>

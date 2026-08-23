@@ -1,0 +1,12 @@
+Login: 200 OK, token_type=bearer
+Token payload: b'{"sub":"1","role":"admin","exp":1786770453,"iat":1786766853,"iss":"rmfood","aud":"rmfood-api","type":"access","jti":"e934fe14-5e70-42e1-823d-a1b31fd82cca"}'
+AI Models Status: 200
+AI Generate: 403 - {"detail":"CSRF token missing"}
+Safety Check: 403 - {"detail":"CSRF token missing"}
+Synergy Analysis: 403 - {"detail":"CSRF token missing"}
+Herbs Search: 200 - {"items":[{"id":8,"name_cn":"白术","name_latin":"Atractylodis Macrocephalae Rhizoma","name_pinyin":null,"category":"补气药","ob_percent":0.8,"dl_value":0.7,"effects":"健脾益气,燥湿利水","is_food_homology":true,"tcmsp_id":null,"compounds":[],"targets":[],"diseases":[],"compound_count":0,"target_count":0},{"id":9,
+Peptides Search: 200 - {"items":[{"id":8310,"sequence":"AGP","source_protein":"Pea protein","source_organism":"Pisum sativum","activity_type":"Anti-aging","activity_value":"48.3","activity_unit":"% activity","molecular_weight":243.2,"hydrolysis_enzyme":"Alcalase"},{"id":8317,"sequence":"AGP","source_protein":"Pea protein"
+KG Search: 503 - {"success":false,"error":"数据库服务暂时不可用，请稍后再试","code":503,"error_code":"ERROR_503","details":null,"request_id":"4e3cd6d6d5b3","timestamp":"2026-08-15T12:08:36Z"}
+Snapshots: 503 - {"success":false,"error":"数据库服务暂时不可用，请稍后再试","code":503,"error_code":"ERROR_503","details":null,"request_id":"e3a6d3c28462","timestamp":"2026-08-15T12:08:47Z"}
+Notifications: 503 - {"success":false,"error":"数据库服务暂时不可用，请稍后再试","code":503,"error_code":"ERROR_503","details":null,"request_id":"541479a76e8b","timestamp":"2026-08-15T12:08:58Z"}
+Admin Users: 200 - {"items":[{"username":"testuser1776381726","email":"test1776381726@example.com","full_name":null,"id":1776381726,"role":"researcher","is_active":true,"department":null,"phone":null,"avatar_url":null,"created_at":"2026-08-15T12:03:15.310961"},{"username":"testuser197959170","email":"test197959170@exa

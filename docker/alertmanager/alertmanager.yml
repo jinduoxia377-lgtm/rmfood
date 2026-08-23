@@ -1,0 +1,75 @@
+# Alertmanager 配置 — RMFOOD 告警路由
+# 对接 Prometheus 规则，实现分级告警通知
+
+global:
+  resolve_timeout: 5m
+  smtp_smarthost: '${SMTP_HOST:-localhost:587}'
+  smtp_from: '${SMTP_FROM:-alerts@rmfood.local}'
+  smtp_auth_username: '${SMTP_USER:-}'
+  smtp_auth_password: '${SMTP_PASS:-}'
+
+route:
+  # 根路由：所有未匹配的告警
+  receiver: 'default-receiver'
+  group_by: ['alertname', 'cluster', 'service']
+  group_wait: 30s          # 首次告警等待时间
+  group_interval: 5m       # 后续合并间隔
+  repeat_interval: 4h      # 重复告警间隔
+  receiver: 'webhook-router'
+
+  # 子路由：按严重级别分流
+  routes:
+    # 🔴 严重级别 → 即时通知
+    - match:
+        severity: critical
+      receiver: 'critical-alerts'
+      repeat_interval: 1h
+      continue: false
+
+    # 🟡 警告级别 → 汇总通知
+    - match:
+        severity: warning
+      receiver: 'warning-alerts'
+      repeat_interval: 4h
+      continue: false
+
+    # 🔵 信息级别 → 仅记录
+    - match:
+        severity: info
+      receiver: 'info-logger'
+
+receivers:
+  # 默认 Webhook（可对接企业微信/钉钉/飞书机器人）
+  - name: 'default-receiver'
+    webhook_configs:
+      - url: 'http://alertmanager-webhook-proxy:8080/webhook/default'
+        send_resolved: true
+
+  # 关键告警 → 即时通知
+  - name: 'critical-alerts'
+    webhook_configs:
+      - url: 'http://alertmanager-webhook-proxy:8080/webhook/critical'
+        send_resolved: true
+    email_configs:
+      - to: '${ALERT_EMAIL:-ops@rmfood.local}'
+        send_resolved: true
+
+  # 警告告警 → 汇总通知
+  - name: 'warning-alerts'
+    webhook_configs:
+      - url: 'http://alertmanager-webhook-proxy:8080/webhook/warning'
+        send_resolved: true
+
+  # 信息级别 → 仅记录
+  - name: 'info-logger'
+    webhook_configs:
+      - url: 'http://alertmanager-webhook-proxy:8080/webhook/info'
+        send_resolved: false
+
+inhibit_rules:
+  # 当 critical 告警存在时，抑制同服务同实例的 warning
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'cluster', 'service']

@@ -18,8 +18,9 @@ from .enums import (
 )
 from .user_model import User
 from .formula import Formula, FormulaVersion, Ingredient, Peptide, Comment, CommentLike, formula_ingredients, formula_peptides, formula_categories, formula_tags, Category, Tag
+from .formula_template import FormulaTemplate
 from .experiment import Experiment, ExperimentData
-from .workflow import Workflow, WorkflowTask
+from .workflow import Workflow, WorkflowTask, WorkflowTemplate
 from .notification import Notification, NotificationPreference
 from .system import AuditLog, Attachment, DataSnapshot, SystemConfig
 from .external_data import TCMHerb, MMIDHerb, SymMapHerb, BioactivePeptide, KnowledgeGraphNode
@@ -98,6 +99,7 @@ __all__ = [
     # 核心模型
     "User",
     "Formula",
+    "FormulaTemplate",
     "FormulaVersion",
     "Ingredient",
     "Peptide",
@@ -113,6 +115,7 @@ __all__ = [
     "ExperimentData",
     "Workflow",
     "WorkflowTask",
+    "WorkflowTemplate",
     "Notification",
     "AuditLog",
     "Attachment",

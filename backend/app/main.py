@@ -26,6 +26,7 @@ from .core.middleware.encoding import UTF8EncodingMiddleware
 from .core.middleware.exceptions import GlobalExceptionHandler
 from .core.observability.telemetry import (
     TelemetryMiddleware, configure_trace_logging, get_trace_summary,
+    enable_otel_sdk,
 )
 from .core.multi_tenant.tenant_security import (
     TenantMiddleware, tenant_query_guard,
@@ -73,6 +74,13 @@ async def lifespan(app: FastAPI):
     logger.info("应用启动中...")
     # 初始化 Sentry 错误追踪
     sentry_init(app)
+
+    # ── OTel SDK 切换开关（P2-1: 自研实现 → 官方 SDK） ──
+    if settings.monitoring.use_otel_sdk:
+        enable_otel_sdk(endpoint=settings.monitoring.otel_exporter_endpoint)
+        logger.info("[Telemetry] OTel 官方 SDK 已启用")
+    else:
+        logger.info("[Telemetry] 使用自研 Tracer 实现（设置 USE_OTEL_SDK=true 切换至官方 SDK）")
 
     # ── 导入所有模型，确保 Base.metadata 包含所有表定义 ──
     from .models import (  # noqa: F401
@@ -481,11 +489,18 @@ Authorization: Bearer <your_access_token>
         logger.warning(f"[CoreRouter] Core router registration failed (non-blocking): {e}")
     # ── AI Agent API ──
     try:
-        from .api.v1.agent_router import router as agent_router
+        from app.api.v1.agent_router import router as agent_router
         app.include_router(agent_router, prefix="/api/v1")
         logger.info("[AgentRouter] AI Agent API registered")
     except Exception as e:
         logger.warning(f"[AgentRouter] Agent router registration failed (non-blocking): {e}")
+    # ── 实验室验证 API ──
+    try:
+        from .api.lab_validation import router as lab_validation_router
+        app.include_router(lab_validation_router, prefix="/api/v1")
+        logger.info("[LabValidation] Lab validation API registered")
+    except Exception as e:
+        logger.warning(f"[LabValidation] Router registration failed (non-blocking): {e}")
     # ── Data Flywheel API (P1-C: automated collection, validation, ML training) ──
     try:
         from .api.v1.data_flywheel_router import router as data_flywheel_router

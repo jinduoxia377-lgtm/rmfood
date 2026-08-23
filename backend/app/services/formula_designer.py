@@ -26,6 +26,8 @@ class FormulaDesigner:
         """
         设计配方。
 
+        优先使用七步专业引擎，失败时降级到传统引擎。
+
         Returns dict with keys: summary, details, data (list[dict]), scores
         """
         effects = intent.get("target_effects") or ["免疫调节", "抗氧化"]
@@ -33,6 +35,12 @@ class FormulaDesigner:
         # 肽类问题走专用路径
         if intent.get("is_peptide"):
             return self._design_peptide(effects)
+
+        # 尝试使用七步专业引擎
+        use_seven_step = intent.get("use_seven_step", False)
+
+        if use_seven_step:
+            return await self._seven_step_design(effects, intent, knowledge)
 
         # 尝试使用统一引擎（新方法）
         use_new_engine = intent.get("use_new_engine", False)
@@ -48,6 +56,69 @@ class FormulaDesigner:
 
         # 降级：基于功效评分手动选择
         return self._manual_formula_design(effects, intent)
+
+    async def _seven_step_design(
+        self,
+        effects: list[str],
+        intent: dict,
+        knowledge: dict,
+    ) -> dict:
+        """使用七步专业引擎生成配方"""
+        try:
+            from .formula.seven_step_engine import SevenStepFormulaEngine, FormulaRequest
+
+            product_form = intent.get("product_form", "保健饮品")
+            target_group = intent.get("target_group", "adult")
+            max_cost = intent.get("max_cost")
+            n_candidates = intent.get("n_candidates", 10)
+
+            engine = SevenStepFormulaEngine()
+            req = FormulaRequest(
+                target_effects=effects[:3],
+                product_form=product_form,
+                target_group=target_group,
+                max_cost=max_cost,
+                n_candidates=n_candidates,
+            )
+            result = await engine.design(req)
+
+            # 格式化为统一输出格式
+            herbs_output = []
+            for herb in result.framework.get("herbs", []):
+                herbs_output.append({
+                    "role": herb.get("role", ""),
+                    "name": herb.get("name", ""),
+                    "dosage": f"{herb.get('dosage', 0):.1f}g",
+                    "purpose": effects[0] if effects else "综合调理",
+                    "score": herb.get("efficacy_score", 0),
+                })
+
+            return {
+                "summary": result.summary,
+                "details": f"七步引擎生成 | 结构合规: {result.framework.get('structure_score', 0):.2f}",
+                "data": herbs_output,
+                "scores": {
+                    "overall_score": result.framework.get("structure_score", 0),
+                    "efficacy_score": herbs_output[0].get("score", 0) if herbs_output else 0,
+                    "structure_score": result.framework.get("structure_score", 0),
+                },
+                "strategy": "seven_step_engine",
+                "execution_time_ms": result.total_time_ms,
+                # 额外信息
+                "product_form": product_form,
+                "total_dosage_g": result.framework.get("total_dosage_g", 0),
+                "validation": result.validation,
+                "flavor_balance": result.flavor.get("balance_score", 0),
+                "preservation": result.preservation,
+                "functional": result.functional,
+            }
+        except Exception as e:
+            logger.warning(f"[FormulaDesigner] 七步引擎失败，回退到传统引擎: {e}")
+            # 回退到传统引擎
+            formula_data = await self._optimize_formula(effects, intent)
+            if formula_data and len(formula_data) >= 3:
+                return self._build_tcm_structure(formula_data, effects, intent)
+            return self._manual_formula_design(effects, intent)
 
     async def _new_engine_design(
         self,

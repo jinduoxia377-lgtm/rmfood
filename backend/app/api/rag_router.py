@@ -5,7 +5,7 @@ v2.0 (2026-07-06): 增强文档版本管理和多格式支持
 
 import logging
 import hashlib
-from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi import APIRouter, UploadFile, File, HTTPException, Query
 
 from ..services.ai.rag.rag_service import rag_service
 from ..services.ai.rag.document_version_manager import DocumentVersionManager, DocumentVersion

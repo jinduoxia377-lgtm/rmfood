@@ -2,6 +2,7 @@ import { GraphNode } from '../types'
 import type { AIInsight } from './types'
 
 export interface AIInsightsPanelProps {
+  [key: string]: any;
   showAIPanel: boolean
   aiInsights: AIInsight[]
   isGeneratingInsight: boolean

@@ -140,7 +140,7 @@ interface ConflictInfo {
 }
 
 interface NetworkQuality {
-  effectiveType: '4g' | '3g' | '2g' | 'slow-2g'
+  effectiveType: '4g' | '3g' | '2g' | 'unknown'
   rtt: number
   downlink: number
   downlinkMax: number
@@ -587,7 +587,7 @@ export function useOfflineManager(
    * 获取网络质量信息
    */
   const getNetworkQuality = useCallback((): NetworkQuality => {
-    const connection = (navigator.connection || (navigator.mozConnection || (navigator.webkitConnection
+    const connection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection
 
     if (!connection) {
       return {
@@ -603,7 +603,7 @@ export function useOfflineManager(
       effectiveType: connection.effectiveType || '4g',
       rtt: connection.rtt || 50,
       downlink: connection.downlink || 10,
-      downlinkMax: connection.downlinkMax || Infinity,
+      downlinkMax: connection.downlink || 0 || Infinity,
       saveData: connection.saveData || false,
     }
   }, [])
@@ -629,7 +629,7 @@ export function useOfflineManager(
       '4g': { batchSize: 20, retryDelay: 1000, maxRetries: 5, timeout: 60000, useCompression: true },
       '3g': { batchSize: 10, retryDelay: 2000, maxRetries: 3, timeout: 30000, useCompression: true },
       '2g': { batchSize: 5, retryDelay: 5000, maxRetries: 2, timeout: 15000, useCompression: true },
-      'slow-2g': { batchSize: 1, retryDelay: 10000, maxRetries: 1, timeout: 10000, useCompression: true },
+      'unknown': { batchSize: 1, retryDelay: 10000, maxRetries: 1, timeout: 10000, useCompression: true },
     }
 
     const strategy = strategies[quality.effectiveType] || strategies['4g']

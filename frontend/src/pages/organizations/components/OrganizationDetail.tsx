@@ -304,7 +304,7 @@ export default function OrganizationDetail({ organizationId: propOrgId }: Organi
                 <>
                   <div className="flex items-center gap-3 flex-wrap">
                     <h1 className="h1 text-neutral-900 dark:text-white truncate">{organization?.name}</h1>
-                    {getRoleIcon((organization as Record<string, unknown>)?.my_role as string || '')}
+                    {getRoleIcon((organization as unknown as Record<string, unknown>)?.my_role as string || '')}
                   </div>
 
                   <div className="flex items-center gap-3 mt-1.5 flex-wrap">
@@ -333,10 +333,10 @@ export default function OrganizationDetail({ organizationId: propOrgId }: Organi
                     <span
                       className={cn(
                         'px-2.5 py-0.5 rounded-full text-xs font-medium',
-                        getStatusConfig(((organization as Record<string, unknown>).is_active as boolean) ? 'active' : 'suspended').className,
+                        getStatusConfig(((organization as unknown as Record<string, unknown>).is_active as boolean) ? 'active' : 'suspended').className,
                       )}
                     >
-                      {getStatusConfig(((organization as Record<string, unknown>).is_active as boolean) ? 'active' : 'suspended').label}
+                      {getStatusConfig(((organization as unknown as Record<string, unknown>).is_active as boolean) ? 'active' : 'suspended').label}
                     </span>
                   </div>
                 </>

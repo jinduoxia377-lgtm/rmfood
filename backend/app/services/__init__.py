@@ -2,7 +2,7 @@
 from .auth import AuthService
 from .user import UserService
 from .formula import FormulaService
-from .experiment import ExperimentService
+from .experiment_service import ExperimentService
 from .ingredient import IngredientService
 from .peptide import PeptideService
 from .ai import AIService, ai_service

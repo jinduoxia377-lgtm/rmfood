@@ -40,7 +40,14 @@ export function useFormula(id: number) {
     queryKey: ['formula', id],
     queryFn: () => formulaApi.get(id),
     enabled: !!id,
-  });
+    throwOnError: false,
+    retry: (failureCount, error: any) => {
+      // Don't retry on 401 (auth errors)
+      if (error?.response?.status === 401) return false
+      return failureCount < 3
+    },
+    staleTime: 60_000,
+  })
 }
 
 // ── 创建配方 ──
@@ -89,6 +96,11 @@ export function useFormulaVersions(id: number) {
     queryKey: ['formula-versions', id],
     queryFn: () => formulaApi.versions(id),
     enabled: !!id,
+    throwOnError: false,
+    retry: (failureCount, error: any) => {
+      if (error?.response?.status === 401) return false
+      return failureCount < 3
+    },
   });
 }
 
@@ -115,6 +127,11 @@ export function useExperiment(id: number) {
     queryKey: ['experiment', id],
     queryFn: () => experimentApi.get(id),
     enabled: !!id,
+    throwOnError: false,
+    retry: (failureCount, error: any) => {
+      if (error?.response?.status === 401) return false
+      return failureCount < 3
+    },
   });
 }
 

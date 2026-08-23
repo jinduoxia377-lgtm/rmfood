@@ -410,7 +410,7 @@ export class AdvancedPdfExportService {
           },
         });
 
-        this.currentY = (this.doc.lastAutoTable.finalY + 10;
+        this.currentY = (this.doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10;
         this.doc.setFont(this.options.fontName, 'normal');
       });
     }
@@ -474,7 +474,7 @@ export class AdvancedPdfExportService {
               title: bookmark.title,
               pageNumber: bookmark.page,
             };
-            (outline.addPage(currentLevel0);
+            (outline as unknown as { addPage: (p: any) => void }).addPage(currentLevel0);
             currentLevel1 = null;
           } else if (bookmark.level === 1 && currentLevel0) {
             currentLevel1 = {

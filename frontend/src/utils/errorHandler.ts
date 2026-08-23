@@ -53,8 +53,8 @@ export class AppError extends Error {
     this.userMessage = getUserMessage(code)
     this.timestamp = Date.now()
 
-    if (typeof (Error.captureStackTrace === 'function') {
-      (Error.captureStackTrace(this, AppError)
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, AppError);
     }
   }
 

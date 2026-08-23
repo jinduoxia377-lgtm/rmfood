@@ -43,7 +43,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import BaseModel, Field, field_validator, computed_field
+from pydantic import BaseModel, Field, field_validator, model_validator, computed_field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 logger = logging.getLogger(__name__)
@@ -301,6 +301,10 @@ class CeleryConfig(BaseModel):
         default=3000,
         description="软时间提前警告时间（秒），应小于 task_time_limit"
     )
+    result_expires: int = Field(
+        default=3600,
+        description="任务结果过期时间（秒）"
+    )
 
     @field_validator("broker_url", "result_backend")
     def validate_redis_url(cls, v: str) -> str:
@@ -328,17 +332,18 @@ class SecurityConfig(BaseModel):
     @field_validator("secret_key", mode="before")
     @classmethod
     def ensure_secret_key(cls, v: str) -> str:
-        from ..config import settings  # 延迟导入避免循环依赖
+        import os
 
         if not v:
-            env = getattr(settings, 'app_env', None)
+            env = os.environ.get("ENV", "development")
             # 生产环境禁止使用随机 SECRET_KEY
-            if not env or env != Environment.DEVELOPMENT:
+            if env not in ("development", "test"):
                 raise ValueError(
                     "生产环境中必须设置 SECRET_KEY 环境变量。"
                     "请通过环境变量 SECRET_KEY 设置强密钥（至少 32 字符）"
                 )
-            logger.warning(
+            import logging
+            logging.getLogger(__name__).warning(
                 "⚠️ SECRET_KEY 未设置（开发环境），仅用于调试，"
                 "在生产环境中此行为会被阻止"
             )
@@ -347,6 +352,27 @@ class SecurityConfig(BaseModel):
         if len(v) < 32:
             raise ValueError("SECRET_KEY 长度必须 >= 32 字符")
         return v
+
+    @model_validator(mode="after")
+    def ensure_secret_key_valid(self) -> "SecurityConfig":
+        """确保 secret_key 有效（在模型验证后补充默认值并校验长度）"""
+        import os
+        if not self.secret_key:
+            env = os.environ.get("ENV", "development")
+            if env not in ("development", "test"):
+                raise ValueError(
+                    "生产环境中必须设置 SECRET_KEY 环境变量。"
+                    "请通过环境变量 SECRET_KEY 设置强密钥（至少 32 字符）"
+                )
+            import logging
+            logging.getLogger(__name__).warning(
+                "⚠️ SECRET_KEY 未设置（开发环境），仅用于调试，"
+                "在生产环境中此行为会被阻止"
+            )
+            self.secret_key = secrets.token_urlsafe(32)
+        elif len(self.secret_key) < 32:
+            raise ValueError("SECRET_KEY 长度必须 >= 32 字符")
+        return self
 
 
 class LoggingConfig(BaseModel):
@@ -390,6 +416,17 @@ class MonitoringConfig(BaseModel):
     enable_metrics: bool = Field(default=True, description="是否启用 Prometheus 指标")
     metrics_port: int = Field(default=9090, ge=1, description="Prometheus 端口")
     health_check_interval: int = Field(default=30, ge=1, description="健康检查间隔（秒）")
+    # ─── OTel SDK 切换开关 ──────────────────────────────────
+    use_otel_sdk: bool = Field(
+        default=False,
+        alias="USE_OTEL_SDK",
+        description="是否启用官方 opentelemetry-sdk 替代自研实现（生产环境推荐开启）"
+    )
+    otel_exporter_endpoint: str = Field(
+        default="",
+        alias="OTEL_EXPORTER_ENDPOINT",
+        description="OTel 导出器端点（如 http://tempo:4318）"
+    )
 
 
 # ═════════════════════════════════════════════
@@ -576,8 +613,10 @@ class Settings(BaseSettings):
                 parsed = urlparse(self.redis.url)
                 self.redis.url = urlunparse((parsed.scheme, value, parsed.hostname, parsed.port, parsed.path, parsed.query))
 
-            # SECRET_KEY - 直接赋值
-            elif env_key == "SECRET_KEY":
+            # SECRET_KEY - 直接赋值（校验长度）
+            elif env_key == "SECRET_KEY" and value:
+                if len(value) < 32:
+                    raise ValueError(f"SECRET_KEY 长度必须 >= 32 字符，当前: {len(value)}")
                 self.security.secret_key = value
 
             # LOG_LEVEL - 直接赋值

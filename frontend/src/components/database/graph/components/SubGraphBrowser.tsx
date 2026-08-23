@@ -2,6 +2,7 @@ import { GraphNode, TYPE_CONFIG } from '../types'
 import type { CommunityResult, KCoreResult, SubGraphResult } from './types'
 
 export interface SubGraphBrowserProps {
+  [key: string]: any;
   showSubGraphPanel: boolean
   communityResult: CommunityResult | null
   kcoreResult: KCoreResult | null

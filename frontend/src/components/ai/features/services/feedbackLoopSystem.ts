@@ -25,6 +25,7 @@ export interface FeedbackRecord {
     sessionDuration: number
     deviceType: string
     userAgent: string
+    reportReason?: string
   }
 }
 
@@ -127,7 +128,7 @@ export class FeedbackTracker {
     })
 
     if (record) {
-      (record.metadata.reportReason = reason
+      record.metadata.reportReason = reason;
     }
   }
 

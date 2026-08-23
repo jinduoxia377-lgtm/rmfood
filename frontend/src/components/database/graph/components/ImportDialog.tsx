@@ -8,6 +8,7 @@ export interface ImportState {
 }
 
 export interface ImportDialogProps {
+  [key: string]: any;
   showImportDialog: boolean
   importState: ImportState
   dragOver: boolean

@@ -19,7 +19,7 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
 from app.services.ai.agent import get_orchestrator, AgentExecution
-from app.services.ai.agent.workflow_engine import get_workflow_engine, WorkflowEngine
+from app.services.ai.agent.workflow_engine import get_workflow_engine, WorkflowEngine, WORKFLOW_TEMPLATES
 
 logger = logging.getLogger(__name__)
 
@@ -62,6 +62,17 @@ async def list_tools():
     orch = get_orchestrator()
     tools = orch.list_available_tools()
     return {"success": True, "tools": tools, "count": len(tools)}
+
+
+@router.get("/csrf-token", summary="获取 CSRF Token")
+async def get_csrf_token():
+    """
+    获取 CSRF token（适用于 SPA 跨域场景）
+    返回 JSON 格式，避免 Cookie 的 Secure 属性限制
+    """
+    import secrets
+    token = secrets.token_hex(32)
+    return {"token": token}
 
 
 @router.post("/execute", summary="执行 Agent 任务")
@@ -164,6 +175,28 @@ async def delete_execution(execution_id: str):
         raise HTTPException(status_code=404, detail="执行记录不存在")
     del _executions[execution_id]
     return {"success": True, "message": "已删除"}
+
+
+@router.get("/workflows/templates", summary="列出所有工作流模板")
+async def list_workflow_templates():
+    template_info = {
+        "formula_design": {"label": "配方设计", "desc": "RAG检索 → 配方生成 → 合规检查 → 报告输出"},
+        "compliance_check": {"label": "合规预审", "desc": "多维度合规检查 + 自动修复建议"},
+        "experiment_plan": {"label": "实验方案", "desc": "配方 → 体外/体内实验设计 → 指标体系"},
+        "ingredient_lookup": {"label": "原料查询", "desc": "药材功效/法规/配伍禁忌查询"},
+        "full_pipeline": {"label": "全流程", "desc": "RAG→配方→合规→实验→报告完整链路"},
+    }
+    items = []
+    for wf_type, stages in WORKFLOW_TEMPLATES.items():
+        info = template_info.get(wf_type, {})
+        items.append({
+            "template_id": wf_type,
+            "name": info.get("label", wf_type),
+            "description": info.get("desc", ""),
+            "stage_count": len(stages),
+            "stages": [s.value if hasattr(s, 'value') else str(s) for s in stages],
+        })
+    return {"success": True, "items": items, "total": len(items)}
 
 
 # ════════════════════════════════════════════

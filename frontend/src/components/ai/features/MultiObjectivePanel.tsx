@@ -23,6 +23,12 @@ import type { MultiObjectiveResponse, MOObjective, MOPresetInfo, GAHistoryRecord
 import { EFFECT_OPTIONS } from '@/config/ai/effects';
 import { cn } from '@/lib/utils';
 import { getAuthToken } from '@/hooks/useSSEAuth';
+
+// 获取 CSRF Token
+function getCsrfToken(): string | null {
+  const match = document.cookie.match(new RegExp('(^| )csrf_token=([^;]+)'))
+  return match ? match[2] : null
+}
 import {
   Card,
   Button,
@@ -180,6 +186,8 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
   const [excludeHerbs, setExcludeHerbs] = useState<string[]>([]);
   const [excludedInput, setExcludedInput] = useState('');
   const [maxCost, setMaxCost] = useState<number | null>(null);
+  const [includeHerbs, setIncludeHerbs] = useState<string[]>([]);
+  const [includedInput, setIncludedInput] = useState('');
 
   // ── 流式模式 ──
   const [isStreamingMode, setIsStreamingMode] = useState(true);
@@ -461,6 +469,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
 
       const constraints: Record<string, unknown> = {};
       if (excludeHerbs.length > 0) constraints.exclude_herbs = excludeHerbs;
+      if (includeHerbs.length > 0) constraints.include_herbs = includeHerbs;
       if (maxCost !== null && maxCost > 0) constraints.max_cost = maxCost;
 
       addLog(`📊 种群大小=${params.populationSize}, 代数=${params.generations}, 模式=${mode}`, 'info');
@@ -507,6 +516,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
   const buildRequestBody = useCallback(() => {
     const constraints: Record<string, unknown> = {};
     if (excludeHerbs.length > 0) constraints.exclude_herbs = excludeHerbs;
+    if (includeHerbs.length > 0) constraints.include_herbs = includeHerbs;
     if (maxCost !== null && maxCost > 0) constraints.max_cost = maxCost;
     return {
       target_effects: selectedEffects.length > 0 ? selectedEffects : ['免疫调节'],
@@ -524,7 +534,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
       constraints: Object.keys(constraints).length > 0 ? constraints : null,
       count: params.count,
     };
-  }, [selectedEffects, customObjectives, selectedPreset, mode, params, excludeHerbs, maxCost]);
+  }, [selectedEffects, customObjectives, selectedPreset, mode, params, excludeHerbs, includeHerbs, maxCost]);
 
   // ── SSE 流式执行 ──
   const executeStreaming = useCallback(async () => {
@@ -563,6 +573,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
         headers: {
           'Content-Type': 'application/json',
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          ...(getCsrfToken() ? { 'X-CSRF-Token': getCsrfToken()! } : {}),
         },
         body: JSON.stringify(requestBody),
         signal: controller.signal,
@@ -704,6 +715,22 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
 
   const removeExcludedIngredient = useCallback((item: string) => {
     setExcludeHerbs((prev) => prev.filter((i) => i !== item));
+  }, []);
+
+  // ── 基础配方管理（用户指定强制包含的药材） ──
+  const addIncludedIngredient = useCallback(() => {
+    const items = includedInput
+      .split(/[,，]/)
+      .map((s) => s.trim())
+      .filter(Boolean);
+    if (items.length > 0) {
+      setIncludeHerbs((prev) => [...new Set([...prev, ...items])]);
+      setIncludedInput('');
+    }
+  }, [includedInput]);
+
+  const removeIncludedIngredient = useCallback((item: string) => {
+    setIncludeHerbs((prev) => prev.filter((i) => i !== item));
   }, []);
 
   // ── 参数合理性校验 ──
@@ -1217,6 +1244,62 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
               />
             </div>
           </div>
+        </section>
+
+        {/* ═══ 基础配方（可选：用户指定的药材）═══ */}
+        <section aria-labelledby="mo-included-heading">
+          <h3
+            id="mo-included-heading"
+            className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-2 mb-4"
+          >
+            <FlaskConical className="w-4 h-4 text-emerald-500" />
+            基础配方
+            <span className="text-xs font-normal text-neutral-400">(可选，强制包含)</span>
+          </h3>
+          <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-3">
+            指定药材将作为固定基础，优化器将在其基础上添加更多药材。若留空则由算法自动选择。
+          </p>
+          <div className="flex gap-2 mb-3">
+            <Input
+              value={includedInput}
+              onChange={(e) => setIncludedInput(e.target.value)}
+              placeholder="输入药材名称，逗号分隔（如：黄芪,党参,甘草）"
+              className="flex-1"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  addIncludedIngredient();
+                }
+              }}
+              aria-label="基础配方输入"
+            />
+            <Button variant="outline" size="sm" onClick={addIncludedIngredient}>
+              添加
+            </Button>
+          </div>
+          {includeHerbs.length > 0 && (
+            <div className="flex flex-wrap gap-1.5" role="list" aria-label="基础配方药材列表">
+              {includeHerbs.map((item) => (
+                <Badge
+                  key={item}
+                  variant="success"
+                  size="sm"
+                  className="flex items-center gap-1 cursor-pointer"
+                  role="listitem"
+                >
+                  <FlaskConical className="w-3 h-3" />
+                  {item}
+                  <button
+                    onClick={() => removeIncludedIngredient(item)}
+                    aria-label={`移除配方项: ${item}`}
+                    className="hover:text-error-700 focus:outline-none focus:ring-1 focus:ring-red-400 rounded"
+                  >
+                    ×
+                  </button>
+                </Badge>
+              ))}
+            </div>
+          )}
         </section>
       </Card>
 

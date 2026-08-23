@@ -125,11 +125,9 @@ export function ThemeProvider({
       const handleChange = (e: MediaQueryListEvent) => {
         try {
           const newMode = e.matches ? 'dark' : 'light';
-          const currentType = store.activeThemeId.split('-').slice(1).join('-') || 'default';
-          const themeId = `${newMode}-${currentType}` as PresetThemeId;
-          if (presetThemes[themeId]) {
-            store.setPresetTheme(themeId);
-          }
+          // 精简后仅两套预设主题，直接按模式切换
+          const themeId = newMode === 'dark' ? 'dark-default' : 'light-default' as PresetThemeId;
+          store.setPresetTheme(themeId);
         } catch (err) {
           logger.warn('[ThemeProvider] System preference change error:', err);
         }

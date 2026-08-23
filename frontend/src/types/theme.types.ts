@@ -417,19 +417,8 @@ export interface ThemeConfig {
 // 主题预设定义
 // ============================================================================
 
-/** 预设主题 ID */
-export type PresetThemeId =
-  | 'light-default'
-  | 'light-warm'
-  | 'light-cool'
-  | 'dark-default'
-  | 'dark-warm'
-  | 'dark-cool'
-  | 'dark-oled'
-  | 'high-contrast-light'
-  | 'high-contrast-dark'
-  | 'reading-sepia'
-  | 'reading-dark';
+/** 预设主题 ID（精简版：仅保留2套完整设计 Token 体系的基础主题） */
+export type PresetThemeId = 'light-default' | 'dark-default';
 
 /** 用户自定义主题配置 */
 export interface CustomThemeOverrides {

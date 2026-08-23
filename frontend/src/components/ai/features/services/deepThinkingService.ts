@@ -158,7 +158,7 @@ class DeepThinkingServiceV2 {
   async analyze(question: string, context?: string[]): Promise<MultiDimensionResult> {
     logger.debug('[DeepThinkingServiceV2] 开始多维度深度分析:', { question, contextLength: context?.length });
 
-    eventBus.emit('thinking:step', { question, timestamp: Date.now() };
+    eventBus.emit('thinking:step', { question, timestamp: Date.now() });
 
     try {
       const response = await fetch(API_ENDPOINTS.AI.CHAT as any, {
@@ -179,7 +179,7 @@ class DeepThinkingServiceV2 {
         question,
         result,
         timestamp: Date.now(),
-      };
+      });
 
       logger.debug('[DeepThinkingServiceV2] 深度分析完成');
       return this.enrichWithDomainAnalysis(result as MultiDimensionResult, question);
@@ -187,7 +187,7 @@ class DeepThinkingServiceV2 {
       eventBus.emit('thinking:step', {
         error: error instanceof Error ? error.message : 'Unknown error',
         timestamp: Date.now(),
-      };
+      });
 
       logger.error('[DeepThinkingServiceV2] 深度分析失败，使用增强版降级分析:', error);
       return this.enhancedFallbackAnalysis(question, context);

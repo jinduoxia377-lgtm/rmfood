@@ -1,4 +1,5 @@
 export interface GraphSkeletonProps {
+  [key: string]: any;
   isLoading: boolean
 }
 

@@ -660,12 +660,12 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
                       原料来源偏好
                     </label>
                     <div className="flex flex-wrap gap-2">
-                      {[
-                        { value: 'natural', label: '天然' },
-                        { value: 'synthetic', label: '合成' },
-                        { value: 'fermented', label: '发酵' },
-                        { value: 'plant_extract', label: '植物提取' },
-                      ].map((source) => (
+                      {([
+                        { value: 'natural' as const, label: '天然' },
+                        { value: 'synthetic' as const, label: '合成' },
+                        { value: 'fermented' as const, label: '发酵' },
+                        { value: 'plant_extract' as const, label: '植物提取' },
+                      ] as const).map((source) => (
                         <button
                           key={source.value}
                           onClick={() =>
@@ -698,13 +698,13 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
                       认证要求
                     </label>
                     <div className="flex flex-wrap gap-2">
-                      {[
-                        { value: 'organic', label: '有机认证' },
-                        { value: 'gmp', label: 'GMP' },
-                        { value: 'iso', label: 'ISO' },
-                        { value: 'halal', label: 'Halal' },
-                        { value: 'kosher', label: 'Kosher' },
-                      ].map((cert) => (
+                      {([
+                        { value: 'organic' as const, label: '有机认证' },
+                        { value: 'gmp' as const, label: 'GMP' },
+                        { value: 'iso' as const, label: 'ISO' },
+                        { value: 'halal' as const, label: 'Halal' },
+                        { value: 'kosher' as const, label: 'Kosher' },
+                      ] as const).map((cert) => (
                         <button
                           key={cert.value}
                           onClick={() =>
@@ -737,13 +737,13 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
                       目标市场
                     </label>
                     <div className="flex flex-wrap gap-2">
-                      {[
-                        { value: 'china', label: '中国' },
-                        { value: 'eu', label: '欧盟' },
-                        { value: 'usa', label: '美国' },
-                        { value: 'japan', label: '日本' },
-                        { value: 'global', label: '全球' },
-                      ].map((market) => (
+                      {([
+                        { value: 'china' as const, label: '中国' },
+                        { value: 'eu' as const, label: '欧盟' },
+                        { value: 'usa' as const, label: '美国' },
+                        { value: 'japan' as const, label: '日本' },
+                        { value: 'global' as const, label: '全球' },
+                      ] as const).map((market) => (
                         <button
                           key={market.value}
                           onClick={() =>
@@ -776,11 +776,11 @@ export function FormulaWizard({ onComplete, onCancel, initialConfig, className =
                       特殊工艺限制
                     </label>
                     <div className="flex flex-wrap gap-2">
-                      {[
-                        { value: 'no_preservative', label: '无防腐剂' },
-                        { value: 'no_fragrance', label: '无香精' },
-                        { value: 'no_colorant', label: '无色素' },
-                      ].map((restriction) => (
+                      {([
+                        { value: 'no_preservative' as const, label: '无防腐剂' },
+                        { value: 'no_fragrance' as const, label: '无香精' },
+                        { value: 'no_colorant' as const, label: '无色素' },
+                      ] as const).map((restriction) => (
                         <button
                           key={restriction.value}
                           onClick={() =>

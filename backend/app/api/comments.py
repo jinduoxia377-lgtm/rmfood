@@ -9,8 +9,8 @@ from sqlalchemy import select, func
 from ..models.models import (
     Comment, User, Formula, Experiment,
 )
-from ..services.auth import get_current_user
-from ..api.deps import get_db_session, PaginationParams
+from ..services.auth import get_current_user as _auth_get_current_user
+from ..api.deps import get_db_session, PaginationParams, get_current_user
 from pydantic import BaseModel
 from typing import Optional
 
@@ -56,7 +56,7 @@ async def list_comments(
     include_internal: bool = Query(False),
     pagination: PaginationParams = Depends(),
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: Optional[User] = Depends(get_current_user),
 ):
     """获取指定配方或实验的评论"""
     stmt = (

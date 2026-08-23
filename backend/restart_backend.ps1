@@ -8,4 +8,6 @@ if ($proc) {
 }
 Write-Host "Starting backend..."
 $env:PYTHONIOENCODING = "utf-8"
+# cd to backend dir so relative .venv path resolves correctly
+Set-Location -Path $PSScriptRoot
 & .venv/Scripts/python.exe -m uvicorn app.main:app --host 0.0.0.0 --port 8000

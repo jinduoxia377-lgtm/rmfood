@@ -52,19 +52,19 @@ export class FormulaGeneticOptimizer {
         ...e,
         weight: targetEffects.includes(e.targetId) ? e.weight * 1.5 : e.weight,
       }))
-      const ae = weightedEdges.length ? weightedEdges.reduce((s,e) => s+e.weight, 0)/weightedEdges.length : 0
-      eff += i === 0 ? ae*1.2 : ae
+      const ae = weightedEdges.length ? weightedEdges.reduce((s,e) => s+(e.weight as number), 0)/weightedEdges.length : 0
+      eff += (i === 0 ? ae*1.2 : ae) as number
       const idx = this.ingredients.indexOf(ing)
-      const d = c.dosages[idx]; const lim = p.safetyLimit || 30; const r = d/lim
-      safe += r>0.8 ? 0.3 : r>0.5 ? 0.6 : 0.9
-      taste += p.tasteScore ?? 0.5
+      const d = c.dosages[idx] as number; const lim = (p.safetyLimit as number) || 30; const r = d/lim
+      safe += (r>0.8 ? 0.3 : r>0.5 ? 0.6 : 0.9) as number
+      taste += (p.tasteScore ?? 0.5) as number
       const sm: Record<string,number> = { cold:0.7, cool:0.75, neutral:0.9, warm:0.8, hot:0.65 }
-      stab += sm[p.nature] || 0.7
-      cost += p.costFactor ?? 0.5
+      stab += ((sm as any)[(p.nature as string)] || 0.7) as number
+      cost += (p.costFactor ?? 0.5) as number
     }
     const n = sel.length
     eff = Math.min(1, eff/n); safe = safe/n
-    taste = Math.max(0.1, Math.min(1, taste/n - sel.filter(i => (i.properties as Record<string, unknown>).flavor?.includes('苦') as boolean).length*0.08))
+    taste = Math.max(0.1, Math.min(1, taste/n - sel.filter(i => !!((i.properties as any)?.flavor || '').includes('苦')).length*0.08))
     stab = stab/n; cost = Math.max(0.1, 1 - cost/n)
     const pairs = new Set<string>()
     for (let i = 0; i < n; i++) {
@@ -210,7 +210,7 @@ export class FormulaGeneticOptimizer {
     }
     if (cnt > this.maxIng) {
       const sel = c.selection.map((s,i)=>({i,s})).filter(x=>x.s)
-      sel.sort((a,b) => knowledgeGraph.getEdgesFrom(this.ingredients[a.i].id).reduce((s,e)=>s+e.weight,0) - knowledgeGraph.getEdgesFrom(this.ingredients[b.i].id).reduce((s,e)=>s+e.weight,0))
+      sel.sort((a,b) => knowledgeGraph.getEdgesFrom(this.ingredients[a.i].id).reduce((s,e)=>s+(e.weight as number),0) - knowledgeGraph.getEdgesFrom(this.ingredients[b.i].id).reduce((s,e)=>s+(e.weight as number),0))
       for (const {i:idx} of sel) {
         if (c.selection.filter(Boolean).length <= this.maxIng) break
         c.selection[idx] = false

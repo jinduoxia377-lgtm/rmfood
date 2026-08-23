@@ -11,6 +11,9 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { peptideAnalysisApi, type PeptideAnalysisData } from '@/api/ai';
 import { logger } from '@/utils/safeLogger';
+import { useToast } from '@/components/ui';
+const { error: toastError, warning: toastWarning, success: toastSuccess } = useToast();
+
 
 // ════════════════════════════════════════════
 // 1. 统一状态管理 Hook
@@ -197,11 +200,11 @@ export function usePeptideAnalysis(initialSequence = ''): [AnalysisState, Analys
       });
 
       safeSetState({ currentAnalysisId: response.data.id });
-      alert(`✅ 分析已保存！ID: ${response.data.id}`);
+      toastSuccess(`分析已保存！ID: ${response.data.id}`);
       await loadHistory(1);
     } catch (err: any) {
       logger.error('保存失败:', err);
-      alert('❌ 保存失败: ' + (err.message || '未知错误'));
+      toastError('保存失败: ' + (err.message || '未知错误'));
     } finally {
       safeSetState({ saving: false });
     }
@@ -234,7 +237,7 @@ export function usePeptideAnalysis(initialSequence = ''): [AnalysisState, Analys
         }
       } catch (err: any) {
         logger.error('加载失败:', err);
-        alert('❌ 加载失败: ' + (err.message || '未知错误'));
+        toastError('加载失败: ' + (err.message || '未知错误'));
       }
     },
     [safeSetState],
@@ -253,11 +256,11 @@ export function usePeptideAnalysis(initialSequence = ''): [AnalysisState, Analys
       });
 
       safeSetState({ isEditing: false });
-      alert('✅ 已更新');
+      toastSuccess('已更新');
       await loadHistory(state.historyPage);
     } catch (err: any) {
       logger.error('更新失败:', err);
-      alert('❌ 更新失败');
+      toastError('更新失败');
     }
   }, [state.currentAnalysisId, state.editingTags, state.editingNotes, state.historyPage, safeSetState, loadHistory]);
 
@@ -275,11 +278,11 @@ export function usePeptideAnalysis(initialSequence = ''): [AnalysisState, Analys
         showDeleteConfirm: false,
       });
 
-      alert('✅ 已删除');
+      toastSuccess('已删除');
       await loadHistory(state.historyPage);
     } catch (err: any) {
       logger.error('删除失败:', err);
-      alert('❌ 删除失败');
+      toastError('删除失败');
     } finally {
       safeSetState({ deleteLoading: false });
     }

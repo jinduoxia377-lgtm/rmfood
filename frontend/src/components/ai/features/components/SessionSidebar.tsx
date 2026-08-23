@@ -42,7 +42,7 @@ import {
   Check,
 } from 'lucide-react'
 import { useChatSessions } from '../hooks/useChatSessions'
-import type { ChatSession } from '../hooks/useChatSessions'
+import type { ChatSession, SessionExportFormat } from '../hooks/useChatSessions'
 import { logger } from '@/utils/safeLogger'
 
 // ===== 类型定义 =====
@@ -426,7 +426,7 @@ const SessionSidebar: React.FC<SessionSidebarProps> = ({
     if (!selectedSessionId) return
 
     try {
-      const blob = await exportSession(selectedSessionId, format
+      const blob = await exportSession(selectedSessionId, format as SessionExportFormat)
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url

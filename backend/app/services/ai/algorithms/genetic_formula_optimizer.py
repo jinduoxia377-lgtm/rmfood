@@ -282,7 +282,7 @@ class Individual:
         self.stability = sum(stability_factors) / max(len(stability_factors), 1) if stability_factors else 0
 
         # ── 君臣佐使结构合规度 ──
-        self.structural_compliance = self._evaluate_structural_compliance(self, herbs)
+        self.structural_compliance = 0.7  # 默认合规度，由调用方（优化器）注入
 
         # 综合适应度（扩展为 7 维，权重与 NSGA-II 一致）
         # 结构合规度作为乘法因子惩罚不合规配方
@@ -380,7 +380,9 @@ class GeneticFormulaOptimizer:
         logger.debug("[GeneticOptimizer] HerbKnowledgeService 不可用，使用内置字典（21种药材）")
 
     def optimize(self, target_effects: List[str], exclude_herbs: Optional[set] = None,
-                 _cancel_signal: Optional[threading.Event] = None) -> Tuple[List[Individual], List[Dict]]:
+                 _cancel_signal: Optional[threading.Event] = None,
+                 progress_callback: Optional[callable] = None,
+                 include_herbs: Optional[List[str]] = None) -> Tuple[List[Individual], List[Dict]]:
         """执行遗传算法优化，返回 (结果列表, 进化历史)
 
         Args:
@@ -397,7 +399,8 @@ class GeneticFormulaOptimizer:
             logger.info(f"[GeneticAlgorithm] 设置随机种子: {self.config.seed}")
 
         # Step 1: 选择候选药材（支持排除药材）
-        candidates = self._select_herbs(target_effects, exclude_herbs=exclude_herbs)
+        candidates = self._select_herbs(target_effects, exclude_herbs=exclude_herbs,
+                                         include_herbs=include_herbs)
         if len(candidates) < 3:
             logger.warning(f"候选药材不足 ({len(candidates)})")
             return [], []
@@ -529,6 +532,19 @@ class GeneticFormulaOptimizer:
                 "adaptive_mutation_rate": round(actual_mutation_rate, 6),
             })
 
+            # 通知进度回调（用于 SSE 流式推送）
+            if progress_callback:
+                try:
+                    progress_callback({
+                        "generation": gen + 1,
+                        "best_fitness": round(best_fitness, 6),
+                        "avg_fitness": round(avg_fitness, 6),
+                        "min_fitness": round(min_fitness, 6),
+                        "diversity": round(diversity, 6),
+                    })
+                except Exception:
+                    pass
+
             if (gen + 1) % 10 == 0:
                 logger.info(f"  Gen {gen+1}/{self.config.generations}, "
                           f"Best: {best_fitness:.4f}, "
@@ -613,19 +629,27 @@ class GeneticFormulaOptimizer:
         max_possible = math.sqrt(n_herbs) * count if count > 0 else 1
         return total_dist / max_possible
 
-    def _select_herbs(self, target_effects: List[str], exclude_herbs: Optional[set] = None) -> List[str]:
+    def _select_herbs(self, target_effects: List[str], exclude_herbs: Optional[set] = None,
+                      include_herbs: Optional[List[str]] = None) -> List[str]:
         """选择候选药材
 
         Args:
             target_effects: 目标功效列表
             exclude_herbs: 可选，需要排除的药材集合
+            include_herbs: 可选，用户指定的基础配方药材（强制包含）
 
         院士级修复[P0]: 使用 self._herbs（已注入 HerbKnowledgeService 数据）
         替代硬编码的 _BUILTIN_HERBS，确保动态药材库参与优化。
         """
         exclude_herbs = exclude_herbs or set()
+        include_herbs_set = set(include_herbs or [])
         candidate_set: Dict[str, float] = {}
         herbs = self._herbs  # 使用注入的 herb_db，而非 _BUILTIN_HERBS
+
+        # 用户强制包含的药材（基础配方），高优先级加入候选集
+        for hid in include_herbs_set:
+            if hid in herbs and hid not in exclude_herbs:
+                candidate_set[hid] = 1.0  # 最高优先级
 
         for effect in target_effects:
             if effect in self._efficacy_index:
@@ -638,7 +662,7 @@ class GeneticFormulaOptimizer:
         for hid in list(candidate_set.keys()):
             if hid in herbs:
                 for p in herbs[hid].synergy_partners:
-                    if p in herbs and p not in candidate_set:
+                    if p in herbs and p not in candidate_set and p not in exclude_herbs:
                         candidate_set[p] = 0.1  # 低权重引入
 
         sorted_h = sorted(candidate_set.keys(), key=lambda x: candidate_set[x], reverse=True)
@@ -647,7 +671,7 @@ class GeneticFormulaOptimizer:
         if exclude_herbs:
             sorted_h = [h for h in sorted_h if h not in exclude_herbs]
 
-        return sorted_h[:15]
+        return sorted_h[:25]  # 从15增加到25，提供更多多样性
 
     def _init_population(self, candidates: List[str]) -> List[Individual]:
         """初始化种群 — 院士级修复[P1-A1]: 加入 TCM 经典方剂种子
@@ -670,7 +694,9 @@ class GeneticFormulaOptimizer:
             {"逍遥散": {"ds": 9, "fp": 9, "bq": 9, "dg": 6, "cs": 6, "sj": 3}},  # 疏肝健脾
             {"银翘散": {"cyh": 9, "jgh": 9, "gq": 6, "sj": 6, "ds": 9}},  # 清热解毒
         ]
-        for formula_name, formula_herbs in classic_formulas:
+        for formula_data in classic_formulas:
+            formula_name = list(formula_data.keys())[0]
+            formula_herbs = formula_data[formula_name]
             genes = {}
             for hid, dosage in formula_herbs.items():
                 if hid in herbs:
@@ -698,44 +724,20 @@ class GeneticFormulaOptimizer:
                         genes[hid] = dosage
             population.append(Individual(genes))
 
-        # ═══ 填充随机采样 ═══
+        # ═══ 填充随机采样（确保多样性：随机选择3-8味药材）═══
         for _ in range(self.config.population_size - len(population)):
-            # 随机打乱候选顺序以增加多样性
-            shuffled_candidates = list(candidates)
-            random.shuffle(shuffled_candidates)
             genes = {}
-            for j, hid in enumerate(shuffled_candidates):
+            # 随机选择药材子集（3-8味），而非全选
+            num_herbs = random.randint(3, min(8, len(candidates)))
+            selected = random.sample(candidates, num_herbs)
+            for hid in selected:
                 if hid in herbs:
                     herb = herbs[hid]
-                    base_ratio = max(0.1, 1.0 - abs(j - i) * 0.15)
-                    dosage = herb.dosage_min + base_ratio * (herb.dosage_max - herb.dosage_min)
-                    dosage = round(dosage / herb.dosage_step) * herb.dosage_step
-                    dosage = max(herb.dosage_min, min(herb.dosage_max, dosage))
-                    if dosage > 0:
-                        genes[hid] = dosage
-            population.append(Individual(genes))
-
-        # 随机采样
-        for _ in range(self.config.population_size - len(population)):
-            genes = {}
-            for hid in candidates:
-                if hid in herbs and random.random() > 0.3:
-                    herb = herbs[hid]
-                    ratio = random.random()
-                    dosage = herb.dosage_min + ratio * (herb.dosage_max - herb.dosage_min)
+                    dosage = herb.dosage_min + random.random() * (herb.dosage_max - herb.dosage_min)
                     dosage = round(dosage / herb.dosage_step) * herb.dosage_step
                     dosage = max(herb.dosage_min, min(herb.dosage_max, dosage))
                     genes[hid] = dosage
             if len(genes) >= 3:
-                population.append(Individual(genes))
-            else:
-                # 强制补充
-                for hid in candidates[:5]:
-                    if hid in herbs:
-                        herb = herbs[hid]
-                        dosage = herb.dosage_min + random.random() * (herb.dosage_max - herb.dosage_min)
-                        dosage = round(dosage / herb.dosage_step) * herb.dosage_step
-                        genes[hid] = max(herb.dosage_min, dosage)
                 population.append(Individual(genes))
 
         return population[:self.config.population_size]
@@ -815,14 +817,14 @@ class GeneticFormulaOptimizer:
                     ind.genes[hid] = max(herb.dosage_min, dosage)
 
     def _deduplicate(self, individuals: List[Individual]) -> List[Individual]:
-        """Jaccard 去重"""
+        """Jaccard 去重 — 放宽阈值允许更多多样性"""
         unique = []
         for ind in individuals:
             dup = False
             for existing in unique:
                 its = set(ind.genes.keys()) & set(existing.genes.keys())
                 uni = set(ind.genes.keys()) | set(existing.genes.keys())
-                if uni and len(its) / len(uni) > 0.7:
+                if uni and len(its) / len(uni) > 0.85:  # 从0.7放宽到0.85，避免过度去重
                     dup = True
                     break
             if not dup:

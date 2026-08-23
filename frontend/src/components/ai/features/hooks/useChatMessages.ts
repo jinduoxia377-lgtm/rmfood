@@ -223,7 +223,7 @@ export function useChatMessages(): UseChatMessagesReturn {
 
           // 转发思考步骤到 ChatSidebar（通过 eventBus）
           if (chunk.step) {
-            eventBus.emit('thinking:step', chunk.step)
+            eventBus.emit('thinking:step' as any, { step: chunk.step } as any)
           }
 
           updateMessage(assistantMessageId, {

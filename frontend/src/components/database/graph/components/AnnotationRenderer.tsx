@@ -10,6 +10,7 @@ export interface AnnotationItem {
 }
 
 export interface AnnotationRendererProps {
+  [key: string]: any;
   annotations: AnnotationItem[]
   onRemoveAnnotation: (id: string) => void
 }

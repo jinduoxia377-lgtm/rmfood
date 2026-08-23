@@ -6,7 +6,8 @@ import {
   Trash2, Edit3, X, Clock, Tag, Database,
 } from 'lucide-react'
 import { peptideAnalysisApi, type PeptideAnalysisData } from '@/api/ai'
-import { logger } from '@/utils/safeLogger';
+import { logger } from '@/utils/safeLogger'
+import { useToast } from '@/components/ui'
 
 
 interface PeptideAnalysisResult {
@@ -46,6 +47,7 @@ interface DeepAnalysisProps {
 }
 
 export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComplete }: DeepAnalysisProps) {
+  const { addToast } = useToast()
   const [activeMode, setActiveMode] = useState<'single' | 'batch' | 'pareto' | 'synergy' | 'solubility'>('single')
   const [sequence, setSequence] = useState(initialSequence)
   const [loading, setLoading] = useState(false)
@@ -105,13 +107,13 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
       setCurrentAnalysisId(response.data.id)
 
       // 显示成功提示（可替换为Toast）
-      alert(`✅ 分析已保存！ID: ${response.data.id}`)
+      addToast({ type: 'success', title: '保存成功', message: `分析已保存！ID: ${response.data.id}` })
 
       // 刷新历史列表
       await loadHistory(1)
     } catch (err: any) {
       logger.error('保存失败:', err)
-      alert('❌ 保存失败: ' + (err.message || '未知错误'))
+      addToast({ type: 'error', title: '保存失败', message: err.message || '未知错误' })
     } finally {
       setSaving(false)
     }
@@ -146,7 +148,7 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
       setShowHistoryPanel(false)
     } catch (err: any) {
       logger.error('加载失败:', err)
-      alert('❌ 加载失败: ' + (err.message || '未知错误'))
+      addToast({ type: 'error', title: '加载失败', message: err.message || '未知错误' })
     }
   }
 
@@ -161,11 +163,11 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
       })
 
       setIsEditing(false)
-      alert('✅ 已更新')
+      addToast({ type: 'success', title: '更新成功', message: '分析数据已更新' })
       await loadHistory(historyPage)
     } catch (err: any) {
       logger.error('更新失败:', err)
-      alert('❌ 更新失败')
+      addToast({ type: 'error', title: '更新失败', message: '请重试' })
     }
   }
 
@@ -183,11 +185,11 @@ export function AdvancedPeptideAnalyzer({ initialSequence = '', onAnalysisComple
       setSequence('')
       setShowDeleteConfirm(false)
 
-      alert('✅ 已删除')
+      addToast({ type: 'success', title: '删除成功', message: '分析记录已删除' })
       await loadHistory(historyPage)
     } catch (err: any) {
       logger.error('删除失败:', err)
-      alert('❌ 删除失败')
+      addToast({ type: 'error', title: '删除失败', message: '请重试' })
     } finally {
       setDeleteLoading(false)
     }

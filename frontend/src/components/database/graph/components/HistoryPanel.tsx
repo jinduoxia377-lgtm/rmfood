@@ -9,6 +9,7 @@ export interface HistoryEntryItem {
 }
 
 export interface HistoryPanelProps {
+  [key: string]: any;
   showHistoryPanel: boolean
   historyEntries: HistoryEntryItem[]
   historyIndex: number

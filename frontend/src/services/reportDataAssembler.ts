@@ -268,7 +268,7 @@ export function assembleReportData(
 function extractMetadata(formula: AIRecognizedFormula, author: string): ReportMetadata {
   return {
     formulaId: formula.id,
-    formulaName: formula.name || (formula as Record<string, unknown>).title as string || '未命名配方',
+    formulaName: formula.name || (formula as unknown as Record<string, unknown>).title as string || '未命名配方',
     author,
     generatedAt: new Date(),
     analysisVersion: 'v2.0.0',

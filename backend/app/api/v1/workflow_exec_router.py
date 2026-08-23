@@ -6,10 +6,11 @@
 import asyncio
 import json
 import logging
+import uuid
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, WebSocket, WebSocketDisconnect
-from sqlalchemy import select
+from sqlalchemy import select, func, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_db_session, get_current_user
@@ -22,7 +23,7 @@ from app.core.workflow import (
     EdgeType,
     execute_workflow_dag,
 )
-from app.core.realtime.websocket_manager import get_ws_manager
+from app.core.realtime.websocket_manager import get_ws_manager, MessageType, WSMessage
 
 logger = logging.getLogger(__name__)
 
@@ -102,18 +103,61 @@ async def execute_workflow(
             workflow.status = WorkflowStatus.IN_PROGRESS
             await db.commit()
 
-            result = await execute_workflow_dag(dag)
+            # 带进度回调的执行
+            async def on_progress(task_id: int, status: str, result=None):
+                await _push_progress(workflow_id, task_id, status, result)
+                # 同步到数据库
+                if status == "running":
+                    await db.execute(
+                        select(WorkflowTask).where(WorkflowTask.id == task_id).update(
+                            {"status": TaskStatus.IN_PROGRESS, "started_at": datetime.now(timezone.utc)}
+                        )
+                    )
+                elif status == "success" and result:
+                    await db.execute(
+                        select(WorkflowTask).where(WorkflowTask.id == task_id).update(
+                            {
+                                "status": TaskStatus.COMPLETED,
+                                "completed_at": datetime.now(timezone.utc),
+                                "duration_ms": int(result.latency_ms),
+                                "output_data": result.output_data,
+                            }
+                        )
+                    )
+
+            result = await execute_workflow_dag(dag, on_progress=on_progress)
 
             # 更新工作流结果
             workflow.status = WorkflowStatus.COMPLETED if result["failed"] == 0 else WorkflowStatus.FAILED
             workflow.result = result
             await db.commit()
 
+            # 推送完成消息
+            ws_manager = get_ws_manager()
+            await ws_manager.broadcast_to_channel(
+                f"workflow:{workflow_id}",
+                WSMessage(type=MessageType.AI_TASK_COMPLETED.value, data={
+                    "workflow_id": workflow_id,
+                    "execution_id": execution_id,
+                    "result": result,
+                }),
+            )
+
         except Exception as e:
             logger.error("Workflow execution failed: %s", e, exc_info=True)
             workflow.status = WorkflowStatus.FAILED
             workflow.error_message = str(e)
             await db.commit()
+
+            # 推送错误消息
+            ws_manager = get_ws_manager()
+            await ws_manager.broadcast_to_channel(
+                f"workflow:{workflow_id}",
+                WSMessage(type=MessageType.AI_TASK_FAILED.value, data={
+                    "workflow_id": workflow_id,
+                    "error": str(e),
+                }),
+            )
 
     # 启动异步执行
     asyncio.create_task(_run())
@@ -186,8 +230,12 @@ async def workflow_ws(
 
     消息格式:
     - {"type": "progress", "task_id": int, "status": str, "result": dict}
+    - {"type": "stage_done", "stage": str, "success": bool, "latency_ms": float}
     - {"type": "complete", "result": dict}
     - {"type": "error", "message": str}
+
+    前端订阅方式:
+    ws.send(JSON.stringify({type: "subscribe", channel: "workflow:{id}"}))
     """
     # 验证工作流存在
     workflow = (await db.execute(
@@ -199,14 +247,20 @@ async def workflow_ws(
 
     await websocket.accept()
     ws_manager = get_ws_manager()
-    await ws_manager.join_group(f"workflow:{workflow_id}", websocket)
+    connection_id = f"wf_ws_{workflow_id}_{uuid.uuid4().hex[:8]}"
 
     try:
-        # 持续推送进度
+        # 订阅工作流通道
+        await ws_manager.subscribe(connection_id, f"workflow:{workflow_id}")
+        await websocket.send_json({
+            "type": "connected",
+            "channel": f"workflow:{workflow_id}",
+            "connection_id": connection_id,
+        })
+
+        # 持续监听
         while True:
-            # 接收客户端消息（心跳等）
             data = await websocket.receive_text()
-            # 解析并处理（可选：支持客户端发送控制命令）
             try:
                 msg = json.loads(data)
                 if msg.get("type") == "ping":
@@ -216,7 +270,7 @@ async def workflow_ws(
     except WebSocketDisconnect:
         logger.info("Workflow WS disconnected: workflow_id=%d", workflow_id)
     finally:
-        await ws_manager.leave_group(f"workflow:{workflow_id}", websocket)
+        await ws_manager.unsubscribe(connection_id, f"workflow:{workflow_id}")
 
 
 @router.get("/executors", summary="列出可用执行器")

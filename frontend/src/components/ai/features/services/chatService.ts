@@ -429,7 +429,7 @@ export class ChatService implements IChatService {
           detail,
           hasToken: !!this.isAuthenticated(),
         });
-        this.eventBus.emit('auth:required' as any, {};
+        this.eventBus.emit('auth:required' as any, {});
         throw new Error(`HTTP 错误 (401): ${detail || '认证失败，Token 可能已过期'}`);
       }
       if (status === 429) {
@@ -516,7 +516,7 @@ export class ChatService implements IChatService {
             hasToken: !!this.isAuthenticated(),
           });
 
-          this.eventBus.emit('auth:required' as any, {};
+          this.eventBus.emit('auth:required' as any, {});
           throw new Error(`认证失败 (401): ${errorText || '未授权访问'}`);
         }
 

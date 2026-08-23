@@ -537,11 +537,11 @@ export interface FormulaListQueryParams {
 }
 
 export interface FormulaListResponse {
-  data: Formula[];
+  items: Formula[];
   total: number;
   page: number;
   page_size: number;
-  total_pages: number;
+  total_pages?: number;
 }
 
 // ==================== 版本管理相关类型 ====================
@@ -634,4 +634,63 @@ export interface FormulaCreatePayload {
   estimated_cost?: number;
   production_time?: string;
   notes?: string;
+}
+
+// ==================== 多算法融合优化 ====================
+
+export type AlgorithmType = 'nsga3' | 'moead' | 'pso' | 'sa';
+
+export type FusionMethod = 'union' | 'weighted' | 'voting';
+
+export interface MultiAlgorithmRequest {
+  ingredients: Array<{ name: string; efficacy?: number; safety?: number }>;
+  algorithms?: AlgorithmType[];
+  fusion_method?: FusionMethod;
+  time_budget?: number;
+  constraints?: Record<string, any>;
+}
+
+export interface AlgorithmIndividualResult {
+  algorithm: AlgorithmType;
+  pareto_frontier: Array<{
+    efficacy: number;
+    safety: number;
+    stability: number;
+    cost: number;
+    ingredients: Record<string, number>;
+  }>;
+  convergence_score: number;
+  diversity_score: number;
+  computation_time: number;
+  success: boolean;
+  error_message?: string;
+}
+
+export interface MultiAlgorithmResponse {
+  success: boolean;
+  fusion_method: FusionMethod;
+  total_solutions: number;
+  computation_time: number;
+  best_solution: {
+    efficacy: number;
+    safety: number;
+    stability: number;
+    cost: number;
+    ingredients: Record<string, number>;
+  } | null;
+  pareto_frontier: Array<{
+    efficacy: number;
+    safety: number;
+    stability: number;
+    cost: number;
+    ingredients: Record<string, number>;
+  }>;
+  algorithms_used: number;
+  algorithm_stats: {
+    total_algorithms: number;
+    successful_algorithms: number;
+    total_solutions_found: number;
+    average_convergence: number;
+    average_diversity: number;
+  };
 }

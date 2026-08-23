@@ -17,6 +17,7 @@ import { useState, useCallback, useMemo, useEffect } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { aiApi } from '@/api/ai'
 import type { SafetyCheckResult } from '@/types'
+import { exportSafetyReport } from './SafetyTab/reportExporter'
 import {
   Input,
   Button,
@@ -52,7 +53,7 @@ import {
   RISK_LEVELS,
 } from '@/config'
 
-// ===== 类型定义 (模块? =====
+// ===== 类型定义 =====
 
 interface SafetyCheckItem {
   name: string
@@ -296,7 +297,7 @@ function useSafetyHistory() {
   }
 }
 
-// ===== 工具函数 (模块? =====
+// ===== 工具函数 =====
 
 function calculateComplianceRate(checks: Record<string, { passed?: boolean } | undefined>): number {
   const passedChecks = SAFETY_CHECK_CATEGORIES.filter(category =>
@@ -319,7 +320,7 @@ function getRiskLevel(complianceRate: number): typeof RISK_LEVELS[keyof typeof R
   return RISK_LEVELS.CONTRAINDICATED
 }
 
-// ===== 子组?(模块? =====
+// ===== 子组件 =====
 
 interface ComplianceRateDisplayProps {
   complianceRate: number
@@ -492,6 +493,9 @@ export function SafetyTab({
     historyCount,
   } = useSafetyHistory()
 
+  // 保存最近一次检查的成分列表（用于导出报告）
+  const [lastCheckedIngredients, setLastCheckedIngredients] = useState<string[]>([])
+
   // 计算合规?
   const complianceRate = useMemo(() => {
     if (!safetyResult) return 0
@@ -505,12 +509,14 @@ export function SafetyTab({
       : parsedIngredients
 
     handleCheck(ingredientsToCheck, () => {
-      // 添加到历史记?
+      // 保存成分列表供导出使用
+      setLastCheckedIngredients([...ingredientsToCheck])
+      // 添加到历史记录
       if (safetyResult) {
         addHistoryEntry(ingredientsToCheck, safetyResult, complianceRate)
       }
 
-      // 将解析的成分添加到已选列?
+      // 将解析的成分添加到已选列表
       parsedIngredients.forEach(ingredient => {
         addToSelected(ingredient)
       })
@@ -681,12 +687,15 @@ export function SafetyTab({
               size="sm"
               icon={<Download className="w-4 h-4" />}
               onClick={() => {
-                logger.info('导出安全报告')
-                feedback.showInfo(
-                  DEFAULTS.PLACEHOLDER_TEXTS.INFO_EXPORT_REPORT || '导出报告',
-                  '安全报告导出功能开发中',
-                )
-
+                if (!safetyResult || !lastCheckedIngredients.length) {
+                  feedback.showWarning('提示', '请先完成安全检查后再导出报告')
+                  return
+                }
+                exportSafetyReport({
+                  ingredients: lastCheckedIngredients,
+                  result: safetyResult,
+                  complianceRate,
+                })
               }}
             >
               {DEFAULTS.PLACEHOLDER_TEXTS.BUTTON_EXPORT_REPORT || '导出报告'}

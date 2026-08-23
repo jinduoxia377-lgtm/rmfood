@@ -64,7 +64,22 @@ async def _seed_mmid_herbs(session) -> int:
 
     # 使用原始 SQL 查询 tcm_herbs 中 pid IS NOT NULL 的记录
     # 避免 ORM 模型引用已迁移走的列
+    # 注意：pid 列在 alembic 迁移 20260702 中已被从 tcm_herbs 移除，
+    #       若表结构已是最新则直接跳过迁移（mmid_herbs 应为空时再执行）
     from sqlalchemy import text
+    try:
+        pid_check = await session.execute(text(
+            "SELECT column_name FROM information_schema.columns "
+            "WHERE table_name = 'tcm_herbs' AND column_name = 'pid'"
+        ))
+        has_pid = pid_check.scalar_one_or_none() is not None
+    except Exception:
+        has_pid = False
+
+    if not has_pid:
+        logger.info("tcm_herbs 表中无 pid 列（已迁移），跳过 MMID 种子导入")
+        return 0
+
     mmid_rows = await session.execute(text("""
         SELECT id, pid, name_cn, name_latin, name_pinyin, name_eng,
                botanical_type, category, nature, flavor, toxicity,

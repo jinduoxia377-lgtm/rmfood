@@ -60,7 +60,7 @@ async def create_analysis(
             }
         )
 
-    except Exception as e:
+    except (RuntimeError, ValueError, TypeError) as e:
         logger.error("创建分析失败: %s", e, exc_info=True)
         raise HTTPException(status_code=422, detail="分析创建失败，请检查请求参数")
 
@@ -104,7 +104,7 @@ async def list_analyses(
             page_size=pagination.page_size
         )
 
-    except Exception as e:
+    except (RuntimeError, ValueError, TypeError) as e:
         logger.error("查询分析列表失败: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail="查询失败，请稍后重试")
 
@@ -151,7 +151,7 @@ async def get_analysis(
 
     except HTTPException:
         raise
-    except Exception as e:
+    except (RuntimeError, ValueError, TypeError) as e:
         logger.error("获取分析详情失败: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail="获取分析详情失败，请稍后重试")
 
@@ -187,7 +187,7 @@ async def update_analysis(
 
     except HTTPException:
         raise
-    except Exception as e:
+    except (RuntimeError, ValueError, TypeError) as e:
         logger.error("更新分析失败: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail="更新分析失败，请稍后重试")
 
@@ -212,7 +212,7 @@ async def delete_analysis(
 
     except HTTPException:
         raise
-    except Exception as e:
+    except (RuntimeError, ValueError, TypeError) as e:
         logger.error("删除分析失败: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail="删除分析失败，请稍后重试")
 
@@ -241,7 +241,7 @@ async def batch_create_analyses(
 
     except ValueError as e:
         raise HTTPException(status_code=400, detail="参数无效")
-    except Exception as e:
+    except (RuntimeError, ValueError, TypeError) as e:
         logger.error("批量创建失败: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail="批量创建失败，请稍后重试")
 
@@ -353,6 +353,6 @@ async def export_analyses(
 
     except HTTPException:
         raise
-    except Exception as e:
+    except (RuntimeError, ValueError, TypeError) as e:
         logger.error("导出失败: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail="导出失败，请稍后重试")

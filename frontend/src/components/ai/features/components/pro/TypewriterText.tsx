@@ -102,6 +102,9 @@ export default function TypewriterText({
     }
   }, [content, enabled, speed, chunkSize, onComplete])
 
+  // 计算百分比
+  const progress = content.length > 0 ? (displayedLen / content.length) * 100 : 100
+
   // 不做动画时直接渲染
   if (!enabled || isComplete) {
     return (
@@ -111,11 +114,8 @@ export default function TypewriterText({
     )
   }
 
-  // 逐字模式：渲染已显示的部分（memoized to avoid recreating on every render）
-  const visibleText = useMemo(() => content.slice(0, displayedLen), [content, displayedLen])
-
-  // 计算百分比
-  const progress = content.length > 0 ? (displayedLen / content.length) * 100 : 100
+  // 逐字模式：渲染已显示的部分
+  const visibleText = content.slice(0, displayedLen)
 
   return (
     <div onClick={skipToEnd} className="cursor-default group relative">

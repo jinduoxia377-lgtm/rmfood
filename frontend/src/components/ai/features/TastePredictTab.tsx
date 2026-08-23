@@ -33,6 +33,15 @@ interface IngredientInput {
   processingMethod?: string;
 }
 
+function computeAvgSour(names: string[]): number {
+  let total = 0, count = 0;
+  for (const name of names) {
+    const profile = INGREDIENT_TASTE_DATABASE[name];
+    if (profile) { total += profile.sour; count++; }
+  }
+  return count > 0 ? Math.round(total / count) : 0;
+}
+
 export function TastePredictTab() {
   const [tasteInput, setTasteInput] = useState('');
   const [ingredients, setIngredients] = useState<IngredientInput[]>([]);
@@ -46,6 +55,7 @@ export function TastePredictTab() {
       return await aiApi.tastePredict(names.map((name) => ({ name })));
     },
     onSuccess: (data) => {
+      const names = tasteInput.split(/[,，\n]/).map((s) => s.trim()).filter(Boolean);
       const mapped: TastePrediction = {
         score: data.overall_score,
         dominantTaste:
@@ -57,16 +67,20 @@ export function TastePredictTab() {
         dominantIntensity: Math.max(data.sweetness, data.bitterness, data.astringency),
         profile: {
           sweet: data.sweetness,
-          sour: 0,
+          sour: computeAvgSour(names),
           bitter: data.bitterness,
           pungent: data.pungency ?? 0,
           salty: data.saltiness ?? 0,
           bland: 0,
         },
         features: data.flavor_notes,
-        suggestions: [],
         description: '',
-        contributions: [],
+        // 用本地预测器补全 suggestions 和 contributions
+        ...(() => {
+          const localInput = names.map((n) => ({ name: n, processingMethod }));
+          const localResult = localTastePredictor.predict({ ingredients: localInput, algorithmMode });
+          return { suggestions: localResult.suggestions, contributions: localResult.contributions };
+        })(),
       };
       setTasteResult(mapped);
       if (!historyResults.find((r) => r.score === mapped.score)) {
@@ -186,7 +200,7 @@ export function TastePredictTab() {
 
             <div>
               <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5 block">算法模式</label>
-              <Select value={algorithmMode} onChange={(e) => setAlgorithmMode(e.target.value}>
+              <Select value={algorithmMode} onChange={(e) => setAlgorithmMode(e.target.value as 'weighted' | 'synergy')}>
                 <option value="weighted">加权平均（快速）</option>
                 <option value="synergy">协同分析（中等）</option>
               </Select>

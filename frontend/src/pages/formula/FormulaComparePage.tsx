@@ -33,8 +33,8 @@ export default function FormulaComparePage() {
     search: rightSearch || undefined,
   })
 
-  const leftList = leftFormulas?.data || []
-  const rightList = rightFormulas?.data || []
+  const leftList = (leftFormulas as any)?.data || []
+  const rightList = (rightFormulas as any)?.data || []
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">

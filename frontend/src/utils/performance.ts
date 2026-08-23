@@ -117,12 +117,12 @@ function observeLCP(callback: (metric: VitalMetric) => void) {
           delta: value,
           rating: rateMetric('LCP', value),
           attribution: {
-            element: (lastEntry.element?.tagName || 'unknown'),
-            url: (lastEntry.url || 'n/a'),
+            element: (lastEntry as any).element?.tagName || 'unknown',
+            url: (lastEntry as any).url || 'n/a',
             renderTime: 0,
             loadTime: 0,
           },
-        );
+        });
       }
     });
 
@@ -147,8 +147,8 @@ function observeCLS(callback: (metric: VitalMetric) => void) {
     const observer = new PerformanceObserver((entryList) => {
       for (const entry of entryList.getEntries()) {
         // 只记录非用户输入的布局偏移
-        if (!(entry.hadRecentInput)) {
-          const shiftValue = (entry.value || 0);
+        if (!((entry as any).hadRecentInput)) {
+          const shiftValue = ((entry as any).value || 0);
           sessionValue += shiftValue;
           sessionEntries.push(entry);
 
@@ -197,7 +197,7 @@ function observeFID(callback: (metric: VitalMetric) => void) {
 
     const observer = new PerformanceObserver((entryList) => {
       for (const entry of entryList.getEntries()) {
-        const delay = (entry.processingStart - entry.startTime || 0);
+        const delay = ((entry as any).processingStart - entry.startTime || 0);
         callback({
           name: 'FID',
           value: delay,
@@ -384,14 +384,14 @@ function buildReportPayload(): any {
     screenHeight: window.screen.height,
     colorDepth: window.screen.colorDepth,
     devicePixelRatio: window.devicePixelRatio,
-    connection: (navigator.connection
+    connection: ((navigator as any).connection
       ? {
-          effectiveType: (navigator.connection.effectiveType || null),
-          downlink: (navigator.connection.downlink || null),
-          rtt: (navigator.connection.rtt || null),
+          effectiveType: ((navigator as any).connection.effectiveType || null),
+          downlink: ((navigator as any).connection.downlink || null),
+          rtt: ((navigator as any).connection.rtt || null),
         }
       : null),
-    memory: (navigator.deviceMemory || null),
+    memory: ((navigator as any).deviceMemory || null),
     hardwareConcurrency: navigator.hardwareConcurrency || null,
   };
 
@@ -528,12 +528,14 @@ function scheduleReport(immediate: boolean = false) {
 /**
  * 🔒 P3-4: 获取当前性能摘要
  */
-export function getPerformanceSummary(): {
+export interface PerformanceSummary {
   metrics: VitalMetric[];
   custom: Record<string, number>;
   memory?: any;
   navigation?: any;
-} {
+}
+
+export function getPerformanceSummary(): PerformanceSummary {
   return {
     metrics: metrics,
     custom: customMetrics,

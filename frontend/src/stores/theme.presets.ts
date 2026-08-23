@@ -334,9 +334,7 @@ function createPresetTheme(
 // ============================================================================
 
 export const presetThemes: Record<PresetThemeId, ThemeConfig> = {
-  // ==================== Light Themes ====================
-
-  /** 默认 Light 主题 */
+  // ==================== Light ====================
   'light-default': createPresetTheme(
     'light-default',
     'Default Light',
@@ -345,308 +343,13 @@ export const presetThemes: Record<PresetThemeId, ThemeConfig> = {
     'Clean and professional light theme with excellent readability',
   ),
 
-  /** 暖色调 Light 主题 */
-  'light-warm': createPresetTheme(
-    'light-warm',
-    'Warm Light',
-    'light',
-    {
-      ...lightColors,
-      primary: {
-        main: '#C2410C', // Orange-600
-        light: '#EA580C', // Orange-500
-        dark: '#c2410c', // Orange-700
-        contrastText: '#ffffff',
-      },
-      background: {
-        ...lightColors.background,
-        default: '#FFF8E1', // Amber-50 tint
-        elevated: '#FFF8E1', // Amber-50
-      },
-    },
-    'Warm and inviting orange-tinted light theme',
-  ),
-
-  /** 冷色调 Light 主题 */
-  'light-cool': createPresetTheme(
-    'light-cool',
-    'Cool Light',
-    'light',
-    {
-      ...lightColors,
-      primary: {
-        main: '#0E7490', // Cyan-600
-        light: '#0891B2', // Cyan-500
-        dark: '#155E75', // Cyan-700
-        contrastText: '#ffffff',
-      },
-      background: {
-        ...lightColors.background,
-        default: '#E8FAFF', // Cyan-50 tint
-        elevated: '#ECFEFF', // Cyan-50
-      },
-    },
-    'Cool and calming cyan-tinted light theme',
-  ),
-
-  // ==================== Dark Themes ====================
-
-  /** 默认 Dark 主题 */
+  // ==================== Dark ====================
   'dark-default': createPresetTheme(
     'dark-default',
     'Default Dark',
     'dark',
     { ...darkColors },
     'Modern dark theme optimized for OLED screens and reduced eye strain',
-  ),
-
-  /** OLED 优化 Dark 主题（纯黑背景） */
-  'dark-oled': createPresetTheme(
-    'dark-oled',
-    'OLED Dark',
-    'dark',
-    {
-      ...darkColors,
-      background: {
-        ...darkColors.background,
-        default: '#000000', // 纯黑 (OLED 省电)
-        elevated: '#1C1C1E', // Apple 标准暗色表面
-      },
-      surface: {
-        ...darkColors.surface,
-        default: '#1C1C1E',
-        variant: '#2C2C2E',
-      },
-    },
-    'Pure black background for OLED displays - maximum battery savings',
-  ),
-
-  /** 暖色调 Dark 主题 */
-  'dark-warm': createPresetTheme(
-    'dark-warm',
-    'Warm Dark',
-    'dark',
-    {
-      ...darkColors,
-      primary: {
-        main: '#FB923C', // Orange-400
-        light: '#FDBA74', // Orange-300
-        dark: '#EA580C', // Orange-500
-        contrastText: '#431407',
-      },
-      secondary: {
-        main: '#EF4444', // Red-400
-        light: '#FF8080', // Red-300
-        dark: '#FF3B30', // Red-500
-        contrastText: '#450A0A',
-      },
-      tertiary: {
-        main: '#4ADE80', // Emerald-400
-        light: '#86EFAC', // Emerald-300
-        dark: '#34C759', // Emerald-500
-        contrastText: '#064E3B',
-      },
-      background: {
-        ...darkColors.background,
-        default: '#1C1207', // Amber-950 tint
-        elevated: '#291A0A',
-      },
-      surface: {
-        ...darkColors.surface,
-        default: '#291A0A',
-        variant: '#3D2610',
-      },
-    },
-    'Warm and cozy dark theme with amber undertones',
-  ),
-
-  /** 冷色调 Dark 主题 */
-  'dark-cool': createPresetTheme(
-    'dark-cool',
-    'Cool Dark',
-    'dark',
-    {
-      ...darkColors,
-      primary: {
-        main: '#67E8F9', // Cyan-400
-        light: '#A5F3FC', // Cyan-300
-        dark: '#0891B2', // Cyan-500
-        contrastText: '#083344',
-      },
-      secondary: {
-        main: '#6ECAFF', // Blue-400
-        light: '#A8DFFF', // Blue-300
-        dark: '#007AFF', // Blue-500
-        contrastText: '#002A60',
-      },
-      tertiary: {
-        main: '#C090FF', // Violet-400
-        light: '#D4B3FF', // Violet-300
-        dark: '#AF52DE', // Violet-500
-        contrastText: '#3730A3',
-      },
-      background: {
-        ...darkColors.background,
-        default: '#083344', // Cyan-950 tint
-        elevated: '#0C4A6E',
-      },
-      surface: {
-        ...darkColors.surface,
-        default: '#0C4A6E',
-        variant: '#0C4A6E',
-      },
-    },
-    'Cool and immersive dark theme with cyan undertones',
-  ),
-
-  // ==================== High Contrast Themes ====================
-
-  /** 高对比度 Light 主题 (WCAG AAA) */
-  'high-contrast-light': createPresetTheme(
-    'high-contrast-light',
-    'High Contrast Light',
-    'light',
-    {
-      ...lightColors,
-      text: {
-        primary: '#000000', // 纯黑
-        secondary: '#1f2937', // Gray-800
-        disabled: '#6b7280', // Gray-500
-        link: '#0000ee', // 标准蓝链接
-        textPrimary: '#000000',
-        textSecondary: '#1f2937',
-        textMuted: '#6b7280',
-      },
-      background: {
-        ...lightColors.background,
-        default: '#ffffff', // 纯白
-        elevated: '#ffffff',
-      },
-      border: {
-        ...lightColors.border,
-        default: '#000000', // 黑色边框
-        focus: '#000000', // 明显焦点环
-      },
-    },
-    'WCAG AAA compliant high contrast theme for accessibility',
-  ),
-
-  /** 高对比度 Dark 主题 (WCAG AAA) */
-  'high-contrast-dark': createPresetTheme(
-    'high-contrast-dark',
-    'High Contrast Dark',
-    'dark',
-    {
-      ...darkColors,
-      text: {
-        primary: '#ffffff', // 纯白
-        secondary: '#f3f4f6', // Gray-100
-        disabled: '#9ca3af', // Gray-400
-        link: '#60a5ff', // 亮蓝链接
-        textPrimary: '#ffffff',
-        textSecondary: '#f3f4f6',
-        textMuted: '#9ca3af',
-      },
-      background: {
-        ...darkColors.background,
-        default: '#000000', // 纯黑
-        elevated: '#000000',
-      },
-      border: {
-        ...darkColors.border,
-        default: '#ffffff', // 白色边框
-        focus: '#ffffff', // 明显焦点环
-      },
-    },
-    'WCAG AAA compliant dark high contrast theme',
-  ),
-
-  // ==================== Reading Modes ====================
-
-  /** 阅读模式 Sepia（护眼） */
-  'reading-sepia': createPresetTheme(
-    'reading-sepia',
-    'Reading Sepia',
-    'light',
-    {
-      ...lightColors,
-      primary: {
-        main: '#D97706', // Amber-800
-        light: '#D97706', // Amber-700
-        dark: '#78350f', // Amber-900
-        contrastText: '#ffffff',
-      },
-      background: {
-        default: '#fdf6e3', // Sepia 背景
-        elevated: '#FFF3CD', // Amber-100
-        hover: '#FEF3C7', // Amber-200
-        active: '#FFB340', // Amber-300
-        disabled: '#FFF3CD',
-      },
-      surface: {
-        default: '#FFF3CD',
-        variant: '#FEF3C7',
-        overlay: 'rgba(0, 0, 0, 0.5)',
-      },
-      text: {
-        primary: '#5b4636', // Brown-800 (on sepia 12.1:1 ✅✅)
-        secondary: '#78716c', // Stone-500 (8.5:1 ✅)
-        disabled: '#a8a29e', // Stone-400
-        link: '#D97706', // Amber-800
-        textPrimary: '#5b4636',
-        textSecondary: '#78716c',
-        textMuted: '#a8a29e',
-      },
-      border: {
-        default: '#d6d3d1', // Stone-300
-        focus: '#D97706',
-        divider: '#e7e5e4', // Stone-200
-      },
-    },
-    'Sepia-toned reading mode - reduces eye strain during extended reading',
-  ),
-
-  /** 阅读模式 Dark（夜间阅读） */
-  'reading-dark': createPresetTheme(
-    'reading-dark',
-    'Reading Dark',
-    'dark',
-    {
-      ...darkColors,
-      primary: {
-        main: '#B45309', // Amber-500
-        light: '#D97706', // Amber-400
-        dark: '#D97706', // Amber-600
-        contrastText: '#000000',
-      },
-      background: {
-        default: '#1c1917', // Stone-900
-        elevated: '#292524', // Stone-800
-        hover: '#44403c', // Stone-700
-        active: '#57534e', // Stone-600
-        disabled: '#292524',
-      },
-      surface: {
-        default: '#292524',
-        variant: '#44403c',
-        overlay: 'rgba(0, 0, 0, 0.75)',
-      },
-      text: {
-        primary: '#e7e5e4', // Stone-200 (14.2:1 ✅)
-        secondary: '#a8a29e', // Stone-400 (5.1:1 ✅)
-        disabled: '#78716c', // Stone-500
-        link: '#F59E0B', // Amber-400
-        textPrimary: '#e7e5e4',
-        textSecondary: '#a8a29e',
-        textMuted: '#78716c',
-      },
-      border: {
-        default: '#44403c', // Stone-700
-        focus: '#B45309',
-        divider: '#292524', // Stone-800
-      },
-    },
-    'Dark reading mode optimized for nighttime reading sessions',
   ),
 };
 
@@ -664,14 +367,64 @@ export function getDefaultTheme(): ThemeConfig {
 
 export function getAccessibilityTheme(baseTheme: ThemeConfig, mode: AccessibilityMode): ThemeConfig {
   switch (mode) {
-    case 'high-contrast':
-      // 使用高对比度变体
+    case 'high-contrast': {
+      // 运行时派生高对比度变体（无需静态主题定义）
       const isDark = baseTheme.mode === 'dark';
-      return presetThemes[isDark ? 'high-contrast-dark' : 'high-contrast-light'];
+      return {
+        ...baseTheme,
+        id: `high-contrast-${isDark ? 'dark' : 'light'}`,
+        name: isDark ? '高对比度深色' : '高对比度浅色',
+        isPreset: false,
+        colors: {
+          ...baseTheme.colors,
+          text: isDark
+            ? { primary: '#ffffff', secondary: '#f3f4f6', disabled: '#9ca3af', link: '#60a5ff', textPrimary: '#ffffff', textSecondary: '#f3f4f6', textMuted: '#9ca3af' }
+            : { primary: '#000000', secondary: '#1f2937', disabled: '#6b7280', link: '#0000ee', textPrimary: '#000000', textSecondary: '#1f2937', textMuted: '#6b7280' },
+          background: isDark
+            ? { ...baseTheme.colors.background, default: '#000000', elevated: '#000000' }
+            : { ...baseTheme.colors.background, default: '#ffffff', elevated: '#ffffff' },
+          border: {
+            ...baseTheme.colors.border,
+            default: isDark ? '#ffffff' : '#000000',
+            focus: isDark ? '#ffffff' : '#000000',
+          },
+        },
+      };
+    }
 
-    case 'reading':
-      // 使用阅读模式变体
-      return presetThemes[baseTheme.mode === 'dark' ? 'reading-dark' : 'reading-sepia'];
+    case 'reading': {
+      // 运行时派生阅读模式（Sepia 暖色调 / Dark Stone 色调）
+      if (baseTheme.mode === 'dark') {
+        return {
+          ...baseTheme,
+          id: 'reading-dark',
+          name: '阅读暗色',
+          isPreset: false,
+          colors: {
+            ...baseTheme.colors,
+            primary: { main: '#B45309', light: '#D97706', dark: '#D97706', contrastText: '#000000' },
+            background: { default: '#1c1917', elevated: '#292524', hover: '#44403c', active: '#57534e', disabled: '#292524' },
+            surface: { default: '#292524', variant: '#44403c', overlay: 'rgba(0, 0, 0, 0.75)' },
+            text: { primary: '#e7e5e4', secondary: '#a8a29e', disabled: '#78716c', link: '#F59E0B', textPrimary: '#e7e5e4', textSecondary: '#a8a29e', textMuted: '#78716c' },
+            border: { default: '#44403c', focus: '#B45309', divider: '#292524' },
+          },
+        };
+      }
+      return {
+        ...baseTheme,
+        id: 'reading-sepia',
+        name: '阅读琥珀色',
+        isPreset: false,
+        colors: {
+          ...baseTheme.colors,
+          primary: { main: '#D97706', light: '#D97706', dark: '#78350f', contrastText: '#ffffff' },
+          background: { default: '#fdf6e3', elevated: '#FFF3CD', hover: '#FEF3C7', active: '#FFB340', disabled: '#FFF3CD' },
+          surface: { default: '#FFF3CD', variant: '#FEF3C7', overlay: 'rgba(0, 0, 0, 0.5)' },
+          text: { primary: '#5b4636', secondary: '#78716c', disabled: '#a8a29e', link: '#D97706', textPrimary: '#5b4636', textSecondary: '#78716c', textMuted: '#a8a29e' },
+          border: { default: '#d6d3d1', focus: '#D97706', divider: '#e7e5e4' },
+        },
+      };
+    }
 
     case 'color-blind':
       // 色盲友好：调整颜色确保不仅靠颜色传达信息

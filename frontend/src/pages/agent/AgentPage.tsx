@@ -10,19 +10,8 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { agentApi, type AgentExecution, type AgentTool } from '@/api/agent';
-import { workflowApi, type WorkflowExecution, type KGInferenceResponse } from '@/api/deep_dev';
-import { kgInferenceApi } from '@/api/deep_dev';
+import { workflowApi, type WorkflowExecution } from '@/api/deep_dev';
 import { logger } from '@/utils/safeLogger';
-
-// ── 工作流模板列表 ──────────────────────────────────────────
-
-const WORKFLOW_TEMPLATES = [
-  { id: 'formula_design', label: '配方设计', desc: 'RAG检索 → 配方生成 → 合规检查 → 报告输出' },
-  { id: 'compliance_check', label: '合规预审', desc: '多维度合规检查 + 自动修复建议' },
-  { id: 'experiment_plan', label: '实验方案', desc: '配方 → 体外/体内实验设计 → 指标体系' },
-  { id: 'ingredient_lookup', label: '原料查询', desc: '药材功效/法规/配伍禁忌查询' },
-  { id: 'full_pipeline', label: '全流程', desc: 'RAG→配方→合规→实验→报告完整链路' },
-] as const;
 
 // ── 类型定义 ────────────────────────────────────────────────
 
@@ -60,11 +49,17 @@ export default function AgentPage() {
   const [executedCount, setExecutedCount] = useState(0);
   const [workflowType, setWorkflowType] = useState<string>('formula_design');
   const [workflowStages, setWorkflowStages] = useState<WorkflowStageLog[]>([]);
+  const [workflowTemplates, setWorkflowTemplates] = useState<
+    { id: string; name: string; description?: string }[]
+  >([]);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     agentApi.listTools().then((res) => setAvailableTools(res.tools)).catch(logger.error);
+    workflowApi.listTemplates().then((res) =>
+      setWorkflowTemplates(res.items.map((t) => ({ id: t.template_id, name: t.name, description: t.description ?? undefined })))
+    ).catch(logger.error);
   }, []);
 
   useEffect(() => {
@@ -183,7 +178,7 @@ export default function AgentPage() {
             AI 研发助手
           </h1>
           <p className="text-xs text-gray-500 dark:text-gray-400">
-            自然语言驱动配方研发 · {availableTools.length} 个工具可用
+            {availableTools.length} 个工具可用
           </p>
         </div>
 
@@ -196,8 +191,14 @@ export default function AgentPage() {
             disabled={isRunning}
             className="text-xs px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-500 disabled:opacity-50"
           >
-            {WORKFLOW_TEMPLATES.map((t) => (
-              <option key={t.id} value={t.id}>{t.label}</option>
+            {(workflowTemplates.length > 0 ? workflowTemplates : [
+              { id: 'formula_design', name: '配方设计' },
+              { id: 'compliance_check', name: '合规预审' },
+              { id: 'experiment_plan', name: '实验方案' },
+              { id: 'ingredient_lookup', name: '原料查询' },
+              { id: 'full_pipeline', name: '全流程' },
+            ]).map((t) => (
+              <option key={t.id} value={t.id}>{t.name}</option>
             ))}
           </select>
         </div>

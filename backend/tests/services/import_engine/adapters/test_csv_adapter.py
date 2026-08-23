@@ -9,11 +9,7 @@ from app.services.import_engine.models import ImportStats
 def sample_csv_file(tmp_path):
     """创建一个测试用的 CSV 文件"""
     csv_file = tmp_path / "test.csv"
-    csv_file.write_text("id,name,value
-1,apple,10
-2,banner,20
-3,cherry,30
-")
+    csv_file.write_text("id,name,value\n1,apple,10\n2,banner,20\n3,cherry,30\n")
     return csv_file
 
 
@@ -26,7 +22,7 @@ class TestCsvAdapter:
         adapter = CsvAdapter(file_path=sample_csv_file, delimiter=",")
         valid, msg = await adapter.validate()
         assert valid is True
-        assert msg == "Valid"
+        assert msg == "OK"
 
     @pytest.mark.asyncio
     async def test_count_rows(self, sample_csv_file):
@@ -79,19 +75,16 @@ class TestCsvAdapterEdgeCases:
         empty_file = tmp_path / "empty.csv"
         empty_file.write_text("")
         adapter = CsvAdapter(file_path=empty_file, delimiter=",")
-        
-        with pytest.raises(Exception) as exc_info:
-            await adapter.validate()
-        assert "Empty file" in str(exc_info.value)
+
+        valid, msg = await adapter.validate()
+        assert valid is False
+        assert "empty" in msg.lower() or "Empty" in msg
 
     @pytest.mark.asyncio
     async def test_missing_column(self, tmp_path):
         """测试缺少必要列"""
         bad_file = tmp_path / "bad.csv"
-        bad_file.write_text("name,value
-1,10
-2,20
-")  # 缺少 id 列
+        bad_file.write_text("name,value\n1,10\n2,20\n")  # 缺少 id 列
         adapter = CsvAdapter(file_path=bad_file, delimiter=",")
         # 这个应该不会失败，但可能在映射时出现问题
         valid, msg = await adapter.validate()

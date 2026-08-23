@@ -210,7 +210,7 @@ export class ProfessionalBaseService {
             const response = JSON.parse(xhr.responseText);
             resolve(response.data);
           } catch {
-            resolve(xhr.responseText);
+            resolve(xhr.responseText as unknown as T);
           }
         } else {
           reject(new Error(`Upload failed: ${xhr.statusText}`));

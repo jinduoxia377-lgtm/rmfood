@@ -11,6 +11,7 @@ import logging
 import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
+from sqlalchemy.exc import SQLAlchemyError
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
@@ -170,7 +171,7 @@ async def deep_analysis(
         except ValueError as ve:
             logger.warning("序列验证失败: %s", ve)
             raise HTTPException(status_code=422, detail="参数无效")
-        except Exception as analysis_error:
+        except (ValueError, RuntimeError, TypeError) as analysis_error:
             logger.error("分析引擎异常: %s", analysis_error, exc_info=True)
             raise HTTPException(status_code=500, detail="分析引擎异常")
 
@@ -194,7 +195,7 @@ async def deep_analysis(
 
     except HTTPException:
         raise
-    except Exception as e:
+    except (ValueError, RuntimeError, TypeError) as e:
         logger.error("深度分析API异常: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail="服务器内部错误，请稍后重试")
 
@@ -247,7 +248,7 @@ async def batch_analysis(
             _task_store[task_id]["status"] = "completed"
             _task_store[task_id]["completed"] = len(results)
 
-        except Exception as e:
+        except (ValueError, RuntimeError, TypeError) as e:
             _task_store[task_id]["status"] = "failed"
             _task_store[task_id]["error"] = "分析任务失败"
             logger.error("批量分析失败: %s", e, exc_info=True)
@@ -310,7 +311,7 @@ async def pareto_optimization(
             },
         }
 
-    except Exception as e:
+    except (ValueError, RuntimeError, TypeError) as e:
         logger.error("Pareto 优化失败: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail="服务器内部错误，请稍后重试")
 
@@ -355,7 +356,7 @@ async def custom_optimization(
 
     except ValueError as e:
         raise HTTPException(status_code=422, detail="参数无效")
-    except Exception as e:
+    except (ValueError, RuntimeError, TypeError) as e:
         logger.error("自定义优化失败: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail="服务器内部错误，请稍后重试")
 
@@ -391,7 +392,7 @@ async def synergy_analysis(
             "data": result,
         }
 
-    except Exception as e:
+    except (ValueError, RuntimeError, TypeError) as e:
         logger.error("协同分析失败: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail="服务器内部错误，请稍后重试")
 
@@ -433,7 +434,7 @@ async def solubility_prediction(
             },
         }
 
-    except Exception as e:
+    except (ValueError, RuntimeError, TypeError) as e:
         logger.error("溶解度预测失败: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail="服务器内部错误，请稍后重试")
 
@@ -491,7 +492,7 @@ async def generate_variants(
 
     except ValueError as e:
         raise HTTPException(status_code=422, detail="参数无效")
-    except Exception as e:
+    except (ValueError, RuntimeError, TypeError) as e:
         logger.error("变体生成失败: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail="服务器内部错误，请稍后重试")
 

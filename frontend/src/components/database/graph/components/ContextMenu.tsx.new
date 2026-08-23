@@ -1,0 +1,21 @@
+import { GraphNode } from '../types'
+
+export interface ContextMenuProps {
+  contextMenu: { x: number; y: number; node?: GraphNode | null } | null
+  selectedNodesCount: number
+  communitiesSize: number
+  onAction: (action: string, node?: GraphNode) => void
+  onClearCommunities: () => void
+  onDetectCommunities: () => void
+  onResetView: () => void
+}
+
+export default function ContextMenu({
+  contextMenu,
+  selectedNodesCount,
+  communitiesSize,
+  onAction,
+  onClearCommunities,
+  onDetectCommunities,
+  onResetView,
+}: ContextMenuProps) {

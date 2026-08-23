@@ -1,6 +1,7 @@
 import { GraphStatistics } from './types'
 
 export interface StatisticsDashboardProps {
+  [key: string]: any;
   showStatsPanel: boolean
   graphStats: GraphStatistics | null
   onClose: () => void

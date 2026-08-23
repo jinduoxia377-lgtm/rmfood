@@ -95,7 +95,8 @@ class NSGAIIOptimizer:
     # ──────────────────────────────────────────
 
     def _run_nsga2_loop(self, target_effects: List[str], constraints: Dict,
-                        _cancel_signal: Optional[threading.Event]) -> Tuple[List[MultiObjectiveIndividual], List[Dict]]:
+                        _cancel_signal: Optional[threading.Event] = None,
+                        progress_callback: Optional[callable] = None) -> Tuple[List[MultiObjectiveIndividual], List[Dict]]:
         """NSGA-II Pareto 前沿优化主体循环"""
         constraints = constraints or {}
         effective_constraints = dict(constraints)
@@ -230,6 +231,18 @@ class NSGAIIOptimizer:
                 "adaptive_mutation_rate": round(actual_mutation_rate, 6),
             })
 
+            if progress_callback:
+                try:
+                    progress_callback({
+                        "generation": gen + 1,
+                        "best_fitness": round(best_fitness, 6),
+                        "avg_fitness": round(avg_fit_now, 6),
+                        "min_fitness": round(min_fit_now, 6),
+                        "diversity": round(diversity, 6),
+                    })
+                except Exception:
+                    pass
+
             if (gen + 1) % 10 == 0:
                 logger.info(f"  Gen {gen+1}/{self.config.generations}, Best: {best_fitness:.4f}, "
                            f"Avg: {avg_fit_now:.4f}, ParetoFront: {len(fronts[0]) if fronts else 0}, Div: {diversity:.4f}")
@@ -340,6 +353,18 @@ class NSGAIIOptimizer:
                 "min_fitness": round(min(fitnesses), 6),
                 "diversity": round(diversity, 6), "stop_reason": "completed",
             })
+
+            if progress_callback:
+                try:
+                    progress_callback({
+                        "generation": gen + 1,
+                        "best_fitness": round(best_fitness, 6),
+                        "avg_fitness": round(sum(fitnesses) / len(fitnesses), 6),
+                        "min_fitness": round(min(fitnesses), 6),
+                        "diversity": round(diversity, 6),
+                    })
+                except Exception:
+                    pass
 
             if (gen + 1) % 10 == 0:
                 logger.info(f"  [weighted] Gen {gen+1}/{self.config.generations}, "
@@ -709,6 +734,7 @@ class NSGAIIOptimizer:
         """根据目标功效选择候选药材"""
         constraints = constraints or {}
         exclude = set(constraints.get("exclude_herbs", []))
+        include = set(constraints.get("include_herbs", []))
         herbs = self.evaluator.herb_db
 
         if not herbs:
@@ -726,6 +752,11 @@ class NSGAIIOptimizer:
                             candidate_set[hid] = max(candidate_set.get(hid, 0), score)
                 else:
                     logger.warning(f"[NSGA-II] 功效 '{effect}' 未找到对应药材")
+
+        # 用户强制包含的药材（基础配方），高优先级加入候选集
+        for hid in include:
+            if hid in herbs and hid not in exclude:
+                candidate_set[hid] = 1.0
 
         if not candidate_set:
             logger.info("[NSGA-II] 无匹配药材，使用全部可用药材")

@@ -10,6 +10,7 @@ export interface NodeAIAnalysisData {
 }
 
 export interface NodeAIAnalysisProps {
+  [key: string]: any;
   nodeAIAnalysis: NodeAIAnalysisData | null
   selectedNodeLabel?: string
   onClose: () => void

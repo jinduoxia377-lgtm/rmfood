@@ -358,7 +358,7 @@ class TestFormulaManagement:
         
         cost = await formula_service.calculate_total_cost(ingredients)
         
-        expected_cost = (100 * 50) + (200 * 30) = 11000
+        expected_cost = (100 * 50) + (200 * 30)  # 11000
         assert cost == expected_cost
     
     @pytest.mark.asyncio

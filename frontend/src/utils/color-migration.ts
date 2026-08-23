@@ -5,31 +5,11 @@
  */
 
 /**
- * 旧版CSS变量名 → 新版CSS变量名 映射表
- * 用于统一变量命名规范
+ * 旧版 CSS 变量名 → 新版变量名的兼容映射
+ * 注：当前 base.css 已统一使用 --text-primary 等命名，此映射表仅保留必要的跨版本兼容项
  */
-export const CSS_VARIABLE_MIGRATION = {
-  // 文本色
-  '--text-primary': 'var(--color-text-primary)',
-  '--text-secondary': 'var(--color-text-secondary)',
-  '--text-muted': 'var(--color-text-disabled)',
-  '--text-disabled': 'var(--color-text-disabled)',
-
-  // 背景色
-  '--bg-primary': 'var(--color-background-default)',
-  '--bg-secondary': 'var(--color-background-elevated)',
-  '--bg-card': 'var(--color-surface-default)',
-
-  // 边框色
-  '--border-color': 'var(--color-border-default)',
-  '--border-light': 'var(--color-border-divider)',
-
-  // 主题色
-  '--color-primary': 'var(--color-primary-main)',
-  '--color-success': 'var(--color-success-main)',
-  '--color-warning': 'var(--color-warning-main)',
-  '--color-danger': 'var(--color-error-main)',
-  '--color-info': 'var(--color-info-main)',
+export const CSS_VARIABLE_MIGRATION: Readonly<Record<string, string>> = {
+  // 无迁移项 — base.css 变量名已与语义化命名一致
 } as const;
 
 /**
