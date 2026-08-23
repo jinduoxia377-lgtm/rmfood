@@ -15,7 +15,7 @@ const TYPE_CONFIG: Record<string, { icon: typeof FlaskConical; label: string; co
   formula: { icon: FlaskConical, label: '配方', color: 'text-primary-600 dark:text-primary-400' },
   experiment: { icon: TestTubes, label: '实验', color: 'text-secondary-600 dark:text-secondary-400' },
   herb: { icon: Leaf, label: '药材', color: 'text-primary-600 dark:text-primary-400' },
-  peptide: { icon: Dna, label: '肽', color: 'text-violet-600 dark:text-violet-400' },
+  peptide: { icon: Dna, label: '肽', color: 'text-accent-600 dark:text-accent-400' },
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -317,7 +317,7 @@ export default function CommandPalette() {
                 </button>
                 <button
                   onClick={() => { navigate('/experiments/new'); setOpen(false) }}
-                  className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300 hover:bg-violet-100 dark:hover:bg-violet-900/30 transition-colors text-sm font-medium"
+                  className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-accent-50 dark:bg-accent-900/20 text-accent-700 dark:text-accent-300 hover:bg-accent-100 dark:hover:bg-violet-900/30 transition-colors text-sm font-medium"
                 >
                   <Plus size={14} /> 新建实验
                 </button>

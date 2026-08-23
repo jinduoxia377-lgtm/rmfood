@@ -1,73 +1,73 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from'react';
 
 interface ConditionalRenderProps {
-  condition: boolean;
-  children: React.ReactNode;
-  fallback?: React.ReactNode;
-  delay?: number;
+ condition: boolean;
+ children: React.ReactNode;
+ fallback?: React.ReactNode;
+ delay?: number;
 }
 
 export function ConditionalRender({
-  condition,
-  children,
-  fallback = null,
-  delay = 0,
+ condition,
+ children,
+ fallback = null,
+ delay = 0,
 }: ConditionalRenderProps) {
-  const [isRendered, setIsRendered] = useState(false);
+ const [isRendered, setIsRendered] = useState(false);
 
-  useEffect(() => {
-    if (condition) {
-      const timer = setTimeout(() => {
-        setIsRendered(true);
-      }, delay);
-      return () => clearTimeout(timer);
-    } else {
-      setIsRendered(false);
-    }
-    return
-  }, [condition, delay]);
+ useEffect(() => {
+ if (condition) {
+ const timer = setTimeout(() => {
+ setIsRendered(true);
+ }, delay);
+ return () => clearTimeout(timer);
+ } else {
+ setIsRendered(false);
+ }
+ return
+ }, [condition, delay]);
 
-  if (!condition) {
-    return <>{fallback}</>;
-  }
+ if (!condition) {
+ return <>{fallback}</>;
+ }
 
-  return (
-    <div
-      className="transition-opacity duration-200"
-      style={{
-        opacity: isRendered ? 1 : 0,
-        pointerEvents: isRendered ? 'auto' : 'none',
-      }}
-    >
-      {children}
-    </div>
-  );
+ return (
+ <div
+ className="transition-opacity duration-200"
+ style={{
+ opacity: isRendered ? 1 : 0,
+ pointerEvents: isRendered ?'auto' :'none',
+ }}
+ >
+ {children}
+ </div>
+ );
 }
 
 interface DebouncedRenderProps {
-  value: unknown;
-  children: React.ReactNode;
-  delay?: number;
+ value: unknown;
+ children: React.ReactNode;
+ delay?: number;
 }
 
 export function DebouncedRender({
-  value,
-  children,
-  delay = 300,
+ value,
+ children,
+ delay = 300,
 }: DebouncedRenderProps) {
-  const [debouncedValue, setDebouncedValue] = useState(value);
+ const [debouncedValue, setDebouncedValue] = useState(value);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedValue(value);
-    }, delay);
+ useEffect(() => {
+ const timer = setTimeout(() => {
+ setDebouncedValue(value);
+ }, delay);
 
-    return () => clearTimeout(timer);
-  }, [value, delay]);
+ return () => clearTimeout(timer);
+ }, [value, delay]);
 
-  if (value !== debouncedValue) {
-    return null;
-  }
+ if (value !== debouncedValue) {
+ return null;
+ }
 
-  return <>{children}</>;
+ return <>{children}</>;
 }

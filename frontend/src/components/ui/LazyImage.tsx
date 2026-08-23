@@ -40,7 +40,7 @@ export function LazyImage({
     (node: HTMLDivElement | null) => {
       setRef(node);
       if (node) {
-        imgRef.current = node;
+        Object.assign(imgRef, { current: node });
       }
     },
     [setRef],

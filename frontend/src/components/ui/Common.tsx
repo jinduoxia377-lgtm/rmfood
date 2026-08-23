@@ -21,13 +21,13 @@ const statusConfig: Record<string, { label: string; cls: string; dot?: string }>
   draft:          { label: '草稿',   cls: 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400', dot: 'bg-neutral-400' },
   pending_review: { label: '待审核', cls: 'bg-warning-50 text-warning-700 dark:bg-warning-900/30 dark:text-warning-300', dot: 'bg-warning-500' },
   approved:       { label: '已通过', cls: 'bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300', dot: 'bg-primary-500' },
-  rejected:       { label: '已驳回', cls: 'bg-rose-50 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300', dot: 'bg-rose-500' },
+  rejected:       { label: '已驳回', cls: 'bg-error-50 text-error-700 dark:bg-error-900/30 dark:text-error-300', dot: 'bg-rose-500' },
   archived:       { label: '已归档', cls: 'bg-slate-50 text-neutral-500 dark:bg-neutral-800/60 dark:text-neutral-500', dot: 'bg-neutral-300' },
   // 实验状态
   planned:     { label: '计划中', cls: 'bg-sky-50 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300', dot: 'bg-sky-500' },
-  in_progress: { label: '进行中', cls: 'bg-violet-50 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300', dot: 'bg-violet-500' },
+  in_progress: { label: '进行中', cls: 'bg-accent-50 text-accent-700 dark:bg-accent-900/30 dark:text-accent-300', dot: 'bg-violet-500' },
   completed:   { label: '已完成', cls: 'bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300', dot: 'bg-primary-500' },
-  failed:      { label: '已失败', cls: 'bg-rose-50 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300', dot: 'bg-rose-500' },
+  failed:      { label: '已失败', cls: 'bg-error-50 text-error-700 dark:bg-error-900/30 dark:text-error-300', dot: 'bg-rose-500' },
   cancelled:   { label: '已取消', cls: 'bg-slate-50 text-neutral-500 dark:bg-neutral-800/60 dark:text-neutral-500', dot: 'bg-neutral-300' },
 }
 

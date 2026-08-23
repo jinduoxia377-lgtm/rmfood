@@ -6,8 +6,8 @@
  */
 
 export {
-  EmptyState,
-  StatusBadge,
-  Skeleton,
-  Pagination,
-} from './Common'
+ EmptyState,
+ StatusBadge,
+ Skeleton,
+ Pagination,
+} from'./Common'

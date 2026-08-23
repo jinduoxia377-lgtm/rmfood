@@ -92,8 +92,8 @@ export {
   TableCell,
   TableCaption,
   DataTable,
-} from './DataTable'
-export type { DataTableProps } from './DataTable'
+} from './shadcn/data-table'
+export type { DataTableProps } from './shadcn/data-table'
 
 // ═══════════════════════════════════════════════════════════════
 // Business Components (unmigrated — retain original implementation)
