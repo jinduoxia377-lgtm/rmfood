@@ -1,6 +1,14 @@
 /**
  * RMFOOD 设计系统 — 组件统一导出
+ *
+ * Phase 4 策略: 保留旧组件 (backward compatible) + 新增 shadcn 组件
+ * 页面可逐步迁移: import { Button } from '@/components/ui' 继续使用旧版
+ * 新页面使用: import { Button } from '@/components/ui/shadcn'
  */
+
+// ═══════════════════════════════════════════════════════════════
+// 旧版组件 (保持向后兼容，现有页面无需修改)
+// ═══════════════════════════════════════════════════════════════
 
 // 基础 UI 组件
 export { Button } from './Button'
@@ -66,10 +74,88 @@ export { LoadingState, FormulaGenerateSkeleton, PanelSkeleton } from './LoadingS
 // 功能组件 - 增强版通知系统 v2.0
 export { Toast, useToast, ToastProvider } from './Toast'
 export { ToastContainer } from './ToastContainer'
-export type { FeedbackMessage, FeedbackType } from '@/utils/uiuxEnhancement'
+export type { FeedbackMessage, FeedbackType } from './Toast'
 
 export { default as ErrorBoundary } from './ErrorBoundary'
 
 export { default as NotificationBell } from './NotificationBell'
 export { default as CommandPalette } from './CommandPalette'
 export { PageState } from './PageState'
+
+// ═══════════════════════════════════════════════════════════════
+// shadcn/ui 组件 (全新 — 可选迁移路径)
+// 导入方式: import { Button } from '@/components/ui/shadcn'
+// ═══════════════════════════════════════════════════════════════
+
+export { Button as ShadcnButton, buttonVariants } from './shadcn/button'
+export type { ButtonProps as ShadcnButtonProps } from './shadcn/button'
+
+export {
+  Dialog,
+  DialogPortal,
+  DialogOverlay,
+  DialogClose,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+  DialogDescription,
+} from './shadcn/dialog'
+
+export {
+  Select as ShadcnSelect,
+  SelectGroup,
+  SelectValue,
+  SelectTrigger,
+  SelectContent,
+  SelectLabel,
+  SelectItem,
+  SelectSeparator,
+} from './shadcn/select'
+
+export { Tabs as ShadcnTabs, TabsList as ShadcnTabsList, TabsTrigger as ShadcnTabsTrigger, TabsContent as ShadcnTabsContent } from './shadcn/tabs'
+
+export { Checkbox as ShadcnCheckbox } from './shadcn/checkbox'
+
+export { Switch as ShadcnSwitch } from './shadcn/switch'
+
+export { Input as ShadcnInput } from './shadcn/input'
+
+export { Textarea as ShadcnTextarea } from './shadcn/textarea'
+
+export { Badge as ShadcnBadge, badgeVariants as shadcnBadgeVariants } from './shadcn/badge'
+
+export {
+  Card as ShadcnCard,
+  CardHeader as ShadcnCardHeader,
+  CardFooter as ShadcnCardFooter,
+  CardTitle as ShadcnCardTitle,
+  CardDescription as ShadcnCardDescription,
+  CardContent as ShadcnCardContent,
+} from './shadcn/card'
+
+export { Skeleton as ShadcnSkeleton } from './shadcn/skeleton'
+
+export { Progress as ShadcnProgress } from './shadcn/progress'
+
+export { Tooltip as ShadcnTooltip, TooltipTrigger as ShadcnTooltipTrigger, TooltipContent as ShadcnTooltipContent, TooltipProvider as ShadcnTooltipProvider } from './shadcn/tooltip'
+
+export {
+  Toast as ShadcnToast,
+  ToastProvider as ShadcnToastProvider,
+  ToastViewport as ShadcnToastViewport,
+  ToastTitle as ShadcnToastTitle,
+  ToastDescription as ShadcnToastDescription,
+  ToastClose as ShadcnToastClose,
+  ToastAction as ShadcnToastAction,
+} from './shadcn/toast'
+export type { ToastProps as ShadcnToastProps } from './shadcn/toast'
+
+export { Alert as ShadcnAlert, AlertTitle as ShadcnAlertTitle, AlertDescription as ShadcnAlertDescription } from './shadcn/alert'
+
+export { DataTable, TableHeader, TableBody, TableRow, TableCell, TableCaption } from './shadcn/data-table'
+export type { DataTableProps as ShadcnDataTableProps } from './shadcn/data-table'
+
+export { OperationFeedback } from './shadcn/operation-feedback'
+export type { OperationFeedbackProps } from './shadcn/operation-feedback'
