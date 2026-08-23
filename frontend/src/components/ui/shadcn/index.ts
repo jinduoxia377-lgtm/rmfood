@@ -66,3 +66,17 @@ export type { ToastProps, ToastActionElement } from './toast'
 
 export { Alert, AlertTitle, AlertDescription } from './alert'
 export type { AlertProps } from './alert'
+
+// Complex widgets (Phase 3)
+export { OperationFeedback } from './operation-feedback'
+export type { OperationFeedbackProps } from './operation-feedback'
+
+export {
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableCell,
+  TableCaption,
+  DataTable,
+} from './data-table'
+export type { DataTableProps } from './data-table'
