@@ -1,6 +1,8 @@
 /**
- * RMFOOD 设计系统 — Select 下拉选择
- * 封装原生 select，支持 size / error / placeholder
+ * RMFOOD 设计系统 — Select 下拉选择 (shadcn/ui 兼容层)
+ *
+ * Phase 5: 保留原生 <select> 实现以维持大小/error/placeholder API
+ * 新增无障碍增强 (aria-invalid 等)，CSS 类保持兼容
  */
 import { forwardRef, type SelectHTMLAttributes } from 'react'
 import { cn } from '@/lib/utils'
@@ -29,9 +31,10 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
           'input w-full appearance-none pr-9 cursor-pointer transition-all duration-200',
           sizeClasses[size],
           error && 'input-error border-danger-500 focus:ring-danger-500/20 focus:border-danger-500',
-          props.disabled && 'bg-slate-50 dark:bg-neutral-800 text-neutral-400 dark:text-neutral-500 cursor-not-allowed',
+          props.disabled && 'bg-neutral-700 text-text-disabled cursor-not-allowed',
           className,
         )}
+        aria-invalid={!!error}
         {...props}
       >
         {placeholder && (
@@ -43,7 +46,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
       </select>
       <ChevronDown
         size={size === 'sm' ? 14 : 16}
-        className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-neutral-500 pointer-events-none"
+        className="absolute right-3 top-1/2 -translate-y-1/2 text-text-disabled pointer-events-none"
       />
     </div>
   ),
