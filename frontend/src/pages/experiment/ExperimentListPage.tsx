@@ -141,8 +141,8 @@ export default function ExperimentListPage() {
         String(exp.id),
         exp.title,
         exp.status,
-        (exp.formula_name || '-',
-        format(new Date(exp.updatedAt), 'yyyy-MM-dd HH:mm', { locale: zhCN }),
+        [exp.formula_name || '-',
+        format(new Date(exp.updatedAt), 'yyyy-MM-dd HH:mm', { locale: zhCN })],
       ]),
     ]
     const csv = rows.map((r) => r.map((c) => `"${c}"`).join(',')).join('\n')
@@ -457,14 +457,14 @@ export default function ExperimentListPage() {
 
                       {/* 关联配方 */}
                       <div className="hidden sm:block">
-                        {(exp.formula_id ? (
+                        {exp.formula_id ? (
                           <Link
-                            to={`/formulas/${(exp.formula_id}`}
+                            to={`/formulas/${exp.formula_id}`}
                             className="inline-flex items-center gap-1 text-xs text-primary-600 dark:text-primary-400 hover:underline"
                             onClick={(e) => e.stopPropagation()}
                           >
                             <FlaskConical size={11} />
-                            {(exp.formula_name || `配方#${(exp.formula_id}`}
+                            {exp.formula_name || `配方#${exp.formula_id}`}
                           </Link>
                         ) : (
                           <span className="text-xs text-neutral-400">-</span>
