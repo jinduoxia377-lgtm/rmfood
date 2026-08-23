@@ -1,302 +1,309 @@
 /*
- * RMFOOD 设计系统 - 基础 CSS 变量 (:root)
- * Apple HIG 风格 — 柔和色彩、轻盈阴影、统一材质
- * 此文件由 index.css 导入，请勿手动编辑
+ * RMFOOD 设计系统 - 基础 CSS 变量 (:root) — Light Mode
+ * 与 frontend/design-system/DESIGN.md v1.0 完全对齐
+ * 此文件由 index.css 导入
  */
 
-/* ── 设计 Token — 使用 CSS 变量支持动态主题 ── */
 :root {
-  /* ═══ 品牌主色 (Apple 风格 Emerald) ═══ */
-  --color-primary: #34C759;
-  --color-primary-rgb: 52, 199, 89;
-  --color-primary-hover: #28A745;
-  --color-primary-container: #D1FAE5;
-  --color-secondary: #007AFF;
-  --color-secondary-container: #D2EFFF;
-  --color-tertiary: #AF52DE;
-  --color-tertiary-hover: #8B5CF6;
-  --color-tertiary-container: #E8D5FF;
+  /* ═══ Brand Primary: Forest Green (#10B981) ═══ */
+  --color-primary-50: #ecfdf5;
+  --color-primary-100: #d1fae5;
+  --color-primary-200: #a7f3d0;
+  --color-primary-300: #6ee7b7;
+  --color-primary-400: #34d399;
+  --color-primary-500: #0066cc;
+  --color-primary-600: #059669;
+  --color-primary-700: #047857;
+  --color-primary-800: #065f46;
+  --color-primary-900: #064e3b;
+  --color-primary-950: #022c22;
 
-  /* ═══ Apple 系统语义色 ═══ */
-  --color-success: #34C759;
-  --color-warning: #FF9F0A;
-  --color-info: #007AFF;
-  --color-error: #FF3B30;
+  --color-primary: #0066cc;
+  --color-primary-rgb: 16, 185, 129;
+  --color-primary-hover: #047857;
+  --color-primary-container: #d1fae5;
+  --color-primary-text: #047857; /* WCAG AA: 5.24:1 on white — 用于白色背景上的文字（原 #10b981=2.42:1 FAIL） */
 
-  /* ═══ 文本颜色 ═══ */
-  --text-primary: #1D1D1F;
-  --text-secondary: #6E6E73;
-  --text-muted: #9A9A9F;
-  --text-disabled: #9CA3AF;
+  /* ═══ Brand Secondary: Ocean Blue (#3B82F6) ═══ */
+  --color-secondary-50: #eff6ff;
+  --color-secondary-100: #dbeafe;
+  --color-secondary-200: #bfdbfe;
+  --color-secondary-300: #93c5fd;
+  --color-secondary-400: #60a5fa;
+  --color-secondary-500: #3b82f6;
+  --color-secondary-600: #2563eb;
+  --color-secondary-700: #1d4ed8;
+  --color-secondary-800: #1e40af;
+  --color-secondary-900: #1e3a8a;
+  --color-secondary-950: #172554;
 
-  /* ═══ 边框 ═══ */
-  --border-color: rgba(0, 0, 0, 0.06);
-  --border-color-hover: rgba(0, 0, 0, 0.1);
-  --overlay-bg: rgba(0, 0, 0, 0.5);
-  --border-subtle: rgba(0, 0, 0, 0.04);
-  --border-subtle-hover: rgba(0, 0, 0, 0.08);
+  --color-secondary: #3b82f6;
+  --color-secondary-rgb: 59, 130, 246;
+  --color-secondary-hover: #1d4ed8;
+  --color-secondary-container: #dbeafe;
 
-  /* ═══ 背景分层系统 (Apple 风格 subtle surface variation) ═══ */
-  --bg-canvas: #F5F5F7;
-  --bg-primary: #F5F5F7;
-  --bg-secondary: #FFFFFF;
-  --bg-tertiary: #F5F5F7;
-  --card-bg: var(--card-bg-solid, #FFFFFF);
-  --card-bg-solid: #FFFFFF;
-  --bg-surface-container: #FFFFFF;
-  --bg-surface-container-low: #F5F5F7;
-  --bg-surface-raised: #FFFFFF;
-  --bg-surface-elevated: #FFFFFF;
+  /* ═══ Brand Accent: Bio Purple (#8B5CF6) ═══ */
+  --color-accent-50: #faf5ff;
+  --color-accent-100: #f3e8ff;
+  --color-accent-200: #e8d5ff;
+  --color-accent-300: #c084fc;
+  --color-accent-400: #c084fc;
+  --color-accent-500: #8b5cf6;
+  --color-accent-600: #7c3aed;
+  --color-accent-700: #6d28d9;
+  --color-accent-800: #5b21b6;
+  --color-accent-900: #3b0764;
+  --color-accent-950: #1a0542;
 
-  --header-bg: rgba(255, 255, 255, 0.82);
+  --color-accent: #8b5cf6;
+  --color-accent-rgb: 139, 92, 246;
+  --color-accent-hover: #7c3aed;
+  --color-accent-container: #f3e8ff;
+
+  /* ═══ Semantic Colors ═══ */
+  --color-success: #10b981;
+  --color-success-bg: #ecfdf5;
+  --color-success-text: #065f46;
+  --color-warning: #f59e0b;
+  --color-warning-bg: #fffbeb;
+  --color-warning-text: #92400e;
+  --color-error: #ef4444;
+  --color-error-bg: #fef2f2;
+  --color-error-text: #991b1b;
+  --color-info: #3b82f6;
+  --color-info-bg: #eff6ff;
+  --color-info-text: #1e40af;
+
+  /* ═══ Semantic 10-scale (for component primitives) ═══ */
+  --color-success-50: #ecfdf5; --color-success-100: #d1fae5; --color-success-200: #a7f3d0;
+  --color-success-300: #6ee7b7; --color-success-400: #34d399; --color-success-500: #10b981;
+  --color-success-600: #059669; --color-success-700: #047857; --color-success-800: #065f46;
+  --color-success-900: #064e3b; --color-success-950: #022c22;
+
+  --color-warning-50: #fffbeb; --color-warning-100: #fef3c7; --color-warning-200: #fde68a;
+  --color-warning-300: #fcd34d; --color-warning-400: #fbbf24; --color-warning-500: #f59e0b;
+  --color-warning-600: #d97706; --color-warning-700: #b45309; --color-warning-800: #92400e;
+  --color-warning-900: #78350f; --color-warning-950: #451a03;
+
+  --color-danger-50: #fef2f2; --color-danger-100: #fee2e2; --color-danger-200: #fecaca;
+  --color-danger-300: #fca5a5; --color-danger-400: #f87171; --color-danger-500: #ef4444;
+  --color-danger-600: #dc2626; --color-danger-700: #b91c1c; --color-danger-800: #991b1b;
+  --color-danger-900: #7f1d1d; --color-danger-950: #450a0a;
+
+  /* ═══ Surface & Canvas ═══ */
+  --bg-canvas: #f8fafc;       /* DESIGN.md: slate-50 — 页面背景 */
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;    /* 卡片背景 */
+  --bg-tertiary: #f1f5f9;
+  --card-bg: #ffffff;
+  --card-bg-solid: #ffffff;
+  --bg-surface-container: #ffffff;
+  --bg-surface-container-low: #f8fafc;
+  --bg-surface-raised: #ffffff;
+  --bg-surface-elevated: #f1f5f9;
+  --header-bg: rgba(255, 255, 255, 0.9);
   --hover-bg: rgba(0, 0, 0, 0.04);
 
-  /* ═══ 毛玻璃材质系统 (Acrylic) ═══ */
+  /* ═══ Neutral Semantic Tokens — 替代 Tailwind 内置 neutral-* ═══ */
+  --color-neutral-default: #f8fafc;  /* canvas 级背景 */
+  --color-neutral-subtle:  #f1f5f9;  /* surface-elevated 级 */
+  --color-neutral-muted:   #e2e8f0;  /* border 级 */
+
+  /* ═══ Glassmorphism (Acrylic) ═══ */
   --material-acrylic: rgba(255, 255, 255, 0.72);
-  --material-acrylic-blur: 20px;
-  --material-acrylic-border: rgba(255, 255, 255, 0.3);
+  --material-acrylic-blur: 16px;
+  --material-acrylic-border: rgba(255, 255, 255, 0.2);
   --material-vibrancy: rgba(255, 255, 255, 0.5);
   --glass-bg: rgba(255, 255, 255, 0.75);
   --glass-border: rgba(255, 255, 255, 0.3);
-  /* ═══ 背景渐变 (修复缺失令牌) ═══ */
-  --bg-gradient-start: #F5F5F7;
-  --bg-gradient-end: #E8E8ED;
 
-  /* ═══ 品牌色 10 级色阶 ═══ */
-  --color-primary-50: #E8F9EE;
-  --color-primary-100: #D1F5DE;
-  --color-primary-200: #A9EAC3;
-  --color-primary-300: #6DD896;
-  --color-primary-400: #34C759;
-  --color-primary-500: #30D158;
-  --color-primary-600: #28A745;
-  --color-primary-700: #1E8E3E;
-  --color-primary-800: #166534;
-  --color-primary-900: #0D4F28;
+  /* ═══ Text Colors ═══ */
+  --text-primary: #0f172a;   /* slate-900 */
+  --text-secondary: #334155; /* slate-700 */
+  --text-muted: #64748b;     /* slate-500 */
+  --text-disabled: #64748b;  /* slate-500 — 修正: 原 #94a3b8(2.45:1 FAIL) → 4.55:1 ✅ AA */
 
-  --color-blue-50: #E8F4FD;
-  --color-blue-100: #D2EFFF;
-  --color-blue-200: #A8DFFF;
-  --color-blue-300: #6ECAFF;
-  --color-blue-400: #0A84FF;
-  --color-blue-500: #007AFF;
-  --color-blue-600: #0066D6;
-  --color-blue-700: #0052AE;
-  --color-blue-800: #003E87;
-  --color-blue-900: #002A60;
+  /* ═══ Borders ═══ */
+  --border-color: #e2e8f0;   /* slate-200 */
+  --border-color-hover: rgba(0, 0, 0, 0.1);
+  --border-subtle: rgba(0, 0, 0, 0.04);
+  --border-subtle-hover: rgba(0, 0, 0, 0.08);
+  --overlay-bg: rgba(0, 0, 0, 0.4);
+  --focus-ring: #3b82f6;
 
-  --color-accent-50: #F3E8FF;
-  --color-accent-100: #E8D5FF;
-  --color-accent-200: #D4B3FF;
-  --color-accent-300: #C090FF;
-  --color-accent-400: #AF52DE;
-  --color-accent-500: #8B5CF6;
-  --color-accent-600: #7C3AED;
-  --color-accent-700: #6D28D9;
-  --color-accent-800: #5B21B6;
-  --color-accent-900: #4C1D95;
-  --color-cyan-400: #22D3EE;
-  --color-cyan-500: #06B6D4;
-  --color-pink-400: #EC4899;
-  --color-pink-500: #D946EF;
-  --color-pink-600: #C026D3;
-  /* ═══ 语义色 - Success ═══ */
-  --color-success-50: #F0FDF4;
-  --color-success-100: #DCFCE7;
-  --color-success-200: #BBF7D0;
-  --color-success-300: #86EFAC;
-  --color-success-400: #4ADE80;
-  --color-success-500: #22C55E;
-  --color-success-600: #16A34A;
-  --color-success-700: #15803D;
-  --color-success-800: #166534;
-  --color-success-900: #14532D;
+  /* ═══ Font Family — DESIGN.md v1.0 ═══ */
+  --font-sans: 'Inter', 'Noto Sans SC', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', Consolas, ui-monospace, monospace;
+  --font-serif: 'Noto Serif SC', Georgia, 'Times New Roman', serif;
 
-  /* ═══ 语义色 - Warning ═══ */
-  --color-warning-50: #FFFBEB;
-  --color-warning-100: #FEF3C7;
-  --color-warning-200: #FDE68A;
-  --color-warning-300: #FCD34D;
-  --color-warning-400: #FBBF24;
-  --color-warning-500: #F59E0B;
-  --color-warning-600: #D97706;
-  --color-warning-700: #B45309;
-  --color-warning-800: #92400E;
-  --color-warning-900: #78350F;
-
-  /* ═══ 语义色 - Error/Danger ═══ */
-  --color-danger-50: #FEF2F2;
-  --color-danger-100: #FEE2E2;
-  --color-danger-200: #FECACA;
-  --color-danger-300: #FCA5A5;
-  --color-danger-400: #F87171;
-  --color-danger-500: #EF4444;
-  --color-danger-600: #DC2626;
-  --color-danger-700: #B91C1C;
-  --color-danger-800: #991B1B;
-  --color-danger-900: #7F1D1D;
-
-  /* ═══ 语义色 - Info ═══ */
-  --color-info-400: #60A5FA;
-  --color-info-500: #3B82F6;
-  /* ═══ 中性色系统 Slate (50-900) ═══ */
-  --color-neutral-50: #F9FAFB;
-  --color-neutral-100: #F3F4F6;
-  --color-neutral-200: #E5E7EB;
-  --color-neutral-300: #D1D5DB;
-  --color-neutral-400: #9CA3AF;
-  --color-neutral-500: #6B7280;
-  --color-neutral-600: #4B5563;
-  --color-neutral-700: #374151;
-  --color-neutral-800: #1F2937;
-  --color-neutral-900: #111827;
-
-  /* ═══ 知识图谱默认 fallback（动态颜色不可用时） ═══ */
-  --color-knowledge-default: #6B7280;
-  --color-knowledge-text: #4B5563;
-
-  /* ═══ 补充: 图表/用户管理页面使用的色阶 ═══ */
-  --color-orange-500: #EA580C;
-  --color-orange-600: #C2410C;
-  --color-purple-500: #A855F7;
-  --color-purple-600: #9333EA;
-
-  /* ═══ WCAG 色彩语义令牌 — 渐变卡片文字 ═══ */
-  --gradient-text-primary: rgba(255, 255, 255, 0.95);
-  --gradient-text-secondary: rgba(255, 255, 255, 0.8);
-  --gradient-text-muted: rgba(255, 255, 255, 0.65);
-  --gradient-trend-up: rgba(255, 255, 255, 0.9);
-  --gradient-trend-down: rgba(255, 255, 255, 0.9);
-  --gradient-text-shadow: 0 1px 3px rgba(0, 0, 0, 0.25), 0 1px 2px rgba(0, 0, 0, 0.15);
-
-  /* ═══ 字体 ═══ */
-  --font-sans: var(--font-family-sans, 'SF Pro Display', -apple-system, 'PingFang SC', system-ui, sans-serif);
-  --font-mono: var(--font-family-mono, 'JetBrains Mono', 'Fira Code', Consolas, monospace);
-  --font-serif: var(--font-family-serif, 'Source Han Serif SC', 'SimSun', serif);
-
-  /* ═══ 排版比例 — Professional Type Scale (CJK-optimized Major Third 1.2) ═══ */
-  /* Display: 32px */
-  /* H1: 22px */
-  --text-h1: 1.375rem;
-  --text-h1-line-height: 1.25;
+  /* ═══ Typography Scale — DESIGN.md v1.0 ═══ */
+  --text-h1: 2.25rem;    /* 36px — page heading */
+  --text-h1-line-height: 1.22;
   --text-h1-font-weight: 600;
-  --text-h1-tracking: -0.018em;
+  --text-h1-tracking: -0.015em;
 
-  /* H2: 18px */
-  --text-h2: 1.125rem;
-  --text-h2-line-height: 1.3;
+  --text-h2: 1.75rem;    /* 28px — section heading */
+  --text-h2-line-height: 1.28;
   --text-h2-font-weight: 600;
-  --text-h2-tracking: -0.012em;
+  --text-h2-tracking: -0.01em;
 
-  /* H3: 16px */
-  --text-h3: 1rem;
-  --text-h3-line-height: 1.35;
+  --text-h3: 1.5rem;     /* 24px — sub-heading */
+  --text-h3-line-height: 1.33;
   --text-h3-font-weight: 600;
-  --text-h3-tracking: -0.008em;
+  --text-h3-tracking: 0em;
 
-  /* H4: 15px */
-  --text-h4: 0.9375rem;
-  --text-h4-line-height: 1.4;
+  --text-h4: 1.375rem;   /* 22px — card title */
+  --text-h4-line-height: 1.36;
   --text-h4-font-weight: 600;
-  --text-h4-tracking: -0.005em;
+  --text-h4-tracking: 0em;
 
-  /* H5: 14px */
-  --text-h5: 0.875rem;
-  --text-h5-line-height: 1.45;
-  --text-h5-font-weight: 500;
-  --text-h5-tracking: -0.003em;
-
-  /* H6: 13px */
-  --text-h6: 0.8125rem;
-  --text-h6-line-height: 1.5;
-  --text-h6-font-weight: 500;
-  --text-h6-tracking: -0.002em;
-
-  /* Body-lg: 17px */
-  --text-body-lg: 1.0625rem;
-  --text-body-lg-line-height: 1.65;
+  --text-body-lg: 1rem;      /* 16px — lead paragraph */
+  --text-body-lg-line-height: 1.625;
   --text-body-lg-font-weight: 400;
-  /* Body: 17px */
-  --text-body: 1.0625rem;
-  --text-body-line-height: 1.65;
+
+  --text-body: 0.9375rem;    /* 15px — standard body ⭐️ */
+  --text-body-line-height: 1.5;
   --text-body-font-weight: 400;
-  /* Body-sm: 15px */
-  --text-body-sm: 0.9375rem;
-  --text-body-sm-line-height: 1.5;
+
+  --text-body-sm: 0.875rem;  /* 14px — secondary body */
+  --text-body-sm-line-height: 1.43;
   --text-body-sm-font-weight: 400;
-  /* Caption: 12px */
-  --text-caption: 0.75rem;
-  --text-caption-line-height: 1.5;
+
+  --text-caption: 0.75rem;   /* 12px — fine print */
+  --text-caption-line-height: 1.33;
   --text-caption-font-weight: 400;
-  /* Overline: 11px */
-  --text-overline: 0.6875rem;
+
+  --text-overline: 0.6875rem; /* 11px — labels/badges */
   --text-overline-line-height: 1.45;
   --text-overline-font-weight: 500;
-  /* Tiny: 10px */
-  --text-tiny: 0.625rem;
-  --text-tiny-line-height: 1.4;
-  --text-tiny-font-weight: 400;
-  /* ═══ 圆角 ═══ */
-  --radius-xs: 6px;
-  --radius-sm: 4px;
+  --text-overline-tracking: 0.05em;
+  --text-overline-transform: uppercase;
+
+  /* ═══ Border Radius — DESIGN.md v1.0 ═══ */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
   --radius-md: 8px;
   --radius-lg: 12px;
   --radius-xl: 16px;
-  --radius-2xl: 24px;
+  --radius-2xl: 20px;
   --radius-full: 9999px;
 
-  /* ═══ 间距系统 - 4px 基础单位 ═══ */
-  --space-0_5: 0.25rem;
-  --space-1: 0.5rem;
-  --space-2: 1rem;
-  --space-3: 1.5rem;
-  --space-4: 2rem;
-  --space-5: 2.5rem;
-  --space-6: 3rem;
-  --space-8: 4rem;
-  --space-10: 5rem;
-  --space-12: 6rem;
-  /* 语义化间距变量 */
-  --space-sm: var(--space-1);
-  --space-md: var(--space-2);
-  --space-lg: var(--space-3);
-  --space-xl: var(--space-4);
-  /* ═══ 阴影系统 v3.0 — Apple 风格轻盈阴影 ═══ */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
-  --shadow-elevated: 0 8px 24px rgba(0, 0, 0, 0.1), 0 4px 8px rgba(0, 0, 0, 0.05);
-  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.12), 0 6px 12px rgba(0, 0, 0, 0.06);
-  --shadow-xl: 0 20px 48px rgba(0, 0, 0, 0.14), 0 8px 16px rgba(0, 0, 0, 0.08);
-  --shadow-modal: 0 24px 64px rgba(0, 0, 0, 0.16), 0 12px 24px rgba(0, 0, 0, 0.1);
+  /* ═══ Spacing System — DESIGN.md v1.0 ═══ */
+  --space-0: 0;
+  --space-0_5: 0.125rem; /* 2px */
+  --space-1: 0.25rem;    /* 4px */
+  --space-1_5: 0.375rem; /* 6px */
+  --space-2: 0.5rem;     /* 8px */
+  --space-2_5: 0.625rem; /* 10px */
+  --space-3: 0.75rem;    /* 12px */
+  --space-4: 1rem;       /* 16px ⭐️ */
+  --space-5: 1.25rem;    /* 20px */
+  --space-6: 1.5rem;     /* 24px */
+  --space-8: 2rem;       /* 32px */
+  --space-10: 2.5rem;    /* 40px */
+  --space-12: 3rem;      /* 48px */
+  --space-16: 4rem;      /* 64px */
+  --space-24: 6rem;      /* 96px */
+
+  /* ═══ Apple-Style Tokens — DESIGN.md v5.0 ═══ */
+  /* Apple 风格间距 — 用于关键组件 */
+  --space-apple-sm: 12px;
+  --space-apple-md: 17px;
+  --space-apple-lg: 24px;
+  --space-apple-xl: 32px;
+  --space-apple-section: 80px;
+
+  /* Apple 风格圆角 */
+  --radius-pill: 9999px;       /* 药丸形 — 主 CTA */
+  --radius-Apple-sm: 8px;      /* 紧凑按钮 */
+  --radius-Apple-md: 11px;     /* Pearl Button */
+  --radius-Apple-lg: 18px;     /* 工具卡片 */
+
+  /* Apple 风格排版 */
+  --text-body-apple: 17px;
+  --text-body-apple-lh: 1.47;
+  --text-body-apple-tracking: -0.01em;
+  --text-headline-tracking: -0.015em;
+
+  /* Apple 风格阴影 — 极简 (3 级) */
+  --shadow-apple-none: none;
+  --shadow-apple-soft: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-apple-product: 0 3px 30px rgba(0, 0, 0, 0.22);
+  --shadow-apple-modal: 0 20px 60px rgba(0, 0, 0, 0.2);
+
+  /* Hairline 边框 — Apple 风格发丝线 */
+  --hairline-light: rgba(0, 0, 0, 0.08);
+  --hairline-dark: rgba(255, 255, 255, 0.08);
+
+  /* Apple 风格动效 */
+  --duration-apple-fast: 100ms;
+  --duration-apple-normal: 200ms;
+  --ease-apple-standard: cubic-bezier(0.25, 0.1, 0.25, 1.0);
+  --ease-apple-spring: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* ═══ Shadows — 保留原 9 级向后兼容，新增 3 级 Apple 风格 ═══ */
+  --shadow-sm: var(--shadow-apple-soft);
+  --shadow-card: var(--shadow-apple-soft);
+  --shadow-card-hover: var(--shadow-apple-soft);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-elevated: 0 8px 24px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.12);
+  --shadow-xl: 0 20px 48px rgba(0, 0, 0, 0.14);
+  --shadow-modal: var(--shadow-apple-modal);
   --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.1);
 
-  /* ═══ 动效系统 v3.0 — Apple Spring Physics ═══ */
-  --duration-fast:       100ms;
-  --duration-normal:     200ms;
-  --duration-slow:       350ms;
-  --duration-emphasis:   500ms;
-  --ease-standard:       cubic-bezier(0.25, 0.1, 0.25, 1.0);
-  --ease-spring:         cubic-bezier(0.25, 0.1, 0.25, 1.0);
-  --ease-spring-heavy:   cubic-bezier(0.22, 0.61, 0.36, 1);
-  --ease-spring-light:   cubic-bezier(0, 0.55, 0.45, 1);
-  --ease-in-quick:       cubic-bezier(0.4, 0, 0.6, 1);
-  --ease-elegant:        cubic-bezier(0.16, 1, 0.3, 1);
-  /* ═══ 布局变量 (MainLayout 使用) ═══ */
-  --sidebar-width: 264px;
-  --sidebar-collapsed-width: 72px;
+  /* ═══ Animation — DESIGN.md v1.0 ═══ */
+  --duration-fast: 100ms;
+  --duration-normal: 200ms;
+  --duration-slow: 300ms;
+  --duration-emphasis: 500ms;
+  --ease-standard: cubic-bezier(0.25, 0.1, 0.25, 1.0);
+  --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-elegant: cubic-bezier(0.16, 1, 0.3, 1);
 
-  /* ═══ Z-Index 层级系统 ═══ */
+  /* ═══ Layout Variables ═══ */
+  --sidebar-width: 256px;
+  --sidebar-collapsed-width: 64px;
+  --header-height: 56px;
+
+  /* ═══ Z-Index Layer System ═══ */
   --z-overlay: 300;
+  --z-sidebar: 301;       /* sidebar 在 overlay 之上 */
+  --z-header: 100;        /* 顶栏在内容之上、overlay 之下 */
   --z-modal-backdrop: 1000;
   --z-toast: 1200;
   --z-tooltip: 1300;
 
-  /* ═══ Safe area insets (iPhone notch/home indicator) ═══ */
+  /* ═══ Safe Area Insets ═══ */
   --safe-area-inset-top: env(safe-area-inset-top, 0px);
   --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
 
-  /* ═══ Skeleton fill tokens ═══ */
-  --fill-secondary: #e5e7eb;
+  /* ═══ Skeleton Fill Token ═══ */
+  --fill-secondary: #e2e8f0;
+
+  /* ═══ shadcn/ui Theme Variables — mapped from RMFOOD design tokens ═══ */
+  --background: var(--bg-canvas, #f8fafc);
+  --foreground: var(--text-primary, #0f172a);
+  --card: var(--bg-surface-container, #ffffff);
+  --card-foreground: var(--text-primary, #0f172a);
+  --popover: var(--bg-surface-container, #ffffff);
+  --popover-foreground: var(--text-primary, #0f172a);
+  --primary: var(--color-primary-600, #059669);
+  --primary-foreground: var(--color-primary-text, #047857);
+  --secondary: var(--color-secondary-500, #3b82f6);
+  --secondary-foreground: #ffffff;
+  --muted: var(--color-neutral-muted, #e2e8f0);
+  --muted-foreground: var(--text-secondary, #334155);
+  --accent: var(--color-accent-500, #8b5cf6);
+  --accent-foreground: #ffffff;
+  --destructive: var(--color-error, #ef4444);
+  --destructive-foreground: #ffffff;
+  --success: var(--color-success, #10b981);
+  --success-foreground: #ffffff;
+  --warning: var(--color-warning, #f59e0b);
+  --warning-foreground: #ffffff;
+  --border: var(--color-neutral-muted, #e2e8f0);
+  --input: var(--bg-surface-container, #ffffff);
+  --ring: var(--color-primary-600, #059669);
+  --radius: var(--radius-md, 0.5rem);
 }

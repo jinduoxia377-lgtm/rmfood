@@ -1,92 +1,252 @@
 /*
- * RMFOOD 设计系统 - 暗色主题变量 (.dark)
- * Apple HIG 风格 — 分层灰度表面，非纯黑反转
- * 此文件由 index.css 导入，请勿手动编辑
+ * RMFOOD 设计系统 - 暗色主题变量 (.dark) — Dark Mode
+ * 与 frontend/design-system/DESIGN.md v1.0 完全对齐
+ * 此文件由 index.css 导入
  */
 
-/* ── 深色模式变量 ── */
 .dark {
-  /* ═══ 品牌色 — Apple 风格明亮 Emerald ═══ */
-  --color-primary: #30D158;
-  --color-primary-rgb: 48, 209, 88;
-  --color-primary-hover: #34D399;
-  --color-primary-container: rgba(48, 209, 88, 0.15);
-  --color-secondary: #0A84FF;
-  --color-secondary-hover: #409CFF;
-  --color-secondary-container: rgba(10, 132, 255, 0.15);
-  --color-tertiary: #BF5AF2;
-  --color-tertiary-hover: #D550F5;
-  --color-tertiary-container: rgba(191, 90, 242, 0.15);
+  /* ═══ Brand Primary: Forest Green (dark mode 提亮) ═══ */
+  --color-primary-50: #022c22;
+  --color-primary-100: #064e3b;
+  --color-primary-200: #065f46;
+  --color-primary-300: #047857;
+  --color-primary-400: #059669;
+  --color-primary-500: #0066cc;
+  --color-primary-600: #34d399;
+  --color-primary-700: #6ee7b7;
+  --color-primary-800: #a7f3d0;
+  --color-primary-900: #d1fae5;
+  --color-primary-950: #ecfdf5;
 
-  /* ═══ Apple 系统语义色 (暗色模式提亮) ═══ */
-  --color-success: #30D158;
-  --color-warning: #FF9F0A;
-  --color-info: #0A84FF;
-  --color-error: #FF453A;
+  --color-primary: #34d399;
+  --color-primary-rgb: 52, 211, 153;
+  --color-primary-hover: #6ee7b7;
+  --color-primary-container: rgba(52, 211, 153, 0.15);
 
-  /* ═══ Apple 风格分层深色表面 (非纯黑) ═══ */
-  --bg-canvas:     #000000;
-  --bg-primary:    #000000;
-  --bg-secondary:  #1C1C1E;
-  --bg-tertiary:   #2C2C2E;
-  --card-bg-solid: #1C1C1E;
-  --bg-surface-container: #1C1C1E;
-  --bg-surface-container-low: #000000;
-  --bg-surface-raised: #2C2C2E;
-  --bg-surface-elevated: #3A3A3C;
+  /* ═══ Brand Secondary: Ocean Blue (dark mode 提亮) ═══ */
+  --color-secondary-50: #172554;
+  --color-secondary-100: #1e3a8a;
+  --color-secondary-200: #1e40af;
+  --color-secondary-300: #1d4ed8;
+  --color-secondary-400: #2563eb;
+  --color-secondary-500: #3b82f6;
+  --color-secondary-600: #60a5fa;
+  --color-secondary-700: #93c5fd;
+  --color-secondary-800: #bfdbfe;
+  --color-secondary-900: #dbeafe;
+  --color-secondary-950: #eff6ff;
 
-  /* ═══ Apple 暗色文本 (非纯白，减少刺眼) ═══ */
-  --text-primary:    #F5F5F7;
-  --text-secondary:  #A1A1A6;
-  --text-muted:      #636366;
-  --text-disabled:   #636366;
+  --color-secondary: #60a5fa;
+  --color-secondary-rgb: 96, 165, 250;
+  --color-secondary-hover: #93c5fd;
+  --color-secondary-container: rgba(96, 165, 250, 0.15);
 
-  /* ═══ 边框 — 暗色模式极 subtle ═══ */
-  --border-color:    rgba(255, 255, 255, 0.08);
+  /* ═══ Brand Accent: Bio Purple (dark mode 提亮) ═══ */
+  --color-accent-50: #1a0542;
+  --color-accent-100: #3b0764;
+  --color-accent-200: #5b21b6;
+  --color-accent-300: #6d28d9;
+  --color-accent-400: #7c3aed;
+  --color-accent-500: #8b5cf6;
+  --color-accent-600: #a78bfa;
+  --color-accent-700: #c4b5fd;
+  --color-accent-800: #ddd6fe;
+  --color-accent-900: #ede9fe;
+  --color-accent-950: #faf5ff;
+
+  --color-accent: #a78bfa;
+  --color-accent-rgb: 167, 139, 250;
+  --color-accent-hover: #c4b5fd;
+  --color-accent-container: rgba(167, 139, 250, 0.15);
+
+  /* ═══ Semantic Colors (dark mode) ═══ */
+  --color-success: #34d399;
+  --color-success-bg: #022c22;
+  --color-success-text: #6ee7b7;
+  --color-warning: #fbbf24;
+  --color-warning-bg: #451a03;
+  --color-warning-text: #fcd34d;
+  --color-error: #f87171;
+  --color-error-bg: #450a0a;
+  --color-error-text: #fca5a5;
+  --color-info: #60a5fa;
+  --color-info-bg: #1e3a8a;
+  --color-info-text: #93c5fd;
+
+  /* ═══ Surface & Canvas — DESIGN.md: slate-950 (#020617) ═══ */
+  --bg-canvas: #020617;       /* slate-950 — 页面全局背景 */
+  --bg-primary: #020617;
+  --bg-secondary: #0f172a;    /* slate-900 — 卡片背景 */
+  --bg-tertiary: #1e293b;     /* slate-800 */
+  --card-bg: #0f172a;
+  --card-bg-solid: #0f172a;
+  --bg-surface-container: #0f172a;
+  --bg-surface-container-low: #020617;
+  --bg-surface-raised: #1e293b;
+  --bg-surface-elevated: #334155;
+  --header-bg: rgba(15, 23, 42, 0.9);
+  --hover-bg: rgba(255, 255, 255, 0.04);
+
+  /* ═══ Neutral Semantic Tokens (dark) ═══ */
+  --color-neutral-default: #020617;  /* canvas 级背景 */
+  --color-neutral-subtle:  #0f172a;  /* surface-elevated 级 */
+  --color-neutral-muted:   #1e293b;  /* border 级 */
+
+  /* ═══ Glassmorphism (Dark Acrylic) ═══ */
+  --material-acrylic: rgba(15, 23, 42, 0.72);
+  --material-acrylic-blur: 16px;
+  --material-acrylic-border: rgba(255, 255, 255, 0.05);
+  --material-vibrancy: rgba(30, 41, 59, 0.5);
+  --glass-bg: rgba(15, 23, 42, 0.65);
+  --glass-border: rgba(255, 255, 255, 0.05);
+
+  /* ═══ Text Colors — DESIGN.md: ink-light/dark ═══ */
+  --text-primary: #f1f5f9;   /* slate-100 */
+  --text-secondary: #94a3b8; /* slate-400 — 7.87:1 on canvas ✅ */
+  --text-muted: #94a3b8;     /* slate-400 — 修正: 原 #64748b (3.91:1) 不达标 AA ✅ */
+  --text-disabled: #94a3b8;  /* slate-400 — 7.87:1 on canvas ✅ AA OK（原 #475569=2.36:1 FAIL） */
+
+  /* ═══ Borders — DESIGN.md: hairline in dark ═══ */
+  --border-color: #64748b;   /* slate-500 — 4.24:1 on canvas ✅ UI OK（原 #334155=1.95:1 FAIL） */
   --border-color-hover: rgba(255, 255, 255, 0.12);
-  --border-subtle:   rgba(255, 255, 255, 0.06);
+  --border-subtle: rgba(255, 255, 255, 0.06);
   --border-subtle-hover: rgba(255, 255, 255, 0.1);
+  --overlay-bg: rgba(0, 0, 0, 0.6);
+  --focus-ring: #34d399;     /* primary-400 in dark */
 
-  /* ═══ 毛玻璃材质 — 暗色 Acrylic ═══ */
-  --material-acrylic:        rgba(28, 28, 30, 0.72);
-  --material-acrylic-blur:   30px;
-  --material-acrylic-border: rgba(255, 255, 255, 0.08);
-  --material-vibrancy:       rgba(44, 44, 46, 0.5);
-  --glass-bg:                rgba(28, 28, 30, 0.65);
-  --glass-border:            rgba(255, 255, 255, 0.08);
-  --glass-shadow:            0 8px 32px rgba(0, 0, 0, 0.4);
+  /* ═══ Apple-Style Tokens — Dark Mode ═══ */
+  --space-apple-sm: 12px;
+  --space-apple-md: 17px;
+  --space-apple-lg: 24px;
+  --space-apple-xl: 32px;
+  --space-apple-section: 80px;
+  --radius-pill: 9999px;
+  --radius-Apple-sm: 8px;
+  --radius-Apple-md: 11px;
+  --radius-Apple-lg: 18px;
+  --text-body-apple: 17px;
+  --text-body-apple-lh: 1.47;
+  --text-body-apple-tracking: -0.01em;
+  --text-headline-tracking: -0.015em;
+  --shadow-apple-none: none;
+  --shadow-apple-soft: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-apple-product: 0 3px 30px rgba(0, 0, 0, 0.5);
+  --shadow-apple-modal: 0 20px 60px rgba(0, 0, 0, 0.5);
+  --hairline-light: rgba(255, 255, 255, 0.08);
+  --hairline-dark: rgba(0, 0, 0, 0.08);
+  --duration-apple-fast: 100ms;
+  --duration-apple-normal: 200ms;
+  --ease-apple-standard: cubic-bezier(0.25, 0.1, 0.25, 1.0);
+  --ease-apple-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
 
-  /* ═══ 悬停与头部背景 ═══ */
-  --hover-bg:    rgba(255, 255, 255, 0.04);
-  --header-bg:   rgba(28, 28, 30, 0.82);
-
-  /* ═══ 背景渐变 (暗色) ═══ */
-  --bg-gradient-start: #000000;
-  --bg-gradient-end: #1C1C1E;
-
-  /* ═══ 阴影 — 暗色模式使用彩色辉光替代纯黑 ═══ */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
-  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
-  --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.2);
-  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.2);
-  --shadow-elevated: 0 8px 24px rgba(0, 0, 0, 0.35), 0 4px 8px rgba(0, 0, 0, 0.2);
-  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.4), 0 6px 12px rgba(0, 0, 0, 0.25);
-  --shadow-xl: 0 20px 48px rgba(0, 0, 0, 0.35), 0 8px 16px rgba(0, 0, 0, 0.2);
-  --shadow-modal: 0 24px 64px rgba(0, 0, 0, 0.5), 0 12px 24px rgba(0, 0, 0, 0.3);
-  --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  --shadow-float: 0 12px 28px rgba(0, 0, 0, 0.3), 0 4px 10px rgba(0, 0, 0, 0.2);
+  /* ═══ Shadows — dark mode 简化 (3 级 Apple 风格) ═══ */
+  --shadow-sm: var(--shadow-apple-soft);
+  --shadow-card: var(--shadow-apple-soft);
+  --shadow-card-hover: var(--shadow-apple-soft);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-elevated: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 20px 48px rgba(0, 0, 0, 0.45);
+  --shadow-modal: var(--shadow-apple-modal);
   --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
 
-  /* ═══ 布局变量暗色覆盖 ═══ */
-  --bg-surface-container: #1C1C1E;
-  --bg-surface-container-low: #000000;
-  --bg-surface: #1C1C1E;
+  /* ═══ Layout Variables (dark) ═══ */
+  --bg-surface-container: #0f172a;
+  --bg-surface-container-low: #020617;
+  --bg-surface: #0f172a;
   --bg-surface-hover: rgba(255, 255, 255, 0.04);
-  --color-primary-container: rgba(48, 209, 88, 0.15);
-  --color-text-secondary: var(--text-secondary, #A1A1A6);
-  --fill-secondary: #374151;
+  --color-primary-container: rgba(52, 211, 153, 0.15);
+  /* ═══ Layout Variables (dark) — 冗余变量已清理 --color-text-secondary → --text-secondary ✅ */
 
-  /* ═══ 知识图谱默认 fallback（暗色） ═══ */
-  --color-knowledge-default: #94A3B8;
-  --color-knowledge-text: #64748B;
+  /* ═══ Skeleton Fill (dark) ═══ */
+  --fill-secondary: #334155;
+
+  /* ═══ Knowledge Graph Fallback (dark) ═══ */
+  --color-knowledge-default: #94a3b8;
+  --color-knowledge-text: #64748b;
+
+  /* ═══ Semantic 10-scale (dark) — 补全 base.css 缺失的变量 ═══ */
+  --color-success-50: #022c22;  --color-success-100: #064e3b;  --color-success-200: #065f46;
+  --color-success-300: #047857; --color-success-400: #059669;  --color-success-500: #10b981;
+  --color-success-600: #34d399; --color-success-700: #6ee7b7; --color-success-800: #a7f3d0;
+  --color-success-900: #d1fae5; --color-success-950: #ecfdf5;
+
+  --color-warning-50: #451a03;  --color-warning-100: #78350f;  --color-warning-200: #92400e;
+  --color-warning-300: #b45309; --color-warning-400: #d97706;  --color-warning-500: #f59e0b;
+  --color-warning-600: #fbbf24; --color-warning-700: #fcd34d; --color-warning-800: #fde68a;
+  --color-warning-900: #fef3c7; --color-warning-950: #fffbeb;
+
+  --color-danger-50: #450a0a;   --color-danger-100: #7f1d1d;   --color-danger-200: #991b1b;
+  --color-danger-300: #b91c1c;  --color-danger-400: #dc2626;   --color-danger-500: #ef4444;
+  --color-danger-600: #f87171;  --color-danger-700: #fca5a5;   --color-danger-800: #fecaca;
+  --color-danger-900: #fee2e2;  --color-danger-950: #fef2f2;
+
+  /* ═══ Typography Tokens (dark) ═══ */
+  --text-h1: 2.25rem;  --text-h1-line-height: 1.22; --text-h1-font-weight: 600; --text-h1-tracking: -0.015em;
+  --text-h2: 1.75rem;  --text-h2-line-height: 1.28; --text-h2-font-weight: 600; --text-h2-tracking: -0.01em;
+  --text-h3: 1.5rem;   --text-h3-line-height: 1.33; --text-h3-font-weight: 600;
+  --text-h4: 1.375rem; --text-h4-line-height: 1.36; --text-h4-font-weight: 600;
+  --text-body-lg: 1rem;    --text-body-lg-line-height: 1.625; --text-body-lg-font-weight: 400;
+  --text-body: 0.9375rem;  --text-body-line-height: 1.5;     --text-body-font-weight: 400;
+  --text-body-sm: 0.875rem;--text-body-sm-line-height: 1.43;  --text-body-sm-font-weight: 400;
+  --text-caption: 0.75rem; --text-caption-line-height: 1.33;  --text-caption-font-weight: 400;
+  --text-overline: 0.6875rem;--text-overline-line-height: 1.45;--text-overline-font-weight: 500;
+  --text-overline-tracking: 0.05em; --text-overline-transform: uppercase;
+
+  /* ═══ Radius Tokens (dark) ═══ */
+  --radius-xs: 4px;  --radius-sm: 6px;  --radius-md: 8px;  --radius-lg: 12px;
+  --radius-xl: 16px; --radius-2xl: 20px; --radius-full: 9999px;
+
+  /* ═══ Spacing Tokens (dark) ═══ */
+  --space-0: 0; --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
+  --space-5: 20px; --space-6: 24px; --space-8: 32px; --space-10: 40px; --space-12: 48px;
+  --space-16: 64px; --space-24: 96px;
+
+  /* ═══ Duration / Easing Tokens (dark) ═══ */
+  --duration-fast: 100ms; --duration-normal: 200ms; --duration-slow: 300ms; --duration-emphasis: 500ms;
+  --ease-standard: cubic-bezier(0.25, 0.1, 0.25, 1.0);
+  --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  --ease-elegant: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ═══ Layout Tokens (dark) ═══ */
+  --sidebar-width: 16rem;
+  --sidebar-collapsed-width: 4rem;
+  --header-height: 3.5rem;
+
+  /* ═══ Z-Index — 与 base.css 统一，移除重复整数覆盖 ✅ */
+  /* z-overlay/modal-backdrop/toast/tooltip 继承 base.css 语义化定义 */
+
+  /* ═══ Safe Area (dark) ═══ */
+  --safe-area-inset-top: env(safe-area-inset-top, 0px);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+  /* ═══ Font Family (dark) ═══ */
+  --font-sans: 'Inter', 'Noto Sans SC', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', Monaco, ui-monospace, monospace;
+  --font-serif: 'Noto Serif SC', Georgia, 'Times New Roman', serif;
+
+  /* ═══ shadcn/ui Theme Variables — dark mode ═══ */
+  --background: var(--color-primary-950, #022c22);
+  --foreground: var(--color-neutral-100, #f1f5f9);
+  --card: var(--bg-surface-container, #0f172a);
+  --card-foreground: var(--color-neutral-100, #f1f5f9);
+  --popover: var(--bg-surface-container, #0f172a);
+  --popover-foreground: var(--color-neutral-100, #f1f5f9);
+  --primary: var(--color-primary-400, #34d399);
+  --primary-foreground: var(--color-primary-950, #022c22);
+  --secondary: var(--color-secondary-400, #60a5fa);
+  --secondary-foreground: #0f172a;
+  --muted: var(--color-neutral-800, #1e293b);
+  --muted-foreground: var(--color-neutral-400, #94a3b8);
+  --accent: var(--color-accent-400, #c084fc);
+  --accent-foreground: #0f172a;
+  --destructive: var(--color-error-400, #f87171);
+  --destructive-foreground: #0f172a;
+  --success: var(--color-success-400, #34d399);
+  --success-foreground: #0f172a;
+  --warning: var(--color-warning-400, #fbbf24);
+  --warning-foreground: #0f172a;
+  --border: var(--color-neutral-700, #334155);
+  --input: var(--bg-surface-container, #0f172a);
+  --ring: var(--color-primary-400, #34d399);
+  --radius: var(--radius-md, 0.5rem);
 }
