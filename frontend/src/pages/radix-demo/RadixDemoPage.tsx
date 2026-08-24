@@ -9,10 +9,10 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
-  RadixButton,
-  RadixBadge,
-  RadixCard,
-  RadixText,
+  Button as RadixButton,
+  Badge as RadixBadge,
+  Card as RadixCard,
+  Text as RadixText,
 } from '@/components/ui/RadixComponents'
 import { Button, Badge, Card, CardHeader, CardTitle, CardContent } from '@/components/ui'
 import { Sparkles, Settings, Bell, User, CheckCircle, AlertCircle, Info } from 'lucide-react'
