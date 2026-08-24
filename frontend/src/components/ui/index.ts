@@ -63,7 +63,7 @@ export type { SkeletonProps } from './Skeleton'
 
 export { Progress } from './Progress'
 
-export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from './Tooltip'
+export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from './shadcn/tooltip'
 
 export {
   ToastProvider,
@@ -142,6 +142,6 @@ export type { FeedbackMessage, FeedbackType } from './Toast'
 // Radix Themes Components (Phase 3)
 // ═══════════════════════════════════════════════════════════════
 
-export { Button as RadixButton, Badge as RadixBadge, Card as RadixCard, Text as RadixText } from './RadixComponents'
-export type { ButtonProps as RadixButtonProps, BadgeProps as RadixBadgeProps, CardProps as RadixCardProps, TextProps as RadixTextProps } from './RadixComponents'
+export { RadixBadge, RadixText } from './RadixComponents'
+export type { RadixBadgeProps, RadixTextProps } from './RadixComponents'
 

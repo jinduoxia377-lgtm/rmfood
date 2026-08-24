@@ -9,8 +9,8 @@
 'use client'
 
 import * as React from 'react'
-import { Theme, Section, Container } from '@radix-ui/themes'
-import { useTheme } from '@/stores/theme.storage'
+import { Theme } from '@radix-ui/themes'
+import { useTheme, useIsDarkMode } from '@/stores/ThemeProvider'
 
 interface RadixThemeProviderProps {
   children: React.ReactNode
@@ -19,12 +19,16 @@ interface RadixThemeProviderProps {
 }
 
 export function RadixThemeProvider({ children, forceAppearance }: RadixThemeProviderProps) {
-  const { appearance, toggleAppearance, isDark } = useTheme()
+  const { mode } = useTheme()
+  const isDark = useIsDarkMode()
 
   // Sync document class for Tailwind dark mode
   React.useEffect(() => {
     document.documentElement.classList.toggle('dark', isDark)
   }, [isDark])
+
+  // Determine appearance: explicit > mode > system
+  const appearance = forceAppearance ?? (isDark ? 'dark' : 'light')
 
   return (
     <Theme
@@ -33,7 +37,7 @@ export function RadixThemeProvider({ children, forceAppearance }: RadixThemeProv
       grayColor="mauve"
       radius="medium"       // 8px — matches --radius-md
       scaling="100%"
-      appearance={forceAppearance ?? appearance}
+      appearance={appearance as 'light' | 'dark'}
       panelBackground="translucent"
     >
       {/* Custom CSS for brand token overrides */}
@@ -71,12 +75,11 @@ export function RadixThemeProvider({ children, forceAppearance }: RadixThemeProv
         }
       `}</style>
 
-      <Section paddingTop="large" paddingBottom="large">
-        <Container size="4">{children}</Container>
-      </Section>
+      {children}
     </Theme>
   )
 }
 
-export { Section, Container }
+// Re-export Theme for direct use
+export { Theme }
 export type { RadixThemeProviderProps }
