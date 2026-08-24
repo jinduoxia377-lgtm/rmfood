@@ -236,21 +236,24 @@ async def check_food_homology(
     current_user: User = Depends(get_current_user),
 ):
     """检查药材是否在药食同源目录中"""
-    result = await db.execute(
+    from ...services.data_sources.tcmsp_client import tcmsp_service
+    result = await tcmsp_service.check_food_homology(herb_name)
+    # Enrich with DB match info
+    db_match = await db.execute(
         select(TCMHerb).where(
             (TCMHerb.name_cn.ilike(f"%{herb_name}%"))
             | (TCMHerb.name_latin.ilike(f"%{herb_name}%"))
-        ).limit(10)
+        ).limit(5)
     )
-    herbs = result.scalars().all()
-    return {
-        "herb_name": herb_name,
-        "results": [
-            {
-                "id": h.id,
-                "name_cn": h.name_cn,
-                "is_food_homology": h.is_food_homology,
-            }
-            for h in herbs
-        ],
-    }
+    herbs = db_match.scalars().all()
+    result["db_matches"] = [
+        {
+            "id": h.id,
+            "name_cn": h.name_cn,
+            "is_food_homology": h.is_food_homology,
+            "ob_percent": h.ob_percent,
+            "dl_value": h.dl_value,
+        }
+        for h in herbs
+    ]
+    return result

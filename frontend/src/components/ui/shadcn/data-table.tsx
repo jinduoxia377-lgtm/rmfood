@@ -10,7 +10,7 @@ import {
 } from '@tanstack/react-table'
 import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { Button } from './button'
+import { Button } from './Button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select'
 
 function TableHeader({ className, ...props }: React.HTMLAttributes<HTMLTableSectionElement>) {

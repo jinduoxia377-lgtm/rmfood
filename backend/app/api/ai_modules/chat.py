@@ -284,8 +284,8 @@ async def chat_stream(
                         "suggestion": "可切换到非流式模式重试"
                     }
 
-                yield f"data: {json.dumps(error_data, ensure_ascii=False)}\n\n"
-                yield "data: [ERROR]\n\n"
+                yield _format_sse_event("error", error_data)
+                yield _format_sse_event("done", {})
 
             except Exception as e:
                 logger.error("流式对话未知异常: %s", e, exc_info=True)
@@ -295,8 +295,8 @@ async def chat_stream(
                     "message": "服务器内部错误，请稍后重试",
                     "suggestion": "请刷新页面重试"
                 }
-                yield f"data: {json.dumps(error_data, ensure_ascii=False)}\n\n"
-                yield "data: [ERROR]\n\n"
+                yield _format_sse_event("error", error_data)
+                yield _format_sse_event("done", {})
 
         logger.info("[chat_stream] 即将返回 StreamingResponse")
         # 在响应发送完成后，后台清理 SSE 连接计数（租户级）

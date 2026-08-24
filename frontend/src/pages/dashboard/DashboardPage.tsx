@@ -53,7 +53,7 @@ import {
   ReviewQueueList,
   ActivityTimeline,
 } from '@/components/dashboard/cards'
-import { CardSkeleton as CardSkeletonComp } from '@/components/ui/Skeleton'
+import { CardSkeleton as CardSkeletonComp } from '@/components/ui/SkeletonPresets'
 
 
 import { logger } from '@/utils/safeLogger';

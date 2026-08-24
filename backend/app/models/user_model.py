@@ -71,6 +71,11 @@ class User(Base):
         "GARunRecord", back_populates="user", cascade="all, delete-orphan"
     )
 
+    # 配方案例关系
+    created_cases: Mapped[list["FormulaCase"]] = relationship("FormulaCase", back_populates="creator", foreign_keys="[FormulaCase.created_by]")
+    liked_cases: Mapped[list["CaseLike"]] = relationship("CaseLike", back_populates="user")
+    commented_cases: Mapped[list["CaseComment"]] = relationship("CaseComment", back_populates="user")
+
     @property
     def permission_level(self) -> int:
         level_map = {
@@ -293,3 +298,4 @@ class User(Base):
 from .formula import Formula
 from .experiment import Experiment
 from .notification import Notification
+from .formula_case import FormulaCase, CaseLike, CaseComment

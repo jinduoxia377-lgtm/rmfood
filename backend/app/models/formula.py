@@ -7,6 +7,8 @@ from .base import ClassifiedMixin
 from .enums import FormulaStatus
 from .peptide_analysis import PeptideAnalysis
 from .peptide_design import PeptideDesign
+from .peptide_batch_coa import PeptideBatchCOA
+from .formula_case import FormulaCase
 from app.models.utils import now_utc_mapped
 
 
@@ -124,6 +126,7 @@ class Formula(ClassifiedMixin, Base):
     experiments: Mapped[list["Experiment"]] = relationship("Experiment", back_populates="formula")
     categories: Mapped[list["Category"]] = relationship("Category", secondary=formula_categories, back_populates="formulas")
     tags: Mapped[list["Tag"]] = relationship("Tag", secondary=formula_tags, back_populates="formulas")
+    cases: Mapped[list["FormulaCase"]] = relationship("FormulaCase", back_populates="formula", lazy="selectin")
 
     __table_args__ = (
         CheckConstraint("shelf_life > 0", name="ck_formula_shelf_life_positive"),
@@ -194,6 +197,7 @@ class Peptide(Base):
         "Formula", secondary=formula_peptides, back_populates="peptides"
     )
     analyses = relationship("PeptideAnalysis", back_populates="peptide", foreign_keys="PeptideAnalysis.peptide_id")
+    batch_coas = relationship("PeptideBatchCOA", back_populates="peptide", lazy="selectin")
 
 
 from .user_model import User

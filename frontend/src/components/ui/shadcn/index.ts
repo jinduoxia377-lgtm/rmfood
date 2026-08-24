@@ -1,8 +1,8 @@
 // shadcn/ui components — Radix UI primitives with RMFOOD design tokens
 
 // Core primitives (Phase 1)
-export { Button } from './button'
-export type { ButtonProps } from './button'
+export { Button } from './Button'
+export type { ButtonProps } from './Button'
 
 export {
   Dialog,
