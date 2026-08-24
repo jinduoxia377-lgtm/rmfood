@@ -32,6 +32,7 @@ import { lazyWithPreload } from '@/components/LazyLoad.tsx';
 import LoginPage from '@/pages/auth/LoginPage';
 import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage';
 import DashboardPage from '@/pages/dashboard/DashboardPage';
+import RadixDemoPage from '@/pages/radix-demo/RadixDemoPage';
 
 
 import { logger } from '@/utils/safeLogger';
@@ -210,6 +211,10 @@ const router = createBrowserRouter([
       { index: true, element: <Navigate to="/dashboard" replace /> },
       {
         path: 'dashboard',
+      {
+        path: 'radix-demo',
+        element: <RadixDemoPage />,
+      },
         element: <DashboardPage />,
       },
 
