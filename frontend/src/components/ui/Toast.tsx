@@ -111,6 +111,29 @@ type ToastProps = React.ComponentPropsWithoutRef<typeof Toast>
 
 type ToastActionElement = React.ReactElement<typeof ToastAction>
 
+// ── Backward-compatible useToast hook ──
+import { useToastStore } from '@/stores/toastStore'
+
+export const useToast = () => {
+  const { addToast, removeToast, clearAll, toasts } = useToastStore()
+  return {
+    addToast,
+    removeToast,
+    clearAll,
+    toasts,
+    success: (message: string, options?: { duration?: number; title?: string }) =>
+      addToast({ type: 'success', message, ...options }),
+    error: (message: string, options?: { duration?: number; title?: string }) =>
+      addToast({ type: 'error', message, ...options }),
+    warning: (message: string, options?: { duration?: number; title?: string }) =>
+      addToast({ type: 'warning', message, ...options }),
+    info: (message: string, options?: { duration?: number; title?: string }) =>
+      addToast({ type: 'info', message, ...options }),
+  }
+}
+
+export type { FeedbackMessage, FeedbackType } from '@/utils/uiuxEnhancement'
+
 export {
   type ToastProps,
   type ToastActionElement,

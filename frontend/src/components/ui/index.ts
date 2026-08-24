@@ -72,8 +72,10 @@ export {
   ToastDescription,
   ToastClose,
   ToastAction,
+  useToast,
 } from './Toast'
 export type { ToastProps, ToastActionElement } from './Toast'
+export type { FeedbackMessage, FeedbackType } from './Toast'
 
 export { Alert, AlertTitle, AlertDescription } from './Alert'
 export type { AlertProps } from './Alert'

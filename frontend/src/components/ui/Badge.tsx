@@ -27,6 +27,8 @@ export interface BadgeProps
     VariantProps<typeof badgeVariants> {
   dot?: boolean
   icon?: React.ReactNode
+  variant?: string
+  size?: string
 }
 
 function Badge({ className, variant, dot = false, icon, children, ...props }: BadgeProps) {

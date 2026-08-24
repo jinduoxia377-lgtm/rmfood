@@ -1,16 +1,14 @@
 'use client'
 
 import * as React from 'react'
+import { useEffect, useRef, useState } from 'react'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import { X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const Dialog = DialogPrimitive.Root
-
 const DialogTrigger = DialogPrimitive.Trigger
-
 const DialogPortal = DialogPrimitive.Portal
-
 const DialogClose = DialogPrimitive.Close
 
 const DialogOverlay = React.forwardRef<
@@ -35,7 +33,7 @@ const DialogContent = React.forwardRef<
     maxWidth?: string
   }
 >(({ className, children, size = 'md', maxWidth, ...props }, ref) => {
-  const sizeClasses = {
+  const sizeClasses: Record<string, string> = {
     sm: 'max-w-sm',
     md: 'max-w-md',
     lg: 'max-w-lg',
@@ -65,28 +63,13 @@ const DialogContent = React.forwardRef<
 })
 DialogContent.displayName = DialogPrimitive.Content.displayName
 
-const DialogHeader = ({
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement>) => (
-  <div
-    className={cn('flex flex-col space-y-1.5 text-center sm:text-left', className)}
-    {...props}
-  />
+const DialogHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+  <div className={cn('flex flex-col space-y-1.5 text-center sm:text-left', className)} {...props} />
 )
 DialogHeader.displayName = 'DialogHeader'
 
-const DialogFooter = ({
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement>) => (
-  <div
-    className={cn(
-      'flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2',
-      className
-    )}
-    {...props}
-  />
+const DialogFooter = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+  <div className={cn('flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2', className)} {...props} />
 )
 DialogFooter.displayName = 'DialogFooter'
 
@@ -94,11 +77,7 @@ const DialogTitle = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Title>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title>
 >(({ className, ...props }, ref) => (
-  <DialogPrimitive.Title
-    ref={ref}
-    className={cn('text-lg font-semibold leading-none tracking-tight', className)}
-    {...props}
-  />
+  <DialogPrimitive.Title ref={ref} className={cn('text-lg font-semibold leading-none tracking-tight', className)} {...props} />
 ))
 DialogTitle.displayName = DialogPrimitive.Title.displayName
 
@@ -106,13 +85,50 @@ const DialogDescription = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Description>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Description>
 >(({ className, ...props }, ref) => (
-  <DialogPrimitive.Description
-    ref={ref}
-    className={cn('text-sm text-muted-foreground', className)}
-    {...props}
-  />
+  <DialogPrimitive.Description ref={ref} className={cn('text-sm text-muted-foreground', className)} {...props} />
 ))
 DialogDescription.displayName = DialogPrimitive.Description.displayName
+
+// ── Backward-compatible Modal wrapper ──
+export interface ModalProps {
+  open: boolean
+  onClose: () => void
+  title?: string
+  description?: string
+  children: React.ReactNode
+  className?: string
+  size?: 'sm' | 'md' | 'lg' | 'xl'
+  maxWidth?: string
+}
+
+export function Modal({ open, onClose, title, description, children, className, size = 'md', maxWidth }: ModalProps) {
+  const previousActiveElement = useRef<HTMLElement | null>(null)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => { setMounted(true) }, [])
+  useEffect(() => {
+    if (!open) return
+    previousActiveElement.current = document.activeElement as HTMLElement
+    return () => { document.body.style.overflow = ''; previousActiveElement.current?.focus() }
+  }, [open])
+
+  if (!open || !mounted) return null
+
+  return (
+    <Dialog open={open} onOpenChange={(isOpen: boolean) => !isOpen && onClose()}>
+      <DialogContent ref={undefined} size={size} maxWidth={maxWidth} className={className}
+        onOpenAutoFocus={(e: Event) => e.preventDefault()} onInteractOutside={(e: Event) => e.preventDefault()}>
+        {(title || description) && (
+          <DialogHeader>
+            {title && <DialogTitle>{title}</DialogTitle>}
+            {description && <DialogDescription>{description}</DialogDescription>}
+          </DialogHeader>
+        )}
+        {children}
+      </DialogContent>
+    </Dialog>
+  )
+}
 
 export {
   Dialog,

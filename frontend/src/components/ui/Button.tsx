@@ -9,21 +9,25 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default: 'bg-primary text-primary-foreground shadow-sm hover:bg-primary/90',
-        destructive:
-          'bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90',
-        outline:
-          'border border-input bg-background hover:bg-accent hover:text-accent-foreground',
-        secondary:
-          'bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80',
+        primary: 'bg-primary text-primary-foreground shadow-sm hover:bg-primary/90',
+        destructive: 'bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90',
+        danger: 'bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90',
+        outline: 'border border-input bg-background hover:bg-accent hover:text-accent-foreground',
+        secondary: 'bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80',
         ghost: 'hover:bg-accent hover:text-accent-foreground',
         link: 'text-primary underline-offset-4 hover:underline',
+        success: 'bg-success text-success-foreground shadow-sm hover:bg-success/90',
+        warning: 'bg-warning text-warning-foreground shadow-sm hover:bg-warning/90',
         ai: 'bg-gradient-to-r from-accent to-primary text-white shadow-md hover:shadow-lg',
         amber: 'bg-warning text-warning-foreground shadow-sm hover:bg-warning/90',
+        glass: 'backdrop-blur-md bg-white/10 border border-white/20 text-white shadow-lg hover:bg-white/20',
       },
       size: {
         default: 'h-9 px-4 py-2 text-sm',
+        md: 'h-9 px-4 py-2 text-sm',
         sm: 'h-8 rounded-full px-3 text-xs',
         lg: 'h-11 rounded-full px-8 text-base',
+        xl: 'h-12 rounded-full px-10 text-base',
         icon: 'h-9 w-9',
       },
     },
@@ -39,6 +43,8 @@ export interface ButtonProps
     VariantProps<typeof buttonVariants> {
   asChild?: boolean
   loading?: boolean
+  variant?: string
+  size?: string
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
