@@ -33,7 +33,7 @@ function TableRow({ className, ...props }: React.HTMLAttributes<HTMLTableRowElem
   )
 }
 
-function TableCell({ className, ...props }: React.HTMLAttributes<HTMLTableCellElement>) {
+function TableCell({ className, colSpan, ...props }: React.HTMLAttributes<HTMLTableCellElement> & { colSpan?: number }) {
   return (
     <td
       className={cn('p-4 align-middle [&:has([role=checkbox])]:pr-0', className)}
@@ -46,7 +46,7 @@ function TableCaption({ className, ...props }: React.HTMLAttributes<HTMLTableCap
   return <caption className={cn('mt-4 text-sm text-muted-foreground', className)} {...props} />
 }
 
-interface DataTableProps<TData, TValue> {
+export interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
   searchableColumns?: string[]
@@ -150,7 +150,7 @@ function DataTable<TData, TValue>({
           <span>每页</span>
           <Select
             value={String(table.getState().pagination.pageSize)}
-            onValueChange={(v) => table.setPageSize(Number(v))}
+            onValueChange={(v: string) => table.setPageSize(Number(v))}
           >
             <SelectTrigger className="h-8 w-[70px]">
               <SelectValue placeholder={table.getState().pagination.pageSize} />

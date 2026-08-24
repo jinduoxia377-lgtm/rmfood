@@ -5,7 +5,10 @@ export interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: 'circle' | 'rect'
   width?: string | number
   height?: string | number
+  radius?: number
   animate?: boolean
+  circular?: boolean
+  animationType?: string
 }
 
 function Skeleton({

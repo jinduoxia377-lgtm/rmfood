@@ -23,6 +23,7 @@ export {
   DialogFooter,
   DialogTitle,
   DialogDescription,
+  Modal,
 } from './Modal'
 
 export {

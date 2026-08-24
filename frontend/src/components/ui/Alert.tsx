@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
-import { AlertCircle, CheckCircle2, Info, WarningTriangle, X } from 'lucide-react'
+import { AlertCircle, CheckCircle2, Info, AlertTriangle, X } from 'lucide-react'
 import { Button } from './button'
 
 const alertVariants = cva(
@@ -26,7 +26,7 @@ const alertIcons = {
   default: null,
   destructive: AlertCircle,
   success: CheckCircle2,
-  warning: WarningTriangle,
+  warning: AlertTriangle,
   info: Info,
 }
 
