@@ -137,3 +137,11 @@ export { ConditionalRender } from './ConditionalRender'
 
 // Legacy aliases for backward compatibility
 export type { FeedbackMessage, FeedbackType } from './Toast'
+
+// ═══════════════════════════════════════════════════════════════
+// Radix Themes Components (Phase 3)
+// ═══════════════════════════════════════════════════════════════
+
+export { Button as RadixButton, Badge as RadixBadge, Card as RadixCard, Text as RadixText } from './RadixComponents'
+export type { ButtonProps as RadixButtonProps, BadgeProps as RadixBadgeProps, CardProps as RadixCardProps, TextProps as RadixTextProps } from './RadixComponents'
+
