@@ -31,8 +31,8 @@ const alertIcons = {
 }
 
 export interface AlertProps
-  extends React.HTMLAttributes<HTMLDivElement>,
-    VariantProps<typeof alertVariants> {
+  extends React.HTMLAttributes<HTMLDivElement> {
+  variant?: string
   title?: string
   description?: string
   dismissible?: boolean
