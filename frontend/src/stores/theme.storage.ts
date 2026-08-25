@@ -29,6 +29,7 @@ interface ThemeStateSnapshot {
   mode: 'light' | 'dark' | 'system';
   accessibilityMode: string;
   transitionType: string;
+  colors?: Record<string, string>;
 }
 
 // ============================================================================

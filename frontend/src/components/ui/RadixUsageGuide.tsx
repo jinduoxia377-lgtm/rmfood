@@ -1,58 +1,42 @@
 /**
- * RMFOOD 设计系统 — Radix Themes 组件使用示例
- *
- * Phase 3: 展示如何在页面中使用 Radix Themes 组件
+ * RMFOOD 设计系统 — Radix Components 使用示例
  */
 import React from 'react'
-import { Button, Badge, Card, Text } from './RadixComponents'
-import { Card as ShadcnCard } from './shadcn/card'
+import { RadixBadge, RadixText } from './RadixComponents'
 
-export function RadixDemo() {
+export function RadixUsageGuide() {
   return (
-    <div className="space-y-4 p-4">
-      {/* Radix Button */}
-      <div className="flex gap-2">
-        <Button variant="solid">Solid Button</Button>
-        <Button variant="soft">Soft Button</Button>
-        <Button variant="outline">Outline Button</Button>
-        <Button variant="ghost">Ghost Button</Button>
+    <div className="p-4 space-y-4">
+      <h2 className="text-xl font-bold">Radix Components 使用指南</h2>
+      
+      <div>
+        <h3 className="font-semibold">Badge 示例</h3>
+        <div className="flex gap-2 mt-2">
+          <RadixBadge variant="default">Default</RadixBadge>
+          <RadixBadge variant="success">Success</RadixBadge>
+          <RadixBadge variant="warning">Warning</RadixBadge>
+          <RadixBadge variant="error">Error</RadixBadge>
+          <RadixBadge variant="info">Info</RadixBadge>
+        </div>
       </div>
 
-      {/* Radix Badge */}
-      <div className="flex gap-2">
-        <Badge variant="default">Default</Badge>
-        <Badge variant="success">Success</Badge>
-        <Badge variant="warning">Warning</Badge>
-        <Badge variant="error">Error</Badge>
-        <Badge variant="info">Info</Badge>
-        <Badge variant="success" dot>Dot</Badge>
+      <div>
+        <h3 className="font-semibold">Text 示例</h3>
+        <RadixText size="7" weight="bold">标题</RadixText>
+        <RadixText size="4" weight="medium">副标题</RadixText>
+        <RadixText size="2" color="gray">正文</RadixText>
       </div>
 
-      {/* Radix Card */}
-      <div className="grid grid-cols-2 gap-4">
-        <Card hoverable className="p-4">
-          <Text size="4" weight="bold">Hoverable Card</Text>
-          <Text size="2" color="gray">Card with hover shadow effect</Text>
-        </Card>
-        <Card glass className="p-4">
-          <Text size="4" weight="bold">Glass Card</Text>
-          <Text size="2" color="gray">Card with glassmorphism effect</Text>
-        </Card>
-      </div>
-
-      {/* Comparison with shadcn */}
       <div className="border-t pt-4">
-        <Text size="3" weight="bold">shadcn/ui 对比</Text>
-        <ShadcnCard className="mt-2">
-          <ShadcnCard.Header>
-            <ShadcnCard.Title>shadcn Card</ShadcnCard.Title>
-            <ShadcnCard.Description>传统 shadcn 组件</ShadcnCard.Description>
-          </ShadcnCard.Header>
-          <ShadcnCard.Content>内容区域</ShadcnCard.Content>
-        </ShadcnCard>
+        <h3 className="font-semibold">说明</h3>
+        <p className="text-sm text-gray-600 mt-2">
+          - Button 和 Card 组件继续使用 shadcn/ui 实现（功能更丰富）
+          - Badge 和 Text 使用 Radix Themes 原生实现
+          - 所有组件保持向后兼容
+        </p>
       </div>
     </div>
   )
 }
 
-export default RadixDemo
+export default RadixUsageGuide

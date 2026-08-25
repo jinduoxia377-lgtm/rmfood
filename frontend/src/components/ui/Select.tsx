@@ -5,10 +5,23 @@ import * as SelectPrimitive from '@radix-ui/react-select'
 import { Check, ChevronDown, ChevronUp } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-const Select = SelectPrimitive.Root
+// ── Select 包装层：兼容 onChange → onValueChange ──────────────────────────
+type SelectRootProps = React.ComponentPropsWithoutRef<typeof SelectPrimitive.Root> & {
+  onChange?: (value: string) => void
+  onValueChange?: (value: string) => void
+}
+
+const Select: React.FC<SelectRootProps> = ({ onChange, onValueChange, ...props }) => (
+  <SelectPrimitive.Root
+    {...props}
+    onValueChange={(v) => {
+      onValueChange?.(v)
+      onChange?.(v)
+    }}
+  />
+)
 
 const SelectGroup = SelectPrimitive.Group
-
 const SelectValue = SelectPrimitive.Value
 
 const SelectTrigger = React.forwardRef<

@@ -1,313 +1,530 @@
-<h1>RMFOOD 智能配方设计平台 — 项目开发手册
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RMFOOD 项目开发手册 v4.0.0</title>
+  <style>
+    /* Reset & Base */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      font-size: 16px;
+      line-height: 1.7;
+      color: #1a1a2e;
+      background: #ffffff;
+    }
+    .page-wrapper {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 24px;
+    }
+    .doc-header {
+      margin-bottom: 48px;
+      padding-bottom: 32px;
+      border-bottom: 2px solid #e8e8f0;
+    }
+    .doc-header h1 {
+      font-size: 32px;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin-bottom: 16px;
+      line-height: 1.3;
+    }
+    .doc-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 24px;
+      font-size: 14px;
+      color: #666;
+    }
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 16px;
+      margin: 32px 0;
+    }
+    .kpi-card {
+      background: #f8f9fc;
+      border: 1px solid #e8e8f0;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+    }
+    .kpi-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: #4f46e5;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+    .kpi-label {
+      font-size: 13px;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    h1 { font-size: 28px; font-weight: 700; color: #1a1a2e; margin: 48px 0 24px; padding-bottom: 12px; border-bottom: 2px solid #e8e8f0; }
+    h2 { font-size: 22px; font-weight: 600; color: #1a1a2e; margin: 36px 0 16px; }
+    h3 { font-size: 18px; font-weight: 600; color: #333; margin: 28px 0 12px; }
+    p { margin-bottom: 16px; color: #444; }
+    table { width: 100%; border-collapse: collapse; margin: 24px 0; font-size: 14px; background: #fff; border-radius: 8px; overflow: hidden; border: 1px solid #e8e8f0; }
+    thead { background: #f8f9fc; }
+    th { padding: 12px 16px; text-align: left; font-weight: 600; color: #1a1a2e; border-bottom: 2px solid #e8e8f0; }
+    td { padding: 12px 16px; border-bottom: 1px solid #f0f0f5; color: #444; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #fafafe; }
+    pre { background: #1e293b; color: #e2e8f0; padding: 20px; border-radius: 8px; overflow-x: auto; margin: 24px 0; font-family: monospace; font-size: 13px; line-height: 1.6; }
+    code { font-family: monospace; background: #f0f0f5; padding: 2px 6px; border-radius: 4px; font-size: 14px; color: #dc2626; }
+    pre code { background: none; padding: 0; color: inherit; }
+    ul, ol { margin: 16px 0; padding-left: 24px; }
+    li { margin: 8px 0; color: #444; }
+    li::marker { color: #4f46e5; }
+    a { color: #4f46e5; text-decoration: none; border-bottom: 1px solid transparent; transition: all 0.2s; }
+    a:hover { color: #4338ca; border-bottom-color: #4338ca; }
+    hr { border: none; height: 1px; background: #e8e8f0; margin: 40px 0; }
+    section { margin-bottom: 64px; }
+    .security-layers { display: flex; flex-direction: column; gap: 8px; margin: 24px 0; }
+    .security-layer { display: flex; align-items: center; gap: 16px; padding: 16px; background: #f8f9fc; border-radius: 8px; border-left: 4px solid #4f46e5; }
+    .security-layer:nth-child(1) { border-left-color: #059669; }
+    .security-layer:nth-child(2) { border-left-color: #0891b2; }
+    .security-layer:nth-child(3) { border-left-color: #2563eb; }
+    .security-layer:nth-child(4) { border-left-color: #7c3aed; }
+    .security-layer:nth-child(5) { border-left-color: #db2777; }
+    .security-layer:nth-child(6) { border-left-color: #dc2626; }
+    .security-layer:nth-child(7) { border-left-color: #ea580c; }
+    .layer-num { font-weight: 700; font-size: 13px; color: #999; min-width: 32px; }
+    .layer-content strong { display: block; color: #1a1a2e; font-size: 14px; }
+    .layer-content p { margin: 0; font-size: 13px; color: #666; }
+    .maturity-chart { margin: 24px 0; }
+    .maturity-item { display: grid; grid-template-columns: 180px 1fr 60px; align-items: center; gap: 16px; margin-bottom: 12px; }
+    .maturity-label { font-size: 14px; color: #444; }
+    .maturity-bar { height: 24px; background: #e8e8f0; border-radius: 12px; overflow: hidden; }
+    .maturity-fill { height: 100%; border-radius: 12px; background: #4f46e5; }
+    .maturity-score { font-size: 14px; font-weight: 600; color: #1a1a2e; text-align: right; }
+    .timeline { position: relative; padding-left: 32px; margin: 24px 0; }
+    .timeline::before { content: ''; position: absolute; left: 8px; top: 0; bottom: 0; width: 2px; background: #e8e8f0; }
+    .timeline-item { position: relative; padding-bottom: 20px; }
+    .timeline-item::before { content: ''; position: absolute; left: -28px; top: 4px; width: 12px; height: 12px; border-radius: 50%; background: #4f46e5; border: 3px solid #fff; box-shadow: 0 0 0 2px #4f46e5; }
+    .timeline-item strong { display: block; color: #1a1a2e; font-size: 14px; }
+    .timeline-item .date { display: inline-block; background: #f0f0f5; padding: 2px 8px; border-radius: 4px; font-size: 12px; color: #666; margin-left: 8px; }
+    .timeline-item p { margin: 4px 0 0; font-size: 14px; color: #666; }
+    .bar-chart { display: flex; align-items: flex-end; justify-content: space-around; height: 200px; padding: 20px; background: #f8f9fc; border-radius: 12px; margin: 24px 0; }
+    .bar-item { display: flex; flex-direction: column; align-items: center; gap: 8px; flex: 1; }
+    .bar-track { width: 48px; height: 160px; background: #e8e8f0; border-radius: 4px 4px 0 0; display: flex; align-items: flex-end; }
+    .bar-fill { width: 100%; background: linear-gradient(180deg, #4f46e5, #7c3aed); border-radius: 4px 4px 0 0; }
+    .bar-label { font-size: 12px; color: #666; font-weight: 500; }
+    .bar-value { font-size: 14px; font-weight: 700; color: #1a1a2e; }
+    .doc-footer { margin-top: 64px; padding-top: 32px; border-top: 1px solid #e8e8f0; text-align: center; color: #999; font-size: 13px; }
+    @media print { body { background: #fff; } .doc-header { border-bottom-color: #ccc; } pre { background: #f5f5f5 !important; color: #333 !important; } }
+  </style>
+</head>
+<body>
+  <div class="page-wrapper">
+    <header class="doc-header">
+      <h1>RMFOOD 智能配方设计平台 — 项目开发手册</h1>
+      <div class="doc-meta">
+        <div>📄 文档版本：v4.0.0</div>
+        <div>📅 编制日期：2026-08-24</div>
+        <div>🏢 莱茵 (厦门) 分子生物科技有限公司</div>
+        <div>✅ 正式发布 · 院士级评审</div>
+      </div>
+    </header>
 
-**文档版本**：v4.0.0（shadcn/ui 迁移完成·前端重构版）
-**编制日期**：2026-08-24
-**编制单位**：RMFOOD 开发团队 · 莱茵(厦门)分子生物科技有限公司
-**文档状态**：正式发布 · 院士级评审
+    <div class="kpi-grid">
+      <div class="kpi-card"><div class="kpi-value">40</div><div class="kpi-label">ORM 模型</div></div>
+      <div class="kpi-card"><div class="kpi-value">35</div><div class="kpi-label">Alembic 版本</div></div>
+      <div class="kpi-card"><div class="kpi-value">79</div><div class="kpi-label">API 路由</div></div>
+      <div class="kpi-card"><div class="kpi-value">27</div><div class="kpi-label">ADR 文档</div></div>
+      <div class="kpi-card"><div class="kpi-value">111+</div><div class="kpi-label">Git 提交</div></div>
+      <div class="kpi-card"><div class="kpi-value">25</div><div class="kpi-label">活跃天数</div></div>
+    </div>
+
+    <div class="security-layers">
+      <div class="security-layer"><span class="layer-num">L7</span><div class="layer-content"><strong>应用层安全</strong><p>输入验证 · 输出编码 · 敏感数据脱敏</p></div></div>
+      <div class="security-layer"><span class="layer-num">L6</span><div class="layer-content"><strong>认证与授权</strong><p>JWT Token · RBAC 5 级角色 · 审计日志</p></div></div>
+      <div class="security-layer"><span class="layer-num">L5</span><div class="layer-content"><strong>速率限制</strong><p>滑动窗口算法 · IP/User/端点多维限制</p></div></div>
+      <div class="security-layer"><span class="layer-num">L4</span><div class="layer-content"><strong>数据保护</strong><p>HSTS/CSP/X-Frame · 请求体限制 · 日志脱敏</p></div></div>
+      <div class="security-layer"><span class="layer-num">L3</span><div class="layer-content"><strong>多租户隔离</strong><p>TenantMiddleware · 租户查询守卫 · 资源隔离</p></div></div>
+      <div class="security-layer"><span class="layer-num">L2</span><div class="layer-content"><strong>传输层安全</strong><p>TLS 配置 · 安全上传机制</p></div></div>
+      <div class="security-layer"><span class="layer-num">L1</span><div class="layer-content"><strong>基础设施安全</strong><p>Sentry 错误追踪 · SQL 安全过滤</p></div></div>
+    </div>
+
+    <div class="maturity-chart">
+      <h2>技术成熟度评估</h2>
+      <div class="maturity-item"><span class="maturity-label">业务架构完整性</span><div class="maturity-bar"><div class="maturity-fill" style="width:88%;background:#10b981;"></div></div><span class="maturity-score">88/A</span></div>
+      <div class="maturity-item"><span class="maturity-label">数据架构规范性</span><div class="maturity-bar"><div class="maturity-fill" style="width:82%;background:#0ea5e9;"></div></div><span class="maturity-score">82/B+</span></div>
+      <div class="maturity-item"><span class="maturity-label">应用架构模块化</span><div class="maturity-bar"><div class="maturity-fill" style="width:85%;background:#6366f1;"></div></div><span class="maturity-score">85/A-</span></div>
+      <div class="maturity-item"><span class="maturity-label">技术架构先进性</span><div class="maturity-bar"><div class="maturity-fill" style="width:90%;background:#f59e0b;"></div></div><span class="maturity-score">90/A</span></div>
+      <div class="maturity-item"><span class="maturity-label">工程化成熟度</span><div class="maturity-bar"><div class="maturity-fill" style="width:80%;background:#8b5cf6;"></div></div><span class="maturity-score">80/B+</span></div>
+    </div>
+
+    <div class="bar-chart">
+      <h2>Alembic 迁移趋势（月度）</h2>
+      <div class="bar-item"><div class="bar-track"><div class="bar-fill" style="height:25%;"></div></div><span class="bar-label">2026-05</span><span class="bar-value">3</span></div>
+      <div class="bar-item"><div class="bar-track"><div class="bar-fill" style="height:57%;"></div></div><span class="bar-label">2026-06</span><span class="bar-value">8</span></div>
+      <div class="bar-item"><div class="bar-track"><div class="bar-fill" style="height:86%;"></div></div><span class="bar-label">2026-07</span><span class="bar-value">12</span></div>
+      <div class="bar-item"><div class="bar-track"><div class="bar-fill" style="height:100%;"></div></div><span class="bar-label">2026-08</span><span class="bar-value">12</span></div>
+    </div>
+
+    <div class="timeline">
+      <h2>shadcn/ui 迁移时间线</h2>
+      <div class="timeline-item"><strong>Phase 1 - 基础设施搭建</strong><span class="date">08-17</span><p>shadcn/ui 安装 + Radix UI + 品牌 Token 映射</p></div>
+      <div class="timeline-item"><strong>Phase 2 - Surface 组件</strong><span class="date">08-17</span><p>Input, Textarea, Badge, Card, Toast, Alert</p></div>
+      <div class="timeline-item"><strong>Phase 3 - 复杂组件</strong><span class="date">08-18</span><p>DataTable, OperationFeedback</p></div>
+      <div class="timeline-item"><strong>Phase 4 - 兼容桥接</strong><span class="date">08-18</span><p>向后兼容层，旧 API 保留</p></div>
+      <div class="timeline-item"><strong>Phase 5 - 核心交互</strong><span class="date">08-19</span><p>Button, Modal, Select, Tabs</p></div>
+      <div class="timeline-item"><strong>Phase 6 - 表单控件</strong><span class="date">08-20</span><p>Checkbox, Switch 等迁移</p></div>
+      <div class="timeline-item"><strong>Phase 7 - 最终替换</strong><span class="date">08-21</span><p>旧组件文件全量替换为 shadcn/Radix</p></div>
+    </div>
+
+<section id="目录">
+
+<h1>目录</h1>
+
+<p>1. <a href="#1-项目概述">项目概述</a></p>
+
+<p>2. <a href="#2-技术架构全景">技术架构全景</a></p>
+
+<p>3. <a href="#3-架构深度解析院士级评审">架构深度解析（院士级评审）</a></p>
+
+<p>4. <a href="#4-架构收敛决策说明adr-011">架构收敛决策说明（ADR-011）</a></p>
+
+<p>5. <a href="#5-开发时间线总览">开发时间线总览</a></p>
+
+<p>6. <a href="#6-每日开发记录">每日开发记录</a></p>
+
+<p>7. <a href="#7-里程碑与阶段总结">里程碑与阶段总结</a></p>
+
+<p>8. <a href="#8-质量与安全体系">质量与安全体系</a></p>
+
+<p>9. <a href="#9-部署与运维">部署与运维</a></p>
+
+<p>10. <a href="#10-开发规范与流程">开发规范与流程</a></p>
+
+<p>11. <a href="#11-ai-模块深度解析">AI 模块深度解析</a></p>
+
+<p>12. <a href="#12-数据架构与治理">数据架构与治理</a></p>
+
+<p>21. <a href="#21-shadcnui-迁移与前端重构">shadcn/ui 迁移与前端重构</a></p>
+
+<p>22. <a href="#13-附录数据统计">附录：数据统计</a></p>
+
 <hr>
-#<h1>目录
 
-1. [项目概述](#1-项目概述)
-2. [技术架构全景](#2-技术架构全景)
-3. [架构深度解析（院士级评审）](#3-架构深度解析院士级评审)
-4. [架构收敛决策说明（ADR-011）](#4-架构收敛决策说明adr-011)
-5. [开发时间线总览](#5-开发时间线总览)
-6. [每日开发记录](#6-每日开发记录)
-7. [里程碑与阶段总结](#7-里程碑与阶段总结)
-8. [质量与安全体系](#8-质量与安全体系)
-9. [部署与运维](#9-部署与运维)
-10. [开发规范与流程](#10-开发规范与流程)
-11. [AI 模块深度解析](#11-ai-模块深度解析)
-12. [数据架构与治理](#12-数据架构与治理)
-21. [shadcn/ui 迁移与前端重构](#21-shadcnui-迁移与前端重构)
-22. [附录：数据统计](#13-附录数据统计)
+</section>
+
+<section id="1-项目概述">
+
+<h1>1. 项目概述</h1>
+
+<h2 id="1-1-项目定位">1.1 项目定位</h2>
+
+<p><strong>RMFOOD</strong>（Recipe Management for Optimal Organic Design）是一款面向药食同源功能性食品研发的 AI 驱动企业级配方设计平台，由莱茵(厦门)分子生物科技有限公司主导建设。平台覆盖从原料筛选、配方设计、功效评估到合规审查的完整研发生命周期。</p>
+
+<h2 id="1-2-核心能力矩阵">1.2 核心能力矩阵</h2>
+
+<table><thead><tr><th>维度</th><th>能力</th><th>技术实现</th></tr></thead><tbody><tr><td>**AI 智能研发**</td><td>神经网络配方生成</td><td>Neural Formula Engine (PyTorch)</td></tr>
+<tr><td></td><td>多目标优化</td><td>MCTS / 模拟退火 / 梯度下降（3 种求解器）</td></tr>
+<tr><td></td><td>肽序列设计</td><td>PepINVENT 引擎集成（RDKit + PyTorch）</td></tr>
+<tr><td></td><td>LLM 对话系统</td><td>OpenAI / DeepSeek / 智谱 / 通义千问 / vLLM 自定义端点</td></tr>
+<tr><td>**AI Agent 工作流**</td><td>Agent 自主编排 + 异步任务调度</td><td>Orchestrator + 5 专业工具 + ai_task_router</td></tr>
+<tr><td>**数据驱动决策**</td><td>TCMSP 中药材数据库</td><td>35 个 Alembic 迁移版本持续增强</td></tr>
+<tr><td></td><td>DFBP 活性肽数据库</td><td>食源性生物活性肽结构库</td></tr>
+<tr><td></td><td>知识图谱</td><td>Neo4j 可选集成 + 本地图谱查询服务</td></tr>
+<tr><td></td><td>全文搜索</td><td>Elasticsearch 可选集成 + PostgreSQL 内置 FTS</td></tr>
+<tr><td>**实验管理**</td><td>电子实验记录本（ELN）</td><td>标准化实验流程 + HPLC/GC/MS 数据解析</td></tr>
+<tr><td></td><td>合规性检查</td><td>China Food Regulations 集成引擎</td></tr>
+<tr><td>**协作与企业功能**</td><td>多租户隔离</td><td>Multi-Tenant 数据隔离 + 组织级管理</td></tr>
+<tr><td></td><td>权限控制</td><td>RBAC 5 级角色 + 细粒度权限装饰器</td></tr>
+<tr><td></td><td>团队协作</td><td>成员管理 / 邀请链接 / 在线状态 / @提及</td></tr>
+<tr><td></td><td>实时通信</td><td>WebSocket 连接管理器 + 分析仪表盘推送</td></tr>
+</tbody></table>
+
+<h2 id="1-3-项目规模概览">1.3 项目规模概览</h2>
+
+<table><thead><tr><th>指标</th><th>数值</th></tr></thead><tbody><tr><td>后端 Python 源文件</td><td>920 个</td></tr>
+<tr><td>后端 API 路由模块</td><td>79 个（含 v1/ 28 个）</td></tr>
+<tr><td>后端核心基础设施模块</td><td>48 个</td></tr>
+<tr><td>后端 ORM 模型</td><td>40 个</td></tr>
+<tr><td>后端 Pydantic Schema</td><td>17 个</td></tr>
+<tr><td>后端服务文件</td><td>90+（16 子目录）</td></tr>
+<tr><td>前端 TypeScript/TSX 文件</td><td>567 个</td></tr>
+<tr><td>前端页面组件</td><td>22（一级目录）</td></tr>
+<tr><td>前端 UI 组件</td><td>28（子目录，AI 模块 10 个专业版组件）</td></tr>
+<tr><td>前端 API 服务模块</td><td>39 个</td></tr>
+<tr><td>前端自定义 Hooks</td><td>42 个</td></tr>
+<tr><td>前端 Zustand Store</td><td>14 个</td></tr>
+<tr><td>前端配置文件</td><td>21 个</td></tr>
+<tr><td>数据库迁移版本</td><td>35 个 Alembic</td></tr>
+<tr><td>架构决策记录</td><td>27 份 ADR</td></tr>
+<tr><td>项目文档资产</td><td>80+</td></tr>
+<tr><td>CI/CD Pipeline Jobs</td><td>9 个</td></tr>
+</tbody></table>
+
 <hr>
-#<h1>1. 项目概述
 
-##<h1>1.1 项目定位
+</section>
 
-**RMFOOD**（Recipe Management for Optimal Organic Design）是一款面向药食同源功能性食品研发的 AI 驱动企业级配方设计平台，由莱茵(厦门)分子生物科技有限公司主导建设。平台覆盖从原料筛选、配方设计、功效评估到合规审查的完整研发生命周期。
+<section id="2-技术架构全景">
 
-##<h1>1.2 核心能力矩阵
-| 维度 | 能力 | 技术实现 |
-|:-----|:-----|:---------|
-| **AI 智能研发** | 神经网络配方生成 | Neural Formula Engine (PyTorch) |
-| | 多目标优化 | MCTS / 模拟退火 / 梯度下降（3 种求解器） |
-| | 肽序列设计 | PepINVENT 引擎集成（RDKit + PyTorch） |
-| | LLM 对话系统 | OpenAI / DeepSeek / 智谱 / 通义千问 / vLLM 自定义端点 |
-| **AI Agent 工作流** | Agent 自主编排 + 异步任务调度 | Orchestrator + 5 专业工具 + ai_task_router |
-| **数据驱动决策** | TCMSP 中药材数据库 | 35 个 Alembic 迁移版本持续增强 |
-| | DFBP 活性肽数据库 | 食源性生物活性肽结构库 |
-| | 知识图谱 | Neo4j 可选集成 + 本地图谱查询服务 |
-| | 全文搜索 | Elasticsearch 可选集成 + PostgreSQL 内置 FTS |
-| **实验管理** | 电子实验记录本（ELN） | 标准化实验流程 + HPLC/GC/MS 数据解析 |
-| | 合规性检查 | China Food Regulations 集成引擎 |
-| **协作与企业功能** | 多租户隔离 | Multi-Tenant 数据隔离 + 组织级管理 |
-| | 权限控制 | RBAC 5 级角色 + 细粒度权限装饰器 |
-| | 团队协作 | 成员管理 / 邀请链接 / 在线状态 / @提及 |
-| | 实时通信 | WebSocket 连接管理器 + 分析仪表盘推送 |
+<h1>2. 技术架构全景</h1>
 
-##<h1>1.3 项目规模概览
-| 指标 | 数值 |
-|:-----|-----:|
-| 后端 Python 源文件 | 920 个 |
-| 后端 API 路由模块 | 79 个（含 v1/ 28 个） |
-| 后端核心基础设施模块 | 48 个 |
-| 后端 ORM 模型 | 40 个 |
-| 后端 Pydantic Schema | 17 个 |
-| 后端服务文件 | 90+（16 子目录） |
-| 前端 TypeScript/TSX 文件 | 567 个 |
-| 前端页面组件 | 22（一级目录） |
-| 前端 UI 组件 | 28（子目录，AI 模块 10 个专业版组件） |
-| 前端 API 服务模块 | 39 个 |
-| 前端自定义 Hooks | 42 个 |
-| 前端 Zustand Store | 14 个 |
-| 前端配置文件 | 21 个 |
-| 数据库迁移版本 | 35 个 Alembic |
-| 架构决策记录 | 27 份 ADR |
-| 项目文档资产 | 80+ |
-| CI/CD Pipeline Jobs | 9 个 |
+<h2 id="2-1-后端技术栈">2.1 后端技术栈</h2>
+
+<table><thead><tr><th>类别</th><th>技术</th><th>版本</th></tr></thead><tbody><tr><td>框架</td><td>FastAPI</td><td>0.115+</td></tr>
+<tr><td>语言</td><td>Python</td><td>3.12+</td></tr>
+<tr><td>数据库</td><td>PostgreSQL</td><td>15+</td></tr>
+<tr><td>ORM</td><td>SQLAlchemy</td><td>2.0（Async）</td></tr>
+<tr><td>缓存</td><td>Redis</td><td>7+</td></tr>
+<tr><td>图数据库</td><td>Neo4j</td><td>可选集成</td></tr>
+<tr><td>搜索引擎</td><td>Elasticsearch</td><td>可选集成</td></tr>
+<tr><td>迁移工具</td><td>Alembic</td><td>35 个版本</td></tr>
+<tr><td>分布式计算</td><td>Ray</td><td>集群管理</td></tr>
+</tbody></table>
+
+<h2 id="2-2-前端技术栈">2.2 前端技术栈</h2>
+
+<table><thead><tr><th>类别</th><th>技术</th><th>版本</th></tr></thead><tbody><tr><td>框架</td><td>React</td><td>19.x</td></tr>
+<tr><td>语言</td><td>TypeScript</td><td>5.7</td></tr>
+<tr><td>构建工具</td><td>Vite</td><td>8.x</td></tr>
+<tr><td>样式</td><td>Tailwind CSS</td><td>4.x</td></tr>
+<tr><td>状态管理</td><td>Zustand</td><td>5.x</td></tr>
+<tr><td>数据请求</td><td>TanStack Query</td><td>5.x</td></tr>
+<tr><td>AI 对话</td><td>OpenAI SDK / 多提供商适配</td><td>v10.0</td></tr>
+<tr><td>实时通信</td><td>WebSocket</td><td>实时推送 + 分析仪表盘</td></tr>
+<tr><td>路由</td><td>React Router</td><td>v7</td></tr>
+</tbody></table>
+
+<h2 id="2-3-架构设计原则">2.3 架构设计原则</h2>
+
+<h2 id="2-4-架构决策记录-adr">2.4 架构决策记录（ADR）</h2>
+
+<ul>
+<li><strong>六边形架构（Ports & Adapters）</strong>：领域层零外部依赖，适配器实现接口</li>
+<li><strong>领域驱动设计（DDD）</strong>：按有界上下文组织模块（配方、实验、用户、知识图谱等）</li>
+<li><strong>微内核 + 插件化</strong>：AI 助手可扩展插件框架</li>
+<li><strong>多租户隔离</strong>：行级安全策略，支持严格/审计两种模式</li>
+</ul>
+
+<table><thead><tr><th>&lt;h1&gt;</th><th>标题</th><th>状态</th><th>日期</th><th>领域</th></tr></thead><tbody><tr><td>001</td><td>六边形架构重构</td><td>✅ 已接受</td><td>2026-06-05</td><td>架构模式</td></tr>
+<tr><td>002</td><td>事件驱动架构选型</td><td>✅ 已接受</td><td>2026-06-05</td><td>通信模式</td></tr>
+<tr><td>003</td><td>数据分类分级体系</td><td>✅ 已接受</td><td>2026-06-05</td><td>数据治理</td></tr>
+<tr><td>004</td><td>DDD 有界上下文划分</td><td>✅ 已接受</td><td>2026-06-05</td><td>领域建模</td></tr>
+<tr><td>005</td><td>可观测性体系</td><td>✅ 已接受</td><td>2026-06-05</td><td>运维</td></tr>
+<tr><td>006</td><td>认证授权与访问控制</td><td>✅ 已接受</td><td>2026-06-15</td><td>安全</td></tr>
+<tr><td>007</td><td>数据库迁移与版本管理</td><td>✅ 已接受</td><td>2026-06-15</td><td>数据</td></tr>
+<tr><td>008</td><td>CI/CD 流水线</td><td>✅ 已接受</td><td>2026-06-15</td><td>DevOps</td></tr>
+<tr><td>009</td><td>前端架构与状态管理</td><td>✅ 已接受</td><td>2026-06-15</td><td>前端</td></tr>
+<tr><td>010</td><td>AI/ML 服务集成</td><td>✅ 已接受</td><td>2026-06-15</td><td>AI/ML</td></tr>
+<tr><td>011</td><td>架构收敛决策</td><td>✅ 已接受</td><td>2026-06-18</td><td>架构收敛</td></tr>
+<tr><td>012</td><td>主题系统精简与统一</td><td>✅ 已接受</td><td>2026-08-17</td><td>前端设计</td></tr>
+<tr><td>013</td><td>主题系统完整性补齐</td><td>✅ 已接受</td><td>2026-08-18</td><td>前端设计</td></tr>
+<tr><td>014</td><td>主题系统组件级迁移</td><td>✅ 已接受</td><td>2026-08-18</td><td>前端设计</td></tr>
+<tr><td>015</td><td>主题系统完整性审计与修复</td><td>✅ 已接受</td><td>2026-08-19</td><td>前端设计</td></tr>
+<tr><td>016</td><td>主题系统深度审计与补齐</td><td>✅ 已接受</td><td>2026-08-19</td><td>前端设计</td></tr>
+<tr><td>017</td><td>Dashboard UI/UX 深度审计与升级方案</td><td>✅ 已接受</td><td>2026-08-19</td><td>前端设计</td></tr>
+<tr><td>018</td><td>Dashboard UI/UX 深度修复与升级</td><td>✅ 已接受</td><td>2026-08-20</td><td>前端设计</td></tr>
+<tr><td>019</td><td>Dashboard UI/UX 深度设计审计</td><td>✅ 已接受</td><td>2026-08-20</td><td>前端设计</td></tr>
+<tr><td>020</td><td>TypeScript 错误修复 - 配方案例页面</td><td>✅ 已接受</td><td>2026-08-20</td><td>前端修复</td></tr>
+<tr><td>021</td><td>配方管理页面 UI/UX 深度审计与语义化修复</td><td>✅ 已接受</td><td>2026-08-21</td><td>前端设计</td></tr>
+<tr><td>022</td><td>InvalidTimeValue 错误修复</td><td>✅ 已接受</td><td>2026-08-21</td><td>前端修复</td></tr>
+<tr><td>023</td><td>公式详情页 Hooks 顺序错误修复</td><td>✅ 已接受</td><td>2026-08-21</td><td>前端修复</td></tr>
+<tr><td>024</td><td>配方详情页深度开发方案</td><td>✅ 已接受</td><td>2026-08-22</td><td>前端设计</td></tr>
+<tr><td>025</td><td>配方详情页深度审查与开发方案</td><td>✅ 已接受</td><td>2026-08-22</td><td>前端设计</td></tr>
+<tr><td>026</td><td>配方详情页 Phase 3 深度开发方案</td><td>✅ 已接受</td><td>2026-08-23</td><td>前端设计</td></tr>
+<tr><td>027</td><td>Radix UI / shadcn/ui 迁移</td><td>✅ 已接受</td><td>2026-08-23</td><td>前端架构</td></tr>
+</tbody></table>
+
 <hr>
-#<h1>2. 技术架构全景
 
-##<h1>2.1 后端技术栈
-| 类别 | 技术 | 版本 |
-|:-----|:-----|:-----|
-| 框架 | FastAPI | 0.115+ |
-| 语言 | Python | 3.12+ |
-| 数据库 | PostgreSQL | 15+ |
-| ORM | SQLAlchemy | 2.0（Async） |
-| 缓存 | Redis | 7+ |
-| 图数据库 | Neo4j | 可选集成 |
-| 搜索引擎 | Elasticsearch | 可选集成 |
-| 迁移工具 | Alembic | 35 个版本 |
-| 分布式计算 | Ray | 集群管理 |
+</section>
 
-##<h1>2.2 前端技术栈
-| 类别 | 技术 | 版本 |
-|:-----|:-----|:-----|
-| 框架 | React | 19.x |
-| 语言 | TypeScript | 5.7 |
-| 构建工具 | Vite | 8.x |
-| 样式 | Tailwind CSS | 4.x |
-| 状态管理 | Zustand | 5.x |
-| 数据请求 | TanStack Query | 5.x |
-| AI 对话 | OpenAI SDK / 多提供商适配 | v10.0 |
-| 实时通信 | WebSocket | 实时推送 + 分析仪表盘 |
-| 路由 | React Router | v7 |
+<section id="3-架构深度解析-院士级评审">
 
-##<h1>2.3 架构设计原则
+<h1>3. 架构深度解析（院士级评审）</h1>
 
-- **六边形架构（Ports & Adapters）**：领域层零外部依赖，适配器实现接口
-- **领域驱动设计（DDD）**：按有界上下文组织模块（配方、实验、用户、知识图谱等）
-- **微内核 + 插件化**：AI 助手可扩展插件框架
-- **多租户隔离**：行级安全策略，支持严格/审计两种模式
+<p><strong>评审级别</strong>：院士级专家评审</p>
 
-##<h1>2.4 架构决策记录（ADR）
-| <h1>| 标题 | 状态 | 日期 | 领域 |
-|:-:|:-----|:----:|:----:|:-----|
-| 001 | 六边形架构重构 | ✅ 已接受 | 2026-06-05 | 架构模式 |
-| 002 | 事件驱动架构选型 | ✅ 已接受 | 2026-06-05 | 通信模式 |
-| 003 | 数据分类分级体系 | ✅ 已接受 | 2026-06-05 | 数据治理 |
-| 004 | DDD 有界上下文划分 | ✅ 已接受 | 2026-06-05 | 领域建模 |
-| 005 | 可观测性体系 | ✅ 已接受 | 2026-06-05 | 运维 |
-| 006 | 认证授权与访问控制 | ✅ 已接受 | 2026-06-15 | 安全 |
-| 007 | 数据库迁移与版本管理 | ✅ 已接受 | 2026-06-15 | 数据 |
-| 008 | CI/CD 流水线 | ✅ 已接受 | 2026-06-15 | DevOps |
-| 009 | 前端架构与状态管理 | ✅ 已接受 | 2026-06-15 | 前端 |
-| 010 | AI/ML 服务集成 | ✅ 已接受 | 2026-06-15 | AI/ML |
-| 011 | 架构收敛决策 | ✅ 已接受 | 2026-06-18 | 架构收敛 |
-| 012 | 主题系统精简与统一 | ✅ 已接受 | 2026-08-17 | 前端设计 |
-| 013 | 主题系统完整性补齐 | ✅ 已接受 | 2026-08-18 | 前端设计 |
-| 014 | 主题系统组件级迁移 | ✅ 已接受 | 2026-08-18 | 前端设计 |
-| 015 | 主题系统完整性审计与修复 | ✅ 已接受 | 2026-08-19 | 前端设计 |
-| 016 | 主题系统深度审计与补齐 | ✅ 已接受 | 2026-08-19 | 前端设计 |
-| 017 | Dashboard UI/UX 深度审计与升级方案 | ✅ 已接受 | 2026-08-19 | 前端设计 |
-| 018 | Dashboard UI/UX 深度修复与升级 | ✅ 已接受 | 2026-08-20 | 前端设计 |
-| 019 | Dashboard UI/UX 深度设计审计 | ✅ 已接受 | 2026-08-20 | 前端设计 |
-| 020 | TypeScript 错误修复 - 配方案例页面 | ✅ 已接受 | 2026-08-20 | 前端修复 |
-| 021 | 配方管理页面 UI/UX 深度审计与语义化修复 | ✅ 已接受 | 2026-08-21 | 前端设计 |
-| 022 | InvalidTimeValue 错误修复 | ✅ 已接受 | 2026-08-21 | 前端修复 |
-| 023 | 公式详情页 Hooks 顺序错误修复 | ✅ 已接受 | 2026-08-21 | 前端修复 |
-| 024 | 配方详情页深度开发方案 | ✅ 已接受 | 2026-08-22 | 前端设计 |
-| 025 | 配方详情页深度审查与开发方案 | ✅ 已接受 | 2026-08-22 | 前端设计 |
-| 026 | 配方详情页 Phase 3 深度开发方案 | ✅ 已接受 | 2026-08-23 | 前端设计 |
-| 027 | Radix UI / shadcn/ui 迁移 | ✅ 已接受 | 2026-08-23 | 前端架构 |
+<p><strong>评审日期</strong>：2026-08-24</p>
+
+<p><strong>分析对象</strong>：<code class="inline-code">D:\RMFOODFP</code> 全量代码库</p>
+
+<p><strong>评审依据</strong>：ISO/IEC 25010 + TOGAF 企业架构框架 + OWASP Top 10</p>
+
 <hr>
-#<h1>3. 架构深度解析（院士级评审）
 
-**评审级别**：院士级专家评审  
-**评审日期**：2026-08-24  
-**分析对象**：`D:\RMFOODFP` 全量代码库  
-**评审依据**：ISO/IEC 25010 + TOGAF 企业架构框架 + OWASP Top 10
+<h2 id="3-1-项目总体评价">3.1 项目总体评价</h2>
+
+<p>RMFOOD 是一个<strong>面向药食同源功能性食品的 AI 驱动配方设计平台</strong>，聚焦于食品研发的全流程数字化。平台集成了神经网络配方生成、多目标优化算法、肽序列设计、LLM 对话系统、知识图谱、实验数据管理等核心能力。</p>
+
+<h3>技术成熟度评估</h3>
+
+<table><thead><tr><th>评估维度</th><th>权重</th><th>得分</th><th>评级</th><th>说明</th></tr></thead><tbody><tr><td>业务架构完整性</td><td>20%</td><td>88</td><td>A</td><td>12 大能力域，核心研发链路全覆盖</td></tr>
+<tr><td>数据架构规范性</td><td>20%</td><td>82</td><td>B+</td><td>38 个 ORM 模型，27 个迁移版本，数据治理体系待完善</td></tr>
+<tr><td>应用架构模块化</td><td>20%</td><td>85</td><td>A-</td><td>DDD 有界上下文已落地 60%，AI/肽模块待迁移</td></tr>
+<tr><td>技术架构先进性</td><td>20%</td><td>90</td><td>A</td><td>React 19 + FastAPI 0.115 + Vite 8，均为最新稳定版</td></tr>
+<tr><td>工程化成熟度</td><td>20%</td><td>80</td><td>B+</td><td>CI/CD 9 Job + Docker Compose + K8s Helm，但部分 CI Job 为占位符</td></tr>
+<tr><td>**综合评分**</td><td>100%</td><td>**85**</td><td>**A-**</td><td>同类项目中处于领先水平</td></tr>
+</tbody></table>
+
+<h3>核心亮点</h3>
+
+<p>1. <strong>AI 驱动的深度集成</strong>：从 LLM 对话（v10.0）到多目标优化算法（NSGA-III/MOEA/D/PSO/SA）到肽序列设计（PepINVENT），AI 贯穿整个研发流程</p>
+
+<p>2. <strong>企业级架构</strong>：多租户隔离（RLS）、RBAC 5 级权限、7 层纵深安全、CQRS 模式、事件驱动架构</p>
+
+<p>3. <strong>工程化成熟</strong>：TypeScript strict mode + 完整测试体系 + Prometheus+Grafana 可观测性 + 架构约束检查（importlinter）</p>
+
+<p>4. <strong>国际化与无障碍</strong>：i18next 中英双语、MD3 Design Token、WCAG AA 合规</p>
+
+<p>5. <strong>数据生态丰富</strong>：OpenFoodFacts + TCMSP + DFBP + PepINVENT 多源数据集成</p>
+
+<h3>需关注风险</h3>
+
+<table><thead><tr><th>风险项</th><th>严重度</th><th>建议措施</th></tr></thead><tbody><tr><td>AI 模块覆盖被排除在覆盖率统计外</td><td>🔴 高</td><td>取消 `omit` 配置，逐步覆盖</td></tr>
+<tr><td>部分 CI/CD 部署步骤为 echo 占位</td><td>🔴 高</td><td>接入真实部署工具（ArgoCD/Terraform）</td></tr>
+<tr><td>`docker-compose.prod.yml` 过于简陋</td><td>🟡 中</td><td>完善生产级 Docker Compose</td></tr>
+<tr><td>图组件 TypeScript 错误 128 个</td><td>🟡 中</td><td>设立专项优化期</td></tr>
+<tr><td>自研 OTel 实现维护负担</td><td>🟡 中</td><td>评估切换官方 SDK 成本</td></tr>
+<tr><td>无告警规则（仅指标采集）</td><td>🟡 中</td><td>引入 Alertmanager 规则</td></tr>
+</tbody></table>
+
 <hr>
-##<h1>3.1 项目总体评价
 
-RMFOOD 是一个**面向药食同源功能性食品的 AI 驱动配方设计平台**，聚焦于食品研发的全流程数字化。平台集成了神经网络配方生成、多目标优化算法、肽序列设计、LLM 对话系统、知识图谱、实验数据管理等核心能力。
+<h2 id="3-2-后端架构深度解析">3.2 后端架构深度解析</h2>
 
-###<h1>技术成熟度评估
-| 评估维度 | 权重 | 得分 | 评级 | 说明 |
-|:---------|:----:|:----:|:----:|:-----|
-| 业务架构完整性 | 20% | 88 | A | 12 大能力域，核心研发链路全覆盖 |
-| 数据架构规范性 | 20% | 82 | B+ | 38 个 ORM 模型，27 个迁移版本，数据治理体系待完善 |
-| 应用架构模块化 | 20% | 85 | A- | DDD 有界上下文已落地 60%，AI/肽模块待迁移 |
-| 技术架构先进性 | 20% | 90 | A | React 19 + FastAPI 0.115 + Vite 8，均为最新稳定版 |
-| 工程化成熟度 | 20% | 80 | B+ | CI/CD 9 Job + Docker Compose + K8s Helm，但部分 CI Job 为占位符 |
-| **综合评分** | 100% | **85** | **A-** | 同类项目中处于领先水平 |
+<h3>3.2.1 目录结构全景</h3>
 
-###<h1>核心亮点
-
-1. **AI 驱动的深度集成**：从 LLM 对话（v10.0）到多目标优化算法（NSGA-III/MOEA/D/PSO/SA）到肽序列设计（PepINVENT），AI 贯穿整个研发流程
-2. **企业级架构**：多租户隔离（RLS）、RBAC 5 级权限、7 层纵深安全、CQRS 模式、事件驱动架构
-3. **工程化成熟**：TypeScript strict mode + 完整测试体系 + Prometheus+Grafana 可观测性 + 架构约束检查（importlinter）
-4. **国际化与无障碍**：i18next 中英双语、MD3 Design Token、WCAG AA 合规
-5. **数据生态丰富**：OpenFoodFacts + TCMSP + DFBP + PepINVENT 多源数据集成
-
-###<h1>需关注风险
-| 风险项 | 严重度 | 建议措施 |
-|:-------|:------:|:---------|
-| AI 模块覆盖被排除在覆盖率统计外 | 🔴 高 | 取消 `omit` 配置，逐步覆盖 |
-| 部分 CI/CD 部署步骤为 echo 占位 | 🔴 高 | 接入真实部署工具（ArgoCD/Terraform） |
-| `docker-compose.prod.yml` 过于简陋 | 🟡 中 | 完善生产级 Docker Compose |
-| 图组件 TypeScript 错误 128 个 | 🟡 中 | 设立专项优化期 |
-| 自研 OTel 实现维护负担 | 🟡 中 | 评估切换官方 SDK 成本 |
-| 无告警规则（仅指标采集） | 🟡 中 | 引入 Alertmanager 规则 |
-<hr>
-##<h1>3.2 后端架构深度解析
-
-###<h1>3.2.1 目录结构全景
-
-```
-backend/app/
-├── main.py                      <h1>应用入口 (664 行) + lifespan 生命周期管理
-├── api/                         <h1>API 层（71 个路由文件）
-│   ├── v1/                      <h1>V1 API 路由（27 个路由文件）
-│   │   ├── agent_router.py      <h1>Agent 工作流
-│   │   ├── ai_task_router.py    <h1>AI 任务路由
-│   │   ├── chat_schemas.py      <h1>对话 Schema
-│   │   ├── compliance_router.py <h1>合规路由
-│   │   ├── core_router.py       <h1>核心路由
-│   │   ├── data_flywheel_router.py <h1>数据飞轮
-│   │   ├── experiment_data_router.py <h1>实验数据
-│   │   ├── explainability_router.py  <h1>可解释性
-│   │   ├── import_router.py     <h1>导入路由
-│   │   ├── kg_router.py         <h1>知识图谱
-│   │   ├── metrics_router.py    <h1>指标路由
-│   │   ├── mo_stream_endpoint.py <h1>MCTS 流式端点
-│   │   ├── notification_router.py <h1>通知路由
-│   │   ├── plugin_router.py     <h1>插件路由
-│   │   ├── query_routes.py      <h1>查询路由
-│   │   ├── quota_router.py      <h1>配额路由
-│   │   ├── ray_router.py        <h1>Ray 集群
-│   │   ├── report_export_router.py <h1>报告导出
-│   │   ├── report_router.py     <h1>报告路由
-│   │   ├── sync_router.py       <h1>同步路由
-│   │   ├── team_dashboard_router.py <h1>团队仪表板
-│   │   ├── team_router.py       <h1>团队路由
-│   │   ├── tenant_router.py     <h1>租户路由
-│   │   ├── version_router.py    <h1>版本控制
-│   │   └── workflow_exec_router.py <h1>工作流执行
-│   └── (顶层 44 个路由)           <h1>auth/formulas/experiments/ai/chat 等
-├── domain/                      <h1>DDD 领域层（纯 Python，零外部依赖）
-│   ├── entities.py              <h1>领域实体（Formula/Peptide/Herb/Experiment）
-│   ├── events.py                <h1>领域事件（FormulaCreatedEvent 等）
-│   ├── ports.py                 <h1>端口接口（HerbKnowledgePort 等）
-│   ├── agents.py                <h1>AI Agent 抽象
-│   ├── rag.py                   <h1>RAG 领域接口
-│   ├── sensory.py               <h1>感官分析领域
-│   └── digital_twin.py          <h1>数字孪生
-├── services/                    <h1>业务服务层（328 文件 / 13 子目录）
-│   ├── ai/                      <h1>AI 核心服务（15 文件）
-│   │   ├── conversation_service.py  <h1>对话服务 v10.0
-│   │   ├── formula_service.py       <h1>配方生成服务
-│   │   ├── formula_optimizer.py     <h1>配方优化服务
-│   │   ├── algorithms/              <h1>核心算法
-│   │   │   ├── mcts_solver.py       <h1>蒙特卡洛树搜索
+<pre class="code-block"><code>backend/app/
+├── main.py                      &lt;h1&gt;应用入口 (664 行) + lifespan 生命周期管理
+├── api/                         &lt;h1&gt;API 层（71 个路由文件）
+│   ├── v1/                      &lt;h1&gt;V1 API 路由（27 个路由文件）
+│   │   ├── agent_router.py      &lt;h1&gt;Agent 工作流
+│   │   ├── ai_task_router.py    &lt;h1&gt;AI 任务路由
+│   │   ├── chat_schemas.py      &lt;h1&gt;对话 Schema
+│   │   ├── compliance_router.py &lt;h1&gt;合规路由
+│   │   ├── core_router.py       &lt;h1&gt;核心路由
+│   │   ├── data_flywheel_router.py &lt;h1&gt;数据飞轮
+│   │   ├── experiment_data_router.py &lt;h1&gt;实验数据
+│   │   ├── explainability_router.py  &lt;h1&gt;可解释性
+│   │   ├── import_router.py     &lt;h1&gt;导入路由
+│   │   ├── kg_router.py         &lt;h1&gt;知识图谱
+│   │   ├── metrics_router.py    &lt;h1&gt;指标路由
+│   │   ├── mo_stream_endpoint.py &lt;h1&gt;MCTS 流式端点
+│   │   ├── notification_router.py &lt;h1&gt;通知路由
+│   │   ├── plugin_router.py     &lt;h1&gt;插件路由
+│   │   ├── query_routes.py      &lt;h1&gt;查询路由
+│   │   ├── quota_router.py      &lt;h1&gt;配额路由
+│   │   ├── ray_router.py        &lt;h1&gt;Ray 集群
+│   │   ├── report_export_router.py &lt;h1&gt;报告导出
+│   │   ├── report_router.py     &lt;h1&gt;报告路由
+│   │   ├── sync_router.py       &lt;h1&gt;同步路由
+│   │   ├── team_dashboard_router.py &lt;h1&gt;团队仪表板
+│   │   ├── team_router.py       &lt;h1&gt;团队路由
+│   │   ├── tenant_router.py     &lt;h1&gt;租户路由
+│   │   ├── version_router.py    &lt;h1&gt;版本控制
+│   │   └── workflow_exec_router.py &lt;h1&gt;工作流执行
+│   └── (顶层 44 个路由)           &lt;h1&gt;auth/formulas/experiments/ai/chat 等
+├── domain/                      &lt;h1&gt;DDD 领域层（纯 Python，零外部依赖）
+│   ├── entities.py              &lt;h1&gt;领域实体（Formula/Peptide/Herb/Experiment）
+│   ├── events.py                &lt;h1&gt;领域事件（FormulaCreatedEvent 等）
+│   ├── ports.py                 &lt;h1&gt;端口接口（HerbKnowledgePort 等）
+│   ├── agents.py                &lt;h1&gt;AI Agent 抽象
+│   ├── rag.py                   &lt;h1&gt;RAG 领域接口
+│   ├── sensory.py               &lt;h1&gt;感官分析领域
+│   └── digital_twin.py          &lt;h1&gt;数字孪生
+├── services/                    &lt;h1&gt;业务服务层（328 文件 / 13 子目录）
+│   ├── ai/                      &lt;h1&gt;AI 核心服务（15 文件）
+│   │   ├── conversation_service.py  &lt;h1&gt;对话服务 v10.0
+│   │   ├── formula_service.py       &lt;h1&gt;配方生成服务
+│   │   ├── formula_optimizer.py     &lt;h1&gt;配方优化服务
+│   │   ├── algorithms/              &lt;h1&gt;核心算法
+│   │   │   ├── mcts_solver.py       &lt;h1&gt;蒙特卡洛树搜索
 │   │   │   ├── parallel_mcts_solver.py
 │   │   │   ├── gradient_descent_optimizer.py
 │   │   │   ├── simulated_annealing.py
 │   │   │   └── constraint_solver.py
-│   │   ├── llm/                   <h1>LLM 多提供商适配
+│   │   ├── llm/                   &lt;h1&gt;LLM 多提供商适配
 │   │   │   ├── openai.py
 │   │   │   ├── deepseek.py
-│   │   │   ├── zhipu.py            <h1>智谱
-│   │   │   ├── tongyi.py           <h1>通义千问
-│   │   │   └── vllm.py             <h1>自定义端点
-│   │   ├── rag/                   <h1>RAG 检索增强
-│   │   │   ├── rag_service.py      <h1>ChromaDB 向量检索
+│   │   │   ├── zhipu.py            &lt;h1&gt;智谱
+│   │   │   ├── tongyi.py           &lt;h1&gt;通义千问
+│   │   │   └── vllm.py             &lt;h1&gt;自定义端点
+│   │   ├── rag/                   &lt;h1&gt;RAG 检索增强
+│   │   │   ├── rag_service.py      &lt;h1&gt;ChromaDB 向量检索
 │   │   │   ├── embedding_service.py
 │   │   │   ├── document_processor.py
 │   │   │   └── vector_store.py
-│   │   ├── prompts/               <h1>Prompt 工程管理（24 模板/8 场景/12 维评估）
-│   │   └── safety/                <h1>安全检测
-│   ├── formula/                 <h1>配方服务（7 文件）
-│   │   ├── synergy_engine.py      <h1>协同效应引擎
-│   │   ├── taste_predictor.py     <h1>口感预测
+│   │   ├── prompts/               &lt;h1&gt;Prompt 工程管理（24 模板/8 场景/12 维评估）
+│   │   └── safety/                &lt;h1&gt;安全检测
+│   ├── formula/                 &lt;h1&gt;配方服务（7 文件）
+│   │   ├── synergy_engine.py      &lt;h1&gt;协同效应引擎
+│   │   ├── taste_predictor.py     &lt;h1&gt;口感预测
 │   │   ├── stability_predictor.py
-│   │   └── multi_algorithm_orchestrator.py  <h1>多算法编排器
-│   ├── peptide_analysis_v2/     <h1>肽分析引擎（4+ 文件）
-│   ├── kg/                      <h1>知识图谱服务
-│   ├── search/                  <h1>搜索服务（BM25+向量混合）
-│   ├── openfoodfacts/           <h1>OpenFoodFacts 数据同步
-│   ├── sync/                    <h1>云端同步服务（6 文件）
-│   ├── ml/                      <h1>机器学习服务
-│   ├── report/                  <h1>报告生成服务
-│   ├── plugin_registry/         <h1>插件注册表
-│   └── (顶层服务 23 文件)         <h1>auth/user/experiment/LLM/file/workflow 等
-├── core/                        <h1>核心基础设施（16 子目录）
-│   ├── config.py                <h1>多环境配置管理（Pydantic Settings）
-│   ├── database/                <h1>数据库连接池管理
-│   │   ├── database_pool.py     <h1>连接池监控
-│   │   ├── session.py           <h1>会话管理
-│   │   ├── init_db.py           <h1>数据库初始化
-│   │   ├── data_masking.py      <h1>数据脱敏
-│   │   └── database_router.py   <h1>读写分离路由器
-│   ├── security/                <h1>7 层纵深安全防护
-│   │   ├── security_middleware.py    <h1>771 行安全中间件
-│   │   ├── security.py              <h1>JWT/RBAC 核心
-│   │   ├── sql_security.py          <h1>SQL 注入防护
-│   │   ├── account_lockout.py       <h1>账户锁定
-│   │   ├── ai_rate_limiter.py       <h1>AI 限流
-│   │   ├── sentry_config.py         <h1>Sentry 错误追踪
-│   │   └── encryption/              <h1>AES-256-GCM 加密
-│   ├── rbac/                    <h1>RBAC 5 级角色权限
-│   ├── multi_tenant/            <h1>多租户隔离
-│   │   ├── tenant_security.py     <h1>TenantMiddleware + tenant_query_guard
-│   │   └── collaboration.py       <h1>团队协作
-│   ├── observability/           <h1>可观测性
-│   │   ├── logging_config.py      <h1>结构化日志
-│   │   ├── telemetry.py           <h1>OpenTelemetry（自研纯 Python 实现）
-│   │   ├── metrics_extended.py    <h1>Prometheus 指标增强
-│   │   └── logging_enhanced.py    <h1>增强日志
-│   ├── middleware/              <h1>中间件链
-│   │   ├── error_alert.py         <h1>全局异常处理
-│   │   ├── encoding.py            <h1>UTF-8 编码强制
-│   │   ├── audit_middleware.py    <h1>审计日志
-│   │   └── health_check.py        <h1>健康检查
-│   ├── realtime/                <h1>WebSocket 实时通信
-│   │   ├── websocket.py           <h1>连接管理器
-│   │   └── websocket_manager.py   <h1>WebSocket Manager
-│   ├── distributed/             <h1>分布式（Ray 集群管理）
-│   ├── workflow/                <h1>工作流引擎
-│   └── api_framework/           <h1>API 框架扩展
-├── infrastructure/              <h1>基础设施适配器
-│   ├── event_bus.py             <h1>Redis Streams 事件总线
-│   ├── cache.py                 <h1>多级缓存
+│   │   └── multi_algorithm_orchestrator.py  &lt;h1&gt;多算法编排器
+│   ├── peptide_analysis_v2/     &lt;h1&gt;肽分析引擎（4+ 文件）
+│   ├── kg/                      &lt;h1&gt;知识图谱服务
+│   ├── search/                  &lt;h1&gt;搜索服务（BM25+向量混合）
+│   ├── openfoodfacts/           &lt;h1&gt;OpenFoodFacts 数据同步
+│   ├── sync/                    &lt;h1&gt;云端同步服务（6 文件）
+│   ├── ml/                      &lt;h1&gt;机器学习服务
+│   ├── report/                  &lt;h1&gt;报告生成服务
+│   ├── plugin_registry/         &lt;h1&gt;插件注册表
+│   └── (顶层服务 23 文件)         &lt;h1&gt;auth/user/experiment/LLM/file/workflow 等
+├── core/                        &lt;h1&gt;核心基础设施（16 子目录）
+│   ├── config.py                &lt;h1&gt;多环境配置管理（Pydantic Settings）
+│   ├── database/                &lt;h1&gt;数据库连接池管理
+│   │   ├── database_pool.py     &lt;h1&gt;连接池监控
+│   │   ├── session.py           &lt;h1&gt;会话管理
+│   │   ├── init_db.py           &lt;h1&gt;数据库初始化
+│   │   ├── data_masking.py      &lt;h1&gt;数据脱敏
+│   │   └── database_router.py   &lt;h1&gt;读写分离路由器
+│   ├── security/                &lt;h1&gt;7 层纵深安全防护
+│   │   ├── security_middleware.py    &lt;h1&gt;771 行安全中间件
+│   │   ├── security.py              &lt;h1&gt;JWT/RBAC 核心
+│   │   ├── sql_security.py          &lt;h1&gt;SQL 注入防护
+│   │   ├── account_lockout.py       &lt;h1&gt;账户锁定
+│   │   ├── ai_rate_limiter.py       &lt;h1&gt;AI 限流
+│   │   ├── sentry_config.py         &lt;h1&gt;Sentry 错误追踪
+│   │   └── encryption/              &lt;h1&gt;AES-256-GCM 加密
+│   ├── rbac/                    &lt;h1&gt;RBAC 5 级角色权限
+│   ├── multi_tenant/            &lt;h1&gt;多租户隔离
+│   │   ├── tenant_security.py     &lt;h1&gt;TenantMiddleware + tenant_query_guard
+│   │   └── collaboration.py       &lt;h1&gt;团队协作
+│   ├── observability/           &lt;h1&gt;可观测性
+│   │   ├── logging_config.py      &lt;h1&gt;结构化日志
+│   │   ├── telemetry.py           &lt;h1&gt;OpenTelemetry（自研纯 Python 实现）
+│   │   ├── metrics_extended.py    &lt;h1&gt;Prometheus 指标增强
+│   │   └── logging_enhanced.py    &lt;h1&gt;增强日志
+│   ├── middleware/              &lt;h1&gt;中间件链
+│   │   ├── error_alert.py         &lt;h1&gt;全局异常处理
+│   │   ├── encoding.py            &lt;h1&gt;UTF-8 编码强制
+│   │   ├── audit_middleware.py    &lt;h1&gt;审计日志
+│   │   └── health_check.py        &lt;h1&gt;健康检查
+│   ├── realtime/                &lt;h1&gt;WebSocket 实时通信
+│   │   ├── websocket.py           &lt;h1&gt;连接管理器
+│   │   └── websocket_manager.py   &lt;h1&gt;WebSocket Manager
+│   ├── distributed/             &lt;h1&gt;分布式（Ray 集群管理）
+│   ├── workflow/                &lt;h1&gt;工作流引擎
+│   └── api_framework/           &lt;h1&gt;API 框架扩展
+├── infrastructure/              &lt;h1&gt;基础设施适配器
+│   ├── event_bus.py             &lt;h1&gt;Redis Streams 事件总线
+│   ├── cache.py                 &lt;h1&gt;多级缓存
 │   └── ...
-├── models/                      <h1>ORM 数据模型（38 个模型文件）
-├── schemas/                     <h1>Pydantic 数据校验（21 个）
-├── cqrs/                        <h1>CQRS 模式实现
-│   ├── handlers/                <h1>事件处理器
-│   └── queries/                 <h1>查询处理器
-└── websockets/                  <h1>WebSocket 处理器
-```
+├── models/                      &lt;h1&gt;ORM 数据模型（38 个模型文件）
+├── schemas/                     &lt;h1&gt;Pydantic 数据校验（21 个）
+├── cqrs/                        &lt;h1&gt;CQRS 模式实现
+│   ├── handlers/                &lt;h1&gt;事件处理器
+│   └── queries/                 &lt;h1&gt;查询处理器
+└── websockets/                  &lt;h1&gt;WebSocket 处理器</code></pre>
 
-###<h1>3.2.2 关键架构模式详解
+<h3>3.2.2 关键架构模式详解</h3>
 
-**（1）六边形架构（Hexagonal Architecture）**
+<p><strong>（1）六边形架构（Hexagonal Architecture）</strong></p>
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
+<pre class="code-block"><code>┌─────────────────────────────────────────────────────────────────────┐
 │                     Inbound Adapters                                │
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐           │
 │  │ REST API │  │ GraphQL  │  │ gRPC     │  │ WebSocket│           │
@@ -335,49 +552,50 @@ backend/app/
 │  │ (Vector) │  │(Distrib) │  │ (Search) │                 │       │
 │  └──────────┘  └──────────┘  └──────────┘                 │       │
 │  └─────────────────────────────────────────────────────────┘       │
-└─────────────────────────────────────────────────────────────────────┘
-```
+└─────────────────────────────────────────────────────────────────────┘</code></pre>
 
-**实施进度**（基于 ADR-001 + ADR-011 收敛决策）：
-- domain/ 纯 Python 层：⏸️ 已暂停（entities.py、ports.py 已删除）
-- ports.py 抽象接口：⏸️ 已暂停
-- infrastructure/ 适配器：⏸️ 已暂停（部分保留用于 AI/图谱模块）
-- CI 架构约束检查：⏳ 计划 v2.0
-- 90+ 服务迁移完成：**实际采用三层架构**（Controller→Service→Model），AI/图谱模块局部使用端口/适配器模式
-- **最终决策**：全局三层（ADR-011）+ 局部六边形（AI/搜索/图谱模块）
+<p><strong>实施进度</strong>（基于 ADR-001 + ADR-011 收敛决策）：</p>
 
-**（2）多算法融合优化架构**
+<ul>
+<li>domain/ 纯 Python 层：⏸️ 已暂停（entities.py、ports.py 已删除）</li>
+<li>ports.py 抽象接口：⏸️ 已暂停</li>
+<li>infrastructure/ 适配器：⏸️ 已暂停（部分保留用于 AI/图谱模块）</li>
+<li>CI 架构约束检查：⏳ 计划 v2.0</li>
+<li>90+ 服务迁移完成：<strong>实际采用三层架构</strong>（Controller→Service→Model），AI/图谱模块局部使用端口/适配器模式</li>
+<li><strong>最终决策</strong>：全局三层（ADR-011）+ 局部六边形（AI/搜索/图谱模块）</li>
+</ul>
 
-`multi_algorithm_orchestrator.py` 实现了四种优化算法的并行编排：
-| 算法 | 适用场景 | 优势 |
-|:-----|:---------|:-----|
-| **NSGA-III** | 高维度多目标帕累托前沿搜索 | 处理 >3 个目标的最优解集 |
-| **MOEA/D** | 分解型多目标优化 | 收敛速度快 |
-| **PSO** | 连续空间粒子群优化 | 全局搜索能力强 |
-| **SA** | 离散/复杂约束问题 | 避免局部最优 |
+<p><strong>（2）多算法融合优化架构</strong></p>
 
-核心特性：并行执行（最多 4 并发）、结果融合（union/weighted/voting）、时间预算控制。
+<p><code class="inline-code">multi_algorithm_orchestrator.py</code> 实现了四种优化算法的并行编排：</p>
 
-**（3）CQRS 模式**
+<table><thead><tr><th>算法</th><th>适用场景</th><th>优势</th></tr></thead><tbody><tr><td>**NSGA-III**</td><td>高维度多目标帕累托前沿搜索</td><td>处理 >3 个目标的最优解集</td></tr>
+<tr><td>**MOEA/D**</td><td>分解型多目标优化</td><td>收敛速度快</td></tr>
+<tr><td>**PSO**</td><td>连续空间粒子群优化</td><td>全局搜索能力强</td></tr>
+<tr><td>**SA**</td><td>离散/复杂约束问题</td><td>避免局部最优</td></tr>
+</tbody></table>
 
-```
-写操作（Command）:
+<p>核心特性：并行执行（最多 4 并发）、结果融合（union/weighted/voting）、时间预算控制。</p>
+
+<p><strong>（3）CQRS 模式</strong></p>
+
+<pre class="code-block"><code>写操作（Command）:
   API Request → Service → Domain Event → Event Handler → DB Write
 
 读操作（Query）:
-  API Request → Query Handler → Cached/Read Replica → Response
-```
+  API Request → Query Handler → Cached/Read Replica → Response</code></pre>
 
-**（4）事件驱动架构**
+<p><strong>（4）事件驱动架构</strong></p>
 
-- **Redis Streams 事件总线**（`infrastructure/event_bus.py`）实现跨上下文异步通信
-- 变更队列（`sync/change_queue.py`）实现实时同步
-- 领域事件体系：`FormulaCreatedEvent`、`DataChangedEvent` 等
+<ul>
+<li><strong>Redis Streams 事件总线</strong>（<code class="inline-code">infrastructure/event_bus.py</code>）实现跨上下文异步通信</li>
+<li>变更队列（<code class="inline-code">sync/change_queue.py</code>）实现实时同步</li>
+<li>领域事件体系：<code class="inline-code">FormulaCreatedEvent</code>、<code class="inline-code">DataChangedEvent</code> 等</li>
+</ul>
 
-**（5）中间件链（执行顺序：自下而上）**
+<p><strong>（5）中间件链（执行顺序：自下而上）</strong></p>
 
-```
-请求 → GlobalExceptionHandler (全局异常)
+<pre class="code-block"><code>请求 → GlobalExceptionHandler (全局异常)
        → RateLimitMiddleware      (速率限制: 开发 60/min, 生产 100/min)
        → CORSMiddleware          (CORS 跨域)
        → SecurityHeadersMiddleware (安全响应头)
@@ -386,67 +604,65 @@ backend/app/
        → TenantMiddleware         (多租户隔离)
        → AuditMiddleware          (审计日志)
        → TelemetryMiddleware      (分布式追踪)
-       → 路由处理
-```
+       → 路由处理</code></pre>
+
 <hr>
-##<h1>3.3 AI/ML 智能引擎深度解析
 
-###<h1>3.3.1 AI 服务架构
+<h2 id="3-3-ai-ml-智能引擎深度解析">3.3 AI/ML 智能引擎深度解析</h2>
 
-```
-services/ai/
-├── conversation_service.py     <h1>对话服务 v10.0
-│   ├── AcademicianChatEngine  <h1>院士级对话引擎
+<h3>3.3.1 AI 服务架构</h3>
+
+<pre class="code-block"><code>services/ai/
+├── conversation_service.py     &lt;h1&gt;对话服务 v10.0
+│   ├── AcademicianChatEngine  &lt;h1&gt;院士级对话引擎
 │   │   ├── 系统提示词 (1166 字, 6 章节结构)
 │   │   ├── 三级 Token 降级 (8192→4096→2048)
 │   │   ├── 质量检查 + 自动扩展 (min_response_length=800)
 │   │   └── 终极保底回复
-│   ├── HybridNLPEngineV2      <h1>混合 NLP 引擎（意图识别 85%+）
-│   ├── promptEngineeringFramework.py  <h1>提示词工程 V2.0（24 模板/8 场景/12 维评估）
-│   └── thinking_engine.py     <h1>实时思考可视化 V3
+│   ├── HybridNLPEngineV2      &lt;h1&gt;混合 NLP 引擎（意图识别 85%+）
+│   ├── promptEngineeringFramework.py  &lt;h1&gt;提示词工程 V2.0（24 模板/8 场景/12 维评估）
+│   └── thinking_engine.py     &lt;h1&gt;实时思考可视化 V3
 ├── algorithms/
-│   ├── multi_algorithm_orchestrator.py  <h1>4 算法并行编排
-│   ├── mcts_solver.py         <h1>蒙特卡洛树搜索
+│   ├── multi_algorithm_orchestrator.py  &lt;h1&gt;4 算法并行编排
+│   ├── mcts_solver.py         &lt;h1&gt;蒙特卡洛树搜索
 │   ├── parallel_mcts_solver.py
 │   ├── gradient_descent_optimizer.py
 │   ├── simulated_annealing.py
 │   ├── bayesian_formula_optimizer.py
 │   └── genetic_formula_optimizer.py
 ├── llm/
-│   ├── provider_factory.py    <h1>LLM 提供商工厂（策略模式）
+│   ├── provider_factory.py    &lt;h1&gt;LLM 提供商工厂（策略模式）
 │   ├── openai.py
 │   ├── deepseek.py
-│   ├── zhipu.py               <h1>智谱
-│   ├── tongyi.py              <h1>通义千问
-│   └── vllm.py                <h1>自定义端点
+│   ├── zhipu.py               &lt;h1&gt;智谱
+│   ├── tongyi.py              &lt;h1&gt;通义千问
+│   └── vllm.py                &lt;h1&gt;自定义端点
 ├── rag/
-│   ├── rag_service.py         <h1>ChromaDB 向量检索
+│   ├── rag_service.py         &lt;h1&gt;ChromaDB 向量检索
 │   ├── embedding_service.py
 │   ├── document_processor.py
 │   └── vector_store.py
-└── safety/                    <h1>安全检测
-```
+└── safety/                    &lt;h1&gt;安全检测</code></pre>
 
-###<h1>3.3.2 核心 AI 能力矩阵
-| 能力 | 技术实现 | 模块路径 | 完成度 |
-|:-----|:---------|:---------|:------:|
-| 神经网络配方生成 | PyTorch Neural Network | `neural_formula_engine.py` | 90% |
-| 多目标优化（4 种算法融合） | NSGA-III/MOEA/D/PSO/SA | `multi_algorithm_orchestrator.py` | 88% |
-| 肽序列设计 | PepINVENT 引擎 (RDKit+PyTorch) | `pepinvent_service.py` | 85% |
-| 肽分析流水线 | 理化性质→二级结构→ADMET | `peptide_analysis_v2/` | 95% |
-| LLM 对话（v10.0） | OpenAI/DeepSeek/智谱/通义/vLLM | `conversation_service.py` | 95% |
-| RAG 检索增强 | ChromaDB + 语义检索 | `rag/` | 75% |
-| 知识图谱推理 | Neo4j + 推理引擎 | `kg/reasoning_engine.py` | 80% |
-| 口感预测 | 机器学习模型 | `taste_predictor.py` | 85% |
-| 稳定性预测 | 预测模型 | `stability_model.py` | 85% |
-| 协同效应分析 | 雷达成像 + 专利比对 | `synergy_engine.py` | 90% |
-| 合规检查 | 中国食品法规引擎 | `compliance_engine_v2.py` | 88% |
-| Agent 工作流 | 6 工具 + LLM 自主编排 | `agent/` | 90% |
+<h3>3.3.2 核心 AI 能力矩阵</h3>
 
-###<h1>3.3.3 LLM 多提供商适配架构
+<table><thead><tr><th>能力</th><th>技术实现</th><th>模块路径</th><th>完成度</th></tr></thead><tbody><tr><td>神经网络配方生成</td><td>PyTorch Neural Network</td><td>`neural_formula_engine.py`</td><td>90%</td></tr>
+<tr><td>多目标优化（4 种算法融合）</td><td>NSGA-III/MOEA/D/PSO/SA</td><td>`multi_algorithm_orchestrator.py`</td><td>88%</td></tr>
+<tr><td>肽序列设计</td><td>PepINVENT 引擎 (RDKit+PyTorch)</td><td>`pepinvent_service.py`</td><td>85%</td></tr>
+<tr><td>肽分析流水线</td><td>理化性质→二级结构→ADMET</td><td>`peptide_analysis_v2/`</td><td>95%</td></tr>
+<tr><td>LLM 对话（v10.0）</td><td>OpenAI/DeepSeek/智谱/通义/vLLM</td><td>`conversation_service.py`</td><td>95%</td></tr>
+<tr><td>RAG 检索增强</td><td>ChromaDB + 语义检索</td><td>`rag/`</td><td>75%</td></tr>
+<tr><td>知识图谱推理</td><td>Neo4j + 推理引擎</td><td>`kg/reasoning_engine.py`</td><td>80%</td></tr>
+<tr><td>口感预测</td><td>机器学习模型</td><td>`taste_predictor.py`</td><td>85%</td></tr>
+<tr><td>稳定性预测</td><td>预测模型</td><td>`stability_model.py`</td><td>85%</td></tr>
+<tr><td>协同效应分析</td><td>雷达成像 + 专利比对</td><td>`synergy_engine.py`</td><td>90%</td></tr>
+<tr><td>合规检查</td><td>中国食品法规引擎</td><td>`compliance_engine_v2.py`</td><td>88%</td></tr>
+<tr><td>Agent 工作流</td><td>6 工具 + LLM 自主编排</td><td>`agent/`</td><td>90%</td></tr>
+</tbody></table>
 
-```
-                    ┌─────────────────────┐
+<h3>3.3.3 LLM 多提供商适配架构</h3>
+
+<pre class="code-block"><code>                    ┌─────────────────────┐
                     │   LLM Provider      │
                     │   Factory (策略模式)  │
                     └──────────┬──────────┘
@@ -469,122 +685,126 @@ services/ai/
                      ┌─────────────────────┐
                      │  多供应商智能路由    │
                      │  根据问题类型自动选择│
-                     └─────────────────────┘
-```
+                     └─────────────────────┘</code></pre>
+
 <hr>
-##<h1>3.4 数据层架构
 
-###<h1>3.4.1 ORM 模型体系（40 个模型）
-| 分类 | 模型 | 说明 |
-|:-----|:-----|:-----|
-| 用户体系 | `user_model.py`, `user_device.py` | 用户 + 设备管理 |
-| 配方核心 | `formula.py`, `formula_deep_integration.py`, `ingredient.py` | 全生命周期配方管理 |
-| 配方案例 | `formula_case.py` | 配方案例管理 |
-| 实验 | `experiment.py` | ELN 实验记录 |
-| 肽模块 | `peptide_analysis.py`, `peptide_design.py`, `peptide_batch_coa.py` | 肽分析与批次 COA |
-| AI | `chat.py`, `ai_suggestion.py`, `ai_model_config.py` | 对话历史与建议 + 模型配置 |
-| 工作流 | `workflow.py` | DAG 工作流定义 |
-| 知识图谱 | `knowledge_graph.py` | Neo4j 节点/边映射 |
-| 通知/团队 | `notification.py`, `team.py`, `team_member.py` | 协作功能 |
-| 版本控制 | `prompt_template.py`, `prompt_version.py` | Prompt 版本管理 |
-| 同步 | `sync_log.py` | 变更队列 |
-| 多租户 | `organization.py`, `system.py` | 组织隔离 |
-| 外部数据 | `tcm_schema.py`, `dfbp_schema.py`, `external_data.py`, `data_source_health.py` | 外部数据源管理 |
-| 基础设施 | `base.py`, `models.py`, `terminology.py`, `enums.py`, `change_event.py` | 基础设施 |
-| 原料/产品 | `food_material.py`, `retail_product.py` | 食品原料与零售产品 |
-| 集成配置 | `integration.py`, `api_key.py` | 集成与 API Key 管理 |
+<h2 id="3-4-数据层架构">3.4 数据层架构</h2>
 
-**Alembic 迁移版本**：35 个（20260502 ~ 20260823），持续增强的 TCMSP 中药数据库 schema。
+<h3>3.4.1 ORM 模型体系（40 个模型）</h3>
 
-###<h1>3.4.2 数据源集成全景
-| 数据源 | 用途 | 同步方式 | 数据量级 |
-|:-------|:-----|:---------|:---------|
-| OpenFoodFacts | 全球食品数据库 | ETL 定时同步（GBK 编码自动降级） | 大型 CSV (~100万条) |
-| TCMSP | 中药成分数据库 | Alembic 35 版本增强 | 持续增长 |
-| DFBP | 食源性活性肽数据库 | 种子数据导入 | 数千条 |
-| PepINVENT | 肽序列数据库 | API 适配器 | 外部服务 |
-| ChromaDB | 向量数据库（RAG） | 文档处理器自动索引 | 动态增长 |
-| Neo4j | 知识图谱 | 可选集成 | 动态增长 |
-| Elasticsearch | 全文搜索 | 可选集成 | 动态增长 |
+<table><thead><tr><th>分类</th><th>模型</th><th>说明</th></tr></thead><tbody><tr><td>用户体系</td><td>`user_model.py`, `user_device.py`</td><td>用户 + 设备管理</td></tr>
+<tr><td>配方核心</td><td>`formula.py`, `formula_deep_integration.py`, `ingredient.py`</td><td>全生命周期配方管理</td></tr>
+<tr><td>配方案例</td><td>`formula_case.py`</td><td>配方案例管理</td></tr>
+<tr><td>实验</td><td>`experiment.py`</td><td>ELN 实验记录</td></tr>
+<tr><td>肽模块</td><td>`peptide_analysis.py`, `peptide_design.py`, `peptide_batch_coa.py`</td><td>肽分析与批次 COA</td></tr>
+<tr><td>AI</td><td>`chat.py`, `ai_suggestion.py`, `ai_model_config.py`</td><td>对话历史与建议 + 模型配置</td></tr>
+<tr><td>工作流</td><td>`workflow.py`</td><td>DAG 工作流定义</td></tr>
+<tr><td>知识图谱</td><td>`knowledge_graph.py`</td><td>Neo4j 节点/边映射</td></tr>
+<tr><td>通知/团队</td><td>`notification.py`, `team.py`, `team_member.py`</td><td>协作功能</td></tr>
+<tr><td>版本控制</td><td>`prompt_template.py`, `prompt_version.py`</td><td>Prompt 版本管理</td></tr>
+<tr><td>同步</td><td>`sync_log.py`</td><td>变更队列</td></tr>
+<tr><td>多租户</td><td>`organization.py`, `system.py`</td><td>组织隔离</td></tr>
+<tr><td>外部数据</td><td>`tcm_schema.py`, `dfbp_schema.py`, `external_data.py`, `data_source_health.py`</td><td>外部数据源管理</td></tr>
+<tr><td>基础设施</td><td>`base.py`, `models.py`, `terminology.py`, `enums.py`, `change_event.py`</td><td>基础设施</td></tr>
+<tr><td>原料/产品</td><td>`food_material.py`, `retail_product.py`</td><td>食品原料与零售产品</td></tr>
+<tr><td>集成配置</td><td>`integration.py`, `api_key.py`</td><td>集成与 API Key 管理</td></tr>
+</tbody></table>
+
+<p><strong>Alembic 迁移版本</strong>：35 个（20260502 ~ 20260823），持续增强的 TCMSP 中药数据库 schema。</p>
+
+<h3>3.4.2 数据源集成全景</h3>
+
+<table><thead><tr><th>数据源</th><th>用途</th><th>同步方式</th><th>数据量级</th></tr></thead><tbody><tr><td>OpenFoodFacts</td><td>全球食品数据库</td><td>ETL 定时同步（GBK 编码自动降级）</td><td>大型 CSV (~100万条)</td></tr>
+<tr><td>TCMSP</td><td>中药成分数据库</td><td>Alembic 35 版本增强</td><td>持续增长</td></tr>
+<tr><td>DFBP</td><td>食源性活性肽数据库</td><td>种子数据导入</td><td>数千条</td></tr>
+<tr><td>PepINVENT</td><td>肽序列数据库</td><td>API 适配器</td><td>外部服务</td></tr>
+<tr><td>ChromaDB</td><td>向量数据库（RAG）</td><td>文档处理器自动索引</td><td>动态增长</td></tr>
+<tr><td>Neo4j</td><td>知识图谱</td><td>可选集成</td><td>动态增长</td></tr>
+<tr><td>Elasticsearch</td><td>全文搜索</td><td>可选集成</td><td>动态增长</td></tr>
+</tbody></table>
+
 <hr>
-##<h1>3.5 前端架构深度解析
 
-###<h1>3.5.1 目录结构
+<h2 id="3-5-前端架构深度解析">3.5 前端架构深度解析</h2>
 
-```
-frontend/src/
-├── App.tsx                    <h1>路由入口（react-router v7 + lazyWithPreload）
+<h3>3.5.1 目录结构</h3>
+
+<pre class="code-block"><code>frontend/src/
+├── App.tsx                    &lt;h1&gt;路由入口（react-router v7 + lazyWithPreload）
 │   └── 三层路由守卫：AuthGuard / GuestGuard / AdminGuard
-├── api/                       <h1>API 客户端（43 个模块）
-│   ├── client.ts              <h1>Axios 实例（拦截器/Token 刷新/Mock 降级）
+├── api/                       &lt;h1&gt;API 客户端（43 个模块）
+│   ├── client.ts              &lt;h1&gt;Axios 实例（拦截器/Token 刷新/Mock 降级）
 │   ├── apiConfig.ts / apiInit.ts / apiArchitecture.ts
-│   ├── modelClient.ts         <h1>模型客户端
+│   ├── modelClient.ts         &lt;h1&gt;模型客户端
 │   └── 业务 API（40 个）
-├── components/                <h1>UI 组件库（393 文件 / 20 子目录）
-│   ├── ai/                    <h1>AI 模块组件（130+ 文件）⭐ 核心
+├── components/                &lt;h1&gt;UI 组件库（393 文件 / 20 子目录）
+│   ├── ai/                    &lt;h1&gt;AI 模块组件（130+ 文件）⭐ 核心
 │   │   ├── features/
-│   │   │   ├── ChatTab/       <h1>对话 Tab（v10.0）
-│   │   │   ├── GenerateTab/   <h1>配方生成 Tab
-│   │   │   ├── SafetyTab/     <h1>安全检测 Tab
-│   │   │   └── SynergyTab/    <h1>协同分析 Tab
-│   │   ├── charts/            <h1>专业图表组件
-│   │   ├── pro/               <h1>专业版组件（ChatMessages/ChatInputPro/ChatSidebar 等）
+│   │   │   ├── ChatTab/       &lt;h1&gt;对话 Tab（v10.0）
+│   │   │   ├── GenerateTab/   &lt;h1&gt;配方生成 Tab
+│   │   │   ├── SafetyTab/     &lt;h1&gt;安全检测 Tab
+│   │   │   └── SynergyTab/    &lt;h1&gt;协同分析 Tab
+│   │   ├── charts/            &lt;h1&gt;专业图表组件
+│   │   ├── pro/               &lt;h1&gt;专业版组件（ChatMessages/ChatInputPro/ChatSidebar 等）
 │   │   └── components(40+) / hooks(25+) / services(35+)
-│   ├── ui/                    <h1>基础原子组件（39 文件）
+│   ├── ui/                    &lt;h1&gt;基础原子组件（39 文件）
 │   │   ├── Button/Card/Input/Modal/Select/Tabs/Toast/
 │   │   ├── VirtualList/ErrorBoundary/CommandPalette/
 │   │   └── MarkdownRenderer/TypewriterText/
-│   ├── academic/              <h1>学术协作（~18 文件）
-│   ├── theme/                 <h1>主题系统（6 文件）
-│   ├── history-sidebar/       <h1>会话列表（9 文件）
+│   ├── academic/              &lt;h1&gt;学术协作（~18 文件）
+│   ├── theme/                 &lt;h1&gt;主题系统（6 文件）
+│   ├── history-sidebar/       &lt;h1&gt;会话列表（9 文件）
 │   └── dashboard/search/analytics/formula/inference/common/layout/...
-├── pages/                     <h1>页面（89 文件 / 16 个目录）
-│   ├── auth/                  <h1>认证页（6 文件，Rhine 风格）
-│   ├── formula/               <h1>配方管理（最复杂：7 页面 + 22 子组件）
-│   ├── experiment/            <h1>实验管理（4 页面）
-│   ├── ai/                    <h1>AI 助手主页（AIAssistantPage.tsx）
-│   ├── academic/              <h1>学术报告生成
-│   ├── database/              <h1>知识库（8 文件，6 Tab）
-│   ├── organizations/         <h1>组织管理（8 文件）
-│   ├── settings/              <h1>个人设置（8 文件）
-│   ├── analytics/             <h1>数据分析（5 文件，4 Tab）
-│   ├── workflow/              <h1>工作流可视化
-│   ├── integrations/          <h1>外部集成
-│   ├── notification/          <h1>通知中心
-│   ├── admin/                 <h1>管理员页面
-│   └── user/                  <h1>用户管理
-├── stores/                    <h1>Zustand Store（15 个）
-│   ├── auth.ts                <h1>JWT 持久化 + 自动刷新
-│   ├── themeStore.ts          <h1>完整主题系统
-│   ├── toastStore.ts          <h1>通知系统
-│   ├── academicReportStore.ts <h1>学术报告
-│   ├── collaborationStore.ts  <h1>协作
+├── pages/                     &lt;h1&gt;页面（89 文件 / 16 个目录）
+│   ├── auth/                  &lt;h1&gt;认证页（6 文件，Rhine 风格）
+│   ├── formula/               &lt;h1&gt;配方管理（最复杂：7 页面 + 22 子组件）
+│   ├── experiment/            &lt;h1&gt;实验管理（4 页面）
+│   ├── ai/                    &lt;h1&gt;AI 助手主页（AIAssistantPage.tsx）
+│   ├── academic/              &lt;h1&gt;学术报告生成
+│   ├── database/              &lt;h1&gt;知识库（8 文件，6 Tab）
+│   ├── organizations/         &lt;h1&gt;组织管理（8 文件）
+│   ├── settings/              &lt;h1&gt;个人设置（8 文件）
+│   ├── analytics/             &lt;h1&gt;数据分析（5 文件，4 Tab）
+│   ├── workflow/              &lt;h1&gt;工作流可视化
+│   ├── integrations/          &lt;h1&gt;外部集成
+│   ├── notification/          &lt;h1&gt;通知中心
+│   ├── admin/                 &lt;h1&gt;管理员页面
+│   └── user/                  &lt;h1&gt;用户管理
+├── stores/                    &lt;h1&gt;Zustand Store（15 个）
+│   ├── auth.ts                &lt;h1&gt;JWT 持久化 + 自动刷新
+│   ├── themeStore.ts          &lt;h1&gt;完整主题系统
+│   ├── toastStore.ts          &lt;h1&gt;通知系统
+│   ├── academicReportStore.ts &lt;h1&gt;学术报告
+│   ├── collaborationStore.ts  &lt;h1&gt;协作
 │   └── ...
-├── hooks/                     <h1>自定义 Hooks（44 个）
-│   ├── useFormulaAnalysis     <h1>配方分析
-│   ├── useExport              <h1>报告导出
-│   ├── usePeptideAnalysis     <h1>肽分析
-│   ├── usePerformance         <h1>性能优化
-│   ├── useTheme               <h1>主题
-│   ├── usePermissions         <h1>权限
+├── hooks/                     &lt;h1&gt;自定义 Hooks（44 个）
+│   ├── useFormulaAnalysis     &lt;h1&gt;配方分析
+│   ├── useExport              &lt;h1&gt;报告导出
+│   ├── usePeptideAnalysis     &lt;h1&gt;肽分析
+│   ├── usePerformance         &lt;h1&gt;性能优化
+│   ├── useTheme               &lt;h1&gt;主题
+│   ├── usePermissions         &lt;h1&gt;权限
 │   └── ...
-├── i18n/                      <h1>国际化（i18next 中英双语）
-├── theme/                     <h1>主题系统（Design Token 驱动）
-├── design-system/             <h1>MD3 Design Token（8 类）
-└── types/                     <h1>TypeScript 类型定义
-```
+├── i18n/                      &lt;h1&gt;国际化（i18next 中英双语）
+├── theme/                     &lt;h1&gt;主题系统（Design Token 驱动）
+├── design-system/             &lt;h1&gt;MD3 Design Token（8 类）
+└── types/                     &lt;h1&gt;TypeScript 类型定义</code></pre>
 
-###<h1>3.5.2 懒加载策略
+<h3>3.5.2 懒加载策略</h3>
 
-- **首屏关键页面**（登录、仪表盘）：同步加载
-- **其他页面**：`lazyWithPreload`（空闲时预加载）
-- **大体积模块**（图表/导出）：延迟加载
-- **AI 模块**：130+ 文件按需懒加载
+<ul>
+<li><strong>首屏关键页面</strong>（登录、仪表盘）：同步加载</li>
+<li><strong>其他页面</strong>：<code class="inline-code">lazyWithPreload</code>（空闲时预加载）</li>
+<li><strong>大体积模块</strong>（图表/导出）：延迟加载</li>
+<li><strong>AI 模块</strong>：130+ 文件按需懒加载</li>
+</ul>
+
 <hr>
-##<h1>3.6 安全体系（7 层纵深防御）
 
-```
-┌─────────────────────────────────────┐
+<h2 id="3-6-安全体系-7-层纵深防御">3.6 安全体系（7 层纵深防御）</h2>
+
+<pre class="code-block"><code>┌─────────────────────────────────────┐
 │  L7: 应用层安全                      │
 │    - 输入验证与清洗 (InputSanitizer) │
 │    - 输出编码 (防XSS)               │
@@ -617,47 +837,51 @@ frontend/src/
 │  L1: 基础设施安全                    │
 │    - Sentry 错误追踪                 │
 │    - 数据库 SQL 安全过滤             │
-└─────────────────────────────────────┘
-```
+└─────────────────────────────────────┘</code></pre>
 
-**安全工具链**：pip-audit + bandit + safety + TruffleHog + npm audit（集成于 CI/CD）
+<p><strong>安全工具链</strong>：pip-audit + bandit + safety + TruffleHog + npm audit（集成于 CI/CD）</p>
+
 <hr>
-##<h1>3.7 部署架构（Docker Compose 多服务编排）
 
-```yaml
-services:
-  postgres:16-alpine    <h1>主数据库，连接池 20+10
-  backend               <h1>FastAPI 应用（Gunicorn + UvicornWorker × 4）
-  frontend              <h1>Nginx + Vite 构建产物
-  redis:7-alpine        <h1>缓存 + Redis Streams 事件总线
-  neo4j                 <h1>知识图谱（可选）
-  chromadb              <h1>向量数据库（RAG）
-  prometheus            <h1>指标采集
-  grafana               <h1>监控仪表盘
-  loki                  <h1>日志聚合
-  tempo                 <h1>分布式追踪
-```
+<h2 id="3-7-部署架构-docker-compose-多服务编排">3.7 部署架构（Docker Compose 多服务编排）</h2>
+
+<pre class="code-block"><code>services:
+  postgres:16-alpine    &lt;h1&gt;主数据库，连接池 20+10
+  backend               &lt;h1&gt;FastAPI 应用（Gunicorn + UvicornWorker × 4）
+  frontend              &lt;h1&gt;Nginx + Vite 构建产物
+  redis:7-alpine        &lt;h1&gt;缓存 + Redis Streams 事件总线
+  neo4j                 &lt;h1&gt;知识图谱（可选）
+  chromadb              &lt;h1&gt;向量数据库（RAG）
+  prometheus            &lt;h1&gt;指标采集
+  grafana               &lt;h1&gt;监控仪表盘
+  loki                  &lt;h1&gt;日志聚合
+  tempo                 &lt;h1&gt;分布式追踪</code></pre>
+
 <hr>
-#<h1>4. 架构收敛决策说明（ADR-011）
 
-> **重要声明**：本节是对 ADR-001（六边形架构）实施的反思与收敛，由实际代码审查发现后新增。
+</section>
 
-##<h1>4.1 问题诊断
+<section id="4-架构收敛决策说明-adr-011">
 
-自 ADR-001 提出六边形架构重构以来，实施过程中暴露了以下核心问题：
-| 问题 | 严重程度 | 代码证据 |
-|:-----|:--------:|:---------|
-| `domain/` 层文件被删除 | 🔴 严重 | `entities.py`、`ports.py` 已不在版本控制中 |
-| `importlib` 反模式 | 🔴 严重 | `services/formula/__init__.py` 使用动态加载规避循环引用 |
-| 混合架构风格 | 🟡 中等 | 部分服务采用六边形 adapter，部分仍是传统三层 |
-| 迁移不彻底 | 🟡 中等 | 60% 迁移进度未产生实际收益，反而增加维护成本 |
+<h1>4. 架构收敛决策说明（ADR-011）</h1>
 
-##<h1>4.2 收敛决策
+<p>> <strong>重要声明</strong>：本节是对 ADR-001（六边形架构）实施的反思与收敛，由实际代码审查发现后新增。</p>
 
-**采纳清晰三层架构（Controller → Service → Repository），正式暂停六边形架构迁移。**
+<h2 id="4-1-问题诊断">4.1 问题诊断</h2>
 
-```
-当前实际分层（2026-08-24 实证）：
+<p>自 ADR-001 提出六边形架构重构以来，实施过程中暴露了以下核心问题：</p>
+
+<table><thead><tr><th>问题</th><th>严重程度</th><th>代码证据</th></tr></thead><tbody><tr><td>`domain/` 层文件被删除</td><td>🔴 严重</td><td>`entities.py`、`ports.py` 已不在版本控制中</td></tr>
+<tr><td>`importlib` 反模式</td><td>🔴 严重</td><td>`services/formula/__init__.py` 使用动态加载规避循环引用</td></tr>
+<tr><td>混合架构风格</td><td>🟡 中等</td><td>部分服务采用六边形 adapter，部分仍是传统三层</td></tr>
+<tr><td>迁移不彻底</td><td>🟡 中等</td><td>60% 迁移进度未产生实际收益，反而增加维护成本</td></tr>
+</tbody></table>
+
+<h2 id="4-2-收敛决策">4.2 收敛决策</h2>
+
+<p><strong>采纳清晰三层架构（Controller → Service → Repository），正式暂停六边形架构迁移。</strong></p>
+
+<pre class="code-block"><code>当前实际分层（2026-08-24 实证）：
 
 ┌──────────────────────────────────────────────────────────┐
 │                    Controller 层 (api/)                  │
@@ -685,32 +909,38 @@ services:
 │  ├── rbac/         (5 级角色权限)                        │
 │  ├── multi_tenant/ (多租户隔离)                          │
 │  └── realtime/     (WebSocket 通信)                      │
-└──────────────────────────────────────────────────────────┘
-```
+└──────────────────────────────────────────────────────────┘</code></pre>
 
-##<h1>4.3 新架构约束
-| 层级 | 禁止事项 | 允许事项 |
-|:-----|:---------|:---------|
-| **Controller** | 直接操作数据库、包含业务逻辑 | 路由注册、请求解析、权限校验、响应格式化 |
-| **Service** | 定义 FastAPI 路由、直接返回 HTTP 响应 | 业务规则、事务管理、跨服务调用、领域事件发布 |
-| **Model** | 依赖 Service 层、包含业务逻辑 | ORM 映射、查询构建、数据验证 |
+<h2 id="4-3-新架构约束">4.3 新架构约束</h2>
 
-##<h1>4.4 六边形架构的保留价值
+<table><thead><tr><th>层级</th><th>禁止事项</th><th>允许事项</th></tr></thead><tbody><tr><td>**Controller**</td><td>直接操作数据库、包含业务逻辑</td><td>路由注册、请求解析、权限校验、响应格式化</td></tr>
+<tr><td>**Service**</td><td>定义 FastAPI 路由、直接返回 HTTP 响应</td><td>业务规则、事务管理、跨服务调用、领域事件发布</td></tr>
+<tr><td>**Model**</td><td>依赖 Service 层、包含业务逻辑</td><td>ORM 映射、查询构建、数据验证</td></tr>
+</tbody></table>
 
-虽然全局采用三层架构，但以下局部领域仍受益于六边形思想：
+<h2 id="4-4-六边形架构的保留价值">4.4 六边形架构的保留价值</h2>
 
-1. **AI 服务**（`services/ai/`）：LLM Provider 工厂（策略模式）、RAG 向量存储接口，实质上是端口/适配器模式
-2. **知识图谱**（`services/kg/`）：Neo4j/内存双实现，通过 `graph_service.py` 接口隔离
-3. **搜索服务**（`services/search/`）：BM25/Elasticsearch/ChromaDB 三种实现，统一通过 `hybrid_search.py` 接口
+<p>虽然全局采用三层架构，但以下局部领域仍受益于六边形思想：</p>
 
-> **结论**：全局三层 + 局部六边形 = 最务实的工程选择
+<p>1. <strong>AI 服务</strong>（<code class="inline-code">services/ai/</code>）：LLM Provider 工厂（策略模式）、RAG 向量存储接口，实质上是端口/适配器模式</p>
+
+<p>2. <strong>知识图谱</strong>（<code class="inline-code">services/kg/</code>）：Neo4j/内存双实现，通过 <code class="inline-code">graph_service.py</code> 接口隔离</p>
+
+<p>3. <strong>搜索服务</strong>（<code class="inline-code">services/search/</code>）：BM25/Elasticsearch/ChromaDB 三种实现，统一通过 <code class="inline-code">hybrid_search.py</code> 接口</p>
+
+<p>> <strong>结论</strong>：全局三层 + 局部六边形 = 最务实的工程选择</p>
+
 <hr>
-#<h1>5. 开发时间线总览
 
-项目总开发周期跨越 **2026年4月至2026年8月24日**，正式 Git 提交从 **2026-06-10** 开始，至今共 **111 次提交**，活跃天数 **25 天**。
+</section>
 
-```
-2026.04 ────────────────────────────────────────────────────────────────────
+<section id="5-开发时间线总览">
+
+<h1>5. 开发时间线总览</h1>
+
+<p>项目总开发周期跨越 <strong>2026年4月至2026年8月24日</strong>，正式 Git 提交从 <strong>2026-06-10</strong> 开始，至今共 <strong>111 次提交</strong>，活跃天数 <strong>25 天</strong>。</p>
+
+<pre class="code-block"><code>2026.04 ────────────────────────────────────────────────────────────────────
          ▲ 项目规划与设计阶段（未纳入 Git 追踪）
          │
 2026.05 ─┤ 深度开发阶段
@@ -779,682 +1009,853 @@ services:
 2026.07.31 ┤ 项目结构组织化重构
          │  • docs/scripts/tests 布局统一
          │  • 编码问题修复
-         │  • README 规范对齐
-```
+         │  • README 规范对齐</code></pre>
+
 <hr>
-#<h1>6. 每日开发记录
 
-##<h1>2026-04 ~ 2026-05 阶段：早期开发与深度优化
+</section>
 
-> 注：此阶段代码在正式 Git 初始化前已完成，详见文档记录。
+<section id="6-每日开发记录">
 
-###<h1>2026-05-03 · 核心算法深度优化日
+<h1>6. 每日开发记录</h1>
 
-**背景**：RatioOptimizer NSGA-III 算法存在阻塞性 Bug，多项式变异产生复数导致整个模块崩溃。
+<h2 id="2026-04--2026-05-阶段-早期开发与深度优化">2026-04 ~ 2026-05 阶段：早期开发与深度优化</h2>
 
-**主要工作**：
-- 修复 `ratio_optimizer.py:584-585` 复数类型比较错误，加入实数防御逻辑
-- 补全 15+ 处接口不匹配，修复依赖版本冲突
-- 建立性能基准：优化后性能提升 **5~16x**
-- 核心测试套件达到 **100% 通过率**（41/41）
+<p>> 注：此阶段代码在正式 Git 初始化前已完成，详见文档记录。</p>
 
-**交付成果**：
-- `FINAL_OPTIMIZATION_REPORT_2026-05-03.md`
-- `SYSTEM_COMPLETION_REPORT.md`
-- `TEST_REPORT_2026-05-03.md`
+<h3>2026-05-03 · 核心算法深度优化日</h3>
+
+<p><strong>背景</strong>：RatioOptimizer NSGA-III 算法存在阻塞性 Bug，多项式变异产生复数导致整个模块崩溃。</p>
+
+<p><strong>主要工作</strong>：</p>
+
+<ul>
+<li>修复 <code class="inline-code">ratio_optimizer.py:584-585</code> 复数类型比较错误，加入实数防御逻辑</li>
+<li>补全 15+ 处接口不匹配，修复依赖版本冲突</li>
+<li>建立性能基准：优化后性能提升 <strong>5~16x</strong></li>
+<li>核心测试套件达到 <strong>100% 通过率</strong>（41/41）</li>
+</ul>
+
+<p><strong>交付成果</strong>：</p>
+
+<ul>
+<li><code class="inline-code">FINAL_OPTIMIZATION_REPORT_2026-05-03.md</code></li>
+<li><code class="inline-code">SYSTEM_COMPLETION_REPORT.md</code></li>
+<li><code class="inline-code">TEST_REPORT_2026-05-03.md</code></li>
+</ul>
+
 <hr>
-###<h1>2026-05-06 · AI 模块全面审查日
 
-**背景**：对 http://localhost:3001/ai 页面进行系统性技术审查。
+<h3>2026-05-06 · AI 模块全面审查日</h3>
 
-**主要工作**：
-- 发现并修复 6 个问题（4 P0/P1，2 P2）
-- 消除 108 个 unused imports
-- 修复 11 处 `any` 类型宽泛声明
-- Bundle size 减少 **75%**
-- 前端 TypeScript 编译：**零错误**
+<p><strong>背景</strong>：对 http://localhost:3001/ai 页面进行系统性技术审查。</p>
 
-**评级结果**：⭐⭐⭐⭐☆（4/5星）
+<p><strong>主要工作</strong>：</p>
 
-**交付成果**：
-- `AI_PAGE_REVIEW_REPORT_2026-05-06.md`
+<ul>
+<li>发现并修复 6 个问题（4 P0/P1，2 P2）</li>
+<li>消除 108 个 unused imports</li>
+<li>修复 11 处 <code class="inline-code">any</code> 类型宽泛声明</li>
+<li>Bundle size 减少 <strong>75%</strong></li>
+<li>前端 TypeScript 编译：<strong>零错误</strong></li>
+</ul>
+
+<p><strong>评级结果</strong>：⭐⭐⭐⭐☆（4/5星）</p>
+
+<p><strong>交付成果</strong>：</p>
+
+<ul>
+<li><code class="inline-code">AI_PAGE_REVIEW_REPORT_2026-05-06.md</code></li>
+</ul>
+
 <hr>
-###<h1>2026-05-08 ~ 2026-05-17 · 迭代开发期
 
-**主要工作**：
-- 多轮迭代：AI 模块 v4.0 合规检查、肽分析模块完善
-- 架构文档整理定稿（`ARCHITECTURE.md` v1.0.0）
-- 快速入门指南编写（`QUICKSTART.md`）
-- 肽模块专项测试报告完成
+<h3>2026-05-08 ~ 2026-05-17 · 迭代开发期</h3>
 
-**交付成果**：
-- `AI_V4_COMPLIANCE_IMPLEMENTATION_REPORT.md`
-- `PEPTIDE_MODULE_TEST_REPORT_2026-05-03.md`
-- `ARCHITECTURE.md` v1.0.0
-- `QUICKSTART.md` v1.0.0
+<p><strong>主要工作</strong>：</p>
+
+<ul>
+<li>多轮迭代：AI 模块 v4.0 合规检查、肽分析模块完善</li>
+<li>架构文档整理定稿（<code class="inline-code">ARCHITECTURE.md</code> v1.0.0）</li>
+<li>快速入门指南编写（<code class="inline-code">QUICKSTART.md</code>）</li>
+<li>肽模块专项测试报告完成</li>
+</ul>
+
+<p><strong>交付成果</strong>：</p>
+
+<ul>
+<li><code class="inline-code">AI_V4_COMPLIANCE_IMPLEMENTATION_REPORT.md</code></li>
+<li><code class="inline-code">PEPTIDE_MODULE_TEST_REPORT_2026-05-03.md</code></li>
+<li><code class="inline-code">ARCHITECTURE.md</code> v1.0.0</li>
+<li><code class="inline-code">QUICKSTART.md</code> v1.0.0</li>
+</ul>
+
 <hr>
-##<h1>2026-06-10 · 项目 Git 初始化日
 
-**里程碑**：RMFOOD 智能配方设计平台正式进入版本控制系统。
+<h2 id="2026-06-10--项目-git-初始化日">2026-06-10 · 项目 Git 初始化日</h2>
 
-###<h1>提交记录
-| 提交 | 内容 |
-|:-----|:-----|
-| 1 | `feat: initial commit - RMFOOD智能配方设计平台` — 完整代码库首次入库 |
-| 2 | `fix: replace print() with logger in backend app code` — 统一日志系统 |
+<p><strong>里程碑</strong>：RMFOOD 智能配方设计平台正式进入版本控制系统。</p>
 
-**当日要点**：
-- 将此前散落的开发成果整合入 Git
-- 统一 backend 日志系统，消除所有 `print()` 调用
-- 项目正式进入可追踪开发流程
+<h3>提交记录</h3>
+
+<table><thead><tr><th>提交</th><th>内容</th></tr></thead><tbody><tr><td>1</td><td>`feat: initial commit - RMFOOD智能配方设计平台` — 完整代码库首次入库</td></tr>
+<tr><td>2</td><td>`fix: replace print() with logger in backend app code` — 统一日志系统</td></tr>
+</tbody></table>
+
+<p><strong>当日要点</strong>：</p>
+
+<ul>
+<li>将此前散落的开发成果整合入 Git</li>
+<li>统一 backend 日志系统，消除所有 <code class="inline-code">print()</code> 调用</li>
+<li>项目正式进入可追踪开发流程</li>
+</ul>
+
 <hr>
-##<h1>2026-06-11 · 基础设施加固日（Phase 0 第 1 天）
 
-**目标**：建立代码质量门禁、可观测性与运维自动化。
+<h2 id="2026-06-11--基础设施加固日-phase-0-第-1-天">2026-06-11 · 基础设施加固日（Phase 0 第 1 天）</h2>
 
-###<h1>提交记录（共 10 条）
-| <h1>| 提交 | 分类 |
-|:-:|:-----|:----:|
-| 1 | `test: add 152 unit/integration tests for core modules` | test |
-| 2 | `chore: raise coverage threshold from 70% to 75%` | chore |
-| 3 | `chore: remove archived scripts from git tracking` | chore |
-| 4 | `chore: add scripts/archive/ to .gitignore` | chore |
-| 5 | `chore: add circular dependency detection` | chore |
-| 6 | `refactor: split 3 giant service files into focused modules` | refactor |
-| 7 | `feat: enhance observability - health check + Prometheus metrics` | feat |
-| 8 | `feat: add DB backup automation + operations Runbook` | feat |
-| 9 | `docs: update expert review with Phase 0-4 progress` | docs |
+<p><strong>目标</strong>：建立代码质量门禁、可观测性与运维自动化。</p>
 
-**当日亮点**：
-- **测试基建**：新增 152 个测试用例，涵盖 core/services/auth 三大模块
-- **覆盖率门禁**：将 CI 覆盖率阈值从 70% 提升至 75%
-- **可观测性**：集成 Prometheus metrics，暴露 `/health` 和 `/metrics` 端点
-- **运维自动化**：数据库备份脚本 + Operations Runbook
-- **代码拆分**：将 3 个巨型服务文件拆分为专注模块
+<h3>提交记录（共 10 条）</h3>
+
+<table><thead><tr><th>&lt;h1&gt;</th><th>提交</th><th>分类</th></tr></thead><tbody><tr><td>1</td><td>`test: add 152 unit/integration tests for core modules`</td><td>test</td></tr>
+<tr><td>2</td><td>`chore: raise coverage threshold from 70% to 75%`</td><td>chore</td></tr>
+<tr><td>3</td><td>`chore: remove archived scripts from git tracking`</td><td>chore</td></tr>
+<tr><td>4</td><td>`chore: add scripts/archive/ to .gitignore`</td><td>chore</td></tr>
+<tr><td>5</td><td>`chore: add circular dependency detection`</td><td>chore</td></tr>
+<tr><td>6</td><td>`refactor: split 3 giant service files into focused modules`</td><td>refactor</td></tr>
+<tr><td>7</td><td>`feat: enhance observability - health check + Prometheus metrics`</td><td>feat</td></tr>
+<tr><td>8</td><td>`feat: add DB backup automation + operations Runbook`</td><td>feat</td></tr>
+<tr><td>9</td><td>`docs: update expert review with Phase 0-4 progress`</td><td>docs</td></tr>
+</tbody></table>
+
+<p><strong>当日亮点</strong>：</p>
+
+<ul>
+<li><strong>测试基建</strong>：新增 152 个测试用例，涵盖 core/services/auth 三大模块</li>
+<li><strong>覆盖率门禁</strong>：将 CI 覆盖率阈值从 70% 提升至 75%</li>
+<li><strong>可观测性</strong>：集成 Prometheus metrics，暴露 <code class="inline-code">/health</code> 和 <code class="inline-code">/metrics</code> 端点</li>
+<li><strong>运维自动化</strong>：数据库备份脚本 + Operations Runbook</li>
+<li><strong>代码拆分</strong>：将 3 个巨型服务文件拆分为专注模块</li>
+</ul>
+
 <hr>
-##<h1>2026-06-12 · 专家审查日
 
-**事件**：RMFOOD 院士级架构升级与战略规划专家评审。
+<h2 id="2026-06-12--专家审查日">2026-06-12 · 专家审查日</h2>
 
-**审查结果**：
-- 审查前评分：6.3/10（工程闭环存在显著缺口）
-- 四路并行探查：后端核心 / 基础设施 / 测试质量 / 前端代码
-- 输出 4 大 Phase 改进计划（HerbKnowledgePort、OpenTelemetry、K8s、多租户配额）
-- 当日改进后评分跃升至 **8.0/10**
+<p><strong>事件</strong>：RMFOOD 院士级架构升级与战略规划专家评审。</p>
 
-**交付成果**：
-- `EXPERT_ARCHITECTURE_REVIEW_2026.md`
-- `EXPERT_ARCHITECTURE_REVIEW_2026_FINAL.md`
+<p><strong>审查结果</strong>：</p>
+
+<ul>
+<li>审查前评分：6.3/10（工程闭环存在显著缺口）</li>
+<li>四路并行探查：后端核心 / 基础设施 / 测试质量 / 前端代码</li>
+<li>输出 4 大 Phase 改进计划（HerbKnowledgePort、OpenTelemetry、K8s、多租户配额）</li>
+<li>当日改进后评分跃升至 <strong>8.0/10</strong></li>
+</ul>
+
+<p><strong>交付成果</strong>：</p>
+
+<ul>
+<li><code class="inline-code">EXPERT_ARCHITECTURE_REVIEW_2026.md</code></li>
+<li><code class="inline-code">EXPERT_ARCHITECTURE_REVIEW_2026_FINAL.md</code></li>
+</ul>
+
 <hr>
-##<h1>2026-06-15 · 架构收敛日（Phase 0 验收日）
 
-**目标**：完成 ADR 体系、可观测性全栈、部署脚本和安全加固。
+<h2 id="2026-06-15--架构收敛日-phase-0-验收日">2026-06-15 · 架构收敛日（Phase 0 验收日）</h2>
 
-###<h1>提交记录（共 5 条）
-| <h1>| 提交 | 分类 |
-|:-:|:-----|:----:|
-| 1 | `chore: commit all pending changes - Phase 0 verification` | chore |
-| 2 | `feat: ADR expansion 5→10, add implementation tracking to all ADRs` | feat |
-| 3 | `fix(ci): enforce coverage thresholds in CI` | fix |
-| 4 | `feat: complete observability stack - Prometheus + Grafana + Loki + Tempo` | feat |
-| 5 | `feat: complete deployment scripts - K8s, rollback, health checks` | feat |
-| 6 | `feat: security hardening - GDPR compliance + security report` | feat |
+<p><strong>目标</strong>：完成 ADR 体系、可观测性全栈、部署脚本和安全加固。</p>
 
-**当日亮点**：
-- **ADR 体系**：从 5 份扩展至 11 份，全部标记实现跟踪
-- **可观测性全栈**：Metrics（Prometheus）+ Traces（Tempo）+ Logs（Loki）+ Dashboard（Grafana）
-- **K8s 部署**：Helm Charts + 健康检查 + 自动回滚脚本
-- **GDPR 合规**：数据保留策略、用户数据删除接口、同意管理
+<h3>提交记录（共 5 条）</h3>
+
+<table><thead><tr><th>&lt;h1&gt;</th><th>提交</th><th>分类</th></tr></thead><tbody><tr><td>1</td><td>`chore: commit all pending changes - Phase 0 verification`</td><td>chore</td></tr>
+<tr><td>2</td><td>`feat: ADR expansion 5→10, add implementation tracking to all ADRs`</td><td>feat</td></tr>
+<tr><td>3</td><td>`fix(ci): enforce coverage thresholds in CI`</td><td>fix</td></tr>
+<tr><td>4</td><td>`feat: complete observability stack - Prometheus + Grafana + Loki + Tempo`</td><td>feat</td></tr>
+<tr><td>5</td><td>`feat: complete deployment scripts - K8s, rollback, health checks`</td><td>feat</td></tr>
+<tr><td>6</td><td>`feat: security hardening - GDPR compliance + security report`</td><td>feat</td></tr>
+</tbody></table>
+
+<p><strong>当日亮点</strong>：</p>
+
+<ul>
+<li><strong>ADR 体系</strong>：从 5 份扩展至 11 份，全部标记实现跟踪</li>
+<li><strong>可观测性全栈</strong>：Metrics（Prometheus）+ Traces（Tempo）+ Logs（Loki）+ Dashboard（Grafana）</li>
+<li><strong>K8s 部署</strong>：Helm Charts + 健康检查 + 自动回滚脚本</li>
+<li><strong>GDPR 合规</strong>：数据保留策略、用户数据删除接口、同意管理</li>
+</ul>
+
 <hr>
-##<h1>2026-06-16 · 项目关闭报告日
 
-###<h1>提交记录（共 1 条）
-| <h1>| 提交 | 分类 |
-|:-:|:-----|:----:|
-| 1 | `docs: add final closure report - comprehensive review 9.2/10` | docs |
+<h2 id="2026-06-16--项目关闭报告日">2026-06-16 · 项目关闭报告日</h2>
 
-**说明**：综合评审最终得分 **9.2/10**，Phase 0 全部交付物通过验收。
+<h3>提交记录（共 1 条）</h3>
+
+<table><thead><tr><th>&lt;h1&gt;</th><th>提交</th><th>分类</th></tr></thead><tbody><tr><td>1</td><td>`docs: add final closure report - comprehensive review 9.2/10`</td><td>docs</td></tr>
+</tbody></table>
+
+<p><strong>说明</strong>：综合评审最终得分 <strong>9.2/10</strong>，Phase 0 全部交付物通过验收。</p>
+
 <hr>
-##<h1>2026-06-18 · 生产部署就绪日
 
-**目标**：完成局域网部署方案、后端优化、前端增强及部署文档。
+<h2 id="2026-06-18--生产部署就绪日">2026-06-18 · 生产部署就绪日</h2>
 
-###<h1>提交记录（共 7 条）
-| <h1>| 提交 | 分类 |
-|:---|:-----|:----:|
-| 1 | `feat: LAN局域网部署配置 - 多IP支持、Nginx反向代理、启动脚本` | feat |
-| 2 | `docs: 生产部署就绪文档 - 部署检查清单、快速启动、部署总结` | docs |
-| 3 | `feat: 后端优化和Ray集群 - Ray分布式计算管理、安全模块、依赖分层管理、协同系数优化` | feat |
-| 4 | `feat: 脚本和工具 - 配置验证、集成验证、安全审计、依赖安装、后端启动脚本` | feat |
-| 5 | `feat: 前端优化 - AI助手增强、WebSocket实时通信、权限系统重构、动态API配置` | feat |
-| 6 | `chore: 清理构建缓存 - 从Git跟踪中移除.vite-cache和tsbuildinfo` | chore |
-| 7 | `chore: 优化.dockerignore - 排除部署文档、脚本、构建缓存以减少构建上下文` | chore |
+<p><strong>目标</strong>：完成局域网部署方案、后端优化、前端增强及部署文档。</p>
 
-**当日亮点**：
-- **LAN 部署**：支持多 IP 配置、Nginx 反向代理、一键启动脚本
-- **Ray 集群**：分布式计算任务管理，支持配方优化任务的并行处理
-- **WebSocket**：实时通信能力，支持在线状态、通知推送
-- **前端增强**：AI 助手体验优化、动态 API 配置、权限系统重构
+<h3>提交记录（共 7 条）</h3>
+
+<table><thead><tr><th>&lt;h1&gt;</th><th>提交</th><th>分类</th></tr></thead><tbody><tr><td>1</td><td>`feat: LAN局域网部署配置 - 多IP支持、Nginx反向代理、启动脚本`</td><td>feat</td></tr>
+<tr><td>2</td><td>`docs: 生产部署就绪文档 - 部署检查清单、快速启动、部署总结`</td><td>docs</td></tr>
+<tr><td>3</td><td>`feat: 后端优化和Ray集群 - Ray分布式计算管理、安全模块、依赖分层管理、协同系数优化`</td><td>feat</td></tr>
+<tr><td>4</td><td>`feat: 脚本和工具 - 配置验证、集成验证、安全审计、依赖安装、后端启动脚本`</td><td>feat</td></tr>
+<tr><td>5</td><td>`feat: 前端优化 - AI助手增强、WebSocket实时通信、权限系统重构、动态API配置`</td><td>feat</td></tr>
+<tr><td>6</td><td>`chore: 清理构建缓存 - 从Git跟踪中移除.vite-cache和tsbuildinfo`</td><td>chore</td></tr>
+<tr><td>7</td><td>`chore: 优化.dockerignore - 排除部署文档、脚本、构建缓存以减少构建上下文`</td><td>chore</td></tr>
+</tbody></table>
+
+<p><strong>当日亮点</strong>：</p>
+
+<ul>
+<li><strong>LAN 部署</strong>：支持多 IP 配置、Nginx 反向代理、一键启动脚本</li>
+<li><strong>Ray 集群</strong>：分布式计算任务管理，支持配方优化任务的并行处理</li>
+<li><strong>WebSocket</strong>：实时通信能力，支持在线状态、通知推送</li>
+<li><strong>前端增强</strong>：AI 助手体验优化、动态 API 配置、权限系统重构</li>
+</ul>
+
 <hr>
-##<h1>2026-06-19 ~ 2026-07-11 · 间隔期
 
-> 此期间主要为需求分析与方案设计，无代码提交。
+<h2 id="2026-06-19--2026-07-11--间隔期">2026-06-19 ~ 2026-07-11 · 间隔期</h2>
 
-**期间工作**：
-- 第二阶段至第五阶段详细需求规格制定
-- 安全加固方案细化
-- 核心业务补齐规划
-- CodeGraph 索引建立
+<p>> 此期间主要为需求分析与方案设计，无代码提交。</p>
+
+<p><strong>期间工作</strong>：</p>
+
+<ul>
+<li>第二阶段至第五阶段详细需求规格制定</li>
+<li>安全加固方案细化</li>
+<li>核心业务补齐规划</li>
+<li>CodeGraph 索引建立</li>
+</ul>
+
 <hr>
-##<h1>2026-07-12 · 安全攻坚启动日
 
-**目标**：全面修复安全漏洞，建立纵深防御体系。
+<h2 id="2026-07-12--安全攻坚启动日">2026-07-12 · 安全攻坚启动日</h2>
 
-###<h1>提交记录（共 1 条）
-| <h1>| 提交 | 分类 |
-|:-:|:-----|:----:|
-| 1 | `fix: comprehensive security hardening - SSRF, JWT validation, CSRF, auth consolidation, XSS prevention` | fix |
+<p><strong>目标</strong>：全面修复安全漏洞，建立纵深防御体系。</p>
 
-**当日亮点**：
-- **SSRF 防护**：URL 白名单校验，禁止内网地址访问
-- **JWT 加固**：严格的 token 验证流程，防重放攻击
-- **CSRF 防护**：跨站请求伪造令牌机制
-- **XSS 预防**：输入输出双端过滤
-- **认证整合**：统一认证入口，消除冗余认证逻辑
+<h3>提交记录（共 1 条）</h3>
+
+<table><thead><tr><th>&lt;h1&gt;</th><th>提交</th><th>分类</th></tr></thead><tbody><tr><td>1</td><td>`fix: comprehensive security hardening - SSRF, JWT validation, CSRF, auth consolidation, XSS prevention`</td><td>fix</td></tr>
+</tbody></table>
+
+<p><strong>当日亮点</strong>：</p>
+
+<ul>
+<li><strong>SSRF 防护</strong>：URL 白名单校验，禁止内网地址访问</li>
+<li><strong>JWT 加固</strong>：严格的 token 验证流程，防重放攻击</li>
+<li><strong>CSRF 防护</strong>：跨站请求伪造令牌机制</li>
+<li><strong>XSS 预防</strong>：输入输出双端过滤</li>
+<li><strong>认证整合</strong>：统一认证入口，消除冗余认证逻辑</li>
+</ul>
+
 <hr>
-##<h1>2026-07-13 · 安全攻坚核心日
 
-**目标**：修复异常泄漏、XSS 加固、类型安全、依赖清理。
+<h2 id="2026-07-13--安全攻坚核心日">2026-07-13 · 安全攻坚核心日</h2>
 
-###<h1>提交记录（共 12 条）
-| <h1>| 提交 | 分类 |
-|:---|:-----|:----:|
-| 1 | `fix: exception leaks, schema validation, XSS hardening, type safety` | fix |
-| 2 | `fix: resolve import errors from agent-applied exception leak fixes` | fix |
-| 3 | `fix: frontend as any cleanup + window type declarations` | fix |
-| 4 | `fix: remove debug state leak from system/info endpoint` | fix |
-| 5 | `fix: dependency cleanup and security scanner integration` | fix |
-| 6 | `fix: remove duplicate LOCALES export in i18n/index.tsx` | fix |
-| 7 | `fix: i18n/index.tsx TypeScript errors` | fix |
-| 8 | `chore: rename stale i18n/index.ts to .old for removal` | chore |
-| 9 | `fix: remaining security issues - str(e) leaks, health endpoint leaks, rate limits, CI scan` | fix |
-| 10 | `fix: remaining frontend as any casts in production code` | fix |
-| 11 | `fix: CSRF middleware, stale file cleanup, i18n type fixes, as any cleanup` | fix |
-| 12 | `fix: remaining security gaps - str(e) leaks, rate limit exposure, CORS, CI blocking` | fix |
+<p><strong>目标</strong>：修复异常泄漏、XSS 加固、类型安全、依赖清理。</p>
 
-**当日亮点**：
-- **异常泄漏修复**：全局扫描 `str(e)` 模式，替换为安全的错误摘要
-- **类型安全**：消除前端生产代码中所有 `as any` 强制转换
-- **CORS 加固**：严格限制跨域来源
-- **安全扫描集成**：接入 CI 自动安全扫描门禁
+<h3>提交记录（共 12 条）</h3>
+
+<table><thead><tr><th>&lt;h1&gt;</th><th>提交</th><th>分类</th></tr></thead><tbody><tr><td>1</td><td>`fix: exception leaks, schema validation, XSS hardening, type safety`</td><td>fix</td></tr>
+<tr><td>2</td><td>`fix: resolve import errors from agent-applied exception leak fixes`</td><td>fix</td></tr>
+<tr><td>3</td><td>`fix: frontend as any cleanup + window type declarations`</td><td>fix</td></tr>
+<tr><td>4</td><td>`fix: remove debug state leak from system/info endpoint`</td><td>fix</td></tr>
+<tr><td>5</td><td>`fix: dependency cleanup and security scanner integration`</td><td>fix</td></tr>
+<tr><td>6</td><td>`fix: remove duplicate LOCALES export in i18n/index.tsx`</td><td>fix</td></tr>
+<tr><td>7</td><td>`fix: i18n/index.tsx TypeScript errors`</td><td>fix</td></tr>
+<tr><td>8</td><td>`chore: rename stale i18n/index.ts to .old for removal`</td><td>chore</td></tr>
+<tr><td>9</td><td>`fix: remaining security issues - str(e) leaks, health endpoint leaks, rate limits, CI scan`</td><td>fix</td></tr>
+<tr><td>10</td><td>`fix: remaining frontend as any casts in production code`</td><td>fix</td></tr>
+<tr><td>11</td><td>`fix: CSRF middleware, stale file cleanup, i18n type fixes, as any cleanup`</td><td>fix</td></tr>
+<tr><td>12</td><td>`fix: remaining security gaps - str(e) leaks, rate limit exposure, CORS, CI blocking`</td><td>fix</td></tr>
+</tbody></table>
+
+<p><strong>当日亮点</strong>：</p>
+
+<ul>
+<li><strong>异常泄漏修复</strong>：全局扫描 <code class="inline-code">str(e)</code> 模式，替换为安全的错误摘要</li>
+<li><strong>类型安全</strong>：消除前端生产代码中所有 <code class="inline-code">as any</code> 强制转换</li>
+<li><strong>CORS 加固</strong>：严格限制跨域来源</li>
+<li><strong>安全扫描集成</strong>：接入 CI 自动安全扫描门禁</li>
+</ul>
+
 <hr>
-##<h1>2026-07-14 · 安全收尾日
 
-###<h1>提交记录（共 4 条）
-| <h1>| 提交 | 分类 |
-|:---|:-----|:----:|
-| 1 | `fix: health endpoint info leaks + frontend as any cleanup` | fix |
-| 2 | `fix: lab_validation batch import str(e) leak` | fix |
-| 3 | `fix: remaining 3 frontend as any casts in production code` | fix |
-| 4 | `fix: absolute imports, __import__, security scanners, default passwords` | fix |
-| 5 | `docs: update README to remove references to deleted Docker files` | docs |
+<h2 id="2026-07-14--安全收尾日">2026-07-14 · 安全收尾日</h2>
 
-**当日亮点**：
-- `/system/info` 端点信息泄漏彻底修复
-- Lab Validation 批量导入异常处理修复
-- 默认密码检测与清除
-- 绝对路径导入规范化
+<h3>提交记录（共 4 条）</h3>
+
+<table><thead><tr><th>&lt;h1&gt;</th><th>提交</th><th>分类</th></tr></thead><tbody><tr><td>1</td><td>`fix: health endpoint info leaks + frontend as any cleanup`</td><td>fix</td></tr>
+<tr><td>2</td><td>`fix: lab_validation batch import str(e) leak`</td><td>fix</td></tr>
+<tr><td>3</td><td>`fix: remaining 3 frontend as any casts in production code`</td><td>fix</td></tr>
+<tr><td>4</td><td>`fix: absolute imports, __import__, security scanners, default passwords`</td><td>fix</td></tr>
+<tr><td>5</td><td>`docs: update README to remove references to deleted Docker files`</td><td>docs</td></tr>
+</tbody></table>
+
+<p><strong>当日亮点</strong>：</p>
+
+<ul>
+<li><code class="inline-code">/system/info</code> 端点信息泄漏彻底修复</li>
+<li>Lab Validation 批量导入异常处理修复</li>
+<li>默认密码检测与清除</li>
+<li>绝对路径导入规范化</li>
+</ul>
+
 <hr>
-##<h1>2026-07-15 ~ 2026-07-18 · 间隔期
 
-> 此期间进行第二阶段至第五阶段的集成测试与回归验证。
+<h2 id="2026-07-15--2026-07-18--间隔期">2026-07-15 ~ 2026-07-18 · 间隔期</h2>
+
+<p>> 此期间进行第二阶段至第五阶段的集成测试与回归验证。</p>
+
 <hr>
-##<h1>2026-07-19 · 第二阶段至第五阶段完成日
 
-###<h1>提交记录（共 1 条）
-| <h1>| 提交 | 分类 |
-|:---|:-----|:----:|
-| 1 | `feat: 第二阶段至第五阶段开发完成 - 安全加固/核心业务补齐/代码质量提升` | feat |
+<h2 id="2026-07-19--第二阶段至第五阶段完成日">2026-07-19 · 第二阶段至第五阶段完成日</h2>
 
-**涵盖范围**：
-- 第二阶段：安全加固全面落地（接 7/12-7/14）
-- 第三阶段：核心业务补齐（配方、实验、用户、知识库完整链路）
-- 第四阶段：代码质量提升（linter 全绿、类型检查通过）
-- 第五阶段：集成测试通过（端到端流程验证）
+<h3>提交记录（共 1 条）</h3>
+
+<table><thead><tr><th>&lt;h1&gt;</th><th>提交</th><th>分类</th></tr></thead><tbody><tr><td>1</td><td>`feat: 第二阶段至第五阶段开发完成 - 安全加固/核心业务补齐/代码质量提升`</td><td>feat</td></tr>
+</tbody></table>
+
+<p><strong>涵盖范围</strong>：</p>
+
+<ul>
+<li>第二阶段：安全加固全面落地（接 7/12-7/14）</li>
+<li>第三阶段：核心业务补齐（配方、实验、用户、知识库完整链路）</li>
+<li>第四阶段：代码质量提升（linter 全绿、类型检查通过）</li>
+<li>第五阶段：集成测试通过（端到端流程验证）</li>
+</ul>
+
 <hr>
-##<h1>2026-07-20 · 三大业务模块上线日
 
-**目标**：实现食品原料、零售产品、搜索分析三大独立业务模块。
+<h2 id="2026-07-20--三大业务模块上线日">2026-07-20 · 三大业务模块上线日</h2>
 
-###<h1>提交记录（共 1 条）
-| <h1>| 提交 | 分类 |
-|:---|:-----|:----:|
-| 1 | `feat: 实现食品原料、零售产品、搜索分析三大独立模块` | feat |
+<p><strong>目标</strong>：实现食品原料、零售产品、搜索分析三大独立业务模块。</p>
 
-**当日亮点**：
-- **食品原料模块**：TCMSP 中药材 API 集成，支持原料检索与配方关联
-- **零售产品模块**：OpenFoodFacts 零售产品数据接入，支持商品查询
-- **搜索分析模块**：全文搜索与搜索分析独立化，支持多维度检索统计
+<h3>提交记录（共 1 条）</h3>
+
+<table><thead><tr><th>&lt;h1&gt;</th><th>提交</th><th>分类</th></tr></thead><tbody><tr><td>1</td><td>`feat: 实现食品原料、零售产品、搜索分析三大独立模块`</td><td>feat</td></tr>
+</tbody></table>
+
+<p><strong>当日亮点</strong>：</p>
+
+<ul>
+<li><strong>食品原料模块</strong>：TCMSP 中药材 API 集成，支持原料检索与配方关联</li>
+<li><strong>零售产品模块</strong>：OpenFoodFacts 零售产品数据接入，支持商品查询</li>
+<li><strong>搜索分析模块</strong>：全文搜索与搜索分析独立化，支持多维度检索统计</li>
+</ul>
+
 <hr>
-##<h1>2026-07-21 · API 兼容修复日
 
-**目标**：修复食品原料 API 返回数组格式兼容性问题。
+<h2 id="2026-07-21--api-兼容修复日">2026-07-21 · API 兼容修复日</h2>
 
-###<h1>提交记录（共 1 条）
-| <h1>| 提交 | 分类 |
-|:---|:-----|:----:|
-| 1 | `fix(database): 兼容食品原料API返回数组格式的响应` | fix |
+<p><strong>目标</strong>：修复食品原料 API 返回数组格式兼容性问题。</p>
 
-**当日亮点**：
-- 修复原料 API 响应格式不一致导致的解析错误
-- 统一数组/对象格式的兼容处理逻辑
+<h3>提交记录（共 1 条）</h3>
+
+<table><thead><tr><th>&lt;h1&gt;</th><th>提交</th><th>分类</th></tr></thead><tbody><tr><td>1</td><td>`fix(database): 兼容食品原料API返回数组格式的响应`</td><td>fix</td></tr>
+</tbody></table>
+
+<p><strong>当日亮点</strong>：</p>
+
+<ul>
+<li>修复原料 API 响应格式不一致导致的解析错误</li>
+<li>统一数组/对象格式的兼容处理逻辑</li>
+</ul>
+
 <hr>
-##<h1>2026-07-23 · AI 安全加固 + 数据源重构日
 
-**目标**：强化 AI 对话安全，重构 OpenFoodFacts 数据源。
+<h2 id="2026-07-23--ai-安全加固--数据源重构日">2026-07-23 · AI 安全加固 + 数据源重构日</h2>
 
-###<h1>提交记录（共 7 条）
-| <h1>| 提交 | 分类 |
-|:---|:-----|:----:|
-| 1 | `fix: retail product API security & design review fixes` | fix |
-| 2 | `docs: add standalone SQL for 031 migration (no alembic CLI available)` | docs |
-| 3 | `fix(ai): 修复缓存 dead code + 为 /chat/stream 添加 Rate Limit` | fix |
-| 4 | `fix(ai): AI 页面安全加固 — 缓存修复 + rate limit + 独立加密密钥 + SSE 超时` | fix |
-| 5 | `fix(ai): 为 /chat/stream 添加多租户隔离 + 清理 SSE 超时注释` | fix |
-| 6 | `fix(ai): 修复 ChatTab 重复注释序号 + SSE unmount cleanup + ENCRYPTION_KEY配置` | fix |
-| 7 | `fix(ai): 补充 AI chat.py 全面单元测试 + SSE unmount cleanup` | fix |
-| 8 | `feat: OpenFoodFacts 数据源重构与 API 客户端统一优化` | feat |
-| 9 | `fix: Redis 启用密码认证，防止内部网络任意访问` | fix |
-| 10 | `fix: 安全加固 —— Neo4j 密码去硬编码、CI/CD 回滚实现、多租户隔离` | fix |
+<p><strong>目标</strong>：强化 AI 对话安全，重构 OpenFoodFacts 数据源。</p>
 
-**当日亮点**：
-- `/chat/stream` 增加 Rate Limit 中间件，防止滥用
-- AI 对话历史使用独立加密密钥存储
-- SSE 连接增加超时与组件卸载清理
-- 多租户隔离确保不同组织间 AI 对话数据不串扰
-- OpenFoodFacts 数据源 API 客户端统一重构
-- Redis 启用密码认证（防止内部网络任意访问）
-- Neo4j 密码去硬编码，改用环境变量
+<h3>提交记录（共 7 条）</h3>
+
+<table><thead><tr><th>&lt;h1&gt;</th><th>提交</th><th>分类</th></tr></thead><tbody><tr><td>1</td><td>`fix: retail product API security & design review fixes`</td><td>fix</td></tr>
+<tr><td>2</td><td>`docs: add standalone SQL for 031 migration (no alembic CLI available)`</td><td>docs</td></tr>
+<tr><td>3</td><td>`fix(ai): 修复缓存 dead code + 为 /chat/stream 添加 Rate Limit`</td><td>fix</td></tr>
+<tr><td>4</td><td>`fix(ai): AI 页面安全加固 — 缓存修复 + rate limit + 独立加密密钥 + SSE 超时`</td><td>fix</td></tr>
+<tr><td>5</td><td>`fix(ai): 为 /chat/stream 添加多租户隔离 + 清理 SSE 超时注释`</td><td>fix</td></tr>
+<tr><td>6</td><td>`fix(ai): 修复 ChatTab 重复注释序号 + SSE unmount cleanup + ENCRYPTION_KEY配置`</td><td>fix</td></tr>
+<tr><td>7</td><td>`fix(ai): 补充 AI chat.py 全面单元测试 + SSE unmount cleanup`</td><td>fix</td></tr>
+<tr><td>8</td><td>`feat: OpenFoodFacts 数据源重构与 API 客户端统一优化`</td><td>feat</td></tr>
+<tr><td>9</td><td>`fix: Redis 启用密码认证，防止内部网络任意访问`</td><td>fix</td></tr>
+<tr><td>10</td><td>`fix: 安全加固 —— Neo4j 密码去硬编码、CI/CD 回滚实现、多租户隔离`</td><td>fix</td></tr>
+</tbody></table>
+
+<p><strong>当日亮点</strong>：</p>
+
+<ul>
+<li><code class="inline-code">/chat/stream</code> 增加 Rate Limit 中间件，防止滥用</li>
+<li>AI 对话历史使用独立加密密钥存储</li>
+<li>SSE 连接增加超时与组件卸载清理</li>
+<li>多租户隔离确保不同组织间 AI 对话数据不串扰</li>
+<li>OpenFoodFacts 数据源 API 客户端统一重构</li>
+<li>Redis 启用密码认证（防止内部网络任意访问）</li>
+<li>Neo4j 密码去硬编码，改用环境变量</li>
+</ul>
+
 <hr>
-##<h1>2026-07-24 · 核心重构日
 
-**目标**：消除 core/ 上帝模块，完善测试基建，统一 Alembic 规范。
+<h2 id="2026-07-24--核心重构日">2026-07-24 · 核心重构日</h2>
 
-###<h1>提交记录（共 4 条）
-| <h1>| 提交 | 分类 |
-|:---|:-----|:----:|
-| 1 | `refactor(core): 拆分 core/ 上帝模块为 12 个子目录 + 完善后端测试基建 + Alembic 迁移修复方案` | refactor |
-| 2 | `fix(core): 修复 core/ 重构后的 import 路径 — exceptions/middleware/security compat` | fix |
-| 3 | `fix(ai): 修复 AI 模块重组后的 import 路径 — 同步服务层重构` | fix |
-| 4 | `refactor(alembic): 统一迁移文件命名 — YYYYMMDD_HHMMSS_ 格式 + 更新 revision 字符串` | refactor |
-| 5 | `ci: 添加 Alembic 迁移检查和后端启动验证门禁` | ci |
+<p><strong>目标</strong>：消除 core/ 上帝模块，完善测试基建，统一 Alembic 规范。</p>
 
-**当日亮点**：
-- `core/` 模块从单体拆分为 **12 个子目录**：
-  - `core/config/` — 配置管理
-  - `core/database/` — 数据库连接与路由
-  - `core/security/` — 安全工具
-  - `core/logging/` — 日志系统
-  - `core/redis/` — Redis 客户端
-  - `core/opentelemetry/` — 可观测性
-  - `core/ray/` — Ray 集群管理
-  - `core/i18n/` — 国际化
-  - `core/health/` — 健康检查
-  - `core/scheduler/` — 定时任务
-  - `core/encryption/` — 加密工具
-  - `core/errors/` — 错误处理
-- Alembic 迁移文件命名统一为 `YYYYMMDD_HHMMSS_description.py`
-- CI 新增迁移检查和后端启动验证门禁
+<h3>提交记录（共 4 条）</h3>
+
+<table><thead><tr><th>&lt;h1&gt;</th><th>提交</th><th>分类</th></tr></thead><tbody><tr><td>1</td><td>`refactor(core): 拆分 core/ 上帝模块为 12 个子目录 + 完善后端测试基建 + Alembic 迁移修复方案`</td><td>refactor</td></tr>
+<tr><td>2</td><td>`fix(core): 修复 core/ 重构后的 import 路径 — exceptions/middleware/security compat`</td><td>fix</td></tr>
+<tr><td>3</td><td>`fix(ai): 修复 AI 模块重组后的 import 路径 — 同步服务层重构`</td><td>fix</td></tr>
+<tr><td>4</td><td>`refactor(alembic): 统一迁移文件命名 — YYYYMMDD_HHMMSS_ 格式 + 更新 revision 字符串`</td><td>refactor</td></tr>
+<tr><td>5</td><td>`ci: 添加 Alembic 迁移检查和后端启动验证门禁`</td><td>ci</td></tr>
+</tbody></table>
+
+<p><strong>当日亮点</strong>：</p>
+
+<ul>
+<li><code class="inline-code">core/</code> 模块从单体拆分为 <strong>12 个子目录</strong>：</li>
+<li><code class="inline-code">core/config/</code> — 配置管理</li>
+<li><code class="inline-code">core/database/</code> — 数据库连接与路由</li>
+<li><code class="inline-code">core/security/</code> — 安全工具</li>
+<li><code class="inline-code">core/logging/</code> — 日志系统</li>
+<li><code class="inline-code">core/redis/</code> — Redis 客户端</li>
+<li><code class="inline-code">core/opentelemetry/</code> — 可观测性</li>
+<li><code class="inline-code">core/ray/</code> — Ray 集群管理</li>
+<li><code class="inline-code">core/i18n/</code> — 国际化</li>
+<li><code class="inline-code">core/health/</code> — 健康检查</li>
+<li><code class="inline-code">core/scheduler/</code> — 定时任务</li>
+<li><code class="inline-code">core/encryption/</code> — 加密工具</li>
+<li><code class="inline-code">core/errors/</code> — 错误处理</li>
+<li>Alembic 迁移文件命名统一为 <code class="inline-code">YYYYMMDD_HHMMSS_description.py</code></li>
+<li>CI 新增迁移检查和后端启动验证门禁</li>
+</ul>
+
 <hr>
-##<h1>2026-07-25 · 新功能发布日
 
-**目标**：发布收藏架功能、定时同步调度器，完善限流中间件。
+<h2 id="2026-07-25--新功能发布日">2026-07-25 · 新功能发布日</h2>
 
-###<h1>提交记录（共 6 条）
-| <h1>| 提交 | 分类 |
-|:---|:-----|:----:|
-| 1 | `refactor(frontend): 拆分 contextAwareSuggestionEngineV2.ts 为3个模块` | refactor |
-| 2 | `feat(pantry): 实现完整收藏架功能` | feat |
-| 3 | `refactor(dashboard): 搜索建议端点增强 context 参数支持` | refactor |
-| 4 | `feat(middleware): 公开搜索端点限流 — RateLimitMiddleware` | feat |
-| 5 | `feat(auto_sync): 定时数据同步调度器` | feat |
-| 6 | `wip(KnowledgeGraph): 初步拆分类型/引擎提取（进行中）` | wip |
+<p><strong>目标</strong>：发布收藏架功能、定时同步调度器，完善限流中间件。</p>
 
-**当日亮点**：
-- **收藏架（Pantry）**：用户可收藏常用原料/配方，快速访问个人资产
-- **RateLimitMiddleware**：公开搜索端点限流，防止恶意爬取
-- **Auto Sync 调度器**：定时从外部数据源（OpenFoodFacts 等）自动同步数据
-- **搜索建议增强**：Dashboard 搜索建议支持 context 参数，提供更精准的推荐
+<h3>提交记录（共 6 条）</h3>
+
+<table><thead><tr><th>&lt;h1&gt;</th><th>提交</th><th>分类</th></tr></thead><tbody><tr><td>1</td><td>`refactor(frontend): 拆分 contextAwareSuggestionEngineV2.ts 为3个模块`</td><td>refactor</td></tr>
+<tr><td>2</td><td>`feat(pantry): 实现完整收藏架功能`</td><td>feat</td></tr>
+<tr><td>3</td><td>`refactor(dashboard): 搜索建议端点增强 context 参数支持`</td><td>refactor</td></tr>
+<tr><td>4</td><td>`feat(middleware): 公开搜索端点限流 — RateLimitMiddleware`</td><td>feat</td></tr>
+<tr><td>5</td><td>`feat(auto_sync): 定时数据同步调度器`</td><td>feat</td></tr>
+<tr><td>6</td><td>`wip(KnowledgeGraph): 初步拆分类型/引擎提取（进行中）`</td><td>wip</td></tr>
+</tbody></table>
+
+<p><strong>当日亮点</strong>：</p>
+
+<ul>
+<li><strong>收藏架（Pantry）</strong>：用户可收藏常用原料/配方，快速访问个人资产</li>
+<li><strong>RateLimitMiddleware</strong>：公开搜索端点限流，防止恶意爬取</li>
+<li><strong>Auto Sync 调度器</strong>：定时从外部数据源（OpenFoodFacts 等）自动同步数据</li>
+<li><strong>搜索建议增强</strong>：Dashboard 搜索建议支持 context 参数，提供更精准的推荐</li>
+</ul>
+
 <hr>
-##<h1>2026-07-26 · 知识图谱重构日
 
-**目标**：将单一大文件重构为多层模块化架构。
+<h2 id="2026-07-26--知识图谱重构日">2026-07-26 · 知识图谱重构日</h2>
 
-###<h1>提交记录（共 6 条）
-| <h1>| 提交 | 分类 |
-|:---|:-----|:----:|
-| 1 | `refactor(KnowledgeGraph): 提取 D3 渲染引擎到独立模块（进行中）` | refactor |
-| 2 | `refactor(KnowledgeGraph): 继续提取 D3 引擎 + 修复导入/导出` | refactor |
-| 3 | `refactor(KnowledgeGraph): Phase 1.1 COMPLETE — D3 渲染引擎提取` | refactor |
-| 4 | `refactor(KnowledgeGraph): Phase 1.2 COMPLETE — Analytics extracted to graph/analytics/` | refactor |
-| 5 | `refactor(KnowledgeGraph): Phase 1.3 COMPLETE — Hooks & Analytics wiring + JSX extraction` | refactor |
-| 6 | `refactor(KnowledgeGraph): Phase 1.3 — hooks/JSX extraction + analytics wiring` | refactor |
-| 7 | `refactor(KnowledgeGraph): Phase 1 COMPLETE — Extract all layers to graph/ directory` | refactor |
-| 8 | `refactor(KnowledgeGraph): Phase 1.4 COMPLETE — JSX wiring reduces file to 813 lines` | refactor |
+<p><strong>目标</strong>：将单一大文件重构为多层模块化架构。</p>
 
-**重构前后对比**：
-| 指标 | 重构前 | 重构后 |
-|:-----|:------:|:------:|
-| 主文件行数 | 4000+ | 813 |
-| 模块数量 | 1 | 4 层 + 6 子目录 |
-| 关注点分离 | ❌ 混合 | ✅ 清晰 |
+<h3>提交记录（共 6 条）</h3>
 
-**新目录结构**：
-```
-graph/
-├── types.ts              <h1>类型定义
-├── engine/               <h1>D3 渲染引擎
-├── analytics/            <h1>分析统计
-├── hooks/                <h1>自定义 Hooks
-├── components/           <h1>React 组件
-└── index.ts              <h1>公共导出
-```
+<table><thead><tr><th>&lt;h1&gt;</th><th>提交</th><th>分类</th></tr></thead><tbody><tr><td>1</td><td>`refactor(KnowledgeGraph): 提取 D3 渲染引擎到独立模块（进行中）`</td><td>refactor</td></tr>
+<tr><td>2</td><td>`refactor(KnowledgeGraph): 继续提取 D3 引擎 + 修复导入/导出`</td><td>refactor</td></tr>
+<tr><td>3</td><td>`refactor(KnowledgeGraph): Phase 1.1 COMPLETE — D3 渲染引擎提取`</td><td>refactor</td></tr>
+<tr><td>4</td><td>`refactor(KnowledgeGraph): Phase 1.2 COMPLETE — Analytics extracted to graph/analytics/`</td><td>refactor</td></tr>
+<tr><td>5</td><td>`refactor(KnowledgeGraph): Phase 1.3 COMPLETE — Hooks & Analytics wiring + JSX extraction`</td><td>refactor</td></tr>
+<tr><td>6</td><td>`refactor(KnowledgeGraph): Phase 1.3 — hooks/JSX extraction + analytics wiring`</td><td>refactor</td></tr>
+<tr><td>7</td><td>`refactor(KnowledgeGraph): Phase 1 COMPLETE — Extract all layers to graph/ directory`</td><td>refactor</td></tr>
+<tr><td>8</td><td>`refactor(KnowledgeGraph): Phase 1.4 COMPLETE — JSX wiring reduces file to 813 lines`</td><td>refactor</td></tr>
+</tbody></table>
+
+<p><strong>重构前后对比</strong>：</p>
+
+<table><thead><tr><th>指标</th><th>重构前</th><th>重构后</th></tr></thead><tbody><tr><td>主文件行数</td><td>4000+</td><td>813</td></tr>
+<tr><td>模块数量</td><td>1</td><td>4 层 + 6 子目录</td></tr>
+<tr><td>关注点分离</td><td>❌ 混合</td><td>✅ 清晰</td></tr>
+</tbody></table>
+
+<p><strong>新目录结构</strong>：</p>
+
+<pre class="code-block"><code>graph/
+├── types.ts              &lt;h1&gt;类型定义
+├── engine/               &lt;h1&gt;D3 渲染引擎
+├── analytics/            &lt;h1&gt;分析统计
+├── hooks/                &lt;h1&gt;自定义 Hooks
+├── components/           &lt;h1&gt;React 组件
+└── index.ts              &lt;h1&gt;公共导出</code></pre>
+
 <hr>
-##<h1>2026-07-28 · OpenFoodFacts 导入增强日
 
-###<h1>提交记录（共 1 条）
-| <h1>| 提交 | 分类 |
-|:---|:-----|:----:|
-| 1 | `feat(import): add GBK encoding support, task tracking, and error logging for OpenFoodFacts import` | feat |
+<h2 id="2026-07-28--openfoodfacts-导入增强日">2026-07-28 · OpenFoodFacts 导入增强日</h2>
 
-**当日亮点**：
-- **GBK 编码自动降级**：检测 CSV 文件编码，UTF-8 失败时自动尝试 GBK
-- **任务追踪**：导入过程记录进度，支持断点续传
-- **错误日志**：详细记录每批次导入错误，便于排查数据质量问题
+<h3>提交记录（共 1 条）</h3>
+
+<table><thead><tr><th>&lt;h1&gt;</th><th>提交</th><th>分类</th></tr></thead><tbody><tr><td>1</td><td>`feat(import): add GBK encoding support, task tracking, and error logging for OpenFoodFacts import`</td><td>feat</td></tr>
+</tbody></table>
+
+<p><strong>当日亮点</strong>：</p>
+
+<ul>
+<li><strong>GBK 编码自动降级</strong>：检测 CSV 文件编码，UTF-8 失败时自动尝试 GBK</li>
+<li><strong>任务追踪</strong>：导入过程记录进度，支持断点续传</li>
+<li><strong>错误日志</strong>：详细记录每批次导入错误，便于排查数据质量问题</li>
+</ul>
+
 <hr>
-##<h1>2026-07-31 · 项目组织化重构日
 
-###<h1>提交记录（共 1 条）
-| <h1>| 提交 | 分类 |
-|:---|:-----|:----:|
-| 1 | `feat: refactor project structure organization - fix encoding issues, unify docs/scripts/tests layout per README.md specifications` | feat |
+<h2 id="2026-07-31--项目组织化重构日">2026-07-31 · 项目组织化重构日</h2>
 
-**变更统计**：331 个文件变更，+27,048 / -6,107 行
+<h3>提交记录（共 1 条）</h3>
 
-**当日亮点**：
-- 统一 `docs/`、`scripts/`、`tests/` 目录布局规范
-- 修复编码问题（含中文字符处理）
-- README.md 与实际目录结构对齐
-- 新增项目启动/验证脚本（`start_backend.sh`、`start_frontend.sh`、`verify_env.py`）
+<table><thead><tr><th>&lt;h1&gt;</th><th>提交</th><th>分类</th></tr></thead><tbody><tr><td>1</td><td>`feat: refactor project structure organization - fix encoding issues, unify docs/scripts/tests layout per README.md specifications`</td><td>feat</td></tr>
+</tbody></table>
+
+<p><strong>变更统计</strong>：331 个文件变更，+27,048 / -6,107 行</p>
+
+<p><strong>当日亮点</strong>：</p>
+
+<ul>
+<li>统一 <code class="inline-code">docs/</code>、<code class="inline-code">scripts/</code>、<code class="inline-code">tests/</code> 目录布局规范</li>
+<li>修复编码问题（含中文字符处理）</li>
+<li>README.md 与实际目录结构对齐</li>
+<li>新增项目启动/验证脚本（<code class="inline-code">start_backend.sh</code>、<code class="inline-code">start_frontend.sh</code>、<code class="inline-code">verify_env.py</code>）</li>
+</ul>
+
 <hr>
-##<h1>2026-08-02 · 深度开发启动日（P0-A ~ P2）
 
-**目标**：基于《Development strategy as of August 1, 2026》战略文档，从"技术驱动"转向"价值驱动"。
+<h2 id="2026-08-02--深度开发启动日-p0-a--p2">2026-08-02 · 深度开发启动日（P0-A ~ P2）</h2>
 
-###<h1>提交记录（共 10 条）
-| <h1>| 提交 | 分类 |
-|:---|:-----|:----:|
-| 1 | `docs: 更新 README 真实状态 — TypeScript 140 错误/ESLint 2257 错误` | docs |
-| 2 | `fix(readme-todos): 清理生产 print() 并更新 README 待完成项状态` | fix |
-| 3 | `fix(todos): 完成 P1/P2 待完成项 — API Key加密/passlib清理/prettier-husky` | fix |
-| 4 | `fix(todos): ESLint flat config 修复 + husky/lint-staged 完成` | fix |
-| 5 | `fix: 修复 DataUploadPanel + experimentData 类型不匹配` | fix |
-| 6 | `fix(tsc): 修复 TypeScript 编译错误 141→96` | fix |
-| 7 | `fix(tsc): 修复 TypeScript 错误 96→85 (非图组件全部清零)` | fix |
-| 8 | `fix(tsc): 非图组件 TypeScript 错误清零 (141→78)` | fix |
-| 9 | `fix(tsc): TypeScript 错误清零 (141→0)` | fix |
-| 10 | `docs: 更新 TypeScript 错误统计 140→139 (非图组件清零)` | docs |
+<p><strong>目标</strong>：基于《Development strategy as of August 1, 2026》战略文档，从"技术驱动"转向"价值驱动"。</p>
 
-**当日亮点**：
-- 完成 **P0-A** Agent 工作流（5 专业工具 + LLM 自主编排 + AgentPage 前端）
-- 完成 **P0-B** 合规前置（约束惩罚 + 实时评分 + ComplianceBadge）
-- 完成 **P0-C** 实验解析（AnIML/JCAMP-DX 解析器 + 峰识别引擎）
-- 完成 **P1-A** 工作流执行（DAG 调度器 + 5 执行器）
-- 完成 **P1-B** 可解释性报告（君臣佐使 + 协同/拮抗）
-- 完成 **P1-C** 报告导出（DOCX/PDF/Markdown）
-- 完成 **P1-D** 数据飞轮（采集→校验→脱敏→训练→推荐）
-- 完成 **P2** 插件化生态（6 核心插件 + API Key 管理）
-- TypeScript 编译错误从 141 清零，ESLint flat config 修复完成
-- 新增 API Key 加密、passlib 清理、prettier-husky 集成
+<h3>提交记录（共 10 条）</h3>
+
+<table><thead><tr><th>&lt;h1&gt;</th><th>提交</th><th>分类</th></tr></thead><tbody><tr><td>1</td><td>`docs: 更新 README 真实状态 — TypeScript 140 错误/ESLint 2257 错误`</td><td>docs</td></tr>
+<tr><td>2</td><td>`fix(readme-todos): 清理生产 print() 并更新 README 待完成项状态`</td><td>fix</td></tr>
+<tr><td>3</td><td>`fix(todos): 完成 P1/P2 待完成项 — API Key加密/passlib清理/prettier-husky`</td><td>fix</td></tr>
+<tr><td>4</td><td>`fix(todos): ESLint flat config 修复 + husky/lint-staged 完成`</td><td>fix</td></tr>
+<tr><td>5</td><td>`fix: 修复 DataUploadPanel + experimentData 类型不匹配`</td><td>fix</td></tr>
+<tr><td>6</td><td>`fix(tsc): 修复 TypeScript 编译错误 141→96`</td><td>fix</td></tr>
+<tr><td>7</td><td>`fix(tsc): 修复 TypeScript 错误 96→85 (非图组件全部清零)`</td><td>fix</td></tr>
+<tr><td>8</td><td>`fix(tsc): 非图组件 TypeScript 错误清零 (141→78)`</td><td>fix</td></tr>
+<tr><td>9</td><td>`fix(tsc): TypeScript 错误清零 (141→0)`</td><td>fix</td></tr>
+<tr><td>10</td><td>`docs: 更新 TypeScript 错误统计 140→139 (非图组件清零)`</td><td>docs</td></tr>
+</tbody></table>
+
+<p><strong>当日亮点</strong>：</p>
+
+<ul>
+<li>完成 <strong>P0-A</strong> Agent 工作流（5 专业工具 + LLM 自主编排 + AgentPage 前端）</li>
+<li>完成 <strong>P0-B</strong> 合规前置（约束惩罚 + 实时评分 + ComplianceBadge）</li>
+<li>完成 <strong>P0-C</strong> 实验解析（AnIML/JCAMP-DX 解析器 + 峰识别引擎）</li>
+<li>完成 <strong>P1-A</strong> 工作流执行（DAG 调度器 + 5 执行器）</li>
+<li>完成 <strong>P1-B</strong> 可解释性报告（君臣佐使 + 协同/拮抗）</li>
+<li>完成 <strong>P1-C</strong> 报告导出（DOCX/PDF/Markdown）</li>
+<li>完成 <strong>P1-D</strong> 数据飞轮（采集→校验→脱敏→训练→推荐）</li>
+<li>完成 <strong>P2</strong> 插件化生态（6 核心插件 + API Key 管理）</li>
+<li>TypeScript 编译错误从 141 清零，ESLint flat config 修复完成</li>
+<li>新增 API Key 加密、passlib 清理、prettier-husky 集成</li>
+</ul>
+
 <hr>
-##<h1>2026-08-03 · 最终优化日
 
-###<h1>提交记录（共 2 条）
-| <h1>| 提交 | 分类 |
-|:---|:-----|:----:|
-| 1 | `fix(tsc): 修复非图组件错误，图组件错误降至 128` | fix |
-| 2 | `fix(tsc): 非图组件错误清零` | fix |
+<h2 id="2026-08-03--最终优化日">2026-08-03 · 最终优化日</h2>
 
-**当日亮点**：
-- 修复 DataUploadPanel + experimentData 类型不匹配
-- 非图组件 TypeScript 错误清零
-- 图组件错误降至 128 个（待后续优化）
+<h3>提交记录（共 2 条）</h3>
 
-**目标**：消除 core/ 上帝模块，完善测试基建，统一 Alembic 规范。
+<table><thead><tr><th>&lt;h1&gt;</th><th>提交</th><th>分类</th></tr></thead><tbody><tr><td>1</td><td>`fix(tsc): 修复非图组件错误，图组件错误降至 128`</td><td>fix</td></tr>
+<tr><td>2</td><td>`fix(tsc): 非图组件错误清零`</td><td>fix</td></tr>
+</tbody></table>
 
-###<h1>提交记录（共 4 条）
-| <h1>| 提交 | 分类 |
-|:---|:-----|:----:|
-| 1 | `refactor(core): 拆分 core/ 上帝模块为 12 个子目录 + 完善后端测试基建 + Alembic 迁移修复方案` | refactor |
-| 2 | `fix(core): 修复 core/ 重构后的 import 路径 — exceptions/middleware/security compat` | fix |
-| 3 | `fix(ai): 修复 AI 模块重组后的 import 路径 — 同步服务层重构` | fix |
-| 4 | `refactor(alembic): 统一迁移文件命名 — YYYYMMDD_HHMMSS_ 格式 + 更新 revision 字符串` | refactor |
-| 5 | `ci: 添加 Alembic 迁移检查和后端启动验证门禁` | ci |
+<p><strong>当日亮点</strong>：</p>
 
-**当日亮点**：
-- `core/` 模块从单体拆分为 **12 个子目录**：
-  - `core/config/` — 配置管理
-  - `core/database/` — 数据库连接与路由
-  - `core/security/` — 安全工具
-  - `core/logging/` — 日志系统
-  - `core/redis/` — Redis 客户端
-  - `core/opentelemetry/` — 可观测性
-  - `core/ray/` — Ray 集群管理
-  - `core/i18n/` — 国际化
-  - `core/health/` — 健康检查
-  - `core/scheduler/` — 定时任务
-  - `core/encryption/` — 加密工具
-  - `core/errors/` — 错误处理
-- Alembic 迁移文件命名统一为 `YYYYMMDD_HHMMSS_description.py`
-- CI 新增迁移检查和后端启动验证门禁
+<ul>
+<li>修复 DataUploadPanel + experimentData 类型不匹配</li>
+<li>非图组件 TypeScript 错误清零</li>
+<li>图组件错误降至 128 个（待后续优化）</li>
+</ul>
+
+<p><strong>目标</strong>：消除 core/ 上帝模块，完善测试基建，统一 Alembic 规范。</p>
+
+<h3>提交记录（共 4 条）</h3>
+
+<table><thead><tr><th>&lt;h1&gt;</th><th>提交</th><th>分类</th></tr></thead><tbody><tr><td>1</td><td>`refactor(core): 拆分 core/ 上帝模块为 12 个子目录 + 完善后端测试基建 + Alembic 迁移修复方案`</td><td>refactor</td></tr>
+<tr><td>2</td><td>`fix(core): 修复 core/ 重构后的 import 路径 — exceptions/middleware/security compat`</td><td>fix</td></tr>
+<tr><td>3</td><td>`fix(ai): 修复 AI 模块重组后的 import 路径 — 同步服务层重构`</td><td>fix</td></tr>
+<tr><td>4</td><td>`refactor(alembic): 统一迁移文件命名 — YYYYMMDD_HHMMSS_ 格式 + 更新 revision 字符串`</td><td>refactor</td></tr>
+<tr><td>5</td><td>`ci: 添加 Alembic 迁移检查和后端启动验证门禁`</td><td>ci</td></tr>
+</tbody></table>
+
+<p><strong>当日亮点</strong>：</p>
+
+<ul>
+<li><code class="inline-code">core/</code> 模块从单体拆分为 <strong>12 个子目录</strong>：</li>
+<li><code class="inline-code">core/config/</code> — 配置管理</li>
+<li><code class="inline-code">core/database/</code> — 数据库连接与路由</li>
+<li><code class="inline-code">core/security/</code> — 安全工具</li>
+<li><code class="inline-code">core/logging/</code> — 日志系统</li>
+<li><code class="inline-code">core/redis/</code> — Redis 客户端</li>
+<li><code class="inline-code">core/opentelemetry/</code> — 可观测性</li>
+<li><code class="inline-code">core/ray/</code> — Ray 集群管理</li>
+<li><code class="inline-code">core/i18n/</code> — 国际化</li>
+<li><code class="inline-code">core/health/</code> — 健康检查</li>
+<li><code class="inline-code">core/scheduler/</code> — 定时任务</li>
+<li><code class="inline-code">core/encryption/</code> — 加密工具</li>
+<li><code class="inline-code">core/errors/</code> — 错误处理</li>
+<li>Alembic 迁移文件命名统一为 <code class="inline-code">YYYYMMDD_HHMMSS_description.py</code></li>
+<li>CI 新增迁移检查和后端启动验证门禁</li>
+</ul>
+
 <hr>
-##<h1>2026-07-25 · 新功能发布日
 
-**目标**：发布收藏架功能、定时同步调度器，完善限流中间件。
+<h2 id="2026-07-25--新功能发布日">2026-07-25 · 新功能发布日</h2>
 
-###<h1>提交记录（共 5 条）
-| <h1>| 提交 | 分类 |
-|:---|:-----|:----:|
-| 1 | `refactor(frontend): 拆分 contextAwareSuggestionEngineV2.ts 为3个模块` | refactor |
-| 2 | `feat(pantry): 实现完整收藏架功能` | feat |
-| 3 | `refactor(dashboard): 搜索建议端点增强 context 参数支持` | refactor |
-| 4 | `feat(middleware): 公开搜索端点限流 — RateLimitMiddleware` | feat |
-| 5 | `feat(auto_sync): 定时数据同步调度器` | feat |
-| 6 | `wip(KnowledgeGraph): 初步拆分类型/引擎提取（进行中）` | wip |
+<p><strong>目标</strong>：发布收藏架功能、定时同步调度器，完善限流中间件。</p>
 
-**当日亮点**：
-- **收藏架（Pantry）**：用户可收藏常用原料/配方，快速访问个人资产
-- **RateLimitMiddleware**：公开搜索端点限流，防止恶意爬取
-- **Auto Sync 调度器**：定时从外部数据源（OpenFoodFacts 等）自动同步数据
-- **搜索建议增强**：Dashboard 搜索建议支持 context 参数，提供更精准的推荐
+<h3>提交记录（共 5 条）</h3>
+
+<table><thead><tr><th>&lt;h1&gt;</th><th>提交</th><th>分类</th></tr></thead><tbody><tr><td>1</td><td>`refactor(frontend): 拆分 contextAwareSuggestionEngineV2.ts 为3个模块`</td><td>refactor</td></tr>
+<tr><td>2</td><td>`feat(pantry): 实现完整收藏架功能`</td><td>feat</td></tr>
+<tr><td>3</td><td>`refactor(dashboard): 搜索建议端点增强 context 参数支持`</td><td>refactor</td></tr>
+<tr><td>4</td><td>`feat(middleware): 公开搜索端点限流 — RateLimitMiddleware`</td><td>feat</td></tr>
+<tr><td>5</td><td>`feat(auto_sync): 定时数据同步调度器`</td><td>feat</td></tr>
+<tr><td>6</td><td>`wip(KnowledgeGraph): 初步拆分类型/引擎提取（进行中）`</td><td>wip</td></tr>
+</tbody></table>
+
+<p><strong>当日亮点</strong>：</p>
+
+<ul>
+<li><strong>收藏架（Pantry）</strong>：用户可收藏常用原料/配方，快速访问个人资产</li>
+<li><strong>RateLimitMiddleware</strong>：公开搜索端点限流，防止恶意爬取</li>
+<li><strong>Auto Sync 调度器</strong>：定时从外部数据源（OpenFoodFacts 等）自动同步数据</li>
+<li><strong>搜索建议增强</strong>：Dashboard 搜索建议支持 context 参数，提供更精准的推荐</li>
+</ul>
+
 <hr>
-##<h1>2026-07-26 · 知识图谱重构日
 
-**目标**：将单一大文件重构为多层模块化架构。
+<h2 id="2026-07-26--知识图谱重构日">2026-07-26 · 知识图谱重构日</h2>
 
-###<h1>提交记录（共 6 条）
-| <h1>| 提交 | 分类 |
-|:---|:-----|:----:|
-| 1 | `refactor(KnowledgeGraph): 提取 D3 渲染引擎到独立模块（进行中）` | refactor |
-| 2 | `refactor(KnowledgeGraph): 继续提取 D3 引擎 + 修复导入/导出` | refactor |
-| 3 | `refactor(KnowledgeGraph): Phase 1.1 COMPLETE — D3 渲染引擎提取` | refactor |
-| 4 | `refactor(KnowledgeGraph): Phase 1.2 COMPLETE — Analytics extracted to graph/analytics/` | refactor |
-| 5 | `refactor(KnowledgeGraph): Phase 1.3 COMPLETE — Hooks & Analytics wiring + JSX extraction` | refactor |
-| 6 | `refactor(KnowledgeGraph): Phase 1.3 — hooks/JSX extraction + analytics wiring` | refactor |
-| 7 | `refactor(KnowledgeGraph): Phase 1 COMPLETE — Extract all layers to graph/ directory` | refactor |
-| 8 | `refactor(KnowledgeGraph): Phase 1.4 COMPLETE — JSX wiring reduces file to 813 lines` | refactor |
+<p><strong>目标</strong>：将单一大文件重构为多层模块化架构。</p>
 
-**重构前后对比**：
-| 指标 | 重构前 | 重构后 |
-|:-----|:------:|:------:|
-| 主文件行数 | 4000+ | 813 |
-| 模块数量 | 1 | 4 层 + 6 子目录 |
-| 关注点分离 | ❌ 混合 | ✅ 清晰 |
+<h3>提交记录（共 6 条）</h3>
 
-**新目录结构**：
-```
-graph/
-├── types.ts              <h1>类型定义
-├── engine/               <h1>D3 渲染引擎
+<table><thead><tr><th>&lt;h1&gt;</th><th>提交</th><th>分类</th></tr></thead><tbody><tr><td>1</td><td>`refactor(KnowledgeGraph): 提取 D3 渲染引擎到独立模块（进行中）`</td><td>refactor</td></tr>
+<tr><td>2</td><td>`refactor(KnowledgeGraph): 继续提取 D3 引擎 + 修复导入/导出`</td><td>refactor</td></tr>
+<tr><td>3</td><td>`refactor(KnowledgeGraph): Phase 1.1 COMPLETE — D3 渲染引擎提取`</td><td>refactor</td></tr>
+<tr><td>4</td><td>`refactor(KnowledgeGraph): Phase 1.2 COMPLETE — Analytics extracted to graph/analytics/`</td><td>refactor</td></tr>
+<tr><td>5</td><td>`refactor(KnowledgeGraph): Phase 1.3 COMPLETE — Hooks & Analytics wiring + JSX extraction`</td><td>refactor</td></tr>
+<tr><td>6</td><td>`refactor(KnowledgeGraph): Phase 1.3 — hooks/JSX extraction + analytics wiring`</td><td>refactor</td></tr>
+<tr><td>7</td><td>`refactor(KnowledgeGraph): Phase 1 COMPLETE — Extract all layers to graph/ directory`</td><td>refactor</td></tr>
+<tr><td>8</td><td>`refactor(KnowledgeGraph): Phase 1.4 COMPLETE — JSX wiring reduces file to 813 lines`</td><td>refactor</td></tr>
+</tbody></table>
+
+<p><strong>重构前后对比</strong>：</p>
+
+<table><thead><tr><th>指标</th><th>重构前</th><th>重构后</th></tr></thead><tbody><tr><td>主文件行数</td><td>4000+</td><td>813</td></tr>
+<tr><td>模块数量</td><td>1</td><td>4 层 + 6 子目录</td></tr>
+<tr><td>关注点分离</td><td>❌ 混合</td><td>✅ 清晰</td></tr>
+</tbody></table>
+
+<p><strong>新目录结构</strong>：</p>
+
+<pre class="code-block"><code>graph/
+├── types.ts              &lt;h1&gt;类型定义
+├── engine/               &lt;h1&gt;D3 渲染引擎
 │   ├── index.ts
 │   └── ...
-├── analytics/            <h1>分析统计
+├── analytics/            &lt;h1&gt;分析统计
 │   └── index.ts
-├── hooks/                <h1>自定义 Hooks
+├── hooks/                &lt;h1&gt;自定义 Hooks
 │   └── useGraphData.ts
-├── components/           <h1>React 组件
+├── components/           &lt;h1&gt;React 组件
 │   └── GraphView.tsx
-└── index.ts              <h1>公共导出
-```
+└── index.ts              &lt;h1&gt;公共导出</code></pre>
+
 <hr>
-##<h1>2026-07-28 · OpenFoodFacts 导入增强日
 
-###<h1>提交记录（共 1 条）
-| <h1>| 提交 | 分类 |
-|:---|:-----|:----:|
-| 1 | `feat(import): add GBK encoding support, task tracking, and error logging for OpenFoodFacts import` | feat |
+<h2 id="2026-07-28--openfoodfacts-导入增强日">2026-07-28 · OpenFoodFacts 导入增强日</h2>
 
-**当日亮点**：
-- **GBK 编码自动降级**：检测 CSV 文件编码，UTF-8 失败时自动尝试 GBK
-- **任务追踪**：导入过程记录进度，支持断点续传
-- **错误日志**：详细记录每批次导入错误，便于排查数据质量问题
+<h3>提交记录（共 1 条）</h3>
+
+<table><thead><tr><th>&lt;h1&gt;</th><th>提交</th><th>分类</th></tr></thead><tbody><tr><td>1</td><td>`feat(import): add GBK encoding support, task tracking, and error logging for OpenFoodFacts import`</td><td>feat</td></tr>
+</tbody></table>
+
+<p><strong>当日亮点</strong>：</p>
+
+<ul>
+<li><strong>GBK 编码自动降级</strong>：检测 CSV 文件编码，UTF-8 失败时自动尝试 GBK</li>
+<li><strong>任务追踪</strong>：导入过程记录进度，支持断点续传</li>
+<li><strong>错误日志</strong>：详细记录每批次导入错误，便于排查数据质量问题</li>
+</ul>
+
 <hr>
-##<h1>2026-07-31 · 项目组织化重构日（最新）
 
-###<h1>提交记录（共 1 条）
-| <h1>| 提交 | 分类 |
-|:---|:-----|:----:|
-| 1 | `feat: refactor project structure organization - fix encoding issues, unify docs/scripts/tests layout per README.md specifications` | feat |
+<h2 id="2026-07-31--项目组织化重构日-最新">2026-07-31 · 项目组织化重构日（最新）</h2>
 
-**变更统计**：288 个文件变更，+18,163 / -1,373 行
+<h3>提交记录（共 1 条）</h3>
 
-**当日亮点**：
-- 统一 `docs/`、`scripts/`、`tests/` 目录布局规范
-- 修复编码问题（含中文字符处理）
-- README.md 与实际目录结构对齐
-- 新增项目启动/验证脚本（`start_backend.sh`、`start_frontend.sh`、`verify_env.py`）
+<table><thead><tr><th>&lt;h1&gt;</th><th>提交</th><th>分类</th></tr></thead><tbody><tr><td>1</td><td>`feat: refactor project structure organization - fix encoding issues, unify docs/scripts/tests layout per README.md specifications`</td><td>feat</td></tr>
+</tbody></table>
+
+<p><strong>变更统计</strong>：288 个文件变更，+18,163 / -1,373 行</p>
+
+<p><strong>当日亮点</strong>：</p>
+
+<ul>
+<li>统一 <code class="inline-code">docs/</code>、<code class="inline-code">scripts/</code>、<code class="inline-code">tests/</code> 目录布局规范</li>
+<li>修复编码问题（含中文字符处理）</li>
+<li>README.md 与实际目录结构对齐</li>
+<li>新增项目启动/验证脚本（<code class="inline-code">start_backend.sh</code>、<code class="inline-code">start_frontend.sh</code>、<code class="inline-code">verify_env.py</code>）</li>
+</ul>
+
 <hr>
-##<h1>2026-08-13 ~ 2026-08-16 · shadcn/ui 迁移准备期
 
-**目标**：引入 Radix UI + shadcn/ui 组件库，为前端 UI 全面重构奠定技术基础。
+<h2 id="2026-08-13--2026-08-16--shadcn-ui-迁移准备期">2026-08-13 ~ 2026-08-16 · shadcn/ui 迁移准备期</h2>
 
-###<h1>提交记录（共 4 条）
-| <h1>| 提交 | 分类 |
-|:---|:-----|:----:|
-| 1 | `docs: add design spec for Radix UI / shadcn/ui migration` | docs |
-| 2 | `feat(ui): Phase 1 - install shadcn/ui with Radix UI primitives and brand token mapping` | feat |
-| 3 | `feat(ui): Phase 2 - shadcn surface components (Input, Textarea, Badge, Card, Skeleton, Progress, Tooltip, Toast, Alert)` | feat |
-| 4 | `feat(ui): Phase 3 - add complex widget components (DataTable, OperationFeedback)` | feat |
+<p><strong>目标</strong>：引入 Radix UI + shadcn/ui 组件库，为前端 UI 全面重构奠定技术基础。</p>
 
-**当日亮点**：
-- **Phase 1**：安装 shadcn/ui 与 Radix UI 原始组件，建立品牌 Token 映射
-- **Phase 2**：完成 9 个 Surface 组件迁移（Input、Textarea、Badge、Card、Skeleton、Progress、Tooltip、Toast、Alert）
-- **Phase 3**：实现 DataTable、OperationFeedback 等复杂组件
-- **Phase 4**：建立向后兼容的迁移桥接层，确保旧组件平滑过渡
-- **Phase 5**：迁移 Button、Modal、Select、Tabs 等核心交互组件
-- **Phase 6**：补充 Checkbox、Switch 等表单控件迁移
-- **Phase 7**：替换所有旧组件文件，完成最终迁移
+<h3>提交记录（共 4 条）</h3>
 
-##<h1>2026-08-17 ~ 2026-08-18 · 主题系统审计期
+<table><thead><tr><th>&lt;h1&gt;</th><th>提交</th><th>分类</th></tr></thead><tbody><tr><td>1</td><td>`docs: add design spec for Radix UI / shadcn/ui migration`</td><td>docs</td></tr>
+<tr><td>2</td><td>`feat(ui): Phase 1 - install shadcn/ui with Radix UI primitives and brand token mapping`</td><td>feat</td></tr>
+<tr><td>3</td><td>`feat(ui): Phase 2 - shadcn surface components (Input, Textarea, Badge, Card, Skeleton, Progress, Tooltip, Toast, Alert)`</td><td>feat</td></tr>
+<tr><td>4</td><td>`feat(ui): Phase 3 - add complex widget components (DataTable, OperationFeedback)`</td><td>feat</td></tr>
+</tbody></table>
 
-**目标**：修复主题系统不完整、组件级迁移等问题。
+<p><strong>当日亮点</strong>：</p>
 
-###<h1>提交记录（共 4 条）
-| <h1>| 提交 | 分类 |
-|:---|:-----|:----:|
-| 1 | `docs: ADR-012 主题系统精简与统一` | docs |
-| 2 | `fix(ui): 主题系统完整性补齐` | fix |
-| 3 | `refactor(ui): 主题系统组件级迁移 (ADR-014)` | refactor |
-| 4 | `fix(ui): 主题系统完整性审计与修复` | fix |
+<h2 id="2026-08-17--2026-08-18--主题系统审计期">2026-08-17 ~ 2026-08-18 · 主题系统审计期</h2>
 
-**当日亮点**：
-- **ADR-012**：主题系统精简与统一决策
-- **ADR-013**：补齐缺失的主题 token 定义
-- **ADR-014**：组件级迁移至新主题体系
-- **ADR-015**：完整性审计与自动修复
-- **ADR-016**：深度审计，补齐剩余设计令牌
+<ul>
+<li><strong>Phase 1</strong>：安装 shadcn/ui 与 Radix UI 原始组件，建立品牌 Token 映射</li>
+<li><strong>Phase 2</strong>：完成 9 个 Surface 组件迁移（Input、Textarea、Badge、Card、Skeleton、Progress、Tooltip、Toast、Alert）</li>
+<li><strong>Phase 3</strong>：实现 DataTable、OperationFeedback 等复杂组件</li>
+<li><strong>Phase 4</strong>：建立向后兼容的迁移桥接层，确保旧组件平滑过渡</li>
+<li><strong>Phase 5</strong>：迁移 Button、Modal、Select、Tabs 等核心交互组件</li>
+<li><strong>Phase 6</strong>：补充 Checkbox、Switch 等表单控件迁移</li>
+<li><strong>Phase 7</strong>：替换所有旧组件文件，完成最终迁移</li>
+</ul>
 
-##<h1>2026-08-19 ~ 2026-08-20 · Dashboard UI/UX 深度审计期
+<p><strong>目标</strong>：修复主题系统不完整、组件级迁移等问题。</p>
 
-**目标**：对仪表盘进行深度 UI/UX 审计与升级。
+<h3>提交记录（共 4 条）</h3>
 
-###<h1>提交记录（共 5 条）
-| <h1>| 提交 | 分类 |
-|:---|:-----|:----:|
-| 1 | `docs: ADR-017 Dashboard UI/UX 深度审计与升级方案` | docs |
-| 2 | `feat(ui): ADR-018 Dashboard UI/UX 深度修复与升级` | feat |
-| 3 | `docs: ADR-019 Dashboard UI/UX 深度设计审计` | docs |
-| 4 | `fix: patch octal literals in rimraf/graceful-fs for Vite build` | fix |
-| 5 | `fix: patch rimraf octal literals for Vite build compatibility` | fix |
+<table><thead><tr><th>&lt;h1&gt;</th><th>提交</th><th>分类</th></tr></thead><tbody><tr><td>1</td><td>`docs: ADR-012 主题系统精简与统一`</td><td>docs</td></tr>
+<tr><td>2</td><td>`fix(ui): 主题系统完整性补齐`</td><td>fix</td></tr>
+<tr><td>3</td><td>`refactor(ui): 主题系统组件级迁移 (ADR-014)`</td><td>refactor</td></tr>
+<tr><td>4</td><td>`fix(ui): 主题系统完整性审计与修复`</td><td>fix</td></tr>
+</tbody></table>
 
-**当日亮点**：
-- **ADR-017**：Dashboard UI/UX 深度审计与升级方案设计
-- **ADR-018**：执行 Dashboard 深度修复与升级
-- **ADR-019**：完成 Dashboard 深度设计审计
-- 修复 Vite 构建兼容性（rimraf/graceful-fs octal 字面量问题）
-- Alembic 迁移：`20260819_000000` + `20260819_010000`
+<p><strong>当日亮点</strong>：</p>
 
-##<h1>2026-08-21 · TypeScript 错误修复与配方详情页开发日
+<h2 id="2026-08-19--2026-08-20--dashboard-ui-ux-深度审计期">2026-08-19 ~ 2026-08-20 · Dashboard UI/UX 深度审计期</h2>
 
-**目标**：修复 TypeScript 错误，推进配方详情页深度开发。
+<ul>
+<li><strong>ADR-012</strong>：主题系统精简与统一决策</li>
+<li><strong>ADR-013</strong>：补齐缺失的主题 token 定义</li>
+<li><strong>ADR-014</strong>：组件级迁移至新主题体系</li>
+<li><strong>ADR-015</strong>：完整性审计与自动修复</li>
+<li><strong>ADR-016</strong>：深度审计，补齐剩余设计令牌</li>
+</ul>
 
-###<h1>提交记录（共 5 条）
-| <h1>| 提交 | 分类 |
-|:---|:-----|:----:|
-| 1 | `docs: ADR-020 TypeScript 错误修复 - 配方案例页面` | docs |
-| 2 | `docs: ADR-021 配方管理页面 UI/UX 深度审计与语义化修复` | docs |
-| 3 | `fix: InvalidTimeValue 错误修复 (ADR-022)` | fix |
-| 4 | `fix: 公式详情页 Hooks 顺序错误修复 (ADR-023)` | fix |
-| 5 | `docs: ADR-024 配方详情页深度开发方案` | docs |
+<p><strong>目标</strong>：对仪表盘进行深度 UI/UX 审计与升级。</p>
 
-**当日亮点**：
-- 修复配方案例页面 TypeScript 类型错误
-- 配方管理页面 UI/UX 深度审计与语义化修复
-- 修复 `InvalidTimeValue` 运行时错误
-- 修复公式详情页 Hooks 顺序错误
-- 启动配方详情页 Phase 3 深度开发
+<h3>提交记录（共 5 条）</h3>
 
-##<h1>2026-08-22 ~ 2026-08-23 · 配方详情页开发 + shadcn 迁移完成日
+<table><thead><tr><th>&lt;h1&gt;</th><th>提交</th><th>分类</th></tr></thead><tbody><tr><td>1</td><td>`docs: ADR-017 Dashboard UI/UX 深度审计与升级方案`</td><td>docs</td></tr>
+<tr><td>2</td><td>`feat(ui): ADR-018 Dashboard UI/UX 深度修复与升级`</td><td>feat</td></tr>
+<tr><td>3</td><td>`docs: ADR-019 Dashboard UI/UX 深度设计审计`</td><td>docs</td></tr>
+<tr><td>4</td><td>`fix: patch octal literals in rimraf/graceful-fs for Vite build`</td><td>fix</td></tr>
+<tr><td>5</td><td>`fix: patch rimraf octal literals for Vite build compatibility`</td><td>fix</td></tr>
+</tbody></table>
 
-**目标**：完成配方详情页深度开发，shadcn/ui 迁移进入收尾阶段。
+<p><strong>当日亮点</strong>：</p>
 
-###<h1>提交记录（共 6 条）
-| <h1>| 提交 | 分类 |
-|:---|:-----|:----:|
-| 1 | `docs: ADR-025 配方详情页深度审查与开发方案` | docs |
-| 2 | `docs: ADR-026 配方详情页 Phase 3 深度开发方案` | docs |
-| 3 | `fix(ui): 解决 shadcn 迁移 Breaking Changes` | fix |
-| 4 | `fix(ui): resolve type mismatches from shadcn migration` | fix |
-| 5 | `fix(ui): relax Button/Alert prop types for backward compatibility` | fix |
-| 6 | `test(ui): add ARIA compliance test suite for migrated shadcn components` | test |
-| 7 | `docs: add antd → shadcn migration guide for remaining 4 database pages` | docs |
-| 8 | `fix(ui): resolve TypeScript type mismatches from shadcn migration` | fix |
+<h2 id="2026-08-21--typescript-错误修复与配方详情页开发日">2026-08-21 · TypeScript 错误修复与配方详情页开发日</h2>
 
-**当日亮点**：
-- ADR-025/026 推进配方详情页深度开发与 Phase 3 方案
-- **ADR-027**：Radix UI / shadcn/ui 迁移完成，所有旧组件文件被替换
-- ARIA 合规测试套件通过
-- antd → shadcn 迁移指南完成（剩余 4 个数据库页面）
-- 新增 Alembic 迁移：`20260821_140000`（肽批次COA）、`20260821_150000`（AI模型配置）、`20260823_000000`（并发限制）
-- 新增 ORM 模型：`formula_case.py`、`ai_model_config.py`、`peptide_batch_coa.py`
-- 新增 API 路由：`coa_routes.py`、`herb_food.py`、`herb_images.py`、`ingredients.py`、`pepinvent.py`、`websocket.py`、`api_version.py`
+<ul>
+<li><strong>ADR-017</strong>：Dashboard UI/UX 深度审计与升级方案设计</li>
+<li><strong>ADR-018</strong>：执行 Dashboard 深度修复与升级</li>
+<li><strong>ADR-019</strong>：完成 Dashboard 深度设计审计</li>
+<li>修复 Vite 构建兼容性（rimraf/graceful-fs octal 字面量问题）</li>
+<li>Alembic 迁移：<code class="inline-code">20260819_000000</code> + <code class="inline-code">20260819_010000</code></li>
+</ul>
+
+<p><strong>目标</strong>：修复 TypeScript 错误，推进配方详情页深度开发。</p>
+
+<h3>提交记录（共 5 条）</h3>
+
+<table><thead><tr><th>&lt;h1&gt;</th><th>提交</th><th>分类</th></tr></thead><tbody><tr><td>1</td><td>`docs: ADR-020 TypeScript 错误修复 - 配方案例页面`</td><td>docs</td></tr>
+<tr><td>2</td><td>`docs: ADR-021 配方管理页面 UI/UX 深度审计与语义化修复`</td><td>docs</td></tr>
+<tr><td>3</td><td>`fix: InvalidTimeValue 错误修复 (ADR-022)`</td><td>fix</td></tr>
+<tr><td>4</td><td>`fix: 公式详情页 Hooks 顺序错误修复 (ADR-023)`</td><td>fix</td></tr>
+<tr><td>5</td><td>`docs: ADR-024 配方详情页深度开发方案`</td><td>docs</td></tr>
+</tbody></table>
+
+<p><strong>当日亮点</strong>：</p>
+
+<h2 id="2026-08-22--2026-08-23--配方详情页开发--shadcn-迁移完成日">2026-08-22 ~ 2026-08-23 · 配方详情页开发 + shadcn 迁移完成日</h2>
+
+<ul>
+<li>修复配方案例页面 TypeScript 类型错误</li>
+<li>配方管理页面 UI/UX 深度审计与语义化修复</li>
+<li>修复 <code class="inline-code">InvalidTimeValue</code> 运行时错误</li>
+<li>修复公式详情页 Hooks 顺序错误</li>
+<li>启动配方详情页 Phase 3 深度开发</li>
+</ul>
+
+<p><strong>目标</strong>：完成配方详情页深度开发，shadcn/ui 迁移进入收尾阶段。</p>
+
+<h3>提交记录（共 6 条）</h3>
+
+<table><thead><tr><th>&lt;h1&gt;</th><th>提交</th><th>分类</th></tr></thead><tbody><tr><td>1</td><td>`docs: ADR-025 配方详情页深度审查与开发方案`</td><td>docs</td></tr>
+<tr><td>2</td><td>`docs: ADR-026 配方详情页 Phase 3 深度开发方案`</td><td>docs</td></tr>
+<tr><td>3</td><td>`fix(ui): 解决 shadcn 迁移 Breaking Changes`</td><td>fix</td></tr>
+<tr><td>4</td><td>`fix(ui): resolve type mismatches from shadcn migration`</td><td>fix</td></tr>
+<tr><td>5</td><td>`fix(ui): relax Button/Alert prop types for backward compatibility`</td><td>fix</td></tr>
+<tr><td>6</td><td>`test(ui): add ARIA compliance test suite for migrated shadcn components`</td><td>test</td></tr>
+<tr><td>7</td><td>`docs: add antd → shadcn migration guide for remaining 4 database pages`</td><td>docs</td></tr>
+<tr><td>8</td><td>`fix(ui): resolve TypeScript type mismatches from shadcn migration`</td><td>fix</td></tr>
+</tbody></table>
+
+<p><strong>当日亮点</strong>：</p>
+
+<ul>
+<li>ADR-025/026 推进配方详情页深度开发与 Phase 3 方案</li>
+<li><strong>ADR-027</strong>：Radix UI / shadcn/ui 迁移完成，所有旧组件文件被替换</li>
+<li>ARIA 合规测试套件通过</li>
+<li>antd → shadcn 迁移指南完成（剩余 4 个数据库页面）</li>
+<li>新增 Alembic 迁移：<code class="inline-code">20260821_140000</code>（肽批次COA）、<code class="inline-code">20260821_150000</code>（AI模型配置）、<code class="inline-code">20260823_000000</code>（并发限制）</li>
+<li>新增 ORM 模型：<code class="inline-code">formula_case.py</code>、<code class="inline-code">ai_model_config.py</code>、<code class="inline-code">peptide_batch_coa.py</code></li>
+<li>新增 API 路由：<code class="inline-code">coa_routes.py</code>、<code class="inline-code">herb_food.py</code>、<code class="inline-code">herb_images.py</code>、<code class="inline-code">ingredients.py</code>、<code class="inline-code">pepinvent.py</code>、<code class="inline-code">websocket.py</code>、<code class="inline-code">api_version.py</code></li>
+</ul>
+
 <hr>
-#<h1>7. 里程碑与阶段总结
 
-##<h1>5.1 里程碑时间线
+</section>
 
-```
-时间          里程碑                               关键成果
+<section id="7-里程碑与阶段总结">
+
+<h1>7. 里程碑与阶段总结</h1>
+
+<h2 id="5-1-里程碑时间线">5.1 里程碑时间线</h2>
+
+<pre class="code-block"><code>时间          里程碑                               关键成果
 ────────────  ────────────────────────────────   ──────────────────────────
 2026-05-03    🏆 核心算法深度优化完成              NSGA-III 修复 + 100% 测试通过
 2026-05-06    🏆 AI 模块技术审查完成              4/5星评级 + Bundle 缩减 75%
@@ -1480,217 +1881,257 @@ graph/
 2026-08-19    📊 Dashboard UI/UX 深度审计          ADR-017~019 完成
 2026-08-21    🔧 TypeScript 修复 + 配方详情页     ADR-020~023 + Alembic 3 版本
 2026-08-23    🎨 shadcn/ui 迁移完成             ADR-027 全量迁移 + ARIA 测试通过
-2026-08-24    ✅ 手册版本更新 v4.0.0              补全全部变更
-```
+2026-08-24    ✅ 手册版本更新 v4.0.0              补全全部变更</code></pre>
 
-##<h1>5.2 阶段总结
+<h2 id="5-2-阶段总结">5.2 阶段总结</h2>
 
-###<h1>第一阶段（2026-05-03 ~ 2026-06-09）：基础建设期
+<h3>第一阶段（2026-05-03 ~ 2026-06-09）：基础建设期</h3>
 
-- 完成核心算法优化（NSGA-III 修复）
-- AI 模块技术审查与修复
-- 架构文档体系建立
-- 肽模块专项测试
+<h3>第二阶段（2026-06-10 ~ 2026-06-18）：工程化建设期（Phase 0）</h3>
 
-###<h1>第二阶段（2026-06-10 ~ 2026-06-18）：工程化建设期（Phase 0）
-| 子阶段 | 日期 | 核心交付 |
-|:-------|:----:|:---------|
-| 基础加固 | 06-10~06-11 | 152 测试 + 覆盖率门禁 + Prometheus metrics |
-| 架构收敛 | 06-15 | ADR×11 + 全栈可观测（Prometheus/Grafana/Loki/Tempo）+ K8s 部署 + GDPR |
-| 生产就绪 | 06-18 | LAN 部署 + Ray 集群 + WebSocket + 前端增强 |
+<ul>
+<li>完成核心算法优化（NSGA-III 修复）</li>
+<li>AI 模块技术审查与修复</li>
+<li>架构文档体系建立</li>
+<li>肽模块专项测试</li>
+</ul>
 
-###<h1>第三阶段（2026-07-12 ~ 2026-07-31）：深化与重构期
-| 子阶段 | 日期 | 核心交付 |
-|:-------|:----:|:---------|
-| 安全攻坚 | 07-12~07-14 | SSRF/JWT/CSRF/XSS/异常泄漏全面修复 |
-| 业务补齐 | 07-19 | 第二~五阶段全流程完成 |
-| AI 加固 | 07-23 | /chat/stream 限流 + 多租户隔离 + 独立密钥 |
-| 架构重构 | 07-24 | core/ 拆分为 12 子目录 + Alembic 规范 |
-| 新功能 | 07-25 | 收藏架 + Auto Sync + RateLimitMiddleware |
-| 知识图谱 | 07-26 | KG 重构为多层模块化架构 |
-| 数据导入 | 07-28 | GBK 编码支持 + 任务追踪 |
-| 组织化 | 07-31 | docs/scripts/tests 布局统一 |
+<table><thead><tr><th>子阶段</th><th>日期</th><th>核心交付</th></tr></thead><tbody><tr><td>基础加固</td><td>06-10~06-11</td><td>152 测试 + 覆盖率门禁 + Prometheus metrics</td></tr>
+<tr><td>架构收敛</td><td>06-15</td><td>ADR×11 + 全栈可观测（Prometheus/Grafana/Loki/Tempo）+ K8s 部署 + GDPR</td></tr>
+<tr><td>生产就绪</td><td>06-18</td><td>LAN 部署 + Ray 集群 + WebSocket + 前端增强</td></tr>
+</tbody></table>
 
-###<h1>第四阶段（2026-08-02 ~ 2026-08-03）：深度开发期（P0/P1/P2）
+<h3>第三阶段（2026-07-12 ~ 2026-07-31）：深化与重构期</h3>
 
-> 基于《Development strategy as of August 1, 2026》战略文档，从"技术驱动"转向"价值驱动"。
-| 阶段 | 日期 | 核心交付 | 关键成果 |
-|:-----|:----:|:---------|:---------|
-| P0-A Agent 工作流 | 08-02 | 6 工具 + LLM 编排 + 前端对话页 | RAG检索/合规检查/配方生成/实验方案 + AgentPage.tsx |
-| P0-B 合规前置 | 08-02 | 实时评分 + 自动修复 + 前端徽标 | 15 种限量 + 10 对禁忌搭配 + ComplianceBadge.tsx |
-| P0-C 实验解析 | 08-02 | AnIML/JCAMP-DX 解析器 + 峰识别引擎 | 支持 HPLC/GC/MS/FTIR/NMR/UV-Vis |
-| P1-A 工作流执行 | 08-02 | DAG 调度器 + 5 执行器 + WebSocket | 串行/并行/条件分支 + 失败重试 + 超时控制 |
-| P1-B 可解释性报告 | 08-02 | 贡献度分析 + 协同/拮抗 + 合规说明 | 君臣佐使角色分配 + FormulaDetailPage 新增 Tab |
-| P1-C 报告导出 | 08-02 | DOCX/PDF/Markdown 三格式导出 | python-docx + reportlab + Markdown |
-| P1-D 数据飞轮 | 08-02 | 采集管道 + 质量校验 + 脱敏 + 推荐训练 | 全自动：采集→校验→脱敏→训练→反哺 |
-| P2 插件化生态 | 08-02 | 6 核心插件 + API Key + SDK 元数据 | 插件管理器 + 开放 API Schema + 开发者文档 |
+<table><thead><tr><th>子阶段</th><th>日期</th><th>核心交付</th></tr></thead><tbody><tr><td>安全攻坚</td><td>07-12~07-14</td><td>SSRF/JWT/CSRF/XSS/异常泄漏全面修复</td></tr>
+<tr><td>业务补齐</td><td>07-19</td><td>第二~五阶段全流程完成</td></tr>
+<tr><td>AI 加固</td><td>07-23</td><td>/chat/stream 限流 + 多租户隔离 + 独立密钥</td></tr>
+<tr><td>架构重构</td><td>07-24</td><td>core/ 拆分为 12 子目录 + Alembic 规范</td></tr>
+<tr><td>新功能</td><td>07-25</td><td>收藏架 + Auto Sync + RateLimitMiddleware</td></tr>
+<tr><td>知识图谱</td><td>07-26</td><td>KG 重构为多层模块化架构</td></tr>
+<tr><td>数据导入</td><td>07-28</td><td>GBK 编码支持 + 任务追踪</td></tr>
+<tr><td>组织化</td><td>07-31</td><td>docs/scripts/tests 布局统一</td></tr>
+</tbody></table>
 
-**测试通过率**：100%（23/23），TypeScript 新增错误：0（非图组件清零），图组件错误降至 128
+<h3>第四阶段（2026-08-02 ~ 2026-08-03）：深度开发期（P0/P1/P2）</h3>
 
-###<h1>技术架构演进
-| 版本 | 日期 | 架构里程碑 |
-|:----:|:----:|:-----------|
-| v1.0 | 2026-07-31 | 六边形架构 + DDD + 全栈可观测 |
-| v2.0 | 2026-08-02 | 深度开发：Agent + 合规前置 + DAG + 数据飞轮 + 插件化 |
+<p>> 基于《Development strategy as of August 1, 2026》战略文档，从"技术驱动"转向"价值驱动"。</p>
+
+<table><thead><tr><th>阶段</th><th>日期</th><th>核心交付</th><th>关键成果</th></tr></thead><tbody><tr><td>P0-A Agent 工作流</td><td>08-02</td><td>6 工具 + LLM 编排 + 前端对话页</td><td>RAG检索/合规检查/配方生成/实验方案 + AgentPage.tsx</td></tr>
+<tr><td>P0-B 合规前置</td><td>08-02</td><td>实时评分 + 自动修复 + 前端徽标</td><td>15 种限量 + 10 对禁忌搭配 + ComplianceBadge.tsx</td></tr>
+<tr><td>P0-C 实验解析</td><td>08-02</td><td>AnIML/JCAMP-DX 解析器 + 峰识别引擎</td><td>支持 HPLC/GC/MS/FTIR/NMR/UV-Vis</td></tr>
+<tr><td>P1-A 工作流执行</td><td>08-02</td><td>DAG 调度器 + 5 执行器 + WebSocket</td><td>串行/并行/条件分支 + 失败重试 + 超时控制</td></tr>
+<tr><td>P1-B 可解释性报告</td><td>08-02</td><td>贡献度分析 + 协同/拮抗 + 合规说明</td><td>君臣佐使角色分配 + FormulaDetailPage 新增 Tab</td></tr>
+<tr><td>P1-C 报告导出</td><td>08-02</td><td>DOCX/PDF/Markdown 三格式导出</td><td>python-docx + reportlab + Markdown</td></tr>
+<tr><td>P1-D 数据飞轮</td><td>08-02</td><td>采集管道 + 质量校验 + 脱敏 + 推荐训练</td><td>全自动：采集→校验→脱敏→训练→反哺</td></tr>
+<tr><td>P2 插件化生态</td><td>08-02</td><td>6 核心插件 + API Key + SDK 元数据</td><td>插件管理器 + 开放 API Schema + 开发者文档</td></tr>
+</tbody></table>
+
+<p><strong>测试通过率</strong>：100%（23/23），TypeScript 新增错误：0（非图组件清零），图组件错误降至 128</p>
+
+<h3>技术架构演进</h3>
+
+<table><thead><tr><th>版本</th><th>日期</th><th>架构里程碑</th></tr></thead><tbody><tr><td>v1.0</td><td>2026-07-31</td><td>六边形架构 + DDD + 全栈可观测</td></tr>
+<tr><td>v2.0</td><td>2026-08-02</td><td>深度开发：Agent + 合规前置 + DAG + 数据飞轮 + 插件化</td></tr>
+</tbody></table>
+
 <hr>
-#<h1>8. 质量与安全体系
 
-##<h1>6.1 代码质量标准
-| 指标 | 标准 | 当前状态 |
-|:-----|:----:|:--------:|
-| 后端测试覆盖率 | ≥ 75% | ✅ 达标 |
-| 前端 TypeScript 错误（非图组件） | 0 | ✅ 已清零 |
-| 前端 TypeScript 错误（图组件） | ≤ 128 | ⚠️ 128（待优化） |
-| 前端 `as any` 数量 | 0 | ✅ 已清零 |
-| 后端 `str(e)` 泄漏 | 0 | ✅ 已修复 |
-| CI 门禁通过率 | 100% | ✅ 达标 |
-| Alembic 迁移规范 | YYYYMMDD_HHMMSS_ 格式 | ✅ 已统一（27 版本） |
-| 循环依赖检测 | 通过 | ✅ 已通过 |
-| **架构约束（三层模式）** | ✅ 符合 ADR-011 | ✅ 全局三层 + 局部六边形 |
-| 安全扫描 | 通过 | ✅ 无高危漏洞 |
+</section>
 
-##<h1>6.2 安全体系
+<section id="8-质量与安全体系">
 
-**纵深防御 7 层架构**：
-| 层级 | 防护措施 |
-|:----:|:---------|
-| 1 | 请求签名验证 + IP 黑名单 |
-| 2 | SQL 注入参数化查询 |
-| 3 | XSS 输入输出双端过滤 |
-| 4 | CSRF Token 验证 |
-| 5 | JWT 强验证 + 短期有效期 |
-| 6 | AES-256-GCM 敏感数据加密 |
-| 7 | 速率限制 + 异常行为检测 |
+<h1>8. 质量与安全体系</h1>
 
-**安全审计日期**：2026-07-12 ~ 2026-07-14（集中修复期），2026-07-23（AI 模块专项加固），2026-08-02（深度开发安全审查）
+<h2 id="6-1-代码质量标准">6.1 代码质量标准</h2>
 
-##<h1>6.3 测试体系
+<table><thead><tr><th>指标</th><th>标准</th><th>当前状态</th></tr></thead><tbody><tr><td>后端测试覆盖率</td><td>≥ 75%</td><td>✅ 达标</td></tr>
+<tr><td>前端 TypeScript 错误（非图组件）</td><td>0</td><td>✅ 已清零</td></tr>
+<tr><td>前端 TypeScript 错误（图组件）</td><td>≤ 128</td><td>⚠️ 128（待优化）</td></tr>
+<tr><td>前端 `as any` 数量</td><td>0</td><td>✅ 已清零</td></tr>
+<tr><td>后端 `str(e)` 泄漏</td><td>0</td><td>✅ 已修复</td></tr>
+<tr><td>CI 门禁通过率</td><td>100%</td><td>✅ 达标</td></tr>
+<tr><td>Alembic 迁移规范</td><td>YYYYMMDD_HHMMSS_ 格式</td><td>✅ 已统一（27 版本）</td></tr>
+<tr><td>循环依赖检测</td><td>通过</td><td>✅ 已通过</td></tr>
+<tr><td>**架构约束（三层模式）**</td><td>✅ 符合 ADR-011</td><td>✅ 全局三层 + 局部六边形</td></tr>
+<tr><td>安全扫描</td><td>通过</td><td>✅ 无高危漏洞</td></tr>
+</tbody></table>
 
-**后端测试**（46 个测试文件，1,384+ 测试函数）：
-- `tests/core/` — 核心模块单元测试
-- `tests/api/` — API 路由集成测试
-- `tests/services/` — 业务服务测试
-- `tests/security/` — 安全专项测试
-- `tests/integration/` — 端到端集成测试
-- `tests/e2e/` — 用户流程 E2E 测试
+<h2 id="6-2-安全体系">6.2 安全体系</h2>
 
-**前端测试**（34 个测试文件）：
-- 组件单元测试
-- Hook 测试
-- 集成测试
+<p><strong>纵深防御 7 层架构</strong>：</p>
+
+<table><thead><tr><th>层级</th><th>防护措施</th></tr></thead><tbody><tr><td>1</td><td>请求签名验证 + IP 黑名单</td></tr>
+<tr><td>2</td><td>SQL 注入参数化查询</td></tr>
+<tr><td>3</td><td>XSS 输入输出双端过滤</td></tr>
+<tr><td>4</td><td>CSRF Token 验证</td></tr>
+<tr><td>5</td><td>JWT 强验证 + 短期有效期</td></tr>
+<tr><td>6</td><td>AES-256-GCM 敏感数据加密</td></tr>
+<tr><td>7</td><td>速率限制 + 异常行为检测</td></tr>
+</tbody></table>
+
+<p><strong>安全审计日期</strong>：2026-07-12 ~ 2026-07-14（集中修复期），2026-07-23（AI 模块专项加固），2026-08-02（深度开发安全审查）</p>
+
+<h2 id="6-3-测试体系">6.3 测试体系</h2>
+
+<p><strong>后端测试</strong>（46 个测试文件，1,384+ 测试函数）：</p>
+
+<ul>
+<li><code class="inline-code">tests/core/</code> — 核心模块单元测试</li>
+<li><code class="inline-code">tests/api/</code> — API 路由集成测试</li>
+<li><code class="inline-code">tests/services/</code> — 业务服务测试</li>
+<li><code class="inline-code">tests/security/</code> — 安全专项测试</li>
+<li><code class="inline-code">tests/integration/</code> — 端到端集成测试</li>
+<li><code class="inline-code">tests/e2e/</code> — 用户流程 E2E 测试</li>
+</ul>
+
+<p><strong>前端测试</strong>（34 个测试文件）：</p>
+
+<ul>
+<li>组件单元测试</li>
+<li>Hook 测试</li>
+<li>集成测试</li>
+</ul>
+
 <hr>
-#<h1>9. 部署与运维
 
-##<h1>7.1 部署方式
-| 环境 | 方式 | 说明 |
-|:----:|:----:|:-----|
-| 本地开发 | Docker Compose | 5 服务编排（backend/frontend/postgres/redis/neoj4） |
-| 局域网部署 | Nginx 反向代理 | 多 IP 支持，一键启动脚本 |
-| 生产部署 | K8s + Helm | 完整 Helm Charts + 健康检查 + 自动回滚 |
+</section>
 
-##<h1>7.2 监控告警
-| 系统 | 用途 |
-|:-----|:-----|
-| Prometheus | 指标采集（QPS、延迟、错误率、JVM/Python 运行时） |
-| Grafana | 可视化仪表盘 |
-| Loki | 日志聚合与检索 |
-| Tempo | 分布式链路追踪 |
+<section id="9-部署与运维">
 
-##<h1>7.3 备份策略
+<h1>9. 部署与运维</h1>
 
-- 数据库自动备份（每日）
-- PITR（Point-in-Time Recovery）支持
-- 灾难恢复演练脚本
+<h2 id="7-1-部署方式">7.1 部署方式</h2>
+
+<table><thead><tr><th>环境</th><th>方式</th><th>说明</th></tr></thead><tbody><tr><td>本地开发</td><td>Docker Compose</td><td>5 服务编排（backend/frontend/postgres/redis/neoj4）</td></tr>
+<tr><td>局域网部署</td><td>Nginx 反向代理</td><td>多 IP 支持，一键启动脚本</td></tr>
+<tr><td>生产部署</td><td>K8s + Helm</td><td>完整 Helm Charts + 健康检查 + 自动回滚</td></tr>
+</tbody></table>
+
+<h2 id="7-2-监控告警">7.2 监控告警</h2>
+
+<table><thead><tr><th>系统</th><th>用途</th></tr></thead><tbody><tr><td>Prometheus</td><td>指标采集（QPS、延迟、错误率、JVM/Python 运行时）</td></tr>
+<tr><td>Grafana</td><td>可视化仪表盘</td></tr>
+<tr><td>Loki</td><td>日志聚合与检索</td></tr>
+<tr><td>Tempo</td><td>分布式链路追踪</td></tr>
+</tbody></table>
+
+<h2 id="7-3-备份策略">7.3 备份策略</h2>
+
+<ul>
+<li>数据库自动备份（每日）</li>
+<li>PITR（Point-in-Time Recovery）支持</li>
+<li>灾难恢复演练脚本</li>
+</ul>
+
 <hr>
-#<h1>10. 开发规范与流程
 
-##<h1>10.1 分支策略
+</section>
 
-```
-main                    ← 生产分支，受保护
+<section id="10-开发规范与流程">
+
+<h1>10. 开发规范与流程</h1>
+
+<h2 id="10-1-分支策略">10.1 分支策略</h2>
+
+<pre class="code-block"><code>main                    ← 生产分支，受保护
   ├── feature/*         ← 功能开发（feat/xxx）
   ├── fix/*             ← Bug 修复（fix/xxx）
   ├── refactor/*        ← 代码重构（refactor/xxx）
   ├── docs/*            ← 文档更新（docs/xxx）
   ├── chore/*           ← 杂项（chore/xxx）
-  └── hotfix/*          ← 紧急修复（hotfix/xxx）
-```
+  └── hotfix/*          ← 紧急修复（hotfix/xxx）</code></pre>
 
-**命名规范**：`{类型}/{简短描述}`，例如 `feature/agent-workflow`、`fix/compliance-bug`
+<p><strong>命名规范</strong>：<code class="inline-code">{类型}/{简短描述}</code>，例如 <code class="inline-code">feature/agent-workflow</code>、<code class="inline-code">fix/compliance-bug</code></p>
 
-##<h1>10.2 Commit 规范（Conventional Commits）
-| 前缀 | 含义 | 示例 |
-|:-----|:-----|:-----|
-| `feat:` | 新功能 | `feat(agent): add RAG retrieval tool` |
-| `fix:` | Bug 修复 | `fix(auth): prevent JWT replay attack` |
-| `docs:` | 文档变更 | `docs: update ADR index` |
-| `refactor:` | 代码重构 | `refactor(core): split core/ into 12 modules` |
-| `test:` | 测试相关 | `test: add 152 unit tests for core modules` |
-| `chore:` | 杂项 | `chore: update dependency versions` |
-| `perf:` | 性能优化 | `perf(search): add BM25+vector hybrid` |
-| `ci:` | CI/CD 变更 | `ci: add Alembic migration check` |
+<h2 id="10-2-commit-规范-conventional-commits">10.2 Commit 规范（Conventional Commits）</h2>
 
-##<h1>10.3 代码审查流程
+<table><thead><tr><th>前缀</th><th>含义</th><th>示例</th></tr></thead><tbody><tr><td>`feat:`</td><td>新功能</td><td>`feat(agent): add RAG retrieval tool`</td></tr>
+<tr><td>`fix:`</td><td>Bug 修复</td><td>`fix(auth): prevent JWT replay attack`</td></tr>
+<tr><td>`docs:`</td><td>文档变更</td><td>`docs: update ADR index`</td></tr>
+<tr><td>`refactor:`</td><td>代码重构</td><td>`refactor(core): split core/ into 12 modules`</td></tr>
+<tr><td>`test:`</td><td>测试相关</td><td>`test: add 152 unit tests for core modules`</td></tr>
+<tr><td>`chore:`</td><td>杂项</td><td>`chore: update dependency versions`</td></tr>
+<tr><td>`perf:`</td><td>性能优化</td><td>`perf(search): add BM25+vector hybrid`</td></tr>
+<tr><td>`ci:`</td><td>CI/CD 变更</td><td>`ci: add Alembic migration check`</td></tr>
+</tbody></table>
 
-1. **提交前自检**：`npm run lint` + `npx tsc --noEmit`（前端）；`ruff check` + `black --check`（后端）
-2. **创建 PR**：填写 PR 描述，关联 Issue/ADR
-3. **CI 门禁**：9 Job Pipeline 自动运行
-4. **同行评审**：至少 1 人 Review
-5. **合并**： Squash Merge 至目标分支
+<h2 id="10-3-代码审查流程">10.3 代码审查流程</h2>
 
-##<h1>10.4 新增模块开发 Checklist
+<p>1. <strong>提交前自检</strong>：<code class="inline-code">npm run lint</code> + <code class="inline-code">npx tsc --noEmit</code>（前端）；<code class="inline-code">ruff check</code> + <code class="inline-code">black --check</code>（后端）</p>
 
-- [ ] 遵循 DDD 有界上下文边界（参考 ADR-004）
-- [ ] 领域层不导入外部依赖（参考 ADR-001）
-- [ ] 编写单元测试（覆盖率 ≥75%）
-- [ ] 添加 API 文档注解（FastAPI auto-docs）
-- [ ] 更新 ADR 索引（如为架构变更）
-- [ ] 更新本手册相关章节
+<p>2. <strong>创建 PR</strong>：填写 PR 描述，关联 Issue/ADR</p>
 
-##<h1>10.5 本地开发环境启动
+<p>3. <strong>CI 门禁</strong>：9 Job Pipeline 自动运行</p>
 
-```bash
-<h1>═══════════════════════════════════════════════════════
-<h1>方式一：Docker Compose（推荐，一次性启动所有服务）
-<h1>═══════════════════════════════════════════════════════
+<p>4. <strong>同行评审</strong>：至少 1 人 Review</p>
+
+<p>5. <strong>合并</strong>： Squash Merge 至目标分支</p>
+
+<h2 id="10-4-新增模块开发-checklist">10.4 新增模块开发 Checklist</h2>
+
+<h2 id="10-5-本地开发环境启动">10.5 本地开发环境启动</h2>
+
+<pre class="code-block"><code>&lt;h1&gt;═══════════════════════════════════════════════════════
+&lt;h1&gt;方式一：Docker Compose（推荐，一次性启动所有服务）
+&lt;h1&gt;═══════════════════════════════════════════════════════
 cp .env.example .env
-<h1>编辑 .env：确保 SECRET_KEY >= 32位, ADMIN_PASSWORD >= 12位
+&lt;h1&gt;编辑 .env：确保 SECRET_KEY &gt;= 32位, ADMIN_PASSWORD &gt;= 12位
 docker compose up -d
 
-<h1>═══════════════════════════════════════════════════════
-<h1>方式二：本地开发（前后端分别启动）
-<h1>═══════════════════════════════════════════════════════
-<h1>后端
+&lt;h1&gt;═══════════════════════════════════════════════════════
+&lt;h1&gt;方式二：本地开发（前后端分别启动）
+&lt;h1&gt;═══════════════════════════════════════════════════════
+&lt;h1&gt;后端
 cd backend
-python -m venv venv && venv\Scripts\activate
+python -m venv venv &amp;&amp; venv\Scripts\activate
 pip install -r requirements.txt
 alembic upgrade head
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
-<h1>前端（另一终端）
+&lt;h1&gt;前端（另一终端）
 cd frontend
 npm install
-npm run dev
-```
+npm run dev</code></pre>
 
-**访问地址**：
-- 前端：http://localhost:3000
-- 后端 API：http://localhost:8000
-- Swagger UI：http://localhost:8000/docs
-- Grafana：http://localhost:3001（Docker Compose 模式）
+<ul>
+<li>[ ] 遵循 DDD 有界上下文边界（参考 ADR-004）</li>
+<li>[ ] 领域层不导入外部依赖（参考 ADR-001）</li>
+<li>[ ] 编写单元测试（覆盖率 ≥75%）</li>
+<li>[ ] 添加 API 文档注解（FastAPI auto-docs）</li>
+<li>[ ] 更新 ADR 索引（如为架构变更）</li>
+<li>[ ] 更新本手册相关章节</li>
+</ul>
 
-**默认账号**：
-- 用户名：`admin`
-- 密码：见 `.env` 中 `ADMIN_PASSWORD`（首次启动自动生成）
+<p><strong>访问地址</strong>：</p>
+
+<ul>
+<li>前端：http://localhost:3000</li>
+<li>后端 API：http://localhost:8000</li>
+<li>Swagger UI：http://localhost:8000/docs</li>
+<li>Grafana：http://localhost:3001（Docker Compose 模式）</li>
+</ul>
+
+<p><strong>默认账号</strong>：</p>
+
+<ul>
+<li>用户名：<code class="inline-code">admin</code></li>
+<li>密码：见 <code class="inline-code">.env</code> 中 <code class="inline-code">ADMIN_PASSWORD</code>（首次启动自动生成）</li>
+</ul>
+
 <hr>
-#<h1>11. AI 模块深度解析
 
-##<h1>11.1 AI 模块架构总览
+</section>
 
-AI 模块是 RMFOOD 平台的核心差异化能力，占前端代码的 **130+ 文件、后端 15+ 服务文件**。
+<section id="11-ai-模块深度解析">
 
-```
-AI 智能助手中心 (http://localhost:3000/ai)
+<h1>11. AI 模块深度解析</h1>
+
+<h2 id="11-1-ai-模块架构总览">11.1 AI 模块架构总览</h2>
+
+<p>AI 模块是 RMFOOD 平台的核心差异化能力，占前端代码的 <strong>130+ 文件、后端 15+ 服务文件</strong>。</p>
+
+<pre class="code-block"><code>AI 智能助手中心 (http://localhost:3000/ai)
 ├── 💬 智能对话 (ChatTab v10.0)          ← 最成熟模块 (95%)
 │   ├── AcademicianChatEngine            ← 院士级对话引擎
 │   ├── HybridNLPEngineV2                ← 混合 NLP 引擎（意图识别 85%+）
@@ -1731,14 +2172,13 @@ AI 智能助手中心 (http://localhost:3000/ai)
 └── ⚙️ 配置管理
     ├── 模型选择 + 参数配置
     ├── API Key 管理（AES-256-GCM 加密）
-    └── 模型状态实时监控
-```
+    └── 模型状态实时监控</code></pre>
 
-##<h1>11.2 院士级对话引擎（AcademicianChatEngine）
+<h2 id="11-2-院士级对话引擎-academicianchatengine">11.2 院士级对话引擎（AcademicianChatEngine）</h2>
 
-**核心链路**：
-```
-用户输入 → ChatTab → useChatSendMessage → chatService.sendMessage()
+<p><strong>核心链路</strong>：</p>
+
+<pre class="code-block"><code>用户输入 → ChatTab → useChatSendMessage → chatService.sendMessage()
   ↓
 POST /api/v1/ai/chat → ai_router.py → AcademicianChatEngine.chat()
   ↓
@@ -1752,216 +2192,223 @@ POST /api/v1/ai/chat → ai_router.py → AcademicianChatEngine.chat()
   ↓
 ChatResponse { content, formulas, thinking_steps }
   ↓
-前端渲染: MarkdownRenderer + EnhancedContentRenderer + ChatSidebarV4
-```
+前端渲染: MarkdownRenderer + EnhancedContentRenderer + ChatSidebarV4</code></pre>
 
-##<h1>11.3 LLM 多提供商智能路由
-| 场景 | 推荐提供商 | 理由 |
-|:-----|:----------:|:-----|
-| 简单查询/日常对话 | DeepSeek | 成本低，响应快 |
-| 复杂推理/专业配方设计 | OpenAI (GPT-4o) | 推理能力强 |
-| 中文场景优化 | 智谱 (GLM-4) | 中文理解优秀 |
-| 企业私有化部署 | vLLM 自定义端点 | 数据不出域 |
-| 多模态需求 | 通义千问 | 视觉理解强 |
+<h2 id="11-3-llm-多提供商智能路由">11.3 LLM 多提供商智能路由</h2>
+
+<table><thead><tr><th>场景</th><th>推荐提供商</th><th>理由</th></tr></thead><tbody><tr><td>简单查询/日常对话</td><td>DeepSeek</td><td>成本低，响应快</td></tr>
+<tr><td>复杂推理/专业配方设计</td><td>OpenAI (GPT-4o)</td><td>推理能力强</td></tr>
+<tr><td>中文场景优化</td><td>智谱 (GLM-4)</td><td>中文理解优秀</td></tr>
+<tr><td>企业私有化部署</td><td>vLLM 自定义端点</td><td>数据不出域</td></tr>
+<tr><td>多模态需求</td><td>通义千问</td><td>视觉理解强</td></tr>
+</tbody></table>
+
 <hr>
-#<h1>12. 数据架构与治理
 
-##<h1>12.1 数据分类分级
-| 级别 | 数据类型 | 示例 | 保护措施 |
-|:----:|:---------|:-----|:---------|
-| 🔴 绝密 | API Key / 加密密钥 | LLM API Key | AES-256-GCM 加密存储 |
-| 🟠 机密 | 用户数据 / 配方数据 | 用户个人信息 | RBAC + 多租户隔离 |
-| 🟡 内部 | 实验数据 / 知识库 | 配方配方、实验记录 | 组织内可见 |
-| 🟢 公开 | 原料信息 / 法规数据 | TCMSP 公开数据 | 无需认证 |
+</section>
 
-##<h1>12.2 数据血缘追踪
+<section id="12-数据架构与治理">
 
-当前状态：**基础链路已建立，缺乏正式数据血缘系统**。
+<h1>12. 数据架构与治理</h1>
 
-建议引入 OpenLineage + Marquez 构建完整数据血缘，追溯：
-```
-原始数据源 → 导入管道 → 数据库 → AI 模型训练 → 配方输出 → 实验验证
-```
+<h2 id="12-1-数据分类分级">12.1 数据分类分级</h2>
 
-##<h1>12.3 数据生命周期管理
-| 阶段 | 策略 | 当前状态 |
-|:-----|:-----|:--------:|
-| 采集 | 自动化 ETL + 手动导入 | ✅ |
-| 存储 | PostgreSQL 主存储 + Redis 缓存 | ✅ |
-| 使用 | RBAC 权限控制 + 多租户隔离 | ✅ |
-| 归档 | 尚未建立 | ⚠️ 待规划 |
-| 销毁 | GDPR 合规删除接口 | ✅ |
+<table><thead><tr><th>级别</th><th>数据类型</th><th>示例</th><th>保护措施</th></tr></thead><tbody><tr><td>🔴 绝密</td><td>API Key / 加密密钥</td><td>LLM API Key</td><td>AES-256-GCM 加密存储</td></tr>
+<tr><td>🟠 机密</td><td>用户数据 / 配方数据</td><td>用户个人信息</td><td>RBAC + 多租户隔离</td></tr>
+<tr><td>🟡 内部</td><td>实验数据 / 知识库</td><td>配方配方、实验记录</td><td>组织内可见</td></tr>
+<tr><td>🟢 公开</td><td>原料信息 / 法规数据</td><td>TCMSP 公开数据</td><td>无需认证</td></tr>
+</tbody></table>
+
+<h2 id="12-2-数据血缘追踪">12.2 数据血缘追踪</h2>
+
+<p>当前状态：<strong>基础链路已建立，缺乏正式数据血缘系统</strong>。</p>
+
+<p>建议引入 OpenLineage + Marquez 构建完整数据血缘，追溯：</p>
+
+<pre class="code-block"><code>原始数据源 → 导入管道 → 数据库 → AI 模型训练 → 配方输出 → 实验验证</code></pre>
+
+<h2 id="12-3-数据生命周期管理">12.3 数据生命周期管理</h2>
+
+<table><thead><tr><th>阶段</th><th>策略</th><th>当前状态</th></tr></thead><tbody><tr><td>采集</td><td>自动化 ETL + 手动导入</td><td>✅</td></tr>
+<tr><td>存储</td><td>PostgreSQL 主存储 + Redis 缓存</td><td>✅</td></tr>
+<tr><td>使用</td><td>RBAC 权限控制 + 多租户隔离</td><td>✅</td></tr>
+<tr><td>归档</td><td>尚未建立</td><td>⚠️ 待规划</td></tr>
+<tr><td>销毁</td><td>GDPR 合规删除接口</td><td>✅</td></tr>
+</tbody></table>
+
 <hr>
-#<h1>13. 附录：数据统计
 
-##<h1>13.1 开发统计
-| 指标 | 数值 |
-|:-----|-----:|
-| 项目总开发天数 | 约 130 天（2026-04 ~ 2026-08） |
-| Git 正式提交天数 | 25 天 |
-| 总提交次数 | 111+ 次 |
-| 最后一次提交 | 2026-08-24 |
-| 当前活跃分支 | main |
-| 主分支 | main |
-| Alembic 迁移版本 | 35 个（20260502 ~ 20260823） |
-| 架构决策记录 | 27 份（ADR-001 ~ ADR-027） |
-| 前端路由页面 | 22 个（含子路由 ~45+） |
-| 后端 API 路由文件 | 79 个（v1/ 28 + 顶层 51） |
-| ORM 模型文件 | 40 个 |
-| Pydantic Schema 文件 | 21 个 |
-| 后端 Core 子目录 | 16 个 |
-| 后端 Service 子目录 | 23+ 个 |
-| 前端 Zustand Store | 15 个 |
-| 前端自定义 Hook | 44 个 |
-| 前端 API 客户端模块 | 43 个 |
-| 前端 UI 原子组件 | 39 个 |
+</section>
 
-##<h1>13.2 代码量统计（截至 2026-08-12 实证）
-| 类别 | 文件数 | 行数（估算） |
-|:-----|-------:|------------:|
-| 后端 Python 源文件 | **636** | ~120,000 |
-| 后端 API 路由模块 | **79** | ~27,000 |
-| 后端服务文件 | **328** | ~95,000 |
-| 后端 Core 基础设施 | **88** | ~28,000 |
-| 后端 ORM 模型 | **40** | ~13,000 |
-| 后端 Pydantic Schema | **21** | ~8,000 |
-| 后端 Alembic 迁移 | **35 版本** | ~15,000 |
-| 前端 TSX 文件 | **515** | ~95,000 |
-| 前端 TS 文件 | **533** | ~65,000 |
-| 前端页面组件 | **89** | ~40,000 |
-| 前端 UI 组件 | **393** | ~55,000 |
-| 前端自定义 Hooks | **44** | ~12,000 |
-| 前端 Zustand Stores | **15** | ~8,000 |
-| 前端 API 客户端 | **43** | ~15,000 |
-| 测试文件（后+前） | **128+** | ~35,000 |
-| 项目 Markdown 文档 | **62+** | ~30,000 |
-| **合计** | **~2,200+** | **~430,000** |
+<section id="13-附录-数据统计">
 
-##<h1>8.4 深度开发交付统计（2026-08-02 ~ 2026-08-03）
-| 阶段 | 后端文件 | 前端文件 | API 端点 | 测试通过率 |
-|:----:|--------:|--------:|--------:|:---------:|
-| P0-A Agent 工作流 | 7 | 2 | 6 | 100% |
-| P0-B 合规前置 | 2 | 2 | 5 | 100% |
-| P0-C 实验解析 | 4 | 2 | 2 | 100% |
-| P1-A 工作流执行 | 5 | 0 | 4 | 100% |
-| P1-B 可解释性报告 | 4 | 4 | 8 | 100% |
-| P1-C 数据飞轮 | 6 | 0 | 5 | 100% |
-| P2 插件化生态 | 4 | 0 | 9 | 100% |
-| **合计** | **32** | **12** | **39** | **100%** |
+<h1>13. 附录：数据统计</h1>
 
-###<h1>深度开发核心能力
-| 能力 | 技术实现 | 前端接入 |
-|:-----|:---------|:---------|
-| **AI Agent 工作流** | 6 个工具（RAG检索/合规检查/配方生成/实验方案/药材查询/知识库统计）+ LLM 自主编排 | AgentPage.tsx + /agent 路由 |
-| **合规前置设计** | 约束惩罚机制接入生成管线 + 实时评分 + 自动修复 + 15 种药食同源限量 + 10 对禁忌搭配 | ComplianceBadge.tsx + useComplianceCheck Hook |
-| **实验数据解析** | AnIML + JCAMP-DX 双格式解析器 + 峰识别规则引擎 + 成分含量估算 | DataUploadPanel.tsx（拖拽上传） |
-| **DAG 工作流执行** | 5 内置执行器（LLM/FormulaGPT/SafetyCheck/SynergyAnalysis/DataAnalysis）+ 重试 + 超时 + WebSocket 推送 | 工作流详情页 |
-| **可解释性报告** | 君臣佐使贡献度分析 + 协同/拮抗效应 + 合规说明 + 改进建议 | FormulaDetailPage「可解释性」Tab |
-| **报告导出** | DOCX（python-docx）+ PDF（reportlab）+ Markdown 三格式 | ReportExportPanel.tsx |
-| **数据飞轮** | 自动采集管道 + 质量校验器 + 行为脱敏 + 推荐模型训练 | /data-flywheel API |
-| **插件化生态** | 6 核心插件 + API Key 管理 + SDK 元数据 + 开放 API Schema | /plugins API |
+<h2 id="13-1-开发统计">13.1 开发统计</h2>
 
-##<h1>8.3 目录结构
+<table><thead><tr><th>指标</th><th>数值</th></tr></thead><tbody><tr><td>项目总开发天数</td><td>约 130 天（2026-04 ~ 2026-08）</td></tr>
+<tr><td>Git 正式提交天数</td><td>25 天</td></tr>
+<tr><td>总提交次数</td><td>111+ 次</td></tr>
+<tr><td>最后一次提交</td><td>2026-08-24</td></tr>
+<tr><td>当前活跃分支</td><td>main</td></tr>
+<tr><td>主分支</td><td>main</td></tr>
+<tr><td>Alembic 迁移版本</td><td>35 个（20260502 ~ 20260823）</td></tr>
+<tr><td>架构决策记录</td><td>27 份（ADR-001 ~ ADR-027）</td></tr>
+<tr><td>前端路由页面</td><td>22 个（含子路由 ~45+）</td></tr>
+<tr><td>后端 API 路由文件</td><td>79 个（v1/ 28 + 顶层 51）</td></tr>
+<tr><td>ORM 模型文件</td><td>40 个</td></tr>
+<tr><td>Pydantic Schema 文件</td><td>21 个</td></tr>
+<tr><td>后端 Core 子目录</td><td>16 个</td></tr>
+<tr><td>后端 Service 子目录</td><td>23+ 个</td></tr>
+<tr><td>前端 Zustand Store</td><td>15 个</td></tr>
+<tr><td>前端自定义 Hook</td><td>44 个</td></tr>
+<tr><td>前端 API 客户端模块</td><td>43 个</td></tr>
+<tr><td>前端 UI 原子组件</td><td>39 个</td></tr>
+</tbody></table>
 
-```
-RMFOOD/
-├── backend/                  <h1>后端服务（FastAPI + SQLAlchemy）
+<h2 id="13-2-代码量统计-截至-2026-08-12-实证">13.2 代码量统计（截至 2026-08-12 实证）</h2>
+
+<table><thead><tr><th>类别</th><th>文件数</th><th>行数（估算）</th></tr></thead><tbody><tr><td>后端 Python 源文件</td><td>**636**</td><td>~120,000</td></tr>
+<tr><td>后端 API 路由模块</td><td>**79**</td><td>~27,000</td></tr>
+<tr><td>后端服务文件</td><td>**328**</td><td>~95,000</td></tr>
+<tr><td>后端 Core 基础设施</td><td>**88**</td><td>~28,000</td></tr>
+<tr><td>后端 ORM 模型</td><td>**40**</td><td>~13,000</td></tr>
+<tr><td>后端 Pydantic Schema</td><td>**21**</td><td>~8,000</td></tr>
+<tr><td>后端 Alembic 迁移</td><td>**35 版本**</td><td>~15,000</td></tr>
+<tr><td>前端 TSX 文件</td><td>**515**</td><td>~95,000</td></tr>
+<tr><td>前端 TS 文件</td><td>**533**</td><td>~65,000</td></tr>
+<tr><td>前端页面组件</td><td>**89**</td><td>~40,000</td></tr>
+<tr><td>前端 UI 组件</td><td>**393**</td><td>~55,000</td></tr>
+<tr><td>前端自定义 Hooks</td><td>**44**</td><td>~12,000</td></tr>
+<tr><td>前端 Zustand Stores</td><td>**15**</td><td>~8,000</td></tr>
+<tr><td>前端 API 客户端</td><td>**43**</td><td>~15,000</td></tr>
+<tr><td>测试文件（后+前）</td><td>**128+**</td><td>~35,000</td></tr>
+<tr><td>项目 Markdown 文档</td><td>**62+**</td><td>~30,000</td></tr>
+<tr><td>**合计**</td><td>**~2,200+**</td><td>**~430,000**</td></tr>
+</tbody></table>
+
+<h2 id="8-4-深度开发交付统计-2026-08-02--2026-08-03">8.4 深度开发交付统计（2026-08-02 ~ 2026-08-03）</h2>
+
+<table><thead><tr><th>阶段</th><th>后端文件</th><th>前端文件</th><th>API 端点</th><th>测试通过率</th></tr></thead><tbody><tr><td>P0-A Agent 工作流</td><td>7</td><td>2</td><td>6</td><td>100%</td></tr>
+<tr><td>P0-B 合规前置</td><td>2</td><td>2</td><td>5</td><td>100%</td></tr>
+<tr><td>P0-C 实验解析</td><td>4</td><td>2</td><td>2</td><td>100%</td></tr>
+<tr><td>P1-A 工作流执行</td><td>5</td><td>0</td><td>4</td><td>100%</td></tr>
+<tr><td>P1-B 可解释性报告</td><td>4</td><td>4</td><td>8</td><td>100%</td></tr>
+<tr><td>P1-C 数据飞轮</td><td>6</td><td>0</td><td>5</td><td>100%</td></tr>
+<tr><td>P2 插件化生态</td><td>4</td><td>0</td><td>9</td><td>100%</td></tr>
+<tr><td>**合计**</td><td>**32**</td><td>**12**</td><td>**39**</td><td>**100%**</td></tr>
+</tbody></table>
+
+<h3>深度开发核心能力</h3>
+
+<table><thead><tr><th>能力</th><th>技术实现</th><th>前端接入</th></tr></thead><tbody><tr><td>**AI Agent 工作流**</td><td>6 个工具（RAG检索/合规检查/配方生成/实验方案/药材查询/知识库统计）+ LLM 自主编排</td><td>AgentPage.tsx + /agent 路由</td></tr>
+<tr><td>**合规前置设计**</td><td>约束惩罚机制接入生成管线 + 实时评分 + 自动修复 + 15 种药食同源限量 + 10 对禁忌搭配</td><td>ComplianceBadge.tsx + useComplianceCheck Hook</td></tr>
+<tr><td>**实验数据解析**</td><td>AnIML + JCAMP-DX 双格式解析器 + 峰识别规则引擎 + 成分含量估算</td><td>DataUploadPanel.tsx（拖拽上传）</td></tr>
+<tr><td>**DAG 工作流执行**</td><td>5 内置执行器（LLM/FormulaGPT/SafetyCheck/SynergyAnalysis/DataAnalysis）+ 重试 + 超时 + WebSocket 推送</td><td>工作流详情页</td></tr>
+<tr><td>**可解释性报告**</td><td>君臣佐使贡献度分析 + 协同/拮抗效应 + 合规说明 + 改进建议</td><td>FormulaDetailPage「可解释性」Tab</td></tr>
+<tr><td>**报告导出**</td><td>DOCX（python-docx）+ PDF（reportlab）+ Markdown 三格式</td><td>ReportExportPanel.tsx</td></tr>
+<tr><td>**数据飞轮**</td><td>自动采集管道 + 质量校验器 + 行为脱敏 + 推荐模型训练</td><td>/data-flywheel API</td></tr>
+<tr><td>**插件化生态**</td><td>6 核心插件 + API Key 管理 + SDK 元数据 + 开放 API Schema</td><td>/plugins API</td></tr>
+</tbody></table>
+
+<h2 id="8-3-目录结构">8.3 目录结构</h2>
+
+<pre class="code-block"><code>RMFOOD/
+├── backend/                  &lt;h1&gt;后端服务（FastAPI + SQLAlchemy）
 │   ├── app/
-│   │   ├── api/              <h1>56 个 API 路由模块
-│   │   ├── services/         <h1>90+ 服务（16 子目录）
-│   │   ├── models/           <h1>37 个 ORM 模型
-│   │   ├── schemas/          <h1>17 个 Pydantic Schema
-│   │   ├── core/             <h1>12 个核心子模块（重构后）
-│   │   ├── infrastructure/   <h1>基础设施层
-│   │   ├── domain/           <h1>领域层（DDD）
-│   │   └── tests/            <h1>后端测试
-│   ├── alembic/              <h1>35 个数据库迁移版本
-│   └── scripts/              <h1>运维脚本
-├── frontend/                 <h1>前端应用（React 19 + TypeScript）
+│   │   ├── api/              &lt;h1&gt;56 个 API 路由模块
+│   │   ├── services/         &lt;h1&gt;90+ 服务（16 子目录）
+│   │   ├── models/           &lt;h1&gt;37 个 ORM 模型
+│   │   ├── schemas/          &lt;h1&gt;17 个 Pydantic Schema
+│   │   ├── core/             &lt;h1&gt;12 个核心子模块（重构后）
+│   │   ├── infrastructure/   &lt;h1&gt;基础设施层
+│   │   ├── domain/           &lt;h1&gt;领域层（DDD）
+│   │   └── tests/            &lt;h1&gt;后端测试
+│   ├── alembic/              &lt;h1&gt;35 个数据库迁移版本
+│   └── scripts/              &lt;h1&gt;运维脚本
+├── frontend/                 &lt;h1&gt;前端应用（React 19 + TypeScript）
 │   ├── src/
-│   │   ├── pages/            <h1>50+ 页面组件（16 个目录）
-│   │   ├── components/       <h1>200+ UI 组件（20 个子目录）
-│   │   ├── hooks/            <h1>42 个自定义 Hooks
-│   │   ├── stores/           <h1>14 个 Zustand Store
-│   │   ├── api/              <h1>39 个 API 服务模块
-│   │   ├── ai/               <h1>AI 模块（130+ 组件）
-│   │   └── tests/            <h1>前端测试
-├── docs/                     <h1>项目文档（80+ 文件）
-│   ├── adr/                  <h1>架构决策记录（27 份）
-│   ├── plans/                <h1>实施计划
-│   ├── reviews/              <h1>审查报告
-│   └── reports/              <h1>各类报告
-├── development-plan/         <h1>开发计划文档
-├── scripts/                  <h1>项目级脚本
-├── tests/                    <h1>集成测试
-├── ai-docs/                  <h1>AI 相关文档与 PDF
-├── data/                     <h1>数据文件
-├── docker/                   <h1>Docker 配置
-└── logs/                     <h1>运行日志
-```
+│   │   ├── pages/            &lt;h1&gt;50+ 页面组件（16 个目录）
+│   │   ├── components/       &lt;h1&gt;200+ UI 组件（20 个子目录）
+│   │   ├── hooks/            &lt;h1&gt;42 个自定义 Hooks
+│   │   ├── stores/           &lt;h1&gt;14 个 Zustand Store
+│   │   ├── api/              &lt;h1&gt;39 个 API 服务模块
+│   │   ├── ai/               &lt;h1&gt;AI 模块（130+ 组件）
+│   │   └── tests/            &lt;h1&gt;前端测试
+├── docs/                     &lt;h1&gt;项目文档（80+ 文件）
+│   ├── adr/                  &lt;h1&gt;架构决策记录（27 份）
+│   ├── plans/                &lt;h1&gt;实施计划
+│   ├── reviews/              &lt;h1&gt;审查报告
+│   └── reports/              &lt;h1&gt;各类报告
+├── development-plan/         &lt;h1&gt;开发计划文档
+├── scripts/                  &lt;h1&gt;项目级脚本
+├── tests/                    &lt;h1&gt;集成测试
+├── ai-docs/                  &lt;h1&gt;AI 相关文档与 PDF
+├── data/                     &lt;h1&gt;数据文件
+├── docker/                   &lt;h1&gt;Docker 配置
+└── logs/                     &lt;h1&gt;运行日志</code></pre>
 
-##<h1>13.3 文档索引
-| 文档类型 | 路径 | 数量 |
-|:---------|:-----|:----:|
-| ADR | `docs/adr/` | 27 |
-| 审查报告 | `docs/reviews/` | 8 |
-| 实施报告 | `docs/reports/` | 15 |
-| 部署指南 | `docs/deployment/` | 7 |
-| 设计文档 | `docs/design/` | 4 |
-| 计划文档 | `docs/plans/` | 5 |
-| 快速入门 | `docs/getting-started/` | 2 |
-| 超级能力计划 | `docs/superpowers/plans/` | 4 |
-| 超级能力规格 | `docs/superpowers/specs/` | 2 |
+<h2 id="13-3-文档索引">13.3 文档索引</h2>
 
-##<h1>13.4 核心文件速查
+<table><thead><tr><th>文档类型</th><th>路径</th><th>数量</th></tr></thead><tbody><tr><td>ADR</td><td>`docs/adr/`</td><td>27</td></tr>
+<tr><td>审查报告</td><td>`docs/reviews/`</td><td>8</td></tr>
+<tr><td>实施报告</td><td>`docs/reports/`</td><td>15</td></tr>
+<tr><td>部署指南</td><td>`docs/deployment/`</td><td>7</td></tr>
+<tr><td>设计文档</td><td>`docs/design/`</td><td>4</td></tr>
+<tr><td>计划文档</td><td>`docs/plans/`</td><td>5</td></tr>
+<tr><td>快速入门</td><td>`docs/getting-started/`</td><td>2</td></tr>
+<tr><td>超级能力计划</td><td>`docs/superpowers/plans/`</td><td>4</td></tr>
+<tr><td>超级能力规格</td><td>`docs/superpowers/specs/`</td><td>2</td></tr>
+</tbody></table>
 
-###<h1>后端关键文件
-| 文件 | 路径 | 说明 |
-|:-----|:-----|:-----|
-| 应用入口 | `backend/app/main.py` | 664 行，lifespan 生命周期管理 |
-| 安全中间件 | `backend/app/core/security/security_middleware.py` | 771 行，7 层纵深防御 |
-| 多算法编排器 | `backend/app/services/formula/multi_algorithm_orchestrator.py` | 4 种优化算法并行 |
-| 对话引擎 | `backend/app/services/ai/conversation_service.py` | AcademicianChatEngine v10.0 |
-| LLM 工厂 | `backend/app/services/ai/llm/provider_factory.py` | 5 提供商策略模式 |
-| CQRS 入口 | `backend/app/cqrs/handlers/` + `queries/` | 命令/查询处理器 |
-| 事件总线 | `backend/app/infrastructure/event_bus.py` | Redis Streams 事件驱动 |
-| 数据库初始化 | `backend/app/core/database/init_db.py` | Alembic 升级 + 种子数据 |
-| RBAC 核心 | `backend/app/core/rbac/` | 5 级角色权限体系 |
-| 多租户隔离 | `backend/app/core/multi_tenant/` | RLS + 租户守卫 |
-| 实时通信 | `backend/app/core/realtime/` | WebSocket 连接管理器 |
+<h2 id="13-4-核心文件速查">13.4 核心文件速查</h2>
 
-###<h1>前端关键文件
-| 文件 | 路径 | 说明 |
-|:-----|:-----|:-----|
-| 路由入口 | `frontend/src/App.tsx` | 3 路由守卫 + 22 页面路由 |
-| AI 助手主页 | `frontend/src/pages/ai/AIAssistantPage.tsx` | 9 大功能 Tab |
-| 配方详情 | `frontend/src/pages/formula/FormulaDetailPage.tsx` | 最复杂页面 |
-| Agent 工作流 | `frontend/src/pages/agent/AgentPage.tsx` | LLM 自主编排 |
-| 知识图谱 | `frontend/src/components/knowledge-graph/` | 4 层 + 6 子目录 |
-| Chat 消息列表 | `frontend/src/components/ai/features/ChatTab/` | v10.0 对话 UI |
-| 专业版组件 | `frontend/src/components/ai/features/components/pro/` | ChatMessages/ChatInputPro/ChatSidebar |
-| 状态管理 | `frontend/src/stores/` | 15 个 Zustand Store |
-| API 客户端 | `frontend/src/api/` | 43 个业务模块 |
-| 自定义 Hooks | `frontend/src/hooks/` | 44 个业务 Hook |
-| UI 原子组件 | `frontend/src/components/ui/` | 39 个基础组件 |
+<h3>后端关键文件</h3>
 
-###<h1>数据库关键文件
-| 文件 | 路径 | 说明 |
-|:-----|:-----|:-----|
-| ORM 模型基类 | `backend/app/models/base.py` | 所有模型继承 |
-| 枚举定义 | `backend/app/models/enums.py` | 全局枚举 |
-| 公式集成 | `backend/app/models/formula_deep_integration.py` | 配方深度关联 |
-| TCM 模型 | `backend/app/models/tcm_schema.py` | 中药数据库 |
-| DFBP 模型 | `backend/app/models/dfbp_schema.py` | 活性肽数据库 |
-| 知识图谱 | `backend/app/models/knowledge_graph.py` | Neo4j 映射 |
-| 工作流模型 | `backend/app/models/workflow.py` | DAG 定义 |
-| Alembic 配置 | `backend/alembic.ini` | 迁移工具配置 |
-| 迁移脚本 | `backend/alembic/versions/` | 27 个版本 |
+<table><thead><tr><th>文件</th><th>路径</th><th>说明</th></tr></thead><tbody><tr><td>应用入口</td><td>`backend/app/main.py`</td><td>664 行，lifespan 生命周期管理</td></tr>
+<tr><td>安全中间件</td><td>`backend/app/core/security/security_middleware.py`</td><td>771 行，7 层纵深防御</td></tr>
+<tr><td>多算法编排器</td><td>`backend/app/services/formula/multi_algorithm_orchestrator.py`</td><td>4 种优化算法并行</td></tr>
+<tr><td>对话引擎</td><td>`backend/app/services/ai/conversation_service.py`</td><td>AcademicianChatEngine v10.0</td></tr>
+<tr><td>LLM 工厂</td><td>`backend/app/services/ai/llm/provider_factory.py`</td><td>5 提供商策略模式</td></tr>
+<tr><td>CQRS 入口</td><td>`backend/app/cqrs/handlers/` + `queries/`</td><td>命令/查询处理器</td></tr>
+<tr><td>事件总线</td><td>`backend/app/infrastructure/event_bus.py`</td><td>Redis Streams 事件驱动</td></tr>
+<tr><td>数据库初始化</td><td>`backend/app/core/database/init_db.py`</td><td>Alembic 升级 + 种子数据</td></tr>
+<tr><td>RBAC 核心</td><td>`backend/app/core/rbac/`</td><td>5 级角色权限体系</td></tr>
+<tr><td>多租户隔离</td><td>`backend/app/core/multi_tenant/`</td><td>RLS + 租户守卫</td></tr>
+<tr><td>实时通信</td><td>`backend/app/core/realtime/`</td><td>WebSocket 连接管理器</td></tr>
+</tbody></table>
 
-##<h1>13.5 前端路由全景（App.tsx 实证）
+<h3>前端关键文件</h3>
 
-```
-路由层级结构（react-router v7 createBrowserRouter）
+<table><thead><tr><th>文件</th><th>路径</th><th>说明</th></tr></thead><tbody><tr><td>路由入口</td><td>`frontend/src/App.tsx`</td><td>3 路由守卫 + 22 页面路由</td></tr>
+<tr><td>AI 助手主页</td><td>`frontend/src/pages/ai/AIAssistantPage.tsx`</td><td>9 大功能 Tab</td></tr>
+<tr><td>配方详情</td><td>`frontend/src/pages/formula/FormulaDetailPage.tsx`</td><td>最复杂页面</td></tr>
+<tr><td>Agent 工作流</td><td>`frontend/src/pages/agent/AgentPage.tsx`</td><td>LLM 自主编排</td></tr>
+<tr><td>知识图谱</td><td>`frontend/src/components/knowledge-graph/`</td><td>4 层 + 6 子目录</td></tr>
+<tr><td>Chat 消息列表</td><td>`frontend/src/components/ai/features/ChatTab/`</td><td>v10.0 对话 UI</td></tr>
+<tr><td>专业版组件</td><td>`frontend/src/components/ai/features/components/pro/`</td><td>ChatMessages/ChatInputPro/ChatSidebar</td></tr>
+<tr><td>状态管理</td><td>`frontend/src/stores/`</td><td>15 个 Zustand Store</td></tr>
+<tr><td>API 客户端</td><td>`frontend/src/api/`</td><td>43 个业务模块</td></tr>
+<tr><td>自定义 Hooks</td><td>`frontend/src/hooks/`</td><td>44 个业务 Hook</td></tr>
+<tr><td>UI 原子组件</td><td>`frontend/src/components/ui/`</td><td>39 个基础组件</td></tr>
+</tbody></table>
+
+<h3>数据库关键文件</h3>
+
+<table><thead><tr><th>文件</th><th>路径</th><th>说明</th></tr></thead><tbody><tr><td>ORM 模型基类</td><td>`backend/app/models/base.py`</td><td>所有模型继承</td></tr>
+<tr><td>枚举定义</td><td>`backend/app/models/enums.py`</td><td>全局枚举</td></tr>
+<tr><td>公式集成</td><td>`backend/app/models/formula_deep_integration.py`</td><td>配方深度关联</td></tr>
+<tr><td>TCM 模型</td><td>`backend/app/models/tcm_schema.py`</td><td>中药数据库</td></tr>
+<tr><td>DFBP 模型</td><td>`backend/app/models/dfbp_schema.py`</td><td>活性肽数据库</td></tr>
+<tr><td>知识图谱</td><td>`backend/app/models/knowledge_graph.py`</td><td>Neo4j 映射</td></tr>
+<tr><td>工作流模型</td><td>`backend/app/models/workflow.py`</td><td>DAG 定义</td></tr>
+<tr><td>Alembic 配置</td><td>`backend/alembic.ini`</td><td>迁移工具配置</td></tr>
+<tr><td>迁移脚本</td><td>`backend/alembic/versions/`</td><td>27 个版本</td></tr>
+</tbody></table>
+
+<h2 id="13-5-前端路由全景-app-tsx-实证">13.5 前端路由全景（App.tsx 实证）</h2>
+
+<pre class="code-block"><code>路由层级结构（react-router v7 createBrowserRouter）
 
 /
 ├── /login                    → LoginPage（GuestGuard）
@@ -2001,80 +2448,78 @@ RMFOOD/
     ├── /users                → UserManagementPage（AdminGuard）
     └── /audit-logs           → AuditLogPage（AdminGuard）
     │
-    └── *                     → 404 NotFoundPage
-```
+    └── *                     → 404 NotFoundPage</code></pre>
 
-##<h1>13.6 后端 API 路由全景
+<h2 id="13-6-后端-api-路由全景">13.6 后端 API 路由全景</h2>
 
-**V1 API（`api/v1/`，28 个路由文件）**
-| 路由文件 | 前缀 | 功能域 |
-|:---------|:-----|:-------|
-| `agent_router.py` | `/agent` | Agent 工作流 |
-| `ai_task_router.py` | `/ai/tasks` | AI 任务管理 |
-| `compliance_router.py` | `/compliance` | 合规检查 |
-| `data_flywheel_router.py` | `/data-flywheel` | 数据飞轮 |
-| `experiment_data_router.py` | `/experiment-data` | 实验数据 |
-| `explainability_router.py` | `/explainability` | 可解释性报告 |
-| `import_router.py` | `/import` | 数据导入 |
-| `kg_router.py` | `/kg` | 知识图谱 |
-| `metrics_router.py` | `/metrics` | Prometheus 指标 |
-| `notification_router.py` | `/notifications` | 通知管理 |
-| `plugin_router.py` | `/plugins` | 插件管理 |
-| `quota_router.py` | `/quota` | API 配额 |
-| `ray_router.py` | `/ray` | Ray 集群管理 |
-| `report_export_router.py` | `/reports/export` | 报告导出 |
-| `report_router.py` | `/reports` | 报告管理 |
-| `sync_router.py` | `/sync` | 云端同步 |
-| `team_dashboard_router.py` | `/teams/dashboard` | 团队仪表盘 |
-| `team_router.py` | `/teams` | 团队协作 |
-| `tenant_router.py` | `/tenants` | 多租户管理 |
-| `version_router.py` | `/versions` | 版本控制 |
-| `workflow_exec_router.py` | `/workflows/exec` | 工作流执行 |
-| `formula_cases.py` | `/formula-cases` | 配方案例管理 |
-| `websocket_router.py` | `/ws` | WebSocket 路由 |
-| `core_router.py` | `/core` | 核心操作 |
-| `query_routes.py` | `/query` | CQRS 查询 |
-| `chat_schemas.py` | — | 对话 Schema 定义 |
-| `mo_stream_endpoint.py` | — | MCTS 流式端点 |
+<p><strong>V1 API（<code class="inline-code">api/v1/</code>，28 个路由文件）</strong></p>
 
-**顶层 API（51 个路由文件）**
-| 路由文件 | 功能域 |
-|:---------|:-------|
-| `auth.py`, `oauth2_auth.py` | 认证授权 |
-| `formulas.py`, `formula_integration.py` | 配方 CRUD |
-| `experiments.py` | 实验管理 |
-| `ai.py`, `chat.py`, `rag_router.py` | AI 对话与 RAG |
-| `peptides.py`, `peptide_analysis_routes.py`, `peptide_design_routes.py`, `advanced_peptide.py`, `food_peptide_routes.py` | 肽分析/设计 |
-| `knowledge_base.py`, `knowledge_graph.py` | 知识库/图谱 |
-| `databases.py` | 数据源管理 |
-| `search.py`, `search_analytics.py` | 搜索服务 |
-| `organizations.py`, `teams.py`, `team_members.py` | 组织/团队 |
-| `analytics.py` | 数据分析 |
-| `workflow.py`, `workflows.py` | 工作流 |
-| `report.py`, `file_generator.py` | 报告生成 |
-| `sync.py` | 云同步 |
-| `terminology.py` | 术语管理 |
-| `notifications.py` | 通知 |
-| `users.py`, `admin.py`, `audit.py` | 用户管理/审计 |
-| `activity.py`, `comments.py`, `comment_likes.py` | 社交互动 |
-| `categories.py`, `tags.py` | 分类标签 |
-| `attachments.py`, `integrations.py` | 附件/集成 |
-| `enterprise.py`, `lab_validation.py` | 企业功能 |
-| `dashboard.py` | 仪表盘 |
-| `user_settings.py` | 用户设置 |
-| `mobile.py`, `api_version.py` | 移动端适配 + API 版本管理 |
-| `router_registry.py` | 路由注册中心 |
-| `coa_routes.py` | COA 证书管理 |
-| `herb_food.py` | 药食同源 API |
-| `herb_images.py` | 中药材图片服务 |
-| `ingredients.py` | 原料 API |
-| `pepinvent.py` | PepINVENT 集成 |
-| `websocket.py` | WebSocket 主路由 |
+<table><thead><tr><th>路由文件</th><th>前缀</th><th>功能域</th></tr></thead><tbody><tr><td>`agent_router.py`</td><td>`/agent`</td><td>Agent 工作流</td></tr>
+<tr><td>`ai_task_router.py`</td><td>`/ai/tasks`</td><td>AI 任务管理</td></tr>
+<tr><td>`compliance_router.py`</td><td>`/compliance`</td><td>合规检查</td></tr>
+<tr><td>`data_flywheel_router.py`</td><td>`/data-flywheel`</td><td>数据飞轮</td></tr>
+<tr><td>`experiment_data_router.py`</td><td>`/experiment-data`</td><td>实验数据</td></tr>
+<tr><td>`explainability_router.py`</td><td>`/explainability`</td><td>可解释性报告</td></tr>
+<tr><td>`import_router.py`</td><td>`/import`</td><td>数据导入</td></tr>
+<tr><td>`kg_router.py`</td><td>`/kg`</td><td>知识图谱</td></tr>
+<tr><td>`metrics_router.py`</td><td>`/metrics`</td><td>Prometheus 指标</td></tr>
+<tr><td>`notification_router.py`</td><td>`/notifications`</td><td>通知管理</td></tr>
+<tr><td>`plugin_router.py`</td><td>`/plugins`</td><td>插件管理</td></tr>
+<tr><td>`quota_router.py`</td><td>`/quota`</td><td>API 配额</td></tr>
+<tr><td>`ray_router.py`</td><td>`/ray`</td><td>Ray 集群管理</td></tr>
+<tr><td>`report_export_router.py`</td><td>`/reports/export`</td><td>报告导出</td></tr>
+<tr><td>`report_router.py`</td><td>`/reports`</td><td>报告管理</td></tr>
+<tr><td>`sync_router.py`</td><td>`/sync`</td><td>云端同步</td></tr>
+<tr><td>`team_dashboard_router.py`</td><td>`/teams/dashboard`</td><td>团队仪表盘</td></tr>
+<tr><td>`team_router.py`</td><td>`/teams`</td><td>团队协作</td></tr>
+<tr><td>`tenant_router.py`</td><td>`/tenants`</td><td>多租户管理</td></tr>
+<tr><td>`version_router.py`</td><td>`/versions`</td><td>版本控制</td></tr>
+<tr><td>`workflow_exec_router.py`</td><td>`/workflows/exec`</td><td>工作流执行</td></tr>
+<tr><td>`formula_cases.py`</td><td>`/formula-cases`</td><td>配方案例管理</td></tr>
+<tr><td>`websocket_router.py`</td><td>`/ws`</td><td>WebSocket 路由</td></tr>
+<tr><td>`core_router.py`</td><td>`/core`</td><td>核心操作</td></tr>
+<tr><td>`query_routes.py`</td><td>`/query`</td><td>CQRS 查询</td></tr>
+<tr><td>`chat_schemas.py`</td><td>—</td><td>对话 Schema 定义</td></tr>
+<tr><td>`mo_stream_endpoint.py`</td><td>—</td><td>MCTS 流式端点</td></tr>
+</tbody></table>
 
-##<h1>13.7 数据库 ER 核心实体关系
+<p><strong>顶层 API（51 个路由文件）</strong></p>
 
-```
-┌──────────────┐     ┌──────────────────┐     ┌──────────────┐
+<table><thead><tr><th>路由文件</th><th>功能域</th></tr></thead><tbody><tr><td>`auth.py`, `oauth2_auth.py`</td><td>认证授权</td></tr>
+<tr><td>`formulas.py`, `formula_integration.py`</td><td>配方 CRUD</td></tr>
+<tr><td>`experiments.py`</td><td>实验管理</td></tr>
+<tr><td>`ai.py`, `chat.py`, `rag_router.py`</td><td>AI 对话与 RAG</td></tr>
+<tr><td>`peptides.py`, `peptide_analysis_routes.py`, `peptide_design_routes.py`, `advanced_peptide.py`, `food_peptide_routes.py`</td><td>肽分析/设计</td></tr>
+<tr><td>`knowledge_base.py`, `knowledge_graph.py`</td><td>知识库/图谱</td></tr>
+<tr><td>`databases.py`</td><td>数据源管理</td></tr>
+<tr><td>`search.py`, `search_analytics.py`</td><td>搜索服务</td></tr>
+<tr><td>`organizations.py`, `teams.py`, `team_members.py`</td><td>组织/团队</td></tr>
+<tr><td>`analytics.py`</td><td>数据分析</td></tr>
+<tr><td>`workflow.py`, `workflows.py`</td><td>工作流</td></tr>
+<tr><td>`report.py`, `file_generator.py`</td><td>报告生成</td></tr>
+<tr><td>`sync.py`</td><td>云同步</td></tr>
+<tr><td>`terminology.py`</td><td>术语管理</td></tr>
+<tr><td>`notifications.py`</td><td>通知</td></tr>
+<tr><td>`users.py`, `admin.py`, `audit.py`</td><td>用户管理/审计</td></tr>
+<tr><td>`activity.py`, `comments.py`, `comment_likes.py`</td><td>社交互动</td></tr>
+<tr><td>`categories.py`, `tags.py`</td><td>分类标签</td></tr>
+<tr><td>`attachments.py`, `integrations.py`</td><td>附件/集成</td></tr>
+<tr><td>`enterprise.py`, `lab_validation.py`</td><td>企业功能</td></tr>
+<tr><td>`dashboard.py`</td><td>仪表盘</td></tr>
+<tr><td>`user_settings.py`</td><td>用户设置</td></tr>
+<tr><td>`mobile.py`, `api_version.py`</td><td>移动端适配 + API 版本管理</td></tr>
+<tr><td>`router_registry.py`</td><td>路由注册中心</td></tr>
+<tr><td>`coa_routes.py`</td><td>COA 证书管理</td></tr>
+<tr><td>`herb_food.py`</td><td>药食同源 API</td></tr>
+<tr><td>`herb_images.py`</td><td>中药材图片服务</td></tr>
+<tr><td>`ingredients.py`</td><td>原料 API</td></tr>
+<tr><td>`pepinvent.py`</td><td>PepINVENT 集成</td></tr>
+<tr><td>`websocket.py`</td><td>WebSocket 主路由</td></tr>
+</tbody></table>
+
+<h2 id="13-7-数据库-er-核心实体关系">13.7 数据库 ER 核心实体关系</h2>
+
+<pre class="code-block"><code>┌──────────────┐     ┌──────────────────┐     ┌──────────────┐
 │   User       │────▶│   Organization   │◀────│  Team        │
 │  (用户)      │     │   (组织)         │     │  (团队)      │
 └──────┬───────┘     └────────┬─────────┘     └──────┬───────┘
@@ -2100,98 +2545,130 @@ RMFOOD/
 ┌──────────────────┐  ┌──────────────┐  ┌──────────────┐
 │  KnowledgeGraph  │  │    Chat      │  │   Workflow   │
 │  (知识图谱)       │  │  (对话历史)   │  │  (工作流)     │
-└──────────────────┘  └──────────────┘  └──────────────┘
-```
+└──────────────────┘  └──────────────┘  └──────────────┘</code></pre>
+
 <hr>
-#<h1>21. shadcn/ui 迁移与前端重构（2026-08-13 ~ 2026-08-23）
 
-> **背景**：随着项目发展，前端 UI 组件库经历了从自定义实现到 shadcn/ui + Radix UI 的系统性迁移。7 阶段迁移覆盖全部核心组件，同时建立 ARIA 无障碍测试、主题系统标准化、Dashboard UI/UX 深度优化等配套工作。
+</section>
 
-##<h1>21.1 迁移概述
+<section id="21-shadcn-ui-迁移与前端重构-2026-08-13--2026-08-23">
 
-| 阶段 | 日期 | 内容 | 关键组件 |
-|:----:|:----:|:-----|:---------|
-| Phase 1 | 08-17 | 基础设施搭建 | shadcn/ui 安装 + Radix UI 原始组件 + 品牌 Token 映射 |
-| Phase 2 | 08-17 | Surface 组件 | Input, Textarea, Badge, Card, Skeleton, Progress, Tooltip, Toast, Alert |
-| Phase 3 | 08-18 | 复杂组件 | DataTable, OperationFeedback |
-| Phase 4 | 08-18 | 兼容桥接 | 向后兼容层，旧 API 保留 |
-| Phase 5 | 08-19 | 核心交互组件 | Button, Modal, Select, Tabs |
-| Phase 6 | 08-20 | 表单控件 | Checkbox, Switch 等迁移 |
-| Phase 7 | 08-21 | 最终替换 | 旧组件文件全量替换为 shadcn/Radix 实现 |
+<h1>21. shadcn/ui 迁移与前端重构（2026-08-13 ~ 2026-08-23）</h1>
 
-##<h1>21.2 技术决策（ADR-027）
+<p>> <strong>背景</strong>：随着项目发展，前端 UI 组件库经历了从自定义实现到 shadcn/ui + Radix UI 的系统性迁移。7 阶段迁移覆盖全部核心组件，同时建立 ARIA 无障碍测试、主题系统标准化、Dashboard UI/UX 深度优化等配套工作。</p>
 
-**从自定义组件迁移至 shadcn/ui + Radix UI 的核心原因：**
-1. **一致性**：所有组件共享同一设计 Token 体系
-2. **可维护性**：Radix UI 提供无样式但功能完善的原始组件
-3. **无障碍**：Radix 内置 ARIA 支持，通过 ARIA 合规测试套件
-4. **生态兼容**：Tailwind CSS 4.x 原生支持，与项目技术栈无缝集成
-5. **TypeScript 安全**：严格的类型定义，消除 `as any` 强制转换
+<h2 id="21-1-迁移概述">21.1 迁移概述</h2>
 
-**迁移策略：**
-- Phase 4 的兼容桥接层确保零运行时破坏
-- 旧组件导出路径保持兼容，渐进式替换
-- antd → shadcn 迁移指南覆盖剩余 4 个数据库页面
+<table><thead><tr><th>阶段</th><th>日期</th><th>内容</th><th>关键组件</th></tr></thead><tbody><tr><td>Phase 1</td><td>08-17</td><td>基础设施搭建</td><td>shadcn/ui 安装 + Radix UI 原始组件 + 品牌 Token 映射</td></tr>
+<tr><td>Phase 2</td><td>08-17</td><td>Surface 组件</td><td>Input, Textarea, Badge, Card, Skeleton, Progress, Tooltip, Toast, Alert</td></tr>
+<tr><td>Phase 3</td><td>08-18</td><td>复杂组件</td><td>DataTable, OperationFeedback</td></tr>
+<tr><td>Phase 4</td><td>08-18</td><td>兼容桥接</td><td>向后兼容层，旧 API 保留</td></tr>
+<tr><td>Phase 5</td><td>08-19</td><td>核心交互组件</td><td>Button, Modal, Select, Tabs</td></tr>
+<tr><td>Phase 6</td><td>08-20</td><td>表单控件</td><td>Checkbox, Switch 等迁移</td></tr>
+<tr><td>Phase 7</td><td>08-21</td><td>最终替换</td><td>旧组件文件全量替换为 shadcn/Radix 实现</td></tr>
+</tbody></table>
 
-##<h1>21.3 配套工作
+<h2 id="21-2-技术决策-adr-027">21.2 技术决策（ADR-027）</h2>
 
-###<h1>主题系统标准化（ADR-012 ~ ADR-016）
-| ADR | 主题 | 日期 |
-|:----:|:-----|:----:|
-| ADR-012 | 主题系统精简与统一 | 2026-08-17 |
-| ADR-013 | 主题系统完整性补齐 | 2026-08-18 |
-| ADR-014 | 主题系统组件级迁移 | 2026-08-18 |
-| ADR-015 | 主题系统完整性审计与修复 | 2026-08-19 |
-| ADR-016 | 主题系统深度审计与补齐 | 2026-08-19 |
+<p><strong>从自定义组件迁移至 shadcn/ui + Radix UI 的核心原因：</strong></p>
 
-###<h1>Dashboard UI/UX 深度优化（ADR-017 ~ ADR-019）
-| ADR | 主题 | 日期 |
-|:----:|:-----|:----:|
-| ADR-017 | Dashboard UI/UX 深度审计与升级方案 | 2026-08-19 |
-| ADR-018 | Dashboard UI/UX 深度修复与升级 | 2026-08-20 |
-| ADR-019 | Dashboard UI/UX 深度设计审计 | 2026-08-20 |
+<p>1. <strong>一致性</strong>：所有组件共享同一设计 Token 体系</p>
 
-###<h1>TypeScript 错误修复
-| ADR | 主题 | 日期 |
-|:----:|:-----|:----:|
-| ADR-020 | TypeScript 错误修复 - 配方案例页面 | 2026-08-21 |
-| ADR-021 | 配方管理页面 UI/UX 深度审计与语义化修复 | 2026-08-21 |
-| ADR-022 | InvalidTimeValue 错误修复 | 2026-08-21 |
-| ADR-023 | 公式详情页 Hooks 顺序错误修复 | 2026-08-21 |
+<p>2. <strong>可维护性</strong>：Radix UI 提供无样式但功能完善的原始组件</p>
 
-###<h1>配方详情页深度开发（ADR-024 ~ ADR-026）
-| ADR | 主题 | 日期 |
-|:----:|:-----|:----:|
-| ADR-024 | 配方详情页深度开发方案 | 2026-08-21 |
-| ADR-025 | 配方详情页深度审查与开发方案 | 2026-08-22 |
-| ADR-026 | 配方详情页 Phase 3 深度开发方案 | 2026-08-23 |
+<p>3. <strong>无障碍</strong>：Radix 内置 ARIA 支持，通过 ARIA 合规测试套件</p>
 
-##<h1>21.4 迁移成果
+<p>4. <strong>生态兼容</strong>：Tailwind CSS 4.x 原生支持，与项目技术栈无缝集成</p>
 
-| 指标 | 迁移前 | 迁移后 |
-|:-----|:------:|:------:|
-| UI 组件库 | 自定义实现 | shadcn/ui + Radix UI |
-| 设计一致性 | 分散 | 统一 Token 体系 |
-| ARIA 支持 | 部分手动 | 自动（Radix 内置） |
-| TypeScript 类型安全 | 存在 `as any` | 严格类型，0 个 `as any` |
-| 无障碍测试 | 无 | ARIA 合规测试套件通过 |
-| Bundle 大小 | 较大 | 按需导入，tree-shaking 友好 |
+<p>5. <strong>TypeScript 安全</strong>：严格的类型定义，消除 <code class="inline-code">as any</code> 强制转换</p>
 
-##<h1>21.5 迁移后遗留工作
+<p><strong>迁移策略：</strong></p>
 
-- 剩余 4 个数据库页面需完成 antd → shadcn 迁移（指南已就绪）
-- 图组件（D3.js 相关）TypeScript 错误待后续专项优化
-- 部分旧组件文件仍存在于代码库中，待完全清理
+<h2 id="21-3-配套工作">21.3 配套工作</h2>
+
+<h3>主题系统标准化（ADR-012 ~ ADR-016）</h3>
+
+<ul>
+<li>Phase 4 的兼容桥接层确保零运行时破坏</li>
+<li>旧组件导出路径保持兼容，渐进式替换</li>
+<li>antd → shadcn 迁移指南覆盖剩余 4 个数据库页面</li>
+</ul>
+
+<table><thead><tr><th>ADR</th><th>主题</th><th>日期</th></tr></thead><tbody><tr><td>ADR-012</td><td>主题系统精简与统一</td><td>2026-08-17</td></tr>
+<tr><td>ADR-013</td><td>主题系统完整性补齐</td><td>2026-08-18</td></tr>
+<tr><td>ADR-014</td><td>主题系统组件级迁移</td><td>2026-08-18</td></tr>
+<tr><td>ADR-015</td><td>主题系统完整性审计与修复</td><td>2026-08-19</td></tr>
+<tr><td>ADR-016</td><td>主题系统深度审计与补齐</td><td>2026-08-19</td></tr>
+</tbody></table>
+
+<h3>Dashboard UI/UX 深度优化（ADR-017 ~ ADR-019）</h3>
+
+<table><thead><tr><th>ADR</th><th>主题</th><th>日期</th></tr></thead><tbody><tr><td>ADR-017</td><td>Dashboard UI/UX 深度审计与升级方案</td><td>2026-08-19</td></tr>
+<tr><td>ADR-018</td><td>Dashboard UI/UX 深度修复与升级</td><td>2026-08-20</td></tr>
+<tr><td>ADR-019</td><td>Dashboard UI/UX 深度设计审计</td><td>2026-08-20</td></tr>
+</tbody></table>
+
+<h3>TypeScript 错误修复</h3>
+
+<table><thead><tr><th>ADR</th><th>主题</th><th>日期</th></tr></thead><tbody><tr><td>ADR-020</td><td>TypeScript 错误修复 - 配方案例页面</td><td>2026-08-21</td></tr>
+<tr><td>ADR-021</td><td>配方管理页面 UI/UX 深度审计与语义化修复</td><td>2026-08-21</td></tr>
+<tr><td>ADR-022</td><td>InvalidTimeValue 错误修复</td><td>2026-08-21</td></tr>
+<tr><td>ADR-023</td><td>公式详情页 Hooks 顺序错误修复</td><td>2026-08-21</td></tr>
+</tbody></table>
+
+<h3>配方详情页深度开发（ADR-024 ~ ADR-026）</h3>
+
+<table><thead><tr><th>ADR</th><th>主题</th><th>日期</th></tr></thead><tbody><tr><td>ADR-024</td><td>配方详情页深度开发方案</td><td>2026-08-21</td></tr>
+<tr><td>ADR-025</td><td>配方详情页深度审查与开发方案</td><td>2026-08-22</td></tr>
+<tr><td>ADR-026</td><td>配方详情页 Phase 3 深度开发方案</td><td>2026-08-23</td></tr>
+</tbody></table>
+
+<h2 id="21-4-迁移成果">21.4 迁移成果</h2>
+
+<table><thead><tr><th>指标</th><th>迁移前</th><th>迁移后</th></tr></thead><tbody><tr><td>UI 组件库</td><td>自定义实现</td><td>shadcn/ui + Radix UI</td></tr>
+<tr><td>设计一致性</td><td>分散</td><td>统一 Token 体系</td></tr>
+<tr><td>ARIA 支持</td><td>部分手动</td><td>自动（Radix 内置）</td></tr>
+<tr><td>TypeScript 类型安全</td><td>存在 `as any`</td><td>严格类型，0 个 `as any`</td></tr>
+<tr><td>无障碍测试</td><td>无</td><td>ARIA 合规测试套件通过</td></tr>
+<tr><td>Bundle 大小</td><td>较大</td><td>按需导入，tree-shaking 友好</td></tr>
+</tbody></table>
+
+<h2 id="21-5-迁移后遗留工作">21.5 迁移后遗留工作</h2>
+
+<ul>
+<li>剩余 4 个数据库页面需完成 antd → shadcn 迁移（指南已就绪）</li>
+<li>图组件（D3.js 相关）TypeScript 错误待后续专项优化</li>
+<li>部分旧组件文件仍存在于代码库中，待完全清理</li>
+</ul>
+
 <hr>
-#<h1>版本历史
-| 版本 | 日期 | 说明 |
-|:----:|:----:|:-----|
-| v1.0.0 | 2026-07-31 | 初始版本，完整记录项目开发历程 |
-| v1.1.0 | 2026-08-03 | 深度开发完成：Agent 工作流 + 合规前置 + 实验解析 + 工作流执行 + 可解释性报告 + 数据飞轮 + 插件化生态 |
-| v2.0.0 | 2026-08-03 | 院士级审查补全：新增 2026-07-20~08-03 全部每日开发记录（含提交明细），ADR 11份，Alembic 35个，补充数据飞轮P1-D/报告导出P1-C独立阶段，修正Agent工具数（5工具+AI Task），更新代码量与目录结构 |
-| v3.0.0 | 2026-08-11 | **院士级深度审查版**：新增架构深度解析（院士级评审）、开发规范与流程、AI 模块深度解析、数据架构与治理、修正数据不一致、完善技术债务追踪 |
-| v3.1.0 | 2026-08-12 | **代码实证补全版**：基于全量代码扫描更新文件统计、新增 ADR-011 架构收敛决策章节、补全前端路由全景、后端 API 路由全景、数据库 ER 实体关系、前端组件/Store/Hook/API 模块索引 |
-| v4.0.0 | 2026-08-24 | **shadcn/ui 迁移完成版**：7 阶段 shadcn/Radix UI 迁移、ADR-012~027 新增（主题系统/Dashboard UI/UX/配方详情页/TypeScript 修复）、ORM 模型 38→40、Alembic 27→35 版本、新增 7 个 API 路由、新增配方详情/报告页面、ARIA 合规测试通过 |
+
+</section>
+
+<section id="版本历史">
+
+<h1>版本历史</h1>
+
+<table><thead><tr><th>版本</th><th>日期</th><th>说明</th></tr></thead><tbody><tr><td>v1.0.0</td><td>2026-07-31</td><td>初始版本，完整记录项目开发历程</td></tr>
+<tr><td>v1.1.0</td><td>2026-08-03</td><td>深度开发完成：Agent 工作流 + 合规前置 + 实验解析 + 工作流执行 + 可解释性报告 + 数据飞轮 + 插件化生态</td></tr>
+<tr><td>v2.0.0</td><td>2026-08-03</td><td>院士级审查补全：新增 2026-07-20~08-03 全部每日开发记录（含提交明细），ADR 11份，Alembic 35个，补充数据飞轮P1-D/报告导出P1-C独立阶段，修正Agent工具数（5工具+AI Task），更新代码量与目录结构</td></tr>
+<tr><td>v3.0.0</td><td>2026-08-11</td><td>**院士级深度审查版**：新增架构深度解析（院士级评审）、开发规范与流程、AI 模块深度解析、数据架构与治理、修正数据不一致、完善技术债务追踪</td></tr>
+<tr><td>v3.1.0</td><td>2026-08-12</td><td>**代码实证补全版**：基于全量代码扫描更新文件统计、新增 ADR-011 架构收敛决策章节、补全前端路由全景、后端 API 路由全景、数据库 ER 实体关系、前端组件/Store/Hook/API 模块索引</td></tr>
+<tr><td>v4.0.0</td><td>2026-08-24</td><td>**shadcn/ui 迁移完成版**：7 阶段 shadcn/Radix UI 迁移、ADR-012~027 新增（主题系统/Dashboard UI/UX/配方详情页/TypeScript 修复）、ORM 模型 38→40、Alembic 27→35 版本、新增 7 个 API 路由、新增配方详情/报告页面、ARIA 合规测试通过</td></tr>
+</tbody></table>
+
 <hr>
-*本文档由 RMFOOD 开发团队编制，基于 git log、代码扫描与院士级专家评审综合分析生成。*
-*最后更新：2026-08-24*
+
+<p>*本文档由 RMFOOD 开发团队编制，基于 git log、代码扫描与院士级专家评审综合分析生成。*</p>
+
+<p>*最后更新：2026-08-24*</p>
+
+</section>
+
+    <footer class="doc-footer">
+      <p>本文档由 RMFOOD 开发团队编制，基于 git log、代码扫描与院士级专家评审综合分析生成。</p>
+      <p>最后更新：2026-08-24</p>
+    </footer>
+  </div>
+</body>
+</html>

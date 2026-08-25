@@ -8,7 +8,7 @@
 
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { RadixBadge, RadixText } from '@/components/ui/RadixComponents'
+import { Badge as RadixBadge, Text as RadixText } from '@/components/ui/RadixComponents'
 import { Button, Badge, Card, CardHeader, CardTitle, CardContent } from '@/components/ui'
 import { Sparkles, Settings, Bell, User, CheckCircle, AlertCircle, Info } from 'lucide-react'
 

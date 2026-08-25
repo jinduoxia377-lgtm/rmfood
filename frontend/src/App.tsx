@@ -17,6 +17,7 @@ import { useEffect, lazy, Suspense, type ReactNode } from 'react';
 import { useAuthStore } from '@/stores/auth';
 import { UserRole } from '@/types/index';
 import { ThemeProvider } from '@/stores/ThemeProvider';
+import { RadixThemeProvider } from '@/theme/RadixThemeProvider';
 import MainLayout from '@/components/layout/MainLayout';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { ModuleErrorBoundary } from '@/components/ai/features';
@@ -211,11 +212,11 @@ const router = createBrowserRouter([
       { index: true, element: <Navigate to="/dashboard" replace /> },
       {
         path: 'dashboard',
+        element: <DashboardPage />,
+      },
       {
         path: 'radix-demo',
         element: <RadixDemoPage />,
-      },
-        element: <DashboardPage />,
       },
 
       // 配方管理
@@ -483,16 +484,18 @@ export default function App() {
     <ErrorBoundary
       fallback={<div className="flex items-center justify-center min-h-screen"><p>页面加载失败，请刷新重试</p></div>}
     >
-      <ThemeProvider>
-        <QueryClientProvider client={queryClient}>
-          <ToastProvider>
-            <ShortcutHelpProvider>
-              <RouterProvider router={router} />
-              <ToastContainer />
-            </ShortcutHelpProvider>
-          </ToastProvider>
-        </QueryClientProvider>
-      </ThemeProvider>
+      <RadixThemeProvider>
+        <ThemeProvider>
+          <QueryClientProvider client={queryClient}>
+            <ToastProvider>
+              <ShortcutHelpProvider>
+                <RouterProvider router={router} />
+                <ToastContainer />
+              </ShortcutHelpProvider>
+            </ToastProvider>
+          </QueryClientProvider>
+        </ThemeProvider>
+      </RadixThemeProvider>
     </ErrorBoundary>
   );
 }

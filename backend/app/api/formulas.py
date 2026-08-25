@@ -125,6 +125,72 @@ async def get_recommendations(
     )
 
 
+@router.get("/statistics", summary="配方统计数据")
+async def get_formula_statistics(
+    tenant: TenantContext = Depends(require_tenant),
+    db: AsyncSession = Depends(get_db_session),
+):
+    """返回配方统计数据（总数、状态分布）— 匿名可访问"""
+    from sqlalchemy import func, select as sa_select
+    from datetime import datetime, timedelta, timezone
+    from ..models.formula import Formula
+    from ..models.user_model import User
+
+    query = sa_select(func.count(Formula.id))
+    if tenant.org_id is not None:
+        query = query.where(Formula.organization_id == tenant.org_id)
+    result = await db.execute(query)
+    total = result.scalar() or 0
+
+    status_query = sa_select(Formula.status, func.count(Formula.id)).group_by(Formula.status)
+    if tenant.org_id is not None:
+        status_query = status_query.where(Formula.organization_id == tenant.org_id)
+    status_result = await db.execute(status_query)
+    status_distribution = {}
+    for s, c in status_result.all():
+        key = s.value if hasattr(s, "value") else str(s)
+        status_distribution[key] = c
+
+    # recent creations (last 30 days, daily)
+    now = datetime.now(timezone.utc)
+    recent_creations = []
+    for i in range(30):
+        day = now - timedelta(days=29 - i)
+        day_start = day.replace(hour=0, minute=0, second=0, microsecond=0)
+        day_end = day_start + timedelta(days=1)
+        cnt_q = sa_select(func.count(Formula.id)).where(
+            Formula.created_at >= day_start, Formula.created_at < day_end
+        )
+        if tenant.org_id is not None:
+            cnt_q = cnt_q.where(Formula.organization_id == tenant.org_id)
+        cnt = (await db.execute(cnt_q)).scalar() or 0
+        recent_creations.append({"date": day_start.strftime("%Y-%m-%d"), "count": int(cnt)})
+
+    # trend: compare last 7 days vs prior 7 days
+    week_ago = now - timedelta(days=7)
+    two_weeks_ago = now - timedelta(days=14)
+    trend_q1 = sa_select(func.count(Formula.id)).where(
+        Formula.created_at >= week_ago, Formula.created_at < now
+    )
+    trend_q2 = sa_select(func.count(Formula.id)).where(
+        Formula.created_at >= two_weeks_ago, Formula.created_at < week_ago
+    )
+    if tenant.org_id is not None:
+        trend_q1 = trend_q1.where(Formula.organization_id == tenant.org_id)
+        trend_q2 = trend_q2.where(Formula.organization_id == tenant.org_id)
+    created_now = (await db.execute(trend_q1)).scalar() or 0
+    created_prev = (await db.execute(trend_q2)).scalar() or 0
+    trend_data = [{"period": "last7d", "created": int(created_now), "updated": 0, "deleted": 0},
+                  {"period": "prev7d", "created": int(created_prev), "updated": 0, "deleted": 0}]
+
+    return {
+        "total_formulas": int(total),
+        "status_distribution": {k: int(v) for k, v in status_distribution.items()},
+        "recent_creations": recent_creations,
+        "trend_data": trend_data,
+    }
+
+
 @router.get("/{formula_id}", response_model=FormulaResponse, summary="获取配方详情")
 async def get_formula(
     formula_id: int,
@@ -279,37 +345,6 @@ async def archive_formula(
     """归档配方"""
     service = FormulaService(db)
     return await service.archive_formula(formula_id, current_user.id)
-
-
-@router.get("/statistics", summary="配方统计数据")
-async def get_formula_statistics(
-    tenant: TenantContext = Depends(require_tenant),
-    db: AsyncSession = Depends(get_db_session),
-):
-    """返回配方统计数据（总数、状态分布）— 无需认证，匿名可访问"""
-    from sqlalchemy import func, select as sa_select
-
-    query = sa_select(func.count(Formula.id))
-    if tenant.org_id is not None:
-        query = query.where(Formula.organization_id == tenant.org_id)
-    result = await db.execute(query)
-    total = result.scalar() or 0
-
-    status_query = sa_select(Formula.status, func.count(Formula.id)).group_by(Formula.status)
-    if tenant.org_id is not None:
-        status_query = status_query.where(Formula.organization_id == tenant.org_id)
-    status_result = await db.execute(status_query)
-    status_distribution = {}
-    for s, c in status_result.all():
-        key = s.value if hasattr(s, "value") else str(s)
-        status_distribution[key] = c
-
-    return {
-        "total_formulas": total,
-        "status_distribution": status_distribution,
-        "recent_creations": [],
-        "trend_data": [],
-    }
 
 
 @router.patch("/batch-status", response_model=SuccessResponse, summary="批量更新配方状态")

@@ -3527,6 +3527,7 @@ export default function SettingsPage() {
 
               // 2. 应用颜色配置
               if (versionConfig.colors) {
+                const colorMap = versionConfig.colors as Record<string, unknown>
                 const colorsToUpdate: Partial<ThemeColorsType> = {}
 
                 // 提取颜色值（兼容多种数据结构）
@@ -3536,12 +3537,12 @@ export default function SettingsPage() {
                   return colorData.main || colorData.default || colorData.light || undefined
                 }
 
-                if (versionConfig.colors.primary) colorsToUpdate.primary = extractColor(versionConfig.colors.primary)
-                if (versionConfig.colors.secondary) colorsToUpdate.secondary = extractColor(versionConfig.colors.secondary)
-                if (versionConfig.colors.tertiary) colorsToUpdate.tertiary = extractColor(versionConfig.colors.tertiary)
-                if (versionConfig.colors.background) colorsToUpdate.background = extractColor(versionConfig.colors.background)
-                if (versionConfig.colors.surface) colorsToUpdate.surface = extractColor(versionConfig.colors.surface)
-                if (versionConfig.colors.error) colorsToUpdate.error = extractColor(versionConfig.colors.error)
+                if (colorMap.primary) colorsToUpdate.primary = extractColor(colorMap.primary)
+                if (colorMap.secondary) colorsToUpdate.secondary = extractColor(colorMap.secondary)
+                if (colorMap.tertiary) colorsToUpdate.tertiary = extractColor(colorMap.tertiary)
+                if (colorMap.background) colorsToUpdate.background = extractColor(colorMap.background)
+                if (colorMap.surface) colorsToUpdate.surface = extractColor(colorMap.surface)
+                if (colorMap.error) colorsToUpdate.error = extractColor(colorMap.error)
 
                 // 更新本地和全局状态
                 if (Object.keys(colorsToUpdate).length > 0) {
@@ -3559,10 +3560,10 @@ export default function SettingsPage() {
 
               // 3. 应用字体配置
               if (versionConfig.font || versionConfig.typography) {
-                const fontConfig = versionConfig.font || versionConfig.typography
-                if (fontConfig.fontFamily) setLocalFontFamily(fontConfig.fontFamily)
+                const fontConfig = (versionConfig.font || versionConfig.typography) as Record<string, unknown>
+                if (fontConfig.fontFamily) setLocalFontFamily(fontConfig.fontFamily as string)
                 if (fontConfig.fontSize) {
-                  const size = typeof fontConfig.fontSize === 'number' ? fontConfig.fontSize : parseInt(fontConfig.fontSize)
+                  const size = typeof fontConfig.fontSize === 'number' ? fontConfig.fontSize : parseInt(fontConfig.fontSize as string)
                   if (!isNaN(size)) setLocalFontSize(size)
                 }
               }
