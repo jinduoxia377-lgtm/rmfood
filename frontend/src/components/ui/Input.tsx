@@ -10,7 +10,7 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
   showCount?: boolean
 }
 
-const sizeClasses: Record<InputProps['size'], string> = {
+const sizeClasses: Record<NonNullable<InputProps['size']>, string> = {
   sm: 'h-8 text-xs',
   md: 'h-9 text-sm',
   lg: 'h-10 text-sm',
