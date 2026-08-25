@@ -11,6 +11,7 @@ from ..models.models import (
     Formula, FormulaStatus, Experiment, ExperimentStatus,
     AuditLog, User, Notification, NotificationStatus,
 )
+from ..models.terminology import TermCategory, Term
 from ..services.auth import get_current_user
 from ..api.deps import get_db_session
 from ..models.models import User as UserModel
@@ -69,6 +70,42 @@ async def get_timeline(
             "status": e.status.value,
             "created_at": e.updated_at.isoformat(),
             "event": event_type,
+        })
+
+    # 术语分类事件
+    stmt = (
+        select(TermCategory)
+        .where(TermCategory.updated_at >= since)
+        .order_by(TermCategory.updated_at.desc())
+        .limit(limit // 3)
+    )
+    categories = (await db.execute(stmt)).scalars().all()
+    for c in categories:
+        events.append({
+            "id": c.id,
+            "type": "category",
+            "title": c.name,
+            "status": "success",
+            "created_at": c.updated_at.isoformat(),
+            "event": "分类更新",
+        })
+
+    # 术语事件
+    stmt = (
+        select(Term)
+        .where(Term.updated_at >= since)
+        .order_by(Term.updated_at.desc())
+        .limit(limit // 3)
+    )
+    terms = (await db.execute(stmt)).scalars().all()
+    for t in terms:
+        events.append({
+            "id": t.id,
+            "type": "term",
+            "title": t.term,
+            "status": "success",
+            "created_at": t.updated_at.isoformat(),
+            "event": "术语更新",
         })
 
     # 按时间排序

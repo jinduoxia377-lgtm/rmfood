@@ -63,7 +63,7 @@ export type { SkeletonProps } from './Skeleton'
 
 export { Progress } from './Progress'
 
-export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from './shadcn/tooltip'
+export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from './Tooltip'
 
 export {
   ToastProvider,

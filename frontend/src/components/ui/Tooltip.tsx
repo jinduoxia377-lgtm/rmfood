@@ -5,17 +5,16 @@ import * as TooltipPrimitive from '@radix-ui/react-tooltip'
 import { cn } from '@/lib/utils'
 
 const TooltipProvider = TooltipPrimitive.Provider
-
-const Tooltip = TooltipPrimitive.Root
-
+const TooltipRoot = TooltipPrimitive.Root
 const TooltipTrigger = TooltipPrimitive.Trigger
+
+export interface TooltipContentProps extends React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Content> {
+  position?: 'top' | 'bottom' | 'left' | 'right'
+}
 
 const TooltipContent = React.forwardRef<
   React.ElementRef<typeof TooltipPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Content> & {
-    position?: 'top' | 'bottom' | 'left' | 'right'
-    delay?: number
-  }
+  TooltipContentProps
 >(({ className, side = 'top', align = 'center', sideOffset = 4, ...props }, ref) => (
   <TooltipPrimitive.Portal>
     <TooltipPrimitive.Content
@@ -33,4 +32,29 @@ const TooltipContent = React.forwardRef<
 ))
 TooltipContent.displayName = TooltipPrimitive.Content.displayName
 
-export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider }
+// Backward-compatible wrapper that accepts `content` prop
+export interface TooltipWrapperProps {
+  content?: React.ReactNode
+  children: React.ReactNode
+  position?: 'top' | 'bottom' | 'left' | 'right'
+  delay?: number
+  className?: string
+}
+
+function TooltipWrapper({ content, children, position = 'top', delay = 300, className = '' }: TooltipWrapperProps) {
+  return (
+    <TooltipProvider delayDuration={delay}>
+      <TooltipRoot>
+        <TooltipTrigger asChild>{children}</TooltipTrigger>
+        <TooltipContent side={position} className={className}>
+          {content}
+        </TooltipContent>
+      </TooltipRoot>
+    </TooltipProvider>
+  )
+}
+
+TooltipWrapper.displayName = 'Tooltip'
+
+export { TooltipWrapper as Tooltip, TooltipTrigger, TooltipContent, TooltipProvider }
+export type { TooltipWrapperProps }

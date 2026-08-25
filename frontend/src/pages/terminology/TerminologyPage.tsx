@@ -174,7 +174,7 @@ function RecentActivitySection() {
 
   const terminologyEvents = useMemo(() => {
     if (!timelineData?.items) return []
-    const termRelatedTypes = ['term.created', 'term.updated', 'term.deleted', 'category.created', 'category.updated', 'category.deleted']
+    const termRelatedTypes = ['term', 'category']
     return timelineData.items.filter((e) => termRelatedTypes.includes(e.type)).slice(0, 5)
   }, [timelineData])
 

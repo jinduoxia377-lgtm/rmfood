@@ -17,7 +17,7 @@ from ..schemas.base import ApiResponse, PaginatedResponse
 from .deps import get_db
 from ..services.terminology_service import TerminologyService
 
-router = APIRouter(prefix="/api/terminology", tags=["术语管理"])
+router = APIRouter(prefix="/terminology", tags=["术语管理"])
 
 
 def get_terminology_service(db: Session = Depends(get_db)) -> TerminologyService:

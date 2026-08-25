@@ -5,7 +5,7 @@ import api from './client'
 
 export interface TimelineEvent {
   id: number
-  type: 'formula' | 'experiment'
+  type: 'formula' | 'experiment' | 'category' | 'term'
   title: string
   status: string
   created_at: string
