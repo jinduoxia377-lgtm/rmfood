@@ -20,7 +20,9 @@ const feedbackVariants = cva(
   }
 )
 
-const iconMap: Record<string, React.ReactNode> = {
+type FeedbackVariant = 'success' | 'error' | 'warning' | 'info'
+
+const iconMap: Record<FeedbackVariant, React.ReactNode> = {
   success: <CheckCircle2 className="h-5 w-5" />,
   error: <AlertCircle className="h-5 w-5" />,
   warning: <TriangleAlert className="h-5 w-5" />,
@@ -55,7 +57,7 @@ export function OperationFeedback({
   ...props
 }: OperationFeedbackProps) {
   const [dismissed, setDismissed] = React.useState(false)
-  const Icon = iconMap[variant] || iconMap.info
+  const Icon = iconMap[variant as FeedbackVariant] ?? iconMap.info
 
   if (dismissed) return null
 

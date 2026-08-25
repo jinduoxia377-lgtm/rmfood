@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { cn } from '@/lib/utils'
 
-export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> {
   size?: 'sm' | 'md' | 'lg'
   error?: string | boolean
   prefix?: React.ReactNode
@@ -9,7 +9,7 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
   showCount?: boolean
 }
 
-const sizeClasses: Record<InputProps['size'], string> = {
+const sizeClasses: Record<NonNullable<InputProps['size']>, string> = {
   sm: 'h-8 text-xs',
   md: 'h-9 text-sm',
   lg: 'h-10 text-sm',

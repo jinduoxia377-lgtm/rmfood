@@ -35,12 +35,9 @@ const Progress = React.forwardRef<
       {...props}
     >
       <ProgressPrimitive.Indicator
-        className={`h-full w-full flex-1 transition-all ${variantClasses[variant]}`}
-        style={{ transform: `translateX(-${100 - (value ?? 0)}%)` }}
-        role="progressbar"
-        aria-valuenow={value}
-        aria-valuemin={0}
-        aria-valuemax={100}
+        className={`h-full w-full flex-1 transition-all ${variantClasses[variant as keyof typeof variantClasses] ?? variantClasses.default}`}
+        style={{ transform: `translateX(-${100 - (value ?? 0)}%)` } as React.CSSProperties}
+        {...props}
       />
     </ProgressPrimitive.Root>
   )

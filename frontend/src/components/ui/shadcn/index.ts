@@ -1,8 +1,8 @@
 // shadcn/ui components — Radix UI primitives with RMFOOD design tokens
 
 // Core primitives (Phase 1)
-export { Button } from './Button'
-export type { ButtonProps } from './Button'
+export { Button } from '../Button'
+export type { ButtonProps } from '../Button'
 
 export {
   Dialog,
@@ -80,3 +80,25 @@ export {
   DataTable,
 } from './data-table'
 export type { DataTableProps } from './data-table'
+
+// New Radix primitives (Phase 4)
+export { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from './accordion'
+export { Collapsible, CollapsibleTrigger, CollapsibleContent } from './collapsible'
+export {
+  DropdownMenu,
+  DropdownMenuPortal,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuCheckboxItem,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuGroup,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
+} from './dropdown-menu'
+export { Popover, PopoverTrigger, PopoverContent, PopoverAnchor } from './popover'
+export { RadioGroup, RadioGroupItem } from './radio-group'
