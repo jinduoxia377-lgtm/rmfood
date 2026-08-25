@@ -80,3 +80,5 @@ export const RadixText = React.forwardRef<HTMLElement, RadixTextProps>(
   }
 )
 RadixText.displayName = 'RadixText'
+
+export { RadixBadge as Badge, RadixText as Text }

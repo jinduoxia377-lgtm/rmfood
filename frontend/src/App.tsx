@@ -9,12 +9,13 @@
  * - 其他页面使用懒加载 + 空闲预加载
  * - 大体积模块（图表/导出）延迟加载
  */
-import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, Navigate, type LoaderFunction } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from '@/utils/queryClient';
 import { useEffect, lazy, Suspense, type ReactNode } from 'react';
 
 import { useAuthStore } from '@/stores/auth';
+import LandingPage from '@/pages/landing/LandingPage';
 import { UserRole } from '@/types/index';
 import { ThemeProvider } from '@/stores/ThemeProvider';
 import { RadixThemeProvider } from '@/theme/RadixThemeProvider';
@@ -176,6 +177,15 @@ const LoadingComponent = () => (
 );
 
 /* ═══════════════════════════════════════════
+   根路由 Loader — 未登录时展示着陆页，已登录跳转仪表盘
+   ═══════════════════════════════════════════ */
+const rootLoader: LoaderFunction = () => {
+  const { isAuthenticated } = useAuthStore.getState();
+  if (isAuthenticated) return null; // 已登录 → 由路由守卫处理跳转
+  return null; // 未登录 → 渲染着陆页（由 index 子路由判断）
+};
+
+/* ═══════════════════════════════════════════
    路由配置 (react-router-dom v7)
    ═══════════════════════════════════════════ */
 
@@ -198,10 +208,16 @@ const router = createBrowserRouter([
       </GuestGuard>
     ),
   },
+  // 公开路由 — 公官网着陆页
+  {
+    path: '/landing',
+    element: <LandingPage />,
+  },
 
   // 受保护路由 — 带 MainLayout 布局
   {
     path: '/',
+    loader: rootLoader,
     element: (
       <AuthGuard>
         <MainLayout />
@@ -209,7 +225,15 @@ const router = createBrowserRouter([
     ),
     children: [
       { path: 'formula', element: <Navigate to="/formulas" replace /> },
-      { index: true, element: <Navigate to="/dashboard" replace /> },
+      // 根路径：未登录用户展示着陆页，已登录用户跳转仪表盘
+      {
+        index: true,
+        element: (() => {
+          const { isAuthenticated } = useAuthStore.getState();
+          if (!isAuthenticated) return <LandingPage />;
+          return <Navigate to="/dashboard" replace />;
+        })(),
+      },
       {
         path: 'dashboard',
         element: <DashboardPage />,
