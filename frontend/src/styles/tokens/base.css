@@ -109,6 +109,15 @@
   --color-neutral-subtle:  #f1f5f9;  /* surface-elevated 级 */
   --color-neutral-muted:   #e2e8f0;  /* border 级 */
 
+
+  /* ═══ Hero v5 — Dark Product Preview Area Tokens ═══ */
+  --hero-dark-bg: #0a0f1e;          /* 深墨蓝背景 */
+  --hero-dark-surface: #111827;     /* 应用窗口背景 */
+  --hero-dark-surface-2: #1a2236;   /* 侧边栏/子面板 */
+  --hero-dark-border: rgba(255,255,255,0.08);
+  --hero-dark-text: rgba(255,255,255,0.95);
+  --hero-dark-muted: rgba(255,255,255,0.45);
+  --hero-dark-input: #0d1321;
   /* ═══ Glassmorphism (Acrylic) ═══ */
   --material-acrylic: rgba(255, 255, 255, 0.72);
   --material-acrylic-blur: 16px;
@@ -307,3 +316,4 @@
   --ring: var(--color-primary-600, #059669);
   --radius: var(--radius-md, 0.5rem);
 }
+

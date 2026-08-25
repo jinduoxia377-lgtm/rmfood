@@ -1,6 +1,6 @@
 """RMFOOD 配方模型"""
 from datetime import datetime, timezone
-from sqlalchemy import Integer, String, Text, DateTime, JSON, Enum, ForeignKey, Table, Column, Float, Boolean, BigInteger, CheckConstraint, UniqueConstraint
+from sqlalchemy import Integer, String, Text, DateTime, JSON, ForeignKey, Table, Column, Float, Boolean, BigInteger, CheckConstraint, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .base import Base
 from .base import ClassifiedMixin
@@ -84,7 +84,8 @@ class Formula(ClassifiedMixin, Base):
     code: Mapped[str] = mapped_column(String(50), unique=True, index=True, nullable=False)
     description: Mapped[str | None] = mapped_column(Text)
     status: Mapped[FormulaStatus] = mapped_column(
-        Enum(FormulaStatus), default=FormulaStatus.DRAFT, nullable=False
+        String(50), default=FormulaStatus.DRAFT, nullable=False,
+        server_default=FormulaStatus.DRAFT.value
     )
     version: Mapped[int] = mapped_column(Integer, default=1)
     target_effects: Mapped[list | None] = mapped_column(JSON, default=list)

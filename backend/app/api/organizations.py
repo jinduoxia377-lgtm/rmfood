@@ -72,7 +72,7 @@ class CreateTeamRequest(BaseModel):
 async def create_organization(
     request: CreateOrganizationRequest,
     db: AsyncSession = Depends(get_db_session),
-    current_user: dict = Depends(get_current_user),
+    current_user = Depends(get_current_user),
 ):
     """
     创建新组织
@@ -85,7 +85,7 @@ async def create_organization(
     
     try:
         org = await service.create_organization(
-            owner_id=current_user["id"],
+            owner_id=current_user.id,
             name=request.name,
             slug=request.slug,
             description=request.description,
@@ -113,7 +113,7 @@ async def create_organization(
 @router.get("", summary="获取我的组织列表")
 async def list_my_organizations(
     db: AsyncSession = Depends(get_db_session),
-    current_user: dict = Depends(get_current_user),
+    current_user = Depends(get_current_user),
 ):
     """获取当前用户所属的所有组织"""
     result = await db.execute(
@@ -122,7 +122,7 @@ async def list_my_organizations(
            JOIN organization_members m ON o.id = m.org_id
            WHERE m.user_id = :user_id AND o.is_active = TRUE
            ORDER BY m.joined_at DESC""",
-        {"user_id": current_user["id"]},
+        {"user_id": current_user.id},
     )
     
     organizations = []
@@ -146,7 +146,7 @@ async def list_my_organizations(
 async def get_organization(
     org_id_or_slug: str,
     db: AsyncSession = Depends(get_db_session),
-    current_user: dict = Depends(get_current_user),
+    current_user = Depends(get_current_user),
 ):
     """通过ID或slug获取组织详情"""
     service = get_org_service(db)
@@ -160,7 +160,7 @@ async def get_organization(
     if not org:
         raise HTTPException(status_code=404, detail="组织不存在")
 
-    membership = await service._get_membership(org.id, current_user["id"])
+    membership = await service._get_membership(org.id, current_user.id)
     if not membership:
         raise HTTPException(status_code=403, detail="您不是该组织的成员")
 
@@ -186,7 +186,7 @@ async def update_organization(
     org_id: int,
     request: UpdateOrganizationRequest,
     db: AsyncSession = Depends(get_db_session),
-    current_user: dict = Depends(get_current_user),
+    current_user = Depends(get_current_user),
 ):
     """更新组织基本信息（需ADMIN或OWNER权限）"""
     service = get_org_service(db)
@@ -202,7 +202,7 @@ async def update_organization(
         updates["settings"] = request.settings
 
     try:
-        org = await service.update_organization(org_id, current_user["id"], **updates)
+        org = await service.update_organization(org_id, current_user.id, **updates)
         
         return {"success": True, "organization": org.__dict__}
         
@@ -215,13 +215,13 @@ async def update_organization(
 async def delete_organization(
     org_id: int,
     db: AsyncSession = Depends(get_db_session),
-    current_user: dict = Depends(get_current_user),
+    current_user = Depends(get_current_user),
 ):
     """删除组织（仅OWNER，慎用！）"""
     service = get_org_service(db)
     
     try:
-        success = await service.delete_organization(org_id, current_user["id"])
+        success = await service.delete_organization(org_id, current_user.id)
         
         return {"success": success}
         
@@ -238,12 +238,12 @@ async def delete_organization(
 async def get_members(
     org_id: int,
     db: AsyncSession = Depends(get_db_session),
-    current_user: dict = Depends(get_current_user),
+    current_user = Depends(get_current_user),
 ):
     """获取组织所有成员"""
     service = get_org_service(db)
     
-    membership = await service._get_membership(org_id, current_user["id"])
+    membership = await service._get_membership(org_id, current_user.id)
     if not membership:
         raise HTTPException(status_code=403, detail="您不是该组织的成员")
     
@@ -257,7 +257,7 @@ async def invite_member(
     org_id: int,
     request: InviteMemberRequest,
     db: AsyncSession = Depends(get_db_session),
-    current_user: dict = Depends(get_current_user),
+    current_user = Depends(get_current_user),
 ):
     """
     邀请新成员加入组织
@@ -268,7 +268,7 @@ async def invite_member(
     """
     service = get_org_service(db)
     
-    if not await service._check_permission(org_id, current_user["id"], [OrganizationRole.OWNER, OrganizationRole.ADMIN]):
+    if not await service._check_permission(org_id, current_user.id, [OrganizationRole.OWNER, OrganizationRole.ADMIN]):
         raise HTTPException(status_code=403, detail="需要管理员权限")
 
     result = await db.execute(
@@ -287,7 +287,7 @@ async def invite_member(
             org_id=org_id,
             user_id=user_id,
             role=request.role,
-            invited_by=current_user["id"],
+            invited_by=current_user.id,
             team_ids=request.team_ids,
         )
 
@@ -295,7 +295,7 @@ async def invite_member(
         
         await notify_mention(
             db=db,
-            author_id=current_user["id"],
+            author_id=current_user.id,
             mentioned_user_id=user_id,
             resource_type="organization",
             resource_id=org_id,
@@ -318,13 +318,13 @@ async def remove_member(
     org_id: int,
     user_id: int,
     db: AsyncSession = Depends(get_db_session),
-    current_user: dict = Depends(get_current_user),
+    current_user = Depends(get_current_user),
 ):
     """从组织中移除成员"""
     service = get_org_service(db)
     
     try:
-        success = await service.remove_member(org_id, user_id, current_user["id"])
+        success = await service.remove_member(org_id, user_id, current_user.id)
         
         return {"success": success}
         
@@ -339,7 +339,7 @@ async def change_member_role(
     user_id: int,
     request: ChangeRoleRequest,
     db: AsyncSession = Depends(get_db_session),
-    current_user: dict = Depends(get_current_user),
+    current_user = Depends(get_current_user),
 ):
     """修改成员角色（需ADMIN或OWNER）"""
     service = get_org_service(db)
@@ -349,7 +349,7 @@ async def change_member_role(
             org_id=org_id,
             target_user_id=user_id,
             new_role=request.role,
-            changer_id=current_user["id"],
+            changer_id=current_user.id,
         )
         
         return {"success": success}
@@ -368,7 +368,7 @@ async def create_team(
     org_id: int,
     request: CreateTeamRequest,
     db: AsyncSession = Depends(get_db_session),
-    current_user: dict = Depends(get_current_user),
+    current_user = Depends(get_current_user),
 ):
     """在组织中创建新团队"""
     service = get_org_service(db)
@@ -377,7 +377,7 @@ async def create_team(
         team = await service.create_team(
             org_id=org_id,
             name=request.name,
-            creator_id=current_user["id"],
+            creator_id=current_user.id,
             description=request.description,
         )
         
@@ -395,7 +395,7 @@ async def create_team(
 async def get_teams(
     org_id: int,
     db: AsyncSession = Depends(get_db_session),
-    current_user: dict = Depends(get_current_user),
+    current_user = Depends(get_current_user),
 ):
     """获取组织的所有团队"""
     service = get_org_service(db)
@@ -413,7 +413,7 @@ async def get_teams(
 async def get_quotas(
     org_id: int,
     db: AsyncSession = Depends(get_db_session),
-    current_user: dict = Depends(get_current_user),
+    current_user = Depends(get_current_user),
 ):
     """获取组织的资源配额使用详情"""
     service = get_org_service(db)

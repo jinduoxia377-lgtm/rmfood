@@ -12,7 +12,8 @@ export const BRAND_CONFIG = {
   description: '集成中医药知识图谱与生物活性肽数据库，为配方研发提供智能化辅助',
   slogan: '药食同源功能性食品，专业配方研发平台',
   logo: {
-    icon: 'Beaker', // lucide-react icon name
+    icon: 'Beaker',           // lucide-react icon name（无图片时的降级）
+    path: '/logos/logo.svg',  // 图片 logo 路径（public/ 目录下），空字符串则使用图标
     size: {
       small: 24,
       medium: 28,

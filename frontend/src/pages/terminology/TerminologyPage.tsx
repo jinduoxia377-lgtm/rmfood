@@ -13,15 +13,17 @@
 import { useState, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
-  Input, Button, Badge, Modal, Pagination, Card, Tabs, TabsList, TabsTrigger, TabsContent,
+  Input, Button, Badge, Modal, Pagination, Card, CardHeader, CardTitle, CardContent, Tabs, TabsList, TabsTrigger, TabsContent,
   StatCard, Alert,
 } from '@/components/ui'
 import * as terminologyApi from '@/api/terminology'
 import type { Term, TermCategory, TermCategoryCreate, TermStatistics, TermValidationResponse } from '@/api/terminology'
+import { activityApi, type TimelineEvent } from '@/api/activity'
 import {
   BookOpen, Search, Tag, Settings, BarChart3, Plus, Trash2, Edit2, X, Check,
-  FileText, List, Database, RefreshCw,
+  FileText, List, Database, RefreshCw, Clock, ShieldCheck,
 } from 'lucide-react'
+import { TableSkeleton, EmptyState } from '@/components/ui'
 
 // ═══════════════════════════════════════════════
 // 主页面
@@ -31,15 +33,29 @@ export default function TerminologyPage() {
   const [activeTab, setActiveTab] = useState('categories')
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">术语管理</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            管理药食同源专业术语库，支持分类、验证、搜索和标准化
-          </p>
+    <div className="space-y-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* 顶部横幅 */}
+      <div className="rounded-2xl bg-gradient-to-r from-primary-600 to-primary-700 p-6 text-white shadow-lg">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex-1">
+            <h1 className="text-xl font-bold leading-snug">术语库管理</h1>
+            <p className="mt-1 text-white/90 text-sm">管理药食同源专业术语库，支持分类、验证、搜索和标准化</p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+            <Button
+              variant="secondary"
+              size="sm"
+              icon={<RefreshCw size={14} />}
+              onClick={() => queryClient.invalidateQueries({ queryKey: ['terminology-statistics'] })}
+            >
+              刷新数据
+            </Button>
+          </div>
         </div>
       </div>
+
+      {/* 统计卡片行 */}
+      <StatCardsRow />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="grid grid-cols-4 w-full max-w-2xl">
@@ -74,8 +90,155 @@ export default function TerminologyPage() {
           <RulesTab />
         </TabsContent>
       </Tabs>
+
+      {/* 最近活动 */}
+      <RecentActivitySection />
     </div>
   )
+}
+
+// ═══════════════════════════════════════════════
+// 统计卡片行
+// ═══════════════════════════════════════════════
+
+function StatCardsRow() {
+  const { data: stats, isLoading } = useQuery({
+    queryKey: ['terminology-statistics'],
+    queryFn: terminologyApi.getStatistics,
+  })
+
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="h-20 rounded-xl bg-gray-100 dark:bg-gray-800 animate-pulse" />
+        ))}
+      </div>
+    )
+  }
+
+  if (!stats) return null
+
+  const cards = [
+    {
+      label: '术语总数',
+      value: stats.total_terms,
+      icon: BookOpen,
+      variant: 'primary' as const,
+    },
+    {
+      label: '分类数量',
+      value: stats.total_categories,
+      icon: Database,
+      variant: 'secondary' as const,
+    },
+    {
+      label: '标准术语',
+      value: stats.category_stats?.reduce((sum, c) => sum + c.term_count, 0) ?? 0,
+      icon: ShieldCheck,
+      variant: 'success' as const,
+    },
+    {
+      label: '验证次数',
+      value: stats.total_validations,
+      icon: Check,
+      variant: 'info' as const,
+    },
+  ]
+
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {cards.map((card) => (
+        <StatCard
+          key={card.label}
+          label={card.label}
+          value={card.value}
+          icon={card.icon}
+          variant={card.variant}
+        />
+      ))}
+    </div>
+  )
+}
+
+// ═══════════════════════════════════════════════
+// 最近活动
+// ═══════════════════════════════════════════════
+
+function RecentActivitySection() {
+  const { data: timelineData, isLoading } = useQuery({
+    queryKey: ['terminology-activity'],
+    queryFn: ({ signal }) => activityApi.timeline(7, signal),
+    staleTime: 5 * 60_000,
+  })
+
+  const terminologyEvents = useMemo(() => {
+    if (!timelineData?.items) return []
+    const termRelatedTypes = ['term.created', 'term.updated', 'term.deleted', 'category.created', 'category.updated', 'category.deleted']
+    return timelineData.items.filter((e) => termRelatedTypes.includes(e.type)).slice(0, 5)
+  }, [timelineData])
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle as="h3" className="text-sm font-bold">最近术语活动</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="h-4 bg-gray-100 dark:bg-gray-800 rounded animate-pulse" />
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  if (terminologyEvents.length === 0) return null
+
+  return (
+    <Card>
+      <CardHeader className="px-6 pt-6 pb-4">
+        <CardTitle as="h3" className="text-sm font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+          <Clock size={14} />
+          最近术语活动
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="px-6 pb-6 pt-0">
+        <div className="space-y-3">
+          {terminologyEvents.map((event) => (
+            <div key={event.id} className="flex items-start gap-3 text-sm">
+              <div className="w-2 h-2 rounded-full bg-primary-500 mt-1.5 shrink-0" />
+              <div className="flex-1">
+                <span className="font-medium">{event.title}</span>
+                <span className="text-gray-500 dark:text-gray-400 ml-2 text-xs">{formatRelativeTime(event.created_at)}</span>
+              </div>
+              {event.status && (
+                <Badge variant={event.status === 'success' ? 'success' : 'info'} size="sm">
+                  {event.status}
+                </Badge>
+              )}
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+function formatRelativeTime(dateStr?: string): string {
+  if (!dateStr) return ''
+  const date = new Date(dateStr)
+  const now = new Date()
+  const diffMs = now.getTime() - date.getTime()
+  const diffMin = Math.floor(diffMs / 60000)
+  if (diffMin < 1) return '刚刚'
+  if (diffMin < 60) return `${diffMin} 分钟前`
+  const diffHr = Math.floor(diffMin / 60)
+  if (diffHr < 24) return `${diffHr} 小时前`
+  const diffDay = Math.floor(diffHr / 24)
+  return `${diffDay} 天前`
 }
 
 // ═══════════════════════════════════════════════
@@ -88,7 +251,7 @@ function CategoryManagementTab() {
   const [editingCategory, setEditingCategory] = useState<TermCategory | null>(null)
   const [formData, setFormData] = useState({ name: '', name_en: '', description: '', sort_order: 0 })
 
-  const { data: categories = [] as TermCategory[], isLoading } = useQuery({
+  const { data: categories = [], isLoading } = useQuery({
     queryKey: ['terminology-categories'],
     queryFn: terminologyApi.getCategories,
   })
@@ -128,7 +291,21 @@ function CategoryManagementTab() {
       </div>
 
       {isLoading ? (
-        <div className="text-center py-8 text-gray-500">加载中...</div>
+        <Card>
+          <CardContent className="p-0">
+            <TableSkeleton rows={5} cols={4} />
+          </CardContent>
+        </Card>
+      ) : categories.length === 0 ? (
+        <Card>
+          <CardContent className="p-6">
+            <EmptyState
+              icon={<Database size={48} />}
+              title="暂无分类"
+              description="添加第一个术语分类，开始构建术语库"
+            />
+          </CardContent>
+        </Card>
       ) : (
         <Card>
           <table className="w-full text-sm">
@@ -143,7 +320,7 @@ function CategoryManagementTab() {
             <tbody>
               {categories.map((cat) => (
                 <tr key={cat.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900/50">
-                  <td className="px-4 py-3">{cat.name}</td>
+                  <td className="px-4 py-3 font-medium">{cat.name}</td>
                   <td className="px-4 py-3 text-gray-500">{cat.name_en || '-'}</td>
                   <td className="px-4 py-3 text-gray-500">{cat.description || '-'}</td>
                   <td className="px-4 py-3 text-right">
@@ -324,7 +501,21 @@ function TermManagementTab() {
 
       {/* 术语表格 */}
       {isLoading ? (
-        <div className="text-center py-8 text-gray-500">加载中...</div>
+        <Card>
+          <CardContent className="p-0">
+            <TableSkeleton rows={5} cols={6} />
+          </CardContent>
+        </Card>
+      ) : terms.length === 0 ? (
+        <Card>
+          <CardContent className="p-6">
+            <EmptyState
+              icon={<BookOpen size={48} />}
+              title="暂无术语"
+              description="添加第一个术语，或调整筛选条件"
+            />
+          </CardContent>
+        </Card>
       ) : (
         <Card>
           <table className="w-full text-sm">
@@ -470,89 +661,97 @@ function ValidationTab() {
       <div className="grid grid-cols-2 gap-6">
         {/* 单个验证 */}
         <Card>
-          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <Check className="w-5 h-5" />
-            单个术语验证
-          </h3>
-          <div className="space-y-3">
-            <Input
-              value={validationInput}
-              onChange={(e) => setValidationInput(e.target.value)}
-              placeholder="输入术语进行验证"
-            />
-            <Button
-              variant="primary"
-              onClick={() => validateMutation.mutate({ term: validationInput })}
-              disabled={!validationInput}
-            >
-              验证
-            </Button>
-          </div>
-          {validationResult && (
-            <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-900 rounded">
-              <div className="flex items-center gap-2 mb-2">
-                {validationResult.is_valid ? (
-                  <Badge variant="success">✓ 有效</Badge>
-                ) : (
-                  <Badge variant="danger">✗ 无效</Badge>
-                )}
-                <span className="text-sm text-gray-500">
-                  置信度: {(validationResult.confidence || 0).toFixed(2)}
-                </span>
-              </div>
-              {validationResult.corrected_term && (
-                <p className="text-sm">修正: {validationResult.corrected_term}</p>
-              )}
-              {validationResult.suggestions && validationResult.suggestions.length > 0 && (
-                <div className="mt-2">
-                  <p className="text-sm text-gray-500 mb-1">建议:</p>
-                  {validationResult.suggestions.map((s: string, i: number) => (
-                    <p key={i} className="text-sm">• {s}</p>
-                  ))}
-                </div>
-              )}
+          <CardHeader className="px-6 pt-6 pb-4">
+            <CardTitle as="h3" className="text-sm font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+              <Check className="w-4 h-4" />
+              单个术语验证
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="px-6 pb-6 pt-0">
+            <div className="space-y-3">
+              <Input
+                value={validationInput}
+                onChange={(e) => setValidationInput(e.target.value)}
+                placeholder="输入术语进行验证"
+              />
+              <Button
+                variant="primary"
+                onClick={() => validateMutation.mutate({ term: validationInput })}
+                disabled={!validationInput}
+              >
+                验证
+              </Button>
             </div>
-          )}
+            {validationResult && (
+              <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-900 rounded">
+                <div className="flex items-center gap-2 mb-2">
+                  {validationResult.is_valid ? (
+                    <Badge variant="success">✓ 有效</Badge>
+                  ) : (
+                    <Badge variant="danger">✗ 无效</Badge>
+                  )}
+                  <span className="text-sm text-gray-500">
+                    置信度: {(validationResult.confidence || 0).toFixed(2)}
+                  </span>
+                </div>
+                {validationResult.corrected_term && (
+                  <p className="text-sm">修正: {validationResult.corrected_term}</p>
+                )}
+                {validationResult.suggestions && validationResult.suggestions.length > 0 && (
+                  <div className="mt-2">
+                    <p className="text-sm text-gray-500 mb-1">建议:</p>
+                    {validationResult.suggestions.map((s: string, i: number) => (
+                      <p key={i} className="text-sm">• {s}</p>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </CardContent>
         </Card>
 
         {/* 批量验证 */}
         <Card>
-          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <List className="w-5 h-5" />
-            批量验证
-          </h3>
-          <div className="space-y-3">
-            <textarea
-              value={batchInput}
-              onChange={(e) => setBatchInput(e.target.value)}
-              placeholder="每行一个术语"
-              className="input w-full h-32 resize-none"
-            />
-            <Button
-              variant="primary"
-              onClick={() => {
-                const terms = batchInput.split('\n').filter(Boolean)
-                batchValidateMutation.mutate({ terms })
-              }}
-              disabled={!batchInput.trim()}
-            >
+          <CardHeader className="px-6 pt-6 pb-4">
+            <CardTitle as="h3" className="text-sm font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+              <List className="w-4 h-4" />
               批量验证
-            </Button>
-          </div>
-          {batchResult.length > 0 && (
-            <div className="mt-4 space-y-2">
-              {batchResult.map((r: any, i: number) => (
-                <div key={i} className="flex items-center gap-2 text-sm">
-                  {r.is_valid ? (
-                    <Badge variant="success">✓</Badge>
-                  ) : (
-                    <Badge variant="danger">✗</Badge>
-                  )}
-                  <span>{r.term || `条目 ${i + 1}`}</span>
-                </div>
-              ))}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="px-6 pb-6 pt-0">
+            <div className="space-y-3">
+              <textarea
+                value={batchInput}
+                onChange={(e) => setBatchInput(e.target.value)}
+                placeholder="每行一个术语"
+                className="input w-full h-32 resize-none"
+              />
+              <Button
+                variant="primary"
+                onClick={() => {
+                  const terms = batchInput.split('\n').filter(Boolean)
+                  batchValidateMutation.mutate({ terms })
+                }}
+                disabled={!batchInput.trim()}
+              >
+                批量验证
+              </Button>
             </div>
-          )}
+            {batchResult.length > 0 && (
+              <div className="mt-4 space-y-2">
+                {batchResult.map((r: any, i: number) => (
+                  <div key={i} className="flex items-center gap-2 text-sm">
+                    {r.is_valid ? (
+                      <Badge variant="success">✓</Badge>
+                    ) : (
+                      <Badge variant="danger">✗</Badge>
+                    )}
+                    <span>{r.term || `条目 ${i + 1}`}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
         </Card>
       </div>
     </div>
@@ -601,7 +800,21 @@ function RulesTab() {
       </div>
 
       {isLoading ? (
-        <div className="text-center py-8 text-gray-500">加载中...</div>
+        <Card>
+          <CardContent className="p-0">
+            <TableSkeleton rows={5} cols={6} />
+          </CardContent>
+        </Card>
+      ) : rules.length === 0 ? (
+        <Card>
+          <CardContent className="p-6">
+            <EmptyState
+              icon={<Settings size={48} />}
+              title="暂无规则"
+              description="添加标准化规则，自动处理术语变体"
+            />
+          </CardContent>
+        </Card>
       ) : (
         <Card>
           <table className="w-full text-sm">

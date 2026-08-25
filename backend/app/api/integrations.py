@@ -79,7 +79,7 @@ class TestWebhookRequest(BaseModel):
 async def create_webhook(
     request: CreateWebhookRequest,
     db: AsyncSession = Depends(get_db_session),
-    current_user: dict = Depends(get_current_user),
+    current_user = Depends(get_current_user),
 ):
     """
     创建新的Webhook
@@ -97,7 +97,7 @@ async def create_webhook(
             name=request.name,
             url=request.url,
             events=events,
-            owner_id=current_user["id"],
+            owner_id=current_user.id,
             secret=request.secret,
             headers=request.headers,
         )
@@ -121,11 +121,11 @@ async def create_webhook(
 @router.get("/webhooks", summary="获取Webhook列表")
 async def list_webhooks(
     db: AsyncSession = Depends(get_db_session),
-    current_user: dict = Depends(get_current_user),
+    current_user = Depends(get_current_user),
 ):
     """获取当前用户的所有Webhook"""
     service = get_webhook_service(db)
-    webhooks = await service.get_webhooks(current_user["id"])
+    webhooks = await service.get_webhooks(current_user.id)
 
     return {
         "webhooks": [
@@ -149,11 +149,11 @@ async def list_webhooks(
 async def get_webhook(
     webhook_id: str,
     db: AsyncSession = Depends(get_db_session),
-    current_user: dict = Depends(get_current_user),
+    current_user = Depends(get_current_user),
 ):
     """获取单个Webhook详情（包含secret）"""
     service = get_webhook_service(db)
-    webhook = await service.get_webhook(webhook_id, current_user["id"])
+    webhook = await service.get_webhook(webhook_id, current_user.id)
     
     if not webhook:
         raise HTTPException(status_code=404, detail="Webhook不存在")
@@ -179,7 +179,7 @@ async def update_webhook(
     webhook_id: str,
     request: UpdateWebhookRequest,
     db: AsyncSession = Depends(get_db_session),
-    current_user: dict = Depends(get_current_user),
+    current_user = Depends(get_current_user),
 ):
     """更新Webhook配置"""
     service = get_webhook_service(db)
@@ -192,7 +192,7 @@ async def update_webhook(
     if request.status is not None:
         updates["status"] = request.status
 
-    webhook = await service.update_webhook(webhook_id, current_user["id"], **updates)
+    webhook = await service.update_webhook(webhook_id, current_user.id, **updates)
 
     if not webhook:
         raise HTTPException(status_code=404, detail="Webhook不存在")
@@ -204,11 +204,11 @@ async def update_webhook(
 async def delete_webhook(
     webhook_id: str,
     db: AsyncSession = Depends(get_db_session),
-    current_user: dict = Depends(get_current_user),
+    current_user = Depends(get_current_user),
 ):
     """删除Webhook"""
     service = get_webhook_service(db)
-    success = await service.delete_webhook(webhook_id, current_user["id"])
+    success = await service.delete_webhook(webhook_id, current_user.id)
 
     if not success:
         raise HTTPException(status_code=404, detail="Webhook不存在")
@@ -220,7 +220,7 @@ async def delete_webhook(
 async def test_webhook(
     request: TestWebhookRequest,
     db: AsyncSession = Depends(get_db_session),
-    current_user: dict = Depends(get_current_user),
+    current_user = Depends(get_current_user),
 ):
     """
     发送测试请求到指定URL
@@ -348,7 +348,7 @@ async def list_events():
 async def create_api_key(
     request: CreateAPIKeyRequest,
     db: AsyncSession = Depends(get_db_session),
-    current_user: dict = Depends(get_current_user),
+    current_user = Depends(get_current_user),
 ):
     """
     创建新的API密钥
@@ -364,7 +364,7 @@ async def create_api_key(
     api_key, plain_key = await service.create_api_key(
         name=request.name,
         scopes=request.scopes,
-        owner_id=current_user["id"],
+        owner_id=current_user.id,
         expires_in_days=request.expires_in_days,
     )
 
@@ -386,7 +386,7 @@ async def create_api_key(
 @router.get("/api-keys", summary="列出API密钥")
 async def list_api_keys(
     db: AsyncSession = Depends(get_db_session),
-    current_user: dict = Depends(get_current_user),
+    current_user = Depends(get_current_user),
 ):
     """
     列出用户的所有API密钥
@@ -394,7 +394,7 @@ async def list_api_keys(
     ⚠️ 不返回实际密钥值，仅显示前缀
     """
     service = get_api_key_service(db)
-    keys = await service.list_keys(current_user["id"])
+    keys = await service.list_keys(current_user.id)
 
     return {"keys": keys}
 
@@ -403,11 +403,11 @@ async def list_api_keys(
 async def revoke_api_key(
     key_id: str,
     db: AsyncSession = Depends(get_db_session),
-    current_user: dict = Depends(get_current_user),
+    current_user = Depends(get_current_user),
 ):
     """撤销（禁用）指定的API密钥"""
     service = get_api_key_service(db)
-    success = await service.revoke_key(key_id, current_user["id"])
+    success = await service.revoke_key(key_id, current_user.id)
 
     if not success:
         raise HTTPException(status_code=404, detail="密钥不存在")
@@ -440,7 +440,7 @@ async def list_scopes():
 async def create_integration(
     request: CreateIntegrationRequest,
     db: AsyncSession = Depends(get_db_session),
-    current_user: dict = Depends(get_current_user),
+    current_user = Depends(get_current_user),
 ):
     """
     创建第三方服务集成
@@ -459,7 +459,7 @@ async def create_integration(
         type=request.type,
         name=request.name,
         config=request.config,
-        owner_id=current_user["id"],
+        owner_id=current_user.id,
         events=events,
     )
 
@@ -478,7 +478,7 @@ async def create_integration(
 @router.get("/third-party", summary="列出集成")
 async def list_integrations(
     db: AsyncSession = Depends(get_db_session),
-    current_user: dict = Depends(get_current_user),
+    current_user = Depends(get_current_user),
 ):
     """列出用户的所有第三方集成"""
     result = await db.execute(
@@ -486,7 +486,7 @@ async def list_integrations(
            FROM integrations 
            WHERE owner_id = :owner_id
            ORDER BY created_at DESC""",
-        {"owner_id": current_user["id"]},
+        {"owner_id": current_user.id},
     )
 
     integrations = []
@@ -506,12 +506,12 @@ async def list_integrations(
 async def delete_integration(
     integration_id: str,
     db: AsyncSession = Depends(get_db_session),
-    current_user: dict = Depends(get_current_user),
+    current_user = Depends(get_current_user),
 ):
     """删除第三方集成"""
     await db.execute(
         "DELETE FROM integrations WHERE id = :id AND owner_id = :owner_id",
-        {"id": integration_id, "owner_id": current_user["id"]},
+        {"id": integration_id, "owner_id": current_user.id},
     )
     await db.commit()
 
