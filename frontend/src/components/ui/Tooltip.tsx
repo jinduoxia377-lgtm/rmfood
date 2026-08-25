@@ -57,4 +57,3 @@ function TooltipWrapper({ content, children, position = 'top', delay = 300, clas
 TooltipWrapper.displayName = 'Tooltip'
 
 export { TooltipWrapper as Tooltip, TooltipTrigger, TooltipContent, TooltipProvider }
-export type { TooltipWrapperProps }
