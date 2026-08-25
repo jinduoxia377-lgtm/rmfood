@@ -176,14 +176,14 @@ const LoadingComponent = () => (
   </div>
 );
 
-/* ═══════════════════════════════════════════
-   根路由 Loader — 未登录时展示着陆页，已登录跳转仪表盘
-   ═══════════════════════════════════════════ */
-const rootLoader: LoaderFunction = () => {
-  const { isAuthenticated } = useAuthStore.getState();
-  if (isAuthenticated) return null; // 已登录 → 由路由守卫处理跳转
-  return null; // 未登录 → 渲染着陆页（由 index 子路由判断）
-};
+/**
+ * 根路径组件 — 未登录展示着陆页，已登录跳转仪表盘
+ */
+function RootRoute() {
+  const { isAuthenticated } = useAuthStore();
+  if (!isAuthenticated) return <LandingPage />;
+  return <Navigate to="/dashboard" replace />;
+}
 
 /* ═══════════════════════════════════════════
    路由配置 (react-router-dom v7)
@@ -217,7 +217,6 @@ const router = createBrowserRouter([
   // 受保护路由 — 带 MainLayout 布局
   {
     path: '/',
-    loader: rootLoader,
     element: (
       <AuthGuard>
         <MainLayout />
@@ -225,15 +224,7 @@ const router = createBrowserRouter([
     ),
     children: [
       { path: 'formula', element: <Navigate to="/formulas" replace /> },
-      // 根路径：未登录用户展示着陆页，已登录用户跳转仪表盘
-      {
-        index: true,
-        element: (() => {
-          const { isAuthenticated } = useAuthStore.getState();
-          if (!isAuthenticated) return <LandingPage />;
-          return <Navigate to="/dashboard" replace />;
-        })(),
-      },
+      { index: true, element: <RootRoute /> },
       {
         path: 'dashboard',
         element: <DashboardPage />,

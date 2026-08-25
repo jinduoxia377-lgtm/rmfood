@@ -10,8 +10,8 @@ import {
 } from '@tanstack/react-table'
 import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { Button } from './Button'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select'
+import { Button } from '../Button'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../Select'
 
 function TableHeader({ className, ...props }: React.HTMLAttributes<HTMLTableSectionElement>) {
   return <thead className={cn('[&_tr]:border-b', className)} {...props} />
