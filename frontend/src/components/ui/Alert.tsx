@@ -32,7 +32,7 @@ const alertIcons = {
 
 export interface AlertProps
   extends React.HTMLAttributes<HTMLDivElement> {
-  variant?: string
+  variant?: 'default' | 'destructive' | 'success' | 'warning' | 'info'
   title?: string
   description?: string
   dismissible?: boolean
@@ -41,7 +41,7 @@ export interface AlertProps
 
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
   ({ className, variant, title, description, dismissible = false, onDismiss, children, ...props }, ref) => {
-    const IconComponent = alertIcons[variant ?? 'default']
+    const IconComponent = alertIcons[variant as keyof typeof alertIcons ?? 'default']
     const [dismissed, setDismissed] = React.useState(false)
 
     const handleDismiss = () => {

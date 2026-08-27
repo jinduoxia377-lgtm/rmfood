@@ -6,20 +6,20 @@ import { Check, ChevronDown, ChevronUp } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 // ── Select 包装层：兼容 onChange → onValueChange ──────────────────────────
-type SelectRootProps = React.ComponentPropsWithoutRef<typeof SelectPrimitive.Root> & {
+interface SelectRootProps extends Omit<SelectPrimitive.SelectProps, 'onChange'> {
   onChange?: (value: string) => void
   onValueChange?: (value: string) => void
+  size?: string
+  className?: string
+  placeholder?: string
 }
 
-const Select: React.FC<SelectRootProps> = ({ onChange, onValueChange, ...props }) => (
-  <SelectPrimitive.Root
-    {...props}
-    onValueChange={(v) => {
-      onValueChange?.(v)
-      onChange?.(v)
-    }}
-  />
-)
+const Select = React.memo(({ onChange, onValueChange, ...props }: SelectRootProps) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const rootProps = { ...props, onValueChange: (v: string) => { onValueChange?.(v); onChange?.(v) } } as any
+  return <SelectPrimitive.Root {...rootProps} />
+})
+Select.displayName = 'Select'
 
 const SelectGroup = SelectPrimitive.Group
 const SelectValue = SelectPrimitive.Value

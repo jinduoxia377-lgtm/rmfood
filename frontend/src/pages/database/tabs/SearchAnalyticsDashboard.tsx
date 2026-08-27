@@ -6,24 +6,30 @@
  */
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  Card, Row, Col, Table, Tag, Statistic, DatePicker,
-  Spin, Empty, Alert, Radio, Select,
-} from 'antd';
+  Card, CardHeader, CardContent,
+  Button, Badge,
+  DataTable,
+  EmptyState,
+  Alert,
+  StatCard,
+  Pagination,
+  CardTitle,
+} from '@/components/ui';
 import {
-  SearchOutlined, FireOutlined, ArrowUpOutlined,
-  EyeOutlined, CheckCircleOutlined, ClockCircleOutlined,
-  BarChartOutlined, LineChartOutlined, PieChartOutlined,
-} from '@ant-design/icons';
+  Search, Flame, ArrowUp,
+  Eye, CheckCircle, Clock,
+  BarChart3, LineChart, PieChart,
+} from 'lucide-react';
 import {
-  LineChart, Line, BarChart, Bar, PieChart as RePieChart, Pie,
-  Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
+  LineChart as ReLineChart, Line,
+  BarChart as ReBarChart, Bar,
+  PieChart as RePieChart, Pie,
+  Cell,
+  XAxis, YAxis, CartesianGrid,
   ResponsiveContainer, AreaChart, Area,
 } from 'recharts';
 import { databaseApi } from '@/api/database';
-
-
 import { logger } from '@/utils/safeLogger';
-const { RangePicker } = DatePicker;
 
 // ── 颜色常量 ──
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
@@ -109,121 +115,114 @@ const SearchAnalyticsDashboard: React.FC = () => {
 
   // ── 概览卡片 ──
   const OverviewCards = () => (
-    <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-      <Col xs={24} sm={12} lg={6}>
-        <Card>
-          <Statistic
-            title="总搜索次数"
-            value={behaviorStats?.total_searches || 0}
-            prefix={<SearchOutlined />}
-            valueStyle={{ color: '#1890ff' }}
-          />
-        </Card>
-      </Col>
-      <Col xs={24} sm={12} lg={6}>
-        <Card>
-          <Statistic
-            title="独立用户数"
-            value={behaviorStats?.unique_users || 0}
-            prefix={<EyeOutlined />}
-            valueStyle={{ color: '#52c41a' }}
-          />
-        </Card>
-      </Col>
-      <Col xs={24} sm={12} lg={6}>
-        <Card>
-          <Statistic
-            title="平均结果数"
-            value={behaviorStats?.avg_result_count || 0}
-            precision={1}
-            prefix={<BarChartOutlined />}
-            valueStyle={{ color: '#faad14' }}
-          />
-        </Card>
-      </Col>
-      <Col xs={24} sm={12} lg={6}>
-        <Card>
-          <Statistic
-            title="转化率"
-            value={conversionRate?.conversion_rate || 0}
-            suffix="%"
-            prefix={<CheckCircleOutlined />}
-            valueStyle={{ color: '#722ed1' }}
-          />
-        </Card>
-      </Col>
-    </Row>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <StatCard
+        label="总搜索次数"
+        value={behaviorStats?.total_searches || 0}
+        icon={Search}
+        variant="primary"
+      />
+      <StatCard
+        label="独立用户数"
+        value={behaviorStats?.unique_users || 0}
+        icon={Eye}
+        variant="success"
+      />
+      <StatCard
+        label="平均结果数"
+        value={behaviorStats?.avg_result_count?.toFixed(1) || 0}
+        icon={BarChart3}
+        variant="warning"
+      />
+      <StatCard
+        label="转化率"
+        value={`${conversionRate?.conversion_rate || 0}%`}
+        icon={CheckCircle}
+        variant="info"
+      />
+    </div>
   );
 
   // ── 热门搜索词表格 ──
   const HotSearchTable = () => {
-    const columns = [
-      {
-        title: '排名',
-        key: 'rank',
-        render: (_: any, __: any, index: number) => <span style={{ fontWeight: 700 }}>{index + 1}</span>,
-      },
-      {
-        title: '搜索词',
-        dataIndex: 'keyword',
-        key: 'keyword',
-        render: (text: string) => (
-          <a onClick={() => {
-            setSelectedKeyword(text);
-            loadTrendData(text);
-            setActiveTab('trends');
-          }}>
-            {text}
-          </a>
-        ),
-      },
-      {
-        title: '搜索次数',
-        dataIndex: 'search_count',
-        key: 'search_count',
-        sorter: (a: HotSearchItem, b: HotSearchItem) => b.search_count - a.search_count,
-      },
-      {
-        title: '趋势',
-        dataIndex: 'trend',
-        key: 'trend',
-        render: (trend: string) => (
-          <Tag color={trend === 'rising' ? 'red' : 'green'}>
-            {trend === 'rising' ? '🔥 上升' : '➡️ 稳定'}
-          </Tag>
-        ),
-      },
-      {
-        title: '最后搜索',
-        dataIndex: 'last_searched',
-        key: 'last_searched',
-        render: (date: string) => date ? new Date(date).toLocaleDateString('zh-CN') : '-',
-      },
-    ];
+    const handleRowClick = (record: HotSearchItem) => {
+      setSelectedKeyword(record.keyword);
+      loadTrendData(record.keyword);
+      setActiveTab('trends');
+    };
 
     return (
-      <Card title="🔥 热门搜索词" extra={
-        <Radio.Group value={activeTab} onChange={(e) => setActiveTab(e.target.value)} size="small">
-          <Radio.Button value="overview">概览</Radio.Button>
-          <Radio.Button value="trends">趋势</Radio.Button>
-          <Radio.Button value="categories">分类</Radio.Button>
-        </Radio.Group>
-      }>
-        <Table
-          columns={columns}
-          dataSource={hotSearches}
-          rowKey={(record) => record.keyword}
-          pagination={false}
-          size="small"
-          onRow={(record) => ({
-            style: { cursor: 'pointer' },
-            onClick: () => {
-              setSelectedKeyword(record.keyword);
-              loadTrendData(record.keyword);
-              setActiveTab('trends');
-            },
-          })}
-        />
+      <Card className="mb-6">
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <CardTitle>🔥 热门搜索词</CardTitle>
+          <div className="flex gap-1">
+            {(['overview', 'trends', 'categories'] as const).map((tab) => (
+              <Button
+                key={tab}
+                variant={activeTab === tab ? 'primary' : 'ghost'}
+                size="sm"
+                onClick={() => setActiveTab(tab)}
+                className="text-xs h-7"
+              >
+                {{ overview: '概览', trends: '趋势', categories: '分类' }[tab]}
+              </Button>
+            ))}
+          </div>
+        </CardHeader>
+        <CardContent>
+          <DataTable
+            columns={[
+              {
+                accessorKey: 'rank',
+                header: '排名',
+                size: 60,
+                cell: ({ row }: { row: { index: number } }) => (
+                  <span className="font-bold">{row.index + 1}</span>
+                ),
+              },
+              {
+                accessorKey: 'keyword',
+                header: '搜索词',
+                cell: ({ row }: { row: { original: HotSearchItem } }) => (
+                  <a
+                    onClick={() => handleRowClick(row.original)}
+                    className="text-primary hover:underline cursor-pointer"
+                  >
+                    {row.original.keyword}
+                  </a>
+                ),
+              },
+              {
+                accessorKey: 'search_count',
+                header: '搜索次数',
+                size: 120,
+                cell: ({ row }: { row: { original: HotSearchItem } }) => row.original.search_count,
+              },
+              {
+                accessorKey: 'trend',
+                header: '趋势',
+                size: 100,
+                cell: ({ row }: { row: { original: HotSearchItem } }) => (
+                  <Badge variant={row.original.trend === 'rising' ? 'destructive' : 'success'}>
+                    {row.original.trend === 'rising' ? '🔥 上升' : '➡️ 稳定'}
+                  </Badge>
+                ),
+              },
+              {
+                accessorKey: 'last_searched',
+                header: '最后搜索',
+                size: 120,
+                cell: ({ row }: { row: { original: HotSearchItem } }) =>
+                  row.original.last_searched
+                    ? new Date(row.original.last_searched).toLocaleDateString('zh-CN')
+                    : '-',
+              },
+            ]}
+            data={hotSearches}
+            onRowClick={handleRowClick}
+            pageSizeOptions={[10, 20]}
+          />
+        </CardContent>
       </Card>
     );
   };
@@ -231,28 +230,32 @@ const SearchAnalyticsDashboard: React.FC = () => {
   // ── 趋势图表 ──
   const TrendChart = () => {
     if (!selectedKeyword) {
-      return <Empty description="请选择一个搜索词查看趋势" />;
+      return <EmptyState title="请选择一个搜索词查看趋势" description="点击热门搜索词可在此查看其搜索趋势变化" />;
     }
 
     return (
-      <Card title={`📈 ${selectedKeyword} 搜索趋势`} style={{ marginTop: 24 }}>
-        <ResponsiveContainer width="100%" height={300}>
-          <AreaChart data={trendData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="date" />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Area
-              type="monotone"
-              dataKey="count"
-              stroke="#8884d8"
-              fill="#8884d8"
-              fillOpacity={0.3}
-              name="搜索次数"
-            />
-          </AreaChart>
-        </ResponsiveContainer>
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle>{`📈 ${selectedKeyword} 搜索趋势`}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={300}>
+            <AreaChart data={trendData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="date" />
+              <YAxis />
+              <ReLineChart />
+              <Area
+                type="monotone"
+                dataKey="count"
+                stroke="#8884d8"
+                fill="#8884d8"
+                fillOpacity={0.3}
+                name="搜索次数"
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </CardContent>
       </Card>
     );
   };
@@ -265,13 +268,16 @@ const SearchAnalyticsDashboard: React.FC = () => {
     }));
 
     if (pieData.length === 0) {
-      return <Empty description="暂无分类数据" />;
+      return <EmptyState title="暂无分类数据" description="暂无热门分类统计信息" />;
     }
 
     return (
-      <Card title="📊 热门分类分布" style={{ marginTop: 24 }}>
-        <Row gutter={24}>
-          <Col span={12}>
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle>📊 热门分类分布</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <ResponsiveContainer width="100%" height={300}>
               <RePieChart>
                 <Pie
@@ -288,22 +294,18 @@ const SearchAnalyticsDashboard: React.FC = () => {
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip />
               </RePieChart>
             </ResponsiveContainer>
-          </Col>
-          <Col span={12}>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={pieData}>
+              <ReBarChart data={pieData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" angle={-45} textAnchor="end" height={60} />
                 <YAxis />
-                <Tooltip />
                 <Bar dataKey="value" fill="#82ca9d" name="数量" />
-              </BarChart>
+              </ReBarChart>
             </ResponsiveContainer>
-          </Col>
-        </Row>
+          </div>
+        </CardContent>
       </Card>
     );
   };
@@ -313,11 +315,9 @@ const SearchAnalyticsDashboard: React.FC = () => {
     if (!behaviorStats || behaviorStats.zero_result_rate < 5) return null;
     return (
       <Alert
-        message="零结果率偏高"
+        variant="warning"
+        title="零结果率偏高"
         description={`当前零结果率为 ${behaviorStats.zero_result_rate}%，建议优化搜索算法或扩充词库。`}
-        type="warning"
-        showIcon
-        style={{ marginBottom: 24 }}
       />
     );
   };
@@ -332,30 +332,41 @@ const SearchAnalyticsDashboard: React.FC = () => {
     }));
 
     return (
-      <Card title="🔍 搜索来源分布" style={{ marginTop: 24 }}>
-        <ResponsiveContainer width="100%" height={200}>
-          <BarChart data={sourceData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" />
-            <YAxis />
-            <Tooltip />
-            <Bar dataKey="value" fill="#8884d8" name="搜索次数" />
-          </BarChart>
-        </ResponsiveContainer>
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle>🔍 搜索来源分布</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={200}>
+            <ReBarChart data={sourceData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
+              <YAxis />
+              <Bar dataKey="value" fill="#8884d8" name="搜索次数" />
+            </ReBarChart>
+          </ResponsiveContainer>
+        </CardContent>
       </Card>
     );
   };
 
   return (
-    <div style={{ padding: 24 }}>
-      <Spin spinning={loading}>
-        <ZeroResultAlert />
-        <OverviewCards />
-        <HotSearchTable />
-        <TrendChart />
-        <CategoryPie />
-        <SourceDistribution />
-      </Spin>
+    <div className="p-6">
+      {loading ? (
+        <div className="flex flex-col items-center justify-center py-16 gap-3">
+          <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full" />
+          <span className="text-sm text-muted-foreground">加载分析数据...</span>
+        </div>
+      ) : (
+        <>
+          <ZeroResultAlert />
+          <OverviewCards />
+          <HotSearchTable />
+          <TrendChart />
+          <CategoryPie />
+          <SourceDistribution />
+        </>
+      )}
     </div>
   );
 };

@@ -315,12 +315,10 @@ export function ChatTab({ onBatchExport, onBatchDelete, onBatchTag, onSelectAll:
               isStreaming={isStreaming}
               chatError={chatError}
               onRetry={chatHandlers.handleRetry}
-              onClear={callbacks.handleClearChat}
               onGenerateReport={() => handleGenerateReport()}
               showReportButton={formulaCount > 0}
               highlightedMessageId={highlightedMessageId}
               selectedMessageIds={[]}
-              onSelectMessage={() => {}}
               onReferenceMessage={() => {}}
               onEditMessage={messageEditing.handleEditMessage}
               onRetractMessage={messageEditing.handleRetractMessage}

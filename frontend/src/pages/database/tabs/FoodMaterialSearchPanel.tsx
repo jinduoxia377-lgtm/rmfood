@@ -4,16 +4,23 @@
  * 对标 Potion AI VFT 的 Raw Material Search 界面。
  * 集成到 DatabasePage 的新 Tab 中。
  */
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
-  Card, Input, Select, Tag, Space, Button, Badge, Collapse,
-  Spin, Empty, Result, Tabs, Pagination, Tooltip,
-} from 'antd';
+  Card, CardHeader, CardContent,
+  Button, Input,
+  Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
+  Badge,
+  Accordion, AccordionItem, AccordionTrigger, AccordionContent,
+  Tooltip, TooltipTrigger, TooltipContent, TooltipProvider,
+  Skeleton,
+  EmptyState,
+  Pagination,
+} from '@/components/ui';
 import {
-  SearchOutlined, FilterOutlined, StarOutlined,
-  CheckCircleOutlined, ExclamationCircleOutlined,
-  SafetyCertificateOutlined, FileTextOutlined,
-} from '@ant-design/icons';
+  Search, Filter, Star,
+  CheckCircle, AlertCircle,
+  ShieldCheck,
+} from 'lucide-react';
 import {
   searchFoodMaterials,
   listFoodMaterials,
@@ -25,10 +32,7 @@ import {
   type NormalizeResult,
 } from '../../../api/searchNew';
 import { databaseApi } from '@/api/database';
-
-
 import { logger } from '@/utils/safeLogger';
-const { Panel } = Collapse;
 
 interface FoodMaterialSearchPanelProps {
   className?: string;
@@ -56,59 +60,52 @@ const MaterialCard: React.FC<{
     }
   }, [result.id]);
 
+  const toxicityColor = (result.extra.toxicity_class as string) === '无毒' ? 'success' : 'warning';
+
   return (
-    <Card
-      size="small"
-      hoverable
+    <div
+      className="card card-hover cursor-pointer mb-3 p-4 rounded-lg border border-border hover:shadow-md transition-shadow"
       style={{ marginBottom: 12 }}
-      extra={
-        <Space>
-          <Tooltip title="添加到书架">
-            <Button
-              type="text"
-              icon={<StarOutlined />}
-              onClick={() => onFavorite(result.id)}
-              style={{ color: isFavorite ? '#faad14' : undefined }}
-            />
-          </Tooltip>
-        </Space>
-      }
     >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 4 }}>
+      <div className="flex justify-between items-start">
+        <div className="flex-1 min-w-0">
+          <div className="text-base font-semibold mb-1 truncate">
             {(result.extra.name_cn as string) || result.name}
             {(result.extra.name_latin as string) && (
-              <span style={{ fontSize: 12, color: '#999', marginLeft: 8 }}>
+              <span className="text-xs text-muted-foreground ml-2">
                 ({result.extra.name_latin as string})
               </span>
             )}
           </div>
-          <Space size="small" wrap>
-            {(result.extra.category as string) && <Tag color="blue">{result.extra.category as string}</Tag>}
-            {(result.extra.food_homology as boolean) && <Tag color="green">药食同源</Tag>}
+          <div className="flex flex-wrap gap-1.5">
+            {(result.extra.category as string) && (
+              <Badge variant="info">{result.extra.category as string}</Badge>
+            )}
+            {(result.extra.food_homology as boolean) && (
+              <Badge variant="success">药食同源</Badge>
+            )}
             {(result.extra.toxicity_class as string) && (
-              <Tag color={(result.extra.toxicity_class as string) === '无毒' ? 'green' : 'orange'}>
+              <Badge variant={toxicityColor as any}>
                 {result.extra.toxicity_class as string}
-              </Tag>
+              </Badge>
             )}
             {(result.extra.effects as string[])?.map((e: string) => (
-              <Tag key={e}>{e}</Tag>
+              <Badge key={e} variant="secondary">{e}</Badge>
             ))}
-          </Space>
+          </div>
           {(result.extra.description as string) && (
-            <div style={{ fontSize: 13, color: '#666', marginTop: 8 }}>
+            <div className="text-xs text-muted-foreground mt-2 line-clamp-2">
               {(result.extra.description as string).substring(0, 120)}...
             </div>
           )}
         </div>
-        <div style={{ textAlign: 'right', minWidth: 80 }}>
-          <div style={{ fontSize: 12, color: '#999' }}>相关度</div>
-          <div style={{ fontSize: 18, fontWeight: 700, color: '#1890ff' }}>
+        <div className="text-right ml-4 shrink-0" style={{ minWidth: 80 }}>
+          <div className="text-xs text-muted-foreground">相关度</div>
+          <div className="text-xl font-bold text-primary">
             {(result.score * 100).toFixed(1)}%
           </div>
           {(result.extra.similarity as number | undefined) !== undefined && (
-            <div style={{ fontSize: 11, color: '#999', marginTop: 4 }}>
+            <div className="text-[11px] text-muted-foreground mt-1">
               语义: {((((result.extra.similarity as number) ?? 0)) * 100).toFixed(1)}%
             </div>
           )}
@@ -117,22 +114,23 @@ const MaterialCard: React.FC<{
       {/* 合规检查 */}
       {!complianceChecked ? (
         <Button
-          type="link"
-          size="small"
-          icon={<SafetyCertificateOutlined />}
+          variant="ghost"
+          size="sm"
+          icon={<ShieldCheck className="h-3.5 w-3.5" />}
           onClick={handleCheckCompliance}
-          style={{ marginTop: 8 }}
+          className="mt-2 h-7 text-xs"
         >
           合规检查
         </Button>
       ) : (
         <Badge
-          status={compliancePassed ? 'success' : 'error'}
-          text={compliancePassed ? '合规' : '不合规'}
-          style={{ marginTop: 8 }}
-        />
+          variant={compliancePassed ? 'success' : 'destructive'}
+          className="mt-2"
+        >
+          {compliancePassed ? '合规' : '不合规'}
+        </Badge>
       )}
-    </Card>
+    </div>
   );
 };
 
@@ -186,26 +184,27 @@ const FoodMaterialSearchPanel: React.FC<FoodMaterialSearchPanelProps> = ({ class
     }
   }, []);
 
+  const totalPages = Math.ceil(total / 20);
+
   return (
     <div className={className}>
       {/* 搜索栏 */}
-      <Card style={{ marginBottom: 16 }}>
-        <Space direction="vertical" style={{ width: '100%' }} size="middle">
-          <div style={{ display: 'flex', gap: 8 }}>
+      <Card className="mb-4">
+        <div className="flex flex-col gap-4">
+          {/* 搜索输入行 */}
+          <div className="flex gap-2">
             <Input
               placeholder="搜索食品原料 (如: 黄芪、胶原蛋白肽)... "
-              size="large"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              onPressEnter={handleSearch}
-              prefix={<SearchOutlined />}
-              style={{ flex: 1 }}
-              allowClear
+              onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
+              prefix={<Search className="h-4 w-4 text-muted-foreground" />}
+              className="flex-1"
             />
             <Button
-              type="primary"
-              size="large"
-              icon={<SearchOutlined />}
+              variant="primary"
+              size="lg"
+              icon={<Search className="h-4 w-4" />}
               loading={loading}
               onClick={handleSearch}
             >
@@ -215,78 +214,93 @@ const FoodMaterialSearchPanel: React.FC<FoodMaterialSearchPanelProps> = ({ class
 
           {/* 名称标准化提示 */}
           {normalized && normalized.canonical !== normalized.original && (
-            <Tag color="blue">
+            <Badge variant="info" className="self-start">
               已标准化: {normalized.original} → {normalized.canonical}
               {normalized.aliases_found.length > 0 && (
-                <span style={{ marginLeft: 8, opacity: 0.7 }}>
+                <span className="ml-2 opacity-70">
                   ({normalized.aliases_found.length} 个别名)
                 </span>
               )}
-            </Tag>
+            </Badge>
           )}
 
-          {/* 筛选器 */}
-          <Collapse defaultActiveKey={[]} size="small">
-            <Panel header="筛选条件" key="filters">
-              <Space wrap>
-                <Select
-                  placeholder="分类"
-                  style={{ width: 150 }}
-                  value={filters.category}
-                  onChange={(v: string) => setFilters((f) => ({ ...f, category: v }))}
-                  options={[
-                    { label: '中药材', value: '中药材' },
-                    { label: '食品添加剂', value: '食品添加剂' },
-                    { label: '普通食品', value: '普通食品' },
-                    { label: '保健食品', value: '保健食品' },
-                  ]}
-                />
-                <Select
-                  placeholder="毒性等级"
-                  style={{ width: 120 }}
-                  value={filters.toxicity_class}
-                  onChange={(v: string) => setFilters((f) => ({ ...f, toxicity_class: v }))}
-                  options={[
-                    { label: '无毒', value: '无毒' },
-                    { label: '小毒', value: '小毒' },
-                    { label: '有毒', value: '有毒' },
-                  ]}
-                />
-                <Select
-                  placeholder="药食同源"
-                  style={{ width: 120 }}
-                  value={filters.food_homology}
-                  onChange={(v: boolean) => setFilters((f) => ({ ...f, food_homology: v }))}
-                  options={[
-                    { label: '是', value: true },
-                    { label: '否', value: false },
-                  ]}
-                />
-                <Button
-                  icon={<FilterOutlined />}
-                  onClick={() => setFilters({})}
-                >
-                  重置筛选
-                </Button>
-              </Space>
-            </Panel>
-          </Collapse>
+          {/* 筛选器 (Accordion 替代 Collapse) */}
+          <Accordion type="single" collapsible>
+            <AccordionItem value="filters">
+              <AccordionTrigger>筛选条件</AccordionTrigger>
+              <AccordionContent>
+                <div className="flex flex-wrap gap-2">
+                  <Select
+                    value={filters.category}
+                    onValueChange={(v: string) => setFilters((f) => ({ ...f, category: v }))}
+                    placeholder="分类"
+                  >
+                    <SelectTrigger className="w-[150px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="中药材">中药材</SelectItem>
+                      <SelectItem value="食品添加剂">食品添加剂</SelectItem>
+                      <SelectItem value="普通食品">普通食品</SelectItem>
+                      <SelectItem value="保健食品">保健食品</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select
+                    value={filters.toxicity_class}
+                    onValueChange={(v: string) => setFilters((f) => ({ ...f, toxicity_class: v }))}
+                    placeholder="毒性等级"
+                  >
+                    <SelectTrigger className="w-[120px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="无毒">无毒</SelectItem>
+                      <SelectItem value="小毒">小毒</SelectItem>
+                      <SelectItem value="有毒">有毒</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select
+                    value={filters.food_homology != null ? String(filters.food_homology) : undefined}
+                    onValueChange={(v: string) => setFilters((f) => ({ ...f, food_homology: v === 'true' }))}
+                    placeholder="药食同源"
+                  >
+                    <SelectTrigger className="w-[120px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="true">是</SelectItem>
+                      <SelectItem value="false">否</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    icon={<Filter className="h-3.5 w-3.5" />}
+                    onClick={() => setFilters({})}
+                  >
+                    重置筛选
+                  </Button>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
 
           {/* 搜索模式权重 */}
-          <div style={{ fontSize: 12, color: '#999' }}>
+          <div className="text-xs text-muted-foreground">
             搜索模式: BM25: {searchModes.bm25} | 向量: {searchModes.vector} | 规则: {searchModes.rule}
           </div>
-        </Space>
+        </div>
       </Card>
 
       {/* 搜索结果 */}
       {loading ? (
-        <div style={{ textAlign: 'center', padding: 40 }}>
-          <Spin size="large" tip="搜索中..." />
+        <div className="flex flex-col items-center justify-center py-10 gap-3">
+          <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" />
+          <span className="text-sm text-muted-foreground">搜索中...</span>
         </div>
       ) : results.length > 0 ? (
         <>
-          <div style={{ marginBottom: 12, fontSize: 13, color: '#666' }}>
+          <div className="mb-3 text-xs text-muted-foreground">
             找到 {total} 条结果，耗时 {searchTime.toFixed(1)}ms
           </div>
           {results.map((result) => (
@@ -299,21 +313,26 @@ const FoodMaterialSearchPanel: React.FC<FoodMaterialSearchPanelProps> = ({ class
           ))}
           {total > 20 && (
             <Pagination
-              current={currentPage}
-              total={total}
+              page={currentPage}
               pageSize={20}
-              onChange={(page) => {
+              total={total}
+              onPageChange={(page) => {
                 setCurrentPage(page);
-                // 重新搜索
               }}
-              style={{ textAlign: 'center', marginTop: 16 }}
+              className="mt-4"
             />
           )}
         </>
       ) : query ? (
-        <Empty description="未找到匹配的原料" />
+        <EmptyState
+          title="未找到匹配的原料"
+          description="请尝试更换关键词或调整筛选条件"
+        />
       ) : (
-        <Empty description="请输入关键词开始搜索" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+        <EmptyState
+          title="请输入关键词开始搜索"
+          description="支持按名称、分类、药食同源属性搜索食品原料"
+        />
       )}
     </div>
   );

@@ -1,4 +1,4 @@
-import { useReducer, useCallback, useEffect, useRef, useMemo } from 'react'
+﻿import { useReducer, useCallback, useEffect, useRef, useMemo } from 'react'
 import api from '@/api/client'
 
 export interface Organization {
@@ -475,7 +475,19 @@ export function useOrganizations(options: UseOrganizationsOptions = {}) {
     isStale,
     allSelected,
     someSelected,
+    getPermissionMatrix,
   }
+}
+
+export interface PermissionMatrixData {
+  roles: Array<{ role: string; permissions?: Array<{ resourceId: string; actions: string[] }> }>
+  resourceTypes: string[]
+  actions: string[]
+}
+
+export async function getPermissionMatrix(organizationId: number): Promise<PermissionMatrixData> {
+  const response = await api.get("/organizations/" + organizationId + "/permissions")
+  return response.data
 }
 
 export type UseOrganizationsReturn = ReturnType<typeof useOrganizations>

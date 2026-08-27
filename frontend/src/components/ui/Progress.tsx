@@ -10,7 +10,7 @@ const Progress = React.forwardRef<
     variant?: 'default' | 'success' | 'warning' | 'danger'
     size?: 'sm' | 'md' | 'lg'
   }
->(({ className, value, variant = 'default', size = 'md', ...props }, ref) => {
+>(({ className, value, variant = 'default', size = 'md', ...restProps }, ref) => {
   const sizeClasses = {
     sm: 'h-1',
     md: 'h-1.5',
@@ -32,13 +32,13 @@ const Progress = React.forwardRef<
         sizeClasses[size],
         className,
       )}
-      {...props}
+      {...restProps}
     >
       <ProgressPrimitive.Indicator
         className={`h-full w-full flex-1 transition-all ${variantClasses[variant]}`}
         style={{ transform: `translateX(-${100 - (value ?? 0)}%)` }}
         role="progressbar"
-        aria-valuenow={value}
+        aria-valuenow={value ?? 0}
         aria-valuemin={0}
         aria-valuemax={100}
       />

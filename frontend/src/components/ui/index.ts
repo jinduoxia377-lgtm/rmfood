@@ -143,5 +143,9 @@ export type { FeedbackMessage, FeedbackType } from './Toast'
 // ═══════════════════════════════════════════════════════════════
 
 export { RadixBadge, RadixText } from './RadixComponents'
+export { RadixText as Text } from './RadixComponents'
 export type { RadixBadgeProps, RadixTextProps } from './RadixComponents'
+
+// Accordion (shadcn/ui)
+export { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from './shadcn/accordion'
 

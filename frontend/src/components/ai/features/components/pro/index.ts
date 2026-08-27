@@ -1,5 +1,5 @@
-export { default as ChatMessages } from './ChatMessages'
-export type { MessageType, ChatMessagesProps } from './ChatMessages'
+﻿export { default as ChatMessages, type ChatMessagesProps } from './ChatMessages'
+export type { MessageType } from './ChatMessages'
 export { default as ChatInputPro } from './ChatInput'
 export { default as ChatHistory } from './ChatHistory'
 export { saveSessions, loadSessions, formatTime } from './ChatHistory'

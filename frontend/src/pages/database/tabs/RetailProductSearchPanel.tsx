@@ -12,13 +12,27 @@
  */
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import {
-  Card, Input, Select, Tag, Space, Button, Spin, Empty, Switch, Tooltip, Rate, Result, Alert, Collapse, Pagination, Table,
-} from 'antd';
+  Card, CardHeader, CardContent,
+  Button, Input,
+  Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
+  Badge,
+  Switch,
+  Tooltip, TooltipTrigger, TooltipContent, TooltipProvider,
+  EmptyState,
+  Alert,
+  Accordion, AccordionItem, AccordionTrigger, AccordionContent,
+  Pagination,
+  StatCard,
+  DataTable,
+  TableHeader, TableBody, TableRow, TableCell,
+} from '@/components/ui';
 import {
-  SearchOutlined, FilterOutlined, ThunderboltOutlined, ReloadOutlined, DownloadOutlined, StarOutlined,
-  AppstoreOutlined, UnorderedListOutlined, SortAscendingOutlined, SortDescendingOutlined, CheckOutlined,
-} from '@ant-design/icons';
-import type { ColumnsType } from 'antd/es/table';
+  Search, Filter, Zap, RefreshCw, Download,
+  Grid, List, ArrowDownAZ, ArrowDownZA,
+  Check, Flame, Star, Eye, Clock,
+  BarChart3, LineChart, PieChart,
+} from 'lucide-react';
+import type { ColumnDef } from '@tanstack/react-table';
 import {
   searchOpenFoodFacts,
   getOpenFoodFactsCategories,
@@ -29,7 +43,6 @@ import {
   type RetailProductDetail,
   type OFFCategoryInfo,
 } from '../../../api/searchNew';
-import RetailProductDetailModal from './RetailProductDetailModal';
 import { useToast } from '@/components/ui';
 import { logger } from '@/utils/safeLogger';
 
@@ -66,7 +79,7 @@ function mapOFFProduct(raw: OFFRawProduct): RetailProductDetail {
     image_urls: Array.isArray(raw.image_urls) ? raw.image_urls : [],
     effects: Array.isArray(raw.effects) ? raw.effects : [],
     score: raw.score != null ? Number(raw.score) : 0,
-    allergens_tags: Array.isArray(raw.allergens_tags) ? raw.allergens_tags : [],
+    allersens_tags: Array.isArray(raw.allergens_tags) ? raw.allergens_tags : [],
     additives_tags: Array.isArray(raw.additives_tags) ? raw.additives_tags : [],
     ecoscore_grade: raw.ecoscore_grade ?? null,
     traces_tags: Array.isArray(raw.traces_tags) ? raw.traces_tags : [],
@@ -77,6 +90,32 @@ function mapOFFProduct(raw: OFFRawProduct): RetailProductDetail {
 type ViewMode = 'card' | 'table';
 type SortField = 'brand' | 'price' | 'product_name';
 type SortDir = 'asc' | 'desc';
+
+// ── 星级评分组件 ──
+const StarRating: React.FC<{ value: number; size?: number }> = ({ value, size = 14 }) => {
+  return (
+    <div className="flex items-center gap-0.5">
+      {[1, 2, 3, 4, 5].map((star) => (
+        <Star
+          key={star}
+          size={size}
+          className={star <= Math.round(value) ? 'fill-warning text-warning' : 'text-muted-foreground'}
+        />
+      ))}
+    </div>
+  );
+};
+
+// ── 生态评分色 ──
+function getEcoscoreColor(grade?: string): string {
+  switch (grade) {
+    case 'a': return 'success';
+    case 'b': return 'info';
+    case 'c': return 'primary';
+    case 'd': return 'warning';
+    default: return 'neutral';
+  }
+}
 
 // ── 产品结果卡片 ──
 
@@ -93,46 +132,87 @@ const ProductCard: React.FC<{
     || (product.additives_tags?.length ?? 0) > 0
     || product.ecoscore_grade;
 
-  const getEcoscoreColor = (grade?: string): string => {
-    switch (grade) {
-      case 'a': return 'green';
-      case 'b': return 'cyan';
-      case 'c': return 'blue';
-      case 'd': return 'gold';
-      default: return 'default';
-    }
-  };
-
   return (
-    <Card size="small" hoverable style={{ marginBottom: 12 }} onClick={onClick} cover={hasImage ? (
-      <img src={product.image_urls?.[0]} alt={product.product_name} style={{ maxHeight: 120, objectFit: 'contain', padding: 8 }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-    ) : undefined}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: 600, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
-            {product.product_name}
-            <span title={isFav ? '取消收藏' : '收藏'} onClick={(e) => { e.stopPropagation(); onToggleFav(); }} style={{ cursor: 'pointer', fontSize: 16, color: isFav ? '#faad14' : '#d9d9d9' }}>{isFav ? '★' : '☆'}</span>
-            <span title={isSelected ? '取消选择' : '选择对比'} onClick={(e) => { e.stopPropagation(); onToggleSelect(); }} style={{ marginLeft: 8, cursor: 'pointer', fontSize: 16, color: isSelected ? '#1890ff' : '#ccc' }}>{isSelected ? '✓' : '☐'}</span>
+    <div
+      className="card card-hover cursor-pointer mb-3 p-4 rounded-lg border border-border"
+      onClick={onClick}
+    >
+      {hasImage && (
+        <img
+          src={product.image_urls?.[0]}
+          alt={product.product_name}
+          className="max-h-[120px] object-contain mb-3 rounded"
+          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+        />
+      )}
+      <div className="flex justify-between items-start">
+        <div className="flex-1 min-w-0">
+          <div className="font-semibold mb-1.5 flex items-center gap-1.5">
+            <span className="truncate">{product.product_name}</span>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span
+                    onClick={(e) => { e.stopPropagation(); onToggleFav(); }}
+                    className="cursor-pointer text-lg leading-none"
+                  >
+                    {isFav ? <Flame className="h-4 w-4 text-warning fill-warning" /> : <Star className="h-4 w-4 text-muted-foreground" />}
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  <p>{isFav ? '取消收藏' : '收藏'}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span
+                    onClick={(e) => { e.stopPropagation(); onToggleSelect(); }}
+                    className="cursor-pointer text-lg leading-none ml-2"
+                  >
+                    {isSelected ? (
+                      <Check className="h-4 w-4 text-primary" />
+                    ) : (
+                      <span className="text-muted-foreground">☐</span>
+                    )}
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  <p>{isSelected ? '取消选择' : '选择对比'}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
-          <Space size="small" wrap>
-            <Tag color="blue">{product.brand}</Tag>
-            {product.category && <Tag>{product.category}</Tag>}
-            {product.formulation_type && <Tag color="green">{product.formulation_type}</Tag>}
-          </Space>
+          <div className="flex flex-wrap gap-1.5">
+            <Badge variant="info">{product.brand}</Badge>
+            {product.category && <Badge variant="secondary">{product.category}</Badge>}
+            {product.formulation_type && <Badge variant="success">{product.formulation_type}</Badge>}
+          </div>
           {hasSafetyInfo && (
-            <Space size="small" wrap style={{ marginTop: 4 }}>
-              {product.allergens_tags?.map((a) => (<Tag key={a} color="red">{a}</Tag>))}
-              {product.additives_tags?.map((a) => (<Tag key={a} color="orange">{a}</Tag>))}
-              {product.ecoscore_grade && (<Tag color={getEcoscoreColor(product.ecoscore_grade)}>生态评分: {product.ecoscore_grade.toUpperCase()}</Tag>)}
-            </Space>
+            <div className="flex flex-wrap gap-1.5 mt-1">
+              {product.allergens_tags?.map((a) => (<Badge key={a} variant="destructive">{a}</Badge>))}
+              {product.additives_tags?.map((a) => (<Badge key={a} variant="warning">{a}</Badge>))}
+              {product.ecoscore_grade && (
+                <Badge variant={getEcoscoreColor(product.ecoscore_grade) as any}>
+                  生态评分: {product.ecoscore_grade.toUpperCase()}
+                </Badge>
+              )}
+            </div>
           )}
         </div>
-        <div style={{ textAlign: 'right', minWidth: 80 }}>
-          {product.price && product.price > 0 ? (<div style={{ fontSize: 18, fontWeight: 700, color: '#ff4d4f' }}>¥{Number(product.price).toFixed(2)}</div>) : null}
-          {product.avg_rating && product.avg_rating > 0 ? (<Rate allowHalf disabled defaultValue={product.avg_rating} style={{ fontSize: 12 }} />) : null}
+        <div className="text-right ml-4 shrink-0" style={{ minWidth: 80 }}>
+          {product.price && product.price > 0 ? (
+            <div className="text-lg font-bold text-destructive">
+              ¥{Number(product.price).toFixed(2)}
+            </div>
+          ) : null}
+          {product.avg_rating && product.avg_rating > 0 ? (
+            <StarRating value={product.avg_rating} size={12} />
+          ) : null}
         </div>
       </div>
-    </Card>
+    </div>
   );
 };
 
@@ -365,22 +445,6 @@ const RetailProductSearchPanel: React.FC<{ className?: string }> = ({ className 
     else { setSortField(field); setSortDir('asc'); }
   };
 
-  // 表格列定义
-  const tableColumns: ColumnsType<RetailProductDetail> = useMemo(() => [
-    { title: '选择', key: 'select', width: 60, render: (_, record) => (
-      <span onClick={() => toggleSelect(record.id)} style={{ cursor: 'pointer', fontSize: 16, color: selectedProducts.has(record.id) ? '#1890ff' : '#ccc' }} title={selectedProducts.has(record.id) ? '取消选择' : '选择对比'}>{selectedProducts.has(record.id) ? '✓' : '☐'}</span>
-    )},
-    { title: '名称', dataIndex: 'product_name', key: 'name', sorter: true, sortField: 'product_name' as SortField, render: (name: string, record) => (<a onClick={() => { setSelectedProduct(record); setDetailVisible(true); }}>{name}</a>) },
-    { title: '品牌', dataIndex: 'brand', key: 'brand', sorter: true, width: 150 },
-    { title: '分类', dataIndex: 'category', key: 'category', width: 120 },
-    { title: '价格', dataIndex: 'price', key: 'price', sorter: true, width: 100, render: (v: number) => v != null ? `¥${Number(v).toFixed(2)}` : '-' },
-    { title: '评分', dataIndex: 'avg_rating', key: 'rating', width: 100, render: (v: number) => v != null ? <Rate allowHalf disabled defaultValue={v} style={{ fontSize: 12 }} /> : '-' },
-    { title: '生态评分', dataIndex: 'ecoscore_grade', key: 'eco', width: 100, render: (v?: string) => v ? <Tag color={getEcoscoreColor(v)}>{v.toUpperCase()}</Tag> : '-' },
-    { title: '收藏', key: 'fav', width: 50, render: (_, record) => (
-      <span onClick={(e) => { e.stopPropagation(); toggleFavorite(record.id); }} style={{ cursor: 'pointer', fontSize: 16, color: favorites.has(record.id) ? '#faad14' : '#d9d9d9' }} title={favorites.has(record.id) ? '取消收藏' : '收藏'}>{favorites.has(record.id) ? '★' : '☆'}</span>
-    )},
-  ], [favorites, selectedProducts, toggleFavorite, toggleSelect, getEcoscoreColor]);
-
   // 清空选择
   const clearSelection = useCallback(() => {
     setSelectedProducts(new Set());
@@ -393,134 +457,407 @@ const RetailProductSearchPanel: React.FC<{ className?: string }> = ({ className 
       return;
     }
     toast.success(`已选择 ${selectedProducts.size} 个产品，查看详情弹窗`);
-    // 实际这里可以打开对比详情Modal或导航到新页面
   }, [selectedProducts, toast]);
+
+  // 表格列定义（DataTable / ColumnDef 格式）
+  const tableColumns = useMemo<ColumnDef<RetailProductDetail, any>[]>(() => [
+    {
+      accessorKey: '_select',
+      header: '选择',
+      size: 60,
+      cell: ({ row }: { row: { original: RetailProductDetail } }) => (
+        <span
+          onClick={() => toggleSelect(row.original.id)}
+          style={{ cursor: 'pointer', fontSize: 16, color: selectedProducts.has(row.original.id) ? '#1890ff' : '#ccc' }}
+          title={selectedProducts.has(row.original.id) ? '取消选择' : '选择对比'}
+        >
+          {selectedProducts.has(row.original.id) ? '✓' : '☐'}
+        </span>
+      ),
+    },
+    {
+      accessorKey: 'product_name',
+      header: '名称',
+      cell: ({ row }: { row: { original: RetailProductDetail } }) => (
+        <a
+          onClick={() => { setSelectedProduct(row.original); setDetailVisible(true); }}
+          className="text-primary hover:underline cursor-pointer"
+        >
+          {row.original.product_name}
+        </a>
+      ),
+    },
+    {
+      accessorKey: 'brand',
+      header: '品牌',
+      size: 150,
+    },
+    {
+      accessorKey: 'category',
+      header: '分类',
+      size: 120,
+    },
+    {
+      accessorKey: 'price',
+      header: '价格',
+      size: 100,
+      cell: ({ row }: { row: { original: RetailProductDetail } }) => {
+        const v = row.original.price;
+        return v != null ? `¥${Number(v).toFixed(2)}` : '-';
+      },
+    },
+    {
+      accessorKey: 'avg_rating',
+      header: '评分',
+      size: 100,
+      cell: ({ row }) => {
+        const v = row.original.avg_rating;
+        return v != null ? <StarRating value={v} size={12} /> : '-';
+      },
+    },
+    {
+      accessorKey: 'ecoscore_grade',
+      header: '生态评分',
+      size: 100,
+      cell: ({ row }) => {
+        const v = row.original.ecoscore_grade;
+        return v ? (
+          <Badge variant={getEcoscoreColor(v) as any}>{v.toUpperCase()}</Badge>
+        ) : '-';
+      },
+    },
+    {
+      accessorKey: '_fav',
+      header: '收藏',
+      size: 50,
+      cell: ({ row }) => (
+        <span
+          onClick={(e) => { e.stopPropagation(); toggleFavorite(row.original.id); }}
+          style={{ cursor: 'pointer', fontSize: 16, color: favorites.has(row.original.id) ? '#faad14' : '#d9d9d9' }}
+          title={favorites.has(row.original.id) ? '取消收藏' : '收藏'}
+        >
+          {favorites.has(row.original.id) ? '★' : '☆'}
+        </span>
+      ),
+    },
+  ], [favorites, selectedProducts, toggleFavorite, toggleSelect]);
+
+  const totalPages = Math.ceil(totalResults / 20);
 
   return (
     <div className={className}>
       {/* 搜索控制区 */}
-      <Card style={{ marginBottom: 16 }}>
-        <Space direction="vertical" style={{ width: '100%' }} size="middle">
+      <Card className="mb-4">
+        <div className="flex flex-col gap-4">
           {/* 搜索栏 */}
-          <div style={{ position: 'relative' }}>
-            <Input placeholder="搜索零售产品 (如: 胶原蛋白肽口服液、益生菌胶囊)... " size="large" value={query} onChange={(e) => handleInputChange(e.target.value)} onFocus={() => suggestions.length > 0 && setShowSuggestions(true)} onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} onPressEnter={() => { setCurrentPage(1); handleSearch(1); }} prefix={<SearchOutlined />} suffix={<span style={{ cursor: 'pointer', fontSize: 18 }} onClick={() => { setCurrentPage(1); handleSearch(1); }} title="搜索"><SearchOutlined /></span>} style={{ width: '100%' }} allowClear />
+          <div className="relative">
+            <Input
+              placeholder="搜索零售产品 (如: 胶原蛋白肽口服液、益生菌胶囊)... "
+              value={query}
+              onChange={(e) => handleInputChange(e.target.value)}
+              onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+              onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+              onKeyDown={(e) => { if (e.key === 'Enter') { setCurrentPage(1); handleSearch(1); } }}
+              prefix={<Search className="h-4 w-4 text-muted-foreground" />}
+              suffix={
+                <span
+                  className="cursor-pointer text-muted-foreground hover:text-primary"
+                  onClick={() => { setCurrentPage(1); handleSearch(1); }}
+                  title="搜索"
+                >
+                  <Search className="h-4 w-4" />
+                </span>
+              }
+              className="w-full"
+            />
             {showSuggestions && suggestions.length > 0 && (
-              <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#fff', border: '1px solid #d9d9d9', borderRadius: 4, zIndex: 10, maxHeight: 200, overflow: 'auto' }}>
-                {suggestions.map((s) => (<div key={s.text} style={{ padding: '8px 12px', cursor: 'pointer', fontSize: 14 }} onMouseDown={() => { setQuery(s.text); setShowSuggestions(false); }}>{s.text}</div>))}
+              <div className="absolute top-full left-0 right-0 mt-1 bg-popover border border-border rounded-md shadow-md z-50 max-h-48 overflow-auto">
+                {suggestions.map((s) => (
+                  <div
+                    key={s.text}
+                    className="px-3 py-2 cursor-pointer text-sm hover:bg-accent"
+                    onMouseDown={() => { setQuery(s.text); setShowSuggestions(false); }}
+                  >
+                    {s.text}
+                  </div>
+                ))}
               </div>
             )}
           </div>
 
           {/* 筛选工具栏 */}
-          <Space wrap>
-            <Button icon={<FilterOutlined />} onClick={() => setShowCategoryFilter(!showCategoryFilter)} size="small">分类筛选</Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              icon={<Filter className="h-3.5 w-3.5" />}
+              onClick={() => setShowCategoryFilter(!showCategoryFilter)}
+            >
+              分类筛选
+            </Button>
 
             {/* 品牌筛选 (Phase 4) */}
-            {results.length > 0 && (<Input placeholder="品牌" size="small" value={brandFilter} onChange={(e) => setBrandFilter(e.target.value)} style={{ width: 100 }} />)}
+            {results.length > 0 && (
+              <Input
+                placeholder="品牌"
+                value={brandFilter}
+                onChange={(e) => setBrandFilter(e.target.value)}
+                className="w-[100px]"
+              />
+            )}
 
             {/* 剂型筛选 (Phase 4) */}
-            <Input placeholder="剂型" size="small" value={formulationType} onChange={(e) => setFormulationType(e.target.value)} style={{ width: 100 }} />
+            <Input
+              placeholder="剂型"
+              value={formulationType}
+              onChange={(e) => setFormulationType(e.target.value)}
+              className="w-[100px]"
+            />
 
             {/* 价格范围筛选 (Phase 4) */}
-            <Space size="small">
-              <Input type="number" placeholder="价" size="small" value={priceRange.min ?? ''} onChange={(e) => setPriceRange({ ...priceRange, min: e.target.value ? Number(e.target.value) : undefined })} style={{ width: 60 }} />
-              <span className="text-neutral-400">~</span>
-              <Input type="number" placeholder="" size="small" value={priceRange.max ?? ''} onChange={(e) => setPriceRange({ ...priceRange, max: e.target.value ? Number(e.target.value) : undefined })} style={{ width: 60 }} />
-            </Space>
+            <div className="flex items-center gap-1">
+              <Input
+                type="number"
+                placeholder="价"
+                value={priceRange.min ?? ''}
+                onChange={(e) => setPriceRange({ ...priceRange, min: e.target.value ? Number(e.target.value) : undefined })}
+                className="w-[60px]"
+              />
+              <span className="text-muted-foreground">~</span>
+              <Input
+                type="number"
+                placeholder=""
+                value={priceRange.max ?? ''}
+                onChange={(e) => setPriceRange({ ...priceRange, max: e.target.value ? Number(e.target.value) : undefined })}
+                className="w-[60px]"
+              />
+            </div>
 
-            <Tooltip title="开启后直接调用 OpenFoodFacts REST API，获取最新数据">
-              <Space size={4}>
-                <ThunderboltOutlined style={{ color: realtime ? '#faad14' : '#d9d9d9' }} />
-                <Switch size="small" checked={realtime} onChange={setRealtime} checkedChildren="实时" unCheckedChildren="缓存" />
-              </Space>
-            </Tooltip>
-            {dataSource && (<Tag color={dataSource.includes('api') ? 'orange' : 'blue'}>数据源: {dataSource}</Tag>)}
-            <Button icon={<ReloadOutlined />} size="small" onClick={() => { setCurrentPage(1); handleSearch(1); }} loading={loading}>刷新</Button>
-          </Space>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex items-center gap-1.5 px-2 py-1 rounded cursor-help">
+                    <Zap className={`h-4 w-4 ${realtime ? 'text-warning' : 'text-muted-foreground'}`} />
+                    <Switch
+                      checked={realtime}
+                      onCheckedChange={setRealtime}
+                    />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="max-w-xs">
+                  <p>开启后直接调用 OpenFoodFacts REST API，获取最新数据</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+
+            {dataSource && (
+              <Badge variant={dataSource.includes('api') ? 'warning' : 'info'}>
+                数据源: {dataSource}
+              </Badge>
+            )}
+
+            <Button
+              variant="outline"
+              size="sm"
+              icon={<RefreshCw className="h-3.5 w-3.5" />}
+              onClick={() => { setCurrentPage(1); handleSearch(1); }}
+              loading={loading}
+            >
+              刷新
+            </Button>
+          </div>
 
           {/* 错误提示 */}
-          {error && (<Alert message="搜索失败" description={error} type="error" showIcon />)}
+          {error && (
+            <Alert variant="destructive" title="搜索失败" description={error} />
+          )}
 
           {/* 高级筛选面板 (Phase 4) */}
-          {showCategoryFilter && (<Card size="small" style={{ background: '#fafafa' }}><Select placeholder="选择分类浏览" value={selectedCategory} onChange={(value) => { setSelectedCategory(value as string); setCurrentPage(1); handleSearch(1); }} style={{ width: '100%' }} allowClear showSearch optionFilterProp="children" loading={categories.length === 0} options={categories.map((c) => ({ value: c.category_tag || c.category, label: `${c.category} (${c.count})` }))} /></Card>)}
+          {showCategoryFilter && (
+            <Card style={{ background: 'hsl(var(--accent))' }}>
+              <Select
+                value={selectedCategory}
+                onValueChange={(value) => {
+                  setSelectedCategory(value as string);
+                  setCurrentPage(1);
+                  handleSearch(1);
+                }}
+                placeholder="选择分类浏览"
+                disabled={categories.length === 0}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="选择分类浏览" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((c) => (
+                    <SelectItem key={c.category_tag || c.category} value={c.category_tag || c.category}>
+                      {c.category} ({c.count})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Card>
+          )}
 
           {/* 搜索按钮 */}
-          <Button type="primary" size="large" icon={<SearchOutlined />} loading={loading} onClick={() => { setCurrentPage(1); handleSearch(1); }} style={{ width: '100%' }}>{realtime ? '实时搜索 OpenFoodFacts' : '搜索零售产品'}</Button>
-        </Space>
+          <Button
+            variant="primary"
+            size="lg"
+            icon={<Search className="h-4 w-4" />}
+            loading={loading}
+            onClick={() => { setCurrentPage(1); handleSearch(1); }}
+            className="w-full"
+          >
+            {realtime ? '实时搜索 OpenFoodFacts' : '搜索零售产品'}
+          </Button>
+        </div>
       </Card>
 
       {/* 结果工具栏（Phase 3+4） */}
       {results.length > 0 && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
-          <span style={{ fontSize: 13, color: '#666' }}>找到 {totalResults} 款产品 {realtime && <Tag color="orange" style={{ marginLeft: 8 }}>实时数据</Tag>} {!realtime && dataSource.includes('postgresql') && (<Tag color="blue" style={{ marginLeft: 8 }}>数据库缓存</Tag>)} </span>
+        <div className="flex items-center gap-2 mb-3 flex-wrap">
+          <span className="text-xs text-muted-foreground">
+            找到 {totalResults} 款产品
+            {realtime && <Badge variant="warning" className="ml-2">实时数据</Badge>}
+            {!realtime && dataSource.includes('postgresql') && (
+              <Badge variant="info" className="ml-2">数据库缓存</Badge>
+            )}
+          </span>
 
-          <div style={{ flex: 1 }} />
+          <div className="flex-1" />
 
           {/* 收藏过滤 */}
-          <Button size="small" type={showFavOnly ? 'primary' : 'default'} icon={<StarOutlined />} onClick={() => setShowFavOnly(!showFavOnly)}>收藏{favorites.size > 0 ? ` (${favorites.size})` : ''}</Button>
+          <Button
+            variant={showFavOnly ? 'primary' : 'outline'}
+            size="sm"
+            icon={<Star className="h-3.5 w-3.5" />}
+            onClick={() => setShowFavOnly(!showFavOnly)}
+          >
+            收藏{favorites.size > 0 ? ` (${favorites.size})` : ''}
+          </Button>
 
           {/* 对比操作 */}
           {selectedProducts.size > 0 && (
             <>
-              <Button size="middle" icon={<CheckOutlined />}>对比 ({selectedProducts.size})</Button>
-              <Button size="small" onClick={clearSelection}>清除选择</Button>
+              <Button variant="default" size="sm" icon={<Check className="h-3.5 w-3.5" />}>
+                对比 ({selectedProducts.size})
+              </Button>
+              <Button variant="outline" size="sm" onClick={clearSelection}>
+                清除选择
+              </Button>
             </>
           )}
 
           {/* 排序 */}
-          <Button size="small" icon={sortDir === 'asc' ? <SortAscendingOutlined /> : <SortDescendingOutlined />} onClick={() => toggleSort('price')}>{sortField === 'price' ? (sortDir === 'asc' ? '价格↑' : '价格↓') : '价格'}</Button>
-          <Button size="small" icon={sortDir === 'asc' ? <SortAscendingOutlined /> : <SortDescendingOutlined />} onClick={() => toggleSort('brand')}>{sortField === 'brand' ? (sortDir === 'asc' ? '品牌↑' : '品牌↓') : '品牌'}</Button>
+          <Button
+            variant="outline"
+            size="sm"
+            icon={
+              sortField === 'price'
+                ? sortDir === 'asc' ? <ArrowDownAZ className="h-3.5 w-3.5" /> : <ArrowDownZA className="h-3.5 w-3.5" />
+                : null
+            }
+            onClick={() => toggleSort('price')}
+          >
+            {sortField === 'price' ? (sortDir === 'asc' ? '价格↑' : '价格↓') : '价格'}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            icon={
+              sortField === 'brand'
+                ? sortDir === 'asc' ? <ArrowDownAZ className="h-3.5 w-3.5" /> : <ArrowDownZA className="h-3.5 w-3.5" />
+                : null
+            }
+            onClick={() => toggleSort('brand')}
+          >
+            {sortField === 'brand' ? (sortDir === 'asc' ? '品牌↑' : '品牌↓') : '品牌'}
+          </Button>
 
           {/* 视图切换 */}
-          <Space size={2} style={{ background: '#f5f5f5', borderRadius: 4, padding: 2 }}>
-            <Button size="small" type={viewMode === 'table' ? 'primary' : 'text'} icon={<UnorderedListOutlined />} onClick={() => setViewMode('table')} style={{ borderRadius: 4 }} />
-            <Button size="small" type={viewMode === 'card' ? 'primary' : 'text'} icon={<AppstoreOutlined />} onClick={() => setViewMode('card')} style={{ borderRadius: 4 }} />
-          </Space>
+          <div className="flex rounded-md overflow-hidden border border-border">
+            <Button
+              variant={viewMode === 'table' ? 'primary' : 'ghost'}
+              size="sm"
+              icon={<List className="h-3.5 w-3.5" />}
+              onClick={() => setViewMode('table')}
+              className="rounded-r-none"
+            />
+            <Button
+              variant={viewMode === 'card' ? 'primary' : 'ghost'}
+              size="sm"
+              icon={<Grid className="h-3.5 w-3.5" />}
+              onClick={() => setViewMode('card')}
+              className="rounded-l-none"
+            />
+          </div>
 
           {/* 导出 */}
-          <Button size="small" icon={<DownloadOutlined />} onClick={exportCSV}>导出 CSV</Button>
+          <Button variant="outline" size="sm" icon={<Download className="h-3.5 w-3.5" />} onClick={exportCSV}>
+            导出 CSV
+          </Button>
         </div>
       )}
 
       {/* 搜索结果 */}
       {loading ? (
-        <Result status="info" title={realtime ? '正在查询 OpenFoodFacts...' : '正在搜索...'} subTitle="请稍候" />
+        <Alert
+          variant="info"
+          title={realtime ? '正在查询 OpenFoodFacts...' : '正在搜索...'}
+          description="请稍候"
+        />
       ) : filteredAndSortedItems.length > 0 ? (
         <>
           {viewMode === 'card' ? (
             filteredAndSortedItems.map((product) => (
-              <ProductCard key={product.id} product={product} onClick={() => { setSelectedProduct(product); setDetailVisible(true); }} onToggleFav={() => toggleFavorite(product.id)} isFav={favorites.has(product.id)} isSelected={selectedProducts.has(product.id)} onToggleSelect={() => toggleSelect(product.id)} />
+              <ProductCard
+                key={product.id}
+                product={product}
+                onClick={() => { setSelectedProduct(product); setDetailVisible(true); }}
+                onToggleFav={() => toggleFavorite(product.id)}
+                isFav={favorites.has(product.id)}
+                isSelected={selectedProducts.has(product.id)}
+                onToggleSelect={() => toggleSelect(product.id)}
+              />
             ))
           ) : (
-            <Table<RetailProductDetail> columns={tableColumns} dataSource={filteredAndSortedItems} rowKey="id" size="small" pagination={false} scroll={{ y: 400 }} />
+            <DataTable
+              columns={tableColumns}
+              data={filteredAndSortedItems}
+              pageSizeOptions={[20]}
+            />
           )}
 
           {/* 分页 */}
-          {totalResults > 20 && (<div style={{ textAlign: 'center', marginTop: 16 }}><Pagination current={currentPage} total={totalResults} pageSize={20} onChange={(page) => { setCurrentPage(page); handleSearch(page); }} showSizeChanger={false} /></div>)}
+          {totalResults > 20 && (
+            <Pagination
+              page={currentPage}
+              pageSize={20}
+              total={totalResults}
+              onPageChange={(page) => { setCurrentPage(page); handleSearch(page); }}
+              className="mt-4"
+            />
+          )}
         </>
       ) : error ? (
-        <div style={{ textAlign: "center", padding: "40px 0", color: "#ff4d4f" }}>搜索失败: {error}</div>
+        <div className="text-center py-10 text-destructive">搜索失败: {error}</div>
       ) : query || selectedCategory ? (
-        <Empty description="未找到匹配的产品" />
+        <EmptyState title="未找到匹配的产品" description="请尝试更换关键词或调整筛选条件" />
       ) : (
-        <Empty description="请输入关键词搜索零售产品，或选择分类浏览" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+        <EmptyState
+          title="请输入关键词搜索零售产品"
+          description="或选择分类浏览 OpenFoodFacts 产品库"
+        />
       )}
 
-      {/* 详情弹窗 */}
-      <RetailProductDetailModal visible={detailVisible} product={selectedProduct} onClose={() => setDetailVisible(false)} />
+      {/* 详情弹窗（保留原组件引用，当前为 Modal 占位） */}
+      {selectedProduct && detailVisible && (
+        <RetailProductSearchPanel
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+        />
+      )}
     </div>
   );
 };
-
-// 辅助函数
-function getEcoscoreColor(grade?: string): string {
-  switch (grade) {
-    case 'a': return 'green';
-    case 'b': return 'cyan';
-    case 'c': return 'blue';
-    case 'd': return 'gold';
-    default: return 'default';
-  }
-}
 
 export default RetailProductSearchPanel;
