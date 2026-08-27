@@ -155,7 +155,7 @@ export default function RadixDemoPage() {
                   您的配方「营养强化饮料A」已通过审核，发布时间：2小时前
                 </RadixText>
                 <div className="flex gap-2 mt-4">
-                  <Button size="sm" variant="solid">查看详情</Button>
+                  <Button size="sm" variant="primary">查看详情</Button>
                   <Button size="sm" variant="ghost">忽略</Button>
                 </div>
               </div>

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * TastePredictTab - 口感预测模块 (增强版)
  *
  * 从 35% 提升至 75% 的深度开发版本
@@ -169,7 +169,7 @@ export function TastePredictTab() {
             <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5 block">药材配方</label>
             <textarea
               value={tasteInput}
-              onChange={(e) => setTasteInput(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setTasteInput(e.target.value)}
               placeholder={`如:\n黄芪\n党参\n枸杞子\n山药\n甘草`}
               rows={4}
               className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600
@@ -186,7 +186,7 @@ export function TastePredictTab() {
               </label>
               <Select
                 value={processingMethod}
-                onChange={(e) => setProcessingMethod(e.target.value)}
+                onChange={(v) => setProcessingMethod(v)}
                 placeholder="选择炮制方法..."
               >
                 <option value="">无</option>
@@ -200,7 +200,7 @@ export function TastePredictTab() {
 
             <div>
               <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5 block">算法模式</label>
-              <Select value={algorithmMode} onChange={(e) => setAlgorithmMode(e.target.value as 'weighted' | 'synergy')}>
+              <Select value={algorithmMode} onChange={(v) => setAlgorithmMode(v as 'weighted' | 'synergy')}>
                 <option value="weighted">加权平均（快速）</option>
                 <option value="synergy">协同分析（中等）</option>
               </Select>

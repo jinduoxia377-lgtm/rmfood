@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
+﻿import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   BarChart,
@@ -1170,8 +1170,8 @@ export default function UserManagementPage() {
               <label className="text-xs font-medium text-neutral-500 uppercase tracking-wider">角色</label>
               <Select
                 value={roleFilter}
-                onChange={(e) => {
-                  setRoleFilter(e.target.value);
+                onChange={(v) => {
+                  setRoleFilter(v);
                   setPage(1);
                 }}
                 size="sm"
@@ -1189,8 +1189,8 @@ export default function UserManagementPage() {
               <label className="text-xs font-medium text-neutral-500 uppercase tracking-wider">状态</label>
               <Select
                 value={statusFilter}
-                onChange={(e) => {
-                  setStatusFilter(e.target.value);
+                onChange={(v) => {
+                  setStatusFilter(v);
                   setPage(1);
                 }}
                 size="sm"
@@ -1209,8 +1209,8 @@ export default function UserManagementPage() {
                 <label className="text-xs font-medium text-neutral-500">每页数量</label>
                 <Select
                   value={String(pageSize)}
-                  onChange={(e) => {
-                    setPageSize(Number(e.target.value));
+                  onChange={(v) => {
+                    setPageSize(Number(v));
                     setPage(1);
                   }}
                   size="sm"
@@ -1293,14 +1293,14 @@ export default function UserManagementPage() {
               <AlertDescription className="flex flex-wrap items-center gap-2 mt-2">
                 <Select
                   value=""
-                  onChange={(e) => {
-                    if (e.target.value)
+                  onChange={(v) => {
+                    if (v)
                       setConfirmAction({
                         type: 'batch_role',
                         userIds: [...selectedIds],
-                        newValue: e.target.value,
+                        newValue: v,
                         label: '批量更改角色',
-                        description: `确定要将选中 ${selectedIds.size} 个用户的角色更改为「${getRoleConfig(e.target.value).label}」吗？`,
+                        description: `确定要将选中 ${selectedIds.size} 个用户的角色更改为「${getRoleConfig(v).label}」吗？`,
                         confirmLabel: '确认更改',
                         variant: 'warning',
                       });
@@ -2209,7 +2209,7 @@ lisi,李四,li@example.com,analyst,数据部`}
               <label className="text-[13px] font-medium text-neutral-700 dark:text-neutral-300">角色</label>
               <Select
                 value={createForm.role}
-                onChange={(e) => setCreateForm((prev) => ({ ...prev, role: e.target.value as UserRole }))}
+                onChange={(v) => setCreateForm((prev) => ({ ...prev, role: v as UserRole }))}
                 size="sm"
               >
                 {ROLE_OPTIONS.map(({ value, label }) => (

@@ -248,9 +248,14 @@ export class ChatService implements IChatService {
         const lines = buffer.split('\n');
         buffer = lines.pop() || '';
 
+        let currentEventType = '';
         for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const data = line.slice(6).trim();
+          if (line.startsWith('event:')) {
+            currentEventType = line.slice(6).trim();
+            continue;
+          }
+          if (line.startsWith('data:')) {
+            const data = line.slice(5).trim();
             if (data === '[DONE]') {
               yield { content: '', done: true };
               return;
@@ -260,7 +265,7 @@ export class ChatService implements IChatService {
               const parsed = JSON.parse(data);
 
               // ── 按事件类型分发处理 ──
-              const eventType = parsed.type;
+              const eventType = currentEventType;
 
               // type=error: 抛出错误让外层 catch 走标准错误处理流程
               if (eventType === 'error') {
@@ -735,42 +740,3 @@ export class ChatService implements IChatService {
 
 export const chatService = new ChatService();
 export default chatService;
-
-// ═══ Phase 1 Enhancement: AI LLM Error Taxonomy ═══
-
-/**
- * AI LLM 细粒度错误响应模板
- * 用于将后端返回的结构化错误码映射为前端可消费的错误信息
- */
-export interface ErrorResponseTemplate {
-  /** 错误类型标识（对应 ErrorType 或扩展类型） */
-  type: string;
-  /** 面向用户的中文提示信息 */
-  userMessage: string;
-  /** 是否可恢复（可重试/可修复） */
-  recoverable: boolean;
-  /** 冷却时间（毫秒），仅限速率限制等场景 */
-  cooldownMs?: number;
-}
-
-/** AI LLM 细粒度错误码 → 响应模板 映射表 */
-export const AI_LLM_ERROR_MAP: Record<string, ErrorResponseTemplate> = {
-  // ── 认证类 (AUTH) ──
-  AI_LLM_AUTH_001: { type: 'AuthError', userMessage: 'API Key 格式无效', recoverable: false },
-  AI_LLM_AUTH_002: { type: 'AuthExpiredError', userMessage: 'API Key 已过期或被撤销', recoverable: false },
-
-  // ── 配额类 (QUOTA) ──
-  AI_LLM_QUOTA_001: {
-    type: 'RateLimitedError',
-    userMessage: '请求过于频繁，请稍后再试',
-    recoverable: true,
-    cooldownMs: 60_000,
-  },
-  AI_LLM_QUOTA_003: { type: 'QuotaExhaustedError', userMessage: 'API 余额不足', recoverable: false },
-
-  // ── 模型类 (MODEL) ──
-  AI_LLM_MODEL_001: { type: 'ModelNotFoundError', userMessage: '指定的模型不存在', recoverable: true },
-
-  // ── 网络类 (NET) ──
-  AI_LLM_NET_002: { type: 'ConnectionTimeoutError', userMessage: '连接 AI 服务超时', recoverable: true },
-};

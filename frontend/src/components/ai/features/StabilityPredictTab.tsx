@@ -1,4 +1,4 @@
-/**
+﻿/**
  * StabilityPredictTab - 稳定性评估模块 (增强版)
  *
  * 从 35% 提升至 70% 的深度开发版本
@@ -163,7 +163,7 @@ export function StabilityPredictTab() {
             <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5 block">配方成分</label>
             <textarea
               value={stabilityInput}
-              onChange={(e) => setStabilityInput(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setStabilityInput(e.target.value)}
               placeholder={`如:\n黄芪\n党参\n枸杞子\n甘草`}
               rows={4}
               className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600
@@ -182,7 +182,7 @@ export function StabilityPredictTab() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-xs text-neutral-600 mb-1 block">温度 (°C)</label>
-                <Select value={String(temperature)} onChange={(e) => setTemperature(Number(e.target.value))}>
+                <Select value={String(temperature)} onChange={(v) => setTemperature(Number(v))}>
                   {[4, 15, 25, 30, 37].map((t) => (
                     <option key={t} value={String(t)}>
                       {t}°C
@@ -193,7 +193,7 @@ export function StabilityPredictTab() {
 
               <div>
                 <label className="text-xs text-neutral-600 mb-1 block">湿度 (%)</label>
-                <Select value={String(humidity)} onChange={(e) => setHumidity(Number(e.target.value))}>
+                <Select value={String(humidity)} onChange={(v) => setHumidity(Number(v))}>
                   {[30, 45, 60, 75, 90].map((h) => (
                     <option key={h} value={String(h)}>
                       {h}%
@@ -206,7 +206,7 @@ export function StabilityPredictTab() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-xs text-neutral-600 mb-1 block">光照</label>
-                <Select value={lightExposure} onChange={(e) => setLightExposure(e.target.value as 'dark' | 'ambient' | 'bright')}>
+                <Select value={lightExposure} onChange={(v) => setLightExposure(v as 'dark' | 'ambient' | 'bright')}>
                   <option value="dark">避光</option>
                   <option value="ambient">正常</option>
                   <option value="bright">强光</option>
@@ -215,7 +215,7 @@ export function StabilityPredictTab() {
 
               <div>
                 <label className="text-xs text-neutral-600 mb-1 block">包装</label>
-                <Select value={packaging} onChange={(e) => setPackaging(e.target.value as 'sealed' | 'semi-permeable' | 'open')}>
+                <Select value={packaging} onChange={(v) => setPackaging(v as 'sealed' | 'semi-permeable' | 'open')}>
                   <option value="sealed">密封</option>
                   <option value="semi-permeable">半透膜</option>
                   <option value="open">开放</option>

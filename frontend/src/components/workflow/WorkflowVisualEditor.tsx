@@ -717,11 +717,11 @@ export function WorkflowVisualEditor({
                       <label className="block text-xs font-medium text-neutral-600 dark:text-neutral-400 mb-1">任务类型</label>
                       <Select
                         value={selectedNode.data.taskType || ''}
-                        onChange={(e) =>
+                        onChange={(v) =>
                           setNodes(prev =>
                             prev.map(n =>
                               n.id === selectedNode.id
-                                ? { ...n, data: { ...n.data, taskType: e.target.value } }
+                                ? { ...n, data: { ...n.data, taskType: v } }
                                 : n,
                             ),
                           )

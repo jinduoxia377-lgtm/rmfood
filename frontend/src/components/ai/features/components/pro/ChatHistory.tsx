@@ -26,7 +26,8 @@ interface ChatHistoryProps {
   onToggle: () => void
 }
 
-const STORAGE_KEY = 'chat_history_sessions'
+// 与 useChatSessions 使用同一存储 key，避免数据碎片化
+const STORAGE_KEY = 'rmfood_chat_sessions_v1'
 
 // 持久化工具
 export function saveSessions(sessions: HistorySession[]) {

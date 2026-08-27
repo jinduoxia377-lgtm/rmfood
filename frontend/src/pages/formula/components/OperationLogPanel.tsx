@@ -298,7 +298,7 @@ export default function OperationLogPanel({ open, onClose, targetId, targetType 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
             <Select
               value={timeRange}
-              onChange={(e) => setTimeRange(e.target.value as TimeRange)}
+              onChange={(v) => setTimeRange(v as TimeRange)}
               placeholder="时间范围"
             >
               {TIME_RANGE_OPTIONS.map((o) => (
@@ -313,19 +313,18 @@ export default function OperationLogPanel({ open, onClose, targetId, targetType 
                 <Input
                   type="date"
                   value={customStartDate}
-                  onChange={(e) => setCustomStartDate(e.target.value)}
-                  placeholder="开始日期"
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCustomStartDate(e.target.value)}
                 />
                 <Input
                   type="date"
                   value={customEndDate}
-                  onChange={(e) => setCustomEndDate(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCustomEndDate(e.target.value)}
                   placeholder="结束日期"
                 />
               </>
             )}
 
-            <Select value={selectedOperator} onChange={(e) => setSelectedOperator(e.target.value)} placeholder="操作人">
+            <Select value={selectedOperator} onChange={(v) => setSelectedOperator(v)} placeholder="操作人">
               <option value="">全部操作人</option>
               {uniqueOperators.map((o) => (
                 <option key={o.id} value={o.id}>
@@ -336,7 +335,7 @@ export default function OperationLogPanel({ open, onClose, targetId, targetType 
 
             <Select
               value={selectedActions[0] || ''}
-              onChange={(e) => setSelectedActions(e.target.value ? [e.target.value as OperationAction] : [])}
+              onChange={(v) => setSelectedActions(v ? [v as OperationAction] : [])}
               placeholder="操作类型"
             >
               <option value="">全部操作类型</option>
@@ -347,7 +346,7 @@ export default function OperationLogPanel({ open, onClose, targetId, targetType 
               ))}
             </Select>
 
-            <Select value={selectedResult} onChange={(e) => setSelectedResult(e.target.value)} placeholder="操作结果">
+            <Select value={selectedResult} onChange={(v) => setSelectedResult(v)} placeholder="操作结果">
               {RESULT_OPTIONS.map((o) => (
                 <option key={o.value} value={o.value}>
                   {o.label}
@@ -362,7 +361,7 @@ export default function OperationLogPanel({ open, onClose, targetId, targetType 
               <input
                 type="text"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
                 placeholder="搜索目标名称、操作人..."
                 className="w-full pl-10 pr-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-neutral-800"
               />

@@ -1,7 +1,16 @@
 /**
- * 配方列表页 - 三栏式深度重构版（Phase 4 深度增强）
+ * 配方列表页 - 三栏式深度重构版（Phase 5 UI/UX 优化）
  * 左侧筛选面板 + 中间主内容区（统计+表格）+ 右侧快捷操作
  * 支持双视图模式、虚拟滚动、URL参数同步、服务端排序
+ *
+ * UI/UX 优化要点：
+ * 1. 简洁标题栏（去除渐变色块和装饰性光晕，减少 AI 感）
+ * 2. 扁平化快捷操作栏（柔和背景色而非渐变按钮）
+ * 3. 统计卡片用实心配色（无透明渐变文字，可读性更好）
+ * 4. 移除无意义动画（Sparkles pulse、scale-110 hover）
+ * 5. 右侧新增「最近更新」预览卡片
+ * 6. 表格行精致 hover / 选中态
+ * 7. 空状态更有引导性
  */
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
@@ -21,6 +30,8 @@ import {
   Eye,
   ChevronUp,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   LayoutGrid,
   ArrowRightLeft,
   MoreVertical,
@@ -28,24 +39,17 @@ import {
   Edit3,
   Copy,
   Trash2,
-  CalendarDays,
-  Tag,
-  Hash,
   TrendingUp,
   TrendingDown,
   RefreshCw,
-  ChevronLeft,
-  ChevronRight,
-  ChevronsLeft,
-  ChevronsRight,
   AlertTriangle,
-  Users,
   Clock,
-  Zap,
   Keyboard,
   ShieldOff,
-  Undo2,
   TestTubes,
+  Brain,
+  Database,
+  ArrowRight,
 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useVirtualizer } from '@tanstack/react-virtual';
@@ -56,7 +60,6 @@ import { StatusBadge, EmptyState, Pagination, Skeleton } from '@/components/ui/C
 import {
   Button,
   Input,
-  PageHeader,
   Badge,
   Card,
   CardContent,
@@ -114,6 +117,45 @@ const EFFECT_CATEGORIES = [
   '疏肝理气',
   '活血化瘀',
   '安神助眠',
+];
+
+// ── 快捷操作定义 ──
+const QUICK_ACTIONS = [
+  {
+    to: '/formulas/new',
+    icon: Plus,
+    title: '新建配方',
+    bgLight: 'bg-primary-50 dark:bg-primary-900/20',
+    textColor: 'text-primary-600 dark:text-primary-400',
+  },
+  {
+    to: '/formulas?status=pending_review',
+    icon: Clock,
+    title: '待审核',
+    bgLight: 'bg-warning-50 dark:bg-warning-900/20',
+    textColor: 'text-warning-600 dark:text-warning-400',
+  },
+  {
+    to: '/experiments',
+    icon: TestTubes,
+    title: '实验管理',
+    bgLight: 'bg-violet-50 dark:bg-violet-900/20',
+    textColor: 'text-violet-600 dark:text-violet-400',
+  },
+  {
+    to: '/ai',
+    icon: Brain,
+    title: 'AI 助手',
+    bgLight: 'bg-teal-50 dark:bg-teal-900/20',
+    textColor: 'text-teal-600 dark:text-teal-400',
+  },
+  {
+    to: '/databases',
+    icon: Database,
+    title: '数据库',
+    bgLight: 'bg-sky-50 dark:bg-sky-900/20',
+    textColor: 'text-sky-600 dark:text-sky-400',
+  },
 ];
 
 // ── 工具函数 ──
@@ -189,7 +231,7 @@ function useDebounce<T>(value: T, delay: number): T {
   return debouncedValue;
 }
 
-// ── 排序图标组件（支持双排序：主排序实心 + 次排序空心）──
+// ── 排序图标组件 ──
 function SortIcon({
   field,
   primaryField,
@@ -351,6 +393,14 @@ export default function FormulaListPage() {
     queryFn: () => formulaApi.getStatistics(),
   });
 
+  // ── API 查询：最近配方（用于右侧预览）──
+  const { data: recentData } = useQuery({
+    queryKey: ['formulas-recent'],
+    queryFn: () => formulaApi.list({ page: 1, page_size: 5, sort_field: 'updated_at', sort_order: 'desc' }),
+    staleTime: 60_000,
+  });
+  const recentFormulas = recentData?.items ?? [];
+
   // ── 数据提取 ──
   const items = listData?.items ?? [];
   const total = listData?.total ?? 0;
@@ -429,17 +479,14 @@ export default function FormulaListPage() {
   // ── 键盘快捷键（桌面端）──
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Ctrl/Cmd + F: 聚焦搜索框
       if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
         e.preventDefault();
         searchInputRef.current?.focus();
       }
-      // Ctrl/Cmd + N: 新建配方
       if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
         e.preventDefault();
         navigate('/formulas/new');
       }
-      // Escape: 关闭弹窗/清除筛选
       if (e.key === 'Escape') {
         setShowMobileFilter(false);
         setActionMenuId(null);
@@ -771,7 +818,7 @@ export default function FormulaListPage() {
     overscan: 5,
   });
 
-  // ── ResizeObserver 用于校正行高估算 ──
+  // ── ResizeObserver ──
   useEffect(() => {
     if (!shouldUseVirtualizer || !parentRef.current) return;
 
@@ -801,7 +848,7 @@ export default function FormulaListPage() {
         pendingReview: 0,
         approved: 0,
         monthlyNew: 0,
-        trend: 'up',
+        trend: 'up' as 'up' | 'down' | 'stable',
       };
     }
     return {
@@ -839,131 +886,197 @@ export default function FormulaListPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto space-y-8 px-4 lg:px-6">
-      {/* ── Page Header ── */}
-      <PageHeader
-        title="配方管理"
-        description={
-          <span className="inline-flex items-center gap-3 leading-relaxed">
-            <span>
-              共<strong className="font-semibold text-neutral-900 dark:text-white">{total}</strong> 个配方
+    <div className="max-w-7xl mx-auto space-y-6 px-4 lg:px-6 pb-10">
+
+      {/* 顶部标题栏 */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <div className="flex items-center gap-2 mb-0.5">
+            <h1 className="text-xl font-bold text-neutral-900 dark:text-white">配方管理</h1>
+            <span className="text-xs font-medium text-neutral-400 bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 rounded-full tabular-nums">
+              {total} 条
             </span>
-            {isFetching && !isLoading && (
-              <span className="inline-flex items-center gap-1 text-xs text-primary-600 dark:text-primary-400">
-                <RefreshCw className="w-3 h-3 animate-spin" /> 同步中...
+          </div>
+          <p className="text-sm text-neutral-500 dark:text-neutral-400">
+            {statsData.approved > 0 && (
+              <span>
+                <span className="text-emerald-600 dark:text-emerald-400 font-medium">{statsData.approved}</span> 已通过
+                {statsData.pendingReview > 0 && (
+                  <span className="ml-3">
+                    <span className="text-amber-600 dark:text-amber-400 font-medium">{statsData.pendingReview}</span> 待审核
+                  </span>
+                )}
               </span>
             )}
-          </span>
-        }
-        actions={
-          <div className="flex items-center gap-2 flex-wrap">
-            {/* 视图切换 */}
-            <div className="flex items-center border border-neutral-200 dark:border-neutral-700 rounded-lg overflow-hidden">
-              <button
-                onClick={() => setViewMode('card')}
-                className={cn(
-                  'p-2 transition-colors',
-                  viewMode === 'card'
-                    ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600'
-                    : 'text-neutral-400 hover:text-neutral-600',
-                )}
-                title="卡片视图"
-                aria-label="卡片视图"
-              >
-                <LayoutGrid size={16} />
-              </button>
-              <button
-                onClick={() => setViewMode('table')}
-                className={cn(
-                  'p-2 transition-colors',
-                  viewMode === 'table'
-                    ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600'
-                    : 'text-neutral-400 hover:text-neutral-600',
-                )}
-                title="表格视图"
-                aria-label="表格视图"
-              >
-                <List size={16} />
-              </button>
-            </div>
-
-            {/* 收藏筛选 */}
+            {!statsData.approved && !statsData.pendingReview && <span className="text-neutral-400">创建您的第一个药食同源配方</span>}
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          {/* 视图切换 */}
+          <div className="flex items-center border border-neutral-200 dark:border-neutral-700 rounded-lg overflow-hidden">
             <button
-              onClick={() => setFavoritesOnly(!favoritesOnly)}
+              onClick={() => setViewMode('card')}
               className={cn(
-                'p-2 rounded-lg border transition-all',
-                favoritesOnly
-                  ? 'bg-warning-50 dark:bg-warning-900/20 border-amber-300 dark:border-amber-700 text-warning-600'
-                  : 'border-neutral-200 dark:border-neutral-700 text-neutral-400 hover:text-neutral-600',
+                'p-2 transition-colors',
+                viewMode === 'card'
+                  ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400'
+                  : 'text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300',
               )}
-              title={favoritesOnly ? '显示全部' : '只看收藏'}
-              aria-label={favoritesOnly ? '显示全部配方' : '只看收藏'}
+              title="卡片视图"
+              aria-label="卡片视图"
             >
-              <Star size={16} className={favoritesOnly ? 'fill-amber-400' : ''} />
+              <LayoutGrid size={16} />
             </button>
-
-            {/* 批量操作按钮 */}
-            {selectedIds.size > 0 && (
-              <>
-                <span className="mr-1 px-2.5 py-1 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 text-xs font-medium animate-pulse">
-                  已选 {selectedIds.size}
-                </span>
-                <Button variant="outline" size="sm" icon={<Download size={14} />} onClick={handleBatchExport}>
-                  导出 CSV
-                </Button>
-                {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && (
-                  <Button variant="danger" size="sm" icon={<Trash2 size={14} />} onClick={handleBatchDelete}>
-                    批量删除 ({selectedIds.size})
-                  </Button>
-                )}
-              </>
-            )}
-
-            <Button
-              variant="outline"
-              size="sm"
-              icon={<Download size={16} />}
-              onClick={() => {
-                const input = document.createElement('input');
-                input.type = 'file';
-                input.accept = '.json,.csv';
-                input.onchange = async (e) => {
-                  const target = e.target as HTMLInputElement;
-                  if (target.files?.[0]) {
-                    try {
-                      const formData = new FormData();
-                      formData.append('file', target.files[0]);
-                      await formulaApi.importFormulas({ file: target.files[0], mode: 'all' });
-                      qc.invalidateQueries({ queryKey: ['formulas-list'] });
-                    } catch (err) {
-                      logger.error('导入失败:', err);
-                    }
-                  }
-                };
-                input.click();
-              }}
+            <button
+              onClick={() => setViewMode('table')}
+              className={cn(
+                'p-2 transition-colors',
+                viewMode === 'table'
+                  ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400'
+                  : 'text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300',
+              )}
+              title="表格视图"
+              aria-label="表格视图"
             >
-              导入配方
-            </Button>
-
-            <Link to="/formulas/new">
-              <Button icon={<Plus size={16} />} size="md">
-                新建配方
-              </Button>
-            </Link>
-
-            <Button variant="outline" size="sm" icon={<FileText size={16} />} onClick={() => setShowLogPanel(true)}>
-              操作日志
-            </Button>
+              <List size={16} />
+            </button>
           </div>
-        }
-      />
 
-      {/* ── 三栏布局主体（响应式）── */}
+          {/* 收藏筛选 */}
+          <button
+            onClick={() => setFavoritesOnly(!favoritesOnly)}
+            className={cn(
+              'p-2 rounded-lg border transition-all',
+              favoritesOnly
+                ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800 text-amber-600 dark:text-amber-400'
+                : 'border-neutral-200 dark:border-neutral-700 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300',
+            )}
+            title={favoritesOnly ? '显示全部' : '只看收藏'}
+            aria-label={favoritesOnly ? '显示全部配方' : '只看收藏'}
+          >
+            <Star size={16} className={favoritesOnly ? 'fill-amber-400' : ''} />
+          </button>
+
+          {/* 操作日志 */}
+          <button
+            onClick={() => setShowLogPanel(true)}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-all text-sm"
+          >
+            <FileText size={14} />
+            <span className="hidden sm:inline">日志</span>
+          </button>
+
+          <Link to="/formulas/new">
+            <Button icon={<Plus size={16} />} size="md">
+              新建配方
+            </Button>
+          </Link>
+        </div>
+      </div>
+
+      {/* 快捷操作 */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
+        {QUICK_ACTIONS.map((action) => (
+          <Link
+            key={action.to}
+            to={action.to}
+            className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg border border-neutral-100 dark:border-neutral-800 hover:border-neutral-200 dark:hover:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors group"
+          >
+            <div className={cn(
+              'w-8 h-8 rounded-lg flex items-center justify-center shrink-0',
+              action.bgLight,
+            )}>
+              <action.icon size={15} className={action.textColor} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-medium text-neutral-900 dark:text-white truncate">{action.title}</p>
+            </div>
+          </Link>
+        ))}
+      </div>
+
+      {/* 统计概览 */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {/* 总配方数 */}
+        <Card className="overflow-hidden border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-900">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center">
+                  <FlaskConical className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                </div>
+                <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400">总配方</span>
+              </div>
+              {statsData.trend !== 'stable' && (
+                <span className={cn(
+                  'text-xs font-medium flex items-center gap-0.5',
+                  statsData.trend === 'up' ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400',
+                )}>
+                  {statsData.trend === 'up' ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+                </span>
+              )}
+            </div>
+            <p className="text-2xl font-bold text-neutral-900 dark:text-white tabular-nums">{statsData.total}</p>
+            <p className="text-xs text-neutral-400 mt-1">本月新增 <span className="text-neutral-600 dark:text-neutral-300 font-medium">{statsData.monthlyNew}</span></p>
+          </CardContent>
+        </Card>
+
+        {/* 草稿数 */}
+        <Card className="overflow-hidden border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-900">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
+                  <FileText className="w-4 h-4 text-neutral-500 dark:text-neutral-400" />
+                </div>
+                <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400">草稿</span>
+              </div>
+            </div>
+            <p className="text-2xl font-bold text-neutral-900 dark:text-white tabular-nums">{statsData.draft}</p>
+            <p className="text-xs text-neutral-400 mt-1">等待提交</p>
+          </CardContent>
+        </Card>
+
+        {/* 待审核数 */}
+        <Card className="overflow-hidden border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-900">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-900/30 flex items-center justify-center">
+                  <Clock className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                </div>
+                <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400">待审核</span>
+              </div>
+            </div>
+            <p className="text-2xl font-bold text-neutral-900 dark:text-white tabular-nums">{statsData.pendingReview}</p>
+            <p className="text-xs text-neutral-400 mt-1">需要审批</p>
+          </CardContent>
+        </Card>
+
+        {/* 已通过数 */}
+        <Card className="overflow-hidden border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-900">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                </div>
+                <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400">已通过</span>
+              </div>
+            </div>
+            <p className="text-2xl font-bold text-neutral-900 dark:text-white tabular-nums">{statsData.approved}</p>
+            <p className="text-xs text-neutral-400 mt-1">可用状态</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* ═══════════════════════════════════════════════════════════
+          主内容区域（三栏布局）
+      ═══════════════════════════════════════════════════════════ */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        {/* ═══════════════ 移动端/平板端：顶部搜索栏 + 筛选按钮 ═══════════════ */}
+
+        {/* ═══════════════ 移动端/平板端：顶部搜索栏 ═══════════════ */}
         <div className="lg:hidden col-span-12 space-y-3">
-          {/* 移动端搜索框 */}
           <div className="relative">
             <Input
               ref={searchInputRef}
@@ -973,7 +1086,6 @@ export default function FormulaListPage() {
               prefix={<Search size={14} className="text-neutral-400" />}
               className="h-11 w-full"
             />
-            {/* 筛选按钮（触发移动端筛选弹窗） */}
             <button
               onClick={() => setShowMobileFilter(true)}
               className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-lg bg-primary-50 dark:bg-primary-900/20 text-primary-600 hover:bg-primary-100 dark:hover:bg-primary-900/40 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
@@ -983,7 +1095,6 @@ export default function FormulaListPage() {
             </button>
             <Modal open={showMobileFilter} onClose={() => setShowMobileFilter(false)} title="筛选条件">
               <div className="space-y-5 overflow-y-auto pb-4 max-h-[60vh]">
-                {/* 状态多选 */}
                 <div className="space-y-3">
                   <label className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">状态</label>
                   <div className="grid grid-cols-2 gap-2">
@@ -1003,132 +1114,57 @@ export default function FormulaListPage() {
                     ))}
                   </div>
                 </div>
-
-                {/* 日期范围 */}
                 <div className="space-y-3">
                   <label className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">创建日期</label>
                   <div className="space-y-2">
-                    <input
-                      type="date"
-                      value={createdStart}
-                      onChange={(e) => setCreatedStart(e.target.value)}
-                      className="w-full px-4 py-3 text-sm border border-neutral-200 dark:border-neutral-700 rounded-xl bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:ring-2 focus:ring-primary-200 outline-none min-h-[44px]"
-                    />
-                    <input
-                      type="date"
-                      value={createdEnd}
-                      onChange={(e) => setCreatedEnd(e.target.value)}
-                      className="w-full px-4 py-3 text-sm border border-neutral-200 dark:border-neutral-700 rounded-xl bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:ring-2 focus:ring-primary-200 outline-none min-h-[44px]"
-                    />
+                    <input type="date" value={createdStart} onChange={(e) => setCreatedStart(e.target.value)}
+                      className="w-full px-4 py-3 text-sm border border-neutral-200 dark:border-neutral-700 rounded-xl bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:ring-2 focus:ring-primary-200 outline-none min-h-[44px]" />
+                    <input type="date" value={createdEnd} onChange={(e) => setCreatedEnd(e.target.value)}
+                      className="w-full px-4 py-3 text-sm border border-neutral-200 dark:border-neutral-700 rounded-xl bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:ring-2 focus:ring-primary-200 outline-none min-h-[44px]" />
                   </div>
                 </div>
-
-                {/* 标签选择 */}
                 <div className="space-y-3">
                   <label className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">标签</label>
-                  <TagMultiSelect
-                    value={selectedTags}
-                    onChange={(ids) => {
-                      setSelectedTags(ids);
-                      setPage(1);
-                    }}
-                    placeholder="选择标签..."
-                  />
+                  <TagMultiSelect value={selectedTags} onChange={(ids) => { setSelectedTags(ids); setPage(1); }} placeholder="选择标签..." />
                 </div>
-
-                {/* 功效分类 */}
                 <div className="space-y-3">
                   <label className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">功效分类</label>
-                  <Select
-                    value={effectCategory}
-                    onChange={(e) => {
-                      setEffectCategory(e.target.value);
-                      setPage(1);
-                    }}
-                    className="min-h-[44px]"
-                  >
+                  <Select value={effectCategory} onChange={(v) => { setEffectCategory(v); setPage(1); }} className="min-h-[44px]">
                     <option value="">全部分类</option>
-                    {EFFECT_CATEGORIES.map((cat) => (
-                      <option key={cat} value={cat}>
-                        {cat}
-                      </option>
-                    ))}
+                    {EFFECT_CATEGORIES.map((cat) => (<option key={cat} value={cat}>{cat}</option>))}
                   </Select>
                 </div>
-
-                {/* 配方分类 */}
                 <div className="space-y-3">
                   <label className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">配方分类</label>
-                  <CategoryTree
-                    value={categoryIds}
-                    onChange={(ids) => {
-                      setCategoryIds(ids);
-                      setPage(1);
-                    }}
-                    placeholder="选择分类..."
-                  />
+                  <CategoryTree value={categoryIds} onChange={(ids) => { setCategoryIds(ids); setPage(1); }} placeholder="选择分类..." />
                 </div>
-
-                {/* 操作按钮 */}
                 <div className="flex gap-3 pt-4 border-t border-neutral-200 dark:border-neutral-700">
-                  <Button
-                    variant="secondary"
-                    onClick={() => setShowMobileFilter(false)}
-                    className="flex-1 min-h-[48px]"
-                  >
-                    应用筛选
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      clearAllFilters();
-                      setShowMobileFilter(false);
-                    }}
-                    className="flex-1 min-h-[48px]"
-                  >
-                    清除全部
-                  </Button>
+                  <Button variant="secondary" onClick={() => setShowMobileFilter(false)} className="flex-1 min-h-[48px]">应用筛选</Button>
+                  <Button variant="outline" onClick={() => { clearAllFilters(); setShowMobileFilter(false); }} className="flex-1 min-h-[48px]">清除全部</Button>
                 </div>
               </div>
             </Modal>
           </div>
 
-          {/* 当前激活的筛选条件 Tag（移动端） */}
           {activeFilterTags.length > 0 && (
             <div className="flex flex-wrap items-center gap-2 px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700">
               <span className="text-xs font-medium text-neutral-500 shrink-0">已选：</span>
               <div className="flex flex-wrap gap-1.5 flex-1">
                 {activeFilterTags.slice(0, 3).map((tag, idx) => (
-                  <Badge
-                    key={idx}
-                    variant="primary"
-                    size="sm"
-                    className="gap-1 cursor-pointer hover:bg-primary-200 transition-colors"
-                  >
+                  <Badge key={idx} variant="primary" size="sm" className="gap-1 cursor-pointer hover:bg-primary-200 transition-colors">
                     {tag.label.length > 10 ? `${tag.label.slice(0, 10)}...` : tag.label}
-                    <button onClick={tag.onRemove} className="hover:text-error-500" aria-label="移除筛选">
-                      <X size={10} />
-                    </button>
+                    <button onClick={tag.onRemove} className="hover:text-error-500" aria-label="移除筛选"><X size={10} /></button>
                   </Badge>
                 ))}
-                {activeFilterTags.length > 3 && (
-                  <Badge variant="neutral" size="sm">
-                    +{activeFilterTags.length - 3}
-                  </Badge>
-                )}
+                {activeFilterTags.length > 3 && <Badge variant="neutral" size="sm">+{activeFilterTags.length - 3}</Badge>}
               </div>
-              <button
-                onClick={clearAllFilters}
-                className="text-xs text-danger-600 hover:text-danger-700 font-medium shrink-0 ml-auto"
-              >
-                清除
-              </button>
+              <button onClick={clearAllFilters} className="text-xs text-danger-600 hover:text-danger-700 font-medium shrink-0 ml-auto">清除</button>
             </div>
           )}
         </div>
 
         {/* ═══════════════ 左侧：筛选面板（桌面端）═══════════════ */}
-        <Card className="hidden lg:block lg:col-span-3 transition-all duration-300 hover:shadow-md shadow-md border-neutral-200/80 dark:border-neutral-700/60 bg-gradient-to-b from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-800/50 h-fit">
+        <Card className="hidden lg:block lg:col-span-3 transition-all duration-300 hover:shadow-md border-neutral-200/80 dark:border-neutral-700/60 bg-white dark:bg-neutral-900 h-fit">
           <CardContent className="p-5 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-[15px] font-semibold text-neutral-800 dark:text-neutral-200 flex items-center gap-2">
@@ -1138,12 +1174,7 @@ export default function FormulaListPage() {
                 筛选条件
               </h3>
               {hasActiveFilters && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-xs text-neutral-500 hover:text-danger-600"
-                  onClick={clearAllFilters}
-                >
+                <Button variant="ghost" size="sm" className="text-xs text-neutral-500 hover:text-danger-600" onClick={clearAllFilters}>
                   清除全部
                 </Button>
               )}
@@ -1167,10 +1198,7 @@ export default function FormulaListPage() {
               <div className="space-y-1.5">
                 {STATUS_OPTIONS.map((opt) => (
                   <label key={opt.value} className="flex items-center gap-2 cursor-pointer group">
-                    <Checkbox
-                      checked={selectedStatuses.has(opt.value)}
-                      onChange={() => toggleStatusFilter(opt.value)}
-                    />
+                    <Checkbox checked={selectedStatuses.has(opt.value)} onChange={() => toggleStatusFilter(opt.value)} />
                     <span className="text-sm text-neutral-600 dark:text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-neutral-200 transition-colors">
                       {opt.label}
                     </span>
@@ -1183,83 +1211,41 @@ export default function FormulaListPage() {
             <div className="space-y-2">
               <label className="text-xs font-medium text-neutral-500 uppercase tracking-wider">创建日期</label>
               <div className="space-y-2">
-                <input
-                  type="date"
-                  value={createdStart}
-                  onChange={(e) => setCreatedStart(e.target.value)}
-                  className="w-full px-3 py-1.5 text-xs border border-neutral-200 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:ring-2 focus:ring-primary-200 focus:border-primary-400 outline-none transition-all"
-                />
-                <input
-                  type="date"
-                  value={createdEnd}
-                  onChange={(e) => setCreatedEnd(e.target.value)}
-                  className="w-full px-3 py-1.5 text-xs border border-neutral-200 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:ring-2 focus:ring-primary-200 focus:border-primary-400 outline-none transition-all"
-                />
+                <input type="date" value={createdStart} onChange={(e) => setCreatedStart(e.target.value)}
+                  className="w-full px-3 py-1.5 text-xs border border-neutral-200 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:ring-2 focus:ring-primary-200 focus:border-primary-400 outline-none transition-all" />
+                <input type="date" value={createdEnd} onChange={(e) => setCreatedEnd(e.target.value)}
+                  className="w-full px-3 py-1.5 text-xs border border-neutral-200 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:ring-2 focus:ring-primary-200 focus:border-primary-400 outline-none transition-all" />
               </div>
             </div>
 
             {/* 标签选择 */}
             <div className="space-y-2">
               <label className="text-xs font-medium text-neutral-500 uppercase tracking-wider">标签</label>
-              <TagMultiSelect
-                value={selectedTags}
-                onChange={(ids) => {
-                  setSelectedTags(ids);
-                  setPage(1);
-                }}
-                placeholder="选择标签..."
-              />
+              <TagMultiSelect value={selectedTags} onChange={(ids) => { setSelectedTags(ids); setPage(1); }} placeholder="选择标签..." />
             </div>
 
             {/* 功效分类 */}
             <div className="space-y-2">
               <label className="text-xs font-medium text-neutral-500 uppercase tracking-wider">功效分类</label>
-              <Select
-                value={effectCategory}
-                onChange={(e) => {
-                  setEffectCategory(e.target.value);
-                  setPage(1);
-                }}
-                size="sm"
-              >
+              <Select value={effectCategory} onChange={(v) => { setEffectCategory(v); setPage(1); }} size="sm">
                 <option value="">全部分类</option>
-                {EFFECT_CATEGORIES.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
+                {EFFECT_CATEGORIES.map((cat) => (<option key={cat} value={cat}>{cat}</option>))}
               </Select>
             </div>
 
             {/* 配方分类 */}
             <div className="space-y-2">
               <label className="text-xs font-medium text-neutral-500 uppercase tracking-wider">配方分类</label>
-              <CategoryTree
-                value={categoryIds}
-                onChange={(ids) => {
-                  setCategoryIds(ids);
-                  setPage(1);
-                }}
-                placeholder="选择分类..."
-              />
+              <CategoryTree value={categoryIds} onChange={(ids) => { setCategoryIds(ids); setPage(1); }} placeholder="选择分类..." />
             </div>
 
             {/* 创建者筛选 */}
             <div className="space-y-2">
               <label className="text-xs font-medium text-neutral-500 uppercase tracking-wider">创建者</label>
-              <Select
-                value={creatorId}
-                onChange={(e) => {
-                  setCreatorId(e.target.value);
-                  setPage(1);
-                }}
-                size="sm"
-              >
+              <Select value={creatorId} onChange={(v) => { setCreatorId(v); setPage(1); }} size="sm">
                 <option value="">全部创建者</option>
                 {creatorOptions.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
                 ))}
               </Select>
             </div>
@@ -1269,15 +1255,9 @@ export default function FormulaListPage() {
               <p className="text-[13px] font-medium text-neutral-500">显示设置</p>
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-neutral-500">每页数量</label>
-                <Select
-                  value={String(pageSize)}
-                  onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-                  size="sm"
-                >
+                <Select value={String(pageSize)} onChange={(v) => handlePageSizeChange(Number(v))} size="sm">
                   {PAGE_SIZE_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
                   ))}
                 </Select>
               </div>
@@ -1288,27 +1268,19 @@ export default function FormulaListPage() {
               <p className="text-xs font-medium text-neutral-500 uppercase tracking-wider mb-2.5">当前统计</p>
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="flex items-center gap-1.5 text-neutral-500">
-                    <FlaskConical className="w-3.5 h-3.5" /> 总数
-                  </span>
+                  <span className="flex items-center gap-1.5 text-neutral-500"><FlaskConical className="w-3.5 h-3.5" /> 总数</span>
                   <span className="font-semibold tabular-nums">{total}</span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="flex items-center gap-1.5 text-primary-600 dark:text-primary-400">
-                    <CheckCircle2 className="w-3.5 h-3.5" /> 已通过
-                  </span>
+                  <span className="flex items-center gap-1.5 text-primary-600 dark:text-primary-400"><CheckCircle2 className="w-3.5 h-3.5" /> 已通过</span>
                   <span className="font-semibold tabular-nums">{statsData.approved}</span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="flex items-center gap-1.5 text-warning-600 dark:text-warning-400">
-                    <Clock className="w-3.5 h-3.5" /> 待审核
-                  </span>
+                  <span className="flex items-center gap-1.5 text-warning-600 dark:text-warning-400"><Clock className="w-3.5 h-3.5" /> 待审核</span>
                   <span className="font-semibold tabular-nums">{statsData.pendingReview}</span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="flex items-center gap-1.5 text-neutral-500">
-                    <Star className="w-3.5 h-3.5" /> 收藏
-                  </span>
+                  <span className="flex items-center gap-1.5 text-neutral-500"><Star className="w-3.5 h-3.5" /> 收藏</span>
                   <span className="font-semibold tabular-nums">{favorites.size}</span>
                 </div>
               </div>
@@ -1318,138 +1290,18 @@ export default function FormulaListPage() {
 
         {/* ═══════════════ 中间：主内容区 ═══════════════ */}
         <div className="lg:col-span-9 space-y-4">
-          {/* ── 统计概览卡片（响应式4个）── */}
-          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-            {/* 总配方数 */}
-            <Card className="overflow-hidden group cursor-default transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 border-l-4 border-l-blue-500 backdrop-blur-sm">
-              <CardContent className="p-4 md:p-5">
-                <div className="flex items-center justify-between mb-2 md:mb-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 md:w-9 md:h-9 rounded-xl bg-gradient-to-br from-blue-100 via-blue-50 to-indigo-50 dark:from-blue-900/50 dark:via-blue-900/30 dark:to-indigo-900/20 flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
-                      <FlaskConical className="w-4 h-4 md:w-4.5 md:h-4.5 text-secondary-600 dark:text-secondary-400" />
-                    </div>
-                    <span className="text-[12px] md:text-[13px] font-medium text-neutral-500 dark:text-neutral-400 hidden sm:inline">
-                      总配方数
-                    </span>
-                    <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400 sm:hidden">总数</span>
-                  </div>
-                  <Badge variant="primary" size="sm" className="hidden md:flex items-center gap-1">
-                    {statsData.trend === 'up' && <TrendingUp size={10} />}
-                    {statsData.trend === 'down' && <TrendingDown size={10} />}
-                    全部
-                  </Badge>
-                </div>
-                <p className="text-[22px] md:text-[28px] font-bold bg-gradient-to-r bg-clip-text text-transparent from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 tabular-nums tracking-tight">
-                  {statsData.total}
-                </p>
-                <p className="text-[11px] md:text-xs text-neutral-400 mt-1 md:mt-1.5 font-medium hidden sm:block">
-                  本月新增 <span className="text-primary-600 font-semibold">{statsData.monthlyNew}</span>
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* 草稿数 */}
-            <Card className="overflow-hidden group cursor-default transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 border-l-4 border-l-slate-400 backdrop-blur-sm">
-              <CardContent className="p-4 md:p-5">
-                <div className="flex items-center justify-between mb-2 md:mb-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 md:w-9 md:h-9 rounded-xl bg-gradient-to-br from-slate-100 via-slate-50 to-gray-50 dark:from-slate-800 dark:via-slate-800/50 dark:to-gray-900/20 flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
-                      <FileText className="w-4 h-4 md:w-4.5 md:h-4.5 text-neutral-600 dark:text-neutral-400" />
-                    </div>
-                    <span className="text-[12px] md:text-[13px] font-medium text-neutral-500 dark:text-neutral-400 hidden sm:inline">
-                      草稿数
-                    </span>
-                    <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400 sm:hidden">草稿</span>
-                  </div>
-                  <Badge variant="neutral" size="sm" className="hidden md:inline-flex">
-                    编辑中
-                  </Badge>
-                </div>
-                <p className="text-[22px] md:text-[28px] font-bold bg-gradient-to-r bg-clip-text text-transparent from-slate-600 to-gray-600 dark:from-slate-400 dark:to-gray-400 tabular-nums tracking-tight">
-                  {statsData.draft}
-                </p>
-                <p className="text-[11px] md:text-xs text-neutral-400 mt-1 md:mt-1.5 font-medium hidden sm:block">
-                  等待完善和提交
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* 待审核数 */}
-            <Card className="overflow-hidden group cursor-default transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 border-l-4 border-l-amber-500 backdrop-blur-sm">
-              <CardContent className="p-4 md:p-5">
-                <div className="flex items-center justify-between mb-2 md:mb-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 md:w-9 md:h-9 rounded-xl bg-gradient-to-br from-amber-100 via-amber-50 to-orange-50 dark:from-amber-900/50 dark:via-amber-900/30 dark:to-orange-900/20 flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
-                      <Clock className="w-4 h-4 md:w-4.5 md:h-4.5 text-warning-600 dark:text-warning-400" />
-                    </div>
-                    <span className="text-[12px] md:text-[13px] font-medium text-neutral-500 dark:text-neutral-400 hidden sm:inline">
-                      待审核
-                    </span>
-                    <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400 sm:hidden">待审</span>
-                  </div>
-                  <Badge variant="neutral" size="sm" className="hidden md:inline-flex">
-                    处理中
-                  </Badge>
-                </div>
-                <p className="text-[22px] md:text-[28px] font-bold bg-gradient-to-r bg-clip-text text-transparent from-amber-600 to-orange-600 dark:from-amber-400 dark:to-orange-400 tabular-nums tracking-tight">
-                  {statsData.pendingReview}
-                </p>
-                <p className="text-[11px] md:text-xs text-neutral-400 mt-1 md:mt-1.5 font-medium hidden sm:block">
-                  需要管理员审批
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* 已通过数 */}
-            <Card className="overflow-hidden group cursor-default transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 border-l-4 border-l-emerald-500 backdrop-blur-sm">
-              <CardContent className="p-4 md:p-5">
-                <div className="flex items-center justify-between mb-2 md:mb-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 md:w-9 md:h-9 rounded-xl bg-gradient-to-br from-emerald-100 via-emerald-50 to-teal-50 dark:from-emerald-900/50 dark:via-emerald-900/30 dark:to-teal-900/20 flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
-                      <CheckCircle2 className="w-4 h-4 md:w-4.5 md:h-4.5 text-primary-600 dark:text-primary-400" />
-                    </div>
-                    <span className="text-[12px] md:text-[13px] font-medium text-neutral-500 dark:text-neutral-400 hidden sm:inline">
-                      已通过
-                    </span>
-                    <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400 sm:hidden">通过</span>
-                  </div>
-                  <Badge variant="success" size="sm" className="hidden md:inline-flex">
-                    可用
-                  </Badge>
-                </div>
-                <p className="text-[22px] md:text-[28px] font-bold bg-gradient-to-r bg-clip-text text-transparent from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400 tabular-nums tracking-tight">
-                  {statsData.approved}
-                </p>
-                <p className="text-[11px] md:text-xs text-neutral-400 mt-1 md:mt-1.5 font-medium hidden sm:block">
-                  可正常使用
-                </p>
-              </CardContent>
-            </Card>
-          </div>
 
           {/* ── 筛选条件 Tag 展示栏 ── */}
           {activeFilterTags.length > 0 && (
             <div className="flex flex-wrap items-center gap-2 px-4 py-3 rounded-xl bg-slate-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700 animate-in fade-in duration-200">
               <span className="text-xs font-medium text-neutral-500">当前筛选：</span>
               {activeFilterTags.map((tag, idx) => (
-                <Badge
-                  key={idx}
-                  variant="primary"
-                  size="sm"
-                  className="gap-1 cursor-pointer hover:bg-primary-200 transition-colors"
-                >
+                <Badge key={idx} variant="primary" size="sm" className="gap-1 cursor-pointer hover:bg-primary-200 transition-colors">
                   {tag.label}
-                  <button onClick={tag.onRemove} className="hover:text-error-500">
-                    <X size={10} />
-                  </button>
+                  <button onClick={tag.onRemove} className="hover:text-error-500"><X size={10} /></button>
                 </Badge>
               ))}
-              <button
-                onClick={clearAllFilters}
-                className="text-xs text-danger-600 hover:text-danger-700 font-medium ml-auto"
-              >
-                清除全部
-              </button>
+              <button onClick={clearAllFilters} className="text-xs text-danger-600 hover:text-danger-700 font-medium ml-auto">清除全部</button>
             </div>
           )}
 
@@ -1467,12 +1319,7 @@ export default function FormulaListPage() {
                   </Button>
                 )}
                 {has(FormulaPermission.DELETE) && (
-                  <Button
-                    size="sm"
-                    variant="danger"
-                    className=""
-                    onClick={handleBatchDelete}
-                  >
+                  <Button size="sm" variant="danger" onClick={handleBatchDelete}>
                     <Trash2 className="w-3.5 h-3.5 mr-1" /> 批量删除
                   </Button>
                 )}
@@ -1483,13 +1330,8 @@ export default function FormulaListPage() {
                     </Button>
                     <div className="absolute right-0 mt-1 w-44 bg-white dark:bg-neutral-800 rounded-lg shadow-lg border border-neutral-200 dark:border-neutral-700 py-1 z-50">
                       {STATUS_OPTIONS.map((opt) => (
-                        <button
-                          key={opt.value}
-                          className="w-full text-left px-3 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
-                          onClick={() => {
-                            handleBatchStatusChange(opt.value as FormulaStatus);
-                          }}
-                        >
+                        <button key={opt.value} className="w-full text-left px-3 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
+                          onClick={() => { handleBatchStatusChange(opt.value as FormulaStatus); }}>
                           {opt.label}
                         </button>
                       ))}
@@ -1510,11 +1352,7 @@ export default function FormulaListPage() {
               <AlertTitle>加载失败</AlertTitle>
               <AlertDescription className="flex items-center gap-2 mt-1.5">
                 <span>无法获取配方数据，请检查网络连接后重试</span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => qc.invalidateQueries({ queryKey: ['formulas-list'] })}
-                >
+                <Button variant="outline" size="sm" onClick={() => qc.invalidateQueries({ queryKey: ['formulas-list'] })}>
                   <RefreshCw className="w-3.5 h-3.5 mr-1" /> 重试
                 </Button>
               </AlertDescription>
@@ -1522,9 +1360,8 @@ export default function FormulaListPage() {
           )}
 
           {/* ── 主内容区域（响应式：移动端强制卡片视图）── */}
-          <Card className="transition-all duration-300 hover:shadow-xl shadow-md ring-1 ring-slate-200/60 dark:ring-slate-700/40 overflow-visible">
+          <Card className="transition-all duration-300 hover:shadow-xl shadow-md ring-1 ring-slate-200/60 dark:ring-slate-700/40 overflow-visible bg-white dark:bg-neutral-900">
             {isLoading ? (
-              /* 加载骨架屏 */
               viewMode === 'card' || isMobile ? (
                 <div className="p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                   {Array.from({ length: 6 }).map((_, i) => (
@@ -1544,16 +1381,22 @@ export default function FormulaListPage() {
                 </div>
               )
             ) : items.length === 0 ? (
-              /* 空状态 */
-              <div className="py-12 md:py-16">
+              /* 空状态 — 更精致的引导 */
+              <div className="py-16 md:py-20">
                 <EmptyState
-                  icon={<FlaskConical size={40} className="md:w-[48px] md:h-[48px]" />}
-                  title={hasActiveFilters ? '没有匹配的配方' : '暂无配方'}
-                  titleClassName="text-lg md:text-xl"
-                  description={
-                    hasActiveFilters ? '尝试调整搜索关键词或筛选条件' : '点击「新建配方」创建您的第一个药食同源配方'
+                  icon={
+                    <div className="w-16 h-16 md:w-[64px] md:h-[64px] rounded-2xl bg-gradient-to-br from-primary-100 to-indigo-100 dark:from-primary-900/30 dark:to-indigo-900/30 flex items-center justify-center">
+                      <FlaskConical size={32} className="md:w-[36px] md:h-[36px] text-primary-500 dark:text-primary-400" />
+                    </div>
                   }
-                  descriptionClassName="text-sm md:text-base"
+                  title={hasActiveFilters ? '没有匹配的配方' : '暂无配方'}
+                  titleClassName="text-xl md:text-2xl font-bold text-neutral-900 dark:text-white"
+                  description={
+                    hasActiveFilters
+                      ? '尝试调整搜索关键词或筛选条件，让数据重新显现'
+                      : '点击下方按钮创建您的第一个药食同源配方，开启智能配方设计之旅'
+                  }
+                  descriptionClassName="text-sm md:text-base text-neutral-500 dark:text-neutral-400 mt-2"
                   action={
                     hasActiveFilters ? (
                       <Button variant="secondary" onClick={clearAllFilters} className="min-h-[44px]">
@@ -1561,7 +1404,7 @@ export default function FormulaListPage() {
                       </Button>
                     ) : (
                       <Link to="/formulas/new">
-                        <Button icon={<Plus size={14} />} size="sm" className="min-h-[44px]">
+                        <Button icon={<Plus size={16} />} size="md" className="min-h-[44px] shadow-md hover:shadow-lg">
                           新建配方
                         </Button>
                       </Link>
@@ -1622,7 +1465,7 @@ export default function FormulaListPage() {
               <>
                 <div ref={parentRef} className="overflow-x-auto" style={{ maxHeight: '70vh' }}>
                   <table className="w-full text-sm" role="table" aria-label="配方列表">
-                    <thead className="sticky top-0 z-10 bg-slate-50 dark:bg-neutral-800/95 backdrop-blur-sm border-b border-neutral-200 dark:border-neutral-700 text-[13px] uppercase">
+                    <thead className="sticky top-0 z-10 bg-slate-50/90 dark:bg-neutral-800/95 backdrop-blur-sm border-b border-neutral-200 dark:border-neutral-700 text-[13px] uppercase">
                       <tr>
                         <th className="w-10 px-4 py-3">
                           <Checkbox
@@ -1639,13 +1482,7 @@ export default function FormulaListPage() {
                         >
                           <span className="inline-flex items-center">
                             名称{' '}
-                            <SortIcon
-                              field="name"
-                              primaryField={sortField}
-                              primaryDir={sortDir}
-                              secondaryField={secondarySort.field}
-                              secondaryDir={secondarySort.dir}
-                            />
+                            <SortIcon field="name" primaryField={sortField} primaryDir={sortDir} secondaryField={secondarySort.field} secondaryDir={secondarySort.dir} />
                           </span>
                         </th>
                         <th
@@ -1655,79 +1492,47 @@ export default function FormulaListPage() {
                         >
                           <span className="inline-flex items-center">
                             状态{' '}
-                            <SortIcon
-                              field="status"
-                              primaryField={sortField}
-                              primaryDir={sortDir}
-                              secondaryField={secondarySort.field}
-                              secondaryDir={secondarySort.dir}
-                            />
+                            <SortIcon field="status" primaryField={sortField} primaryDir={sortDir} secondaryField={secondarySort.field} secondaryDir={secondarySort.dir} />
                           </span>
                         </th>
-                        <th className="px-4 py-3 text-left font-semibold text-neutral-600 dark:text-neutral-400 hidden lg:table-cell">
-                          成分数量
-                        </th>
-                        <th className="px-4 py-3 text-left font-semibold text-neutral-600 dark:text-neutral-400 hidden xl:table-cell">
-                          创建者
-                        </th>
-                        <th className="px-4 py-3 text-left font-semibold text-neutral-600 dark:text-neutral-400 hidden xl:table-cell">
-                          关联实验
-                        </th>
+                        <th className="px-4 py-3 text-left font-semibold text-neutral-600 dark:text-neutral-400 hidden lg:table-cell">成分数量</th>
+                        <th className="px-4 py-3 text-left font-semibold text-neutral-600 dark:text-neutral-400 hidden xl:table-cell">创建者</th>
+                        <th className="px-4 py-3 text-left font-semibold text-neutral-600 dark:text-neutral-400 hidden xl:table-cell">关联实验</th>
                         <th
                           className="px-4 py-3 text-left font-semibold text-neutral-600 dark:text-neutral-400 hidden xl:table-cell cursor-pointer select-none hover:text-neutral-900 dark:hover:text-white transition-colors"
                           onClick={() => handleSort('created_at')}
-                          aria-sort={
-                            sortField === 'created_at' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'
-                          }
+                          aria-sort={sortField === 'created_at' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
                         >
                           <span className="inline-flex items-center">
                             创建日期{' '}
-                            <SortIcon
-                              field="created_at"
-                              primaryField={sortField}
-                              primaryDir={sortDir}
-                              secondaryField={secondarySort.field}
-                              secondaryDir={secondarySort.dir}
-                            />
+                            <SortIcon field="created_at" primaryField={sortField} primaryDir={sortDir} secondaryField={secondarySort.field} secondaryDir={secondarySort.dir} />
                           </span>
                         </th>
                         <th
                           className="px-4 py-3 text-left font-semibold text-neutral-600 dark:text-neutral-400 cursor-pointer select-none hover:text-neutral-900 dark:hover:text-white transition-colors"
                           onClick={() => handleSort('updated_at')}
-                          aria-sort={
-                            sortField === 'updated_at' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'
-                          }
+                          aria-sort={sortField === 'updated_at' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
                         >
                           <span className="inline-flex items-center">
                             更新日期{' '}
-                            <SortIcon
-                              field="updated_at"
-                              primaryField={sortField}
-                              primaryDir={sortDir}
-                              secondaryField={secondarySort.field}
-                              secondaryDir={secondarySort.dir}
-                            />
+                            <SortIcon field="updated_at" primaryField={sortField} primaryDir={sortDir} secondaryField={secondarySort.field} secondaryDir={secondarySort.dir} />
                           </span>
                         </th>
-                        <th className="px-4 py-3 text-center font-semibold text-neutral-600 dark:text-neutral-400 w-20">
-                          操作
-                        </th>
+                        <th className="px-4 py-3 text-center font-semibold text-neutral-600 dark:text-neutral-400 w-20">操作</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
                       {items.map((formula, idx) => {
                         const isSelected = selectedIds.has(formula.id);
                         const showMenu = actionMenuId === formula.id;
-
                         return (
                           <tr
                             key={formula.id}
-                            className={`group animate-in fade-in slide-in-from-4 duration-300 fill-mode-both hover:[&]:bg-slate-50/90 dark:hover:bg-neutral-800/50 [&]:transition-colors [&]:duration-150 ${
-                              isSelected
-                                ? 'bg-primary-50/60 dark:bg-primary-950/20 ring-1 ring-primary-200 dark:ring-primary-800'
-                                : ''
-                            }`}
-                            style={{ animationDelay: `${Math.min(idx * 25, 250)}ms` }}
+                            className={cn(
+                              'group transition-all duration-150 hover:bg-slate-50/80 dark:hover:bg-neutral-800/40',
+                              isSelected && 'bg-primary-50/60 dark:bg-primary-950/20 ring-1 ring-primary-200 dark:ring-primary-800',
+                            )}
+                            style={{ animationDelay: `${Math.min(idx * 20, 200)}ms` }}
                           >
                             <td className="px-4 py-3">
                               <Checkbox
@@ -1739,22 +1544,12 @@ export default function FormulaListPage() {
                             <td className="px-4 py-3">
                               <div className="flex items-center gap-2">
                                 <button onClick={() => toggleFavoriteItem(formula.id)} className="shrink-0" aria-label={favorites.has(formula.id) ? '取消收藏' : '收藏'} aria-pressed={favorites.has(formula.id)}>
-                                  <Star
-                                    size={14}
-                                    className={
-                                      favorites.has(formula.id) ? 'fill-amber-400 text-warning-400' : 'text-neutral-300'
-                                    }
-                                  />
+                                  <Star size={14} className={favorites.has(formula.id) ? 'fill-amber-400 text-warning-400' : 'text-neutral-300 dark:text-neutral-600 hover:text-amber-400 transition-colors'} />
                                 </button>
-                                <Link
-                                  to={`/formulas/${formula.id}`}
-                                  className="font-medium text-neutral-900 dark:text-white hover:text-primary-600 transition-colors truncate max-w-[180px]"
-                                >
+                                <Link to={`/formulas/${formula.id}`} className="font-medium text-neutral-900 dark:text-white hover:text-primary-600 dark:hover:text-primary-400 transition-colors truncate max-w-[180px]">
                                   <Highlight text={formula.name} keyword={debouncedSearch} />
                                 </Link>
-                                <Badge variant="neutral" size="sm" className="text-[10px]">
-                                  v{formula.version}
-                                </Badge>
+                                <Badge variant="neutral" size="sm" className="text-[10px]">v{formula.version}</Badge>
                               </div>
                             </td>
                             <td className="px-4 py-3">
@@ -1771,11 +1566,7 @@ export default function FormulaListPage() {
                             </td>
                             <td className="px-4 py-3 text-neutral-500 dark:text-neutral-400">
                               {formula.experimentIds && formula.experimentIds.length > 0 ? (
-                                <Link
-                                  to={`/experiments?formula_id=${formula.id}`}
-                                  className="inline-flex items-center gap-1 text-xs text-violet-600 dark:text-violet-400 hover:underline"
-                                  onClick={(e) => e.stopPropagation()}
-                                >
+                                <Link to={`/experiments?formula_id=${formula.id}`} className="inline-flex items-center gap-1 text-xs text-violet-600 dark:text-violet-400 hover:underline" onClick={(e) => e.stopPropagation()}>
                                   <TestTubes size={12} />
                                   {formula.experimentIds.length} 个实验
                                 </Link>
@@ -1805,73 +1596,42 @@ export default function FormulaListPage() {
                                   >
                                     <div className="absolute -top-1.5 right-3 w-2.5 h-2.5 bg-white dark:bg-neutral-800 border-l border-t border-neutral-200 dark:border-neutral-700 rotate-45 shadow-sm" />
 
-                                    <button
-                                      className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
-                                      onClick={() => {
-                                        navigate(`/formulas/${formula.id}`);
-                                        setActionMenuId(null);
-                                      }}
-                                    >
+                                    <button className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
+                                      onClick={() => { navigate(`/formulas/${formula.id}`); setActionMenuId(null); }}>
                                       <FileText className="w-4 h-4 text-neutral-400" /> 查看详情
                                     </button>
 
                                     {has(FormulaPermission.EDIT) && (
-                                      <button
-                                        className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-slate-50 dark:hover:bg-neutral-700/50 transition-colors"
-                                        onClick={() => {
-                                          navigate(`/formulas/${formula.id}/edit`);
-                                          setActionMenuId(null);
-                                        }}
-                                      >
+                                      <button className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-slate-50 dark:hover:bg-neutral-700/50 transition-colors"
+                                        onClick={() => { navigate(`/formulas/${formula.id}/edit`); setActionMenuId(null); }}>
                                         <Edit3 className="w-4 h-4 text-neutral-400" /> 编辑
                                       </button>
                                     )}
 
                                     {has(FormulaPermission.CREATE) && (
-                                      <button
-                                        className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-slate-50 dark:hover:bg-neutral-700/50 transition-colors"
-                                        onClick={() => {
-                                          handleDuplicate(formula);
-                                          setActionMenuId(null);
-                                        }}
-                                      >
+                                      <button className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-slate-50 dark:hover:bg-neutral-700/50 transition-colors"
+                                        onClick={() => { handleDuplicate(formula); setActionMenuId(null); }}>
                                         <Copy className="w-4 h-4 text-neutral-400" /> 复制
                                       </button>
                                     )}
 
                                     {has(FormulaPermission.EXPORT) && (
-                                      <button
-                                        className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-slate-50 dark:hover:bg-neutral-700/50 transition-colors"
-                                        onClick={() => {
-                                          handleExportSingle(formula);
-                                          setActionMenuId(null);
-                                        }}
-                                      >
+                                      <button className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-slate-50 dark:hover:bg-neutral-700/50 transition-colors"
+                                        onClick={() => { handleExportSingle(formula); setActionMenuId(null); }}>
                                         <Download className="w-4 h-4 text-neutral-400" /> 导出单个
                                       </button>
                                     )}
 
-                                    {/* 关联实验入口 */}
-                                    <button
-                                      className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-slate-50 dark:hover:bg-neutral-700/50 transition-colors"
-                                      onClick={() => {
-                                        navigate(`/experiments/new?formula_id=${formula.id}`);
-                                        setActionMenuId(null);
-                                      }}
-                                    >
+                                    <button className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-slate-50 dark:hover:bg-neutral-700/50 transition-colors"
+                                      onClick={() => { navigate(`/experiments/new?formula_id=${formula.id}`); setActionMenuId(null); }}>
                                       <TestTubes className="w-4 h-4 text-neutral-400" /> 关联实验
                                     </button>
 
                                     {has(FormulaPermission.DELETE) && (
                                       <>
                                         <div className="my-1 mx-3 border-t border-neutral-100 dark:border-neutral-700" />
-                                        <button
-                                          className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-error-600 hover:bg-error-50 dark:hover:bg-error-900/20 transition-colors"
-                                          onClick={() => {
-                                            setDeleteConfirmId(formula.id);
-                                            setActionMenuId(null);
-                                          }}
-                                        >
+                                        <button className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-error-600 hover:bg-error-50 dark:hover:bg-error-900/20 transition-colors"
+                                          onClick={() => { setDeleteConfirmId(formula.id); setActionMenuId(null); }}>
                                           <Trash2 className="w-4 h-4" /> 删除
                                         </button>
                                       </>
@@ -1887,79 +1647,39 @@ export default function FormulaListPage() {
                   </table>
                 </div>
 
-                {/* ── 分页组件（响应式）── */}
+                {/* ── 分页组件 ── */}
                 {totalPages > 1 && (
                   <div className="px-4 md:px-6 py-3 md:py-4 border-t border-neutral-200/80 dark:border-neutral-700/60 flex flex-col sm:flex-row items-center justify-between gap-3 bg-gradient-to-r from-slate-50 to-slate-50/80 dark:from-slate-800/50 dark:to-slate-800/30">
                     <p className="text-xs text-neutral-500 dark:text-neutral-400 order-2 sm:order-1">
-                      <span className="sm:hidden">
-                        第 {page}/{totalPages} 页
-                      </span>
+                      <span className="sm:hidden">第 {page}/{totalPages} 页</span>
                       <span className="hidden sm:inline">
-                        显示第
-                        <span className="font-medium text-neutral-700 dark:text-neutral-300">
-                          {(page - 1) * pageSize + 1}
-                        </span>
-                        -
-                        <span className="font-medium text-neutral-700 dark:text-neutral-300">
-                          {Math.min(page * pageSize, total)}
-                        </span>{' '}
-                        条，共<span className="font-medium text-neutral-700 dark:text-neutral-300">{total}</span> 条
+                        显示第<span className="font-medium text-neutral-700 dark:text-neutral-300">{(page - 1) * pageSize + 1}</span>
+                        -<span className="font-medium text-neutral-700 dark:text-neutral-300">{Math.min(page * pageSize, total)}</span>
+                        {' '}条，共<span className="font-medium text-neutral-700 dark:text-neutral-300">{total}</span> 条
                       </span>
                     </p>
                     <div className="flex items-center gap-2 sm:gap-3 order-1 sm:order-2 w-full sm:w-auto justify-between sm:justify-end">
-                      {/* 移动端：简化分页按钮 */}
                       <div className="flex sm:hidden items-center gap-2 w-full">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setPage(Math.max(1, page - 1))}
-                          disabled={page <= 1}
-                          className="flex-1 min-h-[44px]"
-                          icon={<ChevronLeft size={16} />}
-                        >
+                        <Button variant="outline" size="sm" onClick={() => setPage(Math.max(1, page - 1))} disabled={page <= 1} className="flex-1 min-h-[44px]" icon={<ChevronLeft size={16} />}>
                           上一页
                         </Button>
                         <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300 min-w-[60px] text-center tabular-nums">
                           {page}/{totalPages}
                         </span>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setPage(Math.min(totalPages, page + 1))}
-                          disabled={page >= totalPages}
-                          className="flex-1 min-h-[44px]"
-                          icon={<ChevronRight size={16} />}
-                        >
+                        <Button variant="outline" size="sm" onClick={() => setPage(Math.min(totalPages, page + 1))} disabled={page >= totalPages} className="flex-1 min-h-[44px]" icon={<ChevronRight size={16} />}>
                           下一页
                         </Button>
                       </div>
-
-                      {/* 桌面端：完整分页 */}
                       <div className="hidden sm:flex items-center gap-3">
-                        {/* 页码快速跳转 */}
                         <div className="hidden md:flex items-center gap-2">
                           <span className="text-xs text-neutral-500">跳至</span>
-                          <input
-                            type="number"
-                            min={1}
-                            max={totalPages}
-                            value={page}
-                            onChange={(e) => {
-                              const val = Math.min(Math.max(1, Number(e.target.value)), totalPages);
-                              if (!isNaN(val)) setPage(val);
-                            }}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
-                                const val = Math.min(Math.max(1, Number(e.currentTarget.value)), totalPages);
-                                if (!isNaN(val)) setPage(val);
-                              }
-                            }}
+                          <input type="number" min={1} max={totalPages} value={page}
+                            onChange={(e) => { const val = Math.min(Math.max(1, Number(e.target.value)), totalPages); if (!isNaN(val)) setPage(val); }}
+                            onKeyDown={(e) => { if (e.key === 'Enter') { const val = Math.min(Math.max(1, Number(e.currentTarget.value)), totalPages); if (!isNaN(val)) setPage(val); } }}
                             className="w-14 px-2 py-1 text-xs border border-neutral-200 dark:border-neutral-700 rounded bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 text-center focus:ring-2 focus:ring-primary-200 outline-none"
                           />
                           <span className="text-xs text-neutral-500">/{totalPages}</span>
                         </div>
-
-                        {/* 分页按钮组 */}
                         <Pagination page={page} pageSize={pageSize} total={total} onPageChange={setPage} />
                       </div>
                     </div>
@@ -1967,6 +1687,107 @@ export default function FormulaListPage() {
                 )}
               </>
             )}
+          </Card>
+        </div>
+
+        {/* ═══════════════ 右侧：最近配方预览 + 导入导出 ═══════════════ */}
+        <div className="lg:col-span-3 space-y-4">
+          {/* 最近配方 */}
+          <Card className="overflow-hidden border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-900">
+            <CardHeader className="px-5 pt-5 pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle as="h3" className="text-sm font-semibold text-neutral-800 dark:text-neutral-200 flex items-center gap-2">
+                  <Clock size={13} className="text-neutral-400" />
+                  最近更新
+                </CardTitle>
+                <Link to="/formulas" className="text-xs text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 flex items-center gap-1 transition-colors">
+                  全部 <ArrowRight size={11} />
+                </Link>
+              </div>
+            </CardHeader>
+            <CardContent className="px-0 pb-4 pt-0">
+              {recentFormulas.length === 0 ? (
+                <div className="px-5 py-8 text-center text-neutral-400 dark:text-neutral-500 text-xs">
+                  暂无最近配方
+                </div>
+              ) : (
+                <div className="divide-y divide-slate-100 dark:divide-slate-800/40">
+                  {recentFormulas.slice(0, 5).map((f) => (
+                    <Link key={f.id} to={`/formulas/${f.id}`} className="block px-5 py-2.5 hover:bg-slate-50 dark:hover:bg-neutral-800/40 transition-colors cursor-pointer">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-medium text-neutral-900 dark:text-white truncate">
+                            <Highlight text={f.name} keyword={debouncedSearch} />
+                          </p>
+                          <p className="text-[11px] text-neutral-400 mt-0.5">
+                            {f.code} · {formatDate(f.updatedAt)}
+                          </p>
+                        </div>
+                        <StatusBadge status={f.status} size="sm" />
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* 导入导出 */}
+          <Card className="overflow-hidden border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-900">
+            <CardHeader className="px-5 pt-5 pb-3">
+              <CardTitle as="h3" className="text-sm font-semibold text-neutral-800 dark:text-neutral-200 flex items-center gap-2">
+                <Download size={13} className="text-neutral-400" />
+                导入导出
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="px-5 pb-5 pt-0 space-y-2">
+              <button
+                onClick={() => {
+                  const input = document.createElement('input');
+                  input.type = 'file';
+                  input.accept = '.json,.csv';
+                  input.onchange = async (e) => {
+                    const target = e.target as HTMLInputElement;
+                    if (target.files?.[0]) {
+                      try {
+                        await formulaApi.importFormulas({ file: target.files[0], mode: 'all' });
+                        qc.invalidateQueries({ queryKey: ['formulas-list'] });
+                      } catch (err) {
+                        logger.error('导入失败:', err);
+                      }
+                    }
+                  };
+                  input.click();
+                }}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg border border-neutral-100 dark:border-neutral-800 hover:border-primary-200 dark:hover:border-primary-800/60 hover:bg-primary-50/50 dark:hover:bg-primary-900/10 transition-colors text-left"
+              >
+                <div className="w-7 h-7 rounded-md bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center shrink-0">
+                  <Download size={13} className="text-primary-600 dark:text-primary-400" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium text-neutral-900 dark:text-white">导入配方</p>
+                  <p className="text-[11px] text-neutral-400 mt-0.5">JSON / CSV 格式</p>
+                </div>
+              </button>
+
+              <button
+                onClick={() => {
+                  const selected = items.filter((f) => selectedIds.has(f.id));
+                  exportFormulasCSV(selected.length > 0 ? selected : items);
+                }}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg border border-neutral-100 dark:border-neutral-800 hover:border-violet-200 dark:hover:border-violet-800/60 hover:bg-violet-50/50 dark:hover:bg-violet-900/10 transition-colors text-left"
+              >
+                <div className="w-7 h-7 rounded-md bg-violet-50 dark:bg-violet-900/30 flex items-center justify-center shrink-0">
+                  <Download size={13} className="text-violet-600 dark:text-violet-400" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium text-neutral-900 dark:text-white">导出 CSV</p>
+                  <p className="text-[11px] text-neutral-400 mt-0.5">
+                    {selectedIds.size > 0 ? `已选 ${selectedIds.size} 条` : '全部数据'}
+                  </p>
+                </div>
+              </button>
+            </CardContent>
           </Card>
         </div>
       </div>
@@ -1979,27 +1800,17 @@ export default function FormulaListPage() {
       />
 
       {/* ── 删除确认对话框 ── */}
-      <Modal open={!!deleteConfirmId} onClose={() => setDeleteConfirmId(null)} title="确认删除" size="sm">
+      <Modal open={!!deleteConfirmId} onClose={() => setDeleteConfirmId(null)} title="确认删除">
         {deleteConfirmId && (
           <div className="space-y-4">
             <p className="text-sm leading-relaxed text-neutral-600 dark:text-neutral-300">
               确定要删除该配方吗？此操作将永久删除该配方及其相关数据，删除后无法恢复。
             </p>
             <div className="flex items-center gap-2 pt-1">
-              <Button
-                variant="danger"
-                size="sm"
-                onClick={() => handleDelete(deleteConfirmId)}
-                className="flex-1 min-h-[44px]"
-              >
+              <Button variant="danger" size="sm" onClick={() => handleDelete(deleteConfirmId)} className="flex-1 min-h-[44px]">
                 <Trash2 className="w-4 h-4 mr-1.5" /> 确认删除
               </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setDeleteConfirmId(null)}
-                className="flex-1 min-h-[44px]"
-              >
+              <Button variant="ghost" size="sm" onClick={() => setDeleteConfirmId(null)} className="flex-1 min-h-[44px]">
                 取消
               </Button>
             </div>
@@ -2037,4 +1848,3 @@ export default function FormulaListPage() {
     </div>
   );
 }
-

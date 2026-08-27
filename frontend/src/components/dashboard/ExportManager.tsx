@@ -188,7 +188,7 @@ export function ExportManager({ data, className }: ExportManagerProps) {
             <div className="space-y-4">
               <div>
                 <label>导出格式</label>
-                <Select value={exportFormat} onChange={(e) => setExportFormat(e.target.value)}>
+                <Select value={exportFormat} onChange={(v) => setExportFormat(v)}>
                   <option value="csv">CSV (逗号分隔值)</option>
                   <option value="xlsx">Excel (.xlsx)</option>
                   <option value="pdf">PDF (文档)</option>
@@ -215,9 +215,9 @@ export function ExportManager({ data, className }: ExportManagerProps) {
                       <label>分隔符</label>
                       <Select
                         value={exportOptions.csvOptions.delimiter}
-                        onChange={(e) => setExportOptions(prev => ({
+                        onChange={(v) => setExportOptions(prev => ({
                           ...prev,
-                          csvOptions: { ...prev.csvOptions, delimiter: e.target.value },
+                          csvOptions: { ...prev.csvOptions, delimiter: v },
                         }))}
                       >
                         <option value=",">逗号 (,)</option>
@@ -255,9 +255,9 @@ export function ExportManager({ data, className }: ExportManagerProps) {
                       <label>页面大小</label>
                       <Select
                         value={exportOptions.pdfOptions.pageSize}
-                        onChange={(e) => setExportOptions(prev => ({
+                        onChange={(v) => setExportOptions(prev => ({
                           ...prev,
-                          pdfOptions: { ...prev.pdfOptions, pageSize: e.target.value },
+                          pdfOptions: { ...prev.pdfOptions, pageSize: v },
                         }))}
                       >
                         <option value="a4">A4</option>
@@ -268,9 +268,9 @@ export function ExportManager({ data, className }: ExportManagerProps) {
                       <label>页面方向</label>
                       <Select
                         value={exportOptions.pdfOptions.orientation}
-                        onChange={(e) => setExportOptions(prev => ({
+                        onChange={(v) => setExportOptions(prev => ({
                           ...prev,
-                          pdfOptions: { ...prev.pdfOptions, orientation: e.target.value },
+                          pdfOptions: { ...prev.pdfOptions, orientation: v },
                         }))}
                       >
                         <option value="portrait">纵向</option>

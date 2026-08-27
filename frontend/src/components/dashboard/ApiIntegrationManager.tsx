@@ -370,7 +370,7 @@ export function ApiIntegrationManager({ className }: ApiIntegrationManagerProps)
                   <label>集成类型</label>
                   <Select
                     value={newIntegration.type}
-                    onChange={(e) => setNewIntegration(prev => ({ ...prev, type: e.target.value as IntegrationType }))}
+                    onChange={(v) => setNewIntegration(prev => ({ ...prev, type: v as IntegrationType }))}
                   >
                     <option value="rest">REST API</option>
                     <option value="graphql">GraphQL</option>
@@ -402,7 +402,7 @@ export function ApiIntegrationManager({ className }: ApiIntegrationManagerProps)
                 <label>认证类型</label>
                 <Select
                   value={newIntegration.authType}
-                  onChange={(e) => setNewIntegration(prev => ({ ...prev, authType: e.target.value as AuthType }))}
+                  onChange={(v) => setNewIntegration(prev => ({ ...prev, authType: v as AuthType }))}
                 >
                   <option value="none">无认证</option>
                   <option value="api_key">API Key</option>
@@ -647,7 +647,7 @@ export function ApiIntegrationManager({ className }: ApiIntegrationManagerProps)
                     <label>集成名称</label>
                     <Input
                       value={editingIntegration.name}
-                      onChange={(e) => setEditingIntegration(prev => prev ? { ...prev, name: e.target.value } : null)}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditingIntegration(prev => prev ? { ...prev, name: e.target.value } : null)}
                       placeholder="输入集成名称"
                     />
                   </div>
@@ -655,7 +655,7 @@ export function ApiIntegrationManager({ className }: ApiIntegrationManagerProps)
                     <label>集成类型</label>
                     <Select
                       value={editingIntegration.type}
-                      onChange={(e) => setEditingIntegration(prev => prev ? { ...prev, type: e.target.value as IntegrationType } : null)}
+                      onChange={(v) => setEditingIntegration(prev => prev ? { ...prev, type: v as IntegrationType } : null)}
                     >
                       <option value="rest">REST API</option>
                       <option value="graphql">GraphQL</option>
@@ -687,7 +687,7 @@ export function ApiIntegrationManager({ className }: ApiIntegrationManagerProps)
                   <label>认证类型</label>
                   <Select
                     value={editingIntegration.authType}
-                    onChange={(e) => setEditingIntegration(prev => prev ? { ...prev, authType: e.target.value as AuthType } : null)}
+                    onChange={(v) => setEditingIntegration(prev => prev ? { ...prev, authType: v as AuthType } : null)}
                   >
                     <option value="none">无认证</option>
                     <option value="api_key">API Key</option>

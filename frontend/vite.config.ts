@@ -4,6 +4,48 @@ import tailwindcss from '@tailwindcss/vite';
 import path from 'path';
 import { visualizer } from 'rollup-plugin-visualizer';
 
+/**
+ * SPA fallback 插件 — 开发环境下所有未匹配的请求返回 index.html，
+ * 让 React Router 处理客户端路由（防止 /api-docs 等路径返回 404）
+ */
+function createSpaFallbackPlugin(): Plugin {
+  return {
+    name: 'vite-spa-fallback',
+    configureServer(server) {
+      server.middlewares.use(async (req, res, next) => {
+        const url = req.url || '/';
+        // 不拦截：Vite 内部路径、静态资源、真实 API 路径、后端专属路径
+        if (
+          url.startsWith('/@') ||
+          url.startsWith('/node_modules') ||
+          url.startsWith('/api/') ||       // 只排除 /api/ 开头的真实 API 调用，不拦截 /api-docs
+          url.startsWith('/health') ||
+          url.startsWith('/docs') ||
+          url.startsWith('/redoc') ||
+          url.includes('.')               // 带扩展名的请求（JS/CSS/图片等静态资源）
+        ) {
+          return next();
+        }
+        try {
+          // 读取真实的 index.html
+          const indexHtmlPath = server.config.root ? `${server.config.root}/index.html` : 'index.html';
+          const fs = require('fs');
+          let html = fs.readFileSync(indexHtmlPath, 'utf-8');
+          html = await server.transformIndexHtml(url, html);
+          res.statusCode = 200;
+          res.setHeader('Content-Type', 'text/html; charset=utf-8');
+          res.end(html);
+        } catch (e) {
+          // 如果变换失败，返回空页面
+          res.statusCode = 200;
+          res.setHeader('Content-Type', 'text/html; charset=utf-8');
+          res.end('<!doctype html><html lang="zh-CN"><head><meta charset="UTF-8"/></head><body><div id="root"></div></body></html>');
+        }
+      });
+    },
+  };
+}
+
 function createProcessPolyfillPlugin(): Plugin {
   const processPolyfill = `
     (typeof window !== 'undefined' ? window : typeof globalThis !== 'undefined' ? globalThis : {}).process =
@@ -109,6 +151,7 @@ export default defineConfig(({ mode }) => {
       'process.node': 'false',
     },
     plugins: [
+      createSpaFallbackPlugin(),
       createProcessPolyfillPlugin(),
       createEsbuildCompatPlugin(),
       react({
@@ -136,6 +179,7 @@ export default defineConfig(({ mode }) => {
     server: {
       host: '0.0.0.0',
       port: parseInt(process.env.VITE_PORT || '3000', 10),
+      allowedHosts: ['agnet.ltd', 'www.agnet.ltd'],
       proxy: {
         '/api': {
           target: backendUrl,

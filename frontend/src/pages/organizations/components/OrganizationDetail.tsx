@@ -22,7 +22,7 @@ import {
 import { cn } from '@/lib/utils';
 import { useOrganizationDetail, type Member, type Team, type Role } from '@/hooks/useOrganizationDetail';
 import { Modal } from '@/components/ui/Modal';
-import { Skeleton, CardSkeleton } from '@/components/ui/Skeleton';
+import { Skeleton, CardSkeleton } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
 
 const OverviewTab = lazy(() => import('./detail/OverviewTab'));

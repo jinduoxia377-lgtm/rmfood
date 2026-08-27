@@ -216,7 +216,7 @@ export function ChangeHistory({ dashboardId, className }: ChangeHistoryProps) {
           <div className="w-[120px]">
             <Select
               value={filterAction}
-              onChange={(e) => setFilterAction(e.target.value)}
+              onChange={(v) => setFilterAction(v)}
               className="w-full"
             >
               <option value="all">所有操作</option>
@@ -230,7 +230,7 @@ export function ChangeHistory({ dashboardId, className }: ChangeHistoryProps) {
           <div className="w-[120px]">
             <Select
               value={filterUser}
-              onChange={(e) => setFilterUser(e.target.value)}
+              onChange={(v) => setFilterUser(v)}
               className="w-full"
             >
               <option value="all">所有用户</option>

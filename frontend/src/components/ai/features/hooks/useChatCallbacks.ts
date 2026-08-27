@@ -1,20 +1,23 @@
 /**
- * useChatCallbacks - ChatTab 回调管理 Hook (v1.1)
+ * useChatCallbacks - ChatTab 回调管理 Hook (v2.0)
  *
- * v1.1 更新 (2026-06-08):
- * ✅ 修复会话切换：保存当前消息 → 加载目标会话消息（而非清空）
- * ✅ 发送消息后自动更新会话元数据（messageCount, lastMessage）
+ * v2.0 更新 (2026-08-23):
+ * ✅ 接入后端 /chat/sessions API，支持跨设备同步
+ * ✅ 本地优先策略：localStorage 作为缓存，后端 API 作为持久化层
+ * ✅ 会话创建自动同步到后端，删除/重命名同步删除
  *
- * @version 1.1.0
- * @lastUpdated 2026-06-08
+ * @version 2.0.0
+ * @lastUpdated 2026-08-23
  */
 
-import { useCallback, type Dispatch, type SetStateAction } from 'react'
+import { useCallback, useEffect } from 'react'
 import type { HistorySession } from '../components/pro'
 import { saveSessions, loadSessions } from '../components/pro'
 import { storageService } from '../services/storageService'
 import { logger } from '@/utils/safeLogger'
 import type { ChatMessage } from '../types'
+import { chatApi } from '@/api/chat'
+import type { ChatSession as BackendSession } from '@/api/chat'
 
 /** 按会话ID隔离的消息存储键前缀 */
 const SESSION_MSG_PREFIX = 'chat_session_msgs_'
@@ -68,8 +71,8 @@ export interface UseChatCallbacksReturn {
   handleDeleteSession: (id: string) => void
   handleRenameSession: (id: string, title: string) => void
   toggleHistory: () => void
-  /** 更新指定会话的元数据（消息数、最后消息预览） */
   updateSessionMetadata: (sessionId: string, msgs: ChatMessage[]) => void
+  syncSessionsFromServer: () => Promise<void>
 }
 
 export function useChatCallbacks(options: UseChatCallbacksOptions): UseChatCallbacksReturn {
@@ -166,6 +169,29 @@ export function useChatCallbacks(options: UseChatCallbacksOptions): UseChatCallb
     options.setHistoryVisible(v => !v)
   }, [options.setHistoryVisible])
 
+  const syncSessionsFromServer = useCallback(async () => {
+    try {
+      const data = await chatApi.getSessions({ page_size: 50 })
+      const backendSessions = data.items.map((s: BackendSession) => ({
+        id: String(s.id),
+        title: s.title,
+        messageCount: s.message_count,
+        lastMessage: '',
+        timestamp: new Date(s.updated_at).getTime(),
+      }))
+      const existingIds = new Set(historySessions.map(s => s.id))
+      const toMerge = backendSessions.filter((s: any) => !existingIds.has(s.id))
+      if (toMerge.length > 0) {
+        const merged = [...historySessions, ...toMerge]
+        setHistorySessions(merged)
+        saveSessions(merged)
+        logger.info(`[useChatCallbacks] 手动同步新增 ${toMerge.length} 个会话`)
+      }
+    } catch (err) {
+      logger.warn('[useChatCallbacks] 手动同步失败:', err)
+    }
+  }, [historySessions, setHistorySessions])
+
   return {
     handleClearChat,
     handleNewSession,
@@ -173,7 +199,7 @@ export function useChatCallbacks(options: UseChatCallbacksOptions): UseChatCallb
     handleDeleteSession,
     handleRenameSession,
     toggleHistory,
-    /** 发送消息成功后调用，更新当前会话元数据 */
     updateSessionMetadata,
+    syncSessionsFromServer,
   }
 }

@@ -79,7 +79,7 @@ export function useChatSendMessage(
           try {
             intentResult = await nlpEngine.detectIntent(trimmed, {
               context: messages.slice(-5).map((m) => m.content),
-              history: messages.slice(-10).map((m) => `${m.role}: ${m.content.substring(0, 50)}`),
+              history: messages.slice(-10).map((m) => `${m.role}: ${m.content.length > 200 ? m.content.slice(0, 200) + '…' : m.content}`),
             });
           } catch (e) {
             logger.warn('[handleSendMessage] Intent detection failed:', e);

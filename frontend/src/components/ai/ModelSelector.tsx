@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 模型选择与参数调节组件
  * 允许用户选择不同的模型和调节模型参数
  */
@@ -95,7 +95,7 @@ export function ModelSelector({ modelType, onModelChange, onParamsChange, classN
       <div className="mt-4 space-y-4">
         <div className="space-y-2">
           <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 block">模型类型</label>
-          <Select value={modelType} onChange={(e) => onModelChange(e.target.value as ModelType)}>
+          <Select value={modelType} onChange={(v) => onModelChange(v as ModelType)}>
             {modelOptions.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label} - {option.description}

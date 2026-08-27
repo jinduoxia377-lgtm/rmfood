@@ -14,6 +14,9 @@ const badgeVariants = cva(
         success: 'border-transparent bg-success text-success-foreground',
         warning: 'border-transparent bg-warning text-warning-foreground',
         info: 'border-transparent bg-blue-500 text-white',
+        danger: 'border-transparent bg-red-500 text-white',
+        neutral: 'border-transparent bg-neutral-200 dark:bg-neutral-700 text-neutral-800 dark:text-neutral-200',
+        primary: 'border-transparent bg-primary text-primary-foreground',
       },
     },
     defaultVariants: {
@@ -22,12 +25,13 @@ const badgeVariants = cva(
   }
 )
 
+export type BadgeVariant = NonNullable<VariantProps<typeof badgeVariants>['variant']>
+
 export interface BadgeProps
   extends React.HTMLAttributes<HTMLSpanElement>,
     VariantProps<typeof badgeVariants> {
   dot?: boolean
   icon?: React.ReactNode
-  variant?: string
   size?: string
 }
 

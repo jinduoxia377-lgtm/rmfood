@@ -257,7 +257,7 @@ export function TeamDashboardShare({ dashboard, onUpdate, className }: TeamDashb
                   <label className="text-sm font-medium mb-1 block">访问权限</label>
                   <Select
                     value={newUserAccess}
-                    onChange={(e) => setNewUserAccess(e.target.value as AccessLevel)}
+                    onChange={(v) => setNewUserAccess(v as AccessLevel)}
                   >
                     <option value="view">查看 - 仅能查看仪表板内容</option>
                     <option value="edit">编辑 - 可修改仪表板内容</option>

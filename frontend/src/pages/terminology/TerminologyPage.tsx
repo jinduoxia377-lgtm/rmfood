@@ -46,7 +46,7 @@ export default function TerminologyPage() {
               variant="secondary"
               size="sm"
               icon={<RefreshCw size={14} />}
-              onClick={() => queryClient.invalidateQueries({ queryKey: ['terminology-statistics'] })}
+              onClick={() => useQueryClient().invalidateQueries({ queryKey: ['terminology-statistics'] })}
             >
               刷新数据
             </Button>
@@ -259,7 +259,7 @@ function CategoryManagementTab() {
   const createMutation = useMutation({
     mutationFn: terminologyApi.createCategory,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['terminology-categories'] })
+      useQueryClient().invalidateQueries({ queryKey: ['terminology-categories'] })
       setShowCreateModal(false)
     },
   })
@@ -268,7 +268,7 @@ function CategoryManagementTab() {
     mutationFn: ({ id, data }: { id: number; data: any }) =>
       terminologyApi.updateCategory(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['terminology-categories'] })
+      useQueryClient().invalidateQueries({ queryKey: ['terminology-categories'] })
       setEditingCategory(null)
     },
   })
@@ -276,7 +276,7 @@ function CategoryManagementTab() {
   const deleteMutation = useMutation({
     mutationFn: terminologyApi.deleteCategory,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['terminology-categories'] })
+      useQueryClient().invalidateQueries({ queryKey: ['terminology-categories'] })
     },
   })
 
@@ -293,7 +293,7 @@ function CategoryManagementTab() {
       {isLoading ? (
         <Card>
           <CardContent className="p-0">
-            <TableSkeleton rows={5} cols={4} />
+            <TableSkeleton rows={5} columns={4} />
           </CardContent>
         </Card>
       ) : categories.length === 0 ? (
@@ -448,7 +448,7 @@ function TermManagementTab() {
   const createMutation = useMutation({
     mutationFn: terminologyApi.createTerm,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['terminology-terms'] })
+      useQueryClient().invalidateQueries({ queryKey: ['terminology-terms'] })
       setShowCreateModal(false)
     },
   })
@@ -456,7 +456,7 @@ function TermManagementTab() {
   const deleteMutation = useMutation({
     mutationFn: terminologyApi.deleteTerm,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['terminology-terms'] })
+      useQueryClient().invalidateQueries({ queryKey: ['terminology-terms'] })
     },
   })
 
@@ -494,7 +494,7 @@ function TermManagementTab() {
             <option key={cat.id} value={cat.id}>{cat.name}</option>
           ))}
         </select>
-        <Button variant="secondary" size="sm" onClick={() => queryClient.invalidateQueries({ queryKey: ['terminology-terms'] })}>
+        <Button variant="secondary" size="sm" onClick={() => useQueryClient().invalidateQueries({ queryKey: ['terminology-terms'] })}>
           <RefreshCw className="w-4 h-4" />
         </Button>
       </div>
@@ -503,7 +503,7 @@ function TermManagementTab() {
       {isLoading ? (
         <Card>
           <CardContent className="p-0">
-            <TableSkeleton rows={5} cols={6} />
+            <TableSkeleton rows={5} columns={6} />
           </CardContent>
         </Card>
       ) : terms.length === 0 ? (
@@ -777,7 +777,7 @@ function RulesTab() {
   const createMutation = useMutation({
     mutationFn: terminologyApi.createNormalizationRule,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['terminology-rules'] })
+      useQueryClient().invalidateQueries({ queryKey: ['terminology-rules'] })
       setShowCreateModal(false)
     },
   })
@@ -785,7 +785,7 @@ function RulesTab() {
   const deleteMutation = useMutation({
     mutationFn: terminologyApi.deleteNormalizationRule,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['terminology-rules'] })
+      useQueryClient().invalidateQueries({ queryKey: ['terminology-rules'] })
     },
   })
 
@@ -802,7 +802,7 @@ function RulesTab() {
       {isLoading ? (
         <Card>
           <CardContent className="p-0">
-            <TableSkeleton rows={5} cols={6} />
+            <TableSkeleton rows={5} columns={6} />
           </CardContent>
         </Card>
       ) : rules.length === 0 ? (

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * TemplateGallery - 行业模板库展示组件
  *
  * 提供完整的模板浏览和管理功能：
@@ -247,7 +247,7 @@ export function TemplateGallery({ onTemplateUse, onTemplateFavorite, className =
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
             <Input
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
               placeholder="搜索模板名称、描述或标签..."
               className="pl-9"
@@ -257,8 +257,8 @@ export function TemplateGallery({ onTemplateUse, onTemplateFavorite, className =
           {/* 分类筛选 */}
           <Select
             value={categoryFilter}
-            onChange={(e) => {
-              setCategoryFilter(e.target.value);
+            onChange={(v) => {
+              setCategoryFilter(v);
               setCurrentPage(1);
             }}
             className="w-full md:w-40"
@@ -271,7 +271,7 @@ export function TemplateGallery({ onTemplateUse, onTemplateFavorite, className =
           {/* 排序选择 */}
           <Select
             value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
+            onChange={(v) => setSortBy(v)}
             className="w-full md:w-36"
           >
             {SORT_OPTIONS.map((s) => (

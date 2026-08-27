@@ -889,7 +889,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
             </label>
             <Select
               value={selectedPreset}
-              onChange={(e) => setSelectedPreset(e.target.value as PresetKey | 'custom')}
+              onChange={(v) => setSelectedPreset(v as PresetKey | 'custom')}
               className="w-44"
             >
               {PRESET_KEYS.map((k) => (
@@ -908,7 +908,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
             </label>
             <Select
               value={mode}
-              onChange={(e) => setMode(e.target.value as 'pareto' | 'weighted' | 'epsilon')}
+              onChange={(v) => setMode(v as 'pareto' | 'weighted' | 'epsilon')}
               className="w-48"
             >
               {MODE_OPTIONS.map((m) => (
@@ -945,8 +945,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
                     <label className="text-xs text-neutral-500 dark:text-neutral-400 block mb-1">目标名称</label>
                     <Select
                       value={obj.key}
-                      onChange={(e) => {
-                        const v = e.target.value;
+                      onChange={(v) => {
                         const opt = OBJECTIVE_OPTIONS.find((o) => o.key === v);
                         updateObjective(obj.id, 'key', v);
                         updateObjective(obj.id, 'name', opt?.name ?? v);
@@ -966,7 +965,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
                     <label className="text-xs text-neutral-500 dark:text-neutral-400 block mb-1">方向</label>
                     <Select
                       value={obj.direction}
-                      onChange={(e) => updateObjective(obj.id, 'direction', e.target.value)}
+                      onChange={(v) => updateObjective(obj.id, 'direction', v)}
                       className="w-full"
                     >
                       <option value="maximize">最大化 ↑</option>
@@ -1188,7 +1187,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
               <div className="flex gap-2">
                 <Input
                   value={excludedInput}
-                  onChange={(e) => setExcludedInput(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setExcludedInput(e.target.value)}
                   placeholder="输入药材名称，逗号分隔"
                   className="flex-1"
                   onKeyDown={(e) => {
@@ -1234,9 +1233,8 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
                 id="mo-max-cost"
                 type="number"
                 value={maxCost ?? ''}
-                onChange={(e) => {
-                  const v = e.target.value;
-                  setMaxCost(v === '' ? null : Number(v));
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  setMaxCost(e.target.value === '' ? null : Number(e.target.value));
                 }}
                 placeholder="不限制则留空"
                 min={0}
@@ -1262,7 +1260,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
           <div className="flex gap-2 mb-3">
             <Input
               value={includedInput}
-              onChange={(e) => setIncludedInput(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setIncludedInput(e.target.value)}
               placeholder="输入药材名称，逗号分隔（如：黄芪,党参,甘草）"
               className="flex-1"
               onKeyDown={(e) => {
@@ -1616,7 +1614,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
                 {/* 轴切换按钮 */}
                 <div className="flex items-center gap-2">
                   <label className="text-xs text-neutral-500">X:</label>
-                  <Select value={axisX} onChange={(e) => setAxisX(e.target.value)} className="w-32" size="sm">
+                  <Select value={axisX} onChange={(v) => setAxisX(v)} className="w-32" size="sm">
                     {availableAxes.map((a) => (
                       <option key={`x-${a}`} value={a}>
                         {a}
@@ -1624,7 +1622,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
                     ))}
                   </Select>
                   <label className="text-xs text-neutral-500 ml-2">Y:</label>
-                  <Select value={axisY} onChange={(e) => setAxisY(e.target.value)} className="w-32" size="sm">
+                  <Select value={axisY} onChange={(v) => setAxisY(v)} className="w-32" size="sm">
                     {availableAxes.map((a) => (
                       <option key={`y-${a}`} value={a}>
                         {a}

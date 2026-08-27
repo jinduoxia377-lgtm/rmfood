@@ -321,7 +321,7 @@ export function ExportModal({
             <Checkbox
               id="exp-ingredients"
               checked={includeIngredients}
-              onCheckedChange={setIncludeIngredients}
+              onCheckedChange={(checked) => setIncludeIngredients(checked as boolean)}
               disabled={isExporting}
               label="包含成分详细信息"
             />
@@ -329,7 +329,7 @@ export function ExportModal({
             <Checkbox
               id="exp-steps"
               checked={includeSteps}
-              onCheckedChange={setIncludeSteps}
+              onCheckedChange={(checked) => setIncludeSteps(checked as boolean)}
               disabled={isExporting}
               label="包含制作步骤"
             />
@@ -337,7 +337,7 @@ export function ExportModal({
             <Checkbox
               id="exp-analysis"
               checked={includeAnalysis}
-              onCheckedChange={setIncludeAnalysis}
+              onCheckedChange={(checked) => setIncludeAnalysis(checked as boolean)}
               disabled={isExporting}
               label="包含 AI 分析结果（可能导致文件较大）"
             />

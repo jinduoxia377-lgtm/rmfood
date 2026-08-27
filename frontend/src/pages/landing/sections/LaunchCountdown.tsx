@@ -1,0 +1,186 @@
+/**
+ * CountdownBanner — 正式上线倒计时（嵌入 Hero 内部使用）
+ * 数据：data/launchCountdown.ts
+ *
+ * 逻辑：
+ *   - 目标日期 = localStorage 中已存的 launchDate，否则 = now + baseDays
+ *   - 每秒 tick，归零后自动隐藏
+ *   - 数字变化时有闪烁动画
+ */
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { Bell } from 'lucide-react';
+import { LAUNCH_CONFIG } from '../data/launchCountdown';
+import { cn } from '@/lib/utils';
+
+// ── 计时常量 ──────────────────────────────────────────────────────
+const MS_PER_DAY    = 86_400_000;
+const MS_PER_HOUR   = 3_600_000;
+const MS_PER_MINUTE = 60_000;
+const MS_PER_SECOND = 1_000;
+const TICK_MS       = 1_000;
+
+/** 从 localStorage 读取或计算目标日期 */
+function getLaunchDate(): Date {
+  const stored = localStorage.getItem('rmfood_launch_date');
+  if (stored) return new Date(stored);
+  const now = new Date();
+  const target = new Date(now.getTime() + LAUNCH_CONFIG.baseDays * MS_PER_DAY);
+  localStorage.setItem('rmfood_launch_date', target.toISOString());
+  return target;
+}
+
+/** 格式化两位数字 */
+function pad(n: number): string {
+  return String(n).padStart(2, '0');
+}
+
+// ── 单个倒计时单元 ────────────────────────────────────────────────
+interface UnitProps {
+  value: string;
+  label: string;
+  prevValue?: string;
+}
+
+function CountUnit({ value, label, prevValue }: UnitProps) {
+  const flipped = prevValue !== value && prevValue !== undefined;
+  return (
+    <div className="flex flex-col items-center gap-1">
+      <div
+        className={cn(
+          'w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center text-xl sm:text-2xl font-bold tabular-nums transition-all duration-200',
+          flipped && 'lp-countdown-flip'
+        )}
+        style={{
+          background: '#f8fafc',
+          border: '1px solid #e2e8f0',
+          color: '#0f172a',
+          minWidth: 48,
+        }}
+      >
+        {value}
+      </div>
+      <span className="text-[10px] font-medium uppercase tracking-wider" style={{ color: '#94a3b8' }}>{label}</span>
+    </div>
+  );
+}
+
+// ── 分隔符（:） ────────────────────────────────────────────────────
+function Separator() {
+  return (
+    <div className="flex items-center pb-5 text-lg font-bold" style={{ color: '#cbd5e1' }}>
+      :
+    </div>
+  );
+}
+
+// ── 主组件 ────────────────────────────────────────────────────────
+export function CountdownBanner() {
+  if (!LAUNCH_CONFIG.enabled) return null;
+
+  const launchDate = getLaunchDate();
+  const [timeLeft, setTimeLeft] = useState(() => calcTimeLeft(launchDate));
+  const [prevTime, setPrevTime] = useState(timeLeft);
+
+  function calcTimeLeft(target: Date) {
+    const diff = target.getTime() - Date.now();
+    if (diff <= 0) return null;
+    const days    = Math.floor(diff / MS_PER_DAY);
+    const hours   = Math.floor((diff % MS_PER_DAY) / MS_PER_HOUR);
+    const minutes = Math.floor((diff % MS_PER_HOUR) / MS_PER_MINUTE);
+    const seconds = Math.floor((diff % MS_PER_MINUTE) / MS_PER_SECOND);
+    return { days, hours: pad(hours), minutes: pad(minutes), seconds: pad(seconds) };
+  }
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      const next = calcTimeLeft(launchDate);
+      if (!next) {
+        clearInterval(id);
+        return;
+      }
+      setPrevTime(timeLeft);
+      setTimeLeft(next);
+    }, TICK_MS);
+    return () => clearInterval(id);
+  }, [launchDate]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (!timeLeft) return null;
+
+  return (
+    <div
+      className="relative overflow-hidden mt-[64px] border-b"
+      style={{
+        background: '#fff',
+        borderBottom: '1px solid #e2e8f0',
+      }}
+    >
+      <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+
+          {/* 左侧：文案 + CTA */}
+          <div className="flex items-center gap-4 min-w-0">
+            {/* 徽章 */}
+            <div
+              className="shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold"
+              style={{
+                background: 'rgba(5,150,105,0.10)',
+                border: '1px solid rgba(5,150,105,0.25)',
+                color: '#059669',
+              }}
+            >
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
+              {LAUNCH_CONFIG.title}
+            </div>
+
+            {/* 文案 */}
+            <div className="min-w-0">
+              <p className="text-[13px] sm:text-[14px] font-medium truncate" style={{ color: '#0f172a' }}>
+                {LAUNCH_CONFIG.subtitle}
+              </p>
+              <p className="text-[11px] mt-0.5" style={{ color: '#94a3b8' }}>
+                {LAUNCH_CONFIG.footnote}
+              </p>
+            </div>
+          </div>
+
+          {/* 右侧：倒计时 + CTA */}
+          <div className="flex items-center gap-4">
+            {/* 倒计时单位 */}
+            <div className="flex items-center gap-1.5">
+              <CountUnit value={pad(timeLeft.days)}         label="天" prevValue={String(prevTime?.days ?? -1)} />
+              <Separator />
+              <CountUnit value={timeLeft.hours}           label="时" prevValue={prevTime?.hours} />
+              <Separator />
+              <CountUnit value={timeLeft.minutes}         label="分" prevValue={prevTime?.minutes} />
+              <Separator />
+              <CountUnit value={timeLeft.seconds}         label="秒" prevValue={prevTime?.seconds} />
+            </div>
+
+            {/* CTA */}
+            <Link
+              to={LAUNCH_CONFIG.ctaHref}
+              className="shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-[12px] font-semibold transition-all duration-200 hover:-translate-y-[1px]"
+              style={{
+                background: '#0f172a',
+                color: '#ffffff',
+                boxShadow: '0 1px 3px rgba(15,23,42,0.12)',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.boxShadow = '0 2px 8px rgba(15,23,42,0.18)';
+                e.currentTarget.style.opacity = '0.9';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.boxShadow = '0 1px 3px rgba(15,23,42,0.12)';
+                e.currentTarget.style.opacity = '1';
+              }}
+            >
+              <Bell size={12} />
+              {LAUNCH_CONFIG.ctaLabel}
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

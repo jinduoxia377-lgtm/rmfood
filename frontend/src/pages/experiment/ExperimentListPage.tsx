@@ -141,7 +141,7 @@ export default function ExperimentListPage() {
         String(exp.id),
         exp.title,
         exp.status,
-        [exp.formula_name || '-',
+        [exp.formulaId ? `配方#${exp.formulaId}` : '-',
         format(new Date(exp.updatedAt), 'yyyy-MM-dd HH:mm', { locale: zhCN })],
       ]),
     ]
@@ -464,7 +464,7 @@ export default function ExperimentListPage() {
                             onClick={(e) => e.stopPropagation()}
                           >
                             <FlaskConical size={11} />
-                            {exp.formula_name || `配方#${exp.formula_id}`}
+                            {exp.formulaId ? `配方#${exp.formulaId}` : '-'}
                           </Link>
                         ) : (
                           <span className="text-xs text-neutral-400">-</span>
