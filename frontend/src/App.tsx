@@ -38,7 +38,16 @@ import RadixDemoPage from '@/pages/radix-demo/RadixDemoPage';
 
 
 import { logger } from '@/utils/safeLogger';
-// 🔒 P3-1: 中等体积页面 - 标准懒加载
+
+// 🔒 P3-1: 公开信息页面（无需认证）
+const DocsPage = lazyWithPreload(() => import('@/pages/public/DocsPage'));
+const ApiDocsPage = lazyWithPreload(() => import('@/pages/public/ApiDocsPage'));
+const FaqsPage = lazyWithPreload(() => import('@/pages/public/FaqsPage'));
+const AboutPage = lazyWithPreload(() => import('@/pages/public/AboutPage'));
+const CareersPage = lazyWithPreload(() => import('@/pages/public/CareersPage'));
+const PrivacyPage = lazyWithPreload(() => import('@/pages/public/PrivacyPage'));
+
+// 页面懒加载
 const FormulaListPage = lazyWithPreload(() => import('@/pages/formula/FormulaListPage'));
 const FormulaNewPage = lazyWithPreload(() => import('@/pages/formula/FormulaNewPage'));
 const FormulaDetailPage = lazyWithPreload(() => import('@/pages/formula/FormulaDetailPage'));
@@ -213,6 +222,13 @@ const router = createBrowserRouter([
     path: '/landing',
     element: <LandingPage />,
   },
+  // 公开路由 — 信息页面
+  { path: '/docs',   element: <DocsPage /> },
+  { path: '/api-docs', element: <ApiDocsPage /> },
+  { path: '/faqs',   element: <FaqsPage /> },
+  { path: '/about',  element: <AboutPage /> },
+  { path: '/careers', element: <CareersPage /> },
+  { path: '/privacy', element: <PrivacyPage /> },
 
   // 受保护路由 — 带 MainLayout 布局
   {

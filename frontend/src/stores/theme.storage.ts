@@ -192,7 +192,13 @@ export class ThemeStorage {
       id: crypto.randomUUID(),
       timestamp: Date.now(),
       summary,
-      snapshot: { colors: { primary: state.activeThemeId || 'light-default' } },
+      snapshot: {
+        activeThemeId: state.activeThemeId || 'light-default',
+        mode: state.mode || 'light',
+        accessibilityMode: state.accessibilityMode || 'normal',
+        transitionType: state.transitionType || 'smooth',
+        colors: { primary: state.activeThemeId || 'light-default' },
+      },
     };
     versions.unshift(version);
     const MAX = 10;

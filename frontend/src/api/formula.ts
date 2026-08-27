@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 配方深度集成 API 服务
  *
  * 提供所有与协同配方设计相关的 API 调用函数
@@ -1015,4 +1015,125 @@ export async function saveAnalysisResult(
 export async function getAnalysisHistory(formulaId: number): Promise<any> {
   const response = await api.get(`${FORMULA_BASE_URL}/${formulaId}/analysis/history`)
   return response.data
+}
+
+// ==================== 配方案例库 API ====================
+
+export interface FormulaCase {
+  id: string | number
+  title: string
+  summary: string
+  content?: string
+  category: string
+  tags: string[]
+  cover_image?: string
+  is_featured: boolean
+  generated_by_ai: boolean
+  views: number
+  likes: number
+  bookmarks?: number
+  formula_name?: string
+  formula_id?: string | number
+  creator_name?: string
+  created_by?: string
+  created_at: string
+  updated_at: string
+}
+
+export interface CaseComment {
+  id: string | number
+  content: string
+  author: string
+  user_name?: string
+  parent_id?: string | number
+  created_at: string
+  likes: number
+  replies?: CaseComment[]
+}
+
+export interface CaseListParams {
+  page?: number
+  page_size?: number
+  sort_by?: string
+  sort_dir?: 'asc' | 'desc'
+  keyword?: string
+  category?: string
+  featured_only?: boolean
+}
+
+export interface CaseStats {
+  total: number
+  featured: number
+  total_views: number
+  total_likes: number
+}
+
+export async function getFormulaCases(params?: CaseListParams): Promise<{ cases: FormulaCase[]; total: number; featured: FormulaCase[] }> {
+  const response = await api.get('/formulas/cases', { params })
+  return response.data
+}
+
+export async function getCaseStats(): Promise<CaseStats> {
+  const response = await api.get('/formulas/cases/stats')
+  return response.data
+}
+
+export async function getCaseCategories(): Promise<string[]> {
+  const response = await api.get('/formulas/cases/categories')
+  return response.data
+}
+
+export async function getTrendingCases(limit: number = 5): Promise<FormulaCase[]> {
+  const response = await api.get('/formulas/cases/trending', { params: { limit } })
+  return response.data
+}
+
+export async function getFormulaCase(id: string | number): Promise<FormulaCase> {
+  const response = await api.get(`/formulas/cases/${id}`)
+  return response.data
+}
+
+export async function toggleCaseLike(id: string | number): Promise<{ liked: boolean }> {
+  const response = await api.post(`/formulas/cases/${id}/like`)
+  return response.data
+}
+
+export async function getCaseComments(id: string | number) {
+  const response = await api.get(`/formulas/cases/${id}/comments`)
+  return response.data
+}
+
+export async function createCaseComment(id: string | number, comment: { content: string; author?: string }) {
+  const response = await api.post(`/formulas/cases/${id}/comments`, comment)
+  return response.data
+}
+
+export async function deleteFormulaCase(id: string | number): Promise<void> {
+  await api.delete(`/formulas/cases/${id}`)
+}
+
+export async function toggleBookmark(id: string | number): Promise<{ bookmarked: boolean }> {
+  const response = await api.post(`/formulas/cases/${id}/bookmark`)
+  return response.data
+}
+
+export async function reportCase(id: string | number, reason: string, reportType?: string) {
+  const response = await api.post(`/formulas/cases/${id}/report`, { reason })
+  return response.data
+}
+
+export async function getCasesByFormula(formulaId: string | number): Promise<FormulaCase[]> {
+  const response = await api.get(`/formulas/${formulaId}/cases`)
+  return response.data
+}
+
+export interface CaseComment {
+  id: string | number
+  content: string
+  author: string
+  user_name?: string
+  parent_id?: string | number
+  created_at: string
+  likes: number
+  replies?: CaseComment[]
 }
