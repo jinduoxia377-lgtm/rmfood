@@ -65,7 +65,7 @@ async def get_statistics(
     for role_val, count in user_role_result.all():
         user_role_map[str(role_val)] = count
 
-    # ── 最近30天每日活动数据（naive datetime）──
+    # ── 最近30天每日活动数据（naive datetime，匹配 TIMESTAMP WITHOUT TIME ZONE）──
     today = datetime.now().date()
     start_date = today - timedelta(days=29)
     recent_activity = []

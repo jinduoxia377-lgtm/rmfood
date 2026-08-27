@@ -205,28 +205,24 @@ class FormulaService:
         if category and len(category) > 0:
             query = query.join(Formula.categories).where(Category.id.in_(category))
 
-        # 创建日期范围
+        # 创建日期范围（naive datetime，匹配 TIMESTAMP WITHOUT TIME ZONE）
         if created_start:
             start_dt = datetime.fromisoformat(created_start.replace("Z", "+00:00"))
-            if start_dt.tzinfo is None:
-                start_dt = start_dt.replace(tzinfo=datetime.timezone.utc)
+            start_dt = start_dt.replace(tzinfo=None)  # 去除时区，转为 naive
             query = query.where(Formula.created_at >= start_dt)
         if created_end:
             end_dt = datetime.fromisoformat(created_end.replace("Z", "+00:00")) + timedelta(days=1)
-            if end_dt.tzinfo is None:
-                end_dt = end_dt.replace(tzinfo=datetime.timezone.utc)
+            end_dt = end_dt.replace(tzinfo=None)  # 去除时区，转为 naive
             query = query.where(Formula.created_at < end_dt)
 
-        # 更新日期范围
+        # 更新日期范围（naive datetime）
         if updated_start:
             start_dt = datetime.fromisoformat(updated_start.replace("Z", "+00:00"))
-            if start_dt.tzinfo is None:
-                start_dt = start_dt.replace(tzinfo=datetime.timezone.utc)
+            start_dt = start_dt.replace(tzinfo=None)
             query = query.where(Formula.updated_at >= start_dt)
         if updated_end:
             end_dt = datetime.fromisoformat(updated_end.replace("Z", "+00:00")) + timedelta(days=1)
-            if end_dt.tzinfo is None:
-                end_dt = end_dt.replace(tzinfo=datetime.timezone.utc)
+            end_dt = end_dt.replace(tzinfo=None)
             query = query.where(Formula.updated_at < end_dt)
 
         # 总数

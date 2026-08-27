@@ -27,6 +27,12 @@ from ...services.ai.shared.observability import ai_observability
 
 sub_router = APIRouter(tags=["生成"])
 
+
+def _format_sse_event(event_type: str, data: dict) -> str:
+    """将数据格式化为 SSE event 行"""
+    return f"event: {event_type}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
+
+
 class ChatRequest(BaseModel):
     """智能对话请求"""
     model_config = {"extra": "ignore"}  # 忽略前端发送的额外字段
@@ -59,7 +65,9 @@ async def chat(
         start_time = time.time()
 
         # 检查缓存（租户级 key 防止跨租户缓存泄漏）
-        cache_key = f"org:{tenant.org_id}:{req.question}"
+        # 缓存键加入 history 哈希，避免不同上下文中相同问题返回相同答案
+        history_hash = hash(tuple(str(h) for h in (req.history or [])[-3:])) if req.history else 0
+        cache_key = f"org:{tenant.org_id}:q:{hash(req.question)}:ctx:{history_hash}"
         cached = ai_cache.get(cache_key)
         if cached:
             logger.info("缓存命中: %s", cache_key[:50])
@@ -116,7 +124,44 @@ async def chat(
             question=req.question,
             history=req.history,
         )
-        
+
+        # 回写对话记录到数据库
+        try:
+            from ...models.chat import ChatSession, ChatMessage
+            session_result = await db.execute(
+                select(ChatSession).where(
+                    ChatSession.user_id == current_user.id,
+                    ChatSession.is_active == True,
+                ).order_by(ChatSession.updated_at.desc()).limit(1)
+            )
+            chat_session = session_result.scalar_one_or_none()
+            if not chat_session:
+                chat_session = ChatSession(
+                    user_id=current_user.id,
+                    title=req.question[:50] + ('...' if len(req.question) > 50 else ''),
+                    message_count=0,
+                    is_active=True,
+                )
+                db.add(chat_session)
+                await db.commit()
+                await db.refresh(chat_session)
+
+            await db.add(ChatMessage(
+                session_id=chat_session.id,
+                role="user",
+                content=req.question,
+            ))
+            await db.add(ChatMessage(
+                session_id=chat_session.id,
+                role="assistant",
+                content=answer,
+            ))
+            chat_session.message_count += 2
+            chat_session.updated_at = datetime.datetime.now(datetime.timezone.utc)
+            await db.commit()
+        except Exception as db_err:
+            logger.warning(f"对话记录回写失败（非致命）: {db_err}")
+
         # 构建返回结果（匹配前端 AIResponse 接口）
         result = {
             "content": answer,
@@ -217,7 +262,7 @@ async def chat_stream(
                 status_code=status.HTTP_429_TOO_MANY_REQUESTS,
                 detail={
                     "error": "TOO_MANY_SSE_CONNECTIONS",
-                    "message": f"每个组织最多同时打开 {_get_llm_service().config.model if False else 5} 个流式连接",
+                    "message": "每个组织最多同时打开 5 个流式连接",
                     "retry_after": 30,
                 },
             )
@@ -258,7 +303,8 @@ async def chat_stream(
         async def event_stream():
             try:
                 async for chunk in _get_llm_service().chat_stream(messages):
-                    yield f"data: {chunk}\n\n"
+                    if chunk:
+                        yield _format_sse_event("content", {"content": chunk})
                 yield "data: [DONE]\n\n"
             except RuntimeError as e:
                 error_msg = str(e)

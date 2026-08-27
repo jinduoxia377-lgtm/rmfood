@@ -27,7 +27,7 @@ async def get_timeline(
     current_user: UserModel = Depends(get_current_user),
 ):
     """获取最近的活动时间线"""
-    since = datetime.now(timezone.utc) - timedelta(days=days)
+    since = datetime.now().replace(tzinfo=None) - timedelta(days=days)  # naive datetime
 
     events = []
 
@@ -44,7 +44,7 @@ async def get_timeline(
             "id": f.id,
             "type": "formula",
             "title": f.name,
-            "status": f.status.value,
+            "status": f.status.value if hasattr(f.status, "value") else str(f.status),
             "created_at": f.updated_at.isoformat(),
             "event": "配方更新",
         })
@@ -67,7 +67,7 @@ async def get_timeline(
             "id": e.id,
             "type": "experiment",
             "title": e.title,
-            "status": e.status.value,
+            "status": e.status.value if hasattr(e.status, "value") else str(e.status),
             "created_at": e.updated_at.isoformat(),
             "event": event_type,
         })

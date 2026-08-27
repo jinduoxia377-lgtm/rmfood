@@ -276,7 +276,7 @@ def with_query_cache(ttl: int = None):
     使用示例：
         @with_query_cache(ttl=600)
         def get_active_users(session):
-            return session.query(User).filter_by(is_active=True).all()
+            return session.execute(select(User).where(User.is_active == True)).scalars().all()
     """
     query_cache = QueryCache(ttl)
     

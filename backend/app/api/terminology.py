@@ -1,6 +1,7 @@
 """专业术语API接口"""
 from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 from ..models.terminology import Term, TermCategory, TermVariant, TermNormalizationRule
 from ..schemas.terminology import (
@@ -30,14 +31,14 @@ def get_terminology_service(db: Session = Depends(get_db)) -> TerminologyService
 @router.get("/categories", response_model=ApiResponse[List[TermCategoryOut]])
 def get_categories(db: Session = Depends(get_db)):
     """获取所有术语分类"""
-    categories = db.query(TermCategory).order_by(TermCategory.sort_order).all()
+    categories = db.execute(select(TermCategory).order_by(TermCategory.sort_order)).scalars().all()
     return ApiResponse(data=[TermCategoryOut.from_orm(c) for c in categories])
 
 
 @router.get("/categories/{category_id}", response_model=ApiResponse[TermCategoryOut])
 def get_category(category_id: int, db: Session = Depends(get_db)):
     """获取单个分类"""
-    category = db.query(TermCategory).filter(TermCategory.id == category_id).first()
+    category = db.execute(select(TermCategory).where(TermCategory.id == category_id)).scalar_one_or_none()
     if not category:
         raise HTTPException(status_code=404, detail="分类不存在")
     return ApiResponse(data=TermCategoryOut.from_orm(category))
@@ -46,7 +47,7 @@ def get_category(category_id: int, db: Session = Depends(get_db)):
 @router.post("/categories", response_model=ApiResponse[TermCategoryOut])
 def create_category(category: TermCategoryCreate, db: Session = Depends(get_db)):
     """创建分类"""
-    existing = db.query(TermCategory).filter(TermCategory.name == category.name).first()
+    existing = db.execute(select(TermCategory).where(TermCategory.name == category.name)).scalar_one_or_none()
     if existing:
         raise HTTPException(status_code=400, detail="分类名称已存在")
     
@@ -61,15 +62,15 @@ def create_category(category: TermCategoryCreate, db: Session = Depends(get_db))
 @router.put("/categories/{category_id}", response_model=ApiResponse[TermCategoryOut])
 def update_category(category_id: int, category: TermCategoryUpdate, db: Session = Depends(get_db)):
     """更新分类"""
-    db_category = db.query(TermCategory).filter(TermCategory.id == category_id).first()
+    db_category = db.execute(select(TermCategory).where(TermCategory.id == category_id)).scalar_one_or_none()
     if not db_category:
         raise HTTPException(status_code=404, detail="分类不存在")
     
     if category.name:
-        existing = db.query(TermCategory).filter(
+        existing = db.execute(select(TermCategory).where(
             TermCategory.name == category.name,
             TermCategory.id != category_id
-        ).first()
+        )).scalar_one_or_none()
         if existing:
             raise HTTPException(status_code=400, detail="分类名称已存在")
         db_category.name = category.name
@@ -94,12 +95,12 @@ def update_category(category_id: int, category: TermCategoryUpdate, db: Session 
 @router.delete("/categories/{category_id}", response_model=ApiResponse)
 def delete_category(category_id: int, db: Session = Depends(get_db)):
     """删除分类"""
-    category = db.query(TermCategory).filter(TermCategory.id == category_id).first()
+    category = db.execute(select(TermCategory).where(TermCategory.id == category_id)).scalar_one_or_none()
     if not category:
         raise HTTPException(status_code=404, detail="分类不存在")
     
     # 检查是否有术语关联
-    term_count = db.query(Term).filter(Term.category_id == category_id).count()
+    term_count = db.execute(select(Term).filter(Term.category_id == category_id).count()).scalar()
     if term_count > 0:
         raise HTTPException(status_code=400, detail=f"该分类下有 {term_count} 个术语，无法删除")
     
@@ -121,10 +122,9 @@ def get_terms(
     db: Session = Depends(get_db)
 ):
     """分页获取术语列表"""
-    query = db.query(Term)
-    
+    stmt = select(Term)
     if category_id:
-        query = query.filter(Term.category_id == category_id)
+        stmt = stmt.where(Term.category_id == category_id)
     
     # 排序
     if hasattr(Term, sort_by):
@@ -137,9 +137,11 @@ def get_terms(
         query = query.order_by(Term.created_at.desc())
     
     # 分页
-    total = query.count()
+    total_stmt = stmt.count()
+    total = db.execute(total_stmt).scalar()
     offset = (page - 1) * page_size
-    terms = query.offset(offset).limit(page_size).all()
+    terms_stmt = stmt.offset(offset).limit(page_size)
+    terms = db.execute(terms_stmt).scalars().all()
     
     # 转换为输出格式
     service = TerminologyService(db)
@@ -168,12 +170,12 @@ def get_term(term_id: int, db: Session = Depends(get_db)):
 def create_term(term: TermCreate, db: Session = Depends(get_db)):
     """创建术语"""
     # 检查分类是否存在
-    category = db.query(TermCategory).filter(TermCategory.id == term.category_id).first()
+    category = db.execute(select(TermCategory).where(TermCategory.id == term.category_id)).scalar_one_or_none()
     if not category:
         raise HTTPException(status_code=400, detail="分类不存在")
     
     # 检查术语是否已存在
-    existing = db.query(Term).filter(Term.term == term.term).first()
+    existing = db.execute(select(Term).where(Term.term == term.term)).scalar_one_or_none()
     if existing:
         raise HTTPException(status_code=400, detail="术语已存在")
     
@@ -189,15 +191,15 @@ def create_term(term: TermCreate, db: Session = Depends(get_db)):
 @router.put("/terms/{term_id}", response_model=ApiResponse[TermOut])
 def update_term(term_id: int, term: TermUpdate, db: Session = Depends(get_db)):
     """更新术语"""
-    db_term = db.query(Term).filter(Term.id == term_id).first()
+    db_term = db.execute(select(Term).where(Term.id == term_id)).scalar_one_or_none()
     if not db_term:
         raise HTTPException(status_code=404, detail="术语不存在")
     
     if term.term:
-        existing = db.query(Term).filter(
+        existing = db.execute(select(Term).where(
             Term.term == term.term,
             Term.id != term_id
-        ).first()
+        )).scalar_one_or_none()
         if existing:
             raise HTTPException(status_code=400, detail="术语已存在")
         db_term.term = term.term
@@ -215,7 +217,7 @@ def update_term(term_id: int, term: TermUpdate, db: Session = Depends(get_db)):
     if term.definition_en is not None:
         db_term.definition_en = term.definition_en
     if term.category_id is not None:
-        category = db.query(TermCategory).filter(TermCategory.id == term.category_id).first()
+        category = db.execute(select(TermCategory).where(TermCategory.id == term.category_id)).scalar_one_or_none()
         if not category:
             raise HTTPException(status_code=400, detail="分类不存在")
         db_term.category_id = term.category_id
@@ -248,12 +250,12 @@ def update_term(term_id: int, term: TermUpdate, db: Session = Depends(get_db)):
 @router.delete("/terms/{term_id}", response_model=ApiResponse)
 def delete_term(term_id: int, db: Session = Depends(get_db)):
     """删除术语"""
-    term = db.query(Term).filter(Term.id == term_id).first()
+    term = db.execute(select(Term).where(Term.id == term_id)).scalar_one_or_none()
     if not term:
         raise HTTPException(status_code=404, detail="术语不存在")
     
     # 删除相关变体
-    db.query(TermVariant).filter(TermVariant.term_id == term_id).delete()
+    db.execute(delete(TermVariant).where(TermVariant.term_id == term_id))
     
     db.delete(term)
     db.commit()
@@ -319,12 +321,12 @@ def suggest_terms(request: TermSuggestionRequest, db: Session = Depends(get_db))
 def create_term_variant(variant: TermVariantCreate, db: Session = Depends(get_db)):
     """创建术语变体"""
     # 检查术语是否存在
-    term = db.query(Term).filter(Term.id == variant.term_id).first()
+    term = db.execute(select(Term).where(Term.id == variant.term_id)).scalar_one_or_none()
     if not term:
         raise HTTPException(status_code=400, detail="术语不存在")
     
     # 检查变体是否已存在
-    existing = db.query(TermVariant).filter(TermVariant.variant == variant.variant).first()
+    existing = db.execute(select(TermVariant).where(TermVariant.variant == variant.variant)).scalar_one_or_none()
     if existing:
         raise HTTPException(status_code=400, detail="变体已存在")
     
@@ -347,14 +349,13 @@ def create_term_variant(variant: TermVariantCreate, db: Session = Depends(get_db
 @router.get("/variants", response_model=ApiResponse[List[TermVariantOut]])
 def get_term_variants(term_id: Optional[int] = None, db: Session = Depends(get_db)):
     """获取术语变体列表"""
-    query = db.query(TermVariant)
+    stmt = select(TermVariant)
     if term_id:
-        query = query.filter(TermVariant.term_id == term_id)
-    
-    variants = query.all()
+        stmt = stmt.where(TermVariant.term_id == term_id)
+    variants = db.execute(stmt).scalars().all()
     result = []
     for v in variants:
-        term = db.query(Term).filter(Term.id == v.term_id).first()
+        term = db.execute(select(Term).where(Term.id == v.term_id)).scalar_one_or_none()
         result.append(TermVariantOut(
             id=v.id,
             variant=v.variant,
@@ -371,7 +372,7 @@ def get_term_variants(term_id: Optional[int] = None, db: Session = Depends(get_d
 @router.delete("/variants/{variant_id}", response_model=ApiResponse)
 def delete_term_variant(variant_id: int, db: Session = Depends(get_db)):
     """删除术语变体"""
-    variant = db.query(TermVariant).filter(TermVariant.id == variant_id).first()
+    variant = db.execute(select(TermVariant).where(TermVariant.id == variant_id)).scalar_one_or_none()
     if not variant:
         raise HTTPException(status_code=404, detail="变体不存在")
     
@@ -386,7 +387,7 @@ def delete_term_variant(variant_id: int, db: Session = Depends(get_db)):
 @router.get("/normalization-rules", response_model=ApiResponse[List[TermNormalizationRuleOut]])
 def get_normalization_rules(db: Session = Depends(get_db)):
     """获取所有标准化规则"""
-    rules = db.query(TermNormalizationRule).order_by(TermNormalizationRule.priority).all()
+    rules = db.execute(select(TermNormalizationRule).order_by(TermNormalizationRule.priority)).scalars().all()
     return ApiResponse(data=[TermNormalizationRuleOut.from_orm(r) for r in rules])
 
 
@@ -404,7 +405,7 @@ def create_normalization_rule(rule: TermNormalizationRuleCreate, db: Session = D
 @router.put("/normalization-rules/{rule_id}", response_model=ApiResponse[TermNormalizationRuleOut])
 def update_normalization_rule(rule_id: int, rule: TermNormalizationRuleCreate, db: Session = Depends(get_db)):
     """更新标准化规则"""
-    db_rule = db.query(TermNormalizationRule).filter(TermNormalizationRule.id == rule_id).first()
+    db_rule = db.execute(select(TermNormalizationRule).where(TermNormalizationRule.id == rule_id)).scalar_one_or_none()
     if not db_rule:
         raise HTTPException(status_code=404, detail="规则不存在")
     
@@ -424,7 +425,7 @@ def update_normalization_rule(rule_id: int, rule: TermNormalizationRuleCreate, d
 @router.delete("/normalization-rules/{rule_id}", response_model=ApiResponse)
 def delete_normalization_rule(rule_id: int, db: Session = Depends(get_db)):
     """删除标准化规则"""
-    rule = db.query(TermNormalizationRule).filter(TermNormalizationRule.id == rule_id).first()
+    rule = db.execute(select(TermNormalizationRule).where(TermNormalizationRule.id == rule_id)).scalar_one_or_none()
     if not rule:
         raise HTTPException(status_code=404, detail="规则不存在")
     
@@ -439,16 +440,16 @@ def delete_normalization_rule(rule_id: int, db: Session = Depends(get_db)):
 @router.get("/statistics", response_model=ApiResponse)
 def get_statistics(db: Session = Depends(get_db)):
     """获取术语统计信息"""
-    total_terms = db.query(Term).count()
-    total_categories = db.query(TermCategory).count()
-    total_variants = db.query(TermVariant).count()
-    total_validations = db.query(TermValidation).count()
+    total_terms = db.execute(select(Term).count()).scalar()
+    total_categories = db.execute(select(TermCategory).count()).scalar()
+    total_variants = db.execute(select(TermVariant).count()).scalar()
+    total_validations = db.execute(select(TermValidation).count()).scalar()
     
     # 按分类统计
     category_stats = []
-    categories = db.query(TermCategory).all()
+    categories = db.execute(select(TermCategory)).scalars().all()
     for cat in categories:
-        term_count = db.query(Term).filter(Term.category_id == cat.id).count()
+        term_count = db.execute(select(Term).filter(Term.category_id == cat.id).count()).scalar()
         category_stats.append({
             "category_id": cat.id,
             "category_name": cat.name,

@@ -25,13 +25,13 @@ def list_team_members(
     db: Session = Depends(get_db),
 ):
     """获取团队成员列表及角色"""
-    team = db.query(Team).filter(Team.id == team_id).first()
+    team = db.execute(select(Team).where(Team.id == team_id)).scalar_one_or_none()
     if not team:
         raise HTTPException(status_code=404, detail="团队不存在")
 
-    members = db.query(TeamMember).filter(
-        TeamMember.team_id == team_id
-    ).all()
+    members = db.execute(select(TeamMember).where(
+    TeamMember.team_id == team_id
+)).scalars().all()
 
     return ApiResponse(data={
         "team_id": team_id,
@@ -65,10 +65,12 @@ def add_team_member(
         raise HTTPException(status_code=400, detail="缺少 user_id")
 
     # 检查是否已存在
-    existing = db.query(TeamMember).filter(
-        TeamMember.team_id == team_id,
-        TeamMember.user_id == user_id,
-    ).first()
+    existing = db.execute(
+        select(TeamMember).where(
+            TeamMember.team_id == team_id,
+            TeamMember.user_id == user_id,
+        )
+    ).scalar_one_or_none()
 
     if existing:
         raise HTTPException(status_code=409, detail="该用户已是团队成员")
@@ -97,10 +99,12 @@ def update_member_role(
     if not new_role or new_role not in ["owner", "admin", "member", "guest"]:
         raise HTTPException(status_code=400, detail="无效的角色")
 
-    member = db.query(TeamMember).filter(
-        TeamMember.id == member_id,
-        TeamMember.team_id == team_id,
-    ).first()
+    member = db.execute(
+        select(TeamMember).where(
+            TeamMember.id == member_id,
+            TeamMember.team_id == team_id,
+        )
+    ).scalar_one_or_none()
 
     if not member:
         raise HTTPException(status_code=404, detail="成员不存在")
@@ -118,10 +122,12 @@ def remove_team_member(
     db: Session = Depends(get_db),
 ):
     """移除团队成员"""
-    member = db.query(TeamMember).filter(
-        TeamMember.id == member_id,
-        TeamMember.team_id == team_id,
-    ).first()
+    member = db.execute(
+        select(TeamMember).where(
+            TeamMember.id == member_id,
+            TeamMember.team_id == team_id,
+        )
+    ).scalar_one_or_none()
 
     if not member:
         raise HTTPException(status_code=404, detail="成员不存在")
@@ -139,10 +145,12 @@ def get_team_permissions(
     db: Session = Depends(get_db),
 ):
     """获取用户在团队中的权限"""
-    member = db.query(TeamMember).filter(
-        TeamMember.team_id == team_id,
-        TeamMember.user_id == user_id,
-    ).first()
+    member = db.execute(
+        select(TeamMember).where(
+            TeamMember.team_id == team_id,
+            TeamMember.user_id == user_id,
+        )
+    ).scalar_one_or_none()
 
     if not member:
         raise HTTPException(status_code=403, detail="无权限访问此团队")

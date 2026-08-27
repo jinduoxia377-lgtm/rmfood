@@ -6,6 +6,7 @@ from collections import defaultdict
 import re
 import difflib
 import logging
+from sqlalchemy import select, delete
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, and_
 from app.models.terminology import Term, TermCategory, TermVariant, TermValidation, TermNormalizationRule
@@ -24,12 +25,12 @@ class TerminologyService:
 
     def _load_normalization_rules(self):
         """加载标准化规则"""
-        rules = self.db.query(TermNormalizationRule).filter(TermNormalizationRule.enabled == True).all()
+        rules = self.db.execute(select(TermNormalizationRule).where(TermNormalizationRule.enabled == True)).scalars().all()
         self.normalization_rules = sorted(rules, key=lambda r: r.priority)
 
     def _build_term_index(self):
         """构建术语索引用于快速搜索"""
-        terms = self.db.query(Term).all()
+        terms = self.db.execute(select(Term)).scalars().all()
         self.term_index = {t.term.lower(): t for t in terms}
         self.term_names = [t.term.lower() for t in terms]
         self.category_index = defaultdict(list)
@@ -148,7 +149,7 @@ class TerminologyService:
 
     def _search_variants(self, term: str, category_id: Optional[int]) -> Optional[Tuple[Term, float]]:
         """搜索术语变体"""
-        variants = self.db.query(TermVariant).filter(TermVariant.variant == term).all()
+        variants = self.db.execute(select(TermVariant).where(TermVariant.variant == term)).scalars().all()
         
         for variant in variants:
             term_obj = self._get_term_by_id(variant.term_id)
@@ -214,11 +215,11 @@ class TerminologyService:
 
     def _get_term_by_id(self, term_id: int) -> Optional[Term]:
         """根据ID获取术语"""
-        return self.db.query(Term).filter(Term.id == term_id).first()
+        return self.db.execute(select(Term).where(Term.id == term_id)).scalar_one_or_none()
 
     def _term_to_out(self, term: Term) -> TermOut:
         """转换为输出格式"""
-        category = self.db.query(TermCategory).filter(TermCategory.id == term.category_id).first()
+        category = self.db.execute(select(TermCategory).where(TermCategory.id == term.category_id)).scalar_one_or_none()
         return TermOut(
             id=term.id,
             term=term.term,
@@ -267,11 +268,11 @@ class TerminologyService:
                     results.append(self._term_to_out(term))
             return results
         else:
-            query = self.db.query(Term)
+            stmt = select(Term)
             if category_id:
-                query = query.filter(Term.category_id == category_id)
+                stmt = stmt.where(Term.category_id == category_id)
             
-            results = query.filter(or_(
+            results = db.execute(stmt.filter(or_(
                 Term.term.ilike(f"%{query_normalized}%"),
                 Term.term_en.ilike(f"%{query_normalized}%"),
                 Term.pinyin.ilike(f"%{query_normalized}%")
@@ -281,12 +282,12 @@ class TerminologyService:
 
     def get_categories(self) -> List[TermCategoryOut]:
         """获取所有分类"""
-        categories = self.db.query(TermCategory).order_by(TermCategory.sort_order).all()
+        categories = self.db.execute(select(TermCategory).order_by(TermCategory.sort_order)).scalars().all()
         return [TermCategoryOut.from_orm(c) for c in categories]
 
     def get_category_by_id(self, category_id: int) -> Optional[TermCategoryOut]:
         """根据ID获取分类"""
-        category = self.db.query(TermCategory).filter(TermCategory.id == category_id).first()
+        category = self.db.execute(select(TermCategory).where(TermCategory.id == category_id)).scalar_one_or_none()
         if category:
             return TermCategoryOut.from_orm(category)
         return None
@@ -330,7 +331,7 @@ class TerminologyService:
     def add_term_variant(self, term_id: int, variant: str, 
                          similarity: float = 0.8, variant_type: str = "synonym"):
         """添加术语变体"""
-        existing = self.db.query(TermVariant).filter(TermVariant.variant == variant).first()
+        existing = self.db.execute(select(TermVariant).where(TermVariant.variant == variant)).scalar_one_or_none()
         if existing:
             existing.similarity = similarity
             existing.variant_type = variant_type
@@ -363,23 +364,27 @@ class TerminologyService:
 
     def update_statistics(self):
         """更新统计信息"""
-        categories = self.db.query(TermCategory).all()
+        categories = self.db.execute(select(TermCategory)).scalars().all()
         
         for category in categories:
-            term_count = self.db.query(Term).filter(Term.category_id == category.id).count()
-            validation_count = self.db.query(TermValidation).filter(
-                TermValidation.matched_term_id == Term.id,
-                Term.category_id == category.id
-            ).count()
-            correction_count = self.db.query(TermValidation).filter(
-                TermValidation.correction_needed == True,
-                TermValidation.matched_term_id == Term.id,
-                Term.category_id == category.id
-            ).count()
+            term_count = self.db.execute(select(Term).filter(Term.category_id == category.id).count()).scalar()
+            validation_count = self.db.execute(
+                select(TermValidation).where(
+                    TermValidation.matched_term_id == Term.id,
+                    Term.category_id == category.id
+                ).count()
+            ).scalar()
+            correction_count = self.db.execute(
+                select(TermValidation).where(
+                    TermValidation.correction_needed == True,
+                    TermValidation.matched_term_id == Term.id,
+                    Term.category_id == category.id
+                ).count()
+            ).scalar()
             
-            stats = self.db.query(TermValidation).filter(
-                TermCategory.id == category.id
-            ).first()
+            stats = self.db.execute(
+                select(TermValidation).where(TermCategory.id == category.id)
+            ).scalar_one_or_none()
             
             if stats:
                 stats.total_terms = term_count

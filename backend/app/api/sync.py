@@ -6,6 +6,7 @@
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ..schemas.base import ApiResponse
@@ -22,9 +23,9 @@ def register_device(
     db: Session = Depends(get_db),
 ):
     """注册/更新设备"""
-    device = db.query(UserDevice).filter(
-        UserDevice.device_id == device_info.get("device_id")
-    ).first()
+    device = db.execute(select(UserDevice).where(
+    UserDevice.device_id == device_info.get("device_id")
+)).scalar_one_or_none()
 
     if not device:
         device = UserDevice(
@@ -59,17 +60,18 @@ def get_sync_status(
     db: Session = Depends(get_db),
 ):
     """获取设备同步状态"""
-    device = db.query(UserDevice).filter(
-        UserDevice.device_id == device_id
-    ).first()
+    device = db.execute(select(UserDevice).where(
+    UserDevice.device_id == device_id
+)).scalar_one_or_none()
 
     if not device:
         raise HTTPException(status_code=404, detail="设备未注册")
 
     # 获取最近的同步日志
-    recent_logs = db.query(SyncLog).filter(
-        SyncLog.device_id == device_id
-    ).order_by(SyncLog.created_at.desc()).limit(10).all()
+    recent_logs = db.execute(
+        select(SyncLog).where(SyncLog.device_id == device_id).
+        order_by(SyncLog.created_at.desc()).limit(10)
+    ).scalars().all()
 
     return ApiResponse(data={
         "device_id": device_id,
@@ -113,9 +115,9 @@ def sync_push(
     db.commit()
 
     # 更新设备最后同步时间
-    device = db.query(UserDevice).filter(
-        UserDevice.device_id == device_id
-    ).first()
+    device = db.execute(select(UserDevice).where(
+    UserDevice.device_id == device_id
+)).scalar_one_or_none()
     if device:
         device.last_sync_time = db.func.now()
         db.commit()

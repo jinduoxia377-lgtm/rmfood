@@ -57,8 +57,8 @@ async def list_notifications(
         "items": [
             {
                 "id": n.id,
-                "type": n.type.value,
-                "status": n.status.value,
+                "type": n.type.value if hasattr(n.type, "value") else str(n.type),
+                "status": n.status.value if hasattr(n.status, "value") else str(n.status),
                 "title": n.title,
                 "content": n.content,
                 "link": n.link,

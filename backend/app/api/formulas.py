@@ -74,7 +74,7 @@ async def list_formulas(
         formula_responses.append({
             "id": f.id,
             "code": f.code,
-            "status": f.status.value,
+            "status": f.status.value if hasattr(f.status, "value") else str(f.status),
             "version": f.version,
             "creator_id": f.creator_id,
             "creator_name": f.creator.username if f.creator else None,
@@ -152,7 +152,7 @@ async def get_formula_statistics(
         status_distribution[key] = c
 
     # recent creations (last 30 days, daily)
-    now = datetime.now(timezone.utc)
+    now = datetime.now()  # 使用 naive datetime 匹配 TIMESTAMP WITHOUT TIME ZONE
     recent_creations = []
     for i in range(30):
         day = now - timedelta(days=29 - i)
@@ -976,7 +976,7 @@ async def export_formula(
             "code": formula.code,
             "name": formula.name,
             "description": formula.description or "",
-            "status": formula.status.value,
+            "status": formula.status.value if hasattr(formula.status, "value") else str(formula.status),
             "version": formula.version,
             "target_effects": formula.target_effects or [],
             "dosage": formula.dosage or "",
@@ -1382,10 +1382,9 @@ async def batch_delete_formulas(
     existing = formulas.scalars().all()
     existing_ids = {f.id for f in existing}
 
-    from datetime import datetime, timezone
     deleted = 0
     for f in existing:
-        f.deleted_at = datetime.now(timezone.utc)
+        f.deleted_at = datetime.now()  # 使用 naive datetime
         deleted += 1
 
     await db.commit()
