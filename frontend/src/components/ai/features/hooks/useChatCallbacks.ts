@@ -11,6 +11,7 @@
  */
 
 import { useCallback, useEffect } from 'react'
+import type { Dispatch, SetStateAction } from 'react'
 import type { HistorySession } from '../components/pro'
 import { saveSessions, loadSessions } from '../components/pro'
 import { storageService } from '../services/storageService'
