@@ -1,13 +1,11 @@
 /**
- * Navbar 组件 v3 — 专业学术风格导航栏
+ * Navbar 组件 v4 — 专业学术风格导航栏
  *
- * 升级要点：
- *   - 高度 56px → 64px，增加呼吸感
- *   - Logo 16px → 20px，更醒目
- *   - 导航链接 13px → 14px，字重 500→600
- *   - CTA 按钮更大更醒目
- *   - 滚动后更明显的阴影分隔
- *   - 去版本号标签
+ * 升级要点（v4）：
+ *   - Logo 尺寸提升：图标 20px，容器 36px
+ *   - 导航链接 hover/active 样式提取为 CSS 类（lp-nav-link / lp-nav-active）
+ *   - CTA "免费试用" → "免费开始研发"（行动暗示更强）
+ *   - 移动端菜单增加过渡动画
  */
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
@@ -50,15 +48,7 @@ export default function Navbar() {
     return () => observer.disconnect();
   }, []);
 
-  const activeLinkStyle = (href: string) => {
-    const sectionId = href.replace('#', '');
-    const isActive = activeSection === sectionId;
-    return {
-      color: isActive ? '#0f172a' : '#475569',
-      background: isActive ? 'rgba(15,23,42,0.06)' : 'transparent',
-      borderBottom: isActive ? '2px solid #0f172a' : '2px solid transparent',
-    };
-  };
+  const isActive = (href: string) => activeSection === href.replace('#', '');
 
   return (
     <nav
@@ -92,41 +82,27 @@ export default function Navbar() {
             </div>
           ) : (
             <div
-              className="w-8 h-8 rounded-md flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:rotate-[-5deg]"
-              style={{ background: '#059669' }}
+              className="shrink-0 rounded-md flex items-center justify-center transition-transform duration-200 group-hover:rotate-[-5deg]"
+              style={{ width: logoSize.image, height: logoSize.image, background: '#059669' }}
             >
-              <Beaker size={logoSize.icon + 2} color="white" strokeWidth={2.2} />
+              <Beaker size={logoSize.icon} color="white" strokeWidth={2.2} />
             </div>
           )}
           <span
-              className="font-bold text-[15px] tracking-tight leading-none"
-              style={{ color: '#0f172a' }}
-            >
-              {BRAND_CONFIG.name}
-            </span>
+            className="font-bold text-[16px] tracking-tight leading-none"
+            style={{ color: '#0f172a' }}
+          >
+            {BRAND_CONFIG.name}
+          </span>
         </Link>
 
         {/* 桌面导航 */}
-        <div className="hidden md:flex items-center gap-1">
+        <div className="hidden md:flex items-center gap-0.5">
           {navLinks.map((l) => (
             <a
               key={l.href}
               href={l.href}
-              className="text-[14px] font-medium px-3 py-2 rounded-md transition-colors"
-              style={{ color: '#475569', borderBottom: '2px solid transparent' }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = '#0f172a';
-                e.currentTarget.style.background = 'rgba(15,23,42,0.04)';
-              }}
-              onMouseLeave={(e) => {
-                const isActive = activeSection === l.href.replace('#', '');
-                e.currentTarget.style.color = isActive ? '#0f172a' : '#475569';
-                e.currentTarget.style.background = isActive ? 'rgba(15,23,42,0.06)' : 'transparent';
-                e.currentTarget.style.borderBottomColor = isActive ? '#0f172a' : 'transparent';
-              }}
-              {...(activeSection === l.href.replace('#', '') && {
-                style: { color: '#0f172a', background: 'rgba(15,23,42,0.06)', borderBottom: '2px solid #0f172a' }
-              })}
+              className={cn('lp-nav-link', isActive(l.href) && 'lp-nav-active')}
             >
               {l.label}
             </a>
@@ -138,16 +114,7 @@ export default function Navbar() {
           {isAuthenticated ? (
             <Link
               to="/dashboard"
-              className="text-[14px] font-medium px-3 py-2 rounded-md transition-colors"
-              style={{ color: '#475569' }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = '#0f172a';
-                e.currentTarget.style.background = 'rgba(15,23,42,0.04)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = '#475569';
-                e.currentTarget.style.background = 'transparent';
-              }}
+              className="lp-nav-link"
             >
               {navbarCTA.dashboardLabel}
             </Link>
@@ -155,16 +122,7 @@ export default function Navbar() {
             <>
               <Link
                 to="/login"
-                className="hidden sm:inline-flex text-[14px] font-medium px-3 py-2 rounded-md transition-colors"
-                style={{ color: '#475569' }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = '#0f172a';
-                  e.currentTarget.style.background = 'rgba(15,23,42,0.04)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = '#475569';
-                  e.currentTarget.style.background = 'transparent';
-                }}
+                className="hidden sm:inline-flex lp-nav-link"
               >
                 登录
               </Link>
@@ -186,17 +144,14 @@ export default function Navbar() {
             <CollapsibleTrigger asChild>
               <button
                 type="button"
-                className="md:hidden p-2 rounded-md ml-1 transition-colors"
-                style={{ color: '#475569' }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(15,23,42,0.04)'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+                className="md:hidden p-2 rounded-md ml-1 transition-colors lp-nav-link"
                 aria-expanded={mobileOpen}
                 aria-label="菜单"
               >
                 {mobileOpen ? <X size={18} /> : <Menu size={18} />}
               </button>
             </CollapsibleTrigger>
-            <CollapsibleContent className="md:hidden overflow-hidden">
+            <CollapsibleContent className="md:hidden overflow-hidden" style={{ animation: 'lp-mobile-menu 0.2s ease' }}>
               <div style={{ background: '#fff', borderTop: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}>
                 <div className="px-4 py-3 space-y-0.5">
                   {navLinks.map((l) => (
@@ -204,16 +159,11 @@ export default function Navbar() {
                       key={l.href}
                       href={l.href}
                       onClick={() => setMobileOpen(false)}
-                      className="block text-[14px] font-medium py-2.5 px-3 rounded-md transition-colors"
-                      style={{ color: '#334155' }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.background = 'rgba(15,23,42,0.04)';
-                        e.currentTarget.style.color = '#0f172a';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.background = 'transparent';
-                        e.currentTarget.style.color = '#334155';
-                      }}
+                      className={cn(
+                        'block text-[14px] font-medium py-2.5 px-3 rounded-md transition-colors',
+                        'text-slate-600 hover:text-slate-900 hover:bg-slate-50',
+                        isActive(l.href) && 'text-slate-900 bg-slate-50'
+                      )}
                     >
                       {l.label}
                     </a>

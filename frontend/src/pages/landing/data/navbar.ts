@@ -28,7 +28,7 @@ export interface NavbarCTA {
 }
 
 export const navbarCTA: NavbarCTA = {
-  trialLabel: '免费试用',
+  trialLabel: '免费开始研发',
   dashboardLabel: '工作台',
 };
 
@@ -37,9 +37,9 @@ export const logoPath = BRAND_CONFIG.logo.path ?? '';
 
 export const logoSize = {
   /** 图片模式：容器尺寸（w/h），含内边距 */
-  image: 32,
+  image: 36,
   /** 图标模式：lucide-react 尺寸 */
-  icon: 16,
+  icon: 20,
 };
 
 /**
