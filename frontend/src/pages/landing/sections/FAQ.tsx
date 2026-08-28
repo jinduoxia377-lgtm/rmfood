@@ -16,8 +16,8 @@ export default function FAQ() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <Reveal>
           <div className="text-center mb-8">
-            <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block mb-3">{sectionLabel}</span>
-            <h2 className="text-2xl font-bold text-slate-900">常见问题</h2>
+            <span className="lp-section-tag block mb-3">{sectionLabel}</span>
+            <h2 className="lp-h2">常见问题</h2>
           </div>
         </Reveal>
 

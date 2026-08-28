@@ -65,8 +65,7 @@ export default function Footer() {
           ))}
         </div>
 
-        <div className="pt-5 border-t flex flex-col sm:flex-row items-center justify-between gap-3" style={{ borderColor: '#e2e8f0' }}>
-          <p className="text-[11px]" style={{ color: '#94a3b8' }}>© {new Date().getFullYear()} {RHINE_BRAND_CONFIG.fullName}</p>
+        <div className="pt-5 border-t flex items-center justify-between gap-3" style={{ borderColor: '#e2e8f0' }}>
           <p className="text-[10px] font-mono" style={{ color: '#cbd5e1' }}>闽ICP备2025XXXXXX号-1</p>
         </div>
       </div>

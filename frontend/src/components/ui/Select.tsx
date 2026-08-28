@@ -5,7 +5,13 @@ import * as SelectPrimitive from '@radix-ui/react-select'
 import { Check, ChevronDown, ChevronUp } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-// ── Select 包装层：兼容 onChange → onValueChange ──────────────────────────
+// ═══════════════════════════════════════════════════════════════
+// Select 包装层 — 类型安全桥接
+//
+// 问题：SelectPrimitive.Root 不接受 onChange，只接受 onValueChange
+// 解决：显式定义桥接 props，避免使用 as any
+// ═══════════════════════════════════════════════════════════════
+
 interface SelectRootProps extends Omit<SelectPrimitive.SelectProps, 'onChange'> {
   onChange?: (value: string) => void
   onValueChange?: (value: string) => void
@@ -15,8 +21,14 @@ interface SelectRootProps extends Omit<SelectPrimitive.SelectProps, 'onChange'> 
 }
 
 const Select = React.memo(({ onChange, onValueChange, ...props }: SelectRootProps) => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const rootProps = { ...props, onValueChange: (v: string) => { onValueChange?.(v); onChange?.(v) } } as any
+  // 桥接：将 onChange 转换为 onValueChange
+  const rootProps: SelectPrimitive.SelectProps & { onValueChange?: (v: string) => void } = {
+    ...props,
+    onValueChange: (v) => {
+      onValueChange?.(v)
+      onChange?.(v)
+    },
+  }
   return <SelectPrimitive.Root {...rootProps} />
 })
 Select.displayName = 'Select'

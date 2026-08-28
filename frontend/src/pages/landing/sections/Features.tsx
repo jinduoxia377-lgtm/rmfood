@@ -115,14 +115,13 @@ export default function Features() {
         {/* 标题区 */}
         <Reveal>
           <div className="max-w-2xl mb-12">
-            <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block mb-3">
+            <span className="lp-section-tag block mb-3">
               {sectionLabel}
             </span>
-            <h2 className="text-[clamp(2rem,4.5vw,2.75rem)] font-bold leading-[1.15] mb-4 tracking-tight text-slate-900"
-                style={{ fontFamily: 'var(--font-sans)' }}>
+            <h2 className="lp-h2 mb-4">
               {titleLines.map((line, i) => <span key={i}>{line}{i < titleLines.length - 1 && <br />} </span>)}
             </h2>
-            <p className="text-[14px] leading-[1.75] text-slate-600 max-w-lg">
+            <p className="lp-body-sm max-w-lg">
               {sectionDesc}
             </p>
           </div>
