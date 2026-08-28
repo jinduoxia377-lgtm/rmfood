@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 配方详情页 - Phase 5 深度增强版（Tab 重构）
  * 配方信息、AI分析、评论区、导出、版本历史、审核、活动时间线、成分可视化
  * 新增: 5个Tab布局、内联编辑、版本对比/回滚、相关推荐、增强删除确认
@@ -94,7 +94,10 @@ import { TemplateEditor } from '@/components/formula/TemplateEditor';
 import { useComplianceCheck, complianceApi } from '@/api/compliance';
 import { explainabilityApi } from '@/api/explainability';
 
-export default function FormulaDetailPage() {
+export default function FormulaDetailPage() {  // DEBUG: Log all hooks before any render
+  try {
+    console.log('[FormulaDetail] Starting render, id =', typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('id') : 'n/a');
+  } catch(e) {}
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
@@ -1846,7 +1849,7 @@ export default function FormulaDetailPage() {
                                   </div>
                                   <div className="flex items-center gap-2">
                                     <span className="text-xs text-neutral-400">
-                                      {new Date(v.createdAt).toLocaleString('zh-CN')}
+                                      {new Date(v.created_at).toLocaleString('zh-CN')}
                                     </span>
                                     <span className="text-xs text-neutral-500">
                                       by {v.changed_by_name || v.changed_by || '-'}
@@ -1870,7 +1873,7 @@ export default function FormulaDetailPage() {
                                         id: Number(v.id),
                                         version: String(v.version_number || v.version_label),
                                         snapshot: v.snapshot,
-                                        created_at: v.createdAt,
+                                        created_at: v.created_at,
                                         change_summary: v.change_summary || undefined,
                                       });
                                       setShowVersionDiff(true);
@@ -2555,7 +2558,7 @@ export default function FormulaDetailPage() {
                           id: Number(v.id),
                           version: String(v.version_number || v.version_label),
                           snapshot: v.snapshot,
-                          created_at: v.createdAt,
+                          created_at: v.created_at,
                           change_summary: v.change_summary || undefined,
                         });
                       } else {
@@ -2563,7 +2566,7 @@ export default function FormulaDetailPage() {
                           id: Number(v.id),
                           version: String(v.version_number || v.version_label),
                           snapshot: v.snapshot,
-                          created_at: v.createdAt,
+                          created_at: v.created_at,
                           change_summary: v.change_summary || undefined,
                         });
                       }
@@ -2576,7 +2579,7 @@ export default function FormulaDetailPage() {
                         v{v.version_number || v.version_label}
                       </span>
                       <span className="text-xs text-neutral-400">
-                        {new Date(v.createdAt).toLocaleDateString('zh-CN')}
+                        {new Date(v.created_at).toLocaleDateString('zh-CN')}
                       </span>
                     </div>
                     {v.change_summary && <p className="text-xs text-neutral-500 mt-0.5">{v.change_summary}</p>}
@@ -2776,5 +2779,6 @@ function AnalysisCard({
     </div>
   )
 }
+
 
 
