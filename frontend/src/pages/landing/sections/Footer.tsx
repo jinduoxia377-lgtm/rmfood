@@ -32,7 +32,7 @@ export default function Footer() {
           </div>
           {navSections.map((col) => (
             <div key={col.title} className="col-span-1">
-              <h4 className="text-[11px] font-semibold uppercase tracking-wider mb-3" style={{ color: '#0f172a' }}>{col.title}</h4>
+              <h4 className="lp-label uppercase tracking-wider mb-3" style={{ color: '#0f172a' }}>{col.title}</h4>
               <ul className="space-y-2">
                 {col.links.map((link) => (
                   <li key={typeof link === 'string' ? link : link.label}>
@@ -55,7 +55,7 @@ export default function Footer() {
             <a
               key={name}
               href="#"
-              className="text-[11px] font-medium px-2.5 py-1 rounded-md transition-colors hover:text-slate-700"
+              className="lp-label px-2.5 py-1 rounded-md transition-colors hover:text-slate-700"
               style={{ color: '#94a3b8', border: '1px solid #e2e8f0' }}
               onClick={(e) => e.preventDefault()}
             >
@@ -65,8 +65,8 @@ export default function Footer() {
         </div>
 
         <div className="pt-5 border-t flex items-center justify-between gap-3" style={{ borderColor: '#e2e8f0' }}>
-          <p className="text-[11px]" style={{ color: '#94a3b8' }}>© {new Date().getFullYear()} {RHINE_BRAND_CONFIG.fullName} 所有权利保留</p>
-          <p className="text-[10px] font-mono" style={{ color: '#cbd5e1' }}>闽ICP备2025XXXXXX号-1</p>
+          <p className="lp-caption">© {new Date().getFullYear()} {RHINE_BRAND_CONFIG.fullName} 所有权利保留</p>
+          <p className="lp-mono">闽ICP备2025XXXXXX号-1</p>
         </div>
       </div>
     </footer>

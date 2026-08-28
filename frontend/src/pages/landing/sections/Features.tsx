@@ -32,7 +32,7 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
       <div
         className="lp-card-white relative overflow-hidden transition-all duration-200 cursor-default"
         style={{
-          border: `1px solid ${hovered ? cfg.primary : '#e2e8f0'}`,
+          border: `1px solid ${hovered ? cfg.primary : 'var(--border-color, #e2e8f0)'}`,
         }}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
@@ -60,15 +60,15 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
               <div className="flex items-center gap-2 mb-0.5">
                 <h3 className="text-[14px] font-bold text-slate-900">{feature.title}</h3>
                 {feature.keyMetric && (
-                  <span className="text-[11px] font-mono text-slate-400 shrink-0">{feature.keyMetric}</span>
+                  <span className="lp-caption font-mono shrink-0">{feature.keyMetric}</span>
                 )}
               </div>
-              <span className="text-[10px] text-slate-400">{feature.tag}</span>
+              <span className="text-[10px] text-neutral-400">{feature.tag}</span>
             </div>
           </div>
 
           {/* 描述 */}
-          <p className="text-[13px] leading-relaxed text-slate-600 mb-4 min-h-[52px]">
+          <p className="text-[13px] leading-relaxed text-neutral-600 mb-4 min-h-[52px]">
             {feature.desc}
           </p>
 
@@ -78,7 +78,7 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
               {feature.steps.map((step, i) => (
                 <li key={step.label} className="text-[12px] text-slate-500 leading-relaxed">
                   <span className="font-medium text-slate-700">{step.label}</span>
-                  {step.detail && <span className="text-slate-400 ml-1">— {step.detail}</span>}
+                  {step.detail && <span className="text-neutral-400 ml-1">— {step.detail}</span>}
                 </li>
               ))}
             </ol>

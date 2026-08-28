@@ -31,10 +31,10 @@ export default function FAQ() {
                 onMouseLeave={e => (e.currentTarget as HTMLElement).style.borderColor = '#e2e8f0'}
               >
                 <AccordionTrigger className="px-4 py-3 hover:no-underline">
-                  <span className="text-[13px] font-medium text-left text-slate-800">{faq.q}</span>
+                  <span className="lp-body font-medium text-left text-slate-800">{faq.q}</span>
                 </AccordionTrigger>
                 <AccordionContent className="px-4 pb-3">
-                  <p className="text-[13px] leading-[1.7] text-slate-600">{faq.a}</p>
+                  <p className="lp-body leading-[1.7] text-slate-600">{faq.a}</p>
                 </AccordionContent>
               </AccordionItem>
             ))}

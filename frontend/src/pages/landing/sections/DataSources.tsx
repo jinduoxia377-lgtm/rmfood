@@ -20,12 +20,12 @@ import { Database, Network, Shield, Scale, FlaskConical, RefreshCw } from 'lucid
 function StatusBadge({ status }: { status: DataSource['status'] }) {
   const cfg = {
     online:  { label: '在线', color: '#059669', bg: '#ecfdf5', border: '#a7f3d0' },
-    syncing: { label: '同步中', color: '#2563eb', bg: '#eff6ff', border: '#bfdbfe' },
     update:  { label: '已更新', color: '#d97706', bg: '#fffbeb', border: '#fde68a' },
+    syncing: { label: '同步中', color: '#2563eb', bg: '#eff6ff', border: '#bfdbfe' },
   };
   const c = cfg[status];
   return (
-    <span className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-md"
+    <span className="inline-flex items-center gap-1 lp-caption px-1.5 py-0.5 rounded-md"
           style={{ background: c.bg, color: c.color, border: `1px solid ${c.border}` }}>
       {status === 'syncing' && <RefreshCw size={8} className="animate-spin" />}
       {c.label}
@@ -70,7 +70,7 @@ function DataSourceCard({ data, index }: { data: DataSource; index: number }) {
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5 mb-0.5">
-                <span className="text-[12px] font-bold text-slate-900">{data.name}</span>
+                <span className="lp-label font-bold text-slate-900">{data.name}</span>
                 <StatusBadge status={data.status} />
               </div>
               <span className="lp-caption font-medium" style={{ color: data.color }}>{data.subtitle}</span>

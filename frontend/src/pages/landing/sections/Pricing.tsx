@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Pricing 组件 v4 — 学术定价表风格（升级 v4）
  *
  * 升级要点（v4）：
@@ -38,7 +38,7 @@ export default function Pricing() {
 
             <div className="mt-5 inline-flex items-center gap-0.5 p-0.5 rounded-md" style={{ background: '#f1f5f9', border: '1px solid #e2e8f0' }}>
               {(['monthly', 'yearly'] as const).map((m) => (
-                <button key={m} onClick={() => setBilling(m)} className="px-3 py-1.5 text-[11px] font-medium rounded-md transition-colors"
+                <button key={m} onClick={() => setBilling(m)} className="lp-label rounded-md transition-colors px-3 py-1.5"
                   style={billing === m ? { background: '#fff', color: '#0f172a', border: '1px solid #e2e8f0', boxShadow: '0 1px 2px rgba(0,0,0,0.04)' } : { background: 'transparent', color: '#94a3b8' }}
                 >{m === 'monthly' ? '月付' : '年付'}</button>
               ))}
@@ -70,10 +70,10 @@ export default function Pricing() {
                       ) : (
                         <Lock size={10} className="mt-0.5 shrink-0" style={{ color: p.popular ? '#475569' : '#cbd5e1' }} />
                       )}
-                      <span className="text-[12px] font-medium" style={{ color: f.included ? (p.popular ? '#f8fafc' : '#475569') : (p.popular ? '#475569' : '#cbd5e1'), opacity: f.included ? 1 : 0.55 }}>
+                      <span className="lp-label" style={{ color: f.included ? (p.popular ? '#f8fafc' : '#475569') : (p.popular ? '#475569' : '#cbd5e1'), opacity: f.included ? 1 : 0.55 }}>
                         {f.text}
                         {!f.included && p.name !== '企业版' && (
-                          <span className="ml-1.5 text-[10px] font-mono" style={{ color: p.popular ? '#64748b' : '#94a3b8' }}>升级解锁</span>
+                          <span className="ml-1.5 lp-mono" style={{ color: p.popular ? '#64748b' : '#94a3b8' }}>升级解锁</span>
                         )}
                       </span>
                     </li>
@@ -83,7 +83,7 @@ export default function Pricing() {
                   <DialogTrigger asChild>
                     <Button
                       variant={p.popular ? 'default' : 'outline'}
-                      className={cn('w-full h-9 text-[12px] font-medium rounded-md')}
+                      className={cn('w-full h-9 lp-label rounded-md')}
                       style={!p.popular ? { borderColor: '#e2e8f0', color: '#475569' } : undefined}
                     >
                       {p.cta}
@@ -117,3 +117,4 @@ export default function Pricing() {
     </section>
   );
 }
+

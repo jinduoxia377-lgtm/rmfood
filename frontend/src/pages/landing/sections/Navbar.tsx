@@ -57,10 +57,10 @@ export default function Navbar() {
         scrolled && 'navbar-scrolled'
       )}
       style={{
-        background: scrolled ? 'rgba(255,255,255,0.97)' : 'rgba(255,255,255,0.92)',
-        borderBottom: scrolled ? '1px solid #e2e8f0' : '1px solid rgba(226,232,240,0.5)',
-        backdropFilter: scrolled ? 'blur(12px) saturate(180%)' : 'blur(8px)',
-        WebkitBackdropFilter: scrolled ? 'blur(12px) saturate(180%)' : 'blur(8px)',
+        background: 'rgba(255,255,255,0.97)',
+        borderBottom: '1px solid rgba(226,232,240,0.5)',
+        backdropFilter: 'blur(12px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(12px) saturate(180%)',
         height: '64px',
         boxShadow: scrolled ? '0 1px 0 rgba(0,0,0,0.04), 0 2px 8px rgba(0,0,0,0.04)' : 'none',
       }}

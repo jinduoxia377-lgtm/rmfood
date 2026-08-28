@@ -60,7 +60,7 @@ function CountUnit({ value, label, prevValue }: UnitProps) {
       >
         {value}
       </div>
-      <span className="text-[10px] font-medium uppercase tracking-wider" style={{ color: '#94a3b8' }}>{label}</span>
+      <span className="lp-caption uppercase tracking-wider">{label}</span>
     </div>
   );
 }
@@ -122,7 +122,7 @@ export function CountdownBanner() {
           <div className="flex items-center gap-4 min-w-0">
             {/* 徽章 */}
             <div
-              className="shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold"
+              className="shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-full lp-label"
               style={{
                 background: 'rgba(5,150,105,0.10)',
                 border: '1px solid rgba(5,150,105,0.25)',
@@ -160,7 +160,7 @@ export function CountdownBanner() {
             {/* CTA */}
             <Link
               to={LAUNCH_CONFIG.ctaHref}
-              className="shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-[12px] font-semibold transition-all duration-200 hover:-translate-y-[1px]"
+              className="shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl lp-label transition-all duration-200 hover:-translate-y-[1px]"
               style={{
                 background: '#0f172a',
                 color: '#ffffff',

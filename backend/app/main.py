@@ -433,6 +433,13 @@ Authorization: Bearer <your_access_token>
     #   2. router_registry — 动态发现的扩展路由（peptide/ai/analytics/...）
     #   3. version_routes — API 版本管理和元数据
     # 若注册中心出现异常，必须记录明确错误，禁止静默降级。
+    # ── 配方案例库 API（必须在 api_router 之前注册，避免 /formulas/{id} 先匹配 /formulas/cases）──
+    try:
+        from .api.v1.formula_cases import router as formula_cases_router
+        app.include_router(formula_cases_router, prefix="/api/v1")
+        logger.info("[FormulaCases] Formula case study API registered")
+    except Exception as e:
+        logger.warning(f"[FormulaCases] Router registration failed (non-blocking): {e}")
     app.include_router(api_router, prefix="/api/v1")
     # 🔒 P5: 注册企业级管理与合规路由
     try:
@@ -571,13 +578,6 @@ Authorization: Bearer <your_access_token>
         logger.info("[PluginRouter] Plugin management API registered")
     except Exception as e:
         logger.warning(f"[PluginRouter] Plugin router registration failed (non-blocking): {e}")
-    # ── 配方案例库 API ──
-    try:
-        from .api.v1.formula_cases import router as formula_cases_router
-        app.include_router(formula_cases_router, prefix="/api/v1")
-        logger.info("[FormulaCases] Formula case study API registered")
-    except Exception as e:
-        logger.warning(f"[FormulaCases] Router registration failed (non-blocking): {e}")
     # ── Potion AI VFT: 搜索分析 API ──
     try:
         app.include_router(search_analytics.router, prefix="/api/v1")
