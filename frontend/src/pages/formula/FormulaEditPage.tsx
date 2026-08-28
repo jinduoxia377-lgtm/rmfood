@@ -422,8 +422,8 @@ export default function FormulaEditPage() {
       }
 
       if (status === 409) {
-        const lastModified = data?.updated_at
-          ? new Date(data.updated_at).toLocaleString('zh-CN')
+        const lastModified = data?.updatedAt
+          ? new Date(data.updatedAt).toLocaleString('zh-CN')
           : new Date().toLocaleString('zh-CN');
         setConflictInfo({ lastModified });
         setConflictDetected(true);
@@ -1304,4 +1304,5 @@ function HerbSearchDropdown({
     </div>
   );
 }
+
 
