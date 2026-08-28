@@ -138,7 +138,7 @@ export function CountdownBanner() {
               <p className="text-[13px] sm:text-[14px] font-medium truncate" style={{ color: '#0f172a' }}>
                 {LAUNCH_CONFIG.subtitle}
               </p>
-              <p className="text-[11px] mt-0.5" style={{ color: '#94a3b8' }}>
+              <p className="lp-caption mt-0.5">
                 {LAUNCH_CONFIG.footnote}
               </p>
             </div>

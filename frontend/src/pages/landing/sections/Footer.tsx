@@ -29,7 +29,6 @@ export default function Footer() {
               <span className="font-bold text-sm" style={{ color: '#0f172a' }}>{BRAND_CONFIG.name}</span>
             </div>
             <p className="text-[12px] leading-relaxed mb-2" style={{ color: '#64748b' }}>{RHINE_BRAND_CONFIG.description}</p>
-            <p className="text-[11px]" style={{ color: '#94a3b8' }}>{RHINE_BRAND_CONFIG.copyright}</p>
           </div>
           {navSections.map((col) => (
             <div key={col.title} className="col-span-1">
@@ -66,6 +65,7 @@ export default function Footer() {
         </div>
 
         <div className="pt-5 border-t flex items-center justify-between gap-3" style={{ borderColor: '#e2e8f0' }}>
+          <p className="text-[11px]" style={{ color: '#94a3b8' }}>© {new Date().getFullYear()} {RHINE_BRAND_CONFIG.fullName} 所有权利保留</p>
           <p className="text-[10px] font-mono" style={{ color: '#cbd5e1' }}>闽ICP备2025XXXXXX号-1</p>
         </div>
       </div>
