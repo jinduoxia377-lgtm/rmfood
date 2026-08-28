@@ -1,4 +1,4 @@
-﻿"""
+"""
 多租户组织管理 API 路由
 
 提供:
@@ -116,14 +116,38 @@ async def list_my_organizations(
     current_user = Depends(get_current_user),
 ):
     """获取当前用户所属的所有组织"""
-    result = await db.execute(
-        """SELECT o.*, m.role as member_role
-           FROM organizations o
-           JOIN organization_members m ON o.id = m.organization_id
-           WHERE m.user_id = :user_id AND o.is_active = TRUE
-           ORDER BY m.joined_at DESC""",
-        {"user_id": current_user.id},
-    )
+    logger.info(f"[ORG DEBUG] user_id={current_user.id} role={current_user.role}")
+    try:
+        result = await db.execute(
+            """SELECT o.*, m.role as member_role
+               FROM organizations o
+               JOIN organization_members m ON o.id = m.organization_id
+               WHERE m.user_id = :user_id AND o.is_active = TRUE
+               ORDER BY m.joined_at DESC""",
+            {"user_id": current_user.id},
+        )
+        rows = result.fetchall()
+        logger.info(f"[ORG DEBUG] query returned {len(rows)} rows")
+        organizations = []
+        for row in rows:
+            organizations.append({
+                "id": row.id,
+                "name": row.name,
+                "slug": row.slug,
+                "description": row.description,
+                "logo_url": row.logo_url,
+                "plan": row.plan,
+                "member_role": row.member_role,
+                "owner_id": row.owner_id,
+                "created_at": row.created_at.isoformat() if row.created_at else None,
+            })
+        logger.info(f"[ORG DEBUG] returning {len(organizations)} orgs")
+        return {"organizations": organizations}
+    except Exception as e:
+        logger.error(f"[ORG DEBUG] EXCEPTION: {type(e).__name__}: {e}")
+        import traceback
+        traceback.print_exc()
+        raise
     
     organizations = []
     for row in result.fetchall():

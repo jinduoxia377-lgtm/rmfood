@@ -94,7 +94,8 @@ import { TemplateEditor } from '@/components/formula/TemplateEditor';
 import { useComplianceCheck, complianceApi } from '@/api/compliance';
 import { explainabilityApi } from '@/api/explainability';
 
-export default function FormulaDetailPage() {\n  const { id } = useParams<{ id: string }>();
+export default function FormulaDetailPage() {
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
   const { has } = usePermission();
@@ -2775,6 +2776,3 @@ function AnalysisCard({
     </div>
   )
 }
-
-
-
