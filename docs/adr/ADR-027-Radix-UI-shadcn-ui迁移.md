@@ -1,8 +1,8 @@
 # ADR-027: Radix UI / shadcn/ui 设计系统迁移
 
-**状态**: 已执行
+**状态**: 已执行完成
 **日期**: 2026-08-23
-**更新**: 2026-08-26 (所有 Phase 已完成)
+**最新更新**: 2026-08-27 (全部完成，0 TS 错误，antd 完全移除)
 **领域**: 前端/UI/UX
 
 ---
@@ -40,6 +40,9 @@ RMFOOD 前端目前有 ~38 个自研 UI 组件（~5,100 行代码），部分依
 | Phase 3 | CommandPalette, DataTable, OperationFeedback | ✅ 已完成 |
 | Phase 4 | 页面级迁移 + 无障碍审计 | ✅ 已完成 |
 | 补全 | InputProps 类型修复, Tooltip API 兼容性 | ✅ 已完成 |
+| antd 清理 | FoodMaterialSearchPanel, RetailProductSearchPanel, SearchAnalyticsDashboard | ✅ 已完成 |
+| TS 错误修复 | 114 个错误 → 0 | ✅ 已完成 |
+| Landing Page 升级 | 全面重新设计 | ✅ 已完成 |
 
 ## 交付成果
 
@@ -69,37 +72,49 @@ tabs, textarea, toast, tooltip
 | radius="medium" | --radius-md (8px) |
 | appearance="light/dark" | theme mode |
 
-## 遗留问题
+## 完成状态 (2026-08-27)
 
-### 预存 TypeScript 错误 (~161 处)
-- chatService.ts: 142 处 (with error: any)
-- UserManagementPage, SettingsPage: 预存类型错误
-- 多个 AI 组件: Tooltip content prop 类型变更
-
-### antd 残留 (4 处)
-仅 4 个 database 页面仍使用 antd:
-- FoodMaterialSearchPanel.tsx
-- RetailProductDetailModal.tsx
-- RetailProductSearchPanel.tsx
-- SearchAnalyticsDashboard.tsx
-
-### 可选优化
-- Lighthouse 性能审计
-- Bundle size 分析
-- 移除旧组件文件
-
-## 验证结果
-
+### TypeScript
 ```
-TypeScript:    0 错误 (我们的代码)
-Vite Build:    ✓ 通过 (13.64s)
-页面访问:      ✓ /radix-demo 正常渲染
+TypeScript:    0 错误 (原 114 个)
+```
+
+### antd 清理
+```
+antd 源码引用: 0 (原 4 个文件)
+```
+
+### 生产构建
+```
+Vite Build:    ✓ 通过 (36s)
 向后兼容:      ✓ 100%
 ```
+
+### Git 提交
+```
+提交数:        9 commits
+分支:          main
+```
+
+## 遗留类型工作区 (7 处，必要妥协)
+
+| 文件 | 类型 | 原因 |
+|------|------|------|
+| `Input.tsx:4` | `@ts-ignore` | React 19 InputHTMLAttributes.size 从 string 改为 number |
+| `shadcn/input.tsx:4` | `@ts-ignore` | 同上 |
+| `Card.tsx:34` | `as any` | 动态组件类型推断限制 |
+| `RadixComponents.tsx:38,71,73` | `as any` | Radix Themes props 类型过宽 (27+ 颜色) |
+| `Select.tsx:19` | `as any` | forwardRef 类型限制 |
+
+**分析结论**: 这些是 React 19 + Radix Themes 3.x 的结构性限制，无法在不破坏功能的情况下消除。
 
 ## 后续步骤
 
 1. ✅ 每个 Phase 完成后运行 TypeScript 检查和构建验证
 2. ✅ 每阶段结束后更新此 ADR 的状态
 3. ✅ Phase 4 完成后进行全面无障碍审计
-4. ⏳ 后续迭代: antd 清理 (建议独立任务)
+4. ✅ antd 清理完成
+5. ✅ TS 错误全部修复
+6. 📋 可选: Lighthouse 性能审计
+7. 📋 可选: Bundle size 分析
+8. 📋 可选: 组件使用文档
