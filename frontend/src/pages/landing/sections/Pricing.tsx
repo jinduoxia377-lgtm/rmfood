@@ -53,9 +53,9 @@ export default function Pricing() {
               <div className={cn('h-full flex flex-col rounded-md p-5', p.popular && 'ring-1 ring-slate-900')}
                 style={{ background: p.popular ? '#0f172a' : '#fafafa', border: p.popular ? '1px solid #0f172a' : '1px solid #e2e8f0' }}
               >
-                {p.popular && <span className="text-[10px] font-mono text-slate-400 mb-3 block">推荐方案</span>}
+                {p.popular && <span className="lp-section-tag mb-3 block">推荐方案</span>}
                 <h3 className={cn('text-base font-bold mb-0.5', p.popular ? 'text-white' : 'text-slate-900')}>{p.name}</h3>
-                <p className={cn('text-[11px] mb-4', p.popular ? 'text-slate-400' : 'text-slate-500')}>{p.desc}</p>
+                <p className={cn('lp-caption mb-4', p.popular ? 'text-slate-400' : 'text-slate-500')}>{p.desc}</p>
                 <div className={cn('mb-4 flex items-baseline gap-1', p.popular ? 'text-white' : 'text-slate-900')}>
                   <span key={`${p.name}-${animKey}`} className="text-2xl font-bold font-mono animate-in fade-in duration-200">
                     {p.name === '专业版' ? (billing === 'monthly' ? p.priceMonthly : p.priceYearly) : p.priceMonthly}
@@ -96,7 +96,7 @@ export default function Pricing() {
                     </DialogHeader>
                     <ul className="space-y-1.5">
                       {p.features.filter((f) => f.included).map((f) => (
-                        <li key={f.text} className="flex items-center gap-2 text-[11px] text-slate-600">
+                        <li key={f.text} className="flex items-center gap-2 lp-caption text-slate-600">
                           <Check size={11} style={{ color: '#059669' }} /> {f.text}
                         </li>
                       ))}

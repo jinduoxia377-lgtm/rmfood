@@ -58,15 +58,15 @@ export default function CTABanner() {
                 </DialogHeader>
                 <div className="space-y-3">
                   <div>
-                    <label className="text-[12px] font-medium text-slate-700 mb-1 block">姓名</label>
+                    <label className="lp-label mb-1 block">姓名</label>
                     <input className="w-full h-9 px-3 text-[13px] rounded-md border border-slate-200 bg-white text-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-300" placeholder="请输入您的姓名" />
                   </div>
                   <div>
-                    <label className="text-[12px] font-medium text-slate-700 mb-1 block">邮箱</label>
+                    <label className="lp-label mb-1 block">邮箱</label>
                     <input className="w-full h-9 px-3 text-[13px] rounded-md border border-slate-200 bg-white text-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-300" placeholder="company@example.com" type="email" />
                   </div>
                   <div>
-                    <label className="text-[12px] font-medium text-slate-700 mb-1 block">公司名称</label>
+                    <label className="lp-label mb-1 block">公司名称</label>
                     <input className="w-full h-9 px-3 text-[13px] rounded-md border border-slate-200 bg-white text-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-300" placeholder="请输入公司名称" />
                   </div>
                 </div>

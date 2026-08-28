@@ -74,7 +74,7 @@ function ScenarioCard({ item, index }: { item: (typeof useCases)[0]; index: numb
 
           {/* 工作流程（如方法学） */}
           <div className="mb-5">
-            <div className="text-[10px] font-mono text-slate-400 uppercase tracking-widest mb-2.5">
+            <div className="lp-caption mb-2.5">
               工作流程
             </div>
             <div className="space-y-3">
@@ -87,8 +87,8 @@ function ScenarioCard({ item, index }: { item: (typeof useCases)[0]; index: numb
                     {i + 1}
                   </div>
                   <div className="pt-0.5">
-                    <div className="text-[12px] font-medium text-slate-700">{step.label}</div>
-                    <div className="text-[11px] text-slate-400">{step.detail}</div>
+                    <div className="lp-label">{step.label}</div>
+                    <div className="lp-caption">{step.detail}</div>
                   </div>
                 </div>
               ))}
@@ -97,7 +97,7 @@ function ScenarioCard({ item, index }: { item: (typeof useCases)[0]; index: numb
 
           {/* 指标数据表 */}
           <div className="mb-5">
-            <div className="text-[10px] font-mono text-slate-400 uppercase tracking-widest mb-2">
+            <div className="lp-caption mb-2">
               核心指标
             </div>
             <table className="w-full text-[11px] border-collapse">
@@ -159,16 +159,15 @@ export default function UseCases() {
         {/* 标题区 */}
         <Reveal>
           <div className="mb-10">
-            <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block mb-3">
+            <span className="lp-section-tag block mb-3">
               {sectionLabel}
             </span>
-            <h2 className="text-[clamp(2rem,4.5vw,2.5rem)] font-bold leading-[1.15] mb-3 tracking-tight text-slate-900"
-                style={{ fontFamily: 'var(--font-sans)' }}>
+            <h2 className="lp-h2 mb-3">
               {titleLines.map((line, i) => (
                 <span key={i}>{line}{i < titleLines.length - 1 && <br />} </span>
               ))}
             </h2>
-            <p className="text-[13px] leading-relaxed max-w-lg text-slate-600">
+            <p className="lp-body-sm max-w-lg">
               {sectionDesc}
             </p>
           </div>

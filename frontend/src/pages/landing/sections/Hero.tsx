@@ -903,7 +903,7 @@ function ProductPreview() {
         {/* 标题栏 */}
         <div className="lp-titlebar flex items-center gap-0 px-4 py-2 border-b">
           <div className="flex items-center gap-2">
-            <span className="text-[9px] font-mono text-slate-400 tracking-wider">RMFOOD</span>
+            <span className="lp-brand tracking-wider">RMFOOD</span>
             <div className="w-px h-3 bg-slate-700" />
             <div className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium" style={{ background: 'rgba(5,150,105,0.2)', color: '#6ee7b7', border: '1px solid rgba(5,150,105,0.3)' }}>
               <Sparkles size={9} /><span>智能对话</span>

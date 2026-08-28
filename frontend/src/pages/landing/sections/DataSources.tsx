@@ -73,7 +73,7 @@ function DataSourceCard({ data, index }: { data: DataSource; index: number }) {
                 <span className="text-[12px] font-bold text-slate-900">{data.name}</span>
                 <StatusBadge status={data.status} />
               </div>
-              <span className="text-[11px] font-medium" style={{ color: data.color }}>{data.subtitle}</span>
+              <span className="lp-caption font-medium" style={{ color: data.color }}>{data.subtitle}</span>
             </div>
           </div>
 
