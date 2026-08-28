@@ -728,7 +728,7 @@ section[id] {
 }
 .lp-data-card-title-group {
   flex: 1;
-  min-w-0;
+  min-width: 0;
 }
 .lp-data-card-name {
   font-size: 12px;
@@ -834,7 +834,7 @@ section[id] {
 }
 .lp-data-section-title-group {
   flex: 1;
-  min-w-0;
+  min-width: 0;
 }
 .lp-data-section-desc {
   font-size: 13px;
