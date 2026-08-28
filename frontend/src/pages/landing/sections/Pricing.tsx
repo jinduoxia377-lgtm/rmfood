@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Pricing 组件 v4 — 学术定价表风格（升级 v4）
  *
  * 升级要点（v4）：
@@ -50,10 +50,10 @@ export default function Pricing() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {plans.map((p, i) => (
             <Reveal key={p.name} delay={`lp-reveal-delay-${i + 1}`}>
-              <div className={cn('h-full flex flex-col rounded-md p-5', p.popular && 'ring-1 ring-slate-900')}
-                style={{ background: p.popular ? '#0f172a' : '#fafafa', border: p.popular ? '1px solid #0f172a' : '1px solid #e2e8f0' }}
+              <div className={cn('h/full flex flex-col rounded-md p-5', p.popular && 'ring-1 ring-emerald-500/40')}
+                style={{ background: p.popular ? '#0f172a' : '#fafafa', border: p.popular ? '1px solid rgba(5,150,105,0.35)' : '1px solid #e2e8f0' }}
               >
-                {p.popular && <span className="lp-section-tag mb-3 block">推荐方案</span>}
+                {p.popular && <span className="lp-popular-badge mb-3 block">推荐方案</span>}
                 <h3 className={cn('text-base font-bold mb-0.5', p.popular ? 'text-white' : 'text-slate-900')}>{p.name}</h3>
                 <p className={cn('lp-caption mb-4', p.popular ? 'text-slate-400' : 'text-slate-500')}>{p.desc}</p>
                 <div className={cn('mb-4 flex items-baseline gap-1', p.popular ? 'text-white' : 'text-slate-900')}>

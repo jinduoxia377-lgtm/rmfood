@@ -467,3 +467,152 @@ input:focus-visible, button:focus-visible, a:focus-visible {
   text-transform: uppercase;
   color: #64748b;
 }
+
+/* ── 专业导航链接（桌面） ── */
+.lp-nav-link {
+  font-size: 13px;
+  font-weight: 500;
+  color: #64748b;
+  padding: 0.375rem 0.75rem;
+  border-radius: 6px;
+  transition: color 0.15s, background-color 0.15s;
+  text-decoration: none;
+}
+.lp-nav-link:hover {
+  color: #0f172a;
+  background-color: rgba(0,0,0,0.04);
+}
+.lp-nav-active {
+  color: #0f172a !important;
+  background-color: rgba(5,150,105,0.08) !important;
+}
+
+/* ── Section 锚点防遮挡（固定导航栏 64px + 额外空间） ── */
+section[id] {
+  scroll-margin-top: 80px;
+}
+
+/* ── 专业 CTA 按钮（深色主按钮） ── */
+.lp-cta-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  background: #0f172a;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: box-shadow 0.2s, transform 0.15s, opacity 0.15s;
+  box-shadow: 0 1px 3px rgba(15,23,42,0.12), 0 1px 2px rgba(15,23,42,0.08);
+  text-decoration: none;
+}
+.lp-cta-primary:hover {
+  box-shadow: 0 4px 12px rgba(15,23,42,0.15), 0 2px 4px rgba(15,23,42,0.10);
+  transform: translateY(-1px);
+  opacity: 0.92;
+}
+.lp-cta-primary:active {
+  transform: translateY(0);
+}
+
+/* ── 次要 CTA（outline 风格） ── */
+.lp-cta-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  font-size: 13px;
+  font-weight: 500;
+  color: #475569;
+  background: transparent;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background-color 0.15s;
+  text-decoration: none;
+}
+.lp-cta-secondary:hover {
+  color: #0f172a;
+  border-color: #cbd5e1;
+  background-color: #f8fafc;
+}
+
+/* ── 产品预览窗口底部装饰线 ── */
+.lp-preview-accent {
+  height: 2px;
+  background: linear-gradient(90deg, #059669 0%, #34d399 50%, #059669 100%);
+  opacity: 0.6;
+}
+
+/* ── 推荐方案标签（深色背景上） ── */
+.lp-popular-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 500;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #6ee7b7;
+  background: rgba(5,150,105,0.2);
+  border: 1px solid rgba(5,150,105,0.35);
+  border-radius: 4px;
+  padding: 0.125rem 0.5rem;
+}
+
+/* ── FAQ 顶部微装饰线 ── */
+.lp-faq-accent {
+  width: 32px;
+  height: 2px;
+  background: linear-gradient(90deg, #059669, #34d399);
+  border-radius: 1px;
+  margin: 0 auto 1rem;
+}
+
+/* ── Hero 区域背景网格 ── */
+.lp-grid-bg {
+  background-image:
+    linear-gradient(rgba(148,163,184,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148,163,184,0.04) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* ── Footer 样式 ── */
+.lp-footer {
+  background: #0f172a;
+  color: #94a3b8;
+}
+.lp-footer a {
+  color: #94a3b8;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.lp-footer a:hover {
+  color: #e2e8f0;
+}
+.lp-footer-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #475569;
+}
+.lp-footer-desc {
+  font-size: 12px;
+  line-height: 1.65;
+  color: #64748b;
+}
+.lp-footer-link {
+  font-size: 13px;
+  color: #94a3b8;
+  transition: color 0.15s;
+  text-decoration: none;
+}
+.lp-footer-link:hover {
+  color: #e2e8f0;
+}
+.lp-footer-bottom {
+  border-color: #1e293b;
+}

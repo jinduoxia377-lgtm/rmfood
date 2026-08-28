@@ -153,7 +153,7 @@ export default function UseCases() {
   const titleLines = sectionTitle.split('\n');
 
   return (
-    <section id="use-cases" className="py-20 lg:py-24 border-t lp-grid-bg" style={{ background: '#fff', borderColor: '#e2e8f0' }}>
+    <section id="use-cases" className="py-16 lg:py-20" style={{ background: 'var(--bg-canvas, #f8fafc)', borderTop: '1px solid #e2e8f0' }}>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* 标题区 */}

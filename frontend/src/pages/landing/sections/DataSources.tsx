@@ -114,7 +114,7 @@ function DataSourceCard({ data, index }: { data: DataSource; index: number }) {
 // 移除管道可视化，改为简洁的标题区
 export default function DataSources() {
   return (
-    <section id="data-sources" className="py-16 lg:py-20 lp-grid-bg" style={{ background: '#fff', borderTop: '1px solid #e2e8f0' }}>
+    <section id="data-sources" className="py-16 lg:py-20" style={{ background: '#fff', borderTop: '1px solid #e2e8f0' }}>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* 标题 */}
@@ -131,7 +131,7 @@ export default function DataSources() {
         </Reveal>
 
         {/* 卡片网格 — 5 列消除末行不对称 */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
           {dataSources.map((ds, i) => (
             <DataSourceCard key={ds.id} data={ds} index={i} />
           ))}

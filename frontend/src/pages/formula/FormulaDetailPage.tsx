@@ -303,8 +303,8 @@ export default function FormulaDetailPage() {
   const timeline = useMemo(() => {
     if (!formula) return [];
     return generateMockTimeline({
-      created_at: formula.createdAt,
-      updated_at: formula.updatedAt,
+      created_at: formula.createdAt || formula.createdAt,
+      updated_at: formula.updatedAt || formula.updatedAt,
       status: formula.status,
       reviewer_id: formula.reviewer_id ?? undefined,
       reviewed_at: formula.reviewed_at ?? undefined,
@@ -389,7 +389,7 @@ export default function FormulaDetailPage() {
     setEditedData({
       name: formula.name,
       description: formula.description || '',
-      targetEffects: formula.targetEffects || [],
+      targetEffects: (formula.targetEffects || formula.targetEffects) as string[] || [],
       category: formula.category || '',
       tags: formula.tags || [],
       notes: formula.notes || '',
@@ -490,7 +490,8 @@ export default function FormulaDetailPage() {
 
   // ── 推荐功能（Tab 5）──
   const loadRecommendations = useCallback(async () => {
-    if (!formula.targetEffects || formula.targetEffects.length === 0) {
+    const effects = (formula.targetEffects || formula.targetEffects) as string[];
+    if (!effects || effects.length === 0) {
       addToast({ type: 'info', message: '暂无目标功效，无法生成推荐' });
       return;
     }
@@ -498,7 +499,7 @@ export default function FormulaDetailPage() {
     setLoadingRecommendations(true);
     try {
       const data = await import('@/api/formula').then((m) =>
-        m.formulaApi.recommendations(formula.targetEffects as string[]),
+        m.formulaApi.recommendations((formula.targetEffects || formula.targetEffects) as string[]),
       );
       setRecommendations(data);
     } catch (error: any) {
@@ -506,7 +507,7 @@ export default function FormulaDetailPage() {
     } finally {
       setLoadingRecommendations(false);
     }
-  }, [formula.targetEffects, addToast]);
+  }, [(formula.targetEffects || formula.targetEffects) as string[], addToast]);
 
   // ── 成分展开/折叠（Tab 2）──
   const toggleIngredientExpand = useCallback((name: string) => {
@@ -1014,7 +1015,7 @@ export default function FormulaDetailPage() {
       description: formula.description,
       status: formula.status,
       version: formula.version,
-      targetEffects: formula.targetEffects,
+      targetEffects: (formula.targetEffects || formula.targetEffects) as string[],
       composition: formula.composition,
       processing_method: formula.processing_method,
       dosage: formula.dosage,
@@ -1223,7 +1224,7 @@ export default function FormulaDetailPage() {
               </div>
               <p className="text-xs md:text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed">
                 {formula.code} · 版本 v{formula.version} · 创建于{' '}
-                {new Date(formula.createdAt).toLocaleDateString('zh-CN')}
+                {new Date(formula.createdAt || formula.createdAt).toLocaleDateString('zh-CN')}
               </p>
             </div>
           </div>
@@ -1329,8 +1330,8 @@ export default function FormulaDetailPage() {
                         </div>
                       ) : (
                         <div className="flex flex-wrap gap-2">
-                          {formula.targetEffects && formula.targetEffects.length > 0 ? (
-                            (formula.targetEffects as string[]).map((effect: string) => (
+                          {((formula.targetEffects || formula.targetEffects) as string[]).length > 0 ? (
+                            ((formula.targetEffects || formula.targetEffects) as string[]).map((effect: string) => (
                               <Badge key={effect} variant="primary">
                                 {effect}
                               </Badge>
@@ -1443,13 +1444,13 @@ export default function FormulaDetailPage() {
                     <div>
                       <p className="mb-0.5">创建时间</p>
                       <p className="font-medium text-neutral-700 dark:text-neutral-300">
-                        {new Date(formula.createdAt).toLocaleString('zh-CN')}
+                        {new Date(formula.createdAt || formula.createdAt).toLocaleString('zh-CN')}
                       </p>
                     </div>
                     <div>
                       <p className="mb-0.5">更新时间</p>
                       <p className="font-medium text-neutral-700 dark:text-neutral-300">
-                        {new Date(formula.updatedAt).toLocaleString('zh-CN')}
+                        {new Date(formula.updatedAt || formula.updatedAt).toLocaleString('zh-CN')}
                       </p>
                     </div>
                   </div>
@@ -2019,7 +2020,7 @@ export default function FormulaDetailPage() {
                     </h2>
                   </div>
 
-                  {!formula?.targetEffects || formula.targetEffects.length === 0 ? (
+                  {!((formula.targetEffects || formula.targetEffects) as string[])?.length ? (
                     <div className="p-6 rounded-xl bg-gray-50 dark:bg-gray-800 text-center text-gray-500">
                       请先设置目标功效以生成解释报告
                     </div>
@@ -2031,7 +2032,7 @@ export default function FormulaDetailPage() {
                           name: i.name,
                           dosage_mg: i.dosage || 0,
                         }))}
-                        targetEffects={formula.targetEffects as string[]}
+                        targetEffects={(formula.targetEffects || formula.targetEffects) as string[]}
                       />
 
                       {/* 可解释性报告 */}
@@ -2041,7 +2042,7 @@ export default function FormulaDetailPage() {
                           name: i.name,
                           dosage_mg: i.dosage || 0,
                         }))}
-                        targetEffects={formula.targetEffects as string[]}
+                        targetEffects={(formula.targetEffects || formula.targetEffects) as string[]}
                       />
 
                       {/* 导出报告 */}
@@ -2052,7 +2053,7 @@ export default function FormulaDetailPage() {
                           name: i.name,
                           dosage_mg: i.dosage || 0,
                         }))}
-                        targetEffects={formula.targetEffects as string[]}
+                        targetEffects={(formula.targetEffects || formula.targetEffects) as string[]}
                       />
                     </>
                   )}
