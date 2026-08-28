@@ -377,7 +377,6 @@ export default function OrganizationsPage() {
               toggleSelect={toggleSelect}
               selectAll={selectAll}
               allSelected={allSelected}
-              handleBulkAction={handleBulkAction}
               clearSelection={clearSelection}
               refetch={refetch}
             />
@@ -407,7 +406,6 @@ export default function OrganizationsPage() {
             toggleSelect={toggleSelect}
             selectAll={selectAll}
             allSelected={allSelected}
-            handleBulkAction={handleBulkAction}
             clearSelection={clearSelection}
             refetch={refetch}
           />
@@ -431,7 +429,6 @@ export default function OrganizationsPage() {
             toggleSelect={toggleSelect}
             selectAll={selectAll}
             allSelected={allSelected}
-            handleBulkAction={handleBulkAction}
             clearSelection={clearSelection}
             refetch={refetch}
           />
