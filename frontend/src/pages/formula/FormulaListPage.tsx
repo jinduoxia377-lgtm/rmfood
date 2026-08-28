@@ -1562,7 +1562,7 @@ export default function FormulaListPage() {
                               {formula.creator_name || '-'}
                             </td>
                             <td className="px-4 py-3 text-neutral-500 dark:text-neutral-400 hidden xl:table-cell">
-                              {formatDate(formula.created_at || formula.createdAt)}
+                              {formatDate(formula.createdAt || formula.createdAt)}
                             </td>
                             <td className="px-4 py-3 text-neutral-500 dark:text-neutral-400">
                               {formula.experimentIds && formula.experimentIds.length > 0 ? (
@@ -1575,7 +1575,7 @@ export default function FormulaListPage() {
                               )}
                             </td>
                             <td className="px-4 py-3 text-neutral-500 dark:text-neutral-400">
-                              {formatDate(formula.updated_at || formula.updatedAt)}
+                              {formatDate(formula.updatedAt || formula.updatedAt)}
                             </td>
                             <td className="px-4 py-3">
                               <div className="relative inline-block" ref={showMenu ? actionMenuRef : undefined}>
