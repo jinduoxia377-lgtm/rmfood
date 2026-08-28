@@ -80,14 +80,14 @@ export const DEFAULT_CARDS: CardConfig[] = [
   { id: 'c4', type: 'stats-completed', title: '完成实验', position: { x: 3, y: 0 }, size: { w: 1, h: 1 }, isVisible: true },
   { id: 'c5', type: 'chart-trends', title: '研发趋势', position: { x: 0, y: 1 }, size: { w: 2, h: 1 }, isVisible: true },
   { id: 'c6', type: 'chart-formula-pie', title: '配方状态分布', position: { x: 2, y: 1 }, size: { w: 1, h: 1 }, isVisible: true },
-  { id: 'c7', type: 'chart-experiment-bar', title: '实验状态统计', position: { x: 0, y: 2 }, size: { w: 1, h: 1 }, isVisible: true },
+  { id: 'c7', type: 'chart-experiment-bar', title: '实验状态统计', position: { x: 3, y: 1 }, size: { w: 1, h: 1 }, isVisible: true },
   { id: 'c8', type: 'quick-actions', title: '快捷操作', position: { x: 1, y: 2 }, size: { w: 1, h: 1 }, isVisible: true },
   { id: 'c9', type: 'recent-formulas', title: '最近配方', position: { x: 0, y: 3 }, size: { w: 1, h: 1 }, isVisible: true },
   { id: 'c10', type: 'recent-experiments', title: '最近实验', position: { x: 1, y: 3 }, size: { w: 1, h: 1 }, isVisible: true },
   { id: 'c11', type: 'todos', title: '待办事项', position: { x: 0, y: 4 }, size: { w: 1, h: 1 }, isVisible: true },
   { id: 'c12', type: 'review-queue', title: '待审核配方', position: { x: 1, y: 4 }, size: { w: 1, h: 1 }, isVisible: true },
   { id: 'c13', type: 'activity-timeline', title: '最近动态', position: { x: 2, y: 4 }, size: { w: 1, h: 1 }, isVisible: true },
-  { id: 'c14', type: 'ai-analysis', title: 'AI分析面板', position: { x: 0, y: 5 }, size: { w: 2, h: 2 }, isVisible: true },
+  { id: 'c14', type: 'ai-analysis', title: 'AI分析面板', position: { x: 0, y: 2 }, size: { w: 2, h: 1 }, isVisible: false },
 ]
 
 export const DEFAULT_LAYOUT: DashboardLayout = {

@@ -1,11 +1,11 @@
 /**
- * UseCases 组件 v9 — 学术案例研究风格
+ * UseCases 组件 v10 — 学术案例研究风格（升级 v10）
  *
- * 设计理念：
- *   - 卡片如"Case Study"板块
- *   - 去渐变、去旋转、去流动线
- *   - 工作流如方法学流程图
- *   - 指标如数据表格
+ * 升级要点（v10）：
+ *   - 背景色从 #f8fafc 改为 #fff（与 DataSources 区分）
+ *   - 去掉"应用场景 X"机械编号，改为场景关键词标签
+ *   - 圆角 rounded-sm → rounded-md
+ *   - CTA 文案强化
  */
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -19,6 +19,13 @@ import type { Scenario } from '../data/useCases';
 import { ChevronRight } from 'lucide-react';
 import { Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/shadcn';
 
+/** 场景标签映射：scenario key → 展示标签 */
+const SCENARIO_LABELS: Record<Scenario, string> = {
+  tcm: '药食同源',
+  peptide: '生物活性肽',
+  eln: '实验数据管理',
+};
+
 function ScenarioCard({ item, index }: { item: (typeof useCases)[0]; index: number }) {
   const [hovered, setHovered] = useState(false);
   const cfg = scenarioConfig[item.scenario as Scenario];
@@ -27,11 +34,10 @@ function ScenarioCard({ item, index }: { item: (typeof useCases)[0]; index: numb
   return (
     <Reveal delay={`lp-reveal-delay-${index + 1}`}>
       <div
-        className="relative rounded-sm overflow-hidden transition-all duration-200 cursor-default"
+        className="lp-card-white relative overflow-hidden transition-all duration-200 cursor-default"
         style={{
-          background: hovered ? '#fff' : '#fafafa',
+          background: hovered ? '#fff' : '#fff',
           border: `1px solid ${hovered ? cfg.primary + '40' : '#e2e8f0'}`,
-          boxShadow: hovered ? '0 2px 8px rgba(0,0,0,0.06)' : 'none',
         }}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
@@ -39,18 +45,25 @@ function ScenarioCard({ item, index }: { item: (typeof useCases)[0]; index: numb
         {/* 顶部色条（极简，无渐变） */}
         <div className="h-0.5 w-full" style={{ background: cfg.primary + '50' }} />
 
-        <div className="p-5">
-          {/* 场景标识 */}
+        <div className="p-6">
+          {/* 场景标识 — 关键词标签替代"应用场景 X" */}
           <div className="flex items-center gap-2.5 mb-4">
             <div
-              className="w-8 h-8 rounded-sm flex items-center justify-center shrink-0"
+              className="w-8 h-8 rounded-md flex items-center justify-center shrink-0"
               style={{ background: cfg.primaryLight, color: cfg.primary, border: `1px solid ${cfg.primaryBorder}` }}
             >
               <IconComp size={15} strokeWidth={1.8} />
             </div>
-            <div>
-              <h3 className="text-[14px] font-bold text-slate-900">{item.title}</h3>
-              <span className="text-[11px] text-slate-400">应用场景 {index + 1}</span>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-0.5">
+                <h3 className="text-[14px] font-bold text-slate-900 truncate">{item.title}</h3>
+                <span
+                  className="shrink-0 text-[10px] font-medium px-2 py-0.5 rounded-md"
+                  style={{ background: cfg.primaryLight, color: cfg.primary, border: `1px solid ${cfg.primaryBorder}` }}
+                >
+                  {SCENARIO_LABELS[item.scenario as Scenario]}
+                </span>
+              </div>
             </div>
           </div>
 
@@ -62,13 +75,13 @@ function ScenarioCard({ item, index }: { item: (typeof useCases)[0]; index: numb
           {/* 工作流程（如方法学） */}
           <div className="mb-5">
             <div className="text-[10px] font-mono text-slate-400 uppercase tracking-widest mb-2.5">
-            工作流程
+              工作流程
             </div>
             <div className="space-y-3">
               {item.workflow.map((step, i) => (
                 <div key={step.label} className="flex items-start gap-2.5">
                   <div
-                    className="w-5 h-5 rounded-sm flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5"
+                    className="w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5"
                     style={{ background: hovered ? cfg.primaryLight : '#f1f5f9', color: hovered ? cfg.primary : '#94a3b8', border: `1px solid ${cfg.primaryBorder}` }}
                   >
                     {i + 1}
@@ -85,7 +98,7 @@ function ScenarioCard({ item, index }: { item: (typeof useCases)[0]; index: numb
           {/* 指标数据表 */}
           <div className="mb-5">
             <div className="text-[10px] font-mono text-slate-400 uppercase tracking-widest mb-2">
-            核心指标
+              核心指标
             </div>
             <table className="w-full text-[11px] border-collapse">
               <tbody>
@@ -140,7 +153,7 @@ export default function UseCases() {
   const titleLines = sectionTitle.split('\n');
 
   return (
-    <section id="use-cases" className="py-20 lg:py-24" style={{ background: '#f8fafc' }}>
+    <section id="use-cases" className="py-20 lg:py-24 border-t lp-grid-bg" style={{ background: '#fff', borderColor: '#e2e8f0' }}>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* 标题区 */}
@@ -162,7 +175,7 @@ export default function UseCases() {
         </Reveal>
 
         {/* 三场景卡片 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {useCases.map((c, i) => (
             <ScenarioCard key={c.id} item={c} index={i} />
           ))}

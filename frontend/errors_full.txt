@@ -1,0 +1,150 @@
+﻿src/components/ai/features/components/pro/MessageList.tsx(245,41): error TS2345: Argument of type 'ChatMessage | undefined' is not assignable to parameter of type 'ChatMessage'.
+src/components/ai/features/FormulaInputWithOptimization.tsx(4,22): error TS2724: '"@/components/ui/Badge"' has no exported member named 'BadgeVariant'. Did you mean 'badgeVariants'?
+src/components/ai/features/MultiObjectivePanel.tsx(892,52): error TS2339: Property 'target' does not exist on type 'string'.
+src/components/ai/features/MultiObjectivePanel.tsx(893,15): error TS2322: Type '{ children: (Element | Element[])[]; value: "custom" | "balanced" | "comprehensive" | "cost_first" | "efficacy_first" | "safety_first" | "synergy_focused"; onChange: (e: string) => void; className: string; }' is not assignable to type 'IntrinsicAttributes & SelectSharedProps & { value?: string | undefined; defaultValue?: string | undefined; onValueChange?(value: string): void; } & { ...; }'.
+src/components/ai/features/MultiObjectivePanel.tsx(911,42): error TS2339: Property 'target' does not exist on type 'string'.
+src/components/ai/features/MultiObjectivePanel.tsx(912,15): error TS2322: Type '{ children: Element[]; value: "weighted" | "pareto" | "epsilon"; onChange: (e: string) => void; className: string; }' is not assignable to type 'IntrinsicAttributes & SelectSharedProps & { value?: string | undefined; defaultValue?: string | undefined; onValueChange?(value: string): void; } & { ...; }'.
+src/components/ai/features/MultiObjectivePanel.tsx(949,37): error TS2339: Property 'target' does not exist on type 'string'.
+src/components/ai/features/MultiObjectivePanel.tsx(955,23): error TS2322: Type '{ children: (Element | Element[])[]; value: string; onChange: (e: string) => void; className: string; }' is not assignable to type 'IntrinsicAttributes & SelectSharedProps & { value?: string | undefined; defaultValue?: string | undefined; onValueChange?(value: string): void; } & { ...; }'.
+src/components/ai/features/MultiObjectivePanel.tsx(969,79): error TS2339: Property 'target' does not exist on type 'string'.
+src/components/ai/features/MultiObjectivePanel.tsx(970,23): error TS2322: Type '{ children: Element[]; value: "maximize" | "minimize"; onChange: (e: string) => void; className: string; }' is not assignable to type 'IntrinsicAttributes & SelectSharedProps & { value?: string | undefined; defaultValue?: string | undefined; onValueChange?(value: string): void; } & { ...; }'.
+src/components/ai/features/MultiObjectivePanel.tsx(1619,69): error TS2339: Property 'target' does not exist on type 'string'.
+src/components/ai/features/MultiObjectivePanel.tsx(1619,84): error TS2322: Type '{ children: Element[]; value: string; onChange: (e: string) => void; className: string; size: string; }' is not assignable to type 'IntrinsicAttributes & SelectSharedProps & { value?: string | undefined; defaultValue?: string | undefined; onValueChange?(value: string): void; } & { ...; }'.
+src/components/ai/features/MultiObjectivePanel.tsx(1627,69): error TS2339: Property 'target' does not exist on type 'string'.
+src/components/ai/features/MultiObjectivePanel.tsx(1627,84): error TS2322: Type '{ children: Element[]; value: string; onChange: (e: string) => void; className: string; size: string; }' is not assignable to type 'IntrinsicAttributes & SelectSharedProps & { value?: string | undefined; defaultValue?: string | undefined; onValueChange?(value: string): void; } & { ...; }'.
+src/components/ai/features/StabilityPredictTab.tsx(185,94): error TS2339: Property 'target' does not exist on type 'string'.
+src/components/ai/features/StabilityPredictTab.tsx(196,88): error TS2339: Property 'target' does not exist on type 'string'.
+src/components/ai/features/StabilityPredictTab.tsx(209,83): error TS2339: Property 'target' does not exist on type 'string'.
+src/components/ai/features/StabilityPredictTab.tsx(218,75): error TS2339: Property 'target' does not exist on type 'string'.
+src/components/ai/features/TastePredictTab.tsx(189,56): error TS2339: Property 'target' does not exist on type 'string'.
+src/components/ai/features/TastePredictTab.tsx(190,17): error TS2322: Type '{ children: (Element | Element[])[]; value: string; onChange: (e: string) => void; placeholder: string; }' is not assignable to type 'IntrinsicAttributes & SelectSharedProps & { value?: string | undefined; defaultValue?: string | undefined; onValueChange?(value: string): void; } & { ...; }'.
+src/components/ai/features/TastePredictTab.tsx(203,81): error TS2339: Property 'target' does not exist on type 'string'.
+src/components/ai/ModelSelector.tsx(98,70): error TS2339: Property 'target' does not exist on type 'string'.
+src/components/ai/TemplateGallery.tsx(261,35): error TS2339: Property 'target' does not exist on type 'string'.
+src/components/ai/TemplateGallery.tsx(264,13): error TS2322: Type '{ children: Element[]; value: string; onChange: (e: string) => void; className: string; }' is not assignable to type 'IntrinsicAttributes & SelectSharedProps & { value?: string | undefined; defaultValue?: string | undefined; onValueChange?(value: string): void; } & { ...; }'.
+src/components/ai/TemplateGallery.tsx(274,42): error TS2339: Property 'target' does not exist on type 'string'.
+src/components/ai/TemplateGallery.tsx(275,13): error TS2322: Type '{ children: Element[]; value: string; onChange: (e: string) => void; className: string; }' is not assignable to type 'IntrinsicAttributes & SelectSharedProps & { value?: string | undefined; defaultValue?: string | undefined; onValueChange?(value: string): void; } & { ...; }'.
+src/components/dashboard/ApiIntegrationManager.tsx(373,84): error TS2339: Property 'target' does not exist on type 'string'.
+src/components/dashboard/ApiIntegrationManager.tsx(405,86): error TS2339: Property 'target' does not exist on type 'string'.
+src/components/dashboard/ApiIntegrationManager.tsx(658,96): error TS2339: Property 'target' does not exist on type 'string'.
+src/components/dashboard/ApiIntegrationManager.tsx(690,98): error TS2339: Property 'target' does not exist on type 'string'.
+src/components/dashboard/ChangeHistory.tsx(219,50): error TS2339: Property 'target' does not exist on type 'string'.
+src/components/dashboard/ChangeHistory.tsx(220,15): error TS2322: Type '{ children: Element[]; value: string; onChange: (e: string) => void; className: string; }' is not assignable to type 'IntrinsicAttributes & SelectSharedProps & { value?: string | undefined; defaultValue?: string | undefined; onValueChange?(value: string): void; } & { ...; }'.
+src/components/dashboard/ChangeHistory.tsx(233,48): error TS2339: Property 'target' does not exist on type 'string'.
+src/components/dashboard/ChangeHistory.tsx(234,15): error TS2322: Type '{ children: (Element | Element[])[]; value: string; onChange: (e: string) => void; className: string; }' is not assignable to type 'IntrinsicAttributes & SelectSharedProps & { value?: string | undefined; defaultValue?: string | undefined; onValueChange?(value: string): void; } & { ...; }'.
+src/components/dashboard/ExportManager.tsx(191,81): error TS2339: Property 'target' does not exist on type 'string'.
+src/components/dashboard/ExportManager.tsx(220,74): error TS2339: Property 'target' does not exist on type 'string'.
+src/components/dashboard/ExportManager.tsx(260,73): error TS2339: Property 'target' does not exist on type 'string'.
+src/components/dashboard/ExportManager.tsx(273,76): error TS2339: Property 'target' does not exist on type 'string'.
+src/components/dashboard/TeamDashboardShare.tsx(260,57): error TS2339: Property 'target' does not exist on type 'string'.
+src/components/ui/Alert.tsx(44,27): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ default: null; destructive: ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>; success: ForwardRefExoticComponent<...>; warning: ForwardRefExoticComponent<...>; info: ForwardRefExoticComponent<...>; }'.
+src/components/ui/Alert.tsx(58,39): error TS2322: Type 'string | undefined' is not assignable to type '"info" | "warning" | "success" | "default" | "destructive" | null | undefined'.
+src/components/ui/Badge.tsx(25,18): error TS2430: Interface 'BadgeProps' incorrectly extends interface 'VariantProps<(props?: (ConfigVariants<{ variant: { default: string; secondary: string; destructive: string; outline: string; success: string; warning: string; info: string; }; }> & ClassProp) | undefined) => string>'.
+src/components/ui/Badge.tsx(37,37): error TS2322: Type 'string | undefined' is not assignable to type '"info" | "warning" | "success" | "default" | "destructive" | "outline" | "secondary" | null | undefined'.
+src/components/ui/Button.tsx(56,40): error TS2322: Type 'string | undefined' is not assignable to type '"danger" | "warning" | "success" | "link" | "default" | "primary" | "destructive" | "outline" | "secondary" | "ghost" | "ai" | "amber" | "glass" | null | undefined'.
+src/components/ui/Button.tsx(56,49): error TS2322: Type 'string | undefined' is not assignable to type '"default" | "md" | "sm" | "lg" | "xl" | "icon" | null | undefined'.
+src/components/ui/Progress.tsx(37,8): error TS2322: Type '{ className: string; style: { transform: `translateX(-${number}%)`; }; role: "progressbar"; "aria-valuenow": number | null | undefined; "aria-valuemin": number; "aria-valuemax": number; }' is not assignable to type 'ProgressIndicatorProps'.
+src/components/ui/ToastContainer.tsx(16,2): error TS2322: Type '{ key: string; message: { id: string; type: ToastType; title: string; description: string | undefined; }; onClose: (id: string) => void; }' is not assignable to type 'IntrinsicAttributes & Omit<ToastProps & RefAttributes<HTMLLIElement>, "ref"> & VariantProps<(props?: (ConfigVariants<{ variant: { ...; }; }> & ClassProp) | undefined) => string> & RefAttributes<...>'.
+src/components/workflow/WorkflowVisualEditor.tsx(724,74): error TS2339: Property 'target' does not exist on type 'string'.
+src/pages/database/tabs/RetailProductDetailModal.tsx(16,3): error TS2305: Module '"@/components/ui"' has no exported member 'Accordion'.
+src/pages/database/tabs/RetailProductDetailModal.tsx(17,3): error TS2305: Module '"@/components/ui"' has no exported member 'AccordionContent'.
+src/pages/database/tabs/RetailProductDetailModal.tsx(18,3): error TS2305: Module '"@/components/ui"' has no exported member 'AccordionItem'.
+src/pages/database/tabs/RetailProductDetailModal.tsx(19,3): error TS2305: Module '"@/components/ui"' has no exported member 'AccordionTrigger'.
+src/pages/database/tabs/RetailProductDetailModal.tsx(20,3): error TS2305: Module '"@/components/ui"' has no exported member 'Text'.
+src/pages/experiment/ExperimentListPage.tsx(144,14): error TS2339: Property 'formula_name' does not exist on type 'Experiment'.
+src/pages/experiment/ExperimentListPage.tsx(467,34): error TS2339: Property 'formula_name' does not exist on type 'Experiment'.
+src/pages/formula/components/ExportModal.tsx(324,15): error TS2322: Type 'Dispatch<SetStateAction<boolean>>' is not assignable to type '((checked: CheckedState) => void) & ((checked: boolean) => void)'.
+src/pages/formula/components/ExportModal.tsx(332,15): error TS2322: Type 'Dispatch<SetStateAction<boolean>>' is not assignable to type '((checked: CheckedState) => void) & ((checked: boolean) => void)'.
+src/pages/formula/components/ExportModal.tsx(340,15): error TS2322: Type 'Dispatch<SetStateAction<boolean>>' is not assignable to type '((checked: CheckedState) => void) & ((checked: boolean) => void)'.
+src/pages/formula/components/OperationLogPanel.tsx(301,47): error TS2339: Property 'target' does not exist on type 'string'.
+src/pages/formula/components/OperationLogPanel.tsx(302,15): error TS2322: Type '{ children: Element[]; value: TimeRange; onChange: (e: string) => void; placeholder: string; }' is not assignable to type 'IntrinsicAttributes & SelectSharedProps & { value?: string | undefined; defaultValue?: string | undefined; onValueChange?(value: string): void; } & { ...; }'.
+src/pages/formula/components/OperationLogPanel.tsx(328,85): error TS2339: Property 'target' does not exist on type 'string'.
+src/pages/formula/components/OperationLogPanel.tsx(328,100): error TS2322: Type '{ children: (Element | Element[])[]; value: string; onChange: (e: string) => void; placeholder: string; }' is not assignable to type 'IntrinsicAttributes & SelectSharedProps & { value?: string | undefined; defaultValue?: string | undefined; onValueChange?(value: string): void; } & { ...; }'.
+src/pages/formula/components/OperationLogPanel.tsx(339,53): error TS2339: Property 'target' does not exist on type 'string'.
+src/pages/formula/components/OperationLogPanel.tsx(339,71): error TS2339: Property 'target' does not exist on type 'string'.
+src/pages/formula/components/OperationLogPanel.tsx(340,15): error TS2322: Type '{ children: (Element | Element[])[]; value: OperationAction; onChange: (e: string) => void; placeholder: string; }' is not assignable to type 'IntrinsicAttributes & SelectSharedProps & { value?: string | undefined; defaultValue?: string | undefined; onValueChange?(value: string): void; } & { ...; }'.
+src/pages/formula/components/OperationLogPanel.tsx(350,81): error TS2339: Property 'target' does not exist on type 'string'.
+src/pages/formula/components/OperationLogPanel.tsx(350,96): error TS2322: Type '{ children: Element[]; value: string; onChange: (e: string) => void; placeholder: string; }' is not assignable to type 'IntrinsicAttributes & SelectSharedProps & { value?: string | undefined; defaultValue?: string | undefined; onValueChange?(value: string): void; } & { ...; }'.
+src/pages/formula/FormulaCaseDetailPage.tsx(48,3): error TS2724: '"@/api/formula"' has no exported member named 'getFormulaCase'. Did you mean 'getFormula'?
+src/pages/formula/FormulaCaseDetailPage.tsx(49,3): error TS2614: Module '"@/api/formula"' has no exported member 'toggleCaseLike'. Did you mean to use 'import toggleCaseLike from "@/api/formula"' instead?
+src/pages/formula/FormulaCaseDetailPage.tsx(50,3): error TS2614: Module '"@/api/formula"' has no exported member 'getCaseComments'. Did you mean to use 'import getCaseComments from "@/api/formula"' instead?
+src/pages/formula/FormulaCaseDetailPage.tsx(51,3): error TS2614: Module '"@/api/formula"' has no exported member 'createCaseComment'. Did you mean to use 'import createCaseComment from "@/api/formula"' instead?
+src/pages/formula/FormulaCaseDetailPage.tsx(52,3): error TS2724: '"@/api/formula"' has no exported member named 'deleteFormulaCase'. Did you mean 'deleteFormula'?
+src/pages/formula/FormulaCaseDetailPage.tsx(53,3): error TS2614: Module '"@/api/formula"' has no exported member 'toggleBookmark'. Did you mean to use 'import toggleBookmark from "@/api/formula"' instead?
+src/pages/formula/FormulaCaseDetailPage.tsx(54,3): error TS2614: Module '"@/api/formula"' has no exported member 'reportCase'. Did you mean to use 'import reportCase from "@/api/formula"' instead?
+src/pages/formula/FormulaCaseDetailPage.tsx(55,3): error TS2614: Module '"@/api/formula"' has no exported member 'getCasesByFormula'. Did you mean to use 'import getCasesByFormula from "@/api/formula"' instead?
+src/pages/formula/FormulaCaseDetailPage.tsx(56,8): error TS2614: Module '"@/api/formula"' has no exported member 'FormulaCase'. Did you mean to use 'import FormulaCase from "@/api/formula"' instead?
+src/pages/formula/FormulaCaseDetailPage.tsx(57,8): error TS2614: Module '"@/api/formula"' has no exported member 'CaseComment'. Did you mean to use 'import CaseComment from "@/api/formula"' instead?
+src/pages/formula/FormulaCaseDetailPage.tsx(314,32): error TS7006: Parameter 'r' implicitly has an 'any' type.
+src/pages/formula/FormulaCaseDetailPage.tsx(466,39): error TS7006: Parameter 'c' implicitly has an 'any' type.
+src/pages/formula/FormulaCaseDetailPage.tsx(583,36): error TS7006: Parameter 'tag' implicitly has an 'any' type.
+src/pages/formula/FormulaCaseDetailPage.tsx(670,54): error TS7006: Parameter 'line' implicitly has an 'any' type.
+src/pages/formula/FormulaCaseDetailPage.tsx(670,60): error TS7006: Parameter 'i' implicitly has an 'any' type.
+src/pages/formula/FormulaCaseDetailPage.tsx(702,50): error TS7006: Parameter 'c' implicitly has an 'any' type.
+src/pages/formula/FormulaCaseDetailPage.tsx(713,40): error TS7006: Parameter 'c' implicitly has an 'any' type.
+src/pages/formula/FormulaCaseDetailPage.tsx(713,83): error TS7006: Parameter 'c' implicitly has an 'any' type.
+src/pages/formula/FormulaCaseDetailPage.tsx(783,38): error TS7006: Parameter 'c' implicitly has an 'any' type.
+src/pages/formula/FormulaCasesPage.tsx(30,3): error TS2724: '"@/api/formula"' has no exported member named 'getFormulaCases'. Did you mean 'getFormula'?
+src/pages/formula/FormulaCasesPage.tsx(31,3): error TS2614: Module '"@/api/formula"' has no exported member 'getCaseStats'. Did you mean to use 'import getCaseStats from "@/api/formula"' instead?
+src/pages/formula/FormulaCasesPage.tsx(32,3): error TS2614: Module '"@/api/formula"' has no exported member 'getCaseCategories'. Did you mean to use 'import getCaseCategories from "@/api/formula"' instead?
+src/pages/formula/FormulaCasesPage.tsx(33,3): error TS2614: Module '"@/api/formula"' has no exported member 'getTrendingCases'. Did you mean to use 'import getTrendingCases from "@/api/formula"' instead?
+src/pages/formula/FormulaCasesPage.tsx(34,8): error TS2614: Module '"@/api/formula"' has no exported member 'FormulaCase'. Did you mean to use 'import FormulaCase from "@/api/formula"' instead?
+src/pages/formula/FormulaCasesPage.tsx(35,8): error TS2614: Module '"@/api/formula"' has no exported member 'CaseListParams'. Did you mean to use 'import CaseListParams from "@/api/formula"' instead?
+src/pages/formula/FormulaCasesPage.tsx(157,41): error TS7006: Parameter 'tag' implicitly has an 'any' type.
+src/pages/formula/FormulaCasesPage.tsx(333,15): error TS7006: Parameter 'prev' implicitly has an 'any' type.
+src/pages/formula/FormulaCasesPage.tsx(338,15): error TS7006: Parameter 'prev' implicitly has an 'any' type.
+src/pages/formula/FormulaCasesPage.tsx(343,89): error TS2339: Property 'slice' does not exist on type '{}'.
+src/pages/formula/FormulaCasesPage.tsx(344,42): error TS2339: Property 'length' does not exist on type '{}'.
+src/pages/formula/FormulaCasesPage.tsx(359,54): error TS2339: Property 'total' does not exist on type '{}'.
+src/pages/formula/FormulaCasesPage.tsx(360,23): error TS2339: Property 'featured' does not exist on type '{}'.
+src/pages/formula/FormulaCasesPage.tsx(404,46): error TS2339: Property 'total' does not exist on type '{}'.
+src/pages/formula/FormulaCasesPage.tsx(405,46): error TS2339: Property 'featured' does not exist on type '{}'.
+src/pages/formula/FormulaCasesPage.tsx(406,47): error TS2339: Property 'total_views' does not exist on type '{}'.
+src/pages/formula/FormulaCasesPage.tsx(407,47): error TS2339: Property 'total_likes' does not exist on type '{}'.
+src/pages/formula/FormulaCasesPage.tsx(428,61): error TS2339: Property 'length' does not exist on type '{}'.
+src/pages/formula/FormulaCasesPage.tsx(501,15): error TS2322: Type '(e: React.ChangeEvent<HTMLSelectElement>) => void' is not assignable to type '(value: string) => void'.
+src/pages/formula/FormulaCasesPage.tsx(502,27): error TS7006: Parameter 'prev' implicitly has an 'any' type.
+src/pages/formula/FormulaCasesPage.tsx(507,28): error TS2339: Property 'map' does not exist on type '{}'.
+src/pages/formula/FormulaCasesPage.tsx(514,15): error TS2322: Type '(e: React.ChangeEvent<HTMLSelectElement>) => void' is not assignable to type '(value: string) => void'.
+src/pages/formula/FormulaCasesPage.tsx(515,27): error TS7006: Parameter 'prev' implicitly has an 'any' type.
+src/pages/formula/FormulaCasesPage.tsx(528,15): error TS2322: Type '(e: React.ChangeEvent<HTMLSelectElement>) => void' is not assignable to type '(value: string) => void'.
+src/pages/formula/FormulaCasesPage.tsx(529,27): error TS7006: Parameter 'prev' implicitly has an 'any' type.
+src/pages/formula/FormulaCasesPage.tsx(541,44): error TS7006: Parameter 'prev' implicitly has an 'any' type.
+src/pages/formula/FormulaCasesPage.tsx(588,23): error TS7006: Parameter 'c' implicitly has an 'any' type.
+src/pages/formula/FormulaCasesPage.tsx(592,23): error TS7006: Parameter 'c' implicitly has an 'any' type.
+src/pages/formula/FormulaCasesPage.tsx(601,40): error TS7006: Parameter 'prev' implicitly has an 'any' type.
+src/pages/formula/FormulaListPage.tsx(990,15): error TS2322: Type '{ children: Element[]; variant: string; size: string; icon: Element; onClick: () => void; className: string; }' is not assignable to type 'DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement>'.
+src/pages/formula/FormulaListPage.tsx(1192,89): error TS2339: Property 'target' does not exist on type 'string'.
+src/pages/formula/FormulaListPage.tsx(1192,119): error TS2322: Type '{ children: (Element | Element[])[]; value: string; onChange: (e: string) => void; className: string; }' is not assignable to type 'IntrinsicAttributes & SelectSharedProps & { value?: string | undefined; defaultValue?: string | undefined; onValueChange?(value: string): void; } & { ...; }'.
+src/pages/formula/FormulaListPage.tsx(1290,85): error TS2339: Property 'target' does not exist on type 'string'.
+src/pages/formula/FormulaListPage.tsx(1290,115): error TS2322: Type '{ children: (Element | Element[])[]; value: string; onChange: (e: string) => void; size: string; }' is not assignable to type 'IntrinsicAttributes & SelectSharedProps & { value?: string | undefined; defaultValue?: string | undefined; onValueChange?(value: string): void; } & { ...; }'.
+src/pages/formula/FormulaListPage.tsx(1305,75): error TS2339: Property 'target' does not exist on type 'string'.
+src/pages/formula/FormulaListPage.tsx(1305,105): error TS2322: Type '{ children: (Element | Element[])[]; value: string; onChange: (e: string) => void; size: string; }' is not assignable to type 'IntrinsicAttributes & SelectSharedProps & { value?: string | undefined; defaultValue?: string | undefined; onValueChange?(value: string): void; } & { ...; }'.
+src/pages/formula/FormulaListPage.tsx(1318,97): error TS2339: Property 'target' does not exist on type 'string'.
+src/pages/formula/FormulaListPage.tsx(1318,113): error TS2322: Type '{ children: Element[]; value: string; onChange: (e: string) => void; size: string; }' is not assignable to type 'IntrinsicAttributes & SelectSharedProps & { value?: string | undefined; defaultValue?: string | undefined; onValueChange?(value: string): void; } & { ...; }'.
+src/pages/formula/FormulaListPage.tsx(1533,29): error TS2322: Type '{ checked: boolean; indeterminate: boolean; onChange: () => void; "aria-label": string; }' is not assignable to type 'IntrinsicAttributes & Omit<CheckboxProps & RefAttributes<HTMLButtonElement>, "ref"> & { ...; } & RefAttributes<...>'.
+src/pages/landing/sections/Features.tsx(75,31): error TS2339: Property 'label' does not exist on type 'string'.
+src/pages/landing/sections/Features.tsx(76,70): error TS2339: Property 'label' does not exist on type 'string'.
+src/pages/landing/sections/Features.tsx(77,25): error TS2339: Property 'detail' does not exist on type 'string'.
+src/pages/landing/sections/Features.tsx(77,81): error TS2339: Property 'detail' does not exist on type 'string'.
+src/pages/organizations/components/OrganizationDetail.tsx(25,20): error TS2724: '"@/components/ui/Skeleton"' has no exported member named 'CardSkeleton'. Did you mean 'Skeleton'?
+src/pages/organizations/components/PermissionMatrix.tsx(61,11): error TS2339: Property 'getPermissionMatrix' does not exist on type '{ organizations: Organization[]; loading: boolean; error: Error | null; total: number; page: number; pageSize: number; search: string; filters: OrganizationFilters; ... 20 more ...; someSelected: boolean; }'.
+src/pages/organizations/components/PermissionMatrix.tsx(70,13): error TS7006: Parameter 'result' implicitly has an 'any' type.
+src/pages/terminology/TerminologyPage.tsx(49,30): error TS2552: Cannot find name 'queryClient'. Did you mean 'useQueryClient'?
+src/pages/terminology/TerminologyPage.tsx(296,37): error TS2322: Type '{ rows: number; cols: number; }' is not assignable to type 'IntrinsicAttributes & TableSkeletonProps'.
+src/pages/terminology/TerminologyPage.tsx(506,37): error TS2322: Type '{ rows: number; cols: number; }' is not assignable to type 'IntrinsicAttributes & TableSkeletonProps'.
+src/pages/terminology/TerminologyPage.tsx(805,37): error TS2322: Type '{ rows: number; cols: number; }' is not assignable to type 'IntrinsicAttributes & TableSkeletonProps'.
+src/pages/user/UserManagementPage.tsx(1174,35): error TS2339: Property 'target' does not exist on type 'string'.
+src/pages/user/UserManagementPage.tsx(1177,17): error TS2322: Type '{ children: (Element | Element[])[]; value: string; onChange: (e: string) => void; size: string; }' is not assignable to type 'IntrinsicAttributes & SelectSharedProps & { value?: string | undefined; defaultValue?: string | undefined; onValueChange?(value: string): void; } & { ...; }'.
+src/pages/user/UserManagementPage.tsx(1193,37): error TS2339: Property 'target' does not exist on type 'string'.
+src/pages/user/UserManagementPage.tsx(1196,17): error TS2322: Type '{ children: Element[]; value: string; onChange: (e: string) => void; size: string; }' is not assignable to type 'IntrinsicAttributes & SelectSharedProps & { value?: string | undefined; defaultValue?: string | undefined; onValueChange?(value: string): void; } & { ...; }'.
+src/pages/user/UserManagementPage.tsx(1213,42): error TS2339: Property 'target' does not exist on type 'string'.
+src/pages/user/UserManagementPage.tsx(1216,19): error TS2322: Type '{ children: Element[]; value: string; onChange: (e: string) => void; size: string; }' is not assignable to type 'IntrinsicAttributes & SelectSharedProps & { value?: string | undefined; defaultValue?: string | undefined; onValueChange?(value: string): void; } & { ...; }'.
+src/pages/user/UserManagementPage.tsx(1297,27): error TS2339: Property 'target' does not exist on type 'string'.
+src/pages/user/UserManagementPage.tsx(1301,37): error TS2339: Property 'target' does not exist on type 'string'.
+src/pages/user/UserManagementPage.tsx(1303,94): error TS2339: Property 'target' does not exist on type 'string'.
+src/pages/user/UserManagementPage.tsx(1308,19): error TS2322: Type '{ children: (Element | Element[])[]; value: string; onChange: (e: string) => void; size: string; className: string; }' is not assignable to type 'IntrinsicAttributes & SelectSharedProps & { value?: string | undefined; defaultValue?: string | undefined; onValueChange?(value: string): void; } & { ...; }'.
+src/pages/user/UserManagementPage.tsx(1406,29): error TS2322: Type '{ checked: boolean; indeterminate: boolean; onChange: () => void; "aria-label": string; }' is not assignable to type 'IntrinsicAttributes & Omit<CheckboxProps & RefAttributes<HTMLButtonElement>, "ref"> & { ...; } & RefAttributes<...>'.
+src/pages/user/UserManagementPage.tsx(2212,78): error TS2339: Property 'target' does not exist on type 'string'.
+src/pages/user/UserManagementPage.tsx(2213,17): error TS2322: Type '{ children: Element[]; value: UserRole; onChange: (e: string) => void; size: string; }' is not assignable to type 'IntrinsicAttributes & SelectSharedProps & { value?: string | undefined; defaultValue?: string | undefined; onValueChange?(value: string): void; } & { ...; }'.
+src/stores/theme.storage.ts(195,7): error TS2739: Type '{ colors: { primary: string; }; }' is missing the following properties from type 'ThemeStateSnapshot': activeThemeId, mode, accessibilityMode, transitionType

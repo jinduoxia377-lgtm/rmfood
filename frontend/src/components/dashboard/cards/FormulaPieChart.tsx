@@ -19,20 +19,19 @@ interface Props {
 
 const COLORS: Record<string, string> = {
   draft: 'var(--color-neutral-400, #9CA3AF)',
-  in_progress: 'var(--color-info, #007AFF)',
-  pending_review: 'var(--color-warning, #FF9F0A)',
-  approved: 'var(--color-success, #34C759)',
-  rejected: 'var(--color-error, #FF3B30)',
+  in_progress: 'var(--color-info, #3B82F6)',
+  pending_review: 'var(--color-warning, #F59E0B)',
+  approved: 'var(--color-primary, #10B981)',
+  rejected: 'var(--color-error, #EF4444)',
 }
 
 const tooltipStyle = {
   contentStyle: {
-    backgroundColor: 'var(--card-bg-solid, rgba(255,255,255,0.98))',
-    backdropFilter: 'blur(16px)',
-    borderRadius: '14px',
-    border: '1px solid var(--border-color, rgba(226,232,240,0.9))',
-    boxShadow: '0 12px 40px rgba(0,0,0,0.12)',
-    padding: '14px 18px',
+    backgroundColor: 'var(--card-bg-solid, #ffffff)',
+    borderRadius: '8px',
+    border: '1px solid var(--border-color, #e2e8f0)',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+    padding: '10px 14px',
   },
 }
 

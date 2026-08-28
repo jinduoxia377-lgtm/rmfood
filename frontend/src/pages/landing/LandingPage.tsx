@@ -1,5 +1,5 @@
 /**
- * RMFOOD 公官网着陆页 — 模块化编排器 v5.0
+ * RMFOOD 公官网着陆页 — 模块化编排器 v6.0
  *
  * 架构：
  *   sections/  → 各业务区块组件（独立、可单独测试）
@@ -8,13 +8,16 @@
  *   LandingPage.css → 区块共享样式
  *
  * 此文件仅为编排层，不承载业务逻辑。
+ *
+ * 布局顺序（v6）：
+ *   Hero → Features → SocialProof → UseCases → DataSources → Pricing → FAQ → CTA
  */
 import Navbar from './sections/Navbar';
 import Hero from './sections/Hero';
 import Features from './sections/Features';
+import SocialProof from './sections/SocialProof';
 import UseCases from './sections/UseCases';
 import DataSources from './sections/DataSources';
-import SocialProof from './sections/SocialProof';
 import Pricing from './sections/Pricing';
 import FAQ from './sections/FAQ';
 import CTABanner from './sections/CTABanner';
@@ -27,8 +30,8 @@ export default function LandingPage() {
       <Navbar />
       <main>
         <Hero />
-        <SocialProof />
         <Features />
+        <SocialProof />
         <UseCases />
         <DataSources />
         <Pricing />

@@ -1168,7 +1168,7 @@ export default function FormulaListPage() {
           <CardContent className="p-5 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-[15px] font-semibold text-neutral-800 dark:text-neutral-200 flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary-100 to-primary-50 dark:from-primary-900/30 dark:to-primary-800/20 flex items-center justify-center">
+                <div className="w-7 h-7 rounded-lg bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
                   <Filter className="w-3.5 h-3.5 text-primary-600 dark:text-primary-400" />
                 </div>
                 筛选条件
@@ -1298,7 +1298,7 @@ export default function FormulaListPage() {
               {activeFilterTags.map((tag, idx) => (
                 <Badge key={idx} variant="primary" size="sm" className="gap-1 cursor-pointer hover:bg-primary-200 transition-colors">
                   {tag.label}
-                  <button onClick={tag.onRemove} className="hover:text-error-500"><X size={10} /></button>
+                  <button onClick={tag.onRemove} className="hover:text-error-500" aria-label={`移除筛选: ${tag.label}`}><X size={10} /></button>
                 </Badge>
               ))}
               <button onClick={clearAllFilters} className="text-xs text-danger-600 hover:text-danger-700 font-medium ml-auto">清除全部</button>
@@ -1307,7 +1307,7 @@ export default function FormulaListPage() {
 
           {/* ── 批量操作提示条 ── */}
           {selectedIds.size > 0 && (
-            <Alert className="rounded-xl border-primary-200 bg-gradient-to-r from-primary-50/80 to-blue-50/60 dark:border-primary-800 dark:from-primary-950/30 dark:to-blue-950/20 animate-in fade-in slide-in-from-bottom-2 duration-200 shadow-sm">
+            <Alert className="rounded-lg border-primary-200 bg-primary-50 dark:border-primary-800 dark:bg-primary-950/20 shadow-sm">
               <CheckCircle2 className="w-4 h-4 text-primary-600" />
               <AlertTitle className="text-sm font-medium">
                 已选择 <strong className="text-primary-700 dark:text-primary-300">{selectedIds.size}</strong> 个配方
@@ -1360,7 +1360,7 @@ export default function FormulaListPage() {
           )}
 
           {/* ── 主内容区域（响应式：移动端强制卡片视图）── */}
-          <Card className="transition-all duration-300 hover:shadow-xl shadow-md ring-1 ring-slate-200/60 dark:ring-slate-700/40 overflow-visible bg-white dark:bg-neutral-900">
+          <Card className="transition-shadow duration-200 ring-1 ring-slate-200/60 dark:ring-slate-700/40 overflow-visible bg-white dark:bg-neutral-900">
             {isLoading ? (
               viewMode === 'card' || isMobile ? (
                 <div className="p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
@@ -1385,7 +1385,7 @@ export default function FormulaListPage() {
               <div className="py-16 md:py-20">
                 <EmptyState
                   icon={
-                    <div className="w-16 h-16 md:w-[64px] md:h-[64px] rounded-2xl bg-gradient-to-br from-primary-100 to-indigo-100 dark:from-primary-900/30 dark:to-indigo-900/30 flex items-center justify-center">
+                    <div className="w-16 h-16 md:w-[64px] md:h-[64px] rounded-xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
                       <FlaskConical size={32} className="md:w-[36px] md:h-[36px] text-primary-500 dark:text-primary-400" />
                     </div>
                   }
@@ -1465,7 +1465,7 @@ export default function FormulaListPage() {
               <>
                 <div ref={parentRef} className="overflow-x-auto" style={{ maxHeight: '70vh' }}>
                   <table className="w-full text-sm" role="table" aria-label="配方列表">
-                    <thead className="sticky top-0 z-10 bg-slate-50/90 dark:bg-neutral-800/95 backdrop-blur-sm border-b border-neutral-200 dark:border-neutral-700 text-[13px] uppercase">
+                    <thead className="sticky top-0 z-10 bg-slate-50 dark:bg-neutral-800 border-b border-neutral-200 dark:border-neutral-700 text-[13px] uppercase">
                       <tr>
                         <th className="w-10 px-4 py-3">
                           <Checkbox
@@ -1591,7 +1591,7 @@ export default function FormulaListPage() {
                                     ref={actionMenuRef}
                                     role="menu"
                                     aria-label={`${formula.name || '配方'} 的操作菜单`}
-                                    className="absolute right-0 w-44 bg-white dark:bg-neutral-800 rounded-lg shadow-lg shadow-black/10 border border-neutral-200/80 dark:border-neutral-700 py-1 z-[60] animate-in fade-in duration-150 origin-top-right min-w-[176px]"
+                                    className="absolute right-0 w-44 bg-white dark:bg-neutral-800 rounded-lg shadow-md border border-neutral-200/80 dark:border-neutral-700 py-1 z-[60] min-w-[176px]"
                                     style={{ top: 'calc(100% + 6px)', maxHeight: 'none' }}
                                   >
                                     <div className="absolute -top-1.5 right-3 w-2.5 h-2.5 bg-white dark:bg-neutral-800 border-l border-t border-neutral-200 dark:border-neutral-700 rotate-45 shadow-sm" />
@@ -1649,7 +1649,7 @@ export default function FormulaListPage() {
 
                 {/* ── 分页组件 ── */}
                 {totalPages > 1 && (
-                  <div className="px-4 md:px-6 py-3 md:py-4 border-t border-neutral-200/80 dark:border-neutral-700/60 flex flex-col sm:flex-row items-center justify-between gap-3 bg-gradient-to-r from-slate-50 to-slate-50/80 dark:from-slate-800/50 dark:to-slate-800/30">
+                  <div className="px-4 md:px-6 py-3 md:py-4 border-t border-neutral-200 dark:border-neutral-700 flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-50 dark:bg-neutral-800">
                     <p className="text-xs text-neutral-500 dark:text-neutral-400 order-2 sm:order-1">
                       <span className="sm:hidden">第 {page}/{totalPages} 页</span>
                       <span className="hidden sm:inline">

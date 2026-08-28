@@ -1,11 +1,12 @@
 /**
- * Features 组件 v8 — 学术卡片风格
+ * Features 组件 v9 — 学术卡片风格（升级 v9）
  *
- * 设计理念：
- *   - 去渐变、去发光、去旋转动画
- *   - 卡片如论文摘要，信息密度高
- *   - 编号列表替代步骤按钮
- *   - 单一绿色作为唯一强调色
+ * 升级要点（v9）：
+ *   - 卡片间距 gap-3 → gap-5，增加呼吸感
+ *   - 卡片 padding p-5 → p-6
+ *   - 圆角 rounded-sm → rounded-md
+ *   - 移除 techLabel 展示（非技术决策者无意义）
+ *   - 第一排 AI 能力卡片增加"核心能力"角标
  */
 import { useState } from 'react';
 import { getFeatureIcon } from '../data/features';
@@ -15,31 +16,42 @@ import {
   sectionLabel, sectionTitle, sectionDesc, features, dimensionConfig,
 } from '../data/features';
 import type { Dimension } from '../data/features';
+import { Sparkles } from 'lucide-react';
 
 const dimensionOrder: Dimension[] = ['ai', 'data', 'team'];
+const coreFeatureIds = new Set(['ai-chat', 'multi-opt', 'safety']);
 
 function FeatureCard({ feature, index }: { feature: typeof features[0]; index: number }) {
   const [hovered, setHovered] = useState(false);
   const cfg = dimensionConfig[feature.dimension];
   const IconComp = getFeatureIcon(feature.icon);
+  const isCore = coreFeatureIds.has(feature.id);
 
   return (
     <Reveal delay={`lp-reveal-delay-${(index % 3) + 1}`}>
       <div
-        className="relative rounded-sm overflow-hidden transition-all duration-200 cursor-default"
+        className="lp-card-white relative overflow-hidden transition-all duration-200 cursor-default"
         style={{
-          background: hovered ? '#fff' : '#fafafa',
           border: `1px solid ${hovered ? cfg.primary : '#e2e8f0'}`,
-          boxShadow: hovered ? '0 2px 8px rgba(0,0,0,0.06)' : 'none',
         }}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
-        <div className="p-5">
+        {/* 核心能力角标 */}
+        {isCore && (
+          <div
+            className="absolute top-0 right-0 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider"
+            style={{ background: cfg.primary, color: '#fff' }}
+          >
+            核心
+          </div>
+        )}
+
+        <div className="p-6">
           {/* 头部：图标 + 标题行 */}
           <div className="flex items-start gap-3 mb-3">
             <div
-              className="w-8 h-8 rounded-sm flex items-center justify-center shrink-0 mt-0.5"
+              className="w-8 h-8 rounded-md flex items-center justify-center shrink-0 mt-0.5"
               style={{ background: cfg.primaryLight, color: cfg.primary, border: `1px solid ${cfg.primaryBorder}` }}
             >
               <IconComp size={15} strokeWidth={1.8} />
@@ -59,14 +71,6 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
           <p className="text-[13px] leading-relaxed text-slate-600 mb-4 min-h-[52px]">
             {feature.desc}
           </p>
-
-          {/* 技术标签 */}
-          {feature.techLabel && (
-            <div className="flex items-center gap-1.5 mb-4 pt-3 border-t border-slate-100">
-              <div className="w-1 h-1 rounded-full" style={{ background: cfg.primary }} />
-              <span className="text-[10px] font-mono text-slate-400">{feature.techLabel}</span>
-            </div>
-          )}
 
           {/* 流程步骤（编号列表） */}
           {feature.steps && feature.steps.length > 0 && (
@@ -105,7 +109,7 @@ export default function Features() {
   const titleLines = sectionTitle.split('\n');
 
   return (
-    <section id="features" className="py-20 lg:py-24" style={{ background: '#fff' }}>
+    <section id="features" className="py-20 lg:py-24 lp-grid-bg" style={{ background: '#fff' }}>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* 标题区 */}
@@ -130,12 +134,7 @@ export default function Features() {
           return (
             <div key={dim} className="mb-10 last:mb-0">
               <DimensionHeader dimension={dim} />
-              <div className={cn(
-                'grid gap-3',
-                dim === 'ai' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' :
-                dim === 'data' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-2' :
-                'grid-cols-1 md:grid-cols-2 lg:grid-cols-1 max-w-2xl'
-              )}>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 {dimFeatures.map((f, i) => (
                   <FeatureCard key={f.id} feature={f} index={dimIdx * 3 + i} />
                 ))}

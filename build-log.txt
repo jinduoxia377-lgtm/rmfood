@@ -1,0 +1,176 @@
+﻿vite v5.4.21 building for production...
+transforming...
+✓ 8597 modules transformed.
+node.exe : Export "StatCard" of module "src/components/ui/StatCard.tsx" was reexported through module "s
+rc/components/ui/index.ts" while both modules are dependencies of each other and will end up in differen
+t chunks by current Rollup settings. This scenario is not well supported at the moment as it will produc
+e a circular dependency between chunks and will likely lead to broken execution order.
+At line:1 char:1
++ & "C:\nvm4w\nodejs/node.exe" "C:\nvm4w\nodejs/node_modules/npm/bin/np ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Export "StatCar...xecution order.:String) [], RemoteExcept 
+   ion
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Either change the import in "src/pages/formula/FormulaListPage.tsx" to point directly to the exporting m
+odule or reconfigure "output.manualChunks" to ensure these modules end up in the same chunk.
+Export "StatCard" of module "src/components/ui/StatCard.tsx" was reexported through module "src/componen
+ts/ui/index.ts" while both modules are dependencies of each other and will end up in different chunks by
+ current Rollup settings. This scenario is not well supported at the moment as it will produce a circula
+r dependency between chunks and will likely lead to broken execution order.
+Either change the import in "src/pages/formula/FormulaCasesPage.tsx" to point directly to the exporting 
+module or reconfigure "output.manualChunks" to ensure these modules end up in the same chunk.
+Export "StatCard" of module "src/components/ui/StatCard.tsx" was reexported through module "src/componen
+ts/ui/index.ts" while both modules are dependencies of each other and will end up in different chunks by
+ current Rollup settings. This scenario is not well supported at the moment as it will produce a circula
+r dependency between chunks and will likely lead to broken execution order.
+Either change the import in "src/pages/experiment/ExperimentListPage.tsx" to point directly to the expor
+ting module or reconfigure "output.manualChunks" to ensure these modules end up in the same chunk.
+Export "StatCard" of module "src/components/ui/StatCard.tsx" was reexported through module "src/componen
+ts/ui/index.ts" while both modules are dependencies of each other and will end up in different chunks by
+ current Rollup settings. This scenario is not well supported at the moment as it will produce a circula
+r dependency between chunks and will likely lead to broken execution order.
+Either change the import in "src/pages/terminology/TerminologyPage.tsx" to point directly to the exporti
+ng module or reconfigure "output.manualChunks" to ensure these modules end up in the same chunk.
+Export "StatCard" of module "src/components/ui/StatCard.tsx" was reexported through module "src/componen
+ts/ui/index.ts" while both modules are dependencies of each other and will end up in different chunks by
+ current Rollup settings. This scenario is not well supported at the moment as it will produce a circula
+r dependency between chunks and will likely lead to broken execution order.
+Either change the import in "src/pages/user/UserManagementPage.tsx" to point directly to the exporting m
+odule or reconfigure "output.manualChunks" to ensure these modules end up in the same chunk.
+Export "StatCard" of module "src/components/ui/StatCard.tsx" was reexported through module "src/componen
+ts/ui/index.ts" while both modules are dependencies of each other and will end up in different chunks by
+ current Rollup settings. This scenario is not well supported at the moment as it will produce a circula
+r dependency between chunks and will likely lead to broken execution order.
+Either change the import in "src/pages/integrations/IntegrationsPage.tsx" to point directly to the expor
+ting module or reconfigure "output.manualChunks" to ensure these modules end up in the same chunk.
+rendering chunks...
+[plugin:vite:reporter] [plugin vite:reporter] 
+(!) D:/RMFOODFP/frontend/src/components/ai/ModelConfigPanel.tsx is dynamically imported by D:/RMFOODFP/f
+rontend/src/pages/ai/AIAssistantPage.tsx but also statically imported by D:/RMFOODFP/frontend/src/compon
+ents/ai/ConfigManagementPanel.tsx, dynamic import will not move module into another chunk.
+
+[plugin:vite:reporter] [plugin vite:reporter] 
+(!) D:/RMFOODFP/frontend/src/api/searchNew.ts is dynamically imported by D:/RMFOODFP/frontend/src/pages/
+database/tabs/RetailProductSearchPanel.tsx, D:/RMFOODFP/frontend/src/pages/database/tabs/RetailProductSe
+archPanel.tsx but also statically imported by D:/RMFOODFP/frontend/src/pages/database/tabs/FoodMaterialS
+earchPanel.tsx, D:/RMFOODFP/frontend/src/pages/database/tabs/RetailProductSearchPanel.tsx, dynamic impor
+t will not move module into another chunk.
+
+[plugin:vite:reporter] [plugin vite:reporter] 
+(!) D:/RMFOODFP/frontend/src/components/ai/features/services/userPreferencesService.ts is dynamically im
+ported by D:/RMFOODFP/frontend/src/components/ai/features/services/userProfileService.ts but also static
+ally imported by D:/RMFOODFP/frontend/src/components/ai/features/components/ChatInputSettingsDialog.tsx,
+ D:/RMFOODFP/frontend/src/components/ai/features/hooks/useChatInputBehavior.ts, dynamic import will not 
+move module into another chunk.
+
+[plugin:vite:reporter] [plugin vite:reporter] 
+(!) D:/RMFOODFP/frontend/src/api/formula.ts is dynamically imported by D:/RMFOODFP/frontend/src/pages/fo
+rmula/FormulaDetailPage.tsx, D:/RMFOODFP/frontend/src/pages/formula/FormulaDetailPage.tsx, D:/RMFOODFP/f
+rontend/src/pages/formula/FormulaDetailPage.tsx, D:/RMFOODFP/frontend/src/pages/formula/FormulaDetailPag
+e.tsx, D:/RMFOODFP/frontend/src/pages/formula/FormulaDetailPage.tsx, D:/RMFOODFP/frontend/src/pages/form
+ula/FormulaDetailPage.tsx, D:/RMFOODFP/frontend/src/pages/formula/FormulaDetailPage.tsx, D:/RMFOODFP/fro
+ntend/src/pages/formula/FormulaDetailPage.tsx, D:/RMFOODFP/frontend/src/pages/formula/FormulaDetailPage.
+tsx, D:/RMFOODFP/frontend/src/pages/formula/FormulaDetailPage.tsx, D:/RMFOODFP/frontend/src/pages/formul
+a/FormulaDetailPage.tsx, D:/RMFOODFP/frontend/src/pages/formula/FormulaEditPage.tsx, D:/RMFOODFP/fronten
+d/src/pages/formula/FormulaEditPage.tsx, D:/RMFOODFP/frontend/src/pages/formula/FormulaNewPage.tsx but a
+lso statically imported by D:/RMFOODFP/frontend/src/components/ai/hooks/useNeuralResultCard.ts, D:/RMFOO
+DFP/frontend/src/hooks/useQueries.ts, D:/RMFOODFP/frontend/src/pages/formula/FormulaCaseDetailPage.tsx, 
+D:/RMFOODFP/frontend/src/pages/formula/FormulaCasesPage.tsx, D:/RMFOODFP/frontend/src/pages/formula/Form
+ulaDetailPage.tsx, D:/RMFOODFP/frontend/src/pages/formula/FormulaEditPage.tsx, D:/RMFOODFP/frontend/src/
+pages/formula/FormulaListPage.tsx, D:/RMFOODFP/frontend/src/pages/formula/FormulaNewPage.tsx, D:/RMFOODF
+P/frontend/src/pages/formula/FormulaTestPage.tsx, D:/RMFOODFP/frontend/src/pages/formula/components/Form
+ulaCompare.tsx, D:/RMFOODFP/frontend/src/pages/formula/components/FormulaQuickView.tsx, D:/RMFOODFP/fron
+tend/src/pages/formula/components/OperationLogPanel.tsx, D:/RMFOODFP/frontend/src/utils/operationLogger.
+ts, dynamic import will not move module into another chunk.
+
+computing gzip size...
+dist/index.html                                            0.46 kB │ gzip:   0.34 kB
+dist/assets/FormulaInputWithOptimization-BnnjnONR.css      9.06 kB │ gzip:   2.13 kB
+dist/assets/index-_uM7ClI6.css                           503.92 kB │ gzip:  61.47 kB
+dist/assets/useSSEAuth-BAFxEXtM.js                         0.10 kB │ gzip:   0.10 kB
+dist/assets/LineChart-MCkWVSvh.js                          0.26 kB │ gzip:   0.21 kB
+dist/assets/Divider-Do6epNSQ.js                            0.37 kB │ gzip:   0.26 kB
+dist/assets/Highlight-BkcVLfkx.js                          0.43 kB │ gzip:   0.32 kB
+dist/assets/effects-DTWuK6ov.js                            0.44 kB │ gzip:   0.31 kB
+dist/assets/defineProperty-BzEQREwA.js                     0.49 kB │ gzip:   0.33 kB
+dist/assets/PageHeader-zgrPGR0B.js                         0.50 kB │ gzip:   0.29 kB
+dist/assets/admin-C7I93SwE.js                              0.59 kB │ gzip:   0.29 kB
+dist/assets/Progress-B5h0jmRb.js                           0.61 kB │ gzip:   0.40 kB
+dist/assets/SkeletonPresets-Bc2KGMh1.js                    1.51 kB │ gzip:   0.50 kB
+dist/assets/NotFoundPage-Ga3l8UcA.js                       2.14 kB │ gzip:   1.06 kB
+dist/assets/design-tokens-BuxzEiou.js                      2.50 kB │ gzip:   1.01 kB
+dist/assets/deep_dev-DluFz8xl.js                           2.88 kB │ gzip:   1.16 kB
+dist/assets/RealTimeSync-Dj6zAGFD.js                       4.36 kB │ gzip:   1.74 kB
+dist/assets/PersonalizedRecommendations-DQoZ3XzB.js        4.52 kB │ gzip:   1.64 kB
+dist/assets/EmptyStateIllustration-D9wgvPoN.js             4.69 kB │ gzip:   1.85 kB
+dist/assets/configManager-BvI20_R-.js                      4.99 kB │ gzip:   1.58 kB
+dist/assets/NotificationPage-BBCURdRj.js                   5.28 kB │ gzip:   2.20 kB
+dist/assets/TeamOnlineStatus-DHFXSseW.js                   5.63 kB │ gzip:   1.87 kB
+dist/assets/FormulaComparePage-BNRgLxZ8.js                 5.66 kB │ gzip:   1.59 kB
+dist/assets/FormulaCaseDetailPage-B7Ws_PD9.js              5.79 kB │ gzip:   2.06 kB
+dist/assets/AuditLogPage-7vYrHiP1.js                       6.11 kB │ gzip:   2.39 kB
+dist/assets/database-BuHz0t7Z.js                           6.52 kB │ gzip:   1.76 kB
+dist/assets/TokenDocPage-BR3SJn04.js                       6.67 kB │ gzip:   1.43 kB
+dist/assets/TeamDashboardShare-BIPEe51-.js                 7.31 kB │ gzip:   2.50 kB
+dist/assets/AgentPage-B7DX5WPH.js                          7.38 kB │ gzip:   2.80 kB
+dist/assets/unifiedApiKeyManager-BxouIFpe.js               7.52 kB │ gzip:   3.24 kB
+dist/assets/ChangeHistory-DoCir7B5.js                      7.54 kB │ gzip:   2.31 kB
+dist/assets/ParameterAdjustPanel-s7XLVftT.js               7.95 kB │ gzip:   2.55 kB
+dist/assets/TemplateManager-CoeyusfT.js                    8.50 kB │ gzip:   2.57 kB
+dist/assets/WorkflowPage-cOySI23D.js                       8.61 kB │ gzip:   3.15 kB
+dist/assets/WebSocketStatus-BMve36HN.js                    8.75 kB │ gzip:   2.02 kB
+dist/assets/FormulaTemplatesPage-DST_JnEf.js               9.09 kB │ gzip:   3.81 kB
+dist/assets/useOperationFeedback-FM2ztFem.js               9.19 kB │ gzip:   5.39 kB
+dist/assets/ExportManager-CbiY_cfk.js                      9.41 kB │ gzip:   2.90 kB
+dist/assets/KnowledgeBasePanel-CNrK9MHJ.js                10.35 kB │ gzip:   3.47 kB
+dist/assets/FormulaCasesPage-CMyljRHy.js                  10.52 kB │ gzip:   3.30 kB
+dist/assets/Line-DLQBqIcv.js                              10.91 kB │ gzip:   4.19 kB
+dist/assets/ExperimentListPage-CwsUSb-V.js                11.40 kB │ gzip:   4.20 kB
+dist/assets/ExperimentEditPage-j8iWhqvc.js                11.48 kB │ gzip:   3.25 kB
+dist/assets/SynergyTab-DfGlmR8I.js                        11.54 kB │ gzip:   3.92 kB
+dist/assets/ExperimentNewPage-DA8Elfh9.js                 11.67 kB │ gzip:   4.18 kB
+dist/assets/NeuralGeneratePanel-CEXZQ8GX.js               11.70 kB │ gzip:   4.04 kB
+dist/assets/IntegrationsPage-DZpCDyEL.js                  11.74 kB │ gzip:   3.26 kB
+dist/assets/Scatter-NEPMBAEe.js                           11.77 kB │ gzip:   3.74 kB
+dist/assets/FormulaSharePanel-BwAAMbwV.js                 13.12 kB │ gzip:   4.30 kB
+dist/assets/SafetyTab-BC2BTYN9.js                         13.52 kB │ gzip:   4.98 kB
+dist/assets/AgentWorkflowTab-DmEBj76j.js                  15.16 kB │ gzip:   5.38 kB
+dist/assets/StabilityPredictTab-DzqFu1De.js               15.49 kB │ gzip:   5.67 kB
+dist/assets/AIAnalysisPanel-C0XP-Qqr.js                   15.51 kB │ gzip:   4.44 kB
+dist/assets/operationLogger-DtUdrWBR.js                   15.98 kB │ gzip:   5.30 kB
+dist/assets/FormulaTestPage-C7XziWGh.js                   17.04 kB │ gzip:   5.24 kB
+dist/assets/AdvancedPeptideAnalyzer-D1oEZDZh.js           19.74 kB │ gzip:   6.24 kB
+dist/assets/TerminologyPage-CfSPaC2V.js                   21.54 kB │ gzip:   4.68 kB
+dist/assets/TastePredictTab-_LF_mvEm.js                   22.02 kB │ gzip:   8.51 kB
+dist/assets/FormulaNewPage-DZrMKLpp.js                    22.23 kB │ gzip:   7.04 kB
+dist/assets/OptimizationAdvisor-3sZUd3ss.js               22.42 kB │ gzip:   8.03 kB
+dist/assets/ApiIntegrationManager-8KVMw65q.js             22.71 kB │ gzip:   5.33 kB
+dist/assets/index-DOtrU8LM.js                             24.09 kB │ gzip:   7.36 kB
+dist/assets/AdvancedPeptideDesign-Cb4vruLF.js             24.89 kB │ gzip:   7.32 kB
+dist/assets/ExperimentDetailPage-DjAw6xK8.js              24.93 kB │ gzip:   6.70 kB
+dist/assets/zh-CN-C-MjrY54.js                             25.78 kB │ gzip:   7.52 kB
+dist/assets/purify.es-DP5U8-sc.js                         29.17 kB │ gzip:  10.99 kB
+dist/assets/GeneticAlgorithmPanel-CVGRlTMu.js             31.43 kB │ gzip:  10.25 kB
+dist/assets/FormulaEditPage-CVC8pTzA.js                   34.98 kB │ gzip:   9.11 kB
+dist/assets/FormulaInputWithOptimization-blP3Qrjl.js      46.22 kB │ gzip:  13.60 kB
+dist/assets/UserManagementPage-BORaADVE.js                51.03 kB │ gzip:  14.03 kB
+dist/assets/MultiObjectivePanel-C74myfJ7.js               55.25 kB │ gzip:  16.23 kB
+dist/assets/AnalyticsPage-CzqnKxlD.js                     59.72 kB │ gzip:  15.03 kB
+dist/assets/OrganizationsPage-BErj534v.js                 70.56 kB │ gzip:  17.69 kB
+dist/assets/FormulaListPage-CBVqcnBt.js                   70.91 kB │ gzip:  17.83 kB
+dist/assets/SettingsPage-9tVgqBcM.js                     122.05 kB │ gzip:  33.46 kB
+dist/assets/AcademicReportPage-C8iP-3It.js               131.43 kB │ gzip:  32.78 kB
+dist/assets/GenerateTab-CmqLrLhl.js                      135.68 kB │ gzip:  44.30 kB
+dist/assets/index.es-DzrJ9bju.js                         150.42 kB │ gzip:  51.47 kB
+dist/assets/AIAssistantPage-DQ1aApCO.js                  333.55 kB │ gzip: 109.96 kB
+dist/assets/exceljs.min-BvGAyL4g.js                      938.56 kB │ gzip: 271.04 kB
+dist/assets/DatabasePage-pzFculD7.js                   1,403.40 kB │ gzip: 417.28 kB
+dist/assets/index-CYprgYUl.js                          3,263.01 kB │ gzip: 890.03 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-op
+tions/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 59.78s

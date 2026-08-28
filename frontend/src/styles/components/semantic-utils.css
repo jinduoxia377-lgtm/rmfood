@@ -1,0 +1,201 @@
+/**
+ * RMFOOD 设计系统 — 语义化组件工具类
+ * 所有组件应优先使用此类，而非硬编码 Tailwind 默认色系
+ *
+ * 命名约定：
+ *   .bg-*       → 背景色（自动响应 .dark）
+ *   .text-*     → 文字色（自动响应 .dark）
+ *   .border-*   → 边框色（自动响应 .dark）
+ *   .surface-*  → 卡片/面板表面（含 border + radius + shadow）
+ */
+
+/* ═══════════════════════════════════════════════════════════════
+   品牌主色语义化类
+   ═══════════════════════════════════════════════════════════════ */
+
+.text-primary-main       { color: var(--color-primary, #10B981); }
+.text-primary-light      { color: var(--color-primary-300, #6ee7b7); }
+.bg-primary-container    { background: var(--color-primary-container, rgba(16,185,129,0.12)); }
+.border-primary-main     { border-color: var(--color-primary, #10B981); }
+
+/* 成功 / 警告 / 错误 / 信息 */
+.text-success-main       { color: var(--color-success, #10b981); }
+.bg-success-container    { background: var(--color-success-container, rgba(0, 102, 204, 0.12)); }
+.text-warning-main       { color: var(--color-warning, #f59e0b); }
+.bg-warning-container    { background: var(--color-warning-container, rgba(255,159,10,0.12)); }
+.text-error-main         { color: var(--color-error, #ef4444); }
+.bg-error-container      { background: var(--color-error-container, rgba(255,59,48,0.12)); }
+.text-info-main          { color: var(--color-info, #3b82f6); }
+.bg-info-container       { background: var(--color-info-container, rgba(0,122,255,0.12)); }
+
+/* ═══════════════════════════════════════════════════════════════
+   中性色全阶（50–900）— 替代 Tailwind bg-neutral-* / text-neutral-* / border-neutral-*
+   暗色模式下自动变深，无需 dark: 前缀
+   ═══════════════════════════════════════════════════════════════ */
+
+/* 背景色 */
+.bg-neutral-50  { background: var(--color-neutral-50,  #f8fafc); }
+.bg-neutral-100 { background: var(--color-neutral-100, #f1f5f9); }
+.bg-neutral-200 { background: var(--color-neutral-200, #e2e8f0); }
+.bg-neutral-300 { background: var(--color-neutral-300, #cbd5e1); }
+.bg-neutral-400 { background: var(--color-neutral-400, #9CA3AF); }
+.bg-neutral-500 { background: var(--color-neutral-500, #6B7280); }
+.bg-neutral-600 { background: var(--color-neutral-600, #475569); }
+.bg-neutral-700 { background: var(--color-neutral-700, #334155); }
+.bg-neutral-800 { background: var(--color-neutral-800, #1F2937); }
+.bg-neutral-900 { background: var(--color-neutral-900, #111827); }
+
+/* 文字色 */
+.text-neutral-50  { color: var(--color-neutral-50,  #f8fafc); }
+.text-neutral-100 { color: var(--color-neutral-100, #f1f5f9); }
+.text-neutral-200 { color: var(--color-neutral-200, #e2e8f0); }
+.text-neutral-300 { color: var(--color-neutral-300, #cbd5e1); }
+.text-neutral-400 { color: var(--color-neutral-400, #9CA3AF); }
+.text-neutral-500 { color: var(--color-neutral-500, #6B7280); }
+.text-neutral-600 { color: var(--color-neutral-600, #475569); }
+.text-neutral-700 { color: var(--color-neutral-700, #334155); }
+.text-neutral-800 { color: var(--color-neutral-800, #1F2937); }
+.text-neutral-900 { color: var(--color-neutral-900, #111827); }
+
+/* 边框色 */
+.border-neutral-50  { border-color: var(--color-neutral-50,  #f8fafc); }
+.border-neutral-100 { border-color: var(--color-neutral-100, #f1f5f9); }
+.border-neutral-200 { border-color: var(--color-neutral-200, #e2e8f0); }
+.border-neutral-300 { border-color: var(--color-neutral-300, #cbd5e1); }
+.border-neutral-400 { border-color: var(--color-neutral-400, #9CA3AF); }
+.border-neutral-500 { border-color: var(--color-neutral-500, #6B7280); }
+.border-neutral-600 { border-color: var(--color-neutral-600, #475569); }
+.border-neutral-700 { border-color: var(--color-neutral-700, #334155); }
+.border-neutral-800 { border-color: var(--color-neutral-800, #1F2937); }
+.border-neutral-900 { border-color: var(--color-neutral-900, #111827); }
+
+/* ── 默认/微妙/muted 中性变体 (CSS 变量) ── */
+.bg-neutral-default  { background: var(--color-neutral-default, #f8fafc); }
+.bg-neutral-subtle   { background: var(--color-neutral-subtle,  #f1f5f9); }
+.bg-neutral-muted    { background: var(--color-neutral-muted,   #e2e8f0); }
+
+.text-neutral-default { color: var(--color-neutral-default, #f8fafc); }
+.text-neutral-subtle  { color: var(--color-neutral-subtle,  #f1f5f9); }
+.text-neutral-muted   { color: var(--color-neutral-muted,   #e2e8f0); }
+
+.border-neutral-default { border-color: var(--color-neutral-default, #f8fafc); }
+.border-neutral-subtle  { border-color: var(--color-neutral-subtle,  #f1f5f9); }
+.border-neutral-muted   { border-color: var(--color-neutral-muted,   #e2e8f0); }
+
+/* 悬停态 — 自动响应 .dark（CSS 变量已映射暗色值，无需额外 dark:）*/
+.hover\:bg-neutral-50:hover  { background: var(--color-neutral-50,  #f8fafc); }
+.hover\:bg-neutral-100:hover  { background: var(--color-neutral-100, #f1f5f9); }
+.hover\:bg-neutral-200:hover  { background: var(--color-neutral-200, #e2e8f0); }
+.hover\:bg-neutral-300:hover  { background: var(--color-neutral-300, #cbd5e1); }
+.hover\:bg-neutral-400:hover  { background: var(--color-neutral-400, #9CA3AF); }
+.hover\:bg-neutral-500:hover  { background: var(--color-neutral-500, #6B7280); }
+
+/* ── hover:bg-slate-* → hover:bg-neutral-* 映射（消除残留 187 处）── */
+.hover\:bg-slate-50:hover  { background: var(--color-neutral-50,  #f8fafc); }
+.hover\:bg-slate-100:hover { background: var(--color-neutral-100, #f1f5f9); }
+.hover\:bg-slate-200:hover { background: var(--color-neutral-200, #e2e8f0); }
+
+/* ═══════════════════════════════════════════════════════════════
+   表面层语义化类 — 替代 bg-white / dark:bg-neutral-900 等双值写法
+   ═══════════════════════════════════════════════════════════════ */
+
+.surface-card {
+  background: var(--card-bg-solid, #FFFFFF);
+  border: 1px solid var(--border-default, rgba(0,0,0,0.08));
+  border-radius: var(--radius-lg, 12px);
+}
+
+.surface-elevated {
+  background: var(--bg-surface-elevated, #FFFFFF);
+  border: 1px solid var(--border-default, rgba(0,0,0,0.06));
+  box-shadow: var(--shadow-card);
+}
+
+.surface-hover { background: var(--bg-surface-hover, rgba(0,0,0,0.04)); }
+
+.surface-overlay { background: var(--surface-overlay, rgba(0,0,0,0.5)); }
+
+.surface-glass {
+  background: var(--material-acrylic, rgba(255,255,255,0.72));
+  backdrop-filter: blur(var(--material-acrylic-blur, 20px));
+  border: 1px solid var(--material-acrylic-border, rgba(255,255,255,0.3));
+  box-shadow: var(--shadow-glass);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   分割线
+   ═══════════════════════════════════════════════════════════════ */
+
+.divider-horizontal { height: 1px; background: var(--border-divider, rgba(0,0,0,0.06)); }
+.divider-vertical   { width: 1px;   background: var(--border-divider, rgba(0,0,0,0.06)); }
+
+/* ═══════════════════════════════════════════════════════════════
+   骨架屏
+   ═══════════════════════════════════════════════════════════════ */
+
+.skeleton-base {
+  background: linear-gradient(90deg, var(--fill-secondary, #e2e8f0) 25%, var(--color-neutral-100, #f1f5f9) 50%, var(--fill-secondary, #e2e8f0) 75%);
+  background-size: 200% 100%;
+  animation: rmfood-shimmer 1.5s infinite;
+  border-radius: var(--radius-md, 8px);
+}
+
+@keyframes rmfood-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   焦点环
+   ═══════════════════════════════════════════════════════════════ */
+
+.focus-ring {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--bg-primary, #fff), 0 0 0 4px var(--color-primary, #10B981);
+  border-radius: var(--radius-md, 8px);
+}
+
+/* ── 焦点环暗色模式适配 ── */
+.dark .focus-ring {
+  box-shadow: 0 0 0 2px var(--bg-primary, #000), 0 0 0 4px var(--color-primary, #34d399);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   无障碍模式覆盖
+   ═══════════════════════════════════════════════════════════════ */
+
+[data-a11y-mode="high-contrast"] {
+  --color-primary:        #047857;
+  --text-primary:         #000000;
+  --text-secondary:       #334155;
+  --bg-primary:           #FFFFFF;
+  --bg-surface:           #FFFFFF;
+  --border-default:       #000000;
+  --color-neutral-50:  #FFFFFF;
+  --color-neutral-900: #000000;
+}
+[data-a11y-mode="high-contrast"].dark {
+  --text-primary:    #FFFFFF;
+  --bg-primary:      #000000;
+  --bg-surface:      #000000;
+  --border-default:  #FFFFFF;
+  --color-neutral-50:  #000000;
+  --color-neutral-900: #FFFFFF;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   阅读模式覆盖
+   ═══════════════════════════════════════════════════════════════ */
+
+[data-reading-mode="sepia"] {
+  --bg-primary:     #FDF6E3;
+  --bg-surface:     #FAF3E0;
+  --text-primary:   #5C4B37;
+  --text-secondary: #8B7355;
+}
+[data-reading-mode="dark-read"] {
+  --bg-primary:     #1a1a2e;
+  --bg-surface:     #16213e;
+  --text-primary:   #e0e0e0;
+  --text-secondary: #a0a0a0;
+}

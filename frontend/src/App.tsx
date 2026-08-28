@@ -55,6 +55,8 @@ const FormulaEditPage = lazyWithPreload(() => import('@/pages/formula/FormulaEdi
 const FormulaTemplatesPage = lazyWithPreload(() => import('@/pages/formula/FormulaTemplatesPage'));
 const FormulaComparePage = lazyWithPreload(() => import('@/pages/formula/FormulaComparePage'));
 const FormulaTestPage = lazyWithPreload(() => import('@/pages/formula/FormulaTestPage'));
+const FormulaCasesPage = lazyWithPreload(() => import('@/pages/formula/FormulaCasesPage'));
+const FormulaCaseDetailPage = lazyWithPreload(() => import('@/pages/formula/FormulaCaseDetailPage'));
 
 // 🔒 P3-1: 数据管理 - 中等体积
 const ExperimentListPage = lazyWithPreload(() => import('@/pages/experiment/ExperimentListPage'));
@@ -310,6 +312,26 @@ const router = createBrowserRouter([
         element: (
           <Suspense fallback={<LoadingComponent />}>
             <FormulaTestPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'formulas/cases',
+        element: (
+          <Suspense fallback={<LoadingComponent />}>
+            <ModuleErrorBoundary moduleName="案例库">
+              <FormulaCasesPage />
+            </ModuleErrorBoundary>
+          </Suspense>
+        ),
+      },
+      {
+        path: 'formulas/cases/:id',
+        element: (
+          <Suspense fallback={<LoadingComponent />}>
+            <ModuleErrorBoundary moduleName="案例详情">
+              <FormulaCaseDetailPage />
+            </ModuleErrorBoundary>
           </Suspense>
         ),
       },

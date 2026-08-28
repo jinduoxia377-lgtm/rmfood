@@ -105,8 +105,8 @@
   transition: all var(--duration-normal) var(--ease-spring);
 }
 .ai-step-dot.done {
-  background: var(--color-primary, #34C759);
-  border-color: var(--color-primary, #34C759);
+  background: var(--color-primary, #10B981);
+  border-color: var(--color-primary, #10B981);
   color: white;
 }
 .ai-step-dot.active {

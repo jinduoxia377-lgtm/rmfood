@@ -1,0 +1,89 @@
+﻿src/components/dashboard/ChangeHistory.tsx(7,1): error TS1435: Unknown keyword or identifier. Did you mean 'import'?
+src/components/dashboard/ChangeHistory.tsx(7,32): error TS1434: Unexpected keyword or identifier.
+src/components/dashboard/ChangeHistory.tsx(8,1): error TS1435: Unknown keyword or identifier. Did you mean 'import'?
+src/components/dashboard/ChangeHistory.tsx(8,77): error TS1434: Unexpected keyword or identifier.
+src/components/dashboard/ChangeHistory.tsx(9,1): error TS1435: Unknown keyword or identifier. Did you mean 'import'?
+src/components/dashboard/ChangeHistory.tsx(9,83): error TS1434: Unexpected keyword or identifier.
+src/components/dashboard/ChangeHistory.tsx(29,1): error TS1435: Unknown keyword or identifier. Did you mean 'export'?
+src/components/dashboard/ChangeHistory.tsx(29,8): error TS1435: Unknown keyword or identifier. Did you mean 'function'?
+src/components/dashboard/ChangeHistory.tsx(29,57): error TS1005: ',' expected.
+src/components/dashboard/ChangeHistory.tsx(29,79): error TS1005: ';' expected.
+src/components/dashboard/ChangeHistory.tsx(37,5): error TS1435: Unknown keyword or identifier. Did you mean 'const'?
+src/components/dashboard/ChangeHistory.tsx(37,35): error TS1011: An element access expression should take an argument.
+src/components/dashboard/ChangeHistory.tsx(117,3): error TS1435: Unknown keyword or identifier. Did you mean 'const'?
+src/components/dashboard/ChangeHistory.tsx(134,3): error TS1435: Unknown keyword or identifier. Did you mean 'const'?
+src/components/dashboard/ChangeHistory.tsx(151,3): error TS1435: Unknown keyword or identifier. Did you mean 'const'?
+src/components/dashboard/ChangeHistory.tsx(168,3): error TS1435: Unknown keyword or identifier. Did you mean 'const'?
+src/components/dashboard/ChangeHistory.tsx(169,5): error TS1435: Unknown keyword or identifier. Did you mean 'const'?
+src/components/dashboard/ChangeHistory.tsx(170,5): error TS1435: Unknown keyword or identifier. Did you mean 'const'?
+src/components/dashboard/ChangeHistory.tsx(171,5): error TS1435: Unknown keyword or identifier. Did you mean 'const'?
+src/components/dashboard/ChangeHistory.tsx(180,3): error TS1435: Unknown keyword or identifier. Did you mean 'const'?
+src/components/dashboard/ChangeHistory.tsx(181,5): error TS1435: Unknown keyword or identifier. Did you mean 'const'?
+src/components/dashboard/ChangeHistory.tsx(182,5): error TS1435: Unknown keyword or identifier. Did you mean 'const'?
+src/components/dashboard/ChangeHistory.tsx(183,5): error TS1435: Unknown keyword or identifier. Did you mean 'const'?
+src/components/dashboard/ChangeHistory.tsx(191,3): error TS1435: Unknown keyword or identifier. Did you mean 'const'?
+src/components/dashboard/ChangeHistory.tsx(192,3): error TS1435: Unknown keyword or identifier. Did you mean 'const'?
+src/components/dashboard/ExportManager.tsx(8,1): error TS1435: Unknown keyword or identifier. Did you mean 'import'?
+src/components/dashboard/ExportManager.tsx(8,32): error TS1434: Unexpected keyword or identifier.
+src/components/dashboard/ExportManager.tsx(9,1): error TS1435: Unknown keyword or identifier. Did you mean 'import'?
+src/components/dashboard/ExportManager.tsx(9,107): error TS1434: Unexpected keyword or identifier.
+src/components/dashboard/ExportManager.tsx(10,1): error TS1435: Unknown keyword or identifier. Did you mean 'import'?
+src/components/dashboard/ExportManager.tsx(10,125): error TS1434: Unexpected keyword or identifier.
+src/components/dashboard/ExportManager.tsx(11,1): error TS1435: Unknown keyword or identifier. Did you mean 'import'?
+src/components/dashboard/ExportManager.tsx(11,30): error TS1005: ';' expected.
+src/components/dashboard/ExportManager.tsx(11,49): error TS1005: ';' expected.
+src/components/dashboard/ExportManager.tsx(11,69): error TS1005: ';' expected.
+src/components/dashboard/ExportManager.tsx(11,82): error TS1434: Unexpected keyword or identifier.
+src/components/dashboard/ExportManager.tsx(12,1): error TS1435: Unknown keyword or identifier. Did you mean 'import'?
+src/components/dashboard/ExportManager.tsx(12,19): error TS1434: Unexpected keyword or identifier.
+src/components/dashboard/ExportManager.tsx(20,1): error TS1435: Unknown keyword or identifier. Did you mean 'export'?
+src/components/dashboard/ExportManager.tsx(20,8): error TS1435: Unknown keyword or identifier. Did you mean 'function'?
+src/components/dashboard/ExportManager.tsx(20,50): error TS1005: ',' expected.
+src/components/dashboard/ExportManager.tsx(20,72): error TS1005: ';' expected.
+src/components/dashboard/ExportManager.tsx(55,3): error TS1435: Unknown keyword or identifier. Did you mean 'const'?
+src/components/dashboard/ExportManager.tsx(64,3): error TS1435: Unknown keyword or identifier. Did you mean 'const'?
+src/components/dashboard/ExportManager.tsx(73,5): error TS1435: Unknown keyword or identifier. Did you mean 'const'?
+src/components/dashboard/ExportManager.tsx(80,3): error TS1435: Unknown keyword or identifier. Did you mean 'const'?
+src/components/dashboard/ExportManager.tsx(81,5): error TS1435: Unknown keyword or identifier. Did you mean 'const'?
+src/components/dashboard/ExportManager.tsx(99,3): error TS1435: Unknown keyword or identifier. Did you mean 'const'?
+src/components/dashboard/ExportManager.tsx(104,3): error TS1435: Unknown keyword or identifier. Did you mean 'const'?
+src/components/dashboard/ExportManager.tsx(121,3): error TS1435: Unknown keyword or identifier. Did you mean 'const'?
+src/components/dashboard/ExportManager.tsx(138,3): error TS1435: Unknown keyword or identifier. Did you mean 'const'?
+src/components/dashboard/ExportManager.tsx(153,3): error TS1435: Unknown keyword or identifier. Did you mean 'const'?
+src/components/dashboard/ExportManager.tsx(407,31): error TS1435: Unknown keyword or identifier. Did you mean 'const'?
+src/components/dashboard/TeamDashboardShare.tsx(8,1): error TS1435: Unknown keyword or identifier. Did you mean 'import'?
+src/components/dashboard/TeamDashboardShare.tsx(8,32): error TS1434: Unexpected keyword or identifier.
+src/components/dashboard/TeamDashboardShare.tsx(9,1): error TS1435: Unknown keyword or identifier. Did you mean 'import'?
+src/components/dashboard/TeamDashboardShare.tsx(9,71): error TS1434: Unexpected keyword or identifier.
+src/components/dashboard/TeamDashboardShare.tsx(10,1): error TS1435: Unknown keyword or identifier. Did you mean 'import'?
+src/components/dashboard/TeamDashboardShare.tsx(10,83): error TS1434: Unexpected keyword or identifier.
+src/components/dashboard/TeamDashboardShare.tsx(11,1): error TS1435: Unknown keyword or identifier. Did you mean 'import'?
+src/components/dashboard/TeamDashboardShare.tsx(11,13): error TS2457: Type alias name cannot be 'type'.
+src/components/dashboard/TeamDashboardShare.tsx(11,46): error TS1434: Unexpected keyword or identifier.
+src/components/dashboard/TeamDashboardShare.tsx(12,1): error TS1435: Unknown keyword or identifier. Did you mean 'import'?
+src/components/dashboard/TeamDashboardShare.tsx(12,8): error TS1434: Unexpected keyword or identifier.
+src/components/dashboard/TeamDashboardShare.tsx(12,31): error TS1434: Unexpected keyword or identifier.
+src/components/dashboard/TeamDashboardShare.tsx(13,1): error TS1435: Unknown keyword or identifier. Did you mean 'import'?
+src/components/dashboard/TeamDashboardShare.tsx(13,35): error TS1434: Unexpected keyword or identifier.
+src/components/dashboard/TeamDashboardShare.tsx(14,1): error TS1435: Unknown keyword or identifier. Did you mean 'import'?
+src/components/dashboard/TeamDashboardShare.tsx(14,25): error TS1434: Unexpected keyword or identifier.
+src/components/dashboard/TeamDashboardShare.tsx(22,1): error TS1435: Unknown keyword or identifier. Did you mean 'export'?
+src/components/dashboard/TeamDashboardShare.tsx(22,8): error TS1435: Unknown keyword or identifier. Did you mean 'function'?
+src/components/dashboard/TeamDashboardShare.tsx(22,70): error TS1005: ',' expected.
+src/components/dashboard/TeamDashboardShare.tsx(22,97): error TS1005: ';' expected.
+src/components/dashboard/TeamDashboardShare.tsx(34,3): error TS1435: Unknown keyword or identifier. Did you mean 'const'?
+src/components/dashboard/TeamDashboardShare.tsx(37,3): error TS1435: Unknown keyword or identifier. Did you mean 'const'?
+src/components/dashboard/TeamDashboardShare.tsx(44,3): error TS1435: Unknown keyword or identifier. Did you mean 'const'?
+src/components/dashboard/TeamDashboardShare.tsx(45,3): error TS1435: Unknown keyword or identifier. Did you mean 'const'?
+src/components/dashboard/TeamDashboardShare.tsx(46,3): error TS1435: Unknown keyword or identifier. Did you mean 'const'?
+src/components/dashboard/TeamDashboardShare.tsx(50,5): error TS1435: Unknown keyword or identifier. Did you mean 'const'?
+src/components/dashboard/TeamDashboardShare.tsx(59,3): error TS1435: Unknown keyword or identifier. Did you mean 'const'?
+src/components/dashboard/TeamDashboardShare.tsx(62,5): error TS1435: Unknown keyword or identifier. Did you mean 'const'?
+src/components/dashboard/TeamDashboardShare.tsx(73,7): error TS1435: Unknown keyword or identifier. Did you mean 'const'?
+src/components/dashboard/TeamDashboardShare.tsx(81,3): error TS1435: Unknown keyword or identifier. Did you mean 'const'?
+src/components/dashboard/TeamDashboardShare.tsx(83,5): error TS1435: Unknown keyword or identifier. Did you mean 'const'?
+src/components/dashboard/TeamDashboardShare.tsx(87,3): error TS1435: Unknown keyword or identifier. Did you mean 'const'?
+src/components/dashboard/TeamDashboardShare.tsx(89,5): error TS1435: Unknown keyword or identifier. Did you mean 'const'?
+src/components/dashboard/TeamDashboardShare.tsx(93,3): error TS1435: Unknown keyword or identifier. Did you mean 'const'?
+src/components/dashboard/TeamDashboardShare.tsx(104,3): error TS1435: Unknown keyword or identifier. Did you mean 'const'?
+src/components/dashboard/TeamDashboardShare.tsx(115,3): error TS1435: Unknown keyword or identifier. Did you mean 'const'?

@@ -243,3 +243,117 @@ input:focus-visible, button:focus-visible, a:focus-visible {
   pointer-events: auto;
   transform: translateY(0);
 }
+
+/* ── 移动端菜单展开动画 ── */
+@keyframes lp-mobile-menu {
+  from { max-height: 0; opacity: 0; }
+  to   { max-height: 300px; opacity: 1; }
+}
+
+/* ── 产品预览窗口动效 ── */
+@keyframes lp-chat-bubble-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.lp-chat-bubble-in {
+  animation: lp-chat-bubble-in 0.25s ease both;
+}
+
+@keyframes lp-dots-pulse {
+  0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+  40%             { opacity: 1;    transform: scale(1);   }
+}
+.lp-dot-1 { animation: lp-dots-pulse 1.4s infinite ease-in-out; }
+.lp-dot-2 { animation: lp-dots-pulse 1.4s infinite ease-in-out 0.2s; }
+.lp-dot-3 { animation: lp-dots-pulse 1.4s infinite ease-in-out 0.4s; }
+
+@keyframes lp-welcome-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(5,150,105,0.12); }
+  50%       { box-shadow: 0 0 0 6px rgba(5,150,105,0);  }
+}
+.lp-welcome-icon { animation: lp-welcome-glow 2.5s infinite ease-in-out; }
+
+@keyframes lp-step-progress {
+  from { width: 0%; }
+  to   { width: 100%; }
+}
+.lp-step-fill {
+  height: 2px;
+  border-radius: 1px;
+  background: #059669;
+  animation: lp-step-progress 0.8s ease-out forwards;
+}
+
+/* ── 产品预览窗口边框系统（v12：三层深度） ── */
+.lp-preview-window {
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #b8c4d0;
+  border-top-color: rgba(255,255,255,0.6);
+  border-bottom-color: rgba(5,150,105,0.25);
+  background: #fff;
+  box-shadow:
+    0 1px 3px rgba(0,0,0,0.08),
+    0 4px 16px rgba(0,0,0,0.06),
+    0 16px 48px rgba(5,150,105,0.10);
+}
+.lp-preview-window::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 11px;
+  background: linear-gradient(
+    180deg,
+    rgba(255,255,255,0.7) 0%,
+    transparent 40%
+  );
+  pointer-events: none;
+  z-index: 2;
+}
+.lp-preview-glow {
+  position: absolute;
+  inset: 12px -16px -12px -16px;
+  background: radial-gradient(ellipse at center, rgba(5,150,105,0.10) 0%, transparent 65%);
+  filter: blur(24px);
+  z-index: 0;
+  pointer-events: none;
+}
+.lp-titlebar {
+  background: #0f172a;
+  border-bottom: 1px solid #1e293b;
+}
+.lp-sidebar {
+  background: #f1f5f9;
+  border-right: 1px solid #cbd5e1;
+}
+.lp-input-border:focus-within {
+  border-color: #059669 !important;
+  box-shadow: 0 0 0 2px rgba(5,150,105,0.10) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   点阵网格背景（学术笔记本风格）
+   使用伪元素叠加，不影响子元素背景色和 hover 态
+   ═══════════════════════════════════════════════════════════════ */
+.lp-grid-bg {
+  position: relative;
+  overflow: hidden;
+}
+.lp-grid-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, #e2e8f0 1px, transparent 1px);
+  background-size: 32px 32px;
+  background-position: center top;
+  pointer-events: none;
+  z-index: 0;
+}
+.lp-grid-bg > * {
+  position: relative;
+  z-index: 1;
+}
+@media (max-width: 767px) {
+  .lp-grid-bg::before { display: none; }
+}
