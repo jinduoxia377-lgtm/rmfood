@@ -143,6 +143,34 @@ async def list_my_organizations(
     return {"organizations": organizations}
 
 
+# NOTE: /plans must be registered BEFORE /{org_id_or_slug} catch-all
+@router.get("/plans", summary="获取订阅计划列表")
+async def get_plans():
+    """获取所有可用的订阅计划及其限制"""
+    plans = []
+
+    for plan, limits in PLAN_LIMITS.items():
+        plans.append({
+            "plan": plan.value,
+            "display_name": {
+                "free": "免费版",
+                "pro": "专业版",
+                "enterprise": "企业版",
+            }.get(plan.value, plan.value),
+            "limits": {
+                "max_members": limits.max_members,
+                "max_teams": limits.max_teams,
+                "max_formulas": limits.max_formulas,
+                "storage_mb": limits.storage_mb,
+                "api_calls_per_day": limits.api_calls_per_day,
+                "ai_generations_per_day": limits.ai_generations_per_day,
+            },
+            "features": limits.features,
+        })
+
+    return {"plans": plans}
+
+
 @router.get("/{org_id_or_slug}", summary="获取组织详情")
 async def get_organization(
     org_id_or_slug: str,

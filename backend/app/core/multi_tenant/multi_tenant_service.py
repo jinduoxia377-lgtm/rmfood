@@ -1,4 +1,4 @@
-﻿"""
+"""
 企业级多租户组织管理系统
 
 功能:
@@ -18,6 +18,8 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set
+
+from sqlalchemy import text
 
 
 logger = logging.getLogger(__name__)
@@ -220,10 +222,10 @@ class OrganizationService:
         )
 
         result = await self.db.execute(
-            """INSERT INTO organizations 
+            text("""INSERT INTO organizations
                (name, slug, description, owner_id, plan, settings, is_active, created_at, updated_at)
                VALUES (:name, :slug, :description, :owner_id, :plan, :settings::jsonb, :is_active, NOW(), NOW())
-               RETURNING id""",
+               RETURNING id"""),
             {
                 "name": org.name,
                 "slug": org.slug,
@@ -247,7 +249,7 @@ class OrganizationService:
     async def get_organization(self, organization_id: int) -> Optional[Organization]:
         """获取组织详情"""
         result = await self.db.execute(
-            "SELECT * FROM organizations WHERE id = :id AND is_active = TRUE",
+            text("SELECT * FROM organizations WHERE id = :id AND is_active = TRUE"),
             {"id": organization_id},
         )
         row = result.fetchone()
@@ -272,7 +274,7 @@ class OrganizationService:
     async def get_organization_by_slug(self, slug: str) -> Optional[Organization]:
         """通过slug获取组织"""
         result = await self.db.execute(
-            "SELECT * FROM organizations WHERE slug = :slug AND is_active = TRUE",
+            text("SELECT * FROM organizations WHERE slug = :slug AND is_active = TRUE"),
             {"slug": slug},
         )
         row = result.fetchone()
@@ -321,7 +323,7 @@ class OrganizationService:
             set_clauses.append("updated_at = NOW()")
             
             await self.db.execute(
-                f"UPDATE organizations SET {', '.join(set_clauses)} WHERE id = :id",
+                text(f"UPDATE organizations SET {', '.join(set_clauses)} WHERE id = :id"),
                 params,
             )
             await self.db.commit()
@@ -334,7 +336,7 @@ class OrganizationService:
             raise PermissionError("仅组织拥有者可删除组织")
 
         await self.db.execute(
-            "UPDATE organizations SET is_active = FALSE, updated_at = NOW() WHERE id = :id",
+            text("UPDATE organizations SET is_active = FALSE, updated_at = NOW() WHERE id = :id"),
             {"id": organization_id},
         )
         await self.db.commit()
@@ -388,8 +390,8 @@ class OrganizationService:
         )
 
         await self.db.execute(
-            """INSERT INTO organization_members (user_id, organization_id, role, team_ids, joined_at, invited_by)
-               VALUES (:user_id, :organization_id, :role, :team_ids::int[], NOW(), :invited_by)""",
+            text("""INSERT INTO organization_members (user_id, organization_id, role, team_ids, joined_at, invited_by)
+               VALUES (:user_id, :organization_id, :role, :team_ids::int[], NOW(), :invited_by)"""),
             {
                 "user_id": member.user_id,
                 "organization_id": member.organization_id,
@@ -414,7 +416,7 @@ class OrganizationService:
                 raise PermissionError("无权移除成员")
 
         await self.db.execute(
-            "DELETE FROM organization_members WHERE organization_id = :organization_id AND user_id = :user_id",
+            text("DELETE FROM organization_members WHERE organization_id = :organization_id AND user_id = :user_id"),
             {"organization_id": organization_id, "user_id": user_id},
         )
         await self.db.commit()
@@ -438,7 +440,7 @@ class OrganizationService:
             raise PermissionError("仅拥有者可转让OWNER角色")
 
         await self.db.execute(
-            "UPDATE organization_members SET role = :role WHERE organization_id = :organization_id AND user_id = :user_id",
+            text("UPDATE organization_members SET role = :role WHERE organization_id = :organization_id AND user_id = :user_id"),
             {"role": new_role.value, "organization_id": organization_id, "user_id": target_user_id},
         )
         await self.db.commit()
@@ -450,12 +452,12 @@ class OrganizationService:
     async def get_members(self, organization_id: int) -> List[Dict[str, Any]]:
         """获取组织所有成员"""
         result = await self.db.execute(
-            """SELECT m.user_id, m.role, m.joined_at, m.invited_id,
+            text("""SELECT m.user_id, m.role, m.joined_at, m.invited_id,
                       u.username, u.email, u.avatar_url
                FROM organization_members m
                JOIN users u ON m.user_id = u.id
                WHERE m.organization_id = :organization_id
-               ORDER BY m.joined_at ASC""",
+               ORDER BY m.joined_at ASC"""),
             {"organization_id": organization_id},
         )
         
@@ -484,9 +486,9 @@ class OrganizationService:
             raise ValueError(f"已达团队上限 ({limits.max_teams})")
 
         result = await self.db.execute(
-            """INSERT INTO teams (organization_id, name, description, lead_id, permissions, created_at)
+            text("""INSERT INTO teams (organization_id, name, description, lead_id, permissions, created_at)
                VALUES (:organization_id, :name, :description, :lead_id, '{}'::jsonb, NOW())
-               RETURNING id""",
+               RETURNING id"""),
             {"organization_id": organization_id, "name": name, "description": description, "lead_id": creator_id},
         )
         
@@ -500,7 +502,7 @@ class OrganizationService:
     async def get_teams(self, organization_id: int) -> List[Team]:
         """获取组织的所有团队"""
         result = await self.db.execute(
-            "SELECT * FROM teams WHERE organization_id = :organization_id ORDER BY name ASC",
+            text("SELECT * FROM teams WHERE organization_id = :organization_id ORDER BY name ASC"),
             {"organization_id": organization_id},
         )
         
@@ -529,9 +531,9 @@ class OrganizationService:
                 raise PermissionError("无权添加团队成员")
 
         await self.db.execute(
-            """UPDATE organization_members 
+            text("""UPDATE organization_members
                SET team_ids = array_append(team_ids, :team_id)
-               WHERE user_id = :user_id AND organization_id = :organization_id""",
+               WHERE user_id = :user_id AND organization_id = :organization_id"""),
             {"team_id": team_id, "user_id": user_id, "organization_id": team.organization_id},
         )
         await self.db.commit()
@@ -634,7 +636,7 @@ class OrganizationService:
     async def _slug_exists(self, slug: str) -> bool:
         """检查slug是否已存在"""
         result = await self.db.execute(
-            "SELECT COUNT(*) FROM organizations WHERE slug = :slug",
+            text("SELECT COUNT(*) FROM organizations WHERE slug = :slug"),
             {"slug": slug},
         )
         return (result.scalar() or 0) > 0
@@ -642,7 +644,7 @@ class OrganizationService:
     async def _get_membership(self, organization_id: int, user_id: int) -> Optional[Dict]:
         """获取成员关系"""
         result = await self.db.execute(
-            "SELECT * FROM organization_members WHERE organization_id = :organization_id AND user_id = :user_id",
+            text("SELECT * FROM organization_members WHERE organization_id = :organization_id AND user_id = :user_id"),
             {"organization_id": organization_id, "user_id": user_id},
         )
         row = result.fetchone()
@@ -669,7 +671,7 @@ class OrganizationService:
     async def _count_members(self, organization_id: int) -> int:
         """统计成员数"""
         result = await self.db.execute(
-            "SELECT COUNT(*) FROM organization_members WHERE organization_id = :organization_id",
+            text("SELECT COUNT(*) FROM organization_members WHERE organization_id = :organization_id"),
             {"organization_id": organization_id},
         )
         return result.scalar() or 0
@@ -677,7 +679,7 @@ class OrganizationService:
     async def _count_teams(self, organization_id: int) -> int:
         """统计团队数"""
         result = await self.db.execute(
-            "SELECT COUNT(*) FROM teams WHERE organization_id = :organization_id",
+            text("SELECT COUNT(*) FROM teams WHERE organization_id = :organization_id"),
             {"organization_id": organization_id},
         )
         return result.scalar() or 0
@@ -693,7 +695,7 @@ class OrganizationService:
     async def _get_storage_usage(self, organization_id: int) -> float:
         """获取存储使用量(MB)"""
         result = await self.db.execute(
-            "SELECT COALESCE(SUM(file_size), 0) FROM files WHERE organization_id = :organization_id",
+            text("SELECT COALESCE(SUM(file_size), 0) FROM files WHERE organization_id = :organization_id"),
             {"organization_id": organization_id},
         )
         bytes_total = result.scalar() or 0
@@ -702,9 +704,9 @@ class OrganizationService:
     async def _count_api_calls_today(self, organization_id: int) -> int:
         """统计今日API调用次数"""
         result = await self.db.execute(
-            """SELECT COUNT(*) FROM api_logs 
-               WHERE organization_id = :organization_id 
-               AND created_at >= CURRENT_DATE""",
+            text("""SELECT COUNT(*) FROM api_logs
+               WHERE organization_id = :organization_id
+               AND created_at >= CURRENT_DATE"""),
             {"organization_id": organization_id},
         )
         return result.scalar() or 0
@@ -712,9 +714,9 @@ class OrganizationService:
     async def _count_ai_generations_today(self, organization_id: int) -> int:
         """统计今日AI生成次数"""
         result = await self.db.execute(
-            """SELECT COUNT(*) FROM ai_generations 
-               WHERE organization_id = :organization_id 
-               AND created_at >= CURRENT_DATE""",
+            text("""SELECT COUNT(*) FROM ai_generations
+               WHERE organization_id = :organization_id
+               AND created_at >= CURRENT_DATE"""),
             {"organization_id": organization_id},
         )
         return result.scalar() or 0
@@ -722,7 +724,7 @@ class OrganizationService:
     async def _get_team(self, team_id: int) -> Optional[Team]:
         """获取团队详情"""
         result = await self.db.execute(
-            "SELECT * FROM teams WHERE id = :id",
+            text("SELECT * FROM teams WHERE id = :id"),
             {"id": team_id},
         )
         row = result.fetchone()
