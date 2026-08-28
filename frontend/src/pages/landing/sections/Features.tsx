@@ -109,7 +109,7 @@ export default function Features() {
   const titleLines = sectionTitle.split('\n');
 
   return (
-    <section id="features" className="py-20 lg:py-24 lp-grid-bg" style={{ background: '#fff' }}>
+    <section id="features" className="py-20 lg:py-24" style={{ background: 'var(--bg-canvas, #f8fafc)', borderTop: '1px solid #e2e8f0' }}>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* 标题区 */}

@@ -1086,7 +1086,7 @@ export default function Hero() {
   const { isAuthenticated } = useAuthStore();
 
   return (
-    <section className="lp-grid-bg relative overflow-hidden" style={{ background: '#fff', borderTop: '1px solid #e2e8f0' }}>
+    <section className="lp-grid-bg relative overflow-hidden" style={{ background: '#fff' }}>
       <CountdownBanner />
 
       <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-16">
@@ -1114,11 +1114,11 @@ export default function Hero() {
 
               <Reveal delay="lp-reveal-delay-1">
                 <div className="flex flex-col sm:flex-row items-start gap-3 mb-10">
-                  <Link to="/login" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md text-[14px] font-semibold text-white transition-opacity hover:opacity-90" style={{ background: '#0f172a' }}>
+                  <Link to="/login" className="lp-cta-primary">
                     {isAuthenticated ? '进入工作台' : '立即体验'}
                     <ArrowRight size={13} />
                   </Link>
-                  <Link to="#demo-area" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md text-[13px] font-medium text-slate-600 transition-colors hover:text-slate-900 hover:bg-slate-50">
+                  <Link to="#demo-area" className="lp-cta-secondary">
                     <ChevronRight size={14} />
                     产品演示
                   </Link>
@@ -1126,10 +1126,10 @@ export default function Hero() {
               </Reveal>
 
               <Reveal delay="lp-reveal-delay-2">
-                <div className="flex items-center gap-4 lp-label text-slate-500">
+                <div className="flex items-center gap-3 lp-label text-slate-400">
                   <div className="flex -space-x-1.5">
                     {testimonials.slice(0, 4).map((t, i) => (
-                      <div key={i} className="w-6 h-6 rounded-full border-2 border-white flex items-center justify-center text-[9px] font-bold text-white" style={{ background: t.gradient }}>
+                      <div key={i} className="w-5 h-5 rounded-full border-2 border-white flex items-center justify-center text-[8px] font-bold text-white" style={{ background: t.gradient }}>
                         {t.name[0]}
                       </div>
                     ))}

@@ -171,7 +171,7 @@ function Testimonials() {
 
 export default function SocialProof() {
   return (
-    <section id="social-proof" className="py-16 lg:py-20 border-t lp-grid-bg" style={{ background: '#fff', borderColor: '#e2e8f0' }}>
+    <section id="social-proof" className="py-16 lg:py-20" style={{ background: '#fff', borderTop: '1px solid #e2e8f0' }}>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* 标题 */}

@@ -12,10 +12,11 @@ import { sectionLabel, faqs } from '../data/faqs';
 
 export default function FAQ() {
   return (
-    <section id="faq" className="py-16 lg:py-20 border-t lp-grid-bg" style={{ background: '#fff', borderTop: '3px solid #059669' }}>
+    <section id="faq" className="py-16 lg:py-20 border-t" style={{ background: 'var(--bg-canvas, #f8fafc)', borderColor: '#e2e8f0' }}>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <Reveal>
           <div className="text-center mb-8">
+            <div className="lp-faq-accent" />
             <span className="lp-section-tag block mb-3">{sectionLabel}</span>
             <h2 className="lp-h2">常见问题</h2>
           </div>
