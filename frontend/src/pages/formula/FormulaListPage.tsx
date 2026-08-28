@@ -188,8 +188,8 @@ function exportFormulasCSV(formulas: Formula[]) {
     `v${f.version}`,
     f.targetEffects?.join('; ') || '',
     f.description || '',
-    new Date(f.created_at || f.createdAt).toLocaleDateString('zh-CN'),
-    new Date(f.updated_at || f.updatedAt).toLocaleDateString('zh-CN'),
+    new Date(f.createdAt).toLocaleDateString('zh-CN'),
+    new Date(f.updatedAt).toLocaleDateString('zh-CN'),
   ]);
   const csv =
     BOM +
@@ -1720,7 +1720,7 @@ export default function FormulaListPage() {
                             <Highlight text={f.name} keyword={debouncedSearch} />
                           </p>
                           <p className="text-[11px] text-neutral-400 mt-0.5">
-                            {f.code} · {formatDate(f.updated_at || f.updatedAt)}
+                            {f.code} · {formatDate(f.updatedAt)}
                           </p>
                         </div>
                         <StatusBadge status={f.status} size="sm" />
