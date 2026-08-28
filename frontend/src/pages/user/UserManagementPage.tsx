@@ -1,4 +1,4 @@
-﻿import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   BarChart,
@@ -78,7 +78,6 @@ import {
 import {
   Button,
   Input,
-  PageHeader,
   Badge,
   Card,
   CardContent,
@@ -849,85 +848,49 @@ export default function UserManagementPage() {
   };
 
   return (
-    <div className="max-w-[1520px] mx-auto space-y-8 px-4 lg:px-6">
-      {/* ── Page Header ── */}
-      <PageHeader
-        title="用户管理"
-        description={
-          <span className="inline-flex items-center gap-3 leading-relaxed">
-            <span>
-              共<strong className="font-semibold text-neutral-900 dark:text-white">{total}</strong> 位注册用户
-            </span>
-            {isFetching && !isLoading && (
-              <span className="inline-flex items-center gap-1 text-xs text-primary-600 dark:text-primary-400">
-                <RefreshCw className="w-3 h-3 animate-spin" /> 同步中...{' '}
-              </span>
-            )}
-          </span>
-        }
-        actions={
-          <div className="flex items-center gap-2 flex-wrap">
+    <div className="space-y-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-page-enter">
+
+      {/* ── 顶部主色横幅 ── */}
+      <div className="rounded-xl bg-primary-600 p-6 text-white shadow-sm">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex-1">
+            <h1 className="text-xl font-bold leading-snug">用户管理</h1>
+            <p className="mt-1 text-white/90 text-sm">
+              共 <strong className="text-white font-semibold">{total}</strong> 位注册用户
+              {isFetching && !isLoading && (
+                <span className="ml-2 inline-flex items-center gap-1 text-xs text-white/80">
+                  <RefreshCw className="w-3 h-3 animate-spin" />同步中…
+                </span>
+              )}
+            </p>
+          </div>
+          <div className="flex items-center gap-3 w-full sm:w-auto flex-wrap">
             {selectedIds.size > 0 && (
-              <span className="mr-1 px-2.5 py-1 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 text-xs font-medium animate-pulse">
+              <span className="px-3 py-1 rounded-full bg-white/20 backdrop-blur-sm text-white text-xs font-medium">
                 已选 {selectedIds.size}
               </span>
             )}
-            <Button
-              variant={'primary'}
-              size="sm"
-              onClick={() => setShowCreateModal(true)}
-              className="shadow-sm hover:shadow-md active:scale-[0.97] transition-all duration-200 h-8 px-3 inline-flex items-center"
-            >
-              <UserRoundPlus className="w-[15px] h-[15px] mr-1.5 shrink-0" /> 新增用户
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowImportModal(true)}
-              className="hover:shadow-sm active:scale-[0.97] transition-all duration-200 h-8 px-2.5 inline-flex items-center"
-            >
-              <Upload className="w-[15px] h-[15px] mr-1.5 shrink-0" /> 导入
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={exportToCSV}
-              disabled={filteredUsers.length === 0}
-              className="hover:shadow-sm active:scale-[0.97] transition-all duration-200 h-8 px-2.5 inline-flex items-center"
-            >
-              <Download className="w-[15px] h-[15px] mr-1.5 shrink-0" /> 导出
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => qc.invalidateQueries({ queryKey: ['admin-users'] })}
-              disabled={isFetching}
-              className="hover:shadow-sm active:scale-[0.97] transition-all duration-200 h-8 px-2.5 inline-flex items-center"
-            >
-              <RefreshCw className={`w-[15px] h-[15px] mr-1.5 shrink-0 ${isFetching ? 'animate-spin' : ''}`} /> 刷新
-            </Button>
-            <Button
-              variant={showOpLogPanel ? 'primary' : 'outline'}
-              size="sm"
-              onClick={() => setShowOpLogPanel(!showOpLogPanel)}
-              className={`h-8 px-2.5 inline-flex items-center${anomalyCount > 0 ? ' relative animate-pulse' : ''}`}
-            >
-              <Terminal className="w-[15px] h-[15px] mr-1.5 shrink-0" />
+            <Button variant="glass" size="sm" icon={<UserRoundPlus className="w-4 h-4" />}
+              onClick={() => setShowCreateModal(true)}>新增用户</Button>
+            <Button variant="secondary" size="sm" icon={<Upload className="w-4 h-4" />}
+              onClick={() => setShowImportModal(true)}>导入</Button>
+            <Button variant="secondary" size="sm" icon={<Download className="w-4 h-4" />}
+              onClick={exportToCSV} disabled={filteredUsers.length === 0}>导出</Button>
+            <Button variant="glass" size="sm" icon={<Terminal className="w-4 h-4" />}
+              onClick={() => setShowOpLogPanel(!showOpLogPanel)}>
               操作日志
               {anomalyCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] bg-error-500 text-white text-[10px] font-semibold rounded-full shadow-sm px-1 leading-none flex items-center justify-center">
-                  {anomalyCount}
-                </span>
+                <span className="ml-1.5 min-w-[18px] h-[18px] bg-white text-primary-600 text-[10px] font-bold rounded-full flex items-center justify-center px-1">{anomalyCount}</span>
               )}
             </Button>
           </div>
-        }
-      />
+        </div>
+      </div>
 
       {/* ── Data Visualization Dashboard ── */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
         <Card className="overflow-hidden group cursor-default transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 border-l-4 border-l-emerald-500 backdrop-blur-sm">
-          <CardContent className="p-5">
+          <CardContent className="p-6">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-100 via-emerald-50 to-teal-50 dark:from-emerald-900/50 dark:via-emerald-900/30 dark:to-teal-900/20 flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
@@ -948,7 +911,7 @@ export default function UserManagementPage() {
         </Card>
 
         <Card className="overflow-hidden group cursor-default transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 border-l-4 border-l-red-500 backdrop-blur-sm">
-          <CardContent className="p-5">
+          <CardContent className="p-6">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-red-100 via-red-50 to-orange-50 dark:from-red-900/50 dark:via-red-900/30 dark:to-orange-900/20 flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
@@ -977,7 +940,7 @@ export default function UserManagementPage() {
         </Card>
 
         <Card className="overflow-hidden lg:col-span-2 group cursor-default transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 border-l-4 border-l-blue-500">
-          <CardContent className="p-5">
+          <CardContent className="p-6">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-100 via-indigo-50 to-violet-50 dark:from-blue-900/50 dark:via-indigo-900/30 dark:to-violet-900/20 flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
@@ -1049,7 +1012,7 @@ export default function UserManagementPage() {
       {/* ── Operation Log Panel (Collapsible) ── */}
       {showOpLogPanel && (
         <Card className="overflow-hidden border-primary-200 dark:border-primary-800 animate-in fade-in slide-in-from-top-2 duration-200 shadow-lg ring-1 ring-primary-100 dark:ring-primary-900/30">
-          <CardContent className="p-4">
+          <CardContent className="p-6">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-2">
                 <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-slate-100 to-slate-50 dark:from-slate-800 dark:to-slate-700 flex items-center justify-center">
@@ -1124,10 +1087,10 @@ export default function UserManagementPage() {
       )}
 
       {/* ── Main Content Grid ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* ── Left Sidebar: Filters ── */}
         <Card className="lg:col-span-1 transition-all duration-300 hover:shadow-md shadow-md border-neutral-200/80 dark:border-neutral-700/60 bg-gradient-to-b from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-800/50">
-          <CardContent className="p-5 space-y-4">
+          <CardContent className="p-6 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-[15px] font-semibold text-neutral-800 dark:text-neutral-200 flex items-center gap-2">
                 <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary-100 to-primary-50 dark:from-primary-900/30 dark:to-primary-800/20 flex items-center justify-center">
@@ -1367,7 +1330,7 @@ export default function UserManagementPage() {
 
           {/* Table Card */}
           <Card
-            className="transition-all duration-300 hover:shadow-xl shadow-md ring-1 ring-slate-200/60 dark:ring-slate-700/40 overflow-visible"
+            className="transition-all duration-300 hover:shadow-xl shadow-md ring-1 ring-slate-200/60 dark:ring-slate-700/40 overflow-visible border-neutral-200 dark:border-neutral-700/60"
             id="user-table-card"
           >
             {isLoading ? (

@@ -496,7 +496,7 @@ function GraphTab() {
         <div className="w-32 flex-shrink-0 border-l p-3 overflow-y-auto" style={{ background: '#fafbfc', borderColor: '#e2e8f0' }}>
           <div className="flex items-center gap-1.5 mb-2">
             <div className="w-2 h-2 rounded-full" style={{ background: KG_TYPE_STYLE[selectedNode.type].color }} />
-            <span className="text-[10px] font-semibold text-slate-800">{selectedNode.name}</span>
+            <span className="lp-tiny font-semibold text-slate-800">{selectedNode.name}</span>
           </div>
           <div className="text-[8px] font-mono px-1.5 py-0.5 rounded mb-2 inline-block" style={{ background: KG_TYPE_STYLE[selectedNode.type].bg, color: KG_TYPE_STYLE[selectedNode.type].color, border: `1px solid ${KG_TYPE_STYLE[selectedNode.type].border}` }}>
             {KG_TYPE_STYLE[selectedNode.type].label}
@@ -562,7 +562,7 @@ function DataTab() {
       <div className="flex items-center justify-between px-3 py-2 border-b" style={{ borderColor: '#e2e8f0', background: '#fafbfc' }}>
         <div className="flex items-center gap-2">
           <DBIcon size={11} style={{ color: '#64748b' }} />
-          <span className="text-[10px] font-medium text-slate-600">数据源概览</span>
+          <span className="lp-tiny font-medium text-slate-600">数据源概览</span>
           <span className="text-[8px] font-mono px-1.5 py-0.5 rounded" style={{ background: '#ecfdf5', color: '#059669', border: '1px solid #a7f3d0' }}>5 个活跃</span>
         </div>
         <button onClick={() => setAnimKey(k => k + 1)} className="text-[9px] text-slate-400 hover:text-emerald-600 transition-colors flex items-center gap-1" title="刷新">
@@ -590,7 +590,7 @@ function DataTab() {
                 <div className="h-0.5 w-full" style={{ background: ds.color + '40' }} />
                 <div className="p-2.5">
                   <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-[10px] font-semibold text-slate-800 leading-tight">{ds.name}</span>
+                    <span className="lp-tiny font-semibold text-slate-800 leading-tight">{ds.name}</span>
                     {statusIcon(ds.status)}
                   </div>
                   <div className="flex items-baseline gap-1 mb-1">
@@ -726,7 +726,7 @@ function ComplianceTab() {
           placeholder="黄芪&#10;枸杞&#10;甘草"
         />
         <button onClick={runCheck} disabled={result.status === 'scanning'}
-          className="mt-1.5 w-full h-7 rounded-md text-[10px] font-medium flex items-center justify-center gap-1.5 transition-all disabled:opacity-50"
+          className="mt-1.5 w-full h-7 rounded-md lp-tiny font-medium flex items-center justify-center gap-1.5 transition-all disabled:opacity-50"
           style={{ background: result.status === 'scanning' ? '#94a3b8' : '#059669', color: '#fff' }}>
           {result.status === 'scanning'
             ? <><Loader2 size={11} className="animate-spin" />检测中…</>
@@ -768,7 +768,7 @@ function ComplianceTab() {
                 <div className="text-[8px] text-slate-400 mt-0.5">安全评分</div>
               </div>
               <div className="flex-1">
-                <div className="text-[10px] font-semibold" style={{ color: result.score >= 90 ? '#065f46' : result.score >= 70 ? '#92400e' : '#991b1b' }}>
+                <div className="lp-tiny font-semibold" style={{ color: result.score >= 90 ? '#065f46' : result.score >= 70 ? '#92400e' : '#991b1b' }}>
                   {result.score >= 90 ? '✅ 配方整体安全' : result.score >= 70 ? '⚠️ 存在部分风险项' : '❌ 存在严重禁忌'}
                 </div>
                 <div className="text-[9px] text-slate-500 mt-0.5">
@@ -787,8 +787,8 @@ function ComplianceTab() {
                      : h.severity === 'warn' ? <AlertTriangle size={10} style={{ color: '#d97706', flexShrink: 0, marginTop: 1 }} />
                      : <XCircle size={10} style={{ color: '#dc2626', flexShrink: 0, marginTop: 1 }} />}
                     <div>
-                      <div className="text-[10px] font-medium text-slate-700">{h.label}</div>
-                      <div className="text-[9px] text-slate-500">{h.detail}</div>
+                      <div className="lp-tiny font-medium text-slate-700">{h.label}</div>
+                      <div className="lp-micro text-slate-500">{h.detail}</div>
                     </div>
                   </div>
                 ))}
@@ -804,8 +804,8 @@ function ComplianceTab() {
                     {a.result === 'pass'
                       ? <CheckCircle size={10} style={{ color: '#059669' }} />
                       : <AlertTriangle size={10} style={{ color: '#d97706' }} />}
-                    <span className="text-[10px] font-medium text-slate-700">{a.label}</span>
-                    <span className="text-[9px] text-slate-400 ml-auto">{a.detail}</span>
+                    <span className="lp-tiny font-medium text-slate-700">{a.label}</span>
+                    <span className="lp-micro text-slate-400 ml-auto">{a.detail}</span>
                   </div>
                 ))}
               </div>
@@ -813,13 +813,13 @@ function ComplianceTab() {
 
             {/* 操作按钮 */}
             <div className="flex gap-2 pt-1">
-              <button onClick={runCheck} className="flex-1 h-7 rounded-md text-[10px] font-medium flex items-center justify-center gap-1" style={{ background: '#f8fafc', border: '1px solid #e2e8f0', color: '#475569' }}>
+              <button onClick={runCheck} className="flex-1 h-7 rounded-md lp-tiny font-medium flex items-center justify-center gap-1" style={{ background: '#f8fafc', border: '1px solid #e2e8f0', color: '#475569' }}>
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="23 4 23 10 17 10" /><polyline points="1 20 1 14 7 14" /><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
                 </svg>
                 重新检测
               </button>
-              <button className="flex-1 h-7 rounded-md text-[10px] font-medium flex items-center justify-center gap-1" style={{ background: '#059669', color: '#fff' }}>
+              <button className="flex-1 h-7 rounded-md lp-tiny font-medium flex items-center justify-center gap-1" style={{ background: '#059669', color: '#fff' }}>
                 <FileText size={10} />导出报告
               </button>
             </div>
@@ -905,7 +905,7 @@ function ProductPreview() {
           <div className="flex items-center gap-2">
             <span className="lp-brand tracking-wider">RMFOOD</span>
             <div className="w-px h-3 bg-slate-700" />
-            <div className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium" style={{ background: 'rgba(5,150,105,0.2)', color: '#6ee7b7', border: '1px solid rgba(5,150,105,0.3)' }}>
+            <div className="flex items-center gap-1 px-2 py-0.5 rounded lp-section-tag" style={{ background: 'rgba(5,150,105,0.2)', color: '#6ee7b7', border: '1px solid rgba(5,150,105,0.3)' }}>
               <Sparkles size={9} /><span>智能对话</span>
             </div>
           </div>
@@ -934,7 +934,7 @@ function ProductPreview() {
                 </button>
               );
             })}
-            <div className="w-5 h-px my-1.5" style={{ background: '#e2e8f0' }} />
+            <div className="w-5 h-px my-1.5" style={{ background: 'var(--border-color, #e2e8f0)' }} />
             <button
               onClick={() => { if (activeTab === 0) { setMessages([]); setDemoState({ status: 'idle', message: '' }); } }}
               title="刷新"
@@ -959,7 +959,7 @@ function ProductPreview() {
                       <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4 lp-welcome-icon" style={{ background: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)', border: '1px solid #a7f3d0' }}>
                         <Sparkles size={16} style={{ color: '#059669' }} />
                       </div>
-                      <p className="text-[12px] font-semibold text-slate-800 mb-1">与配方顾问对话</p>
+                      <p className="lp-label font-semibold mb-1">与配方顾问对话</p>
                       <p className="text-[10px] text-slate-400 text-center leading-relaxed mb-6 max-w-[220px]">输入您的研发需求，获取专业配方设计与安全评估</p>
                       <div className="grid grid-cols-2 gap-2 w-full max-w-[280px]">
                         {PRESET_QUESTIONS.map((q, i) => (
@@ -1022,7 +1022,7 @@ function ProductPreview() {
                 </div>
                 <div className="flex-shrink-0 px-4 py-3 border-t" style={{ borderColor: '#e2e8f0', background: '#fafbfc' }}>
                   <form onSubmit={handleSubmit} className="flex items-end gap-2">
-                    <div className="flex-1 relative rounded-lg border overflow-hidden transition-all lp-input-border" style={{ borderColor: '#e2e8f0', background: '#f8fafc' }}>
+                    <div className="flex-1 relative rounded-lg border overflow-hidden transition-all lp-input-border" style={{ borderColor: 'var(--border-color, #e2e8f0)', background: 'var(--bg-canvas, #f8fafc)' }}>
                       <textarea ref={textareaRef} value={input} onChange={(e) => setInput(e.target.value)}
                         onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(e); } }}
                         placeholder="描述您的研发需求…" rows={1} disabled={demoState.status === 'thinking'}
@@ -1045,12 +1045,12 @@ function ProductPreview() {
         </div>
 
         {/* 状态栏 */}
-        <div className="flex items-center justify-between px-4 py-1.5 border-t" style={{ background: '#f8fafc', borderColor: '#e2e8f0' }}>
+        <div className="flex items-center justify-between px-4 py-1.5 border-t" style={{ background: 'var(--bg-canvas, #f8fafc)', borderColor: 'var(--border-color, #e2e8f0)' }}>
           <div className="flex items-center gap-3">
-            <span className="text-[9px] font-mono" style={{ color: '#64748b' }}>{tabStatus}</span>
-            {isConversing && <span className="text-[9px] font-mono" style={{ color: '#94a3b8' }}>· {messages.length} 轮</span>}
+            <span className="text-[9px] font-mono" style={{ color: 'var(--text-secondary, #334155)' }}>{tabStatus}</span>
+            {isConversing && <span className="text-[9px] font-mono" style={{ color: 'var(--text-muted, #64748b)' }}>· {messages.length} 轮</span>}
           </div>
-          <span className="text-[9px] font-mono" style={{ color: '#94a3b8' }}>{tabEngine}</span>
+          <span className="text-[9px] font-mono" style={{ color: 'var(--text-muted, #64748b)' }}>{tabEngine}</span>
         </div>
       </div>
     </div>
@@ -1155,3 +1155,4 @@ export default function Hero() {
     </section>
   );
 }
+

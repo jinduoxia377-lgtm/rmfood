@@ -58,7 +58,7 @@ function ScenarioCard({ item, index }: { item: (typeof useCases)[0]; index: numb
               <div className="flex items-center gap-2 mb-0.5">
                 <h3 className="text-[14px] font-bold text-slate-900 truncate">{item.title}</h3>
                 <span
-                  className="shrink-0 text-[10px] font-medium px-2 py-0.5 rounded-md"
+                  className="shrink-0 lp-label px-2 py-0.5 rounded-md"
                   style={{ background: cfg.primaryLight, color: cfg.primary, border: `1px solid ${cfg.primaryBorder}` }}
                 >
                   {SCENARIO_LABELS[item.scenario as Scenario]}
@@ -81,7 +81,7 @@ function ScenarioCard({ item, index }: { item: (typeof useCases)[0]; index: numb
               {item.workflow.map((step, i) => (
                 <div key={step.label} className="flex items-start gap-2.5">
                   <div
-                    className="w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5"
+                    className="w-5 h-5 rounded-md flex items-center justify-center lp-tiny font-bold shrink-0 mt-0.5"
                     style={{ background: hovered ? cfg.primaryLight : '#f1f5f9', color: hovered ? cfg.primary : '#94a3b8', border: `1px solid ${cfg.primaryBorder}` }}
                   >
                     {i + 1}
@@ -120,7 +120,7 @@ function ScenarioCard({ item, index }: { item: (typeof useCases)[0]; index: numb
             <DialogTrigger asChild>
               <button
                 type="button"
-                className="w-full inline-flex items-center justify-center gap-2 px-3 py-2.5 rounded-md text-[12px] font-medium transition-colors"
+                className="w-full inline-flex items-center justify-center gap-2 px-3 py-2.5 rounded-md lp-label transition-colors"
                 style={{
                   background: hovered ? cfg.primaryLight : '#fff',
                   color: cfg.primary,

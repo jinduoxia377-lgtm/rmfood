@@ -40,7 +40,7 @@ function TrustMetrics() {
                   >
                     {IconComp ? <IconComp size={14} strokeWidth={1.8} /> : null}
                   </div>
-                  <span className="text-[10px] font-medium" style={{ color: m.color }}>{m.sub}</span>
+                  <span className="lp-caption" style={{ color: m.color }}>{m.sub}</span>
                 </div>
                 <div className="text-xl font-bold font-mono text-slate-900">{m.value}</div>
                 <div className="lp-caption mt-0.5">{m.label}</div>
@@ -151,7 +151,7 @@ function Testimonials() {
               {/* 作者 */}
               <div className="flex items-center gap-2 pt-2.5 border-t border-slate-100">
                 <div
-                  className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold text-white shrink-0"
+                  className="w-7 h-7 rounded-full flex items-center justify-center lp-label text-white shrink-0"
                   style={{ background: t.gradient, boxShadow: '0 1px 4px rgba(0,0,0,0.15)' }}
                 >
                   {t.name[0]}
