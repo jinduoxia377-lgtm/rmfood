@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Navbar 组件 v4 — 专业学术风格导航栏
  *
  * 升级要点（v4）：
@@ -57,8 +57,8 @@ export default function Navbar() {
         scrolled && 'navbar-scrolled'
       )}
       style={{
-        background: 'rgba(255,255,255,0.97)',
-        borderBottom: '1px solid rgba(226,232,240,0.5)',
+        background: scrolled ? 'rgba(255,255,255,0.97)' : 'rgba(255,255,255,0.95)',
+        borderBottom: scrolled ? '1px solid rgba(226,232,240,1)' : '1px solid rgba(226,232,240,0.3)',
         backdropFilter: 'blur(12px) saturate(180%)',
         WebkitBackdropFilter: 'blur(12px) saturate(180%)',
         height: '64px',
