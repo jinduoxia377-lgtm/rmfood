@@ -301,7 +301,7 @@ const router = createBrowserRouter([
                 console.error('[FormulaDetail ERROR]', error, info.componentStack);
                 // Also show the error in the page itself for debugging
                 if (typeof window !== 'undefined') {
-                  window.__lastReactError = { message: error?.message, stack: error?.stack, time: new Date().toISOString() };
+                  (window as any).__lastReactError = { message: error?.message, stack: error?.stack, time: new Date().toISOString() };
                 }
               }}
             >
