@@ -11,6 +11,7 @@
 
 import logging
 from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel, EmailStr
 from typing import Any, Dict, List, Optional
@@ -116,39 +117,16 @@ async def list_my_organizations(
     current_user = Depends(get_current_user),
 ):
     """获取当前用户所属的所有组织"""
-    logger.info(f"[ORG DEBUG] user_id={current_user.id} role={current_user.role}")
-    try:
-        result = await db.execute(
-            """SELECT o.*, m.role as member_role
+    if not current_user:
+        raise HTTPException(status_code=401, detail="未提供有效的认证令牌")
+    result = await db.execute(
+        text("""SELECT o.*, m.role as member_role
                FROM organizations o
                JOIN organization_members m ON o.id = m.organization_id
                WHERE m.user_id = :user_id AND o.is_active = TRUE
-               ORDER BY m.joined_at DESC""",
-            {"user_id": current_user.id},
-        )
-        rows = result.fetchall()
-        logger.info(f"[ORG DEBUG] query returned {len(rows)} rows")
-        organizations = []
-        for row in rows:
-            organizations.append({
-                "id": row.id,
-                "name": row.name,
-                "slug": row.slug,
-                "description": row.description,
-                "logo_url": row.logo_url,
-                "plan": row.plan,
-                "member_role": row.member_role,
-                "owner_id": row.owner_id,
-                "created_at": row.created_at.isoformat() if row.created_at else None,
-            })
-        logger.info(f"[ORG DEBUG] returning {len(organizations)} orgs")
-        return {"organizations": organizations}
-    except Exception as e:
-        logger.error(f"[ORG DEBUG] EXCEPTION: {type(e).__name__}: {e}")
-        import traceback
-        traceback.print_exc()
-        raise
-    
+               ORDER BY m.joined_at DESC"""),
+        {"user_id": current_user.id},
+    )
     organizations = []
     for row in result.fetchall():
         organizations.append({
@@ -162,7 +140,6 @@ async def list_my_organizations(
             "owner_id": row.owner_id,
             "created_at": row.created_at.isoformat() if row.created_at else None,
         })
-    
     return {"organizations": organizations}
 
 

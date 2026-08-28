@@ -146,10 +146,10 @@ export default function FormulaEditPage() {
         setProcessingMethod(formula.processing_method || '');
         setStorageConditions(formula.storage_conditions || '');
         setShelfLife(formula.shelf_life ? String(formula.shelf_life) : '');
-        setEffects(((formula.target_effects || formula.targetEffects) || (formula.target_effects || formula.targetEffects)) as string[] || []);
+        setEffects(((formula.targetEffects || formula.targetEffects) || (formula.targetEffects || formula.targetEffects)) as string[] || []);
         setCategoryIds(formula.categories?.map((c) => c.id) || []);
         setTagIds(((formula.tags as any[]) || []).map((t: any) => t.id));
-        setOriginalUpdatedAt(formula.updated_at || formula.updatedAt || formula.updated_at || formula.updatedAt || '');
+        setOriginalUpdatedAt(formula.updatedAt || formula.updatedAt || formula.updatedAt || formula.updatedAt || '');
 
         if (formula.composition && typeof formula.composition === 'object') {
           const comp = formula.composition as Record<string, unknown>;
@@ -171,7 +171,7 @@ export default function FormulaEditPage() {
         setPreviewData({
           name: formula.name,
           description: formula.description || '',
-          effects: ((formula.target_effects || formula.targetEffects) as string[]) || [],
+          effects: ((formula.targetEffects || formula.targetEffects) as string[]) || [],
           ingredients: ingredients.map((i) => ({
             name: i.name,
             category: i.category,
@@ -377,7 +377,7 @@ export default function FormulaEditPage() {
     if ((processingMethod || null) !== (formula.processing_method || null)) return true;
     if ((storageConditions || null) !== (formula.storage_conditions || null)) return true;
     if (Number(shelfLife) !== (formula.shelf_life ?? 0)) return true;
-    if (JSON.stringify(effects) !== JSON.stringify(((formula.target_effects || formula.targetEffects) || (formula.target_effects || formula.targetEffects)) || [])) return true;
+    if (JSON.stringify(effects) !== JSON.stringify(((formula.targetEffects || formula.targetEffects) || (formula.targetEffects || formula.targetEffects)) || [])) return true;
     if (JSON.stringify(categoryIds) !== JSON.stringify(formula.categories?.map((c) => c.id) || [])) return true;
     if (JSON.stringify(tagIds) !== JSON.stringify(((formula.tags as any[]) || []).map((t: any) => t.id) || []))
       return true;
@@ -904,13 +904,13 @@ export default function FormulaEditPage() {
                     <div>
                       <span className="font-medium">创建时间</span>
                       <p className="text-neutral-900 dark:text-white mt-0.5">
-                        {new Date(formula.created_at || formula.createdAt || formula.created_at || formula.createdAt).toLocaleDateString('zh-CN')}
+                        {new Date(formula.createdAt || formula.createdAt || formula.createdAt || formula.createdAt).toLocaleDateString('zh-CN')}
                       </p>
                     </div>
                     <div>
                       <span className="font-medium">最后更新</span>
                       <p className="text-neutral-900 dark:text-white mt-0.5">
-                        {new Date(formula.updated_at || formula.updatedAt || formula.updated_at || formula.updatedAt).toLocaleDateString('zh-CN')}
+                        {new Date(formula.updatedAt || formula.updatedAt || formula.updatedAt || formula.updatedAt).toLocaleDateString('zh-CN')}
                       </p>
                     </div>
                   </div>
