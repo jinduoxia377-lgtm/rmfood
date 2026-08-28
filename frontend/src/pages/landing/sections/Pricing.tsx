@@ -32,9 +32,9 @@ export default function Pricing() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <Reveal>
           <div className="text-center mb-10">
-            <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block mb-3">{sectionLabel}</span>
-            <h2 className="text-2xl lg:text-[1.75rem] font-bold text-slate-900 mb-2">{sectionTitle}</h2>
-            <p className="text-[13px] text-slate-600 max-w-sm mx-auto">{sectionSub}</p>
+            <span className="lp-section-tag block mb-3">{sectionLabel}</span>
+            <h2 className="lp-h2 mb-2">{sectionTitle}</h2>
+            <p className="lp-body-sm max-w-sm mx-auto">{sectionSub}</p>
 
             <div className="mt-5 inline-flex items-center gap-0.5 p-0.5 rounded-md" style={{ background: '#f1f5f9', border: '1px solid #e2e8f0' }}>
               {(['monthly', 'yearly'] as const).map((m) => (

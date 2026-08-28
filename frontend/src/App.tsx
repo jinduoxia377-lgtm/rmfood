@@ -272,6 +272,26 @@ const router = createBrowserRouter([
         ),
       },
       {
+        path: 'formulas/cases',
+        element: (
+          <Suspense fallback={<LoadingComponent />}>
+            <ModuleErrorBoundary moduleName="案例库">
+              <FormulaCasesPage />
+            </ModuleErrorBoundary>
+          </Suspense>
+        ),
+      },
+      {
+        path: 'formulas/cases/:id',
+        element: (
+          <Suspense fallback={<LoadingComponent />}>
+            <ModuleErrorBoundary moduleName="案例详情">
+              <FormulaCaseDetailPage />
+            </ModuleErrorBoundary>
+          </Suspense>
+        ),
+      },
+      {
         path: 'formulas/:id',
         element: (
           <Suspense fallback={<LoadingComponent />}>
@@ -312,26 +332,6 @@ const router = createBrowserRouter([
         element: (
           <Suspense fallback={<LoadingComponent />}>
             <FormulaTestPage />
-          </Suspense>
-        ),
-      },
-      {
-        path: 'formulas/cases',
-        element: (
-          <Suspense fallback={<LoadingComponent />}>
-            <ModuleErrorBoundary moduleName="案例库">
-              <FormulaCasesPage />
-            </ModuleErrorBoundary>
-          </Suspense>
-        ),
-      },
-      {
-        path: 'formulas/cases/:id',
-        element: (
-          <Suspense fallback={<LoadingComponent />}>
-            <ModuleErrorBoundary moduleName="案例详情">
-              <FormulaCaseDetailPage />
-            </ModuleErrorBoundary>
           </Suspense>
         ),
       },

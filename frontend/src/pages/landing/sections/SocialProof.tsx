@@ -25,7 +25,7 @@ function TrustMetrics() {
   return (
     <Reveal>
       <div className="mb-10">
-        <div className="text-[10px] font-mono text-slate-400 uppercase tracking-widest mb-4">
+        <div className="lp-section-tag mb-4">
           平台数据 · {new Date().getFullYear()}
         </div>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -59,7 +59,7 @@ function PartnerLogos() {
   return (
     <Reveal delay="lp-reveal-delay-1">
       <div className="mb-10">
-        <div className="text-[10px] font-mono text-slate-400 uppercase tracking-widest mb-4">
+        <div className="lp-section-tag mb-4">
           合作机构
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
@@ -108,7 +108,7 @@ function Testimonials() {
   return (
     <Reveal delay="lp-reveal-delay-2">
       <div>
-        <div className="text-[10px] font-mono text-slate-400 uppercase tracking-widest mb-4">
+        <div className="lp-section-tag mb-4">
           用户评价
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -177,11 +177,10 @@ export default function SocialProof() {
         {/* 标题 */}
         <Reveal>
           <div className="mb-10">
-            <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block mb-3">
+            <span className="lp-section-tag block mb-3">
               信任证明
             </span>
-            <h2 className="text-[clamp(2rem,4vw,2.25rem)] font-bold leading-[1.15] text-slate-900"
-                style={{ fontFamily: 'var(--font-sans)' }}>
+            <h2 className="lp-h2">
               200+ 研发团队信赖
             </h2>
             <p className="text-[13px] leading-relaxed max-w-lg text-slate-600 mt-2">

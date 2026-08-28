@@ -120,11 +120,11 @@ export default function DataSources() {
         {/* 标题 */}
         <Reveal>
           <div className="text-center mb-8">
-            <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block mb-2">
+            <span className="lp-section-tag block mb-2">
               数据底座
             </span>
-            <h2 className="text-2xl font-bold text-slate-900 mb-2">5 大数据源 · 128,000+ 知识节点</h2>
-            <p className="text-[13px] text-slate-600 max-w-md mx-auto">
+            <h2 className="lp-h2 mb-2">5 大数据源 · 128,000+ 知识节点</h2>
+            <p className="lp-body-sm max-w-md mx-auto">
               覆盖中药材、活性肽、知识图谱、法规标准五大维度，支持跨库联合查询与实时同步。
             </p>
           </div>
