@@ -1846,7 +1846,7 @@ export default function FormulaDetailPage() {
                                   </div>
                                   <div className="flex items-center gap-2">
                                     <span className="text-xs text-neutral-400">
-                                      {new Date(v.createdAt).toLocaleString('zh-CN')}
+                                      {new Date(v.created_at).toLocaleString('zh-CN')}
                                     </span>
                                     <span className="text-xs text-neutral-500">
                                       by {v.changed_by_name || v.changed_by || '-'}
@@ -1870,7 +1870,7 @@ export default function FormulaDetailPage() {
                                         id: Number(v.id),
                                         version: String(v.version_number || v.version_label),
                                         snapshot: v.snapshot,
-                                        created_at: v.createdAt,
+                                        created_at: v.created_at,
                                         change_summary: v.change_summary || undefined,
                                       });
                                       setShowVersionDiff(true);
@@ -2555,7 +2555,7 @@ export default function FormulaDetailPage() {
                           id: Number(v.id),
                           version: String(v.version_number || v.version_label),
                           snapshot: v.snapshot,
-                          created_at: v.createdAt,
+                          created_at: v.created_at,
                           change_summary: v.change_summary || undefined,
                         });
                       } else {
@@ -2563,7 +2563,7 @@ export default function FormulaDetailPage() {
                           id: Number(v.id),
                           version: String(v.version_number || v.version_label),
                           snapshot: v.snapshot,
-                          created_at: v.createdAt,
+                          created_at: v.created_at,
                           change_summary: v.change_summary || undefined,
                         });
                       }
@@ -2576,7 +2576,7 @@ export default function FormulaDetailPage() {
                         v{v.version_number || v.version_label}
                       </span>
                       <span className="text-xs text-neutral-400">
-                        {new Date(v.createdAt).toLocaleDateString('zh-CN')}
+                        {new Date(v.created_at).toLocaleDateString('zh-CN')}
                       </span>
                     </div>
                     {v.change_summary && <p className="text-xs text-neutral-500 mt-0.5">{v.change_summary}</p>}
