@@ -94,11 +94,7 @@ import { TemplateEditor } from '@/components/formula/TemplateEditor';
 import { useComplianceCheck, complianceApi } from '@/api/compliance';
 import { explainabilityApi } from '@/api/explainability';
 
-export default function FormulaDetailPage() {
-  try {
-    console.log('[FormulaDetail] Starting render, id =', typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('id') : 'n/a');
-  } catch(e) {}
-  const { id } = useParams<{ id: string }>();
+export default function FormulaDetailPage() {\n  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
   const { has } = usePermission();
@@ -321,11 +317,6 @@ export default function FormulaDetailPage() {
     setIsFavorite(favs.includes(formulaId));
   }, [formulaId]);
 
-  // ── 调试：检测渲染失败原因 ──
-  const _debugFormula = formula;
-  const _debugIsLoading = isLoading;
-  console.log('[FormulaDetail] Hook state:', { formulaId, formulaKeys: _debugFormula ? Object.keys(_debugFormula) : 'null', isLoading: _debugIsLoading });
-  
   // ── Early Returns（在所有 hooks 之后）──
 
   if (isLoading) {
