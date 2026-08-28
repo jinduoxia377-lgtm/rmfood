@@ -369,6 +369,18 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
         }));
       } catch(e) {}
     }
+    
+    // 写入 localStorage 以便调试
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('__rmfood_last_error', JSON.stringify({
+          message: error?.message,
+          stack: error?.stack,
+          componentStack: info?.componentStack,
+          time: new Date().toISOString()
+        }));
+      } catch(e) {}
+    }
 
     if (captured) {
       this.setState({ capturedError: captured });
@@ -560,7 +572,11 @@ function DefaultFallback({ error, resetErrorBoundary, errorDetails, safeRefresh 
         >
           <strong>错误信息：</strong>
           <br />
-          {error.message || '未知错误'}
+          <span style={{ wordBreak: 'break-all' }}>{error.message || '未知错误'}</span>
+          <br />
+          <small style={{ color: '#999', marginTop: '8px', display: 'block' }}>
+            时间: {new Date().toLocaleString('zh-CN')}
+          </small>
           <br />
           <small style={{ color: '#999' }}>
             错误 ID: {errorDetails.id}

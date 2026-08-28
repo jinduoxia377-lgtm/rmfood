@@ -1,4 +1,4 @@
-"""
+﻿"""
 多租户组织管理 API 路由
 
 提供:
@@ -119,7 +119,7 @@ async def list_my_organizations(
     result = await db.execute(
         """SELECT o.*, m.role as member_role
            FROM organizations o
-           JOIN organization_members m ON o.id = m.org_id
+           JOIN organization_members m ON o.id = m.organization_id
            WHERE m.user_id = :user_id AND o.is_active = TRUE
            ORDER BY m.joined_at DESC""",
         {"user_id": current_user.id},

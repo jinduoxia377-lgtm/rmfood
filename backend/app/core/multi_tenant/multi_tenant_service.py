@@ -1,4 +1,4 @@
-"""
+﻿"""
 企业级多租户组织管理系统
 
 功能:
@@ -73,7 +73,7 @@ class Organization:
 class Team:
     """团队"""
     id: int
-    org_id: int
+    organization_id: int
     name: str
     description: Optional[str] = None
     lead_id: Optional[int] = None
@@ -86,7 +86,7 @@ class Team:
 class OrganizationMember:
     """组织成员"""
     user_id: int
-    org_id: int
+    organization_id: int
     role: OrganizationRole = OrganizationRole.MEMBER
     team_ids: List[int] = field(default_factory=list)
     joined_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
@@ -244,11 +244,11 @@ class OrganizationService:
         
         return org
 
-    async def get_organization(self, org_id: int) -> Optional[Organization]:
+    async def get_organization(self, organization_id: int) -> Optional[Organization]:
         """获取组织详情"""
         result = await self.db.execute(
             "SELECT * FROM organizations WHERE id = :id AND is_active = TRUE",
-            {"id": org_id},
+            {"id": organization_id},
         )
         row = result.fetchone()
         
@@ -296,17 +296,17 @@ class OrganizationService:
 
     async def update_organization(
         self,
-        org_id: int,
+        organization_id: int,
         updater_id: int,
         **updates
     ) -> Organization:
         """更新组织信息"""
-        if not await self._check_permission(org_id, updater_id, [OrganizationRole.OWNER, OrganizationRole.ADMIN]):
+        if not await self._check_permission(organization_id, updater_id, [OrganizationRole.OWNER, OrganizationRole.ADMIN]):
             raise PermissionError("无权修改此组织")
 
         allowed_fields = ["name", "description", "logo_url", "settings"]
         set_clauses = []
-        params = {"id": org_id}
+        params = {"id": organization_id}
         
         for key, value in updates.items():
             if key in allowed_fields:
@@ -326,20 +326,20 @@ class OrganizationService:
             )
             await self.db.commit()
 
-        return await self.get_organization(org_id)
+        return await self.get_organization(organization_id)
 
-    async def delete_organization(self, org_id: int, deleter_id: int) -> bool:
+    async def delete_organization(self, organization_id: int, deleter_id: int) -> bool:
         """删除组织（仅OWNER）"""
-        if not await self._check_permission(org_id, deleter_id, [OrganizationRole.OWNER]):
+        if not await self._check_permission(organization_id, deleter_id, [OrganizationRole.OWNER]):
             raise PermissionError("仅组织拥有者可删除组织")
 
         await self.db.execute(
             "UPDATE organizations SET is_active = FALSE, updated_at = NOW() WHERE id = :id",
-            {"id": org_id},
+            {"id": organization_id},
         )
         await self.db.commit()
 
-        logger.info(f"🗑️ 组织已删除: org_id={org_id}")
+        logger.info(f"🗑️ 组织已删除: organization_id={organization_id}")
         
         return True
 
@@ -349,7 +349,7 @@ class OrganizationService:
 
     async def add_member(
         self,
-        org_id: int,
+        organization_id: int,
         user_id: int,
         role: OrganizationRole = OrganizationRole.MEMBER,
         *,
@@ -360,7 +360,7 @@ class OrganizationService:
         添加组织成员
         
         Args:
-            org_id: 组织ID
+            organization_id: 组织ID
             user_id: 用户ID
             role: 角色
             invited_by: 邀请人ID
@@ -369,30 +369,30 @@ class OrganizationService:
         Returns:
             OrganizationMember对象
         """
-        existing = await self._get_membership(org_id, user_id)
+        existing = await self._get_membership(organization_id, user_id)
         if existing:
             raise ValueError(f"用户已是该组织成员")
 
-        limits = PLAN_LIMITS[(await self.get_organization(org_id)).plan]
-        member_count = await self._count_members(org_id)
+        limits = PLAN_LIMITS[(await self.get_organization(organization_id)).plan]
+        member_count = await self._count_members(organization_id)
         
         if limits.max_members > 0 and member_count >= limits.max_members:
             raise ValueError(f"已达成员上限 ({limits.max_members})")
 
         member = OrganizationMember(
             user_id=user_id,
-            org_id=org_id,
+            organization_id=organization_id,
             role=role,
             team_ids=team_ids or [],
             invited_by=invited_by,
         )
 
         await self.db.execute(
-            """INSERT INTO organization_members (user_id, org_id, role, team_ids, joined_at, invited_by)
-               VALUES (:user_id, :org_id, :role, :team_ids::int[], NOW(), :invited_by)""",
+            """INSERT INTO organization_members (user_id, organization_id, role, team_ids, joined_at, invited_by)
+               VALUES (:user_id, :organization_id, :role, :team_ids::int[], NOW(), :invited_by)""",
             {
                 "user_id": member.user_id,
-                "org_id": member.org_id,
+                "organization_id": member.organization_id,
                 "role": member.role.value,
                 "team_ids": member.team_ids,
                 "invited_by": member.invited_by,
@@ -400,63 +400,63 @@ class OrganizationService:
         )
         await self.db.commit()
 
-        logger.info(f"👥 添加成员: user={user_id} → org={org_id} as {role.value}")
+        logger.info(f"👥 添加成员: user={user_id} → org={organization_id} as {role.value}")
         
         return member
 
-    async def remove_member(self, org_id: int, user_id: int, remover_id: int) -> bool:
+    async def remove_member(self, organization_id: int, user_id: int, remover_id: int) -> bool:
         """移除组织成员"""
         if user_id == remover_id:
-            if not await self._check_permission(org_id, remover_id, [OrganizationRole.OWNER]):
+            if not await self._check_permission(organization_id, remover_id, [OrganizationRole.OWNER]):
                 raise PermissionError("组织拥有者无法退出")
         else:
-            if not await self._check_permission(org_id, remover_id, [OrganizationRole.OWNER, OrganizationRole.ADMIN]):
+            if not await self._check_permission(organization_id, remover_id, [OrganizationRole.OWNER, OrganizationRole.ADMIN]):
                 raise PermissionError("无权移除成员")
 
         await self.db.execute(
-            "DELETE FROM organization_members WHERE org_id = :org_id AND user_id = :user_id",
-            {"org_id": org_id, "user_id": user_id},
+            "DELETE FROM organization_members WHERE organization_id = :organization_id AND user_id = :user_id",
+            {"organization_id": organization_id, "user_id": user_id},
         )
         await self.db.commit()
 
-        logger.info(f"🚫 移除成员: user={user_id} from org={org_id}")
+        logger.info(f"🚫 移除成员: user={user_id} from org={organization_id}")
         
         return True
 
     async def change_role(
         self,
-        org_id: int,
+        organization_id: int,
         target_user_id: int,
         new_role: OrganizationRole,
         changer_id: int,
     ) -> bool:
         """修改成员角色"""
-        if not await self._check_permission(org_id, changer_id, [OrganizationRole.OWNER, OrganizationRole.ADMIN]):
+        if not await self._check_permission(organization_id, changer_id, [OrganizationRole.OWNER, OrganizationRole.ADMIN]):
             raise PermissionError("无权修改角色")
 
-        if new_role == OrganizationRole.OWNER and not await self._check_permission(org_id, changer_id, [OrganizationRole.OWNER]):
+        if new_role == OrganizationRole.OWNER and not await self._check_permission(organization_id, changer_id, [OrganizationRole.OWNER]):
             raise PermissionError("仅拥有者可转让OWNER角色")
 
         await self.db.execute(
-            "UPDATE organization_members SET role = :role WHERE org_id = :org_id AND user_id = :user_id",
-            {"role": new_role.value, "org_id": org_id, "user_id": target_user_id},
+            "UPDATE organization_members SET role = :role WHERE organization_id = :organization_id AND user_id = :user_id",
+            {"role": new_role.value, "organization_id": organization_id, "user_id": target_user_id},
         )
         await self.db.commit()
 
-        logger.info(f"🔄 角色变更: user={target_user_id} → {new_role.value} in org={org_id}")
+        logger.info(f"🔄 角色变更: user={target_user_id} → {new_role.value} in org={organization_id}")
         
         return True
 
-    async def get_members(self, org_id: int) -> List[Dict[str, Any]]:
+    async def get_members(self, organization_id: int) -> List[Dict[str, Any]]:
         """获取组织所有成员"""
         result = await self.db.execute(
             """SELECT m.user_id, m.role, m.joined_at, m.invited_id,
                       u.username, u.email, u.avatar_url
                FROM organization_members m
                JOIN users u ON m.user_id = u.id
-               WHERE m.org_id = :org_id
+               WHERE m.organization_id = :organization_id
                ORDER BY m.joined_at ASC""",
-            {"org_id": org_id},
+            {"organization_id": organization_id},
         )
         
         return [dict(row._mapping) for row in result.fetchall()]
@@ -467,48 +467,48 @@ class OrganizationService:
 
     async def create_team(
         self,
-        org_id: int,
+        organization_id: int,
         name: str,
         creator_id: int,
         description: Optional[str] = None,
     ) -> Team:
         """创建团队"""
-        if not await self._check_permission(org_id, creator_id, [OrganizationRole.OWNER, OrganizationRole.ADMIN]):
+        if not await self._check_permission(organization_id, creator_id, [OrganizationRole.OWNER, OrganizationRole.ADMIN]):
             raise PermissionError("无权创建团队")
 
-        org = await self.get_organization(org_id)
+        org = await self.get_organization(organization_id)
         limits = PLAN_LIMITS[org.plan]
-        team_count = await self._count_teams(org_id)
+        team_count = await self._count_teams(organization_id)
         
         if limits.max_teams > 0 and team_count >= limits.max_teams:
             raise ValueError(f"已达团队上限 ({limits.max_teams})")
 
         result = await self.db.execute(
-            """INSERT INTO teams (org_id, name, description, lead_id, permissions, created_at)
-               VALUES (:org_id, :name, :description, :lead_id, '{}'::jsonb, NOW())
+            """INSERT INTO teams (organization_id, name, description, lead_id, permissions, created_at)
+               VALUES (:organization_id, :name, :description, :lead_id, '{}'::jsonb, NOW())
                RETURNING id""",
-            {"org_id": org_id, "name": name, "description": description, "lead_id": creator_id},
+            {"organization_id": organization_id, "name": name, "description": description, "lead_id": creator_id},
         )
         
         row = result.fetchone()
-        team = Team(id=row.id, org_id=org_id, name=name, description=description, lead_id=creator_id)
+        team = Team(id=row.id, organization_id=organization_id, name=name, description=description, lead_id=creator_id)
 
-        logger.info(f"👥 创建团队: {name} in org={org_id}")
+        logger.info(f"👥 创建团队: {name} in org={organization_id}")
         
         return team
 
-    async def get_teams(self, org_id: int) -> List[Team]:
+    async def get_teams(self, organization_id: int) -> List[Team]:
         """获取组织的所有团队"""
         result = await self.db.execute(
-            "SELECT * FROM teams WHERE org_id = :org_id ORDER BY name ASC",
-            {"org_id": org_id},
+            "SELECT * FROM teams WHERE organization_id = :organization_id ORDER BY name ASC",
+            {"organization_id": organization_id},
         )
         
         teams = []
         for row in result.fetchall():
             teams.append(Team(
                 id=row.id,
-                org_id=row.org_id,
+                organization_id=row.organization_id,
                 name=row.name,
                 description=row.description,
                 lead_id=row.lead_id,
@@ -524,15 +524,15 @@ class OrganizationService:
         if not team:
             raise ValueError("团队不存在")
 
-        if not await self._check_permission(team.org_id, adder_id, [OrganizationRole.OWNER, OrganizationRole.ADMIN, OrganizationRole.MEMBER]):
+        if not await self._check_permission(team.organization_id, adder_id, [OrganizationRole.OWNER, OrganizationRole.ADMIN, OrganizationRole.MEMBER]):
             if team.lead_id != adder_id:
                 raise PermissionError("无权添加团队成员")
 
         await self.db.execute(
             """UPDATE organization_members 
                SET team_ids = array_append(team_ids, :team_id)
-               WHERE user_id = :user_id AND org_id = :org_id""",
-            {"team_id": team_id, "user_id": user_id, "org_id": team.org_id},
+               WHERE user_id = :user_id AND organization_id = :organization_id""",
+            {"team_id": team_id, "user_id": user_id, "organization_id": team.organization_id},
         )
         await self.db.commit()
 
@@ -542,16 +542,16 @@ class OrganizationService:
     # Quota Management
     # ============================================================
 
-    async def get_quota_usage(self, org_id: int) -> Dict[str, QuotaUsage]:
+    async def get_quota_usage(self, organization_id: int) -> Dict[str, QuotaUsage]:
         """获取组织的配额使用情况"""
-        org = await self.get_organization(org_id)
+        org = await self.get_organization(organization_id)
         if not org:
             raise ValueError("组织不存在")
 
         limits = PLAN_LIMITS[org.plan]
         quotas = {}
 
-        formulas_count = await self._count_resource(org_id, "formulas")
+        formulas_count = await self._count_resource(organization_id, "formulas")
         quotas["formulas"] = QuotaUsage(
             resource_type=ResourceType.FORMULAS,
             used=formulas_count,
@@ -559,7 +559,7 @@ class OrganizationService:
             unit="个",
         )
 
-        experiments_count = await self._count_resource(org_id, "experiments")
+        experiments_count = await self._count_resource(organization_id, "experiments")
         quotas["experiments"] = QuotaUsage(
             resource_type=ResourceType.EXPERIMENTS,
             used=experiments_count,
@@ -567,7 +567,7 @@ class OrganizationService:
             unit="个",
         )
 
-        storage_used_mb = await self._get_storage_usage(org_id)
+        storage_used_mb = await self._get_storage_usage(organization_id)
         quotas["storage"] = QuotaUsage(
             resource_type=ResourceType.STORAGE,
             used=storage_used_mb,
@@ -575,7 +575,7 @@ class OrganizationService:
             unit="MB",
         )
 
-        member_count = await self._count_members(org_id)
+        member_count = await self._count_members(organization_id)
         quotas["members"] = QuotaUsage(
             resource_type=ResourceType.MEMBERS,
             used=float(member_count),
@@ -583,7 +583,7 @@ class OrganizationService:
             unit="人",
         )
 
-        team_count = await self._count_teams(org_id)
+        team_count = await self._count_teams(organization_id)
         quotas["teams"] = QuotaUsage(
             resource_type=ResourceType.TEAMS,
             used=float(team_count),
@@ -591,7 +591,7 @@ class OrganizationService:
             unit="个",
         )
 
-        api_calls_today = await self._count_api_calls_today(org_id)
+        api_calls_today = await self._count_api_calls_today(organization_id)
         quotas["api_calls"] = QuotaUsage(
             resource_type=ResourceType.API_CALLS,
             used=float(api_calls_today),
@@ -600,7 +600,7 @@ class OrganizationService:
             reset_date=datetime.now(timezone.utc).replace(hour=23, minute=59, second=59),
         )
 
-        ai_gen_today = await self._count_ai_generations_today(org_id)
+        ai_gen_today = await self._count_ai_generations_today(organization_id)
         quotas["ai_generations"] = QuotaUsage(
             resource_type=ResourceType.AI_GENERATIONS,
             used=float(ai_gen_today),
@@ -611,9 +611,9 @@ class OrganizationService:
 
         return quotas
 
-    async def check_quota(self, org_id: int, resource: ResourceType, amount: float = 1) -> bool:
+    async def check_quota(self, organization_id: int, resource: ResourceType, amount: float = 1) -> bool:
         """检查是否有足够配额"""
-        quotas = await self.get_quota_usage(org_id)
+        quotas = await self.get_quota_usage(organization_id)
         quota = quotas.get(resource.value)
         
         if not quota:
@@ -639,18 +639,18 @@ class OrganizationService:
         )
         return (result.scalar() or 0) > 0
 
-    async def _get_membership(self, org_id: int, user_id: int) -> Optional[Dict]:
+    async def _get_membership(self, organization_id: int, user_id: int) -> Optional[Dict]:
         """获取成员关系"""
         result = await self.db.execute(
-            "SELECT * FROM organization_members WHERE org_id = :org_id AND user_id = :user_id",
-            {"org_id": org_id, "user_id": user_id},
+            "SELECT * FROM organization_members WHERE organization_id = :organization_id AND user_id = :user_id",
+            {"organization_id": organization_id, "user_id": user_id},
         )
         row = result.fetchone()
         return dict(row._mapping) if row else None
 
-    async def _check_permission(self, org_id: int, user_id: int, required_roles: List[OrganizationRole]) -> bool:
+    async def _check_permission(self, organization_id: int, user_id: int, required_roles: List[OrganizationRole]) -> bool:
         """检查用户在组织中的权限"""
-        membership = await self._get_membership(org_id, user_id)
+        membership = await self._get_membership(organization_id, user_id)
         if not membership:
             return False
         
@@ -666,56 +666,56 @@ class OrganizationService:
         
         return user_level >= min_required
 
-    async def _count_members(self, org_id: int) -> int:
+    async def _count_members(self, organization_id: int) -> int:
         """统计成员数"""
         result = await self.db.execute(
-            "SELECT COUNT(*) FROM organization_members WHERE org_id = :org_id",
-            {"org_id": org_id},
+            "SELECT COUNT(*) FROM organization_members WHERE organization_id = :organization_id",
+            {"organization_id": organization_id},
         )
         return result.scalar() or 0
 
-    async def _count_teams(self, org_id: int) -> int:
+    async def _count_teams(self, organization_id: int) -> int:
         """统计团队数"""
         result = await self.db.execute(
-            "SELECT COUNT(*) FROM teams WHERE org_id = :org_id",
-            {"org_id": org_id},
+            "SELECT COUNT(*) FROM teams WHERE organization_id = :organization_id",
+            {"organization_id": organization_id},
         )
         return result.scalar() or 0
 
-    async def _count_resource(self, org_id: int, table: str) -> int:
+    async def _count_resource(self, organization_id: int, table: str) -> int:
         """统计资源数量"""
         result = await self.db.execute(
-            f"SELECT COUNT(*) FROM {table} WHERE org_id = :org_id",
-            {"org_id": org_id},
+            f"SELECT COUNT(*) FROM {table} WHERE organization_id = :organization_id",
+            {"organization_id": organization_id},
         )
         return result.scalar() or 0
 
-    async def _get_storage_usage(self, org_id: int) -> float:
+    async def _get_storage_usage(self, organization_id: int) -> float:
         """获取存储使用量(MB)"""
         result = await self.db.execute(
-            "SELECT COALESCE(SUM(file_size), 0) FROM files WHERE org_id = :org_id",
-            {"org_id": org_id},
+            "SELECT COALESCE(SUM(file_size), 0) FROM files WHERE organization_id = :organization_id",
+            {"organization_id": organization_id},
         )
         bytes_total = result.scalar() or 0
         return round(bytes_total / 1024 / 1024, 2)
 
-    async def _count_api_calls_today(self, org_id: int) -> int:
+    async def _count_api_calls_today(self, organization_id: int) -> int:
         """统计今日API调用次数"""
         result = await self.db.execute(
             """SELECT COUNT(*) FROM api_logs 
-               WHERE org_id = :org_id 
+               WHERE organization_id = :organization_id 
                AND created_at >= CURRENT_DATE""",
-            {"org_id": org_id},
+            {"organization_id": organization_id},
         )
         return result.scalar() or 0
 
-    async def _count_ai_generations_today(self, org_id: int) -> int:
+    async def _count_ai_generations_today(self, organization_id: int) -> int:
         """统计今日AI生成次数"""
         result = await self.db.execute(
             """SELECT COUNT(*) FROM ai_generations 
-               WHERE org_id = :org_id 
+               WHERE organization_id = :organization_id 
                AND created_at >= CURRENT_DATE""",
-            {"org_id": org_id},
+            {"organization_id": organization_id},
         )
         return result.scalar() or 0
 
@@ -732,7 +732,7 @@ class OrganizationService:
         
         return Team(
             id=row.id,
-            org_id=row.org_id,
+            organization_id=row.organization_id,
             name=row.name,
             description=row.description,
             lead_id=row.lead_id,
