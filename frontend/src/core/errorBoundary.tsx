@@ -357,6 +357,18 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       type: 'component',
       extra: { componentStack: info.componentStack },
     });
+    
+    // 写入 localStorage 以便调试
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('__rmfood_last_error', JSON.stringify({
+          message: error?.message,
+          stack: error?.stack,
+          componentStack: info?.componentStack,
+          time: new Date().toISOString()
+        }));
+      } catch(e) {}
+    }
 
     if (captured) {
       this.setState({ capturedError: captured });
