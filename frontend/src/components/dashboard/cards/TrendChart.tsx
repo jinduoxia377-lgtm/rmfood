@@ -24,12 +24,11 @@ interface Props {
 
 const tooltipStyle = {
   contentStyle: {
-    backgroundColor: 'var(--card-bg-solid, rgba(255,255,255,0.98))',
-    backdropFilter: 'blur(16px)',
-    borderRadius: '14px',
-    border: '1px solid var(--border-color, rgba(226,232,240,0.9))',
-    boxShadow: '0 12px 40px rgba(0,0,0,0.12)',
-    padding: '14px 18px',
+    backgroundColor: 'var(--card-bg-solid, #ffffff)',
+    borderRadius: '8px',
+    border: '1px solid var(--border-color, #e2e8f0)',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+    padding: '10px 14px',
   },
   itemStyle: { padding: '4px 0' },
   labelStyle: {
@@ -63,8 +62,8 @@ export const TrendChart: FC<Props> = ({ data }) => {
                   <stop offset="95%" stopColor="var(--color-success)" stopOpacity={0} />
                 </linearGradient>
                 <linearGradient id="colorExp" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="var(--color-purple-500, oklch(0.65 0.22 305))" stopOpacity={0.25} />
-                  <stop offset="95%" stopColor="var(--color-purple-500, oklch(0.65 0.22 305))" stopOpacity={0} />
+                  <stop offset="5%" stopColor="var(--color-accent, #8B5CF6)" stopOpacity={0.25} />
+                  <stop offset="95%" stopColor="var(--color-accent, #8B5CF6)" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" opacity={0.3} vertical={false} />
@@ -72,9 +71,9 @@ export const TrendChart: FC<Props> = ({ data }) => {
               <YAxis tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} width={36} />
               <Tooltip {...tooltipStyle} />
               <Legend wrapperStyle={{ paddingTop: 16, fontSize: 12 }} iconType="circle" iconSize={8} />
-              <Area type="monotone" dataKey="新增配方" stroke="var(--color-success)" fill="url(#colorFormula)" strokeWidth={2} />
-              <Area type="monotone" dataKey="新增实验" stroke="var(--color-purple-500, oklch(0.65 0.22 305))" fill="url(#colorExp)" strokeWidth={2} />
-              <Area type="monotone" dataKey="批准配方" stroke="var(--color-info)" fill="none" strokeWidth={1.5} strokeDasharray="5 5" />
+              <Area type="monotone" dataKey="新增配方" stroke="var(--color-primary, #10B981)" fill="url(#colorFormula)" strokeWidth={2} />
+              <Area type="monotone" dataKey="新增实验" stroke="var(--color-accent, #8B5CF6)" fill="url(#colorExp)" strokeWidth={2} />
+              <Area type="monotone" dataKey="批准配方" stroke="var(--color-secondary, #3B82F6)" fill="none" strokeWidth={1.5} strokeDasharray="5 5" />
             </AreaChart>
           </ResponsiveContainer>
         ) : (

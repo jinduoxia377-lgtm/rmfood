@@ -84,7 +84,7 @@ export function DraggableCard({
         ref={setNodeRef}
         style={style}
         className={cn(
-          'border-2 border-dashed border-neutral-200 dark:border-neutral-700 rounded-xl flex items-center justify-center bg-slate-50 dark:bg-neutral-800/30',
+          'border border-dotted border-neutral-200 dark:border-neutral-700 rounded-lg flex items-center justify-center bg-neutral-50 dark:bg-neutral-800/30',
           'transition-all duration-200 hover:bg-neutral-100 dark:hover:bg-neutral-800/50',
         )}
       >
@@ -108,7 +108,7 @@ export function DraggableCard({
       style={style}
       className={cn(
         'relative group',
-        isSorting && 'scale-105 shadow-2xl',
+        isSorting && 'scale-[1.02] shadow-md',
       )}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -120,8 +120,10 @@ export function DraggableCard({
             {...attributes}
             {...listeners}
             className="flex items-center gap-1 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 cursor-grab active:cursor-grabbing"
+            aria-label={`拖拽卡片 ${card.title} 调整位置`}
+            role="button"
           >
-            <GripVertical size={16} />
+            <GripVertical size={16} aria-hidden="true" />
             <span className="text-xs font-medium">拖拽</span>
           </button>
           <div className="flex items-center gap-1">
@@ -196,7 +198,7 @@ export function DraggableCard({
                     }}
                     className={`w-full flex items-center gap-2 px-3 py-2 rounded text-xs ${cardTheme === 'system' ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400' : 'text-neutral-700 dark:text-neutral-300 hover:bg-slate-50 dark:hover:bg-neutral-700'}`}
                   >
-                    <div className="w-3 h-3 rounded-full bg-gradient-to-r from-white to-slate-900 border border-neutral-300"></div>
+                    <div className="w-3 h-3 rounded-full bg-gradient-to-r from-white via-neutral-300 to-neutral-800 border border-neutral-400"></div>
                     跟随系统
                   </button>
                 </div>
@@ -249,7 +251,7 @@ export function DraggableCard({
       <Card
         hoverable
         className={cn(
-          'h-full shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1',
+          'h-full shadow-sm hover:shadow-md transition-shadow duration-200',
           isEditing && 'ring-2 ring-primary-500/30',
         )}
       >
@@ -260,7 +262,7 @@ export function DraggableCard({
       {!isEditing && (isHovered || isSorting) && (
         <button
           onClick={() => setIsEditing(true)}
-          className="absolute top-2 right-2 p-1.5 bg-white dark:bg-neutral-800 rounded-lg shadow-lg border border-neutral-200 dark:border-neutral-700 text-neutral-500 hover:text-primary-600 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10"
+          className="absolute top-2 right-2 p-1.5 bg-white dark:bg-neutral-800 rounded-md shadow-sm border border-neutral-200 dark:border-neutral-700 text-neutral-500 hover:text-primary-600 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10"
         >
           <Settings size={16} />
         </button>

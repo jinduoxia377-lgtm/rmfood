@@ -97,15 +97,15 @@
   padding: var(--space-lg);
 }
 .card-outlined:hover {
-  border-color: var(--color-primary, #34C759);
+  border-color: var(--color-primary, #10B981);
   background: var(--color-primary-container, rgba(16, 185, 129, 0.04));
 }
 .dark .card-outlined {
   border-color: var(--border-subtle, rgba(255, 255, 255, 0.06));
 }
 .dark .card-outlined:hover {
-  border-color: var(--color-primary, #30D158);
-  background: var(--color-primary-container, rgba(48, 209, 88, 0.06));
+  border-color: var(--color-primary, #34D399);
+  background: var(--color-primary-container, rgba(52, 211, 153, 0.06));
 }
 
 /* 渐变卡片 -- Apple 风格品牌色 */
@@ -115,11 +115,11 @@
   position: relative;
   overflow: hidden;
   color: white;
-  background: linear-gradient(135deg, var(--color-primary, #34C759), var(--color-primary-hover, #28A745));
+  background: linear-gradient(135deg, var(--color-primary, #10B981), var(--color-primary-hover, #059669));
   transition: all var(--duration-normal) var(--ease-spring);
 }
 .card-gradient:hover {
-  background: linear-gradient(135deg, var(--color-primary-hover, #28A745), var(--color-primary, #34C759));
+  background: linear-gradient(135deg, var(--color-primary-hover, #059669), var(--color-primary, #10B981));
 }
 .dark .card-gradient {
   box-shadow: 0 8px 24px rgba(16, 185, 129, 0.15);

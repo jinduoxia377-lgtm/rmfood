@@ -860,6 +860,9 @@ class CsrfProtectMiddleware(BaseHTTPMiddleware):
         # 跳过认证相关端点（登录/注册/刷新/忘记密码/重置密码）
         skip_paths = {"/api/v1/auth/login", "/api/v1/auth/register", "/api/v1/auth/refresh",
                       "/api/v1/auth/forgot-password", "/api/v1/auth/reset-password"}
+        # 跳过落地页公开 demo 端点（无需认证，访客可直接调用）
+        if request.url.path.startswith("/api/v1/ai/demo"):
+            return await call_next(request)
         # OFF 公开搜索端点豁免 CSRF（POST /search 不需要认证）
         is_off_public = (request.url.path.startswith("/api/v1/databases/openfoodfacts/") or
                          request.url.path.startswith("/databases/openfoodfacts/"))

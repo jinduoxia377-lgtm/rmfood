@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 配方深度集成 API 服务
  *
  * 提供所有与协同配方设计相关的 API 调用函数
@@ -1123,7 +1123,7 @@ export async function reportCase(id: string | number, reason: string, reportType
 }
 
 export async function getCasesByFormula(formulaId: string | number): Promise<FormulaCase[]> {
-  const response = await api.get(`/formulas/${formulaId}/cases`)
+  const response = await api.get(`/formulas/cases/by-formula/${formulaId}`)
   return response.data
 }
 

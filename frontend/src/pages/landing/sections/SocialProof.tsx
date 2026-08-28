@@ -1,11 +1,10 @@
 /**
- * SocialProof 组件 v10 — 学术引用风格
+ * SocialProof 组件 v11 — 学术引用风格（升级 v11）
  *
- * 设计理念：
- *   - 指标如论文中的数据表格
- *   - 合作机构如"Affiliations"列表
- *   - 用户评价如"Editorial Review"引用块
- *   - 去所有渐变、脉冲、流动线
+ * 升级要点（v11）：
+ *   - 星级评分从实色填充改为空心描边风格（学术克制感）
+ *   - 圆角统一 rounded-sm → rounded-md / rounded-sm
+ *   - 指标卡片改用 lp-metric-card CSS 类
  */
 import { useState } from 'react';
 import { Reveal } from '../shared/Reveal';
@@ -33,10 +32,7 @@ function TrustMetrics() {
           {trustMetrics.map((m) => {
             const IconComp = iconMap[m.icon];
             return (
-              <div
-                key={m.label}
-                className="rounded-md px-4 py-3.5 border border-slate-200"
-              >
+              <div key={m.label} className="lp-metric-card">
                 <div className="flex items-center gap-2 mb-2">
                   <div
                     className="w-7 h-7 rounded-md flex items-center justify-center shrink-0"
@@ -74,7 +70,7 @@ function PartnerLogos() {
             return (
               <div
                 key={org.name}
-                className="rounded-sm px-3 py-2 text-center transition-all duration-200 cursor-default"
+                className="rounded-md px-3 py-2 text-center transition-all duration-200 cursor-default"
                 style={{
                   background: isHovered ? '#fff' : s.bg,
                   border: `1px solid ${isHovered ? s.border : s.border}`,
@@ -120,7 +116,7 @@ function Testimonials() {
             <div
               key={t.name}
               className={cn(
-                'relative rounded-sm p-4 transition-all duration-200 cursor-default',
+                'relative rounded-md p-4 transition-all duration-200 cursor-default',
                 hovered === i && 'translate-y-[-1px]'
               )}
               style={{
@@ -134,10 +130,16 @@ function Testimonials() {
               {/* 引用符号 */}
               <Quote size={14} className="mb-2 opacity-20" style={{ color: '#059669' }} />
 
-              {/* 星级 */}
+              {/* 星级 — 空心描边风格（学术克制） */}
               <div className="flex items-center gap-0.5 mb-2.5">
                 {[...Array(t.rating)].map((_, si) => (
-                  <Star key={si} size={10} fill="#f59e0b" color="#f59e0b" strokeWidth={0} />
+                  <Star
+                    key={si}
+                    size={10}
+                    fill="none"
+                    stroke="#059669"
+                    strokeWidth={1.8}
+                  />
                 ))}
               </div>
 
@@ -149,13 +151,13 @@ function Testimonials() {
               {/* 作者 */}
               <div className="flex items-center gap-2 pt-2.5 border-t border-slate-100">
                 <div
-                  className="w-6 h-6 rounded-sm flex items-center justify-center text-[10px] font-bold text-white shrink-0"
-                  style={{ background: '#059669', boxShadow: '0 1px 3px rgba(0,0,0,0.15)' }}
+                  className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold text-white shrink-0"
+                  style={{ background: t.gradient, boxShadow: '0 1px 4px rgba(0,0,0,0.15)' }}
                 >
                   {t.name[0]}
                 </div>
                 <div>
-                  <div className="text-[11px] font-medium text-slate-800">{t.name}</div>
+                  <div className="text-[11px] font-semibold text-slate-800">{t.name}</div>
                   <div className="text-[9px] text-slate-400">{t.role} · {t.org}</div>
                 </div>
               </div>
@@ -169,7 +171,7 @@ function Testimonials() {
 
 export default function SocialProof() {
   return (
-    <section id="social-proof" className="py-16 lg:py-20" style={{ background: '#fff' }}>
+    <section id="social-proof" className="py-16 lg:py-20 border-t lp-grid-bg" style={{ background: '#fff', borderColor: '#e2e8f0' }}>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* 标题 */}

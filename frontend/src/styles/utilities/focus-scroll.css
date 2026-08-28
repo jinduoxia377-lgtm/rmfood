@@ -6,31 +6,31 @@
 /* ═══ 焦点状态（全局）— Apple 风格单环焦点 ═══ */
 *:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px var(--color-primary, #34C759);
+  box-shadow: 0 0 0 3px var(--color-primary, #10B981);
   transition: box-shadow var(--duration-fast) var(--ease-spring);
 }
 .dark *:focus-visible {
-  box-shadow: 0 0 0 3px var(--color-primary, #30D158);
+  box-shadow: 0 0 0 3px var(--color-primary, #10B981);
 }
 
 /* 输入框焦点环 — 柔和 */
 input:focus-visible,
 textarea:focus-visible,
 select:focus-visible {
-  box-shadow: 0 0 0 3px var(--color-primary-container, rgba(52, 199, 89, 0.12)), 0 0 0 1px var(--color-primary, #34C759);
+  box-shadow: 0 0 0 3px var(--color-primary-container, rgba(16, 185, 129, 0.12)), 0 0 0 1px var(--color-primary, #10B981);
 }
 .dark input:focus-visible,
 .dark textarea:focus-visible,
 .dark select:focus-visible {
-  box-shadow: 0 0 0 3px rgba(48, 209, 88, 0.15), 0 0 0 1px var(--color-primary, #30D158);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15), 0 0 0 1px var(--color-primary, #10B981);
 }
 
 /* 按钮焦点环 — 与全局一致 */
 button:focus-visible {
-  box-shadow: 0 0 0 3px var(--color-primary, #34C759);
+  box-shadow: 0 0 0 3px var(--color-primary, #10B981);
 }
 .dark button:focus-visible {
-  box-shadow: 0 0 0 3px var(--color-primary, #30D158);
+  box-shadow: 0 0 0 3px var(--color-primary, #10B981);
 }
 
 /* ═══ 滚动条系统 v3.0 — Apple 风格 ═══ */

@@ -1,27 +1,53 @@
 /**
- * CTABanner 组件 v3 — 学术行动召唤
+ * CTABanner 组件 v5 — 学术行动召唤（升级 v5）
+ *
+ * 升级要点（v5）：
+ *   - max-w-4xl → max-w-6xl，与其他 section 对齐
+ *   - 主 CTA（免费注册）加粗加大
+ *   - 副 CTA（预约演示）降为次要 outlined 样式
+ *   - 回到顶部按钮默认隐藏，仅滚动超过首屏后显示
  */
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, ChevronUp } from 'lucide-react';
 import { Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/shadcn';
 import { Reveal } from '../shared/Reveal';
+import { cn } from '@/lib/utils';
 
 export default function CTABanner() {
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setShowScrollTop(window.scrollY > 600);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
   return (
     <section className="py-16 relative" style={{ background: '#0f172a' }}>
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <Reveal>
           <h2 className="text-xl lg:text-[1.75rem] font-bold text-white mb-2 tracking-tight">开始您的配方研发</h2>
           <p className="text-[13px] text-slate-400 mb-7">科研版永久免费，无需信用卡，30 秒完成注册。</p>
-          <div className="flex items-center justify-center gap-3">
-            <Link to="/login" className="inline-flex items-center gap-1.5 px-6 py-3 rounded-md text-[14px] font-semibold text-slate-900 transition-opacity hover:opacity-90" style={{ background: '#fff' }}>
-              免费注册 <ArrowRight size={14} />
+          <div className="flex items-center justify-center gap-3 flex-wrap">
+            {/* 主 CTA：免费注册 — 白色大按钮 */}
+            <Link
+              to="/login"
+              className="inline-flex items-center gap-1.5 px-7 py-3 rounded-md text-[14px] font-semibold text-slate-900 transition-opacity hover:opacity-90"
+              style={{ background: '#fff' }}
+            >
+              免费注册
+              <ArrowRight size={14} />
             </Link>
+            {/* 副 CTA：预约演示 — 次要 outlined 样式 */}
             <Dialog>
               <DialogTrigger asChild>
-                <button type="button" className="text-[13px] font-medium text-slate-400 px-5 py-3 rounded-md transition-colors hover:text-white border border-slate-700 hover:border-slate-500">
+                <button
+                  type="button"
+                  className="inline-flex items-center gap-1.5 text-[13px] font-medium text-slate-400 px-6 py-3 rounded-md transition-colors hover:text-white border border-slate-700 hover:border-slate-500"
+                >
                   预约演示
                 </button>
               </DialogTrigger>
@@ -53,11 +79,15 @@ export default function CTABanner() {
         </Reveal>
       </div>
 
-      {/* 回到顶部 */}
+      {/* 回到顶部 — 滚动超过 600px 后淡入显示 */}
       <button
         type="button"
         onClick={scrollToTop}
-        className="absolute bottom-4 right-8 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 hover:-translate-y-0.5"
+        className={cn(
+          'absolute bottom-4 right-8 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 hover:-translate-y-0.5',
+          'lp-scroll-top',
+          showScrollTop && 'lp-scroll-top-visible'
+        )}
         style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', color: '#94a3b8' }}
         aria-label="回到顶部"
       >

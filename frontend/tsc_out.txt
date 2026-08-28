@@ -1,0 +1,5 @@
+﻿src/hooks/useOrganizations.ts(488,34): error TS1127: Invalid character.
+src/hooks/useOrganizations.ts(488,50): error TS1127: Invalid character.
+src/hooks/useOrganizations.ts(488,51): error TS1161: Unterminated regular expression literal.
+src/hooks/useOrganizations.ts(489,3): error TS1005: ',' expected.
+src/hooks/useOrganizations.ts(495,1): error TS1109: Expression expected.

@@ -34,7 +34,7 @@
 
 .badge-primary {
   background: var(--color-primary-container, rgba(16, 185, 129, 0.1));
-  color: var(--color-primary-hover, #28A745);
+  color: var(--color-primary-hover, #059669);
   border-color: rgba(16, 185, 129, 0.15);
 }
 .dark .badge-primary {
@@ -129,12 +129,12 @@
 }
 .tabs-trigger-active {
   background: var(--card-bg-solid, #FFFFFF);
-  color: var(--color-primary, #34C759);
+  color: var(--color-primary, #10B981);
   font-weight: 600;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 .tabs-trigger-active .icon {
-  color: var(--color-primary, #34C759);
+  color: var(--color-primary, #10B981);
 }
 .dark .tabs-list {
   background: rgba(44, 44, 46, 0.5);
@@ -148,11 +148,11 @@
 }
 .dark .tabs-trigger-active {
   background: var(--bg-surface-raised, #2C2C2E);
-  color: var(--color-primary, #30D158);
+  color: var(--color-primary, #34D399);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 .dark .tabs-trigger-active .icon {
-  color: var(--color-primary, #30D158);
+  color: var(--color-primary, #34D399);
 }
 
 /* 标签页响应式优化 */

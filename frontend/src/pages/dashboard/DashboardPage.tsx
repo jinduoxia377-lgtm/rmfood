@@ -454,7 +454,7 @@ export default function DashboardPage() {
   return (
     <div className="space-y-4 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       {/* 欢迎横幅 */}
-      <div className="rounded-2xl bg-gradient-to-r from-primary-600 to-primary-700 p-6 text-white shadow-lg">
+      <div className="rounded-xl bg-primary-600 p-6 text-white shadow-sm">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex-1">
             <h1 className="text-xl font-bold leading-snug">
@@ -530,7 +530,7 @@ export default function DashboardPage() {
 
       {/* 编辑模式提示 */}
       {isEditMode && (
-        <div className="p-4 rounded-xl bg-warning-50 dark:bg-warning-900/10 border border-amber-200 dark:border-amber-800/30">
+        <div className="p-4 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <AlertTriangle size={18} className="text-warning-600" />
@@ -573,6 +573,7 @@ export default function DashboardPage() {
                 onRemove={() => updateCard(card.id, { isVisible: false })}
                 onDuplicate={duplicateCard}
                 disabled={!isEditMode}
+                aria-label={`卡片: ${card.title}，拖拽调整位置`}
               >
                 {renderCard({
                   card,

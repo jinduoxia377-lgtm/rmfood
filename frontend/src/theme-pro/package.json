@@ -1,0 +1,21 @@
+{
+  "name": "@rmfood/theme-pro",
+  "version": "1.0.0",
+  "description": "RMFOOD 专业主题分析插件 — 设计差距检测、WCAG对比度检查、CSS变量覆盖率报告",
+  "type": "module",
+  "main": "./index.js",
+  "exports": {
+    ".": "./index.js",
+    "./host": "./host/plugin.js",
+    "./client": "./client/plugin.js"
+  },
+  "cordis": {
+    "id": "theme-pro",
+    "host": "./host/plugin.js",
+    "client": "./client/plugin.js"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  }
+}

@@ -11,18 +11,18 @@
   --color-primary-200: #a7f3d0;
   --color-primary-300: #6ee7b7;
   --color-primary-400: #34d399;
-  --color-primary-500: #0066cc;
+  --color-primary-500: #10b981;
   --color-primary-600: #059669;
   --color-primary-700: #047857;
   --color-primary-800: #065f46;
   --color-primary-900: #064e3b;
   --color-primary-950: #022c22;
 
-  --color-primary: #0066cc;
+  --color-primary: #10b981;
   --color-primary-rgb: 16, 185, 129;
-  --color-primary-hover: #047857;
+  --color-primary-hover: #059669;
   --color-primary-container: #d1fae5;
-  --color-primary-text: #047857; /* WCAG AA: 5.24:1 on white — 用于白色背景上的文字（原 #10b981=2.42:1 FAIL） */
+  --color-primary-text: #047857; /* WCAG AA: 5.24:1 on white */
 
   /* ═══ Brand Secondary: Ocean Blue (#3B82F6) ═══ */
   --color-secondary-50: #eff6ff;

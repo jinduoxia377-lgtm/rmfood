@@ -23,7 +23,7 @@
 }
 
 .input:focus {
-  border-color: var(--color-primary, #34C759);
+  border-color: var(--color-primary, #10B981);
   background: var(--card-bg-solid, #FFFFFF);
 }
 .input:focus::placeholder {
@@ -127,9 +127,9 @@
   color: var(--text-primary, #F5F5F7);
 }
 .dark .input:focus {
-  border-color: var(--color-primary, #30D158);
+  border-color: var(--color-primary, #34D399);
   background: var(--card-bg-solid, #1C1C1E);
-  box-shadow: 0 0 0 3px rgba(48, 209, 88, 0.15);
+  box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.15);
 }
 .dark .input::placeholder {
   color: var(--text-muted, #636366);

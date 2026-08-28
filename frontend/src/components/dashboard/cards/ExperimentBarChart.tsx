@@ -21,20 +21,19 @@ interface Props {
 }
 
 const COLORS: Record<string, string> = {
-  in_progress: 'var(--color-info, #007AFF)',
-  completed: 'var(--color-success, #34C759)',
-  pending: 'var(--color-warning, #FF9F0A)',
-  cancelled: 'var(--color-error, #FF3B30)',
+  in_progress: 'var(--color-info, #3B82F6)',
+  completed: 'var(--color-success, #10B981)',
+  pending: 'var(--color-warning, #F59E0B)',
+  cancelled: 'var(--color-error, #EF4444)',
 }
 
 const tooltipStyle = {
   contentStyle: {
-    backgroundColor: 'var(--card-bg-solid, rgba(255,255,255,0.98))',
-    backdropFilter: 'blur(16px)',
-    borderRadius: '14px',
-    border: '1px solid var(--border-color, rgba(226,232,240,0.9))',
-    boxShadow: '0 12px 40px rgba(0,0,0,0.12)',
-    padding: '14px 18px',
+    backgroundColor: 'var(--card-bg-solid, #ffffff)',
+    borderRadius: '8px',
+    border: '1px solid var(--border-color, #e2e8f0)',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+    padding: '10px 14px',
   },
 }
 
@@ -78,7 +77,7 @@ export const ExperimentBarChart: FC<Props> = ({ data }) => {
             <XAxis type="number" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
             <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} width={64} />
             <Tooltip {...tooltipStyle} />
-            <Bar dataKey="count" radius={[0, 6, 6, 0]} barSize={28}>
+            <Bar dataKey="count" radius={[4, 4, 4, 4]} barSize={28}>
               {data.map((entry) => (
                 <Cell key={entry.key} fill={COLORS[entry.key] ?? 'var(--color-neutral-500)'} />
               ))}

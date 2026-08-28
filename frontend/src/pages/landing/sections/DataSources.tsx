@@ -1,11 +1,13 @@
 /**
- * DataSources 组件 v7 — 学术数据库卡片
+ * DataSources 组件 v9 — 学术数据库卡片（升级 v9）
  *
- * 设计理念：
- *   - 去除数据流管道动画（过于科技感）
- *   - 卡片如数据库条目，信息清晰
- *   - 单一绿色强调，去彩虹渐变
- *   - 状态指示如期刊标记
+ * 升级要点（v9）：
+ *   - 标题强化为"5 大数据源 · 128,000+ 知识节点"
+ *   - H2 改为 text-2xl，与其他 section 对齐
+ *   - 卡片间距 gap-3 → gap-5
+ *   - 卡片 padding p-4 → p-5
+ *   - 圆角统一 rounded-sm → rounded-md
+ *   - 5 卡片 lg 列改为 5 列，消除末行不对称
  */
 import { useState } from 'react';
 import { Reveal } from '../shared/Reveal';
@@ -23,7 +25,7 @@ function StatusBadge({ status }: { status: DataSource['status'] }) {
   };
   const c = cfg[status];
   return (
-    <span className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-sm"
+    <span className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-md"
           style={{ background: c.bg, color: c.color, border: `1px solid ${c.border}` }}>
       {status === 'syncing' && <RefreshCw size={8} className="animate-spin" />}
       {c.label}
@@ -45,11 +47,11 @@ function DataSourceCard({ data, index }: { data: DataSource; index: number }) {
   return (
     <Reveal delay={`lp-reveal-delay-${(index % 3) + 1}`}>
       <div
-        className="rounded-sm overflow-hidden transition-all duration-200 cursor-default"
+        className="rounded-md overflow-hidden transition-all duration-200 cursor-default"
         style={{
-          background: hovered ? '#fff' : '#fafafa',
+          background: hovered ? '#fff' : '#fff',
           border: `1px solid ${hovered ? data.colorBorder : '#e2e8f0'}`,
-          boxShadow: hovered ? '0 2px 6px rgba(0,0,0,0.06)' : 'none',
+          boxShadow: hovered ? '0 4px 12px rgba(0,0,0,0.07)' : 'none',
         }}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
@@ -57,11 +59,11 @@ function DataSourceCard({ data, index }: { data: DataSource; index: number }) {
         {/* 顶部标识条 */}
         <div className="h-0.5 w-full" style={{ background: data.color + '40' }} />
 
-        <div className="p-4">
+        <div className="p-5">
           {/* 图标 + 名称 + 状态 */}
           <div className="flex items-start gap-2.5 mb-3">
             <div
-              className="w-8 h-8 rounded-sm flex items-center justify-center shrink-0"
+              className="w-8 h-8 rounded-md flex items-center justify-center shrink-0"
               style={{ background: data.colorLight, color: data.color, border: `1px solid ${data.colorBorder}` }}
             >
               {iconMap[data.icon] || <Database size={14} />}
@@ -76,14 +78,14 @@ function DataSourceCard({ data, index }: { data: DataSource; index: number }) {
           </div>
 
           {/* 描述 */}
-          <p className="text-[12px] leading-relaxed text-slate-600 mb-3 min-h-[40px]">
+          <p className="text-[13px] leading-relaxed text-slate-600 mb-3 min-h-[40px]">
             {data.desc}
           </p>
 
           {/* 能力标签 */}
-          <div className="flex flex-wrap gap-1 mb-3">
+          <div className="flex flex-wrap gap-1.5 mb-3">
             {data.features.map((f) => (
-              <span key={f} className="text-[10px] px-1.5 py-0.5 rounded-sm"
+              <span key={f} className="text-[10px] px-1.5 py-0.5 rounded-md"
                     style={{ background: '#f1f5f9', color: '#64748b', border: '1px solid #e2e8f0' }}>
                 {f}
               </span>
@@ -112,7 +114,7 @@ function DataSourceCard({ data, index }: { data: DataSource; index: number }) {
 // 移除管道可视化，改为简洁的标题区
 export default function DataSources() {
   return (
-    <section className="py-16 lg:py-20" style={{ background: '#f8fafc', borderTop: '1px solid #e2e8f0' }}>
+    <section id="data-sources" className="py-16 lg:py-20 lp-grid-bg" style={{ background: '#fff', borderTop: '1px solid #e2e8f0' }}>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* 标题 */}
@@ -121,15 +123,15 @@ export default function DataSources() {
             <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block mb-2">
               数据底座
             </span>
-            <h2 className="text-xl font-bold text-slate-900 mb-2">从权威数据出发</h2>
-            <p className="text-[12px] text-slate-600 max-w-md mx-auto">
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">5 大数据源 · 128,000+ 知识节点</h2>
+            <p className="text-[13px] text-slate-600 max-w-md mx-auto">
               覆盖中药材、活性肽、知识图谱、法规标准五大维度，支持跨库联合查询与实时同步。
             </p>
           </div>
         </Reveal>
 
-        {/* 卡片网格 */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        {/* 卡片网格 — 5 列消除末行不对称 */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
           {dataSources.map((ds, i) => (
             <DataSourceCard key={ds.id} data={ds} index={i} />
           ))}

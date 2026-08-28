@@ -571,6 +571,13 @@ Authorization: Bearer <your_access_token>
         logger.info("[PluginRouter] Plugin management API registered")
     except Exception as e:
         logger.warning(f"[PluginRouter] Plugin router registration failed (non-blocking): {e}")
+    # ── 配方案例库 API ──
+    try:
+        from .api.v1.formula_cases import router as formula_cases_router
+        app.include_router(formula_cases_router, prefix="/api/v1")
+        logger.info("[FormulaCases] Formula case study API registered")
+    except Exception as e:
+        logger.warning(f"[FormulaCases] Router registration failed (non-blocking): {e}")
     # ── Potion AI VFT: 搜索分析 API ──
     try:
         app.include_router(search_analytics.router, prefix="/api/v1")

@@ -1,0 +1,17 @@
+# Theme Pro Plugin — Cordis 配置
+# RMFOOD 专业主题分析插件
+#
+# 此配置文件将 Theme Pro 插件注册到 DSH 运行时
+# 使用方法：在 agent preset 的 cordis.yml 中添加此行
+#
+# - id: theme-pro
+#   name: './src/theme-pro/index.js'
+#   config:
+#     host: './src/theme-pro/host/plugin.js'
+#     client: './src/theme-pro/client/plugin.js'
+
+id: theme-pro
+name: './src/theme-pro/index.js'
+config:
+  host: './src/theme-pro/host/plugin.js'
+  client: './src/theme-pro/client/plugin.js'

@@ -16,7 +16,7 @@
 }
 .data-table thead th {
   background: rgba(5, 150, 105, 0.03);
-  color: var(--color-primary-hover, #28A745);
+  color: var(--color-primary-hover, #059669);
   padding: 12px 14px;
   text-align: left;
   font-weight: 600;
@@ -48,8 +48,8 @@
 }
 .dark .data-table thead th {
   background: rgba(48, 209, 88, 0.04);
-  color: var(--color-primary, #30D158);
-  border-bottom-color: rgba(48, 209, 88, 0.08);
+  color: var(--color-primary, #34D399);
+  border-bottom-color: rgba(52, 211, 153, 0.08);
 }
 .dark .data-table tbody td {
   border-bottom-color: rgba(255, 255, 255, 0.04);

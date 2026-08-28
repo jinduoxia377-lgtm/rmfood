@@ -73,7 +73,7 @@
   font-weight: 500;
   font-size: 0.875rem;
   transition: top 0.2s;
-  background: var(--color-primary, #34C759);
+  background: var(--color-primary, #10B981);
 }
 .skip-link:focus {
   top: 0;
