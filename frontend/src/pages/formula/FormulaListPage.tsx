@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 配方列表页 - 三栏式深度重构版（Phase 5 UI/UX 优化）
  * 左侧筛选面板 + 中间主内容区（统计+表格）+ 右侧快捷操作
  * 支持双视图模式、虚拟滚动、URL参数同步、服务端排序
@@ -188,8 +188,8 @@ function exportFormulasCSV(formulas: Formula[]) {
     `v${f.version}`,
     f.targetEffects?.join('; ') || '',
     f.description || '',
-    new Date(f.createdAt).toLocaleDateString('zh-CN'),
-    new Date(f.updatedAt).toLocaleDateString('zh-CN'),
+    new Date(f.created_at || f.createdAt).toLocaleDateString('zh-CN'),
+    new Date(f.updated_at || f.updatedAt).toLocaleDateString('zh-CN'),
   ]);
   const csv =
     BOM +
@@ -1562,7 +1562,7 @@ export default function FormulaListPage() {
                               {formula.creator_name || '-'}
                             </td>
                             <td className="px-4 py-3 text-neutral-500 dark:text-neutral-400 hidden xl:table-cell">
-                              {formatDate(formula.createdAt)}
+                              {formatDate(formula.created_at || formula.createdAt)}
                             </td>
                             <td className="px-4 py-3 text-neutral-500 dark:text-neutral-400">
                               {formula.experimentIds && formula.experimentIds.length > 0 ? (
@@ -1575,7 +1575,7 @@ export default function FormulaListPage() {
                               )}
                             </td>
                             <td className="px-4 py-3 text-neutral-500 dark:text-neutral-400">
-                              {formatDate(formula.updatedAt)}
+                              {formatDate(formula.updated_at || formula.updatedAt)}
                             </td>
                             <td className="px-4 py-3">
                               <div className="relative inline-block" ref={showMenu ? actionMenuRef : undefined}>
@@ -1720,7 +1720,7 @@ export default function FormulaListPage() {
                             <Highlight text={f.name} keyword={debouncedSearch} />
                           </p>
                           <p className="text-[11px] text-neutral-400 mt-0.5">
-                            {f.code} · {formatDate(f.updatedAt)}
+                            {f.code} · {formatDate(f.updated_at || f.updatedAt)}
                           </p>
                         </div>
                         <StatusBadge status={f.status} size="sm" />
@@ -1848,3 +1848,4 @@ export default function FormulaListPage() {
     </div>
   );
 }
+
