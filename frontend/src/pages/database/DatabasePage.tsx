@@ -1193,21 +1193,16 @@ export default function DatabasePage() {
       <Tabs value={tab} onValueChange={(v) => setTab(v as DbTab)}>
         <TabsList className="relative p-1 bg-[var(--color-neutral-subtle,#f1f5f9)]/90 dark:bg-neutral-800/90 rounded-2xl shadow-inner">
           {[
-            { value: 'dashboard' as DbTab, label: '实时概览', icon: LayoutDashboard, badge: null },
-            { value: 'herbs' as DbTab, label: '中药材', icon: Database, badge: herbCount },
-            { value: 'peptides' as DbTab, label: '活性肽', icon: Activity, badge: peptideCount },
-            {
-              value: 'graph' as DbTab,
-              label: '知识图谱',
-              icon: Layers,
-              badge: graphNodes.total_herbs + graphNodes.total_compounds + graphNodes.total_targets,
-            },
-            { value: 'homology' as DbTab, label: '药食同源', icon: Zap, badge: homologyCount },
-            { value: 'food_materials' as DbTab, label: '食品原料', icon: Database, badge: null },
-            { value: 'retail_products' as DbTab, label: '零售产品', icon: ShoppingBag, badge: retailProductCount },
-            { value: 'analytics' as DbTab, label: '搜索分析', icon: BarChart3, badge: null },
-            { value: 'sync' as DbTab, label: '数据管理', icon: RefreshCw, badge: null },
-          ].map(({ value, label, icon: Icon, badge }) => (
+            { value: 'dashboard' as DbTab, label: '实时概览', icon: LayoutDashboard },
+            { value: 'herbs' as DbTab, label: '中药材', icon: Database },
+            { value: 'peptides' as DbTab, label: '活性肽', icon: Activity },
+            { value: 'graph' as DbTab, label: '知识图谱', icon: Layers },
+            { value: 'homology' as DbTab, label: '药食同源', icon: Zap },
+            { value: 'food_materials' as DbTab, label: '食品原料', icon: Database },
+            { value: 'retail_products' as DbTab, label: '零售产品', icon: ShoppingBag },
+            { value: 'analytics' as DbTab, label: '搜索分析', icon: BarChart3 },
+            { value: 'sync' as DbTab, label: '数据管理', icon: RefreshCw },
+          ].map(({ value, label, icon: Icon }) => (
             <TabsTrigger
               key={value}
               value={value}
@@ -1215,15 +1210,6 @@ export default function DatabasePage() {
             >
               <Icon className="w-[18px] h-[18px] shrink-0" />
               <span className="text-[13.5px] font-semibold leading-none tracking-tight">{label}</span>
-              {badge !== null && badge > 0 && (
-                <Badge
-                  variant={value === 'herbs' ? 'primary' : value === 'peptides' ? 'info' : 'neutral'}
-                  size="sm"
-                  className="ml-0.5 font-semibold tabular-nums text-xs px-1.5 py-0 min-h-[18px]"
-                >
-                  {badge.toLocaleString()}
-                </Badge>
-              )}
             </TabsTrigger>
           ))}
         </TabsList>
