@@ -91,7 +91,7 @@ const HerbCategoryChart = lazy(() =>
         <Card>
           <CardHeader className="px-6 pt-6 pb-4">
             <CardTitle as="h3" className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-3">
-              <BarChart3 size={18} className="text-neutral-400 dark:text-neutral-500" />
+              <Leaf size={18} className="text-neutral-400 dark:text-neutral-500" />
               药材分类分布
             </CardTitle>
           </CardHeader>
@@ -181,7 +181,7 @@ const PeptideActivityChart = lazy(() =>
         <Card>
           <CardHeader className="px-6 pt-6 pb-4">
             <CardTitle as="h3" className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-3">
-              <BarChart3 size={18} className="text-neutral-400 dark:text-neutral-500" />
+              <Dna size={18} className="text-neutral-400 dark:text-neutral-500" />
               活性肽类型分布
             </CardTitle>
           </CardHeader>
