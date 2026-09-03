@@ -1147,7 +1147,7 @@ export default function DatabasePage() {
           ))}
       </div>
 
-      {/* 统计图表（懒加载优化） */}
+      {/* 统计图表（重新设计版） */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
         <Suspense
           fallback={
@@ -1157,7 +1157,7 @@ export default function DatabasePage() {
           }
         >
           {categoryData.length > 0 && (
-            <LazyPieChart data={categoryData} title="药材分类分布" icon={BarChart2} color="text-primary-600" />
+          <HerbCategoryChart data={categoryData} loading={categoryQuery.isLoading} />
           )}
         </Suspense>
 
@@ -1169,7 +1169,7 @@ export default function DatabasePage() {
           }
         >
           {activityData.length > 0 && (
-            <LazyBarChart data={activityData} title="活性肽类型分布" icon={Activity} color="text-secondary-600" />
+          <PeptideActivityChart data={activityData} loading={activityQuery.isLoading} />
           )}
         </Suspense>
       </div>
