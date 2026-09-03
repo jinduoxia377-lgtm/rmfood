@@ -25,7 +25,7 @@ export const RecentFormulas: FC<Props> = ({ items, loading }) => {
       <Card className="overflow-hidden">
         <CardHeader className="px-6 pt-6 pb-4">
           <div className="flex items-center justify-between">
-            <CardTitle as="h3" className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>最近配方</CardTitle>
+            <CardTitle as="h3" className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">最近配方</CardTitle>
             <span className="text-xs text-primary-600 hover:text-primary-700 dark:text-primary-400 font-semibold">查看全部</span>
           </div>
         </CardHeader>
@@ -44,19 +44,19 @@ export const RecentFormulas: FC<Props> = ({ items, loading }) => {
     <Card className="overflow-hidden">
       <CardHeader className="px-6 pt-6 pb-4">
         <div className="flex items-center justify-between">
-          <CardTitle as="h3" className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>最近配方</CardTitle>
+          <CardTitle as="h3" className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>最近配方</CardTitle>
           <Link to="/formulas" className="text-xs text-primary-600 hover:text-primary-700 dark:text-primary-400 font-semibold flex items-center gap-1 transition-colors">
             查看全部 <ArrowRight size={14} />
           </Link>
         </div>
       </CardHeader>
       <CardContent className="p-0">
-        <div className="divide-y divide-slate-100 dark:divide-slate-800/40">
+        <div className="divide-y divide-neutral-100 dark:divide-neutral-800/40">
           {list.length === 0 ? (
             <div className="px-6 py-10 text-center text-neutral-500 dark:text-neutral-400 text-sm">暂无配方数据</div>
           ) : (
             list.map((f) => (
-              <Link key={f.id} to={`/formulas/${f.id}`} className="block px-6 py-3 hover:bg-slate-50 dark:hover:bg-neutral-800/40 transition-colors duration-200 cursor-pointer">
+              <Link key={f.id} to={`/formulas/${f.id}`} className="block px-6 py-3 hover:bg-neutral-50 dark:hover:bg-neutral-800/40 transition-colors duration-200 cursor-pointer">
                 <div className="flex items-center justify-between">
                   <div className="min-w-0">
                     <p className="text-xs font-semibold text-neutral-900 dark:text-white truncate">{f.name}</p>

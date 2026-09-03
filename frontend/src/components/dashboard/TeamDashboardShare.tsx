@@ -129,7 +129,7 @@ export function TeamDashboardShare({ dashboard, onUpdate, className }: TeamDashb
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Users size={20} className="text-secondary-600 dark:text-secondary-400" />
-            <CardTitle as="h3" className="text-sm font-bold">团队共享</CardTitle>
+            <CardTitle as="h3" className="text-sm font-semibold">团队共享</CardTitle>
           </div>
           <Badge size="sm">
             {dashboard.isShared ? '已共享' : '未共享'}

@@ -22,7 +22,13 @@ interface ResourcesTabProps {
   teams: Team[]
   memberCount: number
   teamCount: number
-  organization: any
+  organization?: {
+    storageUsed: number
+    storageLimit: number
+    apiCalls?: number
+    plan: string
+    id?: number
+  }
   onInvite?: (email: string, role?: Role) => Promise<void>
   onRemoveMember?: (memberId: number) => Promise<void>
   onUpdateRole?: (memberId: number, role: Role) => Promise<void>
@@ -158,7 +164,7 @@ const ResourcesTab = memo(({ organization, memberCount }: ResourcesTabProps) => 
   }, [organization, toast])
 
   return (
-    <div className="p-6 space-y-8">
+    <div className="p-8 space-y-8">
       {/* Header */}
       <div>
         <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">资源配额</h2>
@@ -166,7 +172,7 @@ const ResourcesTab = memo(({ organization, memberCount }: ResourcesTabProps) => 
       </div>
 
       {/* Storage Section */}
-      <section aria-label="存储空间" className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-6 space-y-5">
+      <section aria-label="存储空间" className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-8 space-y-6">
         <div className="flex items-center gap-3">
           <div className="w-11 h-11 rounded-xl bg-accent-100 dark:bg-accent-900/30 flex items-center justify-center">
             <HardDrive className="w-5.5 h-5.5 text-accent-600 dark:text-accent-400" />
@@ -243,7 +249,7 @@ const ResourcesTab = memo(({ organization, memberCount }: ResourcesTabProps) => 
       </section>
 
       {/* API Calls Section */}
-      <section aria-label="API调用配额" className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-6 space-y-5">
+      <section aria-label="API调用配额" className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-8 space-y-6">
         <div className="flex items-center gap-3">
           <div className="w-11 h-11 rounded-xl bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
             <Zap className="w-5.5 h-5.5 text-orange-600 dark:text-orange-400" />
@@ -290,7 +296,7 @@ const ResourcesTab = memo(({ organization, memberCount }: ResourcesTabProps) => 
       </section>
 
       {/* Members Section */}
-      <section aria-label="成员席位" className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-6 space-y-5">
+      <section aria-label="成员席位" className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-8 space-y-6">
         <div className="flex items-center gap-3">
           <div className="w-11 h-11 rounded-xl bg-secondary-100 dark:bg-secondary-900/30 flex items-center justify-center">
             <Users className="w-5.5 h-5.5 text-secondary-600 dark:text-secondary-400" />

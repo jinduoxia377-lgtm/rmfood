@@ -57,9 +57,9 @@ export const PermissionManager: React.FC<PermissionManagerProps> = memo(({
   }, [])
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Tab 导航 */}
-      <div className="flex items-center gap-1 bg-neutral-100 dark:bg-neutral-800 rounded-lg p-1">
+      <div className="flex items-center gap-1.5 bg-neutral-100 dark:bg-neutral-800 rounded-lg p-1.5">
         <button
           onClick={() => setActiveTab('matrix')}
           className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${

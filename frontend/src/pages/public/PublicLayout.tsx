@@ -69,6 +69,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
                   { label: '关于莱茵分子', href: '/about' },
                   { label: '加入我们', href: '/careers' },
                   { label: '隐私政策', href: '/privacy' },
+                  { label: '服务条款', href: '/terms' },
                 ].map(l => (
                   <li key={l.label}>
                     <Link to={l.href} className="text-[12px] transition-colors hover:underline" style={{ color: '#64748b' }}>{l.label}</Link>

@@ -12,6 +12,8 @@ export interface FoodStandard {
   summary: string;
   scope: string[];
   related_topics: string[];
+  source_url?: string;
+  priority?: string;
 }
 
 export interface FoodHomologyMaterial {
@@ -83,6 +85,22 @@ export interface FormulaValidationResult {
     warnings: number;
     errors: number;
   };
+}
+
+export interface InternationalStandard {
+  standard_code: string;
+  title: string;
+  title_en: string;
+  category: string;
+  status: string;
+  publish_date: string;
+  implementation_date: string;
+  summary: string;
+  scope: string[];
+  related_topics: string[];
+  source_url: string;
+  organization: string;
+  priority: string;
 }
 
 export interface RegulationSummary {
@@ -548,13 +566,31 @@ class FoodRegulationService extends ProfessionalBaseService {
     return result;
   }
 
+  public async getInternationalStandards(org?: string, keyword?: string): Promise<{ standards: InternationalStandard[] }> {
+    const cacheKey = this.getCacheKey('/international', { org, keyword });
+    const cached = this.getFromCache(cacheKey);
+    if (cached) return cached;
+
+    const params: Record<string, string> = {};
+    if (org) params.org = org;
+    if (keyword) params.keyword = keyword;
+
+    const result = await this.get<{ standards: InternationalStandard[] }>('/international', params);
+    this.setCache(cacheKey, result);
+    return result;
+  }
+
+  public async searchInternational(keyword: string): Promise<{ standards: InternationalStandard[] }> {
+    return this.getInternationalStandards(undefined, keyword);
+  }
+
   private mockGetSummary(): RegulationSummary {
     return {
-      version: '2024.1',
+      version: '2025.1',
       update_date: new Date().toISOString(),
-      data_sources: ['国家卫生健康委员会', '国家市场监督管理总局', '食品安全国家标准'],
+      data_sources: ['国家卫生健康委员会', '国家市场监督管理总局', '食品安全国家标准', 'CAC食品法典', 'ISO国际标准'],
       statistics: {
-        safety_standards: 8,
+        safety_standards: 92,
         food_homology_materials: 8,
         new_food_materials: 8,
         food_additives: 10,

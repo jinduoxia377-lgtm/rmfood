@@ -1,19 +1,32 @@
-﻿/**
- * ChatMessages - 消息列表入口组件 (v2.0)
+/**
+ * ChatMessages — 消息列表入口组件（薄层 v2.0）
+ *
  * 所有逻辑已提取至 MessageList / MessageBubble / utils
  */
-import MessageList, { type MessageListProps } from './MessageList'
+import React from 'react';
+import MessageList from './MessageList';
 
-export type { MessageListProps }
-export type ChatMessagesProps = MessageListProps
+import type { MessageListProps } from './MessageList'
 
-const ChatMessages: React.FC<ChatMessagesProps> = (props) => <MessageList {...props} />
-
-export { MessageList }
+// 导出新的拆分组件
+export { MessageList } from './MessageList'
 export { MessageBubble } from './MessageBubble'
+export type { MessageListProps } from './MessageList'
+export type { MessageBubbleProps } from './MessageBubble'
+
+// 重新导出原有类型接口保持向后兼容
 export type { MessageType } from './utils'
 export { detectMessageType, parseChartData, renderMessageContent } from './utils'
+
+// 导出 Props 类型别名（旧接口兼容）
+export interface ChatMessagesProps extends MessageListProps {}
+export type { HistorySession } from './ChatHistory'
+export { saveSessions, loadSessions, formatTime } from './ChatHistory'
+
+// 导出子组件工具函数
 export { LinkMessageCard, CodeMessageBlock, ImageMessageCard, FileMessageCard } from './utils'
 export { tryExtractDomain, tryExtractTitle, extractExtension } from './utils'
 
-export default ChatMessages
+export default function ChatMessages(props: ChatMessagesProps) {
+  return <MessageList {...props} />
+}

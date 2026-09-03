@@ -7,7 +7,9 @@ import { Brain, BarChart3, TrendingUp, FlaskConical, TestTube, Lightbulb, AlertT
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge, Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui'
 import { cn } from '@/lib/utils'
 import api from '@/api/client'
+import { useFormulas, useExperiments } from '@/hooks/useQueries'
 import { logger } from '@/utils/safeLogger';
+import { ErrorCard } from '@/components/dashboard/cards/ErrorCard'
 
 
 // 类型定义
@@ -86,7 +88,9 @@ interface TrendPrediction {
 
 interface ExperimentAnalysisResult {
   experiment_id: number | null
-  result_summary: {
+  status?: string
+  message?: string
+  result_summary?: {
     overall_status: string
     key_metrics: {
       effectiveness: number
@@ -120,9 +124,12 @@ interface ExperimentAnalysisResult {
 interface AIAnalysisPanelProps {
   className?: string
   defaultTab?: 'analysis' | 'recommendations' | 'trends' | 'experiments'
+  loading?: boolean
+  error?: Error | null
+  onRetry?: () => void
 }
 
-export function AIAnalysisPanel({ className, defaultTab = 'analysis' }: AIAnalysisPanelProps) {
+export function AIAnalysisPanel({ className, defaultTab = 'analysis', loading: parentLoading, error: parentError, onRetry: parentRetry }: AIAnalysisPanelProps) {
   const [activeTab, setActiveTab] = useState<typeof defaultTab>(defaultTab)
   const [isLoading, setIsLoading] = useState(false)
   const [analysisResult, setAnalysisResult] = useState<FormulaAnalysisResult | null>(null)
@@ -131,12 +138,36 @@ export function AIAnalysisPanel({ className, defaultTab = 'analysis' }: AIAnalys
   const [experimentAnalysis, setExperimentAnalysis] = useState<ExperimentAnalysisResult | null>(null)
   const [error, setError] = useState<string | null>(null)
 
+  // 获取真实配方和实验 ID
+  const { data: formulasData } = useFormulas({ page: 1, page_size: 1 })
+  const { data: experimentsData } = useExperiments({ page: 1, page_size: 1 })
+  // useFormulas 返回完整响应对象，useExperiments 返回数组（.then(r => r.data)）
+  const formulaItems = (formulasData as any)?.items ?? []
+  const experimentItems = Array.isArray(experimentsData) ? experimentsData : (experimentsData as any)?.items ?? []
+  const formulaId = formulaItems[0]?.id ?? null
+  const experimentId = experimentItems[0]?.id ?? null
+
+  // 组件挂载时自动加载配方分析（等待真实 ID 可用）
+  useEffect(() => {
+    if (formulaId !== null) {
+      fetchFormulaAnalysis()
+    }
+  }, [formulaId]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // 实验分析在 formulaId 加载后也触发（避免重复加载）
+  useEffect(() => {
+    if (experimentId !== null && !analysisResult) {
+      fetchExperimentAnalysis()
+    }
+  }, [experimentId]) // eslint-disable-line react-hooks/exhaustive-deps
+
   // 获取配方分析
   const fetchFormulaAnalysis = useCallback(async () => {
     setIsLoading(true)
     setError(null)
     try {
       const response = await api.post<FormulaAnalysisResult>('/ai/analyze/formula', {
+        formula_id: formulaId,
         target_effects: ['增强免疫', '抗疲劳'],
       })
       setAnalysisResult(response.data)
@@ -305,7 +336,9 @@ export function AIAnalysisPanel({ className, defaultTab = 'analysis' }: AIAnalys
     setIsLoading(true)
     setError(null)
     try {
-      const response = await api.post<ExperimentAnalysisResult>('/ai/analyze/experiment', {})
+      const response = await api.post<ExperimentAnalysisResult>('/ai/analyze/experiment', {
+        experiment_id: experimentId,
+      })
       setExperimentAnalysis(response.data)
     } catch (err) {
       logger.error('Experiment analysis error:', err)
@@ -384,17 +417,42 @@ export function AIAnalysisPanel({ className, defaultTab = 'analysis' }: AIAnalys
     }
   }, [activeTab, fetchFormulaAnalysis, fetchRecommendations, fetchTrendPrediction, fetchExperimentAnalysis])
 
+  // 父级 loading 优先：卡片级骨架
+  if (parentLoading) {
+    return (
+      <Card className={className}>
+        <CardHeader className="px-6 pt-6 pb-4">
+          <div className="flex items-center gap-3">
+            <div className="skeleton w-10 h-10 rounded-lg shrink-0" />
+            <div className="space-y-1.5">
+              <div className="skeleton h-4 w-28 rounded" />
+              <div className="skeleton h-3 w-40 rounded" />
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="px-6 pb-6 pt-0">
+          <div className="skeleton h-32 rounded-xl" />
+        </CardContent>
+      </Card>
+    )
+  }
+
+  // 父级 error：显示错误状态
+  if (parentError) {
+    return <ErrorCard title="AI分析加载失败" message="数据获取异常，请稍后重试" onRetry={parentRetry} className={className} />
+  }
+
   // 渲染加载状态
   if (isLoading) {
     return (
       <Card className={className}>
         <CardHeader>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-              <Brain size={20} className="text-white" />
+            <div className="w-10 h-10 rounded-lg bg-accent-100 dark:bg-accent-900/30 flex items-center justify-center">
+              <Brain size={20} className="text-accent-600 dark:text-accent-400" />
             </div>
             <div>
-              <CardTitle as="h3" className="text-sm font-bold">AI 智能分析</CardTitle>
+              <CardTitle as="h3" className="text-sm font-semibold">AI 智能分析</CardTitle>
               <p className="text-xs text-neutral-500 dark:text-neutral-400">正在分析数据，请稍候...</p>
             </div>
           </div>
@@ -418,7 +476,7 @@ export function AIAnalysisPanel({ className, defaultTab = 'analysis' }: AIAnalys
               <AlertTriangle size={20} className="text-error-600" />
             </div>
             <div>
-              <CardTitle as="h3" className="text-sm font-bold">AI 智能分析</CardTitle>
+              <CardTitle as="h3" className="text-sm font-semibold">AI 智能分析</CardTitle>
               <p className="text-xs text-neutral-500 dark:text-neutral-400">分析失败</p>
             </div>
           </div>
@@ -455,11 +513,11 @@ export function AIAnalysisPanel({ className, defaultTab = 'analysis' }: AIAnalys
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-              <Brain size={20} className="text-white" />
+            <div className="w-10 h-10 rounded-lg bg-accent-100 dark:bg-accent-900/30 flex items-center justify-center">
+              <Brain size={20} className="text-accent-600 dark:text-accent-400" />
             </div>
             <div>
-              <CardTitle as="h3" className="text-sm font-bold">AI 智能分析</CardTitle>
+              <CardTitle as="h3" className="text-sm font-semibold">AI 智能分析</CardTitle>
               <p className="text-xs text-neutral-500 dark:text-neutral-400">实时数据分析与智能洞察</p>
             </div>
           </div>
@@ -648,7 +706,12 @@ export function AIAnalysisPanel({ className, defaultTab = 'analysis' }: AIAnalys
 
           {/* 实验分析 */}
           <TabsContent value="experiments" className="space-y-4">
-            {experimentAnalysis && (
+            {experimentAnalysis?.status === 'no_data' ? (
+              <div className="py-10 text-center">
+                <p className="text-sm text-neutral-500 dark:text-neutral-400">暂无实验数据可供分析</p>
+                <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1">创建并完成后，实验分析将自动更新</p>
+              </div>
+            ) : experimentAnalysis?.result_summary ? (
               <>
                 <div className="grid grid-cols-2 gap-3 mb-4">
                   <div className="p-3 rounded-lg bg-secondary-50 dark:bg-secondary-900/20">
@@ -662,7 +725,7 @@ export function AIAnalysisPanel({ className, defaultTab = 'analysis' }: AIAnalys
                       </Badge>
                     </div>
                     <p className="text-xs text-neutral-500 mt-1">
-                      较基线提升 {experimentAnalysis.result_summary.comparison_to_baseline.improvement}%
+                      较基线提升 {experimentAnalysis.result_summary.comparison_to_baseline?.improvement ?? 0}%
                     </p>
                   </div>
                   <div className="p-3 rounded-lg bg-success-50 dark:bg-success-900/20">
@@ -670,15 +733,15 @@ export function AIAnalysisPanel({ className, defaultTab = 'analysis' }: AIAnalys
                     <div className="space-y-1">
                       <div className="flex justify-between">
                         <span className="text-xs text-neutral-500">有效性</span>
-                        <span className="text-xs font-semibold">{experimentAnalysis.result_summary.key_metrics.effectiveness}%</span>
+                        <span className="text-xs font-semibold">{experimentAnalysis.result_summary.key_metrics?.effectiveness ?? 0}%</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-xs text-neutral-500">稳定性</span>
-                        <span className="text-xs font-semibold">{experimentAnalysis.result_summary.key_metrics.stability}%</span>
+                        <span className="text-xs font-semibold">{experimentAnalysis.result_summary.key_metrics?.stability ?? 0}%</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-xs text-neutral-500">口感</span>
-                        <span className="text-xs font-semibold">{experimentAnalysis.result_summary.key_metrics.taste_score}%</span>
+                        <span className="text-xs font-semibold">{experimentAnalysis.result_summary.key_metrics?.taste_score ?? 0}%</span>
                       </div>
                     </div>
                   </div>
@@ -711,7 +774,7 @@ export function AIAnalysisPanel({ className, defaultTab = 'analysis' }: AIAnalys
                   </ul>
                 </div>
               </>
-            )}
+            ) : null}
           </TabsContent>
         </Tabs>
       </CardContent>

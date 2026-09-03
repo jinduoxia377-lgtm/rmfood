@@ -55,7 +55,7 @@ export const aiInsightsApi = {
       insights.push({
         id: `insight-approval-rate`,
         type: 'achievement',
-        title: '配方批准率达 ${rate}%',
+        title: `配方批准率达 ${rate}%`,
         description: `已批准的 ${approvedFormulas} 个配方占总量的 ${approvalRate}%，质量管控表现良好。`,
         impact: rate >= 70 ? 'high' : 'medium',
         confidence: 0.95,
@@ -91,7 +91,7 @@ export const aiInsightsApi = {
         insights.push({
           id: `insight-high-fail-rate`,
           type: 'anomaly',
-          title: '实验失败率偏高 (${rate}%)',
+          title: `实验失败率偏高 (${rate}%)`,
           description: `近期实验失败率达到 ${failRate}%，建议检查实验设计和数据采集流程。`,
           impact: 'high',
           confidence: 0.85,
@@ -106,7 +106,7 @@ export const aiInsightsApi = {
       insights.push({
         id: `insight-active-experiments`,
         type: 'trend',
-        title: '当前 ${inProgressExps} 个实验进行中',
+        title: `当前 ${inProgressExps} 个实验进行中`,
         description: `已完成 ${completedExps} 个实验，整体实验推进节奏${inProgressExps > completedExps ? '较快' : '稳定'}。`,
         impact: 'low',
         confidence: 0.92,

@@ -279,43 +279,9 @@ interface DashboardLayoutProps {
   onColumnsChange?: (columns: number) => void
 }
 
-export function DashboardLayout({ children, columns = 4, gap = 16, responsive = true, onColumnsChange }: DashboardLayoutProps) {
+export function DashboardLayout({ children, columns = 4, gap = 16, responsive = true }: DashboardLayoutProps) {
   return (
     <div className="w-full">
-      {/* 布局控制栏 */}
-      {onColumnsChange && (
-        <div className="flex items-center justify-between mb-4 pb-4 border-b border-neutral-200 dark:border-neutral-800">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">布局列数:</span>
-            <div className="flex items-center gap-1">
-              {[2, 3, 4, 6].map((col) => (
-                <button
-                  key={col}
-                  onClick={() => onColumnsChange(col)}
-                  className={`px-3 py-1 rounded text-xs font-medium ${columns === col ? 'bg-primary-600 text-white' : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700'}`}
-                >
-                  {col}列
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">间距:</span>
-            <div className="flex items-center gap-1">
-              {[8, 16, 24].map((g) => (
-                <button
-                  key={g}
-                  onClick={() => onColumnsChange && onColumnsChange(columns)}
-                  className={`w-6 h-6 rounded flex items-center justify-center text-xs ${gap === g ? 'bg-primary-600 text-white' : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700'}`}
-                >
-                  {g}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* 网格布局 */}
       <div
         className={cn(
@@ -471,7 +437,7 @@ export function LayoutEditor({ isOpen, onClose, availableCards, onAddCard }: Lay
       <div className="bg-white dark:bg-neutral-900 w-96 h-full shadow-2xl overflow-y-auto">
         <div className="p-6 border-b border-neutral-200 dark:border-neutral-800">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold text-neutral-900 dark:text-white">布局编辑器</h2>
+            <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">布局编辑器</h2>
             <button
               onClick={onClose}
               className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"
@@ -649,16 +615,18 @@ export function LayoutSwitcher({
             </div>
             <div className="max-h-64 overflow-y-auto">
               {layouts.map((layout) => (
-                <div
+                <button
                   key={layout.id}
+                  type="button"
                   className={cn(
-                    'flex items-center justify-between px-4 py-3 hover:bg-slate-50 dark:hover:bg-neutral-800 cursor-pointer',
+                    'w-full flex items-center justify-between px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-neutral-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500',
                     currentId === layout.id && 'bg-primary-50 dark:bg-primary-900/10',
                   )}
                   onClick={() => {
                     onSwitch(layout.id)
                     setIsOpen(false)
                   }}
+                  aria-selected={currentId === layout.id}
                 >
                   <div className="flex items-center gap-3">
                     <span className={cn(
@@ -699,7 +667,7 @@ export function LayoutSwitcher({
                       </button>
                     )}
                   </div>
-                </div>
+                </button>
               ))}
             </div>
             <div className="p-3 border-t border-neutral-200 dark:border-neutral-800">

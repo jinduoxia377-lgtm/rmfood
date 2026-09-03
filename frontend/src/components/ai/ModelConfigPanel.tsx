@@ -7,7 +7,7 @@
  * - 统一API Key管理入口
  * - 权限控制和操作审计
  */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   Card,
@@ -39,6 +39,8 @@ import {
   Info,
   Shield,
   Key,
+  History,
+  Clock,
 } from 'lucide-react';
 import { ConfigManager } from '@/utils/configManager';
 import type { ModelType, ModelConfig } from '@/utils/configManager';
@@ -64,6 +66,14 @@ export function ModelConfigPanel({ className, onConfigChange }: ModelConfigPanel
   const [success, setSuccess] = useState<string | null>(null);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const [showPassword, setShowPassword] = useState(false);
+  const [showAuditLog, setShowAuditLog] = useState(false);
+  const [auditLogs, setAuditLogs] = useState<Array<{
+    timestamp: string;
+    action: string;
+    userId: string;
+    userRole: string;
+    details?: Record<string, unknown>;
+  }>>([]);
 
   // 获取认证状态和 token
   const { user, isAuthenticated } = useAuthStore();
@@ -123,6 +133,21 @@ export function ModelConfigPanel({ className, onConfigChange }: ModelConfigPanel
   // 加载配置
   useEffect(() => {
     loadConfigs();
+  }, []);
+
+  // 加载审计日志
+  useEffect(() => {
+    try {
+      const logs = JSON.parse(localStorage.getItem('rmfood_config_audit_log') || '[]');
+      setAuditLogs(logs);
+    } catch {
+      // ignore
+    }
+  }, [showAuditLog]);
+
+  const clearAuditLog = useCallback(() => {
+    localStorage.removeItem('rmfood_config_audit_log');
+    setAuditLogs([]);
   }, []);
 
   // 自动隐藏成功/错误提示
@@ -1006,6 +1031,69 @@ export function ModelConfigPanel({ className, onConfigChange }: ModelConfigPanel
           </TabsContent>
         ))}
       </Tabs>
+
+      {/* 审计日志面板 */}
+      <div className="mt-4">
+        <button
+          onClick={() => setShowAuditLog((v) => !v)}
+          className="flex items-center gap-2 text-sm font-medium text-neutral-600 dark:text-neutral-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+        >
+          <History className="w-4 h-4" />
+          配置变更审计日志
+          {auditLogs.length > 0 && (
+            <Badge variant="neutral" className="text-[10px]">{auditLogs.length}</Badge>
+          )}
+        </button>
+        {showAuditLog && (
+          <div className="mt-3 p-4 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900/30 max-h-80 overflow-y-auto">
+            {auditLogs.length === 0 ? (
+              <p className="text-sm text-neutral-400 text-center py-4">暂无变更记录</p>
+            ) : (
+              <>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-xs text-neutral-500">最近 {auditLogs.length} 条记录</span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-xs h-7 px-2"
+                    onClick={clearAuditLog}
+                  >
+                    <Trash2 className="w-3 h-3 mr-1" />
+                    清空日志
+                  </Button>
+                </div>
+                <div className="space-y-2">
+                  {auditLogs.slice(0, 20).map((log, i) => (
+                    <div
+                      key={i}
+                      className="flex items-start gap-3 p-2.5 rounded-lg bg-white dark:bg-neutral-800 border border-neutral-100 dark:border-neutral-700 text-xs"
+                    >
+                      <Clock className="w-3.5 h-3.5 text-neutral-400 flex-shrink-0 mt-0.5" />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-neutral-700 dark:text-neutral-300">{log.action}</span>
+                          <span className="text-neutral-400">·</span>
+                          <span className="text-neutral-500">{log.userId}</span>
+                          <span className="text-neutral-400">·</span>
+                          <Badge variant="neutral" className="text-[10px]">{log.userRole}</Badge>
+                        </div>
+                        <div className="text-neutral-400 mt-0.5">
+                          {new Date(log.timestamp).toLocaleString('zh-CN')}
+                        </div>
+                        {log.details && Object.keys(log.details).length > 0 && (
+                          <div className="mt-1 text-neutral-500 font-mono break-all">
+                            {JSON.stringify(log.details)}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        )}
+      </div>
     </Card>
   );
 }

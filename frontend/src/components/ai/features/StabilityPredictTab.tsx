@@ -1,4 +1,4 @@
-﻿/**
+/**
  * StabilityPredictTab - 稳定性评估模块 (增强版)
  *
  * 从 35% 提升至 70% 的深度开发版本
@@ -37,6 +37,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
+import { StabilityDegradationChart, FactorImpactBar } from './components/StabilityDegradationChart';
 
 import { stabilityPredictor } from '@/services/stabilityPredictor';
 import type { StabilityAssessment, StorageCondition } from '@/types/stability.types';
@@ -397,62 +398,7 @@ export function StabilityPredictTab() {
 
             {/* 时间序列视图 */}
             <TabsContent value="timeseries" className="mt-0">
-              <Card className="p-6">
-                <h3 className="font-semibold mb-4">有效成分含量变化趋势</h3>
-                <ResponsiveContainer width="100%" height={350}>
-                  <LineChart data={stabilityResult.timeSeriesData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                    <XAxis
-                      dataKey="time"
-                      label={{ value: '时间 (天)', position: 'insideBottomRight', offset: -10 }}
-                      tickFormatter={(value) => (value >= 30 ? `${(value / 30).toFixed(0)}月` : `${value}天`)}
-                    />
-                    <YAxis domain={[0, 105]} label={{ value: '含量 (%)', angle: -90, position: 'insideLeft' }} />
-                    <RechartsTooltip
-                      formatter={(value: number) => [`${value.toFixed(1)}%`, '有效成分']}
-                      labelFormatter={(value: any) => {
-                        const numValue = Number(value);
-                        return numValue >= 30 ? `${(numValue / 30).toFixed(1)} 个月` : `${numValue} 天`;
-                      }}
-                    />
-                    <Legend />
-                    <Line
-                      type="monotone"
-                      dataKey="potency"
-                      stroke="#007AFF"
-                      strokeWidth={2.5}
-                      dot={{ r: 3 }}
-                      activeDot={{ r: 6 }}
-                      name="有效成分 (%)"
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="impurities"
-                      stroke="#FF3B30"
-                      strokeWidth={2}
-                      strokeDasharray="5 5"
-                      dot={false}
-                      name="杂质 (ppm)"
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-
-                <div className="mt-4 flex items-center justify-center gap-6 text-sm">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-secondary-500 rounded-full" />
-                    <span>有效成分含量</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div
-                      className="w-3 h-3 bg-error-500 rounded-full"
-                      style={{
-                        background: 'repeating-linear-gradient(45deg, #FF3B30, #FF3B30 2px, white 2px, white 4px)',
-                      }}
-                    />
-                    <span>杂质累积</span>
-                  </div>
-                </div>
-              </Card>
+              <StabilityDegradationChart result={stabilityResult} />
             </TabsContent>
 
             {/* 因素分析视图 */}

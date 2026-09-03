@@ -37,8 +37,11 @@ const TabsTrigger = React.forwardRef<
     )}
     {...props}
   >
-    {icon && <span className="mr-1.5">{icon}</span>}
-    {children}
+    {/* 始终用单个 div 包裹，Radix Slot 只接受单一子元素 */}
+    <div className="flex items-center gap-2">
+      {icon && <span className="mr-1.5 flex items-center">{icon}</span>}
+      {children}
+    </div>
   </TabsPrimitive.Trigger>
 ))
 TabsTrigger.displayName = TabsPrimitive.Trigger.displayName

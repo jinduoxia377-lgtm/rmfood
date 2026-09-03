@@ -142,6 +142,14 @@ export interface Formula {
   review_notes?: string;
   creator_name?: string;
   categories?: { id: number }[]; // 多分类支持
+  // Recipe params (camelCase aliases)
+  processingMethod?: string;
+  storageConditions?: string;
+  shelfLife?: number;
+  // API 兼容别名（snake_case）
+  created_at?: string;
+  updated_at?: string;
+  target_effects?: string[];
 }
 
 export enum FormulaCategory {

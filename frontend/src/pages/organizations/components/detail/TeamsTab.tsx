@@ -23,7 +23,7 @@ interface TeamsTabProps {
   teams: Team[]
   memberCount: number
   teamCount: number
-  organization: any
+  organization?: { storageUsed: number; storageLimit: number; apiCalls?: number; plan: string }
   onInvite?: (email: string, role?: Role) => Promise<void>
   onRemoveMember?: (memberId: number) => Promise<void>
   onUpdateRole?: (memberId: number, role: Role) => Promise<void>
@@ -323,9 +323,9 @@ const TeamsTab = memo(({ teams, members, teamCount, onCreateTeam, onUpdateTeam, 
   }, [])
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-8 space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">团队管理</h2>
           <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">共 {teamCount} 个团队</p>
@@ -340,9 +340,9 @@ const TeamsTab = memo(({ teams, members, teamCount, onCreateTeam, onUpdateTeam, 
       </div>
 
       {/* Main Layout: Tree + Detail Panel */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
         {/* Tree View */}
-        <div className="lg:col-span-3 bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-4" role="tree" aria-label="团队树形结构">
+        <div className="lg:col-span-3 bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-5" role="tree" aria-label="团队树形结构">
           {rootTeams.length === 0 ? (
             <div className="py-12 text-center">
               <Folder className="w-12 h-12 mx-auto text-neutral-300 dark:text-neutral-600 mb-3" />

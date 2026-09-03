@@ -1,14 +1,28 @@
-import { useState, useMemo, useCallback } from 'react'
-import { Card, Button, Badge, Input, Alert, Tooltip } from '@/components/ui'
+import { useState, useMemo, useCallback, useEffect } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
+import { Button } from '@/components/ui/Button'
+import { Badge } from '@/components/ui/Badge'
+import { Input } from '@/components/ui/Input'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/Tabs'
 import { useOperationFeedback } from '@/hooks/useOperationFeedback'
 import Fuse from 'fuse.js'
+import foodRegulationService from '@/services/professional/foodRegulationService'
+import type { FoodStandard, InternationalStandard } from '@/services/professional/foodRegulationService'
 
-interface Region {
+interface RegionDef {
   id: string
   name: string
-  flag: string
   standards: string[]
 }
+
+const REGIONS: RegionDef[] = [
+  { id: 'cn', name: '中国', standards: ['GB 标准', 'GB/T 标准', 'NY/T 标准'] },
+  { id: 'us', name: '美国', standards: ['FDA GRAS', 'CFR 21', 'FDA Guidance'] },
+  { id: 'eu', name: '欧盟', standards: ['EFSA', 'REACH', 'EC No'] },
+  { id: 'jp', name: '日本', standards: ['厚生省告示', 'JIS 标准', '食品卫生法'] },
+  { id: 'kr', name: '韩国', standards: ['KFDA', '食品公典', 'KFDA 告示'] },
+  { id: 'international', name: '国际标准', standards: ['ISO', 'Codex Alimentarius', 'WHO/FAO'] },
+]
 
 interface RegulationCategory {
   id: string
@@ -16,680 +30,607 @@ interface RegulationCategory {
   description: string
 }
 
-interface LimitRequirement {
-  substanceName: string
-  maxUsage: string
-  conditions?: string
-  remarks?: string
+const GB_CATEGORIES: RegulationCategory[] = [
+  { id: 'all', name: '全部类别', description: '' },
+  { id: '食品添加剂', name: '食品添加剂', description: '添加剂使用原则与限量' },
+  { id: '污染物限量', name: '污染物限量', description: '重金属、真菌毒素限量' },
+  { id: '农药残留', name: '农药残留', description: '农药最大残留限量' },
+  { id: '标签标识', name: '标签标识', description: '预包装食品标签规范' },
+  { id: '生产规范', name: '生产规范', description: 'GMP/HACCP卫生规范' },
+  { id: '微生物控制', name: '微生物控制', description: '致病菌限量要求' },
+  { id: '兽药残留', name: '兽药残留', description: '动物性食品兽药限量' },
+  { id: '乳制品', name: '乳制品', description: '乳及乳制品安全标准' },
+  { id: '饮料', name: '饮料', description: '各类饮料标准' },
+  { id: '婴幼儿食品', name: '婴幼儿食品', description: '婴配粉及辅食标准' },
+  { id: '酒类', name: '酒类', description: '发酵酒及蒸馏酒标准' },
+  { id: '油脂', name: '油脂', description: '植物油及动物油脂标准' },
+  { id: '调味品', name: '调味品', description: '酱油、醋、味精等标准' },
+  { id: '粮食及制品', name: '粮食及制品', description: '谷物、面粉、淀粉标准' },
+  { id: '保健食品', name: '保健食品', description: '保健食品注册标准' },
+  { id: '豆制品', name: '豆制品', description: '豆制品安全标准' },
+  { id: '肉禽制品', name: '肉禽制品', description: '畜禽肉产品标准' },
+  { id: '冷冻食品', name: '冷冻食品', description: '速冻面米及冷冻饮品' },
+  { id: '食品接触材料', name: '食品接触材料', description: '包装材料卫生规范' },
+  { id: '流通卫生', name: '流通卫生', description: '食品流通环节卫生规范' },
+  { id: '餐饮卫生', name: '餐饮卫生', description: '餐饮服务卫生规范' },
+  { id: '其他', name: '其他', description: '' },
+]
+
+const INTL_CATEGORIES: RegulationCategory[] = [
+  { id: 'all', name: '全部类型', description: '' },
+  { id: '管理体系', name: '管理体系', description: 'ISO/FSSC/BRCGS认证' },
+  { id: '基础规范', name: '基础规范', description: 'CAC通用卫生规范' },
+  { id: '食品添加剂', name: '食品添加剂', description: '国际添加剂使用标准' },
+  { id: '农药残留', name: '农药残留', description: 'CAC MRL标准' },
+  { id: '污染物限量', name: '污染物限量', description: '国际污染物限量' },
+  { id: '标签标识', name: '标签标识', description: '国际食品标签法规' },
+  { id: '国别法规', name: '国别法规', description: 'FDA/EU/日本法规' },
+  { id: '认证标准', name: '认证标准', description: 'BRCGS/FSSC/SQF/IFS' },
+  { id: '追溯管理', name: '追溯管理', description: '食品追溯体系准则' },
+  { id: '进出口管理', name: '进出口管理', description: '进出口检验检疫准则' },
+]
+
+function StatusBadge({ status }: { status: string }) {
+  const config: Record<string, { label: string; variant: 'success' | 'warning' | 'neutral' | 'info' }> = {
+    '现行':          { label: '现行有效', variant: 'success' },
+    '已废止':        { label: '已废止',   variant: 'neutral' },
+    'active':        { label: '有效',     variant: 'success' },
+    'pending_update': { label: '待更新',  variant: 'warning' },
+    'deprecated':    { label: '已废止',   variant: 'neutral' },
+    'new':           { label: '新增',     variant: 'info' },
+  }
+  const c = config[status] ?? { label: status, variant: 'neutral' }
+  return <Badge variant={c.variant}>{c.label}</Badge>
 }
 
-interface RegulationDetail {
-  id: string
-  number: string
-  fullName: string
-  region: string
-  category: string
-  issuingAgency: string
-  effectiveDate: string
-  lastRevised: string
-  status: 'active' | 'pending_update' | 'deprecated' | 'new'
-  scope: string
-  limits: LimitRequirement[]
-  testMethods: string[]
-  exceptions: string[]
-  relatedRegulations: string[]
-  versionHistory: {
-    version: string
-    date: string
-    changes: string[]
-  }[]
-  pdfUrl?: string
+function PriorityBadge({ priority }: { priority?: string }) {
+  if (!priority) return null
+  const p = priority.includes('P0') ? 'warning' as const : priority.includes('P1') ? 'info' as const : 'neutral' as const
+  return <Badge variant={p}>{priority}</Badge>
 }
 
-interface RegulationUpdate {
-  id: string
-  regulationId: string
-  regulationName: string
-  summary: string
-  effectiveDate: string
-  isRead: boolean
-  createdAt: number
+interface GBViewProps {
+  standards: FoodStandard[]
+  onSelect: (st: FoodStandard) => void
 }
 
-interface ComplianceIndicatorProps {
-  regulationId: string
-  status: 'compliant' | 'pending' | 'non_compliant'
-  summary?: string
-  onClick?: () => void
+function GBStandardsView({ standards, onSelect }: GBViewProps) {
+  const [search, setSearch] = useState('')
+  const [category, setCategory] = useState('all')
+  const [sortBy, setSortBy] = useState<'date' | 'code'>('date')
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
+  const [selected, setSelected] = useState<FoodStandard | null>(null)
+
+  const fuse = useMemo(() => new Fuse(standards, {
+    keys: ['standard_code', 'title', 'summary', 'category'],
+    threshold: 0.3,
+  }), [standards])
+
+  const filtered = useMemo(() => {
+    let result = standards
+    if (category !== 'all') result = result.filter(st => st.category === category)
+    if (search.trim()) {
+      const hits = fuse.search(search.trim())
+      result = hits.map(h => h.item)
+    }
+    result = [...result].sort((a, b) => {
+      let cmp = 0
+      if (sortBy === 'date') cmp = (a.publish_date ?? '').localeCompare(b.publish_date ?? '')
+      else cmp = a.standard_code.localeCompare(b.standard_code)
+      return sortOrder === 'asc' ? cmp : -cmp
+    })
+    return result
+  }, [standards, category, search, sortBy, sortOrder, fuse])
+
+  const activeCount = useMemo(() => standards.filter(st => st.status === '现行').length, [standards])
+  const categoryCounts = useMemo(() => {
+    const c: Record<string, number> = {}
+    standards.forEach(st => { c[st.category] = (c[st.category] || 0) + 1 })
+    return c
+  }, [standards])
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="p-4 bg-slate-50 dark:bg-neutral-800 rounded-lg border border-slate-200 dark:border-neutral-700">
+          <p className="text-xs text-neutral-500 mb-1">标准总数</p>
+          <p className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">{standards.length}</p>
+        </div>
+        <div className="p-4 bg-slate-50 dark:bg-neutral-800 rounded-lg border border-slate-200 dark:border-neutral-700">
+          <p className="text-xs text-neutral-500 mb-1">现行有效</p>
+          <p className="text-2xl font-bold text-success-600">{activeCount}</p>
+        </div>
+        <div className="p-4 bg-slate-50 dark:bg-neutral-800 rounded-lg border border-slate-200 dark:border-neutral-700">
+          <p className="text-xs text-neutral-500 mb-1">已废止</p>
+          <p className="text-2xl font-bold text-neutral-400">{standards.length - activeCount}</p>
+        </div>
+        <div className="p-4 bg-slate-50 dark:bg-neutral-800 rounded-lg border border-slate-200 dark:border-neutral-700">
+          <p className="text-xs text-neutral-500 mb-1">已筛选</p>
+          <p className="text-2xl font-bold text-secondary-600">{filtered.length}</p>
+        </div>
+      </div>
+
+      <div className="flex flex-col sm:flex-row gap-3">
+        <Input
+          placeholder="搜索标准编号、名称、关键词..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          className="flex-1"
+        />
+        <select
+          value={category}
+          onChange={e => setCategory(e.target.value)}
+          className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-sm min-w-[160px]"
+        >
+          {GB_CATEGORIES.map(c => (
+            <option key={c.id} value={c.id}>{c.name}</option>
+          ))}
+        </select>
+        <select
+          value={sortBy}
+          onChange={e => setSortBy(e.target.value as 'date' | 'code')}
+          className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-sm"
+        >
+          <option value="date">按发布日期</option>
+          <option value="code">按标准编号</option>
+        </select>
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
+        >
+          {sortOrder === 'asc' ? '升序' : '降序'}
+        </Button>
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        {Object.entries(categoryCounts)
+          .sort((a: [string, number], b: [string, number]) => b[1] - a[1])
+          .slice(0, 12)
+          .map(([cat, count]) => (
+            <button
+              key={cat}
+              onClick={() => setCategory(category === cat ? 'all' : cat)}
+              className={`px-3 py-1.5 text-xs rounded-full border transition-colors ${
+                category === cat
+                  ? 'bg-secondary-600 text-white border-secondary-600'
+                  : 'border-neutral-300 dark:border-neutral-600 text-neutral-600 dark:text-neutral-400 hover:border-secondary-400'
+              }`}
+            >
+              {cat} <span className="ml-1 opacity-70">{count}</span>
+            </button>
+          ))}
+      </div>
+
+      {!selected ? (
+        <>
+          <p className="text-sm text-neutral-500">共 {filtered.length} 条标准</p>
+          <div className="border border-neutral-200 dark:border-neutral-700 rounded-lg overflow-hidden">
+            <table className="w-full text-sm">
+              <thead className="bg-slate-50 dark:bg-neutral-800">
+                <tr>
+                  <th className="px-4 py-3 text-left font-medium text-neutral-700 dark:text-neutral-300 w-36">标准编号</th>
+                  <th className="px-4 py-3 text-left font-medium text-neutral-700 dark:text-neutral-300">标准名称</th>
+                  <th className="px-4 py-3 text-left font-medium text-neutral-700 dark:text-neutral-300 w-28">类别</th>
+                  <th className="px-4 py-3 text-left font-medium text-neutral-700 dark:text-neutral-300 w-28">发布日期</th>
+                  <th className="px-4 py-3 text-left font-medium text-neutral-700 dark:text-neutral-300 w-24">状态</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+                {filtered.slice(0, 50).map((st, i) => (
+                  <tr
+                    key={i}
+                    className="hover:bg-slate-50 dark:hover:bg-neutral-800/50 cursor-pointer transition-colors"
+                    onClick={() => { setSelected(st); onSelect(st) }}
+                  >
+                    <td className="px-4 py-3 font-mono text-secondary-600 dark:text-secondary-400 text-xs">{st.standard_code}</td>
+                    <td className="px-4 py-3 max-w-xs truncate text-neutral-800 dark:text-neutral-200">{st.title}</td>
+                    <td className="px-4 py-3"><Badge variant="neutral" className="text-xs">{st.category}</Badge></td>
+                    <td className="px-4 py-3 text-neutral-500 text-xs">{st.publish_date}</td>
+                    <td className="px-4 py-3"><StatusBadge status={st.status} /></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {filtered.length === 0 && (
+              <div className="p-12 text-center text-neutral-400">未找到匹配的标准，请调整筛选条件</div>
+            )}
+            {filtered.length > 50 && (
+              <div className="p-3 text-center text-xs text-neutral-500 bg-slate-50 dark:bg-neutral-800">
+                显示前 50 条，请使用搜索框进一步筛选（共 {filtered.length} 条）
+              </div>
+            )}
+          </div>
+        </>
+      ) : (
+        <div className="space-y-4">
+          <Button variant="ghost" size="sm" onClick={() => setSelected(null)}>
+            返回标准列表
+          </Button>
+          <div className="border border-neutral-200 dark:border-neutral-700 rounded-lg p-6 space-y-5">
+            <div className="flex items-start justify-between">
+              <div>
+                <h3 className="text-lg font-bold text-neutral-900 dark:text-neutral-100">{selected.title}</h3>
+                <p className="font-mono text-secondary-600 dark:text-secondary-400 mt-1 text-sm">{selected.standard_code}</p>
+              </div>
+              <StatusBadge status={selected.status} />
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-slate-50 dark:bg-neutral-800 rounded-lg text-sm">
+              <div>
+                <p className="text-xs text-neutral-500 mb-1">发布日期</p>
+                <p className="font-medium">{selected.publish_date || '-'}</p>
+              </div>
+              <div>
+                <p className="text-xs text-neutral-500 mb-1">实施日期</p>
+                <p className="font-medium">{selected.implementation_date || '-'}</p>
+              </div>
+              <div>
+                <p className="text-xs text-neutral-500 mb-1">类别</p>
+                <p className="font-medium">{selected.category}</p>
+              </div>
+              <div>
+                <p className="text-xs text-neutral-500 mb-1">英文名称</p>
+                <p className="font-medium text-xs text-neutral-500">{selected.title_en || '-'}</p>
+              </div>
+            </div>
+
+            {selected.summary && (
+              <div>
+                <h4 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-2">标准摘要</h4>
+                <p className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">{selected.summary}</p>
+              </div>
+            )}
+
+            {selected.scope && selected.scope.length > 0 && (
+              <div>
+                <h4 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-2">适用范围</h4>
+                <div className="flex flex-wrap gap-2">
+                  {selected.scope.map((tag: string, i: number) => (
+                    <Badge key={i} variant="secondary" className="text-xs">{tag}</Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {selected.related_topics && selected.related_topics.length > 0 && (
+              <div>
+                <h4 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-2">相关主题</h4>
+                <div className="flex flex-wrap gap-2">
+                  {selected.related_topics.map((tag: string, i: number) => (
+                    <Badge key={i} variant="neutral" className="text-xs">{tag}</Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {selected.source_url && (
+              <div>
+                <a
+                  href={selected.source_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-secondary-600 hover:underline inline-flex items-center gap-1"
+                >
+                  查看原文来源
+                </a>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+interface IntlViewProps {
+  standards: InternationalStandard[]
+  onSelect: (st: InternationalStandard) => void
+}
+
+function InternationalStandardsView({ standards, onSelect }: IntlViewProps) {
+  const [search, setSearch] = useState('')
+  const [category, setCategory] = useState('all')
+  const [orgFilter, setOrgFilter] = useState('all')
+  const [selected, setSelected] = useState<InternationalStandard | null>(null)
+
+  const fuse = useMemo(() => new Fuse(standards, {
+    keys: ['standard_code', 'title', 'title_en', 'summary'],
+    threshold: 0.3,
+  }), [standards])
+
+  const orgs = useMemo(() => {
+    const s = new Set<string>()
+    standards.forEach(st => { if (st.organization) s.add(st.organization) })
+    return Array.from(s).sort()
+  }, [standards])
+
+  const filtered = useMemo(() => {
+    let result = standards
+    if (category !== 'all') result = result.filter(st => st.category === category)
+    if (orgFilter !== 'all') result = result.filter(st => st.organization === orgFilter)
+    if (search.trim()) {
+      const hits = fuse.search(search.trim())
+      result = hits.map(h => h.item)
+    }
+    return result
+  }, [standards, category, orgFilter, search, fuse])
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="p-4 bg-slate-50 dark:bg-neutral-800 rounded-lg border border-slate-200 dark:border-neutral-700">
+          <p className="text-xs text-neutral-500 mb-1">国际标准总数</p>
+          <p className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">{standards.length}</p>
+        </div>
+        <div className="p-4 bg-slate-50 dark:bg-neutral-800 rounded-lg border border-slate-200 dark:border-neutral-700">
+          <p className="text-xs text-neutral-500 mb-1">来源机构</p>
+          <p className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">{orgs.length}</p>
+        </div>
+        <div className="p-4 bg-slate-50 dark:bg-neutral-800 rounded-lg border border-slate-200 dark:border-neutral-700">
+          <p className="text-xs text-neutral-500 mb-1">核心参考</p>
+          <p className="text-2xl font-bold text-warning-600">
+            {standards.filter(st => st.priority?.includes('P0')).length}
+          </p>
+        </div>
+        <div className="p-4 bg-slate-50 dark:bg-neutral-800 rounded-lg border border-slate-200 dark:border-neutral-700">
+          <p className="text-xs text-neutral-500 mb-1">已筛选</p>
+          <p className="text-2xl font-bold text-secondary-600">{filtered.length}</p>
+        </div>
+      </div>
+
+      <div className="flex flex-col sm:flex-row gap-3">
+        <Input
+          placeholder="搜索标准编号、名称、关键词..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          className="flex-1"
+        />
+        <select
+          value={category}
+          onChange={e => setCategory(e.target.value)}
+          className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-sm min-w-[140px]"
+        >
+          {INTL_CATEGORIES.map(c => (
+            <option key={c.id} value={c.id}>{c.name}</option>
+          ))}
+        </select>
+        <select
+          value={orgFilter}
+          onChange={e => setOrgFilter(e.target.value)}
+          className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-sm min-w-[120px]"
+        >
+          <option value="all">全部机构</option>
+          {orgs.map(o => <option key={o} value={o}>{o}</option>)}
+        </select>
+      </div>
+
+      {!selected ? (
+        <>
+          <p className="text-sm text-neutral-500">共 {filtered.length} 条国际标准</p>
+          <div className="border border-neutral-200 dark:border-neutral-700 rounded-lg overflow-hidden">
+            <table className="w-full text-sm">
+              <thead className="bg-slate-50 dark:bg-neutral-800">
+                <tr>
+                  <th className="px-4 py-3 text-left font-medium text-neutral-700 dark:text-neutral-300 w-40">标准编号</th>
+                  <th className="px-4 py-3 text-left font-medium text-neutral-700 dark:text-neutral-300">标准名称</th>
+                  <th className="px-4 py-3 text-left font-medium text-neutral-700 dark:text-neutral-300 w-28">类型</th>
+                  <th className="px-4 py-3 text-left font-medium text-neutral-700 dark:text-neutral-300 w-24">机构</th>
+                  <th className="px-4 py-3 text-left font-medium text-neutral-700 dark:text-neutral-300 w-24">优先级</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+                {filtered.map((st, i) => (
+                  <tr
+                    key={i}
+                    className="hover:bg-slate-50 dark:hover:bg-neutral-800/50 cursor-pointer transition-colors"
+                    onClick={() => { setSelected(st); onSelect(st) }}
+                  >
+                    <td className="px-4 py-3 font-mono text-secondary-600 dark:text-secondary-400 text-xs">{st.standard_code}</td>
+                    <td className="px-4 py-3 max-w-xs truncate text-neutral-800 dark:text-neutral-200">{st.title}</td>
+                    <td className="px-4 py-3"><Badge variant="neutral" className="text-xs">{st.category}</Badge></td>
+                    <td className="px-4 py-3 text-neutral-500 text-xs">{st.organization || '-'}</td>
+                    <td className="px-4 py-3"><PriorityBadge priority={st.priority} /></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {filtered.length === 0 && (
+              <div className="p-12 text-center text-neutral-400">未找到匹配的国际标准</div>
+            )}
+          </div>
+        </>
+      ) : (
+        <div className="space-y-4">
+          <Button variant="ghost" size="sm" onClick={() => setSelected(null)}>
+            返回标准列表
+          </Button>
+          <div className="border border-neutral-200 dark:border-neutral-700 rounded-lg p-6 space-y-5">
+            <div className="flex items-start justify-between">
+              <div>
+                <h3 className="text-lg font-bold text-neutral-900 dark:text-neutral-100">{selected.title}</h3>
+                <p className="font-mono text-secondary-600 dark:text-secondary-400 mt-1 text-sm">{selected.standard_code}</p>
+                {selected.title_en && (
+                  <p className="text-xs text-neutral-500 mt-1 italic">{selected.title_en}</p>
+                )}
+              </div>
+              <div className="flex flex-col gap-2 items-end">
+                <StatusBadge status={selected.status} />
+                {selected.priority && <PriorityBadge priority={selected.priority} />}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-slate-50 dark:bg-neutral-800 rounded-lg text-sm">
+              <div>
+                <p className="text-xs text-neutral-500 mb-1">发布机构</p>
+                <p className="font-medium">{selected.organization || '-'}</p>
+              </div>
+              <div>
+                <p className="text-xs text-neutral-500 mb-1">发布日期</p>
+                <p className="font-medium">{selected.publish_date || '-'}</p>
+              </div>
+              <div>
+                <p className="text-xs text-neutral-500 mb-1">实施日期</p>
+                <p className="font-medium">{selected.implementation_date || '-'}</p>
+              </div>
+              <div>
+                <p className="text-xs text-neutral-500 mb-1">标准类型</p>
+                <p className="font-medium">{selected.category}</p>
+              </div>
+            </div>
+
+            {selected.summary && (
+              <div>
+                <h4 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-2">标准说明</h4>
+                <p className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">{selected.summary}</p>
+              </div>
+            )}
+
+            {selected.scope && selected.scope.length > 0 && (
+              <div>
+                <h4 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-2">适用范围</h4>
+                <div className="flex flex-wrap gap-2">
+                  {selected.scope.map((tag: string, i: number) => (
+                    <Badge key={i} variant="secondary" className="text-xs">{tag}</Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {selected.related_topics && selected.related_topics.length > 0 && (
+              <div>
+                <h4 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-2">相关标准</h4>
+                <div className="flex flex-wrap gap-2">
+                  {selected.related_topics.map((tag: string, i: number) => (
+                    <Badge key={i} variant="neutral" className="text-xs">{tag}</Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {selected.source_url && (
+              <div>
+                <a
+                  href={selected.source_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-secondary-600 hover:underline inline-flex items-center gap-1"
+                >
+                  访问官方链接
+                </a>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  )
 }
 
 interface RegulationBrowserProps {
-  regulations?: RegulationDetail[]
-  updates?: RegulationUpdate[]
-  onRegulationSelect?: (regulation: RegulationDetail) => void
-  onUpdateMarkRead?: (updateIds: string[]) => void
+  onStandardSelect?: (standard: FoodStandard | InternationalStandard) => void
   className?: string
 }
 
-const REGIONS: Region[] = [
-  { id: 'cn', name: '中国', flag: '🇨🇳', standards: ['GB 标准', 'GB/T 标准', 'NY/T 标准'] },
-  { id: 'us', name: '美国', flag: '🇺🇸', standards: ['FDA GRAS', 'CFR 21', 'FDA Guidance'] },
-  { id: 'eu', name: '欧盟', flag: '🇪🇺', standards: ['EFSA', 'REACH', 'EC No'] },
-  { id: 'jp', name: '日本', flag: '🇯🇵', standards: ['厚生省告示', 'JIS 标准', '食品卫生法'] },
-  { id: 'kr', name: '韩国', flag: '🇰🇷', standards: ['KFDA', '食品公典', 'KFDA 告示'] },
-  { id: 'international', name: '国际标准', flag: '🌐', standards: ['ISO', 'Codex Alimentarius', 'WHO/FAO'] },
-]
-
-const CATEGORIES: RegulationCategory[] = [
-  { id: 'food_additives', name: '食品添加剂限量标准', description: '各类食品添加剂的最大使用量及限制条件' },
-  { id: 'contact_materials', name: '食品接触材料标准', description: '包装材料、容器等的迁移限量要求' },
-  { id: 'cosmetics', name: '化妆品原料标准', description: '化妆品禁限用物质清单及要求' },
-  { id: 'medicine_food', name: '药食同源物质标准', description: '既是食品又是中药材的物质目录' },
-  { id: 'pesticide_residue', name: '农药残留限量', description: '农产品中农药最大残留限量' },
-  { id: 'microbial_limits', name: '微生物限度标准', description: '食品中微生物指标及检验方法' },
-]
-
-const MOCK_REGULATIONS: RegulationDetail[] = [
-  {
-    id: '1',
-    number: 'GB 2760-2014',
-    fullName: '食品安全国家标准 食品添加剂使用标准',
-    region: 'cn',
-    category: 'food_additives',
-    issuingAgency: '国家卫生健康委员会',
-    effectiveDate: '2015-05-24',
-    lastRevised: '2014-12-24',
-    status: 'active',
-    scope: '适用于各类食品中食品添加剂的使用',
-    limits: [
-      { substanceName: '苯甲酸', maxUsage: '0.2-1.0 g/kg', conditions: '按生产需要适量使用', remarks: '以苯甲酸计' },
-      { substanceName: '山梨酸', maxUsage: '0.075-2.0 g/kg', conditions: '按生产需要适量使用', remarks: '以山梨酸计' },
-    ],
-    testMethods: ['GB/T 5009.29', 'GB/T 23495'],
-    exceptions: [],
-    relatedRegulations: ['GB 14880', 'GB 7718'],
-    versionHistory: [
-      { version: '2014版', date: '2014-12-24', changes: ['新增部分添加剂品种', '调整部分使用范围'] },
-    ],
-  },
-  {
-    id: '2',
-    number: '21 CFR 184.1664',
-    fullName: 'Affirmation of GRAS Status of Total Carotenoid Extract',
-    region: 'us',
-    category: 'food_additives',
-    issuingAgency: 'U.S. Food and Drug Administration',
-    effectiveDate: '2003-10-08',
-    lastRevised: '2003-09-18',
-    status: 'active',
-    scope: 'Food additive as a color additive in foods',
-    limits: [
-      { substanceName: 'Total Carotenoid Extract', maxUsage: 'GMP', conditions: 'Good Manufacturing Practice', remarks: '' },
-    ],
-    testMethods: ['FDA Analytical Methods'],
-    exceptions: [],
-    relatedRegulations: ['21 CFR 73', '21 CFR 70'],
-    versionHistory: [],
-  },
-  {
-    id: '3',
-    number: 'Regulation (EU) No 1333/2008',
-    fullName: 'Food Additives - European Parliament and Council',
-    region: 'eu',
-    category: 'food_additives',
-    issuingAgency: 'European Commission',
-    effectiveDate: '2009-01-20',
-    lastRevised: '2023-01-15',
-    status: 'active',
-    scope: 'Food additives authorized for use in foods in the EU',
-    limits: [
-      { substanceName: 'E210 (Benzoic acid)', maxUsage: 'As specified', conditions: 'Annex II', remarks: '' },
-    ],
-    testMethods: ['EN 12856', 'ISO 11063'],
-    exceptions: [],
-    relatedRegulations: ['Regulation (EC) No 1935/2004', 'Regulation (EU) No 1169/2011'],
-    versionHistory: [
-      { version: '2023 Amendment', date: '2023-01-15', changes: ['Updated Annex II with new additives'] },
-    ],
-  },
-]
-
-const MOCK_UPDATES: RegulationUpdate[] = [
-  {
-    id: 'u1',
-    regulationId: '1',
-    regulationName: 'GB 2760-2014 拟修订',
-    summary: '新增 5 种食品添加剂，调整 12 种添加剂的使用范围和限量',
-    effectiveDate: '2026-06-01',
-    isRead: false,
-    createdAt: Date.now() - 86400000 * 5,
-  },
-  {
-    id: 'u2',
-    regulationId: '3',
-    regulationName: 'EU No 1333/2008 更新通知',
-    summary: '更新附录II，新增天然色素使用规定',
-    effectiveDate: '2026-05-20',
-    isRead: false,
-    createdAt: Date.now() - 86400000 * 2,
-  },
-]
-
-function ComplianceIndicator({ status, summary, onClick }: ComplianceIndicatorProps) {
-  const config = {
-    compliant: { icon: '✅', color: 'text-success-600', bg: 'bg-success-100', label: '已通过' },
-    pending: { icon: '⏳', color: 'text-yellow-600', bg: 'bg-yellow-100', label: '待审核' },
-    non_compliant: { icon: '❌', color: 'text-error-600', bg: 'bg-error-100', label: '不合规' },
-  }
-
-  const currentConfig = config[status]
-
-  return (
-    <Tooltip content={summary || currentConfig.label} position="top">
-      <div
-        onClick={onClick}
-        className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium cursor-pointer hover:opacity-80 transition-opacity ${currentConfig.bg} ${currentConfig.color}`}
-      >
-        <span>{currentConfig.icon}</span>
-        <span>{currentConfig.label}</span>
-      </div>
-    </Tooltip>
-  )
-}
-
-export function RegulationBrowser({
-  regulations = MOCK_REGULATIONS,
-  updates = MOCK_UPDATES,
-  onRegulationSelect,
-  onUpdateMarkRead,
-  className = '',
-}: RegulationBrowserProps) {
-  const [selectedRegion, setSelectedRegion] = useState<string>('all')
-  const [selectedCategory, setSelectedCategory] = useState<string>('all')
-  const [searchQuery, setSearchQuery] = useState('')
-  const [selectedRegulation, setSelectedRegulation] = useState<RegulationDetail | null>(null)
-  const [showUpdatesPanel, setShowUpdatesPanel] = useState(false)
-  const [sortBy, setSortBy] = useState<'date' | 'name' | 'region'>('date')
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
+export function RegulationBrowser({ onStandardSelect, className = '' }: RegulationBrowserProps) {
+  const [gbStandards, setGbStandards] = useState<FoodStandard[]>([])
+  const [intlStandards, setIntlStandards] = useState<InternationalStandard[]>([])
+  const [gbLoading, setGbLoading] = useState(true)
+  const [intlLoading, setIntlLoading] = useState(true)
+  const [gbError, setGbError] = useState<string | null>(null)
+  const [intlError, setIntlError] = useState<string | null>(null)
   const feedback = useOperationFeedback()
 
-  const fuse = useMemo(() => new Fuse(regulations, {
-    keys: ['number', 'fullName', 'scope', 'issuingAgency'],
-    threshold: 0.3,
-    includeScore: true,
-  }), [regulations])
-
-  const filteredRegulations = useMemo(() => {
-    let result = regulations
-
-    if (selectedRegion !== 'all') {
-      result = result.filter(r => r.region === selectedRegion)
-    }
-
-    if (selectedCategory !== 'all') {
-      result = result.filter(r => r.category === selectedCategory)
-    }
-
-    if (searchQuery.trim()) {
-      const searchResults = fuse.search(searchQuery.trim())
-      result = searchResults.map(result => result.item)
-    }
-
-    result = [...result].sort((a, b) => {
-      let comparison = 0
-
-      switch (sortBy) {
-        case 'date':
-          comparison = new Date(a.effectiveDate).getTime() - new Date(b.effectiveDate).getTime()
-          break
-        case 'name':
-          comparison = a.number.localeCompare(b.number)
-          break
-        case 'region':
-          comparison = a.region.localeCompare(b.region)
-          break
-      }
-
-      return sortOrder === 'asc' ? comparison : -comparison
+  useEffect(() => {
+    foodRegulationService.getStandards().then((data: { standards: FoodStandard[] }) => {
+      setGbStandards(data.standards)
+      setGbLoading(false)
+    }).catch((err: unknown) => {
+      setGbError(err instanceof Error ? err.message : '加载失败')
+      setGbLoading(false)
     })
+  }, [])
 
-    return result
-  }, [regulations, selectedRegion, selectedCategory, searchQuery, sortBy, sortOrder, fuse])
+  useEffect(() => {
+    foodRegulationService.getInternationalStandards().then((data: { standards: InternationalStandard[] }) => {
+      setIntlStandards(data.standards)
+      setIntlLoading(false)
+    }).catch((err: unknown) => {
+      setIntlError(err instanceof Error ? err.message : '加载失败')
+      setIntlLoading(false)
+    })
+  }, [])
 
-  const unreadUpdatesCount = useMemo(
-    () => updates.filter(u => !u.isRead).length,
-    [updates],
-  )
+  const handleGbSelect = useCallback((st: FoodStandard) => {
+    onStandardSelect?.(st)
+  }, [onStandardSelect])
 
-  const handleMarkAllAsRead = useCallback(() => {
-    const unreadIds = updates.filter(u => !u.isRead).map(u => u.id)
-    onUpdateMarkRead?.(unreadIds)
-    feedback.showSuccess('已标记', `${unreadIds.length} 条更新已标记为已读`)
-  }, [updates, onUpdateMarkRead, feedback])
-
-  const handleDownloadPDF = useCallback((regulation: RegulationDetail) => {
-    if (regulation.pdfUrl) {
-      window.open(regulation.pdfUrl, '_blank')
-      feedback.showInfo('下载开始', `正在下载 ${regulation.number}`)
-    } else {
-      feedback.showWarning('暂无文件', '该法规的 PDF 文件暂未上传')
-    }
-  }, [feedback])
-
-  const getStatusBadge = (status: RegulationDetail['status']) => {
-    switch (status) {
-      case 'active':
-        return <Badge variant="success">✅ 有效</Badge>
-      case 'pending_update':
-        return <Badge variant="warning">⚠️ 待更新</Badge>
-      case 'deprecated':
-        return <Badge variant="neutral" className="line-through">❌ 已废止</Badge>
-      case 'new':
-        return <Badge variant="info">🆕 新增</Badge>
-      default:
-        return null
-    }
-  }
+  const handleIntlSelect = useCallback((st: InternationalStandard) => {
+    onStandardSelect?.(st)
+  }, [onStandardSelect])
 
   return (
     <div className={`space-y-6 ${className}`}>
-      <Card className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold flex items-center gap-2">
-            📚 法规浏览器
-          </h2>
+      <Card>
+        <CardHeader className="pb-4">
+          <CardTitle className="text-base font-semibold">合规标准检索中心</CardTitle>
+          <p className="text-sm text-neutral-500 mt-1">
+            收录 {gbStandards.length} 项 GB 国家标准 + {intlStandards.length} 项国际食品安全标准
+          </p>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue="gb" className="w-full">
+            <TabsList className="mb-6">
+              <TabsTrigger value="gb">
+                GB 国家标准
+                {gbStandards.length > 0 && (
+                  <span className="ml-2 px-1.5 py-0.5 text-xs bg-secondary-100 dark:bg-secondary-900/30 text-secondary-700 dark:text-secondary-400 rounded-full">
+                    {gbStandards.length}
+                  </span>
+                )}
+              </TabsTrigger>
+              <TabsTrigger value="intl">
+                国际食品安全标准
+                {intlStandards.length > 0 && (
+                  <span className="ml-2 px-1.5 py-0.5 text-xs bg-warning-100 dark:bg-warning-900/30 text-warning-700 dark:text-warning-400 rounded-full">
+                    {intlStandards.length}
+                  </span>
+                )}
+              </TabsTrigger>
+            </TabsList>
 
-          <div className="relative">
-            <button
-              onClick={() => setShowUpdatesPanel(!showUpdatesPanel)}
-              className="relative p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
-            >
-              🔔
-              {unreadUpdatesCount > 0 && (
-                <span className="absolute top-1 right-1 w-4 h-4 bg-error-500 text-white text-[10px] rounded-full flex items-center justify-center">
-                  {unreadUpdatesCount}
-                </span>
+            <TabsContent value="gb">
+              {gbLoading && (
+                <div className="p-12 text-center text-neutral-400 text-sm">正在加载 GB 国家标准数据...</div>
               )}
-            </button>
-
-            {showUpdatesPanel && (
-              <div className="absolute right-0 mt-2 w-96 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg shadow-xl z-50 max-h-96 overflow-hidden">
-                <div className="p-4 border-b border-neutral-200 dark:border-neutral-700 flex items-center justify-between">
-                  <h3 className="font-semibold">法规更新通知</h3>
-                  <Button variant="ghost" size="sm" onClick={handleMarkAllAsRead}>
-                    全部标记已读
-                  </Button>
+              {gbError && (
+                <div className="p-6 text-center text-error-600 text-sm bg-error-50 dark:bg-error-900/10 rounded-lg">
+                  加载失败: {gbError}
                 </div>
+              )}
+              {!gbLoading && !gbError && (
+                <GBStandardsView standards={gbStandards} onSelect={handleGbSelect} />
+              )}
+            </TabsContent>
 
-                <div className="overflow-y-auto max-h-80">
-                  {updates.length > 0 ? (
-                    updates.map(update => (
-                      <div
-                        key={update.id}
-                        className={`p-4 border-b border-neutral-100 dark:border-neutral-800 hover:bg-slate-50 dark:hover:bg-neutral-800 cursor-pointer ${
-                          !update.isRead ? 'bg-secondary-50 dark:bg-secondary-900/10' : ''
-                        }`}
-                        onClick={() => {
-                          onUpdateMarkRead?.([update.id])
-                          const reg = regulations.find(r => r.id === update.regulationId)
-                          if (reg) {
-                            setSelectedRegulation(reg)
-                            onRegulationSelect?.(reg)
-                          }
-                          setShowUpdatesPanel(false)
-                        }}
-                      >
-                        <div className="flex items-start gap-2">
-                          {!update.isRead && (
-                            <span className="w-2 h-2 bg-secondary-500 rounded-full mt-2 flex-shrink-0" />
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <h4 className="font-medium text-sm text-neutral-900 dark:text-neutral-100 truncate">
-                              {update.regulationName}
-                            </h4>
-                            <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-1 line-clamp-2">
-                              {update.summary}
-                            </p>
-                            <div className="flex items-center gap-2 mt-2 text-xs text-neutral-500">
-                              <span>生效日期: {update.effectiveDate}</span>
-                              <span>•</span>
-                              <span>{Math.floor((Date.now() - update.createdAt) / 86400000)} 天前</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="p-8 text-center text-neutral-500">
-                      暂无更新通知
-                    </div>
-                  )}
+            <TabsContent value="intl">
+              {intlLoading && (
+                <div className="p-12 text-center text-neutral-400 text-sm">正在加载国际标准数据...</div>
+              )}
+              {intlError && (
+                <div className="p-6 text-center text-error-600 text-sm bg-error-50 dark:bg-error-900/10 rounded-lg">
+                  加载失败: {intlError}
                 </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          <div className="lg:col-span-1 space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                地区筛选
-              </label>
-              <select
-                value={selectedRegion}
-                onChange={(e) => setSelectedRegion(e.target.value)}
-                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-sm"
-              >
-                <option value="all">全部地区</option>
-                {REGIONS.map(region => (
-                  <option key={region.id} value={region.id}>
-                    {region.flag} {region.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                类型筛选
-              </label>
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-sm"
-              >
-                <option value="all">全部类型</option>
-                {CATEGORIES.map(category => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                搜索
-              </label>
-              <Input
-                placeholder="搜索法规编号、名称、CAS号..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full"
-              />
-            </div>
-
-            <div className="pt-4 border-t border-neutral-200 dark:border-neutral-700">
-              <h4 className="text-xs font-semibold text-neutral-500 mb-2">快捷统计</h4>
-              <div className="space-y-1 text-xs">
-                <div className="flex justify-between">
-                  <span className="text-neutral-600">有效法规:</span>
-                  <span className="font-medium">{regulations.filter(r => r.status === 'active').length}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-neutral-600">待更新:</span>
-                  <span className="font-medium text-yellow-600">{regulations.filter(r => r.status === 'pending_update').length}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-neutral-600">新增:</span>
-                  <span className="font-medium text-secondary-600">{regulations.filter(r => r.status === 'new').length}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="lg:col-span-3">
-            {!selectedRegulation ? (
-              <>
-                <div className="flex items-center justify-between mb-4">
-                  <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                    共找到 {filteredRegulations.length} 条法规
-                  </p>
-                  <div className="flex gap-2">
-                    <select
-                      value={sortBy}
-                      onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-                      className="px-2 py-1 text-xs border border-neutral-300 dark:border-neutral-600 rounded"
-                    >
-                      <option value="date">按生效日期</option>
-                      <option value="name">按编号</option>
-                      <option value="region">按地区</option>
-                    </select>
-                    <button
-                      onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
-                      className="px-2 py-1 text-xs border border-neutral-300 dark:border-neutral-600 rounded hover:bg-slate-50"
-                    >
-                      {sortOrder === 'asc' ? '↑ 升序' : '↓ 降序'}
-                    </button>
-                  </div>
-                </div>
-
-                <div className="border border-neutral-200 dark:border-neutral-700 rounded-lg overflow-hidden">
-                  <table className="w-full text-sm">
-                    <thead className="bg-slate-50 dark:bg-neutral-800">
-                      <tr>
-                        <th className="px-4 py-3 text-left font-medium text-neutral-700 dark:text-neutral-300">法规编号</th>
-                        <th className="px-4 py-3 text-left font-medium text-neutral-700 dark:text-neutral-300">名称</th>
-                        <th className="px-4 py-3 text-left font-medium text-neutral-700 dark:text-neutral-300">地区</th>
-                        <th className="px-4 py-3 text-left font-medium text-neutral-700 dark:text-neutral-300">生效日期</th>
-                        <th className="px-4 py-3 text-left font-medium text-neutral-700 dark:text-neutral-300">状态</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-                      {filteredRegulations.map(regulation => (
-                        <tr
-                          key={regulation.id}
-                          className="hover:bg-slate-50 dark:hover:bg-neutral-800 cursor-pointer transition-colors"
-                          onClick={() => {
-                            setSelectedRegulation(regulation)
-                            onRegulationSelect?.(regulation)
-                          }}
-                        >
-                          <td className="px-4 py-3 font-mono text-secondary-600 dark:text-secondary-400">
-                            {regulation.number}
-                          </td>
-                          <td className="px-4 py-3 max-w-xs truncate" title={regulation.fullName}>
-                            {regulation.fullName.length > 40
-                              ? regulation.fullName.substring(0, 40) + '...'
-                              : regulation.fullName
-                            }
-                          </td>
-                          <td className="px-4 py-3">
-                            {REGIONS.find(r => r.id === regulation.region)?.flag || ''} {REGIONS.find(r => r.id === regulation.region)?.name || ''}
-                          </td>
-                          <td className="px-4 py-3 text-neutral-600 dark:text-neutral-400">
-                            {regulation.effectiveDate}
-                          </td>
-                          <td className="px-4 py-3">
-                            {getStatusBadge(regulation.status)}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-
-                  {filteredRegulations.length === 0 && (
-                    <div className="p-12 text-center text-neutral-500">
-                      未找到匹配的法规，请调整筛选条件或搜索关键词
-                    </div>
-                  )}
-                </div>
-              </>
-            ) : (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setSelectedRegulation(null)}
-                  >
-                    ← 返回列表
-                  </Button>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => handleDownloadPDF(selectedRegulation)}
-                    >
-                      📥 下载 PDF
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="border border-neutral-200 dark:border-neutral-700 rounded-lg p-6 space-y-6">
-                  <div>
-                    <div className="flex items-start justify-between mb-4">
-                      <div>
-                        <h3 className="text-xl font-bold text-neutral-900 dark:text-neutral-100">
-                          {selectedRegulation.fullName}
-                        </h3>
-                        <p className="text-lg font-mono text-secondary-600 dark:text-secondary-400 mt-1">
-                          {selectedRegulation.number}
-                        </p>
-                      </div>
-                      {getStatusBadge(selectedRegulation.status)}
-                    </div>
-
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 p-4 bg-slate-50 dark:bg-neutral-800 rounded-lg">
-                      <div>
-                        <p className="text-xs text-neutral-500">发布机构</p>
-                        <p className="text-sm font-medium mt-1">{selectedRegulation.issuingAgency}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-neutral-500">生效日期</p>
-                        <p className="text-sm font-medium mt-1">{selectedRegulation.effectiveDate}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-neutral-500">最新修订</p>
-                        <p className="text-sm font-medium mt-1">{selectedRegulation.lastRevised}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-neutral-500">适用范围</p>
-                        <p className="text-sm font-medium mt-1 line-clamp-2">{selectedRegulation.scope}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {selectedRegulation.limits.length > 0 && (
-                    <div>
-                      <h4 className="font-semibold text-neutral-900 dark:text-neutral-100 mb-3 flex items-center gap-2">
-                        📋 限量要求
-                      </h4>
-                      <div className="overflow-x-auto border border-neutral-200 dark:border-neutral-700 rounded-lg">
-                        <table className="w-full text-sm">
-                          <thead className="bg-slate-50 dark:bg-neutral-800">
-                            <tr>
-                              <th className="px-4 py-2 text-left font-medium">物质名称</th>
-                              <th className="px-4 py-2 text-left font-medium">最大使用量</th>
-                              <th className="px-4 py-2 text-left font-medium">限制条件</th>
-                              <th className="px-4 py-2 text-left font-medium">备注</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-                            {selectedRegulation.limits.map((limit, idx) => (
-                              <tr key={idx}>
-                                <td className="px-4 py-2 font-medium">{limit.substanceName}</td>
-                                <td className="px-4 py-2">{limit.maxUsage}</td>
-                                <td className="px-4 py-2 text-neutral-600 dark:text-neutral-400">{limit.conditions || '-'}</td>
-                                <td className="px-4 py-2 text-neutral-600 dark:text-neutral-400">{limit.remarks || '-'}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  )}
-
-                  {selectedRegulation.testMethods.length > 0 && (
-                    <div>
-                      <h4 className="font-semibold text-neutral-900 dark:text-neutral-100 mb-3">
-                        🔬 检测方法参考
-                      </h4>
-                      <div className="flex flex-wrap gap-2">
-                        {selectedRegulation.testMethods.map((method, idx) => (
-                          <Badge key={idx} variant="neutral">{method}</Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {selectedRegulation.exceptions.length > 0 && (
-                    <Alert variant="warning">
-                      <p className="font-medium">⚠️ 例外情况说明</p>
-                      <ul className="mt-2 list-disc list-inside text-sm space-y-1">
-                        {selectedRegulation.exceptions.map((exception: string, idx: number) => (
-                          <li key={idx}>{exception}</li>
-                        ))}
-                      </ul>
-                    </Alert>
-                  )}
-
-                  {selectedRegulation.relatedRegulations.length > 0 && (
-                    <div>
-                      <h4 className="font-semibold text-neutral-900 dark:text-neutral-100 mb-3">
-                        🔗 相关法规链接
-                      </h4>
-                      <div className="flex flex-wrap gap-2">
-                        {selectedRegulation.relatedRegulations.map((relatedId, idx) => {
-                          const relatedReg = regulations.find(r => r.number === relatedId)
-                          return (
-                            <button
-                              key={idx}
-                              onClick={() => {
-                                if (relatedReg) {
-                                  setSelectedRegulation(relatedReg)
-                                  onRegulationSelect?.(relatedReg)
-                                }
-                              }}
-                              className="px-3 py-1 text-sm text-secondary-600 dark:text-secondary-400 border border-blue-300 dark:border-blue-700 rounded hover:bg-secondary-50 dark:hover:bg-secondary-900/20 transition-colors"
-                            >
-                              {relatedId}
-                            </button>
-                          )
-                        })}
-                      </div>
-                    </div>
-                  )}
-
-                  {selectedRegulation.versionHistory.length > 0 && (
-                    <div>
-                      <h4 className="font-semibold text-neutral-900 dark:text-neutral-100 mb-3">
-                        📜 历史版本对比
-                      </h4>
-                      <div className="space-y-3">
-                        {selectedRegulation.versionHistory.map((version, idx) => (
-                          <div key={idx} className="p-3 border border-neutral-200 dark:border-neutral-700 rounded-lg">
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="font-medium text-sm">{version.version}</span>
-                              <span className="text-xs text-neutral-500">{version.date}</span>
-                            </div>
-                            <ul className="list-disc list-inside text-sm text-neutral-600 dark:text-neutral-400 space-y-1">
-                              {version.changes.map((change, changeIdx) => (
-                                <li key={changeIdx}>{change}</li>
-                              ))}
-                            </ul>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
+              )}
+              {!intlLoading && !intlError && (
+                <InternationalStandardsView standards={intlStandards} onSelect={handleIntlSelect} />
+              )}
+            </TabsContent>
+          </Tabs>
+        </CardContent>
       </Card>
     </div>
   )
 }
 
-export type {
-  RegulationBrowserProps,
-  RegulationDetail,
-  Region,
-  RegulationCategory,
-  LimitRequirement,
-  RegulationUpdate,
-  ComplianceIndicatorProps,
-}
+export type { RegulationBrowserProps }

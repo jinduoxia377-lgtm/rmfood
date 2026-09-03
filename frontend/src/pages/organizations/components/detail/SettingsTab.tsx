@@ -15,7 +15,18 @@ import { LazyImage } from '@/components/ui/LazyImage'
 
 interface SettingsTabProps {
   organizationId: number
-  organization: any
+  organization?: {
+    name: string
+    slug: string
+    description?: string
+    logo_url?: string
+    plan: string
+    is_active: boolean
+    storageUsed: number
+    storageLimit: number
+    apiUsage?: number
+    apiCalls?: number
+  }
   onArchive?: () => Promise<void>
   onDelete?: () => void
 }
@@ -74,7 +85,7 @@ const SettingsTab = memo(({ organization, onArchive, onDelete }: SettingsTabProp
   )
 
   return (
-    <div className="p-6 space-y-8">
+    <div className="p-8 space-y-8">
       {/* Header */}
       <div>
         <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">组织设置</h2>
@@ -82,7 +93,7 @@ const SettingsTab = memo(({ organization, onArchive, onDelete }: SettingsTabProp
       </div>
 
       {/* Basic Information */}
-      <section aria-label="基本信息" className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-6 space-y-6">
+      <section aria-label="基本信息" className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-8 space-y-6">
         <h3 className="font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
           <Info className="w-5 h-5 text-secondary-500" />
           基本信息
@@ -268,7 +279,7 @@ const SettingsTab = memo(({ organization, onArchive, onDelete }: SettingsTabProp
                 删除此组织
               </h4>
               <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                ⚠️ 此操作不可逆！删除后所有数据将永久丢失。
+                此操作不可逆！删除后所有数据将永久丢失。
               </p>
             </div>
             <button

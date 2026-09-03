@@ -13,12 +13,13 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
-import { Bot, Send, Sparkles, CheckCircle, Brain } from 'lucide-react';
+import { Bot, Send, Sparkles, CheckCircle, Brain, FlaskConical, FileText, Search, Microscope, BookOpen, Zap } from 'lucide-react';
 import {
   AgentMessageList,
   ToolCallDisplay,
   StageProgress,
 } from '@/components/ai/shared';
+import { WorkflowNodeVisualizer } from './components/pro/WorkflowNodeVisualizer';
 import { useUnifiedAgent } from './hooks/useUnifiedAgent';
 import { useAgentSmartRouter } from './hooks/useAgentSmartRouter';
 
@@ -119,12 +120,22 @@ export function AgentWorkflowTab() {
         {recommendedRoute && (
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800">
             <Brain className="w-3.5 h-3.5 text-violet-600 dark:text-violet-400" />
-            <span className="text-xs text-violet-700 dark:text-violet-300">
-              {recommendedRoute.workflowType === 'formula_design' && '🧪 配方设计模式'}
-              {recommendedRoute.workflowType === 'compliance_check' && '🔍 合规检查模式'}
-              {recommendedRoute.workflowType === 'experiment_plan' && '🧬 实验方案模式'}
-              {recommendedRoute.workflowType === 'ingredient_lookup' && '📚 原料查询模式'}
-              {recommendedRoute.workflowType === 'full_pipeline' && '⚡ 全流程模式'}
+            <span className="text-xs text-violet-700 dark:text-violet-300 flex items-center gap-1.5">
+              {(recommendedRoute.workflowType === 'formula_design' || recommendedRoute.workflowType === 'full_pipeline') && (
+                <><FlaskConical className="w-3 h-3" /> 配方设计模式</>
+              )}
+              {recommendedRoute.workflowType === 'compliance_check' && (
+                <><Search className="w-3 h-3" /> 合规检查模式</>
+              )}
+              {recommendedRoute.workflowType === 'experiment_plan' && (
+                <><Microscope className="w-3 h-3" /> 实验方案模式</>
+              )}
+              {recommendedRoute.workflowType === 'ingredient_lookup' && (
+                <><BookOpen className="w-3 h-3" /> 原料查询模式</>
+              )}
+              {recommendedRoute.workflowType === 'full_pipeline' && (
+                <><Zap className="w-3 h-3" /> 全流程模式</>
+              )}
             </span>
           </div>
         )}
@@ -161,8 +172,8 @@ export function AgentWorkflowTab() {
       <div className="flex-1 overflow-y-auto px-6 py-4">
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white text-2xl mb-4">
-              🧪
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center mb-4" aria-hidden="true">
+              <FlaskConical className="w-8 h-8 text-white" />
             </div>
             <p className="text-sm text-slate-600 dark:text-slate-300 font-medium mb-2">
               AI 研发助手就绪
@@ -171,31 +182,35 @@ export function AgentWorkflowTab() {
               输入您的需求，AI 助手将自动调用知识库、生成配方并检查合规性
             </p>
             <div className="flex flex-wrap gap-2 justify-center max-w-lg">
-              {[
-                '帮我设计一款针对高血糖人群的饮品配方',
-                '查询黄芪的功效和合规用量',
-                '生成一款抗氧化配方的实验方案',
-                '检测枸杞和黄芪搭配的协同效应',
-                '检查人参和藜芦是否可同用',
-              ].map((s) => (
-                <button
-                  key={s}
-                  onClick={() => {
-                    setInput(s);
-                    inputRef.current?.focus();
-                  }}
-                  className="text-xs px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:border-violet-400 hover:text-violet-600 dark:hover:border-violet-500 dark:hover:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-all"
-                >
-                  {s}
-                </button>
-              ))}
+              {(() => {
+                const template = DEFAULT_WORKFLOW_TEMPLATES.find(t => t.id === workflowType);
+                const quickPrompts: Record<string, string[]> = {
+                  formula_design: ['帮我设计一款针对高血糖人群的饮品配方', '生成一款抗氧化配方的实验方案'],
+                  compliance_check: ['查询黄芪的功效和合规用量', '检测枸杞和黄芪搭配的协同效应', '检查人参和藜芦是否可同用'],
+                  experiment_plan: ['生成一款抗氧化配方的实验方案', '设计体外细胞实验验证流程'],
+                  ingredient_lookup: ['查询黄芪的功效和合规用量', '查一下当归的性味归经'],
+                  full_pipeline: ['帮我设计一款针对高血糖人群的饮品配方，并完成合规检查'],
+                };
+                return (quickPrompts[workflowType] || quickPrompts.formula_design).map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => {
+                      setInput(s);
+                      inputRef.current?.focus();
+                    }}
+                    className="text-xs px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:border-violet-400 hover:text-violet-600 dark:hover:border-violet-500 dark:hover:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-all"
+                  >
+                    {s}
+                  </button>
+                ));
+              })()}
             </div>
 
             {/* 模板说明 */}
             {selectedTemplate && (
               <div className="mt-8 p-4 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 max-w-md">
                 <div className="flex items-start gap-3">
-                  <span className="text-2xl">{selectedTemplate.icon || '📋'}</span>
+                  <FileText className="w-6 h-6 text-violet-600 dark:text-violet-400" aria-hidden="true" />
                   <div className="text-left">
                     <p className="text-sm font-medium text-slate-900 dark:text-white">
                       {selectedTemplate.name || selectedTemplate.label}
@@ -224,10 +239,12 @@ export function AgentWorkflowTab() {
           />
         )}
 
-        {/* Workflow stage animation */}
-        {isRunning && stages.length > 0 && (
-          <StageProgress stages={stages} isRunning={true} />
-        )}
+        {/* Workflow node visualizer */}
+        <WorkflowNodeVisualizer
+          stages={stages}
+          isRunning={isRunning}
+          workflowType={workflowType}
+        />
 
         {/* Tool call animation */}
         {isRunning && tools.length > 0 && (

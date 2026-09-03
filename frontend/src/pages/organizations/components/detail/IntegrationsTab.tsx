@@ -9,6 +9,7 @@ import {
   Bell,
   MessageSquare,
   Layers,
+  ArrowRight,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -47,7 +48,7 @@ const INTEGRATIONS: IntegrationCard[] = [
     title: 'API 密钥管理',
     description: '生成、撤销和管理 API 访问密钥，控制权限范围和使用配额',
     icon: KeyRound,
-    status: 'beta',
+    status: 'available',
     category: '开发者工具',
   },
   {
@@ -86,7 +87,7 @@ const IntegrationsTab = memo(({ organizationId }: IntegrationsTabProps) => {
   const categories = [...new Set(INTEGRATIONS.map((i) => i.category))]
 
   return (
-    <div className="p-6 space-y-8">
+    <div className="p-8 space-y-8">
       {/* Header */}
       <div>
         <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">集成配置</h2>
@@ -118,7 +119,7 @@ const IntegrationsTab = memo(({ organizationId }: IntegrationsTabProps) => {
             <Bell className="w-4 h-4" />
             {category}
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {INTEGRATIONS
               .filter((integration) => integration.category === category)
               .map((integration) => {
@@ -168,7 +169,7 @@ const IntegrationsTab = memo(({ organizationId }: IntegrationsTabProps) => {
                     {!isDisabled && (
                       <button className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-secondary-600 dark:text-secondary-400 group-hover:text-secondary-700 dark:group-hover:text-secondary-300 transition-colors">
                         {integration.status === 'available' ? '配置' : '申请体验'}
-                        <Clock className="w-3.5 h-3.5" />
+                        <ArrowRight className="w-3.5 h-3.5" />
                       </button>
                     )}
 

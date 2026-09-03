@@ -18,8 +18,11 @@ import {
   Crown,
   Shield,
   Loader2,
+  AlertCircle,
+  AlertTriangle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import api from '@/api/client';
 import { useOrganizationDetail, type Member, type Team, type Role } from '@/hooks/useOrganizationDetail';
 import { Modal } from '@/components/ui/Modal';
 import { Skeleton, CardSkeleton } from '@/components/ui';
@@ -164,35 +167,36 @@ export default function OrganizationDetail({ organizationId: propOrgId }: Organi
   const handleArchive = useCallback(async () => {
     if (!organization) return;
     try {
-      await refetch();
+      await api.patch(`/organizations/${orgId}/archive`, { isActive: false });
       setShowArchiveModal(false);
       toast.success(`组织 "${organization.name}" 已归档`);
-    } catch {
-      toast.error('归档操作失败');
+      navigate('/organizations');
+    } catch (err: any) {
+      toast.error(err?.response?.data?.detail || '归档操作失败');
     }
-  }, [organization, refetch, toast]);
+  }, [organization, orgId, toast, navigate]);
 
   const handleDelete = useCallback(async () => {
     if (deleteConfirmText !== organization?.name) return;
     try {
-      await refetch();
+      await api.delete(`/organizations/${orgId}`);
       setShowDeleteModal(false);
       setDeleteConfirmText('');
       toast.success(`组织 "${organization.name}" 已删除`);
       navigate('/organizations');
-    } catch {
-      toast.error('删除操作失败');
+    } catch (err: any) {
+      toast.error(err?.response?.data?.detail || '删除操作失败');
     }
-  }, [organization, deleteConfirmText, refetch, toast, navigate]);
+  }, [organization, orgId, deleteConfirmText, toast, navigate]);
 
   const renderTabContent = useMemo(() => {
-    const commonProps: any = {
+    const commonProps = {
       organizationId: orgId,
       members,
       teams,
       memberCount,
       teamCount,
-      organization,
+      organization: organization ?? undefined,
       onInvite: inviteMember,
       onRemoveMember: removeMember,
       onUpdateRole: updateMemberRole,
@@ -200,7 +204,7 @@ export default function OrganizationDetail({ organizationId: propOrgId }: Organi
       onUpdateTeam: updateTeam,
       onDeleteTeam: deleteTeam,
       onRefresh: refetch,
-    };
+    } as any;
 
     switch (activeTab) {
       case 'overview':
@@ -215,7 +219,7 @@ export default function OrganizationDetail({ organizationId: propOrgId }: Organi
         return (
           <SettingsTab
             organizationId={orgId}
-            organization={organization}
+            organization={organization ?? undefined as any}
             onArchive={handleArchive}
             onDelete={() => setShowDeleteModal(true)}
           />
@@ -247,7 +251,7 @@ export default function OrganizationDetail({ organizationId: propOrgId }: Organi
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
         <div className="w-16 h-16 rounded-full bg-error-100 dark:bg-error-900/30 flex items-center justify-center">
-          <span className="text-3xl">⚠️</span>
+          <AlertCircle className="w-16 h-16 mx-auto text-error-400" />
         </div>
         <h2 className="text-xl font-semibold text-neutral-900 dark:text-white">加载失败</h2>
         <p className="text-sm text-neutral-500 dark:text-neutral-400">{error.message}</p>
@@ -265,11 +269,11 @@ export default function OrganizationDetail({ organizationId: propOrgId }: Organi
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-8 animate-fade-in">
       {/* Detail Header */}
       <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 overflow-hidden">
         {/* Header Top Bar */}
-        <div className="px-6 py-5 border-b border-neutral-100 dark:border-neutral-800">
+        <div className="px-8 py-6 border-b border-neutral-100 dark:border-neutral-800">
           <div className="flex items-start gap-4">
             {/* Back Button */}
             <button
@@ -554,7 +558,7 @@ export default function OrganizationDetail({ organizationId: propOrgId }: Organi
       >
         <div className="space-y-4">
           <div className="rounded-lg bg-error-50 dark:bg-error-900/20 border border-red-200 dark:border-red-800 p-3">
-            <p className="text-sm text-error-800 dark:text-error-200 font-medium">⚠️ 此操作不可逆！</p>
+            <p className="text-sm text-error-800 dark:text-error-200 font-medium flex items-center gap-1.5"><AlertTriangle className="w-4 h-4 shrink-0" />此操作不可逆！</p>
             <p className="text-sm text-error-700 dark:text-error-300 mt-1">
               删除后组织的所有数据（成员、团队、配方等）将永久丢失。
             </p>

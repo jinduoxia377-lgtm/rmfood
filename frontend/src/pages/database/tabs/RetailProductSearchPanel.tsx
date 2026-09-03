@@ -151,7 +151,7 @@ const ProductCard: React.FC<{
             <span className="truncate">{product.product_name}</span>
             <TooltipProvider>
               <Tooltip>
-                <TooltipTrigger asChild>
+                <TooltipTrigger>
                   <span
                     onClick={(e) => { e.stopPropagation(); onToggleFav(); }}
                     className="cursor-pointer text-lg leading-none"
@@ -166,7 +166,7 @@ const ProductCard: React.FC<{
             </TooltipProvider>
             <TooltipProvider>
               <Tooltip>
-                <TooltipTrigger asChild>
+                <TooltipTrigger>
                   <span
                     onClick={(e) => { e.stopPropagation(); onToggleSelect(); }}
                     className="cursor-pointer text-lg leading-none ml-2"
@@ -232,7 +232,7 @@ const RetailProductSearchPanel: React.FC<{ className?: string }> = ({ className 
   const [realtime, setRealtime] = useState(false);
   const [dataSource, setDataSource] = useState<string>('');
   const [categories, setCategories] = useState<OFFCategoryInfo[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string>();
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [showCategoryFilter, setShowCategoryFilter] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<RetailProductDetail | null>(null);
   const [detailVisible, setDetailVisible] = useState(false);
@@ -251,6 +251,10 @@ const RetailProductSearchPanel: React.FC<{ className?: string }> = ({ className 
   const [priceRange, setPriceRange] = useState<{ min?: number; max?: number }>({});
   const [formulationType, setFormulationType] = useState<string>('');
   const [brandFilter, setBrandFilter] = useState<string>('');
+  // Phase 5: 新增状态
+  const [novaGroup, setNovaGroup] = useState<string>('');        // '' = 未选择
+  const [minCompleteness, setMinCompleteness] = useState<string>(''); // '' = 未设置
+  const [sortBy, setSortBy] = useState<string>('relevance');
 
   // 从服务器加载用户收藏（持久化）
   useEffect(() => {
@@ -299,6 +303,9 @@ const RetailProductSearchPanel: React.FC<{ className?: string }> = ({ className 
           formulation_type: formulationType,
           min_price: priceRange.min,
           max_price: priceRange.max,
+          nova_group: novaGroup ? Number(novaGroup) : undefined,
+          min_completeness: minCompleteness ? parseFloat(minCompleteness) : undefined,
+          sort_by: sortBy,
         });
         if (!response) throw new Error('搜索请求失败，请稍后重试');
         transformed = (response.items as OFFRawProduct[]).map(mapOFFProduct);
@@ -316,7 +323,7 @@ const RetailProductSearchPanel: React.FC<{ className?: string }> = ({ className 
     } finally {
       setLoading(false);
     }
-  }, [query, selectedCategory, realtime, brandFilter, formulationType, priceRange]);
+  }, [query, selectedCategory, realtime, brandFilter, formulationType, priceRange, novaGroup, minCompleteness, sortBy]);
 
   // 搜索建议
   const handleInputChange = useCallback(async (value: string) => {
@@ -614,6 +621,52 @@ const RetailProductSearchPanel: React.FC<{ className?: string }> = ({ className 
               className="w-[100px]"
             />
 
+            {/* NOVA 分组筛选 (Phase 5) */}
+            <Select
+              value={novaGroup}
+              onValueChange={(v) => {
+                setNovaGroup(v);
+                setCurrentPage(1);
+              }}
+            >
+              <SelectTrigger className="w-[120px]">
+                <SelectValue placeholder="NOVA分组" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">全部</SelectItem>
+                <SelectItem value="1">NOVA 1</SelectItem>
+                <SelectItem value="2">NOVA 2</SelectItem>
+                <SelectItem value="3">NOVA 3</SelectItem>
+                <SelectItem value="4">NOVA 4</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {/* 数据完整度 (Phase 5) */}
+            <Input
+              type="number"
+              min="0"
+              max="1"
+              step="0.1"
+              placeholder="完整度≥"
+              value={minCompleteness}
+              onChange={(e) => setMinCompleteness(e.target.value)}
+              className="w-[80px]"
+            />
+
+            {/* 排序 (Phase 5) */}
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger className="w-[100px]">
+                <SelectValue placeholder="排序方式" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="relevance">相关度</SelectItem>
+                <SelectItem value="quality">完整度</SelectItem>
+                <SelectItem value="name">名称</SelectItem>
+                <SelectItem value="date">日期</SelectItem>
+                <SelectItem value="nova">NOVA分组</SelectItem>
+              </SelectContent>
+            </Select>
+
             {/* 价格范围筛选 (Phase 4) */}
             <div className="flex items-center gap-1">
               <Input
@@ -635,7 +688,7 @@ const RetailProductSearchPanel: React.FC<{ className?: string }> = ({ className 
 
             <TooltipProvider>
               <Tooltip>
-                <TooltipTrigger asChild>
+                <TooltipTrigger>
                   <div className="flex items-center gap-1.5 px-2 py-1 rounded cursor-help">
                     <Zap className={`h-4 w-4 ${realtime ? 'text-warning' : 'text-muted-foreground'}`} />
                     <Switch
@@ -678,11 +731,10 @@ const RetailProductSearchPanel: React.FC<{ className?: string }> = ({ className 
               <Select
                 value={selectedCategory}
                 onValueChange={(value) => {
-                  setSelectedCategory(value as string);
+                  setSelectedCategory(value);
                   setCurrentPage(1);
                   handleSearch(1);
                 }}
-                placeholder="选择分类浏览"
                 disabled={categories.length === 0}
               >
                 <SelectTrigger className="w-full">

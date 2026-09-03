@@ -318,10 +318,14 @@ export interface OFFSearchRequest {
   page?: number;
   page_size?: number;
   realtime?: boolean;
-  brand?: string;          // Phase 4: 品牌筛选
+  brand?: string;          // Phase 4: 品牌筛选（单品牌）
+  brands?: string[];       // Phase 5: 多品牌筛选
   formulation_type?: string;  // Phase 4: 剂型筛选
   min_price?: number;       // Phase 4: 最低价格
   max_price?: number;       // Phase 4: 最高价格
+  nova_group?: number;      // Phase 5: NOVA分组过滤 1-4
+  min_completeness?: number; // Phase 5: 最低数据完整度 0-1
+  sort_by?: string;         // Phase 5: 排序（relevance|name|date|quality|nova）
 }
 
 export interface OFFSearchResponse {

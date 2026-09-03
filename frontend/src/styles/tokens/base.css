@@ -100,6 +100,10 @@
   --bg-surface-container: #ffffff;
   --bg-surface-container-low: #f8fafc;
   --bg-surface-raised: #ffffff;
+
+  /* ═══ 网格背景（Dashboard 专用）═══ */
+  --grid-color-light: rgba(148, 163, 184, 0.12);   /* slate-400 @ 12% — 浅色模式网格线 */
+  --grid-size: 24px;                                 /* 网格单元格尺寸 */
   --bg-surface-elevated: #f1f5f9;
   --header-bg: rgba(255, 255, 255, 0.9);
   --hover-bg: rgba(0, 0, 0, 0.04);
@@ -129,7 +133,7 @@
   /* ═══ Text Colors ═══ */
   --text-primary: #0f172a;   /* slate-900 */
   --text-secondary: #334155; /* slate-700 */
-  --text-muted: #64748b;     /* slate-500 */
+  --text-muted: #334155;     /* slate-700 — 6.47:1 on canvas ✅ AA */
   --text-disabled: #64748b;  /* slate-500 — 修正: 原 #94a3b8(2.45:1 FAIL) → 4.55:1 ✅ AA */
 
   /* ═══ Borders ═══ */
@@ -315,5 +319,12 @@
   --input: var(--bg-surface-container, #ffffff);
   --ring: var(--color-primary-600, #059669);
   --radius: var(--radius-md, 0.5rem);
+}
+
+/* ═══ Dashboard 点状网格背景 ═══ */
+.bg-grid {
+  background-image: radial-gradient(circle, var(--grid-color-light, rgba(148,163,184,0.12)) 1px, transparent 1px);
+  background-size: var(--grid-size, 24px) var(--grid-size, 24px);
+  background-attachment: local;
 }
 

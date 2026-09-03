@@ -165,7 +165,7 @@ export function NotificationCenter({ isOpen, onClose }: NotificationCenterProps)
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <Bell size={20} className="text-neutral-600 dark:text-neutral-400" />
-            <h3 className="text-lg font-bold text-neutral-900 dark:text-white">通知中心</h3>
+            <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">通知中心</h3>
             {unreadCount > 0 && (
               <Badge variant="primary" size="sm">{unreadCount}条未读</Badge>
             )}
@@ -337,10 +337,11 @@ export function NotificationBadge({ count, onClick }: NotificationBadgeProps) {
     <button
       onClick={onClick}
       className="relative p-2 rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+      aria-label={count > 0 ? `${count} 条未读通知` : '通知中心'}
     >
       <Bell size={20} className="text-neutral-600 dark:text-neutral-400" />
       {count > 0 && (
-        <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-5 h-5 px-1 rounded-full bg-error-500 text-white text-[10px] font-bold">
+        <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-5 h-5 px-1 rounded-full bg-error-500 text-white text-[10px] font-semibold" aria-hidden="true">
           {count > 99 ? '99+' : count}
         </span>
       )}

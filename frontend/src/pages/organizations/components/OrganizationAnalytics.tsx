@@ -6,6 +6,8 @@ import {
   Building2, Users, HardDrive, Zap,
   TrendingUp, TrendingDown, Calendar,
 } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
+import api from '@/api/client'
 
 interface KPIData {
   label: string
@@ -23,37 +25,16 @@ interface ChartDataPoint {
   value2?: number
 }
 
-const MOCK_KPIS: KPIData[] = [
-  { label: '总组织数', value: 12, change: 8.5, icon: Building2, color: 'blue' },
-  { label: '总成员数', value: 356, change: 12.3, icon: Users, color: 'green' },
-  { label: '存储使用率', value: 67.3, change: -2.1, icon: HardDrive, color: 'orange', unit: '%', format: 'percent' },
-  { label: 'API 调用量', value: 45200, change: 15.7, icon: Zap, color: 'purple', format: 'k' },
-]
-
-const MOCK_MEMBER_TREND: ChartDataPoint[] = Array.from({ length: 30 }, (_, i) => ({
-  date: new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' }),
-  value: 320 + Math.floor(Math.random() * 40 + i * 0.8),
-  value2: 300 + Math.floor(Math.random() * 20),
-}))
-
-const MOCK_STORAGE_TREND: ChartDataPoint[] = Array.from({ length: 30 }, (_, i) => ({
-  date: new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' }),
-  value: 5 + Math.random() * 3,
-}))
-
-const MOCK_ORG_ACTIVITY = [
-  { name: 'RMFOOD 研发中心', activity: 92 },
-  { name: '功能性食品项目组', activity: 78 },
-  { name: '质量控制部', activity: 65 },
-  { name: '市场分析团队', activity: 54 },
-  { name: '产品创新实验室', activity: 43 },
-]
-
-const MOCK_PLAN_DISTRIBUTION = [
-  { name: '企业版', value: 3, color: 'var(--color-tertiary, #AF52DE)' },
-  { name: '专业版', value: 5, color: 'var(--color-secondary, #0A84FF)' },
-  { name: '免费版', value: 4, color: 'var(--text-muted, #9A9A9F)' },
-]
+interface AnalyticsData {
+  totalOrgs: number
+  totalMembers: number
+  avgStorageUsage: number
+  monthlyApiCalls: number
+  memberTrend: ChartDataPoint[]
+  storageTrend: ChartDataPoint[]
+  orgActivity: Array<{ name: string; activity: number }>
+  planDistribution: Array<{ name: string; value: number; color: string }>
+}
 
 interface OrganizationAnalyticsProps {
   timeRange?: '7d' | '30d' | '90d'
@@ -65,6 +46,48 @@ export const OrganizationAnalytics: React.FC<OrganizationAnalyticsProps> = memo(
   onTimeRangeChange,
 }) => {
   const [selectedRange, setSelectedRange] = useState(timeRange)
+
+  const { data: analyticsData } = useQuery({
+    queryKey: ['org-analytics', timeRange],
+    queryFn: async () => {
+      const res = await api.get('/organizations/analytics', { params: { range: timeRange } })
+      return res.data as AnalyticsData
+    },
+    staleTime: 5 * 60_000,
+  })
+
+  // Fallback to mock data if API not available
+  const KPIS: KPIData[] = useMemo(() => [
+    { label: '总组织数', value: analyticsData?.totalOrgs ?? 12, change: 8.5, icon: Building2, color: 'blue' },
+    { label: '总成员数', value: analyticsData?.totalMembers ?? 356, change: 12.3, icon: Users, color: 'green' },
+    { label: '存储使用率', value: analyticsData?.avgStorageUsage ?? 67.3, change: -2.1, icon: HardDrive, color: 'orange', unit: '%', format: 'percent' },
+    { label: 'API 调用量', value: analyticsData?.monthlyApiCalls ?? 45200, change: 15.7, icon: Zap, color: 'purple', format: 'k' },
+  ], [analyticsData])
+
+  const memberTrend = analyticsData?.memberTrend ?? (Array.from({ length: 30 }, (_, i) => ({
+    date: new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' }),
+    value: 320 + Math.floor(Math.random() * 40 + i * 0.8),
+    value2: 300 + Math.floor(Math.random() * 20),
+  })))
+
+  const storageTrend = analyticsData?.storageTrend ?? (Array.from({ length: 30 }, (_, i) => ({
+    date: new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' }),
+    value: 5 + Math.random() * 3,
+  })))
+
+  const orgActivity = analyticsData?.orgActivity ?? [
+    { name: 'RMFOOD 研发中心', activity: 92 },
+    { name: '功能性食品项目组', activity: 78 },
+    { name: '质量控制部', activity: 65 },
+    { name: '市场分析团队', activity: 54 },
+    { name: '产品创新实验室', activity: 43 },
+  ]
+
+  const planDistribution = analyticsData?.planDistribution ?? [
+    { name: '企业版', value: 3, color: 'var(--color-tertiary, #AF52DE)' },
+    { name: '专业版', value: 5, color: 'var(--color-secondary, #0A84FF)' },
+    { name: '免费版', value: 4, color: 'var(--text-muted, #9A9A9F)' },
+  ]
 
   const handleRangeChange = (range: typeof selectedRange) => {
     setSelectedRange(range)
@@ -78,9 +101,9 @@ export const OrganizationAnalytics: React.FC<OrganizationAnalyticsProps> = memo(
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* 时间范围选择器 */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between mb-6">
         <h2 className="text-lg font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
           <Calendar className="w-5 h-5 text-primary-600" />
           数据概览
@@ -103,8 +126,8 @@ export const OrganizationAnalytics: React.FC<OrganizationAnalyticsProps> = memo(
       </div>
 
       {/* KPI 卡片网格 */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-        {MOCK_KPIS.map((kpi, index) => {
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {KPIS.map((kpi, index) => {
           const Icon = kpi.icon
           const isPositive = kpi.change >= 0
 
@@ -157,7 +180,7 @@ export const OrganizationAnalytics: React.FC<OrganizationAnalyticsProps> = memo(
       </div>
 
       {/* 趋势图表区域 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* 成员增长趋势 */}
         <div className="bg-white dark:bg-neutral-900 rounded-xl p-6 border border-neutral-200 dark:border-neutral-700">
           <h3 className="text-base font-semibold text-neutral-900 dark:text-white mb-4 flex items-center gap-2">
@@ -165,7 +188,7 @@ export const OrganizationAnalytics: React.FC<OrganizationAnalyticsProps> = memo(
             成员增长趋势
           </h3>
           <div className="h-64 flex items-end space-x-2">
-            {MOCK_MEMBER_TREND.slice(-14).map((point, i) => (
+            {memberTrend.slice(-14).map((point, i) => (
               <div key={i} className="flex-1 flex flex-col items-center gap-1">
                 <div className="w-full bg-secondary-100 dark:bg-secondary-900/30 rounded-t relative" style={{ height: `${(point.value / 400) * 100}%`, minHeight: 8 }}>
                   <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs text-neutral-500 opacity-0 hover:opacity-100 transition-opacity whitespace-nowrap">
@@ -194,7 +217,7 @@ export const OrganizationAnalytics: React.FC<OrganizationAnalyticsProps> = memo(
                   </linearGradient>
                 </defs>
                 <path
-                  d={MOCK_STORAGE_TREND.map((p, i, arr) => {
+                  d={storageTrend.map((p, i, arr) => {
                     const x = (i / (arr.length - 1)) * 100
                     const y = 100 - ((p.value / 10) * 80 + 10)
                     return `${i === 0 ? 'M' : 'L'} ${x},${y}`
@@ -202,7 +225,7 @@ export const OrganizationAnalytics: React.FC<OrganizationAnalyticsProps> = memo(
                   fill="url(#storageGradient)"
                 />
                 <path
-                  d={MOCK_STORAGE_TREND.map((p, i, arr) => {
+                  d={storageTrend.map((p, i, arr) => {
                     const x = (i / (arr.length - 1)) * 100
                     const y = 100 - ((p.value / 10) * 80 + 10)
                     return `${i === 0 ? 'M' : 'L'} ${x},${y}`
@@ -220,12 +243,12 @@ export const OrganizationAnalytics: React.FC<OrganizationAnalyticsProps> = memo(
       </div>
 
       {/* 底部图表 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* 组织活动排行 */}
         <div className="bg-white dark:bg-neutral-900 rounded-xl p-6 border border-neutral-200 dark:border-neutral-700">
           <h3 className="text-base font-semibold text-neutral-900 dark:text-white mb-4">组织活跃度 TOP 5</h3>
           <div className="space-y-3">
-            {MOCK_ORG_ACTIVITY.map((org, index) => (
+            {orgActivity.map((org, index) => (
               <div key={index} className="flex items-center gap-3">
                 <span className="text-sm font-medium text-neutral-500 w-6">{index + 1}</span>
                 <span className="text-sm text-neutral-700 dark:text-neutral-300 flex-1 truncate">{org.name}</span>
@@ -247,7 +270,7 @@ export const OrganizationAnalytics: React.FC<OrganizationAnalyticsProps> = memo(
           <div className="flex items-center justify-center h-48">
             <div className="relative w-40 h-40">
               <svg viewBox="0 0 42 42" className="w-full h-full">
-                {MOCK_PLAN_DISTRIBUTION.reduce((acc: { paths: React.ReactNode[]; currentAngle: number }, item, index, arr) => {
+                {planDistribution.reduce((acc: { paths: React.ReactNode[]; currentAngle: number }, item, index, arr) => {
                   const total = arr.reduce((sum, d) => sum + d.value, 0)
                   const startAngle = acc.currentAngle
                   const angle = (item.value / total) * 360
@@ -276,7 +299,7 @@ export const OrganizationAnalytics: React.FC<OrganizationAnalyticsProps> = memo(
             </div>
 
             <div className="ml-6 space-y-2">
-              {MOCK_PLAN_DISTRIBUTION.map((item, index) => (
+              {planDistribution.map((item, index) => (
                 <div key={index} className="flex items-center gap-2 text-sm">
                   <span className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
                   <span className="text-neutral-700 dark:text-neutral-300">{item.name}</span>

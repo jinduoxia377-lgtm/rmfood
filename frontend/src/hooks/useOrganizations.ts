@@ -1,4 +1,4 @@
-﻿import { useReducer, useCallback, useEffect, useRef, useMemo } from 'react'
+import { useReducer, useCallback, useEffect, useRef, useMemo } from 'react'
 import api from '@/api/client'
 
 export interface Organization {
@@ -55,6 +55,8 @@ interface OrganizationsState {
   sortOrder: 'asc' | 'desc'
   selectedIds: Set<number>
   lastFetchedAt: number | null
+  trashedOrganizations: Organization[]
+  trashLoading: boolean
 }
 
 type OrganizationsAction =
@@ -73,6 +75,8 @@ type OrganizationsAction =
   | { type: 'SELECT_ALL'; payload: number[] }
   | { type: 'CLEAR_SELECTION' }
   | { type: 'RESET_STATE' }
+  | { type: 'SET_TRASHED'; payload: Organization[] }
+  | { type: 'REMOVE_TRASHED'; payload: number }
 
 const initialState: OrganizationsState = {
   organizations: [],
@@ -87,6 +91,8 @@ const initialState: OrganizationsState = {
   sortOrder: 'desc',
   selectedIds: new Set(),
   lastFetchedAt: null,
+  trashedOrganizations: [],
+  trashLoading: false,
 }
 
 function organizationsReducer(state: OrganizationsState, action: OrganizationsAction): OrganizationsState {
@@ -163,6 +169,12 @@ function organizationsReducer(state: OrganizationsState, action: OrganizationsAc
 
     case 'RESET_STATE':
       return { ...initialState }
+
+    case 'SET_TRASHED':
+      return { ...state, trashedOrganizations: action.payload }
+
+    case 'REMOVE_TRASHED':
+      return { ...state, trashedOrganizations: state.trashedOrganizations.filter((o) => o.id !== action.payload) }
 
     default:
       return state
@@ -405,6 +417,56 @@ export function useOrganizations(options: UseOrganizationsOptions = {}) {
     }
   }, [state.organizations])
 
+  const fetchTrashedOrganizations = useCallback(async () => {
+    if (!mountedRef.current) return
+    dispatch({ type: 'SET_LOADING', payload: true })
+    try {
+      const response = await api.get('/organizations?status=deleted&pageSize=100')
+      if (!mountedRef.current) return
+      dispatch({
+        type: 'SET_ORGANIZATIONS',
+        payload: { items: response.data?.items || [], total: response.data?.total || 0 },
+      })
+      // Store in a separate state by using a custom action
+      ;(dispatch as any)({ type: 'SET_TRASHED', payload: response.data?.items || [] })
+      dispatch({ type: 'SET_LOADING', payload: false })
+    } catch (error: any) {
+      if (!mountedRef.current) return
+      dispatch({ type: 'SET_ERROR', payload: error as Error })
+    }
+  }, [])
+
+  const restoreOrganization = useCallback(async (id: number): Promise<void> => {
+    try {
+      await api.patch(`/organizations/${id}/restore`)
+      dispatch({ type: 'REMOVE_ORGANIZATION', payload: id })
+      ;(dispatch as any)({ type: 'REMOVE_TRASHED', payload: id })
+    } catch (error: any) {
+      throw error
+    }
+  }, [])
+
+  const cloneOrganization = useCallback(async (id: number, newName?: string): Promise<number> => {
+    try {
+      const response = await api.post(`/organizations/${id}/clone`, { name: newName })
+      const newOrg = response.data as Organization
+      dispatch({ type: 'ADD_ORGANIZATION', payload: newOrg })
+      return newOrg.id
+    } catch (error: any) {
+      throw error
+    }
+  }, [])
+
+  const permanentDeleteOrganization = useCallback(async (id: number): Promise<void> => {
+    try {
+      await api.delete(`/organizations/${id}/permanent`)
+      dispatch({ type: 'REMOVE_ORGANIZATION', payload: id })
+      ;(dispatch as any)({ type: 'REMOVE_TRASHED', payload: id })
+    } catch (error: any) {
+      throw error
+    }
+  }, [])
+
   const togglePin = useCallback(async (id: number): Promise<void> => {
     try {
       const org = state.organizations.find((o) => o.id === id)
@@ -476,6 +538,12 @@ export function useOrganizations(options: UseOrganizationsOptions = {}) {
     allSelected,
     someSelected,
     getPermissionMatrix,
+    trashedOrganizations: (state as any).trashedOrganizations ?? [],
+    trashLoading: state.loading,
+    fetchTrashedOrganizations,
+    restoreOrganization,
+    permanentDeleteOrganization,
+    cloneOrganization,
   }
 }
 

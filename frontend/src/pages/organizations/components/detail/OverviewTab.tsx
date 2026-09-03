@@ -20,7 +20,11 @@ interface OverviewTabProps {
   teams: Team[]
   memberCount: number
   teamCount: number
-  organization: any
+  organization?: {
+    storageUsed: number
+    storageLimit: number
+    apiCalls?: number
+  }
   onInvite?: (email: string, role?: Role) => Promise<void>
   onRemoveMember?: (memberId: number) => Promise<void>
   onUpdateRole?: (memberId: number, role: Role) => Promise<void>
@@ -39,13 +43,33 @@ interface ActivityItem {
   time: string
 }
 
-const MOCK_ACTIVITIES: ActivityItem[] = [
-  { id: '1', type: 'join', user: { name: '张三' }, target: '研发组', targetType: '团队', time: '2小时前' },
-  { id: '2', type: 'upload', user: { name: '李四' }, target: 'Q4季度报告.pdf', targetType: '文件', time: '5小时前' },
-  { id: '3', type: 'create', user: { name: '王五' }, target: '低糖配方 v2.0', targetType: '配方', time: '1天前' },
-  { id: '4', type: 'update', user: { name: '赵六' }, target: '实验数据表', targetType: '文档', time: '2天前' },
-  { id: '5', type: 'join', user: { name: '孙七' }, target: '市场部', targetType: '团队', time: '3天前' },
-]
+// Activities are derived from members/teams data instead of mock
+function deriveActivities(members: Member[], teams: Team[]): ActivityItem[] {
+  const activities: ActivityItem[] = []
+  members.slice(0, 3).forEach((m, i) => {
+    activities.push({
+      id: `join-${m.id}`,
+      type: 'join' as const,
+      user: { name: m.displayName },
+      target: teams[i % teams.length]?.name || '组织',
+      targetType: '团队',
+      time: formatTimeAgo(m.joinedAt),
+    })
+  })
+  return activities
+}
+
+function formatTimeAgo(dateStr: string): string {
+  if (!dateStr) return '刚刚'
+  const diff = Date.now() - new Date(dateStr).getTime()
+  const mins = Math.floor(diff / 60000)
+  if (mins < 1) return '刚刚'
+  if (mins < 60) return `${mins}分钟前`
+  const hours = Math.floor(mins / 60)
+  if (hours < 24) return `${hours}小时前`
+  const days = Math.floor(hours / 24)
+  return `${days}天前`
+}
 
 const ACTIVITY_ICONS: Record<ActivityItem['type'], typeof Users> = {
   join: UserPlus,
@@ -111,6 +135,7 @@ function StatCard({
 }
 
 const OverviewTab = memo(({ members, teams, memberCount, teamCount, organization }: OverviewTabProps) => {
+  const recentActivities = useMemo(() => deriveActivities(members, teams), [members, teams])
   const stats = useMemo(() => {
     const activeMembers = members.filter((m) => m.status === 'active').length
     const activeRate = memberCount > 0 ? Math.round((activeMembers / memberCount) * 100) : 0
@@ -160,11 +185,11 @@ const OverviewTab = memo(({ members, teams, memberCount, teamCount, organization
   )
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-8 space-y-8">
       {/* Stats Grid */}
       <section aria-label="统计概览">
-        <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4">数据概览</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-5">数据概览</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {stats.map((stat) => (
             <StatCard key={stat.label} {...stat} />
           ))}
@@ -173,7 +198,7 @@ const OverviewTab = memo(({ members, teams, memberCount, teamCount, organization
 
       {/* Recent Activities */}
       <section aria-label="最近活动">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-5">
           <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">最近活动</h2>
           <button className="text-sm text-secondary-600 hover:text-secondary-700 dark:text-secondary-400 dark:hover:text-secondary-300 flex items-center gap-1 transition-colors">
             查看全部 <ArrowRight className="w-3.5 h-3.5" />
@@ -181,7 +206,7 @@ const OverviewTab = memo(({ members, teams, memberCount, teamCount, organization
         </div>
 
         <div className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 divide-y divide-slate-100 dark:divide-slate-700">
-          {MOCK_ACTIVITIES.map((activity, index) => {
+          {recentActivities.map((activity, index) => {
             const Icon = ACTIVITY_ICONS[activity.type]
             return (
               <div
@@ -193,7 +218,7 @@ const OverviewTab = memo(({ members, teams, memberCount, teamCount, organization
                   <div className={cn('w-9 h-9 rounded-full flex items-center justify-center shrink-0', ACTIVITY_COLORS[activity.type])}>
                     <Icon className="w-4 h-4" />
                   </div>
-                  {index < MOCK_ACTIVITIES.length - 1 && (
+                  {index < recentActivities.length - 1 && (
                     <div className="w-px h-full bg-neutral-200 dark:bg-neutral-700 absolute top-10" />
                   )}
                 </div>
@@ -221,8 +246,8 @@ const OverviewTab = memo(({ members, teams, memberCount, teamCount, organization
 
       {/* Quick Actions */}
       <section aria-label="快捷操作">
-        <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4">快捷操作</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-5">快捷操作</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
           {quickActions.map((action) => {
             const Icon = action.icon
             return (

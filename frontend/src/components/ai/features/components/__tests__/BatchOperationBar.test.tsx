@@ -1,4 +1,4 @@
-/**
+﻿/**
  * BatchOperationBar组件全面测试
  *
  * 测试覆盖：

@@ -7,7 +7,7 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
   ResponsiveContainer,
 } from 'recharts'
-import { Card, CardContent } from '@/components/ui'
+import { Card, CardHeader, CardTitle, CardContent, ChartSkeleton } from '@/components/ui'
 import { EmptyState } from '@/components/ui/Common'
 import { Link } from 'react-router-dom'
 
@@ -20,6 +20,7 @@ interface TrendPoint {
 
 interface Props {
   data: TrendPoint[]
+  loading?: boolean
 }
 
 const tooltipStyle = {
@@ -38,9 +39,31 @@ const tooltipStyle = {
   },
 }
 
-export const TrendChart: FC<Props> = ({ data }) => {
+export const TrendChart: FC<Props> = ({ data, loading }) => {
+  if (loading) {
+    return (
+      <Card>
+        <CardHeader className="px-6 pt-6 pb-4">
+          <CardTitle as="h3" className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-3">
+            <BarChart3 size={18} className="text-neutral-400" />
+            研发趋势
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="px-6 pb-6 pt-0">
+          <ChartSkeleton hasLegend />
+        </CardContent>
+      </Card>
+    )
+  }
+
+  const formatDate = (dateStr: string) => {
+    const d = new Date(dateStr);
+    const weekdays = ['周日','周一','周二','周三','周四','周五','周六'];
+    return `${d.getMonth()+1}月${d.getDate()}日 ${weekdays[d.getDay()]}`;
+  };
+
   const trendChartData = data?.map((d) => ({
-    date: d.date.slice(5),
+    date: formatDate(d.date),
     '新增配方': d.formulas_created,
     '新增实验': d.experiments_created,
     '批准配方': d.formulas_approved,
@@ -48,11 +71,13 @@ export const TrendChart: FC<Props> = ({ data }) => {
 
   return (
     <Card>
-      <CardContent className="px-6 pt-6 pb-6">
-        <div className="flex items-center gap-3 mb-4">
-          <BarChart3 size={20} className="text-neutral-500 dark:text-neutral-400" />
-          <h3 className="text-sm font-bold text-neutral-900 dark:text-neutral-100">研发趋势</h3>
-        </div>
+      <CardHeader className="px-6 pt-6 pb-4">
+        <CardTitle as="h3" className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-3">
+          <BarChart3 size={18} className="text-neutral-400 dark:text-neutral-500" />
+          研发趋势
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="px-6 pb-6 pt-0">
         {trendChartData.length > 0 ? (
           <ResponsiveContainer width="100%" height={200}>
             <AreaChart data={trendChartData} margin={{ top: 10, right: 10, left: 0, bottom: 10 }}>

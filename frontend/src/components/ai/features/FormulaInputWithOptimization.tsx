@@ -23,6 +23,7 @@ import {
   ChevronUp,
   Save,
   FolderOpen,
+  Square,
 } from 'lucide-react';
 import { FormulaIngredientInput } from './FormulaIngredientInput';
 import type { FormulaIngredient, FormulaTemplate } from './FormulaIngredientInput/types';
@@ -57,6 +58,7 @@ export const FormulaInputWithOptimization: React.FC<FormulaInputWithOptimization
   const [expandedCandidate, setExpandedCandidate] = useState<number | null>(null);
 
   const logsContainerRef = useRef<HTMLDivElement>(null);
+  const optimizerRef = useRef<NSGAIIOptimizer | null>(null);
 
   useEffect(() => {
     if (logsContainerRef.current) {
@@ -105,6 +107,7 @@ export const FormulaInputWithOptimization: React.FC<FormulaInputWithOptimization
       };
 
       const optimizer = new NSGAIIOptimizer(params, nsga2Ingredients, data.total_weight);
+      optimizerRef.current = optimizer;
 
       addLog('🚀 开始多目标优化...');
 
@@ -144,6 +147,7 @@ export const FormulaInputWithOptimization: React.FC<FormulaInputWithOptimization
     } catch (error) {
       addLog(`❌ 优化失败：${(error as Error).message}`);
     } finally {
+      optimizerRef.current = null;
       setIsLoading(false);
     }
   }, [addLog, populationSize, generations, mutationRate, crossoverRate, eliteRate, candidateCount]);
@@ -165,6 +169,12 @@ export const FormulaInputWithOptimization: React.FC<FormulaInputWithOptimization
     setCurrentGeneration(0);
     setProgress(0);
     addLog('🗑️ 已清空所有数据');
+  }, [addLog]);
+
+  const handleStopOptimization = useCallback(() => {
+    optimizerRef.current?.stop();
+    setIsLoading(false);
+    addLog('⏹️ 优化已手动停止');
   }, [addLog]);
 
   const handleResetParams = useCallback(() => {
@@ -622,6 +632,13 @@ export const FormulaInputWithOptimization: React.FC<FormulaInputWithOptimization
                       <span className="progress-text">
                         第 {currentGeneration}/{generations} 代 ({progress}%)
                       </span>
+                      <button
+                        onClick={handleStopOptimization}
+                        className="ml-auto px-3 py-1 rounded-lg text-xs font-medium bg-error-500/10 text-error-600 dark:text-error-400 border border-error-200 dark:border-error-800 hover:bg-error-500/20 transition-colors flex items-center gap-1"
+                      >
+                        <Square className="w-3 h-3" />
+                        停止
+                      </button>
                     </div>
                   )}
                   <div ref={logsContainerRef} className="logs-container">

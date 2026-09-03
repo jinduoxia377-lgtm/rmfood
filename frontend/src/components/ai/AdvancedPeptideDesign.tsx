@@ -4,11 +4,22 @@ import { peptideDesignApi } from '@/api/ai'
 import type { PeptideResult, OptimizedPeptide, PepinventStatusResponse, PeptideDesignData } from '@/api/ai'
 import { logger } from '@/utils/safeLogger'
 import { useToast } from '@/components/ui'
+import { generateSimulatedPeptides } from '@/components/ai/features/services/simulatedPeptideGenerator'
 
 
 interface AdvancedPeptideDesignProps {
   onPeptidesGenerated?: (peptides: PeptideResult[]) => void
   className?: string
+}
+
+const AMINO_ACIDS = 'ACDEFGHIKLMNPQRSTVWY'
+function randomMutate(seq: string, n: number): string {
+  let s = seq
+  for (let i = 0; i < n && s.length > 0; i++) {
+    const pos = Math.floor(Math.random() * s.length)
+    s = s.substring(0, pos) + AMINO_ACIDS[Math.floor(Math.random() * AMINO_ACIDS.length)] + s.substring(pos + 1)
+  }
+  return s
 }
 
 const TARGET_EFFECTS = [
@@ -261,8 +272,16 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
         setError('参数错误 (422): 请检查输入参数是否符合要求（如目标功效、序列长度等）')
         logger.warn('[AdvancedPeptideDesign] 参数验证失败', { detail: err?.response?.data })
       } else if (status === 503) {
-        setError('服务不可用 (503): PepINVERT核心服务未启动或依赖库缺失，当前已切换到模拟模式')
-        logger.warn('[AdvancedPeptideDesign] PepINVERT 服务不可用', { detail: err?.response?.data })
+        logger.warn('[AdvancedPeptideDesign] PepINVERT 服务不可用，切换到模拟生成模式')
+        const simulated = generateSimulatedPeptides(selectedEffects, maxCandidates)
+        setResults({
+          peptides: simulated as PeptideResult[],
+          diversityMetrics: { tanimoto: 0.6 + Math.random() * 0.3 },
+          generationMethod: 'simulation_fallback',
+          processingTime: Date.now(),
+        })
+        onPeptidesGenerated?.(simulated as PeptideResult[])
+        addToast({ type: 'info', title: '模拟模式', message: 'PepINVERT 服务不可用，已使用本地模拟生成' })
       } else if (status === 401) {
         setError('身份验证失败 (401): 请先登录后再使用肽设计功能')
         logger.warn('[AdvancedPeptideDesign] 用户未登录')
@@ -286,18 +305,22 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
       return
     }
 
+    const goals: Record<string, number> = {}
+    OPTIMIZATION_GOALS.forEach(goal => {
+      const input = document.getElementById(`goal-${goal.id}`) as HTMLInputElement | null
+      if (input && input.value && parseFloat(input.value) > 0) {
+        goals[goal.id] = parseFloat(input.value)
+      }
+    })
+
+    const iterationsInput = document.getElementById('iterations') as HTMLInputElement | null
+    const iterations = parseInt(iterationsInput?.value || '10', 10)
+
     setLoading(true)
     setError(null)
     setResults(null)
 
     try {
-      const goals: Record<string, number> = {}
-      OPTIMIZATION_GOALS.forEach(goal => {
-        const input = document.getElementById(`goal-${goal.id}`) as HTMLInputElement | null
-        if (input && input.value && parseFloat(input.value) > 0) {
-          goals[goal.id] = parseFloat(input.value)
-        }
-      })
 
       if (Object.keys(goals).length === 0) {
         setError('请至少设置一个优化目标权重')
@@ -327,8 +350,17 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
         setError('参数错误 (422): 种子序列格式错误或优化目标权重设置不当')
         logger.warn('[AdvancedPeptideDesign] 参数验证失败', { detail: err?.response?.data })
       } else if (status === 503) {
-        setError('服务不可用 (503): RL优化引擎未就绪，请稍后重试')
-        logger.warn('[AdvancedPeptideDesign] 优化服务不可用')
+        logger.warn('[AdvancedPeptideDesign] 优化服务不可用，切换到模拟优化模式')
+        const seedSeq = seedSequence
+        const simOptimized: OptimizedPeptide[] = Array.from({ length: 3 }, (_, i) => ({
+          sequence: randomMutate(seedSeq, 1 + i),
+          scores: Object.fromEntries(Object.keys(goals).map((k, idx) => [k, Math.min(98, goals[k] * 1.2 + idx * 5)])),
+          weighted_score: 0.7 + Math.random() * 0.25,
+          improvement_over_seed: 0.05 + Math.random() * 0.15,
+          iteration_improved: iterations,
+        }))
+        setResults({ optimized: simOptimized, processingTime: Date.now() })
+        addToast({ type: 'info', title: '模拟模式', message: 'RL优化引擎不可用，已使用本地模拟优化' })
       } else if (err?.code === 'ERR_NETWORK') {
         setError('网络连接失败: 无法连接到后端服务器')
       } else {
@@ -387,8 +419,13 @@ export function AdvancedPeptideDesign({ onPeptidesGenerated, className = '' }: A
         setError('参数错误 (422): 采样参数超出范围（采样数量:1-100, 温度:0.1-5.0）')
         logger.warn('[AdvancedPeptideDesign] 采样参数验证失败', { detail: err?.response?.data })
       } else if (status === 503) {
-        setError('服务不可用 (503): 采样服务未启动，请稍后重试')
-        logger.warn('[AdvancedPeptideDesign] 采样服务不可用')
+        logger.warn('[AdvancedPeptideDesign] 采样服务不可用，切换到模拟采样模式')
+        const simPeptides = generateSimulatedPeptides(
+          Object.keys(selectedEffects).length > 0 ? selectedEffects : ['ACE抑制'],
+          sampleSize,
+        )
+        setResults({ peptides: simPeptides as PeptideResult[], processingTime: Date.now() })
+        addToast({ type: 'info', title: '模拟模式', message: '采样服务不可用，已使用本地模拟采样' })
       } else if (err?.code === 'ERR_NETWORK') {
         setError('网络连接失败: 无法连接到后端服务器')
       } else {

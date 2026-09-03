@@ -4,7 +4,8 @@
  */
 import { useState, useMemo } from 'react'
 import { Brain, TrendingUp, AlertTriangle, Lightbulb, Target, Sparkles, ArrowUpRight, ArrowDownRight, Minus } from 'lucide-react'
-import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from '@/components/ui'
+import { Card, CardHeader, CardTitle, CardContent, Button, Badge, CardSkeleton } from '@/components/ui'
+import { ErrorCard } from '@/components/dashboard/cards/ErrorCard'
 import { cn } from '@/lib/utils'
 import { useAIInsights, useAIPredictions, useKPIProgress } from '@/hooks/useAIInsights'
 import { Skeleton } from '@/components/ui/Skeleton'
@@ -24,14 +25,27 @@ interface Insight {
 
 interface AIInsightsProps {
   className?: string
+  loading?: boolean
+  error?: Error | null
+  onRetry?: () => void
 }
 
-export function AIInsights({ className }: AIInsightsProps) {
+export function AIInsights({ className, loading, error, onRetry }: AIInsightsProps) {
   const [activeTab, setActiveTab] = useState<'all' | 'trends' | 'anomalies' | 'recommendations' | 'achievements'>('all')
 
   const { data: insights, isLoading: insightsLoading } = useAIInsights()
   const { data: predictions, isLoading: predictionsLoading } = useAIPredictions()
   const { data: kpiProgress, isLoading: kpiLoading } = useKPIProgress()
+
+  // 父级 loading 优先：数据请求期间显示卡片骨架
+  if (loading) {
+    return <CardSkeleton count={1} className={className} />
+  }
+
+  // 父级 error：显示错误状态
+  if (error) {
+    return <ErrorCard title="AI洞察加载失败" message="数据获取异常，请稍后重试" onRetry={onRetry} className={className} />
+  }
 
   const filteredInsights = useMemo(() => {
     if (!insights) return []
@@ -87,11 +101,11 @@ export function AIInsights({ className }: AIInsightsProps) {
     <Card className={className}>
       <CardHeader className="flex flex-row items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-            <Brain size={20} className="text-white" />
+          <div className="w-10 h-10 rounded-lg bg-accent-100 dark:bg-accent-900/30 flex items-center justify-center">
+            <Brain size={20} className="text-accent-600 dark:text-accent-400" />
           </div>
           <div>
-            <CardTitle as="h3" className="text-sm font-bold">AI智能洞察</CardTitle>
+            <CardTitle as="h3" className="text-sm font-semibold">AI智能洞察</CardTitle>
             <p className="text-xs text-neutral-500 dark:text-neutral-400">基于数据的智能分析与建议</p>
           </div>
         </div>
@@ -278,7 +292,7 @@ export function KPIDashboard({ className }: { className?: string }) {
             <Target size={20} className="text-warning-600 dark:text-warning-400" />
           </div>
           <div>
-            <CardTitle as="h3" className="text-sm font-bold">KPI进度监控</CardTitle>
+            <CardTitle as="h3" className="text-sm font-semibold">KPI进度监控</CardTitle>
             <p className="text-xs text-neutral-500 dark:text-neutral-400">关键绩效指标实时追踪</p>
           </div>
         </div>
@@ -308,7 +322,7 @@ export function KPIDashboard({ className }: { className?: string }) {
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium text-neutral-900 dark:text-white">{kpi.name}</span>
                     <div className="flex items-baseline gap-1">
-                      <span className="text-sm font-bold text-neutral-900 dark:text-white">{kpi.current}%</span>
+                      <span className="text-sm font-semibold text-neutral-900 dark:text-white">{kpi.current}%</span>
                       <span className="text-xs text-neutral-500">/ {kpi.target}%</span>
                     </div>
                   </div>

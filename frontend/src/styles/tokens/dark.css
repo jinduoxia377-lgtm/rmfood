@@ -82,6 +82,10 @@
   --card-bg-solid: #0f172a;
   --bg-surface-container: #0f172a;
   --bg-surface-container-low: #020617;
+
+  /* ═══ 网格背景（Dashboard 专用，暗色模式更淡）═══ */
+  --grid-color-light: rgba(148, 163, 184, 0.06);   /* slate-400 @ 6% — 深色模式极淡网格 */
+  --grid-size: 24px;
   --bg-surface-raised: #1e293b;
   --bg-surface-elevated: #334155;
   --header-bg: rgba(15, 23, 42, 0.9);
@@ -249,4 +253,9 @@
   --input: var(--bg-surface-container, #0f172a);
   --ring: var(--color-primary-400, #34d399);
   --radius: var(--radius-md, 0.5rem);
+}
+
+/* ═══ Dashboard 点状网格背景（暗色模式） ═══ */
+.dark .bg-grid {
+  background-image: radial-gradient(circle, var(--grid-color-light, rgba(148,163,184,0.06)) 1px, transparent 1px);
 }

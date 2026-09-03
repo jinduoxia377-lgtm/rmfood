@@ -99,6 +99,39 @@ export const complianceApi = {
   getProhibited(): Promise<{ success: boolean; data: { combinations: Array<{ pair: string[]; rule: string }> } }> {
     return fetch(`${BASE}/prohibited`).then(r => r.json());
   },
+
+  /** 查询GB 2760食品添加剂使用标准 */
+  getGB2760(): Promise<{ success: boolean; data: { source: string; additives: Array<{ name: string; max_usage: string; categories: string[] }> } }> {
+    return fetch(`${BASE}/gb2760`).then(r => r.json());
+  },
+
+  /** 查询GB 14880营养强化剂使用标准 */
+  getGB14880(): Promise<{ success: boolean; data: { source: string; enrichers: Array<{ name: string; min: string; max: string; categories: string[] }> } }> {
+    return fetch(`${BASE}/gb14880`).then(r => r.json());
+  },
+
+  /** 查询中国食品安全禁用品清单 */
+  getGBProhibited(): Promise<{ success: boolean; data: { source: string; items: string[] } }> {
+    return fetch(`${BASE}/gb-prohibited`).then(r => r.json());
+  },
+
+  /** 查询食品安全国家标准目录（支持分类筛选） */
+  getStandards(category?: string): Promise<{ success: boolean; data: { source: string; count: number; standards: any[] } }> {
+    const params = category ? `?category=${encodeURIComponent(category)}` : '';
+    return fetch(`${BASE}/standards${params}`).then(r => r.json());
+  },
+
+  /** 查询药食同源目录完整信息 */
+  getFoodHomology(name?: string): Promise<{ success: boolean; data: { source: string; count: number; materials: any[] } }> {
+    const params = name ? `?name=${encodeURIComponent(name)}` : '';
+    return fetch(`${BASE}/food-homology${params}`).then(r => r.json());
+  },
+
+  /** 查询新食品原料目录 */
+  getNewFoodMaterials(name?: string): Promise<{ success: boolean; data: { source: string; count: number; materials: any[] } }> {
+    const params = name ? `?name=${encodeURIComponent(name)}` : '';
+    return fetch(`${BASE}/new-food-materials${params}`).then(r => r.json());
+  },
 };
 
 /**

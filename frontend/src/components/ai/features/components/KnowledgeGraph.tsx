@@ -24,7 +24,7 @@ import { logger } from '@/utils/safeLogger'
 
 // ===== 类型定义 =====
 
-interface GraphNode {
+export interface GraphNode {
   x?: number;
   y?: number;
   fx?: number | null;
@@ -40,7 +40,7 @@ interface GraphNode {
   metadata?: Record<string, unknown>
 }
 
-interface GraphLink {
+export interface GraphLink {
   source: string | GraphNode
   target: string | GraphNode
   value?: number

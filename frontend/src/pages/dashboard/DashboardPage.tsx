@@ -12,9 +12,10 @@ import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, us
 import type { DragEndEvent } from '@dnd-kit/core'
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import {
-  Sparkles, Download, Settings, AlertTriangle,
+  Sparkles, Download, Settings, AlertTriangle, Search, RefreshCw, ArrowRight,
 } from 'lucide-react'
 import { useDashboardStatistics, useDashboardTrends, useFormulas, useExperiments } from '@/hooks/useQueries'
+import { ErrorCard } from '@/components/dashboard/cards/ErrorCard'
 import { useAuthStore } from '@/stores/auth'
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge, StatCard } from '@/components/ui'
 import { StatusBadge, Skeleton, EmptyState } from '@/components/ui/Common'
@@ -28,6 +29,7 @@ import DashboardConfigManager, { CARD_CATALOG, DEFAULT_CARDS, type CardConfig, t
 import { DraggableCard, DashboardLayout as GridLayout, LayoutEditor, LayoutSwitcher } from '@/pages/formula/components/DashboardLayout'
 import { NotificationCenter, NotificationBadge } from '@/pages/formula/components/NotificationCenter'
 import { AIInsights, KPIDashboard } from '@/pages/formula/components/AIInsights'
+import { aiInsightsApi } from '@/api/aiInsights'
 import { subscribeToChannel } from '@/services/websocket'
 
 // 懒加载非首屏组件
@@ -54,6 +56,7 @@ import {
   ActivityTimeline,
 } from '@/components/dashboard/cards'
 import { CardSkeleton as CardSkeletonComp } from '@/components/ui/SkeletonPresets'
+import { DashboardSkeleton } from '@/components/dashboard/DashboardSkeleton'
 
 
 import { logger } from '@/utils/safeLogger';
@@ -76,7 +79,7 @@ const CARD_COMPONENTS: Record<string, React.ComponentType<any>> = {
   'team-activity': () => (
     <Card>
       <CardHeader className="px-6 pt-6 pb-4">
-        <CardTitle as="h3" className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>团队活动</CardTitle>
+        <CardTitle as="h3" className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>团队活动</CardTitle>
       </CardHeader>
       <CardContent className="px-6 pb-6 pt-0">
         <EmptyState icon={<Sparkles size={48} />} title="即将上线" description="团队协作功能开发中，敬请期待" />
@@ -117,9 +120,33 @@ interface CardRenderProps {
   navigate: (url: string) => void
   currentLayout: DashboardLayout
   setCurrentLayout: (layout: DashboardLayout) => void
+  // 加载/错误/重试状态
+  statsLoading?: boolean
+  statsError?: Error | null
+  refetchStats?: () => void
+  trendsLoading?: boolean
+  trendsError?: Error | null
+  formulasLoading?: boolean
+  formulasError?: Error | null
+  refetchFormulas?: () => void
+  experimentsLoading?: boolean
+  experimentsError?: Error | null
+  refetchExperiments?: () => void
+  todosLoading?: boolean
+  todosError?: Error | null
+  refetchTodos?: () => void
+  reviewQueueLoading?: boolean
+  reviewQueueError?: Error | null
+  refetchReviewQueue?: () => void
+  timelineLoading?: boolean
+  timelineError?: Error | null
+  refetchTimeline?: () => void
+  aiInsightsLoading?: boolean
+  aiInsightsError?: Error | null
+  refetchAIInsights?: () => void
 }
 
-function renderCard({ card, data, trendsData, formulasData, experimentsData, todos, reviewQueue, timeline, navigate, currentLayout, setCurrentLayout }: CardRenderProps) {
+function renderCard({ card, data, trendsData, formulasData, experimentsData, todos, reviewQueue, timeline, navigate, currentLayout, setCurrentLayout, statsLoading, statsError, refetchStats, trendsLoading, trendsError, formulasLoading, formulasError, refetchFormulas, experimentsLoading, experimentsError, refetchExperiments, todosLoading, todosError, refetchTodos, reviewQueueLoading, reviewQueueError, refetchReviewQueue, timelineLoading, timelineError, refetchTimeline, aiInsightsLoading, aiInsightsError, refetchAIInsights }: CardRenderProps) {
   // Lazy-access to currentLayout/setCurrentLayout for the components that need them
   const lazyLayout = { currentLayout, setCurrentLayout }
 
@@ -149,11 +176,16 @@ function renderCard({ card, data, trendsData, formulasData, experimentsData, tod
     } else {
       props.total = experimentsByStatus['completed'] ?? 0
     }
+    props.loading = statsLoading
+    props.error = statsError
+    props.onRetry = refetchStats
   }
 
   // Trend chart
   if (card.type === 'chart-trends') {
     props.data = trendsData?.data ?? []
+    props.loading = trendsLoading
+    props.error = trendsError
   }
 
   // Pie chart
@@ -165,6 +197,9 @@ function renderCard({ card, data, trendsData, formulasData, experimentsData, tod
         }))
       : []
     props.data = entries
+    props.loading = statsLoading
+    props.error = statsError
+    props.onRetry = refetchStats
   }
 
   // Bar chart
@@ -176,33 +211,56 @@ function renderCard({ card, data, trendsData, formulasData, experimentsData, tod
         }))
       : []
     props.data = entries
+    props.loading = statsLoading
+    props.error = statsError
+    props.onRetry = refetchStats
   }
 
   // Recent formulas
   if (card.type === 'recent-formulas') {
     props.items = formulasData?.data ?? null
-    props.loading = !formulasData
+    props.loading = formulasLoading
+    props.error = formulasError
+    props.onRetry = refetchFormulas
   }
 
   // Recent experiments
   if (card.type === 'recent-experiments') {
     props.items = experimentsData?.data ?? null
-    props.loading = !experimentsData
+    props.loading = experimentsLoading
+    props.error = experimentsError
+    props.onRetry = refetchExperiments
   }
 
   // Todos
   if (card.type === 'todos') {
     props.items = todos
+    props.loading = todosLoading
+    props.error = todosError
+    props.onRetry = refetchTodos
   }
 
   // Review queue
   if (card.type === 'review-queue') {
     props.items = reviewQueue
+    props.loading = reviewQueueLoading
+    props.error = reviewQueueError
+    props.onRetry = refetchReviewQueue
   }
 
   // Activity timeline
   if (card.type === 'activity-timeline') {
     props.items = timeline
+    props.loading = timelineLoading
+    props.error = timelineError
+    props.onRetry = refetchTimeline
+  }
+
+  // AI insights
+  if (card.type === 'ai-insights') {
+    props.loading = aiInsightsLoading
+    props.error = aiInsightsError
+    props.onRetry = refetchAIInsights
   }
 
   // Layout-dependent lazy components
@@ -238,31 +296,45 @@ export default function DashboardPage() {
   const navigate = useNavigate()
   const user = useAuthStore((s) => s.user)
   const [trendPeriod] = useState<'7d' | '30d' | '90d'>('30d')
-  const { data: stats } = useDashboardStatistics()
-  const { data: trendsData } = useDashboardTrends(trendPeriod)
-  const { data: formulasData } = useFormulas({ page: 1, page_size: 5 })
-  const { data: experimentsData } = useExperiments({ page: 1, page_size: 5 })
+  const { data: stats, isLoading: statsLoading, error: statsError, refetch: refetchStats } = useDashboardStatistics()
+  const { data: trendsData, isLoading: trendsLoading, error: trendsError } = useDashboardTrends(trendPeriod)
+  const { data: formulasData, isLoading: formulasLoading, error: formulasError, refetch: refetchFormulas } = useFormulas({ page: 1, page_size: 5 })
+  const { data: experimentsData, isLoading: experimentsLoading, error: experimentsError, refetch: refetchExperiments } = useExperiments({ page: 1, page_size: 5 })
 
   // 活动数据 — 延迟加载（staleTime 5 分钟，不阻塞首屏）
-  const { data: timelineData } = useQuery({
+  const { data: timelineData, isLoading: timelineLoading, error: timelineError, refetch: refetchTimeline } = useQuery({
     queryKey: ['activity-timeline'],
     queryFn: ({ signal }) => activityApi.timeline(7, signal),
     staleTime: 5 * 60_000,
+    enabled: !statsLoading && !trendsLoading,
   })
-  const { data: todosData } = useQuery({
+  const { data: todosData, isLoading: todosLoading, error: todosError, refetch: refetchTodos } = useQuery({
     queryKey: ['activity-todos'],
     queryFn: ({ signal }) => activityApi.todos(signal),
     staleTime: 5 * 60_000,
+    enabled: !statsLoading && !trendsLoading,
   })
-  const { data: reviewQueueData } = useQuery({
+  const { data: reviewQueueData, isLoading: reviewQueueLoading, error: reviewQueueError, refetch: refetchReviewQueue } = useQuery({
     queryKey: ['activity-review-queue'],
     queryFn: ({ signal }) => activityApi.reviewQueue(signal),
     staleTime: 5 * 60_000,
+    enabled: !statsLoading && !trendsLoading,
   })
 
   const todos = todosData?.items ?? []
   const reviewQueue = reviewQueueData?.items ?? []
   const timeline = timelineData?.items ?? []
+
+  // AI 洞察数据 — 延迟加载（等关键数据就绪后请求）
+  const { data: aiInsightsData, isLoading: aiInsightsLoading, error: aiInsightsError, refetch: refetchAIInsights } = useQuery({
+    queryKey: ['ai-insights'],
+    queryFn: aiInsightsApi.getInsights,
+    enabled: !statsLoading && !trendsLoading,
+    staleTime: 5 * 60_000,
+  })
+
+  // 全局加载状态：关键数据未就绪时显示全局骨架
+  const isInitialLoading = statsLoading || trendsLoading || formulasLoading || experimentsLoading
 
   // 仪表盘配置状态
   const [currentLayout, setCurrentLayout] = useState<DashboardLayout>(() => {
@@ -334,6 +406,35 @@ export default function DashboardPage() {
   }, [])
   const [layoutColumns, setLayoutColumns] = useState(4)
   const [layoutGap, setLayoutGap] = useState(16)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchResults, setSearchResults] = useState<Array<{ type: string; id: number; title: string; to: string }>>([])
+  const [showSearch, setShowSearch] = useState(false)
+
+  // 搜索防抖
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchQuery.trim().length < 2) {
+        setSearchResults([])
+        return
+      }
+      const q = searchQuery.toLowerCase()
+      const results: Array<{ type: string; id: number; title: string; to: string }> = []
+      const formulaItems: any[] = (formulasData as any)?.items ?? (formulasData as any)?.data ?? []
+      const experimentItems: any[] = (experimentsData as any)?.items ?? (experimentsData as any)?.data ?? []
+      formulaItems.forEach((f: any) => {
+        if (f.name?.toLowerCase().includes(q) || f.code?.toLowerCase().includes(q)) {
+          results.push({ type: '配方', id: f.id, title: f.name, to: `/formulas/${f.id}` })
+        }
+      })
+      experimentItems.forEach((e: any) => {
+        if (e.title?.toLowerCase().includes(q) || e.code?.toLowerCase().includes(q)) {
+          results.push({ type: '实验', id: e.id, title: e.title, to: `/experiments/${e.id}` })
+        }
+      })
+      setSearchResults(results.slice(0, 8))
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [searchQuery, formulasData, experimentsData])
 
   // DnD sensors
   const sensors = useSensors(
@@ -452,17 +553,52 @@ export default function DashboardPage() {
   const visibleCards = currentLayout.cards.filter(card => card.isVisible)
 
   return (
-    <div className="space-y-4 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      {/* 欢迎横幅 */}
+    <div className="min-h-screen bg-grid" style={{ backgroundColor: 'var(--bg-canvas)' }}>
+      <div className="space-y-4 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      {/* 欢迎横幅 + 内嵌布局控制 */}
       <div className="rounded-xl bg-primary-600 p-6 text-white shadow-sm">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex-1">
-            <h1 className="text-xl font-bold leading-snug">
+            <h2 className="text-xl font-semibold leading-snug tracking-tight">
               {DASHBOARD_CONFIG.messages.welcomeBack}, {user?.fullName ?? user?.username}
-            </h1>
-            <p className="mt-1 text-white/90 text-sm">{DASHBOARD_CONFIG.messages.startWork}</p>
+            </h2>
+            <p className="mt-1 text-white/80 text-sm">{DASHBOARD_CONFIG.messages.startWork}</p>
           </div>
           <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+            {/* 全局搜索 */}
+            <div className="relative">
+              <div className="flex items-center gap-2 bg-white/15 rounded-full px-4 py-2">
+                <Search size={14} className="text-white/70 shrink-0" />
+                <input
+                  type="text"
+                  placeholder="搜索配方/实验…"
+                  value={searchQuery}
+                  onChange={(e) => { setSearchQuery(e.target.value); setShowSearch(true) }}
+                  onFocus={() => setShowSearch(true)}
+                  onBlur={() => setTimeout(() => setShowSearch(false), 200)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' && searchResults[0]) navigate(searchResults[0].to) }}
+                  className="bg-transparent text-white placeholder-white/60 text-sm outline-none w-40 sm:w-52"
+                  aria-label="搜索配方或实验"
+                />
+              </div>
+              {showSearch && searchResults.length > 0 && (
+                <div className="absolute top-full mt-2 right-0 w-72 bg-white dark:bg-neutral-900 rounded-xl shadow-lg border border-neutral-200 dark:border-neutral-700 py-2 z-50">
+                  {searchResults.map((r) => (
+                    <Link
+                      key={`${r.type}-${r.id}`}
+                      to={r.to}
+                      onClick={() => { setShowSearch(false); setSearchQuery('') }}
+                      className="flex items-center gap-3 px-4 py-2.5 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+                    >
+                      <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${r.type === '配方' ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400' : 'bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-400'}`}>{r.type}</span>
+                      <span className="text-sm text-neutral-900 dark:text-white truncate">{r.title}</span>
+                      <ArrowRight size={12} className="text-neutral-400 ml-auto shrink-0" />
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <Button
               variant="secondary"
               size="sm"
@@ -511,7 +647,8 @@ export default function DashboardPage() {
               size="sm"
               icon={<Settings size={14} />}
               onClick={() => setIsEditMode(!isEditMode)}
-              className={isEditMode ? 'bg-primary-500' : ''}
+              className={isEditMode ? 'bg-white text-primary-600 hover:bg-neutral-100' : ''}
+              aria-label={isEditMode ? '退出编辑模式' : '进入编辑模式'}
             >
               {isEditMode ? '完成编辑' : '编辑布局'}
             </Button>
@@ -521,9 +658,72 @@ export default function DashboardPage() {
               size="sm"
               icon={<Download size={14} />}
               onClick={handleExportDashboard}
+              aria-label="导出仪表盘数据"
             >
               {DASHBOARD_CONFIG.messages.exportData}
             </Button>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              icon={<RefreshCw size={14} />}
+              onClick={() => {
+                refetchStats()
+                refetchFormulas()
+                refetchExperiments()
+                refetchAIInsights()
+              }}
+              title="刷新数据"
+              aria-label="刷新仪表盘数据"
+            >
+              刷新
+            </Button>
+
+            {/* 编辑模式下的布局控制 — 内嵌于横幅右侧 */}
+            {isEditMode && (
+              <div className="flex items-center gap-3 pl-4 border-l border-white/20 ml-1" role="group" aria-label="布局设置">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[11px] text-white/70 font-medium uppercase tracking-wider">列</span>
+                  <div className="flex items-center bg-white/15 rounded-full overflow-hidden">
+                    {[2, 3, 4].map((col) => (
+                      <button
+                        key={col}
+                        onClick={() => setLayoutColumns(col)}
+                        className={`px-2 py-0.5 text-xs font-medium transition-colors ${
+                          layoutColumns === col
+                            ? 'bg-white text-primary-600'
+                            : 'text-white/80 hover:text-white'
+                        }`}
+                        aria-label={`切换为${col}列布局`}
+                        aria-pressed={layoutColumns === col}
+                      >
+                        {col}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[11px] text-white/70 font-medium uppercase tracking-wider">距</span>
+                  <div className="flex items-center bg-white/15 rounded-full overflow-hidden">
+                    {[8, 16, 24].map((g) => (
+                      <button
+                        key={g}
+                        onClick={() => setLayoutGap(g)}
+                        className={`px-2 py-0.5 text-xs font-medium transition-colors ${
+                          layoutGap === g
+                            ? 'bg-white text-primary-600'
+                            : 'text-white/80 hover:text-white'
+                        }`}
+                        aria-label={`间距${g}px`}
+                        aria-pressed={layoutGap === g}
+                      >
+                        {g}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -535,13 +735,14 @@ export default function DashboardPage() {
             <div className="flex items-center gap-3">
               <AlertTriangle size={18} className="text-warning-600" />
               <p className="text-sm text-warning-800 dark:text-warning-400">
-                编辑模式已开启 - 拖拽卡片调整位置，点击卡片右上角按钮进行配置
+                编辑模式已开启 — 拖拽卡片调整位置，点击卡片右上角按钮进行配置
               </p>
             </div>
             <Button
               variant="secondary"
               size="sm"
               onClick={() => setShowEditor(true)}
+              aria-label="添加卡片"
             >
               添加卡片
             </Button>
@@ -549,8 +750,11 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* 主要内容区域 */}
-      <DndContext
+      {/* 主要内容区域 — 全局骨架或真实内容 */}
+      {isInitialLoading ? (
+        <DashboardSkeleton />
+      ) : (
+        <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
         onDragEnd={handleDragEnd}
@@ -563,7 +767,6 @@ export default function DashboardPage() {
             columns={layoutColumns}
             gap={layoutGap}
             responsive={true}
-            onColumnsChange={(columns) => setLayoutColumns(columns)}
           >
             {visibleCards.map((card) => (
               <DraggableCard
@@ -587,6 +790,29 @@ export default function DashboardPage() {
                   navigate,
                   currentLayout,
                   setCurrentLayout,
+                  statsLoading,
+                  statsError,
+                  refetchStats,
+                  trendsLoading,
+                  trendsError,
+                  formulasLoading,
+                  formulasError,
+                  refetchFormulas,
+                  experimentsLoading,
+                  experimentsError,
+                  refetchExperiments,
+                  todosLoading,
+                  todosError,
+                  refetchTodos,
+                  reviewQueueLoading,
+                  reviewQueueError,
+                  refetchReviewQueue,
+                  timelineLoading,
+                  timelineError,
+                  refetchTimeline,
+                  aiInsightsLoading,
+                  aiInsightsError,
+                  refetchAIInsights,
                 })}
               </DraggableCard>
             ))}
@@ -595,6 +821,7 @@ export default function DashboardPage() {
 
         <DragOverlay />
       </DndContext>
+      )}
 
       {/* 布局编辑器 */}
       <LayoutEditor
@@ -615,6 +842,7 @@ export default function DashboardPage() {
           setNotificationCount(0)
         }}
       />
+      </div>
     </div>
   )
 }
