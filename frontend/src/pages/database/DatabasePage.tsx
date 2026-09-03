@@ -998,9 +998,9 @@ export default function DatabasePage() {
                     key={`sug-${i}`}
                     className="w-full px-4 py-2 text-left hover:bg-primary-50/60 dark:hover:bg-primary-950/20 transition-colors flex items-center gap-3 border-b border-neutral-100 dark:border-neutral-800"
                     onClick={() => {
-                      setTab('herbs');
-                      setShowGlobalResults(false);
                       setSearchInput(s.label);
+                      handleGlobalSearch(s.label);
+                      setShowGlobalResults(false);
                       setSuggestions(null);
                     }}
                   >
@@ -1044,9 +1044,10 @@ export default function DatabasePage() {
                       key={h.id}
                       className="w-full px-4 py-3 text-left hover:bg-primary-50/60 dark:hover:bg-primary-950/20 transition-colors flex items-center gap-3 border-b border-[rgba(148,163,184,0.06)] last:border-0"
                       onClick={() => {
+                        setPendingHerbName(h.name_cn);
                         setTab('herbs');
                         setShowGlobalResults(false);
-                        setSearchInput('');
+                        setSearchInput(h.name_cn);
                       }}
                     >
                       <Leaf className="w-6 h-6 text-primary-600" />
@@ -1096,9 +1097,10 @@ export default function DatabasePage() {
                         key={p.id}
                         className="w-full px-4 py-3 text-left hover:bg-secondary-50/60 dark:hover:bg-blue-950/20 transition-colors flex items-center gap-3 border-b border-[rgba(148,163,184,0.06)] last:border-0"
                         onClick={() => {
+                          setPendingPeptideSequence(p.sequence);
                           setTab('peptides');
                           setShowGlobalResults(false);
-                          setSearchInput('');
+                          setSearchInput(p.sequence);
                         }}
                       >
                         <Dna className="w-6 h-6 text-secondary-600" />
