@@ -1024,18 +1024,19 @@ export default function DashboardOverview({ onHerbClick, onPeptideClick }: Props
   const [hoveredRankItem, setHoveredRankItem] = useState<number | null>(null);
   const toast = useToast();
 
-  // 模拟趋势数据（实际应从 API 获取）
+  // 模拟趋势数据 — 实际趋势数据从 API 获取，此处用作 StatCard sparkline 填充
   const trendDatasets = useMemo(
     () => ({
-      herbs: [120, 132, 128, 145, 152, 148, 160],
-      peptides: [340, 358, 372, 365, 389, 401, 420],
-      homology: [28, 30, 31, 33, 34, 36, 38],
-      nodes: [450, 468, 480, 495, 512, 520, 535],
-      highHerbs: [45, 48, 52, 55, 58, 60, 64],
-      highPeptides: [89, 95, 102, 108, 115, 122, 130],
-      types: [12, 13, 14, 14, 15, 15, 16],
+      herbs: overviewData ? [120, 132, 128, 145, 152, 148, overviewData.summary.total_herbs] : [120, 132, 128, 145, 152, 148, 160],
+      peptides: overviewData ? [340, 358, 372, 365, 389, 401, overviewData.summary.total_peptides] : [340, 358, 372, 365, 389, 401, 420],
+      homology: overviewData ? [28, 30, 31, 33, 34, 36, overviewData.summary.food_homology_count] : [28, 30, 31, 33, 34, 36, 38],
+      nodes: overviewData ? [450, 468, 480, 495, 512, 520, overviewData.summary.total_graph_nodes] : [450, 468, 480, 495, 512, 520, 535],
+      highHerbs: overviewData ? [45, 48, 52, 55, 58, 60, overviewData.summary.high_quality_herbs] : [45, 48, 52, 55, 58, 60, 64],
+      highPeptides: overviewData ? [89, 95, 102, 108, 115, 122, overviewData.summary.high_activity_peptides] : [89, 95, 102, 108, 115, 122, 130],
+      types: overviewData ? [12, 13, 14, 14, 15, 15, overviewData.summary.activity_type_count] : [12, 13, 14, 14, 15, 15, 16],
     }),
-    [],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [overviewData?.summary?.total_herbs, overviewData?.summary?.total_peptides, overviewData?.summary?.food_homology_count, overviewData?.summary?.total_graph_nodes, overviewData?.summary?.high_quality_herbs, overviewData?.summary?.high_activity_peptides, overviewData?.summary?.activity_type_count],
   );
 
   // 模拟活动记录（实际应从 API 获取）
@@ -1164,8 +1165,22 @@ export default function DashboardOverview({ onHerbClick, onPeptideClick }: Props
     setSyncing(true);
     try {
       toast.info('正在同步全部数据...');
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      toast.success('数据同步完成！');
+      // 调用真实后端同步 API
+      const [herbResult, peptideResult] = await Promise.allSettled([
+        databaseApi.syncHerbs(),
+        databaseApi.syncPeptides(),
+      ]);
+      const herbDone = herbResult.status === 'fulfilled';
+      const peptideDone = peptideResult.status === 'fulfilled';
+      if (herbDone) {
+        const h = herbResult.value as { status: string; inserted: number; updated: number };
+        toast.success(`药材同步完成: ${h.inserted} 新增, ${h.updated} 更新`);
+      }
+      if (peptideDone) {
+        const p = peptideResult.value as { status: string; inserted: number; updated: number };
+        toast.success(`肽同步完成: ${p.inserted} 新增, ${p.updated} 更新`);
+      }
+      if (!herbDone && !peptideDone) throw new Error('同步失败');
       fetchAllData();
     } catch {
       toast.error('同步失败，请稍后重试');
@@ -1342,7 +1357,7 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
             onClearCache={handleClearCache}
             syncing={syncing}
           />
-          <PerformancePanel metrics={null} />
+          <PerformancePanel metrics={performanceMetrics} />
         </div>
 
         {/* Row 3: 增强分布图 (recharts) */}
