@@ -413,12 +413,20 @@ interface QualityMetric {
 
 const DataQualityPanel = React.memo(({ qualityData }: { qualityData: DataQualityReport | null }) => {
   const metrics: QualityMetric[] = useMemo(
-    () => [
-      { name: '完整性', value: qualityData?.herb_data?.quality_score ?? 85, description: '字段填充率' },
-      { name: '准确性', value: qualityData?.peptide_data?.quality_score ?? 78, description: '校验通过率' },
-      { name: '一致性', value: qualityData?.overall_score ?? 82, description: '关联一致率' },
-      { name: '时效性', value: 91, description: '更新新鲜度' },
-    ],
+    () => {
+      // 时效性从 qualityData.generated_at 计算：越近越新鲜，满分100递减
+      let freshness = 100;
+      if (qualityData?.generated_at) {
+        const diffH = (Date.now() - new Date(qualityData.generated_at).getTime()) / 3600000;
+        freshness = Math.max(0, Math.round(100 - diffH * 2));
+      }
+      return [
+        { name: '完整性', value: qualityData?.herb_data?.quality_score ?? 85, description: '字段填充率' },
+        { name: '准确性', value: qualityData?.peptide_data?.quality_score ?? 78, description: '校验通过率' },
+        { name: '一致性', value: qualityData?.overall_score ?? 82, description: '关联一致率' },
+        { name: '时效性', value: freshness, description: '更新新鲜度' },
+      ];
+    },
     [qualityData],
   );
 
@@ -1063,52 +1071,50 @@ export default function DashboardOverview({ onHerbClick, onPeptideClick }: Props
     [overviewData?.summary?.total_herbs, overviewData?.summary?.total_peptides, overviewData?.summary?.food_homology_count, overviewData?.summary?.total_graph_nodes, overviewData?.summary?.high_quality_herbs, overviewData?.summary?.high_activity_peptides, overviewData?.summary?.activity_type_count],
   );
 
-  // 模拟活动记录（实际应从 API 获取）
-  const mockActivities: ActivityRecord[] = useMemo(
-    () => [
-      {
-        id: '1',
-        timestamp: new Date(Date.now() - 5 * 60000).toISOString(),
+  // 最近活动 — 基于实时数据派生，不再使用硬编码 mock 记录
+  const recentActivities = useMemo((): ActivityRecord[] => {
+    const records: ActivityRecord[] = [];
+    const now = new Date();
+
+    // 每次数据刷新记录一次
+    if (lastRefresh) {
+      records.push({
+        id: 'refresh',
+        timestamp: lastRefresh.toISOString(),
         type: 'sync',
-        target: 'TCMSP 中药材库',
-        operator: 'admin',
-        detail: '同步新增 12 条记录',
-      },
-      {
-        id: '2',
-        timestamp: new Date(Date.now() - 25 * 60000).toISOString(),
-        type: 'import',
-        target: 'DFBP 活性肽数据集',
-        operator: 'researcher_01',
-        detail: '导入 CSV 文件 (2.3MB)',
-      },
-      {
-        id: '3',
-        timestamp: new Date(Date.now() - 55 * 60000).toISOString(),
-        type: 'edit',
-        target: '黄芪 (Astragalus)',
-        operator: 'editor_zhang',
-        detail: '更新化合物关联数据',
-      },
-      {
-        id: '4',
-        timestamp: new Date(Date.now() - 120 * 60000).toISOString(),
-        type: 'export',
-        target: '知识图谱子图',
-        operator: 'analyst_wang',
-        detail: '导出 GEXF 格式',
-      },
-      {
-        id: '5',
-        timestamp: new Date(Date.now() - 180 * 60000).toISOString(),
-        type: 'sync',
-        target: '药食同源目录',
+        target: '数据仪表盘刷新',
         operator: 'system',
-        detail: '自动定时同步完成',
-      },
-    ],
-    [],
-  );
+        detail: `概览数据已更新`,
+      });
+    }
+
+    // 如果有质量报告时间，记录一次
+    if (qualityData?.generated_at) {
+      records.push({
+        id: 'quality',
+        timestamp: qualityData.generated_at,
+        type: 'sync',
+        target: '数据质量评估',
+        operator: 'system',
+        detail: `质量报告已生成 (评分: ${qualityData.overall_score})`,
+      });
+    }
+
+    // 如果有趋势数据，记录更新时间
+    if (trendData?.generated_at) {
+      records.push({
+        id: 'trends',
+        timestamp: trendData.generated_at,
+        type: 'sync',
+        target: '趋势分析',
+        operator: 'system',
+        detail: '趋势数据已更新',
+      });
+    }
+
+    // 排序：最近的在前
+    return records.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 5);
+  }, [lastRefresh, qualityData, trendData]);
 
   // 加载全部数据的统一方法
   const fetchAllData = useCallback(async () => {
@@ -1392,7 +1398,7 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
         </div>
 
         {/* Row 4: 最近活动时间线 */}
-        <ActivityTimeline records={mockActivities} />
+        <ActivityTimeline records={recentActivities} />
 
         {/* 底部信息栏 */}
         <div className="flex items-center justify-between text-xs text-neutral-400 px-1">
