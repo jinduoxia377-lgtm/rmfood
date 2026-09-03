@@ -1145,7 +1145,7 @@ export default function DatabasePage() {
                       onClick={() => {
                         setTab('graph');
                         setShowGlobalResults(false);
-                        setSearchInput('');
+                        setSearchInput(g.node_label);
                       }}
                     >
                       <GitBranch className="w-6 h-6 text-violet-600" />
