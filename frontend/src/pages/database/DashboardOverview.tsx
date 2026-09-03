@@ -53,7 +53,6 @@ import {
   Dna,
   Leaf,
   Medal,
-  Crown,
   Loader2,
   Sparkles,
 } from 'lucide-react';
@@ -419,10 +418,14 @@ const DataQualityPanel = React.memo(({ qualityData }: { qualityData: DataQuality
   );
 
   return (
-    <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-sm border border-neutral-100 dark:border-neutral-800 p-6">
-      <h3 className="text-xs font-semibold tracking-wider uppercase text-neutral-500 mb-5">
-        数据质量评分
-      </h3>
+    <Card>
+      <CardHeader className="px-6 pt-6 pb-4">
+        <CardTitle as="h3" className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-3">
+          <BarChart3 size={18} className="text-neutral-400 dark:text-neutral-500" />
+          数据质量评分
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="px-6 pb-6 pt-0">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
         {metrics.map((metric) => (
           <div key={metric.name} className="flex flex-col items-center gap-3">
@@ -452,7 +455,8 @@ const DataQualityPanel = React.memo(({ qualityData }: { qualityData: DataQuality
           </span>
         </div>
       )}
-    </div>
+      </CardContent>
+    </Card>
   );
 });
 DataQualityPanel.displayName = 'DataQualityPanel';
@@ -535,10 +539,14 @@ const QuickActions = React.memo<QuickActionsProps>(
     };
 
     return (
-      <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-sm border border-neutral-100 dark:border-neutral-800 p-6">
-        <h3 className="text-xs font-semibold tracking-wider uppercase text-neutral-500 mb-5">
-          快速操作
-        </h3>
+      <Card>
+        <CardHeader className="px-6 pt-6 pb-4">
+          <CardTitle as="h3" className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-3">
+            <BarChart3 size={18} className="text-neutral-400 dark:text-neutral-500" />
+            快速操作
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="px-6 pb-6 pt-0">
         <div className="grid grid-cols-2 gap-3">
           <button
             onClick={onSyncAll}
@@ -598,7 +606,8 @@ const QuickActions = React.memo<QuickActionsProps>(
             <span>缓存清理</span>
           </button>
         </div>
-      </div>
+        </CardContent>
+      </Card>
     );
   },
 );
@@ -621,8 +630,14 @@ const PerformancePanel = React.memo(({ metrics }: { metrics: PerformanceMetrics 
   const poolUsagePercent = ((displayMetrics.connectionPoolActive / displayMetrics.connectionPoolSize) * 100).toFixed(0);
 
   return (
-    <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-sm border border-neutral-100 dark:border-neutral-800 p-6">
-      <h3 className="text-xs font-semibold tracking-wider uppercase text-neutral-500 mb-5">性能指标</h3>
+    <Card>
+      <CardHeader className="px-6 pt-6 pb-4">
+        <CardTitle as="h3" className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-3">
+          <BarChart3 size={18} className="text-neutral-400 dark:text-neutral-500" />
+          性能指标
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="px-6 pb-6 pt-0">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {[
           {
@@ -709,7 +724,8 @@ const PerformancePanel = React.memo(({ metrics }: { metrics: PerformanceMetrics 
           </div>
         ))}
       </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 });
 PerformancePanel.displayName = 'PerformancePanel';
@@ -761,12 +777,15 @@ const OBDistributionChart = React.memo(({ data, loading }: { data: Record<string
     );
 
   return (
-    <Card className="h-full">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-base font-semibold tracking-tight text-neutral-800 flex items-center gap-2"><BarChart3 className="w-4 h-4 text-primary-600" />口服生物利用度(OB)分布</CardTitle>
+    <Card>
+      <CardHeader className="px-6 pt-6 pb-4">
+        <CardTitle as="h3" className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-3">
+          <BarChart3 size={18} className="text-neutral-400 dark:text-neutral-500" />
+          口服生物利用度(OB)分布
+        </CardTitle>
       </CardHeader>
-      <CardContent>
-      <ResponsiveContainer width="100%" height={220}>
+      <CardContent className="px-6 pb-6 pt-0">
+      <ResponsiveContainer width="100%" height={200}>
         <BarChart data={chartData} layout="vertical" margin={{ top: 10, right: 40, left: 80, bottom: 10 }}>
           <XAxis type="number" tick={{ fontSize: 12, fill: 'var(--text-muted, #9A9A9F)' }} axisLine={false} tickLine={false} />
           <YAxis dataKey="name" type="category" tick={{ fontSize: 12, fill: 'var(--text-secondary, #6E6E73)' }} axisLine={false} tickLine={false} width={80} />
@@ -812,10 +831,13 @@ const DLDistributionChart = React.memo(({ data, loading }: { data: Record<string
   return (
     <Card className="h-full">
       <CardHeader className="pb-3">
-        <CardTitle className="text-base font-semibold tracking-tight text-neutral-800 flex items-center gap-2"><BarChart3 className="w-4 h-4 text-secondary-600" />类药性(DL)分布</CardTitle>
+        <CardTitle as="h3" className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-3">
+          <BarChart3 size={18} className="text-neutral-400 dark:text-neutral-500" />
+          类药性(DL)分布
+        </CardTitle>
       </CardHeader>
       <CardContent>
-      <ResponsiveContainer width="100%" height={220}>
+      <ResponsiveContainer width="100%" height={200}>
         <BarChart data={chartData} margin={{ top: 10, right: 20, left: 10, bottom: 50 }}>
           <XAxis dataKey="name" tick={{ fontSize: 12, fill: 'var(--text-muted, #9A9A9F)' }} angle={-35} textAnchor="end" height={50} />
           <YAxis tick={{ fontSize: 12, fill: 'var(--text-muted, #9A9A9F)' }} axisLine={false} tickLine={false} />
@@ -872,10 +894,13 @@ const SeqLengthDistributionChart = React.memo(
     return (
       <Card className="h-full">
         <CardHeader className="pb-3">
-          <CardTitle className="text-base font-semibold tracking-tight text-neutral-800 flex items-center gap-2"><BarChart3 className="w-4 h-4 text-accent-600" />序列长度分布</CardTitle>
+          <CardTitle as="h3" className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-3">
+          <BarChart3 size={18} className="text-neutral-400 dark:text-neutral-500" />
+          序列长度分布
+        </CardTitle>
         </CardHeader>
         <CardContent>
-        <ResponsiveContainer width="100%" height={220}>
+        <ResponsiveContainer width="100%" height={200}>
           <ComposedChart data={processed} margin={{ top: 10, right: 50, left: 10, bottom: 10 }}>
             <XAxis dataKey="name" tick={{ fontSize: 12, fill: 'var(--text-muted, #9A9A9F)' }} axisLine={false} tickLine={false} />
             <YAxis yAxisId="left" tick={{ fontSize: 12, fill: 'var(--text-muted, #9A9A9F)' }} axisLine={false} tickLine={false} />
