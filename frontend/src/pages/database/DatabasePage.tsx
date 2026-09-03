@@ -119,15 +119,15 @@ const HerbCategoryChart = lazy(() =>
                     border: '1px solid var(--border-color, #e2e8f0)',
                     boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
                     padding: '8px 12px',
-                    fontSize: '12px',
+                    fontSize: '13px',
                   }}
                 />
               </PieChart>
             </ResponsiveContainer>
-            <div className="flex flex-col gap-1.5 min-w-[120px]">
+            <div className="flex flex-col gap-2 min-w-[140px]">
               {data.slice(0, 5).map((item, i) => (
-                <div key={i} className="flex items-center gap-2 text-xs">
-                  <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: item.fill }} />
+                <div key={i} className="flex items-center gap-2 text-sm">
+                  <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: item.fill }} />
                   <span className="text-[var(--text-secondary,#334155)] dark:text-[var(--text-disabled,#94a3b8)] truncate flex-1">{item.name}</span>
                   <span className="text-[var(--text-primary,#0f172a)] dark:text-neutral-100 font-medium tabular-nums">{item.value}</span>
                   <span className="text-[var(--text-disabled,#94a3b8)] dark:text-[var(--text-muted,#64748b)] tabular-nums">({'(' + ((item.value / total) * 100).toFixed(0) + ')%'})</span>
@@ -175,11 +175,11 @@ const PeptideActivityChart = lazy(() =>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={data} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" horizontal={false} opacity={0.3} />
-              <XAxis type="number" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
+              <XAxis type="number" tick={{ fontSize: 12, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
               <YAxis
                 type="category"
                 dataKey="name"
-                tick={{ fontSize: 11, fill: 'var(--text-muted)' }}
+                tick={{ fontSize: 12, fill: 'var(--text-muted)' }}
                 axisLine={false}
                 tickLine={false}
                 width={80}

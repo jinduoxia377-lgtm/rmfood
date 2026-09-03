@@ -305,18 +305,18 @@ const StatCardGrid = React.memo(({ cards }: { cards: EnhancedStatCard[] }) => {
           className={`bg-gradient-to-br ${STAT_CARD_GRADIENTS[i % STAT_CARD_GRADIENTS.length]} rounded-lg pt-3.5 pb-2.5 px-3 shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5 relative overflow-hidden`}
         >
           <div className="absolute top-0 left-0 right-0 h-px bg-white/20"></div>
-          <p className="text-gradient-muted font-medium truncate leading-relaxed text-[10px] tracking-wide">
+          <p className="text-gradient-muted font-semibold truncate leading-relaxed text-xs tracking-wide">
             {card.title}
           </p>
           <div className="flex items-end justify-between mt-2">
-            <p className="text-gradient-primary font-bold leading-none tabular-nums tracking-tight text-lg">
+            <p className="text-gradient-primary font-bold leading-none tabular-nums tracking-tight text-xl">
               {typeof card.value === 'number' ? card.value.toLocaleString() : card.value}
-              {card.unit && <span className="text-gradient-secondary ml-0.5 font-medium text-[10px]">{card.unit}</span>}
+              {card.unit && <span className="text-gradient-secondary ml-0.5 font-semibold text-xs">{card.unit}</span>}
             </p>
             {card.trend !== undefined && (
               <div className="flex items-center gap-0.5 mb-0.5">
                 <span
-                  className={`text-[10px] font-semibold leading-none ${card.trend >= 0 ? 'text-gradient-trend-up' : 'text-gradient-trend-down'}`}
+                  className={`text-xs font-semibold leading-none ${card.trend >= 0 ? 'text-gradient-trend-up' : 'text-gradient-trend-down'}`}
                 >
                   {card.trend >= 0 ? '↑' : '↓'}
                   {Math.abs(card.trend).toFixed(1)}%
@@ -388,7 +388,7 @@ const ProgressRing = React.memo<ProgressRingProps>(
             <span className="text-base font-bold tabular-nums leading-none" style={{ color }}>
               {clampedValue.toFixed(0)}
             </span>
-            {label && <span className="text-[10px] text-neutral-500 mt-0.5 leading-none">{label}</span>}
+            {label && <span className="text-xs font-semibold text-neutral-500 mt-1 leading-none">{label}</span>}
           </div>
         </div>
       </div>
@@ -420,7 +420,7 @@ const DataQualityPanel = React.memo(({ qualityData }: { qualityData: DataQuality
 
   return (
     <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-sm border border-neutral-100 dark:border-neutral-800 p-6">
-      <h3 className="text-[13px] font-semibold tracking-tight text-neutral-800 mb-5 uppercase text-neutral-500">
+      <h3 className="text-xs font-semibold tracking-wider uppercase text-neutral-500 mb-5">
         数据质量评分
       </h3>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
@@ -536,26 +536,26 @@ const QuickActions = React.memo<QuickActionsProps>(
 
     return (
       <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-sm border border-neutral-100 dark:border-neutral-800 p-6">
-        <h3 className="text-[13px] font-semibold tracking-tight text-neutral-800 mb-5 uppercase text-neutral-500">
+        <h3 className="text-xs font-semibold tracking-wider uppercase text-neutral-500 mb-5">
           快速操作
         </h3>
         <div className="grid grid-cols-2 gap-3">
           <button
             onClick={onSyncAll}
             disabled={syncing}
-            className="group relative flex items-center justify-center gap-2.5 px-4 min-h-[46px] bg-secondary-50/90 text-secondary-700 rounded-xl hover:bg-secondary-100 disabled:opacity-40 transition-all duration-200 ease-out text-[13px] font-semibold tracking-wide active:scale-[0.98] overflow-hidden"
+            className="group relative flex items-center justify-center gap-2.5 px-4 min-h-[46px] bg-secondary-50/90 text-secondary-700 rounded-xl hover:bg-secondary-100 disabled:opacity-40 transition-all duration-200 ease-out text-sm font-semibold tracking-wide active:scale-[0.98] overflow-hidden"
           >
             <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-secondary-400/60 group-hover:bg-secondary-500/80 transition-colors" />
-            <RefreshCw className={`w-[18px] h-[18px] ${syncing ? 'animate-spin' : ''} shrink-0`} />
+            <RefreshCw className={`w-5 h-5 ${syncing ? 'animate-spin' : ''} shrink-0`} />
             <span>一键同步全部数据</span>
           </button>
           <div className="relative group">
             <button
               onClick={() => {}}
-              className="w-full group/button relative flex items-center justify-center gap-2.5 px-4 min-h-[46px] bg-primary-50/90 text-primary-700 rounded-xl hover:bg-primary-100 transition-all duration-200 ease-out text-[13px] font-semibold tracking-wide active:scale-[0.98] overflow-hidden"
+              className="w-full group/button relative flex items-center justify-center gap-2.5 px-4 min-h-[46px] bg-primary-50/90 text-primary-700 rounded-xl hover:bg-primary-100 transition-all duration-200 ease-out text-sm font-semibold tracking-wide active:scale-[0.98] overflow-hidden"
             >
               <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-primary-400/60 group-hover/button:bg-primary-500/80 transition-colors" />
-              <Download className="w-[18px] h-[18px] shrink-0" />
+              <Download className="w-5 h-5 shrink-0" />
               <span>导出统计数据</span>
               <svg
                 className="w-3.5 h-3.5 opacity-40 ml-0.5"
@@ -569,13 +569,13 @@ const QuickActions = React.memo<QuickActionsProps>(
             <div className="absolute right-0 top-full mt-1.5 hidden group-hover:block bg-white dark:bg-neutral-900 shadow-lg rounded-xl border border-neutral-100 dark:border-neutral-800 py-1 z-20 min-w-[120px] animate-in fade-in slide-in-from-top-1 duration-150">
               <button
                 onClick={handleExportJSON}
-                className="w-full text-left px-4 py-2.5 text-[13px] text-neutral-600 hover:bg-slate-50 rounded-lg font-medium transition-colors"
+                className="w-full text-left px-4 py-2.5 text-sm text-neutral-600 hover:bg-slate-50 rounded-lg font-medium transition-colors"
               >
                 导出 JSON
               </button>
               <button
                 onClick={handleExportCSV}
-                className="w-full text-left px-4 py-2.5 text-[13px] text-neutral-600 hover:bg-slate-50 rounded-lg font-medium transition-colors"
+                className="w-full text-left px-4 py-2.5 text-sm text-neutral-600 hover:bg-slate-50 rounded-lg font-medium transition-colors"
               >
                 导出 CSV
               </button>
@@ -583,18 +583,18 @@ const QuickActions = React.memo<QuickActionsProps>(
           </div>
           <button
             onClick={onQualityReport}
-            className="group relative flex items-center justify-center gap-2.5 px-4 min-h-[46px] bg-warning-50/90 text-warning-700 rounded-xl hover:bg-warning-100 transition-all duration-200 ease-out text-[13px] font-semibold tracking-wide active:scale-[0.98] overflow-hidden"
+            className="group relative flex items-center justify-center gap-2.5 px-4 min-h-[46px] bg-warning-50/90 text-warning-700 rounded-xl hover:bg-warning-100 transition-all duration-200 ease-out text-sm font-semibold tracking-wide active:scale-[0.98] overflow-hidden"
           >
             <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-warning-400/60 group-hover:bg-warning-500/80 transition-colors" />
-            <BarChart3 className="w-[18px] h-[18px] shrink-0" />
+            <BarChart3 className="w-5 h-5 shrink-0" />
             <span>数据质量报告</span>
           </button>
           <button
             onClick={onClearCache}
-            className="group relative flex items-center justify-center gap-2.5 px-4 min-h-[46px] bg-rose-50/90 text-rose-700 rounded-xl hover:bg-rose-100 transition-all duration-200 ease-out text-[13px] font-semibold tracking-wide active:scale-[0.98] overflow-hidden"
+            className="group relative flex items-center justify-center gap-2.5 px-4 min-h-[46px] bg-rose-50/90 text-rose-700 rounded-xl hover:bg-rose-100 transition-all duration-200 ease-out text-sm font-semibold tracking-wide active:scale-[0.98] overflow-hidden"
           >
             <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-rose-400/60 group-hover:bg-rose-500/80 transition-colors" />
-            <Trash2 className="w-[18px] h-[18px] shrink-0" />
+            <Trash2 className="w-5 h-5 shrink-0" />
             <span>缓存清理</span>
           </button>
         </div>
@@ -622,7 +622,7 @@ const PerformancePanel = React.memo(({ metrics }: { metrics: PerformanceMetrics 
 
   return (
     <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-sm border border-neutral-100 dark:border-neutral-800 p-6">
-      <h3 className="text-[13px] font-semibold tracking-tight text-neutral-800 mb-5 uppercase text-neutral-500">性能指标</h3>
+      <h3 className="text-xs font-semibold tracking-wider uppercase text-neutral-500 mb-5">性能指标</h3>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {[
           {
@@ -678,11 +678,11 @@ const PerformancePanel = React.memo(({ metrics }: { metrics: PerformanceMetrics 
               style={{ color: 'currentColor' }}
             />
             <p
-              className={`[font-size:26px] font-bold ${metric.valueColor} font-mono tabular-nums leading-none tracking-tight`}
+              className={`text-2xl font-bold ${metric.valueColor} font-mono tabular-nums leading-none tracking-tight`}
             >
               {metric.value}
               {metric.unit && (
-                <span className={`[font-size:15px] font-normal ${metric.unitColor} ml-1 align-baseline`}>
+                <span className={`text-sm font-normal ${metric.unitColor} ml-1 align-baseline`}>
                   {metric.unit}
                 </span>
               )}
@@ -763,7 +763,7 @@ const OBDistributionChart = React.memo(({ data, loading }: { data: Record<string
   return (
     <Card className="h-full">
       <CardHeader className="pb-3">
-        <CardTitle className="text-sm font-semibold tracking-tight text-neutral-700">口服生物利用度(OB)分布</CardTitle>
+        <CardTitle className="text-base font-semibold tracking-tight text-neutral-800">口服生物利用度(OB)分布</CardTitle>
       </CardHeader>
       <CardContent>
       <ResponsiveContainer width="100%" height={280}>
@@ -772,9 +772,9 @@ const OBDistributionChart = React.memo(({ data, loading }: { data: Record<string
           <YAxis dataKey="name" type="category" tick={{ fontSize: 10, fill: 'var(--text-secondary, #6E6E73)' }} width={65} />
           <Tooltip
             formatter={(value: number, _name, props) => [`${value}`, props?.payload?.fullName || '数量']}
-            contentStyle={{ fontSize: 12, borderRadius: 8 }}
+            contentStyle={{ fontSize: 13, borderRadius: 8 }}
           />
-          <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={18}>
+          <Bar dataKey="value" radius={[4, 4, 4, 4]} barSize={18}>
             {chartData.map((entry, index) => (
               <Cell key={index} fill={PIE_COLORS[index % PIE_COLORS.length]} />
             ))}
@@ -812,14 +812,14 @@ const DLDistributionChart = React.memo(({ data, loading }: { data: Record<string
   return (
     <Card className="h-full">
       <CardHeader className="pb-3">
-        <CardTitle className="text-sm font-semibold tracking-tight text-neutral-700">类药性(DL)分布</CardTitle>
+        <CardTitle className="text-base font-semibold tracking-tight text-neutral-800">类药性(DL)分布</CardTitle>
       </CardHeader>
       <CardContent>
       <ResponsiveContainer width="100%" height={280}>
         <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 5 }}>
-          <XAxis dataKey="name" tick={{ fontSize: 9, fill: 'var(--text-muted, #9A9A9F)' }} angle={-30} textAnchor="end" height={45} />
+          <XAxis dataKey="name" tick={{ fontSize: 11, fill: 'var(--text-muted, #9A9A9F)' }} angle={-30} textAnchor="end" height={45} />
           <YAxis tick={{ fontSize: 10, fill: 'var(--text-muted, #9A9A9F)' }} />
-          <Tooltip formatter={(v: number) => [`${v}`, '数量']} contentStyle={{ fontSize: 12, borderRadius: 8 }} />
+          <Tooltip formatter={(v: number) => [`${v}`, '数量']} contentStyle={{ fontSize: 13, borderRadius: 8 }} />
           <ReferenceLine y={0} stroke="#e5e7eb" strokeDasharray="3 3" />
           <ReferenceLine
             y={Math.max(...chartData.map((d) => d.value)) * 0.5}
@@ -827,7 +827,7 @@ const DLDistributionChart = React.memo(({ data, loading }: { data: Record<string
             strokeDasharray="6 4"
             label={{ value: '中位参考', position: 'right', fontSize: 10, fill: 'var(--color-warning, #FF9F0A)' }}
           />
-          <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+          <Bar dataKey="value" radius={[4, 4, 4, 4]}>
             {chartData.map((_, index) => (
               <Cell key={index} fill={PIE_COLORS[(index + 2) % PIE_COLORS.length]} />
             ))}
@@ -872,27 +872,27 @@ const SeqLengthDistributionChart = React.memo(
     return (
       <Card className="h-full">
         <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-semibold tracking-tight text-neutral-700">序列长度分布</CardTitle>
+          <CardTitle className="text-base font-semibold tracking-tight text-neutral-800">序列长度分布</CardTitle>
         </CardHeader>
         <CardContent>
         <ResponsiveContainer width="100%" height={280}>
           <ComposedChart data={processed} margin={{ top: 10, right: 40, left: -20, bottom: 5 }}>
-            <XAxis dataKey="name" tick={{ fontSize: 9, fill: 'var(--text-muted, #9A9A9F)' }} />
+            <XAxis dataKey="name" tick={{ fontSize: 11, fill: 'var(--text-muted, #9A9A9F)' }} />
             <YAxis yAxisId="left" tick={{ fontSize: 10, fill: 'var(--text-muted, #9A9A9F)' }} />
             <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10, fill: 'var(--color-tertiary, #AF52DE)' }} />
             <Tooltip
-              contentStyle={{ fontSize: 12, borderRadius: 8 }}
+              contentStyle={{ fontSize: 13, borderRadius: 8 }}
               formatter={(value: number, name: string) => {
                 if (name === '累计') return [`${value.toLocaleString()}`, '累计'];
                 return [`${value}`, '数量'];
               }}
             />
-            <Legend wrapperStyle={{ fontSize: 11 }} />
+            <Legend wrapperStyle={{ fontSize: 12 }} />
             <Bar
               yAxisId="left"
               dataKey="value"
               name="数量"
-              radius={[4, 4, 0, 0]}
+              radius={[4, 4, 4, 4]}
               fill="var(--color-primary-600, #28A745)"
               opacity={0.85}
             >
@@ -955,7 +955,7 @@ function DistributionChart({
   return (
     <Card className="h-full">
       <CardHeader className="pb-3">
-        <CardTitle className="text-sm font-semibold tracking-tight text-neutral-700">{title}</CardTitle>
+        <CardTitle className="text-base font-semibold tracking-tight text-neutral-800">{title}</CardTitle>
       </CardHeader>
       <CardContent>
       <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
