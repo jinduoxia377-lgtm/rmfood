@@ -21,10 +21,10 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { databaseApi } from '@/api/database';
-import { PageHeader, Badge, Tabs, Tooltip, TabsList, TabsTrigger, TabsContent, useToast, StatCard, Button, Input } from '@/components/ui';
+import { PageHeader, Badge, Tabs, Tooltip, TabsList, TabsTrigger, TabsContent, useToast, StatCard, Button, Input, Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
 import {
   Search,
-  BarChart2,
+  BarChart3,
   TrendingUp,
   Activity,
   Database,
@@ -88,11 +88,14 @@ const HerbCategoryChart = lazy(() =>
       }
       const total = data.reduce((sum, d) => sum + d.value, 0);
       return (
-        <div className="card p-6">
-          <h3 className="text-base font-semibold text-[var(--text-primary,#0f172a)] dark:text-neutral-100 mb-4 flex items-center gap-2 leading-tight tracking-tight">
-            <BarChart2 className="w-4 h-4 text-primary-600" />
-            药材分类分布
-          </h3>
+        <Card>
+          <CardHeader className="px-6 pt-6 pb-4">
+            <CardTitle as="h3" className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-3">
+              <BarChart3 size={18} className="text-neutral-400 dark:text-neutral-500" />
+              药材分类分布
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="px-6 pb-6 pt-0">
           <div className="flex flex-col md:flex-row items-center gap-4">
             <ResponsiveContainer width="100%" height={200}>
               <PieChart>
@@ -118,7 +121,7 @@ const HerbCategoryChart = lazy(() =>
                     borderRadius: '8px',
                     border: '1px solid var(--border-color, #e2e8f0)',
                     boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                    padding: '8px 12px',
+                    padding: '10px 14px',
                     fontSize: '13px',
                   }}
                 />
@@ -140,7 +143,8 @@ const HerbCategoryChart = lazy(() =>
               )}
             </div>
           </div>
-        </div>
+          </CardContent>
+        </Card>
       );
     },
   }),
@@ -167,13 +171,16 @@ const PeptideActivityChart = lazy(() =>
         );
       }
       return (
-        <div className="card p-6">
-          <h3 className="text-base font-semibold text-[var(--text-primary,#0f172a)] dark:text-neutral-100 mb-4 flex items-center gap-2 leading-tight tracking-tight">
-            <Activity className="w-4 h-4 text-secondary-600" />
-            活性肽类型分布
-          </h3>
+        <Card>
+          <CardHeader className="px-6 pt-6 pb-4">
+            <CardTitle as="h3" className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-3">
+              <BarChart3 size={18} className="text-neutral-400 dark:text-neutral-500" />
+              活性肽类型分布
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="px-6 pb-6 pt-0">
           <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={data} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+            <BarChart data={data} layout="vertical" margin={{ top: 10, right: 40, left: 80, bottom: 10 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" horizontal={false} opacity={0.3} />
               <XAxis type="number" tick={{ fontSize: 12, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
               <YAxis
@@ -191,8 +198,8 @@ const PeptideActivityChart = lazy(() =>
                   borderRadius: '8px',
                   border: '1px solid var(--border-color, #e2e8f0)',
                   boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                  padding: '8px 12px',
-                  fontSize: '12px',
+                  padding: '10px 14px',
+                  fontSize: '13px',
                 }}
               />
               <Bar dataKey="count" radius={[4, 4, 4, 4]} barSize={20}>
@@ -202,7 +209,8 @@ const PeptideActivityChart = lazy(() =>
               </Bar>
             </BarChart>
           </ResponsiveContainer>
-        </div>
+          </CardContent>
+        </Card>
       );
     },
   }),
