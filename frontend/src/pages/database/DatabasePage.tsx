@@ -95,20 +95,19 @@ const HerbCategoryChart = lazy(() =>
               药材分类分布
             </CardTitle>
           </CardHeader>
-          <CardContent className="px-6 pb-6 pt-0">
-          <div className="flex flex-col md:flex-row items-center gap-4">
+          <CardContent className="px-6 pb-5 pt-0">
+          <div className="flex flex-col md:flex-row items-center gap-5">
             <ResponsiveContainer width="100%" height={200}>
               <PieChart>
                 <Pie
                   data={data}
                   cx="50%"
                   cy="50%"
-                  innerRadius={50}
-                  outerRadius={80}
-                  paddingAngle={2}
+                  innerRadius={52}
+                  outerRadius={82}
+                  paddingAngle={4}
                   dataKey="value"
-                  label={({ name, percent }) => name + ' ' + (percent * 100).toFixed(0) + '%'}
-                  labelLine={{ stroke: 'var(--text-muted)', strokeWidth: 0.8, opacity: 0.4 }}
+                  label={false}
                 >
                   {data.map((entry, index) => (
                     <Cell key={'cell-' + index} fill={entry.fill} strokeWidth={0} />
@@ -121,26 +120,34 @@ const HerbCategoryChart = lazy(() =>
                     borderRadius: '8px',
                     border: '1px solid var(--border-color, #e2e8f0)',
                     boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                    padding: '10px 14px',
-                    fontSize: '13px',
+                    padding: '8px 12px',
+                    fontSize: '12px',
                   }}
                 />
               </PieChart>
             </ResponsiveContainer>
-            <div className="flex flex-col gap-2 min-w-[140px]">
-              {data.slice(0, 5).map((item, i) => (
-                <div key={i} className="flex items-center gap-2 text-sm">
-                  <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: item.fill }} />
-                  <span className="text-[var(--text-secondary,#334155)] dark:text-[var(--text-disabled,#94a3b8)] truncate flex-1">{item.name}</span>
-                  <span className="text-[var(--text-primary,#0f172a)] dark:text-neutral-100 font-medium tabular-nums">{item.value}</span>
-                  <span className="text-[var(--text-disabled,#94a3b8)] dark:text-[var(--text-muted,#64748b)] tabular-nums">({'(' + ((item.value / total) * 100).toFixed(0) + ')%'})</span>
+            <div className="flex flex-col gap-1.5 min-w-[150px]">
+              {data.slice(0, 6).map((item, i) => (
+                <div key={i} className="flex items-center justify-between gap-2 text-xs">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: item.fill }} />
+                    <span className="text-[var(--text-secondary,#334155)] dark:text-[var(--text-muted,#64748b)] truncate">{item.name}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <span className="font-semibold text-neutral-800 dark:text-neutral-100 tabular-nums">{item.value}</span>
+                    <span className="text-[var(--text-disabled,#94a3b8)] dark:text-[var(--text-muted,#64748b)] tabular-nums">({((item.value / total) * 100).toFixed(0)}%)</span>
+                  </div>
                 </div>
               ))}
-              {data.length > 5 && (
-                <div className="text-xs text-[var(--text-disabled,#94a3b8)] dark:text-[var(--text-muted,#64748b)] pt-1 border-t border-neutral-200 dark:border-neutral-700">
-                  +{data.length - 5} 其他分类
+              {data.length > 6 && (
+                <div className="text-[11px] text-[var(--text-disabled,#94a3b8)] dark:text-[var(--text-muted,#64748b)] pt-1 border-t border-neutral-200 dark:border-neutral-700 mt-0.5">
+                  +{data.length - 6} 其他分类
                 </div>
               )}
+              <div className="mt-2 pt-2 border-t border-neutral-200 dark:border-neutral-700 flex items-center justify-between">
+                <span className="text-[11px] text-[var(--text-muted,#64748b)]">总计</span>
+                <span className="text-xs font-semibold text-neutral-800 dark:text-neutral-100 tabular-nums">{total} 种</span>
+              </div>
             </div>
           </div>
           </CardContent>
@@ -178,18 +185,18 @@ const PeptideActivityChart = lazy(() =>
               活性肽类型分布
             </CardTitle>
           </CardHeader>
-          <CardContent className="px-6 pb-6 pt-0">
+          <CardContent className="px-6 pb-5 pt-0">
           <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={data} layout="vertical" margin={{ top: 10, right: 40, left: 80, bottom: 10 }}>
+            <BarChart data={data} layout="vertical" margin={{ top: 10, right: 50, left: 90, bottom: 10 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" horizontal={false} opacity={0.3} />
-              <XAxis type="number" tick={{ fontSize: 12, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
+              <XAxis type="number" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
               <YAxis
                 type="category"
                 dataKey="name"
-                tick={{ fontSize: 12, fill: 'var(--text-muted)' }}
+                tick={{ fontSize: 11, fill: 'var(--text-muted)' }}
                 axisLine={false}
                 tickLine={false}
-                width={80}
+                width={90}
               />
               <RechartsTooltip
                 formatter={(value: number, name: string, props: any) => [value + ' 条', props.payload?.fullName || name]}
@@ -198,11 +205,11 @@ const PeptideActivityChart = lazy(() =>
                   borderRadius: '8px',
                   border: '1px solid var(--border-color, #e2e8f0)',
                   boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                  padding: '10px 14px',
-                  fontSize: '13px',
+                  padding: '8px 12px',
+                  fontSize: '12px',
                 }}
               />
-              <Bar dataKey="count" radius={[4, 4, 4, 4]} barSize={20}>
+              <Bar dataKey="count" radius={[4, 4, 4, 4]} barSize={22}>
                 {data.map((entry, index) => (
                   <Cell key={'cell-' + index} fill={entry.fill} />
                 ))}
