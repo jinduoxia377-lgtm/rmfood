@@ -55,6 +55,11 @@ import {
   Medal,
   Loader2,
   Sparkles,
+  Gauge,
+  BadgeCheck,
+  HeartPulse,
+  ShieldCheck,
+  Activity,
 } from 'lucide-react';
 import { databaseApi } from '@/api/database';
 import type { FoodHomologyRankItem, ActivePeptideRankItem } from '@/api/database';
@@ -421,7 +426,7 @@ const DataQualityPanel = React.memo(({ qualityData }: { qualityData: DataQuality
     <Card>
       <CardHeader className="px-6 pt-6 pb-4">
         <CardTitle as="h3" className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-3">
-          <BarChart3 size={18} className="text-neutral-400 dark:text-neutral-500" />
+          <BadgeCheck size={18} className="text-neutral-400 dark:text-neutral-500" />
           数据质量评分
         </CardTitle>
       </CardHeader>
@@ -542,7 +547,7 @@ const QuickActions = React.memo<QuickActionsProps>(
       <Card>
         <CardHeader className="px-6 pt-6 pb-4">
           <CardTitle as="h3" className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-3">
-            <BarChart3 size={18} className="text-neutral-400 dark:text-neutral-500" />
+            <Zap size={18} className="text-neutral-400 dark:text-neutral-500" />
             快速操作
           </CardTitle>
         </CardHeader>
@@ -622,7 +627,7 @@ const PerformancePanel = React.memo(({ metrics }: { metrics: PerformanceMetrics 
     <Card>
       <CardHeader className="px-6 pt-6 pb-4">
         <CardTitle as="h3" className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-3">
-          <BarChart3 size={18} className="text-neutral-400 dark:text-neutral-500" />
+          <Gauge size={18} className="text-neutral-400 dark:text-neutral-500" />
           性能指标
         </CardTitle>
       </CardHeader>
@@ -765,7 +770,7 @@ const OBDistributionChart = React.memo(({ data, loading }: { data: Record<string
     <Card>
       <CardHeader className="px-6 pt-6 pb-4">
         <CardTitle as="h3" className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-3">
-          <BarChart3 size={18} className="text-neutral-400 dark:text-neutral-500" />
+          <HeartPulse size={18} className="text-neutral-400 dark:text-neutral-500" />
           口服生物利用度(OB)分布
         </CardTitle>
       </CardHeader>
@@ -817,7 +822,7 @@ const DLDistributionChart = React.memo(({ data, loading }: { data: Record<string
     <Card className="h-full">
       <CardHeader className="pb-3">
         <CardTitle as="h3" className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-3">
-          <BarChart3 size={18} className="text-neutral-400 dark:text-neutral-500" />
+          <ShieldCheck size={18} className="text-neutral-400 dark:text-neutral-500" />
           类药性(DL)分布
         </CardTitle>
       </CardHeader>
@@ -880,7 +885,7 @@ const SeqLengthDistributionChart = React.memo(
       <Card className="h-full">
         <CardHeader className="pb-3">
           <CardTitle as="h3" className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-3">
-          <BarChart3 size={18} className="text-neutral-400 dark:text-neutral-500" />
+          <Dna size={18} className="text-neutral-400 dark:text-neutral-500" />
           序列长度分布
         </CardTitle>
         </CardHeader>
