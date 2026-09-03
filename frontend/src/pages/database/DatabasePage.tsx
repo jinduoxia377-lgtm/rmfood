@@ -80,7 +80,7 @@ const HerbCategoryChart = lazy(() =>
       if (!data || data.length === 0) {
         return (
           <div className="card p-6 flex flex-col items-center justify-center h-[280px] text-center">
-            <BarChart2 className="w-10 h-10 text-neutral-300 dark:text-[var(--text-secondary,#334155)] mb-3" />
+            <BarChart3 className="w-10 h-10 text-neutral-300 dark:text-[var(--text-secondary,#334155)] mb-3" />
             <p className="text-sm font-normal text-[var(--text-secondary,#334155)] dark:text-[var(--text-disabled,#94a3b8)]">暂无药材分类数据</p>
             <p className="text-xs text-[var(--text-disabled,#94a3b8)] dark:text-[var(--text-muted,#64748b)] mt-1">请先同步数据库获取分类统计</p>
           </div>
@@ -1198,7 +1198,7 @@ export default function DatabasePage() {
             { value: 'homology' as DbTab, label: '药食同源', icon: Zap, badge: homologyCount },
             { value: 'food_materials' as DbTab, label: '食品原料', icon: Database, badge: null },
             { value: 'retail_products' as DbTab, label: '零售产品', icon: ShoppingBag, badge: retailProductCount },
-            { value: 'analytics' as DbTab, label: '搜索分析', icon: BarChart2, badge: null },
+            { value: 'analytics' as DbTab, label: '搜索分析', icon: BarChart3, badge: null },
             { value: 'sync' as DbTab, label: '数据管理', icon: RefreshCw, badge: null },
           ].map(({ value, label, icon: Icon, badge }) => (
             <TabsTrigger
@@ -1302,7 +1302,7 @@ export default function DatabasePage() {
                   { keys: ['5'], description: '切换到「药食同源」Tab', icon: Zap },
                   { keys: ['6'], description: '切换到「食品原料」Tab', icon: Database },
                   { keys: ['7'], description: '切换到「零售产品」Tab', icon: ShoppingBag },
-                  { keys: ['8'], description: '切换到「搜索分析」Tab', icon: BarChart2 },
+                  { keys: ['8'], description: '切换到「搜索分析」Tab', icon: BarChart3 },
                   { keys: ['9'], description: '切换到「数据管理」Tab', icon: RefreshCw },
                   { keys: ['R'], description: '刷新所有数据缓存', icon: RefreshCw },
                   { keys: ['E'], description: '导出统计数据为 JSON', icon: Download },
