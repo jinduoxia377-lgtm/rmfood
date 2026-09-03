@@ -27,6 +27,7 @@ export interface ChartDataset {
   borderColor?: string;
   backgroundColor?: string | string[];
   fill?: boolean;
+  borderDash?: [number, number];
 }
 
 export interface BaseChartProps {

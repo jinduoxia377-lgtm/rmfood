@@ -11,7 +11,7 @@
  * - WCAG 2.1 AA 完整可访问性
  */
 import {
-  useState, useCallback, useRef, useEffect,
+  useState, useCallback, useRef, useEffect, useLayoutEffect,
   type FC, type FormEvent, type ChangeEvent,
   type FocusEvent, type MouseEvent as RMouseEvent,
 } from 'react'
@@ -167,7 +167,7 @@ const SocialLoginSection: FC = () => {
   )
 
   return (
-    <>
+    <div className="rhine-social-section">
       <div className="rhine-divider" aria-hidden="true">
         <span className="rhine-divider-text">{RHINE_LOGIN_CONFIG.messages.orContinueWith}</span>
       </div>
@@ -180,7 +180,7 @@ const SocialLoginSection: FC = () => {
             className={`rhine-social-btn wechat ${loadingProvider === 'wechat' ? 'loading' : ''}`}
             onClick={() => handleOAuthLogin('wechat', socials.wechat)}
             disabled={loadingProvider !== null}
-            aria-label={socials.wechat.label}
+            aria-label={loadingProvider === 'wechat' ? '微信登录中，请稍候' : '微信登录'}
           >
             <span className="rhine-social-icon-wrap">
               {loadingProvider === 'wechat' ? <span className="rhine-social-spinner" /> : <WechatIcon />}
@@ -196,7 +196,7 @@ const SocialLoginSection: FC = () => {
             className={`rhine-social-btn qq ${loadingProvider === 'qq' ? 'loading' : ''}`}
             onClick={() => handleOAuthLogin('qq', socials.qq)}
             disabled={loadingProvider !== null}
-            aria-label={socials.qq.label}
+            aria-label={loadingProvider === 'qq' ? 'QQ登录中，请稍候' : 'QQ登录'}
           >
             <span className="rhine-social-icon-wrap">
               {loadingProvider === 'qq' ? <span className="rhine-social-spinner" /> : <QQIcon />}
@@ -212,7 +212,7 @@ const SocialLoginSection: FC = () => {
             className={`rhine-social-btn github ${loadingProvider === 'github' ? 'loading' : ''}`}
             onClick={() => handleOAuthLogin('github', socials.github)}
             disabled={loadingProvider !== null}
-            aria-label={socials.github.label}
+            aria-label={loadingProvider === 'github' ? 'GitHub登录中，请稍候' : 'GitHub登录'}
           >
             <span className="rhine-social-icon-wrap">
               {loadingProvider === 'github' ? <span className="rhine-social-spinner" /> : <GitHubIcon />}
@@ -221,7 +221,7 @@ const SocialLoginSection: FC = () => {
           </button>
         )}
       </div>
-    </>
+    </div>
   )
 }
 
@@ -259,6 +259,20 @@ export default function RhineLoginPage() {
   const [loading, setLoading] = useState(false)
   const [userErr, setUserErr] = useState('')
   const [passErr, setPassErr] = useState('')
+  const [pwStrength, setPwStrength] = useState(0)
+  const [rateLimitRemaining, setRateLimitRemaining] = useState(0)
+
+  /* ── 密码强度计算（≥8字符起步） ── */
+  const calcStrength = useCallback((v: string): number => {
+    if (!v) return 0
+    let score = 0
+    if (v.length >= 8) score++
+    if (v.length >= 12) score++
+    if (/[A-Z]/.test(v) && /[a-z]/.test(v)) score++
+    if (/\d/.test(v)) score++
+    if (/[^A-Za-z0-9]/.test(v)) score++
+    return Math.min(4, score)
+  }, [])
 
   /* ── Validation ── */
   const validateUser = useCallback((v: string) => {
@@ -272,6 +286,17 @@ export default function RhineLoginPage() {
     return ''
   }, [])
 
+  /* ── 记住用户名自动填充 — useLayoutEffect 确保 DOM 已挂载 ── */
+  useLayoutEffect(() => {
+    const stored = sessionStorage.getItem('rhine_remember')
+    if (stored !== '1') return
+    const savedUser = sessionStorage.getItem('rhine_user')
+    if (!savedUser) return
+    setUsername(savedUser)
+    setRemember(true)
+    requestAnimationFrame(() => requestAnimationFrame(() => { passRef.current?.focus() }))
+  }, [])
+
   /* ── Handlers ── */
   const handleUserChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setUsername(e.target.value); if (userErr) setUserErr('')
@@ -281,8 +306,9 @@ export default function RhineLoginPage() {
   }, [username, validateUser])
   const handlePassChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value)
+    setPwStrength(calcStrength(e.target.value))
     if (passErr) setPassErr('')
-  }, [passErr])
+  }, [passErr, calcStrength])
   const handlePassBlur = useCallback((_: FocusEvent<HTMLInputElement>) => {
     setPassErr(validatePass(password))
   }, [password, validatePass])
@@ -294,18 +320,26 @@ export default function RhineLoginPage() {
     setUserErr(ue); setPassErr(pe)
     if (ue) { userRef.current?.focus(); return }
     if (pe) { passRef.current?.focus(); return }
-    setError(''); setLoading(true)
+    setError(''); setRateLimitRemaining(0); setLoading(true)
     try {
       await login(username, password)
       if (remember) { sessionStorage.setItem('rhine_remember', '1'); sessionStorage.setItem('rhine_user', username) }
       else { sessionStorage.removeItem('rhine_remember'); sessionStorage.removeItem('rhine_user') }
       setSuccess(msg.loginSuccess)
-      setTimeout(() => navigate('/dashboard'), 800)
+      setTimeout(() => navigate('/dashboard'), 1200)
     } catch (err: unknown) {
-      const s = (typeof err === 'object' && err !== null && 'response' in err &&
-        typeof err.response === 'object' && err.response !== null && 'status' in err.response)
-        ? (err.response as { status: number }).status : null
-      setError(s === 401 ? msg.errorAuth : s === 429 ? msg.errorRateLimit : msg.errorNetwork)
+      const resp = (typeof err === 'object' && err !== null && 'response' in err &&
+        typeof (err as Record<string, unknown>).response === 'object' && (err as Record<string, unknown>).response !== null)
+        ? (err as { response: { status: number; headers?: Record<string, string> } }).response
+        : null
+      const s = resp?.status ?? null
+      if (s === 429) {
+        const retryAfter = parseInt((resp?.headers?.['retry-after'] as string | undefined) ?? '60', 10)
+        setRateLimitRemaining(isNaN(retryAfter) ? 60 : retryAfter)
+        setError(`验证请求过于频繁，请 ${isNaN(retryAfter) ? 60 : retryAfter} 秒后重试`)
+      } else {
+        setError(s === 401 ? msg.errorAuth : msg.errorNetwork)
+      }
     } finally { setLoading(false) }
   }, [username, password, remember, validateUser, validatePass, login, navigate, msg])
 
@@ -323,8 +357,10 @@ export default function RhineLoginPage() {
   /* ═════════════════════════════════════════════════════════════
      Render
      ═════════════════════════════════════════════════════════════ */
+  const hasSocialLogin = Object.values(RHINE_LOGIN_CONFIG.socialLogin).some(s => s.enabled)
+
   return (
-    <>
+    <div className="rhine-page-root">
       <a href="#rhine-login-form" className="rhine-skip-link">跳转到登录表单</a>
 
       <div className="login-page" role="main" aria-label="莱茵分子登录页面">
@@ -349,118 +385,157 @@ export default function RhineLoginPage() {
 
         {/* 登录表单面板 */}
         <div className="rhine-form-panel">
-          <div id="rhine-login-form" className="rhine-card rhine-anim-slide-right rhine-delay-3">
+          <div className="rhine-form-content">
+            <div id="rhine-login-form" className="rhine-card rhine-anim-slide-right rhine-delay-3">
 
-            {/* 卡片头部 */}
-            <div className="rhine-card-header">
-              <h1>{RHINE_BRAND_CONFIG.name}</h1>
-              <h2>{msg.welcome}</h2>
-              <p>{msg.prompt}</p>
-            </div>
-
-            {/* 错误提示 */}
-            {error && (
-              <div className="rhine-alert rhine-alert-error rhine-anim-shake" role="alert">
-                <AlertCircle size={16} className="rhine-alert-icon" aria-hidden="true" />
-                <span>{error}</span>
+              {/* 卡片头部 — h2 作为页面内最高层级标题 */}
+              <div className="rhine-card-header">
+                <h2>{msg.welcome}</h2>
+                <p>{msg.prompt}</p>
               </div>
-            )}
 
-            {/* 成功提示 */}
-            {success && (
-              <div className="rhine-alert rhine-alert-success" role="status" aria-live="polite">
-                <CheckCircle2 size={16} className="rhine-alert-icon" aria-hidden="true" />
-                <span>{success}</span>
-              </div>
-            )}
-
-            {/* 表单 */}
-            <form onSubmit={handleSubmit} noValidate aria-label="登录表单">
-              {/* 用户名 */}
-              <div className="rhine-form-group">
-                <label htmlFor="rhine-username" className="rhine-label">{msg.usernameLabel}</label>
-                <div className="rhine-input-wrap">
-                  <User size={18} className="rhine-input-icon" aria-hidden="true" />
-                  <input ref={userRef} id="rhine-username" type="text"
-                    className={`rhine-input${username ? ' filled' : ''}${userErr ? ' error' : ''}`}
-                    value={username} onChange={handleUserChange} onBlur={handleUserBlur}
-                    placeholder={msg.usernamePlaceholder}
-                    autoComplete="username" autoFocus
-                    aria-required="true" aria-invalid={!!userErr}
-                    aria-describedby={userErr ? 'rhine-user-err' : undefined} />
+              {/* 错误提示 */}
+              {error && (
+                <div className="rhine-alert rhine-alert-error rhine-anim-shake" role="alert">
+                  <AlertCircle size={16} className="rhine-alert-icon" aria-hidden="true" />
+                  <span>{error}</span>
                 </div>
-                {userErr && <p id="rhine-user-err" className="rhine-error-text" role="alert">{userErr}</p>}
-              </div>
+              )}
 
-              {/* 密码 */}
-              <div className="rhine-form-group">
-                <label htmlFor="rhine-password" className="rhine-label">{msg.passwordLabel}</label>
-                <div className="rhine-input-wrap">
-                  <Lock size={18} className="rhine-input-icon" aria-hidden="true" />
-                  <input ref={passRef} id="rhine-password"
-                    type={showPw ? 'text' : 'password'}
-                    className={`rhine-input${password ? ' filled' : ''}${passErr ? ' error' : ''}`}
-                    value={password} onChange={handlePassChange} onBlur={handlePassBlur}
-                    placeholder={msg.passwordPlaceholder}
-                    autoComplete="current-password"
-                    aria-required="true" aria-invalid={!!passErr}
-                    aria-describedby={passErr ? 'rhine-pass-err' : undefined} />
-                  <button type="button" className="rhine-password-toggle"
-                    onClick={() => setShowPw(!showPw)}
-                    aria-label={showPw ? '隐藏密码' : '显示密码'}>
-                    {showPw ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
+              {/* 成功提示 */}
+              {success && (
+                <div className="rhine-alert rhine-alert-success" role="status" aria-live="polite">
+                  <CheckCircle2 size={16} className="rhine-alert-icon" aria-hidden="true" />
+                  <span>{success}</span>
                 </div>
-                {passErr && <p id="rhine-pass-err" className="rhine-error-text" role="alert">{passErr}</p>}
-              </div>
+              )}
 
-              {/* 选项行 */}
-              <div className="rhine-form-options">
-                <label className="rhine-remember">
-                  <div className={`rhine-remember-check${remember ? ' checked' : ''}`}
-                    onClick={() => setRemember(!remember)}
-                    role="checkbox" aria-checked={remember} tabIndex={0}
-                    onKeyDown={(e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); setRemember(!remember) } }}>
-                    {remember && <CheckCircle2 size={14} />}
+              {/* 表单 */}
+              <form onSubmit={handleSubmit} noValidate aria-label="登录表单">
+                {/* 用户名 */}
+                <div className="rhine-form-group">
+                  <label htmlFor="rhine-username" className="rhine-label">{msg.usernameLabel}</label>
+                  <div className="rhine-input-wrap">
+                    <User size={18} className="rhine-input-icon" aria-hidden="true" />
+                    <input ref={userRef} id="rhine-username" type="text"
+                      className={`rhine-input${username ? ' filled' : ''}${userErr ? ' error' : ''}`}
+                      value={username} onChange={handleUserChange} onBlur={handleUserBlur}
+                      placeholder={msg.usernamePlaceholder}
+                      autoComplete="username" autoFocus
+                      aria-required="true" aria-invalid={!!userErr}
+                      aria-describedby={userErr ? 'rhine-user-err' : undefined} />
                   </div>
-                  <span>{msg.rememberMe}</span>
-                </label>
-                <Link to="/forgot-password" className="rhine-forgot-link">{msg.forgotPassword}</Link>
+                  {userErr && <p id="rhine-user-err" className="rhine-error-text" role="alert">{userErr}</p>}
+                </div>
+
+                {/* 密码 */}
+                <div className="rhine-form-group">
+                  <label htmlFor="rhine-password" className="rhine-label">{msg.passwordLabel}</label>
+                  <div className="rhine-input-wrap">
+                    <Lock size={18} className="rhine-input-icon" aria-hidden="true" />
+                    <input ref={passRef} id="rhine-password"
+                      type={showPw ? 'text' : 'password'}
+                      className={`rhine-input${password ? ' filled' : ''}${passErr ? ' error' : ''}`}
+                      value={password} onChange={handlePassChange} onBlur={handlePassBlur}
+                      placeholder={msg.passwordPlaceholder}
+                      autoComplete="current-password"
+                      aria-required="true" aria-invalid={!!passErr}
+                      aria-describedby={passErr ? 'rhine-pass-err' : undefined} />
+                    <button type="button" className="rhine-password-toggle"
+                      onClick={() => setShowPw(!showPw)}
+                      aria-label={showPw ? '隐藏密码' : '显示密码'}>
+                      {showPw ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                  {passErr && <p id="rhine-pass-err" className="rhine-error-text" role="alert">{passErr}</p>}
+                  {/* 密码强度指示器 */}
+                  <div
+                    className="rhine-password-strength"
+                    aria-label={password ? `密码强度：${['无','非常弱','弱','中等','强','非常强'][pwStrength]}` : undefined}
+                    role="meter" aria-valuenow={pwStrength} aria-valuemin={0} aria-valuemax={4}
+                    aria-valuetext={['无','非常弱','弱','中等','强','非常强'][pwStrength]}
+                  >
+                    <div className="rhine-strength-bar">
+                      {[1,2,3,4].map(i => (
+                        <div
+                          key={i}
+                          className={`rhine-strength-fill${i <= pwStrength ? ' active' : ''}`}
+                          style={{
+                            width: `${(100 / 4) * i}%`,
+                            background: pwStrength >= 4 ? 'var(--rhine-success)'
+                              : pwStrength >= 3 ? 'var(--rhine-warning)'
+                              : pwStrength >= 2 ? '#ca8a04'
+                              : 'var(--rhine-error)',
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* 选项行 */}
+                <div className="rhine-form-options">
+                  <label className="rhine-remember">
+                    <div
+                      className={`rhine-remember-check${remember ? ' checked' : ''}`}
+                      onClick={() => setRemember(!remember)}
+                      onKeyDown={(e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); setRemember(!remember) } }}
+                      role="checkbox" aria-checked={remember} tabIndex={0}
+                      aria-label={remember ? '已勾选：保持登录' : '未勾选：保持登录'}
+                    >
+                      {remember && <CheckCircle2 size={14} />}
+                    </div>
+                    <span>{msg.rememberMe}</span>
+                  </label>
+                  <Link to="/forgot-password" className="rhine-forgot-link">{msg.forgotPassword}</Link>
+                </div>
+
+                {/* 主提交按钮 */}
+                <button type="submit" className="rhine-submit-btn"
+                  disabled={loading} onClick={handleBtnClick}
+                  aria-label={loading ? msg.loggingIn : msg.loginButton}
+                  aria-busy={loading}>
+                  {loading ? (
+                    <span className="rhine-btn-content">
+                      <span className="rhine-spinner" aria-hidden="true" />
+                      <span>{msg.loggingIn}</span>
+                    </span>
+                  ) : msg.loginButton}
+                </button>
+              </form>
+
+              {/* 社交登录 — 仅在至少一个启用时渲染 */}
+              {hasSocialLogin && (
+                <div className="rhine-social-divider-section">
+                  <div className="rhine-divider" aria-hidden="true">
+                    <span className="rhine-divider-text">{RHINE_LOGIN_CONFIG.messages.orContinueWith}</span>
+                  </div>
+                  <SocialLoginSection />
+                </div>
+              )}
+
+              {/* 安全提示 */}
+              <div className="rhine-security-note">
+                <Shield size={12} aria-hidden="true" /><span>{msg.securityNote}</span>
               </div>
 
-              {/* 主提交按钮 ✨ 辉光效果 */}
-              <button type="submit" className="rhine-submit-btn"
-                disabled={loading} onClick={handleBtnClick}
-                aria-label={loading ? msg.loggingIn : msg.loginButton}>
-                {loading ? (
-                  <><span className="rhine-spinner" aria-hidden="true" /><span>{msg.loggingIn}</span></>
-                ) : msg.loginButton}
-              </button>
-            </form>
-
-            {/* 社交登录 — 完整功能版 */}
-            <SocialLoginSection />
-
-            {/* 安全提示 */}
-            <div className="rhine-security-note">
-              <Shield size={12} aria-hidden="true" /><span>{msg.securityNote}</span>
-            </div>
-
-            {/* 页脚链接 */}
-            <div className="rhine-footer">
-              <div className="rhine-footer-links">
-                <Link to="/privacy-policy">{msg.privacyPolicy}</Link>
-                <span className="rhine-footer-sep" aria-hidden="true" />
-                <Link to="/terms">{msg.termsOfService}</Link>
+              {/* 页脚链接 */}
+              <div className="rhine-footer">
+                <div className="rhine-footer-links">
+                  <Link to="/privacy">{msg.privacyPolicy}</Link>
+                  <span className="rhine-footer-sep" aria-hidden="true" />
+                  <Link to="/terms">{msg.termsOfService}</Link>
+                </div>
               </div>
-              {/* 注册状态提示 */}
-              <p className="mt-3 text-xs text-neutral-400 dark:text-neutral-500 text-center">
-                平台暂未开放自助注册，请联系管理员开通账号
-              </p>
             </div>
+
+            {/* 注册状态提示 — 卡片正下方，在 rhine-form-content 内垂直堆叠 */}
+            <p className="rhine-registration-notice">
+              平台暂未开放自助注册，请联系管理员开通账号
+            </p>
           </div>
         </div>
       </div>
-    </>
+    </div>
   )
 }

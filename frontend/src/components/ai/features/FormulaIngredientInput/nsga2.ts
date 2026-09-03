@@ -48,6 +48,21 @@ export class NSGAIIOptimizer {
   private totalWeight: number;
   private population: Individual[] = [];
   private convergenceHistory: NSGAIIProgress[] = [];
+  private _shouldStop = false;
+
+  /** 停止优化，在下一次代际检查点生效 */
+  stop(): void {
+    this._shouldStop = true;
+  }
+
+  /** 重置停止标志（用于重新运行） */
+  reset(): void {
+    this._shouldStop = false;
+  }
+
+  get isStopped(): boolean {
+    return this._shouldStop;
+  }
 
   constructor(
     params: NSGAIIParams,
@@ -433,6 +448,13 @@ export class NSGAIIOptimizer {
     this.initializePopulation();
 
     for (let gen = 1; gen <= this.params.generations; gen++) {
+      if (this._shouldStop) {
+        const partialProgress = this.convergenceHistory.length > 0
+          ? this.convergenceHistory[this.convergenceHistory.length - 1]
+          : { generation: 0, best_fitness: 0, avg_fitness: 0, diversity: 0 };
+        onProgress?.({ ...partialProgress, generation: gen - 1 });
+        break;
+      }
       const offspring: Individual[] = [];
       const eliteCount = Math.floor(this.params.populationSize * this.params.eliteRatio / 100);
       

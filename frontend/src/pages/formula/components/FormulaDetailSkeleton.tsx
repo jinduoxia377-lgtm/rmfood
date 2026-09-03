@@ -1,4 +1,4 @@
-import { Skeleton } from '@/components/ui/Skeleton'
+﻿import { Skeleton } from '@/components/ui/Skeleton'
 
 interface FormulaDetailSkeletonProps {
   activeTab?: string
@@ -69,8 +69,9 @@ export function FormulaDetailSkeleton({ activeTab = 'basic' }: FormulaDetailSkel
       <div className="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-6 min-h-[400px]">
         {activeTab === 'basic' && <BasicInfoSkeleton />}
         {activeTab === 'ingredients' && <IngredientsSkeleton />}
-        {activeTab === 'process' && <ProcessSkeleton />}
+        {activeTab === 'steps' && <ProcessSkeleton />}
         {activeTab === 'versions' && <VersionsSkeleton />}
+        {activeTab === 'nutrition' && <BasicInfoSkeleton />}
         {activeTab === 'recommendations' && <RecommendationsSkeleton />}
       </div>
     </div>

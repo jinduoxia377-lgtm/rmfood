@@ -16,12 +16,12 @@
 /* 亮色模式下的登录页变量 */
 :root {
   /* ── 品牌色 → 直接使用全局变量 ── */
-  --rhine-brand: var(--color-primary-600, #28A745);
+  --rhine-brand: var(--color-primary-600, #059669);
   --rhine-brand-light: var(--color-primary-400, #34D399);
-  --rhine-brand-dark: var(--color-primary-700, #1E8E3E);
-  --rhine-brand-glow: rgba(40, 167, 69, 0.35);
-  --rhine-brand-dim: rgba(40, 167, 69, 0.10);
-  --rhine-brand-micro: rgba(40, 167, 69, 0.05);
+  --rhine-brand-dark: var(--color-primary-hover, #059669);
+  --rhine-brand-glow: rgba(5, 150, 105, 0.35);
+  --rhine-brand-dim: rgba(5, 150, 105, 0.10);
+  --rhine-brand-micro: rgba(5, 150, 105, 0.05);
 
   /* ── 辅色 → 直接使用全局变量 ── */
   --rhine-accent: var(--color-blue-600, #2563EB);
@@ -57,15 +57,15 @@
   --rhine-shadow-md: var(--shadow-md, 0 4px 6px -1px rgba(0, 0, 0, 0.1));
   --rhine-shadow-lg: var(--shadow-lg, 0 10px 15px -3px rgba(0, 0, 0, 0.1));
   --rhine-shadow-card:
-    0 0 0 0.5px rgba(40, 167, 69, 0.06),
+    0 0 0 0.5px rgba(5, 150, 105, 0.06),
     0 8px 32px rgba(0, 0, 0, 0.12),
     0 2px 8px rgba(0, 0, 0, 0.06);
   --rhine-shadow-card-hover:
-    0 0 0 1px rgba(40, 167, 69, 0.12),
+    0 0 0 1px rgba(5, 150, 105, 0.12),
     0 12px 40px rgba(0, 0, 0, 0.15),
-    0 0 24px rgba(40, 167, 69, 0.06);
-  --rhine-shadow-glow: 0 0 16px rgba(40, 167, 69, 0.12), 0 0 48px rgba(40, 167, 69, 0.04);
-  --rhine-shadow-input: 0 0 0 3px var(--rhine-brand-dim), 0 0 16px rgba(40, 167, 69, 0.15);
+    0 0 24px rgba(5, 150, 105, 0.06);
+  --rhine-shadow-glow: 0 0 16px rgba(5, 150, 105, 0.12), 0 0 48px rgba(5, 150, 105, 0.04);
+  --rhine-shadow-input: 0 0 0 3px var(--rhine-brand-dim), 0 0 16px rgba(5, 150, 105, 0.15);
 
   /* ── 圆角 → 使用项目圆角令牌 ── */
   --rhine-radius-xs: var(--radius-xs, 2px);
@@ -142,10 +142,51 @@
   opacity: 0.3;
 }
 
+/* ── 点状网格背景 ── */
+.rhine-dot-grid {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.55;
+  animation: rhineDotBreath 8s ease-in-out infinite;
+}
+
+/* 亮色模式 — 浅灰绿点 */
+.login-page .rhine-dot-grid .rhine-dot-fg {
+  fill: rgba(5, 150, 105, 0.22);
+}
+.login-page .rhine-dot-grid .rhine-dot-sub {
+  fill: rgba(5, 150, 105, 0.12);
+}
+.login-page .rhine-dot-grid .rhine-dot-accent {
+  fill: rgba(5, 150, 105, 0.15);
+}
+
+/* 暗色模式 — 翡翠绿点 */
+.dark .rhine-dot-grid .rhine-dot-fg {
+  fill: rgba(5, 150, 105, 0.18);
+}
+.dark .rhine-dot-grid .rhine-dot-sub {
+  fill: rgba(5, 150, 105, 0.08);
+}
+.dark .rhine-dot-grid .rhine-dot-accent {
+  fill: rgba(5, 150, 105, 0.12);
+}
+
 /* 暗色模式 */
 .dark .login-page {
   background: var(--bg-canvas, #000000);
   color: var(--text-primary, #F5F5F7);
+}
+
+/* ── 暗色模式品牌色覆盖：强制使用深翡翠绿，避免 dark.css 中 --color-primary-600 过浅 ── */
+.dark {
+  --rhine-brand: #059669;
+  --rhine-brand-dark: #047857;
+  --rhine-brand-glow: rgba(5, 150, 105, 0.45);
+  --rhine-brand-dim: rgba(5, 150, 105, 0.12);
+  --rhine-brand-micro: rgba(5, 150, 105, 0.06);
 }
 
 .dark .login-page .rhine-hex-grid {
@@ -159,7 +200,7 @@
   z-index: 1;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 80% 60% at 25% 25%, rgba(40, 167, 69, 0.04) 0%, transparent 70%),
+    radial-gradient(ellipse 80% 60% at 25% 25%, rgba(5, 150, 105, 0.04) 0%, transparent 70%),
     radial-gradient(ellipse 60% 50% at 70% 55%, rgba(37, 99, 235, 0.03) 0%, transparent 70%),
     radial-gradient(ellipse 40% 30% at 50% 80%, rgba(245, 158, 11, 0.02) 0%, transparent 70%),
     linear-gradient(to bottom, transparent 55%, var(--bg-surface-raised, #1C1C1E) 95%, var(--bg-canvas, #000000) 100%);
@@ -300,7 +341,7 @@
   width: 36px;
   height: 36px;
   border-radius: var(--rhine-radius-sm);
-  background: linear-gradient(135deg, var(--rhine-brand), var(--color-primary-hover, #28A745));
+  background: linear-gradient(135deg, var(--rhine-brand), var(--color-primary-hover, #059669));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -384,6 +425,7 @@
   background: var(--rhine-bg);
   width: 100%;
   justify-content: center;
+  align-items: center;
   left: 0;
   right: auto;
   transform: none;
@@ -392,17 +434,13 @@
 @media (max-width: 1023px) {
   .login-page .rhine-form-panel {
     width: 100%;
-    padding-top: 230px;
+    /* 移除固定 padding-top，改为让 card 自身决定位置 */
+    padding-top: 0;
     align-items: flex-start;
+    justify-content: flex-start;
     left: 0;
     right: auto;
     transform: none;
-  }
-}
-
-@media (max-width: 767px) {
-  .rhine-form-panel {
-    padding: 140px var(--rhine-space-4) var(--rhine-space-4);
   }
 }
 
@@ -441,7 +479,7 @@
   width: 30px;
   height: 30px;
   border-radius: 7px;
-  background: linear-gradient(135deg, var(--rhine-brand), var(--color-primary-hover, #28A745));
+  background: linear-gradient(135deg, var(--rhine-brand), var(--color-primary-hover, #059669));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -456,11 +494,6 @@
   color: var(--rhine-text);
 }
 
-/* ── 亮色模式表单面板 ── */
-.login-page .rhine-form-panel {
-  background: var(--rhine-bg);
-}
-
 /* ── 暗色模式表单面板 ── */
 .dark .login-page .rhine-form-panel {
   background: var(--bg-canvas, #000000);
@@ -468,6 +501,7 @@
   left: auto;
   width: 44%;
   justify-content: flex-end;
+  align-items: center;
 }
 
 /* ── 玻璃态卡片 — 暗色模式 ── */
@@ -481,7 +515,7 @@
   border-radius: var(--rhine-radius-xl);
   padding: var(--rhine-space-10);
   box-shadow:
-    0 0 0 0.5px rgba(40, 167, 69, 0.06),
+    0 0 0 0.5px rgba(5, 150, 105, 0.06),
     0 8px 32px rgba(0, 0, 0, 0.55),
     0 2px 8px rgba(0, 0, 0, 0.3);
   position: relative;
@@ -494,17 +528,17 @@
   inset: -1px;
   z-index: -1;
   border-radius: inherit;
-  background: linear-gradient(160deg, rgba(40, 167, 69, 0.06), transparent 40%, transparent 60%, rgba(37, 99, 235, 0.04));
+  background: linear-gradient(160deg, rgba(5, 150, 105, 0.06), transparent 40%, transparent 60%, rgba(37, 99, 235, 0.04));
   pointer-events: none;
 }
 
 .dark .login-page .rhine-card:hover {
   background: rgba(var(--bg-surface-rgb, 44, 44, 46), 0.78);
-  border-color: rgba(40, 167, 69, 0.20);
+  border-color: rgba(5, 150, 105, 0.20);
   box-shadow:
-    0 0 0 1px rgba(40, 167, 69, 0.12),
+    0 0 0 1px rgba(5, 150, 105, 0.12),
     0 12px 40px rgba(0, 0, 0, 0.6),
-    0 0 24px rgba(40, 167, 69, 0.06);
+    0 0 24px rgba(5, 150, 105, 0.06);
 }
 
 @media (max-width: 639px) {
@@ -526,7 +560,7 @@
   }
 }
 
-/* ── 亮色模式卡片 ── */
+/* ── 亮色模式卡片 — 补充微妙背景区分 ── */
 .login-page .rhine-card {
   width: 100%;
   max-width: 430px;
@@ -536,11 +570,28 @@
   padding: var(--rhine-space-10);
   box-shadow: var(--rhine-shadow-card);
   transition: all var(--rhine-duration-normal) var(--rhine-ease-out);
+  position: relative;
+}
+
+/* 亮色模式卡片 hover 微光边框 */
+.login-page .rhine-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(160deg, rgba(5,150,105,0.04), transparent 50%);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--rhine-duration-normal) var(--rhine-ease-out);
+}
+
+.login-page .rhine-card:hover::after {
+  opacity: 1;
 }
 
 .login-page .rhine-card:hover {
   box-shadow: var(--rhine-shadow-card-hover);
-  border-color: rgba(40, 167, 69, 0.2);
+  border-color: rgba(5, 150, 105, 0.2);
 }
 
 @media (max-width: 639px) {
@@ -552,7 +603,7 @@
 
 /* ── 卡片头部 ── */
 .rhine-card-header {
-  margin-bottom: var(--rhine-space-8);
+  margin-bottom: var(--rhine-space-5); /* 从 4rem → 2.5rem，减少顶部浪费 */
 }
 
 .rhine-card-header h2 {
@@ -579,7 +630,7 @@
 
 .rhine-label {
   display: block;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: var(--rhine-weight-semibold);
   color: var(--rhine-text-secondary);
   margin-bottom: var(--rhine-space-2);
@@ -606,7 +657,7 @@
   width: 100%;
   height: 50px;
   padding: 0 var(--rhine-space-4) 0 46px;
-  font-size: 14.5px;
+  font-size: 15px;
   font-family: var(--rhine-font-body);
   color: var(--rhine-text);
   background: var(--rhine-surface);
@@ -630,7 +681,7 @@
 }
 
 .rhine-input.filled {
-  border-color: rgba(40, 167, 69, 0.15);
+  border-color: rgba(5, 150, 105, 0.15);
 }
 
 /* 错误态 — 使用项目 error 色 */
@@ -735,13 +786,21 @@
   background: var(--rhine-border);
   border-radius: 2px;
   overflow: hidden;
+  display: flex;
+  gap: 2px;
 }
 
 .rhine-strength-fill {
   height: 100%;
   border-radius: 2px;
-  transition: width var(--rhine-duration-normal) var(--rhine-ease-out),
-              background-color var(--rhine-duration-normal) var(--rhine-ease-out);
+  width: 0%;
+  transition: width 0.3s var(--rhine-ease-out),
+              background-color 0.3s var(--rhine-ease-out);
+  flex: 1;
+}
+
+.rhine-strength-fill.active {
+  width: 100%;
 }
 
 /* ── 暗色模式强度条 ── */
@@ -798,6 +857,17 @@
   border-color: var(--rhine-border);
 }
 
+/* ── 自定义 checkbox 焦点样式 (P1: 键盘可访问性) ── */
+.rhine-remember-check:focus-visible {
+  outline: 2px solid var(--rhine-brand);
+  outline-offset: 2px;
+  border-radius: var(--rhine-radius-xs);
+}
+
+.dark .rhine-remember-check:focus-visible {
+  outline-color: var(--rhine-brand-light, #34D399);
+}
+
 /* 忘记密码链接 — 使用项目辅色 */
 .rhine-forgot-link {
   font-size: 13px;
@@ -820,7 +890,7 @@
   font-family: var(--rhine-font-body);
   letter-spacing: 0.06em;
   color: var(--color-primary-contrast-text, #ffffff);
-  background: linear-gradient(135deg, var(--rhine-brand), var(--color-primary-hover, #28A745));
+  background: linear-gradient(135deg, var(--rhine-brand), var(--color-primary-hover, #059669));
   border: none;
   border-radius: var(--rhine-radius-md);
   cursor: pointer;
@@ -835,8 +905,8 @@
 }
 
 .rhine-submit-btn:hover {
-  background: linear-gradient(135deg, var(--color-primary-hover, #28A745), var(--color-primary, #34C759));
-  box-shadow: 0 0 28px rgba(40, 167, 69, 0.45), 0 0 56px rgba(40, 167, 69, 0.15), 0 4px 12px rgba(0, 0, 0, 0.35);
+  background: linear-gradient(135deg, var(--color-primary-hover, #059669), var(--color-primary-500, #10b981));
+  box-shadow: 0 0 28px var(--rhine-brand-glow), 0 0 56px rgba(16, 185, 129, 0.1), 0 4px 12px rgba(0, 0, 0, 0.35);
   transform: translateY(-1px);
 }
 
@@ -845,15 +915,27 @@
 }
 
 .rhine-submit-btn:disabled {
-  opacity: 0.45;
+  opacity: 0.6;
+  color: rgba(255, 255, 255, 0.88);
   cursor: not-allowed;
   transform: none;
   box-shadow: 0 0 8px var(--rhine-brand-dim);
 }
 
 .rhine-submit-btn:disabled:hover {
-  background: linear-gradient(135deg, var(--rhine-brand), var(--color-primary-hover, #28A745));
+  background: linear-gradient(135deg, var(--rhine-brand), var(--color-primary-hover, #059669));
   transform: none;
+}
+
+/* ── 加载态按钮 — 防止重复点击视觉反馈 ── */
+.rhine-submit-btn.loading {
+  pointer-events: none;
+  user-select: none;
+}
+
+.rhine-submit-btn.loading:hover {
+  transform: none;
+  box-shadow: 0 0 8px var(--rhine-brand-dim);
 }
 
 /* ── 涟漪 ── */
@@ -1051,7 +1133,7 @@
 }
 
 .rhine-social-label {
-  font-size: 11.5px;
+  font-size: 12px;
   color: var(--rhine-text-dim);
   transition: color var(--rhine-duration-fast) var(--rhine-ease-out);
   font-weight: var(--rhine-weight-medium);
@@ -1062,7 +1144,7 @@
 }
 
 .dark .rhine-social-label {
-  color: var(--text-dim, #94A3B8);
+  color: var(--text-muted, #CBD5E1);
 }
 
 .rhine-social-spinner {
@@ -1132,17 +1214,17 @@
   margin-top: var(--rhine-space-5);
   padding: var(--rhine-space-3) var(--rhine-space-4);
   background: var(--rhine-brand-micro);
-  border: 1px solid rgba(40, 167, 69, 0.08);
+  border: 1px solid rgba(5, 150, 105, 0.08);
   border-radius: var(--rhine-radius-md);
   text-align: center;
   font-size: 11px;
-  color: rgba(40, 167, 69, 0.6);
+  color: rgba(5, 150, 105, 0.6);
 }
 
 .rhine-credentials-hint code {
   font-family: var(--rhine-font-mono);
   font-size: 10.5px;
-  background: rgba(40, 167, 69, 0.08);
+  background: rgba(5, 150, 105, 0.08);
   padding: 2px 6px;
   border-radius: 3px;
   font-weight: var(--rhine-weight-semibold);
@@ -1168,7 +1250,11 @@
 
 @media (max-width: 767px) {
   .rhine-form-panel {
-    padding: 150px var(--rhine-space-4) var(--rhine-space-4);
+    /* 移除硬编码 150px，改为紧贴移动端品牌条底部（~60px） */
+    padding-top: 60px;
+    padding-left: var(--rhine-space-4);
+    padding-right: var(--rhine-space-4);
+    padding-bottom: var(--rhine-space-4);
   }
   .rhine-card-header h2 {
     font-size: 22px;
@@ -1311,4 +1397,152 @@
   0%, 100% { transform: translateX(0); }
   15%, 45%, 75% { transform: translateX(-4px); }
   30%, 60%, 90% { transform: translateX(4px); }
+}
+
+/* ── 点状网格呼吸动画 ── */
+@keyframes rhineDotBreath {
+  0%, 100% { opacity: 0.50; }
+  50%       { opacity: 0.70; }
+}
+
+/* ── 亮色模式品牌装饰层 — 柔和光斑营造层次感 ── */
+.rhine-light-decor {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.rhine-light-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  animation: rhineOrbFloat 12s ease-in-out infinite alternate;
+}
+
+.rhine-light-orb-1 {
+  width: 420px;
+  height: 420px;
+  top: -10%;
+  left: -8%;
+  background: radial-gradient(circle, rgba(5, 150, 105, 0.08) 0%, transparent 70%);
+  animation-delay: 0s;
+}
+
+.rhine-light-orb-2 {
+  width: 320px;
+  height: 320px;
+  bottom: 5%;
+  right: 15%;
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.06) 0%, transparent 70%);
+  animation-delay: -4s;
+  animation-duration: 15s;
+}
+
+.rhine-light-orb-3 {
+  width: 200px;
+  height: 200px;
+  top: 40%;
+  left: 30%;
+  background: radial-gradient(circle, rgba(5, 150, 105, 0.05) 0%, transparent 70%);
+  animation-delay: -8s;
+  animation-duration: 18s;
+}
+
+@keyframes rhineOrbFloat {
+  0%   { transform: translate(0, 0) scale(1); }
+  50%  { transform: translate(20px, -15px) scale(1.05); }
+  100% { transform: translate(-10px, 20px) scale(0.95); }
+}
+
+/* 暗色模式隐藏光斑 */
+.dark .rhine-light-decor {
+  display: none;
+}
+
+/* ── 粒子 Canvas 平滑颜色过渡 ── */
+.rhine-particle-canvas {
+  transition: opacity 0.6s ease;
+}
+
+/* ── 表单加载骨架 shimmer 效果 ── */
+.rhine-card.loading-state {
+  animation: rhineCardShimmer 1.8s ease-in-out infinite;
+}
+
+@keyframes rhineCardShimmer {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.85; }
+}
+
+/* ── 表单内容容器 — 卡片 + 注册提示 垂直堆叠 ── */
+.rhine-form-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 430px;
+}
+
+/* 移动端内容容器撑满宽度 */
+@media (max-width: 1023px) {
+  .rhine-form-content {
+    width: 100%;
+    max-width: 460px;
+  }
+}
+
+@media (max-width: 767px) {
+  .rhine-form-content {
+    max-width: 100%;
+    padding: 0 var(--rhine-space-2);
+  }
+}
+
+/* ── 注册提示 — 卡片下方 ── */
+.rhine-registration-notice {
+  margin-top: var(--rhine-space-5);
+  font-size: 12px;
+  color: var(--text-muted, #94A3B8);
+  text-align: center;
+  line-height: 1.6;
+  max-width: 430px;
+  width: 100%;
+}
+
+/* 移动端注册提示 */
+@media (max-width: 767px) {
+  .rhine-registration-notice {
+    font-size: 11px;
+    margin-top: var(--rhine-space-3);
+  }
+}
+
+/* ── 移动端优化：避免光斑遮挡表单 ── */
+@media (max-width: 1023px) {
+  .rhine-light-orb-1 { width: 280px; height: 280px; }
+  .rhine-light-orb-2 { width: 200px; height: 200px; }
+  .rhine-light-orb-3 { display: none; }
+}
+
+/* ── 低端设备粒子降级（触控设备 + 小内存感知） ── */
+@media (max-width: 767px) {
+  .rhine-particle-canvas {
+    opacity: 0.6;
+  }
+}
+
+/* ── prefers-reduced-data 用户减少背景渲染 ── */
+@media (prefers-reduced-data: reduce) {
+  .rhine-particle-canvas,
+  .rhine-hex-grid {
+    display: none !important;
+  }
+  .rhine-dot-grid {
+    opacity: 0.3;
+  }
+  .rhine-light-decor {
+    display: none !important;
+  }
 }

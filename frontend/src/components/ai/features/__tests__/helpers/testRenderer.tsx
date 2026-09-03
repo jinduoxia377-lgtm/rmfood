@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { renderHook, RenderHookOptions, RenderHookResult, act as reactAct } from '@testing-library/react';
 import { waitFor, waitForOptions } from '@testing-library/react';
 

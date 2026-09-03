@@ -14,15 +14,7 @@ export { BatchSafetyChecker } from './BatchSafetyChecker'
 export type { BatchSafetyCheckerProps, BatchTask, FileUploadData, ReviewAction } from './BatchSafetyChecker'
 
 export { RegulationBrowser } from './RegulationBrowser'
-export type {
-  RegulationBrowserProps,
-  RegulationDetail,
-  Region,
-  RegulationCategory,
-  LimitRequirement,
-  RegulationUpdate,
-  ComplianceIndicatorProps,
-} from './RegulationBrowser'
+export type { RegulationBrowserProps } from './RegulationBrowser'
 
 export { SafetyReportTemplate } from './SafetyReportTemplate'
 export type { SafetyReportTemplateProps, ReportTemplate, ReportData, ReportSection } from './SafetyReportTemplate'

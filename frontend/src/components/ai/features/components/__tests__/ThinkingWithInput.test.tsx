@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ThinkingWithInput 组件单元测试
  *
  * 测试内容：

@@ -1,13 +1,10 @@
 /**
- * DataSources 组件 v10 — Dashboard 数据基础设施风格
+ * DataSources 组件 v11 — 补充国际标准 + 法规链接
  *
- * 升级要点（v10）：
- *   - 顶部深色聚合统计横幅，仿数据看板头部
- *   - 卡片布局改为 2+3 双行结构（主数据源优先）
- *   - 每张卡片左侧彩色竖条标识数据来源
- *   - 统计数字升级为等宽字体 + 大字号，突出数据感
- *   - 功能标签改为内联小药丸，更紧凑
- *   - hover 显示"连接就绪"状态指示
+ * 升级要点（v11）：
+ *   - 新增「国际标准」数据源卡片（FDA GRAS / EFSA / JFSA / Codex）
+ *   - 国标卡片增加法规原文链接
+ *   - 卡片底部展示可点击的标准链接
  */
 import { useState } from 'react';
 import { Reveal } from '../shared/Reveal';
@@ -15,7 +12,7 @@ import { cn } from '@/lib/utils';
 import {
   dataSources, type DataSource,
 } from '../data/dataSources';
-import { Database, Network, Shield, Scale, FlaskConical, RefreshCw } from 'lucide-react';
+import { Database, Network, Shield, Scale, FlaskConical, RefreshCw, Globe, ExternalLink } from 'lucide-react';
 
 // ── 聚合统计 ──────────────────────────────────────────────────────
 const TOTAL_ENTITIES = '38,074';
@@ -50,6 +47,7 @@ function DataSourceCard({ data, index }: { data: DataSource; index: number }) {
     'network':       <Network size={14} />,
     'shield-check':  <Shield size={14} />,
     'scale':         <Scale size={14} />,
+    'globe':         <Globe size={14} />,
   };
 
   const isPrimary = index < 2; // 前两张为主数据源，更大更显眼
@@ -106,6 +104,27 @@ function DataSourceCard({ data, index }: { data: DataSource; index: number }) {
           </div>
         </div>
 
+        {/* 法规原文链接 */}
+        {data.links && data.links.length > 0 && (
+          <div className="lp-data-card-links">
+            {data.links.map(link => (
+              <a
+                key={link.label}
+                href={link.url}
+                target="_blank"
+                rel="noreferrer"
+                className="lp-data-card-link"
+                style={{ color: data.color }}
+                onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.opacity = '0.7'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.opacity = '1'; }}
+              >
+                <ExternalLink size={10} className="shrink-0" />
+                <span className="truncate">{link.label}</span>
+              </a>
+            ))}
+          </div>
+        )}
+
         {/* 底部：统计 + 连接状态 */}
         <div className="lp-data-card-footer">
           <div className="lp-data-card-stat">
@@ -136,9 +155,9 @@ export default function DataSources() {
           <div className="lp-data-section-header">
             <div className="lp-data-section-title-group">
               <span className="lp-section-tag block mb-2">数据底座</span>
-              <h2 className="lp-h2 mb-1">5 大数据源 · 128,000+ 知识节点</h2>
+              <h2 className="lp-h2 mb-1">6 大数据源 · 128,000+ 知识节点</h2>
               <p className="lp-data-section-desc">
-                覆盖中药材、活性肽、知识图谱、法规标准五大维度，支持跨库联合查询与实时同步。
+                覆盖中药材、活性肽、知识图谱、法规标准、国际标准五大维度，支持跨库联合查询与实时同步。
               </p>
             </div>
             <span className="lp-caption shrink-0 hidden sm:block" style={{ color: '#64748b' }}>
@@ -151,7 +170,7 @@ export default function DataSources() {
         <Reveal>
           <div className="lp-data-panel mb-6" style={{ background: '#0f172a' }}>
             {[
-              { value: '5',  label: '数据源',  color: '#34d399' },
+              { value: '6',  label: '数据源',  color: '#34d399' },
               { value: '38K+', label: '知识实体', color: '#60a5fa' },
               { value: '128K', label: '图谱节点', color: '#a78bfa' },
               { value: SYNC_STATUS, label: '同步状态', color: '#64748b' },
@@ -174,7 +193,7 @@ export default function DataSources() {
           ))}
         </div>
 
-        {/* 次数据源（后3张） */}
+        {/* 次数据源（后4张） */}
         <div className="lp-data-secondary-row">
           {dataSources.slice(2).map((ds, i) => (
             <DataSourceCard key={ds.id} data={ds} index={i + 2} />

@@ -26,7 +26,7 @@ interface MembersTabProps {
   teams: Team[];
   memberCount: number;
   teamCount: number;
-  organization: any;
+  organization?: { storageUsed: number; storageLimit: number; apiCalls?: number; plan: string };
   onInvite?: (email: string, role?: Role) => Promise<void>;
   onRemoveMember?: (memberId: number) => Promise<void>;
   onUpdateRole?: (memberId: number, role: Role) => Promise<void>;
@@ -259,9 +259,9 @@ const MembersTab = memo(
     const activeMembers = members.filter((m) => m.status === 'active').length;
 
     return (
-      <div className="p-6 space-y-6">
+      <div className="p-8 space-y-8">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
           <div>
             <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">成员管理</h2>
             <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
@@ -278,7 +278,7 @@ const MembersTab = memo(
         </div>
 
         {/* Search & Filters */}
-        <div className="flex flex-col sm:flex-row gap-3">
+        <div className="flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
             <input
@@ -360,22 +360,22 @@ const MembersTab = memo(
               <table className="w-full" aria-label="成员列表">
                 <thead>
                   <tr className="border-b border-neutral-100 dark:border-neutral-700 bg-slate-50/50 dark:bg-neutral-800/50">
-                    <th className="px-5 py-3 text-left text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+                    <th className="px-5 py-4 text-left text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
                       成员
                     </th>
-                    <th className="px-5 py-3 text-left text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+                    <th className="px-5 py-4 text-left text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
                       角色
                     </th>
-                    <th className="hidden md:table-cell px-5 py-3 text-left text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+                    <th className="hidden md:table-cell px-5 py-4 text-left text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
                       加入时间
                     </th>
-                    <th className="hidden lg:table-cell px-5 py-3 text-left text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+                    <th className="hidden lg:table-cell px-5 py-4 text-left text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
                       最后活跃
                     </th>
-                    <th className="px-5 py-3 text-left text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+                    <th className="px-5 py-4 text-left text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
                       状态
                     </th>
-                    <th className="px-5 py-3 text-right text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+                    <th className="px-5 py-4 text-right text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
                       操作
                     </th>
                   </tr>
@@ -483,7 +483,7 @@ const MembersTab = memo(
 
           {/* Table Footer */}
           {filteredMembers.length > 0 && (
-            <div className="px-5 py-3 border-t border-neutral-100 dark:border-neutral-700 flex items-center justify-between text-sm text-neutral-500 dark:text-neutral-400">
+            <div className="px-5 py-4 border-t border-neutral-100 dark:border-neutral-700 flex items-center justify-between text-sm text-neutral-500 dark:text-neutral-400">
               <span>
                 显示 {filteredMembers.length} / {memberCount} 名成员
               </span>

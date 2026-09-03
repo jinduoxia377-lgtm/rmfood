@@ -46,6 +46,7 @@ const FaqsPage = lazyWithPreload(() => import('@/pages/public/FaqsPage'));
 const AboutPage = lazyWithPreload(() => import('@/pages/public/AboutPage'));
 const CareersPage = lazyWithPreload(() => import('@/pages/public/CareersPage'));
 const PrivacyPage = lazyWithPreload(() => import('@/pages/public/PrivacyPage'));
+const TermsPage = lazyWithPreload(() => import('@/pages/public/TermsPage'));
 
 // 页面懒加载
 const FormulaListPage = lazyWithPreload(() => import('@/pages/formula/FormulaListPage'));
@@ -70,6 +71,8 @@ const AcademicReportPage = lazyWithPreload(() => import('@/pages/academic/Academ
 
 // 🔒 P3-1: 数据库页面 - 数据密集型
 const DatabasePage = lazyWithPreload(() => import('@/pages/database/DatabasePage'));
+// 🔒 P3-1: 合规标准页面 - 独立页面
+const RegulationsPage = lazyWithPreload(() => import('@/pages/regulations/RegulationsPage'));
 
 // 🔒 术语管理页面
 const TerminologyPage = lazyWithPreload(() => import('@/pages/terminology/TerminologyPage'));
@@ -93,6 +96,7 @@ const TokenDocPage = lazyWithPreload(() => import('@/pages/TokenDocPage'));
 // 🔒 P3-1: SSS 企业级功能页面 - 大体积，懒加载
 const AnalyticsPage = lazyWithPreload(() => import('@/pages/analytics/AnalyticsPage'));
 const OrganizationsPage = lazyWithPreload(() => import('@/pages/organizations/OrganizationsPage'));
+const OrganizationDetailPage = lazyWithPreload(() => import('@/pages/organizations/components/OrganizationDetail'));
 const IntegrationsPage = lazyWithPreload(() => import('@/pages/integrations/IntegrationsPage'));
 
 /**
@@ -231,6 +235,7 @@ const router = createBrowserRouter([
   { path: '/about',  element: <AboutPage /> },
   { path: '/careers', element: <CareersPage /> },
   { path: '/privacy', element: <PrivacyPage /> },
+  { path: '/terms',   element: <TermsPage /> },
 
   // 受保护路由 — 带 MainLayout 布局
   {
@@ -405,6 +410,14 @@ const router = createBrowserRouter([
         ),
       },
       {
+        path: 'regulations',
+        element: (
+          <Suspense fallback={<LoadingComponent />}>
+            <RegulationsPage />
+          </Suspense>
+        ),
+      },
+      {
         path: 'terminology',
         element: (
           <Suspense fallback={<LoadingComponent />}>
@@ -445,6 +458,14 @@ const router = createBrowserRouter([
         element: (
           <Suspense fallback={<LoadingComponent />}>
             <OrganizationsPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'organizations/:id',
+        element: (
+          <Suspense fallback={<LoadingComponent />}>
+            <OrganizationDetailPage />
           </Suspense>
         ),
       },

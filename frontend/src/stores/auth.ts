@@ -70,7 +70,14 @@ export const useAuthStore = create<AuthState>()((set, get) => {
         // 1. 调用登录 API，后端会设置 HttpOnly Cookie
         await authApi.login({ username, password })
 
-        // 2. 立即获取用户信息 — 这一步验证 Cookie 确实被浏览器接受了
+        // 2. 获取 CSRF token（必须在登录成功后、任何状态变更请求之前）
+        try {
+          await api.get<{ csrf_token: string }>('/auth/csrf')
+        } catch {
+          // CSRF 初始化失败不阻断登录流程
+        }
+
+        // 3. 立即获取用户信息 — 这一步验证 Cookie 确实被浏览器接受了
         //    使用 _loginFlow 标记跳过 token 刷新逻辑（避免登录期间 401 触发重定向）
         try {
           const { data: user } = await api.get<User>('/auth/me', {
@@ -85,7 +92,17 @@ export const useAuthStore = create<AuthState>()((set, get) => {
           throw new Error('登录失败：Cookie 未被接受，请检查 CORS 和端口配置')
         }
 
-        // 3. 验证通过后，连接 WebSocket
+        // 3. 初始化 CSRF token（登录成功后必须获取，否则后续状态变更请求会 403）
+        try {
+          const csrfResp = await api.get<{ csrf_token: string }>('/auth/csrf')
+          // CSRF token 已由后端通过 Set-Cookie 设置，响应体也返回了 token 值
+          // 前端 interceptor 会通过 document.cookie 自动读取并注入 X-CSRF-Token 头
+          if (import.meta.env.DEV) logger.info('[Auth] CSRF token initialized')
+        } catch (csrfErr) {
+          logger.warn('[Auth] Failed to initialize CSRF token:', csrfErr)
+        }
+
+        // 4. 连接 WebSocket
         connectWebSocket().then((connected) => {
           logger.info('WebSocket connected after login:', connected)
         }).catch((error) => {

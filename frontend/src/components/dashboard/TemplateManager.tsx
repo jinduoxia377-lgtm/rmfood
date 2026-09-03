@@ -176,7 +176,7 @@ export function TemplateManager({ currentLayout, onUpdate, className }: Template
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <FileText size={20} className="text-secondary-600 dark:text-secondary-400" />
-            <CardTitle as="h3" className="text-sm font-bold">模板管理</CardTitle>
+            <CardTitle as="h3" className="text-sm font-semibold">模板管理</CardTitle>
           </div>
           <Badge size="sm">{templates.length}</Badge>
         </div>

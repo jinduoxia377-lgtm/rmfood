@@ -8,7 +8,8 @@
  *   - 全页面间距宽松（space-y-6、card p-6、section gap-6）
  *   - 去除侧边栏，内容全宽展开
  */
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useRef, type RefObject } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 import {
   Building2,
@@ -31,6 +32,7 @@ import {
   RefreshCw,
   AlertCircle,
   BarChart3,
+  Loader2,
 } from 'lucide-react'
 import {
   Button,
@@ -45,6 +47,7 @@ import {
   EmptyStateIllustration,
   useToast,
 } from '@/components/ui'
+import api from '@/api/client'
 import { useOrganizations } from '@/hooks/useOrganizations'
 import type { Organization } from '@/hooks/useOrganizations'
 import { AnalyticsErrorBoundary } from '@/components/analytics/AnalyticsErrorBoundary'
@@ -53,6 +56,10 @@ import { OrganizationList } from './components/OrganizationList'
 import { OrganizationAnalytics } from './components/OrganizationAnalytics'
 import { BulkOperationsPanel } from './components/BulkOperationsPanel'
 import { DataExportDialog } from './components/DataExportDialog'
+import { CloneOrgDialog } from './components/CloneOrgDialog'
+import { CreateOrgWizard } from './components/CreateOrgWizard'
+import { ShortcutHints, useKeyboardShortcuts } from '@/hooks/useOrgKeyboardShortcuts.tsx'
+import { useRecentOrganizations } from '@/hooks/useRecentOrganizations'
 import { logger } from '@/utils/safeLogger'
 
 type OrgTab = 'overview' | 'analytics' | 'my-orgs' | 'all' | 'trash'
@@ -112,7 +119,13 @@ export default function OrganizationsPage() {
   })
   const [showFilters, setShowFilters] = useState(false)
   const [showExportDialog, setShowExportDialog] = useState(false)
+  const [showCloneDialog, setShowCloneDialog] = useState(false)
+  const [cloneSourceOrg, setCloneSourceOrg] = useState<{ id: number; name: string; slug: string; plan: string } | null>(null)
   const toast = useToast()
+  const navigate = useNavigate()
+  const { recent, addRecent, clearRecent } = useRecentOrganizations()
+  const [showCreateWizard, setShowCreateWizard] = useState(false)
+  const searchInputRef = useRef<HTMLInputElement>(null)
 
   const {
     organizations,
@@ -128,7 +141,44 @@ export default function OrganizationsPage() {
     someSelected,
     createOrganization,
     refetch,
+    trashedOrganizations,
+    trashLoading,
+    fetchTrashedOrganizations,
+    restoreOrganization,
+    permanentDeleteOrganization,
+    cloneOrganization,
   } = useOrganizations({ autoFetch: true })
+
+  // Keyboard shortcuts
+  useKeyboardShortcuts({
+    onAction: (action) => {
+      switch (action) {
+        case 'new':
+          setShowCreateWizard(true)
+          break
+        case 'search':
+          searchInputRef.current?.focus()
+          break
+        case 'overview':
+          setActiveTab('overview')
+          break
+        case 'myOrgs':
+          setActiveTab('my-orgs')
+          break
+        case 'all':
+          setActiveTab('all')
+          break
+        case 'analytics':
+          setActiveTab('analytics')
+          break
+        case 'escape':
+          setShowFilters(false)
+          setShowExportDialog(false)
+          setShowCloneDialog(false)
+          break
+      }
+    },
+  })
 
   const filteredOrganizations = useMemo(() => {
     let result = [...organizations]
@@ -209,6 +259,17 @@ export default function OrganizationsPage() {
     [organizations],
   )
 
+  const handleCloneOrg = useCallback(async (newName: string): Promise<number> => {
+    if (!cloneSourceOrg) throw new Error('没有源组织')
+    const newId = await cloneOrganization(cloneSourceOrg.id, newName)
+    return newId
+  }, [cloneSourceOrg, cloneOrganization])
+
+  const openCloneDialog = useCallback((org: Organization) => {
+    setCloneSourceOrg({ id: org.id, name: org.name, slug: org.slug, plan: org.plan })
+    setShowCloneDialog(true)
+  }, [])
+
   const handleCreateOrg = useCallback(async () => {
     try {
       await createOrganization({
@@ -223,28 +284,46 @@ export default function OrganizationsPage() {
     }
   }, [createOrganization, toast])
 
+  const [isProcessing, setIsProcessing] = useState(false)
+
   const handleBulkAction = useCallback(
     async (action: string) => {
-      const count = selectedIds.size
-      switch (action) {
-        case 'export':
-          setShowExportDialog(true)
-          break
-        case 'archive':
-          toast.success(`已归档 ${count} 个组织`)
-          clearSelection()
-          break
-        case 'delete':
-          toast.warning(`确定要删除 ${count} 个组织吗? 此操作不可恢复!`)
-          break
-        case 'permission':
-          toast.info('权限修改功能开发中...')
-          break
-        default:
-          toast.info(`批量${action}功能开发中...`)
+      const ids = Array.from(selectedIds)
+      const count = ids.length
+      setIsProcessing(true)
+      try {
+        switch (action) {
+          case 'export':
+            setShowExportDialog(true)
+            break
+          case 'archive':
+            await Promise.all(ids.map(id => api.patch(`/organizations/${id}/archive`, { isActive: false })))
+            toast.success(`已归档 ${count} 个组织`)
+            clearSelection()
+            refetch()
+            break
+          case 'delete':
+            // 先确认再删除
+            if (window.confirm(`确定要删除 ${count} 个组织吗？此操作不可恢复！`)) {
+              await Promise.all(ids.map(id => api.delete(`/organizations/${id}`)))
+              toast.success(`已删除 ${count} 个组织`)
+              clearSelection()
+              refetch()
+            }
+            break
+          case 'permission':
+            toast.info('权限批量修改功能开发中...')
+            break
+          default:
+            toast.info(`批量${action}功能开发中...`)
+        }
+      } catch (err: any) {
+        toast.error(err?.response?.data?.detail || '操作失败，请重试')
+      } finally {
+        setIsProcessing(false)
       }
     },
-    [selectedIds.size, toast, clearSelection],
+    [selectedIds, toast, clearSelection, refetch],
   )
 
   const handleExportComplete = useCallback(
@@ -258,7 +337,7 @@ export default function OrganizationsPage() {
 
   return (
     <AnalyticsErrorBoundary>
-      <div className="space-y-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-page-enter">
+      <div className="space-y-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 animate-page-enter">
 
         {/* ── 顶部横幅 — 与 Dashboard 一致 ── */}
         <div className="rounded-xl bg-primary-600 p-6 text-white shadow-sm">
@@ -267,7 +346,7 @@ export default function OrganizationsPage() {
               <h1 className="text-xl font-bold leading-snug">组织管理</h1>
               <p className="mt-1 text-white/90 text-sm">管理您的组织、团队成员和资源配额</p>
             </div>
-            <Button onClick={handleCreateOrg} variant="secondary" size="sm">
+            <Button onClick={() => setShowCreateWizard(true)} variant="secondary" size="sm">
               <Plus className="w-4 h-4 mr-2" />
               创建组织
             </Button>
@@ -276,7 +355,7 @@ export default function OrganizationsPage() {
 
         {/* ── 横向药丸 Tab — 与 Settings / Dashboard 一致风格 ── */}
         <div className="overflow-x-auto pb-1 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
-          <div className="inline-flex items-center gap-1 bg-neutral-100 dark:bg-neutral-800/60 rounded-xl p-1 min-w-max">
+          <div className="inline-flex items-center gap-1.5 bg-neutral-100 dark:bg-neutral-800/60 rounded-xl p-1.5 min-w-max">
             {TABS.map(({ id, label, icon: Icon }) => (
               <button
                 key={id}
@@ -299,7 +378,7 @@ export default function OrganizationsPage() {
         {activeTab === 'overview' && (
           <div className="space-y-6">
             {/* KPI 统计卡片 */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
               <Card className="bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-800/50 dark:to-neutral-700/50 border-neutral-200 dark:border-neutral-700">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-3">
@@ -379,7 +458,45 @@ export default function OrganizationsPage() {
               allSelected={allSelected}
               clearSelection={clearSelection}
               refetch={refetch}
+              searchInputRef={searchInputRef}
+              navigate={navigate}
+              addRecent={addRecent}
+              openCloneDialog={openCloneDialog}
             />
+          </div>
+        )}
+
+        {/* 最近访问 */}
+        {recent.length > 0 && (
+          <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
+                <svg className="w-4 h-4 text-secondary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                最近访问
+              </h3>
+              <button onClick={clearRecent} className="text-xs text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors">
+                清除
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              {recent.map((entry) => (
+                <a
+                  key={`${entry.id}-${entry.visitedAt}`}
+                  href={`/organizations/${entry.id}`}
+                  className="flex items-center gap-2 px-3 py-2 bg-neutral-50 dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:border-secondary-300 dark:hover:border-secondary-700 hover:bg-secondary-50 dark:hover:bg-secondary-900/20 transition-all group"
+                >
+                  <div className="w-7 h-7 bg-gradient-to-br from-secondary-500 to-accent-500 rounded-lg flex items-center justify-center text-white text-xs font-bold shrink-0">
+                    {entry.name.charAt(0)}
+                  </div>
+                  <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300 group-hover:text-neutral-900 dark:group-hover:text-white">
+                    {entry.name}
+                  </span>
+                  <span className="text-xs text-neutral-400">{new Date(entry.visitedAt).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' })}</span>
+                </a>
+              ))}
+            </div>
           </div>
         )}
 
@@ -408,6 +525,10 @@ export default function OrganizationsPage() {
             allSelected={allSelected}
             clearSelection={clearSelection}
             refetch={refetch}
+            searchInputRef={searchInputRef}
+            navigate={navigate}
+            addRecent={addRecent}
+            openCloneDialog={openCloneDialog}
           />
         )}
 
@@ -431,34 +552,144 @@ export default function OrganizationsPage() {
             allSelected={allSelected}
             clearSelection={clearSelection}
             refetch={refetch}
+            searchInputRef={searchInputRef}
+            navigate={navigate}
+            addRecent={addRecent}
+            openCloneDialog={openCloneDialog}
           />
         )}
 
         {/* ── 回收站 Tab ── */}
         {activeTab === 'trash' && (
-          <Card>
-            <CardContent className="p-12 text-center">
-              <Trash2 className="w-16 h-16 mx-auto text-neutral-300 dark:text-neutral-600 mb-4" />
-              <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2">回收站</h3>
-              <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4">
-                已删除的组织将在此保留 30 天，之后将被永久清除。
-              </p>
-              <EmptyStateIllustration type="no-users" />
-            </CardContent>
-          </Card>
+          <div className="space-y-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">回收站</h2>
+                <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
+                  已删除的组织将在此保留 30 天，之后将被永久清除。
+                </p>
+              </div>
+              <Button size="sm" variant="outline" onClick={() => fetchTrashedOrganizations()}>
+                <RefreshCw className="w-4 h-4 mr-2" />
+                刷新
+              </Button>
+            </div>
+
+            {trashLoading ? (
+              <Card>
+                <CardContent className="p-12 text-center">
+                  <Loader2 className="w-8 h-8 mx-auto text-neutral-300 animate-spin mb-4" />
+                  <p className="text-sm text-neutral-500">加载中...</p>
+                </CardContent>
+              </Card>
+            ) : trashedOrganizations.length === 0 ? (
+              <Card>
+                <CardContent className="p-16 text-center">
+                  <Trash2 className="w-16 h-16 mx-auto text-neutral-300 dark:text-neutral-600 mb-4" />
+                  <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2">回收站为空</h3>
+                  <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                    已删除的组织会显示在这里，您可以恢复或永久删除它们。
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-700 overflow-hidden">
+                <table className="w-full">
+                  <thead className="bg-slate-50 dark:bg-neutral-800">
+                    <tr>
+                      <th className="px-5 py-4 text-left text-xs font-medium text-neutral-500 uppercase">组织名称</th>
+                      <th className="px-5 py-4 text-left text-xs font-medium text-neutral-500 uppercase">Slug</th>
+                      <th className="px-5 py-4 text-left text-xs font-medium text-neutral-500 uppercase">计划</th>
+                      <th className="px-5 py-4 text-left text-xs font-medium text-neutral-500 uppercase">删除时间</th>
+                      <th className="px-5 py-4 text-right text-xs font-medium text-neutral-500 uppercase">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+                    {trashedOrganizations.map((org: Organization) => (
+                      <tr key={org.id} className="hover:bg-slate-50 dark:hover:bg-neutral-800/50 transition-colors">
+                        <td className="px-5 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 bg-gradient-to-br from-neutral-400 to-neutral-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">
+                              {org.name.charAt(0)}
+                            </div>
+                            <span className="font-medium text-neutral-900 dark:text-white">{org.name}</span>
+                          </div>
+                        </td>
+                        <td className="px-5 py-4 text-sm text-neutral-500">@{org.slug}</td>
+                        <td className="px-5 py-4">
+                          <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
+                            org.plan === 'pro' ? 'bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-400' :
+                            org.plan === 'enterprise' ? 'bg-accent-100 text-accent-700 dark:bg-accent-900/30 dark:text-accent-400' :
+                            'bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300'
+                          }`}>
+                            {org.plan === 'free' ? '免费版' : org.plan === 'pro' ? '专业版' : '企业版'}
+                          </span>
+                        </td>
+                        <td className="px-5 py-4 text-sm text-neutral-500">
+                          {new Date(org.updatedAt || org.createdAt).toLocaleDateString('zh-CN')}
+                        </td>
+                        <td className="px-5 py-4 text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => restoreOrganization(org.id)}
+                              className="px-3 py-1.5 text-sm font-medium text-secondary-600 hover:bg-secondary-50 dark:hover:bg-secondary-900/20 rounded-lg transition-colors"
+                            >
+                              恢复
+                            </button>
+                            <button
+                              onClick={() => permanentDeleteOrganization(org.id)}
+                              className="px-3 py-1.5 text-sm font-medium text-error-600 hover:bg-error-50 dark:hover:bg-error-900/20 rounded-lg transition-colors"
+                            >
+                              永久删除
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
         )}
+
+        {/* 快捷键提示 */}
+        <div className="flex items-center justify-end">
+          <ShortcutHints />
+        </div>
 
         {/* 批量操作面板 */}
         {someSelected && (
           <BulkOperationsPanel
             selectedIds={selectedIds}
             onClearSelection={clearSelection}
-            onBulkChangePermissions={() => handleBulkAction('permission')}
-            onBulkExport={() => handleBulkAction('export')}
-            onBulkArchive={() => handleBulkAction('archive')}
-            onBulkDelete={() => handleBulkAction('delete')}
+            onBulkChangePermissions={async () => { toast.info('批量修改权限功能开发中'); return undefined }}
+            onBulkExport={async () => { toast.info('请使用右侧导出按钮进行数据导出'); return undefined }}
+            onBulkArchive={handleBulkAction.bind(null, 'archive')}
+            onBulkDelete={handleBulkAction.bind(null, 'delete')}
+            isProcessing={isProcessing}
           />
         )}
+
+        {/* 克隆组织对话框 */}
+        <CloneOrgDialog
+          open={showCloneDialog}
+          sourceOrg={cloneSourceOrg}
+          onClone={handleCloneOrg}
+          onClose={() => setShowCloneDialog(false)}
+          onCloned={() => refetch()}
+        />
+
+        {/* 创建组织向导 */}
+        <CreateOrgWizard
+          open={showCreateWizard}
+          onClose={() => setShowCreateWizard(false)}
+          onCreate={async (data) => {
+            await createOrganization(data)
+            toast.success('组织创建成功!')
+            setShowCreateWizard(false)
+          }}
+        />
 
         {/* 数据导出对话框 */}
         <DataExportDialog
@@ -472,7 +703,7 @@ export default function OrganizationsPage() {
             plan: org.plan,
             avatar: null,
             memberCount: org.memberCount,
-            teamCount: 0,
+            teamCount: org.teamCount,
             storageUsed: org.storageUsed * 1024 * 1024 * 1024,
             storageLimit: org.storageLimit * 1024 * 1024 * 1024,
             apiCalls: org.apiUsage,
@@ -510,6 +741,10 @@ function OrganizationContent({
   allSelected,
   clearSelection,
   refetch,
+  searchInputRef,
+  navigate,
+  addRecent,
+  openCloneDialog,
 }: {
   organizations: Organization[]
   loading: boolean
@@ -528,6 +763,10 @@ function OrganizationContent({
   allSelected: boolean
   clearSelection: () => void
   refetch: () => void
+  searchInputRef: RefObject<HTMLInputElement | null>
+  navigate: (to: string) => void
+  addRecent: (id: number, name: string, slug: string) => void
+  openCloneDialog: (org: Organization) => void
 }) {
   if (error) {
     return (
@@ -546,12 +785,14 @@ function OrganizationContent({
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       {/* 搜索和筛选工具栏 */}
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+      <div className="flex flex-col sm:flex-row gap-5 items-start sm:items-center justify-between">
         <div className="relative flex-1 w-full sm:max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400 pointer-events-none" />
           <Input
+            ref={searchInputRef}
+            id="org-search-input"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="搜索组织名称或 Slug..."
@@ -559,7 +800,7 @@ function OrganizationContent({
           />
         </div>
 
-        <div className="flex items-center gap-2 w-full sm:w-auto">
+        <div className="flex items-center gap-3 w-full sm:w-auto">
           <button
             onClick={() => setShowFilters(!showFilters)}
             className={cn(
@@ -573,7 +814,7 @@ function OrganizationContent({
             筛选
           </button>
 
-          <div className="flex bg-neutral-100 dark:bg-neutral-800 rounded-lg p-1">
+          <div className="flex bg-neutral-100 dark:bg-neutral-800 rounded-lg p-1.5">
             {[
               { mode: 'card' as ViewMode, icon: LayoutGrid, label: '卡片' },
               { mode: 'table' as ViewMode, icon: List, label: '表格' },
@@ -600,10 +841,10 @@ function OrganizationContent({
       {/* 筛选面板 */}
       {showFilters && (
         <Card className="border-primary-200 dark:border-primary-800">
-          <CardContent className="p-5">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <CardContent className="p-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
               <div>
-                <label className="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1.5">计划类型</label>
+                <label className="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-2">计划类型</label>
                 <select
                   value={localFilters.plan}
                   onChange={(e) => setLocalFilters({ ...localFilters, plan: e.target.value })}
@@ -616,7 +857,7 @@ function OrganizationContent({
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1.5">成员数量</label>
+                <label className="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-2">成员数量</label>
                 <select
                   value={localFilters.memberRange}
                   onChange={(e) => setLocalFilters({ ...localFilters, memberRange: e.target.value })}
@@ -629,7 +870,7 @@ function OrganizationContent({
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1.5">状态</label>
+                <label className="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-2">状态</label>
                 <select
                   value={localFilters.status}
                   onChange={(e) => setLocalFilters({ ...localFilters, status: e.target.value })}
@@ -642,7 +883,7 @@ function OrganizationContent({
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1.5">排序方式</label>
+                <label className="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-2">排序方式</label>
                 <select
                   value={localFilters.sortBy}
                   onChange={(e) => setLocalFilters({ ...localFilters, sortBy: e.target.value })}
@@ -683,7 +924,7 @@ function OrganizationContent({
             plan: org.plan,
             avatar: null,
             memberCount: org.memberCount,
-            teamCount: 0,
+            teamCount: org.teamCount,
             storageUsed: org.storageUsed * 1024 * 1024 * 1024,
             storageLimit: org.storageLimit * 1024 * 1024 * 1024,
             apiCalls: org.apiUsage,
@@ -694,15 +935,25 @@ function OrganizationContent({
             isPinned: false,
             myRole: org.myRole,
           }))}
-          loading={false}
+          loading={loading}
           viewMode={viewMode}
           search={search}
           selectedIds={new Set(Array.from(selectedIds).map(String))}
           onToggleSelect={(id) => toggleSelect(Number(id))}
           onSelectAll={selectAll}
-          onNavigateToDetail={() => {}}
+          onNavigateToDetail={(id) => {
+            const org = organizations.find(o => o.id === Number(id))
+            if (org) {
+              addRecent(org.id, org.name, org.slug)
+              navigate(`/organizations/${id}`)
+            }
+          }}
           onToggleFavorite={() => {}}
           onTogglePin={() => {}}
+          onClone={(id) => {
+            const org = organizations.find(o => o.id === id)
+            if (org) openCloneDialog(org)
+          }}
           page={1}
           pageSize={20}
           total={organizations.length}

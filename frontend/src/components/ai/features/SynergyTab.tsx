@@ -28,12 +28,68 @@ interface SynergyHistoryEntry {
   antagonismCount: number;
 }
 
-// ── 十八反十九畏 禁忌组合（药典标准）──────────────────────────────────────────
-const CONTRAINDICATED_PAIRS: Record<string, string[]> = {
-  '甘草': ['大戟', '芫花', '甘遂', '海藻'],
-  '乌头': ['贝母', '瓜蒌', '半夏', '白蔹', '白及'],
-  '藜芦': ['参类', '沙参', '丹参', '玄参', '细辛', '芍药'],
-};
+// ── 十八反十九畏 禁忌组合（依据《中国药典》2020版）──────────────────────────
+interface ContraindicatedPair {
+  herbA: string
+  herbB: string
+  type: '十八反' | '十九畏'
+  severity: 'high' | 'medium'
+}
+
+export const CONTRAINDICATED_PAIRS: ContraindicatedPair[] = [
+  // 十八反（18组）
+  { herbA: '甘草', herbB: '大戟', type: '十八反', severity: 'high' },
+  { herbA: '甘草', herbB: '芫花', type: '十八反', severity: 'high' },
+  { herbA: '甘草', herbB: '甘遂', type: '十八反', severity: 'high' },
+  { herbA: '甘草', herbB: '海藻', type: '十八反', severity: 'high' },
+  { herbA: '乌头', herbB: '贝母', type: '十八反', severity: 'high' },
+  { herbA: '乌头', herbB: '瓜蒌', type: '十八反', severity: 'high' },
+  { herbA: '乌头', herbB: '半夏', type: '十八反', severity: 'high' },
+  { herbA: '乌头', herbB: '白蔹', type: '十八反', severity: 'high' },
+  { herbA: '乌头', herbB: '白及', type: '十八反', severity: 'high' },
+  { herbA: '藜芦', herbB: '人参', type: '十八反', severity: 'high' },
+  { herbA: '藜芦', herbB: '沙参', type: '十八反', severity: 'high' },
+  { herbA: '藜芦', herbB: '丹参', type: '十八反', severity: 'high' },
+  { herbA: '藜芦', herbB: '玄参', type: '十八反', severity: 'high' },
+  { herbA: '藜芦', herbB: '细辛', type: '十八反', severity: 'high' },
+  { herbA: '藜芦', herbB: '芍药', type: '十八反', severity: 'high' },
+  { herbA: '川乌', herbB: '贝母', type: '十八反', severity: 'high' },
+  { herbA: '川乌', herbB: '瓜蒌', type: '十八反', severity: 'high' },
+  { herbA: '川乌', herbB: '半夏', type: '十八反', severity: 'high' },
+  { herbA: '川乌', herbB: '白蔹', type: '十八反', severity: 'high' },
+  { herbA: '川乌', herbB: '白及', type: '十八反', severity: 'high' },
+  { herbA: '草乌', herbB: '贝母', type: '十八反', severity: 'high' },
+  { herbA: '草乌', herbB: '瓜蒌', type: '十八反', severity: 'high' },
+  { herbA: '草乌', herbB: '半夏', type: '十八反', severity: 'high' },
+  { herbA: '草乌', herbB: '白蔹', type: '十八反', severity: 'high' },
+  { herbA: '草乌', herbB: '白及', type: '十八反', severity: 'high' },
+  // 十九畏（19组）
+  { herbA: '硫黄', herbB: '朴硝', type: '十九畏', severity: 'high' },
+  { herbA: '水银', herbB: '砒霜', type: '十九畏', severity: 'high' },
+  { herbA: '砒霜', herbB: '水银', type: '十九畏', severity: 'high' },
+  { herbA: '狼毒', herbB: '密陀僧', type: '十九畏', severity: 'high' },
+  { herbA: '丁香', herbB: '郁金', type: '十九畏', severity: 'high' },
+  { herbA: '牙硝', herbB: '三棱', type: '十九畏', severity: 'high' },
+  { herbA: '川乌', herbB: '犀角', type: '十九畏', severity: 'high' },
+  { herbA: '官桂', herbB: '石脂', type: '十九畏', severity: 'medium' },
+  { herbA: '牵牛', herbB: '大黄', type: '十九畏', severity: 'medium' },
+  { herbA: '赤石脂', herbB: '肉桂', type: '十九畏', severity: 'medium' },
+]
+
+/** 快速查询：给定药材名，返回所有禁忌配伍 */
+export function getContraindications(herbName: string): ContraindicatedPair[] {
+  return CONTRAINDICATED_PAIRS.filter(
+    p => p.herbA === herbName || p.herbB === herbName,
+  )
+}
+
+/** 检查两味药材是否存在禁忌关系 */
+export function hasContraindication(herbA: string, herbB: string): ContraindicatedPair | null {
+  return CONTRAINDICATED_PAIRS.find(
+    p => (p.herbA === herbA && p.herbB === herbB) ||
+         (p.herbA === herbB && p.herbB === herbA),
+  ) ?? null
+}
 
 // ── localStorage 键 ───────────────────────────────────────────────────────────
 const HISTORY_STORAGE_KEY = 'synergy_analysis_history';
@@ -150,19 +206,24 @@ export function SynergyTab() {
   const contraindicationWarnings = useMemo(() => {
     if (!synergyInput.trim()) return [];
     const inputHerbs = synergyInput.split(/[,，\n]/).map((s) => s.trim()).filter(Boolean);
-    const warnings: { a: string; b: string; reason: string }[] = [];
+    const warnings: { a: string; b: string; type: string; severity: string }[] = [];
     inputHerbs.forEach((h1) => {
-      Object.entries(CONTRAINDICATED_PAIRS).forEach(([herb, banned]) => {
-        if (h1 === herb) {
-          banned.forEach((b) => {
-            if (inputHerbs.includes(b)) {
-              warnings.push({ a: herb, b, reason: '十八反禁忌' });
-            }
-          });
+      CONTRAINDICATED_PAIRS.forEach(({ herbA, herbB, type, severity }) => {
+        if (h1 === herbA && inputHerbs.includes(herbB)) {
+          warnings.push({ a: herbA, b: herbB, type, severity });
+        } else if (h1 === herbB && inputHerbs.includes(herbA)) {
+          warnings.push({ a: herbB, b: herbA, type, severity });
         }
       });
     });
-    return warnings;
+    // 去重
+    const seen = new Set<string>();
+    return warnings.filter(w => {
+      const key = [w.a, w.b].sort().join('-');
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
   }, [synergyInput]);
 
   // ── 推荐添加药材（点击添加到输入框）─────────────────────────────────────────
@@ -241,7 +302,7 @@ export function SynergyTab() {
               </p>
               <ul className="mt-2 space-y-1 text-sm text-amber-600 dark:text-amber-500">
                 {contraindicationWarnings.map((w, i) => (
-                  <li key={i}>⚠ {w.a} + {w.b}：{w.reason}</li>
+                  <li key={i}>⚠ {w.a} + {w.b}：{w.type}</li>
                 ))}
               </ul>
             </div>

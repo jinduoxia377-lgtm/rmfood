@@ -9,6 +9,7 @@ import { logger } from '@/utils/safeLogger';
 import type { AICandidate } from '@/api/ai';
 import type { InputMode, ViewMode, FormulaCategory } from './GenerateTab/config/generateTabConfig';
 import { AcademicReportEnhanced } from '@/components/ai/AcademicReportEnhanced';
+import { VersionComparePanel } from '@/components/ai/FormulaVersionManager';
 
 // Hooks
 import { useGenerateEffects } from './GenerateTab/hooks/useGenerateEffects';
@@ -66,6 +67,7 @@ export function GenerateTab({ llmAvailable, modelStatus, onGenerateSuccess }: Ge
   const [inputMode, setInputMode] = useState<InputMode>('effects');
   const [selectedReport, setSelectedReport] = useState<AICandidate | null>(null);
   const [selectedCompareIndex, setSelectedCompareIndex] = useState<number | undefined>(undefined);
+  const [compareVersions, setCompareVersions] = useState<{ v1: number; v2: number } | null>(null);
   const [paramPanelExpanded, setParamPanelExpanded] = useState(false);
 
   // Process result once
@@ -108,6 +110,7 @@ export function GenerateTab({ llmAvailable, modelStatus, onGenerateSuccess }: Ge
     generationHook.handleReset();
     effectsHook.clearEffects();
     setSelectedReport(null);
+    setCompareVersions(null);
     savedHook.resetSavedFormulas();
   }, [generationHook, effectsHook, savedHook]);
 
@@ -239,6 +242,7 @@ export function GenerateTab({ llmAvailable, modelStatus, onGenerateSuccess }: Ge
                 onViewReport={handleViewReport}
                 onSelectCandidate={handleSelectCandidate}
                 selectedCompareIndex={selectedCompareIndex}
+                onCompareVersions={(v1, v2) => setCompareVersions({ v1, v2 })}
                 onExportFormula={handleExportFormula}
                 effectLabels={effectsHook.effectLabels}
               />
@@ -261,6 +265,25 @@ export function GenerateTab({ llmAvailable, modelStatus, onGenerateSuccess }: Ge
               candidate={selectedReport}
               effects={effectsHook.effectLabels}
               onClose={() => setSelectedReport(null)}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* 版本对比 Modal */}
+      {compareVersions && versionsHook.formulaVersions.length >= 2 && (
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+          onClick={() => setCompareVersions(null)}
+        >
+          <div
+            className="bg-white dark:bg-neutral-800 rounded-xl max-w-4xl w-full mx-4 overflow-hidden shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <VersionComparePanel
+              version1={versionsHook.formulaVersions[compareVersions.v2 - 1]}
+              version2={versionsHook.formulaVersions[compareVersions.v1 - 1]}
+              onClose={() => setCompareVersions(null)}
             />
           </div>
         </div>

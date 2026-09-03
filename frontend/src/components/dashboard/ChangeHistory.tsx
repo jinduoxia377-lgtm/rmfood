@@ -197,7 +197,7 @@ export function ChangeHistory({ dashboardId, className }: ChangeHistoryProps) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <History size={20} className="text-secondary-600 dark:text-secondary-400" />
-            <CardTitle as="h3" className="text-sm font-bold">变更历史</CardTitle>
+            <CardTitle as="h3" className="text-sm font-semibold">变更历史</CardTitle>
           </div>
           <Badge size="sm">{events.length}</Badge>
         </div>
@@ -290,31 +290,31 @@ export function ChangeHistory({ dashboardId, className }: ChangeHistoryProps) {
         <div className="mt-4 grid grid-cols-5 gap-2">
           <div className="p-2 rounded-lg bg-success-50 dark:bg-success-900/10 border border-green-100 dark:border-green-800/30">
             <div className="text-center">
-              <p className="text-sm font-bold text-success-800 dark:text-success-400">{events.filter(e => e.action === 'create').length}</p>
+              <p className="text-sm font-semibold text-success-800 dark:text-success-400">{events.filter(e => e.action === 'create').length}</p>
               <p className="text-xs text-success-600 dark:text-success-500">创建</p>
             </div>
           </div>
           <div className="p-2 rounded-lg bg-secondary-50 dark:bg-secondary-900/10 border border-blue-100 dark:border-blue-800/30">
             <div className="text-center">
-              <p className="text-sm font-bold text-secondary-800 dark:text-secondary-400">{events.filter(e => e.action === 'update').length}</p>
+              <p className="text-sm font-semibold text-secondary-800 dark:text-secondary-400">{events.filter(e => e.action === 'update').length}</p>
               <p className="text-xs text-secondary-600 dark:text-secondary-500">更新</p>
             </div>
           </div>
           <div className="p-2 rounded-lg bg-error-50 dark:bg-error-900/10 border border-red-100 dark:border-red-800/30">
             <div className="text-center">
-              <p className="text-sm font-bold text-error-800 dark:text-error-400">{events.filter(e => e.action === 'delete').length}</p>
+              <p className="text-sm font-semibold text-error-800 dark:text-error-400">{events.filter(e => e.action === 'delete').length}</p>
               <p className="text-xs text-error-600 dark:text-error-500">删除</p>
             </div>
           </div>
           <div className="p-2 rounded-lg bg-accent-50 dark:bg-accent-900/10 border border-purple-100 dark:border-purple-800/30">
             <div className="text-center">
-              <p className="text-sm font-bold text-accent-800 dark:text-accent-400">{events.filter(e => e.action === 'share').length}</p>
+              <p className="text-sm font-semibold text-accent-800 dark:text-accent-400">{events.filter(e => e.action === 'share').length}</p>
               <p className="text-xs text-accent-600 dark:text-accent-500">共享</p>
             </div>
           </div>
           <div className="p-2 rounded-lg bg-warning-50 dark:bg-warning-900/10 border border-amber-100 dark:border-amber-800/30">
             <div className="text-center">
-              <p className="text-sm font-bold text-warning-800 dark:text-warning-400">{events.filter(e => e.action === 'permission').length}</p>
+              <p className="text-sm font-semibold text-warning-800 dark:text-warning-400">{events.filter(e => e.action === 'permission').length}</p>
               <p className="text-xs text-warning-600 dark:text-warning-500">权限</p>
             </div>
           </div>

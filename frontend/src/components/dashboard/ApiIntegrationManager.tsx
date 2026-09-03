@@ -199,7 +199,7 @@ export function ApiIntegrationManager({ className }: ApiIntegrationManagerProps)
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Settings size={20} className="text-secondary-600 dark:text-secondary-400" />
-            <CardTitle as="h3" className="text-sm font-bold">API集成管理</CardTitle>
+            <CardTitle as="h3" className="text-sm font-semibold">API集成管理</CardTitle>
           </div>
           <Button
             variant="primary"

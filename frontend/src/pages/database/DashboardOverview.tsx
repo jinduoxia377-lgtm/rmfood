@@ -59,7 +59,7 @@ import {
 } from 'lucide-react';
 import { databaseApi } from '@/api/database';
 import type { FoodHomologyRankItem, ActivePeptideRankItem } from '@/api/database';
-import { useToast } from '@/components/ui';
+import { useToast, Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
 
 
 import { logger } from '@/utils/safeLogger';
@@ -761,8 +761,11 @@ const OBDistributionChart = React.memo(({ data, loading }: { data: Record<string
     );
 
   return (
-    <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-sm border border-neutral-100 dark:border-neutral-800 p-5">
-      <h3 className="text-sm font-semibold tracking-tight text-neutral-700 mb-3">口服生物利用度(OB)分布</h3>
+    <Card className="h-full">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-sm font-semibold tracking-tight text-neutral-700">口服生物利用度(OB)分布</CardTitle>
+      </CardHeader>
+      <CardContent>
       <ResponsiveContainer width="100%" height={280}>
         <BarChart data={chartData} layout="vertical" margin={{ top: 5, right: 30, left: 70, bottom: 5 }}>
           <XAxis type="number" tick={{ fontSize: 10, fill: 'var(--text-muted, #9A9A9F)' }} />
@@ -778,7 +781,8 @@ const OBDistributionChart = React.memo(({ data, loading }: { data: Record<string
           </Bar>
         </BarChart>
       </ResponsiveContainer>
-    </div>
+      </CardContent>
+    </Card>
   );
 });
 OBDistributionChart.displayName = 'OBDistributionChart';
@@ -806,8 +810,11 @@ const DLDistributionChart = React.memo(({ data, loading }: { data: Record<string
     );
 
   return (
-    <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-sm border border-neutral-100 dark:border-neutral-800 p-5">
-      <h3 className="text-sm font-semibold tracking-tight text-neutral-700 mb-3">类药性(DL)分布</h3>
+    <Card className="h-full">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-sm font-semibold tracking-tight text-neutral-700">类药性(DL)分布</CardTitle>
+      </CardHeader>
+      <CardContent>
       <ResponsiveContainer width="100%" height={280}>
         <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 5 }}>
           <XAxis dataKey="name" tick={{ fontSize: 9, fill: 'var(--text-muted, #9A9A9F)' }} angle={-30} textAnchor="end" height={45} />
@@ -827,7 +834,8 @@ const DLDistributionChart = React.memo(({ data, loading }: { data: Record<string
           </Bar>
         </BarChart>
       </ResponsiveContainer>
-    </div>
+      </CardContent>
+    </Card>
   );
 });
 DLDistributionChart.displayName = 'DLDistributionChart';
@@ -862,8 +870,11 @@ const SeqLengthDistributionChart = React.memo(
       );
 
     return (
-      <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-sm border border-neutral-100 dark:border-neutral-800 p-5">
-        <h3 className="text-sm font-semibold tracking-tight text-neutral-700 mb-3">序列长度分布</h3>
+      <Card className="h-full">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm font-semibold tracking-tight text-neutral-700">序列长度分布</CardTitle>
+        </CardHeader>
+        <CardContent>
         <ResponsiveContainer width="100%" height={280}>
           <ComposedChart data={processed} margin={{ top: 10, right: 40, left: -20, bottom: 5 }}>
             <XAxis dataKey="name" tick={{ fontSize: 9, fill: 'var(--text-muted, #9A9A9F)' }} />
@@ -901,10 +912,10 @@ const SeqLengthDistributionChart = React.memo(
             />
           </ComposedChart>
         </ResponsiveContainer>
-      </div>
-    );
-  },
-);
+      </CardContent>
+    </Card>
+  );
+});
 SeqLengthDistributionChart.displayName = 'SeqLengthDistributionChart';
 
 // ============================================================
@@ -942,8 +953,11 @@ function DistributionChart({
   const getColor = colorFn || ((i: number) => defaultColors[i % defaultColors.length]);
 
   return (
-    <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-sm border border-neutral-100 dark:border-neutral-800 p-5">
-      <h3 className="text-sm font-semibold tracking-tight text-neutral-700 mb-3">{title}</h3>
+    <Card className="h-full">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-sm font-semibold tracking-tight text-neutral-700">{title}</CardTitle>
+      </CardHeader>
+      <CardContent>
       <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
         {entries.map(([label, count], i) => (
           <div key={label} className="flex items-center gap-2">
@@ -963,7 +977,8 @@ function DistributionChart({
           </div>
         ))}
       </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
 

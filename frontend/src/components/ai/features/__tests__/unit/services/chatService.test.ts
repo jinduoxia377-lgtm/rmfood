@@ -1,4 +1,4 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals'
 import { ChatService } from '../../../services/chatService'
 import { IChatService, AIResponse, RateLimitStatus, AuthToken } from '../../../types'

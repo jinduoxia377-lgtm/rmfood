@@ -1,5 +1,5 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿/**
- * <Shield className="w-4 h-4" /> 企业级安全合规检查系?- SafetyTab v4.0
+/**
+ * <Shield className="w-4 h-4" /> 企业级安全合规检查系统 - SafetyTab v4.0
  *
  * 技术规范合规
  * <CheckCircle className="w-4 h-4 text-success-500" /> 零硬编码 - 所有参数通过配置系统注入
@@ -18,6 +18,8 @@ import { useMutation } from '@tanstack/react-query'
 import { aiApi } from '@/api/ai'
 import type { SafetyCheckResult } from '@/types'
 import { exportSafetyReport } from './SafetyTab/reportExporter'
+import { RiskMatrix } from './safety/RiskMatrix'
+import { SafetyHistoryTrendChart } from './safety/SafetyHistoryTrendChart'
 import {
   Input,
   Button,
@@ -655,6 +657,36 @@ export function SafetyTab({
             />
           </div>
 
+          {/* 风险矩阵 */}
+          {(() => {
+            const ingredientWarnings = safetyResult?.warnings?.filter(
+              w => w.ingredient && (w.level === 'warning' || w.level === 'danger' || w.severity === 'warning' || w.severity === 'danger'),
+            ) ?? []
+            if (ingredientWarnings.length === 0) return null
+            const riskData = ingredientWarnings.map(w => ({
+              ingredientId: w.ingredient || 'unknown',
+              name: w.ingredient || '未知成分',
+              hazards: {
+                [w.category || 'other']: {
+                  score: w.level === 'danger' ? 80 : w.level === 'warning' ? 50 : 30,
+                  level: (w.level === 'danger' || w.severity === 'danger' ? 'high' : 'medium') as 'low' | 'medium' | 'high' | 'unknown',
+                  suggestion: w.message,
+                },
+              },
+            }))
+            return (
+              <div className="mt-6">
+                <h4 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-3 flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 text-warning-500" />
+                  风险矩阵
+                </h4>
+                <div className="rounded-xl border border-neutral-200 dark:border-neutral-700 overflow-hidden">
+                  <RiskMatrix data={riskData} maxIngredients={10} />
+                </div>
+              </div>
+            )
+          })()}
+
           {/* 错误列表 */}
           <IssueList
             title={DEFAULTS.PLACEHOLDER_TEXTS.TITLE_ERRORS || '错误'}
@@ -702,6 +734,14 @@ export function SafetyTab({
             </Button>
           </div>
         </div>
+      )}
+
+      {/* 安全合规趋势图 */}
+      {historyCount > 0 && (
+        <SafetyHistoryTrendChart
+          history={history}
+          className="mt-4"
+        />
       )}
 
       {/* 历史记录（可选显示） */}

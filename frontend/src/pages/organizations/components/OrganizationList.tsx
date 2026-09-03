@@ -19,6 +19,7 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
+  Copy,
 } from 'lucide-react';
 import type { Organization, ViewMode } from '@/types/organization.types';
 
@@ -33,6 +34,7 @@ interface OrganizationListProps {
   onNavigateToDetail: (id: string) => void;
   onToggleFavorite: (id: string) => void;
   onTogglePin: (id: string) => void;
+  onClone?: (id: number) => void;
   page: number;
   pageSize: number;
   total: number;
@@ -71,6 +73,7 @@ const OrganizationCard = memo(
     onNavigateToDetail,
     onToggleFavorite,
     onTogglePin,
+    onClone,
   }: {
     org: Organization;
     isSelected: boolean;
@@ -79,6 +82,7 @@ const OrganizationCard = memo(
     onNavigateToDetail: (id: string) => void;
     onToggleFavorite: (id: string) => void;
     onTogglePin: (id: string) => void;
+    onClone?: (id: number) => void;
   }) => {
     const planConfig = PlanBadgeConfig[org.plan] || PlanBadgeConfig.free;
 
@@ -200,12 +204,23 @@ const OrganizationCard = memo(
               </div>
             </div>
 
-            <button
-              onClick={() => onNavigateToDetail(String(org.id))}
-              className="w-full px-4 py-2 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 rounded-lg transition-colors text-sm font-medium"
-            >
-              管理
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => onNavigateToDetail(String(org.id))}
+                className="flex-1 px-3 py-2 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 rounded-lg transition-colors text-sm font-medium"
+              >
+                管理
+              </button>
+              {onClone && (
+                <button
+                  onClick={() => onClone(Number(org.id))}
+                  title="克隆组织"
+                  className="px-3 py-2 bg-neutral-100 dark:bg-neutral-800 hover:bg-secondary-100 dark:hover:bg-secondary-900/20 text-neutral-700 dark:text-neutral-300 hover:text-secondary-700 dark:hover:text-secondary-400 rounded-lg transition-colors text-sm"
+                >
+                  <Copy className="w-4 h-4" />
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -256,16 +271,15 @@ const OrganizationTableRow = memo(
           index % 2 === 0 ? 'bg-white dark:bg-neutral-900' : 'bg-slate-50 dark:bg-neutral-800/50'
         } ${isSelected ? 'bg-primary-50 dark:bg-primary-900/20 border-l-4 border-l-primary-500' : ''} hover:bg-neutral-100 dark:hover:bg-neutral-700/50`}
       >
-        <td className="px-4 py-3">
+        <td className="px-5 py-4">
           <input
             type="checkbox"
             checked={isSelected}
-            // @ts-expect-error - See type definition
-            onChange={() => onToggleSelect(Number(Number(Number(org.id))))}
+            onChange={() => onToggleSelect(org.id)}
             className="w-4 h-4 rounded border-neutral-300 text-primary-600 focus:ring-primary-500"
           />
         </td>
-        <td className="px-4 py-3">
+        <td className="px-5 py-4">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
               {org.name.charAt(0)}
@@ -276,14 +290,14 @@ const OrganizationTableRow = memo(
             </div>
           </div>
         </td>
-        <td className="px-4 py-3">
-          <span className={`px-2 py-1 rounded-full text-xs font-medium ${planConfig.className}`}>
+        <td className="px-5 py-4">
+          <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${planConfig.className}`}>
             {planConfig.label}
           </span>
         </td>
-        <td className="px-4 py-3 text-sm text-neutral-900 dark:text-white">{org.memberCount}</td>
-        <td className="px-4 py-3 text-sm text-neutral-900 dark:text-white">{org.teamCount}</td>
-        <td className="px-4 py-3">
+        <td className="px-5 py-4 text-sm text-neutral-900 dark:text-white">{org.memberCount}</td>
+        <td className="px-5 py-4 text-sm text-neutral-900 dark:text-white">{org.teamCount}</td>
+        <td className="px-5 py-4">
           <div className="flex items-center gap-2">
             <div className="w-20 h-1.5 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden">
               <div
@@ -294,11 +308,11 @@ const OrganizationTableRow = memo(
             <span className="text-xs text-neutral-500">{storagePercent.toFixed(0)}%</span>
           </div>
         </td>
-        <td className="px-4 py-3">
+        <td className="px-5 py-4">
           <RoleIcon role={org.myRole || 'member'} />
         </td>
-        <td className="px-4 py-3 text-sm text-neutral-500">{new Date(org.createdAt).toLocaleDateString('zh-CN')}</td>
-        <td className="px-4 py-3">
+        <td className="px-5 py-4 text-sm text-neutral-500">{new Date(org.createdAt).toLocaleDateString('zh-CN')}</td>
+        <td className="px-5 py-4">
           <button
             onClick={() => onNavigateToDetail(String(org.id))}
             className="text-primary-600 hover:text-primary-700 text-sm font-medium"
@@ -352,8 +366,7 @@ const OrganizationCompactItem = memo(
         <input
           type="checkbox"
           checked={isSelected}
-          // @ts-expect-error - See type definition
-          onChange={() => onToggleSelect(Number(Number(Number(org.id))))}
+          onChange={() => onToggleSelect(org.id)}
           className="w-4 h-4 rounded border-neutral-300 text-primary-600 focus:ring-primary-500"
         />
 
@@ -406,7 +419,7 @@ const Pagination = memo(
     const totalPages = Math.ceil(total / pageSize);
 
     return (
-      <div className="flex items-center justify-between px-4 py-3 border-t border-neutral-200 dark:border-neutral-700">
+      <div className="flex items-center justify-between px-5 py-4 border-t border-neutral-100 dark:border-neutral-700">
         <div className="flex items-center gap-2 text-sm text-neutral-500">
           <span>每页</span>
           <select
@@ -532,6 +545,7 @@ export const OrganizationList: React.FC<OrganizationListProps> = ({
   onNavigateToDetail,
   onToggleFavorite,
   onTogglePin,
+  onClone = () => {},
   page,
   pageSize,
   total,
@@ -602,6 +616,7 @@ export const OrganizationList: React.FC<OrganizationListProps> = ({
               onNavigateToDetail={onNavigateToDetail}
               onToggleFavorite={onToggleFavorite}
               onTogglePin={onTogglePin}
+              onClone={onClone}
             />
           ))}
         </div>
@@ -612,20 +627,20 @@ export const OrganizationList: React.FC<OrganizationListProps> = ({
           <table className="w-full">
             <thead className="bg-slate-50 dark:bg-neutral-800 sticky top-0 z-10">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider w-12"></th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">名称</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">计划</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">成员</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">团队</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">存储</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">角色</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                <th className="px-5 py-4 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider w-12"></th>
+                <th className="px-5 py-4 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">名称</th>
+                <th className="px-5 py-4 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">计划</th>
+                <th className="px-5 py-4 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">成员</th>
+                <th className="px-5 py-4 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">团队</th>
+                <th className="px-5 py-4 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">存储</th>
+                <th className="px-5 py-4 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">角色</th>
+                <th className="px-5 py-4 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
                   创建时间
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">操作</th>
+                <th className="px-5 py-4 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">操作</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
               {sortedOrganizations.map((org, index) => (
                 <OrganizationTableRow
                   key={org.id}

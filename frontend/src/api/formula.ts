@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 配方深度集成 API 服务
  *
  * 提供所有与协同配方设计相关的 API 调用函数
@@ -393,6 +393,7 @@ export const formulaApi = {
   versions: getFormulaVersions,
   getVersionDiff,
   rollbackToVersion,
+  createVersion: createFormulaVersion,
 
   // ===== 新增：AI 推荐 =====
   recommendations: getAIRecommendations,
@@ -528,7 +529,7 @@ export async function patchFormula(
   id: string | number,
   data: Partial<FormulaCreatePayload>,
 ): Promise<Formula> {
-  const response = await api.patch(`${FORMULA_BASE_URL}/${id}`, data)
+  const response = await api.put(`${FORMULA_BASE_URL}/${id}`, data)
   return response.data
 }
 
@@ -1124,6 +1125,121 @@ export async function reportCase(id: string | number, reason: string, reportType
 
 export async function getCasesByFormula(formulaId: string | number): Promise<FormulaCase[]> {
   const response = await api.get(`/formulas/cases/by-formula/${formulaId}`)
+  return response.data
+}
+
+// ==================== 成分管理 API ====================
+
+export interface AddIngredientRequest {
+  ingredient_id: number
+  dosage_g: number
+  prep?: string
+}
+
+export interface RemoveIngredientRequest {
+  ingredient_id: number
+}
+
+export interface UpdateIngredientRequest {
+  ingredient_name: string
+  dosage_g: number
+  prep?: string
+  ingredient_name_new?: string
+}
+
+export interface UpdateStepsRequest {
+  steps: Array<{
+    step_number: number
+    description: string
+    temperature?: { min: number; max: number; unit: string }
+    duration?: { value: number; unit: string }
+    equipment?: string
+    notes?: string
+  }>
+}
+
+export async function addIngredientToFormula(
+  formulaId: number,
+  data: AddIngredientRequest,
+): Promise<any> {
+  const response = await api.post(`/formulas/${formulaId}/ingredients/add`, data)
+  return response.data
+}
+
+export async function removeIngredientFromFormula(
+  formulaId: number,
+  data: RemoveIngredientRequest,
+): Promise<any> {
+  const response = await api.post(`/formulas/${formulaId}/ingredients/remove`, data)
+  return response.data
+}
+
+export async function removeIngredientByName(
+  formulaId: number,
+  ingredientName: string,
+): Promise<any> {
+  const response = await api.post(`/formulas/${formulaId}/ingredients/remove`, { ingredient_name: ingredientName })
+  return response.data
+}
+
+export async function updateIngredientInFormula(
+  formulaId: number,
+  data: UpdateIngredientRequest,
+): Promise<any> {
+  const response = await api.post(`/formulas/${formulaId}/ingredients/update`, data)
+  return response.data
+}
+
+export async function updateFormulaSteps(
+  formulaId: number,
+  data: UpdateStepsRequest,
+): Promise<any> {
+  const response = await api.put(`/formulas/${formulaId}/steps`, data)
+  return response.data
+}
+
+// ==================== 成分搜索 API ====================
+
+export interface HerbSearchResult {
+  id: string
+  name: string
+  nameCn: string
+  pinyin: string
+  latin: string
+  category: string
+  is_food_homology: boolean
+  properties?: Array<{ name: string; value: string; unit: string }>
+}
+
+export interface HerbSearchResponse {
+  success: boolean
+  data: {
+    items: HerbSearchResult[]
+    total: number
+    page: number
+    page_size: number
+  }
+}
+
+
+export async function createFormulaVersion(
+  formulaId: number,
+  changeSummary?: string,
+): Promise<any> {
+  const response = await api.post(
+    `${FORMULA_BASE_URL}/${formulaId}/versions`,
+    { change_summary: changeSummary },
+  )
+  return response.data
+}
+export async function searchHerbs(
+  keyword: string,
+  page: number = 1,
+  pageSize: number = 10,
+): Promise<HerbSearchResponse> {
+  const response = await api.get('/ingredients', {
+    params: { search: keyword, page, page_size: pageSize },
+  })
   return response.data
 }
 

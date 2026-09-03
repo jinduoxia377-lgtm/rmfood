@@ -1,12 +1,14 @@
 /**
- * useKeyboardSearch — Ctrl+K / Cmd+K 快捷键
+ * useKeyboardSearch — 全局搜索快捷键（已通过 useGlobalShortcuts 统一管理）
  *
- * 监听键盘事件，打开/关闭搜索模态框。
+ * 保留此 hook 以兼容现有调用点，实际快捷键注册在 AIAssistantPage 中统一使用 useGlobalShortcuts。
  */
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useRef } from 'react';
 
 export function useKeyboardSearch() {
   const [isOpen, setIsOpen] = useState(false);
+  const isOpenRef = useRef(isOpen);
+  isOpenRef.current = isOpen;
 
   const toggle = useCallback(() => {
     setIsOpen((prev) => !prev);
@@ -16,19 +18,9 @@ export function useKeyboardSearch() {
     setIsOpen(false);
   }, []);
 
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-        e.preventDefault();
-        toggle();
-      }
-      if (e.key === 'Escape' && isOpen) {
-        close();
-      }
-    };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [toggle, close, isOpen]);
+  // 暴露 handler 供 useGlobalShortcuts 使用
+  const searchToggleHandler = useCallback(() => toggle(), [toggle]);
 
-  return { isOpen, toggle, close };
+  return { isOpen, toggle, close, searchToggleHandler };
 }
+

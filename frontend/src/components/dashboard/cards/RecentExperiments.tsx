@@ -25,7 +25,7 @@ export const RecentExperiments: FC<Props> = ({ items, loading }) => {
       <Card className="overflow-hidden">
         <CardHeader className="px-6 pt-6 pb-4">
           <div className="flex items-center justify-between">
-            <CardTitle as="h3" className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>最近实验</CardTitle>
+            <CardTitle as="h3" className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>最近实验</CardTitle>
             <span className="text-xs text-primary-600 hover:text-primary-700 dark:text-primary-400 font-semibold">查看全部</span>
           </div>
         </CardHeader>
@@ -44,7 +44,7 @@ export const RecentExperiments: FC<Props> = ({ items, loading }) => {
     <Card className="overflow-hidden">
       <CardHeader className="px-6 pt-6 pb-4">
         <div className="flex items-center justify-between">
-          <CardTitle as="h3" className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>最近实验</CardTitle>
+          <CardTitle as="h3" className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>最近实验</CardTitle>
           <Link to="/experiments" className="text-xs text-primary-600 hover:text-primary-700 dark:text-primary-400 font-semibold flex items-center gap-1 transition-colors">
             查看全部 <ArrowRight size={14} />
           </Link>

@@ -160,7 +160,7 @@ export function RealTimeSync({ className }: RealTimeSyncProps) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Activity size={20} className="text-primary-600 dark:text-primary-400" />
-            <CardTitle as="h3" className="text-sm font-bold">实时数据同步</CardTitle>
+            <CardTitle as="h3" className="text-sm font-semibold">实时数据同步</CardTitle>
           </div>
           <Badge variant="primary" size="sm">{syncCount}</Badge>
         </div>

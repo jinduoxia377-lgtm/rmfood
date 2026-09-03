@@ -129,6 +129,8 @@ export const envConfig: EnvConfig = {
   },
 }
 
+export { getWebSocketUrl }
+
 export const getCurrentEnv = (): Environment => envConfig.env
 
 export const isDevelopment = (): boolean => envConfig.env === 'development'

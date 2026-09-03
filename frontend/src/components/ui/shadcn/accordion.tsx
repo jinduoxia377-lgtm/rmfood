@@ -30,10 +30,13 @@ const AccordionTrigger = React.forwardRef<
       )}
       {...props}
     >
-      <span className="flex items-center gap-2">{children}</span>
-      {icon ?? (
-        <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 text-[var(--color-primary-500)]" />
-      )}
+      {/* 合并为单个子元素，避免 Radix Slot 报错 */}
+      <div className="flex items-center gap-2 w-full">
+        <span className="flex items-center gap-2 flex-1">{children}</span>
+        {icon ?? (
+          <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 text-[var(--color-primary-500)]" />
+        )}
+      </div>
     </AccordionPrimitive.Trigger>
   </AccordionPrimitive.Header>
 ))

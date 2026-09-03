@@ -42,13 +42,19 @@ export interface TooltipWrapperProps {
 }
 
 function TooltipWrapper({ content, children, position = 'top', delay = 300, className = '' }: TooltipWrapperProps) {
+  const hasContent = content != null && content !== ''
   return (
     <TooltipProvider delayDuration={delay}>
       <TooltipRoot>
-        <TooltipTrigger asChild>{children}</TooltipTrigger>
-        <TooltipContent side={position} className={className}>
-          {content}
-        </TooltipContent>
+        {/* 不使用 asChild：react-popper@1.3.7 的 Anchor 组件不支持 asChild prop，
+            会导致 Slot 收到非 React element 子元素而崩溃。
+            改为使用 display:contents 的 span 包裹，视觉上透明不影响布局。 */}
+        <TooltipTrigger>{children}</TooltipTrigger>
+        {hasContent && (
+          <TooltipContent side={position} className={className}>
+            {content}
+          </TooltipContent>
+        )}
       </TooltipRoot>
     </TooltipProvider>
   )

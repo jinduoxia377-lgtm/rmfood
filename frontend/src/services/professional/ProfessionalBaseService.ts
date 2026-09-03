@@ -126,7 +126,10 @@ export class ProfessionalBaseService {
           this.setCache(key, data);
         }
 
-        return data.data;
+        // 兼容两种响应格式：
+        // 1. 有 data 包装的 ApiResponse<T> → 返回 data
+        // 2. 直接返回数据的响应（无 data 包装）→ 返回原始数据
+        return (data as any).data !== undefined ? (data as any).data : data as T;
       } catch (error) {
         lastError = error as Error;
 

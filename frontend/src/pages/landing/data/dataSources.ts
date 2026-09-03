@@ -14,6 +14,7 @@ export interface DataSource {
   status: 'online' | 'syncing' | 'update';
   features: string[];
   icon: string;
+  links?: { label: string; url: string }[];
 }
 
 export const dataSources: DataSource[] = [
@@ -72,6 +73,9 @@ export const dataSources: DataSource[] = [
     status: 'syncing',
     features: ['配伍禁忌检测', '过敏原标注', '合规预判'],
     icon: 'shield-check',
+    links: [
+      { label: '药食同源目录', url: 'https://www.nhc.gov.cn/' },
+    ],
   },
   {
     id: 'gb',
@@ -86,5 +90,31 @@ export const dataSources: DataSource[] = [
     status: 'update',
     features: ['全文检索', '条款对照', '版本追溯'],
     icon: 'scale',
+    links: [
+      { label: 'GB 2760-2024 食品添加剂使用标准', url: 'http://www.neastates.com.cn/upload/2024/06/20/20240620101458_3681.pdf' },
+      { label: 'GB 14880-2012 食品营养强化剂使用标准', url: 'http://www.samr.gov.cn/fldy/zt/zlzd/fgzc/202301/P020230112382973826266.pdf' },
+      { label: 'GB 28050-2011 预包装食品营养标签通则', url: 'http://www.samr.gov.cn/fldy/zt/zlzd/fgzc/202301/P020230112382973826266.pdf' },
+      { label: '卫健委药食同源目录（2023版）', url: 'https://www.nhc.gov.cn/' },
+    ],
+  },
+  {
+    id: 'intl',
+    name: '国际法规标准',
+    subtitle: 'FDA / EFSA / JFSA',
+    desc: '覆盖美国 FDA GRAS、欧盟 EFSA 认证、日本厚生省等国际标准数据库，支持多国法规交叉比对',
+    stat: '50+',
+    statLabel: '国际法规源',
+    color: '#0891b2',
+    colorLight: '#ecfeff',
+    colorBorder: '#a5f3fc',
+    status: 'online',
+    features: ['FDA GRAS 查询', 'EFSA 认证检索', 'JFSA 标准对照', '多国合规对比'],
+    icon: 'globe',
+    links: [
+      { label: 'FDA GRAS 列表 (21 CFR)', url: 'https://www.accessdata.fda.gov/scripts/fdcc/index.cfm?set=GrasNotices' },
+      { label: 'EFSA 食品成分数据库', url: 'https://www.efsa.europa.eu/en/data' },
+      { label: '日本食品安全委员会', url: 'https://www.fsc.go.jp/chinese/index.html' },
+      { label: 'Codex 食品添加剂标准', url: 'https://www.fao.org/food-safety/scientific-advice/codex-food-standard/en/' },
+    ],
   },
 ];

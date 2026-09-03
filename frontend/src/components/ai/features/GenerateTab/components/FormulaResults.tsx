@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, Suspense, lazy } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Filter, Lightbulb, Share2, FileText } from 'lucide-react';
+import { Filter, Lightbulb, Share2, FileText, GitBranch } from 'lucide-react';
 import { Badge } from '@/components/ui';
 import { NeuralResultCard } from '@/components/ai/NeuralResultCard';
 import { MultiCandidateCompare } from '@/components/ai/MultiCandidateCompare';
@@ -40,6 +40,7 @@ interface FormulaResultsProps {
   selectedCompareIndex: number | undefined;
   onExportFormula: (format: 'json' | 'csv' | 'pdf') => void;
   effectLabels: string[];
+  onCompareVersions?: (v1: number, v2: number) => void;
 }
 
 interface SavedFormulaState {
@@ -80,6 +81,7 @@ export const FormulaResults: React.FC<FormulaResultsProps> = ({
   selectedCompareIndex,
   onExportFormula,
   effectLabels,
+  onCompareVersions,
 }) => {
   // ===== i18n =====
   const { t } = useTranslation();
@@ -245,6 +247,17 @@ export const FormulaResults: React.FC<FormulaResultsProps> = ({
             {DEFAULTS.PLACEHOLDER_TEXTS.BUTTON_SHARE_FORMULA}
           </button>
 
+          {onCompareVersions && (
+            <button
+              onClick={() => onCompareVersions(1, 2)}
+              className="px-3.5 py-2 rounded-xl text-xs font-medium transition-all duration-200 flex items-center gap-1.5 border bg-slate-50 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:shadow-md"
+              title="对比最近两个版本"
+            >
+              <GitBranch className="w-3.5 h-3.5" />
+              版本对比
+            </button>
+          )}
+
           <div className="relative group">
             <button
               className={`px-3.5 py-2 rounded-xl text-xs font-medium transition-all duration-200 flex items-center gap-1.5 border ${'bg-slate-50 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:shadow-md'}`}
@@ -258,19 +271,19 @@ export const FormulaResults: React.FC<FormulaResultsProps> = ({
                   onClick={() => onExportFormula('json')}
                   className="w-full px-4 py-2 text-left text-sm hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors flex items-center gap-2"
                 >
-                  <span className="text-success-500">📋 {t('ai.formula.generateTab.json')}</span>
+                  <span className="text-success-500">{t('ai.formula.generateTab.json')}</span>
                 </button>
                 <button
                   onClick={() => onExportFormula('csv')}
                   className="w-full px-4 py-2 text-left text-sm hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors flex items-center gap-2"
                 >
-                  <span className="text-secondary-500">📊 {t('ai.formula.generateTab.csv')}</span>
+                  <span className="text-secondary-500">{t('ai.formula.generateTab.csv')}</span>
                 </button>
                 <button
                   onClick={() => onExportFormula('pdf')}
                   className="w-full px-4 py-2 text-left text-sm hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors flex items-center gap-2"
                 >
-                  <span className="text-error-500">📄 {t('ai.formula.generateTab.pdfDeveloping')}</span>
+                  <span className="text-error-500">{t('ai.formula.generateTab.pdfDeveloping')}</span>
                 </button>
               </div>
             </div>

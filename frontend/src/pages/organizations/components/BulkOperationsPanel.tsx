@@ -94,7 +94,7 @@ export const BulkOperationsPanel: React.FC<BulkOperationsPanelProps> = memo(({
   return (
     <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-full max-w-3xl bg-white dark:bg-neutral-900 rounded-xl shadow-2xl border border-neutral-200 dark:border-neutral-700 animate-in slide-in-from-bottom-4">
       {/* 头部 */}
-      <div className="flex items-center justify-between px-5 py-3 border-b border-neutral-100 dark:border-neutral-800">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-100 dark:border-neutral-800">
         <div className="flex items-center gap-3">
           <CheckCircle2 className="w-5 h-5 text-primary-600" />
           <span className="font-medium text-neutral-900 dark:text-white">
@@ -111,7 +111,7 @@ export const BulkOperationsPanel: React.FC<BulkOperationsPanelProps> = memo(({
       </div>
 
       {/* 操作按钮 */}
-      <div className="px-5 py-3 flex items-center gap-3 border-b border-neutral-100 dark:border-neutral-800">
+      <div className="px-6 py-4 flex items-center gap-4 border-b border-neutral-100 dark:border-neutral-800">
         <button
           onClick={() => setShowPermissionModal(true)}
           disabled={isProcessing}
@@ -314,7 +314,7 @@ export const DeleteConfirmModal: React.FC<{
               disabled={confirmText !== 'DELETE'}
               className="px-4 py-2 bg-error-600 text-white text-sm font-medium rounded-lg hover:bg-error-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              🗑️ 永久删除
+              <Trash2 className="w-4 h-4 mr-1" />永久删除
             </button>
           </div>
         </div>

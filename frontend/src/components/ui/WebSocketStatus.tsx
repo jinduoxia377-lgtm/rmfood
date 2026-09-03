@@ -156,7 +156,7 @@ export function WebSocketStatus({ className }: WebSocketStatusProps) {
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-3">
  <Pocket size={20} className="text-secondary-600 dark:text-secondary-400" />
- <CardTitle as="h3" className="text-sm font-bold">WebSocket 状态监控</CardTitle>
+ <CardTitle as="h3" className="text-sm font-semibold">WebSocket 状态监控</CardTitle>
  </div>
  <div className="flex items-center gap-1" title={networkStatus ==='online' ?'网络正常' :'网络离线'}>
  {getNetworkIcon()}

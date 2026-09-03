@@ -640,15 +640,30 @@ export default function HerbsTab({
 // ─── TCMSP 药材详情 ───
 function TcmspHerbDetail({ herb, chartColor }: { herb: any; chartColor: string }) {
   const [activeTab, setActiveTab] = useState<'overview' | 'compounds' | 'targets' | 'diseases'>('overview');
+  const hasExternalData = (herb.compound_count ?? 0) > 0 || (herb.target_count ?? 0) > 0;
+
+  // 从 herb_food_* 表加载化合物和靶点数据
+  const compoundsQuery = useQuery({
+    queryKey: ['herb-compounds', herb.id],
+    queryFn: () => databaseApi.get(`/databases/herbs/${herb.id}/compounds?page=1&page_size=50`).then((r: any) => r.items ?? []),
+    enabled: hasExternalData && activeTab !== 'targets' && activeTab !== 'diseases',
+  });
+  const targetsQuery = useQuery({
+    queryKey: ['herb-targets', herb.id],
+    queryFn: () => databaseApi.get(`/databases/herbs/${herb.id}/targets?page=1&page_size=50`).then((r: any) => r.items ?? []),
+    enabled: hasExternalData && activeTab !== 'compounds' && activeTab !== 'diseases',
+  });
+
   const radarData = [
     { subject: '口服生物利用度', A: Math.min(((herb.ob_percent ?? 0) / 80) * 100, 100), fullMark: 100 },
     { subject: '类药性', A: Math.min(((herb.dl_value ?? 0) / 0.5) * 100, 100), fullMark: 100 },
-    { subject: '化合物丰富度', A: Math.min(((herb.compounds?.length || 0) / 30) * 100, 100), fullMark: 100 },
-    { subject: '靶点覆盖', A: Math.min(((herb.targets?.length || 0) / 20) * 100, 100), fullMark: 100 },
+    { subject: '化合物丰富度', A: Math.min(((herb.compounds?.length ?? 0) / 30) * 100, 100), fullMark: 100 },
+    { subject: '靶点覆盖', A: Math.min(((herb.targets?.length ?? 0) / 20) * 100, 100), fullMark: 100 },
   ];
-  const compounds = herb.compounds || [];
-  const targets = herb.targets || [];
-  const diseases = herb.diseases || [];
+  // 优先使用外部数据，否则用 TCMSP 内嵌数据
+  const compounds = (hasExternalData && compoundsQuery.data) ? compoundsQuery.data : (herb.compounds || []);
+  const targets = (hasExternalData && targetsQuery.data) ? targetsQuery.data : (herb.targets || []);
+  const diseases = (hasExternalData && targetsQuery.data && targets.length > 0) ? [] : (herb.diseases || []);
 
   const tgtName = (t: any) => (typeof t === 'string' ? t : t?.name || '');
   const disName = (d: any) => (typeof d === 'string' ? d : d?.name || '');

@@ -9,7 +9,7 @@ interface CreateOrgWizardProps {
   onCreate: (data: CreateOrganizationRequest) => Promise<void>;
 }
 
-type WizardStep = 'basic' | 'details' | 'confirm' | 'success';
+type WizardStep = 'basic' | 'details' | 'members' | 'confirm' | 'success';
 
 export function CreateOrgWizard({ open, onClose, onCreate }: CreateOrgWizardProps) {
   const [step, setStep] = useState<WizardStep>('basic');
@@ -19,6 +19,8 @@ export function CreateOrgWizard({ open, onClose, onCreate }: CreateOrgWizardProp
   const [description, setDescription] = useState('');
   const [plan, setPlan] = useState<'free' | 'pro' | 'enterprise'>('free');
   const [autoSlug, setAutoSlug] = useState(true);
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [inviteEmail, setInviteEmail] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   const handleNameChange = useCallback((value: string) => {
@@ -63,6 +65,8 @@ export function CreateOrgWizard({ open, onClose, onCreate }: CreateOrgWizardProp
     setDescription('');
     setPlan('free');
     setAutoSlug(true);
+    setLogoUrl(null);
+    setInviteEmail('');
     setError(null);
     onClose();
   }, [onClose]);
@@ -72,19 +76,19 @@ export function CreateOrgWizard({ open, onClose, onCreate }: CreateOrgWizardProp
       <div className="space-y-6">
         {/* 步骤指示器 */}
         <div className="flex items-center gap-2">
-          {(['basic', 'details', 'confirm'] as const).map((s, i) => (
+          {(['basic', 'details', 'members', 'confirm'] as const).map((s, i) => (
             <div key={s} className="flex items-center gap-2">
               <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium ${
                 step === s ? 'bg-secondary-600 text-white' :
-                step !== 'basic' && ['basic', 'details', 'confirm'].indexOf(step) > i ? 'bg-success-500 text-white' :
+                step !== 'basic' && ['basic', 'details', 'members', 'confirm'].indexOf(step) > i ? 'bg-success-500 text-white' :
                 'bg-neutral-200 text-neutral-500'
               }`}>
-                {['basic', 'details', 'confirm'].indexOf(step) > i ? <CheckCircle className="w-4 h-4" /> : i + 1}
+                {['basic', 'details', 'members', 'confirm'].indexOf(step) > i ? <CheckCircle className="w-4 h-4" /> : i + 1}
               </div>
               <span className={`text-sm ${step === s ? 'text-secondary-600 font-medium' : 'text-neutral-500'}`}>
-                {i === 0 ? '基本信息' : i === 1 ? '详细设置' : '确认创建'}
+                {i === 0 ? '基本信息' : i === 1 ? '详细设置' : i === 2 ? '邀请成员' : '确认创建'}
               </span>
-              {i < 2 && <div className="w-6 h-px bg-neutral-200" />}
+              {i < 3 && <div className="w-6 h-px bg-neutral-200" />}
             </div>
           ))}
         </div>
@@ -134,6 +138,30 @@ export function CreateOrgWizard({ open, onClose, onCreate }: CreateOrgWizardProp
         {step === 'details' && (
           <div className="space-y-4">
             <div>
+              <label className="block text-sm font-medium text-neutral-700 mb-1.5">组织头像（可选）</label>
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold text-2xl shadow-lg">
+                  {logoUrl ? (
+                    <img src={logoUrl} alt="Logo" className="w-full h-full object-cover rounded-xl" />
+                  ) : name.charAt(0).toUpperCase()}
+                </div>
+                <label className="flex-1 cursor-pointer">
+                  <input type="file" accept="image/*" className="hidden" onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    if (file) {
+                      const reader = new FileReader()
+                      reader.onloadend = () => setLogoUrl(reader.result as string)
+                      reader.readAsDataURL(file)
+                    }
+                  }} />
+                  <div className="px-4 py-2 border-2 border-dashed border-neutral-300 dark:border-neutral-600 rounded-lg text-center hover:border-secondary-500 transition-colors">
+                    <p className="text-sm text-neutral-500">点击上传 Logo</p>
+                    <p className="text-xs text-neutral-400 mt-0.5">支持 JPG、PNG，建议 200×200px</p>
+                  </div>
+                </label>
+              </div>
+            </div>
+            <div>
               <label className="block text-sm font-medium text-neutral-700 mb-1.5">描述（可选）</label>
               <textarea
                 value={description}
@@ -170,12 +198,38 @@ export function CreateOrgWizard({ open, onClose, onCreate }: CreateOrgWizardProp
           </div>
         )}
 
+        {step === 'members' && (
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-neutral-700 mb-1.5">邀请首名成员（可选）</label>
+              <div className="flex gap-3">
+                <input
+                  type="email"
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  placeholder="member@example.com"
+                  className="flex-1 px-3 py-2 rounded-lg border border-neutral-300 surface-card text-neutral-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-secondary-500"
+                />
+                <button
+                  onClick={() => setInviteEmail('')}
+                  className="px-3 py-2 text-sm text-neutral-500 hover:bg-neutral-100 rounded-lg transition-colors"
+                >
+                  清空
+                </button>
+              </div>
+              <p className="text-xs text-neutral-400 mt-1.5">创建组织后可在设置中继续邀请更多成员</p>
+            </div>
+          </div>
+        )}
+
         {step === 'confirm' && (
           <div className="space-y-4">
             <div className="surface-card rounded-xl border border-neutral-200 p-4 space-y-3">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-accent-600 rounded-xl flex items-center justify-center text-white font-bold text-lg">
-                  {name.charAt(0).toUpperCase()}
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold text-lg overflow-hidden shadow-lg">
+                  {logoUrl ? (
+                    <img src={logoUrl} alt="Logo" className="w-full h-full object-cover" />
+                  ) : name.charAt(0).toUpperCase()}
                 </div>
                 <div>
                   <p className="font-semibold text-neutral-900 dark:text-white">{name}</p>
@@ -212,7 +266,7 @@ export function CreateOrgWizard({ open, onClose, onCreate }: CreateOrgWizardProp
         {/* 操作按钮 */}
         <div className="flex justify-between gap-3 pt-2">
           {step !== 'basic' && step !== 'success' ? (
-            <button onClick={() => { const steps: WizardStep[] = ['basic', 'details', 'confirm']; const idx = steps.indexOf(step); if (idx > 0) setStep(steps[idx - 1]); }} className="px-4 py-2 text-sm text-neutral-600 hover:bg-neutral-100 rounded-lg transition-colors">
+            <button onClick={() => { const steps: WizardStep[] = ['basic', 'details', 'members', 'confirm']; const idx = steps.indexOf(step); if (idx > 0) setStep(steps[idx - 1]); }} className="px-4 py-2 text-sm text-neutral-600 hover:bg-neutral-100 rounded-lg transition-colors">
               上一步
             </button>
           ) : <div />}
@@ -230,7 +284,7 @@ export function CreateOrgWizard({ open, onClose, onCreate }: CreateOrgWizardProp
               确认创建
             </button>
           ) : (
-            <button onClick={() => setStep(step === 'basic' ? 'details' : 'confirm')} className="px-6 py-2 text-sm bg-secondary-600 text-white rounded-lg hover:bg-secondary-700 transition-colors">
+            <button onClick={() => setStep(step === 'basic' ? 'details' : step === 'details' ? 'members' : 'confirm')} className="px-6 py-2 text-sm bg-secondary-600 text-white rounded-lg hover:bg-secondary-700 transition-colors">
               下一步
             </button>
           )}

@@ -5,7 +5,7 @@ import type { FC } from 'react'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
 } from 'recharts'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui'
+import { Card, CardHeader, CardTitle, CardContent, ChartSkeleton } from '@/components/ui'
 import { EmptyState } from '@/components/ui/Common'
 import { BarChart3, Plus } from 'lucide-react'
 import { Link } from 'react-router-dom'
@@ -18,6 +18,7 @@ interface BarData {
 
 interface Props {
   data: BarData[]
+  loading?: boolean
 }
 
 const COLORS: Record<string, string> = {
@@ -37,12 +38,31 @@ const tooltipStyle = {
   },
 }
 
-export const ExperimentBarChart: FC<Props> = ({ data }) => {
+export const ExperimentBarChart: FC<Props> = ({ data, loading }) => {
+  if (loading) {
+    return (
+      <Card>
+        <CardHeader className="px-6 pt-6 pb-4">
+          <CardTitle as="h3" className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-3">
+            <BarChart3 size={18} className="text-neutral-400 dark:text-neutral-500" />
+            实验状态统计
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="px-6 pb-6 pt-0">
+          <ChartSkeleton hasLegend={false} />
+        </CardContent>
+      </Card>
+    )
+  }
+
   if (!data || data.length === 0) {
     return (
       <Card>
         <CardHeader className="px-6 pt-6 pb-4">
-          <CardTitle as="h3" className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>实验状态统计</CardTitle>
+          <CardTitle as="h3" className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-3">
+            <BarChart3 size={18} className="text-neutral-400 dark:text-neutral-500" />
+            实验状态统计
+          </CardTitle>
         </CardHeader>
         <CardContent className="px-6 pb-6 pt-0">
           <div className="h-[200px] flex items-center justify-center">
@@ -68,7 +88,10 @@ export const ExperimentBarChart: FC<Props> = ({ data }) => {
   return (
     <Card>
       <CardHeader className="px-6 pt-6 pb-4">
-        <CardTitle as="h3" className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>实验状态统计</CardTitle>
+        <CardTitle as="h3" className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-3">
+          <BarChart3 size={18} className="text-neutral-400 dark:text-neutral-500" />
+          实验状态统计
+        </CardTitle>
       </CardHeader>
       <CardContent className="px-6 pb-6 pt-0">
         <ResponsiveContainer width="100%" height={200}>

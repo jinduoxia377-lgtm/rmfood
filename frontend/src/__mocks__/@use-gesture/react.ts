@@ -1,3 +1,3 @@
-export const useSwipeable = () => ({})
+﻿export const useSwipeable = () => ({})
 
 export const useLongPress = () => ({})

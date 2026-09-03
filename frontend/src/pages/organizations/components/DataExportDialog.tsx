@@ -209,12 +209,12 @@ export const DataExportDialog: React.FC<DataExportDialogProps> = memo(({
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
+        <div className="flex-1 overflow-y-auto px-8 py-6 space-y-6">
           <div>
             <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-3">
               选择导出格式
             </label>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-3 gap-5">
               {FORMAT_OPTIONS.map((config) => {
                 const Icon = config.icon
                 const isSelected = selectedFormat === config.value

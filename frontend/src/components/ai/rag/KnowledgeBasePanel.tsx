@@ -19,6 +19,8 @@ import {
   EyeOff,
   ChevronDown,
   ChevronUp,
+  Network,
+  X,
 } from 'lucide-react';
 import {
   listDocuments,
@@ -29,9 +31,12 @@ import {
   type DocumentInfo,
   type SearchChunkResult,
 } from '@/api/rag';
+import { databaseApi } from '@/api/database';
 import { DocumentUploader } from './DocumentUploader';
 import { Card, Button } from '@/components/ui';
+import { KnowledgeGraph } from '../features/components/KnowledgeGraph';
 import { clsx } from 'clsx';
+import type { GraphNode, GraphLink } from '../features/components/KnowledgeGraph';
 
 // ═══════════════════════════════════════════
 // 命名常量（替换魔法数字）
@@ -200,9 +205,75 @@ function SearchTester() {
   );
 }
 
+/* ─── 知识图谱视图 ─── */
+function KnowledgeGraphView() {
+  const [graphData, setGraphData] = useState<{ nodes: GraphNode[]; links: GraphLink[] } | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [centerNode, setCenterNode] = useState('')
+  const [error, setError] = useState<string | null>(null)
+
+  const handleLoadGraph = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const center = centerNode.trim() || '黄芪'
+      const data = await databaseApi.findSubgraph(center, 2)
+      const nodes: GraphNode[] = (data.nodes || []).map((n: any) => ({
+        id: n.id ?? n.node_id ?? String(n.node_label),
+        label: n.node_label ?? n.label ?? n.id,
+        category: n.node_type ?? n.group ?? 'herb',
+        value: n.importance ?? 10,
+        description: n.description ?? '',
+        metadata: n.metadata ?? {},
+      }))
+      const links: GraphLink[] = (data.edges || []).map((e: any) => ({
+        source: e.source ?? e.from,
+        target: e.target ?? e.to,
+        label: e.relation ?? e.type ?? '',
+        type: e.relation_type ?? 'related',
+        value: e.strength ?? 1,
+      }))
+      setGraphData({ nodes, links })
+    } catch (err) {
+      setError((err as Error).message || '加载图谱失败')
+    } finally {
+      setLoading(false)
+    }
+  }, [centerNode])
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-2">
+        <input
+          value={centerNode}
+          onChange={(e) => setCenterNode(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && handleLoadGraph()}
+          placeholder="输入节点名称（如：黄芪）…"
+          className="flex-1 px-3 py-1.5 text-sm border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-primary-500"
+        />
+        <Button onClick={handleLoadGraph} disabled={loading || !centerNode.trim()} size="sm">
+          {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : '加载图谱'}
+        </Button>
+      </div>
+      {error && <p className="text-xs text-error-500">{error}</p>}
+      {graphData && (
+        <div className="rounded-xl border border-neutral-200 dark:border-neutral-700 overflow-hidden" style={{ height: 520 }}>
+          <KnowledgeGraph nodes={graphData.nodes} links={graphData.links} />
+        </div>
+      )}
+      {!graphData && !loading && !error && (
+        <div className="text-center py-12 text-sm text-neutral-400">
+          输入节点名称后点击「加载图谱」查看知识关联
+        </div>
+      )}
+    </div>
+  )
+}
+
 export function KnowledgeBasePanel({ isEmbedded = false }: KnowledgeBasePanelProps) {
   const queryClient = useQueryClient();
   const [deletingFile, setDeletingFile] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'list' | 'graph'>('list');
 
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ['rag-stats'],
@@ -256,6 +327,30 @@ export function KnowledgeBasePanel({ isEmbedded = false }: KnowledgeBasePanelPro
             </span>
           )}
         </div>
+        <div className="flex items-center gap-1 bg-neutral-100 dark:bg-neutral-800 rounded-lg p-1">
+          <button
+            onClick={() => setViewMode('list')}
+            className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-all ${
+              viewMode === 'list'
+                ? 'bg-white dark:bg-neutral-700 shadow-sm text-neutral-900 dark:text-white'
+                : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
+            }`}
+          >
+            <FileText className="w-3.5 h-3.5" />
+            文档列表
+          </button>
+          <button
+            onClick={() => setViewMode('graph')}
+            className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-all ${
+              viewMode === 'graph'
+                ? 'bg-white dark:bg-neutral-700 shadow-sm text-neutral-900 dark:text-white'
+                : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
+            }`}
+          >
+            <Network className="w-3.5 h-3.5" />
+            知识图谱
+          </button>
+        </div>
         <button
           onClick={() => queryClient.invalidateQueries({ queryKey: ['rag-stats'] })}
           className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
@@ -265,16 +360,20 @@ export function KnowledgeBasePanel({ isEmbedded = false }: KnowledgeBasePanelPro
         </button>
       </div>
 
-      {/* Upload */}
-      <DocumentUploader onUploadSuccess={handleUploadSuccess} />
+      {viewMode === 'graph' ? (
+        <KnowledgeGraphView />
+      ) : (
+        <>
+          {/* Upload */}
+          <DocumentUploader onUploadSuccess={handleUploadSuccess} />
 
-      {/* Quality Metrics */}
-      {stats && <QualityMetrics stats={stats} docCount={docs.length} />}
+          {/* Quality Metrics */}
+          {stats && <QualityMetrics stats={stats} docCount={docs.length} />}
 
-      {/* Search Tester */}
-      <SearchTester />
+          {/* Search Tester */}
+          <SearchTester />
 
-      {/* Document list */}
+          {/* Document list */}
       <div className="space-y-1">
         <h3 className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
           已导入文档 ({docs.length})
@@ -312,7 +411,9 @@ export function KnowledgeBasePanel({ isEmbedded = false }: KnowledgeBasePanelPro
             ))}
           </div>
         )}
-      </div>
+        </div>
+        </>
+      )}
     </div>
   );
 }

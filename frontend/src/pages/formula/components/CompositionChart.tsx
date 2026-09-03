@@ -90,6 +90,15 @@ export function CompositionChart({ ingredients, compact = false }: CompositionCh
 
   const totalIngredients = ingredients.length
 
+  if (totalIngredients === 0) {
+    return (
+      <div className="py-8 text-center text-neutral-400 dark:text-neutral-500">
+        <p className="text-sm">暂无成分数据</p>
+        <p className="text-xs mt-1">请先添加成分后查看分布图</p>
+      </div>
+    )
+  }
+
   if (compact) {
     return (
       <div className="flex items-center gap-3">

@@ -169,7 +169,7 @@ export function TeamOnlineStatus({ dashboardId, className }: TeamOnlineStatusPro
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Users size={20} className="text-secondary-600 dark:text-secondary-400" />
-            <CardTitle as="h3" className="text-sm font-bold">团队在线状态</CardTitle>
+            <CardTitle as="h3" className="text-sm font-semibold">团队在线状态</CardTitle>
           </div>
           <Badge size="sm">{onlineCount}</Badge>
         </div>
@@ -209,19 +209,19 @@ export function TeamOnlineStatus({ dashboardId, className }: TeamOnlineStatusPro
         <div className="mt-4 grid grid-cols-3 gap-2">
           <div className="p-2 rounded-lg bg-success-50 dark:bg-success-900/10 border border-green-100 dark:border-green-800/30">
             <div className="text-center">
-              <p className="text-sm font-bold text-success-800 dark:text-success-400">{users.filter(u => u.status === 'online').length}</p>
+              <p className="text-sm font-semibold text-success-800 dark:text-success-400">{users.filter(u => u.status === 'online').length}</p>
               <p className="text-xs text-success-600 dark:text-success-500">在线</p>
             </div>
           </div>
           <div className="p-2 rounded-lg bg-warning-50 dark:bg-warning-900/10 border border-amber-100 dark:border-amber-800/30">
             <div className="text-center">
-              <p className="text-sm font-bold text-warning-800 dark:text-warning-400">{users.filter(u => u.status === 'away').length}</p>
+              <p className="text-sm font-semibold text-warning-800 dark:text-warning-400">{users.filter(u => u.status === 'away').length}</p>
               <p className="text-xs text-warning-600 dark:text-warning-500">离开</p>
             </div>
           </div>
           <div className="p-2 rounded-lg bg-slate-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-800/30">
             <div className="text-center">
-              <p className="text-sm font-bold text-neutral-800 dark:text-neutral-400">{users.filter(u => u.status === 'offline').length}</p>
+              <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-400">{users.filter(u => u.status === 'offline').length}</p>
               <p className="text-xs text-neutral-600 dark:text-neutral-500">离线</p>
             </div>
           </div>

@@ -1,4 +1,4 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 import { ReactElement } from 'react'
 import { render, RenderOptions, waitFor, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'

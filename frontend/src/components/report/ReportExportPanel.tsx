@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 报告导出组件
  *
  * 提供报告格式选择和一键下载功能
@@ -9,6 +9,7 @@ import React from 'react';
 import { useReportExport, type ExportOptions } from '@/api/reportExport';
 import { type ExplainabilityResult } from '@/api/explainability';
 import { logger } from '@/utils/safeLogger';
+import { BarChart3, CheckCircle2, Clock } from 'lucide-react';
 
 interface Props {
   report: ExplainabilityResult;
@@ -20,9 +21,9 @@ interface Props {
 type Format = 'docx' | 'pdf' | 'markdown';
 
 const FORMAT_CONFIG: Record<Format, { label: string; icon: string; desc: string }> = {
-  docx: { label: 'Word 文档', icon: '📄', desc: '可编辑的 Word 格式' },
-  pdf: { label: 'PDF 文档', icon: '📕', desc: '标准 PDF 格式' },
-  markdown: { label: 'Markdown', icon: '📝', desc: '源代码格式' },
+  docx: { label: 'Word 文档', icon: '', desc: '可编辑的 Word 格式' },
+  pdf: { label: 'PDF 文档', icon: '', desc: '标准 PDF 格式' },
+  markdown: { label: 'Markdown', icon: '', desc: '源代码格式' },
 };
 
 export function ReportExportPanel({ report, formulaName, ingredients, targetEffects }: Props) {
@@ -68,7 +69,7 @@ export function ReportExportPanel({ report, formulaName, ingredients, targetEffe
   return (
     <div className="rounded-2xl border border-gray-200 dark:border-gray-700 p-5 bg-white dark:bg-gray-800">
       <div className="flex items-center gap-2 mb-4">
-        <span className="text-xl">📊</span>
+        <BarChart3 size={28} className="text-violet-600" />
         <h3 className="font-semibold text-gray-900 dark:text-gray-100">导出报告</h3>
       </div>
 
@@ -101,7 +102,7 @@ export function ReportExportPanel({ report, formulaName, ingredients, targetEffe
         disabled={exporting}
         className="w-full py-3 rounded-xl bg-violet-600 hover:bg-violet-700 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white font-medium transition-colors disabled:cursor-not-allowed"
       >
-        {exporting ? '⏳ 生成中...' : `📥 导出 ${FORMAT_CONFIG[selectedFormat].label}`}
+        {exporting ? (<><Clock size={14} className='animate-spin' /> 生成中...</>) : `导出 ${FORMAT_CONFIG[selectedFormat].label}`}
       </button>
 
       {/* 错误提示 */}
@@ -118,7 +119,7 @@ export function ReportExportPanel({ report, formulaName, ingredients, targetEffe
           download
           className="mt-3 flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-green-300 dark:border-green-700 text-green-700 dark:text-green-400 font-medium hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
         >
-          <span>✅</span> 下载报告
+          <CheckCircle2 size={14} className="text-success-500" /> 下载报告
         </a>
       )}
     </div>

@@ -171,7 +171,7 @@ export function ExportManager({ data, className }: ExportManagerProps) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Download size={20} className="text-secondary-600 dark:text-secondary-400" />
-            <CardTitle as="h3" className="text-sm font-bold">数据导出</CardTitle>
+            <CardTitle as="h3" className="text-sm font-semibold">数据导出</CardTitle>
           </div>
           <Badge size="sm">{exportTasks.length}</Badge>
         </div>

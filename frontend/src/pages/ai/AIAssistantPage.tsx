@@ -16,7 +16,7 @@
  * - ✅ prefers-reduced-motion 支持
  */
 
-import { useState, useEffect, useCallback, lazy, Suspense } from 'react';
+import { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
 // AIContext 已移除（2026-07-22）：经确认，AIProvider 包裹内无任何子组件使用 useAIContext()。
 // 所有状态已由独立 Hooks（useChatMessages、useFormulaManager 等）和 Zustand Stores 管理。
 // 保留 ErrorBoundary 作为全局容错边界。
@@ -24,7 +24,7 @@ import { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { ModelClient } from '@/api/modelClient';
 import type { ModelType } from '@/api/modelClient';
-import { Badge, Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui';
+import { Badge, Tabs, TabsList, TabsTrigger, TabsContent, StatCard, Input } from '@/components/ui';
 import { Skeleton as SkeletonComp } from '@/components/ui/Skeleton';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';
 import { ToastContainer } from '@/components/ui/ToastContainer';
@@ -44,7 +44,6 @@ import {
   Dna,
   Database,
   GitBranch,
-  Brain,
   Cpu,
   Wrench,
   ChevronDown,
@@ -57,7 +56,9 @@ import { logger } from '@/utils/safeLogger';
 import { useFeedbackSystem, useAccessibility, useResponsive } from '@/utils/uiuxEnhancement';
 import { useAISummaryStats } from '@/hooks/useAISummaryStats';
 import { useKeyboardSearch } from '@/hooks/useKeyboardSearch';
+import { useGlobalShortcuts } from '@/hooks/useGlobalShortcuts';
 import { SearchModal } from '@/components/ai/SearchModal';
+import { Menu, X } from 'lucide-react';
 
 // 懒加载非首屏 Tab 组件 — 使用命名导出模式，兼容各组件的 export 方式
 const GenerateTab = lazy(() => import('@/components/ai/features/GenerateTab').then(m => ({ default: m.GenerateTab })));
@@ -110,6 +111,17 @@ export default function AIAssistantPage() {
 
   // ===== 搜索快捷键 =====
   const { isOpen: searchOpen, toggle: toggleSearch, close: closeSearch } = useKeyboardSearch();
+
+  // ===== 统一全局快捷键注册 =====
+  useGlobalShortcuts([
+    { key: 'k', ctrl: true, meta: true, action: toggleSearch, scope: 'global', description: '全局搜索', priority: 10 },
+    { key: 'Escape', action: closeSearch, scope: 'global', description: '关闭弹窗' },
+  ]);
+
+  // ===== 移动端侧栏 =====
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const toggleMobileMenu = useCallback(() => setMobileMenuOpen((v) => !v), []);
+  const closeMobileMenu = useCallback(() => setMobileMenuOpen(false), []);
 
   // UI/UX Enhancement Hooks
   const { feedbacks, showSuccess, showError } = useFeedbackSystem();
@@ -306,240 +318,224 @@ export default function AIAssistantPage() {
     },
   ];
 
-  // 统计卡片配置 — 4 列布局，增大触摸目标 (min 44×44px)
-  const statsConfig = [
-    {
-      label: '智能对话',
-      value: chatCount,
-      icon: MessageSquare,
-      color: 'text-primary-600 dark:text-primary-400',
-      bg: 'bg-primary-50 dark:bg-primary-950/40',
-      border: 'border-primary-200 dark:border-primary-800/40',
-      tab: 'chat' as const,
-      accent: 'from-primary-500/20 to-primary-600/5',
-    },
-    {
-      label: '配方生成',
-      value: generateCount,
-      icon: Sparkles,
-      color: 'text-secondary-600 dark:text-secondary-400',
-      bg: 'bg-secondary-50 dark:bg-blue-950/40',
-      border: 'border-blue-200 dark:border-blue-800/40',
-      tab: 'generate' as const,
-      accent: 'from-blue-500/20 to-blue-600/5',
-    },
-    {
-      label: '安全检查',
-      value: safetyChecks,
-      icon: Shield,
-      color: 'text-warning-600 dark:text-warning-400',
-      bg: 'bg-warning-50 dark:bg-amber-950/40',
-      border: 'border-amber-200 dark:border-amber-800/40',
-      tab: 'safety' as const,
-      accent: 'from-amber-500/20 to-amber-600/5',
-    },
-    {
-      label: '协同分析',
-      value: synergyCount,
-      icon: GitMerge,
-      color: 'text-primary-600 dark:text-primary-400',
-      bg: 'bg-primary-50 dark:bg-emerald-950/40',
-      border: 'border-emerald-200 dark:border-emerald-800/40',
-      tab: 'synergy' as const,
-      accent: 'from-emerald-500/20 to-emerald-600/5',
-    },
-    {
-      label: '肽序列分析',
-      value: peptideAnalyzeCount,
-      icon: Dna,
-      color: 'text-accent-600 dark:text-accent-400',
-      bg: 'bg-accent-50 dark:bg-purple-950/40',
-      border: 'border-purple-200 dark:border-purple-800/40',
-      tab: 'peptide-analyze' as const,
-      accent: 'from-purple-500/20 to-purple-600/5',
-    },
-    {
-      label: '肽设计优化',
-      value: peptideDesignCount,
-      icon: Dna,
-      color: 'text-pink-600 dark:text-pink-400',
-      bg: 'bg-pink-50 dark:bg-pink-950/40',
-      border: 'border-pink-200 dark:border-pink-800/40',
-      tab: 'peptide-design' as const,
-      accent: 'from-pink-500/20 to-pink-600/5',
-    },
-    {
-      label: '模型状态',
-      value: llmAvailable ? '在线' : '离线',
-      icon: Bot,
-      color: llmAvailable ? 'text-primary-600 dark:text-primary-400' : 'text-error-600 dark:text-error-400',
-      bg: llmAvailable ? 'bg-primary-50 dark:bg-emerald-950/40' : 'bg-error-50 dark:bg-red-950/40',
-      border: llmAvailable ? 'border-emerald-200 dark:border-emerald-800/40' : 'border-red-200 dark:border-red-800/40',
-      tab: 'config' as const,
-      accent: llmAvailable ? 'from-emerald-500/20 to-emerald-600/5' : 'from-red-500/20 to-red-600/5',
-    },
-    {
-      label: '知识库',
-      value: knowledgeDocCount,
-      icon: Database,
-      color: 'text-cyan-600 dark:text-cyan-400',
-      bg: 'bg-cyan-50 dark:bg-cyan-950/40',
-      border: 'border-cyan-200 dark:border-cyan-800/40',
-      tab: 'knowledge' as const,
-      accent: 'from-cyan-500/20 to-cyan-600/5',
-    },
-  ];
+  // 移动端 Tab 激活后自动滚动到可见区域
+  const tabGroupRefs = useRef<Map<string, HTMLDivElement | null>>(new Map());
+  useEffect(() => {
+    if (!isMobile) return;
+    for (const group of tabGroups) {
+      if (group.tabs.some(t => t.value === tab)) {
+        const ref = tabGroupRefs.current.get(group.key);
+        const activeTrigger = ref?.querySelector('[aria-selected="true"]') as HTMLElement;
+        activeTrigger?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        break;
+      }
+    }
+  }, [tab, isMobile, tabGroups]);
 
   return (
     <ErrorBoundary onError={handleError}>
       {/* Toast Notification Container — 使用独立容器组件 */}
       <ToastContainer />
 
-      <main
-          className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 animate-page-enter"
+      <div className="min-h-screen bg-grid" style={{ backgroundColor: 'var(--bg-canvas)' }}>
+        {/* 移动端汉堡菜单遮罩 */}
+        {isMobile && mobileMenuOpen && (
+          <div
+            className="fixed inset-0 z-50 bg-black/50 sm:hidden"
+            onClick={closeMobileMenu}
+            aria-hidden="true"
+          />
+        )}
+        {/* 移动端汉堡菜单抽屉 */}
+        {isMobile && (
+          <aside
+            className={`fixed top-0 right-0 z-50 h-full w-72 bg-white dark:bg-neutral-900 border-l border-neutral-200 dark:border-neutral-800 shadow-2xl transition-transform duration-300 sm:hidden ${
+              mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
+            }`}
+            role="navigation"
+            aria-label="功能导航菜单"
+            aria-hidden={!mobileMenuOpen}
+          >
+            <div className="flex items-center justify-between p-4 border-b border-neutral-200 dark:border-neutral-800">
+              <span className="font-semibold text-neutral-900 dark:text-white">功能导航</span>
+              <button
+                onClick={closeMobileMenu}
+                className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                aria-label="关闭菜单"
+              >
+                <X className="w-5 h-5 text-neutral-500" />
+              </button>
+            </div>
+            <nav className="p-4 space-y-1 overflow-y-auto max-h-[calc(100vh-64px)]">
+              {tabGroups.flatMap((group) =>
+                group.tabs.map((t) => {
+                  const TabIcon = t.icon;
+                  return (
+                    <button
+                      key={t.value}
+                      onClick={() => {
+                        handleTabChange(t.value as AITab);
+                        closeMobileMenu();
+                      }}
+                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                        tab === t.value
+                          ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
+                          : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                      }`}
+                      aria-current={tab === t.value ? 'page' : undefined}
+                    >
+                      <TabIcon className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
+                      <span className="flex-1 text-left">{t.label}</span>
+                      {t.badge != null && t.badge > 0 && (
+                        <Badge variant={t.badgeVariant} size="sm" className="flex-shrink-0">
+                          {t.badge}
+                        </Badge>
+                      )}
+                    </button>
+                  );
+                }),
+              )}
+            </nav>
+          </aside>
+        )}
+
+        <main
+          className="max-w-7xl mx-auto space-y-4 px-4 sm:px-6 lg:px-8 py-6"
           role="main"
           aria-label="AI智能助手中心主内容区"
         >
-          {/* ── 页面头部 — 渐变装饰 + 图标增强视觉冲击力 ── */}
-          <header className="relative overflow-hidden rounded-2xl">
-            {/* 渐变装饰背景 */}
-            <div
-              className="absolute inset-0 bg-gradient-to-r from-primary-600/10 via-accent-600/8 to-blue-600/10 dark:from-primary-500/15 dark:via-accent-500/10 dark:to-blue-500/15"
-              aria-hidden="true"
-            />
-            <div
-              className="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-gradient-to-br from-primary-400/20 to-accent-400/20 blur-2xl"
-              aria-hidden="true"
-            />
-            <div
-              className="absolute -left-4 -bottom-4 w-24 h-24 rounded-full bg-gradient-to-tr from-blue-400/15 to-primary-400/15 blur-xl"
-              aria-hidden="true"
-            />
-
-            <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 px-6 py-5 sm:px-8 sm:py-6">
-              <div className="flex items-start gap-4">
-                {/* 品牌图标 */}
-                <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-primary-500 to-primary-700 dark:from-primary-400 dark:to-primary-600 flex items-center justify-center shadow-lg shadow-primary-500/25">
-                  <Brain className="w-6 h-6 text-white" aria-hidden="true" />
-                </div>
-                <div>
-                  <h1 className="h1 text-neutral-900 dark:text-white">
-                    AI 智能助手中心
-                  </h1>
-                  <p className="mt-1.5 text-sm sm:text-base text-neutral-500 dark:text-neutral-400 leading-relaxed">
-                    智能对话 · 配方生成 · 安全检查 · 协同分析 · 口感预测 · 稳定性评估
-                  </p>
-                </div>
+          {/* ── 页面横幅 — 与 Dashboard 风格一致 ── */}
+          <div className="rounded-xl bg-primary-600 p-6 text-white shadow-sm">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex-1">
+                <h2 className="text-xl font-semibold leading-snug tracking-tight">
+                  AI 智能助手中心
+                </h2>
+                <p className="mt-1 text-white/80 text-sm">
+                  智能对话 · 配方生成 · 安全检查 · 协同分析 · 口感预测 · 稳定性评估
+                </p>
               </div>
-              {/* 模型状态指示器 */}
-              <div
-                className={`
-                flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium
-                ${
-                  llmAvailable
-                    ? 'bg-primary-50 text-primary-700 dark:bg-emerald-950/50 dark:text-primary-300 border border-emerald-200 dark:border-emerald-800/50'
-                    : 'bg-error-50 text-error-700 dark:bg-red-950/50 dark:text-error-300 border border-red-200 dark:border-red-800/50'
-                }
-              `}
-              >
-                <span
-                  className={`
-                  w-2 h-2 rounded-full animate-pulse
-                  ${llmAvailable ? 'bg-primary-500' : 'bg-error-500'}
-                `}
-                  aria-hidden="true"
-                />
-                {llmAvailable ? '模型在线' : '模型离线'}
+              <div className="flex items-center gap-3 w-full sm:w-auto">
+                {/* 汉堡菜单按钮（移动端） */}
+                <button
+                  onClick={toggleMobileMenu}
+                  className="sm:hidden p-2 rounded-lg bg-white/15 hover:bg-white/25 text-white transition-colors"
+                  aria-label={mobileMenuOpen ? '关闭菜单' : '打开菜单'}
+                  aria-expanded={mobileMenuOpen}
+                >
+                  {mobileMenuOpen ? (
+                    <X className="w-5 h-5" aria-hidden="true" />
+                  ) : (
+                    <Menu className="w-5 h-5" aria-hidden="true" />
+                  )}
+                </button>
+                {/* 模型状态指示器 */}
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium bg-white/15 text-white/90">
+                  <span className={`w-1.5 h-1.5 rounded-full ${llmAvailable ? 'bg-emerald-300' : 'bg-red-300'}`} aria-hidden="true" />
+                  {llmAvailable ? '模型在线' : '模型离线'}
+                </div>
               </div>
             </div>
-          </header>
+          </div>
 
-          {/* ── 搜索栏 — 玻璃态效果 + 增强视觉层级 ── */}
-          <section aria-label="全局搜索" className="relative">
-            <div className="relative glass-card !p-0 overflow-hidden">
-              <div
-                className="absolute inset-0 bg-gradient-to-r from-primary-50/50 via-transparent to-blue-50/50 dark:from-primary-950/30 dark:via-transparent dark:to-blue-950/30"
-                aria-hidden="true"
+          {/* ── 搜索栏 ── */}
+          <div className="relative">
+            <Input
+              type="search"
+              placeholder="搜索配方、药材、分析工具…"
+              aria-label="搜索配方、药材、分析工具"
+              prefix={<Search size={14} className="text-neutral-400" />}
+              className="h-10"
+            />
+            <kbd
+              className="absolute right-3 top-1/2 -translate-y-1/2 hidden sm:inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-mono text-neutral-400 dark:text-neutral-500 bg-neutral-100 dark:bg-neutral-800 rounded border border-neutral-200 dark:border-neutral-700"
+              aria-label="快捷键 Ctrl+K"
+            >
+              Ctrl+K
+            </kbd>
+          </div>
+
+          {/* ── 统计卡片 — 4 大卡 + 4 辅卡 ── */}
+          <section aria-label="功能模块统计" className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {/* 主卡（large） */}
+            <button
+              type="button"
+              onClick={() => handleStatCardClick('chat', '智能对话')}
+              className="w-full text-left"
+              aria-label="智能对话：{chatCount} 次"
+            >
+              <StatCard
+                label="智能对话"
+                value={chatCount}
+                icon={MessageSquare}
+                variant="primary"
+                size="large"
+                subtitle={`累计 ${chatCount > 0 ? chatCount.toLocaleString() : '0'} 次对话`}
               />
-              <div className="relative flex items-center">
-                <Search
-                  className="ml-4 w-5 h-5 text-neutral-400 dark:text-neutral-500 pointer-events-none flex-shrink-0"
-                  aria-hidden="true"
-                />
-                <label htmlFor="ai-global-search" className="sr-only">
-                  搜索配方、药材、分析工具
-                </label>
-                <input
-                  id="ai-global-search"
-                  type="search"
-                  placeholder="搜索配方、药材、分析工具..."
-                  className="w-full pl-3 pr-20 py-3.5 bg-transparent text-base focus:outline-none placeholder:text-neutral-400 dark:placeholder:text-neutral-500"
-                  aria-label="搜索配方、药材、分析工具，按Ctrl+K快速访问"
-                />
-                <kbd
-                  className="mr-3 hidden sm:inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-mono text-neutral-400 dark:text-neutral-500 bg-neutral-100/80 dark:bg-neutral-800/80 rounded-md border border-neutral-200 dark:border-neutral-700"
-                  aria-label="快捷键 Ctrl+K"
-                >
-                  Ctrl+K
-                </kbd>
-              </div>
-            </div>
-          </section>
-
-          {/* ── 统计卡片 — 4 列布局 + 交错入场动画 ── */}
-          <section aria-label="功能模块统计" className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-            {statsConfig.map(({ label, value, icon: Icon, color, bg, border, tab: tabTarget, accent }, index) => (
-              <button
-                key={label}
-                onClick={() => handleStatCardClick(tabTarget, label)}
-                className={`
-                  group relative overflow-hidden
-                  card p-4 sm:p-5 text-left ${bg} ${border} border
-                  hover:shadow-lg hover:-translate-y-0.5
-                  active:scale-[0.97]
-                  transition-all duration-200 ease-out
-                  focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500
-                  min-h-[88px] sm:min-h-[100px] flex items-center gap-3 sm:gap-4
-                  ${tab === tabTarget ? 'ring-2 ring-primary-500 shadow-md' : ''}
-                  animate-[statCardEnter_0.4s_ease-out_both]
-                `}
-                style={{ animationDelay: `${index * 50}ms` }}
-                aria-label={`${label}: ${typeof value === 'number' ? value.toLocaleString() : value}`}
-                aria-current={tab === tabTarget ? 'page' : undefined}
-              >
-                {/* 渐变装饰角标 */}
-                <div
-                  className={`absolute top-0 right-0 w-16 h-16 bg-gradient-to-bl ${accent} rounded-bl-2xl opacity-60 group-hover:opacity-100 transition-opacity duration-200`}
-                  aria-hidden="true"
-                />
-
-                <div
-                  className={`
-                  relative flex-shrink-0 w-10 h-10 sm:w-11 sm:h-11 rounded-xl
-                  flex items-center justify-center
-                  bg-white/70 dark:bg-neutral-800/60
-                  shadow-sm group-hover:shadow-md
-                  transition-shadow duration-200
-                `}
-                >
-                  <Icon className={`w-5 h-5 sm:w-5.5 sm:h-5.5 ${color}`} aria-hidden="true" />
-                </div>
-                <div className="relative min-w-0">
-                  <div
-                    className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-white tabular-nums"
-                    aria-live="polite"
-                  >
-                    {typeof value === 'number' ? value.toLocaleString() : value}
-                  </div>
-                  <div className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5 truncate">{label}</div>
-                </div>
-              </button>
-            ))}
+            </button>
+            <button
+              type="button"
+              onClick={() => handleStatCardClick('generate', '配方生成')}
+              className="w-full text-left"
+              aria-label="配方生成：{generateCount} 次"
+            >
+              <StatCard
+                label="配方生成"
+                value={generateCount}
+                icon={Sparkles}
+                variant="secondary"
+                size="large"
+                subtitle={`累计生成 ${generateCount > 0 ? generateCount.toLocaleString() : '0'} 个配方`}
+              />
+            </button>
+            <button
+              type="button"
+              onClick={() => handleStatCardClick('safety', '安全检查')}
+              className="w-full text-left"
+              aria-label="安全检查：{safetyChecks} 次"
+            >
+              <StatCard
+                label="安全检查"
+                value={safetyChecks}
+                icon={Shield}
+                variant="warning"
+                size="large"
+                subtitle={`累计检查 ${safetyChecks > 0 ? safetyChecks.toLocaleString() : '0'} 次`}
+              />
+            </button>
+            <button
+              type="button"
+              onClick={() => handleStatCardClick('synergy', '协同分析')}
+              className="w-full text-left"
+              aria-label="协同分析：{synergyCount} 次"
+            >
+              <StatCard
+                label="协同分析"
+                value={synergyCount}
+                icon={GitMerge}
+                variant="success"
+                size="large"
+                subtitle={`累计分析 ${synergyCount > 0 ? synergyCount.toLocaleString() : '0'} 次`}
+              />
+            </button>
+            {/* 辅卡（default） */}
+            <button type="button" onClick={() => handleStatCardClick('peptide-analyze', '肽序列分析')} className="w-full text-left" aria-label="肽序列分析：{peptideAnalyzeCount} 次">
+              <StatCard label="肽序列分析" value={peptideAnalyzeCount} icon={Dna} variant="info" subtitle="氨基酸序列预测" />
+            </button>
+            <button type="button" onClick={() => handleStatCardClick('peptide-design', '肽设计优化')} className="w-full text-left" aria-label="肽设计优化：{peptideDesignCount} 次">
+              <StatCard label="肽设计优化" value={peptideDesignCount} icon={Dna} variant="success" subtitle="自定义肽段设计" />
+            </button>
+            <button type="button" onClick={() => handleStatCardClick('config', '模型状态')} className="w-full text-left" aria-label="模型状态">
+              <StatCard label="模型状态" value={llmAvailable ? '在线' : '离线'} icon={Bot} variant={llmAvailable ? 'success' : 'warning'} subtitle={llmAvailable ? 'LLM 服务正常' : '请检查模型配置'} />
+            </button>
+            <button type="button" onClick={() => handleStatCardClick('knowledge', '知识库')} className="w-full text-left" aria-label="知识库：{knowledgeDocCount} 篇文档">
+              <StatCard label="知识库" value={knowledgeDocCount} icon={Database} variant="secondary" subtitle={`${knowledgeDocCount} 篇文档`} />
+            </button>
           </section>
 
           {/* ── Tab 导航 — 分组布局 (核心/高级/管理) ── */}
           <Tabs value={tab} onValueChange={(v) => handleTabChange(v as AITab)}>
-            <nav aria-label="AI助手功能标签导航" className="space-y-3">
+            <nav aria-label="AI助手功能标签导航" className="space-y-3 mobile-tabs-scroll">
               {tabGroups.map((group) => {
                 const GroupIcon = group.icon;
                 const isActive = group.tabs.some((t) => t.value === tab);
@@ -551,47 +547,49 @@ export default function AIAssistantPage() {
                     ${
                       isActive
                         ? 'border-primary-200 dark:border-primary-800/50 bg-primary-50/30 dark:bg-primary-950/20'
-                        : 'border-neutral-200 dark:border-neutral-700/50 bg-slate-50/50 dark:bg-neutral-800/20'
+                        : 'border-neutral-200 dark:border-neutral-700/50 bg-neutral-50/50 dark:bg-neutral-800/20'
                     }
                   `}
                   >
                     {/* 分组标题 */}
                     <div
                       className={`
-                      flex items-center gap-2 px-4 py-2 text-xs font-semibold uppercase tracking-wider
-                      ${isActive ? 'text-primary-700 dark:text-primary-300' : 'text-neutral-400 dark:text-neutral-500'}
+                      flex items-center gap-2 px-4 py-2 text-xs font-medium
+                      ${isActive ? 'text-primary-700 dark:text-primary-300' : 'text-neutral-500 dark:text-neutral-400'}
                     `}
                     >
                       <GroupIcon className="w-3.5 h-3.5" aria-hidden="true" />
                       {group.label}
                     </div>
                     {/* 分组内 Tab 按钮 */}
-                    <TabsList
-                      role="tablist"
-                      aria-label={`${group.label}标签`}
-                      className="px-2 pb-2 border-0 bg-transparent shadow-none flex-wrap"
-                    >
-                      {group.tabs.map((t) => {
-                        const TabIcon = t.icon;
-                        return (
-                          <TabsTrigger
-                            key={t.value}
-                            value={t.value}
-                            role="tab"
-                            aria-selected={tab === t.value}
-                            aria-controls={`panel-${t.value}`}
-                          >
-                            <TabIcon className="w-3.5 h-3.5" aria-hidden="true" />
-                            {t.label}
-                            {t.badge != null && t.badge > 0 && (
-                              <Badge variant={t.badgeVariant} size="sm" className="ml-1.5" aria-label={`${t.badge}`}>
-                                {t.badge}
-                              </Badge>
-                            )}
-                          </TabsTrigger>
-                        );
-                      })}
-                    </TabsList>
+                    <div ref={(el) => { tabGroupRefs.current.set(group.key, el); }}>
+                      <TabsList
+                        role="tablist"
+                        aria-label={`${group.label}标签`}
+                        className="px-2 pb-2 border-0 bg-transparent shadow-none flex flex-wrap sm:flex-nowrap sm:overflow-x-auto sm:scroll-smooth sm:[&::-webkit-scrollbar]:hidden [&::-webkit-scrollbar]:w-0"
+                      >
+                        {group.tabs.map((t) => {
+                          const TabIcon = t.icon;
+                          return (
+                            <TabsTrigger
+                              key={t.value}
+                              value={t.value}
+                              role="tab"
+                              aria-selected={tab === t.value}
+                              aria-controls={`panel-${t.value}`}
+                            >
+                              <TabIcon className="w-3.5 h-3.5" aria-hidden="true" />
+                              {t.label}
+                              {t.badge != null && t.badge > 0 && (
+                                <Badge variant={t.badgeVariant} size="sm" className="ml-1.5" aria-label={`${t.badge}`}>
+                                  {t.badge}
+                                </Badge>
+                              )}
+                            </TabsTrigger>
+                          );
+                        })}
+                      </TabsList>
+                    </div>
                   </div>
                 );
               })}
@@ -761,6 +759,7 @@ export default function AIAssistantPage() {
 
         {/* 全局搜索模态框 */}
         <SearchModal isOpen={searchOpen} onClose={closeSearch} />
+      </div>
     </ErrorBoundary>
   );
 }
