@@ -249,6 +249,12 @@ const NODE_TYPE_LABEL: Record<string, string> = {
 };
 
 // ─── 类型定义 ───// ═════════════════════════════════════════
+interface UnifiedSearchResults {
+  herbs: { id: number; name_cn: string; name_latin: string | null; category: string | null }[];
+  peptides: { id: number; sequence: string; source_protein: string | null; activity_type: string | null }[];
+  graph: { node_label: string; node_type: string }[];
+  total: number;
+}
 export default function DatabasePage() {
   const [tab, setTab] = useState<DbTab>('dashboard');
   const [searchInput, setSearchInput] = useState('');
@@ -452,8 +458,35 @@ export default function DatabasePage() {
 
       const timer = setTimeout(async () => {
         try {
-          const results = await databaseApi.unifiedSearch({ keyword, sources: 'herbs,peptides,graph', limit: 10 });
-          setGlobalResults(results);
+          const raw = await databaseApi.unifiedSearch({ keyword, sources: 'herbs,peptides,graph', limit: 10 });
+          // 将后端平铺结果转换为前端期望的分组结构
+          const herbs: { id: number; name_cn: string; name_latin: string | null; category: string | null }[] = [];
+          const peptides: { id: number; sequence: string; source_protein: string | null; activity_type: string | null }[] = [];
+          const graph: { node_label: string; node_type: string }[] = [];
+          const items = raw?.results ?? [];
+          for (const item of items) {
+            if (item.source === 'herb') {
+              herbs.push({
+                id: item.id,
+                name_cn: item.name,
+                name_latin: item.name_latin || null,
+                category: item.category || null,
+              });
+            } else if (item.source === 'peptide') {
+              peptides.push({
+                id: item.id,
+                sequence: item.name,
+                source_protein: item.extra?.source_protein || null,
+                activity_type: item.extra?.activity_type || null,
+              });
+            } else if (item.source === 'graph') {
+              graph.push({
+                node_label: item.name,
+                node_type: item.category || '',
+              });
+            }
+          }
+          setGlobalResults({ herbs, peptides, graph, total: raw?.total ?? items.length });
           setShowGlobalResults(true);
           saveToSearchHistory(keyword);
         } catch (err) {
