@@ -72,24 +72,24 @@ const HerbCategoryChart = lazy(() =>
     default: ({ data, loading }: { data: { name: string; value: number; fill: string }[]; loading?: boolean }) => {
       if (loading) {
         return (
-          <div className="card p-5 flex items-center justify-center h-[280px]">
-            <div className="text-neutral-500 text-sm font-normal">加载中...</div>
+          <div className="card p-6 flex items-center justify-center h-[280px]">
+            <div className="text-[var(--text-muted,#64748b)] text-sm font-normal leading-normal">加载中...</div>
           </div>
         );
       }
       if (!data || data.length === 0) {
         return (
-          <div className="card p-5 flex flex-col items-center justify-center h-[280px] text-center">
-            <BarChart2 className="w-10 h-10 text-neutral-300 dark:text-neutral-600 mb-3" />
-            <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">暂无药材分类数据</p>
-            <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1">请先同步数据库获取分类统计</p>
+          <div className="card p-6 flex flex-col items-center justify-center h-[280px] text-center">
+            <BarChart2 className="w-10 h-10 text-neutral-300 dark:text-[var(--text-secondary,#334155)] mb-3" />
+            <p className="text-sm font-normal text-[var(--text-secondary,#334155)] dark:text-[var(--text-disabled,#94a3b8)]">暂无药材分类数据</p>
+            <p className="text-xs text-[var(--text-disabled,#94a3b8)] dark:text-[var(--text-muted,#64748b)] mt-1">请先同步数据库获取分类统计</p>
           </div>
         );
       }
       const total = data.reduce((sum, d) => sum + d.value, 0);
       return (
-        <div className="card p-5">
-          <h3 className="text-base font-semibold text-neutral-900 dark:text-neutral-100 mb-4 flex items-center gap-2 leading-[1.25] tracking-tight">
+        <div className="card p-6">
+          <h3 className="text-base font-semibold text-[var(--text-primary,#0f172a)] dark:text-neutral-100 mb-4 flex items-center gap-2 leading-tight tracking-tight">
             <BarChart2 className="w-4 h-4 text-primary-600" />
             药材分类分布
           </h3>
@@ -128,13 +128,13 @@ const HerbCategoryChart = lazy(() =>
               {data.slice(0, 5).map((item, i) => (
                 <div key={i} className="flex items-center gap-2 text-xs">
                   <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: item.fill }} />
-                  <span className="text-neutral-600 dark:text-neutral-400 truncate flex-1">{item.name}</span>
-                  <span className="text-neutral-900 dark:text-neutral-100 font-medium tabular-nums">{item.value}</span>
-                  <span className="text-neutral-400 dark:text-neutral-500 tabular-nums">({'(' + ((item.value / total) * 100).toFixed(0) + ')%'})</span>
+                  <span className="text-[var(--text-secondary,#334155)] dark:text-[var(--text-disabled,#94a3b8)] truncate flex-1">{item.name}</span>
+                  <span className="text-[var(--text-primary,#0f172a)] dark:text-neutral-100 font-medium tabular-nums">{item.value}</span>
+                  <span className="text-[var(--text-disabled,#94a3b8)] dark:text-[var(--text-muted,#64748b)] tabular-nums">({'(' + ((item.value / total) * 100).toFixed(0) + ')%'})</span>
                 </div>
               ))}
               {data.length > 5 && (
-                <div className="text-xs text-neutral-400 dark:text-neutral-500 pt-1 border-t border-neutral-200 dark:border-neutral-700">
+                <div className="text-xs text-[var(--text-disabled,#94a3b8)] dark:text-[var(--text-muted,#64748b)] pt-1 border-t border-neutral-200 dark:border-neutral-700">
                   +{data.length - 5} 其他分类
                 </div>
               )}
@@ -152,23 +152,23 @@ const PeptideActivityChart = lazy(() =>
     default: ({ data, loading }: { data: { name: string; count: number; fill: string }[]; loading?: boolean }) => {
       if (loading) {
         return (
-          <div className="card p-5 flex items-center justify-center h-[280px]">
-            <div className="text-neutral-500 text-sm font-normal">加载中...</div>
+          <div className="card p-6 flex items-center justify-center h-[280px]">
+            <div className="text-[var(--text-muted,#64748b)] text-sm font-normal leading-normal">加载中...</div>
           </div>
         );
       }
       if (!data || data.length === 0) {
         return (
-          <div className="card p-5 flex flex-col items-center justify-center h-[280px] text-center">
-            <Activity className="w-10 h-10 text-neutral-300 dark:text-neutral-600 mb-3" />
-            <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">暂无活性肽类型数据</p>
-            <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1">请先同步数据库获取类型统计</p>
+          <div className="card p-6 flex flex-col items-center justify-center h-[280px] text-center">
+            <Activity className="w-10 h-10 text-neutral-300 dark:text-[var(--text-secondary,#334155)] mb-3" />
+            <p className="text-sm font-normal text-[var(--text-secondary,#334155)] dark:text-[var(--text-disabled,#94a3b8)]">暂无活性肽类型数据</p>
+            <p className="text-xs text-[var(--text-disabled,#94a3b8)] dark:text-[var(--text-muted,#64748b)] mt-1">请先同步数据库获取类型统计</p>
           </div>
         );
       }
       return (
         <div className="card p-5">
-          <h3 className="text-base font-semibold text-neutral-900 dark:text-neutral-100 mb-4 flex items-center gap-2 leading-[1.25] tracking-tight">
+          <h3 className="text-base font-semibold text-[var(--text-primary,#0f172a)] dark:text-neutral-100 mb-4 flex items-center gap-2 leading-tight tracking-tight">
             <Activity className="w-4 h-4 text-secondary-600" />
             活性肽类型分布
           </h3>
@@ -677,7 +677,7 @@ export default function DatabasePage() {
       <div className="rounded-xl bg-primary-600 p-6 text-white shadow-sm">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h2 className="text-xl font-semibold leading-snug tracking-tight">数据库检索中心</h2>
+            <h2 className="text-2xl font-semibold leading-snug tracking-tight" style={{ letterSpacing: "-0.015em" }}>数据库检索中心</h2>
             <p className="text-white/80 text-sm mt-1">TCMSP 中药材 · DFBP 活性肽 · 知识图谱 · 药食同源目录</p>
           </div>
           <div className="flex items-center gap-2">
@@ -696,38 +696,38 @@ export default function DatabasePage() {
       {/* 顶部工具栏 */}
       <div className="flex items-center justify-between gap-4">
         {/* 左侧：视图切换 */}
-        <div className="flex items-center gap-1.5 bg-neutral-100 dark:bg-neutral-800 rounded-lg p-1">
+        <div className="flex items-center gap-1.5 bg-[var(--color-neutral-subtle,#f1f5f9)] dark:bg-neutral-800 rounded-md p-1">
           <button
             onClick={() => handleViewModeChange('overview')}
-            className={`flex items-center gap-2 px-3 py-2 text-xs font-semibold rounded-md transition-all leading-relaxed tracking-tight focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none ${
+            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold rounded-md transition-all leading-normal tracking-tight focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none ${
               viewMode === 'overview'
                 ? 'bg-white dark:bg-neutral-700 text-primary-600 dark:text-primary-400 shadow-sm'
-                : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900'
+                : 'text-[var(--text-secondary,#334155)] dark:text-[var(--text-disabled,#94a3b8)] hover:text-[var(--text-primary,#0f172a)]'
             }`}
           >
-            <LayoutDashboard className="w-3.5 h-3.5" />
+            <LayoutDashboard className="w-4 h-4" />
             概览
           </button>
           <button
             onClick={() => handleViewModeChange('compact')}
-            className={`flex items-center gap-2 px-3 py-2 text-xs font-semibold rounded-md transition-all leading-relaxed tracking-tight focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none ${
+            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold rounded-md transition-all leading-normal tracking-tight focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none ${
               viewMode === 'compact'
                 ? 'bg-white dark:bg-neutral-700 text-primary-600 dark:text-primary-400 shadow-sm'
-                : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900'
+                : 'text-[var(--text-secondary,#334155)] dark:text-[var(--text-disabled,#94a3b8)] hover:text-[var(--text-primary,#0f172a)]'
             }`}
           >
-            <LayoutList className="w-3.5 h-3.5" />
+            <LayoutList className="w-4 h-4" />
             紧凑
           </button>
           <button
             onClick={() => handleViewModeChange('detailed')}
-            className={`flex items-center gap-2 px-3 py-2 text-xs font-semibold rounded-md transition-all leading-relaxed tracking-tight focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none ${
+            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold rounded-md transition-all leading-normal tracking-tight focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none ${
               viewMode === 'detailed'
                 ? 'bg-white dark:bg-neutral-700 text-primary-600 dark:text-primary-400 shadow-sm'
-                : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900'
+                : 'text-[var(--text-secondary,#334155)] dark:text-[var(--text-disabled,#94a3b8)] hover:text-[var(--text-primary,#0f172a)]'
             }`}
           >
-            <LayoutGrid className="w-3.5 h-3.5" />
+            <LayoutGrid className="w-4 h-4" />
             详细
           </button>
         </div>
@@ -737,10 +737,10 @@ export default function DatabasePage() {
           {/* 快捷键帮助按钮 */}
           <button
             onClick={() => setShowShortcuts(true)}
-            className="flex items-center gap-2 px-3 py-2 text-xs font-semibold text-neutral-600 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-800 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors leading-relaxed tracking-tight"
+            className="flex items-center gap-2 px-4 py-2.5 text-xs font-semibold text-[var(--text-secondary,#334155)] dark:text-[var(--text-disabled,#94a3b8)] bg-[var(--color-neutral-subtle,#f1f5f9)] dark:bg-neutral-800 rounded-md hover:bg-[var(--color-neutral-muted,#e2e8f0)] dark:hover:bg-neutral-700 transition-colors leading-normal tracking-tight"
             title="查看快捷键 (按 ? 键)"
           >
-            <Keyboard className="w-3.5 h-3.5" />
+            <Keyboard className="w-4 h-4" />
             <span className="hidden sm:inline">快捷键</span>
           </button>
 
@@ -748,10 +748,10 @@ export default function DatabasePage() {
           <div ref={quickActionsRef} className="relative">
             <button
               onClick={() => setShowQuickActions(!showQuickActions)}
-              className="flex items-center gap-2 px-3 py-2 text-xs font-semibold text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors leading-relaxed tracking-tight"
+              className="flex items-center gap-2 px-4 py-2.5 text-xs font-semibold text-white bg-primary-600 hover:bg-primary-700 rounded-md transition-colors leading-normal tracking-tight"
             >
               快速操作
-              <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showQuickActions ? 'rotate-180' : ''}`} />
+              <ChevronDown className={`w-4 h-4 transition-transform ${showQuickActions ? 'rotate-180' : ''}`} />
             </button>
 
             {showQuickActions && (
@@ -762,11 +762,11 @@ export default function DatabasePage() {
                       handleExportStats();
                       setShowQuickActions(false);
                     }}
-                    className="w-full flex items-center gap-3 px-3 py-2 text-left text-sm font-medium text-neutral-900 dark:text-neutral-900 hover:bg-primary-50/60 dark:hover:bg-primary-950/20 transition-colors rounded-lg leading-relaxed"
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm font-normal text-[var(--text-primary,#0f172a)] dark:text-[var(--text-primary,#0f172a)] hover:bg-primary-50/60 dark:hover:bg-primary-950/20 transition-colors rounded-md leading-normal"
                   >
                     <Download className="w-4 h-4 text-secondary-600" />
                     导出统计数据
-                    <span className="ml-auto text-[10px] text-neutral-500 font-normal tabular-nums">E</span>
+                    <span className="ml-auto text-xs text-[var(--text-muted,#64748b)] font-normal tabular-nums">E</span>
                   </button>
 
                   <button
@@ -774,11 +774,11 @@ export default function DatabasePage() {
                       handleRefreshCache();
                       setShowQuickActions(false);
                     }}
-                    className="w-full flex items-center gap-3 px-3 py-2 text-left text-sm font-medium text-neutral-900 dark:text-neutral-900 hover:bg-primary-50/60 dark:hover:bg-emerald-950/20 transition-colors rounded-lg leading-relaxed"
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm font-normal text-[var(--text-primary,#0f172a)] dark:text-[var(--text-primary,#0f172a)] hover:bg-primary-50/60 dark:hover:bg-emerald-950/20 transition-colors rounded-md leading-normal"
                   >
                     <RefreshCw className="w-4 h-4 text-primary-600" />
                     刷新所有缓存
-                    <span className="ml-auto text-[10px] text-neutral-500 font-normal tabular-nums">R</span>
+                    <span className="ml-auto text-xs text-[var(--text-muted,#64748b)] font-normal tabular-nums">R</span>
                   </button>
 
                   <button
@@ -786,7 +786,7 @@ export default function DatabasePage() {
                       handleHealthCheck();
                       setShowQuickActions(false);
                     }}
-                    className="w-full flex items-center gap-3 px-3 py-2 text-left text-sm font-medium text-neutral-900 dark:text-neutral-900 hover:bg-warning-50/60 dark:hover:bg-amber-950/20 transition-colors rounded-lg leading-relaxed"
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm font-normal text-[var(--text-primary,#0f172a)] dark:text-[var(--text-primary,#0f172a)] hover:bg-warning-50/60 dark:hover:bg-amber-950/20 transition-colors rounded-md leading-normal"
                   >
                     <ShieldCheck className="w-4 h-4 text-warning-600" />
                     数据库健康检查
@@ -799,7 +799,7 @@ export default function DatabasePage() {
                       handlePrintReport();
                       setShowQuickActions(false);
                     }}
-                    className="w-full flex items-center gap-3 px-3 py-2 text-left text-sm font-medium text-neutral-900 dark:text-neutral-900 hover:bg-accent-50/60 dark:hover:bg-purple-950/20 transition-colors rounded-lg leading-relaxed"
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm font-normal text-[var(--text-primary,#0f172a)] dark:text-[var(--text-primary,#0f172a)] hover:bg-accent-50/60 dark:hover:bg-purple-950/20 transition-colors rounded-md leading-normal"
                   >
                     <Printer className="w-4 h-4 text-accent-600" />
                     打印报告
@@ -811,7 +811,7 @@ export default function DatabasePage() {
                       toast.success('链接已复制到剪贴板');
                       setShowQuickActions(false);
                     }}
-                    className="w-full flex items-center gap-3 px-3 py-2 text-left text-sm font-medium text-neutral-900 dark:text-neutral-900 hover:bg-cyan-50/60 dark:hover:bg-cyan-950/20 transition-colors rounded-lg leading-relaxed"
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm font-normal text-[var(--text-primary,#0f172a)] dark:text-[var(--text-primary,#0f172a)] hover:bg-cyan-50/60 dark:hover:bg-cyan-950/20 transition-colors rounded-md leading-normal"
                   >
                     <Share2 className="w-4 h-4 text-cyan-600" />
                     分享此页面
@@ -825,28 +825,28 @@ export default function DatabasePage() {
 
       {/* 数据源状态指示器 */}
       <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-2 text-xs font-normal leading-relaxed">
+        <div className="flex items-center gap-2 text-xs font-normal leading-normal leading-normal">
           {syncStatsQuery.isLoading && (
-            <div className="flex items-center gap-2 px-3 py-2 bg-secondary-50 dark:bg-blue-950/30 text-secondary-700 dark:text-secondary-300 rounded-lg border border-blue-200 dark:border-blue-800">
+            <div className="flex items-center gap-2 px-4 py-2.5 bg-secondary-50 dark:bg-blue-950/30 text-secondary-700 dark:text-secondary-300 rounded-md border border-blue-200 dark:border-blue-800">
               <div className="w-2 h-2 bg-secondary-500 rounded-full animate-pulse" />
-              <span className="text-xs font-medium leading-relaxed">正在连接数据库服务器...</span>
+              <span className="text-xs font-normal leading-normal">正在连接数据库服务器...</span>
             </div>
           )}
           {dataSource === 'database' && !syncStatsQuery.isLoading && (
-            <div className="flex items-center gap-2 px-3 py-2 bg-primary-50 dark:bg-emerald-950/30 text-primary-700 dark:text-primary-300 rounded-lg border border-emerald-200 dark:border-emerald-800">
-              <Database className="w-3.5 h-3.5" />
-              <span className="text-xs font-medium leading-relaxed">已连接真实数据库</span>
+            <div className="flex items-center gap-2 px-4 py-2.5 bg-primary-50 dark:bg-emerald-950/30 text-primary-700 dark:text-primary-300 rounded-md border border-emerald-200 dark:border-emerald-800">
+              <Database className="w-4 h-4" />
+              <span className="text-xs font-normal leading-normal">已连接真实数据库</span>
             </div>
           )}
           {dataSource === 'fallback' && (
-            <div className="flex items-center gap-2 px-3 py-2 bg-warning-50 dark:bg-amber-950/30 text-warning-700 dark:text-warning-300 rounded-lg border border-amber-200 dark:border-amber-800">
-              <Zap className="w-3.5 h-3.5" />
-              <span className="text-xs font-medium leading-relaxed">使用内存数据库（后端服务不可用）</span>
+            <div className="flex items-center gap-2 px-4 py-2.5 bg-warning-50 dark:bg-amber-950/30 text-warning-700 dark:text-warning-300 rounded-md border border-amber-200 dark:border-amber-800">
+              <Zap className="w-4 h-4" />
+              <span className="text-xs font-normal leading-normal">使用内存数据库（后端服务不可用）</span>
             </div>
           )}
           {dataSource === 'error' && (
-            <div className="flex items-center gap-2 px-3 py-2 bg-error-50 dark:bg-red-950/30 text-error-700 dark:text-error-300 rounded-lg border border-red-200 dark:border-red-800">
-              <span className="text-xs font-semibold leading-relaxed">⚠️ {errorMessage || '数据加载失败'}</span>
+            <div className="flex items-center gap-2 px-4 py-2.5 bg-error-50 dark:bg-red-950/30 text-error-700 dark:text-error-300 rounded-md border border-red-200 dark:border-red-800">
+              <span className="text-xs font-semibold leading-normal">⚠️ {errorMessage || '数据加载失败'}</span>
             </div>
           )}
         </div>
@@ -854,7 +854,7 @@ export default function DatabasePage() {
         {dataSource === 'error' && (errorMessage?.includes('认证') || errorMessage?.includes('登录')) && (
           <button
             onClick={() => (window.location.href = '/login')}
-            className="text-xs text-primary-600 hover:text-primary-700 font-semibold leading-relaxed tracking-tight"
+            className="text-xs text-primary-600 hover:text-primary-700 font-semibold leading-normal tracking-tight"
           >
             前往登录 →
           </button>
@@ -864,7 +864,7 @@ export default function DatabasePage() {
       {/* 全局快捷搜索栏（增强版） */}
       <div ref={searchRef} className="relative">
         <div className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400 dark:text-neutral-500 pointer-events-none" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-[var(--text-disabled,#94a3b8)] dark:text-[var(--text-muted,#64748b)] pointer-events-none" />
           <input
             type="text"
             value={searchInput}
@@ -878,19 +878,19 @@ export default function DatabasePage() {
             }}
             onKeyDown={handleSearchKeyDown}
             placeholder="搜索药材、活性肽、知识图谱... (Ctrl+K 或 /)"
-            className="w-full pl-12 pr-20 py-3 input text-base font-normal leading-relaxed"
+            className="w-full pl-12 pr-20 py-3 input text-base font-normal leading-normal"
           />
           <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
             {searchHistory.length > 0 && (
               <button
                 onClick={() => setShowSearchHistory(!showSearchHistory)}
-                className="p-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
+                className="p-1 text-[var(--text-disabled,#94a3b8)] hover:text-[var(--text-secondary,#334155)] dark:hover:text-neutral-300 transition-colors"
                 title="搜索历史"
               >
                 <History className="w-4 h-4" />
               </button>
             )}
-            <kbd className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-mono text-neutral-400 dark:text-neutral-500 bg-neutral-100 dark:bg-neutral-800 rounded border border-neutral-200 dark:border-neutral-700">
+            <kbd className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 text-xs font-mono text-[var(--text-disabled,#94a3b8)] dark:text-[var(--text-muted,#64748b)] bg-[var(--color-neutral-subtle,#f1f5f9)] dark:bg-neutral-800 rounded border border-neutral-200 dark:border-neutral-700">
               Ctrl+K
             </kbd>
           </div>
@@ -899,7 +899,7 @@ export default function DatabasePage() {
         {/* 搜索历史下拉 */}
         {showSearchHistory && !showGlobalResults && searchHistory.length > 0 && (
           <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-neutral-900 rounded-xl shadow-xl border border-neutral-200 dark:border-neutral-700 z-50 max-h-60 overflow-y-auto animate-micro-in">
-            <div className="px-4 py-2 text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider bg-neutral-50 dark:bg-neutral-800/50 flex items-center justify-between leading-relaxed">
+            <div className="px-4 py-2 text-xs font-semibold text-[var(--text-muted,#64748b)] dark:text-[var(--text-disabled,#94a3b8)] uppercase tracking-wider bg-[var(--bg-canvas,#f8fafc)] dark:bg-neutral-800/50 flex items-center justify-between leading-normal">
               搜索历史
               <button
                 onClick={() => {
@@ -907,7 +907,7 @@ export default function DatabasePage() {
                   localStorage.removeItem(STORAGE_KEY_SEARCH_HISTORY);
                   setShowSearchHistory(false);
                 }}
-                className="text-error-600 hover:text-error-700 text-xs font-medium leading-relaxed"
+                className="text-error-600 hover:text-error-700 text-xs font-normal leading-normal"
               >
                 清空
               </button>
@@ -922,12 +922,12 @@ export default function DatabasePage() {
                   setShowSearchHistory(false);
                 }}
               >
-                <History className="w-4 h-4 text-neutral-400" />
+                <History className="w-4 h-4 text-[var(--text-disabled,#94a3b8)]" />
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium text-neutral-900 dark:text-neutral-900 truncate leading-relaxed">
+                  <div className="text-sm font-normal text-[var(--text-primary,#0f172a)] dark:text-[var(--text-primary,#0f172a)] truncate leading-normal">
                     {item.query}
                   </div>
-                  <div className="text-[10px] text-neutral-500 font-normal leading-relaxed tabular-nums">
+                  <div className="text-xs text-[var(--text-muted,#64748b)] font-normal leading-normal tabular-nums">
                     {new Date(item.timestamp).toLocaleString('zh-CN')}
                   </div>
                 </div>
@@ -942,7 +942,7 @@ export default function DatabasePage() {
             {/* 自动补全建议 */}
             {suggestions && suggestions.length > 0 && (
               <div>
-                <div className="px-4 py-2 text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider bg-primary-50/40 dark:bg-primary-950/20 leading-relaxed">
+                <div className="px-4 py-2 text-xs font-semibold text-[var(--text-muted,#64748b)] dark:text-[var(--text-disabled,#94a3b8)] uppercase tracking-wider bg-primary-50/40 dark:bg-primary-950/20 leading-normal">
                   搜索建议
                 </div>
                 {suggestions.map((s: { label: string; sublabel?: string }, i: number) => (
@@ -958,11 +958,11 @@ export default function DatabasePage() {
                   >
                     <Leaf className="w-4 h-4 text-primary-600" />
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium text-neutral-900 dark:text-neutral-100 leading-relaxed">
+                      <div className="text-sm font-normal text-[var(--text-primary,#0f172a)] dark:text-neutral-100 leading-normal">
                         {s.label}
                       </div>
                       {s.sublabel && (
-                        <div className="text-[10px] text-neutral-500 dark:text-neutral-400 italic font-normal leading-relaxed">
+                        <div className="text-xs text-[var(--text-muted,#64748b)] dark:text-[var(--text-disabled,#94a3b8)] italic font-normal leading-normal">
                           {s.sublabel}
                         </div>
                       )}
@@ -973,7 +973,7 @@ export default function DatabasePage() {
             )}
             {(globalResults.herbs ?? [])?.length > 0 && (
               <div>
-                <div className="px-4 py-2 text-xs font-semibold text-neutral-500 uppercase tracking-wider bg-neutral-50 dark:bg-neutral-800/50 flex items-center justify-between leading-relaxed">
+                <div className="px-4 py-2 text-xs font-semibold text-[var(--text-muted,#64748b)] uppercase tracking-wider bg-[var(--bg-canvas,#f8fafc)] dark:bg-neutral-800/50 flex items-center justify-between leading-normal">
                   <span>
                     中药材 <span className="tabular-nums">({(globalResults.herbs ?? []).length})</span>
                   </span>
@@ -983,7 +983,7 @@ export default function DatabasePage() {
                       setShowGlobalResults(false);
                       setSearchInput(searchInput);
                     }}
-                    className="text-[10px] text-primary-600 hover:text-primary-700 font-medium leading-relaxed flex items-center gap-1"
+                    className="text-xs text-primary-600 hover:text-primary-700 font-medium leading-normal flex items-center gap-1"
                   >
                     <Filter className="w-3 h-3" />
                     在此Tab筛选
@@ -1001,13 +1001,13 @@ export default function DatabasePage() {
                         setSearchInput('');
                       }}
                     >
-                      <Leaf className="w-5 h-5 text-primary-600" />
+                      <Leaf className="w-6 h-6 text-primary-600" />
                       <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium text-neutral-900 dark:text-neutral-900 leading-relaxed">
+                        <div className="text-sm font-normal text-[var(--text-primary,#0f172a)] dark:text-[var(--text-primary,#0f172a)] leading-normal">
                           {h.name_cn}
                         </div>
                         {h.name_latin && (
-                          <div className="text-xs text-neutral-500 italic font-mono leading-relaxed">{h.name_latin}</div>
+                          <div className="text-xs text-[var(--text-muted,#64748b)] italic font-mono leading-normal">{h.name_latin}</div>
                         )}
                       </div>
                       <Badge variant="info" size="sm" className="font-medium leading-normal">
@@ -1019,7 +1019,7 @@ export default function DatabasePage() {
             )}
             {(globalResults.peptides ?? [])?.length > 0 && (
               <div>
-                <div className="px-4 py-2 text-xs font-semibold text-neutral-500 uppercase tracking-wider bg-neutral-50 dark:bg-neutral-800/50 flex items-center justify-between leading-relaxed">
+                <div className="px-4 py-2 text-xs font-semibold text-[var(--text-muted,#64748b)] uppercase tracking-wider bg-[var(--bg-canvas,#f8fafc)] dark:bg-neutral-800/50 flex items-center justify-between leading-normal">
                   <span>
                     活性肽 <span className="tabular-nums">({(globalResults.peptides ?? []).length})</span>
                   </span>
@@ -1029,7 +1029,7 @@ export default function DatabasePage() {
                       setShowGlobalResults(false);
                       setSearchInput(searchInput);
                     }}
-                    className="text-[10px] text-primary-600 hover:text-primary-700 font-medium leading-relaxed flex items-center gap-1"
+                    className="text-xs text-primary-600 hover:text-primary-700 font-medium leading-normal flex items-center gap-1"
                   >
                     <Filter className="w-3 h-3" />
                     在此Tab筛选
@@ -1053,12 +1053,12 @@ export default function DatabasePage() {
                           setSearchInput('');
                         }}
                       >
-                        <Dna className="w-5 h-5 text-secondary-600" />
+                        <Dna className="w-6 h-6 text-secondary-600" />
                         <div className="flex-1 min-w-0">
-                          <div className="text-sm font-mono font-medium text-secondary-600 dark:text-secondary-400 leading-relaxed tabular-nums">
+                          <div className="text-sm font-mono font-medium text-secondary-600 dark:text-secondary-400 leading-normal tabular-nums">
                             {p.sequence}
                           </div>
-                          <div className="text-xs text-neutral-500 font-normal leading-relaxed">{p.source_protein}</div>
+                          <div className="text-xs text-[var(--text-muted,#64748b)] font-normal leading-normal">{p.source_protein}</div>
                         </div>
                         <Badge variant="primary" size="sm" className="font-medium leading-normal">
                           {p.activity_type || '-'}
@@ -1070,7 +1070,7 @@ export default function DatabasePage() {
             )}
             {(globalResults.graph ?? [])?.length > 0 && (
               <div>
-                <div className="px-4 py-2 text-xs font-semibold text-neutral-500 uppercase tracking-wider bg-neutral-50 dark:bg-neutral-800/50 flex items-center justify-between leading-relaxed">
+                <div className="px-4 py-2 text-xs font-semibold text-[var(--text-muted,#64748b)] uppercase tracking-wider bg-[var(--bg-canvas,#f8fafc)] dark:bg-neutral-800/50 flex items-center justify-between leading-normal">
                   <span>
                     知识图谱 <span className="tabular-nums">({(globalResults.graph ?? []).length})</span>
                   </span>
@@ -1080,7 +1080,7 @@ export default function DatabasePage() {
                       setShowGlobalResults(false);
                       setSearchInput(searchInput);
                     }}
-                    className="text-[10px] text-primary-600 hover:text-primary-700 font-medium leading-relaxed flex items-center gap-1"
+                    className="text-xs text-primary-600 hover:text-primary-700 font-medium leading-normal flex items-center gap-1"
                   >
                     <Filter className="w-3 h-3" />
                     在此Tab筛选
@@ -1098,8 +1098,8 @@ export default function DatabasePage() {
                         setSearchInput('');
                       }}
                     >
-                      <GitBranch className="w-5 h-5 text-violet-600" />
-                      <div className="flex-1 text-sm font-medium text-neutral-900 dark:text-neutral-900 leading-relaxed">
+                      <GitBranch className="w-6 h-6 text-violet-600" />
+                      <div className="flex-1 text-sm font-normal text-[var(--text-primary,#0f172a)] dark:text-[var(--text-primary,#0f172a)] leading-normal">
                         {g.node_label}
                       </div>
                       <Badge
@@ -1116,7 +1116,7 @@ export default function DatabasePage() {
             {(globalResults.herbs ?? []).length === 0 &&
               (globalResults.peptides ?? []).length === 0 &&
               (globalResults.graph ?? []).length === 0 && (
-                <div className="p-8 text-center text-neutral-500 text-sm font-normal leading-relaxed">
+                <div className="p-8 text-center text-[var(--text-muted,#64748b)] text-sm font-normal leading-normal leading-normal">
                   未找到相关结果
                 </div>
               )}
@@ -1137,9 +1137,9 @@ export default function DatabasePage() {
         {syncStatsQuery.isLoading
           ? Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 animate-pulse">
-                <div className="w-8 h-8 rounded-lg bg-neutral-200 dark:bg-neutral-700 mb-3" />
-                <div className="h-4 w-16 bg-neutral-200 dark:bg-neutral-700 rounded mb-2" />
-                <div className="h-6 w-12 bg-neutral-200 dark:bg-neutral-700 rounded" />
+                <div className="w-8 h-8 rounded-md bg-[var(--color-neutral-muted,#e2e8f0)] dark:bg-neutral-700 mb-3" />
+                <div className="h-4 w-16 bg-[var(--color-neutral-muted,#e2e8f0)] dark:bg-neutral-700 rounded mb-2" />
+                <div className="h-6 w-12 bg-[var(--color-neutral-muted,#e2e8f0)] dark:bg-neutral-700 rounded" />
               </div>
             ))
           : statCardsConfig.map((config) => (
@@ -1151,8 +1151,8 @@ export default function DatabasePage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
         <Suspense
           fallback={
-            <div className="card p-5 flex items-center justify-center h-[280px]">
-              <div className="text-neutral-500 text-sm font-normal leading-relaxed">加载图表中...</div>
+            <div className="card p-6 flex items-center justify-center h-[280px]">
+              <div className="text-[var(--text-muted,#64748b)] text-sm font-normal leading-normal leading-normal">加载图表中...</div>
             </div>
           }
         >
@@ -1163,8 +1163,8 @@ export default function DatabasePage() {
 
         <Suspense
           fallback={
-            <div className="card p-5 flex items-center justify-center h-[280px]">
-              <div className="text-neutral-500 text-sm font-normal leading-relaxed">加载图表中...</div>
+            <div className="card p-6 flex items-center justify-center h-[280px]">
+              <div className="text-[var(--text-muted,#64748b)] text-sm font-normal leading-normal leading-normal">加载图表中...</div>
             </div>
           }
         >
@@ -1176,7 +1176,7 @@ export default function DatabasePage() {
 
       {/* 主 Tab 区域（增强版） */}
       <Tabs value={tab} onValueChange={(v) => setTab(v as DbTab)}>
-        <TabsList className="relative p-1 bg-neutral-100/90 dark:bg-neutral-800/90 rounded-2xl shadow-inner">
+        <TabsList className="relative p-1 bg-[var(--color-neutral-subtle,#f1f5f9)]/90 dark:bg-neutral-800/90 rounded-2xl shadow-inner">
           {[
             { value: 'dashboard' as DbTab, label: '实时概览', icon: LayoutDashboard, badge: null },
             { value: 'herbs' as DbTab, label: '中药材', icon: Database, badge: herbCount },
@@ -1204,7 +1204,7 @@ export default function DatabasePage() {
                 <Badge
                   variant={value === 'herbs' ? 'primary' : value === 'peptides' ? 'info' : 'neutral'}
                   size="sm"
-                  className="ml-0.5 font-semibold tabular-nums text-[11px] px-1.5 py-0 min-h-[18px]"
+                  className="ml-0.5 font-semibold tabular-nums text-xs px-1.5 py-0 min-h-[18px]"
                 >
                   {badge.toLocaleString()}
                 </Badge>
@@ -1272,13 +1272,13 @@ export default function DatabasePage() {
             <div className="flex items-center justify-between px-6 py-5 bg-gradient-to-r from-primary-600 to-blue-600 text-white">
               <div className="flex items-center gap-3">
                 <Keyboard className="w-6 h-6" />
-                <h1 className="text-xl font-bold tracking-tight leading-[1.25]">键盘快捷键</h1>
+                <h1 className="text-xl font-semibold tracking-tight leading-tight">键盘快捷键</h1>
               </div>
               <button
                 onClick={() => setShowShortcuts(false)}
-                className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                className="p-2 hover:bg-white/20 rounded-md transition-colors"
               >
-                <X className="w-5 h-5" />
+                <X className="w-6 h-6" />
               </button>
             </div>
 
@@ -1303,11 +1303,11 @@ export default function DatabasePage() {
                 ].map(({ keys, description, icon: Icon }, i) => (
                   <div
                     key={i}
-                    className="flex items-center justify-between p-3 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors group"
+                    className="flex items-center justify-between p-3 rounded-md hover:bg-[var(--bg-canvas,#f8fafc)] dark:hover:bg-neutral-800/50 transition-colors group"
                   >
                     <div className="flex items-center gap-3">
-                      <Icon className="w-5 h-5 text-neutral-400 group-hover:text-primary-600 transition-colors" />
-                      <span className="text-sm font-normal text-neutral-900 dark:text-neutral-900 leading-relaxed">
+                      <Icon className="w-6 h-6 text-[var(--text-disabled,#94a3b8)] group-hover:text-primary-600 transition-colors" />
+                      <span className="text-sm font-normal leading-normal text-[var(--text-primary,#0f172a)] dark:text-[var(--text-primary,#0f172a)] leading-normal">
                         {description}
                       </span>
                     </div>
@@ -1315,7 +1315,7 @@ export default function DatabasePage() {
                       {keys.map((key, j) => (
                         <kbd
                           key={j}
-                          className="px-2 py-1 text-xs font-mono font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded border border-neutral-300 dark:border-neutral-600 shadow-sm tabular-nums leading-relaxed"
+                          className="px-2.5 py-1 text-xs font-mono font-semibold bg-[var(--color-neutral-subtle,#f1f5f9)] dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded border border-neutral-300 dark:border-neutral-600 shadow-sm tabular-nums leading-normal"
                         >
                           {key}
                         </kbd>
@@ -1326,7 +1326,7 @@ export default function DatabasePage() {
               </div>
 
               <div className="pt-4 border-t border-neutral-200 dark:border-neutral-700">
-                <p className="text-xs text-neutral-500 text-center font-normal leading-relaxed">
+                <p className="text-xs text-[var(--text-muted,#64748b)] text-center font-normal leading-normal">
                   提示：在输入框中按快捷键不会触发全局操作
                 </p>
               </div>
