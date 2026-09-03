@@ -547,63 +547,52 @@ const QuickActions = React.memo<QuickActionsProps>(
           </CardTitle>
         </CardHeader>
         <CardContent className="px-6 pb-6 pt-0">
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-4">
           <button
             onClick={onSyncAll}
             disabled={syncing}
-            className="group relative flex items-center justify-center gap-2.5 px-4 min-h-[46px] bg-secondary-50/90 text-secondary-700 rounded-xl hover:bg-secondary-100 disabled:opacity-40 transition-all duration-200 ease-out text-sm font-semibold tracking-wide active:scale-[0.98] overflow-hidden"
+            className="group relative flex items-center gap-3 px-4 py-3.5 bg-secondary-50/80 dark:bg-secondary-500/5 text-secondary-700 dark:text-secondary-300 rounded-xl hover:bg-secondary-100 dark:hover:bg-secondary-500/10 disabled:opacity-40 transition-all duration-200 text-sm font-medium active:scale-[0.98]"
           >
-            <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-secondary-400/60 group-hover:bg-secondary-500/80 transition-colors" />
-            <RefreshCw className={`w-5 h-5 ${syncing ? 'animate-spin' : ''} shrink-0`} />
-            <span>一键同步全部数据</span>
+            <div className="w-9 h-9 rounded-lg bg-secondary-100/80 dark:bg-secondary-500/10 flex items-center justify-center shrink-0">
+              <RefreshCw className={`w-4.5 h-4.5 ${syncing ? 'animate-spin' : ''}`} />
+            </div>
+            <span className="text-sm font-medium">同步全部数据</span>
           </button>
           <div className="relative group">
             <button
               onClick={() => {}}
-              className="w-full group/button relative flex items-center justify-center gap-2.5 px-4 min-h-[46px] bg-primary-50/90 text-primary-700 rounded-xl hover:bg-primary-100 transition-all duration-200 ease-out text-sm font-semibold tracking-wide active:scale-[0.98] overflow-hidden"
+              className="w-full group/button relative flex items-center gap-3 px-4 py-3.5 bg-primary-50/80 dark:bg-primary-500/5 text-primary-700 dark:text-primary-300 rounded-xl hover:bg-primary-100 dark:hover:bg-primary-500/10 transition-all duration-200 text-sm font-medium active:scale-[0.98]"
             >
-              <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-primary-400/60 group-hover/button:bg-primary-500/80 transition-colors" />
-              <Download className="w-5 h-5 shrink-0" />
-              <span>导出统计数据</span>
-              <svg
-                className="w-3.5 h-3.5 opacity-40 ml-0.5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+              <div className="w-9 h-9 rounded-lg bg-primary-100/80 dark:bg-primary-500/10 flex items-center justify-center shrink-0">
+                <Download className="w-4.5 h-4.5" />
+              </div>
+              <span className="text-sm font-medium">导出统计</span>
+              <svg className="w-3.5 h-3.5 opacity-50 ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </button>
             <div className="absolute right-0 top-full mt-1.5 hidden group-hover:block bg-white dark:bg-neutral-900 shadow-lg rounded-xl border border-neutral-100 dark:border-neutral-800 py-1 z-20 min-w-[120px] animate-in fade-in slide-in-from-top-1 duration-150">
-              <button
-                onClick={handleExportJSON}
-                className="w-full text-left px-4 py-2.5 text-sm text-neutral-600 hover:bg-slate-50 rounded-lg font-medium transition-colors"
-              >
-                导出 JSON
-              </button>
-              <button
-                onClick={handleExportCSV}
-                className="w-full text-left px-4 py-2.5 text-sm text-neutral-600 hover:bg-slate-50 rounded-lg font-medium transition-colors"
-              >
-                导出 CSV
-              </button>
+              <button onClick={handleExportJSON} className="w-full text-left px-4 py-2.5 text-sm text-neutral-600 dark:text-neutral-300 hover:bg-slate-50 dark:hover:bg-neutral-800 transition-colors">导出 JSON</button>
+              <button onClick={handleExportCSV} className="w-full text-left px-4 py-2.5 text-sm text-neutral-600 dark:text-neutral-300 hover:bg-slate-50 dark:hover:bg-neutral-800 transition-colors">导出 CSV</button>
             </div>
           </div>
           <button
             onClick={onQualityReport}
-            className="group relative flex items-center justify-center gap-2.5 px-4 min-h-[46px] bg-warning-50/90 text-warning-700 rounded-xl hover:bg-warning-100 transition-all duration-200 ease-out text-sm font-semibold tracking-wide active:scale-[0.98] overflow-hidden"
+            className="group relative flex items-center gap-3 px-4 py-3.5 bg-warning-50/80 dark:bg-warning-500/5 text-warning-700 dark:text-warning-300 rounded-xl hover:bg-warning-100 dark:hover:bg-warning-500/10 transition-all duration-200 text-sm font-medium active:scale-[0.98]"
           >
-            <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-warning-400/60 group-hover:bg-warning-500/80 transition-colors" />
-            <BarChart3 className="w-5 h-5 shrink-0" />
-            <span>数据质量报告</span>
+            <div className="w-9 h-9 rounded-lg bg-warning-100/80 dark:bg-warning-500/10 flex items-center justify-center shrink-0">
+              <BarChart3 className="w-4.5 h-4.5" />
+            </div>
+            <span className="text-sm font-medium">质量报告</span>
           </button>
           <button
             onClick={onClearCache}
-            className="group relative flex items-center justify-center gap-2.5 px-4 min-h-[46px] bg-rose-50/90 text-rose-700 rounded-xl hover:bg-rose-100 transition-all duration-200 ease-out text-sm font-semibold tracking-wide active:scale-[0.98] overflow-hidden"
+            className="group relative flex items-center gap-3 px-4 py-3.5 bg-rose-50/80 dark:bg-rose-500/5 text-rose-700 dark:text-rose-300 rounded-xl hover:bg-rose-100 dark:hover:bg-rose-500/10 transition-all duration-200 text-sm font-medium active:scale-[0.98]"
           >
-            <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-rose-400/60 group-hover:bg-rose-500/80 transition-colors" />
-            <Trash2 className="w-5 h-5 shrink-0" />
-            <span>缓存清理</span>
+            <div className="w-9 h-9 rounded-lg bg-rose-100/80 dark:bg-rose-500/10 flex items-center justify-center shrink-0">
+              <Trash2 className="w-4.5 h-4.5" />
+            </div>
+            <span className="text-sm font-medium">缓存清理</span>
           </button>
         </div>
         </CardContent>
@@ -638,14 +627,14 @@ const PerformancePanel = React.memo(({ metrics }: { metrics: PerformanceMetrics 
         </CardTitle>
       </CardHeader>
       <CardContent className="px-6 pb-6 pt-0">
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           {
             value: displayMetrics.avgQueryTimeMs,
             unit: 'ms',
             label: '平均查询响应',
             color: 'blue',
-            gradient: 'from-blue-50/90 to-blue-50/30',
+            gradient: 'from-blue-50/70 to-blue-50/20',
             border: 'border-blue-100/60',
             valueColor: 'text-secondary-600',
             unitColor: 'text-secondary-400',
@@ -655,7 +644,7 @@ const PerformancePanel = React.memo(({ metrics }: { metrics: PerformanceMetrics 
             unit: '%',
             label: '缓存命中率',
             color: 'emerald',
-            gradient: 'from-emerald-50/90 to-emerald-50/30',
+            gradient: 'from-emerald-50/70 to-emerald-50/20',
             border: 'border-emerald-100/60',
             valueColor: 'text-primary-600',
             unitColor: 'text-primary-400',
@@ -665,7 +654,7 @@ const PerformancePanel = React.memo(({ metrics }: { metrics: PerformanceMetrics 
             unit: '',
             label: '今日 API 调用',
             color: 'violet',
-            gradient: 'from-violet-50/90 to-violet-50/30',
+            gradient: 'from-violet-50/70 to-violet-50/20',
             border: 'border-violet-100/60',
             valueColor: 'text-violet-600',
             unitColor: 'text-violet-400',
@@ -678,7 +667,7 @@ const PerformancePanel = React.memo(({ metrics }: { metrics: PerformanceMetrics 
             showBar: true,
             barValue: parseFloat(poolUsagePercent),
             color: 'amber',
-            gradient: 'from-amber-50/90 to-amber-50/30',
+            gradient: 'from-amber-50/70 to-amber-50/20',
             border: 'border-amber-100/60',
             valueColor: 'text-warning-600',
             unitColor: 'text-warning-400',
@@ -686,30 +675,26 @@ const PerformancePanel = React.memo(({ metrics }: { metrics: PerformanceMetrics 
         ].map((metric) => (
           <div
             key={metric.label}
-            className={`relative text-center p-4 bg-gradient-to-b ${metric.gradient} rounded-xl border ${metric.border}`}
+            className={`relative text-center p-5 bg-gradient-to-b ${metric.gradient} rounded-xl border ${metric.border}`}
           >
-            <div
-              className="absolute top-0 left-3 right-3 h-px bg-gradient-to-r from-transparent via-current to-transparent opacity-20"
-              style={{ color: 'currentColor' }}
-            />
             <p
-              className={`text-2xl font-bold ${metric.valueColor} font-mono tabular-nums leading-none tracking-tight`}
+              className={`text-xl font-bold ${metric.valueColor} font-mono tabular-nums leading-tight`}
             >
               {metric.value}
               {metric.unit && (
-                <span className={`text-sm font-normal ${metric.unitColor} ml-1 align-baseline`}>
+                <span className={`text-xs font-normal ${metric.unitColor} ml-0.5`}>
                   {metric.unit}
                 </span>
               )}
             </p>
-            <p className="text-[13px] text-neutral-500 mt-2.5 leading-snug font-medium">{metric.label}</p>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2 leading-snug font-medium">{metric.label}</p>
             {'subText' in metric && (
               <>
-                <div className="mt-1.5 flex items-center justify-center gap-1">
-                  <span className="text-xs text-neutral-400 font-mono tabular-nums font-medium">{metric.subText}</span>
+                <div className="mt-2 flex items-center justify-center">
+                  <span className="text-[11px] text-neutral-400 dark:text-neutral-500 font-mono tabular-nums">{metric.subText}</span>
                 </div>
                 {'showBar' in metric && (
-                  <div className="mt-2.5 w-full h-1 bg-neutral-200/80 rounded-full overflow-hidden">
+                  <div className="mt-2 w-full h-1 bg-neutral-200/60 dark:bg-neutral-700/60 rounded-full overflow-hidden">
                     <div
                       className="h-full rounded-full transition-all duration-700 ease-out"
                       style={{
