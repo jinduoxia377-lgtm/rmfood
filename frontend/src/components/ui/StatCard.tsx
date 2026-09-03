@@ -59,32 +59,32 @@ export function StatCard({
       )} />
 
       <div className={cn(
-        'px-4 pt-3.5 pb-4',
-        isLg && 'px-5 pt-4 pb-5',
+        'px-5 pt-4 pb-5',
+        isLg && 'px-6 pt-5 pb-6',
       )}>
         {/* 标签 */}
         <p className={cn(
-          'mb-1.5 font-medium',
-          isLg ? 'text-sm text-neutral-600 dark:text-neutral-300' : 'text-[11px] text-neutral-500 dark:text-neutral-400',
+          'mb-2 font-semibold',
+          isLg ? 'text-sm font-semibold text-neutral-600 dark:text-neutral-300' : 'text-xs font-semibold text-neutral-600 dark:text-neutral-300',
         )}>{label}</p>
 
         {/* 图标 + 数值 + 趋势 */}
-        <div className="flex items-baseline gap-2.5 mb-1">
+        <div className="flex items-baseline gap-3 mb-1.5">
           <div
             className={cn(
               'flex items-center justify-center rounded-lg shrink-0',
               s.iconBg,
-              isLg ? 'w-9 h-9' : 'w-6 h-6',
+              isLg ? 'w-10 h-10' : 'w-7 h-7',
             )}
             aria-hidden="true"
           >
-            <Icon size={isLg ? 18 : 13} className={s.iconColor} />
+            <Icon size={isLg ? 20 : 14} className={s.iconColor} />
           </div>
           <div className="flex items-baseline gap-1.5 min-w-0">
             <p
               className={cn(
                 'font-semibold text-neutral-900 dark:text-white tabular-nums leading-none truncate',
-                isLg ? 'text-2xl' : 'text-lg',
+                isLg ? 'text-3xl' : 'text-xl',
               )}
               aria-label={`${label}，数值${fmt}`}
             >
@@ -92,7 +92,7 @@ export function StatCard({
             </p>
             {trend && (
               <span className={cn(
-                'flex items-center gap-0.5 text-xs font-medium shrink-0',
+                'flex items-center gap-0.5 text-xs font-normal shrink-0 leading-normal',
                 trend.direction === 'up'   ? 'text-emerald-600 dark:text-emerald-400'
               : trend.direction === 'down' ? 'text-error-600 dark:text-error-400'
               :                              'text-neutral-400',
@@ -108,7 +108,7 @@ export function StatCard({
         {subtitle && (
           <p className={cn(
             'text-neutral-400 dark:text-neutral-500 leading-relaxed',
-            isLg ? 'text-xs' : 'text-[11px]',
+            isLg ? 'text-sm' : 'text-xs',
           )}>{subtitle}</p>
         )}
       </div>
