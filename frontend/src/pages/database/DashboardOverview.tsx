@@ -755,7 +755,7 @@ const OBDistributionChart = React.memo(({ data, loading }: { data: Record<string
   if (loading) return <ChartSkeleton title="OB分布" />;
   if (chartData.length === 0)
     return (
-      <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-sm border border-neutral-100 dark:border-neutral-800 p-5 text-center text-sm text-neutral-400 py-10">
+      <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-sm border border-neutral-100 dark:border-neutral-800 p-5 text-center text-sm text-neutral-400 py-12">
         无OB分布数据
       </div>
     );
@@ -763,18 +763,18 @@ const OBDistributionChart = React.memo(({ data, loading }: { data: Record<string
   return (
     <Card className="h-full">
       <CardHeader className="pb-3">
-        <CardTitle className="text-base font-semibold tracking-tight text-neutral-800">口服生物利用度(OB)分布</CardTitle>
+        <CardTitle className="text-base font-semibold tracking-tight text-neutral-800 flex items-center gap-2"><BarChart3 className="w-4 h-4 text-primary-600" />口服生物利用度(OB)分布</CardTitle>
       </CardHeader>
       <CardContent>
-      <ResponsiveContainer width="100%" height={280}>
-        <BarChart data={chartData} layout="vertical" margin={{ top: 5, right: 30, left: 70, bottom: 5 }}>
-          <XAxis type="number" tick={{ fontSize: 10, fill: 'var(--text-muted, #9A9A9F)' }} />
-          <YAxis dataKey="name" type="category" tick={{ fontSize: 10, fill: 'var(--text-secondary, #6E6E73)' }} width={65} />
+      <ResponsiveContainer width="100%" height={220}>
+        <BarChart data={chartData} layout="vertical" margin={{ top: 10, right: 40, left: 80, bottom: 10 }}>
+          <XAxis type="number" tick={{ fontSize: 12, fill: 'var(--text-muted, #9A9A9F)' }} axisLine={false} tickLine={false} />
+          <YAxis dataKey="name" type="category" tick={{ fontSize: 12, fill: 'var(--text-secondary, #6E6E73)' }} axisLine={false} tickLine={false} width={80} />
           <Tooltip
             formatter={(value: number, _name, props) => [`${value}`, props?.payload?.fullName || '数量']}
             contentStyle={{ fontSize: 13, borderRadius: 8 }}
           />
-          <Bar dataKey="value" radius={[4, 4, 4, 4]} barSize={18}>
+          <Bar dataKey="value" radius={[4, 4, 4, 4]} barSize={24}>
             {chartData.map((entry, index) => (
               <Cell key={index} fill={PIE_COLORS[index % PIE_COLORS.length]} />
             ))}
@@ -812,20 +812,20 @@ const DLDistributionChart = React.memo(({ data, loading }: { data: Record<string
   return (
     <Card className="h-full">
       <CardHeader className="pb-3">
-        <CardTitle className="text-base font-semibold tracking-tight text-neutral-800">类药性(DL)分布</CardTitle>
+        <CardTitle className="text-base font-semibold tracking-tight text-neutral-800 flex items-center gap-2"><BarChart3 className="w-4 h-4 text-secondary-600" />类药性(DL)分布</CardTitle>
       </CardHeader>
       <CardContent>
-      <ResponsiveContainer width="100%" height={280}>
-        <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 5 }}>
-          <XAxis dataKey="name" tick={{ fontSize: 11, fill: 'var(--text-muted, #9A9A9F)' }} angle={-30} textAnchor="end" height={45} />
-          <YAxis tick={{ fontSize: 10, fill: 'var(--text-muted, #9A9A9F)' }} />
+      <ResponsiveContainer width="100%" height={220}>
+        <BarChart data={chartData} margin={{ top: 10, right: 20, left: 10, bottom: 50 }}>
+          <XAxis dataKey="name" tick={{ fontSize: 12, fill: 'var(--text-muted, #9A9A9F)' }} angle={-35} textAnchor="end" height={50} />
+          <YAxis tick={{ fontSize: 12, fill: 'var(--text-muted, #9A9A9F)' }} axisLine={false} tickLine={false} />
           <Tooltip formatter={(v: number) => [`${v}`, '数量']} contentStyle={{ fontSize: 13, borderRadius: 8 }} />
           <ReferenceLine y={0} stroke="#e5e7eb" strokeDasharray="3 3" />
           <ReferenceLine
             y={Math.max(...chartData.map((d) => d.value)) * 0.5}
             stroke="#D97706"
             strokeDasharray="6 4"
-            label={{ value: '中位参考', position: 'right', fontSize: 10, fill: 'var(--color-warning, #FF9F0A)' }}
+            label={{ value: '中位参考', position: 'right', fontSize: 11, fill: 'var(--color-warning, #FF9F0A)', fontWeight: 500 }}
           />
           <Bar dataKey="value" radius={[4, 4, 4, 4]}>
             {chartData.map((_, index) => (
@@ -872,14 +872,14 @@ const SeqLengthDistributionChart = React.memo(
     return (
       <Card className="h-full">
         <CardHeader className="pb-3">
-          <CardTitle className="text-base font-semibold tracking-tight text-neutral-800">序列长度分布</CardTitle>
+          <CardTitle className="text-base font-semibold tracking-tight text-neutral-800 flex items-center gap-2"><BarChart3 className="w-4 h-4 text-accent-600" />序列长度分布</CardTitle>
         </CardHeader>
         <CardContent>
-        <ResponsiveContainer width="100%" height={280}>
-          <ComposedChart data={processed} margin={{ top: 10, right: 40, left: -20, bottom: 5 }}>
-            <XAxis dataKey="name" tick={{ fontSize: 11, fill: 'var(--text-muted, #9A9A9F)' }} />
-            <YAxis yAxisId="left" tick={{ fontSize: 10, fill: 'var(--text-muted, #9A9A9F)' }} />
-            <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10, fill: 'var(--color-tertiary, #AF52DE)' }} />
+        <ResponsiveContainer width="100%" height={220}>
+          <ComposedChart data={processed} margin={{ top: 10, right: 50, left: 10, bottom: 10 }}>
+            <XAxis dataKey="name" tick={{ fontSize: 12, fill: 'var(--text-muted, #9A9A9F)' }} axisLine={false} tickLine={false} />
+            <YAxis yAxisId="left" tick={{ fontSize: 12, fill: 'var(--text-muted, #9A9A9F)' }} axisLine={false} tickLine={false} />
+            <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 12, fill: 'var(--color-tertiary, #AF52DE)' }} axisLine={false} tickLine={false} width={40} />
             <Tooltip
               contentStyle={{ fontSize: 13, borderRadius: 8 }}
               formatter={(value: number, name: string) => {
@@ -887,7 +887,7 @@ const SeqLengthDistributionChart = React.memo(
                 return [`${value}`, '数量'];
               }}
             />
-            <Legend wrapperStyle={{ fontSize: 12 }} />
+            <Legend wrapperStyle={{ fontSize: 13, paddingTop: 12 }} iconType="circle" iconSize={10} />
             <Bar
               yAxisId="left"
               dataKey="value"
@@ -907,8 +907,8 @@ const SeqLengthDistributionChart = React.memo(
               name="累计"
               stroke="#AF52DE"
               strokeWidth={2}
-              dot={{ r: 3, fill: 'var(--color-tertiary, #AF52DE)' }}
-              activeDot={{ r: 5 }}
+              dot={{ r: 4, fill: 'var(--color-tertiary, #AF52DE)' }}
+              activeDot={{ r: 6 }}
             />
           </ComposedChart>
         </ResponsiveContainer>
