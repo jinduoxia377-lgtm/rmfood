@@ -208,6 +208,31 @@ const PeptideActivityChart = lazy(() =>
   }),
 );
 
+// ─── 常量配置 ───
+const PIE_COLORS = [
+  'var(--color-primary-600, #28A745)',
+  'var(--color-info-600, #007AFF)',
+  'var(--color-warning-600, #B45309)',
+  'var(--color-danger-600, #B91C1C)',
+  'var(--color-purple-600, #AF52DE)',
+  'var(--color-cyan-600, #0891B2)',
+  'var(--color-success-500, #34C759)',
+  'var(--color-warning-500, #D97706)',
+];
+
+const NODE_TYPE_BADGE: Record<string, 'primary' | 'info' | 'warning' | 'danger' | 'neutral'> = {
+  herb: 'primary',
+  compound: 'info',
+  target: 'warning',
+  disease: 'danger',
+};
+const NODE_TYPE_LABEL: Record<string, string> = {
+  herb: '药材',
+  compound: '化合物',
+  target: '靶点',
+  disease: '疾病',
+};
+
 // ─── 类型定义 ───// ═════════════════════════════════════════
 export default function DatabasePage() {
   const [tab, setTab] = useState<DbTab>('dashboard');
