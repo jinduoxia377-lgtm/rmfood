@@ -1335,13 +1335,6 @@ export default function DatabasePage() {
         </div>
       )}
     </div>
-    </div>
-    </div>
-    </div>
-    </div>
-    </div>
-    </div>
-    </div>
   );
 }
 
