@@ -16,11 +16,12 @@ import {
   Bar,
   XAxis,
   YAxis,
+  CartesianGrid,
   Tooltip as RechartsTooltip,
   ResponsiveContainer,
 } from 'recharts';
 import { databaseApi } from '@/api/database';
-import { PageHeader, Badge, Tabs, Tooltip, TabsList, TabsTrigger, TabsContent, useToast } from '@/components/ui';
+import { PageHeader, Badge, Tabs, Tooltip, TabsList, TabsTrigger, TabsContent, useToast, StatCard, Button, Input } from '@/components/ui';
 import {
   Search,
   BarChart2,
@@ -65,216 +66,149 @@ import SearchAnalyticsDashboard from './tabs/SearchAnalyticsDashboard';
 // ─── Phase 4 实时仪表盘 ───
 import DashboardOverview from './DashboardOverview';
 
-// ─── 图表组件懒加载 ───
-const LazyPieChart = lazy(() =>
+// ─── 药材分类饼图组件 ───
+const HerbCategoryChart = lazy(() =>
   Promise.resolve({
-    default: ({
-      data,
-      title,
-      icon: Icon,
-      color,
-    }: {
-      data: CategoryData[];
-      title: string;
-      icon: any;
-      color: string;
-    }) => (
-      <div className="card p-5">
-        <h2 className="text-base font-semibold text-text-primary dark:text-text-primary mb-4 flex items-center gap-2 leading-[1.25] tracking-tight">
-          <Icon className={`w-4 h-4 ${color}`} />
-          {title}
-        </h2>
-        <ResponsiveContainer width="100%" height={200}>
-          <PieChart>
-            <Pie
-              data={data}
-              cx="50%"
-              cy="50%"
-              outerRadius={80}
-              dataKey="value"
-              label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-              labelLine={false}
-              fontSize={10}
-            >
-              {data.map((entry, index) => (
-                <Cell key={index} fill={entry.fill} strokeWidth={0} />
-              ))}
-            </Pie>
-            <RechartsTooltip formatter={(value: number) => [`${value} 种`, '数量']} contentStyle={{ fontSize: 12 }} />
-          </PieChart>
-        </ResponsiveContainer>
-      </div>
-    ),
-  }),
-);
-
-const LazyBarChart = lazy(() =>
-  Promise.resolve({
-    default: ({ data, title, icon: Icon, color }: { data: any[]; title: string; icon: any; color: string }) => (
-      <div className="card p-5">
-        <h2 className="text-base font-semibold text-text-primary dark:text-text-primary mb-4 flex items-center gap-2 leading-[1.25] tracking-tight">
-          <Icon className={`w-4 h-4 ${color}`} />
-          {title}
-        </h2>
-        <ResponsiveContainer width="100%" height={200}>
-          <BarChart data={data} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
-            <XAxis dataKey="name" tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />
-            <YAxis tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />
-            <RechartsTooltip
-              formatter={(value: number, name: string, props) => [`${value} 条`, props?.payload?.fullName || name]}
-              contentStyle={{ fontSize: 12 }}
-            />
-            <Bar dataKey="count" radius={[4, 4, 0, 0]}>
-              {data.map((entry, index) => (
-                <Cell key={index} fill={entry.fill} strokeWidth={0} />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
-    ),
-  }),
-);
-
-// ─── 类型定义 ───
-type DbTab = 'dashboard' | 'herbs' | 'peptides' | 'graph' | 'homology' | 'food_materials' | 'retail_products' | 'analytics' | 'sync';
-type ViewMode = 'overview' | 'compact' | 'detailed';
-
-interface UnifiedSearchResults {
-  herbs?: { id: number; name_cn: string; name_latin: string | null; category: string | null }[];
-  peptides?: { id: number; sequence: string; source_protein: string | null; activity_type: string | null }[];
-  graph?: { node_label: string; node_type: string }[];
-}
-
-interface CategoryData {
-  name: string;
-  value: number;
-  fill: string;
-}
-
-interface StatCardConfig {
-  label: string;
-  value: number;
-  icon: any;
-  color: string;
-  bg: string;
-  border: string;
-  tab: DbTab;
-  trend?: { value: number; direction: 'up' | 'down' | 'neutral'; label: string };
-  tooltip: string;
-}
-
-interface SearchHistoryItem {
-  query: string;
-  timestamp: number;
-}
-
-// ─── 常量配置 ───
-const PIE_COLORS = [
-  'var(--color-primary-600, #28A745)',
-  'var(--color-info-600, #007AFF)',
-  'var(--color-warning-600, #B45309)',
-  'var(--color-danger-600, #B91C1C)',
-  'var(--color-purple-600, #AF52DE)',
-  'var(--color-cyan-600, #0891B2)',
-  'var(--color-success-500, #34C759)',
-  'var(--color-warning-500, #D97706)',
-];
-
-const NODE_TYPE_BADGE: Record<string, 'primary' | 'info' | 'warning' | 'danger' | 'neutral'> = {
-  herb: 'primary',
-  compound: 'info',
-  target: 'warning',
-  disease: 'danger',
-};
-const NODE_TYPE_LABEL: Record<string, string> = {
-  herb: '药材',
-  compound: '化合物',
-  target: '靶点',
-  disease: '疾病',
-};
-
-const SEARCH_DEBOUNCE_MS = 300;
-const MAX_SEARCH_HISTORY = 10;
-const STORAGE_KEY_SEARCH_HISTORY = 'db_search_history';
-const STORAGE_KEY_TODAY_QUERIES = 'db_today_queries';
-const STORAGE_KEY_VIEW_MODE = 'db_view_mode';
-
-// ─── CountUp 动画 Hook ───
-function useCountUp(targetValue: number, duration = 800) {
-  const [displayValue, setDisplayValue] = useState(0);
-  const previousValue = useRef(0);
-
-  useEffect(() => {
-    const start = previousValue.current;
-    const end = targetValue;
-    const startTime = performance.now();
-
-    const animate = (currentTime: number) => {
-      const elapsed = currentTime - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      const easeOutQuart = 1 - Math.pow(1 - progress, 4);
-      const current = Math.round(start + (end - start) * easeOutQuart);
-
-      setDisplayValue(current);
-
-      if (progress < 1) {
-        requestAnimationFrame(animate);
-      } else {
-        previousValue.current = end;
-      }
-    };
-
-    requestAnimationFrame(animate);
-  }, [targetValue, duration]);
-
-  return displayValue;
-}
-
-// ─── 统计卡片组件 ───
-function StatCard({ config, onClick }: { config: StatCardConfig; onClick?: () => void }) {
-  const animatedValue = useCountUp(config.value);
-  const TrendIcon =
-    config.trend?.direction === 'up' ? ArrowUp : config.trend?.direction === 'down' ? ArrowDown : Minus;
-  const trendColor =
-    config.trend?.direction === 'up'
-      ? 'text-primary-600 dark:text-primary-400'
-      : config.trend?.direction === 'down'
-        ? 'text-error-600 dark:text-error-400'
-        : 'text-neutral-400';
-
-  return (
-    <Tooltip content={config.tooltip}>
-      <button
-        onClick={onClick}
-        className={`card p-4 text-center ${config.bg} ${config.border} border hover:shadow-lg hover:-translate-y-0.5 transition-all active:scale-95 group relative overflow-hidden`}
-      >
-        <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-        <config.icon className={`w-5 h-5 mx-auto mb-2 ${config.color} relative z-10`} />
-        <div className="text-xl font-bold text-text-primary dark:text-text-primary relative z-10 tabular-nums leading-tight tracking-tight">
-          {animatedValue.toLocaleString()}
-        </div>
-        <div className="text-xs font-semibold text-text-muted dark:text-text-muted mt-1.5 relative z-10 leading-relaxed tracking-tight">
-          {config.label}
-        </div>
-
-        {config.trend && (
-          <div className={`flex items-center justify-center gap-1 mt-2 ${trendColor} relative z-10`}>
-            <TrendIcon className="w-3.5 h-3.5" />
-            <span className="text-[11px] font-medium leading-relaxed tabular-nums">
-              {Math.abs(config.trend.value)}%
-            </span>
-            <span className="text-[10px] text-text-muted font-normal leading-relaxed">{config.trend.label}</span>
+    default: ({ data, loading }: { data: { name: string; value: number; fill: string }[]; loading?: boolean }) => {
+      if (loading) {
+        return (
+          <div className="card p-5 flex items-center justify-center h-[280px]">
+            <div className="text-neutral-500 text-sm font-normal">加载中...</div>
           </div>
-        )}
-      </button>
-    </Tooltip>
-  );
-}
+        );
+      }
+      if (!data || data.length === 0) {
+        return (
+          <div className="card p-5 flex flex-col items-center justify-center h-[280px] text-center">
+            <BarChart2 className="w-10 h-10 text-neutral-300 dark:text-neutral-600 mb-3" />
+            <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">暂无药材分类数据</p>
+            <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1">请先同步数据库获取分类统计</p>
+          </div>
+        );
+      }
+      const total = data.reduce((sum, d) => sum + d.value, 0);
+      return (
+        <div className="card p-5">
+          <h3 className="text-base font-semibold text-neutral-900 dark:text-neutral-100 mb-4 flex items-center gap-2 leading-[1.25] tracking-tight">
+            <BarChart2 className="w-4 h-4 text-primary-600" />
+            药材分类分布
+          </h3>
+          <div className="flex flex-col md:flex-row items-center gap-4">
+            <ResponsiveContainer width="100%" height={200}>
+              <PieChart>
+                <Pie
+                  data={data}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={50}
+                  outerRadius={80}
+                  paddingAngle={2}
+                  dataKey="value"
+                  label={({ name, percent }) => name + ' ' + (percent * 100).toFixed(0) + '%'}
+                  labelLine={{ stroke: 'var(--text-muted)', strokeWidth: 0.8, opacity: 0.4 }}
+                >
+                  {data.map((entry, index) => (
+                    <Cell key={'cell-' + index} fill={entry.fill} strokeWidth={0} />
+                  ))}
+                </Pie>
+                <RechartsTooltip
+                  formatter={(value: number, name: string) => [value + ' 种', name]}
+                  contentStyle={{
+                    backgroundColor: 'var(--card-bg-solid, #ffffff)',
+                    borderRadius: '8px',
+                    border: '1px solid var(--border-color, #e2e8f0)',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                    padding: '8px 12px',
+                    fontSize: '12px',
+                  }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+            <div className="flex flex-col gap-1.5 min-w-[120px]">
+              {data.slice(0, 5).map((item, i) => (
+                <div key={i} className="flex items-center gap-2 text-xs">
+                  <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: item.fill }} />
+                  <span className="text-neutral-600 dark:text-neutral-400 truncate flex-1">{item.name}</span>
+                  <span className="text-neutral-900 dark:text-neutral-100 font-medium tabular-nums">{item.value}</span>
+                  <span className="text-neutral-400 dark:text-neutral-500 tabular-nums">({'(' + ((item.value / total) * 100).toFixed(0) + ')%'})</span>
+                </div>
+              ))}
+              {data.length > 5 && (
+                <div className="text-xs text-neutral-400 dark:text-neutral-500 pt-1 border-t border-neutral-200 dark:border-neutral-700">
+                  +{data.length - 5} 其他分类
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    },
+  }),
+);
 
-// ═════════════════════════════════════════
-// 主组件
-// ═════════════════════════════════════════
+// ─── 活性肽类型柱状图组件 ───
+const PeptideActivityChart = lazy(() =>
+  Promise.resolve({
+    default: ({ data, loading }: { data: { name: string; count: number; fill: string }[]; loading?: boolean }) => {
+      if (loading) {
+        return (
+          <div className="card p-5 flex items-center justify-center h-[280px]">
+            <div className="text-neutral-500 text-sm font-normal">加载中...</div>
+          </div>
+        );
+      }
+      if (!data || data.length === 0) {
+        return (
+          <div className="card p-5 flex flex-col items-center justify-center h-[280px] text-center">
+            <Activity className="w-10 h-10 text-neutral-300 dark:text-neutral-600 mb-3" />
+            <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">暂无活性肽类型数据</p>
+            <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1">请先同步数据库获取类型统计</p>
+          </div>
+        );
+      }
+      return (
+        <div className="card p-5">
+          <h3 className="text-base font-semibold text-neutral-900 dark:text-neutral-100 mb-4 flex items-center gap-2 leading-[1.25] tracking-tight">
+            <Activity className="w-4 h-4 text-secondary-600" />
+            活性肽类型分布
+          </h3>
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart data={data} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" horizontal={false} opacity={0.3} />
+              <XAxis type="number" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
+              <YAxis
+                type="category"
+                dataKey="name"
+                tick={{ fontSize: 11, fill: 'var(--text-muted)' }}
+                axisLine={false}
+                tickLine={false}
+                width={80}
+              />
+              <RechartsTooltip
+                formatter={(value: number, name: string, props: any) => [value + ' 条', props.payload?.fullName || name]}
+                contentStyle={{
+                  backgroundColor: 'var(--card-bg-solid, #ffffff)',
+                  borderRadius: '8px',
+                  border: '1px solid var(--border-color, #e2e8f0)',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                  padding: '8px 12px',
+                  fontSize: '12px',
+                }}
+              />
+              <Bar dataKey="count" radius={[4, 4, 4, 4]} barSize={20}>
+                {data.map((entry, index) => (
+                  <Cell key={'cell-' + index} fill={entry.fill} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      );
+    },
+  }),
+);
+
+// ─── 类型定义 ───// ═════════════════════════════════════════
 export default function DatabasePage() {
   const [tab, setTab] = useState<DbTab>('dashboard');
   const [searchInput, setSearchInput] = useState('');
@@ -408,6 +342,20 @@ export default function DatabasePage() {
 
   // ─── 数据派生变量（必须在回调函数之前声明，避免 TDZ 错误）────
   const stats = syncStatsQuery.data as Record<string, any> | undefined;
+  // 药材分类数据（独立API获取，更准确）
+  const categoryQuery = useQuery({
+    queryKey: ['db-herb-categories'],
+    queryFn: () => databaseApi.getCategories(),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // 活性肽类型数据（独立API获取，更准确）
+  const activityQuery = useQuery({
+    queryKey: ['db-peptide-activity-types'],
+    queryFn: () => databaseApi.getActivityTypes(),
+    staleTime: 5 * 60 * 1000,
+  });
+
   const herbCount = stats?.tcmsp?.total_herbs ?? 0;
   const peptideCount = stats?.dfbp?.total_peptides ?? 0;
   const graphNodes = stats?.knowledge_graph ?? { total_herbs: 0, total_compounds: 0, total_targets: 0 };
@@ -416,44 +364,26 @@ export default function DatabasePage() {
 
   // 药材分类数据（饼图）
   const categoryData = useMemo((): CategoryData[] => {
-    const raw = stats?.tcmsp?.categories;
-    if (!raw) return [];
-    let entries: [string, number][] = [];
-    if (Array.isArray(raw)) {
-      entries = raw.map((c: { category?: string; name?: string; count?: number }) => [
-        c.category || c.name || '',
-        typeof c.count === 'number' ? c.count : 0,
-      ]);
-    } else if (typeof raw === 'object') {
-      entries = Object.entries(raw as Record<string, number>);
-    }
-    return entries.slice(0, 8).map(([name, value], i) => ({
-      name,
-      value: typeof value === 'number' ? value : 0,
+    const raw = categoryQuery.data?.categories;
+    if (!raw || raw.length === 0) return [];
+    return raw.slice(0, 8).map((c, i) => ({
+      name: c.category,
+      value: typeof c.count === 'number' ? c.count : 0,
       fill: PIE_COLORS[i % PIE_COLORS.length],
     }));
-  }, [stats]);
+  }, [categoryQuery.data]);
 
   // 活性类型数据（柱状图）
   const activityData = useMemo(() => {
-    const raw = stats?.dfbp?.activity_types;
-    if (!raw) return [];
-    let entries: [string, number][] = [];
-    if (Array.isArray(raw)) {
-      entries = raw.map((c: { type?: string; name?: string; count?: number }) => [
-        c.type || c.name || '',
-        typeof c.count === 'number' ? c.count : 0,
-      ]);
-    } else if (typeof raw === 'object') {
-      entries = Object.entries(raw as Record<string, number>);
-    }
-    return entries.slice(0, 6).map(([name, value], i) => ({
-      name: name.length > 6 ? name.slice(0, 6) + '...' : name,
-      fullName: name,
-      count: typeof value === 'number' ? value : 0,
+    const raw = activityQuery.data?.activity_types;
+    if (!raw || raw.length === 0) return [];
+    return raw.slice(0, 6).map((item, i) => ({
+      name: item.type_cn || item.type_en || '',
+      fullName: item.type_cn + ' (' + item.type_en + ')',
+      count: typeof item.count === 'number' ? item.count : 0,
       fill: PIE_COLORS[i % PIE_COLORS.length],
     }));
-  }, [stats]);
+  }, [activityQuery.data]);
 
   // 全局搜索防抖 + 自动补全（可配置化）
   const [searchTimer, setSearchTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
@@ -704,89 +634,38 @@ export default function DatabasePage() {
 
   // 统计卡片配置（6个卡片 + 趋势数据）
   const statCardsConfig = useMemo(
-    (): StatCardConfig[] => [
-      {
-        label: '中药材',
-        value: herbCount,
-        icon: Database,
-        color: 'text-primary-600 dark:text-primary-400',
-        bg: 'bg-primary-50 dark:bg-primary-950/40',
-        border: 'border-primary-100 dark:border-primary-900/30',
-        tab: 'herbs',
-        trend: { value: 12.5, direction: 'up', label: '较上周' },
-        tooltip: `TCMSP 数据库中的中药材总数：${herbCount.toLocaleString()} 种`,
-      },
-      {
-        label: '活性肽',
-        value: peptideCount,
-        icon: Activity,
-        color: 'text-secondary-600 dark:text-secondary-400',
-        bg: 'bg-secondary-50 dark:bg-blue-950/40',
-        border: 'border-blue-100 dark:border-blue-900/30',
-        tab: 'peptides',
-        trend: { value: 8.3, direction: 'up', label: '较上周' },
-        tooltip: `DFBP 数据库中的活性肽总数：${peptideCount.toLocaleString()} 条`,
-      },
-      {
-        label: '图谱节点',
-        value: graphNodes.total_herbs + graphNodes.total_compounds + graphNodes.total_targets,
-        icon: Layers,
-        color: 'text-accent-600 dark:text-accent-400',
-        bg: 'bg-accent-50 dark:bg-accent-950/40',
-        border: 'border-accent-100 dark:border-accent-900/30',
-        tab: 'graph',
-        trend: { value: 5.2, direction: 'up', label: '较上周' },
-        tooltip: `知识图谱总节点数：药材 ${graphNodes.total_herbs} | 化合物 ${graphNodes.total_compounds} | 靶点 ${graphNodes.total_targets}`,
-      },
-      {
-        label: '药食同源',
-        value: homologyCount,
-        icon: Zap,
-        color: 'text-primary-600 dark:text-primary-400',
-        bg: 'bg-primary-50 dark:bg-emerald-950/40',
-        border: 'border-emerald-100 dark:border-emerald-900/30',
-        tab: 'herbs',
-        trend: { value: 2.1, direction: 'neutral', label: '持平' },
-        tooltip: `药食同源目录中的条目数：${homologyCount.toLocaleString()}`,
-      },
-      {
-        label: '配伍关系',
-        value: stats?.knowledge_graph?.herb_interactions ?? 0,
-        icon: TrendingUp,
-        color: 'text-warning-600 dark:text-warning-400',
-        bg: 'bg-warning-50 dark:bg-amber-950/40',
-        border: 'border-amber-100 dark:border-amber-900/30',
-        tab: 'graph',
-        trend: { value: 15.7, direction: 'up', label: '较上周' },
-        tooltip: `已识别的配伍关系数：${(stats?.knowledge_graph?.herb_interactions ?? 0).toLocaleString()}`,
-      },
-      {
-        label: '今日查询',
-        value: todayQueries,
-        icon: Eye,
-        color: 'text-accent-600 dark:text-accent-400',
-        bg: 'bg-accent-50 dark:bg-purple-950/40',
-        border: 'border-purple-100 dark:border-purple-900/30',
-        tab: 'dashboard',
-        trend: { value: 23.4, direction: 'up', label: '较昨日' },
-        tooltip: `今日搜索/查询次数：${todayQueries} 次`,
-      },
+    () => [
+      { label: '中药材', value: herbCount, icon: Database, variant: 'primary', subtitle: 'TCMSP 中药材品种库', trend: { direction: 'up' as const, value: '+12.5%' }, tab: 'herbs' },
+      { label: '活性肽', value: peptideCount, icon: Activity, variant: 'secondary', subtitle: 'DFBP 活性肽序列库', trend: { direction: 'up' as const, value: '+8.3%' }, tab: 'peptides' },
+      { label: '图谱节点', value: graphNodes.total_herbs + graphNodes.total_compounds + graphNodes.total_targets, icon: Layers, variant: 'info', subtitle: '药材 + 化合物 + 靶点', trend: { direction: 'up' as const, value: '+5.2%' }, tab: 'graph' },
+      { label: '药食同源', value: homologyCount, icon: Zap, variant: 'success', subtitle: '国家食药物质目录条目', trend: { direction: 'stable' as const, value: '0%' }, tab: 'herbs' },
+      { label: '配伍关系', value: stats?.knowledge_graph?.herb_interactions ?? 0, icon: TrendingUp, variant: 'warning', subtitle: '已识别的配伍关联数', trend: { direction: 'up' as const, value: '+15.7%' }, tab: 'graph' },
+      { label: '今日查询', value: todayQueries, icon: Eye, variant: 'info', subtitle: '搜索 / 查询总次数', trend: { direction: 'up' as const, value: '+23.4%' }, tab: 'dashboard' },
     ],
     [herbCount, peptideCount, graphNodes, homologyCount, stats, todayQueries],
   );
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 animate-page-enter">
-      {/* Header */}
-      <div className="space-y-2">
-        <h1
-          className="font-bold tracking-tight leading-[1.25] text-2xl text-text-primary dark:text-text-primary"
-        >
-          数据库检索中心
-        </h1>
-        <p className="text-[13px] font-normal leading-relaxed text-text-muted dark:text-text-muted">
-          TCMSP 中药材 · DFBP 活性肽 · 知识图谱 · 药食同源目录
-        </p>
+    <div className="min-h-screen bg-grid" style={{ backgroundColor: 'var(--bg-canvas)' }}>
+      <div className="space-y-4 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 animate-page-enter">
+      {/* 页面横幅 */}
+      <div className="rounded-xl bg-primary-600 p-6 text-white shadow-sm">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <h2 className="text-xl font-semibold leading-snug tracking-tight">数据库检索中心</h2>
+            <p className="text-white/80 text-sm mt-1">TCMSP 中药材 · DFBP 活性肽 · 知识图谱 · 药食同源目录</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" className="bg-white/10 text-white border-white/30 hover:bg-white/20 hover:text-white" onClick={() => window.print()}>
+              <Printer className="w-4 h-4 mr-1.5" />
+              打印报告
+            </Button>
+            <Button variant="outline" size="sm" className="bg-white/10 text-white border-white/30 hover:bg-white/20 hover:text-white" onClick={handleExportStats}>
+              <Download className="w-4 h-4 mr-1.5" />
+              导出数据
+            </Button>
+          </div>
+        </div>
       </div>
 
       {/* 顶部工具栏 */}
@@ -798,7 +677,7 @@ export default function DatabasePage() {
             className={`flex items-center gap-2 px-3 py-2 text-xs font-semibold rounded-md transition-all leading-relaxed tracking-tight focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none ${
               viewMode === 'overview'
                 ? 'bg-white dark:bg-neutral-700 text-primary-600 dark:text-primary-400 shadow-sm'
-                : 'text-neutral-600 dark:text-neutral-400 hover:text-text-primary'
+                : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900'
             }`}
           >
             <LayoutDashboard className="w-3.5 h-3.5" />
@@ -809,7 +688,7 @@ export default function DatabasePage() {
             className={`flex items-center gap-2 px-3 py-2 text-xs font-semibold rounded-md transition-all leading-relaxed tracking-tight focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none ${
               viewMode === 'compact'
                 ? 'bg-white dark:bg-neutral-700 text-primary-600 dark:text-primary-400 shadow-sm'
-                : 'text-neutral-600 dark:text-neutral-400 hover:text-text-primary'
+                : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900'
             }`}
           >
             <LayoutList className="w-3.5 h-3.5" />
@@ -820,7 +699,7 @@ export default function DatabasePage() {
             className={`flex items-center gap-2 px-3 py-2 text-xs font-semibold rounded-md transition-all leading-relaxed tracking-tight focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none ${
               viewMode === 'detailed'
                 ? 'bg-white dark:bg-neutral-700 text-primary-600 dark:text-primary-400 shadow-sm'
-                : 'text-neutral-600 dark:text-neutral-400 hover:text-text-primary'
+                : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900'
             }`}
           >
             <LayoutGrid className="w-3.5 h-3.5" />
@@ -858,11 +737,11 @@ export default function DatabasePage() {
                       handleExportStats();
                       setShowQuickActions(false);
                     }}
-                    className="w-full flex items-center gap-3 px-3 py-2 text-left text-sm font-medium text-text-primary dark:text-text-primary hover:bg-primary-50/60 dark:hover:bg-primary-950/20 transition-colors rounded-lg leading-relaxed"
+                    className="w-full flex items-center gap-3 px-3 py-2 text-left text-sm font-medium text-neutral-900 dark:text-neutral-900 hover:bg-primary-50/60 dark:hover:bg-primary-950/20 transition-colors rounded-lg leading-relaxed"
                   >
                     <Download className="w-4 h-4 text-secondary-600" />
                     导出统计数据
-                    <span className="ml-auto text-[10px] text-text-muted font-normal tabular-nums">E</span>
+                    <span className="ml-auto text-[10px] text-neutral-500 font-normal tabular-nums">E</span>
                   </button>
 
                   <button
@@ -870,11 +749,11 @@ export default function DatabasePage() {
                       handleRefreshCache();
                       setShowQuickActions(false);
                     }}
-                    className="w-full flex items-center gap-3 px-3 py-2 text-left text-sm font-medium text-text-primary dark:text-text-primary hover:bg-primary-50/60 dark:hover:bg-emerald-950/20 transition-colors rounded-lg leading-relaxed"
+                    className="w-full flex items-center gap-3 px-3 py-2 text-left text-sm font-medium text-neutral-900 dark:text-neutral-900 hover:bg-primary-50/60 dark:hover:bg-emerald-950/20 transition-colors rounded-lg leading-relaxed"
                   >
                     <RefreshCw className="w-4 h-4 text-primary-600" />
                     刷新所有缓存
-                    <span className="ml-auto text-[10px] text-text-muted font-normal tabular-nums">R</span>
+                    <span className="ml-auto text-[10px] text-neutral-500 font-normal tabular-nums">R</span>
                   </button>
 
                   <button
@@ -882,7 +761,7 @@ export default function DatabasePage() {
                       handleHealthCheck();
                       setShowQuickActions(false);
                     }}
-                    className="w-full flex items-center gap-3 px-3 py-2 text-left text-sm font-medium text-text-primary dark:text-text-primary hover:bg-warning-50/60 dark:hover:bg-amber-950/20 transition-colors rounded-lg leading-relaxed"
+                    className="w-full flex items-center gap-3 px-3 py-2 text-left text-sm font-medium text-neutral-900 dark:text-neutral-900 hover:bg-warning-50/60 dark:hover:bg-amber-950/20 transition-colors rounded-lg leading-relaxed"
                   >
                     <ShieldCheck className="w-4 h-4 text-warning-600" />
                     数据库健康检查
@@ -895,7 +774,7 @@ export default function DatabasePage() {
                       handlePrintReport();
                       setShowQuickActions(false);
                     }}
-                    className="w-full flex items-center gap-3 px-3 py-2 text-left text-sm font-medium text-text-primary dark:text-text-primary hover:bg-accent-50/60 dark:hover:bg-purple-950/20 transition-colors rounded-lg leading-relaxed"
+                    className="w-full flex items-center gap-3 px-3 py-2 text-left text-sm font-medium text-neutral-900 dark:text-neutral-900 hover:bg-accent-50/60 dark:hover:bg-purple-950/20 transition-colors rounded-lg leading-relaxed"
                   >
                     <Printer className="w-4 h-4 text-accent-600" />
                     打印报告
@@ -907,7 +786,7 @@ export default function DatabasePage() {
                       toast.success('链接已复制到剪贴板');
                       setShowQuickActions(false);
                     }}
-                    className="w-full flex items-center gap-3 px-3 py-2 text-left text-sm font-medium text-text-primary dark:text-text-primary hover:bg-cyan-50/60 dark:hover:bg-cyan-950/20 transition-colors rounded-lg leading-relaxed"
+                    className="w-full flex items-center gap-3 px-3 py-2 text-left text-sm font-medium text-neutral-900 dark:text-neutral-900 hover:bg-cyan-50/60 dark:hover:bg-cyan-950/20 transition-colors rounded-lg leading-relaxed"
                   >
                     <Share2 className="w-4 h-4 text-cyan-600" />
                     分享此页面
@@ -995,7 +874,7 @@ export default function DatabasePage() {
         {/* 搜索历史下拉 */}
         {showSearchHistory && !showGlobalResults && searchHistory.length > 0 && (
           <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-neutral-900 rounded-xl shadow-xl border border-neutral-200 dark:border-neutral-700 z-50 max-h-60 overflow-y-auto animate-micro-in">
-            <div className="px-4 py-2 text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider bg-slate-50 dark:bg-neutral-800/50 flex items-center justify-between leading-relaxed">
+            <div className="px-4 py-2 text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider bg-neutral-50 dark:bg-neutral-800/50 flex items-center justify-between leading-relaxed">
               搜索历史
               <button
                 onClick={() => {
@@ -1020,10 +899,10 @@ export default function DatabasePage() {
               >
                 <History className="w-4 h-4 text-neutral-400" />
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium text-text-primary dark:text-text-primary truncate leading-relaxed">
+                  <div className="text-sm font-medium text-neutral-900 dark:text-neutral-900 truncate leading-relaxed">
                     {item.query}
                   </div>
-                  <div className="text-[10px] text-text-muted font-normal leading-relaxed tabular-nums">
+                  <div className="text-[10px] text-neutral-500 font-normal leading-relaxed tabular-nums">
                     {new Date(item.timestamp).toLocaleString('zh-CN')}
                   </div>
                 </div>
@@ -1069,7 +948,7 @@ export default function DatabasePage() {
             )}
             {(globalResults.herbs ?? [])?.length > 0 && (
               <div>
-                <div className="px-4 py-2 text-xs font-semibold text-text-muted uppercase tracking-wider bg-slate-50 dark:bg-neutral-800/50 flex items-center justify-between leading-relaxed">
+                <div className="px-4 py-2 text-xs font-semibold text-neutral-500 uppercase tracking-wider bg-neutral-50 dark:bg-neutral-800/50 flex items-center justify-between leading-relaxed">
                   <span>
                     中药材 <span className="tabular-nums">({(globalResults.herbs ?? []).length})</span>
                   </span>
@@ -1099,11 +978,11 @@ export default function DatabasePage() {
                     >
                       <Leaf className="w-5 h-5 text-primary-600" />
                       <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium text-text-primary dark:text-text-primary leading-relaxed">
+                        <div className="text-sm font-medium text-neutral-900 dark:text-neutral-900 leading-relaxed">
                           {h.name_cn}
                         </div>
                         {h.name_latin && (
-                          <div className="text-xs text-text-muted italic font-mono leading-relaxed">{h.name_latin}</div>
+                          <div className="text-xs text-neutral-500 italic font-mono leading-relaxed">{h.name_latin}</div>
                         )}
                       </div>
                       <Badge variant="info" size="sm" className="font-medium leading-normal">
@@ -1115,7 +994,7 @@ export default function DatabasePage() {
             )}
             {(globalResults.peptides ?? [])?.length > 0 && (
               <div>
-                <div className="px-4 py-2 text-xs font-semibold text-text-muted uppercase tracking-wider bg-slate-50 dark:bg-neutral-800/50 flex items-center justify-between leading-relaxed">
+                <div className="px-4 py-2 text-xs font-semibold text-neutral-500 uppercase tracking-wider bg-neutral-50 dark:bg-neutral-800/50 flex items-center justify-between leading-relaxed">
                   <span>
                     活性肽 <span className="tabular-nums">({(globalResults.peptides ?? []).length})</span>
                   </span>
@@ -1154,7 +1033,7 @@ export default function DatabasePage() {
                           <div className="text-sm font-mono font-medium text-secondary-600 dark:text-secondary-400 leading-relaxed tabular-nums">
                             {p.sequence}
                           </div>
-                          <div className="text-xs text-text-muted font-normal leading-relaxed">{p.source_protein}</div>
+                          <div className="text-xs text-neutral-500 font-normal leading-relaxed">{p.source_protein}</div>
                         </div>
                         <Badge variant="primary" size="sm" className="font-medium leading-normal">
                           {p.activity_type || '-'}
@@ -1166,7 +1045,7 @@ export default function DatabasePage() {
             )}
             {(globalResults.graph ?? [])?.length > 0 && (
               <div>
-                <div className="px-4 py-2 text-xs font-semibold text-text-muted uppercase tracking-wider bg-slate-50 dark:bg-neutral-800/50 flex items-center justify-between leading-relaxed">
+                <div className="px-4 py-2 text-xs font-semibold text-neutral-500 uppercase tracking-wider bg-neutral-50 dark:bg-neutral-800/50 flex items-center justify-between leading-relaxed">
                   <span>
                     知识图谱 <span className="tabular-nums">({(globalResults.graph ?? []).length})</span>
                   </span>
@@ -1195,7 +1074,7 @@ export default function DatabasePage() {
                       }}
                     >
                       <GitBranch className="w-5 h-5 text-violet-600" />
-                      <div className="flex-1 text-sm font-medium text-text-primary dark:text-text-primary leading-relaxed">
+                      <div className="flex-1 text-sm font-medium text-neutral-900 dark:text-neutral-900 leading-relaxed">
                         {g.node_label}
                       </div>
                       <Badge
@@ -1212,7 +1091,7 @@ export default function DatabasePage() {
             {(globalResults.herbs ?? []).length === 0 &&
               (globalResults.peptides ?? []).length === 0 &&
               (globalResults.graph ?? []).length === 0 && (
-                <div className="p-8 text-center text-text-muted text-sm font-normal leading-relaxed">
+                <div className="p-8 text-center text-neutral-500 text-sm font-normal leading-relaxed">
                   未找到相关结果
                 </div>
               )}
@@ -1239,7 +1118,7 @@ export default function DatabasePage() {
               </div>
             ))
           : statCardsConfig.map((config) => (
-            <StatCard key={config.label} config={config} onClick={() => setTab(config.tab)} />
+            <button key={config.label} onClick={() => setTab(config.tab)} type="button" className="w-full text-left"><StatCard label={config.label} value={config.value} icon={config.icon} variant={config.variant} subtitle={config.subtitle} trend={config.trend} /></button>
           ))}
       </div>
 
@@ -1248,7 +1127,7 @@ export default function DatabasePage() {
         <Suspense
           fallback={
             <div className="card p-5 flex items-center justify-center h-[280px]">
-              <div className="text-text-muted text-sm font-normal leading-relaxed">加载图表中...</div>
+              <div className="text-neutral-500 text-sm font-normal leading-relaxed">加载图表中...</div>
             </div>
           }
         >
@@ -1260,7 +1139,7 @@ export default function DatabasePage() {
         <Suspense
           fallback={
             <div className="card p-5 flex items-center justify-center h-[280px]">
-              <div className="text-text-muted text-sm font-normal leading-relaxed">加载图表中...</div>
+              <div className="text-neutral-500 text-sm font-normal leading-relaxed">加载图表中...</div>
             </div>
           }
         >
@@ -1399,11 +1278,11 @@ export default function DatabasePage() {
                 ].map(({ keys, description, icon: Icon }, i) => (
                   <div
                     key={i}
-                    className="flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-800/50 transition-colors group"
+                    className="flex items-center justify-between p-3 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors group"
                   >
                     <div className="flex items-center gap-3">
                       <Icon className="w-5 h-5 text-neutral-400 group-hover:text-primary-600 transition-colors" />
-                      <span className="text-sm font-normal text-text-primary dark:text-text-primary leading-relaxed">
+                      <span className="text-sm font-normal text-neutral-900 dark:text-neutral-900 leading-relaxed">
                         {description}
                       </span>
                     </div>
@@ -1422,7 +1301,7 @@ export default function DatabasePage() {
               </div>
 
               <div className="pt-4 border-t border-neutral-200 dark:border-neutral-700">
-                <p className="text-xs text-text-muted text-center font-normal leading-relaxed">
+                <p className="text-xs text-neutral-500 text-center font-normal leading-relaxed">
                   提示：在输入框中按快捷键不会触发全局操作
                 </p>
               </div>
@@ -1430,6 +1309,7 @@ export default function DatabasePage() {
           </div>
         </div>
       )}
+    </div>
     </div>
   );
 }
