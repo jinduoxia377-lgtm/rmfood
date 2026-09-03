@@ -86,6 +86,11 @@ export default function HerbsTab({
     }
   }, [initKeyword, onInitKwConsumed]);
 
+  // 当父组件通过 initKeyword 传入新搜索词时（全局搜索点击结果），同步更新内部状态
+  useEffect(() => {
+    setKeyword(initKeyword || '');
+  }, [initKeyword]);
+
   const categoriesQuery = useQuery({
     queryKey: ['db-herb-categories'],
     queryFn: () => databaseApi.getCategories(),
