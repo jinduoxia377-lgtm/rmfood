@@ -167,7 +167,7 @@ async def unified_search(
                 "source": "herb",
                 "id": h.id,
                 "name": h.name_cn or h.name_latin,
-                "name_latin": h.herb_name_latin,
+                "name_latin": h.name_latin,
                 "category": h.category or "中药材",
                 "score": 0.9,
                 "extra": {
