@@ -956,9 +956,8 @@ export default function DatabasePage() {
 
         {/* 搜索历史下拉 */}
         {showSearchHistory && !showGlobalResults && searchHistory.length > 0 && (
-          <div className="fixed inset-0 z-[60] flex items-start justify-center pt-[120px]" onClick={(e) => e.stopPropagation()}>
-            <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={() => setShowSearchHistory(false)} />
-            <div className="relative w-full max-w-2xl mx-4 bg-white dark:bg-neutral-900 rounded-xl shadow-2xl border border-neutral-200 dark:border-neutral-700 z-10 max-h-60 overflow-y-auto animate-micro-in" onClick={(e) => e.stopPropagation()}>
+          <div className="absolute top-full left-0 right-0 mt-2 z-[60]">
+            <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-2xl border border-neutral-200 dark:border-neutral-700 max-h-60 overflow-y-auto animate-micro-in">
               <div className="px-4 py-2 text-xs font-semibold text-[var(--text-muted,#64748b)] dark:text-[var(--text-disabled,#94a3b8)] uppercase tracking-wider bg-[var(--bg-canvas,#f8fafc)] dark:bg-neutral-800 flex items-center justify-between leading-normal sticky top-0 z-10">
                 搜索历史
                 <button
@@ -999,9 +998,8 @@ export default function DatabasePage() {
 
         {/* 搜索结果下拉 */}
         {showGlobalResults && globalResults && (
-          <div className="fixed inset-0 z-[60] flex items-start justify-center pt-[120px]" onClick={(e) => e.stopPropagation()}>
-            <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={() => setShowGlobalResults(false)} />
-            <div className="relative w-full max-w-2xl mx-4 bg-white dark:bg-neutral-900 rounded-xl shadow-2xl border border-neutral-200 dark:border-neutral-700 z-10 max-h-80 overflow-y-auto animate-micro-in" onClick={(e) => e.stopPropagation()}>
+          <div className="absolute top-full left-0 right-0 mt-2 z-[60]">
+            <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-2xl border border-neutral-200 dark:border-neutral-700 max-h-80 overflow-y-auto animate-micro-in">
               {/* 自动补全建议 */}
               {suggestions && suggestions.length > 0 && (
                 <div>
