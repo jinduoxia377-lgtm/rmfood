@@ -946,230 +946,236 @@ export default function DatabasePage() {
 
         {/* 搜索历史下拉 */}
         {showSearchHistory && !showGlobalResults && searchHistory.length > 0 && (
-          <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-neutral-900 rounded-xl shadow-xl border border-neutral-200 dark:border-neutral-700 z-50 max-h-60 overflow-y-auto animate-micro-in">
-            <div className="px-4 py-2 text-xs font-semibold text-[var(--text-muted,#64748b)] dark:text-[var(--text-disabled,#94a3b8)] uppercase tracking-wider bg-[var(--bg-canvas,#f8fafc)] dark:bg-neutral-800/50 flex items-center justify-between leading-normal">
-              搜索历史
-              <button
-                onClick={() => {
-                  setSearchHistory([]);
-                  localStorage.removeItem(STORAGE_KEY_SEARCH_HISTORY);
-                  setShowSearchHistory(false);
-                }}
-                className="text-error-600 hover:text-error-700 text-xs font-normal leading-normal"
-              >
-                清空
-              </button>
+          <div className="fixed inset-0 z-[60] flex items-start justify-center pt-[120px]">
+            <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={() => setShowSearchHistory(false)} />
+            <div className="relative w-full max-w-2xl mx-4 bg-white dark:bg-neutral-900 rounded-xl shadow-2xl border border-neutral-200 dark:border-neutral-700 z-10 max-h-60 overflow-y-auto animate-micro-in">
+              <div className="px-4 py-2 text-xs font-semibold text-[var(--text-muted,#64748b)] dark:text-[var(--text-disabled,#94a3b8)] uppercase tracking-wider bg-[var(--bg-canvas,#f8fafc)] dark:bg-neutral-800 flex items-center justify-between leading-normal sticky top-0 z-10">
+                搜索历史
+                <button
+                  onClick={() => {
+                    setSearchHistory([]);
+                    localStorage.removeItem(STORAGE_KEY_SEARCH_HISTORY);
+                    setShowSearchHistory(false);
+                  }}
+                  className="text-error-600 hover:text-error-700 text-xs font-normal leading-normal"
+                >
+                  清空
+                </button>
+              </div>
+              {searchHistory.map((item, i) => (
+                <button
+                  key={i}
+                  className="w-full px-4 py-2 text-left hover:bg-primary-50 dark:hover:bg-primary-950/30 transition-colors flex items-center gap-3 border-b border-neutral-100 dark:border-neutral-800 last:border-0"
+                  onClick={() => {
+                    setSearchInput(item.query);
+                    handleGlobalSearch(item.query);
+                    setShowSearchHistory(false);
+                  }}
+                >
+                  <History className="w-4 h-4 text-[var(--text-disabled,#94a3b8)]" />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-normal text-[var(--text-primary,#0f172a)] dark:text-[var(--text-primary,#0f172a)] truncate leading-normal">
+                      {item.query}
+                    </div>
+                    <div className="text-xs text-[var(--text-muted,#64748b)] font-normal leading-normal tabular-nums">
+                      {new Date(item.timestamp).toLocaleString('zh-CN')}
+                    </div>
+                  </div>
+                </button>
+              ))}
             </div>
-            {searchHistory.map((item, i) => (
-              <button
-                key={i}
-                className="w-full px-4 py-2 text-left hover:bg-primary-50/60 dark:hover:bg-primary-950/20 transition-colors flex items-center gap-3 border-b border-neutral-100 dark:border-neutral-800 last:border-0"
-                onClick={() => {
-                  setSearchInput(item.query);
-                  handleGlobalSearch(item.query);
-                  setShowSearchHistory(false);
-                }}
-              >
-                <History className="w-4 h-4 text-[var(--text-disabled,#94a3b8)]" />
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-normal text-[var(--text-primary,#0f172a)] dark:text-[var(--text-primary,#0f172a)] truncate leading-normal">
-                    {item.query}
-                  </div>
-                  <div className="text-xs text-[var(--text-muted,#64748b)] font-normal leading-normal tabular-nums">
-                    {new Date(item.timestamp).toLocaleString('zh-CN')}
-                  </div>
-                </div>
-              </button>
-            ))}
           </div>
         )}
 
         {/* 搜索结果下拉 */}
         {showGlobalResults && globalResults && (
-          <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-neutral-900 rounded-xl shadow-xl border border-neutral-200 dark:border-neutral-700 z-50 max-h-80 overflow-y-auto animate-micro-in">
-            {/* 自动补全建议 */}
-            {suggestions && suggestions.length > 0 && (
-              <div>
-                <div className="px-4 py-2 text-xs font-semibold text-[var(--text-muted,#64748b)] dark:text-[var(--text-disabled,#94a3b8)] uppercase tracking-wider bg-primary-50/40 dark:bg-primary-950/20 leading-normal">
-                  搜索建议
-                </div>
-                {suggestions.map((s: { label: string; sublabel?: string }, i: number) => (
-                  <button
-                    key={`sug-${i}`}
-                    className="w-full px-4 py-2 text-left hover:bg-primary-50/60 dark:hover:bg-primary-950/20 transition-colors flex items-center gap-3 border-b border-neutral-100 dark:border-neutral-800"
-                    onClick={() => {
-                      setSearchInput(s.label);
-                      handleGlobalSearch(s.label);
-                      setShowGlobalResults(false);
-                      setSuggestions(null);
-                    }}
-                  >
-                    <Leaf className="w-4 h-4 text-primary-600" />
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-normal text-[var(--text-primary,#0f172a)] dark:text-neutral-100 leading-normal">
-                        {s.label}
-                      </div>
-                      {s.sublabel && (
-                        <div className="text-xs text-[var(--text-muted,#64748b)] dark:text-[var(--text-disabled,#94a3b8)] italic font-normal leading-normal">
-                          {s.sublabel}
-                        </div>
-                      )}
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
-            {(globalResults.herbs ?? [])?.length > 0 && (
-              <div>
-                <div className="px-4 py-2 text-xs font-semibold text-[var(--text-muted,#64748b)] uppercase tracking-wider bg-[var(--bg-canvas,#f8fafc)] dark:bg-neutral-800/50 flex items-center justify-between leading-normal">
-                  <span>
-                    中药材 <span className="tabular-nums">({(globalResults.herbs ?? []).length})</span>
-                  </span>
-                  <button
-                    onClick={() => {
-                      setTab('herbs');
-                      setShowGlobalResults(false);
-                      setSearchInput(searchInput);
-                    }}
-                    className="text-xs text-primary-600 hover:text-primary-700 font-medium leading-normal flex items-center gap-1"
-                  >
-                    <Filter className="w-3 h-3" />
-                    在此Tab筛选
-                  </button>
-                </div>
-                {(globalResults.herbs ?? [])
-                  .slice(0, 5)
-                  .map((h: { id: number; name_cn: string; name_latin: string | null; category: string | null }) => (
+          <div className="fixed inset-0 z-[60] flex items-start justify-center pt-[120px]">
+            <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={() => setShowGlobalResults(false)} />
+            <div className="relative w-full max-w-2xl mx-4 bg-white dark:bg-neutral-900 rounded-xl shadow-2xl border border-neutral-200 dark:border-neutral-700 z-10 max-h-80 overflow-y-auto animate-micro-in">
+              {/* 自动补全建议 */}
+              {suggestions && suggestions.length > 0 && (
+                <div>
+                  <div className="px-4 py-2 text-xs font-semibold text-[var(--text-muted,#64748b)] dark:text-[var(--text-disabled,#94a3b8)] uppercase tracking-wider bg-primary-50 dark:bg-primary-950 leading-normal">
+                    搜索建议
+                  </div>
+                  {suggestions.map((s: { label: string; sublabel?: string }, i: number) => (
                     <button
-                      key={h.id}
-                      className="w-full px-4 py-3 text-left hover:bg-primary-50/60 dark:hover:bg-primary-950/20 transition-colors flex items-center gap-3 border-b border-[rgba(148,163,184,0.06)] last:border-0"
+                      key={`sug-${i}`}
+                      className="w-full px-4 py-2 text-left hover:bg-primary-50 dark:hover:bg-primary-950/30 transition-colors flex items-center gap-3 border-b border-neutral-100 dark:border-neutral-800"
                       onClick={() => {
-                        setPendingHerbName(h.name_cn);
-                        setTab('herbs');
+                        setSearchInput(s.label);
+                        handleGlobalSearch(s.label);
                         setShowGlobalResults(false);
-                        setSearchInput(h.name_cn);
+                        setSuggestions(null);
                       }}
                     >
-                      <Leaf className="w-6 h-6 text-primary-600" />
+                      <Leaf className="w-4 h-4 text-primary-600" />
                       <div className="flex-1 min-w-0">
-                        <div className="text-sm font-normal text-[var(--text-primary,#0f172a)] dark:text-[var(--text-primary,#0f172a)] leading-normal">
-                          {h.name_cn}
+                        <div className="text-sm font-normal text-[var(--text-primary,#0f172a)] dark:text-neutral-100 leading-normal">
+                          {s.label}
                         </div>
-                        {h.name_latin && (
-                          <div className="text-xs text-[var(--text-muted,#64748b)] italic font-mono leading-normal">{h.name_latin}</div>
+                        {s.sublabel && (
+                          <div className="text-xs text-[var(--text-muted,#64748b)] dark:text-[var(--text-disabled,#94a3b8)] italic font-normal leading-normal">
+                            {s.sublabel}
+                          </div>
                         )}
                       </div>
-                      <Badge variant="info" size="sm" className="font-medium leading-normal">
-                        {h.category || '未分类'}
-                      </Badge>
                     </button>
                   ))}
-              </div>
-            )}
-            {(globalResults.peptides ?? [])?.length > 0 && (
-              <div>
-                <div className="px-4 py-2 text-xs font-semibold text-[var(--text-muted,#64748b)] uppercase tracking-wider bg-[var(--bg-canvas,#f8fafc)] dark:bg-neutral-800/50 flex items-center justify-between leading-normal">
-                  <span>
-                    活性肽 <span className="tabular-nums">({(globalResults.peptides ?? []).length})</span>
-                  </span>
-                  <button
-                    onClick={() => {
-                      setTab('peptides');
-                      setShowGlobalResults(false);
-                      setSearchInput(searchInput);
-                    }}
-                    className="text-xs text-primary-600 hover:text-primary-700 font-medium leading-normal flex items-center gap-1"
-                  >
-                    <Filter className="w-3 h-3" />
-                    在此Tab筛选
-                  </button>
                 </div>
-                {(globalResults.peptides ?? [])
-                  .slice(0, 5)
-                  .map(
-                    (p: {
-                      id: number;
-                      sequence: string;
-                      source_protein: string | null;
-                      activity_type: string | null;
-                    }) => (
+              )}
+              {(globalResults.herbs ?? [])?.length > 0 && (
+                <div>
+                  <div className="px-4 py-2 text-xs font-semibold text-[var(--text-muted,#64748b)] uppercase tracking-wider bg-[var(--bg-canvas,#f8fafc)] dark:bg-neutral-800 flex items-center justify-between leading-normal sticky top-0 z-10">
+                    <span>
+                      中药材 <span className="tabular-nums">({(globalResults.herbs ?? []).length})</span>
+                    </span>
+                    <button
+                      onClick={() => {
+                        setTab('herbs');
+                        setShowGlobalResults(false);
+                        setSearchInput(searchInput);
+                      }}
+                      className="text-xs text-primary-600 hover:text-primary-700 font-medium leading-normal flex items-center gap-1"
+                    >
+                      <Filter className="w-3 h-3" />
+                      在此Tab筛选
+                    </button>
+                  </div>
+                  {(globalResults.herbs ?? [])
+                    .slice(0, 5)
+                    .map((h: { id: number; name_cn: string; name_latin: string | null; category: string | null }) => (
                       <button
-                        key={p.id}
-                        className="w-full px-4 py-3 text-left hover:bg-secondary-50/60 dark:hover:bg-blue-950/20 transition-colors flex items-center gap-3 border-b border-[rgba(148,163,184,0.06)] last:border-0"
+                        key={h.id}
+                        className="w-full px-4 py-3 text-left hover:bg-primary-50 dark:hover:bg-primary-950/30 transition-colors flex items-center gap-3 border-b border-[rgba(148,163,184,0.1)] last:border-0"
                         onClick={() => {
-                          setPendingPeptideSequence(p.sequence);
-                          setTab('peptides');
+                          setPendingHerbName(h.name_cn);
+                          setTab('herbs');
                           setShowGlobalResults(false);
-                          setSearchInput(p.sequence);
+                          setSearchInput(h.name_cn);
                         }}
                       >
-                        <Dna className="w-6 h-6 text-secondary-600" />
+                        <Leaf className="w-6 h-6 text-primary-600" />
                         <div className="flex-1 min-w-0">
-                          <div className="text-sm font-mono font-medium text-secondary-600 dark:text-secondary-400 leading-normal tabular-nums">
-                            {p.sequence}
+                          <div className="text-sm font-normal text-[var(--text-primary,#0f172a)] dark:text-[var(--text-primary,#0f172a)] leading-normal">
+                            {h.name_cn}
                           </div>
-                          <div className="text-xs text-[var(--text-muted,#64748b)] font-normal leading-normal">{p.source_protein}</div>
+                          {h.name_latin && (
+                            <div className="text-xs text-[var(--text-muted,#64748b)] italic font-mono leading-normal">{h.name_latin}</div>
+                          )}
                         </div>
-                        <Badge variant="primary" size="sm" className="font-medium leading-normal">
-                          {p.activity_type || '-'}
+                        <Badge variant="info" size="sm" className="font-medium leading-normal">
+                          {h.category || '未分类'}
                         </Badge>
                       </button>
-                    ),
-                  )}
-              </div>
-            )}
-            {(globalResults.graph ?? [])?.length > 0 && (
-              <div>
-                <div className="px-4 py-2 text-xs font-semibold text-[var(--text-muted,#64748b)] uppercase tracking-wider bg-[var(--bg-canvas,#f8fafc)] dark:bg-neutral-800/50 flex items-center justify-between leading-normal">
-                  <span>
-                    知识图谱 <span className="tabular-nums">({(globalResults.graph ?? []).length})</span>
-                  </span>
-                  <button
-                    onClick={() => {
-                      setTab('graph');
-                      setShowGlobalResults(false);
-                      setSearchInput(searchInput);
-                    }}
-                    className="text-xs text-primary-600 hover:text-primary-700 font-medium leading-normal flex items-center gap-1"
-                  >
-                    <Filter className="w-3 h-3" />
-                    在此Tab筛选
-                  </button>
+                    ))}
                 </div>
-                {(globalResults.graph ?? [])
-                  .slice(0, 5)
-                  .map((g: { node_label: string; node_type: string }, i: number) => (
+              )}
+              {(globalResults.peptides ?? [])?.length > 0 && (
+                <div>
+                  <div className="px-4 py-2 text-xs font-semibold text-[var(--text-muted,#64748b)] uppercase tracking-wider bg-[var(--bg-canvas,#f8fafc)] dark:bg-neutral-800 flex items-center justify-between leading-normal sticky top-0 z-10">
+                    <span>
+                      活性肽 <span className="tabular-nums">({(globalResults.peptides ?? []).length})</span>
+                    </span>
                     <button
-                      key={i}
-                      className="w-full px-4 py-3 text-left hover:bg-accent-50/60 dark:hover:bg-accent-950/20 transition-colors flex items-center gap-3 border-b border-[rgba(148,163,184,0.06)] last:border-0"
+                      onClick={() => {
+                        setTab('peptides');
+                        setShowGlobalResults(false);
+                        setSearchInput(searchInput);
+                      }}
+                      className="text-xs text-primary-600 hover:text-primary-700 font-medium leading-normal flex items-center gap-1"
+                    >
+                      <Filter className="w-3 h-3" />
+                      在此Tab筛选
+                    </button>
+                  </div>
+                  {(globalResults.peptides ?? [])
+                    .slice(0, 5)
+                    .map(
+                      (p: {
+                        id: number;
+                        sequence: string;
+                        source_protein: string | null;
+                        activity_type: string | null;
+                      }) => (
+                        <button
+                          key={p.id}
+                          className="w-full px-4 py-3 text-left hover:bg-secondary-50 dark:hover:bg-secondary-950/30 transition-colors flex items-center gap-3 border-b border-[rgba(148,163,184,0.1)] last:border-0"
+                          onClick={() => {
+                            setPendingPeptideSequence(p.sequence);
+                            setTab('peptides');
+                            setShowGlobalResults(false);
+                            setSearchInput(p.sequence);
+                          }}
+                        >
+                          <Dna className="w-6 h-6 text-secondary-600" />
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm font-mono font-medium text-secondary-600 dark:text-secondary-400 leading-normal tabular-nums">
+                              {p.sequence}
+                            </div>
+                            <div className="text-xs text-[var(--text-muted,#64748b)] font-normal leading-normal">{p.source_protein}</div>
+                          </div>
+                          <Badge variant="primary" size="sm" className="font-medium leading-normal">
+                            {p.activity_type || '-'}
+                          </Badge>
+                        </button>
+                      ),
+                    )}
+                </div>
+              )}
+              {(globalResults.graph ?? [])?.length > 0 && (
+                <div>
+                  <div className="px-4 py-2 text-xs font-semibold text-[var(--text-muted,#64748b)] uppercase tracking-wider bg-[var(--bg-canvas,#f8fafc)] dark:bg-neutral-800 flex items-center justify-between leading-normal sticky top-0 z-10">
+                    <span>
+                      知识图谱 <span className="tabular-nums">({(globalResults.graph ?? []).length})</span>
+                    </span>
+                    <button
                       onClick={() => {
                         setTab('graph');
                         setShowGlobalResults(false);
-                        setSearchInput(g.node_label);
+                        setSearchInput(searchInput);
                       }}
+                      className="text-xs text-primary-600 hover:text-primary-700 font-medium leading-normal flex items-center gap-1"
                     >
-                      <GitBranch className="w-6 h-6 text-violet-600" />
-                      <div className="flex-1 text-sm font-normal text-[var(--text-primary,#0f172a)] dark:text-[var(--text-primary,#0f172a)] leading-normal">
-                        {g.node_label}
-                      </div>
-                      <Badge
-                        variant={NODE_TYPE_BADGE[g.node_type] || 'neutral'}
-                        size="sm"
-                        className="font-medium leading-normal"
-                      >
-                        {NODE_TYPE_LABEL[g.node_type] || g.node_type}
-                      </Badge>
+                      <Filter className="w-3 h-3" />
+                      在此Tab筛选
                     </button>
-                  ))}
-              </div>
-            )}
-            {(globalResults.herbs ?? []).length === 0 &&
-              (globalResults.peptides ?? []).length === 0 &&
-              (globalResults.graph ?? []).length === 0 && (
-                <div className="p-8 text-center text-[var(--text-muted,#64748b)] text-sm font-normal leading-normal leading-normal">
-                  未找到相关结果
+                  </div>
+                  {(globalResults.graph ?? [])
+                    .slice(0, 5)
+                    .map((g: { node_label: string; node_type: string }, i: number) => (
+                      <button
+                        key={i}
+                        className="w-full px-4 py-3 text-left hover:bg-accent-50 dark:hover:bg-accent-950/30 transition-colors flex items-center gap-3 border-b border-[rgba(148,163,184,0.1)] last:border-0"
+                        onClick={() => {
+                          setTab('graph');
+                          setShowGlobalResults(false);
+                          setSearchInput(g.node_label);
+                        }}
+                      >
+                        <GitBranch className="w-6 h-6 text-violet-600" />
+                        <div className="flex-1 text-sm font-normal text-[var(--text-primary,#0f172a)] dark:text-[var(--text-primary,#0f172a)] leading-normal">
+                          {g.node_label}
+                        </div>
+                        <Badge
+                          variant={NODE_TYPE_BADGE[g.node_type] || 'neutral'}
+                          size="sm"
+                          className="font-medium leading-normal"
+                        >
+                          {NODE_TYPE_LABEL[g.node_type] || g.node_type}
+                        </Badge>
+                      </button>
+                    ))}
                 </div>
               )}
+              {(globalResults.herbs ?? []).length === 0 &&
+                (globalResults.peptides ?? []).length === 0 &&
+                (globalResults.graph ?? []).length === 0 && (
+                  <div className="p-8 text-center text-[var(--text-muted,#64748b)] text-sm font-normal leading-normal">
+                    未找到相关结果
+                  </div>
+                )}
+            </div>
           </div>
         )}
       </div>
