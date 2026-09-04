@@ -248,7 +248,17 @@ const NODE_TYPE_LABEL: Record<string, string> = {
   disease: '疾病',
 };
 
-// ─── 类型定义 ───// ═════════════════════════════════════════
+// ─── 类型定义 ───
+type DbTab = 'dashboard' | 'herbs' | 'peptides' | 'graph' | 'homology' | 'food_materials' | 'retail_products' | 'analytics' | 'sync';
+type ViewMode = 'overview' | 'compact' | 'detailed';
+interface SearchHistoryItem { query: string; timestamp: number; }
+interface CategoryData { name: string; value: number; fill: string; }
+const STORAGE_KEY_VIEW_MODE = 'rmfood_db_view_mode';
+const STORAGE_KEY_SEARCH_HISTORY = 'rmfood_search_history';
+const STORAGE_KEY_TODAY_QUERIES = 'rmfood_today_queries';
+const MAX_SEARCH_HISTORY = 10;
+const SEARCH_DEBOUNCE_MS = 300;
+
 interface UnifiedSearchResults {
   herbs: { id: number; name_cn: string; name_latin: string | null; category: string | null }[];
   peptides: { id: number; sequence: string; source_protein: string | null; activity_type: string | null }[];
