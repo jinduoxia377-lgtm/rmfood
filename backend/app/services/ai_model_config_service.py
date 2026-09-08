@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import logging
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Optional
 
@@ -19,6 +20,57 @@ from sqlalchemy.orm import selectinload
 from app.models.ai_model_config import AIModelConfig
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass
+class ModelConfig:
+    """模型配置数据类"""
+    model_type: str
+    provider: str = ""
+    api_key: str = ""
+    api_key_plaintext: str = ""
+    base_url: str = ""
+    model: str = ""
+    max_tokens: int = 4096
+    temperature: float = 0.7
+    timeout_ms: int = 30000
+    max_retries: int = 3
+    concurrency_limit: int = 3
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "model_type": self.model_type,
+            "provider": self.provider,
+            "api_key": self.api_key_plaintext[:8] + "..." if len(self.api_key_plaintext) > 8 else "",
+            "api_key_configured": bool(self.api_key_plaintext),
+            "base_url": self.base_url,
+            "model": self.model,
+            "max_tokens": self.max_tokens,
+            "temperature": self.temperature,
+            "timeout_ms": self.timeout_ms,
+            "max_retries": self.max_retries,
+            "concurrency_limit": self.concurrency_limit,
+        }
+
+    @classmethod
+    def get_default(cls, model_type: str) -> "ModelConfig":
+        defaults = {
+            "llm": {"provider": "deepseek", "base_url": "https://api.deepseek.com/v1", "model": "deepseek-chat"},
+            "formula_gpt": {"provider": "local", "base_url": "", "model": "rule_based"},
+            "synergy_net": {"provider": "local", "base_url": "", "model": "rule_based"},
+            "safety_checker": {"provider": "local", "base_url": "", "model": "rule_engine"},
+            "taste_predictor": {"provider": "local", "base_url": "", "model": "rule_based"},
+            "stability_model": {"provider": "local", "base_url": "", "model": "simulation"},
+            "peptide_scorer": {"provider": "local", "base_url": "", "model": "heuristic"},
+        }
+        default = defaults.get(model_type, {})
+        return cls(
+            model_type=model_type,
+            provider=default.get("provider", ""),
+            base_url=default.get("base_url", ""),
+            model=default.get("model", ""),
+        )
+
 
 # ── 内置 provider 预设（格式、基础 URL、默认模型） ───────────────────
 
@@ -125,80 +177,97 @@ class AIModelConfigService:
         from app.core.config import settings
         raw = settings.encryption.encryption_key or settings.secret_key or ""
         if not raw:
-            logger.warning("[AIModelConfig] 未设置 ENCRYPTION_KEY 或 SECRET_KEY，API Key 将以明文存储")
+            logger.warning("[AIModelConfig] 未设置 ENCRYPTION_KEY 或 SECRET_KEY")
             return b""
         return hashlib.sha256(raw.encode("utf-8")).digest()
 
     @classmethod
+    def encrypt_api_key(cls, plaintext: str) -> str:
+        """加密 API Key"""
+        if not plaintext:
+            return ""
+        try:
+            from app.core.security.crypto import encrypt_value
+            return encrypt_value(plaintext)
+        except Exception as e:
+            logger.error(f"[AIModelConfig] 加密失败: {e}")
+            return plaintext
+
+    @classmethod
+    def decrypt_api_key(cls, encrypted: Optional[str]) -> str:
+        """解密 API Key"""
+        if not encrypted:
+            return ""
+        try:
+            from app.core.security.crypto import decrypt_value
+            return decrypt_value(encrypted)
+        except Exception as e:
+            logger.error(f"[AIModelConfig] 解密失败: {e}")
+            return ""
+
+    @classmethod
+    def mask_api_key(cls, api_key: str) -> str:
+        """脱敏显示 API Key"""
+        if not api_key:
+            return ""
+        if len(api_key) <= 12:
+            return "***"
+        return api_key[:8] + "..." + api_key[-4:]
+
+    # ── 数据库操作 ─────────────────────────────────────────────────
+    @classmethod
     async def get_or_create(
-        cls, db: AsyncSession, tenant_id: int, model_type: str,
+        cls, db: AsyncSession, tenant_id: int, model_type: str
     ) -> AIModelConfig:
-        """获取或初始化指定 model_type 的配置记录"""
+        """获取或创建配置记录"""
         stmt = select(AIModelConfig).where(
             AIModelConfig.tenant_id == tenant_id,
             AIModelConfig.model_type == model_type,
         )
         result = await db.execute(stmt)
-        row = result.scalars().one_or_none()
-        if row is not None:
-            return row
+        rec = result.scalar_one_or_none()
 
-        preset = PROVIDER_PRESETS.get("deepseek", PROVIDER_PRESETS["deepseek"])
-        now = datetime.now(timezone.utc)
-        new_record = AIModelConfig(
-            tenant_id=tenant_id,
-            model_type=model_type,
-            api_format=preset["api_format"],
-            auth_method=preset["auth_method"],
-            base_url=preset["base_url"],
-            provider="deepseek",
-            models=preset["models"],
-            default_model=preset["default_model"],
-            fallback_models=preset["fallback_models"],
-            temperature=0.7,
-            max_tokens=4096,
-            top_p=0.9,
-            stream_enabled=False,
-            timeout_ms=30000,
-            max_retries=3,
-            concurrency_limit=3,
-            created_at=now,
-            updated_at=now,
+        if rec is None:
+            preset = PROVIDER_PRESETS.get("deepseek", {})
+            rec = AIModelConfig(
+                tenant_id=tenant_id,
+                model_type=model_type,
+                api_format=preset.get("api_format", "openai"),
+                auth_method=preset.get("auth_method", "api_key"),
+                base_url=preset.get("base_url", "https://api.deepseek.com/v1"),
+                provider="deepseek",
+                default_model=preset.get("default_model", "deepseek-chat"),
+                models=json.dumps(preset.get("models", [])),
+                fallback_models=json.dumps(preset.get("fallback_models", [])),
+            )
+            db.add(rec)
+            await db.flush()
+        return rec
+
+    @classmethod
+    async def get_by_model_type(
+        cls, db: AsyncSession, tenant_id: int, model_type: str
+    ) -> Optional[AIModelConfig]:
+        """按 model_type 查询配置"""
+        stmt = select(AIModelConfig).where(
+            AIModelConfig.tenant_id == tenant_id,
+            AIModelConfig.model_type == model_type,
         )
-        db.add(new_record)
-        await db.flush()
-        logger.info(
-            "[AIModelConfig] 已初始化默认配置: tenant=%s model_type=%s",
-            tenant_id, model_type,
-        )
-        return new_record
+        result = await db.execute(stmt)
+        return result.scalar_one_or_none()
 
     @classmethod
     async def get_all_for_tenant(
-        cls, db: AsyncSession, tenant_id: int,
+        cls, db: AsyncSession, tenant_id: int
     ) -> list[AIModelConfig]:
-        stmt = (
-            select(AIModelConfig)
-            .where(AIModelConfig.tenant_id == tenant_id)
-            .order_by(AIModelConfig.model_type.asc())
-        )
+        """获取租户所有配置"""
+        stmt = select(AIModelConfig).where(AIModelConfig.tenant_id == tenant_id)
         result = await db.execute(stmt)
         return list(result.scalars().all())
 
     @classmethod
-    async def get_by_model_type(
-        cls, db: AsyncSession, tenant_id: int, model_type: str,
-    ) -> Optional[AIModelConfig]:
-        stmt = select(AIModelConfig).where(
-            AIModelConfig.tenant_id == tenant_id,
-            AIModelConfig.model_type == model_type,
-        )
-        result = await db.execute(stmt)
-        return result.scalars().one_or_none()
-
-    @classmethod
     async def ensure_defaults(cls, db: AsyncSession, tenant_id: int) -> None:
-        """为所有已知 model_type 确保配置记录存在（启动时调用）"""
+        """确保所有默认模型类型都有配置记录"""
         for mt in DEFAULT_MODEL_TYPES:
             await cls.get_or_create(db, tenant_id, mt)
 
@@ -210,85 +279,31 @@ class AIModelConfigService:
         model_type: str,
         data: dict[str, Any],
     ) -> AIModelConfig:
-        """
-        更新配置。支持的字段：
-          api_format, auth_method, auth_header_name, base_url, provider,
-          models, default_model, fallback_models, temperature, max_tokens,
-          top_p, stream_enabled, timeout_ms, max_retries, api_key
-        """
-        record = await cls.get_or_create(db, tenant_id, model_type)
+        """更新配置（含加密 API Key）"""
+        rec = await cls.get_or_create(db, tenant_id, model_type)
 
-        updatable = {
-            "api_format", "auth_method", "auth_header_name", "base_url",
-            "provider", "models", "default_model", "fallback_models",
-            "temperature", "max_tokens", "top_p", "stream_enabled",
-            "timeout_ms", "max_retries", "concurrency_limit",
-        }
-        for key in updatable:
-            if key in data:
-                setattr(record, key, data[key])
+        rec.provider = data.get("provider", rec.provider)
+        rec.base_url = data.get("base_url", rec.base_url)
+        rec.default_model = data.get("default_model", rec.default_model)
+        rec.max_tokens = data.get("max_tokens", rec.max_tokens)
+        rec.temperature = data.get("temperature", rec.temperature)
+        rec.timeout_ms = data.get("timeout_ms", rec.timeout_ms)
+        rec.max_retries = data.get("max_retries", rec.max_retries)
+        rec.concurrency_limit = data.get("concurrency_limit", rec.concurrency_limit)
 
-        # API Key 单独处理（加密存储）
-        if "api_key" in data:
-            raw_key = data["api_key"]
-            record.api_key_encrypted = cls.encrypt_api_key(raw_key)
+        if "api_key" in data and data["api_key"]:
+            rec.api_key_encrypted = cls.encrypt_api_key(data["api_key"])
 
-        record.updated_at = datetime.now(timezone.utc)
-        await db.flush()
-        logger.info(
-            "[AIModelConfig] 已更新配置: tenant=%s model_type=%s",
-            tenant_id, model_type,
-        )
-        return record
+        await db.commit()
+        await db.refresh(rec)
+        return rec
 
+    # ── 序列化 ─────────────────────────────────────────────────────
     @classmethod
-    def encrypt_api_key(cls, plaintext: str) -> str | None:
-        """使用 EncryptionUtils 加密 API Key"""
-        if not plaintext:
-            return None
-        try:
-            from ..utils.encryption import EncryptionUtils
-            key = cls._get_encryption_key()
-            ciphertext, nonce = EncryptionUtils.encrypt(plaintext.encode("utf-8"), key)
-            import base64
-            return json.dumps({
-                "__encrypted__": True,
-                "v": base64.b64encode(ciphertext).decode("ascii"),
-                "n": base64.b64encode(nonce).decode("ascii"),
-            })
-        except Exception as e:
-            logger.error(f"[AIModelConfig] 加密 API Key 失败: {e}")
-            return None
-
-    @classmethod
-    def decrypt_api_key(cls, encrypted_value: str | None) -> str:
-        """解密 API Key，兼容明文和加密格式"""
-        if not encrypted_value:
-            return ""
-        try:
-            # 尝试解析为加密格式
-            data = json.loads(encrypted_value)
-            if isinstance(data, dict) and data.get("__encrypted__"):
-                from ..utils.encryption import EncryptionUtils
-                key = cls._get_encryption_key()
-                import base64
-                ciphertext = base64.b64decode(data["v"])
-                nonce = base64.b64decode(data["n"])
-                return EncryptionUtils.decrypt(ciphertext, nonce, key).decode("utf-8")
-        except (json.JSONDecodeError, Exception):
-            pass
-        # 兼容旧版明文存储
-        return str(encrypted_value) if encrypted_value else ""
-
-    @classmethod
-    def serialize(
-        cls, records: list[AIModelConfig],
-    ) -> list[dict[str, Any]]:
-        """序列化为前端格式（API Key 脱敏）"""
-        out = []
+    def serialize(cls, records: list[AIModelConfig]) -> list[dict[str, Any]]:
+        out: list[dict[str, Any]] = []
         for rec in records:
             d = rec.to_dict()
-            # 解密后脱敏显示
             if rec.api_key_encrypted:
                 decrypted = cls.decrypt_api_key(rec.api_key_encrypted)
                 if len(decrypted) >= 8:
@@ -318,3 +333,73 @@ class AIModelConfigService:
             d["api_key_masked"] = None
             d["api_key_configured"] = False
         return d
+
+    # ── 前端兼容方法 ──────────────────────────────────────────────
+    @classmethod
+    async def get_config(cls, db: AsyncSession, model_type: str, tenant_id: int = 1) -> ModelConfig:
+        """获取单个模型配置（前端兼容）"""
+        record = await cls.get_by_model_type(db, tenant_id, model_type)
+        if record:
+            api_key = cls.decrypt_api_key(record.api_key_encrypted)
+            return ModelConfig(
+                model_type=record.model_type,
+                provider=record.provider,
+                api_key=api_key,
+                api_key_plaintext=api_key,
+                base_url=record.base_url,
+                model=record.default_model,
+                max_tokens=record.max_tokens,
+                temperature=record.temperature,
+                timeout_ms=record.timeout_ms,
+                max_retries=record.max_retries,
+                concurrency_limit=record.concurrency_limit,
+            )
+        return ModelConfig.get_default(model_type)
+
+    @classmethod
+    async def save_config(cls, db: AsyncSession, config: ModelConfig, tenant_id: int = 1) -> bool:
+        """保存单个模型配置（前端兼容）"""
+        try:
+            data: dict[str, Any] = {
+                "provider": config.provider,
+                "base_url": config.base_url,
+                "default_model": config.model,
+                "max_tokens": config.max_tokens,
+                "temperature": config.temperature,
+                "timeout_ms": config.timeout_ms,
+                "max_retries": config.max_retries,
+                "concurrency_limit": config.concurrency_limit,
+            }
+            if config.api_key:
+                data["api_key"] = config.api_key
+            await cls.update(db, tenant_id, config.model_type, data)
+            return True
+        except Exception as e:
+            logger.error(f"[AIModelConfig] 保存配置失败: {e}")
+            return False
+
+    @classmethod
+    async def get_all_configs(cls, db: AsyncSession, tenant_id: int = 1) -> dict[str, ModelConfig]:
+        """获取所有模型配置（前端兼容）"""
+        records = await cls.get_all_for_tenant(db, tenant_id)
+        configs: dict[str, ModelConfig] = {}
+        for rec in records:
+            api_key = cls.decrypt_api_key(rec.api_key_encrypted)
+            configs[rec.model_type] = ModelConfig(
+                model_type=rec.model_type,
+                provider=rec.provider,
+                api_key=api_key,
+                api_key_plaintext=api_key,
+                base_url=rec.base_url,
+                model=rec.default_model,
+                max_tokens=rec.max_tokens,
+                temperature=rec.temperature,
+                timeout_ms=rec.timeout_ms,
+                max_retries=rec.max_retries,
+                concurrency_limit=rec.concurrency_limit,
+            )
+        # 补充缺失的默认配置
+        for mt in ["llm", "formula_gpt", "synergy_net", "safety_checker", "taste_predictor", "stability_model", "peptide_scorer"]:
+            if mt not in configs:
+                configs[mt] = ModelConfig.get_default(mt)
+        return configs

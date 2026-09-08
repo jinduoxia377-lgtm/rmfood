@@ -11,8 +11,8 @@ import {
   CheckCircle2, Wifi,
 } from 'lucide-react'
 import { AnalyticsChart, ChartDataItem } from '@/components/analytics/charts/RechartsWrapper'
-import { useAnalyticsData } from '@/hooks/useAnalyticsData'
-import type { KPIMetric } from '@/hooks/useAnalyticsData'
+import type { KPIMetric, DashboardResponse } from '@/hooks/useAnalyticsData'
+import { extractStats } from '@/hooks/useAnalyticsData'
 
 interface FilterConfig {
   timeRange: '7d' | '30d' | '90d' | '1y'
@@ -23,8 +23,8 @@ interface FilterConfig {
 
 interface Props {
   filters: FilterConfig
-  timeRange: string
-  onTimeRangeChange?: (range: string) => void
+  dashboard?: DashboardResponse | null
+  refresh: () => void
 }
 
 const COLOR_MAP: Record<string, { bg: string; text: string; border: string }> = {
@@ -48,36 +48,31 @@ const ICON_MAP: Record<string, React.ElementType> = {
   published_formulas: TrendingUp,
 }
 
-export default function OverviewTab({ filters, timeRange, onTimeRangeChange }: Props) {
+export default function OverviewTab({ filters, dashboard, refresh }: Props) {
   const [viewMode, setViewMode] = useState<ViewMode>('dashboard')
   const [zoomLevel, setZoomLevel] = useState(1)
   const [selectedDataPoint, setSelectedDataPoint] = useState<{ x: string; y: number; series: string } | null>(null)
   const [showDrillDown, setShowDrillDown] = useState(false)
   const [drillDownData, setDrillDownData] = useState<ChartDataItem[]>([])
 
-  // 使用真实数据 hook，自动轮询
-  const {
-    dashboard,
-    stats,
-    kpiMap,
-    statusDistribution,
-    monthlyTrend,
-    categoryBreakdown,
-    activities,
-    health,
-    loading,
-    error,
-    lastFetched,
-    refresh,
-  } = useAnalyticsData({
-    pollInterval: 30_000,
-    timeRange,
-  })
+  // 直接从父级 props 派生所有数据，不重复发起网络请求
+  const stats = dashboard?.kpi ? extractStats(dashboard.kpi) : null
+  const kpiMap = dashboard?.kpi
+    ? Object.fromEntries(dashboard.kpi.map((k: KPIMetric) => [k.id, k]))
+    : null
+  const statusDistribution = dashboard?.charts?.formula_status_distribution
+  const monthlyTrend = dashboard?.charts?.monthly_creation_trend
+  const categoryBreakdown = dashboard?.charts?.category_breakdown
+  const activities = dashboard?.recent_activity ?? []
+  const health = dashboard?.system_health
+  const loading = false  // 由父级 AnalyticsPage 统一管理 loading 状态
+  const error = null
+  const lastFetched = dashboard ? new Date(dashboard.timestamp) : null
 
-  // 监听 timeRange 变化，触发重新拉取
+  // 监听父级 timeRange 变化，触发重新拉取
   useEffect(() => {
     refresh()
-  }, [timeRange, refresh])
+  }, [filters.timeRange])
 
   // ─── 派生 KPI 卡片数据 ─────────────────────────────────────
   const kpiCards = useMemo(() => {
@@ -195,8 +190,8 @@ export default function OverviewTab({ filters, timeRange, onTimeRangeChange }: P
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-4">
           <div className="text-sm text-text-muted">
-            当前筛选: <span className="font-medium text-text-primary">{timeRange}</span>
-            {filters.categories.length > 0 && ` · ${filters.categories.length} 个类别`}
+            当前筛选: <span className="font-medium text-text-primary">{filters.timeRange}</span>
+            {filters?.categories?.length > 0 && ` · ${filters.categories.length} 个类别`}
           </div>
 
           <div className="flex items-center gap-1 bg-neutral-100 dark:bg-neutral-800 rounded-lg p-0.5">

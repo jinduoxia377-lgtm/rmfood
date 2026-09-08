@@ -332,7 +332,7 @@ export class ContextManager {
       this.history.shift();
     }
 
-    eventBus.emit('context:updated' as any, this.getState());
+    eventBus.emit('context:updated', this.getState() as any);
   }
 
   processAssistantMessage(content: string): void {
@@ -352,7 +352,7 @@ export class ContextManager {
       this.history.shift();
     }
 
-    eventBus.emit('context:updated' as any, this.getState());
+    eventBus.emit('context:updated', this.getState() as any);
   }
 
   getState(): ContextState {
@@ -409,7 +409,7 @@ export class ContextManager {
     this.topicContinuity = 0;
 
     logger.info('[ContextManager] 上下文已清空');
-    (eventBus as any).emit('context:cleared');
+    eventBus.emit('context:cleared', {});
   }
 
   getContextPrompt(): string {

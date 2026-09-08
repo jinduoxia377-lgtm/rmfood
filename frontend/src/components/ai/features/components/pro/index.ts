@@ -1,9 +1,12 @@
-﻿export { default as ChatMessages, type ChatMessagesProps } from './ChatMessages'
+export { default as ChatMessages, type ChatMessagesProps } from './ChatMessages'
 export type { MessageType } from './ChatMessages'
 export { default as ChatInputPro } from './ChatInput'
 export { default as ChatHistory } from './ChatHistory'
 export { saveSessions, loadSessions, formatTime } from './ChatHistory'
 export type { HistorySession } from './ChatHistory'
+export { default as ReasoningRow } from './ReasoningRow'
+export type { ReasoningStep } from './ReasoningRow'
+export { default as ComposerStatusBar } from './ComposerStatusBar'
 
 // TopBar / EmptyState / ScenarioToolbar — 布局组件
 export { TopBar } from '../TopBar'

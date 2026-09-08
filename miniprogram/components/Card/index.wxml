@@ -1,0 +1,29 @@
+<!-- Card 卡片组件 -->
+<view 
+  class="card {{className}} {{shadow}} {{clickable ? 'card-clickable' : ''}}"
+  bindtap="handleTap"
+>
+  <!-- 头部 -->
+  <view wx:if="{{title || $slots.header}}" class="card-header">
+    <slot name="header"></slot>
+    <view wx:if="{{title}}" class="card-title">
+      <text class="card-title-text">{{title}}</text>
+      <text wx:if="{{subtitle}}" class="card-subtitle">{{subtitle}}</text>
+    </view>
+    <view wx:if="{{action}}" class="card-action" catchtap="handleAction">
+      <slot name="action"></slot>
+      <text class="card-action-text">{{action}}</text>
+    </view>
+  </view>
+  
+  <!-- 内容 -->
+  <view class="card-content">
+    <slot></slot>
+  </view>
+  
+  <!-- 底部 -->
+  <view wx:if="{{footer}}" class="card-footer">
+    <slot name="footer"></slot>
+    <text class="card-footer-text">{{footer}}</text>
+  </view>
+</view>

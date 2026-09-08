@@ -398,7 +398,7 @@ export default function FormulaListPage() {
   const { data: recentData } = useQuery({
     queryKey: ['formulas-recent'],
     queryFn: () => formulaApi.list({ page: 1, page_size: 5, sort_field: 'updated_at', sort_order: 'desc' }),
-    staleTime: 60_000,
+    staleTime: 5 * 60_000,
   });
   const recentFormulas = recentData?.items ?? [];
 

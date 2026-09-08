@@ -1,0 +1,23 @@
+/* Icon组件 - WeUI风格SVG图标 */
+.icon-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1em;
+  height: 1em;
+  flex-shrink: 0;
+}
+
+.icon-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* 尺寸规范 - 基于rpx */
+.icon-xs { width: 16rpx; height: 16rpx; }
+.icon-sm { width: 24rpx; height: 24rpx; }
+.icon-md { width: 32rpx; height: 32rpx; }
+.icon-lg { width: 48rpx; height: 48rpx; }
+.icon-xl { width: 64rpx; height: 64rpx; }
+.icon-xxl { width: 96rpx; height: 96rpx; }

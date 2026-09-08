@@ -27,6 +27,7 @@ import uuid
 
 from ..core.database.session import get_db
 from ..api.deps import get_current_active_user
+from ..utils.error_sanitize import sanitize_error
 from ..core.analytics_reports.analytics_engine import (
     AnalyticsService,
     ExportFormat,
@@ -37,6 +38,9 @@ from ..core.analytics_reports.analytics_engine import (
     ChartData,
     get_analytics_service,
 )
+from ..core.analytics_reports.health_monitor import get_health_monitor
+from ..core.analytics_reports.anomaly_detector import get_anomaly_detector
+from ..core.analytics_reports.business_metrics import BusinessMetricsService
 from ..core.realtime.websocket import connection_manager, WebSocketMessage
 from ..models.user_model import User
 from ..models.enums import UserRole
@@ -104,7 +108,7 @@ async def get_dashboard_data(
         service = get_analytics_service(db)
 
         # Parse time range
-        days_map = {"7d": 7, "30d": 30, "90d": 90}
+        days_map = {"7d": 7, "30d": 30, "90d": 90, "1y": 365}
         days = days_map.get(time_range, 30)
 
         # Parse filter conditions
@@ -124,7 +128,7 @@ async def get_dashboard_data(
 
         # 1. KPI metrics
         try:
-            kpi = await service._get_kpi_metrics()
+            kpi = await service._get_kpi_metrics(days=days)
             logger.info(f"✓ KPI loaded: {len(kpi)} metrics")
         except Exception as e:
             logger.error(f"✗ KPI failed: {e}", exc_info=True)
@@ -132,7 +136,8 @@ async def get_dashboard_data(
 
         # 2. Chart data
         try:
-            charts = await service._get_chart_data()
+            chart_months = 12 if days >= 365 else 3 if days >= 90 else 1
+            charts = await service._get_chart_data(months=chart_months)
             logger.info(f"✓ Charts loaded: {len(charts)} types")
         except Exception as e:
             logger.error(f"✗ Charts failed: {e}", exc_info=True)
@@ -190,13 +195,16 @@ async def get_dashboard_data(
 
 @router.get("/kpi", summary="Get KPI metrics")
 async def get_kpi_metrics(
+    time_range: str = Query("30d", description="Time range: 7d/30d/90d/1y"),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_active_user),
 ):
     """Quick access to core KPI metric list"""
     try:
         service = get_analytics_service(db)
-        kpi = await service._get_kpi_metrics()
+        days_map = {"7d": 7, "30d": 30, "90d": 90, "1y": 365}
+        days = days_map.get(time_range, 30)
+        kpi = await service._get_kpi_metrics(days=days)
         
         return {
             "timestamp": datetime.now(timezone.utc).isoformat(),
@@ -254,20 +262,95 @@ async def get_system_health(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_active_user),
 ):
-    """Get system runtime health status (real-time)"""
+    """Get system runtime health status (real-time from psutil + DB)."""
     try:
         service = get_analytics_service(db)
         health = await service._get_system_health()
-        
+
         # Add additional system info
         health["websocket_connections"] = connection_manager.get_connection_count()
         health["api_status"] = "operational"
         health["last_check"] = datetime.now(timezone.utc).isoformat()
-        
+
         return health
     except Exception as e:
         logger.error("获取系统健康状态失败: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail="服务器内部错误，请稍后重试")
+
+
+@router.get("/anomalies", summary="Detect data anomalies")
+async def get_anomalies(
+    threshold: float = Query(2.5, ge=1.0, le=5.0, description="标准差倍数阈值"),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    """
+    基于历史数据的统计异常检测。
+    对 KPI 趋势和图表数据集使用 3σ 规则 / CUSUM 检测异常波动。
+    """
+    try:
+        service = get_analytics_service(db)
+        # 获取完整仪表盘数据
+        days_map = {"7d": 7, "30d": 30, "90d": 90, "1y": 365}
+        days = days_map.get(time_range, 30)
+        chart_months = 12 if days >= 365 else 3 if days >= 90 else 1
+        kpi = await service._get_kpi_metrics(days=days)
+        charts = await service._get_chart_data(months=chart_months)
+
+        dashboard_data = {
+            "kpi": kpi,
+            "charts": charts,
+        }
+
+        detector = get_anomaly_detector()
+        anomalies = await detector.detect_all_anomalies(dashboard_data)
+
+        return {
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "threshold": threshold,
+            "total_anomalies": len(anomalies),
+            "high_severity": sum(1 for a in anomalies if a.get("severity") == "high"),
+            "anomalies": anomalies,
+        }
+    except Exception as e:
+        logger.error("异常检测失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="异常检测服务暂时不可用")
+
+
+@router.get("/business-metrics", summary="Business-specific metrics")
+async def get_business_metrics(
+    time_range: str = Query("30d", description="Time range: 7d/30d/90d/1y"),
+    categories: str = Query(None, description="Category filter (comma-separated)"),
+    status: str = Query(None, description="Status filter (comma-separated)"),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    """
+    药食同源业务专属指标：
+    - 配方生命周期转化漏斗
+    - 食材关联分析（频繁共现）
+    - AI 生成质量评估
+    - 药食同源配方占比
+    """
+    try:
+        days_map = {"7d": 7, "30d": 30, "90d": 90, "1y": 365}
+        days = days_map.get(time_range, 30)
+        category_list = categories.split(",") if categories else []
+        status_list = status.split(",") if status else []
+
+        service = BusinessMetricsService(db)
+        overview = await service.get_business_overview(
+            days=days,
+            categories=category_list,
+            statuses=status_list,
+        )
+        return {
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            **overview,
+        }
+    except Exception as e:
+        logger.error("业务指标获取失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="业务指标服务暂时不可用")
 
 
 # ============================================================
@@ -519,117 +602,21 @@ async def export_data(
 
 
 @router.get("/reports/templates", summary="Get report templates")
-async def get_report_templates():
-    """Get predefined report templates (based on actual database table structure)"""
-    templates = [
-        {
-            "id": "formula_overview",
-            "name": "Formula Overview Report",
-            "description": "Detailed information and statistics for all formulas",
-            "widgets": [
-                {
-                    "type": "table",
-                    "title": "Formula List",
-                    "table": "formulas",
-                    "columns": ["id", "name", "code", "status", "version", "creator_id", "created_at"],
-                    "limit": 100
-                },
-                {
-                    "type": "chart",
-                    "title": "Formula Status Distribution",
-                    "chart_type": "pie",
-                    "entity": "formulas",
-                    "group_by": "status"
-                },
-                {
-                    "type": "kpi",
-                    "title": "Formula Statistics",
-                    "metric": "total_formulas"
-                },
-            ],
-        },
-        {
-            "id": "experiment_analysis",
-            "name": "Experiment Analysis Report",
-            "description": "Experiment data and success rate analysis",
-            "widgets": [
-                {
-                    "type": "table",
-                    "title": "Experiment Records",
-                    "table": "experiments",
-                    "columns": ["id", "title", "code", "status", "formula_id", "researcher_id", "start_date", "end_date"],
-                    "limit": 100
-                },
-                {
-                    "type": "chart",
-                    "title": "Experiment Trend Chart",
-                    "chart_type": "line",
-                    "entity": "experiments",
-                    "metric": "count"
-                },
-                {
-                    "type": "chart",
-                    "title": "Experiment Status Distribution",
-                    "chart_type": "bar",
-                    "entity": "experiments",
-                    "group_by": "status"
-                },
-            ],
-        },
-        {
-            "id": "user_activity",
-            "name": "User Activity Report",
-            "description": "User activity and usage statistics",
-            "widgets": [
-                {
-                    "type": "kpi",
-                    "title": "Total Users",
-                    "metric": "total_users"
-                },
-                {
-                    "type": "chart",
-                    "title": "User Registration Trend",
-                    "chart_type": "area",
-                    "entity": "users",
-                    "metric": "count"
-                },
-                {
-                    "type": "table",
-                    "title": "Recently Registered Users",
-                    "table": "users",
-                    "columns": ["id", "username", "email", "role", "created_at"],
-                    "limit": 50
-                },
-            ],
-        },
-        {
-            "id": "ingredient_inventory",
-            "name": "Ingredient Inventory Report",
-            "description": "Ingredient usage and inventory management",
-            "widgets": [
-                {
-                    "type": "table",
-                    "title": "Ingredient List",
-                    "table": "ingredients",
-                    "columns": ["id", "name", "name_cn", "category", "source", "is_food_homology", "created_at"],
-                    "limit": 200
-                },
-                {
-                    "type": "chart",
-                    "title": "Ingredient Category Distribution",
-                    "chart_type": "pie",
-                    "entity": "ingredients",
-                    "group_by": "category"
-                },
-            ],
-        },
-    ]
-    
-    return {
-        "templates": templates,
-        "total_templates": len(templates),
-        "updated_at": datetime.now(timezone.utc).isoformat(),
-    }
+async def get_report_templates(category: str | None = Query(None, description="按分类过滤")):
+    """从 report_templates.py 常量加载预置报表模板。"""
+    try:
+        from app.core.analytics_reports.report_templates import (
+            get_templates_by_category,
+        )
+        templates = get_templates_by_category(category)
+        return {
+            "templates": templates,
+            "total_templates": len(templates),
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+        }
+    except Exception as e:
+        logger.error("加载报表模板失败: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="报表模板加载失败")
 
 
 # ============================================================

@@ -1,0 +1,230 @@
+<!-- 聊天页面 -->
+<view class="page-container">
+  <!-- 顶部导航 -->
+  <nav-bar 
+    title="AI顾问"
+    left-icon="hamburger"
+    right-icon="{{userInfo && userInfo.avatarUrl ? '' : 'person'}}"
+    bind:left="toggleMenu"
+    bind:right="goToProfile"
+    transparent
+  >
+    <avatar
+      slot="right"
+      src="{{userInfo && userInfo.avatarUrl || ''}}"
+      size="sm"
+      bind:tap="goToProfile"
+    />
+  </nav-bar>
+
+  <!-- 消息列表 -->
+  <scroll-view 
+    class="message-list" 
+    scroll-y 
+    scroll-into-view="{{scrollToView}}"
+    scroll-with-animation
+    aria-live="polite"
+    aria-label="消息列表"
+  >
+    <!-- 欢迎消息 -->
+    <view wx:if="{{messages.length === 0}}" class="welcome-section">
+      <card shadow="lg" class="welcome-card">
+        <view class="welcome-icon-wrap">
+          <icon name="herb" size="xxl" color="var(--color-primary)" />
+        </view>
+        <text class="welcome-title">欢迎来到药食同源配方平台</text>
+        <text class="welcome-desc">我是您的AI健康顾问，可以帮您：</text>
+        <view class="welcome-features">
+          <view class="feature-item">
+            <icon name="formula" size="md" color="var(--color-primary)" />
+            <text class="feature-text">设计个性化配方</text>
+          </view>
+          <view class="feature-item">
+            <icon name="search" size="md" color="var(--color-primary)" />
+            <text class="feature-text">分析食材功效</text>
+          </view>
+          <view class="feature-item">
+            <icon name="compliance" size="md" color="var(--color-primary)" />
+            <text class="feature-text">评估配方安全性</text>
+          </view>
+        </view>
+      </card>
+    </view>
+
+    <!-- 消息列表 -->
+    <view wx:for="{{messages}}" wx:key="id" class="message-wrapper">
+      <!-- 用户消息 -->
+      <view wx:if="{{item.role === 'user'}}" class="message user-message">
+        <view class="message-bubble">
+          <text>{{item.content}}</text>
+        </view>
+        <avatar 
+          src="{{userInfo && userInfo.avatarUrl}}"
+          size="sm"
+          aria-hidden="true"
+        />
+      </view>
+
+      <!-- AI消息 -->
+      <view wx:if="{{item.role === 'assistant'}}" class="message ai-message">
+        <view class="message-avatar-ai">
+          <icon name="herb" size="sm" color="var(--color-primary)" />
+        </view>
+        <view class="message-bubble">
+          <text class="message-content">{{item.content}}</text>
+          
+          <!-- 配方卡片 -->
+          <card 
+            wx:if="{{item.formula}}"
+            shadow="sm"
+            class="formula-card"
+            bind:tap="showFormulaDetail"
+            data-formula="{{item.formula}}"
+            aria-label="查看配方: {{item.formula.name}}"
+          >
+            <view class="formula-card-header">
+              <text class="formula-name">{{item.formula.name}}</text>
+              <health-score 
+                score="{{item.formula.healthScore}}" 
+                size="small"
+              />
+            </view>
+            
+            <view class="formula-ingredients">
+              <tag 
+                wx:for="{{item.formula.ingredients}}" 
+                wx:for-item="ing" 
+                wx:key="name"
+                type="primary"
+                size="small"
+              >{{ing.name}} {{ing.amount}}g</tag>
+            </view>
+            
+            <view class="formula-footer">
+              <text class="formula-action">查看完整配方</text>
+              <icon name="arrow-right" size="sm" color="var(--color-primary)" />
+            </view>
+          </card>
+        </view>
+      </view>
+    </view>
+
+    <!-- Typing Indicator -->
+    <view wx:if="{{isTyping}}" class="typing-indicator" aria-label="AI正在输入">
+      <view class="typing-dots">
+        <view class="dot"></view>
+        <view class="dot"></view>
+        <view class="dot"></view>
+      </view>
+      <text class="typing-text">AI正在思考...</text>
+    </view>
+
+    <!-- 底部间距 -->
+    <view class="bottom-spacing"></view>
+  </scroll-view>
+
+  <!-- 输入区域 -->
+  <view class="input-area" style="padding-bottom: {{safeAreaBottom}}px;">
+    <view class="input-wrapper">
+      <input 
+        class="message-input" 
+        placeholder="请输入您的问题..." 
+        placeholder-class="input-placeholder"
+        value="{{inputValue}}"
+        bindinput="onInput"
+        bindconfirm="onSend"
+        confirm-type="send"
+        aria-label="输入消息"
+      />
+      <view 
+        class="send-btn {{inputValue ? 'active' : ''}}" 
+        bindtap="onSend"
+        role="button"
+        aria-label="发送消息"
+        aria-disabled="{{!inputValue}}"
+      >
+        <icon name="send" size="md" color="{{inputValue ? '#FFFFFF' : 'var(--color-text-muted)'}}" />
+      </view>
+    </view>
+    
+    <!-- 快捷建议 -->
+    <view wx:if="{{quickStarts.length > 0 && !isTyping}}" class="suggestions" aria-label="快捷建议">
+      <scroll-view class="suggestion-scroll" scroll-x>
+        <view class="suggestion-list">
+          <view 
+            wx:for="{{quickStarts}}" 
+            wx:key="text"
+            class="suggestion-chip"
+            bindtap="quickStart"
+            data-item="{{item}}"
+            role="button"
+            aria-label="{{item.text}}"
+          >
+            <icon name="{{item.icon}}" size="sm" color="var(--color-primary)" />
+            <text>{{item.text}}</text>
+          </view>
+        </view>
+      </scroll-view>
+    </view>
+  </view>
+
+  <!-- 侧边菜单遮罩 -->
+  <view class="menu-overlay" wx:if="{{menuOpen}}" bindtap="toggleMenu" aria-hidden="true"></view>
+  
+  <!-- 侧边菜单 -->
+  <view 
+    class="side-menu {{menuOpen ? 'open' : ''}}" 
+    role="navigation"
+    aria-label="侧边菜单"
+  >
+    <view class="menu-header">
+      <avatar 
+        src="{{userInfo && userInfo.avatarUrl}}"
+        size="xl"
+        bind:tap="goToProfile"
+        aria-label="个人中心"
+      />
+      <view class="menu-user-info">
+        <text class="menu-nickname">{{userInfo && userInfo.nickname || '点击登录'}}</text>
+      </view>
+      <view 
+        class="menu-close" 
+        bindtap="toggleMenu"
+        role="button"
+        aria-label="关闭菜单"
+      >
+        <icon name="close" size="md" color="var(--color-text-muted)" />
+      </view>
+    </view>
+    
+    <view class="menu-items">
+      <view class="menu-item" bindtap="goToHistory" role="button" aria-label="历史记录">
+        <icon name="history" size="md" color="var(--color-text-muted)" />
+        <text class="menu-text">历史记录</text>
+      </view>
+      <view class="menu-item" bindtap="goToFormulas" role="button" aria-label="我的配方">
+        <icon name="formula" size="md" color="var(--color-text-muted)" />
+        <text class="menu-text">我的配方</text>
+      </view>
+      <view class="menu-item" bindtap="newChat" role="button" aria-label="新对话">
+        <icon name="plus" size="md" color="var(--color-text-muted)" />
+        <text class="menu-text">新对话</text>
+      </view>
+      <view class="menu-item" bindtap="clearChat" role="button" aria-label="清空对话">
+        <icon name="delete" size="md" color="var(--color-text-muted)" />
+        <text class="menu-text">清空对话</text>
+      </view>
+      <view class="menu-item" bindtap="goToSettings" role="button" aria-label="设置">
+        <icon name="settings" size="md" color="var(--color-text-muted)" />
+        <text class="menu-text">设置</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- Toast组件 -->
+  <toast 
+    visible="{{showToast}}" 
+    content="{{toastContent}}" 
+    type="{{toastType}}"
+  ></toast>
+</view>

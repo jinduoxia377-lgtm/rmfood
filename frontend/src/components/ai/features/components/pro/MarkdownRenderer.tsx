@@ -886,8 +886,8 @@ const MDStyles = `
   --md-border-strong: rgba(0, 0, 0, 0.12);
   --md-accent: var(--color-primary, #34C759);
   --md-accent-soft: rgba(52, 199, 89, 0.12);
-  --md-indigo: #6366F1;
-  --md-indigo-soft: rgba(99, 102, 241, 0.15);
+  --md-accent2: var(--color-primary-500, #10b981);
+  --md-accent2-soft: rgba(16, 185, 129, 0.15);
   --md-warning: #D97706;
   --md-warning-soft: rgba(217, 119, 6, 0.1);
   --md-success: #248A3D;
@@ -1090,26 +1090,26 @@ const MDStyles = `
 }
 
 .chat-md-link {
-  color: #4f46e5;
+  color: var(--color-primary-600, #059669);
   text-decoration: none;
   display: inline-flex;
   align-items: center;
   transition: color 0.15s;
 }
 .chat-md-link:hover {
-  color: #4338ca;
+  color: var(--color-primary-700, #047857);
   text-decoration: underline;
 }
 .dark .chat-md-link {
-  color: #818cf8;
+  color: var(--color-primary-400, #34d399);
 }
 .dark .chat-md-link:hover {
-  color: #a5b4fc;
+  color: var(--color-primary-300, #6ee7b7);
 }
 
 .chat-md-fn-ref {
   font-size: 0.7em;
-  color: #6366f1;
+  color: var(--color-primary-500, #10b981);
   cursor: pointer;
   text-decoration: none;
   line-height: 0;
@@ -1545,21 +1545,21 @@ details[open] .chat-md-toc-chevron {
   display: block;
   padding: 0.3em 0.65em;
   font-size: 0.82rem;
-  color: #4f46e5;
+  color: var(--color-primary-600, #059669);
   text-decoration: none;
   border-radius: 0.3em;
   transition: all 0.15s;
 }
 .chat-md-toc-link:hover {
-  background-color: #eef2ff;
-  color: #4338ca;
+  background-color: var(--color-primary-50, #ecfdf5);
+  color: var(--color-primary-700, #047857);
 }
 .dark .chat-md-toc-link {
-  color: #818cf8;
+  color: var(--color-primary-400, #34d399);
 }
 .dark .chat-md-toc-link:hover {
-  background-color: rgba(79, 70, 229, 0.15);
-  color: #a5b4fc;
+  background-color: rgba(16, 185, 129, 0.15);
+  color: var(--color-primary-300, #6ee7b7);
 }
 
 /* ===== Footnotes ===== */
@@ -1589,7 +1589,7 @@ details[open] .chat-md-toc-chevron {
 }
 
 .chat-md-footnote-ref a {
-  color: #6366f1;
+  color: var(--color-primary-500, #10b981);
   text-decoration: none;
   font-weight: 500;
 }

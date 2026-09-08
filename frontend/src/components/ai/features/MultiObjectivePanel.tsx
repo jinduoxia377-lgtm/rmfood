@@ -1591,7 +1591,7 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
                         type="monotone"
                         dataKey="diversity"
                         name="多样性"
-                        stroke="var(--color-violet-500, #AF52DE)"
+                        stroke="var(--color-primary-500, #10b981)"
                         strokeWidth={1.5}
                         dot={false}
                       />
@@ -1694,9 +1694,9 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
                     <Scatter
                       name="Pareto 前沿"
                       data={scatterData}
-                      fill="var(--color-indigo-500, #6366F1)"
+                      fill="var(--color-primary-500, #10b981)"
                       fillOpacity={0.7}
-                      stroke="var(--color-indigo-500, #6366F1)"
+                      stroke="var(--color-primary-500, #10b981)"
                       strokeWidth={2}
                     >
                       {scatterData.map((entry, index) => (
@@ -1831,8 +1831,8 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
                           <Radar
                             name="当前方案"
                             dataKey="score"
-                            stroke="var(--color-indigo-500, #6366F1)"
-                            fill="var(--color-indigo-500, #6366F1)"
+                            stroke="var(--color-primary-500, #10b981)"
+                            fill="var(--color-primary-500, #10b981)"
                             fillOpacity={0.25}
                             strokeWidth={2}
                           />

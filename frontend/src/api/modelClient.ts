@@ -335,6 +335,39 @@ export class ModelClient {
   }
 
   /**
+   * 更新 LLM 配置到后端（同步到服务器内存，再返回最新状态）
+   */
+  static async setModelConfig(
+    provider: string,
+    apiKey: string,
+    baseUrl: string,
+    model: string,
+  ): Promise<{ success: boolean; status?: Record<string, ModelStatus>; error?: string }> {
+    try {
+      const response = await api.post('/ai/models/config', {
+        provider,
+        api_key: apiKey,
+        base_url: baseUrl,
+        model,
+        max_tokens: 4096,
+        temperature: 0.7,
+      })
+      if (response.data?.success) {
+        // 保存成功后立即 refetch 状态
+        const status = await this.getModelStatus()
+        return { success: true, status }
+      }
+      return { success: false, error: response.data?.message || '保存失败' }
+    } catch (error: unknown) {
+      const axiosError = error as { response?: { status?: number; data?: { message?: string } } }
+      const status403 = axiosError.response?.status === 403
+      const msg = axiosError.response?.data?.message || (status403 ? '需要管理员权限才能修改 LLM 配置' : '保存失败，请检查后端服务')
+      logger.error('[ModelClient] setModelConfig failed:', msg)
+      return { success: false, error: msg }
+    }
+  }
+
+  /**
    * 调用模型（通用方法）
    */
   static async callModel<T = unknown>(params: ModelCallParams): Promise<ModelResponse<T>> {

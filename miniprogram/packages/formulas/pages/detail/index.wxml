@@ -1,0 +1,184 @@
+<!-- 配方详情页面 -->
+<view class="page-container">
+  <!-- 顶部导航 -->
+  <nav-bar 
+    title="{{formula ? formula.name : '配方详情'}}"
+    left-icon="arrow-left"
+    right-icon="{{isFavorite ? 'favorite' : 'favorite-outline'}}"
+    bind:left="goBack"
+    bind:right="toggleFavorite"
+    transparent
+  ></nav-bar>
+
+  <scroll-view class="content-scroll" scroll-y>
+    <!-- 加载中状态 -->
+    <view wx:if="{{loading}}" class="loading-wrapper">
+      <skeleton-loader type="card" />
+    </view>
+
+    <!-- 配方内容 -->
+    <view wx:else class="formula-content">
+      <!-- 配方头部卡片 -->
+      <view class="formula-header-card">
+        <image 
+          class="formula-cover" 
+          src="{{formula.coverImage || '/assets/images/default-formula.png'}}" 
+          mode="aspectFill"
+          lazy-load
+        ></image>
+        <health-score 
+          score="{{formula.healthScore}}" 
+          size="lg"
+          class="formula-score-badge"
+        />
+      </view>
+
+      <!-- 基本信息 -->
+      <card shadow="sm" class="info-card">
+        <view class="formula-name">{{formula.name}}</view>
+        <view class="formula-desc">{{formula.description}}</view>
+        
+        <!-- 标签 -->
+        <view class="tags-wrap">
+          <tag wx:for="{{formula.tags}}" wx:key="name" type="{{item.type === 'effect' ? 'success' : 'primary'}}" size="small">
+            <icon name="{{item.type === 'effect' ? 'check' : 'tag'}}" size="xs" color="currentColor" />
+            <text>{{item.name}}</text>
+          </tag>
+        </view>
+      </card>
+
+      <!-- 功效成分 -->
+      <card shadow="sm" class="info-card" wx:if="{{formula.ingredients && formula.ingredients.length > 0}}">
+        <view class="section-title">
+          <icon name="herb" size="sm" color="var(--color-primary)" />
+          <text>功效成分</text>
+        </view>
+        <view class="ingredients-table">
+          <view class="table-header">
+            <text class="col-name">食材名称</text>
+            <text class="col-amount">用量</text>
+            <text class="col-latin">拉丁名</text>
+          </view>
+          <view 
+            wx:for="{{formula.ingredients}}" 
+            wx:key="name"
+            class="table-row {{index % 2 === 0 ? 'even' : ''}}"
+          >
+            <text class="col-name">{{item.name}}</text>
+            <text class="col-amount">{{item.amount}}{{item.unit}}</text>
+            <text class="col-latin">{{item.latinName}}</text>
+          </view>
+        </view>
+      </card>
+
+      <!-- 制备工艺 -->
+      <card shadow="sm" class="info-card" wx:if="{{formula.sop}}">
+        <view class="section-title">
+          <icon name="science" size="sm" color="var(--color-primary)" />
+          <text>制备工艺 (SOP)</text>
+        </view>
+        <view class="sop-content">
+          <text>{{formula.sop}}</text>
+        </view>
+      </card>
+
+      <!-- 服用方法 -->
+      <card shadow="sm" class="info-card" wx:if="{{formula.usage}}">
+        <view class="section-title">
+          <icon name="clock" size="sm" color="var(--color-primary)" />
+          <text>服用方法</text>
+        </view>
+        <view class="usage-content">
+          <text>{{formula.usage}}</text>
+        </view>
+      </card>
+
+      <!-- 作用机理 -->
+      <card shadow="sm" class="info-card" wx:if="{{formula.mechanism}}">
+        <view class="section-title">
+          <icon name="science" size="sm" color="var(--color-primary)" />
+          <text>方解与机理</text>
+        </view>
+        <view class="mechanism-content">
+          <text>{{formula.mechanism}}</text>
+        </view>
+      </card>
+
+      <!-- 适用人群 -->
+      <card shadow="sm" class="info-card" wx:if="{{formula.indications && formula.indications.length > 0}}">
+        <view class="section-title">
+          <icon name="user" size="sm" color="var(--color-success)" />
+          <text>适用人群</text>
+        </view>
+        <view class="indications-content">
+          <tag wx:for="{{formula.indications}}" wx:key="index" type="success" size="small">{{item}}</tag>
+        </view>
+      </card>
+
+      <!-- 禁忌说明 -->
+      <card shadow="sm" class="info-card warning-card" wx:if="{{formula.contraindications && formula.contraindications.length > 0}}">
+        <view class="section-title">
+          <icon name="warning" size="sm" color="var(--color-danger)" />
+          <text>禁忌与注意</text>
+        </view>
+        <view class="contraindications-content">
+          <view wx:for="{{formula.contraindications}}" wx:key="index" class="contraindication-item">
+            <icon name="warning" size="sm" color="var(--color-danger)" />
+            <text>{{item}}</text>
+          </view>
+        </view>
+      </card>
+
+      <!-- 监测建议 -->
+      <card shadow="sm" class="info-card" wx:if="{{formula.monitoring}}">
+        <view class="section-title">
+          <icon name="chart" size="sm" color="var(--color-primary)" />
+          <text>监测与迭代</text>
+        </view>
+        <view class="monitoring-content">
+          <text>{{formula.monitoring}}</text>
+        </view>
+      </card>
+
+      <!-- 配方信息 -->
+      <card shadow="none" class="meta-card">
+        <view class="meta-row">
+          <icon name="calendar" size="sm" color="var(--color-text-muted)" />
+          <text class="meta-label">创建时间</text>
+          <text class="meta-value">{{formula.createdAt}}</text>
+        </view>
+        <view class="meta-row">
+          <icon name="update" size="sm" color="var(--color-text-muted)" />
+          <text class="meta-label">更新时间</text>
+          <text class="meta-value">{{formula.updatedAt}}</text>
+        </view>
+      </card>
+
+      <!-- 底部间距 -->
+      <view class="bottom-spacing"></view>
+    </view>
+  </scroll-view>
+
+  <!-- 底部操作栏 -->
+  <view wx:if="{{!loading && formula}}" class="bottom-bar" style="padding-bottom: {{safeAreaBottom}}px;">
+    <btn 
+      type="secondary" 
+      bind:tap="toggleFavorite"
+      aria-label="{{isFavorite ? '取消收藏' : '收藏'}}"
+    >
+      <icon name="{{isFavorite ? 'favorite' : 'favorite-outline'}}" size="sm" color="{{isFavorite ? 'var(--color-danger)' : 'var(--color-text-secondary)'}}" />
+      <text>{{isFavorite ? '已收藏' : '收藏'}}</text>
+    </btn>
+    <btn type="primary" bind:tap="shareFormula" aria-label="分享配方">
+      <icon name="share" size="sm" color="#FFFFFF" />
+      <text>分享</text>
+    </btn>
+  </view>
+
+  <!-- Toast组件 -->
+  <toast 
+    visible="{{showToast}}" 
+    content="{{toastContent}}" 
+    type="{{toastType}}"
+  ></toast>
+</view>

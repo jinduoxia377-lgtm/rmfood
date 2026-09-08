@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 数据库检索页面 — Phase 4 专家级增强版
  * 导入独立的 Tab 组件，提供全局搜索和统计概览
  * 增强：统计卡片趋势、工具栏、搜索历史、快捷键、性能优化、数据导出
@@ -21,6 +21,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { databaseApi } from '@/api/database';
+import { complianceApi } from '@/api/compliance';
 import { PageHeader, Badge, Tabs, Tooltip, TabsList, TabsTrigger, TabsContent, useToast, StatCard, Button, Input, Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
 import {
   Search,
@@ -51,6 +52,7 @@ import {
   ArrowUp,
   ArrowDown,
   Minus,
+   LucideIcon,
 } from 'lucide-react';
 
 // ─── 模块化 Tab 组件 ───
@@ -69,7 +71,7 @@ import DashboardOverview from './DashboardOverview';
 // ─── 药材分类饼图组件 ───
 const HerbCategoryChart = lazy(() =>
   Promise.resolve({
-    default: ({ data, loading }: { data: { name: string; value: number; fill: string }[]; loading?: boolean }) => {
+    default: ({ data, loading, totalFoodHomology }: { data: { name: string; value: number; fill: string; foodHomology?: number }[]; loading?: boolean; totalFoodHomology?: number }) => {
       if (loading) {
         return (
           <div className="card p-6 flex items-center justify-center h-[280px]">
@@ -97,7 +99,7 @@ const HerbCategoryChart = lazy(() =>
           </CardHeader>
           <CardContent className="px-6 pb-5 pt-0">
           <div className="flex flex-col md:flex-row items-center gap-5">
-            <ResponsiveContainer width="100%" height={200}>
+            <ResponsiveContainer width="100%" height={320}>
               <PieChart>
                 <Pie
                   data={data}
@@ -114,7 +116,7 @@ const HerbCategoryChart = lazy(() =>
                   ))}
                 </Pie>
                 <RechartsTooltip
-                  formatter={(value: number, name: string) => [value + ' 种', name]}
+                  formatter={(value: number, name: string) => [value + ' \u79cd', name]}
                   contentStyle={{
                     backgroundColor: 'var(--card-bg-solid, #ffffff)',
                     borderRadius: '8px',
@@ -144,12 +146,18 @@ const HerbCategoryChart = lazy(() =>
                   +{data.length - 6} 其他分类
                 </div>
               )}
-              <div className="mt-2 pt-2 border-t border-neutral-200 dark:border-neutral-700 flex items-center justify-between">
-                <span className="text-[11px] text-[var(--text-muted,#64748b)]">总计</span>
-                <span className="text-xs font-semibold text-neutral-800 dark:text-neutral-100 tabular-nums">{total} 种</span>
+              <div className="mt-2 pt-2 border-t border-neutral-200 dark:border-neutral-700 space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] text-[var(--text-muted,#64748b)]">总计</span>
+                  <span className="text-xs font-semibold text-neutral-800 dark:text-neutral-100 tabular-nums">{total} 种</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] text-[var(--text-muted,#64748b)] flex items-center gap-1">药食同源</span>
+                  <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 tabular-nums">{totalFoodHomology ?? 0} 种</span>
+                </div>
               </div>
             </div>
-          </div>
+            </div>
           </CardContent>
         </Card>
       );
@@ -186,8 +194,8 @@ const PeptideActivityChart = lazy(() =>
             </CardTitle>
           </CardHeader>
           <CardContent className="px-6 pb-5 pt-0">
-          <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={data} layout="vertical" margin={{ top: 10, right: 50, left: 90, bottom: 10 }}>
+          <ResponsiveContainer width="100%" height={320}>
+            <BarChart data={data} layout="vertical" margin={{ top: 10, right: 50, left: 110, bottom: 10 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" horizontal={false} opacity={0.3} />
               <XAxis type="number" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
               <YAxis
@@ -196,10 +204,10 @@ const PeptideActivityChart = lazy(() =>
                 tick={{ fontSize: 11, fill: 'var(--text-muted)' }}
                 axisLine={false}
                 tickLine={false}
-                width={90}
+                width={110}
               />
               <RechartsTooltip
-                formatter={(value: number, name: string, props: any) => [value + ' 条', props.payload?.fullName || name]}
+                formatter={(value: number) => [value + ' 条', '']}
                 contentStyle={{
                   backgroundColor: 'var(--card-bg-solid, #ffffff)',
                   borderRadius: '8px',
@@ -252,7 +260,7 @@ const NODE_TYPE_LABEL: Record<string, string> = {
 type DbTab = 'dashboard' | 'herbs' | 'peptides' | 'graph' | 'homology' | 'food_materials' | 'retail_products' | 'analytics' | 'sync';
 type ViewMode = 'overview' | 'compact' | 'detailed';
 interface SearchHistoryItem { query: string; timestamp: number; }
-interface CategoryData { name: string; value: number; fill: string; }
+interface CategoryData { name: string; value: number; fill: string; foodHomology?: number; }
 const STORAGE_KEY_VIEW_MODE = 'rmfood_db_view_mode';
 const STORAGE_KEY_SEARCH_HISTORY = 'rmfood_search_history';
 const STORAGE_KEY_TODAY_QUERIES = 'rmfood_today_queries';
@@ -396,16 +404,16 @@ export default function DatabasePage() {
     },
   });
 
-  // ─── 数据派生变量（必须在回调函数之前声明，避免 TDZ 错误）────
+  // ─── 数据派生变量\uff08必须在回调函数之前声明，避免 TDZ 错误\uff09────
   const stats = syncStatsQuery.data as Record<string, any> | undefined;
-  // 药材分类数据（独立API获取，更准确）
+  // 药材分类数据\uff08独立API获取，更准确\uff09
   const categoryQuery = useQuery({
     queryKey: ['db-herb-categories'],
     queryFn: () => databaseApi.getCategories(),
     staleTime: 5 * 60 * 1000,
   });
 
-  // 活性肽类型数据（独立API获取，更准确）
+  // 活性肽类型数据\uff08独立API获取，更准确\uff09
   const activityQuery = useQuery({
     queryKey: ['db-peptide-activity-types'],
     queryFn: () => databaseApi.getActivityTypes(),
@@ -415,10 +423,17 @@ export default function DatabasePage() {
   const herbCount = stats?.tcmsp?.total_herbs ?? 0;
   const peptideCount = stats?.dfbp?.total_peptides ?? 0;
   const graphNodes = stats?.knowledge_graph ?? { total_herbs: 0, total_compounds: 0, total_targets: 0 };
-  const homologyCount = stats?.tcmsp?.food_homology_count ?? 0;
+  // 药食同源合规API\uff08获取官方106\u79cd目录\uff09
+  const homologyComplianceQuery = useQuery({
+    queryKey: ['db-homology-compliance'],
+    queryFn: () => complianceApi.getFoodHomology(),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const homologyCount = homologyComplianceQuery.data?.data?.count ?? stats?.tcmsp?.food_homology_count ?? 0;
   const retailProductCount = offSyncQuery.data?.total_products ?? null;
 
-  // 药材分类数据（饼图）
+  // 药材分类数据\uff08饼图\uff09
   const categoryData = useMemo((): CategoryData[] => {
     const raw = categoryQuery.data?.categories;
     if (!raw || raw.length === 0) return [];
@@ -429,19 +444,43 @@ export default function DatabasePage() {
     }));
   }, [categoryQuery.data]);
 
-  // 活性类型数据（柱状图）
+  // 药食同源总数
+  const totalFoodHomology = categoryQuery.data?.total_food_homology ?? 0;
+
+  // 活性类型数据\uff08柱状图\uff09
   const activityData = useMemo(() => {
     const raw = activityQuery.data?.activity_types;
     if (!raw || raw.length === 0) return [];
-    return raw.slice(0, 6).map((item, i) => ({
+    const sorted = [...raw].sort((a, b) => (b.count ?? 0) - (a.count ?? 0));
+    const threshold = 10;
+    const displayed = sorted.filter((item) => (item.count ?? 0) >= threshold);
+    const others = sorted.filter((item) => (item.count ?? 0) < threshold);
+    const totalOthers = others.reduce((s, item) => s + (typeof item.count === 'number' ? item.count : 0), 0);
+    const result: { name: string; count: number; fill: string }[] = displayed.map((item, i) => ({
       name: item.type_cn || item.type_en || '',
-      fullName: item.type_cn + ' (' + item.type_en + ')',
       count: typeof item.count === 'number' ? item.count : 0,
       fill: PIE_COLORS[i % PIE_COLORS.length],
     }));
+    if (others.length > 0) {
+      result.push({
+        name: `\u5176\u4ed6\u6d3b\u6027\u7c7b\u578b\uff08${others.length}\u79cd\uff09`,
+        count: totalOthers,
+        fill: PIE_COLORS[displayed.length % PIE_COLORS.length],
+      });
+    }
+    return result;
   }, [activityQuery.data]);
 
-  // 全局搜索防抖 + 自动补全（可配置化）
+  // \u6d3b\u6027\u7c7b\u578b en\u2192cn \u6620\u5c04\uff08\u7528\u4e8e\u641c\u7d22\u7ed3\u679c badge\uff09
+  const activityTypeMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    activityQuery.data?.activity_types?.forEach((t) => {
+      map[t.type_en] = t.type_cn || t.type_en;
+    });
+    return map;
+  }, [activityQuery.data]);
+
+  // 全局搜索防抖 + 自动补全\uff08可配置化\uff09
   const [searchTimer, setSearchTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
   const [suggestions, setSuggestions] = useState<{ label: string; sublabel?: string }[] | null>(null);
   const [suggestionsLoading, setSuggestionsLoading] = useState(false);
@@ -544,7 +583,7 @@ export default function DatabasePage() {
     [globalResults],
   );
 
-  // 全局快捷键（Ctrl+K / ? / 1-6 / R / E / /）
+  // 全局快捷键\uff08Ctrl+K / ? / 1-6 / R / E / /\uff09
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       // Ctrl+K 或 Cmd+K 聚焦搜索
@@ -703,7 +742,7 @@ export default function DatabasePage() {
     }
   }, [queryClient, toast]);
 
-  // 数据库健康检查（模拟）
+  // 数据库健康检查\uff08模拟\uff09
   const handleHealthCheck = useCallback(() => {
     const healthStatus = dataSource === 'database' ? 'healthy' : dataSource === 'fallback' ? 'degraded' : 'unhealthy';
 
@@ -716,12 +755,12 @@ export default function DatabasePage() {
   }, []);
 
   // 统计卡片配置（6个卡片 + 趋势数据）
-  const statCardsConfig = useMemo(
+  const statCardsConfig = useMemo<{ label: string; value: number | string; icon: LucideIcon; variant: string; subtitle: string; trend: { direction: 'up' | 'down' | 'stable'; value: string }; tab: DbTab }[]>(
     () => [
       { label: '中药材', value: herbCount, icon: Database, variant: 'primary', subtitle: 'TCMSP 中药材品种库', trend: { direction: 'up' as const, value: '+12.5%' }, tab: 'herbs' },
       { label: '活性肽', value: peptideCount, icon: Activity, variant: 'secondary', subtitle: 'DFBP 活性肽序列库', trend: { direction: 'up' as const, value: '+8.3%' }, tab: 'peptides' },
       { label: '图谱节点', value: graphNodes.total_herbs + graphNodes.total_compounds + graphNodes.total_targets, icon: Layers, variant: 'info', subtitle: '药材 + 化合物 + 靶点', trend: { direction: 'up' as const, value: '+5.2%' }, tab: 'graph' },
-      { label: '药食同源', value: homologyCount, icon: Zap, variant: 'success', subtitle: '国家食药物质目录条目', trend: { direction: 'stable' as const, value: '0%' }, tab: 'herbs' },
+      { label: '药食同源', value: homologyCount, icon: Zap, variant: 'success', subtitle: '国家食药物质目录条目', trend: { direction: 'stable' as const, value: '0%' }, tab: 'homology' },
       { label: '配伍关系', value: stats?.knowledge_graph?.herb_interactions ?? 0, icon: TrendingUp, variant: 'warning', subtitle: '已识别的配伍关联数', trend: { direction: 'up' as const, value: '+15.7%' }, tab: 'graph' },
       { label: '今日查询', value: todayQueries, icon: Eye, variant: 'info', subtitle: '搜索 / 查询总次数', trend: { direction: 'up' as const, value: '+23.4%' }, tab: 'dashboard' },
     ],
@@ -899,7 +938,7 @@ export default function DatabasePage() {
           {dataSource === 'fallback' && (
             <div className="flex items-center gap-2 px-4 py-2.5 bg-warning-50 dark:bg-amber-950/30 text-warning-700 dark:text-warning-300 rounded-md border border-amber-200 dark:border-amber-800">
               <Zap className="w-4 h-4" />
-              <span className="text-xs font-normal leading-normal">使用内存数据库（后端服务不可用）</span>
+              <span className="text-xs font-normal leading-normal">使用内存数据库\uff08后端服务不可用\uff09</span>
             </div>
           )}
           {dataSource === 'error' && (
@@ -919,7 +958,7 @@ export default function DatabasePage() {
         )}
       </div>
 
-      {/* 全局快捷搜索栏（增强版） */}
+      {/* 全局快捷搜索栏\uff08增强版\uff09 */}
       <div ref={searchRef} className="relative">
         <div className="relative">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-[var(--text-disabled,#94a3b8)] dark:text-[var(--text-muted,#64748b)] pointer-events-none" />
@@ -1188,7 +1227,7 @@ export default function DatabasePage() {
         )}
       </div>
 
-      {/* 统计概览（6个增强卡片 + 趋势 + 动画） */}
+      {/* 统计概览\uff086个增强卡片 + 趋势 + 动画\uff09 */}
       <div
         className={`grid gap-2.5 ${
           viewMode === 'overview'
@@ -1207,11 +1246,11 @@ export default function DatabasePage() {
               </div>
             ))
           : statCardsConfig.map((config) => (
-            <button key={config.label} onClick={() => setTab(config.tab)} type="button" className="w-full text-left"><StatCard label={config.label} value={config.value} icon={config.icon} variant={config.variant} subtitle={config.subtitle} trend={config.trend} /></button>
+            <button key={config.label} onClick={() => setTab(config.tab as DbTab)} type="button" className="w-full text-left"><StatCard label={config.label} value={config.value} icon={config.icon} variant={config.variant as any} subtitle={config.subtitle} trend={config.trend} /></button>
           ))}
       </div>
 
-      {/* 统计图表（重新设计版） */}
+      {/* 统计图表\uff08重新设计版\uff09 */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
         <Suspense
           fallback={
@@ -1221,7 +1260,7 @@ export default function DatabasePage() {
           }
         >
           {categoryData.length > 0 && (
-          <HerbCategoryChart data={categoryData} loading={categoryQuery.isLoading} />
+          <HerbCategoryChart data={categoryData} loading={categoryQuery.isLoading} totalFoodHomology={totalFoodHomology} />
           )}
         </Suspense>
 
@@ -1238,7 +1277,7 @@ export default function DatabasePage() {
         </Suspense>
       </div>
 
-      {/* 主 Tab 区域（增强版） */}
+      {/* 主 Tab 区域\uff08增强版\uff09 */}
       <Tabs value={tab} onValueChange={(v) => setTab(v as DbTab)}>
         <TabsList className="relative p-1 bg-[var(--color-neutral-subtle,#f1f5f9)]/90 dark:bg-neutral-800/90 rounded-2xl shadow-inner">
           {[
@@ -1336,7 +1375,7 @@ export default function DatabasePage() {
               <div className="grid grid-cols-1 gap-2">
                 {[
                   { keys: ['Ctrl', 'K'], description: '聚焦搜索框', icon: Search },
-                  { keys: ['/'], description: '聚焦搜索框（备选）', icon: Search },
+                  { keys: ['/'], description: '聚焦搜索框\uff08备选\uff09', icon: Search },
                   { keys: ['1'], description: '切换到「实时概览」Tab', icon: LayoutDashboard },
                   { keys: ['2'], description: '切换到「中药材」Tab', icon: Database },
                   { keys: ['3'], description: '切换到「活性肽」Tab', icon: Activity },

@@ -11,7 +11,7 @@ Phase 5: VERIFY   — 同步后验证与报告
     python etl_sync_pipeline.py
 
 依赖: asyncpg (pip install asyncpg)
-数据库: PostgreSQL 18 @ localhost:5432/rmfood_platform
+数据库: PostgreSQL @ localhost:5432 (from .env DATABASE_URL)
 """
 
 import asyncio
@@ -27,7 +27,7 @@ from typing import Any
 # 常量定义
 # ════════════════════════════════════════════════
 
-DB_URL = "postgresql://postgres@localhost:5432/rmfood_platform"
+from scripts.db_utils import get_asyncpg_dsn; DB_URL = get_asyncpg_dsn()
 EXPECTED_RECORD_COUNT = 292
 SOURCE_VERSION = "etl_v1.0"
 

@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#059669" />
+    <meta name="description" content="RMFOOD 是莱茵分子开发的药食同源配方研发平台，整合 TCMSP 中药材库、活性肽数据库与知识图谱，为食品研发团队提供从原料筛选、配方生成到安全合规的全流程智能辅助工具。" />
+    <meta name="application-name" content="RMFOOD 配方设计平台" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="keywords" content="药食同源,配方设计,中医药数据库,活性肽,功能性食品,配方研发,知识图谱,食品安全,合规检查,TCMSP,DFBP" />
+    <meta name="author" content="莱茵（厦门）分子生物科技有限公司" />
+    <meta property="og:title" content="RMFOOD — 药食同源配方研发平台 | 莱茵分子" />
+    <meta property="og:description" content="整合 TCMSP + DFBP 双数据库与知识图谱，为食品研发团队提供从原料筛选到安全合规的全流程智能辅助。" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="RMFOOD — 药食同源配方研发平台" />
+    <meta name="twitter:description" content="药食同源功能性食品智能配方研发平台，TCMSP + DFBP + 知识图谱驱动。" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&display=swap" />
+    <link rel="preload" href="data:application/octet-stream;base64,Ly8g5rWP6KeI5Zmo546v5aKDIFBvbHlmaWxscyAtIOW/hemhu+WcqOaJgOacieWFtuS7luWvvOWFpeS5i+WJjQppbXBvcnQgeyBsb2dnZXIgfSBmcm9tICdAL3V0aWxzL3NhZmVMb2dnZXInCmltcG9ydCAnLi9wb2x5ZmlsbHMnCgovLyDmgKfog73nm5HmjqfliJ3lp4vljJYgLSDlnKjlupTnlKjlkK/liqjml7bnq4vljbPlkK/liqgKaW1wb3J0IHsgaW5pdFdlYlZpdGFscywgd2ViVml0YWxzTW9uaXRvciB9IGZyb20gJy4vdXRpbHMvd2ViVml0YWxzJwppbml0V2ViVml0YWxzKCkKCi8vIPCflJIgUDMtNDog5aKe5by654mI5YmN56uv5oCn6IO955uR5o6n77yIV2ViIFZpdGFscyArIOiHquWumuS5ieaMh+aghyArIOaJuemHj+S4iuaKpQppbXBvcnQgeyBpbml0UGVyZm9ybWFuY2VNb25pdG9yaW5nIH0gZnJvbSAnLi91dGlscy9wZXJmb3JtYW5jZScKaW5pdFBlcmZvcm1hbmNlTW9uaXRvcmluZyh7CiAgZW5hYmxlZDogdHJ1ZSwKICBlbmRwb2ludDogJy9hcGkvdjEvbWV0cmljcy9jbGllbnQtcGVyZicsCiAgc2FtcGxlUmF0ZTogcHJvY2Vzcy5lbnYuTk9ERV9FTlYgPT09ICdwcm9kdWN0aW9uJyA/IDAuMyA6IDEuMCwKICBiYXRjaFNpemU6IDEwLAogIGJhdGNoSW50ZXJ2YWw6IDUwMDAsCiAgZGVidWc6IHByb2Nlc3MuZW52Lk5PREVfRU5WID09PSAnZGV2ZWxvcG1lbnQnLAp9KQoKLy8g5byA5Y+R546v5aKD5LiL6Ieq5Yqo6L6T5Ye65oCn6IO95oql5ZGKCgovLyDlvIDlj5Hnjq/looPkuIvoh6rliqjovpPlh7rmgKfog73miqXlkYoKaWYgKHByb2Nlc3MuZW52Lk5PREVfRU5WID09PSAnZGV2ZWxvcG1lbnQnKSB7CiAgc2V0VGltZW91dCgoKSA9PiB7CiAgICB3ZWJWaXRhbHNNb25pdG9yLmxvZ1JlcG9ydCgpCiAgfSwgMzAwMCkKfQoKLy8gaTE4biDlm73pmYXljJbphY3nva4gLSDlv4XpobvlnKhBcHDlr7zlhaXkuYvliY0KaW1wb3J0ICcuL2kxOG4nCgovLyBOTFDphY3nva7lpJbpg6jljJbliJ3lp4vljJYgLSDlnKjlupTnlKjlkK/liqjml7bpooTliqDovb3lhbPplK7phY3nva4KaW1wb3J0IHsgaW5pdGlhbGl6ZU5MUENvbmZpZ3MgfSBmcm9tICcuL2NvbmZpZy9ubHAnCgovLyDlvILmraXliJ3lp4vljJZOTFDphY3nva7vvIjkuI3pmLvloZ7lupTnlKjlkK/liqjvvIkKaW5pdGlhbGl6ZU5MUENvbmZpZ3MoewogIHByZUxvYWQ6IFt0cnVlLCB0cnVlXSwgLy8g6aKE5Yqg6L295paH5pys6KeE6IyD5YyW5ZKM5Yqf6IO95a6j56ew5qih5byP6YWN572uCn0pLnRoZW4oKCkgPT4gewogIGxvZ2dlci5sb2coJ1tNYWluXSDinIUgTkxQ6YWN572u5Yid5aeL5YyW5a6M5oiQJykKfSkuY2F0Y2goKGVycm9yKSA9PiB7CiAgbG9nZ2VyLndhcm4oJ1tNYWluXSDimqDvuI8gTkxQ6YWN572u5Yid5aeL5YyW5aSx6LSl77yM5bCG5L2/55So6ZmN57qn5qih5byPOicsIGVycm9yKQp9KQoKaW1wb3J0IHsgU3RyaWN0TW9kZSB9IGZyb20gJ3JlYWN0JwppbXBvcnQgeyBjcmVhdGVSb290IH0gZnJvbSAncmVhY3QtZG9tL2NsaWVudCcKaW1wb3J0IEFwcCBmcm9tICcuL0FwcCcKaW1wb3J0ICcuL2luZGV4LmNzcycKCi8vIOaWsOeahOS4k+S4mue6p+S4u+mimOezu+e7n+S8muiHquWKqOWcqCBUaGVtZVByb3ZpZGVyIOS4reWIneWni+WMlgovLyDljIXmi6zvvJrns7vnu5/lgY/lpb3mo4DmtYvjgIHmjIHkuYXljJbphY3nva7liqDovb3jgIHkuLvpopjlupTnlKjnrYkKLy8g5peg6ZyA5Zyo5q2k5aSE5omL5Yqo5aSE55CG5Li76aKY6YC76L6RCgpjcmVhdGVSb290KGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdyb290JykhKS5yZW5kZXIoCiAgPFN0cmljdE1vZGU+CiAgICA8QXBwIC8+CiAgPC9TdHJpY3RNb2RlPiwKKQo=" as="script" />
+    <title>RMFOOD — 药食同源配方研发平台 | 莱茵分子</title>
+    <!-- Node.js Process Polyfill for ExcelJS and other Node.js libraries -->
+    <script>
+      // 必须在所有脚本之前定义 process 对象
+      window.process = window.process || {
+        env: {
+          NODE_ENV: 'development',
+          DEBUG: undefined,
+          PRODUCTION: false,
+        },
+        version: 'v18.0.0',
+        platform: 'browser',
+        arch: 'unknown',
+        node: false,
+        title: 'browser',
+        browser: true,
+        argv: [],
+        execPath: '',
+        cwd: function() { return '/'; },
+        nextTick: function(cb) {
+          var args = Array.prototype.slice.call(arguments, 1);
+          setTimeout(function() { cb.apply(null, args); }, 0);
+        },
+        stdout: {
+          write: function(s) { console.log(s); },
+          writeLine: function(s) { console.log(s || ''); },
+        },
+        stderr: {
+          write: function(s) { console.error(s); },
+          writeLine: function(s) { console.error(s || ''); },
+        },
+        stdin: {},
+        exit: function(code) {
+          if (code && code !== 0) throw new Error('Process exited with code ' + code);
+        },
+        on: function() {},
+        off: function() {},
+        removeAllListeners: function() {},
+        emit: function() { return false; },
+        listeners: function() { return []; },
+        once: function() {},
+        prependListener: function() {},
+        prependOnceListener: function() {},
+        removeListener: function() {},
+        uptime: function() { return Math.floor(performance.now() / 1000); },
+        memoryUsage: function() {
+          return { rss: 0, heapTotal: 0, heapUsed: 0, external: 0, arrayBuffers: 0 };
+        },
+        hrtime: function(time) {
+          var now = performance.now() * 1e-6;
+          if (!time) return [Math.floor(now), (now % 1) * 1e9];
+          var diff = now - (time[0] + time[1] * 1e-9);
+          return [Math.floor(diff), (diff % 1) * 1e9];
+        }
+      };
+      
+      // Global polyfill
+      if (typeof global === 'undefined') {
+        window.global = window;
+      }
+      
+      // Buffer polyfill
+      if (typeof Buffer === 'undefined') {
+        window.Buffer = {
+          from: function(data, encoding) {
+            if (typeof data === 'string') {
+              if (encoding === 'base64') {
+                var binary = atob(data);
+                var bytes = new Uint8Array(binary.length);
+                for (var i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+                return bytes;
+              }
+              return new TextEncoder().encode(data);
+            }
+            if (data instanceof ArrayBuffer) return new Uint8Array(data);
+            if (Array.isArray(data)) return new Uint8Array(data);
+            return new Uint8Array(0);
+          },
+          alloc: function(size) { return new Uint8Array(size); },
+          isBuffer: function(obj) { return obj instanceof Uint8Array; }
+        };
+      }
+    </script>
+    <!-- 使用系统字体，无需加载外部资源 -->
+    <!-- 主题初始化脚本 - 防止主题切换闪烁 -->
+    <script>
+      (function() {
+        const stored = localStorage.getItem('rmfood-theme-settings-v2');
+        if (stored) {
+          try {
+            const { mode, customColors } = JSON.parse(stored);
+            const isDark = mode === 'dark' || 
+              (mode === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            if (isDark) {
+              document.documentElement.classList.add('dark');
+            }
+          } catch (e) {
+            if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+              document.documentElement.classList.add('dark');
+            }
+          }
+        } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+    <script type="module" crossorigin src="/assets/js/index-C9zoCGv7.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/js/rolldown-runtime-W-g5d7YK.js">
+    <link rel="modulepreload" crossorigin href="/assets/js/feature-ai-chat-DJSmPnZ2.js">
+    <link rel="modulepreload" crossorigin href="/assets/js/vendor-other-rZnVDeGC.js">
+    <link rel="modulepreload" crossorigin href="/assets/js/feature-ai-generate-CbgUuC7B.js">
+    <link rel="modulepreload" crossorigin href="/assets/js/feature-ai-safety-Bv4a4qE2.js">
+    <link rel="modulepreload" crossorigin href="/assets/js/feature-analytics-C-idCc11.js">
+    <link rel="modulepreload" crossorigin href="/assets/js/feature-database-40hQwEDf.js">
+    <link rel="modulepreload" crossorigin href="/assets/js/vendor-react-B7Y0rvYL.js">
+    <link rel="modulepreload" crossorigin href="/assets/js/vendor-ui-C8MjNAt9.js">
+    <link rel="modulepreload" crossorigin href="/assets/js/feature-user-Cp6Dziiq.js">
+    <link rel="modulepreload" crossorigin href="/assets/js/feature-experiment-D0VGC2HE.js">
+    <link rel="modulepreload" crossorigin href="/assets/js/feature-formula-Baq8sZhL.js">
+    <link rel="modulepreload" crossorigin href="/assets/js/feature-settings-uQ-iQRgV.js">
+    <link rel="stylesheet" crossorigin href="/assets/css/feature-ai-chat-Cn9qDu5w.css">
+    <link rel="stylesheet" crossorigin href="/assets/css/index-BtOdaPLr.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>

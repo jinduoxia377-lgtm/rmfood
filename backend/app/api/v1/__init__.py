@@ -15,7 +15,14 @@ from .version_router import router as version_router
 from .metrics_router import router as metrics_router
 from .ray_router import router as ray_router
 from .mo_stream_endpoint import router as mo_stream_router
-from .import_router import router as import_router
+
+# import_router requires celery; skip if not installed
+try:
+    from .import_router import router as import_router
+except ImportError as e:
+    import_router = None  # type: ignore
+    import logging
+    logging.getLogger(__name__).warning(f"[v1/__init__] import_router skipped: {e}")
 
 # List of (router, tag) tuples for registration in main.py
 v1_routers: list[tuple[APIRouter, str]] = [
@@ -26,7 +33,8 @@ v1_routers: list[tuple[APIRouter, str]] = [
     (metrics_router, "Metrics"),
     (ray_router, "Ray 集群管理"),
     (mo_stream_router, "NSGA-II 多目标优化"),
-    (import_router, "数据导入"),
 ]
+if import_router is not None:
+    v1_routers.append((import_router, "数据导入"))
 
 __all__ = ["v1_routers"]

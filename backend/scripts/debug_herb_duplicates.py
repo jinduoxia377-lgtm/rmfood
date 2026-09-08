@@ -1,9 +1,10 @@
+from scripts.db_utils import get_asyncpg_dsn
 """中药材数据重复排查 v2 — 先查列名"""
 import asyncio
 import asyncpg
 
 async def main():
-    conn = await asyncpg.connect('postgresql://postgres@localhost:5432/rmfood_platform')
+    conn = await asyncpg.connect(get_asyncpg_dsn())
     
     # 1. 列名
     cols = await conn.fetch("""

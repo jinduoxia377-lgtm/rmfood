@@ -91,6 +91,15 @@ export default function PeptidesTab({
     queryFn: () => databaseApi.getActivityTypes(),
   });
 
+  // 构建 type_en → type_cn 映射表，用于表格和导出
+  const activityTypeMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    activityTypesQuery.data?.activity_types?.forEach((t) => {
+      map[t.type_en] = t.type_cn || t.type_en;
+    });
+    return map;
+  }, [activityTypesQuery.data]);
+
   const peptideQuery = useQuery({
     queryKey: ['db-peptides', keyword, activityType, page],
     queryFn: () =>
@@ -165,7 +174,7 @@ export default function PeptidesTab({
       p.sequence?.length ?? '',
       p.source_protein || '',
       p.source_organism || '',
-      p.activity_type || '',
+      activityTypeMap[p.activity_type] || p.activity_type || '',
       p.activity_value ?? '',
       p.activity_unit || '',
       p.molecular_weight ?? '',
@@ -316,7 +325,7 @@ export default function PeptidesTab({
                     </td>
                     <td className="px-4 py-3">
                       <Badge variant={ACTIVITY_COLORS[item.activity_type || ''] || 'neutral'} size="sm">
-                        {item.activity_type || '-'}
+                        {activityTypeMap[item.activity_type || ''] || item.activity_type || '-'}
                       </Badge>
                     </td>
                     <td className="px-4 py-3 text-center">

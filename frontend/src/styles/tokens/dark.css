@@ -253,6 +253,97 @@
   --input: var(--bg-surface-container, #0f172a);
   --ring: var(--color-primary-400, #34d399);
   --radius: var(--radius-md, 0.5rem);
+
+  /* ── 暗色模式 Neutral 色阶反转 ── */
+  --color-neutral-50: #020617;
+  --color-neutral-100: #0f172a;
+  --color-neutral-200: #1e293b;
+  --color-neutral-300: #334155;
+  --color-neutral-400: #475569;
+  --color-neutral-500: #64748b;
+  --color-neutral-600: #94a3b8;
+  --color-neutral-700: #cbd5e1;
+  --color-neutral-800: #e2e8f0;
+  --color-neutral-900: #f1f5f9;
+
+  /* ── 暗色模式容器色 ── */
+  --color-success-container: rgba(52, 211, 153, 0.12);
+  --color-success-text: #6ee7b7;
+  --color-warning-container: rgba(251, 191, 36, 0.12);
+  --color-warning-text: #fcd34d;
+  --color-error-container: rgba(248, 113, 113, 0.12);
+  --color-error-text: #fca5a5;
+  --color-info-container: rgba(96, 165, 250, 0.12);
+  --color-info-text: #93c5fd;
+
+  /* ── 暗色模式第三色调 ── */
+  --color-tertiary: #a78bfa;
+  --color-tertiary-container: rgba(167, 139, 250, 0.15);
+  --color-tertiary-hover: #c4b5fd;
+
+  /* ── 暗色模式错误悬停 ── */
+  --color-error-hover: #f87171;
+
+  /* ── 暗色模式渐变文字 ── */
+  --gradient-text-primary: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  --gradient-text-secondary: linear-gradient(135deg, var(--color-secondary), var(--color-primary));
+  --gradient-text-muted: linear-gradient(135deg, var(--text-secondary), var(--text-primary));
+  --gradient-trend-up: linear-gradient(135deg, var(--color-success), var(--color-primary));
+  --gradient-trend-down: linear-gradient(135deg, var(--color-error), var(--color-warning));
+
+  /* ── 暗色模式图表辅助色 ── */
+  --color-orange-500: #f97316;
+  --color-orange-600: #ea580c;
+  --color-purple-500: #a855f7;
+  --color-purple-600: #9333ea;
+  --color-cyan-600: #0891b2;
+  --color-cyan-700: #0e7490;
+  --color-info-600: #2563eb;
+
+  /* ── 暗色模式渐变背景 ── */
+  --bg-gradient-start: #020617;
+  --bg-gradient-end: #064e3b;
+
+  /* ── 暗色模式滚动条 ── */
+  --scrollbar-thumb-dark: rgba(148, 163, 184, 0.12);
+  --scrollbar-thumb-hover-dark: rgba(148, 163, 184, 0.25);
+
+  /* ── 暗色排版补充 token ── */
+  --text-h5: 1.125rem; --text-h5-font-weight: 600; --text-h5-line-height: 1.4; --text-h5-tracking: 0em;
+  --text-h6: 1rem; --text-h6-font-weight: 600; --text-h6-line-height: 1.4; --text-h6-tracking: 0em;
+  --text-tiny: 0.75rem; --text-tiny-font-weight: 400; --text-tiny-line-height: 1.3;
+
+  /* ── 暗色边框默认 token ── */
+  --border-default: #334155;
+
+  /* ── 暗色 Info 色阶补充 ── */
+  --color-info-100: #1e3a8a;
+
+  /* ── 状态徽章色（dark）── */
+  --badge-draft-bg-dark: rgba(148, 163, 184, 0.08);
+  --badge-draft-text-dark: #94A3B8;
+  --badge-draft-border-dark: rgba(148, 163, 184, 0.12);
+  --badge-pending-bg-dark: rgba(255, 159, 10, 0.1);
+  --badge-pending-text-dark: #FFB84D;
+  --badge-pending-border-dark: rgba(255, 159, 10, 0.15);
+  --badge-approved-bg-dark: rgba(48, 209, 88, 0.1);
+  --badge-approved-text-dark: #6EE7B7;
+  --badge-approved-border-dark: rgba(48, 209, 88, 0.15);
+  --badge-rejected-bg-dark: rgba(255, 69, 58, 0.1);
+  --badge-rejected-text-dark: #FF877A;
+  --badge-rejected-border-dark: rgba(255, 69, 58, 0.15);
+  --badge-revision-bg-dark: rgba(255, 149, 0, 0.1);
+  --badge-revision-text-dark: #FFB84D;
+  --badge-revision-border-dark: rgba(255, 149, 0, 0.15);
+  --badge-archived-bg-dark: rgba(148, 163, 184, 0.08);
+  --badge-archived-text-dark: #9CA3AF;
+  --badge-archived-border-dark: rgba(148, 163, 184, 0.12);
+
+  /* ── 骨架屏动画色（dark）── */
+  --skeleton-start: rgba(55, 65, 81, 0.4);
+  --skeleton-mid: rgba(75, 85, 99, 0.5);
+  --skeleton-dark-start: rgba(209, 213, 219, 0.1);
+  --skeleton-dark-mid: rgba(229, 231, 235, 0.15);
 }
 
 /* ═══ Dashboard 点状网格背景（暗色模式） ═══ */

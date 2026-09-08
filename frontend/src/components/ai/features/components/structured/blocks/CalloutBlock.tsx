@@ -14,7 +14,7 @@ import {
   Info, CheckCircle, AlertTriangle, FileText,
   ChevronDown, ChevronUp,
 } from 'lucide-react'
-import type { CalloutData } from '../types'
+import type { CalloutData, CalloutVariant } from '../types'
 
 interface CalloutBlockProps {
   data: CalloutData
@@ -68,7 +68,12 @@ const CALLOUT_STYLES: Record<string, {
 }
 
 function CalloutBlock({ data }: CalloutBlockProps) {
-  const { variant = 'info', title, content, details } = data
+  // 兼容 style（LLM 常用）→ variant 字段映射
+  const normalizedData: CalloutData = {
+    ...data,
+    variant: ((data as unknown) as Record<string, unknown>).variant as CalloutVariant || 'info',
+  }
+  const { variant = 'info', title, content, details } = normalizedData
   const [showDetails, setShowDetails] = useState(false)
 
   const style = CALLOUT_STYLES[variant] || CALLOUT_STYLES.info

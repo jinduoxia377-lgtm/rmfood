@@ -1,4 +1,4 @@
-import { logger } from '@/utils/safeLogger';
+﻿import { logger } from '@/utils/safeLogger';
 
 /**
  * 统一配置管理模块
@@ -19,7 +19,6 @@ export interface ApiKey {
 // 加密工具函数
 const encrypt = (text: string): string => {
   try {
-    // 使用简单的加密方法，实际生产环境应使用更安全的加密方式
     return btoa(unescape(encodeURIComponent(text)));
   } catch (error) {
     logger.error('Encryption failed:', error);
@@ -32,11 +31,9 @@ const decrypt = (text: string): string => {
     if (!text || typeof text !== 'string') {
       return '';
     }
-    // 尝试多种解密方式，提高兼容性
     try {
       return decodeURIComponent(escape(atob(text)));
     } catch {
-      // 如果解密失败，直接返回原始文本
       return text;
     }
   } catch (error) {
@@ -51,6 +48,10 @@ export interface ModelConfig {
   timeout: number;
   maxRetries: number;
   concurrencyLimit: number;
+  model?: string;
+  provider?: string;
+  temperature?: number;
+  maxTokens?: number;
   [key: string]: any;
 }
 
@@ -77,9 +78,7 @@ export class ConfigManager {
     try {
       const stored = localStorage.getItem(STORAGE_KEYS.API_KEYS);
       if (!stored) return [];
-
       const encryptedKeys = JSON.parse(stored);
-      // 解密API密钥
       return encryptedKeys.map((key: any) => ({
         ...key,
         key: decrypt(key.key),
@@ -93,7 +92,6 @@ export class ConfigManager {
   // 保存API密钥
   static setApiKeys(keys: ApiKey[]): void {
     try {
-      // 加密API密钥
       const encryptedKeys = keys.map(key => ({
         ...key,
         key: encrypt(key.key),
@@ -112,7 +110,6 @@ export class ConfigManager {
       id: `key_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
       created_at: new Date().toISOString(),
     };
-
     const keys = this.getApiKeys();
     keys.push(newKey);
     this.setApiKeys(keys);
@@ -130,10 +127,8 @@ export class ConfigManager {
     try {
       const stored = localStorage.getItem(STORAGE_KEYS.MODEL_CONFIGS);
       if (!stored) return this.getDefaultModelConfig();
-
       const configs = JSON.parse(stored);
       const config = configs[modelType] || this.getDefaultModelConfig();
-      // 解密API密钥
       return {
         ...config,
         apiKey: decrypt(config.apiKey),
@@ -149,7 +144,6 @@ export class ConfigManager {
     try {
       const stored = localStorage.getItem(STORAGE_KEYS.MODEL_CONFIGS);
       const defaultConfig = this.getDefaultModelConfig();
-
       const decryptedConfigs: Record<ModelType, ModelConfig> = {
         formula_gpt: defaultConfig,
         synergy_net: defaultConfig,
@@ -159,34 +153,31 @@ export class ConfigManager {
         llm: defaultConfig,
         peptide_scorer: defaultConfig,
       };
-
       if (stored) {
         try {
           const configs = JSON.parse(stored);
-          // 解密所有API密钥并覆盖默认配置
           Object.entries(configs).forEach(([key, config]) => {
             if (Object.keys(decryptedConfigs).includes(key)) {
               try {
+                const encryptedApiKey = (config as Record<string, unknown>).apiKey as string || '';
+                const decrypted = decrypt(encryptedApiKey);
                 decryptedConfigs[key as ModelType] = {
                   ...(config as object),
-                  apiKey: decrypt((config as Record<string, unknown>).apiKey as string || ''),
-                  baseUrl: (config as Record<string, unknown>).baseUrl as string || '',
+                  apiKey: decrypted,
+                  baseUrl: ((config as Record<string, unknown>).baseUrl as string) || '',
                   timeout: (config as Record<string, unknown>).timeout as number || 30000,
                   maxRetries: (config as Record<string, unknown>).maxRetries as number || 3,
                   concurrencyLimit: (config as Record<string, unknown>).concurrencyLimit as number || 5,
                 };
               } catch (error) {
                 logger.error(`Failed to decrypt config for ${key}:`, error);
-                // 保持默认配置
               }
             }
           });
         } catch (error) {
           logger.error('Failed to parse stored configs:', error);
-          // 保持默认配置
         }
       }
-
       return decryptedConfigs;
     } catch (error) {
       logger.error('Failed to get model configs:', error);
@@ -207,12 +198,12 @@ export class ConfigManager {
   static setModelConfig(modelType: ModelType, config: ModelConfig): void {
     try {
       const configs = this.getModelConfigs();
-      // 加密API密钥
       configs[modelType] = {
         ...config,
         apiKey: encrypt(config.apiKey),
       };
-      localStorage.setItem(STORAGE_KEYS.MODEL_CONFIGS, JSON.stringify(configs));
+      const serialized = JSON.stringify(configs);
+      localStorage.setItem(STORAGE_KEYS.MODEL_CONFIGS, serialized);
       this.createConfigVersion(`Updated ${modelType} config`);
     } catch (error) {
       logger.error(`Failed to save model config for ${modelType}:`, error);
@@ -224,7 +215,6 @@ export class ConfigManager {
     try {
       const configs = this.getModelConfigs();
       const defaultConfig = this.getDefaultModelConfig();
-      // 加密API密钥
       configs[modelType] = {
         ...defaultConfig,
         apiKey: encrypt(defaultConfig.apiKey),
@@ -261,7 +251,6 @@ export class ConfigManager {
         },
       };
       versions.push(newVersion);
-      // 只保留最近10个版本
       const trimmedVersions = versions.slice(-10);
       localStorage.setItem(STORAGE_KEYS.CONFIG_VERSIONS, JSON.stringify(trimmedVersions));
     } catch (error) {
@@ -287,7 +276,6 @@ export class ConfigManager {
       const targetVersion = versions.find(v => v.version === version);
       if (targetVersion) {
         if (targetVersion.config.apiKeys) {
-          // 加密API密钥后存储
           const encryptedKeys = targetVersion.config.apiKeys.map((key: any) => ({
             ...key,
             key: encrypt(key.key),
@@ -295,7 +283,6 @@ export class ConfigManager {
           localStorage.setItem(STORAGE_KEYS.API_KEYS, JSON.stringify(encryptedKeys));
         }
         if (targetVersion.config.modelConfigs) {
-          // 加密API密钥后存储
           const encryptedConfigs: Record<ModelType, any> = {} as Record<ModelType, any>;
           Object.entries(targetVersion.config.modelConfigs).forEach(([key, modelConfig]) => {
             encryptedConfigs[key as ModelType] = {
@@ -318,8 +305,8 @@ export class ConfigManager {
       const config = {
         version: '1.0',
         timestamp: new Date().toISOString(),
-        apiKeys: this.getApiKeys(), // 已解密
-        modelConfigs: this.getModelConfigs(), // 已解密
+        apiKeys: this.getApiKeys(),
+        modelConfigs: this.getModelConfigs(),
         versions: this.getConfigVersions(),
       };
       return JSON.stringify(config, null, 2);
@@ -334,7 +321,6 @@ export class ConfigManager {
     try {
       const config = JSON.parse(configStr);
       if (config.apiKeys) {
-        // 加密API密钥后存储
         const encryptedKeys = config.apiKeys.map((key: any) => ({
           ...key,
           key: encrypt(key.key),
@@ -342,7 +328,6 @@ export class ConfigManager {
         localStorage.setItem(STORAGE_KEYS.API_KEYS, JSON.stringify(encryptedKeys));
       }
       if (config.modelConfigs) {
-        // 加密API密钥后存储
         const encryptedConfigs: Record<ModelType, any> = {} as Record<ModelType, any>;
         Object.entries(config.modelConfigs).forEach(([key, modelConfig]) => {
           encryptedConfigs[key as ModelType] = {
@@ -365,7 +350,7 @@ export class ConfigManager {
 
   // 验证API密钥
   static validateApiKey(apiKey: string): boolean {
-    return typeof apiKey === 'string' && apiKey.trim().length >= 20;
+    return typeof apiKey === 'string' && apiKey.trim().length >= 40;
   }
 
   // 检查API密钥是否过期
@@ -379,5 +364,117 @@ export class ConfigManager {
     const now = new Date();
     const daysUntilExpiry = (expiresAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
     return daysUntilExpiry > 0 && daysUntilExpiry <= 7;
+  }
+
+  // 将配置同步到后端数据库
+  static async syncToBackend(modelType: ModelType, config: ModelConfig): Promise<boolean> {
+    try {
+      const response = await fetch('/api/v1/ai/models/config/' + modelType, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          model_type: modelType,
+          provider: config.provider || 'deepseek',
+          api_key: config.apiKey,
+          base_url: config.baseUrl,
+          model: config.model || '',
+          max_tokens: config.maxTokens || 4096,
+          temperature: config.temperature || 0.7,
+        }),
+      });
+      if (!response.ok) throw new Error('HTTP ' + response.status);
+      const result = await response.json();
+      return result.success === true;
+    } catch (error) {
+      logger.error('[ConfigManager] 后端同步失败:', error);
+      return false;
+    }
+  }
+
+  // 从后端数据库加载配置
+  static async loadFromBackend(modelType: ModelType): Promise<ModelConfig | null> {
+    try {
+      const response = await fetch('/api/v1/ai/models/config/' + modelType, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      });
+      if (!response.ok) throw new Error('HTTP ' + response.status);
+      const result = await response.json();
+      if (result.success && result.config) {
+        const config = result.config;
+        return {
+          apiKey: config.api_key || '',
+          baseUrl: config.base_url || '',
+          timeout: config.timeout_ms || 30000,
+          maxRetries: config.max_retries || 3,
+          concurrencyLimit: config.concurrency_limit || 3,
+          model: config.model || '',
+          provider: config.provider || '',
+        };
+      }
+      return null;
+    } catch (error) {
+      logger.error('[ConfigManager] 后端加载失败:', error);
+      return null;
+    }
+  }
+
+  // 批量从后端加载所有配置
+  static async loadAllFromBackend(): Promise<Record<ModelType, ModelConfig>> {
+    try {
+      const response = await fetch('/api/v1/ai/models/configs', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      });
+      if (!response.ok) throw new Error('HTTP ' + response.status);
+      const result = await response.json();
+      if (result.success && result.configs) {
+        const configs: Record<ModelType, ModelConfig> = {
+          formula_gpt: this.getDefaultModelConfig(),
+          synergy_net: this.getDefaultModelConfig(),
+          safety_checker: this.getDefaultModelConfig(),
+          taste_predictor: this.getDefaultModelConfig(),
+          stability_model: this.getDefaultModelConfig(),
+          llm: this.getDefaultModelConfig(),
+          peptide_scorer: this.getDefaultModelConfig(),
+        };
+        Object.entries(result.configs).forEach(([type, config]) => {
+          const mt = type as ModelType;
+          if (config && typeof config === 'object') {
+            configs[mt] = {
+              apiKey: (config as any).api_key || '',
+              baseUrl: (config as any).base_url || '',
+              timeout: (config as any).timeout_ms || 30000,
+              maxRetries: (config as any).max_retries || 3,
+              concurrencyLimit: (config as any).concurrency_limit || 3,
+              model: (config as any).model || '',
+              provider: (config as any).provider || '',
+            };
+          }
+        });
+        return configs;
+      }
+      return this.getDefaultConfigs();
+    } catch (error) {
+      logger.error('[ConfigManager] 批量后端加载失败:', error);
+      return this.getDefaultConfigs();
+    }
+  }
+
+  // 获取默认配置
+  private static getDefaultConfigs(): Record<ModelType, ModelConfig> {
+    const defaultConfig = this.getDefaultModelConfig();
+    return {
+      formula_gpt: defaultConfig,
+      synergy_net: defaultConfig,
+      safety_checker: defaultConfig,
+      taste_predictor: defaultConfig,
+      stability_model: defaultConfig,
+      llm: defaultConfig,
+      peptide_scorer: defaultConfig,
+    };
   }
 }

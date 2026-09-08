@@ -54,7 +54,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: '/ai', label: 'AI 智能助手', icon: Brain },
       { to: '/academic-report', label: '学术报告', icon: FileText },
       { to: '/databases', label: '数据库检索', icon: Database },
-      { to: '/databases#regulations', label: '合规标准', icon: ShieldCheck },
+      { to: '/regulations', label: '合规标准', icon: ShieldCheck },
       { to: '/terminology', label: '术语管理', icon: BookOpen },
       { to: '/workflows', label: '工作流管理', icon: GitBranch },
     ],

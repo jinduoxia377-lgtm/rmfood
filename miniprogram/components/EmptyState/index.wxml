@@ -1,0 +1,11 @@
+<!-- 空状态组件 -->
+<view class="empty-state {{className}}" bindtap="handleTap">
+  <view class="empty-state-icon">
+    <icon name="{{icon}}" size="xl" color="{{iconColor || '#CCCCCC'}}" />
+  </view>
+  <view wx:if="{{title}}" class="empty-state-title">{{title}}</view>
+  <view wx:if="{{desc}}" class="empty-state-desc">{{desc}}</view>
+  <view wx:if="{{btnText}}" class="empty-state-btn">
+    <button class="btn btn-primary btn-sm" bindtap="handleBtnTap">{{btnText}}</button>
+  </view>
+</view>

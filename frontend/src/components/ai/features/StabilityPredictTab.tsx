@@ -146,122 +146,139 @@ export function StabilityPredictTab() {
 
   return (
     <div className="grid grid-cols-12 gap-6 h-full">
-      {/* 左侧：输入控制面板 */}
-      <div className="col-span-4 space-y-4">
-        <Card className="p-5 space-y-4">
-          <div>
-            <h2 className="text-lg font-semibold flex items-center gap-2 mb-1">
-              <BarChart3 className="w-5 h-5 text-secondary-500" />
-              稳定性评估
-            </h2>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              预测配方的化学稳定性和保质期。基于 Arrhenius 方程和 Q10 法则。
-            </p>
-          </div>
-
-          {/* 输入框 */}
-          <div>
-            <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5 block">配方成分</label>
-            <textarea
-              value={stabilityInput}
-              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setStabilityInput(e.target.value)}
-              placeholder={`如:\n黄芪\n党参\n枸杞子\n甘草`}
-              rows={4}
-              className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600
-                         rounded-lg text-sm bg-white dark:bg-neutral-800
-                         focus:ring-2 focus:ring-blue-500 resize-none"
-            />
-          </div>
-
-          {/* 储存条件配置 */}
-          <div className="space-y-3 border-t border-neutral-200 dark:border-neutral-700 pt-4">
-            <h3 className="font-semibold text-sm flex items-center gap-2">
-              <Thermometer className="w-4 h-4" />
-              储存条件
-            </h3>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-xs text-neutral-600 mb-1 block">温度 (°C)</label>
-                <Select value={String(temperature)} onChange={(v) => setTemperature(Number(v))}>
-                  {[4, 15, 25, 30, 37].map((t) => (
-                    <option key={t} value={String(t)}>
-                      {t}°C
-                    </option>
-                  ))}
-                </Select>
+      {/* 左侧：输入控制面板 — 玻璃态设计 */}
+      <div className="col-span-12 lg:col-span-4 space-y-4">
+        <div className="relative group">
+          <div className="absolute -inset-0.5 bg-gradient-to-r from-secondary-500 to-cyan-500 rounded-2xl opacity-0 group-hover:opacity-10 transition-opacity duration-300 blur" />
+          <Card className="relative p-6 space-y-5 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm rounded-2xl">
+            {/* 标题区 */}
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-secondary-500 to-cyan-600 flex items-center justify-center shadow-md flex-shrink-0">
+                <BarChart3 className="w-5 h-5 text-white" />
               </div>
-
-              <div>
-                <label className="text-xs text-neutral-600 mb-1 block">湿度 (%)</label>
-                <Select value={String(humidity)} onChange={(v) => setHumidity(Number(v))}>
-                  {[30, 45, 60, 75, 90].map((h) => (
-                    <option key={h} value={String(h)}>
-                      {h}%
-                    </option>
-                  ))}
-                </Select>
+              <div className="flex-1">
+                <h2 className="text-base font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
+                  稳定性评估
+                </h2>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5 leading-relaxed">
+                  预测配方的化学稳定性和保质期。基于 Arrhenius 方程和 Q10 法则。
+                </p>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-xs text-neutral-600 mb-1 block">光照</label>
-                <Select value={lightExposure} onChange={(v) => setLightExposure(v as 'dark' | 'ambient' | 'bright')}>
-                  <option value="dark">避光</option>
-                  <option value="ambient">正常</option>
-                  <option value="bright">强光</option>
-                </Select>
+            {/* 输入框 */}
+            <div>
+              <label className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-2 block">
+                配方成分
+              </label>
+              <textarea
+                value={stabilityInput}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setStabilityInput(e.target.value)}
+                placeholder={`如：\n黄芪、党参、枸杞子、甘草`}
+                rows={4}
+                className="w-full px-4 py-3 border border-neutral-200 dark:border-neutral-700
+                           rounded-xl text-sm bg-neutral-50 dark:bg-neutral-800/50
+                           focus:ring-2 focus:ring-secondary-200 dark:focus:ring-secondary-800 focus:border-secondary-400
+                           resize-none transition-all duration-200"
+              />
+            </div>
+
+            {/* 储存条件配置 — 卡片式分组 */}
+            <div className="rounded-xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-700/50 p-4 space-y-4">
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded-lg bg-secondary-100 dark:bg-secondary-900/30 flex items-center justify-center">
+                  <Thermometer className="w-3.5 h-3.5 text-secondary-600 dark:text-secondary-400" />
+                </div>
+                <h3 className="text-xs font-bold text-neutral-700 dark:text-neutral-300 uppercase tracking-wider">
+                  储存条件配置
+                </h3>
               </div>
 
-              <div>
-                <label className="text-xs text-neutral-600 mb-1 block">包装</label>
-                <Select value={packaging} onChange={(v) => setPackaging(v as 'sealed' | 'semi-permeable' | 'open')}>
-                  <option value="sealed">密封</option>
-                  <option value="semi-permeable">半透膜</option>
-                  <option value="open">开放</option>
-                </Select>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[11px] font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 block uppercase tracking-wider">
+                    温度 (°C)
+                  </label>
+                  <Select value={String(temperature)} onChange={(v) => setTemperature(Number(v))} className="rounded-lg">
+                    {[4, 15, 25, 30, 37].map((t) => (
+                      <option key={t} value={String(t)}>{t}°C</option>
+                    ))}
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-[11px] font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 block uppercase tracking-wider">
+                    湿度 (%)
+                  </label>
+                  <Select value={String(humidity)} onChange={(v) => setHumidity(Number(v))} className="rounded-lg">
+                    {[30, 45, 60, 75, 90].map((h) => (
+                      <option key={h} value={String(h)}>{h}%</option>
+                    ))}
+                  </Select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[11px] font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 block uppercase tracking-wider">
+                    光照条件
+                  </label>
+                  <Select value={lightExposure} onChange={(v) => setLightExposure(v as 'dark' | 'ambient' | 'bright')} className="rounded-lg">
+                    <option value="dark">☀️ 避光</option>
+                    <option value="ambient">💡 正常</option>
+                    <option value="bright">🔆 强光</option>
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-[11px] font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5 block uppercase tracking-wider">
+                    包装类型
+                  </label>
+                  <Select value={packaging} onChange={(v) => setPackaging(v as 'sealed' | 'semi-permeable' | 'open')} className="rounded-lg">
+                    <option value="sealed">📦 密封</option>
+                    <option value="semi-permeable">🧪 半透膜</option>
+                    <option value="open">🌬️ 开放</option>
+                  </Select>
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* 操作按钮 */}
-          <div className="flex gap-2 pt-2">
-            <Button
-              onClick={handleLocalPredict}
-              disabled={!stabilityInput.trim()}
-              icon={<BarChart3 className="w-4 h-4" />}
-              variant="outline"
-              className="flex-1"
-            >
-              本地计算
-            </Button>
-            <Button
-              onClick={handlePredict}
-              disabled={!stabilityInput.trim() || mutation.isPending}
-              loading={mutation.isPending}
-              icon={<TrendingDown className="w-4 h-4" />}
-              className="flex-1"
-            >
-              AI 分析
-            </Button>
-          </div>
+            {/* 操作按钮 */}
+            <div className="flex gap-2 pt-1">
+              <Button
+                onClick={handleLocalPredict}
+                disabled={!stabilityInput.trim()}
+                icon={<BarChart3 className="w-4 h-4" />}
+                variant="outline"
+                className="flex-1 rounded-xl font-medium border-neutral-200 dark:border-neutral-700"
+              >
+                本地计算
+              </Button>
+              <Button
+                onClick={handlePredict}
+                disabled={!stabilityInput.trim() || mutation.isPending}
+                loading={mutation.isPending}
+                icon={<TrendingDown className="w-4 h-4" />}
+                className="flex-1 rounded-md font-medium transition-colors duration-150"
+              >
+                AI 分析
+              </Button>
+            </div>
 
-          <Button
-            onClick={handleClear}
-            variant="ghost"
-            size="sm"
-            icon={<RotateCcw className="w-4 h-4" />}
-            className="w-full"
-          >
-            清空重置
-          </Button>
-        </Card>
+            <Button
+              onClick={handleClear}
+              variant="ghost"
+              size="sm"
+              icon={<RotateCcw className="w-4 h-4" />}
+              className="w-full text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
+            >
+              清空重置
+            </Button>
+          </Card>
+        </div>
 
         {/* 条件摘要卡片 */}
         {(parsedIngredients.length > 0 || stabilityResult) && (
-          <Card className="p-4">
-            <h3 className="text-sm font-semibold mb-3">当前评估条件</h3>
+          <Card className="p-4 rounded-lg">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-3">当前评估条件</h3>
             <div className="space-y-2 text-sm">
               <div className="flex items-center justify-between">
                 <span className="flex items-center gap-2 text-neutral-600">

@@ -868,6 +868,18 @@ class CsrfProtectMiddleware(BaseHTTPMiddleware):
                          request.url.path.startswith("/databases/openfoodfacts/"))
         if is_off_public and request.method == "POST" and "/sync" not in request.url.path:
             return await call_next(request)
+        # Agent API 端点豁免 CSRF（已使用 JWT 认证，SPA 跨域场景下 CSRF cookie 不可靠）
+        if request.url.path.startswith("/api/v1/agent"):
+            return await call_next(request)
+        # AI 模型配置端点豁免 CSRF（JWT 认证 + SPA 场景）
+        if request.url.path.startswith("/api/v1/ai/models/config"):
+            return await call_next(request)
+        # AI 智能对话端点豁免 CSRF（JWT 认证 + SPA 场景，CSRF cookie 在跨端口代理下不可靠）
+        if request.url.path.startswith("/api/v1/ai/chat"):
+            return await call_next(request)
+        # 合规检查端点豁免 CSRF（纯只读查询，不涉及状态变更，SPA 场景无需 CSRF）
+        if request.url.path.startswith("/api/v1/compliance"):
+            return await call_next(request)
         if request.url.path in skip_paths:
             return await call_next(request)
 

@@ -1,0 +1,225 @@
+/* 对比分析页样式 */
+.container {
+  padding-bottom: 48rpx;
+}
+
+/* 选择区域 */
+.select-section {
+  margin: 24rpx;
+  padding: 32rpx;
+}
+
+.section-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #333333;
+  margin-bottom: 24rpx;
+}
+
+.product-selectors {
+  display: flex;
+  gap: 24rpx;
+}
+
+.selector-item {
+  flex: 1;
+}
+
+.selector-label {
+  font-size: 26rpx;
+  color: #666666;
+  margin-bottom: 12rpx;
+}
+
+.selector-input {
+  padding: 24rpx;
+  background-color: #F5F5F5;
+  border-radius: 16rpx;
+  text-align: center;
+  min-height: 80rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.placeholder {
+  font-size: 26rpx;
+  color: #999999;
+}
+
+.compare-btn {
+  margin-top: 32rpx;
+  padding: 20rpx;
+  background: linear-gradient(135deg, #2D5A3D, #4A7C5C);
+  color: #FFFFFF;
+  border-radius: 44rpx;
+  text-align: center;
+  font-size: 30rpx;
+  font-weight: 500;
+}
+
+/* 对比结果 */
+.result-header {
+  margin: 24rpx 24rpx 0;
+  padding: 24rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333333;
+}
+
+.recommend-badge {
+  padding: 8rpx 20rpx;
+  border-radius: 20rpx;
+  color: #FFFFFF;
+  font-size: 24rpx;
+}
+
+/* 对比表格 */
+.compare-table {
+  margin: 24rpx;
+}
+
+.table-header,
+.table-row {
+  display: flex;
+  padding: 20rpx 16rpx;
+  border-bottom: 1rpx solid #F0F0F0;
+}
+
+.table-header {
+  font-weight: 600;
+  background-color: #FAFAFA;
+}
+
+.th, .td {
+  flex: 1;
+  text-align: center;
+  font-size: 26rpx;
+  color: #666666;
+}
+
+.th:first-child, .td:first-child {
+  flex: 0 0 30%;
+  text-align: left;
+}
+
+.winner-tag {
+  display: inline-block;
+  width: 32rpx;
+  height: 32rpx;
+  background-color: #4CAF50;
+  color: #FFFFFF;
+  border-radius: 50%;
+  font-size: 20rpx;
+  text-align: center;
+  line-height: 32rpx;
+  margin-left: 8rpx;
+}
+
+/* 差异分析 */
+.diff-analysis {
+  margin: 0 24rpx 24rpx;
+}
+
+.diff-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.diff-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16rpx;
+}
+
+.diff-icon {
+  font-size: 32rpx;
+  flex-shrink: 0;
+}
+
+.diff-content {
+  flex: 1;
+}
+
+.diff-title {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #333333;
+  margin-bottom: 8rpx;
+}
+
+.diff-desc {
+  font-size: 26rpx;
+  color: #666666;
+  line-height: 1.6;
+}
+
+/* 购买建议 */
+.buy-suggestion {
+  margin: 0 24rpx 24rpx;
+}
+
+.recommend-card {
+  padding: 24rpx;
+  background-color: #E8F5E9;
+  border-radius: 16rpx;
+}
+
+.recommend-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+
+.recommend-name {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #333333;
+}
+
+.recommend-score {
+  font-size: 32rpx;
+  font-weight: 700;
+}
+
+.recommend-reason {
+  font-size: 26rpx;
+  color: #666666;
+  line-height: 1.6;
+}
+
+/* 空状态 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 120rpx 48rpx;
+}
+
+.empty-icon {
+  font-size: 120rpx;
+  margin-bottom: 32rpx;
+}
+
+.empty-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333333;
+  margin-bottom: 16rpx;
+}
+
+.empty-desc {
+  font-size: 26rpx;
+  color: #999999;
+  text-align: center;
+  line-height: 1.6;
+}

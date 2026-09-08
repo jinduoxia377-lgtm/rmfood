@@ -319,6 +319,111 @@
   --input: var(--bg-surface-container, #ffffff);
   --ring: var(--color-primary-600, #059669);
   --radius: var(--radius-md, 0.5rem);
+
+  /* ── 完整 Neutral 色阶 10 级（替代 Tailwind 内置 neutral-*）── */
+  --color-neutral-50: #f8fafc;
+  --color-neutral-100: #f1f5f9;
+  --color-neutral-200: #e2e8f0;
+  --color-neutral-300: #cbd5e1;
+  --color-neutral-400: #94a3b8;
+  --color-neutral-500: #64748b;
+  --color-neutral-600: #475569;
+  --color-neutral-700: #334155;
+  --color-neutral-800: #1e293b;
+  --color-neutral-900: #0f172a;
+
+  /* ── 容器色 ── */
+  --color-success-container: rgba(16, 185, 129, 0.12);
+  --color-success-text: #065f46;
+  --color-warning-container: rgba(245, 158, 11, 0.12);
+  --color-warning-text: #92400e;
+  --color-error-container: rgba(239, 68, 68, 0.12);
+  --color-error-text: #991b1b;
+  --color-info-container: rgba(59, 130, 246, 0.12);
+  --color-info-text: #1e40af;
+
+  /* ── 第三色调 ── */
+  --color-tertiary: #8b5cf6;
+  --color-tertiary-container: rgba(139, 92, 246, 0.12);
+  --color-tertiary-hover: #7c3aed;
+
+  /* ── 错误悬停色 ── */
+  --color-error-hover: #dc2626;
+
+  /* ── 别名 ── */
+  --bg-surface: var(--bg-surface-container);
+  --bg-surface-hover: var(--hover-bg);
+  --bg-surface-variant: var(--bg-surface-container-low);
+  --surface-overlay: var(--overlay-bg);
+  --border-divider: var(--border-subtle);
+
+  /* ── 渐变文字 ── */
+  --gradient-text-primary: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  --gradient-text-secondary: linear-gradient(135deg, var(--color-secondary), var(--color-primary));
+  --gradient-text-muted: linear-gradient(135deg, var(--text-secondary), var(--text-primary));
+  --gradient-text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  --gradient-trend-up: linear-gradient(135deg, var(--color-success), var(--color-primary));
+  --gradient-trend-down: linear-gradient(135deg, var(--color-error), var(--color-warning));
+
+  /* ── 图表辅助色 ── */
+  --color-orange-500: #f97316;
+  --color-orange-600: #ea580c;
+  --color-purple-500: #a855f7;
+  --color-purple-600: #9333ea;
+  --color-cyan-600: #0891b2;
+  --color-cyan-700: #0e7490;
+  --color-info-600: #2563eb;
+
+  /* ── 渐变背景 ── */
+  --bg-gradient-start: #f8fafc;
+  --bg-gradient-end: #ecfdf5;
+
+  /* ── 滚动条色 ── */
+  --scrollbar-thumb: rgba(148, 163, 184, 0.2);
+  --scrollbar-thumb-hover: rgba(148, 163, 184, 0.35);
+
+  /* ── 排版补充 token ── */
+  --text-h5: 1.125rem; --text-h5-font-weight: 600; --text-h5-line-height: 1.4; --text-h5-tracking: 0em;
+  --text-h6: 1rem; --text-h6-font-weight: 600; --text-h6-line-height: 1.4; --text-h6-tracking: 0em;
+  --text-tiny: 0.75rem; --text-tiny-font-weight: 400; --text-tiny-line-height: 1.3;
+
+  /* ── 间距补充 token ── */
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+
+  /* ── 边框默认 token ── */
+  --border-default: #e2e8f0;
+
+  /* ── Info 色阶补充 ── */
+  --color-info-100: #dbeafe;
+
+  /* ── 状态徽章色（light）── */
+  --badge-draft-bg: rgba(148, 163, 184, 0.1);
+  --badge-draft-text: #6E6E73;
+  --badge-draft-border: rgba(148, 163, 184, 0.15);
+  --badge-pending-bg: rgba(255, 159, 10, 0.08);
+  --badge-pending-text: #D97706;
+  --badge-pending-border: rgba(255, 159, 10, 0.15);
+  --badge-approved-bg: rgba(52, 199, 89, 0.08);
+  --badge-approved-text: #248A3D;
+  --badge-approved-border: rgba(52, 199, 89, 0.12);
+  --badge-rejected-bg: rgba(255, 59, 48, 0.08);
+  --badge-rejected-text: #D70015;
+  --badge-rejected-border: rgba(255, 59, 48, 0.15);
+  --badge-revision-bg: rgba(255, 149, 0, 0.08);
+  --badge-revision-text: #C25E00;
+  --badge-revision-border: rgba(255, 149, 0, 0.12);
+  --badge-archived-bg: rgba(107, 114, 128, 0.08);
+  --badge-archived-text: #6B7280;
+  --badge-archived-border: rgba(107, 114, 128, 0.12);
+
+  /* ── 骨架屏动画色 ── */
+  --skeleton-start: rgba(209, 213, 219, 0.6);
+  --skeleton-mid: rgba(229, 231, 235, 0.8);
+  --skeleton-dark-start: rgba(55, 65, 81, 0.4);
+  --skeleton-dark-mid: rgba(75, 85, 99, 0.5);
 }
 
 /* ═══ Dashboard 点状网格背景 ═══ */

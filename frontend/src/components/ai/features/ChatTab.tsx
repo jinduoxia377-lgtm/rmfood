@@ -46,8 +46,10 @@ import type { BackendThinkingStep } from './hooks/useThinkingProcessV3'
 
 // ===== Pro 组件 =====
 import { ChatMessages, ChatInputPro, ChatHistory, loadSessions, type HistorySession } from './components/pro'
-import ChatSidebarV4, { type SidebarStepV4, type AlgorithmType } from './components/pro/ChatSidebarV4'
 import { TopBar, EmptyStateCard } from './components/pro'
+import ComposerStatusBar from './components/pro/ComposerStatusBar'
+import DetailsPanel from './components/pro/DetailsPanel'
+import type { DraftAttachment } from './components/pro/ChatInput'
 
 // ===== UI 子组件 =====
 import { FormulaPanel } from './components/FormulaPanel'
@@ -57,6 +59,7 @@ import { ErrorBoundary } from './components/ErrorBoundary'
 import { useChatTheme } from './hooks/useChatTheme'
 import { scenarioSwitcher } from './services/scenarioSwitcher'
 import type { ScenarioMode } from './services/scenarioSwitcher'
+import { sessionCapability } from './capabilities/session/SessionCapability'
 
 // ===== UI 组件 =====
 import { Button } from '@/components/ui'
@@ -68,7 +71,7 @@ import type { EnhancedIngredient } from '@/types/ai.types'
 
 // ===== 图标库 =====
 import {
-  AlertTriangle, Play, Pause,
+  AlertTriangle, Play, Pause, Leaf, Database,
 } from 'lucide-react'
 
 // ===== 配置 =====
@@ -79,6 +82,7 @@ import type { ChatMessage } from './types'
 
 // ===== RAG / UI =====
 import { RAGSourcesBanner } from '@/components/ai/rag/RAGSourcesBanner'
+import { RAGKnowledgePanel } from './components/RAGKnowledgePanel'
 import { Card } from '@/components/ui'
 
 interface ChatTabProps {
@@ -112,12 +116,17 @@ export function ChatTab({ onBatchExport, onBatchDelete, onBatchTag, onSelectAll:
   orchestrator.scenarioSwitcher.setAutoSwitch(false)
 
   // 后端 thinking_steps → 前端思维可视化同步
-  const prevMsgCountRef = useRef(messages.length)
+  // 使用 stable ref 避免并发消息时的竞态条件
+  const lastProcessedMsgCountRef = useRef(0)
   useEffect(() => {
-    if (messages.length <= prevMsgCountRef.current) return
-    const newMsgs = messages.slice(prevMsgCountRef.current)
-    prevMsgCountRef.current = messages.length
-    const lastAssistant = [...newMsgs].reverse().find((m) => m.role === 'assistant' && !m.isLoading)
+    const currentCount = messages.length
+    if (currentCount <= lastProcessedMsgCountRef.current) return
+    // 先消费再处理，防止重复消费
+    lastProcessedMsgCountRef.current = currentCount
+
+    // 从最新消息中找最后一条完成态的 AI 回复
+    const recentMsgs = messages.slice(-10)
+    const lastAssistant = [...recentMsgs].reverse().find((m) => m.role === 'assistant' && !m.isLoading)
     if (lastAssistant) {
       const msg = lastAssistant as { role: string; content: string; isLoading?: boolean; thinking_steps?: BackendThinkingStep[] }
       if (msg.thinking_steps && Array.isArray(msg.thinking_steps) && msg.thinking_steps.length > 0) {
@@ -134,6 +143,17 @@ export function ChatTab({ onBatchExport, onBatchDelete, onBatchTag, onSelectAll:
   })
   const llmAvailable = modelStatus?.llm?.status === 'active'
   const llmModel = modelStatus?.llm?.model ?? ''
+
+  // ===== 6. 会话统计（用于 ComposerStatusBar）=====
+  const assistantCount = messages.filter(m => m.role === 'assistant').length
+  const firstMsgTime = messages.length > 0 ? messages[0].timestamp : 0
+  const [elapsedSeconds, setElapsedSeconds] = useState(0)
+  useEffect(() => {
+    if (messages.length === 0) { setElapsedSeconds(0); return }
+    const base = Math.floor((Date.now() - firstMsgTime) / 1000)
+    const timer = setInterval(() => setElapsedSeconds(Math.floor((Date.now() - firstMsgTime) / 1000)), 1000)
+    return () => clearInterval(timer)
+  }, [firstMsgTime, messages.length])
 
   // ===== 5. RAG 上下文 =====
   const rag = useRAGContext()
@@ -181,6 +201,38 @@ export function ChatTab({ onBatchExport, onBatchDelete, onBatchTag, onSelectAll:
   })
   const [historyVisible, setHistoryVisible] = React.useState(false)
 
+  // ===== 12. 消息分支(fork) — DSH 风格 ===
+  const handleForkMessage = useCallback(async (messageId: string) => {
+    if (!activeSessionId) return
+    try {
+      const childId = await sessionCapability.fork(activeSessionId, {
+        boundaryMessageId: messageId,
+        title: `分支 @${messageId.slice(-6)}`,
+      })
+      setActiveSessionId(childId)
+      // 切换后会话自动加载，通过 historySessions 驱动
+      logger.info(`[ChatTab] 已分支至新会话: ${childId}`)
+    } catch (e) {
+      logger.error('[ChatTab] 分支失败:', e)
+    }
+  }, [activeSessionId])
+
+  // ===== 13. 图片附件状态 — DSH ComposerBar 模式 ===
+  const [attachments, setAttachments] = useState<Array<{ id: string; file: File; previewUrl: string }>>([])
+  const handleAddAttachment = useCallback((file: File) => {
+    const id = `att-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`
+    const previewUrl = URL.createObjectURL(file)
+    setAttachments(prev => [...prev, { id, file, previewUrl }])
+  }, [])
+  const handleRemoveAttachment = useCallback((id: string) => {
+    setAttachments(prev => prev.filter(a => a.id !== id))
+  }, [])
+
+  // ===== 14. Details 面板状态 — DSH 工具调用详情 ===
+  const [detailsCall, setDetailsCall] = useState<{ id: string; name: string; args: Record<string, unknown>; result?: string; status: 'running' | 'completed' | 'error'; durationMs?: number } | null>(null)
+  const [detailsOpen, setDetailsOpen] = useState(false)
+  const [showKBPanel, setShowKBPanel] = useState(false)
+
   const callbacks = useChatCallbacks({
     historySessions, setHistorySessions, setActiveSessionId,
     historyVisible, setHistoryVisible, clearMessages, clearAllFormulas,
@@ -208,6 +260,11 @@ export function ChatTab({ onBatchExport, onBatchDelete, onBatchTag, onSelectAll:
   const [searchQuery, setSearchQuery] = React.useState('')
   const [highlightedMessageId, setHighlightedMessageId] = React.useState<string | null>(null)
 
+  // ── 同步当前会话 ID 到持久化层 ──
+  useEffect(() => {
+    chatMessages.setActiveSessionId(activeSessionId)
+  }, [activeSessionId])
+
   // ===== 16. 聊天事件处理 =====
   const chatHandlers = useChatHandlers({
     input, isStreaming, activeSessionId, chatError, setChatError, clearError,
@@ -233,10 +290,10 @@ export function ChatTab({ onBatchExport, onBatchDelete, onBatchTag, onSelectAll:
     onImport: importFormulas,
   })
 
-  // ===== 18. JSX 布局 =====
+  // ===== 18. JSX 布局 — DSH 标准三区域结构 =====
   return (
-    <ErrorBoundary>
-      <div className={`flex h-full relative chat-theme-${scheme} chat-area`}>
+
+      <div className={`flex h-full relative chat-unified chat-area`}>
         {/* 对话历史侧栏 */}
         <ChatHistory
           sessions={historySessions}
@@ -245,27 +302,35 @@ export function ChatTab({ onBatchExport, onBatchDelete, onBatchTag, onSelectAll:
           onSelectSession={callbacks.handleSelectSession}
           onDeleteSession={callbacks.handleDeleteSession}
           onRenameSession={callbacks.handleRenameSession}
+          onForkSession={async (sessionId, title) => {
+            try {
+              const newId = await sessionCapability.fork(sessionId, {
+                title: title || `分支-${sessionId.slice(-6)}`,
+              })
+              callbacks.handleSelectSession(newId)
+              return newId
+            } catch (e) {
+              logger.warn('[ChatTab] Fork failed:', e)
+              return ""
+            }
+          }}
           isVisible={historyVisible}
           onToggle={() => setHistoryVisible((v) => !v)}
         />
 
-        {/* 主内容区 */}
-        <div className="flex flex-col flex-1 min-w-0">
-          {/* 顶栏（模型状态 + 操作按钮 + RAG + 场景切换） */}
+        {/* 主内容区 — DSH 三区域：顶栏(固定) + 消息(滚动) + 输入(固定底部) */}
+        <div className="flex flex-col flex-1 min-h-0 min-w-0">
+          {/* ① 顶栏 — 固定，h-[48px] */}
           <TopBar
             llmAvailable={llmAvailable}
             llmModel={llmModel}
+            onModelChange={(model) => logger.debug('[ChatTab] Model changed:', model)}
             scenarioMode={scenarioMode}
-            scenarioDisplayName={scenarioSwitcher.getCurrentScenario().displayName}
             onScenarioSwitch={handleScenarioSwitch}
             historyVisible={historyVisible}
             historySessions={historySessions}
             onToggleHistory={callbacks.toggleHistory}
-            scheme={scheme}
-            schemeNameCN={schemeInfo?.nameCN}
-            onCycleScheme={cycleScheme}
             ragEnabled={rag.isEnabled}
-            ragHasActiveChunks={rag.hasActiveChunks}
             ragIsSeeded={rag.isSeeded}
             ragIsSeeding={rag.isSeeding}
             onToggleRAG={rag.toggleRAG}
@@ -274,100 +339,131 @@ export function ChatTab({ onBatchExport, onBatchDelete, onBatchTag, onSelectAll:
             onShowFormulaList={() => setShowFormulaList(true)}
             messageCount={messages.length}
             onClearChat={callbacks.handleClearChat}
+            onOpenKBPanel={() => setShowKBPanel(true)}
             t={safeT}
           />
 
-          {/* 消息区域 */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {/* 错误提示 */}
-            {chatError && (
-              <Card className="p-4 bg-error-50 dark:bg-error-900/20 border-red-200 dark:border-red-800">
-                <div className="flex items-start gap-3">
-                  <AlertTriangle className="w-5 h-5 text-error-500 shrink-0 mt-0.5" />
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-error-800 dark:text-error-200">{safeT('ai.chat.chatTab.chatError', '对话出错')}</p>
-                    <p className="text-xs text-error-600 dark:text-error-300 mt-1">{chatError instanceof Error ? chatError.message : String(chatError)}</p>
-                    <div className="flex gap-2 mt-3">
-                      <Button variant="outline" size="sm" onClick={chatHandlers.handleRetry}>{safeT('ai.chat.chatTab.retry', '重试')}</Button>
-                      <Button variant="ghost" size="sm" onClick={clearError}>{safeT('ai.chat.chatTab.close', '关闭')}</Button>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            )}
+          {/* ② 消息滚动区 — flex-1 撑满剩余空间，overflow-y-auto */}
+          <div className="flex-1 overflow-y-auto min-h-0">
+            <div className="px-4 py-5 space-y-5">
 
-            {/* RAG 来源横幅 */}
-            <RAGSourcesBanner isEnabled={rag.isEnabled} chunks={rag.chunks} sources={rag.lastSources} onDismiss={rag.clearChunks} />
-
-            {/* 空状态欢迎引导 */}
-            {messages.length === 0 && (
-              <EmptyStateCard
-                welcomeTitle={safeT('ai.chat.chatTab.welcomeTitle', '欢迎使用智能配方助手')}
-                welcomeSubtitle={safeT('ai.chat.chatTab.welcomeSubtitle', '选择下方问题快速开始，或直接输入您的配方需求')}
-                questions={QUICK_QUESTIONS}
-                onAsk={chatHandlers.handleSend}
-              />
-            )}
-
-            {/* 消息列表 */}
-            <ChatMessages
-              messages={messages}
-              isStreaming={isStreaming}
-              chatError={chatError}
-              onRetry={chatHandlers.handleRetry}
-              onGenerateReport={() => handleGenerateReport()}
-              showReportButton={formulaCount > 0}
-              highlightedMessageId={highlightedMessageId}
-              selectedMessageIds={[]}
-              onReferenceMessage={() => {}}
-              onEditMessage={messageEditing.handleEditMessage}
-              onRetractMessage={messageEditing.handleRetractMessage}
-            />
-
-            {/* 思考过程侧栏 V4 */}
-            <ChatSidebarV4
-              steps={orchestrator.thinkingProcessV3.state.steps.map((s) => {
-                const stepName = s.title
-                let algorithm: AlgorithmType = 'rule-engine'
-                if (/理解|意图|NLP|识别/.test(stepName)) algorithm = 'hybrid-nlp'
-                else if (/检索|搜索|查找|知识/.test(stepName)) algorithm = 'semantic-search'
-                else if (/推理|分析|评估|预测/.test(stepName)) algorithm = 'llm'
-                else if (/设计|生成|优化|配方/.test(stepName)) algorithm = 'bayesian'
-                else if (/回答|整合|结论/.test(stepName)) algorithm = 'ensemble'
-                return {
-                  step: stepName,
-                  content: s.description,
-                  status: (s.status === 'completed' ? 'complete' : s.status === 'processing' ? 'thinking' : 'pending') as SidebarStepV4['status'],
-                  detail: s.details || s.description,
-                  algorithm,
-                  confidence: s.confidence || 0.85,
-                }
-              })}
-              isThinking={orchestrator.thinkingProcessV3.state.isThinking}
-              isVisible={orchestrator.thinkingProcessV3.state.isVisible}
-              onToggle={orchestrator.thinkingProcessV3.toggleVisibility}
-            />
-          </div>
-
-          {/* 输入区域 */}
-          <div className="border-t border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900">
-            <div className="max-w-4xl mx-auto px-3 py-2 space-y-2">
-              {(isStreaming || isPaused) && (
-                <div className="flex items-center justify-center pt-1">
-                  <button
-                    onClick={isPaused ? resumeStreaming : pauseStreaming}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
-                      isPaused
-                        ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 hover:bg-primary-100 dark:hover:bg-primary-900/30 border border-emerald-200 dark:border-emerald-800'
-                        : 'bg-warning-50 dark:bg-warning-900/20 text-warning-600 dark:text-warning-400 hover:bg-warning-100 dark:hover:bg-warning-900/30 border border-amber-200 dark:border-amber-800'
-                    }`}
-                  >
-                    {isPaused ? <Play className="w-3 h-3" /> : <Pause className="w-3 h-3" />}
-                    {isPaused ? safeT('ai.chat.chatTab.resume', '继续生成') : safeT('ai.chat.chatTab.pause', '暂停生成')}
+              {/* RAG 状态通知 — 未初始化时引导打开知识库面板 */}
+              {!rag.isSeeded && !rag.isSeeding && (
+                <div className="flex items-center gap-2 px-4 py-3 bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-900/30 rounded-xl text-sm">
+                  <Database className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                  <span className="flex-1 text-emerald-700 dark:text-emerald-300">
+                    知识库未初始化 — {rag.isEnabled ? '点击管理面板加载内置药材库' : '请先开启知识库'}
+                  </span>
+                  <button onClick={() => setShowKBPanel(true)}
+                    className="px-3 py-1 bg-emerald-500 text-white rounded-lg text-xs font-medium hover:bg-emerald-600 transition-colors flex-shrink-0 shadow-sm">
+                    知识库管理
                   </button>
                 </div>
               )}
+              {rag.isSeeded && rag.isEnabled && (
+                <div className="flex items-center gap-2 px-4 py-2.5 bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-900/30 rounded-xl text-xs text-emerald-600 dark:text-emerald-400">
+                  <Database className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span className="flex-1 font-medium">知识库就绪 · {rag.totalChunks?.toLocaleString() ?? '330'} 个知识片段</span>
+                  <button onClick={() => setShowKBPanel(true)}
+                    className="px-2 py-0.5 bg-emerald-100 dark:bg-emerald-900/30 rounded text-[10px] font-medium hover:bg-emerald-200 transition-colors flex-shrink-0">
+                    管理
+                  </button>
+                </div>
+              )}
+              {!llmAvailable && (
+                <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/30 rounded-lg text-xs text-amber-600 dark:text-amber-400">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500 flex-shrink-0" />
+                  <span>LLM 服务离线，当前为离线模式</span>
+                </div>
+              )}
+
+              {/* RAG 来源横幅 */}
+              <RAGSourcesBanner isEnabled={rag.isEnabled} chunks={rag.chunks} sources={rag.lastSources} onDismiss={rag.clearChunks} />
+
+              {/* 错误提示 */}
+              {chatError && (
+                <div className="p-3 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800/30 rounded-xl">
+                  <div className="flex items-start gap-2.5">
+                    <AlertTriangle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-red-800 dark:text-red-300">{safeT('ai.chat.chatTab.chatError', '对话出错')}</p>
+                      <p className="text-xs text-red-600 dark:text-red-400 mt-0.5 truncate">{chatError instanceof Error ? chatError.message : String(chatError)}</p>
+                      <div className="flex gap-2 mt-2">
+                        <Button variant="outline" size="sm" onClick={chatHandlers.handleRetry}>{safeT('ai.chat.chatTab.retry', '重试')}</Button>
+                        <Button variant="ghost" size="sm" onClick={clearError}>{safeT('ai.chat.chatTab.close', '关闭')}</Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* 空状态欢迎引导 */}
+              {messages.length === 0 && (
+                <EmptyStateCard
+                  welcomeTitle={safeT('ai.chat.chatTab.welcomeTitle', '欢迎使用智能配方助手')}
+                  welcomeSubtitle={safeT('ai.chat.chatTab.welcomeSubtitle', '选择下方问题快速开始，或直接输入您的配方需求')}
+                  questions={QUICK_QUESTIONS}
+                  onAsk={chatHandlers.handleSend}
+                />
+              )}
+
+              {/* 消息列表 */}
+              <ChatMessages
+                messages={messages}
+                isStreaming={isStreaming}
+                chatError={chatError}
+                onRetry={chatHandlers.handleRetry}
+                onGenerateReport={() => handleGenerateReport()}
+                showReportButton={formulaCount > 0}
+                highlightedMessageId={highlightedMessageId}
+                selectedMessageIds={[]}
+                onReferenceMessage={() => {}}
+                onEditMessage={messageEditing.handleEditMessage}
+                onRetractMessage={messageEditing.handleRetractMessage}
+                onForkMessage={handleForkMessage}
+                onDetailsMessage={(call) => { setDetailsCall(call); setDetailsOpen(true); }}
+                thinkingSteps={orchestrator.thinkingProcessV3.state.steps.map((s) => ({
+                  step: s.title,
+                  content: s.description,
+                  status: s.status === 'completed' ? 'complete' : s.status === 'processing' ? 'thinking' : 'pending',
+                  detail: s.details || s.description,
+                }))}
+              />
+
+              {/* 生成中占位 — DSH 打字指示器 */}
+              {isStreaming && (
+                <div className="flex items-start gap-3">
+                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center flex-shrink-0">
+                    <Leaf className="w-3.5 h-3.5 text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5 py-2.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-bounce" style={{ animationDelay: '0ms' }} />
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-bounce" style={{ animationDelay: '150ms' }} />
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-bounce" style={{ animationDelay: '300ms' }} />
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
+          </div>
+
+          {/* ③ 输入区 — 固定底部，h-auto flex-shrink-0 */}
+          <div className="border-t border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 flex-shrink-0">
+            {/* 暂停条 — 仅在生成中时显示 */}
+            {isStreaming && (
+              <div className="flex items-center justify-between px-4 py-1.5 bg-neutral-50/50 dark:bg-neutral-900/50">
+                <span className="text-[10px] text-neutral-400 flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  生成中
+                </span>
+                <button onClick={pauseStreaming}
+                  className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-neutral-200 dark:bg-neutral-800 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors">
+                  <Pause className="w-2.5 h-2.5" />
+                  暂停
+                </button>
+              </div>
+            )}
             <ChatInputPro
               value={input}
               onChange={setInput}
@@ -375,12 +471,37 @@ export function ChatTab({ onBatchExport, onBatchDelete, onBatchTag, onSelectAll:
               onStop={() => pauseStreaming()}
               isStreaming={isStreaming}
               maxLength={2000}
-              placeholder={safeT('ai.chat.chatTab.placeholder', '描述您的配方需求，例如：设计一款低糖饮料的甜味剂方案...')}
+              placeholder={safeT('ai.chat.chatTab.placeholder', '描述您的配方需求...')}
               modelName={llmModel || 'deepseek-chat'}
-              onModelChange={(model) => logger.debug('[ChatTab] Model changed:', model)}
-              charCount={input.length}
+              modelColor="text-emerald-500"
+              attachments={attachments.map(a => ({ id: a.id, file: a.file, previewUrl: a.previewUrl })) as DraftAttachment[]}
+              onAddAttachment={handleAddAttachment}
+              onRemoveAttachment={handleRemoveAttachment}
+              onSlashSelect={(cmd) => {
+                setInput('/' + cmd + ' ')
+                chatHandlers.handleSend()
+              }}
+            />
+            {/* DSH StatsLine 风格状态条 */}
+            <ComposerStatusBar
+              messageCount={messages.length}
+              assistantCount={assistantCount}
+              elapsedSeconds={elapsedSeconds}
+              modelName={llmModel || undefined}
+              ragStatus={rag.isEnabled && rag.isSeeded ? '知识库就绪' : rag.isEnabled ? '未就绪' : null}
             />
           </div>
+
+          {/* DSH Details 面板 — 工具调用详情（右侧面板） */}
+          {detailsOpen && detailsCall && (
+            <div className="w-[320px] flex-shrink-0 border-l border-neutral-200 dark:border-neutral-800 overflow-hidden">
+              <DetailsPanel
+                selectedCall={{ ...detailsCall, arguments: detailsCall.args }}
+                onClose={() => setDetailsOpen(false)}
+                title="工具调用详情"
+              />
+            </div>
+          )}
 
           {/* 配方面板模态框 */}
           {showFormulaList && (
@@ -423,9 +544,20 @@ export function ChatTab({ onBatchExport, onBatchDelete, onBatchTag, onSelectAll:
               onClose={closeDetailTable}
             />
           )}
+
+          {/* RAG 知识库管理面板 */}
+          {showKBPanel && (
+            <RAGKnowledgePanel
+              onClose={() => setShowKBPanel(false)}
+              onSeedComplete={(chunks, files) => {
+                logger.info('[ChatTab] 知识库初始化完成:', { chunks, files })
+                setShowKBPanel(false)
+              }}
+            />
+          )}
         </div>
       </div>
-    </ErrorBoundary>
+
   )
 }
 

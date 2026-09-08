@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { databaseApi } from '@/api/database';
 import { Button, Card, Badge, Progress, Modal, Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui';
 import {
   Upload,
@@ -255,8 +256,6 @@ const QUALITY_METRICS = [
   { key: 'timeliness', label: '时效性', desc: '数据更新频率', color: 'var(--color-error, #FF3B30)' },
 ];
 
-const MOCK_QUERY_TREND = [12, 19, 15, 25, 22, 30, 28, 35, 32, 38, 42, 36];
-
 export default function DataManagementTab() {
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -304,10 +303,10 @@ export default function DataManagementTab() {
   const [logSearch, setLogSearch] = useState('');
 
   const [perfMetrics, setPerfMetrics] = useState({
-    avgResponseTime: 128,
-    apiCallsToday: 1847,
-    cacheHitRate: 94.2,
-    memoryUsage: 67.3,
+    avgResponseTime: 0,
+    apiCallsToday: 0,
+    cacheHitRate: 0,
+    memoryUsage: 0,
   });
 
   useEffect(() => {
@@ -315,21 +314,11 @@ export default function DataManagementTab() {
     if (storedBackups) setBackups(JSON.parse(storedBackups));
     const storedLogs = localStorage.getItem(LOG_STORAGE_KEY);
     if (storedLogs) setOperationLogs(JSON.parse(storedLogs));
-    generateMockQualityIssues();
+    // 不再使用 Mock 数据生成，质量问题和性能指标暂不展示虚假数据
   }, []);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setPerfMetrics((prev) => ({
-        ...prev,
-        avgResponseTime: Math.max(50, Math.min(300, prev.avgResponseTime + (Math.random() - 0.5) * 20)),
-        apiCallsToday: prev.apiCallsToday + Math.floor(Math.random() * 3),
-        cacheHitRate: Math.max(80, Math.min(99.9, prev.cacheHitRate + (Math.random() - 0.5) * 2)),
-        memoryUsage: Math.max(40, Math.min(95, prev.memoryUsage + (Math.random() - 0.5) * 3)),
-      }));
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
+  // 性能指标从后端真实 API 获取（暂不支持，保留 0 占位）
+  // TODO: 接入后端 /databases/dashboard/performance 接口获取真实指标
 
   const addLog = useCallback((log: Omit<OperationLog, 'id' | 'time' | 'operator'>) => {
     const newLog: OperationLog = {
@@ -432,49 +421,56 @@ export default function DataManagementTab() {
     setIsExporting(true);
     setExportProgress(0);
     for (let i = 0; i <= 100; i += 5) {
-      await new Promise((r) => setTimeout(r, 40));
+      await new Promise((r) => setTimeout(r, 20));
       setExportProgress(i);
     }
-    const mockData = Array.from({ length: 50 }, (_, i) => ({
-      id: i + 1,
-      name: `数据项 ${i + 1}`,
-      category: ['分类A', '分类B', '分类C'][i % 3],
-      value: Math.floor(Math.random() * 1000),
-      status: ['活跃', '待审', '归档'][i % 3],
-      createdAt: new Date(Date.now() - Math.random() * 30 * 24 * 3600000).toLocaleDateString(),
-    }));
+
+    // 从真实 API 获取数据导出
+    let exportRows: any[] = [];
+    let headers: string[] = [];
+    try {
+      const herbsResp = await databaseApi.searchHerbs({ page: 1, page_size: 200 });
+      const items = herbsResp?.items ?? [];
+      if (items.length > 0) {
+        headers = ['id', 'name_cn', 'name_latin', 'category', 'ob_percent', 'dl_value', 'is_food_homology'];
+        exportRows = items.map((h: any) => ({
+          id: h.id,
+          name_cn: h.name_cn,
+          name_latin: h.name_latin || '',
+          category: h.category || '',
+          ob_percent: h.ob_percent,
+          dl_value: h.dl_value,
+          is_food_homology: h.is_food_homology,
+        }));
+      }
+    } catch { /* API 不可用时导出空文件 */ }
+
+    if (exportRows.length === 0) {
+      headers = ['id', 'name_cn', 'category', 'ob_percent'];
+    }
+
     let content: string;
     let mimeType: string;
     let ext: string;
+
     if (exportFormat === 'json') {
       content = JSON.stringify(
-        includeMetadata ? { data: mockData, exportedAt: new Date().toISOString(), scope: exportScope } : mockData,
+        includeMetadata ? { data: exportRows, exportedAt: new Date().toISOString(), scope: exportScope, total: exportRows.length } : exportRows,
         null,
         2,
       );
       mimeType = 'application/json';
       ext = 'json';
-    } else if (exportFormat === 'csv') {
-      const headers = Object.keys(mockData[0]);
+    } else {
       const csvRows = [
         headers.join(','),
-        ...mockData.map((row) => headers.map((h) => `"${row[h as keyof typeof row]}"`).join(',')),
+        ...exportRows.map((row) => headers.map((h) => `"${String(row[h] ?? '')}"`).join(',')),
       ];
       content = csvRows.join('\n');
-      mimeType = 'text/csv';
-      ext = 'csv';
-    } else {
-      // xlsx: generate CSV for broad compatibility (browser-side xlsx not available)
-      const headers = Object.keys(mockData[0]);
-      const csvRows = [
-        headers.join(','),
-        ...mockData.map((row) => headers.map((h) => `"${row[h as keyof typeof row]}"`).join(',')),
-      ];
-      content = '﻿' + csvRows.join('\n');
       mimeType = 'text/csv;charset=utf-8';
       ext = 'csv';
-      addLog({ type: 'export', target: `已导出 ${mockData.length} 条 (CSV)`, result: 'success' });
     }
+
     const blob = new Blob([content], { type: mimeType });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -489,7 +485,7 @@ export default function DataManagementTab() {
       type: 'export',
       target: `${exportScope}_${exportFormat}`,
       result: 'success',
-      detail: `${mockData.length} 条记录`,
+      detail: `${exportRows.length} 条记录`,
     });
   }, [exportFormat, exportScope, includeMetadata, addLog]);
 
@@ -567,61 +563,8 @@ export default function DataManagementTab() {
   }, [addLog]);
 
   const generateMockQualityIssues = useCallback(() => {
-    const issues: QualityIssue[] = [
-      { id: '1', recordId: 'REC-0042', field: 'name', issue: '名称字段为空', severity: 'error', autoFixable: false },
-      {
-        id: '2',
-        recordId: 'REC-0118',
-        field: 'category_id',
-        issue: '引用的分类不存在',
-        severity: 'error',
-        autoFixable: true,
-      },
-      { id: '3', recordId: 'REC-0203', field: 'email', issue: '邮箱格式无效', severity: 'warning', autoFixable: true },
-      { id: '4', recordId: 'REC-0315', field: 'price', issue: '价格值为负数', severity: 'error', autoFixable: false },
-      {
-        id: '5',
-        recordId: 'REC-0447',
-        field: 'phone',
-        issue: '手机号长度不正确',
-        severity: 'warning',
-        autoFixable: true,
-      },
-      {
-        id: '6',
-        recordId: 'REC-0562',
-        field: 'created_at',
-        issue: '日期格式异常',
-        severity: 'error',
-        autoFixable: true,
-      },
-      {
-        id: '7',
-        recordId: 'REC-0689',
-        field: 'description',
-        issue: '描述文本过长 (>500字)',
-        severity: 'warning',
-        autoFixable: false,
-      },
-      {
-        id: '8',
-        recordId: 'REC-0724',
-        field: 'status',
-        issue: '状态值不在允许范围内',
-        severity: 'error',
-        autoFixable: true,
-      },
-      { id: '9', recordId: 'REC-0851', field: 'weight', issue: '重量单位缺失', severity: 'warning', autoFixable: true },
-      {
-        id: '10',
-        recordId: 'REC-0917',
-        field: 'supplier_id',
-        issue: '供应商ID无效',
-        severity: 'error',
-        autoFixable: false,
-      },
-    ];
-    setQualityIssues(issues);
+    // 已移除 Mock 数据，质量问题需接入后端真实审计 API
+    setQualityIssues([]);
   }, []);
 
   const fixIssues = useCallback(async () => {
@@ -1421,7 +1364,9 @@ export default function DataManagementTab() {
           <TrendingUp className="w-4 h-4 text-primary-600" />
           最近 1 小时查询量趋势
         </h4>
-        <MiniLineChart data={MOCK_QUERY_TREND} color="#6366f1" height={80} />
+        <div className="h-[80px] flex items-center justify-center text-xs text-neutral-400 bg-neutral-50 rounded-lg border border-neutral-100">
+          暂无实时查询趋势数据，后续将接入搜索日志 API
+        </div>
         <div className="flex justify-between text-xs text-neutral-400">
           <span>60分钟前</span>
           <span>现在</span>

@@ -61,11 +61,11 @@ const COLOR_MAP: Record<TagColor, {
   shadowColor: string
 }> = {
   primary: {
-    gradient: 'linear-gradient(135deg, #667eea, #764ba2)',
-    lightBg: 'var(--color-indigo-50, #EEF2FF)',
-    darkText: 'var(--color-indigo-700, #4C51BF)',
-    border: '#a5b4fc',
-    shadowColor: '#667eea',
+    gradient: 'linear-gradient(135deg, #059669, #10b981)',
+    lightBg: 'var(--color-primary-50, #ecfdf5)',
+    darkText: 'var(--color-primary-700, #047857)',
+    border: 'var(--color-primary-300, #6ee7b7)',
+    shadowColor: 'var(--color-primary-500, #10b981)',
   },
   success: {
     gradient: 'linear-gradient(135deg, #34C759, #28A745)',

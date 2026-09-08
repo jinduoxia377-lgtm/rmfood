@@ -1,0 +1,414 @@
+<!-- 数据检索中心 -->
+<view class="page-container">
+  <!-- 顶部导航 -->
+  <view class="header" style="padding-top: {{statusBarHeight}}px;">
+    <view class="header-content">
+      <!-- 汉堡菜单 -->
+      <view class="hamburger" bindtap="toggleMenu">
+        <view class="hamburger-line {{menuOpen ? 'active' : ''}}"></view>
+        <view class="hamburger-line {{menuOpen ? 'active' : ''}}"></view>
+        <view class="hamburger-line {{menuOpen ? 'active' : ''}}"></view>
+      </view>
+      <!-- 标题 -->
+      <view class="header-title">
+        <view class="title-main">数据检索中心</view>
+      </view>
+      <!-- 统计 -->
+      <view class="header-stats">
+        <text class="stats-count">{{todayQueries}}次查询</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 全局搜索框 -->
+  <view class="search-section">
+    <view class="search-bar">
+      <text class="search-icon">🔍</text>
+      <input
+        class="search-input"
+        placeholder="搜索中药材、活性肽、化合物..."
+        value="{{searchInput}}"
+        bindinput="onSearchInput"
+        bindconfirm="globalSearch"
+        confirm-type="search"
+      />
+      <view wx:if="{{searchInput}}" class="search-clear" bindtap="clearSearch">
+        <text>✕</text>
+      </view>
+    </view>
+    <!-- 搜索历史 -->
+    <view wx:if="{{showSearchHistory && searchHistory.length > 0}}" class="search-history">
+      <view class="history-header">
+        <text class="history-title">搜索历史</text>
+        <text class="history-clear" bindtap="clearHistory">清除</text>
+      </view>
+      <view class="history-list">
+        <view
+          wx:for="{{searchHistory}}"
+          wx:key="index"
+          class="history-item"
+          bindtap="selectHistory"
+          data-query="{{item}}"
+        >
+          <text class="history-icon">🕐</text>
+          <text class="history-text">{{item}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- Tab 导航 -->
+  <view class="tab-container">
+    <scroll-view class="tab-scroll" scroll-x enable-flex>
+      <view class="tab-list">
+        <view
+          wx:for="{{tabs}}"
+          wx:key="key"
+          class="tab-item {{activeTab === item.key ? 'active' : ''}}"
+          bindtap="switchTab"
+          data-tab="{{item.key}}"
+        >
+          <text class="tab-icon">{{item.icon}}</text>
+          <text class="tab-name">{{item.label}}</text>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- Tab 内容区 -->
+  <scroll-view class="content-scroll" scroll-y refresher-enabled refresher-triggered="{{refreshing}}" bindrefresherrefresh="onPullRefresh">
+
+    <!-- 概览页 -->
+    <view wx:if="{{activeTab === 'dashboard'}}" class="tab-content">
+      <!-- 统计卡片 -->
+      <view class="stats-grid">
+        <view class="stat-card" bindtap="switchTab" data-tab="herbs">
+          <view class="stat-icon herb">🌿</view>
+          <view class="stat-info">
+            <text class="stat-value">{{summary.totalHerbs}}</text>
+            <text class="stat-label">中药材</text>
+          </view>
+        </view>
+        <view class="stat-card" bindtap="switchTab" data-tab="peptides">
+          <view class="stat-icon peptide">🧬</view>
+          <view class="stat-info">
+            <text class="stat-value">{{summary.totalPeptides}}</text>
+            <text class="stat-label">活性肽</text>
+          </view>
+        </view>
+        <view class="stat-card">
+          <view class="stat-icon homology">⭐</view>
+          <view class="stat-info">
+            <text class="stat-value">{{summary.foodHomology}}</text>
+            <text class="stat-label">药食同源</text>
+          </view>
+        </view>
+        <view class="stat-card">
+          <view class="stat-icon graph">🕸️</view>
+          <view class="stat-info">
+            <text class="stat-value">{{summary.graphNodes}}</text>
+            <text class="stat-label">图谱节点</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 分类分布 -->
+      <view class="chart-section card">
+        <view class="section-header">
+          <text class="section-title">药材分类分布</text>
+        </view>
+        <view wx:if="{{categoryData.length > 0}}" class="category-list">
+          <view wx:for="{{categoryData}}" wx:key="name" class="category-item">
+            <view class="category-left">
+              <view class="category-dot" style="background: {{item.fill}};"></view>
+              <text class="category-name">{{item.name}}</text>
+            </view>
+            <view class="category-right">
+              <text class="category-count">{{item.value}}</text>
+              <text class="category-percent">({{item.percent}}%)</text>
+            </view>
+          </view>
+        </view>
+        <view wx:else class="empty-data">
+          <text>暂无分类数据</text>
+        </view>
+      </view>
+
+      <!-- 快捷操作 -->
+      <view class="quick-actions card">
+        <view class="section-header">
+          <text class="section-title">快捷操作</text>
+        </view>
+        <view class="action-grid">
+          <view class="action-item" bindtap="switchTab" data-tab="herbs">
+            <text class="action-icon">🌿</text>
+            <text class="action-name">药材检索</text>
+          </view>
+          <view class="action-item" bindtap="switchTab" data-tab="peptides">
+            <text class="action-icon">🧬</text>
+            <text class="action-name">活性肽检索</text>
+          </view>
+          <view class="action-item" bindtap="switchTab" data-tab="homology">
+            <text class="action-icon">⭐</text>
+            <text class="action-name">药食同源</text>
+          </view>
+          <view class="action-item" bindtap="switchTab" data-tab="graph">
+            <text class="action-icon">🕸️</text>
+            <text class="action-name">知识图谱</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 最近更新 -->
+      <view wx:if="{{recentUpdates.length > 0}}" class="recent-section card">
+        <view class="section-header">
+          <text class="section-title">最近更新</text>
+        </view>
+        <view wx:for="{{recentUpdates}}" wx:key="id" class="recent-item" bindtap="viewDetail" data-type="{{item.type}}" data-id="{{item.id}}">
+          <text class="recent-icon">{{item.icon}}</text>
+          <view class="recent-info">
+            <text class="recent-name">{{item.name}}</text>
+            <text class="recent-time">{{item.time}}</text>
+          </view>
+          <text class="recent-arrow">›</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 中药材页 -->
+    <view wx:if="{{activeTab === 'herbs'}}" class="tab-content">
+      <!-- 筛选栏 -->
+      <view class="filter-bar">
+        <view class="filter-input-wrapper">
+          <text class="filter-icon">🔍</text>
+          <input class="filter-input" placeholder="搜索药材名称..." value="{{herbKeyword}}" bindinput="onHerbSearch" bindconfirm="searchHerbs" />
+        </view>
+        <view class="filter-select" bindtap="showCategoryPicker">
+          <text>{{herbCategory || '全部分类'}}</text>
+          <text class="select-arrow">▼</text>
+        </view>
+      </view>
+      <!-- 药食同源筛选 -->
+      <view class="filter-chips">
+        <view class="chip {{herbFoodHomologyOnly ? 'active' : ''}}" bindtap="toggleFoodHomology">
+          <text>⭐ 仅显示药食同源</text>
+        </view>
+      </view>
+      <!-- 药材列表 -->
+      <view wx:if="{{herbsLoading}}" class="loading-state">
+        <text>加载中...</text>
+      </view>
+      <view wx:elif="{{herbs.length === 0}}" class="empty-state">
+        <text class="empty-icon">🌿</text>
+        <text class="empty-text">暂无药材数据</text>
+        <text class="empty-desc">请尝试其他关键词</text>
+      </view>
+      <view wx:else class="herb-list">
+        <view
+          wx:for="{{herbs}}"
+          wx:key="id"
+          class="herb-card"
+          bindtap="viewHerbDetail"
+          data-herb="{{item}}"
+        >
+          <view class="herb-header">
+            <text class="herb-name">{{item.name_cn}}</text>
+            <view wx:if="{{item.is_food_homology}}" class="homology-badge">
+              <text>⭐ 药食同源</text>
+            </view>
+          </view>
+          <text class="herb-latin">{{item.name_latin || ''}}</text>
+          <view class="herb-tags">
+            <view wx:if="{{item.category}}" class="herb-tag">{{item.category}}</view>
+            <view wx:if="{{item.ob_percent}}" class="herb-stat">
+              <text class="stat-label">OB:</text>
+              <text class="stat-value">{{item.ob_percent}}</text>
+            </view>
+            <view wx:if="{{item.dl_value}}" class="herb-stat">
+              <text class="stat-label">DL:</text>
+              <text class="stat-value">{{item.dl_value}}</text>
+            </view>
+          </view>
+          <view class="herb-footer">
+            <text class="herb-compounds">{{item.compound_count || 0}}种化合物</text>
+            <text class="herb-arrow">›</text>
+          </view>
+        </view>
+      </view>
+      <!-- 分页 -->
+      <view wx:if="{{herbsTotal > herbs.length}}" class="load-more" bindtap="loadMoreHerbs">
+        <text>点击加载更多 ({{herbsLoaded}}/{{herbsTotal}})</text>
+      </view>
+    </view>
+
+    <!-- 活性肽页 -->
+    <view wx:if="{{activeTab === 'peptides'}}" class="tab-content">
+      <!-- 筛选栏 -->
+      <view class="filter-bar">
+        <view class="filter-input-wrapper">
+          <text class="filter-icon">🔍</text>
+          <input class="filter-input" placeholder="搜索序列或来源..." value="{{peptideKeyword}}" bindinput="onPeptideSearch" bindconfirm="searchPeptides" />
+        </view>
+        <view class="filter-select" bindtap="showActivityTypePicker">
+          <text>{{peptideActivityType || '全部类型'}}</text>
+          <text class="select-arrow">▼</text>
+        </view>
+      </view>
+      <!-- 肽列表 -->
+      <view wx:if="{{peptidesLoading}}" class="loading-state">
+        <text>加载中...</text>
+      </view>
+      <view wx:elif="{{peptides.length === 0}}" class="empty-state">
+        <text class="empty-icon">🧬</text>
+        <text class="empty-text">暂无活性肽数据</text>
+      </view>
+      <view wx:else class="peptide-list">
+        <view
+          wx:for="{{peptides}}"
+          wx:key="id"
+          class="peptide-card"
+          bindtap="viewPeptideDetail"
+          data-peptide="{{item}}"
+        >
+          <view class="peptide-header">
+            <text class="peptide-sequence">{{item.sequence}}</text>
+            <view wx:if="{{item.activity_type}}" class="activity-badge">
+              <text>{{item.activity_type}}</text>
+            </view>
+          </view>
+          <view class="peptide-meta">
+            <text class="meta-item">来源: {{item.source_protein || '未知'}}</text>
+            <text class="meta-item">MW: {{item.molecular_weight || '—'}} Da</text>
+          </view>
+          <view class="peptide-activity">
+            <text class="activity-label">活性值:</text>
+            <text class="activity-value">{{item.activity_value}}{{item.activity_unit}}</text>
+          </view>
+        </view>
+      </view>
+      <!-- 分页 -->
+      <view wx:if="{{peptidesTotal > peptides.length}}" class="load-more" bindtap="loadMorePeptides">
+        <text>点击加载更多 ({{peptidesLoaded}}/{{peptidesTotal}})</text>
+      </view>
+    </view>
+
+    <!-- 药食同源页 -->
+    <view wx:if="{{activeTab === 'homology'}}" class="tab-content">
+      <!-- 搜索栏 -->
+      <view class="homology-search">
+        <view class="search-box">
+          <text class="search-icon">🔍</text>
+          <input class="search-input" placeholder="输入药材名称查询..." value="{{homologyKeyword}}" bindinput="onHomologySearch" bindconfirm="searchHomology" />
+        </view>
+        <button class="check-btn" bindtap="checkHomology">查询</button>
+      </view>
+      <!-- 查询结果 -->
+      <view wx:if="{{homologyLoading}}" class="loading-state">
+        <text>查询中...</text>
+      </view>
+      <view wx:elif="{{homologyResult}}" class="homology-result card">
+        <view class="result-header">
+          <text class="result-name">{{homologyResult.name}}</text>
+          <view class="result-status {{homologyResult.is_food_homology ? 'confirmed' : 'not_found'}}">
+            <text>{{homologyResult.is_food_homology ? '✅ 确认药食同源' : '❌ 非药食同源'}}</text>
+          </view>
+        </view>
+        <view wx:if="{{homologyResult.is_food_homology}}" class="result-details">
+          <view class="detail-row">
+            <text class="detail-label">最大使用量:</text>
+            <text class="detail-value">{{homologyResult.max_dosage}}g/天</text>
+          </view>
+          <view class="detail-row">
+            <text class="detail-label">适用人群:</text>
+            <text class="detail-value">{{homologyResult.population || '一般人群'}}</text>
+          </view>
+          <view class="detail-row">
+            <text class="detail-label">依据:</text>
+            <text class="detail-value">{{homologyResult.source}}</text>
+          </view>
+        </view>
+      </view>
+      <!-- 药食同源目录 -->
+      <view class="directory-section">
+        <view class="section-header">
+          <text class="section-title">药食同源目录</text>
+          <text class="section-count">{{homologyList.length}}种</text>
+        </view>
+        <view wx:if="{{homologyListLoading}}" class="loading-state">
+          <text>加载中...</text>
+        </view>
+        <view wx:else class="homology-list">
+          <view
+            wx:for="{{homologyList}}"
+            wx:key="id"
+            class="homology-item"
+            bindtap="viewHomologyDetail"
+            data-item="{{item}}"
+          >
+            <text class="homology-name">{{item.name}}</text>
+            <text class="homology-dosage">{{item.max_dosage}}g/天</text>
+            <text class="homology-arrow">›</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 知识图谱页 -->
+    <view wx:if="{{activeTab === 'graph'}}" class="tab-content">
+      <!-- 搜索 -->
+      <view class="graph-search">
+        <view class="search-box">
+          <text class="search-icon">🔍</text>
+          <input class="search-input" placeholder="输入药材名查找关联..." value="{{graphKeyword}}" bindinput="onGraphSearch" bindconfirm="searchGraph" />
+        </view>
+      </view>
+      <!-- 节点类型筛选 -->
+      <view class="node-filters">
+        <view
+          wx:for="{{nodeTypes}}"
+          wx:key="key"
+          class="node-filter {{activeNodeType === item.key ? 'active' : ''}}"
+          bindtap="setNodeType"
+          data-type="{{item.key}}"
+        >
+          <text>{{item.label}}</text>
+        </view>
+      </view>
+      <!-- 图谱结果 -->
+      <view wx:if="{{graphLoading}}" class="loading-state">
+        <text>分析中...</text>
+      </view>
+      <view wx:elif="{{graphResult.nodes.length > 0}}" class="graph-result card">
+        <view class="graph-header">
+          <text class="graph-center">{{graphResult.centerNode}}</text>
+          <view class="graph-stats">
+            <text class="stat">{{graphResult.nodes.length}} 节点</text>
+            <text class="stat">{{graphResult.edges.length}} 关系</text>
+          </view>
+        </view>
+        <!-- 节点列表 -->
+        <view class="node-list">
+          <view
+            wx:for="{{graphResult.nodes}}"
+            wx:key="id"
+            class="node-item {{item.type}}"
+            bindtap="viewGraphNode"
+            data-node="{{item}}"
+          >
+            <view class="node-dot"></view>
+            <text class="node-label">{{item.label}}</text>
+            <text class="node-type">{{nodeTypeLabels[item.type] || item.type}}</text>
+          </view>
+        </view>
+      </view>
+      <view wx:else class="empty-state">
+        <text class="empty-icon">🕸️</text>
+        <text class="empty-text">输入药材名查看知识图谱</text>
+      </view>
+    </view>
+
+  </scroll-view>
+
+  <!-- 底部间距 -->
+  <view class="bottom-spacing"></view>
+</view>

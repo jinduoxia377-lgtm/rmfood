@@ -1,0 +1,763 @@
+{
+  "_PublicLayout-DFw850vf.js": {
+    "file": "assets/js/PublicLayout-DFw850vf.js",
+    "name": "PublicLayout",
+    "imports": [
+      "_feature-ai-chat-D29D1GB-.js",
+      "_feature-ai-generate-B7Ox0lJa.js"
+    ]
+  },
+  "_deep_dev-DWlizdjF.js": {
+    "file": "assets/js/deep_dev-DWlizdjF.js",
+    "name": "deep_dev"
+  },
+  "_feature-ai-chat-Cn9qDu5w.css": {
+    "file": "assets/css/feature-ai-chat-Cn9qDu5w.css",
+    "src": "_feature-ai-chat-Cn9qDu5w.css"
+  },
+  "_feature-ai-chat-D29D1GB-.js": {
+    "file": "assets/js/feature-ai-chat-D29D1GB-.js",
+    "name": "feature-ai-chat",
+    "imports": [
+      "_rolldown-runtime-W-g5d7YK.js"
+    ],
+    "dynamicImports": [
+      "index.html",
+      "_feature-ai-chat-D29D1GB-.js",
+      "_vendor-markdown-CYW6cGfG.js",
+      "_vendor-other-2dQjpXqN.js",
+      "_vendor-export-DJXqwj0t.js"
+    ],
+    "css": [
+      "assets/css/feature-ai-chat-Cn9qDu5w.css"
+    ]
+  },
+  "_feature-ai-generate-B7Ox0lJa.js": {
+    "file": "assets/js/feature-ai-generate-B7Ox0lJa.js",
+    "name": "feature-ai-generate",
+    "imports": [
+      "_rolldown-runtime-W-g5d7YK.js",
+      "_feature-ai-chat-D29D1GB-.js"
+    ],
+    "dynamicImports": [
+      "src/utils/unifiedApiKeyManager.ts",
+      "src/components/ai/PersonalizedRecommendations.tsx",
+      "src/components/ai/ParameterAdjustPanel.tsx",
+      "src/components/ai/OptimizationAdvisor.tsx",
+      "src/components/ai/FormulaSharePanel.tsx",
+      "src/components/ai/NeuralGeneratePanel.tsx"
+    ]
+  },
+  "_feature-ai-safety-DM6et1Ad.js": {
+    "file": "assets/js/feature-ai-safety-DM6et1Ad.js",
+    "name": "feature-ai-safety",
+    "imports": [
+      "_rolldown-runtime-W-g5d7YK.js",
+      "_feature-ai-chat-D29D1GB-.js",
+      "_feature-ai-generate-B7Ox0lJa.js"
+    ]
+  },
+  "_feature-analytics-CcZQe-rp.js": {
+    "file": "assets/js/feature-analytics-CcZQe-rp.js",
+    "name": "feature-analytics",
+    "imports": [
+      "_rolldown-runtime-W-g5d7YK.js",
+      "_feature-ai-chat-D29D1GB-.js",
+      "_feature-ai-safety-DM6et1Ad.js"
+    ]
+  },
+  "_feature-database-BusrdOhe.js": {
+    "file": "assets/js/feature-database-BusrdOhe.js",
+    "name": "feature-database",
+    "imports": [
+      "_rolldown-runtime-W-g5d7YK.js",
+      "_feature-ai-chat-D29D1GB-.js",
+      "_feature-ai-generate-B7Ox0lJa.js",
+      "_feature-ai-safety-DM6et1Ad.js",
+      "_feature-analytics-CcZQe-rp.js"
+    ],
+    "dynamicImports": [
+      "_feature-database-BusrdOhe.js"
+    ]
+  },
+  "_feature-experiment-DeHuPX2d.js": {
+    "file": "assets/js/feature-experiment-DeHuPX2d.js",
+    "name": "feature-experiment",
+    "imports": [
+      "_rolldown-runtime-W-g5d7YK.js",
+      "_feature-ai-chat-D29D1GB-.js",
+      "_feature-ai-generate-B7Ox0lJa.js",
+      "_feature-analytics-CcZQe-rp.js"
+    ]
+  },
+  "_feature-formula-CPUmCtPV.js": {
+    "file": "assets/js/feature-formula-CPUmCtPV.js",
+    "name": "feature-formula",
+    "imports": [
+      "_rolldown-runtime-W-g5d7YK.js",
+      "_feature-ai-chat-D29D1GB-.js",
+      "_feature-ai-generate-B7Ox0lJa.js",
+      "_feature-analytics-CcZQe-rp.js",
+      "_feature-database-BusrdOhe.js",
+      "_feature-experiment-DeHuPX2d.js"
+    ],
+    "dynamicImports": [
+      "_feature-ai-generate-B7Ox0lJa.js"
+    ]
+  },
+  "_feature-orgs-D12Ntc3I.js": {
+    "file": "assets/js/feature-orgs-D12Ntc3I.js",
+    "name": "feature-orgs",
+    "imports": [
+      "_rolldown-runtime-W-g5d7YK.js",
+      "_feature-ai-chat-D29D1GB-.js",
+      "_feature-ai-generate-B7Ox0lJa.js",
+      "_feature-analytics-CcZQe-rp.js"
+    ],
+    "dynamicImports": [
+      "_feature-orgs-D12Ntc3I.js"
+    ]
+  },
+  "_feature-settings-RKpY2dFc.js": {
+    "file": "assets/js/feature-settings-RKpY2dFc.js",
+    "name": "feature-settings",
+    "imports": [
+      "_rolldown-runtime-W-g5d7YK.js",
+      "_feature-ai-chat-D29D1GB-.js",
+      "_feature-ai-generate-B7Ox0lJa.js",
+      "_feature-formula-CPUmCtPV.js"
+    ],
+    "dynamicImports": [
+      "_feature-ai-chat-D29D1GB-.js"
+    ]
+  },
+  "_feature-user-D-hKrY45.js": {
+    "file": "assets/js/feature-user-D-hKrY45.js",
+    "name": "feature-user",
+    "imports": [
+      "_rolldown-runtime-W-g5d7YK.js",
+      "_feature-ai-chat-D29D1GB-.js",
+      "_feature-ai-generate-B7Ox0lJa.js",
+      "_feature-analytics-CcZQe-rp.js"
+    ]
+  },
+  "_rolldown-runtime-W-g5d7YK.js": {
+    "file": "assets/js/rolldown-runtime-W-g5d7YK.js",
+    "name": "rolldown-runtime"
+  },
+  "_useSSEAuth-C-aGOUAU.js": {
+    "file": "assets/js/useSSEAuth-C-aGOUAU.js",
+    "name": "useSSEAuth"
+  },
+  "_vendor-charts-B-WYy3IV.js": {
+    "file": "assets/js/vendor-charts-B-WYy3IV.js",
+    "name": "vendor-charts",
+    "imports": [
+      "_rolldown-runtime-W-g5d7YK.js",
+      "_feature-ai-safety-DM6et1Ad.js"
+    ]
+  },
+  "_vendor-date-DWFhzEXD.js": {
+    "file": "assets/js/vendor-date-DWFhzEXD.js",
+    "name": "vendor-date",
+    "imports": [
+      "_rolldown-runtime-W-g5d7YK.js"
+    ]
+  },
+  "_vendor-export-DJXqwj0t.js": {
+    "file": "assets/js/vendor-export-DJXqwj0t.js",
+    "name": "vendor-export",
+    "imports": [
+      "_rolldown-runtime-W-g5d7YK.js",
+      "_feature-ai-chat-D29D1GB-.js",
+      "_vendor-charts-B-WYy3IV.js",
+      "_vendor-date-DWFhzEXD.js"
+    ]
+  },
+  "_vendor-markdown-CYW6cGfG.js": {
+    "file": "assets/js/vendor-markdown-CYW6cGfG.js",
+    "name": "vendor-markdown",
+    "imports": [
+      "_rolldown-runtime-W-g5d7YK.js"
+    ]
+  },
+  "_vendor-other-2dQjpXqN.js": {
+    "file": "assets/js/vendor-other-2dQjpXqN.js",
+    "name": "vendor-other",
+    "imports": [
+      "_rolldown-runtime-W-g5d7YK.js",
+      "_feature-ai-chat-D29D1GB-.js"
+    ]
+  },
+  "_vendor-react-IsvL_sms.js": {
+    "file": "assets/js/vendor-react-IsvL_sms.js",
+    "name": "vendor-react",
+    "imports": [
+      "_rolldown-runtime-W-g5d7YK.js",
+      "_feature-ai-chat-D29D1GB-.js",
+      "_feature-database-BusrdOhe.js"
+    ]
+  },
+  "_vendor-ui-DtniA-yz.js": {
+    "file": "assets/js/vendor-ui-DtniA-yz.js",
+    "name": "vendor-ui",
+    "imports": [
+      "_rolldown-runtime-W-g5d7YK.js",
+      "_feature-ai-chat-D29D1GB-.js",
+      "_feature-ai-generate-B7Ox0lJa.js"
+    ]
+  },
+  "index.html": {
+    "file": "assets/js/index-DtH3ICp5.js",
+    "name": "index",
+    "src": "index.html",
+    "isEntry": true,
+    "imports": [
+      "_rolldown-runtime-W-g5d7YK.js",
+      "_feature-ai-chat-D29D1GB-.js",
+      "_vendor-other-2dQjpXqN.js",
+      "_vendor-react-IsvL_sms.js",
+      "_feature-ai-generate-B7Ox0lJa.js",
+      "_vendor-ui-DtniA-yz.js",
+      "_feature-user-D-hKrY45.js",
+      "_feature-settings-RKpY2dFc.js",
+      "_feature-ai-safety-DM6et1Ad.js",
+      "_feature-analytics-CcZQe-rp.js",
+      "_feature-experiment-DeHuPX2d.js",
+      "_feature-formula-CPUmCtPV.js"
+    ],
+    "dynamicImports": [
+      "src/components/dashboard/RealTimeSync.tsx",
+      "src/components/dashboard/TeamDashboardShare.tsx",
+      "src/components/dashboard/TeamOnlineStatus.tsx",
+      "src/components/dashboard/ChangeHistory.tsx",
+      "src/components/dashboard/TemplateManager.tsx",
+      "src/components/dashboard/ExportManager.tsx",
+      "src/components/dashboard/ApiIntegrationManager.tsx",
+      "src/components/dashboard/AIAnalysisPanel.tsx",
+      "_feature-ai-chat-D29D1GB-.js",
+      "src/pages/public/DocsPage.tsx",
+      "src/pages/public/ApiDocsPage.tsx",
+      "src/pages/public/FaqsPage.tsx",
+      "src/pages/public/AboutPage.tsx",
+      "src/pages/public/CareersPage.tsx",
+      "src/pages/public/PrivacyPage.tsx",
+      "src/pages/public/TermsPage.tsx",
+      "_feature-formula-CPUmCtPV.js",
+      "_feature-experiment-DeHuPX2d.js",
+      "src/pages/ai/AIAssistantPage.tsx",
+      "src/pages/academic/AcademicReportPage.tsx",
+      "_feature-database-BusrdOhe.js",
+      "src/pages/regulations/RegulationsPage.tsx",
+      "src/pages/terminology/TerminologyPage.tsx",
+      "_feature-user-D-hKrY45.js",
+      "_feature-settings-RKpY2dFc.js",
+      "src/pages/notification/NotificationPage.tsx",
+      "src/pages/workflow/WorkflowPage.tsx",
+      "src/pages/agent/AgentPage.tsx",
+      "src/pages/admin/AuditLogPage.tsx",
+      "src/pages/NotFoundPage.tsx",
+      "src/pages/TokenDocPage.tsx",
+      "_feature-analytics-CcZQe-rp.js",
+      "_feature-orgs-D12Ntc3I.js",
+      "src/pages/integrations/IntegrationsPage.tsx"
+    ],
+    "css": [
+      "assets/css/index-Cb06Xm4-.css"
+    ]
+  },
+  "src/components/ai/AdvancedPeptideAnalyzer.tsx": {
+    "file": "assets/js/AdvancedPeptideAnalyzer-R4kp6h0t.js",
+    "name": "AdvancedPeptideAnalyzer",
+    "src": "src/components/ai/AdvancedPeptideAnalyzer.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_rolldown-runtime-W-g5d7YK.js",
+      "_feature-ai-chat-D29D1GB-.js",
+      "_feature-ai-generate-B7Ox0lJa.js"
+    ]
+  },
+  "src/components/ai/AdvancedPeptideDesign.tsx": {
+    "file": "assets/js/AdvancedPeptideDesign-Dgf15e4S.js",
+    "name": "AdvancedPeptideDesign",
+    "src": "src/components/ai/AdvancedPeptideDesign.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_rolldown-runtime-W-g5d7YK.js",
+      "_feature-ai-chat-D29D1GB-.js",
+      "_feature-ai-generate-B7Ox0lJa.js"
+    ]
+  },
+  "src/components/ai/FormulaSharePanel.tsx": {
+    "file": "assets/js/FormulaSharePanel-C7qav1oC.js",
+    "name": "FormulaSharePanel",
+    "src": "src/components/ai/FormulaSharePanel.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_rolldown-runtime-W-g5d7YK.js",
+      "_feature-ai-chat-D29D1GB-.js",
+      "_feature-ai-generate-B7Ox0lJa.js",
+      "_vendor-markdown-CYW6cGfG.js"
+    ]
+  },
+  "src/components/ai/ModelConfigPanel.tsx": {
+    "file": "assets/js/ModelConfigPanel-WZ62DRv8.js",
+    "name": "ModelConfigPanel",
+    "src": "src/components/ai/ModelConfigPanel.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_rolldown-runtime-W-g5d7YK.js",
+      "_feature-ai-chat-D29D1GB-.js",
+      "src/utils/unifiedApiKeyManager.ts"
+    ]
+  },
+  "src/components/ai/NeuralGeneratePanel.tsx": {
+    "file": "assets/js/NeuralGeneratePanel-BOHNqjsP.js",
+    "name": "NeuralGeneratePanel",
+    "src": "src/components/ai/NeuralGeneratePanel.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_rolldown-runtime-W-g5d7YK.js",
+      "_feature-ai-chat-D29D1GB-.js",
+      "_feature-ai-generate-B7Ox0lJa.js"
+    ]
+  },
+  "src/components/ai/OptimizationAdvisor.tsx": {
+    "file": "assets/js/OptimizationAdvisor-D2gFw6A0.js",
+    "name": "OptimizationAdvisor",
+    "src": "src/components/ai/OptimizationAdvisor.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_rolldown-runtime-W-g5d7YK.js",
+      "_feature-ai-chat-D29D1GB-.js"
+    ]
+  },
+  "src/components/ai/ParameterAdjustPanel.tsx": {
+    "file": "assets/js/ParameterAdjustPanel-Dty5F6HC.js",
+    "name": "ParameterAdjustPanel",
+    "src": "src/components/ai/ParameterAdjustPanel.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_rolldown-runtime-W-g5d7YK.js",
+      "_feature-ai-chat-D29D1GB-.js",
+      "_feature-ai-generate-B7Ox0lJa.js"
+    ]
+  },
+  "src/components/ai/PersonalizedRecommendations.tsx": {
+    "file": "assets/js/PersonalizedRecommendations-B3xmLb6C.js",
+    "name": "PersonalizedRecommendations",
+    "src": "src/components/ai/PersonalizedRecommendations.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_rolldown-runtime-W-g5d7YK.js",
+      "_feature-ai-chat-D29D1GB-.js",
+      "_feature-ai-generate-B7Ox0lJa.js"
+    ]
+  },
+  "src/components/ai/features/AgentWorkflowTab.tsx": {
+    "file": "assets/js/AgentWorkflowTab-Csp6y-5K.js",
+    "name": "AgentWorkflowTab",
+    "src": "src/components/ai/features/AgentWorkflowTab.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_rolldown-runtime-W-g5d7YK.js",
+      "_feature-ai-chat-D29D1GB-.js",
+      "_deep_dev-DWlizdjF.js"
+    ]
+  },
+  "src/components/ai/features/FormulaInputWithOptimization.tsx": {
+    "file": "assets/js/FormulaInputWithOptimization-ClkotVHH.js",
+    "name": "FormulaInputWithOptimization",
+    "src": "src/components/ai/features/FormulaInputWithOptimization.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_rolldown-runtime-W-g5d7YK.js",
+      "_feature-ai-chat-D29D1GB-.js"
+    ],
+    "css": [
+      "assets/css/FormulaInputWithOptimization-Dr7TBkXJ.css"
+    ]
+  },
+  "src/components/ai/features/GeneticAlgorithmPanel.tsx": {
+    "file": "assets/js/GeneticAlgorithmPanel-Bdz2mSvw.js",
+    "name": "GeneticAlgorithmPanel",
+    "src": "src/components/ai/features/GeneticAlgorithmPanel.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_rolldown-runtime-W-g5d7YK.js",
+      "_feature-ai-chat-D29D1GB-.js",
+      "_feature-ai-generate-B7Ox0lJa.js",
+      "_feature-analytics-CcZQe-rp.js",
+      "_useSSEAuth-C-aGOUAU.js"
+    ]
+  },
+  "src/components/ai/features/MultiObjectivePanel.tsx": {
+    "file": "assets/js/MultiObjectivePanel-Df_eAb-A.js",
+    "name": "MultiObjectivePanel",
+    "src": "src/components/ai/features/MultiObjectivePanel.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_rolldown-runtime-W-g5d7YK.js",
+      "_feature-ai-chat-D29D1GB-.js",
+      "_vendor-react-IsvL_sms.js",
+      "_feature-ai-generate-B7Ox0lJa.js",
+      "_feature-analytics-CcZQe-rp.js",
+      "_feature-database-BusrdOhe.js",
+      "_useSSEAuth-C-aGOUAU.js"
+    ]
+  },
+  "src/components/ai/features/StabilityPredictTab.tsx": {
+    "file": "assets/js/StabilityPredictTab-BxCZvAnl.js",
+    "name": "StabilityPredictTab",
+    "src": "src/components/ai/features/StabilityPredictTab.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_rolldown-runtime-W-g5d7YK.js",
+      "_feature-ai-chat-D29D1GB-.js",
+      "_feature-ai-generate-B7Ox0lJa.js",
+      "_feature-ai-safety-DM6et1Ad.js",
+      "_feature-analytics-CcZQe-rp.js"
+    ]
+  },
+  "src/components/ai/features/SynergyTab.tsx": {
+    "file": "assets/js/SynergyTab-CKUOWyU7.js",
+    "name": "SynergyTab",
+    "src": "src/components/ai/features/SynergyTab.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_rolldown-runtime-W-g5d7YK.js",
+      "_feature-ai-chat-D29D1GB-.js",
+      "_feature-ai-generate-B7Ox0lJa.js"
+    ]
+  },
+  "src/components/ai/features/TastePredictTab.tsx": {
+    "file": "assets/js/TastePredictTab-i54dqGmZ.js",
+    "name": "TastePredictTab",
+    "src": "src/components/ai/features/TastePredictTab.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_rolldown-runtime-W-g5d7YK.js",
+      "_feature-ai-chat-D29D1GB-.js",
+      "_feature-ai-generate-B7Ox0lJa.js"
+    ]
+  },
+  "src/components/ai/rag/KnowledgeBasePanel.tsx": {
+    "file": "assets/js/KnowledgeBasePanel-DON_r4Rq.js",
+    "name": "KnowledgeBasePanel",
+    "src": "src/components/ai/rag/KnowledgeBasePanel.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_rolldown-runtime-W-g5d7YK.js",
+      "_feature-ai-chat-D29D1GB-.js",
+      "_feature-ai-generate-B7Ox0lJa.js",
+      "_feature-ai-safety-DM6et1Ad.js",
+      "_feature-database-BusrdOhe.js",
+      "_vendor-charts-B-WYy3IV.js"
+    ]
+  },
+  "src/components/dashboard/AIAnalysisPanel.tsx": {
+    "file": "assets/js/AIAnalysisPanel-DWmtq6Zu.js",
+    "name": "AIAnalysisPanel",
+    "src": "src/components/dashboard/AIAnalysisPanel.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_rolldown-runtime-W-g5d7YK.js",
+      "_feature-ai-chat-D29D1GB-.js",
+      "_feature-experiment-DeHuPX2d.js",
+      "_feature-formula-CPUmCtPV.js"
+    ]
+  },
+  "src/components/dashboard/ApiIntegrationManager.tsx": {
+    "file": "assets/js/ApiIntegrationManager-D8pUBQ1U.js",
+    "name": "ApiIntegrationManager",
+    "src": "src/components/dashboard/ApiIntegrationManager.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_rolldown-runtime-W-g5d7YK.js",
+      "_feature-ai-chat-D29D1GB-.js"
+    ]
+  },
+  "src/components/dashboard/ChangeHistory.tsx": {
+    "file": "assets/js/ChangeHistory-D7iBYGzK.js",
+    "name": "ChangeHistory",
+    "src": "src/components/dashboard/ChangeHistory.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_rolldown-runtime-W-g5d7YK.js",
+      "_feature-ai-chat-D29D1GB-.js"
+    ]
+  },
+  "src/components/dashboard/ExportManager.tsx": {
+    "file": "assets/js/ExportManager-e1vmeXxc.js",
+    "name": "ExportManager",
+    "src": "src/components/dashboard/ExportManager.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_rolldown-runtime-W-g5d7YK.js",
+      "_feature-ai-chat-D29D1GB-.js"
+    ]
+  },
+  "src/components/dashboard/RealTimeSync.tsx": {
+    "file": "assets/js/RealTimeSync-Be56HLcw.js",
+    "name": "RealTimeSync",
+    "src": "src/components/dashboard/RealTimeSync.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_rolldown-runtime-W-g5d7YK.js",
+      "_feature-ai-chat-D29D1GB-.js"
+    ]
+  },
+  "src/components/dashboard/TeamDashboardShare.tsx": {
+    "file": "assets/js/TeamDashboardShare-DldjTPzh.js",
+    "name": "TeamDashboardShare",
+    "src": "src/components/dashboard/TeamDashboardShare.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_rolldown-runtime-W-g5d7YK.js",
+      "_feature-ai-chat-D29D1GB-.js",
+      "index.html"
+    ]
+  },
+  "src/components/dashboard/TeamOnlineStatus.tsx": {
+    "file": "assets/js/TeamOnlineStatus-De5CiY_R.js",
+    "name": "TeamOnlineStatus",
+    "src": "src/components/dashboard/TeamOnlineStatus.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_rolldown-runtime-W-g5d7YK.js",
+      "_feature-ai-chat-D29D1GB-.js"
+    ]
+  },
+  "src/components/dashboard/TemplateManager.tsx": {
+    "file": "assets/js/TemplateManager-Wk79nkc9.js",
+    "name": "TemplateManager",
+    "src": "src/components/dashboard/TemplateManager.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_rolldown-runtime-W-g5d7YK.js",
+      "_feature-ai-chat-D29D1GB-.js",
+      "index.html"
+    ]
+  },
+  "src/pages/NotFoundPage.tsx": {
+    "file": "assets/js/NotFoundPage-DlC5KuSq.js",
+    "name": "NotFoundPage",
+    "src": "src/pages/NotFoundPage.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_feature-ai-chat-D29D1GB-.js"
+    ]
+  },
+  "src/pages/TokenDocPage.tsx": {
+    "file": "assets/js/TokenDocPage-CqLybG65.js",
+    "name": "TokenDocPage",
+    "src": "src/pages/TokenDocPage.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_rolldown-runtime-W-g5d7YK.js",
+      "_feature-ai-chat-D29D1GB-.js",
+      "_feature-ai-generate-B7Ox0lJa.js"
+    ]
+  },
+  "src/pages/academic/AcademicReportPage.tsx": {
+    "file": "assets/js/AcademicReportPage-CWPG9hYH.js",
+    "name": "AcademicReportPage",
+    "src": "src/pages/academic/AcademicReportPage.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_rolldown-runtime-W-g5d7YK.js",
+      "_feature-ai-chat-D29D1GB-.js",
+      "_feature-orgs-D12Ntc3I.js"
+    ]
+  },
+  "src/pages/admin/AuditLogPage.tsx": {
+    "file": "assets/js/AuditLogPage-8UiZWohD.js",
+    "name": "AuditLogPage",
+    "src": "src/pages/admin/AuditLogPage.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_rolldown-runtime-W-g5d7YK.js",
+      "_feature-ai-chat-D29D1GB-.js"
+    ],
+    "dynamicImports": [
+      "_feature-ai-chat-D29D1GB-.js"
+    ]
+  },
+  "src/pages/agent/AgentPage.tsx": {
+    "file": "assets/js/AgentPage-Bbi7yk-l.js",
+    "name": "AgentPage",
+    "src": "src/pages/agent/AgentPage.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_rolldown-runtime-W-g5d7YK.js",
+      "_feature-ai-chat-D29D1GB-.js",
+      "_deep_dev-DWlizdjF.js"
+    ]
+  },
+  "src/pages/ai/AIAssistantPage.tsx": {
+    "file": "assets/js/AIAssistantPage-ljP7tZ4h.js",
+    "name": "AIAssistantPage",
+    "src": "src/pages/ai/AIAssistantPage.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_rolldown-runtime-W-g5d7YK.js",
+      "_feature-ai-chat-D29D1GB-.js",
+      "index.html"
+    ],
+    "dynamicImports": [
+      "_feature-ai-generate-B7Ox0lJa.js",
+      "_feature-ai-safety-DM6et1Ad.js",
+      "src/components/ai/features/SynergyTab.tsx",
+      "src/components/ai/features/TastePredictTab.tsx",
+      "src/components/ai/features/StabilityPredictTab.tsx",
+      "src/components/ai/AdvancedPeptideAnalyzer.tsx",
+      "src/components/ai/AdvancedPeptideDesign.tsx",
+      "src/components/ai/ModelConfigPanel.tsx",
+      "src/components/ai/rag/KnowledgeBasePanel.tsx",
+      "src/components/ai/features/GeneticAlgorithmPanel.tsx",
+      "src/components/ai/features/MultiObjectivePanel.tsx",
+      "src/components/ai/features/FormulaInputWithOptimization.tsx",
+      "src/components/ai/features/AgentWorkflowTab.tsx"
+    ]
+  },
+  "src/pages/integrations/IntegrationsPage.tsx": {
+    "file": "assets/js/IntegrationsPage-Cc7NWvlf.js",
+    "name": "IntegrationsPage",
+    "src": "src/pages/integrations/IntegrationsPage.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_rolldown-runtime-W-g5d7YK.js",
+      "_feature-ai-chat-D29D1GB-.js"
+    ]
+  },
+  "src/pages/notification/NotificationPage.tsx": {
+    "file": "assets/js/NotificationPage-BgJ-duYZ.js",
+    "name": "NotificationPage",
+    "src": "src/pages/notification/NotificationPage.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_rolldown-runtime-W-g5d7YK.js",
+      "_feature-ai-chat-D29D1GB-.js",
+      "_feature-ai-generate-B7Ox0lJa.js",
+      "_feature-experiment-DeHuPX2d.js"
+    ]
+  },
+  "src/pages/public/AboutPage.tsx": {
+    "file": "assets/js/AboutPage-BuPfT9CY.js",
+    "name": "AboutPage",
+    "src": "src/pages/public/AboutPage.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_feature-ai-chat-D29D1GB-.js",
+      "_PublicLayout-DFw850vf.js"
+    ]
+  },
+  "src/pages/public/ApiDocsPage.tsx": {
+    "file": "assets/js/ApiDocsPage-CHUu3-iY.js",
+    "name": "ApiDocsPage",
+    "src": "src/pages/public/ApiDocsPage.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_feature-ai-chat-D29D1GB-.js",
+      "_PublicLayout-DFw850vf.js"
+    ]
+  },
+  "src/pages/public/CareersPage.tsx": {
+    "file": "assets/js/CareersPage-DDAg6CDH.js",
+    "name": "CareersPage",
+    "src": "src/pages/public/CareersPage.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_feature-ai-chat-D29D1GB-.js",
+      "_PublicLayout-DFw850vf.js"
+    ]
+  },
+  "src/pages/public/DocsPage.tsx": {
+    "file": "assets/js/DocsPage-DNbobqTC.js",
+    "name": "DocsPage",
+    "src": "src/pages/public/DocsPage.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_feature-ai-chat-D29D1GB-.js",
+      "index.html",
+      "_PublicLayout-DFw850vf.js"
+    ]
+  },
+  "src/pages/public/FaqsPage.tsx": {
+    "file": "assets/js/FaqsPage-D2L8b3Fp.js",
+    "name": "FaqsPage",
+    "src": "src/pages/public/FaqsPage.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_feature-ai-chat-D29D1GB-.js",
+      "index.html",
+      "_PublicLayout-DFw850vf.js"
+    ]
+  },
+  "src/pages/public/PrivacyPage.tsx": {
+    "file": "assets/js/PrivacyPage-BIvBenpV.js",
+    "name": "PrivacyPage",
+    "src": "src/pages/public/PrivacyPage.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_rolldown-runtime-W-g5d7YK.js",
+      "_feature-ai-chat-D29D1GB-.js",
+      "_PublicLayout-DFw850vf.js"
+    ]
+  },
+  "src/pages/public/TermsPage.tsx": {
+    "file": "assets/js/TermsPage-CxxMHfz_.js",
+    "name": "TermsPage",
+    "src": "src/pages/public/TermsPage.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_rolldown-runtime-W-g5d7YK.js",
+      "_feature-ai-chat-D29D1GB-.js",
+      "_PublicLayout-DFw850vf.js"
+    ]
+  },
+  "src/pages/regulations/RegulationsPage.tsx": {
+    "file": "assets/js/RegulationsPage-DCvJwDym.js",
+    "name": "RegulationsPage",
+    "src": "src/pages/regulations/RegulationsPage.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_rolldown-runtime-W-g5d7YK.js",
+      "_feature-ai-chat-D29D1GB-.js",
+      "_feature-database-BusrdOhe.js"
+    ]
+  },
+  "src/pages/terminology/TerminologyPage.tsx": {
+    "file": "assets/js/TerminologyPage-DF7nCawY.js",
+    "name": "TerminologyPage",
+    "src": "src/pages/terminology/TerminologyPage.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_rolldown-runtime-W-g5d7YK.js",
+      "_feature-ai-chat-D29D1GB-.js",
+      "_feature-ai-generate-B7Ox0lJa.js",
+      "index.html"
+    ]
+  },
+  "src/pages/workflow/WorkflowPage.tsx": {
+    "file": "assets/js/WorkflowPage-Dqip9GUP.js",
+    "name": "WorkflowPage",
+    "src": "src/pages/workflow/WorkflowPage.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_rolldown-runtime-W-g5d7YK.js",
+      "_feature-ai-chat-D29D1GB-.js",
+      "_feature-ai-generate-B7Ox0lJa.js",
+      "_feature-experiment-DeHuPX2d.js"
+    ]
+  },
+  "src/utils/unifiedApiKeyManager.ts": {
+    "file": "assets/js/unifiedApiKeyManager-D7WSVTXD.js",
+    "name": "unifiedApiKeyManager",
+    "src": "src/utils/unifiedApiKeyManager.ts",
+    "isDynamicEntry": true,
+    "imports": [
+      "_feature-ai-chat-D29D1GB-.js"
+    ]
+  }
+}

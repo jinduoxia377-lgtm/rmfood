@@ -1,4 +1,4 @@
-"""RMFOOD LLM Provider工厂与Fallback链
+﻿"""RMFOOD LLM Provider工厂与Fallback链
 
 提供智能的Provider管理：
 - 根据配置选择主Provider
@@ -113,7 +113,7 @@ class LLMProviderFactory:
                 
                 if provider_type == "openai":
                     provider = OpenAIProvider(pconfig)
-                elif provider_type in ("deepseek", "zhipu", "qwen", "custom"):
+                elif provider_type in ("deepseek", "zhipu", "qwen", "custom", "agnes"):
                     logger.info(f"OpenAI兼容Provider: {provider_type}")
                     provider = OpenAIProvider(pconfig)
                 elif provider_type == "anthropic":
@@ -455,7 +455,94 @@ def get_provider_factory() -> LLMProviderFactory:
 async def cleanup_provider_factory():
     """清理全局工厂实例"""
     global _factory_instance
-    
+
     if _factory_instance:
         await _factory_instance.close()
         _factory_instance = None
+
+
+def _set_factory_instance_none():
+    """同步清除工厂单例（供 orchestrator 使用）"""
+    global _factory_instance
+    _factory_instance = None
+
+
+async def reload_factory_from_db() -> None:
+    """从数据库重新加载 LLM 配置并重建工厂单例。
+    确保每次 Agent 执行都使用最新保存的 API Key 和 Provider 设置。
+    优先从 AIModelConfigService（前端配置面板保存的目标）读取，fallback 到 llm_service 运行时配置。
+    """
+    global _factory_instance
+    providers_config: Optional[Dict[str, Dict[str, Any]]] = None
+
+    # 1. 尝试从 AIModelConfigService 读取（前端配置面板保存的位置）
+    try:
+        from app.services.ai_model_config_service import AIModelConfigService
+        from app.core.database.session import async_session_factory
+        async with async_session_factory() as db:
+            cfg = await AIModelConfigService.get_config(db, 'llm', tenant_id=1)
+            if cfg and cfg.api_key_plaintext:
+                providers_config = {
+                    "primary": {
+                        "type": cfg.provider or "openai",
+                        "api_key": cfg.api_key_plaintext,
+                        "base_url": cfg.base_url or "",
+                        "model": cfg.model or "",
+                        "max_tokens": cfg.max_tokens,
+                        "temperature": cfg.temperature,
+                    },
+                }
+                logger.info("🔄 Provider工厂已从AIModelConfigService重载: provider=%s, model=%s, key_len=%d",
+                            providers_config["primary"].get("provider"),
+                            providers_config["primary"].get("model"),
+                            len(providers_config["primary"].get("api_key", "")))
+    except Exception as e:
+        logger.warning("从AIModelConfigService加载失败，尝试llm_service: %s", e)
+
+    # 2. Fallback: 从 llm_service 运行时配置读取
+    if not providers_config:
+        try:
+            from app.services.llm_service import load_config_from_db
+            db_config = await load_config_from_db()
+            if db_config and db_config.api_key:
+                providers_config = {
+                    "primary": {
+                        "type": db_config.provider or "openai",
+                        "api_key": db_config.api_key,
+                        "base_url": db_config.base_url or "",
+                        "model": db_config.model or "",
+                        "max_tokens": db_config.max_tokens,
+                        "temperature": db_config.temperature,
+                    },
+                }
+                logger.info("🔄 Provider工厂已从llm_service数据库重载: provider=%s, model=%s",
+                            db_config.provider, db_config.model)
+        except Exception as e:
+            logger.debug("从llm_service加载失败: %s", e)
+
+    # 3. 如果仍无配置，使用运行时内存配置
+    if not providers_config:
+        runtime = _get_runtime_config()
+        if runtime.get('api_key'):
+            providers_config = {
+                "primary": {
+                    "type": runtime.get('provider') or 'openai',
+                    "api_key": runtime.get('api_key', ''),
+                    "base_url": runtime.get('base_url', ''),
+                    "model": runtime.get('model', ''),
+                    "max_tokens": runtime.get('max_tokens', 4096),
+                    "temperature": runtime.get('temperature', 0.7),
+                },
+            }
+
+    # 重建工厂
+    if providers_config:
+        if _factory_instance:
+            await _factory_instance.close()
+        _factory_instance = LLMProviderFactory(providers_config)
+    else:
+        # 完全无配置，清除单例让下次懒加载
+        if _factory_instance:
+            await _factory_instance.close()
+        _factory_instance = None
+

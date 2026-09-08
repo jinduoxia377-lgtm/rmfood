@@ -1,0 +1,201 @@
+/* 配方详情页样式 */
+.page-container {
+  min-height: 100vh;
+  background-color: var(--color-bg-primary);
+}
+
+.content-scroll {
+  height: calc(100vh - 160rpx);
+}
+
+/* 配方头部卡片 */
+.formula-header-card {
+  position: relative;
+  margin: var(--space-3);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+}
+
+.formula-cover {
+  width: 100%;
+  height: 400rpx;
+  display: block;
+}
+
+.formula-score-badge {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+}
+
+/* 信息卡片 */
+.info-card {
+  margin: var(--space-3);
+  padding: var(--space-4);
+}
+
+.formula-name {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.formula-desc {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-relaxed);
+  margin-bottom: var(--space-3);
+}
+
+.tags-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* 表格样式 */
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-3);
+}
+
+.ingredients-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table-header, .table-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 2fr;
+  padding: var(--space-3) 0;
+  border-bottom: 1rpx solid var(--color-border);
+}
+
+.table-header {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-muted);
+  border-bottom: 2rpx solid var(--color-border);
+}
+
+.table-row.even {
+  background-color: var(--color-bg-tertiary);
+}
+
+.col-name, .col-amount, .col-latin {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+}
+
+.col-latin {
+  font-style: italic;
+  color: var(--color-text-muted);
+}
+
+/* 内容区域 */
+.sop-content,
+.usage-content,
+.mechanism-content,
+.monitoring-content {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-relaxed);
+}
+
+.indications-content {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* 禁忌区域 */
+.warning-card {
+  border-left: 4rpx solid var(--color-warning);
+}
+
+.contraindications-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.contraindication-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background-color: rgba(239, 68, 68, 0.05);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+/* 元数据卡片 */
+.meta-card {
+  margin: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+}
+
+.meta-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
+}
+
+.meta-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.meta-value {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin-left: auto;
+}
+
+/* 底部间距 */
+.bottom-spacing {
+  height: calc(160rpx + env(safe-area-inset-bottom));
+}
+
+/* 底部操作栏 */
+.bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--color-bg-secondary);
+  box-shadow: var(--shadow-lg);
+  gap: var(--space-3);
+  z-index: var(--z-index-fixed);
+}
+
+/* Toast组件 */
+.toast {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(0, 0, 0, 0.75);
+  color: var(--color-text-white);
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-base);
+  z-index: var(--z-index-toast);
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}

@@ -1,3 +1,4 @@
+from scripts.db_utils import get_asyncpg_dsn
 """Debug: 查询非标准分类记录"""
 import asyncio
 import asyncpg
@@ -55,7 +56,7 @@ def normalize_category(cat):
     return current
 
 async def main():
-    conn = await asyncpg.connect('postgresql://postgres@localhost:5432/rmfood_platform')
+    conn = await asyncpg.connect(get_asyncpg_dsn())
 
     rows = await conn.fetch("""
         SELECT id, name_cn, category FROM tcm_herbs ORDER BY id

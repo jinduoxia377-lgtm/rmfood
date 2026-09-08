@@ -1,0 +1,23 @@
+[
+  {
+    "herb_cn_name": "矮地茶",
+    "herb_pinyin": "Aidicha",
+    "herb_en_name": "Ardisiae Japonicae Herba",
+    "child_cn_name": "止咳平喘药",
+    "child_en_name": "Antitussive Antiasthmetics"
+  },
+  {
+    "herb_cn_name": "艾叶",
+    "herb_pinyin": "Aiye",
+    "herb_en_name": "Folium Artemisiae Argyi",
+    "child_cn_name": "温经止血药",
+    "child_en_name": "Channel-Warming Hemostatic"
+  },
+  {
+    "herb_cn_name": "安息香",
+    "herb_pinyin": "Anxixiang",
+    "herb_en_name": "Benzoinum",
+    "child_cn_name": "开窍药",
+    "child_en_name": "Resuscitative Stimulant; Resuscitative Medicinal"
+  }
+]

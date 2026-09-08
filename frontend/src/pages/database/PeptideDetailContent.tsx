@@ -3,7 +3,10 @@
  * 活性肽详情内容组件（增强版）
  * 包含氨基酸序列可视化（彩色编码）、属性指标
  */
+import React, { useMemo } from 'react'
 import { ExternalLink } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
+import { databaseApi } from '@/api/database'
 import type { BioactivePeptide } from '@/types'
 
 // ─── 氨基酸单字母映射 ───
@@ -24,6 +27,16 @@ const AA_COLORS: Record<string, string> = {
 export function PeptideDetailContent({ peptide }: { peptide: BioactivePeptide }) {
   const sequence = peptide.sequence || ''
   const aaCount = sequence.length
+
+  const activityTypesQuery = useQuery({
+    queryKey: ['db-peptide-types-detail'],
+    queryFn: () => databaseApi.getActivityTypes(),
+  });
+  const activityTypeMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    activityTypesQuery.data?.activity_types?.forEach((t) => { map[t.type_en] = t.type_cn || t.type_en; });
+    return map;
+  }, [activityTypesQuery.data]);
 
   // 序列片段渲染（每10个一组）
   const sequenceChunks: string[] = []
@@ -72,7 +85,7 @@ export function PeptideDetailContent({ peptide }: { peptide: BioactivePeptide })
         {[
           { label: '来源蛋白', value: (peptide as { source_protein?: string }).source_protein || '-', bg: 'bg-primary-50 dark:bg-primary-950/40' },
           { label: '来源生物', value: (peptide as { source_organism?: string }).source_organism || '-', bg: 'bg-secondary-50 dark:bg-blue-950/40' },
-          { label: '活性类型', value: (peptide as { activity_type?: string }).activity_type || '-', bg: 'bg-accent-50 dark:bg-accent-950/40' },
+          { label: '活性类型', value: activityTypeMap[(peptide as { activity_type?: string }).activity_type ?? ''] || (peptide as { activity_type?: string }).activity_type || '-', bg: 'bg-accent-50 dark:bg-accent-950/40' },
           { label: '活性值', value: (peptide as { activity_value?: number; activity_unit?: string }).activity_value != null ? `${(peptide as { activity_value?: number }).activity_value} ${(peptide as { activity_unit?: string }).activity_unit || ''}` : '-', bg: 'bg-warning-50 dark:bg-amber-950/40' },
           { label: '分子量 (Da)', value: (peptide as { molecular_weight?: number }).molecular_weight?.toFixed(2) || '-', bg: 'bg-cyan-50 dark:bg-cyan-950/40' },
           { label: '水解酶', value: (peptide as { hydrolysis_enzyme?: string }).hydrolysis_enzyme || '-', bg: 'bg-rose-50 dark:bg-rose-950/40' },

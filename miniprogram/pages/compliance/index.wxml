@@ -1,0 +1,467 @@
+<!-- 合规标准 -->
+<view class="page-container">
+  <!-- 顶部导航 -->
+  <view class="header" style="padding-top: {{statusBarHeight}}px;">
+    <view class="header-content">
+      <!-- 汉堡菜单 -->
+      <view class="hamburger" bindtap="toggleMenu">
+        <view class="hamburger-line {{menuOpen ? 'active' : ''}}"></view>
+        <view class="hamburger-line {{menuOpen ? 'active' : ''}}"></view>
+        <view class="hamburger-line {{menuOpen ? 'active' : ''}}"></view>
+      </view>
+      <!-- 标题 -->
+      <view class="header-title">
+        <view class="title-main">合规标准</view>
+      </view>
+      <!-- 刷新 -->
+      <view class="header-action" bindtap="refreshData">
+        <text>🔄</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- Tab 导航 -->
+  <view class="tab-container">
+    <scroll-view class="tab-scroll" scroll-x enable-flex>
+      <view class="tab-list">
+        <view
+          wx:for="{{tabs}}"
+          wx:key="key"
+          class="tab-item {{activeTab === item.key ? 'active' : ''}}"
+          bindtap="switchTab"
+          data-tab="{{item.key}}"
+        >
+          <text class="tab-icon">{{item.icon}}</text>
+          <text class="tab-name">{{item.label}}</text>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 内容区 -->
+  <scroll-view class="content-scroll" scroll-y refresher-enabled refresher-triggered="{{refreshing}}" bindrefresherrefresh="onPullRefresh">
+
+    <!-- 国家标准 Tab -->
+    <view wx:if="{{activeTab === 'standards'}}" class="tab-content">
+      <!-- 搜索和筛选 -->
+      <view class="filter-bar">
+        <view class="filter-input-wrapper">
+          <text class="filter-icon">🔍</text>
+          <input class="filter-input" placeholder="搜索标准号或名称..." value="{{standardSearch}}" bindinput="onStandardSearch" bindconfirm="filterStandards" />
+        </view>
+        <view class="filter-select" bindtap="showCategoryPicker">
+          <text>{{standardCategory || '全部分类'}}</text>
+          <text class="select-arrow">▼</text>
+        </view>
+      </view>
+      <!-- 统计信息 -->
+      <view class="std-stats card">
+        <view class="stat-row">
+          <view class="stat-item">
+            <text class="stat-num">{{standardsCount}}</text>
+            <text class="stat-label">国家标准</text>
+          </view>
+          <view class="stat-item">
+            <text class="stat-num">{{homologyCount}}</text>
+            <text class="stat-label">药食同源</text>
+          </view>
+          <view class="stat-item">
+            <text class="stat-num">{{gb2760Count}}</text>
+            <text class="stat-label">添加剂</text>
+          </view>
+          <view class="stat-item">
+            <text class="stat-num">{{gb14880Count}}</text>
+            <text class="stat-label">强化剂</text>
+          </view>
+        </view>
+      </view>
+      <!-- 标准列表 -->
+      <view wx:if="{{standardsLoading}}" class="loading-state">
+        <text>加载中...</text>
+      </view>
+      <view wx:else class="standards-list">
+        <view
+          wx:for="{{filteredStandards}}"
+          wx:key="standard_code"
+          class="standard-item"
+          bindtap="viewStandardDetail"
+          data-item="{{item}}"
+          data-type="standard"
+        >
+          <view class="std-header">
+            <text class="std-code">{{item.standard_code}}</text>
+            <view class="std-priority priority-{{item.priority || 'P2'}}">
+              <text>{{item.priority === 'P0-核心必备' ? '核心' : item.priority === 'P1-重要' ? '重要' : '一般'}}</text>
+            </view>
+          </view>
+          <text class="std-title">{{item.title}}</text>
+          <view class="std-meta">
+            <text class="std-category">{{item.category}}</text>
+            <text class="std-date">{{item.publish_date}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- GB 2760 Tab -->
+    <view wx:if="{{activeTab === 'gb2760'}}" class="tab-content">
+      <!-- 筛选 -->
+      <view class="filter-bar">
+        <view class="filter-input-wrapper">
+          <text class="filter-icon">🔍</text>
+          <input class="filter-input" placeholder="搜索添加剂名称..." value="{{gb2760Search}}" bindinput="onGb2760Search" bindconfirm="filterGb2760" />
+        </view>
+        <view class="filter-select" bindtap="showGb2760FunctionPicker">
+          <text>{{gb2760Function || '全部功能'}}</text>
+          <text class="select-arrow">▼</text>
+        </view>
+      </view>
+      <!-- 排序 -->
+      <view class="sort-bar">
+        <view class="sort-item {{gb2760Sort.field === 'name' ? 'active' : ''}}" bindtap="setGb2760Sort" data-field="name">名称</view>
+        <view class="sort-item {{gb2760Sort.field === 'max_usage' ? 'active' : ''}}" bindtap="setGb2760Sort" data-field="max_usage">用量</view>
+      </view>
+      <!-- 列表 -->
+      <view wx:if="{{gb2760Loading}}" class="loading-state">
+        <text>加载中...</text>
+      </view>
+      <view wx:else class="additive-list">
+        <view
+          wx:for="{{sortedGb2760}}"
+          wx:key="cas"
+          class="additive-item"
+          bindtap="viewGb2760Detail"
+          data-item="{{item}}"
+        >
+          <view class="additive-header">
+            <text class="additive-name">{{item.name}}</text>
+            <view class="additive-function">
+              <text>{{item.function}}</text>
+            </view>
+          </view>
+          <view class="additive-meta">
+            <text class="meta-item">CAS: {{item.cas || '—'}}</text>
+            <text class="meta-item">E编码: {{item.e_number || '—'}}</text>
+          </view>
+          <view class="additive-usage">
+            <text class="usage-label">最大使用量:</text>
+            <text class="usage-value">{{item.max_usage}}</text>
+          </view>
+          <view class="additive-categories">
+            <view wx:for="{{item.categories || []}}" wx:for-item="cat" wx:key="index" class="cat-tag">{{cat}}</view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- GB 14880 Tab -->
+    <view wx:if="{{activeTab === 'gb14880'}}" class="tab-content">
+      <!-- 筛选 -->
+      <view class="filter-bar">
+        <view class="filter-input-wrapper">
+          <text class="filter-icon">🔍</text>
+          <input class="filter-input" placeholder="搜索强化剂名称..." value="{{gb14880Search}}" bindinput="onGb14880Search" bindconfirm="filterGb14880" />
+        </view>
+      </view>
+      <!-- 排序 -->
+      <view class="sort-bar">
+        <view class="sort-item {{gb14880Sort.field === 'name' ? 'active' : ''}}" bindtap="setGb14880Sort" data-field="name">名称</view>
+        <view class="sort-item {{gb14880Sort.field === 'min' ? 'active' : ''}}" bindtap="setGb14880Sort" data-field="min">用量</view>
+      </view>
+      <!-- 列表 -->
+      <view wx:if="{{gb14880Loading}}" class="loading-state">
+        <text>加载中...</text>
+      </view>
+      <view wx:else class="enricher-list">
+        <view
+          wx:for="{{sortedGb14880}}"
+          wx:key="cas"
+          class="enricher-item"
+          bindtap="viewGb14880Detail"
+          data-item="{{item}}"
+        >
+          <view class="enricher-header">
+            <text class="enricher-name">{{item.name}}</text>
+            <view class="enricher-function">
+              <text>{{item.function}}</text>
+            </view>
+          </view>
+          <view class="enricher-meta">
+            <text class="meta-item">CAS: {{item.cas || '—'}}</text>
+          </view>
+          <view class="enricher-dosage">
+            <text class="dosage-label">用量范围:</text>
+            <text class="dosage-value">{{item.min}} ~ {{item.max}}</text>
+          </view>
+          <view class="enricher-categories">
+            <view wx:for="{{item.categories || []}}" wx:for-item="cat" wx:key="index" class="cat-tag purple">{{cat}}</view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 药食同源 Tab -->
+    <view wx:if="{{activeTab === 'homology'}}" class="tab-content">
+      <!-- 搜索 -->
+      <view class="homology-search">
+        <view class="search-box">
+          <text class="search-icon">🔍</text>
+          <input class="search-input" placeholder="搜索药食同源材料..." value="{{homologySearch}}" bindinput="onHomologySearch" bindconfirm="searchHomology" />
+        </view>
+      </view>
+      <!-- 排序 -->
+      <view class="sort-bar">
+        <view class="sort-item {{homologySort.field === 'name' ? 'active' : ''}}" bindtap="setHomologySort" data-field="name">名称</view>
+        <view class="sort-item {{homologySort.field === 'max_dosage' ? 'active' : ''}}" bindtap="setHomologySort" data-field="max_dosage">用量</view>
+      </view>
+      <!-- 列表 -->
+      <view class="homology-list">
+        <view
+          wx:for="{{sortedHomology}}"
+          wx:key="name"
+          class="homology-item"
+          bindtap="viewHomologyDetail"
+          data-item="{{item}}"
+        >
+          <view class="homology-left">
+            <text class="homology-icon">⭐</text>
+            <text class="homology-name">{{item.name}}</text>
+          </view>
+          <view class="homology-right">
+            <text class="homology-dosage">{{item.max_dosage}}g/天</text>
+            <text class="homology-arrow">›</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 禁忌搭配 Tab -->
+    <view wx:if="{{activeTab === 'prohibited'}}" class="tab-content">
+      <!-- 搜索 -->
+      <view class="prohibited-search">
+        <view class="search-box">
+          <text class="search-icon">🔍</text>
+          <input class="search-input" placeholder="搜索禁忌搭配..." value="{{prohibitedSearch}}" bindinput="onProhibitedSearch" bindconfirm="filterProhibited" />
+        </view>
+      </view>
+      <!-- 统计 -->
+      <view class="prohibited-stats card">
+        <view class="stat-row">
+          <view class="stat-item warning">
+            <text class="stat-num">{{prohibitedPairs.length}}</text>
+            <text class="stat-label">禁忌搭配</text>
+          </view>
+          <view class="stat-item danger">
+            <text class="stat-num">{{gbProhibitedItems.length}}</text>
+            <text class="stat-label">禁用物质</text>
+          </view>
+        </view>
+      </view>
+      <!-- 禁忌列表 -->
+      <view class="prohibited-list">
+        <view
+          wx:for="{{filteredProhibited}}"
+          wx:key="index"
+          class="prohibited-item"
+        >
+          <view class="prohibited-pair">
+            <text wx:for="{{item.pair}}" wx:for-item="name" wx:key="index" class="pair-name">{{name}}</text>
+          </view>
+          <text class="prohibited-rule">{{item.rule}}</text>
+        </view>
+      </view>
+      <!-- 禁用物质 -->
+      <view wx:if="{{gbProhibitedItems.length > 0}}" class="prohibited-subsection">
+        <view class="subsection-title">禁用/限制使用物质</view>
+        <view
+          wx:for="{{gbProhibitedItems}}"
+          wx:key="name"
+          class="prohibited-material"
+          bindtap="viewProhibitedDetail"
+          data-item="{{item}}"
+        >
+          <view class="material-header">
+            <text class="material-name">{{item.name}}</text>
+            <view class="material-category">
+              <text>{{item.category}}</text>
+            </view>
+          </view>
+          <text class="material-source">依据: {{item.source_law}}</text>
+          <text class="material-reason">{{item.reason}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 合规检查 Tab -->
+    <view wx:if="{{activeTab === 'check'}}" class="tab-content">
+      <!-- 人群选择 -->
+      <view class="population-selector">
+        <view
+          wx:for="{{populations}}"
+          wx:key="key"
+          class="population-item {{population === item.key ? 'active' : ''}}"
+          bindtap="setPopulation"
+          data-pop="{{item.key}}"
+        >
+          <text>{{item.label}}</text>
+        </view>
+      </view>
+      <!-- 成分输入 -->
+      <view class="ingredients-section">
+        <view class="section-header">
+          <text class="section-title">配方成分</text>
+          <text class="add-btn" bindtap="addIngredient">+ 添加</text>
+        </view>
+        <view wx:for="{{ingredients}}" wx:key="index" class="ingredient-row">
+          <input class="ingredient-name" placeholder="成分名称" value="{{item.name}}" bindinput="onIngredientNameChange" data-index="{{index}}" />
+          <input class="ingredient-dosage" placeholder="用量(mg)" value="{{item.dosage_mg}}" bindinput="onIngredientDosageChange" data-index="{{index}}" type="digit" />
+          <view wx:if="{{ingredients.length > 1}}" class="remove-btn" bindtap="removeIngredient" data-index="{{index}}">✕</view>
+        </view>
+      </view>
+      <!-- 检查按钮 -->
+      <button class="check-btn" bindtap="performCheck" loading="{{checking}}">
+        <text>开始合规检查</text>
+      </button>
+      <!-- 检查结果 -->
+      <view wx:if="{{checkResult}}" class="check-result card">
+        <view class="result-header">
+          <view class="result-score" style="background: {{getScoreColor(checkResult.score)}};">
+            <text class="score-value">{{checkResult.score}}</text>
+            <text class="score-label">分</text>
+          </view>
+          <view class="result-status {{checkResult.status}}">
+            <text>{{checkResult.status === 'compliant' ? '✅ 合规' : checkResult.status === 'warning' ? '⚠️ 需注意' : '❌ 不合规'}}</text>
+          </view>
+        </view>
+        <!-- 违规列表 -->
+        <view wx:if="{{checkResult.violations && checkResult.violations.length > 0}}" class="violations-section">
+          <view class="subsection-title">违规项 ({{checkResult.violations.length}})</view>
+          <view
+            wx:for="{{checkResult.violations}}"
+            wx:key="index"
+            class="violation-item"
+          >
+            <view class="violation-header">
+              <text class="violation-ingredient">{{item.ingredient}}</text>
+              <view class="violation-type type-{{item.type}}">
+                <text>{{violationTypeLabels[item.type]}}</text>
+              </view>
+            </view>
+            <text class="violation-message">{{item.message}}</text>
+            <view wx:if="{{item.max_allowed}}" class="violation-dosage">
+              <text class="dosage-label">限量: {{item.max_allowed}}</text>
+              <text class="dosage-actual">实际: {{item.actual_value}}</text>
+            </view>
+          </view>
+        </view>
+        <!-- 警告 -->
+        <view wx:if="{{checkResult.warnings && checkResult.warnings.length > 0}}" class="warnings-section">
+          <view class="subsection-title">警告 ({{checkResult.warnings.length}})</view>
+          <view wx:for="{{checkResult.warnings}}" wx:key="index" class="warning-item">
+            <text>⚠️ {{item}}</text>
+          </view>
+        </view>
+        <!-- 建议 -->
+        <view wx:if="{{checkResult.suggestions && checkResult.suggestions.length > 0}}" class="suggestions-section">
+          <view class="subsection-title">改进建议</view>
+          <view wx:for="{{checkResult.suggestions}}" wx:key="index" class="suggestion-item">
+            <text>💡 {{item}}</text>
+          </view>
+        </view>
+        <!-- 操作按钮 -->
+        <view class="result-actions">
+          <button class="action-btn auto-fix" bindtap="autoFixFormula">
+            <text>🤖 自动修复</text>
+          </button>
+          <button class="action-btn save-btn" bindtap="saveCheckRecord">
+            <text>💾 保存记录</text>
+          </button>
+        </view>
+      </view>
+    </view>
+
+  </scroll-view>
+
+  <!-- 详情弹窗 -->
+  <view wx:if="{{detailModal}}" class="modal-overlay" bindtap="closeDetailModal">
+    <view class="modal-content" catchtap="stopProp">
+      <view class="modal-header" style="background: {{getModalHeaderBg()}};">
+        <text class="modal-title">{{detailModal.title}}</text>
+        <view class="modal-close" bindtap="closeDetailModal">
+          <text>✕</text>
+        </view>
+      </view>
+      <scroll-view class="modal-body" scroll-y>
+        <view wx:if="{{detailModal.type === 'standard'}}" class="detail-content">
+          <view class="detail-grid">
+            <view class="detail-row"><text class="detail-label">标准号</text><text class="detail-value">{{detailModal.item.standard_code}}</text></view>
+            <view class="detail-row"><text class="detail-label">状态</text><text class="detail-value"><view class="badge status-{{detailModal.item.status === '最新' ? 'success' : 'default'}}">{{detailModal.item.status}}</view></text></view>
+            <view class="detail-row"><text class="detail-label">发布日期</text><text class="detail-value">{{detailModal.item.publish_date}}</text></view>
+            <view class="detail-row"><text class="detail-label">实施日期</text><text class="detail-value">{{detailModal.item.implementation_date}}</text></view>
+            <view class="detail-row"><text class="detail-label">优先级</text><text class="detail-value">{{detailModal.item.priority || 'P2'}}</text></view>
+            <view class="detail-row"><text class="detail-label">类别</text><text class="detail-value">{{detailModal.item.category}}</text></view>
+          </view>
+          <view class="detail-section">
+            <text class="detail-section-title">标准摘要</text>
+            <text class="detail-section-content">{{detailModal.item.summary}}</text>
+          </view>
+          <view class="detail-section">
+            <text class="detail-section-title">详细内容</text>
+            <text class="detail-section-content pre-wrap">{{detailModal.item.content || detailModal.item.summary}}</text>
+          </view>
+          <view wx:if="{{detailModal.item.link}}" class="detail-link">
+            <text>🔗 <text bindtap="openLink" data-url="{{detailModal.item.link}}">查看官方标准原文</text></text>
+          </view>
+        </view>
+        <view wx:if="{{detailModal.type === 'gb2760'}}" class="detail-content">
+          <view class="detail-grid">
+            <view class="detail-row"><text class="detail-label">添加剂名称</text><text class="detail-value">{{detailModal.item.name}}</text></view>
+            <view class="detail-row"><text class="detail-label">功能类别</text><text class="detail-value"><view class="badge info">{{detailModal.item.function}}</view></text></view>
+            <view class="detail-row"><text class="detail-label">CAS号</text><text class="detail-value">{{detailModal.item.cas || '—'}}</text></view>
+            <view class="detail-row"><text class="detail-label">E编码</text><text class="detail-value">{{detailModal.item.e_number || '—'}}</text></view>
+            <view class="detail-row"><text class="detail-label">最大使用量</text><text class="detail-value highlight">{{detailModal.item.max_usage}}</text></view>
+          </view>
+          <view class="detail-section">
+            <text class="detail-section-title">适用食品类别</text>
+            <view class="tag-list">
+              <view wx:for="{{detailModal.item.categories || []}}" wx:for-item="cat" wx:key="index" class="tag info">{{cat}}</view>
+            </view>
+          </view>
+          <view wx:if="{{detailModal.item.notes}}" class="detail-warning">
+            <text>⚠️ {{detailModal.item.notes}}</text>
+          </view>
+        </view>
+        <view wx:if="{{detailModal.type === 'gb14880'}}" class="detail-content">
+          <view class="detail-grid">
+            <view class="detail-row"><text class="detail-label">强化剂名称</text><text class="detail-value">{{detailModal.item.name}}</text></view>
+            <view class="detail-row"><text class="detail-label">功能类别</text><text class="detail-value"><view class="badge purple">{{detailModal.item.function}}</view></text></view>
+            <view class="detail-row"><text class="detail-label">CAS号</text><text class="detail-value">{{detailModal.item.cas || '—'}}</text></view>
+            <view class="detail-row"><text class="detail-label">最小用量</text><text class="detail-value highlight">{{detailModal.item.min}}</text></view>
+            <view class="detail-row"><text class="detail-label">最大用量</text><text class="detail-value highlight">{{detailModal.item.max}}</text></view>
+          </view>
+          <view class="detail-section">
+            <text class="detail-section-title">适用食品类别</text>
+            <view class="tag-list">
+              <view wx:for="{{detailModal.item.categories || []}}" wx:for-item="cat" wx:key="index" class="tag purple">{{cat}}</view>
+            </view>
+          </view>
+        </view>
+        <view wx:if="{{detailModal.type === 'prohibited'}}" class="detail-content">
+          <view class="detail-grid">
+            <view class="detail-row"><text class="detail-label">物质名称</text><text class="detail-value danger">{{detailModal.item.name}}</text></view>
+            <view class="detail-row"><text class="detail-label">类别</text><text class="detail-value"><view class="badge danger">{{detailModal.item.category}}</view></text></view>
+            <view class="detail-row"><text class="detail-label">法规依据</text><text class="detail-value">{{detailModal.item.source_law}}</text></view>
+            <view class="detail-row"><text class="detail-label">禁用原因</text><text class="detail-value">{{detailModal.item.reason}}</text></view>
+          </view>
+          <view class="detail-hazard">
+            <text class="hazard-title">健康危害</text>
+            <text class="hazard-content">{{detailModal.item.hazard}}</text>
+          </view>
+        </view>
+      </scroll-view>
+    </view>
+  </view>
+
+  <!-- 底部间距 -->
+  <view class="bottom-spacing"></view>
+</view>

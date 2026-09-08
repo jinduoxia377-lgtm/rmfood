@@ -1,10 +1,11 @@
+from scripts.db_utils import get_asyncpg_dsn
 """中药材重复数据深度分析 — 对比每组的差异"""
 import asyncio
 import asyncpg
 import json
 
 async def main():
-    conn = await asyncpg.connect('postgresql://postgres@localhost:5432/rmfood_platform')
+    conn = await asyncpg.connect(get_asyncpg_dsn())
     
     # 获取所有重复组
     dupes = await conn.fetch("""

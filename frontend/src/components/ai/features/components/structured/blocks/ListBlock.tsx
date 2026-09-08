@@ -40,7 +40,22 @@ const BULLET_COLORS = [
 ]
 
 function ListBlock({ data }: ListBlockProps) {
-  const { title, variant = 'bullet', items = [] } = data
+  // 兼容 LLM 常见变体：自动推断 variant，归一化 items
+  const rawItems = data.items || []
+  const normalizedItems = rawItems.map((item: any) => {
+    if (typeof item === 'string') return { label: item }
+    return item
+  })
+  const inferredVariant: 'bullet' | 'number' | 'analysis' | 'checklist' =
+    data.variant || (normalizedItems.some((i: any) => i.description) ? 'analysis' : 'bullet')
+
+  const normalizedData: ListData = {
+    ...data,
+    variant: inferredVariant,
+    items: normalizedItems,
+  }
+
+  const { title, variant, items = normalizedItems } = normalizedData
 
   if (items.length === 0) {
     return (
@@ -111,9 +126,9 @@ function ListBlock({ data }: ListBlockProps) {
 
           // — analysis 变体 —
           if (variant === 'analysis') {
-            const status = item.status || 'neutral'
-            const StatusIcon = STATUS_ICONS[status] || Circle
-            const statusColor = STATUS_COLORS[status] || STATUS_COLORS.neutral
+            const status = (item.status || 'neutral') as keyof typeof STATUS_ICONS
+            const StatusIcon = STATUS_ICONS[status] ?? Circle
+            const statusColor = STATUS_COLORS[status] ?? STATUS_COLORS.neutral
             return (
               <div key={i} className="flex items-start gap-2 px-2.5 py-2 rounded-lg
                 bg-slate-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-700/50">

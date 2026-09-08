@@ -1,0 +1,421 @@
+/* ==================== Homepage Layout - Professional UI/UX Design ==================== */
+
+/* ==================== Page Container ==================== */
+.page-container {
+  min-height: 100vh;
+  background: var(--color-bg-primary);
+  display: flex;
+  flex-direction: column;
+  padding-top: env(safe-area-inset-top);
+}
+
+.content-scroll {
+  flex: 1;
+  margin-top: 236rpx;
+}
+
+/* ==================== Header Section ==================== */
+.header {
+  background: linear-gradient(135deg, var(--color-brand-500) 0%, var(--color-brand-400) 100%);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--z-index-sticky);
+  box-shadow: var(--shadow-brand);
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  gap: var(--space-3);
+}
+
+/* Hamburger Menu */
+.hamburger {
+  width: 48rpx;
+  height: 36rpx;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.hamburger-line {
+  width: 100%;
+  height: 4rpx;
+  background-color: var(--color-text-white);
+  border-radius: 2rpx;
+  transition: all var(--transition-normal);
+}
+
+.hamburger-line.active:nth-child(1) {
+  transform: translateY(14rpx) rotate(45deg);
+}
+
+.hamburger-line.active:nth-child(2) {
+  opacity: 0;
+}
+
+.hamburger-line.active:nth-child(3) {
+  transform: translateY(-14rpx) rotate(-45deg);
+}
+
+/* Title */
+.header-title {
+  flex: 1;
+  text-align: center;
+}
+
+.title-main {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-white);
+  letter-spacing: var(--letter-spacing-wide);
+  text-align: center;
+}
+
+.title-sub {
+  font-size: var(--font-size-sm);
+  color: rgba(255, 255, 255, 0.8);
+  margin-top: var(--space-1);
+  text-align: center;
+}
+
+/* ==================== Search Section ==================== */
+.search-section {
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-bg-secondary);
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-bg-primary);
+  border-radius: var(--radius-full);
+  gap: var(--space-2);
+}
+
+.search-placeholder {
+  flex: 1;
+  font-size: var(--font-size-base);
+  color: var(--color-text-muted);
+}
+
+/* ==================== Quick Actions Section ==================== */
+.quick-section {
+  margin: var(--space-3) var(--space-4);
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4) var(--space-3);
+  box-shadow: var(--shadow-md);
+}
+
+.quick-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4);
+}
+
+.quick-row {
+  margin-bottom: var(--space-4);
+}
+
+.quick-row:last-child {
+  margin-bottom: 0;
+}
+
+.quick-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+  transition: transform var(--transition-fast);
+}
+
+.quick-item:active {
+  transform: scale(0.96);
+}
+
+.quick-icon-wrap {
+  width: 112rpx;
+  height: 112rpx;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-md);
+}
+
+.quick-icon {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-lg);
+}
+
+.quick-text {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+}
+
+.quick-desc {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+/* 图标背景色 */
+.icon-ingredient-bg {
+  background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
+}
+
+.icon-chat-bg {
+  background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
+}
+
+.icon-formula-bg {
+  background: linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%);
+}
+
+.icon-history-bg {
+  background: linear-gradient(135deg, #F3E5F5 0%, #E1BEE7 100%);
+}
+
+.icon-database-bg {
+  background: linear-gradient(135deg, #E0F2F1 0%, #B2DFDB 100%);
+}
+
+.icon-compliance-bg {
+  background: linear-gradient(135deg, #FFEBEE 0%, #FFCDD2 100%);
+}
+
+/* ==================== Tip Section ==================== */
+.tip-section {
+  margin: var(--space-3) var(--space-4);
+}
+
+.tip-swiper {
+  height: 160rpx;
+}
+
+.tip-card {
+  display: flex;
+  align-items: center;
+  padding: var(--space-4);
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  gap: var(--space-3);
+}
+
+.tip-tag {
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+}
+
+.tag-success {
+  background: rgba(34, 197, 94, 0.1);
+  color: var(--color-success);
+}
+
+.tag-warning {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--color-warning);
+}
+
+.tag-info {
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--color-info);
+}
+
+.tip-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.tip-title {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.tip-desc {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+/* ==================== Section Common ==================== */
+.section {
+  margin: var(--space-3) var(--space-4);
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+.section-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.section-dot {
+  width: 8rpx;
+  height: 32rpx;
+  background: linear-gradient(180deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+  border-radius: 4rpx;
+}
+
+.section-title {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.section-more {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--font-size-sm);
+  color: var(--color-primary);
+  cursor: pointer;
+}
+
+.section-more:active {
+  opacity: 0.7;
+}
+
+/* ==================== Formula List ==================== */
+.formula-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.formula-item {
+  display: flex;
+  align-items: center;
+  padding: var(--space-3);
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  gap: var(--space-3);
+}
+
+.formula-item:active {
+  transform: scale(0.98);
+}
+
+.formula-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.formula-name {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.formula-desc {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.formula-tags {
+  display: flex;
+  gap: var(--space-1);
+  flex-wrap: wrap;
+}
+
+.formula-score {
+  flex-shrink: 0;
+}
+
+/* ==================== Category Grid ==================== */
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-3);
+}
+
+.category-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--space-4);
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  gap: var(--space-2);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.category-item:active {
+  transform: scale(0.98);
+  box-shadow: var(--shadow-md);
+}
+
+.category-icon {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.category-name {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+}
+
+.category-count {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+/* ==================== Loading & Empty State ==================== */
+.loading-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6);
+}
+
+.end-message {
+  text-align: center;
+  padding: var(--space-5);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+/* ==================== Responsive ==================== */
+@media screen and (min-width: 768px) {
+  .quick-grid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+  
+  .category-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}

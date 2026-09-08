@@ -1,0 +1,10 @@
+<!-- Tag 标签组件 -->
+<view 
+  class="tag {{className}} {{type}} {{size}} {{closable ? 'tag-closable' : ''}}"
+  bindtap="handleTap"
+>
+  <slot></slot>
+  <view wx:if="{{closable}}" class="tag-close" catchtap="handleClose">
+    <icon name="close" size="xs" color="currentColor" />
+  </view>
+</view>

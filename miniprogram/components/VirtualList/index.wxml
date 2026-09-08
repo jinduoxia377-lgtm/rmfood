@@ -1,0 +1,21 @@
+<!-- 虚拟列表组件 -->
+<scroll-view 
+  class="virtual-list" 
+  scroll-y 
+  scroll-into-view="{{scrollIntoView}}"
+  bindscroll="onScroll"
+  enhanced
+  bounces="{{false}}"
+>
+  <view class="virtual-list__placeholder" style="height: {{totalHeight}}rpx;">
+    <view 
+      wx:for="{{renderedList}}" 
+      wx:key="index"
+      class="virtual-list__item"
+      style="transform: translateY({{item.offset}}rpx); height: {{item.height}}rpx;"
+      data-index="{{item.index}}"
+    >
+      <slot name="item" data="{{item}}"></slot>
+    </view>
+  </view>
+</scroll-view>

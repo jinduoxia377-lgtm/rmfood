@@ -228,7 +228,7 @@ export default function FormulaDetailPage() {
     queryKey: ['experiments', 'formula', formulaId],
     queryFn: () => experimentApi.list({ formula_id: formulaId, page_size: 10 }),
     enabled: !!formulaId,
-    staleTime: 60_000,
+    staleTime: 5 * 60_000,
   });
   const experiments = experimentsData?.items ?? [];
   const { data: commentsData, isLoading: commentsLoading } = useQuery({

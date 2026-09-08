@@ -340,7 +340,7 @@ function PreferenceLearner({
               const barHeight = (r.rating / 5) * 120
               const x = i * (barWidth + 20) + 40
               const y = 140 - barHeight
-              const colors = ['#F59E0B', '#D946EF', '#AF52DE', '#FF3B30', '#34C759', '#6366f1']
+              const colors = ['#F59E0B', '#EF4444', '#10b981', '#F97316', '#059669', '#0d9488']
 
               return (
                 <g key={r.dimensionId}>

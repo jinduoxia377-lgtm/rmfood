@@ -120,17 +120,25 @@ export function useChatSendMessage(
               finalContent +
               `
 
-【输出格式要求】
-你必须以JSON格式输出配方方案。将JSON放在\`\`\`json代码块中。格式如下:
+【结构化输出要求】
+请以下面格式输出配方方案，使用 JSON 代码块包裹：
+\`\`\`json
 {
   "blocks": [
-    {"type":"header","data":{"title":"配方名称","description":"描述","level":1}},
-    {"type":"metrics","data":{"title":"多维评分","items":[{"label":"功效","value":85,"unit":"分"}]}},
-    {"type":"data-table","data":{"title":"配方组成","columns":[{"key":"name","label":"成分"},{"key":"dosage","label":"用量(g)"}],"rows":[{"name":"成分A","dosage":10}]}}
+    {"type":"header","data":{"title":"配方名称","description":"一句话描述","level":1}},
+    {"type":"metrics","data":{"title":"多维评分","items":[{"label":"功效","value":85,"unit":"分"},{"label":"安全性","value":90,"unit":"分"}]}},
+    {"type":"data-table","data":{"title":"配方组成","columns":[{"key":"name","label":"成分"},{"key":"dosage","label":"用量(g)"}],"rows":[{"name":"成分A","dosage":10}]}},
+    {"type":"callout","data":{"variant":"info","title":"配伍思路","content":"文字说明"}},
+    {"type":"callout","data":{"variant":"warning","title":"注意事项","content":"禁忌说明"}},
+    {"type":"list","data":{"variant":"bullet","title":"生产工艺","items":["要点一","要点二"]}}
   ]
 }
-支持的block类型: header, metrics, data-table, chart, list, callout, divider.
-生成5-8个blocks，数据专业准确。`;
+\`\`\`
+
+重要字段命名规范：
+- callout 区块必须用 "variant" 而非 "style"，取值：info / success / warning / summary
+- list 区块必须有 "variant" 字段，取值：bullet / number / analysis / checklist
+- list 的 items 可以是字符串数组（自动转换）或 [{label, description}] 对象数组`;
           }
         }
         // llmAvailable=false: finalContent = trimmed（原始输入，不做任何污染）

@@ -1,0 +1,95 @@
+/** Input 输入框组件样式 */
+.input-wrapper {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 24rpx 32rpx;
+  background-color: #FFFFFF;
+  border: 2rpx solid #E5E7EB;
+  border-radius: 16rpx;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.input-wrapper:focus-within {
+  border-color: #2D5A3D;
+  box-shadow: 0 0 0 4rpx rgba(45, 90, 61, 0.1);
+}
+
+.input-wrapper.error {
+  border-color: #EF4444;
+}
+
+.input-wrapper.error:focus-within {
+  box-shadow: 0 0 0 4rpx rgba(239, 68, 68, 0.1);
+}
+
+.input-wrapper.disabled {
+  background-color: #F5F7FA;
+  opacity: 0.7;
+}
+
+.input {
+  flex: 1;
+  font-size: 28rpx;
+  color: #1A1A1A;
+  background: transparent;
+  border: none;
+  outline: none;
+}
+
+.input::placeholder {
+  color: #999999;
+}
+
+.input-prefix {
+  margin-right: 16rpx;
+  display: flex;
+  align-items: center;
+}
+
+.input-suffix {
+  margin-left: 16rpx;
+  display: flex;
+  align-items: center;
+}
+
+.input-clear {
+  margin-left: 16rpx;
+  width: 48rpx;
+  height: 48rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: #F3F4F6;
+}
+
+.input-clear:active {
+  background-color: #E5E7EB;
+}
+
+.input-error {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  margin-top: 8rpx;
+  padding-left: 4rpx;
+}
+
+.error-text {
+  font-size: 24rpx;
+  color: #EF4444;
+}
+
+.input-count {
+  position: absolute;
+  right: 32rpx;
+  bottom: -32rpx;
+  font-size: 20rpx;
+  color: #999999;
+}
+
+.input-placeholder {
+  color: #999999;
+}

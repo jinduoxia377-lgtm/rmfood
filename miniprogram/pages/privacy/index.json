@@ -1,0 +1,8 @@
+{
+  "usingComponents": {
+    "Icon": "../../components/Icon/index"
+  },
+  "navigationBarTitleText": "隐私政策",
+  "navigationBarBackgroundColor": "#2D5A3D",
+  "navigationBarTextStyle": "white"
+}

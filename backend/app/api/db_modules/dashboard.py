@@ -121,15 +121,69 @@ async def ranking_food_homology(
 
 
 @router.get("/ranking/active-peptides", summary="高活性肽活性排行")
-async def ranking_active_peptides():
+async def ranking_active_peptides(
+    db: AsyncSession = Depends(get_db_session),
+):
     """
-    高活性肽活性排行 — 基于 DFBP 活性肽数据的 ACE 抑制肽活性排名
-    筛选 activity_type="ACE inhibitory" 的肽，按 IC50 升序排列返回 TOP 20（值越小活性越高）
+    高活性肽活性排行 — 基于 PostgreSQL 活性肽数据的 ACE 抑制肽活性排名
+    筛选 activity_type="ACE inhibitory" 的肽，按 activity_value 升序排列返回 TOP 20（值越小活性越高）
     活性评分公式: activity_score = (1000 / (activity_value + 0.01)) * log(seq_length + 1)
     （公开接口，无需认证）
     """
     from datetime import datetime
     from math import log
+
+    # ── 数据库优先查询 ──
+    peptides_db = (await db.execute(
+        select(BioactivePeptide)
+        .where(BioactivePeptide.activity_type == "ACE inhibitory")
+        .where(BioactivePeptide.activity_value.isnot(None))
+        .order_by(text("CAST(activity_value AS FLOAT) ASC"))
+        .limit(20)
+    )).scalars().all()
+
+    if len(peptides_db) > 0:
+        ranked = []
+        for p in peptides_db:
+            try:
+                av = float(p.activity_value)
+            except (ValueError, TypeError):
+                continue
+            seq_len = len(p.sequence or "")
+            activity_score = round((1000 / (av + 0.01)) * log(seq_len + 1), 4)
+            ranked.append({
+                "sequence": p.sequence or "",
+                "activity_value": round(av, 6),
+                "activity_unit": p.activity_unit or "μM",
+                "source_protein": p.source_protein or "",
+                "molecular_weight": round(p.molecular_weight or 0, 1),
+                "hydrolysis_enzyme": p.hydrolysis_enzyme or "",
+                "activity_type": "ACE inhibitory",
+                "seq_length": seq_len,
+                "activity_score": activity_score,
+            })
+
+        ranked.sort(key=lambda x: x["activity_value"])
+        top20 = ranked[:20]
+        for i, item in enumerate(top20, 1):
+            item["rank"] = i
+
+        # Count total ACE inhibitory peptides in DB
+        total_result = await db.execute(
+            select(func.count()).select_from(BioactivePeptide)
+            .where(BioactivePeptide.activity_type == "ACE inhibitory")
+            .where(BioactivePeptide.activity_value.isnot(None))
+        )
+        total = total_result.scalar() or 0
+
+        return {
+            "items": top20,
+            "total": total,
+            "generated_at": datetime.now().isoformat(),
+            "data_source": "database",
+        }
+
+    # ── Fallback: 内存数据 ──
     from ...services.data_sources.dfbp_client import DFBP_PEPTIDE_DATABASE
 
     candidates = [

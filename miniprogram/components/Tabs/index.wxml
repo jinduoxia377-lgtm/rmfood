@@ -1,0 +1,35 @@
+<!-- Tabs 选项卡组件 -->
+<view class="tabs {{className}} {{type}}">
+  <view class="tabs-nav" style="padding: 0 {{padding}}rpx;">
+    <scroll-view 
+      scroll-x 
+      scroll-with-animation
+      class="tabs-scroll"
+      scroll-left="{{scrollLeft}}"
+    >
+      <view class="tabs-list">
+        <view
+          wx:for="{{tabs}}"
+          wx:key="key"
+          class="tabs-item {{item.disabled ? 'tabs-item-disabled' : ''}} {{currentIndex === index ? 'tabs-item-active' : ''}}"
+          data-index="{{index}}"
+          bindtap="handleTabTap"
+        >
+          <text class="tabs-item-text">{{item.title}}</text>
+          <view wx:if="{{item.badge}}" class="tabs-badge">{{item.badge}}</view>
+        </view>
+      </view>
+    </scroll-view>
+    
+    <!-- 滑动指示器 -->
+    <view 
+      class="tabs-indicator"
+      style="width: {{indicatorWidth}}rpx; transform: translateX({{indicatorX}}rpx);"
+    ></view>
+  </view>
+  
+  <!-- 内容区 -->
+  <view class="tabs-content">
+    <slot></slot>
+  </view>
+</view>

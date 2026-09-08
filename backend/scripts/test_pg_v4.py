@@ -1,12 +1,13 @@
 """PostgreSQL 连接测试 v4 — 无密码 + 多数据库"""
 import asyncio
 import asyncpg
+from scripts.db_utils import get_asyncpg_dsn
 
 async def test():
     # 测试多种 DSN（无密码）
     dsns = [
         "postgresql://postgres@localhost:5432/postgres",
-        "postgresql://postgres@localhost:5432/rmfood_platform",
+        get_asyncpg_dsn(),
     ]
 
     for dsn in dsns:

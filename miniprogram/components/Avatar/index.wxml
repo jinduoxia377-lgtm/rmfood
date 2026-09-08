@@ -1,0 +1,24 @@
+<!-- Avatar 头像组件 -->
+<view 
+  class="avatar {{className}} {{size}} {{shape}} {{type}}"
+  bindtap="handleTap"
+>
+  <!-- 图片头像 -->
+  <image 
+    wx:if="{{src || icon}}" 
+    src="{{src}}" 
+    class="avatar-image"
+    mode="aspectFill"
+    lazy-load
+  />
+  
+  <!-- 文字头像 -->
+  <view wx:else class="avatar-text">
+    <text>{{text}}</text>
+  </view>
+  
+  <!-- 徽章 -->
+  <view wx:if="{{badge}}" class="avatar-badge">
+    <text class="badge-text">{{badge}}</text>
+  </view>
+</view>

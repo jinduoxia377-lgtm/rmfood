@@ -1,0 +1,51 @@
+.health-score {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.health-score-small {
+  width: 80rpx;
+}
+
+.health-score-medium {
+  width: 120rpx;
+}
+
+.health-score-large {
+  width: 160rpx;
+}
+
+.score-circle-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.score-text {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.score-value {
+  font-size: 32rpx;
+  font-weight: 600;
+}
+
+.score-letter {
+  font-size: 20rpx;
+  margin-top: 4rpx;
+}
+
+.score-info {
+  margin-top: 16rpx;
+  text-align: center;
+}
+
+.score-label {
+  font-size: 24rpx;
+}

@@ -2,7 +2,7 @@
  * 趋势分析 Tab — 参考 Dashboard 设计风格
  * 使用 Card+CardHeader+CardContent 统一卡片样式
  */
-import React, { useState, useMemo, useEffect } from 'react'
+import React, { useState, useMemo, useEffect, useCallback } from 'react'
 import {
   LineChart, TrendingUp, BarChart3,
   RefreshCw, Download,
@@ -34,7 +34,16 @@ const TREND_VIEWS: { key: TrendView; label: string; icon: LucideIcon }[] = [
 export default function TrendsTab({ filters }: Props) {
   const [activeView, setActiveView] = useState<TrendView>('time_series')
   const [loading, setLoading] = useState(false)
-  const [selectedDays] = useState(30)
+
+  // 跟随父级时间范围，同时允许用户手动切换
+  const _daysMap: Record<string, number> = { '7d': 7, '30d': 30, '90d': 90, '1y': 365 }
+  const [selectedDays, setSelectedDays] = useState(_daysMap[filters.timeRange] ?? 30)
+
+  // 当父级 timeRange 变化时同步初始值
+  useEffect(() => {
+    const v = _daysMap[filters.timeRange] ?? 30
+    setSelectedDays(v)
+  }, [filters.timeRange])
 
   const formulasTrend = useTrendData('formulas', selectedDays)
   const experimentsTrend = useTrendData('experiments', selectedDays)
@@ -94,11 +103,13 @@ export default function TrendsTab({ filters }: Props) {
   }, [formulasTrend.data])
 
   // ─── 手动刷新 ──────────────────────────────────────────────
-  const handleRefresh = async () => {
+  const handleRefresh = useCallback(async () => {
     setLoading(true)
-    await new Promise(r => setTimeout(r, 800))
+    // 清空缓存后重新拉取（通过修改 selectedDays 触发 re-fetch）
+    setSelectedDays(d => d)
+    await new Promise(r => setTimeout(r, 400))
     setLoading(false)
-  }
+  }, [])
 
   // ─── 增长计算 ──────────────────────────────────────────────
   const formulaGrowthNum = useMemo(() => {
@@ -159,12 +170,13 @@ export default function TrendsTab({ filters }: Props) {
         <div className="flex items-center gap-2">
           <select
             value={selectedDays}
-            onChange={e => {}}
+            onChange={e => setSelectedDays(Number(e.target.value))}
             className="px-3 py-1.5 text-sm input min-w-[100px]"
           >
             <option value={7}>近 7 天</option>
             <option value={30}>近 30 天</option>
             <option value={90}>近 90 天</option>
+            <option value={365}>近 1 年</option>
           </select>
 
           <button

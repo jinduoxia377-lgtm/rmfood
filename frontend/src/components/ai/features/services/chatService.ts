@@ -9,6 +9,52 @@ import { ErrorType } from '../components/ErrorRecoveryDialog';
 import { contextManager } from './contextManager';
 import api from '@/api/client';
 
+// ── CSRF Token 管理（与 agent.ts 保持一致） ──
+// CsrfProtectMiddleware 只在 GET 请求时设置 csrf_token cookie，POST 需要读取并回传
+function _getCookieValue(name: string): string | null {
+  const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+  return match ? match[2] : null;
+}
+
+let _csrfToken: string | null = null;
+let _csrfLoading = false;
+
+async function ensureCsrfToken(): Promise<string | null> {
+  if (_csrfToken) return _csrfToken;
+  const cookieToken = _getCookieValue('csrf_token');
+  if (cookieToken) {
+    _csrfToken = cookieToken;
+    return _csrfToken;
+  }
+  if (_csrfLoading) {
+    return new Promise((resolve) => {
+      const check = () => {
+        const t = _getCookieValue('csrf_token') || _csrfToken;
+        if (t || !_csrfLoading) resolve(t);
+        else setTimeout(check, 50);
+      };
+      check();
+    });
+  }
+  _csrfLoading = true;
+  try {
+    // 发一个 GET 请求触发 CsrfProtectMiddleware 设置 csrf_token cookie
+    await fetch(API_ENDPOINTS.AI.MODELS_STATUS, {
+      method: 'GET',
+      credentials: 'include',
+    });
+    _csrfToken = _getCookieValue('csrf_token');
+    if (import.meta.env.DEV && _csrfToken) {
+      logger.info('[ChatService] CSRF token initialized');
+    }
+  } catch {
+    // 忽略错误，CSRF 初始化失败不阻断功能
+  } finally {
+    _csrfLoading = false;
+  }
+  return _csrfToken;
+}
+
 // 共享状态机实例（与 useChatMessages 共享）
 let _sharedStateMachine: ChatStateMachine | null = null;
 
@@ -17,7 +63,7 @@ function getSharedStateMachine(): ChatStateMachine {
     _sharedStateMachine = createChatStateMachine(ChatState.Idle, { throwOnError: false });
     _sharedStateMachine.onStateChange = (from, to) => {
       logger.debug(`[ChatService] State transition: ${from} -> ${to}`);
-      eventBus.emit('state:changed' as any, { newState: to, previousState: from });
+      eventBus.emit('state:changed', { newState: to, previousState: from });
     };
   }
   return _sharedStateMachine;
@@ -211,11 +257,19 @@ export class ChatService implements IChatService {
       if (history && history.length > 0) {
         bodyData.history = history.slice(-10);
       }
-      // 使用 fetch 但依赖浏览器自动携带 HttpOnly Cookie（不走 localStorage）
-      // 🔒 与 Axios interceptor 对齐：credentials: 'include' 确保 Cookie 自动携带
+      // ── Task 3: 注入用户画像上下文（跨会话个性化） ──
+      try {
+        const { userProfileManager } = await import('./userProfileService')
+        bodyData.user_profile_context = userProfileManager.generatePromptSummary()
+      } catch { /* 画像服务不可用时静默降级 */ }
+      // 🔒 CSRF token 初始化：确保 cookie 已设置后再发 POST
+      const csrfToken = await ensureCsrfToken()
       const response = await fetch(API_ENDPOINTS.AI.CHAT_STREAM, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {}),
+        },
         body: JSON.stringify(bodyData),
         credentials: 'include',
         signal: controller.signal,
@@ -265,7 +319,7 @@ export class ChatService implements IChatService {
               const parsed = JSON.parse(data);
 
               // ── 按事件类型分发处理 ──
-              const eventType = currentEventType;
+              const eventType = currentEventType || (parsed.type === "text" ? "content" : parsed.type === "thinking" ? "step" : parsed.type);
 
               // type=error: 抛出错误让外层 catch 走标准错误处理流程
               if (eventType === 'error') {
@@ -392,6 +446,11 @@ export class ChatService implements IChatService {
     if (history && history.length > 0) {
       requestBody.history = history.slice(-10);
     }
+    // ── Task 3: 注入用户画像上下文 ──
+    try {
+      const { userProfileManager } = await import('./userProfileService')
+      requestBody.user_profile_context = userProfileManager.generatePromptSummary()
+    } catch { /* 画像服务不可用时静默降级 */ }
 
     try {
       // ── 使用 axios api 客户端（走认证拦截器，自动处理 401/Token 刷新）──
@@ -434,7 +493,7 @@ export class ChatService implements IChatService {
           detail,
           hasToken: !!this.isAuthenticated(),
         });
-        this.eventBus.emit('auth:required' as any, {});
+        this.eventBus.emit('auth:required', {});
         throw new Error(`HTTP 错误 (401): ${detail || '认证失败，Token 可能已过期'}`);
       }
       if (status === 429) {
@@ -505,12 +564,12 @@ export class ChatService implements IChatService {
           logger.error('[ChatService] ❌ AI 服务 API Key 无效', { detail: errorDetail });
 
           this.eventBus.emit(
-            'ai:config_error' as any,
+            'ai:config_error',
             {
               type: 'api_key_invalid',
               message: errorDetail.message,
               suggestion: errorDetail.suggestion,
-            } as any,
+            },
           );
 
           throw new Error(`AI服务配置错误 (401): ${errorDetail.message || 'API Key 无效'}`);
@@ -521,7 +580,7 @@ export class ChatService implements IChatService {
             hasToken: !!this.isAuthenticated(),
           });
 
-          this.eventBus.emit('auth:required' as any, {});
+          this.eventBus.emit('auth:required', {});
           throw new Error(`认证失败 (401): ${errorText || '未授权访问'}`);
         }
 
@@ -540,9 +599,23 @@ export class ChatService implements IChatService {
         throw new Error(`请求过于频繁 (429): 剩余 ${this.rateLimitInfo.remaining} 次`);
 
       case 400:
-      case 403:
       case 422:
         throw new Error(`客户端错误 (${response.status}): ${errorText}`);
+
+      case 403:
+        // 区分 CSRF token 缺失 vs 真正的权限不足
+        const isCsrfError = errorText.includes('CSRF') || errorText.includes('csrf');
+        if (isCsrfError) {
+          logger.warn('[ChatService] CSRF token 缺失，尝试重新初始化...');
+          _csrfToken = null; // 清除缓存，下次请求会重新获取
+          // 重试一次：先初始化 CSRF，再发请求
+          const freshToken = await ensureCsrfToken();
+          if (freshToken) {
+            // 重发请求（通过上层调用方自动重试机制）
+            throw new Error(`CSRF token 已重新获取，请重试请求`);
+          }
+        }
+        throw new Error(`权限不足 (${response.status}): ${errorText}`);
 
       default:
         if (response.status >= 500) {
@@ -674,6 +747,20 @@ export class ChatService implements IChatService {
         suggestion: '我们正在努力修复，请稍后重试',
         canAutoRecover: true,
         retryAfter: 2000,
+      };
+    }
+
+    // 403 权限不足 — 触发重新登录
+    if (errorMessage.includes('403') || errorMessage.includes('forbidden') || errorMessage.includes('权限')) {
+      this.eventBus.emit('auth:required', {});
+      return {
+        type: ErrorType.Forbidden,
+        message: error.message,
+        originalError: error,
+        recoverable: false,
+        userMessage: '权限不足，请重新登录后重试',
+        suggestion: '您的登录会话已失效或权限不足，请重新登录',
+        canAutoRecover: false,
       };
     }
 

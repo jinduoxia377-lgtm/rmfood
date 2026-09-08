@@ -1,0 +1,15 @@
+.badge-wrap {
+  position: relative;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.badge-position-top-right {
+  position: relative;
+}
+
+.badge-position-top-right mp-badge {
+  position: absolute;
+  top: -8rpx;
+  right: -8rpx;
+}

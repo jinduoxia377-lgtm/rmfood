@@ -1,0 +1,5 @@
+<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="300" fill="#E8F5E9"/>
+  <text x="200" y="140" text-anchor="middle" font-family="Arial" font-size="24" fill="#2D5A3D">药食同源</text>
+  <text x="200" y="170" text-anchor="middle" font-family="Arial" font-size="16" fill="#666666">配方图片</text>
+</svg>

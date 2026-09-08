@@ -1,0 +1,94 @@
+/** Avatar 头像组件样式 */
+.avatar {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background-color: var(--color-bg-tertiary);
+  flex-shrink: 0;
+}
+
+.avatar-image {
+  width: 100%;
+  height: 100%;
+}
+
+.avatar-text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-white);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
+}
+
+/* 尺寸 */
+.avatar-xs {
+  width: 48rpx;
+  height: 48rpx;
+}
+
+.avatar-sm {
+  width: 64rpx;
+  height: 64rpx;
+}
+
+.avatar-md {
+  width: 80rpx;
+  height: 80rpx;
+}
+
+.avatar-lg {
+  width: 96rpx;
+  height: 96rpx;
+}
+
+.avatar-xl {
+  width: 120rpx;
+  height: 120rpx;
+}
+
+/* 形状 */
+.avatar-circle {
+  border-radius: var(--radius-full);
+}
+
+.avatar-square {
+  border-radius: var(--radius-sm);
+}
+
+.avatar-rounded {
+  border-radius: var(--radius-md);
+}
+
+/* 类型 */
+.avatar-primary {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+}
+
+.avatar-accent {
+  background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-light) 100%);
+}
+
+/* 徽章 */
+.avatar-badge {
+  position: absolute;
+  top: -4rpx;
+  right: -4rpx;
+  min-width: 24rpx;
+  height: 24rpx;
+  padding: 0 6rpx;
+  border-radius: var(--radius-full);
+  background-color: var(--color-danger);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.badge-text {
+  font-size: 18rpx;
+  color: var(--color-text-white);
+  font-weight: var(--font-weight-medium);
+}

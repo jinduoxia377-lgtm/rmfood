@@ -1,10 +1,11 @@
 """PostgreSQL 连接测试脚本"""
 import asyncio
 import asyncpg
+from scripts.db_utils import get_asyncpg_dsn
 
 async def test_pg_connection():
     """测试 PostgreSQL 连接"""
-    dsn = "postgresql://postgres:postgres@localhost:5432/rmfood_platform"
+    dsn = get_asyncpg_dsn()
     print(f"正在连接 PostgreSQL: {dsn}")
 
     try:

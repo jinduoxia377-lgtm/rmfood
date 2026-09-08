@@ -31,11 +31,17 @@ export interface AICandidate {
     dosage: string;
     unit: string;
     amount_mg?: number;
+    dosage_g?: number;
   }[];
   score: number;
   effects: string[];
   formula_name?: string;
-  herb_combination?: { name?: string; dosage?: string; role?: string }[];
+  herb_combination?: Array<{
+    name?: string;
+    dosage?: string;
+    dosage_g?: number;
+    role?: string;
+  }>;
   synergy_score?: number;
   patent_synergy_scores?: PatentSynergyScores;
   peptide_candidates?: { name: string; sequence: string }[];
@@ -47,6 +53,22 @@ export interface AICandidate {
   generated_by?: string;
   generated_at?: string;
   description?: string;
+  algorithm_info?: {
+    strategy: string;
+    generation: number;
+    evaluations: number;
+    convergence_generation: number;
+  };
+  explanation?: {
+    formula_name: string;
+    structure_analysis: string;
+    mechanism_explanation: string;
+    synergistic_analysis: string;
+    suitable_population: string;
+    contraindications: string;
+    usage_instructions: string;
+    monitoring_suggestions: string;
+  };
 }
 
 export interface GenerationRecord {

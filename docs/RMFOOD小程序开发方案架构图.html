@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RMFOOD 微信小程序开发方案 - 可视化架构图</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+        .header h1 {
+            font-size: 36px;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .header p {
+            font-size: 18px;
+            opacity: 0.9;
+        }
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        .card-title {
+            font-size: 24px;
+            color: #2D5A3D;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #2D5A3D;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .card-title::before {
+            content: '';
+            width: 8px;
+            height: 24px;
+            background: #2D5A3D;
+            border-radius: 4px;
+        }
+        
+        /* 系统架构图 */
+        .architecture-diagram {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .layer {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .layer-box {
+            background: linear-gradient(135deg, #2D5A3D 0%, #4A7C59 100%);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 12px;
+            text-align: center;
+            min-width: 200px;
+            box-shadow: 0 4px 15px rgba(45,90,61,0.3);
+        }
+        .layer-box h3 {
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        .layer-box ul {
+            list-style: none;
+            font-size: 13px;
+            opacity: 0.95;
+        }
+        .layer-box ul li {
+            padding: 3px 0;
+        }
+        .arrow-down {
+            text-align: center;
+            font-size: 30px;
+            color: #2D5A3D;
+            margin: 10px 0;
+        }
+        
+        /* 核心模块图 */
+        .core-modules {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+        }
+        @media (max-width: 900px) {
+            .core-modules {
+                grid-template-columns: 1fr;
+            }
+        }
+        .module-card {
+            background: linear-gradient(145deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 16px;
+            padding: 25px;
+            border-left: 5px solid #2D5A3D;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .module-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        .module-card.highlight {
+            border-left-color: #FF6B6B;
+            background: linear-gradient(145deg, #fff5f5 0%, #ffe0e0 100%);
+        }
+        .module-icon {
+            font-size: 40px;
+            margin-bottom: 15px;
+        }
+        .module-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2D5A3D;
+            margin-bottom: 15px;
+        }
+        .module-list {
+            list-style: none;
+        }
+        .module-list li {
+            padding: 8px 0;
+            border-bottom: 1px dashed #ddd;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .module-list li:last-child {
+            border-bottom: none;
+        }
+        .module-list li::before {
+            content: '✓';
+            color: #52c41a;
+            font-weight: bold;
+        }
+        
+        /* 页面结构图 */
+        .page-structure {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        .page-card {
+            background: #fff;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+        .page-card:hover {
+            border-color: #2D5A3D;
+            box-shadow: 0 5px 20px rgba(45,90,61,0.2);
+        }
+        .page-card.priority-p0 {
+            border-color: #2D5A3D;
+            background: linear-gradient(145deg, #f0f7f4 0%, #e8f5e9 100%);
+        }
+        .page-card.priority-p1 {
+            border-color: #FF9800;
+            background: linear-gradient(145deg, #fff8e1 0%, #fff3e0 100%);
+        }
+        .page-card.priority-p2 {
+            border-color: #9E9E9E;
+            background: linear-gradient(145deg, #f5f5f5 0%, #eeeeee 100%);
+        }
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .page-name {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+        }
+        .page-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .badge-p0 {
+            background: #2D5A3D;
+            color: white;
+        }
+        .badge-p1 {
+            background: #FF9800;
+            color: white;
+        }
+        .badge-p2 {
+            background: #9E9E9E;
+            color: white;
+        }
+        .badge-star {
+            background: #FF6B6B;
+            color: white;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        .page-path {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 10px;
+            font-family: monospace;
+        }
+        .page-desc {
+            font-size: 13px;
+            color: #555;
+            line-height: 1.6;
+        }
+        
+        /* 数据流图 */
+        .data-flow {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .flow-step {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border-left: 4px solid #2D5A3D;
+        }
+        .flow-number {
+            width: 40px;
+            height: 40px;
+            background: #2D5A3D;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+        .flow-content {
+            flex: 1;
+        }
+        .flow-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        .flow-desc {
+            font-size: 14px;
+            color: #666;
+        }
+        .flow-arrow {
+            text-align: center;
+            font-size: 24px;
+            color: #2D5A3D;
+            margin: -10px 0;
+        }
+        
+        /* API表格 */
+        .api-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .api-table th {
+            background: #2D5A3D;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-size: 14px;
+        }
+        .api-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 13px;
+        }
+        .api-table tr:hover {
+            background: #f5f5f5;
+        }
+        .api-method {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .method-post {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        .method-get {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+        .status-tag {
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        .status-new {
+            background: #fff3e0;
+            color: #e65100;
+        }
+        .status-existing {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        /* 统计卡片 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #2D5A3D 0%, #4A7C59 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 36px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        /* 打印样式 */
+        @media print {
+            body {
+                background: white;
+                padding: 20px;
+            }
+            .card {
+                box-shadow: none;
+                border: 1px solid #ddd;
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 标题 -->
+        <div class="header">
+            <h1>🏥 RMFOOD 药食同源配方平台</h1>
+            <p>微信小程序开发方案 - 可视化架构图</p>
+            <p style="font-size: 14px; margin-top: 10px; opacity: 0.8;">版本：V2.0 | 编制：RMFOOD架构组 | 日期：2026-09-06</p>
+        </div>
+
+        <!-- 统计概览 -->
+        <div class="card">
+            <div class="card-title">功能统计概览</div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">56</div>
+                    <div class="stat-label">总功能项</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">12</div>
+                    <div class="stat-label">页面数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">18</div>
+                    <div class="stat-label">组件数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">14</div>
+                    <div class="stat-label">API接口</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">10</div>
+                    <div class="stat-label">开发周期（周）</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">56K</div>
+                    <div class="stat-label">首年预算（元）</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 系统架构图 -->
+        <div class="card">
+            <div class="card-title">系统架构图</div>
+            <div class="architecture-diagram">
+                <!-- 前端层 -->
+                <div class="layer">
+                    <div class="layer-box">
+                        <h3>📱 前端展示层</h3>
+                        <ul>
+                            <li>Taro 4.x 框架</li>
+                            <li>React 18 + TypeScript</li>
+                            <li>NutUI-Taro 组件库</li>
+                            <li>12个页面 + 18个组件</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="arrow-down">↓</div>
+                
+                <!-- 业务逻辑层 -->
+                <div class="layer">
+                    <div class="layer-box">
+                        <h3>⚙️ 业务逻辑层</h3>
+                        <ul>
+                            <li>Zustand 状态管理</li>
+                            <li>自定义 Hooks</li>
+                            <li>缓存管理</li>
+                            <li>请求拦截器</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="arrow-down">↓</div>
+                
+                <!-- 请求层 -->
+                <div class="layer">
+                    <div class="layer-box">
+                        <h3>🌐 请求层</h3>
+                        <ul>
+                            <li>fetch API（主）</li>
+                            <li>wx.request（降级）</li>
+                            <li>SSE流式输出</li>
+                            <li>AES加密Token</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="arrow-down">↓</div>
+                
+                <!-- 后端层 -->
+                <div class="layer">
+                    <div class="layer-box" style="background: linear-gradient(135deg, #FF6B6B 0%, #EE5A5A 100%);">
+                        <h3>🚀 FastAPI 后端</h3>
+                        <ul>
+                            <li>/api/v1/ai/* - AI服务</li>
+                            <li>/api/v1/formulas/* - 配方服务</li>
+                            <li>/api/v1/nutrition/* - 营养分析 ⭐</li>
+                            <li>/api/v1/wechat/* - 微信登录</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="arrow-down">↓</div>
+                
+                <!-- 数据层 -->
+                <div class="layer">
+                    <div class="layer-box" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        <h3>💾 数据存储层</h3>
+                        <ul>
+                            <li>PostgreSQL - 业务数据</li>
+                            <li>Redis - 缓存/队列</li>
+                            <li>MinIO - 文件存储</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 三大核心模块 -->
+        <div class="card">
+            <div class="card-title">三大核心功能模块</div>
+            <div class="core-modules">
+                <!-- 模块一：AI智能对话 -->
+                <div class="module-card">
+                    <div class="module-icon">💬</div>
+                    <div class="module-title">AI智能对话</div>
+                    <ul class="module-list">
+                        <li>流式输出（打字机效果）</li>
+                        <li>语音输入支持</li>
+                        <li>快捷问题推荐</li>
+                        <li>配方卡片内嵌</li>
+                        <li>对话历史记录</li>
+                        <li>免责声明展示</li>
+                    </ul>
+                </div>
+
+                <!-- 模块二：配方管理 -->
+                <div class="module-card">
+                    <div class="module-icon">📋</div>
+                    <div class="module-title">配方管理</div>
+                    <ul class="module-list">
+                        <li>配方列表浏览</li>
+                        <li>配方分类筛选</li>
+                        <li>配方搜索功能</li>
+                        <li>配方详情展示</li>
+                        <li>配方收藏管理</li>
+                        <li>分享海报生成</li>
+                    </ul>
+                </div>
+
+                <!-- 模块三：配料表分析（新增核心） -->
+                <div class="module-card highlight">
+                    <div class="module-icon">🔬</div>
+                    <div class="module-title">配料表分析 ⭐</div>
+                    <ul class="module-list">
+                        <li>拍照识别配料表</li>
+                        <li>手动/语音输入</li>
+                        <li>营养成分计算</li>
+                        <li>健康价值评估</li>
+                        <li>安全禁忌审查</li>
+                        <li>改进建议生成</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 页面结构图 -->
+        <div class="card">
+            <div class="card-title">页面结构图（12个页面）</div>
+            <div class="page-structure">
+                <div class="page-card priority-p0">
+                    <div class="page-header">
+                        <span class="page-name">🏠 首页</span>
+                        <span class="page-badge badge-p0">P0</span>
+                    </div>
+                    <div class="page-path">pages/index/index</div>
+                    <div class="page-desc">AI入口、热门配方推荐、快捷问题导航</div>
+                </div>
+
+                <div class="page-card priority-p0">
+                    <div class="page-header">
+                        <span class="page-name">💬 AI对话</span>
+                        <span class="page-badge badge-p0">P0</span>
+                    </div>
+                    <div class="page-path">packages/chat/index</div>
+                    <div class="page-desc">流式对话、配方卡片内嵌、历史记录</div>
+                </div>
+
+                <div class="page-card priority-p0">
+                    <div class="page-header">
+                        <span class="page-name">📋 配方列表</span>
+                        <span class="page-badge badge-p0">P0</span>
+                    </div>
+                    <div class="page-path">packages/formulas/index</div>
+                    <div class="page-desc">分类浏览、搜索筛选、收藏管理</div>
+                </div>
+
+                <div class="page-card priority-p0">
+                    <div class="page-header">
+                        <span class="page-name">📄 配方详情</span>
+                        <span class="page-badge badge-p0">P0</span>
+                    </div>
+                    <div class="page-path">packages/formula-detail/index</div>
+                    <div class="page-desc">成分表、机理说明、禁忌提示</div>
+                </div>
+
+                <div class="page-card priority-p0">
+                    <div class="page-header">
+                        <span class="page-name">🔬 配料表分析</span>
+                        <span class="page-badge badge-star">⭐ P0</span>
+                    </div>
+                    <div class="page-path">packages/ingredient-analysis/index</div>
+                    <div class="page-desc">拍照识别、营养计算、健康评估、安全审查</div>
+                </div>
+
+                <div class="page-card priority-p1">
+                    <div class="page-header">
+                        <span class="page-name">🧪 体质诊断</span>
+                        <span class="page-badge badge-p1">P1</span>
+                    </div>
+                    <div class="page-path">packages/health-check/index</div>
+                    <div class="page-desc">15题问卷、体质分析、AI推荐</div>
+                </div>
+
+                <div class="page-card priority-p0">
+                    <div class="page-header">
+                        <span class="page-name">👤 个人中心</span>
+                        <span class="page-badge badge-p0">P0</span>
+                    </div>
+                    <div class="page-path">packages/profile/index</div>
+                    <div class="page-desc">对话历史、我的收藏、设置</div>
+                </div>
+
+                <div class="page-card priority-p1">
+                    <div class="page-header">
+                        <span class="page-name">🔍 搜索页</span>
+                        <span class="page-badge badge-p1">P1</span>
+                    </div>
+                    <div class="page-path">pages/search/index</div>
+                    <div class="page-desc">食材搜索、配方搜索、联想推荐</div>
+                </div>
+
+                <div class="page-card priority-p1">
+                    <div class="page-header">
+                        <span class="page-name">⚖️ 配方对比</span>
+                        <span class="page-badge badge-p1">P1</span>
+                    </div>
+                    <div class="page-path">pages/compare/index</div>
+                    <div class="page-desc">多方案并列、维度对比</div>
+                </div>
+
+                <div class="page-card priority-p2">
+                    <div class="page-header">
+                        <span class="page-name">⚙️ 设置页</span>
+                        <span class="page-badge badge-p2">P2</span>
+                    </div>
+                    <div class="page-path">pages/settings/index</div>
+                    <div class="page-desc">通知开关、隐私设置</div>
+                </div>
+
+                <div class="page-card priority-p0">
+                    <div class="page-header">
+                        <span class="page-name">📜 隐私政策</span>
+                        <span class="page-badge badge-p0">P0</span>
+                    </div>
+                    <div class="page-path">pages/privacy/index</div>
+                    <div class="page-desc">隐私政策展示（合规必需）</div>
+                </div>
+
+                <div class="page-card priority-p0">
+                    <div class="page-header">
+                        <span class="page-name">📝 用户协议</span>
+                        <span class="page-badge badge-p0">P0</span>
+                    </div>
+                    <div class="page-path">pages/agreement/index</div>
+                    <div class="page-desc">用户协议展示（合规必需）</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 数据流向图 -->
+        <div class="card">
+            <div class="card-title">数据流向图（以配料表分析为例）</div>
+            <div class="data-flow">
+                <div class="flow-step">
+                    <div class="flow-number">1</div>
+                    <div class="flow-content">
+                        <div class="flow-title">用户输入配料表</div>
+                        <div class="flow-desc">拍照识别 / 手动输入 / 语音输入</div>
+                    </div>
+                </div>
+                
+                <div class="flow-arrow">↓</div>
+                
+                <div class="flow-step">
+                    <div class="flow-number">2</div>
+                    <div class="flow-content">
+                        <div class="flow-title">前端解析配料数据</div>
+                        <div class="flow-desc">提取成分名称和用量，构建请求参数</div>
+                    </div>
+                </div>
+                
+                <div class="flow-arrow">↓</div>
+                
+                <div class="flow-step">
+                    <div class="flow-number">3</div>
+                    <div class="flow-content">
+                        <div class="flow-title">调用后端分析API</div>
+                        <div class="flow-desc">POST /api/v1/nutrition/analyze</div>
+                    </div>
+                </div>
+                
+                <div class="flow-arrow">↓</div>
+                
+                <div class="flow-step">
+                    <div class="flow-number">4</div>
+                    <div class="flow-content">
+                        <div class="flow-title">后端处理分析</div>
+                        <div class="flow-desc">
+                            • NutritionLabelGenerator 计算营养标签<br>
+                            • SafetyChecker 检查禁忌成分<br>
+                            • HealthEvaluator 评估健康价值<br>
+                            • 查询 nutrition_database.py（50+味药材）
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flow-arrow">↓</div>
+                
+                <div class="flow-step">
+                    <div class="flow-number">5</div>
+                    <div class="flow-content">
+                        <div class="flow-title">返回分析结果</div>
+                        <div class="flow-desc">营养成分表、健康评分、安全警告、改进建议</div>
+                    </div>
+                </div>
+                
+                <div class="flow-arrow">↓</div>
+                
+                <div class="flow-step">
+                    <div class="flow-number">6</div>
+                    <div class="flow-content">
+                        <div class="flow-title">前端展示结果</div>
+                        <div class="flow-desc">NutritionLabel组件 + HealthScore组件 + ImprovementSuggestion组件</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- API接口清单 -->
+        <div class="card">
+            <div class="card-title">API接口清单（14个）</div>
+            <table class="api-table">
+                <thead>
+                    <tr>
+                        <th>接口路径</th>
+                        <th>方法</th>
+                        <th>功能说明</th>
+                        <th>状态</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>/api/v1/wechat/login</td>
+                        <td><span class="api-method method-post">POST</span></td>
+                        <td>微信授权登录</td>
+                        <td><span class="status-tag status-new">需开发</span></td>
+                    </tr>
+                    <tr>
+                        <td>/api/v1/wechat/bind</td>
+                        <td><span class="api-method method-post">POST</span></td>
+                        <td>绑定微信账号</td>
+                        <td><span class="status-tag status-new">需开发</span></td>
+                    </tr>
+                    <tr>
+                        <td>/api/v1/auth/refresh</td>
+                        <td><span class="api-method method-post">POST</span></td>
+                        <td>Token刷新</td>
+                        <td><span class="status-tag status-existing">已有</span></td>
+                    </tr>
+                    <tr>
+                        <td>/api/v1/formulas</td>
+                        <td><span class="api-method method-get">GET</span></td>
+                        <td>配方列表（精简版）</td>
+                        <td><span class="status-tag status-new">需适配</span></td>
+                    </tr>
+                    <tr>
+                        <td>/api/v1/formulas/{id}</td>
+                        <td><span class="api-method method-get">GET</span></td>
+                        <td>配方详情（精简版）</td>
+                        <td><span class="status-tag status-new">需适配</span></td>
+                    </tr>
+                    <tr>
+                        <td>/api/v1/formulas/favorite</td>
+                        <td><span class="api-method method-post">POST</span></td>
+                        <td>收藏/取消收藏</td>
+                        <td><span class="status-tag status-new">需开发</span></td>
+                    </tr>
+                    <tr>
+                        <td>/api/v1/ai/chat/stream</td>
+                        <td><span class="api-method method-post">POST</span></td>
+                        <td>流式对话</td>
+                        <td><span class="status-tag status-existing">已有</span></td>
+                    </tr>
+                    <tr>
+                        <td>/api/v1/ai/generate</td>
+                        <td><span class="api-method method-post">POST</span></td>
+                        <td>配方生成</td>
+                        <td><span class="status-tag status-existing">已有</span></td>
+                    </tr>
+                    <tr>
+                        <td>/api/v1/nutrition/analyze</td>
+                        <td><span class="api-method method-post">POST</span></td>
+                        <td>配料表分析 ⭐</td>
+                        <td><span class="status-tag status-new">需开发</span></td>
+                    </tr>
+                    <tr>
+                        <td>/api/v1/nutrition/calculate</td>
+                        <td><span class="api-method method-post">POST</span></td>
+                        <td>营养标签计算 ⭐</td>
+                        <td><span class="status-tag status-new">需开发</span></td>
+                    </tr>
+                    <tr>
+                        <td>/api/v1/nutrition/database</td>
+                        <td><span class="api-method method-get">GET</span></td>
+                        <td>营养数据库查询</td>
+                        <td><span class="status-tag status-new">需开发</span></td>
+                    </tr>
+                    <tr>
+                        <td>/api/v1/search/herbs</td>
+                        <td><span class="api-method method-get">GET</span></td>
+                        <td>食材搜索</td>
+                        <td><span class="status-tag status-existing">已有</span></td>
+                    </tr>
+                    <tr>
+                        <td>/api/v1/search/formulas</td>
+                        <td><span class="api-method method-get">GET</span></td>
+                        <td>配方搜索</td>
+                        <td><span class="status-tag status-existing">已有</span></td>
+                    </tr>
+                    <tr>
+                        <td>/api/mobile/dashboard</td>
+                        <td><span class="api-method method-get">GET</span></td>
+                        <td>移动端仪表盘</td>
+                        <td><span class="status-tag status-existing">已有</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 开发里程碑 -->
+        <div class="card">
+            <div class="card-title">开发里程碑（10周）</div>
+            <div class="data-flow">
+                <div class="flow-step" style="border-left-color: #FF6B6B;">
+                    <div class="flow-number" style="background: #FF6B6B;">1</div>
+                    <div class="flow-content">
+                        <div class="flow-title">Phase 1：核心功能（第1-2周）</div>
+                        <div class="flow-desc">
+                            ✅ 项目初始化<br>
+                            ✅ 微信登录 + Token管理<br>
+                            ✅ AI对话（流式输出）<br>
+                            ✅ 配方浏览（列表+详情）<br>
+                            ✅ 配料表分析（拍照识别+营养计算）⭐<br>
+                            ✅ 隐私合规模块
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flow-arrow">↓</div>
+                
+                <div class="flow-step" style="border-left-color: #FF9800;">
+                    <div class="flow-number" style="background: #FF9800;">2</div>
+                    <div class="flow-content">
+                        <div class="flow-title">Phase 2：增值功能（第3-4周）</div>
+                        <div class="flow-desc">
+                            • 体质诊断（15题问卷）<br>
+                            • 个人中心（对话历史、收藏）<br>
+                            • 搜索功能（食材+配方）<br>
+                            • 配方对比<br>
+                            • 分享海报生成
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flow-arrow">↓</div>
+                
+                <div class="flow-step" style="border-left-color: #2196F3;">
+                    <div class="flow-number" style="background: #2196F3;">3</div>
+                    <div class="flow-content">
+                        <div class="flow-title">Phase 3：扩展功能（第5-6周）</div>
+                        <div class="flow-desc">
+                            ○ 语音输入<br>
+                            ○ 订阅消息<br>
+                            ○ 离线缓存<br>
+                            ○ 扫码溯源（可选）
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flow-arrow">↓</div>
+                
+                <div class="flow-step" style="border-left-color: #4CAF50;">
+                    <div class="flow-number" style="background: #4CAF50;">4</div>
+                    <div class="flow-content">
+                        <div class="flow-title">Phase 4：优化与测试（第7-8周）</div>
+                        <div class="flow-desc">
+                            ✓ 性能优化（分包预下载、图片懒加载）<br>
+                            ✓ 真机测试<br>
+                            ✓ 微信审核准备<br>
+                            ✓ Bug修复<br>
+                            ✓ 正式上线
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 技术亮点 -->
+        <div class="card">
+            <div class="card-title">技术亮点</div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                <div style="padding: 20px; background: #f8f9fa; border-radius: 12px; border-left: 4px solid #2D5A3D;">
+                    <h4 style="color: #2D5A3D; margin-bottom: 10px;">🔐 安全认证</h4>
+                    <p style="font-size: 14px; color: #666; line-height: 1.6;">
+                        AES加密存储Token，自动刷新机制，401自动跳转登录
+                    </p>
+                </div>
+                <div style="padding: 20px; background: #f8f9fa; border-radius: 12px; border-left: 4px solid #FF6B6B;">
+                    <h4 style="color: #FF6B6B; margin-bottom: 10px;">⚡ 流式输出</h4>
+                    <p style="font-size: 14px; color: #666; line-height: 1.6;">
+                        fetch API + ReadableStream，打字机效果，支持降级轮询
+                    </p>
+                </div>
+                <div style="padding: 20px; background: #f8f9fa; border-radius: 12px; border-left: 4px solid #FF9800;">
+                    <h4 style="color: #FF9800; margin-bottom: 10px;">📦 分包加载</h4>
+                    <p style="font-size: 14px; color: #666; line-height: 1.6;">
+                        按模块拆分，按需下载，主包<2MB，秒开体验
+                    </p>
+                </div>
+                <div style="padding: 20px; background: #f8f9fa; border-radius: 12px; border-left: 4px solid #2196F3;">
+                    <h4 style="color: #2196F3; margin-bottom: 10px;">💾 离线缓存</h4>
+                    <p style="font-size: 14px; color: #666; line-height: 1.6;">
+                        本地Storage缓存，弱网可用，网络恢复自动同步
+                    </p>
+                </div>
+                <div style="padding: 20px; background: #f8f9fa; border-radius: 12px; border-left: 4px solid #9C27B0;">
+                    <h4 style="color: #9C27B0; margin-bottom: 10px;">📷 拍照识别</h4>
+                    <p style="font-size: 14px; color: #666; line-height: 1.6;">
+                        微信OCR API，自动识别配料表，支持手动补充
+                    </p>
+                </div>
+                <div style="padding: 20px; background: #f8f9fa; border-radius: 12px; border-left: 4px solid #4CAF50;">
+                    <h4 style="color: #4CAF50; margin-bottom: 10px;">📊 GB 28050标准</h4>
+                    <p style="font-size: 14px; color: #666; line-height: 1.6;">
+                        符合国家营养标签标准，能量校验，营养声称检测
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 底部说明 -->
+        <div style="text-align: center; color: white; opacity: 0.8; margin-top: 40px; font-size: 14px;">
+            <p>© 2026 RMFOOD 药食同源配方平台 | 架构组</p>
+            <p style="margin-top: 5px;">本文档为可视化开发方案，建议使用浏览器打开查看</p>
+        </div>
+    </div>
+</body>
+</html>

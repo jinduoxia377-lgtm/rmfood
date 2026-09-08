@@ -21,6 +21,34 @@ from ..domain.herb_ports import HerbKnowledgePort, HerbProfile
 
 logger = logging.getLogger(__name__)
 
+# ── TCMHerb name → herb_id 映射（来自 knowledge_base + _BUILTIN_HERBS）──
+_HERB_NAME_TO_ID: Dict[str, str] = {
+    "黄芪": "hq", "党参": "ds", "枸杞子": "gz", "人参": "rs",
+    "当归": "dg", "黄芪根": "hqg", "白术": "bq", "茯苓": "fp",
+    "甘草": "gq", "菊花": "jgh", "川芎": "cs", "藜芦": "lk",
+    "马利兰": "mld", "附子": "fz", "陈皮": "cx", "薏苡仁": "yq",
+    "金银花": "cyh", "大枣": "dcx", "生姜": "sj", "葛根": "gh",
+    "山楂": "sz", "丹参": "dsz", "山药": "sx", "决明子": "jq",
+    "连翘": "lq", "薄荷": "bo", "桂圆": "gy", "莲子": "ls",
+    "红豆": "hd", "黑芝麻": "hhz", "核桃": "ht", "桑椹": "ss",
+    "百合": "bh", "麦冬": "md", "沙参": "ssn", "玉竹": "yz",
+    "阿胶": "aj", "三七": "sq", "天麻": "tm", "钩藤": "gt",
+    "鱼腥草": "ypc", "蒲公英": "pyg", "马齿苋": "mcx", "荷叶": "hy",
+    "桑叶": "sy", "罗布麻": "lbm", "绞股蓝": "jgl",
+    "白芍": "bsh", "桔梗": "jgf", "半夏": "bx", "枳实": "zs",
+    "厚朴": "hp",
+    # 别名
+    "红枣": "dcx", "桑葚": "ss",
+}
+
+# TCMSP ID → herb_id 映射（常见TCMSP ID前缀）
+_TCMSPTO_HERB_ID: Dict[str, str] = {
+    "TCM4524": "hq", "TCM1168": "ds", "TCM338": "gz", "TCM26": "rs",
+    "TCM5694": "dg", "TCM2529": "bq", "TCM35": "fp", "TCM110": "gq",
+    "TCM154": "jgh", "TCM89": "cs", "TCM108": "cx", "TCM916": "yq",
+    "TCM37": "cyh", "TCM60": "sj", "TCM27": "dcx",
+}
+
 
 # ═══════════════════════════════════════════════════════════════
 # 1. TCMSP 数据库适配器（生产环境首选）
@@ -36,15 +64,23 @@ class TCMSPHerbKnowledgeAdapter(HerbKnowledgePort):
     而不是被限制在硬编码字典的 20 种。
     """
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session=None):
         self._session = session
         self._efficacy_index_cache: Optional[Dict[str, List[str]]] = None
+
+    async def _get_session(self) -> AsyncSession:
+        """懒获取数据库会话（适配无注入场景）"""
+        if self._session is not None:
+            return self._session
+        from app.core.database.session import async_session_factory
+        return async_session_factory()
 
     async def get_herb_by_id(self, herb_id: str) -> Optional[HerbProfile]:
         try:
             from ..models.external_data import TCMHerb
-            stmt = select(TCMHerb).where(TCMHerb.tcm_id == herb_id)
-            result = await self._session.execute(stmt)
+            session = await self._get_session()
+            stmt = select(TCMHerb).where(TCMHerb.name_cn == herb_id)
+            result = await session.execute(stmt)
             orm = result.scalar_one_or_none()
             return self._to_profile(orm) if orm else None
         except Exception as e:
@@ -54,20 +90,17 @@ class TCMSPHerbKnowledgeAdapter(HerbKnowledgePort):
     async def get_herbs_by_efficacy(self, efficacy: str) -> List[HerbProfile]:
         try:
             from ..models.external_data import TCMHerb
-            from sqlalchemy import or_, cast, String
-            # 使用 JSON contains 或字符串匹配查询功效
-            stmt = select(TCMHerb).where(
-                cast(TCMHerb.efficacy_json, String).contains(efficacy)
-            )
-            result = await self._session.execute(stmt)
+            session = await self._get_session()
+            # 从 extra_knowledge JSON 和 effects 文本字段匹配功效
+            stmt = select(TCMHerb)
+            result = await session.execute(stmt)
             herbs = result.scalars().all()
-            profiles = [self._to_profile(h) for h in herbs if h]
-            # 按功效评分降序排列
-            return sorted(
-                profiles,
-                key=lambda p: p.efficacy_scores.get(efficacy, 0),
-                reverse=True,
-            )
+            profiles = []
+            for h in herbs:
+                p = self._to_profile(h)
+                if p.efficacy_scores.get(efficacy, 0) > 0 or efficacy in (h.effects or ""):
+                    profiles.append(p)
+            return sorted(profiles, key=lambda p: p.efficacy_scores.get(efficacy, 0), reverse=True)
         except Exception as e:
             logger.error(f"[TCMSPHerbKnowledgeAdapter] 功效查询失败 efficacy={efficacy}: {e}")
             return []
@@ -75,8 +108,9 @@ class TCMSPHerbKnowledgeAdapter(HerbKnowledgePort):
     async def get_all_herbs(self) -> List[HerbProfile]:
         try:
             from ..models.external_data import TCMHerb
+            session = await self._get_session()
             stmt = select(TCMHerb)
-            result = await self._session.execute(stmt)
+            result = await session.execute(stmt)
             herbs = result.scalars().all()
             return [self._to_profile(h) for h in herbs]
         except Exception as e:
@@ -103,38 +137,91 @@ class TCMSPHerbKnowledgeAdapter(HerbKnowledgePort):
         return herb.antagonistic_pairs if herb else []
 
     def _to_profile(self, orm) -> HerbProfile:
-        """将 TCMHerb ORM 实体映射为 HerbProfile"""
-        efficacy_scores: Dict[str, float] = {}
-        synergy: List[str] = []
-        antagonistic: List[str] = []
+        """将 TCMHerb ORM 实体映射为 HerbProfile
 
-        # 兼容 JSON 字段的多种存储格式
-        if hasattr(orm, "efficacy_json") and orm.efficacy_json:
+        优先级:
+        1. extra_knowledge JSON 字段（enrich_herb_knowledge 写入的结构化数据）
+        2. efficacy_json / synergy_json / antagonistic_json（旧格式兼容）
+        3. 硬编码默认值（兜底）
+        """
+        import json as _json
+
+        # ── 解析 extra_knowledge（结构化扩展数据）──
+        extra: Dict = {}
+        if hasattr(orm, "extra_knowledge") and orm.extra_knowledge:
+            try:
+                extra = _json.loads(orm.extra_knowledge) if isinstance(orm.extra_knowledge, str) else orm.extra_knowledge
+            except (TypeError, ValueError):
+                extra = {}
+
+        # name_cn (must be resolved before herb_id lookup)
+        name_cn = getattr(orm, "name_cn", "") or getattr(orm, "name", "")
+
+        # herb_id: 优先 extra_knowledge.herb_id，其次 tcm_id，再 name 映射，最后 tcmsp_id 映射
+        herb_id = (
+            extra.get("herb_id")
+            or getattr(orm, "tcm_id", None)
+            or _HERB_NAME_TO_ID.get(name_cn)
+            or _TCMSPTO_HERB_ID.get(getattr(orm, "tcmsp_id", ""))
+            or (name_cn[:3] if name_cn else "")
+        )
+
+        # dosage
+        dosage_min = extra.get("dosage_min", float(getattr(orm, "dosage_min", 3) or 3))
+        dosage_max = extra.get("dosage_max", float(getattr(orm, "dosage_max", 15) or 15))
+        dosage_step = extra.get("dosage_step", float(getattr(orm, "dosage_step", 1) or 1))
+
+        # efficacy_scores: 优先 extra_knowledge 中的数值评分
+        efficacy_scores: Dict[str, float] = {}
+        if "efficacy_scores" in extra:
+            efficacy_scores = {k: float(v) for k, v in extra["efficacy_scores"].items() if isinstance(v, (int, float))}
+        elif hasattr(orm, "efficacy_json") and orm.efficacy_json:
             raw = orm.efficacy_json
             if isinstance(raw, dict):
                 efficacy_scores = {k: float(v) for k, v in raw.items()}
             elif isinstance(raw, list):
-                # 部分存储格式为 ["免疫调节", "抗氧化"]，给予默认评分
                 efficacy_scores = {e: 0.7 for e in raw}
 
-        if hasattr(orm, "synergy_json") and orm.synergy_json:
+        # safety_index
+        safety_index = float(extra.get("safety_index", getattr(orm, "safety_index", 0.9) or 0.9))
+
+        # cost_per_gram
+        cost_per_gram = float(extra.get("cost_per_gram", getattr(orm, "cost_per_gram", 0.1) or 0.1))
+
+        # synergy_partners
+        synergy: List[str] = []
+        if "synergy_partners" in extra:
+            synergy = [s for s in extra["synergy_partners"] if isinstance(s, str)]
+        elif hasattr(orm, "synergy_json") and orm.synergy_json:
             synergy = list(orm.synergy_json) if isinstance(orm.synergy_json, list) else []
-        if hasattr(orm, "antagonistic_json") and orm.antagonistic_json:
+
+        # antagonistic_pairs
+        antagonistic: List[str] = []
+        if "antagonistic_pairs" in extra:
+            antagonistic = [s for s in extra["antagonistic_pairs"] if isinstance(s, str)]
+        elif hasattr(orm, "antagonistic_json") and orm.antagonistic_json:
             antagonistic = list(orm.antagonistic_json) if isinstance(orm.antagonistic_json, list) else []
 
+        # categories
+        categories: List[str] = []
+        if "categories" in extra:
+            categories = [c for c in extra["categories"] if isinstance(c, str)]
+        elif hasattr(orm, "categories_json") and orm.categories_json:
+            categories = list(orm.categories_json) if isinstance(orm.categories_json, list) else []
+
         return HerbProfile(
-            herb_id=getattr(orm, "tcm_id", "") or getattr(orm, "id", ""),
-            name_cn=getattr(orm, "name_cn", "") or getattr(orm, "name", ""),
+            herb_id=herb_id,
+            name_cn=name_cn,
             name_en=getattr(orm, "name_en", "") or "",
-            dosage_min=float(getattr(orm, "dosage_min", 0) or 0),
-            dosage_max=float(getattr(orm, "dosage_max", 30) or 30),
-            dosage_step=float(getattr(orm, "dosage_step", 1) or 1),
+            dosage_min=dosage_min,
+            dosage_max=dosage_max,
+            dosage_step=dosage_step,
             efficacy_scores=efficacy_scores,
-            safety_index=float(getattr(orm, "safety_index", 0.9) or 0.9),
-            cost_per_gram=float(getattr(orm, "cost_per_gram", 0.1) or 0.1),
+            safety_index=safety_index,
+            cost_per_gram=cost_per_gram,
             synergy_partners=synergy,
             antagonistic_pairs=antagonistic,
-            categories=list(getattr(orm, "categories_json", None) or []),
+            categories=categories,
         )
 
 

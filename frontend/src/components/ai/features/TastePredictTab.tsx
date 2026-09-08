@@ -1,4 +1,4 @@
-﻿/**
+/**
  * TastePredictTab - 口感预测模块 (增强版)
  *
  * 从 35% 提升至 75% 的深度开发版本
@@ -151,112 +151,152 @@ export function TastePredictTab() {
 
   return (
     <div className="grid grid-cols-12 gap-6 h-full">
-      {/* 左侧：输入控制面板 */}
-      <div className="col-span-4 space-y-4">
-        <Card className="p-5 space-y-4">
-          <div>
-            <h2 className="text-lg font-semibold flex items-center gap-2 mb-1">
-              <Cherry className="w-5 h-5 text-error-500" />
-              口感预测
-            </h2>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              输入药材名称，用逗号或换行分隔。支持本地快速预测和 AI 深度分析。
-            </p>
-          </div>
+      {/* 左侧：输入控制面板 — 玻璃态设计 */}
+      <div className="col-span-12 lg:col-span-4 space-y-4">
+        <div className="relative group">
+          <div className="absolute -inset-0.5 bg-gradient-to-r from-orange-500 to-rose-500 rounded-2xl opacity-0 group-hover:opacity-10 transition-opacity duration-300 blur" />
+          <Card className="relative p-6 space-y-5 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm rounded-2xl">
+            {/* 标题区 */}
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-rose-600 flex items-center justify-center shadow-md flex-shrink-0">
+                <Cherry className="w-5 h-5 text-white" />
+              </div>
+              <div className="flex-1">
+                <h2 className="text-base font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
+                  口感预测
+                </h2>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5 leading-relaxed">
+                  输入药材名称，支持本地快速预测和 AI 深度分析
+                </p>
+              </div>
+            </div>
 
-          {/* 输入框 */}
-          <div>
-            <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5 block">药材配方</label>
-            <textarea
-              value={tasteInput}
-              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setTasteInput(e.target.value)}
-              placeholder={`如:\n黄芪\n党参\n枸杞子\n山药\n甘草`}
-              rows={4}
-              className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600
-                         rounded-lg text-sm bg-white dark:bg-neutral-800
-                         focus:ring-2 focus:ring-blue-500 resize-none"
-            />
-          </div>
-
-          {/* 参数配置 */}
-          <div className="space-y-3">
+            {/* 输入框 */}
             <div>
-              <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5 block">
-                炮制方法（可选）
+              <label className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-2 block">
+                药材配方
               </label>
-              <Select
-                value={processingMethod}
-                onChange={(v) => setProcessingMethod(v)}
-                placeholder="选择炮制方法..."
+              <textarea
+                value={tasteInput}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setTasteInput(e.target.value)}
+                placeholder={`如：\n黄芪、党参、枸杞子、山药、甘草`}
+                rows={4}
+                className="w-full px-4 py-3 border border-neutral-200 dark:border-neutral-700
+                           rounded-xl text-sm bg-neutral-50 dark:bg-neutral-800/50
+                           focus:ring-2 focus:ring-orange-200 dark:focus:ring-orange-800 focus:border-orange-400
+                           resize-none transition-all duration-200"
+              />
+            </div>
+
+            {/* 参数配置 — 选择器样式 */}
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-2 block">
+                  炮制方法（可选）
+                </label>
+                <Select
+                  value={processingMethod}
+                  onChange={(v) => setProcessingMethod(v)}
+                  placeholder="选择炮制方法..."
+                  className="rounded-xl"
+                >
+                  <option value="">无</option>
+                  {PROCESSING_METHODS.map((method) => (
+                    <option key={method.name} value={method.name}>
+                      {method.name} - {method.description}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-2 block">
+                  算法模式
+                </label>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setAlgorithmMode('weighted')}
+                    className={`flex-1 px-3 py-2 rounded-xl text-xs font-medium transition-all duration-200 border ${
+                      algorithmMode === 'weighted'
+                        ? 'bg-orange-50 dark:bg-orange-900/20 border-orange-300 dark:border-orange-700 text-orange-700 dark:text-orange-400 shadow-sm'
+                        : 'bg-neutral-50 dark:bg-neutral-800/50 border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:border-orange-200'
+                    }`}
+                  >
+                    <div className="font-semibold">加权平均</div>
+                    <div className="text-[10px] opacity-70 mt-0.5">快速计算</div>
+                  </button>
+                  <button
+                    onClick={() => setAlgorithmMode('synergy')}
+                    className={`flex-1 px-3 py-2 rounded-xl text-xs font-medium transition-all duration-200 border ${
+                      algorithmMode === 'synergy'
+                        ? 'bg-orange-50 dark:bg-orange-900/20 border-orange-300 dark:border-orange-700 text-orange-700 dark:text-orange-400 shadow-sm'
+                        : 'bg-neutral-50 dark:bg-neutral-800/50 border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:border-orange-200'
+                    }`}
+                  >
+                    <div className="font-semibold">协同分析</div>
+                    <div className="text-[10px] opacity-70 mt-0.5">精确预测</div>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* 操作按钮 — 渐变按钮 */}
+            <div className="flex gap-2 pt-1">
+              <Button
+                onClick={handleLocalPredict}
+                disabled={!tasteInput.trim()}
+                icon={<FlaskConical className="w-4 h-4" />}
+                variant="outline"
+                className="flex-1 rounded-xl font-medium border-neutral-200 dark:border-neutral-700"
               >
-                <option value="">无</option>
-                {PROCESSING_METHODS.map((method) => (
-                  <option key={method.name} value={method.name}>
-                    {method.name} - {method.description}
-                  </option>
-                ))}
-              </Select>
+                本地预测
+              </Button>
+              <Button
+                onClick={handlePredict}
+                disabled={!tasteInput.trim() || mutation.isPending}
+                loading={mutation.isPending}
+                icon={<Cherry className="w-4 h-4" />}
+                className="flex-1 rounded-md font-medium transition-colors duration-150"
+              >
+                AI 分析
+              </Button>
             </div>
 
-            <div>
-              <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5 block">算法模式</label>
-              <Select value={algorithmMode} onChange={(v) => setAlgorithmMode(v as 'weighted' | 'synergy')}>
-                <option value="weighted">加权平均（快速）</option>
-                <option value="synergy">协同分析（中等）</option>
-              </Select>
-            </div>
-          </div>
-
-          {/* 操作按钮 */}
-          <div className="flex gap-2 pt-2">
             <Button
-              onClick={handleLocalPredict}
-              disabled={!tasteInput.trim()}
-              icon={<FlaskConical className="w-4 h-4" />}
-              variant="outline"
-              className="flex-1"
+              onClick={handleClear}
+              variant="ghost"
+              size="sm"
+              icon={<RotateCcw className="w-4 h-4" />}
+              className="w-full text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
             >
-              本地预测
+              清空重置
             </Button>
-            <Button
-              onClick={handlePredict}
-              disabled={!tasteInput.trim() || mutation.isPending}
-              loading={mutation.isPending}
-              icon={<Cherry className="w-4 h-4" />}
-              className="flex-1"
-            >
-              AI 分析
-            </Button>
-          </div>
-
-          <Button
-            onClick={handleClear}
-            variant="ghost"
-            size="sm"
-            icon={<RotateCcw className="w-4 h-4" />}
-            className="w-full"
-          >
-            清空重置
-          </Button>
-        </Card>
+          </Card>
+        </div>
 
         {/* 成分预览卡片 */}
         {ingredientProfiles.length > 0 && (
-          <Card className="p-4">
-            <h3 className="text-sm font-semibold flex items-center gap-2 mb-3">
-              <Table2 className="w-4 h-4" />
-              成分列表 ({ingredientProfiles.length})
-            </h3>
-            <div className="space-y-2 max-h-64 overflow-y-auto">
+          <Card className="p-4 rounded-lg">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+                <div className="w-6 h-6 rounded-lg bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
+                  <Table2 className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400" />
+                </div>
+                成分列表
+                <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400">
+                  {ingredientProfiles.length}
+                </span>
+              </h3>
+            </div>
+            <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
               {ingredientProfiles.map((item, index) => (
                 <div
                   key={index}
-                  className="flex items-center justify-between p-2 rounded-lg
-                             bg-slate-50 dark:bg-neutral-800/50 text-sm"
+                  className="flex items-center justify-between p-2.5 rounded-md bg-neutral-50 dark:bg-neutral-800/50 text-sm hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                 >
-                  <span className="font-medium">{item.name}</span>
-                  <Badge variant={item.hasData ? 'success' : 'warning'} size="sm">
-                    {item.hasData ? '有数据' : '待补充'}
+                  <span className="font-medium text-neutral-700 dark:text-neutral-300">{item.name}</span>
+                  <Badge variant={item.hasData ? 'success' : 'warning'} size="sm" className="rounded-full px-2.5 py-0.5">
+                    {item.hasData ? '✓ 有数据' : '○ 待补充'}
                   </Badge>
                 </div>
               ))}

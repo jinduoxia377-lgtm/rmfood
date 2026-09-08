@@ -16,14 +16,16 @@ import { detectMessageType, parseChartData } from './utils.tsx'
 import MarkdownRenderer from './MarkdownRenderer'
 import TypewriterText from './TypewriterText'
 import ThinkingProcess from './ThinkingProcess'
+import ReasoningRow from './ReasoningRow'
 import StructuredMessageRenderer from '../structured/StructuredMessageRenderer'
 import { detectStructuredContent } from '../structured/utils'
 import EnhancedContentRenderer from './EnhancedContentRenderer'
 import {
-	Bot, Copy, Check, RefreshCw, Trash2,
+	Leaf, Copy, Check, RefreshCw, Trash2,
 	ThumbsUp, ThumbsDown, Pencil, Undo2, X,
 	Link, Code, Image as ImageIcon, ExternalLink,
-	FileText, AlertTriangle,
+	FileText, AlertTriangle, MoreHorizontal,
+	GitBranch,
 } from 'lucide-react'
 import { userProfileManager } from '../../services/userProfileService'
 import { logger } from '@/utils/safeLogger'
@@ -47,10 +49,17 @@ export interface MessageBubbleProps {
 	onDelete: (id: string) => void
 	onReference: (msg: ChatMessage) => void
 	onRegenerate: (id: string) => void
+	onForkMessage?: (messageId: string) => void
+	onDetails?: (call: { id: string; name: string; args: Record<string, unknown>; status: 'running' | 'completed' | 'error'; durationMs?: number }) => void
 	copiedId?: string | null
 	thinkingSteps?: Array<{ step: string; content: string; status: string; detail?: string }>
 	isHighlighted?: boolean
 	isSelected?: boolean
+	/** 子智能体委托状态（Task 6） */
+	delegationProgress?: {
+		taskId: string
+		subtasks: Array<{ id: string; description: string; status: 'pending' | 'running' | 'completed' | 'failed'; error?: string }>
+	}
 }
 
 // ── 工具函数 ──────────────────────────────────────────────────────
@@ -103,26 +112,38 @@ function LinkMessageCard({ url }: { url: string }) {
 	const domain = tryExtractDomain(url)
 	const domainInitial = domain ? domain.charAt(0).toUpperCase() : '?'
 	return (
-		<div className="chat-link-card">
-			<div className="chat-link-card-header">
-				<Link className="w-4 h-4 text-primary-500 flex-shrink-0" />
-				{domain && (
-					<span
-						className="w-4 h-4 rounded-sm flex items-center justify-center text-[10px] font-bold bg-neutral-100 text-neutral-600"
-						title={domain}
-					>
-						{domainInitial}
-					</span>
-				)}
+		<div className="group/link relative overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-700 bg-gradient-to-br from-neutral-50 to-white dark:from-neutral-800/50 dark:to-neutral-900/50 hover:shadow-md transition-all duration-200">
+			{/* 顶部装饰条 */}
+			<div className="h-1 bg-gradient-to-r from-primary-500 to-indigo-500 opacity-0 group-hover/link:opacity-100 transition-opacity duration-200" />
+			<div className="p-3.5">
+				<div className="flex items-center gap-2 mb-2">
+					<div className="w-7 h-7 rounded-lg bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0">
+						<Link className="w-3.5 h-3.5 text-primary-600 dark:text-primary-400" />
+					</div>
+					<div className="flex-1 min-w-0">
+						<div className="text-sm font-medium text-neutral-800 dark:text-neutral-200 truncate">
+							{tryExtractTitle(url)}
+						</div>
+						<div className="text-xs text-neutral-400 dark:text-neutral-500 truncate flex items-center gap-1">
+							{domain && (
+								<span className="w-4 h-4 rounded flex items-center justify-center text-[9px] font-bold bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300">
+									{domainInitial}
+								</span>
+							)}
+							{domain}
+						</div>
+					</div>
+				</div>
+				<a
+					href={url}
+					target="_blank"
+					rel="noopener noreferrer"
+					className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 text-xs font-medium hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors"
+				>
+					<ExternalLink className="w-3 h-3" />
+					打开链接
+				</a>
 			</div>
-			<div className="chat-link-card-body">
-				<div className="chat-link-card-title">{tryExtractTitle(url)}</div>
-				<div className="chat-link-card-url text-xs opacity-60 truncate">{url}</div>
-			</div>
-			<a href={url} target="_blank" rel="noopener noreferrer" className="chat-link-card-action">
-				<ExternalLink className="w-3.5 h-3.5" />
-				打开链接
-			</a>
 		</div>
 	)
 }
@@ -130,12 +151,21 @@ function LinkMessageCard({ url }: { url: string }) {
 function CodeMessageBlock({ code }: { code: string }) {
 	const cleanCode = code.replace(/^```\w*\n?/, '').replace(/\n?```$/, '')
 	return (
-		<div className="chat-code-block">
-			<div className="chat-code-block-header">
-				<Code className="w-3.5 h-3.5" />
-				<span className="text-xs">代码</span>
+		<div className="rounded-xl overflow-hidden border border-neutral-200 dark:border-neutral-700 bg-neutral-900 dark:bg-neutral-950 shadow-sm">
+			<div className="flex items-center justify-between px-4 py-2 bg-neutral-800 dark:bg-neutral-900 border-b border-neutral-700">
+				<div className="flex items-center gap-2">
+					<Code className="w-3.5 h-3.5 text-neutral-400" />
+					<span className="text-xs text-neutral-400 font-medium">代码</span>
+				</div>
+				<div className="flex gap-1.5">
+					<div className="w-2.5 h-2.5 rounded-full bg-neutral-600" />
+					<div className="w-2.5 h-2.5 rounded-full bg-neutral-600" />
+					<div className="w-2.5 h-2.5 rounded-full bg-neutral-600" />
+				</div>
 			</div>
-			<pre className="chat-code-block-content"><code>{cleanCode || code}</code></pre>
+			<pre className="p-4 overflow-x-auto text-sm">
+				<code className="text-neutral-300 font-mono">{cleanCode || code}</code>
+			</pre>
 		</div>
 	)
 }
@@ -172,18 +202,56 @@ function ImageMessageCard({ src }: { src: string }) {
 
 function FileMessageCard({ filename }: { filename: string }) {
 	const ext = extractExtension(filename)
+	const extColors: Record<string, string> = {
+		PDF: 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400',
+		DOC: 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400',
+		DOCX: 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400',
+		XLS: 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400',
+		XLSX: 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400',
+		PNG: 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400',
+		JPG: 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400',
+		MP4: 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400',
+		ZIP: 'bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400',
+	}
+	const colorClass = extColors[ext] || 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400'
 	return (
-		<div className="chat-file-card">
-			<FileText className="w-5 h-5 text-primary-500" />
-			<div className="chat-file-card-info">
-				<div className="chat-file-card-name truncate">{filename}</div>
-				<div className="chat-file-card-ext">{ext}</div>
+		<div className="group/file flex items-center gap-3 p-3.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50 hover:border-primary-300 dark:hover:border-primary-700 hover:shadow-sm transition-all duration-200">
+			<div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${colorClass}`}>
+				<FileText className="w-5 h-5" />
 			</div>
+			<div className="flex-1 min-w-0">
+				<div className="text-sm font-medium text-neutral-800 dark:text-neutral-200 truncate">
+					{filename}
+				</div>
+				<div className="text-xs text-neutral-400 dark:text-neutral-500 mt-0.5">
+					{ext} 格式文件
+				</div>
+			</div>
+			<span className="text-xs font-mono px-2 py-1 rounded-lg bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-400">
+				{ext}
+			</span>
 		</div>
 	)
 }
 
 // ── 消息内容渲染 ──────────────────────────────────────────────────
+
+/**
+ * 判断内容是否"看起来像"结构化 JSON（即使不完整）
+ * 用于流式阶段：避免中间状态展示原始 JSON 文本
+ */
+function isLikelyStructured(content: string): boolean {
+	if (!content || content.length < 20) return false
+	const trimmed = content.trim()
+	// 必须以 { 开头
+	if (trimmed[0] !== '{') return false
+	// 包含 blocks 关键字，且括号平衡（至少闭合一次）
+	const hasBlocks = trimmed.includes('"blocks"')
+	const hasClosingBrace = trimmed.lastIndexOf('}') >= 0
+	const braceDiff = (trimmed.match(/{/g) || []).length - (trimmed.match(/}/g) || []).length
+	// 未闭合但有 blocks 关键字 → 结构化内容在流式生成中
+	return hasBlocks && (braceDiff >= 0 && braceDiff <= 3)
+}
 
 function renderMessageContent(
 	msg: ChatMessage,
@@ -191,10 +259,20 @@ function renderMessageContent(
 	allMessages: ChatMessage[],
 	streaming: boolean,
 ) {
+	// ── 结构化内容优先检测 ──
 	if (msg.role === 'assistant') {
 		const structured = detectStructuredContent(msg.content)
 		if (structured) {
 			return <StructuredMessageRenderer content={structured} />
+		}
+		// 流式中：内容像结构化 JSON 但未完成 → 显示加载占位，避免展示原始 JSON
+		if (streaming && isLikelyStructured(msg.content)) {
+			return (
+				<div className="flex items-center gap-2 py-3 text-xs text-neutral-400 dark:text-neutral-500">
+					<RefreshCw className="w-3 h-3 animate-spin" />
+					正在生成配方方案…
+				</div>
+			)
 		}
 	}
 
@@ -279,9 +357,12 @@ export function MessageBubble({
 	onDelete,
 	onReference,
 	onRegenerate,
+	onForkMessage,
+	onDetails,
 	thinkingSteps,
 	isHighlighted,
 	isSelected,
+	delegationProgress,
 }: MessageBubbleProps) {
 	const startEdit = useCallback(() => onEdit?.(msg.id, msg.content), [msg.id, msg.content, onEdit])
 	const confirmEdit = useCallback(() => {
@@ -308,7 +389,7 @@ export function MessageBubble({
 		[msg.id, onReaction],
 	)
 
-	const showDateSep = index === 0 || isNewDay(allMessages[index - 1]?.timestamp, msg.timestamp)
+	const showDateSep = index > 0 && isNewDay(allMessages[index - 1]?.timestamp, msg.timestamp)
 
 	return (
 		<React.Fragment>
@@ -325,9 +406,11 @@ export function MessageBubble({
 			>
 				{/* 头像 */}
 				<div className={msg.role === 'user' ? 'avatar-user' : 'avatar-ai'}>
-					{msg.role === 'user' ? 'U' : (
+					{msg.role === 'user' ? (
+						<span className="avatar-letter">U</span>
+					) : (
 						<>
-							<Bot className="w-4 h-4" />
+							<Leaf className="w-4 h-4" />
 							<span
 								className={`avatar-status-indicator ${isStreaming && index === allMessages.length - 1 ? 'avatar-status-thinking' : 'avatar-status-online'}`}
 							/>
@@ -337,8 +420,6 @@ export function MessageBubble({
 
 				{/* 消息内容组 */}
 				<div className="chat-message-group">
-					<div className="chat-timestamp">{formatTime(msg.timestamp)}</div>
-
 					{/* 气泡 */}
 					{msg.isRetracted ? (
 						<div className="chat-bubble-retracted">
@@ -394,8 +475,34 @@ export function MessageBubble({
 								</div>
 							) : msg.sendStatus === 'sending' ? null : (
 								<>
+									{/* Task 6: 子智能体委托进度 */}
+									{delegationProgress && delegationProgress.subtasks.length > 0 && (
+										<div className="mb-2 p-2 bg-primary-50 dark:bg-primary-900/10 rounded-lg border border-primary-100 dark:border-primary-800/30">
+											<div className="flex items-center gap-1.5 mb-1.5">
+												<RefreshCw className={`w-3 h-3 text-primary-500 ${delegationProgress.subtasks.some(s => s.status === 'running') ? 'animate-spin' : ''}`} />
+												<span className="text-xs font-medium text-primary-700 dark:text-primary-400">子任务执行中</span>
+											</div>
+											<div className="space-y-0.5">
+												{delegationProgress.subtasks.map(st => (
+													<div key={st.id} className="flex items-center gap-1.5 text-xs">
+														{st.status === 'completed' && <Check className="w-3 h-3 text-success-500 flex-shrink-0" />}
+														{st.status === 'running' && <RefreshCw className="w-3 h-3 text-primary-500 animate-spin flex-shrink-0" />}
+														{st.status === 'failed' && <AlertTriangle className="w-3 h-3 text-error-500 flex-shrink-0" />}
+														{st.status === 'pending' && <div className="w-3 h-3 rounded-full border-2 border-neutral-300 dark:border-neutral-600 flex-shrink-0" />}
+														<span className={st.status === 'completed' ? 'text-success-600 dark:text-success-400' : st.status === 'running' ? 'text-primary-600 dark:text-primary-400' : st.status === 'failed' ? 'text-error-600 dark:text-error-400' : 'text-neutral-500'}>
+															{st.description}
+														</span>
+														{st.status === 'failed' && <span className="text-error-400 truncate">{st.error}</span>}
+													</div>
+												))}
+											</div>
+										</div>
+									)}
 									{msg.role === 'assistant' && thinkingSteps && thinkingSteps.length > 0 && (
-										<div className="mb-2"><ThinkingProcess steps={thinkingSteps} isThinking={false} /></div>
+										<ReasoningRow
+											steps={thinkingSteps as any}
+											isThinking={isStreaming && index === allMessages.length - 1}
+										/>
 									)}
 									{renderMessageContent(msg, index, allMessages, isStreaming)}
 								</>
@@ -404,57 +511,78 @@ export function MessageBubble({
 					)}
 				</div>
 
-				{/* 操作栏 */}
+				{/* 操作栏 — DSH 极简风格：时间 + 核心操作，hover 显示 */}
 				{!msg.error && !msg.isLoading && msg.content && !msg.isRetracted && (
 					<div className="chat-action-bar">
-						{msg.role === 'user' && (
-							<button onClick={startEdit} className="chat-action-btn" title="编辑" aria-label="编辑消息">
-								<Pencil className="w-3.5 h-3.5" />
-							</button>
-						)}
-						<button onClick={handleCopy} className="chat-action-btn" title="复制" aria-label="复制消息">
-							{msg.id === (copiedId ?? (globalThis as any).__chatCopiedId)
-								? <Check className="w-3.5 h-3.5 text-success-500" />
-								: <Copy className="w-3.5 h-3.5" />}
+						<span className="chat-action-time">{formatTime(msg.timestamp)}</span>
+						<button onClick={handleCopy} className="chat-action-btn" title="复制">
+							{(msg.id === (copiedId ?? (globalThis as any).__chatCopiedId))
+								? <Check className="w-3 h-3 text-emerald-500" />
+								: <Copy className="w-3 h-3" />}
 						</button>
-						{onReference && (
-							<button onClick={() => onReference(msg)} className="chat-action-btn" title="引用" aria-label="引用消息">
-								<span className="text-xs font-bold">↑</span>
+						{msg.role === 'user' && (
+							<button onClick={startEdit} className="chat-action-btn" title="编辑">
+								<Pencil className="w-3 h-3" />
 							</button>
-						)}
-						{msg.role === 'assistant' && (
-							<>
-								<button
-									onClick={() => handleReaction('like')}
-									className={`chat-action-btn ${reaction === 'like' ? 'text-secondary-500' : ''}`}
-									title="有用" aria-label="点赞"
-								>
-									<ThumbsUp className="w-3.5 h-3.5" />
-								</button>
-								<button
-									onClick={() => handleReaction('dislike')}
-									className={`chat-action-btn ${reaction === 'dislike' ? 'text-error-500' : ''}`}
-									title="没用" aria-label="点踩"
-								>
-									<ThumbsDown className="w-3.5 h-3.5" />
-								</button>
-								{onRegenerate && (
-									<button onClick={() => onRegenerate(msg.id)} className="chat-action-btn" title="重新生成" aria-label="重新生成">
-										<RefreshCw className="w-3 h-3" />
-									</button>
-								)}
-							</>
 						)}
 						{msg.role === 'user' && onRetract && (
-							<button onClick={() => onRetract(msg.id)} className="chat-action-btn" title="撤回" aria-label="撤回消息">
-								<Undo2 className="w-3.5 h-3.5" />
+							<button onClick={() => onRetract(msg.id)} className="chat-action-btn" title="撤回">
+								<Undo2 className="w-3 h-3" />
 							</button>
 						)}
-						{onDelete && !(msg.role === 'user' && onRetract) && (
-							<button onClick={() => onDelete(msg.id)} className="chat-action-btn" title="删除" aria-label="删除消息">
-								<Trash2 className="w-3.5 h-3.5" />
+						{msg.role === 'assistant' && onRegenerate && (
+							<button onClick={() => onRegenerate(msg.id)} className="chat-action-btn" title="重新生成">
+								<RefreshCw className="w-3 h-3" />
 							</button>
 						)}
+						{onForkMessage && (
+							<button onClick={() => onForkMessage(msg.id)} className="chat-action-btn" title="从此处分支">
+								<GitBranch className="w-3 h-3" />
+							</button>
+						)}
+						{
+							<button
+								onClick={() => {
+									const menu = (document.getElementById('msg-menu-' + msg.id) as HTMLElement | null)
+									if (menu) menu.remove(); else {
+										const el = document.createElement('div')
+										el.id = 'msg-menu-' + msg.id
+										el.className = 'chat-more-menu'
+										el.innerHTML = `
+											<div class="chat-more-menu-content">
+												<button class="chat-more-menu-item" data-action="edit">编辑</button>
+												<button class="chat-more-menu-item" data-action="regen">重新生成</button>
+												<button class="chat-more-menu-item" data-action="delete">删除</button>
+												${onDetails ? `<button class="chat-more-menu-item" data-action="details">详情</button>` : ''}
+											</div>`
+										document.body.appendChild(el)
+										setTimeout(() => {
+											const close = () => { el.remove(); document.removeEventListener('mousedown', close) }
+											document.addEventListener('mousedown', close)
+											el.addEventListener('click', (e) => {
+												const target = e.target as HTMLElement
+												if (target.classList.contains('chat-more-menu-item')) {
+													const action = target.dataset.action
+													if (action === 'edit') startEdit()
+													else if (action === 'regen') onRegenerate?.(msg.id)
+													else if (action === 'delete') onDelete?.(msg.id)
+													else if (action === 'details') onDetails?.({
+														id: msg.id, name: 'assistant_analysis',
+														args: { query: msg.content.slice(0, 100) },
+														status: 'completed',
+													})
+													close()
+												}
+											})
+										}, 10)
+									}
+								}}
+								className="chat-action-btn"
+								title="更多"
+							>
+								<MoreHorizontal className="w-3 h-3" />
+							</button>
+						}
 					</div>
 				)}
 			</div>

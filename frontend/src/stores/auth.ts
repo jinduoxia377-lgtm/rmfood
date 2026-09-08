@@ -63,12 +63,15 @@ export const useAuthStore = create<AuthState>()((set, get) => {
     // ═══════════════════════════════════════════
     login: async (username, password) => {
       let userFetched = false
+      let fallbackToken: string | null = null
 
       try {
         set({ isLoading: true })
 
-        // 1. 调用登录 API，后端会设置 HttpOnly Cookie
-        await authApi.login({ username, password })
+        // 1. 调用登录 API — 后端同时设置 HttpOnly Cookie 并返回 token
+        const loginResult = await authApi.login({ username, password })
+        // 保存 token 作为 Cookie 失效时的降级方案
+        fallbackToken = loginResult?.accessToken || null
 
         // 2. 获取 CSRF token（必须在登录成功后、任何状态变更请求之前）
         try {
@@ -77,8 +80,7 @@ export const useAuthStore = create<AuthState>()((set, get) => {
           // CSRF 初始化失败不阻断登录流程
         }
 
-        // 3. 立即获取用户信息 — 这一步验证 Cookie 确实被浏览器接受了
-        //    使用 _loginFlow 标记跳过 token 刷新逻辑（避免登录期间 401 触发重定向）
+        // 3. 立即获取用户信息 — 优先使用 Cookie，失败时回退到 Authorization header
         try {
           const { data: user } = await api.get<User>('/auth/me', {
             _loginFlow: true,
@@ -86,10 +88,26 @@ export const useAuthStore = create<AuthState>()((set, get) => {
           set({ user, isAuthenticated: true })
           userFetched = true
         } catch (error) {
-          logger.error('Failed to fetch user info after login:', error)
-          // getMe 失败 = Cookie 未被接受，保持未认证状态
-          set({ isAuthenticated: false, isLoading: false })
-          throw new Error('登录失败：Cookie 未被接受，请检查 CORS 和端口配置')
+          // Cookie 可能因域名不匹配（如局域网访问）未被浏览器接受
+          // 回退：使用登录接口返回的 token 作为 Authorization header 重试
+          if (fallbackToken) {
+            try {
+              const { data: user } = await api.get<User>('/auth/me', {
+                _loginFlow: true,
+                headers: { Authorization: `Bearer ${fallbackToken}` },
+              } as Record<string, unknown>)
+              set({ user, isAuthenticated: true })
+              userFetched = true
+            } catch (fallbackError) {
+              logger.error('Login fallback failed:', fallbackError)
+              set({ isAuthenticated: false, isLoading: false })
+              throw new Error('登录失败：Cookie 未被接受，请检查 CORS 和端口配置')
+            }
+          } else {
+            logger.error('Failed to fetch user info after login:', error)
+            set({ isAuthenticated: false, isLoading: false })
+            throw new Error('登录失败：Cookie 未被接受，请检查 CORS 和端口配置')
+          }
         }
 
         // 3. 初始化 CSRF token（登录成功后必须获取，否则后续状态变更请求会 403）

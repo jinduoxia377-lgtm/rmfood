@@ -75,7 +75,7 @@ export function useExportFormula(generateResult: AICandidate[] | null) {
 
       feedback.showSuccess('导出成功', `已成功导出 ${generateResult.length} 条配方数据`)
     } catch (error) {
-      logger.error('Export failed', { error, options })
+      logger.error('导出失败', { error, options })
       feedback.showError('导出失败', '导出过程出错')
     }
   }, [generateResult, feedback])
@@ -138,7 +138,7 @@ export function useExportFormula(generateResult: AICandidate[] | null) {
         feedback.showSuccess('PDF 导出成功', '请在打印对话框中选择"另存为 PDF"')
       }, 500)
     } catch (error) {
-      logger.error('PDF export failed', { error })
+      logger.error('PDF 导出失败', { error })
       feedback.showError('PDF 导出失败', '导出过程出错')
     }
   }

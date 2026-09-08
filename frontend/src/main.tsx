@@ -50,6 +50,17 @@ import './index.css'
 // 包括：系统偏好检测、持久化配置加载、主题应用等
 // 无需在此处手动处理主题逻辑
 
+// Global error handler for debugging
+if (typeof window !== 'undefined') {
+  window.onerror = (message, source, lineno, colno, error) => {
+    console.error('[Global Error]', { message, source, lineno, colno, error });
+    return false;
+  };
+  window.addEventListener('unhandledrejection', (event) => {
+    console.error('[Unhandled Rejection]', event.reason);
+  });
+}
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <App />

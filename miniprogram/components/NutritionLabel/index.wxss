@@ -1,0 +1,112 @@
+/* 营养成分表组件样式 - 升级版 */
+.nutrition-label {
+  background-color: #FFFFFF;
+  border-radius: 20rpx;
+  overflow: hidden;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.06);
+  border: 2rpx solid #E8E8E8;
+}
+
+/* 标题 */
+.label-title {
+  text-align: center;
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #1a1a1a;
+  padding: 24rpx 20rpx 16rpx;
+  background: linear-gradient(180deg, #F8F9FA, #FFFFFF);
+  border-bottom: 4rpx solid #1a1a1a;
+  letter-spacing: 2rpx;
+}
+
+/* 份量说明 */
+.label-serving {
+  text-align: center;
+  font-size: 24rpx;
+  color: #666666;
+  padding: 12rpx 20rpx;
+  border-bottom: 2rpx solid #1a1a1a;
+  background-color: #FAFAFA;
+}
+
+/* 表格 */
+.label-table {
+  border-bottom: 4rpx solid #1a1a1a;
+}
+
+.table-header,
+.table-row {
+  display: flex;
+  padding: 18rpx 24rpx;
+  border-bottom: 1rpx solid #E0E0E0;
+  align-items: center;
+}
+
+.table-header {
+  font-weight: 700;
+  font-size: 26rpx;
+  color: #333333;
+  background: linear-gradient(180deg, #F5F5F5, #EEEEEE);
+  border-bottom: 2rpx solid #1a1a1a;
+}
+
+.table-row {
+  font-size: 26rpx;
+  transition: background-color 0.2s ease;
+}
+
+.table-row:hover {
+  background-color: #F8F9FA;
+}
+
+.table-row.important {
+  font-weight: 600;
+  background: linear-gradient(90deg, #FFF8E1, transparent);
+  border-left: 4rpx solid #FFC107;
+}
+
+/* 列样式 */
+.th-name, .td-name {
+  flex: 2;
+  color: #333333;
+}
+
+.th-amount, .td-amount {
+  flex: 2;
+  text-align: center;
+  color: #555555;
+}
+
+.th-nrv, .td-nrv {
+  flex: 1;
+  text-align: right;
+  font-weight: 600;
+}
+
+/* 页脚 */
+.label-footer {
+  padding: 20rpx 24rpx;
+  background: linear-gradient(180deg, #FAFAFA, #F5F5F5);
+}
+
+.label-footer .label-text {
+  font-size: 22rpx;
+  color: #999999;
+  line-height: 1.5;
+}
+
+/* NRV 颜色 */
+.nrv-high {
+  color: #F44336;
+  font-weight: 700;
+}
+
+.nrv-medium {
+  color: #FF9800;
+  font-weight: 600;
+}
+
+.nrv-low {
+  color: #4CAF50;
+  font-weight: 600;
+}

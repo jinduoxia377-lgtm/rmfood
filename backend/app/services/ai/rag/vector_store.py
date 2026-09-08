@@ -103,7 +103,12 @@ class VectorStore:
 
     def list_sources(self) -> list[str]:
         """列出所有文档来源名"""
-        all_data = self._collection.get(include=["metadatas"])
+        if self._collection is None:
+            return []
+        try:
+            all_data = self._collection.get(include=["metadatas"])
+        except Exception:
+            return []
         sources: set[str] = set()
         for meta in all_data.get("metadatas", []) or []:
             if meta and "source" in meta:
@@ -121,7 +126,10 @@ class VectorStore:
         """当前向量库中的文档块总数"""
         if self._collection is None:
             return 0
-        return self._collection.count()
+        try:
+            return self._collection.count()
+        except Exception:
+            return 0
 
     def reset(self):
         """清空向量库"""

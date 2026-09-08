@@ -17,7 +17,9 @@ export type EventType =
   | 'search:started'
   | 'search:completed'
   | 'search:error'
-  | 'language:changed';
+  | 'language:changed'
+  | 'context:updated' // 上下文状态更新
+  | 'context:cleared'; // 上下文已清空
 
 export interface EventPayloadMap {
   'message:sending': { content: string; timestamp: number };
@@ -37,6 +39,8 @@ export interface EventPayloadMap {
   'search:completed': { query: string; results: number; timeTaken: number; timestamp: number };
   'search:error': { error: string; timestamp: number };
   'language:changed': { language: string };
+  'context:updated': Record<string, unknown>;
+  'context:cleared': Record<string, never>;
 }
 
 export type EventHandler<T = unknown> = (payload: T) => void | Promise<void>;

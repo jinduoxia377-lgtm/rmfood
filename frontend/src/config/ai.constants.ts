@@ -36,6 +36,8 @@ export const STORAGE_KEYS = {
   GENERATE_USE_LLM: 'rmfood_generate_use_llm',
   GENERATE_ADVANCED_MODE: 'rmfood_generate_advanced_mode',
   GENERATE_VIEW_MODE: 'rmfood_generate_view_mode',
+  GENERATE_ALGORITHM_CONFIG: 'rmfood_generate_algorithm_config',
+  GENERATE_CONSTRAINTS: 'rmfood_generate_constraints',
 
   // 安全检查模块
   SAFETY_SELECTED_INGREDIENTS: 'rmfood_safety_selected_ingredients',

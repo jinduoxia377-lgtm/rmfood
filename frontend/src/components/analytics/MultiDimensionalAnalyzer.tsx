@@ -5,6 +5,7 @@
 import React, { useState, useMemo, useCallback } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { logger } from '@/utils/safeLogger'
+import api from '@/api/client'
 import {
   Filter, Download, RefreshCw, ChevronDown, ChevronRight,
   Plus, Minus, RotateCcw, BarChart3, PieChart as PieIcon,
@@ -94,10 +95,36 @@ export const MultiDimensionalAnalyzer: React.FC<{
   const [selectedCells, setSelectedCells] = useState<Set<string>>(new Set())
   const [drillDownPath, setDrillDownPath] = useState<string[]>([])
 
-  // 获取分析数据（使用模拟数据）
+  // 获取分析数据 — 优先使用后端 /analytics/aggregate 接口，失败时降级到模拟
   const { data: rawData, isLoading, error, refetch } = useQuery({
     queryKey: ['multi-dimension-analysis', config],
-    queryFn: async () => generatePivotData(config),
+    queryFn: async () => {
+      // 尝试调用后端聚合接口
+      try {
+        const entity = config.rows[0] || 'formulas'
+        const groupBy = config.columns[0] || 'status'
+        const res = await api.post('/analytics/aggregate', {
+          entity,
+          operations: [{ operation: 'count', field: 'id', alias: 'total' }],
+          group_by: groupBy,
+          filters: {},
+        })
+        const items = (res.data.items ?? []) as Array<{ label: string; total: number }>
+        return items.map(item => ({
+          rowKey: [item.label],
+          colKey: ['合计'],
+          value: item.total,
+          formattedValue: item.total.toLocaleString(),
+          rowLabel: item.label,
+          colLabel: '合计',
+          isTotal: false,
+          isSubtotal: false,
+        }))
+      } catch {
+        // 降级：使用模拟数据
+        return generatePivotData(config)
+      }
+    },
     staleTime: 30_000,
   })
 

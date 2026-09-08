@@ -80,8 +80,8 @@ export function SafetyHistoryTrendChart({ history, className = '' }: SafetyHisto
         <AreaChart data={chartData} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id="safetyTrendGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#6366f1" stopOpacity={0.2} />
-              <stop offset="95%" stopColor="#6366i1" stopOpacity={0} />
+              <stop offset="5%" stopColor="var(--color-primary-500, #10b981)" stopOpacity={0.2} />
+              <stop offset="95%" stopColor="var(--color-primary-500, #10b981)" stopOpacity={0} />
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="currentColor" className="text-neutral-200 dark:text-neutral-700" vertical={false} />
@@ -106,7 +106,7 @@ export function SafetyHistoryTrendChart({ history, className = '' }: SafetyHisto
               return (
                 <div className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg px-2 py-1.5 text-xs shadow-lg">
                   <p className="font-medium text-neutral-700 dark:text-neutral-200">{item.time}</p>
-                  <p className="text-indigo-500 font-semibold">{item.complianceRate}% 合规</p>
+                  <p className="text-primary-500 font-semibold">{item.complianceRate}% 合规</p>
                   <p className="text-neutral-400">{item.ingredients} 味原料</p>
                 </div>
               )
@@ -115,7 +115,7 @@ export function SafetyHistoryTrendChart({ history, className = '' }: SafetyHisto
           <Area
             type="monotone"
             dataKey="complianceRate"
-            stroke="#6366f1"
+            stroke="var(--color-primary-500, #10b981)"
             strokeWidth={2}
             fill="url(#safetyTrendGrad)"
             animationDuration={600}

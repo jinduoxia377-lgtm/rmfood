@@ -118,7 +118,7 @@ export function GADiversityChart({ chartData }: GAPanelChartsProps) {
               type="monotone"
               dataKey="diversity"
               name="多样性"
-              stroke="#AF52DE"
+              stroke="var(--color-primary-500, #10b981)"
               strokeWidth={1.5}
               dot={false}
             />

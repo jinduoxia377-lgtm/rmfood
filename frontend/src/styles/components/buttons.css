@@ -1,4 +1,4 @@
-/*
+﻿/*
  * RMFOOD 设计系统 - 按钮系统 v3.0 (Apple HIG)
  * 基础按钮、Primary/Secondary/Ghost/Danger/AI、加载态
  * 此文件由 index.css 导入，请勿手动编辑
@@ -106,7 +106,7 @@
   font-family: var(--font-sans);
   letter-spacing: 0.01em;
   transition: all var(--duration-normal) var(--ease-spring);
-  background: var(--color-primary, #10B981);
+  background: var(--color-primary, var(--color-primary-600));
   border: none;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
@@ -210,7 +210,7 @@
   border: none;
 }
 .btn-danger:hover {
-  background: var(--color-error-hover, #E0302A);
+  background: var(--color-error-hover, #dc2626);
 }
 .btn-danger:active:not(:disabled) {
   transform: scale(0.97);

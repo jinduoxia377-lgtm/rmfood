@@ -3,39 +3,39 @@
    合并自: chat-design-tokens, empty-state-design-tokens, chat-content-styles
    ═══════════════════════════════════════════════════════ */
 
-/* ── Chat 设计 Token ── */
+/* ── Chat 设计 Token — 与项目品牌色对齐 (#10b981 翠绿) ── */
 :root {
-  --chat-primary-50: #eef2ff;
-  --chat-primary-100: #e0e7ff;
-  --chat-primary-200: #c7d2fe;
-  --chat-primary-300: #a5b4fc;
-  --chat-primary-400: #818cf8;
-  --chat-primary-500: #6366f1;
-  --chat-primary-600: #4f46e5;
-  --chat-primary-700: #4338ca;
-  --chat-primary-800: #3730a3;
-  --chat-primary-900: #312e81;
+  --chat-primary-50:  var(--color-primary-50,  #ecfdf5);
+  --chat-primary-100: var(--color-primary-100, #d1fae5);
+  --chat-primary-200: var(--color-primary-200, #a7f3d0);
+  --chat-primary-300: var(--color-primary-300, #6ee7b7);
+  --chat-primary-400: var(--color-primary-400, #34d399);
+  --chat-primary-500: var(--color-primary-500, #10b981);
+  --chat-primary-600: var(--color-primary-600, #059669);
+  --chat-primary-700: var(--color-primary-700, #047857);
+  --chat-primary-800: var(--color-primary-800, #065f46);
+  --chat-primary-900: var(--color-primary-900, #064e3b);
 
-  --chat-bg-primary: #ffffff;
-  --chat-bg-secondary: #f8fafc;
-  --chat-text-primary: #1e293b;
-  --chat-text-secondary: #64748b;
-  --chat-border: #e2e8f0;
+  --chat-bg-primary: var(--card-bg-solid, #ffffff);
+  --chat-bg-secondary: var(--bg-secondary, #f8fafc);
+  --chat-text-primary: var(--text-primary, #1e293b);
+  --chat-text-secondary: var(--text-secondary, #64748b);
+  --chat-border: var(--border-color, #e2e8f0);
 }
 
 .dark {
-  --chat-bg-primary: #0f172a;
-  --chat-bg-secondary: #1e293b;
-  --chat-text-primary: #f1f5f9;
-  --chat-text-secondary: #94a3b8;
-  --chat-border: #334155;
+  --chat-bg-primary: var(--bg-primary, #0f172a);
+  --chat-bg-secondary: var(--bg-secondary, #1e293b);
+  --chat-text-primary: var(--text-primary, #f1f5f9);
+  --chat-text-secondary: var(--text-secondary, #94a3b8);
+  --chat-border: var(--border-color, #334155);
 }
 
 /* ── Empty State Token ── */
 :root {
-  --empty-state-primary-50: #eef2ff;
-  --empty-state-primary-500: #818cf8;
-  --empty-state-primary-600: #4f46e5;
+  --empty-state-primary-50:  var(--color-primary-50,  #ecfdf5);
+  --empty-state-primary-500: var(--color-primary-500, #10b981);
+  --empty-state-primary-600: var(--color-primary-600, #059669);
   --empty-state-slate-50: #f8fafc;
   --empty-state-slate-100: #f1f5f9;
   --empty-state-slate-200: #e2e8f0;

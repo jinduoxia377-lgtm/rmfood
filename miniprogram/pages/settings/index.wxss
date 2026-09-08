@@ -1,0 +1,81 @@
+/* 设置页样式 */
+.container {
+  min-height: 100vh;
+  background-color: var(--color-bg-primary);
+  padding-bottom: calc(48rpx + env(safe-area-inset-bottom));
+}
+
+.settings-section {
+  margin: var(--space-3);
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--radius-lg);
+  padding: var(--space-2) 0;
+  box-shadow: var(--shadow-md);
+}
+
+.section-title {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  padding: var(--space-3) var(--space-4) var(--space-2);
+}
+
+.settings-list {
+  padding: 0 var(--space-2);
+}
+
+.setting-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-2);
+  border-bottom: 1rpx solid var(--color-border);
+}
+
+.setting-item:last-child {
+  border-bottom: none;
+}
+
+.setting-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.setting-title {
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+}
+
+.setting-right {
+  display: flex;
+  align-items: center;
+}
+
+.cache-size {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  margin-right: var(--space-2);
+}
+
+.setting-value {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  margin-right: var(--space-2);
+}
+
+/* 退出登录 */
+.logout-section {
+  margin: var(--space-6) var(--space-3);
+}
+
+/* 免责声明 */
+.disclaimer {
+  text-align: center;
+  padding: var(--space-5);
+}
+
+.disclaimer text {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  line-height: var(--line-height-relaxed);
+}

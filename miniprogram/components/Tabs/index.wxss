@@ -1,0 +1,91 @@
+/** Tabs 选项卡组件样式 */
+.tabs {
+  width: 100%;
+  background-color: var(--color-bg-secondary);
+}
+
+.tabs-scroll {
+  white-space: nowrap;
+}
+
+.tabs-list {
+  display: inline-flex;
+  position: relative;
+}
+
+.tabs-item {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--font-size-base);
+  color: var(--color-text-muted);
+  position: relative;
+  transition: color var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.tabs-item-active {
+  color: var(--color-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.tabs-item-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.tabs-item-text {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.tabs-badge {
+  min-width: 24rpx;
+  height: 24rpx;
+  padding: 0 6rpx;
+  border-radius: var(--radius-full);
+  background-color: var(--color-danger);
+  color: var(--color-text-white);
+  font-size: 18rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tabs-indicator {
+  position: absolute;
+  bottom: 0;
+  height: 4rpx;
+  background-color: var(--color-primary);
+  border-radius: 2rpx;
+  transition: transform var(--transition-normal);
+}
+
+.tabs-content {
+  padding: var(--space-3);
+}
+
+/* 分割线样式 */
+.tabs-divider .tabs-nav {
+  border-bottom: 1rpx solid var(--color-border);
+}
+
+/* 胶囊样式 */
+.tabs-capsule .tabs-nav {
+  padding: var(--space-2);
+  background-color: var(--color-bg-tertiary);
+  border-radius: var(--radius-lg);
+  display: inline-flex;
+}
+
+.tabs-capsule .tabs-item {
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-4);
+}
+
+.tabs-capsule .tabs-item-active {
+  background-color: var(--color-bg-secondary);
+  color: var(--color-primary);
+  box-shadow: var(--shadow-sm);
+}

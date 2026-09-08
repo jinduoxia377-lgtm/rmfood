@@ -1,0 +1,6 @@
+{
+  "usingComponents": {
+    "Icon": "../Icon/index"
+  },
+  "component": true
+}

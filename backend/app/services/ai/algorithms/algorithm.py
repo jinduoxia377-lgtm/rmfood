@@ -47,6 +47,69 @@ class NSGAIIOptimizer:
         self.evaluator = None  # FormulaEvaluator 注入点
         self._candidate_herbs: List[str] = []
 
+    def _get_herb_db(self) -> Dict[str, Any]:
+        """获取药材数据库（带回退到内置库）"""
+        if self.evaluator is not None and self.evaluator.herb_db:
+            return self.evaluator.herb_db
+        from .bayesian_formula_optimizer import _BUILTIN_HERBS
+        return _BUILTIN_HERBS
+
+    def _get_efficacy_map(self) -> Dict[str, List[str]]:
+        """获取功效-药材索引（带回退到内置索引）"""
+        if self.evaluator is not None and self.evaluator.efficacy_map:
+            return self.evaluator.efficacy_map
+        from .bayesian_formula_optimizer import _EFFICACY_TO_HERBS
+        return _EFFICACY_TO_HERBS
+
+    def _enforce_exclusions(self, individual: MultiObjectiveIndividual, exclude_set: set) -> None:
+        """移除个体中排除的药材，确保约束生效（包括交叉/变异后）"""
+        if not exclude_set:
+            return
+        removed = [hid for hid in list(individual.genes.keys()) if hid in exclude_set]
+        for hid in removed:
+            del individual.genes[hid]
+        # 确保至少保留3味药
+        if len(individual.genes) < 3 and exclude_set:
+            # 随机保留最小剂量的药材
+            sorted_herbs = sorted(individual.genes.items(), key=lambda x: x[1])
+            keep = sorted_herbs[:3]
+            individual.genes = dict(keep)
+
+    def _evaluate_individual(self, individual, config) -> None:
+        """评估个体（evaluator可用时用evaluator，否则用内置逻辑回退）"""
+        if self.evaluator is not None:
+            self.evaluator.evaluate_full(individual, config)
+            return
+        # 回退评估：使用内置药材库计算基本评分
+        from .bayesian_formula_optimizer import _BUILTIN_HERBS
+        herbs = _BUILTIN_HERBS
+        genes = individual.genes
+        if not genes:
+            individual.fitness = 0.0
+            return
+        total_dosage = sum(genes.values())
+        # 简化评分：基于安全性和剂量合理性
+        safety_sum = 0.0
+        for hid, dosage in genes.items():
+            if hid in herbs:
+                herb = herbs[hid]
+                ratio = (dosage - herb.dosage_min) / max(herb.dosage_max - herb.dosage_min, 0.01)
+                safety_sum += herb.safety_index * (1 - 0.2 * ratio)
+        individual.safety = safety_sum / max(len(genes), 1)
+        individual.efficacy = 0.5  # 默认中等功效
+        individual.taste = 0.6
+        individual.cost = 0.7
+        individual.synergy = 0.5
+        individual.stability = 0.6
+        individual.fitness = (
+            individual.efficacy * 0.30 +
+            individual.safety * 0.25 +
+            individual.taste * 0.10 +
+            individual.cost * 0.15 +
+            individual.synergy * 0.10 +
+            individual.stability * 0.10
+        )
+
     def _try_load_herb_knowledge(self) -> None:
         """惰性加载 HerbKnowledgeService"""
         if self._herb_knowledge_loaded:
@@ -100,13 +163,27 @@ class NSGAIIOptimizer:
         """NSGA-II Pareto 前沿优化主体循环"""
         constraints = constraints or {}
         effective_constraints = dict(constraints)
-        if target_effects:
-            effective_constraints["target_effects"] = target_effects
+        # 翻译功效ID：前端发送中文label，后端索引使用中医术语键
+        from .genetic_formula_optimizer import _translate_effect_ids
+        translated_effects = _translate_effect_ids(target_effects or [])
+        if translated_effects:
+            effective_constraints["target_effects"] = translated_effects
         self.config.constraints = effective_constraints
 
         self._try_load_herb_knowledge()
 
-        candidate_herbs = self._select_herbs(target_effects or [], constraints)
+        # 特殊人群禁忌药材硬排除
+        population_exclude = set(constraints.get("exclude_herbs", []))
+        sp = (constraints.get("special_population") or "adult")
+        if sp == "pregnant":
+            population_exclude |= {"cs", "dg", "fz", "mld", "lk"}
+        elif sp == "children":
+            population_exclude |= {"fz", "lk", "mld"}
+        elif sp == "elderly":
+            population_exclude |= {"rs"}
+        effective_constraints["exclude_herbs"] = list(population_exclude)
+
+        candidate_herbs = self._select_herbs(translated_effects or [], effective_constraints)
         if len(candidate_herbs) < 3:
             logger.warning(f"[NSGA-II] 候选药材不足 ({len(candidate_herbs)})")
             return [], []
@@ -115,10 +192,10 @@ class NSGAIIOptimizer:
         logger.info(f"[NSGA-II] 种群={self.config.population_size}, 代数={self.config.generations}, "
                     f"候选药材={len(candidate_herbs)}种, 模式={self.config.mode}")
 
-        exclude_set = set(constraints.get("exclude_herbs", []))
-        population = self._init_population(candidate_herbs, target_effects, exclude_set)
+        exclude_set = set(effective_constraints.get("exclude_herbs", []))
+        population = self._init_population(candidate_herbs, translated_effects, exclude_set)
         for ind in population:
-            self.evaluator.evaluate_full(ind, self.config)
+            self._evaluate_individual(ind, self.config)
 
         best_fitness = max((ind.fitness for ind in population), default=0.0)
         history: List[Dict] = []
@@ -150,14 +227,14 @@ class NSGAIIOptimizer:
                 for _ in range(recovery_count):
                     genes: Dict[str, float] = {}
                     for hid in self._candidate_herbs:
-                        if hid in self.evaluator.herb_db and random.random() > 0.3:
-                            herb = self.evaluator.herb_db[hid]
+                        if hid in self._get_herb_db() and random.random() > 0.3:
+                            herb = self._get_herb_db()[hid]
                             dosage = herb.dosage_min + random.random() * (herb.dosage_max - herb.dosage_min)
                             dosage = round(dosage / herb.dosage_step) * herb.dosage_step
                             genes[hid] = max(herb.dosage_min, min(herb.dosage_max, dosage))
                     if len(genes) >= 3:
                         ind = MultiObjectiveIndividual(genes)
-                        self.evaluator.evaluate_full(ind, self.config)
+                        self._evaluate_individual(ind, self.config)
                         population.append(ind)
 
             # 非支配排序 + 拥挤度
@@ -182,15 +259,21 @@ class NSGAIIOptimizer:
                 if random.random() < actual_mutation_rate:
                     self._polynomial_mutation(child2, candidate_herbs)
 
-                self.evaluator.evaluate_full(child1, self.config)
-                self.evaluator.evaluate_full(child2, self.config)
+                self._evaluate_individual(child1, self.config)
+                self._evaluate_individual(child2, self.config)
+
+                # 约束后置过滤：确保交叉/变异不引入排除药材
+                self._enforce_exclusions(child1, exclude_set)
+                self._enforce_exclusions(child2, exclude_set)
 
                 offspring.append(child1)
                 if len(offspring) < self.config.population_size:
                     offspring.append(child2)
 
-            # 精英保留
+            # 精英保留：先对父代也执行约束过滤，确保禁药不进入下一轮
             combined = population + offspring
+            for ind in combined:
+                self._enforce_exclusions(ind, exclude_set)
             fronts = self._fast_non_dominated_sort(combined)
             for front in fronts:
                 self._crowding_distance_assignment(front)
@@ -268,8 +351,21 @@ class NSGAIIOptimizer:
         """加权标量化简单GA"""
         constraints = constraints or {}
         effective_constraints = dict(constraints)
-        if target_effects:
-            effective_constraints["target_effects"] = target_effects
+        # 翻译功效ID + 特殊人群硬排除（与 Pareto 路径保持一致）
+        from .genetic_formula_optimizer import _translate_effect_ids
+        translated_effects = _translate_effect_ids(target_effects or [])
+        if translated_effects:
+            effective_constraints["target_effects"] = translated_effects
+        # 特殊人群禁忌药材硬排除
+        population_exclude = set(constraints.get("exclude_herbs", []))
+        sp = (constraints.get("special_population") or "adult")
+        if sp == "pregnant":
+            population_exclude |= {"cs", "dg", "fz", "mld", "lk"}
+        elif sp == "children":
+            population_exclude |= {"fz", "lk", "mld"}
+        elif sp == "elderly":
+            population_exclude |= {"rs"}
+        effective_constraints["exclude_herbs"] = list(population_exclude)
         self.config.constraints = effective_constraints
 
         if self.config.seed is not None:
@@ -277,7 +373,7 @@ class NSGAIIOptimizer:
 
         self._try_load_herb_knowledge()
 
-        candidate_herbs = self._select_herbs(target_effects or [], constraints)
+        candidate_herbs = self._select_herbs(translated_effects or [], effective_constraints)
         if len(candidate_herbs) < 3:
             logger.warning(f"[NSGA-II/weighted] 候选药材不足 ({len(candidate_herbs)})")
             return [], []
@@ -286,10 +382,10 @@ class NSGAIIOptimizer:
         logger.info(f"[NSGA-II/weighted] 加权GA: 种群={self.config.population_size}, "
                     f"代数={self.config.generations}, 候选={len(candidate_herbs)}种")
 
-        exclude_set = set(constraints.get("exclude_herbs", []))
-        population = self._init_population(candidate_herbs, target_effects, exclude_set)
+        exclude_set = set(effective_constraints.get("exclude_herbs", []))
+        population = self._init_population(candidate_herbs, translated_effects, exclude_set)
         for ind in population:
-            self.evaluator.evaluate_full(ind, self.config)
+            self._evaluate_individual(ind, self.config)
 
         best_fitness = max((ind.fitness for ind in population), default=0.0)
         history: List[Dict] = []
@@ -329,8 +425,12 @@ class NSGAIIOptimizer:
                 if random.random() < actual_mutation_rate:
                     self._polynomial_mutation(child2, candidate_herbs)
 
-                self.evaluator.evaluate_full(child1, self.config)
-                self.evaluator.evaluate_full(child2, self.config)
+                self._evaluate_individual(child1, self.config)
+                self._evaluate_individual(child2, self.config)
+
+                # 约束后置过滤
+                self._enforce_exclusions(child1, exclude_set)
+                self._enforce_exclusions(child2, exclude_set)
 
                 new_population.append(child1)
                 if len(new_population) < self.config.population_size:
@@ -520,8 +620,8 @@ class NSGAIIOptimizer:
                     child2_genes[hid] = active_val
                 continue
 
-            if hid in self.evaluator.herb_db:
-                herb = self.evaluator.herb_db[hid]
+            if hid in self._get_herb_db():
+                herb = self._get_herb_db()[hid]
                 lower = herb.dosage_min
                 upper = herb.dosage_max
             else:
@@ -545,8 +645,8 @@ class NSGAIIOptimizer:
             child1_val = max(lower, min(upper, child1_val))
             child2_val = max(lower, min(upper, child2_val))
 
-            if hid in self.evaluator.herb_db:
-                step = self.evaluator.herb_db[hid].dosage_step
+            if hid in self._get_herb_db():
+                step = self._get_herb_db()[hid].dosage_step
                 child1_val = round(child1_val / step) * step
                 child2_val = round(child2_val / step) * step
 
@@ -577,10 +677,10 @@ class NSGAIIOptimizer:
         for hid in list(individual.genes.keys()):
             if random.random() > 0.5:
                 continue
-            if hid not in self.evaluator.herb_db:
+            if hid not in self._get_herb_db():
                 continue
 
-            herb = self.evaluator.herb_db[hid]
+            herb = self._get_herb_db()[hid]
             lower = herb.dosage_min
             upper = herb.dosage_max
             current_val = individual.genes[hid]
@@ -630,8 +730,8 @@ class NSGAIIOptimizer:
 
         if random.random() < add_prob and candidate_herbs and herb_count < self.config.max_ingredients:
             new_h = random.choice(candidate_herbs)
-            if new_h not in individual.genes and new_h in self.evaluator.herb_db:
-                herb = self.evaluator.herb_db[new_h]
+            if new_h not in individual.genes and new_h in self._get_herb_db():
+                herb = self._get_herb_db()[new_h]
                 dosage = herb.dosage_min + random.random() * (herb.dosage_max - herb.dosage_min)
                 dosage = round(dosage / herb.dosage_step) * herb.dosage_step
                 individual.genes[new_h] = max(herb.dosage_min, dosage)
@@ -646,20 +746,47 @@ class NSGAIIOptimizer:
         return pareto[:self.config.pareto_front_size]
 
     def _compute_diversity(self, population: List[MultiObjectiveIndividual]) -> float:
-        """计算种群多样性（Jaccard 平均距离）"""
+        """计算种群多样性（剂量感知欧氏距离，与 GA _compute_diversity 对齐）"""
         if len(population) < 2:
             return 1.0
-        gene_sets = [set(ind.genes.keys()) for ind in population]
+
+        # 收集所有个体的所有药材ID
+        all_herb_ids = set()
+        for ind in population:
+            all_herb_ids.update(ind.genes.keys())
+        herb_ids = sorted(all_herb_ids)
+        n_herbs = len(herb_ids)
+        if n_herbs == 0:
+            return 1.0
+
+        # 构建归一化剂量向量
+        herb_ranges: Dict[str, float] = {}
+        for hid in herb_ids:
+            herb = self._get_herb_db().get(hid)
+            if herb:
+                herb_ranges[hid] = max(herb.dosage_max - herb.dosage_min, 0.01)
+            else:
+                herb_ranges[hid] = 1.0
+
+        vectors = []
+        for ind in population:
+            vec = []
+            for hid in herb_ids:
+                val = ind.genes.get(hid, 0.0)
+                vec.append(val / herb_ranges.get(hid, 1.0))
+            vectors.append(vec)
+
+        # 成对欧氏距离
         total_dist = 0.0
         count = 0
-        for i in range(len(gene_sets)):
-            for j in range(i + 1, len(gene_sets)):
-                intersection = len(gene_sets[i] & gene_sets[j])
-                union = len(gene_sets[i] | gene_sets[j])
-                if union > 0:
-                    total_dist += 1.0 - intersection / union
-                    count += 1
-        return total_dist / max(count, 1)
+        for i in range(len(vectors)):
+            for j in range(i + 1, len(vectors)):
+                sq = sum((a - b) ** 2 for a, b in zip(vectors[i], vectors[j]))
+                total_dist += math.sqrt(sq)
+                count += 1
+
+        max_possible = math.sqrt(n_herbs) * count if count > 0 else 1
+        return total_dist / max_possible
 
     def _adaptive_mutation_rate(self, diversity: float) -> float:
         """根据种群多样性动态调整实际变异概率"""
@@ -735,7 +862,7 @@ class NSGAIIOptimizer:
         constraints = constraints or {}
         exclude = set(constraints.get("exclude_herbs", []))
         include = set(constraints.get("include_herbs", []))
-        herbs = self.evaluator.herb_db
+        herbs = self._get_herb_db()
 
         if not herbs:
             logger.error("[NSGA-II] 药材数据库为空！")
@@ -745,8 +872,8 @@ class NSGAIIOptimizer:
 
         if target_effects:
             for effect in target_effects:
-                if effect in self.evaluator.efficacy_map:
-                    for hid in self.evaluator.efficacy_map[effect]:
+                if effect in self._get_efficacy_map():
+                    for hid in self._get_efficacy_map()[effect]:
                         if hid not in exclude and hid in herbs:
                             score = herbs[hid].efficacy_scores.get(effect, 0)
                             candidate_set[hid] = max(candidate_set.get(hid, 0), score)
@@ -796,11 +923,14 @@ class NSGAIIOptimizer:
             {"逍遥散": {"ds": 9, "fp": 9, "bq": 9, "dg": 6, "cs": 6, "sj": 3}},
             {"银翘散": {"cyh": 9, "jgh": 9, "gq": 6, "sj": 6, "ds": 9}},
         ]
-        for _, formula_herbs in classic_formulas:
+        for formula_data in classic_formulas:
+            formula_herbs = list(formula_data.values())[0]
             genes: Dict[str, float] = {}
             for hid, dosage in formula_herbs.items():
-                if hid in self.evaluator.herb_db:
-                    herb = self.evaluator.herb_db[hid]
+                if exclude_herbs and hid in exclude_herbs:
+                    continue  # 跳过排除的药材
+                if hid in self._get_herb_db():
+                    herb = self._get_herb_db()[hid]
                     clamped = max(herb.dosage_min, min(herb.dosage_max, dosage))
                     clamped = round(clamped / herb.dosage_step) * herb.dosage_step
                     genes[hid] = max(herb.dosage_min, clamped)
@@ -813,8 +943,8 @@ class NSGAIIOptimizer:
             random.shuffle(shuffled_candidates)
             genes: Dict[str, float] = {}
             for j, hid in enumerate(shuffled_candidates):
-                if hid in self.evaluator.herb_db:
-                    herb = self.evaluator.herb_db[hid]
+                if hid in self._get_herb_db():
+                    herb = self._get_herb_db()[hid]
                     base_ratio = max(0.1, 1.0 - abs(j - i) * 0.15)
                     dosage = herb.dosage_min + base_ratio * (herb.dosage_max - herb.dosage_min)
                     dosage = round(dosage / herb.dosage_step) * herb.dosage_step
@@ -823,8 +953,8 @@ class NSGAIIOptimizer:
                         genes[hid] = dosage
             if len(genes) < 3 and n >= 3:
                 for hid in candidates[:3]:
-                    if hid not in genes and hid in self.evaluator.herb_db:
-                        herb = self.evaluator.herb_db[hid]
+                    if hid not in genes and hid in self._get_herb_db():
+                        herb = self._get_herb_db()[hid]
                         genes[hid] = herb.dosage_min + random.random() * (herb.dosage_max - herb.dosage_min)
             population.append(MultiObjectiveIndividual(genes))
 
@@ -835,7 +965,7 @@ class NSGAIIOptimizer:
             target_count = random.randint(3, min(6, len(candidates)))
 
             for idx, hid in enumerate(candidates):
-                if hid in self.evaluator.herb_db:
+                if hid in self._get_herb_db():
                     prob = 0.6 if idx < 10 else 0.3
                     if selected_count < target_count:
                         prob *= 1.5
@@ -843,7 +973,7 @@ class NSGAIIOptimizer:
                         prob *= 0.3
 
                     if random.random() < prob:
-                        herb = self.evaluator.herb_db[hid]
+                        herb = self._get_herb_db()[hid]
                         ratio = random.random()
                         dosage = herb.dosage_min + ratio * (herb.dosage_max - herb.dosage_min)
                         dosage = round(dosage / herb.dosage_step) * herb.dosage_step
@@ -853,8 +983,8 @@ class NSGAIIOptimizer:
 
             if len(genes) < 3:
                 for hid in candidates[:min(5, len(candidates))]:
-                    if hid not in genes and hid in self.evaluator.herb_db:
-                        herb = self.evaluator.herb_db[hid]
+                    if hid not in genes and hid in self._get_herb_db():
+                        herb = self._get_herb_db()[hid]
                         dosage = herb.dosage_min + random.random() * (herb.dosage_max - herb.dosage_min)
                         dosage = round(dosage / herb.dosage_step) * herb.dosage_step
                         genes[hid] = max(herb.dosage_min, dosage)

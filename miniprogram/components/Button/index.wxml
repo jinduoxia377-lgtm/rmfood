@@ -1,0 +1,13 @@
+<!-- Button 按钮组件 -->
+<view 
+  class="btn {{className}} {{type === 'primary' ? 'btn-primary' : type === 'secondary' ? 'btn-secondary' : type === 'danger' ? 'btn-danger' : type === 'success' ? 'btn-success' : 'btn-text'}} {{size === 'small' ? 'btn-small' : size === 'large' ? 'btn-large' : ''}} {{loading ? 'btn-loading' : ''}} {{disabled ? 'btn-disabled' : ''}}"
+  bindtap="handleTap"
+  hover-class="btn-hover"
+  hover-stay-time="150"
+>
+  <icon wx:if="{{icon}}" name="{{icon}}" size="{{iconSize || 'md'}}" color="{{iconColor || '#FFFFFF'}}" />
+  <slot></slot>
+  <view wx:if="{{loading}}" class="btn-loading-spinner">
+    <view class="spinner"></view>
+  </view>
+</view>

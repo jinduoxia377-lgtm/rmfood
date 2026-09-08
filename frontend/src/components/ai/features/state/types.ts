@@ -121,7 +121,7 @@ export const DEFAULT_NOTIFICATION_STATE: NotificationState = {
 
 export const DEFAULT_THEME_STATE: ThemeState = {
   mode: 'system',
-  primaryColor: '#1976d2',
+  primaryColor: '#10b981',
   fontSize: 'medium',
   highContrast: false,
   reducedMotion: false,

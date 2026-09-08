@@ -1,0 +1,19 @@
+<!-- Loading 加载组件 -->
+<view class="loading {{className}} {{size}} {{type}}">
+  <!-- 旋转动画 -->
+  <view wx:if="{{type === 'spinner'}}" class="loading-spinner">
+    <view class="spinner-ring"></view>
+    <view class="spinner-ring"></view>
+    <view class="spinner-ring"></view>
+  </view>
+  
+  <!-- 点阵动画 -->
+  <view wx:elif="{{type === 'dots'}}" class="loading-dots">
+    <view class="dot"></view>
+    <view class="dot"></view>
+    <view class="dot"></view>
+  </view>
+  
+  <!-- 文字 -->
+  <text wx:if="{{text}}" class="loading-text">{{text}}</text>
+</view>

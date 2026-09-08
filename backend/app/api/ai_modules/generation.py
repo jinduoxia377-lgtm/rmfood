@@ -90,9 +90,65 @@ async def generate_formula(
     """
     logger.info(f"配方生成请求 - target_effects={req.target_effects}, constraints={req.constraints}")
 
+    # 功效 ID → 中文标签映射（与前端 EFFECT_OPTIONS 保持一致）
+    _EFFECT_LABELS = {
+        "immune_enhancement": "增强免疫",
+        "immune_regulation": "免疫调节",
+        "resistance_boost": "提高抵抗力",
+        "antioxidant": "抗氧化",
+        "anti_aging": "延缓衰老",
+        "free_radical_clear": "清除自由基",
+        "anti_fatigue": "抗疲劳",
+        "fatigue_relief": "缓解疲劳",
+        "energy_boost": "提升精力",
+        "qi_nourishing": "补气养阴",
+        "yin_nourishing": "滋阴补肾",
+        "spleen_qi_tonifying": "健脾益气",
+        "blood_nourishing": "补血养血",
+        "sleep_improvement": "改善睡眠",
+        "calm_mind": "安神定志",
+        "spleen_stomach": "健脾养胃",
+        "digestion_promotion": "促进消化",
+        "blood_lipid": "降血脂",
+        "vascular_protection": "保护血管",
+        "beauty_skin": "美容养颜",
+        "blood_pressure": "降血压",
+        "blood_sugar": "降血糖",
+        "uric_acid": "降尿酸",
+        "detox": "解毒",
+        "heat_clearing": "清热解毒",
+        "cough_relief": "止咳化痰",
+        "liver_protection": "保肝护肝",
+        "kidney_nourishing": "补肾益精",
+        "spleen_strengthening": "健脾和胃",
+    }
+
+    def _effect_label(effect_id: str) -> str:
+        return _EFFECT_LABELS.get(effect_id, effect_id)
+
     try:
+        # 从 constraints 中提取算法参数（支持前端传入）
         max_candidates = (req.constraints or {}).get("max_candidates", 5)
         total_dosage = (req.constraints or {}).get("total_dosage", 100.0)
+
+        # 算法参数（优先使用前端传入值，否则用默认值）
+        algorithm_params = req.constraints or {}
+        population_size = algorithm_params.get("population_size", 60)
+        generations = algorithm_params.get("generations", 40)
+        strategy = algorithm_params.get("strategy", "auto")
+        mutation_rate = algorithm_params.get("mutation_rate", 0.15)
+        crossover_rate = algorithm_params.get("crossover_rate", 0.85)
+        elite_ratio = algorithm_params.get("elite_ratio", 0.15)
+        tournament_size = algorithm_params.get("tournament_size", 5)
+
+        # 约束条件
+        constraints = {
+            "age_group": algorithm_params.get("constraints", {}).get("age_group", "adult"),
+            "allergies": algorithm_params.get("constraints", {}).get("allergies", []),
+            "contraindications": algorithm_params.get("constraints", {}).get("contraindications", []),
+            "conditions": algorithm_params.get("constraints", {}).get("conditions", []),
+            "cooking_method": algorithm_params.get("constraints", {}).get("cooking_method", "decoction"),
+        }
 
         # ── Step 1: 使用统一优化器生成候选 ──
         from ..services.ai.algorithms.unified_optimizer import (
@@ -101,15 +157,28 @@ async def generate_formula(
         from app.services.ai.algorithms.genetic_formula_optimizer import _BUILTIN_HERBS
 
         unified = UnifiedFormulaOptimizer()
+        # 构建排除药材列表（过敏+禁忌）
+        exclude_herbs = list(set(
+            [h for h in (constraints.get("allergies") or [])] +
+            [h for h in (constraints.get("contraindications") or [])]
+        ))
+        # 特殊人群约束
+        age_group = constraints.get("age_group", "adult")
         opt_req = OptimizationRequest(
             target_effects=req.target_effects,
-            strategy="auto",
-            population_size=60,
-            generations=40,
+            strategy=strategy,
+            population_size=population_size,
+            generations=generations,
             max_ingredients=12,
             min_ingredients=3,
             total_dosage=total_dosage,
             count=max(max_candidates, 5),
+            mutation_rate=mutation_rate,
+            crossover_rate=crossover_rate,
+            elite_ratio=elite_ratio,
+            tournament_size=tournament_size,
+            exclude_herbs=exclude_herbs,
+            special_population=age_group,
         )
         opt_result = unified.optimize(opt_req)
 
@@ -123,9 +192,12 @@ async def generate_formula(
             for item in cand.get("ingredients", []):
                 hid = item.get("id", "")
                 name_cn = herb_id_to_name.get(hid, hid)
+                # 剂量从克转为毫克（如果原始是克）
+                dosage_g = item.get("dosage", 0)
                 herb_combo.append({
                     "name": name_cn,
-                    "dosage_mg": round(item.get("dosage", 0) * 1000, 1),
+                    "dosage_g": round(dosage_g, 1),
+                    "dosage_mg": round(dosage_g * 1000, 1),
                 })
 
             # 模拟协同/安全/口感/稳定性评分（基于业务规则）
@@ -138,20 +210,22 @@ async def generate_formula(
                 + cand.get("cost", 0) * 0.15 + stability_score * 0.10
             )
 
-            # 分配君臣佐使角色
-            roles = ["君", "臣", "臣", "佐", "佐", "使"]
+            # 分配君臣佐使角色（基于剂量降序）
+            sorted_herbs = sorted(herb_combo, key=lambda x: x.get("dosage_g", 0), reverse=True)
+            roles = ["君药", "臣药", "臣药", "佐药", "佐药", "使药"]
             herbs_with_roles = []
-            for j, herb in enumerate(herb_combo[:6]):
-                role = roles[j] if j < len(roles) else "佐"
+            for j, herb in enumerate(sorted_herbs[:6]):
+                role = roles[j] if j < len(roles) else "佐药"
                 herbs_with_roles.append({
                     "name": herb["name"],
+                    "dosage_g": herb["dosage_g"],
                     "dosage_mg": herb["dosage_mg"],
                     "role": role,
                 })
 
             candidates.append({
                 "id": f"candidate_{int(time.time())}_{i}",
-                "formula_name": f"优化配方-{i+1}（{'+' .join(req.target_effects[:2])}）",
+                "formula_name": f"优化配方-{i+1}（{'+' .join(_effect_label(e) for e in req.target_effects[:2])}）",
                 "name": f"配方方案{i + 1}",
                 "herb_combination": herbs_with_roles,
                 "peptide_candidates": [],
@@ -164,16 +238,60 @@ async def generate_formula(
                 "effects": req.target_effects,
                 "generated_by": "ga_optimizer",
                 "generated_at": datetime.datetime.now().isoformat(),
+                # 新增：算法元数据
+                "algorithm_info": {
+                    "strategy": opt_result.strategy_used,
+                    "generation": opt_result.total_generations,
+                    "evaluations": opt_result.total_evaluations,
+                    "convergence_generation": opt_result.convergence_generation,
+                },
             })
 
         logger.info(f"遗传算法生成 {len(candidates)} 套候选配方")
+
+        # ── Step 3: 生成配方解释（可选） ──
+        try:
+            from ...services.ai.formula_explanation import FormulaExplanationService
+            expl_service = FormulaExplanationService()
+            herb_names_map = {hid: h.name_cn for hid, h in _BUILTIN_HERBS.items()}
+
+            for i, cand in enumerate(candidates):
+                genes = {item.get("id", ""): item.get("dosage", 0) for item in cand.get("herb_combination", [])}
+                if genes:
+                    try:
+                        explanation = expl_service.generate_explanation(
+                            candidate_genes=genes,
+                            target_effects=req.target_effects,
+                            herb_names=herb_names_map,
+                        )
+                        candidates[i]["explanation"] = {
+                            "formula_name": explanation.formula_name,
+                            "structure_analysis": explanation.structure_analysis,
+                            "mechanism_explanation": explanation.mechanism_explanation,
+                            "synergistic_analysis": explanation.synergistic_analysis,
+                            "suitable_population": explanation.suitable_population,
+                            "contraindications": explanation.contraindications,
+                            "usage_instructions": explanation.usage_instructions,
+                            "monitoring_suggestions": explanation.monitoring_suggestions,
+                        }
+                    except Exception as e:
+                        logger.warning(f"生成配方解释失败 (配方{i+1}): {e}")
+        except Exception as e:
+            logger.warning(f"配方解释服务不可用: {e}")
+
         return {
             "candidates": candidates,
             "total": len(candidates),
-            "generator": "ga_optimizer",
+            "generator": "rule_engine",
             "execution_time_ms": opt_result.execution_time_ms,
             "strategy": opt_result.strategy_used,
             "best_score": round(opt_result.best_score, 4),
+            "algorithm_info": {
+                "strategy": opt_result.strategy_used,
+                "generation": opt_result.total_generations,
+                "evaluations": opt_result.total_evaluations,
+                "convergence_generation": opt_result.convergence_generation,
+            },
         }
 
     except Exception as e:

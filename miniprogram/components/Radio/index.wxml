@@ -1,0 +1,9 @@
+<!-- Radio 单选组件 -->
+<view class="radio {{className}}" bindtap="handleTap">
+  <view class="radio-circle {{checked ? 'radio-circle-checked' : ''}} {{disabled ? 'radio-circle-disabled' : ''}}">
+    <view wx:if="{{checked}}" class="radio-inner"></view>
+  </view>
+  <view class="radio-label">
+    <slot></slot>
+  </view>
+</view>

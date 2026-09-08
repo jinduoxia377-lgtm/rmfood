@@ -3,9 +3,10 @@ import sys, asyncio, datetime
 sys.path.insert(0, '.')
 import asyncpg
 from app.utils.auth import get_password_hash
+from scripts.db_utils import get_asyncpg_dsn
 
 
-DB = 'postgresql://postgres@localhost:5432/rmfood_platform'
+DB = get_asyncpg_dsn()
 KEEP = {'admin'}
 TEST_USERS = [
     {'username': 'test_external', 'email': 'test.external@rmfood.com', 'password': 'TestPass123!', 'role': 'GUEST'},

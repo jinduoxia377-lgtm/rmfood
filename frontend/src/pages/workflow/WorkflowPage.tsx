@@ -55,7 +55,7 @@ export default function WorkflowPage() {
   const { data: stats } = useQuery({
     queryKey: ['workflow-statistics'],
     queryFn: workflowApi.statistics,
-    staleTime: 60_000,
+    staleTime: 5 * 60_000,
   })
 
   const workflows: Workflow[] = data?.items ?? []

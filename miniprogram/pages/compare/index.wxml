@@ -1,0 +1,142 @@
+<!-- 对比页面 -->
+<view class="page-container">
+  <!-- 顶部Header -->
+  <view class="header" style="padding-top: {{statusBarHeight}}px;">
+    <view class="header-content">
+      <!-- 汉堡菜单 -->
+      <view class="hamburger" bindtap="toggleMenu">
+        <view class="hamburger-line {{menuOpen ? 'active' : ''}}"></view>
+        <view class="hamburger-line {{menuOpen ? 'active' : ''}}"></view>
+        <view class="hamburger-line {{menuOpen ? 'active' : ''}}"></view>
+      </view>
+      
+      <!-- 标题 -->
+      <view class="header-title">
+        <view class="title-main">产品对比</view>
+      </view>
+      
+      <!-- 用户头像 -->
+      <view class="header-avatar" bindtap="goToProfile">
+        <image wx:if="{{userInfo.avatarUrl}}" src="{{userInfo.avatarUrl}}" class="avatar-img" mode="aspectFill"></image>
+        <view wx:else class="avatar-default">
+          <text class="icon-person">👤</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 产品选择区 -->
+  <view class="select-section card">
+    <view class="section-title">选择对比产品</view>
+    <view class="product-selectors">
+      <view class="selector-item">
+        <view class="selector-label">产品A</view>
+        <view class="selector-input" bindtap="selectProductA">
+          <text wx:if="{{productA.name}}">{{productA.name}}</text>
+          <text wx:else class="placeholder">点击选择产品</text>
+        </view>
+      </view>
+      <view class="selector-item">
+        <view class="selector-label">产品B</view>
+        <view class="selector-input" bindtap="selectProductB">
+          <text wx:if="{{productB.name}}">{{productB.name}}</text>
+          <text wx:else class="placeholder">点击选择产品</text>
+        </view>
+      </view>
+    </view>
+    <view class="compare-btn" bindtap="startCompare" wx:if="{{productA.name && productB.name}}">
+      <text>开始对比</text>
+    </view>
+  </view>
+
+  <!-- 对比结果 -->
+  <view wx:if="{{comparisonResult}}" class="comparison-result">
+    <view class="result-header card">
+      <view class="header-title">对比结果</view>
+      <view class="recommend-badge" style="background-color: {{recommendColor}};">
+        <text>{{recommendText}}</text>
+      </view>
+    </view>
+
+    <!-- 对比表格 -->
+    <view class="compare-table card">
+      <view class="table-header">
+        <view class="th">对比维度</view>
+        <view class="th" style="color: {{productA.score >= productB.score ? '#4CAF50' : '#999'}};">
+          {{productA.name}}
+        </view>
+        <view class="th" style="color: {{productB.score >= productA.score ? '#4CAF50' : '#999'}};">
+          {{productB.name}}
+        </view>
+      </view>
+      
+      <view class="table-row">
+        <view class="td">Nutri-Score</view>
+        <view class="td">{{productA.nutriScoreLetter}} ({{productA.score}}分)</view>
+        <view class="td">{{productB.nutriScoreLetter}} ({{productB.score}}分)</view>
+      </view>
+      
+      <view class="table-row">
+        <view class="td">NOVA分组</view>
+        <view class="td">{{productA.novaGroup}}</view>
+        <view class="td">{{productB.novaGroup}}</view>
+      </view>
+      
+      <view class="table-row">
+        <view class="td">添加剂数量</view>
+        <view class="td">{{productA.additiveCount}}个</view>
+        <view class="td">{{productB.additiveCount}}个</view>
+      </view>
+      
+      <view class="table-row">
+        <view class="td">药食同源成分</view>
+        <view class="td">{{productA.herbalCount}}个</view>
+        <view class="td">{{productB.herbalCount}}个</view>
+      </view>
+      
+      <view class="table-row">
+        <view class="td">过敏原数量</view>
+        <view class="td">{{productA.allergenCount}}个</view>
+        <view class="td">{{productB.allergenCount}}个</view>
+      </view>
+    </view>
+
+    <!-- 差异分析 -->
+    <view class="diff-analysis card">
+      <view class="section-title">差异分析</view>
+      <view class="diff-list">
+        <view wx:for="{{comparisonResult.differences}}" wx:key="index" class="diff-item">
+          <view class="diff-icon {{item.type}}">{{item.type}}</view>
+          <view class="diff-content">
+            <text class="diff-title">{{item.title}}</text>
+            <text class="diff-desc">{{item.description}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 购买建议 -->
+    <view class="buy-suggestion card" wx:if="{{comparisonResult.recommendation}}">
+      <view class="section-title">购买建议</view>
+      <view class="recommend-card" bindtap="goToProduct" data-product="{{comparisonResult.recommendation}}">
+        <view class="recommend-header">
+          <text class="recommend-name">{{comparisonResult.recommendation.name}}</text>
+          <view class="recommend-score" style="color: {{getScoreColor(comparisonResult.recommendation.score)}};">
+            {{comparisonResult.recommendation.score}}分
+          </view>
+        </view>
+        <text class="recommend-reason">{{comparisonResult.recommendation.reason}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view wx:if="{{!comparisonResult}}" class="empty-state">
+    <text class="empty-icon">📊</text>
+    <text class="empty-title">暂无对比数据</text>
+    <text class="empty-desc">请选择两个产品进行对比分析</text>
+  </view>
+
+  <!-- 底部间距 -->
+  <view class="bottom-spacing"></view>
+</view>

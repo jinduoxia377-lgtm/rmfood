@@ -1,0 +1,1 @@
+import{N as r,Vl as a}from"./feature-ai-chat-DJSmPnZ2.js";import{t as i}from"./feature-database-40hQwEDf.js";var e=a();function o(){return(0,e.jsxs)("div",{className:"flex flex-col gap-6",children:[(0,e.jsx)(r,{title:"合规标准",description:"国家标准查询 · 药食同源目录 · 禁忌搭配检查"}),(0,e.jsx)(i,{})]})}export{o as default};

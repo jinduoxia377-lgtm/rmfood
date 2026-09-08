@@ -1,8 +1,8 @@
-"""
+﻿"""
 统一搜索、数据同步与快照 API
 """
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import select, func
+from sqlalchemy import select, func, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..deps import get_db_session, get_current_user
@@ -380,53 +380,62 @@ async def dashboard_overview(
     peptide_total_result = await db.execute(select(func.count()).select_from(BioactivePeptide))
     total_peptides = peptide_total_result.scalar() or 0
 
-    # ── 2. 药材数据分析（PostgreSQL 优先，内存 fallback）──
-    # 使用聚合查询避免全表加载（防止内存溢出）
-    herbs_db = (await db.execute(select(TCMHerb).order_by(TCMHerb.id).limit(5000))).scalars().all()
-    use_herb_db = len(herbs_db) > 0
+    # ── 2. 药材数据分析（PostgreSQL 聚合查询，避免全表加载）──
+    herbs_count = await db.execute(select(func.count()).select_from(TCMHerb))
+    use_herb_db = (herbs_count.scalar() or 0) > 0
 
     if use_herb_db:
-        # PostgreSQL 数据源
+        from sqlalchemy import text as sql_text
+
+        # OB distribution (aggregate via CASE)
+        ob_rows = await db.execute(sql_text("""
+            SELECT
+                CASE
+                    WHEN ob_percent < 10 THEN '<10%'
+                    WHEN ob_percent < 30 THEN '10-30%'
+                    WHEN ob_percent < 50 THEN '30-50%'
+                    WHEN ob_percent < 70 THEN '50-70%'
+                    ELSE '>70%'
+                END as bucket,
+                COUNT(*) as cnt
+            FROM tcm_herbs
+            GROUP BY bucket ORDER BY cnt DESC
+        """))
         ob_distribution = {"<10%": 0, "10-30%": 0, "30-50%": 0, "50-70%": 0, ">70%": 0}
+        for row in ob_rows.fetchall():
+            if row[0] in ob_distribution:
+                ob_distribution[row[0]] = row[1]
+
+        # DL distribution (aggregate via CASE)
+        dl_rows = await db.execute(sql_text("""
+            SELECT
+                CASE
+                    WHEN dl_value < 0.1 THEN '<0.1'
+                    WHEN dl_value < 0.2 THEN '0.1-0.2'
+                    WHEN dl_value < 0.3 THEN '0.2-0.3'
+                    WHEN dl_value < 0.5 THEN '0.3-0.5'
+                    ELSE '>0.5'
+                END as bucket,
+                COUNT(*) as cnt
+            FROM tcm_herbs
+            GROUP BY bucket ORDER BY cnt DESC
+        """))
         dl_distribution = {"<0.1": 0, "0.1-0.2": 0, "0.2-0.3": 0, "0.3-0.5": 0, ">0.5": 0}
-        category_breakdown = {}
-        food_homology_count = 0
+        for row in dl_rows.fetchall():
+            if row[0] in dl_distribution:
+                dl_distribution[row[0]] = row[1]
+
+        # Category breakdown (aggregate GROUP BY)
+        cat_rows = await db.execute(sql_text("""
+            SELECT COALESCE(category, '未分类') as cat, COUNT(*) as cnt
+            FROM tcm_herbs
+            GROUP BY cat ORDER BY cnt DESC
+        """))
+        category_breakdown = {row[0]: row[1] for row in cat_rows.fetchall()}
+        # 药食同源计数（从 TCMSP 数据库）
+        fh_result = await db.execute(sql_text("SELECT COUNT(*) FROM tcm_herbs WHERE is_food_homology = true"))
+        food_homology_count = fh_result.scalar() or 0
         high_ob_herbs = []
-
-        for h in herbs_db:
-            ob = h.ob_percent or 0
-            dl = h.dl_value or 0
-            cat = h.category or "未分类"
-
-            if ob < 10: ob_distribution["<10%"] += 1
-            elif ob < 30: ob_distribution["10-30%"] += 1
-            elif ob < 50: ob_distribution["30-50%"] += 1
-            elif ob < 70: ob_distribution["50-70%"] += 1
-            else: ob_distribution[">70%"] += 1
-
-            if dl < 0.1: dl_distribution["<0.1"] += 1
-            elif dl < 0.2: dl_distribution["0.1-0.2"] += 1
-            elif dl < 0.3: dl_distribution["0.2-0.3"] += 1
-            elif dl < 0.5: dl_distribution["0.3-0.5"] += 1
-            else: dl_distribution[">0.5"] += 1
-
-            category_breakdown[cat] = category_breakdown.get(cat, 0) + 1
-
-            if h.is_food_homology is True:
-                food_homology_count += 1
-
-            compound_count = len(h.compounds) if isinstance(h.compounds, list) else 0
-            if ob >= 40:
-                high_ob_herbs.append({
-                    "name_cn": h.name_cn or f"(ID:{h.id})",
-                    "ob_percent": round(ob, 2),
-                    "dl_value": round(dl, 3),
-                    "compound_count": compound_count,
-                    "category": cat,
-                    "is_food_homology": bool(h.is_food_homology),
-                })
-
-        high_ob_herbs.sort(key=lambda x: x["ob_percent"], reverse=True)
     else:
         # Fallback: 内存数据
         from ...services.data_sources.tcmsp_client import TCMSP_HERB_DATABASE
@@ -471,102 +480,85 @@ async def dashboard_overview(
 
         high_ob_herbs.sort(key=lambda x: x["ob_percent"], reverse=True)
 
-    # ── 3. 活性肽数据分析（PostgreSQL 优先，内存 fallback）──
-    peptides_db = (await db.execute(select(BioactivePeptide).limit(5000))).scalars().all()
-    use_peptide_db = len(peptides_db) > 0
+    # ── 3. 活性肽数据分析（PostgreSQL 聚合查询，避免全量加载）──
+    activity_type_result = await db.execute(
+        select(BioactivePeptide.activity_type, func.count().label('cnt'))
+        .where(BioactivePeptide.activity_type.isnot(None))
+        .group_by(BioactivePeptide.activity_type)
+        .order_by(func.count().desc())
+    )
+    activity_type_breakdown = {row[0]: row[1] for row in activity_type_result.fetchall()}
+    # total_peptides 已在上方从全表 count 查询获取 (line 381)，此处不覆盖
 
-    if use_peptide_db:
-        seq_len_distribution = {
-            "二肽(2)": 0, "三肽(3)": 0, "四肽(4)": 0, "五肽(5)": 0,
-            "六肽(6)": 0, "七肽(7)": 0, "八肽(8)": 0, "九肽以上(9+)": 0,
-        }
-        activity_type_breakdown = {}
-        enzyme_breakdown = {}
-        source_organism_breakdown = {}
-        high_activity_peptides = []
+    # seq_length distribution via raw SQL CASE
+    seq_len_rows = await db.execute(text("""
+        SELECT
+            CASE
+                WHEN length(sequence) <= 2 THEN '二肽(2)'
+                WHEN length(sequence) <= 3 THEN '三肽(3)'
+                WHEN length(sequence) <= 4 THEN '四肽(4)'
+                WHEN length(sequence) <= 5 THEN '五肽(5)'
+                WHEN length(sequence) <= 6 THEN '六肽(6)'
+                WHEN length(sequence) <= 7 THEN '七肽(7)'
+                WHEN length(sequence) <= 8 THEN '八肽(8)'
+                ELSE '九肽以上(9+)'
+            END as bucket,
+            COUNT(*) as cnt
+        FROM bioactive_peptides
+        WHERE activity_type IS NOT NULL
+        GROUP BY bucket
+        ORDER BY cnt DESC
+    """))
+    seq_len_distribution = {"二肽(2)": 0, "三肽(3)": 0, "四肽(4)": 0, "五肽(5)": 0,
+                            "六肽(6)": 0, "七肽(7)": 0, "八肽(8)": 0, "九肽以上(9+)": 0}
+    for row in seq_len_rows.fetchall():
+        bucket, cnt = row[0], row[1]
+        if bucket in seq_len_distribution:
+            seq_len_distribution[bucket] = cnt
 
-        for p in peptides_db:
-            seq_len = len(p.sequence or "")
-            act_type = p.activity_type or "未知"
-            enzyme = p.hydrolysis_enzyme or "未知"
-            organism = p.source_organism or "未知"
-            act_val = p.activity_value
+    # enzyme & organism breakdown via raw SQL
+    enzyme_rows = await db.execute(text("""
+        SELECT hydrolysis_enzyme, COUNT(*) as cnt
+        FROM bioactive_peptides
+        WHERE activity_type IS NOT NULL
+        GROUP BY hydrolysis_enzyme ORDER BY cnt DESC LIMIT 6
+    """))
+    enzyme_breakdown = {row[0] or "未知": row[1] for row in enzyme_rows.fetchall()}
 
-            if seq_len <= 2: seq_len_distribution["二肽(2)"] += 1
-            elif seq_len <= 3: seq_len_distribution["三肽(3)"] += 1
-            elif seq_len <= 4: seq_len_distribution["四肽(4)"] += 1
-            elif seq_len <= 5: seq_len_distribution["五肽(5)"] += 1
-            elif seq_len <= 6: seq_len_distribution["六肽(6)"] += 1
-            elif seq_len <= 7: seq_len_distribution["七肽(7)"] += 1
-            elif seq_len <= 8: seq_len_distribution["八肽(8)"] += 1
-            else: seq_len_distribution["九肽以上(9+)"] += 1
+    organism_rows = await db.execute(text("""
+        SELECT source_organism, COUNT(*) as cnt
+        FROM bioactive_peptides
+        WHERE activity_type IS NOT NULL
+        GROUP BY source_organism ORDER BY cnt DESC LIMIT 6
+    """))
+    source_organism_breakdown = {row[0] or "未知": row[1] for row in organism_rows.fetchall()}
 
-            activity_type_breakdown[act_type] = activity_type_breakdown.get(act_type, 0) + 1
-            enzyme_breakdown[enzyme] = enzyme_breakdown.get(enzyme, 0) + 1
-            source_organism_breakdown[organism] = source_organism_breakdown.get(organism, 0) + 1
-
-            if act_val and act_type == "ACE inhibitory":
-                try:
-                    if float(act_val) < 1.0:
-                        high_activity_peptides.append({
-                            "sequence": p.sequence,
-                            "activity_value": act_val,
-                            "activity_unit": p.activity_unit or "μM",
-                            "source_protein": p.source_protein,
-                            "molecular_weight": p.molecular_weight,
-                            "hydrolysis_enzyme": enzyme,
-                        })
-                except (ValueError, TypeError):
-                    pass  # non-numeric values are skipped in numeric sort
-    else:
-        # Fallback: 内存数据
-        from ...services.data_sources.dfbp_client import DFBP_PEPTIDE_DATABASE
-        peptides_mem = DFBP_PEPTIDE_DATABASE
-        total_peptides = len(peptides_mem)
-
-        seq_len_distribution = {
-            "二肽(2)": 0, "三肽(3)": 0, "四肽(4)": 0, "五肽(5)": 0,
-            "六肽(6)": 0, "七肽(7)": 0, "八肽(8)": 0, "九肽以上(9+)": 0,
-        }
-        activity_type_breakdown = {}
-        enzyme_breakdown = {}
-        source_organism_breakdown = {}
-        high_activity_peptides = []
-
-        for p in peptides_mem:
-            seq_len = len(p.get("sequence") or "")
-            act_type = p.get("activity_type", "未知")
-            enzyme = p.get("hydrolysis_enzyme", "未知")
-            organism = p.get("source_organism", "未知")
-            act_val = p.get("activity_value")
-
-            if seq_len <= 2: seq_len_distribution["二肽(2)"] += 1
-            elif seq_len <= 3: seq_len_distribution["三肽(3)"] += 1
-            elif seq_len <= 4: seq_len_distribution["四肽(4)"] += 1
-            elif seq_len <= 5: seq_len_distribution["五肽(5)"] += 1
-            elif seq_len <= 6: seq_len_distribution["六肽(6)"] += 1
-            elif seq_len <= 7: seq_len_distribution["七肽(7)"] += 1
-            elif seq_len <= 8: seq_len_distribution["八肽(8)"] += 1
-            else: seq_len_distribution["九肽以上(9+)"] += 1
-
-            activity_type_breakdown[act_type] = activity_type_breakdown.get(act_type, 0) + 1
-            enzyme_breakdown[enzyme] = enzyme_breakdown.get(enzyme, 0) + 1
-            source_organism_breakdown[organism] = source_organism_breakdown.get(organism, 0) + 1
-
-            if act_val and act_type == "ACE inhibitory":
-                try: act_val_f = float(act_val)
-                except (ValueError, TypeError): act_val_f = None
-                if act_val_f is not None and act_val_f < 1.0:
-                    high_activity_peptides.append({
-                        "sequence": p.get("sequence"),
-                        "activity_value": act_val,
-                        "activity_unit": p.get("activity_unit", "μM"),
-                        "source_protein": p.get("source_protein"),
-                        "molecular_weight": p.get("molecular_weight"),
-                        "hydrolysis_enzyme": enzyme,
-                    })
-
-    high_activity_peptides.sort(key=lambda x: float(x["activity_value"]) if x["activity_value"] else 999)
+    # high activity peptides (ACE inhibitory, IC50 < 1.0) — use LIMIT for pagination
+    high_act_rows = await db.execute(text("""
+        SELECT sequence, activity_value, activity_unit, source_protein, molecular_weight, hydrolysis_enzyme
+        FROM bioactive_peptides
+        WHERE activity_type = 'ACE inhibitory'
+          AND activity_value IS NOT NULL
+          AND CAST(activity_value AS FLOAT) < 1.0
+        ORDER BY CAST(activity_value AS FLOAT) ASC
+        LIMIT 20
+    """))
+    high_activity_peptides = []
+    for row in high_act_rows.fetchall():
+        try:
+            av = float(row[1])
+            if av < 1.0:
+                high_activity_peptides.append({
+                    "sequence": row[0] or "",
+                    "activity_value": row[1],
+                    "activity_unit": row[2] or "μM",
+                    "source_protein": row[3] or "",
+                    "molecular_weight": row[4] or 0,
+                    "hydrolysis_enzyme": row[5] or "",
+                })
+        except (ValueError, TypeError):
+            pass
+    use_peptide_db = True
 
     # 热门分类 Top 8
     top_categories = sorted(category_breakdown.items(), key=lambda x: x[1], reverse=True)[:8]

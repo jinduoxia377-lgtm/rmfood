@@ -77,12 +77,12 @@ interface StabilityTimeSeriesProps {
 // ===== 默认配置 =====
 
 const DEFAULT_METRICS = [
-  { key: 'stability', name: '稳定性指数', color: 'var(--color-indigo-500, #6366F1)' },
+  { key: 'stability', name: '稳定性指数', color: 'var(--color-primary-500, #10b981)' },
   { key: 'temperature', name: '温度 (°C)', color: 'var(--color-error, #FF3B30)' },
   { key: 'ph', name: 'pH 值', color: 'var(--color-primary, #34C759)' },
 ]
 
-const COLORS = ['var(--color-indigo-500, #6366F1)', 'var(--color-error, #FF3B30)', 'var(--color-primary, #34C759)', 'var(--color-warning, #FF9F0A)', 'var(--color-pink-500, #D946EF)']
+const COLORS = ['var(--color-primary-500, #10b981)', 'var(--color-error, #FF3B30)', 'var(--color-primary, #34C759)', 'var(--color-warning, #FF9F0A)', 'var(--color-pink-500, #D946EF)']
 
 // ===== 主组件实现 =====
 
@@ -266,7 +266,7 @@ function StabilityTimeSeries({
               <Area
                 type="monotone"
                 dataKey="upper"
-                fill="var(--color-indigo-500, #6366F1)"
+                fill="var(--color-primary-500, #10b981)"
                 fillOpacity={0.1}
                 stroke="none"
                 name={`${(confidenceLevel * 100).toFixed(0)}% 置信上限`}

@@ -5,7 +5,7 @@
  * 数据持久化到 localStorage
  */
 import React, { useState, useEffect, useCallback } from 'react'
-import { MessageSquare, Plus, Trash2, Edit2, Check, X, Clock } from 'lucide-react'
+import { MessageSquare, Plus, Trash2, Edit2, Check, X, Clock, GitBranch } from 'lucide-react'
 
 export interface HistorySession {
   id: string
@@ -22,6 +22,7 @@ interface ChatHistoryProps {
   onSelectSession: (id: string) => void
   onDeleteSession: (id: string) => void
   onRenameSession: (id: string, title: string) => void
+  onForkSession?: (sessionId: string, title: string) => Promise<string>
   isVisible: boolean
   onToggle: () => void
 }
@@ -51,10 +52,14 @@ export function formatTime(ts: number): string {
 
 export default function ChatHistory({
   sessions, activeSessionId, onNewChat, onSelectSession,
-  onDeleteSession, onRenameSession, isVisible, onToggle,
+  onDeleteSession, onRenameSession, isVisible, onToggle, onForkSession,
 }: ChatHistoryProps) {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editTitle, setEditTitle] = useState('')
+  // Task 8: Fork 确认对话框状态
+  const [forkingId, setForkingId] = useState<string | null>(null)
+  const [forkTitle, setForkTitle] = useState('')
+  const [forking, setForking] = useState(false)
 
   const startRename = useCallback((id: string, currentTitle: string) => {
     setEditingId(id)
@@ -67,6 +72,22 @@ export default function ChatHistory({
     }
     setEditingId(null)
   }, [editTitle, onRenameSession])
+
+  // Task 8: Fork 确认处理
+  const handleForkConfirm = useCallback(async () => {
+    if (!forkingId || !forkTitle.trim() || !onForkSession) return
+    setForking(true)
+    try {
+      const newId = await onForkSession(forkingId, forkTitle.trim())
+      if (newId) onSelectSession(newId)
+    } catch (e) {
+      console.error('Fork failed:', e)
+    } finally {
+      setForking(false)
+      setForkingId(null)
+      setForkTitle('')
+    }
+  }, [forkingId, forkTitle, onForkSession, onSelectSession])
 
   const sortedSessions = [...sessions].sort((a, b) => b.timestamp - a.timestamp)
 
@@ -151,7 +172,18 @@ export default function ChatHistory({
                   <div className={`absolute top-1 right-1 flex gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity${'ontouchstart' in window ? ' !opacity-100' : ''}`}>
                     <button onClick={() => startRename(session.id, session.title)}
                       className="p-1 rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-400 hover:text-neutral-600"
+                      title="重命名"
                     ><Edit2 className="w-3 h-3" /></button>
+                    {onForkSession && (
+                      <button
+                        onClick={() => {
+                          setForkingId(session.id)
+                          setForkTitle(`分支-${session.title || '对话'}`)
+                        }}
+                        className="p-1 rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-400 hover:text-primary-500"
+                        title="创建分支"
+                      ><GitBranch className="w-3 h-3" /></button>
+                    )}
                     <button onClick={() => onDeleteSession(session.id)}
                       aria-label="删除对话"
                       className="p-1 rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-400 hover:text-error-500"
@@ -163,6 +195,38 @@ export default function ChatHistory({
           })
         )}
       </div>
+
+      {/* Task 8: Fork 分支确认对话框 */}
+      {forkingId && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white dark:bg-neutral-800 rounded-xl shadow-2xl w-[90%] p-4">
+            <h4 className="text-sm font-semibold text-neutral-700 dark:text-neutral-200 mb-3">创建会话分支</h4>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-3">
+              将为当前会话创建一个分支，从最新消息处截断。请输入分支名称：
+            </p>
+            <input
+              type="text"
+              value={forkTitle}
+              onChange={e => setForkTitle(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') handleForkConfirm() }}
+              autoFocus
+              className="w-full px-3 py-2 text-sm border border-neutral-200 dark:border-neutral-700 rounded-lg bg-neutral-50 dark:bg-neutral-900 outline-none focus:ring-1 focus:ring-primary-500 mb-3"
+              placeholder="分支名称（如：配方对比版）"
+            />
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={() => { setForkingId(null); setForkTitle('') }}
+                className="px-3 py-1.5 text-xs text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"
+              >取消</button>
+              <button
+                onClick={handleForkConfirm}
+                disabled={forking || !forkTitle.trim()}
+                className="px-3 py-1.5 text-xs bg-primary-500 text-white rounded-lg hover:bg-primary-600 disabled:opacity-50"
+              >{forking ? '创建中...' : '确认创建'}</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

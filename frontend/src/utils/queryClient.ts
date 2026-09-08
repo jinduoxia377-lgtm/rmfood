@@ -14,10 +14,17 @@ const defaultOptions: DefaultOptions = {
       }
       return failureCount < 1;
     },
-    refetchOnWindowFocus: false,
-    refetchOnMount: true,
+    // 🔒 P0: 延长 staleTime 至 5 分钟，减少重复 API 请求
+    staleTime: 5 * 60 * 1000,
+    // 🔒 P0: gcTime 延长至 10 分钟，延迟不活跃 query 的垃圾回收
+    gcTime: 10 * 60 * 1000,
+    // 🔒 P0: 移除 refetchOnMount: true，避免每次组件挂载都强制刷新
+    //         仅在页面重新获得焦点时才刷新（更平滑的体验）
+    refetchOnWindowFocus: 'always',
+    refetchOnMount: false,
     refetchOnReconnect: true,
-    staleTime: 60000,
+    // 🔒 P0: 网络不可用时使用缓存数据，不发起新请求
+    networkMode: 'online',
   },
   mutations: {
     retry: 1,
@@ -39,7 +46,8 @@ export function prefetchQuery<T>(
   return queryClient.prefetchQuery({
     queryKey,
     queryFn,
-    staleTime: 60000,
+    // 🔒 P0: prefetch 也使用 5 分钟 staleTime，与默认策略一致
+    staleTime: 5 * 60 * 1000,
   });
 }
 
