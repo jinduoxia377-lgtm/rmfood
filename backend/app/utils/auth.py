@@ -598,9 +598,9 @@ def create_secure_cookie_settings(
         "secure": not settings.debug,  # 🔒 生产环境强制 HTTPS
     }
 
-    # 开发环境: 设置 domain 为 localhost 以便 Vite 代理也能携带 cookie
+    # Cookie domain: 开发环境不限制域名，允许局域网访问；生产环境空域名（仅当前域）
     if settings.debug:
-        cookie_config["domain"] = "localhost"
+        cookie_config["domain"] = ""  # 空域名允许所有 host（含局域网 IP）
 
     # refresh_token 需要更宽松的 SameSite（跨域刷新）
     if is_refresh_token:

@@ -1,0 +1,28 @@
+<!-- Stepper 步进器组件 -->
+<view class="stepper {{className}} {{size}}">
+  <view 
+    class="stepper-btn stepper-btn-minus {{disabled || value <= min ? 'stepper-btn-disabled' : ''}}"
+    bindtap="handleMinus"
+    aria-label="减少"
+  >
+    <icon name="minus" size="sm" color="{{disabled || value <= min ? '#CCCCCC' : '#666666'}}" />
+  </view>
+  
+  <view class="stepper-input-wrapper">
+    <input
+      class="stepper-input"
+      type="number"
+      value="{{value}}"
+      bindchange="handleInput"
+      aria-label="数量"
+    />
+  </view>
+  
+  <view 
+    class="stepper-btn stepper-btn-plus {{disabled || value >= max ? 'stepper-btn-disabled' : ''}}"
+    bindtap="handlePlus"
+    aria-label="增加"
+  >
+    <icon name="plus" size="sm" color="{{disabled || value >= max ? '#CCCCCC' : '#666666'}}" />
+  </view>
+</view>

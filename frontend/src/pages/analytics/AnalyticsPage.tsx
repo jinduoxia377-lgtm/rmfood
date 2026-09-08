@@ -2,7 +2,7 @@
  * 数据分析中心页面 — 参考 Dashboard 设计风格
  * 统一使用 bg-primary-600 横幅、StatCard、Card+CardHeader+CardContent 模式
  */
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import {
   PageHeader, Badge, Tabs,
   TabsList, TabsTrigger, TabsContent, useToast,
@@ -12,16 +12,18 @@ import {
   BarChart3, TrendingUp,
   Activity, Users, FileText, FlaskConical, Zap,
   Filter, Download, LayoutDashboard,
-  PieChart as PieIcon, LineChart, Settings2, Wifi,
-  RefreshCw, Clock, Loader2,
+  PieChart as PieIcon, LineChart, Settings2, Wifi, WifiOff,
+  RefreshCw, Clock, Loader2, AlertCircle,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
+import { useAnalyticsWebSocket } from '@/hooks/useAnalyticsWebSocket'
 
 // 导入功能模块
 import OverviewTab from './tabs/OverviewTab'
 import TrendsTab from './tabs/TrendsTab'
 import ReportsTab from './tabs/ReportsTab'
 import CustomTab from './tabs/CustomTab'
+import BusinessInsightsTab from './tabs/BusinessInsightsTab'
 
 // 导入企业级错误边界
 import { AnalyticsErrorBoundary } from '@/components/analytics/AnalyticsErrorBoundary'
@@ -29,7 +31,7 @@ import { AnalyticsSkeleton } from '@/components/analytics/skeleton/AnalyticsSkel
 import { logger } from '@/utils/safeLogger'
 import { useAnalyticsData } from '@/hooks/useAnalyticsData'
 
-type AnalyticsTab = 'overview' | 'trends' | 'reports' | 'custom'
+type AnalyticsTab = 'overview' | 'trends' | 'reports' | 'business' | 'custom'
 
 interface FilterConfig {
   timeRange: '7d' | '30d' | '90d' | '1y'
@@ -39,15 +41,15 @@ interface FilterConfig {
 }
 
 const TABS: { key: AnalyticsTab; label: string; icon: LucideIcon }[] = [
-  { key: 'overview', label: '概览', icon: LayoutDashboard },
-  { key: 'trends', label: '趋势分析', icon: TrendingUp },
-  { key: 'reports', label: '报表中心', icon: FileText },
-  { key: 'custom', label: '自定义仪表盘', icon: Settings2 },
+  { key: 'overview',        label: '概览',          icon: LayoutDashboard },
+  { key: 'trends',          label: '趋势分析',       icon: TrendingUp },
+  { key: 'reports',         label: '报表中心',       icon: FileText },
+  { key: 'business',        label: '业务洞察',       icon: FlaskConical },
+  { key: 'custom',          label: '自定义仪表盘',   icon: Settings2 },
 ]
 
 export default function AnalyticsPage() {
   const [tab, setTab] = useState<AnalyticsTab>('overview')
-  const [filterInput, setFilterInput] = useState('')
   const [showFilters, setShowFilters] = useState(false)
   const [filters, setFilters] = useState<FilterConfig>({
     timeRange: '30d',
@@ -61,26 +63,85 @@ export default function AnalyticsPage() {
 
   const {
     stats,
+    dashboard,
     loading: dataLoading,
     error: dataError,
     lastFetched,
     refresh,
+    filters: apiFilters,
   } = useAnalyticsData({
     pollInterval: 30_000,
     timeRange: filters.timeRange,
+    categories: filters.categories,
+    status: filters.status,
+    users: filters.users,
   })
 
+  // ─── WebSocket 实时连接 ──────────────────────────────────────
+  const wsUrl = useMemo(() => {
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+    return `${protocol}//${window.location.host}/api/v1/analytics/ws/dashboard`
+  }, [])
+
+  const {
+    connected: wsConnected,
+    connecting: wsConnecting,
+  } = useAnalyticsWebSocket({
+    url: wsUrl,
+    reconnect: true,
+    reconnectInterval: 5000,
+    maxReconnectAttempts: 5,
+    onMessage: useCallback((data: any) => {
+      if (data?.type === 'kpi_update' || data?.type === 'chart_refresh') {
+        refresh()
+      }
+    }, [refresh]),
+  })
+
+  // 导出当前仪表盘数据为 CSV/JSON
+  const handleExport = useCallback(async (format: 'json' | 'excel') => {
+    if (!dashboard) return
+    try {
+      if (format === 'json') {
+        const blob = new Blob([JSON.stringify(dashboard, null, 2)], { type: 'application/json' })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `analytics_dashboard_${filters.timeRange}_${new Date().toISOString().slice(0, 10)}.json`
+        a.click()
+        URL.revokeObjectURL(url)
+      } else {
+        const kpiRows = dashboard.kpi?.map((k: any) => ({
+          指标ID: k.id,
+          指标名称: k.name,
+          数值: k.value,
+          单位: k.unit,
+          环比变化: k.change_percent ?? '—',
+          目标值: k.target ?? '—',
+        })) || []
+        const headers = Object.keys(kpiRows[0] ?? {}).join(',')
+        const rows = kpiRows.map(r => Object.values(r).map(v => String(v ?? '')).join(','))
+        const csv = [headers, ...rows].join('\n')
+        const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `analytics_kpi_${filters.timeRange}.csv`
+        a.click()
+        URL.revokeObjectURL(url)
+      }
+    } catch (e) {
+      toast.error('导出失败，请稍后重试')
+    }
+  }, [dashboard, filters.timeRange, toast])
+
+  // 初始加载完成后清除骨架屏（防止缓存命中时仍显示假 loading）
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 300)
+    return () => clearTimeout(timer)
+  }, [])
+
   // 全局筛选防抖
-  const [filterTimer, setFilterTimer] = useState<ReturnType<typeof setTimeout> | null>(null)
-
-  const handleGlobalFilter = useCallback((keyword: string) => {
-    if (filterTimer) clearTimeout(filterTimer)
-    const timer = setTimeout(() => {
-      logger.info('应用筛选条件:', keyword)
-    }, 300)
-    setFilterTimer(timer)
-  }, [filterTimer])
-
   // 点击外部关闭筛选面板
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -135,6 +196,22 @@ export default function AnalyticsPage() {
               {dataLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Wifi className="w-3.5 h-3.5" />}
               {dataLoading ? '加载中' : '已连接'}
             </div>
+            {/* WebSocket 状态 */}
+            <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs ${
+              wsConnected
+                ? 'bg-green-500/20 text-white'
+                : wsConnecting
+                  ? 'bg-yellow-500/20 text-white'
+                  : 'bg-neutral-500/20 text-white/60'
+            }`}>
+              {wsConnected
+                ? <Wifi className="w-3.5 h-3.5 text-green-400" />
+                : wsConnecting
+                  ? <Loader2 className="w-3.5 h-3.5 animate-spin text-yellow-400" />
+                  : <WifiOff className="w-3.5 h-3.5" />
+              }
+              <span>{wsConnected ? '实时' : wsConnecting ? '连接中…' : '轮询'}</span>
+            </div>
             {/* 刷新按钮 */}
             <Button
               variant="secondary"
@@ -150,9 +227,17 @@ export default function AnalyticsPage() {
               variant="ghost"
               size="sm"
               icon={<Download size={14} />}
-              onClick={() => toast.info('导出功能开发中...')}
+              onClick={() => handleExport('excel')}
             >
-              导出
+              导出 CSV
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              icon={<Download size={14} />}
+              onClick={() => handleExport('json')}
+            >
+              导出 JSON
             </Button>
           </div>
         </div>
@@ -161,18 +246,6 @@ export default function AnalyticsPage() {
       {/* 筛选工具栏 */}
       <div ref={filterRef} className="relative">
         <div className="flex items-center gap-3">
-          {/* 搜索框 */}
-          <div className="relative flex-1 min-w-[200px]">
-            <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none" />
-            <input
-              type="text"
-              value={filterInput}
-              onChange={(e) => { setFilterInput(e.target.value); handleGlobalFilter(e.target.value) }}
-              placeholder="筛选数据…"
-              className="w-full pl-9 pr-4 py-2 text-sm input"
-            />
-          </div>
-
           {/* 时间范围 */}
           <select
             value={filters.timeRange}
@@ -208,7 +281,19 @@ export default function AnalyticsPage() {
                 <div className="space-y-1.5">
                   {['功能性食品', '保健品', '营养补充剂', '药食同源'].map((category) => (
                     <label key={category} className="flex items-center gap-2 cursor-pointer">
-                      <input type="checkbox" className="rounded border-border text-primary-600" />
+                      <input
+                        type="checkbox"
+                        className="rounded border-border text-primary-600"
+                        checked={filters.categories.includes(category)}
+                        onChange={(e) => {
+                          setFilters(prev => ({
+                            ...prev,
+                            categories: e.target.checked
+                              ? [...prev.categories, category]
+                              : prev.categories.filter(c => c !== category),
+                          }))
+                        }}
+                      />
                       <span className="text-sm text-text-primary">{category}</span>
                     </label>
                   ))}
@@ -219,7 +304,19 @@ export default function AnalyticsPage() {
                 <div className="space-y-1.5">
                   {['草稿', '审核中', '已发布', '已归档'].map((status) => (
                     <label key={status} className="flex items-center gap-2 cursor-pointer">
-                      <input type="checkbox" className="rounded border-border text-primary-600" />
+                      <input
+                        type="checkbox"
+                        className="rounded border-border text-primary-600"
+                        checked={filters.status.includes(status)}
+                        onChange={(e) => {
+                          setFilters(prev => ({
+                            ...prev,
+                            status: e.target.checked
+                              ? [...prev.status, status]
+                              : prev.status.filter(s => s !== status),
+                          }))
+                        }}
+                      />
                       <span className="text-sm text-text-primary">{status}</span>
                     </label>
                   ))}
@@ -227,13 +324,29 @@ export default function AnalyticsPage() {
               </div>
               <div>
                 <label className="block text-xs font-semibold text-text-muted uppercase tracking-wider mb-2">负责人</label>
-                <div className="space-y-1.5">
-                  {['张研发', '李实验', '王配方', '赵测试'].map((user) => (
-                    <label key={user} className="flex items-center gap-2 cursor-pointer">
-                      <input type="checkbox" className="rounded border-border text-primary-600" />
-                      <span className="text-sm text-text-primary">{user}</span>
-                    </label>
-                  ))}
+                <div className="space-y-1.5 max-h-32 overflow-y-auto">
+                  {apiFilters?.users?.length ? (
+                    apiFilters.users.map((u) => (
+                      <label key={u.id} className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          className="rounded border-border text-primary-600"
+                          checked={filters.users.includes(u.id)}
+                          onChange={(e) => {
+                            setFilters(prev => ({
+                              ...prev,
+                              users: e.target.checked
+                                ? [...prev.users, u.id]
+                                : prev.users.filter(id => id !== u.id),
+                            }))
+                          }}
+                        />
+                        <span className="text-sm text-text-primary">{u.full_name || u.username}</span>
+                      </label>
+                    ))
+                  ) : (
+                    <span className="text-xs text-text-muted">暂无用户数据</span>
+                  )}
                 </div>
               </div>
             </div>
@@ -241,15 +354,15 @@ export default function AnalyticsPage() {
               <button
                 onClick={() => {
                   setFilters({ timeRange: '30d', categories: [], status: [], users: [] })
-                  setFilterInput('')
                   setShowFilters(false)
+                  refresh()
                 }}
                 className="px-3 py-1.5 text-sm text-text-muted hover:text-text-primary transition-colors"
               >
                 重置
               </button>
               <button
-                onClick={() => setShowFilters(false)}
+                onClick={() => { setShowFilters(false); refresh() }}
                 className="px-4 py-1.5 bg-primary-600 hover:bg-primary-700 text-white text-sm rounded-lg transition-colors"
               >
                 应用筛选
@@ -300,7 +413,7 @@ export default function AnalyticsPage() {
 
         <TabsContent value="overview">
           <AnalyticsErrorBoundary>
-            <OverviewTab filters={filters} timeRange={filters.timeRange} />
+            <OverviewTab filters={filters} dashboard={dashboard} refresh={refresh} />
           </AnalyticsErrorBoundary>
         </TabsContent>
         <TabsContent value="trends">
@@ -313,9 +426,14 @@ export default function AnalyticsPage() {
             <ReportsTab filters={filters} />
           </AnalyticsErrorBoundary>
         </TabsContent>
+        <TabsContent value="business">
+          <AnalyticsErrorBoundary>
+            <BusinessInsightsTab filters={filters} />
+          </AnalyticsErrorBoundary>
+        </TabsContent>
         <TabsContent value="custom">
           <AnalyticsErrorBoundary>
-            <CustomTab filters={filters} />
+            <CustomTab filters={filters} dashboard={dashboard} refresh={refresh} />
           </AnalyticsErrorBoundary>
         </TabsContent>
       </Tabs>

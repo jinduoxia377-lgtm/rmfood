@@ -1,0 +1,583 @@
+{
+  "existing": {
+    "total": 82,
+    "gb": 70,
+    "gbT": 7,
+    "qbT": 4,
+    "catalog": 1,
+    "standards": [
+      "食品安全国家标准——乳清粉和乳清蛋白粉GB 11674—2010",
+      "食品安全国家标准——乳粉GB 19644—2010",
+      "食品安全国家标准——乳糖GB 25595—2010",
+      "食品安全国家标准——再制干酪GB 25192—2010",
+      "食品安全国家标准——发酵乳GB 19302—2010",
+      "食品安全国家标准——巴氏杀菌乳GB 19645—2010",
+      "食品安全国家标准——灭菌乳GB 25190—2010",
+      "食品安全国家标准——炼乳GB 13102—2010",
+      "食品安全国家标准——生乳GB 19301—2010",
+      "食品安全国家标准——稀奶油、奶油和无水奶油GB 19646—2010",
+      "食品安全国家标准——胶原蛋白肠衣GB 14967—2015",
+      "食品安全国家标准——调制乳GB 25191—2010",
+      "食品安全国家标准——食用盐碘含量GB 26878—2011",
+      "食品安全国家标准—保健食品GB 16740—2014",
+      "食品安全国家标准—再制干酪和干酪制品GB 25192—2022",
+      "食品安全国家标准—发酵酒及其配制酒GB 2758—2012",
+      "食品安全国家标准—味精GB 2720—2015",
+      "食品安全国家标准—坚果与籽类食品GB 19300—2014",
+      "食品安全国家标准—复合调味料GB 31644—2018",
+      "食品安全国家标准—婴儿配方食品GB 10765—2010",
+      "食品安全国家标准—婴儿配方食品GB 10765—2021",
+      "食品安全国家标准—婴幼儿罐装辅助食品GB 10770—2010",
+      "食品安全国家标准—婴幼儿谷类辅助食品GB 10769—2010",
+      "食品安全国家标准—巧克力、代可可脂巧克力及其制品GB 9678.2—2014",
+      "食品安全国家标准—干海参GB 31602—2015",
+      "食品安全国家标准—干酪GB 5420—2021",
+      "食品安全国家标准—幼儿配方食品GB 10767—2021",
+      "食品安全国家标准—果冻GB 19299—2015",
+      "食品安全国家标准—植物油GB 2716—2018",
+      "食品安全国家标准—水产调味品GB 10133—2014",
+      "食品安全国家标准—浓缩乳制品GB 13102—2022",
+      "食品安全国家标准—淀粉制品GB 2713—2015",
+      "食品安全国家标准—淀粉糖GB 15203—2014",
+      "食品安全国家标准—特殊医学用途婴儿配方食品通则GB 25596—2010",
+      "食品安全国家标准—粮食GB 2715—2016",
+      "食品安全国家标准—糖果GB 17399—2016",
+      "食品安全国家标准—胶原蛋白肽GB 31645—2018",
+      "食品安全国家标准—膨化食品GB 17401—2014",
+      "食品安全国家标准—葡萄酒GB 15037—2006",
+      "食品安全国家标准—蒸馏酒及其配制酒GB 2757—2012",
+      "食品安全国家标准—藻类及其制品GB 19643—2016",
+      "食品安全国家标准—蜂蜜GB 14963—2011",
+      "食品安全国家标准—豆制品GB 2712—2014",
+      "食品安全国家标准—较大婴儿和幼儿配方食品GB 10767—2010",
+      "食品安全国家标准—较大婴儿配方食品GB 10766—2021",
+      "食品安全国家标准—辅食营养补充品GB 22570—2014",
+      "食品安全国家标准—运动饮料GB 15266—2009",
+      "食品安全国家标准—速冻面米与调制食品GB 19295—2021",
+      "食品安全国家标准—酪蛋白GB 31638—2016",
+      "食品安全国家标准—酱油GB 2717—2018",
+      "食品安全国家标准—酱腌菜GB 2714—2015",
+      "食品安全国家标准—酿造酱GB 2718—2014",
+      "食品安全国家标准—面筋制品GB 2711—2014",
+      "食品安全国家标准—预包装食品标签通则GB 7718—2011",
+      "食品安全国家标准—预包装食品营养标签通则GB 28050—2011",
+      "食品安全国家标准—食品中真菌毒素限量GB 2761—2017",
+      "食品安全国家标准—食品加工用粕类GB 14932—2016",
+      "食品安全国家标准—食品加工用酵母GB 31639—2016",
+      "食品安全国家标准—食品营养强化剂使用标准GB 14880—2012",
+      "食品安全国家标准—食用动物油脂GB 10146—2015",
+      "食品安全国家标准—食用植物油料GB 19641—2015",
+      "食品安全国家标准—食用油脂制品GB 15196—2015",
+      "食品安全国家标准—食用淀粉GB 31637—2016",
+      "食品安全国家标准—食用菌及其制品GB 7096一2014",
+      "食品安全国家标准—食用酒精GB 31640—2016",
+      "食品安全国家标准—食糖GB 13104—2014",
+      "食品安全国家标准—食醋GB 2719—2018",
+      "食品安全国家标准—饮料GB 7101—2022",
+      "食品安全国家标准—饮用天然矿泉水GB 8537—2018",
+      "食品安全国家标准—鲜（冻）畜、禽产品GB 2707—2016",
+      "国家标准植物蛋白饮料—核桃露（乳）GB/T 31325—2014",
+      "国家标准植物蛋白饮料—豆奶和豆奶饮料GB/T 30885—2014",
+      "食品安全国家标准—植物蛋白饮料 杏仁露GB/T 31324—2014",
+      "食品安全国家标准—植物饮料GB/T 31326一2014",
+      "食品安全国家标准—碳酸饮料（汽水）GB/T 10792—2008",
+      "食品安全国家标准—茶饮料GB/T 21733—2008",
+      "食品安全国家标准—饮料通则GB/T 10789—2015",
+      "食品安全国家标准—复合蛋白饮料QB/T 4222—2011",
+      "食品安全国家标准—植物蛋白饮料 椰子汁及复原椰子汁QB/T 2300一2006",
+      "食品安全国家标准—植物蛋白饮料 花生乳（露）QB/T 2439-1999",
+      "食品安全国家标准—谷物类饮料QB/T 4221—2011",
+      "食品安全国家标准目录（截至 2017 年 4 月）"
+    ]
+  },
+  "missingGB": [
+    {
+      "number": "GB 2760",
+      "year": "2014",
+      "fullNumber": "GB 2760-2014",
+      "title": "食品安全国家标准 食品添加剂",
+      "description": "食品工业最重要的基础标准之一，规定允许使用的食品添加剂品种、使用范围及最大使用量",
+      "importance": "核心必备",
+      "category": "添加剂管理类"
+    },
+    {
+      "number": "GB 2760",
+      "year": "2024",
+      "fullNumber": "GB 2760-2024",
+      "title": "食品安全国家标准 食品添加剂",
+      "description": "2024年2月发布，2025年2月8日实施，替代GB 2760-2014",
+      "importance": "核心必备",
+      "category": "添加剂管理类",
+      "note": "最新版，已取代2014版"
+    },
+    {
+      "number": "GB 2762",
+      "year": "2017",
+      "fullNumber": "GB 2762-2017",
+      "title": "食品安全国家标准 食品中污染物限量",
+      "description": "规定食品中铅、砷、汞、镉等污染物及苯并[a]芘等的限量要求",
+      "importance": "核心必备",
+      "category": "污染物控制类"
+    },
+    {
+      "number": "GB 2762",
+      "year": "2022",
+      "fullNumber": "GB 2762-2022",
+      "title": "食品安全国家标准 食品中污染物限量",
+      "description": "2022年发布，替代GB 2762-2017，扩大监管范围",
+      "importance": "核心必备",
+      "category": "污染物控制类",
+      "note": "最新版"
+    },
+    {
+      "number": "GB 2763",
+      "year": "2021",
+      "fullNumber": "GB 2763-2021",
+      "title": "食品安全国家标准 食品中农药最大残留限量",
+      "description": "规定200余种农药在各类食品中的最大残留限量",
+      "importance": "核心必备",
+      "category": "农残控制类"
+    },
+    {
+      "number": "GB 2763",
+      "year": "2024",
+      "fullNumber": "GB 2763-2024",
+      "title": "食品安全国家标准 食品中农药最大残留限量",
+      "description": "2024年发布，替代GB 2763-2021，新增多种农药残留限量",
+      "importance": "核心必备",
+      "category": "农残控制类",
+      "note": "最新版"
+    },
+    {
+      "number": "GB 14881",
+      "year": "2013",
+      "fullNumber": "GB 14881-2013",
+      "title": "食品安全国家标准 食品生产通用卫生规范",
+      "description": "食品生产企业必须遵守的卫生规范，是食品生产许可的基础要求",
+      "importance": "核心必备",
+      "category": "生产卫生类"
+    },
+    {
+      "number": "GB 29921",
+      "year": "2021",
+      "fullNumber": "GB 29921-2021",
+      "title": "食品安全国家标准 预包装食品中致病菌限量",
+      "description": "规定沙门氏菌、金黄色葡萄球菌等致病菌在预包装食品中的限量",
+      "importance": "核心必备",
+      "category": "微生物控制类"
+    },
+    {
+      "number": "GB 29922",
+      "year": "2013",
+      "fullNumber": "GB 29922-2013",
+      "title": "食品安全国家标准 预包装食品中真菌毒素限量",
+      "description": "规定黄曲霉毒素B1、赭曲霉毒素A等真菌毒素的限量（注：部分已被GB 2761整合）",
+      "importance": "重要",
+      "category": "微生物控制类"
+    },
+    {
+      "number": "GB 31650",
+      "year": "2019",
+      "fullNumber": "GB 31650-2019",
+      "title": "食品安全国家标准 食品中兽药最大残留限量",
+      "description": "规定抗菌药、抗寄生虫药等兽药在食品中的残留限量",
+      "importance": "核心必备",
+      "category": "兽药残留控制类"
+    },
+    {
+      "number": "GB 31654",
+      "year": "2021",
+      "fullNumber": "GB 31654-2021",
+      "title": "食品安全国家标准 食品接触材料及制品生产通用卫生规范",
+      "description": "食品包装材料和容器的生产卫生规范",
+      "importance": "重要",
+      "category": "包装材料类"
+    },
+    {
+      "number": "GB 31621",
+      "year": "2016",
+      "fullNumber": "GB 31621-2016",
+      "title": "食品安全国家标准 食品流通卫生规范",
+      "description": "食品贮存、运输、销售过程中的卫生要求",
+      "importance": "重要",
+      "category": "流通卫生类"
+    },
+    {
+      "number": "GB 31623",
+      "year": "2016",
+      "fullNumber": "GB 31623-2016",
+      "title": "食品安全国家标准 餐饮服务通用卫生规范",
+      "description": "餐饮服务环节的卫生要求",
+      "importance": "重要",
+      "category": "餐饮卫生类"
+    },
+    {
+      "number": "GB 31654",
+      "year": "2021",
+      "fullNumber": "GB 31654-2021",
+      "title": "食品安全国家标准 食品生产者的食源性疾病及食品污染监测报告规程",
+      "description": "食品生产企业疾病监测和报告要求",
+      "importance": "重要",
+      "category": "监测报告类"
+    },
+    {
+      "number": "GB 23790",
+      "year": "2010",
+      "fullNumber": "GB 23790-2010",
+      "title": "食品安全国家标准 糕点、面包",
+      "description": "糕点、面包类食品的食品安全要求",
+      "importance": "重要",
+      "category": "品类标准类"
+    },
+    {
+      "number": "GB 17400",
+      "year": "2014",
+      "fullNumber": "GB 17400-2014",
+      "title": "食品安全国家标准 膨化食品",
+      "description": "膨化食品的食品安全要求（已有GB 17401-2014，需确认）",
+      "importance": "一般",
+      "category": "品类标准类"
+    },
+    {
+      "number": "GB 17403",
+      "year": "2016",
+      "fullNumber": "GB 17403-2016",
+      "title": "食品安全国家标准 蛋白补充剂",
+      "description": "蛋白质补充剂的食品安全要求",
+      "importance": "一般",
+      "category": "品类标准类"
+    },
+    {
+      "number": "GB 19303",
+      "year": "2010",
+      "fullNumber": "GB 19303-2010",
+      "title": "食品安全国家标准 酸性发酵乳制品",
+      "description": "酸性发酵乳（如酸奶）的食品安全要求",
+      "importance": "重要",
+      "category": "品类标准类"
+    },
+    {
+      "number": "GB 19304",
+      "year": "2010",
+      "fullNumber": "GB 19304-2010",
+      "title": "食品安全国家标准 乳酸菌饮料",
+      "description": "乳酸菌饮料的食品安全要求",
+      "importance": "重要",
+      "category": "品类标准类"
+    },
+    {
+      "number": "GB 16321",
+      "year": "2016",
+      "fullNumber": "GB 16321-2016",
+      "title": "食品安全国家标准 发酵肉制品生产卫生规范",
+      "description": "发酵肉制品的生产卫生要求",
+      "importance": "一般",
+      "category": "生产卫生类"
+    },
+    {
+      "number": "GB 23791",
+      "year": "2010",
+      "fullNumber": "GB 23791-2010",
+      "title": "食品安全国家标准 冷冻饮品",
+      "description": "冰淇淋、雪糕等冷冻饮品的食品安全要求",
+      "importance": "重要",
+      "category": "品类标准类"
+    },
+    {
+      "number": "GB 17402",
+      "year": "2016",
+      "fullNumber": "GB 17402-2016",
+      "title": "食品安全国家标准 膨化食品生产卫生规范",
+      "description": "膨化食品生产过程的卫生规范",
+      "importance": "一般",
+      "category": "生产卫生类"
+    },
+    {
+      "number": "GB 12695",
+      "year": "2016",
+      "fullNumber": "GB 12695-2016",
+      "title": "食品安全国家标准 饮料生产卫生规范",
+      "description": "饮料类食品生产的卫生规范",
+      "importance": "重要",
+      "category": "生产卫生类"
+    },
+    {
+      "number": "GB 14882",
+      "year": "2016",
+      "fullNumber": "GB 14882-2016",
+      "title": "食品安全国家标准 食品添加剂 维生素预混料",
+      "description": "维生素类食品预混料的卫生要求",
+      "importance": "一般",
+      "category": "添加剂类"
+    },
+    {
+      "number": "GB 1886",
+      "year": "系列",
+      "fullNumber": "GB 1886.xx",
+      "title": "食品安全国家标准 食品相关产品",
+      "description": "涵盖食品添加剂、营养强化剂、新食品原料等系列产品标准（数百项）",
+      "importance": "核心必备",
+      "category": "添加剂/强化剂类"
+    },
+    {
+      "number": "GB 29942",
+      "year": "2013",
+      "fullNumber": "GB 29942-2013",
+      "title": "食品安全国家标准 膳食营养补充剂 维生素、矿物质",
+      "description": "维生素和矿物质补充剂的食品安全要求",
+      "importance": "重要",
+      "category": "保健食品类"
+    },
+    {
+      "number": "GB 29943",
+      "year": "2013",
+      "fullNumber": "GB 29943-2013",
+      "title": "食品安全国家标准 膳食营养补充剂 蛋白质",
+      "description": "蛋白质类膳食补充剂的食品安全要求",
+      "importance": "一般",
+      "category": "保健食品类"
+    },
+    {
+      "number": "GB 13432",
+      "year": "2013",
+      "fullNumber": "GB 13432-2013",
+      "title": "食品安全国家标准 预包装特殊膳食用食品标签",
+      "description": "特殊膳食用食品（如婴幼儿食品）的标签要求",
+      "importance": "重要",
+      "category": "标签标识类"
+    },
+    {
+      "number": "GB 7102",
+      "year": "2015",
+      "fullNumber": "GB 7102.1-2015 / GB 7102.2-2015",
+      "title": "食品安全国家标准 糖果、果冻",
+      "description": "糖果和果冻的食品安全要求",
+      "importance": "重要",
+      "category": "品类标准类"
+    },
+    {
+      "number": "GB 19305",
+      "year": "2010",
+      "fullNumber": "GB 19305-2010",
+      "title": "食品安全国家标准 乳和乳制品检验规则",
+      "description": "乳制品的检验方法标准",
+      "importance": "一般",
+      "category": "检验方法类"
+    }
+  ],
+  "missingInternational": [
+    {
+      "organization": "CAC",
+      "number": "CAC/RCP 1-1969",
+      "title": "食品 hygiene 通用标准（Code of Hygienic Practice）",
+      "description": "食品法典委员会发布的食品hygiene基础性指导文件，各国食品安全管理体系的基础参考",
+      "importance": "核心参考",
+      "category": "基础规范类"
+    },
+    {
+      "organization": "CAC",
+      "number": "CAC Stan 1-1981",
+      "title": "食品法典通用标准（General Standard for Unspecified Food Additives）",
+      "description": "食品法典食品添加剂通用标准，规范食品添加剂的使用原则",
+      "importance": "核心参考",
+      "category": "添加剂类"
+    },
+    {
+      "organization": "CAC",
+      "number": "CXS 192-1995",
+      "title": "食品中农药残留法规（Code of Practice on Pesticide Residues）",
+      "description": "农药残留管理的国际指导原则，与GB 2763相呼应",
+      "importance": "核心参考",
+      "category": "农残控制类"
+    },
+    {
+      "organization": "CAC",
+      "number": "CXS 193-1995",
+      "title": "食品中重金属和污染物法规",
+      "description": "重金属和污染物控制的国际标准，与GB 2762相呼应",
+      "importance": "核心参考",
+      "category": "污染物控制类"
+    },
+    {
+      "organization": "CAC",
+      "number": "CXS 234-2001",
+      "title": "食品标签通用标准",
+      "description": "国际食品标签法规，与GB 7718相呼应，出口企业需重点关注",
+      "importance": "核心参考",
+      "category": "标签标识类"
+    },
+    {
+      "organization": "ISO",
+      "number": "ISO 22000",
+      "title": "食品安全管理体系要求",
+      "description": "国际公认的食品安全管理体系标准，HACCP原理的国际版本，出口企业必备认证",
+      "importance": "核心必备",
+      "category": "管理体系类"
+    },
+    {
+      "organization": "ISO",
+      "number": "ISO 9001",
+      "title": "质量管理体系要求",
+      "description": "国际通用的质量管理体系标准，食品企业基础认证要求",
+      "importance": "核心必备",
+      "category": "管理体系类"
+    },
+    {
+      "organization": "ISO",
+      "number": "ISO 22002-1",
+      "title": "食品安全管理体系 前提方案（PRPs）",
+      "description": "食品链各类组织的前提方案要求，ISO 22000的配套标准",
+      "importance": "重要",
+      "category": "管理体系类"
+    },
+    {
+      "organization": "FDA",
+      "number": "21 CFR Part 110-169",
+      "title": "美国FDA食品法规",
+      "description": "美国食品法规汇编，包括食品additive、 contaminants、 labeling等，出口美国企业必读",
+      "importance": "核心必备",
+      "category": "国别法规类"
+    },
+    {
+      "organization": "EU",
+      "number": "EC 178/2002",
+      "title": "欧盟食品法通用条例",
+      "description": "欧盟食品安全基本法规，建立EFSA和食品追溯体系，出口欧盟企业必读",
+      "importance": "核心必备",
+      "category": "国别法规类"
+    },
+    {
+      "organization": "EU",
+      "number": "EC 852/2004",
+      "title": "欧盟食品hygiene法规",
+      "description": "食品hygiene的基本要求，涵盖食品生产、加工、运输各环节",
+      "importance": "核心必备",
+      "category": "国别法规类"
+    },
+    {
+      "organization": "EU",
+      "number": "EC 1333/2008",
+      "title": "欧盟食品添加剂法规",
+      "description": "欧盟食品添加剂批准和使用法规，与GB 2760对应",
+      "importance": "核心必备",
+      "category": "国别法规类"
+    },
+    {
+      "organization": "EU",
+      "number": "EC 1881/2006",
+      "title": "欧盟食品中污染物限值法规",
+      "description": "欧盟食品中重金属、mycotoxins等污染物的限量标准",
+      "importance": "核心必备",
+      "category": "国别法规类"
+    },
+    {
+      "organization": "JECFA",
+      "number": "JECFA evaluations",
+      "title": "联合国粮农组织/WHO食品添加剂联合专家委员会评估",
+      "description": "食品添加剂安全评估的国际权威标准，各国制定ADDITIVE标准的基础",
+      "importance": "核心参考",
+      "category": "添加剂评估类"
+    },
+    {
+      "organization": "JP-MRLS",
+      "number": "ポジティブリスト制",
+      "title": "日本肯定列表制度",
+      "description": "日本食品中农业chemical残留的肯定列表制度，对出口日本食品有严格要求",
+      "importance": "核心必备",
+      "category": "国别法规类"
+    },
+    {
+      "organization": "CAC",
+      "number": "CXS 1-1981",
+      "title": "食品法典委员会通用标准",
+      "description": "国际食品标准的总纲性文件，所有CAC标准的框架基础",
+      "importance": "核心参考",
+      "category": "基础规范类"
+    },
+    {
+      "organization": "CAC",
+      "number": "MRL 1-2020",
+      "title": "食品中农药残留最大限量法典标准",
+      "description": "国际农药残留限量标准，与GB 2763形成对照",
+      "importance": "核心参考",
+      "category": "农残控制类"
+    },
+    {
+      "organization": "ISO",
+      "number": "ISO/IEC 17025",
+      "title": "检测和校准实验室能力通用要求",
+      "description": "食品检测实验室的国际认可标准，CNAS认可依据",
+      "importance": "重要",
+      "category": "检测能力类"
+    },
+    {
+      "organization": "BRC",
+      "number": "BRCGS Food Safety",
+      "title": "英国零售商协会食品安全标准",
+      "description": "国际零售商普遍认可的食品安全标准，出口欧洲市场的重要认证",
+      "importance": "重要",
+      "category": "认证标准类"
+    },
+    {
+      "organization": "FSSC",
+      "number": "FSSC 22000",
+      "title": "食品安全管理体系认证方案",
+      "description": "GFSI认可的食品安全管理体系认证，全球供应链广泛接受",
+      "importance": "重要",
+      "category": "认证标准类"
+    },
+    {
+      "organization": "SQF",
+      "number": "SQF Code",
+      "title": "安全质量食品安全法规",
+      "description": "Global Food Safety Initiative (GFSI) 认可的食品安全标准",
+      "importance": "重要",
+      "category": "认证标准类"
+    },
+    {
+      "organization": "IFS",
+      "number": "IFS Food",
+      "title": "德国IFOCA认证标准",
+      "description": "国际食品标准，欧洲零售商广泛接受的食品安全认证",
+      "importance": "重要",
+      "category": "认证标准类"
+    },
+    {
+      "organization": "Codex",
+      "number": "CXC 53-2003",
+      "title": "食品追溯系统通用原则",
+      "description": "国际食品追溯体系建设指导原则，与我国食品安全法追溯要求对应",
+      "importance": "重要",
+      "category": "追溯管理类"
+    },
+    {
+      "organization": "CAC",
+      "number": "RPCICCS 2013",
+      "title": "食品进口和出口检查和认证系统准则",
+      "description": "国际食品贸易中进口出口检查认证的国际准则",
+      "importance": "重要",
+      "category": "进出口管理"
+    },
+    {
+      "organization": "WHO",
+      "number": "WHO food safety guidelines",
+      "title": "世界卫生组织食品安全指南",
+      "description": "WHO发布的食品安全管理、风险评估等国际指南",
+      "importance": "参考",
+      "category": "国际指南类"
+    }
+  ],
+  "notes": {
+    "explanation": "本页现有82项标准主要来自原卫生部（现国家卫健委）发布的食品安全国家标准，以GB（强制性国标）为主。以下内容建议补充：",
+    "existingCoverage": "现有标准覆盖乳品、饮料、调味品、油脂、酒类等常见品类，但缺少食品添加剂、污染物、农兽药残留等基础通用标准",
+    "missingCategories": [
+      "基础通用标准：GB 2760（添加剂）、GB 2762（污染物）、GB 2763（农残）、GB 14881（生产卫生）",
+      "微生物控制：GB 29921（致病菌限量）",
+      "兽药残留：GB 31650（兽药残留限量）",
+      "包装材料：GB 31654（食品接触材料卫生规范）",
+      "标签标识：GB 13432（特殊膳食用食品标签）",
+      "更多品类标准：糕点、糖果、冷冻饮品、酸性发酵乳等"
+    ],
+    "internationalRecommendation": "如需满足出口需求，建议补充ISO 22000、FDA 21 CFR、EU 178/2002等国际法规，以及CAC食品法典相关标准"
+  }
+}

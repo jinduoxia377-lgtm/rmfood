@@ -4,6 +4,13 @@ FastAPI 应用工厂 + 生命周期事件
 """
 # NOTE: DATABASE_URL is provided via Docker environment variables.
 # Do NOT call load_dotenv here to avoid overwriting container env vars.
+import os
+if os.environ.get("ENV", "development") in ("development", "test"):
+    try:
+        from dotenv import load_dotenv
+        load_dotenv()  # 开发环境：加载 .env 文件（ENCRYPTION_KEY 等）
+    except ImportError:
+        pass  # 未安装 python-dotenv，跳过
 
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
@@ -159,7 +166,15 @@ async def lifespan(app: FastAPI):
         logger.info("[Startup] 异步任务队列已启动")
     except Exception as e:
         logger.warning(f"[Startup] 任务队列启动失败（非致命）: {e}")
-    # 5. 启动定时数据同步调度器
+    # 5b. 启动定时报表调度器
+    try:
+        from app.core.analytics_reports.scheduled_reports import get_scheduler
+        sched = get_scheduler()
+        await sched.start()
+        logger.info("[Startup] 定时报表调度器已启动")
+    except Exception as e:
+        logger.warning(f"[Startup] 定时报表调度器启动失败（非致命）: {e}")
+    # 6. 启动定时数据同步调度器
     try:
         from app.services.data_sources.auto_sync import start_auto_sync
         start_auto_sync()
@@ -203,6 +218,13 @@ async def lifespan(app: FastAPI):
         logger.info("[Shutdown] 异步任务队列已停止")
     except Exception as e:
         logger.warning(f"[Shutdown] 任务队列清理异常（非致命）: {e}")
+    # 停止定时报表调度器
+    try:
+        from app.core.analytics_reports.scheduled_reports import get_scheduler
+        await get_scheduler().stop()
+        logger.info("[Shutdown] 定时报表调度器已停止")
+    except Exception as e:
+        logger.warning(f"[Shutdown] 定时报表调度器清理异常（非致命）: {e}")
     try:
         await close_database()
     except Exception as e:
@@ -407,6 +429,13 @@ Authorization: Bearer <your_access_token>
         logger.info("[AuditMiddleware] HTTP 审计中间件已注册")
     except Exception as e:
         logger.warning(f"[AuditMiddleware] 注册失败（非阻塞）: {e}")
+    # ── 分析接口响应时间记录中间件 ──
+    try:
+        from .core.middleware.analytics_response_time import AnalyticsResponseTimeMiddleware
+        app.add_middleware(AnalyticsResponseTimeMiddleware)
+        logger.info("[AnalyticsResponseTimeMiddleware] 响应时间记录中间件已注册")
+    except Exception as e:
+        logger.warning(f"[AnalyticsResponseTimeMiddleware] 注册失败（非阻塞）: {e}")
     # ── 监控和错误处理 ──
     # setup_monitoring(app)  # 监控功能已集成到 monitoring.py，可按需启用
     setup_error_handling(app)
@@ -557,6 +586,13 @@ Authorization: Bearer <your_access_token>
         logger.info("[ReportRouter] Product plan report API registered")
     except Exception as e:
         logger.warning(f"[ReportRouter] Product plan report router registration failed (non-blocking): {e}")
+    # ── 配料分析API（六维分析引擎）──
+    try:
+        from .api.v1.ingredient_analysis_router import router as ingredient_analysis_router
+        app.include_router(ingredient_analysis_router, prefix="/api/v1")
+        logger.info("[IngredientAnalysis] 配料分析路由注册成功")
+    except Exception as e:
+        logger.warning(f"[IngredientAnalysis] 配料分析路由注册失败（非阻塞）: {e}")
     # ── 知识图谱推理 API ──
     try:
         from .api.v1.kg_router import router as kg_router
@@ -584,6 +620,20 @@ Authorization: Bearer <your_access_token>
         logger.info("[SearchAnalytics] 搜索分析路由注册成功")
     except Exception as e:
         logger.warning(f"[SearchAnalytics] 搜索分析路由注册失败（非阻塞）: {e}")
+    # ── 定时报表调度 API ──
+    try:
+        from .api.analytics_scheduler import router as analytics_scheduler_router
+        app.include_router(analytics_scheduler_router, prefix="/api/v1")
+        logger.info("[AnalyticsScheduler] 定时报表调度路由注册成功")
+    except Exception as e:
+        logger.warning(f"[AnalyticsScheduler] 定时报表路由注册失败（非阻塞）: {e}")
+    # ── 健康知识文章 API ──
+    try:
+        from .api.articles import router as articles_router
+        app.include_router(articles_router, prefix="/api/v1")
+        logger.info("[Articles] 健康知识文章API注册成功")
+    except Exception as e:
+        logger.warning(f"[Articles] 文章路由注册失败（非阻塞）: {e}")
     # ── API v1 根路径 ──
     @app.get("/api/v1", tags=["系统"])
     async def api_v1_root():

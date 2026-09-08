@@ -1,0 +1,40 @@
+<!-- 隐私政策页面 -->
+<view class="page-container">
+  <view class="header" style="padding-top: {{statusBarHeight}}px;">
+    <view class="back-btn" bindtap="goBack">
+      <text>‹</text>
+    </view>
+    <view class="header-title">隐私政策</view>
+  </view>
+
+  <scroll-view class="content-scroll" scroll-y>
+    <view class="privacy-content">
+      <view class="section">
+        <text class="section-title">一、信息收集</text>
+        <text class="section-content">我们可能收集您的昵称、头像等基本个人信息。</text>
+      </view>
+
+      <view class="section">
+        <text class="section-title">二、信息使用</text>
+        <text class="section-content">2.1 用于提供个性化服务</text>
+        <text class="section-content">2.2 用于改进产品质量</text>
+        <text class="section-content">2.3 用于发送重要通知</text>
+      </view>
+
+      <view class="section">
+        <text class="section-title">三、信息安全</text>
+        <text class="section-content">我们采取合理的安全措施保护您的个人信息。</text>
+      </view>
+
+      <view class="section">
+        <text class="section-title">四、您的权利</text>
+        <text class="section-content">您可以随时查看、修改或删除您的个人信息。</text>
+      </view>
+
+      <view class="section">
+        <text class="section-title">五、联系我们</text>
+        <text class="section-content">如有疑问，请通过应用内反馈功能联系我们。</text>
+      </view>
+    </view>
+  </scroll-view>
+</view>

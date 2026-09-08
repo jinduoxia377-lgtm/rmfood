@@ -1,0 +1,43 @@
+<!-- Modal 弹窗组件 -->
+<view 
+  class="modal-overlay {{visible ? 'active' : ''}}"
+  bindtap="handleOverlayTap"
+  catchtap="stopPropagation"
+>
+  <view 
+    class="modal-container {{position}} {{visible ? 'slide-in' : 'slide-out'}}"
+    catchtap="stopPropagation"
+  >
+    <!-- 头部 -->
+    <view wx:if="{{title || showClose}}" class="modal-header">
+      <text class="modal-title">{{title}}</text>
+      <view wx:if="{{showClose}}" class="modal-close" bindtap="handleClose">
+        <icon name="close" size="md" color="#999999" />
+      </view>
+    </view>
+    
+    <!-- 内容 -->
+    <view class="modal-content">
+      <slot></slot>
+    </view>
+    
+    <!-- 底部操作区 -->
+    <view wx:if="{{showFooter}}" class="modal-footer">
+      <view class="modal-actions {{actionsAlign}}">
+        <view 
+          wx:if="{{showCancel}}"
+          class="modal-btn modal-btn-cancel"
+          bindtap="handleCancel"
+        >
+          <text>{{cancelText}}</text>
+        </view>
+        <view 
+          class="modal-btn modal-btn-confirm {{confirmType}}"
+          bindtap="handleConfirm"
+        >
+          <text>{{confirmText}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,9 @@
+<!-- Divider 分割线组件 -->
+<view 
+  class="divider {{className}} {{type}} {{align}}"
+  style="--divider-color: {{color || 'var(--color-border)'}};"
+>
+  <view wx:if="{{leftText}}" class="divider-text divider-text-left">{{leftText}}</view>
+  <view class="divider-line" style="background-color: var(--divider-color);"></view>
+  <view wx:if="{{rightText}}" class="divider-text divider-text-right">{{rightText}}</view>
+</view>

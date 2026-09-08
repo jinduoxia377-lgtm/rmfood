@@ -1,0 +1,12 @@
+<!-- Switch 开关组件 -->
+<view 
+  class="switch {{className}} {{disabled ? 'switch-disabled' : ''}} {{size}}"
+  bindtap="handleTap"
+  role="switch"
+  aria-checked="{{value}}"
+  aria-disabled="{{disabled}}"
+>
+  <view class="switch-track {{value ? 'switch-track-on' : ''}}">
+    <view class="switch-handle"></view>
+  </view>
+</view>

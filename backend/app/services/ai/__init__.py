@@ -72,17 +72,20 @@ async def init_ai_services():
     # Initialize herb knowledge via port
     try:
         from app.factories.adapters_factory import get_adapter_registry
+        from app.core.database.session import async_session_factory
         registry = get_adapter_registry()
         registry.load_all()
-        herb_knowledge_port = registry.get_adapter_instance("herb_knowledge")
-        from .algorithms.herb_knowledge_service import HerbKnowledgeService, set_global_herb_knowledge
-        herb_service = HerbKnowledgeService(herb_knowledge_port)
-        herbs = await herb_service.load_herbs(force_reload=True)
-        if len(herbs) > 21:
-            logger.info("[AI Services] HerbKnowledgeService initialized: " + str(len(herbs)) + " herbs")
-        else:
-            logger.warning("[AI Services] HerbKnowledgeService only loaded " + str(len(herbs)) + " herbs")
-        set_global_herb_knowledge(herb_service)
+        # 获取 DB session 并创建适配器实例
+        async with async_session_factory() as db:
+            herb_knowledge_port = registry.get_adapter_instance("herb_knowledge", db)
+            from .algorithms.herb_knowledge_service import HerbKnowledgeService, set_global_herb_knowledge
+            herb_service = HerbKnowledgeService(herb_knowledge_port)
+            herbs = await herb_service.load_herbs(force_reload=True)
+            if len(herbs) > 21:
+                logger.info(f"[AI Services] HerbKnowledgeService initialized: {len(herbs)} herbs")
+            else:
+                logger.warning(f"[AI Services] HerbKnowledgeService only loaded {len(herbs)} herbs")
+            set_global_herb_knowledge(herb_service)
     except ImportError as e:
         logger.debug("[AI Services] Skipping HerbKnowledgeService initialization: " + str(e))
     except Exception as e:

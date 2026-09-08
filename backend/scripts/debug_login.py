@@ -34,9 +34,10 @@ except urllib.error.HTTPError as e:
 # 测试 3: 检查用户表中的 password_hash 长度
 print("\n=== Test 3: 检查数据库中的密码哈希 ===")
 import asyncio, asyncpg
+from scripts.db_utils import get_asyncpg_dsn
 async def check():
-    conn = await asyncpg.connect('postgresql://postgres@localhost:5432/rmfood_platform')
-    row = await conn.fetchrow("SELECT username, length(password_hash) as hash_len, left(password_hash, 30) as hash_prefix FROM users WHERE username='admin'")
+    conn = await asyncpg.connect(get_asyncpg_dsn())
+    row = await conn.fetchrow("SELECT username, length(hashed_password) as hash_len, left(hashed_password, 30) as hash_prefix FROM users WHERE username='admin'")
     if row:
         print(f"  username={row['username']}")
         print(f"  hash_len={row['hash_len']}")

@@ -28,6 +28,106 @@ logger = logging.getLogger(__name__)
 # 引用贝叶斯引擎的药材知识库
 from .bayesian_formula_optimizer import _BUILTIN_HERBS, _EFFICACY_TO_HERBS
 
+# 功效 ID → 中文标签映射（与前端 EFFECT_OPTIONS 保持一致）
+_EFFECT_ID_TO_LABEL: dict[str, str] = {
+    "immune_enhancement": "增强免疫",
+    "immune_regulation": "免疫调节",
+    "resistance_boost": "提高抵抗力",
+    "antioxidant": "抗氧化",
+    "anti_aging": "延缓衰老",
+    "free_radical_clear": "清除自由基",
+    "anti_fatigue": "抗疲劳",
+    "fatigue_relief": "缓解疲劳",
+    "energy_boost": "提升精力",
+    "qi_nourishing": "补气养阴",
+    "yin_nourishing": "滋阴补肾",
+    "spleen_qi_tonifying": "健脾益气",
+    "blood_nourishing": "补血养血",
+    "sleep_improvement": "改善睡眠",
+    "calm_mind": "安神定志",
+    "spleen_stomach": "健脾养胃",
+    "digestion_promotion": "促进消化",
+    "blood_lipid": "降血脂",
+    "vascular_protection": "保护血管",
+    "beauty_skin": "美容养颜",
+    "blood_pressure": "降血压",
+    "blood_sugar": "降血糖",
+    "uric_acid": "降尿酸",
+    "detox": "解毒",
+    "heat_clearing": "清热解毒",
+    "cough_relief": "止咳化痰",
+    "liver_protection": "保肝护肝",
+    "kidney_nourishing": "补肾益精",
+    "spleen_strengthening": "健脾和胃",
+}
+
+
+def _translate_effect_ids(effect_ids: list[str]) -> list[str]:
+    """将前端发送的功效 ID/标签转换为后端 _EFFICACY_TO_HERBS 索引用到的中文键。
+
+    前端发送的是 EFFECT_OPTIONS 的 label（如 '增强免疫'），
+    后端索引用的是 _BUILTIN_HERBS.efficacy_scores 的 key（如 '免疫调节'），
+    两者不完全一致，需要映射。
+    """
+    # 前端 label → 后端索引键 映射（语义等价）
+    _LABEL_TO_BACKEND_KEY: dict[str, str] = {
+        # 免疫类
+        "增强免疫": "免疫调节",
+        "免疫调节": "免疫调节",
+        "提高抵抗力": "免疫调节",
+        # 抗衰老类
+        "抗氧化": "抗氧化",
+        "延缓衰老": "抗衰老",
+        "清除自由基": "抗氧化",
+        # 体力类
+        "抗疲劳": "抗疲劳",
+        "缓解疲劳": "抗疲劳",
+        "提升精力": "抗疲劳",
+        # 滋补类
+        "补气养阴": "补气",
+        "滋阴补肾": "补肾",
+        "健脾益气": "健脾",
+        "补血养血": "补血",
+        # 神经类
+        "改善睡眠": "安神",
+        "安神定志": "安神",
+        "缓解焦虑": "安神",
+        # 消化类
+        "健脾养胃": "健脾养胃",
+        "促进消化": "促进消化",
+        "调理脾胃": "健脾养胃",
+        # 心血管类
+        "降血压": "降血压",
+        "降血脂": "降脂",
+        "保护血管": "心血管保护",
+        "促进循环": "活血",
+        # 代谢类
+        "降血糖": "降血糖",
+        "辅助降尿酸": "降尿酸",
+        "调节代谢": "降血糖",
+        "控制体重": "降脂",
+        # 呼吸类
+        "润肺止咳": "止咳化痰",
+        "清咽利喉": "清热生津",
+        # 视觉类
+        "明目护眼": "明目",
+        "缓解眼疲劳": "明目",
+        # 美容类
+        "美容养颜": "美容养颜",
+        "护肤保湿": "美容养颜",
+        # 骨骼类
+        "强健筋骨": "强筋健骨",
+        "补钙健骨": "强筋健骨",
+        # 其他
+        "解毒": "解毒",
+        "清热解毒": "清热解毒",
+        "止咳化痰": "止咳化痰",
+        "保肝护肝": "护肝",
+        "补肾益精": "补肾",
+        "健脾和胃": "健脾养胃",
+    }
+    return [_LABEL_TO_BACKEND_KEY.get(e, e) for e in effect_ids]
+
 @dataclass
 class GAConfig:
     """遗传算法配置"""
@@ -382,7 +482,8 @@ class GeneticFormulaOptimizer:
     def optimize(self, target_effects: List[str], exclude_herbs: Optional[set] = None,
                  _cancel_signal: Optional[threading.Event] = None,
                  progress_callback: Optional[callable] = None,
-                 include_herbs: Optional[List[str]] = None) -> Tuple[List[Individual], List[Dict]]:
+                 include_herbs: Optional[List[str]] = None,
+                 special_population: str = "adult") -> Tuple[List[Individual], List[Dict]]:
         """执行遗传算法优化，返回 (结果列表, 进化历史)
 
         Args:
@@ -391,15 +492,26 @@ class GeneticFormulaOptimizer:
         """
         # 惰性加载 HerbKnowledgeService（解决注入链断裂问题）
         self._try_load_herb_knowledge()
+        # 将英文功效ID转换为中文标签（与后端疗效数据库一致）
+        target_effects = _translate_effect_ids(target_effects)
         self.config.target_effects = target_effects
+
+        # 特殊人群禁忌药材硬排除（在候选阶段即过滤，而非仅在评分阶段软惩罚）
+        population_exclude = set(exclude_herbs or [])
+        if special_population == "pregnant":
+            population_exclude |= {"cs", "dg", "fz", "mld", "lk"}
+        elif special_population == "children":
+            population_exclude |= {"fz", "lk", "mld"}
+        elif special_population == "elderly":
+            population_exclude |= {"rs"}
 
         # 设置随机种子（可重复性）
         if self.config.seed is not None:
             random.seed(self.config.seed)
             logger.info(f"[GeneticAlgorithm] 设置随机种子: {self.config.seed}")
 
-        # Step 1: 选择候选药材（支持排除药材）
-        candidates = self._select_herbs(target_effects, exclude_herbs=exclude_herbs,
+        # Step 1: 选择候选药材（支持排除药材 + 特殊人群硬排除）
+        candidates = self._select_herbs(target_effects, exclude_herbs=population_exclude,
                                          include_herbs=include_herbs)
         if len(candidates) < 3:
             logger.warning(f"候选药材不足 ({len(candidates)})")
@@ -411,8 +523,12 @@ class GeneticFormulaOptimizer:
 
         # Step 2: 初始化种群
         population = self._init_population(candidates)
+        # 将特殊人群标记注入 herb_dict，供 evaluate 读取
+        target_group_herb_dict = {}
+        if special_population and special_population != "adult":
+            target_group_herb_dict["__target_group__"] = special_population
         for ind in population:
-            ind.evaluate(target_effects)
+            ind.evaluate(target_effects, herb_dict=target_group_herb_dict if target_group_herb_dict else None)
 
         # 按适应度排序
         population.sort(key=lambda x: x.fitness, reverse=True)
@@ -673,7 +789,7 @@ class GeneticFormulaOptimizer:
 
         return sorted_h[:25]  # 从15增加到25，提供更多多样性
 
-    def _init_population(self, candidates: List[str]) -> List[Individual]:
+    def _init_population(self, candidates: List[str], exclude_herbs: Optional[set] = None) -> List[Individual]:
         """初始化种群 — 院士级修复[P1-A1]: 加入 TCM 经典方剂种子
 
         种子个体来源:
@@ -699,6 +815,8 @@ class GeneticFormulaOptimizer:
             formula_herbs = formula_data[formula_name]
             genes = {}
             for hid, dosage in formula_herbs.items():
+                if exclude_herbs and hid in exclude_herbs:
+                    continue  # 跳过排除的药材
                 if hid in herbs:
                     # 将经典剂量缩放到 herb 的合法范围内
                     herb = herbs[hid]

@@ -1,0 +1,79 @@
+/** Toast 轻提示组件样式 */
+.toast {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.75);
+  color: #FFFFFF;
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-base);
+  z-index: var(--z-index-toast, 600);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  opacity: 0;
+  visibility: hidden;
+  transition: all var(--transition-normal);
+  max-width: 80%;
+}
+
+.toast-visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* 位置 */
+.toast-top {
+  top: calc(20% + env(safe-area-inset-top));
+  transform: translateX(-50%) translateY(-20rpx);
+}
+
+.toast-top.toast-visible {
+  transform: translateX(-50%) translateY(0);
+}
+
+.toast-center {
+  top: 50%;
+  transform: translate(-50%, -50%) scale(0.8);
+}
+
+.toast-center.toast-visible {
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.toast-bottom {
+  bottom: calc(20% + env(safe-area-inset-bottom));
+  transform: translateX(-50%) translateY(20rpx);
+}
+
+.toast-bottom.toast-visible {
+  transform: translateX(-50%) translateY(0);
+}
+
+/* 类型 */
+.toast-loading {
+  background-color: rgba(0, 0, 0, 0.75);
+}
+
+.toast-success {
+  background-color: var(--color-success);
+}
+
+.toast-error {
+  background-color: var(--color-danger);
+}
+
+.toast-warning {
+  background-color: var(--color-warning);
+}
+
+.toast-info {
+  background-color: var(--color-info);
+}
+
+.toast-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

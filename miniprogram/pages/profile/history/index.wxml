@@ -1,0 +1,33 @@
+<!-- 历史记录页面 -->
+<view class="page-container">
+  <view class="header" style="padding-top: {{statusBarHeight}}px;">
+    <view class="back-btn" bindtap="goBack">
+      <text>‹</text>
+    </view>
+    <view class="header-title">分析历史</view>
+  </view>
+
+  <scroll-view class="content-scroll" scroll-y refresher-enabled refresher-triggered="{{refreshing}}" bindrefresherrefresh="onPullDownRefresh">
+    <!-- 历史列表 -->
+    <view wx:if="{{historyList.length > 0}}" class="history-list">
+      <view wx:for="{{historyList}}" wx:key="id" class="history-item" bindtap="viewDetail" data-id="{{item.id}}">
+        <view class="history-info">
+          <text class="history-name">{{item.name}}</text>
+          <text class="history-time">{{item.createTime}}</text>
+        </view>
+        <view class="history-score" style="background: {{getScoreColor(item.score)}};">
+          <text>{{item.score || 'N/A'}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 空状态 -->
+    <view wx:if="{{!loading && historyList.length === 0}}" class="empty-state">
+      <text class="empty-icon">📝</text>
+      <text class="empty-text">暂无历史记录</text>
+      <text class="empty-desc">开始分析配料表吧！</text>
+    </view>
+
+    <view class="bottom-spacing"></view>
+  </scroll-view>
+</view>

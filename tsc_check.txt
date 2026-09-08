@@ -1,0 +1,1 @@
+﻿src/pages/analytics/tabs/BusinessInsightsTab.tsx(61,47): error TS2739: Type '{}' is missing the following properties from type '{ timeRange: "7d" | "30d" | "90d" | "1y"; categories: string[]; status: string[]; users: string[]; }': timeRange, categories, status, users

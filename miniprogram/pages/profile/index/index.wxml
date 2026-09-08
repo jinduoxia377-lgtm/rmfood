@@ -1,0 +1,112 @@
+<!-- 个人中心页面 -->
+<view class="page-container">
+  <!-- 用户卡片 -->
+  <card shadow="brand" class="user-card">
+    <view class="user-header">
+      <avatar 
+        src="{{userInfo && userInfo.avatarUrl}}" 
+        size="xl"
+        bind:tap="chooseAvatar"
+        aria-label="修改头像"
+      />
+      <view class="user-info" bindtap="editNickname">
+        <text class="nickname">{{userInfo ? userInfo.nickname : '点击登录'}}</text>
+        <view class="user-id">
+          <icon name="shield" size="sm" color="var(--color-text-muted)" />
+          <text class="id-value">{{userInfo ? userInfo.userId : '未登录'}}</text>
+        </view>
+      </view>
+      <view class="user-settings" bindtap="goToSettings" aria-label="设置">
+        <icon name="settings" size="md" color="var(--color-text-muted)" />
+      </view>
+    </view>
+    
+    <view class="user-stats">
+      <view class="stat-item" bindtap="goToPage" data-page="formulas" aria-label="我的配方">
+        <text class="stat-value">{{stats.formulaCount}}</text>
+        <text class="stat-label">我的配方</text>
+      </view>
+      <view class="stat-item" bindtap="goToPage" data-page="favorites" aria-label="我的收藏">
+        <text class="stat-value">{{stats.favoriteCount}}</text>
+        <text class="stat-label">我的收藏</text>
+      </view>
+      <view class="stat-item" bindtap="goToPage" data-page="history" aria-label="分析历史">
+        <text class="stat-value">{{stats.analysisCount}}</text>
+        <text class="stat-label">分析历史</text>
+      </view>
+      <view class="stat-item" bindtap="goToPage" data-page="ai-chat" aria-label="AI对话">
+        <text class="stat-value">{{stats.chatCount}}</text>
+        <text class="stat-label">AI 对话</text>
+      </view>
+    </view>
+  </card>
+
+  <!-- 未登录状态 -->
+  <view wx:if="{{!isLoggedIn}}" class="login-prompt">
+    <btn type="primary" bind:tap="login" block>
+      <icon name="login" size="sm" color="#FFFFFF" />
+      <text>微信登录</text>
+    </btn>
+  </view>
+
+  <!-- 快捷操作 -->
+  <view class="quick-actions">
+    <view 
+      wx:for="{{quickActions}}" 
+      wx:key="id" 
+      class="quick-item"
+      bindtap="goToPage"
+      data-page="{{item.id}}"
+      aria-label="{{item.title}}"
+    >
+      <view class="quick-icon-wrap">
+        <icon name="{{item.icon}}" size="lg" color="{{item.color}}" />
+      </view>
+      <text class="quick-title">{{item.title}}</text>
+    </view>
+  </view>
+
+  <!-- 功能菜单 -->
+  <view class="menu-section">
+    <view class="section-title">常用功能</view>
+    <view class="menu-list">
+      <view 
+        wx:for="{{menuItems}}" 
+        wx:key="id" 
+        class="menu-item"
+        bindtap="goToPage"
+        data-page="{{item.id}}"
+        aria-label="{{item.title}}"
+      >
+        <view class="menu-icon-wrap">
+          <icon name="{{item.icon}}" size="md" color="{{item.color}}" />
+        </view>
+        <view class="menu-content">
+          <text class="menu-title">{{item.title}}</text>
+          <text class="menu-desc">{{item.desc}}</text>
+        </view>
+        <icon name="arrow-right" size="sm" color="var(--color-text-muted)" />
+      </view>
+    </view>
+  </view>
+
+  <!-- 其他设置 -->
+  <view class="menu-section">
+    <view class="section-title">其他设置</view>
+    <view class="menu-list">
+      <view class="menu-item" bindtap="clearCache" aria-label="清除缓存">
+        <view class="menu-icon-wrap">
+          <icon name="refresh" size="md" color="var(--color-text-muted)" />
+        </view>
+        <view class="menu-content">
+          <text class="menu-title">清除缓存</text>
+          <text class="menu-desc">释放存储空间</text>
+        </view>
+        <icon name="arrow-right" size="sm" color="var(--color-text-muted)" />
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部间距 -->
+  <view class="bottom-spacing"></view>
+</view>

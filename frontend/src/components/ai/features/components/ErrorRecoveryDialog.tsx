@@ -41,6 +41,7 @@ export enum ErrorType {
   NetworkTimeout = 'network_timeout',
   NetworkUnreachable = 'network_unreachable',
   Unauthorized = 'unauthorized',
+  Forbidden = 'forbidden',
   RateLimited = 'rate_limited',
   ServerError = 'server_error',
   StreamInterrupted = 'stream_interrupted',
@@ -92,6 +93,12 @@ const ERROR_CONFIG: Record<ErrorType, {
     colorClass: 'text-error-600 dark:text-error-400',
     bgClass: 'bg-error-100 dark:bg-error-900/30',
   },
+  [ErrorType.Forbidden]: {
+    icon: Lock,
+    title: '权限不足',
+    colorClass: 'text-error-600 dark:text-error-400',
+    bgClass: 'bg-error-100 dark:bg-error-900/30',
+  },
   [ErrorType.RateLimited]: {
     icon: Timer,
     title: '请求过于频繁',
@@ -122,6 +129,7 @@ const SUGGESTIONS: Record<ErrorType, string> = {
   [ErrorType.NetworkTimeout]: '请检查您的网络连接后重试',
   [ErrorType.NetworkUnreachable]: 'AI 服务暂时不可用，请确认后端服务已启动 (端口 8000)',
   [ErrorType.Unauthorized]: '请重新登录以继续使用',
+  [ErrorType.Forbidden]: '您的账号没有访问 AI 服务的权限，请联系管理员',
   [ErrorType.RateLimited]: '请稍等片刻后再发送消息',
   [ErrorType.ServerError]: '我们正在努力修复，请稍后重试',
   [ErrorType.StreamInterrupted]: '网络连接不稳定，是否重新生成响应？',
@@ -202,6 +210,17 @@ function classifyError(error: Error): ClassifiedError {
       suggestion: SUGGESTIONS[ErrorType.ServerError],
       canAutoRecover: true,
       retryAfter: 2000,
+    }
+  }
+
+  // 403 权限不足
+  if (errorMessage.includes('403') || errorMessage.includes('forbidden') || errorMessage.includes('权限')) {
+    return {
+      type: ErrorType.Forbidden,
+      originalError: error,
+      userMessage: '权限不足，请重新登录后重试',
+      suggestion: SUGGESTIONS[ErrorType.Forbidden],
+      canAutoRecover: false,
     }
   }
 
@@ -368,7 +387,7 @@ export function ErrorRecoveryDialog({
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            {classifiedError.type === ErrorType.Unauthorized && onLogin && (
+            {(classifiedError.type === ErrorType.Unauthorized || classifiedError.type === ErrorType.Forbidden) && onLogin && (
               <Button
                 variant="primary"
                 size="sm"

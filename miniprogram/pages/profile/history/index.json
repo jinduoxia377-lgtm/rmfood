@@ -1,0 +1,8 @@
+{
+  "usingComponents": {
+    "Icon": "../../../components/Icon/index"
+  },
+  "navigationBarTitleText": "分析历史",
+  "navigationBarBackgroundColor": "#2D5A3D",
+  "navigationBarTextStyle": "white"
+}

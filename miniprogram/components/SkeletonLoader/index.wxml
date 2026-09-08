@@ -1,0 +1,51 @@
+<!-- 骨架屏加载组件 -->
+<view class="skeleton-loader">
+  <!-- 卡片类型 -->
+  <view wx:if="{{type === 'card'}}" class="skeleton-card">
+    <view class="skeleton-image skeleton-pulse"></view>
+    <view class="skeleton-content">
+      <view class="skeleton-line w-80 skeleton-pulse"></view>
+      <view class="skeleton-line w-60 skeleton-pulse"></view>
+      <view class="skeleton-line w-40 skeleton-pulse"></view>
+    </view>
+  </view>
+
+  <!-- 列表类型 -->
+  <view wx:if="{{type === 'list'}}" class="skeleton-list">
+    <view wx:for="{{count}}" wx:key="index" class="skeleton-list-item">
+      <view class="skeleton-avatar skeleton-pulse"></view>
+      <view class="skeleton-content">
+        <view class="skeleton-line w-70 skeleton-pulse"></view>
+        <view class="skeleton-line w-50 skeleton-pulse"></view>
+        <view class="skeleton-tags">
+          <view class="skeleton-tag skeleton-pulse"></view>
+          <view class="skeleton-tag skeleton-pulse"></view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 文字类型 -->
+  <view wx:if="{{type === 'text'}}" class="skeleton-text">
+    <view class="skeleton-line w-100 skeleton-pulse"></view>
+    <view class="skeleton-line w-95 skeleton-pulse"></view>
+    <view class="skeleton-line w-90 skeleton-pulse"></view>
+    <view class="skeleton-line w-85 skeleton-pulse"></view>
+  </view>
+
+  <!-- 圆形类型 -->
+  <view wx:if="{{type === 'circular'}}" class="skeleton-circular">
+    <view class="skeleton-circle skeleton-pulse"></view>
+    <view class="skeleton-content">
+      <view class="skeleton-line w-60 skeleton-pulse"></view>
+      <view class="skeleton-line w-40 skeleton-pulse"></view>
+    </view>
+  </view>
+
+  <!-- 默认卡片类型 -->
+  <view wx:else class="skeleton-default">
+    <view class="skeleton-line w-80 skeleton-pulse"></view>
+    <view class="skeleton-line w-60 skeleton-pulse"></view>
+    <view class="skeleton-line w-40 skeleton-pulse"></view>
+  </view>
+</view>

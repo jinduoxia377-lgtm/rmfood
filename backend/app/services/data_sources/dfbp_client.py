@@ -187,10 +187,10 @@ DFBP_PEPTIDE_DATABASE: list[dict[str, Any]] = [
 
 # 活性类型中文映射
 ACTIVITY_TYPE_MAP = {
-    "ACE inhibitory": "ACE 抑制（降血压）",
+    "ACE inhibitory": "血管紧张素转化酶抑制（降血压）",
     "Antioxidant": "抗氧化",
     "Antimicrobial": "抗菌",
-    "DPP-IV inhibitory": "DPP-IV 抑制（降糖）",
+    "DPP-IV inhibitory": "二肽基肽酶抑制（降糖）",
     "Cholesterol-lowering": "降血脂",
     "Immunomodulatory": "免疫调节",
     "Anticoagulant": "抗凝血",
@@ -403,9 +403,6 @@ class DFBPSyncService:
         return sorted(similar, key=lambda x: -x["overlap_count"])[:10]
 
 
-# 全局实例
-dfbp_service = DFBPSyncService()
-
 # ═══════════════════════════════════════════
 # 合并扩展数据（延迟到 DFBP_PEPTIDE_DATABASE 定义后执行）
 # ═══════════════════════════════════════════
@@ -421,6 +418,9 @@ if '_GENERATED_PEPTIDES' in dir() and _GENERATED_PEPTIDES:
     _GEN_NEW = [p for p in _GENERATED_PEPTIDES if p.get("dfbp_id") not in _EXISTING_IDS]
     DFBP_PEPTIDE_DATABASE = DFBP_PEPTIDE_DATABASE + _GEN_NEW
     logger.info(f"合并程序化生成活性肽: 原有 {len(DFBP_PEPTIDE_DATABASE) - len(_GEN_NEW)} + 新增 {len(_GEN_NEW)} = 总计 {len(DFBP_PEPTIDE_DATABASE)}")
+
+# 全局实例 — 必须在所有合并完成后初始化，确保 peptide_count 准确
+dfbp_service = DFBPSyncService()
 
 
 # ═══════════════════════════════════════════

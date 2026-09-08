@@ -60,6 +60,9 @@ export function ModelConfigPanel({ className, onConfigChange }: ModelConfigPanel
 
   const [activeTab, setActiveTab] = useState<ModelType>('formula_gpt');
   const [configs, setConfigs] = useState<Record<ModelType, ModelConfig>>({} as Record<ModelType, ModelConfig>);
+  // LLM 专属：Provider 和 Model 选择
+  const [llmProvider, setLlmProvider] = useState<string>('deepseek');
+  const [llmModel, setLlmModel] = useState<string>('deepseek-chat');
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -135,6 +138,81 @@ export function ModelConfigPanel({ className, onConfigChange }: ModelConfigPanel
     loadConfigs();
   }, []);
 
+  // 从 localStorage 恢复 LLM Provider/Model 选择
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('rmfood_llm_provider');
+      if (stored && llmProviderPresets[stored]) {
+        setLlmProvider(stored);
+        const preset = llmProviderPresets[stored];
+        const storedModel = localStorage.getItem('rmfood_llm_model');
+        if (storedModel && preset.models.includes(storedModel)) {
+          setLlmModel(storedModel);
+        } else {
+          setLlmModel(preset.models[0]);
+        }
+      }
+    } catch {}
+  }, []);
+
+  // 保存 LLM Provider/Model 到 localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('rmfood_llm_provider', llmProvider);
+      localStorage.setItem('rmfood_llm_model', llmModel);
+    } catch {}
+  }, [llmProvider, llmModel]);
+
+  // LLM Provider 预设（与后端 PROVIDER_PRESETS 保持一致）
+  const llmProviderPresets: Record<string, { label: string; baseUrl: string; models: string[] }> = {
+    deepseek: {
+      label: 'DeepSeek',
+      baseUrl: 'https://api.deepseek.com/v1',
+      models: ['deepseek-chat', 'deepseek-coder', 'deepseek-reasoner'],
+    },
+    openai: {
+      label: 'OpenAI',
+      baseUrl: 'https://api.openai.com/v1',
+      models: ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'gpt-3.5-turbo'],
+    },
+    zhipu: {
+      label: '智谱 AI',
+      baseUrl: 'https://open.bigmodel.cn/api/paas/v4',
+      models: ['glm-4-plus', 'glm-4-air', 'glm-4-flash'],
+    },
+    qwen: {
+      label: '通义千问',
+      baseUrl: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
+      models: ['qwen-plus', 'qwen-turbo', 'qwen-max'],
+    },
+    anthropic: {
+      label: 'Anthropic',
+      baseUrl: 'https://api.anthropic.com/v1',
+      models: ['claude-opus-4-20250514', 'claude-sonnet-4-20250514', 'claude-haiku-4-20250514'],
+    },
+  };
+
+  // 当 Provider 切换时，自动更新 baseUrl 和默认 Model
+  const handleProviderChange = (provider: string) => {
+    setLlmProvider(provider);
+    const preset = llmProviderPresets[provider];
+    if (preset) {
+      // 更新 baseUrl 到 configs
+      setConfigs(prev => ({
+        ...prev,
+        llm: {
+          ...(prev.llm || ConfigManager.getDefaultModelConfig()),
+          baseUrl: preset.baseUrl,
+          apiKey: prev.llm?.apiKey || '',
+        },
+      }));
+      // 如果当前 model 不在新 provider 的列表中，切换为第一个
+      if (!preset.models.includes(llmModel)) {
+        setLlmModel(preset.models[0]);
+      }
+    }
+  };
+
   // 加载审计日志
   useEffect(() => {
     try {
@@ -165,16 +243,18 @@ export function ModelConfigPanel({ className, onConfigChange }: ModelConfigPanel
   const loadConfigs = () => {
     try {
       const loadedConfigs = ConfigManager.getModelConfigs();
+      logger.info('[ModelConfigPanel] 加载配置:', { llmKeyLength: loadedConfigs.llm?.apiKey?.length, hasLlmKey: !!loadedConfigs.llm?.apiKey });
       setConfigs(loadedConfigs);
       setError(null);
       setValidationErrors({});
     } catch (err: any) {
+      logger.error('[ModelConfigPanel] 加载配置失败:', err);
       setError(`加载配置失败: ${err.message}`);
     }
   };
 
   const validateApiKey = (apiKey: string, showErrors = true): boolean => {
-    logger.debug('开始验证API密钥', { length: apiKey?.length, hasValue: !!apiKey });
+    logger.info('[validateApiKey] 开始验证', { length: apiKey?.length, hasValue: !!apiKey, prefix: apiKey?.substring(0, 6) });
 
     if (!apiKey || apiKey.trim() === '') {
       if (showErrors) {
@@ -186,19 +266,19 @@ export function ModelConfigPanel({ className, onConfigChange }: ModelConfigPanel
 
     const trimmedKey = apiKey.trim();
 
-    if (trimmedKey.length < 20) {
+    if (trimmedKey.length < 40) {
       if (showErrors) {
         setValidationErrors((prev) => ({
           ...prev,
-          apiKey: `API 密钥长度不足 (${trimmedKey.length}/20+ 字符)。请确保完整复制密钥，通常以 "sk-" 开头`,
+          apiKey: `API 密钥长度不足 (${trimmedKey.length}/40+ 字符)。请确保完整复制密钥，通常以 "sk-" 开头`,
         }));
       }
-      logger.warn(`API密钥验证失败: 长度不足 (${trimmedKey.length}/20)`);
+      logger.warn(`API密钥验证失败: 长度不足 (${trimmedKey.length}/40)`);
       return false;
     }
 
     if (!trimmedKey.startsWith('sk-') && !trimmedKey.startsWith('Bearer ')) {
-      logger.info('API密钥格式提示: 建议以 "sk-" 或 "Bearer " 开头');
+      logger.warn(`[validateApiKey] 密钥格式异常（不以 sk- 或 Bearer 开头）: ${trimmedKey.substring(0, 10)}...`);
     }
 
     if (showErrors) {
@@ -250,7 +330,11 @@ export function ModelConfigPanel({ className, onConfigChange }: ModelConfigPanel
       const config = configs[modelType];
 
       // 保存到 ConfigManager (传统存储)
+      logger.info('[ModelConfigPanel] 保存前配置:', { modelType, apiKeyLength: config.apiKey?.length, hasKey: !!config.apiKey });
       ConfigManager.setModelConfig(modelType, config);
+      // 立即验证持久化
+      const verify = ConfigManager.getModelConfig(modelType);
+      logger.info('[ModelConfigPanel] 保存后验证:', { modelType, verifiedKeyLength: verify.apiKey?.length, hasKey: !!verify.apiKey });
 
       // v7.0: 当保存 LLM 模型配置时，根据安全模式决定是否同步到安全存储
       if (modelType === 'llm' && apiKey.length >= 20) {
@@ -280,67 +364,68 @@ export function ModelConfigPanel({ className, onConfigChange }: ModelConfigPanel
       }
 
       // 当保存 LLM 或 FormulaGPT 模型配置时，尝试更新后端配置
+      let backendSyncError: string | null = null;
       if (modelType === 'formula_gpt' || modelType === 'llm') {
         try {
-          // 使用 auth store 的 token，确保获取最新的有效 token
-          const token = isAuthenticated ? (localStorage.getItem('access_token') || '') : '';
+          // 🔒 使用 Cookie 认证 + CSRF token（与 axios 客户端一致）
+          const csrfToken = document.cookie.match(/(^| )csrf_token=([^;]+)/)?.[2] || '';
+          const response = await fetch('/api/v1/ai/models/config', {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {}),
+            },
+            body: JSON.stringify({
+              provider: modelType === 'llm' ? llmProvider : 'deepseek',
+              api_key: config.apiKey,
+              base_url: config.baseUrl || (modelType === 'llm' ? llmProviderPresets[llmProvider]?.baseUrl : 'https://api.deepseek.com/v1'),
+              model: modelType === 'llm' ? llmModel : 'deepseek-chat',
+              max_tokens: 4096,
+              temperature: 0.7,
+            }),
+          });
 
-          if (!token) {
-            logger.warn('[ModelConfigPanel] ⚠️ 未找到认证 token，跳过后端配置更新（前端配置已保存）');
+          if (response.ok) {
+            const data = await response.json();
+            logger.info('✅ 更新后端配置成功:', data);
+          } else if (response.status === 401) {
+            backendSyncError = 'Token 已过期，请重新登录后再保存配置';
+            logger.warn('[ModelConfigPanel] ⚠️ 后端配置更新失败 (401 认证失败)');
           } else {
-            const response = await fetch('/api/v1/ai/models/config', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-              },
-              body: JSON.stringify({
-                provider: 'deepseek',
-                api_key: config.apiKey,
-                base_url: config.baseUrl,
-                model: 'deepseek-chat',
-                max_tokens: 4096,
-                temperature: 0.7,
-              }),
-            });
-
-            if (response.ok) {
-              const data = await response.json();
-              logger.info('✅ 更新后端配置成功:', data);
-            } else if (response.status === 401) {
-              // 401 认证失败是常见情况（token过期），仅记录警告而非错误
-              logger.warn('[ModelConfigPanel] ⚠️ 后端配置更新 skipped (401 认证失败，可能需要重新登录)');
-              // 不设置 error 状态，避免干扰用户体验
-            } else {
-              const errorData = await response.json();
-              logger.warn('[ModelConfigPanel] ⚠️ 后端配置更新失败:', errorData);
-            }
+            const errorData = await response.json().catch(() => ({}));
+            backendSyncError = `后端配置更新失败 (${response.status}): ${errorData?.detail || '未知错误'}`;
+            logger.warn('[ModelConfigPanel] ⚠️ 后端配置更新失败:', errorData);
           }
-        } catch (apiError) {
-          // 后端 API 调用失败不应阻止前端配置保存
-          logger.warn('[ModelConfigPanel] ℹ️ 后端配置更新不可达（网络问题或服务未启动），前端配置已成功保存');
+        } catch (apiError: any) {
+          backendSyncError = `后端服务不可达 (${apiError?.message || '网络错误'})`;
+          logger.warn('[ModelConfigPanel] ℹ️ 后端配置更新不可达，前端配置已成功保存');
         }
       }
 
-      // 测试连接
-      await testModelConnection(modelType);
-
       // 主动刷新模型状态，确保配置更新后能立即获取最新状态
       try {
-        // 失效 React Query 缓存，强制重新获取
-        queryClient.invalidateQueries({ queryKey: ['ai-model-status'] });
-        // 等待缓存刷新完成
         await queryClient.refetchQueries({ queryKey: ['ai-model-status'] });
-        logger.info('模型状态已刷新');
-      } catch (statusError) {
-        logger.error('刷新模型状态失败:', statusError);
+      } catch {
+        // 忽略刷新失败
       }
 
       if (onConfigChange) {
         onConfigChange(modelType, config);
       }
 
-      setSuccess('配置保存成功');
+      // 构建清晰的保存结果信息
+      const parts = [`✅ 本地配置已保存（${modelType}）`];
+      if (backendSyncError) {
+        if (backendSyncError.includes('403')) {
+          parts.push('⚠️ 后端同步失败：当前用户无管理员权限，仅本地保存生效。请切换 admin 账号登录后重试。');
+        } else {
+          parts.push(`⚠️ 后端同步失败: ${backendSyncError}`);
+        }
+      } else {
+        parts.push('✅ 后端配置已同步');
+      }
+      setSuccess(parts.join('\n'));
     } catch (err: any) {
       setError(`保存配置失败: ${err.message}`);
     } finally {
@@ -402,202 +487,79 @@ export function ModelConfigPanel({ className, onConfigChange }: ModelConfigPanel
       setError(null);
       setSuccess(null);
 
-      // 🔧 修复：对于 LLM 模型，先确保配置已同步到后端
+      // 🔧 确保配置已同步到后端
+      let syncError: string | null = null;
       if (modelType === 'llm') {
         try {
-          const token = isAuthenticated ? (localStorage.getItem('access_token') || '') : '';
-          const config = configs[modelType] || ConfigManager.getModelConfig('llm');
+          const currentConfig = configs[modelType] || ConfigManager.getModelConfig('llm');
 
-          if (token && config?.apiKey) {
-            logger.info('🔄 测试连接前先同步配置到后端...');
+          if (!currentConfig?.apiKey || currentConfig.apiKey.trim() === '') {
+            syncError = 'API Key 未配置，请先输入 API Key 后再测试。';
+          } else {
+            logger.info('🔄 同步配置到后端...');
+            // 🔒 使用 Cookie 认证 + CSRF token
+            const csrfToken = document.cookie.match(/(^| )csrf_token=([^;]+)/)?.[2] || '';
             const syncResponse = await fetch('/api/v1/ai/models/config', {
               method: 'POST',
+              credentials: 'include',
               headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
+                ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {}),
               },
               body: JSON.stringify({
-                provider: 'deepseek',
-                api_key: config.apiKey,
-                base_url: config.baseUrl || 'https://api.deepseek.com/v1',
-                model: 'deepseek-chat',
+                provider: llmProvider,
+                api_key: currentConfig.apiKey,
+                base_url: currentConfig.baseUrl || llmProviderPresets[llmProvider]?.baseUrl || 'https://api.deepseek.com/v1',
+                model: llmModel,
                 max_tokens: 4096,
                 temperature: 0.7,
               }),
             });
 
-            if (syncResponse.ok) {
-              const syncData = await syncResponse.json();
-              logger.info('✅ 配置已成功同步到后端:', syncData);
-            } else if (syncResponse.status === 401) {
-              logger.warn('⚠️ 同步配置到后端失败 (401 认证错误)');
+            if (!syncResponse.ok) {
+              syncError = `同步配置失败 (HTTP ${syncResponse.status})。请重新登录后重试。`;
+              logger.warn('[ModelConfigPanel] 同步配置失败:', syncResponse.status);
             } else {
-              logger.warn('⚠️ 同步配置到后端失败:', syncResponse.status);
+              logger.info('✅ 配置已同步到后端');
             }
           }
-        } catch (syncError) {
-          logger.warn('ℹ️ 同步配置到后端失败（将继续测试）:', syncError);
+        } catch (syncErr) {
+          syncError = `同步配置失败: ${syncErr instanceof Error ? syncErr.message : '未知错误'}`;
+          logger.warn('同步配置到后端失败（将继续测试）:', syncErr);
         }
       }
 
-      logger.info('正在调用ModelClient测试连接...');
-
-      // 🔧 改进：对于 LLM 模型，发送实际测试请求而不仅仅是检查状态
-      if (modelType === 'llm') {
-        try {
-          const token = isAuthenticated ? (localStorage.getItem('access_token') || '') : '';
-
-          if (!token || token === 'undefined' || token === 'null') {
-            // 无 token 时跳过 chat 测试请求，直接走状态检查
-            logger.info('⏭️ 无有效 token，跳过 chat 测试请求，直接检查模型状态');
-          } else {
-            logger.info('🔐 使用 token 进行认证 (长度:', token.length, ')');
-
-            const testResponse = await fetch('/api/v1/ai/chat', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-              },
-              body: JSON.stringify({
-                question: '你好，这是一个连接测试。请回复"测试成功"。',
-                history: [],
-                api_key: apiKey,
-              }),
-            });
-
-            if (testResponse.ok) {
-              const testData = await testResponse.json();
-              // 同时检查 answer 和 content（兼容修复后的格式）
-              if (testData.success && (testData.answer || testData.content)) {
-                setSuccess('✅ 连接测试成功！DeepSeek API 已正常工作，模型响应正常');
-                logger.info('✅ DeepSeek API 连接测试成功');
-                return { status: 'active' as const, provider: 'deepseek', model: 'deepseek-chat' };
-              } else {
-                throw new Error(testData.error || testData.detail?.message || 'API 返回异常响应');
-              }
-            } else {
-              const errorData = await testResponse.json().catch(() => ({}));
-              const statusCode = testResponse.status;
-              let errorMessage =
-                errorData?.message ||
-                errorData?.detail?.message ||
-                errorData?.detail?.error ||
-                errorData?.error ||
-                `HTTP ${statusCode}`;
-
-              // 确保 errorMessage 是字符串类型
-              if (typeof errorMessage !== 'string') {
-                errorMessage = String(errorMessage);
-              }
-
-              logger.error(`❌ API 测试请求失败 (${statusCode}):`, errorMessage);
-
-              // 🆕 改进：准确识别 401 错误的真正原因
-              if (statusCode === 401) {
-                // 检查是否是用户认证错误（而非 API Key 错误）
-                const isAuthError =
-                  errorMessage.includes('认证') ||
-                  errorMessage.includes('令牌') ||
-                  errorMessage.includes('token') ||
-                  errorMessage.includes('Unauthorized') ||
-                  !errorMessage.includes('API') ||
-                  errorData?.detail?.error === 'AUTHENTICATION_FAILED';
-
-                if (isAuthError) {
-                  // 用户认证失败不是 API Key 问题，跳过 chat 测试，继续状态检查
-                  logger.warn('⚠️ 用户认证失败，跳过 chat 测试，继续模型状态检查');
-                } else {
-                  // 真正的 DeepSeek API Key 无效
-                  const userFriendlyError = `❌ DeepSeek API Key 无效 (${statusCode})
-
-详情: ${errorMessage}
-
-解决方案:
-1. 检查 API Key 是否正确复制（无多余空格）
-2. 确认账户余额充足
-3. 访问 https://platform.deepseek.com/ 检查 Key 状态
-4. 必要时重新生成新的 API Key`;
-                  setError(userFriendlyError);
-                  throw new Error(userFriendlyError);
-                }
-              } else if (statusCode === 429) {
-                const userFriendlyError = `⚠️ API 调用频率过高 (429)\n\n${errorMessage}\n\n请稍后重试（约30秒后）`;
-                setError(userFriendlyError);
-                throw new Error(userFriendlyError);
-              } else if (statusCode >= 500) {
-                const userFriendlyError = `❌ 服务暂时不可用 (${statusCode})\n\n${errorMessage}\n\n可能是服务器问题，请稍后重试`;
-                setError(userFriendlyError);
-                throw new Error(userFriendlyError);
-              } else {
-                const userFriendlyError = `❌ 连接测试失败 (${statusCode})\n\n${errorMessage}`;
-                setError(userFriendlyError);
-                throw new Error(userFriendlyError);
-              }
-            }
-          }
-        } catch (testError: any) {
-          const testErrorMessage =
-            typeof testError.message === 'string' ? testError.message : String(testError.message || testError);
-
-          // 用户认证失败不是 API Key 问题，继续状态检查
-          if (
-            testErrorMessage.includes('用户认证失败') ||
-            testErrorMessage.includes('登录状态')
-          ) {
-            logger.warn('⚠️ 用户认证失败，跳过 chat 测试，继续模型状态检查');
-          } else if (
-            testErrorMessage.includes('API Key 无效') ||
-            testErrorMessage.includes('401') ||
-            testErrorMessage.includes('429')
-          ) {
-            throw testError;
-          }
-          logger.error('实际 API 测试失败，回退到状态检查模式:', testError);
-        }
+      // 刷新模型状态
+      try {
+        await queryClient.refetchQueries({ queryKey: ['ai-model-status'] });
+      } catch {
+        // 忽略刷新失败
       }
 
+      // 获取最新状态
       const status = await ModelClient.getModelStatus();
       const modelState = status[modelType];
-      logger.info(`模型 ${modelType} 状态响应:`, modelState);
+      logger.info(`模型 ${modelType} 状态:`, modelState);
 
-      // 如果后端不可达，modelState 会是默认值，此时直接视为成功（因为 API Key 已保存）
-      const isDefaultFallback = modelState?.status === 'inactive' && modelState?.provider === 'local';
+      if (syncError) {
+        setError(`⚠️ ${syncError}\n\n本地配置已保存，但后端未更新。请检查网络连接或重新登录后重试。`);
+        setIsLoading(false);
+        return modelState;
+      }
 
       if (modelState?.status === 'active') {
         setSuccess('✅ 连接测试成功！API 密钥有效，模型已激活');
         logger.info('连接测试成功');
-      } else if (isDefaultFallback) {
-        // 后端不可达，但 API Key 已保存成功
-        setSuccess('✅ 配置已保存！API Key 有效（后端服务未运行，无法实时验证）');
-        logger.info('配置已保存，后端不可达，视为成功');
       } else if (modelState?.status === 'unconfigured') {
-        setError(`⚠️ 模型未配置。请确保已正确保存 API Key 配置。\n\n提示：点击"保存配置"按钮后再测试。`);
+        setError(`⚠️ 模型未配置。请确保已正确保存 API Key 配置。\n\n当前状态: ${modelState?.note || '未配置'}`);
         logger.warn('模型状态: unconfigured');
       } else if (modelState?.status === 'error') {
-        // 后端返回错误状态
-        const modelNote = modelState?.note || '';
-        const modelSuggestion = modelState?.suggestion || '';
-        const errorMessage = `❌ 后端服务错误\n\n${modelNote}${modelSuggestion ? `\n建议: ${modelSuggestion}` : ''}`;
-        setError(errorMessage);
-        logger.error('模型状态: error', { note: modelNote, suggestion: modelSuggestion });
-      } else if (modelState?.status === 'unknown') {
-        // 未知状态
-        const modelNote = modelState?.note || '';
-        const errorMessage = `⚠️ 模型状态未知${modelNote ? `\n详情: ${modelNote}` : ''}。请检查后端服务状态或稍后重试。`;
-        setError(errorMessage);
-        logger.warn('模型状态: unknown', { note: modelNote });
+        setError(`❌ 后端服务错误\n\n${modelState?.note || ''}${modelState?.suggestion ? `\n建议: ${modelState.suggestion}` : ''}`);
       } else {
-        const modelStatus = modelState?.status || 'unknown';
-        const modelNote = modelState?.note || '';
-        const modelSuggestion = modelState?.suggestion || '';
-        setError(
-          `⚠️ 连接测试完成但模型状态异常: ${modelStatus}${modelNote ? `\n详情: ${modelNote}` : ''}${modelSuggestion ? `\n建议: ${modelSuggestion}` : ''}。请检查模型配置或稍后重试。`,
-        );
-        logger.warn('模型状态异常', { status: modelStatus, note: modelNote, suggestion: modelSuggestion });
+        setError(`⚠️ 连接测试完成但模型状态异常: ${modelState?.status || 'unknown'}\n详情: ${modelState?.note || '无'}`);
       }
 
-      return status[modelType];
+      return modelState;
     } catch (err: any) {
       let errorMessage = err.message || '未知错误';
 
@@ -824,6 +786,23 @@ export function ModelConfigPanel({ className, onConfigChange }: ModelConfigPanel
         </Alert>
       )}
 
+      {/* localStorage 状态指示器 */}
+      {configs[activeTab]?.apiKey && (
+        <div className="mb-4 p-3 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/40">
+          <p className="text-xs text-emerald-700 dark:text-emerald-400 flex items-center gap-2">
+            <Check className="w-3 h-3" />
+            本地存储中已保存 API 密钥（长度：{configs[activeTab].apiKey.length} 字符）
+          </p>
+        </div>
+      )}
+      {!configs[activeTab]?.apiKey && activeTab === 'llm' && (
+        <div className="mb-4 p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/40">
+          <p className="text-xs text-amber-700 dark:text-amber-400">
+            ⚠️ 当前 LLM 配置中无 API 密钥，请在上方输入框中输入并保存
+          </p>
+        </div>
+      )}
+
       {/* 交叉引导文案 */}
       <div className="mb-6 p-4 rounded-lg bg-warning-50 dark:bg-warning-900/10 border border-amber-200 dark:border-amber-800/40">
         <p className="text-sm font-medium text-warning-700 dark:text-warning-300 mb-2 flex items-center gap-1">
@@ -916,40 +895,118 @@ export function ModelConfigPanel({ className, onConfigChange }: ModelConfigPanel
                   </div>
                 )}
 
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">API 密钥</label>
-                  <div className="relative">
-                    <Input
-                      type={showPassword ? 'text' : 'password'}
-                      value={configs[tab.value]?.apiKey || ''}
-                      onChange={(e) => handleConfigChange(tab.value, 'apiKey', e.target.value)}
-                      placeholder="输入 API 密钥"
-                      className={`w-full ${validationErrors.apiKey ? 'border-danger-300 dark:border-danger-500' : ''}`}
-                    />
-                    <button
-                      type="button"
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      {showPassword ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
-                    </button>
-                  </div>
-                  {validationErrors.apiKey && (
-                    <p className="text-xs text-danger-600 dark:text-danger-400">{validationErrors.apiKey}</p>
-                  )}
-                  <p className="text-xs text-neutral-500">DeepSeek API 密钥</p>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">API 基础 URL</label>
-                  <Input
-                    value={configs[tab.value]?.baseUrl || ''}
-                    onChange={(e) => handleConfigChange(tab.value, 'baseUrl', e.target.value)}
-                    placeholder="输入 API 基础 URL"
-                    className="w-full"
-                  />
-                  <p className="text-xs text-neutral-500">默认: https://api.deepseek.com/v1</p>
-                </div>
+                {tab.value === 'llm' && (
+                  <>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {/* Provider 选择 */}
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">Provider</label>
+                        <select
+                          value={llmProvider}
+                          onChange={(e) => handleProviderChange(e.target.value)}
+                          className="w-full h-10 px-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm text-neutral-700 dark:text-neutral-300 outline-none focus:ring-2 focus:ring-primary-500"
+                        >
+                          {Object.entries(llmProviderPresets).map(([key, preset]) => (
+                            <option key={key} value={key}>{preset.label}</option>
+                          ))}
+                        </select>
+                      </div>
+                      {/* Model 选择 */}
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">Model</label>
+                        <select
+                          value={llmModel}
+                          onChange={(e) => setLlmModel(e.target.value)}
+                          className="w-full h-10 px-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm text-neutral-700 dark:text-neutral-300 outline-none focus:ring-2 focus:ring-primary-500"
+                        >
+                          {llmProviderPresets[llmProvider]?.models.map((m) => (
+                            <option key={m} value={m}>{m}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                    {/* API 密钥 */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">API 密钥</label>
+                      <div className="relative">
+                        <Input
+                          type={showPassword ? 'text' : 'password'}
+                          value={configs[tab.value]?.apiKey || ''}
+                          onChange={(e) => handleConfigChange(tab.value, 'apiKey', e.target.value)}
+                          placeholder={`输入 ${llmProviderPresets[llmProvider]?.label || 'LLM'} API 密钥`}
+                          className={`w-full ${validationErrors.apiKey ? 'border-danger-300 dark:border-danger-500' : ''}`}
+                        />
+                        <button
+                          type="button"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
+                          onClick={() => setShowPassword(!showPassword)}
+                        >
+                          {showPassword ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
+                        </button>
+                      </div>
+                      {validationErrors.apiKey && (
+                        <p className="text-xs text-danger-600 dark:text-danger-400">{validationErrors.apiKey}</p>
+                      )}
+                      <p className="text-xs text-neutral-500">
+                        {llmProvider === 'deepseek' && '获取 DeepSeek API 密钥: https://platform.deepseek.com'}
+                        {llmProvider === 'openai' && '获取 OpenAI API 密钥: https://platform.openai.com/api-keys'}
+                        {llmProvider === 'zhipu' && '获取智谱 AI API 密钥: https://open.bigmodel.cn'}
+                        {llmProvider === 'qwen' && '获取通义千问 API 密钥: https://help.aliyun.com/zh/dashscope'}
+                        {llmProvider === 'anthropic' && '获取 Anthropic API 密钥: https://console.anthropic.com'}
+                      </p>
+                    </div>
+                    {/* Base URL */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">API 基础 URL</label>
+                      <Input
+                        value={configs[tab.value]?.baseUrl || llmProviderPresets[llmProvider]?.baseUrl || ''}
+                        onChange={(e) => handleConfigChange(tab.value, 'baseUrl', e.target.value)}
+                        placeholder="输入 API 基础 URL"
+                        className="w-full"
+                      />
+                      <p className="text-xs text-neutral-500">
+                        当前默认: {llmProviderPresets[llmProvider]?.baseUrl || 'https://api.deepseek.com/v1'}
+                      </p>
+                    </div>
+                  </>
+                )}
+                {tab.value !== 'llm' && (
+                  <>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">API 密钥</label>
+                      <div className="relative">
+                        <Input
+                          type={showPassword ? 'text' : 'password'}
+                          value={configs[tab.value]?.apiKey || ''}
+                          onChange={(e) => handleConfigChange(tab.value, 'apiKey', e.target.value)}
+                          placeholder="输入 API 密钥"
+                          className={`w-full ${validationErrors.apiKey ? 'border-danger-300 dark:border-danger-500' : ''}`}
+                        />
+                        <button
+                          type="button"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
+                          onClick={() => setShowPassword(!showPassword)}
+                        >
+                          {showPassword ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
+                        </button>
+                      </div>
+                      {validationErrors.apiKey && (
+                        <p className="text-xs text-danger-600 dark:text-danger-400">{validationErrors.apiKey}</p>
+                      )}
+                      <p className="text-xs text-neutral-500">API 密钥（可选，部分模型无需密钥）</p>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">API 基础 URL</label>
+                      <Input
+                        value={configs[tab.value]?.baseUrl || ''}
+                        onChange={(e) => handleConfigChange(tab.value, 'baseUrl', e.target.value)}
+                        placeholder="输入 API 基础 URL"
+                        className="w-full"
+                      />
+                      <p className="text-xs text-neutral-500">留空使用内置默认值</p>
+                    </div>
+                  </>
+                )}
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">

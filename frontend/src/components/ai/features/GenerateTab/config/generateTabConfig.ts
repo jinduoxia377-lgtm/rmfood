@@ -149,11 +149,11 @@ export const FORMULA_CATEGORY_LIST: {
   { id: 'IMMUNITY', label: '免疫力', color: '#34C759' },
   { id: 'ANTI_FATIGUE', label: '抗疲劳', color: '#D97706' },
   { id: 'DIGESTION', label: '消化', color: '#84cc16' },
-  { id: 'SLEEP', label: '睡眠', color: '#6366f1' },
+  { id: 'SLEEP', label: '睡眠', color: 'var(--color-primary-500, #10b981)' },
   { id: 'BEAUTY', label: '美容', color: '#D946EF' },
   { id: 'CARDIOVASCULAR', label: '心血管', color: '#FF3B30' },
   { id: 'BONE_JOINT', label: '骨关节', color: '#0891B2' },
-  { id: 'VISION', label: '视力', color: '#AF52DE' },
+  { id: 'VISION', label: '视力', color: 'var(--color-primary-500, #10b981)' },
   { id: 'RESPIRATORY', label: '呼吸', color: '#14b8a6' },
   { id: 'METABOLISM', label: '代谢', color: '#EA580C' },
 ] as const

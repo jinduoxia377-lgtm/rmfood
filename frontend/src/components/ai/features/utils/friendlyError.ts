@@ -41,6 +41,11 @@ export function toFriendlyErrorMessage(raw: unknown): string {
     return '登录会话已过期，请重新登录后继续。'
   }
 
+  // 权限不足（403）
+  if (text.includes('403') || text.includes('forbidden') || text.includes('权限')) {
+    return '权限不足，请重新登录后重试。'
+  }
+
   // 限流
   if (text.includes('429') || text.includes('请求过于频繁')) {
     return '请求过于频繁，请稍等片刻后再发送。'

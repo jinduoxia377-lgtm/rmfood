@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 # revision identifiers
 revision = "20260816_000000"
-down_revision = "20260811_000000"
+down_revision = "20260811_000000_add_workflow_templates"
 branch_labels = None
 depends_on = None
 

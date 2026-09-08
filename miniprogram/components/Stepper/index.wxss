@@ -1,0 +1,75 @@
+/** Stepper 步进器组件样式 */
+.stepper {
+  display: inline-flex;
+  align-items: center;
+  border: 1rpx solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.stepper-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56rpx;
+  height: 56rpx;
+  background-color: var(--color-bg-tertiary);
+  transition: background-color var(--transition-fast);
+}
+
+.stepper-btn:active {
+  background-color: var(--color-bg-hover);
+}
+
+.stepper-btn-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.stepper-input-wrapper {
+  width: 80rpx;
+  height: 56rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-bg-secondary);
+}
+
+.stepper-input {
+  width: 100%;
+  text-align: center;
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+  background: transparent;
+  border: none;
+  outline: none;
+}
+
+/* 尺寸 */
+.stepper-small {
+  border-radius: var(--radius-sm);
+}
+
+.stepper-small .stepper-btn {
+  width: 48rpx;
+  height: 48rpx;
+}
+
+.stepper-small .stepper-input-wrapper {
+  width: 64rpx;
+  height: 48rpx;
+}
+
+.stepper-large .stepper-btn {
+  width: 64rpx;
+  height: 64rpx;
+}
+
+.stepper-large .stepper-input-wrapper {
+  width: 96rpx;
+  height: 64rpx;
+}
+
+.stepper-large .stepper-input {
+  font-size: var(--font-size-lg);
+}

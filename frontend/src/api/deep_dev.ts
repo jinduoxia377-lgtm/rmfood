@@ -36,14 +36,16 @@ export interface WorkflowTemplate {
   id: string;
   template_id: string;
   name: string;
-  description: string | null;
+  label?: string;
+  description?: string | null;
+  desc?: string;
   category: string;
-  icon: string | null;
-  node_count: number | null;
-  estimated_duration: string | null;
-  nodes: Record<string, unknown>[];
-  edges: Record<string, unknown>[];
-  preset_config: Record<string, unknown>;
+  icon?: string | null;
+  node_count?: number | null;
+  estimated_duration?: string | null;
+  nodes?: Record<string, unknown>[];
+  edges?: Record<string, unknown>[];
+  preset_config?: Record<string, unknown>;
 }
 
 export interface WorkflowExecuteResponse {
@@ -120,13 +122,23 @@ const API_BASE = '/api/v1';
 let _csrfToken: string | null = null;
 let _csrfLoading = false;
 
+function getCookieValue(name: string): string | null {
+  const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+  return match ? match[2] : null;
+}
+
 async function ensureCsrfToken(): Promise<string | null> {
   if (_csrfToken) return _csrfToken;
+  const cookieToken = getCookieValue('csrf_token');
+  if (cookieToken) {
+    _csrfToken = cookieToken;
+    return _csrfToken;
+  }
   if (_csrfLoading) {
-    // 等待已有的请求完成
     return new Promise((resolve) => {
       const check = () => {
-        if (_csrfToken || !_csrfLoading) resolve(_csrfToken);
+        const t = getCookieValue('csrf_token') || _csrfToken;
+        if (t || !_csrfLoading) resolve(t);
         else setTimeout(check, 50);
       };
       check();
@@ -134,15 +146,12 @@ async function ensureCsrfToken(): Promise<string | null> {
   }
   _csrfLoading = true;
   try {
-    // 先发一个 GET 请求获取 CSRF cookie
-    const resp = await fetch(`${API_BASE}/agent/csrf-token`, {
+    // 发 GET 触发 CsrfProtectMiddleware 设置 csrf_token cookie，然后从 cookie 读取
+    await fetch(`${API_BASE}/agent/csrf-token`, {
       method: 'GET',
       credentials: 'include',
     });
-    if (resp.ok) {
-      const data = await resp.json();
-      if (data.token) _csrfToken = data.token;
-    }
+    _csrfToken = getCookieValue('csrf_token');
   } catch {
     // 忽略错误
   } finally {

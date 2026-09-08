@@ -46,7 +46,7 @@ export function useFormula(id: number) {
       if (error?.response?.status === 401) return false
       return failureCount < 3
     },
-    staleTime: 60_000,
+    staleTime: 5 * 60_000,
   })
 }
 
@@ -149,7 +149,7 @@ export function useExperimentStatistics() {
   return useQuery({
     queryKey: ['experiment-statistics'],
     queryFn: experimentApi.statistics,
-    staleTime: 60_000,
+    staleTime: 5 * 60_000,
   });
 }
 
@@ -158,7 +158,7 @@ export function useDashboardStatistics() {
   return useQuery({
     queryKey: ['dashboard-statistics'],
     queryFn: dashboardApi.getStatistics,
-    staleTime: 60_000,
+    staleTime: 5 * 60_000,
   });
 }
 
@@ -166,6 +166,6 @@ export function useDashboardTrends(period: '7d' | '30d' | '90d' = '30d') {
   return useQuery({
     queryKey: ['dashboard-trends', period],
     queryFn: () => dashboardApi.getTrends(period),
-    staleTime: 60_000,
+    staleTime: 5 * 60_000,
   });
 }

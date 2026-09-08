@@ -1,3 +1,4 @@
+from scripts.db_utils import get_asyncpg_dsn
 """
 中药材 1:1 交叉验证溯源报告
 - ID 序列连续性检查
@@ -10,7 +11,7 @@ import json
 from datetime import datetime
 
 async def main():
-    conn = await asyncpg.connect('postgresql://postgres@localhost:5432/rmfood_platform')
+    conn = await asyncpg.connect(get_asyncpg_dsn())
     
     report = {
         "audit_type": "1:1 Cross-Validation & Traceability",

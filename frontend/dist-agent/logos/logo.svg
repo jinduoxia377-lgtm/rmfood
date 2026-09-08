@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <!-- RMFOOD 品牌 Logo 占位符 -->
+  <!-- 替换文件：将本文件内容替换为实际品牌 logo（建议 SVG 格式，32×32px  viewBox） -->
+  <rect width="32" height="32" rx="8" fill="#059669"/>
+  <path d="M10 22V13C10 10.79 11.79 9 14 9H18C20.21 9 22 10.79 22 13V22" stroke="white" stroke-width="2" stroke-linecap="round"/>
+  <path d="M10 17H22" stroke="white" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="16" cy="24" r="1.5" fill="white"/>
+</svg>

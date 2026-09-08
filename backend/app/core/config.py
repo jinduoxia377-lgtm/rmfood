@@ -736,12 +736,13 @@ class Settings(BaseSettings):
         """获取 CORS 源列表"""
         origins = self.security.cors_origins or []
 
-        # 开发环境允许 localhost
+        # 开发环境允许 localhost + 局域网 IP 访问
         if self.app_env == Environment.DEVELOPMENT:
             origins.extend([
                 "http://localhost:3000",
                 "http://127.0.0.1:3000",
                 "http://localhost:8000",
+                "*",  # 开发环境允许任意来源（局域网/IP 访问）
             ])
 
         return list(set(origins))

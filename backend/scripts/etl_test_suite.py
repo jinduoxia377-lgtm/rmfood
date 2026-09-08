@@ -8,7 +8,7 @@ RMFOOD 配方平台 — ETL 数据同步验证测试套件
     python etl_test_suite.py
 
 依赖: asyncpg (pip install asyncpg)
-数据库: PostgreSQL @ localhost:5432/rmfood_platform
+数据库: PostgreSQL @ localhost:5432 (from .env)
 """
 
 import asyncio
@@ -25,7 +25,7 @@ from typing import Any
 # 常量定义
 # ════════════════════════════════════════════════
 
-DB_URL = "postgresql://postgres@localhost:5432/rmfood_platform"
+from scripts.db_utils import get_asyncpg_dsn; DB_URL = get_asyncpg_dsn()
 EXPECTED_RECORD_COUNT = 292
 REPORT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "etl_test_report.json")
 

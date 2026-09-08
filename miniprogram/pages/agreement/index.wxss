@@ -1,0 +1,52 @@
+/* 用户协议页样式 */
+.container {
+  padding: 24rpx;
+  background-color: #F5F5F5;
+}
+
+.content-card {
+  background-color: #FFFFFF;
+  border-radius: 24rpx;
+  padding: 32rpx;
+}
+
+.content-header {
+  margin-bottom: 32rpx;
+}
+
+.title {
+  display: block;
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #333333;
+  margin-bottom: 12rpx;
+}
+
+.update-time {
+  font-size: 24rpx;
+  color: #999999;
+}
+
+.content-body {
+  display: flex;
+  flex-direction: column;
+  gap: 32rpx;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.section-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #333333;
+}
+
+.section-content {
+  font-size: 28rpx;
+  color: #666666;
+  line-height: 1.8;
+}

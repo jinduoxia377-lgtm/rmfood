@@ -1,3 +1,4 @@
+from scripts.db_utils import get_asyncpg_dsn
 """
 中药材数据 1:1 对比审查报告生成器
 以数据院士级别标准对本地数据库与 TCMSP 官方进行全面对比
@@ -114,7 +115,7 @@ TCMSP_OFFICIAL_NAMES = [
 ]
 
 async def run_audit():
-    conn = await asyncpg.connect('postgresql://postgres@localhost:5432/rmfood_platform')
+    conn = await asyncpg.connect(get_asyncpg_dsn())
     
     report = {
         "audit_info": {

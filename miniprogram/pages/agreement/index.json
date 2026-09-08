@@ -1,0 +1,8 @@
+{
+  "usingComponents": {
+    "Icon": "../../components/Icon/index"
+  },
+  "navigationBarTitleText": "用户协议",
+  "navigationBarBackgroundColor": "#2D5A3D",
+  "navigationBarTextStyle": "white"
+}

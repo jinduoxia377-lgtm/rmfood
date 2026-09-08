@@ -1,4 +1,4 @@
-/*
+﻿/*
  * RMFOOD 设计系统 - 卡片系统 v3.0 — Apple HIG 风格
  * 标准卡片、玻璃态卡片、可交互卡片、边框卡片、渐变卡片
  */
@@ -21,7 +21,7 @@
 }
 
 .dark .card {
-  background: var(--card-bg-solid, #1C1C1E);
+  background: var(--card-bg-solid, #0f172a);
   border-color: var(--border-subtle, rgba(255, 255, 255, 0.06));
   box-shadow: var(--shadow-card, 0 1px 3px rgba(0, 0, 0, 0.3));
 }
@@ -79,7 +79,7 @@
   transform: scale(0.99);
 }
 .dark .card-interactive {
-  background: var(--card-bg-solid, #1C1C1E);
+  background: var(--card-bg-solid, #0f172a);
   border-color: var(--border-subtle, rgba(255, 255, 255, 0.06));
   box-shadow: var(--shadow-card, 0 1px 3px rgba(0, 0, 0, 0.3));
 }

@@ -6,12 +6,13 @@ import os
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 from app.utils.auth import get_password_hash
+from scripts.db_utils import get_asyncpg_dsn
 
 async def main():
     new_hash = get_password_hash('admin123')
     print(f"新哈希: {new_hash[:40]}...")
-    
-    conn = await asyncpg.connect('postgresql://postgres@localhost:5432/rmfood_platform')
+
+    conn = await asyncpg.connect(get_asyncpg_dsn())
     
     await conn.execute(
         "UPDATE users SET hashed_password=$1, login_attempts=0, locked_until=NULL WHERE username='admin'",

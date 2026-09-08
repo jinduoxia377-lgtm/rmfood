@@ -1,10 +1,11 @@
+from scripts.db_utils import get_asyncpg_dsn
 """本地中药材数据库完整导出 — 用于与 TCMSP 官方数据对比"""
 import asyncio
 import asyncpg
 import json
 
 async def main():
-    conn = await asyncpg.connect('postgresql://postgres@localhost:5432/rmfood_platform')
+    conn = await asyncpg.connect(get_asyncpg_dsn())
     
     # 1. 基础统计
     total = await conn.fetchval("SELECT COUNT(*) FROM tcm_herbs")

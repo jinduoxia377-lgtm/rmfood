@@ -1,0 +1,4 @@
+<!-- 徽章组件 -->
+<view class="badge {{type}}">
+  <text>{{text}}</text>
+</view>

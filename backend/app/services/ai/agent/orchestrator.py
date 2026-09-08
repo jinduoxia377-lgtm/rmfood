@@ -18,7 +18,7 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, AsyncIterator, Dict, List, Optional
 
-from app.services.ai.providers.provider_factory import get_provider_factory, TaskType
+from app.services.ai.providers.provider_factory import cleanup_provider_factory, get_provider_factory, TaskType
 from app.services.ai.safety import (
     PromptGuardResult,
     ThreatLevel,
@@ -319,15 +319,14 @@ class AgentOrchestrator:
         """调用 LLM，支持 function calling"""
         try:
             factory = self._provider_factory
-            result = await factory.create_task(
-                task_type=TaskType.CHAT,
+            result = await factory.call_with_fallback(
                 messages=messages,
-                tools=tools if tools else None,
+                task_type=TaskType.CHAT,
                 temperature=0.3,
             )
             return {
-                "content": result.content if hasattr(result, "content") else str(result),
-                "tool_calls": getattr(result, "tool_calls", []),
+                "content": result if isinstance(result, str) else str(result),
+                "tool_calls": [],
             }
         except Exception as e:
             logger.warning("LLM call failed: %s", e)
@@ -361,15 +360,27 @@ class AgentOrchestrator:
         return self._registry.list_tools()
 
 
-# 全局单例
-_orchestrator: Optional[AgentOrchestrator] = None
+async def _reload_factory_from_db_sync():
+    """同步包装异步 reload，供 get_orchestrator 调用"""
+    from app.services.ai.providers.provider_factory import reload_factory_from_db
+    await reload_factory_from_db()
 
 
 def get_orchestrator(system_prompt: str = "") -> AgentOrchestrator:
-    global _orchestrator
-    if _orchestrator is None:
-        _orchestrator = AgentOrchestrator(system_prompt)
-    return _orchestrator
+    """创建新的编排器实例，确保每次都使用最新的 LLM 配置"""
+    # 从数据库重载 Provider 工厂（确保使用最新保存的 API Key）
+    try:
+        import asyncio
+        asyncio.run(_reload_factory_from_db_sync())
+    except Exception:
+        pass
+    # 强制清除工厂单例
+    try:
+        from app.services.ai.providers.provider_factory import _set_factory_instance_none
+        _set_factory_instance_none()
+    except Exception:
+        pass
+    return AgentOrchestrator(system_prompt)
 
 
 # ── 高危操作确认机制 ──────────────────────────────────────────────────────

@@ -83,7 +83,7 @@ const METRIC_COLORS: Record<keyof MetricResult, string> = {
   stability: 'var(--color-secondary, #0A84FF)',
   cost: 'var(--color-warning, #FF9F0A)',
   safety: 'var(--color-error, #FF3B30)',
-  sensory: 'var(--color-violet-500, #AF52DE)',
+  sensory: 'var(--color-primary-500, #10b981)',
   overall: 'var(--color-pink-500, #D946EF)',
 }
 
@@ -433,7 +433,7 @@ export function SensitivityAnalysis({
 
                 <ReferenceLine
                   x={parameters.find(p => p.id === activeParamId)?.baseValue}
-                  stroke="var(--color-violet-500, #AF52DE)"
+                  stroke="var(--color-primary-500, #10b981)"
                   strokeWidth={2}
                   strokeDasharray="5 5"
                   label={{ value: '基准', position: 'top', fontSize: 11 }}

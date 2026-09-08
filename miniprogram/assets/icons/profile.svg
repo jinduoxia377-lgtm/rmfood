@@ -1,0 +1,5 @@
+<svg width="48" height="48" xmlns="http://www.w3.org/2000/svg">
+  <rect width="48" height="48" fill="none"/>
+  <path d="M24 4L4 14v20l20 10 20-10V14L24 4z" fill="#999999" opacity="0.2"/>
+  <text x="24" y="30" text-anchor="middle" font-family="Arial" font-size="20" fill="#999999">profile[0]</text>
+</svg>

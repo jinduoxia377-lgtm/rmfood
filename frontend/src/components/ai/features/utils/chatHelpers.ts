@@ -62,8 +62,6 @@ export interface ParsedUrl {
  * 格式化时间戳为可读字符串
  */
 export function formatTimestamp(timestamp: number | string): string {
-  // TODO: 时间格式化逻辑
-
   let date: Date
 
   if (typeof timestamp === 'string') {
@@ -112,8 +110,6 @@ export function formatTimestamp(timestamp: number | string): string {
  * 截断过长文本并添加省略号
  */
 export function truncateText(text: string, maxLength = 100): string {
-  // TODO: 文本截断逻辑
-
   if (!text || text.length <= maxLength) {
     return text || ''
   }
@@ -125,8 +121,6 @@ export function truncateText(text: string, maxLength = 100): string {
  * 根据内容自动检测消息类型
  */
 export function detectMessageType(content: string): string {
-  // TODO: 消息分类检测逻辑
-
   if (!content) return 'text'
 
   // 检测是否包含公式相关关键词

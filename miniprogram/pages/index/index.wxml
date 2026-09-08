@@ -1,0 +1,264 @@
+<!-- 首页模板 - 专业版 -->
+<view class="page-container">
+  <!-- 顶部Header -->
+  <view class="header" style="padding-top: {{statusBarHeight}}px;">
+    <view class="header-content">
+      <!-- 汉堡菜单 -->
+      <view class="hamburger" bindtap="toggleMenu" aria-label="打开菜单">
+        <view class="hamburger-line {{menuOpen ? 'active' : ''}}"></view>
+        <view class="hamburger-line {{menuOpen ? 'active' : ''}}"></view>
+        <view class="hamburger-line {{menuOpen ? 'active' : ''}}"></view>
+      </view>
+      
+      <!-- 标题 -->
+      <view class="header-title">
+        <view class="title-main">药食同源</view>
+        <view class="title-sub">配方设计平台</view>
+      </view>
+      
+      <!-- 用户头像 -->
+      <avatar
+        src="{{userInfo && userInfo.avatarUrl || ''}}"
+        size="md"
+        bind:tap="goToProfile"
+        aria-label="个人中心"
+      />
+    </view>
+  </view>
+
+  <!-- 滚动内容区 -->
+  <scroll-view
+    class="content-scroll"
+    scroll-y
+    refresher-enabled
+    refresher-triggered="{{refreshing}}"
+    bindrefresherrefresh="onPullDownRefresh"
+    bindscrolltolower="onLoadMore"
+  >
+    <!-- 骨架屏加载状态 -->
+    <skeleton-loader
+      wx:if="{{showSkeleton}}"
+      type="list"
+      count="3"
+      class="skeleton-container"
+    ></skeleton-loader>
+
+    <!-- 搜索框 -->
+    <view wx:if="{{!showSkeleton}}" class="search-section">
+      <view class="search-box" bindtap="goToSearch" role="search" aria-label="搜索">
+        <icon name="search" size="md" color="var(--color-text-muted)" />
+        <text class="search-placeholder">搜索食材、配方、健康知识...</text>
+      </view>
+    </view>
+
+    <!-- 快捷功能区 -->
+    <view class="quick-section">
+      <!-- 第一行：核心功能 -->
+      <view class="quick-grid quick-row">
+        <!-- 配料分析 -->
+        <view class="quick-item" bindtap="startIngredientAnalysis" aria-label="配料分析">
+          <view class="quick-icon-wrap">
+            <view class="quick-icon icon-ingredient-bg">
+              <icon name="ingredient" size="lg" color="#2D5A3D" />
+            </view>
+          </view>
+          <text class="quick-text">配料分析</text>
+          <text class="quick-desc">拍照识别</text>
+        </view>
+
+        <!-- AI顾问 -->
+        <view class="quick-item" bindtap="startAiChat" aria-label="AI顾问">
+          <view class="quick-icon-wrap">
+            <view class="quick-icon icon-chat-bg">
+              <icon name="ai" size="lg" color="#1976D2" />
+            </view>
+          </view>
+          <text class="quick-text">AI顾问</text>
+          <text class="quick-desc">智能诊断</text>
+        </view>
+
+        <!-- 配方库 -->
+        <view class="quick-item" bindtap="goToFormulas" aria-label="配方库">
+          <view class="quick-icon-wrap">
+            <view class="quick-icon icon-formula-bg">
+              <icon name="formula" size="lg" color="#E65100" />
+            </view>
+          </view>
+          <text class="quick-text">配方库</text>
+          <text class="quick-desc">精选配方</text>
+        </view>
+      </view>
+
+      <!-- 第二行：扩展功能 -->
+      <view class="quick-grid quick-row">
+        <!-- 历史记录 -->
+        <view class="quick-item" bindtap="goToHistory" aria-label="历史记录">
+          <view class="quick-icon-wrap">
+            <view class="quick-icon icon-history-bg">
+              <icon name="history" size="lg" color="#7B1FA2" />
+            </view>
+          </view>
+          <text class="quick-text">历史记录</text>
+          <text class="quick-desc">查看记录</text>
+        </view>
+
+        <!-- 数据检索中心 -->
+        <view class="quick-item" bindtap="goToDatabase" aria-label="数据检索">
+          <view class="quick-icon-wrap">
+            <view class="quick-icon icon-database-bg">
+              <icon name="database" size="lg" color="#00838F" />
+            </view>
+          </view>
+          <text class="quick-text">数据检索</text>
+          <text class="quick-desc">药材/肽库</text>
+        </view>
+
+        <!-- 合规标准 -->
+        <view class="quick-item" bindtap="goToCompliance" aria-label="合规标准">
+          <view class="quick-icon-wrap">
+            <view class="quick-icon icon-compliance-bg">
+              <icon name="compliance" size="lg" color="#C62828" />
+            </view>
+          </view>
+          <text class="quick-text">合规标准</text>
+          <text class="quick-desc">GB标准查询</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 健康提示轮播 -->
+    <view class="tip-section" wx:if="{{healthTips.length > 0}}">
+      <swiper 
+        class="tip-swiper" 
+        autoplay 
+        circular 
+        interval="4000"
+        indicator-dots
+        indicator-active-color="var(--color-primary)"
+        aria-label="健康提示轮播"
+      >
+        <swiper-item wx:for="{{healthTips}}" wx:key="index">
+          <view class="tip-card" bindtap="viewTipDetail" data-index="{{index}}" aria-label="查看提示: {{item.title}}">
+            <view class="tip-tag tag-{{item.type}}">{{item.tag}}</view>
+            <view class="tip-body">
+              <text class="tip-title">{{item.title}}</text>
+              <text class="tip-desc">{{item.desc}}</text>
+            </view>
+            <icon name="arrow-right" size="sm" color="var(--color-text-muted)" />
+          </view>
+        </swiper-item>
+      </swiper>
+    </view>
+
+    <!-- 今日推荐 -->
+    <view class="section" wx:if="{{!showSkeleton && featuredFormula}}">
+      <view class="section-header">
+        <view class="section-title-wrap">
+          <view class="section-dot"></view>
+          <text class="section-title">今日推荐</text>
+        </view>
+        <view class="section-more" bindtap="goToFormulas" aria-label="查看全部配方">
+          <text>查看全部</text>
+          <icon name="arrow-right" size="xs" color="var(--color-primary)" />
+        </view>
+      </view>
+      
+      <formula-card 
+        formula="{{featuredFormula}}"
+        bind:tap="goToFormulaDetail"
+        bind:favorite="toggleFavorite"
+        aria-label="今日推荐配方"
+      ></formula-card>
+    </view>
+
+    <!-- 热门配方 -->
+    <view class="section" wx:if="{{!showSkeleton}}">
+      <view class="section-header">
+        <view class="section-title-wrap">
+          <view class="section-dot"></view>
+          <text class="section-title">热门配方</text>
+        </view>
+        <view class="section-more" bindtap="goToFormulas" aria-label="查看更多热门配方">
+          <text>更多</text>
+          <icon name="arrow-right" size="xs" color="var(--color-primary)" />
+        </view>
+      </view>
+      
+      <view class="formula-list">
+        <view 
+          wx:for="{{hotFormulas}}" 
+          wx:key="id"
+          class="formula-item"
+          bindtap="goToFormulaDetail"
+          data-id="{{item.id}}"
+          aria-label="查看配方: {{item.name}}"
+        >
+          <avatar src="{{item.imageUrl}}" size="lg" shape="rounded" />
+          <view class="formula-info">
+            <text class="formula-name">{{item.name}}</text>
+            <text class="formula-desc">{{item.description}}</text>
+            <view class="formula-tags">
+              <tag wx:for="{{item.tags}}" wx:for-item="tag" wx:key="index" type="{{tag.type}}" size="small">{{tag.text}}</tag>
+            </view>
+          </view>
+          <view class="formula-score">
+            <health-score score="{{item.healthScore}}" size="small" />
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 分类导航 -->
+    <view class="section" wx:if="{{!showSkeleton}}">
+      <view class="section-header">
+        <view class="section-title-wrap">
+          <view class="section-dot"></view>
+          <text class="section-title">配方分类</text>
+        </view>
+      </view>
+      
+      <view class="category-grid">
+        <view 
+          wx:for="{{categories}}" 
+          wx:key="id"
+          class="category-item"
+          bindtap="goToCategory"
+          data-id="{{item.id}}"
+          aria-label="查看{{item.name}}分类"
+        >
+          <view class="category-icon" style="background: {{item.color}}10;">
+            <icon name="{{item.icon}}" size="lg" color="{{item.color}}" />
+          </view>
+          <text class="category-name">{{item.name}}</text>
+          <text class="category-count">{{item.count}}个配方</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 空状态 -->
+    <empty-state 
+      wx:if="{{!hasContent}}"
+      icon="empty"
+      title="暂无内容"
+      desc="开始探索药食同源的奥秘吧"
+      btn-text="去探索"
+      bind:btntap="goToFormulas"
+    ></empty-state>
+
+    <!-- 加载更多 -->
+    <view wx:if="{{loading}}" class="loading-container">
+      <loading size="sm" type="spinner"></loading>
+    </view>
+    
+    <view wx:if="{{!hasMore && hasContent}}" class="end-message">
+      <text>没有更多了</text>
+    </view>
+  </scroll-view>
+
+  <!-- Toast组件 -->
+  <toast 
+    visible="{{showToast}}" 
+    content="{{toastContent}}" 
+    type="{{toastType}}"
+  ></toast>
+</view>

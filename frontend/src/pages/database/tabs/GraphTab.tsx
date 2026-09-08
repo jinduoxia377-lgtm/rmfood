@@ -185,7 +185,7 @@ export default function GraphTab() {
   const statsQuery = useQuery({
     queryKey: ['db-graph-stats'],
     queryFn: () => databaseApi.getGraphStats(),
-    staleTime: 60_000,
+    staleTime: 5 * 60_000,
   });
 
   // 全量图谱查询（首屏默认加载，使用 __full__ 标记触发后端全量返回）

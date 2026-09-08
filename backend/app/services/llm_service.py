@@ -134,13 +134,21 @@ async def load_config_from_db() -> "LLMConfig | None":
             row = result.scalar_one_or_none()
             if row and row.config_value:
                 v = row.config_value
+                # 兼容旧版：config_value 可能存储为字符串
+                if isinstance(v, str):
+                    import json
+                    try:
+                        v = json.loads(v)
+                    except Exception:
+                        logger.warning(f"[LLMConfig] config_value 无法解析为 JSON: {v[:50]}...")
+                        return None
                 cfg = LLMConfig(
-                    provider=v.get("provider", ""),
-                    api_key=_decrypt_api_key(v.get("api_key", "")),
-                    base_url=v.get("base_url", ""),
-                    model=v.get("model", ""),
-                    max_tokens=v.get("max_tokens", 4096),
-                    temperature=v.get("temperature", 0.7),
+                    provider=v.get("provider", "") if isinstance(v, dict) else "",
+                    api_key=_decrypt_api_key(v.get("api_key", "")) if isinstance(v, dict) else "",
+                    base_url=v.get("base_url", "") if isinstance(v, dict) else "",
+                    model=v.get("model", "") if isinstance(v, dict) else "",
+                    max_tokens=v.get("max_tokens", 4096) if isinstance(v, dict) else 4096,
+                    temperature=v.get("temperature", 0.7) if isinstance(v, dict) else 0.7,
                 )
                 masked = cfg.api_key[:8] + "..." + cfg.api_key[-4:] if len(cfg.api_key) > 12 else "***"
                 logger.info(f"[LLMConfig] 从数据库恢复配置: provider={cfg.provider}, model={cfg.model}, key={masked}")

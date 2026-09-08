@@ -89,22 +89,34 @@ export type {
 } from '@/types/ai.api';
 
 export const aiApi = {
-  /** AI 配方生成（支持 LLM 模式） */
-  generate: (targetEffects: string[], constraints?: Record<string, unknown>, useLlm = false, signal?: AbortSignal) =>
-    api
-      .post<{ candidates: AICandidate[]; total: number; generator: string }>(
-        '/ai/generate',
-        {
-          target_effects: targetEffects,
-          constraints,
-          use_llm: useLlm,
-          // 兼容后端 AIGenerateRequest 的 description 必填字段
-          description:
-            targetEffects.length > 0 ? `基于${targetEffects.join('、')}功效需求，生成中药配方方案` : undefined,
-        },
-        { timeout: 30000, signal },
-      )
-      .then((r) => r.data),
+  /** AI 配方生成（支持 LLM 模式，自动路由到遗传算法引擎） */
+  generate: async (
+    targetEffects: string[],
+    constraints?: Record<string, unknown>,
+    useLlm = false,
+    signal?: AbortSignal,
+    algorithmConfig?: Record<string, unknown>,
+  ) => {
+    const result = await api.post<{
+      candidates: AICandidate[];
+      total: number;
+      generator: string;
+      execution_time_ms?: number;
+      strategy?: string;
+      best_score?: number;
+    }>('/ai/generate', {
+      target_effects: targetEffects,
+      constraints: {
+        ...constraints,
+        ...algorithmConfig,
+      },
+      use_llm: useLlm,
+      description: targetEffects.length > 0
+        ? `基于${targetEffects.join('、')}功效需求，生成中药配方方案`
+        : undefined,
+    }, { timeout: 120000, signal });
+    return result.data;
+  },
 
   /** 神经网络配方生成（基于专利 US 11,742,060 B2）*/
   generateNeural: (

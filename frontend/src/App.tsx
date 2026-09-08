@@ -551,6 +551,20 @@ const router = createBrowserRouter([
    ═══════════════════════════════════════════ */
 
 export default function App() {
+  // 🔒 P0: 注册 Service Worker（离线缓存 + 快速重载）
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker
+        .register('/sw.js')
+        .then((reg) => {
+          console.log('[SW] 已注册:', reg.scope);
+        })
+        .catch((err) => {
+          console.warn('[SW] 注册失败:', err);
+        });
+    }
+  }, []);
+
   // 🔒 P2-4: 错误上报函数（生产环境可接入 Sentry）
   const handleErrorReport = (error: Error, errorInfo: React.ErrorInfo) => {
     // 开发环境输出到控制桌

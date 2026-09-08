@@ -21,7 +21,7 @@ export const databaseApi = {
 
   /** 药材分类列表 */
   getCategories: () =>
-    api.get<{ categories: { category: string; count: number }[] }>('/databases/herbs/categories').then((r) => r.data),
+    api.get<{ categories: { category: string; count: number; food_homology_count: number }[]; total_food_homology: number }>('/databases/herbs/categories').then((r) => r.data),
 
   /** 药食同源药材列表 */
   getFoodHomologyHerbs: (params: { keyword?: string; page?: number; page_size?: number }) =>

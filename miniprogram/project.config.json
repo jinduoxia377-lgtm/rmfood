@@ -1,0 +1,45 @@
+{
+    "projectname":  "rmfood",
+    "description":  "RMFOOD 药食同源配方平台",
+    "libVersion":  "3.15.2",
+    "compileType":  "miniprogram",
+    "appid":  "wx2aa1c2e869b9e8ac",
+    "setting":  {
+                    "minified":  true,
+                    "packNpmManually":  true,
+                    "minifyWXML":  true,
+                    "useApiHook":  true,
+                    "uglifyFileName":  false,
+                    "minifyWXSS":  true,
+                    "uploadWithSourceMap":  true,
+                    "coverView":  true,
+                    "scopeDataCheck":  false,
+                    "enhance":  true,
+                    "checkSiteMap":  true,
+                    "nodeModules":  true,
+                    "preloadBackgroundData":  false,
+                    "urlCheck":  false,
+                    "useMultiFrameRuntime":  true,
+                    "compileHotReLoad":  false,
+                    "disableUseStrict":  false,
+                    "newFeature":  true,
+                    "checkInvalidKey":  true,
+                    "postcss":  true,
+                    "lazyloadPlaceholderEnable":  false,
+                    "showShadowRootInWxmlPanel":  true,
+                    "useHostInitCtx":  true,
+                    "useCompilerPlugins":  false,
+                    "showES6CompileOption":  false,
+                    "autoAudits":  false,
+                    "es6":  true,
+                    "packNpmRelationList":  [
+                                                {
+                                                    "packageJsonPath":  "./package.json",
+                                                    "miniprogramNpmDistDir":  "./miniprogram_npm/"
+                                                }
+                                            ]
+                },
+    "condition":  {
+
+                  }
+}

@@ -6,6 +6,11 @@ import { logger } from '@/utils/safeLogger'
 import { sanitizeChatMessages } from '../utils/sanitizeChatMessages'
 import { toFriendlyErrorMessage } from '../utils/friendlyError'
 import type { ChatMessage } from '../types'
+import { tokenBudgetManager } from '../capabilities/streaming/TokenBudgetManager'
+import { contextCompactionEngine } from '../capabilities/streaming/ContextCompaction'
+import { chatEventLog } from '../capabilities/storage/ChatEventLog'
+import { chatStorageService } from '../capabilities/storage/ChatStorageService'
+import { offlineManager } from '../utils/offlineManager'
 export type { ChatMessage } from '../types'
 
 interface UseChatMessagesReturn {
@@ -33,6 +38,10 @@ interface UseChatMessagesReturn {
   resumeStreaming: () => void
   editMessage: (id: string, newContent: string) => void
   retractMessage: (id: string) => void
+  /** 设置当前会话 ID（用于持久化到 IndexedDB） */
+  setActiveSessionId: (id: string | null) => void
+  /** 检查并执行上下文压缩（当 token 超限时自动触发） */
+  checkCompaction: () => Promise<void>
 }
 
 const STORAGE_KEY = 'chat_messages'
@@ -72,6 +81,7 @@ export function useChatMessages(): UseChatMessagesReturn {
   const [isPaused, setIsPaused] = useState(false)
   const messagesRef = useRef(messages)
   const lastQuestionRef = useRef<string>('')
+  const activeSessionIdRef = useRef<string | null>(null)
 
   // ── 监听认证失效事件，清除过期 Token ──
   useEffect(() => {
@@ -103,6 +113,19 @@ export function useChatMessages(): UseChatMessagesReturn {
     } catch (storageError) {
       logger.warn('[useChatMessages] Failed to save messages to storage:', storageError)
     }
+  }, [])
+
+  // ── ChatEventLog 集成：所有消息变更写入事件日志 ──
+  useEffect(() => {
+    return chatEventLog.onChange(() => {
+      // EventLog 变更时同步到 IndexedDB
+      const currentMessages = chatEventLog.deriveMessages()
+      if (currentMessages.length > 0 && activeSessionIdRef.current) {
+        chatStorageService.saveMessages(activeSessionIdRef.current, currentMessages).catch(e =>
+          logger.warn('[useChatMessages] EventLog sync failed:', e)
+        )
+      }
+    })
   }, [])
 
   const updateMessages = useCallback((updater: (prev: ChatMessage[]) => ChatMessage[]) => {
@@ -184,11 +207,8 @@ export function useChatMessages(): UseChatMessagesReturn {
 
     try {
       logger.info('[useChatMessages] 📡 Calling chatService (streaming mode)...')
-      const history = messagesRef.current
-        .filter(m => m.role === 'user' || m.role === 'assistant')
-        .filter(m => !m.error && m.content)
-        .slice(-10)
-        .map(m => ({ role: m.role, content: m.content.slice(0, 1000) }))
+      // 使用 TokenBudgetManager 选择完整上下文，不再硬截断 1000 字
+      const history = tokenBudgetManager.selectHistory(messagesRef.current)
 
       // 先创建空的 AI 消息占位（用于流式渐进更新）
       const assistantMessageId = `assistant-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`
@@ -223,7 +243,7 @@ export function useChatMessages(): UseChatMessagesReturn {
 
           // 转发思考步骤到 ChatSidebar（通过 eventBus）
           if (chunk.step) {
-            eventBus.emit('thinking:step' as any, { step: chunk.step } as any)
+            eventBus.emit('thinking:step', { step: chunk.step.step, content: chunk.step.content, status: chunk.step.status, timestamp: Date.now() })
           }
 
           updateMessage(assistantMessageId, {
@@ -281,6 +301,27 @@ export function useChatMessages(): UseChatMessagesReturn {
           formulas: accumulatedFormulas.length > 0 ? accumulatedFormulas : undefined,
         })
         updateMessage(userMessage.id, { sendStatus: 'sent' })
+
+        // ── 写入 EventLog（append-only） ──
+        chatEventLog.append('user/message', userMessage)
+        chatEventLog.append('assistant/message', { ...assistantMessage, id: assistantMessageId, content: fullContent, formulas: accumulatedFormulas.length > 0 ? accumulatedFormulas : undefined })
+
+        // ── 自动触发上下文压缩检查 ──
+        if (messagesRef.current.length >= 20) {
+          const tokens = tokenBudgetManager.estimateHistory(messagesRef.current)
+          if (tokenBudgetManager.shouldCompact(messagesRef.current, tokens)) {
+            logger.info('[useChatMessages] Auto-compaction triggered:', { tokens, msgCount: messagesRef.current.length })
+            try {
+              const result = await contextCompactionEngine.compact(messagesRef.current)
+              if (result.compressedCount > 0) {
+                setMessages(result.messages)
+                logger.info(`[useChatMessages] Compaction done: ${result.compressedCount} msgs → ${result.messages.length}`)
+              }
+            } catch (e) {
+              logger.warn('[useChatMessages] Compaction failed:', e)
+            }
+          }
+        }
       } else {
         // 双重失败：清理占位消息，标记用户消息为失败状态
         updateMessage(userMessage.id, { sendStatus: 'failed' })
@@ -319,6 +360,20 @@ export function useChatMessages(): UseChatMessagesReturn {
       addMessage(errorMessage)
       setChatError(new Error(friendly))
       logger.error('[useChatMessages] 💥 Error state updated, UI should show error message')
+
+      // ── Task 5: 失败消息入离线队列（网络恢复后自动补发） ──
+      try {
+        const isOnline = typeof navigator !== 'undefined' && navigator.onLine
+        if (!isOnline || chatError) {
+          offlineManager.enqueue('message', {
+            id: userMessage.id,
+            payload: { content: userMessage.content, history: tokenBudgetManager.selectHistory(messagesRef.current) },
+            timestamp: Date.now(),
+            retryCount: (userMessage.retryCount ?? 0) + 1,
+          })
+          logger.info('[useChatMessages] 消息已加入离线队列')
+        }
+      } catch { /* 静默降级 */ }
     } finally {
       setIsStreaming(false)
       logger.debug('[useChatMessages] 🔄 Streaming state reset to false')
@@ -473,6 +528,23 @@ export function useChatMessages(): UseChatMessagesReturn {
     resumeStreaming,
     editMessage,
     retractMessage,
+    /** 设置当前会话 ID（用于持久化） */
+    setActiveSessionId: (id: string | null) => { activeSessionIdRef.current = id },
+    /** 检查并执行上下文压缩 */
+    checkCompaction: async () => {
+      const tokens = tokenBudgetManager.estimateHistory(messagesRef.current)
+      if (tokenBudgetManager.shouldCompact(messagesRef.current, tokens)) {
+        logger.info('[useChatMessages] Compaction triggered:', { tokens, messageCount: messagesRef.current.length })
+        const result = await contextCompactionEngine.compact(messagesRef.current, (step) => {
+          logger.debug('[useChatMessages] Compaction step:', step)
+        })
+        if (result.compressedCount > 0 && activeSessionIdRef.current) {
+          await chatStorageService.saveMessages(activeSessionIdRef.current, result.messages)
+          setMessages(result.messages)
+          logger.info(`[useChatMessages] Compaction complete: ${result.compressedCount} messages compressed`)
+        }
+      }
+    },
   }
 }
 

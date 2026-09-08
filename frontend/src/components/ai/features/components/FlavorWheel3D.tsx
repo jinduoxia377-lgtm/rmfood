@@ -58,10 +58,10 @@ interface FlavorWheel3DProps {
 const DEFAULT_DIMENSIONS: Omit<FlavorDimension, 'value'>[] = [
   { id: 'sour', label: '酸', color: 'var(--color-yellow-400, #F59E0B)' },
   { id: 'sweet', label: '甜', color: 'var(--color-pink-500, #D946EF)' },
-  { id: 'bitter', label: '苦', color: 'var(--color-violet-500, #AF52DE)' },
+  { id: 'bitter', label: '苦', color: 'var(--color-amber-600, #d97706)' },
   { id: 'spicy', label: '辣', color: 'var(--color-error, #FF3B30)' },
   { id: 'umami', label: '鲜', color: 'var(--color-primary, #34C759)' },
-  { id: 'astringent', label: '涩', color: 'var(--color-indigo-500, #6366F1)' },
+  { id: 'astringent', label: '涩', color: 'var(--color-primary-500, #10b981)' },
 ]
 
 const ROTATION_SPEED = 0.5

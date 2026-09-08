@@ -1,0 +1,6 @@
+<!-- SVG图标组件 - 基于WeUI设计规范 -->
+<view class="icon-wrap {{sizeClass}} {{colorClass}}" style="{{style}}">
+  <svg class="icon-svg" viewBox="0 0 24 24" fill="currentColor">
+    <use href="#icon-{{name}}"></use>
+  </svg>
+</view>

@@ -27,6 +27,7 @@
 @import './styles/components/tables-stats.css';
 @import './styles/components/nutrition-label.css';
 @import './styles/components/tooltips.css';
+@import './styles/components/semantic-utils.css';
 
 /* ═══════════════════════════════════════════════════════════════
    4. 实用工具 — 微交互、图标、焦点、滚动条
@@ -40,9 +41,11 @@
    ═══════════════════════════════════════════════════════════════ */
 @import './styles/accessibility/environment.css';
 
-/* ═══════════════════════════════════════════════════════════════
-   Tailwind v4 @theme — 引用 CSS 变量避免硬编码
-   ═══════════════════════════════════════════════════════════════ */
+/* ============================================================================== */
+
+@import './components/ai/features/styles/chatTheme.css';
+
+/* ============================================================================== */
 @theme {
   /* ── 品牌色 (引用 :root 中定义的 CSS 变量) ── */
   --color-primary-50: var(--color-primary-50);
@@ -163,11 +166,11 @@
 .text-text-disabled  { color: var(--text-disabled, #9CA3AF); }
 
 /* ── 背景色 ── */
-.bg-surface-default       { background: var(--bg-surface, var(--card-bg-solid, #fff)); }
+.bg-surface-default       { background: var(--bg-surface-container, var(--card-bg-solid, #fff)); }
 .bg-surface-variant       { background: var(--bg-surface-variant, var(--bg-secondary, #f9fafb)); }
 .bg-background-default    { background: var(--bg-primary, #f5f5f7); }
 .bg-background-elevated   { background: var(--bg-surface-elevated, #fff); }
-.bg-background-hover      { background: var(--bg-surface-hover, var(--hover-bg, rgba(0,0,0,0.04))); }
+.bg-background-hover      { background: var(--hover-bg, rgba(0,0,0,0.04)); }
 
 /* ── 边框色 ── */
 .border-border-default { border-color: var(--border-color, rgba(0,0,0,0.06)); }

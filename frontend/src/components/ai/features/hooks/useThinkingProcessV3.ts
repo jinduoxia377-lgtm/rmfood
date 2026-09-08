@@ -538,7 +538,7 @@ export const useThinkingProcessV3 = (): UseThinkingProcessV3Return => {
 
   // ── 监听后端 SSE 实时思考步骤（eventBus 桥接）──
   useEffect(() => {
-    const unsub = eventBus.subscribe('thinking:step' as any, (data: any) => {
+    const unsub = eventBus.subscribe('thinking:step', (data) => {
       // 后端通过 SSE type=step 事件发送的实时思考步骤
       const stepTypeMap: Record<string, ThinkingStepType> = {
         '问题理解': 'analysis', '意图识别': 'analysis',

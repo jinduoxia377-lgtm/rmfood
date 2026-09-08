@@ -19,6 +19,7 @@ export interface StatCardProps {
   subtitle?: string
   trend?: { direction: StatTrend; value: string }
   className?: string
+  onClick?: () => void
 }
 
 const variantStyles: Record<StatVariant, { iconBg: string; iconColor: string; accentBar: string }> = {
@@ -38,7 +39,7 @@ const trendIcon = (direction: StatTrend, cls: string) => {
 export function StatCard({
   label, value, icon: Icon,
   variant = 'primary', size = 'default',
-  subtitle, trend, className,
+  subtitle, trend, className, onClick,
 }: StatCardProps) {
   const s       = variantStyles[variant]
   const isLg    = size === 'large'
@@ -49,8 +50,9 @@ export function StatCard({
       'relative overflow-visible',
       'border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 shadow-sm',
       'transition-all duration-200 hover:shadow-md hover:-translate-y-0.5',
+      onClick && 'cursor-pointer',
       className,
-    )}>
+    )} onClick={onClick}>
       {/* 顶部色条 — 始终显示，flow 布局 */}
       <div className={cn(
         'h-[3px] w-full',

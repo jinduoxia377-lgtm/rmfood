@@ -272,11 +272,13 @@ class TerminologyService:
             if category_id:
                 stmt = stmt.where(Term.category_id == category_id)
             
-            results = db.execute(stmt.filter(or_(
-                Term.term.ilike(f"%{query_normalized}%"),
-                Term.term_en.ilike(f"%{query_normalized}%"),
-                Term.pinyin.ilike(f"%{query_normalized}%")
-            )).limit(max_results).all()
+            results = db.execute(stmt.filter(
+                or_(
+                    Term.term.ilike(f"%{query_normalized}%"),
+                    Term.term_en.ilike(f"%{query_normalized}%"),
+                    Term.pinyin.ilike(f"%{query_normalized}%")
+                )
+            ).limit(max_results)).scalars().all()
             
             return [self._term_to_out(t) for t in results]
 

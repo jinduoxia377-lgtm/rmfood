@@ -1,0 +1,8 @@
+<!-- Toast 轻提示组件 -->
+<view 
+  class="toast {{visible ? 'toast-visible' : ''}} {{type}} {{position}}"
+  wx:if="{{visible}}"
+>
+  <icon wx:if="{{icon}}" name="{{icon}}" size="lg" color="#FFFFFF" />
+  <text class="toast-text">{{content}}</text>
+</view>

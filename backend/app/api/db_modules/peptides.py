@@ -118,10 +118,27 @@ async def search_peptides(
 
 @router.get("/peptides/activity-types", summary="活性肽类型列表")
 async def get_peptide_activity_types(
-    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db_session),
 ):
-    """获取所有活性类型及其数量"""
-    return {"activity_types": await dfbp_service.get_activity_types()}
+    """获取所有活性类型及其数量 — 从 PostgreSQL 实时查询"""
+    from ...services.data_sources.dfbp_client import ACTIVITY_TYPE_MAP
+    result = await db.execute(
+        select(BioactivePeptide.activity_type, func.count().label('cnt'))
+        .where(BioactivePeptide.activity_type.isnot(None))
+        .group_by(BioactivePeptide.activity_type)
+        .order_by(func.count().desc())
+    )
+    rows = result.fetchall()
+    return {
+        "activity_types": [
+            {
+                "type_en": row[0],
+                "type_cn": ACTIVITY_TYPE_MAP.get(row[0], row[0]),
+                "count": row[1],
+            }
+            for row in rows
+        ]
+    }
 
 
 @router.get("/peptides/{peptide_id}", summary="活性肽详情")

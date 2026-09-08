@@ -395,4 +395,7 @@ class OfflineManager {
 }
 
 export { OfflineManager, type OfflineConfig, type SyncStatus, type QueueItem }
+
+// 单例实例
+export const offlineManager = new OfflineManager()
 export default OfflineManager

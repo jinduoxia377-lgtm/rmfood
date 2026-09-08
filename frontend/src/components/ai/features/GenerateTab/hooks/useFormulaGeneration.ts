@@ -22,18 +22,28 @@ interface UseFormulaGenerationOptions {
   effectLabels: string[]
   selectedEffects: EffectOption[]
   onGenerateSuccess?: (candidates: AICandidate[]) => void
+  algorithmConfig?: Record<string, unknown>
+  constraints?: Record<string, unknown>
 }
 
 interface GenerationResult {
   candidates: AICandidate[]
   total: number
   generator: string
+  algorithm_info?: {
+    strategy: string
+    generation: number
+    evaluations: number
+    convergence_generation: number
+  }
 }
 
 export function useFormulaGeneration({
   effectLabels,
   selectedEffects,
   onGenerateSuccess,
+  algorithmConfig,
+  constraints,
 }: UseFormulaGenerationOptions) {
   const queryClient = useQueryClient()
   const feedback = useOperationFeedback()
@@ -69,9 +79,10 @@ export function useFormulaGeneration({
 
         const result = await aiApi.generate(
           effects,
-          undefined,
+          constraints,
           false,
           abortControllerRef.current.signal,
+          algorithmConfig,
         )
 
         updateProgress('generating', 30, DEFAULTS.PLACEHOLDER_TEXTS.GENERATION_PROCESSING, 10)
@@ -289,7 +300,9 @@ export function useFormulaGeneration({
 
   return {
     generateResult,
+    setGenerateResult,
     generator,
+    setGenerator,
     errorMessage,
     setErrorMessage,
     mutation,

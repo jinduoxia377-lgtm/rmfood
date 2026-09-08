@@ -1,0 +1,61 @@
+<wxs module="helpers">
+
+// 健康评分颜色
+function getHealthScoreColor(score) {
+  if (score >= 85) return '#4CAF50'
+  if (score >= 70) return '#8BC34A'
+  if (score >= 50) return '#FFC107'
+  if (score >= 30) return '#FF9800'
+  return '#F44336'
+}
+
+// 健康评分文字
+function getHealthScoreText(score) {
+  if (score >= 85) return '优秀'
+  if (score >= 70) return '良好'
+  if (score >= 50) return '一般'
+  if (score >= 30) return '较差'
+  return '差'
+}
+
+// Nutri-Score字母
+function getNutriScoreLetter(score) {
+  if (score >= 85) return 'A'
+  if (score >= 70) return 'B'
+  if (score >= 50) return 'C'
+  if (score >= 30) return 'D'
+  return 'E'
+}
+
+// NOVA分组颜色
+function getNovaGroupColor(group) {
+  var colors = {1: '#4CAF50', 2: '#8BC34A', 3: '#FFC107', 4: '#F44336'}
+  return colors[group] || '#999999'
+}
+
+// 格式化价格
+function formatPrice(price) {
+  if (!price) return '¥0.00'
+  return '¥' + (price / 100).toFixed(2)
+}
+
+// 格式化日期
+function formatDate(date) {
+  if (!date) return ''
+  var d = new Date(date)
+  var year = d.getFullYear()
+  var month = ('0' + (d.getMonth() + 1)).slice(-2)
+  var day = ('0' + d.getDate()).slice(-2)
+  return year + '-' + month + '-' + day
+}
+
+module.exports = {
+  getHealthScoreColor: getHealthScoreColor,
+  getHealthScoreText: getHealthScoreText,
+  getNutriScoreLetter: getNutriScoreLetter,
+  getNovaGroupColor: getNovaGroupColor,
+  formatPrice: formatPrice,
+  formatDate: formatDate
+}
+
+</wxs>

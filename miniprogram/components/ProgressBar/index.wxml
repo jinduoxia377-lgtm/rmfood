@@ -1,0 +1,7 @@
+<!-- 进度条组件 -->
+<view class="progress-bar">
+  <view class="track">
+    <view class="fill" style="width: {{percentage}}%; background: {{color}};"></view>
+  </view>
+  <text class="label">{{label}}</text>
+</view>

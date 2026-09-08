@@ -173,13 +173,26 @@ async def update_llm_config(
     current_user: User = Depends(get_current_active_user),
 ):
     """更新 LLM 配置，仅管理员可执行"""
+    from ...services.llm_service import LLMConfig, save_config_to_db, llm_service
 
     # 记录接收到的配置信息（脱敏处理）
     masked_key = req.api_key[:8] + "..." + req.api_key[-4:] if len(req.api_key) > 12 else "***"
     logger.info(f"收到 LLM 配置更新请求 - provider={req.provider}, model={req.model}, api_key={masked_key}, base_url={req.base_url}")
 
-    # 这里应该调用 LLM 服务来更新配置
-    # 当前版本返回成功响应，实际配置更新需要在 LLM 服务层实现
+    # 构建配置并持久化到数据库
+    config = LLMConfig(
+        provider=req.provider,
+        api_key=req.api_key,
+        base_url=req.base_url,
+        model=req.model,
+        max_tokens=req.max_tokens,
+        temperature=req.temperature,
+    )
+    save_config_to_db(config, user_id=current_user.id)
+
+    # 更新运行时配置
+    llm_service.update_config(config)
+
     return {
         "success": True,
         "message": "LLM 配置已更新",
@@ -363,3 +376,99 @@ async def get_ai_stats_summary(
         result["model_status"] = {"llm": "unknown", "status": "inactive", "provider": "unknown"}
 
     return AISummaryStats(**result)
+
+
+# ===== 新增：统一模型配置管理 API =====
+
+class SaveModelConfigRequest(BaseModel):
+    """保存模型配置请求"""
+    model_type: str = Field(..., description="模型类型")
+    provider: str = Field("", description="提供商")
+    api_key: str = Field("", description="API Key")
+    base_url: str = Field("", description="基础 URL")
+    model: str = Field("", description="模型名称")
+    max_tokens: int = Field(4096, description="最大 token 数")
+    temperature: float = Field(0.7, description="温度参数")
+
+
+@sub_router.post("/models/config/{model_type}", summary="保存模型配置")
+async def save_model_config(
+    model_type: str,
+    req: SaveModelConfigRequest,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: User = Depends(get_current_active_user),
+):
+    """保存单个模型配置到数据库"""
+    from ...services.ai_model_config_service import AIModelConfigService, ModelConfig
+    from ...services.llm_service import llm_service, LLMConfig
+
+    valid_types = ["llm", "formula_gpt", "synergy_net", "safety_checker", "taste_predictor", "stability_model", "peptide_scorer"]
+    if model_type not in valid_types:
+        raise HTTPException(status_code=400, detail=f"不支持的模型类型: {model_type}")
+
+    config = ModelConfig(
+        model_type=model_type,
+        provider=req.provider,
+        api_key=req.api_key,
+        base_url=req.base_url,
+        model=req.model,
+        max_tokens=req.max_tokens,
+        temperature=req.temperature,
+    )
+
+    success = await AIModelConfigService.save_config(db, config)
+    masked_key = AIModelConfigService.mask_api_key(req.api_key)
+    logger.info(f"模型配置已保存: {model_type}, key={masked_key}")
+
+    # 同步更新 llm_service 配置（仅 LLM 类型）
+    if model_type == 'llm' and req.api_key:
+        llm_config = LLMConfig(
+            provider=req.provider or 'openai',
+            api_key=req.api_key,
+            base_url=req.base_url,
+            model=req.model,
+            max_tokens=req.max_tokens,
+            temperature=req.temperature,
+        )
+        llm_service.update_config(llm_config, user_id=current_user.id)
+        logger.info(f"LLM 服务配置已更新: provider={req.provider}, model={req.model}")
+
+    return {
+        "success": success,
+        "message": "配置已保存到数据库",
+        "config": config.to_dict(),
+    }
+
+
+@sub_router.get("/models/configs", summary="获取所有模型配置")
+async def get_all_model_configs(
+    db: AsyncSession = Depends(get_db_session),
+    current_user: User = Depends(get_current_user),
+):
+    """获取所有模型配置（API Key 已脱敏）"""
+    from ...services.ai_model_config_service import AIModelConfigService
+
+    configs = await AIModelConfigService.get_all_configs(db)
+    result = {}
+    for model_type, config in configs.items():
+        result[model_type] = config.to_dict()
+
+    return {"success": True, "configs": result}
+
+
+@sub_router.get("/models/config/{model_type}", summary="获取单个模型配置")
+async def get_model_config(
+    model_type: str,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: User = Depends(get_current_user),
+):
+    """获取单个模型配置（API Key 已脱敏）"""
+    from ...services.ai_model_config_service import AIModelConfigService
+
+    config = await AIModelConfigService.get_config(db, model_type)
+
+    return {
+        "success": True,
+        "model_type": model_type,
+        "config": config.to_dict(),
+    }

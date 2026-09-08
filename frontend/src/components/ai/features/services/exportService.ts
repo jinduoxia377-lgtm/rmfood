@@ -102,7 +102,7 @@ class ExportService {
   <title>RMFOOD 智能对话记录</title>
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
-    h1 { text-align: center; color: #1976D2; }
+    h1 { text-align: center; color: #10B981; }
     .meta { color: #666; font-size: 14px; text-align: center; margin-bottom: 20px; }
   </style>
 </head>
@@ -323,7 +323,7 @@ class ExportService {
   <title>RMFOOD 智能对话记录</title>
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
-    h1 { text-align: center; color: #1976D2; }
+    h1 { text-align: center; color: #10B981; }
     .meta { color: #666; font-size: 14px; text-align: center; margin-bottom: 20px; }
   </style>
 </head>

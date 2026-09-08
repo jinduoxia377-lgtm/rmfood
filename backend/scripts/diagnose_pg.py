@@ -22,17 +22,17 @@ async def diagnose():
 
             # Step 2: 检查目标数据库是否存在
             print("\n" + "=" * 50)
-            print("Step 2: 检查 rmfood_platform 数据库")
+            print("Step 2: 检查 rmfood 数据库")
             print("=" * 50)
             exists = await conn.fetchval(
-                "SELECT 1 FROM pg_database WHERE datname = 'rmfood_platform'"
+                "SELECT 1 FROM pg_database WHERE datname = 'rmfood'"
             )
             if exists:
-                print(f"  ✅ 数据库 'rmfood_platform' 已存在")
+                print(f"  ✅ 数据库 'rmfood' 已存在")
             else:
-                print(f"  ❌ 数据库 'rmfood_platform' 不存在，正在创建...")
+                print(f"  ❌ 数据库 'rmfood' 不存在，正在创建...")
                 try:
-                    await conn.execute('CREATE DATABASE "rmfood_platform"')
+                    await conn.execute('CREATE DATABASE "rmfood"')
                     print(f"  ✅ 数据库创建成功!")
                 except Exception as e:
                     print(f"  ⚠️ 创建失败(可能需要超级用户权限): {e}")

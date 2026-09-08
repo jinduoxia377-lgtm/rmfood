@@ -1,0 +1,19 @@
+{
+  "total_herbs": 657,
+  "match_stats": {
+    "exact": 219,
+    "fuzzy": 3,
+    "tcmsp_only": 276,
+    "symmap_only": 159
+  },
+  "image_match_count": 83,
+  "with_images": 83,
+  "food_homology_count": 41,
+  "with_ob_percent": 498,
+  "with_nature": 0,
+  "with_meridians": 0,
+  "avg_quality_score": 0.28,
+  "compounds_total": 18887,
+  "targets_total": 21513,
+  "diseases_total": 24101
+}

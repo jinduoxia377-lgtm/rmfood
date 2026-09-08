@@ -79,7 +79,7 @@ const RADAR_DIMENSIONS = [
   { key: 'compliance', label: '合规性' },
 ];
 
-const COLORS = ['#34C759', '#007AFF', '#D97706', '#FF3B30', '#AF52DE', '#D946EF'];
+const COLORS = ['var(--color-primary-500, #10b981)', 'var(--color-blue-500, #3b82f6)', 'var(--color-amber-500, #f59e0b)', 'var(--color-red-500, #ef4444)', 'var(--color-emerald-500, #10b981)', 'var(--color-pink-500, #ec4899)'];
 
 type DisplayMode = 'absolute' | 'percentage' | 'rank';
 

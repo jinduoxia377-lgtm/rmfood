@@ -1,0 +1,43 @@
+<!-- 用户协议页面 -->
+<view class="page-container">
+  <view class="header" style="padding-top: {{statusBarHeight}}px;">
+    <view class="back-btn" bindtap="goBack">
+      <text>‹</text>
+    </view>
+    <view class="header-title">用户协议</view>
+  </view>
+
+  <scroll-view class="content-scroll" scroll-y>
+    <view class="agreement-content">
+      <view class="section">
+        <text class="section-title">一、协议的接受</text>
+        <text class="section-content">1.1 欢迎使用RMFOOD应用。本协议是您与RMFOOD之间关于您使用本应用服务所订立的协议。</text>
+        <text class="section-content">1.2 当您注册、登录或使用本应用服务时，即表示您已阅读并同意接受本协议的全部内容。</text>
+      </view>
+
+      <view class="section">
+        <text class="section-title">二、服务内容</text>
+        <text class="section-content">2.1 RMFOOD提供药食同源配方查询、配料表分析、健康评分等服务。</text>
+        <text class="section-content">2.2 本应用提供的信息仅供健康参考，不构成医疗建议。</text>
+      </view>
+
+      <view class="section">
+        <text class="section-title">三、用户权利与义务</text>
+        <text class="section-content">3.1 您有权使用本应用提供的各项服务。</text>
+        <text class="section-content">3.2 您应确保提供的信息真实、准确。</text>
+      </view>
+
+      <view class="section">
+        <text class="section-title">四、免责声明</text>
+        <text class="section-content">4.1 本应用提供的健康信息仅供参考，不能替代专业医疗建议。</text>
+        <text class="section-content">4.2 因使用本应用信息而产生的任何后果，本应用不承担责任。</text>
+      </view>
+
+      <view class="section">
+        <text class="section-title">五、其他</text>
+        <text class="section-content">5.1 本应用保留随时修改本协议的权利。</text>
+        <text class="section-content">5.2 本协议的解释权归RMFOOD所有。</text>
+      </view>
+    </view>
+  </scroll-view>
+</view>

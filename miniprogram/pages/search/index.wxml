@@ -1,0 +1,163 @@
+<!-- 搜索页面 -->
+<view class="page-container">
+  <!-- 顶部Header -->
+  <view class="header" style="padding-top: {{statusBarHeight}}px;">
+    <view class="header-content">
+      <!-- 返回按钮 -->
+      <view class="nav-btn" bindtap="handleBack" aria-label="返回">
+        <icon name="arrow-left" size="md" color="#FFFFFF" />
+      </view>
+      
+      <!-- 标题 -->
+      <view class="header-title">
+        <view class="title-main">搜索</view>
+      </view>
+      
+      <!-- 用户头像 -->
+      <avatar
+        src="{{userInfo && userInfo.avatarUrl || ''}}"
+        size="sm"
+        bind:tap="goToProfile"
+        aria-label="个人中心"
+      />
+    </view>
+  </view>
+
+  <!-- 搜索框 -->
+  <view class="search-bar">
+    <view class="search-input-wrapper" role="search">
+      <icon name="search" size="md" color="var(--color-text-muted)" />
+      <input 
+        class="search-input" 
+        placeholder="搜索食材、配方..." 
+        placeholder-class="search-placeholder"
+        value="{{searchQuery}}"
+        bindinput="onSearchInput"
+        bindconfirm="performSearch"
+        aria-label="搜索输入框"
+      />
+    </view>
+  </view>
+
+  <!-- 搜索历史 -->
+  <view wx:if="{{!hasSearched && searchHistory.length > 0}}" class="history-section">
+    <view class="history-header">
+      <text class="history-title">搜索历史</text>
+      <view class="history-clear" bindtap="clearHistory" aria-label="清除历史">
+        <icon name="delete" size="sm" color="var(--color-text-muted)" />
+        <text>清除</text>
+      </view>
+    </view>
+    <view class="history-list">
+      <view 
+        wx:for="{{searchHistory}}" 
+        wx:key="index"
+        class="history-item"
+        bindtap="searchFromHistory"
+        data-query="{{item}}"
+        aria-label="搜索历史: {{item}}"
+      >
+        <icon name="history" size="sm" color="var(--color-text-muted)" />
+        <text class="history-text">{{item}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 搜索结果 -->
+  <view wx:if="{{hasSearched}}" class="results-section">
+    <!-- 骨架屏加载状态 -->
+    <skeleton-loader
+      wx:if="{{showSkeleton}}"
+      type="list"
+      count="3"
+      class="skeleton-container"
+    ></skeleton-loader>
+
+    <!-- 结果统计 -->
+    <view wx:if="{{!showSkeleton}}" class="result-stats">
+      <text>找到 {{allResults.length}} 条结果</text>
+      <view class="sort-selector" bindtap="showSortMenu" role="button" aria-label="排序选项">
+        <text>{{sortBy === 'relevance' ? '相关性' : sortBy === 'score' ? '健康分' : '化合物数'}}</text>
+        <icon name="arrow-down" size="sm" color="var(--color-text-muted)" />
+      </view>
+    </view>
+    
+    <!-- 结果列表 -->
+    <view wx:if="{{!showSkeleton}}" class="results-list">
+      <card 
+        wx:for="{{allResults}}" 
+        wx:key="id"
+        shadow="sm"
+        clickable
+        bind:tap="viewResult"
+        data-id="{{item.id}}"
+        aria-label="查看配方: {{item.name}}"
+      >
+        <view class="result-card">
+          <image class="result-image" src="{{item.coverImage || '/assets/images/default-result.png'}}" mode="aspectFill" lazy-load aria-hidden="true" />
+          <view class="result-content">
+            <text class="result-name">{{item.name}}</text>
+            <text class="result-desc">{{item.description || item.shortDesc}}</text>
+            <view class="result-tags">
+              <tag wx:for="{{item.tags}}" wx:for-item="tag" wx:key="index" type="primary" size="small">{{tag}}</tag>
+            </view>
+          </view>
+        </view>
+      </card>
+    </view>
+    
+    <!-- 空状态 -->
+    <empty-state
+      wx:if="{{!showSkeleton && allResults.length === 0}}"
+      icon="search"
+      title="未找到相关结果"
+      desc="请尝试其他关键词"
+    ></empty-state>
+  </view>
+
+  <!-- 热门推荐 -->
+  <view wx:if="{{!hasSearched && hotSearches.length > 0}}" class="hot-section">
+    <view class="hot-header">
+      <text class="hot-title">热门搜索</text>
+    </view>
+    <view class="hot-list">
+      <view 
+        wx:for="{{hotSearches}}" 
+        wx:key="id"
+        class="hot-item"
+        bindtap="searchFromHot"
+        data-query="{{item.name}}"
+        aria-label="热门搜索: {{item.name}}"
+      >
+        <text class="hot-rank">{{item.rank}}</text>
+        <text class="hot-name">{{item.name}}</text>
+        <text class="hot-count">{{item.count}}次搜索</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 分类标签 -->
+  <view class="category-section">
+    <view class="category-header">
+      <text class="category-title">分类浏览</text>
+    </view>
+    <view class="category-grid">
+      <view 
+        wx:for="{{categories}}" 
+        wx:key="id"
+        class="category-item"
+        bindtap="searchByCategory"
+        data-category="{{item.id}}"
+        aria-label="查看{{item.name}}分类"
+      >
+        <view class="category-icon-wrap">
+          <icon name="{{item.icon}}" size="lg" color="{{item.color}}" />
+        </view>
+        <text class="category-name">{{item.name}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部间距 -->
+  <view class="bottom-spacing"></view>
+</view>

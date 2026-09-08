@@ -1,0 +1,171 @@
+/** Modal 弹窗组件样式 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.modal-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal-container {
+  background-color: #FFFFFF;
+  border-radius: 32rpx;
+  width: 600rpx;
+  max-width: 90%;
+  max-height: 80vh;
+  overflow: hidden;
+  transform: scale(0.9);
+  transition: transform 0.3s ease;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.2);
+}
+
+.modal-overlay.active .modal-container {
+  transform: scale(1);
+}
+
+.modal-container.bottom {
+  align-self: flex-end;
+  border-radius: 32rpx 32rpx 0 0;
+  width: 100%;
+  max-width: 100%;
+}
+
+.modal-container.top {
+  align-self: flex-start;
+  border-radius: 0 0 32rpx 32rpx;
+  width: 100%;
+  max-width: 100%;
+}
+
+/* 头部 */
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 40rpx 32rpx 24rpx;
+  border-bottom: 1rpx solid #F3F4F6;
+}
+
+.modal-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #1A1A1A;
+}
+
+.modal-close {
+  width: 48rpx;
+  height: 48rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s ease;
+}
+
+.modal-close:active {
+  background-color: #F3F4F6;
+}
+
+/* 内容 */
+.modal-content {
+  padding: 32rpx;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+/* 底部 */
+.modal-footer {
+  padding: 24rpx 32rpx;
+  border-top: 1rpx solid #F3F4F6;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 24rpx;
+}
+
+.modal-actions.center {
+  justify-content: center;
+}
+
+.modal-actions.end {
+  justify-content: flex-end;
+}
+
+/* 按钮 */
+.modal-btn {
+  flex: 1;
+  padding: 24rpx 32rpx;
+  border-radius: 48rpx;
+  font-size: 28rpx;
+  font-weight: 500;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.modal-btn:active {
+  opacity: 0.8;
+  transform: scale(0.98);
+}
+
+.modal-btn-cancel {
+  background-color: #F3F4F6;
+  color: #666666;
+}
+
+.modal-btn-confirm {
+  background: linear-gradient(135deg, #2D5A3D 0%, #4A7C5C 100%);
+  color: #FFFFFF;
+}
+
+.modal-btn-confirm.primary {
+  background: linear-gradient(135deg, #2D5A3D 0%, #4A7C5C 100%);
+}
+
+.modal-btn-confirm.danger {
+  background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+}
+
+/* 动画 */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20rpx) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes slideOut {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(20rpx) scale(0.95);
+  }
+}
+
+.slide-in {
+  animation: slideIn 0.3s ease forwards;
+}
+
+.slide-out {
+  animation: slideOut 0.2s ease forwards;
+}

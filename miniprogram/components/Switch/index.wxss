@@ -1,0 +1,69 @@
+/** Switch 开关组件样式 */
+.switch {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.switch-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.switch-track {
+  position: relative;
+  width: 80rpx;
+  height: 48rpx;
+  border-radius: var(--radius-full);
+  background-color: var(--color-gray-300);
+  transition: background-color var(--transition-fast);
+}
+
+.switch-track-on {
+  background-color: var(--color-primary);
+}
+
+.switch-handle {
+  position: absolute;
+  top: 4rpx;
+  left: 4rpx;
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: 50%;
+  background-color: #FFFFFF;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition-fast);
+}
+
+.switch-track-on .switch-handle {
+  transform: translateX(32rpx);
+}
+
+/* 尺寸 */
+.switch-small .switch-track {
+  width: 64rpx;
+  height: 36rpx;
+}
+
+.switch-small .switch-handle {
+  width: 28rpx;
+  height: 28rpx;
+}
+
+.switch-small.switch-track-on .switch-handle {
+  transform: translateX(24rpx);
+}
+
+.switch-large .switch-track {
+  width: 96rpx;
+  height: 56rpx;
+}
+
+.switch-large .switch-handle {
+  width: 48rpx;
+  height: 48rpx;
+}
+
+.switch-large.switch-track-on .switch-handle {
+  transform: translateX(36rpx);
+}

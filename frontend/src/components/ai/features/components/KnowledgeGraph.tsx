@@ -72,7 +72,7 @@ const DEFAULT_CONFIG = {
   simulationAlphaDecay: 0.02,
   zoomExtent: [0.2, 4] as [number, number],
   colors: {
-    node: ['var(--color-indigo-500, #6366F1)', 'var(--color-violet-500, #AF52DE)', 'var(--color-pink-500, #D946EF)', 'var(--color-rose-500, #F43F5E)', 'var(--color-orange-500, #EA580C)', 'var(--color-yellow-500, #EAB308)'],
+    node: ['var(--color-primary-500, #10b981)', 'var(--color-primary-400, #34d399)', 'var(--color-emerald-500, #10b981)', 'var(--color-teal-500, #14b8a6)', 'var(--color-cyan-500, #06b6d4)', 'var(--color-sky-500, #0ea5e9)'],
     link: 'var(--color-slate-400, #9CA3AF)',
     linkHighlight: 'var(--color-secondary, #0A84FF)',
     background: 'var(--color-white, #FFFFFF)',

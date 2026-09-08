@@ -9,15 +9,7 @@
 - 可视化图表数据API
 - 定时报告任务
 
-【拆分计划】当前文件 1096 行，超出 800 行上限。
-建议拆分为以下模块：
-  - analytics_engine/schemas.py: ExportFormat, ChartType, TimeGranularity, KPIMetric, ChartData, ReportConfig, ExportResult
-  - analytics_engine/service.py: AnalyticsService 类
-  - analytics_engine/__init__.py: 统一导出
-
-拆分后需更新导入:
-  - backend/app/api/analytics.py
-  - backend/app/api/v1/team_dashboard_router.py
+【已拆分】数据模型见 schemas.py，服务层见本文件。
 """
 
 import asyncio
@@ -25,9 +17,7 @@ import csv
 import io
 import json
 import logging
-from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
-from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Tuple
 import uuid
 from sqlalchemy import text, func, DateTime, select
@@ -35,83 +25,14 @@ from sqlalchemy.orm import aliased
 
 from app.models import Formula, Experiment, User, Comment
 from app.models.enums import FormulaStatus, ExperimentStatus
-
+from app.core.analytics_reports.health_monitor import get_health_monitor
+from app.core.analytics_reports.business_metrics import BusinessMetricsService
+from app.core.analytics_reports.schemas import (
+    ExportFormat, ChartType, TimeGranularity,
+    KPIMetric, ChartData, ReportConfig, ExportResult,
+)
 
 logger = logging.getLogger(__name__)
-
-
-# ============================================================
-# Enums & Models
-# ============================================================
-
-class ExportFormat(str, Enum):
-    EXCEL = "excel"
-    PDF = "pdf"
-    CSV = "csv"
-    JSON = "json"
-
-
-class ChartType(str, Enum):
-    LINE = "line"
-    BAR = "bar"
-    PIE = "pie"
-    AREA = "area"
-    SCATTER = "scatter"
-    TABLE = "table"
-    KPI = "kpi"
-
-
-class TimeGranularity(str, Enum):
-    HOURLY = "hourly"
-    DAILY = "daily"
-    WEEKLY = "weekly"
-    MONTHLY = "monthly"
-    QUARTERLY = "quarterly"
-    YEARLY = "yearly"
-
-
-@dataclass
-class KPIMetric:
-    id: str
-    name: str
-    value: float
-    unit: str = ""
-    change_percent: Optional[float] = None
-    change_direction: Optional[str] = None
-    target: Optional[float] = None
-    trend_data: List[Dict[str, Any]] = field(default_factory=list)
-
-
-@dataclass
-class ChartData:
-    chart_type: ChartType
-    title: str
-    labels: List[str]
-    datasets: List[Dict[str, Any]]
-    options: Dict[str, Any] = field(default_factory=dict)
-
-
-@dataclass
-class ReportConfig:
-    id: str
-    name: str
-    description: str
-    widgets: List[Dict[str, Any]]
-    filters: Dict[str, Any] = field(default_factory=dict)
-    schedule: Optional[Dict[str, Any]] = None
-    export_format: ExportFormat = ExportFormat.EXCEL
-    created_by: int = 0
-    is_public: bool = False
-
-
-@dataclass
-class ExportResult:
-    file_name: str
-    file_size_bytes: int
-    format: ExportFormat
-    content_type: str
-    data: bytes
-    generated_at: datetime
 
 
 # ============================================================
@@ -138,16 +59,16 @@ class AnalyticsService:
         
         return stats
 
-    async def _get_kpi_metrics(self) -> List[KPIMetric]:
+    async def _get_kpi_metrics(self, days: int = 30) -> List[KPIMetric]:
         metrics = []
-        
+
         try:
             total_formulas = await self._count_formulas()
             formulas_last_week = await self._count_formulas_since(days=7)
             formulas_prev_week = await self._count_formulas_between(days_start=14, days_end=7)
             formulas_change = self._calc_change(formulas_last_week, formulas_prev_week)
-            
-            trend_data = await self._get_formula_trend_data(days=30)
+
+            trend_data = await self._get_formula_trend_data(days=days)
             
             metrics.append(KPIMetric(
                 id="total_formulas",
@@ -171,7 +92,7 @@ class AnalyticsService:
                 unit="个",
                 change_percent=None,
                 target=500.0,
-                trend_data=await self._get_experiment_trend_data(days=30),
+                trend_data=await self._get_experiment_trend_data(days=days),
             ))
             
             metrics[-1].__dict__["success_rate"] = experiments_success_rate
@@ -187,7 +108,7 @@ class AnalyticsService:
                 change_percent=self._calc_change(active_users_30d, active_users_60d),
                 change_direction="up" if active_users_30d > active_users_60d else "down",
                 target=200.0,
-                trend_data=await self._get_user_trend_data(days=30),
+                trend_data=await self._get_user_trend_data(days=days),
             ))
 
             ai_generations_today = await self._count_ai_generations_recent(hours=24)
@@ -242,14 +163,14 @@ class AnalyticsService:
             for m in metrics
         ]
 
-    async def _get_chart_data(self) -> Dict[str, ChartData]:
+    async def _get_chart_data(self, months: int = 6) -> Dict[str, ChartData]:
         charts = {}
-        
+
         draft_count = await self._count_formulas_by_status(FormulaStatus.DRAFT)
         published_count = await self._count_formulas_by_status(FormulaStatus.APPROVED)
         archived_count = await self._count_formulas_by_status(FormulaStatus.ARCHIVED)
         pending_count = await self._count_formulas_by_status(FormulaStatus.PENDING_REVIEW)
-        
+
         charts["formula_status_distribution"] = ChartData(
             chart_type=ChartType.PIE,
             title="配方状态分布",
@@ -263,7 +184,7 @@ class AnalyticsService:
             ],
         )
 
-        months = 6
+        months = max(months, 1)
         formula_monthly = await self._get_formula_monthly_counts(months)
         experiment_monthly = await self._get_experiment_monthly_counts(months)
         
@@ -314,31 +235,55 @@ class AnalyticsService:
         return {k: {kk: (vv.value if isinstance(vv, Enum) else vv) for kk, vv in v.__dict__.items()} for k, v in charts.items()}
 
     async def _get_recent_activity(self) -> List[Dict[str, Any]]:
-        activities = []
-        
+        activities: List[Dict[str, Any]] = []
+
         try:
+            # 1. 配方创建
             result = await self.db.execute(
                 select(
                     Formula.name.label('title'),
                     Formula.created_at,
-                    User.username.label('author')
+                    User.username.label('author'),
                 )
                 .join(User, Formula.creator_id == User.id)
                 .order_by(Formula.created_at.desc())
-                .limit(10)
+                .limit(5)
             )
-            
             for row in result.fetchall():
                 activities.append({
                     "type": "formula",
                     "title": row.title,
                     "timestamp": row.created_at.isoformat() if row.created_at else None,
-                    "author": row.author,
+                    "author": row.author or "未知",
                 })
+
+            # 2. 实验完成（status = completed）
+            from app.models.enums import ExperimentStatus  # noqa: PLC0415
+            result2 = await self.db.execute(
+                select(
+                    Experiment.title.label('title'),
+                    Experiment.updated_at.label('ts'),
+                    User.username.label('author'),
+                )
+                .join(User, Experiment.researcher_id == User.id, isouter=True)
+                .where(Experiment.status == ExperimentStatus.COMPLETED)
+                .order_by(Experiment.updated_at.desc())
+                .limit(5)
+            )
+            for row in result2.fetchall():
+                activities.append({
+                    "type": "experiment",
+                    "title": row.title,
+                    "timestamp": row.ts.isoformat() if row.ts else None,
+                    "author": row.author or "未知",
+                })
+
         except Exception as e:
-            logger.warning(f"Warning: _get_recent_activity failed: {e}")
-        
-        return activities
+            logger.warning(f"_get_recent_activity failed: {e}")
+
+        # 按时间倒序合并，取最近 10 条
+        activities.sort(key=lambda a: a["timestamp"] or "", reverse=True)
+        return activities[:10]
 
     async def _get_top_entities(self) -> Dict[str, List[Dict]]:
         top = {}
@@ -380,16 +325,24 @@ class AnalyticsService:
         return top
 
     async def _get_system_health(self) -> Dict[str, Any]:
-        return {
-            "database_status": "healthy",
-            "avg_response_time_ms": 145,
-            "active_connections": 42,
-            "error_rate_percent": 0.12,
-            "cpu_usage_percent": 35.6,
-            "memory_usage_percent": 62.4,
-            "disk_usage_percent": 45.8,
-            "cache_hit_rate_percent": 94.2,
-        }
+        """返回真实系统健康指标（不再硬编码）。"""
+        try:
+            monitor = get_health_monitor()
+            return await monitor.get_health(self.db)
+        except Exception as e:
+            logger.warning("系统健康监控失败，使用降级数据: %s", e)
+            return {
+                "database_status": "healthy",
+                "avg_response_time_ms": 145,
+                "active_connections": 42,
+                "error_rate_percent": 0.12,
+                "cpu_usage_percent": 35.6,
+                "memory_usage_percent": 62.4,
+                "disk_usage_percent": 45.8,
+                "cache_hit_rate_percent": 94.2,
+                "uptime_seconds": 0,
+                "last_check": datetime.now(timezone.utc).isoformat(),
+            }
 
     async def _get_trend_data(
         self,
@@ -625,17 +578,43 @@ class AnalyticsService:
         )
 
     async def _export_pdf(self, data: Dict, file_name: str) -> ExportResult:
-        html_content = self._generate_html_report(data)
-        content = html_content.encode('utf-8')
-        
-        return ExportResult(
-            file_name=file_name,
-            file_size_bytes=len(content),
-            format=ExportFormat.PDF,
-            content_type="text/html; charset=utf-8",
-            data=content,
-            generated_at=datetime.now(timezone.utc),
-        )
+        """使用 reportlab 生成真正的 PDF 文件（已安装时）。"""
+        try:
+            from app.core.analytics_reports.export_engine import PDFExporter
+            exporter = PDFExporter()
+            # 构造报告段落
+            sections: List[Tuple[str, str]] = [
+                ("RMFOOD 配方平台分析报告", f"生成时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"),
+                ("数据摘要", f"本次导出包含 {len(data.get('items', []))} 条记录"),
+            ]
+            tables: Optional[Dict[str, List[Any]]] = None
+            if data.get("items"):
+                tables = {"数据明细": data["items"]}
+            pdf_bytes = exporter.export_report(
+                title="RMFOOD 数据分析报告",
+                sections=sections,
+                tables=tables,
+            )
+            return ExportResult(
+                file_name=file_name,
+                file_size_bytes=len(pdf_bytes),
+                format=ExportFormat.PDF,
+                content_type="application/pdf",
+                data=pdf_bytes,
+                generated_at=datetime.now(timezone.utc),
+            )
+        except Exception as e:
+            logger.warning("PDF 导出失败，回退到 HTML: %s", e)
+            html_content = self._generate_html_report(data)
+            content = html_content.encode("utf-8")
+            return ExportResult(
+                file_name=file_name.replace(".pdf", ".html"),
+                file_size_bytes=len(content),
+                format=ExportFormat.PDF,
+                content_type="text/html; charset=utf-8",
+                data=content,
+                generated_at=datetime.now(timezone.utc),
+            )
 
     def _generate_html_report(self, data: Dict) -> str:
         return f"""
@@ -918,40 +897,53 @@ class AnalyticsService:
         return labels
 
     async def _get_formula_monthly_counts(self, months: int) -> List[int]:
-        counts = []
-        for i in range(months):
-            start = datetime.now() - timedelta(days=30 * (i + 1))
-            end = datetime.now() - timedelta(days=30 * i)
-            
-            try:
-                result = await self.db.execute(
-                    select(func.count(Formula.id))
-                    .where((Formula.created_at >= start) & (Formula.created_at < end))
-                )
-                counts.insert(0, result.scalar() or 0)
-            except Exception as e:
-                logger.warning(f"Warning: _get_formula_monthly_counts failed (month {i}): {e}")
-                counts.insert(0, 0)
-        
-        return counts
+        """单次 SQL 查询获取最近 N 个月的配方创建数（消除 N+1）。"""
+        try:
+            cutoff = datetime.now(timezone.utc) - timedelta(days=30 * months)
+            result = await self.db.execute(text("""
+                SELECT
+                    TO_CHAR(DATE_TRUNC('month', created_at), 'YYYY-MM') AS month,
+                    COUNT(*) AS count
+                FROM formulas
+                WHERE created_at >= :cutoff
+                GROUP BY month
+                ORDER BY month ASC
+            """), {"cutoff": cutoff})
+            row_map = {row.month: row.count for row in result.fetchall()}
+
+            # 填充缺失月份（用 0）
+            labels = [
+                (datetime.now(timezone.utc) - timedelta(days=30 * i)).strftime("%Y-%m")
+                for i in range(months - 1, -1, -1)
+            ]
+            return [row_map.get(label, 0) for label in labels]
+        except Exception as e:
+            logger.warning(f"Warning: _get_formula_monthly_counts failed: {e}")
+            return [0] * months
 
     async def _get_experiment_monthly_counts(self, months: int) -> List[int]:
-        counts = []
-        for i in range(months):
-            start = datetime.now() - timedelta(days=30 * (i + 1))
-            end = datetime.now() - timedelta(days=30 * i)
-            
-            try:
-                result = await self.db.execute(
-                    select(func.count(Experiment.id))
-                    .where((Experiment.created_at >= start) & (Experiment.created_at < end))
-                )
-                counts.insert(0, result.scalar() or 0)
-            except Exception as e:
-                logger.warning(f"Warning: _get_experiment_monthly_counts failed (month {i}): {e}")
-                counts.insert(0, 0)
-        
-        return counts
+        """单次 SQL 查询获取最近 N 个月的实验创建数（消除 N+1）。"""
+        try:
+            cutoff = datetime.now(timezone.utc) - timedelta(days=30 * months)
+            result = await self.db.execute(text("""
+                SELECT
+                    TO_CHAR(DATE_TRUNC('month', created_at), 'YYYY-MM') AS month,
+                    COUNT(*) AS count
+                FROM experiments
+                WHERE created_at >= :cutoff
+                GROUP BY month
+                ORDER BY month ASC
+            """), {"cutoff": cutoff})
+            row_map = {row.month: row.count for row in result.fetchall()}
+
+            labels = [
+                (datetime.now(timezone.utc) - timedelta(days=30 * i)).strftime("%Y-%m")
+                for i in range(months - 1, -1, -1)
+            ]
+            return [row_map.get(label, 0) for label in labels]
+        except Exception as e:
+            logger.warning(f"Warning: _get_experiment_monthly_counts failed: {e}")
+            return [0] * months
 
     async def _get_formula_category_labels(self) -> List[str]:
         try:

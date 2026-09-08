@@ -58,6 +58,7 @@ class OptimizationRequest:
     require_pareto: bool = False
     strict_nutrition: bool = False
     exclude_herbs: List[str] = field(default_factory=list)
+    special_population: str = "adult"
     max_cost: Optional[float] = None
     historical_similarity_threshold: float = 0.9
     custom_objectives: Optional[List[Dict[str, Any]]] = None
@@ -212,10 +213,15 @@ class UnifiedFormulaOptimizer:
 
     def select_strategy(self, request: OptimizationRequest) -> Tuple[str, str]:
         """
-        智能策略选择
+        智能策略选择（增强版）
 
-        Returns:
-            (strategy, explanation)
+        基于问题特征 + 历史检索 + Bandit UCB1-Tuned 三层面决策：
+        1. 用户显式指定 → 直接使用
+        2. Pareto前沿需求 → NSGA-II/III
+        3. 营养约束严格 → GA-LP混合
+        4. 大规模候选池 → GA-LP混合
+        5. 历史检索命中（高相似度）→ 复用历史最优策略
+        6. Bandit UCB1-Tuned 推荐（加入特征加权探索）
         """
         # 1. 如果用户指定了策略，直接使用
         if request.strategy != "auto":
@@ -224,7 +230,10 @@ class UnifiedFormulaOptimizer:
             else:
                 logger.warning(f"未知策略: {request.strategy}, 回退auto")
 
-        # 2. 如果需要Pareto前沿 → NSGA-II/III
+        # 2. 提取问题特征用于决策
+        features = self._extract_problem_features(request)
+
+        # 3. 如果需要Pareto前沿 → NSGA-II/III
         if request.require_pareto:
             if request.custom_objectives and len(request.custom_objectives) >= 6:
                 return ("nsga3",
@@ -232,31 +241,137 @@ class UnifiedFormulaOptimizer:
             return ("nsga2",
                     "需要Pareto前沿 → NSGA-II")
 
-        # 3. 如果营养约束严格 → GA-LP混合
+        # 4. 如果营养约束严格 → GA-LP混合
         if request.strict_nutrition or request.nutrition_constraints:
             return ("ga_lp_hybrid",
                     "严格营养约束 → BinaryGA+MILP混合引擎")
 
-        # 4. 候选药材多 → GA-LP混合
-        estimated_herbs = self._estimate_candidate_herbs(request.target_effects)
+        # 5. 候选药材多 → GA-LP混合
+        estimated_herbs = features.get("estimated_herb_count", 0)
         if estimated_herbs > 20:
             return ("ga_lp_hybrid",
                     f"大规模候选池(~{estimated_herbs}种) → BinaryGA+MILP")
 
-        # 5. 历史检索
+        # 6. 历史检索（降低阈值，提高命中率）
         cached = self.search_history(
             request.target_effects,
-            request.historical_similarity_threshold,
+            threshold=max(0.5, request.historical_similarity_threshold),
         )
         if cached:
-            return (cached["strategy"],
-                    f"历史检索命中: 上次最优策略={cached['strategy']}, "
-                    f"best_score={cached['best_score']:.4f}")
+            # 如果历史表现优秀且相似度足够，直接复用
+            if cached["best_score"] > 0.75 and cached["jaccard_similarity"] >= 0.7:
+                return (cached["strategy"],
+                        f"历史最优复用: strategy={cached['strategy']}, "
+                        f"score={cached['best_score']:.3f}, "
+                        f"similarity={cached['jaccard_similarity']:.2f}")
+            else:
+                # 历史表现一般，仍尝试Bandit学习
+                pass
 
-        # 6. Bandit推荐（仅从已实现策略中选择）
-        bandit_strategy = self.bandit.select(self.implemented_strategies)
+        # 7. Bandit UCB1-Tuned 推荐（加入特征加权探索）
+        bandit_strategy = self._ucb_tuned_select(features, request)
         return (bandit_strategy,
-                f"Bandit推荐 + 默认启发式 → {bandit_strategy}")
+                f"Bandit学习推荐 + 特征加权 → {bandit_strategy} "
+                f"(effect_diversity={features.get('effect_diversity', 0):.2f})")
+
+    def _extract_problem_features(self, request: OptimizationRequest) -> Dict[str, Any]:
+        """提取问题特征用于策略选择"""
+        estimated_herbs = self._estimate_candidate_herbs(request.target_effects)
+
+        # 计算功效多样性（不同功效标签的覆盖度）
+        effect_diversity = len(set(request.target_effects)) / max(len(request.target_effects), 1)
+
+        # 计算约束复杂度
+        constraint_count = 0
+        if request.exclude_herbs:
+            constraint_count += len(request.exclude_herbs)
+        if request.nutrition_constraints:
+            constraint_count += len(request.nutrition_constraints)
+        if request.max_cost:
+            constraint_count += 1
+
+        return {
+            "estimated_herb_count": estimated_herbs,
+            "effect_diversity": effect_diversity,
+            "constraint_count": constraint_count,
+            "num_effects": len(request.target_effects),
+            "requires_pareto": request.require_pareto,
+            "has_nutrition_constraint": bool(request.nutrition_constraints),
+        }
+
+    def _ucb_tuned_select(self, features: Dict, request: OptimizationRequest) -> str:
+        """UCB1-Tuned 策略选择（加入特征加权探索）"""
+        strategies = self.available_strategies
+
+        # 基于问题特征的预筛选
+        filtered = self._filter_by_features(strategies, features)
+
+        # 计算每个策略的UCB值
+        best_strategy = max(
+            filtered,
+            key=lambda s: self._ucb_value(s, request),
+        )
+        return best_strategy
+
+    def _filter_by_features(self, strategies: List[str], features: Dict) -> List[str]:
+        """基于问题特征预筛选策略"""
+        # 简单启发式：高约束问题时排除纯GA
+        if features.get("constraint_count", 0) > 3:
+            return [s for s in strategies if s != "ga"]
+        return strategies
+
+    def _ucb_value(self, strategy: str, request: OptimizationRequest) -> float:
+        """计算UCB值（加入特征加权探索）"""
+        n_s = self.bandit.n_plays.get(strategy, 0)
+        Q_s = self.bandit.Q_values.get(strategy, 0.0)
+        N = max(self.bandit.N, 1)
+
+        # 特征相似度调整探索系数
+        feature_bonus = self._compute_feature_bonus(strategy, request)
+
+        # UCB1-Tuned公式
+        exploration = (1 + feature_bonus) * math.sqrt(math.log(N) / max(n_s, 1))
+        exploitation = Q_s
+
+        return exploitation + exploration
+
+    def _compute_feature_bonus(self, strategy: str, request: OptimizationRequest) -> float:
+        """计算特征相似度带来的探索奖励"""
+        # 如果该策略在相似问题上表现好，降低探索（利用）
+        # 否则增加探索（探索）
+        problem_hash = self._compute_problem_hash(request.target_effects)
+        records = self._history.get(problem_hash, [])
+
+        if not records:
+            return 0.5  # 默认探索
+
+        # 查找该策略在类似问题上的表现
+        same_strategy_records = [
+            r for r in records if r.get("strategy") == strategy
+        ]
+        if same_strategy_records:
+            avg_score = sum(r.get("best_score", 0) for r in same_strategy_records) / len(same_strategy_records)
+            if avg_score > 0.8:
+                return 0.0  # 充分利用
+            else:
+                return 0.3  # 适度探索
+        return 0.5  # 中性探索
+
+    def _record_problem_context(self, request: OptimizationRequest, features: Dict) -> None:
+        """记录问题上下文供后续学习"""
+        problem_hash = self._compute_problem_hash(request.target_effects)
+        context = {
+            "features": features,
+            "timestamp": time.time(),
+            "target_effects": request.target_effects,
+        }
+        with self._lock:
+            if problem_hash not in self._history:
+                self._history[problem_hash] = []
+            # 只保留最近的上下文
+            if len(self._history[problem_hash]) >= 20:
+                self._history[problem_hash] = self._history[problem_hash][-10:]
+            self._history[problem_hash].append(context)
 
     def _estimate_candidate_herbs(self, target_effects: List[str]) -> int:
         """估计候选药材数量"""
@@ -368,6 +483,7 @@ class UnifiedFormulaOptimizer:
             candidates, history = optimizer.optimize(
                 request.target_effects,
                 exclude_herbs=set(request.exclude_herbs) if request.exclude_herbs else None,
+                special_population=request.special_population,
             )
 
             elapsed = (time.perf_counter() - start) * 1000
@@ -473,10 +589,12 @@ class UnifiedFormulaOptimizer:
                 total_dosage=request.total_dosage,
             ))
 
-            # 获取候选药材
+            # 获取候选药材（翻译前端标签 → 后端键）
+            from app.services.ai.algorithms.genetic_formula_optimizer import _translate_effect_ids
             from app.services.ai.algorithms.bayesian_formula_optimizer import _EFFICACY_TO_HERBS
             candidate_herbs = []
-            for effect in request.target_effects:
+            translated_effects = _translate_effect_ids(request.target_effects)
+            for effect in translated_effects:
                 if effect in _EFFICACY_TO_HERBS:
                     candidate_herbs.extend(_EFFICACY_TO_HERBS[effect])
             candidate_herbs = list(set(candidate_herbs))[:25]
@@ -592,6 +710,7 @@ class UnifiedFormulaOptimizer:
                     "target_effects": request.target_effects,
                     "exclude_herbs": request.exclude_herbs,
                     "max_cost": request.max_cost,
+                    "special_population": request.special_population,
                 },
             )
 

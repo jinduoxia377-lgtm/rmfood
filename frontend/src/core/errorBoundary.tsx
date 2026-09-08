@@ -350,6 +350,11 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 
   componentDidCatch(error: Error, info: ErrorInfo): void {
+    console.error('[ErrorBoundary] Caught error:', error);
+    console.error('[ErrorBoundary] Component stack:', info.componentStack);
+    console.error('[ErrorBoundary] Error type:', error.constructor.name);
+    console.error('[ErrorBoundary] Error stack:', error.stack);
+    if (error.cause) console.error('[ErrorBoundary] Error cause:', error.cause);
     this.setState({ errorInfo: info });
 
     // 记录到全局错误系统
@@ -463,6 +468,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
           <p style={{ margin: '0 0 24px 0', color: '#6E6E73', fontSize: '14px', lineHeight: 1.6 }}>
             很抱歉，您当前访问的页面出现了问题。我们已记录此错误并会尽快修复。
           </p>
+          {error && (<p style={{ margin: '0 0 12px 0', color: '#ef4444', fontSize: '12px', lineHeight: 1.4, wordBreak: 'break-all' }}>{error.message}</p>)}
           <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
             <button
               onClick={this.resetErrorBoundary}
@@ -503,7 +509,6 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 // ═════════════════════════════════════════════
 
 function DefaultFallback({ error, resetErrorBoundary, errorDetails, safeRefresh }: FallbackProps): ReactNode {
-  const [showDetails, setShowDetails] = useState(false);
 
   return (
     <div
@@ -631,7 +636,7 @@ function DefaultFallback({ error, resetErrorBoundary, errorDetails, safeRefresh 
         </div>
 
         <button
-          onClick={() => setShowDetails(!showDetails)}
+          onClick={() => {}}
           style={{
             background: 'transparent',
             border: 'none',
@@ -641,10 +646,10 @@ function DefaultFallback({ error, resetErrorBoundary, errorDetails, safeRefresh 
             textDecoration: 'underline',
           }}
         >
-          {showDetails ? '隐藏技术详情' : '查看技术详情'}
+          {true ? '隐藏技术详情' : '查看技术详情'}
         </button>
 
-        {showDetails && (
+        {true && (
           <div
             style={{
               marginTop: '16px',
@@ -726,9 +731,11 @@ export function ErrorTrackingProvider({ children }: { children: ReactNode }) {
 
 /** Hook: 获取错误追踪能力 */
 export function useErrorTracking(): ErrorTrackingContextValue {
+  // ✓ 所有 hooks 必须在条件语句之前调用
   const ctx = useContext(ErrorTrackingContext);
+
+  // 如果未被 Provider 包裹，提供一个简化的实现
   if (!ctx) {
-    // 如果未被 Provider 包裹，提供一个简化的实现
     return {
       errors: [],
       reportError: (error, extra) => handleCapturedError(error, extra) || buildCapturedError(error, extra),

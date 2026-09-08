@@ -60,6 +60,7 @@ import {
   HeartPulse,
   ShieldCheck,
   Activity,
+  Crown,
 } from 'lucide-react';
 import { databaseApi } from '@/api/database';
 import type { FoodHomologyRankItem, ActivePeptideRankItem } from '@/api/database';
@@ -108,6 +109,7 @@ interface DashboardOverviewData {
 }
 
 interface DashboardTrends {
+  generated_at?: string;
   ob_dl_scatter: {
     x: number;
     y: number;
@@ -1032,43 +1034,26 @@ export default function DashboardOverview({ onHerbClick, onPeptideClick }: Props
   const [hoveredRankItem, setHoveredRankItem] = useState<number | null>(null);
   const toast = useToast();
 
-  // 性能指标 — 从实时数据动态计算，而非硬编码
+  // 性能指标 — 从后端实时获取，未提供时展示占位提示
   const performanceMetrics = useMemo((): PerformanceMetrics | null => {
     if (!overviewData) return null;
-    const s = overviewData.summary;
-    const totalRecords = (s.total_herbs || 0) + (s.total_peptides || 0);
-    // 基于数据库规模估算查询性能（毫秒）
-    const avgQueryTimeMs = Math.max(8, Math.min(200, 5 + totalRecords * 0.03));
-    // 缓存命中率基于数据规模 (数据库越大命中率越高)
-    const cacheHitRate = Math.min(99.5, 85 + totalRecords * 0.003);
-    // 今日 API 调用 = 基于数据规模的代理值
-    const apiCallsToday = Math.max(1, Math.floor(totalRecords * 0.8));
-    // 连接池利用率基于负载估算
-    const poolSize = 10;
-    const poolActive = Math.min(poolSize, Math.max(1, Math.ceil(totalRecords / 500)));
-    return {
-      avgQueryTimeMs: Math.round(avgQueryTimeMs),
-      cacheHitRate: Math.round(cacheHitRate * 10) / 10,
-      apiCallsToday,
-      connectionPoolActive: poolActive,
-      connectionPoolIdle: poolSize - poolActive,
-      connectionPoolSize: poolSize,
-    };
+    // TODO: 接入真实性能监控 API（查询耗时/缓存命中率/连接池状态）
+    return null;
   }, [overviewData]);
 
-  // 模拟趋势数据 — 实际趋势数据从 API 获取，此处用作 StatCard sparkline 填充
+  // 趋势数据 — 当前无历史快照接口，sparkline 暂时不展示虚假数据
   const trendDatasets = useMemo(
     () => ({
-      herbs: overviewData ? [120, 132, 128, 145, 152, 148, overviewData.summary.total_herbs] : [120, 132, 128, 145, 152, 148, 160],
-      peptides: overviewData ? [340, 358, 372, 365, 389, 401, overviewData.summary.total_peptides] : [340, 358, 372, 365, 389, 401, 420],
-      homology: overviewData ? [28, 30, 31, 33, 34, 36, overviewData.summary.food_homology_count] : [28, 30, 31, 33, 34, 36, 38],
-      nodes: overviewData ? [450, 468, 480, 495, 512, 520, overviewData.summary.total_graph_nodes] : [450, 468, 480, 495, 512, 520, 535],
-      highHerbs: overviewData ? [45, 48, 52, 55, 58, 60, overviewData.summary.high_quality_herbs] : [45, 48, 52, 55, 58, 60, 64],
-      highPeptides: overviewData ? [89, 95, 102, 108, 115, 122, overviewData.summary.high_activity_peptides] : [89, 95, 102, 108, 115, 122, 130],
-      types: overviewData ? [12, 13, 14, 14, 15, 15, overviewData.summary.activity_type_count] : [12, 13, 14, 14, 15, 15, 16],
+      herbs: overviewData ? [overviewData.summary.total_herbs] : [],
+      peptides: overviewData ? [overviewData.summary.total_peptides] : [],
+      homology: overviewData ? [overviewData.summary.food_homology_count] : [],
+      nodes: overviewData ? [overviewData.summary.total_graph_nodes] : [],
+      highHerbs: overviewData ? [overviewData.summary.high_quality_herbs] : [],
+      highPeptides: overviewData ? [overviewData.summary.high_activity_peptides] : [],
+      types: overviewData ? [overviewData.summary.activity_type_count] : [],
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [overviewData?.summary?.total_herbs, overviewData?.summary?.total_peptides, overviewData?.summary?.food_homology_count, overviewData?.summary?.total_graph_nodes, overviewData?.summary?.high_quality_herbs, overviewData?.summary?.high_activity_peptides, overviewData?.summary?.activity_type_count],
+    [overviewData?.summary],
   );
 
   // 最近活动 — 基于实时数据派生，不再使用硬编码 mock 记录
@@ -1322,57 +1307,50 @@ ${(qualityData.recommendations || []).map((r, i) => `${i + 1}. ${r}`).join('\n')
 
     return (
       <div className="space-y-5">
-        {/* Row 1: 统计卡片 (含 Sparkline 趋势) */}
+        {/* Row 1: 统计卡片 */}
         <StatCardGrid
           cards={[
             {
               title: '中药材总数',
               value: summary.total_herbs ?? 0,
               unit: '种',
-              trend: 5.2,
-              trendData: trendDatasets.herbs,
+              trend: undefined,
             },
             {
               title: '活性肽总数',
               value: summary.total_peptides ?? 0,
               unit: '条',
-              trend: 8.7,
-              trendData: trendDatasets.peptides,
+              trend: undefined,
             },
             {
               title: '药食同源',
               value: summary.food_homology_count ?? 0,
               unit: '种',
-              trend: 3.1,
-              trendData: trendDatasets.homology,
+              trend: undefined,
             },
             {
               title: '图谱节点',
               value: summary.total_graph_nodes ?? 0,
               unit: '个',
-              trend: 6.4,
-              trendData: trendDatasets.nodes,
+              trend: undefined,
             },
             {
               title: '高质量药材',
               value: summary.high_quality_herbs ?? 0,
               unit: '种',
-              trend: 4.8,
-              trendData: trendDatasets.highHerbs,
+              trend: undefined,
             },
             {
               title: '高活性肽',
               value: summary.high_activity_peptides ?? 0,
               unit: '条',
-              trend: 12.3,
-              trendData: trendDatasets.highPeptides,
+              trend: undefined,
             },
             {
               title: '活性类型',
               value: summary.activity_type_count ?? 0,
               unit: '种',
-              trend: 2.0,
-              trendData: trendDatasets.types,
+              trend: undefined,
             },
           ]}
         />

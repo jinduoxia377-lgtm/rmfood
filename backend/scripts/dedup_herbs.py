@@ -1,3 +1,4 @@
+from scripts.db_utils import get_asyncpg_dsn
 """中药材数据去重 + UNIQUE 约束"""
 import asyncio
 import asyncpg
@@ -5,7 +6,7 @@ import asyncpg
 REMOVE_IDS = [245, 314, 244, 292, 298, 293, 311, 300, 317, 305, 294, 308, 307, 302, 315, 306, 243, 316, 297, 303, 250, 248, 249, 299, 304]
 
 async def main():
-    conn = await asyncpg.connect('postgresql://postgres@localhost:5432/rmfood_platform')
+    conn = await asyncpg.connect(get_asyncpg_dsn())
     
     before = await conn.fetchval("SELECT COUNT(*) FROM tcm_herbs")
     dupes_before = await conn.fetchval("SELECT COUNT(*) FROM (SELECT name_cn FROM tcm_herbs GROUP BY name_cn HAVING COUNT(*) > 1) t")

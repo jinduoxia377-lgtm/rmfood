@@ -1,17 +1,17 @@
 /**
- * EmptyStateCard - 空状态欢迎引导卡片 (v1.0)
+ * EmptyStateCard - 空状态欢迎引导卡片 (v2.0)
  *
  * 职责：
  * - 展示欢迎标题和副标题
  * - 展示 3 个热门快捷问题
  * - 点击快捷问题直接发送
  *
- * @version 1.0.0
+ * @version 2.0.0
  * @author RMFOOD Team
  */
 
 import React from 'react'
-import { Brain } from 'lucide-react'
+import { Brain, Sparkles, MessageSquare, FlaskConical } from 'lucide-react'
 
 interface QuickQuestion {
   id: string
@@ -25,44 +25,79 @@ interface EmptyStateCardProps {
   welcomeSubtitle: string
   questions: QuickQuestion[]
   onAsk: (question: string) => void
+  llmAvailable?: boolean
 }
+
+const featureIcons = [Sparkles, MessageSquare, FlaskConical]
 
 export function EmptyStateCard({
   welcomeTitle,
   welcomeSubtitle,
   questions,
   onAsk,
+  llmAvailable = true,
 }: EmptyStateCardProps) {
   const popularQuestions = questions.filter((q) => q.popular).slice(0, 3)
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[40vh] max-w-2xl mx-auto w-full animate-[fadeInUp_0.5s_ease-out]">
+    <div className="flex flex-col items-center justify-center min-h-[45vh] max-w-3xl mx-auto w-full animate-[fadeInUp_0.4s_ease-out_both]">
+      {/* 欢迎区域 */}
       <div className="text-center mb-8">
-        <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center shadow-lg shadow-primary-500/25">
-          <Brain className="w-7 h-7 text-white" />
+        {/* AI 头像 */}
+        <div className="relative inline-block mb-5">
+          <div className="w-12 h-12 rounded-lg bg-primary-600 flex items-center justify-center shadow-sm">
+            <Brain className="w-6 h-6 text-white" />
+          </div>
+          {llmAvailable !== false && (
+            <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 rounded-full border-2 border-white dark:border-neutral-900" />
+          )}
         </div>
-        <h2 className="text-xl font-bold text-neutral-900 dark:text-white mb-2">
+
+        {/* 欢迎标题 */}
+        <h2 className="text-xl font-semibold text-neutral-900 dark:text-white mb-1.5 tracking-tight">
           {welcomeTitle}
         </h2>
-        <p className="text-sm text-neutral-500 dark:text-neutral-400">
+        <p className="text-sm text-neutral-500 dark:text-neutral-400 max-w-md mx-auto leading-relaxed">
           {welcomeSubtitle}
         </p>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full">
-        {popularQuestions.map((q) => (
-          <button
-            key={q.id}
-            onClick={() => onAsk(q.question)}
-            className="group/card flex flex-col items-start p-4 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800/50 hover:border-primary-300 dark:hover:border-primary-600 hover:shadow-md transition-all duration-200 active:scale-[0.98] text-left"
-          >
-            <span className="text-xs font-medium text-primary-500 dark:text-primary-400 mb-1.5">
-              {q.category}
-            </span>
-            <span className="text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed group-hover/card:text-neutral-900 dark:group-hover/card:text-white transition-colors">
-              {q.question}
-            </span>
-          </button>
-        ))}
+
+      {/* 快捷问题卡片 */}
+      <div className="w-full">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {popularQuestions.map((q, index) => {
+            const FeatureIcon = featureIcons[index % featureIcons.length]
+            return (
+              <button
+                key={q.id}
+                onClick={() => onAsk(q.question)}
+                className="flex flex-col items-start p-4 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 hover:border-primary-300 dark:hover:border-primary-700 hover:bg-primary-50/50 dark:hover:bg-primary-900/10 transition-colors duration-150 text-left"
+              >
+                {/* 图标 */}
+                <div className="w-8 h-8 rounded-md bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center mb-2.5">
+                  <FeatureIcon className="w-4 h-4 text-primary-600 dark:text-primary-400" />
+                </div>
+
+                {/* 分类标签 */}
+                <span className="text-[10px] font-semibold text-primary-600 dark:text-primary-400 mb-1.5 uppercase tracking-wider">
+                  {q.category}
+                </span>
+
+                {/* 问题文本 */}
+                <span className="text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed">
+                  {q.question}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+
+        {/* 提示文字 */}
+        <div className="mt-5 text-center">
+          <p className="text-xs text-neutral-400 dark:text-neutral-500">
+            您也可以直接输入需求，AI 将为您智能生成配方方案
+          </p>
+        </div>
       </div>
     </div>
   )

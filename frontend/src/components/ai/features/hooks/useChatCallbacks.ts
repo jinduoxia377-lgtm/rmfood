@@ -1,13 +1,12 @@
 /**
- * useChatCallbacks - ChatTab 回调管理 Hook (v2.0)
+ * useChatCallbacks - ChatTab 回调管理 Hook (v3.0)
  *
- * v2.0 更新 (2026-08-23):
- * ✅ 接入后端 /chat/sessions API，支持跨设备同步
- * ✅ 本地优先策略：localStorage 作为缓存，后端 API 作为持久化层
- * ✅ 会话创建自动同步到后端，删除/重命名同步删除
+ * v3.0 更新 (2026-08-23):
+ * ✅ 统一存储层：使用 ChatStorageService 替代散乱 localStorage
+ * ✅ 后端回退：本地无数据时尝试从后端加载
+ * ✅ 会话隔离：每个会话独立存储，切换安全
  *
- * @version 2.0.0
- * @lastUpdated 2026-08-23
+ * @version 3.0.0
  */
 
 import { useCallback, useEffect } from 'react'
@@ -19,32 +18,7 @@ import { logger } from '@/utils/safeLogger'
 import type { ChatMessage } from '../types'
 import { chatApi } from '@/api/chat'
 import type { ChatSession as BackendSession } from '@/api/chat'
-
-/** 按会话ID隔离的消息存储键前缀 */
-const SESSION_MSG_PREFIX = 'chat_session_msgs_'
-
-/** 获取指定会话的消息存储键 */
-function getSessionMsgKey(sessionId: string): string {
-  return `${SESSION_MSG_PREFIX}${sessionId}`
-}
-
-/** 保存消息到指定会话的存储 */
-function saveSessionMessages(sessionId: string, messages: ChatMessage[]): void {
-  try {
-    storageService.set(getSessionMsgKey(sessionId), messages)
-  } catch (e) {
-    logger.warn('[useChatCallbacks] Failed to save session messages:', e)
-  }
-}
-
-/** 从指定会话的存储加载消息 */
-function loadSessionMessages(sessionId: string): ChatMessage[] {
-  try {
-    return storageService.get<ChatMessage[]>(getSessionMsgKey(sessionId)) || []
-  } catch {
-    return []
-  }
-}
+import { chatStorageService } from '../capabilities/storage/ChatStorageService'
 
 export interface UseChatCallbacksOptions {
   historySessions: HistorySession[]
@@ -93,7 +67,7 @@ export function useChatCallbacks(options: UseChatCallbacksOptions): UseChatCallb
   }, [clearMessages, clearAllFormulas, clearWorkingMemory, clearMultiTurnDialogue, clearShortTermMemory])
 
   /** 更新指定会话的元数据（消息数、最后消息） */
-  const updateSessionMetadata = useCallback((sessionId: string, msgs: ChatMessage[]) => {
+  const updateSessionMetadata = useCallback(async (sessionId: string, msgs: ChatMessage[]) => {
     const userMsgs = msgs.filter(m => m.role === 'user')
     const lastUserMsg = userMsgs[userMsgs.length - 1]
     setHistorySessions(prev => prev.map(s =>
@@ -101,15 +75,23 @@ export function useChatCallbacks(options: UseChatCallbacksOptions): UseChatCallb
         ? { ...s, messageCount: msgs.length, lastMessage: lastUserMsg?.content?.slice(0, 50) || '', timestamp: Date.now() }
         : s
     ))
-    // 同步保存会话消息到隔离存储
-    saveSessionMessages(sessionId, msgs)
+    // 统一保存到 IndexedDB
+    try {
+      await chatStorageService.saveMessages(sessionId, msgs)
+    } catch (e) {
+      logger.warn('[useChatCallbacks] 保存会话消息失败:', e)
+    }
   }, [setHistorySessions])
 
-  const handleNewSession = useCallback(() => {
+  const handleNewSession = useCallback(async () => {
     // 保存当前会话的消息（如果有活跃会话）
     if (activeSessionId && messages.length > 0) {
-      saveSessionMessages(activeSessionId, messages)
-      updateSessionMetadata(activeSessionId, messages)
+      try {
+        await chatStorageService.saveMessages(activeSessionId, messages)
+      } catch (e) {
+        logger.warn('[useChatCallbacks] 保存当前会话失败:', e)
+      }
+      await updateSessionMetadata(activeSessionId, messages)
     }
 
     const newSession: HistorySession = {
@@ -126,34 +108,58 @@ export function useChatCallbacks(options: UseChatCallbacksOptions): UseChatCallb
     handleClearChat()
   }, [historySessions, setHistorySessions, setActiveSessionId, handleClearChat, activeSessionId, messages, updateSessionMetadata])
 
-  const handleSelectSession = useCallback((id: string) => {
+  const handleSelectSession = useCallback(async (id: string) => {
     if (id === activeSessionId) return
 
-    // 1. 保存当前会话的消息到隔离存储
+    // 1. 保存当前会话的消息
     if (activeSessionId && messages.length > 0) {
-      saveSessionMessages(activeSessionId, messages)
-      updateSessionMetadata(activeSessionId, messages)
+      try {
+        await chatStorageService.saveMessages(activeSessionId, messages)
+      } catch (e) {
+        logger.warn('[useChatCallbacks] 保存当前会话失败:', e)
+      }
+      await updateSessionMetadata(activeSessionId, messages)
     }
 
     // 2. 切换到目标会话
     setActiveSessionId(id)
 
-    // 3. 从目标会话的隔离存储恢复消息（而非清空）
-    const restoredMessages = loadSessionMessages(id)
-    if (restoredMessages.length > 0) {
-      logger.info(`[useChatCallbacks] 恢复会话 ${id} 的 ${restoredMessages.length} 条消息`)
-      setMessages(restoredMessages)
-    } else {
-      handleClearChat()
+    // 3. 从统一存储恢复消息（先本地，后后端）
+    try {
+      const restoredMessages = await chatStorageService.loadMessages(id)
+      if (restoredMessages.length > 0) {
+        logger.info(`[useChatCallbacks] 恢复会话 ${id} 的 ${restoredMessages.length} 条消息`)
+        setMessages(restoredMessages)
+        return
+      }
+    } catch (e) {
+      logger.warn('[useChatCallbacks] 本地加载失败，尝试后端:', e)
     }
+
+    // 4. 降级：从后端加载
+    try {
+      const serverMessages = await chatStorageService.fetchFromServer(id)
+      if (serverMessages.length > 0) {
+        setMessages(serverMessages)
+        await chatStorageService.saveMessages(id, serverMessages)
+        return
+      }
+    } catch (e) {
+      logger.warn('[useChatCallbacks] 后端加载失败:', e)
+    }
+
+    // 5. 最终降级：清空
+    handleClearChat()
   }, [setActiveSessionId, activeSessionId, messages, handleClearChat, setMessages, updateSessionMetadata])
 
-  const handleDeleteSession = useCallback((id: string) => {
+  const handleDeleteSession = useCallback(async (id: string) => {
     const updated = historySessions.filter(s => s.id !== id)
     setHistorySessions(updated)
     saveSessions(updated)
     // 清理被删除会话的消息存储
-    try { storageService.remove(getSessionMsgKey(id)) } catch {}
+    try {
+      await chatStorageService.deleteMessages(id)
+    } catch {}
     // 如果删除的是当前活跃会话，清空消息
     if (id === activeSessionId) {
       handleClearChat()

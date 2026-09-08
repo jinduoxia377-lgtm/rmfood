@@ -95,20 +95,28 @@ class AppAdapterRegistry(AdapterRegistry):
     
     def register_core_adapters_at_runtime(self) -> None:
         from app.infrastructure.herb_knowledge_adapters import (TCMSPHerbKnowledgeAdapter, BuiltinHerbKnowledgeAdapter, InMemoryHerbKnowledgeAdapter)
-        from app.infrastructure.formula_repository import (SqlalchemyFormulaRepository, InMemoryFormulaRepository)
-        from app.infrastructure.event_bus import LocalEventBus
-        
+
         self.register_variant("herb_knowledge", "prod", TCMSPHerbKnowledgeAdapter, "Production: TCMSP database herb knowledge")
         self.register_variant("herb_knowledge", "test", InMemoryHerbKnowledgeAdapter, "Test: in-memory herb knowledge adapter")
         self.register_variant("herb_knowledge", "migration", BuiltinHerbKnowledgeAdapter, "Migration: builtin herb knowledge adapter")
         self.set_default("herb_knowledge", "prod")
-        
-        self.register_variant("formula_repository", "prod", SqlalchemyFormulaRepository, "Production: SQLAlchemy ORM formula repository")
-        self.register_variant("formula_repository", "test", InMemoryFormulaRepository, "Test: in-memory formula repository")
-        self.set_default("formula_repository", "prod")
-        
-        self.register_variant("event_publisher", "dev", LocalEventBus, "Development: local event bus")
-        self.set_default("event_publisher", "dev")
+
+        # formula_repository（可选：缺失时跳过）
+        try:
+            from app.infrastructure.formula_repository import (SqlalchemyFormulaRepository, InMemoryFormulaRepository)
+            self.register_variant("formula_repository", "prod", SqlalchemyFormulaRepository, "Production: SQLAlchemy ORM formula repository")
+            self.register_variant("formula_repository", "test", InMemoryFormulaRepository, "Test: in-memory formula repository")
+            self.set_default("formula_repository", "prod")
+        except ImportError:
+            logger.warning("[AdapterRegistry] formula_repository 模块不存在，跳过注册")
+
+        # event_bus（可选）
+        try:
+            from app.infrastructure.event_bus import LocalEventBus
+            self.register_variant("event_publisher", "dev", LocalEventBus, "Development: local event bus")
+            self.set_default("event_publisher", "dev")
+        except ImportError:
+            logger.warning("[AdapterRegistry] event_bus 模块不存在，跳过注册")
         
         logger.info("Core adapters registered at runtime")
 

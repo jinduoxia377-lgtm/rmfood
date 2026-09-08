@@ -1,0 +1,128 @@
+<!-- 设置页面 -->
+<view class="container">
+  <nav-bar title="设置" left-text="返回" bind:left="handleBack"></nav-bar>
+  
+  <!-- 账号设置 -->
+  <view class="settings-section">
+    <view class="section-title">账号设置</view>
+    <view class="settings-list">
+      <view class="setting-item" bindtap="editProfile">
+        <view class="setting-left">
+          <icon name="person" size="md" color="#2D5A3D" />
+          <text class="setting-title">个人资料</text>
+        </view>
+        <icon name="arrow-right" size="sm" color="#CCCCCC" />
+      </view>
+      
+      <view class="setting-item" bindtap="changePassword">
+        <view class="setting-left">
+          <icon name="shield" size="md" color="#2D5A3D" />
+          <text class="setting-title">修改密码</text>
+        </view>
+        <icon name="arrow-right" size="sm" color="#CCCCCC" />
+      </view>
+      
+      <view class="setting-item" bindtap="privacySettings">
+        <view class="setting-left">
+          <icon name="shield" size="md" color="#2D5A3D" />
+          <text class="setting-title">隐私设置</text>
+        </view>
+        <icon name="arrow-right" size="sm" color="#CCCCCC" />
+      </view>
+    </view>
+  </view>
+
+  <!-- 显示设置 -->
+  <view class="settings-section">
+    <view class="section-title">显示设置</view>
+    <view class="settings-list">
+      <view class="setting-item">
+        <view class="setting-left">
+          <icon name="update" size="md" color="#1976D2" />
+          <text class="setting-title">深色模式</text>
+        </view>
+        <switch checked="{{isDarkMode}}" bindchange="toggleDarkMode" color="#2D5A3D" />
+      </view>
+    </view>
+  </view>
+
+  <!-- 数据管理 -->
+  <view class="settings-section">
+    <view class="section-title">数据管理</view>
+    <view class="settings-list">
+      <view class="setting-item" bindtap="clearCache">
+        <view class="setting-left">
+          <icon name="refresh" size="md" color="#666666" />
+          <text class="setting-title">清除缓存</text>
+        </view>
+        <view class="setting-right">
+          <text class="cache-size">12.5MB</text>
+          <icon name="arrow-right" size="sm" color="#CCCCCC" />
+        </view>
+      </view>
+      
+      <view class="setting-item" bindtap="exportData">
+        <view class="setting-left">
+          <icon name="download" size="md" color="#666666" />
+          <text class="setting-title">导出我的数据</text>
+        </view>
+        <icon name="arrow-right" size="sm" color="#CCCCCC" />
+      </view>
+    </view>
+  </view>
+
+  <!-- 关于 -->
+  <view class="settings-section">
+    <view class="section-title">关于</view>
+    <view class="settings-list">
+      <view class="setting-item" bindtap="goToAbout">
+        <view class="setting-left">
+          <icon name="info" size="md" color="#666666" />
+          <text class="setting-title">关于我们</text>
+        </view>
+        <icon name="arrow-right" size="sm" color="#CCCCCC" />
+      </view>
+      
+      <view class="setting-item" bindtap="goToPrivacy">
+        <view class="setting-left">
+          <icon name="shield" size="md" color="#666666" />
+          <text class="setting-title">隐私政策</text>
+        </view>
+        <icon name="arrow-right" size="sm" color="#CCCCCC" />
+      </view>
+      
+      <view class="setting-item" bindtap="goToAgreement">
+        <view class="setting-left">
+          <icon name="standard" size="md" color="#666666" />
+          <text class="setting-title">用户协议</text>
+        </view>
+        <icon name="arrow-right" size="sm" color="#CCCCCC" />
+      </view>
+      
+      <view class="setting-item">
+        <view class="setting-left">
+          <icon name="score" size="md" color="#666666" />
+          <text class="setting-title">版本</text>
+        </view>
+        <text class="setting-value">v1.0.0</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 退出登录 -->
+  <view class="logout-section">
+    <btn type="danger" bind:tap="logout" block>退出登录</btn>
+  </view>
+
+  <!-- 免责声明 -->
+  <view class="disclaimer">
+    <text>本应用仅提供健康信息参考，不构成医疗建议。如有健康问题请咨询专业医生。</text>
+  </view>
+
+  <!-- Toast组件 -->
+  <toast 
+    visible="{{showToast}}" 
+    content="{{toastContent}}" 
+    type="{{toastType}}"
+  ></toast>
+</view>

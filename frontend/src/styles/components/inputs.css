@@ -1,4 +1,4 @@
-/*
+﻿/*
  * RMFOOD 设计系统 - 输入框系统 v3.1 — Apple HIG 风格
  * 基础输入框、错误/成功/禁用状态、尺寸、前后缀
  */
@@ -11,7 +11,7 @@
   padding: 0 14px;
   border-radius: var(--radius-sm, 4px);
   border: 1.5px solid var(--border-subtle, rgba(0, 0, 0, 0.08));
-  background: var(--bg-tertiary, #F5F5F7);
+  background: var(--bg-tertiary, #f1f5f9);
   color: var(--text-primary, #1D1D1F);
   font-family: var(--font-sans);
   position: relative;
@@ -36,7 +36,7 @@
   box-shadow: 0 0 0 3px rgba(255, 59, 48, 0.1);
 }
 .input-error:focus {
-  border-color: var(--color-error-hover, #E0302A);
+  border-color: var(--color-error-hover, #dc2626);
   box-shadow: 0 0 0 3px rgba(255, 59, 48, 0.15);
 }
 .dark .input-error {
@@ -64,7 +64,7 @@
 
 /* 禁用状态 */
 .input:disabled {
-  background: var(--bg-tertiary, #F5F5F7);
+  background: var(--bg-tertiary, #f1f5f9);
   color: var(--text-disabled, #C7C7CC);
   cursor: not-allowed;
   opacity: 0.7;

@@ -160,19 +160,34 @@ async def get_herb_categories(
     db: AsyncSession = Depends(get_db_session),
     current_user: User = Depends(get_current_user),
 ):
-    """获取 TCMSP 药材分类统计"""
-    result = await db.execute(
-        select(TCMHerb.category, func.count(TCMHerb.id).label('count'))
-        .where(TCMHerb.category.isnot(None))
-        .group_by(TCMHerb.category)
-        .order_by(func.count(TCMHerb.id).desc())
-    )
+    """获取 TCMSP 药材分类统计（含药食同源标注）"""
+    from sqlalchemy import text as sql_text
+    
+    # 获取分类统计（含药食同源数量）
+    result = await db.execute(sql_text("""
+        SELECT COALESCE(NULLIF(category, ''), '未分类') as category,
+               COUNT(*) as count,
+               SUM(CASE WHEN is_food_homology = true THEN 1 ELSE 0 END) as food_homology_count
+        FROM tcm_herbs
+        GROUP BY category
+        ORDER BY count DESC
+    """))
     rows = result.all()
+    
+    # 获取总体药食同源统计（使用国家卫健委2025版目录106种）
+    # TCMSP数据库只有96种标记，但国家合规目录有106种
+    total_food_homology = 106  # 国家卫健委药食同源目录（2025版）
+    
     return {
         "categories": [
-            {"category": row[0], "count": row[1]}
+            {
+                "category": row[0], 
+                "count": row[1],
+                "food_homology_count": row[2]
+            }
             for row in rows
-        ]
+        ],
+        "total_food_homology": total_food_homology
     }
 
 

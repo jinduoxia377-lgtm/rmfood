@@ -1,0 +1,45 @@
+<!-- Input 输入框组件 -->
+<view class="input-wrapper {{className}}">
+  <!-- 前置图标 -->
+  <view wx:if="{{prefixIcon}}" class="input-prefix">
+    <icon name="{{prefixIcon}}" size="{{iconSize}}" color="{{prefixColor || '#999999'}}" />
+  </view>
+  
+  <!-- 输入框 -->
+  <input
+    class="input {{inputClass}} {{clearable ? 'input-clearable' : ''}}"
+    type="{{type}}"
+    placeholder="{{placeholder}}"
+    placeholder-class="input-placeholder"
+    value="{{value}}"
+    disabled="{{disabled}}"
+    maxlength="{{maxlength}}"
+    confirm-type="{{confirmType}}"
+    bindinput="handleInput"
+    bindconfirm="handleConfirm"
+    bindblur="handleBlur"
+    bindfocus="handleFocus"
+    focus="{{focus}}"
+  />
+  
+  <!-- 清除按钮 -->
+  <view wx:if="{{clearable && value}}" class="input-clear" bindtap="handleClear">
+    <icon name="close" size="sm" color="#999999" />
+  </view>
+  
+  <!-- 后置图标 -->
+  <view wx:if="{{suffixIcon}}" class="input-suffix">
+    <icon name="{{suffixIcon}}" size="{{iconSize}}" color="{{suffixColor || '#999999'}}" />
+  </view>
+  
+  <!-- 错误提示 -->
+  <view wx:if="{{errorMessage}}" class="input-error">
+    <icon name="warning" size="sm" color="#EF4444" />
+    <text class="error-text">{{errorMessage}}</text>
+  </view>
+  
+  <!-- 字数统计 -->
+  <view wx:if="{{showCount}}" class="input-count">
+    <text>{{value ? value.length : 0}}/{{maxlength}}</text>
+  </view>
+</view>

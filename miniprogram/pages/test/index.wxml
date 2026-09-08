@@ -1,0 +1,43 @@
+<!-- 测试页面 -->
+<view class="page-container">
+  <!-- 标题区 -->
+  <view class="header-section">
+    <text class="page-title">RMFOOD 测试页面</text>
+    <text class="page-desc">药食同源配方平台</text>
+  </view>
+
+  <!-- 功能测试区 -->
+  <view class="test-section">
+    <text class="section-title">功能测试</text>
+    <view class="btn-group">
+      <button class="btn" bindtap="testIngredient">配料分析测试</button>
+      <button class="btn" bindtap="testFormula">配方库测试</button>
+      <button class="btn" bindtap="testSearch">搜索测试</button>
+    </view>
+  </view>
+
+  <!-- 性能测试区 -->
+  <view class="test-section">
+    <text class="section-title">性能测试</text>
+    <view class="btn-group">
+      <button class="btn" bindtap="testLoad">加载测试</button>
+      <button class="btn" bindtap="testRender">渲染测试</button>
+      <button class="btn" bindtap="testCache">缓存测试</button>
+    </view>
+  </view>
+
+  <!-- 导航测试区 -->
+  <view class="test-section">
+    <text class="section-title">导航测试</text>
+    <view class="btn-group">
+      <button class="btn" bindtap="goToHome">首页</button>
+      <button class="btn" bindtap="goToSearch">搜索</button>
+      <button class="btn" bindtap="goToProfile">我的</button>
+    </view>
+  </view>
+
+  <!-- 底部说明 -->
+  <view class="footer-note">
+    <text>此页面仅供开发和测试使用</text>
+  </view>
+</view>

@@ -1,0 +1,14 @@
+<!-- 配方卡片组件 -->
+<view class="formula-card" bindtap="onTap" data-id="{{formula.id}}">
+  <image class="cover" src="{{formula.coverImage || '/assets/images/default-formula.png'}}" mode="aspectFill" lazy-load></image>
+  <view class="content">
+    <text class="name">{{formula.name}}</text>
+    <text class="desc">{{formula.description || formula.shortDesc}}</text>
+    <view class="tags">
+      <view wx:for="{{formula.tags}}" wx:for-item="tag" wx:key="index" class="tag">{{tag.name}}</view>
+    </view>
+  </view>
+  <view class="score" style="background: {{getScoreColor(formula.healthScore)}};">
+    <text>{{formula.healthScore || 'N/A'}}</text>
+  </view>
+</view>

@@ -1,0 +1,1969 @@
+{
+  "metadata": {
+    "version": "2025.1",
+    "update_date": "2026-08-31",
+    "sources": [
+      "foodtalks.cn sourceId=25009",
+      "国家卫生健康委员会",
+      "CAC",
+      "ISO",
+      "FDA",
+      "EU",
+      "MHLW"
+    ],
+    "total_gb_standards": 92,
+    "total_international": 15,
+    "total_all": 107
+  },
+  "gb_standards": [
+    {
+      "standard_code": "GB 2760—2024",
+      "title": "食品安全国家标准 食品添加剂",
+      "title_en": "National Food Safety Standard - Standard for Uses of Food Additives",
+      "category": "食品添加剂",
+      "status": "现行",
+      "publish_date": "2024-12-03",
+      "implementation_date": "2025-02-08",
+      "summary": "规定食品添加剂的使用原则、允许使用的食品添加剂品种、使用范围及最大使用量或残留量。2024年12月发布，2025年2月8日实施，替代GB 2760-2014。是食品工业最重要的基础标准之一。",
+      "scope": [
+        "食品添加剂",
+        "食品生产",
+        "食品加工"
+      ],
+      "related_topics": [
+        "防腐剂",
+        "甜味剂",
+        "着色剂"
+      ],
+      "source_url": "",
+      "priority": "P0-核心必备"
+    },
+    {
+      "standard_code": "GB 2763—2024",
+      "title": "食品安全国家标准 食品中农药最大残留限量",
+      "title_en": "National Food Safety Standard - Maximum Residue Levels for Pesticides in Foods",
+      "category": "农药残留",
+      "status": "现行",
+      "publish_date": "2024-08-30",
+      "implementation_date": "2025-08-30",
+      "summary": "规定200余种农药在各类食品中的最大残留限量。2024年发布，替代GB 2763-2021。与CAC MRL标准形成对照，出口企业需重点关注。",
+      "scope": [
+        "农产品",
+        "食品检测",
+        "农药残留"
+      ],
+      "related_topics": [
+        "CAC MRL",
+        "JMPR"
+      ],
+      "source_url": "",
+      "priority": "P0-核心必备"
+    },
+    {
+      "standard_code": "GB 2762—2022",
+      "title": "食品安全国家标准 食品中污染物限量",
+      "title_en": "National Food Safety Standard - Maximum Levels of Contaminants in Foods",
+      "category": "污染物限量",
+      "status": "现行",
+      "publish_date": "2022-06-30",
+      "implementation_date": "2023-06-30",
+      "summary": "规定食品中铅、镉、汞、砷等重金属及苯并[a]芘、N-亚硝胺等污染物的限量要求。2022年发布，替代GB 2762-2017。",
+      "scope": [
+        "食品检测",
+        "食品安全",
+        "质量控制"
+      ],
+      "related_topics": [
+        "重金属",
+        "真菌毒素"
+      ],
+      "source_url": "",
+      "priority": "P0-核心必备"
+    },
+    {
+      "standard_code": "GB 13102—2022",
+      "title": "食品安全国家标准浓缩乳制品",
+      "title_en": "National Food Safety Standard - 浓缩乳制品",
+      "category": "乳制品",
+      "status": "现行",
+      "publish_date": "2022-06-30",
+      "implementation_date": "2022-12-27",
+      "summary": "GB 13102—2022食品安全国家标准—浓缩乳制品。",
+      "scope": [
+        "乳制品",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/35148"
+    },
+    {
+      "standard_code": "GB 25192—2022",
+      "title": "食品安全国家标准再制干酪和干酪制品",
+      "title_en": "National Food Safety Standard - 再制干酪和干酪制品",
+      "category": "乳制品",
+      "status": "现行",
+      "publish_date": "2022-06-30",
+      "implementation_date": "2022-12-27",
+      "summary": "GB 25192—2022食品安全国家标准—再制干酪和干酪制品。",
+      "scope": [
+        "乳制品",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/35026"
+    },
+    {
+      "standard_code": "GB 7101—2022",
+      "title": "食品安全国家标准饮料",
+      "title_en": "National Food Safety Standard - 饮料",
+      "category": "饮料",
+      "status": "现行",
+      "publish_date": "2022-06-30",
+      "implementation_date": "2022-12-27",
+      "summary": "GB 7101—2022食品安全国家标准—饮料。",
+      "scope": [
+        "饮料",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/35025"
+    },
+    {
+      "standard_code": "GB 31654—2021",
+      "title": "食品安全国家标准 食品接触材料及制品生产通用卫生规范",
+      "title_en": "National Food Safety Standard - General Hygienic Specification for Production of Food Contact Materials",
+      "category": "食品接触材料",
+      "status": "现行",
+      "publish_date": "2021-12-24",
+      "implementation_date": "2022-06-23",
+      "summary": "规定食品接触材料及制品生产过程的卫生要求和检验方法。",
+      "scope": [
+        "包装材料",
+        "食品接触"
+      ],
+      "related_topics": [
+        "塑料",
+        "金属",
+        "纸制品"
+      ],
+      "source_url": "",
+      "priority": "P1-重要"
+    },
+    {
+      "standard_code": "GB 29921—2021",
+      "title": "食品安全国家标准 预包装食品中致病菌限量",
+      "title_en": "National Food Safety Standard - Limits of Pathogenic Bacteria in Prepackaged Foods",
+      "category": "微生物控制",
+      "status": "现行",
+      "publish_date": "2021-12-24",
+      "implementation_date": "2022-06-23",
+      "summary": "规定预包装食品中沙门氏菌、金黄色葡萄球菌、单核细胞增生李斯特氏菌等致病菌的限量要求。",
+      "scope": [
+        "预包装食品",
+        "微生物检测"
+      ],
+      "related_topics": [
+        "沙门氏菌",
+        "李斯特氏菌"
+      ],
+      "source_url": "",
+      "priority": "P0-核心必备"
+    },
+    {
+      "standard_code": "GB 19295—2021",
+      "title": "食品安全国家标准速冻面米与调制食品",
+      "title_en": "National Food Safety Standard - 速冻面米与调制食品",
+      "category": "冷冻食品",
+      "status": "现行",
+      "publish_date": "2021-09-07",
+      "implementation_date": "2022-03-06",
+      "summary": "GB 19295—2021食品安全国家标准—速冻面米与调制食品。",
+      "scope": [
+        "冷冻食品",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/37857"
+    },
+    {
+      "standard_code": "GB 5420—2021",
+      "title": "食品安全国家标准干酪",
+      "title_en": "National Food Safety Standard - 干酪",
+      "category": "乳制品",
+      "status": "现行",
+      "publish_date": "2021-02-22",
+      "implementation_date": "2021-08-21",
+      "summary": "GB 5420—2021食品安全国家标准—干酪。",
+      "scope": [
+        "乳制品",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/37855"
+    },
+    {
+      "standard_code": "GB 10767—2021",
+      "title": "食品安全国家标准幼儿配方食品",
+      "title_en": "National Food Safety Standard - 幼儿配方食品",
+      "category": "婴幼儿食品",
+      "status": "现行",
+      "publish_date": "2021-02-22",
+      "implementation_date": "2021-08-21",
+      "summary": "GB 10767—2021食品安全国家标准—幼儿配方食品。",
+      "scope": [
+        "婴幼儿食品",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/37752"
+    },
+    {
+      "standard_code": "GB 10766—2021",
+      "title": "食品安全国家标准较大婴儿配方食品",
+      "title_en": "National Food Safety Standard - 较大婴儿配方食品",
+      "category": "婴幼儿食品",
+      "status": "现行",
+      "publish_date": "2021-02-22",
+      "implementation_date": "2021-08-21",
+      "summary": "GB 10766—2021食品安全国家标准—较大婴儿配方食品。",
+      "scope": [
+        "婴幼儿食品",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/37739"
+    },
+    {
+      "standard_code": "GB 10765—2021",
+      "title": "食品安全国家标准婴儿配方食品",
+      "title_en": "National Food Safety Standard - 婴儿配方食品",
+      "category": "婴幼儿食品",
+      "status": "现行",
+      "publish_date": "2021-02-22",
+      "implementation_date": "2021-08-21",
+      "summary": "GB 10765—2021食品安全国家标准—婴儿配方食品。",
+      "scope": [
+        "婴幼儿食品",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/37712"
+    },
+    {
+      "standard_code": "GB 31650—2019",
+      "title": "食品安全国家标准 食品中兽药最大残留限量",
+      "title_en": "National Food Safety Standard - Maximum Residue Levels for Veterinary Drugs in Foods",
+      "category": "兽药残留",
+      "status": "现行",
+      "publish_date": "2019-08-30",
+      "implementation_date": "2020-06-01",
+      "summary": "规定抗菌药、抗寄生虫药等兽药在肉、蛋、奶等动物性食品中的残留限量。",
+      "scope": [
+        "动物性食品",
+        "兽药残留"
+      ],
+      "related_topics": [
+        "抗生素",
+        "残留"
+      ],
+      "source_url": "",
+      "priority": "P1-重要"
+    },
+    {
+      "standard_code": "GB/T 2439—1999",
+      "title": "食品安全国家标准植物蛋白饮料 花生乳（露）",
+      "title_en": "National Food Safety Standard - 植物蛋白饮料 花生乳（露）",
+      "category": "乳制品",
+      "status": "现行",
+      "publish_date": "2019-05-06",
+      "implementation_date": "2019-11-02",
+      "summary": "QB/T 2300、2301一1997 QB/T 2438、2439一1999食品安全国家标准—植物蛋白饮料 花生乳（露）。",
+      "scope": [
+        "乳制品",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/35058"
+    },
+    {
+      "standard_code": "GB 31645—2018",
+      "title": "食品安全国家标准胶原蛋白肽",
+      "title_en": "National Food Safety Standard - 胶原蛋白肽",
+      "category": "蛋白质类",
+      "status": "现行",
+      "publish_date": "2018-06-21",
+      "implementation_date": "2018-12-18",
+      "summary": "GB 31645—2018食品安全国家标准—胶原蛋白肽。",
+      "scope": [
+        "蛋白质类",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/37859"
+    },
+    {
+      "standard_code": "GB 31644—2018",
+      "title": "食品安全国家标准复合调味料",
+      "title_en": "National Food Safety Standard - 复合调味料",
+      "category": "调味品",
+      "status": "现行",
+      "publish_date": "2018-06-21",
+      "implementation_date": "2018-12-18",
+      "summary": "GB 31644—2018食品安全国家标准—复合调味料。",
+      "scope": [
+        "调味品",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/37858"
+    },
+    {
+      "standard_code": "GB 2716—2018",
+      "title": "食品安全国家标准植物油",
+      "title_en": "National Food Safety Standard - 植物油",
+      "category": "油脂",
+      "status": "现行",
+      "publish_date": "2018-06-21",
+      "implementation_date": "2018-12-18",
+      "summary": "GB 2716—2018食品安全国家标准—植物油。",
+      "scope": [
+        "油脂",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/37642"
+    },
+    {
+      "standard_code": "GB 2719—2018",
+      "title": "食品安全国家标准食醋",
+      "title_en": "National Food Safety Standard - 食醋",
+      "category": "调味品",
+      "status": "现行",
+      "publish_date": "2018-06-21",
+      "implementation_date": "2018-12-18",
+      "summary": "GB 2719—2018食品安全国家标准—食醋。",
+      "scope": [
+        "调味品",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/37854"
+    },
+    {
+      "standard_code": "GB 2717—2018",
+      "title": "食品安全国家标准酱油",
+      "title_en": "National Food Safety Standard - 酱油",
+      "category": "油脂",
+      "status": "现行",
+      "publish_date": "2018-06-21",
+      "implementation_date": "2018-12-18",
+      "summary": "GB 2717—2018食品安全国家标准—酱油。",
+      "scope": [
+        "油脂",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/37794"
+    },
+    {
+      "standard_code": "GB 8537—2018",
+      "title": "食品安全国家标准饮用天然矿泉水",
+      "title_en": "National Food Safety Standard - 饮用天然矿泉水",
+      "category": "饮料",
+      "status": "现行",
+      "publish_date": "2018-06-21",
+      "implementation_date": "2018-12-18",
+      "summary": "GB 8537—2018食品安全国家标准—饮用天然矿泉水。",
+      "scope": [
+        "饮料",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/34952"
+    },
+    {
+      "standard_code": "GB 2761—2017",
+      "title": "食品安全国家标准食品中真菌毒素限量",
+      "title_en": "National Food Safety Standard - 食品中真菌毒素限量",
+      "category": "污染物限量",
+      "status": "现行",
+      "publish_date": "2017-03-17",
+      "implementation_date": "2017-09-13",
+      "summary": "GB 2761—2017食品安全国家标准—食品中真菌毒素限量。",
+      "scope": [
+        "污染物限量",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/32684"
+    },
+    {
+      "standard_code": "GB 12695—2016",
+      "title": "食品安全国家标准 饮料生产卫生规范",
+      "title_en": "National Food Safety Standard - Hygienic Specification for Beverage Production",
+      "category": "生产规范",
+      "status": "现行",
+      "publish_date": "2016-12-23",
+      "implementation_date": "2017-06-23",
+      "summary": "规定饮料类食品生产过程的卫生要求。",
+      "scope": [
+        "饮料生产",
+        "水处理"
+      ],
+      "related_topics": [
+        "GMP"
+      ],
+      "source_url": "",
+      "priority": "P2-一般"
+    },
+    {
+      "standard_code": "GB 31623—2016",
+      "title": "食品安全国家标准 餐饮服务通用卫生规范",
+      "title_en": "National Food Safety Standard - General Hygienic Specification for Catering Service",
+      "category": "餐饮卫生",
+      "status": "现行",
+      "publish_date": "2016-12-23",
+      "implementation_date": "2017-06-23",
+      "summary": "规定餐饮服务（含学校食堂、集体用餐配送单位等）的卫生要求。",
+      "scope": [
+        "餐饮服务",
+        "食堂"
+      ],
+      "related_topics": [
+        "食材采购",
+        "加工制作"
+      ],
+      "source_url": "",
+      "priority": "P1-重要"
+    },
+    {
+      "standard_code": "GB 31621—2016",
+      "title": "食品安全国家标准 食品流通卫生规范",
+      "title_en": "National Food Safety Standard - Hygienic Specification for Food Circulation",
+      "category": "流通卫生",
+      "status": "现行",
+      "publish_date": "2016-12-23",
+      "implementation_date": "2017-06-23",
+      "summary": "规定食品贮存、运输、销售等环节的卫生要求。",
+      "scope": [
+        "食品流通",
+        "仓储",
+        "运输"
+      ],
+      "related_topics": [
+        "冷链"
+      ],
+      "source_url": "",
+      "priority": "P1-重要"
+    },
+    {
+      "standard_code": "GB 2707—2016",
+      "title": "食品安全国家标准鲜（冻）畜、禽产品",
+      "title_en": "National Food Safety Standard - 鲜（冻）畜、禽产品",
+      "category": "肉禽制品",
+      "status": "现行",
+      "publish_date": "2016-12-23",
+      "implementation_date": "2017-06-21",
+      "summary": "GB 2707—2016食品安全国家标准—鲜（冻）畜、禽产品。",
+      "scope": [
+        "肉禽制品",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/32901"
+    },
+    {
+      "standard_code": "GB 17399—2016",
+      "title": "食品安全国家标准糖果",
+      "title_en": "National Food Safety Standard - 糖果",
+      "category": "糖果巧克力",
+      "status": "现行",
+      "publish_date": "2016-12-23",
+      "implementation_date": "2017-06-21",
+      "summary": "GB 17399—2016食品安全国家标准—糖果。",
+      "scope": [
+        "糖果巧克力",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/32902"
+    },
+    {
+      "standard_code": "GB 31639—2016",
+      "title": "食品安全国家标准食品加工用酵母",
+      "title_en": "National Food Safety Standard - 食品加工用酵母",
+      "category": "酵母",
+      "status": "现行",
+      "publish_date": "2016-12-23",
+      "implementation_date": "2017-06-21",
+      "summary": "GB 31639—2016食品安全国家标准—食品加工用酵母。",
+      "scope": [
+        "酵母",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/34092"
+    },
+    {
+      "standard_code": "GB 31638—2016",
+      "title": "食品安全国家标准酪蛋白",
+      "title_en": "National Food Safety Standard - 酪蛋白",
+      "category": "蛋白质类",
+      "status": "现行",
+      "publish_date": "2016-12-23",
+      "implementation_date": "2017-06-21",
+      "summary": "GB 31638—2016食品安全国家标准—酪蛋白。",
+      "scope": [
+        "蛋白质类",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/32972"
+    },
+    {
+      "standard_code": "GB 2715—2016",
+      "title": "食品安全国家标准粮食",
+      "title_en": "National Food Safety Standard - 粮食",
+      "category": "粮食及制品",
+      "status": "现行",
+      "publish_date": "2016-12-23",
+      "implementation_date": "2017-06-21",
+      "summary": "GB 2715—2016食品安全国家标准—粮食。",
+      "scope": [
+        "粮食及制品",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/34191"
+    },
+    {
+      "standard_code": "GB 14932—2016",
+      "title": "食品安全国家标准食品加工用粕类",
+      "title_en": "National Food Safety Standard - 食品加工用粕类",
+      "category": "其他",
+      "status": "现行",
+      "publish_date": "2016-12-23",
+      "implementation_date": "2017-06-21",
+      "summary": "GB 14932—2016食品安全国家标准—食品加工用粕类。",
+      "scope": [
+        "其他",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/33341"
+    },
+    {
+      "standard_code": "GB 31640—2016",
+      "title": "食品安全国家标准食用酒精",
+      "title_en": "National Food Safety Standard - 食用酒精",
+      "category": "酒类",
+      "status": "现行",
+      "publish_date": "2016-12-23",
+      "implementation_date": "2017-06-21",
+      "summary": "GB 31640—2016食品安全国家标准—食用酒精。",
+      "scope": [
+        "酒类",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/33325"
+    },
+    {
+      "standard_code": "GB 19643—2016",
+      "title": "食品安全国家标准藻类及其制品",
+      "title_en": "National Food Safety Standard - 藻类及其制品",
+      "category": "藻类",
+      "status": "现行",
+      "publish_date": "2016-12-23",
+      "implementation_date": "2017-06-21",
+      "summary": "GB 19643—2016食品安全国家标准—藻类及其制品。",
+      "scope": [
+        "藻类",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/33256"
+    },
+    {
+      "standard_code": "GB 31637—2016",
+      "title": "食品安全国家标准食用淀粉",
+      "title_en": "National Food Safety Standard - 食用淀粉",
+      "category": "粮食及制品",
+      "status": "现行",
+      "publish_date": "2016-12-23",
+      "implementation_date": "2017-06-21",
+      "summary": "GB 31637—2016食品安全国家标准—食用淀粉。",
+      "scope": [
+        "粮食及制品",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/33237"
+    },
+    {
+      "standard_code": "GB 19299—2015",
+      "title": "食品安全国家标准果冻",
+      "title_en": "National Food Safety Standard - 果冻",
+      "category": "果冻",
+      "status": "现行",
+      "publish_date": "2015-11-13",
+      "implementation_date": "2016-05-11",
+      "summary": "GB 19299—2015食品安全国家标准—果冻。",
+      "scope": [
+        "果冻",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/32788"
+    },
+    {
+      "standard_code": "GB 15196—2015",
+      "title": "食品安全国家标准食用油脂制品",
+      "title_en": "National Food Safety Standard - 食用油脂制品",
+      "category": "油脂",
+      "status": "现行",
+      "publish_date": "2015-11-13",
+      "implementation_date": "2016-05-11",
+      "summary": "GB 15196—2015食品安全国家标准—食用油脂制品。",
+      "scope": [
+        "油脂",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/32780"
+    },
+    {
+      "standard_code": "GB 10146—2015",
+      "title": "食品安全国家标准食用动物油脂",
+      "title_en": "National Food Safety Standard - 食用动物油脂",
+      "category": "油脂",
+      "status": "现行",
+      "publish_date": "2015-11-13",
+      "implementation_date": "2016-05-11",
+      "summary": "GB 10146—2015食品安全国家标准—食用动物油脂。",
+      "scope": [
+        "油脂",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/32587"
+    },
+    {
+      "standard_code": "GB 31602—2015",
+      "title": "食品安全国家标准干海参",
+      "title_en": "National Food Safety Standard - 干海参",
+      "category": "其他",
+      "status": "现行",
+      "publish_date": "2015-11-13",
+      "implementation_date": "2016-05-11",
+      "summary": "GB 31602—2015食品安全国家标准—干海参。",
+      "scope": [
+        "其他",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/32898"
+    },
+    {
+      "standard_code": "GB 19641—2015",
+      "title": "食品安全国家标准食用植物油料",
+      "title_en": "National Food Safety Standard - 食用植物油料",
+      "category": "油脂",
+      "status": "现行",
+      "publish_date": "2015-11-13",
+      "implementation_date": "2016-05-11",
+      "summary": "GB 19641—2015食品安全国家标准—食用植物油料。",
+      "scope": [
+        "油脂",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/33990"
+    },
+    {
+      "standard_code": "GB 2720—2015",
+      "title": "食品安全国家标准味精",
+      "title_en": "National Food Safety Standard - 味精",
+      "category": "调味品",
+      "status": "现行",
+      "publish_date": "2015-09-22",
+      "implementation_date": "2016-03-20",
+      "summary": "GB 2720-2015食品安全国家标准—味精。",
+      "scope": [
+        "调味品",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/32844"
+    },
+    {
+      "standard_code": "GB 2714—2015",
+      "title": "食品安全国家标准酱腌菜",
+      "title_en": "National Food Safety Standard - 酱腌菜",
+      "category": "调味品",
+      "status": "现行",
+      "publish_date": "2015-09-22",
+      "implementation_date": "2016-03-20",
+      "summary": "GB 2714-2015食品安全国家标准—酱腌菜。",
+      "scope": [
+        "调味品",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/32863"
+    },
+    {
+      "standard_code": "GB 2713—2015",
+      "title": "食品安全国家标准淀粉制品",
+      "title_en": "National Food Safety Standard - 淀粉制品",
+      "category": "粮食及制品",
+      "status": "现行",
+      "publish_date": "2015-09-22",
+      "implementation_date": "2016-03-20",
+      "summary": "GB 2713—2015食品安全国家标准—淀粉制品。",
+      "scope": [
+        "粮食及制品",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/32843"
+    },
+    {
+      "standard_code": "GB 14967—2015",
+      "title": "食品安全国家标准胶原蛋白肠衣",
+      "title_en": "National Food Safety Standard - 胶原蛋白肠衣",
+      "category": "蛋白质类",
+      "status": "现行",
+      "publish_date": "2015-09-22",
+      "implementation_date": "2016-03-20",
+      "summary": "GB 14967—2015食品安全国家标准——胶原蛋白肠衣。",
+      "scope": [
+        "蛋白质类",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/32977"
+    },
+    {
+      "standard_code": "GB/T 10789—2015",
+      "title": "食品安全国家标准饮料通则GB/T 10789—2015",
+      "title_en": "National Food Safety Standard - 饮料通则GB/T 10789—2015",
+      "category": "饮料",
+      "status": "现行",
+      "publish_date": "2015-02-04",
+      "implementation_date": "2015-08-03",
+      "summary": "GB/T 10789—2015食品安全国家标准—饮料通则。",
+      "scope": [
+        "饮料",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/35049"
+    },
+    {
+      "standard_code": "GB 13104—2014",
+      "title": "食品安全国家标准食糖",
+      "title_en": "National Food Safety Standard - 食糖",
+      "category": "其他",
+      "status": "现行",
+      "publish_date": "2014-12-24",
+      "implementation_date": "2015-06-22",
+      "summary": "GB 13104—2014食品安全国家标准—食糖。",
+      "scope": [
+        "其他",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/34337"
+    },
+    {
+      "standard_code": "GB 19300—2014",
+      "title": "食品安全国家标准坚果与籽类食品",
+      "title_en": "National Food Safety Standard - 坚果与籽类食品",
+      "category": "坚果",
+      "status": "现行",
+      "publish_date": "2014-12-24",
+      "implementation_date": "2015-06-22",
+      "summary": "GB 19300-2014食品安全国家标准—坚果与籽类食品。",
+      "scope": [
+        "坚果",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/32868"
+    },
+    {
+      "standard_code": "GB 2718—2014",
+      "title": "食品安全国家标准酿造酱",
+      "title_en": "National Food Safety Standard - 酿造酱",
+      "category": "调味品",
+      "status": "现行",
+      "publish_date": "2014-12-24",
+      "implementation_date": "2015-06-22",
+      "summary": "GB 2718—2014食品安全国家标准—酿造酱。",
+      "scope": [
+        "调味品",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/33976"
+    },
+    {
+      "standard_code": "GB 17401—2014",
+      "title": "食品安全国家标准膨化食品",
+      "title_en": "National Food Safety Standard - 膨化食品",
+      "category": "膨化食品",
+      "status": "现行",
+      "publish_date": "2014-12-24",
+      "implementation_date": "2015-06-22",
+      "summary": "GB 17401—2014食品安全国家标准—膨化食品。",
+      "scope": [
+        "膨化食品",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/32917"
+    },
+    {
+      "standard_code": "GB 16740—2014",
+      "title": "食品安全国家标准保健食品",
+      "title_en": "National Food Safety Standard - 保健食品",
+      "category": "保健食品",
+      "status": "现行",
+      "publish_date": "2014-12-24",
+      "implementation_date": "2015-06-22",
+      "summary": "GB 16740—2014食品安全国家标准—保健食品。",
+      "scope": [
+        "保健食品",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/32916"
+    },
+    {
+      "standard_code": "GB 15203—2014",
+      "title": "食品安全国家标准淀粉糖",
+      "title_en": "National Food Safety Standard - 淀粉糖",
+      "category": "粮食及制品",
+      "status": "现行",
+      "publish_date": "2014-12-24",
+      "implementation_date": "2015-06-22",
+      "summary": "GB 15203—2014食品安全国家标准—淀粉糖。",
+      "scope": [
+        "粮食及制品",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/32915"
+    },
+    {
+      "standard_code": "GB 10133—2014",
+      "title": "食品安全国家标准水产调味品",
+      "title_en": "National Food Safety Standard - 水产调味品",
+      "category": "调味品",
+      "status": "现行",
+      "publish_date": "2014-12-24",
+      "implementation_date": "2015-06-22",
+      "summary": "GB 10133—2014食品安全国家标准—水产调味品。",
+      "scope": [
+        "调味品",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/34336"
+    },
+    {
+      "standard_code": "GB 2712—2014",
+      "title": "食品安全国家标准豆制品",
+      "title_en": "National Food Safety Standard - 豆制品",
+      "category": "豆制品",
+      "status": "现行",
+      "publish_date": "2014-12-24",
+      "implementation_date": "2015-06-22",
+      "summary": "GB 2712—2014食品安全国家标准—豆制品。",
+      "scope": [
+        "豆制品",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/33767"
+    },
+    {
+      "standard_code": "GB/T 31325—2014",
+      "title": "食品安全国家标准国家标准植物蛋白饮料—核桃露（乳）GB/T 31325—2014",
+      "title_en": "National Food Safety Standard - 国家标准植物蛋白饮料—核桃露（乳）GB/T 31325—2014",
+      "category": "乳制品",
+      "status": "现行",
+      "publish_date": "2014-12-05",
+      "implementation_date": "2015-06-03",
+      "summary": "GB/T 31325—2014国家标准植物蛋白饮料—核桃露（乳）。",
+      "scope": [
+        "乳制品",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/35153"
+    },
+    {
+      "standard_code": "GB/T 31324—2014",
+      "title": "食品安全国家标准植物蛋白饮料 杏仁露GB/T 31324—2014",
+      "title_en": "National Food Safety Standard - 植物蛋白饮料 杏仁露GB/T 31324—2014",
+      "category": "饮料",
+      "status": "现行",
+      "publish_date": "2014-12-05",
+      "implementation_date": "2015-06-03",
+      "summary": "GB/T 31324—2014食品安全国家标准—植物蛋白饮料 杏仁露。",
+      "scope": [
+        "饮料",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/35072"
+    },
+    {
+      "standard_code": "GB/T 30885—2014",
+      "title": "食品安全国家标准国家标准植物蛋白饮料—豆奶和豆奶饮料GB/T 30885—2014",
+      "title_en": "National Food Safety Standard - 国家标准植物蛋白饮料—豆奶和豆奶饮料GB/T 30885—2014",
+      "category": "饮料",
+      "status": "现行",
+      "publish_date": "2014-09-30",
+      "implementation_date": "2015-03-29",
+      "summary": "GB/T 30885—2014国家标准植物蛋白饮料—豆奶和豆奶饮料。",
+      "scope": [
+        "饮料",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/35264"
+    },
+    {
+      "standard_code": "GB 2711—2014",
+      "title": "食品安全国家标准面筋制品",
+      "title_en": "National Food Safety Standard - 面筋制品",
+      "category": "其他",
+      "status": "现行",
+      "publish_date": "2014-07-18",
+      "implementation_date": "2015-01-14",
+      "summary": "GB 2711—2014食品安全国家标准—面筋制品。",
+      "scope": [
+        "其他",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/33766"
+    },
+    {
+      "standard_code": "GB 22570—2014",
+      "title": "食品安全国家标准辅食营养补充品",
+      "title_en": "National Food Safety Standard - 辅食营养补充品",
+      "category": "婴幼儿食品",
+      "status": "现行",
+      "publish_date": "2014-04-29",
+      "implementation_date": "2014-10-26",
+      "summary": "GB 22570—2014食品安全国家标准—辅食营养补充品。",
+      "scope": [
+        "婴幼儿食品",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/33346"
+    },
+    {
+      "standard_code": "GB 14881—2013",
+      "title": "食品安全国家标准 食品生产通用卫生规范",
+      "title_en": "National Food Safety Standard - General Hygienic Specification for Food Production",
+      "category": "生产规范",
+      "status": "现行",
+      "publish_date": "2013-05-24",
+      "implementation_date": "2014-06-01",
+      "summary": "规定食品生产过程中原料采购、加工、包装、贮存、运输等环节的卫生要求，是食品生产许可的基础规范。",
+      "scope": [
+        "食品工厂",
+        "生产流程",
+        "卫生管理"
+      ],
+      "related_topics": [
+        "GMP",
+        "HACCP"
+      ],
+      "source_url": "",
+      "priority": "P0-核心必备"
+    },
+    {
+      "standard_code": "GB 13432—2013",
+      "title": "食品安全国家标准 预包装特殊膳食用食品标签",
+      "title_en": "National Food Safety Standard - Labeling of Prepackaged Foods for Special Dietary Uses",
+      "category": "标签标识",
+      "status": "现行",
+      "publish_date": "2013-01-30",
+      "implementation_date": "2013-06-01",
+      "summary": "规定婴幼儿配方食品、特殊医学用途配方食品等特殊膳食用食品的标签要求。",
+      "scope": [
+        "特殊膳食用食品",
+        "标签标示"
+      ],
+      "related_topics": [
+        "GB 7718",
+        "营养标签"
+      ],
+      "source_url": "",
+      "priority": "P1-重要"
+    },
+    {
+      "standard_code": "GB 2757—2012",
+      "title": "食品安全国家标准蒸馏酒及其配制酒",
+      "title_en": "National Food Safety Standard - 蒸馏酒及其配制酒",
+      "category": "酒类",
+      "status": "现行",
+      "publish_date": "2012-08-06",
+      "implementation_date": "2013-02-02",
+      "summary": "GB 2757—2012食品安全国家标准—蒸馏酒及其配制酒。",
+      "scope": [
+        "酒类",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/32588"
+    },
+    {
+      "standard_code": "GB 2758—2012",
+      "title": "食品安全国家标准发酵酒及其配制酒",
+      "title_en": "National Food Safety Standard - 发酵酒及其配制酒",
+      "category": "酒类",
+      "status": "现行",
+      "publish_date": "2012-07-18",
+      "implementation_date": "2013-01-14",
+      "summary": "GB 2758-2012食品安全国家标准—发酵酒及其配制酒。",
+      "scope": [
+        "酒类",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/33765"
+    },
+    {
+      "standard_code": "GB 14880—2012",
+      "title": "食品安全国家标准食品营养强化剂使用标准",
+      "title_en": "National Food Safety Standard - 食品营养强化剂使用标准",
+      "category": "其他",
+      "status": "现行",
+      "publish_date": "2012-03-15",
+      "implementation_date": "2012-09-11",
+      "summary": "GB 14880—2012食品安全国家标准—食品营养强化剂使用标准。",
+      "scope": [
+        "其他",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/32590"
+    },
+    {
+      "standard_code": "GB/T 4221—2011",
+      "title": "食品安全国家标准谷物类饮料",
+      "title_en": "National Food Safety Standard - 谷物类饮料",
+      "category": "饮料",
+      "status": "现行",
+      "publish_date": "2011-12-20",
+      "implementation_date": "2012-06-17",
+      "summary": "QB/T 4221—2011食品安全国家标准—谷物类饮料。",
+      "scope": [
+        "饮料",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/35259"
+    },
+    {
+      "standard_code": "GB/T 4222—2011",
+      "title": "食品安全国家标准复合蛋白饮料",
+      "title_en": "National Food Safety Standard - 复合蛋白饮料",
+      "category": "饮料",
+      "status": "现行",
+      "publish_date": "2011-12-20",
+      "implementation_date": "2012-06-17",
+      "summary": "QB/T 4222—2011食品安全国家标准—复合蛋白饮料。",
+      "scope": [
+        "饮料",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/35346"
+    },
+    {
+      "standard_code": "GB 28050—2011",
+      "title": "食品安全国家标准预包装食品营养标签通则",
+      "title_en": "National Food Safety Standard - 预包装食品营养标签通则",
+      "category": "标签标识",
+      "status": "现行",
+      "publish_date": "2011-10-12",
+      "implementation_date": "2012-04-09",
+      "summary": "GB 28050—2011食品安全国家标准—预包装食品营养标签通则。",
+      "scope": [
+        "标签标识",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/31713"
+    },
+    {
+      "standard_code": "GB 26878—2011",
+      "title": "食品安全国家标准食用盐碘含量",
+      "title_en": "National Food Safety Standard - 食用盐碘含量",
+      "category": "食盐",
+      "status": "现行",
+      "publish_date": "2011-09-15",
+      "implementation_date": "2012-03-13",
+      "summary": "GB 26878—2011食品安全国家标准——食用盐碘含量。",
+      "scope": [
+        "食盐",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/32623"
+    },
+    {
+      "standard_code": "GB 14963—2011",
+      "title": "食品安全国家标准蜂蜜",
+      "title_en": "National Food Safety Standard - 蜂蜜",
+      "category": "蜂蜜",
+      "status": "现行",
+      "publish_date": "2011-07-13",
+      "implementation_date": "2012-01-09",
+      "summary": "GB 14963—2011食品安全国家标准—蜂蜜。",
+      "scope": [
+        "蜂蜜",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/33244"
+    },
+    {
+      "standard_code": "GB 7718—2011",
+      "title": "食品安全国家标准预包装食品标签通则",
+      "title_en": "National Food Safety Standard - 预包装食品标签通则",
+      "category": "标签标识",
+      "status": "现行",
+      "publish_date": "2011-04-20",
+      "implementation_date": "2011-10-17",
+      "summary": "GB 7718—2011食品安全国家标准—预包装食品标签通则。",
+      "scope": [
+        "标签标识",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/34057"
+    },
+    {
+      "standard_code": "GB 25595—2010",
+      "title": "食品安全国家标准乳糖",
+      "title_en": "National Food Safety Standard - 乳糖",
+      "category": "乳制品",
+      "status": "现行",
+      "publish_date": "2011-02-21",
+      "implementation_date": "2011-08-20",
+      "summary": "GB 25595-2010食品安全国家标准——乳糖。",
+      "scope": [
+        "乳制品",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/32998"
+    },
+    {
+      "standard_code": "GB 25596—2010",
+      "title": "食品安全国家标准特殊医学用途婴儿配方食品通则",
+      "title_en": "National Food Safety Standard - 特殊医学用途婴儿配方食品通则",
+      "category": "婴幼儿食品",
+      "status": "现行",
+      "publish_date": "2010-12-21",
+      "implementation_date": "2011-06-19",
+      "summary": "GB 25596-2010食品安全国家标准—特殊医学用途婴儿配方食品通则。",
+      "scope": [
+        "婴幼儿食品",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/33322"
+    },
+    {
+      "standard_code": "GB 19301—2010",
+      "title": "食品安全国家标准生乳",
+      "title_en": "National Food Safety Standard - 生乳",
+      "category": "乳制品",
+      "status": "现行",
+      "publish_date": "2010-07-21",
+      "implementation_date": "2011-01-17",
+      "summary": "GB 19301—2010食品安全国家标准——生乳。",
+      "scope": [
+        "乳制品",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/32984"
+    },
+    {
+      "standard_code": "GB 13102—2010",
+      "title": "食品安全国家标准炼乳",
+      "title_en": "National Food Safety Standard - 炼乳",
+      "category": "乳制品",
+      "status": "现行",
+      "publish_date": "2010-07-06",
+      "implementation_date": "2011-01-02",
+      "summary": "GB 13102—2010食品安全国家标准。",
+      "scope": [
+        "乳制品",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/32986"
+    },
+    {
+      "standard_code": "GB 19304—2010",
+      "title": "食品安全国家标准 乳酸菌饮料",
+      "title_en": "National Food Safety Standard - Lactic Acid Bacteria Drinks",
+      "category": "饮料",
+      "status": "现行",
+      "publish_date": "2010-03-26",
+      "implementation_date": "2010-06-01",
+      "summary": "规定乳酸菌饮料（含活性/非活性）的食品安全要求。",
+      "scope": [
+        "乳酸菌饮料",
+        "含乳饮料"
+      ],
+      "related_topics": [
+        "活性菌"
+      ],
+      "source_url": "",
+      "priority": "P2-一般"
+    },
+    {
+      "standard_code": "GB 19303—2010",
+      "title": "食品安全国家标准 酸性发酵乳制品",
+      "title_en": "National Food Safety Standard - Acid Fermented Dairy Products",
+      "category": "乳制品",
+      "status": "现行",
+      "publish_date": "2010-03-26",
+      "implementation_date": "2010-06-01",
+      "summary": "规定酸奶等酸性发酵乳制品的食品安全要求。",
+      "scope": [
+        "酸奶",
+        "发酵乳"
+      ],
+      "related_topics": [
+        "乳酸菌",
+        "益生菌"
+      ],
+      "source_url": "",
+      "priority": "P2-一般"
+    },
+    {
+      "standard_code": "GB 23791—2010",
+      "title": "食品安全国家标准 冷冻饮品",
+      "title_en": "National Food Safety Standard - Frozen Desserts",
+      "category": "冷冻饮品",
+      "status": "现行",
+      "publish_date": "2010-03-26",
+      "implementation_date": "2010-06-01",
+      "summary": "规定冰淇淋、雪糕、冰棍等冷冻饮品的食品安全要求。",
+      "scope": [
+        "冰淇淋",
+        "雪糕",
+        "冷冻饮品"
+      ],
+      "related_topics": [
+        "冷链"
+      ],
+      "source_url": "",
+      "priority": "P2-一般"
+    },
+    {
+      "standard_code": "GB 23790—2010",
+      "title": "食品安全国家标准 糕点、面包",
+      "title_en": "National Food Safety Standard - Cakes and Bread",
+      "category": "糕点面包",
+      "status": "现行",
+      "publish_date": "2010-03-26",
+      "implementation_date": "2010-06-01",
+      "summary": "规定糕点、面包类食品的食品安全要求。",
+      "scope": [
+        "糕点",
+        "面包",
+        "烘焙食品"
+      ],
+      "related_topics": [
+        "防腐剂",
+        "微生物"
+      ],
+      "source_url": "",
+      "priority": "P2-一般"
+    },
+    {
+      "standard_code": "GB 19302—2010",
+      "title": "食品安全国家标准发酵乳",
+      "title_en": "National Food Safety Standard - 发酵乳",
+      "category": "乳制品",
+      "status": "现行",
+      "publish_date": "2010-03-26",
+      "implementation_date": "2010-09-22",
+      "summary": "GB 19302—2010食品安全国家标准——发酵乳。",
+      "scope": [
+        "乳制品",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/32961"
+    },
+    {
+      "standard_code": "GB 10767—2010",
+      "title": "食品安全国家标准较大婴儿和幼儿配方食品",
+      "title_en": "National Food Safety Standard - 较大婴儿和幼儿配方食品",
+      "category": "婴幼儿食品",
+      "status": "现行",
+      "publish_date": "2010-03-26",
+      "implementation_date": "2010-09-22",
+      "summary": "GB 10767—2010食品安全国家标准—较大婴儿和幼儿配方食品。",
+      "scope": [
+        "婴幼儿食品",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/32889"
+    },
+    {
+      "standard_code": "GB 19646—2010",
+      "title": "食品安全国家标准稀奶油、奶油和无水奶油",
+      "title_en": "National Food Safety Standard - 稀奶油、奶油和无水奶油",
+      "category": "乳制品",
+      "status": "现行",
+      "publish_date": "2010-03-26",
+      "implementation_date": "2010-09-22",
+      "summary": "GB 19646—2010食品安全国家标准——稀奶油、奶油和无水奶油。",
+      "scope": [
+        "乳制品",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/32956"
+    },
+    {
+      "standard_code": "GB 25190—2010",
+      "title": "食品安全国家标准灭菌乳",
+      "title_en": "National Food Safety Standard - 灭菌乳",
+      "category": "乳制品",
+      "status": "现行",
+      "publish_date": "2010-03-26",
+      "implementation_date": "2010-09-22",
+      "summary": "GB 25190—2010食品安全国家标准——灭菌乳。",
+      "scope": [
+        "乳制品",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/32943"
+    },
+    {
+      "standard_code": "GB 19645—2010",
+      "title": "食品安全国家标准巴氏杀菌乳",
+      "title_en": "National Food Safety Standard - 巴氏杀菌乳",
+      "category": "乳制品",
+      "status": "现行",
+      "publish_date": "2010-03-26",
+      "implementation_date": "2010-09-22",
+      "summary": "GB 19645—2010食品安全国家标准——巴氏杀菌乳。",
+      "scope": [
+        "乳制品",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/32957"
+    },
+    {
+      "standard_code": "GB 25191—2010",
+      "title": "食品安全国家标准调制乳",
+      "title_en": "National Food Safety Standard - 调制乳",
+      "category": "乳制品",
+      "status": "现行",
+      "publish_date": "2010-03-26",
+      "implementation_date": "2010-09-22",
+      "summary": "GB 25191—2010食品安全国家标准——调制乳。",
+      "scope": [
+        "乳制品",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/32941"
+    },
+    {
+      "standard_code": "GB 25192—2010",
+      "title": "食品安全国家标准再制干酪",
+      "title_en": "National Food Safety Standard - 再制干酪",
+      "category": "乳制品",
+      "status": "现行",
+      "publish_date": "2010-03-26",
+      "implementation_date": "2010-09-22",
+      "summary": "GB  25192—2010食品安全国家标准——再制干酪。\n",
+      "scope": [
+        "乳制品",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/32939"
+    },
+    {
+      "standard_code": "GB 19644—2010",
+      "title": "食品安全国家标准乳粉",
+      "title_en": "National Food Safety Standard - 乳粉",
+      "category": "乳制品",
+      "status": "现行",
+      "publish_date": "2010-03-26",
+      "implementation_date": "2010-09-22",
+      "summary": "GB 19644—2010食品安全国家标准——乳粉。",
+      "scope": [
+        "乳制品",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/32960"
+    },
+    {
+      "standard_code": "GB 10770—2010",
+      "title": "食品安全国家标准婴幼儿罐装辅助食品",
+      "title_en": "National Food Safety Standard - 婴幼儿罐装辅助食品",
+      "category": "婴幼儿食品",
+      "status": "现行",
+      "publish_date": "2010-03-26",
+      "implementation_date": "2010-09-22",
+      "summary": "GB 10770—2010食品安全国家标准—婴幼儿罐装辅助食品。",
+      "scope": [
+        "婴幼儿食品",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/34228"
+    },
+    {
+      "standard_code": "GB 10765—2010",
+      "title": "食品安全国家标准婴儿配方食品",
+      "title_en": "National Food Safety Standard - 婴儿配方食品",
+      "category": "婴幼儿食品",
+      "status": "现行",
+      "publish_date": "2010-03-26",
+      "implementation_date": "2010-09-22",
+      "summary": "GB 10765—2010食品安全国家标准—婴儿配方食品。",
+      "scope": [
+        "婴幼儿食品",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/34194"
+    },
+    {
+      "standard_code": "GB 10769—2010",
+      "title": "食品安全国家标准婴幼儿谷类辅助食品",
+      "title_en": "National Food Safety Standard - 婴幼儿谷类辅助食品",
+      "category": "婴幼儿食品",
+      "status": "现行",
+      "publish_date": "2010-03-26",
+      "implementation_date": "2010-09-22",
+      "summary": "GB 10769—2010食品安全国家标准—婴幼儿谷类辅助食品。",
+      "scope": [
+        "婴幼儿食品",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/33438"
+    },
+    {
+      "standard_code": "GB 11674—2010",
+      "title": "食品安全国家标准乳清粉和乳清蛋白粉",
+      "title_en": "National Food Safety Standard - 乳清粉和乳清蛋白粉",
+      "category": "乳制品",
+      "status": "现行",
+      "publish_date": "2010-03-26",
+      "implementation_date": "2010-09-22",
+      "summary": "GB 11674—2010食品安全国家标准——乳清粉和乳清蛋白粉。",
+      "scope": [
+        "乳制品",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/32996"
+    },
+    {
+      "standard_code": "GB 15266—2009",
+      "title": "食品安全国家标准运动饮料",
+      "title_en": "National Food Safety Standard - 运动饮料",
+      "category": "饮料",
+      "status": "现行",
+      "publish_date": "2009-04-14",
+      "implementation_date": "2009-10-11",
+      "summary": "GB 15266—2009食品安全国家标准—运动饮料。",
+      "scope": [
+        "饮料",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/35023"
+    },
+    {
+      "standard_code": "GB/T 21733—2008",
+      "title": "食品安全国家标准茶饮料GB/T 21733—2008",
+      "title_en": "National Food Safety Standard - 茶饮料GB/T 21733—2008",
+      "category": "饮料",
+      "status": "现行",
+      "publish_date": "2008-04-21",
+      "implementation_date": "2008-10-18",
+      "summary": "GB/T 21733—2008食品安全国家标准—茶饮料。",
+      "scope": [
+        "饮料",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/35190"
+    },
+    {
+      "standard_code": "GB/T 10792—2008",
+      "title": "食品安全国家标准碳酸饮料（汽水）GB/T 10792—2008",
+      "title_en": "National Food Safety Standard - 碳酸饮料（汽水）GB/T 10792—2008",
+      "category": "饮料",
+      "status": "现行",
+      "publish_date": "2008-04-21",
+      "implementation_date": "2008-10-18",
+      "summary": "GB/T 10792—2008食品安全国家标准—碳酸饮料（汽水）。",
+      "scope": [
+        "饮料",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/34950"
+    },
+    {
+      "standard_code": "GB 15037—2006",
+      "title": "食品安全国家标准葡萄酒",
+      "title_en": "National Food Safety Standard - 葡萄酒",
+      "category": "酒类",
+      "status": "现行",
+      "publish_date": "2006-12-11",
+      "implementation_date": "2007-06-09",
+      "summary": "GB 15037—2006食品安全国家标准—葡萄酒。",
+      "scope": [
+        "酒类",
+        "食品安全",
+        "食品生产"
+      ],
+      "related_topics": [],
+      "source_url": "https://www.foodtalks.cn/news/35107"
+    }
+  ],
+  "international_standards": [
+    {
+      "standard_code": "21 CFR Part 110-169",
+      "title": "美国FDA食品法规汇编",
+      "title_en": "Code of Federal Regulations Title 21 - Food and Drugs",
+      "category": "国别法规",
+      "status": "现行",
+      "publish_date": "2024-01-01",
+      "implementation_date": "2024-01-01",
+      "summary": "美国FDA食品法规完整汇编，包括食品添加剂批准(21 CFR Part 170-189)、 contaminants限量、食品标签(21 CFR Part 101)等。出口美国企业必读。",
+      "scope": [
+        "FDA法规",
+        "出口美国",
+        "GRAS"
+      ],
+      "related_topics": [
+        "FSMA",
+        "GRAS"
+      ],
+      "source_url": "https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfcfr/CFRSearch.cfm",
+      "organization": "FDA",
+      "priority": "P1-出口必备"
+    },
+    {
+      "standard_code": "BRCGS Food Safety",
+      "title": "英国零售商协会食品安全标准",
+      "title_en": "British Retail Consortium Global Standards for Food Safety",
+      "category": "认证标准",
+      "status": "现行",
+      "publish_date": "2023-07-01",
+      "implementation_date": "2023-07-01",
+      "summary": "国际零售商普遍认可的食品安全标准，出口欧洲市场的重要认证。",
+      "scope": [
+        "食品安全认证",
+        "零售商标准"
+      ],
+      "related_topics": [
+        "ISO 22000",
+        "FSSC 22000"
+      ],
+      "source_url": "https://www.brcgs.com/",
+      "organization": "BRCGS",
+      "priority": "P2-认证标准"
+    },
+    {
+      "standard_code": "CAC/RCP 1-1969",
+      "title": "食品 hygiene 通用标准",
+      "title_en": "Code of Hygienic Practice - General Principles",
+      "category": "基础规范",
+      "status": "现行",
+      "publish_date": "1969-01-01",
+      "implementation_date": "1969-01-01",
+      "summary": "国际食品法典委员会发布的食品hygiene基础性指导文件，GB 14881的基础参考。",
+      "scope": [
+        "食品 hygiene",
+        "基础规范"
+      ],
+      "related_topics": [
+        "GB 14881",
+        "HACCP"
+      ],
+      "source_url": "https://www.codexalimentarius.org/",
+      "organization": "CAC",
+      "priority": "P0-核心参考"
+    },
+    {
+      "standard_code": "CXS 192-1995",
+      "title": "食品中农药残留法典标准",
+      "title_en": "Codex General Standard for Pesticide Residues",
+      "category": "农药残留",
+      "status": "现行",
+      "publish_date": "1995-01-01",
+      "implementation_date": "1995-01-01",
+      "summary": "国际农药残留管理的法典标准，与GB 2763对应，出口企业需对照CAC MRL与国标差异。",
+      "scope": [
+        "农药残留",
+        "MRL",
+        "出口合规"
+      ],
+      "related_topics": [
+        "GB 2763",
+        "CAC MRL"
+      ],
+      "source_url": "https://www.codexalimentarius.org/",
+      "organization": "CAC",
+      "priority": "P1-重要参考"
+    },
+    {
+      "standard_code": "CXS 193-1995",
+      "title": "食品中污染物法典标准",
+      "title_en": "Codex General Standard for Contaminants and Toxins in Foods",
+      "category": "污染物限量",
+      "status": "现行",
+      "publish_date": "1995-01-01",
+      "implementation_date": "1995-01-01",
+      "summary": "国际食品中重金属和污染物限量的法典标准，与GB 2762对应。",
+      "scope": [
+        "重金属",
+        "污染物"
+      ],
+      "related_topics": [
+        "GB 2762"
+      ],
+      "source_url": "https://www.codexalimentarius.org/",
+      "organization": "CAC",
+      "priority": "P1-重要参考"
+    },
+    {
+      "standard_code": "CXS 234-2001",
+      "title": "食品标签通用法典标准",
+      "title_en": "General Standard for the Labelling of Prepackaged Foods",
+      "category": "标签标识",
+      "status": "现行",
+      "publish_date": "2001-01-01",
+      "implementation_date": "2001-01-01",
+      "summary": "国际食品标签法规的基础标准，与GB 7718对应，出口企业必须对照。",
+      "scope": [
+        "食品标签",
+        "预包装"
+      ],
+      "related_topics": [
+        "GB 7718"
+      ],
+      "source_url": "https://www.codexalimentarius.org/",
+      "organization": "CAC",
+      "priority": "P1-重要参考"
+    },
+    {
+      "standard_code": "EC 1333/2008",
+      "title": "欧盟食品添加剂法规",
+      "title_en": "Food Additives",
+      "category": "国别法规",
+      "status": "现行",
+      "publish_date": "2008-12-16",
+      "implementation_date": "2009-01-20",
+      "summary": "欧盟食品添加剂批准和使用法规，与GB 2760对应，出口企业需对照EU E编码与国标差异。",
+      "scope": [
+        "欧盟法规",
+        "食品添加剂",
+        "E编码"
+      ],
+      "related_topics": [
+        "GB 2760",
+        "INS编号"
+      ],
+      "source_url": "https://eur-lex.europa.eu/",
+      "organization": "EU",
+      "priority": "P1-出口必备"
+    },
+    {
+      "standard_code": "EC 178/2002",
+      "title": "欧盟食品法通用条例",
+      "title_en": "General Food Law of the European Parliament and of the Council",
+      "category": "国别法规",
+      "status": "现行",
+      "publish_date": "2002-01-28",
+      "implementation_date": "2006-01-01",
+      "summary": "欧盟食品安全基本法规，建立EFSA和食品追溯体系，出口欧盟企业必读。",
+      "scope": [
+        "欧盟法规",
+        "食品追溯",
+        "EFSA"
+      ],
+      "related_topics": [
+        "EC 852/2004"
+      ],
+      "source_url": "https://eur-lex.europa.eu/",
+      "organization": "EU",
+      "priority": "P1-出口必备"
+    },
+    {
+      "standard_code": "EC 852/2004",
+      "title": "欧盟食品 hygiene 法规",
+      "title_en": "Hygiene of Foodstuffs",
+      "category": "国别法规",
+      "status": "现行",
+      "publish_date": "2004-04-29",
+      "implementation_date": "2006-01-01",
+      "summary": "欧盟食品 hygiene 基本要求法规，涵盖食品生产、加工、运输各环节，与GB 14881相呼应。",
+      "scope": [
+        "欧盟法规",
+        "食品 hygiene"
+      ],
+      "related_topics": [
+        "HACCP",
+        "GB 14881"
+      ],
+      "source_url": "https://eur-lex.europa.eu/",
+      "organization": "EU",
+      "priority": "P1-出口必备"
+    },
+    {
+      "standard_code": "FSSC 22000",
+      "title": "食品安全管理体系认证方案",
+      "title_en": "Food Safety System Certification 22000",
+      "category": "认证标准",
+      "status": "现行",
+      "publish_date": "2024-03-01",
+      "implementation_date": "2024-03-01",
+      "summary": "GFSI认可的食品安全管理体系认证方案，被全球主要零售商和食品企业广泛接受。",
+      "scope": [
+        "GFSI认可",
+        "食品安全认证"
+      ],
+      "related_topics": [
+        "ISO 22000",
+        "BRCGS"
+      ],
+      "source_url": "https://www.fssc22000.com/",
+      "organization": "GFSI",
+      "priority": "P2-认证标准"
+    },
+    {
+      "standard_code": "IFS Food",
+      "title": "国际食品标准",
+      "title_en": "International Featured Standards Food",
+      "category": "认证标准",
+      "status": "现行",
+      "publish_date": "2023-01-01",
+      "implementation_date": "2023-01-01",
+      "summary": "德国IFOCA认证标准，欧洲零售商广泛接受的食品安全认证。",
+      "scope": [
+        "欧洲认证",
+        "过程安全"
+      ],
+      "related_topics": [
+        "BRCGS",
+        "FSSC 22000"
+      ],
+      "source_url": "https://www.ifsworld.org/",
+      "organization": "IFS",
+      "priority": "P2-认证标准"
+    },
+    {
+      "standard_code": "ISO 22000",
+      "title": "食品安全管理体系要求",
+      "title_en": "Food safety management systems — Requirements for any organization in the food chain",
+      "category": "管理体系",
+      "status": "现行",
+      "publish_date": "2018-09-28",
+      "implementation_date": "2018-09-28",
+      "summary": "国际公认的食品安全管理体系标准，基于HACCP原理，适用于食品链中所有组织。出口企业必备认证。",
+      "scope": [
+        "食品安全管理体系",
+        "HACCP",
+        "出口合规"
+      ],
+      "related_topics": [
+        "ISO 9001",
+        "BRCGS"
+      ],
+      "source_url": "https://www.iso.org/standard/60887.html",
+      "organization": "ISO",
+      "priority": "P0-核心参考"
+    },
+    {
+      "standard_code": "ISO 9001",
+      "title": "质量管理体系要求",
+      "title_en": "Quality management systems — Requirements",
+      "category": "管理体系",
+      "status": "现行",
+      "publish_date": "2015-09-15",
+      "implementation_date": "2015-09-15",
+      "summary": "国际通用的质量管理体系标准，食品企业基础认证要求。",
+      "scope": [
+        "质量管理体系"
+      ],
+      "related_topics": [
+        "ISO 22000"
+      ],
+      "source_url": "https://www.iso.org/standard/62085.html",
+      "organization": "ISO",
+      "priority": "P0-核心参考"
+    },
+    {
+      "standard_code": "JP MRLs",
+      "title": "日本肯定列表制度",
+      "title_en": "Positive List System for Pesticide Residues in Food",
+      "category": "国别法规",
+      "status": "现行",
+      "publish_date": "2006-05-28",
+      "implementation_date": "2006-05-29",
+      "summary": "日本食品中农业chemical残留的肯定列表制度，对未制定限量的物质设定0.01mg/kg默认限量。出口日本企业必读。",
+      "scope": [
+        "日本法规",
+        "农药残留",
+        "肯定列表"
+      ],
+      "related_topics": [
+        "GB 2763",
+        "CAC MRL"
+      ],
+      "source_url": "https://www.maff.go.jp/",
+      "organization": "MHLW",
+      "priority": "P1-出口必备"
+    },
+    {
+      "standard_code": "SQF Code",
+      "title": "安全质量食品安全法规",
+      "title_en": "SQF Food Safety Code",
+      "category": "认证标准",
+      "status": "现行",
+      "publish_date": "2024-01-01",
+      "implementation_date": "2024-01-01",
+      "summary": "GFSI认可的食品安全标准，覆盖从农田到餐桌的全链条安全管理。",
+      "scope": [
+        "GFSI认可",
+        "SQF认证"
+      ],
+      "related_topics": [
+        "ISO 22000"
+      ],
+      "source_url": "https://www.sqfi.com/",
+      "organization": "SQFI",
+      "priority": "P2-认证标准"
+    }
+  ],
+  "missing_analysis": {
+    "previously_missing_core": [
+      "GB 2760-2024",
+      "GB 2762-2022",
+      "GB 2763-2024",
+      "GB 14881-2013",
+      "GB 29921-2021"
+    ],
+    "previously_missing_important": [
+      "GB 31650-2019",
+      "GB 31654-2021",
+      "GB 31621-2016",
+      "GB 31623-2016",
+      "GB 13432-2013"
+    ],
+    "international_added": 15,
+    "gap_analysis": "原页面仅收录品类GB标准82项，缺少食品添加剂(GB 2760)、污染物(GB 2762)、农残(GB 2763)等基础通用标准及国际法规"
+  }
+}

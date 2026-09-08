@@ -1,9 +1,10 @@
 """检查 PostgreSQL 中的用户表"""
 import asyncio
 import asyncpg
+from scripts.db_utils import get_asyncpg_dsn
 
 async def main():
-    conn = await asyncpg.connect('postgresql://postgres@localhost:5432/rmfood_platform')
+    conn = await asyncpg.connect(get_asyncpg_dsn())
     rows = await conn.fetch('SELECT id, username, email, is_active, role FROM users')
     print(f'Users count: {len(rows)}')
     if rows:

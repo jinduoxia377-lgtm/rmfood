@@ -1,0 +1,10 @@
+{
+  "navigationBarTitleText": "配方详情",
+  "navigationBarBackgroundColor": "#2D5A3D",
+  "navigationBarTextStyle": "white",
+  "usingComponents": {
+    "icon": "../../../../components/Icon/index",
+    "nutrition-label": "../../../../components/NutritionLabel/index",
+    "health-score": "../../../../components/HealthScore/index"
+  }
+}

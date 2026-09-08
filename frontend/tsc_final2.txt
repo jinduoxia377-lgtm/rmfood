@@ -1,0 +1,1 @@
+﻿src/pages/analytics/tabs/ReportsTab.tsx(347,51): error TS2345: Argument of type 'string' is not assignable to parameter of type 'SetStateAction<"7d" | "30d" | "90d" | "1y">'.

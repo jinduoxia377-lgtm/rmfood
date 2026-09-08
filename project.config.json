@@ -1,0 +1,28 @@
+{
+    "setting":  {
+                    "es6":  true,
+                    "postcss":  true,
+                    "minified":  true,
+                    "enhance":  true,
+                    "packNpmManually":  true,
+                    "npmPackageRoot":  "./miniprogram_npm",
+                    "packNpmRelationList":  [
+
+                                            ],
+                    "condition":  true,
+                    "babelSetting":  {
+                                         "ignore":  [
+
+                                                    ],
+                                         "disablePlugins":  [
+
+                                                            ],
+                                         "outputPath":  ""
+                                     },
+                    "useCompilerPlugins":  false
+                },
+    "projectArchitecture":  "multiPlatform",
+    "miniprogramRoot":  "miniprogram/",
+    "appid":  "wx2aa1c2e869b9e8ac",
+    "compileType":  "miniprogram"
+}

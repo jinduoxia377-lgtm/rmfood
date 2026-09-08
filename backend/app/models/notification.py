@@ -5,7 +5,7 @@
 包含丰富的元数据和已读状态追踪。
 """
 from datetime import datetime, timezone
-from sqlalchemy import Integer, String, Text, DateTime, JSON, Enum, Boolean, ForeignKey, Index, BigInteger
+from sqlalchemy import Integer, String, Text, DateTime, JSON, Boolean, ForeignKey, Index, BigInteger
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .base import Base
 from .enums import NotificationType, NotificationStatus
@@ -20,12 +20,12 @@ class Notification(Base):
         BigInteger, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
     )
     type: Mapped[NotificationType] = mapped_column(
-        Enum(NotificationType), default=NotificationType.SYSTEM, nullable=False
+        String(50), default=NotificationType.SYSTEM.value, nullable=False
     )
     # ── 已读状态（双字段同步） ──
     # status 枚举是权威来源，is_read 是派生字段用于查询性能
     status: Mapped[NotificationStatus] = mapped_column(
-        Enum(NotificationStatus), default=NotificationStatus.UNREAD, nullable=False
+        String(20), default=NotificationStatus.UNREAD.value, nullable=False
     )
     is_read: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     read_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

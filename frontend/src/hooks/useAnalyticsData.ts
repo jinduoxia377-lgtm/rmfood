@@ -41,6 +41,7 @@ export interface ActivityItem {
   title: string
   timestamp?: string | null
   author?: string | null
+  id?: string
 }
 
 export interface SystemHealth {
@@ -97,7 +98,7 @@ export interface TrendResponse {
 
 // ─── 从 KPI 列表中提取快捷字段 ────────────────────────────────
 
-interface StatsSnapshot {
+export interface StatsSnapshot {
   total_formulas: number
   total_experiments: number
   active_users: number
@@ -106,17 +107,24 @@ interface StatsSnapshot {
   avg_processing_time: number
 }
 
-function extractStats(kpis: KPIMetric[]): StatsSnapshot {
+export function extractStats(kpis: KPIMetric[]): StatsSnapshot {
   const map = new Map(kpis.map(k => [k.id, k]))
   const fmt = (id: string, fallback = 0) => (map.has(id) ? map.get(id)!.value : fallback)
+  const totalFormulas = fmt('total_formulas', 0)
+  const publishedFormulas = fmt('published_formulas', 0)
   return {
     total_formulas: fmt('total_formulas', 0),
     total_experiments: fmt('total_experiments', 0),
     active_users: fmt('active_users', 0),
     data_points: fmt('ai_generations', 0),
-    success_rate: fmt('published_formulas', 0),
+    // 成功率 = 已发布配方数 / 总配方数 × 100，而非直接用 published_formulas 的原始计数
+    success_rate: totalFormulas > 0 ? round2(publishedFormulas / totalFormulas * 100) : 0,
     avg_processing_time: 0,
   }
+}
+
+function round2(n: number) {
+  return Math.round(n * 100) / 100
 }
 
 // ─── Hook ────────────────────────────────────────────────────
@@ -126,10 +134,16 @@ export interface UseAnalyticsDataOptions {
   pollInterval?: number
   /** 时间范围过滤器 */
   timeRange?: string
+  /** 分类筛选 */
+  categories?: string[]
+  /** 状态筛选 */
+  status?: string[]
+  /** 用户筛选 */
+  users?: string[]
 }
 
 export function useAnalyticsData(opts: UseAnalyticsDataOptions = {}) {
-  const { pollInterval = 30_000, timeRange = '30d' } = opts
+  const { pollInterval = 30_000, timeRange = '30d', categories = [], status = [], users = [] } = opts
 
   const [dashboard, setDashboard] = useState<DashboardResponse | null>(null)
   const [loading, setLoading] = useState(true)
@@ -139,18 +153,61 @@ export function useAnalyticsData(opts: UseAnalyticsDataOptions = {}) {
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const abortRef = useRef<AbortController | null>(null)
 
+  // ─── 数据缓存（内存级，TTL 5min，避免重复网络请求）─────────────
+  const CACHE_TTL_MS = 5 * 60 * 1000
+  interface CacheEntry {
+    data: DashboardResponse
+    ts: number
+  }
+  const cacheRef = useRef<Map<string, CacheEntry>>(new Map())
+
+  function _cacheKey() {
+    return JSON.stringify({ timeRange, categories, status, users })
+  }
+
+  function _getCached() {
+    const key = _cacheKey()
+    const entry = cacheRef.current.get(key)
+    if (!entry) return null
+    if (Date.now() - entry.ts > CACHE_TTL_MS) {
+      cacheRef.current.delete(key)
+      return null
+    }
+    return entry.data
+  }
+
+  function _setCached(data: DashboardResponse) {
+    cacheRef.current.set(_cacheKey(), { data, ts: Date.now() })
+  }
+
   // 单次拉取 — 使用统一的 axios 客户端（自动携带 Cookie / Authorization）
   const fetchDashboard = useCallback(async () => {
     // 取消上一次未完成请求
     abortRef.current?.abort()
     abortRef.current = new AbortController()
 
+    // 优先返回有效缓存，不中断轮询体验
+    const cached = _getCached()
+    if (cached) {
+      setDashboard(cached)
+      setError(null)
+      setLastFetched(new Date())
+      setLoading(false)
+      return
+    }
+
     try {
+      const params: Record<string, string> = { time_range: timeRange }
+      if (categories.length > 0) params.categories = categories.join(',')
+      if (status.length > 0) params.status = status.join(',')
+      if (users.length > 0) params.users = users.join(',')
+
       const res = await api.get('/analytics/dashboard', {
-        params: { time_range: timeRange },
+        params,
         signal: abortRef.current.signal,
       })
       const data: DashboardResponse = res.data
+      _setCached(data)
       setDashboard(data)
       setError(null)
       setLastFetched(new Date())
@@ -161,7 +218,7 @@ export function useAnalyticsData(opts: UseAnalyticsDataOptions = {}) {
     } finally {
       setLoading(false)
     }
-  }, [timeRange])
+  }, [timeRange, categories, status, users])
 
   // 初始加载
   useEffect(() => {
@@ -177,8 +234,9 @@ export function useAnalyticsData(opts: UseAnalyticsDataOptions = {}) {
     }
   }, [pollInterval, fetchDashboard])
 
-  // 手动刷新
+  // 手动刷新 — 清除缓存后重新拉取
   const refresh = useCallback(() => {
+    cacheRef.current.clear()
     setLoading(true)
     fetchDashboard()
   }, [fetchDashboard])
@@ -230,6 +288,9 @@ export function useAnalyticsData(opts: UseAnalyticsDataOptions = {}) {
     refresh,
   }
 }
+
+/** 导出 hook 返回类型，供子组件使用 */
+export type UseAnalyticsDataReturn = ReturnType<typeof useAnalyticsData>
 
 // ─── 趋势数据 Hook ───────────────────────────────────────────
 

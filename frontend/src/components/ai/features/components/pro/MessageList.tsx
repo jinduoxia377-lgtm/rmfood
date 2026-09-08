@@ -38,6 +38,8 @@ export interface MessageListProps {
 	onReferenceMessage?: (msg: ChatMessage) => void
 	onEditMessage?: (id: string, newContent: string) => void
 	onRetractMessage?: (id: string) => void
+	onForkMessage?: (messageId: string) => void
+	onDetailsMessage?: (call: { id: string; name: string; args: Record<string, unknown>; status: 'running' | 'completed' | 'error'; durationMs?: number }) => void
 	thinkingSteps?: Array<{ step: string; content: string; status: string; detail?: string }>
 }
 
@@ -55,7 +57,8 @@ export function MessageList({
 	onRetry, onRetryMessage, onCopyMessage, onRegenerate, onDeleteMessage,
 	onGenerateReport, showReportButton,
 	highlightedMessageId, selectedMessageIds, onReferenceMessage,
-	onEditMessage, onRetractMessage, thinkingSteps,
+	onEditMessage, onRetractMessage, onForkMessage, onDetailsMessage,
+	thinkingSteps,
 }: MessageListProps) {
 	const scrollRef = useRef<HTMLDivElement>(null)
 	const bottomRef = useRef<HTMLDivElement>(null)
@@ -73,10 +76,32 @@ export function MessageList({
 	const listContainerRef = useRef<HTMLDivElement>(null)
 	const [scrollMargin, setScrollMargin] = useState(0)
 
+	// 动态高度估计：根据消息内容和角色计算，避免固定 140px 导致的滚动错位
+	const getEstimatedSize = useCallback((index: number): number => {
+		const msg = messages[index]
+		if (!msg) return 140
+
+		if (msg.role === 'assistant') {
+			// AI回复：基础高度 + 内容长度（每80字符约25px）+ thinking步骤额外空间
+			const baseHeight = 80
+			const contentHeight = Math.min(Math.floor(msg.content.length / 80) * 25, 400)
+			const stepHeight = ((msg as any).thinking_steps?.length ?? 0) * 30
+			return baseHeight + contentHeight + stepHeight
+		}
+
+		if (msg.role === 'user') {
+			// 用户消息：基础高度 + 内容长度
+			return Math.min(60 + Math.floor(msg.content.length / 40) * 15, 200)
+		}
+
+		// 错误消息等
+		return 100
+	}, [messages])
+
 	const rowVirtualizer = useVirtualizer({
 		count: messages.length,
 		getScrollElement: () => scrollRef.current,
-		estimateSize: () => 140,
+		estimateSize: getEstimatedSize,
 		overscan: 10,
 		scrollMargin,
 		getItemKey: (index) => messages[index]?.id ?? index,
@@ -154,6 +179,34 @@ export function MessageList({
 	const isHL = useCallback((id: string) => highlightedMessageId === id, [highlightedMessageId])
 	const isSel = useCallback((id: string) => selectedMessageIds?.includes(id) ?? false, [selectedMessageIds])
 
+	// 渲染消息列表（必须在所有条件 return 之前定义，遵守 React hooks 规则）
+	const renderInner = useCallback((msg: ChatMessage, i: number) => (
+		<MessageBubble
+			msg={msg}
+			index={i}
+			allMessages={messages}
+			isStreaming={isStreaming}
+			reaction={reactions[msg.id]}
+			searchQuery={undefined}
+			editingId={editingId}
+			editContent={editContent}
+			setEditContent={setEditContent}
+			onCopy={handleCopy}
+			onReaction={handleReaction}
+			copiedId={copiedId}
+			onEdit={(id, content) => { const msg = messages.find(m => m.id === id); if (msg) startEdit(msg); setEditContent(content); }}
+			onRetract={onRetractMessage ?? (() => {})}
+			onDelete={onDeleteMessage ?? (() => {})}
+			onReference={onReferenceMessage ?? (() => {})}
+			onRegenerate={onRegenerate ?? (() => {})}
+			onForkMessage={onForkMessage}
+			onDetails={onDetailsMessage}
+			thinkingSteps={(i === messages.length - 1 && msg.role === 'assistant' && thinkingSteps) ? thinkingSteps : undefined}
+			isHighlighted={isHL(msg.id)}
+			isSelected={isSel(msg.id)}
+		/>
+	), [messages, isStreaming, reactions, editingId, editContent, handleCopy, handleReaction, thinkingSteps, isHL, isSel, onRetractMessage, onDeleteMessage, onReferenceMessage, onRegenerate, onForkMessage, onDetailsMessage, startEdit])
+
 	// 骨架屏
 	if (messages.length === 0 && isLoading && !chatError) {
 		return (
@@ -226,32 +279,6 @@ export function MessageList({
 			</div>
 		)
 	}
-
-	// 渲染消息列表
-	const renderInner = useCallback((msg: ChatMessage, i: number) => (
-		<MessageBubble
-			msg={msg}
-			index={i}
-			allMessages={messages}
-			isStreaming={isStreaming}
-			reaction={reactions[msg.id]}
-			searchQuery={undefined}
-			editingId={editingId}
-			editContent={editContent}
-			setEditContent={setEditContent}
-			onCopy={handleCopy}
-			onReaction={handleReaction}
-			copiedId={copiedId}
-			onEdit={(id, content) => { const msg = messages.find(m => m.id === id); if (msg) startEdit(msg); setEditContent(content); }}
-			onRetract={onRetractMessage ?? (() => {})}
-			onDelete={onDeleteMessage ?? (() => {})}
-			onReference={onReferenceMessage ?? (() => {})}
-			onRegenerate={onRegenerate ?? (() => {})}
-			thinkingSteps={thinkingSteps}
-			isHighlighted={isHL(msg.id)}
-			isSelected={isSel(msg.id)}
-		/>
-	), [messages, isStreaming, reactions, editingId, editContent, handleCopy, handleReaction, thinkingSteps, isHL, isSel, onRetractMessage, onDeleteMessage, onReferenceMessage, onRegenerate, startEdit])
 
 	if (shouldVirtualize) {
 		return (

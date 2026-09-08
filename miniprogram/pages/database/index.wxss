@@ -1,0 +1,852 @@
+/**
+ * 数据检索中心 - 样式
+ */
+
+/* 页面容器 */
+.page-container {
+  min-height: 100vh;
+  background: var(--bg-primary, #F5F5F5);
+  display: flex;
+  flex-direction: column;
+}
+
+/* 顶部导航 */
+.header {
+  background: linear-gradient(135deg, #2D5A3D 0%, #4A7C5C 100%);
+  padding-bottom: 24rpx;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16rpx 32rpx;
+}
+
+.hamburger {
+  width: 44rpx;
+  height: 32rpx;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.hamburger-line {
+  width: 100%;
+  height: 3rpx;
+  background: #fff;
+  border-radius: 2rpx;
+  transition: all 0.3s ease;
+}
+
+.hamburger-line.active:nth-child(1) {
+  transform: translateY(7rpx) rotate(45deg);
+}
+
+.hamburger-line.active:nth-child(2) {
+  opacity: 0;
+}
+
+.hamburger-line.active:nth-child(3) {
+  transform: translateY(-7rpx) rotate(-45deg);
+}
+
+.header-title .title-main {
+  color: #fff;
+  font-size: 36rpx;
+  font-weight: 600;
+}
+
+.header-stats .stats-count {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 24rpx;
+}
+
+/* 搜索区 */
+.search-section {
+  background: #fff;
+  padding: 24rpx 32rpx;
+  border-bottom: 1rpx solid var(--border-color, #E5E7EB);
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  background: var(--bg-primary, #F5F5F5);
+  border-radius: 40rpx;
+  padding: 16rpx 24rpx;
+  gap: 16rpx;
+}
+
+.search-icon {
+  font-size: 32rpx;
+}
+
+.search-input {
+  flex: 1;
+  font-size: 28rpx;
+  background: transparent;
+}
+
+.search-clear {
+  width: 36rpx;
+  height: 36rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--text-muted, #9CA3AF);
+  border-radius: 50%;
+  color: #fff;
+  font-size: 24rpx;
+}
+
+.search-history {
+  margin-top: 20rpx;
+  padding-top: 20rpx;
+  border-top: 1rpx solid var(--border-color, #E5E7EB);
+}
+
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16rpx;
+}
+
+.history-title {
+  font-size: 24rpx;
+  color: var(--text-muted, #9CA3AF);
+}
+
+.history-clear {
+  font-size: 24rpx;
+  color: var(--primary, #2D5A3D);
+}
+
+.history-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 12rpx 20rpx;
+  background: var(--bg-primary, #F5F5F5);
+  border-radius: 32rpx;
+}
+
+.history-icon {
+  font-size: 24rpx;
+}
+
+.history-text {
+  font-size: 24rpx;
+  color: var(--text-secondary, #6B7280);
+}
+
+/* Tab 导航 */
+.tab-container {
+  background: #fff;
+  border-bottom: 1rpx solid var(--border-color, #E5E7EB);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.tab-scroll {
+  white-space: nowrap;
+}
+
+.tab-list {
+  display: flex;
+  padding: 0 16rpx;
+}
+
+.tab-item {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20rpx 32rpx;
+  border-bottom: 4rpx solid transparent;
+  transition: all 0.3s ease;
+}
+
+.tab-item.active {
+  border-bottom-color: var(--primary, #2D5A3D);
+  color: var(--primary, #2D5A3D);
+}
+
+.tab-icon {
+  font-size: 36rpx;
+  margin-bottom: 8rpx;
+}
+
+.tab-name {
+  font-size: 24rpx;
+  color: var(--text-secondary, #6B7280);
+}
+
+.tab-item.active .tab-name {
+  color: var(--primary, #2D5A3D);
+  font-weight: 600;
+}
+
+/* 内容区 */
+.content-scroll {
+  flex: 1;
+  height: calc(100vh - 280rpx);
+}
+
+.tab-content {
+  padding: 24rpx 32rpx;
+}
+
+/* 统计卡片网格 */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20rpx;
+  margin-bottom: 24rpx;
+}
+
+.stat-card {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 28rpx;
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+}
+
+.stat-icon {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36rpx;
+}
+
+.stat-icon.herb { background: rgba(45, 90, 61, 0.1); }
+.stat-icon.peptide { background: rgba(59, 130, 246, 0.1); }
+.stat-icon.homology { background: rgba(245, 158, 11, 0.1); }
+.stat-icon.graph { background: rgba(139, 92, 246, 0.1); }
+
+.stat-info {
+  flex: 1;
+}
+
+.stat-value {
+  display: block;
+  font-size: 40rpx;
+  font-weight: 700;
+  color: var(--text-primary, #111827);
+  line-height: 1;
+}
+
+.stat-label {
+  display: block;
+  font-size: 24rpx;
+  color: var(--text-muted, #9CA3AF);
+  margin-top: 8rpx;
+}
+
+/* 卡片通用样式 */
+.card {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.section-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: var(--text-primary, #111827);
+}
+
+.section-count {
+  font-size: 24rpx;
+  color: var(--text-muted, #9CA3AF);
+}
+
+/* 分类列表 */
+.category-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.category-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12rpx 0;
+  border-bottom: 1rpx solid var(--border-color, #E5E7EB);
+}
+
+.category-item:last-child {
+  border-bottom: none;
+}
+
+.category-left {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.category-dot {
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 50%;
+}
+
+.category-name {
+  font-size: 26rpx;
+  color: var(--text-secondary, #6B7280);
+}
+
+.category-right {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.category-count {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: var(--text-primary, #111827);
+}
+
+.category-percent {
+  font-size: 22rpx;
+  color: var(--text-muted, #9CA3AF);
+}
+
+/* 快捷操作 */
+.action-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20rpx;
+}
+
+.action-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12rpx;
+  padding: 24rpx 0;
+}
+
+.action-icon {
+  font-size: 48rpx;
+}
+
+.action-name {
+  font-size: 22rpx;
+  color: var(--text-secondary, #6B7280);
+  text-align: center;
+}
+
+/* 筛选栏 */
+.filter-bar {
+  display: flex;
+  gap: 16rpx;
+  margin-bottom: 16rpx;
+}
+
+.filter-input-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  background: var(--bg-primary, #F5F5F5);
+  border-radius: 12rpx;
+  padding: 16rpx 20rpx;
+  gap: 12rpx;
+}
+
+.filter-icon {
+  font-size: 28rpx;
+}
+
+.filter-input {
+  flex: 1;
+  font-size: 26rpx;
+  background: transparent;
+}
+
+.filter-select {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 16rpx 20rpx;
+  background: var(--bg-primary, #F5F5F5);
+  border-radius: 12rpx;
+  font-size: 26rpx;
+  color: var(--text-secondary, #6B7280);
+}
+
+.select-arrow {
+  font-size: 20rpx;
+}
+
+.filter-chips {
+  display: flex;
+  gap: 16rpx;
+  margin-bottom: 20rpx;
+}
+
+.chip {
+  padding: 12rpx 24rpx;
+  background: var(--bg-primary, #F5F5F5);
+  border-radius: 32rpx;
+  font-size: 24rpx;
+  color: var(--text-secondary, #6B7280);
+}
+
+.chip.active {
+  background: rgba(45, 90, 61, 0.1);
+  color: var(--primary, #2D5A3D);
+}
+
+/* 药材列表 */
+.herb-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.herb-card {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+}
+
+.herb-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12rpx;
+}
+
+.herb-name {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: var(--text-primary, #111827);
+  flex: 1;
+}
+
+.homology-badge {
+  padding: 6rpx 16rpx;
+  background: rgba(245, 158, 11, 0.1);
+  border-radius: 20rpx;
+  font-size: 22rpx;
+  color: #F59E0B;
+  white-space: nowrap;
+  margin-left: 16rpx;
+}
+
+.herb-latin {
+  font-size: 24rpx;
+  color: var(--text-muted, #9CA3AF);
+  font-style: italic;
+  margin-bottom: 16rpx;
+}
+
+.herb-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  margin-bottom: 16rpx;
+}
+
+.herb-tag {
+  padding: 6rpx 16rpx;
+  background: var(--bg-primary, #F5F5F5);
+  border-radius: 8rpx;
+  font-size: 22rpx;
+  color: var(--text-secondary, #6B7280);
+}
+
+.herb-stat {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  font-size: 24rpx;
+}
+
+.herb-stat .stat-label {
+  color: var(--text-muted, #9CA3AF);
+}
+
+.herb-stat .stat-value {
+  color: var(--primary, #2D5A3D);
+  font-weight: 600;
+}
+
+.herb-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 16rpx;
+  border-top: 1rpx solid var(--border-color, #E5E7EB);
+}
+
+.herb-compounds {
+  font-size: 24rpx;
+  color: var(--text-muted, #9CA3AF);
+}
+
+.herb-arrow {
+  font-size: 32rpx;
+  color: var(--text-muted, #9CA3AF);
+}
+
+/* 肽列表 */
+.peptide-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.peptide-card {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+}
+
+.peptide-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+
+.peptide-sequence {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: var(--text-primary, #111827);
+  font-family: monospace;
+  flex: 1;
+}
+
+.activity-badge {
+  padding: 6rpx 16rpx;
+  background: rgba(59, 130, 246, 0.1);
+  border-radius: 20rpx;
+  font-size: 22rpx;
+  color: #3B82F6;
+  white-space: nowrap;
+  margin-left: 16rpx;
+}
+
+.peptide-meta {
+  display: flex;
+  gap: 24rpx;
+  margin-bottom: 12rpx;
+}
+
+.meta-item {
+  font-size: 24rpx;
+  color: var(--text-secondary, #6B7280);
+}
+
+.peptide-activity {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  padding-top: 12rpx;
+  border-top: 1rpx solid var(--border-color, #E5E7EB);
+}
+
+.activity-label {
+  font-size: 24rpx;
+  color: var(--text-muted, #9CA3AF);
+}
+
+.activity-value {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: var(--primary, #2D5A3D);
+}
+
+/* 药食同源查询 */
+.homology-search {
+  display: flex;
+  gap: 16rpx;
+  margin-bottom: 24rpx;
+}
+
+.search-box {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  background: var(--bg-primary, #F5F5F5);
+  border-radius: 12rpx;
+  padding: 16rpx 20rpx;
+  gap: 12rpx;
+}
+
+.check-btn {
+  padding: 16rpx 32rpx;
+  background: var(--primary, #2D5A3D);
+  color: #fff;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  border: none;
+}
+
+.check-btn::after {
+  border: none;
+}
+
+.homology-result {
+  margin-bottom: 24rpx;
+}
+
+.result-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.result-name {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: var(--text-primary, #111827);
+}
+
+.result-status {
+  padding: 8rpx 20rpx;
+  border-radius: 20rpx;
+  font-size: 24rpx;
+}
+
+.result-status.confirmed {
+  background: rgba(34, 197, 94, 0.1);
+  color: #16A34A;
+}
+
+.result-status.not_found {
+  background: rgba(239, 68, 68, 0.1);
+  color: #DC2626;
+}
+
+.result-details {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 12rpx 0;
+  border-bottom: 1rpx solid var(--border-color, #E5E7EB);
+}
+
+.detail-label {
+  font-size: 26rpx;
+  color: var(--text-muted, #9CA3AF);
+}
+
+.detail-value {
+  font-size: 26rpx;
+  color: var(--text-primary, #111827);
+  font-weight: 500;
+}
+
+/* 药食同源目录 */
+.directory-section {
+  margin-top: 24rpx;
+}
+
+.homology-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rpx;
+  background: var(--border-color, #E5E7EB);
+  border-radius: 16rpx;
+  overflow: hidden;
+}
+
+.homology-item {
+  background: #fff;
+  display: flex;
+  align-items: center;
+  padding: 20rpx 24rpx;
+  gap: 16rpx;
+}
+
+.homology-name {
+  flex: 1;
+  font-size: 28rpx;
+  color: var(--text-primary, #111827);
+}
+
+.homology-dosage {
+  font-size: 24rpx;
+  color: var(--text-secondary, #6B7280);
+}
+
+.homology-arrow {
+  font-size: 28rpx;
+  color: var(--text-muted, #9CA3AF);
+}
+
+/* 知识图谱 */
+.graph-search {
+  margin-bottom: 20rpx;
+}
+
+.node-filters {
+  display: flex;
+  gap: 16rpx;
+  margin-bottom: 20rpx;
+  flex-wrap: wrap;
+}
+
+.node-filter {
+  padding: 12rpx 24rpx;
+  background: var(--bg-primary, #F5F5F5);
+  border-radius: 32rpx;
+  font-size: 24rpx;
+  color: var(--text-secondary, #6B7280);
+}
+
+.node-filter.active {
+  background: rgba(45, 90, 61, 0.1);
+  color: var(--primary, #2D5A3D);
+}
+
+.graph-result {
+  margin-bottom: 24rpx;
+}
+
+.graph-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20rpx;
+  padding-bottom: 20rpx;
+  border-bottom: 1rpx solid var(--border-color, #E5E7EB);
+}
+
+.graph-center {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: var(--text-primary, #111827);
+}
+
+.graph-stats {
+  display: flex;
+  gap: 20rpx;
+}
+
+.graph-stats .stat {
+  font-size: 24rpx;
+  color: var(--text-muted, #9CA3AF);
+}
+
+.node-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.node-item {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 16rpx;
+  background: var(--bg-primary, #F5F5F5);
+  border-radius: 12rpx;
+}
+
+.node-item.herb { border-left: 4rpx solid #2D5A3D; }
+.node-item.compound { border-left: 4rpx solid #3B82F6; }
+.node-item.target { border-left: 4rpx solid #F59E0B; }
+.node-item.disease { border-left: 4rpx solid #EF4444; }
+
+.node-dot {
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 50%;
+  background: var(--text-muted, #9CA3AF);
+}
+
+.node-item.herb .node-dot { background: #2D5A3D; }
+.node-item.compound .node-dot { background: #3B82F6; }
+.node-item.target .node-dot { background: #F59E0B; }
+.node-item.disease .node-dot { background: #EF4444; }
+
+.node-label {
+  flex: 1;
+  font-size: 26rpx;
+  color: var(--text-primary, #111827);
+}
+
+.node-type {
+  font-size: 22rpx;
+  color: var(--text-muted, #9CA3AF);
+}
+
+/* 加载状态 */
+.loading-state {
+  text-align: center;
+  padding: 60rpx 0;
+  color: var(--text-muted, #9CA3AF);
+  font-size: 26rpx;
+}
+
+/* 空状态 */
+.empty-state {
+  text-align: center;
+  padding: 80rpx 0;
+}
+
+.empty-icon {
+  font-size: 80rpx;
+  display: block;
+  margin-bottom: 16rpx;
+}
+
+.empty-text {
+  font-size: 28rpx;
+  color: var(--text-secondary, #6B7280);
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+.empty-desc {
+  font-size: 24rpx;
+  color: var(--text-muted, #9CA3AF);
+}
+
+/* 加载更多 */
+.load-more {
+  text-align: center;
+  padding: 32rpx 0;
+  color: var(--primary, #2D5A3D);
+  font-size: 26rpx;
+}
+
+/* 底部间距 */
+.bottom-spacing {
+  height: 40rpx;
+}

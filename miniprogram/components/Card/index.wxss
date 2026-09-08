@@ -1,0 +1,82 @@
+/** Card 卡片组件样式 */
+.card {
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: all var(--transition-normal);
+}
+
+.card-shadow-sm {
+  box-shadow: var(--shadow-sm);
+}
+
+.card-shadow-md {
+  box-shadow: var(--shadow-md);
+}
+
+.card-shadow-lg {
+  box-shadow: var(--shadow-lg);
+}
+
+.card-shadow-brand {
+  box-shadow: var(--shadow-brand);
+}
+
+.card-clickable {
+  cursor: pointer;
+}
+
+.card-clickable:active {
+  transform: scale(0.98);
+  opacity: 0.9;
+}
+
+/* 头部 */
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4);
+  padding-bottom: var(--space-3);
+}
+
+.card-title {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.card-title-text {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.card-subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  margin-top: 4rpx;
+}
+
+.card-action {
+  margin-left: var(--space-3);
+  color: var(--color-primary);
+  font-size: var(--font-size-sm);
+}
+
+/* 内容 */
+.card-content {
+  padding: 0 var(--space-4) var(--space-4);
+}
+
+/* 底部 */
+.card-footer {
+  padding: var(--space-3) var(--space-4);
+  border-top: 1rpx solid var(--color-border);
+  text-align: center;
+}
+
+.card-footer-text {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}

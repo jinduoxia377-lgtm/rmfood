@@ -11,6 +11,7 @@
  */
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { KeepAliveOutlet } from '@/components/layout/KeepAliveOutlet';
 import { useRealtimeSync } from '@/hooks/useRealtimeSync';
 import {
   FlaskConical,
@@ -430,6 +431,8 @@ export default function MainLayout() {
         tabIndex={-1}
       >
         <PageTransition><Outlet /></PageTransition>
+        {/* ── 页面级缓存：后台管理已访问页面的 DOM，导航返回时秒开 ── */}
+        <KeepAliveOutlet />
       </main>
 
       {/* ── 底部导航栏（仅移动端） ── */}
