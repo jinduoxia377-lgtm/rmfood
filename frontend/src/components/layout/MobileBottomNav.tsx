@@ -197,7 +197,7 @@ export default function MobileBottomNav() {
           {/* 遮罩 — 覆盖全页（含底部导航），阻止主内容点击 */}
           <div
             className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300"
-            onClick={() => setMoreOpen(false)}
+             role="button" tabIndex={0} onClick={() => setMoreOpen(false)}
             aria-hidden="true"
           />
 

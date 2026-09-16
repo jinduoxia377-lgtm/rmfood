@@ -261,7 +261,7 @@ export const TCMSearchComponent: React.FC<TCMSearchComponentProps> = ({ onSelect
           <div
             key={herb.id}
             className="herb-card"
-            onClick={() => onSelectHerb(herb.id)}
+             role="button" tabIndex={0} onClick={() => onSelectHerb(herb.id)}
           >
             <h3>{herb.name}</h3>
             <p className="latin">{herb.latinName}</p>

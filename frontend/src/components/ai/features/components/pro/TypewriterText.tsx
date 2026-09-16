@@ -108,7 +108,7 @@ export default function TypewriterText({
   // 不做动画时直接渲染
   if (!enabled || isComplete) {
     return (
-      <div onClick={skipToEnd} className="cursor-default">
+      <div  role="button" tabIndex={0} onClick={skipToEnd} className="cursor-default">
         <MarkdownRenderer content={content} />
       </div>
     )
@@ -118,7 +118,7 @@ export default function TypewriterText({
   const visibleText = content.slice(0, displayedLen)
 
   return (
-    <div onClick={skipToEnd} className="cursor-default group relative">
+    <div  role="button" tabIndex={0} onClick={skipToEnd} className="cursor-default group relative">
       <MarkdownRenderer content={visibleText} />
 
       {/* 闪烁光标 */}

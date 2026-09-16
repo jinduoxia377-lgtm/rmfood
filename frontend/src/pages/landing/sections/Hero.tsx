@@ -510,7 +510,7 @@ function GraphTab() {
               if (!other) return null;
               return (
                 <div key={i} className="flex items-center gap-1 text-[9px] text-slate-600 cursor-pointer hover:text-emerald-600 transition-colors"
-                  onClick={() => setSelectedNode(other)}>
+                   role="button" tabIndex={0} onClick={() => setSelectedNode(other)}>
                   <span className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: KG_TYPE_STYLE[other.type].color }} />
                   {other.name}
                 </div>
@@ -579,7 +579,7 @@ function DataTab() {
           {DS_DATA.map(ds => {
             const isExpanded = expanded === ds.name;
             return (
-              <div key={ds.name} onClick={() => setExpanded(isExpanded ? null : ds.name)}
+              <div key={ds.name}  role="button" tabIndex={0} onClick={() => setExpanded(isExpanded ? null : ds.name)}
                 className="rounded-md overflow-hidden transition-all duration-200 cursor-pointer"
                 style={{
                   background: isExpanded ? '#fff' : '#fff',

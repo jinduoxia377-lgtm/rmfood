@@ -144,7 +144,7 @@ function RoleSelect({
 
       {open && !disabled && (
         <>
-          <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
+          <div className="fixed inset-0 z-10"  role="button" tabIndex={0} onClick={() => setOpen(false)} />
           <div className="absolute left-0 top-full mt-1 w-40 bg-white dark:bg-neutral-800 rounded-lg shadow-lg border border-neutral-200 dark:border-neutral-700 py-1 z-20 animate-scale-in">
             {ROLE_OPTIONS.map((option) => (
               <button
@@ -445,7 +445,7 @@ const MembersTab = memo(
 
                           {actionMenuMemberId === member.id && (
                             <>
-                              <div className="fixed inset-0 z-10" onClick={() => setActionMenuMemberId(null)} />
+                              <div className="fixed inset-0 z-10"  role="button" tabIndex={0} onClick={() => setActionMenuMemberId(null)} />
                               <div className="absolute right-0 top-full mt-1 w-36 bg-white dark:bg-neutral-800 rounded-lg shadow-lg border border-neutral-200 dark:border-neutral-700 py-1 z-20 animate-scale-in">
                                 <button className="flex items-center gap-2 w-full px-3 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-slate-50 dark:hover:bg-neutral-700 transition-colors">
                                   <Mail className="w-3.5 h-3.5" />

@@ -58,7 +58,7 @@ export default function TouchCard({
         WebkitTapHighlightColor: 'transparent',
         ...style,
       }}
-      onClick={onClick}
+       role="button" tabIndex={0} onClick={onClick}
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseLeave}

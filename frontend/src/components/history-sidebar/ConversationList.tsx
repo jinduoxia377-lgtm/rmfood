@@ -77,7 +77,7 @@ function ConversationItem({
         'hover:bg-neutral-100 dark:hover:bg-neutral-800',
         isSelected && 'bg-primary/5 dark:bg-primary/10',
       )}
-      onClick={onSelect}
+       role="button" tabIndex={0} onClick={onSelect}
       aria-selected={isSelected}
       aria-label={conversation.title}
     >

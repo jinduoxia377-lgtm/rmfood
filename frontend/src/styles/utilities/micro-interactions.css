@@ -1,4 +1,4 @@
-/*
+﻿/*
  * RMFOOD 设计系统 - 微交互与骨架屏
  * 卡片/行悬浮、按钮按压、聚焦环、图标旋转、骨架屏
  * 此文件由 index.css 提取，请勿手动编辑
@@ -99,3 +99,17 @@
     animation: none !important;
   }
 }
+
+/* GPU acceleration hints */
+.animate-chat-bubble-enter,
+.animate-chat-bubble-exit,
+.animate-fade-in,
+.animate-fade-out,
+.animate-slide-up,
+.animate-slide-down,
+.animate-pulse-soft,
+.animate-spin-slow {
+  will-change: opacity, transform;
+  transform: translateZ(0);
+}
+

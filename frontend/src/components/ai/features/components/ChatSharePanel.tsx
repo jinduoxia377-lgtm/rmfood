@@ -661,7 +661,7 @@ export function ChatSharePanel({
       {/* 背景遮罩 */}
       <div
         className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 animate-in fade-in duration-200"
-        onClick={onClose}
+         role="button" tabIndex={0} onClick={onClose}
         aria-hidden="true"
       />
 

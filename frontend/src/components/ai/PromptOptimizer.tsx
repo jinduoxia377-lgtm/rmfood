@@ -408,7 +408,7 @@ export function PromptOptimizer({
                           ? 'bg-secondary-50 border-blue-300 dark:bg-secondary-900/20'
                           : 'bg-slate-50 hover:bg-neutral-100 border-transparent'
                       }`}
-                      onClick={() =>
+                       role="button" tabIndex={0} onClick={() =>
                         setSelectedIssueIndex(selectedIssueIndex === index ? null : index)
                       }
                     >

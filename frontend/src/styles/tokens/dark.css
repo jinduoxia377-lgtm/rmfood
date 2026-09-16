@@ -1,4 +1,4 @@
-/*
+﻿/*
  * RMFOOD 设计系统 - 暗色主题变量 (.dark) — Dark Mode
  * 与 frontend/design-system/DESIGN.md v1.0 完全对齐
  * 此文件由 index.css 导入
@@ -349,4 +349,31 @@
 /* ═══ Dashboard 点状网格背景（暗色模式） ═══ */
 .dark .bg-grid {
   background-image: radial-gradient(circle, var(--grid-color-light, rgba(148,163,184,0.06)) 1px, transparent 1px);
+}
+
+/* GPU acceleration */
+*, *::before, *::after {
+  will-change: auto;
+}
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* focus-visible support */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[role="button"]:focus-visible,
+[role="tab"]:focus-visible {
+  outline: 2px solid var(--color-primary, var(--accent-500));
+  outline-offset: 2px;
+  border-radius: var(--radius-sm, 4px);
 }

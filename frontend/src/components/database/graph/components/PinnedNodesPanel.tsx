@@ -44,7 +44,7 @@ export default function PinnedNodesPanel({
           const conf = TYPE_CONFIG[node.type]
           return (
             <div key={nodeId} className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-neutral-800/50 group cursor-pointer"
-              onClick={() => onNodeClick?.(node)}>
+               role="button" tabIndex={0} onClick={() => onNodeClick?.(node)}>
               <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: conf?.color || 'var(--color-knowledge-default, #9CA3AF)' }} />
               <span className="text-[10px] font-medium text-neutral-700 dark:text-neutral-300 truncate flex-1">{node.label}</span>
               <span className="text-[8px] text-neutral-400">{conf?.label || node.type}</span>

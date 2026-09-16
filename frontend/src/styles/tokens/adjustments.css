@@ -1,0 +1,233 @@
+﻿/*
+ * RMFOOD 设计系统 - 实时调节参数 CSS 变量覆盖
+ * 由 themeStore._applyAdjustments() 动态写入 CSS 变量
+ * 优先于 token 变量生效
+ */
+
+/* ═══════════════════════════════════════════════════════════════
+   全局 dark 模式 bg-white 强制覆盖
+   解决 AI 等子组件未添加 dark: 变体导致的白色背景问题
+   ═══════════════════════════════════════════════════════════════ */
+.dark .bg-white,
+.dark [class*="bg-white"],
+.dark .bg-white\/95,
+.dark .bg-white\/50,
+.dark .bg-white\/15 {
+  background-color: var(--color-surface-elevated, #2c2c2e) !important;
+}
+
+/* 半透明变体（按透明度从高到低） */
+.dark .bg-white\/95 { background-color: rgba(28, 28, 30, 0.95) !important; }
+.dark .bg-white\/80 { background-color: rgba(28, 28, 30, 0.8) !important; }
+.dark .bg-white\/60 { background-color: rgba(28, 28, 30, 0.6) !important; }
+.dark .bg-white\/50 { background-color: rgba(28, 28, 30, 0.5) !important; }
+.dark .bg-white\/40 { background-color: rgba(28, 28, 30, 0.4) !important; }
+.dark .bg-white\/30 { background-color: rgba(28, 28, 30, 0.3) !important; }
+.dark .bg-white\/20 { background-color: rgba(28, 28, 30, 0.2) !important; }
+.dark .bg-white\/15 { background-color: rgba(28, 28, 30, 0.15) !important; }
+.dark .bg-white\/10 { background-color: rgba(28, 28, 30, 0.1) !important; }
+.dark .bg-white\/5  { background-color: rgba(28, 28, 30, 0.05) !important; }
+
+/* ═══════════════════════════════════════════════════════════════
+   淡青色背景强制覆盖（深色模式）
+   解决组件使用 bg-cyan/bg-sky/bg-teal 导致的淡青色背景问题
+   ═══════════════════════════════════════════════════════════════ */
+.dark .bg-cyan-50,
+.dark [class*="bg-cyan-50"],
+.dark .bg-sky-50,
+.dark [class*="bg-sky-50"],
+.dark .bg-teal-50,
+.dark [class*="bg-teal-50"] {
+  background-color: var(--color-surface-elevated, #2c2c2e) !important;
+}
+
+.dark .bg-cyan-100,
+.dark [class*="bg-cyan-100"],
+.dark .bg-sky-100,
+.dark [class*="bg-sky-100"],
+.dark .bg-teal-100,
+.dark [class*="bg-teal-100"] {
+  background-color: var(--color-neutral-800, #3a3a3c) !important;
+}
+
+.dark .bg-cyan-200,
+.dark [class*="bg-cyan-200"],
+.dark .bg-sky-200,
+.dark [class*="bg-sky-200"],
+.dark .bg-teal-200,
+.dark [class*="bg-teal-200"] {
+  background-color: var(--color-neutral-700, #48484a) !important;
+}
+
+.dark .bg-cyan-300,
+.dark [class*="bg-cyan-300"],
+.dark .bg-sky-300,
+.dark [class*="bg-sky-300"],
+.dark .bg-teal-300,
+.dark [class*="bg-teal-300"] {
+  background-color: var(--color-neutral-600, #636366) !important;
+}
+
+.dark .bg-cyan-400,
+.dark [class*="bg-cyan-400"],
+.dark .bg-sky-400,
+.dark [class*="bg-sky-400"],
+.dark .bg-teal-400,
+.dark [class*="bg-teal-400"] {
+  background-color: var(--color-neutral-500, #86868b) !important;
+}
+
+.dark .bg-cyan-500,
+.dark [class*="bg-cyan-500"],
+.dark .bg-sky-500,
+.dark [class*="bg-sky-500"],
+.dark .bg-teal-500,
+.dark [class*="bg-teal-500"] {
+  background-color: var(--color-neutral-400, #aeaeb2) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   强制暗色模式语义色背景 — 防止 Tailwind 内置色污染
+   ═══════════════════════════════════════════════════════════════ */
+.dark .bg-background {
+  background-color: var(--color-background-base, #000000) !important;
+}
+.dark .bg-card {
+  background-color: var(--color-surface-elevated, #1c1c1e) !important;
+}
+.dark .bg-muted {
+  background-color: var(--color-fill-primary, #2c2c2e) !important;
+}
+.dark .bg-card\/50,
+.dark [class*="bg-card/5"] {
+  background-color: rgba(28, 28, 30, 0.5) !important;
+}
+.dark .bg-card\/30,
+.dark [class*="bg-card/3"] {
+  background-color: rgba(28, 28, 30, 0.3) !important;
+}
+.dark .bg-card\/80,
+.dark [class*="bg-card/8"] {
+  background-color: rgba(28, 28, 30, 0.8) !important;
+}
+
+/* ── 强制覆盖 accentColors 相关类在暗色模式下的颜色 ── */
+.dark .bg-emerald-50, .dark [class*="bg-emerald-50"] {
+  background-color: var(--color-surface-elevated, #1c1c1e) !important;
+}
+.dark .bg-blue-50, .dark [class*="bg-blue-50"] {
+  background-color: var(--color-surface-elevated, #1c1c1e) !important;
+}
+.dark .bg-amber-50, .dark [class*="bg-amber-50"] {
+  background-color: var(--color-surface-elevated, #1c1c1e) !important;
+}
+.dark .bg-emerald-100, .dark [class*="bg-emerald-100"] {
+  background-color: var(--color-surface-elevated, #1c1c1e) !important;
+}
+.dark .bg-blue-100, .dark [class*="bg-blue-100"] {
+  background-color: var(--color-surface-elevated, #1c1c1e) !important;
+}
+.dark .bg-amber-100, .dark [class*="bg-amber-100"] {
+  background-color: var(--color-surface-elevated, #1c1c1e) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   实时调节参数（主题设置面板控制）
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ══ 字体大小缩放 ── */
+html {
+  font-size: calc(16px * var(--font-size-scale, 1));
+}
+
+/* ══ 圆角缩放 ── */
+:root {
+  --radius-xs: calc(5px * var(--radius-scale, 1));
+  --radius-sm: calc(8px * var(--radius-scale, 1));
+  --radius-md: calc(11px * var(--radius-scale, 1));
+  --radius-lg: calc(18px * var(--radius-scale, 1));
+  --radius-xl: calc(24px * var(--radius-scale, 1));
+  --radius-2xl: calc(32px * var(--radius-scale, 1));
+}
+
+/* ══ 间距缩放 ── */
+:root {
+  --space-xs: calc(4px * var(--spacing-scale, 1));
+  --space-sm: calc(8px * var(--spacing-scale, 1));
+  --space-md: calc(12px * var(--spacing-scale, 1));
+  --space-lg: calc(16px * var(--spacing-scale, 1));
+  --space-xl: calc(24px * var(--spacing-scale, 1));
+  --space-xxl: calc(32px * var(--spacing-scale, 1));
+  --space-xxxl: calc(48px * var(--spacing-scale, 1));
+}
+
+/* ══ 动画速度 ── */
+:root {
+  --duration-fast: calc(100ms / var(--animation-speed, 1));
+  --duration-normal: calc(200ms / var(--animation-speed, 1));
+  --duration-slow: calc(300ms / var(--animation-speed, 1));
+}
+
+/* ══ 对比度增强 ── */
+:root {
+  --text-primary-opacity: 0.9;
+  --text-secondary-opacity: 0.6;
+}
+
+.dark .text-foreground {
+  color: var(--color-foreground, #ffffff);
+  filter: contrast(calc(1 + var(--contrast-level, 0)));
+}
+
+/* ══ 阴影强度 ── */
+:root {
+  --shadow-multiplier: var(--shadow-strength, 1);
+}
+
+/* ══ 暗色去饱和 ── */
+.dark {
+  filter: saturate(var(--dark-saturation, 100%));
+}
+
+/* ══ 调节生效时的过渡 ── */
+html, body,
+[class*="bg-"],
+[class*="text-"],
+[class*="border-"] {
+  transition:
+    background-color calc(var(--duration-normal, 200ms) / var(--animation-speed, 1)) ease,
+    color calc(var(--duration-normal, 200ms) / var(--animation-speed, 1)) ease,
+    border-color calc(var(--duration-normal, 200ms) / var(--animation-speed, 1)) ease;
+}
+
+/* 字体大小切换时不触发过渡（避免闪烁） */
+html {
+  transition: font-size 0s;
+}
+
+/* GPU acceleration */
+*, *::before, *::after {
+  will-change: auto;
+}
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* focus-visible support */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[role="button"]:focus-visible,
+[role="tab"]:focus-visible {
+  outline: 2px solid var(--color-primary, var(--accent-500));
+  outline-offset: 2px;
+  border-radius: var(--radius-sm, 4px);
+}

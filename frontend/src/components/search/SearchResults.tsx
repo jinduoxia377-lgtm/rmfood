@@ -164,7 +164,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
         {results.map((item) => (
           <div
             key={item.id}
-            onClick={() => onSelect(item)}
+             role="button" tabIndex={0} onClick={() => onSelect(item)}
             className={clsx(
               'group relative flex items-start gap-4 p-4 bg-white border rounded-xl cursor-pointer transition-all duration-200',
               'hover:shadow-md hover:border-blue-200',

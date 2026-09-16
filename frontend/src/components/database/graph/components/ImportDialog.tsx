@@ -40,7 +40,7 @@ export default function ImportDialog({
     importState.status === 'error' ? '导入失败 ✗' : ''
 
   return (
-    <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm" onClick={(e) => e.target === e.currentTarget && onClose()}>
+    <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm"  role="button" tabIndex={0} onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="bg-white dark:bg-neutral-800 rounded-2xl shadow-2xl w-[420px] overflow-hidden animate-fade-in">
         <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/50 dark:to-amber-950/50 border-b border-orange-100/50">
           <div className="flex items-center gap-2"><span>📥</span><span className="text-sm font-bold text-orange-700 dark:text-orange-300">数据导入</span></div>

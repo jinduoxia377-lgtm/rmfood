@@ -323,7 +323,7 @@ export function SensitivityAnalysis({
               const isActive = param.id === activeParamId
 
               return (
-                <div key={param.id} className={`space-y-2 rounded-xl p-3 transition-colors cursor-pointer ${isActive ? 'bg-accent-50 dark:bg-accent-900/20' : 'hover:bg-slate-50 dark:hover:bg-neutral-800/50'}`} onClick={() => setActiveParamId(param.id)}>
+                <div key={param.id} className={`space-y-2 rounded-xl p-3 transition-colors cursor-pointer ${isActive ? 'bg-accent-50 dark:bg-accent-900/20' : 'hover:bg-slate-50 dark:hover:bg-neutral-800/50'}`}  role="button" tabIndex={0} onClick={() => setActiveParamId(param.id)}>
                   <div className="flex items-center justify-between">
                     <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{param.name}</label>
                     <span className={`text-xs font-mono px-2 py-0.5 rounded ${

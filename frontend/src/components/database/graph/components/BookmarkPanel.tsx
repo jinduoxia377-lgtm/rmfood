@@ -34,7 +34,7 @@ export default function BookmarkPanel({
         <button onClick={onSaveCurrentView}
           className="w-full px-3 py-2 rounded-lg border-2 border-dashed border-amber-200 dark:border-amber-700 text-[11px] text-warning-500 hover:bg-warning-50 dark:hover:bg-warning-900/10 transition-colors">+ 保存当前视图为书签</button>
         {bookmarks.map(bm => (
-          <div key={bm.id} className="flex items-center gap-2 px-2.5 py-2 rounded-lg hover:bg-warning-50/50 dark:hover:bg-warning-900/10 group cursor-pointer" onClick={() => onLoadBookmark(bm)}>
+          <div key={bm.id} className="flex items-center gap-2 px-2.5 py-2 rounded-lg hover:bg-warning-50/50 dark:hover:bg-warning-900/10 group cursor-pointer"  role="button" tabIndex={0} onClick={() => onLoadBookmark(bm)}>
             <span className="text-base shrink-0">{bm.icon}</span>
             <div className="min-w-0 flex-1">
               <p className="text-[11px] font-medium text-neutral-700 dark:text-neutral-300 truncate">{bm.name}</p>

@@ -270,7 +270,7 @@ const StepCardV3: React.FC<{
                 </span>
               )}
               {(step.childrenIds && step.childrenIds.length > 0) && !isExpanded && (
-                <span className="text-[10px] text-secondary-500 cursor-pointer hover:underline" onClick={onToggle}>
+                <span className="text-[10px] text-secondary-500 cursor-pointer hover:underline"  role="button" tabIndex={0} onClick={onToggle}>
                   {step.childrenIds.length} 个子步骤 →
                 </span>
               )}
@@ -565,7 +565,7 @@ export const ThinkingVisualizerV3: React.FC<ThinkingVisualizerV3Props> = ({
     <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-lg border border-neutral-100 dark:border-neutral-800 overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
-        <div className="flex items-center gap-2.5 text-white cursor-pointer" onClick={onToggleVisibility}>
+        <div className="flex items-center gap-2.5 text-white cursor-pointer"  role="button" tabIndex={0} onClick={onToggleVisibility}>
           <div className="p-1.5 bg-white/20 rounded-lg backdrop-blur-sm">
             <Brain className="w-5 h-5" />
           </div>

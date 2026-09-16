@@ -95,7 +95,7 @@ const SessionCard: React.FC<{
         'hover:shadow-md',
         'animate-fade-in',
       )}
-      onClick={onClick}
+       role="button" tabIndex={0} onClick={onClick}
     >
       {/* 内容区域 */}
       <div className="flex items-start gap-3">
@@ -175,7 +175,7 @@ const SessionCard: React.FC<{
       {/* 删除确认弹窗 */}
       {showDeleteConfirm && (
         <>
-          <div className="fixed inset-0 z-50" onClick={handleCancelDelete} />
+          <div className="fixed inset-0 z-50"  role="button" tabIndex={0} onClick={handleCancelDelete} />
           <div className="absolute z-50 right-0 top-full mt-2 bg-white dark:bg-neutral-800 rounded-xl shadow-lg border border-neutral-200 dark:border-neutral-700 p-3 min-w-[200px]">
             <p className="text-sm text-neutral-700 dark:text-neutral-300 mb-3">确定要删除此会话吗？</p>
             <div className="flex gap-2">

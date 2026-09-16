@@ -1,4 +1,4 @@
-/*
+﻿/*
  * RMFOOD 设计系统 - 无障碍与环境适配
  * 减少动效、高对比度、强制颜色、打印、环境光效
  * 此文件由 index.css 提取，请勿手动编辑
@@ -111,4 +111,22 @@ main, .app-root, #root {
     border: 1px solid var(--border-color, rgba(0,0,0,0.06)) !important;
     box-shadow: none !important;
   }
+}
+
+/* GPU acceleration */
+*, *::before, *::after {
+  will-change: auto;
+}
+
+/* focus-visible support */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[role="button"]:focus-visible,
+[role="tab"]:focus-visible {
+  outline: 2px solid var(--color-primary, var(--accent-500));
+  outline-offset: 2px;
+  border-radius: var(--radius-sm, 4px);
 }

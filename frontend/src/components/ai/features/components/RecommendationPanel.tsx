@@ -246,7 +246,7 @@ function RecommendationPanel({
     <div className={`bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 shadow-sm overflow-hidden ${className}`}>
       <div
         className="flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-neutral-700/50 transition-colors"
-        onClick={() => setIsExpanded(!isExpanded)}
+         role="button" tabIndex={0} onClick={() => setIsExpanded(!isExpanded)}
       >
         <div className="flex items-center gap-3">
           <div className="p-2 bg-primary-100 dark:bg-primary-900/30 rounded-lg">

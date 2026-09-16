@@ -405,7 +405,7 @@ function SensitivityTornado({
             <div
               key={factor.id}
               className="flex items-center gap-2 px-3 py-2 bg-slate-50 dark:bg-neutral-700/50 rounded-lg"
-              onClick={() => onFactorClick?.(factor)}
+               role="button" tabIndex={0} onClick={() => onFactorClick?.(factor)}
               style={{ cursor: 'pointer' }}
             >
               <span

@@ -608,7 +608,7 @@ export function LayoutSwitcher({
 
       {isOpen && (
         <>
-          <div className="absolute inset-0 fixed z-40" onClick={() => setIsOpen(false)} />
+          <div className="absolute inset-0 fixed z-40"  role="button" tabIndex={0} onClick={() => setIsOpen(false)} />
           <div className="absolute top-full right-0 mt-2 w-72 bg-white dark:bg-neutral-900 rounded-xl shadow-xl border border-neutral-200 dark:border-neutral-700 z-50 overflow-hidden">
             <div className="p-3 border-b border-neutral-200 dark:border-neutral-800">
               <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400">保存的视图</p>

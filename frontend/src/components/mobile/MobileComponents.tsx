@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 移动端容器组件
  *
  * 自动适配移动端布局，处理安全区域
@@ -111,7 +111,7 @@ export function BottomSheet({ open, onClose, title, children, height = '70%', dr
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center">
       {/* 遮罩层 */}
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"  role="button" tabIndex={0} onClick={onClose} />
 
       {/* 面板 */}
       <div
@@ -123,7 +123,7 @@ export function BottomSheet({ open, onClose, title, children, height = '70%', dr
         {draggable && (
           <div
             className="flex justify-center pt-3 pb-2 cursor-grab active:grabbing touch-none"
-            onMouseDown={handleDragStart}
+            onPointerDown={handleDragStart}
             onMouseMove={handleDragMove}
             onMouseUp={handleDragEnd}
             onTouchStart={handleDragStart}
@@ -244,3 +244,4 @@ export function PullToRefresh({
     </div>
   );
 }
+

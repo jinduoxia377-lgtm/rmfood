@@ -263,7 +263,7 @@ export function ImportModal({ open, onClose, onImportComplete }: ImportModalProp
             onDragEnter={handleDragEnter}
             onDragLeave={handleDragLeave}
             onDragOver={handleDragOver}
-            onClick={() => !isParsing && fileInputRef.current?.click()}
+             role="button" tabIndex={0} onClick={() => !isParsing && fileInputRef.current?.click()}
             className={`relative border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all ${
               isDragging
                 ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 scale-[1.02]'

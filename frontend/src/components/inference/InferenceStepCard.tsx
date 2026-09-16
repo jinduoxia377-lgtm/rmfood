@@ -73,7 +73,7 @@ const MemoizedInferenceStepCard = memo(({
       {/* 头部 - 可点击区域 */}
       <div
         className="flex items-center gap-3 p-4"
-        onClick={handleToggle}
+         role="button" tabIndex={0} onClick={handleToggle}
       >
         {/* 折叠/展开指示器 */}
         <button

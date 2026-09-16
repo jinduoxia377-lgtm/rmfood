@@ -309,7 +309,7 @@ export function CitationPanel({
                     ? 'border-primary/50 bg-primary-50/50 dark:bg-primary-900/10'
                     : 'border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600',
               )}
-              onClick={() => setSelectedCitation(citation)}
+               role="button" tabIndex={0} onClick={() => setSelectedCitation(citation)}
               onMouseEnter={() => setPreviewCitation(citation)}
               onMouseLeave={() => setPreviewCitation(null)}
             >

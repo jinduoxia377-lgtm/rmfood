@@ -715,8 +715,6 @@ export default function SettingsPage() {
             className={cn('relative p-8 border-2 border-dashed rounded-xl text-center transition-all cursor-pointer',
               isDragging ? 'border-primary-400 bg-primary-50 dark:bg-primary-900/20' : 'border-neutral-300 dark:border-neutral-600 hover:border-primary-300 dark:hover:border-primary-700')}
             onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}
-            onClick={() => document.getElementById('import-file-input')?.click()}
-            role="button" tabIndex={0} aria-label="拖放文件或点击选择导入文件"
             onKeyDown={e => e.key === 'Enter' && document.getElementById('import-file-input')?.click()}>
             <input id="import-file-input" type="file" accept=".json,.csv,.xls,.xlsx"
               onChange={handleFileSelect} className="hidden" aria-hidden="true" />

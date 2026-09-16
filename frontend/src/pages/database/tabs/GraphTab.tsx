@@ -774,7 +774,7 @@ export default function GraphTab() {
                           <span
                             key={j}
                             className="text-[10px] px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-700 rounded cursor-pointer hover:bg-primary-100"
-                            onClick={() => setSelectedNode(n.node_label)}
+                             role="button" tabIndex={0} onClick={() => setSelectedNode(n.node_label)}
                           >
                             {n.node_label}
                           </span>
@@ -821,7 +821,7 @@ export default function GraphTab() {
                       <span
                         key={i}
                         className="text-xs px-2 py-1 bg-accent-50 dark:bg-purple-950/30 text-accent-700 dark:text-accent-300 rounded-full cursor-pointer hover:ring-2 ring-purple-300"
-                        onClick={() => setSelectedNode(n.node_label)}
+                         role="button" tabIndex={0} onClick={() => setSelectedNode(n.node_label)}
                       >
                         {n.node_label}
                       </span>
@@ -918,7 +918,7 @@ export default function GraphTab() {
                       <div className="flex-1 min-w-0">
                         <span
                           className="font-medium text-sm cursor-pointer hover:text-primary-600"
-                          onClick={() => setSelectedNode(rec.herb_name)}
+                           role="button" tabIndex={0} onClick={() => setSelectedNode(rec.herb_name)}
                         >
                           {rec.herb_name}
                         </span>

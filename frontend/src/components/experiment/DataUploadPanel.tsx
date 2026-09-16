@@ -98,7 +98,7 @@ export function DataUploadPanel({ onParseComplete }: Props) {
             <div>
               <span
                 className="text-violet-600 font-medium cursor-pointer hover:underline"
-                onClick={() => fileInputRef.current?.click()}
+                 role="button" tabIndex={0} onClick={() => fileInputRef.current?.click()}
               >
                 点击上传
               </span>

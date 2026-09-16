@@ -249,7 +249,7 @@ export const ConflictResolver: React.FC<ConflictResolverProps> = ({
       <div key={conflict.id} className={`border rounded-lg transition-all ${config.bgColor} ${config.borderColor}`}>
         <div
           className="p-4 cursor-pointer hover:bg-opacity-80 transition-colors"
-          onClick={() => toggleExpand(conflict.id)}
+           role="button" tabIndex={0} onClick={() => toggleExpand(conflict.id)}
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">

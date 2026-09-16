@@ -297,11 +297,11 @@ export function DocumentEditor({ chapter, onUpdate }: DocumentEditorProps) {
       {showFigureModal && (
         <div
           className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
-          onClick={() => setShowFigureModal(false)}
+           role="button" tabIndex={0} onClick={() => setShowFigureModal(false)}
         >
           <div
             className="bg-white dark:bg-neutral-800 rounded-lg p-6 w-full max-w-md"
-            onClick={(e) => e.stopPropagation()}
+             role="button" tabIndex={0} onClick={(e) => e.stopPropagation()}
           >
             <h3 className="text-lg font-bold text-neutral-900 dark:text-neutral-100 mb-4">插入图表</h3>
             <div className="space-y-4">
@@ -344,11 +344,11 @@ export function DocumentEditor({ chapter, onUpdate }: DocumentEditorProps) {
       {showTableModal && (
         <div
           className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
-          onClick={() => setShowTableModal(false)}
+           role="button" tabIndex={0} onClick={() => setShowTableModal(false)}
         >
           <div
             className="bg-white dark:bg-neutral-800 rounded-lg p-6 w-full max-w-md"
-            onClick={(e) => e.stopPropagation()}
+             role="button" tabIndex={0} onClick={(e) => e.stopPropagation()}
           >
             <h3 className="text-lg font-bold text-neutral-900 dark:text-neutral-100 mb-4">插入表格</h3>
             <div className="space-y-4">

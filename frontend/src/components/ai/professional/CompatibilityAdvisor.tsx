@@ -135,7 +135,7 @@ export class CompatibilityAdvisor extends ProfessionalBaseComponent<
       <span
         key={herb}
         className="inline-flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-teal-500 to-teal-600 text-white rounded-full text-sm font-medium shadow-sm hover:shadow-md transition-shadow cursor-pointer"
-        onClick={() => this.showHerbInfo(herb)}
+         role="button" tabIndex={0} onClick={() => this.showHerbInfo(herb)}
       >
         <span>{herb}</span>
         <button

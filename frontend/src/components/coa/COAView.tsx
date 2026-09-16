@@ -388,7 +388,7 @@ export const COACard: React.FC<{
   onClick?: () => void;
 }> = ({ coa, onClick }) => (
   <div
-    onClick={onClick}
+     role="button" tabIndex={0} onClick={onClick}
     className="bg-white rounded-xl border border-[var(--border-subtle, #e2e8f0)] p-4 cursor-pointer hover:shadow-md hover:border-[var(--color-primary, #1a56db)]/30 transition-all"
   >
     <div className="flex items-start justify-between mb-3">

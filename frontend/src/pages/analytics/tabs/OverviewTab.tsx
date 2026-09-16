@@ -253,7 +253,7 @@ export default function OverviewTab({ filters, dashboard, refresh }: Props) {
                 <div
                   key={id}
                   className={`card p-4 ${colors.bg} ${colors.border} border hover:shadow-lg transition-all cursor-pointer group relative overflow-hidden`}
-                  onClick={() => setViewMode('charts')}
+                   role="button" tabIndex={0} onClick={() => setViewMode('charts')}
                 >
                   <div className="flex items-center justify-between mb-2">
                     <Icon className={`w-5 h-5 ${colors.text} group-hover:scale-110 transition-transform`} />

@@ -361,7 +361,7 @@ export default function OrganizationDetail({ organizationId: propOrgId }: Organi
 
                 {showActionsMenu && (
                   <>
-                    <div className="fixed inset-0 z-10" onClick={() => setShowActionsMenu(false)} />
+                    <div className="fixed inset-0 z-10"  role="button" tabIndex={0} onClick={() => setShowActionsMenu(false)} />
                     <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-neutral-800 rounded-xl shadow-lg border border-neutral-200 dark:border-neutral-700 py-1.5 z-20 animate-scale-in">
                       <button
                         onClick={() => {

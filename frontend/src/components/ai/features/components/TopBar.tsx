@@ -93,7 +93,7 @@ function Dropdown({ trigger, children, className = '' }: {
       </button>
       {open && (
         <>
-          <div className="fixed inset-0 z-30" onClick={() => setOpen(false)} />
+          <div className="fixed inset-0 z-30"  role="button" tabIndex={0} onClick={() => setOpen(false)} />
           <div className="absolute top-full right-0 mt-1 z-40 bg-white dark:bg-neutral-800 rounded-lg shadow-md border border-neutral-200 dark:border-neutral-700 py-1 min-w-[180px]">
             {children}
           </div>

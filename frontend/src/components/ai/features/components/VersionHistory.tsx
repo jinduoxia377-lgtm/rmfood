@@ -331,7 +331,7 @@ function VersionHistory({
                 className={`p-4 hover:bg-slate-50 dark:hover:bg-neutral-700/30 transition-colors cursor-pointer ${
                   isSelected ? 'bg-primary-50 dark:bg-primary-900/10' : ''
                 } ${isCurrent ? 'border-l-4 border-primary-500' : ''}`}
-                onClick={() => handleVersionClick(version)}
+                 role="button" tabIndex={0} onClick={() => handleVersionClick(version)}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-3 flex-1 min-w-0">

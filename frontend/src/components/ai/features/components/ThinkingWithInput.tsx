@@ -268,7 +268,7 @@ export const ThinkingWithInput: React.FC<ThinkingWithInputProps> = ({
           {/* 标题栏 */}
           <div
             className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-800/50 transition-colors"
-            onClick={onToggleThinking}
+             role="button" tabIndex={0} onClick={onToggleThinking}
           >
             <div className="flex items-center gap-2">
               <div className={`

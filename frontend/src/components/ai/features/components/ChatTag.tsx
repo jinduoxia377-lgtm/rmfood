@@ -1,4 +1,4 @@
-import { memo, useCallback } from 'react'
+﻿import { memo, useCallback } from 'react'
 import { X } from 'lucide-react'
 import { ChatIcon } from './ChatIcon'
 import type { IconName } from './icon-mapping'
@@ -142,7 +142,6 @@ function ChatTag({
         color: colorConfig.darkText,
         position: 'relative',
       }}
-      onClick={handleClick}
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}
       onKeyDown={(e) => {
@@ -203,7 +202,6 @@ function ChatTag({
         color: colorConfig.darkText,
         border: `2px solid ${colorConfig.border}`,
       }}
-      onClick={handleClick}
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}
       onKeyDown={(e) => {
@@ -243,7 +241,6 @@ function ChatTag({
         backgroundColor: colorConfig.lightBg,
         color: colorConfig.darkText,
       }}
-      onClick={handleClick}
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}
       onKeyDown={(e) => {
@@ -294,3 +291,4 @@ ChatTag.displayName = 'ChatTag'
 export const ChatTagMemo = memo(ChatTag)
 export default ChatTag
 export type { TagSize, TagVariant, TagColor }
+

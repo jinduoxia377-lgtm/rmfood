@@ -65,7 +65,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
       aria-label="全局搜索"
     >
       {/* 背景遮罩 */}
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={handleClose} />
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm"  role="button" tabIndex={0} onClick={handleClose} />
 
       {/* 搜索框 */}
       <div className="relative w-full max-w-2xl bg-white dark:bg-neutral-800 rounded-xl shadow-2xl border border-neutral-200 dark:border-neutral-700 overflow-hidden">

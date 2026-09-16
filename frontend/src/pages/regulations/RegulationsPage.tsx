@@ -50,7 +50,7 @@ function DetailModal({
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} aria-hidden="true" />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"  role="button" tabIndex={0} onClick={onClose} aria-hidden="true" />
       <div className="relative w-full max-w-2xl max-h-[85vh] bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl overflow-hidden flex flex-col border border-neutral-200 dark:border-neutral-700">
         <div className={`flex items-center justify-between px-6 py-3.5 bg-gradient-to-r ${headerBg} text-white shrink-0`}>
           <div className="flex items-center gap-2.5 min-w-0">

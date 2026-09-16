@@ -1,4 +1,4 @@
-/* ═══════════════════════════════════════════════════════════════
+﻿/* ═══════════════════════════════════════════════════════════════
    RMFOOD 配方设计平台 — 配方动画系统 v1.0
    专为"已识别的配方"面板设计的专业动画与过渡效果系统
    ═══════════════════════════════════════════════════════════════ */
@@ -464,3 +464,30 @@
     animation-iteration-count: 1 !important;
   }
 }
+
+/* focus-visible support */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[role="button"]:focus-visible,
+[role="tab"]:focus-visible {
+  outline: 2px solid var(--color-primary, var(--accent-500));
+  outline-offset: 2px;
+  border-radius: var(--radius-sm, 4px);
+}
+
+/* GPU acceleration hints */
+.animate-chat-bubble-enter,
+.animate-chat-bubble-exit,
+.animate-fade-in,
+.animate-fade-out,
+.animate-slide-up,
+.animate-slide-down,
+.animate-pulse-soft,
+.animate-spin-slow {
+  will-change: opacity, transform;
+  transform: translateZ(0);
+}
+

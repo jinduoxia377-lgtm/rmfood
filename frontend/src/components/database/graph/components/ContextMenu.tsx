@@ -25,7 +25,7 @@ export default function ContextMenu({
     <div
       className="absolute z-50 min-w-[180px] bg-white/97 dark:bg-neutral-900/97 backdrop-blur-xl rounded-xl border border-neutral-200/80 dark:border-neutral-700/60 shadow-2xl py-1 animate-in fade-in zoom-in-95 duration-150"
       style={{ left: contextMenu.x, top: contextMenu.y }}
-      onClick={(e) => e.stopPropagation()}
+       role="button" tabIndex={0} onClick={(e) => e.stopPropagation()}
     >
       {contextMenu.node ? (
         <>

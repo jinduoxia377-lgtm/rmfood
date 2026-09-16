@@ -657,7 +657,7 @@ function SuggestionItem({ suggestion, isExpanded, isApplied, onToggle, onPreview
     <div className={`transition-colors ${isApplied ? 'bg-success-50 dark:bg-success-900/10' : ''}`}>
       <div
         className="px-4 py-3 flex items-start gap-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-neutral-800/50"
-        onClick={onToggle}
+         role="button" tabIndex={0} onClick={onToggle}
       >
         <div className={`w-8 h-8 rounded-lg ${isApplied ? 'bg-success-100' : 'bg-neutral-100 dark:bg-neutral-800'} flex items-center justify-center shrink-0`}>
           {isApplied ? (

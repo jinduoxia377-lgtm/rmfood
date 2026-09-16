@@ -478,7 +478,6 @@ export default function RhineLoginPage() {
                   <label className="rhine-remember">
                     <div
                       className={`rhine-remember-check${remember ? ' checked' : ''}`}
-                      onClick={() => setRemember(!remember)}
                       onKeyDown={(e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); setRemember(!remember) } }}
                       role="checkbox" aria-checked={remember} tabIndex={0}
                       aria-label={remember ? '已勾选：保持登录' : '未勾选：保持登录'}

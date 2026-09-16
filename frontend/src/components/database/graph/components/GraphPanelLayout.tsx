@@ -1,4 +1,4 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 /**
  * GraphPanelLayout — comprehensive JSX delegation layer.
  *
@@ -403,7 +403,7 @@ export default function GraphPanelLayout({
         else if ((e.key === 'z' || e.key === 'Z') && e.ctrlKey && !e.shiftKey) { e.preventDefault(); undoHistory() }
         else if ((e.key === 'z' || e.key === 'Z') && e.ctrlKey && e.shiftKey) { e.preventDefault(); redoHistory() }
       }}
-      onMouseDown={(e) => {
+      onPointerDown={(e) => { const { pointerId } = e; e.currentTarget.setPointerCapture(pointerId); 
         if ((e.ctrlKey || e.metaKey || e.shiftKey) && e.button === 0) {
           const rect = containerRef.current?.getBoundingClientRect()
           if (!rect) return
@@ -729,3 +729,4 @@ export default function GraphPanelLayout({
     </div>
   )
 }
+

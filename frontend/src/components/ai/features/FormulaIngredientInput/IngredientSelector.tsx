@@ -109,8 +109,8 @@ export const IngredientSelector: React.FC<IngredientSelectorProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="ingredient-selector-overlay" onClick={onClose}>
-      <div className="ingredient-selector" ref={wrapperRef} onClick={(e) => e.stopPropagation()}>
+    <div className="ingredient-selector-overlay"  role="button" tabIndex={0} onClick={onClose}>
+      <div className="ingredient-selector" ref={wrapperRef}  role="button" tabIndex={0} onClick={(e) => e.stopPropagation()}>
         <div className="selector-header">
           <h3 className="selector-title">
             <Database className="w-5 h-5" /> 选择成分
@@ -142,7 +142,6 @@ export const IngredientSelector: React.FC<IngredientSelectorProps> = ({
                 <div
                   key={item.id}
                   className="ingredient-item"
-                  onClick={() => handleSelect(item)}
                   tabIndex={0}
                   onKeyPress={(e: React.KeyboardEvent) => e.key === 'Enter' && handleSelect(item)}
                   role="button"

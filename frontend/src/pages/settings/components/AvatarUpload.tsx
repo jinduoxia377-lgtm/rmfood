@@ -71,7 +71,6 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
           disabled && 'opacity-50 cursor-not-allowed',
           error && 'ring-rose-400',
         )}
-        onClick={handleClick}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}

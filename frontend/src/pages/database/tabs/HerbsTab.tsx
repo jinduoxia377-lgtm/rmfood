@@ -537,7 +537,7 @@ export default function HerbsTab({
               {items.map((item: any) => (
                 <div
                   key={item.id}
-                  onClick={() => setSelectedHerb(item)}
+                   role="button" tabIndex={0} onClick={() => setSelectedHerb(item)}
                   className="card p-4 cursor-pointer hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 group border border-transparent hover:border-primary-200 dark:hover:border-primary-800"
                 >
                   <div className="flex items-start justify-between mb-2">

@@ -134,7 +134,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({ onSelect, onPreview
         {filteredTemplates.map((template: ReportTemplate) => (
           <div
             key={template.id}
-            onClick={() => onSelect(template)}
+             role="button" tabIndex={0} onClick={() => onSelect(template)}
             className={`relative border-2 rounded-xl p-6 cursor-pointer transition-all duration-200 transform hover:-translate-y-1 hover:shadow-lg ${
               selectedTemplateId === template.id
                 ? `${getTypeColor(template.type)} ring-2 ring-offset-2 ring-blue-500`

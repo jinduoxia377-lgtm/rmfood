@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
  *  RMFOOD AI 智能对话 — 统一视觉主题样式表 v4.0
  *  单一主题：基于项目设计令牌，品牌翠绿 #10B981
  *  使用方式：<div class="chat-unified chat-area"> 包裹聊天区域
@@ -2896,3 +2896,17 @@
 .chat-more-menu-item[data-action="delete"] {
   color: #ef4444;
 }
+
+/* GPU acceleration hints */
+.animate-chat-bubble-enter,
+.animate-chat-bubble-exit,
+.animate-fade-in,
+.animate-fade-out,
+.animate-slide-up,
+.animate-slide-down,
+.animate-pulse-soft,
+.animate-spin-slow {
+  will-change: opacity, transform;
+  transform: translateZ(0);
+}
+

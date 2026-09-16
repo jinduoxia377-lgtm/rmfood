@@ -44,7 +44,7 @@ export default function SubGraphBrowser({
       <div className="p-3 space-y-2">
         {communityResult?.communities.map(comm => (
           <div key={comm.id} className="rounded-xl p-2.5 border border-neutral-100 dark:border-neutral-700/50 hover:border-purple-300 dark:hover:border-purple-600 cursor-pointer transition-colors"
-            onClick={() => {
+             role="button" tabIndex={0} onClick={() => {
               const newSub: SubGraphResult = {
                 id: crypto.randomUUID(),
                 name: `社区 #${comm.id + 1}`,
@@ -73,7 +73,7 @@ export default function SubGraphBrowser({
         ))}
         {kcoreResult?.cores.filter(c => c.k >= 2).reverse().slice(0, 5).map(core => (
           <div key={core.k} className="rounded-xl p-2.5 border border-neutral-100 dark:border-neutral-700/50 hover:border-pink-300 cursor-pointer transition-colors"
-            onClick={() => {
+             role="button" tabIndex={0} onClick={() => {
               const newSub: SubGraphResult = {
                 id: crypto.randomUUID(),
                 name: `${core.k}-Core`,

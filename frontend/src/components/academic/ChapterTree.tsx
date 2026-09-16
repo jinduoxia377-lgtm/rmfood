@@ -192,7 +192,7 @@ function ChapterItem({
             : 'hover:bg-neutral-100 text-neutral-700',
         )}
         style={{ paddingLeft: `${depth * 16 + 12}px` }}
-        onClick={() => !showBatchToolbar && onSelect(chapter.id)}
+         role="button" tabIndex={0} onClick={() => !showBatchToolbar && onSelect(chapter.id)}
       >
         {showBatchToolbar && onSelectionChange && (
           <button
@@ -305,7 +305,7 @@ function ChapterItem({
                   : 'hover:bg-slate-50 text-neutral-600',
               )}
               style={{ paddingLeft: `${depth * 16 + 24}px` }}
-              onClick={() => onSelect(section.id)}
+               role="button" tabIndex={0} onClick={() => onSelect(section.id)}
             >
               <FileText className="w-4 h-4 flex-shrink-0" />
               <span className="truncate text-sm">

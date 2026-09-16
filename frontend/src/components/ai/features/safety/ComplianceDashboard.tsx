@@ -147,7 +147,7 @@ export function ComplianceDashboard({
               <div
                 key={metric.id}
                 className={`p-4 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600 hover:shadow-md transition-all cursor-pointer ${onClickMetric ? 'cursor-pointer' : ''}`}
-                onClick={() => onClickMetric?.(metric.id)}
+                 role="button" tabIndex={0} onClick={() => onClickMetric?.(metric.id)}
               >
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">

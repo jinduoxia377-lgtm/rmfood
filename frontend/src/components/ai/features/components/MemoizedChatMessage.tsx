@@ -487,7 +487,7 @@ const TypingSpeedController: React.FC<{
 
       {isOpen && (
         <>
-          <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} aria-hidden="true" />
+          <div className="fixed inset-0 z-10"  role="button" tabIndex={0} onClick={() => setIsOpen(false)} aria-hidden="true" />
           <div
             className="absolute bottom-full left-0 mb-2 w-56 bg-white dark:bg-neutral-800 rounded-lg shadow-xl border border-neutral-200 dark:border-neutral-700 p-3 z-20 animate-in fade-in slide-in-from-bottom-2"
             role="listbox"
