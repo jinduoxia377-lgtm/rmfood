@@ -186,7 +186,7 @@ export function CitationPanel({
     <div className="flex items-center gap-2 p-3 border-b border-neutral-200 dark:border-neutral-700">
       <div className="flex-1 relative">
         <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400"/>
-        <input type="text" placeholder="搜索引文..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-8 pr-3 py-1.5 text-sm bg-neutral-100 dark:bg-neutral-800 border-none rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"/>
+<input aria-label="搜索引文..." type="text" placeholder="搜索引文..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-8 pr-3 py-1.5 text-sm bg-neutral-100 dark:bg-neutral-800 border-none rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"/>
       </div>
       <button onClick={() => setShowAddModal(true)} className="flex items-center gap-1 px-3 py-1.5 text-sm bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
         <Plus className="w-4 h-4"/>
@@ -504,7 +504,7 @@ function CitationForm({ citation, onSubmit, onClose }: CitationFormProps) {
           <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
             标题 <span className="text-error-500">*</span>
           </label>
-          <input type="text" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} className="w-full px-3 py-2 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" placeholder="请输入文献标题"/>
+<input aria-label="请输入文献标题" type="text" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} className="w-full px-3 py-2 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" placeholder="请输入文献标题"/>
         </div>
 
         <div>
@@ -512,7 +512,7 @@ function CitationForm({ citation, onSubmit, onClose }: CitationFormProps) {
             作者 <span className="text-error-500">*</span>
           </label>
           <div className="flex gap-2 mb-2">
-            <input type="text" value={newAuthor} onChange={(e) => setNewAuthor(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addAuthor())} className="flex-1 px-3 py-2 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" placeholder="输入作者姓名后回车添加"/>
+<input aria-label="输入作者姓名后回车添加" type="text" value={newAuthor} onChange={(e) => setNewAuthor(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addAuthor())} className="flex-1 px-3 py-2 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" placeholder="输入作者姓名后回车添加"/>
             <button type="button" onClick={addAuthor} className="px-3 py-2 bg-neutral-200 dark:bg-neutral-700 rounded-lg hover:bg-neutral-300 dark:hover:bg-neutral-600 transition-colors">
               <Plus className="w-4 h-4"/>
             </button>
@@ -531,14 +531,14 @@ function CitationForm({ citation, onSubmit, onClose }: CitationFormProps) {
           <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
             {formData.type === 'journal-article' ? '期刊名称' : formData.type === 'conference-proceeding' ? '会议名称' : formData.type === 'book' || formData.type === 'book-chapter' ? '出版社' : formData.type === 'thesis' ? '学校/机构' : '来源'}
           </label>
-          <input type="text" value={formData.journal} onChange={(e) => setFormData({ ...formData, journal: e.target.value })} className="w-full px-3 py-2 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" placeholder="请输入期刊/会议/出版社名称"/>
+<input aria-label="请输入期刊/会议/出版社名称" type="text" value={formData.journal} onChange={(e) => setFormData({ ...formData, journal: e.target.value })} className="w-full px-3 py-2 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" placeholder="请输入期刊/会议/出版社名称"/>
         </div>
 
         <div>
           <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
             年份
           </label>
-          <input type="number" value={formData.year} onChange={(e) => setFormData({ ...formData, year: parseInt(e.target.value) || new Date().getFullYear() })} className="w-full px-3 py-2 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" placeholder="年份"/>
+<input aria-label="年份" type="number" value={formData.year} onChange={(e) => setFormData({ ...formData, year: parseInt(e.target.value) || new Date().getFullYear() })} className="w-full px-3 py-2 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" placeholder="年份"/>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
@@ -546,13 +546,13 @@ function CitationForm({ citation, onSubmit, onClose }: CitationFormProps) {
             <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
               卷号
             </label>
-            <input type="text" value={formData.volume} onChange={(e) => setFormData({ ...formData, volume: e.target.value })} className="w-full px-3 py-2 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" placeholder="卷号"/>
+<input aria-label="卷号" type="text" value={formData.volume} onChange={(e) => setFormData({ ...formData, volume: e.target.value })} className="w-full px-3 py-2 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" placeholder="卷号"/>
           </div>
           <div>
             <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
               页码
             </label>
-            <input type="text" value={formData.pages} onChange={(e) => setFormData({ ...formData, pages: e.target.value })} className="w-full px-3 py-2 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" placeholder="起始-结束"/>
+<input aria-label="起始-结束" type="text" value={formData.pages} onChange={(e) => setFormData({ ...formData, pages: e.target.value })} className="w-full px-3 py-2 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" placeholder="起始-结束"/>
           </div>
         </div>
 
@@ -561,13 +561,13 @@ function CitationForm({ citation, onSubmit, onClose }: CitationFormProps) {
             <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
               DOI
             </label>
-            <input type="text" value={formData.doi} onChange={(e) => setFormData({ ...formData, doi: e.target.value })} className="w-full px-3 py-2 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" placeholder="DOI编号"/>
+<input aria-label="DOI编号" type="text" value={formData.doi} onChange={(e) => setFormData({ ...formData, doi: e.target.value })} className="w-full px-3 py-2 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" placeholder="DOI编号"/>
           </div>
           <div>
             <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
               ISBN
             </label>
-            <input type="text" value={formData.isbn} onChange={(e) => setFormData({ ...formData, isbn: e.target.value })} className="w-full px-3 py-2 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" placeholder="ISBN编号"/>
+<input aria-label="ISBN编号" type="text" value={formData.isbn} onChange={(e) => setFormData({ ...formData, isbn: e.target.value })} className="w-full px-3 py-2 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" placeholder="ISBN编号"/>
           </div>
         </div>
 
@@ -576,7 +576,7 @@ function CitationForm({ citation, onSubmit, onClose }: CitationFormProps) {
             <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
               URL
             </label>
-            <input type="url" value={formData.url} onChange={(e) => setFormData({ ...formData, url: e.target.value })} className="w-full px-3 py-2 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" placeholder="网页链接"/>
+<input aria-label="网页链接" type="url" value={formData.url} onChange={(e) => setFormData({ ...formData, url: e.target.value })} className="w-full px-3 py-2 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" placeholder="网页链接"/>
           </div>
           <div>
             <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">

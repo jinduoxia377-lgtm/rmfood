@@ -579,7 +579,7 @@ function DataTab() {
           {DS_DATA.map(ds => {
             const isExpanded = expanded === ds.name;
             return (
-              <div key={ds.name}  role="button" tabIndex={0} onClick={() => setExpanded(isExpanded ? null : ds.name)}
+              <div key={ds.name} role="button" tabIndex={0} onClick={() => setExpanded(isExpanded ? null : ds.name)} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setExpanded(isExpanded ? null : ds.name) } }}
                 className="rounded-md overflow-hidden transition-all duration-200 cursor-pointer"
                 style={{
                   background: isExpanded ? '#fff' : '#fff',

@@ -494,11 +494,11 @@ export function AcademicReportEditor() {
         <div className="flex items-center gap-4 text-sm">
           <div className="flex items-center gap-2">
             <label className="text-neutral-600 dark:text-neutral-400">作者：</label>
-            <input type="text" value={reportDoc.authors?.join('，') || ''} onChange={(e) => updateMetadata('authors', e.target.value.split('，'))} placeholder="请输入作者姓名" className="px-2 py-1 text-sm bg-white dark:bg-neutral-700 border border-neutral-200 dark:border-neutral-600 rounded focus:outline-none focus:ring-1 focus:ring-primary max-w-32"/>
+<input aria-label="请输入作者姓名" type="text" value={reportDoc.authors?.join('，') || ''} onChange={(e) => updateMetadata('authors', e.target.value.split('，'))} placeholder="请输入作者姓名" className="px-2 py-1 text-sm bg-white dark:bg-neutral-700 border border-neutral-200 dark:border-neutral-600 rounded focus:outline-none focus:ring-1 focus:ring-primary max-w-32"/>
           </div>
           <div className="flex items-center gap-2">
             <label className="text-neutral-600 dark:text-neutral-400">单位：</label>
-            <input type="text" value={reportDoc.institution || ''} onChange={(e) => updateMetadata('institution', e.target.value)} placeholder="请输入单位名称" className="px-2 py-1 text-sm bg-white dark:bg-neutral-700 border border-neutral-200 dark:border-neutral-600 rounded focus:outline-none focus:ring-1 focus:ring-primary max-w-40"/>
+<input aria-label="请输入单位名称" type="text" value={reportDoc.institution || ''} onChange={(e) => updateMetadata('institution', e.target.value)} placeholder="请输入单位名称" className="px-2 py-1 text-sm bg-white dark:bg-neutral-700 border border-neutral-200 dark:border-neutral-600 rounded focus:outline-none focus:ring-1 focus:ring-primary max-w-40"/>
           </div>
           <div className="flex items-center gap-2">
             <label className="text-neutral-600 dark:text-neutral-400">日期：</label>
