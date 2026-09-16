@@ -2,7 +2,6 @@
 
 export const SimpleSlider: React.FC<{ label: string; value: number; onChange: (v: number) => void }> = ({ label, value, onChange }) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log('Slider change:', e.target.value)
     onChange(parseInt(e.target.value, 10))
   }
 

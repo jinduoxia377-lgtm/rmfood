@@ -78,7 +78,6 @@ export function useGlobalShortcuts(shortcuts: GlobalShortcut[], enabled = true) 
       .filter(([, descs]) => descs.length > 1)
       .map(([keys, descs]) => ({ keys, descriptions: descs }))
     if (_conflictLog.length > 0) {
-      console.warn('[useGlobalShortcuts] 检测到快捷键冲突:', _conflictLog)
     }
   }, [shortcuts, enabled])
 
