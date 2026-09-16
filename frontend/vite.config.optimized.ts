@@ -6,7 +6,7 @@ import { visualizer } from 'rollup-plugin-visualizer';
 
 function createProcessPolyfillPlugin(): Plugin {
   const processPolyfill = `
-    (typeof window !== 'undefined' ? window : typeof globalThis !== 'undefined' ? globalThis : {}).process = 
+    (typeof window !== 'undefined' ? window : typeof globalThis !== 'undefined' ? globalThis : {}).process =
     (typeof window !== 'undefined' ? window : typeof globalThis !== 'undefined' ? globalThis : {}).process || {
       env: {
         NODE_ENV: '${process.env.NODE_ENV || 'development'}',
@@ -44,7 +44,7 @@ function createProcessPolyfillPlugin(): Plugin {
 
   return {
     name: 'process-polyfill-plugin',
-    
+
     configResolved(config) {
       if (!config.optimizeDeps.exclude.includes('exceljs')) {
         config.optimizeDeps.exclude.push('exceljs');
