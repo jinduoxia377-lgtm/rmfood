@@ -1,0 +1,19 @@
+{
+  "generated_at": "2026-09-08T09:59:04.324136+00:00",
+  "version": "v3.8",
+  "summary": {
+    "total_herbs": 713,
+    "homology_marked": 126,
+    "homology_percentage": 17.7
+  },
+  "fixes_applied": {
+    "紫苏子_marked": true,
+    "槐米_added": true,
+    "蝮蛇_added": true
+  },
+  "official_catalog_106": {
+    "total": 106,
+    "all_marked": 102,
+    "coverage_rate": "102/106"
+  }
+}

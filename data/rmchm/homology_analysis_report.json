@@ -1,0 +1,43 @@
+{
+  "analysis_date": "2026-09-08",
+  "version": "v3.3",
+  "current_status": {
+    "total_herbs": 711,
+    "current_homology_count": 42,
+    "current_homology_percentage": 5.9
+  },
+  "target_status": {
+    "national_catalog_count": 102,
+    "target_homology_count": 83
+  },
+  "gap_analysis": {
+    "found_in_rmchm": 83,
+    "missing_from_rmchm": 19,
+    "missing_list": [
+      "苦荞麦",
+      "枸杞叶",
+      "益智仁",
+      "枣",
+      "杏仁",
+      "紫苏籽",
+      "油莎草",
+      "玉麒麟",
+      "麦芽糊精",
+      "菊花脑",
+      "黄芥子",
+      "牛磺酸",
+      "蛇莓",
+      "蝮蛇",
+      "雪莲花",
+      "人参果",
+      "天然香草",
+      "阿拉伯胶",
+      "枸杞叶"
+    ]
+  },
+  "recommendations": [
+    "基于国家106种目录补充药食同源标记",
+    "为已存在的药材添加is_food_homology=true标记",
+    "考虑将缺失的药材作为新药材添加到数据库"
+  ]
+}

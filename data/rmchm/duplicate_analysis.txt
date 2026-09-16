@@ -1,0 +1,16 @@
+﻿============================================================
+��飺�Ϲ��׼�����ظ�����
+============================================================
+
+��1��ʳƷ��ȫ���ұ�׼Ŀ¼
+  ����Ŀ: 1724, Ψһ���: 1724
+python : Traceback (most recent call last):
+At line:1 char:129
++ ... ew($false); python "D:/RMFOODFP/backend/scripts/check_duplicates.py"  ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "D:\RMFOODFP\backend\scripts\check_duplicates.py", line 21, in <module>
+    print("  \u2713 ���ظ����")
+UnicodeEncodeError: 'gbk' codec can't encode character '\u2713' in position 2: illegal multibyte sequence

@@ -1,0 +1,40 @@
+{
+  "generated_at": "2026-09-08T08:22:17.138811+00:00",
+  "version": "v2.0",
+  "summary": {
+    "total_herbs": 709,
+    "tcmsp_source": 498,
+    "symmap_source": 698,
+    "images_source": 107
+  },
+  "match_statistics": {
+    "tcmsp_id_match": 0,
+    "name_match": 0,
+    "symmap_only": 0,
+    "tcmsp_only": 11
+  },
+  "data_coverage": {
+    "with_ob_percent": 505,
+    "with_nature_cn": 693,
+    "with_meridians_cn": 653,
+    "with_compounds": 505,
+    "with_images": 94,
+    "food_homology_count": 42
+  },
+  "aggregate_stats": {
+    "total_compounds": 34626,
+    "total_targets": 86808,
+    "total_diseases": 126601
+  },
+  "image_analysis": {
+    "total_images": 107,
+    "matched_images": 94,
+    "unmatched_images": 13
+  },
+  "match_method_breakdown": {
+    "tcmsp_id": 493,
+    "name_match": 1,
+    "symmap_only": 0,
+    "tcmsp_only": 11
+  }
+}

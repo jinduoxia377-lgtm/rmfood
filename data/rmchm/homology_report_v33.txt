@@ -1,0 +1,143 @@
+======================================================================
+  药食同源数据深度分析报告 v3.3
+======================================================================
+
+分析日期: 2026-09-08T09:43:53.680360+00:00
+国家目录总数: 97 种
+当前RMCHM总药材: 711 条
+
+----------------------------------------------------------------------
+  对比分析结果
+----------------------------------------------------------------------
+
+在RMCHM中找到的药食同源: 79 种
+  - 已有标记: 26 种
+  - 需要添加标记: 53 种
+不在RMCHM中的药食同源: 18 种
+
+======================================================================
+  一、已有药食同源标记的药材
+======================================================================
+
+  丹参 (TCMSP_id: 11)
+  人参 (TCMSP_id: 20)
+  代代花 (TCMSP_id: None)
+  八角茴香 (TCMSP_id: 35)
+  决明子 (TCMSP_id: 43)
+  天冬 (TCMSP_id: 102)
+  小茴香 (TCMSP_id: 118)
+  山药 (TCMSP_id: 125)
+  干姜 (TCMSP_id: 139)
+  枸杞子 (TCMSP_id: 173)
+  淡豆豉 (TCMSP_id: 219)
+  玉竹 (TCMSP_id: 243)
+  甘草 (TCMSP_id: 253)
+  百合 (TCMSP_id: 277)
+  罗汉果 (TCMSP_id: 320)
+  肉桂 (TCMSP_id: 324)
+  茯苓 (TCMSP_id: 355)
+  菊花 (TCMSP_id: 374)
+  葛根 (TCMSP_id: 381)
+  薄荷 (TCMSP_id: 391)
+  薏苡仁 (TCMSP_id: 392)
+  酸枣仁 (TCMSP_id: 424)
+  陈皮 (TCMSP_id: 444)
+  高良姜 (TCMSP_id: 470)
+  黄精 (TCMSP_id: 487)
+  黄芪 (TCMSP_id: 489)
+
+======================================================================
+  二、需要添加药食同源标记的药材
+======================================================================
+
+  丁香 (TCMSP_id: 3, SymMap_id: 107)
+  乌梅 (TCMSP_id: 13, SymMap_id: 414)
+  乌梢蛇 (TCMSP_id: None, SymMap_id: 533)
+  僵蚕 (TCMSP_id: None, SymMap_id: 696)
+  刀豆 (TCMSP_id: 48, SymMap_id: 97)
+  南瓜子 (TCMSP_id: 69, SymMap_id: 295)
+  土茯苓 (TCMSP_id: 77, SymMap_id: 405)
+  夏枯草 (TCMSP_id: 90, SymMap_id: 426)
+  姜黄 (TCMSP_id: 111, SymMap_id: 198)
+  山楂 (TCMSP_id: None, SymMap_id: 515)
+  昆布 (TCMSP_id: 154, SymMap_id: 232)
+  枳壳 (TCMSP_id: 170, SymMap_id: 485)
+  枳椇子 (TCMSP_id: 172, SymMap_id: 484)
+  栀子 (TCMSP_id: 178, SymMap_id: 483)
+  桃仁 (TCMSP_id: 181, SymMap_id: 390)
+  桑叶 (TCMSP_id: 182, SymMap_id: 351)
+  桑寄生 (TCMSP_id: 183, SymMap_id: 349)
+  桑枝 (TCMSP_id: 184, SymMap_id: 352)
+  桑椹 (TCMSP_id: 185, SymMap_id: 350)
+  桔梗 (TCMSP_id: 187, SymMap_id: 216)
+  橘红 (TCMSP_id: 198, SymMap_id: 220)
+  沙棘 (TCMSP_id: 205, SymMap_id: 353)
+  淡竹叶 (TCMSP_id: None, SymMap_id: 660)
+  火麻仁 (TCMSP_id: 223, SymMap_id: 190)
+  灵芝 (TCMSP_id: 225, SymMap_id: 248)
+  牡蛎 (TCMSP_id: None, SymMap_id: 587)
+  玫瑰花 (TCMSP_id: 246, SymMap_id: 278)
+  白扁豆 (TCMSP_id: 262, SymMap_id: 9)
+  白芷 (TCMSP_id: 270, SymMap_id: 27)
+  紫苏 (TCMSP_id: 305, SymMap_id: None)
+  肉苁蓉 (TCMSP_id: 325, SymMap_id: 338)
+  肉豆蔻 (TCMSP_id: 326, SymMap_id: 339)
+  胖大海 (TCMSP_id: 328, SymMap_id: 308)
+  胡椒 (TCMSP_id: 329, SymMap_id: 173)
+  芦荟 (TCMSP_id: 337, SymMap_id: 256)
+  荷叶 (TCMSP_id: 368, SymMap_id: 161)
+  莱菔子 (TCMSP_id: 370, SymMap_id: 234)
+  莲子 (TCMSP_id: None, SymMap_id: 633)
+  菊苣 (TCMSP_id: 375, SymMap_id: 218)
+  蒲公英 (TCMSP_id: None, SymMap_id: 679)
+  蒲黄 (TCMSP_id: 385, SymMap_id: 312)
+  蜂胶 (TCMSP_id: None, SymMap_id: 682)
+  蜂蜜 (TCMSP_id: None, SymMap_id: 684)
+  血竭 (TCMSP_id: None, SymMap_id: 569)
+  西洋参 (TCMSP_id: 402, SymMap_id: 423)
+  赤小豆 (TCMSP_id: 412, SymMap_id: 66)
+  郁李仁 (TCMSP_id: 422, SymMap_id: 470)
+  阿胶 (TCMSP_id: None, SymMap_id: 596)
+  马齿苋 (TCMSP_id: 468, SymMap_id: 268)
+  麦冬 (TCMSP_id: None, SymMap_id: 580)
+  麦芽 (TCMSP_id: 483, SymMap_id: 272)
+  龙眼肉 (TCMSP_id: None, SymMap_id: 544)
+  龟甲 (TCMSP_id: None, SymMap_id: 593)
+
+======================================================================
+  三、不在RMCHM中的药食同源药材
+======================================================================
+
+  人参果
+  天然香草
+  杏仁
+  枸杞叶
+  油莎草
+  牛磺酸
+  玉麒麟
+  益智仁
+  紫苏籽
+  苦荞麦
+  菊花脑
+  蛇梅
+  蛇莓
+  蝮蛇
+  阿拉伯胶
+  雪莲花
+  麦芽糊精
+  黄芥子
+
+======================================================================
+  四、汇总统计
+======================================================================
+
+  当前药食同源标记数: 42 条
+  国家目录总数: 97 种
+  在RMCHM中匹配: 79 种
+  需要补充标记: 53 种
+  缺失药材: 18 种
+
+  建议:
+    1. 为53种药材添加is_food_homology=true标记
+    2. 考虑将18种缺失药材添加到数据库
+    3. 最终目标: 确保106种药食同源全部有标记

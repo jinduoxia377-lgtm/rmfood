@@ -1,0 +1,46 @@
+======================================================================
+  RMCHM DATABASE COMPLETION REPORT v312
+======================================================================
+
+Generated: 2026-09-09T17:39:56.004450Z
+Total herbs: 714
+Output: D:\RMFOODFP\data\rmchm\rmchm_merged_herbs_v312.json
+
+----------------------------------------------------------------------
+  DATA QUALITY BY FIELD
+----------------------------------------------------------------------
+
+Field                   Missing   Coverage       Status
+-------------------------------------------------------
+  English Name              219   69.3%         FAIR
+  Medicinal Part            434   39.2%   NEEDS_WORK
+  Alias                     678    5.0%   NEEDS_WORK
+  Toxicity                  609   14.7%   NEEDS_WORK
+  Image                     605   15.3%   NEEDS_WORK
+  OB%                       216   69.7%         FAIR
+  Compounds                 216   69.7%         FAIR
+  Targets                   268   62.5%         FAIR
+  Diseases                  227   68.2%         FAIR
+
+----------------------------------------------------------------------
+  FIX STATISTICS
+----------------------------------------------------------------------
+  name_eng: +493 records
+  is_toxic: +105 records
+
+  Toxic herbs identified: 105
+  Sample: ['艾叶', '八角莲', '巴豆', '白附子', '白果', '白花菜子', '白毛藤', '白屈菜', '白药子', '斑蝥']
+
+----------------------------------------------------------------------
+  REMAINING GAPS
+----------------------------------------------------------------------
+  name_eng: 219 herbs still missing
+  use_part: 434 herbs still missing
+  alias: 678 herbs still missing
+  image_path: 605 herbs still missing
+  Sample missing name_eng: ['紫苏叶', '人工牛黄', '九里香', '九香虫', '三颗针']
+  Sample missing use_part: ['矮地茶', '八角茴香', '八角莲', '菝葜', '白扁豆']
+
+======================================================================
+  END OF REPORT
+======================================================================

@@ -1,0 +1,14 @@
+{
+  "generated_at": "2026-09-08T10:00:41.944557+00:00",
+  "version": "v3.10",
+  "summary": {
+    "total_herbs": 713,
+    "homology_marked": 126,
+    "official_106_covered": 105,
+    "coverage_rate": "105/106"
+  },
+  "fixes_applied": {
+    "白扁豆花_marked": false,
+    "杏仁_marked": true
+  }
+}

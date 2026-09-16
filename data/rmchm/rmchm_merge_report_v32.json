@@ -1,0 +1,34 @@
+{
+  "generated_at": "2026-09-08T09:36:55.220040+00:00",
+  "version": "v3.2",
+  "summary": {
+    "total_herbs": 711,
+    "tcmsp_source": 502,
+    "symmap_source": 698,
+    "images_source": 107
+  },
+  "data_coverage": {
+    "with_ob": 498,
+    "with_nature": 694,
+    "with_meridians": 654,
+    "with_compounds": 498,
+    "with_images": 107,
+    "food_homology": 42
+  },
+  "aggregate_stats": {
+    "total_compounds": 33482,
+    "total_targets": 86003,
+    "total_diseases": 125062
+  },
+  "image_analysis": {
+    "total_images": 107,
+    "matched_images": 107
+  },
+  "fixes_applied": {
+    "latin_name_fixes": 1,
+    "new_herbs_added": 1,
+    "new_herb_names": [
+      "代代花"
+    ]
+  }
+}

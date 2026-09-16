@@ -1,0 +1,580 @@
+﻿
+> rmfood-frontend@1.0.0 build
+> tsc -b && vite build
+
+vite v8.1.3 building client environment for production...
+[2K
+node.exe : [plugin rolldown:vite-resolve] Module "http" has been externalized for browser compatibility,
+ imported by "D:/RMFOODFP/frontend/node_modules/.pnpm/axios@1.18.1_debug@4.4.3_su_b59255e53943b8accf57d6
+4ead93366f/node_modules/axios/lib/adapters/http.js". See https://vite.dev/guide/troubleshooting.html#mod
+ule-externalized-for-browser-compatibility for more details.
+At line:1 char:1
++ & "C:\nvm4w\nodejs/node.exe" "C:\nvm4w\nodejs/node_modules/npm/bin/np ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([plugin rolldow...r more details.:String) [], RemoteExcept 
+   ion
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[plugin rolldown:vite-resolve] Module "https" has been externalized for browser compatibility, imported 
+by "D:/RMFOODFP/frontend/node_modules/.pnpm/axios@1.18.1_debug@4.4.3_su_b59255e53943b8accf57d64ead93366f
+/node_modules/axios/lib/adapters/http.js". See https://vite.dev/guide/troubleshooting.html#module-extern
+alized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "util" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/axios@1.18.1_debug@4.4.3_su_b59255e53943b8accf57d64ead93366f/
+node_modules/axios/lib/adapters/http.js". See https://vite.dev/guide/troubleshooting.html#module-externa
+lized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "http2" has been externalized for browser compatibility, imported 
+by "D:/RMFOODFP/frontend/node_modules/.pnpm/axios@1.18.1_debug@4.4.3_su_b59255e53943b8accf57d64ead93366f
+/node_modules/axios/lib/adapters/http.js". See https://vite.dev/guide/troubleshooting.html#module-extern
+alized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "zlib" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/axios@1.18.1_debug@4.4.3_su_b59255e53943b8accf57d64ead93366f/
+node_modules/axios/lib/adapters/http.js". See https://vite.dev/guide/troubleshooting.html#module-externa
+lized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "fs" has been externalized for browser compatibility, imported by 
+"D:/RMFOODFP/frontend/node_modules/.pnpm/exceljs@4.4.0/node_modules/exceljs/lib/stream/xlsx/workbook-wri
+ter.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility f
+or more details.
+[plugin rolldown:vite-resolve] Module "path" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/axios@1.18.1_debug@4.4.3_su_b59255e53943b8accf57d64ead93366f/
+node_modules/axios/lib/adapters/http.js". See https://vite.dev/guide/troubleshooting.html#module-externa
+lized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "stream" has been externalized for browser compatibility, imported
+ by "D:/RMFOODFP/frontend/node_modules/.pnpm/axios@1.18.1_debug@4.4.3_su_b59255e53943b8accf57d64ead93366
+f/node_modules/axios/lib/adapters/http.js". See https://vite.dev/guide/troubleshooting.html#module-exter
+nalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "events" has been externalized for browser compatibility, imported
+ by "D:/RMFOODFP/frontend/node_modules/.pnpm/axios@1.18.1_debug@4.4.3_su_b59255e53943b8accf57d64ead93366
+f/node_modules/axios/lib/adapters/http.js". See https://vite.dev/guide/troubleshooting.html#module-exter
+nalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "fs" has been externalized for browser compatibility, imported by 
+"D:/RMFOODFP/frontend/node_modules/.pnpm/exceljs@4.4.0/node_modules/exceljs/lib/stream/xlsx/workbook-rea
+der.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility f
+or more details.
+[plugin rolldown:vite-resolve] Module "stream" has been externalized for browser compatibility, imported
+ by "D:/RMFOODFP/frontend/node_modules/.pnpm/exceljs@4.4.0/node_modules/exceljs/lib/stream/xlsx/workbook
+-reader.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibili
+ty for more details.
+[plugin rolldown:vite-resolve] Module "events" has been externalized for browser compatibility, imported
+ by "D:/RMFOODFP/frontend/node_modules/.pnpm/exceljs@4.4.0/node_modules/exceljs/lib/stream/xlsx/workbook
+-reader.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibili
+ty for more details.
+[plugin rolldown:vite-resolve] Module "path" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/form-data@4.0.6/node_modules/form-data/lib/form_data.js". See
+ https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more deta
+ils.
+[plugin rolldown:vite-resolve] Module "fs" has been externalized for browser compatibility, imported by 
+"D:/RMFOODFP/frontend/node_modules/.pnpm/form-data@4.0.6/node_modules/form-data/lib/form_data.js". See h
+ttps://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more detail
+s.
+[plugin rolldown:vite-resolve] Module "crypto" has been externalized for browser compatibility, imported
+ by "D:/RMFOODFP/frontend/node_modules/.pnpm/axios@1.18.1_debug@4.4.3_su_b59255e53943b8accf57d64ead93366
+f/node_modules/axios/lib/platform/node/index.js". See https://vite.dev/guide/troubleshooting.html#module
+-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "https" has been externalized for browser compatibility, imported 
+by "D:/RMFOODFP/frontend/node_modules/.pnpm/form-data@4.0.6/node_modules/form-data/lib/form_data.js". Se
+e https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more det
+ails.
+[plugin rolldown:vite-resolve] Module "util" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/form-data@4.0.6/node_modules/form-data/lib/form_data.js". See
+ https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more deta
+ils.
+[plugin rolldown:vite-resolve] Module "url" has been externalized for browser compatibility, imported by
+ "D:/RMFOODFP/frontend/node_modules/.pnpm/form-data@4.0.6/node_modules/form-data/lib/form_data.js". See 
+https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more detai
+ls.
+[plugin rolldown:vite-resolve] Module "stream" has been externalized for browser compatibility, imported
+ by "D:/RMFOODFP/frontend/node_modules/.pnpm/form-data@4.0.6/node_modules/form-data/lib/form_data.js". S
+ee https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more de
+tails.
+[plugin rolldown:vite-resolve] Module "crypto" has been externalized for browser compatibility, imported
+ by "D:/RMFOODFP/frontend/node_modules/.pnpm/form-data@4.0.6/node_modules/form-data/lib/form_data.js". S
+ee https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more de
+tails.
+[plugin rolldown:vite-resolve] Module "fs" has been externalized for browser compatibility, imported by 
+"D:/RMFOODFP/frontend/node_modules/.pnpm/exceljs@4.4.0/node_modules/exceljs/lib/xlsx/xlsx.js". See https
+://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "stream" has been externalized for browser compatibility, imported
+ by "D:/RMFOODFP/frontend/node_modules/.pnpm/axios@1.18.1_debug@4.4.3_su_b59255e53943b8accf57d64ead93366
+f/node_modules/axios/lib/helpers/ZlibHeaderTransformStream.js". See https://vite.dev/guide/troubleshooti
+ng.html#module-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "util" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/axios@1.18.1_debug@4.4.3_su_b59255e53943b8accf57d64ead93366f/
+node_modules/axios/lib/helpers/formDataToStream.js". See https://vite.dev/guide/troubleshooting.html#mod
+ule-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "stream" has been externalized for browser compatibility, imported
+ by "D:/RMFOODFP/frontend/node_modules/.pnpm/axios@1.18.1_debug@4.4.3_su_b59255e53943b8accf57d64ead93366
+f/node_modules/axios/lib/helpers/formDataToStream.js". See https://vite.dev/guide/troubleshooting.html#m
+odule-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "util" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/axios@1.18.1_debug@4.4.3_su_b59255e53943b8accf57d64ead93366f/
+node_modules/axios/lib/helpers/Http2Sessions.js". See https://vite.dev/guide/troubleshooting.html#module
+-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "http2" has been externalized for browser compatibility, imported 
+by "D:/RMFOODFP/frontend/node_modules/.pnpm/axios@1.18.1_debug@4.4.3_su_b59255e53943b8accf57d64ead93366f
+/node_modules/axios/lib/helpers/Http2Sessions.js". See https://vite.dev/guide/troubleshooting.html#modul
+e-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "url" has been externalized for browser compatibility, imported by
+ "D:/RMFOODFP/frontend/node_modules/.pnpm/follow-redirects@1.16.0_debug@4.4.3_supports-color@8.1.1_/node
+_modules/follow-redirects/index.js". See https://vite.dev/guide/troubleshooting.html#module-externalized
+-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "stream" has been externalized for browser compatibility, imported
+ by "D:/RMFOODFP/frontend/node_modules/.pnpm/follow-redirects@1.16.0_debug@4.4.3_supports-color@8.1.1_/n
+ode_modules/follow-redirects/index.js". See https://vite.dev/guide/troubleshooting.html#module-externali
+zed-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "assert" has been externalized for browser compatibility, imported
+ by "D:/RMFOODFP/frontend/node_modules/.pnpm/follow-redirects@1.16.0_debug@4.4.3_supports-color@8.1.1_/n
+ode_modules/follow-redirects/index.js". See https://vite.dev/guide/troubleshooting.html#module-externali
+zed-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "https" has been externalized for browser compatibility, imported 
+by "D:/RMFOODFP/frontend/node_modules/.pnpm/follow-redirects@1.16.0_debug@4.4.3_supports-color@8.1.1_/no
+de_modules/follow-redirects/index.js". See https://vite.dev/guide/troubleshooting.html#module-externaliz
+ed-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "http" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/follow-redirects@1.16.0_debug@4.4.3_supports-color@8.1.1_/nod
+e_modules/follow-redirects/index.js". See https://vite.dev/guide/troubleshooting.html#module-externalize
+d-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "stream" has been externalized for browser compatibility, imported
+ by "D:/RMFOODFP/frontend/node_modules/.pnpm/axios@1.18.1_debug@4.4.3_su_b59255e53943b8accf57d64ead93366
+f/node_modules/axios/lib/helpers/AxiosTransformStream.js". See https://vite.dev/guide/troubleshooting.ht
+ml#module-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "fs" has been externalized for browser compatibility, imported by 
+"D:/RMFOODFP/frontend/node_modules/.pnpm/tmp@0.2.7/node_modules/tmp/lib/tmp.js". See https://vite.dev/gu
+ide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "fs" has been externalized for browser compatibility, imported by 
+"D:/RMFOODFP/frontend/node_modules/.pnpm/exceljs@4.4.0/node_modules/exceljs/lib/csv/csv.js". See https:/
+/vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "crypto" has been externalized for browser compatibility, imported
+ by "D:/RMFOODFP/frontend/node_modules/.pnpm/tmp@0.2.7/node_modules/tmp/lib/tmp.js". See https://vite.de
+v/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "path" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/tmp@0.2.7/node_modules/tmp/lib/tmp.js". See https://vite.dev/
+guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "os" has been externalized for browser compatibility, imported by 
+"D:/RMFOODFP/frontend/node_modules/.pnpm/tmp@0.2.7/node_modules/tmp/lib/tmp.js". See https://vite.dev/gu
+ide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "events" has been externalized for browser compatibility, imported
+ by "D:/RMFOODFP/frontend/node_modules/.pnpm/exceljs@4.4.0/node_modules/exceljs/lib/stream/xlsx/workshee
+t-reader.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibil
+ity for more details.
+[plugin rolldown:vite-resolve] Module "stream" has been externalized for browser compatibility, imported
+ by "D:/RMFOODFP/frontend/node_modules/.pnpm/readable-stream@3.6.2/node_modules/readable-stream/readable
+.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for 
+more details.
+[plugin rolldown:vite-resolve] Module "events" has been externalized for browser compatibility, imported
+ by "D:/RMFOODFP/frontend/node_modules/.pnpm/exceljs@4.4.0/node_modules/exceljs/lib/stream/xlsx/hyperlin
+k-reader.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibil
+ity for more details.
+[plugin rolldown:vite-resolve] Module "http" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/form-data@4.0.6/node_modules/form-data/lib/form_data.js". See
+ https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more deta
+ils.
+[plugin rolldown:vite-resolve] Module "url" has been externalized for browser compatibility, imported by
+ "D:/RMFOODFP/frontend/node_modules/.pnpm/axios@1.18.1_debug@4.4.3_su_b59255e53943b8accf57d64ead93366f/n
+ode_modules/axios/lib/platform/node/classes/URLSearchParams.js". See https://vite.dev/guide/troubleshoot
+ing.html#module-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "crypto" has been externalized for browser compatibility, imported
+ by "D:/RMFOODFP/frontend/node_modules/.pnpm/exceljs@4.4.0/node_modules/exceljs/lib/utils/encryptor.js".
+ See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more 
+details.
+[plugin rolldown:vite-resolve] Module "fs" has been externalized for browser compatibility, imported by 
+"D:/RMFOODFP/frontend/node_modules/.pnpm/exceljs@4.4.0/node_modules/exceljs/lib/utils/utils.js". See htt
+ps://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "events" has been externalized for browser compatibility, imported
+ by "D:/RMFOODFP/frontend/node_modules/.pnpm/exceljs@4.4.0/node_modules/exceljs/lib/utils/zip-stream.js"
+. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more
+ details.
+[plugin rolldown:vite-resolve] Module "util" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/archiver@5.0.0/node_modules/archiver/lib/plugins/json.js". Se
+e https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more det
+ails.
+[plugin rolldown:vite-resolve] Module "fs" has been externalized for browser compatibility, imported by 
+"D:/RMFOODFP/frontend/node_modules/.pnpm/archiver@5.0.0/node_modules/archiver/lib/core.js". See https://
+vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "url" has been externalized for browser compatibility, imported by
+ "D:/RMFOODFP/frontend/node_modules/.pnpm/https-proxy-agent@5.0.1_supports-color@8.1.1/node_modules/http
+s-proxy-agent/dist/agent.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-br
+owser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "net" has been externalized for browser compatibility, imported by
+ "D:/RMFOODFP/frontend/node_modules/.pnpm/https-proxy-agent@5.0.1_supports-color@8.1.1/node_modules/http
+s-proxy-agent/dist/agent.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-br
+owser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "assert" has been externalized for browser compatibility, imported
+ by "D:/RMFOODFP/frontend/node_modules/.pnpm/https-proxy-agent@5.0.1_supports-color@8.1.1/node_modules/h
+ttps-proxy-agent/dist/agent.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for
+-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "zlib" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/archiver@5.0.0/node_modules/archiver/lib/plugins/tar.js". See
+ https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more deta
+ils.
+[plugin rolldown:vite-resolve] Module "path" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/archiver@5.0.0/node_modules/archiver/lib/core.js". See https:
+//vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "util" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/archiver@5.0.0/node_modules/archiver/lib/core.js". See https:
+//vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "tls" has been externalized for browser compatibility, imported by
+ "D:/RMFOODFP/frontend/node_modules/.pnpm/https-proxy-agent@5.0.1_supports-color@8.1.1/node_modules/http
+s-proxy-agent/dist/agent.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-br
+owser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "util" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/readable-stream@3.6.2/node_modules/readable-stream/lib/_strea
+m_readable.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatib
+ility for more details.
+[plugin rolldown:vite-resolve] Module "events" has been externalized for browser compatibility, imported
+ by "D:/RMFOODFP/frontend/node_modules/.pnpm/readable-stream@3.6.2/node_modules/readable-stream/lib/_str
+eam_readable.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compat
+ibility for more details.
+[plugin rolldown:vite-resolve] Module "util" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/combined-stream@1.0.8/node_modules/combined-stream/lib/combin
+ed_stream.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibi
+lity for more details.
+[plugin rolldown:vite-resolve] Module "stream" has been externalized for browser compatibility, imported
+ by "D:/RMFOODFP/frontend/node_modules/.pnpm/combined-stream@1.0.8/node_modules/combined-stream/lib/comb
+ined_stream.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compati
+bility for more details.
+[plugin rolldown:vite-resolve] Module "path" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/mime-types@2.1.35/node_modules/mime-types/index.js". See http
+s://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "stream" has been externalized for browser compatibility, imported
+ by "D:/RMFOODFP/frontend/node_modules/.pnpm/unzipper@0.10.11/node_modules/unzipper/lib/Open/index.js". 
+See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more d
+etails.
+[plugin rolldown:vite-resolve] Module "stream" has been externalized for browser compatibility, imported
+ by "D:/RMFOODFP/frontend/node_modules/.pnpm/unzipper@0.10.11/node_modules/unzipper/lib/parseOne.js". Se
+e https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more det
+ails.
+[plugin rolldown:vite-resolve] Module "util" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/unzipper@0.10.11/node_modules/unzipper/lib/parse.js". See htt
+ps://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "stream" has been externalized for browser compatibility, imported
+ by "D:/RMFOODFP/frontend/node_modules/.pnpm/unzipper@0.10.11/node_modules/unzipper/lib/parse.js". See h
+ttps://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more detail
+s.
+[plugin rolldown:vite-resolve] Module "zlib" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/unzipper@0.10.11/node_modules/unzipper/lib/parse.js". See htt
+ps://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "util" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/archiver@5.0.0/node_modules/archiver/lib/error.js". See https
+://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "path" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/unzipper@0.10.11/node_modules/unzipper/lib/extract.js". See h
+ttps://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more detail
+s.
+[plugin rolldown:vite-resolve] Module "stream" has been externalized for browser compatibility, imported
+ by "D:/RMFOODFP/frontend/node_modules/.pnpm/unzipper@0.10.11/node_modules/unzipper/lib/extract.js". See
+ https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more deta
+ils.
+[plugin rolldown:vite-resolve] Module "events" has been externalized for browser compatibility, imported
+ by "D:/RMFOODFP/frontend/node_modules/.pnpm/listenercount@1.0.1/node_modules/listenercount/index.js". S
+ee https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more de
+tails.
+[plugin rolldown:vite-resolve] Module "util" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/zip-stream@4.0.0/node_modules/zip-stream/index.js". See https
+://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "fs" has been externalized for browser compatibility, imported by 
+"D:/RMFOODFP/frontend/node_modules/.pnpm/readdir-glob@1.0.0/node_modules/readdir-glob/index.js". See htt
+ps://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "events" has been externalized for browser compatibility, imported
+ by "D:/RMFOODFP/frontend/node_modules/.pnpm/readdir-glob@1.0.0/node_modules/readdir-glob/index.js". See
+ https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more deta
+ils.
+[plugin rolldown:vite-resolve] Module "path" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/readdir-glob@1.0.0/node_modules/readdir-glob/index.js". See h
+ttps://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more detail
+s.
+[plugin rolldown:vite-resolve] Module "path" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/archiver-utils@2.1.0/node_modules/archiver-utils/index.js". S
+ee https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more de
+tails.
+[plugin rolldown:vite-resolve] Module "util" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/archiver-utils@2.1.0/node_modules/archiver-utils/index.js". S
+ee https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more de
+tails.
+[plugin rolldown:vite-resolve] Module "util" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/inherits@2.0.4/node_modules/inherits/inherits.js". See https:
+//vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "util" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/util-deprecate@1.0.2/node_modules/util-deprecate/node.js". Se
+e https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more det
+ails.
+[plugin rolldown:vite-resolve] Module "stream" has been externalized for browser compatibility, imported
+ by "D:/RMFOODFP/frontend/node_modules/.pnpm/readable-stream@3.6.2/node_modules/readable-stream/lib/inte
+rnal/streams/stream.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser
+-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "events" has been externalized for browser compatibility, imported
+ by "D:/RMFOODFP/frontend/node_modules/.pnpm/agent-base@6.0.0_supports-color@8.1.1/node_modules/agent-ba
+se/dist/src/index.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-c
+ompatibility for more details.
+[plugin rolldown:vite-resolve] Module "util" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/readable-stream@3.6.2/node_modules/readable-stream/lib/intern
+al/streams/buffer_list.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-brow
+ser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "stream" has been externalized for browser compatibility, imported
+ by "D:/RMFOODFP/frontend/node_modules/.pnpm/archiver-utils@2.1.0/node_modules/archiver-utils/index.js".
+ See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more 
+details.
+[plugin rolldown:vite-resolve] Module "fs" has been externalized for browser compatibility, imported by 
+"D:/RMFOODFP/frontend/node_modules/.pnpm/@fast-csv+parse@4.3.1/node_modules/@fast-csv/parse/build/src/in
+dex.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility f
+or more details.
+[plugin rolldown:vite-resolve] Module "util" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/delayed-stream@1.0.0/node_modules/delayed-stream/lib/delayed_
+stream.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibilit
+y for more details.
+[plugin rolldown:vite-resolve] Module "stream" has been externalized for browser compatibility, imported
+ by "D:/RMFOODFP/frontend/node_modules/.pnpm/@fast-csv+parse@4.3.1/node_modules/@fast-csv/parse/build/sr
+c/index.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibili
+ty for more details.
+[plugin rolldown:vite-resolve] Module "path" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/unzipper@0.10.11/node_modules/unzipper/lib/Open/directory.js"
+. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more
+ details.
+[plugin rolldown:vite-resolve] Module "fs" has been externalized for browser compatibility, imported by 
+"D:/RMFOODFP/frontend/node_modules/.pnpm/@fast-csv+format@4.3.1/node_modules/@fast-csv/format/build/src/
+index.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility
+ for more details.
+[plugin rolldown:vite-resolve] Module "util" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/@fast-csv+format@4.3.1/node_modules/@fast-csv/format/build/sr
+c/index.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibili
+ty for more details.
+[plugin rolldown:vite-resolve] Module "stream" has been externalized for browser compatibility, imported
+ by "D:/RMFOODFP/frontend/node_modules/.pnpm/@fast-csv+format@4.3.1/node_modules/@fast-csv/format/build/
+src/index.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibi
+lity for more details.
+[plugin rolldown:vite-resolve] Module "stream" has been externalized for browser compatibility, imported
+ by "D:/RMFOODFP/frontend/node_modules/.pnpm/delayed-stream@1.0.0/node_modules/delayed-stream/lib/delaye
+d_stream.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibil
+ity for more details.
+[plugin rolldown:vite-resolve] Module "fs" has been externalized for browser compatibility, imported by 
+"D:/RMFOODFP/frontend/node_modules/.pnpm/graceful-fs@4.2.11/node_modules/graceful-fs/graceful-fs.js". Se
+e https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more det
+ails.
+[plugin rolldown:vite-resolve] Module "util" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/graceful-fs@4.2.11/node_modules/graceful-fs/graceful-fs.js". 
+See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more d
+etails.
+[plugin rolldown:vite-resolve] Module "stream" has been externalized for browser compatibility, imported
+ by "D:/RMFOODFP/frontend/node_modules/.pnpm/unzipper@0.10.11/node_modules/unzipper/lib/BufferStream.js"
+. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more
+ details.
+[plugin rolldown:vite-resolve] Module "assert" has been externalized for browser compatibility, imported
+ by "D:/RMFOODFP/frontend/node_modules/.pnpm/graceful-fs@4.2.11/node_modules/graceful-fs/graceful-fs.js"
+. See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more
+ details.
+[plugin rolldown:vite-resolve] Module "stream" has been externalized for browser compatibility, imported
+ by "D:/RMFOODFP/frontend/node_modules/.pnpm/unzipper@0.10.11/node_modules/unzipper/lib/NoopStream.js". 
+See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more d
+etails.
+[plugin rolldown:vite-resolve] Module "util" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/unzipper@0.10.11/node_modules/unzipper/lib/PullStream.js". Se
+e https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more det
+ails.
+[plugin rolldown:vite-resolve] Module "stream" has been externalized for browser compatibility, imported
+ by "D:/RMFOODFP/frontend/node_modules/.pnpm/unzipper@0.10.11/node_modules/unzipper/lib/PullStream.js". 
+See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more d
+etails.
+[plugin rolldown:vite-resolve] Module "util" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/unzipper@0.10.11/node_modules/unzipper/lib/NoopStream.js". Se
+e https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more det
+ails.
+[plugin rolldown:vite-resolve] Module "stream" has been externalized for browser compatibility, imported
+ by "D:/RMFOODFP/frontend/node_modules/.pnpm/binary@0.3.0/node_modules/binary/index.js". See https://vit
+e.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "stream" has been externalized for browser compatibility, imported
+ by "D:/RMFOODFP/frontend/node_modules/.pnpm/readable-stream@2.3.8/node_modules/readable-stream/readable
+.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for 
+more details.
+[plugin rolldown:vite-resolve] Module "events" has been externalized for browser compatibility, imported
+ by "D:/RMFOODFP/frontend/node_modules/.pnpm/binary@0.3.0/node_modules/binary/index.js". See https://vit
+e.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "util" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/tar-stream@2.1.2/node_modules/tar-stream/extract.js". See htt
+ps://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "path" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/minimatch@3.1.5/node_modules/minimatch/minimatch.js". See htt
+ps://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "util" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/debug@4.4.3_supports-color@8.1.1/node_modules/debug/src/node.
+js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for m
+ore details.
+[plugin rolldown:vite-resolve] Module "stream" has been externalized for browser compatibility, imported
+ by "D:/RMFOODFP/frontend/node_modules/.pnpm/unzipper@0.10.11/node_modules/unzipper/lib/Open/unzip.js". 
+See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more d
+etails.
+[plugin rolldown:vite-resolve] Module "zlib" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/unzipper@0.10.11/node_modules/unzipper/lib/Open/unzip.js". Se
+e https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more det
+ails.
+[plugin rolldown:vite-resolve] Module "tty" has been externalized for browser compatibility, imported by
+ "D:/RMFOODFP/frontend/node_modules/.pnpm/debug@4.4.3_supports-color@8.1.1/node_modules/debug/src/node.j
+s". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for mo
+re details.
+[plugin rolldown:vite-resolve] Module "util" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/lazystream@1.0.1/node_modules/lazystream/lib/lazystream.js". 
+See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more d
+etails.
+[plugin rolldown:vite-resolve] Module "stream" has been externalized for browser compatibility, imported
+ by "D:/RMFOODFP/frontend/node_modules/.pnpm/@fast-csv+parse@4.3.1/node_modules/@fast-csv/parse/build/sr
+c/CsvParserStream.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-c
+ompatibility for more details.
+[plugin rolldown:vite-resolve] Module "stream" has been externalized for browser compatibility, imported
+ by "D:/RMFOODFP/frontend/node_modules/.pnpm/@fast-csv+format@4.3.1/node_modules/@fast-csv/format/build/
+src/CsvFormatterStream.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-brow
+ser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "constants" has been externalized for browser compatibility, impor
+ted by "D:/RMFOODFP/frontend/node_modules/.pnpm/graceful-fs@4.2.11/node_modules/graceful-fs/polyfills.js
+". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for mor
+e details.
+[plugin rolldown:vite-resolve] Module "stream" has been externalized for browser compatibility, imported
+ by "D:/RMFOODFP/frontend/node_modules/.pnpm/graceful-fs@4.2.11/node_modules/graceful-fs/legacy-streams.
+js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for m
+ore details.
+[plugin rolldown:vite-resolve] Module "path" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/archiver-utils@2.1.0/node_modules/archiver-utils/file.js". Se
+e https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more det
+ails.
+[plugin rolldown:vite-resolve] Module "events" has been externalized for browser compatibility, imported
+ by "D:/RMFOODFP/frontend/node_modules/.pnpm/chainsaw@0.1.0/node_modules/chainsaw/index.js". See https:/
+/vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "util" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/compress-commons@3.0.0/node_modules/compress-commons/lib/arch
+ivers/archive-output-stream.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for
+-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "path" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/fstream@1.0.12/node_modules/fstream/lib/dir-reader.js". See h
+ttps://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more detail
+s.
+[plugin rolldown:vite-resolve] Module "assert" has been externalized for browser compatibility, imported
+ by "D:/RMFOODFP/frontend/node_modules/.pnpm/fstream@1.0.12/node_modules/fstream/lib/dir-reader.js". See
+ https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more deta
+ils.
+[plugin rolldown:vite-resolve] Module "util" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/compress-commons@3.0.0/node_modules/compress-commons/lib/arch
+ivers/zip/zip-archive-entry.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for
+-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "path" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/fstream@1.0.12/node_modules/fstream/lib/writer.js". See https
+://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "path" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/fstream@1.0.12/node_modules/fstream/lib/reader.js". See https
+://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "stream" has been externalized for browser compatibility, imported
+ by "D:/RMFOODFP/frontend/node_modules/.pnpm/fstream@1.0.12/node_modules/fstream/lib/reader.js". See htt
+ps://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "stream" has been externalized for browser compatibility, imported
+ by "D:/RMFOODFP/frontend/node_modules/.pnpm/fstream@1.0.12/node_modules/fstream/lib/abstract.js". See h
+ttps://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more detail
+s.
+[plugin rolldown:vite-resolve] Module "util" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/readable-stream@2.3.8/node_modules/readable-stream/lib/_strea
+m_readable.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatib
+ility for more details.
+[plugin rolldown:vite-resolve] Module "util" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/bl@4.0.1/node_modules/bl/bl.js". See https://vite.dev/guide/t
+roubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "path" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/fstream@1.0.12/node_modules/fstream/lib/link-writer.js". See 
+https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more detai
+ls.
+[plugin rolldown:vite-resolve] Module "util" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/compress-commons@3.0.0/node_modules/compress-commons/lib/arch
+ivers/zip/zip-archive-output-stream.js". See https://vite.dev/guide/troubleshooting.html#module-external
+ized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "fs" has been externalized for browser compatibility, imported by 
+"D:/RMFOODFP/frontend/node_modules/.pnpm/fs-constants@1.0.0/node_modules/fs-constants/index.js". See htt
+ps://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "fs" has been externalized for browser compatibility, imported by 
+"D:/RMFOODFP/frontend/node_modules/.pnpm/fstream@1.0.12/node_modules/fstream/lib/proxy-writer.js". See h
+ttps://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more detail
+s.
+[plugin rolldown:vite-resolve] Module "path" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/fstream@1.0.12/node_modules/fstream/lib/dir-writer.js". See h
+ttps://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more detail
+s.
+[plugin rolldown:vite-resolve] Module "constants" has been externalized for browser compatibility, impor
+ted by "D:/RMFOODFP/frontend/node_modules/.pnpm/fs-constants@1.0.0/node_modules/fs-constants/index.js". 
+See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more d
+etails.
+[plugin rolldown:vite-resolve] Module "events" has been externalized for browser compatibility, imported
+ by "D:/RMFOODFP/frontend/node_modules/.pnpm/readable-stream@2.3.8/node_modules/readable-stream/lib/_str
+eam_readable.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compat
+ibility for more details.
+[plugin rolldown:vite-resolve] Module "stream" has been externalized for browser compatibility, imported
+ by "D:/RMFOODFP/frontend/node_modules/.pnpm/unzipper@0.10.11/node_modules/unzipper/lib/Decrypt.js". See
+ https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more deta
+ils.
+[plugin rolldown:vite-resolve] Module "path" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/glob@7.2.0/node_modules/glob/glob.js". See https://vite.dev/g
+uide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "stream" has been externalized for browser compatibility, imported
+ by "D:/RMFOODFP/frontend/node_modules/.pnpm/readable-stream@2.3.8/node_modules/readable-stream/lib/inte
+rnal/streams/stream.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser
+-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "stream" has been externalized for browser compatibility, imported
+ by "D:/RMFOODFP/frontend/node_modules/.pnpm/compress-commons@3.0.0/node_modules/compress-commons/lib/ut
+il/index.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibil
+ity for more details.
+[plugin rolldown:vite-resolve] Module "path" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/mkdirp@0.5.6/node_modules/mkdirp/index.js". See https://vite.
+dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "fs" has been externalized for browser compatibility, imported by 
+"D:/RMFOODFP/frontend/node_modules/.pnpm/mkdirp@0.5.6/node_modules/mkdirp/index.js". See https://vite.de
+v/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "path" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/rimraf@2.0.0/node_modules/rimraf/rimraf.js". See https://vite
+.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "fs" has been externalized for browser compatibility, imported by 
+"D:/RMFOODFP/frontend/node_modules/.pnpm/rimraf@2.0.0/node_modules/rimraf/rimraf.js". See https://vite.d
+ev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "assert" has been externalized for browser compatibility, imported
+ by "D:/RMFOODFP/frontend/node_modules/.pnpm/glob@7.2.0/node_modules/glob/glob.js". See https://vite.dev
+/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "util" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/readable-stream@2.3.8/node_modules/readable-stream/lib/intern
+al/streams/BufferList.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-brows
+er-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "events" has been externalized for browser compatibility, imported
+ by "D:/RMFOODFP/frontend/node_modules/.pnpm/glob@7.2.0/node_modules/glob/glob.js". See https://vite.dev
+/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "util" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/glob@7.2.0/node_modules/glob/glob.js". See https://vite.dev/g
+uide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "zlib" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/crc32-stream@3.0.1/node_modules/crc32-stream/lib/deflate-crc3
+2-stream.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibil
+ity for more details.
+[plugin rolldown:vite-resolve] Module "fs" has been externalized for browser compatibility, imported by 
+"D:/RMFOODFP/frontend/node_modules/.pnpm/graceful-fs@1.1.14/node_modules/graceful-fs/graceful-fs.js". Se
+e https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more det
+ails.
+[plugin rolldown:vite-resolve] Module "constants" has been externalized for browser compatibility, impor
+ted by "D:/RMFOODFP/frontend/node_modules/.pnpm/graceful-fs@1.1.14/node_modules/graceful-fs/graceful-fs.
+js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for m
+ore details.
+[plugin rolldown:vite-resolve] Module "fs" has been externalized for browser compatibility, imported by 
+"D:/RMFOODFP/frontend/node_modules/.pnpm/glob@7.2.0/node_modules/glob/common.js". See https://vite.dev/g
+uide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "path" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/glob@7.2.0/node_modules/glob/common.js". See https://vite.dev
+/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "path" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/glob@7.2.0/node_modules/glob/sync.js". See https://vite.dev/g
+uide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "assert" has been externalized for browser compatibility, imported
+ by "D:/RMFOODFP/frontend/node_modules/.pnpm/glob@7.2.0/node_modules/glob/sync.js". See https://vite.dev
+/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "util" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/glob@7.2.0/node_modules/glob/sync.js". See https://vite.dev/g
+uide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "fs" has been externalized for browser compatibility, imported by 
+"D:/RMFOODFP/frontend/node_modules/.pnpm/fs.realpath@1.0.0/node_modules/fs.realpath/index.js". See https
+://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "path" has been externalized for browser compatibility, imported b
+y "D:/RMFOODFP/frontend/node_modules/.pnpm/fs.realpath@1.0.0/node_modules/fs.realpath/old.js". See https
+://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "fs" has been externalized for browser compatibility, imported by 
+"D:/RMFOODFP/frontend/node_modules/.pnpm/fs.realpath@1.0.0/node_modules/fs.realpath/old.js". See https:/
+/vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+transforming...✓ 5157 modules transformed.
+rendering chunks...
