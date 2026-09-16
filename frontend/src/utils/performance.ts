@@ -1,20 +1,4 @@
-﻿
-// Type augmentations for APIs with incomplete TypeScript definitions
-interface NavigatorConnection {
-  effectiveType: string;
-  rtt: number;
-  downlink: number;
-  saveData: boolean;
-}
-declare global {
-  interface Navigator {
-    connection?: NavigatorConnection;
-  }
-  interface Performance {
-    toJSON?(): any;
-  }
-}
-/**
+﻿/**
  * 🔒 P3-4: 前端性能监控 - Web Vitals 采集
  *
  * 采集核心 Web 指标 (Core Web Vitals):
@@ -400,11 +384,11 @@ function buildReportPayload(): any {
     screenHeight: window.screen.height,
     colorDepth: window.screen.colorDepth,
     devicePixelRatio: window.devicePixelRatio,
-    connection: (navigator.connection
+    connection: ((navigator as any).connection
       ? {
-          effectiveType: (navigator.connection.effectiveType || null),
-          downlink: (navigator.connection.downlink || null),
-          rtt: (navigator.connection.rtt || null),
+          effectiveType: ((navigator as any).connection.effectiveType || null),
+          downlink: ((navigator as any).connection.downlink || null),
+          rtt: ((navigator as any).connection.rtt || null),
         }
       : null),
     memory: ((navigator as any).deviceMemory || null),
@@ -655,4 +639,6 @@ if (typeof window !== 'undefined') {
     },
   };
 }
+
+
 
