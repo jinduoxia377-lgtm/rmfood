@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+﻿/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * 知识图谱 Tab — v5.0 完整版
  *
@@ -578,7 +578,7 @@ export default function GraphTab() {
 
         {/* 对比模式 */}
         <Button
-          variant={'secondary' as any}
+          variant='secondary'
           size="sm"
           onClick={() => {
             setCompareMode(!compareMode);
@@ -589,7 +589,7 @@ export default function GraphTab() {
         </Button>
 
         {/* 路径发现 */}
-        <Button variant={'secondary' as any} size="sm" onClick={() => setShowPathTool(!showPathTool)}>
+        <Button variant='secondary' size="sm" onClick={() => setShowPathTool(!showPathTool)}>
           <GitBranch className="w-3.5 h-3.5 mr-1" />
           {showPathTool ? '收起路径' : '路径发现'}
         </Button>
@@ -1043,7 +1043,7 @@ export default function GraphTab() {
               </div>
               <div className="flex gap-2">
                 <Button
-                  variant={'secondary' as any}
+                  variant='secondary'
                   size="sm"
                   onClick={() => handleAddCompare(selectedNode)}
                   disabled={compareNodes.length >= 4}
@@ -1627,3 +1627,4 @@ export default function GraphTab() {
     </div>
   );
 }
+
