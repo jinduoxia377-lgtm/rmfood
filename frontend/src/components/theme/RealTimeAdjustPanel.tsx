@@ -11,7 +11,6 @@ export const RealTimeAdjustPanel: React.FC = () => {
   const addLog = (msg: string) => {
     const time = new Date().toLocaleTimeString()
     setLogs(prev => [`[${time}] ${msg}`, ...prev].slice(0, 20))
-    console.log(msg)
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
