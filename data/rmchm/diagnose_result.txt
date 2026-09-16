@@ -1,0 +1,28 @@
+﻿=== ���ҿ���ƥ���ҩ�� ===
+  [������] -> ��ֱ��ƥ��
+  [�˽�] -> �˽����� (code:RMCHM-8FC25C47, pinyin:Bajiaohuixiang)
+  [�˽�] -> �˽��� (code:RMCHM-30B6C5F4, pinyin:Bajiaolian)
+  [����] -> ���� (code:RMCHM-470CC170, pinyin:Shengjiang)
+  [�ɽ�] -> �ɽ� (code:RMCHM-B1C8146E, pinyin:Ganjiang)
+  [����] -> ������ (code:RMCHM-E93B6CA6, pinyin:Kuxingren)
+  [����] -> ���� (code:RMCHM-487BBDA7, pinyin:Dazao)
+  [�ۺ�] -> ��ֱ��ƥ��
+  [����] -> ��ֱ��ƥ��
+  [��Ƥ] -> ��Ƥ (code:RMCHM-8E462533, pinyin:Chenpi)
+  [����] -> ���� (code:RMCHM-0CBD1A16, pinyin:Yizhi)
+  [������] -> ������ (code:RMCHM-749182B9, pinyin:Zisuzi)
+  [��޽��] -> ��޽�� (code:RMCHM-E250EB05, pinyin:Guanghuoxiang)
+  [«��] -> «�� (code:RMCHM-EA2DDE1E, pinyin:Lugen)
+  [����] -> ���� (code:RMCHM-8946435C, pinyin:Jiezi)
+  [����] -> ���� (code:RMCHM-528ECD82, pinyin:Hujiao)
+
+=== ���п�����ص�ҩ�� ===
+  '�˽�': ['�˽�����', '�˽���']
+  '��': ['������', '����Ҷ']
+  '��': ['����', '����', '����', '������']
+  '����': ['����']
+  '����': ['����Ҷ', '������', '���չ�', '����']
+  '޽��': ['��޽��']
+  '«��': ['«��']
+  '����': ['����']
+  '����': ['����']

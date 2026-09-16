@@ -1,0 +1,60 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>滑块功能测试 - React 模拟</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        body { font-family: system-ui; padding: 40px; max-width: 800px; margin: 0 auto; }
+        .slider-group { margin: 20px 0; padding: 20px; border: 2px solid #ddd; border-radius: 8px; }
+        .slider-group h3 { margin-top: 0; }
+        input[type="range"] { width: 100%; height: 8px; cursor: pointer; }
+        .log { background: #1a1a1a; color: #0f0; padding: 15px; font-family: monospace; font-size: 12px; max-height: 200px; overflow-y: auto; border-radius: 8px; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>🧪 React 滑块测试</h1>
+    <div id="root"></div>
+    
+    <script type="text/babel">
+        function App() {
+            const [value, setValue] = React.useState(50);
+            const [logs, setLogs] = React.useState([]);
+            
+            const addLog = (msg) => {
+                const time = new Date().toLocaleTimeString();
+                setLogs(prev => [`[${time}] ${msg}`, ...prev].slice(0, 20));
+                console.log(msg);
+            };
+            
+            const handleChange = (e) => {
+                const newVal = parseInt(e.target.value);
+                addLog('滑块变化: ' + newVal);
+                setValue(newVal);
+            };
+            
+            return React.createElement('div', null,
+                React.createElement('h2', null, '测试滑块 (React)'),
+                React.createElement('div', {className: 'slider-group'},
+                    React.createElement('h3', null, '基础 range input'),
+                    React.createElement('input', {
+                        type: 'range',
+                        min: 0,
+                        max: 100,
+                        value: value,
+                        onChange: handleChange
+                    }),
+                    React.createElement('p', null, '当前值:', value)
+                ),
+                React.createElement('div', {className: 'log'},
+                    logs.map((log, i) => React.createElement('div', {key: i}, log))
+                )
+            );
+        }
+        
+        ReactDOM.render(React.createElement(App), document.getElementById('root'));
+    </script>
+</body>
+</html>

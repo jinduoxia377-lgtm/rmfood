@@ -1,0 +1,2310 @@
+[
+  {
+    "Syndrome_id": 1,
+    "Syndrome_name": "下元虚冷",
+    "Syndrome_English": "deficiency-cold of kidney",
+    "Syndrome_PinYin": "Xia Yuan Xu Leng",
+    "Syndrome_definition": "肾阳虚证是指肾阳亏虚，机体失其温煦，以腰膝酸冷、性欲减退、夜尿多及阳虚症状为主要表现的证。",
+    "Version": "v1,v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 2,
+    "Syndrome_name": "下脘虚冷",
+    "Syndrome_English": "deficiency-cold of abdomen",
+    "Syndrome_PinYin": "Xia Wan Xu Leng",
+    "Syndrome_definition": "肾阳虚证是指肾阳亏虚，机体失其温煦，以腰膝酸冷、性欲减退、夜尿多及阳虚症状为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 3,
+    "Syndrome_name": "中气下陷",
+    "Syndrome_English": "sinking of the middle qi",
+    "Syndrome_PinYin": "Zhong Qi Xia Xian",
+    "Syndrome_definition": "脾虚气陷证是指脾气虚弱，升举无力而反下陷，以眩晕、泄泻、脘腹重坠、内脏下垂及气虚症状为主要表现的证。脾虚气陷证又名中气下陷证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 4,
+    "Syndrome_name": "久病虚羸",
+    "Syndrome_English": "the debility from chronic illness",
+    "Syndrome_PinYin": "Jiu Bing Xu Lei",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 5,
+    "Syndrome_name": "乳食停滞",
+    "Syndrome_English": "milk stagnation",
+    "Syndrome_PinYin": "Ru Shi Ting Zhi",
+    "Syndrome_definition": "是脾胃虚弱，乳食停滞不化而出现的证候。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 6,
+    "Syndrome_name": "亡阳",
+    "Syndrome_English": "yang exhaustion",
+    "Syndrome_PinYin": "Wang Yang",
+    "Syndrome_definition": "机体的阳气短时间内大量亡失，使属于阳的功能突然严重衰竭，因而导致生命垂危的一种病理变化。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 7,
+    "Syndrome_name": "产后瘀血",
+    "Syndrome_English": "postpartum  blood stasis",
+    "Syndrome_PinYin": "Chan Hou Yu Xie",
+    "Syndrome_definition": "血瘀证是指瘀血内阻，以疼痛、肿块、出血、瘀血色脉征为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 8,
+    "Syndrome_name": "产后血虚",
+    "Syndrome_English": "postpartum blood deficiency",
+    "Syndrome_PinYin": "Chan Hou Xie Xu",
+    "Syndrome_definition": "血虚证是指血液亏虚，不能濡养脏腑、经络、组织，以面、睑、唇、舌色淡白，脉细为主要表现的证。",
+    "Version": "v1,v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 9,
+    "Syndrome_name": "内热",
+    "Syndrome_English": "intrinsic heat",
+    "Syndrome_PinYin": "Nei Re",
+    "Syndrome_definition": "指体内脏腑阴阳偏胜之热。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 10,
+    "Syndrome_name": "冷哮",
+    "Syndrome_English": "asthma of cold type",
+    "Syndrome_PinYin": "Leng Xiao",
+    "Version": "v1,v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 11,
+    "Syndrome_name": "冷喘",
+    "Syndrome_English": "Cold-type Dyspnea",
+    "Syndrome_PinYin": "Leng Chuan",
+    "Version": "v1,v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 12,
+    "Syndrome_name": "冷泻",
+    "Syndrome_English": "cold diarrhea",
+    "Syndrome_PinYin": "Leng Xie",
+    "Version": "v1,v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 13,
+    "Syndrome_name": "劳伤",
+    "Syndrome_English": "injury caused by strain and sprain",
+    "Syndrome_PinYin": "Lao Shang",
+    "Syndrome_definition": "中医指因过度劳累而引起的内伤",
+    "Version": "v1,v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 14,
+    "Syndrome_name": "外感",
+    "Syndrome_English": "externally infected disease",
+    "Syndrome_PinYin": "Wai Gan",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 15,
+    "Syndrome_name": "外感风寒",
+    "Syndrome_English": "affection by exopathic wind-cold",
+    "Syndrome_PinYin": "Wai Gan Feng Han",
+    "Syndrome_definition": "风寒犯肺证是指由于风寒侵袭，肺卫失宣，以咳嗽及风寒表证症状为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 16,
+    "Syndrome_name": "实热",
+    "Syndrome_English": "strong fever",
+    "Syndrome_PinYin": "Shi Re",
+    "Syndrome_definition": "热证是指感受热邪，或脏腑阳气亢盛，或阴虚阳亢，导致机体功能活动亢进而表现出具有“温、热”等症状特点的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 17,
+    "Syndrome_name": "实热积滞",
+    "Syndrome_English": "stagnation due to excessive heat",
+    "Syndrome_PinYin": "Shi Re Ji Zhi",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 18,
+    "Syndrome_name": "宫冷",
+    "Syndrome_English": "cold sensation in uterus",
+    "Syndrome_PinYin": "Gong Leng",
+    "Syndrome_definition": "指妇女肾阳不足，胞子宫失于温煦所出现的下腹坠胀，疼痛，得热则缓和，白带多，痛经，月经失调，脉沉紧，舌苔薄白多津为主要症状者",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 19,
+    "Syndrome_name": "寒凝气滞",
+    "Syndrome_English": "accumulation of cold and stasis of qi",
+    "Syndrome_PinYin": "Han Ning Qi Zhi",
+    "Syndrome_definition": "是阴寒之邪侵入人体，损伤阳气，寒邪留滞不去，外现寒证的证候。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 20,
+    "Syndrome_name": "寒湿",
+    "Syndrome_English": "cold and damp",
+    "Syndrome_PinYin": "Han Shi",
+    "Syndrome_definition": "是指寒湿之邪阻滞经络，以肢体或患处沉重冷痛、麻木，或肿胀，畏冷肢凉，苔白滑等为常见症的证候。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 21,
+    "Syndrome_name": "寒湿内阻",
+    "Syndrome_English": "retention of cold and wind within the body",
+    "Syndrome_PinYin": "Han Shi Nei Zu",
+    "Syndrome_definition": "是指寒湿之邪阻滞经络，以肢体或患处沉重冷痛、麻木，或肿胀，畏冷肢凉，苔白滑等为常见症的证候。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 22,
+    "Syndrome_name": "寒湿郁滞",
+    "Syndrome_English": "stagnation of cold-dampness",
+    "Syndrome_PinYin": "Han Shi Yu Zhi",
+    "Syndrome_definition": "是指寒湿之邪阻滞经络，以肢体或患处沉重冷痛、麻木，或肿胀，畏冷肢凉，苔白滑等为常见症的证候。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 23,
+    "Syndrome_name": "寒湿闭暑",
+    "Syndrome_English": "Cold-dampness and incubated summer heat",
+    "Syndrome_PinYin": "Han Shi Bi Shu",
+    "Syndrome_definition": "是指寒湿之邪阻滞经络，以肢体或患处沉重冷痛、麻木，或肿胀，畏冷肢凉，苔白滑等为常见症的证候。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 24,
+    "Syndrome_name": "寒滞",
+    "Syndrome_English": "retention of cold and fluid",
+    "Syndrome_PinYin": "Han Zhi",
+    "Syndrome_definition": "是阴寒之邪侵入人体，损伤阳气，寒邪留滞不去，外现寒证的证候。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 25,
+    "Syndrome_name": "寒热互结",
+    "Syndrome_English": "combination of cold and heat ",
+    "Syndrome_PinYin": "Han Re Hu Jie",
+    "Syndrome_definition": "寒热错杂是指在同一患者身上，既有寒证，又有热证的情况。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 26,
+    "Syndrome_name": "寒疝",
+    "Syndrome_English": "periumbilical colic due to invasion of cold",
+    "Syndrome_PinYin": "Han Shan",
+    "Syndrome_definition": "由脾胃虚寒，或产后血虚，复感风寒外邪，结聚於腹中而致。",
+    "Version": "v1,v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 27,
+    "Syndrome_name": "寒痰",
+    "Syndrome_English": "cold phlegm",
+    "Syndrome_PinYin": "Han Tan",
+    "Syndrome_definition": "寒痰阻肺证是指寒痰交阻于肺，肺失宣降，以咳嗽气喘、痰多色白及寒证症状为主要表现的证。寒痰阻肺证又名寒饮停肺证、痰浊阻肺证。",
+    "Version": "v1,v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 28,
+    "Syndrome_name": "寒积",
+    "Syndrome_English": "accumulation of cold evil",
+    "Syndrome_PinYin": "Han Ji",
+    "Syndrome_definition": "感受阴寒之邪所致的证候。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 29,
+    "Syndrome_name": "寒饮",
+    "Syndrome_English": "fluid retention",
+    "Syndrome_PinYin": "Han Yin",
+    "Syndrome_definition": "寒痰阻肺证是指寒痰交阻于肺，肺失宣降，以咳嗽气喘、痰多色白及寒证症状为主要表现的证。寒痰阻肺证又名寒饮停肺证、痰浊阻肺证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 30,
+    "Syndrome_name": "小儿痰热",
+    "Syndrome_English": "Phlegm fever in children",
+    "Syndrome_PinYin": "Xiao Er Tan Re",
+    "Syndrome_definition": "由痰热互结，阻于气道，肺道失利，肺胃气逆，痰火伤及血络所致。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 31,
+    "Syndrome_name": "少阴伏风",
+    "Syndrome_English": "wind in shaoyin",
+    "Syndrome_PinYin": "Shao Yin Fu Feng",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 32,
+    "Syndrome_name": "心火亢盛",
+    "Syndrome_English": "exuberance of the heart fire",
+    "Syndrome_PinYin": "Xin Huo Kang Sheng",
+    "Syndrome_definition": "心火亢盛证是指心火内炽，扰神迫血，火热上炎下移，以心烦失眠、舌赤生疮、吐衄、尿赤及火热症状为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 33,
+    "Syndrome_name": "心肾不交",
+    "Syndrome_English": "breakdowm of the normal physilolgical coordination between the heart and the kidney",
+    "Syndrome_PinYin": "Xin Shen Bu Jiao",
+    "Syndrome_definition": "心肾不交证是指心肾水火既济失调，以心烦、失眠、梦遗、耳鸣、腰膝酸软等为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 34,
+    "Syndrome_name": "心脾不足",
+    "Syndrome_English": "insufficiency of both the heart and the spleen",
+    "Syndrome_PinYin": "Xin Pi Bu Zu",
+    "Syndrome_definition": "心脾两虚证是指脾气亏虚，心血不足，以心悸怔忡、失眠多梦、食少、腹胀、便溏及气血两虚症状为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 35,
+    "Syndrome_name": "心腹瘀血",
+    "Syndrome_English": "Heart stasis",
+    "Syndrome_PinYin": "Xin Fu Yu Xie",
+    "Syndrome_definition": "血瘀证是指瘀血内阻，以疼痛、肿块、出血、瘀血色脉征为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 36,
+    "Syndrome_name": "心虚",
+    "Syndrome_English": "cardiac asthenia",
+    "Syndrome_PinYin": "Xin Xu",
+    "Syndrome_definition": "心气虚证是指心气不足，鼓动无力，以心悸怔忡及气虚症状为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 37,
+    "Syndrome_name": "心阳不足",
+    "Syndrome_English": "insufficiency of cardiac yang",
+    "Syndrome_PinYin": "Xin Yang Bu Zu",
+    "Syndrome_definition": "心阳虚证是指心阳虚衰，温运失司，虚寒内生，以心悸怔忡，或心胸疼痛及阳虚症状为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 38,
+    "Syndrome_name": "暑湿",
+    "Syndrome_English": "be affected by summer-head-dampness",
+    "Syndrome_PinYin": "Shu Shi",
+    "Syndrome_definition": "即暑热挟湿。以胸脘痞闷、心烦、身热、舌苔黄腻为主证。",
+    "Version": "v1,v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 39,
+    "Syndrome_name": "暑湿表证",
+    "Syndrome_English": "cold in meridian",
+    "Syndrome_PinYin": "Shu Shi Biao Zheng",
+    "Syndrome_definition": "暑湿伤表，卫气失调，以发热，微恶风寒，头重身困，口渴，烦躁，小便短赤，舌红苔黄腻，脉濡数等为常见症的证候。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 40,
+    "Syndrome_name": "暑热",
+    "Syndrome_English": "summer heat",
+    "Syndrome_PinYin": "Shu Re",
+    "Syndrome_definition": "外感暑邪的热证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 41,
+    "Syndrome_name": "暑邪",
+    "Syndrome_English": "summer-heat evil",
+    "Syndrome_PinYin": "Shu Xie",
+    "Syndrome_definition": "凡夏至之后，立秋以前，致病具有炎热、升散、兼湿特性的外邪，称为暑邪。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 42,
+    "Syndrome_name": "气不摄",
+    "Syndrome_English": "Qi fails to keep",
+    "Syndrome_PinYin": "Qi Bu She",
+    "Syndrome_definition": "脾不统血证是指脾气虚弱，统血失常，血溢脉外，以各种出血及脾气虚症状为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 43,
+    "Syndrome_name": "气不摄血",
+    "Syndrome_English": "failure of qi to govern blood;qi failing to failure of qi to contain blood",
+    "Syndrome_PinYin": "Qi Bu She Xie",
+    "Syndrome_definition": "脾不统血证是指脾气虚弱，统血失常，血溢脉外，以各种出血及脾气虚症状为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 44,
+    "Syndrome_name": "气滞",
+    "Syndrome_English": "sluggish flow of qi",
+    "Syndrome_PinYin": "Qi Zhi",
+    "Syndrome_definition": "气滞证是指人体某一部位，或某一脏腑、经络的气机阻滞，运行不畅，以胀闷、疼痛、脉弦为主要表现的证。气滞证又称气郁证、气结证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 45,
+    "Syndrome_name": "气潜",
+    "Syndrome_English": "Qi becomes dormant or concealed",
+    "Syndrome_PinYin": "Qi Qian",
+    "Syndrome_definition": "气陷证是指气虚升举无力而反下陷，以自觉气坠，或内脏下垂为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 46,
+    "Syndrome_name": "气虚",
+    "Syndrome_English": "air weakness",
+    "Syndrome_PinYin": "Qi Xu",
+    "Syndrome_definition": "气虚证是指机体元气不足，脏腑组织机能减退，以神疲乏力、少气懒言、脉虚等为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 47,
+    "Syndrome_name": "气血不足",
+    "Syndrome_English": "insufficiency of the vital energy and blood",
+    "Syndrome_PinYin": "Qi Xie Bu Zu",
+    "Syndrome_definition": "气血两虚证是指气血不能互相化生，以气虚和血虚症状相兼为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 48,
+    "Syndrome_name": "气血亏虚",
+    "Syndrome_English": "deficiency of qi and the blood",
+    "Syndrome_PinYin": "Qi Xie Yu Xu",
+    "Syndrome_definition": "气血两虚证是指气血不能互相化生，以气虚和血虚症状相兼为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 49,
+    "Syndrome_name": "气血虚弱",
+    "Syndrome_English": "the debility of qi and the blood",
+    "Syndrome_PinYin": "Qi Xie Xu Ruo",
+    "Syndrome_definition": "气血两虚证是指气血不能互相化生，以气虚和血虚症状相兼为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 50,
+    "Syndrome_name": "气逆",
+    "Syndrome_English": "abnormal rising of qi ",
+    "Syndrome_PinYin": "Qi Ni",
+    "Syndrome_definition": "气逆证是指气机升降失常，逆而向上，以咳喘、呕恶、头痛眩晕等为主要表现的证。",
+    "Version": "v1,v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 51,
+    "Syndrome_name": "气郁",
+    "Syndrome_English": "stagnation of qi",
+    "Syndrome_PinYin": "Qi Yu",
+    "Syndrome_definition": "气滞证是指人体某一部位，或某一脏腑、经络的气机阻滞，运行不畅，以胀闷、疼痛、脉弦为主要表现的证。气滞证又称气郁证、气结证。",
+    "Version": "v1,v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 52,
+    "Syndrome_name": "气阴不足",
+    "Syndrome_English": "insufficiency of  qi and yin; deficiency of qi and yin",
+    "Syndrome_PinYin": "Qi Yin Bu Zu",
+    "Syndrome_definition": "本证指由于阴虚日久，阴不化气而气失化源，或因邪热疫毒伤损，伤阴耗气，导致机体气阴不足，功能减退所表现的证候。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 53,
+    "Syndrome_name": "气阴两虚",
+    "Syndrome_English": "insufficiency of qi and yin",
+    "Syndrome_PinYin": "Qi Yin Liang Xu",
+    "Syndrome_definition": "本证指由于阴虚日久，阴不化气而气失化源，或因邪热疫毒伤损，伤阴耗气，导致机体气阴不足，功能减退所表现的证候。",
+    "Version": "v1,v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 54,
+    "Syndrome_name": "气阴亏虚",
+    "Syndrome_English": "deficiency of qi and yin",
+    "Syndrome_PinYin": "Qi Yin Yu Xu",
+    "Syndrome_definition": "本证指由于阴虚日久，阴不化气而气失化源，或因邪热疫毒伤损，伤阴耗气，导致机体气阴不足，功能减退所表现的证候。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 55,
+    "Syndrome_name": "水血不",
+    "Syndrome_PinYin": "Shui Xie Bu",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 56,
+    "Syndrome_name": "水血不足",
+    "Syndrome_English": "anhydremia",
+    "Syndrome_PinYin": "Shui Xie Bu Zu",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 57,
+    "Syndrome_name": "津亏",
+    "Syndrome_English": "deficiency of fluid ",
+    "Syndrome_PinYin": "Jin Yu",
+    "Syndrome_definition": "津液亏虚证是指机体津液亏少，形体、脏腑、官窍失却滋润濡养和充盈，以口渴欲饮、尿少便干、官窍及皮肤干燥等为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 58,
+    "Syndrome_name": "津伤",
+    "Syndrome_English": "deficiency of the body fluid",
+    "Syndrome_PinYin": "Jin Shang",
+    "Syndrome_definition": "津液亏虚证是指机体津液亏少，形体、脏腑、官窍失却滋润濡养和充盈，以口渴欲饮、尿少便干、官窍及皮肤干燥等为主要表现的证。",
+    "Version": "v1,v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 59,
+    "Syndrome_name": "津枯肠燥",
+    "Syndrome_English": "deficiency of body fluid with dryness in the intestines",
+    "Syndrome_PinYin": "Jin Ku Chang Zao",
+    "Syndrome_definition": "肠燥津亏证是指津液亏损，肠失濡润，传导失职，以大便燥结难下及津亏症状为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 60,
+    "Syndrome_name": "淤滞",
+    "Syndrome_English": "stasis",
+    "Syndrome_PinYin": "Yu Zhi",
+    "Syndrome_definition": "血瘀证是指瘀血内阻，以疼痛、肿块、出血、瘀血色脉征为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 61,
+    "Syndrome_name": "淤血肿痛",
+    "Syndrome_English": "swelling and pain due to blood stasis",
+    "Syndrome_PinYin": "Yu Xie Zhong Tong",
+    "Syndrome_definition": "血瘀证是指瘀血内阻，以疼痛、肿块、出血、瘀血色脉征为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 62,
+    "Syndrome_name": "淤血阻络",
+    "Syndrome_English": "blood stasis in collaterals",
+    "Syndrome_PinYin": "Yu Xie Zu Luo",
+    "Syndrome_definition": "血瘀证是指瘀血内阻，以疼痛、肿块、出血、瘀血色脉征为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 63,
+    "Syndrome_name": "温毒",
+    "Syndrome_English": "heat toxins",
+    "Syndrome_PinYin": "Wen Du",
+    "Syndrome_definition": "温毒是指感受温毒病邪所引起的具有肿毒特征的一类温病。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 64,
+    "Syndrome_name": "温毒发斑",
+    "Syndrome_English": "maculae caused by violent heat pathogen",
+    "Syndrome_PinYin": "Wen Du Fa Ban",
+    "Syndrome_definition": "由於温热之毒内蕴肺胃，充斥三焦，波及营血，透发於肌肤而为斑。",
+    "Version": "v1,v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 65,
+    "Syndrome_name": "温热入营",
+    "Syndrome_English": "Warm into the camp",
+    "Syndrome_PinYin": "Wen Re Ru Ying",
+    "Syndrome_definition": "热毒深传，侵入营血，以发热不退，抽搐频繁，牙关紧闭，两目上视，面色灰暗，甚或突然呼吸停止，肢厥脉绝，舌紫暗而干，或舌卷僵硬，脉细数为常见症的小儿暑温证候",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 66,
+    "Syndrome_name": "温病初起",
+    "Syndrome_English": "Febrile disease early",
+    "Syndrome_PinYin": "Wen Bing Chu Qi",
+    "Syndrome_definition": "感受温邪所引起的一类外感急性热病的总称。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 67,
+    "Syndrome_name": "温邪伤营",
+    "Syndrome_English": "Heat Evil camp injury",
+    "Syndrome_PinYin": "Wen Xie Shang Ying",
+    "Syndrome_definition": "热毒深传，侵入营血，以发热不退，抽搐频繁，牙关紧闭，两目上视，面色灰暗，甚或突然呼吸停止，肢厥脉绝，舌紫暗而干，或舌卷僵硬，脉细数为常见症的小儿暑温证候",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 68,
+    "Syndrome_name": "温邪伤阴",
+    "Syndrome_English": "Warm evil and hurt yin",
+    "Syndrome_PinYin": "Wen Xie Shang Yin",
+    "Syndrome_definition": "风温余邪未净，肺胃阴伤，以低热或不发热，干咳或痰少而黏，口舌干燥而渴，舌干红，少苔，脉细等为常见症的风温证候。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 69,
+    "Syndrome_name": "湿浊中阻",
+    "Syndrome_English": "Retention of Dampness and turbidity in Mtddle-energizer",
+    "Syndrome_PinYin": "Shi Zhuo Zhong Zu",
+    "Syndrome_definition": "寒湿困脾证是指寒湿内盛，困阻脾阳，运化失职，以脘腹痞闷、纳呆、便溏、身重与寒湿症状为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 70,
+    "Syndrome_name": "湿温",
+    "Syndrome_English": "damp fever",
+    "Syndrome_PinYin": "Shi Wen",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 71,
+    "Syndrome_name": "湿温初起",
+    "Syndrome_English": "Humidity at the beginning",
+    "Syndrome_PinYin": "Shi Wen Chu Qi",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 72,
+    "Syndrome_name": "湿滞伤中",
+    "Syndrome_English": "retention of dampness impair mtddle-energizer",
+    "Syndrome_PinYin": "Shi Zhi Shang Zhong",
+    "Syndrome_definition": "寒湿困脾证是指寒湿内盛，困阻脾阳，运化失职，以脘腹痞闷、纳呆、便溏、身重与寒湿症状为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 73,
+    "Syndrome_name": "湿热",
+    "Syndrome_English": "wet fever",
+    "Syndrome_PinYin": "Shi Re",
+    "Syndrome_definition": "指湿热蕴结体内，脏腑经络运行受阻，可见全身湿热症状的病理变化。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 74,
+    "Syndrome_name": "湿热中阻",
+    "Syndrome_English": "Retention of Dampness and heat in Mtddle-energizer",
+    "Syndrome_PinYin": "Shi Re Zhong Zu",
+    "Syndrome_definition": "指湿热蕴结体内，脏腑经络运行受阻，可见全身湿热症状的病理变化。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 75,
+    "Syndrome_name": "湿热壅遏",
+    "Syndrome_English": "Humidity and heat suppression",
+    "Syndrome_PinYin": "Shi Re Yong E",
+    "Syndrome_definition": "指湿热蕴结体内，脏腑经络运行受阻，可见全身湿热症状的病理变化。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 76,
+    "Syndrome_name": "湿热痞满",
+    "Syndrome_English": "sensation of fullness due to dampness and heat",
+    "Syndrome_PinYin": "Shi Re Pi Man",
+    "Syndrome_definition": "指湿热蕴结体内，脏腑经络运行受阻，可见全身湿热症状的病理变化。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 77,
+    "Syndrome_name": "湿痰",
+    "Syndrome_English": "Damp Phlegm",
+    "Syndrome_PinYin": "Shi Tan",
+    "Syndrome_definition": "痰湿内阻，以咳吐多量黏稠痰，痰滑易咯，肢体困重，胸脘痞闷，食少口腻，苔白腻，脉濡缓或滑等为常见症的证候。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 78,
+    "Syndrome_name": "湿阻中焦",
+    "Syndrome_English": "Retention of Dampness in Mtddle-energizer",
+    "Syndrome_PinYin": "Shi Zu Zhong Jiao",
+    "Syndrome_definition": "即湿邪阻滞脾胃，影响其运化功能。症见头重、怠倦、脘闷、腹胀、纳呆、口粘渴、喜热饮、小便短赤，舌苔厚白或腻，脉缓等。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 79,
+    "Syndrome_name": "湿阻气滞",
+    "Syndrome_English": "damp obstruction leading to qi stagnation",
+    "Syndrome_PinYin": "Shi Zu Qi Zhi",
+    "Syndrome_definition": "气机郁滞，湿浊内阻，以胸胁脘腹胀闷窜痛，恶心欲吐，肢体困重，头晕嗜睡，或有浮肿，苔白腻，脉弦滑或濡缓等为常见症的证候。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 80,
+    "Syndrome_name": "火毒",
+    "Syndrome_English": "fire toxic",
+    "Syndrome_PinYin": "Huo Du",
+    "Syndrome_definition": "是指以局部肿痛严重，伴有恶寒发热，烦躁为主要临床特征的一类病证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 81,
+    "Syndrome_name": "火毒蕴结",
+    "Syndrome_English": "accumulation of fire toxins",
+    "Syndrome_PinYin": "Huo Du Yun Jie",
+    "Syndrome_definition": "是指以局部肿痛严重，伴有恶寒发热，烦躁为主要临床特征的一类病证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 82,
+    "Syndrome_name": "热入心包",
+    "Syndrome_English": "the heat attacts the pericardium",
+    "Syndrome_PinYin": "Re Ru Xin Bao",
+    "Syndrome_definition": "温热病内陷营血阶段的证型之一。主要证候有高热、神昏、谵语、甚则昏迷不醒、四肢厥逆、或见抽搐等。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 83,
+    "Syndrome_name": "热入营血",
+    "Syndrome_English": "heat attacking xuefen;heat invading blood ",
+    "Syndrome_PinYin": "Re Ru Ying Xie",
+    "Syndrome_definition": "是指由于感受火热毒邪，或恣食膏粱厚味，脏腑蕴热，亦或是皮肤破损染毒致火毒炽盛，内燔营血所表现出来的局部肿胀，身热夜甚，烦渴，舌红降，脉数一类病证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 84,
+    "Syndrome_name": "热毒",
+    "Syndrome_English": "heat toxic",
+    "Syndrome_PinYin": "Re Du",
+    "Syndrome_definition": "热毒证是以发热为主症，具有流行性和传染性的一类疾病，属温病中瘟疫范畴",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 85,
+    "Syndrome_name": "热毒内盛",
+    "Syndrome_English": "domination of toxin-heat in the body",
+    "Syndrome_PinYin": "Re Du Nei Sheng",
+    "Syndrome_definition": "热毒证是以发热为主症，具有流行性和传染性的一类疾病，属温病中瘟疫范畴",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 86,
+    "Syndrome_name": "热毒痰火郁结",
+    "Syndrome_English": "accumulation of heat toxic and phlegm ",
+    "Syndrome_PinYin": "Re Du Tan Huo Yu Jie",
+    "Syndrome_definition": "指无形之火与有形之痰煎熬胶结贮积于体内的病证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 87,
+    "Syndrome_name": "热泻",
+    "Syndrome_English": "diarrhea due to evil heat",
+    "Syndrome_PinYin": "Re Xie",
+    "Syndrome_definition": "因热迫大肠所引起",
+    "Version": "v1,v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 88,
+    "Syndrome_name": "热病",
+    "Syndrome_English": "heat disease",
+    "Syndrome_PinYin": "Re Bing",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 89,
+    "Syndrome_name": "热病伤阴",
+    "Syndrome_English": "consumption of yin caused by febrile diseases",
+    "Syndrome_PinYin": "Re Bing Shang Yin",
+    "Syndrome_definition": "津液亏虚证是指机体津液亏少，形体、脏腑、官窍失却滋润濡养和充盈，以口渴欲饮、尿少便干、官窍及皮肤干燥等为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 90,
+    "Syndrome_name": "热病气虚",
+    "Syndrome_English": "Fever and Qi Deficiency",
+    "Syndrome_PinYin": "Re Bing Qi Xu",
+    "Syndrome_definition": "气虚证是指机体元气不足，脏腑组织机能减退，以神疲乏力、少气懒言、脉虚等为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 91,
+    "Syndrome_name": "热病津伤",
+    "Syndrome_English": "impairment of the body fluid ",
+    "Syndrome_PinYin": "Re Bing Jin Shang",
+    "Syndrome_definition": "津液亏虚证是指机体津液亏少，形体、脏腑、官窍失却滋润濡养和充盈，以口渴欲饮、尿少便干、官窍及皮肤干燥等为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 92,
+    "Syndrome_name": "热病神昏",
+    "Syndrome_English": "an unconscious patient with febrile diseases",
+    "Syndrome_PinYin": "Re Bing Shen Hun",
+    "Syndrome_definition": "痰火扰神证是指火热痰浊交结，扰乱心神，以狂躁、神昏及痰热症状为主要表现的证。痰火扰神证又称痰火扰心 （闭窍）证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 93,
+    "Syndrome_name": "热痰",
+    "Syndrome_English": "heat-phlegm",
+    "Syndrome_PinYin": "Re Tan",
+    "Version": "v1,v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 94,
+    "Syndrome_name": "热盛伤津",
+    "Syndrome_English": "consumption of the body fluid due to excessive heat",
+    "Syndrome_PinYin": "Re Sheng Shang Jin",
+    "Syndrome_definition": "津液亏虚证是指机体津液亏少，形体、脏腑、官窍失却滋润濡养和充盈，以口渴欲饮、尿少便干、官窍及皮肤干燥等为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 95,
+    "Syndrome_name": "热结",
+    "Syndrome_English": "accumulation of heat",
+    "Syndrome_PinYin": "Re Jie",
+    "Syndrome_definition": "指热邪聚结而出现的病变。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 96,
+    "Syndrome_name": "热证",
+    "Syndrome_English": "febrile symptoms",
+    "Syndrome_PinYin": "Re Zheng",
+    "Syndrome_definition": "是指感受热邪、或阳盛阴虚，人体的机能活动亢进所表现的证候。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 97,
+    "Syndrome_name": "燥咳",
+    "Syndrome_English": "cough caused by dryness",
+    "Syndrome_PinYin": "Zao Ke",
+    "Syndrome_definition": "因肺虚液少或燥邪伤肺所致的咳嗽。",
+    "Version": "v1,v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 98,
+    "Syndrome_name": "痰厥",
+    "Syndrome_English": "adverse rising of phlegm",
+    "Syndrome_PinYin": "Tan Jue",
+    "Syndrome_definition": "指因痰盛气闭而引起四肢厥冷，甚至昏厥的病症。",
+    "Version": "v1,v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 99,
+    "Syndrome_name": "痰壅",
+    "Syndrome_English": "accumulation of phlegm",
+    "Syndrome_PinYin": "Tan Yong",
+    "Syndrome_definition": "痰证是指痰浊停聚或流窜于脏腑、组织之间，临床以痰多、胸闷、呕恶、眩晕、体胖、包块等为主要表现的证。",
+    "Version": "v1,v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 100,
+    "Syndrome_name": "痰多",
+    "Syndrome_English": "abundant sputum",
+    "Syndrome_PinYin": "Tan Duo",
+    "Version": "v1,v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 101,
+    "Syndrome_name": "痰涎凝聚",
+    "Syndrome_English": "phlegmatic saliva accumulated in the interior",
+    "Syndrome_PinYin": "Tan Xian Ning Ju",
+    "Syndrome_definition": "痰证是指痰浊停聚或流窜于脏腑、组织之间，临床以痰多、胸闷、呕恶、眩晕、体胖、包块等为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 102,
+    "Syndrome_name": "痰涎壅肺",
+    "Syndrome_English": "phlegm-damoness obstructing lung",
+    "Syndrome_PinYin": "Tan Xian Yong Fei",
+    "Syndrome_definition": "痰证是指痰浊停聚或流窜于脏腑、组织之间，临床以痰多、胸闷、呕恶、眩晕、体胖、包块等为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 103,
+    "Syndrome_name": "痰涎积滞",
+    "Syndrome_English": "stagnation of phlegm and drool",
+    "Syndrome_PinYin": "Tan Xian Ji Zhi",
+    "Syndrome_definition": "痰证是指痰浊停聚或流窜于脏腑、组织之间，临床以痰多、胸闷、呕恶、眩晕、体胖、包块等为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 104,
+    "Syndrome_name": "痰滞气阻",
+    "Syndrome_English": "phlegm and qi obstructing each other",
+    "Syndrome_PinYin": "Tan Zhi Qi Zu",
+    "Syndrome_definition": "是指气郁痰凝，阻滞胸咽所表现出来的咽中如有物梗赛，胸胁胀痛，苔白腻，脉弦滑的一类病证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 105,
+    "Syndrome_name": "痰滞经络",
+    "Syndrome_English": "retention of phlegm in Meridians and Collaterals",
+    "Syndrome_PinYin": "Tan Zhi Jing Luo",
+    "Syndrome_definition": "痰证是指痰浊停聚或流窜于脏腑、组织之间，临床以痰多、胸闷、呕恶、眩晕、体胖、包块等为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 106,
+    "Syndrome_name": "痰火",
+    "Syndrome_English": "phlegm fire",
+    "Syndrome_PinYin": "Tan Huo",
+    "Syndrome_definition": "痰火是指无形之火与有形之痰煎熬胶结贮积于肺的病证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 107,
+    "Syndrome_name": "痰热",
+    "Syndrome_English": "phlegm heat",
+    "Syndrome_PinYin": "Tan Re",
+    "Syndrome_definition": "痰热壅肺证是指痰热交结，壅滞于肺，肺失清肃，以咳喘、痰黄稠及痰热症状为主要表现的证。",
+    "Version": "v1,v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 108,
+    "Syndrome_name": "痰盛",
+    "Syndrome_English": "abundant phlegm",
+    "Syndrome_PinYin": "Tan Sheng",
+    "Syndrome_definition": "痰证是指痰浊停聚或流窜于脏腑、组织之间，临床以痰多、胸闷、呕恶、眩晕、体胖、包块等为主要表现的证。",
+    "Version": "v1,v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 109,
+    "Syndrome_name": "痰迷",
+    "Syndrome_English": "phlegm covering",
+    "Syndrome_PinYin": "Tan Mi",
+    "Syndrome_definition": "痰蒙心神证是指痰浊内盛，蒙蔽心神，以神志抑郁、错乱、痴呆、昏迷及痰浊症状为主要表现的证。痰蒙心神证又称痰迷心窍证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 110,
+    "Syndrome_name": "痰阻",
+    "Syndrome_English": "retention of phlegm",
+    "Syndrome_PinYin": "Tan Zu",
+    "Syndrome_definition": "是指因嗜酒无度，过食肥甘厚味，损伤脾胃，以致健运失司，水湿内停，积聚生痰，痰阻中焦，清阳不升，头窍失养所表现出来的眩晕，头重昏蒙，舌苔白腻，脉濡滑的一类病证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 111,
+    "Syndrome_name": "痰饮",
+    "Syndrome_English": "sputum drink",
+    "Syndrome_PinYin": "Tan Yin",
+    "Syndrome_definition": "痰证是指痰浊停聚或流窜于脏腑、组织之间，临床以痰多、胸闷、呕恶、眩晕、体胖、包块等为主要表现的证。",
+    "Version": "v1,v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 112,
+    "Syndrome_name": "痰饮停滞",
+    "Syndrome_English": "stagnation of phlegm retention",
+    "Syndrome_PinYin": "Tan Yin Ting Zhi",
+    "Syndrome_definition": "痰证是指痰浊停聚或流窜于脏腑、组织之间，临床以痰多、胸闷、呕恶、眩晕、体胖、包块等为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 113,
+    "Syndrome_name": "痰饮停聚",
+    "Syndrome_English": "retention of phlegm in the interior",
+    "Syndrome_PinYin": "Tan Yin Ting Ju",
+    "Syndrome_definition": "痰证是指痰浊停聚或流窜于脏腑、组织之间，临床以痰多、胸闷、呕恶、眩晕、体胖、包块等为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 114,
+    "Syndrome_name": "痰饮内停",
+    "Syndrome_English": "retention of phlegm in the interior",
+    "Syndrome_PinYin": "Tan Yin Nei Ting",
+    "Syndrome_definition": "痰证是指痰浊停聚或流窜于脏腑、组织之间，临床以痰多、胸闷、呕恶、眩晕、体胖、包块等为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 115,
+    "Syndrome_name": "痰饮积聚",
+    "Syndrome_English": "abdominal mass and gethering of phlegm retention",
+    "Syndrome_PinYin": "Tan Yin Ji Ju",
+    "Syndrome_definition": "痰证是指痰浊停聚或流窜于脏腑、组织之间，临床以痰多、胸闷、呕恶、眩晕、体胖、包块等为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 116,
+    "Syndrome_name": "痰饮蓄结",
+    "Syndrome_English": "Phlegm build knot",
+    "Syndrome_PinYin": "Tan Yin Xu Jie",
+    "Syndrome_definition": "痰证是指痰浊停聚或流窜于脏腑、组织之间，临床以痰多、胸闷、呕恶、眩晕、体胖、包块等为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 117,
+    "Syndrome_name": "瘀滞",
+    "Syndrome_English": "stasis stagnancy ",
+    "Syndrome_PinYin": "Yu Zhi",
+    "Syndrome_definition": "血瘀证是指瘀血内阻，以疼痛、肿块、出血、瘀血色脉征为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 118,
+    "Syndrome_name": "瘀滞肿痛",
+    "Syndrome_English": "Stasis, swelling and pain",
+    "Syndrome_PinYin": "Yu Zhi Zhong Tong",
+    "Syndrome_definition": "血瘀证是指瘀血内阻，以疼痛、肿块、出血、瘀血色脉征为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 119,
+    "Syndrome_name": "瘀肿疼痛",
+    "Syndrome_English": "pain caused by ecchymoma",
+    "Syndrome_PinYin": "Yu Zhong Teng Tong",
+    "Syndrome_definition": "血瘀证是指瘀血内阻，以疼痛、肿块、出血、瘀血色脉征为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 120,
+    "Syndrome_name": "瘀血",
+    "Syndrome_English": "stagnant blood",
+    "Syndrome_PinYin": "Yu Xie",
+    "Syndrome_definition": "血瘀证是指瘀血内阻，以疼痛、肿块、出血、瘀血色脉征为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 121,
+    "Syndrome_name": "瘀血阻络",
+    "Syndrome_English": "blood stasis in collaterals",
+    "Syndrome_PinYin": "Yu Xie Zu Luo",
+    "Syndrome_definition": "血瘀证是指瘀血内阻，以疼痛、肿块、出血、瘀血色脉征为主要表现的证。",
+    "Version": "v1,v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 122,
+    "Syndrome_name": "瘀阻",
+    "Syndrome_English": "Stagnation",
+    "Syndrome_PinYin": "Yu Zu",
+    "Syndrome_definition": "血瘀证是指瘀血内阻，以疼痛、肿块、出血、瘀血色脉征为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 123,
+    "Syndrome_name": "瘀阻经闭",
+    "Syndrome_English": "amenorrhea due to congestion",
+    "Syndrome_PinYin": "Yu Zu Jing Bi",
+    "Syndrome_definition": "多因气滞、寒凝，瘀血阻滞冲任胞脉，积之而成经闭。",
+    "Version": "v1,v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 124,
+    "Syndrome_name": "积滞不消",
+    "Syndrome_English": "indigestion due to accumulation",
+    "Syndrome_PinYin": "Ji Zhi Bu Xiao",
+    "Syndrome_definition": "是指由于饮食不节，损伤脾胃而出现的证候。",
+    "Version": "v1,v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 125,
+    "Syndrome_name": "积滞内停",
+    "Syndrome_English": "accumulation within the body",
+    "Syndrome_PinYin": "Ji Zhi Nei Ting",
+    "Syndrome_definition": "是指由于饮食不节，损伤脾胃而出现的证候。",
+    "Version": "v1,v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 126,
+    "Syndrome_name": "积滞泻痢",
+    "Syndrome_English": "indigestion accompanied with diarrhea and dysentery",
+    "Syndrome_PinYin": "Ji Zhi Xie Li",
+    "Syndrome_definition": "是指由于饮食不节，损伤脾胃而出现的证候。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 127,
+    "Syndrome_name": "积滞胀满",
+    "Syndrome_English": "dyspeptic abdonimal distention",
+    "Syndrome_PinYin": "Ji Zhi Zhang Man",
+    "Syndrome_definition": "是指由于饮食不节，损伤脾胃而出现的证候。",
+    "Version": "v1,v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 128,
+    "Syndrome_name": "精亏",
+    "Syndrome_English": "deficiency of spermatozoa",
+    "Syndrome_PinYin": "Jing Yu",
+    "Syndrome_definition": "是指肾精亏损、髓海空虚所致的发育迟缓、未老先衰、肢体痿弱不用的一类证候。",
+    "Version": "v1,v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 129,
+    "Syndrome_name": "精冷",
+    "Syndrome_English": "cold sperm",
+    "Syndrome_PinYin": "Jing Leng",
+    "Syndrome_definition": "是指男子因真阳不足而引起精气清冷，无生育能力者。",
+    "Version": "v1,v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 130,
+    "Syndrome_name": "精血不足",
+    "Syndrome_English": "deficiency of the essence and blood ",
+    "Syndrome_PinYin": "Jing Xie Bu Zu",
+    "Syndrome_definition": "是指肾精亏损、髓海空虚所致的发育迟缓、未老先衰、肢体痿弱不用的一类证候。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 131,
+    "Syndrome_name": "精血亏虚",
+    "Syndrome_English": "deficiency of the essence and blood ",
+    "Syndrome_PinYin": "Jing Xie Yu Xu",
+    "Syndrome_definition": "是指肾精亏损、髓海空虚所致的发育迟缓、未老先衰、肢体痿弱不用的一类证候。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 132,
+    "Syndrome_name": "经寒",
+    "Syndrome_PinYin": "Jing Han",
+    "Syndrome_definition": "寒湿之邪侵袭经脉。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 133,
+    "Syndrome_name": "肉食积滞",
+    "Syndrome_English": "retention of meat and food in the stomach",
+    "Syndrome_PinYin": "Rou Shi Ji Zhi",
+    "Syndrome_definition": "是指由于饮食不节，损伤脾胃而出现的证候。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 134,
+    "Syndrome_name": "肝气郁结",
+    "Syndrome_English": "stagnation of liver-qi",
+    "Syndrome_PinYin": "Gan Qi Yu Jie",
+    "Syndrome_definition": "指肝失疏泄，气机郁滞，情志抑郁，气血不畅的病理变化。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 135,
+    "Syndrome_name": "肝火",
+    "Syndrome_English": "the hepatic fire",
+    "Syndrome_PinYin": "Gan Huo",
+    "Syndrome_definition": "指肝经火胜，内扰于肝的一种病理现象。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 136,
+    "Syndrome_name": "肝热",
+    "Syndrome_English": "heat in liver",
+    "Syndrome_PinYin": "Gan Re",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 137,
+    "Syndrome_name": "肝肾不足",
+    "Syndrome_English": "deficiency of the liver and kidney",
+    "Syndrome_PinYin": "Gan Shen Bu Zu",
+    "Syndrome_definition": "是指肝肾精亏血少所表现出来的一类病证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 138,
+    "Syndrome_name": "肝肾亏虚",
+    "Syndrome_English": "deficiency of the liver and kidney",
+    "Syndrome_PinYin": "Gan Shen Yu Xu",
+    "Syndrome_definition": "是指肝肾精亏血少所表现出来的一类病证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 139,
+    "Syndrome_name": "肝肾虚",
+    "Syndrome_English": "asthenia of both liver and kidney; deficiency of both liver and kidney",
+    "Syndrome_PinYin": "Gan Shen Xu",
+    "Syndrome_definition": "是指肝肾精亏血少所表现出来的一类病证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 140,
+    "Syndrome_name": "肝肾阴虚",
+    "Syndrome_English": "deficiency of the liver-yin and kidney-yin",
+    "Syndrome_PinYin": "Gan Shen Yin Xu",
+    "Syndrome_definition": "指肝肾阴液亏虚，虚热内扰，以腰酸胁痛、眩晕、耳鸣、遗精等为主要表现的虚热证候。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 141,
+    "Syndrome_name": "肝胃不和",
+    "Syndrome_English": "disharmony between the liver and stomach",
+    "Syndrome_PinYin": "Gan Wei Bu He",
+    "Syndrome_definition": "肝气瘀滞，横逆犯胃，胃失和降，以胃脘、胁肋胀满疼痛，嗳气、呃逆、吞酸，情绪抑郁，不欲食，苔薄黄，脉弦等为常见症的证候。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 142,
+    "Syndrome_name": "肝胃气滞",
+    "Syndrome_English": "stagnation of qi of the liver and stomach",
+    "Syndrome_PinYin": "Gan Wei Qi Zhi",
+    "Syndrome_definition": "是指情志不畅，郁怒伤肝，横逆犯胃，导致胃失和降而出现的证候。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 143,
+    "Syndrome_name": "肝胆湿热",
+    "Syndrome_English": "Dampness and Heat in Liver and Gallbladder",
+    "Syndrome_PinYin": "Gan Dan Shi Re",
+    "Syndrome_definition": "指湿热之邪蕴结肝胆的病证。多由外感湿热之邪，或嗜酒，过食肥甘辛辣，湿邪内生，郁久化热所致，或脾胃运化失常，湿浊内生，蕴而化热，阻遏肝胆而成。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 144,
+    "Syndrome_name": "肝虚",
+    "Syndrome_English": "liver weakness",
+    "Syndrome_PinYin": "Gan Xu",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 145,
+    "Syndrome_name": "肝郁",
+    "Syndrome_English": "liver depression",
+    "Syndrome_PinYin": "Gan Yu",
+    "Syndrome_definition": "是指肝失疏泄，气机郁滞，以情志抑郁、胸胁或少腹胀痛等为主要表现的证候。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 146,
+    "Syndrome_name": "肝郁化火",
+    "Syndrome_English": "the Depression of the liver generates pathogenic fire",
+    "Syndrome_PinYin": "Gan Yu Hua Huo",
+    "Syndrome_definition": "是指因情志不遂，或突然遭受精神刺激，或病邪侵扰，导致肝失疏泄，气机郁滞，日久化火，出现胸胁或少腹胀闷窜疼，急躁易怒，头晕胀疼，面红目赤，口苦，咽干，不寐，妇女乳房胀痛，月经不调，痛经，甚则闭经等症状的一种中医证型。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 147,
+    "Syndrome_name": "肝郁气滞",
+    "Syndrome_English": "liver depression and qi stagnation",
+    "Syndrome_PinYin": "Gan Yu Qi Zhi",
+    "Syndrome_definition": "是指肝失疏泄，气机郁滞，以情志抑郁、胸胁或少腹胀痛等为主要表现的证候。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 148,
+    "Syndrome_name": "肝阳",
+    "Syndrome_English": "liver yang",
+    "Syndrome_PinYin": "Gan Yang",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 149,
+    "Syndrome_name": "肝风内动",
+    "Syndrome_English": "internal movement of the liver-wind ",
+    "Syndrome_PinYin": "Gan Feng Nei Dong",
+    "Syndrome_definition": "肝风内动证是指临床出现眩晕欲仆，震颤，抽搐等症状的病证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 150,
+    "Syndrome_name": "肝风夹痰",
+    "Syndrome_English": "Liver wind and phlegm",
+    "Syndrome_PinYin": "Gan Feng Jia Tan",
+    "Syndrome_definition": "指肝风夹痰，横窜经络所表现出来的以肢体麻木不仁，甚或瘫痪不遂，或肌肤麻木瘙痒，眩晕，口角流涎等为常见症的一类病症。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 151,
+    "Syndrome_name": "肠热",
+    "Syndrome_English": "constipation due to heat in the large intestine",
+    "Syndrome_PinYin": "Chang Re",
+    "Syndrome_definition": "小肠实热证是指心火下移小肠，热迫膀胱，气化失司，以小便赤涩疼痛、心烦、舌疮及实热症状为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 152,
+    "Syndrome_name": "肠燥",
+    "Syndrome_English": "dryness in the intestines",
+    "Syndrome_PinYin": "Chang Zao",
+    "Syndrome_definition": "肠燥津亏证是指津液亏损，肠失濡润，传导失职，以大便燥结难下及津亏症状为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 153,
+    "Syndrome_name": "肺寒",
+    "Syndrome_English": "cold on the lungs",
+    "Syndrome_PinYin": "Fei Han",
+    "Syndrome_definition": "寒邪客肺，肺失宣降，故见咳嗽，气喘，咯稀白痰等症",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 154,
+    "Syndrome_name": "肺气壅实",
+    "Syndrome_English": "stasis of lung-energy",
+    "Syndrome_PinYin": "Fei Qi Yong Shi",
+    "Syndrome_definition": "是指邪实气壅，肺气不能宣降导致的证候",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 155,
+    "Syndrome_name": "肺热",
+    "Syndrome_English": "heat in lung",
+    "Syndrome_PinYin": "Fei Re",
+    "Syndrome_definition": "指火热炽盛，壅积于肺，肺失清肃，以咳喘气粗、鼻翼煽动等为主要表现的实热证候。",
+    "Version": "v1,v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 156,
+    "Syndrome_name": "肺燥",
+    "Syndrome_English": "dry lungs ",
+    "Syndrome_PinYin": "Fei Zao",
+    "Syndrome_definition": "是指外感燥邪，肺失宣降，以干咳痰少、鼻咽口舌干燥等为主要表现的证候。",
+    "Version": "v1,v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 157,
+    "Syndrome_name": "肺肾不足",
+    "Syndrome_English": "deficiency of the lung and kidney",
+    "Syndrome_PinYin": "Fei Shen Bu Zu",
+    "Syndrome_definition": "肺肾阴虚证是指肺肾阴液亏虚，虚热内扰，以干咳、少痰、腰酸、遗精及阴虚症状为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 158,
+    "Syndrome_name": "肺肾两虚",
+    "Syndrome_English": "asthenia of both the lung and kidney",
+    "Syndrome_PinYin": "Fei Shen Liang Xu",
+    "Syndrome_definition": "肺肾阴虚证是指肺肾阴液亏虚，虚热内扰，以干咳、少痰、腰酸、遗精及阴虚症状为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 159,
+    "Syndrome_name": "肺胃阴伤",
+    "Syndrome_English": "imperiment of yin in lung and stomach",
+    "Syndrome_PinYin": "Fei Wei Yin Shang",
+    "Syndrome_definition": "见于温病气分后期，为邪热已退(或渐退)，而肺胃津伤未复之候，病情属虚，病位在肺胃。以干咳，口干舌燥而渴，舌光红少苔，脉细数为辨证要点。多见于风温、春温、暑温、秋燥、温毒等病末期阶段。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 160,
+    "Syndrome_name": "肺虚",
+    "Syndrome_English": "asthenia of lung",
+    "Syndrome_PinYin": "Fei Xu",
+    "Syndrome_definition": "肺气虚证是指肺气虚弱，宣肃、卫外功能减退，以咳嗽、气喘、自汗、易于感冒及气虚症状为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 161,
+    "Syndrome_name": "肾虚",
+    "Syndrome_English": "deficiency in kidney ",
+    "Syndrome_PinYin": "Shen Xu",
+    "Syndrome_definition": "肾气虚弱，以腰酸，耳鸣，性欲减退，头晕健忘，脉弱等为常见症的证候。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 162,
+    "Syndrome_name": "肾阳不足",
+    "Syndrome_English": "deficiency of kidney-yang",
+    "Syndrome_PinYin": "Shen Yang Bu Zu",
+    "Syndrome_definition": "肾阳虚证是指肾阳亏虚，机体失其温煦，以腰膝酸冷、性欲减退、夜尿多及阳虚症状为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 163,
+    "Syndrome_name": "肾阳亏虚",
+    "Syndrome_English": "deficiency of the kidney-yang",
+    "Syndrome_PinYin": "Shen Yang Yu Xu",
+    "Syndrome_definition": "肾阳虚证是指肾阳亏虚，机体失其温煦，以腰膝酸冷、性欲减退、夜尿多及阳虚症状为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 164,
+    "Syndrome_name": "肾阳虚",
+    "Syndrome_English": "deficiency of the kidney-yang",
+    "Syndrome_PinYin": "Shen Yang Xu",
+    "Syndrome_definition": "肾阳虚证是指肾阳亏虚，机体失其温煦，以腰膝酸冷、性欲减退、夜尿多及阳虚症状为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 165,
+    "Syndrome_name": "肾阳虚衰",
+    "Syndrome_English": "kidney yang deficiency",
+    "Syndrome_PinYin": "Shen Yang Xu Shuai",
+    "Syndrome_definition": "肾阳虚证是指肾阳亏虚，机体失其温煦，以腰膝酸冷、性欲减退、夜尿多及阳虚症状为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 166,
+    "Syndrome_name": "胃寒",
+    "Syndrome_English": "the stomach affected by cold",
+    "Syndrome_PinYin": "Wei Han",
+    "Syndrome_definition": "是指脾胃阳气虚衰，过食生冷，或寒邪直中所致阴寒凝滞胃腑的证候。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 167,
+    "Syndrome_name": "胃火",
+    "Syndrome_English": "the stomach fire",
+    "Syndrome_PinYin": "Wei Huo",
+    "Syndrome_definition": "指胃热炽盛化火的病变。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 168,
+    "Syndrome_name": "胃火亢盛",
+    "Syndrome_English": "excessiveness of the stomach-fire",
+    "Syndrome_PinYin": "Wei Huo Kang Sheng",
+    "Syndrome_definition": "指胃热炽盛化火的病变。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 169,
+    "Syndrome_name": "胃热",
+    "Syndrome_English": " stomach heat",
+    "Syndrome_PinYin": "Wei Re",
+    "Syndrome_definition": "指胃热炽盛化火的病变。",
+    "Version": "v1,v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 170,
+    "Syndrome_name": "胃阴不足",
+    "Syndrome_English": "deficiency of the stomach-yin",
+    "Syndrome_PinYin": "Wei Yin Bu Zu",
+    "Syndrome_definition": "是指因饮食不节，过食辛辣厚味，积热于内，或热病后期伤津，或情志不畅，气郁化火伤阴，致胃失和降所表现出来的恶心、呕吐或呃逆，口燥咽干，舌红少苔，脉细数一类病证。",
+    "Version": "v1,v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 171,
+    "Syndrome_name": "胆火挟痰",
+    "Syndrome_English": "Bile fire and phlegm",
+    "Syndrome_PinYin": "Dan Huo Xie Tan",
+    "Syndrome_definition": "胆郁痰扰证是指痰热内扰，胆气不宁，以胆怯易惊、心烦失眠及痰热症状为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 172,
+    "Syndrome_name": "胆胀",
+    "Syndrome_English": "distending pain of the hypochondrium due to gallblsdder disorder",
+    "Syndrome_PinYin": "Dan Zhang",
+    "Syndrome_definition": "胆胀是指胆腑气郁，胆失通降所引起的以右胁胀痛为主要临床表现的一种疾病。",
+    "Version": "v1,v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 173,
+    "Syndrome_name": "脾寒",
+    "Syndrome_English": "a presence of cold in the spleen",
+    "Syndrome_PinYin": "Pi Han",
+    "Syndrome_definition": "脾胃虚寒证是由于素体脾气虚，或脾虚日久，波及脾阳，使脾阳也虚。或贪食生冷，损伤脾阳，导致脾阳虚不能温暖胃肠，寒气自内而生的病证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 174,
+    "Syndrome_name": "脾肺气虚",
+    "Syndrome_English": "asthenia of spleen and lung qi; deficiency of spleen and lung",
+    "Syndrome_PinYin": "Pi Fei Qi Xu",
+    "Syndrome_definition": "由于脾肺两脏气虚，出现脾失健运，肺失宣降的虚弱证候。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 175,
+    "Syndrome_name": "脾肾虚",
+    "Syndrome_English": "splenonephric deficiency ",
+    "Syndrome_PinYin": "Pi Shen Xu",
+    "Syndrome_definition": "脾肾阳虚证是指脾肾阳气亏虚，温化失职，虚寒内生，以久泄久痢、浮肿、腰腹冷痛及阳虚症状为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 176,
+    "Syndrome_name": "脾肾阳虚",
+    "Syndrome_English": "deficiency of the spleen-yang and kidney-yang",
+    "Syndrome_PinYin": "Pi Shen Yang Xu",
+    "Syndrome_definition": "脾肾阳虚证是指脾肾阳气亏虚，温化失职，虚寒内生，以久泄久痢、浮肿、腰腹冷痛及阳虚症状为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 177,
+    "Syndrome_name": "脾胃亏虚",
+    "Syndrome_English": "weak spleen and stomach",
+    "Syndrome_PinYin": "Pi Wei Yu Xu",
+    "Syndrome_definition": "脾胃气虚，中焦失运，以食欲不振，脘腹痞胀，食后尤甚，大便溏泻，神疲肢倦，舌淡，脉弱等为常见症的证候。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 178,
+    "Syndrome_name": "脾胃气滞",
+    "Syndrome_English": "stagnation of gastrosplenic qi; stagnation of spleen and stomach qi",
+    "Syndrome_PinYin": "Pi Wei Qi Zhi",
+    "Syndrome_definition": "指脾胃之气阻滞不畅。",
+    "Version": "v1,v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 179,
+    "Syndrome_name": "脾胃气虚",
+    "Syndrome_English": "eficiency of qi in the spleen and stomach",
+    "Syndrome_PinYin": "Pi Wei Qi Xu",
+    "Syndrome_definition": "脾胃气虚，中焦失运，以食欲不振，脘腹痞胀，食后尤甚，大便溏泻，神疲肢倦，舌淡，脉弱等为常见症的证候。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 180,
+    "Syndrome_name": "脾胃湿阻气滞",
+    "Syndrome_English": "Spleen and stomach dampness block",
+    "Syndrome_PinYin": "Pi Wei Shi Zu Qi Zhi",
+    "Syndrome_definition": "指湿邪阻滞中焦，运化功能减弱，以脘腹满闷，肢体困重，纳食呆滞等为主要临床特征的外感病。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 181,
+    "Syndrome_name": "脾胃虚",
+    "Syndrome_English": "weak spleen and stomach",
+    "Syndrome_PinYin": "Pi Wei Xu",
+    "Syndrome_definition": "脾胃气虚，中焦失运，以食欲不振，脘腹痞胀，食后尤甚，大便溏泻，神疲肢倦，舌淡，脉弱等为常见症的证候。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 182,
+    "Syndrome_name": "脾胃虚寒",
+    "Syndrome_English": "cold syndrome of the spleen and the stomach of deficiency type",
+    "Syndrome_PinYin": "Pi Wei Xu Han",
+    "Syndrome_definition": "脾胃虚寒证是由于素体脾气虚，或脾虚日久，波及脾阳，使脾阳也虚。或贪食生冷，损伤脾阳，导致脾阳虚不能温暖胃肠，寒气自内而生的病证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 183,
+    "Syndrome_name": "脾胃虚弱",
+    "Syndrome_English": "weak spleen and stomach",
+    "Syndrome_PinYin": "Pi Wei Xu Ruo",
+    "Syndrome_definition": "脾胃气虚，中焦失运，以食欲不振，脘腹痞胀，食后尤甚，大便溏泻，神疲肢倦，舌淡，脉弱等为常见症的证候。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 184,
+    "Syndrome_name": "脾虚",
+    "Syndrome_English": "deficiency of spleen",
+    "Syndrome_PinYin": "Pi Xu",
+    "Syndrome_definition": "脾气虚证是指脾气不足，运化失职，以纳少、腹胀、便溏及气虚症状为主要表现的证。",
+    "Version": "v1,v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 185,
+    "Syndrome_name": "膀胱虚冷",
+    "Syndrome_English": "asthenia cold of bladder",
+    "Syndrome_PinYin": "Bang Guang Xu Leng",
+    "Syndrome_definition": "肾阳亏虚，膀胱气化失司，以畏冷肢凉，小腹冷痛，小便失禁或不利，或夜尿多、尿清长，苔白滑等为常见症的证候。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 186,
+    "Syndrome_name": "虚劳",
+    "Syndrome_English": "consumptive disease ",
+    "Syndrome_PinYin": "Xu Lao",
+    "Syndrome_definition": "是由于禀赋薄弱、后天失养及外感内伤等多种原因引起的，以脏腑功能衰退，气血阴阳亏损，日久不复为主要病机，以五脏虚证为主要临床表现的多种慢性虚弱症候的总称。",
+    "Version": "v1,v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 187,
+    "Syndrome_name": "虚喘",
+    "Syndrome_English": "dyspnea due to deficiency",
+    "Syndrome_PinYin": "Xu Chuan",
+    "Syndrome_definition": "虚喘常由慢性咳嗽、肺痨等肺系病症迁延未愈，病久肺虚，气失所主，肾元亏虚，肾不纳气而短气喘促。",
+    "Version": "v1,v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 188,
+    "Syndrome_name": "虚寒",
+    "Syndrome_English": "deficiency-cold",
+    "Syndrome_PinYin": "Xu Han",
+    "Syndrome_definition": "阳虚证是指人体阳气亏损，其温养、推动、气化等功能减退，以畏寒肢冷为主要表现的虚寒证。",
+    "Version": "v1,v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 189,
+    "Syndrome_name": "虚烦",
+    "Syndrome_English": "fidgetiness due to deficiency",
+    "Syndrome_PinYin": "Xu Fan",
+    "Syndrome_definition": "是因虚而致心胸烦热者。",
+    "Version": "v1,v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 190,
+    "Syndrome_name": "虚热",
+    "Syndrome_English": "asthenia-heat",
+    "Syndrome_PinYin": "Xu Re",
+    "Syndrome_definition": "阴虚证是指人体阴液亏少，其滋润、濡养等功能减退，或阴不制阳，阳气偏亢，以口咽干燥、五心烦热、潮热盗汗等为主要表现的虚热证。",
+    "Version": "v1,v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 191,
+    "Syndrome_name": "虚痨",
+    "Syndrome_English": "consumptive disease",
+    "Syndrome_PinYin": "Xu Lao",
+    "Syndrome_definition": "是由于禀赋薄弱、后天失养及外感内伤等多种原因引起的，以脏腑功能衰退，气血阴阳亏损，日久不复为主要病机，以五脏虚证为主要临床表现的多种慢性虚弱症候的总称。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 192,
+    "Syndrome_name": "虚脱",
+    "Syndrome_English": "prostration syndrome",
+    "Syndrome_PinYin": "Xu Tuo",
+    "Syndrome_definition": "以面色苍白、虚汗淋漓、头昏眼花、肢冷汗出、二便失禁、神情淡漠或烦躁甚则不省人事、脉微欲绝等为特征的内科急症。",
+    "Version": "v1,v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 193,
+    "Syndrome_name": "虚阳上浮",
+    "Syndrome_English": "floating of weak yang",
+    "Syndrome_PinYin": "Xu Yang Shang Fu",
+    "Syndrome_definition": "指体内阳气极虚，导致阴寒之气偏盛，格阳于外，阴阳寒热格拒，表现为内真寒外假热的证候。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 194,
+    "Syndrome_name": "虚风内动",
+    "Syndrome_English": "internal stirring of deficiency-wind",
+    "Syndrome_PinYin": "Xu Feng Nei Dong",
+    "Syndrome_definition": "是肾精肝血耗损，虚风内动之候。以手足蠕动，甚或瘛疭，舌干降为辨证要点。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 195,
+    "Syndrome_name": "虫积",
+    "Syndrome_English": "abdominal pain due to parasitic infestation",
+    "Syndrome_PinYin": "Chong Ji",
+    "Syndrome_definition": "虫积肠道证是指蛔虫等寄居肠道，阻滞气机，噬耗营养，以腹痛、面黄体瘦、大便排虫及气滞症状为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 196,
+    "Syndrome_name": "血寒",
+    "Syndrome_English": "blood cold",
+    "Syndrome_PinYin": "Xie Han",
+    "Syndrome_definition": "血寒证是指寒邪客于血脉，凝滞气机，血行不畅，以拘急冷痛、形寒、肤色紫暗为主要表现的实寒证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 197,
+    "Syndrome_name": "血热",
+    "Syndrome_English": "heat in blood",
+    "Syndrome_PinYin": "Xie Re",
+    "Syndrome_definition": "血热证是指火热炽盛，热迫血分，以出血与实热症状为主要表现的证。",
+    "Version": "v1,v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 198,
+    "Syndrome_name": "血热有瘀",
+    "Syndrome_English": "heat in blood with ecchymosis",
+    "Syndrome_PinYin": "Xie Re You Yu",
+    "Syndrome_definition": "外感火热邪气，或体内阳盛化火，入舍于血，血热互结，煎灼血中津液，使血液黏稠而运行不畅；或热灼脉络，迫血妄行导致内出血，以致血液壅滞于体内某些部位而不散而成瘀血。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 199,
+    "Syndrome_name": "血热毒盛",
+    "Syndrome_English": "heat invading the blood phase",
+    "Syndrome_PinYin": "Xie Re Du Sheng",
+    "Syndrome_definition": "血热证是指火热炽盛，热迫血分，以出血与实热症状为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 200,
+    "Syndrome_name": "血瘀",
+    "Syndrome_English": "stasis of blood",
+    "Syndrome_PinYin": "Xie Yu",
+    "Syndrome_definition": "血瘀证是指瘀血内阻，以疼痛、肿块、出血、瘀血色脉征为主要表现的证。",
+    "Version": "v1,v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 201,
+    "Syndrome_name": "血虚",
+    "Syndrome_English": "deficiency of blood",
+    "Syndrome_PinYin": "Xie Xu",
+    "Syndrome_definition": "血虚证是指血液亏虚，不能濡养脏腑、经络、组织，以面、睑、唇、舌色淡白，脉细为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 202,
+    "Syndrome_name": "表虚",
+    "Syndrome_English": "Exteriat Syndrome of Deficiency",
+    "Syndrome_PinYin": "Biao Xu",
+    "Syndrome_definition": "外邪袭表，腠理不固，营卫之气不和所致的表证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 203,
+    "Syndrome_name": "酒毒伤中",
+    "Syndrome_English": "impairment in the body due to alcohol toxin ",
+    "Syndrome_PinYin": "Jiu Du Shang Zhong",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 204,
+    "Syndrome_name": "阳亢",
+    "Syndrome_English": "excess of yang",
+    "Syndrome_PinYin": "Yang Kang",
+    "Syndrome_definition": "肝阳上亢证是指肝肾阴亏，阴不制阳，阳亢于上，以眩晕耳鸣、头目胀痛、头重脚轻、腰膝酸软等上盛下虚症状为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 205,
+    "Syndrome_name": "阳毒",
+    "Syndrome_English": "yang virulence",
+    "Syndrome_PinYin": "Yang Du",
+    "Syndrome_definition": "邪气深重。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 206,
+    "Syndrome_name": "阳虚",
+    "Syndrome_English": "yang deficiency",
+    "Syndrome_PinYin": "Yang Xu",
+    "Syndrome_definition": "阳虚证是指人体阳气亏损，其温养、推动、气化等功能减退，以畏寒肢冷为主要表现的虚寒证。",
+    "Version": "v1,v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 207,
+    "Syndrome_name": "阳虚外感",
+    "Syndrome_English": "externally infection due to yang deficiency",
+    "Syndrome_PinYin": "Yang Xu Wai Gan",
+    "Syndrome_definition": "阳虚证是指人体阳气亏损，其温养、推动、气化等功能减退，以畏寒肢冷为主要表现的虚寒证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 208,
+    "Syndrome_name": "阴亏",
+    "Syndrome_English": "deficiency of yin",
+    "Syndrome_PinYin": "Yin Yu",
+    "Syndrome_definition": "阴虚证是指人体阴液亏少，其滋润、濡养等功能减退，或阴不制阳，阳气偏亢，以口咽干燥、五心烦热、潮热盗汗等为主要表现的虚热证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 209,
+    "Syndrome_name": "阴寒",
+    "Syndrome_English": "coldness of yin",
+    "Syndrome_PinYin": "Yin Han",
+    "Syndrome_definition": "外感之寒邪或阳虚所生之内寒。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 210,
+    "Syndrome_name": "阴疽肿毒",
+    "Syndrome_English": "toxic swelling due to carbuncle of yin nature",
+    "Syndrome_PinYin": "Yin Ju Zhong Du",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 211,
+    "Syndrome_name": "阴虚",
+    "Syndrome_English": "deficiency of yin",
+    "Syndrome_PinYin": "Yin Xu",
+    "Syndrome_definition": "阴虚证是指人体阴液亏少，其滋润、濡养等功能减退，或阴不制阳，阳气偏亢，以口咽干燥、五心烦热、潮热盗汗等为主要表现的虚热证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 212,
+    "Syndrome_name": "阴虚火旺",
+    "Syndrome_English": "flaming-up of fire due to dificiency of yin",
+    "Syndrome_PinYin": "Yin Xu Huo Wang",
+    "Syndrome_definition": "阴虚证是指人体阴液亏少，其滋润、濡养等功能减退，或阴不制阳，阳气偏亢，以口咽干燥、五心烦热、潮热盗汗等为主要表现的虚热证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 213,
+    "Syndrome_name": "阴血不足",
+    "Syndrome_English": "insufficiency of the yin-blood",
+    "Syndrome_PinYin": "Yin Xie Bu Zu",
+    "Syndrome_definition": "血虚证是指血液亏虚，不能濡养脏腑、经络、组织，以面、睑、唇、舌色淡白，脉细为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 214,
+    "Syndrome_name": "顽痰",
+    "Syndrome_English": "stubborn phlegm",
+    "Syndrome_PinYin": "Wan Tan",
+    "Syndrome_definition": "指坚结胶固之痰，亦称老痰、结痰、郁痰。",
+    "Version": "v1,v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 215,
+    "Syndrome_name": "顽痰胶结",
+    "Syndrome_English": "retention of stubborn phlegm",
+    "Syndrome_PinYin": "Wan Tan Xiao Jie",
+    "Syndrome_definition": "指坚结胶固之痰，亦称老痰、结痰、郁痰。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 216,
+    "Syndrome_name": "风寒",
+    "Syndrome_English": "wind-cold syndrome",
+    "Syndrome_PinYin": "Feng Han",
+    "Syndrome_definition": "伤寒证是指寒邪外袭于肤表，阻遏卫阳所表现的表实寒证，又称风寒表证",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 217,
+    "Syndrome_name": "风寒挟湿",
+    "Syndrome_English": "wind syndromes of cold type with damp symptoms",
+    "Syndrome_PinYin": "Feng Han Xie Shi",
+    "Syndrome_definition": "指风、寒、湿三种邪气的结合。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 218,
+    "Syndrome_name": "风寒湿",
+    "Syndrome_English": "wind-cold-damp syndrome",
+    "Syndrome_PinYin": "Feng Han Shi",
+    "Syndrome_definition": "指风、寒、湿三种邪气的结合。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 219,
+    "Syndrome_name": "风水",
+    "Syndrome_English": "wind water",
+    "Syndrome_PinYin": "Feng Shui",
+    "Syndrome_definition": "指风邪外袭，肺卫失宣，水湿泛溢肌肤，以突起头面浮肿及卫表症状为主要表现的证候。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 220,
+    "Syndrome_name": "风温初起",
+    "Syndrome_English": "onset of affection due to wind-warm syndrome ",
+    "Syndrome_PinYin": "Feng Wen Chu Qi",
+    "Syndrome_definition": "风温初起，邪犯肺卫，以发热，微恶风寒，无汗或少汗，头痛，咳嗽，口微渴，舌边尖红，苔薄白，脉浮数等为常见症的风温证候。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 221,
+    "Syndrome_name": "风湿",
+    "Syndrome_English": "wind-dampness",
+    "Syndrome_PinYin": "Feng Shi",
+    "Syndrome_definition": "指风邪与湿邪的结合。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 222,
+    "Syndrome_name": "风热",
+    "Syndrome_English": "wind and heat",
+    "Syndrome_PinYin": "Feng Re",
+    "Syndrome_definition": "感受风热之邪。",
+    "Version": "v1,v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 223,
+    "Syndrome_name": "风热郁肺",
+    "Syndrome_English": "retention of wind-heat in the lung",
+    "Syndrome_PinYin": "Feng Re Yu Fei",
+    "Syndrome_definition": "风热犯肺证是指由于风热侵犯，肺卫失宣，以咳嗽及风热表证症状为主要表现的证。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 224,
+    "Syndrome_name": "风痰",
+    "Syndrome_English": "wind-phlegm",
+    "Syndrome_PinYin": "Feng Tan",
+    "Syndrome_definition": "外风挟痰为患，或肝风痰浊内扰，以咳吐泡沫痰涎，胸闷，眩晕，头目胀痛；或喉中痰鸣，肢体麻木，口眼喎斜，苔白腻，脉弦滑等为常见症的证候。",
+    "Version": "v1,v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 225,
+    "Syndrome_name": "食物积滞",
+    "Syndrome_English": "food accumulation",
+    "Syndrome_PinYin": "Shi Wu Ji Zhi",
+    "Syndrome_definition": "是指由于饮食不节，损伤脾胃而出现的证候。",
+    "Version": "v1,v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 226,
+    "Syndrome_name": "食积",
+    "Syndrome_English": "food stagnation",
+    "Syndrome_PinYin": "Shi Ji",
+    "Syndrome_definition": "是指由于饮食不节，损伤脾胃而出现的证候。",
+    "Version": "v1,v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 227,
+    "Syndrome_name": "食积不化",
+    "Syndrome_English": "food accumulation",
+    "Syndrome_PinYin": "Shi Ji Bu Hua",
+    "Syndrome_definition": "是指由于饮食不节，损伤脾胃而出现的证候。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 228,
+    "Syndrome_name": "食积不消",
+    "Syndrome_English": "indigestion with food retention",
+    "Syndrome_PinYin": "Shi Ji Bu Xiao",
+    "Syndrome_definition": "是指由于饮食不节，损伤脾胃而出现的证候。",
+    "Version": "v1,v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 229,
+    "Syndrome_name": "食积伤酒",
+    "Syndrome_English": "Dyspepsia injury wine",
+    "Syndrome_PinYin": "Shi Ji Shang Jiu",
+    "Syndrome_definition": "是指由于饮酒，损伤脾胃而出现的证候。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 230,
+    "Syndrome_name": "饮酒过多",
+    "Syndrome_English": "Drinking too much",
+    "Syndrome_PinYin": "Yin Jiu Guo Duo",
+    "Version": "v1,v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 231,
+    "Syndrome_name": "饮食不消",
+    "Syndrome_English": "indigestion",
+    "Syndrome_PinYin": "Yin Shi Bu Xiao",
+    "Syndrome_definition": "是指由于饮食不节，损伤脾胃而出现的证候。",
+    "Version": "v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 232,
+    "Syndrome_name": "饮食停滞",
+    "Syndrome_English": "indigestion ",
+    "Syndrome_PinYin": "Yin Shi Ting Zhi",
+    "Syndrome_definition": "是指由于饮食不节，损伤脾胃而出现的证候。",
+    "Version": "v1,v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  },
+  {
+    "Syndrome_id": 233,
+    "Syndrome_name": "饮食积滞",
+    "Syndrome_English": "food stagnation",
+    "Syndrome_PinYin": "Yin Shi Ji Zhi",
+    "Syndrome_definition": "是指由于饮食不节，损伤脾胃而出现的证候。",
+    "Version": "v1,v2",
+    "Type": "Summarized terms",
+    "Suppress": 0
+  }
+]

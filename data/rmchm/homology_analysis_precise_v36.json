@@ -1,0 +1,610 @@
+{
+  "analysis_date": "2026-09-08T09:55:52.700728+00:00",
+  "version": "v3.6",
+  "official_catalog": {
+    "total": 106,
+    "matched": 97,
+    "coverage_rate": 91.5
+  },
+  "marking_status": {
+    "already_marked": 97,
+    "needs_marking": 0,
+    "missing": 9
+  },
+  "matched_records": [
+    {
+      "official": "丁香",
+      "rmchm_name": "丁香",
+      "rmchm_code": "RMCHM-9FEA07E4",
+      "already_marked": true
+    },
+    {
+      "official": "八角茴香",
+      "rmchm_name": "八角茴香",
+      "rmchm_code": "RMCHM-3F432364",
+      "already_marked": true
+    },
+    {
+      "official": "刀豆",
+      "rmchm_name": "刀豆",
+      "rmchm_code": "RMCHM-88F925D8",
+      "already_marked": true
+    },
+    {
+      "official": "小茴香",
+      "rmchm_name": "小茴香",
+      "rmchm_code": "RMCHM-AA7089D8",
+      "already_marked": true
+    },
+    {
+      "official": "小蓟",
+      "rmchm_name": "小蓟",
+      "rmchm_code": "RMCHM-D321384A",
+      "already_marked": true
+    },
+    {
+      "official": "山药",
+      "rmchm_name": "山药",
+      "rmchm_code": "RMCHM-49D21B02",
+      "already_marked": true
+    },
+    {
+      "official": "山楂",
+      "rmchm_name": "山楂",
+      "rmchm_code": "RMCHM-FB47374F",
+      "already_marked": true
+    },
+    {
+      "official": "马齿苋",
+      "rmchm_name": "马齿苋",
+      "rmchm_code": "RMCHM-30A757AF",
+      "already_marked": true
+    },
+    {
+      "official": "乌梢蛇",
+      "rmchm_name": "乌梢蛇",
+      "rmchm_code": "RMCHM-0582A773",
+      "already_marked": true
+    },
+    {
+      "official": "乌梅",
+      "rmchm_name": "乌梅",
+      "rmchm_code": "RMCHM-485CC11A",
+      "already_marked": true
+    },
+    {
+      "official": "木瓜",
+      "rmchm_name": "木瓜",
+      "rmchm_code": "RMCHM-44C96550",
+      "already_marked": true
+    },
+    {
+      "official": "火麻仁",
+      "rmchm_name": "火麻仁",
+      "rmchm_code": "RMCHM-12025E0D",
+      "already_marked": true
+    },
+    {
+      "official": "代代花",
+      "rmchm_name": "代代花",
+      "rmchm_code": "RMCHM-61193554",
+      "already_marked": true
+    },
+    {
+      "official": "玉竹",
+      "rmchm_name": "玉竹",
+      "rmchm_code": "RMCHM-FDB9AA57",
+      "already_marked": true
+    },
+    {
+      "official": "甘草",
+      "rmchm_name": "甘草",
+      "rmchm_code": "RMCHM-AD133D02",
+      "already_marked": true
+    },
+    {
+      "official": "白芷",
+      "rmchm_name": "白芷",
+      "rmchm_code": "RMCHM-02D8E833",
+      "already_marked": true
+    },
+    {
+      "official": "白果",
+      "rmchm_name": "白果",
+      "rmchm_code": "RMCHM-81ED4E4B",
+      "already_marked": true
+    },
+    {
+      "official": "白扁豆",
+      "rmchm_name": "白扁豆",
+      "rmchm_code": "RMCHM-82FD6994",
+      "already_marked": true
+    },
+    {
+      "official": "龙眼肉（桂圆）",
+      "rmchm_name": "龙眼肉",
+      "rmchm_code": "RMCHM-C6B1FFAE",
+      "already_marked": true
+    },
+    {
+      "official": "决明子",
+      "rmchm_name": "决明子",
+      "rmchm_code": "RMCHM-633E35E6",
+      "already_marked": true
+    },
+    {
+      "official": "百合",
+      "rmchm_name": "百合",
+      "rmchm_code": "RMCHM-9704B49E",
+      "already_marked": true
+    },
+    {
+      "official": "肉豆蔻",
+      "rmchm_name": "肉豆蔻",
+      "rmchm_code": "RMCHM-7119B9F8",
+      "already_marked": true
+    },
+    {
+      "official": "肉桂",
+      "rmchm_name": "肉桂",
+      "rmchm_code": "RMCHM-E4D75843",
+      "already_marked": true
+    },
+    {
+      "official": "余甘子",
+      "rmchm_name": "余甘子",
+      "rmchm_code": "RMCHM-32991342",
+      "already_marked": true
+    },
+    {
+      "official": "佛手",
+      "rmchm_name": "佛手",
+      "rmchm_code": "RMCHM-5480AC20",
+      "already_marked": true
+    },
+    {
+      "official": "杏仁（甜、苦）",
+      "rmchm_name": "苦杏仁",
+      "rmchm_code": "RMCHM-06EF7075",
+      "already_marked": true
+    },
+    {
+      "official": "沙棘",
+      "rmchm_name": "沙棘",
+      "rmchm_code": "RMCHM-63996CBF",
+      "already_marked": true
+    },
+    {
+      "official": "牡蛎",
+      "rmchm_name": "牡蛎",
+      "rmchm_code": "RMCHM-1EF1FFB7",
+      "already_marked": true
+    },
+    {
+      "official": "芡实",
+      "rmchm_name": "芡实",
+      "rmchm_code": "RMCHM-768C6E4B",
+      "already_marked": true
+    },
+    {
+      "official": "花椒",
+      "rmchm_name": "花椒",
+      "rmchm_code": "RMCHM-7FDC1DC1",
+      "already_marked": true
+    },
+    {
+      "official": "赤小豆",
+      "rmchm_name": "赤小豆",
+      "rmchm_code": "RMCHM-2905F4FA",
+      "already_marked": true
+    },
+    {
+      "official": "阿胶",
+      "rmchm_name": "阿胶",
+      "rmchm_code": "RMCHM-5E137BF0",
+      "already_marked": true
+    },
+    {
+      "official": "鸡内金",
+      "rmchm_name": "鸡内金",
+      "rmchm_code": "RMCHM-5F225C76",
+      "already_marked": true
+    },
+    {
+      "official": "麦芽",
+      "rmchm_name": "麦芽",
+      "rmchm_code": "RMCHM-06C02A4E",
+      "already_marked": true
+    },
+    {
+      "official": "昆布",
+      "rmchm_name": "昆布",
+      "rmchm_code": "RMCHM-8463F9EB",
+      "already_marked": true
+    },
+    {
+      "official": "枣（大枣、酸枣、黑枣）",
+      "rmchm_name": "大枣",
+      "rmchm_code": "RMCHM-5AF803EB",
+      "already_marked": true
+    },
+    {
+      "official": "罗汉果",
+      "rmchm_name": "罗汉果",
+      "rmchm_code": "RMCHM-10159BC1",
+      "already_marked": true
+    },
+    {
+      "official": "郁李仁",
+      "rmchm_name": "郁李仁",
+      "rmchm_code": "RMCHM-5914A848",
+      "already_marked": true
+    },
+    {
+      "official": "金银花",
+      "rmchm_name": "金银花",
+      "rmchm_code": "RMCHM-4EE7AE0D",
+      "already_marked": true
+    },
+    {
+      "official": "青果",
+      "rmchm_name": "青果",
+      "rmchm_code": "RMCHM-A6CE7BAD",
+      "already_marked": true
+    },
+    {
+      "official": "鱼腥草",
+      "rmchm_name": "鱼腥草",
+      "rmchm_code": "RMCHM-03460B02",
+      "already_marked": true
+    },
+    {
+      "official": "姜（生姜、干姜）",
+      "rmchm_name": "生姜",
+      "rmchm_code": "RMCHM-70A1E748",
+      "already_marked": true
+    },
+    {
+      "official": "枳椇子",
+      "rmchm_name": "枳椇子",
+      "rmchm_code": "RMCHM-8E609B1B",
+      "already_marked": true
+    },
+    {
+      "official": "枸杞子",
+      "rmchm_name": "枸杞子",
+      "rmchm_code": "RMCHM-1A459FAF",
+      "already_marked": true
+    },
+    {
+      "official": "栀子",
+      "rmchm_name": "栀子",
+      "rmchm_code": "RMCHM-9E125E8D",
+      "already_marked": true
+    },
+    {
+      "official": "砂仁",
+      "rmchm_name": "砂仁",
+      "rmchm_code": "RMCHM-FC3C5308",
+      "already_marked": true
+    },
+    {
+      "official": "胖大海",
+      "rmchm_name": "胖大海",
+      "rmchm_code": "RMCHM-83CAAA08",
+      "already_marked": true
+    },
+    {
+      "official": "茯苓",
+      "rmchm_name": "茯苓",
+      "rmchm_code": "RMCHM-845E84E2",
+      "already_marked": true
+    },
+    {
+      "official": "香橼",
+      "rmchm_name": "香橼",
+      "rmchm_code": "RMCHM-06A56AFD",
+      "already_marked": true
+    },
+    {
+      "official": "香薷",
+      "rmchm_name": "香薷",
+      "rmchm_code": "RMCHM-BA93602A",
+      "already_marked": true
+    },
+    {
+      "official": "桃仁",
+      "rmchm_name": "桃仁",
+      "rmchm_code": "RMCHM-8B91ADF1",
+      "already_marked": true
+    },
+    {
+      "official": "桑叶",
+      "rmchm_name": "桑叶",
+      "rmchm_code": "RMCHM-6886FE35",
+      "already_marked": true
+    },
+    {
+      "official": "桑椹",
+      "rmchm_name": "桑椹",
+      "rmchm_code": "RMCHM-C274F1F3",
+      "already_marked": true
+    },
+    {
+      "official": "桔红",
+      "rmchm_name": "化橘红",
+      "rmchm_code": "RMCHM-030AD81E",
+      "already_marked": true
+    },
+    {
+      "official": "桔梗",
+      "rmchm_name": "桔梗",
+      "rmchm_code": "RMCHM-2377B969",
+      "already_marked": true
+    },
+    {
+      "official": "荷叶",
+      "rmchm_name": "荷叶",
+      "rmchm_code": "RMCHM-432C8E33",
+      "already_marked": true
+    },
+    {
+      "official": "莱菔子",
+      "rmchm_name": "莱菔子",
+      "rmchm_code": "RMCHM-572BEE1D",
+      "already_marked": true
+    },
+    {
+      "official": "莲子",
+      "rmchm_name": "莲子",
+      "rmchm_code": "RMCHM-4B941B4D",
+      "already_marked": true
+    },
+    {
+      "official": "高良姜",
+      "rmchm_name": "高良姜",
+      "rmchm_code": "RMCHM-C53087D7",
+      "already_marked": true
+    },
+    {
+      "official": "淡竹叶",
+      "rmchm_name": "淡竹叶",
+      "rmchm_code": "RMCHM-ADECD064",
+      "already_marked": true
+    },
+    {
+      "official": "淡豆豉",
+      "rmchm_name": "淡豆豉",
+      "rmchm_code": "RMCHM-B2F4E8E4",
+      "already_marked": true
+    },
+    {
+      "official": "菊花",
+      "rmchm_name": "菊花",
+      "rmchm_code": "RMCHM-216FD094",
+      "already_marked": true
+    },
+    {
+      "official": "菊苣",
+      "rmchm_name": "菊苣",
+      "rmchm_code": "RMCHM-95F562E5",
+      "already_marked": true
+    },
+    {
+      "official": "黄精",
+      "rmchm_name": "黄精",
+      "rmchm_code": "RMCHM-FEBB81A7",
+      "already_marked": true
+    },
+    {
+      "official": "紫苏",
+      "rmchm_name": "紫苏",
+      "rmchm_code": "RMCHM-CAA9D6FE",
+      "already_marked": true
+    },
+    {
+      "official": "葛根",
+      "rmchm_name": "葛根",
+      "rmchm_code": "RMCHM-EC2B5E51",
+      "already_marked": true
+    },
+    {
+      "official": "黑芝麻",
+      "rmchm_name": "黑芝麻",
+      "rmchm_code": "RMCHM-5649CB41",
+      "already_marked": true
+    },
+    {
+      "official": "槐花",
+      "rmchm_name": "槐花",
+      "rmchm_code": "RMCHM-285BE4F1",
+      "already_marked": true
+    },
+    {
+      "official": "蒲公英",
+      "rmchm_name": "蒲公英",
+      "rmchm_code": "RMCHM-E0BCBEE9",
+      "already_marked": true
+    },
+    {
+      "official": "蜂蜜",
+      "rmchm_name": "蜂蜜",
+      "rmchm_code": "RMCHM-37F3732A",
+      "already_marked": true
+    },
+    {
+      "official": "榧子",
+      "rmchm_name": "榧子",
+      "rmchm_code": "RMCHM-8C97C00C",
+      "already_marked": true
+    },
+    {
+      "official": "酸枣仁",
+      "rmchm_name": "酸枣仁",
+      "rmchm_code": "RMCHM-F9CC040E",
+      "already_marked": true
+    },
+    {
+      "official": "橘皮",
+      "rmchm_name": "陈皮",
+      "rmchm_code": "RMCHM-4169B835",
+      "already_marked": true
+    },
+    {
+      "official": "薄荷",
+      "rmchm_name": "薄荷",
+      "rmchm_code": "RMCHM-F4227138",
+      "already_marked": true
+    },
+    {
+      "official": "薏苡仁",
+      "rmchm_name": "薏苡仁",
+      "rmchm_code": "RMCHM-E68B080A",
+      "already_marked": true
+    },
+    {
+      "official": "薤白",
+      "rmchm_name": "薤白",
+      "rmchm_code": "RMCHM-49996FE4",
+      "already_marked": true
+    },
+    {
+      "official": "覆盆子",
+      "rmchm_name": "覆盆子",
+      "rmchm_code": "RMCHM-300DD01C",
+      "already_marked": true
+    },
+    {
+      "official": "藿香",
+      "rmchm_name": "广藿香",
+      "rmchm_code": "RMCHM-B43D4251",
+      "already_marked": true
+    },
+    {
+      "official": "当归",
+      "rmchm_name": "当归",
+      "rmchm_code": "RMCHM-DA703600",
+      "already_marked": true
+    },
+    {
+      "official": "山柰",
+      "rmchm_name": "山柰",
+      "rmchm_code": "RMCHM-C59EC692",
+      "already_marked": true
+    },
+    {
+      "official": "西红花（在香辛料和调味品中又称\"藏红花\"）",
+      "rmchm_name": "西红花",
+      "rmchm_code": "RMCHM-C9DF3BDA",
+      "already_marked": true
+    },
+    {
+      "official": "草果",
+      "rmchm_name": "草果",
+      "rmchm_code": "RMCHM-69D99D82",
+      "already_marked": true
+    },
+    {
+      "official": "姜黄",
+      "rmchm_name": "姜黄",
+      "rmchm_code": "RMCHM-B218D047",
+      "already_marked": true
+    },
+    {
+      "official": "荜茇",
+      "rmchm_name": "荜茇",
+      "rmchm_code": "RMCHM-D1DAA705",
+      "already_marked": true
+    },
+    {
+      "official": "党参",
+      "rmchm_name": "党参",
+      "rmchm_code": "RMCHM-19D30F55",
+      "already_marked": true
+    },
+    {
+      "official": "肉苁蓉（荒漠）",
+      "rmchm_name": "肉苁蓉",
+      "rmchm_code": "RMCHM-4BEAE4CD",
+      "already_marked": true
+    },
+    {
+      "official": "铁皮石斛",
+      "rmchm_name": "铁皮石斛",
+      "rmchm_code": "RMCHM-600CAB5E",
+      "already_marked": true
+    },
+    {
+      "official": "西洋参",
+      "rmchm_name": "西洋参",
+      "rmchm_code": "RMCHM-CDF7E76C",
+      "already_marked": true
+    },
+    {
+      "official": "黄芪",
+      "rmchm_name": "黄芪",
+      "rmchm_code": "RMCHM-950482D8",
+      "already_marked": true
+    },
+    {
+      "official": "灵芝",
+      "rmchm_name": "灵芝",
+      "rmchm_code": "RMCHM-C2DE41C4",
+      "already_marked": true
+    },
+    {
+      "official": "山茱萸",
+      "rmchm_name": "山茱萸",
+      "rmchm_code": "RMCHM-C50A47D6",
+      "already_marked": true
+    },
+    {
+      "official": "天麻",
+      "rmchm_name": "天麻",
+      "rmchm_code": "RMCHM-36EF0DE7",
+      "already_marked": true
+    },
+    {
+      "official": "杜仲叶",
+      "rmchm_name": "杜仲叶",
+      "rmchm_code": "RMCHM-1ED24DD8",
+      "already_marked": true
+    },
+    {
+      "official": "地黄",
+      "rmchm_name": "地黄",
+      "rmchm_code": "RMCHM-88CFF1FA",
+      "already_marked": true
+    },
+    {
+      "official": "麦冬",
+      "rmchm_name": "麦冬",
+      "rmchm_code": "RMCHM-AEC3B8A8",
+      "already_marked": true
+    },
+    {
+      "official": "天冬",
+      "rmchm_name": "天冬",
+      "rmchm_code": "RMCHM-9A7FB731",
+      "already_marked": true
+    },
+    {
+      "official": "化橘红",
+      "rmchm_name": "化橘红",
+      "rmchm_code": "RMCHM-030AD81E",
+      "already_marked": true
+    }
+  ],
+  "unmatched_official": [
+    "白扁豆花",
+    "益智仁",
+    "黄芥子",
+    "紫苏籽",
+    "黑胡椒",
+    "槐米",
+    "鲜白茅根",
+    "鲜芦根",
+    "蝮蛇"
+  ],
+  "needs_marking": []
+}

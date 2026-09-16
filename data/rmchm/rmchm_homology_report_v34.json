@@ -1,0 +1,18 @@
+{
+  "generated_at": "2026-09-08T09:44:33.524334+00:00",
+  "version": "v3.4",
+  "summary": {
+    "total_herbs": 711,
+    "homology_marked": 95,
+    "homology_percentage": 13.4
+  },
+  "fixes_applied": {
+    "markers_added": 53,
+    "missing_herbs": 18
+  },
+  "national_catalog": {
+    "total": 98,
+    "matched": 79,
+    "missing": 19
+  }
+}

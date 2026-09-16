@@ -1,0 +1,27 @@
+{
+  "generated_at": "2026-09-08T09:27:26.309353+00:00",
+  "version": "v3.1",
+  "summary": {
+    "total_herbs": 702,
+    "tcmsp_source": 502,
+    "symmap_source": 698,
+    "images_source": 107
+  },
+  "data_coverage": {
+    "with_ob": 486,
+    "with_nature": 693,
+    "with_meridians": 653,
+    "with_compounds": 486,
+    "with_images": 106,
+    "food_homology": 41
+  },
+  "aggregate_stats": {
+    "total_compounds": 32181,
+    "total_targets": 84469,
+    "total_diseases": 122614
+  },
+  "image_analysis": {
+    "total_images": 107,
+    "matched_images": 106
+  }
+}

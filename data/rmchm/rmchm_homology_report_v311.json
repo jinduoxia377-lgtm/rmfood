@@ -1,0 +1,19 @@
+{
+  "generated_at": "2026-09-08T10:04:03.491176+00:00",
+  "version": "v3.11",
+  "summary": {
+    "total_herbs": 714,
+    "homology_marked": 127,
+    "white_bean_flower_added": true
+  },
+  "new_herb": {
+    "name_cn": "白扁豆花",
+    "rmchm_code": "RMCHM-205D10B7",
+    "name_latin": "Dolichos Lablab Flos",
+    "nature_cn": "甘，平",
+    "meridians_cn": "脾、胃",
+    "function_cn": "和中益气，和胃醒脾，止泻痢",
+    "is_food_homology": true,
+    "food_homology_batch": "first (2002)"
+  }
+}
