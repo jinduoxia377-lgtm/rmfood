@@ -281,16 +281,13 @@ export function NotificationCenter() {
               <h4 className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-3">通知设置</h4>
               <div className="space-y-2">
                 <label className="flex items-center gap-2 text-sm cursor-pointer">
-                  <input type="checkbox" defaultChecked className="rounded" />
-                  <span>启用通知</span>
+<input aria-label="通知设置" type="checkbox" defaultChecked className="rounded" />                  <span>启用通知</span>
                 </label>
                 <label className="flex items-center gap-2 text-sm cursor-pointer">
-                  <input type="checkbox" defaultChecked className="rounded" />
-                  <span>邮件通知</span>
+<input aria-label="启用通知" type="checkbox" defaultChecked className="rounded" />                  <span>邮件通知</span>
                 </label>
                 <label className="flex items-center gap-2 text-sm cursor-pointer">
-                  <input type="checkbox" defaultChecked className="rounded" />
-                  <span>实时推送</span>
+<input aria-label="邮件通知" type="checkbox" defaultChecked className="rounded" />                  <span>实时推送</span>
                 </label>
                 <div className="flex items-center gap-2 pt-2">
                   <Clock className="w-4 h-4 text-neutral-400" />

@@ -405,8 +405,7 @@ export function AcademicReportEditor() {
           <span className="font-bold text-neutral-900 dark:text-neutral-100">学术报告系统</span>
         </div>
 
-        <input type="text" value={reportDoc.title} onChange={(e) => setReportDoc({ ...reportDoc, title: e.target.value })} className="px-3 py-1.5 text-sm bg-neutral-100 dark:bg-neutral-700 border-none rounded-lg focus:outline-none focus:ring-2 focus:ring-primary max-w-xs"/>
-
+<input aria-label="学术报告系统" type="text" value={reportDoc.title} onChange={(e) => setReportDoc({ ...reportDoc, title: e.target.value })} className="px-3 py-1.5 text-sm bg-neutral-100 dark:bg-neutral-700 border-none rounded-lg focus:outline-none focus:ring-2 focus:ring-primary max-w-xs"/>
         <SaveStatusIndicator
           status={saveStatus}
           lastSavedAt={lastSavedAt}
@@ -502,8 +501,7 @@ export function AcademicReportEditor() {
           </div>
           <div className="flex items-center gap-2">
             <label className="text-neutral-600 dark:text-neutral-400">日期：</label>
-            <input type="date" value={reportDoc.date || ''} onChange={(e) => updateMetadata('date', e.target.value)} className="px-2 py-1 text-sm bg-white dark:bg-neutral-700 border border-neutral-200 dark:border-neutral-600 rounded focus:outline-none focus:ring-1 focus:ring-primary"/>
-          </div>
+<input aria-label="单位：" type="date" value={reportDoc.date || ''} onChange={(e) => updateMetadata('date', e.target.value)} className="px-2 py-1 text-sm bg-white dark:bg-neutral-700 border border-neutral-200 dark:border-neutral-600 rounded focus:outline-none focus:ring-1 focus:ring-primary"/>          </div>
         </div>
 
         <AutoSaveIndicator

@@ -38,12 +38,10 @@ export default function ReportDialog({
           <div className="grid grid-cols-2 gap-2">
             <div>
               <label className="text-[10px] font-semibold text-neutral-500 block mb-1">报告标题</label>
-              <input value={reportConfig.title} onChange={e => onSetReportConfig({ title: e.target.value })} className="w-full px-2.5 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-600 text-[11px] bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-indigo-300" />
-            </div>
+<input aria-label="报告标题" value={reportConfig.title} onChange={e => onSetReportConfig({ title: e.target.value })} className="w-full px-2.5 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-600 text-[11px] bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-indigo-300" />            </div>
             <div>
               <label className="text-[10px] font-semibold text-neutral-500 block mb-1">作者</label>
-              <input value={reportConfig.author} onChange={e => onSetReportConfig({ author: e.target.value })} className="w-full px-2.5 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-600 text-[11px] bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-indigo-300" />
-            </div>
+<input aria-label="报告标题" value={reportConfig.author} onChange={e => onSetReportConfig({ author: e.target.value })} className="w-full px-2.5 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-600 text-[11px] bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-indigo-300" />            </div>
           </div>
           <div>
             <label className="text-[10px] font-semibold text-neutral-500 block mb-1">导出格式</label>
