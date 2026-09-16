@@ -1,4 +1,4 @@
-/*
+﻿/*
  * RMFOOD 设计系统 - 焦点与滚动条 v3.1 — Apple HIG 风格
  * 全局焦点环、输入框焦点、按钮焦点、滚动条
  */
@@ -54,4 +54,18 @@ button:focus-visible {
 }
 .dark ::-webkit-scrollbar-thumb:hover {
   background: var(--scrollbar-thumb-hover-dark, rgba(148, 163, 184, 0.25));
+}
+
+/* GPU acceleration */
+*, *::before, *::after {
+  will-change: auto;
+}
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

@@ -36,7 +36,7 @@ export default function LayoutIndicator({ localLayout, showLayoutMenu, onToggleL
     <div className="absolute top-3 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5">
       <div
         className="px-3 py-1 rounded-full text-[10px] font-medium bg-white/92 dark:bg-neutral-800/92 backdrop-blur-md border border-neutral-200/60 dark:border-neutral-700/60 shadow-sm text-neutral-600 dark:text-neutral-400 cursor-pointer hover:bg-white dark:hover:bg-neutral-700 transition-colors"
-        onClick={onToggleLayoutMenu}
+         role="button" tabIndex={0} onClick={onToggleLayoutMenu}
       >
         布局: {LAYOUT_NAMES[localLayout]}
         <span className="ml-1 text-[8px]">▾</span>

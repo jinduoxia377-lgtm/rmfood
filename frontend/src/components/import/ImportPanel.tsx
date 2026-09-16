@@ -415,7 +415,7 @@ export function ImportPanel({ onClose }: { onClose: () => void }) {
   const columns = previewData?.length ? Object.keys(previewData[0]) : []
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"  role="button" tabIndex={0} onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
       <div className="bg-white dark:bg-neutral-800 rounded-2xl shadow-2xl w-[560px] max-h-[90vh] overflow-hidden flex flex-col animate-fade-in">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-3 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/50 dark:to-amber-950/50 border-b border-orange-100/50 dark:border-orange-900/30 shrink-0">

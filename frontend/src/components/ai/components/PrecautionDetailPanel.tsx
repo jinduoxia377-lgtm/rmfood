@@ -66,7 +66,7 @@ const PrecautionDetailPanel = memo(({ precautions, visible, onClose }: Precautio
         className={`fixed inset-0 bg-black/30 backdrop-blur-sm z-40 transition-opacity duration-200 ${
           isVisible ? 'opacity-100' : 'opacity-0'
         }`}
-        onClick={onClose}
+         role="button" tabIndex={0} onClick={onClose}
         aria-hidden="true"
       />
 

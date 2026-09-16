@@ -348,7 +348,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/20 backdrop-blur-sm"
-        onClick={onClose}
+         role="button" tabIndex={0} onClick={onClose}
       />
 
       {/* Command Panel */}

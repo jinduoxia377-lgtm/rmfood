@@ -275,7 +275,7 @@ const FormulaCard = React.memo<FormulaCardProps>(
           {isExpanded && (
             <span
               className="inline-flex items-center gap-1 text-secondary-600 dark:text-secondary-400 font-medium cursor-pointer"
-              onClick={() => onToggleExpand(formula.id)}
+               role="button" tabIndex={0} onClick={() => onToggleExpand(formula.id)}
             >
               <Eye className="w-3.5 h-3.5" />
               已收起
@@ -285,7 +285,7 @@ const FormulaCard = React.memo<FormulaCardProps>(
           {!isExpanded && (
             <span
               className="inline-flex items-center gap-1 text-secondary-600 dark:text-secondary-400 font-medium cursor-pointer"
-              onClick={() => onToggleExpand(formula.id)}
+               role="button" tabIndex={0} onClick={() => onToggleExpand(formula.id)}
             >
               展开详情
               <ChevronDown className="w-3.5 h-3.5" />
@@ -549,7 +549,7 @@ const FormulaCard = React.memo<FormulaCardProps>(
                 ) : (
                   <div
                     className="flex items-center gap-2 cursor-pointer group/name"
-                    onClick={(e) => {
+                     role="button" tabIndex={0} onClick={(e) => {
                       e.stopPropagation();
                       handleStartEdit();
                     }}

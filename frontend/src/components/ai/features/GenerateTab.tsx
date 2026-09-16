@@ -374,11 +374,11 @@ export function GenerateTab({ llmAvailable, modelStatus, onGenerateSuccess }: Ge
       {selectedReport && (
         <div
           className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
-          onClick={() => setSelectedReport(null)}
+           role="button" tabIndex={0} onClick={() => setSelectedReport(null)}
         >
           <div
             className="bg-surface rounded-xl max-w-3xl w-full mx-4 overflow-hidden shadow-2xl border border-border"
-            onClick={(e) => e.stopPropagation()}
+             role="button" tabIndex={0} onClick={(e) => e.stopPropagation()}
           >
             <AcademicReportEnhanced
               candidate={selectedReport}
@@ -393,11 +393,11 @@ export function GenerateTab({ llmAvailable, modelStatus, onGenerateSuccess }: Ge
       {compareVersions && versionsHook.formulaVersions.length >= 2 && (
         <div
           className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
-          onClick={() => setCompareVersions(null)}
+           role="button" tabIndex={0} onClick={() => setCompareVersions(null)}
         >
           <div
             className="bg-surface rounded-xl max-w-4xl w-full mx-4 overflow-hidden shadow-2xl border border-border"
-            onClick={(e) => e.stopPropagation()}
+             role="button" tabIndex={0} onClick={(e) => e.stopPropagation()}
           >
             <VersionComparePanel
               version1={versionsHook.formulaVersions[compareVersions.v2 - 1]}

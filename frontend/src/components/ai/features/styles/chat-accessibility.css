@@ -1,4 +1,4 @@
-/* ═══════════════════════════════════════════════════════
+﻿/* ═══════════════════════════════════════════════════════
    RMFOOD AI Chat — 无障碍与 WCAG
    合并自: empty-state-accessibility, wcag21-color-system
    ═══════════════════════════════════════════════════════ */
@@ -81,5 +81,19 @@
   .es-button:hover,
   .es-button:focus {
     outline: 2px solid Highlight;
+  }
+}
+
+/* GPU acceleration */
+*, *::before, *::after {
+  will-change: auto;
+}
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

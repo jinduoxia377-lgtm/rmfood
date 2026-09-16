@@ -343,7 +343,7 @@ export default function AIAssistantPage() {
         {isMobile && mobileMenuOpen && (
           <div
             className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm sm:hidden"
-            onClick={closeMobileMenu}
+             role="button" tabIndex={0} onClick={closeMobileMenu}
             aria-hidden="true"
           />
         )}

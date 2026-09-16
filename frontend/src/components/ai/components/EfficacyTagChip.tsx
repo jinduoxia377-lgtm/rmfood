@@ -73,7 +73,7 @@ function EfficacyTagChip({
         ${onClick ? 'hover:opacity-90 hover:scale-105 cursor-pointer' : ''}
       `}
       style={{ backgroundColor: color }}
-      onClick={(e) => {
+       role="button" tabIndex={0} onClick={(e) => {
         e.stopPropagation()
         onClick?.(tag)
       }}

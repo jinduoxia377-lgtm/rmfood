@@ -253,7 +253,7 @@ export default function CommandPalette() {
       {open && (
         <div
           className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm animate-fade-in"
-          onClick={() => setOpen(false)}
+           role="button" tabIndex={0} onClick={() => setOpen(false)}
         />
       )}
 

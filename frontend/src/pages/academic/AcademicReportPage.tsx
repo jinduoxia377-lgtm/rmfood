@@ -421,7 +421,7 @@ export default function AcademicReportPage() {
                       </button>
                       {showMenu && (
                         <>
-                          <div className="fixed inset-0 z-10" onClick={() => setShowMoreMenu(null)} />
+                          <div className="fixed inset-0 z-10"  role="button" tabIndex={0} onClick={() => setShowMoreMenu(null)} />
                           <div className="absolute right-0 top-full mt-1 w-40 bg-white dark:bg-neutral-800 rounded-xl shadow-xl border border-neutral-200 dark:border-neutral-700 py-1.5 z-20">
                             <button onClick={() => handleView(report)} className="w-full px-3 py-2 text-left text-xs hover:bg-neutral-50 dark:hover:bg-neutral-700 flex items-center gap-2 text-neutral-700 dark:text-neutral-200">
                               <Eye size={13} />查看

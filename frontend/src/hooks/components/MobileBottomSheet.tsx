@@ -79,7 +79,7 @@ export default function MobileBottomSheet({
       {/* 遮罩层 */}
       <div
         className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300"
-        onClick={onClose}
+         role="button" tabIndex={0} onClick={onClose}
       />
 
       {/* 面板 */}

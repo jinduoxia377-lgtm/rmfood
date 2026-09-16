@@ -222,7 +222,7 @@ function KeyboardShortcutsHelp({ onClose }: { onClose: () => void }) {
       {/* 遮罩 */}
       <div
         className="absolute inset-0 bg-black/40 backdrop-blur-sm animate-fade-in"
-        onClick={onClose}
+         role="button" tabIndex={0} onClick={onClose}
         aria-hidden
       />
 

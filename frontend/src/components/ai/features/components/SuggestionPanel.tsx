@@ -586,7 +586,6 @@ function EnhancedSuggestionCard({
   return (
     <div
       data-index={index}
-      onClick={() => { onSelect(); onApply() }}
       onMouseEnter={onSelect}
       className={`group w-full p-4 cursor-pointer border-b border-neutral-100 dark:border-neutral-700 last:border-0 transition-all duration-200 ${
         isSelected

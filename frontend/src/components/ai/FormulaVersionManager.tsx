@@ -464,7 +464,7 @@ function VersionItem({
       className={`px-4 py-3 hover:bg-slate-50 dark:hover:bg-neutral-800/50 transition-colors cursor-pointer ${
         isSelected ? 'bg-secondary-50 dark:bg-secondary-900/20' : ''
       } ${isBranch ? 'border-l-0' : ''}`}
-      onClick={onSelect}
+       role="button" tabIndex={0} onClick={onSelect}
     >
       <div className="flex items-start gap-3">
         <div className="flex flex-col items-center">
@@ -525,7 +525,7 @@ function VersionItem({
           </div>
 
           {isEditing ? (
-            <div className="mt-2 space-y-2" onClick={(e) => e.stopPropagation()}>
+            <div className="mt-2 space-y-2"  role="button" tabIndex={0} onClick={(e) => e.stopPropagation()}>
               <div className="relative">
                 <textarea
                   value={remarkText}

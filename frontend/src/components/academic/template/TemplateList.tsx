@@ -36,7 +36,7 @@ export function TemplateList({ templates = [], onSelect, onCreate }: TemplateLis
         {templates.map((template) => (
           <div
             key={template.id}
-            onClick={() => onSelect?.(template.id)}
+             role="button" tabIndex={0} onClick={() => onSelect?.(template.id)}
             className="border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer bg-white dark:bg-neutral-800"
           >
             <div className="flex items-start gap-3">

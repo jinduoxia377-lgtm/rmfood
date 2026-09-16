@@ -220,7 +220,7 @@ export function HistorySidebar({
       {isMobile && isMobileOpen && (
         <div
           className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
-          onClick={handleMobileToggle}
+           role="button" tabIndex={0} onClick={handleMobileToggle}
           aria-hidden={!isMobileOpen}
         />
       )}

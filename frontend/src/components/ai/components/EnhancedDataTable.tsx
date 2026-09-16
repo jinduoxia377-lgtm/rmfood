@@ -94,7 +94,7 @@ export function EnhancedDataTable({
       {
         accessorKey: 'name',
         header: ({ column }) => (
-          <div className="flex items-center gap-2 cursor-pointer select-none" onClick={column.getToggleSortingHandler()}>
+          <div className="flex items-center gap-2 cursor-pointer select-none"  role="button" tabIndex={0} onClick={column.getToggleSortingHandler()}>
             <span>成分名称</span>
             <SortIcon column={column} />
           </div>
@@ -112,7 +112,7 @@ export function EnhancedDataTable({
       {
         accessorKey: 'amount',
         header: ({ column }) => (
-          <div className="flex items-center gap-2 cursor-pointer select-none" onClick={column.getToggleSortingHandler()}>
+          <div className="flex items-center gap-2 cursor-pointer select-none"  role="button" tabIndex={0} onClick={column.getToggleSortingHandler()}>
             <span>用量</span>
             <SortIcon column={column} />
           </div>
@@ -160,7 +160,7 @@ export function EnhancedDataTable({
         accessorFn: (row) => row.source || 'TCM',
         id: 'source',
         header: ({ column }) => (
-          <div className="flex items-center gap-2 cursor-pointer select-none" onClick={column.getToggleSortingHandler()}>
+          <div className="flex items-center gap-2 cursor-pointer select-none"  role="button" tabIndex={0} onClick={column.getToggleSortingHandler()}>
             <span>来源分类</span>
             <SortIcon column={column} />
           </div>
@@ -244,10 +244,10 @@ export function EnhancedDataTable({
   if (!visible) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"  role="button" tabIndex={0} onClick={onClose}>
       <div
         className="w-full max-w-7xl max-h-[90vh] bg-white dark:bg-neutral-900 rounded-xl shadow-2xl overflow-hidden flex flex-col"
-        onClick={(e) => e.stopPropagation()}
+         role="button" tabIndex={0} onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-200 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-800/50">

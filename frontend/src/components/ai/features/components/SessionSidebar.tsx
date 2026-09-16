@@ -113,7 +113,6 @@ const SessionItem: React.FC<SessionItemProps> = React.memo(({
           ? 'bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800'
           : 'hover:bg-neutral-100 dark:hover:bg-neutral-700/50 border border-transparent'
       }`}
-      onClick={onClick}
       onContextMenu={onContextMenu}
       role="button"
       tabIndex={0}
@@ -217,7 +216,7 @@ const SessionActionMenu: React.FC<SessionActionMenuProps> = ({
 
   return (
     <>
-      <div className="fixed inset-0 z-30" onClick={onClose} />
+      <div className="fixed inset-0 z-30"  role="button" tabIndex={0} onClick={onClose} />
       <div
         ref={menuRef}
         className="fixed z-40 w-52 bg-white dark:bg-neutral-800 rounded-lg shadow-xl border border-neutral-200 dark:border-neutral-700 py-1.5 animate-in fade-in zoom-in-95 duration-100"

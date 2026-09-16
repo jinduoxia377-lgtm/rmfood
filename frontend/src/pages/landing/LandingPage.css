@@ -1,4 +1,4 @@
-/**
+﻿/**
  * LandingPage.css — 专业学术风格重设计（升级 v6）
  *
  * 设计语言：
@@ -875,3 +875,17 @@ section[id] {
   margin-top: 4px;
   max-width: 480px;
 }
+
+/* GPU acceleration hints */
+.animate-chat-bubble-enter,
+.animate-chat-bubble-exit,
+.animate-fade-in,
+.animate-fade-out,
+.animate-slide-up,
+.animate-slide-down,
+.animate-pulse-soft,
+.animate-spin-slow {
+  will-change: opacity, transform;
+  transform: translateZ(0);
+}
+

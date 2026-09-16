@@ -28,7 +28,7 @@ export default function ReportDialog({
   ]
 
   return (
-    <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm" onClick={(e) => e.target === e.currentTarget && onClose()}>
+    <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm"  role="button" tabIndex={0} onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="bg-white dark:bg-neutral-800 rounded-2xl shadow-2xl w-[480px] overflow-hidden animate-fade-in">
         <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/50 dark:to-purple-950/50 border-b border-indigo-100/50">
           <div className="flex items-center gap-2"><span>📄</span><span className="text-sm font-bold text-indigo-700 dark:text-indigo-300">生成分析报告</span></div>

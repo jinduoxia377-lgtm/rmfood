@@ -189,7 +189,7 @@ function MobileSidebarContent({
       >
         <div
           className="flex items-center gap-3 cursor-pointer rounded-xl transition-all duration-200 hover:bg-[var(--bg-surface-hover)] focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-          onClick={() => { navigate('/settings'); setSidebarOpen(false); }}
+           role="button" tabIndex={0} onClick={() => { navigate('/settings'); setSidebarOpen(false); }}
           style={{ padding: '12px', background: 'var(--bg-surface)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-xl)' }}
           aria-label={`${user?.fullName || user?.username || '用户'}的账户菜单`}
         >
@@ -382,7 +382,7 @@ export default function MainLayout() {
           mobileDrawerOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none',
         )}
         style={{ background: 'var(--overlay-bg, rgba(0,0,0,0.5))', backdropFilter: 'blur(4px)' }}
-        onClick={() => setMobileDrawerOpen(false)}
+         role="button" tabIndex={0} onClick={() => setMobileDrawerOpen(false)}
         aria-hidden={!mobileDrawerOpen}
       />
 

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * SynergyRadarChart - 药食同源与多肽成分协同效果交互式雷达图
  *
  * 技术选型说明:
@@ -743,7 +743,6 @@ const SynergyRadarChartComponent: React.FC<SynergyRadarChartProps> = ({
       {selectedDimension && interactive && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30 backdrop-blur-sm"
-          onClick={closeDetailPanel}
           role="dialog"
           aria-modal="true"
           aria-labelledby="detail-panel-title"
@@ -754,7 +753,6 @@ const SynergyRadarChartComponent: React.FC<SynergyRadarChartProps> = ({
               backgroundColor: themeColors.tooltipBg,
               border: `1px solid ${themeColors.tooltipBorder}`,
             }}
-            onClick={(e) => e.stopPropagation()}
           >
             {/* 关闭按钮 */}
             <button
@@ -843,3 +841,4 @@ const SynergyRadarChartComponent: React.FC<SynergyRadarChartProps> = ({
 export const SynergyRadarChart = memo(SynergyRadarChartComponent)
 
 export default SynergyRadarChart
+

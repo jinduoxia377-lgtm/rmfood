@@ -268,7 +268,7 @@ export function CategoryTree({
                           isSelected && 'bg-primary-50 dark:bg-primary-900/20',
                         )}
                         style={{ paddingLeft: `${12 + indent * 16}px`, height: `${ITEM_HEIGHT}px` }}
-                        onClick={() => hasChildren ? toggleExpand(node.id) : toggleSelect(node.id)}
+                         role="button" tabIndex={0} onClick={() => hasChildren ? toggleExpand(node.id) : toggleSelect(node.id)}
                       >
                         {hasChildren ? (
                           <span className="text-neutral-400">
@@ -309,7 +309,7 @@ export function CategoryTree({
       {open && (
         <div
           className="fixed inset-0 z-20"
-          onClick={() => setOpen(false)}
+           role="button" tabIndex={0} onClick={() => setOpen(false)}
         />
       )}
     </div>

@@ -47,7 +47,7 @@ export function ShortcutHelp({ shortcuts }: ShortcutHelpProps) {
  {isOpen && (
  <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
  {/* 背景遮罩 */}
- <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setIsOpen(false)} />
+ <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"  role="button" tabIndex={0} onClick={() => setIsOpen(false)} />
 
  {/* 内容面板 */}
  <div className="relative surface-card rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">

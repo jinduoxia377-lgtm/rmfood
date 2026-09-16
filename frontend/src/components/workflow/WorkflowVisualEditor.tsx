@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 工作流可视化编辑器 (Workflow Visual Editor)
  *
  * 功能特性:
@@ -401,7 +401,7 @@ export function WorkflowVisualEditor({
         key={node.id}
         transform={`translate(${node.position.x}, ${node.position.y})`}
         className="cursor-move"
-        onMouseDown={(e) => {
+        onPointerDown={(e) => { const { pointerId } = e; e.currentTarget.setPointerCapture(pointerId); 
           if (readOnly) return
           e.preventDefault()
           setDraggedNode(node.id)
@@ -824,3 +824,4 @@ export function WorkflowVisualEditor({
 }
 
 export default WorkflowVisualEditor
+

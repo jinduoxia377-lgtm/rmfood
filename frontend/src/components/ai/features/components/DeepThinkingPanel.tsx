@@ -349,7 +349,7 @@ const DeepThinkingPanel: React.FC<DeepThinkingPanelProps> = ({
               <div
                 key={item.id}
                 className="p-3 bg-slate-50 dark:bg-neutral-700/30 rounded-lg border border-neutral-200 dark:border-neutral-600 hover:border-blue-300 dark:hover:border-blue-700 transition-colors cursor-pointer"
-                onClick={() => onApplyQuestion(item.analysis.suggestedQuestions[0] || '')}
+                 role="button" tabIndex={0} onClick={() => onApplyQuestion(item.analysis.suggestedQuestions[0] || '')}
               >
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-xs text-neutral-500">{formatTimestamp(item.timestamp)}</span>

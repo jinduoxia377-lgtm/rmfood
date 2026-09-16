@@ -135,7 +135,7 @@ const ProductCard: React.FC<{
   return (
     <div
       className="card card-hover cursor-pointer mb-3 p-4 rounded-lg border border-border"
-      onClick={onClick}
+       role="button" tabIndex={0} onClick={onClick}
     >
       {hasImage && (
         <img
@@ -153,7 +153,7 @@ const ProductCard: React.FC<{
               <Tooltip>
                 <TooltipTrigger>
                   <span
-                    onClick={(e) => { e.stopPropagation(); onToggleFav(); }}
+                     role="button" tabIndex={0} onClick={(e) => { e.stopPropagation(); onToggleFav(); }}
                     className="cursor-pointer text-lg leading-none"
                   >
                     {isFav ? <Flame className="h-4 w-4 text-warning fill-warning" /> : <Star className="h-4 w-4 text-muted-foreground" />}
@@ -168,7 +168,7 @@ const ProductCard: React.FC<{
               <Tooltip>
                 <TooltipTrigger>
                   <span
-                    onClick={(e) => { e.stopPropagation(); onToggleSelect(); }}
+                     role="button" tabIndex={0} onClick={(e) => { e.stopPropagation(); onToggleSelect(); }}
                     className="cursor-pointer text-lg leading-none ml-2"
                   >
                     {isSelected ? (
@@ -474,7 +474,7 @@ const RetailProductSearchPanel: React.FC<{ className?: string }> = ({ className 
       size: 60,
       cell: ({ row }: { row: { original: RetailProductDetail } }) => (
         <span
-          onClick={() => toggleSelect(row.original.id)}
+           role="button" tabIndex={0} onClick={() => toggleSelect(row.original.id)}
           style={{ cursor: 'pointer', fontSize: 16, color: selectedProducts.has(row.original.id) ? '#1890ff' : '#ccc' }}
           title={selectedProducts.has(row.original.id) ? '取消选择' : '选择对比'}
         >
@@ -539,7 +539,7 @@ const RetailProductSearchPanel: React.FC<{ className?: string }> = ({ className 
       size: 50,
       cell: ({ row }) => (
         <span
-          onClick={(e) => { e.stopPropagation(); toggleFavorite(row.original.id); }}
+           role="button" tabIndex={0} onClick={(e) => { e.stopPropagation(); toggleFavorite(row.original.id); }}
           style={{ cursor: 'pointer', fontSize: 16, color: favorites.has(row.original.id) ? '#faad14' : '#d9d9d9' }}
           title={favorites.has(row.original.id) ? '取消收藏' : '收藏'}
         >
@@ -569,7 +569,7 @@ const RetailProductSearchPanel: React.FC<{ className?: string }> = ({ className 
               suffix={
                 <span
                   className="cursor-pointer text-muted-foreground hover:text-primary"
-                  onClick={() => { setCurrentPage(1); handleSearch(1); }}
+                   role="button" tabIndex={0} onClick={() => { setCurrentPage(1); handleSearch(1); }}
                   title="搜索"
                 >
                   <Search className="h-4 w-4" />

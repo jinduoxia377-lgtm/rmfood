@@ -78,7 +78,7 @@ export function PersonalizedRecommendations({
           <div
             key={rec.id}
             className="group p-3 bg-white dark:bg-neutral-800 rounded-lg border border-neutral-100 dark:border-neutral-700 hover:border-accent-300 dark:hover:border-accent-600 transition-colors cursor-pointer"
-            onClick={() => onSelectRecommendation?.(rec)}
+             role="button" tabIndex={0} onClick={() => onSelectRecommendation?.(rec)}
           >
             <div className="flex items-start justify-between gap-2">
               <div className="flex-1 min-w-0">

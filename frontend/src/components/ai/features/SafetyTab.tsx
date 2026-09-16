@@ -773,7 +773,7 @@ export function SafetyTab({
               <div
                 key={entry.id}
                 className="flex items-center justify-between p-3 bg-slate-50 dark:bg-neutral-800 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
-                onClick={() => {
+                 role="button" tabIndex={0} onClick={() => {
                   setSafetyResult(entry.result)
                   window.scrollTo({ top: 0, behavior: 'smooth' })
                 }}

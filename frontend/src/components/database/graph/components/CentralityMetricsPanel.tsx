@@ -62,7 +62,7 @@ export default function CentralityMetricsPanel({
           const barWidth = maxScore > 0 ? (score / maxScore) * 100 : 0
           return (
             <div key={nodeId} className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-error-50 dark:hover:bg-error-900/10 cursor-pointer transition-colors"
-              onClick={() => { onNodeClick?.(node!); setSelectedNode(node ?? null) }}>
+               role="button" tabIndex={0} onClick={() => { onNodeClick?.(node!); setSelectedNode(node ?? null) }}>
               <span className="text-[10px] font-mono text-neutral-400 w-4">{i + 1}</span>
               <div className="flex-1 min-w-0">
                 <div className="text-xs font-medium truncate">{node?.label || nodeId}</div>

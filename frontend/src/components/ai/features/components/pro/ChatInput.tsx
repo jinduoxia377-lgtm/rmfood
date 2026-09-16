@@ -182,7 +182,7 @@ export default function ChatInputPro({
                   </button>
                   {showModelMenu && (
                     <>
-                      <div className="fixed inset-0 z-30" onClick={() => setShowModelMenu(false)} />
+                      <div className="fixed inset-0 z-30"  role="button" tabIndex={0} onClick={() => setShowModelMenu(false)} />
                       <div className="absolute top-full left-0 mt-1 z-40 bg-white dark:bg-neutral-800 rounded-xl shadow-lg border border-neutral-200 dark:border-neutral-700 py-1 min-w-[140px]">
                         {MODELS.map(m => (
                           <button key={m.id}

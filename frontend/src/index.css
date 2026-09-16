@@ -272,3 +272,30 @@ svg {
 :root svg[class*="text-"] {
   transition: color 0.2s ease-in-out;
 }
+
+/* focus-visible support */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[role="button"]:focus-visible,
+[role="tab"]:focus-visible {
+  outline: 2px solid var(--color-primary, var(--accent-500));
+  outline-offset: 2px;
+  border-radius: var(--radius-sm, 4px);
+}
+
+/* GPU acceleration */
+*, *::before, *::after {
+  will-change: auto;
+}
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -243,7 +243,7 @@ export const ThinkingVisualizer: React.FC<ThinkingVisualizerProps> = ({
       {/* Header */}
       <div
         className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 cursor-pointer"
-        onClick={onToggleVisibility}
+         role="button" tabIndex={0} onClick={onToggleVisibility}
       >
         <div className="flex items-center gap-2 text-white">
           <div className="p-1.5 bg-white/20 rounded-lg">

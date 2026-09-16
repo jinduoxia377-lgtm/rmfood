@@ -421,13 +421,13 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-end justify-end p-4"
-         onClick={(e) => {
+          role="button" tabIndex={0} onClick={(e) => {
            if (e.target === e.currentTarget) onClose()
          }}>
       <div
         className="bg-white dark:bg-neutral-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-hidden
                    flex flex-col animate-in-from-right"
-        onClick={e => e.stopPropagation()}
+         role="button" tabIndex={0} onClick={e => e.stopPropagation()}
       >
         {/* ===== 面板头部区域 - 移动端自适应 ===== */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4 border-b border-neutral-200 dark:border-neutral-700 bg-gradient-to-r from-slate-50 to-white dark:from-slate-800 dark:to-slate-900">
@@ -721,7 +721,7 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
                   <>
                     <div
                       className="fixed inset-0 z-40"
-                      onClick={() => setShowMoreMenu(false)}
+                       role="button" tabIndex={0} onClick={() => setShowMoreMenu(false)}
                     />
                     <div className="absolute bottom-full right-0 mb-2 bg-white dark:bg-neutral-800 rounded-lg shadow-xl border border-neutral-200 dark:border-neutral-700 py-2 min-w-[200px] z-50">
                       <button
@@ -834,7 +834,7 @@ const FormulaPanel = React.memo<FormulaPanelProps>(({
         <>
           <div
             className="fixed inset-0 z-40"
-            onClick={handleCloseContextMenu}
+             role="button" tabIndex={0} onClick={handleCloseContextMenu}
           />
           <div
             className="fixed z-50 bg-white dark:bg-neutral-800 rounded-lg shadow-2xl border border-neutral-200 dark:border-neutral-700 py-2 min-w-[180px]"

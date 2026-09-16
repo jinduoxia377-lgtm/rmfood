@@ -30,7 +30,7 @@ export function KeyboardShortcutsPanel({ onClose }: KeyboardShortcutsPanelProps)
 				<>
 					<div
 						className="fixed inset-0 bg-black/30 z-50"
-						onClick={() => { onClose?.(); setIsOpen(false) }}
+						 role="button" tabIndex={0} onClick={() => { onClose?.(); setIsOpen(false) }}
 						aria-hidden="true"
 					/>
 					<div

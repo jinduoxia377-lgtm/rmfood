@@ -66,7 +66,7 @@ export function VersionTimeline({ versions, currentVersion }: VersionTimelinePro
                     : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700',
                   isExpanded && 'shadow-md',
                 )}
-                onClick={() => toggleExpand(v.id)}
+                 role="button" tabIndex={0} onClick={() => toggleExpand(v.id)}
               >
                 <div className="p-3">
                   <div className="flex items-start justify-between gap-3">

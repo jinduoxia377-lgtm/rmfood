@@ -112,7 +112,7 @@ export const EnhancedAIChatPanel: React.FC<EnhancedPanelProps> = ({
       {/* Header */}
       <div
         className="flex items-center justify-between p-4 border-b border-neutral-200 dark:border-neutral-700 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-750"
-        onClick={() => setIsExpanded(!isExpanded)}
+         role="button" tabIndex={0} onClick={() => setIsExpanded(!isExpanded)}
       >
         <div className="flex items-center gap-3">
           <Sparkles className="w-5 h-5 text-primary-600" />

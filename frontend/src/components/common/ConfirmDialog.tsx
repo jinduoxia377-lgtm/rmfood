@@ -38,7 +38,7 @@ export function ConfirmDialog({
   return (
     <div
       className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/50 backdrop-blur-sm"
-      onClick={handleBackdropClick}
+       role="button" tabIndex={0} onClick={handleBackdropClick}
     >
       <div className="bg-white dark:bg-neutral-800 rounded-xl shadow-2xl max-w-md w-full mx-4 p-6 animate-[scaleIn_0.2s_ease-out]">
         <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">

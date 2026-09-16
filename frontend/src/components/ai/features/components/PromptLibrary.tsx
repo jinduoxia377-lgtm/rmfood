@@ -230,9 +230,7 @@ export const PromptLibrary: React.FC<PromptLibraryProps> = ({
         'fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm',
         'animate-[fadeIn_0.2s_ease-out]',
       )}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose?.()
-      }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose?.() }}
       role="dialog"
       aria-modal="true"
       aria-label="提示词库"
@@ -245,7 +243,6 @@ export const PromptLibrary: React.FC<PromptLibraryProps> = ({
           'flex overflow-hidden',
           className,
         )}
-        onClick={e => e.stopPropagation()}
       >
         {/* ===== 头部栏 ===== */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-200 dark:border-neutral-700 bg-gradient-to-r from-slate-50 to-white dark:from-slate-800 dark:to-slate-900">

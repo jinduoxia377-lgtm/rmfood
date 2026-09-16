@@ -1,4 +1,4 @@
-/* ══════════════════════════════════════════════════════════════
+﻿/* ══════════════════════════════════════════════════════════════
    莱茵分子 (Rhine Molecular) — 登录页面样式 v3.0
    生物技术启发 · 分子美学 · 全局主题对齐版
 
@@ -1546,3 +1546,17 @@
     display: none !important;
   }
 }
+
+/* GPU acceleration hints */
+.animate-chat-bubble-enter,
+.animate-chat-bubble-exit,
+.animate-fade-in,
+.animate-fade-out,
+.animate-slide-up,
+.animate-slide-down,
+.animate-pulse-soft,
+.animate-spin-slow {
+  will-change: opacity, transform;
+  transform: translateZ(0);
+}
+

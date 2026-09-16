@@ -120,7 +120,7 @@ function ShareDialog({ open, onClose, caseTitle }: { open: boolean; onClose: () 
   const shareUrl = window.location.href
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"  role="button" tabIndex={0} onClick={onClose} />
       <Card className="relative w-full max-w-sm rounded-2xl shadow-2xl border-neutral-200 dark:border-neutral-700">
         <CardContent className="p-5">
           <div className="flex items-center justify-between mb-1">
@@ -189,7 +189,7 @@ function ReportDialog({ open, onClose, caseId }: { open: boolean; onClose: () =>
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"  role="button" tabIndex={0} onClick={onClose} />
       <Card className="relative w-full max-w-sm rounded-2xl shadow-2xl border-neutral-200 dark:border-neutral-700">
         <CardContent className="p-5">
           <div className="flex items-center justify-between mb-1">
@@ -236,7 +236,7 @@ function DeleteDialog({ open, onClose, onConfirm, caseTitle }: {
   if (!open) return null
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"  role="button" tabIndex={0} onClick={onClose} />
       <Card className="relative w-full max-w-sm rounded-2xl shadow-2xl border-neutral-200 dark:border-neutral-700">
         <CardContent className="p-5">
           <div className="flex items-start gap-3 mb-3">

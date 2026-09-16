@@ -57,7 +57,7 @@ export default function AIPanel({
             <div>向AI提问关于图谱的任何问题</div>
             <div className="space-y-1 text-left max-w-xs mx-auto mt-3">
               {suggestions.map(q => (
-                <div key={q} className="px-3 py-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-800/50 cursor-pointer hover:bg-secondary-100 dark:hover:bg-secondary-900/20 transition-colors" onClick={() => onSetAiQuestion(q)}>{q}</div>
+                <div key={q} className="px-3 py-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-800/50 cursor-pointer hover:bg-secondary-100 dark:hover:bg-secondary-900/20 transition-colors"  role="button" tabIndex={0} onClick={() => onSetAiQuestion(q)}>{q}</div>
               ))}
             </div>
           </div>

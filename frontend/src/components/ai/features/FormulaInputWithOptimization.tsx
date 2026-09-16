@@ -279,7 +279,7 @@ export const FormulaInputWithOptimization: React.FC<FormulaInputWithOptimization
                     <div
                       key={template.id}
                       className={`template-card ${selectedTemplate?.id === template.id ? 'selected' : ''}`}
-                      onClick={() => handleLoadTemplate(template)}
+                       role="button" tabIndex={0} onClick={() => handleLoadTemplate(template)}
                     >
                       <div className="template-header">
                         <Badge variant={getCategoryBadgeVariant(template.category)}>
@@ -496,7 +496,7 @@ export const FormulaInputWithOptimization: React.FC<FormulaInputWithOptimization
                     <div className="candidates-list">
                       {result.candidates.map((candidate: any, index: number) => (
                         <div key={index} className="candidate-item">
-                          <div className="candidate-header" onClick={() => setExpandedCandidate(expandedCandidate === index ? null : index)}>
+                          <div className="candidate-header"  role="button" tabIndex={0} onClick={() => setExpandedCandidate(expandedCandidate === index ? null : index)}>
                             <div className="candidate-info">
                               <span className="candidate-rank">方案 {index + 1}</span>
                               <Badge variant={getRankBadgeVariant(candidate.rank)}>

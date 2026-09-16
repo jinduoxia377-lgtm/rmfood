@@ -1,4 +1,4 @@
-import { memo } from 'react'
+﻿import { memo } from 'react'
 import type { Precaution, PrecautionSeverity } from '@/types/ai.types'
 import {
   getPrecautionIcon,
@@ -125,7 +125,6 @@ const PrecautionBadge = memo(({ precautions, size = 'sm', onClick }: PrecautionB
     <div
       className={`${baseClasses} ${pulseAnimation}`}
       style={badgeStyle}
-      onClick={onClick}
       title={highestTitle}
       role="button"
       tabIndex={0}
@@ -145,3 +144,4 @@ const PrecautionBadge = memo(({ precautions, size = 'sm', onClick }: PrecautionB
 PrecautionBadge.displayName = 'PrecautionBadge'
 
 export default PrecautionBadge
+

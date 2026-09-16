@@ -239,7 +239,7 @@ class IngredientAnalyzer extends ProfessionalBaseComponent<IngredientAnalyzerPro
         {herbs.map((herb) => (
           <div
             key={herb.id}
-            onClick={() => this.handleHerbSelect(herb)}
+             role="button" tabIndex={0} onClick={() => this.handleHerbSelect(herb)}
             className="p-4 bg-white border border-neutral-200 rounded-lg cursor-pointer hover:shadow-lg hover:border-blue-500 transition-all"
           >
             <h3 className="text-lg font-semibold text-neutral-900 mb-2">{herb.name}</h3>
@@ -442,7 +442,7 @@ class IngredientAnalyzer extends ProfessionalBaseComponent<IngredientAnalyzerPro
     return (
       <div className="space-y-6">
         <div
-          onClick={() => this.handleCompoundClick(chemistry)}
+           role="button" tabIndex={0} onClick={() => this.handleCompoundClick(chemistry)}
           className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg p-6 cursor-pointer hover:shadow-lg transition-shadow"
         >
           <div className="flex justify-between items-start mb-4">

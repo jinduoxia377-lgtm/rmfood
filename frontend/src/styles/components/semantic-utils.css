@@ -1,4 +1,4 @@
-/**
+﻿/**
  * RMFOOD 设计系统 — 语义化组件工具类
  * 所有组件应优先使用此类，而非硬编码 Tailwind 默认色系
  *
@@ -198,4 +198,41 @@
   --bg-surface:     #16213e;
   --text-primary:   #e0e0e0;
   --text-secondary: #a0a0a0;
+}
+
+/* GPU acceleration hints */
+.animate-chat-bubble-enter,
+.animate-chat-bubble-exit,
+.animate-fade-in,
+.animate-fade-out,
+.animate-slide-up,
+.animate-slide-down,
+.animate-pulse-soft,
+.animate-spin-slow {
+  will-change: opacity, transform;
+  transform: translateZ(0);
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+
+/* focus-visible support */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[role="button"]:focus-visible,
+[role="tab"]:focus-visible {
+  outline: 2px solid var(--color-primary, var(--accent-500));
+  outline-offset: 2px;
+  border-radius: var(--radius-sm, 4px);
 }
