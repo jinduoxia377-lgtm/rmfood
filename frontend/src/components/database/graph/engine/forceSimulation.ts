@@ -105,13 +105,13 @@ export class GraphEngine {
 
     if (g.empty()) {
       g = this.svg.append('g').attr('class', 'graph-container')
-      defs = this.svg.append('defs')
+      defs = this.svg.append('defs') as any
       this.buildDefs(defs)
       this.setupZoom(g)
     }
 
     this.g = g
-    this.defs = defs
+    this.defs = defs as any
     this.currentLodLevel = this.input.lodLevel
     this.prevLayout = this.input.layout
   }
@@ -241,7 +241,7 @@ export class GraphEngine {
     this.zoomBehavior = d3.zoom<SVGSVGElement, unknown>()
       .scaleExtent([0.08, 8])
       .on('zoom', (event: d3.D3ZoomEvent<SVGSVGElement, unknown>) => {
-        g.attr('transform', event.transform)
+        g.attr('transform', event.transform as any)
         this.input.onSetZoomTransform?.(event.transform)
       })
 
