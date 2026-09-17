@@ -52,7 +52,7 @@ export default function ExperimentCalendarPage() {
     return [...experiments]
       .filter((e) => e.start_date)
       .sort((a, b) =>
-        new Date(a.start_date).getTime() - new Date(b.start_date).getTime()
+        new Date(a.start_date || "").getTime() - new Date(b.start_date || "").getTime()
       )
   }, [experiments])
 

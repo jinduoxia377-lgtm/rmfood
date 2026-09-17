@@ -35,7 +35,7 @@ export const RadixBadge = React.forwardRef<HTMLSpanElement, RadixBadgeProps>(
     return (
       <RadixBadgePrimitive
         ref={ref}
-        color={colorMap[variant] as 'gray' | 'green' | 'orange' | 'red' | 'blue'}
+        color={colorMap[variant] as any}
         className={cn('inline-flex items-center gap-1', className)}
         {...props}
       >
@@ -68,9 +68,9 @@ export const RadixText = React.forwardRef<HTMLElement, RadixTextProps>(
       <RadixTextPrimitive
         ref={ref}
         as={Component}
-        size={size as '1' | '2' | '3' | '4' | '5' | '6' | '7'}
+        size={size as any}
         weight={weight}
-        color={color as 'gray' | 'mint' | 'orange' | 'red' | 'mauve' | 'auto'}
+        color={color as any}
         className={cn(className)}
         {...props}
       >
