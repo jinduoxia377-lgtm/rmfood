@@ -85,7 +85,7 @@ const MaterialCard: React.FC<{
               <Badge variant="success">药食同源</Badge>
             )}
             {(result.extra.toxicity_class as string) && (
-              <Badge variant={toxicityColor as "default" | "success" | "warning" | "error" | "info"}>
+              <Badge variant={toxicityColor as "default" | "success" | "warning" | "danger" | "info" | "neutral" | "primary" | "secondary" | "outline" | "destructive" | null | undefined}>
                 {result.extra.toxicity_class as string}
               </Badge>
             )}
