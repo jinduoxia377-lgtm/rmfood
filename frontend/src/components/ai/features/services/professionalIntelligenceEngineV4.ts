@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 专业级智能建议引擎 V4.0 - 完整实现
  *
  * 整合所有优化模块：
@@ -558,7 +558,7 @@ export class ProfessionalIntelligenceEngineV4 {
         {
           id: `v4-sug-${Date.now()}-1`,
           title: `${functions[0] || '功能优化'}配方设计方案【${ingredients.join('+')}专项】`,
-          category: '',
+          category: 'formula_design' as any,
           priority: 10,
           relevanceScore: 97,
           professionalDepth: 96,

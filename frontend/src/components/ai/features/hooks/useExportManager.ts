@@ -1,4 +1,4 @@
-﻿/**
+/**
  * useExportManager - 导出管理器 Hook (v7.0)
  *
  * 职责：管理聊天消息的导出功能，包括格式选择、
@@ -346,7 +346,7 @@ export function useExportManager(): UseExportManagerReturn {
   const onExportProgress = useCallback((
     handler: (progress: { format: string; processed: number; total: number; percentage: number }) => void,
   ): UnsubscribeFn => {
-    return eventBus.subscribe('', (payload: any) => {
+    return eventBus.subscribe('export:started' as any, (payload: any) => {
       handler({
         format: payload.format || exportFormat,
         processed: payload.itemCount || 0,
