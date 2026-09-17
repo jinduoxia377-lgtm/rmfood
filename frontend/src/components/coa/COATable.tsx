@@ -40,8 +40,8 @@ export function COATable({ peptideId, onCOAClick, showStats = false, className =
     },
   });
 
-  const items = (data as any)?.items ?? [];
-  const total = (data as any)?.total ?? 0;
+  const items = data as any ?? [];
+  const total = data as any ?? 0;
 
   // 删除
   const deleteMutation = useMutation({

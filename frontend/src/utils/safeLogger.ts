@@ -73,7 +73,7 @@ class SafeLogger {
   private sanitize(data: any): any {
     // 处理 Error 对象
     if (data instanceof Error) {
-      const { name, message, stack, ...rest } = data as any;
+      const { name, message, stack, ...rest } = data as unknown as Record<string, unknown>;
       return {
         name,
         message,

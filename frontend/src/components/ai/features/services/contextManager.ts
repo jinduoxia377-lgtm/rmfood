@@ -332,7 +332,7 @@ export class ContextManager {
       this.history.shift();
     }
 
-    eventBus.emit('context:updated', this.getState() as any);
+    eventBus.emit('context:updated', this.getState() as unknown as Record<string, unknown>);
   }
 
   processAssistantMessage(content: string): void {
@@ -352,7 +352,7 @@ export class ContextManager {
       this.history.shift();
     }
 
-    eventBus.emit('context:updated', this.getState() as any);
+    eventBus.emit('context:updated', this.getState() as unknown as Record<string, unknown>);
   }
 
   getState(): ContextState {
