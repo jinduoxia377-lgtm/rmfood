@@ -1,4 +1,4 @@
-/**
+﻿/**
  * useAISummaryStats — AI 页面统计卡片数据获取
  *
  * 从后端获取实时统计数据，替代硬编码数字。
@@ -33,7 +33,7 @@ function toCamelCase(raw: AISummaryStatsRaw): AISummaryStats {
     peptideAnalyzeCount: raw.peptide_analyze_count,
     peptideDesignCount: raw.peptide_design_count,
     knowledgeDocCount: raw.knowledge_doc_count,
-    modelStatus: (raw as unknown as { model_status?: { llm: string; status: string } })?.model_status ?? { llm: 'unknown', status: 'inactive' as 'active' | 'inactive' },
+    modelStatus: ((raw as unknown as { model_status?: { llm: string; status: string } })?.model_status ?? { llm: 'unknown', status: 'inactive' as const }) as { llm: string; status: 'active' | 'inactive' },
   };
 }
 
@@ -82,3 +82,4 @@ export function useAISummaryStats() {
 }
 
 export { STATS_QUERY_KEY };
+
