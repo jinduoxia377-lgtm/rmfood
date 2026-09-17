@@ -23,6 +23,7 @@ import {
 } from 'lucide-react'
 import { useTheme } from '@/hooks/useTheme'
 import { fetchMockDashboardData, getMockAnalyticsData } from '@/services/mockAnalyticsData'
+import type { ThemeColors } from '@/types/theme.types'
 import { logger } from '@/utils/safeLogger';
 
 
@@ -231,11 +232,11 @@ export function AnalyticsDashboard() {
         logger.info('📊 正在加载Mock数据分析...')
         const mockData = await fetchMockDashboardData(800) // 减少延迟到800ms以提高响应速度
 
-        setData(mockData as any)
+        setData(mockData as unknown as DashboardData)
         setLastRefresh(new Date())
 
         if (!customLayoutMode) {
-          generateDefaultWidgets(mockData as any)
+          generateDefaultWidgets(mockData as unknown as DashboardData)
         }
 
         showNotification('info', '当前显示为演示数据（后端API未连接）')
@@ -1054,7 +1055,7 @@ export function AnalyticsDashboard() {
               <div className="h-[320px]">
                 <AreaChart
                   data={data.charts.monthly_creation_trend}
-                  themeColors={colors as any}
+                  themeColors={colors as import("@/stores/theme.types").ThemeColors}
                 />
               </div>
             </div>
@@ -1090,7 +1091,7 @@ export function AnalyticsDashboard() {
               <div className="h-[320px] flex items-center justify-center">
                 <PieChart
                   data={data.charts.formula_status_distribution}
-                  themeColors={colors as any}
+                  themeColors={colors as import("@/stores/theme.types").ThemeColors}
                 />
               </div>
             </div>

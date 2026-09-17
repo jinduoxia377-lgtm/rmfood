@@ -4,6 +4,7 @@
  */
 
 import type { AcademicReport } from './academicReportService';
+import type { Reference } from '@/types/academic-report';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import type { CitationStyle } from './citationFormatter';
@@ -213,7 +214,7 @@ export class AcademicExportService {
     if (options.includeReferences && this.report.references && this.report.references.length > 0) {
       sections.push('\n## 参考文献');
       const formattedReferences = this.citationFormatter.formatMultiple(
-        this.report.references as any,
+        this.report.references as unknown as Reference[],
         options.citationStyle,
       );
       sections.push(...formattedReferences.map((ref, i) => `${i + 1}. ${ref}`));
@@ -255,7 +256,7 @@ export class AcademicExportService {
       sections.push('<h2>参考文献</h2>');
       sections.push('<div class="reference-list">');
       const formattedReferences = this.citationFormatter.formatMultiple(
-        this.report.references as any,
+        this.report.references as unknown as Reference[],
         options.citationStyle,
       );
       formattedReferences.forEach((ref, i) => {
@@ -304,7 +305,7 @@ export class AcademicExportService {
       sections.push('<h2>参考文献</h2>');
       sections.push('<div style="margin-left:24pt;">');
       const formattedReferences = this.citationFormatter.formatMultiple(
-        this.report.references as any,
+        this.report.references as unknown as Reference[],
         options.citationStyle,
       );
       formattedReferences.forEach((ref, i) => {
@@ -607,7 +608,7 @@ ${sections.join('\n')}
         doc.setTextColor(...config.secondaryColor);
 
         const formattedReferences = this.citationFormatter.formatMultiple(
-          this.report.references as any,
+          this.report.references as unknown as Reference[],
           options.citationStyle,
         );
 

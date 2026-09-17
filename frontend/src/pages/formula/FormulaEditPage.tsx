@@ -148,7 +148,7 @@ export default function FormulaEditPage() {
         setShelfLife(formula.shelf_life ? String(formula.shelf_life) : '');
         setEffects(((formula.targetEffects || formula.targetEffects) || (formula.targetEffects || formula.targetEffects)) as string[] || []);
         setCategoryIds(formula.categories?.map((c) => c.id) || []);
-        setTagIds(((formula.tags as any[]) || []).map((t: any) => t.id));
+        setTagIds(((formula.tags as unknown as { id: number }[]) || []).map((t) => t.id));
         setOriginalUpdatedAt(formula.updatedAt || formula.updatedAt || formula.updatedAt || formula.updatedAt || '');
 
         if (formula.composition && typeof formula.composition === 'object') {
@@ -379,7 +379,7 @@ export default function FormulaEditPage() {
     if (Number(shelfLife) !== (formula.shelf_life ?? 0)) return true;
     if (JSON.stringify(effects) !== JSON.stringify(((formula.targetEffects || formula.targetEffects) || (formula.targetEffects || formula.targetEffects)) || [])) return true;
     if (JSON.stringify(categoryIds) !== JSON.stringify(formula.categories?.map((c) => c.id) || [])) return true;
-    if (JSON.stringify(tagIds) !== JSON.stringify(((formula.tags as any[]) || []).map((t: any) => t.id) || []))
+    if (JSON.stringify(tagIds) !== JSON.stringify(((formula.tags as unknown as { id: number }[]) || []).map((t) => t.id) || []))
       return true;
     const currentComp = formula.composition as Record<string, unknown> | null;
     const list = currentComp?.ingredients ?? currentComp?.components;
@@ -751,7 +751,7 @@ export default function FormulaEditPage() {
                     ) : recData && Array.isArray(recData) && recData.length > 0 ? (
                       <div className="grid gap-2">
                         {(Array.isArray(recData) ? recData : []).map((rec, i) => {
-                          const recId = (rec as any).ingredient_id ?? `rec-${i}`;
+                          const recId = ((rec as Record<string, unknown>).ingredient_id as string ?? `rec-${i}`);
                           return (
                           <div
                             key={recId}
@@ -759,7 +759,7 @@ export default function FormulaEditPage() {
                           >
                             <div>
                               <p className="text-sm font-medium text-neutral-900 dark:text-white">{rec.name}</p>
-                              <p className="text-xs text-neutral-500">{((rec as any).match_reasons?.join(' · ') || '')}</p>
+                              <p className="text-xs text-neutral-500">{((rec as Record<string, unknown>).match_reasons as string[] ?? []).join(' · ') || ''}</p>
                             </div>
                             <span className="text-xs font-medium text-primary-600 dark:text-primary-400">
                               {rec.score}分
