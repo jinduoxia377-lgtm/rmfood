@@ -121,7 +121,7 @@ export function useExportFormula(generateResult: AICandidate[] | null) {
           <p>导出时间: ${new Date().toLocaleString('zh-CN')}</p>
           <table>
             <thead><tr>${Object.keys(feedback).map(k => `<th>${k}</th>`).join('')}</tr></thead>
-            <tbody>${(generateResult as any[]).map((row: any) =>
+            <tbody>${(generateResult as Record<string, unknown>[]).map((row: Record<string, unknown>) =>
               `<tr>${Object.values(row).map(v => `<td>${v}</td>`).join('')}</tr>`
             ).join('')}</tbody>
           </table>

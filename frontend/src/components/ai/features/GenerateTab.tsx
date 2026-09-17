@@ -135,7 +135,7 @@ export function GenerateTab({ llmAvailable, modelStatus, onGenerateSuccess }: Ge
     if (cached) {
       logger.info('Using cached result', { key: cacheKey });
       generationHook.setGenerateResult(cached.candidates);
-      generationHook.setGenerator(cached.generator as any);
+      generationHook.setGenerator(cached.generator as Parameters<typeof generationHook.setGenerator>[0]);
       return;
     }
     

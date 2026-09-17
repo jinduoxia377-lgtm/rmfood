@@ -31,7 +31,7 @@ export class EventBusV2<TEvents extends Record<string, any>> {
       const executeNext = async (): Promise<void> => {
         if (index >= handlers.length) return
         const handler = handlers[index++]
-        await handler(payload as any, executeNext)
+        await handler(payload as Record<string, unknown>, executeNext)
       }
       await executeNext()
     }

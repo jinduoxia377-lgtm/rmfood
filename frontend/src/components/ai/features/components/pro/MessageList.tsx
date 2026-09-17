@@ -85,7 +85,7 @@ export function MessageList({
 			// AI回复：基础高度 + 内容长度（每80字符约25px）+ thinking步骤额外空间
 			const baseHeight = 80
 			const contentHeight = Math.min(Math.floor(msg.content.length / 80) * 25, 400)
-			const stepHeight = ((msg as any).thinking_steps?.length ?? 0) * 30
+			const stepHeight = ((msg as Record<string, unknown>).thinking_steps?.length ?? 0) * 30
 			return baseHeight + contentHeight + stepHeight
 		}
 
