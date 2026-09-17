@@ -99,7 +99,7 @@ export default function ExperimentEditPage() {
   const addEquipment = () => {
     const trimmed = equipmentInput.trim()
     if (trimmed) {
-      updateField('equipment', [...(form.equipment || []), { name: trimmed, status: 'available' } as Record<string, unknown>])
+      updateField('equipment', [...(form.equipment || []), { name: trimmed, status: 'available' } as any])
       setEquipmentInput('')
     }
   }
