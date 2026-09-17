@@ -1,4 +1,4 @@
-﻿/**
+/**
  * SafetyReportExporter - PDF export for safety check reports
  */
 import jsPDF from 'jspdf';
@@ -73,15 +73,7 @@ export function exportSafetyReport(options: ExportOptions): void {
   doc.text(ingLines, margin, y);
   y += ingLines.length * 5 + 6;
 
-  
-interface ReportResult {
-  passed?: boolean
-  warnings?: string[]
-  details?: Record<string, unknown>
-  lastAutoTable?: { finalY: number }
-}
-
-const passed = (result as ReportResult).passed ?? true;
+  const passed = (result as any).passed ?? true;
   const badgeColor = passed ? SUCCESS : DANGER;
   doc.setFillColor(badgeColor[0], badgeColor[1], badgeColor[2]);
   doc.roundedRect(margin, y - 4, 22, 8, 2, 2, 'F');
@@ -94,9 +86,9 @@ const passed = (result as ReportResult).passed ?? true;
   doc.text('Compliance: ' + complianceRate.toFixed(1) + '%', margin + 28, y + 1.5);
   y += 14;
 
-  const warnings: any[] = (result as ReportResult).warnings || [];
+  const warnings: any[] = (result as any).warnings || [];
   const errors: any[] = result.errors || [];
-  const details: Record<string, any> = (result as ReportResult).details || {};
+  const details: Record<string, any> = (result as any).details || {};
 
   const dangerCount = warnings.filter((w: any) => ['danger','critical','contraindicated'].includes(w.level)).length;
   const warningCount = warnings.filter((w: any) => ['warning','caution'].includes(w.level)).length;
@@ -146,7 +138,7 @@ const passed = (result as ReportResult).passed ?? true;
       styles: { cellPadding: 3, lineColor: [226, 232, 240] },
       body: allIssues.map((issue) => [issue.type, issue.ingredient, issue.message]),
     });
-    y = (doc as ReportResult).lastAutoTable.finalY + 10;
+    y = (doc as any).lastAutoTable.finalY + 10;
   }
 
   const checkKeys = Object.keys(details);
@@ -193,4 +185,3 @@ const passed = (result as ReportResult).passed ?? true;
   const dateStr = new Date().toISOString().slice(0, 10);
   doc.save('safety_report_' + ingredients.slice(0, 3).join('-') + '_' + dateStr + '.pdf');
 }
-

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * WaterfallInterceptor — Waterfall 消息拦截链
  *
  * 参照 DeepSeek Harness Waterfall Events 设计：
@@ -140,10 +140,9 @@ export function getInterceptorStatus(): {
 } {
   return {
     sendingHandlers: eventBusV2.getSubscriberCount('message:sending' as EventType) +
-      (eventBusV2.pipes?.get('message:sending')?.length || 0),
+      ((eventBusV2 as any).pipes?.get('message:sending')?.length || 0),
     receivedHandlers: eventBusV2.getSubscriberCount('message:received' as EventType) +
-      (eventBusV2.pipes?.get('message:received')?.length || 0),
+      ((eventBusV2 as any).pipes?.get('message:received')?.length || 0),
     currentSessionId,
   }
 }
-
