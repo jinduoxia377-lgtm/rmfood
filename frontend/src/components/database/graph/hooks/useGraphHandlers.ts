@@ -1,4 +1,4 @@
-/**
+﻿/**
  * useGraphHandlers — all useCallback callbacks extracted from KnowledgeGraph.tsx.
  *
  * Every callback is written so that its dependencies are explicit parameters.
@@ -286,8 +286,8 @@ const createAIInsightHandlers = (
 
       const synergyEdges = fEdges.filter(e => e.type === 'synergy')
       synergyEdges.slice(0, 3).forEach(e => {
-        const sName = typeof e.source === 'string' ? e.source : ((e.source as any)?.label || '')
-        const tName = typeof e.target === 'string' ? e.target : ((e.target as any)?.label || '')
+        const sName = typeof e.source === 'string' ? e.source : (e.source || '')
+        const tName = typeof e.target === 'string' ? e.target : (e.target || '')
         if (sName && tName) insights.push(insig.synergyPair(sName, tName, e.type))
       })
 
@@ -585,14 +585,14 @@ const createExternalDataHandlers = (
     dispatch({ type: 'SET_SHOW_COMPARE_MODE', payload: true })
     const currentNodes = new Set(nodes.map(n => n.id || n.label))
     const currentEdges = new Set(edges.map(e =>
-      `${typeof e.source === 'string' ? e.source : ((e.source as any)?.id || '')}-${typeof e.target === 'string' ? e.target : ((e.target as any)?.id || '')}`,
+      `${typeof e.source === 'string' ? e.source : (e.source || '')}-${typeof e.target === 'string' ? e.target : (e.target || '')}`,
     ))
 
     const prevNodeCount = Math.floor(nodes.length * 0.85)
     const prevNodes = nodes.slice(0, prevNodeCount).map(n => n.id || n.label)
     const prevEdgeCount = Math.floor(edges.length * 0.9)
     const prevEdges = edges.slice(0, prevEdgeCount).map(e =>
-      `${typeof e.source === 'string' ? e.source : ((e.source as any)?.id || '')}-${typeof e.target === 'string' ? e.target : ((e.target as any)?.id || '')}`,
+      `${typeof e.source === 'string' ? e.source : (e.source || '')}-${typeof e.target === 'string' ? e.target : (e.target || '')}`,
     )
 
     const nodesOnlyInA = [...currentNodes].filter(n => !prevNodes.includes(n))
@@ -1875,3 +1875,4 @@ export function useGraphHandlers(deps: UseGraphHandlersDeps): GraphHandlers {
     handleResetView: zoom.handleResetView,
   }
 }
+
