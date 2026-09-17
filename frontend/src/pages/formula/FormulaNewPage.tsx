@@ -132,10 +132,10 @@ export default function FormulaNewPage() {
       try {
         const { formulaApi } = await import('@/api/formula');
         const [synergy, stability, taste, safety] = await Promise.all([
-          formulaApi.analyzeFormulaSynergy(0 as any).catch(() => null),
-          formulaApi.predictFormulaStability(0 as any).catch(() => null),
-          formulaApi.predictFormulaTaste(0 as any).catch(() => null),
-          formulaApi.checkFormulaSafety(0 as any).catch(() => null),
+          formulaApi.analyzeFormulaSynergy(0).catch(() => null),
+          formulaApi.predictFormulaStability(0).catch(() => null),
+          formulaApi.predictFormulaTaste(0).catch(() => null),
+          formulaApi.checkFormulaSafety(0).catch(() => null),
         ]);
         setPreviewAnalysis({ synergy, stability, taste, safety, isRunning: false });
       } catch (e) {
@@ -592,12 +592,12 @@ export default function FormulaNewPage() {
                           key={recId}
                           className={cn(
                             'flex items-center justify-between p-2.5 rounded-lg border transition-colors cursor-pointer',
-                            ingredients.some((ing: any) => ing.id === ((rec as any).ingredient_id as string))
+                            ingredients.some((ing: any) => ing.id === (rec.ingredient_id as string))
                               ? 'bg-primary-50 dark:bg-primary-900/20 border-primary-300 dark:border-primary-700 opacity-60'
                               : 'bg-white dark:bg-neutral-900 border-primary-100 dark:border-primary-800 hover:border-primary-300',
                           )}
                           onClick={() => {
-                            if (!ingredients.some((ing: any) => ing.id === ((rec as any).ingredient_id as string))) {
+                            if (!ingredients.some((ing: any) => ing.id === (rec.ingredient_id as string))) {
                               addHerbToIngredients({
                                 id: ((rec as Record<string, unknown>).ingredient_id as string) ?? `rec-${i}`,
                                 name: (rec as Record<string, unknown>).name as string ?? rec.name,

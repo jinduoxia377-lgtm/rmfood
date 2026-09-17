@@ -572,7 +572,7 @@ export function useUnifiedAgent(options: UseUnifiedAgentOptions = {}): UseUnifie
             timestamp: msg.timestamp.getTime(),
           });
         }
-        await (session as any).replaceEvents(toReplaceFrom, session.seq, replacementEvents);
+        await session.replaceEvents(toReplaceFrom, session.seq, replacementEvents);
       }
 
       // 使消息缓存失效
@@ -651,15 +651,15 @@ export function useUnifiedAgent(options: UseUnifiedAgentOptions = {}): UseUnifie
           }
         }
 
-        const finalContent = ('final_response_preview' in (result as any)
-          ? (result as any).final_response_preview
+        const finalContent = ('final_response_preview' in result
+          ? result.final_response_preview
           : '') || '执行完成';
 
         updateLastAssistantMessage(finalContent, { executionId: turnId });
         completeStep('final-response', true, undefined, finalContent);
 
         setExecutedCount((c) => c + 1);
-        onComplete?.(result as any);
+        onComplete?.result;
 
         if (session) setTokenCount(session.estimateTokenCount());
 

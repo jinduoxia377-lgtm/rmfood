@@ -72,6 +72,17 @@ const STORAGE_KEYS = {
 };
 
 // 配置管理类
+
+interface ModelConfigRaw {
+  api_key?: string
+  base_url?: string
+  timeout_ms?: number
+  max_retries?: number
+  concurrency_limit?: number
+  model?: string
+  provider?: string
+}
+
 export class ConfigManager {
   // 获取所有API密钥
   static getApiKeys(): ApiKey[] {
@@ -445,13 +456,13 @@ export class ConfigManager {
           const mt = type as ModelType;
           if (config && typeof config === 'object') {
             configs[mt] = {
-              apiKey: (config as any).api_key || '',
-              baseUrl: (config as any).base_url || '',
-              timeout: (config as any).timeout_ms || 30000,
-              maxRetries: (config as any).max_retries || 3,
-              concurrencyLimit: (config as any).concurrency_limit || 3,
-              model: (config as any).model || '',
-              provider: (config as any).provider || '',
+              apiKey: (config as ModelConfigRaw).api_key || '',
+              baseUrl: (config as ModelConfigRaw).base_url || '',
+              timeout: (config as ModelConfigRaw).timeout_ms || 30000,
+              maxRetries: (config as ModelConfigRaw).max_retries || 3,
+              concurrencyLimit: (config as ModelConfigRaw).concurrency_limit || 3,
+              model: (config as ModelConfigRaw).model || '',
+              provider: (config as ModelConfigRaw).provider || '',
             };
           }
         });
