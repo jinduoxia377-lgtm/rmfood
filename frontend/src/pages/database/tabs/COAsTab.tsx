@@ -23,7 +23,7 @@ function CoaStatsView() {
     queryFn: async () => {
       const resp = await coaService.getStats();
       // ApiResponse 结构：{ data: { ...stats } }
-      return (resp as any)?.data ?? resp;
+      return (resp as { data?: unknown } | null)?.data ?? resp;
     },
   });
 

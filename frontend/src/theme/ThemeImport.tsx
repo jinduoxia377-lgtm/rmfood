@@ -36,7 +36,7 @@ export const ThemeImport: React.FC<ThemeImportProps> = ({ onImport }) => {
       };
 
       if (config.primary || config.secondary || config.accent) {
-        applyCustomTheme(config as any);
+        applyCustomTheme(config as Record<string, unknown>);
         setError('');
         onImport?.(true);
       } else {

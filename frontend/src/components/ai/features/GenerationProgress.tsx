@@ -150,7 +150,7 @@ export function GenerationProgress({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       className={`rounded-xl border bg-white dark:bg-neutral-900 overflow-hidden ${className}`}
-      style={{ borderColor: `var(--tw-${stageInfo.color}-200, rgb(229, 231, 235))` } as any}
+      style={{ borderColor: `var(--tw-${stageInfo.color}-200, rgb(229, 231, 235))` }}
     >
       {/* 主进度条区域 */}
       <div className="p-5 space-y-4">

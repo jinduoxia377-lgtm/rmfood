@@ -15,7 +15,7 @@ export function FormulaComparison({ formulas }: FormulaComparisonProps) {
       name: metric,
       ...formulas.reduce((acc, f, idx) => ({
         ...acc,
-        [`formula_${idx}`]: (f.data[0] as any)?.[metric] || 0
+        [`formula_${idx}`]: (f.data[0] as Record<string, unknown>)?.[metric] as number || 0
       }), {})
     }))
   }, [formulas])

@@ -375,7 +375,7 @@ export function usePersistentState<T>(
       const newValue = typeof value === 'function' ? (value as (prev: T) => T)(state) : value;
 
       setState(newValue);
-      await store.current.set(key as any, newValue);
+      await store.current.set(key as string, newValue);
     },
     [key, state],
   );
