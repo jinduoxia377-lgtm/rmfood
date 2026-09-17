@@ -162,7 +162,7 @@ class ExportService {
     const headers = columns
       ? columns.map((col) => {
           const h = (col as ColumnDef<any, any> & { header?: string | ((info: unknown) => unknown) }).header
-          return typeof h === 'function' ? String(h({ table: {} as any, column: {} as any })) : (h as string) || (col as ColumnDef<any, any> & { accessorKey?: string }).accessorKey || ''
+          return typeof h === 'function' ? String(h({ table: {} as unknown, column: {} as unknown })) : (h as string) || (col as ColumnDef<any, any> & { accessorKey?: string }).accessorKey || ''
         })
       : Object.keys(data[0])
 
