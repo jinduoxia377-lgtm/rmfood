@@ -123,7 +123,7 @@ export function AgentWorkflowTab() {
 
   // 获取模板信息
   const selectedTemplate: { label?: string; name?: string; desc?: string; description?: string } | undefined = DEFAULT_WORKFLOW_TEMPLATES.find((t) => t.id === workflowType)
-    || ((workflowTemplates as Record<string, unknown>)?.find((t: Record<string, unknown>) => t.id === workflowType))
+    || ((workflowTemplates as unknown as { find: (fn: (t: any) => boolean) => any })?.find((t: any) => t.id === workflowType))
     || DEFAULT_WORKFLOW_TEMPLATES[0];
 
   // 清空对话
