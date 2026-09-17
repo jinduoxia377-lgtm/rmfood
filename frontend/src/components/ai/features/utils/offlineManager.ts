@@ -311,7 +311,7 @@ class OfflineManager {
     } catch (error) {
       logger.error('[OfflineManager] 持久化队列失败:', error instanceof Error ? error : new Error(String(error)))
 
-      if ((error as any).name === 'QuotaExceededError') {
+      if ((error as DOMException).name === 'QuotaExceededError') {
         this.handleQuotaExceeded()
       }
     }

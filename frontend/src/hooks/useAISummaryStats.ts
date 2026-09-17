@@ -33,7 +33,7 @@ function toCamelCase(raw: AISummaryStatsRaw): AISummaryStats {
     peptideAnalyzeCount: raw.peptide_analyze_count,
     peptideDesignCount: raw.peptide_design_count,
     knowledgeDocCount: raw.knowledge_doc_count,
-    modelStatus: (raw.model_status as any) ?? { llm: 'unknown', status: 'inactive' },
+    modelStatus: (raw as Record<string, unknown>).model_status as { llm: string; status: string } ?? { llm: 'unknown', status: 'inactive' },
   };
 }
 

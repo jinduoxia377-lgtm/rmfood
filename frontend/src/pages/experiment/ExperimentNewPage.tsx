@@ -84,7 +84,7 @@ export default function ExperimentNewPage() {
   // 关联配方搜索
   const [formulaSearch, setFormulaSearch] = useState('')
   const { data: formulaData } = useFormulas({ search: formulaSearch, page_size: 10 })
-  const formulas = (formulaData as any)?.items ?? []
+  const formulas = (formulaData as { items?: unknown[] })?.items ?? []
 
   // 预算估算
   const estimatedCost = useMemo(() => {

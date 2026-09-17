@@ -81,7 +81,7 @@ export function ExportManager({ data, className }: ExportManagerProps) {
     const options = {
       format: exportFormat as ExportFormat,
       filename: `${exportFilename}.${exportFormat}`,
-      columns: columns as any,
+      columns: columns as unknown,
       ...exportOptions,
     } as ExportOptions
 
