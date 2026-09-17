@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 配方对比组件
  * 左右对比两个配方的成分、功效、参数等差异
  */
@@ -11,6 +11,15 @@ import { StatusBadge, Skeleton } from '@/components/ui/Common'
 import { Badge, Button, Card, CardHeader, CardTitle, CardContent } from '@/components/ui'
 import { CompositionChart } from './CompositionChart'
 import { cn } from '@/lib/utils'
+
+
+/** 配方对比评估数据 */
+interface FormulaCompareData {
+  risk_factors?: string[]
+  passed_checks?: number
+  total_checks?: number
+  error_count?: number
+}
 
 interface FormulaCompareProps {
   leftId: number | null
@@ -308,9 +317,9 @@ export function FormulaCompare({ leftId, rightId }: FormulaCompareProps) {
                     <p className="text-xs text-neutral-400">
                       预测货架期: {data.predicted_shelf_life_months?.toFixed(0) ?? '—'} 月
                     </p>
-                    {((data as any)?.risk_factors?.length ?? 0) > 0 && (
+                    {((data as FormulaCompareData)?.risk_factors?.length ?? 0) > 0 && (
                       <p className="text-xs text-amber-600 dark:text-amber-400">
-                        ⚠ {(data as any)?.risk_factors?.length} 个风险因素
+                        ⚠ {(data as FormulaCompareData)?.risk_factors?.length} 个风险因素
                       </p>
                     )}
                   </div>
@@ -372,8 +381,8 @@ export function FormulaCompare({ leftId, rightId }: FormulaCompareProps) {
                       {data.overall_score?.toFixed(0) ?? '—'}/100
                     </p>
                     <p className="text-xs text-neutral-400 mt-1">
-                      {(data as any)?.passed_checks ?? 0}/{(data as any)?.total_checks ?? 0} 项通过
-                      {(data as any)?.error_count > 0 && <span className="text-rose-500 ml-1">({(data as any)?.error_count} 错误)</span>}
+                      {(data as FormulaCompareData)?.passed_checks ?? 0}/{(data as FormulaCompareData)?.total_checks ?? 0} 项通过
+                      {((data as FormulaCompareData)?.error_count ?? 0) > 0 && <span className="text-rose-500 ml-1">({(data as FormulaCompareData)?.error_count} 错误)</span>}
                     </p>
                   </div>
                 ) : (
@@ -576,3 +585,4 @@ export function FormulaCompare({ leftId, rightId }: FormulaCompareProps) {
     </div>
   )
 }
+

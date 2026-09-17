@@ -1,4 +1,4 @@
-/**
+﻿/**
  * RMFOOD 仪表盘 - 深度增强版
  * 新增：个性化配置、可拖拽布局、通知中心、AI智能洞察、KPI监控
  */
@@ -419,16 +419,16 @@ export default function DashboardPage() {
       }
       const q = searchQuery.toLowerCase()
       const results: Array<{ type: string; id: number; title: string; to: string }> = []
-      const formulaItems: any[] = (formulasData as any)?.items ?? (formulasData as any)?.data ?? []
-      const experimentItems: any[] = (experimentsData as any)?.items ?? (experimentsData as any)?.data ?? []
-      formulaItems.forEach((f: any) => {
+      const formulaItems = (formulasData?.items ?? []) as { id?: number; name?: string; code?: string }[]
+      const experimentItems = (experimentsData?.items ?? []) as { id?: number; title?: string; code?: string }[]
+      formulaItems.forEach((f) => {
         if (f.name?.toLowerCase().includes(q) || f.code?.toLowerCase().includes(q)) {
-          results.push({ type: '配方', id: f.id, title: f.name, to: `/formulas/${f.id}` })
+          results.push({ type: '配方', id: f.id ?? 0, title: f.name ?? '', to: `/formulas/${f.id ?? 0}` })
         }
       })
-      experimentItems.forEach((e: any) => {
+      experimentItems.forEach((e) => {
         if (e.title?.toLowerCase().includes(q) || e.code?.toLowerCase().includes(q)) {
-          results.push({ type: '实验', id: e.id, title: e.title, to: `/experiments/${e.id}` })
+          results.push({ type: '实验', id: e.id ?? 0, title: e.title ?? '', to: `/experiments/${e.id ?? 0}` })
         }
       })
       setSearchResults(results.slice(0, 8))
@@ -782,8 +782,8 @@ export default function DashboardPage() {
                   card,
                   data: stats ? { formulas: { total: stats.formulas?.total ?? 0, by_status: stats.formulas?.by_status || {} }, experiments: { total: stats.experiments?.total ?? 0, by_status: stats.experiments?.by_status || {} } } : null,
                   trendsData: trendsData || null,
-                  formulasData: formulasData ? { data: (formulasData as any).data } : null,
-                  experimentsData: experimentsData ? { data: (experimentsData as any).data } : null,
+                  formulasData: formulasData ? { data: (formulasData.items ?? []).map((f: any) => ({ id: f.id, name: f.name, code: f.code, status: f.status, created_at: f.created_at, creator_name: f.creator_name })) } : null,
+                  experimentsData: experimentsData ? { data: (experimentsData.items ?? []).map((e: any) => ({ id: e.id, title: e.title, code: e.code, formula_id: e.formula_id, formula_name: e.formula_name, status: e.status, created_at: e.created_at })) } : null,
                   todos,
                   reviewQueue,
                   timeline,
@@ -846,3 +846,7 @@ export default function DashboardPage() {
     </div>
   )
 }
+
+
+
+
