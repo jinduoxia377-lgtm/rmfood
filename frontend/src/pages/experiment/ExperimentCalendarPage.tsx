@@ -32,7 +32,7 @@ export default function ExperimentCalendarPage() {
   const experimentsByDate = useMemo(() => {
     const map: Record<string, typeof experiments> = {}
     for (const exp of experiments) {
-      const dateKey = (exp as any).start_date ? format(new Date((exp as any).start_date), 'YYYY-MM-DD') : null
+      const dateKey = exp.start_date ? format(new Date(exp.start_date), 'YYYY-MM-DD') : null
       if (dateKey) {
         if (!map[dateKey]) map[dateKey] = []
         map[dateKey].push(exp)
@@ -50,9 +50,9 @@ export default function ExperimentCalendarPage() {
 
   const sortedExperiments = useMemo(() => {
     return [...experiments]
-      .filter((e) => (e as any).start_date)
+      .filter((e) => e.start_date)
       .sort((a, b) =>
-        new Date((a as any).start_date).getTime() - new Date((b as any).start_date).getTime()
+        new Date(a.start_date).getTime() - new Date(b.start_date).getTime()
       )
   }, [experiments])
 

@@ -73,7 +73,7 @@ export function exportSafetyReport(options: ExportOptions): void {
   doc.text(ingLines, margin, y);
   y += ingLines.length * 5 + 6;
 
-  const passed = (result as any).passed ?? true;
+  const passed = result.passed ?? true;
   const badgeColor = passed ? SUCCESS : DANGER;
   doc.setFillColor(badgeColor[0], badgeColor[1], badgeColor[2]);
   doc.roundedRect(margin, y - 4, 22, 8, 2, 2, 'F');
@@ -86,9 +86,9 @@ export function exportSafetyReport(options: ExportOptions): void {
   doc.text('Compliance: ' + complianceRate.toFixed(1) + '%', margin + 28, y + 1.5);
   y += 14;
 
-  const warnings: any[] = (result as any).warnings || [];
+  const warnings: any[] = result.warnings || [];
   const errors: any[] = result.errors || [];
-  const details: Record<string, any> = (result as any).details || {};
+  const details: Record<string, unknown> = (result as Record<string, unknown>).details as Record<string, unknown> || {};
 
   const dangerCount = warnings.filter((w: any) => ['danger','critical','contraindicated'].includes(w.level)).length;
   const warningCount = warnings.filter((w: any) => ['warning','caution'].includes(w.level)).length;
