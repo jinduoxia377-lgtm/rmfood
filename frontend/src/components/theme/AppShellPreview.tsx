@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+﻿import React, { useMemo } from 'react'
 import type { ThemeStyles } from '@/types/theme-mode'
 
 interface AppShellPreviewProps {
@@ -22,7 +22,7 @@ export function AppShellPreview({ config, viewMode = 'context' }: AppShellPrevie
 		'--preview-primary': colors.primary || '#0066cc',
 		'--preview-text': colors.text || '#1d1d1f',
 		'--preview-text-muted': (colors.text as any)?.secondary || '#6b7280',
-		'--preview-border': colors.border ? ((colors.border as any).default || '#e5e7eb') : '#e5e7eb',
+		'--preview-border': colors.border ? ((colors.border as any)?.default || '#e5e7eb') : '#e5e7eb',
 		'--preview-font': font.fontFamily || "'Inter', system-ui, sans-serif",
 		'--preview-radius': radius.lg || '12px',
 	}), [colors, font, spacing, radius])
@@ -180,3 +180,4 @@ export function AppShellPreview({ config, viewMode = 'context' }: AppShellPrevie
 		</div>
 	)
 }
+

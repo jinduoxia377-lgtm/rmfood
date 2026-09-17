@@ -1,4 +1,4 @@
-import { useReducer, useCallback, useEffect, useRef, useMemo } from 'react'
+﻿import { useReducer, useCallback, useEffect, useRef, useMemo } from 'react'
 import api from '@/api/client'
 
 export interface Organization {
@@ -428,7 +428,7 @@ export function useOrganizations(options: UseOrganizationsOptions = {}) {
         payload: { items: response.data?.items || [], total: response.data?.total || 0 },
       })
       // Store in a separate state by using a custom action
-      ;(dispatch as any)({ type: 'SET_TRASHED', payload: response.data?.items || [] })
+      ;dispatch({ type: 'SET_TRASHED', payload: response.data?.items || [] })
       dispatch({ type: 'SET_LOADING', payload: false })
     } catch (error: any) {
       if (!mountedRef.current) return
@@ -440,7 +440,7 @@ export function useOrganizations(options: UseOrganizationsOptions = {}) {
     try {
       await api.patch(`/organizations/${id}/restore`)
       dispatch({ type: 'REMOVE_ORGANIZATION', payload: id })
-      ;(dispatch as any)({ type: 'REMOVE_TRASHED', payload: id })
+      ;dispatch({ type: 'REMOVE_TRASHED', payload: id })
     } catch (error: any) {
       throw error
     }
@@ -461,7 +461,7 @@ export function useOrganizations(options: UseOrganizationsOptions = {}) {
     try {
       await api.delete(`/organizations/${id}/permanent`)
       dispatch({ type: 'REMOVE_ORGANIZATION', payload: id })
-      ;(dispatch as any)({ type: 'REMOVE_TRASHED', payload: id })
+      ;dispatch({ type: 'REMOVE_TRASHED', payload: id })
     } catch (error: any) {
       throw error
     }
@@ -538,7 +538,7 @@ export function useOrganizations(options: UseOrganizationsOptions = {}) {
     allSelected,
     someSelected,
     getPermissionMatrix,
-    trashedOrganizations: (state as any).trashedOrganizations ?? [],
+    trashedOrganizations: state.trashedOrganizations ?? [],
     trashLoading: state.loading,
     fetchTrashedOrganizations,
     restoreOrganization,

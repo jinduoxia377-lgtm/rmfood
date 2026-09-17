@@ -502,7 +502,7 @@ export function useUnifiedAgent(options: UseUnifiedAgentOptions = {}): UseUnifie
     async (calls: ToolCall[]): Promise<ToolCall[]> => {
       const emitter = emitterRef.current;
 
-      await emitter?.emit('tools/pre-execute', { toolCalls: calls } as any);
+      await emitter?.emit('tools/pre-execute', { toolCalls: calls });
 
       const results = await scheduleToolCalls(calls, MAX_PARALLEL_TOOLS);
 
@@ -517,7 +517,7 @@ export function useUnifiedAgent(options: UseUnifiedAgentOptions = {}): UseUnifie
         };
       });
 
-      await emitter?.emit('tools/post-execute', { results } as any);
+      await emitter?.emit('tools/post-execute', { results });
 
       setTools(updatedCalls);
       return updatedCalls;
@@ -718,4 +718,5 @@ export function useUnifiedAgent(options: UseUnifiedAgentOptions = {}): UseUnifie
     execute,
   };
 }
+
 
