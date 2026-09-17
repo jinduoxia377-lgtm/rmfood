@@ -59,12 +59,12 @@ export class FormulaGeneticOptimizer {
       safe += (r>0.8 ? 0.3 : r>0.5 ? 0.6 : 0.9) as number
       taste += (p.tasteScore ?? 0.5) as number
       const sm: Record<string,number> = { cold:0.7, cool:0.75, neutral:0.9, warm:0.8, hot:0.65 }
-      stab += ((sm as any)[(p.nature as string)] || 0.7) as number
+      stab += (sm[(p.nature as string) ?? 'neutral'] ?? 0.7)
       cost += (p.costFactor ?? 0.5) as number
     }
     const n = sel.length
     eff = Math.min(1, eff/n); safe = safe/n
-    taste = Math.max(0.1, Math.min(1, taste/n - sel.filter(i => !!((i.properties as any)?.flavor || '').includes('苦')).length*0.08))
+    taste = Math.max(0.1, Math.min(1, taste/n - sel.filter(i => !!((i.properties as Record<string, unknown>)?.flavor as string || '').includes('苦')).length*0.08))
     stab = stab/n; cost = Math.max(0.1, 1 - cost/n)
     const pairs = new Set<string>()
     for (let i = 0; i < n; i++) {
@@ -167,7 +167,7 @@ export class FormulaGeneticOptimizer {
       const d1 = p1.chromosome.dosages[i], d2 = p2.chromosome.dosages[i]
       c1.dosages[i] = +(0.5*((1+beta)*d1+(1-beta)*d2)).toFixed(1)
       c2.dosages[i] = +(0.5*((1-beta)*d1+(1+beta)*d2)).toFixed(1)
-      const p = this.ingredients[i].properties as any; const [mn,mx] = p.dosageRange || [1,10]
+      const p = this.ingredients[i].properties as Record<string, unknown>; const [mn,mx] = ((p as Record<string, number[]>).dosageRange as [number,number]) || [1,10]
       c1.dosages[i] = Math.max(mn, Math.min(mx, c1.dosages[i]))
       c2.dosages[i] = Math.max(mn, Math.min(mx, c2.dosages[i]))
     }
@@ -186,7 +186,7 @@ export class FormulaGeneticOptimizer {
     const c: Chromosome = { selection:[...ind.chromosome.selection], dosages:[...ind.chromosome.dosages] }
     for (let i = 0; i < this.ingredients.length; i++) {
       if (Math.random() > this.mutRate) continue
-      const p = this.ingredients[i].properties as any; const [mn,mx] = p.dosageRange || [1,10]
+      const p = this.ingredients[i].properties as Record<string, unknown>; const [mn,mx] = ((p as Record<string, number[]>).dosageRange as [number,number]) || [1,10]
       const eta = 20; const u = Math.random(); const norm = (c.dosages[i]-mn)/(mx-mn)
       const delta = u < 0.5 ? Math.pow(2*u, 1/(eta+1))-1 : 1-Math.pow(2*(1-u), 1/(eta+1))
       c.dosages[i] = +Math.max(mn, Math.min(mx, mn+(norm+delta)*(mx-mn))).toFixed(1)
@@ -204,7 +204,7 @@ export class FormulaGeneticOptimizer {
       for (const idx of unsel) {
         if (c.selection.filter(Boolean).length >= this.minIng) break
         c.selection[idx] = true
-        const p = this.ingredients[idx].properties as any; const [mn,mx] = p.dosageRange || [3,9]
+        const p = this.ingredients[idx].properties as Record<string, unknown>; const [mn,mx] = ((p as Record<string, number[]>).dosageRange as [number,number]) || [3,9]
         c.dosages[idx] = +(mn+(mx-mn)*0.5).toFixed(1)
       }
     }
