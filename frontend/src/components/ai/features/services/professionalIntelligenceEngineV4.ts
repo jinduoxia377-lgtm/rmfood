@@ -658,8 +658,8 @@ export class ProfessionalIntelligenceEngineV4 {
 
   private calculateMemoryUsage(): number {
     try {
-      return (performance as any).memory?.usedJSHeapSize
-        ? (performance as any).memory.usedJSHeapSize / (1024 * 1024)
+      return (performance as { memory?: { usedJSHeapSize?: number } }).memory?.usedJSHeapSize
+        ? ((performance as { memory?: { usedJSHeapSize?: number } }).memory?.usedJSHeapSize ?? 0) / (1024 * 1024)
         : 0
     } catch {
       return 0

@@ -526,7 +526,7 @@ export function AIAnalysisPanel({ className, defaultTab = 'analysis', loading: p
       </CardHeader>
 
       <CardContent className="pt-4">
-        <Tabs value={activeTab} onValueChange={setActiveTab as any} className="w-full">
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)} className="w-full">
           <TabsList className="grid w-full grid-cols-4 mb-4">
             <TabsTrigger value="analysis" className="text-xs">配方分析</TabsTrigger>
             <TabsTrigger value="recommendations" className="text-xs">智能推荐</TabsTrigger>
