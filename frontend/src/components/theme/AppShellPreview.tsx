@@ -21,15 +21,15 @@ export function AppShellPreview({ config, viewMode = 'context' }: AppShellPrevie
 		'--preview-surface': colors.surface || '#f8fafc',
 		'--preview-primary': colors.primary || '#0066cc',
 		'--preview-text': colors.text || '#1d1d1f',
-		'--preview-text-muted': (colors.text as any)?.secondary || '#6b7280',
-		'--preview-border': colors.border ? ((colors.border as any)?.default || '#e5e7eb') : '#e5e7eb',
+		'--preview-text-muted': (colors.text as ThemeColor)?.secondary || '#6b7280',
+		'--preview-border': colors.border ? ((colors.border as ThemeColor)?.default || '#e5e7eb') : '#e5e7eb',
 		'--preview-font': font.fontFamily || "'Inter', system-ui, sans-serif",
 		'--preview-radius': radius.lg || '12px',
 	}), [colors, font, spacing, radius])
 
-	const borderColor = (colors.border as any)?.default || '#e5e7eb'
-	const textColor = (colors.text as any)?.primary || '#1d1d1f'
-	const textMuted = (colors.text as any)?.secondary || '#6b7280'
+	const borderColor = (colors.border as ThemeColor)?.default || '#e5e7eb'
+	const textColor = (colors.text as ThemeColor)?.primary || '#1d1d1f'
+	const textMuted = (colors.text as ThemeColor)?.secondary || '#6b7280'
 	const primaryColor = colors.primary || '#0066cc'
 	const bgColor = colors.background || '#ffffff'
 	const surfaceColor = colors.surface || '#f8fafc'
@@ -180,4 +180,5 @@ export function AppShellPreview({ config, viewMode = 'context' }: AppShellPrevie
 		</div>
 	)
 }
+
 
