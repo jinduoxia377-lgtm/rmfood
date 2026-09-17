@@ -23,6 +23,24 @@ import {
 } from 'lucide-react'
 import { useTheme } from '@/hooks/useTheme'
 import { fetchMockDashboardData, getMockAnalyticsData } from '@/services/mockAnalyticsData'
+
+/** Chart component ThemeColors - stricter than store ThemeColors */
+interface ChartThemeColors {
+  primary: string
+  secondary: string
+  tertiary: string
+  textPrimary: string
+  textSecondary: string
+  textMuted: string
+  surface: string
+  surfaceVariant: string
+  outline: string
+  success: string
+  warning: string
+  error: string
+  info: string
+}
+
 import type { ThemeColors } from '@/types/theme.types'
 import { logger } from '@/utils/safeLogger';
 
@@ -1055,7 +1073,7 @@ export function AnalyticsDashboard() {
               <div className="h-[320px]">
                 <AreaChart
                   data={data.charts.monthly_creation_trend}
-                  themeColors={colors as Record<string, string>}
+                  themeColors={colors as ChartThemeColors}
                 />
               </div>
             </div>
@@ -1091,7 +1109,7 @@ export function AnalyticsDashboard() {
               <div className="h-[320px] flex items-center justify-center">
                 <PieChart
                   data={data.charts.formula_status_distribution}
-                  themeColors={colors as Record<string, string>}
+                  themeColors={colors as ChartThemeColors}
                 />
               </div>
             </div>
