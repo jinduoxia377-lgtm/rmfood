@@ -586,20 +586,20 @@ export default function FormulaNewPage() {
                   ) : recData && Array.isArray(recData) && recData.length > 0 ? (
                     <div className="grid gap-2">
                       {(Array.isArray(recData) ? recData : []).map((rec, i) => {
-                        const recId = (rec as Record<string, unknown>).ingredient_id as string ?? `rec-${i}`
+                        const recId = rec.id ?? `rec-${i}`
                         return (
                         <div
                           key={recId}
                           className={cn(
                             'flex items-center justify-between p-2.5 rounded-lg border transition-colors cursor-pointer',
-                            ingredients.some((ing: any) => ing.id === (rec.ingredient_id as string))
+                            ingredients.some((ing: any) => ing.id === rec.id)
                               ? 'bg-primary-50 dark:bg-primary-900/20 border-primary-300 dark:border-primary-700 opacity-60'
                               : 'bg-white dark:bg-neutral-900 border-primary-100 dark:border-primary-800 hover:border-primary-300',
                           )}
                           onClick={() => {
-                            if (!ingredients.some((ing: any) => ing.id === (rec.ingredient_id as string))) {
+                            if (!ingredients.some((ing: any) => ing.id === rec.id)) {
                               addHerbToIngredients({
-                                id: ((rec as Record<string, unknown>).ingredient_id as string) ?? `rec-${i}`,
+                                id: (rec.id) ?? `rec-${i}`,
                                 name: (rec as Record<string, unknown>).name as string ?? rec.name,
                                 category: (rec as Record<string, unknown>).category as string,
                                 is_food_homology: (rec as Record<string, unknown>).is_food_homology as boolean,

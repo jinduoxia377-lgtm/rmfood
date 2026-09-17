@@ -94,7 +94,7 @@ export function registerWaterfallInterceptors(config: InterceptorConfig = {}): v
           logger.warn('[Waterfall] 持久化失败:', e)
         }
       }
-      config.onPersistReceived?.(payload as InterceptorPayload, currentSessionId ?? '')
+      config.onPersistReceived?.(payload as any, currentSessionId ?? '')
       await next()
     },
     // 2. 上下文压缩检查
