@@ -80,7 +80,7 @@ function ParamComparison({ experiments }: { experiments: Experiment[] }) {
   // Collect all unique parameter keys
   const allParams = new Set<string>()
   for (const exp of experiments) {
-    const params = (exp as any).parameters || {}
+    const params = exp.parameters || {}
     if (typeof params === 'object') {
       Object.keys(params).forEach(k => allParams.add(k))
     }
@@ -124,8 +124,8 @@ function ParamComparison({ experiments }: { experiments: Experiment[] }) {
                 {paramLabels[param] || param}
               </td>
               {experiments.map((exp, i) => {
-                const params = (exp as any).parameters || {}
-                const value = params[param]
+                const params = exp.parameters || {}
+                const value = (params as Record<string, unknown>)[param]
                 return (
                   <td key={exp.id} className="py-3 px-4 text-neutral-600 dark:text-neutral-400 font-mono">
                     {value ?? '-'}
@@ -146,7 +146,7 @@ function DataComparison({ experiments }: { experiments: Experiment[] }) {
   const allParams = new Set<string>()
 
   for (const exp of experiments) {
-    const data = (exp as any).data_points || []
+    const data = (exp as { data_points?: unknown[] }).data_points || []
     allDataPoints[exp.id] = data
     data.forEach((d: any) => {
       if (d.parameter) allParams.add(d.parameter)

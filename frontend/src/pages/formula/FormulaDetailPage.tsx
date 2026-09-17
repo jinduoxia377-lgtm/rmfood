@@ -596,7 +596,7 @@ export default function FormulaDetailPage() {
         checkFormulaSafety,
       } = await import('@/api/formula');
 
-      const [{ temperature_c, humidity_pct, light_exposure }] = [{ temperature_c: 25, humidity_pct: 60, light_exposure: 'normal' }] as any[];
+      const { temperature_c, humidity_pct, light_exposure } = { temperature_c: 25, humidity_pct: 60, light_exposure: 'normal' };
 
       const [synergy, stability, taste, effect, compat, safety] = await Promise.all([
         analyzeFormulaSynergy(formulaId),
