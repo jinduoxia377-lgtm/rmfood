@@ -1,4 +1,4 @@
-/**
+﻿/**
  * usePerformanceMonitor - 企业级性能监控仪表盘系统 (v9.0)
  *
  * 职责：
@@ -509,7 +509,7 @@ export function usePerformanceMonitor(
     setIssues(prev => [...prev, newIssue])
     onIssueDetected?.(newIssue)
 
-    eventBus.emit('performance:issue:detected' as any, newIssue)
+    eventBus.emit('', newIssue)
   }
 
   const detectIssues = useCallback((): PerformanceIssue[] => {
@@ -755,7 +755,7 @@ export function usePerformanceMonitor(
           logger.warn(`[Performance Alert] ${config.message}`, { value, threshold: config.threshold })
           break
         case 'eventbus':
-          eventBus.emit('performance:alert' as any, alert)
+          eventBus.emit('', alert)
           break
         case 'remote':
           sendRemoteAlert(alert)

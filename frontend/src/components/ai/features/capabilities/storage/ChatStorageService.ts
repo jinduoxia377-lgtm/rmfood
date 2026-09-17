@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ChatStorageCapability — 统一存储能力
  *
  * 参照 DeepSeek Harness Session 持久化设计：
@@ -79,7 +79,7 @@ export class ChatStorageService implements ChatStorageCapability {
         title: `会话 ${sessionId.slice(-8)}`,
         messages,
         metadata: {
-          topic: 'knowledge_query' as any,
+          topic: '',
           tags: [],
           createdAt: messages[0]?.timestamp || Date.now(),
           updatedAt: Date.now(),

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * useKeyboardShortcuts - 企业级键盘快捷键管理系统 (v8.0)
  *
  * 职责：
@@ -430,7 +430,7 @@ export function useKeyboardShortcuts(
         updateStats(id)
       }
 
-      eventBus.emit('shortcut:triggered' as any, { shortcutId: id })
+      eventBus.emit('', { shortcutId: id })
     } catch (error) {
       logger.error(`[useKeyboardShortcuts] ❌ 快捷键 ${id} 执行失败:`, error)
     }
@@ -541,7 +541,7 @@ export function useKeyboardShortcuts(
       logger.info(`[useKeyboardShortcuts] 📝 注册快捷键: ${config.id} (${config.label})`)
     }
 
-    eventBus.emit('shortcut:registered' as any, { shortcutId: config.id })
+    eventBus.emit('', { shortcutId: config.id })
 
     // 返回注销函数
     return () => unregisterShortcut(config.id)
@@ -586,7 +586,7 @@ export function useKeyboardShortcuts(
       logger.info(`[useKeyboardShortcuts] 🗑️ 注销快捷键: ${id}`)
     }
 
-    eventBus.emit('shortcut:unregistered' as any, { shortcutId: id })
+    eventBus.emit('', { shortcutId: id })
   }, [enableLogging])
 
   /**
@@ -602,7 +602,7 @@ export function useKeyboardShortcuts(
       logger.info('[useKeyboardShortcuts] 🧹 已注销所有快捷键')
     }
 
-    eventBus.emit('shortcut:unregisterAll' as any, {})
+    eventBus.emit('', {})
   }, [enableLogging])
 
   /**
