@@ -54,8 +54,8 @@ export default function ExperimentEditPage() {
         objectives: experiment.objectives || [],
         methodology: experiment.methodology || '',
         parameters: (experiment.parameters || {}) as Record<string, unknown>,
-        materials: (experiment as any).materials || [],
-        equipment: (experiment as any).equipment || [],
+        materials: experiment.materials || [],
+        equipment: experiment.equipment || [],
         start_date: experiment.start_date ? experiment.start_date.slice(0, 10) : '',
         end_date: experiment.end_date ? experiment.end_date.slice(0, 10) : '',
       })

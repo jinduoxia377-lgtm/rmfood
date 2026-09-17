@@ -272,7 +272,7 @@ class SmartCache<T = unknown> {
     const results: T[] = [];
 
     for (const [, item] of this.cache) {
-      const taggedValue = item.value as any;
+      const taggedValue = item.value as any
       if (taggedValue._tags?.includes(tag)) {
         results.push(taggedValue._value);
       }
@@ -285,7 +285,7 @@ class SmartCache<T = unknown> {
     const keysToDelete: string[] = [];
 
     for (const [key, item] of this.cache) {
-      const taggedValue = item.value as any;
+      const taggedValue = item.value as any
       if (taggedValue._tags?.includes(tag)) {
         keysToDelete.push(key);
       }

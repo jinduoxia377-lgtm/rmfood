@@ -161,7 +161,7 @@ class DeepThinkingServiceV2 {
     eventBus.emit('thinking:step', { question, timestamp: Date.now() });
 
     try {
-      const response = await fetch(API_ENDPOINTS.AI.CHAT as any, {
+      const response = await fetch(API_ENDPOINTS.AI.CHAT as string, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question, context }),
@@ -198,7 +198,7 @@ class DeepThinkingServiceV2 {
     logger.debug('[DeepThinkingServiceV2] 开始流式深度分析:', { question });
 
     try {
-      const response = await fetch(API_ENDPOINTS.AI.CHAT as any, {
+      const response = await fetch(API_ENDPOINTS.AI.CHAT as string, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question, context }),
