@@ -86,13 +86,13 @@ export function StabilityTrendChart({ data, size = 200 }: StabilityTrendChartPro
       {(((data as Record<string, unknown>)?.risk_factors as unknown[])?.length ?? 0) > 0 && (
         <div className="w-full space-y-1">
           <p className="text-xs font-medium text-neutral-600 dark:text-neutral-400">风险因素</p>
-          {(((data as Record<string, unknown>)?.risk_factors as unknown[])?.slice(0, 3) ?? []).map((risk: { severity?: number; factor?: string }, idx: number) => (
+          {(((data as Record<string, unknown>)?.risk_factors as unknown[])?.slice(0, 3) ?? []).map((risk: unknown, idx: number) => (
             <div key={idx} className="flex items-center gap-2 text-xs">
               <div
                 className="w-2 h-2 rounded-full"
-                style={{ backgroundColor: risk.severity > 0.7 ? '#ef4444' : risk.severity > 0.4 ? '#f59e0b' : '#10b981' }}
+                style={{ backgroundColor: (risk as { severity?: number })?.severity ?? 0 > 0.7 ? '#ef4444' : (risk as { severity?: number })?.severity ?? 0 > 0.4 ? '#f59e0b' : '#10b981' }}
               />
-              <span className="text-neutral-600 dark:text-neutral-400 truncate">{risk.factor}</span>
+              <span className="text-neutral-600 dark:text-neutral-400 truncate">{(risk as { factor?: string })?.factor || ""}</span>
             </div>
           ))}
         </div>
