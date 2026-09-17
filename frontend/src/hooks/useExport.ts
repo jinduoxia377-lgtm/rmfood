@@ -356,7 +356,7 @@ async function exportToPDF(
     if (options.includeIndex) tableHeaders.push('序号');
     columns.forEach(col => tableHeaders.push(col.label));
 
-    (doc as unknown as Record<string, unknown>).autoTable({
+    (doc as any).autoTable({
       head: [tableHeaders],
       body: tableData,
       startY: options.pdfConfig?.title ? 35 : 20,
