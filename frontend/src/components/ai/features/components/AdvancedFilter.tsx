@@ -71,7 +71,7 @@ const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ filters, onFiltersChang
   const handleQualityGradeToggle = useCallback(
     (grade: string) => {
       const currentGrades = localFilters.qualityGrades || [];
-      const typedGrade = grade as any;
+      const typedGrade = grade as "A" | "D" | "B" | "C" | "F";
       const newGrades = currentGrades.includes(typedGrade)
         ? currentGrades.filter((g) => g !== grade)
         : [...currentGrades, typedGrade];
