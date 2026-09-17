@@ -125,7 +125,7 @@ function ParamComparison({ experiments }: { experiments: Experiment[] }) {
               </td>
               {experiments.map((exp, i) => {
                 const params = exp.parameters || {}
-                const value = (params as Record<string, unknown>)[param]
+                const value = (params as Record<string, unknown>)[param] as string | number | undefined
                 return (
                   <td key={exp.id} className="py-3 px-4 text-neutral-600 dark:text-neutral-400 font-mono">
                     {value ?? '-'}
