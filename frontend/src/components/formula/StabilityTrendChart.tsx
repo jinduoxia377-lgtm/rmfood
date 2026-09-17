@@ -83,10 +83,10 @@ export function StabilityTrendChart({ data, size = 200 }: StabilityTrendChartPro
         </p>
       </div>
 
-      {(((data as Record<string, unknown>)?.risk_factors as any[])?.length ?? 0) > 0 && (
+      {(((data as Record<string, unknown>)?.risk_factors as unknown[])?.length ?? 0) > 0 && (
         <div className="w-full space-y-1">
           <p className="text-xs font-medium text-neutral-600 dark:text-neutral-400">风险因素</p>
-          {(((data as Record<string, unknown>)?.risk_factors as any[])?.slice(0, 3) ?? []).map((risk: any, idx: number) => (
+          {(((data as Record<string, unknown>)?.risk_factors as unknown[])?.slice(0, 3) ?? []).map((risk: { severity?: number; factor?: string }, idx: number) => (
             <div key={idx} className="flex items-center gap-2 text-xs">
               <div
                 className="w-2 h-2 rounded-full"

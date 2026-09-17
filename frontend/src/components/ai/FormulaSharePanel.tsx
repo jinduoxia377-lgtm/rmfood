@@ -280,7 +280,7 @@ export function FormulaSharePanel({ formula, onClose, onShare, onImport }: Formu
             {['compact', 'detailed', 'card'].map((t) => (
               <button
                 key={t}
-                onClick={() => setConfig({ ...config, template: t as unknown })}
+                onClick={() => setConfig({ ...config, template: t as any })}
                 className={`flex-1 px-3 py-2 text-xs rounded-lg border transition-colors ${
                   config.template === t
                     ? 'border-cyan-500 bg-cyan-50 dark:bg-cyan-900/20 text-cyan-600 dark:text-cyan-400'
