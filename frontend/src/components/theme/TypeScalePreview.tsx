@@ -12,8 +12,8 @@ interface TypeScalePreviewProps {
 export function TypeScalePreview({ config }: TypeScalePreviewProps) {
 	const font = config.font || {}
 	const colors = config.colors || {}
-	const textColor = (colors.text as any)?.primary || '#1d1d1f'
-	const textMuted = (colors.text as any)?.secondary || '#6b7280'
+	const textColor = (colors.text as unknown as Record<string, string>)?.primary || '#1d1d1f'
+	const textMuted = (colors.text as unknown as Record<string, string>)?.secondary || '#6b7280'
 	const fontFamily = font.fontFamily || "'Inter', system-ui, sans-serif"
 
 	const typeScale = [
