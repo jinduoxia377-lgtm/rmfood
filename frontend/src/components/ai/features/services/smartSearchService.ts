@@ -1,4 +1,4 @@
-/**
+﻿/**
  * SmartSearchService - 智能搜索服务
  *
  * 提供语义搜索能力，包括：
@@ -89,7 +89,7 @@ export class SmartSearchService {
     const startTime = Date.now();
 
     try {
-      const response = await fetch(API_ENDPOINTS.AI.CHAT as any, {
+      const response = await fetch(API_ENDPOINTS.AI.CHAT as string, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -202,7 +202,7 @@ export class SmartSearchService {
     logger.debug('[SmartSearchService] 获取搜索建议:', { query });
 
     try {
-      const response = await fetch(API_ENDPOINTS.AI.CHAT as any, {
+      const response = await fetch(API_ENDPOINTS.AI.CHAT as string, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -336,7 +336,7 @@ export class SmartSearchService {
     logger.debug('[SmartSearchService] 获取热门搜索');
 
     try {
-      const response = await fetch(API_ENDPOINTS.AI.CHAT as any, {
+      const response = await fetch(API_ENDPOINTS.AI.CHAT as string, {
         method: 'GET',
         signal: AbortSignal.timeout(10000),
       });
@@ -355,7 +355,7 @@ export class SmartSearchService {
 
   async trackSearch(query: string, resultsCount: number): Promise<void> {
     try {
-      await fetch(API_ENDPOINTS.AI.CHAT as any, {
+      await fetch(API_ENDPOINTS.AI.CHAT as string, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -378,3 +378,4 @@ export class SmartSearchService {
 
 export const smartSearchService = new SmartSearchService();
 export default smartSearchService;
+
