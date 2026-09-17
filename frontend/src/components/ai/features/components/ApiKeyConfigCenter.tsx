@@ -208,7 +208,7 @@ const ApiKeyConfigCenter: React.FC<ApiKeyConfigCenterProps> = ({ className = '',
       if (!keyData) return;
 
       setTestingId(keyId);
-      setTestResults((prev) => ({ ...prev, [keyId]: undefined as any }));
+      setTestResults((prev) => ({ ...prev, [keyId]: undefined }));
       const startTime = performance.now();
 
       try {
