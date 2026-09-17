@@ -96,7 +96,7 @@ export const HeaderPro: React.FC<HeaderProProps> = ({
           {generator && (
             <div className="flex items-center gap-2 px-3 py-2 bg-muted/60 rounded-xl border border-border">
               <span className="text-caption text-muted-foreground font-medium">Generator:</span>
-              <Badge variant={getGeneratorColor(generator) as "default" | "success" | "warning" | "error" | "info" | "danger" | "neutral" | "primary" | "secondary" | "outline" | "destructive" | null | undefined} className="text-label-sm font-semibold">
+              <Badge variant={getGeneratorColor(generator) as any} className="text-label-sm font-semibold">
                 {getGeneratorLabel(generator)}
               </Badge>
             </div>
