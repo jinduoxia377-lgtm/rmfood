@@ -72,8 +72,6 @@
   --color-error-text: #991b1b;
   --color-info: #3b82f6;
   --color-info-bg: #eff6ff;
-  --color-info-text: #1e40af;
-
   /* ═══ Semantic 10-scale (for component primitives) ═══ */
   --color-success-50: #ecfdf5; --color-success-100: #d1fae5; --color-success-200: #a7f3d0;
   --color-success-300: #6ee7b7; --color-success-400: #34d399; --color-success-500: #10b981;
@@ -460,3 +458,4 @@ textarea:focus-visible,
   outline-offset: 2px;
   border-radius: var(--radius-sm, 4px);
 }
+

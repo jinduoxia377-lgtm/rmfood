@@ -1,5 +1,15 @@
-﻿import React, { useMemo } from 'react'
+import React, { useMemo } from 'react'
 import type { ThemeStyles } from '@/types/theme-mode'
+
+type PreviewThemeColors = {
+  text?: { primary?: string; secondary?: string }
+  border?: { default?: string }
+  primary?: string
+  background?: string
+  surface?: string
+  font?: { fontFamily?: string; fontSize?: { base?: string } }
+  spacing?: { borderRadius?: Record<string, string> }
+}
 
 interface AppShellPreviewProps {
 	config: ThemeStyles
@@ -11,7 +21,7 @@ interface AppShellPreviewProps {
  * 展示主题在实际应用中的效果：侧边栏 + 导航栏 + 内容区
  */
 export function AppShellPreview({ config, viewMode = 'context' }: AppShellPreviewProps) {
-	const colors = config.colors || {}
+	const colors = config.colors as PreviewThemeColors || {}
 	const font = config.font || {}
 	const spacing = config.spacing || {}
 	const radius = (spacing?.borderRadius as Record<string, string>) || {}
@@ -20,16 +30,16 @@ export function AppShellPreview({ config, viewMode = 'context' }: AppShellPrevie
 		'--preview-bg': colors.background || '#ffffff',
 		'--preview-surface': colors.surface || '#f8fafc',
 		'--preview-primary': colors.primary || '#0066cc',
-		'--preview-text': colors.text || '#1d1d1f',
-		'--preview-text-muted': (colors.text as ThemeColor)?.secondary || '#6b7280',
-		'--preview-border': colors.border ? ((colors.border as ThemeColor)?.default || '#e5e7eb') : '#e5e7eb',
+		'--preview-text': colors.text?.primary || '#1d1d1f',
+		'--preview-text-muted': colors.text?.secondary || '#6b7280',
+		'--preview-border': colors.border?.default || '#e5e7eb',
 		'--preview-font': font.fontFamily || "'Inter', system-ui, sans-serif",
 		'--preview-radius': radius.lg || '12px',
 	}), [colors, font, spacing, radius])
 
-	const borderColor = (colors.border as ThemeColor)?.default || '#e5e7eb'
-	const textColor = (colors.text as ThemeColor)?.primary || '#1d1d1f'
-	const textMuted = (colors.text as ThemeColor)?.secondary || '#6b7280'
+	const borderColor = colors.border?.default || '#e5e7eb'
+	const textColor = colors.text?.primary || '#1d1d1f'
+	const textMuted = colors.text?.secondary || '#6b7280'
 	const primaryColor = colors.primary || '#0066cc'
 	const bgColor = colors.background || '#ffffff'
 	const surfaceColor = colors.surface || '#f8fafc'
@@ -180,5 +190,3 @@ export function AppShellPreview({ config, viewMode = 'context' }: AppShellPrevie
 		</div>
 	)
 }
-
-
