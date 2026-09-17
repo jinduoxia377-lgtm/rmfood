@@ -35,6 +35,7 @@ interface ChartThemeColors {
   surface: string
   surfaceVariant: string
   outline: string
+  background: string
   success: string
   warning: string
   error: string
