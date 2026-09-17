@@ -48,6 +48,12 @@ import {
   Apple,
 } from 'lucide-react';
 import type { BadgeVariant } from '@/components/ui/Badge';
+// Graph analytics API response types
+interface GraphCommunity { id: string; members: string[]; size?: number; community_id?: number }
+interface GraphKCoreNode { node_label: string; node_type: string }
+interface GraphBridgeNode { node_label: string; node_type: string; bridge_score?: number; score?: number }
+interface GraphRecommendNode { herb_name: string; combined_score?: number; similarity_score?: number; score?: number; shared_compounds?: number; shared_targets?: number }
+
 
 // ═══════════════════════════════════════════
 // 节点类型体系（7种全覆盖）
@@ -756,7 +762,7 @@ export default function GraphTab() {
                 <p className="text-center text-xs text-error-500 py-6">社区检测请求失败，请重试</p>
               ) : communitiesQuery.data?.total_communities > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {(communitiesQuery.data?.communities ?? []) ) as unknown[]).slice(0, 12).map((c, i) => (
+                  {((communitiesQuery.data?.communities ?? []) as GraphCommunity[]).slice(0, 12).map((c, i) => (
                     <div
                       key={i}
                       className="rounded-lg border border-neutral-200 dark:border-neutral-700 p-3 bg-white dark:bg-neutral-800/50"
@@ -811,13 +817,13 @@ export default function GraphTab() {
                 <Loader2 className="w-5 h-5 animate-spin mx-auto my-4" />
               ) : kcoreQuery.isError ? (
                 <p className="text-center text-xs text-error-500 py-6">K-Core分析请求失败，请重试</p>
-              ) : (kcoreQuery.data?.results ?? []) ) as unknown[])?.length > 0 ? (
+              ) : ((kcoreQuery.data?.results ?? []) as unknown[])?.length > 0 ? (
                 <div className="max-h-60 overflow-y-auto space-y-1">
                   <p className="text-xs text-[var(--text-secondary,#6E6E73)] mb-2">
                     {kcoreQuery.data.results.length} 个节点属于 {kCoreValue}-Core（连接度 ≥ {kCoreValue}）
                   </p>
                   <div className="flex flex-wrap gap-1.5">
-                    {kcoreQuery.data.results.map((n: any, i: number) => (
+                    {kcoreQuery.data.results.map((n: GraphKCoreNode, i: number) => (
                       <span
                         key={i}
                         className="text-xs px-2 py-1 bg-accent-50 dark:bg-purple-950/30 text-accent-700 dark:text-accent-300 rounded-full cursor-pointer hover:ring-2 ring-purple-300"
@@ -841,7 +847,7 @@ export default function GraphTab() {
                 <Loader2 className="w-5 h-5 animate-spin mx-auto my-4" />
               ) : bridgesQuery.isError ? (
                 <p className="text-center text-xs text-error-500 py-6">桥梁分析请求失败，请重试</p>
-              ) : (bridgesQuery.data?.bridges ?? []) ) as unknown[])?.length > 0 ? (
+              ) : ((bridgesQuery.data?.bridges ?? []) as unknown[])?.length > 0 ? (
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs">
                     <thead>
@@ -853,7 +859,7 @@ export default function GraphTab() {
                       </tr>
                     </thead>
                     <tbody>
-                      {bridgesQuery.data.bridges.slice(0, 15).map((b: any, i: number) => (
+                      {((bridgesQuery.data?.bridges ?? []) as GraphBridgeNode[]).slice(0, 15).map((b: GraphBridgeNode, i: number) => (
                         <tr
                           key={i}
                           className="hover:bg-warning-50/50 dark:hover:bg-amber-950/20 border-b border-neutral-100/50"
@@ -901,13 +907,13 @@ export default function GraphTab() {
                 <Loader2 className="w-5 h-5 animate-spin mx-auto my-4" />
               ) : recommendQuery.isError ? (
                 <p className="text-center text-xs text-error-500 py-6">推荐请求失败，请重试</p>
-              ) : recommendHerbName.length >= 1 && (recommendQuery.data?.recommendations ?? []) ) as unknown[])?.length > 0 ? (
+              ) : recommendHerbName.length >= 1 && ((recommendQuery.data?.recommendations ?? []) as unknown[])?.length > 0 ? (
                 <div className="space-y-2">
                   <p className="text-xs text-[var(--text-secondary,#6E6E73)]">
                     与 "<strong>{recommendQuery.data.target_herb || recommendHerbName}</strong>"
                     最相似的药材（基于化合物重叠、靶点覆盖、图谱拓扑）：
                   </p>
-                  {((recommendQuery.data?.recommendations ?? []) as unknown[]).map((rec, i) => (
+                  {((recommendQuery.data?.recommendations ?? []) as GraphRecommendNode[]).map((rec, i) => (
                     <div
                       key={i}
                       className="flex items-center gap-3 p-2 rounded-lg bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border border-green-200/50"
@@ -1627,5 +1633,8 @@ export default function GraphTab() {
     </div>
   );
 }
+
+
+
 
 
