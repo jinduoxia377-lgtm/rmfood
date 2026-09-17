@@ -453,8 +453,8 @@ export function usePerformanceMonitor(
         let clsValue = 0
         const clsObserver = new PerformanceObserver((list) => {
           for (const entry of list.getEntries()) {
-            if (!((entry as any).hadRecentInput)) {
-              clsValue += ((entry as any).value || 0)
+            if (!((entry as PerformanceEntry & { hadRecentInput?: boolean }).hadRecentInput)) {
+              clsValue += ((entry as PerformanceEntry & { value?: number }).value ?? 0)
               setWebVitals(prev => ({ ...prev, cls: clsValue }))
             }
           }
@@ -509,7 +509,7 @@ export function usePerformanceMonitor(
     setIssues(prev => [...prev, newIssue])
     onIssueDetected?.(newIssue)
 
-    eventBus.emit('performance:issue:detected' as any, newIssue)
+    eventBus.emit('performance:issue:detected', { issue: newIssue })
   }
 
   const detectIssues = useCallback((): PerformanceIssue[] => {
@@ -755,7 +755,7 @@ export function usePerformanceMonitor(
           logger.warn(`[Performance Alert] ${config.message}`, { value, threshold: config.threshold })
           break
         case 'eventbus':
-          eventBus.emit('performance:alert' as any, alert)
+          eventBus.emit('performance:alert', { alert })
           break
         case 'remote':
           sendRemoteAlert(alert)

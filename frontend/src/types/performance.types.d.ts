@@ -1,0 +1,46 @@
+/**
+ * 扩展 Performance / Navigator API 类型，解决 as any 问题
+ */
+
+interface PerformanceMemory {
+  usedJSHeapSize: number;
+  totalJSHeapSize: number;
+  jsHeapSizeLimit: number;
+}
+
+interface NetworkInformation {
+  effectiveType: 'slow-2g' | '2g' | '3g' | '4g';
+  rtt: number;
+  downlink: number;
+  downlinkMax: number;
+  saveData: boolean;
+  onchange?: EventListener;
+}
+
+// CLS entry extension
+interface PerformanceLayoutShiftEntry extends PerformanceEntry {
+  hadRecentInput: boolean;
+  value: number;
+  sources: Array<{ node?: Node; hadRecentInput: boolean }>;
+}
+
+// FID entry extension
+interface PerformanceInputDelayEntry extends PerformanceEntry {
+  processingStart: number;
+}
+
+interface PerformanceExtensions {
+  memory?: PerformanceMemory;
+}
+
+declare global {
+  interface Performance extends PerformanceExtensions {}
+  interface Navigator {
+    connection?: NetworkInformation;
+    deviceMemory?: number;
+    mozConnection?: NetworkInformation;
+    webkitConnection?: NetworkInformation;
+  }
+}
+
+export {};

@@ -117,8 +117,8 @@ function observeLCP(callback: (metric: VitalMetric) => void) {
           delta: value,
           rating: rateMetric('LCP', value),
           attribution: {
-            element: (lastEntry as any).element?.tagName || 'unknown',
-            url: (lastEntry as any).url || 'n/a',
+            element: (lastEntry as PerformanceEntry & { element?: Element })?.element?.tagName || 'unknown',
+            url: (lastEntry as PerformanceNavigationTiming)?.name || 'n/a',
             renderTime: 0,
             loadTime: 0,
           },
@@ -147,8 +147,8 @@ function observeCLS(callback: (metric: VitalMetric) => void) {
     const observer = new PerformanceObserver((entryList) => {
       for (const entry of entryList.getEntries()) {
         // 只记录非用户输入的布局偏移
-        if (!((entry as any).hadRecentInput)) {
-          const shiftValue = ((entry as any).value || 0);
+        if (!((entry as PerformanceEntry & { hadRecentInput?: boolean })?.hadRecentInput)) {
+          const shiftValue = ((entry as PerformanceEntry & { value?: number })?.value ?? 0);
           sessionValue += shiftValue;
           sessionEntries.push(entry);
 
@@ -197,7 +197,7 @@ function observeFID(callback: (metric: VitalMetric) => void) {
 
     const observer = new PerformanceObserver((entryList) => {
       for (const entry of entryList.getEntries()) {
-        const delay = ((entry as any).processingStart - entry.startTime || 0);
+        const delay = (((entry as PerformanceEntry & { processingStart?: number })?.processingStart ?? entry.startTime) - entry.startTime || 0);
         callback({
           name: 'FID',
           value: delay,
@@ -384,14 +384,14 @@ function buildReportPayload(): any {
     screenHeight: window.screen.height,
     colorDepth: window.screen.colorDepth,
     devicePixelRatio: window.devicePixelRatio,
-    connection: ((navigator as any).connection
+    connection: (navigator.connection
       ? {
-          effectiveType: ((navigator as any).connection.effectiveType || null),
-          downlink: ((navigator as any).connection.downlink || null),
-          rtt: ((navigator as any).connection.rtt || null),
+          effectiveType: (navigator.connection.effectiveType || null),
+          downlink: (navigator.connection.downlink || null),
+          rtt: (navigator.connection.rtt || null),
         }
       : null),
-    memory: ((navigator as any).deviceMemory || null),
+    memory: (navigator.deviceMemory || null),
     hardwareConcurrency: navigator.hardwareConcurrency || null,
   };
 
@@ -447,7 +447,7 @@ function getNavigationTimingSummary(): any {
  */
 function getMemoryUsage(): any {
   try {
-    const perf = performance as any;
+    const perf = performance as Performance & { memory?: PerformanceMemory };
     if (perf.memory) {
       return {
         usedMB: Math.round(perf.memory.usedJSHeapSize / 1024 / 1024),
@@ -639,6 +639,10 @@ if (typeof window !== 'undefined') {
     },
   };
 }
+
+
+
+
 
 
 

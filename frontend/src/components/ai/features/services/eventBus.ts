@@ -19,7 +19,13 @@ export type EventType =
   | 'search:error'
   | 'language:changed'
   | 'context:updated' // 上下文状态更新
-  | 'context:cleared'; // 上下文已清空
+  | 'context:cleared' // 上下文已清空
+  | 'performance:issue:detected' // 性能问题检测
+  | 'performance:alert' // 性能告警
+  | 'shortcut:triggered' // 快捷键触发
+  | 'shortcut:registered' // 快捷键注册
+  | 'shortcut:unregistered' // 快捷键注销
+  | 'shortcut:unregisterAll' // 全部注销
 
 export interface EventPayloadMap {
   'message:sending': { content: string; timestamp: number };
@@ -41,6 +47,12 @@ export interface EventPayloadMap {
   'language:changed': { language: string };
   'context:updated': Record<string, unknown>;
   'context:cleared': Record<string, never>;
+  'performance:issue:detected': { issue: unknown };
+  'performance:alert': { alert: unknown };
+  'shortcut:triggered': { shortcutId: string };
+  'shortcut:registered': { shortcutId: string };
+  'shortcut:unregistered': { shortcutId: string };
+  'shortcut:unregisterAll': Record<string, never>;
 }
 
 export type EventHandler<T = unknown> = (payload: T) => void | Promise<void>;

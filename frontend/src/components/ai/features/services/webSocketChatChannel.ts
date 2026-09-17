@@ -1,4 +1,4 @@
-/**
+﻿/**
  * WebSocketChatChannel — WebSocket 实时消息通道（带自动重连）
  *
  * 参照 DeepSeek Harness WebSocket 设计：
@@ -45,7 +45,7 @@ export class WebSocketChatChannel {
   private heartbeatTimer: ReturnType<typeof setInterval> | null = null
   private messageQueue: Array<WSMessage> = []
   private isReady = false
-  private listeners = new Map<WSMessageType, Set<(payload: unknown) => void>>()
+  private listeners = new Map<string, Set<((type: WSMessageType, payload: unknown) => void) | ((payload: unknown) => void)>>()
 
   constructor(options: WebSocketOptions) {
     this.options = { ...DEFAULTS, ...options } as Required<WebSocketOptions>
@@ -80,16 +80,17 @@ export class WebSocketChatChannel {
 
   /** 注册消息监听 */
   on(type: WSMessageType, handler: (payload: unknown) => void): () => void {
+    const wrapped = (t: WSMessageType, p: unknown) => handler(p);
     if (!this.listeners.has(type)) this.listeners.set(type, new Set())
-    this.listeners.get(type)!.add(handler)
-    return () => this.listeners.get(type)?.delete(handler)
+    this.listeners.get(type)!.add(wrapped)
+    return () => this.listeners.get(type)?.delete(wrapped)
   }
 
   /** 订阅所有消息类型 */
   subscribe(handler: (type: WSMessageType, payload: unknown) => void): () => void {
     const wrapper = (type: WSMessageType, payload: unknown) => handler(type, payload)
-    this.listeners.set('*' as any, new Set([wrapper as any]))
-    return () => this.listeners.delete('*' as any)
+    this.listeners.set('*', new Set([wrapper]))
+    return () => this.listeners.delete('*')
   }
 
   /** 获取排队消息数 */
@@ -203,8 +204,8 @@ export class WebSocketChatChannel {
   }
 
   private dispatch(type: WSMessageType, payload: unknown): void {
-    this.listeners.get(type)?.forEach(fn => { try { fn(payload) } catch (e) { logger.error('[WS] listener error:', e) } })
-    this.listeners.get('*' as any)?.forEach(fn => { try { (fn as any)(type, payload) } catch (e) { logger.error('[WS] wildcard listener error:', e) } })
+    this.listeners.get(type)?.forEach(fn => { try { fn(type, payload) } catch (e) { logger.error('[WS] listener error:', e) } })
+    this.listeners.get('*')?.forEach(fn => { try { fn(type, payload) } catch (e) { logger.error('[WS] wildcard listener error:', e) } })
   }
 
   destroy(): void {
@@ -233,3 +234,5 @@ export function destroyWebSocket(): void {
 }
 
 export default WebSocketChatChannel
+
+
