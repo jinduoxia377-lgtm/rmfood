@@ -1073,7 +1073,7 @@ export function AnalyticsDashboard() {
               <div className="h-[320px]">
                 <AreaChart
                   data={data.charts.monthly_creation_trend}
-                  themeColors={colors as ChartThemeColors}
+                  themeColors={colors as unknown as ChartThemeColors}
                 />
               </div>
             </div>
@@ -1109,7 +1109,7 @@ export function AnalyticsDashboard() {
               <div className="h-[320px] flex items-center justify-center">
                 <PieChart
                   data={data.charts.formula_status_distribution}
-                  themeColors={colors as ChartThemeColors}
+                  themeColors={colors as unknown as ChartThemeColors}
                 />
               </div>
             </div>
@@ -1491,4 +1491,5 @@ export function AnalyticsDashboard() {
     </div>
   )
 }
+
 
