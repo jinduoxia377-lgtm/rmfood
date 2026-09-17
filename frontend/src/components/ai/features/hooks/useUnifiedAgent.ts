@@ -1,4 +1,4 @@
-/**
+﻿/**
  * useUnifiedAgent v3.3 - 集成 LLM Adapter 和增强错误处理
  */
 import { useState, useCallback, useEffect, useRef } from 'react';
@@ -659,7 +659,7 @@ export function useUnifiedAgent(options: UseUnifiedAgentOptions = {}): UseUnifie
         completeStep('final-response', true, undefined, finalContent);
 
         setExecutedCount((c) => c + 1);
-        onComplete?.result;
+        onComplete?.(undefined);
 
         if (session) setTokenCount(session.estimateTokenCount());
 
@@ -718,3 +718,4 @@ export function useUnifiedAgent(options: UseUnifiedAgentOptions = {}): UseUnifie
     execute,
   };
 }
+
