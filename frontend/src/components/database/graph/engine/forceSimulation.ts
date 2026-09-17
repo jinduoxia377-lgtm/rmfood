@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Force-directed graph rendering engine.
  *
  * Encapsulates the entire D3 SVG force simulation pipeline:
@@ -85,7 +85,7 @@ export class GraphEngine {
   constructor(private input: GraphEngineInput) {}
 
   getZoomBehavior(): d3.ZoomBehavior<SVGSVGElement, unknown> | null {
-    return this.zoomBehavior as any
+    return this.zoomBehavior
   }
 
   init(): void {
@@ -105,13 +105,13 @@ export class GraphEngine {
 
     if (g.empty()) {
       g = this.svg.append('g').attr('class', 'graph-container')
-      defs = this.svg.append('defs') as any
+      defs = this.svg.append('defs')
       this.buildDefs(defs)
       this.setupZoom(g)
     }
 
     this.g = g
-    this.defs = defs as any
+    this.defs = defs
     this.currentLodLevel = this.input.lodLevel
     this.prevLayout = this.input.layout
   }
@@ -172,7 +172,7 @@ export class GraphEngine {
 
   setZoom(transform: d3.ZoomTransform): void {
     if (!this.svg || !this.zoomBehavior) return
-    ;(this.svg as any).transition().duration(350).call((this.zoomBehavior as any).transform, transform)
+    ;(this.svg as any).transition().duration(350).call(this.zoomBehavior!.transform, transform)
   }
 
   // ────────────────────────────────────────
@@ -241,15 +241,15 @@ export class GraphEngine {
     this.zoomBehavior = d3.zoom<SVGSVGElement, unknown>()
       .scaleExtent([0.08, 8])
       .on('zoom', (event: d3.D3ZoomEvent<SVGSVGElement, unknown>) => {
-        g.attr('transform', event.transform as any)
+        g.attr('transform', event.transform)
         this.input.onSetZoomTransform?.(event.transform)
       })
 
     ;(this.svg as any).on('touchstart', () => {}, { passive: true })
-    ;(this.svg as any).call(this.zoomBehavior)
+    ;(this.svg as any).call(this.zoomBehavior!)
 
     ;(this.svg as any).on('dblclick', () => {
-      ;(this.svg as any).transition().duration(600).call((this.zoomBehavior as any).transform, d3.zoomIdentity).ease(d3.easeCubicOut)
+      ;(this.svg as any).transition().duration(600).call(this.zoomBehavior!.transform, d3.zoomIdentity).ease(d3.easeCubicOut)
     })
   }
 
@@ -393,7 +393,7 @@ export class GraphEngine {
     this.simulation = d3.forceSimulation<SimNode>(simNodes)
       .alphaDecay((isLarge ? 0.018 : 0.01) * lodAlphaMultiplier)
       .velocityDecay(isLarge ? 0.38 : 0.26)
-      .force('link', d3.forceLink<SimNode, SimEdge>(simEdges as any)
+      .force('link', d3.forceLink<SimNode, SimEdge>(simEdges as d3.LinkObject<SimNode, SimEdge>[])
         .id((d: any) => d.id)
         .distance(baseLinkDistance))
       .force('charge', d3.forceManyBody<SimNode>().strength(
@@ -517,7 +517,7 @@ export class GraphEngine {
         this.rafId = requestAnimationFrame(() => {
           this.ticking = false
           this.applyTickPositions()
-          this.input.onSimulationTick?.(simNodes, simEdges as any)
+          this.input.onSimulationTick?.(simNodes, simEdges as d3.LinkObject<SimNode, SimEdge>[]))
           this.rafId = null
         })
         this.ticking = true
@@ -835,7 +835,7 @@ export class GraphEngine {
 
     // Keyboard focus ring
     const focusRingSel = mergedNodes.selectAll('.keyboard-focus-ring').data(
-      (d: SimNode, i: number) => (i === this.input.focusedNodeIndex ? [d] : [] as any),
+      (d: SimNode, i: number) => (i === this.input.focusedNodeIndex ? [d] : [] as SimNode[]),
     )
     focusRingSel.exit().remove()
     focusRingSel.enter()
@@ -1103,3 +1103,4 @@ export class GraphEngine {
     }
   }
 }
+

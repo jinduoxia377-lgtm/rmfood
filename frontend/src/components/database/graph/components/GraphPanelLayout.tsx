@@ -474,7 +474,7 @@ export default function GraphPanelLayout({
       <div className="absolute top-3 left-1/2 -translate-x-1/2 z-40 w-72">
         <SearchBar
           searchQuery={searchQuery}
-          searchMatches={searchMatches as any}
+          searchMatches={searchMatches.map(m => ({ ...m, matchFields: [] }))}
           focusedNodeIndex={focusedNodeIndex}
           searchHistory={searchHistory}
           onSearchChange={handleSearchChange}
@@ -493,7 +493,7 @@ export default function GraphPanelLayout({
 
       {/* v7.4: Context Menu */}
       {contextMenu && (
-        <ContextMenu node={contextMenu.node as any} selectedNodes={selectedNodes as any} communities={communities as any} contextMenu={contextMenu} selectedNodesCount={selectedNodes.size} communitiesSize={communities.size} onAction={(action, node) => { handleContextAction(action, node); setContextMenu(null) }} />
+        <ContextMenu contextMenu={contextMenu} selectedNodesCount={selectedNodes.size} communitiesSize={communities.size} onAction={(action, node) => { handleContextAction(action, node); setContextMenu(null) }} />
       )}
 
       {/* v7.5: Performance Monitoring Panel */}
@@ -527,7 +527,7 @@ export default function GraphPanelLayout({
               if (!svgRef.current || !zoomBehaviorRef.current) return
               const svg = d3.select(svgRef.current)
               svg.transition().duration(400).ease(d3.easeCubicOut)
-                .call(zoomBehaviorRef.current.transform as any,
+                .call(zoomBehaviorRef.current.transform,
                   d3.zoomIdentity.translate((containerRef.current?.clientWidth || width) / 2, height / 2)
                     .scale(scale).translate(-x * scale, -y * scale))
             }} />
@@ -709,7 +709,7 @@ export default function GraphPanelLayout({
 
       {/* v7.4: Right Click Menu (rendered inline since it uses complex event handling) */}
       {contextMenu && (
-        <ContextMenu node={contextMenu.node as any} selectedNodes={selectedNodes as any} communities={communities as any} contextMenu={contextMenu} selectedNodesCount={selectedNodes.size} communitiesSize={communities.size} onAction={(action, node) => { handleContextAction(action, node); setContextMenu(null) }} />
+        <ContextMenu contextMenu={contextMenu} selectedNodesCount={selectedNodes.size} communitiesSize={communities.size} onAction={(action, node) => { handleContextAction(action, node); setContextMenu(null) }} />
       )}
 
       {/* v7.8: Pin trigger button */}
