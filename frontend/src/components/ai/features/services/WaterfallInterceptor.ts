@@ -15,6 +15,13 @@ import type { EventType, EventPayloadMap } from './eventBus'
 import { chatStorageService } from '../capabilities/storage/ChatStorageService'
 import { userProfileManager } from './userProfileService'
 
+export interface InterceptorPayload {
+  content: string
+  timestamp: number
+  sessionId?: string
+  messageId?: string
+}
+
 export interface InterceptorConfig {
   onAuthCheck?: (payload: EventPayloadMap['message:sending']) => boolean | Promise<boolean>
   onValidate?: (payload: EventPayloadMap['message:sending']) => string | null
@@ -37,7 +44,7 @@ export function registerWaterfallInterceptors(config: InterceptorConfig = {}): v
     async (payload, next) => {
       const hasToken = localStorage.getItem('access_token') || document.cookie.includes('token=')
       if (!hasToken && config.onAuthCheck) {
-        const result = await config.onAuthCheck(payload as any)
+        const result = await config.onAuthCheck(payload as InterceptorPayload)
         if (!result) {
           logger.warn('[Waterfall] 认证检查失败，中止发送')
           eventBusV2.emit('auth:required' as EventType, {})
@@ -48,7 +55,7 @@ export function registerWaterfallInterceptors(config: InterceptorConfig = {}): v
     },
     // 2. 输入校验
     async (payload, next) => {
-      const violation = config.onValidate?.(payload as any)
+      const violation = config.onValidate?.(payload as InterceptorPayload)
       if (violation) {
         logger.warn(`[Waterfall] 输入校验失败: ${violation}`)
         eventBusV2.emit('message:error' as EventType, { error: new Error(violation), messageId: '' })
@@ -63,8 +70,8 @@ export function registerWaterfallInterceptors(config: InterceptorConfig = {}): v
           // 保存用户发送内容到草稿（轻量级，不阻塞发送）
           const draftKey = `draft_${currentSessionId}`
           localStorage.setItem(draftKey, JSON.stringify({
-            content: (payload as any).content,
-            timestamp: (payload as any).timestamp,
+            content: (payload as InterceptorPayload).content,
+            timestamp: (payload as InterceptorPayload).timestamp,
           }))
           logger.debug('[Waterfall] 草稿已保存:', draftKey)
         } catch (e) {
@@ -87,7 +94,7 @@ export function registerWaterfallInterceptors(config: InterceptorConfig = {}): v
           logger.warn('[Waterfall] 持久化失败:', e)
         }
       }
-      config.onPersistReceived?.(payload as any, currentSessionId ?? '')
+      config.onPersistReceived?.(payload as InterceptorPayload, currentSessionId ?? '')
       await next()
     },
     // 2. 上下文压缩检查

@@ -268,7 +268,7 @@ const mockDashboardOverview: DashboardOverview = {
     { organism: 'Oryza sativa', count: 234 },
   ],
   top_herbs_by_ob: mockHerbs.map((h) => ({
-    name_cn: (h as any).name_cn,
+    name_cn: h.name_cn,
     ob_percent: h.ob_percent ?? 0,
     dl_value: h.dl_value ?? 0,
     compound_count: h.compound_count,
@@ -298,7 +298,7 @@ const mockDashboardTrends: DashboardTrends = {
   ob_dl_scatter: mockHerbs.map((h) => ({
     x: h.ob_percent ?? 0,
     y: h.dl_value ?? 0,
-    name: (h as any).name_cn,
+    name: h.name_cn,
     category: h.category ?? '',
     is_food_homology: (h.is_food_homology ?? false) as boolean,
   })),
@@ -543,7 +543,7 @@ export const mockDatabaseApi = {
       const kw = params.keyword.toLowerCase();
       filtered = filtered.filter(
         (h) =>
-          (h as any).name_cn.toLowerCase().includes(kw) ||
+          h.name_cn.toLowerCase().includes(kw) ||
           (h.name_latin?.toLowerCase().includes(kw) ?? false) ||
           (h.name_pinyin?.toLowerCase().includes(kw) ?? false) ||
           (h.effects?.toLowerCase().includes(kw) ?? false),
@@ -581,7 +581,7 @@ export const mockDatabaseApi = {
     if (params.keyword) {
       const kw = params.keyword.toLowerCase();
       filtered = filtered.filter(
-        (h) => (h as any).name_cn.toLowerCase().includes(kw) || (h.name_latin?.toLowerCase().includes(kw) ?? false),
+        (h) => h.name_cn.toLowerCase().includes(kw) || (h.name_latin?.toLowerCase().includes(kw) ?? false),
       );
     }
     const page = params.page ?? 1;
@@ -597,7 +597,7 @@ export const mockDatabaseApi = {
   },
 
   checkFoodHomology: (herbName: string) => {
-    const herb = mockHerbs.find((h) => (h as any).name_cn === herbName);
+    const herb = mockHerbs.find((h) => h.name_cn === herbName);
     return Promise.resolve({ is_food_homology: herb?.is_food_homology ?? false });
   },
 
@@ -657,7 +657,7 @@ export const mockDatabaseApi = {
   unifiedSearch: (params: { keyword: string; page?: number; page_size?: number }) => {
     const kw = params.keyword.toLowerCase();
     const herbs = mockHerbs.filter(
-      (h) => (h as any).name_cn.toLowerCase().includes(kw) || (h.name_latin?.toLowerCase().includes(kw) ?? false),
+      (h) => h.name_cn.toLowerCase().includes(kw) || (h.name_latin?.toLowerCase().includes(kw) ?? false),
     );
     const peptides = mockPeptides.filter(
       (p) => (p.sequence || '').toLowerCase().includes(kw) || (p.source_protein || '').toLowerCase().includes(kw),
