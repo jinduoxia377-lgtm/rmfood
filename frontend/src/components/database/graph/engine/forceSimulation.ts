@@ -393,7 +393,7 @@ export class GraphEngine {
     this.simulation = d3.forceSimulation<SimNode>(simNodes)
       .alphaDecay((isLarge ? 0.018 : 0.01) * lodAlphaMultiplier)
       .velocityDecay(isLarge ? 0.38 : 0.26)
-      .force('link', d3.forceLink<SimNode, SimEdge>(simEdges as d3.LinkObject<SimNode, SimEdge>[])
+      .force('link', d3.forceLink<SimNode, SimEdge>(simEdges as any)
         .id((d: any) => d.id)
         .distance(baseLinkDistance))
       .force('charge', d3.forceManyBody<SimNode>().strength(
@@ -517,7 +517,7 @@ export class GraphEngine {
         this.rafId = requestAnimationFrame(() => {
           this.ticking = false
           this.applyTickPositions()
-          this.input.onSimulationTick?.(simNodes, simEdges as d3.LinkObject<SimNode, SimEdge>[]))
+          this.input.onSimulationTick?.(simNodes, simEdges as any)
           this.rafId = null
         })
         this.ticking = true
@@ -1103,4 +1103,3 @@ export class GraphEngine {
     }
   }
 }
-
