@@ -1,5 +1,4 @@
-﻿/* eslint-disable @typescript-eslint/no-explicit-any */
-/**
+﻿/**
  * 知识图谱 Tab — v5.0 完整版
  *
  * 功能清单：
@@ -48,12 +47,13 @@ import {
   Microscope,
   Apple,
 } from 'lucide-react';
+import type { BadgeVariant } from '@/components/ui/Badge';
 
 // ═══════════════════════════════════════════
 // 节点类型体系（7种全覆盖）
 // ═══════════════════════════════════════════
 
-const NODE_TYPE_BADGE: Record<string, 'primary' | 'info' | 'warning' | 'danger' | 'neutral'> = {
+const NODE_TYPE_BADGE: Record<string, BadgeVariant> = {
   herb: 'primary', // 药材   — 森林绿
   compound: 'info', // 化合物 — 海洋蓝
   target: 'warning', // 靶点   — 琥珀色
@@ -449,16 +449,16 @@ export default function GraphTab() {
               return (
                 <div
                   key={key}
-                  className={`card p-4 text-center ${(cfg as any)?.bg ?? ''} hover:shadow-md transition-shadow`}
+                  className={`card p-4 text-center ${cfg?.bg ?? ''} hover:shadow-md transition-shadow`}
                 >
-                  <div className="flex justify-center" style={{ color: (cfg as any)?.color ?? 'var(--text-secondary, #6E6E73)' }}>
-                    {(cfg as any)?.icon ?? '📌'}
+                  <div className="flex justify-center" style={{ color: cfg?.color ?? 'var(--text-secondary, #6E6E73)' }}>
+                    {cfg?.icon ?? '📌'}
                   </div>
-                  <div className="text-2xl font-bold mt-1" style={{ color: (cfg as any)?.color ?? 'var(--text-secondary, #6E6E73)' }}>
+                  <div className="text-2xl font-bold mt-1" style={{ color: cfg?.color ?? 'var(--text-secondary, #6E6E73)' }}>
                     {(value ?? 0).toLocaleString()}
                   </div>
                   <div className="text-xs text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)] mt-1">
-                    {(cfg as any)?.label ??
+                    {cfg?.label ??
                       `${key === 'peptides' ? '活性肽' : key === 'proteins' ? '蛋白质' : '药食同源'}节点`}
                   </div>
                 </div>
@@ -625,13 +625,13 @@ export default function GraphTab() {
               <span>
                 节点:{' '}
                 <strong className="text-neutral-700 dark:text-neutral-300">
-                  {(statsQuery.data as any)?.stats?.nodes ?? (statsQuery.data as any)?.total_nodes ?? '-'}
+                  {statsQuery.data?.stats?.nodes ?? statsQuery.data?.total_nodes ?? '-'}
                 </strong>
               </span>
               <span>
                 边:{' '}
                 <strong className="text-neutral-700 dark:text-neutral-300">
-                  {(statsQuery.data as any)?.stats?.edges ?? (statsQuery.data as any)?.total_edges ?? '-'}
+                  {statsQuery.data?.stats?.edges ?? statsQuery.data?.total_edges ?? '-'}
                 </strong>
               </span>
             </div>
@@ -727,7 +727,7 @@ export default function GraphTab() {
                             {r.node_label}
                           </td>
                           <td className="py-1.5 px-3">
-                            <Badge variant={(NODE_TYPE_BADGE as any)[r.node_type] || 'neutral'} size="sm">
+                            <Badge variant={NODE_TYPE_BADGE[r.node_type as keyof typeof NODE_TYPE_BADGE] || 'neutral'} size="sm">
                               {NODE_TYPE_LABEL[r.node_type] || r.node_type}
                             </Badge>
                           </td>
@@ -756,7 +756,7 @@ export default function GraphTab() {
                 <p className="text-center text-xs text-error-500 py-6">社区检测请求失败，请重试</p>
               ) : communitiesQuery.data?.total_communities > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {(communitiesQuery.data.communities as any[]).slice(0, 12).map((c, i) => (
+                  {(communitiesQuery.data?.communities ?? []) ) as unknown[]).slice(0, 12).map((c, i) => (
                     <div
                       key={i}
                       className="rounded-lg border border-neutral-200 dark:border-neutral-700 p-3 bg-white dark:bg-neutral-800/50"
@@ -811,7 +811,7 @@ export default function GraphTab() {
                 <Loader2 className="w-5 h-5 animate-spin mx-auto my-4" />
               ) : kcoreQuery.isError ? (
                 <p className="text-center text-xs text-error-500 py-6">K-Core分析请求失败，请重试</p>
-              ) : (kcoreQuery.data?.results as any[])?.length > 0 ? (
+              ) : (kcoreQuery.data?.results ?? []) ) as unknown[])?.length > 0 ? (
                 <div className="max-h-60 overflow-y-auto space-y-1">
                   <p className="text-xs text-[var(--text-secondary,#6E6E73)] mb-2">
                     {kcoreQuery.data.results.length} 个节点属于 {kCoreValue}-Core（连接度 ≥ {kCoreValue}）
@@ -841,7 +841,7 @@ export default function GraphTab() {
                 <Loader2 className="w-5 h-5 animate-spin mx-auto my-4" />
               ) : bridgesQuery.isError ? (
                 <p className="text-center text-xs text-error-500 py-6">桥梁分析请求失败，请重试</p>
-              ) : (bridgesQuery.data?.bridges as any[])?.length > 0 ? (
+              ) : (bridgesQuery.data?.bridges ?? []) ) as unknown[])?.length > 0 ? (
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs">
                     <thead>
@@ -865,7 +865,7 @@ export default function GraphTab() {
                             {b.node_label}
                           </td>
                           <td className="py-1.5 px-3">
-                            <Badge variant={(NODE_TYPE_BADGE as any)[b.node_type] || 'warning'} size="sm">
+                            <Badge variant={NODE_TYPE_BADGE[b.node_type as keyof typeof NODE_TYPE_BADGE] || 'warning'} size="sm">
                               {NODE_TYPE_LABEL[b.node_type] || b.node_type}
                             </Badge>
                           </td>
@@ -901,13 +901,13 @@ export default function GraphTab() {
                 <Loader2 className="w-5 h-5 animate-spin mx-auto my-4" />
               ) : recommendQuery.isError ? (
                 <p className="text-center text-xs text-error-500 py-6">推荐请求失败，请重试</p>
-              ) : recommendHerbName.length >= 1 && (recommendQuery.data?.recommendations as any[])?.length > 0 ? (
+              ) : recommendHerbName.length >= 1 && (recommendQuery.data?.recommendations ?? []) ) as unknown[])?.length > 0 ? (
                 <div className="space-y-2">
                   <p className="text-xs text-[var(--text-secondary,#6E6E73)]">
                     与 "<strong>{recommendQuery.data.target_herb || recommendHerbName}</strong>"
                     最相似的药材（基于化合物重叠、靶点覆盖、图谱拓扑）：
                   </p>
-                  {(recommendQuery.data.recommendations as any[]).map((rec, i) => (
+                  {((recommendQuery.data?.recommendations ?? []) as unknown[]).map((rec, i) => (
                     <div
                       key={i}
                       className="flex items-center gap-3 p-2 rounded-lg bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border border-green-200/50"
@@ -1627,4 +1627,5 @@ export default function GraphTab() {
     </div>
   );
 }
+
 
