@@ -1,4 +1,4 @@
-/**
+﻿/**
  * RMFOOD 主题系统 - 预设主题配置
  * 符合 WCAG 2.1 AA/AAA 标准
  * 基于 UI/UX Pro Max 设计规范
@@ -451,7 +451,7 @@ export function getAccessibilityTheme(baseTheme: ThemeConfig, mode: Accessibilit
           info: {
             main: '#0E7490', // Cyan-600 — 独立色相
             background: baseTheme.mode === 'dark' ? '#0C4A6E' : '#E8FAFF',
-            text: baseTheme.mode === 'dark' ? '#A5F3FC' : '#0C4A6E',
+            text: baseTheme.mode === 'dark' ? '#C7D2FE' : '#0C4A6E',
           },
         },
       };
@@ -579,3 +579,5 @@ export function applyThemeToDOM(theme: ThemeConfig): void {
 
   logger.info(`🎨 [Theme System] Applied theme: ${theme.name} (${theme.mode})`);
 }
+
+
