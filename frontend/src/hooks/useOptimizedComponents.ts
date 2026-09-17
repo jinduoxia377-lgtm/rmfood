@@ -37,7 +37,7 @@ export function optimizedMemo<T extends React.ComponentType<any>>(
   Component: T,
   comparator?: PropertyComparator<React.ComponentProps<T>>,
 ): T {
-  return memo(Component, comparator as any) as unknown as T;
+  return memo(Component, comparator as (a: T, b: T) => boolean) as unknown as T;
 }
 
 // NOTE: useDebouncedCallback has been moved to hooks/useDebounce.ts

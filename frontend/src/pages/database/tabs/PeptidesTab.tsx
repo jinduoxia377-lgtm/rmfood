@@ -125,7 +125,7 @@ export default function PeptidesTab({
   // 排序后的数据
   const items = useMemo(() => {
     const raw = peptideQuery.data?.items ?? [];
-    let arr = [...raw] as any[];
+    let arr = [...raw] as Record<string, unknown>[];
 
     // 长度筛选
     if (lenMin) arr = arr.filter((p) => (p.sequence?.length ?? 0) >= Number(lenMin));
