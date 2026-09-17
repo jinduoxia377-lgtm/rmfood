@@ -1,4 +1,4 @@
-/**
+﻿/**
  * RMFOOD Analytics Dashboard - SSS Enterprise Grade
  *
  * Features:
@@ -1055,7 +1055,7 @@ export function AnalyticsDashboard() {
               <div className="h-[320px]">
                 <AreaChart
                   data={data.charts.monthly_creation_trend}
-                  themeColors={colors as import("@/types/theme.types").ThemeColors}
+                  themeColors={colors as Record<string, string>}
                 />
               </div>
             </div>
@@ -1091,7 +1091,7 @@ export function AnalyticsDashboard() {
               <div className="h-[320px] flex items-center justify-center">
                 <PieChart
                   data={data.charts.formula_status_distribution}
-                  themeColors={colors as import("@/types/theme.types").ThemeColors}
+                  themeColors={colors as Record<string, string>}
                 />
               </div>
             </div>
@@ -1473,3 +1473,4 @@ export function AnalyticsDashboard() {
     </div>
   )
 }
+
