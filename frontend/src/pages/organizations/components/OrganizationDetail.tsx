@@ -219,7 +219,7 @@ export default function OrganizationDetail({ organizationId: propOrgId }: Organi
         return (
           <SettingsTab
             organizationId={orgId}
-            organization={organization ?? undefined as any}
+            organization={organization ?? undefined as { name?: string; slug?: string; plan?: string; is_active?: boolean; storageUsed?: number; storageLimit?: number } | undefined}
             onArchive={handleArchive}
             onDelete={() => setShowDeleteModal(true)}
           />
