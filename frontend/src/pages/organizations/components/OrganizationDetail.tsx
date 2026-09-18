@@ -34,6 +34,7 @@ const TeamsTab = lazy(() => import('./detail/TeamsTab'));
 const ResourcesTab = lazy(() => import('./detail/ResourcesTab'));
 interface CommonTabProps {
   organizationId: number
+  members: Member[]
   organization?: { name?: string; slug?: string; plan?: string; is_active?: boolean; storageUsed?: number; storageLimit?: number; apiUsage?: number }
   memberCount: number
   teamCount: number
@@ -208,7 +209,7 @@ export default function OrganizationDetail({ organizationId: propOrgId }: Organi
     const commonProps = {
       organizationId: orgId,
       members,
-      teams,
+      teams: teams as Team[],
       memberCount,
       teamCount,
       organization: organization ?? undefined,

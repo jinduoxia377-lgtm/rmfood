@@ -575,8 +575,8 @@ export class FormulaKnowledgeGraph {
     // 四气匹配
     if (aProps.nature && bProps.nature) {
       const natureOrder = ['cold', 'cool', 'neutral', 'warm', 'hot']
-      const aIdx = natureOrder.indexOf(aProps.nature)
-      const bIdx = natureOrder.indexOf(bProps.nature)
+      const aIdx = natureOrder.indexOf(String(aProps.nature ?? ""))
+      const bIdx = natureOrder.indexOf(String(bProps.nature ?? ""))
       if (aIdx >= 0 && bIdx >= 0) {
         score += Math.abs(aIdx - bIdx) <= 1 ? 0.15 : 0
         score += Math.abs(aIdx - bIdx) >= 3 ? -0.15 : 0
@@ -584,15 +584,15 @@ export class FormulaKnowledgeGraph {
     }
 
     // 五行归经匹配
-    const aMer = aProps.meridians || []
-    const bMer = bProps.meridians || []
-    const commonMer = aMer.filter((m: string) => bMer.includes(m))
+    const aMer: string[] = (aProps.meridians as string[]) || []
+    const bMer: string[] = (bProps.meridians as string[]) || []
+    const commonMer = aMer.filter((m) => bMer.includes(String(m)))
     score += commonMer.length * 0.05
 
     // 五味调和
-    const aFla = aProps.flavor || []
-    const bFla = bProps.flavor || []
-    const commonFla = aFla.filter((f: string) => bFla.includes(f))
+    const aFla: string[] = (aProps.flavor as string[]) || []
+    const bFla: string[] = (bProps.flavor as string[]) || []
+    const commonFla = aFla.filter((f) => bFla.includes(String(f)))
     score += commonFla.length * 0.03
 
     return Math.max(-0.3, Math.min(0.7, score))

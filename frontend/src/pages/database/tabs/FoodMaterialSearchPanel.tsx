@@ -53,7 +53,7 @@ const MaterialCard: React.FC<{
     try {
       const resp = await checkMaterialCompliance(result.id);
       const r = resp as unknown as { passed?: boolean };
-      setCompliancePassed(r?.passed);
+      setCompliancePassed(r?.passed ?? null);
       setComplianceChecked(true);
     } catch {
       setCompliancePassed(null);
