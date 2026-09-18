@@ -1,8 +1,8 @@
 /**
- * RMFOODFP 肽链结构分析 - TypeScript 类型定义
- * 
- * 用于前端调用后端 API
+ * RMFOODFP 肽链结构分析 - TypeScript 类型定义和服务
+ * 使用项目统一的 axios 客户端（自动处理 CSRF）
  */
+import api from '@/api/client';
 
 export interface SequenceToSmilesRequest {
   /** 肽序列 */
@@ -96,81 +96,48 @@ export class PeptideStructureService {
    * 序列转 SMILES
    */
   async sequenceToSmiles(req: SequenceToSmilesRequest): Promise<SMILESResult> {
-    const response = await fetch(`${this.baseUrl}/peptide-structure/sequence-to-smiles`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(req),
-    });
-    
-    if (!response.ok) {
-      throw new Error(`序列转换失败: ${response.statusText}`);
-    }
-    
-    return response.json();
+    const response = await api.post<SMILESResult>(`${this.baseUrl}/peptide-structure/sequence-to-smiles`, req);
+    return response.data;
   }
 
   /**
    * SMILES 转序列
    */
   async smilesToSequence(smiles: string, formatType: string = 'smiles'): Promise<SequenceResult> {
-    const response = await fetch(`${this.baseUrl}/peptide-structure/smiles-to-sequence`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ smiles, format_type: formatType }),
+    const response = await api.post<SequenceResult>(`${this.baseUrl}/peptide-structure/smiles-to-sequence`, {
+      smiles,
+      format_type: formatType,
     });
-    
-    if (!response.ok) {
-      throw new Error(`SMILES解析失败: ${response.statusText}`);
-    }
-    
-    return response.json();
+    return response.data;
   }
 
   /**
    * 获取支持的非天然氨基酸列表
    */
   async getSupportedAAs(): Promise<{ count: number; amino_acids: SupportedAA }> {
-    const response = await fetch(`${this.baseUrl}/peptide-structure/supported-aas`);
-    
-    if (!response.ok) {
-      throw new Error(`获取列表失败: ${response.statusText}`);
-    }
-    
-    return response.json();
+    const response = await api.get<{ count: number; amino_acids: SupportedAA }>(`${this.baseUrl}/peptide-structure/supported-aas`);
+    return response.data;
   }
 
   /**
    * 食品肽完整分析
    */
   async analyzePeptide(sequence: string): Promise<PeptideAnalysisResult> {
-    const response = await fetch(`${this.baseUrl}/peptide-structure/analyze`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sequence }),
+    const response = await api.post<PeptideAnalysisResult>(`${this.baseUrl}/peptide-structure/analyze`, {
+      sequence,
     });
-    
-    if (!response.ok) {
-      throw new Error(`分析失败: ${response.statusText}`);
-    }
-    
-    return response.json();
+    return response.data;
   }
 
   /**
    * 注册自定义非天然氨基酸
    */
   async registerCustomAA(name: string, smiles: string): Promise<{ success: boolean; message: string }> {
-    const response = await fetch(`${this.baseUrl}/peptide-structure/register-custom-aa`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, smiles }),
-    });
-    
-    if (!response.ok) {
-      throw new Error(`注册失败: ${response.statusText}`);
-    }
-    
-    return response.json();
+    const response = await api.post<{ success: boolean; message: string }>(
+      `${this.baseUrl}/peptide-structure/register-custom-aa`,
+      { name, smiles }
+    );
+    return response.data;
   }
 }
 
