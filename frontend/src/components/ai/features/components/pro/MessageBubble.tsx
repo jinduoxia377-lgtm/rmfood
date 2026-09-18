@@ -500,7 +500,7 @@ export function MessageBubble({
 									)}
 									{msg.role === 'assistant' && thinkingSteps && thinkingSteps.length > 0 && (
 										<ReasoningRow
-											steps={thinkingSteps as Array<{ step: string; content: string; status: string; detail?: string }>}
+											steps={thinkingSteps as ReasoningStep[]}
 											isThinking={isStreaming && index === allMessages.length - 1}
 										/>
 									)}
