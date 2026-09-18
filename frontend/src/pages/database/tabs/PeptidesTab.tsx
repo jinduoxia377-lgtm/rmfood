@@ -127,11 +127,11 @@ export default function PeptidesTab({
   // 排序后的数据
   const items = useMemo(() => {
     const raw = peptideQuery.data?.items ?? [];
-    const arr = [...raw] as unknown[];
+    let arr: unknown[] = [...raw];
 
     // 长度筛选
-    if (lenMin) arr = arr.filter((p) => (p.sequence?.length ?? 0) >= Number(lenMin));
-    if (lenMax) arr = arr.filter((p) => (p.sequence?.length ?? 0) <= Number(lenMax));
+    if (lenMin) arr = arr.filter((p: any) => (p.sequence?.length ?? 0) >= Number(lenMin));
+    if (lenMax) arr = arr.filter((p: any) => (p.sequence?.length ?? 0) <= Number(lenMax));
 
     // 排序
     arr.sort((a: any, b: any) => {

@@ -178,7 +178,7 @@ const ApiKeyConfigCenter: React.FC<ApiKeyConfigCenterProps> = ({ className = '',
       return;
     }
 
-    setErrors({});
+    setErrors({} as Record<string, string>);
     const newKey: APIKeyData = {
       id: Date.now().toString(),
       key: inputKey.trim(),
@@ -208,7 +208,7 @@ const ApiKeyConfigCenter: React.FC<ApiKeyConfigCenterProps> = ({ className = '',
       if (!keyData) return;
 
       setTestingId(keyId);
-      setTestResults((prev) => ({ ...prev, [keyId]: undefined as unknown }));
+      setTestResults((prev) => ({ ...prev, [keyId]: undefined as unknown }) as Record<string, ConnectionTestResult>);
       const startTime = performance.now();
 
       try {
@@ -325,7 +325,7 @@ const ApiKeyConfigCenter: React.FC<ApiKeyConfigCenterProps> = ({ className = '',
                 key={provider.id}
                 onClick={() => {
                   setSelectedProvider(provider.id);
-                  setErrors({});
+                  setErrors({} as Record<string, string>);
                 }}
                 className={`p-2 sm:p-3 rounded-lg border-2 transition-all text-center ${
                   selectedProvider === provider.id
@@ -351,7 +351,7 @@ const ApiKeyConfigCenter: React.FC<ApiKeyConfigCenterProps> = ({ className = '',
                   value={inputKey}
                   onChange={(e) => {
                     setInputKey(e.target.value);
-                    setErrors({});
+                    setErrors({} as Record<string, string>);
                   }}
                   placeholder={`${currentProvider?.name} API Key...`}
                   className={`w-full px-3 py-2 pr-10 border rounded-lg bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white font-mono text-sm focus:ring-2 focus:ring-primary-500 ${

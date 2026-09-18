@@ -20,6 +20,7 @@ import {
 } from './professionalIntelligenceEngine'
 
 import { ENHANCED_DOMAIN_KNOWLEDGE_GRAPH_V2, type EnhancedDomainTerm } from './enhancedKnowledgeGraphV2'
+import { SuggestionCategoryV2 } from './professionalIntelligenceEngine';
 import { HybridIntentRecognitionEngine } from './hybridIntentRecognition'
 import { ThreeLevelCacheManager } from './threeLevelCacheSystem'
 import { FeedbackTracker, QualityScorer, ABTestManager, createFeedbackSystem } from './feedbackLoopSystem'
@@ -558,7 +559,7 @@ export class ProfessionalIntelligenceEngineV4 {
         {
           id: `v4-sug-${Date.now()}-1`,
           title: `${functions[0] || '功能优化'}配方设计方案【${ingredients.join('+')}专项】`,
-          category: 'formula_design' as 'formula_design',
+          category: SuggestionCategoryV2.FORMULA_DESIGN,
           priority: 10,
           relevanceScore: 97,
           professionalDepth: 96,

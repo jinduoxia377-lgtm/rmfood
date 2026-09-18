@@ -8,15 +8,6 @@ interface PerformanceMemory {
   jsHeapSizeLimit: number;
 }
 
-interface NetworkInformation {
-  effectiveType: 'slow-2g' | '2g' | '3g' | '4g';
-  rtt: number;
-  downlink: number;
-  downlinkMax: number;
-  saveData: boolean;
-  onchange?: EventListener;
-}
-
 // CLS entry extension
 interface PerformanceLayoutShiftEntry extends PerformanceEntry {
   hadRecentInput: boolean;
@@ -35,6 +26,16 @@ interface PerformanceExtensions {
 
 declare global {
   interface Performance extends PerformanceExtensions {}
+  interface NetworkInformation {
+    effectiveType: 'slow-2g' | '2g' | '3g' | '4g';
+    rtt: number;
+    downlink: number;
+    downlinkMax: number;
+    saveData: boolean;
+    onchange?: EventListener;
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject): void;
+  }
   interface Navigator {
     connection?: NetworkInformation;
     deviceMemory?: number;
