@@ -2,7 +2,7 @@
 /**
  * 肽链结构分析器 — 基于 PepLink 的序列↔SMILES 双向转换
  */
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { peptideStructureService } from '@/services/professional/peptideStructureService';
 import { Button, Input, Card, Badge } from '@/components/ui';
 import { Beaker, ArrowRightLeft, Dna, ShieldCheck, Activity } from 'lucide-react';
