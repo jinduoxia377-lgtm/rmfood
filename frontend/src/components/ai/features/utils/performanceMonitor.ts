@@ -146,7 +146,7 @@ class PerformanceMonitor {
   }
 
   private getMemoryUsage(): PerformanceMetrics['memoryUsage'] {
-    const memory = (performance as any).memory;
+    const memory = (performance as { memory?: PerformanceMemory }).memory;
 
     if (!memory) {
       return {
@@ -164,7 +164,7 @@ class PerformanceMonitor {
   }
 
   private getTimingMetrics(): PerformanceMetrics['timing'] {
-    const navigation = performance.getEntriesByType('navigation')[0] as any;
+    const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
 
     if (!navigation) {
       return {
