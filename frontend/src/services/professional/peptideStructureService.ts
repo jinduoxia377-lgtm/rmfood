@@ -87,6 +87,17 @@ export interface SupportedAA {
  */
 export class PeptideStructureService {
   /**
+   * 初始化 CSRF Token（必须先调用此方法）
+   */
+  async init(): Promise<void> {
+    try {
+      await api.get('/health');
+    } catch {
+      // 忽略错误，继续执行
+    }
+  }
+
+  /**
    * 序列转 SMILES
    */
   async sequenceToSmiles(req: SequenceToSmilesRequest): Promise<SMILESResult> {

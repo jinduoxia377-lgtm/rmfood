@@ -69,7 +69,7 @@ export function PermissionMatrix({ organizationId }: PermissionMatrixProps) {
     setLoading(true);
     getPermissionMatrix(organizationId)
       .then(result => {
-        setData(result as unknown);
+        setData(result as any);
         // Initialize local permissions from backend data
         const init: Record<string, Record<string, Set<string>>> = {};
         (result.roles || []).forEach((role: any) => {
