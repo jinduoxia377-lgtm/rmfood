@@ -13,8 +13,9 @@ import { useQuery } from '@tanstack/react-query';
 import { databaseApi } from '@/api/database';
 import type { BioactivePeptide } from '@/types';
 import { Input, Button, Badge, Modal, Pagination, Card } from '@/components/ui';
-import { Download, ChevronUp, ChevronDown, Filter, Dna } from 'lucide-react';
+import { Download, ChevronUp, ChevronDown, Filter, Dna, Microscope } from 'lucide-react';
 import { PeptideDetailContent } from '../PeptideDetailContent';
+import PeptideStructureAnalyzer from './PeptideStructureAnalyzer';
 
 // ─── 活性类型颜色映射 ───
 const ACTIVITY_COLORS: Record<string, 'primary' | 'info' | 'danger' | 'warning' | 'neutral' | 'success'> = {
@@ -77,6 +78,7 @@ export default function PeptidesTab({
   const [page, setPage] = useState(1);
   const [selectedPeptide, setSelectedPeptide] = useState<BioactivePeptide | null>(null);
   const [exportLoading, setExportLoading] = useState(false);
+  const [showStructureAnalyzer, setShowStructureAnalyzer] = useState(false);
 
   // 排序
   const [sortField, setSortField] = useState<SortField>('activity_value');
@@ -253,6 +255,14 @@ export default function PeptidesTab({
           <Download className="w-4 h-4" />
           导出
         </Button>
+        <Button
+          variant="outline"
+          onClick={() => setShowStructureAnalyzer(!showStructureAnalyzer)}
+          className="gap-1.5"
+        >
+          <Microscope className="w-4 h-4" />
+          结构分析
+        </Button>
       </div>
 
       {/* 活性类型快速筛选标签 */}
@@ -274,6 +284,10 @@ export default function PeptidesTab({
           </button>
         ))}
       </div>
+
+      {showStructureAnalyzer && (
+        <PeptideStructureAnalyzer />
+      )}
 
       <Card className="overflow-hidden">
         {peptideQuery.isError ? (
