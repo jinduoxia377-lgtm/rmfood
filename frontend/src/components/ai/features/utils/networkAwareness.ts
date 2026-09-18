@@ -31,7 +31,7 @@ function getConnectionInfo(): Partial<NetworkStatus> {
     return { isOnline: true, isSlowConnection: false }
   }
 
-  const nav = navigator as any
+  const nav = navigator
 
   // 尝试获取 NetworkInformation API
   const connection = nav.connection || nav.mozConnection || nav.webkitConnection
@@ -92,7 +92,7 @@ class NetworkAwareness {
     window.addEventListener('offline', this.boundOfflineHandler)
 
     // 监听 NetworkInformation 变化
-    const nav = navigator as any
+    const nav = navigator
     const connection = nav.connection || nav.mozConnection || nav.webkitConnection
 
     if (connection) {
@@ -160,7 +160,7 @@ class NetworkAwareness {
       window.removeEventListener('online', this.boundOnlineHandler)
       window.removeEventListener('offline', this.boundOfflineHandler)
 
-      const nav = navigator as any
+      const nav = navigator
       const connection = nav.connection || nav.mozConnection || nav.webkitConnection
       if (connection && this.connectionEventListener) {
         connection.removeEventListener('change', this.connectionEventListener)
