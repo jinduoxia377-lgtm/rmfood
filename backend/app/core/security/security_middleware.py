@@ -880,6 +880,9 @@ class CsrfProtectMiddleware(BaseHTTPMiddleware):
         # 合规检查端点豁免 CSRF（纯只读查询，不涉及状态变更，SPA 场景无需 CSRF）
         if request.url.path.startswith("/api/v1/compliance"):
             return await call_next(request)
+        # 肽链结构分析端点豁免 CSRF（纯计算功能，不涉及用户数据变更）
+        if request.url.path.startswith("/api/v1/peptide-structure"):
+            return await call_next(request)
         if request.url.path in skip_paths:
             return await call_next(request)
 

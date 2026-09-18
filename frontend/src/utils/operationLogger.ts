@@ -284,7 +284,7 @@ class OperationLogger {
             ...(log.metadata && { metadata: log.metadata }),
           }))
 
-          await formulaApi.createBatchOperationLogs(payload as any)
+          await formulaApi.createBatchOperationLogs(payload as unknown as Array<{ action: string; target_type: string; target_id: string; target_name: string; details?: Record<string, unknown>; result: string; error_message?: string; operator_id: string; operator_name: string; operator_role: string; ip_address?: string; user_agent?: string; created_at: string; metadata?: Record<string, unknown> }>)
           uploaded += batch.length
           this.removeFromIndexedDB(batchIds).catch((err) =>
             logger.warn('[OperationLogger] Failed to remove uploaded logs from IndexedDB:', err),

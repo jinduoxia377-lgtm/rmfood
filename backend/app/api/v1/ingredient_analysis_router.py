@@ -4,6 +4,7 @@ Ingredient Analysis Router - 配料分析API
 """
 
 import logging
+import re
 import base64
 import io
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
@@ -93,7 +94,7 @@ async def analyze_ingredient(req: AnalyzeRequest):
                 })
         elif req.ingredient_text:
             # 从文本解析成分
-            parts = [p.strip() for p in req.ingredient_text.split(/[，,、\s]+/) if p.strip()]
+            parts = [p.strip() for p in re.split(r'[，,、\s]+', req.ingredient_text) if p.strip()]
             for name in parts[:30]:  # 限制最多30个成分
                 ingredients.append({'name': name, 'additive': None})
 
