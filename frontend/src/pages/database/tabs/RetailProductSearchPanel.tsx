@@ -194,7 +194,7 @@ const ProductCard: React.FC<{
               {product.allergens_tags?.map((a) => (<Badge key={a} variant="destructive">{a}</Badge>))}
               {product.additives_tags?.map((a) => (<Badge key={a} variant="warning">{a}</Badge>))}
               {product.ecoscore_grade && (
-                <Badge variant={getEcoscoreColor(product.ecoscore_grade) as any}>
+                <Badge variant={getEcoscoreColor(product.ecoscore_grade) as "default" | "secondary" | "destructive" | "outline" | "success" | "warning" | "info" | "danger" | "neutral" | "primary"}>
                   生态评分: {product.ecoscore_grade.toUpperCase()}
                 </Badge>
               )}
@@ -529,7 +529,7 @@ const RetailProductSearchPanel: React.FC<{ className?: string }> = ({ className 
       cell: ({ row }) => {
         const v = row.original.ecoscore_grade;
         return v ? (
-          <Badge variant={getEcoscoreColor(v) as any}>{v.toUpperCase()}</Badge>
+          <Badge variant={getEcoscoreColor(v) as "default" | "secondary" | "destructive" | "outline" | "success" | "warning" | "info" | "danger" | "neutral" | "primary"}>{v.toUpperCase()}</Badge>
         ) : '-';
       },
     },
