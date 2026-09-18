@@ -29,6 +29,7 @@ import { cn } from '@/lib/utils'
 import { Button, Card, Modal, Badge, Input, Textarea, Select } from '@/components/ui'
 import { useToast } from '@/components/ui/Toast'
 import type { Workflow, WorkflowDetail, WorkflowTask } from '@/api/workflow'
+import type { WorkflowTemplate as APITemplate } from '@/api/deep_dev'
 import { workflowApi } from '@/api/deep_dev'
 
 // ── 类型定义 ──
@@ -247,7 +248,7 @@ export function WorkflowVisualEditor({
   const [showConfigPanel, setShowConfigPanel] = useState(false)
   const [workflowName, setWorkflowName] = useState(workflow?.name || '')
   const [workflowDesc, setWorkflowDesc] = useState(workflow?.description || '')
-  const [templates, setTemplates] = useState<WorkflowTemplate[]>([])
+  const [templates, setTemplates] = useState<APITemplate[]>([])
   const [templatesLoading, setTemplatesLoading] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -263,7 +264,7 @@ export function WorkflowVisualEditor({
   useEffect(() => {
     setTemplatesLoading(true)
     workflowApi.listTemplates()
-      .then((res) => setTemplates(res.items as any || []))
+      .then((res) => setTemplates(res.items || []))
       .catch(() => setTemplates([]))
       .finally(() => setTemplatesLoading(false))
   }, [])
@@ -787,13 +788,13 @@ export function WorkflowVisualEditor({
             ) : templates.length > 0 ? (
               templates.map((template) => (
                 <Card
-                  key={(template as any).template_id}
+                  key={template.template_id || template.id}
                   hoverable
                   className="p-4 cursor-pointer"
-                  onClick={() => applyTemplate(template as WorkflowTemplate)}
+                  onClick={() => applyTemplate(template as unknown as WorkflowTemplate)}
                 >
                   <div className="flex items-start gap-3">
-                    <span className="text-2xl">{(template as any).icon || '📋'}</span>
+                    <span className="text-2xl">{template.icon || '📋'}</span>
                     <div className="flex-1">
                       <h4 className="font-semibold text-neutral-900 dark:text-white">
                         {template.name}
@@ -802,9 +803,9 @@ export function WorkflowVisualEditor({
                         {template.description}
                       </p>
                       <div className="flex items-center gap-3 mt-2 text-xs text-neutral-400">
-                        <span>{(template as any).node_count} 个节点</span>
+                        <span>{template.node_count} 个节点</span>
                         <span>·</span>
-                        <span>{(template as any).estimated_duration || '未知'}</span>
+                        <span>{template.estimated_duration || '未知'}</span>
                         <span>·</span>
                         <Badge size="sm" className="mt-0">{template.category.replace('_', ' ')}</Badge>
                       </div>
