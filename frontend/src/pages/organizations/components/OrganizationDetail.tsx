@@ -32,6 +32,21 @@ const OverviewTab = lazy(() => import('./detail/OverviewTab'));
 const MembersTab = lazy(() => import('./detail/MembersTab'));
 const TeamsTab = lazy(() => import('./detail/TeamsTab'));
 const ResourcesTab = lazy(() => import('./detail/ResourcesTab'));
+interface CommonTabProps {
+  organizationId: number
+  organization?: { name?: string; slug?: string; plan?: string; is_active?: boolean; storageUsed?: number; storageLimit?: number; apiUsage?: number }
+  memberCount: number
+  teamCount: number
+  teams: unknown[]
+  onInvite: () => void
+  onRemoveMember: (id: number) => void
+  onUpdateRole: (id: number, role: string) => void
+  onCreateTeam: () => void
+  onUpdateTeam: (id: number, data: unknown) => void
+  onDeleteTeam: (id: number) => void
+  onRefresh: () => void
+}
+
 const SettingsTab = lazy(() => import('./detail/SettingsTab'));
 const IntegrationsTab = lazy(() => import('./detail/IntegrationsTab'));
 
@@ -204,7 +219,7 @@ export default function OrganizationDetail({ organizationId: propOrgId }: Organi
       onUpdateTeam: updateTeam,
       onDeleteTeam: deleteTeam,
       onRefresh: refetch,
-    } as any;
+    } as CommonTabProps;
 
     switch (activeTab) {
       case 'overview':
