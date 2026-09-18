@@ -558,7 +558,7 @@ export class ProfessionalIntelligenceEngineV4 {
         {
           id: `v4-sug-${Date.now()}-1`,
           title: `${functions[0] || '功能优化'}配方设计方案【${ingredients.join('+')}专项】`,
-          category: 'formula_design' as any,
+          category: 'formula_design' as 'formula_design',
           priority: 10,
           relevanceScore: 97,
           professionalDepth: 96,
