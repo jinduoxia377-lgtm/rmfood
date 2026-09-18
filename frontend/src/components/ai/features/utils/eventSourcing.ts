@@ -370,7 +370,7 @@ export class EventSourcedSession {
     await this.append('request/header' as SessionEventType, {
       reason: 'change' as const,
       ...header,
-    } as any);
+    } as unknown);
   }
 
   /**
