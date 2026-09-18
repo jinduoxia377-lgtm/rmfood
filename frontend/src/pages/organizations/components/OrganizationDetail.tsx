@@ -204,7 +204,7 @@ export default function OrganizationDetail({ organizationId: propOrgId }: Organi
       onUpdateTeam: updateTeam,
       onDeleteTeam: deleteTeam,
       onRefresh: refetch,
-    } as any;
+    } as unknown;
 
     switch (activeTab) {
       case 'overview':
@@ -219,7 +219,7 @@ export default function OrganizationDetail({ organizationId: propOrgId }: Organi
         return (
           <SettingsTab
             organizationId={orgId}
-            organization={organization ?? undefined as any}
+            organization={organization ?? undefined as unknown}
             onArchive={handleArchive}
             onDelete={() => setShowDeleteModal(true)}
           />
