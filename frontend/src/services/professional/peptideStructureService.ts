@@ -86,17 +86,11 @@ export interface SupportedAA {
  * 肽链结构分析 API 服务
  */
 export class PeptideStructureService {
-  private baseUrl: string;
-
-  constructor(baseUrl: string = '/api/v1') {
-    this.baseUrl = baseUrl;
-  }
-
   /**
    * 序列转 SMILES
    */
   async sequenceToSmiles(req: SequenceToSmilesRequest): Promise<SMILESResult> {
-    const response = await api.post<SMILESResult>(`${this.baseUrl}/peptide-structure/sequence-to-smiles`, req);
+    const response = await api.post<SMILESResult>('/peptide-structure/sequence-to-smiles', req);
     return response.data;
   }
 
@@ -104,7 +98,7 @@ export class PeptideStructureService {
    * SMILES 转序列
    */
   async smilesToSequence(smiles: string, formatType: string = 'smiles'): Promise<SequenceResult> {
-    const response = await api.post<SequenceResult>(`${this.baseUrl}/peptide-structure/smiles-to-sequence`, {
+    const response = await api.post<SequenceResult>('/peptide-structure/smiles-to-sequence', {
       smiles,
       format_type: formatType,
     });
@@ -115,7 +109,7 @@ export class PeptideStructureService {
    * 获取支持的非天然氨基酸列表
    */
   async getSupportedAAs(): Promise<{ count: number; amino_acids: SupportedAA }> {
-    const response = await api.get<{ count: number; amino_acids: SupportedAA }>(`${this.baseUrl}/peptide-structure/supported-aas`);
+    const response = await api.get<{ count: number; amino_acids: SupportedAA }>('/peptide-structure/supported-aas');
     return response.data;
   }
 
@@ -123,7 +117,7 @@ export class PeptideStructureService {
    * 食品肽完整分析
    */
   async analyzePeptide(sequence: string): Promise<PeptideAnalysisResult> {
-    const response = await api.post<PeptideAnalysisResult>(`${this.baseUrl}/peptide-structure/analyze`, {
+    const response = await api.post<PeptideAnalysisResult>('/peptide-structure/analyze', {
       sequence,
     });
     return response.data;
@@ -134,7 +128,7 @@ export class PeptideStructureService {
    */
   async registerCustomAA(name: string, smiles: string): Promise<{ success: boolean; message: string }> {
     const response = await api.post<{ success: boolean; message: string }>(
-      `${this.baseUrl}/peptide-structure/register-custom-aa`,
+      '/peptide-structure/register-custom-aa',
       { name, smiles }
     );
     return response.data;
