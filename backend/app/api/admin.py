@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select, func, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..api.deps import get_db_session, get_current_user, require_role
+from ..api.deps import get_db_session, get_current_active_user, require_role
 from ..models.models import (
     User, UserRole, Notification, NotificationStatus,
 )
@@ -27,7 +27,7 @@ async def list_notifications(
     page_size: int = Query(20, ge=1, le=100),
     status: str | None = Query(None, description="通知状态过滤"),
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """获取当前用户的通知列表"""
     query = select(Notification).where(Notification.user_id == current_user.id)
@@ -79,7 +79,7 @@ async def list_notifications(
 async def mark_notification_read(
     notification_id: int,
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """将通知标记为已读"""
     notification = (await db.execute(
@@ -100,7 +100,7 @@ async def mark_notification_read(
 @router.post("/notifications/read-all", summary="全部标记已读")
 async def mark_all_read(
     db: AsyncSession = Depends(get_db_session),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_active_user),
 ):
     """将当前用户所有未读通知标记为已读"""
     await db.execute(
