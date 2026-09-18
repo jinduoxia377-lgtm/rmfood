@@ -587,7 +587,7 @@ export function useOfflineManager(
    * 获取网络质量信息
    */
   const getNetworkQuality = useCallback((): NetworkQuality => {
-    const connection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection
+    const connection = (navigator as Navigator & { connection?: NetworkInformation; mozConnection?: NetworkInformation; webkitConnection?: NetworkInformation }).connection || (navigator as Navigator & { connection?: NetworkInformation; mozConnection?: NetworkInformation; webkitConnection?: NetworkInformation }).mozConnection || (navigator as Navigator & { connection?: NetworkInformation; mozConnection?: NetworkInformation; webkitConnection?: NetworkInformation }).webkitConnection
 
     if (!connection) {
       return {
@@ -600,7 +600,7 @@ export function useOfflineManager(
     }
 
     return {
-      effectiveType: connection.effectiveType || '4g',
+      effectiveType: (connection.effectiveType === 'slow-2g' ? '2g' : connection.effectiveType) as '4g' | '3g' | '2g' | 'unknown' || '4g',
       rtt: connection.rtt || 50,
       downlink: connection.downlink || 10,
       downlinkMax: connection.downlink || 0 || Infinity,
