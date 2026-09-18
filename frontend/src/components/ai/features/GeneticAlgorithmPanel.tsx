@@ -250,7 +250,7 @@ export function GeneticAlgorithmPanel({ className }: GeneticAlgorithmPanelProps)
     },
     onSuccess: (data) => {
       addLog(`进化完成！共 ${data.total_generations} 代，最佳得分 ${data.best_score.toFixed(4)}`, 'info')
-      setResult(data as unknown)
+      setResult(data as any)
       abortRef.current = null
     },
     onError: (error) => {

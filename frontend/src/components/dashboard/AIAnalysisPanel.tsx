@@ -142,8 +142,8 @@ export function AIAnalysisPanel({ className, defaultTab = 'analysis', loading: p
   const { data: formulasData } = useFormulas({ page: 1, page_size: 1 })
   const { data: experimentsData } = useExperiments({ page: 1, page_size: 1 })
   // useFormulas 返回完整响应对象，useExperiments 返回数组（.then(r => r.data)）
-  const formulaItems = (formulasData as any)?.items ?? []
-  const experimentItems = Array.isArray(experimentsData) ? experimentsData : (experimentsData as any)?.items ?? []
+  const formulaItems = (formulasData as unknown as { items?: unknown[] })?.items ?? []
+  const experimentItems = Array.isArray(experimentsData) ? experimentsData : (experimentsData as unknown as { items?: unknown[] })?.items ?? []
   const formulaId = formulaItems[0]?.id ?? null
   const experimentId = experimentItems[0]?.id ?? null
 

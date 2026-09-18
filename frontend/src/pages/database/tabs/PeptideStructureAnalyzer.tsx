@@ -43,6 +43,12 @@ export default function PeptideStructureAnalyzer() {
   const [result, setResult] = useState<PeptideAnalysisResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [initialized, setInitialized] = useState(false);
+
+  // 初始化 CSRF
+  useEffect(() => {
+    peptideStructureService.init().then(() => setInitialized(true));
+  }, []);
 
   const handleAnalyze = useCallback(async () => {
     if (!sequence || sequence.length < 2) {
