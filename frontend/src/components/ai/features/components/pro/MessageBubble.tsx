@@ -516,7 +516,7 @@ export function MessageBubble({
 					<div className="chat-action-bar">
 						<span className="chat-action-time">{formatTime(msg.timestamp)}</span>
 						<button onClick={handleCopy} className="chat-action-btn" title="复制">
-							{(msg.id === (copiedId ?? (globalThis as any).__chatCopiedId))
+							{(msg.id === (copiedId ?? (globalThis as unknown as { __chatCopiedId?: string }).__chatCopiedId))
 								? <Check className="w-3 h-3 text-emerald-500" />
 								: <Copy className="w-3 h-3" />}
 						</button>

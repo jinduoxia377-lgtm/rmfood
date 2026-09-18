@@ -52,7 +52,7 @@ const MaterialCard: React.FC<{
   const handleCheckCompliance = useCallback(async () => {
     try {
       const resp = await checkMaterialCompliance(result.id);
-      const r = resp as any;
+      const r = resp as unknown as { passed?: boolean };
       setCompliancePassed(r?.passed);
       setComplianceChecked(true);
     } catch {
