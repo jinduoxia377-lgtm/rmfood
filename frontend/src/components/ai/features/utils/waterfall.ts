@@ -58,7 +58,7 @@ export class WaterfallEmitter {
       handler(data, next);
       this.off(event, wrapper);
     };
-    return this.on(event as WaterfallEvent, wrapper as any)
+    return this.on(event as WaterfallEvent, wrapper)
   }
 
   /** 移除 Waterfall 监听器 */

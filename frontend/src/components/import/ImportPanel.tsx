@@ -65,7 +65,7 @@ function UploadStep({
   onUpload,
 }: {
   file: File | null
-  onFileSelect: (f: File) => void
+  onFileSelect: (f: File | null) => void
   onUpload: () => void
 }) {
   const inputRef = useRef<HTMLInputElement>(null)
@@ -120,7 +120,7 @@ function UploadStep({
             <p className="text-[10px] text-neutral-400">{(file.size / 1024).toFixed(1)} KB</p>
           </div>
           <button
-            onClick={(e) => { e.stopPropagation(); onFileSelect(null as any) }}
+            onClick={(e) => { e.stopPropagation(); onFileSelect(null) }}
             className="text-neutral-400 hover:text-red-500 text-xs"
           >
             ✕

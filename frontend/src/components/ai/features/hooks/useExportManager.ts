@@ -346,7 +346,7 @@ export function useExportManager(): UseExportManagerReturn {
   const onExportProgress = useCallback((
     handler: (progress: { format: string; processed: number; total: number; percentage: number }) => void,
   ): UnsubscribeFn => {
-    return eventBus.subscribe('export:started' as any, (payload: any) => {
+    return eventBus.subscribe('export:started', (payload: { format: string; itemCount: number }) => {
       handler({
         format: payload.format || exportFormat,
         processed: payload.itemCount || 0,
