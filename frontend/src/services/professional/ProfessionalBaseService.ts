@@ -129,7 +129,7 @@ export class ProfessionalBaseService {
         // 兼容两种响应格式：
         // 1. 有 data 包装的 ApiResponse<T> → 返回 data
         // 2. 直接返回数据的响应（无 data 包装）→ 返回原始数据
-        return (data as unknown as Record<string, unknown>).data !== undefined ? (data as unknown as Record<string, unknown>).data : data as unknown as T;
+        const d = data as unknown as Record<string, unknown>; return d.data !== undefined ? d.data as T : data;
       } catch (error) {
         lastError = error as Error;
 
@@ -252,7 +252,7 @@ export class ProfessionalBaseService {
     if (!data || typeof data !== 'object') {
       throw new Error('Invalid response data');
     }
-    return data as unknown as T;
+    return data as T;
   }
 
   protected formatError(error: any): Error {
