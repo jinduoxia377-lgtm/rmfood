@@ -1804,7 +1804,7 @@ export default function FormulaDetailPage() {
 
                       {/* 导出报告 */}
                       <ReportExportPanel
-                        report={null}
+                        report={null as any}
                         formulaName={formula.name || '未命名配方'}
                         ingredients={ingredientList.map((i) => ({
                           name: i.name,
