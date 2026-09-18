@@ -306,7 +306,7 @@ function selectIngredientsForGoals(
     {
       name: '茯苓多糖',
       source: SourceEnum.PEPTIDE,
-      efficacyTags: ['健脾益胃', '增强免疫', '安神'] as any,
+      efficacyTags: ['健脾益胃', '增强免疫', '安神'] as EfficacyTag[],
       baseDosage: { min: 6, max: 15, optimal: 10, unit: 'g' },
       priority: 8.5,
     },
@@ -348,7 +348,7 @@ function selectIngredientsForGoals(
     {
       name: '银杏叶提取物',
       source: SourceEnum.TCM,
-      efficacyTags: ['保护心血管', '增强免疫', '抗氧化', '改善记忆'] as any,
+      efficacyTags: ['保护心血管', '增强免疫', '抗氧化', '改善记忆'] as EfficacyTag[],
       baseDosage: { min: 60, max: 120, optimal: 80, unit: 'mg' },
       priority: 7.5,
     },

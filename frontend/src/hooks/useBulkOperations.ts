@@ -170,10 +170,10 @@ export function useBulkOperations(options: UseBulkOperationsOptions = {}) {
         });
 
         const batchResults = await Promise.all(batchPromises);
-        results.push(...(batchResults as any));
+        results.push(...batchResults as OperationResult[]);
 
         for (const result of batchResults) {
-          dispatch({ type: 'PROGRESS_UPDATE', payload: { processed: 1, result: result as any } });
+          dispatch({ type: 'PROGRESS_UPDATE', payload: { processed: 1, result: result as OperationResult } });
         }
 
         if (batchResults.some((r) => !r.success)) {
