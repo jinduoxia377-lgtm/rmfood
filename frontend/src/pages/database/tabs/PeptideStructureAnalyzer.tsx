@@ -54,7 +54,7 @@ export default function PeptideStructureAnalyzer() {
     setResult(null);
     try {
       const res = await peptideStructureService.analyzePeptide(sequence.toUpperCase());
-      setResult(res as any);
+      setResult(res as unknown as Parameters<typeof setResult>[0]);
     } catch (e: any) {
       setError(e.message || '分析失败');
     } finally {
