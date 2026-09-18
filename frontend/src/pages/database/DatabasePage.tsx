@@ -1246,7 +1246,7 @@ export default function DatabasePage() {
               </div>
             ))
           : statCardsConfig.map((config) => (
-            <button key={config.label} onClick={() => setTab(config.tab as DbTab)} type="button" className="w-full text-left"><StatCard label={config.label} value={config.value} icon={config.icon} variant={config.variant as any} subtitle={config.subtitle} trend={config.trend} /></button>
+            <button key={config.label} onClick={() => setTab(config.tab as DbTab)} type="button" className="w-full text-left"><StatCard label={config.label} value={config.value} icon={config.icon} variant={config.variant as "primary" | "secondary" | "info" | "success" | "warning" | undefined} subtitle={config.subtitle} trend={config.trend} /></button>
           ))}
       </div>
 
