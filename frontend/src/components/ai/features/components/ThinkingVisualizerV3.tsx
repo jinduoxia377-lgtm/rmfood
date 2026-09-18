@@ -139,7 +139,7 @@ function StatusDot({ status }: { status: ThinkingStepV3['status'] }) {
 }
 
 function DimensionBadge({ dimension }: { dimension: ThinkingDimension }) {
-  const cfg = (DIMENSION_CONFIG as any)[dimension] || DIMENSION_CONFIG['technical'] || { color: 'text-neutral-500', bgColor: 'bg-neutral-100 dark:bg-neutral-800', label: String(dimension || '未知'), icon: 'Tag' }
+  const cfg = DIMENSION_CONFIG[dimension as keyof typeof DIMENSION_CONFIG] || DIMENSION_CONFIG['technical'] || { color: 'text-neutral-500', bgColor: 'bg-neutral-100 dark:bg-neutral-800', label: String(dimension || '未知'), icon: 'Tag' }
   const DimIcon = ICON_MAP[cfg.icon] || Tag
   return (
     <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium ${cfg.color} ${cfg.bgColor}`}>
@@ -455,7 +455,7 @@ function DimensionsView({ steps }: { steps: ThinkingStepV3[] }) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 p-1">
       {dimGroups.map(({ dimension, items }) => {
-        const cfg = (DIMENSION_CONFIG as any)[dimension]
+        const cfg = DIMENSION_CONFIG[dimension as keyof typeof DIMENSION_CONFIG]
         const DimIcon = ICON_MAP[cfg.icon] || Tag
         const avgConfidence = items.reduce((s, i) => s + i.confidence, 0) / items.length
         const completedCount = items.filter(i => i.status === 'completed').length
