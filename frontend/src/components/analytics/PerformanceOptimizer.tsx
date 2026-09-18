@@ -329,11 +329,11 @@ export function MemoryMonitor() {
   useEffect(() => {
     const interval = setInterval(() => {
       if ('memory' in performance) {
-        const memory = (performance as { memory?: PerformanceMemory }).memory ?? {}
+        const perfWithMemory = performance as { memory?: PerformanceMemory } | undefined;
         setMemoryStats({
-          usedJSHeapSize: memory.usedJSHeapSize ?? 0,
-          totalJSHeapSize: memory.totalJSHeapSize ?? 0,
-          jsHeapSizeLimit: memory.jsHeapSizeLimit ?? 0,
+          usedJSHeapSize: perfWithMemory?.memory?.usedJSHeapSize ?? 0,
+          totalJSHeapSize: perfWithMemory?.memory?.totalJSHeapSize ?? 0,
+          jsHeapSizeLimit: perfWithMemory?.memory?.jsHeapSizeLimit ?? 0,
         })
       }
     }, 5000)
