@@ -95,7 +95,7 @@ export default function PeptideStructureAnalyzer() {
           safety: { food_score: 0, is_allergen: false, is_toxic: false, digestibility: 'N/A' },
           taste: { bitterness: 0, umami: 0 },
           analysis_time: new Date().toISOString(),
-        } as any);
+        } as unknown);
       }
     } catch (e: any) {
       setError(e.message || '转换失败');

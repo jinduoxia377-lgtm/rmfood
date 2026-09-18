@@ -568,8 +568,8 @@ export class FormulaKnowledgeGraph {
   }
 
   private calculateImplicitCompatibility(a: GraphNode, b: GraphNode): number {
-    const aProps = a.properties as any
-    const bProps = b.properties as any
+    const aProps = a.properties as Record<string, unknown>
+    const bProps = b.properties as Record<string, unknown>
     let score = 0.3 // 基线中性
 
     // 四气匹配
