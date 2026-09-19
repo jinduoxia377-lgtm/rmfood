@@ -94,7 +94,7 @@ export function registerWaterfallInterceptors(config: InterceptorConfig = {}): v
           logger.warn('[Waterfall] 持久化失败:', e)
         }
       }
-      config.onPersistReceived?.(payload as any, currentSessionId ?? '')
+      config.onPersistReceived?.(payload as EventPayloadMap['message:received'], currentSessionId ?? '')
       await next()
     },
     // 2. 上下文压缩检查
@@ -140,9 +140,9 @@ export function getInterceptorStatus(): {
 } {
   return {
     sendingHandlers: eventBusV2.getSubscriberCount('message:sending' as EventType) +
-      ((eventBusV2 as any).pipes?.get('message:sending')?.length || 0),
+      (eventBusV2.getPipes().get('message:sending')?.length || 0),
     receivedHandlers: eventBusV2.getSubscriberCount('message:received' as EventType) +
-      ((eventBusV2 as any).pipes?.get('message:received')?.length || 0),
+      (eventBusV2.getPipes().get('message:received')?.length || 0),
     currentSessionId,
   }
 }

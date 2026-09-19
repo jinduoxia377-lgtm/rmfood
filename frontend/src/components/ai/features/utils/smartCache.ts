@@ -264,7 +264,7 @@ class SmartCache<T = unknown> {
    */
   setWithTags(key: string, value: T, tags: string[], ttl?: number): void {
     // 使用特殊的内部结构存储标签信息
-    const taggedValue = { _value: value, _tags: tags } as any;
+    const taggedValue: TaggedValue<T> = { _value: value, _tags: tags };
     this.set(key, taggedValue, ttl);
   }
 
@@ -272,7 +272,7 @@ class SmartCache<T = unknown> {
     const results: T[] = [];
 
     for (const [, item] of this.cache) {
-      const taggedValue = item.value as any
+      const taggedValue = item.value as TaggedValue<T>
       if (taggedValue._tags?.includes(tag)) {
         results.push(taggedValue._value);
       }
@@ -285,7 +285,7 @@ class SmartCache<T = unknown> {
     const keysToDelete: string[] = [];
 
     for (const [key, item] of this.cache) {
-      const taggedValue = item.value as any
+      const taggedValue = item.value as TaggedValue<T>
       if (taggedValue._tags?.includes(tag)) {
         keysToDelete.push(key);
       }

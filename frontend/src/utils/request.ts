@@ -65,8 +65,8 @@ async function _request<T = any>(
   const data = await response.json().catch(() => null);
 
   if (!response.ok) {
-    const error = new Error(data?.detail || data?.message || 'Request failed') as any;
-    error.status = response.status;
+    const error = new Error(data?.detail || data?.message || 'Request failed');
+    (error as { status?: number }).status = response.status;
     error.data = data;
     throw error;
   }
