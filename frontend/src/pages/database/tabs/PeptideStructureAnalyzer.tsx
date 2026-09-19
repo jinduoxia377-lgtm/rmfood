@@ -24,15 +24,34 @@ const ReactECharts = ({ option, style }: { option: any; style?: any }) => {
   const chartInstance = useRef<any>(null);
 
   useEffect(() => {
+    // 添加调试日志
+    console.log('[ReactECharts] 初始化图表, option:', !!option, 'window.echarts:', !!window.echarts);
+
     const initChart = () => {
       const echarts = window.echarts;
-      if (!echarts || !chartRef.current) return;
+      console.log('[ReactECharts] echarts对象:', typeof echarts, echarts ? 'init' : 'null');
+
+      if (!echarts || !chartRef.current) {
+        console.warn('[ReactECharts] 缺少echarts或chartRef');
+        return;
+      }
 
       if (!chartInstance.current) {
-        chartInstance.current = echarts.init(chartRef.current, null, { renderer: 'svg' });
+        try {
+          chartInstance.current = echarts.init(chartRef.current, null, { renderer: 'svg' });
+          console.log('[ReactECharts] 图表初始化成功');
+        } catch (err) {
+          console.error('[ReactECharts] 初始化失败:', err);
+        }
       }
+
       if (chartInstance.current && option) {
-        chartInstance.current.setOption(option, true);
+        try {
+          chartInstance.current.setOption(option, true);
+          console.log('[ReactECharts] setOption成功');
+        } catch (err) {
+          console.error('[ReactECharts] setOption失败:', err);
+        }
       }
     };
 
@@ -40,10 +59,18 @@ const ReactECharts = ({ option, style }: { option: any; style?: any }) => {
     if (window.echarts) {
       initChart();
     } else {
+      console.log('[ReactECharts] 等待echarts加载...');
+      let attempts = 0;
       const checkEcharts = setInterval(() => {
+        attempts++;
+        console.log(`[ReactECharts] 尝试加载echarts (第${attempts}次)`, !!window.echarts);
         if (window.echarts) {
           clearInterval(checkEcharts);
           initChart();
+        }
+        if (attempts >= 50) {
+          clearInterval(checkEcharts);
+          console.error('[ReactECharts] 加载echarts超时');
         }
       }, 100);
       setTimeout(() => clearInterval(checkEcharts), 5000);
@@ -53,11 +80,12 @@ const ReactECharts = ({ option, style }: { option: any; style?: any }) => {
       if (chartInstance.current) {
         chartInstance.current.dispose();
         chartInstance.current = null;
+        console.log('[ReactECharts] 图表已销毁');
       }
     };
   }, [option]);
 
-  return <div ref={chartRef} style={style} className="w-full h-full" />;
+  return <div ref={chartRef} style={{ ...style, width: '100%' }} className="w-full h-full" />;
 };
 
 // ─── 类型定义 ───
