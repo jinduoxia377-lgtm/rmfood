@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Ralph Loop 单元测试
  */
 import { RalphLoopEngine, parseHandoffFromText, formatHandoffForInput, runRalphLoop } from '../ralphLoop';

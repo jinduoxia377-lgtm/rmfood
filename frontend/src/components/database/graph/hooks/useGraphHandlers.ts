@@ -1,4 +1,4 @@
-﻿/**
+/**
  * useGraphHandlers — all useCallback callbacks extracted from KnowledgeGraph.tsx.
  *
  * Every callback is written so that its dependencies are explicit parameters.

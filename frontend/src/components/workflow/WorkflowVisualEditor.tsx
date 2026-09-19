@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 工作流可视化编辑器 (Workflow Visual Editor)
  *
  * 功能特性:

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * VirtualizedFormulaList虚拟滚动组件全面测试
  *
  * 测试覆盖：

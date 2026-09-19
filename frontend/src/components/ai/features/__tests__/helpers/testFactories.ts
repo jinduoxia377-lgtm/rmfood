@@ -1,4 +1,4 @@
-﻿// @ts-nocheck
+// @ts-nocheck
 /**
  * Enhanced Test Factories - AI Chat v7.0
  * 

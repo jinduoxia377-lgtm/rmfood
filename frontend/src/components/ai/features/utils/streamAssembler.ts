@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Stream Assembler - 流式响应组装器
  *
  * 基于 DeepSeek Harness 的 StreamAssembler：

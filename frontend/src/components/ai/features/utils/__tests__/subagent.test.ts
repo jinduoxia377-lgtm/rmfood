@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Subagent 单元测试
  */
 import { SubagentManager, getSubagentManager } from '../subagent';

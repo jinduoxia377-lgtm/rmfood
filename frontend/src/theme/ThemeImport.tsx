@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 
 // CSS 变量安全过滤
 const sanitizeCSSVariables = (obj: Record<string, string>): Record<string, string> => {

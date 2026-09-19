@@ -1,4 +1,4 @@
-﻿// @ts-nocheck
+// @ts-nocheck
 import { describe, it, expect, beforeEach, jest } from '@jest/globals'
 import { EventBus } from '../../../services/eventBus'
 import { IEventBus, ChatEvent, AIEvent, FormulaEvent, ExportEvent } from '../../../types'

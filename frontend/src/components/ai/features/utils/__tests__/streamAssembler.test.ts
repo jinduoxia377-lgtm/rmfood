@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Stream Assembler 单元测试
  */
 import { StreamAssembler, processStream, collectStreamText, createAssembler } from '../streamAssembler';

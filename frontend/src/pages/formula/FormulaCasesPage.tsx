@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 配方案例库页面 — 对齐 FormulaListPage 设计语言
  *
  * 与 /formulas 页面保持一致的视觉体系：

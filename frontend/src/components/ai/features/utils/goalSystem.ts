@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Goal System - 持久化完成目标
  *
  * 基于 DeepSeek Harness 的 Goal 系统：

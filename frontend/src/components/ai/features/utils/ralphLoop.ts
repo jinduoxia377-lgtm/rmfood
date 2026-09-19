@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Ralph Loop - 面向目标的 Fresh-Agent 迭代工作流
  *
  * 基于 DeepSeek Harness 的 Ralph 循环模式：

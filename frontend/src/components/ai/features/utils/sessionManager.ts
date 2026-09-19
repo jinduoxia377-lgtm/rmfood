@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Session Manager - 多会话管理
  *
  * 基于 DeepSeek Harness 的多会话架构：

@@ -1,4 +1,4 @@
-﻿// @ts-nocheck
+// @ts-nocheck
 import { renderHook, act } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals'

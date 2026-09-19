@@ -1,4 +1,4 @@
-﻿/**
+/**
  * WebSocketChatChannel — WebSocket 实时消息通道（带自动重连）
  *
  * 参照 DeepSeek Harness WebSocket 设计：

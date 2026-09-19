@@ -1,4 +1,4 @@
-﻿import { useThemeStore, type PresetThemeId } from '@/theme';
+import { useThemeStore, type PresetThemeId } from '@/theme';
 
 export const parseThemeFromUrl = (): {
   theme?: string;

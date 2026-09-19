@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Token Estimator - 精确 Token 计数
  *
  * 基于字符类别估算（简单版）

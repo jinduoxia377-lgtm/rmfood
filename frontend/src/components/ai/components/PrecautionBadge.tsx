@@ -1,4 +1,4 @@
-﻿import { memo } from 'react'
+import { memo } from 'react'
 import type { Precaution, PrecautionSeverity } from '@/types/ai.types'
 import {
   getPrecautionIcon,

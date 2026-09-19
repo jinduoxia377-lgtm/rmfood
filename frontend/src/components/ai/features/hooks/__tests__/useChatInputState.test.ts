@@ -1,4 +1,4 @@
-﻿import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 // @ts-expect-error - vitest environment testing-library compatibility
 import { renderHook, act } from '@testing-library/react'
 import { useChatInputState } from '../useChatInputState'

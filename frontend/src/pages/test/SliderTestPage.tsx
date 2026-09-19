@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react'
+import React, { useState } from 'react'
 
 export const SliderTestPage: React.FC = () => {
   const [values, setValues] = useState({ slider1: 50, slider2: 50, slider3: 50 })

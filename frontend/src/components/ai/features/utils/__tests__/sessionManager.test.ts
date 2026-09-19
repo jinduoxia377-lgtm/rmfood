@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Session Manager 单元测试
  */
 import { SessionManager } from '../sessionManager';

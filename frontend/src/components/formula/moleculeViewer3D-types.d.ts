@@ -1,4 +1,4 @@
-﻿// React Three Fiber & Three.js JSX type declarations
+// React Three Fiber & Three.js JSX type declarations
 // These enable TSX syntax for 3D elements without full R3F types
 
 declare namespace JSX {

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * RMFOOD 主题系统 - 预设主题配置
  * 符合 WCAG 2.1 AA/AAA 标准
  * 基于 UI/UX Pro Max 设计规范

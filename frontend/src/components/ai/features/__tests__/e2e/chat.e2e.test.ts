@@ -1,4 +1,4 @@
-﻿import { test, expect, loginAs, navigateToAIChat, sendMessage } from './fixtures';
+import { test, expect, loginAs, navigateToAIChat, sendMessage } from './fixtures';
 
 test.describe('AI Chat E2E - 基准测试流程', () => {
   test('完整流程: 登录 → 打开 AI 页面 → 发送消息 → 验证响应', async ({ page }) => {

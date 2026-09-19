@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Force-directed graph rendering engine.
  *
  * Encapsulates the entire D3 SVG force simulation pipeline:
