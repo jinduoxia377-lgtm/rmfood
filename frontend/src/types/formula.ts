@@ -634,6 +634,8 @@ export interface FormulaCreatePayload {
   estimated_cost?: number;
   production_time?: string;
   notes?: string;
+  safety_check?: unknown;
+  synergy_analysis?: unknown;
 }
 
 // ==================== 多算法融合优化 ====================
