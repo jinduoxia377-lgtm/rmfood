@@ -571,7 +571,7 @@ export default function FormulaDetailPage() {
         m.formulaApi.update(formula.id, {
           safety_check: safetyRes,
           synergy_analysis: synergyRes,
-        } as any),
+        }),
       );
       qc.invalidateQueries({ queryKey: ['formula', formulaId] });
       addToast({ type: 'success', message: 'AI 分析完成，安全检查和协同分析已更新' });

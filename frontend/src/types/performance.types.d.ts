@@ -1,5 +1,5 @@
 /**
- * 扩展 Performance / Navigator API 类型，解决 as any 问题
+ * 扩展 Performance / Navigator API 类型，类型声明扩展
  */
 
 interface PerformanceMemory {
