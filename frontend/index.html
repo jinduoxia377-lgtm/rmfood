@@ -1,31 +1,33 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#059669" />
-    <meta name="description" content="RMFOOD 是莱茵分子开发的药食同源配方研发平台，整合 TCMSP 中药材库、活性肽数据库与知识图谱，为食品研发团队提供从原料筛选、配方生成到安全合规的全流程智能辅助工具。" />
-    <meta name="application-name" content="RMFOOD 配方设计平台" />
+    <meta name="description" content="RMFOOD 鏄幈鑼靛垎瀛愬紑鍙戠殑鑽鍚屾簮閰嶆柟鐮斿彂骞冲彴锛屾暣鍚?TCMSP 涓嵂鏉愬簱銆佹椿鎬ц偨鏁版嵁搴撲笌鐭ヨ瘑鍥捐氨锛屼负椋熷搧鐮斿彂鍥㈤槦鎻愪緵浠庡師鏂欑瓫閫夈€侀厤鏂圭敓鎴愬埌瀹夊叏鍚堣鐨勫叏娴佺▼鏅鸿兘杈呭姪宸ュ叿銆? />
+    <meta name="application-name" content="RMFOOD 閰嶆柟璁捐骞冲彴" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <meta name="keywords" content="药食同源,配方设计,中医药数据库,活性肽,功能性食品,配方研发,知识图谱,食品安全,合规检查,TCMSP,DFBP" />
-    <meta name="author" content="莱茵（厦门）分子生物科技有限公司" />
-    <meta property="og:title" content="RMFOOD — 药食同源配方研发平台 | 莱茵分子" />
-    <meta property="og:description" content="整合 TCMSP + DFBP 双数据库与知识图谱，为食品研发团队提供从原料筛选到安全合规的全流程智能辅助。" />
+    <meta name="keywords" content="鑽鍚屾簮,閰嶆柟璁捐,涓尰鑽暟鎹簱,娲绘€ц偨,鍔熻兘鎬ч鍝?閰嶆柟鐮斿彂,鐭ヨ瘑鍥捐氨,椋熷搧瀹夊叏,鍚堣妫€鏌?TCMSP,DFBP" />
+    <meta name="author" content="鑾辫尩锛堝帵闂級鍒嗗瓙鐢熺墿绉戞妧鏈夐檺鍏徃" />
+    <meta property="og:title" content="RMFOOD 鈥?鑽鍚屾簮閰嶆柟鐮斿彂骞冲彴 | 鑾辫尩鍒嗗瓙" />
+    <meta property="og:description" content="鏁村悎 TCMSP + DFBP 鍙屾暟鎹簱涓庣煡璇嗗浘璋憋紝涓洪鍝佺爺鍙戝洟闃熸彁渚涗粠鍘熸枡绛涢€夊埌瀹夊叏鍚堣鐨勫叏娴佺▼鏅鸿兘杈呭姪銆? />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="RMFOOD — 药食同源配方研发平台" />
-    <meta name="twitter:description" content="药食同源功能性食品智能配方研发平台，TCMSP + DFBP + 知识图谱驱动。" />
+    <meta name="twitter:title" content="RMFOOD 鈥?鑽鍚屾簮閰嶆柟鐮斿彂骞冲彴" />
+    <meta name="twitter:description" content="鑽鍚屾簮鍔熻兘鎬ч鍝佹櫤鑳介厤鏂圭爺鍙戝钩鍙帮紝TCMSP + DFBP + 鐭ヨ瘑鍥捐氨椹卞姩銆? />
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&display=swap" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&display=swap" />
-    <title>RMFOOD — 药食同源配方研发平台 | 莱茵分子</title>
+    <title>RMFOOD 鈥?鑽鍚屾簮閰嶆柟鐮斿彂骞冲彴 | 鑾辫尩鍒嗗瓙</title>
+    <!-- ECharts CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
     <!-- Node.js Process Polyfill for ExcelJS and other Node.js libraries -->
-    <!-- 使用系统字体，无需加载外部资源 -->
-    <!-- 主题初始化脚本 - 防止主题切换闪烁 -->
+    <!-- 浣跨敤绯荤粺瀛椾綋锛屾棤闇€鍔犺浇澶栭儴璧勬簮 -->
+    <!-- 涓婚鍒濆鍖栬剼鏈?- 闃叉涓婚鍒囨崲闂儊 -->
     <script>
       (function() {
         const stored = localStorage.getItem('rmfood-theme-settings-v2');
