@@ -65,14 +65,6 @@ import {
   Monitor,
   Cpu,
 } from 'lucide-react';
-// @ts-ignore
-import ReactMarkdown from 'react-markdown';
-// @ts-ignore
-import remarkGfm from 'remark-gfm';
-// @ts-ignore
-import remarkMath from 'remark-math';
-// @ts-ignore
-import rehypeKatex from 'rehype-katex';
 import { useStreamingText } from '../hooks/useStreamingText';
 import { logger } from '@/utils/safeLogger';
 import 'katex/dist/katex.min.css';

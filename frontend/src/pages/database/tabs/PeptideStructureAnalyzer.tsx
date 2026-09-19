@@ -11,25 +11,43 @@ import {
   AlertCircle, CheckCircle, Database, GitCompare as Compare, History, BarChart3,
   Search, TrendingUp, Filter, Download, Trash2, Plus, X, Copy
 } from 'lucide-react';
-// 动态导入echarts以避免构建问题
-import { useRef, useEffect } from 'react';
+
+// 使用全局echarts对象（从CDN加载）
+declare global {
+  interface Window {
+    echarts?: any;
+  }
+}
 
 const ReactECharts = ({ option, style }: { option: any; style?: any }) => {
   const chartRef = useRef<HTMLDivElement>(null);
   const chartInstance = useRef<any>(null);
 
   useEffect(() => {
-    // 动态导入echarts
-    import('echarts').then((echarts) => {
-      if (chartRef.current && !chartInstance.current) {
-        chartInstance.current = echarts.init(chartRef.current);
+    const initChart = () => {
+      const echarts = window.echarts;
+      if (!echarts || !chartRef.current) return;
+
+      if (!chartInstance.current) {
+        chartInstance.current = echarts.init(chartRef.current, null, { renderer: 'svg' });
       }
       if (chartInstance.current && option) {
-        chartInstance.current.setOption(option);
+        chartInstance.current.setOption(option, true);
       }
-    }).catch((err) => {
-      console.error('ECharts加载失败:', err);
-    });
+    };
+
+    // 等待echarts加载
+    if (window.echarts) {
+      initChart();
+    } else {
+      const checkEcharts = setInterval(() => {
+        if (window.echarts) {
+          clearInterval(checkEcharts);
+          initChart();
+        }
+      }, 100);
+      setTimeout(() => clearInterval(checkEcharts), 5000);
+    }
 
     return () => {
       if (chartInstance.current) {

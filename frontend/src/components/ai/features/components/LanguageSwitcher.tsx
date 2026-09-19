@@ -19,8 +19,7 @@ import React from 'react';
 import { Globe, ChevronDown, Check } from 'lucide-react';
 import { Button } from '@/components/ui';
 import { useTranslation } from 'react-i18next';
-// @ts-ignore
-import { SUPPORTED_LANGUAGES } from './index';
+import { SUPPORTED_LANGUAGES } from '../i18n/index';
 
 
 import { logger } from '@/utils/safeLogger';

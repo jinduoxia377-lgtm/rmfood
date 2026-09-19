@@ -1,7 +1,6 @@
-// @ts-nocheck
 /**
  * MoleculeViewer3D — 3D 分子结构查看器
- * Three.js JSX 类型与 @react-three/fiber 冲突，使用 @ts-nocheck 降级处理
+ * Three.js JSX 类型通过外部声明文件解决
  */
 import React, { useState, useEffect, useRef } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
@@ -14,7 +13,7 @@ interface MoleculeProps {
 }
 
 function Molecule({ structure, bonds }: MoleculeProps) {
-  const groupRef = useRef<any>(null)
+  const groupRef = useRef<unknown>(null)
 
   useFrame((_state) => {
     if (groupRef.current) {
@@ -30,20 +29,18 @@ function Molecule({ structure, bonds }: MoleculeProps) {
   return (
     <group ref={groupRef}>
       {structure.map((atom, i) => (
-        // @ts-ignore
-        <mesh key={i} position={[atom.x, atom.y, atom.z]}>
-          {/* @ts-ignore */}
+<mesh key={i} position={[atom.x, atom.y, atom.z]}>
+
           <sphereGeometry args={[0.3, 16, 16]} />
-          {/* @ts-ignore */}
+
           <meshStandardMaterial color={atomColors[atom.type] || '#888888'} />
         </mesh>
       ))}
       {bonds.map(([i, j], k) => (
-        // @ts-ignore
-        <line key={k}>
-          {/* @ts-ignore */}
+<line key={k}>
+
           <bufferGeometry>
-            {/* @ts-ignore */}
+
             <float32BufferAttribute
               attach="attributes-position"
               count={2}
@@ -54,7 +51,7 @@ function Molecule({ structure, bonds }: MoleculeProps) {
               itemSize={3}
             />
           </bufferGeometry>
-          {/* @ts-ignore */}
+
           <lineBasicMaterial color="#444444" />
         </line>
       ))}
@@ -62,16 +59,16 @@ function Molecule({ structure, bonds }: MoleculeProps) {
   )
 }
 
-export function MoleculeViewer3D({ structure, bonds }: MoleculeProps & { structure: any, bonds: any }) {
+export function MoleculeViewer3D({ structure, bonds }: MoleculeProps) {
   return (
     <div className="w-full h-96 rounded-lg overflow-hidden">
       <Canvas camera={{ position: [0, 0, 10], fov: 50 }}>
-        {/* @ts-ignore */}
+
         <ambientLight intensity={0.5} />
-        {/* @ts-ignore */}
+
         <directionalLight position={[10, 10, 10]} intensity={1} />
         <Molecule structure={structure} bonds={bonds} />
-        {/* @ts-ignore */}
+
         <OrbitControls enableZoom={true} enablePan={false} />
       </Canvas>
       <div className="p-4 bg-white rounded-b-lg">
