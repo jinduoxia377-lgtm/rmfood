@@ -82,7 +82,7 @@ class StateCoordinator {
 
   subscribe<K extends StateKey>(key: K, listener: StateChangeListener<K>): () => void {
     if (!this.listeners[key]) {
-      this.listeners[key] = new Set<StateChangeListener<K>>() as any;
+      this.listeners[key] = new Set<StateChangeListener<K>>() as unknown as Set<StateChangeListener<StateKey>>;
     }
 
     const listeners = this.listeners[key]!;

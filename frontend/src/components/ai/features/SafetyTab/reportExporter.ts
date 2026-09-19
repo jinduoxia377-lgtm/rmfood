@@ -73,7 +73,7 @@ export function exportSafetyReport(options: ExportOptions): void {
   doc.text(ingLines, margin, y);
   y += ingLines.length * 5 + 6;
 
-  const passed = (result as any).passed ?? true;
+  const passed = (result as Partial<SafetyCheckResult>).passed ?? true;
   const badgeColor = passed ? SUCCESS : DANGER;
   doc.setFillColor(badgeColor[0], badgeColor[1], badgeColor[2]);
   doc.roundedRect(margin, y - 4, 22, 8, 2, 2, 'F');
@@ -86,12 +86,12 @@ export function exportSafetyReport(options: ExportOptions): void {
   doc.text('Compliance: ' + complianceRate.toFixed(1) + '%', margin + 28, y + 1.5);
   y += 14;
 
-  const warnings: any[] = (result as any).warnings || [];
-  const errors: any[] = result.errors || [];
-  const details: Record<string, any> = (result as any).details || {};
+  const warnings = (result as Partial<SafetyCheckResult>).warnings || [];
+  const errors = result.errors || [];
+  const details: Record<string, any> = (result as Partial<SafetyCheckResult>).details || {};
 
-  const dangerCount = warnings.filter((w: any) => ['danger','critical','contraindicated'].includes(w.level)).length;
-  const warningCount = warnings.filter((w: any) => ['warning','caution'].includes(w.level)).length;
+  const dangerCount = warnings.filter((w) => ['danger','critical','contraindicated'].includes(w.level)).length;
+  const warningCount = warnings.filter((w) => ['warning','caution'].includes(w.level)).length;
 
   if (dangerCount > 0 || warningCount > 0) {
     doc.setFontSize(9);
@@ -101,12 +101,12 @@ export function exportSafetyReport(options: ExportOptions): void {
   }
 
   const allIssues = [
-    ...warnings.map((w: any) => ({
+    ...warnings.map((w) => ({
       type: w.level === 'danger' ? 'DANGER' : 'WARNING',
       ingredient: w.ingredient || w.name || '-',
       message: (w.message || w.reason || String(w)).slice(0, 80),
     })),
-    ...errors.map((e: any) => ({
+    ...errors.map((e) => ({
       type: 'ERROR',
       ingredient: '-',
       message: (typeof e === 'string' ? e : e.message || String(e)).slice(0, 80),
@@ -138,7 +138,7 @@ export function exportSafetyReport(options: ExportOptions): void {
       styles: { cellPadding: 3, lineColor: [226, 232, 240] },
       body: allIssues.map((issue) => [issue.type, issue.ingredient, issue.message]),
     });
-    y = (doc as any).lastAutoTable.finalY + 10;
+    y = (doc as { lastAutoTable?: { finalY?: number } }).lastAutoTable?.finalY ? (doc as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10 : y + 10;
   }
 
   const checkKeys = Object.keys(details);

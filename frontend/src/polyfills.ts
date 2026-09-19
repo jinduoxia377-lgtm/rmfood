@@ -73,7 +73,7 @@ if (typeof global === 'undefined') {
 // Buffer polyfill (如果需要)
 if (typeof Buffer === 'undefined') {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ;(globalThis as any).Buffer = {
+  ;(globalThis as Record<string, unknown>).Buffer = {
     from: (data: ArrayBuffer | string | number[], encoding?: BufferEncoding): Uint8Array => {
       if (typeof data === 'string') {
         if (encoding === 'base64') {
@@ -109,7 +109,7 @@ if (typeof Buffer === 'undefined') {
 // __dirname and __filename polyfill
 if (typeof __dirname === 'undefined') {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ;(globalThis as any).__dirname = '/'
+  ;(globalThis as Record<string, unknown>).__dirname = '/'
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ;(globalThis as any).__filename = '/'
+  ;(globalThis as Record<string, unknown>).__filename = '/'
 }

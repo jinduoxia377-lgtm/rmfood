@@ -8,10 +8,39 @@ import { peptideStructureService } from '@/services/professional/peptideStructur
 import { Button, Input, Card, Badge, Tabs, Table } from '@/components/ui';
 import {
   Beaker, ArrowRightLeft, Dna, ShieldCheck, Activity, FlaskConical,
-  AlertCircle, CheckCircle, Database, Compare, History, BarChart3,
-  Search, TrendingUp, Filter, Download, Trash2, Plus, X
+  AlertCircle, CheckCircle, Database, GitCompare as Compare, History, BarChart3,
+  Search, TrendingUp, Filter, Download, Trash2, Plus, X, Copy
 } from 'lucide-react';
-import ReactECharts from 'echarts-for-react';
+// 动态导入echarts以避免构建问题
+import { useRef, useEffect } from 'react';
+
+const ReactECharts = ({ option, style }: { option: any; style?: any }) => {
+  const chartRef = useRef<HTMLDivElement>(null);
+  const chartInstance = useRef<any>(null);
+
+  useEffect(() => {
+    // 动态导入echarts
+    import('echarts').then((echarts) => {
+      if (chartRef.current && !chartInstance.current) {
+        chartInstance.current = echarts.init(chartRef.current);
+      }
+      if (chartInstance.current && option) {
+        chartInstance.current.setOption(option);
+      }
+    }).catch((err) => {
+      console.error('ECharts加载失败:', err);
+    });
+
+    return () => {
+      if (chartInstance.current) {
+        chartInstance.current.dispose();
+        chartInstance.current = null;
+      }
+    };
+  }, [option]);
+
+  return <div ref={chartRef} style={style} className="w-full h-full" />;
+};
 
 // ─── 类型定义 ───
 interface SequenceToSmilesRequest {
@@ -126,13 +155,18 @@ function ScoreProgress({ label, score }: { label: string; score: number }) {
 // ─── 雷达图配置 ───
 function RadarChart({ data }: { data: PeptideAnalysisResult }) {
   const option = {
+    title: {
+      text: '活性谱雷达图',
+      left: 'center',
+      top: 5,
+      textStyle: { fontSize: 12, fontWeight: 'normal', color: 'var(--text-secondary,#6B7280)' }
+    },
     radar: {
       indicator: [
         { name: 'ACE抑制', max: 1 },
         { name: '抗氧化', max: 1 },
         { name: '抗菌', max: 1 },
         { name: '食品安全', max: 1 },
-        { name: '鲜味', max: 1 },
       ],
       shape: 'polygon',
       splitNumber: 4,
@@ -149,7 +183,6 @@ function RadarChart({ data }: { data: PeptideAnalysisResult }) {
           data.antioxidant.score,
           data.antimicrobial.score,
           data.safety.food_score / 100,
-          data.taste.umami,
         ],
         name: '活性谱',
         areaStyle: { color: 'rgba(59,130,246,0.2)' },
@@ -160,40 +193,74 @@ function RadarChart({ data }: { data: PeptideAnalysisResult }) {
     tooltip: { trigger: 'item' },
     legend: { show: false },
   };
-  return <ReactECharts option={option} style={{ height: 220 }} />;
+  return <ReactECharts option={option} style={{ height: 240 }} />;
 }
 
 // ─── 柱状图配置 ───
 function BarChart({ data }: { data: PeptideAnalysisResult }) {
   const option = {
+    title: {
+      text: '活性得分柱状图',
+      left: 'center',
+      top: 5,
+      textStyle: { fontSize: 12, fontWeight: 'normal', color: 'var(--text-secondary,#6B7280)' }
+    },
+    grid: { left: '3%', right: '4%', bottom: '15%', top: '25%', containLabel: true },
     xAxis: {
       type: 'category',
       data: ['ACE抑制', '抗氧化', '抗菌', '食品安全'],
       axisLabel: { color: 'var(--text-secondary,#6B7280)', fontSize: 11 },
+      axisLine: { lineStyle: { color: 'rgba(128,128,128,0.3)' } },
     },
     yAxis: {
       type: 'value',
       max: 1,
-      axisLabel: { formatter: '{value}', color: 'var(--text-secondary,#6B7280)' },
-      splitLine: { lineStyle: { color: 'rgba(128,128,128,0.1)' } },
+      axisLabel: {
+        formatter: (value: number) => `${(value * 100).toFixed(0)}%`,
+        color: 'var(--text-secondary,#6B7280)'
+      },
+      splitLine: { lineStyle: { color: 'rgba(128,128,128,0.1)', type: 'dashed' } },
+      axisLine: { lineStyle: { color: 'rgba(128,128,128,0.3)' } },
     },
     series: [{
       data: [
-        { value: data.ace_inhibition.score, itemStyle: { color: '#3b82f6' } },
-        { value: data.antioxidant.score, itemStyle: { color: '#22c55e' } },
-        { value: data.antimicrobial.score, itemStyle: { color: '#f59e0b' } },
-        { value: data.safety.food_score / 100, itemStyle: { color: '#8b5cf6' } },
+        {
+          value: data.ace_inhibition.score,
+          itemStyle: { color: '#3b82f6', borderRadius: [4, 4, 0, 0] }
+        },
+        {
+          value: data.antioxidant.score,
+          itemStyle: { color: '#22c55e', borderRadius: [4, 4, 0, 0] }
+        },
+        {
+          value: data.antimicrobial.score,
+          itemStyle: { color: '#f59e0b', borderRadius: [4, 4, 0, 0] }
+        },
+        {
+          value: data.safety.food_score / 100,
+          itemStyle: { color: '#8b5cf6', borderRadius: [4, 4, 0, 0] }
+        },
       ],
       type: 'bar',
       barWidth: '50%',
-      itemStyle: { borderRadius: [4, 4, 0, 0] },
+      label: {
+        show: true,
+        position: 'top',
+        formatter: (params: any) => `${(params.value * 100).toFixed(0)}%`,
+        fontSize: 10,
+        color: 'var(--text-secondary,#6B7280)'
+      },
     }],
     tooltip: {
       trigger: 'axis',
-      formatter: (params: any) => `${params[0].name}: ${(params[0].value * 100).toFixed(1)}%`,
+      axisPointer: { type: 'shadow' },
+      formatter: (params: any) => {
+        const p = params[0];
+        return `${p.name}<br/>得分: <b>${(p.value * 100).toFixed(1)}%</b>`;
+      },
     },
   };
-  return <ReactECharts option={option} style={{ height: 200 }} />;
+  return <ReactECharts option={option} style={{ height: 240 }} />;
 }
 
 // ─── 对比分析组件 ───
@@ -309,7 +376,7 @@ function ComparisonView({ sequences }: { sequences: string[] }) {
                     ],
                     name: r.sequence,
                     lineStyle: { color: ['#3b82f6', '#22c55e', '#f59e0b', '#ef4444'][i % 4] },
-                    areaStyle: { color: `rgba(${[59,130,246],[34,197,94],[245,158,11],[239,68,68]][i % 4],0.1)` },
+                    areaStyle: { color: (['rgba(59,130,246,0.1)', 'rgba(34,197,94,0.1)', 'rgba(245,158,11,0.1)', 'rgba(239,68,68,0.1)'][i % 4]) },
                   })),
                 }],
                 legend: { bottom: 0, textStyle: { fontSize: 10 } },
@@ -835,9 +902,51 @@ export default function PeptideStructureAnalyzer() {
                 </div>
                 {result.smiles && (
                   <div className="mt-3 pt-3 border-t border-neutral-200 dark:border-neutral-700">
-                    <div className="text-xs text-[var(--text-muted,#9A9A9F)] mb-1">SMILES</div>
-                    <div className="font-mono text-xs break-all text-[var(--text-secondary,#6B7280)] dark:text-[var(--text-secondary-dark,#9CA3AF)]">
-                      {result.smiles}
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="text-xs text-[var(--text-muted,#9A9A9F)] flex items-center gap-1">
+                        <Dna className="w-3 h-3" />
+                        分子结构式
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => navigator.clipboard.writeText(result.smiles!)}
+                          className="flex items-center gap-1 px-2 py-0.5 text-xs bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded transition-colors"
+                          title="复制SMILES"
+                        >
+                          <Copy className="w-3 h-3" />
+                          复制SMILES
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* 分子结构图 */}
+                    <div className="mb-3 p-4 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-700 flex items-center justify-center min-h-[200px]">
+                      <img
+                        src={`/api/v1/peptide-structure/smiles-to-image?smiles=${encodeURIComponent(result.smiles)}`}
+                        alt="分子结构"
+                        className="max-w-full max-h-[250px] object-contain"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                          (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+                        }}
+                      />
+                      <div className="hidden text-center text-[var(--text-muted,#9A9A9F)]">
+                        <Dna className="w-8 h-8 mx-auto mb-2 opacity-30" />
+                        <p className="text-xs">结构图生成中...</p>
+                      </div>
+                    </div>
+
+                    {/* SMILES文本 */}
+                    <div className="p-3 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+                      <div className="text-xs text-[var(--text-muted,#9A9A9F)] mb-1">SMILES字符串</div>
+                      <div className="font-mono text-xs break-all text-[var(--text-secondary,#6B7280)] dark:text-[var(--text-secondary-dark,#9CA3AF)] leading-relaxed">
+                        {result.smiles}
+                      </div>
+                    </div>
+
+                    <div className="mt-2 flex items-center gap-2 text-xs text-[var(--text-muted,#9A9A9F)]">
+                      <ShieldCheck className="w-3 h-3" />
+                      <span>基于RDKit生成的二维分子结构图 | 可导入ChemDraw、PyMOL进行三维可视化</span>
                     </div>
                   </div>
                 )}

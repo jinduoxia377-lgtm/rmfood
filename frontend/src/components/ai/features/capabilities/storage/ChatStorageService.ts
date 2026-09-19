@@ -79,7 +79,7 @@ export class ChatStorageService implements ChatStorageCapability {
         title: `会话 ${sessionId.slice(-8)}`,
         messages,
         metadata: {
-          topic: 'knowledge_query' as any,
+          topic: 'knowledge_query' as string,
           tags: [],
           createdAt: messages[0]?.timestamp || Date.now(),
           updatedAt: Date.now(),
@@ -170,7 +170,7 @@ export class ChatStorageService implements ChatStorageCapability {
           title: meta.title,
           metadata: {
             ...existing.metadata,
-            topic: meta.topic as any,
+            topic: String(meta.topic),
             tags: meta.tags,
             updatedAt: meta.updatedAt,
             messageCount: meta.messageCount,
@@ -183,7 +183,7 @@ export class ChatStorageService implements ChatStorageCapability {
           title: meta.title,
           messages: [],
           metadata: {
-            topic: (meta.topic || 'knowledge_query') as any,
+            topic: String(meta.topic || 'knowledge_query'),
             tags: meta.tags,
             createdAt: meta.createdAt,
             updatedAt: meta.updatedAt,
