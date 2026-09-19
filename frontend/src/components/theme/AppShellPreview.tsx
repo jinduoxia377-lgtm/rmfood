@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react'
-import type { ThemeStyles } from '@/types/theme-mode'
+import type { ThemeStyles } from '@/types/theme.types'
 
 type PreviewThemeColors = {
   text?: { primary?: string; secondary?: string }

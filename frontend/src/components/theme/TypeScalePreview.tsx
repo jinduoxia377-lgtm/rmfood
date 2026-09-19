@@ -1,5 +1,5 @@
 import React from 'react'
-import type { ThemeStyles } from '@/types/theme-mode'
+import type { ThemeStyles } from '@/types/theme.types'
 
 interface TypeScalePreviewProps {
 	config: ThemeStyles

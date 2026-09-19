@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Lock, Unlock, RefreshCw } from 'lucide-react'
-import type { ThemeStyles } from '@/types/theme-mode'
+import type { ThemeStyles } from '@/types/theme.types'
 import { logger } from '@/utils/safeLogger';
 
 

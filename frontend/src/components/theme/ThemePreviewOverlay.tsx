@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { X, Eye } from 'lucide-react'
-import type { CustomTheme, ThemeStyles } from '@/types/theme-mode'
+import type { CustomTheme, ThemeStyles } from '@/types/theme.types'
 
 interface ThemePreviewOverlayProps {
   theme: CustomTheme
