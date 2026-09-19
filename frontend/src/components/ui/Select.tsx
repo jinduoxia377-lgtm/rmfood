@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils'
 // Select 包装层 — 类型安全桥接
 //
 // 问题：SelectPrimitive.Root 不接受 onChange，只接受 onValueChange
-// 解决：显式定义桥接 props，避免使用 as any
+// 解决：显式定义桥接 props，避免类型断言
 // ═══════════════════════════════════════════════════════════════
 
 interface SelectRootProps extends Omit<SelectPrimitive.SelectProps, 'onChange'> {

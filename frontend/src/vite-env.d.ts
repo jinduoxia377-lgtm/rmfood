@@ -9,7 +9,7 @@ interface ImportMeta {
 }
 
 // ── Window global declarations ──
-// These replace `(window as any).__XXX__` casts throughout the codebase.
+// These replace `(window).__XXX__` casts throughout the codebase.
 
 interface Window {
   /** Development-only: performance monitoring registry */
