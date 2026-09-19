@@ -1,7 +1,6 @@
 import * as React from 'react'
 import { cn } from '@/lib/utils'
 
-// @ts-ignore: React 19 InputHTMLAttributes has size?: number, conflicting with our size?: 'sm'|'md'|'lg'
 export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> {
   size?: 'sm' | 'md' | 'lg'
   error?: string | boolean

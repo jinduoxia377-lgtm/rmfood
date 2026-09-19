@@ -1,5 +1,4 @@
-﻿// @ts-nocheck
-/**
+﻿/**
  * GraphPanelLayout — comprehensive JSX delegation layer.
  *
  * This component takes all state/callbacks from useGraphState/useGraphHandlers
