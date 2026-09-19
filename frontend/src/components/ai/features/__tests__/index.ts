@@ -1,4 +1,4 @@
-﻿export * from './matchers/customMatchers';
+export * from './matchers/customMatchers';
 export { apiMock, mockScenarios, createFetchMock, type MockApiResponse, type MockApiError, type MockDelayOptions } from './mocks/apiMock';
 export {
   createMockUser,

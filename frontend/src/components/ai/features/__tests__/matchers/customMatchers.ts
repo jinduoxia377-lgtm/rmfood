@@ -1,4 +1,4 @@
-﻿import { expect } from 'vitest';
+import { expect } from 'vitest';
 
 expect.extend({
   toBeWithinRange(received: number, floor: number, ceiling: number) {

@@ -1,4 +1,4 @@
-﻿import { faker } from '@faker-js/faker/locale/zh_CN';
+import { faker } from '@faker-js/faker/locale/zh_CN';
 import {
   ChatMessage,
   Formula,

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Subagent Manager - 子智能体委托框架
  *
  * 基于 DeepSeek Harness 的 Subagent 能力：

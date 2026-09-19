@@ -1,4 +1,4 @@
-﻿import { memo, useCallback } from 'react'
+import { memo, useCallback } from 'react'
 import { X } from 'lucide-react'
 import { ChatIcon } from './ChatIcon'
 import type { IconName } from './icon-mapping'

@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react'
+import React, { useState } from 'react'
 
 export const TestSliderPage: React.FC = () => {
   const [value, setValue] = useState(50)

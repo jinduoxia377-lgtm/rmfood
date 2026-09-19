@@ -1,4 +1,4 @@
-﻿import { useReducer, useCallback, useEffect, useRef, useMemo } from 'react'
+import { useReducer, useCallback, useEffect, useRef, useMemo } from 'react'
 import api from '@/api/client'
 
 export interface Organization {

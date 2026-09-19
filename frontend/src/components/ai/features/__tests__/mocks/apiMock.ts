@@ -1,4 +1,4 @@
-﻿import { vi } from 'vitest';
+import { vi } from 'vitest';
 
 export interface MockApiResponse<T = unknown> {
   statusCode: number;

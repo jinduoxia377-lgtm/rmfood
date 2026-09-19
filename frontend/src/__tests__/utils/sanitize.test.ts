@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 安全工具函数单元测试
  */
 import { sanitizeHTML, sanitizeText, createMarkup } from '@/utils/sanitize'

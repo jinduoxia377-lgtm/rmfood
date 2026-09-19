@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 
 export const SliderDiagnosticPage: React.FC = () => {
   const [logs, setLogs] = useState<string[]>([])

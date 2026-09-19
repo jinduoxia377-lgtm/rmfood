@@ -1,4 +1,4 @@
-﻿import { logger } from '@/utils/safeLogger';
+import { logger } from '@/utils/safeLogger';
 
 /**
  * 统一配置管理模块

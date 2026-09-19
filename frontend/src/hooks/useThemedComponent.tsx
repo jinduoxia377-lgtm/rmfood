@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 主题组件包装器
  * 提供 ThemedComponent、ThemedPage、ThemedCard、ThemedButton 等包装组件
  */

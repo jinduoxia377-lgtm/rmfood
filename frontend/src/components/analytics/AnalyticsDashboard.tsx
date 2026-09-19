@@ -1,4 +1,4 @@
-﻿/**
+/**
  * RMFOOD Analytics Dashboard - SSS Enterprise Grade
  *
  * Features:

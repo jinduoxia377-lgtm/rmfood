@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 🔒 P3-4: 前端性能监控 - Web Vitals 采集
  *
  * 采集核心 Web 指标 (Core Web Vitals):

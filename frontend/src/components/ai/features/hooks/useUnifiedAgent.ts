@@ -1,4 +1,4 @@
-﻿/**
+/**
  * useUnifiedAgent v3.3 - 集成 LLM Adapter 和增强错误处理
  */
 import { useState, useCallback, useEffect, useRef } from 'react';

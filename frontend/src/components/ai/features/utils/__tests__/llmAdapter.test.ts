@@ -1,4 +1,4 @@
-﻿/**
+/**
  * LLM Adapter 单元测试
  */
 import {

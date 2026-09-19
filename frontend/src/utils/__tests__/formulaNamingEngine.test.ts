@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 智能命名引擎（formulaNamingEngine）全面单元测试
  *
  * 测试覆盖：

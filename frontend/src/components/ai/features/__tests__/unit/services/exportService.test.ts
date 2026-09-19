@@ -1,4 +1,4 @@
-﻿// @ts-nocheck
+// @ts-nocheck
 import { describe, it, expect, beforeEach, jest } from '@jest/globals'
 import { ExportService } from '../../../services/exportService'
 import { IExportService, ExportFormat, ExportProgress } from '../../../types'

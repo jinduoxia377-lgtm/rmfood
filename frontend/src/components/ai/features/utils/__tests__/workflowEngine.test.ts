@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Workflow Engine 单元测试
  */
 import { WorkflowEngine } from '../workflowEngine';

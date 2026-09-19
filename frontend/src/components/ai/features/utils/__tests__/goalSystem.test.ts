@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Goal System 单元测试
  */
 import { GoalManager, getGoalManager } from '../goalSystem';

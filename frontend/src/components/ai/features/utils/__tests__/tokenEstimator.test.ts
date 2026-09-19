@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Token Estimator 单元测试
  */
 import { PreciseTokenEstimator, estimateTokens } from '../tokenEstimator';
