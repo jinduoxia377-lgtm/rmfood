@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { History, RotateCcw, Clock, ChevronDown, ChevronUp } from 'lucide-react'
-import { versionController } from '@/utils/theme/VersionController'
-import type { ThemeStyles } from '@/types/theme-mode'
+import { themeStorage } from '@/stores/theme.storage'
+import type { ThemeVersion, ThemeStyles } from '@/stores/theme.storage'
 
 interface VersionHistoryPanelProps {
   onSelectVersion: (config: ThemeStyles) => void
@@ -9,17 +9,17 @@ interface VersionHistoryPanelProps {
 }
 
 export function VersionHistoryPanel({ onSelectVersion, onClose }: VersionHistoryPanelProps) {
-  const [versions, setVersions] = useState(versionController.getHistory())
+  const [versions, setVersions] = useState(themeStorage.getVersionHistory())
   const [expandedId, setExpandedId] = useState<string | null>(null)
 
   const handleRollback = (versionId: string) => {
-    const config = versionController.rollback(versionId)
-    if (config && window.confirm('是否将主题回退到此版本？')) {
-      onSelectVersion(config)
+    const version = themeStorage.rollbackVersion(versionId)
+    if (version && window.confirm('是否将主题回退到此版本？')) {
+      onSelectVersion(version.snapshot)
       onClose()
     }
     // Refresh list
-    setVersions(versionController.getHistory())
+    setVersions(themeStorage.getVersionHistory())
   }
 
   const formatTime = (timestamp: number) => {
@@ -114,7 +114,7 @@ export function VersionHistoryPanel({ onSelectVersion, onClose }: VersionHistory
         <button
           onClick={() => {
             if (window.confirm('确定要清空所有版本历史吗？')) {
-              versionController.clear()
+              themeStorage.clearVersionHistory()
               setVersions([])
             }
           }}

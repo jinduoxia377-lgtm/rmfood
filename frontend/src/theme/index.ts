@@ -39,5 +39,9 @@ export { presetThemes, getDefaultTheme, getAccessibilityTheme, mergeThemeOverrid
 // ==================== 持久化存储 ====================
 export { themeStorage, ThemeStorage } from '../stores/theme.storage';
 
+// ==================== 语义主题 ====================
+export type { SemanticColorVars } from '../hooks/useSemanticTheme';
+export { useSemanticTheme, getSemanticColor } from '../hooks/useSemanticTheme';
+
 // ==================== UI 组件 ====================
 export { ThemeSwitcher } from '../components/theme/ThemeSwitcher';

@@ -1,9 +1,9 @@
 import { useState, useCallback } from 'react'
 import { X, Save, RotateCcw, Eye, EyeOff, Palette } from 'lucide-react'
-import type { CustomTheme, ThemeStyles } from '@/types/theme-mode'
-import { DEFAULT_THEME_STYLES } from '@/types/theme-mode'
-import { themeStorageAdapter } from '@/utils/theme/ThemeStorageAdapter'
-import { versionController } from '@/utils/theme/VersionController'
+import type { UserCustomTheme, ThemeStyles } from '@/types/theme.types'
+import { DEFAULT_THEME_STYLES } from '@/types/theme.types'
+import { themeStorage } from '@/stores/theme.storage'
+
 import { themeEventBus } from '@/utils/events/ThemeEventBus'
 import { ColorEditor } from './ColorEditor'
 import { cn } from '@/lib/utils'
@@ -11,8 +11,8 @@ import { logger } from '@/utils/safeLogger';
 
 
 interface ThemeEditorProps {
-  theme?: CustomTheme | null
-  onSave: (theme: CustomTheme) => void
+  theme?: UserCustomTheme | null
+  onSave: (theme: UserCustomTheme) => void
   onCancel: () => void
   onDelete?: (id: string) => void
 }
@@ -38,14 +38,14 @@ export function ThemeEditor({ theme, onSave, onCancel, onDelete }: ThemeEditorPr
     setPreviewMode('applying')
 
     try {
-      let savedTheme: CustomTheme
+      let savedTheme: UserCustomTheme
 
       if (theme?.id) {
-        savedTheme = themeStorageAdapter.update(theme.id, { name, description, config })!
-        versionController.createSnapshot(config, `更新: ${name}`)
+        savedTheme = themeStorage.updateUserCustomTheme(theme.id, { name, description, config })!
+        themeStorage.createVersion(config, `更新: ${name}`)
       } else {
-        savedTheme = themeStorageAdapter.create({ name, description, config, isPreset: false, tags: [] })
-        versionController.createSnapshot(config, `创建: ${name}`)
+        savedTheme = themeStorage.createUserCustomTheme({ name, description, config, isPreset: false, tags: [] })
+        themeStorage.createVersion(config, `创建: ${name}`)
       }
 
       await themeEventBus.emit('custom-theme-update', {
