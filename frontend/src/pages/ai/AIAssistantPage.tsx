@@ -32,6 +32,7 @@ import { ModelConfigPanel } from '@/components/ai/ModelConfigPanel';
 import { ConfigManagementPanel } from '@/components/ai/ConfigManagementPanel';
 import { ModelSelector } from '@/components/ai/ModelSelector';
 import { ChatTab } from '@/components/ai/features';
+import { ChatStateProvider } from '@/components/ai/features/ChatStateProvider';
 import {
   Search,
   Settings,
@@ -747,7 +748,9 @@ export default function AIAssistantPage() {
               {tab === 'chat' && (
                 <Suspense fallback={<TabLoadingSkeleton />}>
                   <ErrorBoundary moduleName="智能对话">
-                    <ChatTab />
+                    <ChatStateProvider>
+                      <ChatTab />
+                    </ChatStateProvider>
                   </ErrorBoundary>
                 </Suspense>
               )}
