@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react'
+﻿import { useState, useCallback, useRef, useEffect } from 'react'
 import { chatService } from '../services/chatService'
 import { storageService } from '../services/storageService'
 import { eventBus } from '../services/eventBus'
@@ -27,7 +27,7 @@ interface UseChatMessagesReturn {
   clearMessages: () => void
   /** 替换所有消息（用于会话切换恢复） */
   replaceMessages: (messages: ChatMessage[]) => void
-  sendMessage: (content: string, displayContent?: string) => Promise<void>
+  sendMessage: (content: string, displayContent?: string, scenarioMode?: string) => Promise<void>
   retryLastMessage: () => Promise<void>
   /** 对指定失败消息重新发送（最大重试3次） */
   retryMessage: (messageId: string) => Promise<void>
@@ -104,12 +104,26 @@ export function useChatMessages(): UseChatMessagesReturn {
     }
   }, [])
 
+  // ADR-029 P1-3: 统一存储策略 - IndexedDB 作为主存储，localStorage 仅作降级兜底
   const saveToStorage = useCallback((newMessages: ChatMessage[]) => {
     try {
       if (newMessages.length > MAX_MESSAGES) {
         newMessages = newMessages.slice(-MAX_MESSAGES)
       }
-      storageService.set(STORAGE_KEY, newMessages)
+
+      // 优先写入 IndexedDB（支持大容量会话）
+      if (activeSessionIdRef.current && newMessages.length > 0) {
+        chatStorageService.saveMessages(activeSessionIdRef.current, newMessages)
+          .catch(e => logger.warn('[useChatMessages] IndexedDB save failed:', e))
+      }
+
+      // localStorage 降级：仅当 IndexedDB 失败时使用
+      // 注意：localStorage 有 ~5MB 限制，不适合大会话
+      const isIndexedDBSupported = typeof indexedDB !== 'undefined'
+      if (!isIndexedDBSupported) {
+        storageService.set(STORAGE_KEY + '_fallback', newMessages)
+        logger.warn('[useChatMessages] IndexedDB 不可用，降级到 localStorage')
+      }
     } catch (storageError) {
       logger.warn('[useChatMessages] Failed to save messages to storage:', storageError)
     }
@@ -147,10 +161,15 @@ export function useChatMessages(): UseChatMessagesReturn {
     )
   }, [updateMessages])
 
-  const clearMessages = useCallback(() => {
+  const clearMessages = useCallback(async () => {
     setMessages([])
     messagesRef.current = []
     storageService.remove(STORAGE_KEY)
+    // 同步清理 IndexedDB，防止切换回该会话时恢复已清除的消息
+    if (activeSessionIdRef.current) {
+      try { await chatStorageService.deleteMessages(activeSessionIdRef.current) }
+      catch (e) { logger.warn('[useChatMessages] IndexedDB 清理失败:', e) }
+    }
     logger.info('[useChatMessages] Messages cleared')
   }, [])
 
@@ -170,7 +189,7 @@ export function useChatMessages(): UseChatMessagesReturn {
     setChatError(null)
   }, [])
 
-  const sendMessage = useCallback(async (content: string, displayContent?: string) => {
+  const sendMessage = useCallback(async (content: string, displayContent?: string, scenarioMode?: string) => {
     if (!content?.trim()) {
       logger.warn('[useChatMessages] ⚠️ Empty message content, ignoring send request')
       return
@@ -229,7 +248,7 @@ export function useChatMessages(): UseChatMessagesReturn {
 
       // ── 尝试 1: 流式 SSE ──
       try {
-        for await (const chunk of chatService.sendMessageStream(content.trim(), history)) {
+        for await (const chunk of chatService.sendMessageStream(content.trim(), history, scenarioMode)) {
           if (chunk.done) break
           // 思考步骤事件不追加到对话内容（仅转发到侧栏）
           if (!chunk.step) {
