@@ -38,11 +38,20 @@ class ModelConfig:
     concurrency_limit: int = 3
 
     def to_dict(self) -> dict[str, Any]:
+        # 字段语义自洽：绝不向调用方输出明文库 key。
+        # - api_key: 固定 ""，避免调用方误把脱敏串当明文写回本地存储
+        # - api_key_configured: 布尔标志
+        # - api_key_masked: 脱敏展示（前8...后4，≤12 位时为 ***）
+        masked = (
+            (self.api_key[:8] + "..." + self.api_key[-4:])
+            if len(self.api_key) > 12 else ("***" if self.api_key else "")
+        )
         return {
             "model_type": self.model_type,
             "provider": self.provider,
-            "api_key": self.api_key_plaintext[:8] + "..." if len(self.api_key_plaintext) > 8 else "",
-            "api_key_configured": bool(self.api_key_plaintext),
+            "api_key": "",
+            "api_key_configured": bool(self.api_key_plaintext or self.api_key),
+            "api_key_masked": masked,
             "base_url": self.base_url,
             "model": self.model,
             "max_tokens": self.max_tokens,

@@ -21,9 +21,9 @@ const SYNC_STATUS   = '实时同步';
 // ── 状态指示点 ──────────────────────────────────────────────────────
 function StatusDot({ status }: { status: DataSource['status'] }) {
   const cfg = {
-    online:  { color: '#059669', label: '在线' },
-    syncing: { color: '#2563eb', label: '同步中' },
-    update:  { color: '#d97706', label: '已更新' },
+    online:  { color: '#047857', label: '在线' },
+    syncing: { color: '#1d4ed8', label: '同步中' },
+    update:  { color: '#b45309', label: '已更新' },
   };
   const c = cfg[status];
   return (
@@ -77,7 +77,7 @@ function DataSourceCard({ data, index }: { data: DataSource; index: number }) {
             </div>
             <div className="lp-data-card-title-group">
               <div className="lp-data-card-name">{data.name}</div>
-              <div className="lp-data-card-subtitle" style={{ color: data.color }}>{data.subtitle}</div>
+              <div className="lp-data-card-subtitle" style={{ color: data.colorText || data.color }}>{data.subtitle}</div>
             </div>
           </div>
           <StatusDot status={data.status} />
@@ -94,7 +94,7 @@ function DataSourceCard({ data, index }: { data: DataSource; index: number }) {
                 className="lp-data-card-feature"
                 style={{
                   background: data.colorLight,
-                  color: data.color,
+                  color: data.colorText || data.color,
                   border: `1px solid ${data.colorBorder}`,
                 }}
               >
@@ -104,7 +104,7 @@ function DataSourceCard({ data, index }: { data: DataSource; index: number }) {
           </div>
         </div>
 
-        {/* 法规原文链接 */}
+        {/* 法规原文链接（P0 对比度 + 44px 热区修复） */}
         {data.links && data.links.length > 0 && (
           <div className="lp-data-card-links">
             {data.links.map(link => (
@@ -114,11 +114,9 @@ function DataSourceCard({ data, index }: { data: DataSource; index: number }) {
                 target="_blank"
                 rel="noreferrer"
                 className="lp-data-card-link"
-                style={{ color: data.color }}
-                onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.opacity = '0.7'; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.opacity = '1'; }}
+                style={{ color: data.colorText || data.color }}
               >
-                <ExternalLink size={10} className="shrink-0" />
+                <ExternalLink size={12} className="shrink-0" />
                 <span className="truncate">{link.label}</span>
               </a>
             ))}
@@ -128,12 +126,12 @@ function DataSourceCard({ data, index }: { data: DataSource; index: number }) {
         {/* 底部：统计 + 连接状态 */}
         <div className="lp-data-card-footer">
           <div className="lp-data-card-stat">
-            <span className="lp-data-card-stat-value" style={{ color: data.color }}>{data.stat}</span>
+            <span className="lp-data-card-stat-value" style={{ color: data.colorText || data.color }}>{data.stat}</span>
             <span className="lp-data-card-stat-label">{data.statLabel}</span>
           </div>
           <span
             className="lp-data-card-connect"
-            style={{ color: data.color, background: data.colorLight, border: `1px solid ${data.colorBorder}` }}
+            style={{ color: data.colorText || data.color, background: data.colorLight, border: `1px solid ${data.colorBorder}` }}
           >
             <RefreshCw size={8} className={data.status === 'syncing' ? 'animate-spin' : ''} />
             连接就绪
@@ -160,7 +158,7 @@ export default function DataSources() {
                 覆盖中药材、活性肽、知识图谱、法规标准、国际标准五大维度，支持跨库联合查询与实时同步。
               </p>
             </div>
-            <span className="lp-caption shrink-0 hidden sm:block" style={{ color: '#64748b' }}>
+            <span className="lp-caption shrink-0 hidden sm:block" style={{ color: '#475569' }}>
               最后更新：刚刚
             </span>
           </div>
@@ -170,10 +168,10 @@ export default function DataSources() {
         <Reveal>
           <div className="lp-data-panel mb-6" style={{ background: '#0f172a' }}>
             {[
-              { value: '6',  label: '数据源',  color: '#34d399' },
-              { value: '38K+', label: '知识实体', color: '#60a5fa' },
-              { value: '128K', label: '图谱节点', color: '#a78bfa' },
-              { value: SYNC_STATUS, label: '同步状态', color: '#64748b' },
+              { value: '6',  label: '数据源',  color: '#6ee7b7' },
+              { value: '38K+', label: '知识实体', color: '#93c5fd' },
+              { value: '128K', label: '图谱节点', color: '#c4b5fd' },
+              { value: SYNC_STATUS, label: '同步状态', color: '#cbd5e1' },
             ].map((s, i) => (
               <div key={i} className="flex-1 flex items-center gap-0">
                 {i > 0 && <div className="lp-data-panel-divider mr-4" />}

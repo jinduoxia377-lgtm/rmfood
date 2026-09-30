@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..schemas.experiment import (
     ExperimentCreate, ExperimentUpdate, ExperimentResponse,
-    ExperimentDataResponse,
+    ExperimentDataResponse, ExperimentListResponse,
 )
 from ..services.experiment_service import ExperimentService
 from ..services.auth import require_role
@@ -18,14 +18,20 @@ from ..api.deps import get_db_session, PaginationParams, ExperimentFilterParams,
 router = APIRouter(prefix="/experiments", tags=["实验管理"])
 
 
-@router.get("", response_model=dict, summary="获取实验列表")
+@router.get("", response_model=ExperimentListResponse, summary="获取实验列表")
 async def list_experiments(
     pagination: PaginationParams = Depends(),
     filters: ExperimentFilterParams = Depends(),
     current_user: Optional[User] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db_session),
 ):
-    """分页获取实验列表"""
+    """分页获取实验列表
+
+    修复: 原实现以 `response_model=dict` 直接返回 ORM `Experiment` 对象，
+    FastAPI 的 Pydantic 无法把 ORM 实例序列化为 JSON（PydanticSerializationError）
+    → 500。改用专用响应模式 `ExperimentListResponse`，其 `from_attributes`
+    会把 ORM 对象逐字段映射，稳定输出 JSON。
+    """
     service = ExperimentService(db)
     experiments, total = await service.list_experiments(
         page=pagination.page,
@@ -35,12 +41,12 @@ async def list_experiments(
         formula_id=filters.formula_id,
         search=filters.search,
     )
-    return {
-        "items": experiments,
-        "total": total,
-        "page": pagination.page,
-        "page_size": pagination.page_size,
-    }
+    return ExperimentListResponse(
+        items=experiments,
+        total=total,
+        page=pagination.page,
+        page_size=pagination.page_size,
+    )
 
 
 @router.get("/statistics", response_model=dict, summary="实验统计")
@@ -247,4 +253,3 @@ async def writeback_experiment_result(
         "code": formula.code,
         "updated_fields": [k for k, v in [("safety_score", safety_score), ("synergy_score", synergy_score)] if v is not None],
     }
-    return {"message": "数据点已删除"}

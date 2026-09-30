@@ -1,6 +1,6 @@
 /**
- * NotificationBell Component
- * Top bar notification entry: shows unread count badge + notification popup panel
+ * NotificationBell 组件
+ * 顶栏通知入口：未读数徽标 + 通知弹层
  */
 'use client';
 
@@ -23,11 +23,11 @@ const TYPE_COLORS: Record<string, string> = {
 };
 
 const TYPE_LABELS: Record<string, string> = {
- system:'System',
- formula_review:'Review',
- experiment_complete:'Experiment',
- ai_task_done:'AI Done',
- data_sync:'Sync',
+ system:'系统',
+ formula_review:'配方评审',
+ experiment_complete:'实验完成',
+ ai_task_done:'AI完成',
+ data_sync:'数据同步',
 };
 
 export default function NotificationBell() {
@@ -81,7 +81,7 @@ export default function NotificationBell() {
  <button
  onClick={() => setOpen(!open)}
  className="relative p-2 rounded-lg text-text-muted hover:bg-bg-tertiary transition-colors"
- title="Notifications"
+ title="通知"
  >
  <Bell size={18} />
  {unreadCount > 0 && (
@@ -96,10 +96,10 @@ export default function NotificationBell() {
  <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-100">
  <div className="flex items-center gap-2">
  <Bell size={16} className="text-text-disabled" />
- <span className="font-semibold text-sm text-text-primary dark:text-white">Notifications</span>
+ <span className="font-semibold text-sm text-text-primary dark:text-white">通知</span>
  {unreadCount > 0 && (
  <span className="px-1.5 py-0.5 rounded-full bg-red-100 text-red-600 text-xs font-medium">
- {unreadCount} unread
+ {unreadCount} 条未读
  </span>
  )}
  </div>
@@ -110,14 +110,14 @@ export default function NotificationBell() {
  className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 disabled:opacity-50 transition-colors"
  >
  <CheckCheck size={14} />
- Mark all read
+ 全部已读
  </button>
  )}
  </div>
 
  <div className="flex-1 overflow-y-auto">
  {notifications.length === 0 ? (
- <div className="p-8 text-center text-text-disabled text-sm">No notifications</div>
+ <div className="p-8 text-center text-text-disabled text-sm">暂无通知</div>
  ) : (
  notifications.map((notif) => {
  const isActive = !notif.isRead;
@@ -138,7 +138,7 @@ export default function NotificationBell() {
  TYPE_COLORS[notif.type] || TYPE_COLORS.system,
  )}
  >
- {TYPE_LABELS[notif.type] ||'Notification'}
+ {TYPE_LABELS[notif.type] ||'通知'}
  </span>
  <div className="flex-1 min-w-0">
  <div className="flex items-center gap-2">
@@ -181,7 +181,7 @@ export default function NotificationBell() {
  }}
  className="text-xs text-text-disabled hover:text-text-secondary dark:hover:text-text-disabled"
  >
- View all notifications
+ 查看全部通知
  </button>
  </div>
  </div>

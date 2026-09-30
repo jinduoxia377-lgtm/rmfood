@@ -1,13 +1,14 @@
 /**
- * Workflow Engine - 工作流引擎增强
+ * Workflow Engine - 本地工作流执行引擎（备用）
  *
- * 基于 DeepSeek Harness 的 Workflow 能力：
- * - 脚本化编排
- * - 节点执行
- * - 结果聚合
+ * 用于在离线或后端不可用时执行简单工作流。
+ * 当前主执行路径通过 workflowApi.execute() 直接调用后端；
+ * 此类保留供未来本地编排扩展使用。
  */
 
 import { logger } from '@/utils/safeLogger';
+import { fetchWithCsrf } from '@/utils/csrf';
+import { chatService } from '../services/chatService';
 import type { ExecutionStage } from '@/components/ai/shared/types';
 
 // ── 类型定义 ────────────────────────────────────────────────
@@ -145,21 +146,66 @@ export class WorkflowEngine {
     const toolName = node.config.tool as string;
     const args = node.config.args as Record<string, unknown>;
 
-    // 这里可以集成实际的工具调用
-    logger.info(`[WorkflowEngine] Executing tool: ${toolName}`);
-    return { tool: toolName, args, result: 'executed' };
+    logger.info(`[WorkflowEngine] Executing tool: ${toolName}`, args);
+
+    try {
+      // 根据工具名称路由到对应的后端 API
+      if (toolName.includes('rag') || toolName.includes('search') || toolName.includes('knowledge')) {
+        return await this.callApi('/api/v1/ai/rag/search', { query: args?.query ?? '', top_k: args?.top_k ?? 5 });
+      }
+      if (toolName.includes('formula') || toolName.includes('generate') || toolName.includes('design')) {
+        return await this.callApi('/api/v1/ai/formula/generate', args ?? {});
+      }
+      if (toolName.includes('compliance') || toolName.includes('check') || toolName.includes('safety')) {
+        return await this.callApi('/api/v1/ai/compliance/check', args ?? {});
+      }
+      if (toolName.includes('experiment') || toolName.includes('plan')) {
+        return await this.callApi('/api/v1/ai/experiment/plan', args ?? {});
+      }
+      if (toolName.includes('kg') || toolName.includes('graph') || toolName.includes('inference')) {
+        return await this.callApi('/api/v1/kg/infer', args ?? {});
+      }
+      // 默认：通过通用 Agent API 执行
+      return await this.callApi('/api/v1/agent/tools/execute', { tool: toolName, arguments: args });
+    } catch (err) {
+      throw new Error(`Tool execution failed: ${toolName} - ${err instanceof Error ? err.message : String(err)}`);
+    }
+  }
+
+  private async callApi(path: string, body: Record<string, unknown>): Promise<unknown> {
+    return fetchWithCsrf(path, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
   }
 
   private async executeLLM(node: WorkflowNode, context: Record<string, unknown>): Promise<string> {
     const prompt = node.config.prompt as string;
-    // 这里可以集成 LLM Adapter
-    logger.info(`[WorkflowEngine] Executing LLM node`);
-    return `LLM response for ${prompt}`;
+    const systemPrompt = node.config.system_prompt as string | undefined;
+
+    logger.info(`[WorkflowEngine] Executing LLM node`, { promptLength: prompt?.length });
+
+    try {
+      // 复用 chatService.sendMessage：统一走 axios 认证拦截器（cookie 自动携带 + 401 自动刷新），
+      // 并获得去重、重试、CSRF 等能力，避免裸 fetchWithCsrf 在 401 时认证链路断裂
+      const fullPrompt = systemPrompt ? `${systemPrompt}\n\n${prompt}` : prompt;
+      const response = await chatService.sendMessage(fullPrompt, undefined, { temperature: 0.3, maxTokens: 2048 });
+      return response.content?.trim() ?? '[LLM response unavailable]';
+    } catch (err) {
+      logger.warn('[WorkflowEngine] LLM 调用失败，降级为本地占位响应:', err);
+      // 降级：返回本地占位而非伪造 LLM 回复，调用方可据此判断
+      return `[LLM response for ${prompt?.slice(0, 30)}...]`;
+    }
   }
 
   private evaluateCondition(node: WorkflowNode, context: Record<string, unknown>): boolean {
     const condition = node.config.condition as string;
-    // 简单的条件评估
+    if (!condition) return true;
+    // 简单的条件评估：支持 "if_result_success" 等语义
+    if (condition === 'if_result_success') {
+      return !!context[node.dependencies?.[0] ?? ''];
+    }
+    // 默认放行
     return true;
   }
 

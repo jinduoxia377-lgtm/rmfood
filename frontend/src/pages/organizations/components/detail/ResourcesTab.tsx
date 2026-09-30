@@ -139,7 +139,7 @@ function ProgressBar({
   )
 }
 
-const ResourcesTab = memo(({ organization, memberCount }: ResourcesTabProps) => {
+const ResourcesTab = memo(({ organization, memberCount, onRefresh }: ResourcesTabProps) => {
   const toast = useToast()
   const [copiedInviteLink, setCopiedInviteLink] = useState(false)
 
@@ -147,9 +147,16 @@ const ResourcesTab = memo(({ organization, memberCount }: ResourcesTabProps) => 
   const storageLimit = useMemo(() => organization?.storageLimit || 10 * 1024 * 1024 * 1024, [organization])
   const storagePercent = useMemo(() => storageLimit > 0 ? (storageUsed / storageLimit) * 100 : 0, [storageUsed, storageLimit])
 
-  const apiCallsUsed = useMemo(() => organization?.apiCalls || 2340, [organization])
-  const apiCallsLimit = useMemo(() => 10000, [])
-  const memberLimit = useMemo(() => organization?.plan === 'enterprise' ? -1 : organization?.plan === 'pro' ? 50 : 10, [organization])
+  // Plan-based limits
+  const planLimits: Record<string, { members: number; storageGB: number; apiCalls: number }> = {
+    free: { members: 5, storageGB: 0.5, apiCalls: 1000 },
+    pro: { members: 50, storageGB: 5, apiCalls: 10000 },
+    enterprise: { members: -1, storageGB: -1, apiCalls: -1 },
+  }
+  const planConfig = planLimits[organization?.plan || 'free'] || planLimits.free
+  const apiCallsUsed = useMemo(() => organization?.apiCalls || 0, [organization])
+  const apiCallsLimit = useMemo(() => planConfig.apiCalls, [planConfig])
+  const memberLimit = useMemo(() => planConfig.members, [planConfig])
 
   const handleCopyInviteLink = useCallback(async () => {
     const link = `${window.location.origin}/invite?org=${organization?.id}`
@@ -343,8 +350,11 @@ const ResourcesTab = memo(({ organization, memberCount }: ResourcesTabProps) => 
               <ArrowUpRight className="w-4 h-4" />
             </p>
             <p className="text-xs text-secondary-600 dark:text-secondary-400">升级计划以解锁更多成员席位和高级功能</p>
-            <button className="mt-1 px-3 py-1.5 text-xs font-medium bg-secondary-600 text-white rounded-lg hover:bg-secondary-700 transition-colors">
-              升级计划
+            <button
+              onClick={() => onRefresh?.()}
+              className="mt-1 px-3 py-1.5 text-xs font-medium bg-secondary-600 text-white rounded-lg hover:bg-secondary-700 transition-colors"
+            >
+              刷新数据
             </button>
           </div>
         </div>

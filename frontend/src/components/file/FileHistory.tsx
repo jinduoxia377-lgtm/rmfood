@@ -214,7 +214,7 @@ export function FileHistory() {
               src={selectedFile}
               width="100%"
               height="100%"
-              title="File Preview"
+              title="文件预览"
             />
           </div>
         </Modal>

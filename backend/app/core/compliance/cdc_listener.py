@@ -1,3 +1,4 @@
+# @coding: utf-8
 """
 变更数据捕获 (CDC) 事件监听器
 
@@ -256,7 +257,7 @@ class CDCListener:
 
         try:
             from ..models.change_event import ChangeEvent, ChangeAction
-                        from ..core.database.session import async_session_factory
+            from ..core.database.session import async_session_factory
             import asyncio
 
             # 如果在异步上下文中，使用异步写入
@@ -276,7 +277,7 @@ class CDCListener:
         """异步持久化 CDC 事件并通过事件总线发布"""
         try:
             from ..models.change_event import ChangeEvent, ChangeAction
-                        from ..core.database.session import async_session_factory
+            from ..core.database.session import async_session_factory
 
             async with async_session_factory() as session:
                 for event_data in events:
@@ -428,13 +429,13 @@ class CDCListener:
             return mapper.mapped_table.name
         except Exception as e:
             logger.debug("获取实体表名失败: %s", e)
-            return None(self, obj) -> Optional[int]:
+    def _get_entity_id(self, obj) -> Optional[int]:
         """获取实体的主键 ID"""
         try:
             return getattr(obj, "id", None)
         except Exception as e:
             logger.debug("获取实体ID失败: %s", e)
-            return None(self, obj) -> dict:
+    def _get_entity_dict(self, obj) -> dict:
         """获取实体当前的所有字段值"""
         values = {}
         try:

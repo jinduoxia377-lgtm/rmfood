@@ -15,6 +15,14 @@ from .enums import (
     SyncAction,
     SyncStatus,
     SuggestionType,
+    # Phase 1: 批记录与追溯
+    BatchStatus,
+    SampleType,
+    TestResult,
+    IngredientLotStatus,
+    CustomFieldType,
+    CustomFieldEntity,
+    ProjectPhase,
 )
 from .user_model import User
 from .formula import Formula, FormulaVersion, Ingredient, Peptide, Comment, CommentLike, formula_ingredients, formula_peptides, formula_categories, formula_tags, Category, Tag
@@ -77,6 +85,15 @@ from .dfbp_schema import PeptideActivity, PeptideSourceProtein, PeptideEnzyme, p
 
 # GA/NSGA-II 优化结果持久化模块
 from .ga_optimization import GARunRecord, GACandidateRecord
+
+# Phase 1: 批记录与追溯体系
+from .batch_record import Batch
+from .sample import Sample
+from .test_report import TestReport
+from .ingredient_lot import IngredientLot
+
+# Phase 1: 自定义字段和项目（使用原始SQL，无ORM模型）
+# custom_field_definitions / custom_field_values / projects 表通过 raw SQL 操作
 
 # Potion AI VFT 融合模块：食品原料 + 零售产品搜索
 from .food_material import FoodMaterial
@@ -189,4 +206,16 @@ __all__ = [
     # Potion AI VFT 融合模块
     "FoodMaterial",
     "RetailProduct",
+    # Phase 1: 批记录与追溯体系
+    "Batch",
+    "Sample",
+    "TestReport",
+    "IngredientLot",
+    "BatchStatus",
+    "SampleType",
+    "TestResult",
+    "IngredientLotStatus",
+    "CustomFieldType",
+    "CustomFieldEntity",
+    "ProjectPhase",
 ]

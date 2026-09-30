@@ -17,6 +17,11 @@ formula_ingredients = Table(
     Base.metadata,
     Column("formula_id", BigInteger, ForeignKey("formulas.id", ondelete="CASCADE"), primary_key=True),
     Column("ingredient_id", BigInteger, ForeignKey("ingredients.id", ondelete="CASCADE"), primary_key=True),
+    Column("amount", Float, nullable=False, default=0.0),
+    Column("unit", String(20), nullable=True, default="g"),
+    Column("percentage", Float, nullable=True, default=0.0),
+    Column("sort_order", Integer, nullable=False, default=0),
+    Column("notes", Text, nullable=True),
 )
 
 formula_peptides = Table(
@@ -128,6 +133,9 @@ class Formula(ClassifiedMixin, Base):
     categories: Mapped[list["Category"]] = relationship("Category", secondary=formula_categories, back_populates="formulas")
     tags: Mapped[list["Tag"]] = relationship("Tag", secondary=formula_tags, back_populates="formulas")
     cases: Mapped[list["FormulaCase"]] = relationship("FormulaCase", back_populates="formula", lazy="selectin")
+    batches: Mapped[list["Batch"]] = relationship(
+        "Batch", back_populates="formula", cascade="all, delete-orphan", order_by="Batch.created_at.desc()"
+    )
 
     __table_args__ = (
         CheckConstraint("shelf_life > 0", name="ck_formula_shelf_life_positive"),
@@ -169,6 +177,9 @@ class Ingredient(Base):
     formulas: Mapped[list["Formula"]] = relationship(
         "Formula", secondary=formula_ingredients, back_populates="ingredients"
     )
+    ingredient_lots: Mapped[list["IngredientLot"]] = relationship(
+        "IngredientLot", back_populates="ingredient", cascade="all, delete-orphan", order_by="IngredientLot.received_date.desc()"
+    )
 
 
 class Peptide(Base):
@@ -203,6 +214,8 @@ class Peptide(Base):
 
 from .user_model import User
 from .experiment import Experiment
+from .batch_record import Batch
+from .ingredient_lot import IngredientLot
 
 
 class Comment(Base):

@@ -4,6 +4,11 @@
 支持两种模式：
 1. 贝叶斯优化 + NSGA-II 多目标优化（首选）
 2. 基于功效评分的手动选择（降级方案）
+
+数据源优先级：
+1. TCMSP 数据库（生产环境）
+2. 数据库 HerbKnowledgeService（优先）
+3. 硬编码 _BUILTIN_HERBS（仅用于测试/开发）
 """
 from __future__ import annotations
 import logging
@@ -11,12 +16,27 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
+# 标记数据来源（用于日志追踪）
+_DATA_SOURCE_FLAG = "database"
+
 
 class FormulaDesigner:
     """配方设计器 — 生成君臣佐使结构的配方方案"""
 
     def __init__(self, knowledge_base: dict):
         self._kb = knowledge_base
+        self._data_source = self._detect_data_source()
+    
+    def _detect_data_source(self) -> str:
+        """检测当前使用的数据来源"""
+        try:
+            from app.services.ai.algorithms.herb_knowledge_service import get_global_herb_knowledge
+            herb_service = get_global_herb_knowledge()
+            if herb_service and hasattr(herb_service, '_herbs') and len(herb_service._herbs) > 20:
+                return f"database ({len(herb_service._herbs)} herbs)"
+        except Exception:
+            pass
+        return "fallback_builtin"
 
     async def design(
         self,
@@ -31,6 +51,8 @@ class FormulaDesigner:
         Returns dict with keys: summary, details, data (list[dict]), scores
         """
         effects = intent.get("target_effects") or ["免疫调节", "抗氧化"]
+        
+        logger.info(f"[FormulaDesigner] 数据来源: {self._data_source}")
 
         # 肽类问题走专用路径
         if intent.get("is_peptide"):
@@ -245,27 +267,75 @@ class FormulaDesigner:
         best = formula_data[0]
         dosages = best["dosages"]
 
+        # ── 加载完整药材知识库（优化器内置 ~60种 + DB 583种）────────
+        herb_full_db: dict = {}
+        try:
+            from .ai.algorithms.bayesian_formula_optimizer import get_bayesian_optimizer
+            opt = get_bayesian_optimizer()
+            for hid, herb in opt._herbs.items():
+                herb_full_db[herb.name_cn] = {
+                    "name": herb.name_cn,
+                    "efficacy_scores": dict(herb.efficacy_scores),
+                    "safety_index": herb.safety_index,
+                    "dosage_min": herb.dosage_min,
+                    "dosage_max": herb.dosage_max,
+                    "synergy_partners": list(herb.synergy_partners),
+                    "antagonistic_pairs": list(herb.antagonistic_pairs),
+                }
+        except Exception as e:
+            logger.warning(f"[FormulaDesigner] 无法加载优化器药材库: {e}")
+
+        # 合并本地知识库（_KB_SEED 9种，优先级低于优化器库）
+        for name, info in self._kb.items():
+            if name not in herb_full_db:
+                herb_full_db[name] = {
+                    "name": name,
+                    "efficacy_scores": {},
+                    "safety_index": 0.9,
+                    "dosage_min": 3,
+                    "dosage_max": 30,
+                    "synergy_partners": [],
+                    "antagonistic_pairs": [],
+                }
+                # 从 KB seed 提取功效信息
+                if "effects" in info:
+                    herb_full_db[name]["efficacy_scores"] = {
+                        eff: 0.7 for eff in info.get("effects", [])
+                    }
+
         sorted_herbs = sorted(dosages.items(), key=lambda x: -x[1])
 
         formula = []
         roles = ["君", "臣", "臣", "佐", "佐", "使"]
         for i, (name, dosage) in enumerate(sorted_herbs[:6]):
             role = roles[i] if i < len(roles) else "佐"
-            herb_info = self._kb.get(name, {})
-            herb_effects = herb_info.get("effects", [])
+            herb_info = herb_full_db.get(name, {})
+            herb_effects = list(herb_info.get("efficacy_scores", {}).keys())
 
+            # ── 功效匹配（修正：检查药材功效是否在目标功效中，或关键词重叠）──
             purpose_parts = []
             for e in effects:
-                if any(e in eff for eff in herb_effects):
-                    purpose_parts.append(e)
+                for eff in herb_effects:
+                    # 正向匹配：目标功效关键词包含药材功效，或药材功效包含目标关键词
+                    if e in eff or eff in e:
+                        if eff not in purpose_parts:
+                            purpose_parts.append(eff)
+                        break
             if not purpose_parts:
-                purpose_parts = herb_effects[:2]
+                # 无精确匹配时，取 Top 2 功效
+                top_effects = sorted(
+                    herb_info.get("efficacy_scores", {}).items(),
+                    key=lambda x: -x[1],
+                )[:2]
+                purpose_parts = [eff for eff, _ in top_effects]
+            if not purpose_parts:
+                purpose_parts = ["综合调理"]
 
             formula.append({
                 "role": role,
                 "name": name,
                 "dosage": f"{dosage}g",
-                "purpose": f"{'、'.join(purpose_parts) if purpose_parts else '综合调理'}",
+                "purpose": f"{'、'.join(purpose_parts)}",
                 "score": best.get("overall_score", 0),
                 "safety_score": best.get("safety_score", 0),
                 "synergy_score": best.get("synergy", 0),

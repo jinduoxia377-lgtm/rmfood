@@ -1,0 +1,15 @@
+<!--图片懒加载组件-->
+<view class="lazy-image-wrapper {{loaded ? 'loaded' : ''}}">
+  <image
+    wx:if="{{actualSrc}}"
+    class="lazy-image"
+    src="{{actualSrc}}"
+    mode="{{mode}}"
+    lazy-load="{{!actualSrc}}"
+    bindload="onLoad"
+    binderror="onError"
+  ></image>
+  <view wx:if="{{!loaded && placeholder}}" class="lazy-image-placeholder">
+    <image src="{{placeholder}}" mode="aspectFit"></image>
+  </view>
+</view>

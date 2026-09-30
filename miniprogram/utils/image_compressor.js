@@ -1,21 +1,21 @@
 /**
- * 图片压缩工具
- * 优化图片加载性能
+ * 鍥剧墖鍘嬬缉宸ュ叿
+ * 浼樺寲鍥剧墖鍔犺浇鎬ц兘
  */
 
 class ImageCompressor {
   constructor() {
-    this.maxWidth = 750  // 最大宽度（rpx）
-    this.maxHeight = 1200 // 最大高度（rpx）
-    this.quality = 0.8    // 压缩质量
+    this.maxWidth = 750  // 鏈€澶у搴︼紙rpx锛?
+    this.maxHeight = 1200 // 鏈€澶ч珮搴︼紙rpx锛?
+    this.quality = 0.8    // 鍘嬬缉璐ㄩ噺
     this.cache = new Map()
   }
 
   /**
-   * 压缩图片
-   * @param {string} tempFilePath - 临时文件路径
-   * @param {Object} options - 压缩选项
-   * @returns {Promise<string>} 压缩后的文件路径
+   * 鍘嬬缉鍥剧墖
+   * @param {string} tempFilePath - 涓存椂鏂囦欢璺緞
+   * @param {Object} options - 鍘嬬缉閫夐」
+   * @returns {Promise<string>} 鍘嬬缉鍚庣殑鏂囦欢璺緞
    */
   async compress(tempFilePath, options = {}) {
     const {
@@ -24,17 +24,17 @@ class ImageCompressor {
       quality = this.quality
     } = options
 
-    // 检查缓存
-    const cacheKey = `${tempFilePath}_${width}_${height}_${quality}`
+    // 妫€鏌ョ紦瀛?
+      const cacheKey = tempFilePath + "_" + width + "_" + height + "_" + quality
     if (this.cache.has(cacheKey)) {
       return this.cache.get(cacheKey)
     }
 
     try {
-      // 获取图片信息
+      // 鑾峰彇鍥剧墖淇℃伅
       const info = await this.getImageInfo(tempFilePath)
       
-      // 计算压缩尺寸
+      // 璁＄畻鍘嬬缉灏哄
       const { compressWidth, compressHeight } = this.calculateSize(
         info.width,
         info.height,
@@ -42,7 +42,7 @@ class ImageCompressor {
         height
       )
 
-      // 压缩图片
+      // 鍘嬬缉鍥剧墖
       const result = await new Promise((resolve, reject) => {
         wx.compressImage({
           src: tempFilePath,
@@ -54,10 +54,10 @@ class ImageCompressor {
         })
       })
 
-      // 缓存结果
+      // 缂撳瓨缁撴灉
       this.cache.set(cacheKey, result)
       
-      // 限制缓存大小
+      // 闄愬埗缂撳瓨澶у皬
       if (this.cache.size > 20) {
         const firstKey = this.cache.keys().next().value
         this.cache.delete(firstKey)
@@ -71,7 +71,7 @@ class ImageCompressor {
   }
 
   /**
-   * 获取图片信息
+   * 鑾峰彇鍥剧墖淇℃伅
    */
   getImageInfo(filePath) {
     return new Promise((resolve, reject) => {
@@ -84,13 +84,13 @@ class ImageCompressor {
   }
 
   /**
-   * 计算压缩尺寸
+   * 璁＄畻鍘嬬缉灏哄
    */
   calculateSize(originalWidth, originalHeight, maxWidth, maxHeight) {
     let width = originalWidth
     let height = originalHeight
 
-    // 等比缩放
+    // 绛夋瘮缂╂斁
     if (width > maxWidth) {
       height = (height * maxWidth) / width
       width = maxWidth
@@ -107,9 +107,9 @@ class ImageCompressor {
   }
 
   /**
-   * 上传前压缩
-   * @param {string} tempFilePath - 临时文件路径
-   * @returns {Promise<string>} 压缩后的文件路径
+   * 涓婁紶鍓嶅帇缂?
+   * @param {string} tempFilePath - 涓存椂鏂囦欢璺緞
+   * @returns {Promise<string>} 鍘嬬缉鍚庣殑鏂囦欢璺緞
    */
   async compressBeforeUpload(tempFilePath) {
     return this.compress(tempFilePath, {
@@ -120,10 +120,10 @@ class ImageCompressor {
   }
 
   /**
-   * 生成缩略图
-   * @param {string} tempFilePath - 原始文件路径
-   * @param {number} size - 缩略图尺寸（rpx）
-   * @returns {Promise<string>} 缩略图路径
+   * 鐢熸垚缂╃暐鍥?
+   * @param {string} tempFilePath - 鍘熷鏂囦欢璺緞
+   * @param {number} size - 缂╃暐鍥惧昂瀵革紙rpx锛?
+   * @returns {Promise<string>} 缂╃暐鍥捐矾寰?
    */
   async generateThumbnail(tempFilePath, size = 200) {
     return this.compress(tempFilePath, {
@@ -134,14 +134,14 @@ class ImageCompressor {
   }
 
   /**
-   * 清除缓存
+   * 娓呴櫎缂撳瓨
    */
   clearCache() {
     this.cache.clear()
   }
 
   /**
-   * 获取统计信息
+   * 鑾峰彇缁熻淇℃伅
    */
   getStats() {
     return {
@@ -151,9 +151,10 @@ class ImageCompressor {
   }
 }
 
-// 导出单例
+// 瀵煎嚭鍗曚緥
 const imageCompressor = new ImageCompressor()
 
 module.exports = {
   getImageCompressor: () => imageCompressor
 }
+

@@ -21,7 +21,7 @@ from ..models.enums import UserRole
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/v1/lab-validation", tags=["实验室验证"])
+router = APIRouter(prefix="/lab-validation", tags=["实验室验证"])
 
 
 # ==================== Pydantic 模型 ====================

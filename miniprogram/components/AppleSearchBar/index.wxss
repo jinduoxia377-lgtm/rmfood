@@ -1,0 +1,52 @@
+/** AppleSearchBar 组件样式 */
+.apple-searchbar {
+  background: rgba(118, 118, 128, 0.12);
+  border-radius: var(--radius-input);
+  height: 36rpx;
+  display: flex;
+  align-items: center;
+  padding: 0 10rpx;
+  margin: 8rpx 16rpx;
+}
+
+.search-icon-wrap {
+  width: 24rpx;
+  height: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.search-input {
+  flex: 1;
+  font-size: var(--font-size-body);
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--color-text-primary);
+  height: 100%;
+  padding: 0 4rpx;
+}
+
+.search-placeholder {
+  color: var(--color-text-tertiary);
+}
+
+.search-clear {
+  width: 24rpx;
+  height: 24rpx;
+  border-radius: 50%;
+  background: var(--color-gray-400);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.clear-text {
+  color: white;
+  font-size: 16rpx;
+  line-height: 1;
+  font-weight: 500;
+}

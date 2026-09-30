@@ -1,9 +1,8 @@
 /** Card 卡片组件样式 */
 .card {
-  background-color: var(--color-bg-secondary);
+  background-color: var(--color-bg-card);
   border-radius: var(--radius-lg);
   overflow: hidden;
-  transition: all var(--transition-normal);
 }
 
 .card-shadow-sm {
@@ -23,7 +22,7 @@
 }
 
 .card-clickable {
-  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .card-clickable:active {
@@ -47,20 +46,20 @@
 }
 
 .card-title-text {
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-lg);
   font-weight: var(--font-weight-semibold);
   color: var(--color-text-primary);
 }
 
 .card-subtitle {
   font-size: var(--font-size-sm);
-  color: var(--color-text-muted);
+  color: var(--color-text-tertiary);
   margin-top: 4rpx;
 }
 
 .card-action {
   margin-left: var(--space-3);
-  color: var(--color-primary);
+  color: var(--color-brand-500);
   font-size: var(--font-size-sm);
 }
 
@@ -78,5 +77,5 @@
 
 .card-footer-text {
   font-size: var(--font-size-sm);
-  color: var(--color-text-muted);
+  color: var(--color-text-tertiary);
 }

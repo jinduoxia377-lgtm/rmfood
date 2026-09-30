@@ -1,11 +1,13 @@
 /**
- * MobileBottomNav — 移动端底部导航栏（v2 修复版）
+ * MobileBottomNav — 移动端底部导航栏（v3 层级统一版）
  *
- * 修复点：
- * - "更多"面板 z-55 高于 bottom nav z-45，解决层级遮挡
- * - "更多"面板打开时遮罩覆盖全页（含底部导航），阻断主内容点击
- * - 面板关闭时添加过渡动画
- * - 移除未使用的 activePath prop（改为内部 useLocation）
+ * v3 变更（对应 Apple HIG 审查 + 层级统一）：
+ * - "更多"面板 z-600→z-450：低于命令面板（z-500），避免压住全局浮层
+ *   （原 600 会与命令面板及未来的 z-500+ 浮层冲突，层级语义错乱）
+ * - 面板内 NavLink 去除全量 end：与 Rail/抽屉同用 startsWith 高亮逻辑
+ * - 激活指示点 4px→6px + 主色描边光圈（触控环境可感知）
+ * - 条目与"更多"按钮加 active:scale-95 press-down 反馈
+ * - 标签去西文 letter-spacing（中文不需 0.05em）
  */
 import { useState, useEffect, useRef } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
@@ -113,7 +115,7 @@ export default function MobileBottomNav() {
                 to={item.to}
                 end={item.to === '/dashboard'}
                 className={cn(
-                  'flex flex-col items-center justify-center gap-0.5 flex-1 transition-all duration-200',
+                  'flex flex-col items-center justify-center gap-0.5 flex-1 transition-all duration-200 active:scale-95',
                   'focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary-500',
                 )}
                 aria-label={item.label}
@@ -130,15 +132,15 @@ export default function MobileBottomNav() {
                   }}
                 >
                   <Icon size={22} strokeWidth={active ? 2 : 1.75} />
-                  {/* 激活指示点 */}
+                  {/* 激活指示点 — 强化：4px→6px，加主色描边光圈，触控环境可感知 */}
                   {active && (
                     <div
-                      className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full"
-                      style={{ background: 'var(--color-primary, #10b981)' }}
+                      className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full"
+                      style={{ background: 'var(--color-primary, #10b981)', boxShadow: '0 0 0 2px var(--bg-surface, #ffffff)' }}
                     />
                   )}
                 </div>
-                {/* 标签 — text-overline 11px */}
+                {/* 标签 — text-overline 11px，去西文 tracking（中文不需 0.05em） */}
                 <span
                   className="truncate px-1"
                   style={{
@@ -146,7 +148,7 @@ export default function MobileBottomNav() {
                     fontWeight: active ? 600 : 400,
                     color: active ? 'var(--color-primary, #10b981)' : 'var(--text-secondary, #64748b)',
                     lineHeight: '1.45',
-                    letterSpacing: 'var(--text-overline-tracking, 0.05em)',
+                    letterSpacing: '0',
                   }}
                 >
                   {item.label}
@@ -172,7 +174,7 @@ export default function MobileBottomNav() {
             aria-label="更多导航"
           >
             <div
-              className="flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200"
+              className="flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 active:scale-95"
               style={{ background: 'var(--bg-surface-hover, #f1f5f9)', borderRadius: 'var(--radius-xl, 16px)' }}
             >
               <MoreHorizontal size={20} strokeWidth={1.75} />
@@ -191,9 +193,9 @@ export default function MobileBottomNav() {
         </div>
       </nav>
 
-      {/* "更多"面板 — z-[600]，高于所有导航层 */}
+      {/* "更多"面板 — z-[450]，低于命令面板 z-500，高于底部导航 150 与抽屉 400，层级统一 */}
       {moreOpen && (
-        <div className="fixed inset-0 z-[600] flex items-end justify-center">
+        <div className="fixed inset-0 z-[450] flex items-end justify-center">
           {/* 遮罩 — 覆盖全页（含底部导航），阻止主内容点击 */}
           <div
             className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300"
@@ -254,7 +256,7 @@ export default function MobileBottomNav() {
                   <NavLink
                     key={item.to}
                     to={item.to}
-                    end
+                    end={item.to === '/dashboard'}
                     onClick={() => setMoreOpen(false)}
                     className={cn(
                       'flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200',

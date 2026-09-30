@@ -8,6 +8,7 @@
  */
 
 import { logger } from '@/utils/safeLogger';
+import { fetchWithCsrf } from '@/utils/csrf';
 import type { AgentMessage } from '@/components/ai/shared/types';
 
 // ── 类型定义 ────────────────────────────────────────────────
@@ -66,17 +67,40 @@ class SubagentImpl implements SubagentHandle {
 
   async execute(): Promise<SubagentResult> {
     try {
-      // 这里可以调用实际的 LLM API 执行子任务
+      const prompt = this.options.prompt;
+      const maxSteps = this.options.maxSteps ?? 5;
+
+      // 调用后端 Agent API 执行子任务
+      const data = await fetchWithCsrf('/api/v1/agent/execute', {
+        method: 'POST',
+        body: JSON.stringify({
+          query: prompt,
+          mode: 'smart' as const,
+          max_steps: maxSteps,
+        }),
+        signal: this.abortController.signal,
+      }) as { data: { final_response_preview?: string; steps?: Array<{ tool: string; result?: unknown }> } };
+      const output = data.data?.final_response_preview ?? `[${this.options.name}] 执行完成`;
+      const steps = (data.data?.steps ?? []).map(s => ({ tool: s.tool, result: s.result }));
+
       const result: SubagentResult = {
         id: this.id,
         status: 'completed',
-        output: `[Subagent ${this.options.name}] 执行完成`,
-        steps: [],
+        output,
+        steps,
         startedAt: this.startTime,
         completedAt: Date.now(),
       };
       return result;
     } catch (err) {
+      if (this.abortController.signal.aborted) {
+        return {
+          id: this.id,
+          status: 'cancelled',
+          startedAt: this.startTime,
+          completedAt: Date.now(),
+        };
+      }
       return {
         id: this.id,
         status: 'failed',

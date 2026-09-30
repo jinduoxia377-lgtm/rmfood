@@ -1,8 +1,11 @@
 {
-  "usingComponents": {
-    "Icon": "../../components/Icon/index"
-  },
   "navigationBarTitleText": "设置",
   "navigationBarBackgroundColor": "#2D5A3D",
-  "navigationBarTextStyle": "white"
+  "navigationBarTextStyle": "white",
+  "usingComponents": {
+    "icon": "../../components/Icon/index",
+    "nav-bar": "../../components/NavBar/index",
+    "btn": "../../components/Button/index",
+    "toast": "../../components/Toast/index"
+  }
 }

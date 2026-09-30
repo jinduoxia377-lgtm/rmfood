@@ -1,0 +1,22 @@
+<!-- Apple Style 导航栏组件 -->
+<view class="apple-navbar {{className}} {{largeTitle ? 'apple-navbar-large' : ''}}"
+      style="padding-top: {{statusBarHeight}}px;">
+  <view class="apple-navbar-content">
+    <!-- 左侧：返回按钮或占位 -->
+    <view wx:if="{{showBack}}" class="apple-navbar-back" catchtap="onBack" aria-label="返回">
+      <view class="back-icon"></view>
+      <text class="back-text">{{backText || '返回'}}</text>
+    </view>
+    
+    <!-- 标题 -->
+    <view class="apple-navbar-title" wx:if="{{title}}">
+      <text>{{title}}</text>
+    </view>
+    
+    <!-- 右侧：操作按钮 -->
+    <view class="apple-navbar-action" wx:if="{{showRightAction}}" catchtap="onRightAction" aria-label="{{rightActionLabel}}">
+      <slot name="right"></slot>
+      <icon wx:if="{{rightIcon}}" name="{{rightIcon}}" size="md" color="var(--color-system-blue)" />
+    </view>
+  </view>
+</view>

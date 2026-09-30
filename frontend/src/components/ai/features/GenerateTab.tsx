@@ -34,6 +34,7 @@ import { ErrorMessage } from './GenerateTab/components/ErrorMessage';
 import { SuccessMessage } from './GenerateTab/components/SuccessMessage';
 import { GenerationInputEnhanced } from './GenerateTab/components/GenerationInputEnhanced';
 import { FormulaResultsEnhanced } from './GenerateTab/components/FormulaResultsEnhanced';
+import { FormulaComparePanel } from './GenerateTab/components/FormulaComparePanel';
 
 // Lazy components
 const NeuralGeneratePanel = lazy(() => import('@/components/ai/NeuralGeneratePanel'));
@@ -57,11 +58,17 @@ export function GenerateTab({ llmAvailable, modelStatus, onGenerateSuccess }: Ge
   // Hooks
   const effectsHook = useGenerateEffects();
   const algorithmHook = useAlgorithmConfig();
+
+  // UI State
+  const [useLlm, setUseLlm] = usePersistentState<boolean>(STORAGE_KEYS.GENERATE_USE_LLM, false);
+  const [advancedMode, setAdvancedMode] = usePersistentState<boolean>(STORAGE_KEYS.GENERATE_ADVANCED_MODE, false);
+
   const generationHook = useFormulaGeneration({
     effectLabels: effectsHook.effectLabels,
     selectedEffects: effectsHook.selectedEffects,
     onGenerateSuccess,
     algorithmConfig: algorithmHook.toApiParams,
+    useLlm,
   });
   const versionsHook = useFormulaVersions();
   const savedHook = useSavedFormulas();
@@ -81,14 +88,13 @@ export function GenerateTab({ llmAvailable, modelStatus, onGenerateSuccess }: Ge
   });
   const { getCachedResult, setCachedResult, clearCache, stats: cacheStats } = useGenerationCache();
 
-  // UI State
-  const [useLlm, setUseLlm] = usePersistentState<boolean>(STORAGE_KEYS.GENERATE_USE_LLM, false);
-  const [advancedMode, setAdvancedMode] = usePersistentState<boolean>(STORAGE_KEYS.GENERATE_ADVANCED_MODE, false);
+  // UI State (useLlm / advancedMode 已在上方声明，此处保留其余状态)
   const [viewMode, setViewMode] = usePersistentState<ViewMode>(STORAGE_KEYS.GENERATE_VIEW_MODE, 'card');
   const [inputMode, setInputMode] = useState<InputMode | 'chat'>('effects');
   const [selectedReport, setSelectedReport] = useState<AICandidate | null>(null);
   const [selectedCompareIndex, setSelectedCompareIndex] = useState<number | undefined>(undefined);
   const [compareVersions, setCompareVersions] = useState<{ v1: number; v2: number } | null>(null);
+  const [compareVersionsEnhanced, setCompareVersionsEnhanced] = useState(false);
   const [paramPanelExpanded, setParamPanelExpanded] = useState(false);
   const [showCacheInfo, setShowCacheInfo] = useState(false);
 
@@ -135,7 +141,13 @@ export function GenerateTab({ llmAvailable, modelStatus, onGenerateSuccess }: Ge
     if (cached) {
       logger.info('Using cached result', { key: cacheKey });
       generationHook.setGenerateResult(cached.candidates);
-      generationHook.setGenerator(cached.generator as Parameters<typeof generationHook.setGenerator>[0]);
+      generationHook.setGenerator(
+        (['rule_engine', 'llm', 'neural_network'] as const).includes(
+          cached.generator as 'rule_engine' | 'llm' | 'neural_network',
+        )
+          ? (cached.generator as Parameters<typeof generationHook.setGenerator>[0])
+          : 'rule_engine',
+      );
       return;
     }
     
@@ -179,8 +191,11 @@ export function GenerateTab({ llmAvailable, modelStatus, onGenerateSuccess }: Ge
     setSelectedReport(candidate);
   }, []);
 
+  const [selectedCandidate, setSelectedCandidate] = useState<AICandidate | null>(null);
   const handleSelectCandidate = useCallback(
     (candidate: AICandidate) => {
+      setSelectedCandidate(candidate);
+      setCompareVersionsEnhanced(true);
       const index = generationHook.generateResult?.findIndex((c) => c === candidate);
       if (index !== undefined && index >= 0) {
         setSelectedCompareIndex(index);
@@ -349,6 +364,7 @@ export function GenerateTab({ llmAvailable, modelStatus, onGenerateSuccess }: Ge
               <ResultsComponent
                 generateResult={generationHook.generateResult}
                 generator={generationHook.generator}
+                generatorType={generationHook.generator}
                 viewMode={viewMode}
                 onViewModeChange={setViewMode}
                 selectedCategory={filtersHook.selectedCategory}
@@ -361,7 +377,10 @@ export function GenerateTab({ llmAvailable, modelStatus, onGenerateSuccess }: Ge
                 onViewReport={handleViewReport}
                 onSelectCandidate={handleSelectCandidate}
                 selectedCompareIndex={selectedCompareIndex}
-                onCompareVersions={(v1, v2) => setCompareVersions({ v1, v2 })}
+                onCompareVersions={(v1, v2) => {
+                  setCompareVersions({ v1, v2 });
+                  setCompareVersionsEnhanced(true);
+                }}
                 onExportFormula={handleExportFormula}
                 effectLabels={effectsHook.effectLabels}
               />
@@ -403,6 +422,34 @@ export function GenerateTab({ llmAvailable, modelStatus, onGenerateSuccess }: Ge
               version1={versionsHook.formulaVersions[compareVersions.v2 - 1]}
               version2={versionsHook.formulaVersions[compareVersions.v1 - 1]}
               onClose={() => setCompareVersions(null)}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Enhanced Version Compare Modal — 六维评分 + 药材组成对比 */}
+      {compareVersionsEnhanced && selectedCandidate && (
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+          role="button" tabIndex={0}
+          onClick={() => setCompareVersionsEnhanced(false)}
+        >
+          <div
+            className="bg-surface rounded-xl max-w-3xl w-full mx-4 overflow-y-auto max-h-[80vh] shadow-2xl border border-border p-6"
+            role="button" tabIndex={0}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-title-md font-semibold">配方对比分析</h3>
+              <button onClick={() => setCompareVersionsEnhanced(false)} className="text-caption text-muted-foreground hover:text-foreground">
+                关闭
+              </button>
+            </div>
+            <FormulaComparePanel
+              version1={selectedCandidate}
+              version2={generationHook.generateResult?.[0] || selectedCandidate}
+              label1={selectedCandidate.formula_name || selectedCandidate.name || '候选配方'}
+              label2={generationHook.generateResult?.[0]?.formula_name || generationHook.generateResult?.[0]?.name || '最优配方'}
             />
           </div>
         </div>

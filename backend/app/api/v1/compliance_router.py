@@ -21071,6 +21071,19 @@ FOOD_HOMOLOGY_MATERIALS = [
 # API 端点定义
 # ════════════════════════════════════════════
 
+@router.get("/health", summary="合规检查服务健康检查")
+async def health_check():
+    """验证合规检查服务可用"""
+    return {
+        "success": True,
+        "data": {
+            "status": "healthy",
+            "service": "compliance-checker",
+            "features": ["realtime_check", "bulk_check", "auto_fix", "dosage_limits", "prohibited_combinations"],
+        },
+    }
+
+
 @router.post("/check/realtime", summary="实时合规检查")
 async def realtime_check(req: RealtimeCheckRequest):
     """

@@ -29,15 +29,26 @@ export function useExportFormula(generateResult: AICandidate[] | null) {
       const { format } = options
 
       const exportItems = generateResult.map((candidate, index) => {
+        // 兼容后端字段：herb_combination 项可能含 dosage_g / dosage / dose_g 与 role
+        const herbCombo = (candidate.herb_combination || [])
+          .map((h: any) => {
+            const dose = h.dosage_g ?? h.dosage ?? h.dose_g
+            const role = h.role ? `[${h.role}]` : ''
+            return `${role}${h.name}${typeof dose !== 'undefined' ? ` ${dose}g` : ''}`
+          })
+          .join(', ')
         const baseData = {
           序号: index + 1,
-          配方名称: candidate.formula_name || 'Unknown',
-          药材组合: (candidate.herb_combination || [])
-            .map((h: any) => `${h.name}${h.dosage ? `(${h.dosage})` : ''}`)
-            .join(', '),
+          配方名称: candidate.formula_name || candidate.name || '未知配方',
+          药材组合: herbCombo,
           功效: (candidate.effects || []).join('、'),
-          综合评分: candidate.score || 0,
+          综合评分: candidate.overall_score ?? candidate.synergy_score ?? 0,
           协同评分: candidate.synergy_score || 0,
+          口感评分: candidate.taste_score || '',
+          稳定性评分: candidate.stability_score || '',
+          安全性: candidate.safety_passed ? '通过' : '未通过',
+          生成方式: candidate.generated_by || '遗传算法',
+          创建时间: candidate.generated_at || '',
         }
 
         if (options.includePatentScores && candidate.patent_synergy_scores) {
@@ -48,17 +59,6 @@ export function useExportFormula(generateResult: AICandidate[] | null) {
             主导机制: candidate.patent_synergy_scores.dominant_mechanism || '',
             质量等级: candidate.patent_synergy_scores.quality_level || '',
             置信度: candidate.patent_synergy_scores.confidence || 0,
-          }
-        }
-
-        if (options.includeDetailedInfo) {
-          return {
-            ...baseData,
-            肽候选: (candidate.peptide_candidates || []).map((p: any) => p.name).join(', '),
-            安全性: candidate.safety_passed ? '通过' : '未通过',
-            口感评分: (candidate.taste_score || ''),
-            稳定性评分: (candidate.stability_score || ''),
-            创建时间: candidate.generated_at || '',
           }
         }
 

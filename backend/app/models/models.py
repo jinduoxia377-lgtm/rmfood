@@ -28,6 +28,7 @@ from .workflow import Workflow, WorkflowTask, WorkflowTemplate
 from .notification import Notification
 from .system import AuditLog, Attachment, DataSnapshot
 from .external_data import TCMHerb, MMIDHerb, SymMapHerb, BioactivePeptide, KnowledgeGraphNode
+from .peptide_structure import PeptideStructureAnalysis
 
 __all__ = [
     "UserRole",
@@ -59,4 +60,5 @@ __all__ = [
     "SymMapHerb",
     "BioactivePeptide",
     "KnowledgeGraphNode",
+    "PeptideStructureAnalysis",
 ]

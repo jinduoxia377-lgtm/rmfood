@@ -1,126 +1,15 @@
-<!-- 配方列表页面 - 虚拟列表优化版 -->
-<view class="page-container">
-  <!-- 顶部导航 -->
-  <nav-bar 
-    title="配方库"
-    left-icon="hamburger"
-    bind:left="toggleMenu"
-    transparent
-  ></nav-bar>
-
-  <!-- 筛选栏 -->
-  <view class="filter-bar">
-    <view 
-      wx:for="{{filters}}" 
-      wx:key="value"
-      class="filter-item {{activeFilter === item.value ? 'active' : ''}}"
-      bindtap="setFilter"
-      data-filter="{{item.value}}"
-      aria-label="筛选: {{item.label}}"
-      data-index="{{index}}"
-    >
-      <text>{{item.label}}</text>
-    </view>
+<!--packages/formulas/pages/index/index.wxml-->
+<view class="formulas-container">
+  <view class="search-bar">
+    <input placeholder="搜索配方..." bindinput="onSearch" />
   </view>
-
-  <!-- 虚拟列表 -->
-  <virtual-list 
-    wx:if="{{!loading && formulas.length > 0}}"
-    list="{{formulas}}"
-    item-height="160"
-    container-height="{{containerHeight}}"
-    buffer-count="10"
-    bind:scroll="onScroll"
-    bind:scrollto="onScrollTo"
-    aria-label="配方列表"
-  >
-    <view slot="item" class="formula-card" data-index="{{item.index}}" bindtap="goToDetail" data-id="{{item.data.id}}">
-      <view class="formula-card-content">
-        <avatar 
-          src="{{item.data.coverImage || '/assets/images/default-formula.png'}}"
-          size="lg"
-          shape="rounded"
-          class="formula-avatar"
-        />
-        <view class="formula-info">
-          <text class="formula-name">{{item.data.name}}</text>
-          <text class="formula-desc">{{item.data.description || item.data.shortDesc}}</text>
-          <view class="formula-tags">
-            <tag 
-              wx:for="{{item.data.tags}}" 
-              wx:for-item="tag" 
-              wx:key="index"
-              type="{{tag.type || 'primary'}}"
-              size="small"
-            >{{tag.text || tag}}</tag>
-          </view>
-        </view>
-        <health-score 
-          score="{{item.data.healthScore}}" 
-          size="small"
-        />
+  <view class="formula-list">
+    <view class="formula-card" wx:for="{{formulas}}" wx:key="id" bindtap="goToDetail" data-id="{{item.id}}">
+      <view class="card-header">
+        <text class="name">{{item.name}}</text>
+        <text class="status status-{{item.status}}">{{item.status}}</text>
       </view>
-    </view>
-  </virtual-list>
-
-  <!-- 加载中状态 -->
-  <loading 
-    wx:if="{{loading}}"
-    type="spinner"
-    size="lg"
-    class="loading-container"
-  ></loading>
-
-  <!-- 空状态 -->
-  <empty-state 
-    wx:if="{{!loading && formulas.length === 0}}"
-    icon="formula"
-    title="暂无配方数据"
-    desc="请尝试其他筛选条件"
-  ></empty-state>
-
-  <!-- 侧边菜单遮罩 -->
-  <view class="menu-overlay" wx:if="{{menuOpen}}" bindtap="toggleMenu" aria-hidden="true"></view>
-  
-  <!-- 侧边菜单 -->
-  <view 
-    class="side-menu {{menuOpen ? 'open' : ''}}" 
-    role="navigation"
-    aria-label="侧边菜单"
-  >
-    <view class="menu-header">
-      <avatar 
-        src="{{userInfo && userInfo.avatarUrl}}"
-        size="xl"
-        bind:tap="goToProfile"
-        aria-label="个人中心"
-      />
-      <view class="menu-user-info">
-        <text class="menu-nickname">{{userInfo && userInfo.nickname || '点击登录'}}</text>
-      </view>
-      <view 
-        class="menu-close" 
-        bindtap="toggleMenu"
-        role="button"
-        aria-label="关闭菜单"
-      >
-        <icon name="close" size="md" color="var(--color-text-muted)" />
-      </view>
-    </view>
-    
-    <view class="menu-items">
-      <view class="menu-item" bindtap="goToHistory" role="button" aria-label="历史记录">
-        <icon name="history" size="md" color="var(--color-text-muted)" />
-        <text class="menu-text">历史记录</text>
-      </view>
-      <view class="menu-item" bindtap="goToSettings" role="button" aria-label="设置">
-        <icon name="settings" size="md" color="var(--color-text-muted)" />
-        <text class="menu-text">设置</text>
-      </view>
-      <view class="menu-item" bindtap="newChat" role="button" aria-label="新对话">
-        <icon name="plus" size="md" color="var(--color-text-muted)" />
-        <text class="menu-text">新对话</text>
-      </view>
+      <text class="desc">{{item.description}}</text>
     </view>
   </view>
 </view>

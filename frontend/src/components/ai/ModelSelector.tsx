@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 模型选择与参数调节组件
  * 与 AI 主页面设计风格同步（AIAssistantPage 规范）
  */
@@ -48,7 +48,7 @@ export function ModelSelector({ modelType, onModelChange, onParamsChange, classN
 
   return (
     // Card default: p-5 (20px), rounded-xl, shadow-sm — matches parent page
-    <Card className={`shadow-sm border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 ${className}`}>
+    <Card className={`shadow-sm border border-[var(--border-color)] bg-white dark:bg-neutral-900 ${className}`}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           {/* icon: rounded-xl w-10 h-10 — matches SectionHeader icon pattern */}
@@ -56,14 +56,14 @@ export function ModelSelector({ modelType, onModelChange, onParamsChange, classN
             <Brain className="w-5 h-5 text-primary-600 dark:text-primary-400" />
           </div>
           <div>
-            {/* text-sm font-semibold — matches StatCard label pattern (was font-medium=500) */}
-            <h3 className="text-sm font-semibold text-neutral-900 dark:text-white leading-tight">模型选择</h3>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-tight mt-0.5">选择和配置 AI 模型</p>
+            {/* text-sm font-semibold — matches StatCard label pattern (was font-semibold=500) */}
+            <h3 className="text-sm font-semibold text-[var(--text-primary)] dark:text-white leading-tight">模型选择</h3>
+            <p className="text-xs text-[var(--text-muted)] leading-tight mt-0.5">选择和配置 AI 模型</p>
           </div>
         </div>
         <button
           onClick={() => setShowParams(!showParams)}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-neutral-600 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors duration-150"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-normal text-[var(--text-secondary)] border border-[var(--border-color)] bg-white dark:bg-neutral-900 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors duration-150"
         >
           {showParams ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
           {showParams ? '收起参数' : '调节参数'}
@@ -72,7 +72,7 @@ export function ModelSelector({ modelType, onModelChange, onParamsChange, classN
 
       <div className="mt-4 space-y-4">
         <div className="space-y-1.5">
-          <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 block">模型类型</label>
+          <label className="text-sm font-semibold text-[var(--text-secondary)] block">模型类型</label>
           <Select value={modelType} onChange={(v) => onModelChange(v as ModelType)}>
             {modelOptions.map((option) => (
               <option key={option.value} value={option.value}>
@@ -83,7 +83,7 @@ export function ModelSelector({ modelType, onModelChange, onParamsChange, classN
         </div>
 
         {showParams && (
-          <div className="space-y-4 pt-4 border-t border-neutral-200 dark:border-neutral-700">
+          <div className="space-y-4 pt-4 border-t border-[var(--border-color)]">
             {[
               { key: 'temperature', label: '温度 (Temperature)', min: 0, max: 1, step: 0.01, display: 'toFixed(2)', low: '0.0 (确定)', high: '1.0 (随机)' },
               { key: 'maxTokens',   label: '最大 Tokens',       min: 100, max: 4000, step: 100, display: '', low: '100', high: '4000' },
@@ -91,8 +91,8 @@ export function ModelSelector({ modelType, onModelChange, onParamsChange, classN
             ].map(({ key, label, min, max, step, display, low, high }) => (
               <div key={key} className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{label}</label>
-                  <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                  <label className="text-sm font-semibold text-[var(--text-secondary)]">{label}</label>
+                  <span className="text-xs text-[var(--text-muted)]">
                     {display === 'toFixed(2)' ? params[key as keyof typeof params]?.toFixed?.(2) : params[key as keyof typeof params]}
                   </span>
                 </div>
@@ -102,7 +102,7 @@ export function ModelSelector({ modelType, onModelChange, onParamsChange, classN
                   onChange={(value) => handleParamChange(key, value)}
                   className="w-full"
                 />
-                <div className="flex justify-between text-xs text-neutral-400 dark:text-neutral-500">
+                <div className="flex justify-between text-xs text-[var(--text-muted)]">
                   <span>{low}</span><span>{high}</span>
                 </div>
               </div>
@@ -115,8 +115,8 @@ export function ModelSelector({ modelType, onModelChange, onParamsChange, classN
               ].map(({ key, label, min, max, step }) => (
                 <div key={key} className="space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{label}</label>
-                    <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                    <label className="text-sm font-semibold text-[var(--text-secondary)]">{label}</label>
+                    <span className="text-xs text-[var(--text-muted)]">
                       {params[key as keyof typeof params]?.toFixed?.(2)}
                     </span>
                   </div>

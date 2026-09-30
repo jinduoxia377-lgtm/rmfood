@@ -42,7 +42,7 @@ export const HeaderPro: React.FC<HeaderProProps> = ({
   // Get generator label
   const getGeneratorLabel = (gen: GeneratorType | undefined): string => {
     switch (gen) {
-      case 'llm': return 'AI LLM'
+      case 'llm': return 'AI 大模型'
       case 'neural_network': return '神经网络'
       default: return '规则引擎'
     }
@@ -95,7 +95,7 @@ export const HeaderPro: React.FC<HeaderProProps> = ({
           {/* Generator status */}
           {generator && (
             <div className="flex items-center gap-2 px-3 py-2 bg-muted/60 rounded-xl border border-border">
-              <span className="text-caption text-muted-foreground font-medium">Generator:</span>
+              <span className="text-caption text-muted-foreground font-medium">生成引擎:</span>
               <Badge variant={getGeneratorColor(generator) as "default" | "secondary" | "destructive" | "outline" | "success" | "warning" | "info" | "danger" | "neutral" | "primary"} className="text-label-sm font-semibold">
                 {getGeneratorLabel(generator)}
               </Badge>

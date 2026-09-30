@@ -51,8 +51,8 @@ class AIChat {
 
     try {
       const response = await request.post('/ai/chat/stream', {
-        session_id: this.currentSessionId,
-        message: message,
+        question: message,
+        history: this.messages.slice(-6).map(m => ({ role: m.role, content: m.content })),
         stream: true
       }, { timeout: 30000 })
 
@@ -84,7 +84,6 @@ class AIChat {
         throw new Error(response.message || 'Chat failed')
       }
     } catch (error) {
-      console.log('[AIChat] Using local simulated reply')
       const reply = this.generateLocalReply(message)
       const structured = this.parseStructuredReply(reply)
 

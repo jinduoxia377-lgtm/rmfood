@@ -1,17 +1,16 @@
 /**
  * Launch Countdown — 数据配置
  *
- * 修改方式：
- *   - enabled: false  → 隐藏整个模块
- *   - baseDays       → 重新倒计时天数（新访客从该值开始）
- *   - title / subtitle / ctaLabel → 文案
+ * v2 修复（P0 真实数据原则）：
+ *   - 目标日期改为服务端固定锚点 anchorDate，全用户一致，不再随访客首次访问时间漂移
+ *   - 删除 baseDays（localStorage 漂移机制已废弃）
  */
 export const LAUNCH_CONFIG = {
   /** 是否启用，设为 false 后整个模块不渲染 */
   enabled: true,
 
-  /** 默认倒计时天数（仅首次访问时生效） */
-  baseDays: 35,
+  /** 固定上线日期锚点（ISO 格式，全用户统一） */
+  anchorDate: '2026-10-01T00:00:00+08:00',
 
   /** 主标题 */
   title: '正式版即将上线',

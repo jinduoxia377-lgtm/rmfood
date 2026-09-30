@@ -1,0 +1,37 @@
+<!-- 错误边界组件 -->
+<view class="error-boundary" wx:if="{{hasError}}">
+  <view class="error-container">
+    <!-- 错误图标 -->
+    <view class="error-icon">
+      <icon name="alert-circle" size="xl" color="#EF4444" />
+    </view>
+    
+    <!-- 错误标题 -->
+    <view class="error-title">{{errorTitle || '出错了'}}</view>
+    
+    <!-- 错误描述 -->
+    <view class="error-desc">{{errorDesc || '抱歉，发生了意外错误'}}</view>
+    
+    <!-- 错误详情（调试模式） -->
+    <view wx:if="{{showDetail}}" class="error-detail">
+      <text class="detail-text">{{errorMessage}}</text>
+    </view>
+    
+    <!-- 操作按钮 -->
+    <view class="error-actions">
+      <button class="btn btn-secondary" bindtap="handleRetry">
+        <icon name="refresh" size="sm" color="currentColor" />
+        <text>重试</text>
+      </button>
+      <button class="btn btn-primary" bindtap="handleReload">
+        <icon name="home" size="sm" color="#FFFFFF" />
+        <text>返回首页</text>
+      </button>
+    </view>
+    
+    <!-- 联系方式 -->
+    <view wx:if="{{showContact}}" class="error-contact">
+      <text class="contact-text">如问题持续，请联系客服</text>
+    </view>
+  </view>
+</view>

@@ -1,21 +1,25 @@
-<!-- 虚拟列表组件 -->
-<scroll-view 
-  class="virtual-list" 
-  scroll-y 
-  scroll-into-view="{{scrollIntoView}}"
-  bindscroll="onScroll"
-  enhanced
-  bounces="{{false}}"
->
-  <view class="virtual-list__placeholder" style="height: {{totalHeight}}rpx;">
+<!--虚拟滚动列表-->
+<view class="virtual-list-container" style="height: {{containerHeight}}rpx;">
+  <view class="virtual-list-spacer" style="height: {{totalHeight}}rpx;">
     <view 
-      wx:for="{{renderedList}}" 
-      wx:key="index"
-      class="virtual-list__item"
-      style="transform: translateY({{item.offset}}rpx); height: {{item.height}}rpx;"
-      data-index="{{item.index}}"
+      wx:for="{{visibleItems}}" 
+      wx:key="id"
+      class="virtual-list-item"
+      style="height: {{itemHeight}}rpx;"
+      data-index="{{index}}"
+      bindtap="onItemTap"
     >
-      <slot name="item" data="{{item}}"></slot>
+      <slot name="item" data-item="{{item}}" data-index="{{index}}"></slot>
     </view>
   </view>
-</scroll-view>
+  
+  <!-- 加载中 -->
+  <view wx:if="{{showLoading}}" class="virtual-list-loading">
+    <text>加载中...</text>
+  </view>
+  
+  <!-- 空状态 -->
+  <view wx:if="{{showEmpty}}" class="virtual-list-empty">
+    <text>暂无数据</text>
+  </view>
+</view>

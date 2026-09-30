@@ -1,6 +1,6 @@
-﻿"""
+"""
 食品肽分析服务
-整合结构转换 + 性质计算 + 活性预测
+整合结构转换 + 性质计算 + 活性预测 + 安全性评估
 """
 
 from dataclasses import dataclass, field
@@ -10,8 +10,10 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# 导入核心转换器
-from app.services.peptide_analyzer.converter import PeptideConverter, SMILESResult
+# 导入核心组件
+from .converter import PeptideConverter, SMILESResult
+from .activity_predictor import get_activity_predictor, ActivityPredictor
+from .safety_predictor import get_safety_predictor, SafetyPredictor
 
 
 @dataclass
@@ -23,18 +25,53 @@ class FoodPeptideAnalysis:
     molecular_weight: float = 0.0
     isoelectric_point: float = 0.0
     hydrophobicity: float = 0.0
+    
+    # 活性预测结果
     ace_inhibition_score: float = 0.0
+    ace_confidence: float = 0.0
+    ace_is_active: bool = False
+    ace_motifs: List[str] = field(default_factory=list)
+    
     antioxidant_score: float = 0.0
+    antioxidant_confidence: float = 0.0
+    antioxidant_is_active: bool = False
+    antioxidant_motifs: List[str] = field(default_factory=list)
+    
     antimicrobial_score: float = 0.0
+    antimicrobial_confidence: float = 0.0
+    antimicrobial_is_active: bool = False
+    antimicrobial_motifs: List[str] = field(default_factory=list)
+    
+    dpp4_inhibition_score: float = 0.0
+    dpp4_confidence: float = 0.0
+    dpp4_is_active: bool = False
+    dpp4_motifs: List[str] = field(default_factory=list)
+    
+    # 安全性评估结果
     food_safety_score: float = 0.0
     is_allergen: bool = False
+    allergen_source: Optional[str] = None
+    allergen_evidence: str = ""
     is_toxic: bool = False
+    toxic_source: Optional[str] = None
+    toxic_evidence: str = ""
     digestibility: str = "unknown"
+    digestibility_reason: str = ""
+    peptic_resistance: bool = False
+    proteolytic_resistance: bool = False
+    overall_risk: str = "low"
+    warnings: List[str] = field(default_factory=list)
+    
+    # 口感预测
     bitterness_score: float = 0.0
     umami_potential: float = 0.0
+    
+    # 来源信息
     source_food: Optional[str] = None
     source_database: Optional[str] = None
     literature_refs: List[str] = field(default_factory=list)
+    
+    # 元数据
     analysis_timestamp: datetime = field(default_factory=datetime.utcnow)
     
     def to_dict(self) -> Dict[str, Any]:
@@ -43,38 +80,67 @@ class FoodPeptideAnalysis:
             "sequence": self.sequence,
             "smiles": self.smiles,
             "selfies": self.selfies,
-            "molecular_weight": self.molecular_weight,
-            "isoelectric_point": self.isoelectric_point,
-            "hydrophobicity": self.hydrophobicity,
+            "molecular_weight": round(self.molecular_weight, 2),
+            "isoelectric_point": round(self.isoelectric_point, 2),
+            "hydrophobicity": round(self.hydrophobicity, 4),
+            
             "ace_inhibition": {
-                "score": self.ace_inhibition_score,
-                "level": self._get_score_level(self.ace_inhibition_score)
+                "score": round(self.ace_inhibition_score, 4),
+                "level": self._get_score_level(self.ace_inhibition_score),
+                "confidence": round(self.ace_confidence, 4),
+                "is_active": self.ace_is_active,
+                "motifs": self.ace_motifs
             },
             "antioxidant": {
-                "score": self.antioxidant_score,
-                "level": self._get_score_level(self.antioxidant_score)
+                "score": round(self.antioxidant_score, 4),
+                "level": self._get_score_level(self.antioxidant_score),
+                "confidence": round(self.antioxidant_confidence, 4),
+                "is_active": self.antioxidant_is_active,
+                "motifs": self.antioxidant_motifs
             },
             "antimicrobial": {
-                "score": self.antimicrobial_score,
-                "level": self._get_score_level(self.antimicrobial_score)
+                "score": round(self.antimicrobial_score, 4),
+                "level": self._get_score_level(self.antimicrobial_score),
+                "confidence": round(self.antimicrobial_confidence, 4),
+                "is_active": self.antimicrobial_is_active,
+                "motifs": self.antimicrobial_motifs
             },
+            "dpp4_inhibition": {
+                "score": round(self.dpp4_inhibition_score, 4),
+                "level": self._get_score_level(self.dpp4_inhibition_score),
+                "confidence": round(self.dpp4_confidence, 4),
+                "is_active": self.dpp4_is_active,
+                "motifs": self.dpp4_motifs
+            },
+            
             "safety": {
-                "food_score": self.food_safety_score,
+                "food_score": round(self.food_safety_score, 2),
                 "is_allergen": self.is_allergen,
+                "allergen_source": self.allergen_source,
+                "allergen_evidence": self.allergen_evidence,
                 "is_toxic": self.is_toxic,
+                "toxic_source": self.toxic_source,
+                "toxic_evidence": self.toxic_evidence,
                 "digestibility": self.digestibility,
+                "digestibility_reason": self.digestibility_reason,
+                "peptic_resistance": self.peptic_resistance,
+                "proteolytic_resistance": self.proteolytic_resistance,
+                "overall_risk": self.overall_risk,
+                "warnings": self.warnings
             },
-            "food_safety_score": self.food_safety_score,
+            
             "taste": {
-                "bitterness": self.bitterness_score,
-                "umami": self.umami_potential,
+                "bitterness": round(self.bitterness_score, 4),
+                "umami": round(self.umami_potential, 4),
             },
+            
             "source": {
                 "food": self.source_food,
                 "database": self.source_database,
                 "references": self.literature_refs,
             },
-            "analysis_time": self.analysis_timestamp.isoformat(),
+            
+            "analysis_time": self.analysis_timestamp.isoformat() + "Z"
         }
     
     def _get_score_level(self, score: float) -> str:
@@ -86,6 +152,29 @@ class FoodPeptideAnalysis:
         elif score > 0:
             return "low"
         return "none"
+    
+    def get_activity_summary(self) -> str:
+        """获取活性摘要"""
+        activities = []
+        if self.ace_is_active:
+            activities.append(f"ACE抑制(score={self.ace_inhibition_score:.2f}, conf={self.ace_confidence:.2f})")
+        if self.antioxidant_is_active:
+            activities.append(f"抗氧化(score={self.antioxidant_score:.2f}, conf={self.antioxidant_confidence:.2f})")
+        if self.antimicrobial_is_active:
+            activities.append(f"抗菌(score={self.antimicrobial_score:.2f}, conf={self.antimicrobial_confidence:.2f})")
+        if self.dpp4_is_active:
+            activities.append(f"DPP-IV抑制(score={self.dpp4_inhibition_score:.2f}, conf={self.dpp4_confidence:.2f})")
+        return ", ".join(activities) if activities else "无显著活性预测"
+    
+    def get_safety_summary(self) -> str:
+        """获取安全性摘要"""
+        parts = [f"风险等级: {self.overall_risk}"]
+        if self.is_allergen:
+            parts.append(f"致敏: 是 (来源: {self.allergen_source})")
+        if self.is_toxic:
+            parts.append(f"毒性: 是 (来源: {self.toxic_source})")
+        parts.append(f"消化性: {self.digestibility}")
+        return "; ".join(parts)
 
 
 class FoodPeptideAnalyzer:
@@ -94,40 +183,25 @@ class FoodPeptideAnalyzer:
     
     整合：
     1. PeptideConverter (PepLink): 结构转换
-    2. 简化理化性质计算
-    3. 食品特性预测（占位实现，后续可集成真实模型）
+    2. ActivityPredictor: 活性预测
+    3. SafetyPredictor: 安全性评估
+    4. RDKit: 理化性质计算
     """
     
     # 常见末端修饰的分子量偏移（Da）
     _MOD_MW_OFFSETS = {
         "ACT": 42.0106,    # N端乙酰化
         "AMP": 43.0058,    # N端甲酰胺
-        "AMC": 72.0211,    # N端甲氧羰基
-        "Bz": 105.0319,    # N端苯甲酰
-        "Gln": 43.0058,    # N端谷氨酰胺（天然）
-        "Glu": 43.0058,    # N端谷氨酸（天然）
         "AMD": -17.0027,   # C端酰胺化
-        "OH": 17.0027,     # C端羟基化（天然）
-        "NH2": -17.0027,   # C端酰胺化（同AMD）
-        "KP": 42.0106,     # N端K乙酰化（侧链）
-        "QA": 42.0106,     # N端Q乙酰化
-        "CY": 42.0106,     # N端C乙酰化
-        "AM": 42.0106,     # N端A乙酰化
-        "AG": 42.0106,     # N端G乙酰化
-        "AK": 42.0106,     # N端K乙酰化
-        "AR": 42.0106,     # N端R乙酰化
-        "AS": 42.0106,     # N端S乙酰化
-        "AT": 42.0106,     # N端T乙酰化
-        "AV": 42.0106,     # N端V乙酰化
-        "AW": 42.0106,     # N端W乙酰化
-        "AY": 42.0106,     # N端Y乙酰化
-        "DBS": -2.0157,    # 二硫键形成（每条键）
-        "DIS": -2.0157,    # 二硫键（同DBS）
-        "SSB": -2.0157,    # 二硫键（同DBS）
+        "OH": 17.0027,     # C端羟基化
+        "NH2": -17.0027,   # C端酰胺化
     }
 
     def __init__(self):
         self.converter = PeptideConverter()
+        self.activity_predictor = get_activity_predictor()
+        self.safety_predictor = get_safety_predictor()
+        
         # 简化的疏水性表（Kyte-Doolittle）
         self._hydrophobicity = {
             'I': 4.5, 'V': 4.2, 'L': 3.8, 'F': 2.8, 'C': 2.5,
@@ -173,25 +247,55 @@ class FoodPeptideAnalyzer:
                 result.smiles = smiles_result.smiles
                 result.selfies = smiles_result.selfies
 
-            # Step 2: 理化性质估算（从 SMILES 精确计算分子量）
+            # Step 2: 理化性质计算
             props = self._calculate_properties(seq, smiles=result.smiles)
             result.molecular_weight = props['molecular_weight']
             result.hydrophobicity = props['hydrophobicity']
             
-            # Step 3: 活性预测（简化版，后续可替换为真实模型）
-            activities = await self._predict_activities(sequence.upper())
-            result.ace_inhibition_score = activities.get('ace_inhibition', 0.0)
-            result.antioxidant_score = activities.get('antioxidant', 0.0)
-            result.antimicrobial_score = activities.get('antimicrobial', 0.0)
+            # Step 3: 活性预测（使用真实特征工程模型）
+            activity_results = await self.activity_predictor.predict_all(seq)
             
-            # Step 4: 安全性评估
-            safety = self._assess_safety(sequence.upper())
-            result.is_allergen = safety['is_allergen']
-            result.is_toxic = safety['is_toxic']
-            result.digestibility = safety['digestibility']
+            result.ace_inhibition_score = activity_results['ace_inhibition']['score']
+            result.ace_confidence = activity_results['ace_inhibition']['confidence']
+            result.ace_is_active = activity_results['ace_inhibition']['is_active']
+            result.ace_motifs = activity_results['ace_inhibition']['motifs']
             
-            # Step 5: 食品特性预测
-            taste = self._predict_taste(sequence.upper())
+            result.antioxidant_score = activity_results['antioxidant']['score']
+            result.antioxidant_confidence = activity_results['antioxidant']['confidence']
+            result.antioxidant_is_active = activity_results['antioxidant']['is_active']
+            result.antioxidant_motifs = activity_results['antioxidant']['motifs']
+            
+            result.antimicrobial_score = activity_results['antimicrobial']['score']
+            result.antimicrobial_confidence = activity_results['antimicrobial']['confidence']
+            result.antimicrobial_is_active = activity_results['antimicrobial']['is_active']
+            result.antimicrobial_motifs = activity_results['antimicrobial']['motifs']
+            
+            result.dpp4_inhibition_score = activity_results['dpp4_inhibition']['score']
+            result.dpp4_confidence = activity_results['dpp4_inhibition']['confidence']
+            result.dpp4_is_active = activity_results['dpp4_inhibition']['is_active']
+            result.dpp4_motifs = activity_results['dpp4_inhibition']['motifs']
+            
+            # Step 4: 安全性评估（使用专业预测器）
+            safety_results = await self.safety_predictor.assess(seq)
+            
+            result.is_allergen = safety_results['is_allergen']
+            result.allergen_source = safety_results.get('allergen_source')
+            result.allergen_evidence = safety_results.get('allergen_evidence', '')
+            result.warnings.extend(safety_results.get('allergen_warnings', []))
+            
+            result.is_toxic = safety_results['is_toxic']
+            result.toxic_source = safety_results.get('toxic_source')
+            result.toxic_evidence = safety_results.get('toxic_evidence', '')
+            
+            result.digestibility = safety_results.get('digestibility', 'unknown')
+            result.digestibility_reason = safety_results.get('digestibility_reason', '')
+            result.peptic_resistance = safety_results.get('peptic_resistance', False)
+            result.proteolytic_resistance = safety_results.get('proteolytic_resistance', False)
+            result.overall_risk = safety_results.get('overall_risk', 'low')
+            result.warnings.extend(safety_results.get('compliance_warnings', []))
+            
+            # Step 5: 口感预测
+            taste = self._predict_taste(seq)
             result.bitterness_score = taste['bitterness']
             result.umami_potential = taste['umami']
             
@@ -201,7 +305,8 @@ class FoodPeptideAnalyzer:
             logger.info(
                 f"肽分析完成: {sequence}, "
                 f"分子量: {result.molecular_weight:.1f} Da, "
-                f"食品评分: {result.food_safety_score:.1f}/100"
+                f"食品评分: {result.food_safety_score:.1f}/100, "
+                f"风险: {result.overall_risk}"
             )
             
         except Exception as e:
@@ -220,7 +325,10 @@ class FoodPeptideAnalyzer:
 
         分子量优先从 SMILES 通过 RDKit 精确计算，
         疏水性基于 Kyte-Doolittle 表计算。
+        等电点（pI）通过 Henderson-Hasselbalch 方程近似计算。
         """
+        from collections import Counter
+
         # 从 SMILES 精确计算分子量
         mw = 0.0
         if smiles:
@@ -230,91 +338,96 @@ class FoodPeptideAnalyzer:
                 mol = Chem.MolFromSmiles(smiles)
                 if mol is not None:
                     mw = rdMolDescriptors.CalcExactMolWt(mol)
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning(f"RDKit分子量计算失败，使用简化计算: {e}")
+
+        # 如果RDKit计算失败，使用简化计算
+        if mw == 0.0:
+            avg_aa_weight = 110.0  # 平均残基分子量
+            mw = len(sequence) * avg_aa_weight + 18.0  # 加水
 
         # 疏水性计算
         hydro = sum(self._hydrophobicity.get(aa, 0.0) for aa in sequence) / max(len(sequence), 1)
 
+        # 等电点（pI）近似计算
+        # 使用 amino_acid_constants 中每个氨基酸的 pKa 值加权平均
+        pI = self._calculate_isoelectric_point(sequence)
+
         return {
             'molecular_weight': round(mw, 2),
             'hydrophobicity': round(hydro, 4),
+            'isoelectric_point': round(pI, 2),
         }
-    
-    async def _predict_activities(
-        self,
-        sequence: str
-    ) -> Dict[str, float]:
+
+    @staticmethod
+    def _calculate_isoelectric_point(sequence: str) -> float:
         """
-        活性预测（简化版）
-        
-        TODO: 后续集成 PeptideRanker 或 BPFun 模型
+        计算肽链的等电点（pI）。
+
+        使用简化方法：
+        - N端氨基 pKa ≈ 8.0，C端羧基 pKa ≈ 3.1
+        - 侧链可电离基团：Asp/Glu (pKa≈4.0), His (pKa≈6.0),
+          Cys (pKa≈8.3), Tyr (pKa≈10.0), Lys (pKa≈10.5), Arg (pKa≈12.5)
+        - 通过二分法找到净电荷为零时的 pH
         """
-        # 基于序列特征的启发式预测
-        score = 0.0
-        
-        # ACE抑制肽特征：富含 Pro, Lys, Arg, Phe, Tyr
-        ace_keywords = ['P', 'K', 'R', 'F', 'Y']
-        ace_count = sum(1 for aa in sequence if aa in ace_keywords)
-        ace_score = min(ace_count / len(sequence) * 100, 100) if sequence else 0
-        
-        # 抗氧化肽特征：富含 His, Tyr, Trp, Cys
-        antiox_keywords = ['H', 'Y', 'W', 'C']
-        antiox_count = sum(1 for aa in sequence if aa in antiox_keywords)
-        antiox_score = min(antiox_count / len(sequence) * 100, 100) if sequence else 0
-        
-        # 抗菌肽特征：富含 Arg, Lys, hydrophobic
-        amp_keywords = ['R', 'K', 'F', 'W', 'I', 'L', 'V']
-        amp_count = sum(1 for aa in sequence if aa in amp_keywords)
-        amp_score = min(amp_count / len(sequence) * 100, 100) if sequence else 0
-        
-        return {
-            'ace_inhibition': round(ace_score / 100, 4),
-            'antioxidant': round(antiox_score / 100, 4),
-            'antimicrobial': round(amp_score / 100, 4),
+        from collections import Counter
+        from rdkit import Chem
+        from rdkit.Chem import rdMolDescriptors
+
+        # 如果 RDKit 可用，直接用 SMILES 计算精确 pI
+        # 否则使用简化公式
+        pka_values = {
+            'NTERM': 8.0,
+            'CTERM': 3.1,
+            'D': 3.9, 'E': 4.3,   # 酸性侧链
+            'H': 6.0,              # 碱性侧链
+            'C': 8.3,              # 半胱氨酸
+            'Y': 10.1,             # 酪氨酸
+            'K': 10.5, 'R': 12.5,  # 强碱性侧链
         }
-    
-    def _assess_safety(
-        self,
-        sequence: str
-    ) -> Dict[str, Any]:
-        """
-        安全性评估（简化版）
-        
-        TODO: 后续集成 ToxinPred 和 AllerTOP
-        """
-        # 基于已知过敏原序列的简单检测
-        allergen_patterns = ['QQ', 'EE', 'KK']  # 示例模式
-        is_allergen = any(p in sequence for p in allergen_patterns)
-        
-        # 毒性检测（简化）
-        toxic_patterns = ['GPPP', 'AAAG']  # 示例模式
-        is_toxic = any(p in sequence for p in toxic_patterns)
-        
-        # 消化稳定性估算
-        # 富含 Pro 的肽通常更稳定
-        pro_count = sequence.count('P')
-        if pro_count > len(sequence) * 0.3:
-            digestibility = "high"
-        elif pro_count > len(sequence) * 0.1:
-            digestibility = "medium"
-        else:
-            digestibility = "low"
-        
-        return {
-            'is_allergen': is_allergen,
-            'is_toxic': is_toxic,
-            'digestibility': digestibility,
-        }
+
+        # 统计各可电离基团数量
+        counts = Counter(sequence.upper())
+        n_term_count = 1
+        c_term_count = 1
+
+        # 收集所有 pKa 值
+        pkas = []
+        for aa, count in counts.items():
+            if aa in pka_values:
+                pkas.extend([pka_values[aa]] * count)
+        # N端和C端
+        pkas.append(pka_values['NTERM'] * n_term_count)
+        pkas.append(pka_values['CTERM'] * c_term_count)
+
+        if not pkas:
+            return 6.0  # 默认中性
+
+        # 二分法计算等电点
+        def net_charge(pH: float) -> float:
+            charge = 0.0
+            for pka in pkas:
+                if pka >= 7.0:  # 碱性基团
+                    charge += 1.0 / (1.0 + 10.0 ** (pH - pka))
+                else:  # 酸性基团
+                    charge -= 1.0 / (1.0 + 10.0 ** (pka - pH))
+            return charge
+
+        lo, hi = 1.0, 14.0
+        for _ in range(50):  # 足够收敛
+            mid = (lo + hi) / 2.0
+            if net_charge(mid) > 0:
+                lo = mid
+            else:
+                hi = mid
+        return (lo + hi) / 2.0
     
     def _predict_taste(
         self,
         sequence: str
     ) -> Dict[str, float]:
         """
-         taste 预测（简化版）
-        
-        TODO: 后续集成 taste 预测模型
+        口感预测
         """
         # 苦味预测：富含 hydrophobic 氨基酸
         bitter_aa = {'F', 'W', 'Y', 'L', 'I', 'V', 'M'}
@@ -348,16 +461,13 @@ class FoodPeptideAnalyzer:
         activity_score = (
             result.ace_inhibition_score * 0.4 +
             result.antioxidant_score * 0.3 +
-            result.antimicrobial_score * 0.3
+            result.antimicrobial_score * 0.3 +
+            result.dpp4_inhibition_score * 0.1
         ) * 100
         
         # 安全性得分
-        if result.is_toxic:
-            safety_score = 0.0
-        elif result.is_allergen:
-            safety_score = 50.0
-        else:
-            safety_score = 100.0
+        risk_scores = {'low': 100, 'medium': 60, 'high': 20}
+        safety_score = risk_scores.get(result.overall_risk, 50)
         
         # 苦味惩罚
         taste_score = max(0, 100 - result.bitterness_score * 100)

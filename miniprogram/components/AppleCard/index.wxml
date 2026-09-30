@@ -1,0 +1,25 @@
+<!-- Apple Card 卡片组件 -->
+<view 
+  class="apple-card {{className}} {{featured ? 'apple-card-featured' : ''}}"
+  bindtap="onTap"
+>
+  <!-- 头部 -->
+  <view wx:if="{{header || $slots.header}}" class="apple-card-header">
+    <slot name="header"></slot>
+    <view wx:if="{{title}}" class="apple-card-title-wrap">
+      <text class="apple-card-title">{{title}}</text>
+      <text wx:if="{{subtitle}}" class="apple-card-subtitle">{{subtitle}}</text>
+    </view>
+  </view>
+  
+  <!-- 内容 -->
+  <view class="apple-card-content">
+    <slot></slot>
+  </view>
+  
+  <!-- 底部 -->
+  <view wx:if="{{footer}}" class="apple-card-footer">
+    <slot name="footer"></slot>
+    <text wx:if="{{footerText}}" class="apple-card-footer-text">{{footerText}}</text>
+  </view>
+</view>

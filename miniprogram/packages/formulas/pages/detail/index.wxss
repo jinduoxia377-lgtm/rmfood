@@ -1,201 +1,124 @@
-/* 配方详情页样式 */
-.page-container {
+/* packages/formulas/pages/detail/index.wxss */
+.detail-container {
   min-height: 100vh;
-  background-color: var(--color-bg-primary);
+  background: #F2F2F7;
+  padding-bottom: 40rpx;
 }
 
-.content-scroll {
-  height: calc(100vh - 160rpx);
+.detail-header {
+  background: #FFFFFF;
+  padding: 40rpx 32rpx;
 }
 
-/* 配方头部卡片 */
-.formula-header-card {
-  position: relative;
-  margin: var(--space-3);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  box-shadow: var(--shadow-lg);
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
 }
 
-.formula-cover {
-  width: 100%;
-  height: 400rpx;
+.name {
   display: block;
+  font-size: 44rpx;
+  font-weight: 700;
+  color: #1D1D1F;
+  flex: 1;
+  margin-right: 16rpx;
 }
 
-.formula-score-badge {
-  position: absolute;
-  top: var(--space-3);
-  right: var(--space-3);
+.code {
+  display: block;
+  font-size: 24rpx;
+  color: #8E8E93;
+  margin-top: 8rpx;
+  white-space: nowrap;
 }
 
-/* 信息卡片 */
-.info-card {
-  margin: var(--space-3);
-  padding: var(--space-4);
+.status {
+  font-size: 24rpx;
+  color: #8E8E93;
+  background: #F2F2F7;
+  padding: 4rpx 12rpx;
+  border-radius: 8rpx;
+  white-space: nowrap;
 }
 
-.formula-name {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-bold);
-  color: var(--color-text-primary);
-  margin-bottom: var(--space-2);
+.detail-section {
+  background: #FFFFFF;
+  margin: 16rpx 24rpx;
+  padding: 32rpx;
+  border-radius: 16rpx;
 }
 
-.formula-desc {
-  font-size: var(--font-size-base);
-  color: var(--color-text-secondary);
-  line-height: var(--line-height-relaxed);
-  margin-bottom: var(--space-3);
-}
-
-.tags-wrap {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-}
-
-/* 表格样式 */
 .section-title {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--font-size-md);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text-primary);
-  margin-bottom: var(--space-3);
+  display: block;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #1D1D1F;
+  margin-bottom: 16rpx;
 }
 
-.ingredients-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.table-header, .table-row {
-  display: grid;
-  grid-template-columns: 2fr 1fr 2fr;
-  padding: var(--space-3) 0;
-  border-bottom: 1rpx solid var(--color-border);
-}
-
-.table-header {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text-muted);
-  border-bottom: 2rpx solid var(--color-border);
-}
-
-.table-row.even {
-  background-color: var(--color-bg-tertiary);
-}
-
-.col-name, .col-amount, .col-latin {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-primary);
-}
-
-.col-latin {
-  font-style: italic;
-  color: var(--color-text-muted);
-}
-
-/* 内容区域 */
-.sop-content,
-.usage-content,
-.mechanism-content,
-.monitoring-content {
-  font-size: var(--font-size-base);
-  color: var(--color-text-secondary);
-  line-height: var(--line-height-relaxed);
-}
-
-.indications-content {
+.tags {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2);
+  gap: 12rpx;
 }
 
-/* 禁忌区域 */
-.warning-card {
-  border-left: 4rpx solid var(--color-warning);
+.tag {
+  background: #E8F5E9;
+  color: #2E7D32;
+  font-size: 24rpx;
+  padding: 8rpx 16rpx;
+  border-radius: 8rpx;
 }
 
-.contraindications-content {
+.composition {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: 16rpx;
 }
 
-.contraindication-item {
+.ingredient {
   display: flex;
-  align-items: flex-start;
-  gap: var(--space-2);
-  padding: var(--space-3);
-  background-color: rgba(239, 68, 68, 0.05);
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
-}
-
-/* 元数据卡片 */
-.meta-card {
-  margin: var(--space-3);
-  padding: var(--space-3) var(--space-4);
-}
-
-.meta-row {
-  display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-2) 0;
+  padding: 16rpx 0;
+  border-bottom: 0.5rpx solid #F2F2F7;
 }
 
-.meta-label {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-muted);
+.ingredient:last-child {
+  border-bottom: none;
 }
 
-.meta-value {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
-  margin-left: auto;
+.ingredient .name {
+  font-size: 28rpx;
+  color: #1D1D1F;
+  font-weight: 500;
 }
 
-/* 底部间距 */
-.bottom-spacing {
-  height: calc(160rpx + env(safe-area-inset-bottom));
+.ingredient .weight {
+  font-size: 26rpx;
+  color: #8E8E93;
 }
 
-/* 底部操作栏 */
-.bottom-bar {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  display: flex;
-  padding: var(--space-3) var(--space-4);
-  background-color: var(--color-bg-secondary);
-  box-shadow: var(--shadow-lg);
-  gap: var(--space-3);
-  z-index: var(--z-index-fixed);
+.ingredient .prep {
+  font-size: 24rpx;
+  color: #007AFF;
+  margin-left: 16rpx;
 }
 
-/* Toast组件 */
-.toast {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: rgba(0, 0, 0, 0.75);
-  color: var(--color-text-white);
-  padding: var(--space-3) var(--space-5);
-  border-radius: var(--radius-lg);
-  font-size: var(--font-size-base);
-  z-index: var(--z-index-toast);
-  animation: fadeIn 0.2s ease;
+.method, .dosage, .storage {
+  font-size: 28rpx;
+  color: #3A3A3C;
+  line-height: 1.6;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
-  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+.shelf-life {
+  font-size: 28rpx;
+  color: #3A3A3C;
+}
+
+.ai-summary {
+  font-size: 26rpx;
+  color: #6E6E73;
+  line-height: 1.6;
 }

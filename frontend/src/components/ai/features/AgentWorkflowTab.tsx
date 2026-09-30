@@ -14,17 +14,14 @@
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
-  Bot, Send, Sparkles, CheckCircle, Brain, FlaskConical, FileText,
-  Search, Microscope, BookOpen, Zap, Loader2, Circle, CheckCircle2,
-  XCircle, Clock, RefreshCw, Trash2, ChevronRight, Activity, Wifi, WifiOff,
+  Bot, Send, Sparkles, Brain, FlaskConical, FileText,
+  Loader2, Circle, CheckCircle2, XCircle, Activity, Trash2,
 } from 'lucide-react';
-import { AgentMessageList, ToolCallDisplay, StageProgress } from '@/components/ai/shared';
+import { AgentMessageList, ToolCallDisplay } from '@/components/ai/shared';
 import { WorkflowNodeVisualizer } from './components/pro/WorkflowNodeVisualizer';
 import { useUnifiedAgent } from './hooks/useUnifiedAgent';
 import { useAgentSmartRouter } from './hooks/useAgentSmartRouter';
-import { getWaterfallEmitter, waterfallEvents } from './utils/waterfall';
 import { tokenEstimator } from './utils/eventSourcing';
-import { getLockStatus } from './utils/compactionLock';
 import { logger } from '@/utils/safeLogger';
 
 // ── 默认工作流模板 ──────────────────────────────────────────
@@ -97,8 +94,13 @@ export function AgentWorkflowTab() {
     clearMessages,
   } = useUnifiedAgent({ initialWorkflowType: 'formula_design' });
 
-  // 根据输入预览推荐模式
+  // 根据输入预览推荐模式，点击可切换工作流类型
   const recommendedRoute = previewMode(input) === 'workflow' ? route(input) : null;
+  const handleRecommendedRouteClick = useCallback(() => {
+    if (recommendedRoute?.workflowType) {
+      setWorkflowType(recommendedRoute.workflowType);
+    }
+  }, [recommendedRoute, setWorkflowType]);
 
   // Token 比例
   const tokenRatio = tokenCount / 128000;
@@ -122,9 +124,9 @@ export function AgentWorkflowTab() {
   }, [messages, tools, stages]);
 
   // 获取模板信息
-  const selectedTemplate: { label?: string; name?: string; desc?: string; description?: string } | undefined = DEFAULT_WORKFLOW_TEMPLATES.find((t) => t.id === workflowType)
-    || ((workflowTemplates as unknown as { find: (fn: (t: any) => boolean) => any })?.find((t: any) => t.id === workflowType))
-    || DEFAULT_WORKFLOW_TEMPLATES[0];
+  const selectedTemplate = DEFAULT_WORKFLOW_TEMPLATES.find((t) => t.id === workflowType)
+    ?? workflowTemplates.find((t) => t.id === workflowType)
+    ?? DEFAULT_WORKFLOW_TEMPLATES[0];
 
   // 清空对话
   const handleClear = useCallback(() => {
@@ -133,7 +135,7 @@ export function AgentWorkflowTab() {
   }, [clearMessages]);
 
   return (
-    <div className="flex flex-col h-full bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800">
+    <div className="flex flex-col h-full bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800" data-testid="agent-workflow-tab">
       {/* Header */}
       <div className="flex items-center gap-4 px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white">
@@ -151,9 +153,13 @@ export function AgentWorkflowTab() {
           </p>
         </div>
 
-        {/* 智能模式指示器 */}
+        {/* 智能模式指示器 — 可点击切换 */}
         {recommendedRoute && (
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800">
+          <button
+            onClick={handleRecommendedRouteClick}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800 hover:bg-violet-100 dark:hover:bg-violet-900/40 transition-colors cursor-pointer"
+            title="点击切换到此工作流模式"
+          >
             <Brain className="w-3.5 h-3.5 text-violet-600 dark:text-violet-400" />
             <span className="text-xs text-violet-700 dark:text-violet-300">
               {recommendedRoute.workflowType === 'formula_design' && '配方设计'}
@@ -162,14 +168,14 @@ export function AgentWorkflowTab() {
               {recommendedRoute.workflowType === 'ingredient_lookup' && '原料查询'}
               {recommendedRoute.workflowType === 'full_pipeline' && '全流程'}
             </span>
-          </div>
+          </button>
         )}
 
         {/* 统计信息 */}
         <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
           {executedCount > 0 && (
             <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-700">
-              <CheckCircle size={12} />
+              <CheckCircle2 size={12} />
               <span>已执行 {executedCount} 次</span>
             </div>
           )}
@@ -177,6 +183,7 @@ export function AgentWorkflowTab() {
             onClick={() => setShowCompactionInfo(!showCompactionInfo)}
             className="flex items-center gap-1.5 px-2 py-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
             title="查看 Token 使用情况"
+            data-testid="token-indicator"
           >
             <Activity size={12} />
             <span>{tokenCount.toLocaleString()} tokens</span>
@@ -264,7 +271,7 @@ export function AgentWorkflowTab() {
             )}
           </div>
         ) : (
-          <AgentMessageList messages={messages} isRunning={isRunning} executedCount={executedCount} />
+          <AgentMessageList messages={messages} isRunning={isRunning} executedCount={executedCount} data-testid="message-list" />
         )}
 
         {/* 当前 Turn 详情 */}
@@ -316,6 +323,7 @@ export function AgentWorkflowTab() {
             rows={2}
             className="flex-1 resize-none rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all"
             disabled={isRunning}
+            data-testid="agent-input"
           />
           <button
             onClick={() => sendMessage(input.trim())}

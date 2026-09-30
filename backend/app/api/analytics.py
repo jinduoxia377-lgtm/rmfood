@@ -568,7 +568,7 @@ async def export_data(
                 data_to_export = result
         
         if not data_to_export:
-            raise HTTPException(status_code=400, detail="Please provide data to export or a report ID")
+            raise HTTPException(status_code=400, detail="请提供要导出的数据或报告编号")
         
         # Execute export
         export_result = await service.export_data(
@@ -656,10 +656,10 @@ async def custom_aggregation(
         filters = request.get("filters", {})
 
         if not entity:
-            raise HTTPException(status_code=400, detail="Entity must be specified (entity)")
+            raise HTTPException(status_code=400, detail="必须指定实体（entity）")
 
         if entity not in ["formulas", "experiments", "users", "ingredients"]:
-            raise HTTPException(status_code=400, detail=f"Unsupported entity: {entity}")
+            raise HTTPException(status_code=400, detail=f"不支持的实体类型：{entity}")
 
         # ── Identifier whitelist validation ──────────────────────────
         # Column names allowed per entity — prevents SQL injection via

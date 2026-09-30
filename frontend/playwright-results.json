@@ -4,9 +4,6 @@
       "C:\\nvm4w\\nodejs\\node.exe",
       "D:\\RMFOODFP\\frontend\\node_modules\\@playwright\\test\\cli.js",
       "test",
-      "--config=playwright.config.ts",
-      "--grep",
-      "dashboard",
       "--list"
     ],
     "configFile": "D:\\RMFOODFP\\frontend\\playwright.config.ts",
@@ -108,7 +105,7 @@
     "tags": [],
     "updateSnapshots": "missing",
     "updateSourceMethod": "patch",
-    "version": "1.62.1",
+    "version": "1.61.1",
     "workers": 2,
     "webServer": {
       "command": "npm run dev",
@@ -117,18 +114,3346 @@
       "timeout": 120000
     }
   },
-  "suites": [],
-  "errors": [
+  "suites": [
     {
-      "message": "Error: No tests found",
-      "stack": "Error: No tests found"
+      "title": "agent-workflow.e2e.test.ts",
+      "file": "agent-workflow.e2e.test.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Agent 工作流 E2E 测试",
+          "file": "agent-workflow.e2e.test.ts",
+          "line": 53,
+          "column": 6,
+          "specs": [
+            {
+              "title": "应渲染 Agent Workflow Tab",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82a91e63b80d50607363-cbd048bc32fd040e61df",
+              "file": "agent-workflow.e2e.test.ts",
+              "line": 58,
+              "column": 3
+            },
+            {
+              "title": "应显示快捷提示按钮",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82a91e63b80d50607363-ba508515e8c7e4eabeb4",
+              "file": "agent-workflow.e2e.test.ts",
+              "line": 73,
+              "column": 3
+            },
+            {
+              "title": "发送消息后应显示 Turn 状态",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82a91e63b80d50607363-8d1bb4c6ee01b1848a30",
+              "file": "agent-workflow.e2e.test.ts",
+              "line": 78,
+              "column": 3
+            },
+            {
+              "title": "应显示 Token 计数器",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82a91e63b80d50607363-b3acb2762c931fb5f69c",
+              "file": "agent-workflow.e2e.test.ts",
+              "line": 133,
+              "column": 3
+            },
+            {
+              "title": "Token 指示器应显示进度条",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82a91e63b80d50607363-f527e3c6e337c3f35e8c",
+              "file": "agent-workflow.e2e.test.ts",
+              "line": 138,
+              "column": 3
+            },
+            {
+              "title": "清空对话应清除所有消息",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82a91e63b80d50607363-98b55b02bc72da375a00",
+              "file": "agent-workflow.e2e.test.ts",
+              "line": 147,
+              "column": 3
+            },
+            {
+              "title": "应显示工作流节点可视化",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82a91e63b80d50607363-49da34f781988183883f",
+              "file": "agent-workflow.e2e.test.ts",
+              "line": 155,
+              "column": 3
+            },
+            {
+              "title": "选择快捷提示应填充输入框",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82a91e63b80d50607363-9127128412467e81e6ad",
+              "file": "agent-workflow.e2e.test.ts",
+              "line": 164,
+              "column": 3
+            },
+            {
+              "title": "应渲染 Agent Workflow Tab",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82a91e63b80d50607363-7ba2c1c6a34c09ef1252",
+              "file": "agent-workflow.e2e.test.ts",
+              "line": 58,
+              "column": 3
+            },
+            {
+              "title": "应显示快捷提示按钮",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82a91e63b80d50607363-1ab8ab66ec0bb62d45ab",
+              "file": "agent-workflow.e2e.test.ts",
+              "line": 73,
+              "column": 3
+            },
+            {
+              "title": "发送消息后应显示 Turn 状态",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82a91e63b80d50607363-c3a229f055ce98f05033",
+              "file": "agent-workflow.e2e.test.ts",
+              "line": 78,
+              "column": 3
+            },
+            {
+              "title": "应显示 Token 计数器",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82a91e63b80d50607363-a27260bb359f3caf516c",
+              "file": "agent-workflow.e2e.test.ts",
+              "line": 133,
+              "column": 3
+            },
+            {
+              "title": "Token 指示器应显示进度条",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82a91e63b80d50607363-6938d009dd28f42540e7",
+              "file": "agent-workflow.e2e.test.ts",
+              "line": 138,
+              "column": 3
+            },
+            {
+              "title": "清空对话应清除所有消息",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82a91e63b80d50607363-f452feacd303d2f2ebfd",
+              "file": "agent-workflow.e2e.test.ts",
+              "line": 147,
+              "column": 3
+            },
+            {
+              "title": "应显示工作流节点可视化",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82a91e63b80d50607363-d43c11ce4961fc148535",
+              "file": "agent-workflow.e2e.test.ts",
+              "line": 155,
+              "column": 3
+            },
+            {
+              "title": "选择快捷提示应填充输入框",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82a91e63b80d50607363-70097d291d9223510309",
+              "file": "agent-workflow.e2e.test.ts",
+              "line": 164,
+              "column": 3
+            },
+            {
+              "title": "应渲染 Agent Workflow Tab",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82a91e63b80d50607363-79bc3c35eaac52c33496",
+              "file": "agent-workflow.e2e.test.ts",
+              "line": 58,
+              "column": 3
+            },
+            {
+              "title": "应显示快捷提示按钮",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82a91e63b80d50607363-6db51157e2f124dd2310",
+              "file": "agent-workflow.e2e.test.ts",
+              "line": 73,
+              "column": 3
+            },
+            {
+              "title": "发送消息后应显示 Turn 状态",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82a91e63b80d50607363-04533f43d1cb9b6edefc",
+              "file": "agent-workflow.e2e.test.ts",
+              "line": 78,
+              "column": 3
+            },
+            {
+              "title": "应显示 Token 计数器",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82a91e63b80d50607363-1c5256713f45d652517c",
+              "file": "agent-workflow.e2e.test.ts",
+              "line": 133,
+              "column": 3
+            },
+            {
+              "title": "Token 指示器应显示进度条",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82a91e63b80d50607363-a89c4d7cc1abe5215561",
+              "file": "agent-workflow.e2e.test.ts",
+              "line": 138,
+              "column": 3
+            },
+            {
+              "title": "清空对话应清除所有消息",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82a91e63b80d50607363-7bc53d8d704a0fcc7214",
+              "file": "agent-workflow.e2e.test.ts",
+              "line": 147,
+              "column": 3
+            },
+            {
+              "title": "应显示工作流节点可视化",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82a91e63b80d50607363-dda38282b2d3f5ab89da",
+              "file": "agent-workflow.e2e.test.ts",
+              "line": 155,
+              "column": 3
+            },
+            {
+              "title": "选择快捷提示应填充输入框",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82a91e63b80d50607363-8759cea28f5e97ddaafd",
+              "file": "agent-workflow.e2e.test.ts",
+              "line": 164,
+              "column": 3
+            },
+            {
+              "title": "应渲染 Agent Workflow Tab",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chromium",
+                  "projectName": "mobile-chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82a91e63b80d50607363-8c0ac1496caf9090104d",
+              "file": "agent-workflow.e2e.test.ts",
+              "line": 58,
+              "column": 3
+            },
+            {
+              "title": "应显示快捷提示按钮",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chromium",
+                  "projectName": "mobile-chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82a91e63b80d50607363-263fa91c8353cde57459",
+              "file": "agent-workflow.e2e.test.ts",
+              "line": 73,
+              "column": 3
+            },
+            {
+              "title": "发送消息后应显示 Turn 状态",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chromium",
+                  "projectName": "mobile-chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82a91e63b80d50607363-940627d0a727e60ddc68",
+              "file": "agent-workflow.e2e.test.ts",
+              "line": 78,
+              "column": 3
+            },
+            {
+              "title": "应显示 Token 计数器",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chromium",
+                  "projectName": "mobile-chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82a91e63b80d50607363-86ca742113829fe42af2",
+              "file": "agent-workflow.e2e.test.ts",
+              "line": 133,
+              "column": 3
+            },
+            {
+              "title": "Token 指示器应显示进度条",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chromium",
+                  "projectName": "mobile-chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82a91e63b80d50607363-98b2145040e58403a352",
+              "file": "agent-workflow.e2e.test.ts",
+              "line": 138,
+              "column": 3
+            },
+            {
+              "title": "清空对话应清除所有消息",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chromium",
+                  "projectName": "mobile-chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82a91e63b80d50607363-612e42699d0e1517f422",
+              "file": "agent-workflow.e2e.test.ts",
+              "line": 147,
+              "column": 3
+            },
+            {
+              "title": "应显示工作流节点可视化",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chromium",
+                  "projectName": "mobile-chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82a91e63b80d50607363-ecb630a70c691c4e1089",
+              "file": "agent-workflow.e2e.test.ts",
+              "line": 155,
+              "column": 3
+            },
+            {
+              "title": "选择快捷提示应填充输入框",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chromium",
+                  "projectName": "mobile-chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82a91e63b80d50607363-75ee407154013e3fc969",
+              "file": "agent-workflow.e2e.test.ts",
+              "line": 164,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "Agent 工作流 - 智能路由测试",
+          "file": "agent-workflow.e2e.test.ts",
+          "line": 175,
+          "column": 6,
+          "specs": [
+            {
+              "title": "输入\"配方\"应路由到配方设计模式",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82a91e63b80d50607363-ccaa30c8e827d2da8218",
+              "file": "agent-workflow.e2e.test.ts",
+              "line": 180,
+              "column": 3
+            },
+            {
+              "title": "输入\"合规检查\"应路由到合规检查模式",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82a91e63b80d50607363-1a1ce48ac0b530e3f481",
+              "file": "agent-workflow.e2e.test.ts",
+              "line": 190,
+              "column": 3
+            },
+            {
+              "title": "输入\"配方\"应路由到配方设计模式",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82a91e63b80d50607363-61d3a45db4fca98f5be2",
+              "file": "agent-workflow.e2e.test.ts",
+              "line": 180,
+              "column": 3
+            },
+            {
+              "title": "输入\"合规检查\"应路由到合规检查模式",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82a91e63b80d50607363-55f1d16c7014ebd28e78",
+              "file": "agent-workflow.e2e.test.ts",
+              "line": 190,
+              "column": 3
+            },
+            {
+              "title": "输入\"配方\"应路由到配方设计模式",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82a91e63b80d50607363-fef7beaf98e5ae0ee24e",
+              "file": "agent-workflow.e2e.test.ts",
+              "line": 180,
+              "column": 3
+            },
+            {
+              "title": "输入\"合规检查\"应路由到合规检查模式",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82a91e63b80d50607363-d99d8bd6c4667f5cb9f6",
+              "file": "agent-workflow.e2e.test.ts",
+              "line": 190,
+              "column": 3
+            },
+            {
+              "title": "输入\"配方\"应路由到配方设计模式",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chromium",
+                  "projectName": "mobile-chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82a91e63b80d50607363-e1dd2ec2b576574784e6",
+              "file": "agent-workflow.e2e.test.ts",
+              "line": 180,
+              "column": 3
+            },
+            {
+              "title": "输入\"合规检查\"应路由到合规检查模式",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chromium",
+                  "projectName": "mobile-chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82a91e63b80d50607363-c60b1c1b4a8a4f817149",
+              "file": "agent-workflow.e2e.test.ts",
+              "line": 190,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "Agent 工作流 - 错误处理测试",
+          "file": "agent-workflow.e2e.test.ts",
+          "line": 199,
+          "column": 6,
+          "specs": [
+            {
+              "title": "API 失败时应显示错误消息",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82a91e63b80d50607363-7d80eacdf44160c84c07",
+              "file": "agent-workflow.e2e.test.ts",
+              "line": 200,
+              "column": 3
+            },
+            {
+              "title": "网络超时时应显示超时提示",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82a91e63b80d50607363-d0206efd8ee45418ee6d",
+              "file": "agent-workflow.e2e.test.ts",
+              "line": 224,
+              "column": 3
+            },
+            {
+              "title": "API 失败时应显示错误消息",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82a91e63b80d50607363-14cf92e7e0baa16fd677",
+              "file": "agent-workflow.e2e.test.ts",
+              "line": 200,
+              "column": 3
+            },
+            {
+              "title": "网络超时时应显示超时提示",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82a91e63b80d50607363-939172eb9f20bdb1163c",
+              "file": "agent-workflow.e2e.test.ts",
+              "line": 224,
+              "column": 3
+            },
+            {
+              "title": "API 失败时应显示错误消息",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82a91e63b80d50607363-a9fc556fec54689066b1",
+              "file": "agent-workflow.e2e.test.ts",
+              "line": 200,
+              "column": 3
+            },
+            {
+              "title": "网络超时时应显示超时提示",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82a91e63b80d50607363-2b02361bc2b195170752",
+              "file": "agent-workflow.e2e.test.ts",
+              "line": 224,
+              "column": 3
+            },
+            {
+              "title": "API 失败时应显示错误消息",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chromium",
+                  "projectName": "mobile-chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82a91e63b80d50607363-620c53fb6b32d2532d21",
+              "file": "agent-workflow.e2e.test.ts",
+              "line": 200,
+              "column": 3
+            },
+            {
+              "title": "网络超时时应显示超时提示",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chromium",
+                  "projectName": "mobile-chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82a91e63b80d50607363-fb23f2ac51026615ca65",
+              "file": "agent-workflow.e2e.test.ts",
+              "line": 224,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "Agent 工作流 - 性能测试",
+          "file": "agent-workflow.e2e.test.ts",
+          "line": 236,
+          "column": 6,
+          "specs": [
+            {
+              "title": "首次加载应小于 2 秒",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82a91e63b80d50607363-a941542a2802caffaa56",
+              "file": "agent-workflow.e2e.test.ts",
+              "line": 237,
+              "column": 3
+            },
+            {
+              "title": "多次消息发送应保持流畅",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82a91e63b80d50607363-4750a16fb3974f45fc22",
+              "file": "agent-workflow.e2e.test.ts",
+              "line": 246,
+              "column": 3
+            },
+            {
+              "title": "首次加载应小于 2 秒",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82a91e63b80d50607363-81bbecae9611f5720c5c",
+              "file": "agent-workflow.e2e.test.ts",
+              "line": 237,
+              "column": 3
+            },
+            {
+              "title": "多次消息发送应保持流畅",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82a91e63b80d50607363-48e3d230135a83ec3c8e",
+              "file": "agent-workflow.e2e.test.ts",
+              "line": 246,
+              "column": 3
+            },
+            {
+              "title": "首次加载应小于 2 秒",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82a91e63b80d50607363-59b61d592194d9c9165d",
+              "file": "agent-workflow.e2e.test.ts",
+              "line": 237,
+              "column": 3
+            },
+            {
+              "title": "多次消息发送应保持流畅",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82a91e63b80d50607363-f3d17bf881e3bea6e861",
+              "file": "agent-workflow.e2e.test.ts",
+              "line": 246,
+              "column": 3
+            },
+            {
+              "title": "首次加载应小于 2 秒",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chromium",
+                  "projectName": "mobile-chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82a91e63b80d50607363-211ffaa9d67ae56259cf",
+              "file": "agent-workflow.e2e.test.ts",
+              "line": 237,
+              "column": 3
+            },
+            {
+              "title": "多次消息发送应保持流畅",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chromium",
+                  "projectName": "mobile-chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "82a91e63b80d50607363-0393377dba3ba16fd8eb",
+              "file": "agent-workflow.e2e.test.ts",
+              "line": 246,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "chat.comprehensive.e2e.test.ts",
+      "file": "chat.comprehensive.e2e.test.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "完整用户流程测试",
+          "file": "chat.comprehensive.e2e.test.ts",
+          "line": 3,
+          "column": 6,
+          "specs": [
+            {
+              "title": "完整流程: 登录 → 导航 → 发送消息 → 查看历史 → 退出",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-88d8897152b972fc27f2",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 4,
+              "column": 3
+            },
+            {
+              "title": "流程: 用户角色登录并使用AI助手",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-2614f6c9668c74abc2f4",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 23,
+              "column": 3
+            },
+            {
+              "title": "完整流程: 登录 → 导航 → 发送消息 → 查看历史 → 退出",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-9752fcc15c7f65c6f676",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 4,
+              "column": 3
+            },
+            {
+              "title": "流程: 用户角色登录并使用AI助手",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-5d4999a916835907378a",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 23,
+              "column": 3
+            },
+            {
+              "title": "完整流程: 登录 → 导航 → 发送消息 → 查看历史 → 退出",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-98a24cf4584fa73b1fa6",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 4,
+              "column": 3
+            },
+            {
+              "title": "流程: 用户角色登录并使用AI助手",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-cc5ec095ebb03f4d5b40",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 23,
+              "column": 3
+            },
+            {
+              "title": "完整流程: 登录 → 导航 → 发送消息 → 查看历史 → 退出",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chromium",
+                  "projectName": "mobile-chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-4dc3440e89b11954e76c",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 4,
+              "column": 3
+            },
+            {
+              "title": "流程: 用户角色登录并使用AI助手",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chromium",
+                  "projectName": "mobile-chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-61a4c680b9693fbac5de",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 23,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "50轮多轮对话测试",
+          "file": "chat.comprehensive.e2e.test.ts",
+          "line": 34,
+          "column": 6,
+          "specs": [
+            {
+              "title": "50轮连续对话测试",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-13229cc58dec92e611ac",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 35,
+              "column": 3
+            },
+            {
+              "title": "多轮上下文保持测试",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-e53a9f5eafb1ed812f75",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 58,
+              "column": 3
+            },
+            {
+              "title": "50轮连续对话测试",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-1e4e0314f6e89a842413",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 35,
+              "column": 3
+            },
+            {
+              "title": "多轮上下文保持测试",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-51b425f0aabc7047a943",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 58,
+              "column": 3
+            },
+            {
+              "title": "50轮连续对话测试",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-4edee0ac9379ce0678cf",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 35,
+              "column": 3
+            },
+            {
+              "title": "多轮上下文保持测试",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-4b2cb0d9fc860c2f92d2",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 58,
+              "column": 3
+            },
+            {
+              "title": "50轮连续对话测试",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chromium",
+                  "projectName": "mobile-chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-64162e2c00b2ab6efdd2",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 35,
+              "column": 3
+            },
+            {
+              "title": "多轮上下文保持测试",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chromium",
+                  "projectName": "mobile-chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-e013b489990abb3d32bd",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 58,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "错误场景和恢复测试",
+          "file": "chat.comprehensive.e2e.test.ts",
+          "line": 82,
+          "column": 6,
+          "specs": [
+            {
+              "title": "网络错误场景处理",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-bf104446561a31c6ca01",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 83,
+              "column": 3
+            },
+            {
+              "title": "超时错误处理",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-199a5e2953df37cb6785",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 103,
+              "column": 3
+            },
+            {
+              "title": "空消息输入验证",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-7c4a4b12c946dda4fe8d",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 119,
+              "column": 3
+            },
+            {
+              "title": "系统错误恢复后继续聊天",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-133db074f8d4c329cff1",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 137,
+              "column": 3
+            },
+            {
+              "title": "网络错误场景处理",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-080063db21df1b7db56c",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 83,
+              "column": 3
+            },
+            {
+              "title": "超时错误处理",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-9067a1e78f68b63f9c02",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 103,
+              "column": 3
+            },
+            {
+              "title": "空消息输入验证",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-e595155ca286ac672475",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 119,
+              "column": 3
+            },
+            {
+              "title": "系统错误恢复后继续聊天",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-2d5aba978fa34dace02f",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 137,
+              "column": 3
+            },
+            {
+              "title": "网络错误场景处理",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-4374e092525048b13754",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 83,
+              "column": 3
+            },
+            {
+              "title": "超时错误处理",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-5b22aba757517eebe01e",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 103,
+              "column": 3
+            },
+            {
+              "title": "空消息输入验证",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-4e2bb73ca8ce866f525e",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 119,
+              "column": 3
+            },
+            {
+              "title": "系统错误恢复后继续聊天",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-75f9e6024658b39d29cc",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 137,
+              "column": 3
+            },
+            {
+              "title": "网络错误场景处理",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chromium",
+                  "projectName": "mobile-chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-2f6228e79b4f133fe1d7",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 83,
+              "column": 3
+            },
+            {
+              "title": "超时错误处理",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chromium",
+                  "projectName": "mobile-chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-08cceeb0cb7a7918ab01",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 103,
+              "column": 3
+            },
+            {
+              "title": "空消息输入验证",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chromium",
+                  "projectName": "mobile-chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-7997546039d0ab934fc8",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 119,
+              "column": 3
+            },
+            {
+              "title": "系统错误恢复后继续聊天",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chromium",
+                  "projectName": "mobile-chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-5d67de17bea5b0ca7d5f",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 137,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "响应式布局测试",
+          "file": "chat.comprehensive.e2e.test.ts",
+          "line": 161,
+          "column": 6,
+          "specs": [
+            {
+              "title": "桌面端布局验证",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-7eb10875f91450a5c799",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 162,
+              "column": 3
+            },
+            {
+              "title": "平板端布局验证",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-31e1e447916572551ad8",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 170,
+              "column": 3
+            },
+            {
+              "title": "移动端布局验证",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-fffbddd9590f9506f1e6",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 178,
+              "column": 3
+            },
+            {
+              "title": "响应式侧边栏折叠",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-4654a05e17bcad0dfb4e",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 190,
+              "column": 3
+            },
+            {
+              "title": "移动端消息气泡自适应",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-3edccc52b893995a144d",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 201,
+              "column": 3
+            },
+            {
+              "title": "桌面端布局验证",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-a0651d4540ff2192f784",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 162,
+              "column": 3
+            },
+            {
+              "title": "平板端布局验证",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-8945de1f6167fd57d047",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 170,
+              "column": 3
+            },
+            {
+              "title": "移动端布局验证",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-32bc70d017debf1c2072",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 178,
+              "column": 3
+            },
+            {
+              "title": "响应式侧边栏折叠",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-ba1199548ccdfe1b89cd",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 190,
+              "column": 3
+            },
+            {
+              "title": "移动端消息气泡自适应",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-8008f5c1c309c4d730b2",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 201,
+              "column": 3
+            },
+            {
+              "title": "桌面端布局验证",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-391c30aa3bee72b0342e",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 162,
+              "column": 3
+            },
+            {
+              "title": "平板端布局验证",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-e7edf48c4636c6d008ad",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 170,
+              "column": 3
+            },
+            {
+              "title": "移动端布局验证",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-5fc38c16fd45b5d414fa",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 178,
+              "column": 3
+            },
+            {
+              "title": "响应式侧边栏折叠",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-a1673249528837587648",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 190,
+              "column": 3
+            },
+            {
+              "title": "移动端消息气泡自适应",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-d7f091deefb2b9f351ab",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 201,
+              "column": 3
+            },
+            {
+              "title": "桌面端布局验证",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chromium",
+                  "projectName": "mobile-chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-3fe124bc039174c7ede1",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 162,
+              "column": 3
+            },
+            {
+              "title": "平板端布局验证",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chromium",
+                  "projectName": "mobile-chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-1c0684a3b4ce1a7e61ae",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 170,
+              "column": 3
+            },
+            {
+              "title": "移动端布局验证",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chromium",
+                  "projectName": "mobile-chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-d3cf141671f66a02b34f",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 178,
+              "column": 3
+            },
+            {
+              "title": "响应式侧边栏折叠",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chromium",
+                  "projectName": "mobile-chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-db2d32afde26c8d203f0",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 190,
+              "column": 3
+            },
+            {
+              "title": "移动端消息气泡自适应",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chromium",
+                  "projectName": "mobile-chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-bd7287c0466881babf79",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 201,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "边界情况测试",
+          "file": "chat.comprehensive.e2e.test.ts",
+          "line": 214,
+          "column": 6,
+          "specs": [
+            {
+              "title": "超长消息处理",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-55e35123a72a42144559",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 215,
+              "column": 3
+            },
+            {
+              "title": "特殊字符处理",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-0860746fe406cae6fa3e",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 226,
+              "column": 3
+            },
+            {
+              "title": "连续快速发送消息",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-c5fa22cd7f95718c7f3c",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 237,
+              "column": 3
+            },
+            {
+              "title": "超长消息处理",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-90af4ba72c5fe7dc46d1",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 215,
+              "column": 3
+            },
+            {
+              "title": "特殊字符处理",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-d2c06d27063790a8080f",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 226,
+              "column": 3
+            },
+            {
+              "title": "连续快速发送消息",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-da4f1d1f008431d72a0a",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 237,
+              "column": 3
+            },
+            {
+              "title": "超长消息处理",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-3255bab18ffc66ba1daa",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 215,
+              "column": 3
+            },
+            {
+              "title": "特殊字符处理",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-e342067fca0665a942cb",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 226,
+              "column": 3
+            },
+            {
+              "title": "连续快速发送消息",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-4e5175f5d59af73dfbfa",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 237,
+              "column": 3
+            },
+            {
+              "title": "超长消息处理",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chromium",
+                  "projectName": "mobile-chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-f954ab5e0c779ee01b76",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 215,
+              "column": 3
+            },
+            {
+              "title": "特殊字符处理",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chromium",
+                  "projectName": "mobile-chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-8d4e415c498ac78742bc",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 226,
+              "column": 3
+            },
+            {
+              "title": "连续快速发送消息",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chromium",
+                  "projectName": "mobile-chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "446707025222de93ac63-014a7fed06517a14f0fb",
+              "file": "chat.comprehensive.e2e.test.ts",
+              "line": 237,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "chat.e2e.test.ts",
+      "file": "chat.e2e.test.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "AI Chat E2E - 基准测试流程",
+          "file": "chat.e2e.test.ts",
+          "line": 3,
+          "column": 6,
+          "specs": [
+            {
+              "title": "完整流程: 登录 → 打开 AI 页面 → 发送消息 → 验证响应",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "2baea69670ff0250346b-335403ee1070821e9dc4",
+              "file": "chat.e2e.test.ts",
+              "line": 4,
+              "column": 3
+            },
+            {
+              "title": "登录后应显示用户信息",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "2baea69670ff0250346b-d154256660f48595565e",
+              "file": "chat.e2e.test.ts",
+              "line": 18,
+              "column": 3
+            },
+            {
+              "title": "AI 聊天页面应包含输入框和发送按钮",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "2baea69670ff0250346b-a0db50e63f905a7b3e4a",
+              "file": "chat.e2e.test.ts",
+              "line": 23,
+              "column": 3
+            },
+            {
+              "title": "发送多条消息应正确显示对话历史",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "2baea69670ff0250346b-92c77cc2569f93ef371d",
+              "file": "chat.e2e.test.ts",
+              "line": 33,
+              "column": 3
+            },
+            {
+              "title": "流式响应应逐步显示内容",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "2baea69670ff0250346b-2a88f5cd914aa43a14d0",
+              "file": "chat.e2e.test.ts",
+              "line": 45,
+              "column": 3
+            },
+            {
+              "title": "完整流程: 登录 → 打开 AI 页面 → 发送消息 → 验证响应",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "2baea69670ff0250346b-ce413900073e330413ea",
+              "file": "chat.e2e.test.ts",
+              "line": 4,
+              "column": 3
+            },
+            {
+              "title": "登录后应显示用户信息",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "2baea69670ff0250346b-cd7a00f3ea751fb2e8d8",
+              "file": "chat.e2e.test.ts",
+              "line": 18,
+              "column": 3
+            },
+            {
+              "title": "AI 聊天页面应包含输入框和发送按钮",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "2baea69670ff0250346b-2b2a04e81fd544530199",
+              "file": "chat.e2e.test.ts",
+              "line": 23,
+              "column": 3
+            },
+            {
+              "title": "发送多条消息应正确显示对话历史",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "2baea69670ff0250346b-910dbb3eec91dc4832ce",
+              "file": "chat.e2e.test.ts",
+              "line": 33,
+              "column": 3
+            },
+            {
+              "title": "流式响应应逐步显示内容",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "2baea69670ff0250346b-844728876f9703446d47",
+              "file": "chat.e2e.test.ts",
+              "line": 45,
+              "column": 3
+            },
+            {
+              "title": "完整流程: 登录 → 打开 AI 页面 → 发送消息 → 验证响应",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "2baea69670ff0250346b-411882d906ccbbd568ce",
+              "file": "chat.e2e.test.ts",
+              "line": 4,
+              "column": 3
+            },
+            {
+              "title": "登录后应显示用户信息",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "2baea69670ff0250346b-b03bf951de745e373b44",
+              "file": "chat.e2e.test.ts",
+              "line": 18,
+              "column": 3
+            },
+            {
+              "title": "AI 聊天页面应包含输入框和发送按钮",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "2baea69670ff0250346b-72de8b08e846af33ec6e",
+              "file": "chat.e2e.test.ts",
+              "line": 23,
+              "column": 3
+            },
+            {
+              "title": "发送多条消息应正确显示对话历史",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "2baea69670ff0250346b-a5917239e2fdabdd9bd7",
+              "file": "chat.e2e.test.ts",
+              "line": 33,
+              "column": 3
+            },
+            {
+              "title": "流式响应应逐步显示内容",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "2baea69670ff0250346b-91418ddaf024bdd1c3b9",
+              "file": "chat.e2e.test.ts",
+              "line": 45,
+              "column": 3
+            },
+            {
+              "title": "完整流程: 登录 → 打开 AI 页面 → 发送消息 → 验证响应",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chromium",
+                  "projectName": "mobile-chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "2baea69670ff0250346b-32c0c0ada2f35598168e",
+              "file": "chat.e2e.test.ts",
+              "line": 4,
+              "column": 3
+            },
+            {
+              "title": "登录后应显示用户信息",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chromium",
+                  "projectName": "mobile-chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "2baea69670ff0250346b-78414a07d9ba13343ad7",
+              "file": "chat.e2e.test.ts",
+              "line": 18,
+              "column": 3
+            },
+            {
+              "title": "AI 聊天页面应包含输入框和发送按钮",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chromium",
+                  "projectName": "mobile-chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "2baea69670ff0250346b-7685bcf3c751a758d61a",
+              "file": "chat.e2e.test.ts",
+              "line": 23,
+              "column": 3
+            },
+            {
+              "title": "发送多条消息应正确显示对话历史",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chromium",
+                  "projectName": "mobile-chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "2baea69670ff0250346b-a75ac51dca179b324b09",
+              "file": "chat.e2e.test.ts",
+              "line": 33,
+              "column": 3
+            },
+            {
+              "title": "流式响应应逐步显示内容",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chromium",
+                  "projectName": "mobile-chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "2baea69670ff0250346b-8d71306282fcbb438cd6",
+              "file": "chat.e2e.test.ts",
+              "line": 45,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "视觉回归测试",
+          "file": "chat.e2e.test.ts",
+          "line": 61,
+          "column": 6,
+          "specs": [
+            {
+              "title": "聊天页面截图对比",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "2baea69670ff0250346b-c0190122a8ddf0d83f61",
+              "file": "chat.e2e.test.ts",
+              "line": 62,
+              "column": 3
+            },
+            {
+              "title": "发送消息后的页面状态",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "2baea69670ff0250346b-968e7d16ec55e8dde5d4",
+              "file": "chat.e2e.test.ts",
+              "line": 71,
+              "column": 3
+            },
+            {
+              "title": "聊天页面截图对比",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "2baea69670ff0250346b-9d64bf7748ddd0765427",
+              "file": "chat.e2e.test.ts",
+              "line": 62,
+              "column": 3
+            },
+            {
+              "title": "发送消息后的页面状态",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "2baea69670ff0250346b-059b0bc213d26dc3b690",
+              "file": "chat.e2e.test.ts",
+              "line": 71,
+              "column": 3
+            },
+            {
+              "title": "聊天页面截图对比",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "2baea69670ff0250346b-55dc11fafbd9076a1795",
+              "file": "chat.e2e.test.ts",
+              "line": 62,
+              "column": 3
+            },
+            {
+              "title": "发送消息后的页面状态",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "2baea69670ff0250346b-8fbb9e7532b6c2550562",
+              "file": "chat.e2e.test.ts",
+              "line": 71,
+              "column": 3
+            },
+            {
+              "title": "聊天页面截图对比",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chromium",
+                  "projectName": "mobile-chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "2baea69670ff0250346b-747de99655d1700c2768",
+              "file": "chat.e2e.test.ts",
+              "line": 62,
+              "column": 3
+            },
+            {
+              "title": "发送消息后的页面状态",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chromium",
+                  "projectName": "mobile-chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "2baea69670ff0250346b-12163547e76a764a166a",
+              "file": "chat.e2e.test.ts",
+              "line": 71,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "nav-diagnostic.e2e.test.ts",
+      "file": "nav-diagnostic.e2e.test.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "导航栏诊断测试",
+          "file": "nav-diagnostic.e2e.test.ts",
+          "line": 3,
+          "column": 6,
+          "specs": [
+            {
+              "title": "桌面端导航栏功能诊断",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "17585ff875a8c62c9bcf-523ab534d765949dcc03",
+              "file": "nav-diagnostic.e2e.test.ts",
+              "line": 4,
+              "column": 3
+            },
+            {
+              "title": "移动端导航栏功能诊断",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "17585ff875a8c62c9bcf-413d0da4f8bdfb59b522",
+              "file": "nav-diagnostic.e2e.test.ts",
+              "line": 95,
+              "column": 3
+            },
+            {
+              "title": "平板端导航栏功能诊断",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "17585ff875a8c62c9bcf-6182fd8f89929ef6b394",
+              "file": "nav-diagnostic.e2e.test.ts",
+              "line": 172,
+              "column": 3
+            },
+            {
+              "title": "桌面端导航栏功能诊断",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "17585ff875a8c62c9bcf-af96ea8fa9f662e323ac",
+              "file": "nav-diagnostic.e2e.test.ts",
+              "line": 4,
+              "column": 3
+            },
+            {
+              "title": "移动端导航栏功能诊断",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "17585ff875a8c62c9bcf-da2b6ca58b43e031692f",
+              "file": "nav-diagnostic.e2e.test.ts",
+              "line": 95,
+              "column": 3
+            },
+            {
+              "title": "平板端导航栏功能诊断",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox",
+                  "projectName": "firefox",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "17585ff875a8c62c9bcf-d72d93c7ed2ceb6bfd92",
+              "file": "nav-diagnostic.e2e.test.ts",
+              "line": 172,
+              "column": 3
+            },
+            {
+              "title": "桌面端导航栏功能诊断",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "17585ff875a8c62c9bcf-995acd362eb8dcf8887f",
+              "file": "nav-diagnostic.e2e.test.ts",
+              "line": 4,
+              "column": 3
+            },
+            {
+              "title": "移动端导航栏功能诊断",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "17585ff875a8c62c9bcf-1fdebf5f02095ab47881",
+              "file": "nav-diagnostic.e2e.test.ts",
+              "line": 95,
+              "column": 3
+            },
+            {
+              "title": "平板端导航栏功能诊断",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "webkit",
+                  "projectName": "webkit",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "17585ff875a8c62c9bcf-2801aa3be8707990ae25",
+              "file": "nav-diagnostic.e2e.test.ts",
+              "line": 172,
+              "column": 3
+            },
+            {
+              "title": "桌面端导航栏功能诊断",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chromium",
+                  "projectName": "mobile-chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "17585ff875a8c62c9bcf-1541b7189541b5a0b77e",
+              "file": "nav-diagnostic.e2e.test.ts",
+              "line": 4,
+              "column": 3
+            },
+            {
+              "title": "移动端导航栏功能诊断",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chromium",
+                  "projectName": "mobile-chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "17585ff875a8c62c9bcf-50f3dfdf4124a18716d6",
+              "file": "nav-diagnostic.e2e.test.ts",
+              "line": 95,
+              "column": 3
+            },
+            {
+              "title": "平板端导航栏功能诊断",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-chromium",
+                  "projectName": "mobile-chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "17585ff875a8c62c9bcf-264dc5f8497d7b2e30a8",
+              "file": "nav-diagnostic.e2e.test.ts",
+              "line": 172,
+              "column": 3
+            }
+          ]
+        }
+      ]
     }
   ],
+  "errors": [],
   "stats": {
-    "startTime": "2026-08-20T11:56:25.944Z",
-    "duration": 266.174,
+    "startTime": "2026-09-20T12:12:40.464Z",
+    "duration": 843.8319999999999,
     "expected": 0,
-    "skipped": 0,
+    "skipped": 160,
     "unexpected": 0,
     "flaky": 0
   }

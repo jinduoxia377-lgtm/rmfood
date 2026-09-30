@@ -9,10 +9,10 @@
  *
  * 配色体系与 MarkdownRenderer 保持一致
  */
-import React, { useState } from 'react'
+import React, { useState, useCallback } from 'react'
 import {
   Info, CheckCircle, AlertTriangle, FileText,
-  ChevronDown, ChevronUp,
+  ChevronDown, ChevronUp, Copy, Check,
 } from 'lucide-react'
 import type { CalloutData, CalloutVariant } from '../types'
 
@@ -75,6 +75,14 @@ function CalloutBlock({ data }: CalloutBlockProps) {
   }
   const { variant = 'info', title, content, details } = normalizedData
   const [showDetails, setShowDetails] = useState(false)
+  const [copied, setCopied] = useState(false)
+
+  const handleCopy = useCallback(() => {
+    navigator.clipboard.writeText(content).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    })
+  }, [content])
 
   const style = CALLOUT_STYLES[variant] || CALLOUT_STYLES.info
   const Icon = style.icon
@@ -84,8 +92,17 @@ function CalloutBlock({ data }: CalloutBlockProps) {
       <div className="flex items-start gap-2 px-3 py-2">
         <Icon className={`flex-shrink-0 w-4 h-4 mt-0.5 ${style.iconColor}`} />
         <div className="min-w-0 flex-1">
-          <div className={`text-xs font-semibold ${style.titleColor}`}>
-            {title || style.label}
+          <div className="flex items-center justify-between gap-2">
+            <div className={`text-xs font-semibold ${style.titleColor}`}>
+              {title || style.label}
+            </div>
+            <button
+              onClick={handleCopy}
+              className="flex-shrink-0 p-1 rounded hover:bg-white/20 transition-colors"
+              title="复制内容"
+            >
+              {copied ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3 opacity-50 hover:opacity-100" />}
+            </button>
           </div>
           <p className={`text-[11px] leading-relaxed mt-0.5 ${style.textColor}`}>
             {content}

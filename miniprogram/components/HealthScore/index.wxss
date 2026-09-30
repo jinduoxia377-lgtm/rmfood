@@ -5,15 +5,19 @@
   flex-direction: column;
 }
 
-.health-score-small {
+.health-score-xs {
+  width: 60rpx;
+}
+
+.health-score-sm {
   width: 80rpx;
 }
 
-.health-score-medium {
+.health-score-md {
   width: 120rpx;
 }
 
-.health-score-large {
+.health-score-lg {
   width: 160rpx;
 }
 

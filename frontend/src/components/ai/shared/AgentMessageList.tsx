@@ -11,12 +11,14 @@ interface AgentMessageListProps {
   messages: AgentMessage[];
   isRunning?: boolean;
   executedCount?: number;
+  'data-testid'?: string;
 }
 
 export function AgentMessageList({
   messages,
   isRunning = false,
   executedCount = 0,
+  'data-testid': dataTestId,
 }: AgentMessageListProps) {
   if (messages.length === 0 && !isRunning) {
     return (
@@ -29,10 +31,11 @@ export function AgentMessageList({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-testid={dataTestId}>
       {messages.map((msg) => (
         <div
           key={msg.id}
+          data-testid={msg.role === 'assistant' ? 'assistant-message' : 'user-message'}
           className={`flex items-start gap-3 ${
             msg.role === 'user' ? 'flex-row-reverse' : ''
           }`}

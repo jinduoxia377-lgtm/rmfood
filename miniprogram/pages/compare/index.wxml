@@ -1,7 +1,7 @@
 <!-- 对比页面 -->
 <view class="page-container">
   <!-- 顶部Header -->
-  <view class="header" style="padding-top: {{statusBarHeight}}px;">
+  <view class="header">
     <view class="header-content">
       <!-- 汉堡菜单 -->
       <view class="hamburger" bindtap="toggleMenu">
@@ -62,10 +62,10 @@
     <view class="compare-table card">
       <view class="table-header">
         <view class="th">对比维度</view>
-        <view class="th" style="color: {{productA.score >= productB.score ? '#4CAF50' : '#999'}};">
+        <view class="th" style="color: {{productA.score >= productB.score ? 'var(--color-success)' : 'var(--color-text-placeholder)'}};">
           {{productA.name}}
         </view>
-        <view class="th" style="color: {{productB.score >= productA.score ? '#4CAF50' : '#999'}};">
+        <view class="th" style="color: {{productB.score >= productA.score ? 'var(--color-success)' : 'var(--color-text-placeholder)'}};">
           {{productB.name}}
         </view>
       </view>

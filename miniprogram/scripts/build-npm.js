@@ -19,9 +19,6 @@ if (fs.existsSync(weuiSrc)) {
         fs.rmSync(weuiDest, { recursive: true });
     }
     fs.cpSync(weuiSrc, weuiDest, { recursive: true });
-    console.log('✅ 已复制 weui-wxss');
 } else {
-    console.log('⚠️ weui-wxss 未找到，请先运行 npm install');
 }
 
-console.log('✅ npm 构建完成');

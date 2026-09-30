@@ -403,8 +403,8 @@ class GeneticFormulaOptimizer:
     def __init__(self, config: Optional[GAConfig] = None, herb_knowledge=None):
         self.config = config or GAConfig()
         self._herb_knowledge = herb_knowledge        # HerbKnowledgePort 注入点
-        self._herbs = dict(_BUILTIN_HERBS)           # 内置兜底（向后兼容）
-        self._efficacy_index = dict(_EFFICACY_TO_HERBS)
+        self._herbs = {}                              # 优先从数据库加载
+        self._efficacy_index = {}
         self._herb_knowledge_loaded = False            # 标记是否已尝试加载 HerbKnowledgeService
 
     def _try_load_herb_knowledge(self) -> None:
@@ -447,48 +447,57 @@ class GeneticFormulaOptimizer:
         # 惰性尝试自动注入（解决启动时服务未就绪问题）
         try:
             from .herb_knowledge_service import get_global_herb_knowledge
+            from .bayesian_formula_optimizer import HerbParameter as _HerbParameter
             hk = get_global_herb_knowledge()
-            if hk is not None:
-                self._herb_knowledge = hk
-                all_herbs = hk.get_herbs()
-                if all_herbs:
-                    from .bayesian_formula_optimizer import HerbParameter
-                    new_herbs = {}
-                    new_index: dict = {}
-                    for herb_id, profile in all_herbs.items():
-                        new_herbs[herb_id] = HerbParameter(
-                            herb_id=profile.herb_id,
-                            name_cn=profile.name_cn,
-                            dosage_min=profile.dosage_min,
-                            dosage_max=profile.dosage_max,
-                            dosage_step=profile.dosage_step,
-                            efficacy_scores=profile.efficacy_scores,
-                            safety_index=profile.safety_index,
-                            cost_per_gram=profile.cost_per_gram,
-                            synergy_partners=profile.synergy_partners,
-                            antagonistic_pairs=profile.antagonistic_pairs,
-                        )
-                        for eff in profile.efficacy_scores:
-                            new_index.setdefault(eff, []).append(profile.herb_id)
-                    self._herbs = new_herbs
-                    self._efficacy_index = new_index
-                    logger.info(f"[GeneticOptimizer] 惰性加载 HerbKnowledgeService: {len(all_herbs)} 种药材")
-                    return
-        except Exception as e:
-            logger.debug("HerbKnowledgeService 加载失败，使用内置字典: %s", e)
+            if hk is None:
+                raise RuntimeError("[数据完整性] HerbKnowledgeService 未初始化，请先运行 init_ai_services()")
 
-        logger.debug("[GeneticOptimizer] HerbKnowledgeService 不可用，使用内置字典（21种药材）")
+            all_herbs = hk.get_herbs()
+            if not all_herbs or len(all_herbs) < 20:
+                raise RuntimeError(
+                    f"[数据完整性] 数据库药材不足: 实际 {len(all_herbs) if all_herbs else 0} 种, "
+                    f"最低要求 20 种。请运行: python -m app.services.recipe_generation_data_completer"
+                )
+
+            new_herbs = {}
+            new_index: dict = {}
+            for herb_id, profile in all_herbs.items():
+                new_herbs[herb_id] = _HerbParameter(
+                    herb_id=profile.herb_id,
+                    name_cn=profile.name_cn,
+                    dosage_min=profile.dosage_min,
+                    dosage_max=profile.dosage_max,
+                    dosage_step=profile.dosage_step,
+                    efficacy_scores=profile.efficacy_scores,
+                    safety_index=profile.safety_index,
+                    cost_per_gram=profile.cost_per_gram,
+                    synergy_partners=profile.synergy_partners,
+                    antagonistic_pairs=profile.antagonistic_pairs,
+                )
+                for eff in profile.efficacy_scores:
+                    new_index.setdefault(eff, []).append(profile.herb_id)
+            self._herbs = new_herbs
+            self._efficacy_index = new_index
+            logger.info(f"[GeneticOptimizer] ✅ 数据库加载成功: {len(all_herbs)} 种药材")
+            
+        except RuntimeError:
+            raise
+        except Exception as e:
+            logger.error(f"[数据完整性] 数据库加载失败: {e}")
+            raise
 
     def optimize(self, target_effects: List[str], exclude_herbs: Optional[set] = None,
                  _cancel_signal: Optional[threading.Event] = None,
                  progress_callback: Optional[callable] = None,
                  include_herbs: Optional[List[str]] = None,
-                 special_population: str = "adult") -> Tuple[List[Individual], List[Dict]]:
+                 special_population: str = "adult",
+                 count: int = 10) -> Tuple[List[Individual], List[Dict]]:
         """执行遗传算法优化，返回 (结果列表, 进化历史)
 
         Args:
             target_effects: 目标功效列表
             exclude_herbs: 可选，需要排除的药材集合
+            count: 返回的去重后 Top-N 候选数量（默认 10）
         """
         # 惰性加载 HerbKnowledgeService（解决注入链断裂问题）
         self._try_load_herb_knowledge()
@@ -563,7 +572,7 @@ class GeneticFormulaOptimizer:
                     "stop_reason": "cancelled",
                 })
                 # 院士级修复[P0]: 返回当前最优种群而非空列表，避免用户取消后数据丢失
-                return self._deduplicate(population[:10]), history
+                return self._deduplicate(population[:count]), history
             new_population = []
 
             # 精英保留
@@ -694,7 +703,7 @@ class GeneticFormulaOptimizer:
             history[-1]["stop_reason"] = stop_reason
 
         # 返回 Top-N (去重) 和进化历史
-        return self._deduplicate(population[:10]), history
+        return self._deduplicate(population[:count]), history
 
     def _compute_diversity(self, population: List[Individual]) -> float:
         """计算种群多样性 — 院士级修复[P0]: 剂量感知欧氏距离

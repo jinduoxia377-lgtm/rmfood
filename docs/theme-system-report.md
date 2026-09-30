@@ -1,6 +1,6 @@
 # RMFOOD 配方平台 - 主题系统完整架构报告
 
-> **版本**: v1.0  
+> **版本**: v2.0  
 > **编制日期**: 2025-07  
 > **维护负责人**: UI/UX 团队  
 > **设计标准**: WCAG 2.1 AA/AAA, Apple HIG, Design Tokens
@@ -21,6 +21,19 @@ RMFOOD 配方平台采用**统一的主题系统架构**，基于 CSS 自定义�
 | **平滑过渡** | Fade/Slide/Scale 三种切换动画 |
 | **WCAG 合规** | 所有颜色对比度符合 AA/AAA 标准 |
 | **品牌一致性** | 森林绿 (#10B981) 品牌色贯穿全系统 |
+| **实时调节** | 字体大小、圆角、间距、动画速度动态调整 |
+| **表面风格** | Flat / Glass / Neumorphic 三种表面风格 |
+| **智能调色** | HSL 色轮算法自动生成和谐配色 |
+| **版本控制** | 主题配置历史版本管理与回滚 |
+
+### 1.2 技术栈
+
+- **状态管理**: Zustand + persist middleware
+- **主题切换**: React Context + CSS 变量动态注入
+- **样式方案**: Tailwind CSS v4 + 原生 CSS 变量
+- **图标库**: Lucide React
+- **第三方集成**: Radix UI Themes (可选)
+- **专业插件**: Cordis Theme Pro (WCAG 分析)
 
 ### 1.2 技术栈
 
@@ -298,6 +311,24 @@ type TransitionType = 'fade' | 'slide' | 'scale' | 'none';
 
 ### 3.4 UI 组件模块 (components/theme/)
 
+| 组件 | 描述 | 文件大小 |
+|------|------|----------|
+| `ThemeSwitcher.tsx` | 主题切换器（图标/紧凑/完整三种变体） | 292 行 |
+| `ThemeEditor.tsx` | 主题编辑器（自定义主题创建/编辑） | 319 行 |
+| `ColorEditor.tsx` | 颜色编辑器（带锁定/同步功能） | 133 行 |
+| `ThemePreviewOverlay.tsx` | 预览覆盖层（悬浮预览） | 90 行 |
+| `VersionHistoryPanel.tsx` | 版本历史面板（回滚功能） | 128 行 |
+| `ThemeOnboarding.tsx` | 新用户引导 | - |
+| `KeyboardShortcutsPanel.tsx` | 快捷键参考面板 | 88 行 |
+| `AppShellPreview.tsx` | 迷你应用预览（侧边栏+导航） | 192 行 |
+| `TypeScalePreview.tsx` | 排版层级可视化 | 61 行 |
+| `SimpleSlider.tsx` | 简单滑块控件 | 23 行 |
+
+**特色功能**:
+- `ColorEditor`: 主色调锁定、自动同步二级色/三级色
+- `VersionHistoryPanel`: 版本时间线、快照预览、一键回滚
+- `AppShellPreview`: 真实应用外壳预览（侧边栏+顶部导航+内容区）
+
 #### 3.4.1 ThemeSwitcher.tsx - 主题切换器
 
 **功能**:
@@ -424,7 +455,134 @@ export const UNIFIED_SCHEME: DesignScheme = 'unified'
 
 ---
 
-## 四、主题系统工作流程
+### 3.8 业务配色系统 (types/)
+
+#### 3.8.1 formula-state-colors.ts - 配方状态配色
+
+定义6种配方生命周期状态的专用颜色：
+
+| 状态 | 主色 | 背景 | 边框 | 描述 |
+|------|------|------|------|------|
+| `draft` | #9CA3AF | rgba(148,163,184,0.1) | rgba(148,163,184,0.3) | 草稿，待编辑 |
+| `pending_review` | #D97706 | rgba(245,158,11,0.1) | rgba(245,158,11,0.3) | 待审核 |
+| `approved` | #34C759 | rgba(16,185,129,0.1) | rgba(16,185,129,0.3) | 已批准 ✅ |
+| `rejected` | #FF3B30 | rgba(239,68,68,0.1) | rgba(239,68,68,0.3) | 已拒绝 ❌ |
+| `revision_required` | #EA580C | rgba(249,115,22,0.1) | rgba(249,115,22,0.3) | 需修订 ⚠️ |
+| `archived` | #4b5563 | rgba(75,85,99,0.1) | rgba(75,85,99,0.3) | 已归档 📦 |
+
+**导出函数**:
+- `getFormulaStateColor(state)` - 获取状态颜色配置
+- `getFormulaStateClasses(state)` - 获取 Tailwind 类名
+- `isTerminalState(state)` - 判断是否为终态
+- `isActiveState(state)` - 判断是否为活跃状态
+
+#### 3.8.2 knowledge-graph-colors.ts - 知识图谱节点配色
+
+定义7种实体节点的专用颜色：
+
+| 节点类型 | 主色 | 语义 |
+|----------|------|------|
+| `herb` | #34C759 | 中药材 - 绿色系 |
+| `compound` | #007AFF | 化合物 - 蓝色系 |
+| `target` | #FF3B30 | 药物靶点 - 红色系 |
+| `peptide` | #AF52DE | 多肽分子 - 紫色系 |
+| `protein` | #D97706 | 蛋白质 - 橙色系 |
+| `food_source` | #0891B2 | 食物来源 - 青色系 |
+| `disease` | #D946EF | 相关疾病 - 粉色系 |
+
+**导出函数**:
+- `getKnowledgeGraphColor(nodeType)` - 获取节点颜色
+- `getKnowledgeGraphPalette()` - 获取所有主色数组
+- `CHART_COLOR_PALETTE` - 图表专用调色板
+
+---
+
+### 3.9 实时调节系统 (styles/tokens/adjustments.css)
+
+支持通过主题设置面板动态调整以下参数：
+
+| 参数 | CSS 变量 | 默认值 | 说明 |
+|------|----------|--------|------|
+| 字体缩放 | `--font-size-scale` | 1 | 全局字体大小缩放 |
+| 圆角缩放 | `--radius-scale` | 1 | 所有圆角统一缩放 |
+| 间距缩放 | `--spacing-scale` | 1 | 所有间距统一缩放 |
+| 动画速度 | `--animation-speed` | 1 | 动画时长缩放（越大越快） |
+| 对比度 | `--contrast-level` | 0 | 对比度增强 |
+| 阴影强度 | `--shadow-strength` | 1 | 阴影深度缩放 |
+| 暗色去饱和 | `--dark-saturation` | 100% | 暗色模式饱和度调节 |
+
+**暗色模式强制覆盖**:
+- 修复 Tailwind 内置色在暗色模式下的白底问题
+- 强制覆盖 `bg-white/*`, `bg-cyan-50/*`, `bg-sky-50/*` 等浅色变体
+
+---
+
+### 3.10 动画系统 (styles/animations.css)
+
+#### 入场动画
+
+| 动画类 | 效果 | 持续时间 |
+|--------|------|----------|
+| `.animate-fade-in-up` | 从下方淡入 | 400ms |
+| `.animate-fade-in-down` | 从上方淡入 | 400ms |
+| `.animate-fade-in-left` | 从左侧淡入 | 400ms |
+| `.animate-fade-in-right` | 从右侧淡入 | 400ms |
+| `.animate-scale-in` | 缩放进入 | 300ms |
+| `.animate-slide-in-bottom` | 弹跳滑入 | 450ms |
+
+#### 退场动画
+
+| 动画类 | 效果 | 持续时间 |
+|--------|------|----------|
+| `.animate-fade-out-up` | 向上淡出 | 300ms |
+| `.animate-fade-out-down` | 向下淡出 | 300ms |
+| `.animate-fade-out-left` | 向左淡出 | 300ms |
+| `.animate-fade-out-right` | 向右淡出 | 300ms |
+| `.animate-scale-out` | 缩小淡出 | 300ms |
+| `.animate-shrink-out` | 垂直收缩淡出 | 300ms |
+
+#### 循环动画
+
+| 动画类 | 效果 |
+|--------|------|
+| `.animate-pulse-slow` | 慢速脉冲 |
+| `.animate-spin-slow` | 慢速旋转 |
+| `.animate-bounce-subtle` | 轻微弹跳 |
+| `.animate-shimmer` | 光泽扫过 |
+
+---
+
+### 3.11 工具函数模块 (utils/)
+
+#### 3.11.1 核心工具
+
+| 文件 | 功能 | 说明 |
+|------|------|------|
+| `themeColorMapper.ts` | 颜色映射 | 语义色 → CSS 变量映射 (70+ 映射) |
+| `themeTransitions.ts` | 过渡动画 | Fade/Slide/Scale 动画实现 |
+| `chartTheme.ts` | 图表主题 | 统一图表颜色配置（自动响应明暗） |
+| `events/ThemeEventBus.ts` | 事件总线 | 主题变化事件广播 |
+
+#### 3.11.2 存储与分享
+
+| 文件 | 功能 | 说明 |
+|------|------|------|
+| `theme/ThemeStorageAdapter.ts` | 存储适配器 | localStorage CRUD 操作 |
+| `theme/ThemeShare.ts` | 分享工具 | URL 参数编码/解码主题 |
+| `theme/VersionController.ts` | 版本控制器 | 版本历史管理（最多10条） |
+
+#### 3.11.3 调色板生成
+
+| 文件 | 功能 | 说明 |
+|------|------|------|
+| `theme/palette.ts` | 智能调色板 | HSL 色轮算法生成和谐配色 |
+| `theme/surfaceMode.ts` | 表面风格 | Flat/Glass/Neumorphic 切换 |
+| `color-migration.ts` | 颜色迁移 | 旧版变量名 → 新版兼容映射 |
+
+**调色板生成算法**:
+- **类似色 (Analogous)**: 色相偏移 ±30°
+- **互补色 (Complementary)**: 色相偏移 180°
+- **三角色 (Triadic)**: 色相偏移 ±120°
 
 ### 4.1 初始化流程
 
@@ -466,20 +624,20 @@ isInitialized = true
 触发 onThemeChange 回调
 ```
 
-### 4.3 辅助功能主题应用
+### 4.5 版本控制流程
 
 ```
-用户选择辅助功能模式
+用户保存主题变更
     ↓
-调用 setAccessibilityMode(mode)
+调用 themeStorage.createVersion(summary)
     ↓
-获取基础主题
+生成主题快照
     ↓
-应用 getAccessibilityTheme() 变换
+保存到 localStorage (theme-versions)
     ↓
-生成变体主题配置
+限制最多保留 10 条版本
     ↓
-应用到 DOM
+返回版本 ID
 ```
 
 ---
@@ -604,16 +762,43 @@ theme-system/
 | `stores/theme.presets.ts` | 581 | 预设主题配置 + 工具函数 |
 | `stores/theme.storage.ts` | 246 | 持久化存储管理 |
 | `types/theme.types.ts` | 634 | 完整类型定义 |
+| `types/formula-state-colors.ts` | 150 | 配方状态配色系统 |
+| `types/knowledge-graph-colors.ts` | 126 | 知识图谱节点配色 |
 | `styles/tokens/base.css` | 330 | Light 模式 CSS 变量 |
 | `styles/tokens/dark.css` | 261 | Dark 模式 CSS 变量 |
+| `styles/tokens/typography.css` | 212 | 排版系统 |
+| `styles/tokens/adjustments.css` | 233 | 实时调节参数 |
 | `styles/components/buttons.css` | 360 | 按钮组件样式 |
 | `styles/components/cards.css` | 142 | 卡片组件样式 |
 | `styles/components/inputs.css` | 136 | 输入框组件样式 |
 | `styles/components/badges-tabs.css` | 185 | 徽章/标签页样式 |
-| `styles/utilities/semantic-utils.css` | 201 | 语义化类名 |
+| `styles/components/semantic-utils.css` | 238 | 语义化工具类 |
+| `styles/animations.css` | 493 | 动画系统 |
 | `styles/accessibility/environment.css` | 114 | 无障碍环境适配 |
 | `components/theme/ThemeSwitcher.tsx` | 292 | 主题切换器 UI |
 | `components/theme/ThemeEditor.tsx` | 319 | 主题编辑器 UI |
+| `components/theme/ColorEditor.tsx` | 133 | 颜色编辑器 |
+| `components/theme/VersionHistoryPanel.tsx` | 128 | 版本历史面板 |
+| `components/theme/AppShellPreview.tsx` | 192 | 应用外壳预览 |
+| `components/theme/TypeScalePreview.tsx` | 61 | 排版比例预览 |
+| `components/theme/KeyboardShortcutsPanel.tsx` | 88 | 快捷键面板 |
+| `components/theme/ThemePreviewOverlay.tsx` | 90 | 预览覆盖层 |
+| `components/ai/useChatTheme.ts` | 48 | AI 对话统一主题 Hook |
+| `components/ai/DarkModeChartTheme.tsx` | 15 | 图表主题兼容层 |
+| `components/database/graph/ThemePanel.tsx` | 42 | 图谱主题面板 |
+| `theme/RadixThemeProvider.tsx` | 85 | Radix UI 集成 |
+| `theme/ThemeImport.tsx` | 75 | 主题导入组件 |
+| `utils/themeColorMapper.ts` | 93 | 颜色映射工具 |
+| `utils/themeTransitions.ts` | 84 | 过渡动画工具 |
+| `utils/chartTheme.ts` | 166 | 图表主题配置 |
+| `utils/events/ThemeEventBus.ts` | 103 | 事件总线 |
+| `utils/color-migration.ts` | 144 | 颜色迁移工具 |
+| `utils/theme/palette.ts` | 156 | 智能调色板生成 |
+| `utils/theme/surfaceMode.ts` | 54 | 表面风格管理 |
+| `utils/theme/VersionController.ts` | 72 | 版本控制器 |
+| `utils/theme/ThemeShare.ts` | 73 | 主题分享工具 |
+| `utils/theme/ThemeStorageAdapter.ts` | 91 | 存储适配器 |
+| `theme-pro/index.js` | 46 | Theme Pro 插件入口 |
 | `theme-pro/host/plugin.js` | 165 | Theme Pro Host 服务 |
 | `theme-pro/client/plugin.js` | 324 | Theme Pro Client UI |
 | `index.css` | 273 | 样式入口文件 |

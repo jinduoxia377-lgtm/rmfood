@@ -3,7 +3,7 @@
 }
 
 .section {
-  background-color: #fff;
+  background-color: var(--color-bg-card);
   border-radius: 16rpx;
   padding: 32rpx;
   margin-bottom: 24rpx;
@@ -12,7 +12,7 @@
 .section-title {
   font-size: 32rpx;
   font-weight: 600;
-  color: #353535;
+  color: var(--color-text-secondary);
   margin-bottom: 24rpx;
 }
 
@@ -32,4 +32,11 @@
   display: flex;
   align-items: center;
   gap: 16rpx;
+}
+
+/* ============================================
+   底部安全区
+   ============================================ */
+.bottom-spacing {
+  height: calc(40rpx + env(safe-area-inset-bottom));
 }

@@ -16,9 +16,11 @@ export interface NavLink {
 
 export const navLinks: NavLink[] = [
   { label: '功能', href: '#features' },
+  { label: '算法', href: '#algorithms' },
   { label: '场景', href: '#use-cases' },
+  { label: '数据', href: '#data-sources' },
   { label: '定价', href: '#pricing' },
-  { label: 'FAQ', href: '#faq' },
+  { label: '常见问题', href: '#faq' },
 ];
 
 export interface NavbarCTA {

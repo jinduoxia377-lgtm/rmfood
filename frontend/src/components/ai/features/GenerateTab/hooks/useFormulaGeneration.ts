@@ -11,6 +11,25 @@ import { getUserMessage } from '@/constants/errorCodes'
 
 type GeneratorType = 'rule_engine' | 'llm' | 'neural_network'
 
+/** 后端返回的 generator 值 → 前端标准类型 的映射 */
+function normalizeGenerator(raw: string | undefined | null): GeneratorType {
+  switch (raw) {
+    case 'rule_engine':
+    case 'unified_engine_v2':
+    case 'seven_step_engine':
+    case 'ga_optimizer':
+    case 'pepinvent_enhanced':
+      return 'rule_engine'
+    case 'neural_network':
+    case 'neural_engine':
+      return 'neural_network'
+    case 'llm':
+      return 'llm'
+    default:
+      return 'rule_engine'
+  }
+}
+
 interface EffectOption {
   id: string
   label: string
@@ -24,6 +43,7 @@ interface UseFormulaGenerationOptions {
   onGenerateSuccess?: (candidates: AICandidate[]) => void
   algorithmConfig?: Record<string, unknown>
   constraints?: Record<string, unknown>
+  useLlm?: boolean
 }
 
 interface GenerationResult {
@@ -44,6 +64,7 @@ export function useFormulaGeneration({
   onGenerateSuccess,
   algorithmConfig,
   constraints,
+  useLlm = false,
 }: UseFormulaGenerationOptions) {
   const queryClient = useQueryClient()
   const feedback = useOperationFeedback()
@@ -80,7 +101,7 @@ export function useFormulaGeneration({
         const result = await aiApi.generate(
           effects,
           constraints,
-          false,
+          useLlm,
           abortControllerRef.current.signal,
           algorithmConfig,
         )
@@ -127,7 +148,7 @@ export function useFormulaGeneration({
         return {
           candidates: validatedCandidates,
           total: validatedCandidates.length,
-          generator: result.generator || 'rule_engine',
+          generator: normalizeGenerator(result.generator),
         }
       } catch (error) {
         const endTime = performance.now()
@@ -189,7 +210,7 @@ export function useFormulaGeneration({
       }
 
       setGenerateResult(data.candidates)
-      setGenerator((data.generator as GeneratorType) || 'rule_engine')
+      setGenerator(normalizeGenerator(data.generator))
 
       feedback.showSuccess(
         DEFAULTS.PLACEHOLDER_TEXTS.GENERATION_SUCCESS_TITLE,

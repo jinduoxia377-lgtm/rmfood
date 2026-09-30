@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Sun, Moon, Monitor, ChevronDown, Eye, Accessibility, Zap, Palette } from 'lucide-react';
+import { Sun, Moon, Monitor, ChevronDown, Accessibility, Zap, Palette, ChevronUp } from 'lucide-react';
 import { useTheme, type ThemeMode, type AccessibilityMode, type TransitionType, presetThemes, type PresetThemeId, type ThemeConfig } from '@/theme';
 
 interface ThemeSwitcherProps {
@@ -88,11 +88,11 @@ export function ThemeSwitcher({
         aria-expanded={isOpen}
       >
         {mode === 'dark' ? (
-          <MoonIcon />
+          <Moon size={18} />
         ) : mode === 'system' ? (
-          <MonitorIcon />
+          <Monitor size={18} />
         ) : (
-          <SunIcon />
+          <Sun size={18} />
         )}
 
         {showLabel && variant !== 'icon-only' && (
@@ -257,35 +257,6 @@ export function ThemeSwitcher({
         </div>
       )}
     </div>
-  );
-}
-
-// ==================== 图标组件 ====================
-
-function SunIcon(): React.ReactElement {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="4" />
-      <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
-    </svg>
-  );
-}
-
-function MoonIcon(): React.ReactElement {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-    </svg>
-  );
-}
-
-function MonitorIcon(): React.ReactElement {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
-      <line x1="8" y1="21" x2="16" y2="21" />
-      <line x1="12" y1="17" x2="12" y2="21" />
-    </svg>
   );
 }
 

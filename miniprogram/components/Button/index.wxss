@@ -1,4 +1,4 @@
-/** Button 按钮组件样式 */
+/** Button 鎸夐挳缁勪欢鏍峰紡 */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -8,13 +8,12 @@
   border-radius: 48rpx;
   font-size: 28rpx;
   font-weight: 500;
-  transition: all 0.3s ease;
   border: none;
-  cursor: pointer;
   position: relative;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.btn-hover {
+.btn:active {
   opacity: 0.8;
   transform: scale(0.98);
 }
@@ -30,40 +29,40 @@
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #2D5A3D 0%, #4A7C5C 100%);
-  color: #FFFFFF;
+  background: linear-gradient(135deg, var(--color-brand-500) 0%, var(--color-brand-400) 100%);
+  color: var(--color-bg-card);
   box-shadow: 0 4rpx 16rpx rgba(45, 90, 61, 0.3);
 }
 
 .btn-secondary {
-  background-color: #FFFFFF;
-  color: #2D5A3D;
-  border: 2rpx solid #2D5A3D;
+  background-color: var(--color-bg-card);
+  color: var(--color-brand-500);
+  border: 2rpx solid var(--color-brand-500);
 }
 
 .btn-text {
   background: transparent;
-  color: #2D5A3D;
+  color: var(--color-brand-500);
   padding: 16rpx 24rpx;
 }
 
 .btn-danger {
-  background-color: #EF4444;
-  color: #FFFFFF;
+  background-color: var(--color-danger);
+  color: var(--color-bg-card);
 }
 
 .btn-success {
-  background-color: #22C55E;
-  color: #FFFFFF;
+  background-color: var(--color-success);
+  color: var(--color-bg-card);
 }
 
 .btn-disabled {
   opacity: 0.5;
-  cursor: not-allowed;
+  
 }
 
 .btn-loading {
-  pointer-events: none;
+  
 }
 
 .btn-loading-spinner {
@@ -76,7 +75,7 @@
   width: 24rpx;
   height: 24rpx;
   border: 3rpx solid rgba(255, 255, 255, 0.3);
-  border-top-color: #FFFFFF;
+  border-top-color: var(--color-bg-card);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -84,3 +83,4 @@
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+

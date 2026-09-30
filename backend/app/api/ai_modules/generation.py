@@ -89,38 +89,72 @@ async def generate_formula(
     - 失败时回退到规则引擎
     """
     logger.info(f"配方生成请求 - target_effects={req.target_effects}, constraints={req.constraints}")
+    
+    # ── 数据来源验证 ──
+    try:
+        from ..services.ai.algorithms.herb_knowledge_service import get_global_herb_knowledge
+        herb_service = get_global_herb_knowledge()
+        if herb_service and hasattr(herb_service, '_herbs'):
+            herb_count = len(herb_service._herbs)
+            if herb_count < 20:
+                logger.error(f"[数据完整性] 数据库药材不足: {herb_count} < 20，请运行数据补全脚本")
+                raise RuntimeError(f"数据库药材数据不足: {herb_count} 种，最低要求 20 种")
+            logger.info(f"[数据完整性] ✅ 使用数据库数据: {herb_count} 种药材")
+        else:
+            logger.warning("[数据完整性] HerbKnowledgeService 未初始化，可能使用硬编码数据")
+    except Exception as e:
+        logger.error(f"[数据完整性] 验证失败: {e}")
+        raise
 
-    # 功效 ID → 中文标签映射（与前端 EFFECT_OPTIONS 保持一致）
+    # 功效 ID → 中文标签映射（与前端 EFFECT_OPTIONS 的 37 个功效选项完全对齐）
     _EFFECT_LABELS = {
+        # 免疫类
         "immune_enhancement": "增强免疫",
         "immune_regulation": "免疫调节",
         "resistance_boost": "提高抵抗力",
+        # 抗衰老类
         "antioxidant": "抗氧化",
         "anti_aging": "延缓衰老",
         "free_radical_clear": "清除自由基",
+        # 体力类
         "anti_fatigue": "抗疲劳",
         "fatigue_relief": "缓解疲劳",
         "energy_boost": "提升精力",
+        # 滋补类
         "qi_nourishing": "补气养阴",
         "yin_nourishing": "滋阴补肾",
         "spleen_qi_tonifying": "健脾益气",
         "blood_nourishing": "补血养血",
-        "sleep_improvement": "改善睡眠",
-        "calm_mind": "安神定志",
-        "spleen_stomach": "健脾养胃",
-        "digestion_promotion": "促进消化",
+        # 心血管类
+        "blood_pressure": "降血压",
         "blood_lipid": "降血脂",
         "vascular_protection": "保护血管",
-        "beauty_skin": "美容养颜",
-        "blood_pressure": "降血压",
+        "circulation_promotion": "促进循环",
+        # 代谢类
         "blood_sugar": "降血糖",
-        "uric_acid": "降尿酸",
-        "detox": "解毒",
-        "heat_clearing": "清热解毒",
-        "cough_relief": "止咳化痰",
-        "liver_protection": "保肝护肝",
-        "kidney_nourishing": "补肾益精",
-        "spleen_strengthening": "健脾和胃",
+        "uric_acid": "辅助降尿酸",
+        "metabolism_regulation": "调节代谢",
+        "weight_management": "控制体重",
+        # 神经类
+        "sleep_improvement": "改善睡眠",
+        "calm_mind": "安神定志",
+        "anxiety_relief": "缓解焦虑",
+        # 消化类
+        "spleen_stomach": "健脾养胃",
+        "digestion_promotion": "促进消化",
+        "digestive_regulation": "调理脾胃",
+        # 呼吸系统
+        "lung_nourishing": "润肺止咳",
+        "throat_clearing": "清咽利喉",
+        # 视觉类
+        "eye_protection": "明目护眼",
+        "eye_fatigue_relief": "缓解眼疲劳",
+        # 美容类
+        "beauty_skin": "美容养颜",
+        "skin_moisturizing": "护肤保湿",
+        # 骨骼类
+        "bone_strength": "强健筋骨",
+        "calcium_supplement": "补钙健骨",
     }
 
     def _effect_label(effect_id: str) -> str:
@@ -154,7 +188,22 @@ async def generate_formula(
         from ..services.ai.algorithms.unified_optimizer import (
             UnifiedFormulaOptimizer, OptimizationRequest,
         )
-        from app.services.ai.algorithms.genetic_formula_optimizer import _BUILTIN_HERBS
+        from app.services.ai.algorithms.herb_knowledge_service import get_global_herb_knowledge
+
+        # 建立 herb_id → name_cn 映射（优先从数据库）
+        herb_id_to_name: dict[str, str] = {}
+        herb_service = get_global_herb_knowledge()
+        if herb_service and hasattr(herb_service, '_herbs') and len(herb_service._herbs) >= 20:
+            herb_id_to_name = {hid: h.name_cn for hid, h in herb_service._herbs.items()}
+            logger.info(f"[API] 使用数据库映射: {len(herb_id_to_name)} 种药材")
+        else:
+            # 数据完整性强制校验：数据库不可用时拒绝回退到硬编码假数据
+            count = len(herb_service._herbs) if herb_service and hasattr(herb_service, '_herbs') else 0
+            logger.error(f"[数据完整性] 数据库药材映射不可用（实际 {count} 种，最低要求 20 种）")
+            raise RuntimeError(
+                f"数据库药材映射不可用（实际 {count} 种，最低要求 20 种）。"
+                "请先运行数据补全脚本:\n  python -m app.services.recipe_generation_data_completer_v2"
+            )
 
         unified = UnifiedFormulaOptimizer()
         # 构建排除药材列表（过敏+禁忌）
@@ -181,9 +230,6 @@ async def generate_formula(
             special_population=age_group,
         )
         opt_result = unified.optimize(opt_req)
-
-        # 建立 herb_id → name_cn 映射
-        herb_id_to_name: dict[str, str] = {hid: h.name_cn for hid, h in _BUILTIN_HERBS.items()}
 
         # ── Step 2: 转换为候选格式并评估 ──
         candidates: list[dict] = []
@@ -249,14 +295,24 @@ async def generate_formula(
 
         logger.info(f"遗传算法生成 {len(candidates)} 套候选配方")
 
-        # ── Step 3: 生成配方解释（可选） ──
+        # ── Step 3: 生成配方解释（可选，机制库已数据库化） ──
         try:
             from ...services.ai.formula_explanation import FormulaExplanationService
             expl_service = FormulaExplanationService()
-            herb_names_map = {hid: h.name_cn for hid, h in _BUILTIN_HERBS.items()}
+            if not expl_service._db_loaded:
+                await expl_service.init_from_database(db)
+            # 使用数据库映射（已在上方加载），不再使用硬编码 _BUILTIN_HERBS
+            herb_names_map = herb_id_to_name
 
             for i, cand in enumerate(candidates):
-                genes = {item.get("id", ""): item.get("dosage", 0) for item in cand.get("herb_combination", [])}
+                # 修复：herb_combination 条目无 "id" 键，需按名称反查 herb_id，
+                # 否则 genes 字典键为空串 → 解释服务无法命中机制库
+                genes = {
+                    next((hid for hid, nm in herb_id_to_name.items() if nm == item.get("name")), item.get("name", "")):
+                    float(item.get("dosage_g") or 0)
+                    for item in cand.get("herb_combination", [])
+                }
+                genes = {k: v for k, v in genes.items() if k and v}
                 if genes:
                     try:
                         explanation = expl_service.generate_explanation(
@@ -370,12 +426,12 @@ async def generate_formula_neural(
                         "taste_score", "stability_score", "overall_score",
                         "generated_at",
                     ]},
-                    "generated_by": "neural_engine",
+                    "generated_by": "neural_network",
                 }
                 for r in results
             ],
             "total": len(results),
-            "generator": "neural_engine",
+            "generator": "neural_network",  # 标准化返回值
         }
     except ImportError:
         logger.warning("NeuralFormulaEngine 未实现，使用规则引擎作为回退")
@@ -478,6 +534,7 @@ async def generate_formula_v2(
                 "role": item.get("role", ""),
                 "name": item.get("name", ""),
                 "dosage": item.get("dosage", ""),
+                "dosage_g": float(item.get("dosage") or 0),  # 前端 FormulaComparePanel 标准字段
                 "purpose": item.get("purpose", ""),
                 "score": item.get("score", 0),
             })
@@ -491,7 +548,7 @@ async def generate_formula_v2(
             "strategy": result.get("strategy", "unified_engine"),
             "template_used": result.get("template_used"),
             "execution_time_ms": round(elapsed_ms, 2),
-            "generator": "unified_engine_v2",
+            "generator": "rule_engine",  # 统一引擎仍使用遗传算法
         }
 
     except Exception as e:
@@ -534,6 +591,72 @@ async def synergy_analysis(
         peptide_sequences=req.peptide_sequences,
     )
     return result
+
+
+# ══════════════════════════════════════════════════════════════════
+# 配方推荐 / 智能解释 API
+# ══════════════════════════════════════════════════════════════════
+
+class FormulaRecommendRequest(BaseModel):
+    """配方推荐请求"""
+    target_effects: list[str] = Field(..., min_length=1, max_length=6,
+                                      description="目标功效列表")
+    top_k: int = Field(3, ge=1, le=10, description="返回推荐数量")
+
+
+@router.post("/recommend", summary="智能配方推荐")
+async def recommend_formula(
+    req: FormulaRecommendRequest,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    基于用户历史配方、数据库功效评分与协同配伍网络，
+    生成个性化的配方推荐（数据全部来自数据库）。
+    """
+    from ...services.ai.prescription_recommender import PrescriptionRecommender
+
+    recommender = PrescriptionRecommender(db)
+    recommendations = await recommender.recommend(
+        user_id=int(current_user.id),
+        target_effects=req.target_effects,
+        top_k=req.top_k,
+    )
+    return {
+        "recommendations": recommendations,
+        "total": len(recommendations),
+        "generator": "recommender",
+    }
+
+
+class FormulaInterpretRequest(BaseModel):
+    """配方智能解释请求"""
+    formula_name: str = Field("", description="配方名称")
+    herbs: list[dict[str, Any]] = Field(..., min_length=1,
+                                         description="药材列表 [{name, dosage_g, role}]")
+    target_effects: list[str] = Field(..., min_length=1, max_length=6,
+                                       description="目标功效列表")
+
+
+@router.post("/interpret", summary="配方智能解释")
+async def interpret_formula(
+    req: FormulaInterpretRequest,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    基于网络药理学与中医理论，生成配方的方解与机理说明。
+    数据来源为 TCMHerb 数据库（effects / compounds / targets / extra_knowledge）。
+    """
+    from ...services.ai.formula_interpreter import FormulaInterpreter
+
+    interpreter = FormulaInterpreter(db)
+    result = await interpreter.interpret(
+        formula_name=req.formula_name,
+        herbs=req.herbs,
+        target_effects=req.target_effects,
+    )
+    return {"interpretation": result}
 
 
 # ══════════════════════════════════════════════════════════════════
@@ -614,7 +737,7 @@ async def generate_formula_seven_step(
             "functional": result.functional,
             "validation": result.validation,
             "execution_time_ms": round(elapsed_ms, 2),
-            "generator": "seven_step_engine",
+            "generator": "rule_engine",  # 七步引擎仍属规则类
         }
 
     except Exception as e:

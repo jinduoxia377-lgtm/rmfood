@@ -13,7 +13,7 @@
 .dark .bg-white\/95,
 .dark .bg-white\/50,
 .dark .bg-white\/15 {
-  background-color: var(--color-surface-elevated, #2c2c2e) !important;
+  background-color: var(--bg-surface-elevated, #2c2c2e) !important;
 }
 
 /* 半透明变体（按透明度从高到低） */
@@ -38,7 +38,7 @@
 .dark [class*="bg-sky-50"],
 .dark .bg-teal-50,
 .dark [class*="bg-teal-50"] {
-  background-color: var(--color-surface-elevated, #2c2c2e) !important;
+  background-color: var(--bg-surface-elevated, #2c2c2e) !important;
 }
 
 .dark .bg-cyan-100,
@@ -93,7 +93,7 @@
   background-color: var(--color-background-base, #000000) !important;
 }
 .dark .bg-card {
-  background-color: var(--color-surface-elevated, #1c1c1e) !important;
+  background-color: var(--bg-surface-elevated, #1c1c1e) !important;
 }
 .dark .bg-muted {
   background-color: var(--color-fill-primary, #2c2c2e) !important;
@@ -113,22 +113,22 @@
 
 /* ── 强制覆盖 accentColors 相关类在暗色模式下的颜色 ── */
 .dark .bg-emerald-50, .dark [class*="bg-emerald-50"] {
-  background-color: var(--color-surface-elevated, #1c1c1e) !important;
+  background-color: var(--bg-surface-elevated, #1c1c1e) !important;
 }
 .dark .bg-blue-50, .dark [class*="bg-blue-50"] {
-  background-color: var(--color-surface-elevated, #1c1c1e) !important;
+  background-color: var(--bg-surface-elevated, #1c1c1e) !important;
 }
 .dark .bg-amber-50, .dark [class*="bg-amber-50"] {
-  background-color: var(--color-surface-elevated, #1c1c1e) !important;
+  background-color: var(--bg-surface-elevated, #1c1c1e) !important;
 }
 .dark .bg-emerald-100, .dark [class*="bg-emerald-100"] {
-  background-color: var(--color-surface-elevated, #1c1c1e) !important;
+  background-color: var(--bg-surface-elevated, #1c1c1e) !important;
 }
 .dark .bg-blue-100, .dark [class*="bg-blue-100"] {
-  background-color: var(--color-surface-elevated, #1c1c1e) !important;
+  background-color: var(--bg-surface-elevated, #1c1c1e) !important;
 }
 .dark .bg-amber-100, .dark [class*="bg-amber-100"] {
-  background-color: var(--color-surface-elevated, #1c1c1e) !important;
+  background-color: var(--bg-surface-elevated, #1c1c1e) !important;
 }
 
 /* ═══════════════════════════════════════════════════════════════

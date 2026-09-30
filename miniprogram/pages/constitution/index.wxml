@@ -1,0 +1,125 @@
+<!-- 体质测试页面 -->
+<view class="page-container">
+  <!-- 顶部Header -->
+  <view class="header">
+    <view class="header-content">
+      <view class="nav-btn" bindtap="goToHome" aria-label="返回首页">
+        <icon name="arrow-left" size="md" color="#FFFFFF" />
+      </view>
+      <view class="header-title">
+        <view class="title-main">中医体质测试</view>
+      </view>
+      <view class="header-spacer"></view>
+    </view>
+  </view>
+
+  <scroll-view class="content-scroll" scroll-y>
+    
+    <!-- 欢迎页 -->
+    <view wx:if="{{!isCompleted && currentQuestion === 0}}" class="welcome-section">
+      <view class="welcome-icon">🧬</view>
+      <view class="welcome-title">了解你的中医体质</view>
+      <view class="welcome-desc">
+        通过20道题目，帮您识别体质类型<br />
+        提供个性化养生建议
+      </view>
+      <view class="constitution-preview">
+        <view class="preview-item" wx:for="['平和质','气虚质','阳虚质','阴虚质','痰湿质','湿热质','血瘀质','气郁质','特禀质']" wx:key="*this">
+          <text>{{item}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 答题区 -->
+    <view wx:if="{{!isCompleted}}" class="question-section">
+      <!-- 进度条 -->
+      <view class="progress-bar">
+        <view class="progress-track">
+          <view class="progress-fill" style="width: {{(currentQuestion + 1) / totalQuestions * 100}}%"></view>
+        </view>
+        <text class="progress-text">{{currentQuestion + 1}} / {{totalQuestions}}</text>
+      </view>
+
+      <!-- 问题卡片 -->
+      <view class="question-card">
+        <view class="question-number">第{{currentQuestion + 1}}题</view>
+        <view class="question-text">{{questions[currentQuestion].text}}</view>
+      </view>
+
+      <!-- 选项列表 -->
+      <view class="options-list">
+        <view 
+          wx:for="{{questions[currentQuestion].options}}" 
+          wx:for-item="option"
+          wx:key="*this"
+          class="option-item {{answers[questions[currentQuestion].id] === index ? 'selected' : ''}}"
+          bindtap="onAnswer"
+          data-index="{{index}}"
+          aria-label="{{option}}"
+        >
+          <view class="option-marker">{{String.fromCharCode(65 + index)}}</view>
+          <text class="option-text">{{option}}</text>
+        </view>
+      </view>
+
+      <!-- 导航按钮 -->
+      <view class="question-nav">
+        <view class="nav-btn prev" bindtap="prevQuestion" wx:if="{{currentQuestion > 0}}">
+          <icon name="arrow-left" size="sm" />
+          <text>上一题</text>
+        </view>
+        <view class="nav-btn skip" bindtap="skipQuestion">
+          <text>跳过</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 结果页 -->
+    <view wx:if="{{isCompleted}}" class="result-section">
+      <!-- 结果卡片 -->
+      <view class="result-card">
+        <view class="result-icon">{{result.mainConstitution ? constitutionTypes[result.mainConstitution].icon : '🧬'}}</view>
+        <view class="result-main">{{result.mainConstitution}}</view>
+        <view class="result-desc">{{result.mainConstitution ? constitutionTypes[result.mainConstitution].desc : ''}}</view>
+        
+        <!-- 次要体质 -->
+        <view wx:if="{{result.secondaryConstitution}}" class="result-secondary">
+          <text>兼夹体质：{{result.secondaryConstitution}}</text>
+        </view>
+      </view>
+
+      <!-- 调理建议 -->
+      <view class="advice-section" wx:if="{{result.mainConstitution}}">
+        <view class="advice-card">
+          <view class="advice-title">🍽️ 饮食建议</view>
+          <view class="advice-content">{{constitutionTypes[result.mainConstitution].diet}}</view>
+        </view>
+        
+        <view class="advice-card">
+          <view class="advice-title">🏃 生活调养</view>
+          <view class="advice-content">{{constitutionTypes[result.mainConstitution].lifestyle}}</view>
+        </view>
+        
+        <view class="advice-card">
+          <view class="advice-title">🌿 推荐药材</view>
+          <view class="advice-content">{{constitutionTypes[result.mainConstitution].herbs}}</view>
+        </view>
+      </view>
+
+      <!-- 操作按钮 -->
+      <view class="action-buttons">
+        <view class="action-btn primary" bindtap="saveResult">
+          <icon name="save" size="sm" />
+          <text>保存结果</text>
+        </view>
+        <view class="action-btn secondary" bindtap="resetTest">
+          <icon name="refresh" size="sm" />
+          <text>重新测试</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 底部间距 -->
+    <view class="bottom-spacing"></view>
+  </scroll-view>
+</view>

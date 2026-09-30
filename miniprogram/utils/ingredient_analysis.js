@@ -26,9 +26,7 @@ class IngredientAnalysisService {
     showLoading('识别中...')
     try {
       // 上传并调用后端OCR
-      const result = await request.post('/ingredients/ocr', {
-        image_path: imagePath
-      }, { timeout: 30000 })
+      const result = await request.upload('/ingredients/ocr', imagePath)
       
       hideLoading()
       return result
@@ -142,7 +140,7 @@ class IngredientAnalysisService {
    */
   async getScoreDetail(score) {
     try {
-      return await request.get(`/ingredients/health-score/${score}`)
+      return await request.get("/ingredients/health-score/" + score + "")
     } catch (error) {
       console.error('[ScoreDetail] 获取失败:', error)
       return null

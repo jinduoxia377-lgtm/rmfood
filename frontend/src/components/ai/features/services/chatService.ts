@@ -130,7 +130,7 @@ export interface RateLimitInfo {
 }
 
 export interface IChatService {
-  sendMessage(question: string): Promise<AIResponse>;
+  sendMessage(question: string, history?: Array<{ role: string; content: string }>, options?: SendMessageOptions): Promise<AIResponse>;
   sendMessageStream(question: string, history?: Array<{ role: string; content: string }>): AsyncGenerator<StreamChunk>;
   setAuthToken(token: string): void;
   clearAuthToken(): void;
@@ -139,6 +139,13 @@ export interface IChatService {
   getClassifiedError(): ClassifiedError | null;
   getRateLimitStatus(): RateLimitInfo;
   getStateMachine(): ChatStateMachine;
+}
+
+/** 发送消息的可选参数：允许调用方临时指定模型与温度（如摘要压缩场景） */
+export interface SendMessageOptions {
+  model?: string;
+  temperature?: number;
+  maxTokens?: number;
 }
 
 class TimeoutError extends Error {
@@ -187,7 +194,7 @@ export class ChatService implements IChatService {
     this.storage = config.storageService ?? storageService;
   }
 
-  async sendMessage(question: string, history?: Array<{ role: string; content: string }>): Promise<AIResponse> {
+  async sendMessage(question: string, history?: Array<{ role: string; content: string }>, options?: SendMessageOptions): Promise<AIResponse> {
     const requestId = this.generateRequestId(question);
 
     if (this.isDuplicateRequest(requestId)) {
@@ -203,7 +210,7 @@ export class ChatService implements IChatService {
     this.stateMachine.transition(ChatState.Sending);
 
     try {
-      const response = await this.executeWithRetry(() => this.fetchChatAPI(question, history));
+      const response = await this.executeWithRetry(() => this.fetchChatAPI(question, history, options));
 
       this.stateMachine.transition(ChatState.Success);
       this.eventBus.emit('message:received', {
@@ -431,6 +438,7 @@ export class ChatService implements IChatService {
   private async fetchChatAPI(
     question: string,
     history?: Array<{ role: string; content: string }>,
+    options?: SendMessageOptions,
   ): Promise<AIResponse> {
     const context = contextManager.getContextPrompt();
     const isFollowUp = contextManager.isFollowUpQuestion(question);
@@ -446,6 +454,10 @@ export class ChatService implements IChatService {
     if (history && history.length > 0) {
       requestBody.history = history.slice(-10);
     }
+    // 调用方可临时覆盖模型与采样参数（如摘要压缩场景要求低温度）
+    if (options?.model) requestBody.model = options.model;
+    if (options?.temperature !== undefined) requestBody.temperature = options.temperature;
+    if (options?.maxTokens !== undefined) requestBody.max_tokens = options.maxTokens;
     // ── Task 3: 注入用户画像上下文 ──
     try {
       const { userProfileManager } = await import('./userProfileService')

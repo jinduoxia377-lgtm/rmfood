@@ -34,6 +34,10 @@ export interface ModelStatus {
   base_url?: string
   api_key_configured?: boolean
   api_key_length?: number
+  /** 当前后端 LLM 密钥来源：'user'（用户个人密钥）| 'db'（数据库持久化）| 'env'（环境变量/settings）| 'none' */
+  key_source?: 'user' | 'db' | 'env' | 'none'
+  /** 当前用户是否配置了个人密钥（'user' 时 key_source === 'user'） */
+  user_key_source?: 'user' | 'none'
   suggestion?: string
 }
 
@@ -335,6 +339,39 @@ export class ModelClient {
   }
 
   /**
+   * 用临时密钥验活（POST /ai/models/config/test）：
+   * 后端用该密钥做一次最小化 chat 调用，**不写库、不更新运行时配置**。
+   */
+  static async testLlmConfig(params: {
+    provider: string
+    apiKey: string
+    baseUrl: string
+    model: string
+  }): Promise<{ success: boolean; detail: string; model?: string; provider?: string }> {
+    try {
+      const response = await api.post<{ success: boolean; detail: string; model?: string; provider?: string; base_url?: string }>(
+        '/ai/models/config/test',
+        {
+          provider: params.provider,
+          api_key: params.apiKey,
+          base_url: params.baseUrl,
+          model: params.model,
+        },
+        { timeout: 20000 },
+      )
+      const d = response.data
+      return { success: d.success, detail: d.detail || (d.success ? '密钥验证通过' : '验证失败'), model: d.model, provider: d.provider }
+    } catch (error: unknown) {
+      const axiosError = error as { response?: { status?: number; data?: { detail?: string; message?: string } }; message?: string }
+      const status = axiosError.response?.status
+      if (status === 403) return { success: false, detail: '需要管理员权限才能验活密钥' }
+      if (status === 401) return { success: false, detail: '未登录或登录已过期，无法验活' }
+      const msg = axiosError.response?.data?.detail || axiosError.response?.data?.message || axiosError.message || '请求失败'
+      return { success: false, detail: `验活请求失败: ${msg}（后端服务可能未启动）` }
+    }
+  }
+
+  /**
    * 更新 LLM 配置到后端（同步到服务器内存，再返回最新状态）
    */
   static async setModelConfig(
@@ -364,6 +401,97 @@ export class ModelClient {
       const msg = axiosError.response?.data?.message || (status403 ? '需要管理员权限才能修改 LLM 配置' : '保存失败，请检查后端服务')
       logger.error('[ModelClient] setModelConfig failed:', msg)
       return { success: false, error: msg }
+    }
+  }
+
+  /**
+   * 保存当前用户的个人 LLM 密钥（服务端存储，不影响全局配置）
+   */
+  static async saveUserLlmKey(params: {
+    provider: string
+    apiKey: string
+    baseUrl: string
+    model: string
+  }): Promise<{ success: boolean; message?: string; keyMasked?: string; error?: string }> {
+    try {
+      const res = await api.post('/ai/models/user-key', {
+        provider: params.provider,
+        api_key: params.apiKey,
+        base_url: params.baseUrl,
+        model: params.model,
+      })
+      if (res.data?.success) {
+        return { success: true, message: res.data.message, keyMasked: res.data.key_masked }
+      }
+      return { success: false, error: res.data?.message || '保存失败' }
+    } catch (e: unknown) {
+      const axErr = e as { response?: { status?: number; data?: { detail?: string; message?: string } } }
+      const msg = axErr.response?.data?.detail || axErr.response?.data?.message
+      return { success: false, error: `保存失败：${msg || '网络错误'}` }
+    }
+  }
+
+  /**
+   * 查询当前用户是否配置了个人密钥（只返回脱敏信息，不含明文）
+   */
+  static async getUserLlmKeyStatus(): Promise<{
+    configured: boolean
+    provider?: string
+    model?: string
+    baseUrl?: string
+    keyMasked?: string
+    note?: string
+  }> {
+    try {
+      const res = await api.get('/ai/models/user-key')
+      const d = res.data
+      if (!d?.success) return { configured: false, note: d?.note }
+      if (!d.configured) return { configured: false, note: d?.note }
+      return {
+        configured: true,
+        provider: d.provider,
+        model: d.model,
+        baseUrl: d.base_url,
+        keyMasked: d.api_key_masked,
+      }
+    } catch {
+      return { configured: false, note: '查询失败：请确认后端服务已启动' }
+    }
+  }
+
+  /**
+   * 删除当前用户的个人 LLM 密钥
+   */
+  static async deleteUserLlmKey(): Promise<{ success: boolean; message?: string }> {
+    try {
+      const res = await api.delete('/ai/models/user-key')
+      return { success: res.data?.success ?? false, message: res.data?.message }
+    } catch {
+      return { success: false, message: '删除失败，请重试' }
+    }
+  }
+
+  /**
+   * 验活用户填写的个人密钥（不写库）
+   */
+  static async testUserLlmKey(params: {
+    provider: string
+    apiKey: string
+    baseUrl: string
+    model: string
+  }): Promise<{ success: boolean; detail: string }> {
+    try {
+      const res = await api.post('/ai/models/user-key/test', {
+        provider: params.provider,
+        api_key: params.apiKey,
+        base_url: params.baseUrl,
+        model: params.model,
+      }, { timeout: 25000 })
+      const d = res.data
+      return { success: d?.success ?? false, detail: d?.detail || (d?.success ? '密钥可用' : '验证失败') }
+    } catch (e: unknown) {
+      const axErr = e as { message?: string }
+      return { success: false, detail: `验活请求失败：${axErr.message || '网络错误'}` }
     }
   }
 

@@ -1,180 +1,152 @@
 /**
- * 图片懒加载管理器
- * 优化图片加载性能
+ * RMFOOD 图片懒加载优化 - 微信小程序版本
+ * 使用小程序 API 替代 DOM API
  */
 
 class ImageLazyLoader {
-  constructor() {
-    this.imageCache = new Map()
-    this.loadingQueue = []
-    this.isProcessing = false
-    this.threshold = 200 // 预加载阈值（像素）
+  constructor(options = {}) {
+    this.options = {
+      threshold: 100,
+      placeholder: '/assets/images/placeholder.png',
+      ...options
+    }
+    this.loadedImages = new Set()
+    this.loadingImages = new Set()
+    this._imageNodes = []
   }
 
   /**
-   * 注册图片观察器
+   * 初始化懒加载
    */
-  init() {
-    if (typeof IntersectionObserver === 'undefined') {
-      console.warn('[ImageLazyLoader] IntersectionObserver not supported')
-      return
-    }
+  init(page) {
+    this._page = page
+    // 注意：小程序中没有 document.querySelectorAll
+    // 需要在页面中手动注册图片节点
+    console.log('[ImageLazyLoader] Initialized for page')
+  }
 
-    this.observer = wx.createIntersectionObserver(this)
-      .relativeToViewport({ top: 500, bottom: 500 })
-      .observe('.lazy-image', (res) => {
-        if (res.intersectionRatio > 0) {
-          this.loadImage(res.dataset.src, res.dataset.index)
-        }
+  /**
+   * 注册图片节点（在页面 onLoad 时调用）
+   */
+  registerImage(imageNode) {
+    if (!imageNode) return
+    
+    this._imageNodes.push(imageNode)
+    
+    // 使用小程序的 IntersectionObserver
+    if (wx.createIntersectionObserver) {
+      const observer = wx.createIntersectionObserver(this._page, {
+        thresholds: [0, 0.1, 0.5, 1]
       })
-
-    console.log('[ImageLazyLoader] Observer initialized')
-  }
-
-  /**
-   * 预加载图片
-   * @param {string} src - 图片地址
-   * @param {number} priority - 优先级（0-1）
-   */
-  preload(src, priority = 0.5) {
-    if (this.imageCache.has(src)) {
-      return
-    }
-
-    this.loadingQueue.push({
-      src,
-      priority,
-      time: Date.now()
-    })
-
-    // 按优先级排序
-    this.loadingQueue.sort((a, b) => b.priority - a.priority)
-
-    // 开始处理队列
-    if (!this.isProcessing) {
-      this.processQueue()
-    }
-  }
-
-  /**
-   * 加载单张图片
-   * @param {string} src - 图片地址
-   * @param {string} index - 索引
-   */
-  loadImage(src, index) {
-    if (!src || this.imageCache.has(src)) {
-      return
-    }
-
-    // 标记为加载中
-    this.imageCache.set(src, {
-      status: 'loading',
-      index
-    })
-
-    wx.getImageInfo({
-      src,
-      success: (res) => {
-        this.imageCache.set(src, {
-          status: 'loaded',
-          width: res.width,
-          height: res.height,
-          index
+      
+      observer
+        .relativeToViewport({ bottom: this.options.threshold })
+        .observe(`[data-src="${imageNode.dataset?.src}"]`, (res) => {
+          if (res.intersectionRatio > 0) {
+            this.loadImage(imageNode)
+            observer.disconnect()
+          }
         })
-        
-        // 触发事件
-        wx.trigger('imageLoaded', { src, index })
+    }
+  }
+
+  /**
+   * 加载图片
+   */
+  loadImage(imageNode) {
+    const src = imageNode.dataset?.src || imageNode.src
+    
+    if (!src) return
+    if (this.loadedImages.has(src) || this.loadingImages.has(src)) return
+
+    this.loadingImages.add(src)
+
+    // 使用 wx.getImageInfo 预加载
+    wx.getImageInfo({
+      src: src,
+      success: (res) => {
+        imageNode.src = src
+        this.loadedImages.add(src)
+        this.loadingImages.delete(src)
       },
       fail: (err) => {
-        this.imageCache.set(src, {
-          status: 'error',
-          error: err,
-          index
-        })
-        
-        // 触发错误事件
-        wx.trigger('imageError', { src, index, error: err })
+        console.error('[ImageLazyLoader] Failed to load:', src, err)
+        imageNode.src = this.options.placeholder
+        this.loadingImages.delete(src)
       }
     })
   }
 
   /**
-   * 处理加载队列
+   * 预加载图片
    */
-  processQueue() {
-    if (this.loadingQueue.length === 0) {
-      this.isProcessing = false
-      return
-    }
-
-    this.isProcessing = true
-    const item = this.loadingQueue.shift()
-
-    this.loadImage(item.src)
-
-    // 延迟处理下一张
-    setTimeout(() => {
-      this.processQueue()
-    }, 100)
+  preload(images) {
+    images.forEach(src => {
+      if (!this.loadedImages.has(src) && !this.loadingImages.has(src)) {
+        wx.getImageInfo({
+          src: src,
+          success: () => {
+            this.loadedImages.add(src)
+          },
+          fail: () => {
+            console.error('[ImageLazyLoader] Preload failed:', src)
+          }
+        })
+      }
+    })
   }
 
   /**
-   * 批量预加载
-   * @param {Array} images - 图片数组
-   * @param {number} batchSize - 批次大小
+   * 批量加载
    */
-  batchPreload(images, batchSize = 5) {
-    for (let i = 0; i < images.length; i += batchSize) {
-      const batch = images.slice(i, i + batchSize)
-      batch.forEach((img, idx) => {
-        this.preload(img.src, img.priority || 0.5)
+  batchLoad(imageList) {
+    const batchSize = 5
+    let index = 0
+
+    const loadBatch = () => {
+      if (index >= imageList.length) return
+      
+      const batch = imageList.slice(index, index + batchSize)
+      batch.forEach(item => {
+        if (item.src) {
+          this.preload([item.src])
+        }
       })
+      
+      index += batchSize
+      setTimeout(loadBatch, 100)
     }
+
+    loadBatch()
   }
 
   /**
    * 清除缓存
    */
   clearCache() {
-    this.imageCache.clear()
-    this.loadingQueue = []
-    this.isProcessing = false
+    this.loadedImages.clear()
+    this.loadingImages.clear()
+    this._imageNodes = []
   }
 
   /**
-   * 获取缓存状态
-   * @param {string} src - 图片地址
-   * @returns {Object|null}
+   * 销毁
    */
-  getCacheStatus(src) {
-    return this.imageCache.get(src) || null
-  }
-
-  /**
-   * 获取统计信息
-   * @returns {Object}
-   */
-  getStats() {
-    let loaded = 0
-    let error = 0
-    
-    for (const [, value] of this.imageCache.entries()) {
-      if (value.status === 'loaded') loaded++
-      if (value.status === 'error') error++
-    }
-
-    return {
-      total: this.imageCache.size,
-      loaded,
-      error,
-      queueLength: this.loadingQueue.length
-    }
+  destroy() {
+    this.clearCache()
   }
 }
 
-// 导出单例
-const imageLazyLoader = new ImageLazyLoader()
+// 单例实例
+let _instance = null
 
+// CommonJS 导出 - 与 app.js 的 require 导入兼容
 module.exports = {
-  getImageLazyLoader: () => imageLazyLoader
+  getImageLazyLoader: function(options) {
+    if (!_instance) {
+      _instance = new ImageLazyLoader(options)
+    }
+    return _instance
+  },
+  ImageLazyLoader: ImageLazyLoader
 }

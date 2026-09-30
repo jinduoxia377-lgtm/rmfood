@@ -85,9 +85,12 @@ class ToolRegistry:
         """返回所有工具的 OpenAI 函数调用 schema"""
         return [
             {
-                "name": tool.name,
-                "description": tool.description,
-                "parameters": tool.parameters,
+                "type": "function",
+                "function": {
+                    "name": tool.name,
+                    "description": tool.description,
+                    "parameters": tool.parameters,
+                },
             }
             for tool in self._tools.values()
         ]

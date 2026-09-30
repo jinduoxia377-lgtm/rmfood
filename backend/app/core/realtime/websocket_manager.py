@@ -90,6 +90,9 @@ class MessageType(str, Enum):
     AI_TASK_COMPLETED = "ai_task_completed"
     AI_TASK_FAILED = "ai_task_failed"
 
+    # 配方验证进度
+    VALIDATION_PROGRESS = "validation_progress"
+
     # 在线状态
     USER_ONLINE = "user_online"
     USER_OFFLINE = "user_offline"

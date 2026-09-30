@@ -1,466 +1,164 @@
 /* ══════════════════════════════════════════════════════════════
-   莱茵分子 (Rhine Molecular) — 登录页面样式 v3.0
-   生物技术启发 · 分子美学 · 全局主题对齐版
+   莱茵分子 (Rhine Molecular) — 登录页面样式 v4.0 (主题系统规范对齐版)
 
-   ★ 所有颜色令牌直接使用项目全局 CSS 变量 (--color-*, --text-*, --font-*, --space-*)
-   ★ 品牌主色: Apple Emerald #34C759 via --color-primary-600
-   ★ 品牌辅色: Ocean Blue #2563EB via --color-blue-600
-   ★ WCAG 2.1 AA 合规 (文本对比度 ≥ 4.5:1)
-   ★ 支持 Light / Dark 双模式切换
+   ★ 全面对接全局语义令牌 (--color-*, --text-*, --bg-*, --space-*, --radius-*, --shadow-*)
+   ★ 页面背景使用 Dashboard 基准：bg-grid 点阵 + var(--bg-canvas)
+   ★ 卡片使用全局 Card 体系：rounded-xl + 顶部 accent bar
+   ★ 字号基线：页面标题 16px (text-body-lg)，副标题/说明 12px (text-caption)，标签 14px (text-body-sm)
+   ★ Light / Dark 双模式自适应，颜色随 /settings 主题切换更新
+   ★ WCAG 2.1 AA 合规
    ══════════════════════════════════════════════════════════════ */
 
 /* ================================================================
-   1. 设计令牌 — 直接使用项目全局变量
+   1. 页面容器 — Light/Dark 双模式 (Dashboard 基准)
    ================================================================ */
 
-/* 亮色模式下的登录页变量 */
-:root {
-  /* ── 品牌色 → 直接使用全局变量 ── */
-  --rhine-brand: var(--color-primary-600, #059669);
-  --rhine-brand-light: var(--color-primary-400, #34D399);
-  --rhine-brand-dark: var(--color-primary-hover, #059669);
-  --rhine-brand-glow: rgba(5, 150, 105, 0.35);
-  --rhine-brand-dim: rgba(5, 150, 105, 0.10);
-  --rhine-brand-micro: rgba(5, 150, 105, 0.05);
-
-  /* ── 辅色 → 直接使用全局变量 ── */
-  --rhine-accent: var(--color-blue-600, #2563EB);
-  --rhine-accent-light: var(--color-blue-400, #60A5FA);
-  --rhine-accent-dark: var(--color-blue-700, #1D4ED8);
-  --rhine-accent-glow: rgba(37, 99, 235, 0.3);
-  --rhine-accent-dim: rgba(37, 99, 235, 0.08);
-
-  /* ── 功能色 → 直接使用全局变量 ── */
-  --rhine-error: var(--color-danger-500, #EF4444);
-  --rhine-error-dim: rgba(239, 68, 68, 0.1);
-  --rhine-success: var(--color-success-500, #22C55E);
-  --rhine-success-dim: rgba(34, 197, 94, 0.1);
-  --rhine-warning: var(--color-warning-500, #F59E0B);
-
-  /* ── 文字色 → 直接使用全局变量 ── */
-  --rhine-text: var(--text-primary, #1E293B);
-  --rhine-text-secondary: var(--text-secondary, #475569);
-  --rhine-text-dim: var(--text-muted, #94A3B8);
-  --rhine-text-faint: var(--text-disabled, #CBD5E1);
-
-  /* ── 表面/背景色 → 直接使用全局变量 ── */
-  --rhine-surface: var(--card-bg-solid, #FFFFFF);
-  --rhine-surface-variant: var(--bg-secondary, #F8FAFC);
-  --rhine-bg: var(--bg-primary, #F8FAFC);
-  --rhine-bg-elevated: var(--bg-secondary, #FFFFFF);
-  --rhine-border: var(--border-color, rgba(148, 163, 184, 0.2));
-  --rhine-border-focus: var(--color-blue-600, #2563EB);
-  --rhine-divider-color: var(--border-color, rgba(148, 163, 184, 0.1));
-
-  /* ── 阴影 — 使用项目阴影令牌 ── */
-  --rhine-shadow-sm: var(--shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.05));
-  --rhine-shadow-md: var(--shadow-md, 0 4px 6px -1px rgba(0, 0, 0, 0.1));
-  --rhine-shadow-lg: var(--shadow-lg, 0 10px 15px -3px rgba(0, 0, 0, 0.1));
-  --rhine-shadow-card:
-    0 0 0 0.5px rgba(5, 150, 105, 0.06),
-    0 8px 32px rgba(0, 0, 0, 0.12),
-    0 2px 8px rgba(0, 0, 0, 0.06);
-  --rhine-shadow-card-hover:
-    0 0 0 1px rgba(5, 150, 105, 0.12),
-    0 12px 40px rgba(0, 0, 0, 0.15),
-    0 0 24px rgba(5, 150, 105, 0.06);
-  --rhine-shadow-glow: 0 0 16px rgba(5, 150, 105, 0.12), 0 0 48px rgba(5, 150, 105, 0.04);
-  --rhine-shadow-input: 0 0 0 3px var(--rhine-brand-dim), 0 0 16px rgba(5, 150, 105, 0.15);
-
-  /* ── 圆角 → 使用项目圆角令牌 ── */
-  --rhine-radius-xs: var(--radius-xs, 2px);
-  --rhine-radius-sm: var(--radius-sm, 4px);
-  --rhine-radius-md: var(--radius-md, 8px);
-  --rhine-radius-lg: var(--radius-lg, 12px);
-  --rhine-radius-xl: var(--radius-xl, 16px);
-
-  /* ── 间距 → 使用项目 4pt 间距令牌 ── */
-  --rhine-space-1: var(--space-1, 0.5rem);
-  --rhine-space-2: var(--space-2, 1rem);
-  --rhine-space-3: var(--space-3, 1.5rem);
-  --rhine-space-4: var(--space-4, 2rem);
-  --rhine-space-5: var(--space-5, 2.5rem);
-  --rhine-space-6: var(--space-6, 3rem);
-  --rhine-space-8: var(--space-8, 4rem);
-  --rhine-space-10: var(--space-10, 5rem);
-  --rhine-space-12: var(--space-12, 6rem);
-  --rhine-space-14: 3.5rem;
-
-  /* ── 字体 → 使用项目字体令牌 ── */
-  --rhine-font-heading: var(--font-sans, 'Microsoft YaHei', 'PingFang SC', sans-serif);
-  --rhine-font-body: var(--font-sans, 'Microsoft YaHei', 'PingFang SC', sans-serif);
-  --rhine-font-mono: var(--font-mono, 'JetBrains Mono', 'Fira Code', monospace);
-  --rhine-text-xs: 0.75rem;
-  --rhine-text-sm: 0.875rem;
-  --rhine-text-base: 1rem;
-  --rhine-text-xl: 1.5rem;
-  --rhine-text-2xl: 2rem;
-  --rhine-leading-tight: 1.25;
-  --rhine-leading-normal: 1.5;
-  --rhine-weight-bold: 700;
-  --rhine-weight-semibold: 600;
-  --rhine-weight-medium: 500;
-
-  /* ── 动画 → 使用项目动画令牌 ── */
-  --rhine-duration-fast: var(--duration-fast, 100ms);
-  --rhine-duration-normal: var(--duration-normal, 200ms);
-  --rhine-duration-slow: var(--duration-slow, 300ms);
-  --rhine-duration-dna: 50s;
-  --rhine-ease-out: var(--ease-elegant, cubic-bezier(0.16, 1, 0.3, 1));
-  --rhine-ease-spring: var(--ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1));
-  --rhine-ease-in-out: var(--ease-standard, cubic-bezier(0.4, 0, 0.2, 1));
+/* 登录页根节点 — 使用全局 .rhine-page-root 避免与全局 body 冲突 */
+.rhine-page-root {
+  min-height: 100vh;
+  font-family: var(--font-sans);
+  background-color: var(--bg-canvas, #f8fafc);
+  color: var(--text-primary, #0f172a);
 }
 
-/* ================================================================
-   2. 页面容器 — 支持 Light/Dark 双模式
-   ================================================================ */
-
-/* 亮色模式 */
+/* 登录页 — bg-grid 点阵背景 + var(--bg-canvas)，与 /dashboard 视觉统一 */
 .login-page {
   position: relative;
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
-  background: var(--rhine-bg);
-  font-family: var(--rhine-font-body);
-  color: var(--rhine-text);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background-color: var(--bg-canvas, #f8fafc);
 }
 
-.login-page .rhine-particle-canvas {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-}
-
-.login-page .rhine-hex-grid {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  opacity: 0.3;
-}
-
-/* ── 点状网格背景 ── */
-.rhine-dot-grid {
+/* 背景层 — Dashboard 基准点阵 (与 .bg-grid 同规格) */
+.login-page .rhine-bg-layer {
   position: absolute;
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  opacity: 0.55;
-  animation: rhineDotBreath 8s ease-in-out infinite;
+  background-image: radial-gradient(circle, var(--grid-color-light, rgba(148, 163, 184, 0.12)) 1px, transparent 1px);
+  background-size: var(--grid-size, 24px) var(--grid-size, 24px);
 }
 
-/* 亮色模式 — 浅灰绿点 */
-.login-page .rhine-dot-grid .rhine-dot-fg {
-  fill: rgba(5, 150, 105, 0.22);
-}
-.login-page .rhine-dot-grid .rhine-dot-sub {
-  fill: rgba(5, 150, 105, 0.12);
-}
-.login-page .rhine-dot-grid .rhine-dot-accent {
-  fill: rgba(5, 150, 105, 0.15);
+/* 暗色模式点阵 */
+.dark .login-page .rhine-bg-layer {
+  background-image: radial-gradient(circle, var(--grid-color-light, rgba(148, 163, 184, 0.06)) 1px, transparent 1px);
 }
 
-/* 暗色模式 — 翡翠绿点 */
-.dark .rhine-dot-grid .rhine-dot-fg {
-  fill: rgba(5, 150, 105, 0.18);
-}
-.dark .rhine-dot-grid .rhine-dot-sub {
-  fill: rgba(5, 150, 105, 0.08);
-}
-.dark .rhine-dot-grid .rhine-dot-accent {
-  fill: rgba(5, 150, 105, 0.12);
-}
+/* ================================================================
+   2. 品牌叠加层 — 桌面端左上 (Dashboard 风格，无动画)
+   ================================================================ */
 
-/* 暗色模式 */
-.dark .login-page {
-  background: var(--bg-canvas, #000000);
-  color: var(--text-primary, #F5F5F7);
-}
-
-/* ── 暗色模式品牌色覆盖：强制使用深翡翠绿，避免 dark.css 中 --color-primary-600 过浅 ── */
-.dark {
-  --rhine-brand: #059669;
-  --rhine-brand-dark: #047857;
-  --rhine-brand-glow: rgba(5, 150, 105, 0.45);
-  --rhine-brand-dim: rgba(5, 150, 105, 0.12);
-  --rhine-brand-micro: rgba(5, 150, 105, 0.06);
-}
-
-.dark .login-page .rhine-hex-grid {
-  opacity: 0.5;
-}
-
-/* ── 渐变叠加层 (仅暗色模式使用) ── */
-.dark .login-page .rhine-gradient-overlay {
+/* 亮色模式品牌叠加层 */
+.login-page .rhine-brand-overlay {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 44%;
   z-index: 1;
   pointer-events: none;
-  background:
-    radial-gradient(ellipse 80% 60% at 25% 25%, rgba(5, 150, 105, 0.04) 0%, transparent 70%),
-    radial-gradient(ellipse 60% 50% at 70% 55%, rgba(37, 99, 235, 0.03) 0%, transparent 70%),
-    radial-gradient(ellipse 40% 30% at 50% 80%, rgba(245, 158, 11, 0.02) 0%, transparent 70%),
-    linear-gradient(to bottom, transparent 55%, var(--bg-surface-raised, #1C1C1E) 95%, var(--bg-canvas, #000000) 100%);
-}
-
-/* 亮色模式渐变 */
-.login-page .rhine-gradient-overlay {
-  display: none;
-}
-
-/* ================================================================
-   3. DNA 螺旋 — 仅暗色模式可见
-   ================================================================ */
-.dark .login-page .rhine-dna-container {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 56%;
-  height: 100%;
-  z-index: 2;
-  pointer-events: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  padding: var(--space-8) var(--space-6);
 }
 
 @media (max-width: 1023px) {
-  .dark .login-page .rhine-dna-container {
-    width: 100%;
-    height: 200px;
-    top: 0;
-  }
-}
-
-@media (max-width: 767px) {
-  .dark .login-page .rhine-dna-container {
-    height: 120px;
-  }
-}
-
-.dark .login-page .rhine-dna-scene {
-  position: relative;
-  width: 100%;
-  height: 82%;
-  max-width: 560px;
-  perspective: 900px;
-  transform-style: preserve-3d;
-  animation: rhineDnaRotate 50s linear infinite;
-}
-
-@media (max-width: 1023px) {
-  .dark .login-page .rhine-dna-scene {
-    height: 100%;
-    perspective: 400px;
-  }
-}
-
-@keyframes rhineDnaRotate {
-  from { transform: rotateY(0deg) rotateX(8deg); }
-  to   { transform: rotateY(360deg) rotateX(8deg); }
-}
-
-.dark .login-page .rhine-dna-pair {
-  position: absolute;
-  left: 0;
-  width: 100%;
-  height: 0;
-  transition: opacity var(--rhine-duration-slow) var(--rhine-ease-out);
-}
-
-.dark .login-page .rhine-dna-node {
-  position: absolute;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  transition: all var(--rhine-duration-normal) var(--rhine-ease-out);
-}
-
-.dark .rhine-dna-node::after {
-  content: '';
-  position: absolute;
-  inset: -3px;
-  border-radius: 50%;
-  background: inherit;
-  opacity: 0.25;
-  filter: blur(4px);
-}
-
-@media (max-width: 767px) {
-  .dark .login-page .rhine-dna-node {
-    width: 5px;
-    height: 5px;
-  }
-}
-
-.dark .login-page .rhine-dna-rung {
-  position: absolute;
-  height: 1px;
-  top: 0;
-  transform: translateY(-50%);
-  opacity: 0.35;
-}
-
-/* 亮色模式隐藏 DNA */
-.login-page .rhine-dna-container {
-  display: none;
-}
-
-/* ================================================================
-   4. 品牌叠加层 — 仅暗色模式可见
-   ================================================================ */
-.dark .login-page .rhine-brand-overlay {
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 56%;
-  z-index: 3;
-  pointer-events: none;
-  padding: var(--rhine-space-14) var(--rhine-space-12) var(--rhine-space-10);
-  background: linear-gradient(to top, var(--bg-surface-raised, #2C2C2E) 0%, rgba(44, 44, 46, 0.85) 40%, transparent 100%);
-}
-
-@media (max-width: 1023px) {
-  .dark .login-page .rhine-brand-overlay {
+  .login-page .rhine-brand-overlay {
     display: none;
   }
 }
 
-.dark .login-page .rhine-brand-overlay .rhine-brand-logo {
+.login-page .rhine-brand-logo {
   display: flex;
   align-items: center;
-  gap: var(--rhine-space-3);
-  margin-bottom: var(--rhine-space-3);
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
 }
 
-.dark .login-page .rhine-brand-overlay .rhine-brand-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: var(--rhine-radius-sm);
-  background: linear-gradient(135deg, var(--rhine-brand), var(--color-primary-hover, #059669));
+.login-page .rhine-brand-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-lg);
+  background: var(--color-primary-600, #059669);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-primary-contrast-text, #ffffff);
-  box-shadow: 0 0 16px var(--rhine-brand-glow);
+  color: #ffffff;
+  box-shadow: var(--shadow-apple-soft, 0 1px 3px rgba(0, 0, 0, 0.06));
 }
 
-.dark .login-page .rhine-brand-overlay .rhine-brand-name {
-  font-family: var(--rhine-font-heading);
-  font-size: 22px;
-  font-weight: var(--rhine-weight-bold);
-  letter-spacing: -0.02em;
-  color: var(--text-primary, #F5F5F7);
+.login-page .rhine-brand-name {
+  font-family: var(--font-sans);
+  font-size: var(--text-h3, 1.5rem);
+  font-weight: 600;
+  letter-spacing: var(--text-h3-tracking, 0em);
+  color: var(--text-primary, #0f172a);
+  line-height: 1.2;
 }
 
-.dark .login-page .rhine-brand-overlay .rhine-brand-name-en {
-  font-size: 11px;
-  font-weight: var(--rhine-weight-medium);
-  color: var(--text-muted, #94A3B8);
-  letter-spacing: 0.1em;
+.login-page .rhine-brand-name-en {
+  font-size: var(--text-caption, 0.75rem);
+  font-weight: 500;
+  color: var(--text-muted, #334155);
+  letter-spacing: 0.05em;
   text-transform: uppercase;
+  margin-top: 2px;
 }
 
-.dark .login-page .rhine-brand-overlay .rhine-brand-tagline {
-  font-size: 13px;
-  font-weight: var(--rhine-weight-medium);
-  color: var(--rhine-brand-light);
-  letter-spacing: 0.06em;
-  margin-bottom: var(--rhine-space-5);
+.login-page .rhine-brand-tagline {
+  font-size: var(--text-body-sm, 0.875rem);
+  font-weight: 400;
+  color: var(--text-secondary, #334155);
+  line-height: var(--text-body-sm-line-height, 1.43);
+  max-width: 360px;
 }
 
-.dark .login-page .rhine-brand-overlay .rhine-brand-desc {
-  font-size: 12.5px;
-  line-height: 1.65;
-  color: var(--text-secondary, #CBD5E1);
-  margin-bottom: var(--rhine-space-8);
-  max-width: 420px;
+/* 暗色模式品牌文字 */
+.dark .login-page .rhine-brand-name {
+  color: var(--text-primary, #f1f5f9);
 }
-
-.dark .login-page .rhine-brand-overlay .rhine-brand-pillars {
-  display: flex;
-  gap: var(--rhine-space-8);
+.dark .login-page .rhine-brand-name-en {
+  color: var(--text-muted, #94a3b8);
 }
-
-.dark .login-page .rhine-brand-overlay .rhine-brand-pillar {
-  display: flex;
-  align-items: center;
-  gap: var(--rhine-space-2);
-  font-size: 12px;
-  color: var(--text-secondary, #CBD5E1);
-  transition: color var(--rhine-duration-fast) var(--rhine-ease-out);
-}
-
-.dark .login-page .rhine-brand-overlay .rhine-brand-pillar-icon {
-  opacity: 0.65;
-}
-
-/* 亮色模式隐藏品牌叠加层 */
-.login-page .rhine-brand-overlay {
-  display: none;
+.dark .login-page .rhine-brand-tagline {
+  color: var(--text-secondary, #94a3b8);
 }
 
 /* ================================================================
-   5. 登录表单面板 — 双模式适配
+   3. 登录表单面板 — 双模式适配 (Dashboard 基线)
    ================================================================ */
-.rhine-form-panel {
-  position: absolute;
-  right: 0;
-  top: 0;
-  width: 44%;
-  height: 100%;
+
+/* 亮色模式表单面板 — 全屏居中 */
+.login-page .rhine-form-panel {
+  position: relative;
   z-index: 10;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--rhine-space-8);
+  min-height: 100vh;
+  padding: var(--space-8) var(--space-4);
+  background-color: var(--bg-canvas, #f8fafc);
 }
 
-/* ── 亮色模式表单面板 ── */
-.login-page .rhine-form-panel {
-  background: var(--rhine-bg);
-  width: 100%;
-  justify-content: center;
-  align-items: center;
-  left: 0;
-  right: auto;
-  transform: none;
+/* 暗色模式表单面板 */
+.dark .login-page .rhine-form-panel {
+  background-color: var(--bg-canvas, #020617);
 }
 
-@media (max-width: 1023px) {
+@media (max-width: 767px) {
   .login-page .rhine-form-panel {
-    width: 100%;
-    /* 移除固定 padding-top，改为让 card 自身决定位置 */
-    padding-top: 0;
+    padding: var(--space-4);
     align-items: flex-start;
-    justify-content: flex-start;
-    left: 0;
-    right: auto;
-    transform: none;
   }
 }
 
 /* 移动端品牌条 */
 .rhine-mobile-brand {
   display: none;
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
+  position: relative;
   z-index: 11;
-  padding: var(--rhine-space-4) var(--rhine-space-5);
+  padding: var(--space-4) var(--space-5);
   justify-content: space-between;
   align-items: center;
-  background: linear-gradient(to bottom, var(--bg-canvas, #000000) 60%, transparent);
-}
-
-/* 亮色模式移动端品牌条 */
-.login-page .rhine-mobile-brand {
-  background: linear-gradient(to bottom, var(--rhine-bg) 60%, transparent);
+  background-color: var(--bg-canvas, #f8fafc);
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
 }
 
 @media (max-width: 1023px) {
@@ -469,173 +167,145 @@
   }
 }
 
+.dark .rhine-mobile-brand {
+  background-color: var(--bg-canvas, #020617);
+  border-bottom-color: var(--border-color, #64748b);
+}
+
 .rhine-mobile-logo {
   display: flex;
   align-items: center;
-  gap: var(--rhine-space-2);
+  gap: var(--space-2);
 }
 
 .rhine-mobile-logo-icon {
   width: 30px;
   height: 30px;
-  border-radius: 7px;
-  background: linear-gradient(135deg, var(--rhine-brand), var(--color-primary-hover, #059669));
+  border-radius: var(--radius-md);
+  background: var(--color-primary-600, #059669);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-primary-contrast-text, #ffffff);
-  box-shadow: 0 0 12px var(--rhine-brand-glow);
+  color: #ffffff;
 }
 
 .rhine-mobile-logo-text {
-  font-family: var(--rhine-font-heading);
-  font-size: 17px;
-  font-weight: var(--rhine-weight-bold);
-  color: var(--rhine-text);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary, #0f172a);
 }
 
-/* ── 暗色模式表单面板 ── */
-.dark .login-page .rhine-form-panel {
-  background: var(--bg-canvas, #000000);
-  right: 0;
-  left: auto;
-  width: 44%;
-  justify-content: flex-end;
+.dark .rhine-mobile-logo-text {
+  color: var(--text-primary, #f1f5f9);
+}
+
+/* 卡片内容容器 */
+.rhine-form-content {
+  display: flex;
+  flex-direction: column;
   align-items: center;
-}
-
-/* ── 玻璃态卡片 — 暗色模式 ── */
-.dark .login-page .rhine-card {
   width: 100%;
-  max-width: 430px;
-  background: rgba(var(--color-primary-rgb, 52,199,89), 0.68);
-  backdrop-filter: blur(28px) saturate(180%);
-  -webkit-backdrop-filter: blur(28px) saturate(180%);
-  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.06));
-  border-radius: var(--rhine-radius-xl);
-  padding: var(--rhine-space-10);
-  box-shadow:
-    0 0 0 0.5px rgba(5, 150, 105, 0.06),
-    0 8px 32px rgba(0, 0, 0, 0.55),
-    0 2px 8px rgba(0, 0, 0, 0.3);
-  position: relative;
-  transition: all var(--rhine-duration-normal) var(--rhine-ease-out);
-}
-
-.dark .login-page .rhine-card::before {
-  content: '';
-  position: absolute;
-  inset: -1px;
-  z-index: -1;
-  border-radius: inherit;
-  background: linear-gradient(160deg, rgba(5, 150, 105, 0.06), transparent 40%, transparent 60%, rgba(37, 99, 235, 0.04));
-  pointer-events: none;
-}
-
-.dark .login-page .rhine-card:hover {
-  background: rgba(var(--bg-surface-rgb, 44, 44, 46), 0.78);
-  border-color: rgba(5, 150, 105, 0.20);
-  box-shadow:
-    0 0 0 1px rgba(5, 150, 105, 0.12),
-    0 12px 40px rgba(0, 0, 0, 0.6),
-    0 0 24px rgba(5, 150, 105, 0.06);
-}
-
-@media (max-width: 639px) {
-  .dark .login-page .rhine-card {
-    background: transparent;
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-    border: none;
-    box-shadow: none;
-    padding: var(--rhine-space-4);
-    max-width: 100%;
-  }
-  .dark .login-page .rhine-card::before {
-    display: none;
-  }
-  .dark .login-page .rhine-card:hover {
-    box-shadow: none;
-    background: transparent;
-  }
-}
-
-/* ── 亮色模式卡片 — 补充微妙背景区分 ── */
-.login-page .rhine-card {
-  width: 100%;
-  max-width: 430px;
-  background: var(--rhine-surface);
-  border: 1px solid var(--rhine-border);
-  border-radius: var(--rhine-radius-xl);
-  padding: var(--rhine-space-10);
-  box-shadow: var(--rhine-shadow-card);
-  transition: all var(--rhine-duration-normal) var(--rhine-ease-out);
-  position: relative;
-}
-
-/* 亮色模式卡片 hover 微光边框 */
-.login-page .rhine-card::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: linear-gradient(160deg, rgba(5,150,105,0.04), transparent 50%);
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity var(--rhine-duration-normal) var(--rhine-ease-out);
-}
-
-.login-page .rhine-card:hover::after {
-  opacity: 1;
-}
-
-.login-page .rhine-card:hover {
-  box-shadow: var(--rhine-shadow-card-hover);
-  border-color: rgba(5, 150, 105, 0.2);
-}
-
-@media (max-width: 639px) {
-  .login-page .rhine-card {
-    padding: var(--rhine-space-4);
-    max-width: 100%;
-  }
-}
-
-/* ── 卡片头部 ── */
-.rhine-card-header {
-  margin-bottom: var(--rhine-space-5); /* 从 4rem → 2.5rem，减少顶部浪费 */
-}
-
-.rhine-card-header h2 {
-  font-family: var(--rhine-font-heading);
-  font-size: var(--rhine-text-2xl);
-  font-weight: var(--rhine-weight-bold);
-  letter-spacing: -0.03em;
-  margin-bottom: var(--rhine-space-1);
-  color: var(--rhine-text);
-}
-
-.rhine-card-header p {
-  font-size: var(--rhine-text-sm);
-  color: var(--rhine-text-secondary);
-  line-height: var(--rhine-leading-normal);
+  max-width: 440px;
 }
 
 /* ================================================================
-   6. 表单元素 — 直接使用项目全局变量
+   4. 卡片 — 全局 Card 体系 (Dashboard 基准：rounded-xl + 顶部 accent bar)
    ================================================================ */
+
+.login-page .rhine-card {
+  width: 100%;
+  max-width: 440px;
+  background: var(--card-bg-solid, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: var(--radius-xl, 16px);
+  padding: var(--space-8);
+  box-shadow: var(--shadow-card, 0 1px 3px rgba(0, 0, 0, 0.06));
+  position: relative;
+  transition: box-shadow var(--duration-normal, 200ms) var(--ease-elegant, cubic-bezier(0.16, 1, 0.3, 1));
+}
+
+.login-page .rhine-card:hover {
+  box-shadow: var(--shadow-elevated, 0 8px 24px rgba(0, 0, 0, 0.1));
+  border-color: var(--border-color-hover, rgba(0, 0, 0, 0.1));
+}
+
+.dark .login-page .rhine-card {
+  background: var(--card-bg-solid, #0f172a);
+  border-color: var(--border-color, #64748b);
+}
+
+.dark .login-page .rhine-card:hover {
+  border-color: var(--border-color-hover, rgba(255, 255, 255, 0.12));
+}
+
+@media (max-width: 767px) {
+  .login-page .rhine-card {
+    padding: var(--space-5) var(--space-4);
+    max-width: 100%;
+  }
+}
+
+/* 卡片头部 — 欢迎横幅：顶部 accent bar + 标题/副标题 */
+.rhine-card-header {
+  position: relative;
+  margin-bottom: var(--space-6);
+}
+
+/* 顶部 accent bar (Dashboard 欢迎横幅风格) */
+.rhine-card-accent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 48px;
+  height: 3px;
+  border-radius: 0 0 var(--radius-xs, 4px) var(--radius-xs, 4px);
+  background: var(--color-primary-600, #059669);
+}
+
+.rhine-card-header h2 {
+  font-family: var(--font-sans);
+  font-size: var(--text-h4, 1.375rem);
+  font-weight: 600;
+  letter-spacing: var(--text-h4-tracking, 0em);
+  color: var(--text-primary, #0f172a);
+  margin-bottom: var(--space-1, 4px);
+}
+
+.rhine-card-header p {
+  font-size: var(--text-body-sm, 0.875rem);
+  color: var(--text-secondary, #334155);
+  line-height: var(--text-body-sm-line-height, 1.43);
+  margin: 0;
+}
+
+.dark .rhine-card-header h2 {
+  color: var(--text-primary, #f1f5f9);
+}
+
+.dark .rhine-card-header p {
+  color: var(--text-secondary, #94a3b8);
+}
+
+/* ================================================================
+   5. 表单元素 — 全局输入系统 (Apple HIG 风格)
+   ================================================================ */
+
 .rhine-form-group {
-  margin-bottom: var(--rhine-space-5);
+  margin-bottom: var(--space-5);
 }
 
 .rhine-label {
   display: block;
-  font-size: 14px;
-  font-weight: var(--rhine-weight-semibold);
-  color: var(--rhine-text-secondary);
-  margin-bottom: var(--rhine-space-2);
-  letter-spacing: 0.02em;
-  transition: color var(--rhine-duration-fast) var(--rhine-ease-out);
+  font-size: var(--text-body-sm, 0.875rem);
+  font-weight: 500;
+  color: var(--text-secondary, #334155);
+  margin-bottom: var(--space-2);
+  line-height: 1.4;
+}
+
+.dark .rhine-label {
+  color: var(--text-secondary, #94a3b8);
 }
 
 .rhine-input-wrap {
@@ -644,270 +314,262 @@
 
 .rhine-input-icon {
   position: absolute;
-  left: 15px;
+  left: 14px;
   top: 50%;
   transform: translateY(-50%);
-  color: var(--rhine-text-dim);
+  color: var(--text-muted, #334155);
   pointer-events: none;
-  transition: color var(--rhine-duration-fast) var(--rhine-ease-out);
+  transition: color var(--duration-fast, 100ms) var(--ease-elegant, cubic-bezier(0.16, 1, 0.3, 1));
 }
 
-/* ── 输入框 (5 态) ── */
+/* 输入框 — 全局 .input 体系 (44px 触摸目标) */
 .rhine-input {
   width: 100%;
-  height: 50px;
-  padding: 0 var(--rhine-space-4) 0 46px;
-  font-size: 15px;
-  font-family: var(--rhine-font-body);
-  color: var(--rhine-text);
-  background: var(--rhine-surface);
-  border: 1.5px solid var(--rhine-border);
-  border-radius: var(--rhine-radius-md);
+  height: 44px;
+  padding: 0 var(--space-4) 0 42px;
+  font-size: var(--text-body, 0.9375rem);
+  font-family: var(--font-sans);
+  color: var(--text-primary, #0f172a);
+  background: var(--bg-tertiary, #f1f5f9);
+  border: 1.5px solid var(--border-subtle, rgba(0, 0, 0, 0.08));
+  border-radius: var(--radius-md, 8px);
   outline: none;
-  transition: all var(--rhine-duration-normal) var(--rhine-ease-out);
+  transition: all var(--duration-normal, 200ms) var(--ease-spring, cubic-bezier(0.16, 1, 0.3, 1));
 }
 
 .rhine-input::placeholder {
-  color: var(--rhine-text-dim);
+  color: var(--text-muted, #334155);
+  transition: color var(--duration-fast, 100ms) var(--ease-spring, cubic-bezier(0.16, 1, 0.3, 1));
 }
 
 .rhine-input:hover {
-  border-color: var(--rhine-border-focus);
+  border-color: var(--border-color, #e2e8f0);
 }
 
 .rhine-input:focus {
-  border-color: var(--rhine-brand);
-  box-shadow: var(--rhine-shadow-input);
+  border-color: var(--color-primary, #10b981);
+  background: var(--card-bg-solid, #ffffff);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.12);
+}
+
+.rhine-input:focus::placeholder {
+  opacity: 0.5;
 }
 
 .rhine-input.filled {
-  border-color: rgba(5, 150, 105, 0.15);
+  border-color: var(--color-primary-100, #d1fae5);
 }
 
-/* 错误态 — 使用项目 error 色 */
+/* 错误态 */
 .rhine-input.error {
-  border-color: var(--rhine-error);
-  box-shadow: 0 0 0 3px var(--rhine-error-dim);
+  border-color: var(--color-error, #ef4444);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
 }
 
 .rhine-input.error:focus {
-  box-shadow: 0 0 0 3px var(--rhine-error-dim), 0 0 8px rgba(220, 38, 38, 0.15);
+  border-color: var(--color-error-hover, #dc2626);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
 }
 
 .rhine-input-wrap:focus-within .rhine-input-icon {
-  color: var(--rhine-brand);
+  color: var(--color-primary, #10b981);
 }
 
 .rhine-input-wrap:has(.rhine-input.error) .rhine-input-icon {
-  color: var(--rhine-error);
+  color: var(--color-error, #ef4444);
 }
 
-/* ── 暗色模式输入框 ── */
+/* 暗色模式输入框 */
 .dark .rhine-input {
-  background: rgba(255, 255, 255, 0.03);
-  border-color: rgba(255, 255, 255, 0.07);
-  color: var(--text-primary, #F1F5F9);
+  background: var(--bg-tertiary, #1e293b);
+  border-color: var(--border-subtle, rgba(255, 255, 255, 0.06));
+  color: var(--text-primary, #f1f5f9);
 }
 
 .dark .rhine-input::placeholder {
-  color: var(--text-muted, #64748B);
+  color: var(--text-muted, #94a3b8);
 }
 
 .dark .rhine-input:hover {
-  border-color: rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--border-color, #64748b);
 }
 
 .dark .rhine-input:focus {
-  border-color: var(--rhine-brand);
-  background: rgba(255, 255, 255, 0.04);
+  border-color: var(--color-primary, #34d399);
+  background: var(--card-bg-solid, #0f172a);
+  box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.15);
 }
 
-/* ── 密码切换按钮 ── */
+.dark .rhine-input.filled {
+  border-color: rgba(52, 211, 153, 0.25);
+}
+
+.dark .rhine-input.error {
+  border-color: var(--color-error, #f87171);
+  box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.2);
+}
+
+/* 密码切换按钮 */
 .rhine-password-toggle {
   position: absolute;
-  right: 5px;
+  right: var(--space-1, 4px);
   top: 50%;
   transform: translateY(-50%);
-  width: 38px;
-  height: 38px;
-  min-width: 44px;
-  min-height: 44px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
   border: none;
   background: transparent;
-  color: var(--rhine-text-dim);
+  color: var(--text-muted, #334155);
   cursor: pointer;
-  border-radius: var(--rhine-radius-xs);
-  transition: color var(--rhine-duration-fast) var(--rhine-ease-out);
+  border-radius: var(--radius-md, 8px);
+  transition: color var(--duration-fast, 100ms) var(--ease-elegant, cubic-bezier(0.16, 1, 0.3, 1));
 }
 
 .rhine-password-toggle:hover {
-  color: var(--rhine-text-secondary);
+  color: var(--text-primary, #0f172a);
 }
 
-/* ── 错误提示 文字对比度 ≥ 4.5:1 ── */
+.dark .rhine-password-toggle {
+  color: var(--text-muted, #94a3b8);
+}
+
+.dark .rhine-password-toggle:hover {
+  color: var(--text-primary, #f1f5f9);
+}
+
+/* 错误提示 */
 .rhine-error-text {
-  margin-top: var(--rhine-space-2);
-  font-size: 12px;
-  color: var(--rhine-error);
-  font-weight: var(--rhine-weight-medium);
+  margin-top: var(--space-2);
+  font-size: var(--text-caption, 0.75rem);
+  color: var(--color-error, #ef4444);
+  font-weight: 500;
   display: flex;
   align-items: center;
   gap: 4px;
 }
 
-/* ── 密码强度指示器 ── */
-.rhine-password-strength {
-  margin-top: var(--rhine-space-3);
+.dark .rhine-error-text {
+  color: var(--color-error, #f87171);
 }
 
-.rhine-strength-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 5px;
-}
-
-.rhine-strength-label {
-  font-size: 11.5px;
-  color: var(--rhine-text-dim);
-}
-
-.rhine-strength-value {
-  font-size: 11.5px;
-  font-weight: var(--rhine-weight-semibold);
-}
-
-.rhine-strength-bar {
-  height: 3px;
-  background: var(--rhine-border);
-  border-radius: 2px;
-  overflow: hidden;
-  display: flex;
-  gap: 2px;
-}
-
-.rhine-strength-fill {
-  height: 100%;
-  border-radius: 2px;
-  width: 0%;
-  transition: width 0.3s var(--rhine-ease-out),
-              background-color 0.3s var(--rhine-ease-out);
-  flex: 1;
-}
-
-.rhine-strength-fill.active {
-  width: 100%;
-}
-
-/* ── 暗色模式强度条 ── */
-.dark .rhine-strength-bar {
-  background: rgba(255, 255, 255, 0.05);
-}
-
-/* ── 选项行 ── */
+/* 选项行 */
 .rhine-form-options {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin: var(--rhine-space-6) 0;
+  margin: var(--space-4) 0;
 }
 
 .rhine-remember {
   display: flex;
   align-items: center;
-  gap: var(--rhine-space-2);
-  font-size: 13px;
-  color: var(--rhine-text-secondary);
+  gap: var(--space-2);
+  font-size: var(--text-body-sm, 0.875rem);
+  color: var(--text-secondary, #334155);
   cursor: pointer;
   user-select: none;
+}
+
+.dark .rhine-remember {
+  color: var(--text-secondary, #94a3b8);
 }
 
 .rhine-remember-check {
   width: 18px;
   height: 18px;
-  border-radius: var(--rhine-radius-xs);
-  border: 1.5px solid var(--border-color, rgba(255, 255, 255, 0.12));
+  border-radius: var(--radius-xs, 4px);
+  border: 1.5px solid var(--border-color, #e2e8f0);
   background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all var(--rhine-duration-fast) var(--rhine-ease-out);
+  transition: all var(--duration-fast, 100ms) var(--ease-elegant, cubic-bezier(0.16, 1, 0.3, 1));
 }
 
 .rhine-remember-check.checked {
-  background: var(--rhine-brand);
-  border-color: var(--rhine-brand);
+  background: var(--color-primary-600, #059669);
+  border-color: var(--color-primary-600, #059669);
 }
 
 .rhine-remember-check.checked svg {
-  color: var(--color-primary-contrast-text, #ffffff);
+  color: #ffffff;
 }
 
-/* 暗色模式复选框 */
 .dark .rhine-remember-check {
-  border-color: rgba(255, 255, 255, 0.12);
+  border-color: var(--border-color, #64748b);
 }
 
-.login-page .rhine-remember-check {
-  border-color: var(--rhine-border);
+.dark .rhine-remember-check.checked {
+  background: var(--color-primary, #34d399);
+  border-color: var(--color-primary, #34d399);
 }
 
-/* ── 自定义 checkbox 焦点样式 (P1: 键盘可访问性) ── */
+.dark .rhine-remember-check.checked svg {
+  color: #ffffff;
+}
+
+/* 自定义 checkbox 焦点样式 */
 .rhine-remember-check:focus-visible {
-  outline: 2px solid var(--rhine-brand);
+  outline: 2px solid var(--color-primary, #10b981);
   outline-offset: 2px;
-  border-radius: var(--rhine-radius-xs);
+  border-radius: var(--radius-xs, 4px);
 }
 
 .dark .rhine-remember-check:focus-visible {
-  outline-color: var(--rhine-brand-light, #34D399);
+  outline-color: var(--color-primary, #34d399);
 }
 
-/* 忘记密码链接 — 使用项目辅色 */
+/* 忘记密码链接 */
 .rhine-forgot-link {
-  font-size: 13px;
-  font-weight: var(--rhine-weight-semibold);
-  color: var(--rhine-accent);
+  font-size: var(--text-body-sm, 0.875rem);
+  font-weight: 500;
+  color: var(--color-secondary-500, #3b82f6);
   text-decoration: none;
-  transition: color var(--rhine-duration-fast) var(--rhine-ease-out);
+  transition: color var(--duration-fast, 100ms) var(--ease-elegant, cubic-bezier(0.16, 1, 0.3, 1));
 }
 
 .rhine-forgot-link:hover {
-  color: var(--rhine-accent-light);
+  color: var(--color-secondary-600, #2563eb);
 }
 
-/* ── 主提交按钮 — 品牌色 via --color-primary-600 ── */
+.dark .rhine-forgot-link {
+  color: var(--color-secondary-400, #60a5fa);
+}
+
+.dark .rhine-forgot-link:hover {
+  color: var(--color-secondary-500, #3b82f6);
+}
+
+/* 主提交按钮 — 品牌色 via --color-primary-600 */
 .rhine-submit-btn {
   width: 100%;
-  height: 50px;
-  font-size: 15px;
-  font-weight: var(--rhine-weight-bold);
-  font-family: var(--rhine-font-body);
-  letter-spacing: 0.06em;
-  color: var(--color-primary-contrast-text, #ffffff);
-  background: linear-gradient(135deg, var(--rhine-brand), var(--color-primary-hover, #059669));
+  height: 44px;
+  font-size: var(--text-body, 0.9375rem);
+  font-weight: 600;
+  font-family: var(--font-sans);
+  color: #ffffff;
+  background: var(--color-primary-600, #059669);
   border: none;
-  border-radius: var(--rhine-radius-md);
+  border-radius: var(--radius-md, 8px);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--rhine-space-2);
+  gap: var(--space-2);
   position: relative;
   overflow: hidden;
-  transition: all var(--rhine-duration-normal) var(--rhine-ease-out);
-  box-shadow: 0 0 18px var(--rhine-brand-glow), 0 2px 8px rgba(0, 0, 0, 0.3);
+  transition: all var(--duration-normal, 200ms) var(--ease-spring, cubic-bezier(0.16, 1, 0.3, 1));
+  box-shadow: var(--shadow-apple-soft, 0 1px 3px rgba(0, 0, 0, 0.06));
 }
 
 .rhine-submit-btn:hover {
-  background: linear-gradient(135deg, var(--color-primary-hover, #059669), var(--color-primary-500, #10b981));
-  box-shadow: 0 0 28px var(--rhine-brand-glow), 0 0 56px rgba(16, 185, 129, 0.1), 0 4px 12px rgba(0, 0, 0, 0.35);
+  background: var(--color-primary-700, #047857);
   transform: translateY(-1px);
+  box-shadow: var(--shadow-elevated, 0 8px 24px rgba(0, 0, 0, 0.1));
 }
 
 .rhine-submit-btn:active {
@@ -916,29 +578,33 @@
 
 .rhine-submit-btn:disabled {
   opacity: 0.6;
-  color: rgba(255, 255, 255, 0.88);
   cursor: not-allowed;
   transform: none;
-  box-shadow: 0 0 8px var(--rhine-brand-dim);
+  box-shadow: none;
 }
 
-.rhine-submit-btn:disabled:hover {
-  background: linear-gradient(135deg, var(--rhine-brand), var(--color-primary-hover, #059669));
-  transform: none;
+.dark .rhine-submit-btn {
+  background: var(--color-primary, #34d399);
 }
 
-/* ── 加载态按钮 — 防止重复点击视觉反馈 ── */
+.dark .rhine-submit-btn:hover {
+  background: var(--color-primary-500, #10b981);
+}
+
+/* 暗色模式：按钮文字与亮色模式保持一致的浅色，保证品牌实底观感 */
+.dark .rhine-submit-btn,
+.dark .rhine-submit-btn:hover,
+.dark .rhine-submit-btn:disabled {
+  color: #ffffff;
+}
+
+/* 加载态按钮 */
 .rhine-submit-btn.loading {
   pointer-events: none;
   user-select: none;
 }
 
-.rhine-submit-btn.loading:hover {
-  transform: none;
-  box-shadow: 0 0 8px var(--rhine-brand-dim);
-}
-
-/* ── 涟漪 ── */
+/* 涟漪 */
 .rhine-btn-ripple {
   position: absolute;
   border-radius: 50%;
@@ -952,10 +618,10 @@
   to { transform: scale(4); opacity: 0; }
 }
 
-/* ── 加载指示器 ── */
+/* 加载指示器 */
 .rhine-spinner {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   border: 2.5px solid rgba(255, 255, 255, 0.25);
   border-top-color: #ffffff;
   border-radius: 50%;
@@ -966,28 +632,40 @@
   to { transform: rotate(360deg); }
 }
 
-/* ── 提示框 — 使用项目功能色 ── */
+/* 提示框 */
 .rhine-alert {
   display: flex;
   align-items: flex-start;
-  gap: var(--rhine-space-3);
-  padding: var(--rhine-space-3) var(--rhine-space-4);
-  border-radius: var(--rhine-radius-md);
-  margin-bottom: var(--rhine-space-5);
-  font-size: 13px;
-  line-height: 1.55;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md, 8px);
+  margin-bottom: var(--space-4);
+  font-size: var(--text-body-sm, 0.875rem);
+  line-height: 1.43;
 }
 
 .rhine-alert-error {
-  background: var(--rhine-error-dim);
-  border: 1px solid rgba(220, 38, 38, 0.2);
-  color: var(--rhine-error);
+  background: var(--color-error-bg, #fef2f2);
+  border: 1px solid var(--color-error, #ef4444);
+  color: var(--color-error-text, #991b1b);
 }
 
 .rhine-alert-success {
-  background: var(--rhine-success-dim);
-  border: 1px solid rgba(22, 163, 74, 0.2);
-  color: var(--rhine-success);
+  background: var(--color-success-bg, #ecfdf5);
+  border: 1px solid var(--color-success, #10b981);
+  color: var(--color-success-text, #065f46);
+}
+
+.dark .rhine-alert-error {
+  background: var(--color-error-container, rgba(248, 113, 113, 0.12));
+  border-color: var(--color-error, #f87171);
+  color: var(--color-error-text, #fca5a5);
+}
+
+.dark .rhine-alert-success {
+  background: var(--color-success-container, rgba(52, 211, 153, 0.12));
+  border-color: var(--color-success, #34d399);
+  color: var(--color-success-text, #6ee7b7);
 }
 
 .rhine-alert-icon {
@@ -995,15 +673,16 @@
   margin-top: 1px;
 }
 
-/* ══════════════════════════════════════════════════════════════
-   7. 社交登录
-   ══════════════════════════════════════════════════════════════ */
+/* ================================================================
+   6. 社交登录
+   ================================================================ */
+
 .rhine-divider {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: var(--rhine-space-8) 0 var(--rhine-space-6);
+  margin: var(--space-6) 0;
 }
 
 .rhine-divider::before {
@@ -1013,28 +692,31 @@
   left: 0;
   right: 0;
   height: 1px;
-  background: var(--rhine-border);
+  background: var(--border-color, #e2e8f0);
+}
+
+.dark .rhine-divider::before {
+  background: var(--border-color, #64748b);
 }
 
 .rhine-divider-text {
   position: relative;
-  padding: 0 var(--rhine-space-4);
-  font-size: 11.5px;
-  color: var(--rhine-text-dim);
-  background: var(--rhine-surface);
+  padding: 0 var(--space-4);
+  font-size: var(--text-caption, 0.75rem);
+  color: var(--text-muted, #334155);
+  background: var(--card-bg-solid, #ffffff);
   letter-spacing: 0.03em;
 }
 
-@media (max-width: 639px) {
-  .rhine-divider-text {
-    background: transparent;
-  }
+.dark .rhine-divider-text {
+  color: var(--text-muted, #94a3b8);
+  background: var(--card-bg-solid, #0f172a);
 }
 
 .rhine-social-buttons {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: var(--rhine-space-3);
+  gap: var(--space-3);
 }
 
 .rhine-social-btn {
@@ -1042,28 +724,29 @@
   flex-direction: column;
   align-items: center;
   gap: 7px;
-  padding: var(--rhine-space-4) var(--rhine-space-2);
-  border: 1px solid var(--rhine-border);
-  border-radius: var(--rhine-radius-md);
+  padding: var(--space-3) var(--space-2);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: var(--radius-md, 8px);
   background: transparent;
   cursor: pointer;
-  transition: all var(--rhine-duration-normal) var(--rhine-ease-out);
-  min-height: 68px;
+  transition: all var(--duration-normal, 200ms) var(--ease-spring, cubic-bezier(0.16, 1, 0.3, 1));
+  min-height: 64px;
   position: relative;
   overflow: hidden;
 }
 
-.rhine-social-btn::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  transition: opacity var(--rhine-duration-normal) var(--rhine-ease-out);
-  border-radius: inherit;
+.dark .rhine-social-btn {
+  border-color: var(--border-color, #64748b);
+  background: rgba(255, 255, 255, 0.015);
 }
 
 .rhine-social-btn:hover {
-  transform: translateY(-2px);
+  transform: translateY(-1px);
+  border-color: var(--border-color-hover, rgba(0, 0, 0, 0.1));
+}
+
+.dark .rhine-social-btn:hover {
+  border-color: var(--border-color-hover, rgba(255, 255, 255, 0.12));
 }
 
 .rhine-social-btn:active {
@@ -1076,235 +759,154 @@
   transform: none;
 }
 
-/* ── 暗色模式社交按钮 ── */
-.dark .rhine-social-btn {
-  border-color: rgba(255, 255, 255, 0.05);
-  background: rgba(255, 255, 255, 0.015);
-}
-
-.dark .rhine-social-btn:hover {
-  transform: translateY(-2px);
-}
-
-/* 微信 — 品牌绿悬停辉光 */
-.rhine-social-btn.wechat:hover {
-  border-color: rgba(7, 193, 96, 0.35);
-  box-shadow: 0 0 18px rgba(7, 193, 96, 0.15);
-}
-
-.rhine-social-btn.wechat:hover::after {
-  opacity: 1;
-  background: radial-gradient(circle at center, rgba(7, 193, 96, 0.08) 0%, transparent 70%);
-}
-
-/* QQ — 天蓝悬停辉光 */
-.rhine-social-btn.qq:hover {
-  border-color: rgba(18, 183, 245, 0.35);
-  box-shadow: 0 0 18px rgba(18, 183, 245, 0.15);
-}
-
-.rhine-social-btn.qq:hover::after {
-  opacity: 1;
-  background: radial-gradient(circle at center, rgba(18, 183, 245, 0.08) 0%, transparent 70%);
-}
-
-/* GitHub — 白色悬停辉光 */
-.rhine-social-btn.github:hover {
-  border-color: rgba(240, 246, 252, 0.25);
-  box-shadow: 0 0 18px rgba(240, 246, 252, 0.08);
-}
-
-.rhine-social-btn.github:hover::after {
-  opacity: 1;
-  background: radial-gradient(circle at center, rgba(240, 246, 252, 0.05) 0%, transparent 70%);
-}
-
 .rhine-social-icon-wrap {
   width: 26px;
   height: 26px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform var(--rhine-duration-fast) var(--rhine-ease-out);
+  transition: transform var(--duration-fast, 100ms) var(--ease-spring, cubic-bezier(0.16, 1, 0.3, 1));
 }
 
 .rhine-social-btn:hover .rhine-social-icon-wrap {
-  transform: scale(1.08);
+  transform: scale(1.05);
 }
 
 .rhine-social-label {
-  font-size: 12px;
-  color: var(--rhine-text-dim);
-  transition: color var(--rhine-duration-fast) var(--rhine-ease-out);
-  font-weight: var(--rhine-weight-medium);
+  font-size: var(--text-caption, 0.75rem);
+  color: var(--text-muted, #334155);
+  transition: color var(--duration-fast, 100ms) var(--ease-spring, cubic-bezier(0.16, 1, 0.3, 1));
+  font-weight: 500;
 }
 
 .rhine-social-btn:hover .rhine-social-label {
-  color: var(--rhine-text-secondary);
+  color: var(--text-secondary, #334155);
 }
 
 .dark .rhine-social-label {
-  color: var(--text-muted, #CBD5E1);
+  color: var(--text-muted, #94a3b8);
+}
+
+.dark .rhine-social-btn:hover .rhine-social-label {
+  color: var(--text-secondary, #94a3b8);
 }
 
 .rhine-social-spinner {
   width: 18px;
   height: 18px;
   border: 2px solid rgba(255, 255, 255, 0.1);
-  border-top-color: var(--rhine-brand);
+  border-top-color: var(--color-primary, #10b981);
   border-radius: 50%;
   animation: rhineSpin 0.65s linear infinite;
 }
 
-/* ══════════════════════════════════════════════════════════════
-   8. 页脚
-   ══════════════════════════════════════════════════════════════ */
+/* ================================================================
+   7. 页脚
+   ================================================================ */
+
 .rhine-footer {
-  margin-top: var(--rhine-space-6);
-  padding-top: var(--rhine-space-4);
-  border-top: 1px solid var(--rhine-border);
+  margin-top: var(--space-6);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border-color, #e2e8f0);
   text-align: center;
+}
+
+.dark .rhine-footer {
+  border-top-color: var(--border-color, #64748b);
 }
 
 .rhine-footer-links {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--rhine-space-4);
-  font-size: 12px;
+  gap: var(--space-4);
+  font-size: var(--text-caption, 0.75rem);
 }
 
 .rhine-footer-links a {
-  color: var(--rhine-text-dim);
+  color: var(--text-muted, #334155);
   text-decoration: none;
-  transition: color var(--rhine-duration-fast) var(--rhine-ease-out);
+  transition: color var(--duration-fast, 100ms) var(--ease-spring, cubic-bezier(0.16, 1, 0.3, 1));
 }
 
 .rhine-footer-links a:hover {
-  color: var(--rhine-brand);
+  color: var(--color-primary, #10b981);
+}
+
+.dark .rhine-footer-links a {
+  color: var(--text-muted, #94a3b8);
+}
+
+.dark .rhine-footer-links a:hover {
+  color: var(--color-primary, #34d399);
 }
 
 .rhine-footer-sep {
   width: 1px;
   height: 10px;
-  background: var(--rhine-border);
+  background: var(--border-color, #e2e8f0);
 }
 
 .rhine-security-note {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--rhine-space-2);
-  margin-bottom: var(--rhine-space-4);
-  font-size: 11px;
-  color: var(--rhine-text-dim);
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+  font-size: var(--text-caption, 0.75rem);
+  color: var(--text-muted, #334155);
 }
 
-/* ── 暗色模式页脚 ── */
-.dark .rhine-footer {
-  border-top-color: rgba(255, 255, 255, 0.04);
+.dark .rhine-security-note {
+  color: var(--text-muted, #94a3b8);
 }
 
-.dark .rhine-footer-links a:hover {
-  color: var(--rhine-brand-light);
-}
-
-/* ── 默认凭证提示 ── */
-.rhine-credentials-hint {
-  margin-top: var(--rhine-space-5);
-  padding: var(--rhine-space-3) var(--rhine-space-4);
-  background: var(--rhine-brand-micro);
-  border: 1px solid rgba(5, 150, 105, 0.08);
-  border-radius: var(--rhine-radius-md);
+/* 注册状态提示 — 卡片下方 */
+.rhine-registration-notice {
+  margin-top: var(--space-5);
+  font-size: var(--text-caption, 0.75rem);
+  color: var(--text-muted, #334155);
   text-align: center;
-  font-size: 11px;
-  color: rgba(5, 150, 105, 0.6);
+  line-height: 1.6;
+  max-width: 440px;
+  width: 100%;
 }
 
-.rhine-credentials-hint code {
-  font-family: var(--rhine-font-mono);
-  font-size: 10.5px;
-  background: rgba(5, 150, 105, 0.08);
-  padding: 2px 6px;
-  border-radius: 3px;
-  font-weight: var(--rhine-weight-semibold);
-  color: var(--rhine-brand-light);
+.dark .rhine-registration-notice {
+  color: var(--text-muted, #94a3b8);
 }
 
-/* ══════════════════════════════════════════════════════════════
-   9. 响应式
-   ══════════════════════════════════════════════════════════════ */
-@media (max-width: 1439px) {
+/* ================================================================
+   8. 可访问性 (WCAG 2.1 AA)
+   ================================================================ */
+
+@media (prefers-reduced-motion: reduce) {
   .rhine-card {
-    max-width: 410px;
-    padding: var(--rhine-space-8);
+    transition: none !important;
   }
-}
-
-@media (max-width: 1023px) {
-  .rhine-card {
-    max-width: 460px;
-    margin: 0 auto;
-  }
-}
-
-@media (max-width: 767px) {
-  .rhine-form-panel {
-    /* 移除硬编码 150px，改为紧贴移动端品牌条底部（~60px） */
-    padding-top: 60px;
-    padding-left: var(--rhine-space-4);
-    padding-right: var(--rhine-space-4);
-    padding-bottom: var(--rhine-space-4);
-  }
-  .rhine-card-header h2 {
-    font-size: 22px;
-  }
-  .rhine-card {
-    padding: var(--rhine-space-5) var(--rhine-space-4);
-  }
-  .rhine-social-buttons {
-    gap: var(--rhine-space-2);
-  }
-}
-
-@media (max-width: 479px) {
   .rhine-input {
-    height: 54px;
-    font-size: 16px;
+    transition: none !important;
   }
   .rhine-submit-btn {
-    height: 54px;
-    font-size: 16px;
+    transition: none !important;
   }
   .rhine-social-btn {
-    min-height: 60px;
-    padding: var(--rhine-space-3) var(--rhine-space-1);
+    transition: none !important;
   }
-}
-
-/* ══════════════════════════════════════════════════════════════
-   10. 可访问性 (WCAG 2.1 AA)
-   ══════════════════════════════════════════════════════════════ */
-@media (prefers-reduced-motion: reduce) {
-  .rhine-dna-scene {
-    animation: none !important;
-  }
-  .rhine-particle-canvas {
-    display: none;
-  }
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
+  .rhine-remember-check {
+    transition: none !important;
   }
 }
 
 /* 高对比度模式 — 增强边框和文字对比度 */
-@media (prefers-contrast: high) {
+@media (prefers-contrast: more) {
   .rhine-input {
-    border: 2px solid var(--rhine-text);
+    border-width: 2px;
+    border-color: var(--text-primary);
   }
   .rhine-card {
-    border: 2px solid var(--rhine-brand);
+    border-width: 2px;
+    border-color: var(--color-primary, #10b981);
   }
 }
 
@@ -1312,8 +914,14 @@
 .rhine-input:focus-visible,
 .rhine-submit-btn:focus-visible,
 .rhine-social-btn:focus-visible {
-  outline: 2px solid var(--rhine-brand);
+  outline: 2px solid var(--color-primary, #10b981);
   outline-offset: 2px;
+}
+
+.dark .rhine-input:focus-visible,
+.dark .rhine-submit-btn:focus-visible,
+.dark .rhine-social-btn:focus-visible {
+  outline-color: var(--color-primary, #34d399);
 }
 
 /* 屏幕阅读器专用 */
@@ -1336,227 +944,56 @@
   left: 16px;
   z-index: 1000;
   padding: 10px 20px;
-  background: var(--rhine-brand);
-  color: var(--color-primary-contrast-text, #ffffff);
-  font-size: 13px;
-  font-weight: var(--rhine-weight-bold);
-  border-radius: var(--rhine-radius-md);
+  background: var(--color-primary-600, #059669);
+  color: #ffffff;
+  font-size: var(--text-body-sm, 0.875rem);
+  font-weight: 600;
+  border-radius: var(--radius-md, 8px);
   text-decoration: none;
-  box-shadow: var(--rhine-shadow-card);
-  transition: top var(--rhine-duration-fast) var(--rhine-ease-out);
+  box-shadow: var(--shadow-card, 0 1px 3px rgba(0, 0, 0, 0.06));
+  transition: top var(--duration-fast, 100ms) var(--ease-spring, cubic-bezier(0.16, 1, 0.3, 1));
 }
 
 .rhine-skip-link:focus {
   top: 16px;
-  outline: 2px solid var(--color-primary-contrast-text, #ffffff);
+  outline: 2px solid var(--color-primary-600, #059669);
   outline-offset: 2px;
 }
 
-/* ── 入场动画 ── */
-.rhine-anim-fade-up {
-  animation: rhineFadeUp 0.55s var(--rhine-ease-out) forwards;
-  opacity: 0;
-}
+/* ================================================================
+   9. 响应式 (移动优先 + 8pt 断点)
+   ================================================================ */
 
-.rhine-anim-fade-in {
-  animation: rhineFadeIn 0.35s var(--rhine-ease-out) forwards;
-  opacity: 0;
-}
-
-.rhine-anim-slide-right {
-  animation: rhineSlideRight 0.55s var(--rhine-ease-spring) forwards;
-  opacity: 0;
-}
-
-.rhine-anim-shake {
-  animation: rhineShake 0.45s var(--rhine-ease-in-out);
-}
-
-.rhine-delay-1 { animation-delay: 0.08s; }
-.rhine-delay-2 { animation-delay: 0.16s; }
-.rhine-delay-3 { animation-delay: 0.24s; }
-.rhine-delay-4 { animation-delay: 0.32s; }
-.rhine-delay-5 { animation-delay: 0.40s; }
-
-@keyframes rhineFadeUp {
-  from { opacity: 0; transform: translateY(14px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes rhineFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes rhineSlideRight {
-  from { opacity: 0; transform: translateX(36px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-
-@keyframes rhineShake {
-  0%, 100% { transform: translateX(0); }
-  15%, 45%, 75% { transform: translateX(-4px); }
-  30%, 60%, 90% { transform: translateX(4px); }
-}
-
-/* ── 点状网格呼吸动画 ── */
-@keyframes rhineDotBreath {
-  0%, 100% { opacity: 0.50; }
-  50%       { opacity: 0.70; }
-}
-
-/* ── 亮色模式品牌装饰层 — 柔和光斑营造层次感 ── */
-.rhine-light-decor {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  overflow: hidden;
-}
-
-.rhine-light-orb {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(80px);
-  animation: rhineOrbFloat 12s ease-in-out infinite alternate;
-}
-
-.rhine-light-orb-1 {
-  width: 420px;
-  height: 420px;
-  top: -10%;
-  left: -8%;
-  background: radial-gradient(circle, rgba(5, 150, 105, 0.08) 0%, transparent 70%);
-  animation-delay: 0s;
-}
-
-.rhine-light-orb-2 {
-  width: 320px;
-  height: 320px;
-  bottom: 5%;
-  right: 15%;
-  background: radial-gradient(circle, rgba(37, 99, 235, 0.06) 0%, transparent 70%);
-  animation-delay: -4s;
-  animation-duration: 15s;
-}
-
-.rhine-light-orb-3 {
-  width: 200px;
-  height: 200px;
-  top: 40%;
-  left: 30%;
-  background: radial-gradient(circle, rgba(5, 150, 105, 0.05) 0%, transparent 70%);
-  animation-delay: -8s;
-  animation-duration: 18s;
-}
-
-@keyframes rhineOrbFloat {
-  0%   { transform: translate(0, 0) scale(1); }
-  50%  { transform: translate(20px, -15px) scale(1.05); }
-  100% { transform: translate(-10px, 20px) scale(0.95); }
-}
-
-/* 暗色模式隐藏光斑 */
-.dark .rhine-light-decor {
-  display: none;
-}
-
-/* ── 粒子 Canvas 平滑颜色过渡 ── */
-.rhine-particle-canvas {
-  transition: opacity 0.6s ease;
-}
-
-/* ── 表单加载骨架 shimmer 效果 ── */
-.rhine-card.loading-state {
-  animation: rhineCardShimmer 1.8s ease-in-out infinite;
-}
-
-@keyframes rhineCardShimmer {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.85; }
-}
-
-/* ── 表单内容容器 — 卡片 + 注册提示 垂直堆叠 ── */
-.rhine-form-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-  max-width: 430px;
-}
-
-/* 移动端内容容器撑满宽度 */
-@media (max-width: 1023px) {
-  .rhine-form-content {
-    width: 100%;
-    max-width: 460px;
+/* 手机 (max-width: 419px) — 输入框/按钮放大字号避免 iOS 缩放 */
+@media (max-width: 419px) {
+  .rhine-input {
+    height: 48px;
+    font-size: var(--text-body-lg, 1rem);
+  }
+  .rhine-submit-btn {
+    height: 48px;
+    font-size: var(--text-body-lg, 1rem);
+  }
+  .rhine-social-btn {
+    min-height: 56px;
+    padding: var(--space-3) var(--space-1, 4px);
   }
 }
 
+/* 平板 (max-width: 767px) */
 @media (max-width: 767px) {
   .rhine-form-content {
     max-width: 100%;
-    padding: 0 var(--rhine-space-2);
+    padding: 0 var(--space-2, 8px);
+  }
+  .rhine-card-header h2 {
+    font-size: var(--text-h3, 1.5rem);
   }
 }
 
-/* ── 注册提示 — 卡片下方 ── */
-.rhine-registration-notice {
-  margin-top: var(--rhine-space-5);
-  font-size: 12px;
-  color: var(--text-muted, #94A3B8);
-  text-align: center;
-  line-height: 1.6;
-  max-width: 430px;
-  width: 100%;
-}
-
-/* 移动端注册提示 */
-@media (max-width: 767px) {
-  .rhine-registration-notice {
-    font-size: 11px;
-    margin-top: var(--rhine-space-3);
+/* 桌面 (max-width: 1439px) — 卡片稍窄 */
+@media (max-width: 1439px) {
+  .rhine-card {
+    max-width: 420px;
   }
 }
-
-/* ── 移动端优化：避免光斑遮挡表单 ── */
-@media (max-width: 1023px) {
-  .rhine-light-orb-1 { width: 280px; height: 280px; }
-  .rhine-light-orb-2 { width: 200px; height: 200px; }
-  .rhine-light-orb-3 { display: none; }
-}
-
-/* ── 低端设备粒子降级（触控设备 + 小内存感知） ── */
-@media (max-width: 767px) {
-  .rhine-particle-canvas {
-    opacity: 0.6;
-  }
-}
-
-/* ── prefers-reduced-data 用户减少背景渲染 ── */
-@media (prefers-reduced-data: reduce) {
-  .rhine-particle-canvas,
-  .rhine-hex-grid {
-    display: none !important;
-  }
-  .rhine-dot-grid {
-    opacity: 0.3;
-  }
-  .rhine-light-decor {
-    display: none !important;
-  }
-}
-
-/* GPU acceleration hints */
-.animate-chat-bubble-enter,
-.animate-chat-bubble-exit,
-.animate-fade-in,
-.animate-fade-out,
-.animate-slide-up,
-.animate-slide-down,
-.animate-pulse-soft,
-.animate-spin-slow {
-  will-change: opacity, transform;
-  transform: translateZ(0);
-}
-

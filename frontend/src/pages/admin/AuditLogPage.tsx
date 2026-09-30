@@ -49,14 +49,12 @@ export default function AuditLogPage() {
   const [search, setSearch] = useState('')
   const [actionFilter, setActionFilter] = useState('')
 
-  // Direct API call to avoid circular dependencies
+  // Fetch audit logs via admin API client
   const { data, isLoading } = useQuery({
     queryKey: ['audit-logs', page, actionFilter],
     queryFn: async () => {
-      const api = (await import('@/api/client')).default
-      const params: Record<string, unknown> = { page, page_size: 20 }
-      if (actionFilter) params.action = actionFilter
-      return api.get('/admin/audit-logs', { params }).then((r: { data: unknown }) => r.data as { items: AuditLog[]; total: number; page: number; page_size: number })
+      const { adminApi } = await import('@/api/admin')
+      return adminApi.getAuditLogs({ page, page_size: 20, action: actionFilter || undefined }) as Promise<{ items: AuditLog[]; total: number; page: number; page_size: number }>
     },
   })
 

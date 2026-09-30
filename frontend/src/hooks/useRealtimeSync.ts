@@ -17,7 +17,7 @@ import { wsService } from '@/services/websocket'
 import { logger } from '@/utils/safeLogger'
 
 /** CDC 变更事件数据 */
-interface CDCChangeEvent {
+export interface CDCChangeEvent {
   entity_type: string
   entity_id: number
   action: 'INSERT' | 'UPDATE' | 'DELETE'
@@ -37,7 +37,7 @@ interface CDCMessage {
 const ENTITY_QUERY_KEY_MAP: Record<string, string[]> = {
   formulas: ['formulas', 'formula', 'dashboard'],
   experiments: ['experiments', 'experiment', 'dashboard'],
-  users: ['users', 'user', 'auth'],
+  users: ['users', 'user', 'auth', 'admin-users'],
   teams: ['teams', 'team'],
   team_members: ['teams', 'team'],
   notifications: ['notifications'],
@@ -50,7 +50,7 @@ const ENTITY_QUERY_KEY_MAP: Record<string, string[]> = {
   chat_messages: ['chat-messages', 'chat-session'],
   peptide_designs: ['peptide-designs', 'peptide-design'],
   peptide_analyses: ['peptide-analyses', 'peptide-analysis'],
-  audit_logs: ['audit-logs'],
+  audit_logs: ['audit-logs', 'admin-audit-logs'],
   sync_logs: ['sync-logs'],
   ai_suggestions: ['ai-suggestions'],
   prompt_templates: ['prompt-templates'],

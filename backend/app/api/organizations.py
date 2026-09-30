@@ -7,8 +7,14 @@
 - 团队管理
 - 配额查询与监控
 - 计划信息
+- 数据分析
+- 归档/恢复/克隆
+- 权限管理
+- 审计日志
+- 数据导出
 """
 
+import json
 import logging
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import text
@@ -75,13 +81,7 @@ async def create_organization(
     db: AsyncSession = Depends(get_db_session),
     current_user = Depends(get_current_user),
 ):
-    """
-    创建新组织
-    
-    - 创建者自动成为OWNER
-    - 自动生成唯一slug（如未提供）
-    - 初始化默认设置
-    """
+    """创建新组织"""
     service = get_org_service(db)
     
     try:
@@ -105,10 +105,10 @@ async def create_organization(
         
     except ValueError as e:
         logger.error("创建组织失败: %s", e, exc_info=True)
-        raise HTTPException(status_code=400, detail="参数无效")
+        raise HTTPException(status_code=400, detail=str(e))
     except PermissionError as e:
         logger.error("创建组织权限不足: %s", e, exc_info=True)
-        raise HTTPException(status_code=403, detail="权限不足")
+        raise HTTPException(status_code=403, detail=str(e))
 
 
 @router.get("", summary="获取我的组织列表")
@@ -143,7 +143,6 @@ async def list_my_organizations(
     return {"organizations": organizations}
 
 
-# NOTE: /plans must be registered BEFORE /{org_id_or_slug} catch-all
 @router.get("/plans", summary="获取订阅计划列表")
 async def get_plans():
     """获取所有可用的订阅计划及其限制"""
@@ -200,10 +199,10 @@ async def get_organization(
             "slug": org.slug,
             "description": org.description,
             "logo_url": org.logo_url,
-            "plan": org.plan.value,
+            "plan": org.plan.value if hasattr(org.plan, 'value') else org.plan,
             "settings": org.settings,
             "owner_id": org.owner_id,
-            "my_role": membership["role"],
+            "my_role": membership.role if hasattr(membership, 'role') else membership["role"],
             "created_at": org.created_at.isoformat(),
             "updated_at": org.updated_at.isoformat(),
         }
@@ -232,12 +231,10 @@ async def update_organization(
 
     try:
         org = await service.update_organization(org_id, current_user.id, **updates)
-        
         return {"success": True, "organization": org.__dict__}
-        
     except PermissionError as e:
         logger.error("更新组织权限不足: %s", e, exc_info=True)
-        raise HTTPException(status_code=403, detail="权限不足")
+        raise HTTPException(status_code=403, detail=str(e))
 
 
 @router.delete("/{org_id}", summary="删除组织")
@@ -251,12 +248,10 @@ async def delete_organization(
     
     try:
         success = await service.delete_organization(org_id, current_user.id)
-        
         return {"success": success}
-        
     except PermissionError as e:
         logger.error("删除组织权限不足: %s", e, exc_info=True)
-        raise HTTPException(status_code=403, detail="权限不足")
+        raise HTTPException(status_code=403, detail=str(e))
 
 
 # ============================================================
@@ -277,7 +272,6 @@ async def get_members(
         raise HTTPException(status_code=403, detail="您不是该组织的成员")
     
     members = await service.get_members(org_id)
-    
     return {"members": members}
 
 
@@ -288,13 +282,7 @@ async def invite_member(
     db: AsyncSession = Depends(get_db_session),
     current_user = Depends(get_current_user),
 ):
-    """
-    邀请新成员加入组织
-    
-    - 需要ADMIN或OWNER权限
-    - 可指定初始角色和团队
-    - 发送邀请邮件
-    """
+    """邀请新成员加入组织"""
     service = get_org_service(db)
     
     if not await service._check_permission(org_id, current_user.id, [OrganizationRole.OWNER, OrganizationRole.ADMIN]):
@@ -339,7 +327,7 @@ async def invite_member(
 
     except ValueError as e:
         logger.error("邀请成员失败: %s", e, exc_info=True)
-        raise HTTPException(status_code=400, detail="参数无效")
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.delete("/{org_id}/members/{user_id}", summary="移除成员")
@@ -354,12 +342,10 @@ async def remove_member(
     
     try:
         success = await service.remove_member(org_id, user_id, current_user.id)
-        
         return {"success": success}
-        
     except PermissionError as e:
         logger.error("移除成员权限不足: %s", e, exc_info=True)
-        raise HTTPException(status_code=403, detail="权限不足")
+        raise HTTPException(status_code=403, detail=str(e))
 
 
 @router.put("/{org_id}/members/{user_id}/role", summary="修改成员角色")
@@ -380,12 +366,48 @@ async def change_member_role(
             new_role=request.role,
             changer_id=current_user.id,
         )
-        
         return {"success": success}
-        
     except PermissionError as e:
         logger.error("修改成员角色权限不足: %s", e, exc_info=True)
-        raise HTTPException(status_code=403, detail="权限不足")
+        raise HTTPException(status_code=403, detail=str(e))
+
+
+@router.put("/{org_id}/members/{user_id}/suspend", summary="停用成员")
+async def suspend_member(
+    org_id: int,
+    user_id: int,
+    db: AsyncSession = Depends(get_db_session),
+    current_user = Depends(get_current_user),
+):
+    """停用成员（保留记录但禁止访问）"""
+    service = get_org_service(db)
+    
+    try:
+        success = await service.suspend_member(org_id, user_id, current_user.id)
+        return {"success": success}
+    except PermissionError as e:
+        raise HTTPException(status_code=403, detail=str(e))
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+
+@router.put("/{org_id}/members/{user_id}/resume", summary="恢复成员")
+async def resume_member(
+    org_id: int,
+    user_id: int,
+    db: AsyncSession = Depends(get_db_session),
+    current_user = Depends(get_current_user),
+):
+    """恢复成员"""
+    service = get_org_service(db)
+    
+    try:
+        success = await service.resume_member(org_id, user_id, current_user.id)
+        return {"success": success}
+    except PermissionError as e:
+        raise HTTPException(status_code=403, detail=str(e))
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
 
 
 # ============================================================
@@ -409,15 +431,13 @@ async def create_team(
             creator_id=current_user.id,
             description=request.description,
         )
-        
         return {"success": True, "team": team.__dict__}
-        
     except ValueError as e:
         logger.error("创建团队失败: %s", e, exc_info=True)
-        raise HTTPException(status_code=400, detail="参数无效")
+        raise HTTPException(status_code=400, detail=str(e))
     except PermissionError as e:
         logger.error("创建团队权限不足: %s", e, exc_info=True)
-        raise HTTPException(status_code=403, detail="权限不足")
+        raise HTTPException(status_code=403, detail=str(e))
 
 
 @router.get("/{org_id}/teams", summary="获取团队列表")
@@ -430,7 +450,6 @@ async def get_teams(
     service = get_org_service(db)
     
     teams = await service.get_teams(org_id)
-    
     return {"teams": [t.__dict__ for t in teams]}
 
 
@@ -448,38 +467,192 @@ async def get_quotas(
     service = get_org_service(db)
     
     quotas = await service.get_quota_usage(org_id)
-    
+
     return {
-        "quotas": {k: v.__dict__ for k, v in quotas.items()},
-        "plan": (await service.get_organization(org_id)).plan.value,
+        "quotas": quotas,
+        "plan": (await service.get_organization(org_id)).plan if hasattr((await service.get_organization(org_id)), 'plan') else 'free',
     }
 
 
-@router.get("/plans", summary="获取订阅计划列表")
-async def get_plans():
-    """获取所有可用的订阅计划及其限制"""
-    plans = []
+# ============================================================
+# 新增端点：归档、克隆、数据分析
+# ============================================================
+
+@router.put("/{org_id}/archive", summary="归档组织")
+async def archive_organization(
+    org_id: int,
+    db: AsyncSession = Depends(get_db_session),
+    current_user = Depends(get_current_user),
+):
+    """归档组织（软删除）"""
+    service = get_org_service(db)
     
-    for plan, limits in PLAN_LIMITS.items():
-        plans.append({
-            "plan": plan.value,
-            "display_name": {
-                "free": "免费版",
-                "pro": "专业版",
-                "enterprise": "企业版",
-            }.get(plan.value, plan.value),
-            "limits": {
-                "max_members": limits.max_members,
-                "max_teams": limits.max_teams,
-                "max_formulas": limits.max_formulas,
-                "storage_mb": limits.storage_mb,
-                "api_calls_per_day": limits.api_calls_per_day,
-                "ai_generations_per_day": limits.ai_generations_per_day,
-            },
-            "features": limits.features,
-        })
-    
-    return {"plans": plans}
+    try:
+        success = await service.archive_organization(org_id, current_user.id)
+        return {"success": success}
+    except PermissionError as e:
+        raise HTTPException(status_code=403, detail=str(e))
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
 
 
-logger.info("🏢 多租户管理API路由加载完成")
+@router.put("/{org_id}/restore", summary="恢复组织")
+async def restore_organization(
+    org_id: int,
+    db: AsyncSession = Depends(get_db_session),
+    current_user = Depends(get_current_user),
+):
+    """恢复已归档的组织"""
+    service = get_org_service(db)
+    
+    try:
+        success = await service.restore_organization(org_id, current_user.id)
+        return {"success": success}
+    except PermissionError as e:
+        raise HTTPException(status_code=403, detail=str(e))
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+
+@router.post("/{org_id}/clone", summary="克隆组织")
+async def clone_organization(
+    org_id: int,
+    request: CreateOrganizationRequest,
+    db: AsyncSession = Depends(get_db_session),
+    current_user = Depends(get_current_user),
+):
+    """克隆组织（复制基本信息）"""
+    service = get_org_service(db)
+    
+    try:
+        new_org_id = await service.clone_organization(org_id, current_user.id, request.name)
+        return {
+            "success": True,
+            "new_organization_id": new_org_id,
+            "message": f"已成功克隆为 '{request.name}'"
+        }
+    except PermissionError as e:
+        raise HTTPException(status_code=403, detail=str(e))
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/{org_id}/analytics", summary="组织数据分析")
+async def get_organization_analytics(
+    org_id: int,
+    time_range: str = Query(default="30d", description="时间范围: 7d, 30d, 90d"),
+    db: AsyncSession = Depends(get_db_session),
+    current_user = Depends(get_current_user),
+):
+    """获取组织数据分析"""
+    service = get_org_service(db)
+    
+    try:
+        analytics = await service.get_analytics(org_id, time_range)
+        return analytics
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except PermissionError as e:
+        raise HTTPException(status_code=403, detail=str(e))
+
+
+@router.get("/{org_id}/audit-log", summary="审计日志")
+async def get_audit_log(
+    org_id: int,
+    limit: int = Query(default=50, ge=1, le=200),
+    offset: int = Query(default=0, ge=0),
+    db: AsyncSession = Depends(get_db_session),
+    current_user = Depends(get_current_user),
+):
+    """获取组织审计日志"""
+    service = get_org_service(db)
+    
+    try:
+        log_data = await service.get_audit_log(org_id, limit, offset)
+        return log_data
+    except PermissionError as e:
+        raise HTTPException(status_code=403, detail=str(e))
+
+
+@router.post("/{org_id}/export", summary="导出组织数据")
+async def export_organization(
+    org_id: int,
+    format_type: str = Query(default="json", description="导出格式: json, csv, excel"),
+    db: AsyncSession = Depends(get_db_session),
+    current_user = Depends(get_current_user),
+):
+    """导出组织数据"""
+    service = get_org_service(db)
+    
+    try:
+        export_data = await service.export_organization(org_id, format_type)
+        return export_data
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except PermissionError as e:
+        raise HTTPException(status_code=403, detail=str(e))
+
+
+@router.get("/{org_id}/permissions", summary="获取权限配置")
+async def get_permissions(
+    org_id: int,
+    db: AsyncSession = Depends(get_db_session),
+    current_user = Depends(get_current_user),
+):
+    """获取组织权限配置"""
+    service = get_org_service(db)
+    
+    membership = await service._get_membership(org_id, current_user.id)
+    if not membership:
+        raise HTTPException(status_code=403, detail="您不是该组织的成员")
+    
+    org = await service.get_organization(org_id)
+    if not org:
+        raise HTTPException(status_code=404, detail="组织不存在")
+    
+    settings = org.settings or {}
+    
+    return {
+        "organization_id": org_id,
+        "permissions": {
+            "member_management": settings.get("permissions", {}).get("member_management", True),
+            "team_management": settings.get("permissions", {}).get("team_management", True),
+            "formula_access": settings.get("permissions", {}).get("formula_access", True),
+            "experiment_access": settings.get("permissions", {}).get("experiment_access", True),
+            "data_export": settings.get("permissions", {}).get("data_export", True),
+            "api_access": settings.get("permissions", {}).get("api_access", True),
+        },
+        "my_role": membership["role"],
+    }
+
+
+@router.put("/{org_id}/permissions", summary="更新权限配置")
+async def update_permissions(
+    org_id: int,
+    permissions: Dict[str, bool],
+    db: AsyncSession = Depends(get_db_session),
+    current_user = Depends(get_current_user),
+):
+    """更新组织权限配置（需OWNER或ADMIN）"""
+    service = get_org_service(db)
+    
+    if not await service._check_permission(org_id, current_user.id, [OrganizationRole.OWNER, OrganizationRole.ADMIN]):
+        raise HTTPException(status_code=403, detail="权限不足")
+    
+    org = await service.get_organization(org_id)
+    if not org:
+        raise HTTPException(status_code=404, detail="组织不存在")
+    
+    settings = org.settings or {}
+    settings["permissions"] = permissions
+    
+    await service.db.execute(
+        text("UPDATE organizations SET settings = :settings::jsonb, updated_at = NOW() WHERE id = :id"),
+        {"settings": json.dumps(settings), "id": org_id},
+    )
+    await service.db.commit()
+    
+    return {"success": True, "permissions": permissions}
+
+
+logger.info("多租户管理API路由加载完成")

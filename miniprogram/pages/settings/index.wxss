@@ -1,21 +1,21 @@
-/* 设置页样式 */
+/* 设置页样式 - 符合微信官方设计规范 */
 .container {
   min-height: 100vh;
-  background-color: var(--color-bg-primary);
+  background-color: var(--color-bg-page);
   padding-bottom: calc(48rpx + env(safe-area-inset-bottom));
 }
 
 .settings-section {
   margin: var(--space-3);
-  background-color: var(--color-bg-secondary);
+  background-color: var(--color-bg-card);
   border-radius: var(--radius-lg);
   padding: var(--space-2) 0;
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-sm);
 }
 
 .section-title {
   font-size: var(--font-size-sm);
-  color: var(--color-text-muted);
+  color: var(--color-text-tertiary);
   padding: var(--space-3) var(--space-4) var(--space-2);
 }
 
@@ -28,7 +28,7 @@
   align-items: center;
   justify-content: space-between;
   padding: var(--space-4) var(--space-2);
-  border-bottom: 1rpx solid var(--color-border);
+  border-bottom: 1rpx solid var(--color-border-light);
 }
 
 .setting-item:last-child {
@@ -42,7 +42,7 @@
 }
 
 .setting-title {
-  font-size: var(--font-size-base);
+  font-size: var(--font-size-md);
   color: var(--color-text-primary);
 }
 
@@ -53,13 +53,13 @@
 
 .cache-size {
   font-size: var(--font-size-sm);
-  color: var(--color-text-muted);
+  color: var(--color-text-tertiary);
   margin-right: var(--space-2);
 }
 
 .setting-value {
   font-size: var(--font-size-sm);
-  color: var(--color-text-muted);
+  color: var(--color-text-tertiary);
   margin-right: var(--space-2);
 }
 
@@ -76,6 +76,6 @@
 
 .disclaimer text {
   font-size: var(--font-size-xs);
-  color: var(--color-text-muted);
+  color: var(--color-text-tertiary);
   line-height: var(--line-height-relaxed);
 }

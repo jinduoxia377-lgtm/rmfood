@@ -28,6 +28,7 @@ export interface WorkflowExecution {
   status: string;
   total_latency_ms: number;
   stages: WorkflowStageResult[];
+  final_response: string;
   final_response_preview: string;
   error?: string;
 }

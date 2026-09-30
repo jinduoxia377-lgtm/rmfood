@@ -1,18 +1,19 @@
 /**
- * 数据检索中心 - 样式
- */
+ * 闁轰胶澧楀畵浣肝涢埀顒傛椤叀鍘煫?- 闁哄秴鍢茬槐? */
 
-/* 页面容器 */
+/* 濡炪倗鏁诲鎵偓鍦嚀濞?*/
 .page-container {
   min-height: 100vh;
-  background: var(--bg-primary, #F5F5F5);
+  background: var(--bg-primary, var(--color-gray-100));
   display: flex;
   flex-direction: column;
-}
 
-/* 顶部导航 */
+  padding-bottom: calc(100rpx + env(safe-area-inset-bottom));
+ }
+
+/* 濡炪倕鐖奸崕瀵糕偓浣冨閸?*/
 .header {
-  background: linear-gradient(135deg, #2D5A3D 0%, #4A7C5C 100%);
+  background: linear-gradient(135deg, var(--color-brand-500) 0%, var(--color-brand-400) 100%);
   padding-bottom: 24rpx;
 }
 
@@ -34,9 +35,9 @@
 .hamburger-line {
   width: 100%;
   height: 3rpx;
-  background: #fff;
+  background: var(--color-text-inverse);
   border-radius: 2rpx;
-  transition: all 0.3s ease;
+  transition: opacity var(--transition-normal), transform var(--transition-normal);
 }
 
 .hamburger-line.active:nth-child(1) {
@@ -52,7 +53,7 @@
 }
 
 .header-title .title-main {
-  color: #fff;
+  color: var(--color-text-inverse);
   font-size: 36rpx;
   font-weight: 600;
 }
@@ -62,17 +63,17 @@
   font-size: 24rpx;
 }
 
-/* 搜索区 */
+/* 闁瑰吋绮庨崒銊╁礌?*/
 .search-section {
-  background: #fff;
+  background: var(--color-text-inverse);
   padding: 24rpx 32rpx;
-  border-bottom: 1rpx solid var(--border-color, #E5E7EB);
+  border-bottom: 1rpx solid var(--border-color, var(--color-border));
 }
 
 .search-bar {
   display: flex;
   align-items: center;
-  background: var(--bg-primary, #F5F5F5);
+  background: var(--bg-primary, var(--color-gray-100));
   border-radius: 40rpx;
   padding: 16rpx 24rpx;
   gap: 16rpx;
@@ -96,14 +97,14 @@
   justify-content: center;
   background: var(--text-muted, #9CA3AF);
   border-radius: 50%;
-  color: #fff;
+  color: var(--color-text-inverse);
   font-size: 24rpx;
 }
 
 .search-history {
   margin-top: 20rpx;
   padding-top: 20rpx;
-  border-top: 1rpx solid var(--border-color, #E5E7EB);
+  border-top: 1rpx solid var(--border-color, var(--color-border));
 }
 
 .history-header {
@@ -119,7 +120,7 @@
 
 .history-clear {
   font-size: 24rpx;
-  color: var(--primary, #2D5A3D);
+  color: var(--primary, var(--color-brand-500));
 }
 
 .history-list {
@@ -133,7 +134,7 @@
   align-items: center;
   gap: 8rpx;
   padding: 12rpx 20rpx;
-  background: var(--bg-primary, #F5F5F5);
+  background: var(--bg-primary, var(--color-gray-100));
   border-radius: 32rpx;
 }
 
@@ -146,10 +147,10 @@
   color: var(--text-secondary, #6B7280);
 }
 
-/* Tab 导航 */
+/* Tab 閻庝絻澹堥崺?*/
 .tab-container {
-  background: #fff;
-  border-bottom: 1rpx solid var(--border-color, #E5E7EB);
+  background: var(--color-text-inverse);
+  border-bottom: 1rpx solid var(--border-color, var(--color-border));
   position: sticky;
   top: 0;
   z-index: 10;
@@ -170,12 +171,12 @@
   align-items: center;
   padding: 20rpx 32rpx;
   border-bottom: 4rpx solid transparent;
-  transition: all 0.3s ease;
+  transition: opacity var(--transition-normal), transform var(--transition-normal);
 }
 
 .tab-item.active {
-  border-bottom-color: var(--primary, #2D5A3D);
-  color: var(--primary, #2D5A3D);
+  border-bottom-color: var(--primary, var(--color-brand-500));
+  color: var(--primary, var(--color-brand-500));
 }
 
 .tab-icon {
@@ -189,21 +190,23 @@
 }
 
 .tab-item.active .tab-name {
-  color: var(--primary, #2D5A3D);
+  color: var(--primary, var(--color-brand-500));
   font-weight: 600;
 }
 
-/* 内容区 */
+/* 闁告劕鎳庨鎰板礌?*/
 .content-scroll {
   flex: 1;
   height: calc(100vh - 280rpx);
-}
+
+  height: 0;
+ }
 
 .tab-content {
   padding: 24rpx 32rpx;
 }
 
-/* 统计卡片网格 */
+/* 缂備胶鍠曢鎼佸础閿涘嫬顣荤紓鍐╁灦閻?*/
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -212,7 +215,7 @@
 }
 
 .stat-card {
-  background: #fff;
+  background: var(--color-text-inverse);
   border-radius: 16rpx;
   padding: 28rpx;
   display: flex;
@@ -244,7 +247,7 @@
   display: block;
   font-size: 40rpx;
   font-weight: 700;
-  color: var(--text-primary, #111827);
+  color: var(--text-primary, var(--color-text-primary));
   line-height: 1;
 }
 
@@ -255,9 +258,9 @@
   margin-top: 8rpx;
 }
 
-/* 卡片通用样式 */
+/* 闁告绱曟晶鏍焻濮樿鲸鏆忛柡宥呭槻缁?*/
 .card {
-  background: #fff;
+  background: var(--color-text-inverse);
   border-radius: 16rpx;
   padding: 24rpx;
   margin-bottom: 20rpx;
@@ -274,7 +277,7 @@
 .section-title {
   font-size: 28rpx;
   font-weight: 600;
-  color: var(--text-primary, #111827);
+  color: var(--text-primary, var(--color-text-primary));
 }
 
 .section-count {
@@ -282,7 +285,7 @@
   color: var(--text-muted, #9CA3AF);
 }
 
-/* 分类列表 */
+/* 闁告帒妫涚悮顐﹀礆濡ゅ嫨鈧?*/
 .category-list {
   display: flex;
   flex-direction: column;
@@ -294,7 +297,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 12rpx 0;
-  border-bottom: 1rpx solid var(--border-color, #E5E7EB);
+  border-bottom: 1rpx solid var(--border-color, var(--color-border));
 }
 
 .category-item:last-child {
@@ -327,7 +330,7 @@
 .category-count {
   font-size: 26rpx;
   font-weight: 600;
-  color: var(--text-primary, #111827);
+  color: var(--text-primary, var(--color-text-primary));
 }
 
 .category-percent {
@@ -335,7 +338,7 @@
   color: var(--text-muted, #9CA3AF);
 }
 
-/* 快捷操作 */
+/* 闊浂鍋呭畵搴ㄥ箼瀹ュ嫮绋?*/
 .action-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -360,7 +363,7 @@
   text-align: center;
 }
 
-/* 筛选栏 */
+/* 缂佹稒鐩埀顒€顦伴悥?*/
 .filter-bar {
   display: flex;
   gap: 16rpx;
@@ -371,7 +374,7 @@
   flex: 1;
   display: flex;
   align-items: center;
-  background: var(--bg-primary, #F5F5F5);
+  background: var(--bg-primary, var(--color-gray-100));
   border-radius: 12rpx;
   padding: 16rpx 20rpx;
   gap: 12rpx;
@@ -392,7 +395,7 @@
   align-items: center;
   gap: 8rpx;
   padding: 16rpx 20rpx;
-  background: var(--bg-primary, #F5F5F5);
+  background: var(--bg-primary, var(--color-gray-100));
   border-radius: 12rpx;
   font-size: 26rpx;
   color: var(--text-secondary, #6B7280);
@@ -410,7 +413,7 @@
 
 .chip {
   padding: 12rpx 24rpx;
-  background: var(--bg-primary, #F5F5F5);
+  background: var(--bg-primary, var(--color-gray-100));
   border-radius: 32rpx;
   font-size: 24rpx;
   color: var(--text-secondary, #6B7280);
@@ -418,10 +421,10 @@
 
 .chip.active {
   background: rgba(45, 90, 61, 0.1);
-  color: var(--primary, #2D5A3D);
+  color: var(--primary, var(--color-brand-500));
 }
 
-/* 药材列表 */
+/* 闁肩瓔鍨卞妤呭礆濡ゅ嫨鈧?*/
 .herb-list {
   display: flex;
   flex-direction: column;
@@ -429,7 +432,7 @@
 }
 
 .herb-card {
-  background: #fff;
+  background: var(--color-text-inverse);
   border-radius: 16rpx;
   padding: 24rpx;
   box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
@@ -445,7 +448,7 @@
 .herb-name {
   font-size: 32rpx;
   font-weight: 600;
-  color: var(--text-primary, #111827);
+  color: var(--text-primary, var(--color-text-primary));
   flex: 1;
 }
 
@@ -454,7 +457,7 @@
   background: rgba(245, 158, 11, 0.1);
   border-radius: 20rpx;
   font-size: 22rpx;
-  color: #F59E0B;
+  color: var(--color-warning);
   white-space: nowrap;
   margin-left: 16rpx;
 }
@@ -475,7 +478,7 @@
 
 .herb-tag {
   padding: 6rpx 16rpx;
-  background: var(--bg-primary, #F5F5F5);
+  background: var(--bg-primary, var(--color-gray-100));
   border-radius: 8rpx;
   font-size: 22rpx;
   color: var(--text-secondary, #6B7280);
@@ -493,7 +496,7 @@
 }
 
 .herb-stat .stat-value {
-  color: var(--primary, #2D5A3D);
+  color: var(--primary, var(--color-brand-500));
   font-weight: 600;
 }
 
@@ -502,7 +505,7 @@
   justify-content: space-between;
   align-items: center;
   padding-top: 16rpx;
-  border-top: 1rpx solid var(--border-color, #E5E7EB);
+  border-top: 1rpx solid var(--border-color, var(--color-border));
 }
 
 .herb-compounds {
@@ -515,7 +518,7 @@
   color: var(--text-muted, #9CA3AF);
 }
 
-/* 肽列表 */
+/* 闁艰尪妫勯崹顏嗘偘?*/
 .peptide-list {
   display: flex;
   flex-direction: column;
@@ -523,7 +526,7 @@
 }
 
 .peptide-card {
-  background: #fff;
+  background: var(--color-text-inverse);
   border-radius: 16rpx;
   padding: 24rpx;
   box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
@@ -539,7 +542,7 @@
 .peptide-sequence {
   font-size: 28rpx;
   font-weight: 600;
-  color: var(--text-primary, #111827);
+  color: var(--text-primary, var(--color-text-primary));
   font-family: monospace;
   flex: 1;
 }
@@ -549,7 +552,7 @@
   background: rgba(59, 130, 246, 0.1);
   border-radius: 20rpx;
   font-size: 22rpx;
-  color: #3B82F6;
+  color: var(--color-info);
   white-space: nowrap;
   margin-left: 16rpx;
 }
@@ -570,7 +573,7 @@
   align-items: center;
   gap: 8rpx;
   padding-top: 12rpx;
-  border-top: 1rpx solid var(--border-color, #E5E7EB);
+  border-top: 1rpx solid var(--border-color, var(--color-border));
 }
 
 .activity-label {
@@ -581,10 +584,10 @@
 .activity-value {
   font-size: 26rpx;
   font-weight: 600;
-  color: var(--primary, #2D5A3D);
+  color: var(--primary, var(--color-brand-500));
 }
 
-/* 药食同源查询 */
+/* 闁肩瓔鍨堕ˉ銈夊触鐏炲墽鐖遍柡灞诲劥椤?*/
 .homology-search {
   display: flex;
   gap: 16rpx;
@@ -595,7 +598,7 @@
   flex: 1;
   display: flex;
   align-items: center;
-  background: var(--bg-primary, #F5F5F5);
+  background: var(--bg-primary, var(--color-gray-100));
   border-radius: 12rpx;
   padding: 16rpx 20rpx;
   gap: 12rpx;
@@ -603,8 +606,8 @@
 
 .check-btn {
   padding: 16rpx 32rpx;
-  background: var(--primary, #2D5A3D);
-  color: #fff;
+  background: var(--primary, var(--color-brand-500));
+  color: var(--color-text-inverse);
   border-radius: 12rpx;
   font-size: 28rpx;
   border: none;
@@ -628,7 +631,7 @@
 .result-name {
   font-size: 32rpx;
   font-weight: 600;
-  color: var(--text-primary, #111827);
+  color: var(--text-primary, var(--color-text-primary));
 }
 
 .result-status {
@@ -639,12 +642,12 @@
 
 .result-status.confirmed {
   background: rgba(34, 197, 94, 0.1);
-  color: #16A34A;
+  color: var(--color-success);
 }
 
 .result-status.not_found {
   background: rgba(239, 68, 68, 0.1);
-  color: #DC2626;
+  color: var(--color-danger);
 }
 
 .result-details {
@@ -657,7 +660,7 @@
   display: flex;
   justify-content: space-between;
   padding: 12rpx 0;
-  border-bottom: 1rpx solid var(--border-color, #E5E7EB);
+  border-bottom: 1rpx solid var(--border-color, var(--color-border));
 }
 
 .detail-label {
@@ -667,11 +670,11 @@
 
 .detail-value {
   font-size: 26rpx;
-  color: var(--text-primary, #111827);
+  color: var(--text-primary, var(--color-text-primary));
   font-weight: 500;
 }
 
-/* 药食同源目录 */
+/* 闁肩瓔鍨堕ˉ銈夊触鐏炲墽鐖遍柣鈺婂枛缂?*/
 .directory-section {
   margin-top: 24rpx;
 }
@@ -680,13 +683,13 @@
   display: flex;
   flex-direction: column;
   gap: 1rpx;
-  background: var(--border-color, #E5E7EB);
+  background: var(--border-color, var(--color-border));
   border-radius: 16rpx;
   overflow: hidden;
 }
 
 .homology-item {
-  background: #fff;
+  background: var(--color-text-inverse);
   display: flex;
   align-items: center;
   padding: 20rpx 24rpx;
@@ -696,7 +699,7 @@
 .homology-name {
   flex: 1;
   font-size: 28rpx;
-  color: var(--text-primary, #111827);
+  color: var(--text-primary, var(--color-text-primary));
 }
 
 .homology-dosage {
@@ -709,7 +712,7 @@
   color: var(--text-muted, #9CA3AF);
 }
 
-/* 知识图谱 */
+/* 闁活厹鍎撮惁鎴﹀炊閹规劖鐨?*/
 .graph-search {
   margin-bottom: 20rpx;
 }
@@ -723,7 +726,7 @@
 
 .node-filter {
   padding: 12rpx 24rpx;
-  background: var(--bg-primary, #F5F5F5);
+  background: var(--bg-primary, var(--color-gray-100));
   border-radius: 32rpx;
   font-size: 24rpx;
   color: var(--text-secondary, #6B7280);
@@ -731,7 +734,7 @@
 
 .node-filter.active {
   background: rgba(45, 90, 61, 0.1);
-  color: var(--primary, #2D5A3D);
+  color: var(--primary, var(--color-brand-500));
 }
 
 .graph-result {
@@ -744,13 +747,13 @@
   align-items: center;
   margin-bottom: 20rpx;
   padding-bottom: 20rpx;
-  border-bottom: 1rpx solid var(--border-color, #E5E7EB);
+  border-bottom: 1rpx solid var(--border-color, var(--color-border));
 }
 
 .graph-center {
   font-size: 30rpx;
   font-weight: 600;
-  color: var(--text-primary, #111827);
+  color: var(--text-primary, var(--color-text-primary));
 }
 
 .graph-stats {
@@ -774,14 +777,14 @@
   align-items: center;
   gap: 16rpx;
   padding: 16rpx;
-  background: var(--bg-primary, #F5F5F5);
+  background: var(--bg-primary, var(--color-gray-100));
   border-radius: 12rpx;
 }
 
-.node-item.herb { border-left: 4rpx solid #2D5A3D; }
-.node-item.compound { border-left: 4rpx solid #3B82F6; }
-.node-item.target { border-left: 4rpx solid #F59E0B; }
-.node-item.disease { border-left: 4rpx solid #EF4444; }
+.node-item.herb { border-left: 4rpx solid var(--color-brand-500); }
+.node-item.compound { border-left: 4rpx solid var(--color-info); }
+.node-item.target { border-left: 4rpx solid var(--color-warning); }
+.node-item.disease { border-left: 4rpx solid var(--color-danger); }
 
 .node-dot {
   width: 12rpx;
@@ -790,15 +793,15 @@
   background: var(--text-muted, #9CA3AF);
 }
 
-.node-item.herb .node-dot { background: #2D5A3D; }
-.node-item.compound .node-dot { background: #3B82F6; }
-.node-item.target .node-dot { background: #F59E0B; }
-.node-item.disease .node-dot { background: #EF4444; }
+.node-item.herb .node-dot { background: var(--color-brand-500); }
+.node-item.compound .node-dot { background: var(--color-info); }
+.node-item.target .node-dot { background: var(--color-warning); }
+.node-item.disease .node-dot { background: var(--color-danger); }
 
 .node-label {
   flex: 1;
   font-size: 26rpx;
-  color: var(--text-primary, #111827);
+  color: var(--text-primary, var(--color-text-primary));
 }
 
 .node-type {
@@ -806,7 +809,7 @@
   color: var(--text-muted, #9CA3AF);
 }
 
-/* 加载状态 */
+/* 闁告梻濮惧ù鍥偐閼哥鍋?*/
 .loading-state {
   text-align: center;
   padding: 60rpx 0;
@@ -814,7 +817,7 @@
   font-size: 26rpx;
 }
 
-/* 空状态 */
+/* 缂佸矁娅ｆ慨鎼佸箑?*/
 .empty-state {
   text-align: center;
   padding: 80rpx 0;
@@ -838,15 +841,23 @@
   color: var(--text-muted, #9CA3AF);
 }
 
-/* 加载更多 */
+/* 闁告梻濮惧ù鍥即閺夋埈妯?*/
 .load-more {
   text-align: center;
   padding: 32rpx 0;
-  color: var(--primary, #2D5A3D);
+  color: var(--primary, var(--color-brand-500));
   font-size: 26rpx;
 }
 
-/* 底部间距 */
+/* 閹煎瓨娲熼崕鎾⒒绾惧鐛?*/
 .bottom-spacing {
   height: 40rpx;
+}
+
+
+
+/* ============================================
+   鎼存洟鍎寸€瑰鍙忛崠?   ============================================ */
+.bottom-spacing {
+  height: calc(40rpx + env(safe-area-inset-bottom));
 }

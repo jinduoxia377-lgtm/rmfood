@@ -492,7 +492,7 @@ class UnifiedFormulaOptimizer:
             for c in candidates[:request.count]:
                 candidate_dicts.append({
                     "ingredients": [
-                        {"id": h, "name_cn": h, "dosage": d}
+                        {"id": h, "name_cn": getattr(self, "_id_to_name", {}).get(h, h), "dosage": d}
                         for h, d in c.genes.items()
                     ],
                     "overall_score": c.fitness,
@@ -549,19 +549,30 @@ class UnifiedFormulaOptimizer:
             # 构建MILP求解器
             milp_solver = None
             try:
-                from app.services.ai.algorithms.bayesian_formula_optimizer import _BUILTIN_HERBS
-                herb_data = {}
-                for hid, hp in _BUILTIN_HERBS.items():
-                    herb_data[hid] = HerbNutritionData(
-                        herb_id=hid,
-                        name_cn=hp.name_cn,
-                        cost_per_gram=hp.cost_per_gram,
-                        nutrition_per_100g=hp.efficacy_scores.copy(),
-                        dosage_min=hp.dosage_min,
-                        dosage_max=hp.dosage_max,
-                        dosage_step=hp.dosage_step,
+                # 优先从 HerbKnowledgeService 获取药材数据
+                from app.services.ai.algorithms.herb_knowledge_service import get_global_herb_knowledge
+                herb_service = get_global_herb_knowledge()
+                herbs = herb_service._herbs if herb_service and hasattr(herb_service, '_herbs') else None
+                
+                if herbs and len(herbs) >= 20:
+                    herb_data = {}
+                    for hid, hp in herbs.items():
+                        herb_data[hid] = HerbNutritionData(
+                            herb_id=hid,
+                            name_cn=hp.name_cn,
+                            cost_per_gram=hp.cost_per_gram,
+                            nutrition_per_100g=hp.efficacy_scores.copy(),
+                            dosage_min=hp.dosage_min,
+                            dosage_max=hp.dosage_max,
+                            dosage_step=hp.dosage_step,
+                        )
+                    milp_solver = MILPSolver(herb_data)
+                    logger.info(f"[UnifiedOptimizer] ✅ MILP使用数据库数据: {len(herb_data)} 种药材")
+                else:
+                    # 数据库无数据时抛出异常
+                    raise RuntimeError(
+                        f"[数据完整性] 数据库药材不足: 实际 {len(herbs) if herbs else 0} 种, 最低要求 20 种"
                     )
-                milp_solver = MILPSolver(herb_data)
 
                 lp_constraints = []
                 for nc in request.nutrition_constraints:
@@ -640,7 +651,7 @@ class UnifiedFormulaOptimizer:
                 }
                 cd = {
                     "ingredients": [
-                        {"id": h, "name_cn": h, "dosage": round(d, 2)}
+                        {"id": h, "name_cn": getattr(self, "_id_to_name", {}).get(h, h), "dosage": round(d, 2)}
                         for h, d in genes_to_use.items() if d > 0
                     ],
                     "overall_score": c.fitness,
@@ -728,10 +739,9 @@ class UnifiedFormulaOptimizer:
             for c in pareto[:request.count]:
                 candidate_dicts.append({
                     "ingredients": [
-                        {"id": h, "name_cn": h, "dosage": round(d, 2)}
+                        {"id": h, "name_cn": getattr(self, "_id_to_name", {}).get(h, h), "dosage": round(d, 2)}
                         for h, d in c.genes.items()
                     ],
-                    "overall_score": c.fitness,
                     "efficacy_score": c.efficacy,
                     "safety_score": c.safety,
                     "taste_score": c.taste,
@@ -783,6 +793,17 @@ class UnifiedFormulaOptimizer:
         5. 返回统一格式
         """
         start = time.perf_counter()
+
+        # 从全局药材知识服务构建 id → 中文名映射，供候选结构使用（R7 修复）
+        try:
+            from .herb_knowledge_service import get_global_herb_knowledge
+            hk = get_global_herb_knowledge()
+            if hk is not None and getattr(hk, "_herbs", None):
+                self._id_to_name = {hid: p.name_cn for hid, p in hk._herbs.items() if p.name_cn}
+            else:
+                self._id_to_name = {}
+        except Exception:
+            self._id_to_name = {}
 
         # Step 1: 选择策略
         strategy, explanation = self.select_strategy(request)

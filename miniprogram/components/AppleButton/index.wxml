@@ -1,0 +1,11 @@
+<!-- Apple Button 按钮组件 -->
+<button 
+  class="apple-btn {{className}} {{type}} {{size}} {{loading ? 'apple-btn-loading' : ''}} {{disabled ? 'apple-btn-disabled' : ''}}"
+  bindtap="onTap"
+  loading="{{loading}}"
+  disabled="{{disabled}}"
+  hover-class="apple-btn-hover"
+>
+  <icon wx:if="{{icon}}" name="{{icon}}" size="sm" color="{{iconColor}}" />
+  <slot></slot>
+</button>

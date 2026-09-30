@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 肽链结构分析 API 服务
  * 支持：完整分析、结构转换、历史记录、数据库查询、对比分析
  */
@@ -237,14 +237,29 @@ export class PeptideStructureService {
     min_value?: number;
     max_value?: number;
     food_source?: string;
+    page?: number;
+    page_size?: number;
   }): Promise<{
     total: number;
+    page: number;
+    page_size: number;
     peptides: DatabasePeptide[];
     activity_distribution: Record<string, number>;
     food_source_distribution: Record<string, number>;
   }> {
-    const response = await request.get(`${this.baseUrl}/database/search`, { params });
-    return response.data;
+const response = await request.get(`${this.baseUrl}/database/search`, { params });
+
+    const data = response.data;
+    // 后端返回 { success, total, page, page_size, peptides }
+    // 前端期望 { total, page, page_size, peptides, activity_distribution, food_source_distribution }
+    return {
+      total: data.total,
+      page: data.page,
+      page_size: data.page_size,
+      peptides: data.peptides || [],
+      activity_distribution: {},
+      food_source_distribution: {},
+    };
   }
 
   /**
@@ -256,7 +271,10 @@ export class PeptideStructureService {
     food_sources: Record<string, number>;
   }> {
     const response = await request.get(`${this.baseUrl}/database/statistics`);
-    return response.data;
+    const data = response.data;
+    // 后端返回 { success, statistics: { total_peptides, activities, food_sources } }
+    // 前端期望 { total_peptides, activities, food_sources }
+    return data.statistics || {};
   }
 
   // ─── 模型状态 ──────────────────────────────────────────────
@@ -326,7 +344,7 @@ export class PeptideStructureService {
     const results = await Promise.all(
       sequences.map(seq => this.analyzePeptide(seq))
     );
-    
+
     // 计算排名
     const scoredResults = results.map(r => ({
       sequence: r.sequence,
@@ -335,10 +353,10 @@ export class PeptideStructureService {
       antiox: r.antioxidant.score,
       amp: r.antimicrobial.score,
     }));
-    
+
     // 按综合评分排序
     scoredResults.sort((a, b) => b.score - a.score);
-    
+
     return {
       comparison: scoredResults.map(r => ({
         sequence: r.sequence,
@@ -354,8 +372,173 @@ export class PeptideStructureService {
       ranking: scoredResults.map(r => r.sequence),
     };
   }
+
+  // ─── 高级分析（PepINVENT） ──────────────────────────────────
+
+  /**
+   * 深度分析（含二级结构预测、理化性质剖面、毒性模式等）
+   */
+  async deepAnalyze(sequence: string): Promise<{
+    success: boolean;
+    data: {
+      sequence: string;
+      basic_properties: Record<string, any>;
+      secondary_structure: { predicted_sequence: string; percentages: Record<string, number> };
+      physicochemical_profile: Record<string, any>;
+      bioactivity_predictions: Record<string, any>;
+      safety_assessment: Record<string, any>;
+      overall_scores: Record<string, number>;
+    };
+  }> {
+    const response = await request.post('/api/v1/ai/peptide/advanced/analyze/deep', { sequence });
+    return response.data;
+  }
+
+  /**
+   * 批量深度分析
+   */
+  async batchDeepAnalyze(sequences: string[], maxConcurrent = 5): Promise<{
+    task_id: string;
+    status_url: string;
+    message: string;
+  }> {
+    const response = await request.post('/api/v1/ai/peptide/advanced/analyze/batch', {
+      sequences,
+      max_concurrent: maxConcurrent,
+    });
+    return response.data;
+  }
+
+  /**
+   * 查询批量分析任务状态
+   */
+  async getBatchTaskStatus(taskId: string): Promise<{
+    task_id: string;
+    status: 'processing' | 'completed' | 'failed';
+    total: number;
+    completed: number;
+    results?: Array<{
+      sequence: string;
+      basic_properties: Record<string, any>;
+      secondary_structure: Record<string, any>;
+      overall_scores: Record<string, number>;
+      bioactivity_summary: Record<string, number>;
+    }>;
+    error?: string;
+  }> {
+    const response = await request.get(`/api/v1/ai/peptide/advanced/tasks/${taskId}`);
+    return response.data;
+  }
+
+  /**
+   * Pareto 多目标优化
+   */
+  async paretoOptimize(sequences: string[], objectives: string[], weights?: Record<string, number>): Promise<{
+    success: boolean;
+    data: {
+      total_processed: number;
+      pareto_frontier_size: number;
+      pareto_points: Array<{ sequence: string; objectives: Record<string, number>; rank: number }>;
+      diversity_metrics: Record<string, number>;
+    };
+  }> {
+    const response = await request.post('/api/v1/ai/peptide/advanced/optimize/pareto', {
+      sequences, objectives, weights,
+    });
+    return response.data;
+  }
+
+  /**
+   * 肽-药材协同分析
+   */
+  async synergyAnalysis(peptideSequences: string[], herbNames: string[]): Promise<{
+    success: boolean;
+    data: {
+      synergies: Array<{ peptide: string; herb: string; synergy_score: number; mechanism: string }>;
+      ranked_herbs: Array<{ name: string; score: number; reason: string }>;
+    };
+  }> {
+    const response = await request.post('/api/v1/ai/peptide/advanced/analyze/synergy', {
+      peptide_sequences: peptideSequences,
+      herb_names: herbNames,
+    });
+    return response.data;
+  }
+
+  /**
+   * 溶解度预测（pH-温度依赖）
+   */
+  async predictSolubility(sequences: string[], phMin = 2, phMax = 10, temperature = 25): Promise<{
+    success: boolean;
+    data: {
+      sequences_analyzed: number;
+      predictions: Array<{
+        sequence: string;
+        ph_solubility: Array<{ ph: number; logS: number }>;
+        best_ph: number;
+        solubility_class: string;
+        isoelectric_point: number;
+      }>;
+    };
+  }> {
+    const response = await request.post('/api/v1/ai/peptide/advanced/predict/solubility', {
+      sequences, ph_range_min: phMin, ph_range_max: phMax, temperature_celsius: temperature,
+    });
+    return response.data;
+  }
+
+  /**
+   * 生成结构变体
+   */
+  async generateVariants(template: string, variantType = 'point', numVariants = 20): Promise<{
+    success: boolean;
+    data: {
+      template: string;
+      variant_type: string;
+      total_generated: number;
+      variants: Array<{
+        sequence: string;
+        edit_distance: number;
+        similarity: number;
+        molecular_weight: number;
+        properties_changed: Record<string, string>;
+      }>;
+    };
+  }> {
+    const response = await request.post('/api/v1/ai/peptide/advanced/generate/variants', {
+      template_sequence: template, variant_type: variantType, num_variants: numVariants,
+    });
+    return response.data;
+  }
+
+  /**
+   * 水解模拟
+   */
+  async simulateHydrolysis(sequence: string): Promise<{
+    sequence: string;
+    fragments: Array<{ fragment: string; position: string; enzyme: string }>;
+    cleavage_sites: Array<{ position: number; enzyme: string; bond: string }>;
+  }> {
+    const response = await request.post('/api/v1/peptide-structure/hydrolysis/simulate', { sequence });
+    return response.data;
+  }
+
+  /**
+   * 定量活性预测（IC50）
+   */
+  async predictQuantitative(sequence: string): Promise<{
+    sequence: string;
+    ace_inhibition: { predicted_ic50_um: number; confidence: number; method: string };
+    antioxidant: { predicted_activity: number; confidence: number; method: string };
+  }> {
+    const response = await request.post('/api/v1/peptide-structure/quantitative/predict', { sequence });
+    return response.data;
+  }
 }
 
 // ─── 单例导出 ────────────────────────────────────────────────
 
 export const peptideStructureService = new PeptideStructureService();
+
+
+

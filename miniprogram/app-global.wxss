@@ -1,0 +1,292 @@
+/**
+ * RMFOOD 閸忋劌鐪弽宄扮础婢х偛宸? * 閹绘劒绶电紒鐔剁閻ㄥ嫯顫嬬憴澶夌秼妤犲苯鎷伴崝銊ф暰閺€顖涘瘮
+ */
+
+/* ============================================
+   閸忋劌鐪崝銊ф暰鐎规矮绠?   ============================================ */
+
+/* 妞ょ敻娼版潪顒€婧€ */
+.page-enter {
+  animation: pageEnter 0.3s ease forwards;
+}
+
+.page-exit {
+  animation: pageExit 0.3s ease forwards;
+}
+
+@keyframes pageEnter {
+  from {
+    opacity: 0;
+    transform: translateX(100rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pageExit {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-100rpx);
+  }
+}
+
+/* 閸忓啰绀屽ǎ鈥冲弳 */
+.fade-in {
+  animation: fadeIn 0.3s ease forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* 閸忓啰绀屽ǎ鈥冲毉 */
+.fade-out {
+  animation: fadeOut 0.3s ease forwards;
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* 閸氭垳绗傚鎴濆弳 */
+.slide-up {
+  animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(40rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 閸氭垳绗呭鎴濆弳 */
+.slide-down {
+  animation: slideDown 0.3s ease forwards;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 缂傗晜鏂佹潻娑樺弳 */
+.scale-in {
+  animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* 妤犮劍鐏︾仦蹇撳З閻?*/
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-bg-tertiary) 25%,
+    var(--color-border-light) 50%,
+    var(--color-bg-tertiary) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* 閺冨娴嗛崝銊ф暰 */
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* 閼村鍟块崝銊ф暰 */
+.pulse {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* 瀵鐑﹂崝銊ф暰 */
+.bounce {
+  animation: bounce 0.6s ease;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  25% { transform: translateY(-10rpx); }
+  50% { transform: translateY(0); }
+  75% { transform: translateY(-5rpx); }
+}
+
+/* 閹舵牕濮╅崝銊ф暰 */
+.shake {
+  animation: shake 0.5s ease;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-8rpx); }
+  75% { transform: translateX(8rpx); }
+}
+
+/* 閹存劕濮涢崝銊ф暰 */
+.success-pop {
+  animation: successPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes successPop {
+  0% { transform: scale(0); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+/* 闁挎瑨顕ら幎鏍уЗ */
+.error-shake {
+  animation: errorShake 0.5s ease;
+}
+
+@keyframes errorShake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-12rpx); }
+  40% { transform: translateX(12rpx); }
+  60% { transform: translateX(-8rpx); }
+  80% { transform: translateX(8rpx); }
+}
+
+/* ============================================
+   娴溿倓绨伴悩鑸碘偓浣风喘閸?   ============================================ */
+
+/* 閻愮懓鍤崣宥夘洯 */
+.press-active {
+  transform: scale(0.98);
+  opacity: 0.9;
+  transition: opacity var(--transition-normal), transform var(--transition-normal);
+}
+
+/* 缁備胶鏁ら悩鑸碘偓?*/
+.disabled {
+  opacity: 0.5;
+  
+}
+
+/* 閸旂姾娴囬悩鑸碘偓?*/
+.loading {
+  position: relative;
+  
+}
+
+.loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 32rpx;
+  height: 32rpx;
+  margin: -16rpx 0 0 -16rpx;
+  border: 3rpx solid var(--color-border);
+  border-top-color: var(--color-brand-500);
+  border-radius: var(--radius-full);
+  animation: spin 0.8s linear infinite;
+}
+
+/* ============================================
+   濠婃艾濮╂导妯哄
+   ============================================ */
+
+/* 楠炶櫕绮﹀姘З */
+.scroll-smooth {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 闂呮劘妫屽姘З閺?*/
+.scroll-hide::-webkit-scrollbar {
+  display: none;
+}
+.scroll-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ============================================
+   閺冪娀娈扮喊宥勭喘閸?   ============================================ */
+
+/* 閸戝繐鐨崝銊ф暰閸嬪繐銈?*/
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ============================================
+   閹嗗厴娴兼ê瀵?   ============================================ */
+
+/* GPU閸旂娀鈧?*/
+.gpu-accelerated {
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* 閸ュ墽澧栭幊鎺戝鏉炶棄宕版担?*/
+.image-placeholder {
+  background: var(--color-bg-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ============================================
+   鐎瑰鍙忛崠鍝勭厵闁倿鍘?   ============================================ */
+
+.safe-bottom {
+  padding-bottom: calc(env(safe-area-inset-bottom) + var(--space-4));
+}
+
+.safe-top {
+  padding-top: calc(env(safe-area-inset-top) + var(--space-2));
+}
+
+

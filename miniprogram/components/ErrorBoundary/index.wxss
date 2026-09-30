@@ -1,0 +1,119 @@
+/**
+ * ErrorBoundary 错误边界组件样式
+ * 提供优雅的错误展示和恢复机制
+ */
+
+.error-boundary {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--color-bg-page);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.error-container {
+  width: 100%;
+  max-width: 600rpx;
+  padding: var(--space-8);
+  text-align: center;
+}
+
+/* 错误图标 */
+.error-icon {
+  width: 160rpx;
+  height: 160rpx;
+  margin: 0 auto var(--space-6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(239, 68, 68, 0.1);
+  border-radius: var(--radius-full);
+}
+
+.error-icon icon {
+  font-size: 80rpx;
+}
+
+/* 错误标题 */
+.error-title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-3);
+}
+
+/* 错误描述 */
+.error-desc {
+  font-size: var(--font-size-md);
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-relaxed);
+  margin-bottom: var(--space-6);
+}
+
+/* 错误详情 */
+.error-detail {
+  background: var(--color-bg-tertiary);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  margin-bottom: var(--space-6);
+  text-align: left;
+}
+
+.detail-text {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  word-break: break-all;
+}
+
+/* 操作按钮 */
+.error-actions {
+  display: flex;
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+}
+
+.error-actions .btn {
+  flex: 1;
+}
+
+/* 联系方式 */
+.error-contact {
+  padding-top: var(--space-4);
+  border-top: 1rpx solid var(--color-border-light);
+}
+
+.contact-text {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+}
+
+/* 加载状态 */
+.error-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.loading-spinner {
+  width: 80rpx;
+  height: 80rpx;
+  border: 4rpx solid var(--color-border-light);
+  border-top-color: var(--color-brand-500);
+  border-radius: var(--radius-full);
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.error-loading-text {
+  font-size: var(--font-size-md);
+  color: var(--color-text-secondary);
+}

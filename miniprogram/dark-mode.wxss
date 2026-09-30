@@ -1,0 +1,121 @@
+/**
+ * RMFOOD 小程序 - 深色模式适配样式
+ * 基于 theme.json 配置
+ */
+
+/* ============================================
+   深色模式基础变量
+   ============================================ */
+@media (prefers-color-scheme: dark) {
+  page {
+    /* 深色背景 */
+    --color-bg-page: #0D1117;
+    --color-bg-card: #161B22;
+    --color-bg-secondary: #0D1117;
+    --color-bg-tertiary: #21262D;
+    --color-bg-hover: rgba(255, 255, 255, 0.06);
+    
+    /* 深文字颜色 */
+    --color-text-primary: #F0F6FC;
+    --color-text-secondary: #C9D1D9;
+    --color-text-tertiary: #8B949E;
+    --color-text-quaternary: #6E7681;
+    --color-text-placeholder: #484F58;
+    
+    /* 深色边框 */
+    --color-border: #30363D;
+    --color-border-light: #21262D;
+    --color-border-dark: #484F58;
+    --color-separator: rgba(240, 246, 252, 0.08);
+    --color-divider: rgba(240, 246, 252, 0.12);
+    
+    /* 深色分组背景 */
+    --color-grouped-bg: #0D1117;
+    --color-grouped-separator: #30363D;
+    
+    /* 毛玻璃效果适配深色 */
+    --blur-bg: rgba(22, 27, 34, 0.94);
+    --blur-bg-secondary: rgba(13, 17, 23, 0.94);
+    --blur-strong: rgba(22, 27, 34, 0.85);
+    
+    /* 阴影适配深色 */
+    --shadow-sm: 0 1rpx 3rpx rgba(0,0,0,0.3), 0 1rpx 2rpx rgba(0,0,0,0.4);
+    --shadow-md: 0 4rpx 12rpx rgba(0,0,0,0.3), 0 2rpx 4rpx rgba(0,0,0,0.4);
+    --shadow-lg: 0 12rpx 28rpx rgba(0,0,0,0.4), 0 4rpx 10rpx rgba(0,0,0,0.4);
+    --shadow-xl: 0 20rpx 40rpx rgba(0,0,0,0.5);
+  }
+  
+  /* 深色模式品牌色微调 */
+  :root {
+    --color-brand-500: #4ADE80;
+    --color-brand-600: #22C55E;
+  }
+}
+
+/* ============================================
+   手动深色模式切换类
+   ============================================ */
+.dark-mode {
+  --color-bg-page: #0D1117;
+  --color-bg-card: #161B22;
+  --color-bg-secondary: #0D1117;
+  --color-bg-tertiary: #21262D;
+  --color-bg-hover: rgba(255, 255, 255, 0.06);
+  
+  --color-text-primary: #F0F6FC;
+  --color-text-secondary: #C9D1D9;
+  --color-text-tertiary: #8B949E;
+  --color-text-quaternary: #6E7681;
+  --color-text-placeholder: #484F58;
+  
+  --color-border: #30363D;
+  --color-border-light: #21262D;
+  --color-border-dark: #484F58;
+  --color-separator: rgba(240, 246, 252, 0.08);
+  --color-divider: rgba(240, 246, 252, 0.12);
+  
+  --color-grouped-bg: #0D1117;
+  --color-grouped-separator: #30363D;
+  
+  --blur-bg: rgba(22, 27, 34, 0.94);
+  --blur-bg-secondary: rgba(13, 17, 23, 0.94);
+  
+  --shadow-sm: 0 1rpx 3rpx rgba(0,0,0,0.3), 0 1rpx 2rpx rgba(0,0,0,0.4);
+  --shadow-md: 0 4rpx 12rpx rgba(0,0,0,0.3), 0 2rpx 4rpx rgba(0,0,0,0.4);
+  --shadow-lg: 0 12rpx 28rpx rgba(0,0,0,0.4), 0 4rpx 10rpx rgba(0,0,0,0.4);
+}
+
+/* ============================================
+   深色模式组件适配
+   ============================================ */
+
+/* 列表项分隔线适配深色 */
+.dark-mode .apple-list-item:not(:last-child)::after,
+.dark-mode .list-item:not(:last-child)::after {
+  background: var(--color-separator);
+}
+
+/* 输入框适配深色 */
+.dark-mode .form-input {
+  color: var(--color-text-primary);
+}
+
+.dark-mode .form-input::placeholder {
+  color: var(--color-text-placeholder);
+}
+
+/* 卡片背景适配 */
+.dark-mode .card,
+.dark-mode .apple-card {
+  background: var(--color-bg-card);
+}
+
+/* 导航栏适配 */
+.dark-mode .navbar {
+  background: var(--blur-bg);
+}
+
+/* TabBar 适配 */
+.dark-mode .tabbar {
+  background: var(--blur-bg);
+}

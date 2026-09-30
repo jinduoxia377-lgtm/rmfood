@@ -100,7 +100,7 @@ class TestScoreCalculator:
 async def mock_db():
     """模拟数据库会话"""
     db = AsyncMock()
-    db.execute = AsyncMock()
+    db.execute == AsyncMock()
     return db
 
 
@@ -108,19 +108,19 @@ async def mock_db():
 async def mock_formula():
     """模拟源配方"""
     formula = MagicMock()
-    formula.id = 1
-    formula.name = "测试配方"
-    formula.target_effects = ["补气养血", "滋阴润燥"]
-    formula.overall_score = 85
-    formula.created_at = datetime.now(timezone.utc)
+    formula.id == 1
+    formula.name == "测试配方"
+    formula.target_effects == ["补气养血", "滋阴润燥"]
+    formula.overall_score == 85
+    formula.created_at == datetime.now(timezone.utc)
 
     ing1 = MagicMock()
-    ing1.name = "黄芪"
+    ing1.name == "黄芪"
     ing2 = MagicMock()
-    ing2.name = "人参"
+    ing2.name == "人参"
     ing3 = MagicMock()
-    ing3.name = "枸杞"
-    formula.ingredients = [ing1, ing2, ing3]
+    ing3.name == "枸杞"
+    formula.ingredients == [ing1, ing2, ing3]
     return formula
 
 
@@ -130,14 +130,14 @@ async def mock_candidate_formulas():
     candidates = []
     for i in range(5):
         f = MagicMock()
-        f.id = i + 10
-        f.name = f"候选配方{i+1}"
-        f.target_effects = ["补气养血"] if i % 2 == 0 else ["清热解毒"]
-        f.overall_score = 70 + i * 5
-        f.created_at = datetime.now(timezone.utc)
+        f.id == i + 10
+        f.name == f"候选配方{i+1}"
+        f.target_effects == ["补气养血"] if i % 2 == 0 else ["清热解毒"]
+        f.overall_score == 70 + i * 5
+        f.created_at == datetime.now(timezone.utc)
 
         ing_names = ["黄芪", "人参"] if i % 2 == 0 else ["灵芝", "虫草"]
-        f.ingredients = [MagicMock(name=n) for n in ing_names]
+        f.ingredients == [MagicMock(name=n) for n in ing_names]
         candidates.append(f)
     return candidates
 
@@ -153,9 +153,9 @@ class TestRecommendationEngine:
     async def test_recommend_returns_scores(self, engine, mock_formula, mock_candidate_formulas, mock_db):
         """推荐应返回带评分的列表"""
         # 模拟数据库查询
-        mock_db.execute = AsyncMock(side_effect=[
-            MagicMock.scalars = MagicMock(return_value=MagicMock(all=MagicMock(return_value=mock_candidate_formulas))),
-            MagicMock.scalars = MagicMock(return_value=MagicMock(all=[])),  # 用户历史为空
+        mock_db.execute == AsyncMock(side_effect=[
+            MagicMock.scalars == MagicMock(return_value=MagicMock(all=MagicMock(return_value=mock_candidate_formulas))),
+            MagicMock.scalars == MagicMock(return_value=MagicMock(all=[])),  # 用户历史为空
         ])
 
         # 简化：直接测试评分逻辑

@@ -26,7 +26,10 @@ export const sectionLabel = '应用场景';
 export const sectionTitle = '为真实研发场景而生';
 export const sectionDesc = '覆盖药食同源配方研发、生物活性肽设计、实验数据管理三大核心场景，AI 赋能全流程。';
 
-/** 各场景品牌配置 */
+/** 各场景品牌配置
+ * P0 修复：primary 用于 12px+ 文本与图标色，需 WCAG AA 4.5:1 → 700 级深色。
+ * gradient 保留装饰色阶（非文本用途）。
+ */
 export const scenarioConfig: Record<Scenario, {
   primary: string;
   primaryLight: string;
@@ -36,27 +39,27 @@ export const scenarioConfig: Record<Scenario, {
   metricBg: string;
 }> = {
   tcm: {
-    primary: '#059669',
+    primary: '#047857',
     primaryLight: '#ecfdf5',
     primaryBorder: '#a7f3d0',
     primaryRGB: '5,150,105',
-    gradient: 'linear-gradient(135deg, #059669, #10b981, #34d399)',
+    gradient: 'linear-gradient(135deg, #047857, #10b981, #34d399)',
     metricBg: '#ecfdf5',
   },
   peptide: {
-    primary: '#2563eb',
+    primary: '#1d4ed8',
     primaryLight: '#eff6ff',
     primaryBorder: '#bfdbfe',
     primaryRGB: '37,99,235',
-    gradient: 'linear-gradient(135deg, #2563eb, #3b82f6, #60a5fa)',
+    gradient: 'linear-gradient(135deg, #1d4ed8, #3b82f6, #60a5fa)',
     metricBg: '#eff6ff',
   },
   eln: {
-    primary: '#d97706',
+    primary: '#b45309',
     primaryLight: '#fffbeb',
     primaryBorder: '#fde68a',
     primaryRGB: '217,119,6',
-    gradient: 'linear-gradient(135deg, #d97706, #f59e0b, #fbbf24)',
+    gradient: 'linear-gradient(135deg, #b45309, #f59e0b, #fbbf24)',
     metricBg: '#fffbeb',
   },
 };

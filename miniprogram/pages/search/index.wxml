@@ -1,163 +1,219 @@
-<!-- 搜索页面 -->
+<!-- Apple Style 搜索页面 -->
 <view class="page-container">
-  <!-- 顶部Header -->
-  <view class="header" style="padding-top: {{statusBarHeight}}px;">
-    <view class="header-content">
-      <!-- 返回按钮 -->
-      <view class="nav-btn" bindtap="handleBack" aria-label="返回">
-        <icon name="arrow-left" size="md" color="#FFFFFF" />
+  <!-- 导航栏 -->
+  <view class="search-nav" style="padding-top: {{statusBarHeight}}px;">
+    <view class="search-nav-content">
+      <view class="nav-btn" bindtap="onCancel" aria-label="取消">
+        <text class="cancel-text">取消</text>
       </view>
-      
-      <!-- 标题 -->
-      <view class="header-title">
-        <view class="title-main">搜索</view>
-      </view>
-      
-      <!-- 用户头像 -->
-      <avatar
-        src="{{userInfo && userInfo.avatarUrl || ''}}"
-        size="sm"
-        bind:tap="goToProfile"
-        aria-label="个人中心"
-      />
+      <view class="nav-title">搜索</view>
+      <view class="nav-placeholder"></view>
     </view>
   </view>
 
-  <!-- 搜索框 -->
-  <view class="search-bar">
-    <view class="search-input-wrapper" role="search">
-      <icon name="search" size="md" color="var(--color-text-muted)" />
-      <input 
-        class="search-input" 
-        placeholder="搜索食材、配方..." 
+  <!-- Search Bar -->
+  <view class="search-bar-container" style="padding-top: {{navHeight}}rpx;">
+    <view class="apple-searchbar" bindtap="focusSearch">
+      <view class="search-icon-wrap">
+        <icon name="search" size="sm" color="var(--color-text-tertiary)" />
+      </view>
+      <input
+        class="search-input"
+        placeholder="搜索食材、配方..."
         placeholder-class="search-placeholder"
         value="{{searchQuery}}"
         bindinput="onSearchInput"
-        bindconfirm="performSearch"
+        bindconfirm="onSearch"
+        focus="{{hasSearch}}"
+        confirm-type="search"
         aria-label="搜索输入框"
       />
-    </view>
-  </view>
-
-  <!-- 搜索历史 -->
-  <view wx:if="{{!hasSearched && searchHistory.length > 0}}" class="history-section">
-    <view class="history-header">
-      <text class="history-title">搜索历史</text>
-      <view class="history-clear" bindtap="clearHistory" aria-label="清除历史">
-        <icon name="delete" size="sm" color="var(--color-text-muted)" />
-        <text>清除</text>
-      </view>
-    </view>
-    <view class="history-list">
-      <view 
-        wx:for="{{searchHistory}}" 
-        wx:key="index"
-        class="history-item"
-        bindtap="searchFromHistory"
-        data-query="{{item}}"
-        aria-label="搜索历史: {{item}}"
-      >
-        <icon name="history" size="sm" color="var(--color-text-muted)" />
-        <text class="history-text">{{item}}</text>
-      </view>
-    </view>
-  </view>
-
-  <!-- 搜索结果 -->
-  <view wx:if="{{hasSearched}}" class="results-section">
-    <!-- 骨架屏加载状态 -->
-    <skeleton-loader
-      wx:if="{{showSkeleton}}"
-      type="list"
-      count="3"
-      class="skeleton-container"
-    ></skeleton-loader>
-
-    <!-- 结果统计 -->
-    <view wx:if="{{!showSkeleton}}" class="result-stats">
-      <text>找到 {{allResults.length}} 条结果</text>
-      <view class="sort-selector" bindtap="showSortMenu" role="button" aria-label="排序选项">
-        <text>{{sortBy === 'relevance' ? '相关性' : sortBy === 'score' ? '健康分' : '化合物数'}}</text>
-        <icon name="arrow-down" size="sm" color="var(--color-text-muted)" />
+      <view wx:if="{{searchQuery}}" class="search-clear" bindtap="clearSearch" aria-label="清除">
+        <text class="clear-text">×</text>
       </view>
     </view>
     
-    <!-- 结果列表 -->
-    <view wx:if="{{!showSkeleton}}" class="results-list">
-      <card 
-        wx:for="{{allResults}}" 
-        wx:key="id"
-        shadow="sm"
-        clickable
-        bind:tap="viewResult"
-        data-id="{{item.id}}"
-        aria-label="查看配方: {{item.name}}"
-      >
-        <view class="result-card">
-          <image class="result-image" src="{{item.coverImage || '/assets/images/default-result.png'}}" mode="aspectFill" lazy-load aria-hidden="true" />
-          <view class="result-content">
-            <text class="result-name">{{item.name}}</text>
-            <text class="result-desc">{{item.description || item.shortDesc}}</text>
-            <view class="result-tags">
-              <tag wx:for="{{item.tags}}" wx:for-item="tag" wx:key="index" type="primary" size="small">{{tag}}</tag>
+    <!-- 语音搜索 -->
+    <view class="voice-btn {{isVoiceRecording ? 'recording' : ''}}" bindtap="startVoiceSearch" aria-label="语音搜索">
+      <icon name="mic" size="md" color="var(--color-system-blue)" />
+    </view>
+  </view>
+
+  <!-- 分段控制器 -->
+  <view class="segmented-container" wx:if="{{hasSearch}}">
+    <view class="apple-segmented">
+      <view 
+        class="apple-segmented-item {{activeTab === 'all' ? 'active' : ''}}"
+        bindtap="switchTab"
+        data-tab="all"
+      >全部</view>
+      <view 
+        class="apple-segmented-item {{activeTab === 'ingredient' ? 'active' : ''}}"
+        bindtap="switchTab"
+        data-tab="ingredient"
+      >食材</view>
+      <view 
+        class="apple-segmented-item {{activeTab === 'formula' ? 'active' : ''}}"
+        bindtap="switchTab"
+        data-tab="formula"
+      >配方</view>
+      <view 
+        class="apple-segmented-item {{activeTab === 'knowledge' ? 'active' : ''}}"
+        bindtap="switchTab"
+        data-tab="knowledge"
+      >知识</view>
+    </view>
+  </view>
+
+  <!-- 滚动内容 -->
+  <scroll-view
+    class="content-scroll"
+    scroll-y
+    refresher-enabled
+    refresher-triggered="{{loading && !searched}}"
+    bindrefresherrefresh="onPullDownRefresh"
+    style="margin-top: {{hasSearch ? 100 : 0}}rpx;"
+  >
+    
+    <!-- 未搜索状态 -->
+    <view wx:if="{{!hasSearch}}" class="empty-state">
+      <view class="empty-icon">
+        <icon name="search" size="xl" color="var(--color-text-tertiary)" />
+      </view>
+      <text class="empty-title">搜索食材、配方</text>
+      <text class="empty-desc">输入关键词开始探索药食同源世界</text>
+      
+      <!-- 热门搜索 -->
+      <view class="hot-search">
+        <text class="hot-title">热门搜索</text>
+        <view class="hot-tags">
+          <view 
+            wx:for="{{hotKeywords}}" 
+            wx:key="index"
+            class="hot-tag"
+            bindtap="searchKeyword"
+            data-keyword="{{item}}"
+          >{{item}}</view>
+        </view>
+      </view>
+      
+      <!-- 搜索历史 -->
+      <view wx:if="{{history.length > 0}}" class="search-history">
+        <view class="history-header">
+          <text class="history-title">搜索历史</text>
+          <view class="clear-history" bindtap="clearHistory">
+            <text class="clear-text">清除</text>
+          </view>
+        </view>
+        <view class="history-list">
+          <view 
+            wx:for="{{history}}" 
+            wx:key="id"
+            class="history-item"
+            bindtap="searchHistory"
+            data-id="{{item.id}}"
+          >
+            <icon name="history" size="sm" color="var(--color-text-tertiary)" />
+            <text class="history-text">{{item.keyword}}</text>
+            <view class="history-delete" bindtap="deleteHistory" data-id="{{item.id}}">
+              <icon name="close" size="sm" color="var(--color-text-tertiary)" />
             </view>
           </view>
         </view>
-      </card>
-    </view>
-    
-    <!-- 空状态 -->
-    <empty-state
-      wx:if="{{!showSkeleton && allResults.length === 0}}"
-      icon="search"
-      title="未找到相关结果"
-      desc="请尝试其他关键词"
-    ></empty-state>
-  </view>
-
-  <!-- 热门推荐 -->
-  <view wx:if="{{!hasSearched && hotSearches.length > 0}}" class="hot-section">
-    <view class="hot-header">
-      <text class="hot-title">热门搜索</text>
-    </view>
-    <view class="hot-list">
-      <view 
-        wx:for="{{hotSearches}}" 
-        wx:key="id"
-        class="hot-item"
-        bindtap="searchFromHot"
-        data-query="{{item.name}}"
-        aria-label="热门搜索: {{item.name}}"
-      >
-        <text class="hot-rank">{{item.rank}}</text>
-        <text class="hot-name">{{item.name}}</text>
-        <text class="hot-count">{{item.count}}次搜索</text>
       </view>
     </view>
-  </view>
 
-  <!-- 分类标签 -->
-  <view class="category-section">
-    <view class="category-header">
-      <text class="category-title">分类浏览</text>
-    </view>
-    <view class="category-grid">
-      <view 
-        wx:for="{{categories}}" 
-        wx:key="id"
-        class="category-item"
-        bindtap="searchByCategory"
-        data-category="{{item.id}}"
-        aria-label="查看{{item.name}}分类"
-      >
-        <view class="category-icon-wrap">
-          <icon name="{{item.icon}}" size="lg" color="{{item.color}}" />
+    <!-- 搜索结果 -->
+    <view wx:if="{{hasSearch}}" class="results-area">
+      <!-- 结果统计 -->
+      <view class="results-info">
+        <text class="results-count">找到 {{results.length}} 个结果</text>
+        <view class="filter-btn" bindtap="toggleFilter" aria-label="筛选">
+          <icon name="filter" size="sm" color="var(--color-system-blue)" />
+          <text>筛选</text>
         </view>
-        <text class="category-name">{{item.name}}</text>
+      </view>
+
+      <!-- 筛选面板 -->
+      <view wx:if="{{showFilter}}" class="filter-panel apple-card">
+        <view class="filter-section">
+          <text class="filter-label">药性</text>
+          <view class="filter-options">
+            <view 
+              wx:for="{{natureOptions}}" 
+              wx:key="index"
+              class="filter-option {{filters.nature === item ? 'active' : ''}}"
+              bindtap="applyFilter"
+              data-type="nature"
+              data-value="{{item}}"
+            >{{item}}</view>
+          </view>
+        </view>
+        
+        <view class="filter-section">
+          <text class="filter-label">功效</text>
+          <view class="filter-options">
+            <view 
+              wx:for="{{effectOptions}}" 
+              wx:key="index"
+              class="filter-option {{filters.effect === item ? 'active' : ''}}"
+              bindtap="applyFilter"
+              data-type="effect"
+              data-value="{{item}}"
+            >{{item}}</view>
+          </view>
+        </view>
+        
+        <view class="filter-actions">
+          <view class="filter-btn clear" bindtap="clearFilter">清除</view>
+          <view class="filter-btn apply" bindtap="applyFilters">确定</view>
+        </view>
+      </view>
+
+      <!-- 结果列表 -->
+      <view class="results-list">
+        <view 
+          wx:for="{{results}}" 
+          wx:key="id"
+          class="result-item apple-list-item"
+          bindtap="viewResult"
+          data-id="{{item.id}}"
+        >
+          <view class="result-icon-wrap">
+            <image 
+              wx:if="{{item.imageUrl}}"
+              class="result-icon"
+              src="{{item.imageUrl}}"
+              mode="aspectFill"
+            />
+            <view wx:else class="result-icon-placeholder">
+              <icon name="{{item.type === 'ingredient' ? 'ingredient' : 'formula'}}" size="md" color="var(--color-text-tertiary)" />
+            </view>
+          </view>
+          <view class="result-content">
+            <text class="result-title">{{item.title}}</text>
+            <text class="result-desc">{{item.subtitle}}</text>
+            <view class="result-tags">
+              <tag wx:for="{{item.tags}}" wx:key="index" wx:for-item="tag" class="tag-apple primary">{{tag}}</tag>
+            </view>
+          </view>
+          <view class="result-accessory">
+            <icon name="arrow-right" size="sm" color="var(--color-text-tertiary)" />
+          </view>
+        </view>
+      </view>
+
+      <!-- 空状态 -->
+      <view wx:if="{{results.length === 0 && searched}}" class="empty-results">
+        <view class="empty-icon">
+          <icon name="empty" size="xl" color="var(--color-text-tertiary)" />
+        </view>
+        <text class="empty-title">未找到相关结果</text>
+        <text class="empty-desc">请尝试其他关键词或筛选条件</text>
       </view>
     </view>
-  </view>
 
-  <!-- 底部间距 -->
-  <view class="bottom-spacing"></view>
+    <!-- 底部间距 -->
+    <view class="bottom-spacing"></view>
+  </scroll-view>
 </view>

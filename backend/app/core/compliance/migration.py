@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 🟡 P2-4: 数据库迁移与版本管理系统
 
@@ -1055,6 +1056,6 @@ __all__ = [
     "MIGRATION_HISTORY_TABLE_SQL",
 ]
 
-【拆分计划】当前文件 1056 行，超出 800 行上限。
-建议拆分为 migration_engine.py (MigrationManager), migration_models.py (数据模型), migration_audit.py (审计日志)。
-拆分后需更新导入: backend/app/core/migration_audit.py
+
+
+

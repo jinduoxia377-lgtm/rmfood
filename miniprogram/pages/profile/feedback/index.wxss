@@ -1,0 +1,143 @@
+/* 意见反馈页面样式 */
+.page-container {
+  min-height: 100vh;
+  background: var(--color-bg-page);
+  display: flex;
+  flex-direction: column;
+}
+
+.content-scroll {
+  flex: 1;
+}
+
+.form-container {
+  padding: 24rpx;
+}
+
+.form-section {
+  background: var(--color-bg-card);
+  border-radius: var(--radius-lg);
+  padding: 24rpx;
+  margin-bottom: 16rpx;
+}
+
+.section-title {
+  font-size: var(--font-size-subtitle);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: 16rpx;
+}
+
+.required {
+  color: var(--color-system-red);
+}
+
+.optional {
+  font-size: var(--font-size-caption);
+  color: var(--color-text-tertiary);
+  font-weight: normal;
+}
+
+.picker-value {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16rpx 0;
+  font-size: var(--font-size-body);
+  color: var(--color-text-primary);
+}
+
+.content-input {
+  width: 100%;
+  min-height: 200rpx;
+  font-size: var(--font-size-body);
+  color: var(--color-text-primary);
+  line-height: 1.6;
+}
+
+.char-count {
+  display: block;
+  text-align: right;
+  font-size: var(--font-size-caption);
+  color: var(--color-text-tertiary);
+  margin-top: 8rpx;
+}
+
+.contact-input {
+  width: 100%;
+  padding: 16rpx 0;
+  font-size: var(--font-size-body);
+  color: var(--color-text-primary);
+}
+
+.upload-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40rpx;
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-md);
+  border: 2rpx dashed var(--color-border);
+}
+
+.upload-text {
+  font-size: var(--font-size-caption);
+  color: var(--color-text-tertiary);
+  margin-top: 12rpx;
+}
+
+.image-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+  margin-top: 16rpx;
+}
+
+.preview-img {
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: var(--radius-md);
+}
+
+.remove-btn {
+  position: absolute;
+  right: -8rpx;
+  top: -8rpx;
+  width: 36rpx;
+  height: 36rpx;
+  background: rgba(0,0,0,0.5);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24rpx;
+}
+
+.form-actions {
+  display: flex;
+  gap: 16rpx;
+  margin-top: 32rpx;
+}
+
+.btn-clear {
+  flex: 1;
+  height: 88rpx;
+  line-height: 88rpx;
+  background: var(--color-bg-card);
+  color: var(--color-text-secondary);
+  border: 1rpx solid var(--color-border);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-body);
+}
+
+.btn-submit {
+  flex: 2;
+  height: 88rpx;
+  line-height: 88rpx;
+  background: var(--color-brand-500);
+  color: #fff;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-body);
+}

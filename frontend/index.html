@@ -1,52 +1,52 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#059669" />
-    <meta name="description" content="RMFOOD 鏄幈鑼靛垎瀛愬紑鍙戠殑鑽鍚屾簮閰嶆柟鐮斿彂骞冲彴锛屾暣鍚?TCMSP 涓嵂鏉愬簱銆佹椿鎬ц偨鏁版嵁搴撲笌鐭ヨ瘑鍥捐氨锛屼负椋熷搧鐮斿彂鍥㈤槦鎻愪緵浠庡師鏂欑瓫閫夈€侀厤鏂圭敓鎴愬埌瀹夊叏鍚堣鐨勫叏娴佺▼鏅鸿兘杈呭姪宸ュ叿銆? />
-    <meta name="application-name" content="RMFOOD 閰嶆柟璁捐骞冲彴" />
+    <meta name="description" content="莱茵分子是药食同源配方研发平台，融合分子生物学、人工智能与功能性食品科学" />
+    <meta name="application-name" content="莱茵分子 配方设计平台" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <meta name="keywords" content="鑽鍚屾簮,閰嶆柟璁捐,涓尰鑽暟鎹簱,娲绘€ц偨,鍔熻兘鎬ч鍝?閰嶆柟鐮斿彂,鐭ヨ瘑鍥捐氨,椋熷搧瀹夊叏,鍚堣妫€鏌?TCMSP,DFBP" />
-    <meta name="author" content="鑾辫尩锛堝帵闂級鍒嗗瓙鐢熺墿绉戞妧鏈夐檺鍏徃" />
-    <meta property="og:title" content="RMFOOD 鈥?鑽鍚屾簮閰嶆柟鐮斿彂骞冲彴 | 鑾辫尩鍒嗗瓙" />
-    <meta property="og:description" content="鏁村悎 TCMSP + DFBP 鍙屾暟鎹簱涓庣煡璇嗗浘璋憋紝涓洪鍝佺爺鍙戝洟闃熸彁渚涗粠鍘熸枡绛涢€夊埌瀹夊叏鍚堣鐨勫叏娴佺▼鏅鸿兘杈呭姪銆? />
-    <meta property="og:type" content="website" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="RMFOOD 鈥?鑽鍚屾簮閰嶆柟鐮斿彂骞冲彴" />
-    <meta name="twitter:description" content="鑽鍚屾簮鍔熻兘鎬ч鍝佹櫤鑳介厤鏂圭爺鍙戝钩鍙帮紝TCMSP + DFBP + 鐭ヨ瘑鍥捐氨椹卞姩銆? />
-    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&display=swap" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&display=swap" />
-    <title>RMFOOD 鈥?鑽鍚屾簮閰嶆柟鐮斿彂骞冲彴 | 鑾辫尩鍒嗗瓙</title>
-    <!-- ECharts CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
-    <!-- Node.js Process Polyfill for ExcelJS and other Node.js libraries -->
-    <!-- 浣跨敤绯荤粺瀛椾綋锛屾棤闇€鍔犺浇澶栭儴璧勬簮 -->
-    <!-- 涓婚鍒濆鍖栬剼鏈?- 闃叉涓婚鍒囨崲闂儊 -->
+    <title>莱茵分子 - 药食同源配方研发平台</title>
+    <!-- 字体使用系统字体回退，避免外部 Google Fonts 网络依赖导致国内加载超时 -->
     <script>
-      (function() {
-        const stored = localStorage.getItem('rmfood-theme-settings-v2');
-        if (stored) {
-          try {
-            const { mode, customColors } = JSON.parse(stored);
-            const isDark = mode === 'dark' ||
-              (mode === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-            if (isDark) {
-              document.documentElement.classList.add('dark');
-            }
-          } catch (e) {
-            if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-              document.documentElement.classList.add('dark');
+      /* ECharts CDN（可选，仅数据库页的 3D 肽结构视图使用，带优雅降级）：
+         加载失败不会阻塞应用，PeptideStructureAnalyzer 已有 window.echarts 缺失守卫 */
+      (function () {
+        var s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js';
+        s.async = true;
+        s.onload = function () { console.info('[ECharts] CDN ready'); };
+        s.onerror = function () { console.warn('[ECharts] CDN 加载失败，肽结构 3D 视图将不可用（不影响其他功能）'); };
+        document.head.appendChild(s);
+      })();
+    </script>
+    <script>
+      // D-11 修复：原脚本读取 'rmfood-theme-settings-v2'（全项目无写入方，实测恒为 null），
+      // 且 mode 取值用 'auto' 而 store 用 'system'，导致预置暗色主题时首屏必然亮色闪烁。
+      // 现对齐 themeStore 的 persist 键名与结构（{ state: { mode }, version }）。
+      (function () {
+        try {
+          var raw = localStorage.getItem('rmfood-theme-storage');
+          if (!raw) return;
+          var parsed = JSON.parse(raw);
+          var state = parsed && parsed.state;
+          var mode = state && state.mode;
+          if (!mode) return;
+          var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          var isDark = mode === 'dark' || (mode === 'system' && prefersDark);
+          if (isDark) document.documentElement.classList.add('dark');
+          // 无障碍模式属性也需在首屏前就位，否则刷新后 semantic-utils.css 的规则失效（D-39）
+          if (state.accessibilityMode && state.accessibilityMode !== 'normal') {
+            document.documentElement.setAttribute('data-a11y-mode', state.accessibilityMode);
+            if (state.accessibilityMode === 'reading') {
+              document.documentElement.setAttribute('data-reading-mode', isDark ? 'dark-read' : 'sepia');
             }
           }
-        } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-          document.documentElement.classList.add('dark');
-        }
+        } catch (e) {}
       })();
     </script>
   </head>

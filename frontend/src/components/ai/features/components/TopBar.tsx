@@ -23,6 +23,8 @@ import {
   Zap,
   Trash2,
   FileText,
+  UserCircle,
+  Search as SearchIcon,
   type LucideIcon,
 } from 'lucide-react'
 import type { ScenarioMode } from '../services/scenarioSwitcher'
@@ -68,6 +70,9 @@ export interface TopBarProps {
   messageCount: number
   onClearChat: () => void
   onOpenKBPanel?: () => void
+  onOpenUserProfile?: () => void
+  onToggleSearch?: () => void
+  searchOpen?: boolean
   t: (key: string, fallback?: string) => string
 }
 
@@ -167,7 +172,8 @@ export function TopBar({
   ragEnabled, ragIsSeeded, ragIsSeeding,
   onToggleRAG, onTriggerSeed,
   formulaCount, onShowFormulaList,
-  messageCount, onClearChat, onOpenKBPanel, t,
+  messageCount, onClearChat, onOpenKBPanel,
+  onOpenUserProfile, onToggleSearch, searchOpen, t,
 }: TopBarProps) {
   const currentModel = MODELS.find(m => m.id === llmModel) || MODELS[0]
   const ScenarioIcon = getScenarioIcon(scenarioMode)
@@ -281,7 +287,33 @@ export function TopBar({
         {/* 分隔 */}
         <div className="w-px h-4 bg-neutral-200 dark:bg-neutral-800 mx-0.5" />
 
-        {/* ④ 设置（仅保留配方面板 + 清除对话） */}
+        {/* ④ 健康画像 */}
+        {onOpenUserProfile && (
+          <button
+            onClick={onOpenUserProfile}
+            title="健康画像"
+            className="p-1.5 rounded-md text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+          >
+            <UserCircle className="w-4 h-4" />
+          </button>
+        )}
+
+        {/* ⑤ 搜索 */}
+        {onToggleSearch && (
+          <button
+            onClick={onToggleSearch}
+            title={searchOpen ? '关闭搜索' : '搜索消息'}
+            className={`p-1.5 rounded-md transition-colors ${
+              searchOpen
+                ? 'text-primary-500 bg-primary-50 dark:bg-primary-900/20'
+                : 'text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+            }`}
+          >
+            <SearchIcon className="w-4 h-4" />
+          </button>
+        )}
+
+        {/* ⑥ 设置（仅保留配方面板 + 清除对话） */}
         <SettingsMenu
           formulaCount={formulaCount}
           onShowFormulaList={onShowFormulaList}

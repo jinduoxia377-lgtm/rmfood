@@ -112,3 +112,65 @@ class DataClassification(str, enum.Enum):
     INTERNAL = "internal"
     SECRET = "secret"
     TOP_SECRET = "top_secret"
+
+
+# ──────────── 批记录与追溯模块（Phase 1） ────────────
+
+
+class BatchStatus(str, enum.Enum):
+    PLANNED = "planned"
+    IN_PROGRESS = "in_progress"
+    COMPLETED = "completed"
+    CANCELLED = "cancelled"
+    CLOSED = "closed"
+
+
+class SampleType(str, enum.Enum):
+    QC = "qc"
+    STABILITY = "stability"
+    PILOT = "pilot"
+    RETENTION = "retention"
+
+
+class TestResult(str, enum.Enum):
+    PASS = "pass"
+    FAIL = "fail"
+    WARN = "warn"
+    PENDING = "pending"
+
+
+class IngredientLotStatus(str, enum.Enum):
+    AVAILABLE = "available"
+    HELD = "held"
+    USED = "used"
+    EXPIRED = "expired"
+    QUARANTINED = "quarantined"
+
+
+class CustomFieldType(str, enum.Enum):
+    TEXT = "text"
+    NUMBER = "number"
+    DATE = "date"
+    SELECT = "select"
+    BOOLEAN = "boolean"
+    EMAIL = "email"
+    PHONE = "phone"
+    URL = "url"
+
+
+class CustomFieldEntity(str, enum.Enum):
+    INGREDIENT = "ingredient"
+    FORMULA = "formula"
+    SAMPLE = "sample"
+    BATCH = "batch"
+    TEST_REPORT = "test_report"
+
+
+class ProjectPhase(str, enum.Enum):
+    BRIEF = "brief"
+    DISCOVERY = "discovery"
+    DESIGN = "design"
+    DEVELOPMENT = "development"
+    SCALE_UP = "scale_up"
+    LAUNCH = "launch"
+    ARCHIVED = "archived"

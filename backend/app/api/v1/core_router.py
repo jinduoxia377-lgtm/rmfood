@@ -96,7 +96,7 @@ async def get_task_result(task_id: str):
     queue = get_task_queue()
     result = await queue.get_task_result(task_id, wait=False)
     if result is None:
-        raise HTTPException(status_code=404, detail="Task not found")
+        raise HTTPException(status_code=404, detail="任务不存在")
     return {"success": True, "data": result.to_dict()}
 
 

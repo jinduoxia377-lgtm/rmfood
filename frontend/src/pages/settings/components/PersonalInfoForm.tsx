@@ -137,7 +137,7 @@ export const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({
               value={data.github}
               onChange={(e) => onChange('github', e.target.value)}
               prefix={<Github className="w-4 h-4" />}
-              placeholder="username"
+              placeholder="GitHub 用户名"
               disabled={disabled}
               error={!!errors.github}
             />

@@ -40,4 +40,5 @@
   <view class="footer-note">
     <text>此页面仅供开发和测试使用</text>
   </view>
+  <view class="bottom-spacing"></view>
 </view>

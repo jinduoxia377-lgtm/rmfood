@@ -373,21 +373,23 @@ class BayesianFormulaOptimizer:
         try:
             # 从 HerbKnowledgeService 加载药材
             herbs = await self._herb_knowledge.load_herbs()
-            if herbs:
+            if herbs and len(herbs) > 20:
                 self._herbs = dict(herbs)
                 self._efficacy_to_herbs = self._herb_knowledge.get_efficacy_to_herbs()
                 logger.info(
-                    f"[BayesianOptimizer] 从 HerbKnowledgeService 加载药材 "
+                    f"[BayesianOptimizer] ✅ 从数据库加载药材 "
                     f"{len(self._herbs)} 种，功效 {len(self._efficacy_to_herbs)} 种"
                 )
             else:
-                logger.warning("[BayesianOptimizer] HerbKnowledgeService 返回空数据，回退内置字典")
-                self._herbs = dict(_BUILTIN_HERBS)
-                self._efficacy_to_herbs = dict(_EFFICACY_TO_HERBS)
+                # 数据库无数据时抛出异常，避免使用假数据
+                raise RuntimeError(
+                    f"[数据完整性] 数据库药材数据不足: 实际 {len(herbs) if herbs else 0} 种, "
+                    f"最低要求 20 种。请先运行数据补全脚本。"
+                )
         except Exception as e:
-            logger.warning(f"[BayesianOptimizer] HerbKnowledgeService 加载失败，回退内置字典: {e}")
-            self._herbs = dict(_BUILTIN_HERBS)
-            self._efficacy_to_herbs = dict(_EFFICACY_TO_HERBS)
+            # 记录错误但不再静默回退到假数据
+            logger.error(f"[数据完整性] HerbKnowledgeService 加载失败: {e}")
+            raise
 
     # ── 公共接口 ──
 

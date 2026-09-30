@@ -14,17 +14,68 @@
  * - 每个区块独立渲染，互相隔离
  * - 整体由 ErrorBoundary 包裹
  * - 暗色模式自适应
- * - 动画入场效果
+ * - Stagger 入场动画（每块延迟 60ms，共 400ms 内完成）
+ * - 滚动时重新触发动画（Intersection Observer）
  */
-import React from 'react'
-import type { StructuredContent } from './types'
+import React, { useRef, useEffect, useState } from 'react'
+import type { StructuredContent, ContentBlock } from './types'
 import { renderBlock } from './BlockRegistry'
 
 interface StructuredMessageRendererProps {
   content: StructuredContent
+  animated?: boolean
 }
 
-function StructuredMessageRenderer({ content }: StructuredMessageRendererProps) {
+const ANIMATION_DELAY = 60
+const ANIMATION_MAX_TOTAL = 400
+
+function BlockWithAnimation({ block, index, delay }: {
+  block: ContentBlock
+  index: number
+  delay: number
+}) {
+  const [visible, setVisible] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+
+    timerRef.current = setTimeout(() => setVisible(true), delay)
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && timerRef.current === null) {
+          setVisible(true)
+        }
+      },
+      { threshold: 0.1 }
+    )
+
+    observer.observe(el)
+    return () => {
+      observer.disconnect()
+      if (timerRef.current) {
+        clearTimeout(timerRef.current)
+        timerRef.current = null
+      }
+    }
+  }, [delay])
+
+  return (
+    <div
+      ref={ref}
+      className={`transition-all duration-500 ease-out ${
+        visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
+      }`}
+    >
+      {renderBlock(block, index)}
+    </div>
+  )
+}
+
+function StructuredMessageRenderer({ content, animated = true }: StructuredMessageRendererProps) {
   const { blocks = [] } = content
 
   if (blocks.length === 0) {
@@ -35,9 +86,23 @@ function StructuredMessageRenderer({ content }: StructuredMessageRendererProps) 
     )
   }
 
+  const maxBlocks = Math.min(blocks.length, 7)
+  const perBlockDelay = Math.min(ANIMATION_DELAY, Math.floor(ANIMATION_MAX_TOTAL / maxBlocks))
+
   return (
     <div className="space-y-1">
-      {blocks.map((block, index) => renderBlock(block, index))}
+      {blocks.map((block, index) =>
+        animated ? (
+          <BlockWithAnimation
+            key={index}
+            block={block as ContentBlock}
+            index={index}
+            delay={index * perBlockDelay}
+          />
+        ) : (
+          <div key={index}>{renderBlock(block as ContentBlock, index)}</div>
+        )
+      )}
     </div>
   )
 }

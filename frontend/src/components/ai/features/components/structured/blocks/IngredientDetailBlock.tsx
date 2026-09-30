@@ -1,0 +1,162 @@
+/**
+ * IngredientDetailBlock — 药材详情卡片
+ *
+ * 展示单个药材/食材的详细信息：
+ * - 名称（中英文）
+ * - 来源
+ * - 性味归经
+ * - 功效
+ * - 活性成分
+ * - 用量范围
+ * - 安全等级
+ */
+import React, { useState } from 'react'
+import {
+  Leaf, Info, Shield, Beaker, Clock, AlertCircle,
+  ChevronDown, ChevronUp,
+} from 'lucide-react'
+import type { IngredientDetailData } from '../types'
+
+interface IngredientDetailBlockProps {
+  data: IngredientDetailData
+}
+
+function IngredientDetailBlock({ data }: IngredientDetailBlockProps) {
+  const {
+    name,
+    latin,
+    source,
+    properties,
+    efficacy,
+    active_compounds,
+    dosage_range,
+    safety_level,
+    notes,
+  } = data
+
+  const [showDetails, setShowDetails] = useState(false)
+
+  const safetyColors: Record<string, string> = {
+    '药食同源': 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800',
+    '保健食品': 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800',
+    '普通食品': 'text-neutral-600 dark:text-neutral-400 bg-neutral-50 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700',
+    '慎用': 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800',
+    '禁用': 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800',
+  }
+
+  const safetyClass = safety_level ? safetyColors[safety_level] || safetyColors['普通食品'] : 'text-neutral-600 dark:text-neutral-400 bg-neutral-50 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700'
+
+  return (
+    <div className="mb-3 last:mb-0 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 overflow-hidden shadow-sm">
+      {/* 头部 */}
+      <div className="flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-primary-50/50 to-transparent dark:from-primary-900/10">
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-emerald-600 flex items-center justify-center flex-shrink-0">
+          <Leaf className="w-5 h-5 text-white" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <h3 className="text-sm font-bold text-neutral-900 dark:text-neutral-100 truncate">
+              {name}
+            </h3>
+            {safety_level && (
+              <span className={`text-[10px] px-1.5 py-0.5 rounded-full border font-medium ${safetyClass}`}>
+                {safety_level}
+              </span>
+            )}
+          </div>
+          {latin && (
+            <p className="text-[10px] text-neutral-500 dark:text-neutral-400 italic mt-0.5">
+              {latin}
+            </p>
+          )}
+        </div>
+        <button
+          onClick={() => setShowDetails(!showDetails)}
+          className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+        >
+          {showDetails ? (
+            <ChevronUp className="w-4 h-4 text-neutral-400" />
+          ) : (
+            <ChevronDown className="w-4 h-4 text-neutral-400" />
+          )}
+        </button>
+      </div>
+
+      {/* 基本信息 */}
+      <div className="px-4 py-3 border-b border-neutral-100 dark:border-neutral-800">
+        <div className="grid grid-cols-2 gap-3">
+          {source && (
+            <div className="flex items-start gap-2">
+              <Info className="w-3.5 h-3.5 text-primary-500 flex-shrink-0 mt-0.5" />
+              <div>
+                <div className="text-[10px] text-neutral-400 dark:text-neutral-500">来源</div>
+                <div className="text-xs text-neutral-700 dark:text-neutral-300">{source}</div>
+              </div>
+            </div>
+          )}
+          {properties && (
+            <div className="flex items-start gap-2">
+              <Shield className="w-3.5 h-3.5 text-secondary-500 flex-shrink-0 mt-0.5" />
+              <div>
+                <div className="text-[10px] text-neutral-400 dark:text-neutral-500">性味</div>
+                <div className="text-xs text-neutral-700 dark:text-neutral-300">{properties}</div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* 展开详情 */}
+      {showDetails && (
+        <div className="px-4 py-3 space-y-3">
+          {efficacy && (
+            <div>
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <Leaf className="w-3 h-3 text-primary-500" />
+                <span className="text-[10px] font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wide">功效</span>
+              </div>
+              <p className="text-xs text-neutral-700 dark:text-neutral-300 leading-relaxed">{efficacy}</p>
+            </div>
+          )}
+
+          {active_compounds && active_compounds.length > 0 && (
+            <div>
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <Beaker className="w-3 h-3 text-accent-500" />
+                <span className="text-[10px] font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wide">活性成分</span>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {active_compounds.map((compound, i) => (
+                  <span
+                    key={i}
+                    className="text-[10px] px-2 py-0.5 rounded-full bg-accent-50 dark:bg-accent-900/20 text-accent-700 dark:text-accent-300 border border-accent-200 dark:border-accent-800"
+                  >
+                    {compound}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {dosage_range && (
+            <div className="flex items-center gap-2">
+              <Clock className="w-3.5 h-3.5 text-warning-500 flex-shrink-0" />
+              <span className="text-xs text-neutral-600 dark:text-neutral-400">
+                建议用量：<span className="font-medium text-neutral-800 dark:text-neutral-200">{dosage_range}</span>
+              </span>
+            </div>
+          )}
+
+          {notes && (
+            <div className="flex items-start gap-2 pt-2 border-t border-neutral-100 dark:border-neutral-800">
+              <AlertCircle className="w-3.5 h-3.5 text-error-500 flex-shrink-0 mt-0.5" />
+              <p className="text-[10px] text-neutral-500 dark:text-neutral-400 leading-relaxed">{notes}</p>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default IngredientDetailBlock

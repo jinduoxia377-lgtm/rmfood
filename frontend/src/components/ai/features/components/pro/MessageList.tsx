@@ -40,6 +40,8 @@ export interface MessageListProps {
 	onRetractMessage?: (id: string) => void
 	onForkMessage?: (messageId: string) => void
 	onDetailsMessage?: (call: { id: string; name: string; args: Record<string, unknown>; status: 'running' | 'completed' | 'error'; durationMs?: number }) => void
+	onStructureSave?: (messageId: string, content: string) => void
+	onStructureShare?: (messageId: string, content: string) => void
 	thinkingSteps?: Array<{ step: string; content: string; status: string; detail?: string }>
 }
 
@@ -58,6 +60,7 @@ export function MessageList({
 	onGenerateReport, showReportButton,
 	highlightedMessageId, selectedMessageIds, onReferenceMessage,
 	onEditMessage, onRetractMessage, onForkMessage, onDetailsMessage,
+	onStructureSave, onStructureShare,
 	thinkingSteps,
 }: MessageListProps) {
 	const scrollRef = useRef<HTMLDivElement>(null)
@@ -201,11 +204,13 @@ export function MessageList({
 			onRegenerate={onRegenerate ?? (() => {})}
 			onForkMessage={onForkMessage}
 			onDetails={onDetailsMessage}
+			onStructureSave={onStructureSave}
+			onStructureShare={onStructureShare}
 			thinkingSteps={(i === messages.length - 1 && msg.role === 'assistant' && thinkingSteps) ? thinkingSteps : undefined}
 			isHighlighted={isHL(msg.id)}
 			isSelected={isSel(msg.id)}
 		/>
-	), [messages, isStreaming, reactions, editingId, editContent, handleCopy, handleReaction, thinkingSteps, isHL, isSel, onRetractMessage, onDeleteMessage, onReferenceMessage, onRegenerate, onForkMessage, onDetailsMessage, startEdit])
+	), [messages, isStreaming, reactions, editingId, editContent, handleCopy, handleReaction, thinkingSteps, isHL, isSel, onRetractMessage, onDeleteMessage, onReferenceMessage, onRegenerate, onForkMessage, onDetailsMessage, onStructureSave, onStructureShare, startEdit])
 
 	// 骨架屏
 	if (messages.length === 0 && isLoading && !chatError) {

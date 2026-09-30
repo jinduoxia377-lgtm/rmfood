@@ -197,10 +197,17 @@ class OpenAIProvider(LLMProvider):
             "top_p": kwargs.get("top_p", self.config.top_p),
             "stream": stream,
         }
-        
+
         if kwargs.get("response_format"):
             payload["response_format"] = kwargs["response_format"]
-            
+
+        # 传递 tools（function calling schema）
+        if kwargs.get("tools"):
+            payload["tools"] = kwargs["tools"]
+            # 如果有 tool_choice，也传递
+            if kwargs.get("tool_choice"):
+                payload["tool_choice"] = kwargs["tool_choice"]
+
         return payload
 
     async def generate(
@@ -209,32 +216,54 @@ class OpenAIProvider(LLMProvider):
         **kwargs
     ) -> str:
         start_time = time.time()
-        
+
         url = f"{self.config.base_url}/chat/completions"
         headers = self._build_headers()
         payload = self._build_payload(messages, stream=False, **kwargs)
 
+        # 打印请求用于调试
+        tool_names = [t.get("function", {}).get("name", "?")
+                      for t in payload.get("tools", [])]
+        logger.info(
+            f"[LLM请求] model={self.config.model}, tools={tool_names}, "
+            f"messages_count={len(messages)}, system前50={messages[0].get('content','')[:50] if messages else ''}"
+        )
+
         try:
             resp = await self.client.post(url, headers=headers, json=payload)
             resp.raise_for_status()
-            
+
             data = resp.json()
             choice = data["choices"][0]
             usage = data.get("usage", {})
-            
+
             self._total_tokens_used += usage.get("total_tokens", 0)
             self._request_count += 1
-            
+
             latency = (time.time() - start_time) * 1000
             logger.info(
                 f"OpenAI生成完成 - 模型: {self.config.model}, "
                 f"Token: {usage.get('total_tokens', 0)}, "
                 f"延迟: {latency:.0f}ms"
             )
-            
-            return choice["message"]["content"]
-            
+
+            message = choice["message"]
+            # 如果有 tool_calls，返回 JSON 字符串供上层解析
+            if message.get("tool_calls"):
+                import json as _json
+                tool_calls_str = _json.dumps(
+                    message["tool_calls"], ensure_ascii=False
+                )
+                logger.info(f"LLM 请求了 {len(message['tool_calls'])} 个工具调用")
+                # 在 content 前添加标记以便识别
+                return f"__TOOL_CALLS__:{tool_calls_str}"
+            # 记录实际返回内容的前200字
+            content = message.get("content", "")
+            logger.info(f"LLM 返回纯文本，长度={len(content)}, 前100字={content[:100]}")
+            return content
+
         except httpx.HTTPStatusError as e:
+            logger.error(f"HTTP错误: {e.response.status_code} - {e.response.text[:500]}")
             await self._handle_http_error(e)
         except Exception as e:
             logger.error(f"OpenAI生成失败: {e}")

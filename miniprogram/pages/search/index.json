@@ -5,8 +5,13 @@
   "usingComponents": {
     "icon": "../../components/Icon/index",
     "skeleton-loader": "../../components/SkeletonLoader/index",
+    "empty-state": "../../components/EmptyState/index",
+    "tag": "../../components/Tag/index",
+    "health-score": "../../components/HealthScore/index",
     "avatar": "../../components/Avatar/index",
-    "card": "../../components/Card/index",
-    "empty-state": "../../components/EmptyState/index"
-  }
+    "loading": "../../components/Loading/index",
+    "toast": "../../components/Toast/index"
+  },
+  "enablePullDownRefresh": true,
+  "backgroundTextStyle": "light"
 }

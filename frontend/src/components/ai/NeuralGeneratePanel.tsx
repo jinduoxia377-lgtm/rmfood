@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { aiApi } from '@/api/ai';
-import type { AICandidate } from '@/api/ai';
+import type { AICandidate, NeuralGenerateResponse } from '@/api/ai';
 import { useGenerationProgress } from '@/hooks/useGenerationProgress';
 import { GenerationProgressPanel } from './GenerationProgressPanel';
 import { Card, Input, Button, Slider, Badge, Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui';
@@ -39,6 +39,7 @@ export function NeuralGeneratePanel({ onCandidatesGenerated, className }: Neural
   const [excludedInput, setExcludedInput] = useState('');
   const [maxIngredients, setMaxIngredients] = useState(10);
   const [candidates, setCandidates] = useState<AICandidate[] | null>(null);
+  const [data, setData] = useState<NeuralGenerateResponse | null>(null);
   const [priorityValues, setPriorityValues] = useState<Record<string, number>>({
     synergy: 0.7,
     taste: 0.5,
@@ -84,6 +85,7 @@ export function NeuralGeneratePanel({ onCandidatesGenerated, className }: Neural
     onSuccess: (data) => {
       completeProgress();
       setCandidates(data.candidates);
+      setData(data);
       onCandidatesGenerated?.(data.candidates);
     },
     onError: (error) => {
@@ -452,7 +454,9 @@ export function NeuralGeneratePanel({ onCandidatesGenerated, className }: Neural
             <h3 id="candidates-heading" className="text-base font-semibold text-neutral-900 dark:text-neutral-100">
               生成 {candidates.length} 个候选方案
             </h3>
-            <Badge variant="primary">神经网络生成</Badge>
+            <Badge variant="primary">
+              {data?.generator === 'rule_engine' ? '规则引擎生成' : '神经网络生成'}
+            </Badge>
           </div>
           <ul className="space-y-4" role="list" aria-label="配方候选方案列表">
             {candidates.map((candidate, index) => (

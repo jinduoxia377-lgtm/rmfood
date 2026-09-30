@@ -1,109 +1,73 @@
-# ═══════════════════════════════════════════════
-# RMFOOD Docker 构建排除文件 - 统一配置
-# ═══════════════════════════════════════════════
+# ============================================================
+# RMFOOD Docker 构建排除文件 - 生产环境精确配置
+# 构建上下文：项目根目录
+# 注意事项：以下规则直接影响 backend/app/、backend/alembic/ 等
+# ============================================================
 
-# ─── Git ───
+# ===== Git / IDE =====
 .git
 .gitignore
-
-# ─── Python ───
-__pycache__
-*.pyc
-*.pyo
-*.egg-info
-.eggs
-dist
-build
-*.egg
-.mypy_cache
-.pytest_cache
-.ruff_cache
-*.py[cod]
-*$py.class
-
-# ─── 虚拟环境 ───
-.venv
-venv
-env
-ENV/
-.env.local
-.env.production
-
-# ─── IDE ───
 .vscode
 .idea
+.husky
 *.swp
 *.swo
 *~
 .trae
 
-# ─── 测试 ───
-tests
-tests-reports
-**/test_*.py
-**/test_*.ts
-**/tests/
+# ===== Python 虚拟环境 / 缓存 =====
+.venv/
+venv/
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+
+# ===== 测试报告 =====
+tests-reports/
 coverage/
 htmlcov/
 .coverage
-*.xml
-junit*.xml
-.hypothesis/
 
-# ─── 文档 ───
-docs/
-*.md
-!README.md
-!app/**/*.md
+# ===== 日志文件（根目录）=====
+*.log
+logs/
 
-# ─── 环境文件 ───
-.env
-.env.*
-!.env.example
-
-# ─── 临时文件 ───
+# ===== 临时文件 =====
 tmp/
 temp/
 *.tmp
 *.bak
 
-# ─── 数据文件 ───
-data/
+# ===== Docker 卷内容（宿主机挂载）=====
 uploads/
 pg_data/
+pg_data_new/
+pg_data_backup_*/
+
+# ===== 数据库文件 =====
 *.db
 *.sqlite
 *.sqlite3
 
-# ─── 报告文件 ───
-*.report.html
-*_REPORT.md
-*_report.*
-*.json
-*.txt
-*.log
+# ===== 环境文件 =====
+.env
+.env.local
+.env.*.local
 
-# ─── 部署文档 ───
-DEPLOYMENT_*.md
-LAN_*.md
-PRODUCTION_*.md
-NETWORK_*.md
-QUICK_START.md
-FINAL_CLOSURE_REPORT.md
-RAY_CLUSTER_MANAGER_GUIDE.md
-OAUTH2_TEST_GUIDE.md
-IMPORT_GUIDE.md
-INTEGRATION_REPORT.md
-REPORT_IMPLEMENTATION_COMPLETE.md
-AI_MODULE_IMPLEMENTATION_SUMMARY.md
-SECURITY.md
-TESTING_GUIDE.md
-UI-DESIGN-SYSTEM.md
-PERFORMANCE_OPTIMIZATION_REPORT.md
-SECURITY_AUDIT_REPORT.md
-MAINTENANCE_GUIDE.md
+# ===== 文档（非运行时必需）=====
+docs/
+reports/
+ai-docs/
+*.md
+!README.md
+!backend/requirements.txt
+!backend/alembic.ini
 
-# ─── 调试截图 ───
+# ===== 调试截图 =====
 debug_*.png
 *.png
 *.jpg
@@ -112,156 +76,75 @@ debug_*.png
 ai-page.png
 screenshot-*.png
 
-# ─── 脚本 ───
-scripts/
+# ===== 前端构建产物 =====
+frontend/node_modules/
+frontend/.vite/
+frontend/tsconfig.tsbuildinfo
+frontend/test-results/
+frontend/playwright-report/
+frontend/tests-reports/
+frontend/frontend.log
+
+# 预构建 dist：生产镜像直接烘焙该目录，必须保留
+# 反转下方 *.png 排除规则，以纳入 dist 内的静态资源（svg/png/woff 等）
+!frontend/dist/
+!frontend/dist/**
+!frontend/dist/**/*.png
+!frontend/dist/**/*.jpg
+!frontend/dist/**/*.jpeg
+!frontend/dist/**/*.gif
+!frontend/dist/**/*.svg
+!frontend/dist/**/*.woff
+!frontend/dist/**/*.woff2
+!frontend/dist/**/*.webp
+
+# ===== Claude 配置 =====
+.claude/
+backend/.claude/
+
+# ===== 大型二进制/数据文件（非运行时必需）=====
+backend/=1.44.0
+backend/uv.lock
+backend/openapi_*.json
+backend/rmfood.db
+backend/server*.log
+backend/backend_output.log
+openfoodfacts/en.openfoodfacts.org.products.csv
+tcmsp_data/
+
+# ===== 已废弃的开发脚本（根目录）=====
 run_backend.py
-run_backend_simple.py
-start-lan.bat
-stop-lan.bat
-start_backend.bat
-start_backend.ps1
-restart_backend.bat
-restart_backend.ps1
-start_services.bat
-stop_services.bat
-start_all.bat
-start_server.bat
-start_server.py
-start_backend.py
-start_clean.py
-start_frontend.bat
+start_*.bat
+stop_*.bat
+start_*.ps1
+stop_*.ps1
+restart_*.ps1
 execute_import.py
 final_import_runner.py
 import_runner.py
 fix_alembic.sh
-fix_surrogates.py
-gen_mo_stream.py
-db_check_importer.py
-db_sync_test.py
-clear_openapi_cache.py
-check_cols.py
-check_db.py
-check_predeploy.py
-check_tables.py
-decode_jwt.ps1
-fix_precise.py
-fix_batch2.py
-fix_final.py
-fix_all.py
-fix_all_final.py
-fix_all_templates.py
-fix_templates2.py
-fix_ts_errors.py
-check_parser_state.py
-count_backticks.py
+check_*.py
+create_*.py
+cleanup_*.py
+verify_*.py
+embed_to_rmfoodfp.py
+generate_*.py
+*.ps1
+fix_*.py
+fix_*.sh
 
-# ─── 测试脚本 ───
-test_*.py
-test_*.ps1
-test_*.ts
-test_asyncpg.py
-test_asyncpg_detailed.py
-test_asyncpg_direct.py
-test_asyncpg_v2.py
-test_conn.py
-test_conn2.py
-test_db.py
-test_db_connection.py
-test_direct.py
-test_engine.py
-test_generate_fix.py
-test_import_flow.py
-test_import_quick.py
-test_loader_sync.py
-test_minimal_psycopg2.py
-test_moga_evaluation.py
-test_offloader.py
-test_payloads.py
-test_psycopg2.py
-test_recipe_generation.py
-test_results.txt
-test_results_full.txt
-test_routes.py
-test_save_path.py
-test_schema.py
-test_schema_output.txt
-test_schema_result.txt
-test_schema2.py
-test_sqlalchemy_connection.py
-test_swagger.html
-test_sync.py
-test_sync_sqlalchemy.py
-test_api_endpoints.ps1
-test_api_quick.py
-test_login.ps1
-
-# ─── Docker 文件 ───
+# ===== Docker 自身配置（不影响构建）=====
 docker-compose*.yml
 Dockerfile*
 .dockerignore
 
-# ─── 前端专用 ───
-frontend/node_modules
-frontend/build
-frontend/.vite-cache
-frontend/tsconfig.tsbuildinfo
-frontend/playwright.config.ts
-frontend/vitest.config.ts
-frontend/eslint.config.js
-frontend/eslint.fix.config.js
-frontend/jest.config.js
-frontend/tsconfig.test.json
-frontend/tsconfig.build.json
-frontend/frontend.log
-frontend/D:devoff_test.json
-frontend/test_domain.ts
-frontend/test_domain2.ts
-frontend/test_minimal.ts
-frontend/test_template.ts
-frontend/test_template2.ts
-frontend/test_template3.ts
-frontend/temp_files
-frontend/coverage
-frontend/htmlcov
-frontend/.coverage
-frontend/test-results
-frontend/playwright-report
-frontend/tests-reports
-frontend/design-system
-frontend/benchmarks
-frontend/performance-*.md
-frontend/security-*.md
-frontend/MAINTENANCE.md
-frontend/testing-*.md
-frontend/*.report.*
-frontend/_*REPORT.*
-frontend/D:devoff_test.json
-frontend/test_*.ts
-frontend/fix_*.py
-frontend/fix_*.ts
-frontend/count_backticks.py
-frontend/check_parser_state.py
-
-# ─── Claude 配置 ───
-.claude/
-backend/.claude/
-
-# ─── 大文件/目录 ───
-backend/alembic/
-backend/deploy/
-backend/static/
-backend/pg_data_backup*
-backend/uv.lock
-backend/=1.44.0
-backend/backend_output.log
-backend/chat_*.txt
-backend/import_*.log
-backend/import_*.txt
-backend/pg_log.txt
-backend/openapi_*.json
-backend/rmfood.db
-backend/server*.log
-
-# ─── Windows ───
-Thumbs.db
-.DS_Store
+# ============================================================
+# 重要：以下路径必须包含在镜像中，禁止排除
+# ============================================================
+# !backend/scripts/docker-healthcheck.py
+# !backend/alembic/
+# !backend/conf/
+# !backend/config/
+# !backend/app/static/
+# !backend/app/services/data_sources/*.json
+# !backend/app/services/data_sources/*.txt

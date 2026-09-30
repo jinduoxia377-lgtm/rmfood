@@ -175,24 +175,24 @@ export function useUnifiedAgent(options: UseUnifiedAgentOptions = {}): UseUnifie
     emitterRef.current = emitter;
 
     // 注册 pre-step 监听器 (输入验证)
-    emitter.on('agent/pre-step', async (data, next) => {
+    const offPreStep = emitter.on('agent/pre-step', async (data, next) => {
       const { input, turnId } = data as { input: string; turnId: string };
-      
+
       // 输入验证
       if (!input || input.trim().length === 0) {
         logger.warn('[useUnifiedAgent] Empty input, rejecting turn');
         return; // 不调用 next()，turn 以空 step 关闭
       }
-      
+
       // 输入长度检查
       if (input.length > MAX_INPUT_LENGTH) {
         data.input = input.slice(0, MAX_INPUT_LENGTH) + '...[truncated]';
         logger.warn('[useUnifiedAgent] Input truncated to max length');
       }
-      
+
       // 敏感信息过滤
       data.input = filterSensitiveData(input);
-      
+
       // Compaction 检查
       const session = sessionRef.current;
       if (session) {
@@ -201,18 +201,18 @@ export function useUnifiedAgent(options: UseUnifiedAgentOptions = {}): UseUnifie
           logger.info(`[useUnifiedAgent] Pre-step compaction check: ${decision.trigger}`);
         }
       }
-      
+
       next();
     });
 
     // 注册 request-error 监听器 (增强版)
-    emitter.on('agent/request-error', async (data, next) => {
-      const { error, turnId, stepId } = data as { 
-        error: unknown; 
-        turnId: string; 
-        stepId: string; 
+    const offRequestError = emitter.on('agent/request-error', async (data, next) => {
+      const { error, turnId, stepId } = data as {
+        error: unknown;
+        turnId: string;
+        stepId: string;
       };
-      
+
       const normalized = normalizeError(error);
       logger.warn(`[useUnifiedAgent] Request error in turn ${turnId}:`, normalized);
 
@@ -253,11 +253,14 @@ export function useUnifiedAgent(options: UseUnifiedAgentOptions = {}): UseUnifie
     });
 
     // 注册 turn-stopping 监听器
-    emitter.onSerial('agent/turn-stopping', (data) => {
+    const offTurnStopping = emitter.onSerial('agent/turn-stopping', (data) => {
       logger.info(`[useUnifiedAgent] Turn stopping: ${data.turnId}, reason=${data.reason}`);
     });
 
     return () => {
+      offPreStep();
+      offRequestError();
+      offTurnStopping();
       session.close();
       emitter.setEnabled(false);
     };
@@ -457,22 +460,38 @@ export function useUnifiedAgent(options: UseUnifiedAgentOptions = {}): UseUnifie
   );
 
   // ── 执行 Step ────────────────────────────────────────────
-  const executeStep = useCallback(async (turnId: string, stepId?: string): Promise<void> => {
+  const executeStep = useCallback(async (
+    turnId: string,
+    stepId?: string,
+    query?: string
+  ): Promise<AgentExecution | null> => {
     const emitter = emitterRef.current;
     const stepId_ = stepId ?? `step-${Date.now()}`;
+    // 优先使用传入的 query，回退到 currentTurn.input（React 闭包安全）
+    const effectiveQuery = query || currentTurn?.input || '';
+
+    if (!effectiveQuery) {
+      logger.warn('[executeStep] Empty query, skipping');
+      completeStep(stepId_, true);
+      return null;
+    }
 
     // 触发 request 事件
     await emitter?.emit('agent/request', { turnId, model: 'deepseek-chat' }).catch(() => {});
 
-    // 执行 Step (使用 Agent API)
+    // 执行 Step (使用真实 LLM Adapter)
     try {
-      const result = await agentApi.execute({ query: 'test', mode: 'smart', max_steps: 3 });
-      completeStep(stepId_, true);
+      const res = await agentApi.execute({ query: effectiveQuery, mode: 'smart', max_steps: 8 });
+      const execution = res.data;
+      // 保存执行结果，供 UI 展示工具调用详情
+      completeStep(stepId_, true, undefined, execution);
+      return execution;
     } catch (err) {
       logger.error('[executeStep] Execution error:', err);
       completeStep(stepId_, false, err instanceof Error ? err.message : String(err));
+      return null;
     }
-  }, [completeStep]);
+  }, [completeStep, currentTurn]);
 
   // ── 结束 Turn ────────────────────────────────────────────
   const endTurn = useCallback(
@@ -612,16 +631,14 @@ export function useUnifiedAgent(options: UseUnifiedAgentOptions = {}): UseUnifie
         const emitter = emitterRef.current;
         await emitter?.emit('agent/request', { turnId, model: 'deepseek-chat' }).catch(() => {});
 
-        // 执行 Step (使用 LLM Adapter)
-        const stepId = addStep('llm_request');
-        await executeStep(turnId, stepId);
-
-        // 尝试工作流执行
+        // 尝试工作流执行（优先路径）
         let result: AgentExecution | WorkflowExecution | null = null;
+        let workflowSucceeded = false;
 
         try {
           const wfRes = await workflowApi.execute(wfType, { query, max_steps: 8 });
           result = wfRes.data;
+          workflowSucceeded = true;
 
           if ('stages' in result) {
             setStages(result.stages.map((s) => ({
@@ -635,6 +652,29 @@ export function useUnifiedAgent(options: UseUnifiedAgentOptions = {}): UseUnifie
           logger.info('Workflow execution failed, fallback to smart mode:', wfErr);
         }
 
+        // 工作流失败时使用 smart 模式（含 LLM 调用）
+        if (!workflowSucceeded) {
+          const stepId = addStep('llm_request');
+          const exec = await executeStep(turnId, stepId, query);
+
+          // 将 smart 模式的工具调用结果呈现给 UI，避免详情丢失
+          if (exec && 'steps' in exec && exec.steps.length > 0) {
+            result = exec;
+            const toolCalls: ToolCall[] = exec.steps.map((s) => ({
+              tool: s.tool,
+              status: (s.status === 'success' ? 'success' : s.status === 'failed' ? 'failed' : 'running') as ToolCall['status'],
+              latencyMs: s.latency_ms || 0,
+              error: s.error,
+              isConcurrencySafe: true,
+            }));
+ await executeToolCalls(toolCalls);
+          }
+        } else {
+          // 工作流成功时补全 final-response step
+          addStep('final_response');
+        }
+
+        // 若工作流成功但未获取到 result（异常），降级到 smart 模式
         if (!result) {
           const smartRes = await agentApi.execute({ query, mode: 'smart', max_steps: 5 });
           result = smartRes.data;
@@ -651,9 +691,11 @@ export function useUnifiedAgent(options: UseUnifiedAgentOptions = {}): UseUnifie
           }
         }
 
-        const finalContent = ('final_response_preview' in result
-          ? result.final_response_preview
-          : '') || '执行完成';
+        const finalContent = ('final_response' in result && result.final_response
+          ? result.final_response
+          : ('final_response_preview' in result
+            ? result.final_response_preview
+            : '')) || '执行完成';
 
         updateLastAssistantMessage(finalContent, { executionId: turnId });
         completeStep('final-response', true, undefined, finalContent);

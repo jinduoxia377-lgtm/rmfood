@@ -12,6 +12,17 @@ def now_utc() -> datetime:
     return datetime.now(timezone.utc)
 
 
+def now_utc_naive() -> datetime:
+    """
+    获取当前 UTC 时间（无时区）。
+
+    用于 DB 列定义为 timestamp without time zone 的表（如 audit_logs、experiments、
+    experiment_data 等）。带时区 datetime 写入 naive 列会触发 asyncpg 的
+    "can't subtract offset-naive and offset-aware datetimes" 错误。
+    """
+    return datetime.now()
+
+
 def now_utc_mapped() -> datetime:
     """
     作为 mapped_column default 使用的时区感知 UTC 时间。

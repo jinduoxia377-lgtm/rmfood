@@ -64,9 +64,9 @@ const SIDEBAR_ITEMS = [
 
 // ── 思考步骤 ────────────────────────────────────────────────────
 const THINKING_STEPS = [
-  { label: '分析意图',   color: '#059669' },
-  { label: '检索知识',   color: '#2563eb' },
-  { label: '生成配方',   color: '#7c3aed' },
+  { label: '分析意图',   color: '#047857' },
+  { label: '检索知识',   color: '#1d4ed8' },
+  { label: '生成配方',   color: '#6d28d9' },
 ];
 
 // ── 专业级 Markdown 渲染器（零外部依赖，针对对话气泡优化） ───────────
@@ -98,9 +98,9 @@ function parseInline(text: string, keyPrefix: string): React.ReactNode {
       );
     } else if (m[5] !== undefined) {
       parts.push(
-        <a key={`${keyPrefix}-l-${idx++}`} href={m[6]} target="_blank" rel="noreferrer"
-          className="text-emerald-600 hover:text-emerald-700 underline decoration-emerald-300 underline-offset-2"
-          style={{ fontSize: 10 }}>
+        <a key={`${keyPrefix}-l-${idx++}`} href={m[6]} target="_blank" rel="noopener noreferrer"
+          className="text-emerald-700 hover:text-emerald-800 underline decoration-emerald-400 underline-offset-2"
+          style={{ fontSize: 11 }}>
           {m[5]}
         </a>
       );
@@ -116,8 +116,8 @@ function parseInline(text: string, keyPrefix: string): React.ReactNode {
 /** 渲染一行文本（含内联格式） */
 function InlineLine({ text, prefix }: { text: string; prefix?: React.ReactNode }) {
   return (
-    <div className="flex items-start gap-1" style={{ fontSize: 10.5, lineHeight: '1.65', color: '#334155' }}>
-      {prefix && <span className="flex-shrink-0 mt-0.5 text-emerald-500" style={{ fontSize: 9 }}>{prefix}</span>}
+    <div className="flex items-start gap-1" style={{ fontSize: 12, lineHeight: '1.65', color: '#334155' }}>
+      {prefix && <span className="flex-shrink-0 mt-0.5 text-emerald-600" style={{ fontSize: 10 }}>{prefix}</span>}
       <span className="flex-1">{parseInline(text, 'line')}</span>
     </div>
   );
@@ -139,11 +139,11 @@ function MDCodeBlock({ lang, code }: { lang: string; code: string }) {
   return (
     <div className="my-1.5 rounded-md overflow-hidden" style={{ border: '1px solid #e2e8f0', background: '#0f172a' }}>
       <div className="flex items-center justify-between px-3 py-1.5" style={{ background: '#1e293b' }}>
-        <span className="text-[9px] font-mono" style={{ color: '#94a3b8' }}>{lang || 'text'}</span>
-        <button onClick={handleCopy} className="flex items-center gap-1 transition-opacity hover:opacity-80" style={{ opacity: 0.6 }}>
+        <span className="text-[10px] font-mono" style={{ color: '#cbd5e1' }}>{lang || 'text'}</span>
+        <button onClick={handleCopy} className="flex items-center gap-1 transition-opacity hover:opacity-80 min-h-[44px] min-w-[44px] justify-center py-1" style={{ opacity: 0.9 }}>
           {copied
-            ? <><Check size={10} style={{ color: '#059669' }} /><span className="text-[9px]" style={{ color: '#059669' }}>已复制</span></>
-            : <Copy size={10} style={{ color: '#94a3b8' }} />}
+            ? <><Check size={11} style={{ color: '#34d399' }} /><span className="text-[10px]" style={{ color: '#34d399' }}>已复制</span></>
+            : <Copy size={11} style={{ color: '#cbd5e1' }} />}
         </button>
       </div>
       <pre className="m-0 p-2.5 overflow-x-auto">
@@ -165,9 +165,9 @@ function MDBlockquote({ children }: { children: React.ReactNode }) {
 /** Callout 提示块 */
 function MDCallout({ type, children }: { type: 'info' | 'warn' | 'success'; children: React.ReactNode }) {
   const cfg = {
-    info:    { bg: '#eff6ff', border: '#93c5fd', dot: '#3b82f6', label: '信息' },
-    warn:    { bg: '#fffbeb', border: '#fcd34d', dot: '#f59e0b', label: '注意' },
-    success: { bg: '#ecfdf5', border: '#6ee7b7', dot: '#059669', label: '通过' },
+    info:    { bg: '#eff6ff', border: '#93c5fd', dot: '#1d4ed8', label: '信息' },
+    warn:    { bg: '#fffbeb', border: '#fcd34d', dot: '#b45309', label: '注意' },
+    success: { bg: '#ecfdf5', border: '#6ee7b7', dot: '#047857', label: '通过' },
   }[type];
   return (
     <div className="my-1.5 rounded-md px-2.5 py-2 flex items-start gap-2" style={{ background: cfg.bg, border: `1px solid ${cfg.border}` }}>
@@ -327,7 +327,7 @@ export function MarkdownRenderer({ content }: MDProps) {
       flushList();
       const level = headingMatch[1].length;
       const txt = headingMatch[2];
-      const size = level === 1 ? 12 : level === 2 ? 11 : 10.5;
+      const size = level === 1 ? 13 : level === 2 ? 12 : 11;
       const weight = level === 1 ? 'font-semibold' : 'font-medium';
       const mg = level === 1 ? 'mt-2 mb-1.5' : level === 2 ? 'mt-1.5 mb-1' : 'mt-1 mb-0.5';
       elements.push(
@@ -395,10 +395,10 @@ const KG_LINKS: KGLink[] = [
 ];
 
 const KG_TYPE_STYLE: Record<string, { color: string; bg: string; border: string; label: string }> = {
-  herb:      { color: '#059669', bg: '#ecfdf5',  border: '#a7f3d0',  label: '药材' },
-  compound:  { color: '#2563eb', bg: '#eff6ff',  border: '#bfdbfe',  label: '成分' },
-  target:    { color: '#7c3aed', bg: '#f5f3ff',  border: '#ddd6fe',  label: '靶点' },
-  disease:   { color: '#d97706', bg: '#fffbeb',  border: '#fde68a',  label: '适应症' },
+  herb:      { color: '#047857', bg: '#ecfdf5',  border: '#a7f3d0',  label: '药材' },
+  compound:  { color: '#1d4ed8', bg: '#eff6ff',  border: '#bfdbfe',  label: '成分' },
+  target:    { color: '#6d28d9', bg: '#f5f3ff',  border: '#ddd6fe',  label: '靶点' },
+  disease:   { color: '#b45309', bg: '#fffbeb',  border: '#fde68a',  label: '适应症' },
 };
 
 function GraphTab() {
@@ -425,7 +425,8 @@ function GraphTab() {
           <input
             value={search} onChange={e => setSearch(e.target.value)}
             placeholder="搜索药材 / 成分 / 靶点…"
-            className="w-full h-7 pl-7 pr-2 text-[10px] rounded-md border outline-none transition-all focus:ring-1 focus:ring-emerald-400"
+            aria-label="搜索知识图谱节点"
+            className="w-full min-h-[36px] pl-7 pr-2 text-[11px] rounded-md border outline-none transition-all focus:ring-1 focus:ring-emerald-500"
             style={{ borderColor: '#e2e8f0', background: '#fff', color: '#334155' }}
           />
         </div>
@@ -485,7 +486,7 @@ function GraphTab() {
           {(['herb','compound','target','disease'] as const).map(t => (
             <div key={t} className="flex items-center gap-1">
               <div className="w-1.5 h-1.5 rounded-full" style={{ background: KG_TYPE_STYLE[t].color }} />
-              <span className="text-[8px] text-slate-400">{KG_TYPE_STYLE[t].label}</span>
+              <span className="text-[10px] text-slate-500">{KG_TYPE_STYLE[t].label}</span>
             </div>
           ))}
         </div>
@@ -498,19 +499,21 @@ function GraphTab() {
             <div className="w-2 h-2 rounded-full" style={{ background: KG_TYPE_STYLE[selectedNode.type].color }} />
             <span className="lp-tiny font-semibold text-slate-800">{selectedNode.name}</span>
           </div>
-          <div className="text-[8px] font-mono px-1.5 py-0.5 rounded mb-2 inline-block" style={{ background: KG_TYPE_STYLE[selectedNode.type].bg, color: KG_TYPE_STYLE[selectedNode.type].color, border: `1px solid ${KG_TYPE_STYLE[selectedNode.type].border}` }}>
+          <div className="text-[10px] font-mono px-1.5 py-0.5 rounded mb-2 inline-block" style={{ background: KG_TYPE_STYLE[selectedNode.type].bg, color: KG_TYPE_STYLE[selectedNode.type].color, border: `1px solid ${KG_TYPE_STYLE[selectedNode.type].border}` }}>
             {KG_TYPE_STYLE[selectedNode.type].label}
           </div>
-          <p className="text-[9px] text-slate-500 leading-[1.55] mb-2">{selectedNode.desc}</p>
-          <div className="text-[9px] text-slate-400">关联节点</div>
+          <p className="text-[11px] text-slate-500 leading-[1.55] mb-2">{selectedNode.desc}</p>
+          <div className="text-[10px] text-slate-500">关联节点</div>
           <div className="mt-1 space-y-0.5">
             {KG_LINKS.filter(l => l.source === selectedNode.id || l.target === selectedNode.id).map((l, i) => {
               const otherId = l.source === selectedNode.id ? l.target : l.source;
               const other = KG_NODES.find(n => n.id === otherId);
               if (!other) return null;
               return (
-                <div key={i} className="flex items-center gap-1 text-[9px] text-slate-600 cursor-pointer hover:text-emerald-600 transition-colors"
-                   role="button" tabIndex={0} onClick={() => setSelectedNode(other)}>
+                <div key={i} role="button" tabIndex={0} onClick={() => setSelectedNode(other)}
+                   onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedNode(other); } }}
+                   className="flex items-center gap-1 text-[10px] text-slate-600 cursor-pointer hover:text-emerald-700 transition-colors min-h-[22px]"
+                >
                   <span className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: KG_TYPE_STYLE[other.type].color }} />
                   {other.name}
                 </div>
@@ -527,11 +530,11 @@ function GraphTab() {
 interface DSItem { name: string; status: 'online' | 'syncing' | 'update'; stat: string; unit: string; color: string; desc: string; features: string[]; }
 
 const DS_DATA: DSItem[] = [
-  { name: 'TCMSP',      status: 'online',  stat: '29,361', unit: '药材条目',  color: '#059669', desc: '中药材化学成分与靶点数据库，覆盖 16 个 Alembic 迁移版本', features: ['化学成分检索', '靶点匹配', '药理作用分析'] },
-  { name: 'DFBP',       status: 'online',  stat: '5,200+', unit: '活性肽结构', color: '#2563eb', desc: '食源性活性肽序列数据库，PepINVENT 引擎实时集成',         features: ['肽序列预测', 'ADMET 评估', '毒性致敏性分析'] },
-  { name: 'Neo4j 图谱', status: 'online',  stat: '128K',   unit: '知识节点',   color: '#7c3aed', desc: '药食同源多维关联图谱，Cypher 查询引擎驱动',               features: ['多维关联查询', 'D3 可视化', '图谱推理'] },
+  { name: 'TCMSP',      status: 'online',  stat: '29,361', unit: '药材条目',  color: '#047857', desc: '中药材化学成分与靶点数据库，覆盖 16 个 Alembic 迁移版本', features: ['化学成分检索', '靶点匹配', '药理作用分析'] },
+  { name: 'DFBP',       status: 'online',  stat: '5,200+', unit: '活性肽结构', color: '#1d4ed8', desc: '食源性活性肽序列数据库，PepINVENT 引擎实时集成',         features: ['肽序列预测', 'ADMET 评估', '毒性致敏性分析'] },
+  { name: 'Neo4j 图谱', status: 'online',  stat: '128K',   unit: '知识节点',   color: '#6d28d9', desc: '药食同源多维关联图谱，Cypher 查询引擎驱动',               features: ['多维关联查询', 'D3 可视化', '图谱推理'] },
   { name: '卫健委目录', status: 'syncing', stat: '130+',   unit: '法定条目',   color: '#dc2626', desc: '实时同步卫健委药食同源名单，动态法规更新',                 features: ['配伍禁忌检测', '过敏原标注', '合规预判'] },
-  { name: '食品安全国标', status: 'update', stat: '380+',  unit: '国标条款',   color: '#d97706', desc: 'GB 2760 / GB 14880 / GB 28050 核心标准全文检索',          features: ['全文检索', '条款对照', '版本追溯'] },
+  { name: '食品安全国标', status: 'update', stat: '380+',  unit: '国标条款',   color: '#b45309', desc: 'GB 2760 / GB 14880 / GB 28050 核心标准全文检索',          features: ['全文检索', '条款对照', '版本追溯'] },
 ];
 
 const ACTIVITY_LOG = [
@@ -551,9 +554,9 @@ function DataTab() {
   }, []);
 
   const statusIcon = (s: string) => {
-    if (s === 'online')  return <CheckCircle size={10} style={{ color: '#059669' }} />;
-    if (s === 'syncing') return <Loader2 size={10} className="animate-spin" style={{ color: '#2563eb' }} />;
-    return <Clock size={10} style={{ color: '#d97706' }} />;
+    if (s === 'online')  return <CheckCircle size={11} style={{ color: '#047857' }} />;
+    if (s === 'syncing') return <Loader2 size={11} className="animate-spin" style={{ color: '#1d4ed8' }} />;
+    return <Clock size={11} style={{ color: '#b45309' }} />;
   };
 
   return (
@@ -563,9 +566,9 @@ function DataTab() {
         <div className="flex items-center gap-2">
           <DBIcon size={11} style={{ color: '#64748b' }} />
           <span className="lp-tiny font-medium text-slate-600">数据源概览</span>
-          <span className="text-[8px] font-mono px-1.5 py-0.5 rounded" style={{ background: '#ecfdf5', color: '#059669', border: '1px solid #a7f3d0' }}>5 个活跃</span>
+          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded" style={{ background: '#ecfdf5', color: '#047857', border: '1px solid #a7f3d0' }}>5 个活跃</span>
         </div>
-        <button onClick={() => setAnimKey(k => k + 1)} className="text-[9px] text-slate-400 hover:text-emerald-600 transition-colors flex items-center gap-1" title="刷新">
+        <button onClick={() => setAnimKey(k => k + 1)} className="text-[10px] text-slate-500 hover:text-emerald-700 transition-colors flex items-center gap-1" title="刷新">
           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="23 4 23 10 17 10" /><polyline points="1 20 1 14 7 14" /><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
           </svg>
@@ -594,22 +597,22 @@ function DataTab() {
                     {statusIcon(ds.status)}
                   </div>
                   <div className="flex items-baseline gap-1 mb-1">
-                    <span className="text-base font-bold font-mono leading-none" style={{ color: ds.color }}>{ds.stat}</span>
-                    <span className="text-[8px] text-slate-400">{ds.unit}</span>
+                    <span className="text-base font-bold font-mono leading-none" style={{ color: '#0f172a' }}>{ds.stat}</span>
+                    <span className="text-[11px] text-slate-500">{ds.unit}</span>
                   </div>
                   {/* 功能标签 */}
                   <div className="flex flex-wrap gap-0.5">
                     {ds.features.slice(0, isExpanded ? 3 : 2).map(f => (
-                      <span key={f} className="text-[8px] px-1 py-0.5 rounded" style={{ background: '#f1f5f9', color: '#64748b', border: '1px solid #e2e8f0' }}>{f}</span>
+                      <span key={f} className="text-[10px] px-1 py-0.5 rounded" style={{ background: '#f1f5f9', color: '#475569', border: '1px solid #e2e8f0' }}>{f}</span>
                     ))}
                   </div>
                 </div>
                 {/* 展开详情 */}
                 {isExpanded && (
                   <div className="px-2.5 pb-2.5 border-t" style={{ borderColor: '#f1f5f9' }}>
-                    <p className="text-[9px] text-slate-500 leading-[1.55] mt-1.5">{ds.desc}</p>
-                    <div className="flex items-center gap-1 mt-1.5 text-[8px] text-slate-400">
-                      <Clock size={8} />
+                    <p className="text-[11px] text-slate-500 leading-[1.55] mt-1.5">{ds.desc}</p>
+                    <div className="flex items-center gap-1 mt-1.5 text-[10px] text-slate-500">
+                      <Clock size={9} />
                       <span>上次同步：刚刚</span>
                     </div>
                   </div>
@@ -621,17 +624,17 @@ function DataTab() {
 
         {/* 活动日志 */}
         <div className="mt-2.5 rounded-md border p-2.5" style={{ borderColor: '#e2e8f0', background: '#fafbfc' }}>
-          <div className="text-[9px] font-medium text-slate-500 mb-1.5 flex items-center gap-1">
+          <div className="text-[10px] font-medium text-slate-500 mb-1.5 flex items-center gap-1">
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
             </svg>
             同步活动记录
           </div>
           {ACTIVITY_LOG.map((log, i) => (
-            <div key={i} className="flex items-center gap-2 py-1 border-t" style={{ borderColor: '#f1f5f9', fontSize: 9 }}>
-              <span className="font-mono flex-shrink-0" style={{ color: '#94a3b8' }}>{log.time}</span>
+            <div key={i} className="flex items-center gap-2 py-1 border-t" style={{ borderColor: '#f1f5f9', fontSize: 10 }}>
+              <span className="font-mono flex-shrink-0" style={{ color: '#64748b' }}>{log.time}</span>
               <span className="text-slate-600 flex-1 truncate">{log.action}</span>
-              <span className="text-slate-400 flex-shrink-0">{log.detail}</span>
+              <span className="text-slate-500 flex-shrink-0">{log.detail}</span>
             </div>
           ))}
         </div>
@@ -714,8 +717,8 @@ function ComplianceTab() {
     <div className="flex flex-col h-full">
       {/* 输入区 */}
       <div className="px-3 py-2 border-b" style={{ borderColor: '#e2e8f0', background: '#fafbfc' }}>
-        <div className="text-[9px] font-medium text-slate-500 mb-1.5 flex items-center gap-1">
-          <ShieldCheck size={10} style={{ color: '#64748b' }} />
+        <div className="text-[10px] font-medium text-slate-500 mb-1.5 flex items-center gap-1">
+          <ShieldCheck size={11} style={{ color: '#64748b' }} />
           输入配方成分（每行一个）
         </div>
         <textarea
@@ -726,8 +729,8 @@ function ComplianceTab() {
           placeholder="黄芪&#10;枸杞&#10;甘草"
         />
         <button onClick={runCheck} disabled={result.status === 'scanning'}
-          className="mt-1.5 w-full h-7 rounded-md lp-tiny font-medium flex items-center justify-center gap-1.5 transition-all disabled:opacity-50"
-          style={{ background: result.status === 'scanning' ? '#94a3b8' : '#059669', color: '#fff' }}>
+          className="mt-1.5 w-full min-h-[36px] rounded-md lp-tiny font-medium flex items-center justify-center gap-1.5 transition-all disabled:opacity-50"
+          style={{ background: result.status === 'scanning' ? '#94a3b8' : '#047857', color: '#fff' }}>
           {result.status === 'scanning'
             ? <><Loader2 size={11} className="animate-spin" />检测中…</>
             : <><ShieldCheck size={11} />开始合规检测</>
@@ -747,14 +750,14 @@ function ComplianceTab() {
         {result.status === 'idle' && (
           <div className="h-full flex flex-col items-center justify-center text-center">
             <ShieldCheck size={24} style={{ color: '#cbd5e1', marginBottom: 8 }} />
-            <p className="text-[10px] text-slate-400 mb-1">输入成分后点击检测</p>
-            <p className="text-[9px] text-slate-300">覆盖配伍禁忌 · 过敏原风险 · 法规合规</p>
+            <p className="text-[10px] text-slate-500 mb-1">输入成分后点击检测</p>
+            <p className="text-[10px] text-slate-400">覆盖配伍禁忌 · 过敏原风险 · 法规合规</p>
           </div>
         )}
 
         {result.status === 'scanning' && (
           <div className="h-full flex flex-col items-center justify-center">
-            <Loader2 size={20} className="animate-spin mb-2" style={{ color: '#059669' }} />
+            <Loader2 size={20} className="animate-spin mb-2" style={{ color: '#047857' }} />
             <p className="text-[10px] text-slate-500">正在扫描 {progress}%</p>
           </div>
         )}
@@ -764,14 +767,14 @@ function ComplianceTab() {
             {/* 总评分 */}
             <div className="rounded-md p-2.5 flex items-center gap-3" style={{ background: result.score >= 90 ? '#ecfdf5' : result.score >= 70 ? '#fffbeb' : '#fef2f2', border: `1px solid ${result.score >= 90 ? '#a7f3d0' : result.score >= 70 ? '#fde68a' : '#fecaca'}` }}>
               <div className="text-center">
-                <div className="text-xl font-bold font-mono leading-none" style={{ color: result.score >= 90 ? '#059669' : result.score >= 70 ? '#d97706' : '#dc2626' }}>{result.score}</div>
-                <div className="text-[8px] text-slate-400 mt-0.5">安全评分</div>
+                <div className="text-xl font-bold font-mono leading-none" style={{ color: result.score >= 90 ? '#047857' : result.score >= 70 ? '#b45309' : '#dc2626' }}>{result.score}</div>
+                <div className="text-[10px] text-slate-500 mt-0.5">安全评分</div>
               </div>
               <div className="flex-1">
                 <div className="lp-tiny font-semibold" style={{ color: result.score >= 90 ? '#065f46' : result.score >= 70 ? '#92400e' : '#991b1b' }}>
                   {result.score >= 90 ? '✅ 配方整体安全' : result.score >= 70 ? '⚠️ 存在部分风险项' : '❌ 存在严重禁忌'}
                 </div>
-                <div className="text-[9px] text-slate-500 mt-0.5">
+                <div className="text-[10px] text-slate-500 mt-0.5">
                   {result.hazards.filter(h => h.severity === 'warn').length} 个警告 · {result.analysis.filter(a => a.result === 'pass').length} 项通过
                 </div>
               </div>
@@ -780,12 +783,12 @@ function ComplianceTab() {
             {/* 风险项 */}
             {result.hazards.length > 0 && (
               <div>
-                <div className="text-[9px] font-medium text-slate-500 mb-1 px-1">风险检测</div>
+                <div className="text-[10px] font-medium text-slate-500 mb-1 px-1">风险检测</div>
                 {result.hazards.map((h, i) => (
                   <div key={i} className="flex items-start gap-1.5 px-1.5 py-1.5 rounded-md mb-1" style={{ background: h.severity === 'safe' ? '#f8fafc' : h.severity === 'warn' ? '#fffbeb' : '#fef2f2', border: `1px solid ${h.severity === 'safe' ? '#e2e8f0' : h.severity === 'warn' ? '#fde68a' : '#fecaca'}` }}>
-                    {h.severity === 'safe' ? <CheckCircle size={10} style={{ color: '#059669', flexShrink: 0, marginTop: 1 }} />
-                     : h.severity === 'warn' ? <AlertTriangle size={10} style={{ color: '#d97706', flexShrink: 0, marginTop: 1 }} />
-                     : <XCircle size={10} style={{ color: '#dc2626', flexShrink: 0, marginTop: 1 }} />}
+                    {h.severity === 'safe' ? <CheckCircle size={11} style={{ color: '#047857', flexShrink: 0, marginTop: 1 }} />
+                     : h.severity === 'warn' ? <AlertTriangle size={11} style={{ color: '#b45309', flexShrink: 0, marginTop: 1 }} />
+                     : <XCircle size={11} style={{ color: '#dc2626', flexShrink: 0, marginTop: 1 }} />}
                     <div>
                       <div className="lp-tiny font-medium text-slate-700">{h.label}</div>
                       <div className="lp-micro text-slate-500">{h.detail}</div>
@@ -798,12 +801,12 @@ function ComplianceTab() {
             {/* 配伍分析 */}
             {result.analysis.length > 0 && (
               <div>
-                <div className="text-[9px] font-medium text-slate-500 mb-1 px-1">配伍分析</div>
+                <div className="text-[10px] font-medium text-slate-500 mb-1 px-1">配伍分析</div>
                 {result.analysis.map((a, i) => (
                   <div key={i} className="flex items-center gap-1.5 px-1.5 py-1 rounded-md mb-0.5" style={{ background: a.result === 'pass' ? '#f8fafc' : '#fffbeb', border: `1px solid ${a.result === 'pass' ? '#e2e8f0' : '#fde68a'}` }}>
                     {a.result === 'pass'
-                      ? <CheckCircle size={10} style={{ color: '#059669' }} />
-                      : <AlertTriangle size={10} style={{ color: '#d97706' }} />}
+                      ? <CheckCircle size={11} style={{ color: '#047857' }} />
+                      : <AlertTriangle size={11} style={{ color: '#b45309' }} />}
                     <span className="lp-tiny font-medium text-slate-700">{a.label}</span>
                     <span className="lp-micro text-slate-400 ml-auto">{a.detail}</span>
                   </div>
@@ -819,8 +822,8 @@ function ComplianceTab() {
                 </svg>
                 重新检测
               </button>
-              <button className="flex-1 h-7 rounded-md lp-tiny font-medium flex items-center justify-center gap-1" style={{ background: '#059669', color: '#fff' }}>
-                <FileText size={10} />导出报告
+              <button className="flex-1 min-h-[36px] rounded-md lp-tiny font-medium flex items-center justify-center gap-1" style={{ background: '#047857', color: '#fff' }}>
+                <FileText size={11} />导出报告
               </button>
             </div>
           </div>
@@ -903,19 +906,19 @@ function ProductPreview() {
         {/* 标题栏 */}
         <div className="lp-titlebar flex items-center gap-0 px-4 py-2 border-b">
           <div className="flex items-center gap-2">
-            <span className="lp-brand tracking-wider">RMFOOD</span>
+            <span className="lp-brand tracking-wider">莱茵分子</span>
             <div className="w-px h-3 bg-slate-700" />
-            <div className="flex items-center gap-1 px-2 py-0.5 rounded lp-section-tag" style={{ background: 'rgba(5,150,105,0.2)', color: '#6ee7b7', border: '1px solid rgba(5,150,105,0.3)' }}>
-              <Sparkles size={9} /><span>智能对话</span>
+            <div className="flex items-center gap-1 px-2 py-0.5 rounded lp-section-tag" style={{ background: 'rgba(4,120,87,0.45)', color: '#ffffff', border: '1px solid rgba(4,120,87,0.6)' }}>
+              <Sparkles size={10} /><span>智能对话</span>
             </div>
           </div>
           <div className="flex-1" />
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full" style={{ background: demoState.status === 'error' ? '#ef4444' : '#059669', boxShadow: '0 0 4px rgba(5,150,105,0.4)' }} />
-              <span className="text-[9px] text-slate-400 font-mono">{demoState.status === 'error' ? '离线' : '在线'}</span>
+              <span className="w-1.5 h-1.5 rounded-full" style={{ background: demoState.status === 'error' ? '#ef4444' : '#34d399', boxShadow: '0 0 4px rgba(5,150,105,0.4)' }} />
+              <span className="text-[10px] text-slate-400 font-mono">{demoState.status === 'error' ? '离线' : '在线'}</span>
             </div>
-            <span className="text-[9px] font-mono text-slate-500">v2.4</span>
+            <span className="text-[10px] font-mono text-slate-400">v2.4</span>
           </div>
         </div>
 
@@ -929,7 +932,7 @@ function ProductPreview() {
               return (
                 <button key={item.label} onClick={() => setActiveTab(i)} title={item.label}
                   className="w-7 h-7 rounded-md flex items-center justify-center transition-all duration-150"
-                  style={isActive ? { background: '#059669', color: '#fff', border: '1px solid #047857', boxShadow: '0 1px 2px rgba(5,150,105,0.3)' } : { background: 'transparent', color: '#64748b', border: '1px solid transparent' }}>
+                  style={isActive ? { background: '#047857', color: '#fff', border: '1px solid #047857', boxShadow: '0 1px 2px rgba(5,150,105,0.3)' } : { background: 'transparent', color: '#475569', border: '1px solid transparent' }}>
                   <Icon size={13} strokeWidth={1.8} />
                 </button>
               );
@@ -960,11 +963,11 @@ function ProductPreview() {
                         <Sparkles size={16} style={{ color: '#059669' }} />
                       </div>
                       <p className="lp-label font-semibold mb-1">与配方顾问对话</p>
-                      <p className="text-[10px] text-slate-400 text-center leading-relaxed mb-6 max-w-[220px]">输入您的研发需求，获取专业配方设计与安全评估</p>
+                      <p className="text-[11px] text-slate-500 text-center leading-relaxed mb-6 max-w-[220px]">输入您的研发需求，获取专业配方设计与安全评估</p>
                       <div className="grid grid-cols-2 gap-2 w-full max-w-[280px]">
                         {PRESET_QUESTIONS.map((q, i) => (
                           <button key={i} onClick={() => triggerPreset(q)}
-                            className="text-left px-3 py-2 rounded-lg text-[10px] leading-relaxed text-slate-600 transition-all duration-150 border hover:shadow-sm"
+                            className="text-left px-3 py-2 rounded-lg text-[11px] leading-relaxed text-slate-600 transition-all duration-150 border min-h-[44px] flex items-center"
                             style={{ background: '#f8fafc', borderColor: '#eef2f7' }}
                             onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#f0fdf4'; (e.currentTarget as HTMLButtonElement).style.borderColor = '#bbf7d0'; (e.currentTarget as HTMLButtonElement).style.color = '#065f46'; }}
                             onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = '#f8fafc'; (e.currentTarget as HTMLButtonElement).style.borderColor = '#eef2f7'; (e.currentTarget as HTMLButtonElement).style.color = '#475569'; }}
@@ -978,7 +981,7 @@ function ProductPreview() {
                         <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} lp-chat-bubble-in`} style={{ animationDelay: `${i * 0.04}s` }}>
                           {msg.role === 'assistant' && (
                             <div className="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 mr-2 mt-0.5" style={{ background: '#ecfdf5', border: '1px solid #d1fae5' }}>
-                              <Sparkles size={10} style={{ color: '#059669' }} />
+                              <Sparkles size={10} style={{ color: '#047857' }} />
                             </div>
                           )}
                           <div className="px-3 py-2 max-w-[80%] leading-relaxed" style={{ background: msg.role === 'user' ? 'linear-gradient(135deg, #059669 0%, #047857 100%)' : '#ffffff', color: msg.role === 'user' ? '#fff' : '#1e293b', borderRadius: msg.role === 'user' ? '12px 12px 3px 12px' : '3px 12px 12px 3px', border: msg.role === 'assistant' ? '1px solid #e2e8f0' : 'none', lineHeight: '1.65', boxShadow: msg.role === 'assistant' ? '0 1px 4px rgba(0,0,0,0.06)' : 'none' }}>
@@ -989,14 +992,14 @@ function ProductPreview() {
                       {demoState.status === 'thinking' && (
                         <div className="flex justify-start lp-chat-bubble-in">
                           <div className="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 mr-2 mt-0.5" style={{ background: '#ecfdf5', border: '1px solid #d1fae5' }}>
-                            <Sparkles size={10} style={{ color: '#059669' }} />
+                            <Sparkles size={10} style={{ color: '#047857' }} />
                           </div>
                           <div className="px-4 py-3 rounded-xl" style={{ background: '#ffffff', border: '1px solid #e2e8f0', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
                             <div className="flex items-center gap-2 mb-2">
                               {THINKING_STEPS.map((step, i) => (
                                 <div key={step.label} className="flex items-center gap-1.5">
                                   <div className="w-1.5 h-1.5 rounded-full transition-all duration-300" style={{ background: i <= thinkingStep ? step.color : '#e2e8f0', opacity: i <= thinkingStep ? 1 : 0.4 }} />
-                                  <span className="text-[9px] text-slate-400">{step.label}</span>
+                                  <span className="text-[10px] text-slate-500">{step.label}</span>
                                 </div>
                               ))}
                             </div>
@@ -1026,12 +1029,14 @@ function ProductPreview() {
                       <textarea ref={textareaRef} value={input} onChange={(e) => setInput(e.target.value)}
                         onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(e); } }}
                         placeholder="描述您的研发需求…" rows={1} disabled={demoState.status === 'thinking'}
-                        className="w-full resize-none px-3 py-2 text-[11px] text-slate-800 placeholder:text-slate-300 bg-transparent outline-none leading-[1.6]" style={{ maxHeight: 80 }} />
-                      <div className="absolute bottom-1.5 right-2"><kbd className="text-[8px] font-mono text-slate-300 px-1 py-0.5 rounded" style={{ border: '1px solid #e2e8f0' }}>⏎</kbd></div>
+                        aria-label="配方研发需求输入"
+                        className="w-full resize-none px-3 py-2.5 text-[12px] text-slate-800 placeholder:text-slate-400 bg-transparent outline-none leading-[1.6]" style={{ maxHeight: 80 }} />
+                      <div className="absolute bottom-1.5 right-2"><kbd className="text-[10px] font-mono text-slate-400 px-1 py-0.5 rounded" style={{ border: '1px solid #e2e8f0' }}>⏎</kbd></div>
                     </div>
                     <button type="submit" disabled={!input.trim() || demoState.status === 'thinking'}
-                      className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-150 disabled:opacity-30 hover:opacity-90 active:scale-95"
-                      style={{ background: '#059669' }}>
+                      aria-label="发送"
+                      className="w-11 h-11 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-150 disabled:opacity-30 hover:opacity-90 active:scale-95"
+                      style={{ background: '#047857' }}>
                       {demoState.status === 'thinking' ? <Loader2 size={14} color="white" className="animate-spin" /> : <Send size={14} color="white" />}
                     </button>
                   </form>
@@ -1047,10 +1052,10 @@ function ProductPreview() {
         {/* 状态栏 */}
         <div className="flex items-center justify-between px-4 py-1.5 border-t" style={{ background: 'var(--bg-canvas, #f8fafc)', borderColor: 'var(--border-color, #e2e8f0)' }}>
           <div className="flex items-center gap-3">
-            <span className="text-[9px] font-mono" style={{ color: 'var(--text-secondary, #334155)' }}>{tabStatus}</span>
-            {isConversing && <span className="text-[9px] font-mono" style={{ color: 'var(--text-muted, #64748b)' }}>· {messages.length} 轮</span>}
+            <span className="text-[10px] font-mono" style={{ color: 'var(--text-secondary, #475569)' }}>{tabStatus}</span>
+            {isConversing && <span className="text-[10px] font-mono" style={{ color: 'var(--text-muted, #475569)' }}>· {messages.length} 轮</span>}
           </div>
-          <span className="text-[9px] font-mono" style={{ color: 'var(--text-muted, #64748b)' }}>{tabEngine}</span>
+          <span className="text-[10px] font-mono" style={{ color: 'var(--text-muted, #475569)' }}>{tabEngine}</span>
         </div>
       </div>
     </div>
@@ -1062,19 +1067,19 @@ function HeroMetricsBar() {
   return (
     <div className="flex flex-wrap items-center justify-center gap-3 mt-8 pt-6 border-t" style={{ borderColor: '#e2e8f0' }}>
       <span className="lp-hero-metric">
-        <span style={{ color: '#059669' }}>●</span>
+        <span style={{ color: '#047857' }}>●</span>
         <strong>200+</strong> 研发机构
       </span>
       <span className="lp-hero-metric">
-        <span style={{ color: '#7c3aed' }}>●</span>
+        <span style={{ color: '#6d28d9' }}>●</span>
         <strong>128K</strong> 知识节点
       </span>
       <span className="lp-hero-metric">
-        <span style={{ color: '#2563eb' }}>●</span>
+        <span style={{ color: '#1d4ed8' }}>●</span>
         <strong>5</strong> 大权威数据源
       </span>
       <span className="lp-hero-metric">
-        <span style={{ color: '#d97706' }}>●</span>
+        <span style={{ color: '#b45309' }}>●</span>
         <strong>72h</strong> 平均研发周期
       </span>
     </div>
@@ -1096,8 +1101,8 @@ export default function Hero() {
           <div className="max-w-xl pt-4">
             <Reveal>
               <div className="flex items-center gap-2 mb-4">
-                <span className="lp-brand">RMFOOD</span>
-                <span className="text-slate-300">·</span>
+                <span className="lp-brand">莱茵分子</span>
+                <span className="text-slate-400">·</span>
                 <span className="lp-caption">药食同源 AI 配方研发平台</span>
               </div>
 
@@ -1126,10 +1131,10 @@ export default function Hero() {
               </Reveal>
 
               <Reveal delay="lp-reveal-delay-2">
-                <div className="flex items-center gap-3 lp-label text-slate-400">
+                <div className="flex items-center gap-3 lp-label text-slate-500">
                   <div className="flex -space-x-1.5">
                     {testimonials.slice(0, 4).map((t, i) => (
-                      <div key={i} className="w-5 h-5 rounded-full border-2 border-white flex items-center justify-center text-[8px] font-bold text-white" style={{ background: t.gradient }}>
+                      <div key={i} className="w-6 h-6 rounded-full border-2 border-white flex items-center justify-center text-[10px] font-bold text-white" style={{ background: t.gradient }}>
                         {t.name[0]}
                       </div>
                     ))}

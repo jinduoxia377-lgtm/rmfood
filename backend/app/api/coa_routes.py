@@ -17,6 +17,7 @@ from typing import Optional
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..api.deps import get_db_session, get_current_user, PaginationParams
@@ -355,7 +356,7 @@ async def download_coa_word(
     service = COAService(db)
     coa = await service.get_coa(coa_id)
     if not coa:
-        raise HTTPException(status_code=404, detail="COA not found")
+        raise HTTPException(status_code=404, detail="COA 报告不存在")
     coa_data = {
         "company_name_cn": "莱辛（厦门）分子生物科技有限公司",
         "company_name_en": "RHEIN (XIAMEN) MOLEKUL BIOTECH INC",
@@ -403,7 +404,7 @@ async def download_coa_pdf(
     service = COAService(db)
     coa = await service.get_coa(coa_id)
     if not coa:
-        raise HTTPException(status_code=404, detail="COA not found")
+        raise HTTPException(status_code=404, detail="COA 报告不存在")
     coa_data = {
         "company_name_cn": "莱辛（厦门）分子生物科技有限公司",
         "company_name_en": "RHEIN (XIAMEN) MOLEKUL BIOTECH INC",

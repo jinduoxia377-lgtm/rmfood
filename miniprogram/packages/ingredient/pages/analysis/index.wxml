@@ -1,363 +1,45 @@
-<!-- 配料分析页面 - 后端API对接版（统一设计系统） -->
-<view class="page-container">
-  <!-- 顶部导航 -->
-  <nav-bar 
-    title="配料分析"
-    left-icon="arrow-left"
-    right-icon="share"
-    bind:left="goBack"
-    bind:right="shareResult"
-    transparent
-  ></nav-bar>
-
-  <!-- 内容滚动区 -->
-  <scroll-view 
-    class="content-scroll" 
-    scroll-y 
-    refresher-enabled 
-    refresher-triggered="{{refreshing}}"
-    bindrefresherrefresh="onPullDownRefresh"
-    aria-live="polite"
-    aria-label="分析内容"
-  >
-
-    <!-- ========== 输入区域 ========== -->
-    <view wx:if="{{showInputSection}}" class="input-section">
-
-      <!-- 拍照上传 -->
-      <view class="upload-area" bindtap="chooseImage" role="button" aria-label="拍照识别配料表">
-        <view class="upload-icon-wrap">
-          <icon name="camera" size="xxl" color="var(--color-primary)" />
-        </view>
-        <text class="upload-title">拍照识别配料表</text>
-        <text class="upload-desc">拍摄食品包装上的配料表和营养成分表</text>
-        <view class="upload-tips">
-          <icon name="info" size="sm" color="var(--color-text-muted)" />
-          <text>建议光线充足、画面平整</text>
-        </view>
-      </view>
-
-      <!-- 手动输入区 -->
-      <view class="manual-input">
-        <divider type="dashed" space="md" />
-        
-        <view class="input-label">
-          <text>配料表</text>
-          <text class="input-hint">必填</text>
-        </view>
-        
-        <view class="input-wrapper">
-          <icon name="document" size="md" color="var(--color-text-muted)" />
-          <textarea
-            class="ingredient-textarea"
-            placeholder="请输入配料表，如：小麦粉、白砂糖、植物油、山梨酸钾..."
-            value="{{ingredientText}}"
-            bindinput="onInputChange"
-            maxlength="500"
-            show-confirm-bar="{{false}}"
-            aria-label="配料表输入"
-          ></textarea>
-        </view>
-        <text class="char-count">{{ingredientText.length}}/500</text>
-
-        <!-- 营养成分表输入（可选） -->
-        <view 
-          class="nutrition-toggle" 
-          bindtap="toggleNutritionInput"
-          role="button"
-          aria-expanded="{{!!nutritionText}}"
-          aria-label="营养成分表（选填）"
-        >
-          <icon name="info" size="sm" color="var(--color-primary)" />
-          <text>填写营养成分表（选填，提升分析准确度）</text>
-          <icon 
-            name="arrow-down" 
-            size="sm" 
-            color="{{nutritionText ? 'var(--color-primary)' : 'var(--color-text-muted)'}}" 
-            class="{{nutritionText ? 'rotated' : ''}}"
-          />
-        </view>
-
-        <view wx:if="{{nutritionText !== undefined || nutritionText === ''}}" class="nutrition-input">
-          <textarea
-            class="nutrition-textarea"
-            placeholder="能量: 1672kJ, 蛋白质: 8.5g, 脂肪: 12.3g, 碳水化合物: 65.2g, 钠: 380mg..."
-            value="{{nutritionText}}"
-            bindinput="onNutritionInputChange"
-            maxlength="300"
-            show-confirm-bar="{{false}}"
-            aria-label="营养成分表输入"
-          ></textarea>
-        </view>
-
-        <!-- 开始分析按钮 -->
-        <btn 
-          type="primary" 
-          size="lg" 
-          loading="{{analyzing}}"
-          bind:tap="startAnalysis"
-          block
-          aria-label="{{analyzing ? '分析中' : '开始六维分析'}}"
-        >
-          <icon name="ingredient" size="sm" color="#FFFFFF" />
-          <text>{{analyzing ? '分析中...' : '开始六维分析'}}</text>
-        </btn>
-      </view>
-
-      <!-- 示例快捷输入 -->
-      <view class="example-section">
-        <text class="example-title">快速体验</text>
-        <view class="example-chips">
-          <view 
-            class="example-chip" 
-            bindtap="fillExample" 
-            data-type="cookie"
-            role="button"
-            aria-label="饼干配料示例"
-          >
-            <icon name="ingredient" size="sm" color="var(--color-primary)" />
-            <text>饼干配料</text>
-          </view>
-          <view 
-            class="example-chip" 
-            bindtap="fillExample" 
-            data-type="drink"
-            role="button"
-            aria-label="饮料配料示例"
-          >
-            <icon name="molecule" size="sm" color="var(--color-accent-500)" />
-            <text>饮料配料</text>
-          </view>
-          <view 
-            class="example-chip" 
-            bindtap="fillExample" 
-            data-type="herbal"
-            role="button"
-            aria-label="药膳汤料示例"
-          >
-            <icon name="herb" size="sm" color="var(--color-success)" />
-            <text>药膳汤料</text>
-          </view>
-        </view>
-      </view>
-
-    </view>
-
-    <!-- ========== 分析结果区域 ========== -->
-    <view wx:if="{{showResultSection && result}}" class="result-section">
-
-      <!-- 健康评分总览 -->
-      <card shadow="lg" class="health-score-card">
-        <view class="score-header">
-          <text class="score-label">综合健康评分</text>
-          <tag type="info" size="small">NOVA {{result.novaGroup || '-'}}</tag>
-        </view>
-        
-        <view class="score-main">
-          <view class="nutri-score-circle" style="border-color: {{getScoreColor(result.nutriScore)}};">
-            <text class="nutri-letter" style="color: {{getScoreColor(result.nutriScore)}};">{{result.nutriLetter || '-'}}</text>
-            <text class="score-label">Nutri-Score</text>
-          </view>
-          <view class="score-details">
-            <text class="score-value">{{result.overallScore || 'N/A'}}</text>
-            <text class="score-text">{{getScoreLevel(result.overallScore)}}</text>
-          </view>
-        </view>
-        
-        <view class="score-breakdown">
-          <view class="breakdown-item">
-            <text class="breakdown-label">营养</text>
-            <text class="breakdown-value">{{result.nutritionScore || '-'}}</text>
-          </view>
-          <view class="breakdown-item">
-            <text class="breakdown-label">添加剂</text>
-            <text class="breakdown-value">{{result.additiveScore || '-'}}</text>
-          </view>
-          <view class="breakdown-item">
-            <text class="breakdown-label">过敏原</text>
-            <text class="breakdown-value">{{result.allergenScore || '-'}}</text>
-          </view>
-          <view class="breakdown-item">
-            <text class="breakdown-label">药食同源</text>
-            <text class="breakdown-value">{{result.herbalScore || '-'}}</text>
-          </view>
-        </view>
-      </card>
-
-      <!-- 营养成分表 -->
-      <card shadow="sm" class="nutrition-table" wx:if="{{result.nutritionTable}}">
-        <view class="section-title">
-          <icon name="chart" size="sm" color="var(--color-primary)" />
-          <text>GB 28050 营养成分表</text>
-        </view>
-        <view class="table-header">
-          <text class="th-name">项目</text>
-          <text class="th-amount">每100g</text>
-          <text class="th-nrv">NRV%</text>
-        </view>
-        <view 
-          wx:for="{{result.nutritionTable}}" 
-          wx:key="name"
-          class="table-row {{item.important ? 'important-row' : ''}}"
-        >
-          <text class="td-name">{{item.name}}</text>
-          <text class="td-amount">{{item.amount}}{{item.unit}}</text>
-          <text class="td-nrv">{{item.nrv || '-'}}</text>
-        </view>
-      </card>
-
-      <!-- 添加剂分析 -->
-      <card shadow="sm" class="additive-section" wx:if="{{result.additives && result.additives.length > 0}}">
-        <view class="section-title">
-          <icon name="molecule" size="sm" color="var(--color-primary)" />
-          <text>E编码添加剂分析</text>
-          <badge wx:if="{{result.additiveCount > 0}}" type="{{result.additiveCount > 3 ? 'danger' : 'warning'}}" count="{{result.additiveCount}}" />
-        </view>
-        <view class="additive-list">
-          <view 
-            wx:for="{{result.additives}}" 
-            wx:key="name"
-            class="additive-item {{item.riskLevel}}"
-            aria-label="添加剂: {{item.name}}"
-          >
-            <icon name="{{item.riskLevel === 'safe' ? 'check' : item.riskLevel === 'warning' ? 'warning' : 'close'}}" size="sm" color="{{getRiskColor(item.riskLevel)}}" />
-            <text class="additive-name">{{item.name}}</text>
-            <text class="additive-e">{{item.eCode || ''}}</text>
-            <text class="additive-risk" style="color: {{getRiskColor(item.riskLevel)}}">{{getRiskText(item.riskLevel)}}</text>
-          </view>
-        </view>
-      </card>
-
-      <!-- 过敏原检测 -->
-      <card shadow="sm" class="allergen-section" wx:if="{{result.allergens && result.allergens.length > 0}}">
-        <view class="section-title">
-          <icon name="warning" size="sm" color="var(--color-warning)" />
-          <text>过敏原检测</text>
-          <badge type="danger" count="{{result.allergenCount}}" />
-        </view>
-        <view class="allergen-list">
-          <view 
-            wx:for="{{result.allergens}}" 
-            wx:key="name"
-            class="allergen-item"
-            aria-label="过敏原: {{item.name}}"
-          >
-            <icon name="warning" size="sm" color="var(--color-warning)" />
-            <text class="allergen-name">{{item.name}}</text>
-            <text class="allergen-level">{{item.level || '未知'}}</text>
-          </view>
-        </view>
-      </card>
-
-      <!-- 药食同源成分 -->
-      <card shadow="sm" class="herbal-section" wx:if="{{result.herbalIngredients && result.herbalIngredients.length > 0}}">
-        <view class="section-title">
-          <icon name="herb" size="sm" color="var(--color-success)" />
-          <text>药食同源成分识别</text>
-          <badge type="success" count="{{result.herbalCount}}" />
-        </view>
-        <view class="herb-list">
-          <view 
-            wx:for="{{result.herbalIngredients}}" 
-            wx:key="name"
-            class="herb-item"
-            aria-label="药食同源成分: {{item.name}}"
-          >
-            <view class="herb-header">
-              <text class="herb-name">{{item.name}}</text>
-              <text class="herb-latin">{{item.latinName || ''}}</text>
-            </view>
-            <text class="herb-function">{{item.function || '具有保健功能'}}</text>
-            <view class="herb-tags">
-              <tag wx:for="{{item.tags}}" wx:for-item="tag" wx:key="index" type="success" size="small">{{tag}}</tag>
-            </view>
-          </view>
-        </view>
-      </card>
-
-      <!-- 改进建议 -->
-      <card shadow="sm" class="suggestions-card" wx:if="{{result.suggestions && result.suggestions.length > 0}}">
-        <view class="section-title">
-          <icon name="lightbulb" size="sm" color="var(--color-info)" />
-          <text>改进建议</text>
-        </view>
-        <view class="suggestion-list">
-          <view 
-            wx:for="{{result.suggestions}}" 
-            wx:key="index"
-            class="suggestion-item"
-          >
-            <icon name="arrow-right" size="sm" color="var(--color-info)" />
-            <text class="suggestion-text">{{item}}</text>
-          </view>
-        </view>
-      </card>
-
-      <!-- 替代配方推荐 -->
-      <card shadow="sm" class="alternative-card" wx:if="{{result.alternativeFormulas && result.alternativeFormulas.length > 0}}">
-        <view class="section-title">
-          <icon name="formula" size="sm" color="var(--color-warning)" />
-          <text>替代配方推荐</text>
-        </view>
-        <view class="formula-list">
-          <view 
-            wx:for="{{result.alternativeFormulas}}" 
-            wx:key="id"
-            class="formula-item"
-            bindtap="viewAlternativeFormula"
-            data-id="{{item.id}}"
-            aria-label="查看替代配方: {{item.name}}"
-          >
-            <view class="formula-info">
-              <text class="formula-name">{{item.name}}</text>
-              <text class="formula-desc">{{item.description}}</text>
-              <view class="formula-score">
-                <text class="score-value" style="color: {{getScoreColor(item.healthScore)}};">{{item.healthScore}}</text>
-                <text class="score-label">健康分</text>
-              </view>
-            </view>
-            <icon name="arrow-right" size="md" color="var(--color-text-muted)" />
-          </view>
-        </view>
-      </card>
-
-    </view>
-
-    <!-- ========== 加载状态 ========== -->
-    <view wx:if="{{loading}}" class="loading-container">
-      <loading type="spinner" size="lg" />
-      <text class="loading-text">正在进行六维分析...</text>
-    </view>
-
-    <!-- 空状态 -->
-    <empty-state 
-      wx:if="{{!showInputSection && !showResultSection && !loading}}"
-      icon="ingredient"
-      title="开始您的配料分析"
-      desc="拍照或手动输入配料表，获得六维健康评估"
-    ></empty-state>
-
-    <!-- 底部间距 -->
-    <view class="bottom-spacing"></view>
-  </scroll-view>
-
-  <!-- 底部操作按钮 -->
-  <view wx:if="{{showResultSection && result}}" class="action-buttons" style="padding-bottom: {{safeAreaBottom}}px;">
-    <btn type="secondary" bind:tap="retryAnalysis" aria-label="重新分析">
-      <icon name="refresh" size="sm" color="var(--color-text-secondary)" />
-      <text>重新分析</text>
-    </btn>
-    <btn type="primary" bind:tap="saveAnalysis" aria-label="保存记录">
-      <icon name="save" size="sm" color="#FFFFFF" />
-      <text>保存记录</text>
-    </btn>
+<!--packages/ingredient/pages/analysis/index.wxml-->
+<view class="analysis-container">
+  <view class="search-area">
+    <input placeholder="输入食材名称..." bindinput="onSearch" value="{{keyword}}" />
+    <button type="primary" loading="{{loading}}" bindtap="analyze">分析</button>
   </view>
 
-  <!-- Toast组件 -->
-  <toast 
-    visible="{{showToast}}" 
-    content="{{toastContent}}" 
-    type="{{toastType}}"
-  ></toast>
-</view>
+  <!-- 结果区域 -->
+  <view class="result-area" wx:if="{{result}}">
+    <view class="result-header">
+      <text class="name">{{result.name_cn}}</text>
+      <text class="latin">{{result.name_latin}}</text>
+    </view>
 
+    <view class="result-section">
+      <text class="section-title">性味归经</text>
+      <text class="properties">{{result.nature_cn}} · {{result.meridians_cn}}</text>
+    </view>
+
+    <view class="result-section">
+      <text class="section-title">功效</text>
+      <text class="function">{{result.function_cn}}</text>
+    </view>
+
+    <view class="result-section">
+      <text class="section-title">类别</text>
+      <text class="category">{{result.category_cn}}</text>
+    </view>
+
+    <view class="result-section">
+      <text class="section-title">药用部位</text>
+      <text>{{result.use_part}}</text>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty" wx:if="{{!result && !loading}}">
+    <text>请输入食材名称进行分析</text>
+  </view>
+
+  <!-- 加载中 -->
+  <view class="loading" wx:if="{{loading}}">
+    <text>搜索中...</text>
+  </view>
+</view>

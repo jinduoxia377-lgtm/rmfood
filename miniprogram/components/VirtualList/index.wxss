@@ -1,19 +1,24 @@
-.virtual-list {
-  width: 100%;
-  height: 100%;
-}
-
-.virtual-list__placeholder {
+/* 虚拟滚动列表样式 */
+.virtual-list-container {
   position: relative;
+  overflow: hidden;
+}
+
+.virtual-list-spacer {
   width: 100%;
 }
 
-.virtual-list__item {
-  position: absolute;
-  left: 0;
-  right: 0;
+.virtual-list-item {
+  width: 100%;
   box-sizing: border-box;
-  padding: 24rpx 32rpx;
-  background-color: #FFFFFF;
-  border-bottom: 1rpx solid #F5F5F5;
+}
+
+.virtual-list-loading,
+.virtual-list-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40rpx;
+  color: var(--color-text-tertiary);
+  font-size: 28rpx;
 }

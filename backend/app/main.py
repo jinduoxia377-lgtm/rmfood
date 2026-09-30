@@ -151,6 +151,24 @@ async def lifespan(app: FastAPI):
         logger.info("[Startup] AI 服务初始化完成")
     except Exception as e:
         logger.error(f"[Startup] AI 服务初始化失败: {e}")
+    
+    # 4.5. 验证配方生成数据完整性
+    try:
+        from .services.recipe_generation_data_checker import check_herb_data_completeness, check_herb_knowledge_service
+        from .core.database.session import async_session_factory
+        async with async_session_factory() as db:
+            db_stats = await check_herb_data_completeness(db)
+            service_stats = await check_herb_knowledge_service(db)
+            
+            logger.info(f"[Startup] 配方生成数据检查:")
+            logger.info(f"  药材数: {db_stats['total_herbs']}, 覆盖率: {db_stats['knowledge_coverage_rate']}")
+            logger.info(f"  适配器: {'✅' if service_stats['adapter_working'] else '❌'}, 加载: {service_stats.get('herbs_loaded', 0)}")
+            
+            if not db_stats['sufficient_data'] or not service_stats.get('sufficient', False):
+                logger.warning("[Startup] 配方生成数据不完整，建议运行数据补全脚本")
+                logger.warning("  命令: python -m app.services.recipe_generation_data_completer")
+    except Exception as e:
+        logger.warning(f"[Startup] 配方生成数据检查失败（非致命）: {e}")
     # 4b. 启动 WebSocket 心跳任务（统一使用 WebSocketManager）
     try:
         ws_manager = get_ws_manager()
@@ -194,6 +212,13 @@ async def lifespan(app: FastAPI):
         logger.info("[Startup] 引擎上下文刷新完成")
     except Exception as e:
         logger.warning(f"[Startup] 引擎上下文刷新失败（非致命）: {e}")
+    # 7b. 启动账号锁定自动过期清理任务
+    try:
+        from app.core.security.account_lockout import cleanup_expired_locks
+        await cleanup_expired_locks()
+        logger.info("[Startup] 账号锁定过期清理完成")
+    except Exception as e:
+        logger.warning(f"[Startup] 账号锁定清理失败（非致命）: {e}")
     yield
     # ── 关闭阶段：释放资源 ──
     logger.info("应用关闭中...")
@@ -469,6 +494,13 @@ Authorization: Bearer <your_access_token>
         logger.info("[FormulaCases] Formula case study API registered")
     except Exception as e:
         logger.warning(f"[FormulaCases] Router registration failed (non-blocking): {e}")
+    # ── 配料分析API（必须在 api_router 之前注册，避免 /ingredients/{id} 先匹配 /ingredients/additives 等）──
+    try:
+        from .api.v1.ingredient_analysis_router import router as ingredient_analysis_router
+        app.include_router(ingredient_analysis_router, prefix="/api/v1")
+        logger.info("[IngredientAnalysis] 配料分析路由注册成功")
+    except Exception as e:
+        logger.warning(f"[IngredientAnalysis] 配料分析路由注册失败（非阻塞）: {e}")
     app.include_router(api_router, prefix="/api/v1")
     # 🔒 P5: 注册企业级管理与合规路由
     try:
@@ -519,7 +551,7 @@ Authorization: Bearer <your_access_token>
     # ── Core system API (cache / tasks / health) ──
     try:
         from .api.v1.core_router import router as core_router
-        app.include_router(core_router, prefix="/api")
+        app.include_router(core_router, prefix="/api/v1")
         logger.info("[CoreRouter] Core system API registered")
     except Exception as e:
         logger.warning(f"[CoreRouter] Core router registration failed (non-blocking): {e}")
@@ -558,6 +590,13 @@ Authorization: Bearer <your_access_token>
         logger.info("[ExperimentDataRouter] Experiment data parsing API registered")
     except Exception as e:
         logger.warning(f"[ExperimentDataRouter] Experiment data router registration failed (non-blocking): {e}")
+    # ── 配方在线验证工作流 API ──
+    try:
+        from .api.formula_validation import router as formula_validation_router
+        app.include_router(formula_validation_router, prefix="/api/v1")
+        logger.info("[FormulaValidationRouter] Formula online validation workflow API registered")
+    except Exception as e:
+        logger.warning(f"[FormulaValidationRouter] Formula validation router registration failed (non-blocking): {e}")
     # ── 工作流执行 API ──
     try:
         from .api.v1.workflow_exec_router import router as workflow_exec_router
@@ -586,13 +625,6 @@ Authorization: Bearer <your_access_token>
         logger.info("[ReportRouter] Product plan report API registered")
     except Exception as e:
         logger.warning(f"[ReportRouter] Product plan report router registration failed (non-blocking): {e}")
-    # ── 配料分析API（六维分析引擎）──
-    try:
-        from .api.v1.ingredient_analysis_router import router as ingredient_analysis_router
-        app.include_router(ingredient_analysis_router, prefix="/api/v1")
-        logger.info("[IngredientAnalysis] 配料分析路由注册成功")
-    except Exception as e:
-        logger.warning(f"[IngredientAnalysis] 配料分析路由注册失败（非阻塞）: {e}")
     # ── 知识图谱推理 API ──
     try:
         from .api.v1.kg_router import router as kg_router
@@ -614,6 +646,13 @@ Authorization: Bearer <your_access_token>
         logger.info("[PluginRouter] Plugin management API registered")
     except Exception as e:
         logger.warning(f"[PluginRouter] Plugin router registration failed (non-blocking): {e}")
+    # ── 客户端性能指标上报 API ──
+    try:
+        from .api.v1.metrics_router import router as metrics_router
+        app.include_router(metrics_router, prefix="/api/v1")
+        logger.info("[MetricsRouter] Client performance metrics API registered")
+    except Exception as e:
+        logger.warning(f"[MetricsRouter] Metrics router registration failed (non-blocking): {e}")
     # ── Potion AI VFT: 搜索分析 API ──
     try:
         app.include_router(search_analytics.router, prefix="/api/v1")

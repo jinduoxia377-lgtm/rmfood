@@ -1,0 +1,21 @@
+<!-- Apple Search Bar 搜索栏组件 -->
+<view class="apple-searchbar" bindtap="onFocus">
+  <view class="search-icon-wrap">
+    <icon name="search" size="sm" color="var(--color-text-tertiary)" />
+  </view>
+  <input
+    class="search-input"
+    placeholder="搜索"
+    placeholder-class="search-placeholder"
+    value="{{value}}"
+    bindinput="onInput"
+    bindfocus="onFocus"
+    bindconfirm="onConfirm"
+    confirm-type="search"
+    type="text"
+    maxlength="-1"
+  />
+  <view wx:if="{{value}}" class="search-clear" catchtap="onClear">
+    <text class="clear-text">×</text>
+  </view>
+</view>

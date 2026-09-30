@@ -388,3 +388,44 @@ class AccountLockout:
             ),
             "hint": "请稍后重试或联系管理员解锁",
         }
+
+
+async def cleanup_expired_locks() -> int:
+    """
+    清理已过锁定期但未自动解锁的账号。
+
+    在应用启动时调用，确保所有锁定期已过期的账号恢复可用状态。
+
+    Returns:
+        int: 实际解锁的账号数量
+    """
+    from app.models.user_model import User
+    from app.core.database.session import get_async_session
+
+    cleaned = 0
+    now = datetime.now(timezone.utc)
+    async with get_async_session() as db:
+        try:
+            result = await db.execute(
+                select(User).where(
+                    User.locked_until.isnot(None),
+                    User.locked_until < now,
+                )
+            )
+            expired_users = result.scalars().all()
+            for user in expired_users:
+                user.login_attempts = 0
+                user.locked_until = None
+                user.updated_at = now
+                logger.info(
+                    f"[Startup] 自动解锁过期账号: {user.username} "
+                    f"(锁定至 {user.locked_until})"
+                )
+            if expired_users:
+                await db.commit()
+                cleaned += len(expired_users)
+        except Exception as e:
+            logger.warning(f"[Startup] 清理过期锁定失败: {e}")
+            await db.rollback()
+    logger.info(f"[Startup] 账号锁定清理完成: 解锁 {cleaned} 个账号")
+    return cleaned

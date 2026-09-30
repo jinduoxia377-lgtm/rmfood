@@ -3,42 +3,40 @@ from datetime import datetime, timezone
 from sqlalchemy import Integer, String, Text, DateTime, JSON, ForeignKey, Boolean, BigInteger, CheckConstraint, Index
 from sqlalchemy.orm import Mapped, mapped_column
 from .base import Base
+from app.models.utils import now_utc_naive
 from app.models.utils import now_utc_mapped
 
 
 class AuditLog(Base):
+    """审计日志 — 列名与 DB 实际表一致（information_schema 校验）：
+      id / action / resource_type / resource_id / user_id / details(json)
+      / ip_address / user_agent / request_id / created_at
+    旧版 ORM 曾映射不存在的 entity_type/entity_id/severity/method 等列，
+    导致任何 AuditLog INSERT 都 500。本模型已对齐真实列。
+    """
     __tablename__ = "audit_logs"
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
-    user_id: Mapped[int | None] = mapped_column(BigInteger, ForeignKey("users.id"), index=True)
-    action: Mapped[str] = mapped_column(String(256), nullable=True, index=True)
-    entity_type: Mapped[str | None] = mapped_column(String(50))
-    entity_id: Mapped[int | None] = mapped_column(BigInteger)
-    details: Mapped[dict | None] = mapped_column(JSON, default=dict)
-    ip_address: Mapped[str | None] = mapped_column(String(45))
-    request_id: Mapped[str | None] = mapped_column(String(64), index=True)
-    username: Mapped[str | None] = mapped_column(String(128))
-    user_role: Mapped[str | None] = mapped_column(String(32))
-    method: Mapped[str] = mapped_column(String(8), nullable=False)
-    path: Mapped[str] = mapped_column(String(512), nullable=False, index=True)
-    query_params: Mapped[dict | None] = mapped_column(JSON)
-    status_code: Mapped[int | None] = mapped_column(Integer)
-    duration_ms: Mapped[int | None] = mapped_column(Integer)
-    user_agent: Mapped[str | None] = mapped_column(String(512))
-    severity: Mapped[str] = mapped_column(String(16), nullable=False, default="low", index=True)
-    masked_request_body: Mapped[str | None] = mapped_column(Text)
-    masked_response_body: Mapped[str | None] = mapped_column(Text)
-    checksum_chain: Mapped[str | None] = mapped_column(String(64))
-    error: Mapped[str | None] = mapped_column(Text)
-    metadata_: Mapped[dict | None] = mapped_column("metadata", JSON, default=dict)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, nullable=False, index=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    action: Mapped[str | None] = mapped_column(String(256), nullable=True, index=True)
+    # DB 列 resource_type（旧属性名 entity_type）
+    resource_type: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    # DB 列 resource_id（旧属性名 entity_id）
+    resource_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    user_id: Mapped[int | None] = mapped_column(Integer, nullable=True, index=True)
+    details: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    ip_address: Mapped[str | None] = mapped_column(String(45), nullable=True)
+    user_agent: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    request_id: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=now_utc_naive)
 
-    __table_args__ = (
-        CheckConstraint("json_typeof(details) = 'object'::text", name="ck_audit_log_details_json"),
-        Index("ix_audit_logs_created_severity", "created_at", "severity"),
-        Index("ix_audit_logs_user_created", "user_id", "created_at"),
-        Index("ix_audit_logs_path_created", "path", "created_at"),
-    )
+    # 兼容别名：旧代码读 log.entity_type / log.entity_id 时仍可工作
+    @property
+    def entity_type(self) -> str | None:
+        return self.resource_type
+
+    @property
+    def entity_id(self) -> int | None:
+        return self.resource_id
 
 
 class Attachment(Base):

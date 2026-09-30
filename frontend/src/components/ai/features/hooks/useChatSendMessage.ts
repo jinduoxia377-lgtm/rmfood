@@ -1,4 +1,4 @@
-/**
+﻿/**
  * useChatSendMessage - 消息发送处理 Hook (v12.0 精简版)
  *
  * 精简说明 (2026-06-26):
@@ -33,6 +33,8 @@ export interface UseChatSendMessageOptions {
   ragAugment?: (question: string) => Promise<string>;
   /** LLM 是否可用（用于降级路径优化：不可用时跳过无效预处理） */
   llmAvailable?: boolean;
+  /** 当前场景模式，用于后端注入对应 system prompt */
+  scenarioMode?: string;
 }
 
 export interface UseChatSendMessageReturn {
@@ -44,7 +46,7 @@ export function useChatSendMessage(
   chatMessages: ReturnType<typeof useChatMessages>,
   options: UseChatSendMessageOptions,
 ): UseChatSendMessageReturn {
-  const { orchestrator, ragAugment, llmAvailable = true } = options;
+  const { orchestrator, ragAugment, llmAvailable = true, scenarioMode } = options;
   const { messages, sendMessage: chatServiceSendMessage, setInput } = chatMessages;
   const {
     nlpEngine,
@@ -92,6 +94,10 @@ export function useChatSendMessage(
               trimmed,
               messages as Parameters<typeof multiTurnDialogue.processUserInput>[1],
               async (text: string) => {
+                // 复用已计算的 intentResult，避免重复调用 NLP 引擎
+                if (intentResult && text === trimmed) {
+                  return { intent: intentResult.primaryIntent, confidence: intentResult.confidence };
+                }
                 const result = await nlpEngine.detectIntent(text);
                 return { intent: result.primaryIntent, confidence: result.confidence };
               },
@@ -144,7 +150,7 @@ export function useChatSendMessage(
         // llmAvailable=false: finalContent = trimmed（原始输入，不做任何污染）
 
         // Step 5: 发送消息
-        await chatServiceSendMessage(finalContent, trimmed);
+        await chatServiceSendMessage(finalContent, trimmed, scenarioMode);
         setInput('');
 
         // Step 6: 同步更新多轮对话（不再用 setTimeout）

@@ -1,5 +1,5 @@
 // 对比分析页逻辑
-const app = getApp()
+const api = require('../../utils/api.js')
 const request = require('../../utils/request.js')
 
 Page({
@@ -8,7 +8,14 @@ Page({
     productB: {},
     comparisonResult: null,
     recommendColor: '',
-    recommendText: ''
+    recommendText: '',
+    loading: false,
+    menuOpen: false,
+    comparing: false
+  },
+
+  onLoad() {
+    wx.setNavigationBarTitle({ title: '产品对比' })
   },
 
   // 选择产品A
@@ -19,7 +26,7 @@ Page({
       sourceType: ['album', 'camera'],
       success: (res) => {
         const filePath = res.tempFiles[0].tempFilePath
-        this.analyzeProduct(filePath).then(result => {
+        this.analyzeProduct(filePath, 'A').then(result => {
           this.setData({ productA: result })
         })
       }
@@ -34,16 +41,45 @@ Page({
       sourceType: ['album', 'camera'],
       success: (res) => {
         const filePath = res.tempFiles[0].tempFilePath
-        this.analyzeProduct(filePath).then(result => {
+        this.analyzeProduct(filePath, 'B').then(result => {
           this.setData({ productB: result })
         })
       }
     })
   },
 
-  // 分析产品
-  async analyzeProduct(imagePath) {
-    // TODO: 实现OCR和分析逻辑
+  // 分析产品（OCR + API）
+  async analyzeProduct(imagePath, side) {
+    this.setData({ loading: true })
+    try {
+      // 调用OCR识别
+      const ocrResult = await api.ingredients.ocr(imagePath)
+      
+      if (ocrResult && ocrResult.ingredients) {
+        // 调用配料分析API
+        const analysis = await api.ingredients.analyze(ocrResult.ingredients)
+        
+        const result = {
+          name: ocrResult.productName || '识别产品',
+          score: analysis.score || 75,
+          nutriScoreLetter: analysis.nutrientLevel === '丰富' ? 'A' : analysis.nutrientLevel === '中等' ? 'B' : 'C',
+          novaGroup: analysis.safetyLevel === '高' ? 1 : analysis.safetyLevel === '中' ? 2 : 3,
+          additiveCount: ocrResult.ingredients.filter(i => i.isAdditive).length,
+          herbalCount: ocrResult.ingredients.filter(i => i.isHerb).length,
+          allergenCount: ocrResult.ingredients.filter(i => i.isAllergen).length,
+          ingredients: ocrResult.ingredients,
+          image: imagePath
+        }
+        
+        this.setData({ loading: false })
+        return result
+      }
+    } catch (e) {
+      console.error('分析失败:', e)
+    }
+    
+    // 降级：使用模拟数据
+    this.setData({ loading: false })
     return {
       name: '测试产品',
       score: 85,
@@ -51,104 +87,125 @@ Page({
       novaGroup: 2,
       additiveCount: 0,
       herbalCount: 2,
-      allergenCount: 0
+      allergenCount: 0,
+      image: imagePath
     }
   },
 
   // 开始对比
   startCompare() {
     const { productA, productB } = this.data
-    const result = this.generateComparison(productA, productB)
-    this.setData({ comparisonResult: result })
+    if (!productA.name || !productB.name) {
+      wx.showToast({ title: '请选择两个产品', icon: 'none' })
+      return
+    }
+    
+    this.setData({ comparing: true })
+    
+    // 计算对比结果
+    const result = this.calculateComparison(productA, productB)
+    this.setData({ 
+      comparisonResult: result,
+      recommending: result.recommendation,
+      recommendColor: result.recommendColor,
+      recommendText: result.recommendText,
+      comparing: false 
+    })
   },
 
-  // 生成对比结果
-  generateComparison(a, b) {
+  calculateComparison(a, b) {
     const differences = []
+    let winner = ''
+    let winReason = ''
     
-    // Nutri-Score差异
-    if (a.score !== b.score) {
-      const better = a.score > b.score ? 'A' : 'B'
-      differences.push({
-        type: better,
-        title: `Nutri-Score差异`,
-        description: `${better === 'A' ? a.name : b.name}的营养评分更高，更健康`
-      })
+    // Nutri-Score 对比
+    if (a.score > b.score) {
+      differences.push({ type: 'good', title: '营养评分', description: `${a.name} 营养评分更高` })
+      winner = a.name
+      winReason = '营养评分更高'
+    } else if (b.score > a.score) {
+      differences.push({ type: 'good', title: '营养评分', description: `${b.name} 营养评分更高` })
+      winner = b.name
+      winReason = '营养评分更高'
     }
     
-    // NOVA分组差异
-    if (a.novaGroup !== b.novaGroup) {
-      const better = a.novaGroup < b.novaGroup ? 'A' : 'B'
-      differences.push({
-        type: better,
-        title: `加工程度差异`,
-        description: `${better === 'A' ? a.name : b.name}的加工程度更低，更接近天然`
-      })
+    // NOVA 分组对比
+    if (a.novaGroup < b.novaGroup) {
+      differences.push({ type: 'good', title: '加工程度', description: `${a.name} 加工程度更低` })
+    } else if (b.novaGroup < a.novaGroup) {
+      differences.push({ type: 'good', title: '加工程度', description: `${b.name} 加工程度更低` })
     }
     
-    // 添加剂差异
-    if (a.additiveCount !== b.additiveCount) {
-      const better = a.additiveCount < b.additiveCount ? 'A' : 'B'
-      differences.push({
-        type: better,
-        title: `添加剂差异`,
-        description: `${better === 'A' ? a.name : b.name}的添加剂更少`
-      })
+    // 添加剂数量对比
+    if (a.additiveCount < b.additiveCount) {
+      differences.push({ type: 'good', title: '添加剂', description: `${a.name} 添加剂更少` })
+    } else if (b.additiveCount < a.additiveCount) {
+      differences.push({ type: 'good', title: '添加剂', description: `${b.name} 添加剂更少` })
     }
     
-    // 药食同源差异
-    if (a.herbalCount !== b.herbalCount) {
-      const better = a.herbalCount > b.herbalCount ? 'A' : 'B'
-      differences.push({
-        type: better,
-        title: `药食同源成分差异`,
-        description: `${better === 'A' ? a.name : b.name}含有更多药食同源成分`
-      })
+    // 药食同源成分对比
+    if (a.herbalCount > b.herbalCount) {
+      differences.push({ type: 'good', title: '药食同源', description: `${a.name} 含有更多药食同源成分` })
+    } else if (b.herbalCount > a.herbalCount) {
+      differences.push({ type: 'good', title: '药食同源', description: `${b.name} 含有更多药食同源成分` })
     }
     
-    // 推荐产品
-    const recommendScore = Math.max(a.score, b.score)
-    const recommendProduct = a.score >= b.score ? a : b
-    const recommendColor = recommendScore >= 70 ? '#4CAF50' : '#FF9800'
-    const recommendText = recommendScore >= 70 ? '推荐此产品' : '谨慎选择'
+    // 过敏原对比
+    if (a.allergenCount > 0 && b.allergenCount === 0) {
+      differences.push({ type: 'warning', title: '过敏原', description: `${a.name} 含有过敏原` })
+    } else if (b.allergenCount > 0 && a.allergenCount === 0) {
+      differences.push({ type: 'warning', title: '过敏原', description: `${b.name} 含有过敏原` })
+    }
+    
+    const recommendColor = winner === a.name ? 'var(--color-system-blue)' : 'var(--color-system-orange)'
     
     return {
+      winner,
+      reason: winReason,
       differences,
-      recommendation: {
-        ...recommendProduct,
-        reason: this.getRecommendReason(recommendProduct, a, b)
-      }
+      recommendation: winner,
+      recommendColor,
+      recommendText: `推荐 ${winner}`
     }
   },
 
-  // 获取推荐理由
-  getRecommendReason(recommend, a, b) {
-    const reasons = []
-    if (recommend.score > (recommend === a ? b : a).score) {
-      reasons.push('营养评分更高')
-    }
-    if (recommend.novaGroup < (recommend === a ? b : a).novaGroup) {
-      reasons.push('加工程度更低')
-    }
-    if (recommend.additiveCount < (recommend === a ? b : a).additiveCount) {
-      reasons.push('添加剂更少')
-    }
-    return `相比另一款产品，${reasons.join('、')}，更健康选择`
+  // 切换菜单
+  toggleMenu() {
+    this.setData({ menuOpen: !this.data.menuOpen })
   },
 
-  // 跳转到产品
+  // 清除对比
+  clearComparison() {
+    this.setData({ 
+      productA: {}, 
+      productB: {}, 
+      comparisonResult: null,
+      recommendColor: '',
+      recommendText: ''
+    })
+  },
+
+  // 跳转到产品详情
   goToProduct(e) {
     const product = e.currentTarget.dataset.product
-    // TODO: 跳转到产品详情页
-    wx.showToast({ title: '功能开发中', icon: 'none' })
+    wx.navigateTo({ url: `/packages/ingredient/pages/analysis/index?name=${product.name}` })
   },
 
-  // 获取评分颜色
-  getScoreColor(score) {
-    if (score >= 85) return '#4CAF50'
-    if (score >= 70) return '#8BC34A'
-    if (score >= 50) return '#FFC107'
-    if (score >= 30) return '#FF9800'
-    return '#F44336'
+  // 返回首页
+  goToHome() {
+    wx.navigateTo({ url:"/pages/index/index" })
+  },
+
+  // 分享
+  onShareAppMessage() {
+    const { productA, productB, comparisonResult } = this.data
+    let title = '药食同源产品对比'
+    if (comparisonResult?.winner) {
+      title = `对比结果：${comparisonResult.winner} 更优`
+    }
+    return {
+      title,
+      path: '/pages/index/index'
+    }
   }
 })

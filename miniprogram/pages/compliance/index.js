@@ -347,7 +347,7 @@ Page({
       itemList: ['查看详情', '添加到配方', '分享'],
       success: (res) => {
         if (res.tapIndex === 0) {
-          wx.navigateTo({ url: `/pages/compliance/homology-detail/index?name=${encodeURIComponent(item.name)}` })
+          wx.navigateTo({ url: "/pages/compliance/homology-detail/index?name=+encodeURIComponent(item.name)+" })
         } else if (res.tapIndex === 1) {
           wx.setStorageSync('rmfood_homology_temp', item)
           wx.showToast({ title: '已添加', icon: 'success' })

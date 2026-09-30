@@ -77,6 +77,7 @@ export const PAGE_SIZE_OPTIONS = [
   { value: 10, label: '10 条/页' },
   { value: 20, label: '20 条/页' },
   { value: 50, label: '50 条/页' },
+  { value: 100, label: '100 条/页' },
 ];
 
 export const CHART_COLORS = ['var(--color-error, #FF3B30)', '#EA580C', 'var(--color-secondary, #0A84FF)', '#a855f7', 'var(--text-muted, #9A9A9F)'];
@@ -108,6 +109,9 @@ export interface UserDetail {
   phone?: string | null;
   avatar_url?: string;
   login_attempts?: number;
+  locked_until?: string | null;
+  organization_id?: number | null;
+  organization_name?: string | null;
 }
 
 export interface ConfirmAction {

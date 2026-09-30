@@ -18,10 +18,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: var(--font-size-base);
+  font-size: var(--font-size-md);
   font-weight: var(--font-weight-semibold);
   color: var(--color-text-white);
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
+  background: linear-gradient(135deg, var(--color-brand-500) 0%, var(--color-accent-500) 100%);
 }
 
 /* 尺寸 */
@@ -65,11 +65,11 @@
 
 /* 类型 */
 .avatar-primary {
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+  background: linear-gradient(135deg, var(--color-brand-500) 0%, var(--color-brand-400) 100%);
 }
 
 .avatar-accent {
-  background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-light) 100%);
+  background: linear-gradient(135deg, var(--color-accent-500) 0%, var(--color-accent-400) 100%);
 }
 
 /* 徽章 */

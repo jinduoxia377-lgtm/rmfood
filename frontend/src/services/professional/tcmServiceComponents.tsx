@@ -41,7 +41,7 @@ const TCMViewer: React.FC<TCMViewerProps> = ({
         setVisualization(viz);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load herb data');
+      setError(err instanceof Error ? err.message : '药材数据加载失败');
     } finally {
       setLoading(false);
     }
@@ -51,7 +51,7 @@ const TCMViewer: React.FC<TCMViewerProps> = ({
     return (
       <div className="tcm-viewer loading">
         <div className="spinner"></div>
-        <p>Loading TCM herb data...</p>
+        <p>正在加载中药数据…</p>
       </div>
     );
   }
@@ -59,8 +59,8 @@ const TCMViewer: React.FC<TCMViewerProps> = ({
   if (error) {
     return (
       <div className="tcm-viewer error">
-        <p>Error: {error}</p>
-        <button onClick={loadHerbData}>Retry</button>
+        <p>加载失败：{error}</p>
+        <button onClick={loadHerbData}>重试</button>
       </div>
     );
   }
@@ -68,7 +68,7 @@ const TCMViewer: React.FC<TCMViewerProps> = ({
   if (!herb) {
     return (
       <div className="tcm-viewer not-found">
-        <p>Herb not found</p>
+        <p>未找到该药材</p>
       </div>
     );
   }
@@ -86,26 +86,26 @@ const TCMViewer: React.FC<TCMViewerProps> = ({
           className={activeTab === 'info' ? 'active' : ''}
           onClick={() => setActiveTab('info')}
         >
-          Basic Info
+          基本信息
         </button>
         <button
           className={activeTab === 'targets' ? 'active' : ''}
           onClick={() => setActiveTab('targets')}
         >
-          Targets ({herb.chemistry.targets.length})
+          靶点（{herb.chemistry.targets.length}）
         </button>
         <button
           className={activeTab === 'diseases' ? 'active' : ''}
           onClick={() => setActiveTab('diseases')}
         >
-          Diseases ({herb.chemistry.diseases.length})
+          疾病（{herb.chemistry.diseases.length}）
         </button>
         {showVisualization && (
           <button
             className={activeTab === 'visualization' ? 'active' : ''}
             onClick={() => setActiveTab('visualization')}
           >
-            Visualization
+            结构可视化
           </button>
         )}
       </div>
@@ -114,17 +114,17 @@ const TCMViewer: React.FC<TCMViewerProps> = ({
         {activeTab === 'info' && (
           <div className="info-section">
             <div className="info-group">
-              <h3>Properties</h3>
-              <p><strong>Nature:</strong> {herb.properties.nature}</p>
-              <p><strong>Flavor:</strong> {herb.properties.flavor.join(', ')}</p>
-              <p><strong>Meridian:</strong> {herb.properties.meridian.join(', ')}</p>
+              <h3>性味归经</h3>
+              <p><strong>性：</strong> {herb.properties.nature}</p>
+              <p><strong>味：</strong> {herb.properties.flavor.join('、')}</p>
+              <p><strong>归经：</strong> {herb.properties.meridian.join('、')}</p>
               {herb.properties.toxicity && (
-                <p><strong>Toxicity:</strong> {herb.properties.toxicity}</p>
+                <p><strong>毒性：</strong> {herb.properties.toxicity}</p>
               )}
             </div>
 
             <div className="info-group">
-              <h3>Indications</h3>
+              <h3>功效主治</h3>
               <ul>
                 {herb.indications.map((indication, index) => (
                   <li key={index}>{indication}</li>
@@ -133,13 +133,13 @@ const TCMViewer: React.FC<TCMViewerProps> = ({
             </div>
 
             <div className="info-group">
-              <h3>Dosage</h3>
+              <h3>用法用量</h3>
               <p>{herb.dosage.amount} {herb.dosage.unit}</p>
-              <p>Preparations: {herb.dosage.preparations.join(', ')}</p>
+              <p>剂型：{herb.dosage.preparations.join('、')}</p>
             </div>
 
             <div className="info-group">
-              <h3>Contraindications</h3>
+              <h3>禁忌</h3>
               <ul>
                 {herb.contraindications.map((item, index) => (
                   <li key={index}>{item}</li>
@@ -148,27 +148,27 @@ const TCMViewer: React.FC<TCMViewerProps> = ({
             </div>
 
             <div className="info-group">
-              <h3>Distribution</h3>
-              <p>{herb.distribution.join(', ')}</p>
+              <h3>产地分布</h3>
+              <p>{herb.distribution.join('、')}</p>
             </div>
           </div>
         )}
 
         {activeTab === 'targets' && (
           <div className="targets-section">
-            <h3>Molecular Targets</h3>
+            <h3>分子靶点</h3>
             {herb.chemistry.targets.map((target, index) => (
               <div key={index} className="target-card">
                 <h4>{target.geneSymbol}</h4>
-                <p><strong>Gene:</strong> {target.geneName}</p>
-                <p><strong>Protein:</strong> {target.proteinName}</p>
-                <p><strong>UniProt:</strong> {target.uniprotId}</p>
-                <p><strong>Species:</strong> {target.species}</p>
+                <p><strong>基因：</strong> {target.geneName}</p>
+                <p><strong>蛋白：</strong> {target.proteinName}</p>
+                <p><strong>UniProt：</strong> {target.uniprotId}</p>
+                <p><strong>物种：</strong> {target.species}</p>
                 {target.affinity && (
-                  <p><strong>Affinity:</strong> {target.affinity.toFixed(2)}</p>
+                  <p><strong>亲和力：</strong> {target.affinity.toFixed(2)}</p>
                 )}
-                <p><strong>Evidence:</strong> {target.evidence.join(', ')}</p>
-                <p><strong>Pathways:</strong> {target.pathways.join(', ')}</p>
+                <p><strong>证据：</strong> {target.evidence.join('、')}</p>
+                <p><strong>通路：</strong> {target.pathways.join('、')}</p>
               </div>
             ))}
           </div>
@@ -176,17 +176,17 @@ const TCMViewer: React.FC<TCMViewerProps> = ({
 
         {activeTab === 'diseases' && (
           <div className="diseases-section">
-            <h3>Related Diseases</h3>
+            <h3>相关疾病</h3>
             {herb.chemistry.diseases.map((disease, index) => (
               <div key={index} className="disease-card">
                 <h4>{disease.diseaseName}</h4>
-                <p><strong>Disease ID:</strong> {disease.diseaseId}</p>
+                <p><strong>疾病编号：</strong> {disease.diseaseId}</p>
                 {disease.omimId && (
-                  <p><strong>OMIM:</strong> {disease.omimId}</p>
+                  <p><strong>OMIM：</strong> {disease.omimId}</p>
                 )}
-                <p><strong>Related Targets:</strong> {disease.relatedTargets}</p>
-                <p><strong>Evidence Level:</strong> {disease.evidenceLevel}</p>
-                <p><strong>Mechanisms:</strong> {disease.mechanisms.join(', ')}</p>
+                <p><strong>相关靶点：</strong> {disease.relatedTargets}</p>
+                <p><strong>证据等级：</strong> {disease.evidenceLevel}</p>
+                <p><strong>作用机制：</strong> {disease.mechanisms.join('、')}</p>
               </div>
             ))}
           </div>
@@ -194,16 +194,16 @@ const TCMViewer: React.FC<TCMViewerProps> = ({
 
         {activeTab === 'visualization' && visualization && (
           <div className="visualization-section">
-            <h3>Molecular Structure</h3>
+            <h3>分子结构</h3>
             <div className="molecular-info">
-              <p><strong>SMILES:</strong> {visualization.smiles}</p>
-              <p><strong>Atoms:</strong> {visualization.atoms}</p>
-              <p><strong>Bonds:</strong> {visualization.bonds}</p>
-              <p><strong>Complexity:</strong> {visualization.complexity.toFixed(2)}</p>
-              {visualization.logP && <p><strong>LogP:</strong> {visualization.logP}</p>}
-              {visualization.hbd && <p><strong>HBD:</strong> {visualization.hbd}</p>}
-              {visualization.hba && <p><strong>HBA:</strong> {visualization.hba}</p>}
-              {visualization.tpsa && <p><strong>TPSA:</strong> {visualization.tpsa}</p>}
+              <p><strong>SMILES：</strong> {visualization.smiles}</p>
+              <p><strong>原子数：</strong> {visualization.atoms}</p>
+              <p><strong>键数：</strong> {visualization.bonds}</p>
+              <p><strong>结构复杂度：</strong> {visualization.complexity.toFixed(2)}</p>
+              {visualization.logP && <p><strong>LogP（油水分配系数）：</strong> {visualization.logP}</p>}
+              {visualization.hbd && <p><strong>氢键供体：</strong> {visualization.hbd}</p>}
+              {visualization.hba && <p><strong>氢键受体：</strong> {visualization.hba}</p>}
+              {visualization.tpsa && <p><strong>极性表面积：</strong> {visualization.tpsa}</p>}
             </div>
             <div
               className="structure-svg"
@@ -248,11 +248,11 @@ export const TCMSearchComponent: React.FC<TCMSearchComponentProps> = ({ onSelect
           type="text"
           value={keyword}
           onChange={(e) => setKeyword(e.target.value)}
-          placeholder="Search herbs..."
+          placeholder="搜索药材…"
           onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
         />
         <button onClick={handleSearch} disabled={searching}>
-          {searching ? 'Searching...' : 'Search'}
+          {searching ? '搜索中…' : '搜索'}
         </button>
       </div>
 

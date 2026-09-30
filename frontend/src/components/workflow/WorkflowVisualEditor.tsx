@@ -2,14 +2,14 @@
  * 工作流可视化编辑器 (Workflow Visual Editor)
  *
  * 功能特性:
- * ✅ 可视化流程图渲染（SVG-based，零依赖）
- * ✅ 拖拽式节点布局
- * ✅ 工作流模板系统
- * ✅ 实时状态更新与动画
- * ✅ 节点详情面板
- * ✅ 缩放和平移支持
- * ✅ 导出/导入工作流配置
- * ✅ 暗色/亮色主题自适应
+ * - 可视化流程图渲染（SVG-based，零依赖）
+ * - 拖拽式节点布局
+ * - 工作流模板系统
+ * - 实时状态更新与动画
+ * - 节点详情面板
+ * - 缩放和平移支持
+ * - 导出/导入工作流配置
+ * - 暗色/亮色主题自适应
  *
  * 使用方法:
  * <WorkflowVisualEditor workflow={workflow} onSave={handleSave} />
@@ -24,6 +24,7 @@ import {
   ChevronDown, ChevronRight, GripVertical, Clock,
   CheckCircle, XCircle, Loader2, AlertCircle, ZoomIn,
   ZoomOut, Maximize2, Download, Upload, Eye,
+  Sparkles, RefreshCw, BarChart3, FileSearch,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button, Card, Modal, Badge, Input, Textarea, Select } from '@/components/ui'
@@ -32,7 +33,14 @@ import type { Workflow, WorkflowDetail, WorkflowTask } from '@/api/workflow'
 import type { WorkflowTemplate as APITemplate } from '@/api/deep_dev'
 import { workflowApi } from '@/api/deep_dev'
 
-// ── 类型定义 ──
+// ── 模板 category → lucide icon，替代渲染 emoji 字符串 ──
+const TEMPLATE_ICON_MAP: Record<string, React.FC<{ size?: number }>> = {
+  ai_generation: Sparkles,
+  review: CheckCircle,
+  data_sync: RefreshCw,
+  analysis: BarChart3,
+  custom: GitBranch,
+}
 
 interface WorkflowNode {
   id: string
@@ -73,7 +81,7 @@ const WORKFLOW_TEMPLATES: WorkflowTemplate[] = [
     name: 'AI 配方生成流水线',
     description: '从需求分析到配方生成的完整AI驱动流程',
     category: 'ai_generation',
-    icon: '🤖',
+    icon: '',
     nodes: [
       { id: 'start', type: 'start', position: { x: 400, y: 0 }, data: { label: '开始' } },
       { id: 'input', type: 'task', position: { x: 350, y: 100 }, data: { label: '需求输入', taskType: 'user_input', status: 'pending' } },
@@ -104,7 +112,7 @@ const WORKFLOW_TEMPLATES: WorkflowTemplate[] = [
     name: '配方审核流程',
     description: '标准化的配方审核与批准流程',
     category: 'review',
-    icon: '✅',
+    icon: '',
     nodes: [
       { id: 'start', type: 'start', position: { x: 400, y: 0 }, data: { label: '提交' } },
       { id: 'pre-check', type: 'task', position: { x: 350, y: 120 }, data: { label: '格式预检', taskType: 'auto_validate', status: 'pending' } },
@@ -131,7 +139,7 @@ const WORKFLOW_TEMPLATES: WorkflowTemplate[] = [
     name: '数据同步流水线',
     description: '外部数据库同步与知识图谱更新',
     category: 'data_sync',
-    icon: '🔄',
+    icon: '',
     nodes: [
       { id: 'start', type: 'start', position: { x: 400, y: 0 }, data: { label: '触发' } },
       { id: 'fetch-tcmsp', type: 'task', position: { x: 250, y: 120 }, data: { label: 'TCMSP同步', taskType: 'tcmsp_sync', status: 'pending' } },
@@ -472,7 +480,26 @@ export function WorkflowVisualEditor({
             fontSize="10"
             pointerEvents="none"
           >
-            {node.data.taskType.replace('_', ' ')}
+            {(() => {
+              const typeMap: Record<string, string> = {
+                custom: '自定义',
+                user_input: '用户输入',
+                llm_analysis: 'LLM 分析',
+                agent_smart: '智能 Agent',
+                formula_gpt: '配方生成',
+                llm: 'LLM 处理',
+                safety_check: '安全检查',
+                save_result: '保存结果',
+                regenerate: '重新生成',
+                agent_fast: '快速 Agent',
+                fetch_tcmsp: 'TCMSP 检索',
+                fetch_dfbp: 'DFBP 检索',
+                merge: '数据合并',
+                validate: '质量验证',
+                update_graph: '图谱更新',
+              }
+              return typeMap[node.data.taskType] || node.data.taskType.replace(/_/g, ' ')
+            })()}
           </text>
         )}
       </g>
@@ -794,7 +821,10 @@ export function WorkflowVisualEditor({
                   onClick={() => applyTemplate(template as unknown as WorkflowTemplate)}
                 >
                   <div className="flex items-start gap-3">
-                    <span className="text-2xl">{template.icon || '📋'}</span>
+                    {(() => {
+                      const TIcon = TEMPLATE_ICON_MAP[template.category] || Sparkles
+                      return <div className="shrink-0 opacity-75 text-primary-500 dark:text-primary-400"><TIcon size={18} /></div>
+                    })()}
                     <div className="flex-1">
                       <h4 className="font-semibold text-neutral-900 dark:text-white">
                         {template.name}

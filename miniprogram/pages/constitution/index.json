@@ -1,0 +1,10 @@
+{
+  "navigationBarTitleText": "中医体质测试",
+  "navigationBarBackgroundColor": "#2D5A3D",
+  "navigationBarTextStyle": "white",
+  "usingComponents": {
+    "icon": "../../components/Icon/index",
+    "tag": "../../components/Tag/index",
+    "btn": "../../components/Button/index"
+  }
+}

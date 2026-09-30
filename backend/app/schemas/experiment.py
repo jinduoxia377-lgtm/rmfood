@@ -74,11 +74,16 @@ class ExperimentDataBase(BaseModel):
     notes: Optional[str] = None
 
 
-class ExperimentDataResponse(ExperimentDataBase):
-    """实验数据响应"""
+class ExperimentDataResponse(BaseModel):
+    """实验数据响应 — 与 experiment_data 真实列对齐。
+    模型属性 data_type/data_value 通过 @property 别名为 parameter/value。"""
     id: int
     experiment_id: int
-    recorded_at: datetime
+    parameter: Optional[str] = None  # 来自 data_type
+    value: Optional[str] = None  # 来自 data_value
+    unit: Optional[str] = None
+    notes: Optional[str] = None
+    measurement_time: Optional[datetime] = None
     created_at: datetime
 
     model_config = {"from_attributes": True}

@@ -1,9 +1,9 @@
-/** Radio 单选组件样式 */
+/** Radio 閸楁洟鈧绮嶆禒鑸电壉瀵?*/
 .radio {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  cursor: pointer;
+  
 }
 
 .radio-circle {
@@ -14,7 +14,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all var(--transition-fast);
+  transition: opacity var(--transition-normal), transform var(--transition-normal);
   flex-shrink: 0;
 }
 
@@ -31,7 +31,7 @@
 
 .radio-circle-disabled {
   opacity: 0.5;
-  cursor: not-allowed;
+  
 }
 
 .radio-label {
@@ -44,3 +44,6 @@
   flex-direction: column;
   gap: var(--space-3);
 }
+
+
+

@@ -10,6 +10,7 @@
 
 import { logger } from '@/utils/safeLogger';
 import { agentApi } from '@/api/agent';
+import { fetchWithCsrf } from '@/utils/csrf';
 import type { ToolCall, ToolResultData } from '@/components/ai/shared/types';
 
 export interface ToolExecutor {
@@ -108,95 +109,65 @@ async function callToolApi(call: ToolCall): Promise<unknown> {
  * RAG 检索执行
  */
 async function executeRagSearch(call: ToolCall): Promise<unknown> {
-  // 调用后端 RAG API
-  const response = await fetch('/api/v1/ai/rag/search', {
+  return fetchWithCsrf('/api/v1/ai/rag/search', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       query: call.input?.query as string,
       top_k: call.input?.top_k as number ?? 5,
     }),
   });
-
-  if (!response.ok) throw new Error(`RAG search failed: ${response.status}`);
-  return response.json();
 }
 
 /**
  * 配方生成执行
  */
 async function executeFormulaGeneration(call: ToolCall): Promise<unknown> {
-  const response = await fetch('/api/v1/ai/formula/generate', {
+  return fetchWithCsrf('/api/v1/ai/formula/generate', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(call.input),
   });
-
-  if (!response.ok) throw new Error(`Formula generation failed: ${response.status}`);
-  return response.json();
 }
 
 /**
  * 合规检查执行
  */
 async function executeComplianceCheck(call: ToolCall): Promise<unknown> {
-  const response = await fetch('/api/v1/ai/compliance/check', {
+  return fetchWithCsrf('/api/v1/ai/compliance/check', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(call.input),
   });
-
-  if (!response.ok) throw new Error(`Compliance check failed: ${response.status}`);
-  return response.json();
 }
 
 /**
  * 实验方案执行
  */
 async function executeExperimentPlan(call: ToolCall): Promise<unknown> {
-  const response = await fetch('/api/v1/ai/experiment/plan', {
+  return fetchWithCsrf('/api/v1/ai/experiment/plan', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(call.input),
   });
-
-  if (!response.ok) throw new Error(`Experiment plan failed: ${response.status}`);
-  return response.json();
 }
 
 /**
  * 知识图谱推理执行
  */
 async function executeKGInference(call: ToolCall): Promise<unknown> {
-  const herbs = call.input?.herbs as string[] ?? [];
-  const reasoningType = call.input?.reasoning_type as string ?? 'all';
-
-  const response = await fetch('/api/v1/kg/infer', {
+  const herbs = (call.input?.herbs as string[] | undefined) ?? [];
+  const reasoningType = (call.input?.reasoning_type as string | undefined) ?? 'all';
+  return fetchWithCsrf('/api/v1/kg/infer', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ herbs, reasoning_type: reasoningType }),
   });
-
-  if (!response.ok) throw new Error(`KG inference failed: ${response.status}`);
-  return response.json();
 }
 
 /**
  * 通用工具执行 (代理到 Agent API)
  */
 async function executeGenericTool(call: ToolCall): Promise<unknown> {
-  // 使用通用 Agent API 执行
-  const response = await fetch('/api/v1/agent/tools/execute', {
+  return fetchWithCsrf('/api/v1/agent/tools/execute', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      tool: call.tool,
-      arguments: call.input,
-    }),
+    body: JSON.stringify({ tool: call.tool, arguments: call.input }),
   });
-
-  if (!response.ok) throw new Error(`Tool execution failed: ${response.status}`);
-  return response.json();
 }
 
 // ── 主调度函数 ──────────────────────────────────────────────
@@ -285,7 +256,7 @@ export async function executeToolsViaAgentAPI(
     });
 
     // 转换结果为 ToolResultData 格式
-    return response.data.steps.map((step, idx) => ({
+    return (response.data?.steps ?? []).map((step, idx) => ({
       callId: calls[idx]?.callId ?? `call-${Date.now()}-${idx}`,
       result: { tool: step.tool, status: step.status, output: null },
       error: step.error,

@@ -102,7 +102,7 @@ export default function CommandPalette() {
   const itemRefs = useRef<Map<number, HTMLButtonElement>>(new Map())
   const navigate = useNavigate()
 
-  // ── 快捷键 Ctrl+K ──
+  // ── 快捷键 Ctrl+K / Cmd+K ──
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
@@ -110,8 +110,14 @@ export default function CommandPalette() {
         setOpen((v) => !v)
       }
     }
+    // 自定义事件：顶栏搜索按钮直接触发（避免伪造 KeyboardEvent 修饰键在 macOS 失效）
+    const customHandler = () => setOpen(true)
     document.addEventListener('keydown', handler)
-    return () => document.removeEventListener('keydown', handler)
+    document.addEventListener('rmfood:open-command-palette', customHandler)
+    return () => {
+      document.removeEventListener('keydown', handler)
+      document.removeEventListener('rmfood:open-command-palette', customHandler)
+    }
   }, [])
 
   // ESC 关闭

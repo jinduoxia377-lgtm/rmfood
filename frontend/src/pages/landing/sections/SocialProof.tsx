@@ -82,17 +82,15 @@ function PartnerLogos() {
                 <div className="lp-label leading-tight mb-1">
                   {org.name}
                 </div>
-                <span className="text-[9px] font-mono" style={{ color: isHovered ? s.text : s.text + '99' }}>
+                <span className="text-[11px] font-mono" style={{ color: s.text }}>
                   [{label}]
                 </span>
-                {isHovered && (
-                  <div className="mt-1.5 text-[9px] text-slate-500 leading-relaxed">
-                    {org.category === 'university' && '中医药学术研究'}
-                    {org.category === 'hospital' && '临床验证与处方研究'}
-                    {org.category === 'enterprise' && '药食同源产品研发'}
-                    {org.category === 'government' && '政策标准制定'}
-                  </div>
-                )}
+                <div className="mt-1.5 text-[11px] text-slate-600 leading-relaxed">
+                  {org.category === 'university' && '中医药学术研究'}
+                  {org.category === 'hospital' && '临床验证与处方研究'}
+                  {org.category === 'enterprise' && '药食同源产品研发'}
+                  {org.category === 'government' && '政策标准制定'}
+                </div>
               </div>
             );
           })}
@@ -128,16 +126,16 @@ function Testimonials() {
               onMouseLeave={() => setHovered(null)}
             >
               {/* 引用符号 */}
-              <Quote size={14} className="mb-2 opacity-20" style={{ color: '#059669' }} />
+              <Quote size={14} className="mb-2 opacity-25" style={{ color: '#047857' }} />
 
               {/* 星级 — 空心描边风格（学术克制） */}
-              <div className="flex items-center gap-0.5 mb-2.5">
+              <div className="flex items-center gap-0.5 mb-2.5" aria-label={`评分 ${t.rating} / 5`}>
                 {[...Array(t.rating)].map((_, si) => (
                   <Star
                     key={si}
                     size={10}
                     fill="none"
-                    stroke="#059669"
+                    stroke="#047857"
                     strokeWidth={1.8}
                   />
                 ))}
@@ -158,7 +156,7 @@ function Testimonials() {
                 </div>
                 <div>
                   <div className="lp-label font-semibold text-slate-800">{t.name}</div>
-                  <div className="text-[9px] text-slate-400">{t.role} · {t.org}</div>
+                  <div className="text-[11px] text-slate-500">{t.role} · {t.org}</div>
                 </div>
               </div>
             </div>

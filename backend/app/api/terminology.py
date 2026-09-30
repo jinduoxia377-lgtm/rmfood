@@ -1,9 +1,11 @@
-"""专业术语API接口"""
+﻿"""专业术语API接口 (Async版本)"""
+import asyncio
 from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import select
-from sqlalchemy.orm import Session
-from ..models.terminology import Term, TermCategory, TermVariant, TermNormalizationRule
+from sqlalchemy import select, func, delete
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
+from ..models.terminology import Term, TermCategory, TermVariant, TermNormalizationRule, TermValidation
 from ..schemas.terminology import (
     TermCreate, TermUpdate, TermOut,
     TermCategoryCreate, TermCategoryUpdate, TermCategoryOut,
@@ -15,62 +17,62 @@ from ..schemas.terminology import (
     TermNormalizationRuleCreate, TermNormalizationRuleOut
 )
 from ..schemas.base import ApiResponse, PaginatedResponse
-from .deps import get_db
+from ..core.database.session import get_db
 from ..services.terminology_service import TerminologyService
 
 router = APIRouter(prefix="/terminology", tags=["术语管理"])
 
 
-def get_terminology_service(db: Session = Depends(get_db)) -> TerminologyService:
-    """获取术语服务实例"""
-    return TerminologyService(db)
-
-
 # ========== 术语分类 API ==========
 
 @router.get("/categories", response_model=ApiResponse[List[TermCategoryOut]])
-def get_categories(db: Session = Depends(get_db)):
+async def get_categories(db: AsyncSession = Depends(get_db)):
     """获取所有术语分类"""
-    categories = db.execute(select(TermCategory).order_by(TermCategory.sort_order)).scalars().all()
+    result = await db.execute(select(TermCategory).order_by(TermCategory.sort_order))
+    categories = result.scalars().all()
     return ApiResponse(data=[TermCategoryOut.from_orm(c) for c in categories])
 
 
 @router.get("/categories/{category_id}", response_model=ApiResponse[TermCategoryOut])
-def get_category(category_id: int, db: Session = Depends(get_db)):
+async def get_category(category_id: int, db: AsyncSession = Depends(get_db)):
     """获取单个分类"""
-    category = db.execute(select(TermCategory).where(TermCategory.id == category_id)).scalar_one_or_none()
+    result = await db.execute(select(TermCategory).where(TermCategory.id == category_id))
+    category = result.scalar_one_or_none()
     if not category:
         raise HTTPException(status_code=404, detail="分类不存在")
     return ApiResponse(data=TermCategoryOut.from_orm(category))
 
 
 @router.post("/categories", response_model=ApiResponse[TermCategoryOut])
-def create_category(category: TermCategoryCreate, db: Session = Depends(get_db)):
+async def create_category(category: TermCategoryCreate, db: AsyncSession = Depends(get_db)):
     """创建分类"""
-    existing = db.execute(select(TermCategory).where(TermCategory.name == category.name)).scalar_one_or_none()
+    result = await db.execute(select(TermCategory).where(TermCategory.name == category.name))
+    existing = result.scalar_one_or_none()
     if existing:
         raise HTTPException(status_code=400, detail="分类名称已存在")
     
-    db_category = TermCategory(**category.dict())
+    db_category = TermCategory(**category.model_dump())
     db.add(db_category)
-    db.commit()
-    db.refresh(db_category)
+    await db.commit()
+    await db.refresh(db_category)
     
     return ApiResponse(data=TermCategoryOut.from_orm(db_category))
 
 
 @router.put("/categories/{category_id}", response_model=ApiResponse[TermCategoryOut])
-def update_category(category_id: int, category: TermCategoryUpdate, db: Session = Depends(get_db)):
+async def update_category(category_id: int, category: TermCategoryUpdate, db: AsyncSession = Depends(get_db)):
     """更新分类"""
-    db_category = db.execute(select(TermCategory).where(TermCategory.id == category_id)).scalar_one_or_none()
+    result = await db.execute(select(TermCategory).where(TermCategory.id == category_id))
+    db_category = result.scalar_one_or_none()
     if not db_category:
         raise HTTPException(status_code=404, detail="分类不存在")
     
     if category.name:
-        existing = db.execute(select(TermCategory).where(
+        result = await db.execute(select(TermCategory).where(
             TermCategory.name == category.name,
             TermCategory.id != category_id
-        )).scalar_one_or_none()
+        ))
+        existing = result.scalar_one_or_none()
         if existing:
             raise HTTPException(status_code=400, detail="分类名称已存在")
         db_category.name = category.name
@@ -86,26 +88,27 @@ def update_category(category_id: int, category: TermCategoryUpdate, db: Session 
     if category.sort_order is not None:
         db_category.sort_order = category.sort_order
     
-    db.commit()
-    db.refresh(db_category)
+    await db.commit()
+    await db.refresh(db_category)
     
     return ApiResponse(data=TermCategoryOut.from_orm(db_category))
 
 
 @router.delete("/categories/{category_id}", response_model=ApiResponse)
-def delete_category(category_id: int, db: Session = Depends(get_db)):
+async def delete_category(category_id: int, db: AsyncSession = Depends(get_db)):
     """删除分类"""
-    category = db.execute(select(TermCategory).where(TermCategory.id == category_id)).scalar_one_or_none()
+    result = await db.execute(select(TermCategory).where(TermCategory.id == category_id))
+    category = result.scalar_one_or_none()
     if not category:
         raise HTTPException(status_code=404, detail="分类不存在")
     
-    # 检查是否有术语关联
-    term_count = db.execute(select(Term).filter(Term.category_id == category_id).count()).scalar()
+    result = await db.execute(select(func.count()).where(Term.category_id == category_id))
+    term_count = result.scalar()
     if term_count > 0:
         raise HTTPException(status_code=400, detail=f"该分类下有 {term_count} 个术语，无法删除")
     
-    db.delete(category)
-    db.commit()
+    await db.delete(category)
+    await db.commit()
     
     return ApiResponse(message="分类删除成功")
 
@@ -113,13 +116,13 @@ def delete_category(category_id: int, db: Session = Depends(get_db)):
 # ========== 术语 API ==========
 
 @router.get("/terms", response_model=ApiResponse[PaginatedResponse[TermOut]])
-def get_terms(
+async def get_terms(
     category_id: Optional[int] = None,
     page: int = Query(1, ge=1),
     page_size: int = Query(10, ge=1, le=100),
     sort_by: str = "created_at",
     sort_order: str = Query("desc", pattern="^(asc|desc)$"),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """分页获取术语列表"""
     stmt = select(Term)
@@ -130,25 +133,28 @@ def get_terms(
     if hasattr(Term, sort_by):
         sort_column = getattr(Term, sort_by)
         if sort_order == "desc":
-            query = query.order_by(sort_column.desc())
+            stmt = stmt.order_by(sort_column.desc())
         else:
-            query = query.order_by(sort_column.asc())
+            stmt = stmt.order_by(sort_column.asc())
     else:
-        query = query.order_by(Term.created_at.desc())
+        stmt = stmt.order_by(Term.created_at.desc())
     
     # 分页
-    total_stmt = stmt.count()
-    total = db.execute(total_stmt).scalar()
+    total_stmt = select(func.count()).select_from(stmt.subquery())
+    result = await db.execute(total_stmt)
+    total = result.scalar()
+    
     offset = (page - 1) * page_size
     terms_stmt = stmt.offset(offset).limit(page_size)
-    terms = db.execute(terms_stmt).scalars().all()
+    result = await db.execute(terms_stmt)
+    terms = result.scalars().all()
     
-    # 转换为输出格式
+    # 转换为输出格式 - 使用 asyncio.gather 并行处理
     service = TerminologyService(db)
-    term_out_list = [service._term_to_out(t) for t in terms]
+    term_out_list = await asyncio.gather(*[service._term_to_out(t) for t in terms])
     
     return ApiResponse(data=PaginatedResponse(
-        items=term_out_list,
+        items=list(term_out_list),
         total=total,
         page=page,
         page_size=page_size,
@@ -157,49 +163,51 @@ def get_terms(
 
 
 @router.get("/terms/{term_id}", response_model=ApiResponse[TermOut])
-def get_term(term_id: int, db: Session = Depends(get_db)):
+async def get_term(term_id: int, db: AsyncSession = Depends(get_db)):
     """获取单个术语"""
     service = TerminologyService(db)
-    term = service.get_term(term_id)
+    term = await service.get_term(term_id)
     if not term:
         raise HTTPException(status_code=404, detail="术语不存在")
     return ApiResponse(data=term)
 
 
 @router.post("/terms", response_model=ApiResponse[TermOut])
-def create_term(term: TermCreate, db: Session = Depends(get_db)):
+async def create_term(term: TermCreate, db: AsyncSession = Depends(get_db)):
     """创建术语"""
-    # 检查分类是否存在
-    category = db.execute(select(TermCategory).where(TermCategory.id == term.category_id)).scalar_one_or_none()
+    result = await db.execute(select(TermCategory).where(TermCategory.id == term.category_id))
+    category = result.scalar_one_or_none()
     if not category:
         raise HTTPException(status_code=400, detail="分类不存在")
     
-    # 检查术语是否已存在
-    existing = db.execute(select(Term).where(Term.term == term.term)).scalar_one_or_none()
+    result = await db.execute(select(Term).where(Term.term == term.term))
+    existing = result.scalar_one_or_none()
     if existing:
         raise HTTPException(status_code=400, detail="术语已存在")
     
-    db_term = Term(**term.dict())
+    db_term = Term(**term.model_dump())
     db.add(db_term)
-    db.commit()
-    db.refresh(db_term)
+    await db.commit()
+    await db.refresh(db_term)
     
     service = TerminologyService(db)
-    return ApiResponse(data=service._term_to_out(db_term))
+    return ApiResponse(data=await service._term_to_out(db_term))
 
 
 @router.put("/terms/{term_id}", response_model=ApiResponse[TermOut])
-def update_term(term_id: int, term: TermUpdate, db: Session = Depends(get_db)):
+async def update_term(term_id: int, term: TermUpdate, db: AsyncSession = Depends(get_db)):
     """更新术语"""
-    db_term = db.execute(select(Term).where(Term.id == term_id)).scalar_one_or_none()
+    result = await db.execute(select(Term).where(Term.id == term_id))
+    db_term = result.scalar_one_or_none()
     if not db_term:
         raise HTTPException(status_code=404, detail="术语不存在")
     
     if term.term:
-        existing = db.execute(select(Term).where(
+        result = await db.execute(select(Term).where(
             Term.term == term.term,
             Term.id != term_id
-        )).scalar_one_or_none()
+        ))
+        existing = result.scalar_one_or_none()
         if existing:
             raise HTTPException(status_code=400, detail="术语已存在")
         db_term.term = term.term
@@ -217,7 +225,8 @@ def update_term(term_id: int, term: TermUpdate, db: Session = Depends(get_db)):
     if term.definition_en is not None:
         db_term.definition_en = term.definition_en
     if term.category_id is not None:
-        category = db.execute(select(TermCategory).where(TermCategory.id == term.category_id)).scalar_one_or_none()
+        result = await db.execute(select(TermCategory).where(TermCategory.id == term.category_id))
+        category = result.scalar_one_or_none()
         if not category:
             raise HTTPException(status_code=400, detail="分类不存在")
         db_term.category_id = term.category_id
@@ -240,25 +249,25 @@ def update_term(term_id: int, term: TermUpdate, db: Session = Depends(get_db)):
     if term.frequency is not None:
         db_term.frequency = term.frequency
     
-    db.commit()
-    db.refresh(db_term)
+    await db.commit()
+    await db.refresh(db_term)
     
     service = TerminologyService(db)
-    return ApiResponse(data=service._term_to_out(db_term))
+    return ApiResponse(data=await service._term_to_out(db_term))
 
 
 @router.delete("/terms/{term_id}", response_model=ApiResponse)
-def delete_term(term_id: int, db: Session = Depends(get_db)):
+async def delete_term(term_id: int, db: AsyncSession = Depends(get_db)):
     """删除术语"""
-    term = db.execute(select(Term).where(Term.id == term_id)).scalar_one_or_none()
+    result = await db.execute(select(Term).where(Term.id == term_id))
+    term = result.scalar_one_or_none()
     if not term:
         raise HTTPException(status_code=404, detail="术语不存在")
     
-    # 删除相关变体
-    db.execute(delete(TermVariant).where(TermVariant.term_id == term_id))
+    await db.execute(delete(TermVariant).where(TermVariant.term_id == term_id))
     
-    db.delete(term)
-    db.commit()
+    await db.delete(term)
+    await db.commit()
     
     return ApiResponse(message="术语删除成功")
 
@@ -266,74 +275,74 @@ def delete_term(term_id: int, db: Session = Depends(get_db)):
 # ========== 术语验证 API ==========
 
 @router.post("/validate", response_model=ApiResponse[TermValidationResponse])
-def validate_term(request: TermValidationRequest, db: Session = Depends(get_db)):
+async def validate_term(request: TermValidationRequest, db: AsyncSession = Depends(get_db)):
     """验证单个术语"""
     service = TerminologyService(db)
-    result = service.validate_term(request.term, request.category_id, request.strict_mode)
+    result = await service.validate_term(request.term, request.category_id, request.strict_mode)
     return ApiResponse(data=result)
 
 
 @router.post("/validate/batch", response_model=ApiResponse[List[TermValidationResponse]])
-def batch_validate_terms(request: BatchTermValidationRequest, db: Session = Depends(get_db)):
+async def batch_validate_terms(request: BatchTermValidationRequest, db: AsyncSession = Depends(get_db)):
     """批量验证术语"""
     service = TerminologyService(db)
-    results = service.batch_validate_terms(request.terms, request.category_id, request.strict_mode)
+    results = await service.batch_validate_terms(request.terms, request.category_id, request.strict_mode)
     return ApiResponse(data=results)
 
 
 # ========== 术语搜索 API ==========
 
 @router.post("/search", response_model=ApiResponse[List[TermOut]])
-def search_terms(request: TermSearchRequest, db: Session = Depends(get_db)):
+async def search_terms(request: TermSearchRequest, db: AsyncSession = Depends(get_db)):
     """搜索术语"""
     service = TerminologyService(db)
-    results = service.search_terms(request.query, request.category_id, request.fuzzy_search, request.max_results)
+    results = await service.search_terms(request.query, request.category_id, request.fuzzy_search, request.max_results)
     return ApiResponse(data=results)
 
 
 @router.get("/search", response_model=ApiResponse[List[TermOut]])
-def search_terms_get(
+async def search_terms_get(
     query: str = Query(..., max_length=200),
     category_id: Optional[int] = None,
     fuzzy_search: bool = True,
     max_results: int = Query(10, ge=1, le=50),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """搜索术语（GET方式）"""
     service = TerminologyService(db)
-    results = service.search_terms(query, category_id, fuzzy_search, max_results)
+    results = await service.search_terms(query, category_id, fuzzy_search, max_results)
     return ApiResponse(data=results)
 
 
 # ========== 术语建议 API ==========
 
 @router.post("/suggest", response_model=ApiResponse[TermSuggestionResponse])
-def suggest_terms(request: TermSuggestionRequest, db: Session = Depends(get_db)):
+async def suggest_terms(request: TermSuggestionRequest, db: AsyncSession = Depends(get_db)):
     """获取术语建议"""
     service = TerminologyService(db)
-    suggestions = service.suggest_terms(request.input, request.limit, request.include_synonyms)
+    suggestions = await service.suggest_terms(request.input, request.limit, request.include_synonyms)
     return ApiResponse(data=TermSuggestionResponse(suggestions=suggestions))
 
 
 # ========== 术语变体 API ==========
 
 @router.post("/variants", response_model=ApiResponse[TermVariantOut])
-def create_term_variant(variant: TermVariantCreate, db: Session = Depends(get_db)):
+async def create_term_variant(variant: TermVariantCreate, db: AsyncSession = Depends(get_db)):
     """创建术语变体"""
-    # 检查术语是否存在
-    term = db.execute(select(Term).where(Term.id == variant.term_id)).scalar_one_or_none()
+    result = await db.execute(select(Term).where(Term.id == variant.term_id))
+    term = result.scalar_one_or_none()
     if not term:
         raise HTTPException(status_code=400, detail="术语不存在")
     
-    # 检查变体是否已存在
-    existing = db.execute(select(TermVariant).where(TermVariant.variant == variant.variant)).scalar_one_or_none()
+    result = await db.execute(select(TermVariant).where(TermVariant.variant == variant.variant))
+    existing = result.scalar_one_or_none()
     if existing:
         raise HTTPException(status_code=400, detail="变体已存在")
     
-    db_variant = TermVariant(**variant.dict())
+    db_variant = TermVariant(**variant.model_dump())
     db.add(db_variant)
-    db.commit()
-    db.refresh(db_variant)
+    await db.commit()
+    await db.refresh(db_variant)
     
     return ApiResponse(data=TermVariantOut(
         id=db_variant.id,
@@ -347,16 +356,18 @@ def create_term_variant(variant: TermVariantCreate, db: Session = Depends(get_db
 
 
 @router.get("/variants", response_model=ApiResponse[List[TermVariantOut]])
-def get_term_variants(term_id: Optional[int] = None, db: Session = Depends(get_db)):
+async def get_term_variants(term_id: Optional[int] = None, db: AsyncSession = Depends(get_db)):
     """获取术语变体列表"""
     stmt = select(TermVariant)
     if term_id:
         stmt = stmt.where(TermVariant.term_id == term_id)
-    variants = db.execute(stmt).scalars().all()
-    result = []
+    result = await db.execute(stmt)
+    variants = result.scalars().all()
+    result_list = []
     for v in variants:
-        term = db.execute(select(Term).where(Term.id == v.term_id)).scalar_one_or_none()
-        result.append(TermVariantOut(
+        term_result = await db.execute(select(Term).where(Term.id == v.term_id))
+        term = term_result.scalar_one_or_none()
+        result_list.append(TermVariantOut(
             id=v.id,
             variant=v.variant,
             term_id=v.term_id,
@@ -366,18 +377,19 @@ def get_term_variants(term_id: Optional[int] = None, db: Session = Depends(get_d
             created_at=v.created_at
         ))
     
-    return ApiResponse(data=result)
+    return ApiResponse(data=result_list)
 
 
 @router.delete("/variants/{variant_id}", response_model=ApiResponse)
-def delete_term_variant(variant_id: int, db: Session = Depends(get_db)):
+async def delete_term_variant(variant_id: int, db: AsyncSession = Depends(get_db)):
     """删除术语变体"""
-    variant = db.execute(select(TermVariant).where(TermVariant.id == variant_id)).scalar_one_or_none()
+    result = await db.execute(select(TermVariant).where(TermVariant.id == variant_id))
+    variant = result.scalar_one_or_none()
     if not variant:
         raise HTTPException(status_code=404, detail="变体不存在")
     
-    db.delete(variant)
-    db.commit()
+    await db.delete(variant)
+    await db.commit()
     
     return ApiResponse(message="变体删除成功")
 
@@ -385,27 +397,29 @@ def delete_term_variant(variant_id: int, db: Session = Depends(get_db)):
 # ========== 标准化规则 API ==========
 
 @router.get("/normalization-rules", response_model=ApiResponse[List[TermNormalizationRuleOut]])
-def get_normalization_rules(db: Session = Depends(get_db)):
+async def get_normalization_rules(db: AsyncSession = Depends(get_db)):
     """获取所有标准化规则"""
-    rules = db.execute(select(TermNormalizationRule).order_by(TermNormalizationRule.priority)).scalars().all()
+    result = await db.execute(select(TermNormalizationRule).order_by(TermNormalizationRule.priority))
+    rules = result.scalars().all()
     return ApiResponse(data=[TermNormalizationRuleOut.from_orm(r) for r in rules])
 
 
 @router.post("/normalization-rules", response_model=ApiResponse[TermNormalizationRuleOut])
-def create_normalization_rule(rule: TermNormalizationRuleCreate, db: Session = Depends(get_db)):
+async def create_normalization_rule(rule: TermNormalizationRuleCreate, db: AsyncSession = Depends(get_db)):
     """创建标准化规则"""
-    db_rule = TermNormalizationRule(**rule.dict())
+    db_rule = TermNormalizationRule(**rule.model_dump())
     db.add(db_rule)
-    db.commit()
-    db.refresh(db_rule)
+    await db.commit()
+    await db.refresh(db_rule)
     
     return ApiResponse(data=TermNormalizationRuleOut.from_orm(db_rule))
 
 
 @router.put("/normalization-rules/{rule_id}", response_model=ApiResponse[TermNormalizationRuleOut])
-def update_normalization_rule(rule_id: int, rule: TermNormalizationRuleCreate, db: Session = Depends(get_db)):
+async def update_normalization_rule(rule_id: int, rule: TermNormalizationRuleCreate, db: AsyncSession = Depends(get_db)):
     """更新标准化规则"""
-    db_rule = db.execute(select(TermNormalizationRule).where(TermNormalizationRule.id == rule_id)).scalar_one_or_none()
+    result = await db.execute(select(TermNormalizationRule).where(TermNormalizationRule.id == rule_id))
+    db_rule = result.scalar_one_or_none()
     if not db_rule:
         raise HTTPException(status_code=404, detail="规则不存在")
     
@@ -416,21 +430,22 @@ def update_normalization_rule(rule_id: int, rule: TermNormalizationRuleCreate, d
     db_rule.description = rule.description
     db_rule.enabled = rule.enabled
     
-    db.commit()
-    db.refresh(db_rule)
+    await db.commit()
+    await db.refresh(db_rule)
     
     return ApiResponse(data=TermNormalizationRuleOut.from_orm(db_rule))
 
 
 @router.delete("/normalization-rules/{rule_id}", response_model=ApiResponse)
-def delete_normalization_rule(rule_id: int, db: Session = Depends(get_db)):
+async def delete_normalization_rule(rule_id: int, db: AsyncSession = Depends(get_db)):
     """删除标准化规则"""
-    rule = db.execute(select(TermNormalizationRule).where(TermNormalizationRule.id == rule_id)).scalar_one_or_none()
+    result = await db.execute(select(TermNormalizationRule).where(TermNormalizationRule.id == rule_id))
+    rule = result.scalar_one_or_none()
     if not rule:
         raise HTTPException(status_code=404, detail="规则不存在")
     
-    db.delete(rule)
-    db.commit()
+    await db.delete(rule)
+    await db.commit()
     
     return ApiResponse(message="规则删除成功")
 
@@ -438,18 +453,29 @@ def delete_normalization_rule(rule_id: int, db: Session = Depends(get_db)):
 # ========== 术语统计 API ==========
 
 @router.get("/statistics", response_model=ApiResponse)
-def get_statistics(db: Session = Depends(get_db)):
+async def get_statistics(db: AsyncSession = Depends(get_db)):
     """获取术语统计信息"""
-    total_terms = db.execute(select(Term).count()).scalar()
-    total_categories = db.execute(select(TermCategory).count()).scalar()
-    total_variants = db.execute(select(TermVariant).count()).scalar()
-    total_validations = db.execute(select(TermValidation).count()).scalar()
+    result = await db.execute(select(func.count()).select_from(Term))
+    total_terms = result.scalar()
+    
+    result = await db.execute(select(func.count()).select_from(TermCategory))
+    total_categories = result.scalar()
+    
+    result = await db.execute(select(func.count()).select_from(TermVariant))
+    total_variants = result.scalar()
+    
+    result = await db.execute(select(func.count()).select_from(TermValidation))
+    total_validations = result.scalar()
     
     # 按分类统计
+    result = await db.execute(select(TermCategory))
+    categories = result.scalars().all()
     category_stats = []
-    categories = db.execute(select(TermCategory)).scalars().all()
     for cat in categories:
-        term_count = db.execute(select(Term).filter(Term.category_id == cat.id).count()).scalar()
+        result = await db.execute(
+            select(func.count()).where(Term.category_id == cat.id).select_from(Term)
+        )
+        term_count = result.scalar()
         category_stats.append({
             "category_id": cat.id,
             "category_name": cat.name,
@@ -470,34 +496,26 @@ def get_statistics(db: Session = Depends(get_db)):
 # ═══════════════════════════════════════════
 
 @router.post("/validate-input", response_model=ApiResponse[TermValidationResponse])
-def validate_term_input(
+async def validate_term_input(
     request: TermValidationRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
 ):
-    """
-    验证配方输入中的术语是否标准。
-
-    返回：
-    - is_valid: 是否是标准术语
-    - standard_name: 标准名称（如果是别名）
-    - suggestions: 相似术语建议
-    - category: 所属分类
-    """
+    """验证配方输入中的术语是否标准"""
     service = TerminologyService(db)
-    result = service.validate_term(request.term)
+    result = await service.validate_term(request.term)
     return ApiResponse(data=TermValidationResponse(**result))
 
 
 @router.post("/batch-validate", response_model=ApiResponse)
-def batch_validate_terms(
+async def batch_validate_terms(
     request: BatchTermValidationRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
 ):
     """批量验证术语"""
     service = TerminologyService(db)
     results = []
     for term_text in request.terms:
-        result = service.validate_term(term_text)
+        result = await service.validate_term(term_text)
         results.append({
             "term": term_text,
             **result,
@@ -506,17 +524,13 @@ def batch_validate_terms(
 
 
 @router.get("/suggest", response_model=ApiResponse)
-def suggest_terms(
+async def suggest_terms(
     query: str = Query(..., min_length=1, description="搜索关键词"),
     category: Optional[str] = Query(None, description="分类过滤"),
     limit: int = Query(10, ge=1, le=50, description="返回数量"),
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
 ):
-    """
-    术语建议（用于配方输入时的自动补全）。
-
-    支持模糊匹配和拼音首字母匹配。
-    """
+    """术语建议（用于配方输入时的自动补全）"""
     service = TerminologyService(db)
-    suggestions = service.search_terms(query, category=category, limit=limit)
+    suggestions = await service.search_terms(query, category=category, limit=limit)
     return ApiResponse(data=suggestions)

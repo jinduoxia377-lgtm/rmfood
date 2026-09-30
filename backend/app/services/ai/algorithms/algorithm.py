@@ -48,18 +48,23 @@ class NSGAIIOptimizer:
         self._candidate_herbs: List[str] = []
 
     def _get_herb_db(self) -> Dict[str, Any]:
-        """获取药材数据库（带回退到内置库）"""
+        """获取药材数据库（强制数据库数据）"""
         if self.evaluator is not None and self.evaluator.herb_db:
             return self.evaluator.herb_db
-        from .bayesian_formula_optimizer import _BUILTIN_HERBS
-        return _BUILTIN_HERBS
+        # 数据库无数据时抛出异常，不再回退到硬编码
+        raise RuntimeError(
+            "[数据完整性] 数据库药材数据不可用，请先运行数据补全脚本:\n"
+            "  python -m app.services.recipe_generation_data_completer"
+        )
 
     def _get_efficacy_map(self) -> Dict[str, List[str]]:
-        """获取功效-药材索引（带回退到内置索引）"""
+        """获取功效-药材索引（强制数据库数据）"""
         if self.evaluator is not None and self.evaluator.efficacy_map:
             return self.evaluator.efficacy_map
-        from .bayesian_formula_optimizer import _EFFICACY_TO_HERBS
-        return _EFFICACY_TO_HERBS
+        # 数据库无数据时抛出异常
+        raise RuntimeError(
+            "[数据完整性] 数据库功效索引不可用，请先运行数据补全脚本"
+        )
 
     def _enforce_exclusions(self, individual: MultiObjectiveIndividual, exclude_set: set) -> None:
         """移除个体中排除的药材，确保约束生效（包括交叉/变异后）"""
@@ -76,42 +81,18 @@ class NSGAIIOptimizer:
             individual.genes = dict(keep)
 
     def _evaluate_individual(self, individual, config) -> None:
-        """评估个体（evaluator可用时用evaluator，否则用内置逻辑回退）"""
+        """评估个体（强制使用数据库数据）"""
         if self.evaluator is not None:
             self.evaluator.evaluate_full(individual, config)
             return
-        # 回退评估：使用内置药材库计算基本评分
-        from .bayesian_formula_optimizer import _BUILTIN_HERBS
-        herbs = _BUILTIN_HERBS
-        genes = individual.genes
-        if not genes:
-            individual.fitness = 0.0
-            return
-        total_dosage = sum(genes.values())
-        # 简化评分：基于安全性和剂量合理性
-        safety_sum = 0.0
-        for hid, dosage in genes.items():
-            if hid in herbs:
-                herb = herbs[hid]
-                ratio = (dosage - herb.dosage_min) / max(herb.dosage_max - herb.dosage_min, 0.01)
-                safety_sum += herb.safety_index * (1 - 0.2 * ratio)
-        individual.safety = safety_sum / max(len(genes), 1)
-        individual.efficacy = 0.5  # 默认中等功效
-        individual.taste = 0.6
-        individual.cost = 0.7
-        individual.synergy = 0.5
-        individual.stability = 0.6
-        individual.fitness = (
-            individual.efficacy * 0.30 +
-            individual.safety * 0.25 +
-            individual.taste * 0.10 +
-            individual.cost * 0.15 +
-            individual.synergy * 0.10 +
-            individual.stability * 0.10
+        # 无 evaluator 时抛出异常，不再使用硬编码数据
+        raise RuntimeError(
+            "[数据完整性] FormulaEvaluator 未初始化，无法评估配方。"
+            "请确保数据库已填充完整数据并运行 init_ai_services()"
         )
 
     def _try_load_herb_knowledge(self) -> None:
-        """惰性加载 HerbKnowledgeService"""
+        """惰性加载 HerbKnowledgeService（强制数据库数据）"""
         if self._herb_knowledge_loaded:
             return
         self._herb_knowledge_loaded = True
@@ -122,11 +103,19 @@ class NSGAIIOptimizer:
                 from .evaluator import FormulaEvaluator
                 self.evaluator = FormulaEvaluator(herb_knowledge=hk)
                 self.evaluator._load_herbs_sync()
-                logger.info("[NSGA-II] 惰性加载 HerbKnowledgeService 成功")
+                logger.info(
+                    f"[NSGA-II] ✅ 数据库加载成功: "
+                    f"{len(self.evaluator.herb_db)} 种药材, "
+                    f"{len(self.evaluator.efficacy_map)} 种功效"
+                )
             else:
-                logger.debug("[NSGA-II] HerbKnowledgeService 返回 None")
+                # 数据库无服务时抛出异常
+                raise RuntimeError("[数据完整性] HerbKnowledgeService 未初始化，请先运行 init_ai_services()")
+        except RuntimeError:
+            raise
         except Exception as e:
-            logger.warning(f"[NSGA-II] 惰性加载 HerbKnowledgeService 失败: {e}")
+            logger.error(f"[数据完整性] 数据库加载失败: {e}")
+            raise
 
     async def optimize_async(self, target_effects: List[str] = None,
                              constraints: Dict = None) -> Tuple[List[MultiObjectiveIndividual], List[Dict]]:

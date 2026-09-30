@@ -24,6 +24,14 @@
   --color-primary-container: #d1fae5;
   --color-primary-text: #047857; /* WCAG AA: 5.24:1 on white */
 
+  /* ── 主色表面（实底 + 白字）──
+     D-50 修复：品牌色阶在暗色下【整体反转】，使 bg-primary-{400..700} 变成浅色，
+     而 text-white 不随主题变化 → 实测暗色对比度仅 1.52:1。
+     本组令牌【不参与反转】，专用于承载白色前景的实底（页头横幅、主按钮、图标圆）。
+     亮色 #047857：白字 5.55:1 ✅ AA；暗色 #065f46：白字 7.78:1 ✅ AAA。 */
+  --color-primary-surface: #047857;
+  --color-on-primary-surface: #ffffff;
+
   /* ═══ Brand Secondary: Ocean Blue (#3B82F6) ═══ */
   --color-secondary-50: #eff6ff;
   --color-secondary-100: #dbeafe;
@@ -398,23 +406,26 @@
   --color-info-100: #dbeafe;
 
   /* ── 状态徽章色（light）── */
+  /* D-52 修复：原配色在各自（半透明合成的）底色上不足 WCAG AA 4.5:1。
+     徽章文字通常为 text-xs(12px) 非粗体，属"正文"级，需 4.5:1。
+     下列文字色已按实测对比度调整（括号内为修复前 → 修复后）。 */
   --badge-draft-bg: rgba(148, 163, 184, 0.1);
-  --badge-draft-text: #6E6E73;
+  --badge-draft-text: #63636A;      /* 4.48:1 → 5.28:1 */
   --badge-draft-border: rgba(148, 163, 184, 0.15);
   --badge-pending-bg: rgba(255, 159, 10, 0.08);
-  --badge-pending-text: #D97706;
+  --badge-pending-text: #92400E;    /* 2.89:1 → 6.43:1 */
   --badge-pending-border: rgba(255, 159, 10, 0.15);
   --badge-approved-bg: rgba(52, 199, 89, 0.08);
-  --badge-approved-text: #248A3D;
+  --badge-approved-text: #1E7A33;   /* 3.95:1 → 4.87:1 */
   --badge-approved-border: rgba(52, 199, 89, 0.12);
   --badge-rejected-bg: rgba(255, 59, 48, 0.08);
-  --badge-rejected-text: #D70015;
+  --badge-rejected-text: #D70015;   /* 已达标 */
   --badge-rejected-border: rgba(255, 59, 48, 0.15);
   --badge-revision-bg: rgba(255, 149, 0, 0.08);
-  --badge-revision-text: #C25E00;
+  --badge-revision-text: #8A4200;   /* 3.86:1 → 6.63:1 */
   --badge-revision-border: rgba(255, 149, 0, 0.12);
   --badge-archived-bg: rgba(107, 114, 128, 0.08);
-  --badge-archived-text: #6B7280;
+  --badge-archived-text: #565D68;   /* 4.20:1 → 5.78:1 */
   --badge-archived-border: rgba(107, 114, 128, 0.12);
 
   /* ── 骨架屏动画色 ── */

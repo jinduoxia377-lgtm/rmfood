@@ -12,7 +12,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any
 
-from ..services.ingredient_analysis import analysis_service
+from ...services.ingredient_analysis import analysis_service
 
 router = APIRouter(prefix="/ingredients", tags=["配料分析"])
 logger = logging.getLogger(__name__)
@@ -70,6 +70,19 @@ class AnalysisResult(BaseModel):
 
 # ========== API Endpoints ==========
 
+@router.get("/health", summary="配料分析服务健康检查")
+async def health_check():
+    """验证配料分析服务可用"""
+    return {
+        "success": True,
+        "data": {
+            "status": "healthy",
+            "service": "ingredient-analysis",
+            "features": ["six_dim_analysis", "ocr_recognition", "additive_database", "food_homology"],
+        },
+    }
+
+
 @router.post("/analyze", response_model=Dict[str, Any], summary="配料六维分析")
 async def analyze_ingredient(req: AnalyzeRequest):
     """
@@ -121,45 +134,132 @@ async def ocr_ingredient_image(file: UploadFile = File(...)):
     """
     OCR识别食品包装配料表图片
 
-    返回识别到的配料文本和结构化成分列表
+    真实行为：
+    - 若部署环境安装了可用的 OCR 引擎（pytesseract / paddleocr / easyocr / cnocr），
+      则对上传图片执行真实识别，返回识别文本 + 结构化成分列表。
+    - 若未安装任何 OCR 引擎，则如实返回 success=False 并说明原因，
+      绝不返回模拟数据（遵守"禁止假数据"约束）。
     """
-    try:
-        # 读取图片
-        content = await file.read()
-        if not content:
-            return OCRResponse(success=False, message="图片内容为空")
+    content = await file.read()
+    if not content:
+        return OCRResponse(success=False, message="图片内容为空")
 
-        # TODO: 接入腾讯OCR/百度OCR API
-        # 当前返回模拟数据用于开发测试
-        simulated_text = "配料：小麦粉、白砂糖、植物油、鸡蛋、全脂奶粉、山梨酸钾、柠檬黄、阿斯巴甜、枸杞子、红枣"
-        simulated_ingredients = [
-            IngredientItem(name="小麦粉"),
-            IngredientItem(name="白砂糖"),
-            IngredientItem(name="植物油"),
-            IngredientItem(name="鸡蛋"),
-            IngredientItem(name="全脂奶粉"),
-            IngredientItem(name="山梨酸钾", additive="201"),
-            IngredientItem(name="柠檬黄", additive="102"),
-            IngredientItem(name="阿斯巴甜", additive="951"),
-            IngredientItem(name="枸杞子"),
-            IngredientItem(name="红枣"),
-        ]
-
+    text = _run_ocr(content)
+    if text is None:
         return OCRResponse(
-            success=True,
-            text=simulated_text,
-            ingredients=simulated_ingredients
+            success=False,
+            message=(
+                "当前环境未安装可用的 OCR 引擎（rapidocr/pytesseract/paddleocr/easyocr/cnocr）。"
+                "请先安装任一引擎（推荐 rapidocr-onnxruntime，无需 torch）后再使用图片识别；"
+                "或直接使用 /analyze 文本分析接口。"
+            ),
         )
 
+    # 从识别文本解析成分（与 /analyze 相同的分词逻辑）
+    parts = [p.strip() for p in re.split(r"[，,、\s]+", text) if p.strip()]
+    ingredients = [IngredientItem(name=name) for name in parts[:30]]
+
+    return OCRResponse(success=True, text=text, ingredients=ingredients)
+
+
+def _run_ocr(content: bytes) -> Optional[str]:
+    """尝试可用的 OCR 引擎，返回识别文本；无可用引擎返回 None。"""
+    # 1. RapidOCR / ONNX（纯 ONNX、无 torch 依赖，中文效果好，首选）
+    try:
+        from rapidocr_onnxruntime import RapidOCR
+        import numpy as np
+        from PIL import Image
+
+        img = Image.open(io.BytesIO(content))
+        arr = np.array(img)
+        engine = RapidOCR()
+        result, elapse = engine(arr)
+        # rapidocr 返回 [[box, text, score], ...] 或 None
+        if result:
+            lines = []
+            for item in result:
+                if item and len(item) >= 2:
+                    lines.append(str(item[1]))
+            text = " ".join(lines).strip()
+            if text:
+                return text
+    except ImportError:
+        pass
     except Exception as e:
-        logger.error(f"[OCRApi] OCR失败: {e}", exc_info=True)
-        return OCRResponse(success=False, message=f"OCR失败: {str(e)}")
+        logger.debug(f"rapidocr OCR failed: {e}")
+
+    # 2. 本地 tesseract（pytesseract）
+    try:
+        import pytesseract
+        from PIL import Image
+
+        img = Image.open(io.BytesIO(content))
+        result = pytesseract.image_to_string(img, lang="chi_sim")
+        if result and result.strip():
+            return result.strip()
+    except ImportError:
+        pass
+    except Exception as e:
+        logger.debug(f"pytesseract OCR failed: {e}")
+
+    # 3. PaddleOCR
+    try:
+        from paddleocr import PaddleOCR
+
+        ocr = PaddleOCR(use_angle_cls=False, lang="ch", show_log=False)
+        out = ocr.ocr(io.BytesIO(content), cls=False)
+        lines = []
+        for page in out or []:
+            for item in page or []:
+                if item and len(item) >= 2:
+                    lines.append(str(item[1][0]))
+        text = "\n".join(lines).strip()
+        if text:
+            return text
+    except ImportError:
+        pass
+    except Exception as e:
+        logger.debug(f"PaddleOCR failed: {e}")
+
+    # 4. EasyOCR
+    try:
+        import easyocr
+
+        reader = easyocr.Reader(["ch_sim", "en"])
+        results = reader.readtext(io.BytesIO(content))
+        text = " ".join(r[2] for r in results if r and len(r) >= 3).strip()
+        if text:
+            return text
+    except ImportError:
+        pass
+    except Exception as e:
+        logger.debug(f"EasyOCR failed: {e}")
+
+    # 5. CNOCR
+    try:
+        from cnocr import CnOcr
+
+        model = CnOcr()
+        result = model.ocr(io.BytesIO(content))
+        lines = []
+        for item in result.get("detail", []):
+            if item.get("text"):
+                lines.append(item["text"])
+        text = "\n".join(lines).strip()
+        if text:
+            return text
+    except ImportError:
+        pass
+    except Exception as e:
+        logger.debug(f"CNOCR failed: {e}")
+
+    return None
 
 
 @router.get("/additives", summary="获取添加剂数据库")
 async def get_additives():
     """返回完整的E编码添加剂数据库"""
-    from ..services.ingredient_analysis import ADDITIVE_DB
+    from ...services.ingredient_analysis import ADDITIVE_DB
     return {
         "success": True,
         "data": list(ADDITIVE_DB.values()),
@@ -170,7 +270,7 @@ async def get_additives():
 @router.get("/food-homology", summary="获取药食同源目录")
 async def get_food_homology():
     """返回药食同源成分目录"""
-    from ..services.ingredient_analysis import FOOD_HOMOLOGY_DB
+    from ...services.ingredient_analysis import FOOD_HOMOLOGY_DB
     return {
         "success": True,
         "data": FOOD_HOMOLOGY_DB,
@@ -181,7 +281,7 @@ async def get_food_homology():
 @router.get("/allergens", summary="获取过敏原配置")
 async def get_allergens():
     """返回八大过敏原配置"""
-    from ..services.ingredient_analysis import ALLERGEN_MAP
+    from ...services.ingredient_analysis import ALLERGEN_MAP
     return {
         "success": True,
         "data": [{"id": k, **v} for k, v in ALLERGEN_MAP.items()]

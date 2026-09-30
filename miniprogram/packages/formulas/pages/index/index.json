@@ -1,10 +1,1 @@
-{
-  "navigationBarTitleText": "配方库",
-  "navigationBarBackgroundColor": "#2D5A3D",
-  "navigationBarTextStyle": "white",
-  "usingComponents": {
-    "icon": "../../../../components/Icon/index",
-    "card": "../../../../components/Card/index",
-    "formula-card": "../../../../components/FormulaCard/index"
-  }
-}
+{"navigationBarTitleText":"配方库","usingComponents":{}}

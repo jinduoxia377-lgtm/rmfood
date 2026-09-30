@@ -4,6 +4,7 @@ import { storageService } from '../services/storageService'
 import { eventBus } from '../services/eventBus'
 import { logger } from '@/utils/safeLogger'
 import { sanitizeChatMessages } from '../utils/sanitizeChatMessages'
+import { detectStructuredContent } from '../components/structured/utils'
 import { toFriendlyErrorMessage } from '../utils/friendlyError'
 import type { ChatMessage } from '../types'
 import { tokenBudgetManager } from '../capabilities/streaming/TokenBudgetManager'
@@ -11,6 +12,7 @@ import { contextCompactionEngine } from '../capabilities/streaming/ContextCompac
 import { chatEventLog } from '../capabilities/storage/ChatEventLog'
 import { chatStorageService } from '../capabilities/storage/ChatStorageService'
 import { offlineManager } from '../utils/offlineManager'
+import { userPreferencesService } from '../services/userPreferencesService'
 export type { ChatMessage } from '../types'
 
 interface UseChatMessagesReturn {
@@ -68,7 +70,23 @@ export function useChatMessages(): UseChatMessagesReturn {
           logger.warn('[useChatMessages] 清理后写回存储失败:', writeError)
         }
       }
-      return cleaned
+      // Normalize content: detect and preserve structured JSON blocks
+      const normalized = cleaned.map(msg => {
+        if (msg.role === 'assistant' && msg.content) {
+          const trimmed = msg.content.trim()
+          if (trimmed.startsWith('{') && trimmed.includes('"blocks"') && !trimmed.includes('\`\`\`json')) {
+            return { ...msg, content: '\`\`\`json\n' + trimmed + '\n\`\`\`' }
+          }
+        }
+        return msg
+      })
+      
+      const hasChanges = normalized.some((m: any, i: number) => m.content !== cleaned[i].content)
+      if (hasChanges) {
+        try { storageService.set(STORAGE_KEY, normalized) } catch(e) {}
+      }
+      
+      return normalized
     } catch (error) {
       logger.warn('[useChatMessages] Failed to load messages from storage:', error)
       return []
@@ -248,7 +266,7 @@ export function useChatMessages(): UseChatMessagesReturn {
 
       // ── 尝试 1: 流式 SSE ──
       try {
-        for await (const chunk of chatService.sendMessageStream(content.trim(), history, scenarioMode)) {
+        for await (const chunk of chatService.sendMessageStream(content.trim(), history)) {
           if (chunk.done) break
           // 思考步骤事件不追加到对话内容（仅转发到侧栏）
           if (!chunk.step) {
@@ -324,6 +342,13 @@ export function useChatMessages(): UseChatMessagesReturn {
         // ── 写入 EventLog（append-only） ──
         chatEventLog.append('user/message', userMessage)
         chatEventLog.append('assistant/message', { ...assistantMessage, id: assistantMessageId, content: fullContent, formulas: accumulatedFormulas.length > 0 ? accumulatedFormulas : undefined })
+
+        // ── 自动提取对话偏好并更新用户画像 ──
+        try {
+          userPreferencesService.extractAndSavePreferencesFromContent(fullContent)
+        } catch (e) {
+          logger.warn('[useChatMessages] 偏好提取失败:', e)
+        }
 
         // ── 自动触发上下文压缩检查 ──
         if (messagesRef.current.length >= 20) {
@@ -568,3 +593,4 @@ export function useChatMessages(): UseChatMessagesReturn {
 }
 
 export type { UseChatMessagesReturn }
+

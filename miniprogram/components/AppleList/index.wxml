@@ -1,0 +1,43 @@
+<!-- Apple List 列表组件 -->
+<view class="apple-list {{className}}">
+  <!-- 分组标题 -->
+  <view wx:if="{{groupTitle}}" class="apple-list-group-title">{{groupTitle}}</view>
+  
+  <!-- 列表项 -->
+  <view 
+    wx:for="{{items}}" 
+    wx:key="{{item.id || index}}"
+    class="apple-list-item {{item.disabled ? 'apple-list-item-disabled' : ''}}"
+    bindtap="onItemTap"
+    data-index="{{index}}"
+    hover-class="apple-list-hover"
+  >
+    <!-- 图标 -->
+    <view wx:if="{{item.icon}}" class="apple-list-item-icon {{item.iconColor || 'gray'}}">
+      <icon name="{{item.icon}}" size="sm" color="#FFFFFF" />
+    </view>
+    
+    <!-- 内容 -->
+    <view class="apple-list-item-content">
+      <text class="apple-list-item-title">{{item.title}}</text>
+      <text wx:if="{{item.subtitle}}" class="apple-list-item-subtitle">{{item.subtitle}}</text>
+    </view>
+    
+    <!-- 附件 -->
+    <view wx:if="{{item.accessory}}" class="apple-list-item-accessory">
+      <!-- Toggle 开关 -->
+      <view wx:if="{{item.accessory === 'toggle'}}" class="apple-toggle {{item.checked ? 'active' : ''}}" catchtap="onToggleTap" data-index="{{index}}">
+        <view class="toggle-thumb"></view>
+      </view>
+      
+      <!-- 箭头 -->
+      <view wx:elif="{{item.accessory === 'arrow'}}" class="apple-list-item-arrow"></view>
+      
+      <!-- 徽章 -->
+      <view wx:elif="{{item.badge}}" class="apple-badge {{item.badgeColor || 'system-blue'}}">{{item.badge}}</view>
+      
+      <!-- 自定义内容 -->
+      <slot wx:elif name="accessory" data-index="{{index}}"></slot>
+    </view>
+  </view>
+</view>

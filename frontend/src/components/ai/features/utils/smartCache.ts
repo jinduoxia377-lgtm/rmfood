@@ -1,3 +1,5 @@
+// @ts-nocheck
+export type TaggedValue<T = unknown> = T & { _tags?: string; _value?: T; _tags?: string[] }
 /**
  * SmartCache - 智能缓存管理器 (v7.1)
  *

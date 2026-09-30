@@ -11,7 +11,7 @@
 """
 
 import logging
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from app.domain.herb_ports import HerbKnowledgePort
 
@@ -56,7 +56,14 @@ class HerbKnowledgeService:
             for herb in all_herbs:
                 herb_param = self._convert_to_herb_parameter(herb)
                 if herb_param:
-                    self._herbs[herb_param.herb_id] = herb_param
+                    existing = self._herbs.get(herb_param.herb_id)
+                    if existing is None:
+                        self._herbs[herb_param.herb_id] = herb_param
+                    else:
+                        # 同一 herb_id 存在多条数据库记录时做字段级合并，
+                        # 避免"后一条覆盖前一条"造成的协同伙伴/功效评分静默丢失
+                        merged = self._merge_herb_parameters(existing, herb_param)
+                        self._herbs[herb_param.herb_id] = merged
 
             for herb_param in self._herbs.values():
                 self._merge_builtin_synergy(herb_param)
@@ -116,9 +123,69 @@ class HerbKnowledgeService:
             logger.warning("[HerbKnowledge] 转换药材失败: %s", str(e))
             return None
 
+    def get_herbs(self) -> Dict[str, Any]:
+        """
+        以 HerbKnowledgePort 鸭子接口形式暴露已加载药材字典。
+
+        GeneticFormulaOptimizer._try_load_herb_knowledge 通过
+        `hk.get_herbs()` 获取全部药材参数（dict[str, HerbParameter]）。
+        """
+        return self._herbs
+
+    def get_efficacy_to_herbs(self) -> Dict[str, List[str]]:
+        """
+        以 HerbKnowledgePort 鸭子接口形式暴露功效-药材索引。
+
+        FormulaEvaluator / BayesianFormulaOptimizer 通过
+        `hk.get_efficacy_to_herbs()` 获取 {功效: [herb_id...]} 映射。
+        """
+        return self._efficacy_to_herbs
+
     def _merge_builtin_synergy(self, herb_param: HerbParameter) -> None:
         """从内置知识库合并协同/拮抗数据"""
         pass
+
+    @staticmethod
+    def _merge_herb_parameters(
+        base: "HerbParameter", incoming: "HerbParameter"
+    ) -> "HerbParameter":
+        """
+        同 herb_id 多条记录的字段级合并（真实数据合并，非生成假数据）。
+
+        规则：
+        - 功效评分：按功效键取较高值并集（同键不同来源取 max，保留信息量）
+        - 剂量范围：dosage_min 取较小值、dosage_max 取较大值（放宽到并集区间）
+        - 协同伙伴/拮抗对：去重并集
+        - 安全性/成本：保留 base（先加载者优先）
+        - 名称：保留非空者
+        """
+        merged_scores = dict(base.efficacy_scores or {})
+        for eff, score in (incoming.efficacy_scores or {}).items():
+            prev = merged_scores.get(eff)
+            merged_scores[eff] = score if prev is None else max(prev, score)
+
+        def _union(a: List[str], b: List[str]) -> List[str]:
+            seen: List[str] = []
+            for x in list(a or []) + list(b or []):
+                if x not in seen:
+                    seen.append(x)
+            return seen
+
+        name = base.name_cn or incoming.name_cn
+        herb_param = HerbParameter(
+            herb_id=base.herb_id,
+            name_cn=name,
+            dosage_min=min(base.dosage_min, incoming.dosage_min)
+            if (base.dosage_min and incoming.dosage_min) else (base.dosage_min or incoming.dosage_min),
+            dosage_max=max(base.dosage_max, incoming.dosage_max),
+            dosage_step=base.dosage_step or incoming.dosage_step or 1.0,
+            efficacy_scores=merged_scores,
+            safety_index=base.safety_index,
+            cost_per_gram=base.cost_per_gram,
+            synergy_partners=_union(base.synergy_partners, incoming.synergy_partners),
+            antagonistic_pairs=_union(base.antagonistic_pairs, incoming.antagonistic_pairs),
+        )
+        return herb_param
 
     def _build_efficacy_index(self) -> None:
         """构建功效-药材索引（基于已加载的 herbs）"""

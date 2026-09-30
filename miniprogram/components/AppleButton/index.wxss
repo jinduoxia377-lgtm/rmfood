@@ -1,0 +1,82 @@
+/** AppleButton 缁勪欢鏍峰紡 */
+.apple-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  border: none;
+  border-radius: var(--radius-button);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  padding: 0 24rpx;
+  height: 50rpx;
+  line-height: 50rpx;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+}
+
+.apple-btn:active {
+  opacity: 0.85;
+  transform: scale(0.98);
+}
+
+.apple-btn-hover {
+  opacity: 0.85;
+}
+
+.apple-btn-disabled {
+  opacity: 0.3;
+}
+
+/* 涓昏鎸夐挳 */
+.apple-btn-primary {
+  background: var(--color-system-blue);
+  color: var(--color-text-white);
+}
+
+/* 娆¤鎸夐挳 */
+.apple-btn-secondary {
+  background: transparent;
+  color: var(--color-system-blue);
+  border: 1.5rpx solid var(--color-system-blue);
+}
+
+/* 閾炬帴鎸夐挳 */
+.apple-btn-link {
+  background: transparent;
+  color: var(--color-system-blue);
+  font-weight: var(--font-weight-regular);
+  padding: 14rpx 0;
+  height: auto;
+  line-height: normal;
+}
+
+/* 鏂囧瓧鎸夐挳 */
+.apple-btn-text {
+  background: transparent;
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-regular);
+}
+
+/* 灏哄 */
+.apple-btn-small {
+  height: 40rpx;
+  font-size: var(--font-size-callout);
+  padding: 0 16rpx;
+}
+
+.apple-btn-large {
+  height: 56rpx;
+  font-size: var(--font-size-title-3);
+  border-radius: var(--radius-xl);
+  padding: 0 32rpx;
+}
+
+/* 鍧楃骇鎸夐挳 */
+.apple-btn-block {
+  width: 100%;
+}
+
+/* 鍔犺浇鐘舵€?*/
+.apple-btn-loading {
+}

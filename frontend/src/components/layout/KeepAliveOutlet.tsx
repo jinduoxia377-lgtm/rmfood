@@ -142,15 +142,23 @@ export function KeepAliveOutlet({
   }, [location.pathname, stateTtlMs]);
 
   // 滚动位置保存/恢复
+  // 修复：主内容滚动容器是 <main id="main-content">（overflow-auto），不是 window
+  // 因此滚动坐标从 #main-content 读取/写入，window.scrollTo 在此布局下不生效
   useEffect(() => {
     if (!saveScrollPosition) return;
+
+    const getScroller = () =>
+      document.getElementById('main-content') ?? window;
 
     // 离开页面时保存滚动位置
     const saveScroll = () => {
       try {
+        const scroller = getScroller();
+        const x = 'scrollX' in scroller ? scroller.scrollX : window.scrollX;
+        const y = 'scrollY' in scroller ? scroller.scrollY : window.scrollY;
         sessionStorage.setItem(
           `${SCROLL_STORAGE_PREFIX}${location.pathname}`,
-          JSON.stringify({ x: window.scrollX, y: window.scrollY }),
+          JSON.stringify({ x, y }),
         );
       } catch {
         /* ignore quota errors */
@@ -167,7 +175,14 @@ export function KeepAliveOutlet({
       const stored = sessionStorage.getItem(`${SCROLL_STORAGE_PREFIX}${location.pathname}`);
       if (stored) {
         const { x, y } = JSON.parse(stored) as { x: number; y: number };
-        requestAnimationFrame(() => window.scrollTo(x, y));
+        requestAnimationFrame(() => {
+          const scroller = document.getElementById('main-content');
+          if (scroller && 'scrollTo' in scroller) {
+            scroller.scrollTo(x, y);
+          } else {
+            window.scrollTo(x, y);
+          }
+        });
         sessionStorage.removeItem(`${SCROLL_STORAGE_PREFIX}${location.pathname}`);
       }
     } catch {

@@ -195,7 +195,7 @@ export interface PaginatedResponse<T> {
 
 // ==================== API 调用 ====================
 
-const BASE_URL = '/api/terminology'
+const BASE_URL = '/api/v1/terminology'
 
 // --- 分类 ---
 

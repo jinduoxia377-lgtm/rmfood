@@ -57,11 +57,5 @@ const COMPONENTS = {
   }
 };
 
-console.log('=== UI/UX 深度分析报告 ===');
-console.log('组件总数:', COMPONENTS.existing.length);
-console.log('图标总数:', COMPONENTS.icons.total);
-console.log('设计变量数:', COMPONENTS.designSystem.colorVariables);
-console.log('\n按类别分布:');
 Object.entries(COMPONENTS.icons.categories).forEach(([k, v]) => {
-  console.log(`  ${k}: ${v}个`);
 });

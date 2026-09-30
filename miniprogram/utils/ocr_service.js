@@ -75,11 +75,11 @@ class OCRService {
   async _uploadImage(imagePath) {
     return new Promise((resolve, reject) => {
       wx.uploadFile({
-        url: `${request.baseUrl}/ingredients/upload`,
+        url: "" + request.baseUrl + "/ingredients/upload",
         filePath: imagePath,
         name: 'image',
         header: {
-          'Authorization': `Bearer ${wx.getStorageSync('access_token') || ''}`
+          'Authorization': "Bearer" + wx.getStorageSync('access_token') || '' + ""
         },
         success: (res) => {
           try {

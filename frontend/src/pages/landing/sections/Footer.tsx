@@ -9,13 +9,14 @@
  */
 import { Link } from 'react-router-dom';
 import { Beaker, Mail, MapPin, Globe, Github, MessageCircle } from 'lucide-react';
-import { BRAND_CONFIG, RHINE_BRAND_CONFIG } from '@/config';
+import { RHINE_BRAND_CONFIG } from '@/config';
 
 const navSections = [
   {
     title: '产品',
     links: [
       { label: '核心功能', href: '/landing#features' },
+      { label: '算法引擎', href: '/landing#algorithms' },
       { label: '应用场景', href: '/landing#use-cases' },
       { label: '数据底座', href: '/landing#data-sources' },
       { label: '定价方案', href: '/landing#pricing' },
@@ -55,7 +56,7 @@ export default function Footer() {
               <div className="w-7 h-7 rounded-md flex items-center justify-center" style={{ background: '#059669' }}>
                 <Beaker size={13} color="white" strokeWidth={2.2} />
               </div>
-              <span className="font-bold text-sm tracking-tight" style={{ color: '#f1f5f9' }}>{BRAND_CONFIG.name}</span>
+              <span className="font-bold text-sm tracking-tight" style={{ color: '#f1f5f9' }}>莱茵分子</span>
             </div>
             <p className="lp-footer-desc mb-4 leading-relaxed">
               {RHINE_BRAND_CONFIG.description}
@@ -70,12 +71,11 @@ export default function Footer() {
                   href={href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-7 h-7 rounded-md flex items-center justify-center transition-colors"
-                  style={{ color: '#64748b', border: '1px solid #1e293b' }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color = '#94a3b8'; (e.currentTarget as HTMLAnchorElement).style.borderColor = '#334155'; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = '#64748b'; (e.currentTarget as HTMLAnchorElement).style.borderColor = '#1e293b'; }}
+                  aria-label={label}
+                  className="w-11 h-11 flex items-center justify-center transition-colors"
+                  style={{ color: '#94a3b8', border: '1px solid #1e293b' }}
                 >
-                  <Icon size={12} />
+                  <Icon size={14} />
                 </a>
               ))}
             </div>
@@ -85,12 +85,12 @@ export default function Footer() {
           {navSections.map(col => (
             <div key={col.title}>
               <h4 className="lp-footer-label mb-3.5">{col.title}</h4>
-              <ul className="space-y-2">
+              <ul className="space-y-0.5">
                 {col.links.map(link => (
                   <li key={link.label}>
                     <Link
                       to={link.href}
-                      className="lp-footer-link block text-[13px]"
+                      className="lp-footer-link text-[13px]"
                     >
                       {link.label}
                     </Link>
@@ -103,14 +103,14 @@ export default function Footer() {
           {/* 联系信息 */}
           <div>
             <h4 className="lp-footer-label mb-3.5">联系我们</h4>
-            <ul className="space-y-2.5">
+            <ul className="space-y-0.5">
               {[
                 { icon: Mail, text: 'contact@rmfood.cn' },
                 { icon: Globe, text: 'www.rmfood.cn' },
                 { icon: MapPin, text: '厦门市思明区' },
               ].map(({ icon: Icon, text }, i) => (
-                <li key={i} className="flex items-center gap-2 text-[13px] text-slate-400">
-                  <Icon size={13} className="shrink-0 opacity-60" />
+                <li key={i} className="flex items-center gap-2 text-[13px] text-slate-400 min-h-[44px]">
+                  <Icon size={14} className="shrink-0 opacity-60" />
                   <span>{text}</span>
                 </li>
               ))}
@@ -123,13 +123,13 @@ export default function Footer() {
       <div className="border-t lp-footer-bottom">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
-            <p className="text-[12px] text-slate-500">
+            <p className="text-[12px] text-slate-400">
               &copy; {new Date().getFullYear()} {RHINE_BRAND_CONFIG.fullName}
             </p>
             <div className="flex items-center gap-4">
-              <span className="lp-mono text-[11px] text-slate-500">闽ICP备2025XXXXXX号-1</span>
-              <span className="text-[11px] text-slate-600">·</span>
-              <span className="lp-mono text-[11px] text-slate-500">网络经营备案</span>
+              <span className="lp-mono text-[11px] text-slate-400">闽ICP备2025XXXXXX号-1</span>
+              <span className="text-[11px] text-slate-500">·</span>
+              <span className="lp-mono text-[11px] text-slate-400">网络经营备案</span>
             </div>
           </div>
         </div>

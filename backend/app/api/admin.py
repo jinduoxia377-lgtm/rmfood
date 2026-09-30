@@ -5,7 +5,7 @@ P1-2: 账号安全管理（防暴力破解）
 """
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import select, func, update
+from sqlalchemy import select, func, update, distinct
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..api.deps import get_db_session, get_current_active_user, require_role
@@ -13,6 +13,7 @@ from ..models.models import (
     User, UserRole, Notification, NotificationStatus,
 )
 from ..schemas.user import UserResponse
+from ..core.rbac.permission import PermissionChecker, Permission
 
 router = APIRouter(tags=["通知与用户管理"])
 
@@ -125,10 +126,14 @@ async def list_users(
     page_size: int = Query(20, ge=1, le=100),
     role: str | None = Query(None, description="角色过滤"),
     search: str | None = Query(None, description="搜索用户名/姓名"),
+    status: str | None = Query(None, description="状态过滤: active / inactive"),
     db: AsyncSession = Depends(get_db_session),
     current_user: User = Depends(require_role(UserRole.ADMIN)),
 ):
     """管理员查看用户列表"""
+    # RBAC 细粒度权限检查
+    perm_checker = PermissionChecker(current_user)
+    perm_checker.require_permission(Permission.USER_READ)
     query = select(User)
     count_query = select(func.count()).select_from(User)
 
@@ -143,6 +148,10 @@ async def list_users(
         count_query = count_query.where(
             (User.username.ilike(like_pattern)) | (User.full_name.ilike(like_pattern))
         )
+    if status:
+        is_active = status == "active"
+        query = query.where(User.is_active == is_active)
+        count_query = count_query.where(User.is_active == is_active)
 
     total = (await db.execute(count_query)).scalar() or 0
     items = (await db.execute(
@@ -166,6 +175,8 @@ async def update_user_role(
     current_user: User = Depends(require_role(UserRole.ADMIN)),
 ):
     """管理员修改用户角色"""
+    perm_checker = PermissionChecker(current_user)
+    perm_checker.require_permission(Permission.USER_UPDATE)
     if user_id == current_user.id:
         raise HTTPException(400, detail="不能修改自己的角色")
     
@@ -190,6 +201,8 @@ async def toggle_user_status(
     current_user: User = Depends(require_role(UserRole.ADMIN)),
 ):
     """管理员启用或禁用用户"""
+    perm_checker = PermissionChecker(current_user)
+    perm_checker.require_permission(Permission.USER_UPDATE)
     if user_id == current_user.id:
         raise HTTPException(400, detail="不能禁用自己")
     
@@ -223,6 +236,8 @@ async def unlock_user_account(
     
     权限要求: ADMIN 角色
     """
+    perm_checker = PermissionChecker(current_user)
+    perm_checker.require_permission(Permission.USER_UPDATE)
     from ..core.security.account_lockout import AccountLockout
     
     # 检查目标用户是否存在
@@ -262,6 +277,8 @@ async def get_account_lock_status(
     - 锁定剩余时间（如已锁定）
     - 最后登录时间
     """
+    perm_checker = PermissionChecker(current_user)
+    perm_checker.require_permission(Permission.USER_READ)
     from ..core.security.account_lockout import AccountLockout
     from datetime import datetime, timezone
     
@@ -286,3 +303,129 @@ async def get_account_lock_status(
             "lockout_duration_minutes": int(lockout.lockout_duration.total_seconds() / 60),
         }
     }
+
+
+# ═══════════════════════════════════════
+# 批量导入用户
+# ═══════════════════════════════════════
+
+
+@router.get("/admin/users/organizations", summary="获取组织列表（含用户数）")
+async def list_user_organizations(
+    db: AsyncSession = Depends(get_db_session),
+    current_user: User = Depends(require_role(UserRole.ADMIN)),
+):
+    """管理员获取所有组织及其用户数量"""
+    perm_checker = PermissionChecker(current_user)
+    perm_checker.require_permission(Permission.USER_READ)
+    result = await db.execute(
+        select(
+            User.organization_id.label("id"),
+            func.count(User.id).label("user_count"),
+        )
+        .where(User.organization_id.isnot(None))
+        .group_by(User.organization_id)
+    )
+    orgs = result.all()
+    return {"organizations": [{"id": r.id, "name": f"组织 {r.id}", "user_count": r.user_count} for r in orgs]}
+
+
+@router.post("/admin/users/batch-import", summary="批量导入用户（CSV）")
+async def batch_import_users(
+    file,
+    db: AsyncSession = Depends(get_db_session),
+    current_user: User = Depends(require_role(UserRole.ADMIN)),
+):
+    """
+    批量导入用户从 CSV 文件。
+
+    CSV 格式要求:
+    - 第一行为标题行: username, email, password, full_name, role, department
+    - username 和 email 必填且唯一
+    - password 至少8位
+    - role 可选: admin, manager, researcher, analyst, viewer (默认 researcher)
+    - department 可选
+
+    返回:
+    - total: 总行数
+    - created: 成功创建数
+    - skipped_duplicate: 跳过（重复）数
+    - errors: 错误列表
+    """
+    import csv
+    import io
+    from ..services.user import UserService
+    from ..services.auth import get_password_hash
+
+    service = UserService(db)
+
+    # 读取 CSV 内容
+    content = await file.read()
+    text = content.decode("utf-8-sig")  # 支持 BOM
+    reader = csv.DictReader(io.StringIO(text))
+
+    results = {
+        "total": 0,
+        "created": 0,
+        "skipped_duplicate": 0,
+        "errors": [],
+    }
+
+    ROLE_MAP = {
+        "admin": "ADMIN",
+        "manager": "MANAGER",
+        "researcher": "RESEARCHER",
+        "analyst": "ANALYST",
+        "viewer": "VIEWER",
+    }
+
+    for row_num, row in enumerate(reader, start=2):  # 第1行是标题
+        results["total"] += 1
+        username = row.get("username", "").strip()
+        email = row.get("email", "").strip()
+        password = row.get("password", "").strip()
+        full_name = row.get("full_name", "").strip() or None
+        role = row.get("role", "researcher").strip().upper()
+        department = row.get("department", "").strip() or None
+
+        # 基础校验
+        if not username:
+            results["errors"].append({"row": row_num, "field": "username", "message": "用户名不能为空"})
+            continue
+        if not email:
+            results["errors"].append({"row": row_num, "field": "email", "message": "邮箱不能为空"})
+            continue
+        if not password or len(password) < 8:
+            results["errors"].append({"row": row_num, "field": "password", "message": "密码至少8位"})
+            continue
+        if role not in ROLE_MAP:
+            results["errors"].append({"row": row_num, "field": "role", "message": f"无效角色: {role}"})
+            continue
+
+        # 唯一性检查
+        existing = await db.execute(
+            select(User).where((User.username == username) | (User.email == email))
+        )
+        if existing.scalar_one_or_none():
+            results["skipped_duplicate"] += 1
+            continue
+
+        # 创建用户
+        try:
+            hashed = get_password_hash(password)
+            from ..models import UserRole
+            user = User(
+                username=username,
+                email=email,
+                hashed_password=hashed,
+                full_name=full_name,
+                role=UserRole[ROLE_MAP[role]],
+                department=department,
+            )
+            db.add(user)
+            results["created"] += 1
+        except Exception as e:
+            results["errors"].append({"row": row_num, "field": "create", "message": str(e)})
+
+    await db.commit()
+    return results

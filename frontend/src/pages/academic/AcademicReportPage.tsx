@@ -204,7 +204,7 @@ export default function AcademicReportPage() {
       <div className="max-w-7xl mx-auto space-y-4 px-4 sm:px-6 lg:px-8 py-6">
 
       {/* ── 页面横幅 ── */}
-      <div className="rounded-xl bg-primary-600 p-6 text-white shadow-sm">
+      <div className="surface-primary rounded-xl p-6 shadow-sm">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex-1">
             <h2 className="text-xl font-semibold leading-snug tracking-tight">学术报告管理</h2>
@@ -231,7 +231,7 @@ export default function AcademicReportPage() {
 
       {/* ── 搜索和筛选 ── */}
       <Card className="overflow-hidden border-neutral-200 dark:border-neutral-700">
-        <div className="h-[3px] bg-gradient-to-r from-primary-500 to-emerald-400" />
+        <div className="h-[3px] bg-gradient-to-r from-primary-500 to-success-400" />
         <CardContent className="p-4 space-y-3">
           <div className="flex flex-col sm:flex-row gap-3">
             <Input

@@ -7,7 +7,7 @@
 
 import { secureApiKeyManager } from './secureKeyManager'
 import { ConfigManager } from './configManager'
-import type { ModelType } from './configManager'
+import type { ModelType, ModelConfig } from './configManager'
 import { logger } from './safeLogger'
 
 // ══════════════════════════════════════
@@ -155,9 +155,19 @@ export class UnifiedApiKeyManager {
   }
 
   /**
-   * 将 API Key 同步到两个存储位置
+   * 将 API Key 同步到两个存储位置。
+   *
+   * - 第一/二参（apiKey + provider）保持向后兼容，ConfigManager 侧仍会基于
+   *   当前存储值做最小增量更新（只覆盖 apiKey 与 baseUrl），不影响调用方。
+   * - 新增可选第三参 fullConfig：传入完整的 ModelConfig 时，ConfigManager 侧
+   *   将写入该完整配置（含 model/temperature/maxTokens/provider 等），
+   *   消除"必须先 setModelConfig 再 syncToAll"的隐式执行顺序依赖。
    */
-  async syncToAll(apiKey: string, provider = 'deepseek'): Promise<SyncResult[]> {
+  async syncToAll(
+    apiKey: string,
+    provider = 'deepseek',
+    fullConfig?: Partial<ModelConfig>,
+  ): Promise<SyncResult[]> {
     const results: SyncResult[] = []
 
     // 同步到安全存储
@@ -180,18 +190,35 @@ export class UnifiedApiKeyManager {
 
     // 同步到 ConfigManager
     try {
-      const currentConfig = ConfigManager.getModelConfig('llm')
-      ConfigManager.setModelConfig('llm', {
-        ...currentConfig,
-        apiKey,
-        baseUrl: currentConfig.baseUrl || 'https://api.deepseek.com/v1',
-      })
-      results.push({
-        success: true,
-        from: 'user_input',
-        to: 'ConfigManager (传统存储)',
-        message: '已同步到配置管理器',
-      })
+      if (fullConfig && Object.keys(fullConfig).length > 0) {
+        // 完整配置写入：不再依赖调用方先执行 setModelConfig
+        const base = ConfigManager.getModelConfig('llm')
+        ConfigManager.setModelConfig('llm', {
+          ...base,
+          ...fullConfig,
+          apiKey,
+          provider,
+        })
+        results.push({
+          success: true,
+          from: 'user_input',
+          to: 'ConfigManager (完整配置写入)',
+          message: '已将完整配置（含 model/temperature/maxTokens）同步到配置管理器',
+        })
+      } else {
+        const currentConfig = ConfigManager.getModelConfig('llm')
+        ConfigManager.setModelConfig('llm', {
+          ...currentConfig,
+          apiKey,
+          baseUrl: currentConfig.baseUrl || 'https://api.deepseek.com/v1',
+        })
+        results.push({
+          success: true,
+          from: 'user_input',
+          to: 'ConfigManager (传统存储)',
+          message: '已同步到配置管理器',
+        })
+      }
     } catch (error) {
       results.push({
         success: false,

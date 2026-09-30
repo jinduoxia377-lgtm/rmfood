@@ -220,7 +220,7 @@ class ProductPlanReporter:
         # 假设售价（基于成本加成）
         markup_rate = 3.0  # 3倍加价
         selling_price = total_cost * markup_rate
-        gross_margin = ((selling_price - total_cost) / selling_price) * 100
+        gross_margin = ((selling_price - total_cost) / selling_price * 100) if selling_price > 0 else 0.0
 
         return {
             "total_cost_per_serving": round(total_cost, 4),

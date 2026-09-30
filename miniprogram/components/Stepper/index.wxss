@@ -1,4 +1,4 @@
-/** Stepper 步进器组件样式 */
+/** Stepper 姝ヨ繘鍣ㄧ粍浠舵牱寮?*/
 .stepper {
   display: inline-flex;
   align-items: center;
@@ -23,7 +23,7 @@
 
 .stepper-btn-disabled {
   opacity: 0.5;
-  cursor: not-allowed;
+  
 }
 
 .stepper-input-wrapper {
@@ -45,7 +45,7 @@
   outline: none;
 }
 
-/* 尺寸 */
+/* 灏哄 */
 .stepper-small {
   border-radius: var(--radius-sm);
 }
@@ -73,3 +73,4 @@
 .stepper-large .stepper-input {
   font-size: var(--font-size-lg);
 }
+

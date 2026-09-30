@@ -1,0 +1,99 @@
+/** AppleNavBar 组件样式 */
+.apple-navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--z-index-fixed);
+  background: var(--blur-bg);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 0.5rpx solid var(--color-separator);
+}
+
+.apple-navbar-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 44rpx;
+  padding: 0 16rpx;
+}
+
+.apple-navbar-back {
+  display: flex;
+  align-items: center;
+  gap: 4rpx;
+  color: var(--color-system-blue);
+  font-size: var(--font-size-body);
+  padding: 8rpx;
+  margin: -8rpx;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.apple-navbar-back:active {
+  opacity: 0.6;
+}
+
+.back-icon {
+  width: 8rpx;
+  height: 14rpx;
+  border-left: 2.5rpx solid var(--color-system-blue);
+  border-bottom: 2.5rpx solid var(--color-system-blue);
+  transform: rotate(45deg);
+  margin-top: 3rpx;
+}
+
+.apple-navbar-title {
+  font-size: var(--font-size-title-3);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  text-align: center;
+  flex: 1;
+}
+
+.apple-navbar-action {
+  width: 44rpx;
+  height: 44rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-system-blue);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.apple-navbar-action:active {
+  opacity: 0.6;
+}
+
+/* Large Title 模式 */
+.apple-navbar-large {
+  padding-top: env(safe-area-inset-top);
+  height: calc(96rpx + env(safe-area-inset-top));
+}
+
+.apple-navbar-large .apple-navbar-content {
+  height: 96rpx;
+  padding: 0 20rpx;
+  align-items: flex-end;
+  padding-bottom: 8rpx;
+}
+
+.apple-navbar-large .apple-navbar-title {
+  font-size: var(--font-size-large-title);
+  font-weight: var(--font-weight-bold);
+  text-align: left;
+  flex: none;
+  margin-bottom: 4rpx;
+}
+
+.apple-navbar-large .apple-navbar-back {
+  position: absolute;
+  left: 20rpx;
+  bottom: 20rpx;
+}
+
+.apple-navbar-large .apple-navbar-action {
+  position: absolute;
+  right: 20rpx;
+  bottom: 16rpx;
+}

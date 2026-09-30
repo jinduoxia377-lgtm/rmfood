@@ -10,12 +10,13 @@ const { getPagePreloader } = require('./utils/page_preloader')
 const { getImageCompressor } = require('./utils/image_compressor')
 const { getWebSocketManager } = require('./utils/websocket')
 const { getOfflineCacheManager } = require('./utils/offline_cache')
+const config = require('./config/api')
 
 App({
   globalData: {
     userInfo: null,
     accessToken: null,
-    baseUrl: 'http://localhost:8000/api/v1',
+    baseUrl: config.baseUrl,
     systemInfo: null,
     platform: 'ios',
     gestureNavigator: null,
@@ -46,7 +47,6 @@ App({
     }
 
     // 初始化手势导航（在页面级别初始化）
-    console.log('[App] Gesture navigator ready (will init per-page)')
     
     // 初始化缓存管理器
     this.initCacheManager()
@@ -97,7 +97,6 @@ App({
     try {
       const cacheManager = getCacheManager()
       this.globalData.cacheManager = cacheManager
-      console.log('[App] Cache manager initialized')
     } catch (e) {
       console.error('[App] Init cache manager failed:', e)
     }
@@ -110,7 +109,6 @@ App({
     try {
       const manager = getMicroAnimationManager()
       this.globalData.microAnimationManager = manager
-      console.log('[App] Micro animation manager initialized')
     } catch (e) {
       console.error('[App] Init micro animation manager failed:', e)
     }
@@ -124,7 +122,6 @@ App({
       const loader = getImageLazyLoader()
       loader.init()
       this.globalData.imageLazyLoader = loader
-      console.log('[App] Image lazy loader initialized')
     } catch (e) {
       console.error('[App] Init image lazy loader failed:', e)
     }
@@ -137,7 +134,6 @@ App({
     try {
       const preloader = getPagePreloader()
       this.globalData.pagePreloader = preloader
-      console.log('[App] Page preloader initialized')
     } catch (e) {
       console.error('[App] Init page preloader failed:', e)
     }
@@ -150,7 +146,6 @@ App({
     try {
       const compressor = getImageCompressor()
       this.globalData.imageCompressor = compressor
-      console.log('[App] Image compressor initialized')
     } catch (e) {
       console.error('[App] Init image compressor failed:', e)
     }
@@ -163,7 +158,6 @@ App({
     try {
       const wsManager = getWebSocketManager()
       this.globalData.wsManager = wsManager
-      console.log('[App] WebSocket manager initialized')
     } catch (e) {
       console.error('[App] Init WebSocket manager failed:', e)
     }
@@ -177,7 +171,6 @@ App({
       const offlineCache = getOfflineCacheManager()
       offlineCache.init()
       this.globalData.offlineCache = offlineCache
-      console.log('[App] Offline cache initialized')
     } catch (e) {
       console.error('[App] Init offline cache failed:', e)
     }
@@ -212,7 +205,6 @@ App({
     
     updateManager.onCheckForUpdate((res) => {
       if (res.hasUpdate) {
-        console.log('[App] Found new version')
       }
     })
     

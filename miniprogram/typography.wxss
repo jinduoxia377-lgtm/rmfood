@@ -1,0 +1,147 @@
+/**
+ * RMFOOD Mini Program - Typography System
+ * WeChat Official Design Specification Compliant
+ */
+
+/* ============================================
+   1. Body Text (14-16px / 28-32rpx)
+   ============================================ */
+
+.text-body-sm {
+  font-size: 28rpx;
+  line-height: 20px;
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-primary);
+}
+
+.text-body {
+  font-size: 30rpx;
+  line-height: 22px;
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-primary);
+}
+
+.text-body-strong {
+  font-size: 30rpx;
+  line-height: 22px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+/* ============================================
+   2. Title Text (17-22px / 34-44rpx)
+   ============================================ */
+
+.text-title-xl {
+  font-size: 44rpx;
+  line-height: 52rpx;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  letter-spacing: -0.5rpx;
+}
+
+.text-title-lg {
+  font-size: 40rpx;
+  line-height: 48rpx;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+.text-title-md {
+  font-size: 34rpx;
+  line-height: 42rpx;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.text-title-sm {
+  font-size: 30rpx;
+  line-height: 36rpx;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+/* ============================================
+   3. Caption Text (12-13px / 24-26rpx)
+   ============================================ */
+
+.text-caption {
+  font-size: 26rpx;
+  line-height: 32rpx;
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-secondary);
+}
+
+.text-caption-strong {
+  font-size: 26rpx;
+  line-height: 32rpx;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+}
+
+.text-caption-sm {
+  font-size: 24rpx;
+  line-height: 28rpx;
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-tertiary);
+}
+
+/* ============================================
+   4. Display Text (28px+ / 56rpx+)
+   ============================================ */
+
+.text-display {
+  font-size: 56rpx;
+  line-height: 64rpx;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  letter-spacing: -1rpx;
+}
+
+/* ============================================
+   5. Link Text
+   ============================================ */
+
+.text-link {
+  font-size: var(--font-size-body);
+  color: var(--color-system-blue);
+  text-decoration: none;
+}
+
+/* ============================================
+   6. Special Styles
+   ============================================ */
+
+.text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.text-truncate-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.text-truncate-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ============================================
+   7. Container Styles
+   ============================================ */
+
+.title-container {
+  margin-bottom: 24rpx;
+}
+
+.content-area {
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-secondary);
+}

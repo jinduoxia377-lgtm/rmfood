@@ -1,0 +1,11 @@
+{
+  "navigationBarTitleText": "饮食日历",
+  "navigationBarBackgroundColor": "#2D5A3D",
+  "navigationBarTextStyle": "white",
+  "usingComponents": {
+    "icon": "../../components/Icon/index",
+    "avatar": "../../components/Avatar/index",
+    "tag": "../../components/Tag/index",
+    "loading": "../../components/Loading/index"
+  }
+}

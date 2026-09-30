@@ -735,7 +735,10 @@ class _LazyEngine:
     # 但常用的主要是 pool、connect、begin、dispose
 
 class _LazySessionFactory:
-    """代理 session factory，懒加载并在调用时获取工厂"""
+    """代理 session factory，懒加载并在调用时获取工厂
+
+    调用后返回 AsyncSession，可直接用于 `async with factory() as session`。
+    """
 
     def __call__(self):
         # 返回 async_sessionmaker 的实例，该实例可被用作异步上下文管理器
@@ -745,3 +748,8 @@ class _LazySessionFactory:
 # 创建兼容性的全局变量
 engine = _LazyEngine()
 async_session_factory = _LazySessionFactory()
+
+# 向后兼容：旧代码通过 get_async_session() / AsyncSessionLocal 引用会话工厂
+# 统一指向懒代理，首次调用时才初始化底层 engine
+get_async_session = _LazySessionFactory()
+AsyncSessionLocal = _LazySessionFactory()

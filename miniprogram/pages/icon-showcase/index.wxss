@@ -1,0 +1,135 @@
+/* 閸ョ偓鐖ｇ仦鏇犮仛妞ょ敻娼伴弽宄扮础 */
+.page-container {
+  padding: 24rpx;
+  background: var(--color-bg-page);
+  min-height: 100vh;
+
+  padding-bottom: calc(100rpx + env(safe-area-inset-bottom));
+ }
+
+.search-box {
+  display: flex;
+  align-items: center;
+  background: var(--color-bg-card);
+  border-radius: var(--radius-lg);
+  padding: 16rpx 24rpx;
+  margin-bottom: 32rpx;
+  box-shadow: var(--shadow-sm);
+}
+
+.search-input {
+  flex: 1;
+  margin-left: 16rpx;
+  font-size: var(--font-size-md);
+}
+
+/* 閸掑棛琚弽鍥暯 */
+.category-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin: 32rpx 0 16rpx;
+  padding-left: 16rpx;
+}
+
+/* 閸ョ偓鐖ｇ純鎴炵壐 */
+.icon-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24rpx;
+  background: var(--color-bg-card);
+  border-radius: var(--radius-lg);
+  padding: 24rpx;
+  box-shadow: var(--shadow-sm);
+}
+
+.icon-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16rpx;
+  border-radius: var(--radius-md);
+  transition: background-color 0.2s;
+}
+
+.icon-item:active {
+  background: var(--color-bg-hover);
+}
+
+.icon-preview {
+  width: 64rpx;
+  height: 64rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-name {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  margin-top: 8rpx;
+  text-align: center;
+  word-break: break-all;
+}
+
+/* 鐏忓搫顕仦鏇犮仛 */
+.size-demo {
+  background: var(--color-bg-card);
+  border-radius: var(--radius-lg);
+  padding: 24rpx;
+  margin-top: 32rpx;
+  box-shadow: var(--shadow-sm);
+}
+
+.size-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin-bottom: 24rpx;
+}
+
+.size-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}
+
+.size-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.size-item text {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+/* 妫版粏澹婄仦鏇犮仛 */
+.color-demo {
+  background: var(--color-bg-card);
+  border-radius: var(--radius-lg);
+  padding: 24rpx;
+  margin-top: 32rpx;
+  box-shadow: var(--shadow-sm);
+}
+
+.color-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin-bottom: 24rpx;
+}
+
+.color-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}
+
+/* ============================================
+   搴曢儴瀹夊叏鍖?   ============================================ */
+.bottom-spacing {
+  height: calc(40rpx + env(safe-area-inset-bottom));
+}

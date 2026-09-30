@@ -35,7 +35,6 @@ class PagePreloader {
       status: 'pending'
     })
 
-    console.log(`[PagePreloader] Preloading: ${url}`)
 
     // 延迟预加载
     setTimeout(() => {
@@ -65,7 +64,6 @@ class PagePreloader {
       status: 'loaded'
     })
 
-    console.log(`[PagePreloader] Loaded: ${url}`)
   }
 
   /**
@@ -74,7 +72,6 @@ class PagePreloader {
    */
   cancel(url) {
     this.preloadQueue.delete(url)
-    console.log(`[PagePreloader] Cancelled: ${url}`)
   }
 
   /**
@@ -82,7 +79,6 @@ class PagePreloader {
    */
   clearAll() {
     this.preloadQueue.clear()
-    console.log('[PagePreloader] All preloads cleared')
   }
 
   /**

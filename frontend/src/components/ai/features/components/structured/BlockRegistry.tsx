@@ -15,6 +15,9 @@ import ListBlock from './blocks/ListBlock'
 import CalloutBlock from './blocks/CalloutBlock'
 import MetricsBlock from './blocks/MetricsBlock'
 import DividerBlock from './blocks/DividerBlock'
+import IngredientDetailBlock from './blocks/IngredientDetailBlock'
+import SynergyChartBlock from './blocks/SynergyChartBlock'
+import TimelineBlock from './blocks/TimelineBlock'
 
 type BlockComponent = React.ComponentType<{ data: any }>
 
@@ -26,6 +29,9 @@ const REGISTRY: Record<BlockType, BlockComponent> = {
   'callout': CalloutBlock,
   'metrics': MetricsBlock,
   'divider': DividerBlock,
+  'ingredient-detail': IngredientDetailBlock,
+  'synergy-chart': SynergyChartBlock,
+  'timeline': TimelineBlock,
 }
 
 /**
