@@ -24,8 +24,10 @@
    品牌色阶在暗色下整体反转，会使底色变浅而文字不变，对比度崩塌至 1.52:1。 */
 .surface-primary          { background-color: var(--color-primary-surface, #047857);
                             color: var(--color-on-primary-surface, #ffffff); }
-.surface-primary:hover    { background-color: var(--color-primary-hover, #059669); }
-.dark .surface-primary:hover { background-color: var(--color-primary-800, #d1fae5); }
+/* 悬停态【必须】同样使用不参与反转的表面令牌族。
+   反例（已修正）：曾用 --color-primary-hover(#059669, 亮 3.77:1) 与
+   --color-primary-800(#d1fae5, 暗 ≈1.13:1) —— 后者比 D-50 本身的 1.52:1 更差。 */
+.surface-primary:hover    { background-color: var(--color-primary-surface-hover, #065f46); }
 
 /* 成功 / 警告 / 错误 / 信息 */
 .text-success-main       { color: var(--color-success, #10b981); }
