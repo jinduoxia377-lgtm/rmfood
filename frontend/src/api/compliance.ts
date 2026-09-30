@@ -126,12 +126,6 @@ export const complianceApi = {
     const params = name ? `?name=${encodeURIComponent(name)}` : '';
     return fetch(`${BASE}/food-homology${params}`).then(r => r.json());
   },
-
-  /** 查询新食品原料目录 */
-  getNewFoodMaterials(name?: string): Promise<{ success: boolean; data: { source: string; count: number; materials: any[] } }> {
-    const params = name ? `?name=${encodeURIComponent(name)}` : '';
-    return fetch(`${BASE}/new-food-materials${params}`).then(r => r.json());
-  },
 };
 
 /**

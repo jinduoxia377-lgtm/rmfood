@@ -50,23 +50,23 @@ export const features: FeatureItem[] = [
     id: 'multi-opt',
     icon: 'FlaskConical',
     title: '多目标优化',
-    desc: 'MCTS 蒙特卡洛树搜索 + 模拟退火双引擎，在安全性约束下自动寻找最优配方组合，支持梯度下降求解器。',
+    desc: '7 种算法引擎（GA / NSGA-III / 贝叶斯 / MOEAD-CMAES / BinaryGA-MILP / Bandit 自动求解器 / 神经网络）统一调度，NSGA-III 支持 8 维目标 Pareto 优化，UCB1 Bandit 自动选择最优策略，完整管线 P95 < 3.2s。',
     tag: 'AI 智能研发',
     dimension: 'ai',
-    keyMetric: '3 种求解器',
-    techLabel: 'MCTS · Simulated Annealing',
-    steps: [{ label: '约束建模', detail: '将业务规则转化为数学约束' }, { label: '搜索空间展开', detail: '穷举所有可行解空间' }, { label: '帕累托最优筛选', detail: '多目标优化找到最优平衡点' }],
+    keyMetric: '7 种引擎',
+    techLabel: 'NSGA-III · Bandit · GP',
+    steps: [{ label: '智能策略选择', detail: 'Bandit UCB1 自动匹配最优算法' }, { label: '多目标 Pareto 优化', detail: '功效/安全/口感/成本 四维寻优' }, { label: '协同机制量化', detail: '5 种数学模型综合协同指数 SI' }],
   },
   {
     id: 'safety',
     icon: 'Shield',
     title: '安全合规引擎',
-    desc: '实时检测配伍禁忌与过敏原风险，对接卫健委药食同源目录与食品安全国家标准，全自动合规预判。',
+    desc: '三级预警系统（INFO/WARN/CRITICAL），61 类内置安全阈值（多肽/多糖/皂苷/黄酮/生物碱等），PopPK/PD 药效动力学模型支持最佳服用时间窗口计算，适配孕妇/儿童/老年人特殊人群剂量调整。',
     tag: '安全保障',
     dimension: 'ai',
-    keyMetric: '130+ 条目',
-    techLabel: '实时同步 · 多级校验',
-    steps: [{ label: '原料扫描', detail: '遍历全量原料数据库' }, { label: '配伍禁忌检测', detail: '基于药性理论进行冲突分析' }, { label: '合规报告生成', detail: '自动输出法规合规性报告' }],
+    keyMetric: '61 类阈值',
+    techLabel: '三级预警 · PopPK/PD',
+    steps: [{ label: '原料扫描', detail: '遍历全量原料数据库' }, { label: '配伍禁忌 + 安全阈值', detail: '130+ 条目 · 61 类阈值实时检测' }, { label: '合规报告生成', detail: '自动输出法规合规性报告' }],
   },
   {
     id: 'kg',
@@ -117,7 +117,10 @@ export function getFeatureIcon(name: string) {
   return iconMap[name] ?? Brain;
 }
 
-/** 各维度的颜色配置 */
+/** 各维度的颜色配置
+ * P0 修复：primary 用于文本对比（12px 标签 / 14px 标题 / 图标色），
+ * 需满足 WCAG AA 4.5:1 → 全部改用 700 级深色。
+ */
 export const dimensionConfig: Record<Dimension, {
   primary: string;
   primaryLight: string;
@@ -127,27 +130,27 @@ export const dimensionConfig: Record<Dimension, {
   stepActive: string;
 }> = {
   ai: {
-    primary: '#059669',
+    primary: '#047857',
     primaryLight: '#ecfdf5',
     primaryBorder: '#a7f3d0',
     primaryRGB: '5,150,105',
-    iconBg: 'linear-gradient(135deg, #059669, #34d399)',
-    stepActive: '#059669',
+    iconBg: 'linear-gradient(135deg, #047857, #34d399)',
+    stepActive: '#047857',
   },
   data: {
-    primary: '#2563eb',
+    primary: '#1d4ed8',
     primaryLight: '#eff6ff',
     primaryBorder: '#bfdbfe',
     primaryRGB: '37,99,235',
-    iconBg: 'linear-gradient(135deg, #2563eb, #60a5fa)',
-    stepActive: '#2563eb',
+    iconBg: 'linear-gradient(135deg, #1d4ed8, #60a5fa)',
+    stepActive: '#1d4ed8',
   },
   team: {
-    primary: '#d97706',
+    primary: '#b45309',
     primaryLight: '#fffbeb',
     primaryBorder: '#fde68a',
     primaryRGB: '217,119,6',
-    iconBg: 'linear-gradient(135deg, #d97706, #fbbf24)',
-    stepActive: '#d97706',
+    iconBg: 'linear-gradient(135deg, #b45309, #fbbf24)',
+    stepActive: '#b45309',
   },
 };

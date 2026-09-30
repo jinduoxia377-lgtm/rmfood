@@ -1,0 +1,149 @@
+<!-- 药材详情页 -->
+<view class="page-container">
+  <!-- 顶部导航 -->
+  <view class="header">
+    <view class="header-content">
+      <view class="back-btn" bindtap="goBack">
+        <text class="back-icon">‹</text>
+      </view>
+      <view class="header-title">
+        <text class="title-main">{{herb ? herb.name : '药材详情'}}</text>
+      </view>
+      <view class="header-actions">
+        <view class="action-btn" bindtap="copyHerbInfo">
+          <text class="action-icon">📋</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 加载状态 -->
+  <view wx:if="{{loading}}" class="loading-container">
+    <view class="loading-spinner"></view>
+    <text class="loading-text">加载中...</text>
+  </view>
+
+  <!-- 内容区 -->
+  <scroll-view 
+    wx:else 
+    class="content-scroll" 
+    scroll-y
+    enable-back-to-top
+  >
+    <!-- 基本信息卡片 -->
+    <view class="info-card">
+      <view class="herb-header">
+        <view class="herb-name-section">
+          <text class="herb-name">{{herb.name}}</text>
+          <text class="herb-latin">{{herb.latinName}}</text>
+        </view>
+        <view class="herb-badges">
+          <view wx:if="{{herb.isFoodHomology}}" class="badge homology">
+            <text>⭐ 药食同源</text>
+          </view>
+          <view class="badge category">
+            <text>{{herb.category}}</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="herb-meta">
+        <view class="meta-item">
+          <text class="meta-label">性味</text>
+          <text class="meta-value nature-{{getNatureClass(herb.nature)}}">{{herb.nature}} {{herb.flavor}}</text>
+        </view>
+        <view class="meta-item">
+          <text class="meta-label">归经</text>
+          <text class="meta-value">{{herb.meridians}}</text>
+        </view>
+        <view class="meta-item">
+          <text class="meta-label">DB评估</text>
+          <text class="meta-value">OB={{herb.obPercent}}% DL={{herb.dlValue}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 功效主治 -->
+    <view class="section-card">
+      <view class="section-header">
+        <text class="section-title">功效主治</text>
+      </view>
+      <view class="section-content">
+        <text class="content-text">{{herb.function || herb.effects}}</text>
+      </view>
+    </view>
+
+    <!-- 药理作用 -->
+    <view wx:if="{{herb.effects}}" class="section-card">
+      <view class="section-header">
+        <text class="section-title">药理作用</text>
+      </view>
+      <view class="section-content">
+        <text class="content-text">{{herb.effects}}</text>
+      </view>
+    </view>
+
+    <!-- 化合物列表 -->
+    <view wx:if="{{compounds.length > 0}}" class="section-card">
+      <view class="section-header">
+        <text class="section-title">主要化合物 ({{compounds.length}})</text>
+        <text class="section-more" bindtap="viewAllCompounds">查看全部</text>
+      </view>
+      <view class="compound-list">
+        <view 
+          wx:for="{{compounds}}" 
+          wx:key="id"
+          class="compound-item"
+          bindtap="viewCompound"
+          data-index="{{index}}"
+        >
+          <text class="compound-name">{{item.name}}</text>
+          <view class="compound-meta">
+            <text class="compound-mw">MW: {{item.mw}}</text>
+            <text class="compound-ob">OB: {{item.ob}}%</text>
+            <text class="compound-dl">DL: {{item.dl}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 知识图谱 -->
+    <view wx:if="{{showingGraph}}" class="section-card">
+      <view class="section-header">
+        <text class="section-title">知识图谱</text>
+        <text class="section-stats">{{graphResult.nodes.length}} 节点, {{graphResult.edges.length}} 关系</text>
+      </view>
+      <view class="graph-summary">
+        <view class="graph-node" wx:for="{{graphResult.nodes}}" wx:key="id">
+          <view class="node-dot {{item.type}}"></view>
+          <text class="node-label">{{item.label}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 使用注意 -->
+    <view class="section-card warning">
+      <view class="section-header">
+        <text class="section-title">使用注意</text>
+      </view>
+      <view class="section-content">
+        <view class="warning-item" wx:for="{{safetyInfo.contraindications}}" wx:key="index">
+          <text class="warning-icon">⚠️</text>
+          <text class="warning-text">{{item}}</text>
+        </view>
+        <view wx:if="{{safetyInfo.contraindications.length === 0}}" class="no-warning">
+          <text class="safe-text">✅ 暂无特别禁忌</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 空状态 -->
+    <view wx:if="{{!loading && !herb}}" class="empty-state">
+      <text class="empty-icon">🌿</text>
+      <text class="empty-text">药材信息暂不可用</text>
+    </view>
+
+    <!-- 底部间距 -->
+    <view class="bottom-spacing"></view>
+  </scroll-view>
+</view>

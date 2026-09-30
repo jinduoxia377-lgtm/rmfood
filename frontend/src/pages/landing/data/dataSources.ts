@@ -9,6 +9,8 @@ export interface DataSource {
   stat: string;
   statLabel: string;
   color: string;
+  /** P0 对比度修复：文本专用深色（白底 ≥4.5:1） */
+  colorText?: string;
   colorLight: string;
   colorBorder: string;
   status: 'online' | 'syncing' | 'update';
@@ -26,6 +28,7 @@ export const dataSources: DataSource[] = [
     stat: '29,361',
     statLabel: '中药材条目',
     color: '#059669',
+    colorText: '#047857',
     colorLight: '#ecfdf5',
     colorBorder: '#a7f3d0',
     status: 'online',
@@ -40,6 +43,7 @@ export const dataSources: DataSource[] = [
     stat: '5,200+',
     statLabel: '活性肽结构',
     color: '#2563eb',
+    colorText: '#1d4ed8',
     colorLight: '#eff6ff',
     colorBorder: '#bfdbfe',
     status: 'online',
@@ -54,6 +58,7 @@ export const dataSources: DataSource[] = [
     stat: '128K',
     statLabel: '实体节点',
     color: '#7c3aed',
+    colorText: '#6d28d9',
     colorLight: '#f5f3ff',
     colorBorder: '#ddd6fe',
     status: 'online',
@@ -68,6 +73,7 @@ export const dataSources: DataSource[] = [
     stat: '130+',
     statLabel: '法定条目',
     color: '#2563eb',
+    colorText: '#1d4ed8',
     colorLight: '#eff6ff',
     colorBorder: '#bfdbfe',
     status: 'syncing',
@@ -85,6 +91,7 @@ export const dataSources: DataSource[] = [
     stat: '380+',
     statLabel: '国标条款',
     color: '#d97706',
+    colorText: '#b45309',
     colorLight: '#fffbeb',
     colorBorder: '#fde68a',
     status: 'update',
@@ -105,6 +112,7 @@ export const dataSources: DataSource[] = [
     stat: '50+',
     statLabel: '国际法规源',
     color: '#0891b2',
+    colorText: '#0e7490',
     colorLight: '#ecfeff',
     colorBorder: '#a5f3fc',
     status: 'online',

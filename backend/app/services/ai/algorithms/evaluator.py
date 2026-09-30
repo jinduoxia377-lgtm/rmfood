@@ -99,31 +99,50 @@ class FormulaEvaluator:
             return
         try:
             herbs = await self._herb_knowledge.load_herbs()
-            if herbs:
+            if herbs and len(herbs) > 20:
                 self.herb_db = dict(herbs)
                 self.efficacy_map = self._herb_knowledge.get_efficacy_to_herbs()
-                logger.info(f"[NSGA-II] 从 HerbKnowledgeService 加载 {len(self.herb_db)} 种药材")
+                logger.info(
+                    f"[NSGA-II] ✅ 数据库加载成功: {len(self.herb_db)} 种药材, "
+                    f"{len(self.efficacy_map)} 种功效"
+                )
                 self._merge_builtin_properties()
                 self._build_synergy_matrix()
             else:
-                logger.warning("[NSGA-II] HerbKnowledgeService 返回空数据，回退内置字典")
+                # 数据库无数据时抛出异常
+                raise RuntimeError(
+                    f"[数据完整性] 数据库药材不足: 实际 {len(herbs) if herbs else 0} 种, "
+                    f"最低要求 20 种。请先运行数据补全脚本。"
+                )
+        except RuntimeError:
+            raise
         except Exception as e:
-            logger.warning(f"[NSGA-II] HerbKnowledgeService 加载失败: {e}")
+            logger.error(f"[数据完整性] HerbKnowledgeService 加载失败: {e}")
+            raise
 
     def _load_herbs_sync(self) -> None:
-        """同步加载 HerbKnowledgeService 数据"""
+        """同步加载 HerbKnowledgeService 数据（强制数据库）"""
         if self._herb_knowledge is None:
-            return
+            raise RuntimeError("[数据完整性] HerbKnowledgeService 未初始化")
         try:
             herbs = self._herb_knowledge.get_herbs()
-            if herbs:
+            if herbs and len(herbs) > 20:
                 self.herb_db = dict(herbs)
                 self.efficacy_map = self._herb_knowledge.get_efficacy_to_herbs()
-                logger.info(f"[NSGA-II] 同步加载 HerbKnowledgeService: {len(self.herb_db)} 种药材")
+                logger.info(
+                    f"[NSGA-II] ✅ 数据库加载成功: {len(self.herb_db)} 种药材"
+                )
                 self._merge_builtin_properties()
                 self._build_synergy_matrix()
+            else:
+                raise RuntimeError(
+                    f"[数据完整性] 数据库药材不足: 实际 {len(herbs) if herbs else 0} 种"
+                )
+        except RuntimeError:
+            raise
         except Exception as e:
-            logger.warning(f"[NSGA-II] 同步加载 HerbKnowledgeService 失败: {e}")
+            logger.error(f"[数据完整性] 数据库加载失败: {e}")
+            raise
 
     def _merge_builtin_properties(self) -> None:
         """合并内置的四气五味/归经/五味分类数据"""

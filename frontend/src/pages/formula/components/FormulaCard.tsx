@@ -96,13 +96,13 @@ export function FormulaCard({
           className={cn(
             'absolute top-3 right-3 p-1.5 rounded-lg transition-all',
             isFavorite
-              ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-500'
-              : 'text-neutral-300 dark:text-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-amber-400',
+              ? 'bg-warning-50 dark:bg-warning-900/20 text-warning-500'
+              : 'text-neutral-400 dark:text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-warning-400',
           )}
           aria-label={isFavorite ? '取消收藏' : '收藏'}
           aria-pressed={isFavorite}
         >
-          <Star size={14} className={isFavorite ? 'fill-amber-400' : ''} />
+          <Star size={14} className={isFavorite ? 'fill-warning-400 text-warning-400' : ''} />
         </button>
 
         {/* 多选框 */}

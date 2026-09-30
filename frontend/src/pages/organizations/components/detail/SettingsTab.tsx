@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, memo } from 'react'
+import { useState, useMemo, useCallback, memo, useRef } from 'react'
 import {
   Save,
   Loader2,
@@ -12,6 +12,7 @@ import {
 import { cn } from '@/lib/utils'
 import { useToast } from '@/components/ui/Toast'
 import { LazyImage } from '@/components/ui/LazyImage'
+import api from '@/api/client'
 
 interface SettingsTabProps {
   organizationId: number
@@ -29,6 +30,7 @@ interface SettingsTabProps {
   }
   onArchive?: () => Promise<void>
   onDelete?: () => void
+  onRefresh?: () => void
 }
 
 function generateSlug(name: string): string {
@@ -41,14 +43,16 @@ function generateSlug(name: string): string {
     .replace(/^-|-$/g, '')
 }
 
-const SettingsTab = memo(({ organization, onArchive, onDelete }: SettingsTabProps) => {
+const SettingsTab = memo(({ organizationId, organization, onArchive, onDelete, onRefresh }: SettingsTabProps) => {
   const toast = useToast()
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [name, setName] = useState(organization?.name || '')
   const [slug, setSlug] = useState(organization?.slug || '')
   const [description, setDescription] = useState(organization?.description || '')
   const [autoSlug, setAutoSlug] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [logoUrl, setLogoUrl] = useState<string | undefined>(organization?.logo_url)
 
   const handleNameChange = useCallback(
     (value: string) => {
@@ -67,21 +71,28 @@ const SettingsTab = memo(({ organization, onArchive, onDelete }: SettingsTabProp
     }
     setSaving(true)
     try {
-      await new Promise((resolve) => setTimeout(resolve, 800))
+      await api.put(`/organizations/${organizationId}`, {
+        name: name.trim(),
+        slug,
+        description: description.trim() || undefined,
+        logo_url: logoUrl,
+      })
       toast.success('组织信息已更新')
+      onRefresh?.()
     } catch (err: any) {
-      toast.error(err.message || '保存失败')
+      toast.error(err?.response?.data?.detail || err?.message || '保存失败')
     } finally {
       setSaving(false)
     }
-  }, [name, slug, description, toast])
+  }, [name, slug, description, logoUrl, organizationId, toast])
 
   const isModified = useMemo(
     () =>
       name !== (organization?.name || '') ||
       slug !== (organization?.slug || '') ||
-      description !== (organization?.description || ''),
-    [name, slug, description, organization],
+      description !== (organization?.description || '') ||
+      logoUrl !== (organization?.logo_url || ''),
+    [name, slug, description, logoUrl, organization],
   )
 
   return (
@@ -113,9 +124,24 @@ const SettingsTab = memo(({ organization, onArchive, onDelete }: SettingsTabProp
                   organization?.name?.charAt(0)?.toUpperCase() || '?'
                 )}
               </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0]
+                  if (file) {
+                    const reader = new FileReader()
+                    reader.onloadend = () => setLogoUrl(reader.result as string)
+                    reader.readAsDataURL(file)
+                  }
+                }}
+              />
               <button
                 className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl flex items-center justify-center cursor-pointer"
                 aria-label="上传头像"
+                onClick={() => fileInputRef.current?.click()}
               >
                 <Camera className="w-6 h-6 text-white" />
               </button>
@@ -178,7 +204,7 @@ const SettingsTab = memo(({ organization, onArchive, onDelete }: SettingsTabProp
                 setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))
                 if (autoSlug && e.target.value !== generateSlug(name)) setAutoSlug(false)
               }}
-              placeholder="url-friendly-identifier"
+              placeholder="URL 友好标识（如 rmfood-lab）"
               disabled={autoSlug}
               className={cn(
                 'flex-1 px-3 py-2.5 border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white text-sm rounded-r-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors',

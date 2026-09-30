@@ -22,10 +22,8 @@ class GestureNavigator {
   init(pageContext) {
     this.pageContext = pageContext
     if (!pageContext) {
-      console.warn('[GestureNavigator] No page context provided')
       return
     }
-    console.log('[GestureNavigator] Initialized for page')
   }
 
   /**
@@ -80,8 +78,8 @@ class GestureNavigator {
       delta: 1,
       fail: () => {
         // 如果没有上一页，返回主页
-        wx.switchTab({
-          url: '/pages/index/index'
+        wx.navigateTo({
+          url:"/pages/index/index"
         })
       }
     })
@@ -127,99 +125,6 @@ class GestureNavigator {
    */
   destroy() {
     this.pageContext = null
-  }
-}
-
-// 导出单例
-const gestureNavigator = new GestureNavigator()
-
-module.exports = {
-  getGestureNavigator: () => gestureNavigator
-}
-
-  /**
-   * 触摸开始
-   */
-  handleTouchStart(e) {
-    // 只处理左边缘滑动
-    const touch = e.touches[0]
-    this.startX = touch.clientX
-    this.startY = touch.clientY
-    this.isSwiping = false
-    this.dragDistance = 0
-  }
-
-  /**
-   * 触摸移动
-   */
-  handleTouchMove(e) {
-    if (this.startX === 0) return
-    
-    const touch = e.touches[0]
-    const deltaX = touch.clientX - this.startX
-    const deltaY = touch.clientY - this.startY
-    
-    // 只处理水平滑动，且起始点在屏幕左边缘
-    if (this.startX < 50 && Math.abs(deltaX) > Math.abs(deltaY) && deltaX > 0) {
-      this.isSwiping = true
-      this.dragDistance = deltaX
-      e.preventDefault() // 阻止页面滚动
-    }
-  }
-
-  /**
-   * 触摸结束
-   */
-  handleTouchEnd() {
-    if (!this.isSwiping || this.dragDistance < this.threshold) {
-      this.reset()
-      return
-    }
-    
-    // 触发返回
-    wx.navigateBack({
-      delta: 1,
-      fail: () => {
-        // 如果没有上一页，返回主页
-        wx.switchTab({
-          url: '/pages/index/index'
-        })
-      }
-    })
-    
-    this.reset()
-  }
-
-  /**
-   * 触摸取消
-   */
-  handleTouchCancel() {
-    this.reset()
-  }
-
-  /**
-   * 重置状态
-   */
-  reset() {
-    this.startX = 0
-    this.startY = 0
-    this.currentX = 0
-    this.isSwiping = false
-    this.dragDistance = 0
-  }
-
-  /**
-   * 获取当前拖拽距离
-   */
-  getDragDistance() {
-    return this.dragDistance
-  }
-
-  /**
-   * 是否正在滑动
-   */
-  isCurrentlySwiping() {
-    return this.isSwiping
   }
 }
 

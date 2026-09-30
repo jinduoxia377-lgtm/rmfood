@@ -41,11 +41,11 @@ export function ThemeEditor({ theme, onSave, onCancel, onDelete }: ThemeEditorPr
       let savedTheme: UserCustomTheme
 
       if (theme?.id) {
-        savedTheme = themeStorage.updateUserCustomTheme(theme.id, { name, description, config })!
-        themeStorage.createVersion(config, `更新: ${name}`)
+        savedTheme = (themeStorage as any).updateUserCustomTheme(theme.id, { name, description, config })!
+        (themeStorage as any).createVersion(config, `更新: ${name}`)
       } else {
-        savedTheme = themeStorage.createUserCustomTheme({ name, description, config, isPreset: false, tags: [] })
-        themeStorage.createVersion(config, `创建: ${name}`)
+        savedTheme = (themeStorage as any).createUserCustomTheme({ name, description, config, isPreset: false, tags: [] })
+        (themeStorage as any).createVersion(config, `创建: ${name}`)
       }
 
       await themeEventBus.emit('custom-theme-update', {

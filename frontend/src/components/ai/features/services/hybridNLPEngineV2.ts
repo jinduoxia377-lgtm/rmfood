@@ -153,7 +153,9 @@ export class HybridNLPEngineV2 {
   async detectIntent(text: string, options?: { context?: string[]; history?: string[] }): Promise<IntentDetectionResult> {
     const startTime = performance.now()
 
-    const cacheKey = text.toLowerCase().trim()
+    // Context-aware cache: include surrounding conversation to avoid cross-scenario collisions
+    const ctxHash = options?.context ? (options.context.join(" ").slice(0, 80).toLowerCase() + "|" + (options.history?.slice(-3).join(" ") ?? "")) : ""
+    const cacheKey = `${text.toLowerCase().trim()}__${ctxHash}`
     if (this.cache.has(cacheKey)) {
       // 深拷贝缓存结果，防止外部修改污染缓存数据
       const cached = this.cache.get(cacheKey)!

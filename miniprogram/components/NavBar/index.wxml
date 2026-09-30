@@ -1,10 +1,10 @@
 <!-- NavBar 导航栏组件 -->
-<view class="navbar {{className}} {{fixed ? 'navbar-fixed' : ''}}" style="padding-top: {{statusBarHeight}}px;">
+<view class="navbar {{className}} {{fixed ? 'navbar-fixed' : ''}}">
   <view class="navbar-content">
     <!-- 左侧 -->
     <view class="navbar-left" catchtap="handleLeftTap">
-      <icon wx:if="{{leftIcon}}" name="{{leftIcon}}" size="md" color="{{leftColor || '#FFFFFF'}}" />
-      <text wx:if="{{leftText}}" class="navbar-left-text" style="color: {{leftColor || '#FFFFFF'}}">{{leftText}}</text>
+      <icon wx:if="{{leftIcon}}" name="{{leftIcon}}" size="md" color="{{leftColor || 'var(--color-text-inverse)'}}" />
+      <text wx:if="{{leftText}}" class="navbar-left-text" style="color: {{leftColor || 'var(--color-text-inverse)'}}">{{leftText}}</text>
     </view>
     
     <!-- 标题 -->
@@ -16,7 +16,7 @@
     <!-- 右侧 -->
     <view class="navbar-right" catchtap="handleRightTap">
       <slot name="right"></slot>
-      <icon wx:if="{{rightIcon}}" name="{{rightIcon}}" size="md" color="{{rightColor || '#FFFFFF'}}" />
+      <icon wx:if="{{rightIcon}}" name="{{rightIcon}}" size="md" color="{{rightColor || 'var(--color-text-inverse)'}}" />
     </view>
   </view>
 </view>

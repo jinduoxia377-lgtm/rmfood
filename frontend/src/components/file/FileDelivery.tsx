@@ -212,7 +212,7 @@ export function FileDelivery({ taskId, filename, format, onClose }: FileDelivery
                 src={previewUrl}
                 width="100%"
                 height="100%"
-                title="PDF Preview"
+                title="PDF 预览"
               />
             ) : (
               <div className="p-4 bg-slate-50 rounded-lg">

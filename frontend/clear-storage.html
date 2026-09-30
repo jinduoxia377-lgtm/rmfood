@@ -1,0 +1,45 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+  <title>Clear AI Chat Storage</title>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: system-ui, sans-serif; padding: 40px; max-width: 600px; margin: 0 auto; }
+    button { padding: 12px 24px; font-size: 16px; cursor: pointer; border-radius: 8px; border: none; background: #10b981; color: white; }
+    button:hover { background: #059669; }
+    .status { margin-top: 20px; padding: 16px; border-radius: 8px; background: #f0fdf4; border: 1px solid #86efac; }
+    .error { background: #fef2f2; border-color: #fca5a5; color: #991b1b; }
+  </style>
+</head>
+<body>
+  <h1>Clear AI Chat Storage</h1>
+  <p>This will clear all cached chat messages from your browser. After clearing, you'll need to refresh the main app page.</p>
+  <button onclick="clearAll()">Clear Storage</button>
+  <div id="status"></div>
+  <script>
+    async function clearAll() {
+      const status = document.getElementById('status');
+      try {
+        // Clear localStorage
+        localStorage.removeItem('chat_messages');
+        localStorage.removeItem('chat_messages_fallback');
+        status.innerHTML = '<div class="status">✓ Cleared localStorage</div>';
+        
+        // Clear IndexedDB
+        const dbNames = ['rmfood_chat_storage', 'chat_storage', 'ai_chat_db', 'chat-messages-db'];
+        let cleared = 0;
+        for (const name of dbNames) {
+          try {
+            await indexedDB.deleteDatabase(name);
+            cleared++;
+          } catch(e) { /* ignore */ }
+        }
+        status.innerHTML += '<div class="status">✓ Cleared ' + cleared + ' IndexedDB databases</div>';
+        status.innerHTML += '<div class="status">✓ Please now refresh the main app page (Ctrl+Shift+R)</div>';
+      } catch(e) {
+        status.innerHTML = '<div class="status error">Error: ' + e.message + '</div>';
+      }
+    }
+  </script>
+</body>
+</html>

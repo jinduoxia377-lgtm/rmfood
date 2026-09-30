@@ -1,0 +1,120 @@
+<!-- 饮食日历页面 -->
+<view class="page-container">
+  <!-- 顶部Header -->
+  <view class="header">
+    <view class="header-content">
+      <view class="header-title">
+        <view class="title-main">饮食日历</view>
+        <view class="title-sub">{{solarTerm ? '今日节气：' + solarTerm : '药食同源·顺应天时'}}</view>
+      </view>
+      <view class="header-actions" bindtap="goToProfile">
+        <avatar src="{{userInfo && userInfo.avatarUrl || ''}}" size="sm" />
+      </view>
+    </view>
+  </view>
+
+  <scroll-view class="content-scroll" scroll-y refresher-enabled refresher-triggered="{{loading}}" bindrefresherrefresh="loadTodayData">
+    
+    <!-- 日历组件 -->
+    <view class="calendar-section">
+      <view class="calendar-header">
+        <view class="calendar-nav" bindtap="switchMonth" data-type="prev">
+          <icon name="arrow-left" size="md" color="var(--color-primary)" />
+        </view>
+        <view class="calendar-title">
+          <text class="calendar-year">{{currentYear}}</text>
+          <text class="calendar-month">{{currentMonth + 1}}月</text>
+        </view>
+        <view class="calendar-nav" bindtap="switchMonth" data-type="next">
+          <icon name="arrow-right" size="md" color="var(--color-primary)" />
+        </view>
+      </view>
+      
+      <view class="calendar-weekdays">
+        <text wx:for="['日','一','二','三','四','五','六']" wx:key="index" class="weekday">{{item}}</text>
+      </view>
+      
+      <view class="calendar-grid">
+        <view 
+          wx:for="{{calendarDays}}" 
+          wx:key="day"
+          class="calendar-day {{item.isCurrentMonth ? 'current-month' : 'other-month'}} {{item.isToday ? 'today' : ''}} {{selectedDate && item.day === parseInt(selectedDate.split('-')[2]) && item.month === parseInt(selectedDate.split('-')[1]) ? 'selected' : ''}}"
+          bindtap="onDateTap"
+          data-day="{{item.day}}"
+          data-month="{{item.month}}"
+          data-year="{{item.year}}"
+          data-is-current-month="{{item.isCurrentMonth}}"
+        >
+          <text class="day-number">{{item.day}}</text>
+          <view wx:if="{{item.hasData}}" class="day-dot"></view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 今日推荐 -->
+    <view class="recommend-section" wx:if="{{!loading}}">
+      <view class="section-header">
+        <view class="section-title-wrap">
+          <view class="section-dot"></view>
+          <text class="section-title">今日推荐</text>
+        </view>
+      </view>
+      
+      <view class="meal-cards">
+        <view class="meal-card" wx:for="{{todayRecommend}}" wx:key="*this">
+          <view class="meal-icon-wrap">
+            <view class="meal-icon {{item === breakfast ? 'breakfast' : item === lunch ? 'lunch' : item === dinner ? 'dinner' : 'snack'}}">
+              <icon name="{{item === breakfast ? 'sunrise' : item === lunch ? 'sun' : item === dinner ? 'moon' : 'cookie'}}" size="lg" color="#FFFFFF" />
+            </view>
+          </view>
+          <view class="meal-info">
+            <text class="meal-label">{{item.label}}</text>
+            <text class="meal-value">{{item.value}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 健康提示 -->
+    <view class="tips-section" wx:if="{{tipsList.length > 0 && !loading}}">
+      <view class="section-header">
+        <view class="section-title-wrap">
+          <view class="section-dot"></view>
+          <text class="section-title">健康提示</text>
+        </view>
+      </view>
+      
+      <view class="tips-list">
+        <view class="tip-card" wx:for="{{tipsList}}" wx:key="index">
+          <view class="tip-tag tag-{{item.type}}">{{item.type === 'season' ? '时令' : item.type === 'warning' ? '注意' : '知识'}}</view>
+          <view class="tip-content">
+            <text class="tip-title">{{item.title}}</text>
+            <text class="tip-desc">{{item.desc}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 节气养生 -->
+    <view class="term-section" wx:if="{{solarTerm && !loading}}">
+      <view class="section-header">
+        <view class="section-title-wrap">
+          <view class="section-dot"></view>
+          <text class="section-title">节气养生</text>
+        </view>
+      </view>
+      
+      <view class="term-card">
+        <view class="term-name">{{solarTerm}}</view>
+        <view class="term-desc">顺应节气，调养身心</view>
+        <view class="term-tips">
+          <text class="tip-item">宜食：温补食材</text>
+          <text class="tip-item">忌食：生冷寒凉</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 底部间距 -->
+    <view class="bottom-spacing"></view>
+  </scroll-view>
+</view>

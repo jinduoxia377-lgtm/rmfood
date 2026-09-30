@@ -7,8 +7,10 @@
  *   - 宽卡片布局，去除紧凑限制，充分利用屏幕空间
  *   - 全页面间距宽松（space-y-6、card p-6、section gap-5）
  *   - 使用 Button/Card 组件统一样式
+ *   - 对接真实后端 /api/v1/integrations/api-keys
  */
 import { useState } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { cn } from '@/lib/utils'
 import {
   Plug, Webhook, Key, Plus, Copy, Trash2, ExternalLink,
@@ -19,6 +21,8 @@ import {
   Button, Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter,
 } from '@/components/ui'
 import { Badge } from '@/components/ui'
+import { useToast } from '@/components/ui/Toast'
+import { listAPIKeys, createAPIKey, revokeAPIKey } from '@/api/integrations'
 
 interface APIKeyItem {
   id: string
@@ -46,25 +50,41 @@ const TABS: { id: 'api-keys' | 'webhooks' | 'third-party'; label: string; icon: 
 
 export default function IntegrationsPage() {
   const [activeTab, setActiveTab] = useState<'api-keys' | 'webhooks' | 'third-party'>('api-keys')
+  const { addToast } = useToast()
+  const qc = useQueryClient()
 
-  const apiKeys: APIKeyItem[] = [
-    {
-      id: '1',
-      name: '生产环境密钥',
-      prefix: 'rmf_a1b2c3...',
-      scopes: ['read', 'write', 'ai:generate'],
-      lastUsed: '2026-05-02T08:30:00Z',
-      created: '2026-03-15',
+  // ─── Fetch API keys from backend ──────────────────────────────────
+  const { data: apiKeysData, isLoading: keysLoading } = useQuery({
+    queryKey: ['integrations-api-keys'],
+    queryFn: listAPIKeys,
+    staleTime: 30_000,
+  })
+
+  const createKeyMutation = useMutation({
+    mutationFn: (name: string) => createAPIKey({ name, scopes: ['read'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['integrations-api-keys'] })
+      addToast({ type: 'success', message: 'API 密钥已创建' })
     },
-    {
-      id: '2',
-      name: '测试环境密钥',
-      prefix: 'rmf_d4e5f6...',
-      scopes: ['read'],
-      lastUsed: null,
-      created: '2026-04-20',
+  })
+
+  const deleteKeyMutation = useMutation({
+    mutationFn: revokeAPIKey,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['integrations-api-keys'] })
+      addToast({ type: 'success', message: 'API 密钥已删除' })
     },
-  ]
+  })
+
+  // Normalize backend data to UI model
+  const apiKeys: APIKeyItem[] = (apiKeysData?.keys ?? []).map((k) => ({
+    id: k.id,
+    name: k.name,
+    prefix: k.key_prefix,
+    scopes: k.scopes,
+    lastUsed: k.last_used_at,
+    created: k.created_at ? new Date(k.created_at).toISOString().slice(0, 10) : '—',
+  }))
 
   const webhooks: WebhookItem[] = [
     {
@@ -104,11 +124,11 @@ export default function IntegrationsPage() {
         </div>
         <div className="flex items-center gap-1 shrink-0">
           <Button variant="ghost" size="icon" className="h-8 w-8" title="复制密钥"
-            onClick={() => { navigator.clipboard.writeText(key.prefix); /* toast placeholder */ }}>
+            onClick={() => { navigator.clipboard.writeText(key.prefix); addToast({ type: 'success', message: '密钥已复制到剪贴板' }) }}>
             <Copy className="w-4 h-4 text-neutral-500" />
           </Button>
           <Button variant="ghost" size="icon" className="h-8 w-8 text-neutral-500 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30" title="删除密钥"
-            onClick={() => { /* delete handler */ }}>
+            onClick={() => deleteKeyMutation.mutate(key.id)}>
             <Trash2 className="w-4 h-4" />
           </Button>
         </div>
@@ -213,7 +233,7 @@ export default function IntegrationsPage() {
     <div className="space-y-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-page-enter">
 
       {/* 顶部横幅 */}
-      <div className="rounded-xl bg-primary-600 p-6 text-white shadow-sm">
+      <div className="surface-primary rounded-xl p-6 shadow-sm">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex-1">
             <h1 className="text-xl font-bold leading-snug">集成与 API</h1>
@@ -223,14 +243,19 @@ export default function IntegrationsPage() {
             <Button
               variant="secondary" size="sm"
               icon={<RefreshCw className="w-4 h-4" />}
-              onClick={() => setActiveTab('api-keys')}
+              onClick={() => qc.invalidateQueries({ queryKey: ['integrations-api-keys'] })}
+              disabled={keysLoading}
             >
               刷新密钥列表
             </Button>
             <Button
               variant="glass" size="sm"
               icon={<Plus className="w-4 h-4" />}
-              onClick={() => setActiveTab('api-keys')}
+              onClick={() => {
+                const name = prompt('请输入密钥名称：')
+                if (name?.trim()) createKeyMutation.mutate(name.trim())
+              }}
+              disabled={createKeyMutation.isPending}
             >
               新建 API 密钥
             </Button>
@@ -279,7 +304,12 @@ export default function IntegrationsPage() {
                   </div>
                 </div>
                 <Button variant="primary" size="sm" icon={<Plus className="w-4 h-4" />}
-                  onClick={() => { /* create key handler */ }}>
+                  onClick={() => {
+                    const name = prompt('请输入密钥名称：')
+                    if (name?.trim()) createKeyMutation.mutate(name.trim())
+                  }}
+                  disabled={createKeyMutation.isPending}
+                >
                   创建新密钥
                 </Button>
               </div>

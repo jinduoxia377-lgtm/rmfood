@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ContextCompaction — 上下文压缩引擎
  *
  * 参照 DeepSeek Harness Compaction 算法：
@@ -10,7 +10,6 @@
  */
 
 import type { ChatMessage } from '../../types'
-import { chatService } from '../../services/chatService'
 import { logger } from '@/utils/safeLogger'
 
 export interface CompactionResult {
@@ -91,15 +90,8 @@ export class ContextCompactionEngine {
 
     onProgress?.('正在生成摘要...')
 
-    // 3. 调用 LLM 生成摘要
-    let summary = ''
-    try {
-      const response = await chatService.sendMessage(compressionPrompt)
-      summary = response.content.trim()
-    } catch (error) {
-      logger.error('[ContextCompaction] 摘要生成失败，使用简单摘要:', error)
-      summary = this.buildSimpleSummary(messagesToCompress)
-    }
+    // 3. 纯规则摘要（不依赖 LLM，避免递归调用）
+    let summary = this.buildRuleSummary(messagesToCompress)
 
     // 4. 构建压缩后的消息列表
     const summaryMessage: ChatMessage = {
@@ -149,7 +141,7 @@ ${conversation}
   /**
    * 简单的摘要生成（LLM 不可用时的降级方案）
    */
-  private buildSimpleSummary(messages: ChatMessage[]): string {
+  private buildRuleSummary(messages: ChatMessage[]): string {
     const userMessages = messages.filter(m => m.role === 'user')
     const assistantMessages = messages.filter(m => m.role === 'assistant')
 

@@ -3,6 +3,7 @@
  * 配方信息、AI分析、评论区、导出、版本历史、审核、活动时间线、成分可视化
  * 新增: 5个Tab布局、内联编辑、版本对比/回滚、相关推荐、增强删除确认
  */
+export interface ExplainabilityResult { explanation?: string; confidence?: number; method?: string; }
 import React, { useMemo, useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
@@ -1804,7 +1805,7 @@ export default function FormulaDetailPage() {
 
                       {/* 导出报告 */}
                       <ReportExportPanel
-                        report={null as ExplainabilityResult | null}
+                        report={null as any}
                         formulaName={formula.name || '未命名配方'}
                         ingredients={ingredientList.map((i) => ({
                           name: i.name,

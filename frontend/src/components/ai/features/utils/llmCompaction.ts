@@ -8,6 +8,7 @@
  */
 
 import { logger } from '@/utils/safeLogger';
+import { chatService } from '../services/chatService';
 import { tokenEstimator } from './eventSourcing';
 import type { AgentMessage } from '@/components/ai/shared/types';
 
@@ -65,8 +66,8 @@ export async function generateContextSummary(
   const compressionPrompt = buildCompressionPrompt(toCompress, maxSummaryLength);
 
   try {
-    // 调用 LLM 生成摘要
-    const summary = await callLLMForSummary(compressionPrompt, config.model);
+    // 调用 LLM 生成摘要（低温度 0.3 保证稳定；调用方可通过 config.model 指定模型）
+    const summary = await callLLMForSummary(compressionPrompt, { model: config.model });
 
     // 创建摘要消息
     const summaryMessage: AgentMessage = {
@@ -118,28 +119,20 @@ ${conversation}
 
 /**
  * 调用 LLM 生成摘要
+ * 复用 chatService.sendMessage：统一走 axios 认证拦截器（cookie 自动携带 + 401 自动刷新），
+ * 并获得去重、重试、CSRF 等能力，避免裸 fetch 在 401 时认证链路断裂。
+ * 摘要场景固定低温度（0.3）以保证输出稳定；调用方可通过 options.model 指定模型。
  */
-async function callLLMForSummary(prompt: string, model?: string): Promise<string> {
-  const response = await fetch('/api/v1/ai/chat', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: model || 'deepseek-chat',
-      messages: [
-        { role: 'system', content: '你是一个专业的文本摘要专家。' },
-        { role: 'user', content: prompt },
-      ],
-      max_tokens: 1000,
-      temperature: 0.3,
-    }),
+interface CallLLMOptions {
+  model?: string;
+}
+async function callLLMForSummary(prompt: string, options?: CallLLMOptions): Promise<string> {
+  const response = await chatService.sendMessage(prompt, undefined, {
+    temperature: 0.3,
+    maxTokens: 1000,
+    model: options?.model,
   });
-
-  if (!response.ok) {
-    throw new Error(`LLM API failed: ${response.status}`);
-  }
-
-  const data = await response.json();
-  return data.choices?.[0]?.message?.content?.trim() ?? '';
+  return response.content?.trim() ?? '';
 }
 
 /**

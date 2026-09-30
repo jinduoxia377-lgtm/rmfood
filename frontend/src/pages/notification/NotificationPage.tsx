@@ -127,7 +127,7 @@ export default function NotificationPage() {
     <div className="space-y-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-page-enter">
 
       {/* ── 顶部横幅 ── */}
-      <div className="rounded-xl bg-primary-600 p-6 text-white shadow-sm">
+      <div className="surface-primary rounded-xl p-6 shadow-sm">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex-1">
             <h1 className="text-xl font-bold leading-snug">通知中心</h1>

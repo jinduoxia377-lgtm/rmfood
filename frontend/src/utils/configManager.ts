@@ -42,6 +42,20 @@ const decrypt = (text: string): string => {
   }
 };
 
+export interface SyncToBackendResult {
+  success: boolean
+  /** 后端运行时 LLM 服务是否已激活（密钥真正生效的标志） */
+  llmActive?: boolean
+  /** 后端运行时是否检测到密钥 */
+  llmKeyConfigured?: boolean
+}
+
+// 检测存储值是否已是 base64 编码（用于区分加密数据与旧版明文数据）
+const isLikelyBase64 = (value: string): boolean => {
+  if (!value || value.length < 4) return false;
+  return /^[A-Za-z0-9+/]+={0,2}$/.test(value);
+};
+
 export interface ModelConfig {
   apiKey: string;
   baseUrl: string;
@@ -134,15 +148,21 @@ export class ConfigManager {
   }
 
   // 获取模型配置
-  static getModelConfig(modelType: ModelType): ModelConfig {
+  // 返回 ModelConfig & { legacyUnencrypted?: boolean }；
+  // legacyUnencrypted=true 表示该 key 是历史遗留的明文（未经 base64 加密入库），
+  // UI 层应据此强制要求用户重新输入，避免把"疑似明文"当作有效密钥写回。
+  static getModelConfig(modelType: ModelType): ModelConfig & { legacyUnencrypted?: boolean } {
     try {
       const stored = localStorage.getItem(STORAGE_KEYS.MODEL_CONFIGS);
       if (!stored) return this.getDefaultModelConfig();
       const configs = JSON.parse(stored);
       const config = configs[modelType] || this.getDefaultModelConfig();
+      const rawKey = (config as { apiKey?: string }).apiKey || '';
+      const legacyUnencrypted = !!rawKey && !isLikelyBase64(rawKey);
       return {
         ...config,
-        apiKey: decrypt(config.apiKey),
+        apiKey: legacyUnencrypted ? rawKey : decrypt(rawKey),
+        legacyUnencrypted,
       };
     } catch (error) {
       logger.error(`Failed to get model config for ${modelType}:`, error);
@@ -328,13 +348,20 @@ export class ConfigManager {
   }
 
   // 导入配置
+  // 幂等加密：导入 JSON 可能来自本系统 exportConfig()（值已 base64 编码），
+  // 直接再次 encrypt() 会产生双重编码，读取时 decrypt() 一次只能解回"半解码串"。
+  // 处理：先用 isLikelyBase64 检测，已编码则跳过加密，避免导出→导入循环损坏密钥。
   static importConfig(configStr: string): boolean {
     try {
       const config = JSON.parse(configStr);
+      const safeEncrypt = (raw: unknown): string => {
+        const s = typeof raw === 'string' ? raw : '';
+        return s && isLikelyBase64(s) ? s : encrypt(s);
+      };
       if (config.apiKeys) {
         const encryptedKeys = config.apiKeys.map((key: any) => ({
           ...key,
-          key: encrypt(key.key),
+          key: safeEncrypt(key.key),
         }));
         localStorage.setItem(STORAGE_KEYS.API_KEYS, JSON.stringify(encryptedKeys));
       }
@@ -343,7 +370,7 @@ export class ConfigManager {
         Object.entries(config.modelConfigs).forEach(([key, modelConfig]) => {
           encryptedConfigs[key as ModelType] = {
             ...(modelConfig as object),
-            apiKey: encrypt((modelConfig as Record<string, unknown>).apiKey as string),
+            apiKey: safeEncrypt((modelConfig as Record<string, unknown>).apiKey),
           };
         });
         localStorage.setItem(STORAGE_KEYS.MODEL_CONFIGS, JSON.stringify(encryptedConfigs));
@@ -377,8 +404,10 @@ export class ConfigManager {
     return daysUntilExpiry > 0 && daysUntilExpiry <= 7;
   }
 
-  // 将配置同步到后端数据库
-  static async syncToBackend(modelType: ModelType, config: ModelConfig): Promise<boolean> {
+  // 将配置同步到后端数据库。
+  // 返回 { success, llmActive?, llmKeyConfigured? }；旧调用方如需布尔值可取 .success。
+  // llmActive/llmKeyConfigured 来自后端回显的运行时 LLM 状态（密钥是否真正生效）。
+  static async syncToBackend(modelType: ModelType, config: ModelConfig): Promise<SyncToBackendResult> {
     try {
       const response = await fetch('/api/v1/ai/models/config/' + modelType, {
         method: 'POST',
@@ -396,14 +425,23 @@ export class ConfigManager {
       });
       if (!response.ok) throw new Error('HTTP ' + response.status);
       const result = await response.json();
-      return result.success === true;
+      const runtime = result.llm_runtime;
+      return {
+        success: result.success === true,
+        llmActive: runtime ? runtime.active === true : undefined,
+        llmKeyConfigured: runtime ? runtime.api_key_configured === true : undefined,
+      };
     } catch (error) {
       logger.error('[ConfigManager] 后端同步失败:', error);
-      return false;
+      return { success: false };
     }
   }
 
   // 从后端数据库加载配置
+  // 注意：后端 GET /models/config/{model_type} 返回的 api_key 字段是脱敏串（如 "sk-ab..." 或 "***"），
+  // 不是明文密钥。若被写回 localStorage 会导致密钥损坏（P2-3 安全保护）。
+  // 返回结果中的 apiKey 永远为空字符串，调用方必须用本地已加密存储的密钥回填，
+  // 或用用户重新输入的明文密钥通过 syncToBackend 写回后端。
   static async loadFromBackend(modelType: ModelType): Promise<ModelConfig | null> {
     try {
       const response = await fetch('/api/v1/ai/models/config/' + modelType, {
@@ -416,7 +454,8 @@ export class ConfigManager {
       if (result.success && result.config) {
         const config = result.config;
         return {
-          apiKey: config.api_key || '',
+          // 脱敏串绝不写回本地存储，固定返回空串
+          apiKey: '',
           baseUrl: config.base_url || '',
           timeout: config.timeout_ms || 30000,
           maxRetries: config.max_retries || 3,
@@ -433,6 +472,8 @@ export class ConfigManager {
   }
 
   // 批量从后端加载所有配置
+  // 批量从后端加载所有配置
+  // 同 loadFromBackend：api_key 是后端脱敏串，绝不写回本地
   static async loadAllFromBackend(): Promise<Record<ModelType, ModelConfig>> {
     try {
       const response = await fetch('/api/v1/ai/models/configs', {
@@ -456,7 +497,8 @@ export class ConfigManager {
           const mt = type as ModelType;
           if (config && typeof config === 'object') {
             configs[mt] = {
-              apiKey: (config as ModelConfigRaw).api_key || '',
+              // 脱敏串绝不写回本地存储，固定返回空串
+              apiKey: '',
               baseUrl: (config as ModelConfigRaw).base_url || '',
               timeout: (config as ModelConfigRaw).timeout_ms || 30000,
               maxRetries: (config as ModelConfigRaw).max_retries || 3,

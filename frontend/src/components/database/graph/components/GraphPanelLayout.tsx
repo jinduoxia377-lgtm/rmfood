@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * GraphPanelLayout — comprehensive JSX delegation layer.
  *

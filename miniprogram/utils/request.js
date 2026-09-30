@@ -1,16 +1,17 @@
 /**
- * RMFOOD 小程序 - HTTP 请求模块
- * 增强版：支持拦截器、错误处理、重试机制
+ * RMFOOD 小程序 - 网络请求工具
+ * 统一API调用，支持拦截器、重试、缓存
  */
 
-const config = require('../config.js')
+const config = require('../config/api')
+const logger = require('./logger')
 
 class Request {
   constructor() {
     this.baseUrl = config.baseUrl
-    this.uploadUrl = config.uploadUrl
-    this.debug = config.debug
     this.timeout = config.timeout
+    this.retryCount = config.retryCount
+    this.retryDelay = config.retryDelay
     
     // 拦截器
     this.interceptors = {
@@ -18,101 +19,119 @@ class Request {
       response: []
     }
     
-    // 重试配置
-    this.retryCount = 3
-    this.retryDelay = 1000
+    // 请求缓存
+    this.cache = new Map()
+    this.cacheDuration = 5 * 60 * 1000 // 5分钟
   }
 
   /**
-   * 注册拦截器
+   * 注册请求拦截器
    */
-  use(options) {
-    if (options.request) {
-      this.interceptors.request.push(options.request)
-    }
-    if (options.response) {
-      this.interceptors.response.push(options.response)
-    }
+  useRequest(interceptor) {
+    this.interceptors.request.push(interceptor)
   }
 
   /**
-   * 执行请求拦截器
+   * 注册响应拦截器
    */
-  async runRequestInterceptors(requestConfig) {
-    for (const interceptor of this.interceptors.request) {
-      try {
-        requestConfig = await interceptor({ ...requestConfig }) || requestConfig
-      } catch (e) {
-        console.warn('[Request] Request interceptor error:', e)
-      }
-    }
-    return requestConfig
+  useResponse(interceptor) {
+    this.interceptors.response.push(interceptor)
   }
 
   /**
-   * 执行响应拦截器
-   */
-  async runResponseInterceptors(response) {
-    for (const interceptor of this.interceptors.response) {
-      try {
-        response = await interceptor({ ...response }) || response
-      } catch (e) {
-        console.warn('[Request] Response interceptor error:', e)
-      }
-    }
-    return response
-  }
-
-  /**
-   * 核心请求方法
+   * 发送请求
    */
   async request(options) {
+    const {
+      url,
+      method = 'GET',
+      data = {},
+      headers = {},
+      cache = false,
+      retry = true,
+      timeout = this.timeout
+    } = options
+
+    const fullUrl = url.startsWith('http') ? url : `${this.baseUrl}${url}`
+    console.log('[Request] baseURL:', this.baseUrl)
+    console.log('[Request] fullUrl:', fullUrl)
+    console.log('[Request] method:', method)
+
+    // 检查缓存
+    if (cache) {
+      const cacheKey = `${method}:${fullUrl}:${JSON.stringify(data)}`
+      const cached = this.getCache(cacheKey)
+      if (cached) {
+        logger.debug('Cache hit:', cacheKey)
+        return cached
+      }
+    }
+
     // 构建请求配置
-    let requestConfig = await this.runRequestInterceptors({
-      url: this.baseUrl + options.url,
-      method: options.method || 'GET',
-      data: options.data || {},
+    const requestConfig = {
+      url: fullUrl,
+      method,
+      data,
+      timeout,
       header: {
         'Content-Type': 'application/json',
-        ...(options.header || {}),
-        'X-Request-Source': 'miniprogram'
-      },
-      timeout: options.timeout || this.timeout
-    })
+        'X-Request-Source': 'miniprogram',
+        ...headers
+      }
+    }
 
-    // 添加认证 Token
-    const token = wx.getStorageSync('access_token')
+    // 添加认证Token
+    const token = wx.getStorageSync(config.tokenKey)
     if (token) {
       requestConfig.header['Authorization'] = `Bearer ${token}`
     }
 
     // 执行请求（带重试）
-    return this._requestWithRetry(requestConfig, options.retry ?? this.retryCount)
+    const result = retry 
+      ? await this._requestWithRetry(requestConfig)
+      : await this._executeRequest(requestConfig)
+
+    // 缓存结果
+    if (cache) {
+      const cacheKey = `${method}:${fullUrl}:${JSON.stringify(data)}`
+      this.setCache(cacheKey, result)
+    }
+
+    return result
   }
 
   /**
    * 带重试的请求
    */
-  async _requestWithRetry(config, retries = 3) {
+  async _requestWithRetry(config, retries = this.retryCount) {
+    let lastError
+    
     for (let i = 0; i < retries; i++) {
       try {
         const result = await this._executeRequest(config)
-        return await this.runResponseInterceptors(result)
+        return result
       } catch (error) {
-        // 4xx 错误不重试
+        lastError = error
+        
+        // 4xx错误不重试
         if (error.statusCode >= 400 && error.statusCode < 500) {
           throw error
         }
         
-        // 最后一次重试抛出错误
+        // 最后一次重试失败则抛出
         if (i === retries - 1) {
+          logger.error('Request failed after', retries, 'attempts:', error)
           throw error
         }
         
-        // 等待后重试
-        await this._delay(this.retryDelay * Math.pow(2, i))
+        // 指数退避重试
+        const delay = this.retryDelay * Math.pow(2, i)
+        logger.warn(`Retry ${i + 1}/${retries} in ${delay}ms`)
+        await this._sleep(delay)
       }
     }
+    
+    throw lastError
   }
 
   /**
@@ -123,19 +142,20 @@ class Request {
       wx.request({
         ...config,
         success: (res) => {
-          if (res.statusCode === 200) {
-            // 业务错误处理
-            if (res.data && res.data.code && res.data.code !== 200) {
+          if (res.statusCode >= 200 && res.statusCode < 300) {
+            // 业务错误处理 - 只检查标准的错误响应格式
+            if (res.data && typeof res.data === 'object' && res.data.code && typeof res.data.code === 'number' && res.data.code !== 200) {
               reject({
                 statusCode: res.data.code,
                 message: res.data.message || 'Business error',
                 data: res.data
               })
             } else {
+              // 成功响应 - 直接返回数据
               resolve(res.data || res)
             }
           } else if (res.statusCode === 401) {
-            // 未授权，清除 Token 并重试登录
+            // 未授权，清除Token并重试登录
             this._handleUnauthorized()
             reject({ statusCode: 401, message: 'Unauthorized' })
           } else {
@@ -146,9 +166,13 @@ class Request {
           }
         },
         fail: (err) => {
+          console.log('[Request] fail:', JSON.stringify(err))
+          // 安全获取错误信息
+          const errMsg = err && err.errMsg ? err.errMsg : (err && typeof err === 'object' ? JSON.stringify(err) : 'Network error')
+          logger.error('Request failed:', errMsg)
           reject({
             statusCode: 0,
-            message: err.errMsg || 'Network error'
+            message: errMsg
           })
         }
       })
@@ -159,9 +183,10 @@ class Request {
    * 处理未授权
    */
   _handleUnauthorized() {
-    wx.removeStorageSync('access_token')
-    wx.removeStorageSync('user_info')
-    getApp().clearUserInfo()
+    wx.removeStorageSync(config.tokenKey)
+    wx.removeStorageSync(config.userInfoKey)
+    
+    logger.warn('Token expired, clearing user session')
     
     // 跳转到登录页
     wx.showModal({
@@ -175,9 +200,39 @@ class Request {
   }
 
   /**
+   * 缓存管理
+   */
+  getCache(key) {
+    const item = this.cache.get(key)
+    if (!item) return null
+    
+    if (Date.now() - item.timestamp > this.cacheDuration) {
+      this.cache.delete(key)
+      return null
+    }
+    
+    return item.data
+  }
+
+  setCache(key, data) {
+    this.cache.set(key, {
+      data,
+      timestamp: Date.now()
+    })
+  }
+
+  clearCache(key) {
+    if (key) {
+      this.cache.delete(key)
+    } else {
+      this.cache.clear()
+    }
+  }
+
+  /**
    * 延迟函数
    */
-  _delay(ms) {
+  _sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms))
   }
 
@@ -202,15 +257,17 @@ class Request {
   /**
    * 文件上传
    */
-  async upload(url, filePath, formData = {}) {
+  upload(url, filePath, formData = {}) {
     return new Promise((resolve, reject) => {
+      const token = wx.getStorageSync(config.tokenKey)
+      
       wx.uploadFile({
-        url: this.uploadUrl + url,
-        filePath: filePath,
+        url: config.uploadUrl + url,
+        filePath,
         name: 'file',
-        formData: formData,
+        formData,
         header: {
-          'Authorization': `Bearer ${wx.getStorageSync('access_token') || ''}`
+          'Authorization': `Bearer ${token || ''}`
         },
         success: (res) => {
           try {
@@ -225,6 +282,7 @@ class Request {
           }
         },
         fail: (err) => {
+          logger.error('Upload failed:', err.errMsg)
           reject(err)
         }
       })

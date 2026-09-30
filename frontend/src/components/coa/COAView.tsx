@@ -122,16 +122,16 @@ const COATestResultTable: React.FC<{
             <thead>
               <tr className="bg-slate-100">
                 <th className="border border-[var(--border-subtle, #e2e8f0)] px-3 py-2 text-left font-semibold text-[var(--text-primary, #1e293b)] w-1/4">
-                  项目<br /><span className="text-xs font-normal text-[var(--text-muted, #94a3b8)]">Items</span>
+                  项目
                 </th>
                 <th className="border border-[var(--border-subtle, #e2e8f0)] px-3 py-2 text-left font-semibold text-[var(--text-primary, #1e293b)] w-1/4">
-                  标准<br /><span className="text-xs font-normal text-[var(--text-muted, #94a3b8)]">Test Standard</span>
+                  标准
                 </th>
                 <th className="border border-[var(--border-subtle, #e2e8f0)] px-3 py-2 text-center font-semibold text-[var(--text-primary, #1e293b)] w-1/4">
-                  检测结果<br /><span className="text-xs font-normal text-[var(--text-muted, #94a3b8)]">Test Result</span>
+                  检测结果
                 </th>
                 <th className="border border-[var(--border-subtle, #e2e8f0)] px-3 py-2 text-center font-semibold text-[var(--text-primary, #1e293b)] w-1/6">
-                  单项判定<br /><span className="text-xs font-normal text-[var(--text-muted, #94a3b8)]">Judgment</span>
+                  单项判定
                 </th>
               </tr>
             </thead>

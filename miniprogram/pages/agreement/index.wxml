@@ -1,6 +1,6 @@
 <!-- 用户协议页面 -->
 <view class="page-container">
-  <view class="header" style="padding-top: {{statusBarHeight}}px;">
+  <view class="header">
     <view class="back-btn" bindtap="goBack">
       <text>‹</text>
     </view>
@@ -29,7 +29,7 @@
 
       <view class="section">
         <text class="section-title">四、免责声明</text>
-        <text class="section-content">4.1 本应用提供的健康信息仅供参考，不能替代专业医疗建议。</text>
+        <text class="section-content">4.1 本应用提供的健康信息仅供参?，不能替代专业医疗建议。</text>
         <text class="section-content">4.2 因使用本应用信息而产生的任何后果，本应用不承担责任。</text>
       </view>
 
@@ -40,4 +40,5 @@
       </view>
     </view>
   </scroll-view>
+  <view class="bottom-spacing"></view>
 </view>

@@ -41,25 +41,33 @@ const META_STORE_NAME = 'metadata';
 // ── Token 估算器 ───────────────────────────────────────────
 
 export class SimpleTokenEstimator {
-  private readonly CJK_RATIO = 1.5;
-  private readonly ASCII_RATIO = 4;
+  // 使用更接近 DeepSeek/ChatGPT tokenizer 的比例：
+  // - CJK 字符约 1.5 字符/token（实际约 2-3，取保守值）
+  // - ASCII 字符约 3.5 字符/token（实际约 4，更精确）
+  private readonly CJK_RATIO = 1.8;
+  private readonly ASCII_RATIO = 3.8;
+  // 每条消息的固定开销（用于估算 system messages 等）
+  private readonly PER_MESSAGE_OVERHEAD = 4;
 
   estimate(messages: AgentMessage[]): number {
+    if (messages.length === 0) return 0;
     return messages.reduce((sum, msg) => sum + this.estimateSingle(msg), 0);
   }
 
   estimateSingle(message: AgentMessage): number {
     const text = message.content;
+    if (!text || text.length === 0) return this.PER_MESSAGE_OVERHEAD;
+
     let chineseCount = 0;
     let asciiCount = 0;
     for (const char of text) {
-      if (/[\u4e00-\u9fa5]/.test(char)) {
+      if (/[\u4e00-\u9fa5\u3000-\u303F\uFF00-\uFFEF]/.test(char)) {
         chineseCount++;
       } else {
         asciiCount++;
       }
     }
-    return Math.ceil(chineseCount / this.CJK_RATIO + asciiCount / this.ASCII_RATIO);
+    return Math.ceil(chineseCount / this.CJK_RATIO + asciiCount / this.ASCII_RATIO + this.PER_MESSAGE_OVERHEAD);
   }
 }
 

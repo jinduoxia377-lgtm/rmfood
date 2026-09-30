@@ -1,4 +1,4 @@
-﻿"""
+"""
 Health Articles API Routes
 提供健康知识文章列表和详情接口
 """
@@ -99,7 +99,7 @@ async def get_article(
     article = next((a for a in SAMPLE_ARTICLES if a["id"] == article_id), None)
     
     if not article:
-        raise HTTPException(status_code=404, detail="Article not found")
+        raise HTTPException(status_code=404, detail="文章不存在")
     
     # Increment views
     article["views"] += 1

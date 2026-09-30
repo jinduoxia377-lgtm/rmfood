@@ -349,10 +349,17 @@ class BinaryGAOptimizer:
             else:
                 # LP不可行: 使用约束违反度作为soft penalty
                 ind.lp_ratios = {}
-                violation = lp_result.violation or ind.constraint_violation
+                raw_violation = lp_result.violation
+                # lp_result.violation 为 dict（约束键→违反量）；为空 dict 时回退到 0.5 基础罚分
+                if isinstance(raw_violation, dict) and raw_violation:
+                    violation_total = sum(raw_violation.values())
+                elif isinstance(raw_violation, (int, float)):
+                    violation_total = float(raw_violation)
+                else:
+                    violation_total = 0.5
                 # 违反度映射到[0,1]，fitness = base_fitness * (1 - violation)
                 base_fitness = self._calc_base_fitness(ind)
-                violation_penalty = min(0.9, sum(violation.values()) / 10.0)
+                violation_penalty = min(0.9, violation_total / 10.0)
                 ind.fitness = base_fitness * (1.0 - violation_penalty)
                 ind.constraint_violation = violation_penalty
         else:
@@ -378,7 +385,12 @@ class BinaryGAOptimizer:
         efficacy = min(1.0, efficacy / max(sum(ind.lp_ratios.values()), 1))
 
         # 安全评分 (基于约束满足)
-        safety = 1.0 - min(0.5, sum(lp_result.violation.values()) / 5.0)
+        _v = lp_result.violation
+        _v_sum = (
+            sum(_v.values()) if isinstance(_v, dict)
+            else (float(_v) if isinstance(_v, (int, float)) else 0.0)
+        )
+        safety = 1.0 - min(0.5, _v_sum / 5.0)
 
         # 口感评分 (基于五味调和)
         taste = 0.7  # 默认中等

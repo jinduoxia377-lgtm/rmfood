@@ -1,32 +1,26 @@
 /**
  * RMFOOD — 登录页面
  *
- * 生物技术启发的沉浸式登录体验
- * - Canvas 交互式分子粒子场 (鼠标引力/斥力/点击爆发)
- * - CSS 3D DNA 双螺旋 (50s 自转 + X轴微倾)
- * - SVG 六边形晶格叠加层
- * - 多层玻璃态浮动登录卡片 (backdrop-filter + 渐变边框)
- * - 第三方登录 (微信/QQ/GitHub OAuth)
- * - 品牌色悬停辉光 + 加载反馈
- * - WCAG 2.1 AA 完整可访问性
+ * 主题系统规范对齐版 (DESIGN.md v2.0 / Dashboard 基准)
+ * - 页面背景使用 bg-grid 点阵 + var(--bg-canvas)，与 /dashboard 视觉统一
+ * - 容器宽度 max-w-7xl，垂直节奏 space-y-4
+ * - 卡片使用全局 Card 体系：rounded-xl bg-primary-600 欢迎横幅 + 顶部 accent bar
+ * - 输入框 / 按钮 / 提示 全部对接全局语义令牌，Light/Dark 双模式自适应
+ * - 字号基线：页面标题 16px，区块副标题/说明 12px，Tab/辅助 14px
+ * - WCAG 2.1 AA 可访问性
  */
 import {
-  useState, useCallback, useRef, useEffect, useLayoutEffect,
+  useState, useCallback, useRef, useLayoutEffect,
   type FC, type FormEvent, type ChangeEvent,
   type FocusEvent, type MouseEvent as RMouseEvent,
 } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import {
-  Dna, BoxSelect, BrainCircuit, Hexagon,
   Eye, EyeOff, User, Lock, AlertCircle, CheckCircle2,
   Shield, type LucideIcon,
 } from 'lucide-react'
 import { useAuthStore } from '@/stores/auth'
-import { useIsDarkMode } from '@/stores/ThemeProvider'
 import { RHINE_BRAND_CONFIG, RHINE_LOGIN_CONFIG } from '@/config'
-import RhineParticleField from './RhineParticleField'
-import RhineDNAHelix from './RhineDNAHelix'
-import RhineHexGrid from './RhineHexGrid'
 
 import { logger } from '@/utils/safeLogger';
 import './LoginPage.css'
@@ -53,9 +47,11 @@ function checkOAuthEnvVars() {
     }
   }
   if (missing.length > 0) {
-    logger.warn(
-      `[Login] OAuth 未配置（社交登录已自动禁用）：缺少环境变量 ${missing.join(', ')}。` +
-      `请在 .env 文件中配置对应的 VITE_* 变量，或在 RHINE_LOGIN_CONFIG.socialLogin 中关闭对应提供商。`
+    // 降噪：OAuth 凭证缺失是预期配置（开发态 .env 留空，社交登录被自动禁用）。
+    // 原实现每次加载登录页都打一条 WARN，刷屏且非错误；降级为 debug。
+    // 真要启用社交登录时，请填入真实 VITE_* 变量而非依赖此告警。
+    logger.debug(
+      `[Login] OAuth 未配置（社交登录已自动禁用）：缺少 ${missing.join(', ')}。`
     )
   }
 }
@@ -67,42 +63,6 @@ checkOAuthEnvVars()
    ═══════════════════════════════════════════════════════════════ */
 interface SocialProvider {
   enabled: boolean; label: string; color: string; oauthUrl: string
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   Brand Overlay — 桌面端左下品牌区
-   ═══════════════════════════════════════════════════════════════ */
-const BrandOverlay: FC = () => {
-  const iconMap: Record<string, LucideIcon> = { Dna, BoxSelect, BrainCircuit }
-
-  return (
-    <div className="rhine-brand-overlay">
-      <div className="rhine-brand-logo rhine-anim-fade-up">
-        <div className="rhine-brand-icon" aria-hidden="true"><Hexagon size={19} /></div>
-        <div>
-          <div className="rhine-brand-name">{RHINE_BRAND_CONFIG.name}</div>
-          <div className="rhine-brand-name-en">{RHINE_BRAND_CONFIG.nameEn}</div>
-        </div>
-      </div>
-      <div className="rhine-brand-tagline rhine-anim-fade-up rhine-delay-1">
-        {RHINE_BRAND_CONFIG.tagline}
-      </div>
-      <p className="rhine-brand-desc rhine-anim-fade-up rhine-delay-2">
-        {RHINE_BRAND_CONFIG.description}
-      </p>
-      <div className="rhine-brand-pillars rhine-anim-fade-up rhine-delay-3">
-        {RHINE_BRAND_CONFIG.pillars.map((p: { icon: string; title: string; subtitle: string }) => {
-          const Icon = iconMap[p.icon] || Dna
-          return (
-            <div key={p.title} className="rhine-brand-pillar">
-              <Icon size={13} className="rhine-brand-pillar-icon" aria-hidden="true" />
-              <span>{p.title}</span>
-            </div>
-          )
-        })}
-      </div>
-    </div>
-  )
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -136,7 +96,7 @@ const SocialLoginSection: FC = () => {
 
     if (authUrl) {
       // 短暂延迟让用户看到 loading 反馈
-      setTimeout(() => window.location.href = authUrl, 400)
+      setTimeout(() => { window.location.href = authUrl }, 400)
     } else {
       setLoadingProvider(null)
     }
@@ -168,10 +128,6 @@ const SocialLoginSection: FC = () => {
 
   return (
     <div className="rhine-social-section">
-      <div className="rhine-divider" aria-hidden="true">
-        <span className="rhine-divider-text">{RHINE_LOGIN_CONFIG.messages.orContinueWith}</span>
-      </div>
-
       <div className="rhine-social-buttons">
         {/* 微信 */}
         {socials.wechat.enabled && (
@@ -226,26 +182,32 @@ const SocialLoginSection: FC = () => {
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   Brand Strip — 桌面端左上品牌区 (Dashboard 风格，无动画)
+   ═══════════════════════════════════════════════════════════════ */
+const BrandOverlay: FC = () => {
+  return (
+    <div className="rhine-brand-overlay">
+      <div className="rhine-brand-logo">
+        <div className="rhine-brand-icon" aria-hidden="true">
+          <Shield size={19} />
+        </div>
+        <div>
+          <div className="rhine-brand-name">{RHINE_BRAND_CONFIG.name}</div>
+          <div className="rhine-brand-name-en">{RHINE_BRAND_CONFIG.nameEn}</div>
+        </div>
+      </div>
+      <p className="rhine-brand-tagline">{RHINE_BRAND_CONFIG.tagline}</p>
+    </div>
+  )
+}
+
+/* ═══════════════════════════════════════════════════════════════
    Main Component
    ═══════════════════════════════════════════════════════════════ */
 export default function RhineLoginPage() {
   const navigate = useNavigate()
   const login = useAuthStore((s) => s.login)
   const msg = RHINE_LOGIN_CONFIG.messages
-  const isDark = useIsDarkMode()
-  const [isIntersecting, setIsIntersecting] = useState(true)
-
-  /* ── IntersectionObserver 检测页面可见 ── */
-  useEffect(() => {
-    const el = document.querySelector('.login-page')
-    if (!el) return
-    const observer = new IntersectionObserver(
-      ([entry]) => setIsIntersecting(entry.isIntersecting),
-      { threshold: 0.1 }
-    )
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [])
 
   const userRef = useRef<HTMLInputElement>(null)
   const passRef = useRef<HTMLInputElement>(null)
@@ -259,20 +221,7 @@ export default function RhineLoginPage() {
   const [loading, setLoading] = useState(false)
   const [userErr, setUserErr] = useState('')
   const [passErr, setPassErr] = useState('')
-  const [pwStrength, setPwStrength] = useState(0)
   const [rateLimitRemaining, setRateLimitRemaining] = useState(0)
-
-  /* ── 密码强度计算（≥8字符起步） ── */
-  const calcStrength = useCallback((v: string): number => {
-    if (!v) return 0
-    let score = 0
-    if (v.length >= 8) score++
-    if (v.length >= 12) score++
-    if (/[A-Z]/.test(v) && /[a-z]/.test(v)) score++
-    if (/\d/.test(v)) score++
-    if (/[^A-Za-z0-9]/.test(v)) score++
-    return Math.min(4, score)
-  }, [])
 
   /* ── Validation ── */
   const validateUser = useCallback((v: string) => {
@@ -306,9 +255,8 @@ export default function RhineLoginPage() {
   }, [username, validateUser])
   const handlePassChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value)
-    setPwStrength(calcStrength(e.target.value))
     if (passErr) setPassErr('')
-  }, [passErr, calcStrength])
+  }, [passErr])
   const handlePassBlur = useCallback((_: FocusEvent<HTMLInputElement>) => {
     setPassErr(validatePass(password))
   }, [password, validatePass])
@@ -364,13 +312,8 @@ export default function RhineLoginPage() {
       <a href="#rhine-login-form" className="rhine-skip-link">跳转到登录表单</a>
 
       <div className="login-page" role="main" aria-label="莱茵分子登录页面">
-        {/* 背景层 */}
-        <RhineParticleField error={!!error} visible={isIntersecting} />
-        <RhineHexGrid />
-        <div className="rhine-gradient-overlay" aria-hidden="true" />
-
-        {/* DNA 螺旋 — 仅暗色模式渲染 */}
-        {isDark && <RhineDNAHelix />}
+        {/* 背景层 — Dashboard 基准：bg-grid 点阵 + var(--bg-canvas) */}
+        <div className="rhine-bg-layer" aria-hidden="true" />
 
         {/* 品牌叠加层 (桌面端) */}
         <BrandOverlay />
@@ -378,7 +321,7 @@ export default function RhineLoginPage() {
         {/* 移动端品牌条 */}
         <div className="rhine-mobile-brand">
           <div className="rhine-mobile-logo">
-            <div className="rhine-mobile-logo-icon" aria-hidden="true"><Hexagon size={17} /></div>
+            <div className="rhine-mobile-logo-icon" aria-hidden="true"><Shield size={17} /></div>
             <span className="rhine-mobile-logo-text">{RHINE_BRAND_CONFIG.name}</span>
           </div>
         </div>
@@ -386,17 +329,18 @@ export default function RhineLoginPage() {
         {/* 登录表单面板 */}
         <div className="rhine-form-panel">
           <div className="rhine-form-content">
-            <div id="rhine-login-form" className="rhine-card rhine-anim-slide-right rhine-delay-3">
+            <div id="rhine-login-form" className="rhine-card">
 
-              {/* 卡片头部 — h2 作为页面内最高层级标题 */}
+              {/* 卡片头部 — 欢迎横幅：rounded-xl bg-primary-600 含顶部 accent bar */}
               <div className="rhine-card-header">
+                <div className="rhine-card-accent" aria-hidden="true" />
                 <h2>{msg.welcome}</h2>
                 <p>{msg.prompt}</p>
               </div>
 
               {/* 错误提示 */}
               {error && (
-                <div className="rhine-alert rhine-alert-error rhine-anim-shake" role="alert">
+                <div className="rhine-alert rhine-alert-error" role="alert">
                   <AlertCircle size={16} className="rhine-alert-icon" aria-hidden="true" />
                   <span>{error}</span>
                 </div>
@@ -448,29 +392,6 @@ export default function RhineLoginPage() {
                     </button>
                   </div>
                   {passErr && <p id="rhine-pass-err" className="rhine-error-text" role="alert">{passErr}</p>}
-                  {/* 密码强度指示器 */}
-                  <div
-                    className="rhine-password-strength"
-                    aria-label={password ? `密码强度：${['无','非常弱','弱','中等','强','非常强'][pwStrength]}` : undefined}
-                    role="meter" aria-valuenow={pwStrength} aria-valuemin={0} aria-valuemax={4}
-                    aria-valuetext={['无','非常弱','弱','中等','强','非常强'][pwStrength]}
-                  >
-                    <div className="rhine-strength-bar">
-                      {[1,2,3,4].map(i => (
-                        <div
-                          key={i}
-                          className={`rhine-strength-fill${i <= pwStrength ? ' active' : ''}`}
-                          style={{
-                            width: `${(100 / 4) * i}%`,
-                            background: pwStrength >= 4 ? 'var(--rhine-success)'
-                              : pwStrength >= 3 ? 'var(--rhine-warning)'
-                              : pwStrength >= 2 ? '#ca8a04'
-                              : 'var(--rhine-error)',
-                          }}
-                        />
-                      ))}
-                    </div>
-                  </div>
                 </div>
 
                 {/* 选项行 */}

@@ -88,10 +88,10 @@ export function exportSafetyReport(options: ExportOptions): void {
 
   const warnings = (result as Partial<SafetyCheckResult>).warnings || [];
   const errors = result.errors || [];
-  const details: Record<string, any> = (result as Partial<SafetyCheckResult>).details || {};
+  const details: Record<string, any> = (result as any).details || {};
 
-  const dangerCount = warnings.filter((w) => ['danger','critical','contraindicated'].includes(w.level)).length;
-  const warningCount = warnings.filter((w) => ['warning','caution'].includes(w.level)).length;
+  const dangerCount = warnings.filter((w: any) => ['danger','critical','contraindicated'].includes(w.level)).length;
+  const warningCount = warnings.filter((w: any) => ['warning','caution'].includes(w.level)).length;
 
   if (dangerCount > 0 || warningCount > 0) {
     doc.setFontSize(9);
@@ -103,13 +103,13 @@ export function exportSafetyReport(options: ExportOptions): void {
   const allIssues = [
     ...warnings.map((w) => ({
       type: w.level === 'danger' ? 'DANGER' : 'WARNING',
-      ingredient: w.ingredient || w.name || '-',
-      message: (w.message || w.reason || String(w)).slice(0, 80),
+      ingredient: w.ingredient || (w as any).name || '-',
+      message: (w.message || (w as any).reason || String(w)).slice(0, 80),
     })),
     ...errors.map((e) => ({
       type: 'ERROR',
       ingredient: '-',
-      message: (typeof e === 'string' ? e : e.message || String(e)).slice(0, 80),
+      message: (typeof e === 'string' ? e : (e as any).message || String(e)).slice(0, 80),
     })),
   ];
 
@@ -138,7 +138,7 @@ export function exportSafetyReport(options: ExportOptions): void {
       styles: { cellPadding: 3, lineColor: [226, 232, 240] },
       body: allIssues.map((issue) => [issue.type, issue.ingredient, issue.message]),
     });
-    y = (doc as { lastAutoTable?: { finalY?: number } }).lastAutoTable?.finalY ? (doc as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10 : y + 10;
+    y = (doc as { lastAutoTable?: { finalY?: number } }).lastAutoTable?.finalY ? (doc as any).lastAutoTable?.finalY + 10 : y + 10;
   }
 
   const checkKeys = Object.keys(details);

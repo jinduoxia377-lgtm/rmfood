@@ -1,0 +1,62 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+  <title>AI Chat Test</title>
+  <meta charset="utf-8">
+</head>
+<body>
+  <h2>AI Chat Structured Output Test</h2>
+  <div id="result"></div>
+  <script>
+    async function test() {
+      const result = document.getElementById('result');
+      result.innerHTML = 'Testing...';
+      
+      // Test 1: Check backend prompt config
+      const promptResp = await fetch('/api/v1/ai/debug/prompt');
+      const promptData = await promptResp.json();
+      result.innerHTML += '<p>Prompt length: ' + promptData.prompt_length + '</p>';
+      result.innerHTML += '<p>Has blocks keyword: ' + promptData.has_blocks_keyword + '</p>';
+      result.innerHTML += '<p>Config path: ' + promptData.config_path + '</p>';
+      
+      // Test 2: Call chat endpoint
+      const chatResp = await fetch('/api/v1/ai/chat', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          question: '帮我设计一款针对高血糖人群的饮品配方TEST',
+          scenario_mode: 'formula_design'
+        })
+      });
+      const chatData = await chatResp.json();
+      const hasBlocks = chatData.content.includes('blocks');
+      const hasJson = chatData.content.includes('```json');
+      result.innerHTML += '<p>Has blocks: ' + hasBlocks + '</p>';
+      result.innerHTML += '<p>Has json wrapper: ' + hasJson + '</p>';
+      result.innerHTML += '<p>Content length: ' + chatData.content.length + '</p>';
+      
+      // Test 3: Parse the structured content
+      const content = chatData.content;
+      const trimmed = content.trim();
+      const codeBlockMatch = trimmed.match(/```(?:json)?\s*\n([\s\S]*?)\n?\s*```/);
+      if (codeBlockMatch) {
+        const inner = codeBlockMatch[1].trim();
+        const lastBrace = inner.lastIndexOf('}');
+        if (lastBrace >= 0 && inner[0] === '{' && inner[lastBrace] === '}') {
+          const jsonStr = inner.substring(0, lastBrace + 1);
+          try {
+            const parsed = JSON.parse(jsonStr);
+            result.innerHTML += '<p>✅ Parsed ' + parsed.blocks.length + ' blocks</p>';
+            parsed.blocks.forEach((b, i) => {
+              result.innerHTML += '<p>  Block ' + i + ': ' + b.type + '</p>';
+            });
+          } catch(e) {
+            result.innerHTML += '<p>❌ Parse error: ' + e.message + '</p>';
+          }
+        }
+      }
+    }
+    test();
+  </script>
+</body>
+</html>

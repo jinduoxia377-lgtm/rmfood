@@ -14,6 +14,7 @@ import { useNeuralResultCard } from './hooks/useNeuralResultCard';
 interface NeuralResultCardProps {
   candidate: AICandidate;
   index: number;
+  generatorType?: string;
   onSaveSuccess?: (formulaId: number, candidateId: string) => void;
   onViewReport?: (candidate: AICandidate) => void;
   onEdit?: (candidate: AICandidate, index: number) => void;
@@ -26,6 +27,7 @@ interface NeuralResultCardProps {
 export function NeuralResultCard({
   candidate,
   index,
+  generatorType,
   onSaveSuccess,
   onViewReport,
   onEdit,
@@ -80,6 +82,7 @@ export function NeuralResultCard({
           overallScore={candidate.overall_score}
           nameInputRef={nameInputRef as React.RefObject<HTMLInputElement>}
           onNameChange={handleNameChange}
+          generatorType={generatorType}
         />
         {isEditing ? (
           <div className="space-y-3">

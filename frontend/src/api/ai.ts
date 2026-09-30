@@ -88,6 +88,13 @@ export type {
   NutritionObjectiveConfig,
 } from '@/types/ai.api';
 
+/** 神经网络生成响应（标准化 generator 值） */
+export interface NeuralGenerateResponse {
+  candidates: AICandidate[];
+  total: number;
+  generator: string;
+}
+
 export const aiApi = {
   /** AI 配方生成（支持 LLM 模式，自动路由到遗传算法引擎） */
   generate: async (
@@ -118,7 +125,30 @@ export const aiApi = {
     return result.data;
   },
 
-  /** 神经网络配方生成（基于专利 US 11,742,060 B2）*/
+  /** 智能配方推荐（基于数据库用户历史 + 协同配伍网络） */
+  recommendFormula: async (
+    targetEffects: string[],
+    topK = 3,
+  ): Promise<{ recommendations: Array<Record<string, unknown>>; total: number; generator: string }> => {
+    const res = await api.post<{ recommendations: Array<Record<string, unknown>>; total: number; generator: string }>(
+      '/ai/recommend',
+      { target_effects: targetEffects, top_k: topK },
+    );
+    return res.data;
+  },
+
+  /** 配方智能解释（方解与现代药理机制） */
+  interpretFormula: async (payload: {
+    formula_name?: string
+    herbs: Array<{ name: string; dosage_g?: number; role?: string }>
+    target_effects: string[]
+  }): Promise<{ interpretation: Record<string, unknown> }> => {
+    const res = await api.post<{ interpretation: Record<string, unknown> }>(
+      '/ai/interpret',
+      payload,
+    );
+    return res.data;
+  },
   generateNeural: (
     targetEffects: string[],
     priorityValues?: Record<string, number>,
@@ -131,9 +161,9 @@ export const aiApi = {
     },
     maxCandidates = 5,
     signal?: AbortSignal,
-  ) =>
+  ): Promise<NeuralGenerateResponse> =>
     api
-      .post<{ candidates: AICandidate[]; total: number; generator: string }>(
+      .post<NeuralGenerateResponse>(
         '/ai/generate/neural',
         {
           target_effects: targetEffects,
@@ -338,62 +368,25 @@ export const aiApi = {
   /** 模型状态 */
   modelStatus: () => api.get<Record<string, Record<string, string>>>('/ai/models/status').then((r) => r.data),
 
-  /** AI 智能对话（非流式） */
+  /**
+   * AI 智能对话（非流式）
+   * @deprecated 本地 API Key 路径已废弃：后端 /ai/chat 明确拒绝前端传递 key（chat.py L231），
+   * 密钥由后端 llm_service（数据库/环境变量）驱动。/ai 页面的真实聊天走
+   * chatService.sendMessage（components/ai/features/services/chatService.ts）。
+   * 此方法仅保留给外部调用方过渡，请求体不含任何密钥字段。
+   */
   chat: async (question: string, history?: { role: string; content: string }[]) => {
-    let apiKey = '';
-
-    try {
-      const { unifiedApiKeyManager } = await import('@/utils/unifiedApiKeyManager');
-      const keyResult = await unifiedApiKeyManager.getApiKey();
-      apiKey = keyResult.apiKey;
-
-      // 仅在开发环境输出存储类型提示（避免生产环境日志污染）
-      if (process.env.NODE_ENV === 'development' && keyResult.source === 'configmanager') {
-        logger.info('[aiApi.chat] 使用传统存储 (ConfigManager) 的 API Key，建议升级到安全存储');
-      }
-    } catch (e) {
-      // 统一管理器失败时仅在开发环境告警，不再降级到 localStorage
-      if (process.env.NODE_ENV === 'development') {
-        logger.warn('[aiApi.chat] 统一API Key管理器读取失败:', e);
-      }
-    }
-
-    apiKey = sanitizeApiKey(apiKey);
-
-    // 最终验证：确保apiKey有效
-    if (!apiKey && process.env.NODE_ENV === 'development') {
-      logger.warn('[aiApi.chat] ⚠️ API Key为空，请求可能会被后端拒绝');
-    }
-
+    logger.warn('[aiApi.chat] deprecated: 本地密钥不参与 /ai 对话，后端使用服务器配置的 LLM 密钥')
     return api.post<{ answer: string }>('/ai/chat', { question, history, scenario_mode: getCurrentScenarioMode() }).then((r) => r.data);
   },
 
-  /** AI 智能对话（流式） - 返回原始 Response 用于 ReadableStream */
+  /**
+   * AI 智能对话（流式）
+   * @deprecated 同 chat：本地密钥不参与，流式请求走后端 llm_service。
+   * 返回 Response 供 ReadableStream 消费。
+   */
   chatStream: async (question: string, history?: { role: string; content: string }[]) => {
-    let apiKey = '';
-    try {
-      const { unifiedApiKeyManager } = await import('@/utils/unifiedApiKeyManager');
-      const keyResult = await unifiedApiKeyManager.getApiKey();
-      apiKey = keyResult.apiKey;
-
-      // 仅在开发环境输出存储类型提示
-      if (process.env.NODE_ENV === 'development' && keyResult.source === 'configmanager') {
-        logger.info('[aiApi.chatStream] 使用传统存储 (ConfigManager) 的 API Key，建议升级到安全存储');
-      }
-    } catch (e) {
-      // 不再降级到 localStorage，统一由后端管理 API Key
-      if (process.env.NODE_ENV === 'development') {
-        logger.warn('[aiApi.chatStream] 统一API Key管理器读取失败:', e);
-      }
-    }
-
-    apiKey = sanitizeApiKey(apiKey);
-
-    // 最终验证：确保apiKey有效
-    if (!apiKey && process.env.NODE_ENV === 'development') {
-      logger.warn('[aiApi.chatStream] ⚠️ API Key为空，请求可能会被后端拒绝');
-    }
-
+    logger.warn('[aiApi.chatStream] deprecated: 本地密钥不参与 /ai 对话，后端使用服务器配置的 LLM 密钥')
     const response = await api.post('/ai/chat/stream', { question, history, stream: true, scenario_mode: getCurrentScenarioMode() }, {
       responseType: 'stream',
     });
@@ -403,52 +396,25 @@ export const aiApi = {
 
 /**
  * 清洗 API Key（移除所有可能导致认证失败的隐藏字符）
+ * @deprecated 本地密钥不再参与 /ai 对话（后端由 llm_service 驱动）。
+ * 仅保留供未来仍接受密钥参数的旧端点做输入清洗，避免零宽/控制字符导致失败。
  */
-function sanitizeApiKey(rawKey: string): string {
+export function sanitizeApiKey(rawKey: string): string {
   if (!rawKey || typeof rawKey !== 'string') {
-    // 仅在开发环境输出警告
-    if (process.env.NODE_ENV === 'development') {
-      logger.warn('[sanitizeApiKey] 输入为空或非字符串');
-    }
+    logger.warn('[sanitizeApiKey] 输入为空或非字符串');
     return '';
   }
 
   const originalLength = rawKey.length;
 
-  // Step 1: 移除首尾空白
+  // 移除首尾空白 + 所有空白/零宽/控制字符
   let cleaned = rawKey.trim();
-
-  // Step 2: 移除所有空白字符（包括不可见的）
   cleaned = cleaned.replace(/[\s\r\n\t\u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000\uFEFF]/g, '');
-
-  // Step 3: 移除零宽字符（Zero-width characters）
   cleaned = cleaned.replace(/[\u200B-\u200D\uFEFF\u2060]/g, '');
-
-  // Step 4: 移除控制字符（保留合法的可打印字符）
   cleaned = cleaned.replace(/[\x00-\x1F\x7F]/g, '');
 
-  const cleanedLength = cleaned.length;
-
-  // 仅在开发环境和实际清洗发生时记录日志
-  if (process.env.NODE_ENV === 'development' && originalLength !== cleanedLength) {
-    logger.info(
-      `[sanitizeApiKey] Key 已清洗: ${originalLength} → ${cleanedLength} 字符 (移除 ${originalLength - cleanedLength} 个隐藏字符)`,
-    );
-  }
-
-  // 验证基本格式（仅开发环境输出详细信息）
-  if (process.env.NODE_ENV === 'development' && cleanedLength > 0) {
-    const prefix = cleaned.substring(0, Math.min(8, cleanedLength));
-    const suffix = cleaned.substring(Math.max(0, cleanedLength - 4));
-
-    logger.debug(`[sanitizeApiKey] Key 验证通过: 长度=${cleanedLength}, 前缀="${prefix}...", 后缀="...${suffix}"`);
-
-    // 检查常见格式问题
-    if (!cleaned.startsWith('sk-') && !cleaned.startsWith('Bearer ')) {
-      logger.warn(`[sanitizeApiKey] Key 格式异常: 不以 "sk-" 或 "Bearer " 开头，前8位="${prefix}"`);
-    }
-  } else if (cleanedLength === 0 && process.env.NODE_ENV === 'development') {
-    logger.error(`[sanitizeApiKey] ❌ 清洗后 Key 为空！原始长度=${originalLength}`);
+  if (import.meta.env.DEV && originalLength !== cleaned.length) {
+    logger.info(`[sanitizeApiKey] Key 已清洗: ${originalLength} → ${cleaned.length} 字符`);
   }
 
   return cleaned;

@@ -383,23 +383,17 @@ export const useAcademicReportStore = create<AcademicReportState>()(
 
       fetchReports: async () => {
         set({ isLoading: true, error: null });
+        // Academic reports are stored locally (no dedicated backend endpoint yet)
         try {
-          const response = await fetch('/api/v1/reports');
-          if (!response.ok) {
-            throw new Error('Failed to fetch reports');
+          const stored = localStorage.getItem('academic-report-storage');
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            set({ reports: parsed.state?.reports || [], isLoading: false });
+          } else {
+            set({ reports: get().reports || [], isLoading: false });
           }
-          const data = await response.json();
-          set({
-            reports: data.reports || [],
-            isLoading: false,
-          });
-        } catch (error) {
-          logger.warn('Backend API unavailable, using local storage:', error);
-          set({
-            reports: get().reports || [],
-            isLoading: false,
-            error: null,
-          });
+        } catch {
+          set({ reports: get().reports || [], isLoading: false, error: null });
         }
       },
 
@@ -416,32 +410,18 @@ export const useAcademicReportStore = create<AcademicReportState>()(
           currentReport: newReport,
         }));
 
+        // Persist to localStorage
         try {
-          const response = await fetch('/api/v1/reports', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(newReport),
-          });
-
-          if (!response.ok) {
-            throw new Error('Failed to sync report');
+          const stored = localStorage.getItem('academic-report-storage');
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            parsed.state.reports.push(newReport);
+            localStorage.setItem('academic-report-storage', JSON.stringify(parsed));
           }
-
-          const savedReport = await response.json();
-          set((state) => ({
-            reports: state.reports.map(r =>
-              r.id === newReport.id ? { ...r, id: savedReport.id } : r,
-            ),
-            currentReport: state.currentReport?.id === newReport.id
-              ? { ...state.currentReport, id: savedReport.id }
-              : state.currentReport,
-          }));
-
-          return savedReport.id;
-        } catch (error) {
-          logger.warn('Backend API unavailable, data saved locally:', error);
-          return newReport.id;
+        } catch {
+          // ignore persistence errors
         }
+        return newReport.id;
       },
     }),
     {

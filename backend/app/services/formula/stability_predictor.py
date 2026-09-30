@@ -1,4 +1,4 @@
-﻿"""
+"""
 稳定性预测模型
 预测配方在储存条件下的稳定性
 考虑：pH、温度、光照、成分相互作用
@@ -220,7 +220,7 @@ class StabilityPredictor:
         
         risk_factors = []
         total_degradation = 0.0
-        min_shelf_life = float('inf')
+        min_shelf_life = 999999.0  # 用大数替代 Infinity，避免 JSONB 序列化错误
         
         for ing in ingredients:
             name = ing.get("name", "")

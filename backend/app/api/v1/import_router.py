@@ -47,7 +47,7 @@ async def _get_task(task_id: str, db: AsyncSession) -> dict:
     )
     row = result.fetchone()
     if not row:
-        raise HTTPException(status_code=404, detail="Import task not found")
+        raise HTTPException(status_code=404, detail="导入任务不存在")
     return dict(row._mapping)
 
 
@@ -126,8 +126,8 @@ async def upload_file(
     if ext not in allowed_types.get(file_type, []):
         raise HTTPException(
             status_code=400,
-            detail=f"Unsupported file extension '{ext}' for type '{file_type}'. "
-                   f"Allowed: {allowed_types.get(file_type, [])}",
+            detail=f"类型 '{file_type}' 不支持文件扩展名 '{ext}'。"
+                   f"允许扩展名：{allowed_types.get(file_type, [])}",
         )
 
     # 保存到临时目录
@@ -137,7 +137,7 @@ async def upload_file(
     task_id = str(uuid.uuid4())
     safe_filename = file.filename or ""
     if not safe_filename:
-        raise HTTPException(status_code=400, detail="Invalid filename")
+        raise HTTPException(status_code=400, detail="文件名无效")
     # Simple sanitization (remove path and dangerous chars)
     from pathlib import Path
     safe_filename = Path(safe_filename).name
@@ -180,7 +180,7 @@ async def upload_file(
         "file_name": safe_filename,
         "file_size_bytes": file_size,
         "status": "uploaded",
-        "message": "File uploaded successfully. Use /preview and /run endpoints.",
+        "message": "文件上传成功。请使用 /preview 与 /run 端点继续操作。",
     }
 
 
@@ -197,15 +197,15 @@ async def preview_data(
     task = _get_task(task_id, db)
 
     if task["status"] != "uploaded":
-        raise HTTPException(status_code=400, detail="Task must be in 'uploaded' status to preview")
+        raise HTTPException(status_code=400, detail="任务须处于已上传状态才能预览")
 
     file_path_str = task.get("_temp_path")
     if not file_path_str:
-        raise HTTPException(status_code=400, detail="No file path available")
+        raise HTTPException(status_code=400, detail="文件路径不可用")
 
     file_path = Path(file_path_str)
     if not file_path.exists():
-        raise HTTPException(status_code=404, detail="Uploaded file not found")
+        raise HTTPException(status_code=404, detail="上传的文件不存在")
 
     try:
         from app.services.import_engine.adapters.csv_adapter import CsvAdapter
@@ -261,7 +261,7 @@ async def run_import(
     if task["status"] not in ("uploaded", "failed"):
         raise HTTPException(
             status_code=400,
-            detail=f"Cannot run import in '{task['status']}' status",
+            detail=f"任务处于 '{task['status']}' 状态，无法启动导入",
         )
 
     # 准备任务配置
@@ -435,7 +435,7 @@ async def cancel_import(
     task = _get_task(task_id, db)
 
     if task["status"] == "running":
-        raise HTTPException(status_code=400, detail="Cannot cancel a running task")
+        raise HTTPException(status_code=400, detail="无法取消运行中的任务")
 
     task["status"] = "cancelled"
     task["updated_at"] = datetime.now(timezone.utc).isoformat()

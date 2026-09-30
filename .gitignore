@@ -247,3 +247,43 @@ logs/builds/
 # ---- scripts/ 已规范化（子目录结构） ----
 # 归档目录不再跟踪
 scripts/archive/
+
+# ============================================
+# ---- 会话临时产物与工具缓存（主题系统修复时补充）----
+# ============================================
+
+# 包管理器缓存与本地 store
+.npm-cache/
+.pnpm-store/
+
+# SSH / 调试临时脚本与输出
+_ssh_tmp/
+_ssh_*
+_out.txt
+_pip_out.txt
+_pip_verbose.txt
+_test*.txt
+_killtest.py
+
+# 多份历史构建产物（dist/ 已在上文忽略）
+frontend/dist-*/
+
+# 临时/中间产物目录
+temp_files/
+# ============================================
+# ---- 安全：环境/密钥文件禁止入库 ----
+# ============================================
+.env.deploy
+.env.*
+!.env.example
+!.env.*.example
+deploy/.env.deploy
+docker/.env.deploy
+*.pem
+*.p12
+*.key
+
+# ---- 归档包与工具截图（非源码）----
+*.tgz
+cf*.png
+cloudflare_*.png

@@ -1,5 +1,5 @@
 /**
- * RMFOOD 公官网着陆页 — 模块化编排器 v6.0
+ * 莱茵分子 公官网着陆页 — 模块化编排器 v6.0
  *
  * 架构：
  *   sections/  → 各业务区块组件（独立、可单独测试）
@@ -15,6 +15,7 @@
 import Navbar from './sections/Navbar';
 import Hero from './sections/Hero';
 import Features from './sections/Features';
+import Algorithms from './sections/Algorithms';
 import SocialProof from './sections/SocialProof';
 import UseCases from './sections/UseCases';
 import DataSources from './sections/DataSources';
@@ -24,6 +25,10 @@ import CTABanner from './sections/CTABanner';
 import Footer from './sections/Footer';
 import './LandingPage.css';
 
+/**
+ * 布局顺序（v7）：
+ *   Hero → Features → Algorithms → SocialProof → UseCases → DataSources → Pricing → FAQ → CTA
+ */
 export default function LandingPage() {
   return (
     <div className="min-h-screen" style={{ background: 'var(--bg-canvas)', color: 'var(--text-primary)' }}>
@@ -31,6 +36,7 @@ export default function LandingPage() {
       <main>
         <Hero />
         <Features />
+        <Algorithms />
         <SocialProof />
         <UseCases />
         <DataSources />

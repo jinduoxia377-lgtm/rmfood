@@ -34,7 +34,7 @@ async def _sync_tcmsp_herbs():
     logger.info("[auto_sync] 开始 TCMSP 中药材同步...")
     try:
         from app.services.data_sources.tcmsp_client import tcmsp_service
-        from app.core.session import async_session_factory
+        from app.core.database.session import async_session_factory
 
         async with async_session_factory() as db:
             result = await tcmsp_service.sync_herbs(db, force=False)
@@ -48,7 +48,7 @@ async def _sync_dfbp_peptides():
     logger.info("[auto_sync] 开始 DFBP 肽链同步...")
     try:
         from app.services.data_sources.dfbp_client import dfbp_service
-        from app.core.session import async_session_factory
+        from app.core.database.session import async_session_factory
 
         async with async_session_factory() as db:
             result = await dfbp_service.sync_peptides(db, force=False)
@@ -109,7 +109,7 @@ if __name__ == "__main__":
     
     async def one_shot_sync():
         """一次性同步所有数据源（用于 cron/systemd 调用）"""
-        from app.core.session import async_session_factory
+        from app.core.database.session import async_session_factory
         
         async with async_session_factory() as db:
             from app.services.data_sources.tcmsp_client import tcmsp_service

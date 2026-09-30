@@ -1,94 +1,74 @@
 /**
- * RMFOOD Mini Program - Authentication Module
+ * 用户认证管理工具
  */
 
-const request = require('./request.js')
-const { showLoading, hideLoading, showSuccess, showError } = require('./helpers.js')
+const STORAGE_KEY = 'rmfood_user'
+const TOKEN_KEY = 'rmfood_token'
+const config = require('../config/api')
 
-class Auth {
-  constructor() {
-    this.app = getApp()
-  }
-
-  /**
-   * WeChat login
-   */
-  async login() {
-    showLoading('Logging in...')
-
+class AuthManager {
+  getUser() {
     try {
-      const loginRes = await this.getWxLoginCode()
-      const code = loginRes.code
-
-      const res = await request.post('/wechat/login', { code })
-
-      if (res) {
-        this.saveUserInfo(res)
-        showSuccess('Login successful')
-        return res
-      } else {
-        throw new Error(res.message || 'Login failed')
-      }
-    } catch (error) {
-      console.error('[Auth] Login error:', error)
-      showError(error.message || 'Login failed, please retry')
-      throw error
-    } finally {
-      hideLoading()
+      const userStr = wx.getStorageSync(STORAGE_KEY)
+      return userStr ? JSON.parse(userStr) : null
+    } catch (e) {
+      return null
     }
   }
 
-  /**
-   * Get WeChat login code
-   */
-  getWxLoginCode() {
-    return new Promise((resolve, reject) => {
-      wx.login({
-        success: (res) => {
-          if (res.code) {
-            resolve({ code: res.code })
-          } else {
-            reject(new Error('Get login code failed'))
-          }
-        },
-        fail: (err) => {
-          reject(err)
-        }
-      })
-    })
+  getToken() {
+    return wx.getStorageSync(TOKEN_KEY) || ''
   }
 
-  /**
-   * Save user info
-   */
-  saveUserInfo(userInfo) {
-    wx.setStorageSync('user_info', userInfo)
-    this.app.globalData.userInfo = userInfo
-  }
-
-  /**
-   * Get user info
-   */
-  getUserInfo() {
-    return this.app.globalData.userInfo || wx.getStorageSync('user_info') || null
-  }
-
-  /**
-   * Check if logged in
-   */
   isLoggedIn() {
-    return !!this.getUserInfo()
+    return !!this.getToken()
   }
 
-  /**
-   * Logout
-   */
+  async login(code) {
+    try {
+      const response = await wx.request({
+        url: `${config.baseUrl}/auth/login`,
+        method: 'POST',
+        data: { code }
+      })
+      
+      if (response.data.success) {
+        const { token, user } = response.data.data
+        wx.setStorageSync(TOKEN_KEY, token)
+        wx.setStorageSync(STORAGE_KEY, JSON.stringify(user))
+        return { success: true, user }
+      } else {
+        throw new Error(response.data.message || '登录失败')
+      }
+    } catch (error) {
+      return { success: false, error }
+    }
+  }
+
   logout() {
-    wx.removeStorageSync('user_info')
-    wx.removeStorageSync('access_token')
-    this.app.globalData.userInfo = null
-    this.app.globalData.accessToken = null
+    wx.removeStorageSync(TOKEN_KEY)
+    wx.removeStorageSync(STORAGE_KEY)
+  }
+
+  async getUserInfo() {
+    const token = this.getToken()
+    if (!token) return null
+    
+    try {
+      const response = await wx.request({
+        url: `${config.baseUrl}/auth/me`,
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      
+      if (response.data.success) {
+        wx.setStorageSync(STORAGE_KEY, JSON.stringify(response.data.data))
+        return response.data.data
+      }
+    } catch (e) {
+      this.logout()
+    }
+    return null
   }
 }
 
-module.exports = new Auth()
+module.exports = new AuthManager()

@@ -9,7 +9,7 @@ import {
   ArrowLeft, Play, CheckCircle, Edit3, Plus, Trash2, TrendingUp,
   FileText, Target, FlaskConical, Calendar, BarChart3, XCircle,
   Download, Paperclip, Upload, Save, X, Clock, Table, ClipboardPaste,
-  ChevronRight, BarChart3 as Chart3, Eye, EyeOff,
+  ChevronRight, BarChart3 as Chart3, Eye, EyeOff, Sparkles,
 } from 'lucide-react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
@@ -24,6 +24,7 @@ import { format } from 'date-fns'
 import { zhCN } from 'date-fns/locale'
 import { Button, Input, Textarea, Card, CardHeader, CardTitle, CardDescription, CardContent, Badge } from '@/components/ui'
 import { attachmentApi, type Attachment } from '@/api/attachment'
+import { FormulaValidationPanel } from '@/components/experiment/FormulaValidationPanel'
 
 // ── 便捷 hooks ──
 function useExperiment(id: number) {
@@ -1014,6 +1015,38 @@ export default function ExperimentDetailPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* ── 配方在线验证面板 ── */}
+      {experiment?.formula_id && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
+                <Sparkles size={16} className="text-white" />
+              </div>
+              <div>
+                <CardTitle as="h2">配方在线验证</CardTitle>
+                <CardDescription>
+                  一键触发全流程验证 · 安全性→兼容性→功效→稳定性→风味→协同效应
+                </CardDescription>
+              </div>
+              <Link
+                to={`/formulas/${experiment.formula_id}`}
+                className="ml-auto text-xs text-primary-600 dark:text-primary-400 hover:underline flex items-center gap-1"
+              >
+                查看配方 <ChevronRight size={12} />
+              </Link>
+            </div>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <FormulaValidationPanel
+              formulaId={experiment.formula_id}
+              formulaName={`配方 #${experiment.formula_id}`}
+              experimentId={experiment.id}
+            />
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

@@ -50,7 +50,7 @@ async function _request<T = any>(
   const url = buildUrl(path, params);
   
   const csrfToken = getCsrfToken();
-  const headers: Record<string, string> = {
+  const headers: Record<string, any> = {
     'Content-Type': 'application/json',
     ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {}),
     ...customHeaders,
@@ -67,7 +67,7 @@ async function _request<T = any>(
   if (!response.ok) {
     const error = new Error(data?.detail || data?.message || 'Request failed');
     (error as { status?: number }).status = response.status;
-    error.data = data;
+    (error as any).data = data;
     throw error;
   }
 

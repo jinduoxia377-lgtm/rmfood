@@ -21,6 +21,7 @@ import {
   mergeThemeOverrides,
   applyThemeToDOM,
 } from './theme.presets';
+// themeStorage 仅用于版本历史读取（read-only），不再双写 customThemes
 import { themeStorage } from './theme.storage';
 import { logger } from '@/utils/safeLogger';
 
@@ -45,18 +46,36 @@ function getValidThemeId(currentId: string): PresetThemeId {
     return currentId as PresetThemeId;
   }
 
-  // 旧版本主题ID回退到默认（已删除的预设主题 ID 映射）
-  const legacyFallbackIds = new Set(['light-warm', 'light-cool', 'dark-warm', 'dark-cool', 'dark-oled', 'high-contrast-light', 'high-contrast-dark', 'reading-sepia', 'reading-dark']);
+  // 所有非当前预设的 ID 均视为已迁移/已删除，统一回退到 light-default
+  // 原因：theme-cleanup 后 presetThemes 仅保留 light-default / dark-default
+  const MIGRATED_IDS = new Set(['light-warm', 'light-cool', 'dark-warm', 'dark-cool', 'dark-oled',
+    'high-contrast-light', 'high-contrast-dark', 'reading-sepia', 'reading-dark']);
 
-  // 检查是否是旧版主题ID
-  if (legacyFallbackIds.has(currentId)) {
-    logger.log(`[Theme System] 🔄 迁移旧主题ID: ${currentId} → light-default`);
+  if (MIGRATED_IDS.has(currentId)) {
+    logger.warn(`[Theme System] ⚠️ 已迁移主题ID: ${currentId}，原预设已删除，回退到 light-default`);
     return 'light-default';
   }
 
   // 完全无效，使用默认主题
   logger.warn(`[Theme System] ⚠️ 无效的主题ID: ${currentId}，使用默认主题`);
   return 'light-default';
+}
+
+// ============================================================================
+// 无障碍 DOM 属性同步（D-39 修复）
+// ----------------------------------------------------------------------------
+// 必须在【初始化】与【交互切换】两条路径上都调用，否则刷新后属性丢失，
+// 使 semantic-utils.css 中 [data-a11y-mode] / [data-reading-mode] 规则整层失效。
+// ============================================================================
+
+function syncA11yAttributes(mode: AccessibilityMode, themeMode: ThemeMode): void {
+  const root = document.documentElement;
+  root.setAttribute('data-a11y-mode', mode);
+  if (mode === 'reading') {
+    root.setAttribute('data-reading-mode', themeMode === 'dark' ? 'dark-read' : 'sepia');
+  } else {
+    root.removeAttribute('data-reading-mode');
+  }
 }
 
 // ============================================================================
@@ -145,7 +164,15 @@ export const useThemeStore = create<ThemeStore>()(
           }
 
           // 7. 应用到 DOM
-          await applyThemeWithTransition(baseTheme, state.transitionType);
+          // D-49 修复：首次应用必须【瞬时】，不得走过渡动画。
+          // 原实现用 applyThemeWithTransition(..., 'fade')，会先把 <html> 设为 opacity:0 再淡入，
+          // 与首屏 FOUC 叠加产生额外空白。用户可见的过渡只应发生在「用户主动切换」时。
+          applyThemeToDOM(baseTheme);
+
+          // D-39 修复：无障碍 DOM 属性必须在初始化路径同样写入，
+          // 否则刷新后 data-a11y-mode / data-reading-mode 丢失，
+          // 使 semantic-utils.css 的阅读/高对比规则整层失效。
+          syncA11yAttributes(state.accessibilityMode, baseTheme.mode);
 
           logger.info('✅ [Theme System] Initialized successfully', {
             mode: effectiveMode,
@@ -276,6 +303,10 @@ export const useThemeStore = create<ThemeStore>()(
           activeTheme: finalTheme,
         });
 
+        // 同步无障碍属性到 DOM（供 semantic-utils.css 中的 [data-a11y-mode] 规则使用）
+        // 与 initialize() 共用同一 helper，避免两条路径行为漂移（D-39）
+        syncA11yAttributes(mode, finalTheme.mode);
+
         applyThemeWithTransition(finalTheme, state.transitionType);
       },
 
@@ -327,8 +358,8 @@ export const useThemeStore = create<ThemeStore>()(
 
         set({ customThemes: updatedThemes });
 
-        // 同时保存到持久化存储
-        themeStorage.saveCustomThemes(updatedThemes);
+        // 持久化由 Zustand persist middleware 统一处理（rmfood-theme-storage）
+        // 不再双写 themeStorage，避免数据竞争
       },
 
       /**
@@ -339,7 +370,7 @@ export const useThemeStore = create<ThemeStore>()(
         const updatedThemes = state.customThemes.filter(t => t.id !== themeId);
 
         set({ customThemes: updatedThemes });
-        themeStorage.saveCustomThemes(updatedThemes);
+        // 持久化由 Zustand persist middleware 统一处理
 
         // 如果删除的是当前激活的主题，回退到默认
         if (state.activeThemeId === themeId) {
@@ -424,7 +455,9 @@ export const useThemeStore = create<ThemeStore>()(
         transitionType: state.transitionType,
         customThemes: state.customThemes.map(t => ({ ...t })),
       }),
-      version: 3, // 版本号升级到3（添加主题ID验证）
+      // ── 兼容旧版 themeStorage 写入的 CUSTOM_THEMES 键 ──
+      // migrate 阶段从 themeStorage 迁移旧数据（一次性）
+      version: 4, // 版本号升级到4（添加旧版 customThemes 迁移）
 
       // 主题ID迁移与验证（v3新增）
       migrate: (persistedState: any, version) => {
@@ -439,6 +472,21 @@ export const useThemeStore = create<ThemeStore>()(
               persistedState.activeThemeId = validId;
             }
           }
+        }
+
+        // v4: 从旧的 themeStorage CUSTOM_THEMES 键迁移自定义主题（一次性）
+        if (version === undefined || version < 4) {
+          try {
+            const raw = localStorage.getItem('rmfood-custom-themes');
+            if (raw) {
+              const parsed = JSON.parse(raw);
+              const oldThemes: any[] = parsed?.data ?? parsed;
+              if (Array.isArray(oldThemes) && oldThemes.length > 0 && (!persistedState?.customThemes || persistedState.customThemes.length === 0)) {
+                logger.info(`[Theme System] 🔄 v3→v4 迁移 ${oldThemes.length} 个自定义主题从旧存储键`);
+                persistedState.customThemes = oldThemes;
+              }
+            }
+          } catch { /* 忽略迁移错误 */ }
         }
 
         return persistedState;
@@ -464,121 +512,42 @@ export const useThemeStore = create<ThemeStore>()(
 );
 
 // ============================================================================
-// 辅助函数：带过渡效果的应用主题
+// 辅助函数：应用主题（含过渡标记）
+// ----------------------------------------------------------------------------
+// D-8 修复：原实现用 <html> 的 inline opacity / transform 做主题过渡
+//   （applyFadeTransition / applySlideTransition / applyScaleTransition），
+//   问题有三：
+//     1) 整页重绘：opacity/transform 作用于 <html>，触发全文档合成层重建；
+//     2) 可访问性遮挡：过渡期间内容处于 opacity:0，屏幕阅读器与自动化测试可能读到空内容；
+//     3) 与首屏 FOUC 叠加，冷启动额外空白（D-49）。
+// 现改为：仅在切换瞬间挂载 .theme-transition 类，由 CSS transition 处理颜色插值，
+//   完全不触碰 opacity / transform。该类已存在于 index.css（颜色/边框/阴影/fill/stroke）。
 // ============================================================================
 
+let _transitionTimer: ReturnType<typeof setTimeout> | null = null;
+
 async function applyThemeWithTransition(theme: ThemeConfig, transitionType: TransitionType): Promise<void> {
-  // 标记开始过渡
+  const root = document.documentElement;
+
+  if (transitionType === 'none') {
+    applyThemeToDOM(theme);
+    return;
+  }
+
   useThemeStore.setState({ isTransitioning: true });
+  root.classList.add('theme-transition');
 
   try {
-    switch (transitionType) {
-      case 'fade':
-        await applyFadeTransition(theme);
-        break;
-      case 'slide':
-        await applySlideTransition(theme);
-        break;
-      case 'scale':
-        await applyScaleTransition(theme);
-        break;
-      case 'none':
-      default:
-        applyThemeToDOM(theme);
-        break;
-    }
+    applyThemeToDOM(theme);
   } finally {
-    // 过渡完成
-    setTimeout(() => {
+    if (_transitionTimer !== null) clearTimeout(_transitionTimer);
+    // 过渡时长与 index.css 的 .theme-transition（200ms）保持一致，略留余量
+    _transitionTimer = setTimeout(() => {
+      root.classList.remove('theme-transition');
+      _transitionTimer = null;
       useThemeStore.setState({ isTransitioning: false });
-    }, 300); // 等待过渡动画完成
+    }, 260);
   }
-}
-
-/** 淡入淡出过渡 */
-async function applyFadeTransition(theme: ThemeConfig): Promise<void> {
-  const root = document.documentElement;
-
-  // 淡出
-  root.style.transition = 'opacity 0.15s ease-out';
-  root.style.opacity = '0';
-
-  await new Promise(resolve => setTimeout(resolve, 150));
-
-  // 应用新主题
-  applyThemeToDOM(theme);
-
-  // 淡入
-  root.style.opacity = '1';
-
-  await new Promise(resolve => setTimeout(resolve, 150));
-
-  // 清理
-  root.style.removeProperty('transition');
-}
-
-/** 滑动过渡 */
-async function applySlideTransition(theme: ThemeConfig): Promise<void> {
-  const root = document.documentElement;
-
-  // 向左滑出
-  root.style.transition = 'transform 0.2s ease-in, opacity 0.2s ease-in';
-  root.style.transform = 'translateX(-20px)';
-  root.style.opacity = '0';
-
-  await new Promise(resolve => setTimeout(resolve, 200));
-
-  // 应用新主题
-  applyThemeToDOM(theme);
-
-  // 从右滑入
-  root.style.transform = 'translateX(20px)';
-  root.style.transition = 'none';
-
-  requestAnimationFrame(() => {
-    root.style.transition = 'transform 0.25s ease-out, opacity 0.25s ease-out';
-    root.style.transform = 'translateX(0)';
-    root.style.opacity = '1';
-  });
-
-  await new Promise(resolve => setTimeout(resolve, 250));
-
-  // 清理
-  root.style.removeProperty('transform');
-  root.style.removeProperty('transition');
-  root.style.removeProperty('opacity');
-}
-
-/** 缩放过渡 */
-async function applyScaleTransition(theme: ThemeConfig): Promise<void> {
-  const root = document.documentElement;
-
-  // 缩小 + 淡出
-  root.style.transition = 'transform 0.15s ease-in, opacity 0.15s ease-in';
-  root.style.transform = 'scale(0.98)';
-  root.style.opacity = '0';
-
-  await new Promise(resolve => setTimeout(resolve, 150));
-
-  // 应用新主题
-  applyThemeToDOM(theme);
-
-  // 放大 + 淡入
-  root.style.transform = 'scale(1.02)';
-  root.style.transition = 'none';
-
-  requestAnimationFrame(() => {
-    root.style.transition = 'transform 0.2s ease-out, opacity 0.2s ease-out';
-    root.style.transform = 'scale(1)';
-    root.style.opacity = '1';
-  });
-
-  await new Promise(resolve => setTimeout(resolve, 200));
-
-  // 清理
-  root.style.removeProperty('transform');
-  root.style.removeProperty('transition');
-  root.style.removeProperty('opacity');
 }
 
 export default useThemeStore;

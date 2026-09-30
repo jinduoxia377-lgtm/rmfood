@@ -35,9 +35,17 @@ async def get_2fa_status(
     current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db_session),
 ):
-    """查询当前用户的 2FA 启用状态"""
+    """查询当前用户的 2FA 启用状态
+
+    修复: `User` 模型当前并无 two_factor_secret/two_factor_enabled 列
+    （users 表实际列见 information_schema），直接属性访问会抛 AttributeError
+    → 500。改用 getattr 安全读取：列尚未落库时返回 {enabled: false}，
+    而非让端点崩溃。一旦迁移补齐这两列，本端点自动开始如实反映真实状态。
+    """
+    secret = getattr(current_user, "two_factor_secret", None)
+    enabled = bool(getattr(current_user, "two_factor_enabled", secret))
     return {
-        "enabled": bool(current_user.two_factor_secret),
+        "enabled": enabled,
     }
 
 
@@ -104,11 +112,17 @@ async def list_devices(
     current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db_session),
 ):
-    """获取当前用户所有登录设备"""
+    """获取当前用户所有登录设备
+
+    修复: 原实现引用了 UserDevice 并不存在的列（platform/browser/ip_address/
+    last_active/is_current），而实际模型与 user_devices 表只有
+    device_type / last_sync_at / is_active，访问缺失属性 → AttributeError → 500。
+    现按真实列对齐；device_type 为枚举，输出其值字符串。
+    """
     result = await db.execute(
         select(UserDevice)
         .where(UserDevice.user_id == current_user.id)
-        .order_by(UserDevice.last_active.desc())
+        .order_by(UserDevice.last_sync_at.desc().nullsfirst())
     )
     devices = result.scalars().all()
 
@@ -117,11 +131,9 @@ async def list_devices(
             {
                 "id": d.id,
                 "device_name": d.device_name or "Unknown Device",
-                "platform": d.platform or "unknown",
-                "browser": d.browser or "unknown",
-                "ip_address": d.ip_address,
-                "last_active": d.last_active.isoformat() if d.last_active else None,
-                "is_current": d.is_current,
+                "device_type": (d.device_type.value if d.device_type else "unknown"),
+                "last_active": d.last_sync_at.isoformat() if d.last_sync_at else None,
+                "is_active": bool(d.is_active),
             }
             for d in devices
         ],

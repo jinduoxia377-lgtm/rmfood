@@ -25,6 +25,7 @@ import { ChatMessages, ChatInputPro, ChatHistory, type HistorySession } from './
 import { TopBar, EmptyStateCard } from './components/pro'
 import ComposerStatusBar from './components/pro/ComposerStatusBar'
 import DetailsPanel from './components/pro/DetailsPanel'
+import FollowUpSuggestionsBar from './components/pro/FollowUpSuggestionsBar'
 import type { DraftAttachment } from './components/pro/ChatInput'
 
 // ===== UI 子组件 =====
@@ -43,8 +44,19 @@ import { ProfessionalReport as ProfessionalReportModal } from '@/components/ai/c
 import { EnhancedDataTable } from '@/components/ai/components/EnhancedDataTable'
 import type { EnhancedIngredient } from '@/types/ai.types'
 
+// ===== 新功能组件 =====
+import { UserProfileSettingsPanel } from './components/UserProfileSettingsPanel'
+import { FormulaShareModal } from './components/FormulaShareModal'
+import { ChatSearchOverlay } from './components/ChatSearchOverlay'
+import { detectStructuredContent } from './components/structured/utils'
+import * as formulaExtractorService from './services/formulaExtractorService'
+
 // ===== 图标库 =====
-import { AlertTriangle, Play, Pause, Leaf, Database } from 'lucide-react'
+import {
+  AlertTriangle, Play, Pause, Leaf, Database,
+  UserCircle, Share2, Search as SearchIcon,
+  Save,
+} from 'lucide-react'
 
 // ===== 配置 =====
 import { QUICK_QUESTIONS } from '@/config/ai'
@@ -99,6 +111,12 @@ export function ChatTab({ onBatchExport, onBatchDelete, onBatchTag, onSelectAll:
   const [detailsOpenLocal, setDetailsOpen] = React.useState(false)
   const [showKBPanelLocal, setShowKBPanelLocal] = React.useState(false)
 
+  // ===== 新功能：设置/分享/搜索 =====
+  const [showUserProfileSettings, setShowUserProfileSettings] = React.useState(false)
+  const [shareModalContent, setShareModalContent] = React.useState<{ messageId: string; content: string } | null>(null)
+  const [searchOpen, setSearchOpen] = React.useState(false)
+  const [savedFormulaId, setSavedFormulaId] = React.useState<string | null>(null)
+
   // ── 同步 Context 状态到本地（用于回调）──
   React.useEffect(() => {
     if (detailsCall !== detailsCallLocal) setDetailsCall(detailsCall)
@@ -109,6 +127,28 @@ export function ChatTab({ onBatchExport, onBatchDelete, onBatchTag, onSelectAll:
   React.useEffect(() => {
     if (showKBPanel !== showKBPanelLocal) setShowKBPanelLocal(showKBPanel)
   }, [showKBPanel])
+
+  // ── 从结构化内容提取配方并保存 ──
+  const handleStructureSave = React.useCallback((messageId: string, content: string) => {
+    const structured = detectStructuredContent(content)
+    if (!structured) {
+      logger.warn('[ChatTab] 消息内容不是结构化格式，无法保存:', messageId)
+      return
+    }
+    const extracted = formulaExtractorService.extractFormulaFromContent(structured)
+    if (!extracted) {
+      logger.warn('[ChatTab] 未能从结构化内容中提取配方:', messageId)
+      return
+    }
+    const formulaId = formulaExtractorService.generateFormulaId(extracted.name)
+    setSavedFormulaId(formulaId)
+    logger.info('[ChatTab] 配方已保存到库:', { formulaId, name: extracted.name, ingredients: extracted.ingredients.length })
+    // TODO: 调用后端API保存到数据库
+  }, [])
+
+  const handleStructureShare = React.useCallback((messageId: string, content: string) => {
+    setShareModalContent({ messageId, content })
+  }, [])
 
   return (
     <div className={`flex h-full relative chat-unified chat-area`}>
@@ -158,6 +198,9 @@ export function ChatTab({ onBatchExport, onBatchDelete, onBatchTag, onSelectAll:
           messageCount={messages.length}
           onClearChat={handleClearChat}
           onOpenKBPanel={() => setShowKBPanelLocal(true)}
+          onOpenUserProfile={() => setShowUserProfileSettings(true)}
+          onToggleSearch={() => setSearchOpen(v => !v)}
+          searchOpen={searchOpen}
           t={() => ''}
         />
 
@@ -209,7 +252,21 @@ export function ChatTab({ onBatchExport, onBatchDelete, onBatchTag, onSelectAll:
               onForkMessage={handleForkMessage}
               onDetailsMessage={(call) => { setDetailsCall(call); setDetailsOpen(true) }}
               thinkingSteps={[]}
+              onStructureSave={handleStructureSave}
+              onStructureShare={handleStructureShare}
             />
+
+            {/* 追问建议栏 */}
+            {!isStreaming && messages.length > 0 && (
+              <FollowUpSuggestionsBar
+                onSendSuggestion={(question) => {
+                  setInput(question)
+                  handleSend()
+                }}
+                messages={messages}
+                isVisible={!isStreaming && messages.length > 0}
+              />
+            )}
 
             {/* 生成中占位 */}
             {isStreaming && (
@@ -289,6 +346,43 @@ export function ChatTab({ onBatchExport, onBatchDelete, onBatchTag, onSelectAll:
             onClose={() => setShowKBPanelLocal(false)}
             onSeedComplete={() => setShowKBPanelLocal(false)}
           />
+        )}
+
+        {/* 健康画像设置面板 */}
+        {showUserProfileSettings && (
+          <UserProfileSettingsPanel
+            onClose={() => setShowUserProfileSettings(false)}
+          />
+        )}
+
+        {/* 配方分享模态框 */}
+        {shareModalContent && (
+          <FormulaShareModal
+            content={detectStructuredContent(shareModalContent.content) ?? { blocks: [], responseType: 'general' as any}}
+            onClose={() => setShareModalContent(null)}
+          />
+        )}
+
+        {/* 聊天消息搜索浮层 */}
+        {searchOpen && (
+          <ChatSearchOverlay
+            messages={messages}
+            onGoToMessage={(id) => {
+              setSearchOpen(false)
+              // 滚动到对应消息
+              const el = document.querySelector(`[data-message-id="${id}"]`)
+              el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+            }}
+            onClose={() => setSearchOpen(false)}
+          />
+        )}
+
+        {/* 保存成功提示 */}
+        {savedFormulaId && (
+          <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full
+            bg-emerald-500 text-white text-xs font-medium shadow-lg animate-fade-in">
+            ✓ 配方已保存到配方库
+          </div>
         )}
       </div>
     </div>

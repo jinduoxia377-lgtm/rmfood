@@ -78,6 +78,31 @@ type OrganizationsAction =
   | { type: 'SET_TRASHED'; payload: Organization[] }
   | { type: 'REMOVE_TRASHED'; payload: number }
 
+/** Map backend org list response to frontend Organization type */
+function mapOrgResponse(raw: Record<string, any>): Organization {
+  const plan = raw.plan || 'free'
+  const limits: Record<string, number> = raw.limits || {}
+  return {
+    id: raw.id,
+    name: raw.name || '',
+    slug: raw.slug || '',
+    description: raw.description || '',
+    plan,
+    memberCount: raw.member_count ?? raw.memberCount ?? 0,
+    teamCount: raw.team_count ?? raw.teamCount ?? 0,
+    storageUsed: Number(raw.storage_used_mb ?? raw.storageUsed) * 1024 * 1024 || 0,
+    storageLimit: (limits.storage_mb ?? 1024) * 1024 * 1024,
+    apiUsage: 0,
+    apiLimit: limits.api_calls_per_day ?? 10000,
+    isFavorite: false,
+    isPinned: false,
+    isActive: raw.is_active !== false,
+    myRole: raw.member_role ?? raw.my_role ?? 'member',
+    createdAt: raw.created_at || new Date().toISOString(),
+    updatedAt: raw.updated_at || raw.created_at || new Date().toISOString(),
+  }
+}
+
 const initialState: OrganizationsState = {
   organizations: [],
   loading: false,
@@ -264,11 +289,13 @@ export function useOrganizations(options: UseOrganizationsOptions = {}) {
       if (!mountedRef.current) return
 
       const data = response.data
+      const rawOrgs = data.organizations || data.items || data.data || []
+      const mapped = rawOrgs.map((o: Record<string, any>) => mapOrgResponse(o))
       dispatch({
         type: 'SET_ORGANIZATIONS',
         payload: {
-          items: data.items || data.data || [],
-          total: data.total || 0,
+          items: mapped,
+          total: data.total ?? mapped.length,
         },
       })
 
@@ -363,7 +390,9 @@ export function useOrganizations(options: UseOrganizationsOptions = {}) {
 
       try {
         const response = await api.post('/organizations', data)
-        const newOrg = response.data as Organization
+        // Backend returns { success: true, organization: {...} }
+        const rawOrg = response.data?.organization ?? response.data
+        const newOrg = mapOrgResponse(rawOrg as Record<string, any>)
         dispatch({ type: 'ADD_ORGANIZATION', payload: newOrg })
         return newOrg
       } catch (error: any) {
@@ -402,33 +431,27 @@ export function useOrganizations(options: UseOrganizationsOptions = {}) {
   }, [])
 
   const toggleFavorite = useCallback(async (id: number): Promise<void> => {
-    try {
-      const org = state.organizations.find((o) => o.id === id)
-      if (!org) return
-
-      await api.patch(`/organizations/${id}/favorite`, { isFavorite: !org.isFavorite })
-      dispatch({
-        type: 'UPDATE_ORGANIZATION',
-        payload: { id, data: { isFavorite: !org.isFavorite } },
-      })
-    } catch (error: any) {
-      dispatch({ type: 'SET_ERROR', payload: error as Error })
-      throw error
-    }
+    // Backend does not yet support favorite; toggle locally only
+    const org = state.organizations.find((o) => o.id === id)
+    if (!org) return
+    dispatch({
+      type: 'UPDATE_ORGANIZATION',
+      payload: { id, data: { isFavorite: !org.isFavorite } },
+    })
   }, [state.organizations])
 
   const fetchTrashedOrganizations = useCallback(async () => {
     if (!mountedRef.current) return
     dispatch({ type: 'SET_LOADING', payload: true })
     try {
-      const response = await api.get('/organizations?status=deleted&pageSize=100')
+      // Backend does not support status=deleted filter; fetch all then filter server-side
+      const response = await api.get('/organizations')
       if (!mountedRef.current) return
-      dispatch({
-        type: 'SET_ORGANIZATIONS',
-        payload: { items: response.data?.items || [], total: response.data?.total || 0 },
-      })
-      // Store in a separate state by using a custom action
-      ;dispatch({ type: 'SET_TRASHED', payload: response.data?.items || [] })
+      const rawOrgs = response.data?.organizations || response.data?.items || response.data?.data || []
+      const allOrgs = rawOrgs.map((o: Record<string, any>) => mapOrgResponse(o))
+      // Mark deleted (archived) organizations for trash view
+      const trashed = allOrgs.filter((org: Organization) => !org.isActive)
+      dispatch({ type: 'SET_TRASHED', payload: trashed })
       dispatch({ type: 'SET_LOADING', payload: false })
     } catch (error: any) {
       if (!mountedRef.current) return
@@ -438,9 +461,10 @@ export function useOrganizations(options: UseOrganizationsOptions = {}) {
 
   const restoreOrganization = useCallback(async (id: number): Promise<void> => {
     try {
-      await api.patch(`/organizations/${id}/restore`)
+      // Backend uses PUT /organizations/{id}/restore
+      await api.put(`/organizations/${id}/restore`)
       dispatch({ type: 'REMOVE_ORGANIZATION', payload: id })
-      ;dispatch({ type: 'REMOVE_TRASHED', payload: id })
+      dispatch({ type: 'REMOVE_TRASHED', payload: id })
     } catch (error: any) {
       throw error
     }
@@ -449,9 +473,31 @@ export function useOrganizations(options: UseOrganizationsOptions = {}) {
   const cloneOrganization = useCallback(async (id: number, newName?: string): Promise<number> => {
     try {
       const response = await api.post(`/organizations/${id}/clone`, { name: newName })
-      const newOrg = response.data as Organization
-      dispatch({ type: 'ADD_ORGANIZATION', payload: newOrg })
-      return newOrg.id
+      // Backend returns { success, new_organization_id }
+      const newOrgId = response.data?.new_organization_id ?? response.data?.id
+      dispatch({
+        type: 'ADD_ORGANIZATION',
+        payload: {
+          id: newOrgId,
+          name: newName || '克隆组织',
+          slug: `clone-${Date.now()}`,
+          description: '',
+          plan: 'free' as const,
+          memberCount: 1,
+          teamCount: 0,
+          storageUsed: 0,
+          storageLimit: 500 * 1024 * 1024,
+          apiUsage: 0,
+          apiLimit: 10000,
+          isFavorite: false,
+          isPinned: false,
+          isActive: true,
+          myRole: 'owner' as const,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        },
+      })
+      return newOrgId
     } catch (error: any) {
       throw error
     }
@@ -459,28 +505,23 @@ export function useOrganizations(options: UseOrganizationsOptions = {}) {
 
   const permanentDeleteOrganization = useCallback(async (id: number): Promise<void> => {
     try {
-      await api.delete(`/organizations/${id}/permanent`)
+      // Use the standard delete (soft delete) then remove from trash
+      await api.delete(`/organizations/${id}`)
       dispatch({ type: 'REMOVE_ORGANIZATION', payload: id })
-      ;dispatch({ type: 'REMOVE_TRASHED', payload: id })
+      dispatch({ type: 'REMOVE_TRASHED', payload: id })
     } catch (error: any) {
       throw error
     }
   }, [])
 
   const togglePin = useCallback(async (id: number): Promise<void> => {
-    try {
-      const org = state.organizations.find((o) => o.id === id)
-      if (!org) return
-
-      await api.patch(`/organizations/${id}/pin`, { isPinned: !org.isPinned })
-      dispatch({
-        type: 'UPDATE_ORGANIZATION',
-        payload: { id, data: { isPinned: !org.isPinned } },
-      })
-    } catch (error: any) {
-      dispatch({ type: 'SET_ERROR', payload: error as Error })
-      throw error
-    }
+    // Backend does not yet support pin; toggle locally only
+    const org = state.organizations.find((o) => o.id === id)
+    if (!org) return
+    dispatch({
+      type: 'UPDATE_ORGANIZATION',
+      payload: { id, data: { isPinned: !org.isPinned } },
+    })
   }, [state.organizations])
 
   const refetch = useCallback(() => {
@@ -537,7 +578,6 @@ export function useOrganizations(options: UseOrganizationsOptions = {}) {
     isStale,
     allSelected,
     someSelected,
-    getPermissionMatrix,
     trashedOrganizations: state.trashedOrganizations ?? [],
     trashLoading: state.loading,
     fetchTrashedOrganizations,

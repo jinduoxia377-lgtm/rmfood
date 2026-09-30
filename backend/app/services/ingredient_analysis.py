@@ -86,7 +86,7 @@ ADDITIVE_DB: Dict[str, Dict[str, Any]] = {
     '341': {'name': '磷酸钙', 'eCode': 'E341', 'function': '酸度调节剂', 'risk': 'low'},
     # 其他
     '621': {'name': '谷氨酸钠(味精)', 'eCode': 'E621', 'function': '增味剂', 'risk': 'low'},
-    '635': {'name': '5'-呈味核苷酸二钠', 'eCode': 'E635', 'function': '增味剂', 'risk': 'low'},
+    '635': {"name": "5'-呈味核苷酸二钠", "eCode": "E635", "function": "增味剂", "risk": "low"},
 }
 
 

@@ -616,7 +616,7 @@ def feature_flag(
             if not feature_flag_manager.is_enabled(name, user_id, user_groups):
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
-                    detail=f"Feature '{name}' is not enabled for this user",
+                    detail=f"功能 '{name}' 未对该用户启用",
                 )
 
             return await func(*args, **kwargs)
@@ -668,7 +668,7 @@ def gray_release(
             ):
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
-                    detail=f"Feature '{name}' is not available for this user",
+                    detail=f"功能 '{name}' 对该用户不可用",
                 )
 
             return await func(*args, **kwargs)

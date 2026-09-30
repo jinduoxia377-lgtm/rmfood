@@ -1,6 +1,6 @@
 <!-- 健康评分组件 -->
 <view class="health-score {{sizeClass}}">
-  <view class="score-circle" style="background: conic-gradient({{color}} {{percentage}}%, #e0e0e0 0);">
+  <view class="score-circle" style="background: conic-gradient({{color}} {{percentage}}%, var(--color-border) 0);">
     <text class="score-value">{{score}}</text>
   </view>
   <text class="score-label">{{label}}</text>

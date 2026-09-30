@@ -1,0 +1,201 @@
+# RMFOOD 生产部署 - 适配 2C4G 云服务器
+# 路径: deploy/docker-compose.deploy.yml
+# 构建上下文: 项目根目录
+#
+# 服务列表:
+#   - postgres: PostgreSQL 16 (数据库)
+#   - redis:    Redis 7 (缓存/队列)
+#   - backend:  FastAPI (API 服务)
+#   - web:      Nginx (前端 + 反向代理)
+#
+# 可选服务（需在 .env 中启用）:
+#   - chromadb: ChromaDB (RAG 向量检索)
+
+version: '3.8'
+
+services:
+  # ===== PostgreSQL 数据库 =====
+  postgres:
+    image: postgres:16-alpine
+    container_name: rmfood_postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-rmfood}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-rmfood}
+      # 性能优化（适配 4GB 内存）
+      POSTGRES_MAX_CONNECTIONS: "${POSTGRES_MAX_CONNECTIONS:-50}"
+      POSTGRES_SHARED_BUFFERS: "${POSTGRES_SHARED_BUFFERS:-128MB}"
+      POSTGRES_EFFECTIVE_CACHE_SIZE: "${POSTGRES_EFFECTIVE_CACHE_SIZE:-384MB}"
+      POSTGRES_WORK_MEM: "${POSTGRES_WORK_MEM:-2MB}"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - rmfood-net
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-rmfood} -d ${POSTGRES_DB:-rmfood}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.5'
+        reservations:
+          memory: 512M
+
+  # ===== Redis 缓存 =====
+  redis:
+    image: redis:7-alpine
+    container_name: rmfood_redis
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    networks:
+      - rmfood-net
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 128M
+
+  # ===== 后端 API (FastAPI) =====
+  backend:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.deploy
+      target: backend-runtime
+    image: rmfood-backend:${DEPLOY_TAG:-latest}
+    container_name: rmfood_backend
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-rmfood}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-rmfood}
+      REDIS_URL: redis://redis:6379/0
+      ENV: production
+      DEBUG: "False"
+      PORT: "8000"
+      CORS_ORIGINS: '["${FRONTEND_URL:-http://localhost}"]'
+      # SECURITY__* 前缀为 pydantic-settings v2 嵌套模型环境变量格式
+      # 用于将顶层 SECRET_KEY 注入到 SecurityConfig 子配置中
+      SECRET_KEY: ${SECRET_KEY}
+      SECURITY__SECRET_KEY: ${SECRET_KEY}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+      SECURITY__ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      LLM_PROVIDER: ${LLM_PROVIDER:-deepseek}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-https://api.deepseek.com}
+      LLM_MODEL: ${LLM_MODEL:-deepseek-chat}
+      AI_MAX_TOKENS: "${AI_MAX_TOKENS:-4096}"
+      AI_TEMPERATURE: "${AI_TEMPERATURE:-0.7}"
+      # Cookie Secure 属性覆盖：纯 HTTP 部署（无 TLS）设为 false，使浏览器接受非 HTTPS 下的
+      # Set-Cookie；HTTPS 部署（443/TLS 终结）请设为 true。嵌套配置同步 SECURITY__COOKIE_SECURE。
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      SECURITY__COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      # 数据库连接池优化
+      DATABASE__POOL_SIZE: "${DATABASE__POOL_SIZE:-20}"
+      DATABASE__MAX_OVERFLOW: "${DATABASE__MAX_OVERFLOW:-10}"
+    volumes:
+      - uploads_data:/app/uploads
+      - ./temp_files:/app/temp_files
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - rmfood-net
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8000:8000"
+    healthcheck:
+      test: ["CMD", "python", "/usr/local/bin/healthcheck.py"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1'
+        reservations:
+          memory: 1G
+          cpus: '0.5'
+
+  # ===== 前端 + Nginx 反向代理（统一入口） =====
+  web:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.deploy
+      target: frontend-runtime
+    image: rmfood-web:${DEPLOY_TAG:-latest}
+    container_name: rmfood_web
+    environment:
+      VITE_API_BASE_URL: /api/v1
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - backend
+    networks:
+      - rmfood-net
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.5'
+        reservations:
+          memory: 128M
+
+  # ===== ChromaDB 向量数据库（可选，RAG 检索增强） =====
+  chromadb:
+    image: chromadb/chroma:0.5.0
+    container_name: rmfood_chromadb
+    environment:
+      CHROMA_AUTH_TOKEN: "${CHROMA_AUTH_TOKEN:-}"
+    volumes:
+      - chroma_data:/chroma/chroma
+    networks:
+      - rmfood-net
+    restart: unless-stopped
+    profiles:
+      - with-rag
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  uploads_data:
+    driver: local
+  chroma_data:
+    driver: local
+
+networks:
+  rmfood-net:
+    driver: bridge
+    name: rmfood-net

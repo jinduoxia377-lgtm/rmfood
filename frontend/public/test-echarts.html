@@ -1,0 +1,73 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>ECharts Test</title>
+    <script src="/echarts/echarts.umd.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        .chart { width: 600px; height: 400px; border: 1px solid #ccc; margin: 20px 0; }
+        .log { background: #f5f5f5; padding: 10px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>ECharts 测试页面</h1>
+    <div class="log" id="log">
+        <p>正在加载 echarts...</p>
+    </div>
+    <div id="radar-chart" class="chart"></div>
+    <div id="bar-chart" class="chart"></div>
+    
+    <script>
+        const log = (msg) => {
+            const div = document.getElementById('log');
+            div.innerHTML += '<p>' + msg + '</p>';
+            console.log(msg);
+        };
+        
+        log('window.echarts 类型: ' + typeof window.echarts);
+        log('window.echarts 值: ' + (window.echarts ? '存在' : '不存在'));
+        
+        if (window.echarts) {
+            try {
+                // 雷达图
+                const radarChart = window.echarts.init(document.getElementById('radar-chart'));
+                radarChart.setOption({
+                    title: { text: '活性谱雷达图', left: 'center' },
+                    radar: {
+                        indicator: [
+                            { name: 'ACE抑制', max: 1 },
+                            { name: '抗氧化', max: 1 },
+                            { name: '抗菌', max: 1 },
+                            { name: '食品安全', max: 1 }
+                        ]
+                    },
+                    series: [{
+                        type: 'radar',
+                        data: [{ value: [0.8, 0.6, 0.5, 0.9], name: '活性谱' }]
+                    }]
+                });
+                log('✓ 雷达图初始化成功');
+            } catch (e) {
+                log('✗ 雷达图初始化失败: ' + e.message);
+            }
+            
+            try {
+                // 柱状图
+                const barChart = window.echarts.init(document.getElementById('bar-chart'));
+                barChart.setOption({
+                    title: { text: '活性得分柱状图', left: 'center' },
+                    xAxis: { type: 'category', data: ['ACE抑制', '抗氧化', '抗菌', '食品安全'] },
+                    yAxis: { type: 'value' },
+                    series: [{ type: 'bar', data: [80, 60, 50, 90] }]
+                });
+                log('✓ 柱状图初始化成功');
+            } catch (e) {
+                log('✗ 柱状图初始化失败: ' + e.message);
+            }
+        } else {
+            log('✗ echarts未加载，无法初始化图表');
+        }
+    </script>
+</body>
+</html>

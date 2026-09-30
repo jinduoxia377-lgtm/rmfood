@@ -1,9 +1,12 @@
-/** NavBar 导航栏组件样式 */
+/** NavBar 导航栏组件样式 - 符合微信官方设计规范 */
 .navbar {
   width: 100%;
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+  background: linear-gradient(135deg, var(--color-brand-500) 0%, var(--color-brand-600) 100%);
   position: relative;
   z-index: var(--z-index-sticky, 200);
+  /* 安全区适配：顶部状态栏高度 */
+  padding-top: env(safe-area-inset-top);
+  box-sizing: border-box;
 }
 
 .navbar-fixed {
@@ -17,7 +20,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 88rpx;
+  /* 44pt = 88rpx (750rpx / 375pt * 44pt)，符合微信导航栏规范 */
+  height: calc(88rpx + env(safe-area-inset-top));
   padding: 0 var(--space-4);
 }
 
@@ -31,6 +35,7 @@
 .navbar-left-text {
   font-size: var(--font-size-md);
   font-weight: var(--font-weight-medium);
+  color: var(--color-text-white);
 }
 
 .navbar-title {

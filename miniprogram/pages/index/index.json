@@ -8,11 +8,7 @@
     "icon": "../../components/Icon/index",
     "skeleton-loader": "../../components/SkeletonLoader/index",
     "avatar": "../../components/Avatar/index",
-    "card": "../../components/Card/index",
     "tag": "../../components/Tag/index",
-    "health-score": "../../components/HealthScore/index",
-    "empty-state": "../../components/EmptyState/index",
-    "loading": "../../components/Loading/index",
-    "toast": "../../components/Toast/index"
+    "empty-state": "../../components/EmptyState/index"
   }
 }

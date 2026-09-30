@@ -1,6 +1,6 @@
 <!-- 隐私政策页面 -->
 <view class="page-container">
-  <view class="header" style="padding-top: {{statusBarHeight}}px;">
+  <view class="header">
     <view class="back-btn" bindtap="goBack">
       <text>‹</text>
     </view>
@@ -37,4 +37,5 @@
       </view>
     </view>
   </scroll-view>
+  <view class="bottom-spacing"></view>
 </view>

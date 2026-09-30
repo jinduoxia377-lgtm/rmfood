@@ -1,7 +1,7 @@
 <!-- 数据检索中心 -->
 <view class="page-container">
   <!-- 顶部导航 -->
-  <view class="header" style="padding-top: {{statusBarHeight}}px;">
+  <view class="header">
     <view class="header-content">
       <!-- 汉堡菜单 -->
       <view class="hamburger" bindtap="toggleMenu">
@@ -134,8 +134,12 @@
         </view>
       </view>
 
+      <!-- 空状态 -->
+      <view wx:if="{{summary.totalHerbs === 0 && summary.totalPeptides === 0}}" class="empty-state-wrapper">
+        <empty-state icon="database" title="暂无数据" desc="数据加载中，请稍候..." />
+      </view>
       <!-- 快捷操作 -->
-      <view class="quick-actions card">
+      <view wx:else class="quick-actions card">
         <view class="section-header">
           <text class="section-title">快捷操作</text>
         </view>
@@ -193,6 +197,10 @@
         <view class="chip {{herbFoodHomologyOnly ? 'active' : ''}}" bindtap="toggleFoodHomology">
           <text>⭐ 仅显示药食同源</text>
         </view>
+      </view>
+      <!-- 空状态 -->
+      <view wx:if="{{!herbsLoading && herbs.length === 0}}" class="empty-state-wrapper">
+        <empty-state icon="herb" title="暂无药材数据" desc="请输入关键词搜索药材" />
       </view>
       <!-- 药材列表 -->
       <view wx:if="{{herbsLoading}}" class="loading-state">

@@ -1,11 +1,11 @@
-/* 隐私政策页样式 */
+/* 闅愮鏀跨瓥椤垫牱寮?*/
 .container {
   padding: 24rpx;
-  background-color: #F5F5F5;
+  background-color: var(--color-gray-100);
 }
 
 .content-card {
-  background-color: #FFFFFF;
+  background-color: var(--color-bg-card);
   border-radius: 24rpx;
   padding: 32rpx;
 }
@@ -18,13 +18,13 @@
   display: block;
   font-size: 36rpx;
   font-weight: 600;
-  color: #333333;
+  color: var(--color-text-secondary);
   margin-bottom: 12rpx;
 }
 
 .update-time {
   font-size: 24rpx;
-  color: #999999;
+  color: var(--color-text-placeholder);
 }
 
 .content-body {
@@ -42,12 +42,12 @@
 .section-title {
   font-size: 30rpx;
   font-weight: 600;
-  color: #333333;
+  color: var(--color-text-secondary);
 }
 
 .section-content {
   font-size: 28rpx;
-  color: #666666;
+  color: var(--color-text-tertiary);
   line-height: 1.8;
 }
 
@@ -59,12 +59,19 @@
 .sub-title {
   font-size: 28rpx;
   font-weight: 500;
-  color: #333333;
+  color: var(--color-text-secondary);
   margin-bottom: 8rpx;
 }
 
 .sub-content {
   font-size: 26rpx;
-  color: #666666;
+  color: var(--color-text-tertiary);
   line-height: 1.6;
+}
+
+/* ============================================
+   底部安全区
+   ============================================ */
+.bottom-spacing {
+  height: calc(40rpx + env(safe-area-inset-bottom));
 }

@@ -173,7 +173,7 @@ export default function AnalyticsPage() {
     <div className="space-y-4 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
       {/* Primary Banner — 与 Dashboard 一致的 bg-primary-600 横幅 */}
-      <div className="rounded-xl bg-primary-600 p-5 text-white shadow-sm">
+      <div className="surface-primary rounded-xl p-5 shadow-sm">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex-1">
             <h1 className="text-xl font-bold leading-snug">数据分析中心</h1>

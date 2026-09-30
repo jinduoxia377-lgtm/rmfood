@@ -3,7 +3,9 @@
  * 数据：data/launchCountdown.ts
  *
  * 逻辑：
- *   - 目标日期 = localStorage 中已存的 launchDate，否则 = now + baseDays
+ *   - 目标日期 = 服务端固定锚点 LAUNCH_CONFIG.anchorDate
+ *     （v2 修复：原实现写入 localStorage 使倒计时随访客首次访问时间漂移，
+ *       构成虚假紧迫感，违反平台"真实数据"原则；现改为全局统一日期）
  *   - 每秒 tick，归零后自动隐藏
  *   - 数字变化时有闪烁动画
  */
@@ -20,15 +22,8 @@ const MS_PER_MINUTE = 60_000;
 const MS_PER_SECOND = 1_000;
 const TICK_MS       = 1_000;
 
-/** 从 localStorage 读取或计算目标日期 */
-function getLaunchDate(): Date {
-  const stored = localStorage.getItem('rmfood_launch_date');
-  if (stored) return new Date(stored);
-  const now = new Date();
-  const target = new Date(now.getTime() + LAUNCH_CONFIG.baseDays * MS_PER_DAY);
-  localStorage.setItem('rmfood_launch_date', target.toISOString());
-  return target;
-}
+/** 目标日期：服务端固定锚点（真实数据原则：全用户一致，不再随首次访问漂移） */
+const LAUNCH_DATE = new Date(LAUNCH_CONFIG.anchorDate);
 
 /** 格式化两位数字 */
 function pad(n: number): string {
@@ -78,7 +73,7 @@ function Separator() {
 export function CountdownBanner() {
   if (!LAUNCH_CONFIG.enabled) return null;
 
-  const launchDate = getLaunchDate();
+  const launchDate = LAUNCH_DATE;
   const [timeLeft, setTimeLeft] = useState(() => calcTimeLeft(launchDate));
   const [prevTime, setPrevTime] = useState(timeLeft);
 
@@ -124,9 +119,9 @@ export function CountdownBanner() {
             <div
               className="shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-full lp-label"
               style={{
-                background: 'rgba(5,150,105,0.10)',
-                border: '1px solid rgba(5,150,105,0.25)',
-                color: '#059669',
+                background: 'rgba(4,120,87,0.08)',
+                border: '1px solid rgba(4,120,87,0.25)',
+                color: '#047857',
               }}
             >
               <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
@@ -157,10 +152,10 @@ export function CountdownBanner() {
               <CountUnit value={timeLeft.seconds}         label="秒" prevValue={prevTime?.seconds} />
             </div>
 
-            {/* CTA */}
+            {/* CTA（P0 触控热区修复：44px 最小高度） */}
             <Link
               to={LAUNCH_CONFIG.ctaHref}
-              className="shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl lp-label transition-all duration-200 hover:-translate-y-[1px]"
+              className="shrink-0 inline-flex items-center gap-1.5 px-4 min-h-[44px] rounded-xl lp-label transition-all duration-200"
               style={{
                 background: '#0f172a',
                 color: '#ffffff',

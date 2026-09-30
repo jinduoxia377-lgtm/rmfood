@@ -1,0 +1,945 @@
+/**
+ * Apple UI 缂佸嫪娆㈡惔?- 鐎瑰本鏆ｇ€圭偟骞? * 閸╄桨绨?iOS Human Interface Guidelines
+ */
+
+/* ============================================
+   1. Apple Button 閹稿鎸崇化鑽ょ埠
+   ============================================ */
+
+/* 娑撴槒顩﹂幐澶愭尦 - 婵夘偄鍘栭弽宄扮础 */
+.apple-btn-primary {
+  background: var(--color-system-blue);
+  color: var(--color-text-white);
+  height: 50rpx;
+  border-radius: var(--radius-button);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+}
+
+.apple-btn-primary:active {
+  opacity: 0.85;
+  transform: scale(0.98);
+}
+
+.apple-btn-primary.block {
+  width: 100%;
+}
+
+.apple-btn-primary.large {
+  height: 56rpx;
+  font-size: var(--font-size-title-3);
+  border-radius: var(--radius-xl);
+}
+
+.apple-btn-primary.small {
+  height: 40rpx;
+  font-size: var(--font-size-callout);
+}
+
+/* 濞喡ゎ洣閹稿鎸?- 閹诲繗绔熼弽宄扮础 */
+.apple-btn-secondary {
+  background: transparent;
+  color: var(--color-system-blue);
+  height: 50rpx;
+  border-radius: var(--radius-button);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  border: 1.5rpx solid var(--color-system-blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.apple-btn-secondary:active {
+  background: rgba(0, 122, 255, 0.08);
+}
+
+.apple-btn-secondary.block {
+  width: 100%;
+}
+
+/* 闁剧偓甯撮幐澶愭尦 */
+.apple-btn-link {
+  background: transparent;
+  color: var(--color-system-blue);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-regular);
+  padding: 14rpx 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.apple-btn-link:active {
+  opacity: 0.6;
+}
+
+/* 閺傚洤鐡ч幐澶愭尦 */
+.apple-btn-text {
+  background: transparent;
+  color: var(--color-text-primary);
+  height: 44rpx;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-regular);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.apple-btn-text:active {
+  background: var(--color-bg-hover);
+}
+
+/* 閸ョ偓鐖ｉ幐澶愭尦 */
+.apple-btn-icon {
+  width: 44rpx;
+  height: 44rpx;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.apple-btn-icon:active {
+  background: var(--color-bg-hover);
+}
+
+/* 缁備胶鏁ら悩鑸碘偓?*/
+.apple-btn-disabled {
+  opacity: 0.3;
+  
+}
+
+/* ============================================
+   2. Apple List 閸掓銆冪化鑽ょ埠 (Grouped Table)
+   ============================================ */
+
+/* 閸掓銆冮崚鍡欑矋 */
+.apple-list-group {
+  background: var(--color-bg-card);
+  margin: 20rpx 16rpx;
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+/* 閸掓銆冪紒鍕垼妫?*/
+.apple-list-group-title {
+  font-size: var(--font-size-caption-strong);
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.5rpx;
+  padding: 8rpx 20rpx 4rpx;
+  margin-top: 20rpx;
+}
+
+.apple-list-group-title:first-child {
+  margin-top: 0;
+}
+
+/* 閸掓銆冩い?*/
+.apple-list-item {
+  display: flex;
+  align-items: center;
+  padding: 14rpx 16rpx;
+  background: var(--color-bg-card);
+  position: relative;
+  min-height: 56rpx;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.apple-list-item:active {
+  background: var(--color-bg-hover);
+}
+
+.apple-list-item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 56rpx;
+  right: 0;
+  height: 0.5rpx;
+  background: var(--color-separator);
+}
+
+/* 閸掓銆冩い鐟版禈閺?*/
+.apple-list-item-icon {
+  width: 36rpx;
+  height: 36rpx;
+  border-radius: var(--radius-sm);
+  margin-right: 14rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 18rpx;
+}
+
+.apple-list-item-icon.blue { background: var(--color-system-blue); color: white; }
+.apple-list-item-icon.green { background: var(--color-system-green); color: white; }
+.apple-list-item-icon.red { background: var(--color-system-red); color: white; }
+.apple-list-item-icon.orange { background: var(--color-system-orange); color: white; }
+.apple-list-item-icon.purple { background: var(--color-system-purple); color: white; }
+.apple-list-item-icon.teal { background: var(--color-system-teal); color: white; }
+.apple-list-item-icon.gray { background: var(--color-gray-400); color: white; }
+.apple-list-item-icon.brand { background: var(--color-brand-500); color: white; }
+
+/* 閸掓銆冩い鐟板敶鐎?*/
+.apple-list-item-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.apple-list-item-title {
+  font-size: var(--font-size-body);
+  color: var(--color-text-primary);
+  line-height: var(--line-height-normal);
+}
+
+.apple-list-item-subtitle {
+  font-size: var(--font-size-callout);
+  color: var(--color-text-secondary);
+  margin-top: 2rpx;
+  line-height: var(--line-height-normal);
+}
+
+/* 閸掓銆冩い褰掓娴?*/
+.apple-list-item-accessory {
+  color: var(--color-text-tertiary);
+  margin-left: 8rpx;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* 缁狀厼銇旈梽鍕 */
+.apple-list-item-arrow {
+  width: 8rpx;
+  height: 14rpx;
+  border-right: 2rpx solid var(--color-text-tertiary);
+  border-bottom: 2rpx solid var(--color-text-tertiary);
+  transform: rotate(-45deg);
+  margin-top: -4rpx;
+}
+
+/* ============================================
+   3. Apple Toggle 瀵偓閸忓磭閮寸紒?   ============================================ */
+
+.apple-toggle {
+  width: 52rpx;
+  height: 32rpx;
+  background: rgba(120, 120, 120, 0.24);
+  border-radius: 16rpx;
+  position: relative;
+  transition: background var(--transition-normal);
+  flex-shrink: 0;
+}
+
+.apple-toggle.active {
+  background: var(--color-system-green);
+}
+
+.apple-toggle .toggle-thumb {
+  position: absolute;
+  top: 2rpx;
+  left: 2rpx;
+  width: 28rpx;
+  height: 28rpx;
+  background: #FFFFFF;
+  border-radius: 50%;
+  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.15);
+  transition: transform var(--transition-spring);
+}
+
+.apple-toggle.active .toggle-thumb {
+  transform: translateX(20rpx);
+}
+
+/* ============================================
+   4. Apple Segmented Control 閸掑棙顔岄幒褍鍩楅崳?   ============================================ */
+
+.apple-segmented {
+  display: flex;
+  background: rgba(118, 118, 128, 0.12);
+  border-radius: var(--radius-segment);
+  padding: 2rpx;
+  margin: 0 16rpx;
+}
+
+.apple-segmented-item {
+  flex: 1;
+  text-align: center;
+  padding: 6rpx 0;
+  font-size: var(--font-size-callout);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+  border-radius: 7rpx;
+  transition: all var(--transition-fast);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.apple-segmented-item.active {
+  background: var(--color-bg-card);
+  box-shadow: 0 1rpx 3rpx rgba(0, 0, 0, 0.08),
+              0 1rpx 2rpx rgba(0, 0, 0, 0.04);
+}
+
+/* ============================================
+   5. Apple Search Bar 閹兼粎鍌ㄩ弽?   ============================================ */
+
+.apple-searchbar {
+  background: rgba(118, 118, 128, 0.12);
+  border-radius: var(--radius-input);
+  height: 36rpx;
+  display: flex;
+  align-items: center;
+  padding: 0 10rpx;
+  margin: 8rpx 16rpx;
+}
+
+.apple-searchbar .search-icon {
+  width: 20rpx;
+  height: 20rpx;
+  opacity: 0.5;
+  flex-shrink: 0;
+}
+
+.apple-searchbar .search-input {
+  flex: 1;
+  font-size: var(--font-size-body);
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--color-text-primary);
+  height: 100%;
+}
+
+.apple-searchbar .search-input::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+.apple-searchbar .search-clear {
+  width: 24rpx;
+  height: 24rpx;
+  border-radius: 50%;
+  background: var(--color-gray-400);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: white;
+  font-size: 12rpx;
+}
+
+/* ============================================
+   6. Apple Card 閸楋紕澧栫化鑽ょ埠
+   ============================================ */
+
+.apple-card {
+  background: var(--color-bg-card);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.apple-card-header {
+  padding: 16rpx;
+  border-bottom: 0.5rpx solid var(--color-separator);
+}
+
+.apple-card-title {
+  font-size: var(--font-size-title-3);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.apple-card-subtitle {
+  font-size: var(--font-size-callout);
+  color: var(--color-text-secondary);
+  margin-top: 2rpx;
+}
+
+.apple-card-content {
+  padding: 16rpx;
+}
+
+.apple-card-footer {
+  padding: 12rpx 16rpx;
+  border-top: 0.5rpx solid var(--color-separator);
+  display: flex;
+  gap: 12rpx;
+}
+
+/* 閻楃澹婇崡锛勫 */
+.apple-card-featured {
+  background: linear-gradient(135deg, var(--color-system-blue) 0%, var(--color-system-teal) 100%);
+  color: white;
+}
+
+.apple-card-featured .apple-card-title,
+.apple-card-featured .apple-card-subtitle {
+  color: white;
+}
+
+/* ============================================
+   7. Apple Badge 瀵扮晫鐝风化鑽ょ埠
+   ============================================ */
+
+.apple-badge {
+  min-width: 20rpx;
+  height: 20rpx;
+  padding: 0 6rpx;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.apple-badge.system-blue { background: var(--color-system-blue); color: white; }
+.apple-badge.system-red { background: var(--color-system-red); color: white; }
+.apple-badge.system-green { background: var(--color-system-green); color: white; }
+.apple-badge.system-orange { background: var(--color-system-orange); color: white; }
+.apple-badge.dot { 
+  width: 8rpx; 
+  height: 8rpx; 
+  border-radius: 50%;
+  min-width: auto;
+  padding: 0;
+}
+.apple-badge.dot.system-red { background: var(--color-system-red); }
+.apple-badge.dot.system-green { background: var(--color-system-green); }
+.apple-badge.dot.system-blue { background: var(--color-system-blue); }
+
+/* ============================================
+   8. Apple Empty State 缁岃櫣濮搁幀?   ============================================ */
+
+.apple-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80rpx 40rpx;
+  min-height: 400rpx;
+}
+
+.apple-empty-state-icon {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: var(--radius-full);
+  background: var(--color-bg-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24rpx;
+}
+
+.apple-empty-state-title {
+  font-size: var(--font-size-title-3);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: 8rpx;
+}
+
+.apple-empty-state-desc {
+  font-size: var(--font-size-callout);
+  color: var(--color-text-secondary);
+  text-align: center;
+  line-height: var(--line-height-relaxed);
+}
+
+/* ============================================
+   9. Apple Divider 閸掑棗澹婄痪?   ============================================ */
+
+.apple-divider {
+  height: 0.5rpx;
+  background: var(--color-separator);
+  margin-left: 56rpx;
+}
+
+.apple-divider.full {
+  margin-left: 0;
+}
+
+/* ============================================
+   10. Apple Input 鏉堟挸鍙嗗?   ============================================ */
+
+.apple-input-wrapper {
+  display: flex;
+  align-items: center;
+  background: var(--color-bg-card);
+  border: 1rpx solid var(--color-border);
+  border-radius: var(--radius-input);
+  padding: 12rpx 16rpx;
+  min-height: 48rpx;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.apple-input-wrapper[class*="focus"] {
+  border-color: var(--color-system-blue);
+  box-shadow: 0 0 0 3rpx rgba(0, 122, 255, 0.15);
+}
+
+.apple-input {
+  flex: 1;
+  font-size: var(--font-size-body);
+  color: var(--color-text-primary);
+  background: transparent;
+  border: none;
+  outline: none;
+  height: 100%;
+}
+
+.apple-input::placeholder {
+  color: var(--color-text-placeholder);
+}
+
+.apple-input-error {
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+  margin-top: 6rpx;
+  padding-left: 4rpx;
+  font-size: var(--font-size-caption);
+  color: var(--color-system-red);
+}
+
+/* ============================================
+   11. Apple Action Sheet 閹垮秳缍旈棃銏℃緲
+   ============================================ */
+
+.apple-sheet-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: var(--z-index-sheet);
+  opacity: 0;
+  transition: opacity var(--transition-normal);
+}
+
+.apple-sheet-mask.visible {
+  opacity: 1;
+}
+
+.apple-sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--blur-bg);
+  backdrop-filter: BLUR_PLACEHOLDER_blur(
+    param($match)
+    $value = [int]$match.Groups[1].Value
+    "$($value * 2)rpx"
+) saturate(180%);
+  -webkit-backdrop-filter: BLUR_PLACEHOLDER_blur(
+    param($match)
+    $value = [int]$match.Groups[1].Value
+    "$($value * 2)rpx"
+) saturate(180%);
+  border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 32rpx);
+  z-index: var(--z-index-sheet);
+  transform: translateY(100%);
+  transition: transform var(--transition-spring);
+}
+
+.apple-sheet.visible {
+  transform: translateY(0);
+}
+
+.apple-sheet-handle {
+  width: 36rpx;
+  height: 4rpx;
+  background: var(--color-gray-300);
+  border-radius: 2rpx;
+  margin: 12rpx auto;
+}
+
+.apple-sheet-title {
+  font-size: var(--font-size-title-3);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  text-align: center;
+  padding: 8rpx 16rpx;
+}
+
+.apple-sheet-description {
+  font-size: var(--font-size-callout);
+  color: var(--color-text-secondary);
+  text-align: center;
+  padding: 0 16rpx 16rpx;
+}
+
+.apple-sheet-content {
+  background: var(--color-bg-card);
+  margin: 0 16rpx;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.apple-sheet-item {
+  padding: 16rpx;
+  text-align: center;
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-system-blue);
+  border-bottom: 0.5rpx solid var(--color-separator);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.apple-sheet-item:last-child {
+  border-bottom: none;
+}
+
+.apple-sheet-item:active {
+  background: var(--color-bg-hover);
+}
+
+.apple-sheet-item.danger {
+  color: var(--color-system-red);
+}
+
+.apple-sheet-cancel {
+  margin: 16rpx 16rpx 0;
+  padding: 16rpx;
+  text-align: center;
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-system-blue);
+  background: var(--color-bg-card);
+  border-radius: var(--radius-lg);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.apple-sheet-cancel:active {
+  background: var(--color-bg-hover);
+}
+
+/* ============================================
+   12. Apple Alert 閹绘劗銇氬?   ============================================ */
+
+.apple-alert-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: var(--z-index-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity var(--transition-normal);
+}
+
+.apple-alert-mask.visible {
+  opacity: 1;
+}
+
+.apple-alert {
+  width: calc(100% - 64rpx);
+  max-width: 320rpx;
+  background: var(--blur-bg);
+  backdrop-filter: BLUR_PLACEHOLDER_blur(
+    param($match)
+    $value = [int]$match.Groups[1].Value
+    "$($value * 2)rpx"
+) saturate(180%);
+  -webkit-backdrop-filter: BLUR_PLACEHOLDER_blur(
+    param($match)
+    $value = [int]$match.Groups[1].Value
+    "$($value * 2)rpx"
+) saturate(180%);
+  border-radius: var(--radius-2xl);
+  padding: 24rpx;
+  transform: scale(0.9);
+  transition: transform var(--transition-spring);
+}
+
+.apple-alert-mask.visible .apple-alert {
+  transform: scale(1);
+}
+
+.apple-alert-title {
+  font-size: var(--font-size-title-3);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  text-align: center;
+  margin-bottom: 8rpx;
+}
+
+.apple-alert-message {
+  font-size: var(--font-size-callout);
+  color: var(--color-text-secondary);
+  text-align: center;
+  line-height: var(--line-height-relaxed);
+  margin-bottom: 24rpx;
+}
+
+.apple-alert-buttons {
+  display: flex;
+  border-top: 0.5rpx solid var(--color-separator);
+  margin: 0 -8rpx;
+}
+
+.apple-alert-button {
+  flex: 1;
+  padding: 14rpx 8rpx;
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-medium);
+  text-align: center;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.apple-alert-button.cancel {
+  color: var(--color-system-blue);
+  border-right: 0.5rpx solid var(--color-separator);
+}
+
+.apple-alert-button.default {
+  color: var(--color-system-blue);
+  font-weight: var(--font-weight-semibold);
+}
+
+.apple-alert-button.destructive {
+  color: var(--color-system-red);
+}
+
+.apple-alert-button:active {
+  background: var(--color-bg-hover);
+}
+
+/* ============================================
+   13. Apple Navigation Bar 鐎佃壈鍩呴弽?   ============================================ */
+
+.apple-navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--z-index-fixed);
+  background: var(--blur-bg);
+  backdrop-filter: BLUR_PLACEHOLDER_blur(
+    param($match)
+    $value = [int]$match.Groups[1].Value
+    "$($value * 2)rpx"
+) saturate(180%);
+  -webkit-backdrop-filter: BLUR_PLACEHOLDER_blur(
+    param($match)
+    $value = [int]$match.Groups[1].Value
+    "$($value * 2)rpx"
+) saturate(180%);
+  border-bottom: 0.5rpx solid var(--color-separator);
+}
+
+.apple-navbar-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 44rpx;
+  padding: 0 16rpx;
+}
+
+.apple-navbar-back {
+  display: flex;
+  align-items: center;
+  gap: 4rpx;
+  color: var(--color-system-blue);
+  font-size: var(--font-size-body);
+  padding: 8rpx;
+  margin: -8rpx;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.apple-navbar-back:active {
+  opacity: 0.6;
+}
+
+.apple-navbar-title {
+  font-size: var(--font-size-title-3);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  text-align: center;
+  flex: 1;
+}
+
+.apple-navbar-action {
+  width: 44rpx;
+  height: 44rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-system-blue);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.apple-navbar-action:active {
+  opacity: 0.6;
+}
+
+/* Large Title 濡€崇础 */
+.apple-navbar-large {
+  padding-top: env(safe-area-inset-top);
+}
+
+.apple-navbar-large .apple-navbar-content {
+  height: 96rpx;
+  padding: 0 20rpx;
+}
+
+.apple-navbar-large .apple-navbar-title {
+  font-size: var(--font-size-large-title);
+  font-weight: var(--font-weight-bold);
+  text-align: left;
+  flex: none;
+}
+
+.apple-navbar-large .apple-navbar-back {
+  position: absolute;
+  left: 20rpx;
+  top: calc(env(safe-area-inset-top) + 24rpx);
+}
+
+.apple-navbar-large .apple-navbar-action {
+  position: absolute;
+  right: 20rpx;
+  top: calc(env(safe-area-inset-top) + 16rpx);
+}
+
+/* ============================================
+   14. Apple Tab Bar 閺嶅洨顒烽弽?   ============================================ */
+
+.apple-tabbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: calc(83rpx + env(safe-area-inset-bottom));
+  background: var(--blur-bg);
+  backdrop-filter: BLUR_PLACEHOLDER_blur(
+    param($match)
+    $value = [int]$match.Groups[1].Value
+    "$($value * 2)rpx"
+) saturate(180%);
+  -webkit-backdrop-filter: BLUR_PLACEHOLDER_blur(
+    param($match)
+    $value = [int]$match.Groups[1].Value
+    "$($value * 2)rpx"
+) saturate(180%);
+  border-top: 0.5rpx solid var(--color-separator);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-around;
+  padding-top: 8rpx;
+  z-index: var(--z-index-fixed);
+}
+
+.apple-tabbar-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 4rpx 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.apple-tabbar-icon {
+  width: 28rpx;
+  height: 28rpx;
+  margin-bottom: 2rpx;
+}
+
+.apple-tabbar-label {
+  font-size: 10rpx;
+  color: var(--color-text-tertiary);
+  font-weight: var(--font-weight-medium);
+}
+
+.apple-tabbar-item.active .apple-tabbar-label {
+  color: var(--color-system-blue);
+}
+
+/* ============================================
+   15. Apple Loading 閸旂姾娴囬悩鑸碘偓?   ============================================ */
+
+.apple-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40rpx;
+}
+
+.apple-spinner {
+  width: 36rpx;
+  height: 36rpx;
+  border: 3rpx solid var(--color-border);
+  border-top-color: var(--color-system-blue);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ============================================
+   16. Apple Toast 閹绘劗銇?   ============================================ */
+
+.apple-toast {
+  position: fixed;
+  top: calc(env(safe-area-inset-top) + 100rpx);
+  left: 50%;
+  transform: translateX(-50%) translateY(-20rpx);
+  background: rgba(0, 0, 0, 0.75);
+  color: white;
+  padding: 14rpx 24rpx;
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-body);
+  z-index: var(--z-index-toast);
+  opacity: 0;
+  transition: opacity var(--transition-normal), transform var(--transition-spring);
+  max-width: 80%;
+  text-align: center;
+}
+
+.apple-toast.visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ============================================
+   17. Apple Skeleton 妤犮劍鐏︾仦?   ============================================ */
+
+.apple-skeleton {
+  background: linear-gradient(90deg, 
+    var(--color-gray-200) 25%, 
+    var(--color-gray-100) 50%, 
+    var(--color-gray-200) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius-sm);
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}

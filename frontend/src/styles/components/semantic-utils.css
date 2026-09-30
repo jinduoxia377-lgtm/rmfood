@@ -18,6 +18,15 @@
 .bg-primary-container    { background: var(--color-primary-container, rgba(16,185,129,0.12)); }
 .border-primary-main     { border-color: var(--color-primary, #10B981); }
 
+/* ── 主色表面（实底 + 白字）— D-50 / 规范 §4.3 C-24 ──
+   用于页头横幅、主按钮、图标圆等"承载白色前景的实底"。
+   禁止用 bg-primary-{400..700} + text-white 表达同一意图：
+   品牌色阶在暗色下整体反转，会使底色变浅而文字不变，对比度崩塌至 1.52:1。 */
+.surface-primary          { background-color: var(--color-primary-surface, #047857);
+                            color: var(--color-on-primary-surface, #ffffff); }
+.surface-primary:hover    { background-color: var(--color-primary-hover, #059669); }
+.dark .surface-primary:hover { background-color: var(--color-primary-800, #d1fae5); }
+
 /* 成功 / 警告 / 错误 / 信息 */
 .text-success-main       { color: var(--color-success, #10b981); }
 .bg-success-container    { background: var(--color-success-container, rgba(0, 102, 204, 0.12)); }

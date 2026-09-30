@@ -1,0 +1,56 @@
+/** AppleCard 组件样式 */
+.apple-card {
+  background: var(--color-bg-card);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.apple-card-header {
+  padding: 16rpx;
+  border-bottom: 0.5rpx solid var(--color-separator);
+}
+
+.apple-card-title-wrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.apple-card-title {
+  font-size: var(--font-size-title-3);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.apple-card-subtitle {
+  font-size: var(--font-size-callout);
+  color: var(--color-text-secondary);
+  margin-top: 2rpx;
+}
+
+.apple-card-content {
+  padding: 16rpx;
+}
+
+.apple-card-footer {
+  padding: 12rpx 16rpx;
+  border-top: 0.5rpx solid var(--color-separator);
+  display: flex;
+  gap: 12rpx;
+}
+
+.apple-card-footer-text {
+  font-size: var(--font-size-callout);
+  color: var(--color-text-secondary);
+}
+
+/* 特色卡片 */
+.apple-card-featured {
+  background: linear-gradient(135deg, var(--color-system-blue) 0%, var(--color-system-teal) 100%);
+  color: white;
+}
+
+.apple-card-featured .apple-card-title,
+.apple-card-featured .apple-card-subtitle {
+  color: white;
+}

@@ -14,7 +14,8 @@ import {
   AlertCircle,
   Info,
 } from 'lucide-react'
-import type { Organization, ExportFormat } from '../../../types/organization.types'
+import type { Organization } from '@/hooks/useOrganizations'
+import type { ExportFormat } from '../../../types/organization.types'
 import { logger } from '@/utils/safeLogger';
 
 
@@ -29,7 +30,7 @@ interface DataExportDialogProps {
   isOpen: boolean
   onClose: () => void
   organizations: Organization[]
-  selectedIds?: Set<string>
+  selectedIds?: Set<number>
   onExportComplete?: (format: ExportFormat, count: number) => void
 }
 
@@ -53,10 +54,28 @@ const FORMAT_OPTIONS = [
     value: 'csv' as ExportFormat,
     icon: FileType,
     label: 'CSV',
-    description: '逗号分隔值，兼容Excel',
+    description: '逗号分隔值，兼容Excel、Google Sheets',
     extension: '.csv',
     color: 'green',
     available: true,
+  },
+  {
+    value: 'excel' as ExportFormat,
+    icon: FileType,
+    label: 'Excel',
+    description: 'XLSX 格式，支持多工作表',
+    extension: '.xlsx',
+    color: 'blue',
+    available: false,
+  },
+  {
+    value: 'pdf' as ExportFormat,
+    icon: FileType,
+    label: 'PDF',
+    description: '便携式文档格式，适合打印归档',
+    extension: '.pdf',
+    color: 'red',
+    available: false,
   },
 ]
 

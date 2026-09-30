@@ -1,119 +1,179 @@
 /**
- * RMFOOD 小程序 - 合规标准 API
- * 对应前端 RegulationsPage.tsx
+ * RMFOOD 小程序 - 合规标准服务
+ * 对接后端 /api/v1/compliance/* 接口
  */
 
 const request = require('./request.js')
 
-const BASE = '/api/v1/compliance'
+const BASE = '/compliance'
 
 /**
  * 查询药食同源目录限量
  */
-const getLimits = () => {
-  return request.get(`${BASE}/limits`)
+const getLimits = async () => {
+  try {
+    const res = await request.get("" + BASE + "/limits")
+    return res.data || res
+  } catch (error) {
+    console.error('[Compliance] Get limits error:', error)
+    return { items: [] }
+  }
 }
 
 /**
  * 查询禁忌搭配
  */
-const getProhibited = () => {
-  return request.get(`${BASE}/prohibited`)
+const getProhibited = async () => {
+  try {
+    const res = await request.get("" + BASE + "/prohibited")
+    return res.data || res
+  } catch (error) {
+    console.error('[Compliance] Get prohibited error:', error)
+    return { combinations: [] }
+  }
 }
 
 /**
  * GB 2760 食品添加剂检索
  */
-const getGB2760 = (params = {}) => {
-  return request.get(`${BASE}/gb2760`, {
-    keyword: params.keyword || '',
-    function: params.function || '',
-    page: params.page || 1,
-    page_size: params.pageSize || 20
-  })
+const getGB2760 = async (params = {}) => {
+  try {
+    const res = await request.get("" + BASE + "/gb2760", {
+      keyword: params.keyword || '',
+      function: params.function || '',
+      page: params.page || 1,
+      page_size: params.pageSize || 20
+    })
+    return res.data || res
+  } catch (error) {
+    console.error('[Compliance] Get GB2760 error:', error)
+    return { additives: [] }
+  }
 }
 
 /**
  * GB 14880 营养强化剂检索
  */
-const getGB14880 = (params = {}) => {
-  return request.get(`${BASE}/gb14880`, {
-    keyword: params.keyword || '',
-    function: params.function || '',
-    page: params.page || 1,
-    page_size: params.pageSize || 20
-  })
+const getGB14880 = async (params = {}) => {
+  try {
+    const res = await request.get("" + BASE + "/gb14880", {
+      keyword: params.keyword || '',
+      function: params.function || '',
+      page: params.page || 1,
+      page_size: params.pageSize || 20
+    })
+    return res.data || res
+  } catch (error) {
+    console.error('[Compliance] Get GB14880 error:', error)
+    return { enrichers: [] }
+  }
 }
 
 /**
  * GB 禁用/限制使用物质
  */
-const getGBProhibited = (params = {}) => {
-  return request.get(`${BASE}/gb-prohibited`, {
-    keyword: params.keyword || '',
-    category: params.category || ''
-  })
+const getGBProhibited = async (params = {}) => {
+  try {
+    const res = await request.get("" + BASE + "/gb-prohibited", {
+      keyword: params.keyword || '',
+      category: params.category || ''
+    })
+    return res.data || res
+  } catch (error) {
+    console.error('[Compliance] Get GB prohibited error:', error)
+    return { items: [] }
+  }
 }
 
 /**
  * 食品安全国家标准目录
  */
-const getStandards = (category = '') => {
-  return request.get(`${BASE}/standards`, {
-    category: category
-  })
+const getStandards = async (category = '') => {
+  try {
+    const res = await request.get("" + BASE + "/standards", {
+      category: category
+    })
+    return res.data || res
+  } catch (error) {
+    console.error('[Compliance] Get standards error:', error)
+    return { standards: [] }
+  }
 }
 
 /**
  * 药食同源材料目录
  */
-const getFoodHomology = (keyword = '') => {
-  return request.get(`${BASE}/food-homology`, {
-    keyword: keyword
-  })
+const getFoodHomology = async (keyword = '') => {
+  try {
+    const res = await request.get("" + BASE + "/food-homology", {
+      keyword: keyword
+    })
+    return res.data || res
+  } catch (error) {
+    console.error('[Compliance] Get food homology error:', error)
+    return { materials: [] }
+  }
 }
 
 /**
  * 实时合规检查
  */
-const realtimeCheck = (ingredients, options = {}) => {
-  return request.post(`${BASE}/check/realtime`, {
-    current_ingredients: ingredients.map(item => ({
-      name: item.name,
-      dosage_mg: parseFloat(item.dosage_mg) || 0
-    })),
-    new_ingredient: options.newIngredient ? {
-      name: options.newIngredient.name,
-      dosage_mg: parseFloat(options.newIngredient.dosage_mg) || 0
-    } : null,
-    population: options.population || 'adults'
-  })
+const realtimeCheck = async (ingredients, options = {}) => {
+  try {
+    const res = await request.post("" + BASE + "/check/realtime", {
+      current_ingredients: ingredients.map(item => ({
+        name: item.name,
+        dosage_mg: parseFloat(item.dosage_mg) || 0
+      })),
+      new_ingredient: options.newIngredient ? {
+        name: options.newIngredient.name,
+        dosage_mg: parseFloat(options.newIngredient.dosage_mg) || 0
+      } : null,
+      population: options.population || 'adults'
+    })
+    return res.data || res
+  } catch (error) {
+    console.error('[Compliance] Realtime check error:', error)
+    throw error
+  }
 }
 
 /**
  * 批量合规检查
  */
-const bulkCheck = (ingredients, population = 'adults') => {
-  return request.post(`${BASE}/check/bulk`, {
-    ingredients: ingredients.map(item => ({
-      name: item.name,
-      dosage_mg: parseFloat(item.dosage_mg) || 0
-    })),
-    population
-  })
+const bulkCheck = async (ingredients, population = 'adults') => {
+  try {
+    const res = await request.post("" + BASE + "/check/bulk", {
+      ingredients: ingredients.map(item => ({
+        name: item.name,
+        dosage_mg: parseFloat(item.dosage_mg) || 0
+      })),
+      population
+    })
+    return res.data || res
+  } catch (error) {
+    console.error('[Compliance] Bulk check error:', error)
+    throw error
+  }
 }
 
 /**
  * 自动修复配方
  */
-const autoFix = (ingredients, population = 'adults') => {
-  return request.post(`${BASE}/fix`, {
-    ingredients: ingredients.map(item => ({
-      name: item.name,
-      dosage_mg: parseFloat(item.dosage_mg) || 0
-    })),
-    population
-  })
+const autoFix = async (ingredients, population = 'adults') => {
+  try {
+    const res = await request.post("" + BASE + "/fix", {
+      ingredients: ingredients.map(item => ({
+        name: item.name,
+        dosage_mg: parseFloat(item.dosage_mg) || 0
+      })),
+      population
+    })
+    return res.data || res
+  } catch (error) {
+    console.error('[Compliance] Auto fix error:', error)
+    throw error
+  }
 }
 
 /**

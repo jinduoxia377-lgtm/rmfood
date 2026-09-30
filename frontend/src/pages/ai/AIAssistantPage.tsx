@@ -420,7 +420,7 @@ export default function AIAssistantPage() {
           aria-label="AI智能助手中心主内容区"
         >
           {/* ── 页面横幅 — Dashboard 风格，DESIGN.md 规范 ── */}
-          <div className="rounded-xl bg-primary-600 p-6 text-white shadow-sm">
+          <div className="surface-primary rounded-xl p-6 shadow-sm">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div className="flex-1">
                 <h2 className="text-xl font-semibold leading-snug tracking-tight">

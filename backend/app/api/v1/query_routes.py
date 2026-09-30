@@ -61,5 +61,5 @@ def get_formula(
     """Get a single formula by ID (read-optimized)."""
     formula = query_service.get_formula(formula_id)
     if formula is None:
-        raise HTTPException(status_code=404, detail="Formula not found")
+        raise HTTPException(status_code=404, detail="配方不存在")
     return formula

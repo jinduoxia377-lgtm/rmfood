@@ -1,45 +1,71 @@
 {
-    "projectname":  "rmfood",
-    "description":  "RMFOOD 药食同源配方平台",
-    "libVersion":  "3.15.2",
-    "compileType":  "miniprogram",
-    "appid":  "wx2aa1c2e869b9e8ac",
-    "setting":  {
-                    "minified":  true,
-                    "packNpmManually":  true,
-                    "minifyWXML":  true,
-                    "useApiHook":  true,
-                    "uglifyFileName":  false,
-                    "minifyWXSS":  true,
-                    "uploadWithSourceMap":  true,
-                    "coverView":  true,
-                    "scopeDataCheck":  false,
-                    "enhance":  true,
-                    "checkSiteMap":  true,
-                    "nodeModules":  true,
-                    "preloadBackgroundData":  false,
-                    "urlCheck":  false,
-                    "useMultiFrameRuntime":  true,
-                    "compileHotReLoad":  false,
-                    "disableUseStrict":  false,
-                    "newFeature":  true,
-                    "checkInvalidKey":  true,
-                    "postcss":  true,
-                    "lazyloadPlaceholderEnable":  false,
-                    "showShadowRootInWxmlPanel":  true,
-                    "useHostInitCtx":  true,
-                    "useCompilerPlugins":  false,
-                    "showES6CompileOption":  false,
-                    "autoAudits":  false,
-                    "es6":  true,
-                    "packNpmRelationList":  [
-                                                {
-                                                    "packageJsonPath":  "./package.json",
-                                                    "miniprogramNpmDistDir":  "./miniprogram_npm/"
-                                                }
-                                            ]
-                },
-    "condition":  {
-
-                  }
+  "optimize": {
+    "subPackages": true
+  },
+  "permission": {
+    "scope.camera": {
+      "desc": "用于拍摄食材照片进行识别分析"
+    },
+    "scope.writePhotosAlbum": {
+      "desc": "用于保存图片到相册"
+    }
+  },
+  "description": "RMFOOD 药食同源配方平台",
+  "appid": "wx2aa1c2e869b9e8ac",
+  "projectname": "rmfood",
+  "setting": {
+    "minified": true,
+    "showShadowRootInWxmlPanel": true,
+    "minifyWXML": true,
+    "uploadWithSourceMap": true,
+    "coverView": true,
+    "scopeDataCheck": false,
+    "enhance": true,
+    "checkSiteMap": true,
+    "nodeModules": true,
+    "preloadBackgroundData": false,
+    "packNpmManually": true,
+    "minifyWXSS": true,
+    "urlCheck": true,
+    "compileHotReLoad": false,
+    "disableUseStrict": false,
+    "checkInvalidKey": true,
+    "useCompilerPlugins": false,
+    "uglifyFileName": true,
+    "useMultiFrameRuntime": true,
+    "lazyloadPlaceholderEnable": false,
+    "useHostInitCtx": true,
+    "postcss": true,
+    "showES6CompileOption": false,
+    "useApiHook": true,
+    "es6": true,
+    "packNpmRelationList": [
+      {
+        "packageJsonPath": "./package.json",
+        "miniprogramNpmDistDir": "./miniprogram_npm/"
+      }
+    ],
+    "autoAudits": false,
+    "newFeature": true,
+    "condition": true,
+    "compileWorklet": true,
+    "disableSWC": true
+  },
+  "compileType": "miniprogram",
+  "libVersion": "3.15.2",
+  "condition": {},
+  "requiredPrivateInfos": [
+    "chooseImage",
+    "previewImage"
+  ],
+  "networkTimeout": {
+    "connectSocket": 10000,
+    "request": 10000,
+    "downloadFile": 10000
+  },
+  "simulatorPluginLibVersion": {
+    "wxext1456970e7e9f62": "2.27.3",
+    "wxext14566970e7e9f62": "2.27.3"
+  },
+  "projectArchitecture": "multiPlatform"
 }

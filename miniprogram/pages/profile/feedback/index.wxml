@@ -1,0 +1,72 @@
+<!-- 意见反馈页面 -->
+<view class="page-container">
+  <view class="header">
+    <view class="header-content">
+      <view class="header-title">
+        <view class="title-main">意见反馈</view>
+        <view class="title-sub">帮助我们做得更好</view>
+      </view>
+    </view>
+  </view>
+
+  <scroll-view class="content-scroll" scroll-y>
+    <view class="form-container">
+      <!-- 反馈类型 -->
+      <view class="form-section">
+        <view class="section-title">反馈类型</view>
+        <picker range="{{categories}}" range-key="label" value="{{categoryIndex}}" bindchange="onCategoryChange">
+          <view class="picker-value">
+            <text>{{categories[categoryIndex]?.label || '请选择反馈类型'}}</text>
+            <icon name="arrow-down" size="sm" />
+          </view>
+        </picker>
+      </view>
+
+      <!-- 反馈内容 -->
+      <view class="form-section">
+        <view class="section-title">反馈内容 <text class="required">*</text></view>
+        <textarea 
+          class="content-input" 
+          placeholder="请详细描述您遇到的问题或建议，至少10个字..."
+          value="{{content}}"
+          bindinput="onContentInput"
+          maxlength="500"
+          auto-height
+        ></textarea>
+        <text class="char-count">{{content.length}}/500</text>
+      </view>
+
+      <!-- 联系方式 -->
+      <view class="form-section">
+        <view class="section-title">联系方式 <text class="optional">(选填)</text></view>
+        <input 
+          class="contact-input" 
+          placeholder="请输入手机号或微信号，方便我们回复您"
+          value="{{contact}}"
+          bindinput="onContactInput"
+        />
+      </view>
+
+      <!-- 截图上传 -->
+      <view class="form-section">
+        <view class="section-title">上传截图 <text class="optional">(选填)</text></view>
+        <view class="upload-area" bindtap="chooseImage">
+          <icon name="camera" size="lg" color="var(--color-text-tertiary)" />
+          <text class="upload-text">点击上传截图</text>
+        </view>
+        <view class="image-preview" wx:if="{{images.length > 0}}">
+          <image wx:for="{{images}}" wx:key="index" src="{{item}}" mode="aspectFill" class="preview-img" />
+          <view wx:for="{{images}}" wx:key="index" class="remove-btn" bindtap="removeImage" data-index="{{index}}">×</view>
+        </view>
+      </view>
+
+      <!-- 提交按钮 -->
+      <view class="form-actions">
+        <button class="btn-clear" bindtap="clearForm">清空</button>
+        <button class="btn-submit" loading="{{submitting}}" bindtap="submitFeedback">提交反馈</button>
+      </view>
+    </view>
+
+    <view class="bottom-spacing"></view>
+  </scroll-view>
+</view>

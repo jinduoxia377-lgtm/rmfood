@@ -20,6 +20,7 @@ import {
   Globe, MapPin, CheckCircle2, Eye,
   QrCode, Info, ShieldCheck, Sun, Moon, BellRing,
   LogOut, SmartphoneIcon, Trash, Palette, Keyboard,
+  Brain,
 } from 'lucide-react'
 import {
   Button, Input,
@@ -40,9 +41,11 @@ import { useTheme, type ThemeMode } from '@/theme'
 import { PersonalInfoSection } from './components/PersonalInfoSection'
 import { ConfigManager } from '@/utils/configManager'
 import type { ApiKey } from '@/utils/configManager'
+import { unifiedApiKeyManager } from '@/utils/unifiedApiKeyManager'
+import ModelClient from '@/api/modelClient'
 
 // ─── Tab 定义 ─────────────────────────────────────────────────────
-type TabId = 'account' | 'security' | 'api' | 'data' | 'locale' | 'theme' | 'notifications'
+type TabId = 'account' | 'security' | 'api' | 'data' | 'locale' | 'theme' | 'notifications' | 'llm'
 
 const TABS: { id: TabId; label: string; icon: typeof User; desc: string }[] = [
   { id: 'account',  label: '账户',  icon: User,  desc: '个人资料 · 密码' },
@@ -52,6 +55,7 @@ const TABS: { id: TabId; label: string; icon: typeof User; desc: string }[] = [
   { id: 'locale',   label: '语言',  icon: Globe, desc: '时区 · 格式' },
   { id: 'theme',    label: '主题',  icon: Palette, desc: '外观' },
   { id: 'notifications', label: '通知', icon: Bell, desc: '推送偏好' },
+  { id: 'llm', label: 'LLM', icon: Brain, desc: '模型配置 · API Key' },
 ]
 
 // ─── 工具函数 ─────────────────────────────────────────────────────
@@ -60,6 +64,490 @@ const maskKey = (key: string, visible = false) =>
 
 const fmtDate = (d: string | Date) =>
   new Date(d).toLocaleDateString('zh-CN', { year: 'numeric', month: 'short', day: 'numeric' })
+
+// ─── LLM 配置面板（独立组件，hooks 归属自身 fiber，避免 Rules of Hooks 违规）────
+// provider 预设 — 与后端 PROVIDER_PRESETS（ai_model_config_service.py）对齐
+const LLM_PROVIDER_PRESETS: Record<string, { label: string; baseUrl: string; defaultModel: string; models: string[] }> = {
+  deepseek:  { label: 'DeepSeek（深度求索）', baseUrl: 'https://api.deepseek.com/v1', defaultModel: 'deepseek-chat', models: ['deepseek-chat', 'deepseek-reasoner', 'deepseek-coder'] },
+  openai:    { label: 'OpenAI', baseUrl: 'https://api.openai.com/v1', defaultModel: 'gpt-4o', models: ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo'] },
+  zhipu:     { label: '智谱 GLM', baseUrl: 'https://open.bigmodel.cn/api/paas/v4', defaultModel: 'glm-4-plus', models: ['glm-4-plus', 'glm-4-air', 'glm-4-flash'] },
+  qwen:      { label: '通义千问', baseUrl: 'https://dashscope.aliyuncs.com/compatible-mode/v1', defaultModel: 'qwen-plus', models: ['qwen-plus', 'qwen-turbo', 'qwen-max'] },
+  anthropic: { label: 'Anthropic（Claude）', baseUrl: 'https://api.anthropic.com/v1', defaultModel: 'claude-3-5-sonnet', models: ['claude-3-5-sonnet', 'claude-3-opus'] },
+}
+
+function LlmPanel() {
+  // 初始化：从真实数据通道（rmfood_model_configs.llm）读取，而非孤立的 api_keys 列表
+  const initial = ConfigManager.getModelConfig('llm')
+  const [apiKey, setApiKey] = useState(initial.apiKey ?? '')
+  const [model, setModel] = useState(initial.model ?? LLM_PROVIDER_PRESETS[initial.provider || 'deepseek']?.defaultModel ?? 'deepseek-chat')
+  const [temperature, setTemperature] = useState(initial.temperature ?? 0.7)
+  const [maxTokens, setMaxTokens] = useState(initial.maxTokens ?? 4096)
+  const [provider, setProvider] = useState(initial.provider || 'deepseek')
+  const [baseUrl, setBaseUrl] = useState(initial.baseUrl ?? LLM_PROVIDER_PRESETS.deepseek.baseUrl)
+  const [syncToBackend, setSyncToBackend] = useState(true)
+
+  // 保存后反馈：successMsg / errorMsg 两个独立 state，避免"成功文案"复用错误文案变量
+  const [saving, setSaving] = useState(false)
+  const [successMsg, setSuccessMsg] = useState('')
+  const [errorMsg, setErrorMsg] = useState('')
+
+  // 测试连接：先对**当前填写的密钥**做验活（POST /ai/models/config/test，不写库），
+  // 再回读后端 /ai/models/status 的真实运行时状态，两段信息都如实展示
+  const [testing, setTesting] = useState(false)
+  const [testResult, setTestResult] = useState<{ ok: boolean; detail: string } | null>(null)
+  const [statusNote, setStatusNote] = useState<{ ok: boolean; detail: string } | null>(null)
+
+  // key 校验
+  const keyValid = apiKey.length >= 40
+  const maskedKey = apiKey.length > 12 ? `${apiKey.slice(0, 8)}...${apiKey.slice(-4)}` : (apiKey ? '***' : '')
+  // 历史遗留明文密钥警示（未加密入库，保存时会被 encrypt() 正确加密）
+  const legacyKeyWarning = Boolean((initial as { legacyUnencrypted?: boolean }).legacyUnencrypted)
+
+  // ── 我的密钥（用户级，服务端存储）──────────────────────────────
+  const [myKeyProvider, setMyKeyProvider] = useState(provider)
+  const [myKeyApi, setMyKeyApi] = useState('')
+  const [myKeyModel, setMyKeyModel] = useState(model)
+  const [myKeyStatus, setMyKeyStatus] = useState<{ configured: boolean; provider?: string; model?: string; keyMasked?: string; note?: string } | null>(null)
+  const [myKeyLoading, setMyKeyLoading] = useState(false)
+  const [myKeyDeleting, setMyKeyDeleting] = useState(false)
+  const [myKeyTestResult, setMyKeyTestResult] = useState<{ ok: boolean; detail: string } | null>(null)
+  const [myKeyTestTesting, setMyKeyTestTesting] = useState(false)
+
+  // 初始化时查询用户是否已配置个人密钥
+  useEffect(() => {
+    let cancelled = false
+    ModelClient.getUserLlmKeyStatus().then(s => {
+      if (!cancelled) setMyKeyStatus(s)
+    })
+    return () => { cancelled = true }
+  }, [])
+
+  // provider 不在预设中时（如手改过的字符串 / 已废弃的 openai-compat），baseUrl 不自动更新，
+  // 展示 warning 提示用户手动核对地址，避免切服务商后 baseUrl 仍指向旧服务商
+  const [providerWarning, setProviderWarning] = useState('')
+
+  const handleProviderChange = (p: string) => {
+    setProvider(p)
+    const preset = LLM_PROVIDER_PRESETS[p]
+    if (preset) {
+      setBaseUrl(preset.baseUrl)
+      setProviderWarning('')
+      if (!preset.models.includes(model)) setModel(preset.defaultModel)
+    } else {
+      setProviderWarning(`服务商「${p}」不在预设列表中，Base URL 与模型需手动填写`)
+    }
+  }
+
+  const handleSave = async () => {
+    if (!keyValid) {
+      setErrorMsg(`API 密钥长度不足（${apiKey.length}/40+ 字符），请完整复制以 "sk-" 开头的密钥`)
+      setSuccessMsg('')
+      return
+    }
+    setSaving(true)
+    setErrorMsg('')
+    setSuccessMsg('')
+    try {
+      const llmConfig = {
+        ...ConfigManager.getModelConfig('llm'),
+        apiKey,
+        baseUrl,
+        provider,
+        model,
+        temperature,
+        maxTokens,
+      }
+      // ① 主通道：写入 rmfood_model_configs.llm（AI 对话实际读取的数据源）
+      ConfigManager.setModelConfig('llm', llmConfig)
+      // ② 双通道同步：secure(AES-256-GCM) + legacy，保证 unifiedApiKeyManager 读得到
+      //    传入完整 llmConfig，消除"必须先 setModelConfig 再 syncToAll"的顺序依赖
+      await unifiedApiKeyManager.syncToAll(apiKey, provider, llmConfig)
+      // ③ 可选：同步到后端数据库（仅管理员可写，会即时更新运行时 LLM 服务）
+      let backendNote = ''
+      if (syncToBackend) {
+        const r = await ConfigManager.syncToBackend('llm', llmConfig)
+        if (r.success && r.llmActive !== undefined) {
+          backendNote = r.llmActive && r.llmKeyConfigured
+            ? '，已同步到后端数据库且密钥已生效'
+            : '，已写入数据库但后端 LLM 运行时未激活（密钥未实际生效，请检查后端日志）'
+        } else if (r.success) {
+          backendNote = '，已同步到后端数据库'
+        } else {
+          // 失败时区分"权限不足"（HTTP 403）与"后端未启动"，给普通用户明确指引
+          backendNote = '（后端同步失败：403 需管理员权限——当前 /ai 对话仍使用服务器已配置的密钥，您的本地配置不会影响对话功能；或后端服务未启动。本地已保存）'
+        }
+      }
+      setSuccessMsg(`配置已保存${backendNote}`)
+      setTimeout(() => setSuccessMsg(''), 4000)
+    } catch (err: unknown) {
+      setErrorMsg(`保存失败：${err instanceof Error ? err.message : '未知错误'}`)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  // 测试连接：两段式——先验活当前填写的密钥（不写库），再回读后端运行时真实状态
+  const handleTestConnection = async () => {
+    setTesting(true)
+    setTestResult(null)
+    setStatusNote(null)
+
+    // ① 验活当前填写的密钥（POST /ai/models/config/test，不写库）
+    if (apiKey.length >= 20) {
+      try {
+        const r = await ModelClient.testLlmConfig({ provider, apiKey, baseUrl, model })
+        setTestResult({ ok: r.success, detail: r.detail })
+      } catch (err: unknown) {
+        setTestResult({ ok: false, detail: `验活请求失败：${err instanceof Error ? err.message : '网络错误'}` })
+      }
+    } else {
+      setTestResult({ ok: false, detail: '请先填写有效密钥（≥ 20 字符）再验活' })
+    }
+
+    // ② 回读后端 /ai/models/status 的真实运行时状态（测的是后端当前密钥，不是刚填的）
+    try {
+      const status = await ModelClient.getModelStatus()
+      const llm = status.llm
+      if (llm && typeof llm === 'object' && 'status' in llm) {
+        const st = llm as { status?: string; provider?: string; model?: string; note?: string; suggestion?: string; api_key_configured?: boolean; key_source?: string }
+        const ok = st.status === 'active'
+        const keySourceLabel = st.key_source === 'user'
+          ? '（密钥来源：您的个人密钥）'
+          : st.key_source === 'db'
+            ? '（密钥来源：服务器数据库）'
+            : st.key_source === 'env'
+              ? '（密钥来源：服务器环境变量）'
+              : st.key_source === 'none'
+                ? '（服务器暂无密钥，/ai 对话将走降级推理引擎）'
+                : ''
+        setStatusNote({
+          ok,
+          detail: ok
+            ? `后端当前 LLM 运行中：服务商 ${st.provider || provider}，模型 ${st.model || model}${keySourceLabel}`
+            : `后端当前 LLM 未就绪（${st.status}）：${st.note || st.suggestion || '请保存配置后重试，或检查后端服务日志'}${keySourceLabel}`,
+        })
+      } else {
+        setStatusNote({ ok: false, detail: '后端未返回 LLM 状态，请确认后端服务已启动' })
+      }
+    } catch (err: unknown) {
+      setStatusNote({ ok: false, detail: `状态回读失败：${err instanceof Error ? err.message : '网络错误'}` })
+    } finally {
+      setTesting(false)
+    }
+  }
+
+  // ── 我的密钥：保存 / 删除 / 验活 ─────────────────────────────
+  const handleMyKeySave = async () => {
+    if (myKeyApi.length < 20) {
+      setMyKeyTestResult({ ok: false, detail: `密钥长度不足（${myKeyApi.length}/20 字符），请填写完整的 API 密钥` })
+      return
+    }
+    setMyKeyLoading(true)
+    setMyKeyTestResult(null)
+    try {
+      const r = await ModelClient.saveUserLlmKey({ provider: myKeyProvider, apiKey: myKeyApi, baseUrl, model: myKeyModel })
+      if (r.success) {
+        setMyKeyStatus({ configured: true, provider: myKeyProvider, model: myKeyModel, keyMasked: r.keyMasked })
+        setMyKeyTestResult({ ok: true, detail: `您的个人密钥已保存（${r.keyMasked}），/ai 对话将使用您自己的密钥` })
+        setMyKeyApi('')
+      } else {
+        setMyKeyTestResult({ ok: false, detail: r.error || '保存失败' })
+      }
+    } finally {
+      setMyKeyLoading(false)
+    }
+  }
+
+  const handleMyKeyDelete = async () => {
+    setMyKeyDeleting(true)
+    try {
+      const r = await ModelClient.deleteUserLlmKey()
+      if (r.success) {
+        setMyKeyStatus({ configured: false, note: '已删除' })
+        setMyKeyTestResult({ ok: true, detail: '您的个人密钥已删除，/ai 对话将回退到服务器密钥' })
+      } else {
+        setMyKeyTestResult({ ok: false, detail: r.message || '删除失败' })
+      }
+    } finally {
+      setMyKeyDeleting(false)
+    }
+  }
+
+  const handleMyKeyTest = async () => {
+    if (myKeyApi.length < 20) {
+      setMyKeyTestResult({ ok: false, detail: '请先填写有效密钥（≥ 20 字符）再验活' })
+      return
+    }
+    setMyKeyTestTesting(true)
+    setMyKeyTestResult(null)
+    try {
+      const r = await ModelClient.testUserLlmKey({ provider: myKeyProvider, apiKey: myKeyApi, baseUrl, model: myKeyModel })
+      setMyKeyTestResult({ ok: r.success, detail: r.detail })
+    } catch (err: unknown) {
+      setMyKeyTestResult({ ok: false, detail: `验活请求失败：${err instanceof Error ? err.message : '网络错误'}` })
+    } finally {
+      setMyKeyTestTesting(false)
+    }
+  }
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-accent-50 dark:bg-accent-500/10 flex items-center justify-center shrink-0">
+              <Brain className="w-5 h-5 text-accent-600 dark:text-accent-400" />
+            </div>
+            <div>
+              <CardTitle as="h2" className="text-base font-semibold tracking-tight">AI 模型配置</CardTitle>
+              <CardDescription>设置 LLM 服务商、模型与密钥，保存后可用于 AI 对话、配方生成等功能</CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1 block">服务商</label>
+                <select value={provider} onChange={e => handleProviderChange(e.target.value)}
+                  className="w-full h-9 px-3 text-sm rounded-md border border-input bg-transparent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+                  {Object.entries(LLM_PROVIDER_PRESETS).map(([value, preset]) => (
+                    <option key={value} value={value}>{preset.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1 block">模型</label>
+                <Input value={model} onChange={e => setModel(e.target.value)}
+                  placeholder={LLM_PROVIDER_PRESETS[provider]?.defaultModel ?? 'deepseek-chat'} />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1 block">API 接口地址（Base URL）</label>
+              <Input value={baseUrl} onChange={e => setBaseUrl(e.target.value)} placeholder="https://api.deepseek.com/v1" />
+              {providerWarning && (
+                <p className="mt-1 text-xs text-warning-600 dark:text-warning-400 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3 shrink-0" />
+                  {providerWarning}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-xs font-medium text-neutral-500 dark:text-neutral-400">API 密钥</label>
+                {maskedKey && <span className="text-xs font-mono text-neutral-400">当前已存：{maskedKey}</span>}
+              </div>
+              <Input type="password" value={apiKey} onChange={e => setApiKey(e.target.value)}
+                placeholder="sk-..." error={keyValid ? undefined : (apiKey ? `长度不足（${apiKey.length}/40 字符）` : 'API 密钥不能为空')} />
+              {legacyKeyWarning && (
+                <div className="mt-2 flex items-start gap-2 rounded-lg border border-warning-200 dark:border-warning-500/20 bg-warning-50 dark:bg-warning-500/10 px-3 py-2.5">
+                  <AlertCircle className="w-3.5 h-3.5 text-warning-600 dark:text-warning-400 shrink-0 mt-0.5" />
+                  <div className="text-xs text-warning-800 dark:text-warning-300 leading-relaxed">
+                    <span className="font-medium">检测到历史遗留的未加密密钥</span>
+                    <span className="ml-1">（脱敏显示：{maskedKey}）。该密钥此前未经加密入库，请重新粘贴完整密钥后保存，保存后将自动转为加密存储。</span>
+                  </div>
+                  <button type="button" onClick={() => setApiKey('')}
+                    className="ml-auto shrink-0 text-xs font-medium text-warning-700 dark:text-warning-400 hover:underline">
+                    清空重新输入
+                  </button>
+                </div>
+              )}
+              <p className="text-xs text-neutral-400 mt-1">
+                本地以加密方式存储；开启后端同步后仅写入您自己的服务器数据库，不会上传到第三方。
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-medium text-neutral-500 dark:text-neutral-400" htmlFor="llm-temperature">温度参数：{temperature}</label>
+                  <span className="text-xs text-neutral-400">0 – 2</span>
+                </div>
+                <input id="llm-temperature" type="range" min={0} max={2} step={0.1} value={temperature} onChange={e => setTemperature(parseFloat(e.target.value))}
+                  className="w-full" style={{ accentColor: 'var(--color-accent)' } as React.CSSProperties}
+                  aria-valuemin={0} aria-valuemax={2} aria-valuenow={temperature} />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1 block">最大 Token 数</label>
+                <Input type="number" value={maxTokens} onChange={e => setMaxTokens(parseInt(e.target.value) || 4096)}
+                  min={1} max={32768} step={1} />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between rounded-lg bg-neutral-50 dark:bg-neutral-800/50 px-4 py-3 border border-neutral-200 dark:border-neutral-700">
+              <div>
+                <p className="text-sm font-medium">同步到后端数据库</p>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">保存时写入服务器 ai_model_configs 表并即时更新运行时 LLM 服务。该操作仅限管理员；普通用户开关不会造成损失，失败时本地配置仍完整保留</p>
+              </div>
+              <Switch checked={syncToBackend} onCheckedChange={setSyncToBackend} />
+            </div>
+          </div>
+
+          <div className="mt-5 flex flex-wrap items-center gap-3">
+            <Button variant="primary" size="md" loading={saving}
+              icon={<CheckCircle className="w-4 h-4" />}
+              onClick={handleSave}>
+              保存配置
+            </Button>
+            <Button variant="outline" size="md" loading={testing}
+              icon={<Key className="w-4 h-4" />}
+              onClick={handleTestConnection}>
+              测试连接
+            </Button>
+            {successMsg && (
+              <span className="text-xs text-success-600 dark:text-success-400 flex items-center gap-1">
+                <CheckCircle className="w-3.5 h-3.5" />
+                {successMsg}
+              </span>
+            )}
+          </div>
+          {errorMsg && <p className="mt-2 text-xs text-destructive flex items-center gap-1"><AlertCircle className="w-3.5 h-3.5 shrink-0" />{errorMsg}</p>}
+          {testResult && (
+            <div className={cn(
+              'mt-3 rounded-lg border px-4 py-3 text-xs leading-relaxed',
+              testResult.ok
+                ? 'bg-success-50 dark:bg-success-500/10 border-success-200 dark:border-success-500/20 text-success-800 dark:text-success-300'
+                : 'bg-warning-50 dark:bg-warning-500/10 border-warning-200 dark:border-warning-500/20 text-warning-800 dark:text-warning-300',
+            )}>
+              <p className="font-medium mb-1 flex items-center gap-1.5">
+                {testResult.ok ? <CheckCircle className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
+                密钥验活结果（不写库）
+              </p>
+              {testResult.detail}
+            </div>
+          )}
+          {statusNote && (
+            <div className={cn(
+              'mt-2 rounded-lg border px-4 py-3 text-xs leading-relaxed',
+              statusNote.ok
+                ? 'bg-success-50 dark:bg-success-500/10 border-success-200 dark:border-success-500/20 text-success-800 dark:text-success-300'
+                : 'bg-warning-50 dark:bg-warning-500/10 border-warning-200 dark:border-warning-500/20 text-warning-800 dark:text-warning-300',
+            )}>
+              <p className="font-medium mb-1 flex items-center gap-1.5">
+                {statusNote.ok ? <CheckCircle className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
+                后端运行时状态（回读 /ai/models/status）
+              </p>
+              {statusNote.detail}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* 我的密钥（用户级，服务端存储，不影响全局配置） */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-success-50 dark:bg-success-500/10 flex items-center justify-center shrink-0">
+              <Key className="w-5 h-5 text-success-600 dark:text-success-400" />
+            </div>
+            <div>
+              <CardTitle as="h2" className="text-base font-semibold tracking-tight">我的密钥（个人）</CardTitle>
+              <CardDescription>
+                {myKeyStatus?.configured
+                  ? `已配置：服务商 ${myKeyStatus.provider}，模型 ${myKeyStatus.model}，密钥 ${myKeyStatus.keyMasked}`
+                  : '尚未配置个人密钥，/ai 对话使用服务器密钥'}
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
+              保存后 /ai 对话将使用您自己的密钥驱动 LLM，与服务器全局配置相互独立。
+              删除后回退到服务器密钥。密钥以 AES-256-GCM 加密存储，不会明文展示。
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1 block">服务商</label>
+                <select value={myKeyProvider} onChange={e => setMyKeyProvider(e.target.value)}
+                  className="w-full h-9 px-3 text-sm rounded-md border border-input bg-transparent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+                  {Object.entries(LLM_PROVIDER_PRESETS).map(([value, preset]) => (
+                    <option key={value} value={value}>{preset.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1 block">模型</label>
+                <Input value={myKeyModel} onChange={e => setMyKeyModel(e.target.value)}
+                  placeholder={LLM_PROVIDER_PRESETS[myKeyProvider]?.defaultModel ?? 'deepseek-chat'} />
+              </div>
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-xs font-medium text-neutral-500 dark:text-neutral-400">API 密钥</label>
+                {myKeyStatus?.configured && <span className="text-xs font-mono text-neutral-400">当前已存：{myKeyStatus.keyMasked}</span>}
+              </div>
+              <Input type="password" value={myKeyApi} onChange={e => setMyKeyApi(e.target.value)}
+                placeholder={myKeyStatus?.configured ? '留空则保留当前密钥' : 'sk-...'}
+                error={myKeyApi && myKeyApi.length < 20 ? `长度不足（${myKeyApi.length}/20 字符）` : undefined} />
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3">
+              <Button variant="primary" size="md" loading={myKeyLoading}
+                icon={<CheckCircle className="w-4 h-4" />}
+                onClick={handleMyKeySave}
+                disabled={myKeyStatus?.configured && !myKeyApi}>
+                {myKeyStatus?.configured ? '更新密钥' : '保存我的密钥'}
+              </Button>
+              <Button variant="outline" size="md" loading={myKeyTestTesting}
+                icon={<Key className="w-4 h-4" />}
+                onClick={handleMyKeyTest}>
+                验活密钥
+              </Button>
+              {myKeyStatus?.configured && (
+                <Button variant="danger" size="md" loading={myKeyDeleting}
+                  onClick={handleMyKeyDelete}>
+                  删除我的密钥
+                </Button>
+              )}
+            </div>
+
+            {myKeyTestResult && (
+              <div className={cn(
+                'rounded-lg border px-4 py-3 text-xs leading-relaxed',
+                myKeyTestResult.ok
+                  ? 'bg-success-50 dark:bg-success-500/10 border-success-200 dark:border-success-500/20 text-success-800 dark:text-success-300'
+                  : 'bg-warning-50 dark:bg-warning-500/10 border-warning-200 dark:border-warning-500/20 text-warning-800 dark:text-warning-300',
+              )}>
+                <p className="font-medium mb-1 flex items-center gap-1.5">
+                  {myKeyTestResult.ok ? <CheckCircle className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
+                  我的密钥验活 / 操作结果
+                </p>
+                {myKeyTestResult.detail}
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-secondary-50 dark:bg-secondary-500/10 flex items-center justify-center shrink-0">
+              <Info className="w-5 h-5 text-secondary-600 dark:text-secondary-400" />
+            </div>
+            <div>
+              <CardTitle as="h2" className="text-base font-semibold tracking-tight">配置说明</CardTitle>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <ul className="list-disc list-inside space-y-1.5 text-xs text-neutral-600 dark:text-neutral-400">
+            <li>保存后本地即时生效；AI 对话（/ai）由后端 LLM 服务驱动。密钥优先级：您的个人密钥（服务端存储）&gt; 服务器数据库 &gt; 服务器环境变量（测试连接可查 key_source）</li>
+            <li>「我的密钥」卡片中的个人密钥由您自行管理，删除后立即回退到服务器密钥，两者互不影响</li>
+            <li>开启后端同步后配置由管理员写入数据库并即时更新运行时 LLM 服务；普通用户同步失败不影响本地配置</li>
+            <li>「测试连接」分两步：先用当前填写的密钥验活（不写库），再回读后端 <code className="font-mono">/ai/models/status</code> 的真实运行时状态与密钥来源</li>
+            <li>密钥校验要求 ≥ 40 字符，通常以 sk- 开头；脱敏显示仅保留前 8 后 4 位</li>
+          </ul>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
 
 export default function SettingsPage() {
   const { user } = useAuthStore()
@@ -1166,6 +1654,9 @@ export default function SettingsPage() {
     </Dialog>
   )
 
+  // ── LLM 配置面板 ─────────────────────────────────────────────
+  const renderLlmPanel = () => <LlmPanel />
+
   // ── 面板映射 ─────────────────────────────────────────────────
   const PANELS: Record<TabId, () => React.ReactNode> = {
     account: renderAccountPanel,
@@ -1175,6 +1666,7 @@ export default function SettingsPage() {
     locale: renderLocalePanel,
     theme: renderThemePanel,
     notifications: renderNotificationsPanel,
+    llm: renderLlmPanel,
   }
 
   // ── 主布局 ────────────────────────────────────────────────────
@@ -1182,7 +1674,7 @@ export default function SettingsPage() {
     <div className="space-y-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-page-enter">
 
       {/* 顶部横幅 — 与 Dashboard 一致 */}
-      <div className="rounded-xl bg-primary-600 p-6 text-white shadow-sm">
+      <div className="surface-primary rounded-xl p-6 shadow-sm">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex-1">
             <h1 className="text-xl font-bold leading-snug">设置</h1>

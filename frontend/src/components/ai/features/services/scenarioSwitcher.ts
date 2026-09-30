@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 场景化 System Prompt 切换模块 (Scenario-Based Prompt Switcher)
  *
  * 根据用户意图或主动选择，动态切换 AI 角色设定：
@@ -64,7 +64,7 @@ const SCENARIOS: Record<ScenarioMode, ScenarioConfig> = {
   academician: {
     id: 'academician',
     displayName: '学者顾问',
-    icon: '🎓',
+    icon: 'GraduationCap',
     description: '配方设计与研发专家，擅长从科学原理出发进行系统化配方设计',
     systemPrompt: `你是一位在食品配方设计领域拥有20年研究经验的资深学者顾问。你的专业领域涵盖功能性食品、营养补充剂、特殊医学用途配方食品等。
 
@@ -98,7 +98,7 @@ const SCENARIOS: Record<ScenarioMode, ScenarioConfig> = {
   safety_off: {
     id: 'safety_off',
     displayName: '安全专员',
-    icon: '🛡️',
+    icon: 'Shield',
     description: '食品安全与毒理学专家，专注安全性评估与风险管控',
     systemPrompt: `你是一位拥有15年实践经验的食品安全与毒理学评估专家。你曾在国家级食品检验机构工作，处理过大量安全性评价案例。
 
@@ -133,7 +133,7 @@ const SCENARIOS: Record<ScenarioMode, ScenarioConfig> = {
   process_eng: {
     id: 'process_eng',
     displayName: '工艺工程师',
-    icon: '⚙️',
+    icon: 'Wrench',
     description: '生产工艺与质量控制专家，专注工业化生产可行性',
     systemPrompt: `你是一位在食品工业企业工作18年的高级工艺工程师。你熟悉从实验室到工厂的全流程放大生产。
 
@@ -168,7 +168,7 @@ const SCENARIOS: Record<ScenarioMode, ScenarioConfig> = {
   concise_adv: {
     id: 'concise_adv',
     displayName: '精简顾问',
-    icon: '⚡',
+    icon: 'Zap',
     description: '快速响应模式，适合高效查询与对比分析',
     systemPrompt: `你是一位高效的配方咨询顾问，擅长在短时间内给出精准、实用的答案。
 

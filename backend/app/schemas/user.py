@@ -37,6 +37,9 @@ class UserResponse(UserBase):
     phone: Optional[str] = None
     avatar_url: Optional[str] = None
     created_at: datetime
+    last_login: Optional[datetime] = None
+    login_attempts: int = 0
+    locked_until: Optional[datetime] = None
 
     model_config = {"from_attributes": True}
 

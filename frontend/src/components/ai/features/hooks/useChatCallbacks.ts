@@ -12,8 +12,6 @@
 import { useCallback, useEffect } from 'react'
 import type { Dispatch, SetStateAction } from 'react'
 import type { HistorySession } from '../components/pro'
-import { saveSessions, loadSessions } from '../components/pro'
-import { storageService } from '../services/storageService'
 import { logger } from '@/utils/safeLogger'
 import type { ChatMessage } from '../types'
 import { chatApi } from '@/api/chat'
@@ -104,7 +102,14 @@ export function useChatCallbacks(options: UseChatCallbacksOptions): UseChatCallb
     const updated = [newSession, ...historySessions]
     setHistorySessions(updated)
     setActiveSessionId(newSession.id)
-    saveSessions(updated)
+    // 同步写入 IndexedDB 元数据，保证新会话在侧栏立即可见
+    chatStorageService.saveSessionMeta(newSession.id, {
+      title: newSession.title,
+      tags: [],
+      createdAt: newSession.timestamp,
+      updatedAt: newSession.timestamp,
+      messageCount: 0,
+    }).catch(e => logger.warn('[useChatCallbacks] 保存新会话元数据失败:', e))
     handleClearChat()
   }, [historySessions, setHistorySessions, setActiveSessionId, handleClearChat, activeSessionId, messages, updateSessionMetadata])
 
@@ -155,8 +160,7 @@ export function useChatCallbacks(options: UseChatCallbacksOptions): UseChatCallb
   const handleDeleteSession = useCallback(async (id: string) => {
     const updated = historySessions.filter(s => s.id !== id)
     setHistorySessions(updated)
-    saveSessions(updated)
-    // 清理被删除会话的消息存储
+    // 清理被删除会话的消息存储（IndexedDB）
     try {
       await chatStorageService.deleteMessages(id)
     } catch {}
@@ -166,10 +170,21 @@ export function useChatCallbacks(options: UseChatCallbacksOptions): UseChatCallb
     }
   }, [historySessions, setHistorySessions, activeSessionId, handleClearChat])
 
-  const handleRenameSession = useCallback((id: string, title: string) => {
+  const handleRenameSession = useCallback(async (id: string, title: string) => {
     const updated = historySessions.map(s => s.id === id ? { ...s, title } : s)
     setHistorySessions(updated)
-    saveSessions(updated)
+    // 同步更新 IndexedDB 元数据
+    try {
+      await chatStorageService.saveSessionMeta(id, {
+        title,
+        tags: [],
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        messageCount: updated.find(s => s.id === id)?.messageCount ?? 0,
+      })
+    } catch (e) {
+      logger.warn('[useChatCallbacks] 重命名会话元数据保存失败:', e)
+    }
   }, [historySessions, setHistorySessions])
 
   const toggleHistory = useCallback(() => {
@@ -191,7 +206,20 @@ export function useChatCallbacks(options: UseChatCallbacksOptions): UseChatCallb
       if (toMerge.length > 0) {
         const merged = [...historySessions, ...toMerge]
         setHistorySessions(merged)
-        saveSessions(merged)
+        // 同步写入 IndexedDB，废弃 localStorage
+        try {
+          for (const s of toMerge) {
+            await chatStorageService.saveSessionMeta(s.id, {
+              title: s.title,
+              tags: [],
+              createdAt: s.timestamp,
+              updatedAt: s.timestamp,
+              messageCount: s.messageCount,
+            })
+          }
+        } catch (e) {
+          logger.warn('[useChatCallbacks] 服务端会话写入 IndexedDB 失败:', e)
+        }
         logger.info(`[useChatCallbacks] 手动同步新增 ${toMerge.length} 个会话`)
       }
     } catch (err) {

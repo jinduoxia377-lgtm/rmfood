@@ -588,6 +588,17 @@ def create_secure_cookie_settings(
     from ..core.config import settings
 
     # 基础安全设置
+    # COOKIE_SECURE 覆盖: 纯 HTTP 部署（如公网 IP 无 TLS）可设 COOKIE_SECURE=false，
+    # 使浏览器接受非 HTTPS 下的 Set-Cookie（Secure 属性会被浏览器拒绝存储）。
+    # 优先级: 环境变量 COOKIE_SECURE > settings.security.cookie_secure > (not debug)
+    import os as _os
+    _env_override = _os.environ.get("COOKIE_SECURE")
+    if _env_override is not None:
+        cookie_secure = _env_override.lower() in ("1", "true", "yes")
+    else:
+        _sec_cfg = getattr(settings, "security", None)
+        _explicit = getattr(_sec_cfg, "cookie_secure", None) if _sec_cfg else None
+        cookie_secure = (not settings.debug) if _explicit is None else _explicit
     cookie_config = {
         "key": cookie_name,
         "value": cookie_value,
@@ -595,7 +606,7 @@ def create_secure_cookie_settings(
         "path": "/",
         "httponly": True,  # 🔒 防止 XSS 窃取
         "samesite": "strict",  # 🔒 CSRF 防护
-        "secure": not settings.debug,  # 🔒 生产环境强制 HTTPS
+        "secure": cookie_secure,  # 生产 HTTPS 强制；纯 HTTP 部署可由 COOKIE_SECURE=false 覆盖
     }
 
     # Cookie domain: 开发环境不限制域名，允许局域网访问；生产环境空域名（仅当前域）

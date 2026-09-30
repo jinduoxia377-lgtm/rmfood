@@ -18,7 +18,7 @@ const DialogOverlay = React.forwardRef<
   <DialogPrimitive.Overlay
     ref={ref}
     className={cn(
-      'fixed inset-0 z-[var(--z-modal-backdrop,1000)] bg-black/65 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
+      'fixed inset-0 z-[1000] bg-black/60 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
       className
     )}
     {...props}
@@ -31,32 +31,35 @@ const DialogContent = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & {
     size?: 'sm' | 'md' | 'lg' | 'xl'
     maxWidth?: string
+    maxHeight?: string
   }
->(({ className, children, size = 'md', maxWidth, ...props }, ref) => {
+>(({ className, children, size = 'md', maxWidth, maxHeight, ...props }, ref) => {
   const sizeClasses: Record<string, string> = {
     sm: 'max-w-sm',
     md: 'max-w-md',
     lg: 'max-w-lg',
     xl: 'max-w-2xl',
   }
+  const widthClass = maxWidth ? `max-w-[${maxWidth}]` : sizeClasses[size]
+  const heightClass = maxHeight ? `max-h-[${maxHeight}]` : ''
   return (
     <DialogPortal>
       <DialogOverlay />
       <DialogPrimitive.Content
         ref={ref}
         className={cn(
-          'fixed left-[50%] top-[50%] z-[var(--z-modal-backdrop,1000)] w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 rounded-2xl border bg-card p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%]',
-          sizeClasses[size],
-          maxWidth && `max-w-[${maxWidth}]`,
+          'fixed left-[50%] top-[50%] z-[1001] w-full translate-x-[-50%] translate-y-[-50%] rounded-2xl border bg-card shadow-2xl duration-200',
+          'data-[state=open]:animate-in data-[state=closed]:animate-out',
+          'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
+          'data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
+          widthClass,
+          heightClass,
+          'max-h-[90vh] overflow-hidden flex flex-col',
           className
         )}
         {...props}
       >
         {children}
-        <DialogPrimitive.Close className="absolute right-4 top-4 rounded-lg opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
-          <X className="h-4 w-4" />
-          <span className="sr-only">Close</span>
-        </DialogPrimitive.Close>
       </DialogPrimitive.Content>
     </DialogPortal>
   )
@@ -64,12 +67,12 @@ const DialogContent = React.forwardRef<
 DialogContent.displayName = DialogPrimitive.Content.displayName
 
 const DialogHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div className={cn('flex flex-col space-y-1.5 text-center sm:text-left', className)} {...props} />
+  <div className={cn('flex flex-col space-y-1.5 text-center sm:text-left p-6 pb-0', className)} {...props} />
 )
 DialogHeader.displayName = 'DialogHeader'
 
 const DialogFooter = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div className={cn('flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2', className)} {...props} />
+  <div className={cn('flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 p-6 pt-0', className)} {...props} />
 )
 DialogFooter.displayName = 'DialogFooter'
 
@@ -89,7 +92,6 @@ const DialogDescription = React.forwardRef<
 ))
 DialogDescription.displayName = DialogPrimitive.Description.displayName
 
-// ── Backward-compatible Modal wrapper ──
 export interface ModalProps {
   open: boolean
   onClose: () => void
@@ -99,9 +101,10 @@ export interface ModalProps {
   className?: string
   size?: 'sm' | 'md' | 'lg' | 'xl'
   maxWidth?: string
+  maxHeight?: string
 }
 
-export function Modal({ open, onClose, title, description, children, className, size = 'md', maxWidth }: ModalProps) {
+export function Modal({ open, onClose, title, description, children, className, size = 'md', maxWidth, maxHeight }: ModalProps) {
   const previousActiveElement = useRef<HTMLElement | null>(null)
   const [mounted, setMounted] = useState(false)
 
@@ -109,6 +112,7 @@ export function Modal({ open, onClose, title, description, children, className, 
   useEffect(() => {
     if (!open) return
     previousActiveElement.current = document.activeElement as HTMLElement
+    document.body.style.overflow = 'hidden'
     return () => { document.body.style.overflow = ''; previousActiveElement.current?.focus() }
   }, [open])
 
@@ -116,15 +120,34 @@ export function Modal({ open, onClose, title, description, children, className, 
 
   return (
     <Dialog open={open} onOpenChange={(isOpen: boolean) => !isOpen && onClose()}>
-      <DialogContent ref={undefined} size={size} maxWidth={maxWidth} className={className}
+      <DialogContent ref={undefined} size={size} maxWidth={maxWidth} maxHeight={maxHeight} className={className}
         onOpenAutoFocus={(e: Event) => e.preventDefault()} onInteractOutside={(e: Event) => e.preventDefault()}>
+        <button
+          onClick={onClose}
+          className="absolute right-4 top-4 z-20 flex h-8 w-8 items-center justify-center rounded-lg bg-white/90 dark:bg-neutral-800/90 backdrop-blur-sm opacity-70 hover:opacity-100 transition-opacity focus:outline-none"
+          aria-label="关闭"
+        >
+          <X className="h-4 w-4" />
+        </button>
         {(title || description) && (
           <DialogHeader>
             {title && <DialogTitle>{title}</DialogTitle>}
             {description && <DialogDescription>{description}</DialogDescription>}
           </DialogHeader>
         )}
-        {children}
+        <div className="flex-1 overflow-auto px-6 pb-6">
+          {children}
+        </div>
+        {children && (
+          <DialogFooter>
+            <button
+              onClick={onClose}
+              className="inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+            >
+              关闭
+            </button>
+          </DialogFooter>
+        )}
       </DialogContent>
     </Dialog>
   )

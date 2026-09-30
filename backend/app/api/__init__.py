@@ -47,6 +47,7 @@ _LAZY_ROUTER_MODULES = [
     'file_generator',
     'chat',
     'food_peptide_routes',  # RMFOOD食品活性肽分析
+    'peptide_structure_routes',  # 肽链结构分析
     'terminology',  # 术语管理
 
     # SSS 企业级功能模块

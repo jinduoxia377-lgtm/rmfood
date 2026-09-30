@@ -1,15 +1,21 @@
 /**
- * ConfigManagementPanel v8.0 — 专业字体层级升级（与 AI 主页面完全同步）
+ * ConfigManagementPanel v8.1 — 主题系统规范化（DESIGN.md §1.3 零硬编码原则）
  *
- * 字体层级规范（严格遵循 Apple 设计体系 400/600/700 阶梯，禁用 500）：
- *   L1 Panel标题:  text-lg (18px) / font-semibold (600)
- *   L2 区块标题:   text-sm (14px) / font-semibold (600)
- *   L3 卡片内标题: text-sm (14px) / font-semibold (600)
- *   L4 数据标签:   text-xs (12px) / font-semibold (600)
- *   L5 数值展示:   text-base (16px) / font-semibold (600)
- *   L6 辅助说明:   text-xs (12px) / font-normal (400)
+ * 字体层级（Apple HIG 400/600/700 阶梯，禁用 500）：
+ *   L1 Panel 标题:  text-base (16px) / font-semibold (600) — 与 /ai 主页 StatCard 数值基线一致
+ *   L2 区块标题:   text-sm / font-semibold (600)
+ *   L3 卡片标题:   text-sm / font-semibold (600)
+ *   L4 数据标签:   text-xs / font-semibold (600)
+ *   L5 数值展示:   text-base / font-semibold (600)
+ *   L6 辅助说明:   text-xs / font-normal (400)
  *
- * 间距规范: gap-3 (12px) / p-4 (16px) — 紧凑 SaaS 仪表盘风格
+ * 色彩令牌（base.css 100% 覆盖，零硬编码 hex）：
+ *   边框: var(--border-color)            替代 border-neutral-200
+ *   文字: var(--text-primary/secondary/muted/disabled)
+ *   容器: var(--card-bg-solid)          替代 bg-white / bg-neutral-900
+ *   语义: var(--color-success/warning/error/info)-*  对应 10 级色阶
+ *
+ * 间距: gap-3 (12px) / p-4 (16px) / 卡片 p-5  — 紧凑 SaaS 仪表盘
  */
 import { useState, useEffect, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -97,15 +103,15 @@ const SUB_MODELS = [
 // ════════════════════════════════════════════════════════════
 function PageHeader() {
   return (
-    <div className="flex items-center gap-3 pb-3 mb-4 border-b border-neutral-200 dark:border-neutral-700">
+    <div className="flex items-center gap-3 pb-3 mb-4 border-b" style={{ borderColor: 'var(--border-color)' }}>
       <div className="w-10 h-10 rounded-xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0">
         <Settings className="w-5 h-5 text-primary-600 dark:text-primary-400" />
       </div>
       <div>
-        <h1 className="text-lg font-semibold leading-tight tracking-tight" style={{ color: 'var(--text-primary)' }}>
+        <h1 className="text-base font-bold leading-tight tracking-tight" style={{ color: 'var(--text-primary)' }}>
           配置管理
         </h1>
-        <p className="text-sm font-normal mt-0.5" style={{ color: 'var(--text-muted)' }}>
+        <p className="text-xs font-normal mt-0.5" style={{ color: 'var(--text-muted)' }}>
           管理 AI 模型连接、参数和技术指标
         </p>
       </div>
@@ -127,17 +133,15 @@ function SectionHeader({
   action?: React.ReactNode;
 }) {
   return (
-    <div className="flex items-center justify-between mb-4">
-      <div className="flex items-center gap-3">
-        <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${iconBg}`}>
-          <span className={iconColor}>{icon}</span>
-        </div>
-        <div>
-          <h2 className="text-sm font-semibold leading-tight" style={{ color: 'var(--text-primary)' }}>{title}</h2>
-          <p className="text-sm font-normal mt-0.5 leading-tight" style={{ color: 'var(--text-muted)' }}>{subtitle}</p>
-        </div>
+    <div className="flex items-center gap-3 mb-3.5">
+      <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${iconBg}`}>
+        <span className={iconColor}>{icon}</span>
       </div>
-      {action && <div className="flex items-center gap-2">{action}</div>}
+      <div className="flex-1 min-w-0">
+        <h2 className="text-sm font-bold leading-tight" style={{ color: 'var(--text-primary)' }}>{title}</h2>
+        <p className="text-xs font-normal mt-0.5 leading-tight" style={{ color: 'var(--text-muted)' }}>{subtitle}</p>
+      </div>
+      {action && <div className="flex items-center gap-2 flex-shrink-0">{action}</div>}
     </div>
   );
 }
@@ -241,7 +245,7 @@ function HealthDashboard() {
       const effectiveBaseUrl = llmBaseUrl.trim() || LLM_PRESETS[llmProvider]?.baseUrl || 'https://api.deepseek.com/v1';
       
       // Step 1: 同步到后端数据库
-      const backendSuccess = await ConfigManager.syncToBackend('llm', {
+      const backendResult = await ConfigManager.syncToBackend('llm', {
         apiKey: llmKey.trim(),
         baseUrl: effectiveBaseUrl,
         timeout: 60000,
@@ -250,6 +254,7 @@ function HealthDashboard() {
         model: llmModel,
         provider: llmProvider,
       });
+      const backendSuccess = backendResult.success;
       
       // Step 2: 本地持久化
       ConfigManager.setModelConfig('llm', {
@@ -296,7 +301,7 @@ function HealthDashboard() {
             )}
             <button
               onClick={() => queryClient.refetchQueries({ queryKey: ['ai-model-status'] })}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors duration-150"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm border border-[var(--border-color)] bg-white dark:bg-neutral-900 text-[var(--text-secondary)] hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors duration-150"
             >
               <RefreshCw className="w-3.5 h-3.5" />
               刷新
@@ -308,31 +313,32 @@ function HealthDashboard() {
       {/* LLM 主卡 + 子模型列表 */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
 
-        {/* ── LLM 主卡（与 StatCard 风格一致: rounded-xl / shadow-sm / border-neutral-200 / p-5 pt-4 pb-5）── */}
-        <div className="lg:col-span-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 shadow-sm overflow-hidden transition-all duration-200 hover:shadow-md">
-          {/* 状态色带 */}
-          <div className={`h-[3px] w-full ${isLlmActive ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+        {/* ── LLM 主卡（与 AIAssistantPage 统计卡风格一致: rounded-xl / shadow-sm / var(--border-color)）── */}
+        <div className="lg:col-span-2 rounded-xl border bg-white dark:bg-neutral-900 shadow-sm overflow-hidden transition-all duration-200 hover:shadow-md"
+          style={{ borderColor: 'var(--border-color)' }}>
+          {/* 状态色带 — 与页面 Tab 分组顶部强调色条一致: h-[2px] + left-4 right-4 + rounded-full */}
+          <div className={`h-[2px] mx-4 rounded-full transition-colors duration-200 ${isLlmActive ? 'bg-emerald-500' : 'bg-amber-500'}`} />
           <div className="px-5 pt-4 pb-5">
             {/* 头部 */}
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-4">
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                  isLlmActive ? 'bg-emerald-100 dark:bg-emerald-900/30' : 'bg-amber-100 dark:bg-amber-900/30'
-                }`}>
+        <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
+          isLlmActive ? 'bg-emerald-100 dark:bg-emerald-900/30' : 'bg-amber-100 dark:bg-amber-900/30'
+        }`}>
                   {isLlmActive
-                    ? <CheckCircle2 className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
-                    : <CircleAlert className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+                    ? <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                    : <CircleAlert className="w-5 h-5 text-amber-600 dark:text-amber-400" />
                   }
                 </div>
                 <div>
-                  <div className="text-sm font-semibold leading-tight" style={{ color: 'var(--text-primary)' }}>LLM 大语言模型</div>
+                  <div className="text-sm font-bold leading-tight" style={{ color: 'var(--text-primary)' }}>LLM 大语言模型</div>
                   <div className="text-sm font-normal mt-0.5 leading-tight" style={{ color: 'var(--text-muted)' }}>
                     {llmStatus?.provider || '未配置'} · {llmStatus?.model || '—'}
                   </div>
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
+                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
                   isLlmActive
                     ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400'
                     : 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400'
@@ -342,7 +348,7 @@ function HealthDashboard() {
                 </span>
                 <button
                   onClick={() => setShowLlmQuick(!showLlmQuick)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors duration-150"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm border border-[var(--border-color)] bg-white dark:bg-neutral-900 text-[var(--text-secondary)] hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors duration-150"
                 >
                   {showLlmQuick ? <ChevronDown className="w-3.5 h-3.5" /> : <Settings className="w-3.5 h-3.5" />}
                   {showLlmQuick ? '收起' : '配置'}
@@ -353,16 +359,16 @@ function HealthDashboard() {
             {/* 快捷配置面板 */}
             {showLlmQuick && (
               <div className="mb-4 p-4 rounded-xl border border-primary-200 dark:border-primary-800 bg-primary-50/50 dark:bg-primary-900/10 space-y-3">
-                <div className="flex items-center gap-1.5 text-sm font-medium text-primary-700 dark:text-primary-400">
+                <div className="flex items-center gap-1.5 text-sm font-semibold text-primary-700 dark:text-primary-400">
                   <Key className="w-3.5 h-3.5" />LLM API 配置
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 block">Provider</label>
+                    <label className="text-sm font-semibold text-[var(--text-secondary)] block">Provider</label>
                     <select
                       value={llmProvider}
                       onChange={(e) => setLlmProvider(e.target.value)}
-                      className="w-full h-10 px-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm text-neutral-900 dark:text-white outline-none focus:ring-2 focus:ring-primary-500"
+                      className="w-full h-10 px-3 rounded-lg border border-[var(--border-color)] bg-white dark:bg-neutral-900 text-sm text-[var(--text-primary)] dark:text-white outline-none focus:ring-2 focus:ring-primary-500"
                     >
                       {Object.entries(LLM_PRESETS).map(([k, v]) => (
                         <option key={k} value={k}>{v.label}</option>
@@ -370,12 +376,12 @@ function HealthDashboard() {
                     </select>
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 block">Model</label>
+                    <label className="text-sm font-semibold text-[var(--text-secondary)] block">Model</label>
                     <select
                       value={llmModel}
                       onChange={(e) => setLlmModel(e.target.value)}
                       disabled={llmFetching}
-                      className="w-full h-10 px-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm text-neutral-900 dark:text-white outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50"
+                      className="w-full h-10 px-3 rounded-lg border border-[var(--border-color)] bg-white dark:bg-neutral-900 text-sm text-[var(--text-primary)] dark:text-white outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50"
                     >
                       {llmModels.map((m) => (
                         <option key={m} value={m}>{m}</option>
@@ -385,7 +391,7 @@ function HealthDashboard() {
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 block">请求地址</label>
+                  <label className="text-sm font-semibold text-[var(--text-secondary)] block">请求地址</label>
                   <Input
                     type="text"
                     value={llmBaseUrl}
@@ -393,12 +399,12 @@ function HealthDashboard() {
                     placeholder="https://api.xxx.com/v1"
                     className="h-10 font-mono text-xs"
                   />
-                  <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                  <p className="text-xs text-[var(--text-muted)]">
                     留空则使用 Provider 默认地址
                   </p>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 block">API 密钥</label>
+                  <label className="text-sm font-semibold text-[var(--text-secondary)] block">API 密钥</label>
                   <Input
                     type="password"
                     value={llmKey}
@@ -406,7 +412,7 @@ function HealthDashboard() {
                     placeholder="sk-..."
                     className="h-10"
                   />
-                  <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                  <p className="text-xs text-[var(--text-muted)]">
                     获取密钥: {LLM_PRESETS[llmProvider]?.keyHint}
                   </p>
                 </div>
@@ -418,14 +424,14 @@ function HealthDashboard() {
                 <div className="flex justify-end gap-2">
                   <button
                     onClick={() => { setShowLlmQuick(false); setLlmMsg(null); }}
-                    className="px-3 py-1.5 rounded-lg text-sm border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-normal border border-[var(--border-color)] bg-white dark:bg-neutral-900 text-[var(--text-secondary)] hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors duration-150"
                   >
                     取消
                   </button>
                   <button
                     onClick={handleLlmSave}
                     disabled={llmSaving}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-normal bg-primary-600 text-white hover:bg-primary-700 transition-colors disabled:opacity-50"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold bg-primary-600 text-white hover:bg-primary-700 transition-colors duration-150 disabled:opacity-50"
                   >
                     {llmSaving ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
                     保存配置
@@ -442,8 +448,8 @@ function HealthDashboard() {
                 { icon: <Clock className="w-3.5 h-3.5" />, label: '延迟', value: (() => { const h = healthData?.[0]; return h ? `${h.latency_ms}ms` : '—'; })() },
                 { icon: <TrendingUp className="w-3.5 h-3.5" />, label: '成功率', value: (() => { const h = healthData?.[0]; return h ? `${h.success_rate}%` : '—'; })() },
               ].map(({ icon, label, value }) => (
-                <div key={label} className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700">
-                  <div className="flex items-center gap-1.5 text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-1.5">
+                <div key={label} className="p-3 rounded-xl bg-neutral-50 dark:bg-neutral-800 border border-[var(--border-color)]">
+                  <div className="flex items-center gap-1.5 text-xs font-semibold text-[var(--text-muted)] mb-1.5">
                     {icon}{label}
                   </div>
                   <div className="text-base font-semibold leading-none" style={{ color: 'var(--text-primary)' }}>{value}</div>
@@ -453,13 +459,15 @@ function HealthDashboard() {
 
             {/* 备注 */}
             {llmStatus?.note && (
-              <div className="mt-3 flex items-start gap-2.5 text-sm rounded-xl px-3 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700" style={{ color: 'var(--text-secondary)' }}>
-                <FileText className="w-4 h-4 flex-shrink-0 mt-0.5 text-neutral-400" />
+              <div className="mt-3 flex items-start gap-2.5 text-sm rounded-xl px-3 py-2.5 bg-neutral-50 dark:bg-neutral-800 border border-[var(--border-color)]" style={{ color: 'var(--text-secondary)' }}>
+                <FileText className="w-4 h-4 flex-shrink-0 mt-0.5 text-[var(--text-muted)]" />
                 {llmStatus.note}
               </div>
             )}
             {!isLlmActive && llmStatus?.suggestion && (
-              <div className="mt-3 flex items-start gap-2.5 text-sm rounded-xl px-3 py-2.5 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/40" style={{ color: '#92400e' }}>
+              <div
+                className="mt-3 flex items-start gap-2.5 text-sm rounded-xl px-3 py-2.5 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/40 text-amber-800 dark:text-amber-300"
+              >
                 <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
                 {llmStatus.suggestion}
               </div>
@@ -473,10 +481,10 @@ function HealthDashboard() {
             const s = statuses?.[key] as BackendModelStatus | undefined;
             const isActive = s?.status === 'active';
             return (
-              <div key={key} className="flex items-center gap-3 px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 hover:border-neutral-300 dark:hover:border-neutral-600 hover:shadow-sm transition-all duration-150">
+              <div key={key} className="flex items-center gap-3 px-4 py-3 rounded-xl border border-[var(--border-color)] bg-white dark:bg-neutral-900 hover:border-[var(--border-color)] hover:shadow-sm transition-all duration-150">
                 <div className={`w-2 h-2 rounded-full flex-shrink-0 ${isActive ? 'bg-emerald-500' : 'bg-neutral-300 dark:bg-neutral-600'}`} />
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-semibold leading-none" style={{ color: 'var(--text-primary)' }}>{label}</div>
+                  <div className="text-sm font-bold leading-none" style={{ color: 'var(--text-primary)' }}>{label}</div>
                   <div className="text-xs mt-0.5 leading-tight" style={{ color: 'var(--text-muted)' }}>{desc}</div>
                 </div>
                 <span className="text-xs font-semibold flex-shrink-0" style={{ color: isActive ? 'var(--color-success)' : 'var(--text-muted)' }}>
@@ -490,9 +498,9 @@ function HealthDashboard() {
 
       {/* 健康进度条 */}
       {healthData?.length > 0 && (
-        <div className="p-5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 shadow-sm">
+        <div className="p-5 rounded-xl border border-[var(--border-color)] bg-white dark:bg-neutral-900 shadow-sm">
           <div className="flex items-center justify-between mb-4">
-            <span className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>模型响应质量</span>
+            <span className="text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>模型响应质量</span>
             <div className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--text-muted)' }}>
               {isConnected
                 ? <><Wifi className="w-3.5 h-3.5 text-emerald-500" /><span>SSE 实时</span></>
@@ -504,14 +512,14 @@ function HealthDashboard() {
             {healthData.map((m) => (
               <div key={m.model}>
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{m.model}</span>
+                  <span className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{m.model}</span>
                   <span className={`text-sm font-semibold tabular-nums ${
                     m.success_rate >= 98 ? 'text-emerald-600 dark:text-emerald-400'
                     : m.success_rate >= 95 ? 'text-amber-600 dark:text-amber-400'
                     : 'text-red-600 dark:text-red-400'
                   }`}>{m.success_rate}%</span>
                 </div>
-                <div className="h-1.5 rounded-full bg-neutral-200 dark:bg-neutral-700 overflow-hidden">
+                <div className="h-1.5 rounded-full overflow-hidden bg-[var(--border-color)]">
                   <div
                     className={`h-full rounded-full transition-all duration-700 ${
                       m.success_rate >= 98 ? 'bg-emerald-500'
@@ -570,7 +578,7 @@ function DefaultModelSection() {
         <div className="lg:col-span-2">
           <ModelSelector modelType={selectedModel} onModelChange={handleModelSelect} onParamsChange={() => {}} />
           {saveMsg && (
-            <div className="mt-3 px-3 py-2 rounded-lg text-sm font-medium bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40 flex items-center gap-2">
+            <div className="mt-3 px-3 py-2 rounded-lg text-sm font-semibold bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40 flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
               {saveMsg}
             </div>
@@ -583,8 +591,8 @@ function DefaultModelSection() {
               <button key={value} onClick={() => handleModelSelect(value)} disabled={saving}
                 className={`w-full text-left p-4 rounded-xl border transition-all duration-150 ${
                   isSelected
-                    ? 'border-primary-300 dark:border-primary-700 bg-primary-50 dark:bg-primary-900/20 shadow-sm'
-                    : 'border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 hover:border-neutral-300 dark:hover:border-neutral-600 hover:shadow-sm'
+                    ? 'border-primary-300 dark:border-primary-700 bg-primary-50 dark:bg-primary-900/20 shadow-sm ring-1 ring-primary-500/20'
+                    : 'border-[var(--border-color)] bg-white dark:bg-neutral-900 hover:border-[var(--border-color)] hover:shadow-sm'
                 }`}>
                 <div className="flex items-center gap-3">
                   <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${
@@ -709,7 +717,7 @@ function ModelConfigRow({ modelKey, status }: { modelKey: ModelType; status?: Ba
       let backendSuccess = true;
       if (key === 'llm') {
         const effectiveBaseUrl = (config.baseUrl || '').trim() || LLM_PRESETS[llmProvider]?.baseUrl || '';
-        backendSuccess = await ConfigManager.syncToBackend('llm', {
+        const r = await ConfigManager.syncToBackend('llm', {
           apiKey: config.apiKey || '',
           baseUrl: effectiveBaseUrl,
           timeout: config.timeout || 60000,
@@ -718,6 +726,7 @@ function ModelConfigRow({ modelKey, status }: { modelKey: ModelType; status?: Ba
           model: llmModel,
           provider: llmProvider,
         });
+        backendSuccess = r.success;
       }
       
       await queryClient.refetchQueries({ queryKey: ['ai-model-status'] });
@@ -747,7 +756,7 @@ function ModelConfigRow({ modelKey, status }: { modelKey: ModelType; status?: Ba
   const modelInfo = ADVANCED_MODELS.find(m => m.key === modelKey)!;
 
   return (
-    <AccordionItem value={modelKey} className="border-b border-neutral-200 dark:border-neutral-700 last:border-0">
+    <AccordionItem value={modelKey} className="border-b border-[var(--border-color)] last:border-0">
       <AccordionTrigger
         icon={<ChevronRight className="w-3.5 h-3.5 transition-transform duration-200" />}
         className="py-3 hover:no-underline"
@@ -759,12 +768,12 @@ function ModelConfigRow({ modelKey, status }: { modelKey: ModelType; status?: Ba
               : isUnconfigured ? 'bg-amber-100 dark:bg-amber-900/30'
               : 'bg-neutral-100 dark:bg-neutral-800'
           }`}>
-            <span className={isActive ? 'text-emerald-600 dark:text-emerald-400' : isUnconfigured ? 'text-amber-600 dark:text-amber-400' : 'text-neutral-500'}>
+            <span className={isActive ? 'text-emerald-600 dark:text-emerald-400' : isUnconfigured ? 'text-amber-600 dark:text-amber-400' : 'text-[var(--text-disabled)]'}>
               {modelInfo.icon}
             </span>
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-sm font-semibold leading-none" style={{ color: 'var(--text-primary)' }}>{modelInfo.label}</div>
+            <div className="text-sm font-bold leading-none" style={{ color: 'var(--text-primary)' }}>{modelInfo.label}</div>
             <div className="text-xs mt-0.5 leading-tight" style={{ color: 'var(--text-muted)' }}>{modelInfo.desc}</div>
           </div>
           <div className="hidden md:flex items-center gap-3 flex-shrink-0">
@@ -773,10 +782,10 @@ function ModelConfigRow({ modelKey, status }: { modelKey: ModelType; status?: Ba
                 <Key className="w-3 h-3" />{hasKey ? '已配置' : '未配置'}
               </span>
             )}
-            <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+            <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
               isActive ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400'
                 : isUnconfigured ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400'
-                : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400'
+                : 'bg-neutral-100 dark:bg-neutral-800 text-[var(--text-secondary)] dark:text-[var(--text-muted)]'
             }`}>
               {isActive ? '活跃' : isUnconfigured ? '未配置' : '规则模式'}
             </span>
@@ -789,21 +798,21 @@ function ModelConfigRow({ modelKey, status }: { modelKey: ModelType; status?: Ba
         </div>
       </AccordionTrigger>
 
-      <AccordionContent className="px-5 pb-4">
-        <div className="space-y-4 pt-3">
+      <AccordionContent>
+        <div className="space-y-4 pt-1">
           {modelKey === 'llm' && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 block">Provider</label>
+                <label className="text-sm font-semibold text-[var(--text-secondary)] block">Provider</label>
                 <select value={llmProvider} onChange={e => handleProviderChange(e.target.value)}
-                  className="w-full h-10 px-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm text-neutral-900 dark:text-white outline-none focus:ring-2 focus:ring-primary-500">
+                  className="w-full h-10 px-3 rounded-lg border border-[var(--border-color)] bg-white dark:bg-neutral-900 text-sm text-[var(--text-primary)] dark:text-white outline-none focus:ring-2 focus:ring-primary-500">
                   {Object.entries(LLM_PRESETS).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
                 </select>
               </div>
               <div className="space-y-1.5">
-                <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 block">Model</label>
+                <label className="text-sm font-semibold text-[var(--text-secondary)] block">Model</label>
                 <select value={llmModel} onChange={e => setLlmModel(e.target.value)} disabled={llmFetching}
-                  className="w-full h-10 px-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm text-neutral-900 dark:text-white outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50">
+                  className="w-full h-10 px-3 rounded-lg border border-[var(--border-color)] bg-white dark:bg-neutral-900 text-sm text-[var(--text-primary)] dark:text-white outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50">
                   {llmModels.map((m) => <option key={m} value={m}>{m}</option>)}
                   {llmFetching && <option value="">加载中...</option>}
                 </select>
@@ -813,7 +822,7 @@ function ModelConfigRow({ modelKey, status }: { modelKey: ModelType; status?: Ba
 
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+              <label className="text-sm font-semibold text-[var(--text-secondary)]">
                 API 密钥 {modelKey === 'llm' ? '' : '(可选)'}
               </label>
               {configs[modelKey]?.apiKey && (
@@ -831,19 +840,19 @@ function ModelConfigRow({ modelKey, status }: { modelKey: ModelType; status?: Ba
                 className="h-10 pr-10"
               />
               <button type="button" onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors">
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text-secondary)] dark:hover:text-[var(--text-secondary)] transition-colors">
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
             {modelKey === 'llm' && (
-              <p className="text-xs text-neutral-500 dark:text-neutral-400">
+              <p className="text-xs text-[var(--text-muted)]">
                 获取密钥: {LLM_PRESETS[llmProvider]?.keyHint}
               </p>
             )}
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 block">API 基础 URL</label>
+            <label className="text-sm font-semibold text-[var(--text-secondary)] block">API 基础 URL</label>
             <Input
               value={configs[modelKey]?.baseUrl || (modelKey === 'llm' ? LLM_PRESETS[llmProvider]?.baseUrl || '' : '')}
               onChange={(e) => setConfigs(prev => ({ ...prev, [modelKey]: { ...(prev[modelKey] || ConfigManager.getDefaultModelConfig()), baseUrl: e.target.value } }))}
@@ -854,21 +863,21 @@ function ModelConfigRow({ modelKey, status }: { modelKey: ModelType; status?: Ba
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 block">超时 (ms)</label>
+              <label className="text-sm font-semibold text-[var(--text-secondary)] block">超时 (ms)</label>
               <Input type="number" value={configs[modelKey]?.timeout || 30000}
                 onChange={(e) => setConfigs(prev => ({ ...prev, [modelKey]: { ...(prev[modelKey] || ConfigManager.getDefaultModelConfig()), timeout: parseInt(e.target.value) || 30000 } }))}
                 min={5000} max={60000} step={1000}
                 className="h-10 font-mono text-xs" />
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 block">最大重试</label>
+              <label className="text-sm font-semibold text-[var(--text-secondary)] block">最大重试</label>
               <Input type="number" value={configs[modelKey]?.maxRetries ?? 3}
                 onChange={(e) => setConfigs(prev => ({ ...prev, [modelKey]: { ...(prev[modelKey] || ConfigManager.getDefaultModelConfig()), maxRetries: parseInt(e.target.value) || 3 } }))}
                 min={0} max={10}
                 className="h-10 font-mono text-xs" />
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300 block">
+              <label className="text-sm font-semibold text-[var(--text-secondary)] block">
                 并发限制: {configs[modelKey]?.concurrencyLimit ?? 3}
               </label>
               <Slider value={configs[modelKey]?.concurrencyLimit ?? 3} min={1} max={10} step={1}
@@ -878,12 +887,12 @@ function ModelConfigRow({ modelKey, status }: { modelKey: ModelType; status?: Ba
 
           <div className="flex items-center gap-2">
             <button onClick={() => handleSave(modelKey)} disabled={isSaving}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-normal bg-primary-600 text-white hover:bg-primary-700 transition-colors disabled:opacity-50">
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold bg-primary-600 text-white hover:bg-primary-700 transition-colors duration-150 disabled:opacity-50">
               {isSaving ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
               保存配置
             </button>
             <button onClick={() => handleReset(modelKey)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors">
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-normal border border-[var(--border-color)] bg-white dark:bg-neutral-900 text-[var(--text-secondary)] hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors duration-150">
               <Trash2 className="w-3.5 h-3.5" />重置
             </button>
             {msg && (
@@ -921,7 +930,7 @@ function AdvancedConfigSection() {
       />
 
       {/* Accordion 容器 — 与 StatCard 风格一致 */}
-      <div className="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 shadow-sm overflow-hidden">
+      <div className="rounded-xl border border-[var(--border-color)] bg-white dark:bg-neutral-900 shadow-sm overflow-hidden">
         <Accordion type="single" collapsible className="w-full">
           {ADVANCED_MODELS.map(({ key }) => (
             <ModelConfigRow key={key} modelKey={key} status={statuses?.[key] as BackendModelStatus | undefined} />
@@ -957,31 +966,31 @@ function CompactionAndEventSourcing() {
   }, []);
 
   return (
-    <div className="mt-4 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 shadow-sm overflow-hidden">
+    <div className="mt-4 rounded-xl border border-[var(--border-color)] bg-white dark:bg-neutral-900 shadow-sm overflow-hidden">
       <button onClick={() => setShow(!show)}
-        className="w-full flex items-center justify-between px-5 py-3 text-sm font-medium text-neutral-600 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors duration-150"
+        className="w-full flex items-center justify-between px-5 py-3 text-sm font-semibold text-[var(--text-secondary)] hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors duration-150"
       >
         <div className="flex items-center gap-2.5">
           <Lock className="w-4 h-4 text-purple-500" />
           <span>Compaction 与事件溯源</span>
-          <span className="px-2 py-0.5 rounded-full text-xs font-normal bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400">高级</span>
+          <span className="px-2 py-0.5 rounded-full text-xs font-normal bg-neutral-100 dark:bg-neutral-800 text-[var(--text-muted)]">高级</span>
         </div>
-        {show ? <ChevronUp className="w-4 h-4 text-neutral-400" /> : <ChevronDown className="w-4 h-4 text-neutral-400" />}
+        {show ? <ChevronUp className="w-4 h-4 text-[var(--text-muted)]" /> : <ChevronDown className="w-4 h-4 text-[var(--text-muted)]" />}
       </button>
       {show && (
-        <div className="px-5 pb-5 pt-3 border-t border-neutral-200 dark:border-neutral-700 space-y-4">
-          <p className="text-sm leading-relaxed text-neutral-500 dark:text-neutral-400">
+        <div className="px-5 pb-5 pt-3 border-t border-[var(--border-color)] space-y-4">
+          <p className="text-xs leading-relaxed text-[var(--text-muted)]">
             AI Agent 工作流的底层技术指标：锁竞争、压缩决策、会话事件统计。仅供开发者调试参考。
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Compaction 指标 */}
-            <div className="p-4 rounded-xl bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700">
+            <div className="p-4 rounded-xl bg-neutral-50 dark:bg-neutral-800 border border-[var(--border-color)]">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                   <Lock className="w-3.5 h-3.5 text-purple-500" />
-                  <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Compaction 指标</span>
+                  <span className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>Compaction 指标</span>
                 </div>
-                <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
                   metrics.health.status === 'healthy'
                     ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400'
                     : 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400'
@@ -996,19 +1005,19 @@ function CompactionAndEventSourcing() {
                   { label: '锁等待', value: `${Math.round(metrics.metrics.avgLockWaitTime)}ms`, color: metrics.metrics.avgLockWaitTime > 500 ? 'text-red-600 dark:text-red-400' : 'text-amber-600 dark:text-amber-400' },
                   { label: '超时次数', value: metrics.metrics.lockTimeoutCount, color: metrics.metrics.lockTimeoutCount > 0 ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400' },
                 ].map(({ label, value, color }) => (
-                  <div key={label} className="text-center p-3 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700">
-                    <div className={`text-lg font-semibold tabular-nums leading-none ${color}`}>{value}</div>
+                  <div key={label} className="text-center p-3 rounded-xl bg-white dark:bg-neutral-900 border border-[var(--border-color)]">
+                    <div className={`text-base font-semibold tabular-nums leading-none ${color}`}>{value}</div>
                   </div>
                 ))}
               </div>
               {metrics.recentAlerts.length > 0 && (
                 <div className="mt-4 space-y-2">
-                  <div className="text-xs font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">最近告警</div>
+                  <div className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)] dark:text-[var(--text-muted)]">最近告警</div>
                   {metrics.recentAlerts.slice(0, 3).map((alert, idx) => (
                     <div key={idx} className="flex items-center gap-2.5 text-sm px-3 py-2 rounded-lg bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/40 text-amber-700 dark:text-amber-400">
                       <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
                       <span className="flex-1 truncate">{alert.message}</span>
-                      <span className="text-xs flex-shrink-0 text-neutral-400 dark:text-neutral-500">
+                      <span className="text-xs flex-shrink-0 text-[var(--text-muted)] dark:text-[var(--text-muted)]">
                         {new Date(alert.timestamp).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </div>
@@ -1018,13 +1027,13 @@ function CompactionAndEventSourcing() {
             </div>
 
             {/* 事件溯源 */}
-            <div className="p-4 rounded-xl bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700">
+            <div className="p-4 rounded-xl bg-neutral-50 dark:bg-neutral-800 border border-[var(--border-color)]">
               <div className="flex items-center gap-2 mb-4">
                 <Database className="w-3.5 h-3.5 text-blue-500" />
-                <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>事件溯源统计</span>
+                <span className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>事件溯源统计</span>
               </div>
               {esLoading ? (
-                <div className="text-sm text-neutral-500 dark:text-neutral-400">加载中…</div>
+                <div className="text-sm text-[var(--text-muted)]">加载中…</div>
               ) : (
                 <>
                   <div className="grid grid-cols-3 gap-3">
@@ -1033,13 +1042,13 @@ function CompactionAndEventSourcing() {
                       { label: '事件总数', value: esData?.total_events ?? 0, color: 'text-emerald-600 dark:text-emerald-400' },
                       { label: '存储大小', value: `${(esData?.db_size_kb ?? 0).toFixed(1)} KB`, color: 'text-purple-600 dark:text-purple-400' },
                     ].map(({ label, value, color }) => (
-                      <div key={label} className="text-center p-3 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700">
-                        <div className={`text-lg font-semibold tabular-nums leading-none ${color}`}>{value}</div>
-                        <div className="text-xs mt-1.5 leading-tight text-neutral-500 dark:text-neutral-400">{label}</div>
+                      <div key={label} className="text-center p-3 rounded-xl bg-white dark:bg-neutral-900 border border-[var(--border-color)]">
+                        <div className={`text-base font-semibold tabular-nums leading-none ${color}`}>{value}</div>
+                        <div className="text-xs mt-1.5 leading-tight text-[var(--text-muted)]">{label}</div>
                       </div>
                     ))}
                   </div>
-                  <div className="mt-3 flex items-center gap-1.5 text-xs text-neutral-500 dark:text-neutral-400">
+                  <div className="mt-3 flex items-center gap-1.5 text-xs text-[var(--text-muted)]">
                     <Zap className="w-3 h-3" />
                     <span>IndexedDB 持久化 · Turn/Step 驱动</span>
                   </div>

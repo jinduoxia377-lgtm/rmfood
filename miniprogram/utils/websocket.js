@@ -32,7 +32,6 @@ class WebSocketManager {
       this.ws = wx.connectSocket({
         url: url,
         success: () => {
-          console.log('[WebSocket] Connect successful')
         },
         fail: (err) => {
           console.error('[WebSocket] Connect failed:', err)
@@ -41,7 +40,6 @@ class WebSocketManager {
       })
 
       this.ws.onOpen(() => {
-        console.log('[WebSocket] Connection opened')
         this.isConnected = true
         this.reconnectDelay = 1000
         
@@ -65,7 +63,6 @@ class WebSocketManager {
       })
 
       this.ws.onClose(() => {
-        console.log('[WebSocket] Connection closed')
         this.isConnected = false
         this.stopHeartbeat()
         this.trigger('close', {})
@@ -90,7 +87,6 @@ class WebSocketManager {
       this.ws.send({
         data: message,
         success: () => {
-          console.log('[WebSocket] Message sent')
         },
         fail: (err) => {
           console.error('[WebSocket] Send failed:', err)
@@ -100,7 +96,6 @@ class WebSocketManager {
     } else {
       // 连接断开时加入队列
       this.messageQueue.push(message)
-      console.log('[WebSocket] Message queued, count:', this.messageQueue.length)
     }
   }
 
@@ -110,7 +105,6 @@ class WebSocketManager {
   handleMessage(data) {
     try {
       const message = JSON.parse(data)
-      console.log('[WebSocket] Received:', message)
       
       // 触发对应事件
       if (message.type) {
@@ -162,7 +156,7 @@ class WebSocketManager {
       try {
         handler(data)
       } catch (error) {
-        console.error(`[WebSocket] Handler error for ${event}:`, error)
+        console.error("[WebSocket] Handler error for" + event + ":", error)
       }
     })
   }
@@ -201,7 +195,6 @@ class WebSocketManager {
     const delay = Math.min(this.reconnectDelay * 2, this.maxReconnectDelay)
     this.reconnectDelay = delay
     
-    console.log(`[WebSocket] Reconnecting in ${delay}ms...`)
     
     this.reconnectTimer = setTimeout(() => {
       this.connect(this.url)
@@ -236,7 +229,6 @@ class WebSocketManager {
     
     this.isConnected = false
     this.messageQueue = []
-    console.log('[WebSocket] Connection closed')
   }
 
   /**

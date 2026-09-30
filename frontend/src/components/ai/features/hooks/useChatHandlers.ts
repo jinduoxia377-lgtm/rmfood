@@ -1,4 +1,4 @@
-/**
+﻿/**
  * useChatHandlers - 聊天事件处理 Hook (v2.0)
  *
  * v2.0 变更：
@@ -36,6 +36,8 @@ interface UseChatHandlersOptions {
   setShowFormulaList: (v: boolean) => void
   /** 当前会话 ID，传给能力层 */
   setCurrentSessionId?: (id: string) => void
+  /** 检查并执行上下文压缩（来自 useChatMessages） */
+  checkCompaction?: () => Promise<void>
 }
 
 export function useChatHandlers(opts: UseChatHandlersOptions) {
@@ -47,6 +49,7 @@ export function useChatHandlers(opts: UseChatHandlersOptions) {
     isDetailModalOpen, closeDetailTable,
     showFormulaList, setShowFormulaList,
     setCurrentSessionId,
+    checkCompaction,
   } = opts
 
   // ── 绑定当前会话 ID 到 SessionCapability ──
@@ -67,7 +70,7 @@ export function useChatHandlers(opts: UseChatHandlersOptions) {
         title,
       })
     },
-    checkCompaction: async () => {}, // TODO: wire up to useChatMessages
+    checkCompaction: checkCompaction ?? (async () => {}),
     resumeToMessage: async (messageId: string) => {
       if (!opts.activeSessionId) return null
       const result = await sessionCapability.resumeTo(opts.activeSessionId, messageId)

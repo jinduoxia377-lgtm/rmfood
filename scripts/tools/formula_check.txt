@@ -1,6 +1,0 @@
-Formula: 黄芪复合多肽固体饮料 | ingredients count: 0
-Formula: 兴本源黄芪复合多肽 | ingredients count: 0
-Formula: 人参皂苷多肽抗疲劳配方 | ingredients count: 3
-  - Ginseng (cn=人参)
-  - Astragalus (cn=黄芪)
-  - Lycium (cn=枸杞子)

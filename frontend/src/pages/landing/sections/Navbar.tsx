@@ -11,7 +11,6 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Beaker, Menu, X } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/shadcn';
-import { BRAND_CONFIG } from '@/config';
 import { useAuthStore } from '@/stores/auth';
 import { navLinks, navbarCTA, logoPath, logoSize, isImageLogo } from '../data/navbar';
 import { cn } from '@/lib/utils';
@@ -29,7 +28,7 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
-    const sections = ['features', 'use-cases', 'data-sources', 'social-proof', 'pricing', 'faq'];
+    const sections = ['features', 'algorithms', 'use-cases', 'data-sources', 'social-proof', 'pricing', 'faq'];
     const observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
@@ -73,9 +72,9 @@ export default function Navbar() {
         <Link to="/" className="flex items-center gap-2.5 group">
           {isImageLogo ? (
             <div className="shrink-0 rounded-md overflow-hidden" style={{ width: logoSize.image, height: logoSize.image }}>
-              <img
-                src={logoPath}
-                alt={`${BRAND_CONFIG.name} logo`}
+                <img
+                  src={logoPath}
+                  alt="莱茵分子 logo"
                 className="w-full h-full object-contain"
                 loading="lazy"
               />
@@ -92,7 +91,7 @@ export default function Navbar() {
             className="font-bold text-[16px] tracking-tight leading-none"
             style={{ color: '#0f172a' }}
           >
-            {BRAND_CONFIG.name}
+            莱茵分子
           </span>
         </Link>
 
@@ -128,7 +127,7 @@ export default function Navbar() {
               </Link>
               <Link
                 to="/login"
-                className="inline-flex items-center gap-1.5 text-[13px] font-semibold px-4 py-2 rounded-md text-white transition-all hover:opacity-90 hover:translate-y-[-1px]"
+                className="inline-flex items-center gap-1.5 text-[13px] font-semibold px-4 min-h-[44px] rounded-md text-white transition-all hover:opacity-90"
                 style={{
                   background: '#0f172a',
                   boxShadow: '0 1px 3px rgba(15,23,42,0.15)',
@@ -144,7 +143,7 @@ export default function Navbar() {
             <CollapsibleTrigger asChild>
               <button
                 type="button"
-                className="md:hidden p-2 rounded-md ml-1 transition-colors lp-nav-link"
+                className="md:hidden w-11 h-11 flex items-center justify-center rounded-md ml-1 transition-colors lp-nav-link"
                 aria-expanded={mobileOpen}
                 aria-label="菜单"
               >
@@ -160,7 +159,7 @@ export default function Navbar() {
                       href={l.href}
                       onClick={() => setMobileOpen(false)}
                       className={cn(
-                        'block text-[14px] font-medium py-2.5 px-3 rounded-md transition-colors',
+                        'block text-[14px] font-medium py-2.5 px-3 rounded-md transition-colors min-h-[44px] flex items-center',
                         'text-slate-600 hover:text-slate-900 hover:bg-slate-50',
                         isActive(l.href) && 'text-slate-900 bg-slate-50'
                       )}
@@ -171,7 +170,7 @@ export default function Navbar() {
                   <div className="pt-2 mt-2 border-t border-slate-100">
                     <Link
                       to="/login"
-                      className="w-full text-center text-[14px] font-semibold py-2.5 rounded-md text-white block transition-opacity hover:opacity-90"
+                      className="w-full text-center text-[14px] font-semibold py-3 rounded-md text-white block transition-opacity hover:opacity-90 min-h-[44px] flex items-center justify-center"
                       style={{ background: '#0f172a' }}
                     >
                       {navbarCTA.trialLabel}

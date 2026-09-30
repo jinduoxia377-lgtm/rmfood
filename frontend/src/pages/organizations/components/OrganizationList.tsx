@@ -21,19 +21,20 @@ import {
   ChevronsRight,
   Copy,
 } from 'lucide-react';
-import type { Organization, ViewMode } from '@/types/organization.types';
+import type { ViewMode } from '@/types/organization.types';
+import type { Organization } from '@/hooks/useOrganizations';
 
 interface OrganizationListProps {
   organizations: Organization[];
   loading?: boolean;
   viewMode: ViewMode;
   search: string;
-  selectedIds: Set<string>;
-  onToggleSelect: (id: string) => void;
+  selectedIds: Set<number>;
+  onToggleSelect: (id: number) => void;
   onSelectAll: () => void;
-  onNavigateToDetail: (id: string) => void;
-  onToggleFavorite: (id: string) => void;
-  onTogglePin: (id: string) => void;
+  onNavigateToDetail: (id: number) => void;
+  onToggleFavorite: (id: number) => void;
+  onTogglePin: (id: number) => void;
   onClone?: (id: number) => void;
   page: number;
   pageSize: number;
@@ -78,10 +79,10 @@ const OrganizationCard = memo(
     org: Organization;
     isSelected: boolean;
     search: string;
-    onToggleSelect: (id: string) => void;
-    onNavigateToDetail: (id: string) => void;
-    onToggleFavorite: (id: string) => void;
-    onTogglePin: (id: string) => void;
+    onToggleSelect: (id: number) => void;
+    onNavigateToDetail: (id: number) => void;
+    onToggleFavorite: (id: number) => void;
+    onTogglePin: (id: number) => void;
     onClone?: (id: number) => void;
   }) => {
     const planConfig = PlanBadgeConfig[org.plan] || PlanBadgeConfig.free;
@@ -118,7 +119,7 @@ const OrganizationCard = memo(
               <input
                 type="checkbox"
                 checked={isSelected}
-                onChange={() => onToggleSelect(String(org.id))}
+                onChange={() => onToggleSelect(org.id)}
                 className="w-4 h-4 rounded border-neutral-300 text-primary-600 focus:ring-primary-500"
               />
               <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
@@ -135,7 +136,7 @@ const OrganizationCard = memo(
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  onToggleFavorite(String(org.id));
+                  onToggleFavorite(org.id);
                 }}
                 className={`p-1.5 rounded-lg transition-colors ${org.isFavorite ? 'text-yellow-500 bg-yellow-50 dark:bg-yellow-900/20' : 'text-neutral-400 hover:text-yellow-500 hover:bg-neutral-100 dark:hover:bg-neutral-800'}`}
               >
@@ -144,7 +145,7 @@ const OrganizationCard = memo(
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  onTogglePin(String(org.id));
+                  onTogglePin(org.id);
                 }}
                 className={`p-1.5 rounded-lg transition-colors ${org.isPinned ? 'text-secondary-500 bg-secondary-50 dark:bg-secondary-900/20' : 'text-neutral-400 hover:text-secondary-500 hover:bg-neutral-100 dark:hover:bg-neutral-800'}`}
               >
@@ -184,11 +185,11 @@ const OrganizationCard = memo(
             <div className="flex items-center justify-between text-xs text-neutral-500 mb-3">
               <span className="flex items-center gap-1">
                 <HardDrive className="w-3.5 h-3.5" />
-                存储: {(org.storageUsed / 1024).toFixed(1)}GB / {(org.storageLimit / 1024).toFixed(0)}GB
+                存储: {(org.storageUsed / (1024 ** 3)).toFixed(1)}GB / {(org.storageLimit / (1024 ** 3)).toFixed(1)}GB
               </span>
               <span className="flex items-center gap-1">
                 <Zap className="w-3.5 h-3.5" />
-                API: {(org.apiCalls / 1000).toFixed(1)}K / 10K
+                API: {(org.apiUsage / 1000).toFixed(1)}K / {(org.apiLimit / 1000).toFixed(0)}K
               </span>
             </div>
 
@@ -206,7 +207,7 @@ const OrganizationCard = memo(
 
             <div className="flex gap-2">
               <button
-                onClick={() => onNavigateToDetail(String(org.id))}
+                onClick={() => onNavigateToDetail(org.id)}
                 className="flex-1 px-3 py-2 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 rounded-lg transition-colors text-sm font-medium"
               >
                 管理
@@ -244,8 +245,8 @@ const OrganizationTableRow = memo(
     isSelected: boolean;
     index: number;
     search: string;
-    onToggleSelect: (id: string) => void;
-    onNavigateToDetail: (id: string) => void;
+    onToggleSelect: (id: number) => void;
+    onNavigateToDetail: (id: number) => void;
   }) => {
     const planConfig = PlanBadgeConfig[org.plan] || PlanBadgeConfig.free;
     const storagePercent = org.storageLimit > 0 ? (org.storageUsed / org.storageLimit) * 100 : 0;
@@ -314,7 +315,7 @@ const OrganizationTableRow = memo(
         <td className="px-5 py-4 text-sm text-neutral-500">{new Date(org.createdAt).toLocaleDateString('zh-CN')}</td>
         <td className="px-5 py-4">
           <button
-            onClick={() => onNavigateToDetail(String(org.id))}
+            onClick={() => onNavigateToDetail(org.id)}
             className="text-primary-600 hover:text-primary-700 text-sm font-medium"
           >
             管理
@@ -339,8 +340,8 @@ const OrganizationCompactItem = memo(
     org: Organization;
     isSelected: boolean;
     search: string;
-    onToggleSelect: (id: string) => void;
-    onNavigateToDetail: (id: string) => void;
+    onToggleSelect: (id: number) => void;
+    onNavigateToDetail: (id: number) => void;
   }) => {
     const highlightText = (text: string) => {
       if (!search) return text;
@@ -389,7 +390,7 @@ const OrganizationCompactItem = memo(
         </div>
 
         <button
-          onClick={() => onNavigateToDetail(String(org.id))}
+          onClick={() => onNavigateToDetail(org.id)}
           className="text-primary-600 hover:text-primary-700 text-sm font-medium flex-shrink-0"
         >
           管理

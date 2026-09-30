@@ -1,9 +1,9 @@
-/** Checkbox 多选组件样式 */
+/** Checkbox 婢舵岸鈧绮嶆禒鑸电壉瀵?*/
 .checkbox {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  cursor: pointer;
+  
 }
 
 .checkbox-box {
@@ -14,7 +14,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all var(--transition-fast);
+  transition: opacity var(--transition-normal), transform var(--transition-normal);
   flex-shrink: 0;
 }
 
@@ -25,7 +25,7 @@
 
 .checkbox-box-disabled {
   opacity: 0.5;
-  cursor: not-allowed;
+  
 }
 
 .checkbox-label {
@@ -38,3 +38,6 @@
   flex-direction: column;
   gap: var(--space-3);
 }
+
+
+

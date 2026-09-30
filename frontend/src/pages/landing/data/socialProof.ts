@@ -20,10 +20,10 @@ export interface TrustMetric {
 }
 
 export const trustMetrics: TrustMetric[] = [
-  { icon: 'Users',          value: '200+', label: '研发机构',        sub: '入驻平台',            color: '#059669' },
-  { icon: 'Zap',            value: '12,000+', label: '日均 AI 请求', sub: '+18% 月增长',       color: '#7c3aed' },
-  { icon: 'FileText',       value: '3,800+', label: '配方方案生成',  sub: '已交付文档',         color: '#2563eb' },
-  { icon: 'Clock',          value: '72h',   label: '平均研发周期',   sub: '较传统缩短 60%',     color: '#d97706' },
+  { icon: 'Users',          value: '200+', label: '研发机构',        sub: '入驻平台',            color: '#047857' },
+  { icon: 'Zap',            value: '12,000+', label: '日均 AI 请求', sub: '+18% 月增长',       color: '#6d28d9' },
+  { icon: 'FileText',       value: '3,800+', label: '配方方案生成',  sub: '已交付文档',         color: '#1d4ed8' },
+  { icon: 'Clock',          value: '72h',   label: '平均研发周期',   sub: '较传统缩短 60%',     color: '#b45309' },
 ];
 
 // ── 合作机构 ──────────────────────────────────────────────────────
@@ -58,7 +58,7 @@ export const testimonials: Testimonial[] = [
     org: '广东中医药大学生药学院',
     quote: 'AI 配方对话将原料筛选时间从 3 天缩短到 20 分钟，知识图谱的关联推理帮我们发现了以前忽略的配伍规律。',
     rating: 5,
-    gradient: 'linear-gradient(135deg, #059669, #34d399)',
+    gradient: 'linear-gradient(135deg, #047857, #059669)',
   },
   {
     name: '李思涵',
@@ -80,10 +80,10 @@ export const testimonials: Testimonial[] = [
 
 // ── 合作机构分类标签样式 ──────────────────────────────────────────
 export const categoryStyle: Record<string, { bg: string; text: string; border: string }> = {
-  university:  { bg: '#ecfdf5', text: '#059669', border: '#a7f3d0' },
-  hospital:    { bg: '#fef2f2', text: '#dc2626', border: '#fecaca'  },
-  enterprise:  { bg: '#eff6ff', text: '#2563eb', border: '#bfdbfe' },
-  government:  { bg: '#f5f3ff', text: '#7c3aed', border: '#ddd6fe' },
+  university:  { bg: '#ecfdf5', text: '#047857', border: '#a7f3d0' },
+  hospital:    { bg: '#fef2f2', text: '#b91c1c', border: '#fecaca'  },
+  enterprise:  { bg: '#eff6ff', text: '#1d4ed8', border: '#bfdbfe' },
+  government:  { bg: '#f5f3ff', text: '#6d28d9', border: '#ddd6fe' },
 };
 
 export const categoryLabel: Record<string, string> = {

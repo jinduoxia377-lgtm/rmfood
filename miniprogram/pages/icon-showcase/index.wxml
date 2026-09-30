@@ -1,0 +1,45 @@
+<!-- 图标展示页面 -->
+<view class="page-container">
+  <!-- 搜索框 -->
+  <view class="search-box">
+    <icon name="search" size="sm" color="#9ca3af" />
+    <input class="search-input" placeholder="搜索图标..." bindinput="onSearch" value="{{searchKey}}" />
+  </view>
+
+  <!-- 图标分类展示 -->
+  <view class="icon-category" wx:for="{{categories}}" wx:key="name">
+    <view class="category-title">{{item.name}}</view>
+    <view class="icon-grid">
+      <view class="icon-item" wx:for="{{item.icons}}" wx:for-item="icon" wx:key="name" bindtap="onIconTap" data-icon="{{icon.name}}">
+        <view class="icon-preview">
+          <icon name="{{icon.name}}" size="xl" color="#2D5A3D" />
+        </view>
+        <text class="icon-name">{{icon.name}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 尺寸展示 -->
+  <view class="size-demo">
+    <view class="size-title">尺寸对比</view>
+    <view class="size-row">
+      <view class="size-item" wx:for="{{sizes}}" wx:key="size">
+        <icon name="{{iconName}}" size="{{item.size}}" color="#2D5A3D" />
+        <text>{{item.label}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 颜色展示 -->
+  <view class="color-demo">
+    <view class="color-title">颜色适配</view>
+    <view class="color-row">
+      <icon name="{{iconName}}" size="lg" color="#2D5A3D" />
+      <icon name="{{iconName}}" size="lg" color="#1565c0" />
+      <icon name="{{iconName}}" size="lg" color="#E65100" />
+      <icon name="{{iconName}}" size="lg" color="#7B1FA2" />
+      <icon name="{{iconName}}" size="lg" color="#C62828" />
+    </view>
+  </view>
+  <view class="bottom-spacing"></view>
+</view>

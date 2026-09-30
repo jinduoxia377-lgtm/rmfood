@@ -37,7 +37,7 @@ class MicroAnimationManager {
    * @param {string} animation - 动画类型
    */
   animateElement(page, selector, animation) {
-    const animationName = `micro-${animation}`
+    const animationName = "micro-" + animation + ""
     const el = page.select(selector)
     
     if (!el) return

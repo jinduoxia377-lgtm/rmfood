@@ -27,7 +27,7 @@ class FormulaService:
         """Create a new formula with all necessary steps."""
         
         # Generate unique ID if not provided
-        formula_id = formula_data.get("id", f"form_{int(1000000 + 100000 * (hash(str(formula_data)) % 900000)))}")
+        formula_id = formula_data.get("id", f"form_{int(1000000 + 100000 * (hash(str(formula_data)) % 900000))}")
         
         # Prepare formula data including metadata
         data_with_meta = {
@@ -68,7 +68,7 @@ class FormulaService:
         
         if success:
             # Update event already emitted by repository
-            
+            pass
         return success
     
     async def delete_formula(self, formula_id: str, user_id: str, reason: str) -> bool:

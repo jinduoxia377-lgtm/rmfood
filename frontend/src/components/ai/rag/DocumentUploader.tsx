@@ -96,22 +96,22 @@ export function DocumentUploader({ onUploadSuccess, maxSizeMB = 20 }: DocumentUp
         {isUploading ? (
           <div className="space-y-2">
             <Loader2 className="w-8 h-8 mx-auto text-primary-500 animate-spin" />
-            <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">正在上传并解析...</p>
+            <p className="text-sm text-[var(--text-secondary)]">正在上传并解析...</p>
             <div className="w-full max-w-xs mx-auto bg-neutral-200 dark:bg-neutral-700 rounded-full h-1.5">
               <div
                 className="bg-primary-500 h-1.5 rounded-full transition-all duration-300"
                 style={{ width: `${progress}%` }}
               />
             </div>
-            <p className="text-xs text-neutral-400">{progress}%</p>
+            <p className="text-xs text-[var(--text-muted)]">{progress}%</p>
           </div>
         ) : (
           <div className="space-y-2">
-            <Upload className="w-8 h-8 mx-auto text-neutral-400" />
-            <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
+            <Upload className="w-8 h-8 mx-auto text-[var(--text-muted)]" />
+            <p className="text-sm text-[var(--text-secondary)]">
               拖拽文件到此处，或 <span className="text-primary-500">点击选择</span>
             </p>
-            <p className="text-xs text-neutral-400">
+            <p className="text-xs text-[var(--text-muted)]">
               支持 {ACCEPTED_TYPES_LABEL} 格式，单文件最大 {maxSizeMB}MB
             </p>
           </div>

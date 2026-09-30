@@ -404,7 +404,7 @@ const MembersTab = memo(
                         ) : (
                           <RoleSelect
                             value={member.role}
-                            onChange={(newRole) => handleUpdateRole(member.id, newRole)}
+                            onChange={(newRole) => handleUpdateRole(member.userId, newRole)}
                             disabled={member.role === 'owner'}
                           />
                         )}
@@ -452,7 +452,7 @@ const MembersTab = memo(
                                   发送消息
                                 </button>
                                 <button
-                                  onClick={() => handleRemove(member.id)}
+                                  onClick={() => handleRemove(member.userId)}
                                   disabled={removingId === member.id || member.role === 'owner'}
                                   className={cn(
                                     'flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors',

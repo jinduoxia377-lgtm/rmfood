@@ -1,45 +1,43 @@
-/** Input 输入框组件样式 */
+/** Input 杈撳叆妗嗙粍浠舵牱寮?*/
 .input-wrapper {
   display: flex;
   align-items: center;
   width: 100%;
   padding: 24rpx 32rpx;
-  background-color: #FFFFFF;
-  border: 2rpx solid #E5E7EB;
+  background-color: var(--color-bg-card);
+  border: 2rpx solid var(--color-border);
   border-radius: 16rpx;
-  transition: all 0.3s ease;
   position: relative;
 }
 
-.input-wrapper:focus-within {
-  border-color: #2D5A3D;
+.input-wrapper.focus {
+  border-color: var(--color-brand-500);
   box-shadow: 0 0 0 4rpx rgba(45, 90, 61, 0.1);
 }
 
 .input-wrapper.error {
-  border-color: #EF4444;
+  border-color: var(--color-danger);
 }
 
-.input-wrapper.error:focus-within {
+.input-wrapper.error.focus {
   box-shadow: 0 0 0 4rpx rgba(239, 68, 68, 0.1);
 }
 
 .input-wrapper.disabled {
-  background-color: #F5F7FA;
+  background-color: var(--color-bg-page);
   opacity: 0.7;
 }
 
 .input {
   flex: 1;
   font-size: 28rpx;
-  color: #1A1A1A;
+  color: var(--color-text-primary);
   background: transparent;
   border: none;
-  outline: none;
 }
 
 .input::placeholder {
-  color: #999999;
+  color: var(--color-text-placeholder);
 }
 
 .input-prefix {
@@ -62,11 +60,11 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background-color: #F3F4F6;
+  background-color: var(--color-border-light);
 }
 
 .input-clear:active {
-  background-color: #E5E7EB;
+  background-color: var(--color-border);
 }
 
 .input-error {
@@ -79,7 +77,7 @@
 
 .error-text {
   font-size: 24rpx;
-  color: #EF4444;
+  color: var(--color-danger);
 }
 
 .input-count {
@@ -87,9 +85,9 @@
   right: 32rpx;
   bottom: -32rpx;
   font-size: 20rpx;
-  color: #999999;
+  color: var(--color-text-placeholder);
 }
 
 .input-placeholder {
-  color: #999999;
+  color: var(--color-text-placeholder);
 }

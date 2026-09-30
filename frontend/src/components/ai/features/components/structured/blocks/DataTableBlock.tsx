@@ -9,8 +9,11 @@
  * - 空状态优雅降级
  * - 响应式水平滚动
  */
-import React, { useState, useMemo } from 'react'
-import { Table, ChevronDown, ChevronUp, ArrowUpDown } from 'lucide-react'
+import React, { useState, useMemo, useCallback } from 'react'
+import {
+  Table, ChevronDown, ChevronUp, ArrowUpDown,
+  Download, Copy, Check,
+} from 'lucide-react'
 import type { DataTableData } from '../types'
 
 interface DataTableBlockProps {
@@ -22,6 +25,7 @@ function DataTableBlock({ data }: DataTableBlockProps) {
   const [sortKey, setSortKey] = useState<string | null>(null)
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc')
   const [collapsed, setCollapsed] = useState(false)
+  const [copied, setCopied] = useState(false)
 
   const sortedRows = useMemo(() => {
     if (!sortKey || rows.length === 0) return rows
@@ -34,6 +38,37 @@ function DataTableBlock({ data }: DataTableBlockProps) {
       return sortDir === 'asc' ? cmp : -cmp
     })
   }, [rows, sortKey, sortDir])
+
+  const handleExportCSV = useCallback(() => {
+    const headers = columns.map(c => c.label).join(',')
+    const dataRows = sortedRows.map(row =>
+      columns.map(col => {
+        const val = row[col.key]
+        return val == null ? '' : String(val).replace(/"/g, '""')
+      }).join(',')
+    )
+    const csv = [headers, ...dataRows].join('\n')
+    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${title || 'export'}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }, [columns, sortedRows, title])
+
+  const handleCopy = useCallback(() => {
+    const text = [
+      columns.map(c => c.label).join('\t'),
+      ...sortedRows.map(row =>
+        columns.map(col => String(row[col.key] ?? '')).join('\t')
+      ),
+    ].join('\n')
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    })
+  }, [columns, sortedRows])
 
   const handleSort = (key: string) => {
     if (sortKey === key) {
@@ -97,19 +132,37 @@ function DataTableBlock({ data }: DataTableBlockProps) {
     <div className="mb-3 last:mb-0">
       {/* 标题栏 */}
       {title && (
-        <button
-          onClick={() => setCollapsed(prev => !prev)}
-          className="flex items-center gap-1.5 mb-2 text-xs font-semibold
-            text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-neutral-100
-            transition-colors cursor-pointer"
-        >
-          {collapsed ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-          <Table className="w-3 h-3 text-primary-500" />
-          <span>{title}</span>
-          <span className="text-[10px] font-normal text-neutral-400 dark:text-neutral-500 ml-1">
-            ({rows.length} 行)
-          </span>
-        </button>
+        <div className="flex items-center justify-between mb-2">
+          <button
+            onClick={() => setCollapsed(prev => !prev)}
+            className="flex items-center gap-1.5 text-xs font-semibold
+              text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-neutral-100
+              transition-colors cursor-pointer"
+          >
+            {collapsed ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+            <Table className="w-3 h-3 text-primary-500" />
+            <span>{title}</span>
+            <span className="text-[10px] font-normal text-neutral-400 dark:text-neutral-500 ml-1">
+              ({rows.length} 行)
+            </span>
+          </button>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={handleExportCSV}
+              className="p-1.5 rounded-lg text-neutral-400 hover:text-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
+              title="导出CSV"
+            >
+              <Download className="w-3 h-3" />
+            </button>
+            <button
+              onClick={handleCopy}
+              className="p-1.5 rounded-lg text-neutral-400 hover:text-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
+              title="复制表格"
+            >
+              {copied ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
+            </button>
+          </div>
+        </div>
       )}
 
       {!collapsed && (

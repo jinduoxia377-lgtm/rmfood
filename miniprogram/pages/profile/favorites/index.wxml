@@ -1,0 +1,55 @@
+<!-- 我的收藏页面 -->
+<view class="page-container">
+  <view class="header">
+    <view class="header-content">
+      <view class="header-title">
+        <view class="title-main">我的收藏</view>
+      </view>
+    </view>
+  </view>
+
+  <scroll-view class="content-scroll" scroll-y refresher-enabled refresher-triggered="{{loading}}" bindrefresherrefresh="onPullDownRefresh">
+    
+    <!-- 收藏列表 -->
+    <view wx:if="{{!loading && favorites.length > 0}}" class="favorites-list">
+      <view wx:for="{{favorites}}" wx:key="id" class="favorite-item" bindtap="goToDetail" data-id="{{item.id}}">
+        <view class="favorite-image">
+          <image src="{{item.cover_image || item.image_url || '/assets/images/placeholder.png'}}" mode="aspectFill" />
+        </view>
+        <view class="favorite-info">
+          <view class="favorite-name">{{item.name}}</view>
+          <view class="favorite-tags">
+            <text wx:for="{{item.tags}}" wx:for-item="tag" wx:key="*this" class="tag">{{tag}}</text>
+          </view>
+          <view class="favorite-meta">
+            <text class="meta-item">评分 {{item.health_score || 85}}</text>
+            <text class="meta-item">难度 {{item.difficulty || '简单'}}</text>
+          </view>
+        </view>
+        <view class="unfavorite-btn" bindtap="cancelFavorite" data-id="{{item.id}}">
+          <icon name="favorite" color="#FF3B30" />
+        </view>
+      </view>
+    </view>
+
+    <!-- 空状态 -->
+    <view wx:if="{{!loading && favorites.length === 0}}" class="empty-state">
+      <text class="empty-icon">📌</text>
+      <text class="empty-text">{{emptyText}}</text>
+      <button class="go-discover-btn" bindtap="goToFormulas">去发现</button>
+    </view>
+
+    <!-- 加载中 -->
+    <view wx:if="{{loading}}" class="loading-state">
+      <view class="skeleton-card" wx:for="{{5}}" wx:key="index">
+        <view class="skeleton-image"></view>
+        <view class="skeleton-info">
+          <view class="skeleton-line short"></view>
+          <view class="skeleton-line medium"></view>
+        </view>
+      </view>
+    </view>
+
+    <view class="bottom-spacing"></view>
+  </scroll-view>
+</view>

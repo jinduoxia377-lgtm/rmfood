@@ -19,6 +19,65 @@ logger = logging.getLogger(__name__)
 # ── 数据库持久化 ──
 _CONFIG_DB_KEY = "llm_runtime_config"
 
+# 用户级 LLM 密钥在 SystemConfig 中的键前缀
+# 完整键形如 "llm_user_key_<user_id>"，每个用户一份独立配置，
+# 加密方式与全局 llm_runtime_config 相同（AES-256-GCM）
+_USER_KEY_PREFIX = "llm_user_key_"
+
+
+def _user_key_config_key(user_id: int) -> str:
+    return f"{_USER_KEY_PREFIX}{user_id}"
+
+
+async def save_user_config_to_db(config: "LLMConfig", user_id: int) -> bool:
+    """将用户级 LLM 配置持久化到 SystemConfig（键 llm_user_key_<user_id>，API Key 加密存储）"""
+    try:
+        from ..core.database.session import async_session_factory
+        from ..models.system import SystemConfig
+        from sqlalchemy import select
+
+        config_key = _user_key_config_key(user_id)
+        async with async_session_factory() as db:
+            result = await db.execute(select(SystemConfig).where(SystemConfig.config_key == config_key))
+            existing = result.scalar_one_or_none()
+            value_dict = {
+                "provider": config.provider,
+                "api_key": _encrypt_api_key(config.api_key),
+                "base_url": config.base_url,
+                "model": config.model,
+                "max_tokens": config.max_tokens,
+                "temperature": config.temperature,
+            }
+            if existing:
+                existing.config_value = value_dict
+                existing.updated_by = user_id
+            else:
+                db.add(SystemConfig(config_key=config_key, config_value=value_dict, updated_by=user_id))
+            await db.commit()
+            logger.info(f"[UserLLM] 用户 {user_id} 的 LLM 配置已持久化 (provider={config.provider}, model={config.model})")
+        return True
+    except Exception as e:
+        logger.warning(f"[UserLLM] 用户 {user_id} 配置保存失败: {e}")
+        return False
+
+
+async def delete_user_config(user_id: int) -> bool:
+    """删除用户级 LLM 配置（用户清除自己的密钥）"""
+    try:
+        from ..core.database.session import async_session_factory
+        from ..models.system import SystemConfig
+        from sqlalchemy import delete
+
+        config_key = _user_key_config_key(user_id)
+        async with async_session_factory() as db:
+            await db.execute(delete(SystemConfig).where(SystemConfig.config_key == config_key))
+            await db.commit()
+            logger.info(f"[UserLLM] 用户 {user_id} 的 LLM 配置已删除")
+        return True
+    except Exception as e:
+        logger.warning(f"[UserLLM] 用户 {user_id} 配置删除失败: {e}")
+        return False
+
 
 def _get_encryption_key() -> bytes:
     """获取 API Key 加密密钥。优先使用独立 ENCRYPTION_KEY，fallback 到 SECRET_KEY（兼容旧版）"""
@@ -149,6 +208,7 @@ async def load_config_from_db() -> "LLMConfig | None":
                     model=v.get("model", "") if isinstance(v, dict) else "",
                     max_tokens=v.get("max_tokens", 4096) if isinstance(v, dict) else 4096,
                     temperature=v.get("temperature", 0.7) if isinstance(v, dict) else 0.7,
+                    key_from_db=True,  # 数据库持久化来源
                 )
                 masked = cfg.api_key[:8] + "..." + cfg.api_key[-4:] if len(cfg.api_key) > 12 else "***"
                 logger.info(f"[LLMConfig] 从数据库恢复配置: provider={cfg.provider}, model={cfg.model}, key={masked}")
@@ -204,6 +264,10 @@ class LLMConfig:
     temperature: float = 0.7
     top_p: float = 1.0
     timeout: float = 60.0
+    # 运行时标记：密钥是否来自数据库持久化（load_config_from_db 载入或 update_config 写入）
+    key_from_db: bool = False
+    # 用户级密钥隔离：该实例属于哪个用户（None = 全局实例）
+    user_id: int | None = None
 
 
 @dataclass
@@ -227,12 +291,11 @@ class LLMService:
             self.config = config
         else:
             # 优先级: 尝试从数据库恢复 → fallback 到 settings
-            # LLMService 在模块导入时初始化（startup 前无 event loop），asyncio.run() 允许阻塞
             db_config = None
             try:
                 import asyncio
                 try:
-                    loop = asyncio.get_running_loop()
+                    asyncio.get_running_loop()
                     # 在事件循环中无法同步等待，跳过 DB 加载（由 startup 事件补充）
                 except RuntimeError:
                     db_config = asyncio.run(load_config_from_db())
@@ -242,7 +305,8 @@ class LLMService:
         self._client: httpx.AsyncClient | None = None
 
     def update_config(self, config: LLMConfig, user_id: int | None = None):
-        """更新LLM配置并持久化到数据库"""
+        """更新LLM配置并持久化到数据库（密钥来源标记为 db）"""
+        config.key_from_db = True  # 该路径必然伴随 save_config_to_db，密钥已落库
         self.config = config
         # 关闭旧客户端，使用新配置创建新客户端
         if self._client and not self._client.is_closed:
@@ -382,6 +446,141 @@ class LLMService:
     async def close(self):
         if self._client and not self._client.is_closed:
             await self._client.aclose()
+
+    # ── 用户级密钥支持 ──────────────────────────────────────────────
+    # 按 user_id 缓存用户级 LLMService 实例，避免每次对话都查库。
+    # 用户级实例的 config 来自 SystemConfig("llm_user_key_<user_id>")，
+    # 与全局 llm_service（环境变量/全局 db）完全隔离。
+    _user_instances: "dict[int, LLMService]" = {}
+
+    @classmethod
+    async def get_user_service(cls, user_id: int) -> "LLMService | None":
+        """获取（或创建并缓存）某用户级的 LLMService。
+
+        返回 None 表示该用户未配置自己的密钥。
+        用户修改/删除密钥时调用 invalidate_user(user_id) 强制失效缓存。
+        """
+        svc = cls._user_instances.get(user_id)
+        if svc is not None:
+            return svc
+        try:
+            from ..core.database.session import async_session_factory
+            from ..models.system import SystemConfig
+            from sqlalchemy import select
+            import json as _json
+
+            config_key = _user_key_config_key(user_id)
+            async with async_session_factory() as db:
+                row = (await db.execute(
+                    select(SystemConfig).where(SystemConfig.config_key == config_key)
+                )).scalar_one_or_none()
+            if not row or not row.config_value:
+                return None
+            v = row.config_value
+            if isinstance(v, str):
+                try:
+                    v = _json.loads(v)
+                except Exception:
+                    return None
+            if not isinstance(v, dict) or not _decrypt_api_key(v.get("api_key", "")):
+                return None
+            cfg = LLMConfig(
+                provider=v.get("provider", "") or cls.config.provider,
+                api_key=_decrypt_api_key(v.get("api_key", "")),
+                base_url=v.get("base_url", "") or cls.config.base_url,
+                model=v.get("model", "") or cls.config.model,
+                max_tokens=v.get("max_tokens", 4096),
+                temperature=v.get("temperature", 0.7),
+                key_from_db=True,
+                user_id=user_id,
+            )
+            instance = cls(cfg)
+            cls._user_instances[user_id] = instance
+            masked = cfg.api_key[:8] + "..." + cfg.api_key[-4:] if len(cfg.api_key) > 12 else "***"
+            logger.info(f"[UserLLM] 用户 {user_id} 的 LLM 实例已创建: provider={cfg.provider}, model={cfg.model}, key={masked}")
+            return instance
+        except Exception as e:
+            logger.warning(f"[UserLLM] 加载用户 {user_id} LLM 配置失败: {e}")
+            return None
+
+    @classmethod
+    def invalidate_user(cls, user_id: int) -> None:
+        """用户修改/删除自己的密钥时调用，使缓存失效并关闭旧 HTTP 客户端"""
+        old = cls._user_instances.pop(user_id, None)
+        if old and old._client and not old._client.is_closed:
+            import asyncio
+            try:
+                loop = asyncio.get_running_loop()
+                loop.create_task(old._client.aclose())
+            except RuntimeError:
+                asyncio.run(old._client.aclose())
+
+    # ── 用户级密钥支持 ──────────────────────────────────────────────
+    # 按 user_id 缓存用户级 LLMService 实例，避免每次对话都查库。
+    # 用户级实例的 config 来自 SystemConfig("llm_user_key_<user_id>")，
+    # 与全局 llm_service（环境变量/全局 db）完全隔离。
+
+    _user_instances: "dict[int, LLMService]" = {}
+
+    @classmethod
+    async def get_user_service(cls, user_id: int) -> "LLMService | None":
+        """获取（或创建并缓存）某用户级的 LLMService。
+
+        返回 None 表示该用户未配置自己的密钥。
+        用户修改/删除密钥时调用 invalidate_user(user_id) 强制失效缓存。
+        """
+        svc = cls._user_instances.get(user_id)
+        if svc is not None:
+            return svc
+        try:
+            from ..core.database.session import async_session_factory
+            from ..models.system import SystemConfig
+            from sqlalchemy import select
+            import json as _json
+
+            config_key = _user_key_config_key(user_id)
+            async with async_session_factory() as db:
+                row = (await db.execute(select(SystemConfig).where(SystemConfig.config_key == config_key))).scalar_one_or_none()
+            if not row or not row.config_value:
+                return None
+            v = row.config_value
+            if isinstance(v, str):
+                try:
+                    v = _json.loads(v)
+                except Exception:
+                    return None
+            if not isinstance(v, dict) or not _decrypt_api_key(v.get("api_key", "")):
+                return None
+            cfg = LLMConfig(
+                provider=v.get("provider", "") or cls.config.provider,
+                api_key=_decrypt_api_key(v.get("api_key", "")),
+                base_url=v.get("base_url", "") or cls.config.base_url,
+                model=v.get("model", "") or cls.config.model,
+                max_tokens=v.get("max_tokens", 4096),
+                temperature=v.get("temperature", 0.7),
+                key_from_db=True,
+                user_id=user_id,
+            )
+            instance = cls(cfg)
+            cls._user_instances[user_id] = instance
+            masked = cfg.api_key[:8] + "..." + cfg.api_key[-4:] if len(cfg.api_key) > 12 else "***"
+            logger.info(f"[UserLLM] 用户 {user_id} 的 LLM 实例已创建: provider={cfg.provider}, model={cfg.model}, key={masked}")
+            return instance
+        except Exception as e:
+            logger.warning(f"[UserLLM] 加载用户 {user_id} LLM 配置失败: {e}")
+            return None
+
+    @classmethod
+    def invalidate_user(cls, user_id: int) -> None:
+        """用户修改/删除自己的密钥时调用，使缓存失效"""
+        old = cls._user_instances.pop(user_id, None)
+        if old and old._client and not old._client.is_closed:
+            import asyncio
+            try:
+                loop = asyncio.get_running_loop()
+                loop.create_task(old._client.aclose())
+            except RuntimeError:
+                asyncio.run(old._client.aclose())
 
     def _build_headers(self) -> dict[str, str]:
         headers = {"Content-Type": "application/json"}

@@ -25,7 +25,7 @@ import {
 	ThumbsUp, ThumbsDown, Pencil, Undo2, X,
 	Link, Code, Image as ImageIcon, ExternalLink,
 	FileText, AlertTriangle, MoreHorizontal,
-	GitBranch,
+	GitBranch, Share2,
 } from 'lucide-react'
 import { userProfileManager } from '../../services/userProfileService'
 import { logger } from '@/utils/safeLogger'
@@ -51,6 +51,8 @@ export interface MessageBubbleProps {
 	onRegenerate: (id: string) => void
 	onForkMessage?: (messageId: string) => void
 	onDetails?: (call: { id: string; name: string; args: Record<string, unknown>; status: 'running' | 'completed' | 'error'; durationMs?: number }) => void
+	onStructureSave?: (messageId: string, content: string) => void
+	onStructureShare?: (messageId: string, content: string) => void
 	copiedId?: string | null
 	thinkingSteps?: Array<{ step: string; content: string; status: string; detail?: string }>
 	isHighlighted?: boolean
@@ -262,6 +264,7 @@ function renderMessageContent(
 	// ── 结构化内容优先检测 ──
 	if (msg.role === 'assistant') {
 		const structured = detectStructuredContent(msg.content)
+		console.log('[MessageBubble] detectStructured:', structured ? `OK (${structured.blocks.length} blocks)` : 'NULL', '| content preview:', msg.content.substring(0, 60))
 		if (structured) {
 			return <StructuredMessageRenderer content={structured} />
 		}
@@ -359,6 +362,8 @@ export function MessageBubble({
 	onRegenerate,
 	onForkMessage,
 	onDetails,
+	onStructureSave,
+	onStructureShare,
 	thinkingSteps,
 	isHighlighted,
 	isSelected,
@@ -504,7 +509,12 @@ export function MessageBubble({
 											isThinking={isStreaming && index === allMessages.length - 1}
 										/>
 									)}
-									{renderMessageContent(msg, index, allMessages, isStreaming)}
+									{msg.role === 'assistant' && (
+								<div style={{fontSize:10,color:"#ff0",padding:"2px 4px",background:"#333",borderRadius:2,marginBottom:4}}>
+									{(() => { const _s=detectStructuredContent(msg.content); return _s ? `struct:${_s.blocks.length}blks` : 'NO_STRUCT'; })()}
+								</div>
+							)}
+							{renderMessageContent(msg, index, allMessages, isStreaming)}
 								</>
 							)}
 						</div>
@@ -538,6 +548,16 @@ export function MessageBubble({
 						{onForkMessage && (
 							<button onClick={() => onForkMessage(msg.id)} className="chat-action-btn" title="从此处分支">
 								<GitBranch className="w-3 h-3" />
+							</button>
+						)}
+						{msg.role === 'assistant' && onStructureSave && (
+							<button onClick={() => onStructureSave(msg.id, msg.content)} className="chat-action-btn" title="保存到配方库">
+								<Leaf className="w-3 h-3" />
+							</button>
+						)}
+						{msg.role === 'assistant' && onStructureShare && (
+							<button onClick={() => onStructureShare(msg.id, msg.content)} className="chat-action-btn" title="分享配方">
+								<Share2 className="w-3 h-3" />
 							</button>
 						)}
 						{

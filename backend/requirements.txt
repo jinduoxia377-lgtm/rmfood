@@ -1,59 +1,52 @@
-# 📦 RMFOOD 后端依赖 - 已锁定版本（P1-2 修复）
-# 此文件由 pyproject.toml 生成，作为 pip 安装的兼容格式
-# 如需更新依赖，请修改 pyproject.toml 后运行:
+# 馃摝 RMFOOD 鍚庣渚濊禆 - 宸查攣瀹氱増鏈紙P1-2 淇锛?# 姝ゆ枃浠剁敱 pyproject.toml 鐢熸垚锛屼綔涓?pip 瀹夎鐨勫吋瀹规牸寮?# 濡傞渶鏇存柊渚濊禆锛岃淇敼 pyproject.toml 鍚庤繍琛?
 #   pip-compile pyproject.toml > requirements.txt
-#   或使用: pip-audit 扫描漏洞
+#   鎴栦娇鐢? pip-audit 鎵弿婕忔礊
 
-# ── Web 框架 ──
+# 鈹€鈹€ Web 妗嗘灦 鈹€鈹€
 fastapi==0.115.0
 uvicorn[standard]==0.30.0
 
-# ── ORM + 数据库 ──
+# 鈹€鈹€ ORM + 鏁版嵁搴?鈹€鈹€
 sqlalchemy[asyncio]==2.0.35
-asyncpg==0.29.0            # PostgreSQL 异步驱动（唯一支持的数据库）
-alembic==1.13.2             # 数据库迁移工具
-
-# ── 数据验证 ──
+asyncpg==0.29.0            # PostgreSQL 寮傛椹卞姩锛堝敮涓€鏀寔鐨勬暟鎹簱锛?alembic==1.13.2             # 鏁版嵁搴撹縼绉诲伐鍏?
+# 鈹€鈹€ 鏁版嵁楠岃瘉 鈹€鈹€
 pydantic==2.9.0
 pydantic-settings==2.5.0
 jsonschema==4.23.0
 
-# ── 认证 + 安全 ──
+# 鈹€鈹€ 璁よ瘉 + 瀹夊叏 鈹€鈹€
 python-jose[cryptography]==3.3.0
 bcrypt==4.2.0
 python-multipart==0.0.9
 
-# ── HTTP 客户端 ──
+# 鈹€鈹€ HTTP 瀹㈡埛绔?鈹€鈹€
 httpx==0.27.2
 
-# ── 文档导出 ──
+# 鈹€鈹€ 鏂囨。瀵煎嚭 鈹€鈹€
 python-docx==1.1.2
 reportlab==4.2.5
 openpyxl==3.1.5
 
-# ── 科学计算（协同作用引擎）──
-numpy==1.26.4  # 固定 <2.0：chromadb 0.5.0 依赖已被 NumPy 2.0 移除的 np.float_
+# 鈹€鈹€ 绉戝璁＄畻锛堝崗鍚屼綔鐢ㄥ紩鎿庯級鈹€鈹€
+numpy==1.26.4  # 鍥哄畾 <2.0锛歝hromadb 0.5.0 渚濊禆宸茶 NumPy 2.0 绉婚櫎鐨?np.float_
 scipy==1.14.0
 
-# ── RAG 检索增强生成 ──
+# 鈹€鈹€ RAG 妫€绱㈠寮虹敓鎴?鈹€鈹€
 chromadb==0.5.0
-fastembed==0.8.0  # 本地 embedding 模型（EMBEDDING_PROVIDER=local），免 API key、离线可用
-
-# ── 可观测性 ──
+fastembed==0.8.0  # 鏈湴 embedding 妯″瀷锛圗MBEDDING_PROVIDER=local锛夛紝鍏?API key銆佺绾垮彲鐢?
+# 鈹€鈹€ 鍙娴嬫€?鈹€鈹€
 opentelemetry-api==1.28.0
 opentelemetry-sdk==1.28.0
 
-# ── 安全扫描工具 ──
-pip-audit>=2.7.0    # 依赖漏洞扫描器（PyPA官方）
-bandit>=1.7.0        # 代码安全静态分析工具
-psutil>=5.9.0
+# 鈹€鈹€ 瀹夊叏鎵弿宸ュ叿 鈹€鈹€
+pip-audit>=2.7.0    # 渚濊禆婕忔礊鎵弿鍣紙PyPA瀹樻柟锛?bandit>=1.7.0        # 浠ｇ爜瀹夊叏闈欐€佸垎鏋愬伐鍏?psutil>=5.9.0
 email-validator>=2.0.0
 pandas>=2.0.0
 
-# ── 中文分词 ──
+# 鈹€鈹€ 涓枃鍒嗚瘝 鈹€鈹€
 jieba==0.42.1
 
-# ── 测试 ──
+# 鈹€鈹€ 娴嬭瘯 鈹€鈹€
 pytest==8.3.3
 pytest-asyncio==0.24.0
 pytest-cov==6.0.0
@@ -62,12 +55,24 @@ factory-boy==3.3.1
 freezegun==1.5.1
 testcontainers[postgres]==4.8.1
 
-# ── 定时调度 ──
+# 鈹€鈹€ 瀹氭椂璋冨害 鈹€鈹€
 apscheduler==3.10.4
 
-# ── 错误追踪 ──
+# 鈹€鈹€ 閿欒杩借釜 鈹€鈹€
 sentry-sdk[fastapi]>=1.44.0
 
 # Async tasks / queue
 celery>=5.3.0
 redis>=4.6.0
+
+# 鑲介摼缁撴瀯鍒嗘瀽妯″潡
+peplink>=0.1.2
+rdkit>=2023.9.0
+selfies>=2.1.1
+cachetools>=5.3.0
+
+# 文档解析
+pdfminer.six==20240706
+
+# 环境变量加载（开发模式）
+python-dotenv>=1.0.0

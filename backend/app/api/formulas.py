@@ -207,7 +207,40 @@ async def get_formula(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="配方不存在",
         )
-    return result
+    # 将 ORM 对象序列化为 dict，避免 Pydantic 无法转换 Ingredient/Peptide 对象为 dict
+    def _to_dict(obj):
+        return {c.name: getattr(obj, c.name) for c in obj.__table__.columns}
+
+    ingredients = [_to_dict(i) for i in (result.ingredients or [])]
+    peptides = [_to_dict(p) for p in (result.peptides or [])]
+    status_val = result.status.value if hasattr(result.status, 'value') else str(result.status)
+    return {
+        "id": result.id,
+        "code": result.code,
+        "name": result.name,
+        "description": result.description,
+        "status": status_val,
+        "version": result.version,
+        "creator_id": result.creator_id,
+        "creator_name": result.creator.username if result.creator else None,
+        "reviewer_id": result.reviewer_id,
+        "reviewed_at": result.reviewed_at.isoformat() if result.reviewed_at else None,
+        "review_notes": result.review_notes,
+        "safety_check": result.safety_check,
+        "compliance_status": result.compliance_status,
+        "ai_recommendations": result.ai_recommendations,
+        "synergy_analysis": result.synergy_analysis,
+        "ingredients": ingredients,
+        "peptides": peptides,
+        "created_at": result.created_at.isoformat() if result.created_at else None,
+        "updated_at": result.updated_at.isoformat() if result.updated_at else None,
+        "target_effects": result.target_effects,
+        "composition": result.composition,
+        "processing_method": result.processing_method,
+        "dosage": result.dosage,
+        "storage_conditions": result.storage_conditions,
+        "shelf_life": result.shelf_life,
+    }
 
 
 @router.post("", response_model=FormulaResponse, status_code=201, summary="创建配方")
@@ -926,7 +959,7 @@ async def multi_algorithm_optimize(
     )
     ingredients = request.get('ingredients', [])
     if not ingredients:
-        raise HTTPException(status_code=400, detail='ingredients required')
+        raise HTTPException(status_code=400, detail='配料列表不能为空')
     algorithms = request.get('algorithms', [])
     fusion_method = request.get('fusion_method', 'union')
     time_budget = request.get('time_budget', 30.0)
@@ -935,9 +968,9 @@ async def multi_algorithm_optimize(
         algorithms = valid_algorithms
     for algo in algorithms:
         if algo not in valid_algorithms:
-            raise HTTPException(status_code=400, detail=f'Invalid algorithm: {algo}')
+            raise HTTPException(status_code=400, detail=f'未知算法类型：{algo}')
     if fusion_method not in ('union', 'weighted', 'voting'):
-        raise HTTPException(status_code=400, detail='Invalid fusion method')
+        raise HTTPException(status_code=400, detail='无效的融合方法')
     config = FusionConfig(algorithms=algorithms, parallel_execution=True, time_budget=time_budget, fusion_method=fusion_method)
     orchestrator = MultiAlgorithmOrchestrator(config)
     result = await orchestrator.optimize(ingredients, request.get('constraints', {}))

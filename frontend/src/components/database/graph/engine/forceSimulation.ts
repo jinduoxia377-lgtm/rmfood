@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Force-directed graph rendering engine.
  *

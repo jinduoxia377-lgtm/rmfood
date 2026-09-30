@@ -1,5 +1,7 @@
 import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useVirtualizer } from '@tanstack/react-virtual';
+import { useRealtimeEntity, type CDCChangeEvent } from '@/hooks/useRealtimeSync';
 import {
   BarChart,
   Bar,
@@ -11,6 +13,8 @@ import {
   Tooltip as RechartsTooltip,
   ResponsiveContainer,
   Legend,
+  LineChart,
+  Line,
 } from 'recharts';
 import { adminApi } from '@/api/admin';
 import { UserRole } from '@/types';
@@ -108,20 +112,24 @@ export default function UserManagementPage() {
   const search = useDebounce(searchInput, 350);
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [orgFilter, setOrgFilter] = useState<number | null>(null);
   const [sortField, setSortField] = useState<SortField>('created_at');
   const [sortDir, setSortDir] = useState<SortDirection>('desc');
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [detailUser, setDetailUser] = useState<UserDetail | null>(null);
   const [confirmAction, setConfirmAction] = useState<ConfirmAction | null>(null);
   const [actionMenuId, setActionMenuId] = useState<number | null>(null);
-  const [pageSize, setPageSize] = useState(12);
+  const [pageSize, setPageSize] = useState(20);
   const [showImportModal, setShowImportModal] = useState(false);
+  const [importErrorDetail, setImportErrorDetail] = useState<any[]>([]);
   const [showOpLogPanel, setShowOpLogPanel] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [detailTab, setDetailTab] = useState('info');
   const [tableDensity, setTableDensity] = useState<'comfortable' | 'compact'>('comfortable');
+  const [expandedLogId, setExpandedLogId] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const actionMenuRef = useRef<HTMLDivElement>(null);
+  const tableBodyRef = useRef<HTMLTableSectionElement>(null);
 
   const [createForm, setCreateForm] = useState({
     username: '',
@@ -130,20 +138,70 @@ export default function UserManagementPage() {
     full_name: '',
     role: UserRole.VIEWER,
     department: '',
+    organization_id: null as number | null,
   });
   const [createErrors, setCreateErrors] = useState<Record<string, string>>({});
   const [showCreatePassword, setShowCreatePassword] = useState(false);
+  const [editProfileOpen, setEditProfileOpen] = useState(false);
+  const [editForm, setEditForm] = useState({ email: '', full_name: '', phone: '', department: '' });
+  const [editErrors, setEditErrors] = useState<Record<string, string>>({});
 
   const { data, isLoading, error, isFetching } = useQuery({
-    queryKey: ['admin-users', page, pageSize, search, roleFilter, statusFilter],
+    queryKey: ['admin-users', page, pageSize, search, roleFilter, statusFilter, orgFilter],
     queryFn: () =>
       adminApi.listUsers({
         page,
         page_size: pageSize,
         search: search || undefined,
         role: roleFilter !== 'all' ? roleFilter : undefined,
+        status: statusFilter !== 'all' ? statusFilter : undefined,
+        organization_id: orgFilter || undefined,
       }),
   });
+  const { data: auditLogData } = useQuery({
+    queryKey: ['admin-audit-logs'],
+    queryFn: () => adminApi.getAuditLogs({ page: 1, page_size: 50 }),
+    enabled: showOpLogPanel,
+  });
+
+  const userActivityQuery = useQuery({
+    queryKey: ['user-activity', detailUser?.id],
+    queryFn: () => detailUser ? adminApi.getUserActivity(detailUser.id) : null,
+    enabled: !!detailUser && detailTab === 'activity',
+  });
+
+  const { data: userTrendData } = useQuery({
+    queryKey: ['user-trend'],
+    queryFn: () => adminApi.getUserTrend(30),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // MEDIUM #8+#14: Organization list from dedicated API endpoint
+  const { data: orgListData } = useQuery({
+    queryKey: ['orgs-for-users'],
+    queryFn: () => adminApi.getOrganizations().then((r) => r.organizations || []),
+    staleTime: 10 * 60 * 1000,
+  });
+
+  const registrationTrendChart = useMemo(() => {
+    if (!userTrendData?.data || !Array.isArray(userTrendData.data)) return [];
+    return userTrendData.data.slice(-14).map((d: any) => ({
+      date: d.date || d.time || '',
+      count: Number(d.count ?? d.value ?? d.total ?? 0),
+    }));
+  }, [userTrendData]);
+
+  // P3-5: CDC 实时通知 - 用户变更时显示 toast
+  useRealtimeEntity('users', useCallback((change: CDCChangeEvent) => {
+    const { action, entity_id } = change;
+    if (action === 'INSERT') {
+      toast.success(`新用户 #${entity_id} 已注册`);
+    } else if (action === 'UPDATE') {
+      toast.info(`用户 #${entity_id} 信息已更新`);
+    } else if (action === 'DELETE') {
+      toast.warning(`用户 #${entity_id} 已被禁用`);
+    }
+  }, [toast]));
 
   const roleMutation = useMutation({
     mutationFn: ({ userId, role }: { userId: number; role: string }) => adminApi.updateUserRole(userId, role),
@@ -202,11 +260,12 @@ export default function UserManagementPage() {
         email: data.email,
         full_name: data.full_name || undefined,
         role: data.role,
+        organization_id: data.organization_id || undefined,
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin-users'] });
       setShowCreateModal(false);
-      setCreateForm({ username: '', password: '', email: '', full_name: '', role: UserRole.VIEWER, department: '' });
+      setCreateForm({ username: '', password: '', email: '', full_name: '', role: UserRole.VIEWER, department: '', organization_id: null });
       setCreateErrors({});
       toast.success('用户创建成功');
     },
@@ -215,27 +274,48 @@ export default function UserManagementPage() {
     },
   });
 
-  const deleteUserMutation = useMutation({
-    mutationFn: (userId: number) => adminApi.deleteUser(userId),
+  const deactivateUserMutation = useMutation({
+    mutationFn: (userId: number) => adminApi.toggleUserStatus(userId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin-users'] });
-      toast.success('用户已删除');
+      toast.success('用户已禁用');
     },
     onError: () => {
-      toast.error('删除用户失败，请重试');
+      toast.error('禁用用户失败，请重试');
     },
   });
 
   const batchDeleteMutation = useMutation({
-    mutationFn: (userIds: number[]) => Promise.all(userIds.map((id) => adminApi.deleteUser(id))),
+    mutationFn: (userIds: number[]) => Promise.all(userIds.map((id) => adminApi.toggleUserStatus(id))),
     onSuccess: (_data, vars) => {
       qc.invalidateQueries({ queryKey: ['admin-users'] });
       setSelectedIds(new Set());
-      toast.success(`已成功删除 ${vars.length} 个用户`);
+      toast.success(`已成功禁用 ${vars.length} 个用户`);
     },
     onError: () => {
-      toast.error('批量删除失败，请重试');
+      toast.error('批量禁用失败，请重试');
     },
+  });
+
+  const editProfileMutation = useMutation({
+    mutationFn: ({ userId, data }: { userId: number; data: Record<string, any> }) =>
+      adminApi.updateUser(userId, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin-users'] });
+      if (detailUser) qc.invalidateQueries({ queryKey: ['user-lock-status', detailUser.id] });
+      setEditProfileOpen(false);
+      toast.success('用户资料已更新');
+    },
+    onError: () => {
+      toast.error('更新失败，请重试');
+    },
+  });
+
+  // CRITICAL #1: lockStatus moved to component top-level (was inside Modal IIFE - Rules of Hooks violation)
+  const { data: lockStatus } = useQuery({
+    queryKey: ['user-lock-status', detailUser?.id],
+    queryFn: () => detailUser ? adminApi.getAccountLockStatus(detailUser.id) : null,
+    enabled: !!detailUser,
   });
 
   const total = data?.total ?? 0;
@@ -268,9 +348,26 @@ export default function UserManagementPage() {
   }, [users, sortField, sortDir]);
 
   const filteredUsers = useMemo(() => {
-    if (statusFilter === 'all') return sortedUsers;
-    return sortedUsers.filter((u) => (statusFilter === 'active' ? u.is_active : !u.is_active));
-  }, [sortedUsers, statusFilter]);
+    let result = sortedUsers;
+    // Apply server-side filters that also need client-side filtering for select-all consistency
+    if (statusFilter !== 'all') {
+      result = result.filter((u) => (statusFilter === 'active' ? u.is_active : !u.is_active));
+    }
+    if (orgFilter !== null) {
+      result = result.filter((u) => (u as any).organization_id === orgFilter);
+    }
+    return result;
+  }, [sortedUsers, statusFilter, orgFilter]);
+
+  // 虚拟滚动：数据量大时启用
+  const enableVirtualScroll = filteredUsers.length > 100;
+  const rowVirtualizer = useVirtualizer({
+    count: enableVirtualScroll ? filteredUsers.length : 0,
+    getScrollElement: () => tableBodyRef.current,
+    estimateSize: () => tableDensity === 'compact' ? 40 : 56,
+    overscan: 5,
+    enabled: enableVirtualScroll,
+  });
 
   const roleStats = useMemo(() => {
     const stats: Record<string, number> = {};
@@ -300,9 +397,16 @@ export default function UserManagementPage() {
     [roleStats],
   );
 
-  const anomalyCount = MOCK_OPERATION_LOGS.filter(
-    (l) => l.type === 'login_anomaly' || l.type === 'security_event',
-  ).length;
+  const anomalyCount = useMemo(() => {
+    if (auditLogData?.items) {
+      return auditLogData.items.filter(
+        (l: any) => l.action?.includes('login') || l.action?.includes('auth') || l.action?.includes('lock'),
+      ).length;
+    }
+    return MOCK_OPERATION_LOGS.filter(
+      (l) => l.type === 'login_anomaly' || l.type === 'security_event',
+    ).length;
+  }, [auditLogData]);
 
   const handleSort = useCallback(
     (field: SortField) => {
@@ -314,6 +418,10 @@ export default function UserManagementPage() {
     },
     [sortField],
   );
+
+  const handleLogClick = useCallback((logId: number) => {
+    setExpandedLogId((prev) => (prev === logId ? null : logId));
+  }, []);
 
   const toggleSelectAll = useCallback(() => {
     if (selectedIds.size === filteredUsers.length) setSelectedIds(new Set());
@@ -347,7 +455,7 @@ export default function UserManagementPage() {
           batchRoleMutation.mutate({ userIds: confirmAction.userIds, role: confirmAction.newValue });
         break;
       case 'delete':
-        if (confirmAction.userId) deleteUserMutation.mutate(confirmAction.userId);
+        if (confirmAction.userId) deactivateUserMutation.mutate(confirmAction.userId);
         break;
       case 'batch_delete':
         if (confirmAction.userIds) batchDeleteMutation.mutate(confirmAction.userIds);
@@ -360,7 +468,7 @@ export default function UserManagementPage() {
     roleMutation,
     batchStatusMutation,
     batchRoleMutation,
-    deleteUserMutation,
+    deactivateUserMutation,
     batchDeleteMutation,
   ]);
 
@@ -432,13 +540,43 @@ export default function UserManagementPage() {
     [selectedIds, currentUser, toast],
   );
 
+  const requestBatchRoleChange = useCallback(
+    (userIds: number[]) => {
+      if (userIds.includes(currentUser?.id ?? -1)) {
+        toast.warning('批量操作中包含当前登录用户，已自动排除');
+        const filtered = userIds.filter((id) => id !== currentUser?.id);
+        if (filtered.length === 0) return;
+        setConfirmAction({
+          type: 'batch_role',
+          userIds: filtered,
+          newValue: UserRole.RESEARCHER,
+          label: '批量更改角色',
+          description: `确定要将选中 ${filtered.length} 个用户的角色更改为「研究员」吗？`,
+          confirmLabel: '确认更改',
+          variant: 'warning',
+        });
+        return;
+      }
+      setConfirmAction({
+        type: 'batch_role',
+        userIds,
+        newValue: UserRole.RESEARCHER,
+        label: '批量更改角色',
+        description: `确定要将选中 ${userIds.length} 个用户的角色更改为「研究员」吗？`,
+        confirmLabel: '确认更改',
+        variant: 'warning',
+      });
+    },
+    [currentUser, toast],
+  );
+
   const validateCreateForm = (): boolean => {
     const errors: Record<string, string> = {};
     if (!createForm.username.trim()) errors.username = '用户名不能为空';
     else if (!/^[a-zA-Z0-9_]{3,50}$/.test(createForm.username))
       errors.username = '用户名需3-50位，仅允许字母、数字、下划线';
     if (!createForm.password) errors.password = '密码不能为空';
-    else if (createForm.password.length < 6) errors.password = '密码至少6个字符';
+    else if (createForm.password.length < 8) errors.password = '密码至少8个字符';
     if (!createForm.email.trim()) errors.email = '邮箱不能为空';
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(createForm.email)) errors.email = '请输入有效的邮箱地址';
     setCreateErrors(errors);
@@ -453,15 +591,15 @@ export default function UserManagementPage() {
   const requestDeleteUser = useCallback(
     (user: UserDetail) => {
       if (user.id === currentUser?.id) {
-        toast.warning('不能删除自己的账户');
+        toast.warning('不能禁用自己的账户');
         return;
       }
       setConfirmAction({
         type: 'delete',
         userId: user.id,
-        label: '删除用户',
-        description: `确定要删除用户「${user.username}」吗？此操作将停用该账户，删除后数据不可恢复。`,
-        confirmLabel: '确认删除',
+        label: '禁用用户',
+        description: `确定要禁用用户「${user.username}」吗？禁用后该用户将无法登录系统。`,
+        confirmLabel: '确认禁用',
         variant: 'danger',
       });
     },
@@ -478,26 +616,53 @@ export default function UserManagementPage() {
     setConfirmAction({
       type: 'batch_delete',
       userIds: ids,
-      label: '批量删除用户',
-      description: `确定要删除选中 ${ids.length} 个用户吗？此操作将停用这些账户，删除后数据不可恢复。`,
-      confirmLabel: `确认删除 (${ids.length})`,
+      label: '批量禁用用户',
+      description: `确定要禁用选中 ${ids.length} 个用户吗？禁用后这些用户将无法登录系统。`,
+      confirmLabel: `确认禁用 (${ids.length})`,
       variant: 'danger',
     });
   }, [selectedIds, currentUser, toast]);
 
-  const exportToCSV = useCallback(() => {
+  const exportToCSV = useCallback(async () => {
+    // Export ALL matching users (not just current page) by fetching all pages
     const headers = ['用户名', '姓名', '邮箱', '角色', '状态', '部门', '注册时间', '最后登录'];
-    const rows = filteredUsers.map((u) => [
-      u.username,
-      u.full_name || '',
-      u.email || '',
-      getRoleConfig(u.role).label,
-      u.is_active ? '正常' : '已禁用',
-      u.department || '',
-      u.created_at ? new Date(u.created_at).toLocaleDateString('zh-CN') : '',
-      u.last_login ? new Date(u.last_login).toLocaleDateString('zh-CN') : '',
-    ]);
-    const csv = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+    const allRows: string[][] = [];
+    const params: any = {
+      search: search || undefined,
+      role: roleFilter !== 'all' ? roleFilter : undefined,
+      status: statusFilter !== 'all' ? statusFilter : undefined,
+      organization_id: orgFilter || undefined,
+    };
+    try {
+      let currentPage = 1;
+      let total = Infinity;
+      while (currentPage * 100 <= total || currentPage === 1) {
+        const res: any = await adminApi.listUsers({ ...params, page: currentPage, page_size: 100 });
+        const items = res.items || [];
+        total = res.total ?? items.length;
+        for (const u of items) {
+          allRows.push([
+            u.username, u.full_name || '', u.email || '',
+            getRoleConfig(u.role).label, u.is_active ? '正常' : '已禁用',
+            u.department || '',
+            u.created_at ? new Date(u.created_at).toLocaleDateString('zh-CN') : '',
+            u.last_login ? new Date(u.last_login).toLocaleDateString('zh-CN') : '',
+          ]);
+        }
+        if (currentPage * 100 >= total) break;
+        currentPage++;
+      }
+    } catch {
+      // Fallback: export current filteredUsers only
+      allRows.push(...filteredUsers.map((u) => [
+        u.username, u.full_name || '', u.email || '',
+        getRoleConfig(u.role).label, u.is_active ? '正常' : '已禁用',
+        u.department || '',
+        u.created_at ? new Date(u.created_at).toLocaleDateString('zh-CN') : '',
+        u.last_login ? new Date(u.last_login).toLocaleDateString('zh-CN') : '',
+      ]));
+    }
+    const csv = [headers.join(','), ...allRows.map((r) => r.join(','))].join('\n');
     const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -505,35 +670,28 @@ export default function UserManagementPage() {
     link.download = `users_${new Date().toISOString().slice(0, 10)}.csv`;
     link.click();
     URL.revokeObjectURL(url);
-    toast.success(`已导出 ${filteredUsers.length} 条用户数据`);
-  }, [filteredUsers, toast]);
+    toast.success(`已导出 ${allRows.length} 条用户数据`);
+  }, [filteredUsers, toast, search, roleFilter, statusFilter, orgFilter]);
 
   const handleCSVImport = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (evt) => {
-        try {
-          const text = evt.target?.result as string;
-          const lines = text
-            .split('\n')
-            .filter((l) => l.trim())
-            .slice(1);
-          if (lines.length === 0) {
-            toast.error('CSV 文件中没有有效数据行');
-            return;
-          }
-          toast.success(`已解析 ${lines.length} 条记录（预览模式，实际导入需后端支持）`);
-          setShowImportModal(false);
-        } catch {
-          toast.error('CSV 解析失败，请检查文件格式');
+      try {
+        const result = await adminApi.batchImportUsers(file);
+        toast.success(`导入完成: 成功 ${result.created} 个，跳过 ${result.skipped_duplicate} 个重复`);
+        if (result.errors.length > 0) {
+          setImportErrorDetail(result.errors);
+          toast.warning(`有 ${result.errors.length} 条记录导入失败，点击查看明细`);
         }
-      };
-      reader.readAsText(file);
+        qc.invalidateQueries({ queryKey: ['admin-users'] });
+        setShowImportModal(false);
+      } catch {
+        toast.error('导入失败，请检查文件格式后重试');
+      }
       e.target.value = '';
     },
-    [toast],
+    [toast, qc],
   );
 
   useEffect(() => {
@@ -577,7 +735,7 @@ export default function UserManagementPage() {
     batchRoleMutation.isPending ||
     batchStatusMutation.isPending ||
     createUserMutation.isPending ||
-    deleteUserMutation.isPending ||
+    deactivateUserMutation.isPending ||
     batchDeleteMutation.isPending;
   const cellPadding = tableDensity === 'compact' ? 'px-4 py-2.5' : 'px-4 py-3';
   const textSize = tableDensity === 'compact' ? 'text-xs' : 'text-sm';
@@ -599,7 +757,7 @@ export default function UserManagementPage() {
     <div className="space-y-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-page-enter">
 
       {/* ── 顶部主色横幅 ── */}
-      <div className="rounded-xl bg-primary-600 p-6 text-white shadow-sm">
+      <div className="surface-primary rounded-xl p-6 shadow-sm">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex-1">
             <h1 className="text-xl font-bold leading-snug">用户管理</h1>
@@ -757,6 +915,56 @@ export default function UserManagementPage() {
         </Card>
       </div>
 
+
+      {/* ── 用户注册趋势 ── */}
+      {registrationTrendChart.length > 1 && (
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 text-primary-500" />
+                用户注册趋势
+                <span className="text-xs font-normal text-neutral-400">近 14 天</span>
+              </h3>
+              <span className="text-xs text-neutral-400">
+                总计 {registrationTrendChart.reduce((s: number, d: any) => s + d.count, 0)} 人
+              </span>
+            </div>
+            <ResponsiveContainer width="100%" height={200}>
+              <LineChart data={registrationTrendChart} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+                <defs>
+                  <linearGradient id="regGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="var(--color-primary, #0A84FF)" stopOpacity={0.2} />
+                    <stop offset="95%" stopColor="var(--color-primary, #0A84FF)" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <XAxis
+                  dataKey="date"
+                  tick={{ fontSize: 11, fill: 'var(--text-muted, #9A9A9F)' }}
+                  tickLine={false}
+                  axisLine={false}
+                  interval="preserveStartEnd"
+                />
+                <YAxis tick={{ fontSize: 11, fill: 'var(--text-muted, #9A9A9F)' }} tickLine={false} axisLine={false} allowDecimals={false} />
+                <RechartsTooltip
+                  contentStyle={{ borderRadius: 8, fontSize: 12, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                  formatter={(value) => [`${value} 人`, '新增注册']}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="count"
+                  stroke="var(--color-primary, #0A84FF)"
+                  strokeWidth={2}
+                  dot={{ r: 3, fill: 'var(--color-primary, #0A84FF)' }}
+                  activeDot={{ r: 5 }}
+                  fill="url(#regGrad)"
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      )}
+
       {/* ── Operation Log Panel (Collapsible) ── */}
       {showOpLogPanel && (
         <Card className="overflow-hidden border-primary-200 dark:border-primary-800 animate-in fade-in slide-in-from-top-2 duration-200 shadow-lg ring-1 ring-primary-100 dark:ring-primary-900/30">
@@ -778,55 +986,101 @@ export default function UserManagementPage() {
                 收起 <ChevronUp className="w-3 h-3 ml-1" />
               </Button>
             </div>
-            <div className="space-y-2 max-h-[240px] overflow-y-auto pr-1">
-              {MOCK_OPERATION_LOGS.slice(0, 8).map((log) => (
-                <div
-                  key={log.id}
-                  className={`flex items-start gap-3 p-2.5 rounded-lg text-xs ${
-                    log.type === 'login_anomaly' || log.type === 'security_event'
-                      ? 'bg-error-50 dark:bg-error-900/10 border border-red-200 dark:border-red-800/30'
-                      : log.type === 'batch_op'
-                        ? 'bg-warning-50 dark:bg-warning-900/10 border border-amber-200 dark:border-amber-800/30'
-                        : 'bg-slate-50 dark:bg-neutral-800/50'
-                  }`}
-                >
+            <div className="space-y-1.5 max-h-[320px] overflow-y-auto pr-1">
+              {(auditLogData?.items?.length ? auditLogData.items : MOCK_OPERATION_LOGS).slice(0, 10).map((log: any) => (
+                <div key={log.id}>
                   <div
-                    className={`shrink-0 w-7 h-7 rounded-full flex items-center justify-center ${
-                      log.type === 'role_change'
-                        ? 'bg-accent-100 text-accent-600'
-                        : log.type === 'status_toggle'
-                          ? 'bg-neutral-200 text-neutral-600'
-                          : log.type === 'batch_op'
-                            ? 'bg-warning-100 text-warning-600'
-                            : log.type === 'login_anomaly'
-                              ? 'bg-error-100 text-error-600'
-                              : 'bg-error-100 text-error-600'
-                    }`}
+                    onClick={() => handleLogClick(log.id)}
+                    className={`flex items-start gap-3 p-2.5 rounded-lg text-xs cursor-pointer transition-all duration-150 hover:bg-primary-50 dark:hover:bg-primary-900/10 ${
+                      log.type === 'login_anomaly' || log.type === 'security_event'
+                        ? 'border border-red-200 dark:border-red-800/30'
+                        : log.type === 'batch_op'
+                          ? 'border border-amber-200 dark:border-amber-800/30'
+                          : 'border border-transparent'
+                    } ${expandedLogId === log.id ? 'bg-primary-50 dark:bg-primary-900/10 rounded-t-none' : ''}`}
                   >
-                    {log.type === 'role_change' ? (
-                      <UserCog className="w-3.5 h-3.5" />
-                    ) : log.type === 'status_toggle' ? (
-                      <ShieldQuestion className="w-3.5 h-3.5" />
-                    ) : log.type === 'batch_op' ? (
-                      <Users className="w-3.5 h-3.5" />
-                    ) : (
-                      <AlertCircle className="w-3.5 h-3.5" />
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-neutral-700 dark:text-neutral-300">{log.action}</span>
-                      <span className="text-neutral-400">·</span>
-                      <span className="text-neutral-500 truncate">{log.target}</span>
+                    <div
+                      className={`shrink-0 w-7 h-7 rounded-full flex items-center justify-center ${
+                        log.type === 'role_change'
+                          ? 'bg-accent-100 text-accent-600'
+                          : log.type === 'status_toggle'
+                            ? 'bg-neutral-200 text-neutral-600'
+                            : log.type === 'batch_op'
+                              ? 'bg-warning-100 text-warning-600'
+                              : log.type === 'login_anomaly'
+                                ? 'bg-error-100 text-error-600'
+                                : 'bg-error-100 text-error-600'
+                      }`}
+                    >
+                      {log.type === 'role_change' ? (
+                        <UserCog className="w-3.5 h-3.5" />
+                      ) : log.type === 'status_toggle' ? (
+                        <ShieldQuestion className="w-3.5 h-3.5" />
+                      ) : log.type === 'batch_op' ? (
+                        <Users className="w-3.5 h-3.5" />
+                      ) : (
+                        <AlertCircle className="w-3.5 h-3.5" />
+                      )}
                     </div>
-                    <p className="text-neutral-400 mt-0.5 truncate">{log.details}</p>
-                    <div className="flex items-center gap-2 mt-1 text-[11px] text-neutral-400">
-                      <Clock className="w-3 h-3" />
-                      {log.timestamp}
-                      <span className="text-neutral-300">|</span>
-                      <span className="font-mono">{log.operator}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-neutral-700 dark:text-neutral-300">{log.action}</span>
+                        <span className="text-neutral-400">·</span>
+                        <span className="text-neutral-500 truncate">{log.target || log.username || '系统'}</span>
+                        <span className="ml-auto text-[10px] text-neutral-400 flex items-center gap-1">
+                          {expandedLogId === log.id ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                        </span>
+                      </div>
+                      <p className="text-neutral-500 dark:text-neutral-400 mt-0.5 text-[11px] truncate">
+                        {log.details || log.action}
+                      </p>
+                      <div className="flex items-center gap-2 mt-0.5 text-[10px] text-neutral-400">
+                        <Clock className="w-3 h-3" />
+                        {log.created_at || log.timestamp}
+                        <span className="text-neutral-300">|</span>
+                        <span className="font-mono">{log.username || log.operator || '—'}</span>
+                        {log.user_role && (
+                          <>
+                            <span className="text-neutral-300">|</span>
+                            <span className="px-1 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-[10px]">{log.user_role}</span>
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
+                  {expandedLogId === log.id && (
+                    <div className="mx-2 mb-2 p-3 rounded-lg bg-neutral-50 dark:bg-neutral-900/50 border border-neutral-200 dark:border-neutral-700 text-[11px] space-y-1.5">
+                      {log.entity_type && (
+                        <div className="flex gap-2">
+                          <span className="text-neutral-400 shrink-0">实体类型:</span>
+                          <span className="font-mono text-neutral-700 dark:text-neutral-300">{log.entity_type}</span>
+                        </div>
+                      )}
+                      {log.entity_id && (
+                        <div className="flex gap-2">
+                          <span className="text-neutral-400 shrink-0">实体ID:</span>
+                          <span className="font-mono text-neutral-700 dark:text-neutral-300">{log.entity_id}</span>
+                        </div>
+                      )}
+                      {log.ip_address && (
+                        <div className="flex gap-2">
+                          <span className="text-neutral-400 shrink-0">IP地址:</span>
+                          <span className="font-mono text-neutral-700 dark:text-neutral-300">{log.ip_address}</span>
+                        </div>
+                      )}
+                      {log.details && typeof log.details === 'string' && (
+                        <div className="flex gap-2">
+                          <span className="text-neutral-400 shrink-0">详情:</span>
+                          <span className="text-neutral-600 dark:text-neutral-400 break-all">{log.details}</span>
+                        </div>
+                      )}
+                      {log.details && typeof log.details === 'object' && (
+                        <pre className="mt-1 p-2 rounded bg-white dark:bg-neutral-900 font-mono text-[10px] overflow-x-auto text-neutral-600 dark:text-neutral-400">
+                          {JSON.stringify(log.details, null, 2)}
+                        </pre>
+                      )}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -846,7 +1100,7 @@ export default function UserManagementPage() {
                 </div>
                 筛选条件{' '}
               </h3>
-              {(roleFilter !== 'all' || statusFilter !== 'all' || search) && (
+              {(roleFilter !== 'all' || statusFilter !== 'all' || orgFilter !== null || search) && (
                 <Button
                   variant="ghost"
                   size="sm"
@@ -854,6 +1108,7 @@ export default function UserManagementPage() {
                   onClick={() => {
                     setRoleFilter('all');
                     setStatusFilter('all');
+                    setOrgFilter(null);
                     setSearchInput('');
                     setPage(1);
                   }}
@@ -909,6 +1164,26 @@ export default function UserManagementPage() {
                 {STATUS_OPTIONS.map(({ value, label }) => (
                   <option key={value} value={value}>
                     {label}
+                  </option>
+                ))}
+              </Select>
+            </div>
+
+            {/* P3-4: 组织筛选 */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-neutral-500 uppercase tracking-wider">组织</label>
+              <Select
+                value={orgFilter !== null ? String(orgFilter) : 'all'}
+                onChange={(v) => {
+                  setOrgFilter(v === 'all' ? null : Number(v));
+                  setPage(1);
+                }}
+                size="sm"
+              >
+                <option value="all">全部组织</option>
+                {orgListData?.map((org: { id: number; name: string }) => (
+                  <option key={org.id} value={org.id}>
+                    {org.name}
                   </option>
                 ))}
               </Select>
@@ -1053,7 +1328,7 @@ export default function UserManagementPage() {
                   onClick={() => requestBatchDelete()}
                   disabled={batchDeleteMutation.isPending}
                 >
-                  <Trash2 className="w-3.5 h-3.5 mr-1" /> 批量删除
+                  <Trash2 className="w-3.5 h-3.5 mr-1" /> 批量禁用
                 </Button>
                 <Button size="sm" variant="ghost" className="text-neutral-500" onClick={() => setSelectedIds(new Set())}>
                   取消选择
@@ -1090,9 +1365,9 @@ export default function UserManagementPage() {
             ) : filteredUsers.length === 0 ? (
               <div className="py-16">
                 <EmptyState
-                  title={search || roleFilter !== 'all' || statusFilter !== 'all' ? '没有匹配的用户' : '暂无用户'}
+                  title={search || roleFilter !== 'all' || statusFilter !== 'all' || orgFilter !== null ? '没有匹配的用户' : '暂无用户'}
                   description={
-                    search || roleFilter !== 'all' || statusFilter !== 'all'
+                    search || roleFilter !== 'all' || statusFilter !== 'all' || orgFilter !== null
                       ? '尝试调整搜索关键词或筛选条件'
                       : '系统中还没有注册用户'
                   }
@@ -1167,7 +1442,7 @@ export default function UserManagementPage() {
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
+                    <tbody ref={tableBodyRef} className="divide-y divide-slate-100 dark:divide-slate-700/50">
                       {filteredUsers.map((user, idx) => {
                         const roleCfg = getRoleConfig(user.role);
                         const RoleIcon = roleCfg.icon;
@@ -1178,6 +1453,7 @@ export default function UserManagementPage() {
                         const isSelf = user.id === currentUser?.id;
                         const showMenu = actionMenuId === user.id;
                         const hasAnomaly = (user.login_attempts ?? 0) >= 3;
+                        const isLocked = !!(user as any).locked_until && new Date((user as any).locked_until) > new Date();
 
                         return (
                           <tr
@@ -1218,6 +1494,7 @@ export default function UserManagementPage() {
                                       </Badge>
                                     )}
                                     {hasAnomaly && <AlertTriangle className="w-3 h-3 ml-1 inline text-warning-500" />}
+                                    {isLocked && <Lock className="w-3 h-3 ml-1 inline text-error-500" />}
                                   </p>
                                   <p className="text-xs text-neutral-400 dark:text-neutral-500 truncate max-w-[140px]">
                                     ID: {user.id}
@@ -1311,10 +1588,11 @@ export default function UserManagementPage() {
                                     <button
                                       className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-slate-50 dark:hover:bg-neutral-700/50 transition-colors"
                                       onClick={() => {
-                                        requestRoleChange(
-                                          user,
-                                          user.role === UserRole.ADMIN ? UserRole.MANAGER : UserRole.ADMIN,
-                                        );
+                                        // Cycle through roles: ADMIN -> MANAGER -> RESEARCHER -> ANALYST -> VIEWER -> ADMIN
+                                        const roleOrder = [UserRole.ADMIN, UserRole.MANAGER, UserRole.RESEARCHER, UserRole.ANALYST, UserRole.VIEWER];
+                                        const currentIdx = roleOrder.indexOf(user.role as UserRole);
+                                        const nextRole = roleOrder[(currentIdx + 1) % roleOrder.length];
+                                        requestRoleChange(user, nextRole);
                                         setActionMenuId(null);
                                       }}
                                       disabled={isSelf}
@@ -1352,7 +1630,7 @@ export default function UserManagementPage() {
                                       }}
                                       disabled={isSelf}
                                     >
-                                      <Trash2 className="w-4 h-4" /> 删除用户
+                                      <Trash2 className="w-4 h-4" /> 删除账户
                                     </button>
                                   </div>
                                 )}
@@ -1474,6 +1752,12 @@ export default function UserManagementPage() {
                           highlight: (detailUser.login_attempts ?? 0) >= 3,
                         },
                         { icon: Globe, label: '头像', value: detailUser.avatar_url ? '已设置' : '未设置' },
+                        ...(lockStatus ? [{
+                          icon: lockStatus.is_locked ? Lock : Unlock,
+                          label: '账号锁定',
+                          value: lockStatus.is_locked ? `已锁定${lockStatus.lock_info?.remaining_time ? ` 剩余${Math.ceil(lockStatus.lock_info.remaining_time / 60)}分钟` : ''}` : '未锁定',
+                          highlight: lockStatus.is_locked,
+                        }] : []),
                       ].map(({ icon: Icon, label, value, highlight }) => (
                         <div
                           key={label}
@@ -1489,6 +1773,107 @@ export default function UserManagementPage() {
                         </div>
                       ))}
                     </div>
+
+                    {/* Edit Profile Button / Form */}
+                    {!editProfileOpen ? (
+                      <button
+                        disabled={isSelf}
+                        onClick={() => {
+                          if (isSelf) return;
+                          setEditForm({
+                            email: detailUser.email || '',
+                            full_name: detailUser.full_name || '',
+                            phone: (detailUser as any).phone || '',
+                            department: detailUser.department || '',
+                          });
+                          setEditErrors({});
+                          setEditProfileOpen(true);
+                        }}
+                        className={`self-stretch flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium border transition-all ${
+                          isSelf
+                            ? 'opacity-40 cursor-not-allowed border-neutral-200 dark:border-neutral-700 text-neutral-400'
+                            : 'border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300 hover:border-primary-300 dark:hover:border-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20'
+                        }`}
+                      >
+                        <Edit3 className="w-4 h-4" /> 编辑资料
+                      </button>
+                    ) : (
+                      <div className="self-stretch w-full space-y-3 bg-white dark:bg-neutral-900/50 rounded-xl border border-primary-200 dark:border-primary-800/40 p-4">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-semibold text-neutral-700 dark:text-neutral-200">编辑用户资料</span>
+                          <button onClick={() => setEditProfileOpen(false)} className="text-neutral-400 hover:text-neutral-600">
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="space-y-1">
+                            <label className="text-xs text-neutral-500">邮箱</label>
+                            <Input
+                              value={editForm.email}
+                              onChange={(e) => setEditForm((p) => ({ ...p, email: e.target.value }))}
+                              placeholder="user@example.com"
+                              prefix={<Mail size={14} className="text-neutral-400" />}
+                              size="sm"
+                              error={!!editErrors.email}
+                            />
+                            {editErrors.email && <p className="text-xs text-error-500">{editErrors.email}</p>}
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-xs text-neutral-500">姓名</label>
+                            <Input
+                              value={editForm.full_name}
+                              onChange={(e) => setEditForm((p) => ({ ...p, full_name: e.target.value }))}
+                              placeholder="真实姓名"
+                              prefix={<UserCog size={14} className="text-neutral-400" />}
+                              size="sm"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-xs text-neutral-500">电话</label>
+                            <Input
+                              value={editForm.phone}
+                              onChange={(e) => setEditForm((p) => ({ ...p, phone: e.target.value }))}
+                              placeholder="手机号码"
+                              prefix={<Phone size={14} className="text-neutral-400" />}
+                              size="sm"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-xs text-neutral-500">部门</label>
+                            <Input
+                              value={editForm.department}
+                              onChange={(e) => setEditForm((p) => ({ ...p, department: e.target.value }))}
+                              placeholder="所属部门"
+                              prefix={<Building2 size={14} className="text-neutral-400" />}
+                              size="sm"
+                            />
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 justify-end">
+                          <Button size="sm" variant="ghost" onClick={() => setEditProfileOpen(false)}>
+                            取消
+                          </Button>
+                          <Button
+                            size="sm"
+                            onClick={() => {
+                              const errs: Record<string, string> = {};
+                              if (editForm.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editForm.email)) errs.email = '邮箱格式无效';
+                              setEditErrors(errs);
+                              if (Object.keys(errs).length > 0) return;
+                              const payload: Record<string, any> = {};
+                              if (editForm.email) payload.email = editForm.email;
+                              if (editForm.full_name) payload.full_name = editForm.full_name;
+                              if (editForm.phone) payload.phone = editForm.phone;
+                              if (editForm.department) payload.department = editForm.department;
+                              if (detailUser) editProfileMutation.mutate({ userId: detailUser.id, data: payload });
+                            }}
+                            disabled={editProfileMutation.isPending}
+                          >
+                            {editProfileMutation.isPending ? '保存中...' : '保存更改'}
+                          </Button>
+                        </div>
+                      </div>
+                    )}
 
                     <div className="gap-2.5 pt-3 border-t border-neutral-100 dark:border-neutral-700 bg-slate-50/50 dark:bg-neutral-800/30 -mx-6 -mb-6 px-6 py-4 rounded-b-xl flex items-center">
                       {!detailUser.is_active && !isSelf && (
@@ -1527,9 +1912,27 @@ export default function UserManagementPage() {
                             requestDeleteUser(detailUser);
                             setDetailUser(null);
                           }}
-                          disabled={deleteUserMutation.isPending}
+                          disabled={deactivateUserMutation.isPending}
                         >
-                          <Trash2 className="w-4 h-4 mr-1.5" /> 删除用户
+                          <Trash2 className="w-4 h-4 mr-1.5" /> 删除账户
+                        </Button>
+                      )}
+                      {lockStatus?.is_locked && !isSelf && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="flex-1 text-warning-600 border-amber-200 hover:bg-warning-50 dark:border-amber-800 dark:hover:bg-warning-900/20"
+                          onClick={async () => {
+                            try {
+                              await adminApi.unlockUserAccount(detailUser.id);
+                              toast.success('账号已解锁');
+                              setDetailUser(null);
+                            } catch {
+                              toast.error('解锁失败，请重试');
+                            }
+                          }}
+                        >
+                          <Unlock className="w-4 h-4 mr-1.5" /> 解锁账号
                         </Button>
                       )}
                       <Button variant="outline" size="sm" onClick={() => setDetailUser(null)} className="flex-1">
@@ -1591,6 +1994,44 @@ export default function UserManagementPage() {
                       </div>
                     </div>
 
+                    {/* P5-7: 2FA Toggle */}
+                    <div className="pt-3 border-t border-neutral-100 dark:border-neutral-700">
+                      <div className="flex items-center justify-between p-3 rounded-xl bg-neutral-50 dark:bg-neutral-900/30">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+                            <KeyRound className="w-4 h-4 text-primary-600 dark:text-primary-400" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">两步验证 (2FA)</p>
+                            <p className="text-[11px] text-neutral-400">增强账户安全，登录时需要额外验证码</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                            (detailUser as any).totp_enabled
+                              ? 'bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-400'
+                              : 'bg-neutral-100 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400'
+                          }`}>
+                            {(detailUser as any).totp_enabled ? '已启用' : '未启用'}
+                          </span>
+                          <Button
+                            size="sm"
+                            variant={(detailUser as any).totp_enabled ? 'outline' : 'default'}
+                            disabled={isSelf}
+                            onClick={() => {
+                              if ((detailUser as any).totp_enabled) {
+                                toast.info('2FA 管理功能开发中');
+                              } else {
+                                toast.info('2FA 启用功能开发中，敬请期待');
+                              }
+                            }}
+                          >
+                            {(detailUser as any).totp_enabled ? '管理' : '启用'}
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+
                     <div className="pt-3 border-t border-neutral-100 dark:border-neutral-700">
                       <h4 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-2">权限说明</h4>
                       <div className="space-y-2">
@@ -1632,7 +2073,18 @@ export default function UserManagementPage() {
                     </div>
 
                     <div className="relative pl-4 border-l-2 border-neutral-200/80 dark:border-neutral-700/60 space-y-0">
-                      {MOCK_ACTIVITY_RECORDS.map((record, idx) => (
+                      {(detailUser ? (
+        userActivityQuery.data?.items?.length
+          ? userActivityQuery.data.items.map((log) => ({
+              id: log.id,
+              action: log.action || '未知操作',
+              time: log.created_at || '',
+              ip: log.ip_address || '-',
+              location: '本地',
+              status: (log.status_code === 200 || log.status_code === undefined) ? 'success' : 'failed',
+            }))
+          : MOCK_ACTIVITY_RECORDS
+      ) : MOCK_ACTIVITY_RECORDS).map((record) => (
                         <div key={record.id} className="relative pb-4 last:pb-0">
                           <div
                             className={`absolute -left-[21px] w-3 h-3 rounded-full border-2 shadow-sm background-white dark:bg-neutral-900 ${
@@ -1661,11 +2113,11 @@ export default function UserManagementPage() {
                             <div className="flex items-center gap-3 mt-1 text-[11px] text-neutral-400">
                               <span className="flex items-center gap-1">
                                 <Calendar className="w-3 h-3" />
-                                {record.time.split(' ')[0]}
+                                {(() => { const d = new Date(record.time); return isNaN(d.getTime()) ? record.time : d.toLocaleDateString('zh-CN'); })()}
                               </span>
                               <span className="flex items-center gap-1">
                                 <Clock className="w-3 h-3" />
-                                {record.time.split(' ')[1]}
+                                {(() => { const d = new Date(record.time); return isNaN(d.getTime()) ? '' : d.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }); })()}
                               </span>
                               <span className="flex items-center gap-1">
                                 <MapPin className="w-3 h-3" />
@@ -1684,19 +2136,19 @@ export default function UserManagementPage() {
                     <div className="pt-3 border-t border-neutral-100 dark:border-neutral-700 grid grid-cols-3 gap-3">
                       <div className="text-center p-2 rounded-lg bg-primary-50 dark:bg-primary-900/10">
                         <p className="text-lg font-bold text-primary-600 tabular-nums">
-                          {MOCK_ACTIVITY_RECORDS.filter((r) => r.status === 'success').length}
+                          {detailUser && userActivityQuery.data?.items ? userActivityQuery.data.items.filter((l) => l.status_code === 200).length : MOCK_ACTIVITY_RECORDS.filter((r) => r.status === 'success').length}
                         </p>
                         <p className="text-[11px] text-primary-600/70">成功操作</p>
                       </div>
                       <div className="text-center p-2 rounded-lg bg-error-50 dark:bg-error-900/10">
                         <p className="text-lg font-bold text-error-600 tabular-nums">
-                          {MOCK_ACTIVITY_RECORDS.filter((r) => r.status === 'failed').length}
+                          {detailUser && userActivityQuery.data?.items ? userActivityQuery.data.items.filter((l) => l.status_code !== 200).length : MOCK_ACTIVITY_RECORDS.filter((r) => r.status === 'failed').length}
                         </p>
                         <p className="text-[11px] text-error-600/70">失败操作</p>
                       </div>
                       <div className="text-center p-2 rounded-lg bg-warning-50 dark:bg-warning-900/10">
                         <p className="text-lg font-bold text-warning-600 tabular-nums">
-                          {formatTimeAgo(MOCK_ACTIVITY_RECORDS[0]?.time || '')}
+                          {detailUser && userActivityQuery.data?.items?.[0]?.created_at ? formatTimeAgo(userActivityQuery.data.items[0].created_at) : formatTimeAgo(MOCK_ACTIVITY_RECORDS[0]?.time || '')}
                         </p>
                         <p className="text-[11px] text-warning-600/70">最近活动</p>
                       </div>
@@ -1797,6 +2249,36 @@ lisi,李四,li@example.com,analyst,数据部`}
         </div>
       </Modal>
 
+      {/* ── Import Error Detail Modal ── */}
+      <Modal
+        open={importErrorDetail.length > 0}
+        onClose={() => setImportErrorDetail([])}
+        title={`导入错误 (${importErrorDetail.length})`}
+        size="md"
+      >
+        <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1">
+          {importErrorDetail.map((err: any, i: number) => (
+            <div
+              key={i}
+              className="flex items-start gap-3 p-3 rounded-lg bg-error-50 dark:bg-error-900/10 border border-error-200 dark:border-error-800/30 text-xs"
+            >
+              <AlertTriangle className="w-4 h-4 text-error-500 shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-error-700 dark:text-error-400">
+                  第 {err.row || '?'} 行 · {err.field || '未知字段'}
+                </p>
+                <p className="text-error-600/80 dark:text-error-500/70 mt-0.5">{err.message || String(err)}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="flex justify-end pt-3">
+          <Button variant="ghost" size="sm" onClick={() => setImportErrorDetail([])}>
+            关闭
+          </Button>
+        </div>
+      </Modal>
+
       {/* ── Create User Modal ── */}
       <Modal
         open={showCreateModal}
@@ -1864,7 +2346,7 @@ lisi,李四,li@example.com,analyst,数据部`}
                       return next;
                     });
                   }}
-                  placeholder="至少6个字符"
+                  placeholder="至少8个字符"
                   prefix={<Lock size={14} className="text-neutral-400" />}
                   size="sm"
                   error={!!createErrors.password}
@@ -1942,6 +2424,22 @@ lisi,李四,li@example.com,analyst,数据部`}
                 className="focus:ring-2 focus:ring-primary-200 dark:focus:ring-primary-800 transition-all duration-200"
               />
             </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-neutral-600 dark:text-neutral-400">组织</label>
+              <Select
+                value={createForm.organization_id != null ? String(createForm.organization_id) : 'all'}
+                onChange={(v) => setCreateForm((prev) => ({ ...prev, organization_id: v === 'all' ? null : Number(v) }))}
+                size="sm"
+              >
+                <option value="all">不限组织</option>
+                {orgListData?.map((org: { id: number; name: string }) => (
+                  <option key={org.id} value={org.id}>
+                    {org.name}
+                  </option>
+                ))}
+              </Select>
+            </div>
           </div>
 
           <div className="bg-gradient-to-r from-slate-50 to-slate-100/50 dark:from-slate-800/50 dark:to-slate-700/30 border border-neutral-200/60 dark:border-neutral-700/40 rounded-xl p-3.5 ring-1 ring-slate-200/60 dark:ring-slate-700/40">
@@ -1949,7 +2447,7 @@ lisi,李四,li@example.com,analyst,数据部`}
               <span className="inline-flex items-center gap-1 font-semibold text-neutral-700 dark:text-neutral-300">
                 <Zap className="w-3 h-3" /> 提示：{' '}
               </span>
-              新创建的用户默认状态为「正常」。创建后可随时在列表中修改角色或禁用账户。用户名仅支持英文字母、数字和下划线，密码长度至少6位。{' '}
+              新创建的用户默认状态为「正常」。创建后可随时在列表中修改角色或禁用账户。用户名仅支持英文字母、数字和下划线，密码长度至少8位。{' '}
             </p>
           </div>
 
@@ -1984,6 +2482,7 @@ lisi,李四,li@example.com,analyst,数据部`}
                   full_name: '',
                   role: UserRole.VIEWER,
                   department: '',
+                  organization_id: null,
                 });
               }}
               disabled={createUserMutation.isPending}

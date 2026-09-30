@@ -15,6 +15,14 @@ from .version_router import router as version_router
 from .metrics_router import router as metrics_router
 from .ray_router import router as ray_router
 from .mo_stream_endpoint import router as mo_stream_router
+from .batches_router import router as batches_router
+from .samples_router import router as samples_router
+from .fact_engine_router import router as fact_engine_router
+from .doe_router import router as doe_router
+from .stability_router import router as stability_router
+from .label_router import router as label_router
+from .document_router import router as document_router
+from .mcp_router import router as mcp_router
 
 # import_router requires celery; skip if not installed
 try:
@@ -33,6 +41,14 @@ v1_routers: list[tuple[APIRouter, str]] = [
     (metrics_router, "Metrics"),
     (ray_router, "Ray 集群管理"),
     (mo_stream_router, "NSGA-II 多目标优化"),
+    (batches_router, "批记录管理"),
+    (samples_router, "样品与测试"),
+    (fact_engine_router, "FactEngine 确定性计算"),
+    (doe_router, "DOE 实验设计"),
+    (stability_router, "Arrhenius 稳定性预测"),
+    (label_router, "标签生成"),
+    (document_router, "文档智能提取"),
+    (mcp_router, "MCP Server"),
 ]
 if import_router is not None:
     v1_routers.append((import_router, "数据导入"))

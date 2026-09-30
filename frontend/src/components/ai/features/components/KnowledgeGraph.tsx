@@ -335,23 +335,23 @@ const KnowledgeGraph = memo(({
             className="p-2 bg-white dark:bg-neutral-800 rounded-lg shadow-md hover:bg-slate-50 dark:hover:bg-neutral-700 transition-colors"
             title="放大"
           >
-            <ZoomIn className="w-4 h-4 text-neutral-600 dark:text-neutral-300" />
+            <ZoomIn className="w-4 h-4 text-[var(--text-secondary)]" />
           </button>
           <button
             onClick={handleZoomOut}
             className="p-2 bg-white dark:bg-neutral-800 rounded-lg shadow-md hover:bg-slate-50 dark:hover:bg-neutral-700 transition-colors"
             title="缩小"
           >
-            <ZoomOut className="w-4 h-4 text-neutral-600 dark:text-neutral-300" />
+            <ZoomOut className="w-4 h-4 text-[var(--text-secondary)]" />
           </button>
           <button
             onClick={handleResetZoom}
             className="p-2 bg-white dark:bg-neutral-800 rounded-lg shadow-md hover:bg-slate-50 dark:hover:bg-neutral-700 transition-colors"
             title="重置视图"
           >
-            <RotateCcw className="w-4 h-4 text-neutral-600 dark:text-neutral-300" />
+            <RotateCcw className="w-4 h-4 text-[var(--text-secondary)]" />
           </button>
-          <div className="text-xs text-center text-neutral-500 dark:text-neutral-400 mt-1">
+          <div className="text-xs text-center text-[var(--text-muted)] mt-1">
             {(zoomLevel * 100).toFixed(0)}%
           </div>
         </div>
@@ -370,7 +370,7 @@ const KnowledgeGraph = memo(({
           <div className="space-y-1">
             <div className="font-semibold">{hoveredNode.label}</div>
             {hoveredNode.category && (
-              <div className="text-xs text-neutral-400">分类: {hoveredNode.category}</div>
+              <div className="text-xs text-[var(--text-muted)]">分类: {hoveredNode.category}</div>
             )}
             {hoveredNode.description && (
               <div className="text-xs">{hoveredNode.description.slice(0, 100)}...</div>
@@ -385,7 +385,7 @@ const KnowledgeGraph = memo(({
       {selectedNode && (
         <div className="absolute bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-80 bg-white dark:bg-neutral-800 rounded-xl shadow-xl border border-neutral-200 dark:border-neutral-700 p-4 animate-in slide-in-from-bottom-2 fade-in duration-200">
           <div className="flex items-start justify-between mb-3">
-            <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">
+            <h3 className="text-base font-bold text-[var(--text-primary)]">
               {selectedNode.label}
             </h3>
             <button
@@ -398,28 +398,28 @@ const KnowledgeGraph = memo(({
 
           {selectedNode.category && (
             <div className="mb-2">
-              <span className="inline-block px-2 py-1 text-xs font-medium bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300 rounded-full">
+              <span className="inline-block px-2 py-1 text-xs font-semibold bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300 rounded-full">
                 {selectedNode.category}
               </span>
             </div>
           )}
 
           {selectedNode.description && (
-            <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
+            <p className="text-sm text-[var(--text-secondary)] mb-3">
               {selectedNode.description}
             </p>
           )}
 
           {selectedNode.metadata && Object.keys(selectedNode.metadata).length > 0 && (
             <div className="border-t border-neutral-200 dark:border-neutral-700 pt-3">
-              <h4 className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2">
+              <h4 className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-2">
                 详细信息
               </h4>
               <div className="grid grid-cols-2 gap-2 text-xs">
                 {Object.entries(selectedNode.metadata).map(([key, value]) => (
                   <div key={key}>
-                    <span className="text-neutral-500">{key}:</span>{' '}
-                    <span className="font-medium text-neutral-900 dark:text-neutral-100">
+                    <span className="text-[var(--text-muted)]">{key}:</span>{' '}
+                    <span className="font-semibold text-[var(--text-primary)]">
                       {String(value)}
                     </span>
                   </div>
@@ -432,7 +432,7 @@ const KnowledgeGraph = memo(({
 
       {/* 统计信息 */}
       <div className="absolute top-4 left-4 z-10 bg-white/90 dark:bg-neutral-800/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-sm">
-        <div className="flex items-center gap-3 text-xs text-neutral-600 dark:text-neutral-400">
+        <div className="flex items-center gap-3 text-xs text-[var(--text-secondary)]">
           <span className="flex items-center gap-1">
             <Info className="w-3.5 h-3.5" />
             {nodes.length} 个节点

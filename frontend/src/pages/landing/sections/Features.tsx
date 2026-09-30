@@ -40,8 +40,8 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
         {/* 核心能力角标 */}
         {isCore && (
           <div
-            className="absolute top-0 right-0 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider"
-            style={{ background: cfg.primary, color: '#fff' }}
+            className="absolute top-0 right-0 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider"
+            style={{ background: '#047857', color: '#fff' }}
           >
             核心
           </div>
@@ -60,10 +60,10 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
               <div className="flex items-center gap-2 mb-0.5">
                 <h3 className="text-[14px] font-bold text-slate-900">{feature.title}</h3>
                 {feature.keyMetric && (
-                  <span className="lp-caption font-mono shrink-0">{feature.keyMetric}</span>
+                  <span className="lp-caption font-mono shrink-0" style={{ color: '#047857' }}>{feature.keyMetric}</span>
                 )}
               </div>
-              <span className="text-[10px] text-neutral-400">{feature.tag}</span>
+              <span className="text-[11px] text-slate-500">{feature.tag}</span>
             </div>
           </div>
 
@@ -76,9 +76,9 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
           {feature.steps && feature.steps.length > 0 && (
             <ol className="lp-numbered">
               {feature.steps.map((step, i) => (
-                <li key={step.label} className="text-[12px] text-slate-500 leading-relaxed">
+                <li key={step.label} className="text-[12px] text-slate-600 leading-relaxed">
                   <span className="font-medium text-slate-700">{step.label}</span>
-                  {step.detail && <span className="text-neutral-400 ml-1">— {step.detail}</span>}
+                  {step.detail && <span className="text-slate-500 ml-1">— {step.detail}</span>}
                 </li>
               ))}
             </ol>
@@ -121,7 +121,7 @@ export default function Features() {
             <h2 className="lp-h2 mb-4">
               {titleLines.map((line, i) => <span key={i}>{line}{i < titleLines.length - 1 && <br />} </span>)}
             </h2>
-            <p className="lp-body-sm max-w-lg">
+            <p className="lp-body-sm max-w-lg text-slate-600">
               {sectionDesc}
             </p>
           </div>

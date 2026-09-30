@@ -53,8 +53,8 @@ async def execute_workflow(
     if not workflow:
         raise HTTPException(404, detail="工作流不存在")
 
-    if workflow.status in (WorkflowStatus.COMPLETED, WorkflowStatus.CANCELLED):
-        raise HTTPException(400, detail="该工作流已完成或已取消")
+    if workflow.status in (WorkflowStatus.COMPLETED, WorkflowStatus.CANCELLED, WorkflowStatus.IN_PROGRESS):
+        raise HTTPException(400, detail="该工作流已完成、已取消或正在执行中")
 
     # 加载任务节点
     tasks_result = await db.execute(

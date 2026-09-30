@@ -205,7 +205,7 @@ class ExperimentService:
             )
 
         experiment.status = ExperimentStatus.IN_PROGRESS
-        experiment.actual_start = datetime.utcnow()
+        experiment.actual_start = datetime.now()
         await self.db.flush()
 
         return experiment
@@ -228,7 +228,7 @@ class ExperimentService:
             )
 
         experiment.status = ExperimentStatus.COMPLETED
-        experiment.actual_end = datetime.utcnow()
+        experiment.actual_end = datetime.now()
         if results is not None:
             experiment.results = results
         if conclusions is not None:
@@ -268,8 +268,8 @@ class ExperimentService:
 
         data_point = ExperimentData(
             experiment_id=experiment_id,
-            parameter=parameter,
-            value=value,
+            data_type=parameter,
+            data_value=float(value) if value is not None else None,
             unit=unit,
             notes=notes,
         )
@@ -296,8 +296,8 @@ class ExperimentService:
         for dp in data_points:
             point = ExperimentData(
                 experiment_id=experiment_id,
-                parameter=dp.get("parameter", ""),
-                value=dp.get("value"),
+                data_type=dp.get("parameter", ""),
+                data_value=float(dp.get("value")) if dp.get("value") is not None else None,
                 unit=dp.get("unit"),
                 notes=dp.get("notes"),
             )
@@ -312,7 +312,7 @@ class ExperimentService:
         result = await self.db.execute(
             select(ExperimentData)
             .where(ExperimentData.experiment_id == experiment_id)
-            .order_by(ExperimentData.recorded_at)
+            .order_by(ExperimentData.created_at)
         )
         return list(result.scalars().all())
 
@@ -362,12 +362,22 @@ class ExperimentService:
         user_id: int,
         details: dict = None,
     ):
-        """记录审计日志"""
+        """记录审计日志
+
+        audit_logs 真实表列（已用 information_schema 校验）：
+          id / action / resource_type / resource_id / user_id / details(json)
+          / ip_address / user_agent / request_id / created_at
+        模型属性通过 mapped_column 列名映射对齐；细节信息（含 entity_type 语义）
+        统一并入 details JSON，不再写独立列。
+        """
+        merged_details = details or {}
+        merged_details["entity_type"] = entity_type
+        merged_details["resource_id"] = entity_id
         log = AuditLog(
-            user_id=user_id,
             action=action,
-            entity_type=entity_type,
-            entity_id=entity_id,
-            details=details,
+            resource_type=entity_type,
+            resource_id=entity_id,
+            user_id=user_id,
+            details=merged_details,
         )
         self.db.add(log)

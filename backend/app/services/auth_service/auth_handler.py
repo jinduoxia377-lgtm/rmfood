@@ -15,10 +15,10 @@ class AuthHandler:
         if username in self._test_users and self._test_users[username] == password:
             # In real app, generate JWT token here
             return f"mock_token_{username}"
-        raise HTTPException(status_code=401, detail="Invalid credentials")
+        raise HTTPException(status_code=401, detail="用户名或密码错误")
     
     async def get_current_user(self, token: str) -> str:
         """Extract user ID from token (simplified)."""
         if token.startswith("mock_token_"):
             return token.replace("mock_token_", "")
-        raise HTTPException(status_code=401, detail="Invalid token")
+        raise HTTPException(status_code=401, detail="令牌无效")

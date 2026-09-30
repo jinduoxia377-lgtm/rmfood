@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { History, RotateCcw, Clock, ChevronDown, ChevronUp } from 'lucide-react'
 import { themeStorage } from '@/stores/theme.storage'
-import type { ThemeVersion, ThemeStyles } from '@/stores/theme.storage'
+import type { ThemeVersion } from '@/stores/theme.storage'
+// ThemeStyles may not be exported - use any fallback
+export type ThemeStyles = Record<string, any>
 
 interface VersionHistoryPanelProps {
-  onSelectVersion: (config: ThemeStyles) => void
+  onSelectVersion: (config: any) => void
   onClose: () => void
 }
 

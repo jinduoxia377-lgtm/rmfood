@@ -23,6 +23,7 @@
  */
 
 import { logger } from '@/utils/safeLogger';
+import { userPreferencesService } from './userPreferencesService';
 // ===== 类型定义 =====
 
 /** UI 层偏好（委托给 userPreferencesService） */
@@ -430,7 +431,92 @@ class UnifiedUserProfileManager {
       parts.push('用户已关闭共情回应模式，保持纯专业语调')
     }
 
+    // ── 健康安全约束（来自设置面板 / 自动提取）──
+    // 这是安全关键信息，缺失会导致 AI 忽略用户过敏原与饮食禁忌。
+    const health = this.buildHealthConstraints()
+    if (health.length > 0) {
+      parts.push(...health)
+    }
+
     return `【用户画像】\n${parts.map(p => `- ${p}`).join('\n')}`
+  }
+
+  /**
+   * 构建健康安全约束条目。
+   *
+   * 数据源：userPreferencesService（设置面板手动填写 + 对话自动提取）。
+   * 与「交互偏好」不同，这些字段属于安全约束，必须注入 Prompt。
+   */
+  private buildHealthConstraints(): string[] {
+    const items: string[] = []
+    try {
+      const hp = userPreferencesService.getUserProfile()
+      if (!hp) return items
+
+      const goalLabels: Record<string, string> = {
+        blood_sugar_control: '血糖管理',
+        blood_pressure_control: '血压管理',
+        weight_management: '体重管理',
+        sleep_improvement: '改善睡眠',
+        immune_boost: '增强免疫',
+        antioxidant: '抗氧化/抗衰老',
+        liver_protection: '肝脏养护',
+        digestive_health: '消化健康',
+        anti_fatigue: '抗疲劳/提升精力',
+        other: '其他健康目标',
+      }
+      const allergenLabels: Record<string, string> = {
+        peanuts: '花生',
+        shellfish: '海鲜/甲壳类',
+        dairy: '乳制品',
+        gluten: '麸质',
+        soy: '大豆',
+        eggs: '鸡蛋',
+        tree_nuts: '坚果',
+        sesame: '芝麻',
+        mugwort: '菊科植物（苦瓜、桑叶等）',
+        other: '其他',
+      }
+      const dietLabels: Record<string, string> = {
+        vegetarian: '素食',
+        vegan: '纯素',
+        halal: '清真',
+        kosher: '洁食',
+        low_sugar: '低糖',
+        low_fat: '低脂',
+        low_sodium: '低盐',
+        no_alcohol: '禁酒',
+      }
+
+      const goals = (hp.healthGoals ?? [])
+        .map(g => goalLabels[g] ?? String(g))
+        .filter(Boolean)
+      if (goals.length > 0) items.push(`健康目标: ${goals.join('、')}`)
+
+      const allergens = (hp.allergens ?? [])
+        .map(a => allergenLabels[a] ?? String(a))
+        .filter(Boolean)
+      if (allergens.length > 0) {
+        items.push(`⚠️ 过敏禁忌（严禁使用）: ${allergens.join('、')}`)
+      }
+
+      const diets = (hp.dietRestrictions ?? [])
+        .map(d => dietLabels[d] ?? String(d))
+        .filter(Boolean)
+      if (diets.length > 0) {
+        items.push(`饮食限制: ${diets.join('、')}`)
+      }
+
+      if (hp.constitutionType) {
+        items.push(`体质倾向: ${hp.constitutionType}`)
+      }
+      if (hp.healthNotes) {
+        items.push(`健康状况备注: ${hp.healthNotes}`)
+      }
+    } catch (error) {
+      logger.warn('[UnifiedUserProfile] 读取健康约束失败，已跳过:', error)
+    }
+    return items
   }
 
   // ===== 持久化 =====

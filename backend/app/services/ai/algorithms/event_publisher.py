@@ -1,4 +1,4 @@
-"""Event publisher module for CQRS.""
+"""Event publisher module for CQRS."""
 
 from typing import List, Callable
 

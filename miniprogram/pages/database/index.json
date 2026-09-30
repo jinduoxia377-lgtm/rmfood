@@ -1,6 +1,9 @@
 {
-  "navigationBarTitleText": "数据检索中心",
-  "navigationBarBackgroundColor": "#2D5A3D",
-  "navigationBarTextStyle": "white",
-  "usingComponents": {}
+    "navigationBarTitleText":  "数据检索中心",
+    "usingComponents":  {
+                            "icon":  "../../components/Icon/index",
+                            "empty-state":  "../../components/EmptyState/index"
+                        },
+    "navigationBarBackgroundColor":  "#2D5A3D",
+    "navigationBarTextStyle":  "white"
 }

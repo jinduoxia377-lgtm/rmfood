@@ -1,5 +1,6 @@
 import { logger } from '@/utils/safeLogger'
 import { eventBus, IEventBus } from '../services/eventBus'
+import { chatService } from '../services/chatService'
 
 type SyncStatus = 'online' | 'offline' | 'syncing' | 'error'
 interface QueueItem {
@@ -65,15 +66,23 @@ class OfflineManager {
   }
 
   private setupNetworkListeners(): void {
-    window.addEventListener('online', this.handleOnline.bind(this))
-    window.addEventListener('offline', this.handleOffline.bind(this))
-
-    document.addEventListener('visibilitychange', () => {
+    // 存储绑定后的处理器引用，确保 destroy() 能正确移除
+    this._onlineHandler = this.handleOnline.bind(this)
+    this._offlineHandler = this.handleOffline.bind(this)
+    this._visibilityHandler = () => {
       if (document.visibilityState === 'visible' && navigator.onLine) {
         this.syncPendingItems()
       }
-    })
+    }
+    window.addEventListener('online', this._onlineHandler)
+    window.addEventListener('offline', this._offlineHandler)
+    document.addEventListener('visibilitychange', this._visibilityHandler)
   }
+
+  /** 绑定后的事件处理器引用（用于 destroy 时正确移除） */
+  private _onlineHandler: (() => void) | null = null
+  private _offlineHandler: (() => void) | null = null
+  private _visibilityHandler: (() => void) | null = null
 
   private handleOnline(): void {
     logger.info('[OfflineManager] 网络已恢复')
@@ -262,26 +271,14 @@ class OfflineManager {
   }
 
   private async syncMessage(payload: any): Promise<void> {
-    const response = await fetch('/api/v1/ai/chat', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${localStorage.getItem('access_token') || ''}`,
-      },
-      body: JSON.stringify({ question: payload.question }),
-    })
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-    }
-
-    const data = await response.json()
-
+    // 复用 chatService.sendMessage：统一走 axios 认证拦截器（cookie 自动携带 + 401 自动刷新），
+    // 并获得去重、重试、CSRF、状态机、事件总线等能力，避免裸 fetch 在 401 时认证链路断裂
+    const response = await chatService.sendMessage(payload.question)
     this.eventBus.emit('message:received', {
-      content: data.content,
+      content: response.content,
       senderId: 'assistant',
       timestamp: Date.now(),
-      ...(data.formulas && { formulas: data.formulas }),
+      ...(response.formulas && { formulas: response.formulas }),
     })
   }
 
@@ -382,8 +379,19 @@ class OfflineManager {
   }
 
   destroy(): void {
-    window.removeEventListener('online', this.handleOnline.bind(this))
-    window.removeEventListener('offline', this.handleOffline.bind(this))
+    // 使用存储的绑定引用正确移除监听器（避免 bind() 创建新引用的问题）
+    if (this._onlineHandler) {
+      window.removeEventListener('online', this._onlineHandler)
+      this._onlineHandler = null
+    }
+    if (this._offlineHandler) {
+      window.removeEventListener('offline', this._offlineHandler)
+      this._offlineHandler = null
+    }
+    if (this._visibilityHandler) {
+      document.removeEventListener('visibilitychange', this._visibilityHandler)
+      this._visibilityHandler = null
+    }
 
     if (this.syncInProgress) {
       this.syncInProgress = false

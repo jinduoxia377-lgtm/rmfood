@@ -67,6 +67,7 @@ class User(Base):
         cascade="all, delete-orphan",
         foreign_keys="PeptideAnalysis.user_id"
     )
+    # peptide_structure_analyses 关系已移除，避免循环导入问题
     ga_runs: Mapped[list["GARunRecord"]] = relationship(
         "GARunRecord", back_populates="user", cascade="all, delete-orphan"
     )

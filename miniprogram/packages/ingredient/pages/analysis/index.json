@@ -1,10 +1,1 @@
-{
-  "navigationBarTitleText": "配料分析",
-  "navigationBarBackgroundColor": "#2D5A3D",
-  "navigationBarTextStyle": "white",
-  "usingComponents": {
-    "icon": "../../../../components/Icon/index",
-    "nutrition-label": "../../../../components/NutritionLabel/index",
-    "health-score": "../../../../components/HealthScore/index"
-  }
-}
+{"navigationBarTitleText":"食材分析","usingComponents":{}}

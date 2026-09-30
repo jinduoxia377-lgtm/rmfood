@@ -74,13 +74,11 @@ def demo_usage():
     query = FormulaSearchQuery(target_effects=["补气"])
     results = sserv.search(query)
     
-    logger.info(f"
-Search returned {len(results)} results")
+    logger.info(f"Search returned {len(results)} results")
     if results:
         logger.info(f"First result: {results[0].name} (score: {results[0].relevance_score})")
     
-    logger.info("
-Demo complete!")
+    logger.info("Demo complete!")
 
 
 if __name__ == "__main__":

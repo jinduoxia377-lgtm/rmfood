@@ -258,7 +258,7 @@ class DatabaseConfig(BaseModel):
 
 class RedisConfig(BaseModel):
     """Redis 配置"""
-    url: str = Field(alias="DATABASE_URL", default="redis://localhost:6379/0", description="Redis 连接 URL")
+    url: str = Field(default="redis://localhost:6379/0", description="Redis 连接 URL")
     max_connections: int = Field(default=50, ge=1, description="最大连接数")
     socket_timeout: int = Field(default=5, ge=1, description="Socket 超时（秒）")
     socket_connect_timeout: int = Field(default=5, ge=1, description="Socket 连接超时（秒）")
@@ -314,8 +314,11 @@ class CeleryConfig(BaseModel):
         return v
 
 
-class SecurityConfig(BaseModel):
+class SecurityConfig(BaseSettings):
     """安全配置"""
+    model_config = SettingsConfigDict(
+        env_file=None, extra="ignore", case_sensitive=False
+    )
     secret_key: str = Field(default="", description="JWT 签名密钥")
     jwt_algorithm: str = Field(default="HS256", description="JWT 算法")
     jwt_expire_minutes: int = Field(default=60, ge=1, description="JWT 过期时间（分钟）")
@@ -328,6 +331,7 @@ class SecurityConfig(BaseModel):
     cors_origins: List[str] = Field(default_factory=list, description="CORS 允许的源")
     cors_allow_credentials: bool = Field(default=True, description="是否允许携带凭证")
     csrf_secret: str = Field(default="", description="CSRF double-submit secret")
+    cookie_secure: bool | None = Field(default=None, description="Cookie Secure 属性覆盖: None=跟随debug(生产True)；false=纯HTTP部署允许非HTTPS cookie；true=强制HTTPS")
 
     @field_validator("secret_key", mode="before")
     @classmethod
@@ -516,6 +520,11 @@ class Settings(BaseSettings):
             self.celery.broker_url = os.environ["CELERY__BROKER_URL"]
         if os.environ.get("CELERY__RESULT_BACKEND"):
             self.celery.result_backend = os.environ["CELERY__RESULT_BACKEND"]
+
+        # Redis URL：支持 REDIS_URL（扁平）和 REDIS__URL（嵌套）两种格式
+        redis_url = os.environ.get("REDIS__URL") or os.environ.get("REDIS_URL")
+        if redis_url:
+            self.redis.url = redis_url
 
         if os.environ.get("SECURITY__SECRET_KEY"):
             self.security.secret_key = os.environ["SECURITY__SECRET_KEY"]
@@ -776,8 +785,11 @@ class Settings(BaseSettings):
         return result
 
 
-class EncryptionConfig(BaseModel):
+class EncryptionConfig(BaseSettings):
     """加密配置"""
+    model_config = SettingsConfigDict(
+        env_file=None, extra="ignore", case_sensitive=False
+    )
     encryption_key: Optional[str] = Field(default=None, alias="ENCRYPTION_KEY", description="API Key 加密密钥（生产环境必须设置，不使用 SECRET_KEY）")
 
 

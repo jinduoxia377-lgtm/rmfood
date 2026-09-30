@@ -1,7 +1,7 @@
 <!-- 合规标准 -->
 <view class="page-container">
   <!-- 顶部导航 -->
-  <view class="header" style="padding-top: {{statusBarHeight}}px;">
+  <view class="header">
     <view class="header-content">
       <!-- 汉堡菜单 -->
       <view class="hamburger" bindtap="toggleMenu">

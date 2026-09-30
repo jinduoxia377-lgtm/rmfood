@@ -59,23 +59,68 @@ function normalizeList(block: { type: string; data: unknown }): { type: string; 
  * @returns 解析成功返回 StructuredContent, 失败返回 null
  */
 export function detectStructuredContent(content: string): StructuredContent | null {
-  if (!content) return null
-  let trimmed = content.trim()
+  if (!content) {
+    console.warn('[detectStructured] empty content')
+    return null
+  }
+  const trimmed = content.trim()
+  console.log(`[detectStructured] content length=${trimmed.length}, starts="${trimmed[0]}", ends="${trimmed[trimmed.length-1]}"`)
 
   // 快速短路 — 纯文本消息不尝试解析
-  if (trimmed.length < 10) return null
-
-  // 尝试从 ```json 代码块中提取JSON
-  const jsonBlockMatch = trimmed.match(/```(?:json)?\s*\n?({[\s\S]*?})\n?\s*```/)
-  if (jsonBlockMatch) {
-    trimmed = jsonBlockMatch[1].trim()
+  if (trimmed.length < 10) {
+    console.log('[detectStructured] too short, returning null')
+    return null
   }
 
-  // 必须以 { 开头
-  if (trimmed[0] !== '{') return null
+  let jsonStr: string | null = null
+  let strategy = 'none'
+
+  // ── 策略1: 从 ```json ... ``` 代码块中提取（处理嵌套大括号）──
+  const codeBlockMatch = trimmed.match(/```(?:json)?\s*\n([\s\S]*?)\n?\s*```/)
+  if (codeBlockMatch) {
+    const candidate = codeBlockMatch[1].trim()
+    const lastBrace = candidate.lastIndexOf('}')
+    if (lastBrace >= 0 && candidate.startsWith('{') && candidate[lastBrace] === '}') {
+      jsonStr = candidate.slice(0, lastBrace + 1)
+      strategy = 'code-block'
+    }
+  }
+
+  // ── 策略2: 内容以 { 开头 → 找最后一个匹配的 } ──
+  if (!jsonStr && trimmed[0] === '{') {
+    const lastBrace = trimmed.lastIndexOf('}')
+    if (lastBrace > 0) {
+      jsonStr = trimmed.slice(0, lastBrace + 1)
+      strategy = 'starts-brace'
+    }
+  }
+
+  // ── 策略3: 全文就是一段JSON（无代码块包裹）──
+  if (!jsonStr && trimmed.startsWith('{') && trimmed.endsWith('}')) {
+    jsonStr = trimmed
+    strategy = 'full-text'
+  }
+
+  // ── 策略4: 扫描内容中第一个 { 到最后一个 } 的区间 ──
+  if (!jsonStr) {
+    const firstBrace = trimmed.indexOf('{')
+    const lastBrace = trimmed.lastIndexOf('}')
+    if (firstBrace >= 0 && lastBrace > firstBrace) {
+      jsonStr = trimmed.slice(firstBrace, lastBrace + 1)
+      strategy = 'scan-braces'
+    }
+  }
+
+  console.log(`[detectStructured] strategy=${strategy}, jsonStr.length=${jsonStr ? jsonStr.length : 0}, first100="${jsonStr ? jsonStr.substring(0, 100) : 'null'}"`)
+
+  if (!jsonStr) {
+    console.warn('[detectStructured] no json found, returning null')
+    return null
+  }
 
   try {
-    const parsed = JSON.parse(trimmed) as Record<string, unknown>
+    const parsed = JSON.parse(jsonStr) as Record<string, unknown>
+    console.log(`[detectStructured] JSON parse OK, keys=${Object.keys(parsed).join(',')}, blocks=${Array.isArray(parsed.blocks) ? parsed.blocks.length : 'N/A'}`)
 
     // 验证核心结构
     if (!parsed || typeof parsed !== 'object') return null
@@ -85,6 +130,7 @@ export function detectStructuredContent(content: string): StructuredContent | nu
     const validTypes = new Set<BlockType>([
       'header', 'data-table', 'chart', 'list',
       'callout', 'metrics', 'divider',
+      'ingredient-detail', 'synergy-chart', 'timeline',
     ])
 
     for (const block of parsed.blocks) {
@@ -99,7 +145,13 @@ export function detectStructuredContent(content: string): StructuredContent | nu
       return normalizeList(n)
     })
 
-    return { ...parsed, blocks: normalizedBlocks } as unknown as StructuredContent
+    // 兼容 LLM 未输出 responseType 的情况，自动补全默认值
+    const structured: StructuredContent = {
+      responseType: (parsed.responseType as StructuredContent['responseType']) ?? 'general',
+      title: (parsed.title as string) || undefined,
+      blocks: normalizedBlocks as any,
+    }
+    return structured
   } catch {
     // JSON 解析失败 → 不是结构化内容
     return null

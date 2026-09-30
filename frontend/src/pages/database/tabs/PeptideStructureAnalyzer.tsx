@@ -4,12 +4,16 @@
  * 功能：完整分析、结构转换、数据库查询、对比分析、历史记录、可视化图表
  */
 import { useState, useCallback, useEffect, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { peptideStructureService } from '@/services/professional/peptideStructureService';
-import { Button, Input, Card, Badge, Tabs, Table } from '@/components/ui';
+import { Button, Input, Card, Badge, Tabs, Pagination } from '@/components/ui';
+import { databaseApi } from '@/api/database';
+import { MoleculeViewer3D } from '@/components/molecule';
 import {
   Beaker, ArrowRightLeft, Dna, ShieldCheck, Activity, FlaskConical,
   AlertCircle, CheckCircle, Database, GitCompare as Compare, History, BarChart3,
-  Search, TrendingUp, Filter, Download, Trash2, Plus, X, Copy
+  Search, TrendingUp, Filter, Download, Trash2, Plus, X, Copy,
+  Layers, Zap, Target, TestTube, Bot, ZoomIn, Expand,
 } from 'lucide-react';
 
 // 使用全局echarts对象（从CDN加载）
@@ -22,68 +26,40 @@ declare global {
 const ReactECharts = ({ option, style }: { option: any; style?: any }) => {
   const chartRef = useRef<HTMLDivElement>(null);
   const chartInstance = useRef<any>(null);
+  const optionRef = useRef<any>(option);
+  optionRef.current = option;
+  const [echartsReady, setEchartsReady] = useState(true);
 
   useEffect(() => {
-    // 添加调试日志
-    console.log('[ReactECharts] 初始化图表, option:', !!option, 'window.echarts:', !!window.echarts);
-
-    const initChart = () => {
-      const echarts = window.echarts;
-      console.log('[ReactECharts] echarts对象:', typeof echarts, echarts ? 'init' : 'null');
-
-      if (!echarts || !chartRef.current) {
-        console.warn('[ReactECharts] 缺少echarts或chartRef');
-        return;
-      }
-
-      if (!chartInstance.current) {
-        try {
-          chartInstance.current = echarts.init(chartRef.current, null, { renderer: 'svg' });
-          console.log('[ReactECharts] 图表初始化成功');
-        } catch (err) {
-          console.error('[ReactECharts] 初始化失败:', err);
-        }
-      }
-
-      if (chartInstance.current && option) {
-        try {
-          chartInstance.current.setOption(option, true);
-          console.log('[ReactECharts] setOption成功');
-        } catch (err) {
-          console.error('[ReactECharts] setOption失败:', err);
-        }
-      }
-    };
-
-    // 等待echarts加载
-    if (window.echarts) {
-      initChart();
-    } else {
-      console.log('[ReactECharts] 等待echarts加载...');
-      let attempts = 0;
-      const checkEcharts = setInterval(() => {
-        attempts++;
-        console.log(`[ReactECharts] 尝试加载echarts (第${attempts}次)`, !!window.echarts);
-        if (window.echarts) {
-          clearInterval(checkEcharts);
-          initChart();
-        }
-        if (attempts >= 50) {
-          clearInterval(checkEcharts);
-          console.error('[ReactECharts] 加载echarts超时');
-        }
-      }, 100);
-      setTimeout(() => clearInterval(checkEcharts), 5000);
+    const echarts = window.echarts;
+    if (!echarts) {
+      setEchartsReady(false);
+      return;
     }
+    if (!chartRef.current) return;
+
+    if (!chartInstance.current) {
+      chartInstance.current = echarts.init(chartRef.current, null, { renderer: 'svg' });
+    }
+
+    chartInstance.current.setOption(optionRef.current, true);
 
     return () => {
       if (chartInstance.current) {
         chartInstance.current.dispose();
         chartInstance.current = null;
-        console.log('[ReactECharts] 图表已销毁');
       }
     };
-  }, [option]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  if (!echartsReady) {
+    return (
+      <div style={style} className="w-full h-full flex items-center justify-center bg-neutral-50 dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700">
+        <span className="text-xs text-[var(--text-muted,#9A9A9F)]">图表加载失败，请检查网络连接</span>
+      </div>
+    );
+  }
 
   return <div ref={chartRef} style={{ ...style, width: '100%' }} className="w-full h-full" />;
 };
@@ -134,6 +110,31 @@ interface SourceInfo {
   references: string[];
 }
 
+// 3D分子坐标类型
+interface Atom3D {
+  element: string;
+  x: number;
+  y: number;
+  z: number;
+  atomic_num: number;
+}
+
+interface Bond3D {
+  start: number;
+  end: number;
+  type: string;
+}
+
+interface Molecule3DData {
+  success: boolean;
+  smiles: string;
+  atom_count: number;
+  bond_count: number;
+  molecular_weight: number;
+  atoms: Atom3D[];
+  bonds: Bond3D[];
+}
+
 interface HistoryRecord {
   id: number;
   sequence: string;
@@ -159,7 +160,7 @@ interface DatabasePeptide {
   source_database: string;
 }
 
-type TabType = 'analyze' | 'convert' | 'database' | 'compare' | 'history';
+type TabType = 'analyze' | 'convert' | 'database' | 'compare' | 'history' | 'batch' | 'deep' | 'optimize' | 'synergy';
 
 // ─── 工具函数 ───
 function getScoreColor(score: number): string {
@@ -442,23 +443,30 @@ function DatabaseView() {
   const [results, setResults] = useState<DatabasePeptide[]>([]);
   const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState<any>(null);
+  const [showAll, setShowAll] = useState(false);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState<number>(0); // 保存搜索结果总数
+  const PAGE_SIZE = 20;
 
-  const handleSearch = useCallback(async () => {
-    if (!query.trim()) return;
-    setLoading(true);
+  const doSearch = useCallback(async (q: string, p: number = 1) => {
+setLoading(true);
     try {
-      const res = await peptideStructureService.searchDatabase({ sequence: query });
+      const res = await peptideStructureService.searchDatabase({ sequence: q || undefined, page: p, page_size: PAGE_SIZE });
+
       setResults(res.peptides);
+      setTotal(res.total || 0);
+      setShowAll(q === '');
     } catch (e) {
       console.error('数据库搜索失败:', e);
     } finally {
       setLoading(false);
     }
-  }, [query]);
+  }, []);
 
   const handleLoadStats = useCallback(async () => {
     try {
       const res = await peptideStructureService.getDatabaseStatistics();
+      // service 已返回 statistics 对象，直接使用
       setStats(res);
     } catch (e) {
       console.error('获取统计失败:', e);
@@ -467,7 +475,15 @@ function DatabaseView() {
 
   useEffect(() => {
     handleLoadStats();
+    // 默认显示前20条
+    doSearch('', 1);
   }, []);
+
+  const handleSearch = useCallback(() => {
+
+    setPage(1);
+    doSearch(query, 1);
+  }, [query, doSearch]);
 
   return (
     <div className="space-y-4">
@@ -480,9 +496,13 @@ function DatabaseView() {
           className="flex-1 font-mono"
           onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
         />
-        <Button onClick={handleSearch} disabled={loading || !query}>
+        <Button onClick={() => {  handleSearch(); }} disabled={loading || !query}>
           <Search className="w-4 h-4 mr-1" />
           搜索
+        </Button>
+
+        <Button variant="outline" onClick={() => doSearch('', 1)} disabled={loading}>
+          显示全部
         </Button>
       </div>
 
@@ -505,33 +525,42 @@ function DatabaseView() {
       )}
 
       {/* 搜索结果 */}
-      {results.length > 0 && (
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-neutral-200 dark:border-neutral-700">
-                <th className="px-3 py-2 text-left text-xs font-medium text-[var(--text-muted,#9A9A9F)]">序列</th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-[var(--text-muted,#9A9A9F)]">来源蛋白</th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-[var(--text-muted,#9A9A9F)]">活性类型</th>
-                <th className="px-3 py-2 text-right text-xs font-medium text-[var(--text-muted,#9A9A9F)]">活性值</th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-[var(--text-muted,#9A9A9F)]">食物来源</th>
-              </tr>
-            </thead>
-            <tbody>
-              {results.map((p, i) => (
-                <tr key={i} className="border-b border-neutral-100 dark:border-neutral-800">
-                  <td className="px-3 py-2 font-mono font-medium">{p.sequence}</td>
-                  <td className="px-3 py-2 text-xs">{p.source_protein || '-'}</td>
-                  <td className="px-3 py-2 text-xs">{p.activity_type || '-'}</td>
-                  <td className="px-3 py-2 text-right text-xs">
-                    {p.activity_value ? `${p.activity_value} ${p.activity_unit}` : '-'}
-                  </td>
-                  <td className="px-3 py-2 text-xs">{p.food_source || '-'}</td>
+      {loading && <div className="text-center py-8 text-[var(--text-muted)]">加载中...</div>}
+      {!loading && results.length > 0 && (
+        <>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-neutral-200 dark:border-neutral-700">
+                  <th className="px-3 py-2 text-left text-xs font-medium text-[var(--text-muted,#9A9A9F)]">序列</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-[var(--text-muted,#9A9A9F)]">来源蛋白</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-[var(--text-muted,#9A9A9F)]">活性类型</th>
+                  <th className="px-3 py-2 text-right text-xs font-medium text-[var(--text-muted,#9A9A9F)]">活性值</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-[var(--text-muted,#9A9A9F)]">食物来源</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {results.map((p, i) => (
+                  <tr key={i} className="border-b border-neutral-100 dark:border-neutral-800">
+                    <td className="px-3 py-2 font-mono font-medium">{p.sequence}</td>
+                    <td className="px-3 py-2 text-xs">{p.source_protein || '-'}</td>
+                    <td className="px-3 py-2 text-xs">{p.activity_type || '-'}</td>
+                    <td className="px-3 py-2 text-right text-xs">
+                      {p.activity_value ? `${p.activity_value} ${p.activity_unit}` : '-'}
+                    </td>
+                    <td className="px-3 py-2 text-xs">{p.food_source || '-'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <Pagination
+            currentPage={page}
+            totalPages={Math.ceil(total / PAGE_SIZE)}
+            onPageChange={(p) => { setPage(p); doSearch(query, p); }}
+            total={total || stats?.total_peptides || 0}
+          />
+        </>
       )}
 
       {!loading && results.length === 0 && query && (
@@ -616,7 +645,7 @@ function HistoryView() {
             option={{
               xAxis: {
                 type: 'category',
-                data: stats.score_distribution.map(d => `${(d.bin * 10)}-${((d.bin + 1) * 10)}%`),
+                data: stats.score_distribution.map((d: any) => `${(d.bin * 10)}-${((d.bin + 1) * 10)}%`),
                 axisLabel: { color: 'var(--text-secondary,#6B7280)', fontSize: 10 },
               },
               yAxis: {
@@ -625,7 +654,7 @@ function HistoryView() {
                 splitLine: { lineStyle: { color: 'rgba(128,128,128,0.1)' } },
               },
               series: [{
-                data: stats.score_distribution.map(d => d.count),
+                data: stats.score_distribution.map((d: any) => d.count),
                 type: 'bar',
                 barWidth: '60%',
                 itemStyle: { color: '#3b82f6', borderRadius: [4, 4, 0, 0] },
@@ -697,8 +726,418 @@ function HistoryView() {
   );
 }
 
+// ─── 批量分析组件 ──────────────────────────────────────────
+function BatchAnalysisView() {
+  const [input, setInput] = useState('');
+  const [results, setResults] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleBatch = useCallback(async () => {
+    const seqs = input.split('\n').map(s => s.trim().toUpperCase()).filter(Boolean);
+    if (seqs.length === 0) { setError('请输入至少一条序列'); return; }
+    if (seqs.length > 50) { setError('最多支持50条序列'); return; }
+    setLoading(true); setError(null); setResults([]);
+    try {
+      const res = await peptideStructureService.batchAnalyze(seqs);
+      // 后端直接返回完整分析结果，不是 { success, result } 包装
+      setResults((res.results || []).map(r => ({
+        ...r,
+        success: true,
+        result: r,
+      })));
+    } catch (e: any) {
+      setError(e.message || '批量分析失败');
+    } finally {
+      setLoading(false);
+    }
+  }, [input]);
+
+  return (
+    <div className="space-y-4">
+      <Card className="p-4 space-y-3">
+        <label className="text-xs text-[var(--text-secondary)] block">输入序列（每行一条，最多50条）</label>
+        <textarea
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          placeholder={"ACDEFG\nVLGYT\nLLPGTFVDNQKF"}
+          className="w-full h-32 font-mono text-xs p-3 bg-neutral-50 dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-700 resize-none"
+        />
+        <div className="flex gap-2">
+          <Button onClick={handleBatch} disabled={loading || !input.trim()} className="flex-1">
+            {loading ? <><span className="animate-spin w-3 h-3 border-2 border-current border-t-transparent rounded-full inline-block mr-1"/>分析中...</> : <><FlaskConical className="w-4 h-4 mr-1"/>批量分析</>}
+          </Button>
+        </div>
+      </Card>
+      {error && <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-700 dark:text-red-400 flex items-center gap-2"><AlertCircle className="w-4 h-4 flex-shrink-0"/>{error}</div>}
+      {results.length > 0 && (
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead><tr className="border-b border-neutral-200 dark:border-neutral-700">
+              {['序列', '成功', '分子量', '食品评分', 'ACE抑制', '抗氧化', '抗菌', '过敏', '毒性'].map(h => (
+                <th key={h} className="px-3 py-2 text-left text-xs font-medium text-[var(--text-muted)]">{h}</th>
+              ))}
+            </tr></thead>
+            <tbody>
+              {results.map((r, i) => (
+                <tr key={i} className="border-b border-neutral-100 dark:border-neutral-800">
+                  <td className="px-3 py-2 font-mono text-xs">{r.sequence}</td>
+                  <td className="px-3 py-2"><span className={`px-1.5 py-0.5 rounded text-xs ${r.success ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'}`}>{r.success ? '成功' : '失败'}</span></td>
+                  {r.success && r.result ? (
+                    <>
+                      <td className="px-3 py-2 font-mono text-xs">{r.result.molecular_weight?.toFixed(1) ?? '-'}</td>
+                      <td className="px-3 py-2"><span className={`font-bold ${getScoreColor((r.result.safety?.food_score ?? 0) / 100)}`}>{(r.result.safety?.food_score ?? 0).toFixed(0)}</span></td>
+                      <td className="px-3 py-2 text-xs">{((r.result.ace_inhibition?.score ?? 0) * 100).toFixed(1)}%</td>
+                      <td className="px-3 py-2 text-xs">{((r.result.antioxidant?.score ?? 0) * 100).toFixed(1)}%</td>
+                      <td className="px-3 py-2 text-xs">{((r.result.antimicrobial?.score ?? 0) * 100).toFixed(1)}%</td>
+                      <td className="px-3 py-2 text-center text-xs">{r.result.safety?.is_allergen ? '是' : '否'}</td>
+                      <td className="px-3 py-2 text-center text-xs">{r.result.safety?.is_toxic ? '是' : '否'}</td>
+                    </>
+                  ) : (
+                    <td colSpan={7} className="px-3 py-2 text-xs text-red-500">{r.error ?? '-'}</td>
+                  )}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── 高级深度分析组件 ───────────────────────────────────────
+function DeepAnalysisView() {
+  const [sequence, setSequence] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<any>(null);
+
+  const handleDeepAnalyze = useCallback(async () => {
+    if (!sequence || sequence.length < 2) { setError('请输入至少2个氨基酸的序列'); return; }
+    setLoading(true); setError(null); setResult(null);
+    try {
+      const res = await peptideStructureService.deepAnalyze(sequence.toUpperCase());
+      setResult(res.data);
+    } catch (e: any) {
+      setError(e.message || '深度分析失败');
+    } finally {
+      setLoading(false);
+    }
+  }, [sequence]);
+
+  if (!result) return (
+    <div className="space-y-4">
+      <Card className="p-4 space-y-3">
+        <label className="text-xs text-[var(--text-secondary)] block">氨基酸序列</label>
+        <Input value={sequence} onChange={e => setSequence(e.target.value.toUpperCase())} placeholder="例如: VLGYT" className="font-mono" maxLength={50} />
+        <Button onClick={handleDeepAnalyze} disabled={loading || !sequence} className="w-full">
+          {loading ? <><span className="animate-spin w-3 h-3 border-2 border-current border-t-transparent rounded-full inline-block mr-1"/>分析中...</> : <><Bot className="w-4 h-4 mr-1"/>深度分析</>}
+        </Button>
+      </Card>
+      {error && <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-700 dark:text-red-400 flex items-center gap-2"><AlertCircle className="w-4 h-4 flex-shrink-0"/>{error}</div>}
+    </div>
+  );
+
+  const ss = result.secondary_structure?.percentages || {};
+  const pp = result.physicochemical_profile || {};
+  const sa = result.safety_assessment || {};
+  const bp = result.bioactivity_predictions || {};
+  const os = result.overall_scores || {};
+
+  return (
+    <div className="space-y-4">
+      <Card className="p-4">
+        <h3 className="text-sm font-medium mb-3 flex items-center gap-2"><Dna className="w-4 h-4 text-primary"/>基本性质</h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+          {[
+            ['分子量 (Da)', result.basic_properties?.molecular_weight?.toFixed(2)],
+            ['LogP', pp?.logp?.toFixed(3)],
+            ['GRAVY', pp?.gravy?.toFixed(3)],
+            ['不稳定指数', pp?.instability_index?.toFixed(1)],
+            ['代数指数', pp?.aliphatic_index?.toFixed(1)],
+            ['消光系数', pp?.extinction_coefficient?.toFixed(0)],
+            ['等电点', result.basic_properties?.isoelectric_point?.toFixed(2)],
+            ['净电荷(pH7)', pp?.net_charge?.toFixed(1)],
+          ].map(([label, val]) => (
+            <div key={label} className="p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg">
+              <div className="text-[var(--text-muted)]">{label}</div>
+              <div className="font-mono font-medium mt-0.5">{val ?? '-'}</div>
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      <Card className="p-4">
+        <h3 className="text-sm font-medium mb-3 flex items-center gap-2"><Layers className="w-4 h-4 text-primary"/>二级结构预测 (Chou-Fasman)</h3>
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            ['α-螺旋 (%)', ss?.alpha_helix ?? 0, '#3b82f6'],
+            ['β-折叠 (%)', ss?.beta_sheet ?? 0, '#22c55e'],
+            ['无规卷曲 (%)', ss?.random_coil ?? 0, '#f59e0b'],
+          ].map(([label, val, color]: any) => (
+            <div key={label} className="text-center p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg">
+              <div className="text-2xl font-bold" style={{ color }}>{(val).toFixed(1)}%</div>
+              <div className="text-xs text-[var(--text-muted)] mt-1">{label}</div>
+              <div className="w-full bg-neutral-200 dark:bg-neutral-700 rounded-full h-1.5 mt-2">
+                <div className="h-1.5 rounded-full transition-all" style={{ width: `${Math.min(val, 100)}%`, backgroundColor: color }}/>
+              </div>
+            </div>
+          ))}
+        </div>
+        {ss?.predicted_sequence && (
+          <div className="mt-3 p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg">
+            <div className="text-xs text-[var(--text-muted)] mb-1">结构序列 (H=螺旋 E=折叠 C=卷曲)</div>
+            <div className="font-mono text-xs break-all">{ss.predicted_sequence}</div>
+          </div>
+        )}
+      </Card>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Card className="p-4">
+          <h3 className="text-sm font-medium mb-3 flex items-center gap-2"><Activity className="w-4 h-4 text-primary"/>生物活性预测</h3>
+          <div className="space-y-2">
+            {Object.entries(bp).map(([key, val]: any) => (
+              <div key={key} className="flex justify-between items-center text-xs">
+                <span className="text-[var(--text-secondary)] capitalize">{key.replace(/_/g, ' ')}</span>
+                <span className="font-mono font-medium">{typeof val === 'object' ? `${(val.score * 100).toFixed(1)}%` : `${val}`}</span>
+              </div>
+            ))}
+          </div>
+        </Card>
+        <Card className="p-4">
+          <h3 className="text-sm font-medium mb-3 flex items-center gap-2"><ShieldCheck className="w-4 h-4 text-primary"/>安全性评估</h3>
+          <div className="space-y-2 text-xs">
+            {[
+              ['综合得分', `${(os.composite ?? 0).toFixed(2)}`],
+              ['功能得分', `${(os.functional ?? 0).toFixed(2)}`],
+              ['安全得分', `${(os.safety_score ?? 0).toFixed(2)}`],
+              ['口服生物利用度', sa?.oral_bioavailability ?? 'N/A'],
+              ['毒性模式', sa?.toxicity_pattern ?? 'N/A'],
+              ['免疫原性风险', `${((sa?.immunogenicity_risk ?? 0) * 100).toFixed(0)}%`, sa?.immunogenicity_risk && sa.immunogenicity_risk > 0.5 ? 'text-red-500' : 'text-green-500'],
+            ].map(([label, val, cls]: any) => (
+              <div key={label} className={`flex justify-between ${cls ? cls : ''}`}>
+                <span className="text-[var(--text-muted)]">{label}</span>
+                <span className="font-mono font-medium">{String(val)}</span>
+              </div>
+            ))}
+          </div>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+// ─── Pareto 优化组件 ────────────────────────────────────────
+function OptimizeView() {
+  const [sequences, setSequences] = useState('');
+  const [objectives, setObjectives] = useState('ACE_inhibitory,antioxidant');
+  const [weightsStr, setWeightsStr] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<any>(null);
+
+  const handleOptimize = useCallback(async () => {
+    const seqs = sequences.split('\n').map(s => s.trim().toUpperCase()).filter(Boolean);
+    if (seqs.length < 2) { setError('请输入至少2条候选序列'); return; }
+    const objs = objectives.split(',').map(s => s.trim()).filter(Boolean);
+    setLoading(true); setError(null); setResult(null);
+    try {
+      const weights: Record<string, number> = {};
+      if (weightsStr.trim()) {
+        weightsStr.split(',').forEach(pair => {
+          const [k, v] = pair.split(':');
+          if (k && v) weights[k.trim()] = parseFloat(v.trim());
+        });
+      }
+      const res = await peptideStructureService.paretoOptimize(seqs, objs, weights);
+      setResult(res.data);
+    } catch (e: any) {
+      setError(e.message || '优化失败');
+    } finally {
+      setLoading(false);
+    }
+  }, [sequences, objectives, weightsStr]);
+
+  return (
+    <div className="space-y-4">
+      <Card className="p-4 space-y-3">
+        <div>
+          <label className="text-xs text-[var(--text-secondary)] block mb-1">候选序列（每行一条）</label>
+          <textarea value={sequences} onChange={e => setSequences(e.target.value)} placeholder={"VLGYT\nRPYPIP\nLLPGTFVDNQKF"} className="w-full h-20 font-mono text-xs p-2 bg-neutral-50 dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-700 resize-none" />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="text-xs text-[var(--text-secondary)] block mb-1">优化目标（逗号分隔）</label>
+            <Input value={objectives} onChange={e => setObjectives(e.target.value)} placeholder="ACE_inhibitory,antioxidant" className="text-xs" />
+          </div>
+          <div>
+            <label className="text-xs text-[var(--text-secondary)] block mb-1">权重（可选，格式 key:value）</label>
+            <Input value={weightsStr} onChange={e => setWeightsStr(e.target.value)} placeholder="ACE_inhibitory:0.7,antioxidant:0.3" className="text-xs" />
+          </div>
+        </div>
+        <Button onClick={handleOptimize} disabled={loading} className="w-full">
+          {loading ? <><span className="animate-spin w-3 h-3 border-2 border-current border-t-transparent rounded-full inline-block mr-1"/>计算中...</> : <><Target className="w-4 h-4 mr-1"/>计算 Pareto 前沿</>}
+        </Button>
+      </Card>
+      {error && <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-700 dark:text-red-400 flex items-center gap-2"><AlertCircle className="w-4 h-4 flex-shrink-0"/>{error}</div>}
+      {result && (
+        <Card className="p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-medium flex items-center gap-2"><TrendingUp className="w-4 h-4 text-primary"/>Pareto 最优前沿</h3>
+            <span className="text-xs text-[var(--text-muted)]">前沿点数: {result.pareto_frontier_size} / 处理: {result.total_processed}</span>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead><tr className="border-b border-neutral-200 dark:border-neutral-700">
+                <th className="px-2 py-1.5 text-left">序列</th>
+                <th className="px-2 py-1.5 text-right">等级</th>
+                {objectives.split(',').map(o => <th key={o} className="px-2 py-1.5 text-right capitalize">{o.replace(/_/g, ' ')}</th>)}
+              </tr></thead>
+              <tbody>
+                {(result.pareto_points || []).slice(0, 10).map((p: any, i: number) => (
+                  <tr key={i} className="border-b border-neutral-100 dark:border-neutral-800">
+                    <td className="px-2 py-1.5 font-mono font-medium">{p.sequence}</td>
+                    <td className="px-2 py-1.5 text-center"><Badge variant={i < 3 ? 'success' : 'neutral'} size="sm">{p.rank}</Badge></td>
+                    {objectives.split(',').map((o: string) => (
+                      <td key={o} className="px-2 py-1.5 text-right font-mono">{(p.objectives?.[o] ?? 0).toFixed(3)}</td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {result.diversity_metrics && (
+            <div className="grid grid-cols-3 gap-2 text-xs">
+              {Object.entries(result.diversity_metrics).map(([k, v]: any) => (
+                <div key={k} className="p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg">
+                  <div className="text-[var(--text-muted)]">{k}</div>
+                  <div className="font-mono font-medium">{typeof v === 'number' ? v.toFixed(4) : v}</div>
+                </div>
+              ))}
+            </div>
+          )}
+        </Card>
+      )}
+    </div>
+  );
+}
+
+// ─── 协同分析组件 ───────────────────────────────────────────
+function SynergyView() {
+  const [peptideSeq, setPeptideSeq] = useState('');
+  const [herbInput, setHerbInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<any>(null);
+
+  // 从后端动态获取药食同源药材列表
+  const [herbs, setHerbs] = useState<string[]>([]);
+  const [herbsLoading, setHerbsLoading] = useState(true);
+
+  useEffect(() => {
+    databaseApi.getFoodHomologyHerbs({ page: 1, page_size: 50 })
+      .then(res => {
+        const names = (res?.items ?? [])
+          .map((h: any) => h.name_cn || h.name || '')
+          .filter(Boolean)
+          .slice(0, 20);
+        setHerbs(names);
+      })
+      .catch(() => {
+        // fallback to defaults if API fails
+        setHerbs(['黄芪', '人参', '枸杞子', '山楂', '菊花', '葛根', '酸枣仁', '灵芝']);
+      })
+      .finally(() => setHerbsLoading(false));
+  }, []);
+
+  const handleSynergy = useCallback(async () => {
+    if (!peptideSeq.trim()) { setError('请输入肽序列'); return; }
+    const herbNames = herbInput ? herbInput.split(',').map(s => s.trim()).filter(Boolean) : herbs.slice(0, 4);
+    setLoading(true); setError(null); setResult(null);
+    try {
+      const res = await peptideStructureService.synergyAnalysis([peptideSeq.trim().toUpperCase()], herbNames);
+      setResult(res.data);
+    } catch (e: any) {
+      setError(e.message || '协同分析失败');
+    } finally {
+      setLoading(false);
+    }
+  }, [peptideSeq, herbInput]);
+
+  return (
+    <div className="space-y-4">
+      <Card className="p-4 space-y-3">
+        <div>
+          <label className="text-xs text-[var(--text-secondary)] block mb-1">肽序列</label>
+          <Input value={peptideSeq} onChange={e => setPeptideSeq(e.target.value.toUpperCase())} placeholder="例如: VLGYT" className="font-mono" />
+        </div>
+        <div>
+          <label className="text-xs text-[var(--text-secondary)] block mb-1">药材（逗号分隔，留空使用默认）</label>
+          <Input value={herbInput} onChange={e => setHerbInput(e.target.value)} placeholder="黄芪,人参,枸杞子" />
+        </div>
+        <div className="flex flex-wrap gap-1.5">
+          {herbs.map(h => (
+            <button key={h} onClick={() => setHerbInput(prev => prev.includes(h) ? prev.replace(h, '').replace(/,,?/, '') : (prev ? prev + ',' + h : h))}
+              className="px-2 py-0.5 text-xs bg-neutral-100 dark:bg-neutral-800 rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors">
+              {h}
+            </button>
+          ))}
+        </div>
+        <Button onClick={handleSynergy} disabled={loading || !peptideSeq.trim()} className="w-full">
+          {loading ? <><span className="animate-spin w-3 h-3 border-2 border-current border-t-transparent rounded-full inline-block mr-1"/>分析中...</> : <><Zap className="w-4 h-4 mr-1"/>协同效应分析</>}
+        </Button>
+      </Card>
+      {error && <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-700 dark:text-red-400 flex items-center gap-2"><AlertCircle className="w-4 h-4 flex-shrink-0"/>{error}</div>}
+      {result && (
+        <Card className="p-4 space-y-3">
+          <h3 className="text-sm font-medium flex items-center gap-2"><Zap className="w-4 h-4 text-primary"/>协同效应结果</h3>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead><tr className="border-b border-neutral-200 dark:border-neutral-700">
+                <th className="px-2 py-1.5 text-left">肽序列</th>
+                <th className="px-2 py-1.5 text-left">药材</th>
+                <th className="px-2 py-1.5 text-right">协同评分</th>
+                <th className="px-2 py-1.5 text-left">机制</th>
+              </tr></thead>
+              <tbody>
+                {(result.synergies || []).map((s: any, i: number) => (
+                  <tr key={i} className="border-b border-neutral-100 dark:border-neutral-800">
+                    <td className="px-2 py-1.5 font-mono">{s.peptide}</td>
+                    <td className="px-2 py-1.5">{s.herb}</td>
+                    <td className="px-2 py-1.5 text-right font-bold">{s.synergy_score?.toFixed(3)}</td>
+                    <td className="px-2 py-1.5 text-[var(--text-muted)]">{s.mechanism || '-'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {result.ranked_herbs && result.ranked_herbs.length > 0 && (
+            <div>
+              <h4 className="text-xs font-medium text-[var(--text-muted)] mb-2">药材推荐排序</h4>
+              <div className="space-y-1.5">
+                {result.ranked_herbs.slice(0, 5).map((h: any, i: number) => (
+                  <div key={i} className="flex items-center justify-between text-xs p-2 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg">
+                    <span className="font-medium">{i + 1}. {h.name}</span>
+                    <span className="font-mono text-primary">{h.score?.toFixed(3)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </Card>
+      )}
+    </div>
+  );
+}
+
 // ─── 主组件 ───
-export default function PeptideStructureAnalyzer() {
+interface PeptideStructureAnalyzerProps {
+  initialTab?: TabType;
+}
+
+export default function PeptideStructureAnalyzer({ initialTab = 'analyze' }: PeptideStructureAnalyzerProps) {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [sequence, setSequence] = useState('');
   const [compareSequences, setCompareSequences] = useState<string[]>([]);
   const [compareInput, setCompareInput] = useState('');
@@ -707,13 +1146,42 @@ export default function PeptideStructureAnalyzer() {
   const [result, setResult] = useState<PeptideAnalysisResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<TabType>('analyze');
+  const [activeTab, setActiveTab] = useState<TabType>(() => {
+    const urlTab = searchParams.get('tab') as TabType | null;
+    if (urlTab && ['analyze', 'convert', 'database', 'compare', 'history', 'batch', 'deep', 'optimize', 'synergy'].includes(urlTab)) {
+      return urlTab;
+    }
+    return initialTab;
+  });
   const [initialized, setInitialized] = useState(false);
+
+  // 3D分子数据状态
+  const [molecule3D, setMolecule3D] = useState<Molecule3DData | null>(null);
+  const [renderingMode, setRenderingMode] = useState<'ball-stick' | 'space-filling' | 'tube'>('ball-stick');
+  const [loading3D, setLoading3D] = useState(false);
+  const [molecule3DError, setMolecule3DError] = useState<string | null>(null);
 
   // 初始化
   useEffect(() => {
     peptideStructureService.init().then(() => setInitialized(true));
   }, []);
+
+  // 同步 activeTab 到 URL search params
+  useEffect(() => {
+    if (searchParams.get('tab') !== activeTab) {
+      const params = new URLSearchParams(searchParams);
+      params.set('tab', activeTab);
+      setSearchParams(params, { replace: true });
+    }
+  }, [activeTab]);
+
+  // 监听 URL 变化，更新 activeTab（处理外部导航场景）
+  useEffect(() => {
+    const urlTab = searchParams.get('tab') as TabType | null;
+    if (urlTab && ['analyze', 'convert', 'database', 'compare', 'history', 'batch', 'deep', 'optimize', 'synergy'].includes(urlTab)) {
+      setActiveTab(urlTab);
+    }
+  }, [searchParams]);
 
   // 完整分析
   const handleAnalyze = useCallback(async () => {
@@ -740,6 +1208,7 @@ export default function PeptideStructureAnalyzer() {
         c_terminal: cTerminal || undefined,
       });
       setResult(res as PeptideAnalysisResult);
+      if (res.smiles) fetchMolecule3D(res.smiles);
     } catch (e: any) {
       setError(e.message || '分析失败');
     } finally {
@@ -763,11 +1232,13 @@ export default function PeptideStructureAnalyzer() {
         c_terminal: cTerminal || undefined,
       });
       if (res.smiles) {
-        setResult({
+        // 优先使用后端返回的分子量（如有），否则后续从3D接口获取
+        const mw = res.molecular_weight || 0;
+        const tempResult: PeptideAnalysisResult = {
           sequence: res.sequence || sequence.toUpperCase(),
           smiles: res.smiles,
           selfies: res.selfies,
-          molecular_weight: res.molecular_weight || 0,
+          molecular_weight: mw,
           isoelectric_point: 0,
           hydrophobicity: 0,
           ace_inhibition: { score: 0, level: 'none' },
@@ -777,7 +1248,14 @@ export default function PeptideStructureAnalyzer() {
           taste: { bitterness: 0, umami: 0 },
           source: { food: undefined, database: undefined, references: [] },
           analysis_time: new Date().toISOString(),
-        } as PeptideAnalysisResult);
+        };
+        setResult(tempResult);
+        // 获取3D坐标（同时修正分子量）
+        fetchMolecule3D(res.smiles, (mw3D: number, pI: number) => {
+          if (mw3D > 0) {
+            setResult(prev => prev ? { ...prev, molecular_weight: mw3D, isoelectric_point: pI } : prev);
+          }
+        });
       }
     } catch (e: any) {
       setError(e.message || '转换失败');
@@ -795,6 +1273,38 @@ export default function PeptideStructureAnalyzer() {
     }
   }, [compareInput, compareSequences]);
 
+  // 获取分子3D坐标，同时可选回调修正分子量和等电点
+  const fetchMolecule3D = useCallback(async (
+    smiles: string,
+    onMwUpdated?: (mw: number, pI: number) => void,
+  ) => {
+    if (!smiles) return;
+    setLoading3D(true);
+    setMolecule3DError(null);
+    try {
+      const response = await fetch(`/api/v1/peptide-structure/smiles-to-3d?smiles=${encodeURIComponent(smiles)}`);
+      if (!response.ok) {
+        const errText = await response.text().catch(() => '');
+        throw new Error(errText || `HTTP ${response.status}`);
+      }
+      const data = await response.json();
+      if (data.success) {
+        setMolecule3D(data);
+        if (onMwUpdated && data.molecular_weight > 0) {
+          onMwUpdated(data.molecular_weight, 6.0); // pI 暂用默认值，等后端返回
+        }
+      } else {
+        setMolecule3DError(data.detail || '3D结构生成失败');
+      }
+    } catch (e: any) {
+      const msg = e?.message || '3D坐标获取失败';
+      setMolecule3DError(msg);
+      console.error('3D坐标获取失败:', e);
+    } finally {
+      setLoading3D(false);
+    }
+  }, []);
+
   // 清空结果
   const handleClear = useCallback(() => {
     setSequence('');
@@ -802,12 +1312,19 @@ export default function PeptideStructureAnalyzer() {
     setCTerminal('');
     setResult(null);
     setError(null);
+    setMolecule3D(null);
+    setMolecule3DError(null);
+    setLoading3D(false);
   }, []);
 
   const quickSequences = ['AC', 'VLGYT', 'LLPGTFVDNQKF', 'RPYPIP'];
 
   const tabs: { key: TabType; label: string; icon: any }[] = [
     { key: 'analyze', label: '完整分析', icon: Beaker },
+    { key: 'deep', label: '高级分析', icon: Bot },
+    { key: 'batch', label: '批量分析', icon: Layers },
+    { key: 'optimize', label: 'Pareto优化', icon: Target },
+    { key: 'synergy', label: '协同分析', icon: Zap },
     { key: 'convert', label: '结构转换', icon: ArrowRightLeft },
     { key: 'database', label: '数据库', icon: Database },
     { key: 'compare', label: '对比分析', icon: Compare },
@@ -951,7 +1468,7 @@ export default function PeptideStructureAnalyzer() {
                     <div className="flex items-center justify-between mb-3">
                       <div className="text-xs text-[var(--text-muted,#9A9A9F)] flex items-center gap-1">
                         <Dna className="w-3 h-3" />
-                        分子结构式
+                        分子结构可视化
                       </div>
                       <div className="flex items-center gap-2">
                         <button
@@ -962,25 +1479,94 @@ export default function PeptideStructureAnalyzer() {
                           <Copy className="w-3 h-3" />
                           复制SMILES
                         </button>
+                        {/* 渲染模式切换 */}
+                        {molecule3D && (
+                          <select
+                            value={renderingMode}
+                            onChange={(e) => setRenderingMode(e.target.value as any)}
+                            className="text-xs bg-neutral-100 dark:bg-neutral-800 border-none rounded px-2 py-0.5 text-[var(--text-secondary)]"
+                          >
+                            <option value="ball-stick">球棍模型</option>
+                            <option value="space-filling">空间填充</option>
+                            <option value="tube">管线模型</option>
+                          </select>
+                        )}
                       </div>
                     </div>
 
-                    {/* 分子结构图 */}
-                    <div className="mb-3 p-4 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-700 flex items-center justify-center min-h-[200px]">
-                      <img
-                        src={`/api/v1/peptide-structure/smiles-to-image?smiles=${encodeURIComponent(result.smiles)}`}
-                        alt="分子结构"
-                        className="max-w-full max-h-[250px] object-contain"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = 'none';
-                          (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
-                        }}
-                      />
-                      <div className="hidden text-center text-[var(--text-muted,#9A9A9F)]">
-                        <Dna className="w-8 h-8 mx-auto mb-2 opacity-30" />
-                        <p className="text-xs">结构图生成中...</p>
-                      </div>
-                    </div>
+                    {/* 分子结构可视化区域 */}
+                    {result && (
+                      <>
+                        {/* 2D化学结构图 */}
+                        <div className="mb-3">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-sm font-medium text-[var(--text-secondary,#374151)] dark:text-[var(--text-secondary-dark,#E5E7EB)] flex items-center gap-1.5">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-blue-500"><circle cx="12" cy="12" r="10"/><path d="M12 2 L12 22 M2 12 L22 12"/></svg>
+                              2D 化学结构
+                            </span>
+                            <span className="text-xs text-[var(--text-muted,#9A9A9F)] font-mono">{result.smiles?.length || 0} chars</span>
+                          </div>
+                          <div className="p-3 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-700 flex items-center justify-center min-h-[200px]">
+                            <img
+                              src={`/api/v1/peptide-structure/smiles-to-image?smiles=${encodeURIComponent(result.smiles)}`}
+                              alt="分子2D结构"
+                              className="max-w-full max-h-[220px] object-contain rounded"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).style.display = 'none';
+                                (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+                              }}
+                            />
+                            <div className="hidden text-center text-[var(--text-muted,#9A9A9F)]">
+                              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="mx-auto mb-2 opacity-30"><circle cx="12" cy="12" r="10"/><path d="M12 2 L12 22 M2 12 L22 12"/></svg>
+                              <p className="text-xs">结构图生成失败</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* 3D分子查看器 */}
+                        {molecule3D ? (
+                          <div className="mb-3">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-sm font-medium text-[var(--text-secondary,#374151)] dark:text-[var(--text-secondary-dark,#E5E7EB)] flex items-center gap-1.5">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-emerald-500"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                                3D 分子结构
+                              </span>
+                              <select
+                                value={renderingMode}
+                                onChange={(e) => setRenderingMode(e.target.value as any)}
+                                className="text-xs bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded px-2 py-1 text-[var(--text-secondary)]"
+                              >
+                                <option value="ball-stick">球棍模型</option>
+                                <option value="space-filling">空间填充</option>
+                                <option value="tube">管线模型</option>
+                              </select>
+                            </div>
+                            <MoleculeViewer3D
+                              atoms={molecule3D.atoms}
+                              bonds={molecule3D.bonds}
+                              renderingMode={renderingMode}
+                            />
+                            <div className="mt-2 flex items-center gap-3 text-xs text-[var(--text-muted,#9A9A9F)]">
+                              <span className="flex items-center gap-1"><Dna className="w-3 h-3" />拖拽旋转</span>
+                              <span className="flex items-center gap-1"><ZoomIn className="w-3 h-3" />滚轮缩放</span>
+                              <span className="flex items-center gap-1"><Expand className="w-3 h-3" />右键平移</span>
+                              <span className="ml-auto font-mono text-emerald-600 dark:text-emerald-400">{molecule3D.atom_count} atoms · {molecule3D.bond_count} bonds · MW {molecule3D.molecular_weight}</span>
+                            </div>
+                          </div>
+                        ) : loading3D ? (
+                          <div className="mb-3 p-8 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-700 flex items-center justify-center">
+                            <div className="text-center text-[var(--text-muted,#9A9A9F)]">
+                              <div className="animate-spin w-5 h-5 border-2 border-emerald-500 border-t-transparent rounded-full mx-auto mb-2"></div>
+                              <p className="text-xs">生成3D结构...</p>
+                            </div>
+                          </div>
+                        ) : molecule3DError ? (
+                          <div className="mb-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-xs text-red-600 dark:text-red-400">
+                            ⚠ 3D结构生成失败：{molecule3DError}
+                          </div>
+                        ) : null}
+                      </>
+                    )}
 
                     {/* SMILES文本 */}
                     <div className="p-3 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
@@ -992,7 +1578,7 @@ export default function PeptideStructureAnalyzer() {
 
                     <div className="mt-2 flex items-center gap-2 text-xs text-[var(--text-muted,#9A9A9F)]">
                       <ShieldCheck className="w-3 h-3" />
-                      <span>基于RDKit生成的二维分子结构图 | 可导入ChemDraw、PyMOL进行三维可视化</span>
+                      <span>基于RDKit生成的三维分子结构 | 支持交互旋转和缩放</span>
                     </div>
                   </div>
                 )}
@@ -1111,6 +1697,18 @@ export default function PeptideStructureAnalyzer() {
         </div>
       )}
 
+      {/* 高级深度分析 */}
+      {activeTab === 'deep' && <DeepAnalysisView />}
+
+      {/* 批量分析 */}
+      {activeTab === 'batch' && <BatchAnalysisView />}
+
+      {/* Pareto 优化 */}
+      {activeTab === 'optimize' && <OptimizeView />}
+
+      {/* 协同分析 */}
+      {activeTab === 'synergy' && <SynergyView />}
+
       {/* 结构转换 */}
       {activeTab === 'convert' && (
         <div className="space-y-4">
@@ -1226,3 +1824,11 @@ export default function PeptideStructureAnalyzer() {
     </div>
   );
 }
+
+
+
+
+
+
+
+

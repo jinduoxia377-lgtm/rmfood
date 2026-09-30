@@ -7,8 +7,9 @@ import { Link, useSearchParams } from 'react-router-dom'
 import {
   Plus, Search, Filter, TestTubes, Trash2, X,
   ChevronUp, ChevronDown, ArrowUpDown, FlaskConical,
-  Calendar, Download,
+  Calendar, Download, Send,
   TestTube, CheckCircle2, AlertCircle, Ban, Clock,
+  Sparkles,
 } from 'lucide-react'
 import { useExperiments } from '@/hooks/useQueries'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -181,7 +182,7 @@ export default function ExperimentListPage() {
       <div className="max-w-7xl mx-auto space-y-4 px-4 sm:px-6 lg:px-8 py-6">
 
       {/* ── 页面横幅 ── */}
-      <div className="rounded-xl bg-primary-600 p-6 text-white shadow-sm">
+      <div className="surface-primary rounded-xl p-6 shadow-sm">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex-1">
             <h2 className="text-xl font-semibold leading-snug tracking-tight">
@@ -492,6 +493,30 @@ export default function ExperimentListPage() {
                   >
                     <Trash2 size={14} />
                   </button>
+
+                  {/* 发送到 DOE（实验管理 → DOE 拟合入口） */}
+                  <Link
+                    to={`/doe?exp=${exp.id}`}
+                    onClick={(e) => e.stopPropagation()}
+                    className="shrink-0 p-1.5 rounded-lg text-neutral-300 dark:text-neutral-600 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
+                    title="发送到 DOE 拟合"
+                    aria-label="发送到 DOE"
+                  >
+                    <Send size={14} />
+                  </Link>
+
+                  {/* 一键验证（仅有关联配方时显示） */}
+                  {exp.formula_id && (
+                    <Link
+                      to={`/experiments/${exp.id}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="shrink-0 p-1.5 rounded-lg text-neutral-300 dark:text-neutral-600 hover:text-violet-600 dark:hover:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-colors"
+                      title="查看验证详情"
+                      aria-label="验证配方"
+                    >
+                      <Sparkles size={14} />
+                    </Link>
+                  )}
                 </div>
               )
             })}

@@ -74,11 +74,11 @@ export const useAuthStore = create<AuthState>()((set, get) => {
         fallbackToken = loginResult?.accessToken || null
 
         // 2. 获取 CSRF token（必须在登录成功后、任何状态变更请求之前）
-        try {
-          await api.get<{ csrf_token: string }>('/auth/csrf')
-        } catch {
-          // CSRF 初始化失败不阻断登录流程
-        }
+        // 说明: 后端并无 /auth/csrf 路由（只有 /agent/csrf-token）。
+        // 双提交 CSRF 依赖 CsrfProtectMiddleware 在每个 GET 响应的 Set-Cookie 种下
+        // csrf_token，而登录成功后的 getMe（GET）已完成该种入。
+        // 旧实现显式 GET /auth/csrf 会 404 → 每次登录日志一条 404 + 一次无效请求。
+        // 移除该调用；csrf cookie 由 getMe 自动完成。
 
         // 3. 立即获取用户信息 — 优先使用 Cookie，失败时回退到 Authorization header
         try {
@@ -110,15 +110,9 @@ export const useAuthStore = create<AuthState>()((set, get) => {
           }
         }
 
-        // 3. 初始化 CSRF token（登录成功后必须获取，否则后续状态变更请求会 403）
-        try {
-          const csrfResp = await api.get<{ csrf_token: string }>('/auth/csrf')
-          // CSRF token 已由后端通过 Set-Cookie 设置，响应体也返回了 token 值
-          // 前端 interceptor 会通过 document.cookie 自动读取并注入 X-CSRF-Token 头
-          if (import.meta.env.DEV) logger.info('[Auth] CSRF token initialized')
-        } catch (csrfErr) {
-          logger.warn('[Auth] Failed to initialize CSRF token:', csrfErr)
-        }
+        // 3. 初始化 CSRF token
+        // 说明: 与上面第 2 步相同 —— 后端无 /auth/csrf 路由，csrf cookie 已由
+        // 登录成功后的 getMe(GET) 由中间件种下，无需再显式请求。保留注释记录设计。
 
         // 4. 连接 WebSocket
         connectWebSocket().then((connected) => {
@@ -169,7 +163,14 @@ export const useAuthStore = create<AuthState>()((set, get) => {
           logger.error('WebSocket connection error after fetchUser:', error)
         })
       } catch (error) {
-        logger.warn('fetchUser failed, keeping existing auth state:', error)
+        // 401 = 未登录 / 令牌过期，属于预期态而非错误；
+        // 原实现打成 WARN，登录未鉴权时刷新/轮询会刷屏 401，
+        // 降噪：降级为 debug（保留上下文，必要时打开 devtools 还能看到）。
+        if ((error as { response?: { status?: number } })?.response?.status === 401) {
+          logger.debug('fetchUser 未认证（预期态），保留现有 auth state')
+        } else {
+          logger.warn('fetchUser failed, keeping existing auth state:', error)
+        }
         // 不清除 isAuthenticated — 登录态仍然有效，只是用户信息获取失败
         set({ isLoading: false })
       }

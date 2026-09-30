@@ -132,7 +132,7 @@ export default function InferenceChainVisualizer({ chain, autoScrollToActive = t
       });
       // 强制虚拟列表重新计算尺寸
       setTimeout(() => {
-        typeof (virtualizer as { recomputeSize?: () => void }).recomputeSize === "function" && (virtualizer as { recomputeSize?: () => void }).recomputeSize();
+        (virtualizer as any)?.recomputeSize?.();
       }, 50);
     },
     [virtualizer],
@@ -143,7 +143,7 @@ export default function InferenceChainVisualizer({ chain, autoScrollToActive = t
     const allStepIds = new Set(chain.steps.map((s) => s.id));
     setExpandedSteps(allStepIds);
     setTimeout(() => {
-      typeof (virtualizer as { recomputeSize?: () => void }).recomputeSize === "function" && (virtualizer as { recomputeSize?: () => void }).recomputeSize();
+      (virtualizer as any)?.recomputeSize?.();
     }, 50);
   }, [chain.steps, virtualizer]);
 
@@ -151,7 +151,7 @@ export default function InferenceChainVisualizer({ chain, autoScrollToActive = t
   const handleCollapseAll = useCallback(() => {
     setExpandedSteps(new Set());
     setTimeout(() => {
-      typeof (virtualizer as { recomputeSize?: () => void }).recomputeSize === "function" && (virtualizer as { recomputeSize?: () => void }).recomputeSize();
+      (virtualizer as any)?.recomputeSize?.();
     }, 50);
   }, [virtualizer]);
 

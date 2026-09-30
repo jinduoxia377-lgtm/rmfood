@@ -136,26 +136,6 @@ async def list_ingredients(
         raise HTTPException(status_code=500, detail="查询成分数据失败")
 
 
-@router.get("/{ingredient_id}", response_model=IngredientResponse, summary="获取成分详情")
-async def get_ingredient(
-    ingredient_id: int,
-    db: AsyncSession = Depends(get_db_session),
-):
-    """获取单个成分详情"""
-    herb = (await db.execute(
-        select(TCMHerb).where(TCMHerb.id == ingredient_id)
-    )).scalar_one_or_none()
-
-    if herb:
-        return {
-            "data": _format_tcm_herb_for_frontend(herb),
-            "message": "success",
-            "success": True,
-        }
-
-    raise HTTPException(status_code=404, detail="成分不存在")
-
-
 @router.get("/stats", summary="获取成分统计")
 async def get_ingredient_stats(
     db: AsyncSession = Depends(get_db_session),
@@ -191,3 +171,23 @@ async def get_ingredient_stats(
             "message": "统计查询失败，请稍后重试",
             "success": False,
         }
+
+
+@router.get("/{ingredient_id}", response_model=IngredientResponse, summary="获取成分详情")
+async def get_ingredient(
+    ingredient_id: int,
+    db: AsyncSession = Depends(get_db_session),
+):
+    """获取单个成分详情（注意：此路由必须放在所有具体子路由之后）"""
+    herb = (await db.execute(
+        select(TCMHerb).where(TCMHerb.id == ingredient_id)
+    )).scalar_one_or_none()
+
+    if herb:
+        return {
+            "data": _format_tcm_herb_for_frontend(herb),
+            "message": "success",
+            "success": True,
+        }
+
+    raise HTTPException(status_code=404, detail="成分不存在")

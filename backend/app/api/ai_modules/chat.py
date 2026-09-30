@@ -21,9 +21,67 @@ from . import (
 )
 from ...core.performance.resilience import get_ai_rate_limiter
 from ...core.multi_tenant.tenant_security import TenantContext, require_tenant
-from ...services.llm_service import LLMMessage
+from ...services.llm_service import LLMMessage, LLMService
+
+
+async def _get_user_llm(user_id: int):
+    """获取用户级 LLMService（按 user_id 缓存）；该用户未配置自己的密钥则返回 None。
+
+    优先级：用户级密钥（SystemConfig llm_user_key_<user_id>）> 全局 llm_service。
+    调用方拿到非 None 实例时用它的密钥发起对话；拿到 None 时回退到全局实例。
+    """
+    return await LLMService.get_user_service(user_id)
+from ...services.ai.prompt_service import get_prompt_service
 from ...services.ai.shared.response_cache import ai_cache
 from ...services.ai.shared.observability import ai_observability
+
+
+@router.get("/debug/prompt", summary="Debug: check current prompt")
+async def debug_prompt(
+    current_user: User = Depends(get_current_user),
+):
+    from ...services.ai.prompt_service import get_prompt_service
+    svc = get_prompt_service()
+    p = svc.get_scenario_prompt("formula_design")
+    return {
+        "prompt_length": len(p),
+        "has_blocks_keyword": "blocks" in p,
+        "has_json_codeblock": "```json" in p,
+        "first_300": p[:300],
+        "last_200": p[-200:],
+        "config_path": str(svc.config_path),
+        "config_hash": svc._config_hash,
+        "prompt_count": len(svc._config.system_prompts),
+        "academician_len": len(svc._config.system_prompts.get("academician", "")),
+    }
+
+
+@router.get("/debug/llm-test", summary="Debug: test LLM directly")
+async def debug_llm_test(
+    current_user: User = Depends(get_current_user),
+):
+    from ...services.ai.prompt_service import get_prompt_service
+    from ...services.llm_service import llm_service, LLMMessage
+    import json as _json
+    
+    prompt = get_prompt_service().get_scenario_prompt("formula_design")
+    messages = [
+        LLMMessage(role="system", content=prompt),
+        LLMMessage(role="user", content="帮我设计一款针对高血糖人群的饮品配方"),
+    ]
+    
+    # Call LLM non-streaming
+    result = await llm_service.chat(messages)
+    content = result.content
+    
+    return {
+        "prompt_length": len(prompt),
+        "response_length": len(content),
+        "has_blocks": "blocks" in content,
+        "has_json_codeblock": "```json" in content,
+        "first_500": content[:500],
+        "model": result.model,
+    }
 
 sub_router = APIRouter(tags=["生成"])
 
@@ -40,12 +98,84 @@ class ChatRequest(BaseModel):
     question: str = Field(..., min_length=1, max_length=2000, description="用户问题")
     history: list[dict[str, str]] | None = Field(None, description="对话历史")
     stream: bool = Field(False, description="是否使用流式输出")
+    scenario_mode: str = Field("formula_design", description="场景模式")
+    user_profile_context: str | None = Field(
+        None,
+        max_length=2000,
+        description="用户画像摘要（健康目标/过敏原/饮食禁忌/体质）",
+    )
 
 
 class ChatMessage(BaseModel):
     """单条对话消息"""
     role: str  # "user" | "assistant"
     content: str
+
+
+# 用户画像中需要触发「指令覆盖」过滤的句式
+_PROFILE_INJECTION_PATTERNS = [
+    # 指令覆盖类：允许中间插入任意修饰词（如「上述」「所有」「之前」）
+    r"(忽略|无视|忘记|跳过|抛弃)[^。；\n]{0,12}?(指令|规则|提示|设定|要求|限制)",
+    r"(你|你现在)\s*(是|变成|扮演)\s*[^。；\n]{1,20}(?=[。；\n]|$)",
+    r"(system|assistant|developer)\s*[:：]",
+    r"</?\s*(system|instruction|prompt)\s*>",
+]
+
+
+def _sanitize_profile(raw: str | None) -> str:
+    """
+    净化用户画像文本，防止 Prompt 注入。
+
+    画像来自前端 localStorage，属不可信输入。这里做最小必要的清洗：
+      1. 移除控制字符
+      2. 替换明显的指令覆盖句式
+      3. 折叠换行，限制长度
+    """
+    if not raw:
+        return ""
+
+    import re as _re
+
+    text = str(raw)
+    # 1. 移除控制字符（保留常规空白）
+    text = _re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]", "", text)
+    # 2. 替换注入句式
+    for pattern in _PROFILE_INJECTION_PATTERNS:
+        text = _re.sub(pattern, "[已过滤]", text, flags=_re.IGNORECASE)
+    # 3. 折叠换行与多余空白
+    text = _re.sub(r"\s*\n\s*", "；", text)
+    text = _re.sub(r"[ \t]{2,}", " ", text).strip()
+    # 4. 兜底限长
+    return text[:2000]
+
+
+def _build_system_prompt(scenario_mode: str, profile_raw: str | None) -> str:
+    """
+    构建 System Prompt，并将用户画像作为「用户约束」注入。
+
+    安全设计：
+      - 画像注入 System 层而非 User 层，获得更高指令优先级
+      - 明确要求遵守过敏/禁忌，无法满足时必须说明而非忽略
+    """
+    base_prompt = get_prompt_service().get_scenario_prompt(
+        scenario_mode or "formula_design"
+    )
+
+    profile = _sanitize_profile(profile_raw)
+    if not profile:
+        return base_prompt
+
+    return (
+        f"{base_prompt}\n\n"
+        "【用户约束 — 必须严格遵守】\n"
+        f"{profile}\n\n"
+        "执行要求：\n"
+        "1. 配方中严禁出现用户已声明的过敏原或饮食禁忌原料；\n"
+        "2. 若在满足约束的前提下无法达到预期功效，必须明确说明冲突，"
+        "不得静默忽略约束；\n"
+        "3. 药材用量必须符合药食同源目录的每日用量上限；\n"
+        "4. 特殊人群（孕妇、儿童、慢性病患者）需给出针对性提示。"
+    )
 
 
 @router.post("/chat", summary="AI 智能对话（非流式）")
@@ -64,10 +194,22 @@ async def chat(
     try:
         start_time = time.time()
 
-        # 检查缓存（租户级 key 防止跨租户缓存泄漏）
+        # 解析该用户实际可用的 LLM 服务：优先用户级密钥（SystemConfig llm_user_key_<user_id>），
+        # 未配置则回退到全局 llm_service。缓存键加入用户维度，避免跨用户命中他人答案。
+        user_llm = await _get_user_llm(current_user.id)
+        llm = user_llm if user_llm is not None else _get_llm_service()
+        key_source = "user" if user_llm is not None else (
+            "db" if llm.config.key_from_db else ("env" if llm.config.api_key else "none")
+        )
+
+        # 检查缓存（租户级 key 防止跨租户缓存泄漏；用户级密钥时缓存按用户隔离）
         # 缓存键加入 history 哈希，避免不同上下文中相同问题返回相同答案
         history_hash = hash(tuple(str(h) for h in (req.history or [])[-3:])) if req.history else 0
-        cache_key = f"org:{tenant.org_id}:q:{hash(req.question)}:ctx:{history_hash}"
+        cache_key = (
+            f"user:{current_user.id}:q:{hash(req.question)}:ctx:{history_hash}"
+            if user_llm is not None
+            else f"org:{tenant.org_id}:q:{hash(req.question)}:ctx:{history_hash}"
+        )
         cached = ai_cache.get(cache_key)
         if cached:
             logger.info("缓存命中: %s", cache_key[:50])
@@ -77,12 +219,13 @@ async def chat(
                 "role": "assistant",
                 "formulas": [],
                 "timestamp": datetime.datetime.now().timestamp(),
-                "model": _get_llm_service().config.model if _get_llm_service().is_available else None,
+                "model": llm.config.model if llm.is_available else None,
                 "success": True,
                 "cached": True,
+                "key_source": key_source,
             }
-        if not _get_llm_service().is_available:
-            logger.info("LLM服务不可用，使用智能推理引擎")
+        if not llm.is_available:
+            logger.info("LLM服务不可用（用户 %s 无用户级密钥且全局未配置），使用智能推理引擎", current_user.id)
             from ...services.thinking_engine import thinking_engine
             thinking_steps = []
             final_answer = ""
@@ -104,6 +247,7 @@ async def chat(
                 "timestamp": dt.datetime.now().timestamp(),
                 "model": None,
                 "success": True,
+                "key_source": "none",
                 "thinking_steps": thinking_steps,
             }
 
@@ -119,11 +263,22 @@ async def chat(
                 }
             )
 
-        from ...services.llm_service import chat_with_rmfood
-        answer = await chat_with_rmfood(
-            question=req.question,
-            history=req.history,
+        scenario_mode = getattr(req, "scenario_mode", "formula_design") or "formula_design"
+        system_prompt = _build_system_prompt(
+            scenario_mode, getattr(req, "user_profile_context", None)
         )
+
+        messages = [LLMMessage(role="system", content=system_prompt)]
+        if req.history:
+            for h in req.history[-10:]:
+                messages.append(LLMMessage(role=h["role"], content=h["content"]))
+        messages.append(LLMMessage(role="user", content=req.question))
+
+        # Use LLM streaming to collect the full response（使用按用户解析出的服务实例）
+        answer = ""
+        async for chunk in llm.chat_stream(messages):
+            if chunk:
+                answer += chunk
 
         # 回写对话记录到数据库
         try:
@@ -168,9 +323,10 @@ async def chat(
             "role": "assistant",
             "formulas": [],
             "timestamp": datetime.datetime.now().timestamp(),
-            "model": _get_llm_service().config.model if _get_llm_service().is_available else None,
+            "model": llm.config.model if llm.is_available else None,
             "success": True,
             "cached": False,
+            "key_source": key_source,
         }
 
         # 写入缓存 + 记录指标（在 return 之前）
@@ -210,12 +366,20 @@ async def chat(
             )
     except Exception as e:
         logger.error("AI 对话未知异常: %s", e, exc_info=True)
+        # 即使未知异常也回显 key_source，前端可据此区分"用户密钥导致"还是"服务器配置问题"
+        try:
+            _ks = "user" if user_llm is not None else (
+                "db" if llm.config.key_from_db else ("env" if llm.config.api_key else "none")
+            )
+        except Exception:
+            _ks = "unknown"
         raise HTTPException(
             status_code=500,
             detail={
                 "error": "INTERNAL_ERROR",
                 "message": "服务器内部错误，请稍后重试",
-                "suggestion": "请联系技术支持"
+                "suggestion": "请联系技术支持",
+                "key_source": _ks,
             }
         )
 
@@ -281,7 +445,18 @@ async def chat_stream(
 
         logger.info(f"[chat_stream] LLM 配置: provider={_get_llm_service().config.provider}, model={_get_llm_service().config.model}, base_url={_get_llm_service().config.base_url}, is_available={_get_llm_service().is_available}")
 
-        if not _get_llm_service().is_available:
+        # 解析用户级 LLM 服务（用户密钥 > 全局密钥）
+        user_llm = await _get_user_llm(current_user.id)
+        llm = user_llm if user_llm is not None else _get_llm_service()
+        key_source = "user" if user_llm is not None else (
+            "db" if llm.config.key_from_db else ("env" if llm.config.api_key else "none")
+        )
+        if user_llm is not None:
+            logger.info(f"[chat_stream] 用户 {current_user.id} 使用自己的 LLM 密钥: provider={user_llm.config.provider}, model={user_llm.config.model}")
+        else:
+            logger.info(f"[chat_stream] 用户 {current_user.id} 未配置个人密钥，使用全局 LLM: provider={llm.config.provider}, model={llm.config.model}, key_source={key_source}")
+
+        if not llm.is_available and user_llm is None:
             import json
             async def thinking_stream():
                 from ...services.thinking_engine import thinking_engine
@@ -290,19 +465,23 @@ async def chat_stream(
                 yield "data: [DONE]\n\n"
             return StreamingResponse(thinking_stream(), media_type="text/event-stream")
 
-        from ...services.llm_service import RMFOOD_SYSTEM_PROMPT
+        scenario_mode = getattr(req, "scenario_mode", "formula_design") or "formula_design"
+        system_prompt = _build_system_prompt(
+            scenario_mode, getattr(req, "user_profile_context", None)
+        )
 
-        messages = [LLMMessage(role="system", content=RMFOOD_SYSTEM_PROMPT)]
+        messages = [LLMMessage(role="system", content=system_prompt)]
         if req.history:
             for h in req.history[-10:]:
                 messages.append(LLMMessage(role=h["role"], content=h["content"]))
         messages.append(LLMMessage(role="user", content=req.question))
 
-        logger.info(f"[chat_stream] 消息列表构建完成, 共 {len(messages)} 条消息, system_prompt长度={len(RMFOOD_SYSTEM_PROMPT)}")
+        logger.info(f"[chat_stream] 消息列表构建完成, 共 {len(messages)} 条消息, system_prompt长度={len(system_prompt)}")
+
 
         async def event_stream():
             try:
-                async for chunk in _get_llm_service().chat_stream(messages):
+                async for chunk in llm.chat_stream(messages):
                     if chunk:
                         yield _format_sse_event("content", {"content": chunk})
                 yield "data: [DONE]\n\n"
@@ -369,6 +548,9 @@ async def chat_stream(
                 "suggestion": "请检查后端日志获取详情"
             }
         )
+
+
+
 
 
 

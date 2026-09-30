@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback, memo } from 'react';
-import { Shield, Save, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
+import { Shield, Save, Loader2, CheckCircle, AlertCircle } from 'lucide-react'
+import api from '@/api/client';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/components/ui/Toast';
-import { useOrganizations } from '@/hooks/useOrganizations';
+import { getPermissionMatrix } from '@/hooks/useOrganizations';
 
 interface PermissionMatrixProps {
   organizationId: number;
@@ -59,7 +60,6 @@ const PermissionCell = memo(({ checked, onChange, readonly }: {
 
 export function PermissionMatrix({ organizationId }: PermissionMatrixProps) {
   const toast = useToast();
-  const { getPermissionMatrix } = useOrganizations({ autoFetch: false });
   const [data, setData] = useState<PermissionMatrixData | null>(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -82,7 +82,7 @@ export function PermissionMatrix({ organizationId }: PermissionMatrixProps) {
       })
       .catch(() => toast.error('加载权限矩阵失败'))
       .finally(() => setLoading(false));
-  }, [organizationId, getPermissionMatrix, toast]);
+  }, [organizationId, toast]);
 
   const togglePermission = useCallback((role: string, resource: string, action: string) => {
     setLocalPerms(prev => {
@@ -110,12 +110,7 @@ export function PermissionMatrix({ organizationId }: PermissionMatrixProps) {
           resourceType: resource,
           actions: Array.from(actions),
         }));
-        await fetch(`/api/v1/organizations/${organizationId}/permissions`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ roleId: role, permissions }),
-        });
+        await api.put(`/organizations/${organizationId}/permissions`, permissions);
       }
       toast.success('权限配置已更新');
     } catch {

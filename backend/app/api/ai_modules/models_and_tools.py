@@ -25,6 +25,95 @@ from . import (
 
 sub_router = APIRouter(tags=["生成"])
 
+
+class LLMTestRequest(BaseModel):
+    """LLM 密钥验活请求（仅验证，不写库）"""
+    provider: str = Field(..., description="提供商: deepseek/openai/zhipu/qwen/anthropic")
+    api_key: str = Field(..., description="待验证的 API Key")
+    base_url: str = Field("", description="API 基础 URL（留空使用提供商默认）")
+    model: str = Field("", description="模型名称（留空使用提供商默认）")
+    timeout: float = Field(10.0, ge=3, le=30, description="验活超时（秒），防止误选超长值")
+
+
+@sub_router.post("/models/config/test", summary="LLM 密钥验活（不写库）")
+async def test_llm_config(
+    req: LLMTestRequest,
+    current_user: User = Depends(get_current_active_user),
+):
+    """
+    用请求中的临时密钥做一次最小化的 chat 调用（max_tokens=1），
+    验证密钥是否真实可用；**不写入数据库、不更新运行时 llm_service**。
+
+    返回:
+      success  — 密钥可用
+      detail   — 失败原因（认证 401 / 权限 403 / 限流 429 / 网络等）
+      model    — 成功时实际响应的模型名
+      provider / base_url — 回显本次使用的提供商与地址
+    """
+    import httpx
+    from ...services.llm_service import PROVIDER_DEFAULTS
+
+    provider = (req.provider or "").strip() or "deepseek"
+    base_url = (req.base_url or "").strip()
+    if not base_url:
+        base_url = PROVIDER_DEFAULTS.get(provider, {}).get("base_url") or (
+            "https://api.deepseek.com/v1" if provider in ("deepseek", "") else ""
+        )
+    model = (req.model or "").strip()
+    if not model:
+        model = PROVIDER_DEFAULTS.get(provider, {}).get("model") or "deepseek-chat"
+
+    if not base_url:
+        return {"success": False, "detail": "无法确定 Base URL：未知提供商且未填写地址", "provider": provider, "base_url": "", "model": model}
+
+    url = f"{base_url.rstrip('/')}/chat/completions"
+    headers = {"Content-Type": "application/json", "Authorization": f"Bearer {req.api_key}"}
+    payload = {
+        "model": model,
+        "messages": [{"role": "user", "content": "hi"}],
+        "max_tokens": 1,
+        "temperature": 0,
+        "stream": False,
+    }
+
+    masked = req.api_key[:8] + "..." + req.api_key[-4:] if len(req.api_key) > 12 else "***"
+    logger.info(f"[LLM Test] 验活请求: provider={provider}, model={model}, key={masked}")
+
+    try:
+        async with httpx.AsyncClient(timeout=req.timeout) as client:
+            resp = await client.post(url, headers=headers, json=payload)
+    except httpx.TimeoutException:
+        return {"success": False, "detail": f"请求超时（{req.timeout}s），无法连接 {base_url}", "provider": provider, "base_url": base_url, "model": model}
+    except httpx.HTTPError as e:
+        return {"success": False, "detail": f"网络错误: {e.__class__.__name__}: {e}", "provider": provider, "base_url": base_url, "model": model}
+
+    if resp.status_code == 200:
+        try:
+            data = resp.json()
+            actual_model = data.get("model", model)
+            logger.info(f"[LLM Test] 验活成功: provider={provider}, model={actual_model}")
+            return {"success": True, "detail": "密钥验证通过", "provider": provider, "base_url": base_url, "model": actual_model}
+        except Exception:
+            return {"success": True, "detail": "HTTP 200 但响应体无法解析，密钥基本可用", "provider": provider, "base_url": base_url, "model": model}
+
+    # 解析错误体
+    detail = ""
+    try:
+        err = resp.json()
+        detail = (err.get("error") or {}).get("message") or str(err)
+    except Exception:
+        detail = resp.text[:200] or "未知错误"
+
+    friendly = {
+        401: "API 认证失败（401）：密钥无效或已过期",
+        403: "API 权限被拒绝（403）：请检查账户权限与余额",
+        429: "调用频率受限（429）：请稍后重试",
+        404: "模型或地址不存在（404）：请核对模型名与 Base URL",
+    }.get(resp.status_code, f"HTTP {resp.status_code}")
+    logger.warning(f"[LLM Test] 验活失败: {resp.status_code} {detail}")
+    return {"success": False, "detail": f"{friendly}。{detail}", "provider": provider, "base_url": base_url, "model": model}
+
+
 class TastePredictRequest(BaseModel):
     """口感预测请求"""
     ingredients: list[dict[str, Any]] = Field(..., min_length=1, description="成分列表 [{name, ...}]")
@@ -95,8 +184,23 @@ async def peptide_score(
 async def model_status(
     current_user: Optional[User] = Depends(get_current_user),
 ):
-    """查看各 AI 子模型服务的状态，包括 LLM 连接状态"""
+    """查看各 AI 子模型服务的状态，包括 LLM 连接状态与密钥来源（db/env/none）"""
     try:
+        # 判定 LLM 密钥来源：用户级密钥 > 全局 db > 全局 env > none
+        key_source = "none"
+        try:
+            from ...services.llm_service import LLMService
+            user_llm = None
+            if current_user and current_user.id:
+                user_llm = await LLMService.get_user_service(current_user.id)
+            if user_llm is not None:
+                key_source = "user"
+            else:
+                cfg = getattr(_get_llm_service(), "config", None)
+                if cfg is not None and getattr(cfg, "api_key", ""):
+                    key_source = "db" if getattr(cfg, "key_from_db", False) else "env"
+        except Exception:
+            key_source = "none"
         # 检查 LLM 服务的详细状态
         llm_status_detail = {}
         if hasattr(_get_llm_service(), 'is_available') and _get_llm_service().is_available:
@@ -108,6 +212,8 @@ async def model_status(
                 "note": "已配置并可用",
                 "api_key_configured": True,
                 "api_key_length": len(getattr(_get_llm_service().config, 'api_key', '')) if getattr(_get_llm_service().config, 'api_key', None) else 0,
+                "key_source": key_source,
+                "user_key_source": key_source if key_source == "user" else "none",
             }
         else:
             # 提供更详细的状态信息
@@ -120,6 +226,8 @@ async def model_status(
                 "note": "未配置 API Key" if not has_api_key else "API Key 已配置但服务未激活，请检查配置或重启服务",
                 "api_key_configured": has_api_key,
                 "api_key_length": len(getattr(_get_llm_service().config, 'api_key', '')) if has_api_key else 0,
+                "key_source": key_source,
+                "user_key_source": key_source if key_source == "user" else "none",
                 "suggestion": "请在配置管理中保存有效的 API Key" if not has_api_key else "尝试重新保存配置或刷新页面"
             }
 
@@ -391,14 +499,14 @@ class SaveModelConfigRequest(BaseModel):
     temperature: float = Field(0.7, description="温度参数")
 
 
-@sub_router.post("/models/config/{model_type}", summary="保存模型配置")
+@sub_router.post("/models/config/{model_type}", dependencies=[Depends(require_role("ADMIN"))], summary="保存模型配置（仅管理员）")
 async def save_model_config(
     model_type: str,
     req: SaveModelConfigRequest,
     db: AsyncSession = Depends(get_db_session),
     current_user: User = Depends(get_current_active_user),
 ):
-    """保存单个模型配置到数据库"""
+    """保存单个模型配置到数据库（会即时更新运行时 LLM 服务，影响全体用户，故仅限管理员）"""
     from ...services.ai_model_config_service import AIModelConfigService, ModelConfig
     from ...services.llm_service import llm_service, LLMConfig
 
@@ -433,10 +541,19 @@ async def save_model_config(
         llm_service.update_config(llm_config, user_id=current_user.id)
         logger.info(f"LLM 服务配置已更新: provider={req.provider}, model={req.model}")
 
+    # 回显运行时 LLM 服务的真实状态（前端据此区分"密钥已生效"与"仅写库未生效"）
+    llm_runtime = {
+        "active": bool(getattr(llm_service, "is_available", False)),
+        "provider": getattr(getattr(llm_service, "config", None), "provider", "unknown"),
+        "model": getattr(getattr(llm_service, "config", None), "model", "unknown"),
+        "api_key_configured": bool(getattr(getattr(llm_service, "config", None), "api_key", "")),
+    }
+
     return {
         "success": success,
         "message": "配置已保存到数据库",
         "config": config.to_dict(),
+        "llm_runtime": llm_runtime,
     }
 
 
@@ -472,3 +589,143 @@ async def get_model_config(
         "model_type": model_type,
         "config": config.to_dict(),
     }
+
+
+# ════════════════════════════════════════
+# 用户级 LLM 密钥管理
+# 按 user_id 隔离，存 SystemConfig("llm_user_key_<user_id>")，
+# 每个用户用自己的密钥驱动 /ai 对话，与全局 llm_service 完全独立。
+# 权限：仅当前用户可管理自己的密钥（无需 ADMIN）。
+# ════════════════════════════════════════
+
+class UserLLMKeyRequest(BaseModel):
+    """用户级 LLM 密钥保存请求"""
+    provider: str = Field(..., min_length=1, max_length=64, description="提供商: deepseek/openai/zhipu/qwen/anthropic/custom")
+    api_key: str = Field(..., min_length=20, max_length=512, description="API Key（≥ 20 字符）")
+    base_url: str = Field("", max_length=512, description="API 基础 URL（留空使用提供商默认）")
+    model: str = Field("", max_length=128, description="模型名称（留空使用提供商默认）")
+    max_tokens: int = Field(4096, ge=1, le=32768)
+    temperature: float = Field(0.7, ge=0, le=2)
+
+
+@sub_router.post("/models/user-key", summary="保存当前用户的 LLM 密钥")
+async def save_user_llm_key(
+    req: UserLLMKeyRequest,
+    current_user: User = Depends(get_current_active_user),
+):
+    """保存/覆盖当前用户自己的 LLM 密钥（AES-256-GCM 加密后存 SystemConfig）。
+
+    保存后 /ai 对话立即使用该用户密钥驱动 LLM，无需管理员介入。
+    全局 llm_service（环境变量/全局 db）不受影响。
+    """
+    from ...services.llm_service import LLMService, LLMConfig, save_user_config_to_db
+
+    cfg = LLMConfig(
+        provider=req.provider,
+        api_key=req.api_key,
+        base_url=req.base_url,
+        model=req.model,
+        max_tokens=req.max_tokens,
+        temperature=req.temperature,
+        user_id=current_user.id,
+    )
+    saved = await save_user_config_to_db(cfg, user_id=current_user.id)
+    LLMService.invalidate_user(current_user.id)
+
+    masked = req.api_key[:8] + "..." + req.api_key[-4:] if len(req.api_key) > 12 else "***"
+    logger.info(f"[UserLLM] 用户 {current_user.id} 保存个人密钥: provider={req.provider}, model={req.model}, key={masked}")
+
+    return {
+        "success": saved,
+        "message": "您的个人 LLM 密钥已保存，/ai 对话将使用您自己的密钥" if saved else "保存失败，请检查后端日志",
+        "user_id": current_user.id,
+        "key_masked": masked,
+    }
+
+
+@sub_router.get("/models/user-key", summary="查询当前用户的 LLM 密钥状态")
+async def get_user_llm_key_status(
+    current_user: User = Depends(get_current_user),
+):
+    """返回当前用户是否配置了个人密钥及脱敏信息（不返回明文）"""
+    from ...services.llm_service import LLMService, _user_key_config_key, _decrypt_api_key
+
+    user_cfg = await LLMService.get_user_service(current_user.id)
+    if user_cfg is None:
+        return {
+            "success": True,
+            "configured": False,
+            "note": "您尚未配置个人 LLM 密钥，/ai 对话使用服务器密钥",
+        }
+    cfg = user_cfg.config
+    masked = cfg.api_key[:8] + "..." + cfg.api_key[-4:] if len(cfg.api_key) > 12 else "***"
+    return {
+        "success": True,
+        "configured": True,
+        "provider": cfg.provider,
+        "model": cfg.model,
+        "base_url": cfg.base_url or "(使用提供商默认)",
+        "api_key_masked": masked,
+        "api_key_length": len(cfg.api_key),
+        "max_tokens": cfg.max_tokens,
+        "temperature": cfg.temperature,
+    }
+
+
+@sub_router.delete("/models/user-key", summary="删除当前用户的 LLM 密钥")
+async def delete_user_llm_key(
+    current_user: User = Depends(get_current_active_user),
+):
+    """删除当前用户的个人密钥，/ai 对话回退到服务器密钥"""
+    from ...services.llm_service import LLMService, delete_user_config
+
+    deleted = await delete_user_config(current_user.id)
+    LLMService.invalidate_user(current_user.id)
+    logger.info(f"[UserLLM] 用户 {current_user.id} 删除个人密钥")
+
+    return {
+        "success": deleted,
+        "message": "您的个人 LLM 密钥已删除，/ai 对话将回退到服务器密钥" if deleted else "删除失败",
+    }
+
+
+@sub_router.post("/models/user-key/test", summary="验活当前用户的 LLM 密钥（不写库）")
+async def test_user_llm_key(
+    req: UserLLMKeyRequest,
+    current_user: User = Depends(get_current_active_user),
+):
+    """用填写的密钥做一次最小 LLM 调用（max_tokens=1），验证可用性，不写库不更新运行时。"""
+    import httpx
+
+    from ...services.llm_service import PROVIDER_DEFAULTS
+
+    provider = req.provider or "deepseek"
+    base_url = req.base_url or PROVIDER_DEFAULTS.get(provider, {}).get("base_url", "")
+    model = req.model or PROVIDER_DEFAULTS.get(provider, {}).get("model", "deepseek-chat")
+
+    if not base_url:
+        return {"success": False, "detail": f"提供商 {provider} 未配置默认 Base URL，请填写 base_url"}
+
+    url = f"{base_url.rstrip('/')}/chat/completions"
+    headers = {"Content-Type": "application/json", "Authorization": f"Bearer {req.api_key}"}
+    payload = {"model": model, "messages": [{"role": "user", "content": "hi"}], "max_tokens": 1, "temperature": 0.1}
+
+    try:
+        async with httpx.AsyncClient(timeout=req.timeout if hasattr(req, "timeout") else 20.0) as client:
+            resp = await client.post(url, json=payload, headers=headers)
+        if resp.status_code == 200:
+            return {"success": True, "detail": f"密钥可用，模型 {model} 已响应", "provider": provider, "base_url": base_url, "model": model}
+        detail = resp.text[:200] or "未知错误"
+        friendly = {
+            401: "API 认证失败（401）：密钥无效或已过期",
+            403: "API 权限被拒绝（403）：请检查账户权限与余额",
+            429: "调用频率受限（429）：请稍后重试",
+            404: "模型或地址不存在（404）：请核对模型名与 Base URL",
+        }.get(resp.status_code, f"HTTP {resp.status_code}")
+        logger.warning(f"[UserLLM Test] 用户 {current_user.id} 验活失败: {resp.status_code} {detail}")
+        return {"success": False, "detail": f"{friendly}。{detail}", "provider": provider, "base_url": base_url, "model": model}
+    except httpx.TimeoutException:
+        return {"success": False, "detail": "验活超时（20s）：请检查 Base URL 或网络", "provider": provider}
+    except Exception as e:
+        logger.error(f"[UserLLM Test] 用户 {current_user.id} 验活异常: {e}", exc_info=True)
+        return {"success": False, "detail": f"验活请求失败：{e}", "provider": provider}

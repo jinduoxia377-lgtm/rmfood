@@ -8,13 +8,16 @@
 /* ===== 区块类型枚举 ===== */
 
 export type BlockType =
-  | 'header'       // 标题区
-  | 'data-table'   // 数据表格
-  | 'chart'        // 可视化图表
-  | 'list'         // 分析列表
-  | 'callout'      // 提示框
-  | 'metrics'      // KPI指标卡
-  | 'divider'      // 分隔线
+  | 'header'            // 标题区
+  | 'data-table'        // 数据表格
+  | 'chart'             // 可视化图表
+  | 'list'              // 分析列表
+  | 'callout'           // 提示框
+  | 'metrics'           // KPI指标卡
+  | 'divider'           // 分隔线
+  | 'ingredient-detail' // 药材详情卡片
+  | 'synergy-chart'     // 配伍关系图
+  | 'timeline'          // 服用周期时间线
 
 /* ===== 核心结构 ===== */
 
@@ -115,4 +118,68 @@ export type DividerVariant = 'solid' | 'dashed' | 'dotted'
 export interface DividerData {
   variant?: DividerVariant
   label?: string
+}
+
+/* ===== IngredientDetail 区块 ===== */
+
+export interface IngredientDetailData {
+  name: string
+  latin?: string
+  source?: string
+  properties?: string
+  efficacy?: string
+  active_compounds?: string[]
+  dosage_range?: string
+  safety_level?: string
+  notes?: string
+}
+
+/* ===== SynergyChart 区块 ===== */
+
+export type SynergyChartType = 'hierarchy' | 'network'
+
+export interface SynergyNode {
+  id: string
+  label: string
+  role: '君' | '臣' | '佐' | '使' | '其他'
+  level?: number
+}
+
+export interface SynergyEdge {
+  from: string
+  to: string
+  weight?: number
+  type?: '协同' | '相须' | '相使' | '相畏' | '相杀'
+}
+
+export interface SynergyChartData {
+  type: SynergyChartType
+  title?: string
+  nodes: SynergyNode[]
+  edges: SynergyEdge[]
+}
+
+/* ===== Timeline 区块 ===== */
+
+export type TimelinePhase = '初期' | '中期' | '后期' | '巩固'
+
+export interface TimelineItem {
+  day: number
+  phase: TimelinePhase
+  title: string
+  description: string
+  dosage?: string
+  notes?: string
+  icon?: string
+}
+
+export interface TimelineData {
+  title?: string
+  duration_days: number
+  phases: Array<{
+    key: TimelinePhase
+    label: string
+    days: number[]
+  }>
+  items: TimelineItem[]
 }

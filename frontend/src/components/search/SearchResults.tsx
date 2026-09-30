@@ -124,7 +124,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-error-500">
-        <div className="text-4xl mb-4">Error</div>
+        <div className="text-4xl mb-4">加载失败</div>
         <p>{error}</p>
       </div>
     );
@@ -134,7 +134,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
   if (results.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-neutral-500">
-        <div className="text-4xl mb-4">No results</div>
+        <div className="text-4xl mb-4">暂无结果</div>
         <p>未找到与"{query}"相关的内容</p>
         <p className="text-sm mt-2">请尝试其他关键词或调整筛选条件</p>
       </div>

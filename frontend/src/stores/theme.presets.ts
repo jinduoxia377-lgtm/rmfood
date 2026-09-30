@@ -543,6 +543,33 @@ export function generateCSSVariables(theme: ThemeConfig): Record<string, string>
 }
 
 // ============================================================================
+// 安全校验：令牌名与令牌值的白名单
+// ----------------------------------------------------------------------------
+// 主题可经三条不可信路径进入：JSON 导入 / 文件上传 / URL 分享。
+// 原实现把这些值拼成字符串写入 root.style.cssText，攻击者只需在 value 中放入
+// ';' 即可越界注入任意 CSS 声明到 <html>（D-33）。
+// 现改为逐属性 setProperty + 严格白名单，使 value 永远无法逃逸出声明值位置。
+// ============================================================================
+
+/** 合法令牌名：仅小写 kebab-case 的自定义属性 */
+const SAFE_TOKEN_NAME = /^--[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+/** 合法令牌值：颜色 / var() 引用 / 渐变 / 数值+单位 / 关键字 */
+const SAFE_TOKEN_VALUE =
+  /^(?:#[0-9a-fA-F]{3,8}|rgba?\(\s*[\d.%,\s/]+\)|hsla?\(\s*[\d.%,\s/deg]+\)|var\(\s*--[a-z0-9-]+\s*(?:,[^;{}]*)?\)|linear-gradient\([^;{}]*\)|radial-gradient\([^;{}]*\)|-?[\d.]+(?:px|rem|em|%|ms|s|vh|vw)?|none|auto|inherit|transparent|currentColor)$/;
+
+/** 校验单个令牌，返回是否可安全写入 */
+export function isSafeToken(name: string, value: string): boolean {
+  if (typeof name !== 'string' || typeof value !== 'string') return false;
+  if (!SAFE_TOKEN_NAME.test(name)) return false;
+  const v = value.trim();
+  if (v.length === 0 || v.length > 300) return false;
+  if (/[;{}<>\\]/.test(v)) return false;        // 显式拒绝分隔符与转义
+  if (/url\s*\(/i.test(v)) return false;        // 拒绝外部资源引用
+  return SAFE_TOKEN_VALUE.test(v);
+}
+
+// ============================================================================
 // 辅助功能：将主题应用到 DOM
 // ============================================================================
 
@@ -556,26 +583,36 @@ export function applyThemeToDOM(theme: ThemeConfig): void {
   const root = document.documentElement;
   const cssVars = generateCSSVariables(theme);
 
-  // 批量构建 CSS text，一次性写入（比逐条 setProperty 快 5-10x）
-  const cssText = Object.entries(cssVars)
-    .map(([name, value]) => `${name}: ${value};`)
-    .join('\n');
-  root.style.cssText += cssText;
+  // D-33 / D-5 修复：
+  //  · 原先用 `root.style.cssText += \`${name}: ${value};\`` 拼接写入 —— 既是 CSS 注入向量，
+  //    也会整体重置 <html> 的 style 属性并强制全量重解析。
+  //  · 现改为逐属性 setProperty：幂等覆盖、无字符串拼接、值无法逃逸声明位置。
+  let rejected = 0;
+  for (const [name, value] of Object.entries(cssVars)) {
+    if (!isSafeToken(name, value)) {
+      rejected++;
+      logger.warn('[Theme System] 拒绝不安全的令牌值', { name, value: String(value).slice(0, 60) });
+      continue;
+    }
+    root.style.setProperty(name, value);
+  }
+  if (rejected > 0) {
+    logger.warn(`[Theme System] 共拒绝 ${rejected} 个不安全的令牌值（已跳过，未写入 DOM）`);
+  }
 
   // 设置 data 属性用于 CSS 选择器
   root.setAttribute('data-theme', theme.id);
   root.setAttribute('data-mode', theme.mode);
 
   // 统一使用 .dark class 作为暗色模式选择器（Tailwind dark: 变体依赖它）
-  if (theme.mode === 'dark') {
-    root.classList.add('dark');
-  } else {
-    root.classList.remove('dark');
-  }
+  root.classList.toggle('dark', theme.mode === 'dark');
 
   // 设置颜色方案（影响浏览器原生 UI）
-  const colorScheme = theme.mode === 'dark' ? 'dark' : 'light';
-  root.style.colorScheme = colorScheme;
+  root.style.colorScheme = theme.mode === 'dark' ? 'dark' : 'light';
+
+  // 注意：无障碍属性（data-a11y-mode / data-reading-mode）现由 themeStore 的
+  // syncA11yAttributes() 在【初始化】与【交互切换】两条路径统一负责（D-39 修复）。
+  // 此处不再重复维护，避免两处写入漂移。
 
   logger.info(`🎨 [Theme System] Applied theme: ${theme.name} (${theme.mode})`);
 }

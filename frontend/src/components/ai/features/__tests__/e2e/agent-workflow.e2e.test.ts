@@ -18,12 +18,12 @@ const AGENT_WORKFLOW_URL = '/ai';
 
 async function navigateToAgentWorkflow(page: any): Promise<void> {
   await page.goto(AGENT_WORKFLOW_URL);
-  // 等待页面加载
+  // 等待页面加载（使用 data-testid）
   await page.waitForSelector('[data-testid="agent-workflow-tab"]', { timeout: 10000 });
 }
 
 async function sendAgentMessage(page: any, message: string): Promise<void> {
-  const textarea = page.locator('textarea[placeholder*="研发需求"]');
+  const textarea = page.locator('[data-testid="agent-input"]');
   await textarea.fill(message);
   await textarea.press('Enter');
 }
@@ -31,7 +31,7 @@ async function sendAgentMessage(page: any, message: string): Promise<void> {
 async function waitForAgentResponse(page: any, timeout: number = 15000): Promise<void> {
   // 等待 running 状态消失
   await page.waitForSelector('.animate-spin', { state: 'hidden', timeout });
-  // 等待新消息出现
+  // 等待新消息出现（使用 data-testid）
   await page.locator('[data-testid="assistant-message"]').last().waitFor({ state: 'visible', timeout });
 }
 
@@ -131,13 +131,13 @@ test.describe('Agent 工作流 E2E 测试', () => {
   });
 
   test('应显示 Token 计数器', async ({ page }) => {
-    const tokenBadge = page.locator('[class*="Activity"]').first();
+    const tokenBadge = page.locator('[data-testid="token-indicator"]');
     await expect(tokenBadge).toBeVisible();
   });
 
   test('Token 指示器应显示进度条', async ({ page }) => {
     // 点击 Token 指示器展开详情
-    const tokenBadge = page.locator('[class*="Activity"]').first();
+    const tokenBadge = page.locator('[data-testid="token-indicator"]');
     await tokenBadge.click();
 
     // 等待进度条显示

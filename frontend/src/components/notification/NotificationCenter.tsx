@@ -197,7 +197,9 @@ export function NotificationCenter() {
 
   const deleteNotification = async (id: string) => {
     try {
-      await api.delete(`/api/notifications/${id}`)
+      // 修复：api 客户端 baseURL 已含 /api/v1，路径不应再带 /api 前缀
+      // 否则拼成 /api/v1/api/notifications/:id → 404
+      await api.delete(`/notifications/${id}`)
 
       setNotifications(prev => prev.filter(n => n.id !== id))
     } catch (error) {

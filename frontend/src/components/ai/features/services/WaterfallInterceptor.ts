@@ -140,9 +140,9 @@ export function getInterceptorStatus(): {
 } {
   return {
     sendingHandlers: eventBusV2.getSubscriberCount('message:sending' as EventType) +
-      (eventBusV2.getPipes().get('message:sending')?.length || 0),
+      (eventBusV2 as any).getPipes?.().get('message:sending')?.length || 0,
     receivedHandlers: eventBusV2.getSubscriberCount('message:received' as EventType) +
-      (eventBusV2.getPipes().get('message:received')?.length || 0),
+      (eventBusV2 as any).getPipes?.().get('message:received')?.length || 0,
     currentSessionId,
   }
 }

@@ -22,6 +22,14 @@
   --color-primary-rgb: 52, 211, 153;
   --color-primary-hover: #6ee7b7;
   --color-primary-container: rgba(52, 211, 153, 0.15);
+  /* D-12 修复：--color-primary-text 原先只在 base.css 定义为 #047857（深绿），
+     在暗色画布 #020617 上仅约 2.3:1。此处给出暗色专用值（对比度约 13.3:1）。 */
+  --color-primary-text: #6ee7b7;
+
+  /* D-50 修复：主色表面令牌【不参与色阶反转】，
+     保证「实底 + 白字」在暗色下仍为深底白字（白字 7.78:1 ✅ AAA）。 */
+  --color-primary-surface: #065f46;
+  --color-on-primary-surface: #ffffff;
 
   /* ═══ Brand Secondary: Ocean Blue (dark mode 提亮) ═══ */
   --color-secondary-50: #172554;
@@ -227,7 +235,9 @@
   --font-serif: 'Noto Serif SC', Georgia, 'Times New Roman', serif;
 
   /* ═══ shadcn/ui Theme Variables — dark mode ═══ */
-  --background: var(--color-primary-950, #022c22);
+  /* D-9 修复：原为 var(--color-primary-950, #022c22)，而暗色下 --color-primary-950 = #f0fdf4（近白绿），
+     导致所有使用 bg-background 的 shadcn 组件在暗色下得到近白背景。改为指向画布色。 */
+  --background: var(--bg-canvas, #020617);
   --foreground: var(--color-neutral-100, #f1f5f9);
   --card: var(--bg-surface-container, #0f172a);
   --card-foreground: var(--color-neutral-100, #f1f5f9);
@@ -288,6 +298,8 @@
   --gradient-text-muted: linear-gradient(135deg, var(--text-secondary), var(--text-primary));
   --gradient-trend-up: linear-gradient(135deg, var(--color-success), var(--color-primary));
   --gradient-trend-down: linear-gradient(135deg, var(--color-error), var(--color-warning));
+  /* 由 dark.css 尾部孤儿 :root 块移入（原处写法使其在亮色模式同样生效） */
+  --gradient-text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 
   /* ── 暗色模式图表辅助色 ── */
   --color-orange-500: #f97316;
@@ -375,5 +387,3 @@ textarea:focus-visible,
   outline-offset: 2px;
   border-radius: var(--radius-sm, 4px);
 }
-
-

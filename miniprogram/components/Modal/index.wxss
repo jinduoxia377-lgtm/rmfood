@@ -1,4 +1,4 @@
-/** Modal 弹窗组件样式 */
+/** Modal 瀵湱鐛ョ紒鍕閺嶅嘲绱?*/
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -12,7 +12,7 @@
   justify-content: center;
   opacity: 0;
   visibility: hidden;
-  transition: all 0.3s ease;
+  transition: opacity var(--transition-normal), transform var(--transition-normal);
 }
 
 .modal-overlay.active {
@@ -21,7 +21,7 @@
 }
 
 .modal-container {
-  background-color: #FFFFFF;
+  background-color: var(--color-bg-card);
   border-radius: 32rpx;
   width: 600rpx;
   max-width: 90%;
@@ -50,19 +50,19 @@
   max-width: 100%;
 }
 
-/* 头部 */
+/* 婢舵挳鍎?*/
 .modal-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 40rpx 32rpx 24rpx;
-  border-bottom: 1rpx solid #F3F4F6;
+  border-bottom: 1rpx solid var(--color-border-light);
 }
 
 .modal-title {
   font-size: 32rpx;
   font-weight: 600;
-  color: #1A1A1A;
+  color: var(--color-text-primary);
 }
 
 .modal-close {
@@ -76,20 +76,20 @@
 }
 
 .modal-close:active {
-  background-color: #F3F4F6;
+  background-color: var(--color-border-light);
 }
 
-/* 内容 */
+/* 閸愬懎顔?*/
 .modal-content {
   padding: 32rpx;
   max-height: 50vh;
   overflow-y: auto;
 }
 
-/* 底部 */
+/* 鎼存洟鍎?*/
 .modal-footer {
   padding: 24rpx 32rpx;
-  border-top: 1rpx solid #F3F4F6;
+  border-top: 1rpx solid var(--color-border-light);
 }
 
 .modal-actions {
@@ -105,7 +105,7 @@
   justify-content: flex-end;
 }
 
-/* 按钮 */
+/* 閹稿鎸?*/
 .modal-btn {
   flex: 1;
   padding: 24rpx 32rpx;
@@ -113,7 +113,7 @@
   font-size: 28rpx;
   font-weight: 500;
   text-align: center;
-  transition: all 0.2s ease;
+  transition: opacity var(--transition-normal), transform var(--transition-normal);
 }
 
 .modal-btn:active {
@@ -122,24 +122,24 @@
 }
 
 .modal-btn-cancel {
-  background-color: #F3F4F6;
-  color: #666666;
+  background-color: var(--color-border-light);
+  color: var(--color-text-tertiary);
 }
 
 .modal-btn-confirm {
-  background: linear-gradient(135deg, #2D5A3D 0%, #4A7C5C 100%);
-  color: #FFFFFF;
+  background: linear-gradient(135deg, var(--color-brand-500) 0%, var(--color-brand-400) 100%);
+  color: var(--color-bg-card);
 }
 
 .modal-btn-confirm.primary {
-  background: linear-gradient(135deg, #2D5A3D 0%, #4A7C5C 100%);
+  background: linear-gradient(135deg, var(--color-brand-500) 0%, var(--color-brand-400) 100%);
 }
 
 .modal-btn-confirm.danger {
-  background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+  background: linear-gradient(135deg, var(--color-danger) 0%, var(--color-danger) 100%);
 }
 
-/* 动画 */
+/* 閸斻劎鏁?*/
 @keyframes slideIn {
   from {
     opacity: 0;
@@ -169,3 +169,5 @@
 .slide-out {
   animation: slideOut 0.2s ease forwards;
 }
+
+

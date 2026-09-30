@@ -28,13 +28,11 @@ export default function FAQ() {
               <AccordionItem key={i} value={`faq-${i}`}
                 className="rounded-md transition-all duration-150"
                 style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '4px' }}
-                onMouseEnter={e => (e.currentTarget as HTMLElement).style.borderColor = '#cbd5e1'}
-                onMouseLeave={e => (e.currentTarget as HTMLElement).style.borderColor = '#e2e8f0'}
               >
                 <AccordionTrigger className="px-4 py-3 hover:no-underline">
-                  <span className="lp-body font-medium text-left text-slate-800">{faq.q}</span>
+                  <span className="lp-body font-normal text-left text-slate-800">{faq.q}</span>
                 </AccordionTrigger>
-                <AccordionContent className="px-4 pb-3">
+                <AccordionContent className="pb-3">
                   <p className="lp-body leading-[1.7] text-slate-600">{faq.a}</p>
                 </AccordionContent>
               </AccordionItem>

@@ -1,0 +1,22 @@
+<!--登录页面-->
+<view class="login-page">
+  <view class="login-header">
+    <image class="logo" src="/assets/images/logo.png" mode="aspectFit"></image>
+    <text class="title">药食同源配方平台</text>
+    <text class="subtitle">科学 · 精准 · 个性化</text>
+  </view>
+  
+  <view class="login-form">
+    <button class="login-btn" bindtap="handleLogin" loading="{{loading}}">
+      微信登录
+    </button>
+    
+    <view class="agreement">
+      <checkbox checked bindchange="agreeChange"></checkbox>
+      <text>登录后即表示同意</text>
+      <text class="link" bindtap="goAgreement">《用户协议》</text>
+      <text>和</text>
+      <text class="link" bindtap="goPrivacy">《隐私政策》</text>
+    </view>
+  </view>
+</view>

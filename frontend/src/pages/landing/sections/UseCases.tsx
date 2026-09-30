@@ -82,12 +82,12 @@ function ScenarioCard({ item, index }: { item: (typeof useCases)[0]; index: numb
                 <div key={step.label} className="flex items-start gap-2.5">
                   <div
                     className="w-5 h-5 rounded-md flex items-center justify-center lp-tiny font-bold shrink-0 mt-0.5"
-                    style={{ background: hovered ? cfg.primaryLight : '#f1f5f9', color: hovered ? cfg.primary : '#94a3b8', border: `1px solid ${cfg.primaryBorder}` }}
+                    style={{ background: hovered ? cfg.primaryLight : '#f1f5f9', color: hovered ? cfg.primary : '#475569', border: `1px solid ${cfg.primaryBorder}` }}
                   >
                     {i + 1}
                   </div>
                   <div className="pt-0.5">
-                    <div className="lp-label">{step.label}</div>
+                    <div className="lp-label text-slate-800">{step.label}</div>
                     <div className="lp-caption">{step.detail}</div>
                   </div>
                 </div>
@@ -100,14 +100,14 @@ function ScenarioCard({ item, index }: { item: (typeof useCases)[0]; index: numb
             <div className="lp-caption mb-2">
               核心指标
             </div>
-            <table className="w-full text-[11px] border-collapse">
+            <table className="w-full text-[12px] border-collapse">
               <tbody>
                 {item.metrics.map((m, i) => (
                   <tr key={m.label} style={{ borderBottom: i < item.metrics.length - 1 ? '1px solid #f1f5f9' : 'none' }}>
                     <td className="py-1 px-2 text-slate-500">{m.label}</td>
-                    <td className="py-1 px-2 text-right font-mono font-semibold" style={{ color: cfg.primary }}>
+                    <td className="py-1 px-2 text-right font-mono font-semibold" style={{ color: '#047857' }}>
                       {m.value}
-                      {m.unit && <span className="font-normal text-slate-400 ml-0.5">{m.unit}</span>}
+                      {m.unit && <span className="font-normal text-slate-500 ml-0.5">{m.unit}</span>}
                     </td>
                   </tr>
                 ))}
@@ -167,7 +167,7 @@ export default function UseCases() {
                 <span key={i}>{line}{i < titleLines.length - 1 && <br />} </span>
               ))}
             </h2>
-            <p className="lp-body-sm max-w-lg">
+            <p className="lp-body-sm max-w-lg text-slate-600">
               {sectionDesc}
             </p>
           </div>

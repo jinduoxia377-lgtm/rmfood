@@ -18,7 +18,11 @@ import { useAuthStore } from '@/stores/auth';
 import LandingPage from '@/pages/landing/LandingPage';
 import { UserRole } from '@/types/index';
 import { ThemeProvider } from '@/stores/ThemeProvider';
-import { RadixThemeProvider } from '@/theme/RadixThemeProvider';
+// T-R1 / D-41：原此处 import { RadixThemeProvider } from '@/theme/RadixThemeProvider'。
+// 该 Provider 依赖 @radix-ui/themes，但后者的 styles.css 从未被导入（全仓 0 引用），
+// 导致 <Theme> 只渲染出一个没有令牌定义的 wrapper，其内联 --accent-* 覆盖也无效。
+// 已移除该依赖与 Provider（仅 2 个消费点，均为非必要包装），令牌体系统一由
+// styles/tokens/{base,dark}.css + .dark 类负责。
 import MainLayout from '@/components/layout/MainLayout';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { ModuleErrorBoundary } from '@/components/ai/features';
@@ -64,6 +68,23 @@ const ExperimentListPage = lazyWithPreload(() => import('@/pages/experiment/Expe
 const ExperimentDetailPage = lazyWithPreload(() => import('@/pages/experiment/ExperimentDetailPage'));
 const ExperimentNewPage = lazyWithPreload(() => import('@/pages/experiment/ExperimentNewPage'));
 const ExperimentEditPage = lazyWithPreload(() => import('@/pages/experiment/ExperimentEditPage'));
+const ExperimentCalendarPage = lazyWithPreload(() => import('@/pages/experiment/ExperimentCalendarPage'));
+const ExperimentSharePage = lazyWithPreload(() => import('@/pages/experiment/ExperimentSharePage'));
+
+// 🔒 Phase 3-5: DOE · 稳定性 · 文档提取
+const DoePage = lazyWithPreload(() => import('@/pages/experiment/DoePage'));
+const StabilityPage = lazyWithPreload(() => import('@/pages/stability/StabilityPage'));
+const DocumentExtractPage = lazyWithPreload(() => import('@/pages/documents/DocumentExtractPage'));
+
+// 🔒 Phase 5: 合规检查 · 配料分析 · 标签生成
+const ComplianceCheckPage = lazyWithPreload(() => import('@/pages/compliance/ComplianceCheckPage'));
+const IngredientAnalysisPage = lazyWithPreload(() => import('@/pages/ingredient/IngredientAnalysisPage'));
+const LabelGeneratorPage = lazyWithPreload(() => import('@/pages/labels/LabelGeneratorPage'));
+
+// 🔒 P3-1: 批记录管理 - Phase 1 数据底座
+const BatchListPage = lazyWithPreload(() => import('@/pages/batch/BatchListPage'));
+const BatchDetailPage = lazyWithPreload(() => import('@/pages/batch/BatchDetailPage'));
+const TracePage = lazyWithPreload(() => import('@/pages/batch/TracePage'));
 
 // 🔒 P3-1: AI 相关页面 - 大体积，懒加载
 const AIAssistantPage = lazyWithPreload(() => import('@/pages/ai/AIAssistantPage'));
@@ -71,6 +92,8 @@ const AcademicReportPage = lazyWithPreload(() => import('@/pages/academic/Academ
 
 // 🔒 P3-1: 数据库页面 - 数据密集型
 const DatabasePage = lazyWithPreload(() => import('@/pages/database/DatabasePage'));
+// 🔒 P3-1: 肽链结构分析页面
+const PeptideStructurePage = lazyWithPreload(() => import('@/pages/peptide-structure/PeptideStructurePage'));
 // 🔒 P3-1: 合规标准页面 - 独立页面
 const RegulationsPage = lazyWithPreload(() => import('@/pages/regulations/RegulationsPage'));
 
@@ -350,6 +373,34 @@ const router = createBrowserRouter([
         ),
       },
 
+      // 批记录管理 — Phase 1 数据底座
+      {
+        path: 'batches',
+        element: (
+          <Suspense fallback={<LoadingComponent />}>
+            <ModuleErrorBoundary moduleName="批记录列表">
+              <BatchListPage />
+            </ModuleErrorBoundary>
+          </Suspense>
+        ),
+      },
+      {
+        path: 'batches/:id',
+        element: (
+          <Suspense fallback={<LoadingComponent />}>
+            <BatchDetailPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'trace/:mode',
+        element: (
+          <Suspense fallback={<LoadingComponent />}>
+            <TracePage />
+          </Suspense>
+        ),
+      },
+
       // 实验管理
       {
         path: 'experiments',
@@ -383,6 +434,88 @@ const router = createBrowserRouter([
           </Suspense>
         ),
       },
+      {
+        path: 'experiments/calendar',
+        element: (
+          <Suspense fallback={<LoadingComponent />}>
+            <ModuleErrorBoundary moduleName="实验日历">
+              <ExperimentCalendarPage />
+            </ModuleErrorBoundary>
+          </Suspense>
+        ),
+      },
+      {
+        path: 'experiments/share/:shareId',
+        element: (
+          <Suspense fallback={<LoadingComponent />}>
+            <ModuleErrorBoundary moduleName="实验分享">
+              <ExperimentSharePage />
+            </ModuleErrorBoundary>
+          </Suspense>
+        ),
+      },
+
+      // Phase 3-5: DOE · 稳定性 · 文档提取
+      {
+        path: 'doe',
+        element: (
+          <Suspense fallback={<LoadingComponent />}>
+            <ModuleErrorBoundary moduleName="DOE实验设计">
+              <DoePage />
+            </ModuleErrorBoundary>
+          </Suspense>
+        ),
+      },
+      {
+        path: 'stability',
+        element: (
+          <Suspense fallback={<LoadingComponent />}>
+            <ModuleErrorBoundary moduleName="稳定性分析">
+              <StabilityPage />
+            </ModuleErrorBoundary>
+          </Suspense>
+        ),
+      },
+      {
+        path: 'documents',
+        element: (
+          <Suspense fallback={<LoadingComponent />}>
+            <ModuleErrorBoundary moduleName="文档提取">
+              <DocumentExtractPage />
+            </ModuleErrorBoundary>
+          </Suspense>
+        ),
+      },
+      {
+        path: 'compliance',
+        element: (
+          <Suspense fallback={<LoadingComponent />}>
+            <ModuleErrorBoundary moduleName="合规检查">
+              <ComplianceCheckPage />
+            </ModuleErrorBoundary>
+          </Suspense>
+        ),
+      },
+      {
+        path: 'ingredient-analysis',
+        element: (
+          <Suspense fallback={<LoadingComponent />}>
+            <ModuleErrorBoundary moduleName="配料分析">
+              <IngredientAnalysisPage />
+            </ModuleErrorBoundary>
+          </Suspense>
+        ),
+      },
+      {
+        path: 'labels',
+        element: (
+          <Suspense fallback={<LoadingComponent />}>
+            <ModuleErrorBoundary moduleName="标签生成">
+              <LabelGeneratorPage />
+            </ModuleErrorBoundary>
+          </Suspense>
+        ),
+      },
 
       // 智能工具
       {
@@ -406,6 +539,16 @@ const router = createBrowserRouter([
         element: (
           <Suspense fallback={<LoadingComponent />}>
             <DatabasePage />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'peptide-structure',
+        element: (
+          <Suspense fallback={<LoadingComponent />}>
+            <ModuleErrorBoundary moduleName="肽链结构分析">
+              <PeptideStructurePage />
+            </ModuleErrorBoundary>
           </Suspense>
         ),
       },
@@ -581,18 +724,16 @@ export default function App() {
     <ErrorBoundary
       fallback={<div className="flex items-center justify-center min-h-screen"><p>页面加载失败，请刷新重试</p></div>}
     >
-      <RadixThemeProvider>
-        <ThemeProvider>
-          <QueryClientProvider client={queryClient}>
-            <ToastProvider>
-              <ShortcutHelpProvider>
-                <RouterProvider router={router} />
-                <ToastContainer />
-              </ShortcutHelpProvider>
-            </ToastProvider>
-          </QueryClientProvider>
-        </ThemeProvider>
-      </RadixThemeProvider>
+      <ThemeProvider>
+        <QueryClientProvider client={queryClient}>
+          <ToastProvider>
+            <ShortcutHelpProvider>
+              <RouterProvider router={router} />
+              <ToastContainer />
+            </ShortcutHelpProvider>
+          </ToastProvider>
+        </QueryClientProvider>
+      </ThemeProvider>
     </ErrorBoundary>
   );
 }

@@ -23,6 +23,8 @@ const CN_CHAR_WEIGHT = 1.5
 const EN_WORD_WEIGHT = 0.8
 const NUM_WEIGHT = 1.2
 const NEWLINE_WEIGHT = 0.3
+const PUNCT_WEIGHT = 0.5   // 标点/空格/特殊字符（如 JSON 结构符）
+const JSON_PENALTY = 1.15  // JSON/markup 结构字符整体加权（{ } : " 等高频出现）
 
 /** 常见模型每 1K tokens 价格（USD），用于成本估算 */
 const MODEL_PRICING: Record<string, { input: number; output: number }> = {
@@ -51,7 +53,8 @@ export class TokenBudgetManager {
 
   /**
    * 估算字符串的 token 数
-   * 中文字符 ≈ 1.5 token，英文单词 ≈ 0.8 token，数字 ≈ 1.2 token
+   * 中文字符 ≈ 1.5 token，英文单词 ≈ 0.8 token，数字 ≈ 1.2 token，
+   * 标点/空白 ≈ 0.5 token；JSON 结构内容整体 ×1.15 修正系数
    */
   estimateTokens(content: string): number {
     if (!content) return 0
@@ -60,13 +63,21 @@ export class TokenBudgetManager {
     const en = (content.match(/[a-zA-Z]+/g) || []).length
     const nums = (content.match(/\d+/g) || []).length
     const newlines = (content.match(/\n/g) || []).length
+    // 标点、空白及常见 JSON 结构字符（{ } : " , [ ]）的近似 token 贡献
+    const structChars = (content.match(/[{}\[\]:,"\s]/g) || []).length
 
-    return Math.ceil(
+    let raw =
       cn * CN_CHAR_WEIGHT +
       en * EN_WORD_WEIGHT +
       nums * NUM_WEIGHT +
-      newlines * NEWLINE_WEIGHT
-    )
+      newlines * NEWLINE_WEIGHT +
+      structChars * PUNCT_WEIGHT
+
+    // 若消息中含明显 JSON/markup 结构，施加小幅修正
+    const hasJson = /[{\[]/.test(content)
+    if (hasJson) raw *= JSON_PENALTY
+
+    return Math.ceil(raw)
   }
 
   /**

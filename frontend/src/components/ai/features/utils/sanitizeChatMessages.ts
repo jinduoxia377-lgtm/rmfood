@@ -1,4 +1,4 @@
-import type { ChatMessage } from '../types'
+﻿import type { ChatMessage } from '../types'
 
 /**
  * 历史消息一次性清理：过滤 v12 精简前遗留在 localStorage 的"脚手架污染"消息。
@@ -59,6 +59,53 @@ export function sanitizeChatMessages(messages: ChatMessage[]): SanitizeResult {
     return { messages: messages ?? [], removedCount: 0 }
   }
 
-  const cleaned = messages.filter((m) => !isPolluted(m))
+  const cleaned = messages
+  .filter((m) => !isPolluted(m))
+  .map(m => ({
+    ...m,
+    content: m.role === 'assistant' ? stripJsonWrapper(m.content || '') : m.content
+  })).map((m) => {
+    // 清理旧格式消息内容
+    if (m.role === 'assistant' && m.content) {
+      const stripped = stripJsonWrapper(m.content)
+      if (stripped !== m.content) {
+        return { ...m, content: stripped }
+      }
+    }
+    return m
+  })
+  
   return { messages: cleaned, removedCount: messages.length - cleaned.length }
 }
+
+
+// 过滤污染消息，返回清理后的消息数组与移除数量。
+
+/**
+ * 清理消息内容：检测并剥离 ```json ... ``` 包装（旧格式遗留）
+ * 将原始 JSON 字符串中的结构化内容提取出来，便于前端正确渲染
+ */
+function stripJsonWrapper(content: string): string {
+  if (!content) return content
+  const trimmed = content.trim()
+  // 如果内容以 ```json 开头且以 ``` 结尾，提取内部 JSON
+  const match = trimmed.match(/^```(?:json)?\s*\n([\s\S]*?)\n?\s*```$/)
+  if (match) {
+    return match[1].trim()
+  }
+  return content
+}
+
+/**
+ * 检测消息是否为旧版 thinking_engine 输出的原始 Markdown（非结构化）
+ * 这类消息会被渲染为普通文本，不会显示结构化 block
+ */
+function isOldFormatMessage(msg: ChatMessage): boolean {
+  if (msg.role !== 'assistant') return false
+  const content = msg.content ?? ''
+  // 旧格式特征：包含 thinking_engine 输出标记或纯 Markdown 无 JSON 包装
+  const hasThinkingMarkers = /\[思考步骤\]|\[Step \d+\]/.test(content)
+  const hasRawMarkdown = content.startsWith('#') && !content.includes('```json')
+  return hasThinkingMarkers || hasRawMarkdown
+}
+

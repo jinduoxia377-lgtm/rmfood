@@ -20,7 +20,7 @@ class Workflow(Base):
     config: Mapped[dict | None] = mapped_column(JSON, default=dict)
     result: Mapped[dict | None] = mapped_column(JSON, default=dict)
     error_message: Mapped[str | None] = mapped_column(Text)
-    created_by: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"), index=True)
+    creator_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.id"), index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc_mapped, onupdate=now_utc_mapped)
 

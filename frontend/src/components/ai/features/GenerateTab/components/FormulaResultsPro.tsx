@@ -4,15 +4,17 @@
  * @description Clean layout following RMFOOD design system
  * @version 5.0.0 - Unified Layout
  */
-import React, { useCallback, useMemo, Suspense, lazy } from 'react'
+import React, { useCallback, useMemo, useState, Suspense, lazy } from 'react'
 import {
   Filter, Lightbulb, Share2, TrendingUp, CheckCircle,
-  ChevronDown, Download, RefreshCw, BookOpen,
+  ChevronDown, Download, RefreshCw, BookOpen, Sparkles, FlaskConical,
 } from 'lucide-react'
 import { Badge, Button } from '@/components/ui'
 import { NeuralResultCard } from '@/components/ai/NeuralResultCard'
 import { MultiCandidateCompare } from '@/components/ai/MultiCandidateCompare'
 import { ResultsViewSwitcher } from './ResultsViewSwitcher'
+import { FormulaRecommendPanel } from './FormulaRecommendPanel'
+import { FormulaExplanationPanel } from './FormulaExplanationPanel'
 import { DEFAULTS } from '@/config'
 import { type FormulaCategory } from '../config/generateTabConfig'
 import { logger } from '@/utils/safeLogger'
@@ -30,6 +32,7 @@ const FormulaSharePanel = lazy(() =>
 interface FormulaResultsProProps {
   generateResult: AICandidate[] | null
   generator: GeneratorType
+  generatorType?: string
   viewMode: ViewMode
   onViewModeChange: (mode: 'card' | 'compare') => void
   selectedCategory: FormulaCategory | 'all'
@@ -52,6 +55,7 @@ interface FormulaResultsProProps {
 export const FormulaResultsPro: React.FC<FormulaResultsProProps> = ({
   generateResult,
   generator,
+  generatorType,
   viewMode,
   onViewModeChange,
   selectedCategory,
@@ -74,6 +78,8 @@ export const FormulaResultsPro: React.FC<FormulaResultsProProps> = ({
   const [showSharePanel, setShowSharePanel] = React.useState(false)
   const [showStats, setShowStats] = React.useState(true)
   const [selectedForExplanation, setSelectedForExplanation] = React.useState<AICandidate | null>(null)
+  const [showRecommend, setShowRecommend] = React.useState(false)
+  const [showExplanation, setShowExplanation] = React.useState(false)
 
   const stats = useMemo(() => {
     if (!generateResult || generateResult.length === 0) return null
@@ -155,10 +161,10 @@ export const FormulaResultsPro: React.FC<FormulaResultsProProps> = ({
 
           <div className="flex items-center gap-1 bg-muted rounded-lg p-0.5">
             <button onClick={() => onToggleSort('score')} className={`px-2 py-1 rounded text-caption font-medium ${sortBy === 'score' ? 'bg-background shadow-sm text-primary' : 'text-muted-foreground'}`}>
-              Overall {sortBy === 'score' && (sortOrder === 'desc' ? '↓' : '↑')}
+              综合 {sortBy === 'score' && (sortOrder === 'desc' ? '↓' : '↑')}
             </button>
             <button onClick={() => onToggleSort('synergy')} className={`px-2 py-1 rounded text-caption font-medium ${sortBy === 'synergy' ? 'bg-background shadow-sm text-primary' : 'text-muted-foreground'}`}>
-              Synergy {sortBy === 'synergy' && (sortOrder === 'desc' ? '↓' : '↑')}
+              协同 {sortBy === 'synergy' && (sortOrder === 'desc' ? '↓' : '↑')}
             </button>
           </div>
 
@@ -227,6 +233,7 @@ export const FormulaResultsPro: React.FC<FormulaResultsProProps> = ({
               key={index}
               candidate={candidate}
               index={index}
+              generatorType={generatorType}
               onViewReport={() => onViewReport(candidate)}
               onSelect={() => onSelectCandidate(candidate)}
               isSelected={selectedCompareIndex === index}
@@ -273,6 +280,47 @@ export const FormulaResultsPro: React.FC<FormulaResultsProProps> = ({
               <Button variant="outline" size="sm" icon={<Download className="w-3.5 h-3.5" />} onClick={onSaveAll}>全部保存</Button>
             )}
           </div>
+          {filteredResults.length >= 2 && onCompareVersions && (
+            <button
+              onClick={() => onCompareVersions(1, 2)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-body-sm font-medium bg-info/10 text-info hover:bg-info/20 border border-info/20"
+            >
+              版本对比
+            </button>
+          )}
+          <button
+            onClick={() => setShowRecommend(!showRecommend)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-body-sm font-medium border ${showRecommend ? 'bg-primary/10 text-primary border-primary/20' : 'bg-muted text-muted-foreground hover:text-foreground border-border'}`}
+          >
+            <Sparkles className="w-3.5 h-3.5" />智能推荐
+          </button>
+          <button
+            onClick={() => setShowExplanation(!showExplanation)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-body-sm font-medium border ${showExplanation ? 'bg-accent-50 text-accent-700 border-accent-200 dark:bg-accent-900/30 dark:text-accent-300 dark:border-accent-800' : 'bg-muted text-muted-foreground hover:text-foreground border-border'}`}
+          >
+            <FlaskConical className="w-3.5 h-3.5" />配方方解
+          </button>
+        </div>
+      )}
+
+      {/* Smart Recommend panel */}
+      {showRecommend && (
+        <div className="mb-4">
+          <FormulaRecommendPanel
+            targetEffects={effectLabels}
+            onClose={() => setShowRecommend(false)}
+          />
+        </div>
+      )}
+
+      {/* Formula Explanation panel */}
+      {showExplanation && generateResult && generateResult.length > 0 && (
+        <div className="mb-4">
+          <FormulaExplanationPanel
+            candidate={generateResult[0]}
+            targetEffects={effectLabels}
+            onClose={() => setShowExplanation(false)}
+          />
         </div>
       )}
     </div>

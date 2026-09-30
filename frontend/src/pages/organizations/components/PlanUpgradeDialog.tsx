@@ -3,6 +3,7 @@ import { useToast } from '@/components/ui/Toast';
 import { Modal } from '@/components/ui/Modal';
 import { Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import api from '@/api/client';
 import type { Organization } from '@/hooks/useOrganizations';
 
 interface PlanUpgradeDialogProps {
@@ -79,16 +80,7 @@ export function PlanUpgradeDialog({ open, organization, onClose, onPlanUpdated }
     }
     setConfirming(true);
     try {
-      const response = await fetch(`/api/v1/organizations/${organization.id}/plan`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ plan: selectedPlan }),
-      });
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({}));
-        throw new Error(data.detail || '操作失败');
-      }
+      await api.put(`/organizations/${organization.id}/plan`, { plan: selectedPlan });
       toast.success(`计划已更新为${PLAN_CONFIG.find(p => p.value === selectedPlan)?.label}`);
       onPlanUpdated(selectedPlan);
       onClose();

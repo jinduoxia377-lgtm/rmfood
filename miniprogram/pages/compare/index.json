@@ -1,6 +1,6 @@
 {
   "usingComponents": {
-    "Icon": "../../components/Icon/index"
+    "icon": "../../components/Icon/index"
   },
   "navigationBarTitleText": "对比分析",
   "navigationBarBackgroundColor": "#2D5A3D",

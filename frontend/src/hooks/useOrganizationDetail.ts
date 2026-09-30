@@ -16,6 +16,21 @@ export interface Member {
 
 export type Role = 'owner' | 'admin' | 'member' | 'viewer'
 
+/** Map backend member record to frontend Member interface */
+function mapMemberResponse(raw: Record<string, any>): Member {
+  return {
+    id: raw.id,
+    userId: raw.user_id ?? raw.userId,
+    email: raw.email ?? '',
+    displayName: raw.username ?? raw.display_name ?? raw.full_name ?? raw.email?.split('@')[0] ?? '',
+    avatarUrl: raw.avatar_url ?? raw.avatarUrl,
+    role: (raw.role || 'member') as Role,
+    status: (raw.status || 'active') as Member['status'],
+    joinedAt: raw.joined_at ?? raw.joinedAt ?? new Date().toISOString(),
+    lastActiveAt: raw.last_active_at ?? raw.lastActiveAt,
+  }
+}
+
 export interface Team {
   id: number
   name: string
@@ -187,19 +202,22 @@ export function useOrganizationDetail(options: UseOrganizationDetailOptions = {}
 
         if (!mountedRef.current) return
 
-        dispatch({ type: 'SET_ORGANIZATION', payload: orgResponse.data })
+        // Backend returns { organization: {...} }, { members: [...] }, { teams: [...] }
+        const rawOrg = orgResponse.data?.organization ?? orgResponse.data
+        dispatch({ type: 'SET_ORGANIZATION', payload: rawOrg })
 
         if (autoFetchMembers) {
+          const rawMembers = membersResponse.data?.members || membersResponse.data || []
           dispatch({
             type: 'SET_MEMBERS',
-            payload: membersResponse.data.items || membersResponse.data || [],
+            payload: rawMembers.map((m: Record<string, any>) => mapMemberResponse(m)),
           })
         }
 
         if (autoFetchTeams) {
           dispatch({
             type: 'SET_TEAMS',
-            payload: teamsResponse.data.items || teamsResponse.data || [],
+            payload: teamsResponse.data?.teams || teamsResponse.data || [],
           })
         }
       } catch (error: any) {
@@ -223,7 +241,8 @@ export function useOrganizationDetail(options: UseOrganizationDetailOptions = {}
       dispatch({ type: 'SET_ERROR', payload: null })
 
       try {
-        const response = await api.post(`/organizations/${state.organizationId}/members/invite`, {
+        // Backend: POST /organizations/{id}/members with { email, role, team_ids? }
+        const response = await api.post(`/organizations/${state.organizationId}/members`, {
           email,
           role,
         })
@@ -239,20 +258,25 @@ export function useOrganizationDetail(options: UseOrganizationDetailOptions = {}
   )
 
   const removeMember = useCallback(
-    async (memberId: number): Promise<void> => {
+    async (memberUserId: number): Promise<void> => {
       if (!state.organizationId) throw new Error('No organization selected')
 
       dispatch({ type: 'SET_ERROR', payload: null })
 
       try {
-        await api.delete(`/organizations/${state.organizationId}/members/${memberId}`)
-        dispatch({ type: 'REMOVE_MEMBER', payload: memberId })
+        // Backend DELETE /{org_id}/members/{user_id} expects user_id
+        await api.delete(`/organizations/${state.organizationId}/members/${memberUserId}`)
+        // Remove from local state by matching userId
+        dispatch({
+          type: 'REMOVE_MEMBER',
+          payload: state.members.find((m) => m.userId === memberUserId)?.id ?? memberUserId,
+        })
       } catch (error: any) {
         dispatch({ type: 'SET_ERROR', payload: error as Error })
         throw error
       }
     },
-    [state.organizationId],
+    [state.organizationId, state.members],
   )
 
   const updateMemberRole = useCallback(
@@ -262,7 +286,8 @@ export function useOrganizationDetail(options: UseOrganizationDetailOptions = {}
       dispatch({ type: 'SET_ERROR', payload: null })
 
       try {
-        await api.patch(`/organizations/${state.organizationId}/members/${memberId}`, { role })
+        // Backend: PUT /organizations/{id}/members/{user_id}/role
+        await api.put(`/organizations/${state.organizationId}/members/${memberId}/role`, { role })
         dispatch({
           type: 'UPDATE_MEMBER',
           payload: { id: memberId, data: { role } },
@@ -301,7 +326,8 @@ export function useOrganizationDetail(options: UseOrganizationDetailOptions = {}
       dispatch({ type: 'SET_ERROR', payload: null })
 
       try {
-        await api.patch(`/organizations/${state.organizationId}/teams/${teamId}`, data)
+        // Backend: PUT /organizations/{id}/teams/{team_id}
+        await api.put(`/organizations/${state.organizationId}/teams/${teamId}`, data)
         dispatch({
           type: 'UPDATE_TEAM',
           payload: { id: teamId, data },
@@ -340,9 +366,10 @@ export function useOrganizationDetail(options: UseOrganizationDetailOptions = {}
     try {
       const response = await api.get(`/organizations/${state.organizationId}/members`)
       if (mountedRef.current) {
+        // Backend returns { members: [...] }
         dispatch({
           type: 'SET_MEMBERS',
-          payload: response.data.items || response.data || [],
+          payload: response.data?.members || response.data || [],
         })
       }
     } catch (error: any) {
@@ -358,9 +385,10 @@ export function useOrganizationDetail(options: UseOrganizationDetailOptions = {}
     try {
       const response = await api.get(`/organizations/${state.organizationId}/teams`)
       if (mountedRef.current) {
+        // Backend returns { teams: [...] }
         dispatch({
           type: 'SET_TEAMS',
-          payload: response.data.items || response.data || [],
+          payload: response.data?.teams || response.data || [],
         })
       }
     } catch (error: any) {

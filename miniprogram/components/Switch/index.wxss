@@ -1,13 +1,13 @@
-/** Switch 开关组件样式 */
+/** Switch 寮€鍏崇粍浠舵牱寮?*/
 .switch {
   display: inline-flex;
   align-items: center;
-  cursor: pointer;
+  
 }
 
 .switch-disabled {
   opacity: 0.5;
-  cursor: not-allowed;
+  
 }
 
 .switch-track {
@@ -30,7 +30,7 @@
   width: 40rpx;
   height: 40rpx;
   border-radius: 50%;
-  background-color: #FFFFFF;
+  background-color: var(--color-bg-card);
   box-shadow: var(--shadow-sm);
   transition: transform var(--transition-fast);
 }
@@ -39,7 +39,7 @@
   transform: translateX(32rpx);
 }
 
-/* 尺寸 */
+/* 灏哄 */
 .switch-small .switch-track {
   width: 64rpx;
   height: 36rpx;
@@ -67,3 +67,4 @@
 .switch-large.switch-track-on .switch-handle {
   transform: translateX(36rpx);
 }
+

@@ -92,6 +92,7 @@ V1_MODULES = frozenset({
     "ai_task_router",       # Phase 4-A: AI 推理任务队列
     "quota_router",         # Phase 4-B: 多租户配额管理
     "websocket_router",
+    "metrics_router",       # 客户端性能指标上报
 })
 
 

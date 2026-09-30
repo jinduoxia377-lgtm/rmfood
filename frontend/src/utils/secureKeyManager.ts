@@ -17,6 +17,7 @@ import { logger } from '@/utils/safeLogger'
 const STORAGE_PREFIX = 'rmfood_secure_'
 const KEY_ALIAS = `${STORAGE_PREFIX}api_key`
 const METADATA_ALIAS = `${STORAGE_PREFIX}key_metadata`
+const MASTER_SECRET_ALIAS = `${STORAGE_PREFIX}master_secret`
 const ENCRYPTION_VERSION = 'v2.0'
 
 // 密钥格式规则
@@ -147,8 +148,8 @@ export class SecureApiKeyManager {
   private masterPassword: string
 
   private constructor() {
-    // 使用浏览器指纹和用户代理生成唯一的主密码
-    this.masterPassword = this.generateMasterPassword()
+    // 主密钥持久化于 localStorage，不再依赖可预测的浏览器指纹
+    this.masterPassword = this.loadOrCreateMasterPassword()
   }
 
   /**
@@ -162,27 +163,33 @@ export class SecureApiKeyManager {
   }
 
   /**
-   * 生成基于浏览器的唯一主密码
+   * 加载或创建主密钥。
+   * 首次访问：生成 256-bit 随机数（base64），持久化到 localStorage；
+   * 后续访问：直接复用已存值，保证换屏幕分辨率 / 时区 / UA 后仍能解密旧密文。
    */
-  private generateMasterPassword(): string {
-    const browserInfo = [
-      navigator.userAgent,
-      navigator.language,
-      screen.width.toString(),
-      screen.height.toString(),
-      new Date().getTimezoneOffset().toString(),
-      'RMFOOD_Secure_v2',  // 应用特定盐值
-    ].join('|')
-
-    // 简单哈希（生产环境应使用更强的哈希）
-    let hash = 0
-    for (let i = 0; i < browserInfo.length; i++) {
-      const char = browserInfo.charCodeAt(i)
-      hash = ((hash << 5) - hash) + char
-      hash = hash & hash
+  private loadOrCreateMasterPassword(): string {
+    try {
+      const existing = localStorage.getItem(MASTER_SECRET_ALIAS)
+      if (existing) {
+        return existing
+      }
+      const random = new Uint8Array(32)
+      if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+        crypto.getRandomValues(random)
+      } else {
+        // 非安全上下文降级：用 Math.random 填充（仍优于 32-bit 指纹哈希）
+        for (let i = 0; i < 32; i++) random[i] = Math.floor(Math.random() * 256)
+      }
+      const secret = btoa(String.fromCharCode(...random))
+      localStorage.setItem(MASTER_SECRET_ALIAS, secret)
+      logger.info('[SecureApiKeyManager] 首次生成 256-bit 主密钥并持久化')
+      return secret
+    } catch (error) {
+      logger.error('[SecureApiKeyManager] 主密钥加载失败，降级为随机会话密钥:', error)
+      const random = new Uint8Array(16)
+      for (let i = 0; i < 16; i++) random[i] = Math.floor(Math.random() * 256)
+      return btoa(String.fromCharCode(...random))
     }
-
-    return `rmfood_${Math.abs(hash).toString(36)}_secure`
   }
 
   /**

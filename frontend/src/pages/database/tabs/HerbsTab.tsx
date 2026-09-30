@@ -332,7 +332,7 @@ export default function HerbsTab({
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-[var(--border-subtle,rgba(0,0,0,0.06))] bg-slate-50/60 dark:bg-neutral-800/40">
+                <tr className="border-b border-[var(--border-subtle,rgba(0,0,0,0.06))] bg-slate-50 dark:bg-neutral-800">
                   <th className="px-3 py-3 w-8" />
                   {[{ key: 'name_cn' as SortField, label: '药材名称' }].map(({ key, label }) => (
                     <th
@@ -676,7 +676,7 @@ function TcmspHerbDetail({ herb, chartColor }: { herb: any; chartColor: string }
     if (activeTab === 'overview') {
       return (
         <div className="space-y-4">
-          <div className="rounded-lg bg-gradient-to-br from-slate-50 to-blue-50/30 dark:from-slate-800/60 dark:to-blue-950/10 p-3 border border-[var(--border-subtle,rgba(0,0,0,0.06))]">
+          <div className="rounded-lg bg-gradient-to-br from-slate-50 to-blue-100 dark:from-slate-800 dark:to-blue-950 p-3 border border-[var(--border-subtle,rgba(0,0,0,0.06))]">
             <p className="text-xs text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)] leading-relaxed">{herb.effects}</p>
             <p className="text-[10px] text-[var(--text-muted,#9A9A9F)] mt-1">分类：{herb.category}</p>
           </div>
@@ -690,7 +690,7 @@ function TcmspHerbDetail({ herb, chartColor }: { herb: any; chartColor: string }
               </h4>
               <div className="flex flex-wrap gap-2">
                 {compounds.slice(0, 8).map((c: any, i: number) => (
-                  <div key={i} className="bg-white dark:bg-neutral-800/80 px-3 py-1.5 rounded-lg text-xs border border-blue-100 dark:border-blue-900/20 shadow-sm hover:shadow-md transition-shadow">
+                  <div key={i} className="bg-white dark:bg-neutral-800 px-3 py-1.5 rounded-lg text-xs border border-blue-100 dark:border-blue-900/20 shadow-sm hover:shadow-md transition-shadow">
                     <div className="font-medium text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)] truncate max-w-[140px]" title={c.name}>{c.name}</div>
                     <div className="text-[10px] text-[var(--text-muted,#9A9A9F)] font-mono mt-0.5">
                       <span className="text-primary-600 dark:text-primary-400">OB {Number(c.ob).toFixed(1)}</span>
@@ -759,7 +759,7 @@ function TcmspHerbDetail({ herb, chartColor }: { herb: any; chartColor: string }
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
-              <tr className="bg-neutral-100/80 dark:bg-neutral-800/80 border-b border-[var(--border-subtle,rgba(0,0,0,0.06))]">
+              <tr className="bg-neutral-100 dark:bg-neutral-800 border-b border-[var(--border-subtle,rgba(0,0,0,0.06))]">
                 <th className="px-3 py-2.5 text-left text-xs font-semibold text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-secondary,#A1A1A6)] rounded-tl-lg">化合物名称</th>
                 <th className="px-3 py-2.5 text-right text-xs font-semibold text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-secondary,#A1A1A6)]">生物利用度 (%)</th>
                 <th className="px-3 py-2.5 text-right text-xs font-semibold text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-secondary,#A1A1A6)]">类药性</th>
@@ -820,7 +820,7 @@ function TcmspHerbDetail({ herb, chartColor }: { herb: any; chartColor: string }
           </div>
         </div>
 
-        <div className="bg-slate-50/60 dark:bg-neutral-800/40 rounded-xl p-4 border border-[var(--border-subtle,rgba(0,0,0,0.06))]">
+        <div className="bg-slate-50 dark:bg-neutral-800 rounded-xl p-4 border border-[var(--border-subtle,rgba(0,0,0,0.06))]">
           <h4 className="text-xs font-semibold text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-secondary,#A1A1A6)] mb-3 flex items-center gap-1.5">
             <span className="w-1 h-3 rounded-full bg-gradient-to-b from-primary-400 to-primary-600"></span>
             药理属性雷达图
@@ -836,10 +836,10 @@ function TcmspHerbDetail({ herb, chartColor }: { herb: any; chartColor: string }
 
         <div className="grid grid-cols-2 gap-2">
           {[
-            { value: herb.ob_percent != null ? `${Number(herb.ob_percent).toFixed(1)}%` : '-', label: '口服生物利用度', sub: 'OB', color: 'text-primary-600 dark:text-primary-400', bg: 'bg-primary-50/80 dark:bg-emerald-950/20', border: 'border-emerald-200/50 dark:border-emerald-800/20' },
-            { value: herb.dl_value != null ? Number(herb.dl_value).toFixed(3) : '-', label: '类药性', sub: 'DL', color: 'text-secondary-600 dark:text-secondary-400', bg: 'bg-secondary-50/80 dark:bg-blue-950/20', border: 'border-blue-200/50 dark:border-blue-800/20' },
-            { value: compounds.length, label: '活性化合物', sub: 'Compounds', color: 'text-primary-600 dark:text-primary-400', bg: 'bg-primary-50/80 dark:bg-primary-950/20', border: 'border-primary-200/50 dark:border-primary-800/20' },
-            { value: targets.length, label: '作用靶点', sub: 'Targets', color: 'text-warning-600 dark:text-warning-400', bg: 'bg-warning-50/80 dark:bg-amber-950/20', border: 'border-amber-200/50 dark:border-amber-800/20' },
+            { value: herb.ob_percent != null ? `${Number(herb.ob_percent).toFixed(1)}%` : '-', label: '口服生物利用度', sub: 'OB', color: 'text-primary-600 dark:text-primary-400', bg: 'bg-primary-50 dark:bg-emerald-950/20', border: 'border-emerald-200/50 dark:border-emerald-800/20' },
+            { value: herb.dl_value != null ? Number(herb.dl_value).toFixed(3) : '-', label: '类药性', sub: 'DL', color: 'text-secondary-600 dark:text-secondary-400', bg: 'bg-secondary-50 dark:bg-blue-950/20', border: 'border-blue-200/50 dark:border-blue-800/20' },
+            { value: compounds.length, label: '活性化合物', sub: 'Compounds', color: 'text-primary-600 dark:text-primary-400', bg: 'bg-primary-50 dark:bg-primary-950/20', border: 'border-primary-200/50 dark:border-primary-800/20' },
+            { value: targets.length, label: '作用靶点', sub: 'Targets', color: 'text-warning-600 dark:text-warning-400', bg: 'bg-warning-50 dark:bg-amber-950/20', border: 'border-amber-200/50 dark:border-amber-800/20' },
           ].map(({ value, label, sub, color, bg, border }) => (
             <div key={label} className={`p-3 rounded-xl text-center ${bg} border ${border} transition-all hover:shadow-sm`}>
               <div className={`text-lg font-bold ${color}`}>{value}</div>
@@ -902,7 +902,7 @@ function SymMapHerbDetail({ herb }: { herb: any }) {
   return (
     <div className="space-y-4">
       {/* 基本信息 */}
-      <div className="rounded-lg bg-gradient-to-br from-purple-50 to-indigo-50/30 dark:from-purple-950/20 dark:to-indigo-950/10 p-4 border border-purple-200/50 dark:border-purple-800/20">
+      <div className="rounded-lg bg-gradient-to-br from-purple-50 to-indigo-100 dark:from-purple-950 dark:to-indigo-950 p-4 border border-purple-200/50 dark:border-purple-800/20">
         <div className="flex items-start gap-3 mb-3">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
@@ -925,37 +925,37 @@ function SymMapHerbDetail({ herb }: { herb: any }) {
 
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-3">
           {herb.nature_cn || herb.natureCn ? (
-            <div className="bg-white/60 dark:bg-neutral-800/60 rounded-lg p-2 border border-purple-100/50 dark:border-purple-900/20">
+            <div className="bg-white dark:bg-neutral-800 rounded-lg p-2 border border-purple-100/50 dark:border-purple-900/20">
               <div className="text-[10px] text-[var(--text-muted,#9A9A9F)] uppercase tracking-wider">性味</div>
               <div className="text-sm font-medium text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)] mt-0.5">{herb.nature_cn || herb.natureCn}</div>
             </div>
           ) : null}
           {herb.meridians_cn || herb.meridiansCn ? (
-            <div className="bg-white/60 dark:bg-neutral-800/60 rounded-lg p-2 border border-purple-100/50 dark:border-purple-900/20">
+            <div className="bg-white dark:bg-neutral-800 rounded-lg p-2 border border-purple-100/50 dark:border-purple-900/20">
               <div className="text-[10px] text-[var(--text-muted,#9A9A9F)] uppercase tracking-wider">归经</div>
               <div className="text-sm font-medium text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)] mt-0.5">{herb.meridians_cn || herb.meridiansCn}</div>
             </div>
           ) : null}
           {herb.category_cn || herb.categoryCn ? (
-            <div className="bg-white/60 dark:bg-neutral-800/60 rounded-lg p-2 border border-purple-100/50 dark:border-purple-900/20">
+            <div className="bg-white dark:bg-neutral-800 rounded-lg p-2 border border-purple-100/50 dark:border-purple-900/20">
               <div className="text-[10px] text-[var(--text-muted,#9A9A9F)] uppercase tracking-wider">分类</div>
               <div className="text-sm font-medium text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)] mt-0.5">{herb.category_cn || herb.categoryCn}</div>
             </div>
           ) : null}
           {herb.use_part ? (
-            <div className="bg-white/60 dark:bg-neutral-800/60 rounded-lg p-2 border border-purple-100/50 dark:border-purple-900/20">
+            <div className="bg-white dark:bg-neutral-800 rounded-lg p-2 border border-purple-100/50 dark:border-purple-900/20">
               <div className="text-[10px] text-[var(--text-muted,#9A9A9F)] uppercase tracking-wider">药用部位</div>
               <div className="text-sm font-medium text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)] mt-0.5">{herb.use_part}</div>
             </div>
           ) : null}
           {herb.category_eng ? (
-            <div className="bg-white/60 dark:bg-neutral-800/60 rounded-lg p-2 border border-purple-100/50 dark:border-purple-900/20">
+            <div className="bg-white dark:bg-neutral-800 rounded-lg p-2 border border-purple-100/50 dark:border-purple-900/20">
               <div className="text-[10px] text-[var(--text-muted,#9A9A9F)] uppercase tracking-wider">分类(英)</div>
               <div className="text-sm font-medium text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)] mt-0.5">{herb.category_eng}</div>
             </div>
           ) : null}
           {herb.alias ? (
-            <div className="bg-white/60 dark:bg-neutral-800/60 rounded-lg p-2 border border-purple-100/50 dark:border-purple-900/20 sm:col-span-2">
+            <div className="bg-white dark:bg-neutral-800 rounded-lg p-2 border border-purple-100/50 dark:border-purple-900/20 sm:col-span-2">
               <div className="text-[10px] text-[var(--text-muted,#9A9A9F)] uppercase tracking-wider">别名</div>
               <div className="text-sm font-medium text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)] mt-0.5">{herb.alias}</div>
             </div>
@@ -964,7 +964,7 @@ function SymMapHerbDetail({ herb }: { herb: any }) {
       </div>
 
       {(herb.tcmsp_id || herb.tcmid_id || herb.tcmid2_id || herb.herbdb_id) && (
-        <div className="rounded-lg bg-slate-50/60 dark:bg-neutral-800/40 p-3 border border-[var(--border-subtle,rgba(0,0,0,0.06))]">
+        <div className="rounded-lg bg-slate-50 dark:bg-neutral-800 p-3 border border-[var(--border-subtle,rgba(0,0,0,0.06))]">
           <h4 className="text-xs font-semibold text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-secondary,#A1A1A6)] mb-2">交叉引用</h4>
           <div className="flex flex-wrap gap-2">
             {herb.tcmsp_id && (
@@ -984,7 +984,7 @@ function SymMapHerbDetail({ herb }: { herb: any }) {
       )}
 
       {/* 数据信息 */}
-      <div className="rounded-lg bg-slate-50/60 dark:bg-neutral-800/40 p-3 border border-[var(--border-subtle,rgba(0,0,0,0.06))]">
+      <div className="rounded-lg bg-slate-50 dark:bg-neutral-800 p-3 border border-[var(--border-subtle,rgba(0,0,0,0.06))]">
         <h4 className="text-xs font-semibold text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-secondary,#A1A1A6)] mb-2">数据信息</h4>
         <div className="flex flex-wrap gap-2 text-xs text-[var(--text-muted,#9A9A9F)]">
           {herb.source_version && (
@@ -1001,7 +1001,7 @@ function SymMapHerbDetail({ herb }: { herb: any }) {
 
       {/* 功效可视化 */}
       {herb.function_cn || herb.functionCn ? (
-        <div className="rounded-lg bg-gradient-to-br from-teal-50 to-emerald-50/30 dark:from-teal-950/20 dark:to-emerald-950/10 p-4 border border-teal-200/50 dark:border-teal-800/20">
+        <div className="rounded-lg bg-gradient-to-br from-teal-50 to-emerald-100 dark:from-teal-950 dark:to-emerald-950 p-4 border border-teal-200/50 dark:border-teal-800/20">
           <h4 className="text-xs font-semibold text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-secondary,#A1A1A6)] mb-2 flex items-center gap-1.5">
             <span className="w-1 h-3 rounded-full bg-gradient-to-b from-teal-400 to-teal-600"></span>
             功效
@@ -1015,7 +1015,7 @@ function SymMapHerbDetail({ herb }: { herb: any }) {
 
       {/* 性味可视化 */}
       {herb.nature_cn || herb.natureCn ? (
-        <div className="rounded-lg bg-gradient-to-br from-amber-50 to-orange-50/30 dark:from-amber-950/20 dark:to-orange-950/10 p-4 border border-amber-200/50 dark:border-amber-800/20">
+        <div className="rounded-lg bg-gradient-to-br from-amber-50 to-orange-100 dark:from-amber-950 dark:to-orange-950 p-4 border border-amber-200/50 dark:border-amber-800/20">
           <h4 className="text-xs font-semibold text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-secondary,#A1A1A6)] mb-2 flex items-center gap-1.5">
             <span className="w-1 h-3 rounded-full bg-gradient-to-b from-amber-400 to-amber-600"></span>
             四气五味
@@ -1029,7 +1029,7 @@ function SymMapHerbDetail({ herb }: { herb: any }) {
 
       {/* 归经可视化 */}
       {herb.meridians_cn || herb.meridiansCn ? (
-        <div className="rounded-lg bg-gradient-to-br from-blue-50 to-indigo-50/30 dark:from-blue-950/20 dark:to-indigo-950/10 p-4 border border-blue-200/50 dark:border-blue-800/20">
+        <div className="rounded-lg bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950 dark:to-indigo-950 p-4 border border-blue-200/50 dark:border-blue-800/20">
           <h4 className="text-xs font-semibold text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-secondary,#A1A1A6)] mb-2 flex items-center gap-1.5">
             <span className="w-1 h-3 rounded-full bg-gradient-to-b from-blue-400 to-blue-600"></span>
             归经

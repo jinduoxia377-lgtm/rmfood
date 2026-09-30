@@ -8,6 +8,15 @@ interface CardHeaderProps {
   overallScore: number | null | undefined
   nameInputRef: React.RefObject<HTMLInputElement>
   onNameChange: (value: string) => void
+  generatorType?: string
+}
+
+const getGeneratorLabel = (gen?: string): string => {
+  switch (gen) {
+    case 'neural_network': return '神经网络'
+    case 'llm': return 'AI 大模型'
+    default: return '遗传算法'
+  }
 }
 
 const getScoreColor = (score: number) => {
@@ -16,7 +25,7 @@ const getScoreColor = (score: number) => {
   return 'var(--color-danger-600)'
 }
 
-export function CardHeader({ isEditing, editedName, safetyPassed, overallScore, nameInputRef, onNameChange }: CardHeaderProps) {
+export function CardHeader({ isEditing, editedName, safetyPassed, overallScore, nameInputRef, onNameChange, generatorType }: CardHeaderProps) {
   const scoreColor = getScoreColor(overallScore ?? 0)
 
   return (
@@ -42,7 +51,7 @@ export function CardHeader({ isEditing, editedName, safetyPassed, overallScore, 
                 {editedName}
               </h3>
             )}
-            <p className="text-xs text-muted mt-0.5">神经网络生成</p>
+            <p className="text-xs text-muted mt-0.5">{getGeneratorLabel(generatorType)}生成</p>
           </div>
         </div>
         <div className="flex items-center gap-2 flex-wrap">

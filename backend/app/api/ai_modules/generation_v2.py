@@ -135,7 +135,10 @@ async def generate_formula(
             early_stop_threshold=0.0,
         )
         optimizer = GeneticFormulaOptimizer(config=config)
-        candidates, history = optimizer.optimize(target_effects=tcm_keywords)
+        candidates, history = optimizer.optimize(
+            target_effects=tcm_keywords,
+            count=max_candidates,
+        )
 
         if not candidates:
             logger.warning("[Generate] GA 引擎未返回候选，回退规则引擎")

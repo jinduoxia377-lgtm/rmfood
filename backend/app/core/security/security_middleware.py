@@ -871,8 +871,23 @@ class CsrfProtectMiddleware(BaseHTTPMiddleware):
         # Agent API 端点豁免 CSRF（已使用 JWT 认证，SPA 跨域场景下 CSRF cookie 不可靠）
         if request.url.path.startswith("/api/v1/agent"):
             return await call_next(request)
+        # FactEngine API 端点豁免 CSRF（确定性计算，JWT 认证保护）
+        if request.url.path.startswith("/api/v1/facts"):
+            return await call_next(request)
+        # DOE API 端点豁免 CSRF（确定性计算，JWT 认证保护）
+        if request.url.path.startswith("/api/v1/doe"):
+            return await call_next(request)
+        # Stability API 端点豁免 CSRF（确定性计算，JWT 认证保护）
+        if request.url.path.startswith("/api/v1/stability"):
+            return await call_next(request)
+        # Label & Document API 豁免 CSRF（文件上传场景）
+        if request.url.path.startswith("/api/v1/labels") or request.url.path.startswith("/api/v1/documents"):
+            return await call_next(request)
         # AI 模型配置端点豁免 CSRF（JWT 认证 + SPA 场景）
         if request.url.path.startswith("/api/v1/ai/models/config"):
+            return await call_next(request)
+        # 用户级 LLM 密钥端点豁免 CSRF（JWT 认证 + SPA 场景，与 models/config 一致）
+        if request.url.path.startswith("/api/v1/ai/models/user-key"):
             return await call_next(request)
         # AI 智能对话端点豁免 CSRF（JWT 认证 + SPA 场景，CSRF cookie 在跨端口代理下不可靠）
         if request.url.path.startswith("/api/v1/ai/chat"):
@@ -882,6 +897,25 @@ class CsrfProtectMiddleware(BaseHTTPMiddleware):
             return await call_next(request)
         # 肽链结构分析端点豁免 CSRF（纯计算功能，不涉及用户数据变更）
         if request.url.path.startswith("/api/v1/peptide-structure"):
+            return await call_next(request)
+        # 配料分析端点豁免 CSRF（小程序场景，JWT认证 + 跨域）
+        if request.url.path.startswith("/api/v1/ingredients"):
+            return await call_next(request)
+        # 配方相关端点豁免 CSRF（SPA场景，JWT认证）
+        if request.url.path.startswith("/api/v1/formulas"):
+            return await call_next(request)
+        # 实验管理端点豁免 CSRF（SPA 场景，JWT 认证保护，与 /formulas 等一致）
+        # 注意：原实现只豁免 /experiments，未覆盖 /experiments/{id}/data 等子路径
+        if request.url.path.startswith("/api/v1/experiments"):
+            return await call_next(request)
+        # 数据库检索端点豁免 CSRF（读操作，不需要CSRF保护）
+        if request.url.path.startswith("/api/v1/databases"):
+            return await call_next(request)
+        # 客户端性能指标上报（无用户上下文，跳过CSRF）
+        if request.url.path.startswith("/api/v1/metrics"):
+            return await call_next(request)
+        # 工作流端点豁免 CSRF（JWT 认证 + SPA 场景，与 /formulas 等一致）
+        if request.url.path.startswith("/api/v1/workflows"):
             return await call_next(request)
         if request.url.path in skip_paths:
             return await call_next(request)

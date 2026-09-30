@@ -1,23 +1,21 @@
 {
   "pages": [
     "pages/index/index",
+    "pages/icon-showcase/index",
+    "packages/chat/pages/index/index",
     "pages/search/index",
     "pages/profile/index/index",
     "pages/profile/history/index",
     "pages/settings/index",
     "pages/database/index",
+    "pages/database/herb-detail/index",
     "pages/compliance/index",
     "pages/agreement/index",
-    "pages/privacy/index"
+    "pages/privacy/index",
+    "pages/calendar/index",
+    "pages/constitution/index"
   ],
   "subpackages": [
-    {
-      "root": "packages/chat",
-      "name": "chat",
-      "pages": [
-        "pages/index/index"
-      ]
-    },
     {
       "root": "packages/formulas",
       "name": "formulas",
@@ -35,17 +33,17 @@
     }
   ],
   "window": {
-    "backgroundTextStyle": "light",
-    "navigationBarBackgroundColor": "#2D5A3D",
-    "navigationBarTitleText": "RMFOOD",
-    "navigationBarTextStyle": "white",
-    "backgroundColor": "#F5F7FA"
+    "navigationBarBackgroundColor": "#ffffff",
+    "navigationBarTitleText": "药食同源",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#F2F2F7",
+    "backgroundTextStyle": "dark"
   },
   "tabBar": {
-    "color": "#999999",
-    "selectedColor": "#2D5A3D",
-    "backgroundColor": "#ffffff",
-    "borderStyle": "black",
+    "color": "#8E8E93",
+    "selectedColor": "#007AFF",
+    "backgroundColor": "rgba(252, 252, 254, 0.94)",
+    "borderStyle": "white",
     "list": [
       {
         "pagePath": "pages/index/index",
@@ -75,8 +73,11 @@
   },
   "networkTimeout": {
     "request": 10000,
-    "downloadFile": 10000
+    "downloadFile": 10000,
+    "connectSocket": 10000
   },
+  "darkmode": true,
+  "themeLocation": "theme.json",
   "style": "v2",
   "sitemapLocation": "sitemap.json",
   "lazyCodeLoading": "requiredComponents"
