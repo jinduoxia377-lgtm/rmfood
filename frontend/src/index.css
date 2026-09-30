@@ -70,6 +70,26 @@
   --color-primary-700: var(--color-primary-700);
   --color-primary-800: var(--color-primary-800);
   --color-primary-900: var(--color-primary-900);
+  --color-primary-950: var(--color-primary-950);
+
+  /* ── D-55 修复：secondary 族整族缺失桥接 ──
+     原状：base.css/dark.css 定义了 --color-secondary-50..950，但本 @theme 块
+     从未声明，故 Tailwind v4 不生成任何 bg-secondary-* / text-secondary-* /
+     border-secondary-* / hover:bg-secondary-* 工具类（编译产物实测 0 个）。
+     而源码有 104 处使用（如 `bg-secondary-600 text-white` 的主按钮），
+     这些元素在**亮暗两种模式下都没有背景色** —— 白字落在透明底上。
+     与 D-51 同源：@theme 桥接层不完整。 */
+  --color-secondary-50: var(--color-secondary-50);
+  --color-secondary-100: var(--color-secondary-100);
+  --color-secondary-200: var(--color-secondary-200);
+  --color-secondary-300: var(--color-secondary-300);
+  --color-secondary-400: var(--color-secondary-400);
+  --color-secondary-500: var(--color-secondary-500);
+  --color-secondary-600: var(--color-secondary-600);
+  --color-secondary-700: var(--color-secondary-700);
+  --color-secondary-800: var(--color-secondary-800);
+  --color-secondary-900: var(--color-secondary-900);
+  --color-secondary-950: var(--color-secondary-950);
 
   /* ── D-51 修复：此处原有 --color-blue-50..900 自引用桥接 ──
      这些声明会替换 Tailwind v4 的默认蓝色阶，而 base.css/dark.css 从未定义
@@ -88,6 +108,7 @@
   --color-accent-700: var(--color-accent-700);
   --color-accent-800: var(--color-accent-800);
   --color-accent-900: var(--color-accent-900);
+  --color-accent-950: var(--color-accent-950);   /* D-55：补桥接（原缺失 → bg-accent-950 不生成） */
 
   /* ── 语义色 (引用 :root 中定义的 CSS 变量) ── */
   --color-success-50: var(--color-success-50);
@@ -100,6 +121,7 @@
   --color-success-700: var(--color-success-700);
   --color-success-800: var(--color-success-800);
   --color-success-900: var(--color-success-900);
+  --color-success-950: var(--color-success-950);   /* D-55：补桥接 */
 
   --color-warning-50: var(--color-warning-50);
   --color-warning-100: var(--color-warning-100);
@@ -111,6 +133,7 @@
   --color-warning-700: var(--color-warning-700);
   --color-warning-800: var(--color-warning-800);
   --color-warning-900: var(--color-warning-900);
+  --color-warning-950: var(--color-warning-950);   /* D-55：补桥接 */
 
   --color-danger-50: var(--color-danger-50);
   --color-danger-100: var(--color-danger-100);
@@ -122,6 +145,8 @@
   --color-danger-700: var(--color-danger-700);
   --color-danger-800: var(--color-danger-800);
   --color-danger-900: var(--color-danger-900);
+  --color-danger-950: var(--color-danger-950);   /* D-55：补桥接 */
+  --color-error-950: var(--color-error-950);     /* D-56：error 族补 950 档 */
 
   --color-error-50: var(--color-error-bg);
   --color-error-100: #fee2e2;
@@ -163,6 +188,17 @@
   --color-cyan-600: var(--color-cyan-600);
   --color-cyan-700: var(--color-cyan-700);
   --color-info-600: var(--color-info-600);
+  --color-info-100: var(--color-info-100);       /* D-55：补桥接（原缺失 → bg-info-100 不生成） */
+  /* D-56：info 族补全为 10 阶后同步桥接，否则类名仍不生成 */
+  --color-info-50:  var(--color-info-50);
+  --color-info-200: var(--color-info-200);
+  --color-info-300: var(--color-info-300);
+  --color-info-400: var(--color-info-400);
+  --color-info-500: var(--color-info-500);
+  --color-info-700: var(--color-info-700);
+  --color-info-800: var(--color-info-800);
+  --color-info-900: var(--color-info-900);
+  --color-info-950: var(--color-info-950);
 
   /* ── 背景渐变 ── */
   --bg-gradient-start: var(--bg-gradient-start);

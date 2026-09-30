@@ -20,16 +20,16 @@
 
 | 任务 | 状态 | 覆盖缺陷 | 门禁/渲染证据 |
 |:-----|:-----|:---------|:--------------|
-| **T-H1** 门禁脚本 | ✅ 完成 | — | 交付 9 项断言（G-01~G-09）+ 5 个 npm script；在未修复代码上正确判失败（9/9） |
-| **T-C2** 清除循环引用令牌 | ✅ 完成 | **D-51** | G-09 由 `fail` → `warn`；编译产物 `--color-blue-500` 不再等于 `var(--color-blue-500)` |
-| **T-C1** 清理孤儿 `:root` | ✅ 完成 | D-21, D-22, D-12b, **D-52** | G-02 → ✅；G-06 → ✅（徽章 1.26:1 → **5.26:1**，六枚徽章全部 ≥ 4.65:1）；`--bg-surface-variant` 由空 → `#f8fafc`/`#020617` |
+| **T-H1** 门禁脚本 | ✅ 完成 | — | 交付 9 项断言（GATE-01~GATE-09）+ 5 个 npm script；在未修复代码上正确判失败（9/9） |
+| **T-C2** 清除循环引用令牌 | ✅ 完成 | **D-51** | GATE-09 由 `fail` → `warn`；编译产物 `--color-blue-500` 不再等于 `var(--color-blue-500)` |
+| **T-C1** 清理孤儿 `:root` | ✅ 完成 | D-21, D-22, D-12b, **D-52** | GATE-02 → ✅；GATE-06 → ✅（徽章 1.26:1 → **5.26:1**，六枚徽章全部 ≥ 4.65:1）；`--bg-surface-variant` 由空 → `#f8fafc`/`#020617` |
 | **T-D3** 暗色 `--background` | ✅ 完成 | D-9 | 实测暗色 `--background` 由 `#f0fdf4` → **`#020617`** |
-| **T-D1** 首屏闪烁 | ✅ 完成 | D-11, D-49, **D-39** | 时间线：`.dark` 生效时刻 **1516ms → 153ms**；首个 body 背景 `rgb(2,6,23)`（暗）出现在 **1766ms < FCP 1888ms** → 无 FOUC；G-07 → ✅（刷新后 `a11y=reading reading=sepia`） |
+| **T-D1** 首屏闪烁 | ✅ 完成 | D-11, D-49, **D-39** | 时间线：`.dark` 生效时刻 **1516ms → 153ms**；首个 body 背景 `rgb(2,6,23)`（暗）出现在 **1766ms < FCP 1888ms** → 无 FOUC；GATE-07 → ✅（刷新后 `a11y=reading reading=sepia`） |
 | **T-D2** 消除 CSS 注入 | ✅ 完成 | D-33 | 改用 `setProperty` + 白名单；**59/59 断言通过**，10 种注入形态全部阻断（浏览器内调用真实 `isSafeToken`） |
 | **T-D4** 移除全页 opacity 过渡 | ✅ 完成 | D-8 | 6 次切换（fade/slide/scale × 亮/暗）实测 `<html>` 上 **0 处** inline opacity/transform；`.theme-transition` 类正确挂载与卸载 |
-| **T-R1** Radix Themes 前置条件 | ✅ 完成 | **D-41**, **D-10** | 采用**方案乙（移除）**：移除 `@radix-ui/themes` 依赖 + `RadixThemeProvider`，包装层改项目原生实现并补齐 `role="status"`。实测：`/radix-demo` 可达、**0 个 Radix 残留节点**、**13 个 Badge 具备 role=status**、0 页面错误。新增门禁 **G-10** 防「引入但样式表未加载」复发 |
-| **T-A2** 页头实底对比度 | ✅ 完成 | **D-50** | 新增 `--color-primary-surface`/`--color-on-primary-surface` + `.surface-primary`；**23 个文件**替换（22 个 `p-6` + 1 个 `p-5`）+ `MainLayout` 侧边栏 Logo；G-04/G-05 → ✅ |
-| **T-A1** `dark:` 变体归属 | ✅ 完成 | **D-1** | 加入 `@custom-variant dark`；G-01、G-03 → ✅（编译产物媒体查询内 `.dark\:` **1467 → 0**） |
+| **T-R1** Radix Themes 前置条件 | ✅ 完成 | **D-41**, **D-10** | 采用**方案乙（移除）**：移除 `@radix-ui/themes` 依赖 + `RadixThemeProvider`，包装层改项目原生实现并补齐 `role="status"`。实测：`/radix-demo` 可达、**0 个 Radix 残留节点**、**13 个 Badge 具备 role=status**、0 页面错误。新增门禁 **GATE-10** 防「引入但样式表未加载」复发 |
+| **T-A2** 页头实底对比度 | ✅ 完成 | **D-50** | 新增 `--color-primary-surface`/`--color-on-primary-surface` + `.surface-primary`；**23 个文件**替换（22 个 `p-6` + 1 个 `p-5`）+ `MainLayout` 侧边栏 Logo；GATE-04/GATE-05 → ✅ |
+| **T-A1** `dark:` 变体归属 | ✅ 完成 | **D-1** | 加入 `@custom-variant dark`；GATE-01、GATE-03 → ✅（编译产物媒体查询内 `.dark\:` **1467 → 0**） |
 | **T-A3** 实底按钮对比度 | ⏸️ 免做 | D-50 余量 | 门禁在 **12 路由 × 22 个白字实底元素 × 双模式**下未发现失败实例。静态 105 处条件类字符串仍属残余风险，建议随 M2 语义化迁移处理 |
 
 **T-A1 视觉回归复核**（before/after 截图逐像素对比，6 路由 × 双模式）：
@@ -49,10 +49,10 @@
 > `/dashboard`、`/login` 变化极小，因其主要依赖手写 `.dark .X` 规则（此前已工作）。
 
 **M1 门禁最终状态**：`通过 7 / 失败 0 / 跳过 0`，退出码 **0**（`npm run theme:gate:m1`）。
-唯一非绿项 G-09 为 `warn`（79 个冗余自引用，**无循环引用**），G-08 属 **M2** 范围（图表与未定义令牌）。
+唯一非绿项 GATE-09 为 `warn`（79 个冗余自引用，**无循环引用**），GATE-08 属 **M2** 范围（图表与未定义令牌）。
 
 **M1 全部 9 个任务项完成**：T-H1 / T-C1 / T-C2 / T-D1 / T-D2 / T-D3 / T-D4 / T-R1 / T-A1 / T-A2（含 T-A3 判定免做）。
-门禁断言由 9 项增至 **10 项**（新增 G-10 Radix 前置条件）。
+门禁断言由 9 项增至 **10 项**（新增 GATE-10 Radix 前置条件）。
 
 **M1 期间新增缺陷**（由门禁首次运行发现，均已修复或记录）：
 - **D-51**（P0）`--color-blue-50..900` 循环引用 → 约 347 处 `blue-*` 工具类失去颜色 → **已修复**
@@ -216,19 +216,19 @@
 
   | 断言 | 方法 | 依据 |
   |:-----|:-----|:-----|
-  | G-01 `@custom-variant dark` 存在 | 读 `src/index.css` 文本 | CHK-05 |
-  | G-02 `dark.css` 无裸 `:root{}` 令牌块 | 解析 `dark.css`，找块外 `:root` | CHK-17 |
-  | G-03 编译产物中 `.dark\:` 全部位于 `.dark` 作用域、**不在** `prefers-color-scheme` 内 | 花括号深度追踪 `dist/assets/index-*.css` | CHK-22 / I5 |
-  | G-04 无「`bg-primary-*` + `text-white`」元素 | DOM 扫描（登录后） | **CHK-23 / D-50** |
-  | G-05 页头横幅亮/暗对比度均 ≥ 4.5:1（大文本 ≥ 3:1） | 像素采样 | **CHK-24 / A-2** |
-  | G-06 徽章亮色对比度 ≥ 4.5:1 | 合成探针 + 半透明合成 | CHK-24 / D-21 |
-  | G-07 无障碍属性在刷新后仍存在 | 设置 → reload → 读属性 | **CHK-25 / D-39** |
-  | G-08 引用的 `var(--x)` 均可用 | 计算样式探测白名单变量 | CHK-18 |
+  | GATE-01 `@custom-variant dark` 存在 | 读 `src/index.css` 文本 | CHK-05 |
+  | GATE-02 `dark.css` 无裸 `:root{}` 令牌块 | 解析 `dark.css`，找块外 `:root` | CHK-17 |
+  | GATE-03 编译产物中 `.dark\:` 全部位于 `.dark` 作用域、**不在** `prefers-color-scheme` 内 | 花括号深度追踪 `dist/assets/index-*.css` | CHK-22 / I5 |
+  | GATE-04 无「`bg-primary-*` + `text-white`」元素 | DOM 扫描（登录后） | **CHK-23 / D-50** |
+  | GATE-05 页头横幅亮/暗对比度均 ≥ 4.5:1（大文本 ≥ 3:1） | 像素采样 | **CHK-24 / A-2** |
+  | GATE-06 徽章亮色对比度 ≥ 4.5:1 | 合成探针 + 半透明合成 | CHK-24 / D-21 |
+  | GATE-07 无障碍属性在刷新后仍存在 | 设置 → reload → 读属性 | **CHK-25 / D-39** |
+  | GATE-08 引用的 `var(--x)` 均可用 | 计算样式探测白名单变量 | CHK-18 |
 
-- **验证**：`npm run build && npm run theme:gate` → 当前代码**必须失败**（预期 G-01/G-03/G-04/G-05/G-06/G-07 失败）。这是门禁有效性的证明。
+- **验证**：`npm run build && npm run theme:gate` → 当前代码**必须失败**（预期 GATE-01/GATE-03/GATE-04/GATE-05/GATE-06/GATE-07 失败）。这是门禁有效性的证明。
 - **回滚**：删除脚本与 script 条目（无副作用）。
 - **工时**：2–3 人日
-- **风险**：低。需注意渲染类断言（G-04~G-07）依赖运行中的前后端，CI 中需 provision 服务；无服务时降级为「跳过并警告」而非「通过」。
+- **风险**：低。需注意渲染类断言（GATE-04~GATE-07）依赖运行中的前后端，CI 中需 provision 服务；无服务时降级为「跳过并警告」而非「通过」。
 
 ---
 
@@ -244,7 +244,7 @@
 ```
 
 - **验证**：
-  1. `npm run build`，对 `dist/assets/index-*.css` 跑 G-03：`.dark\:` 在媒体查询内计数必须为 **0**；
+  1. `npm run build`，对 `dist/assets/index-*.css` 跑 GATE-03：`.dark\:` 在媒体查询内计数必须为 **0**；
   2. `node scripts/theme-audit/theme-audit-isolation.mjs`：条件 B（`.dark` 类有、系统亮）下 `bg-white dark:bg-neutral-900` 的 `background-color` 必须**不再是** `rgb(255,255,255)`；
   3. 手工：`Ctrl+Shift+T` 切暗色（OS 保持亮色），确认 `dark:` 元素变色。
 - **回滚**：删除该行（单行，零成本）。
@@ -301,7 +301,7 @@
 
 - **⚠️ 需设计会签**：变更 1 会把亮色页头从 `#059669` 变为 `#047857`（略深），以满足正文级 4.5:1。
   **替代方案（保持亮色观感）**：亮色 `--color-primary-surface: #059669`（3.77:1），同时把页头内**小于 24px 且非粗体**的文字改为 `--color-on-primary-surface-muted` 并单独满足对比度 —— 复杂度更高，**不推荐**。
-- **验证**：G-04 通过（无 `bg-primary-* + text-white` 元素）；G-05 通过（亮/暗对比度均达标）。
+- **验证**：GATE-04 通过（无 `bg-primary-* + text-white` 元素）；GATE-05 通过（亮/暗对比度均达标）。
 - **回滚**：`git revert` 单个提交（令牌新增 + 批量替换同处一个提交）。
 - **工时**：1.5 人日 + 0.5 人日会签
 - **风险**：低-中。替换为纯机械操作，可用脚本；风险主要在「22 处之外的 83 处按钮」是否同批处理 —— **建议本任务只做 22 处页头 + 头像圆，按钮另开 T-A3**。
@@ -313,7 +313,7 @@
 - **目标**：`bg-primary-{500,600,700}` + `text-white` 的另外约 83 行。
 - **文件**：按扫描清单逐文件。
 - **变更**：`bg-primary-600 text-white hover:bg-primary-700` → `surface-primary hover:bg-primary-hover`（`--color-primary-hover` 已存在）。
-- **验证**：G-04 通过。
+- **验证**：GATE-04 通过。
 - **工时**：1 人日
 - **风险**：低。
 
@@ -333,8 +333,8 @@
 
 - **预期副作用（正向）**：删除后 `--bg-surface-variant` 的覆盖消失，`base.css:354` 的 `var(--bg-surface-container-low)` 别名恢复生效 → **D-22 一并修复，无需单独任务**。
 - **验证**：
-  1. G-02 通过；
-  2. G-06 通过（徽章亮色对比度 ≥ 4.5:1；预期 `--badge-draft-text` 恢复 `#6E6E73`，实测对比度由 **1.26:1 → ≥ 4.5:1**）；
+  1. GATE-02 通过；
+  2. GATE-06 通过（徽章亮色对比度 ≥ 4.5:1；预期 `--badge-draft-text` 恢复 `#6E6E73`，实测对比度由 **1.26:1 → ≥ 4.5:1**）；
   3. 渲染断言：亮色模式下 `getComputedStyle(html).getPropertyValue('--badge-draft-text')` === `#6E6E73`；
   4. 渲染断言：亮/暗两模式下 `--bg-surface-variant` 均**非空**。
 - **回滚**：`git revert`（单文件）。
@@ -345,7 +345,7 @@
 
 #### T-C2 · 清除 `@theme` 循环引用令牌【D-51，P0 — 门禁新发现】
 
-- **发现来源**：交付 T-H1 门禁后，断言 **G-09** 首次运行即告警。
+- **发现来源**：交付 T-H1 门禁后，断言 **GATE-09** 首次运行即告警。
 - **目标**：恢复 `blue-*` 工具类族的颜色。
 - **现状（双重确证）**：
   - 编译产物中 `--color-blue-500:var(--color-blue-500)`（循环引用）；对照组 `--color-pink-500` = `oklch(65.6% .241 354.308)` 正常；
@@ -373,7 +373,7 @@
 
 - **建议**：先做**方案甲**恢复功能（阶段 0，可立即交付）；把 `blue-*` → `bg-secondary-*`/`bg-info-container` 的语义化迁移纳入 T-A3 同类批量替换（规范 §4.5 已列映射）。
 - **验证**：
-  1. **G-09 通过**（无循环引用令牌；冗余自引用降为 warn）；
+  1. **GATE-09 通过**（无循环引用令牌；冗余自引用降为 warn）；
   2. 编译产物中 `--color-blue-500` 不再等于 `var(--color-blue-500)`；
   3. 浏览器断言：合成 `<div class="bg-blue-500">` 的 `background-color` **非透明**。
 - **回滚**：`git revert`（10 行）。
@@ -571,7 +571,7 @@ syncA11yAttributes(state.accessibilityMode, baseTheme.mode);
 // setAccessibilityMode() 内改为调用同一 helper（去重复）
 ```
 
-- **验证**：G-07 通过 —— 设为 `reading` → 刷新 → `data-a11y-mode` === `'reading'` 且 `data-reading-mode` === `'sepia'`；`--text-primary` 保持 `#5C4B37`。
+- **验证**：GATE-07 通过 —— 设为 `reading` → 刷新 → `data-a11y-mode` === `'reading'` 且 `data-reading-mode` === `'sepia'`；`--text-primary` 保持 `#5C4B37`。
 - **工时**：0.5 人日
 - **风险**：低。
 
@@ -585,7 +585,7 @@ syncA11yAttributes(state.accessibilityMode, baseTheme.mode);
   2. **高对比补正确令牌**：`--border-default` → 同时设置 `--border-color`（组件实际消费的是后者，见 `index.css:195`）；
   3. **新增 `[data-a11y-mode="color-blind"]` 规则**（当前 CSS 层零响应）；
   4. **消除 CSS 与 JS 双实现**：收敛为单一来源（建议保留 JS 侧 `getAccessibilityTheme()`，CSS 只做无法在 JS 中表达的补充）。
-- **验证**：G-06 扩展断言 —— sepia 模式下 `body` 背景色必须变化（当前实测不变）；`color-blind` 模式下 `--color-success` 变化。
+- **验证**：GATE-06 扩展断言 —— sepia 模式下 `body` 背景色必须变化（当前实测不变）；`color-blind` 模式下 `--color-success` 变化。
 - **工时**：1.5 人日
 - **风险**：中。涉及两套实现，需谨慎合并。
 
@@ -602,7 +602,7 @@ syncA11yAttributes(state.accessibilityMode, baseTheme.mode);
   2. 修复 `ChartComponent.tsx:23` / `CompositionChart.tsx:36` 的 `useMemo(…, [])` → 加入 `isDark` 依赖；
   3. 删除三个废弃模块及其引用。
 - **验证**：
-  1. G-08 通过（无失效 `var()` 引用）；
+  1. GATE-08 通过（无失效 `var()` 引用）；
   2. 切主题后图表颜色**立即变化**（当前实测不变化）；
   3. `rg 'color-migration|themeColorMapper|DarkModeChartTheme' src` = 0。
 - **工时**：3 人日
@@ -782,7 +782,7 @@ vars[`--ease-${key}`] = value;
 | 级别 | 手段 | 用于 |
 |:-----|:-----|:-----|
 | **L1 静态** | `rg` 断言、`tsc -b`、`theme-validate.ts` | 快速回归，pre-commit |
-| **L2 编译产物** | 花括号深度追踪 `dist/assets/index-*.css` | 验证 `dark:` 归属（G-03） |
+| **L2 编译产物** | 花括号深度追踪 `dist/assets/index-*.css` | 验证 `dark:` 归属（GATE-03） |
 | **L3 渲染** | `scripts/theme-audit/*` + 截图 diff | 对比度、无障碍、视觉回归 |
 
 ### 5.2 逐项验证命令
@@ -862,7 +862,7 @@ pages/user/UserManagementPage.tsx:760            pages/workflow/WorkflowPage.tsx
 | T-R1 方案甲导入 Radix 完整样式表引发大面积冲突 | 中 | 中 | 优先选方案乙（**DEC-2**）；若选甲则必须全站截图复核 |
 | `SAFE_COLOR` 正则过严导致令牌静默丢失 | 中 | 中 | 打 warn 日志 + 单元测试边界 |
 | 后台服务被环境回收导致渲染验证中断 | 高 | 低 | 每个脚本自包含登录+测量；或改用 `vite preview` |
-| 22 处页头替换后仍遗漏 `p-5`/其他变体 | 中 | 中 | G-04 作为兜底断言，不靠人工清点 |
+| 22 处页头替换后仍遗漏 `p-5`/其他变体 | 中 | 中 | GATE-04 作为兜底断言，不靠人工清点 |
 
 ### 6.4 追溯矩阵（缺陷 → 任务）
 
@@ -909,9 +909,9 @@ pages/user/UserManagementPage.tsx:760            pages/workflow/WorkflowPage.tsx
 
 ### 7.2 第一个提交：T-H1
 
-1. 新建 `frontend/scripts/theme-audit/theme-gate.mjs`，实现 G-01~G-08；
+1. 新建 `frontend/scripts/theme-audit/theme-gate.mjs`，实现 GATE-01~GATE-08；
 2. `frontend/package.json` 增加 `"theme:gate": "node scripts/theme-audit/theme-gate.mjs"`；
-3. 在**当前未修复**代码上运行，**确认它以非 0 退出并列出预期的失败项**（至少 G-01/G-03/G-04/G-05/G-06/G-07）；
+3. 在**当前未修复**代码上运行，**确认它以非 0 退出并列出预期的失败项**（至少 GATE-01/GATE-03/GATE-04/GATE-05/GATE-06/GATE-07）；
 4. 提交该门禁 —— 此时流水线**应当标红**，这是期望状态，不是故障。
 
 ### 7.3 M1 推荐顺序（风险从低到高）

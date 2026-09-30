@@ -6,15 +6,15 @@
  *      docs/plans/RMFOOD-主题系统修复执行方案.md §3 T-H1
  *
  * 断言：
- *   G-01 [M1] index.css 声明 @custom-variant dark            ← CHK-05 / D-1
- *   G-02 [M1] dark.css 无顶层 :root{} 令牌块                  ← CHK-17 / D-21
- *   G-03 [M1] 编译产物 .dark\: 无一位于 prefers-color-scheme  ← CHK-22 / D-1 / I5
- *   G-04 [M1] 无「反转色阶 + text-white」元素                 ← CHK-23 / D-50 / C-24
- *   G-05 [M1] 所有 text-white 实底元素对比度达标（亮+暗）      ← CHK-24 / A-2
- *   G-06 [M1] 徽章类亮色对比度 ≥ 4.5:1                        ← CHK-24 / D-21
- *   G-07 [M2] 无障碍 DOM 属性刷新后保留                        ← CHK-25 / D-39
- *   G-08 [M2] src 无回退引用的 var(--x) 全部解析非空            ← CHK-18 / D-22 / D-4
- *   G-09 [M1] 无自引用令牌声明 --x:var(--x)（循环引用）        ← CHK-26 / D-51
+ *   GATE-01 [M1] index.css 声明 @custom-variant dark            ← CHK-05 / D-1
+ *   GATE-02 [M1] dark.css 无顶层 :root{} 令牌块                  ← CHK-17 / D-21
+ *   GATE-03 [M1] 编译产物 .dark\: 无一位于 prefers-color-scheme  ← CHK-22 / D-1 / I5
+ *   GATE-04 [M1] 无「反转色阶 + text-white」元素                 ← CHK-23 / D-50 / C-24
+ *   GATE-05 [M1] 所有 text-white 实底元素对比度达标（亮+暗）      ← CHK-24 / A-2
+ *   GATE-06 [M1] 徽章类亮色对比度 ≥ 4.5:1                        ← CHK-24 / D-21
+ *   GATE-07 [M2] 无障碍 DOM 属性刷新后保留                        ← CHK-25 / D-39
+ *   GATE-08 [M2] src 无回退引用的 var(--x) 全部解析非空            ← CHK-18 / D-22 / D-4
+ *   GATE-09 [M1] 无自引用令牌声明 --x:var(--x)（循环引用）        ← CHK-26 / D-51
  *
  * 用法：
  *   node scripts/theme-audit/theme-gate.mjs                 # 静态 + 渲染（服务不可达则跳过渲染）
@@ -113,13 +113,13 @@ function walkFiles(dir, exts, out = []) {
 // ============================================================================
 function g01() {
   const f = join(SRC, 'index.css');
-  if (!existsSync(f)) return rec('G-01', 'M1', 'index.css 声明 @custom-variant dark', 'fail', `找不到 ${f}`);
+  if (!existsSync(f)) return rec('GATE-01', 'M1', 'index.css 声明 @custom-variant dark', 'fail', `找不到 ${f}`);
   const css = readFileSync(f, 'utf8');
   const m = css.match(/@custom-variant\s+dark\s*\(([^)]*)\)/);
   if (m && /\.dark/.test(m[1])) {
-    rec('G-01', 'M1', 'index.css 声明 @custom-variant dark', 'pass', `@custom-variant dark (${m[1].trim()})`);
+    rec('GATE-01', 'M1', 'index.css 声明 @custom-variant dark', 'pass', `@custom-variant dark (${m[1].trim()})`);
   } else {
-    rec('G-01', 'M1', 'index.css 声明 @custom-variant dark', 'fail',
+    rec('GATE-01', 'M1', 'index.css 声明 @custom-variant dark', 'fail',
       '缺失 → Tailwind v4 把 dark: 编译为 @media (prefers-color-scheme:dark)，\n' +
       '14 912 处 dark: 工具类不随应用主题切换（D-1）。\n' +
       '修复：在 @import "tailwindcss"; 之后加 @custom-variant dark (&:where(.dark, .dark *));');
@@ -128,7 +128,7 @@ function g01() {
 
 function g02() {
   const f = join(SRC, 'styles/tokens/dark.css');
-  if (!existsSync(f)) return rec('G-02', 'M1', 'dark.css 无顶层 :root{} 令牌块', 'fail', `找不到 ${f}`);
+  if (!existsSync(f)) return rec('GATE-02', 'M1', 'dark.css 无顶层 :root{} 令牌块', 'fail', `找不到 ${f}`);
   const css = readFileSync(f, 'utf8');
   const blocks = scanBlocks(css).filter(b => b.depth === 0 && /^:root$/.test(b.selector));
   const offenders = [];
@@ -139,9 +139,9 @@ function g02() {
     if (decls > 0) offenders.push({ line, decls });
   }
   if (offenders.length === 0) {
-    rec('G-02', 'M1', 'dark.css 无顶层 :root{} 令牌块', 'pass', `${blocks.length} 个顶层 :root 块，均无令牌声明`);
+    rec('GATE-02', 'M1', 'dark.css 无顶层 :root{} 令牌块', 'pass', `${blocks.length} 个顶层 :root 块，均无令牌声明`);
   } else {
-    rec('G-02', 'M1', 'dark.css 无顶层 :root{} 令牌块', 'fail',
+    rec('GATE-02', 'M1', 'dark.css 无顶层 :root{} 令牌块', 'fail',
       `发现 ${offenders.length} 个顶层 :root 令牌块：` +
       offenders.map(o => `\n  · dark.css:${o.line}（${o.decls} 条声明）`).join('') +
       '\n这些值在【亮色模式】同样生效，污染语义令牌（D-21）。\n' +
@@ -152,10 +152,10 @@ function g02() {
 function g03() {
   const assets = join(ROOT, 'dist/assets');
   if (!existsSync(assets)) {
-    return rec('G-03', 'M1', '编译产物 .dark\\: 归属正确', 'skip', '缺少 frontend/dist —— 先执行 npm run build');
+    return rec('GATE-03', 'M1', '编译产物 .dark\\: 归属正确', 'skip', '缺少 frontend/dist —— 先执行 npm run build');
   }
   const cssFile = readdirSync(assets).filter(f => /^index-.*\.css$/.test(f)).sort().pop();
-  if (!cssFile) return rec('G-03', 'M1', '编译产物 .dark\\: 归属正确', 'skip', 'dist/assets 下无 index-*.css');
+  if (!cssFile) return rec('GATE-03', 'M1', '编译产物 .dark\\: 归属正确', 'skip', 'dist/assets 下无 index-*.css');
   const css = readFileSync(join(assets, cssFile), 'utf8');
   const ranges = mediaRanges(css, 'prefers-color-scheme\\s*:\\s*dark');
   let inside = 0, outside = 0;
@@ -165,10 +165,10 @@ function g03() {
   }
   const whereDark = (css.match(/:where\(\.dark/g) || []).length;
   if (inside === 0 && outside > 0) {
-    rec('G-03', 'M1', '编译产物 .dark\\: 归属正确', 'pass',
+    rec('GATE-03', 'M1', '编译产物 .dark\\: 归属正确', 'pass',
       `${cssFile}：媒体查询内 0 / 外 ${outside}；:where(.dark 包装 ${whereDark} 处`);
   } else {
-    rec('G-03', 'M1', '编译产物 .dark\\: 归属正确', 'fail',
+    rec('GATE-03', 'M1', '编译产物 .dark\\: 归属正确', 'fail',
       `${cssFile}：媒体查询内 ${inside} / 外 ${outside}\n` +
       (inside > 0 ? `⇒ 全部 dark: 工具类跟随操作系统偏好，不随应用主题开关（D-1）。` :
                     `⇒ 产物中未找到 .dark\\: 选择器，构建产物可能过期。`));
@@ -176,7 +176,7 @@ function g03() {
 }
 
 // ============================================================================
-// G-09 自引用令牌（循环引用）—— 源码 + 编译产物双查
+// GATE-09 自引用令牌（循环引用）—— 源码 + 编译产物双查
 // ============================================================================
 const SELF_REF = /--([a-z0-9-]+)\s*:\s*var\(\s*--\1\s*\)/g;
 
@@ -222,7 +222,7 @@ function g09() {
   }
 
   if (hits.length === 0) {
-    return rec('G-09', 'M1', '无自引用令牌（循环引用）', 'pass', '源码与编译产物均未发现 --x:var(--x)');
+    return rec('GATE-09', 'M1', '无自引用令牌（循环引用）', 'pass', '源码与编译产物均未发现 --x:var(--x)');
   }
 
   // 分类：同名有真实定义 → 冗余（可工作，潜在风险）；无定义 → 循环引用（令牌彻底失效）
@@ -235,7 +235,7 @@ function g09() {
   }
 
   if (harmful.size === 0) {
-    return rec('G-09', 'M1', '无自引用令牌（循环引用）', 'warn',
+    return rec('GATE-09', 'M1', '无自引用令牌（循环引用）', 'warn',
       `无「循环引用」（失效）令牌；但存在 ${redundant.size} 个冗余自引用（同名有真实定义，靠层叠顺序侥幸可用）：\n` +
       '  ' + [...redundant.keys()].slice(0, 15).join(', ') +
       (redundant.size > 15 ? ` …（共 ${redundant.size}）` : '') +
@@ -245,7 +245,7 @@ function g09() {
   const detail = [...harmful.entries()].slice(0, 12)
     .map(([n, w]) => `  · --${n}  ← ${[...w].slice(0, 2).join(', ')}`).join('\n');
 
-  rec('G-09', 'M1', '无自引用令牌（循环引用）', 'fail',
+  rec('GATE-09', 'M1', '无自引用令牌（循环引用）', 'fail',
     `发现 ${harmful.size} 个【循环引用】令牌（令牌彻底失效，共 ${[...harmful.values()].reduce((a, s) => a + s.size, 0)} 处）：\n${detail}` +
     (harmful.size > 12 ? `\n  …（共 ${harmful.size} 个）` : '') +
     `\n另有 ${redundant.size} 个冗余自引用（同名有真实定义，靠层叠顺序侥幸可用）。` +
@@ -255,7 +255,7 @@ function g09() {
 }
 
 // ============================================================================
-// G-10 Radix Themes 前置条件（R-9 / CHK-21 / D-41）
+// GATE-10 Radix Themes 前置条件（R-9 / CHK-21 / D-41）
 // ----------------------------------------------------------------------------
 // 规则：若源码导入 @radix-ui/themes，则必须同时导入其样式表
 //       @radix-ui/themes/styles.css；否则 <Theme> 只是没有令牌定义的 wrapper。
@@ -277,21 +277,143 @@ function g10() {
   }
 
   if (importers.length === 0) {
-    rec('G-10', 'M1', 'Radix Themes 前置条件（R-9）', 'pass',
+    rec('GATE-10', 'M1', 'Radix Themes 前置条件（R-9）', 'pass',
       '源码未使用 @radix-ui/themes —— 无「引入但样式表未加载」风险');
     return;
   }
   if (styleImported) {
-    rec('G-10', 'M1', 'Radix Themes 前置条件（R-9）', 'pass',
+    rec('GATE-10', 'M1', 'Radix Themes 前置条件（R-9）', 'pass',
       `${importers.length} 处导入，且已加载 @radix-ui/themes/styles.css`);
     return;
   }
-  rec('G-10', 'M1', 'Radix Themes 前置条件（R-9）', 'fail',
+  rec('GATE-10', 'M1', 'Radix Themes 前置条件（R-9）', 'fail',
     `检测到 ${importers.length} 处 @radix-ui/themes 导入，但全项目未导入其样式表：\n` +
     importers.slice(0, 8).map(p => `  · ${p}`).join('\n') +
     '\n后果：<Theme> 仅渲染无令牌定义的 wrapper；--gray-* / --font-size-* / --radius-* 全部为空。\n' +
     '修复二选一：① 补 `import \'@radix-ui/themes/styles.css\'` 并做视觉复核；\n' +
     '            ② 移除该依赖，包装层改用项目原生实现。');
+}
+
+// ============================================================================
+// GATE-11 主色表面令牌对比度（亮/暗 × 基础 / hover）
+// ----------------------------------------------------------------------------
+// D-54 回归防护：.surface-primary 承载固定的白色前景，其**所有状态（含 :hover）**
+// 必须使用【不参与色阶反转】的表面令牌族。曾用 --color-primary-800 作暗色 hover，
+// 该令牌在暗色下被反转为 #d1fae5（浅薄荷），白字对比度仅 1.13:1 —— 比 D-50 本身
+// 的 1.52:1 更差，且静态对比度断言无法发现（它只测非悬停态）。
+// ============================================================================
+function g11() {
+  const readTokens = (file) => {
+    const p = join(SRC, 'styles/tokens', file);
+    if (!existsSync(p)) return {};
+    const css = readFileSync(p, 'utf8');
+    const out = {};
+    // 键统一保留 `--` 前缀，与 NEED 数组口径一致
+    for (const m of css.matchAll(/--([a-z0-9-]+)\s*:\s*(#[0-9a-fA-F]{3,8})\s*;/g)) out[`--${m[1]}`] = m[2];
+    return out;
+  };
+  const lum = (hex) => {
+    let h = String(hex).replace('#', '');
+    if (h.length === 3) h = h.split('').map(c => c + c).join('');
+    const [r, g, b] = [0, 2, 4]
+      .map(i => parseInt(h.slice(i, i + 2), 16) / 255)
+      .map(s => (s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4)));
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  };
+  const ratio = (a, b) => {
+    const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p);
+    return Math.round(((x + 0.05) / (y + 0.05)) * 100) / 100;
+  };
+
+  const NEED = ['--color-primary-surface', '--color-primary-surface-hover', '--color-on-primary-surface'];
+  const problems = [];
+  const report = [];
+  for (const [mode, file] of [['亮色', 'base.css'], ['暗色', 'dark.css']]) {
+    const t = readTokens(file);
+    const missing = NEED.filter(n => !t[n]);
+    if (missing.length) { problems.push(`${mode}(${file}) 缺少令牌: ${missing.join(', ')}`); continue; }
+    const base = ratio(t['--color-primary-surface'], t['--color-on-primary-surface']);
+    const hov = ratio(t['--color-primary-surface-hover'], t['--color-on-primary-surface']);
+    report.push(`${mode} 基础 ${base}:1 / hover ${hov}:1`);
+    if (base < 4.5) problems.push(`${mode} 基础态对比度 ${base}:1 < 4.5:1`);
+    if (hov < 4.5) problems.push(`${mode} hover 态对比度 ${hov}:1 < 4.5:1`);
+  }
+
+  // .surface-primary:hover 不得引用会随主题反转的色阶令牌
+  const su = join(SRC, 'styles/components/semantic-utils.css');
+  if (existsSync(su)) {
+    const css = readFileSync(su, 'utf8');
+    const m = css.match(/\.surface-primary:hover\s*\{([^}]*)\}/);
+    if (!m) problems.push('semantic-utils.css 中未找到 .surface-primary:hover 规则');
+    else {
+      const bad = m[1].match(/--color-primary-(?:[1-9]\d{2}|hover)\b/);
+      if (bad) problems.push(`.surface-primary:hover 引用了会反转的色阶令牌 ${bad[0]}（暗色下变浅 → 白字对比度崩塌）`);
+      if (!/--color-primary-surface-hover/.test(m[1])) problems.push('.surface-primary:hover 未使用 --color-primary-surface-hover');
+    }
+  }
+
+  if (problems.length) {
+    rec('GATE-11', 'M1', '主色表面令牌对比度（含 hover）', 'fail',
+      problems.join('\n') + (report.length ? `\n实测: ${report.join(' | ')}` : ''));
+  } else {
+    rec('GATE-11', 'M1', '主色表面令牌对比度（含 hover）', 'pass',
+      `全部 ≥ 4.5:1 —— ${report.join(' | ')}`);
+  }
+}
+
+// ============================================================================
+// GATE-12 源码使用的品牌色阶类必须在编译产物中真实存在
+// ----------------------------------------------------------------------------
+// D-51 / D-55 同源防护：@theme 桥接层不完整时，Tailwind v4 不会生成对应的
+// 工具类，而源码里的类名却照常书写 —— 元素静默失去颜色（bg-* → 透明，
+// 配 text-white 即白字落在透明底上）。静态 grep 与 var() 可用性检查都发现不了。
+// 本次实测：secondary 族整族缺失 → 104 处 bg-secondary-* / text-secondary-* 全废。
+// ============================================================================
+function g12() {
+  const assets = join(ROOT, 'dist/assets');
+  if (!existsSync(assets)) {
+    rec('GATE-12', 'M1', '品牌色阶工具类已在产物中生成', 'skip', '未找到 dist/assets，跳过');
+    return;
+  }
+  const compiled = readdirSync(assets).filter(f => /^index-.*\.css$/.test(f)).sort().pop();
+  if (!compiled) { rec('GATE-12', 'M1', '品牌色阶工具类已在产物中生成', 'skip', '未找到 index-*.css'); return; }
+  const css = readFileSync(join(assets, compiled), 'utf8');
+
+  const FAMILIES = ['primary', 'secondary', 'accent', 'success', 'warning', 'danger', 'error', 'info', 'neutral'];
+  const STEPS = ['50', '100', '200', '300', '400', '500', '600', '700', '800', '900', '950'];
+  const PREFIX = ['bg', 'text', 'border', 'from', 'to', 'via', 'ring', 'fill', 'stroke', 'divide', 'outline', 'shadow', 'decoration', 'accent'];
+
+  const used = new Set();
+  for (const f of walkFiles(SRC, ['.ts', '.tsx'])) {
+    const t = readFileSync(f, 'utf8');
+    const re = new RegExp(`\\b((?:${PREFIX.join('|')})-(?:${FAMILIES.join('|')})-(?:${STEPS.join('|')}))\\b`, 'g');
+    for (const m of t.matchAll(re)) used.add(m[1]);
+  }
+
+  // Tailwind 产物中类选择器形如 `.bg-x`，带变体时形如 `.dark\:bg-x`、`.hover\:bg-x`
+  // 故匹配「紧邻 `.` 或转义冒号 `\:`」的类名，并排除更长标识符的误配
+  const esc = (c) => c.replace(/[.*+?^${}()|[\]\\-]/g, '\\$&');
+  const missing = [];
+  for (const c of used) {
+    const re = new RegExp(`(?:\\.|\\\\:)${esc(c)}(?![\\w-])`);
+    if (!re.test(css)) missing.push(c);
+  }
+
+  if (missing.length === 0) {
+    rec('GATE-12', 'M1', '品牌色阶工具类已在产物中生成', 'pass',
+      `源码使用的 ${used.size} 个品牌色阶类全部存在于 ${compiled}`);
+  } else {
+    const byFam = {};
+    for (const c of missing) {
+      const fam = c.match(new RegExp(`(?:${PREFIX.join('|')})-(${FAMILIES.join('|')})-`))?.[1] ?? '其他';
+      (byFam[fam] ??= []).push(c);
+    }
+    rec('GATE-12', 'M1', '品牌色阶工具类已在产物中生成', 'fail',
+      `源码使用了 ${missing.length}/${used.size} 个产物中不存在的品牌色阶类：\n` +
+      Object.entries(byFam).map(([f, a]) => `  · ${f}(${a.length}): ${a.slice(0, 8).join(', ')}${a.length > 8 ? ' …' : ''}`).join('\n') +
+      '\n后果：这些类不产生任何样式 → bg-* 元素背景透明、text-* 回落继承色。\n' +
+      '成因：@theme 块未桥接对应令牌 —— 在 index.css 的 @theme 中补 `--color-<族>-<档>: var(--color-<族>-<档>);`。');
+  }
 }
 
 // ============================================================================
@@ -511,7 +633,7 @@ async function main() {
   log('══════════════════════════════════════════════════════════════');
   log('');
   log('── 静态断言 ──');
-  g01(); g02(); g03(); g09(); g10();
+  g01(); g02(); g03(); g09(); g10(); g11(); g12();
 
   log('');
   log('── 渲染断言 ──');
@@ -519,11 +641,11 @@ async function main() {
   if (!env.available) {
     const why = env.reason || '渲染环境不可用';
     for (const [id, ms, t] of [
-      ['G-04', 'M1', '无「反转色阶 + text-white」元素'],
-      ['G-05', 'M1', 'text-white 实底元素对比度达标'],
-      ['G-06', 'M1', '徽章类亮色对比度达标'],
-      ['G-07', 'M2', '无障碍属性刷新后保留'],
-      ['G-08', 'M2', 'var(--x) 全部可解析'],
+      ['GATE-04', 'M1', '无「反转色阶 + text-white」元素'],
+      ['GATE-05', 'M1', 'text-white 实底元素对比度达标'],
+      ['GATE-06', 'M1', '徽章类亮色对比度达标'],
+      ['GATE-07', 'M2', '无障碍属性刷新后保留'],
+      ['GATE-08', 'M2', 'var(--x) 全部可解析'],
     ]) {
       rec(id, ms, t, OPT.requireRender ? 'fail' : 'skip', why);
     }
@@ -531,12 +653,12 @@ async function main() {
     try {
       const r05 = await g0405(env);
       if (r05.error) {
-        rec('G-04', 'M1', '无「反转色阶 + text-white」元素', 'fail', r05.error);
-        rec('G-05', 'M1', 'text-white 实底元素对比度达标', 'fail', r05.error);
+        rec('GATE-04', 'M1', '无「反转色阶 + text-white」元素', 'fail', r05.error);
+        rec('GATE-05', 'M1', 'text-white 实底元素对比度达标', 'fail', r05.error);
       } else {
-        // G-04
+        // GATE-04
         if (r05.inverted.length === 0) {
-          rec('G-04', 'M1', '无「反转色阶 + text-white」元素', 'pass',
+          rec('GATE-04', 'M1', '无「反转色阶 + text-white」元素', 'pass',
             `扫描 ${r05.scanned} 个白字实底元素 × ${r05.routes.length} 路由 × 双模式`);
         } else {
           const uniq = new Map();
@@ -545,18 +667,18 @@ async function main() {
             if (!uniq.has(key)) uniq.set(key, { ...it, count: 0, routes: new Set() });
             const u = uniq.get(key); u.count++; u.routes.add(it.route);
           }
-          rec('G-04', 'M1', '无「反转色阶 + text-white」元素', 'fail',
+          rec('GATE-04', 'M1', '无「反转色阶 + text-white」元素', 'fail',
             `发现 ${r05.inverted.length} 处（${uniq.size} 种模式）：\n` +
             [...uniq.values()].slice(0, 6).map(u =>
               `  · ${u.cls.slice(0, 78)}\n    ${u.mode} bg=${u.bg} 对比度=${u.ratio}（需 ${u.required}） 见于 ${[...u.routes].join(',')}`
             ).join('\n') +
             '\n修复：见规范 §4.3 C-24（改用 surface-primary 或不可反转的固定色阶）。');
         }
-        // G-05
+        // GATE-05
         if (r05.failures.length === 0) {
-          rec('G-05', 'M1', 'text-white 实底元素对比度达标', 'pass', `${r05.scanned} 个元素全部 ≥ 阈值`);
+          rec('GATE-05', 'M1', 'text-white 实底元素对比度达标', 'pass', `${r05.scanned} 个元素全部 ≥ 阈值`);
         } else {
-          rec('G-05', 'M1', 'text-white 实底元素对比度达标', 'fail',
+          rec('GATE-05', 'M1', 'text-white 实底元素对比度达标', 'fail',
             `${r05.failures.length}/${r05.scanned} 未达标：\n` +
             r05.failures.slice(0, 6).map(f =>
               `  · [${f.route} ${f.mode}] 实测 ${f.ratio}:1（需 ${f.required}）bg=${f.bg}`
@@ -564,50 +686,50 @@ async function main() {
         }
       }
 
-      // G-06
+      // GATE-06
       try {
         const b = await g06(env);
         const bad = b.badges.filter(x => x.ratio !== null && x.ratio < 4.5);
         if (bad.length === 0) {
-          rec('G-06', 'M1', '徽章类亮色对比度达标', 'pass',
+          rec('GATE-06', 'M1', '徽章类亮色对比度达标', 'pass',
             b.badges.map(x => `${x.cls.replace('badge-','')}=${x.ratio}`).join(' '));
         } else {
-          rec('G-06', 'M1', '徽章类亮色对比度达标', 'fail',
+          rec('GATE-06', 'M1', '徽章类亮色对比度达标', 'fail',
             `--badge-draft-text 解析为 ${b.draftText}（应为 #6E6E73）\n` +
             bad.map(x => `  · ${x.cls}: ${x.ratio}:1（${x.color} on ${x.effectiveBg}）`).join('\n') +
             '\n修复：dark.css 顶层 :root 块把暗色值泄漏到亮色模式（D-21）。');
         }
-      } catch (e) { rec('G-06', 'M1', '徽章类亮色对比度达标', 'fail', String(e).slice(0, 200)); }
+      } catch (e) { rec('GATE-06', 'M1', '徽章类亮色对比度达标', 'fail', String(e).slice(0, 200)); }
 
-      // G-07
+      // GATE-07
       try {
         const a = await g07(env);
         if (a.after.a11y === 'reading' && a.after.reading === 'sepia') {
-          rec('G-07', 'M2', '无障碍属性刷新后保留', 'pass',
+          rec('GATE-07', 'M2', '无障碍属性刷新后保留', 'pass',
             `刷新后 a11y=${a.after.a11y} reading=${a.after.reading} --text-primary=${a.after.textPrimary}`);
         } else {
-          rec('G-07', 'M2', '无障碍属性刷新后保留', 'fail',
+          rec('GATE-07', 'M2', '无障碍属性刷新后保留', 'fail',
             `交互设置时 a11y=${a.set.a11y} reading=${a.set.reading}（正确）\n` +
             `刷新后 a11y=${a.after.a11y} reading=${a.after.reading}（丢失）\n` +
             `⇒ --text-primary 回退为 ${a.after.textPrimary}，semantic-utils.css 的阅读模式规则整层失效（D-39）。`);
         }
-      } catch (e) { rec('G-07', 'M2', '无障碍属性刷新后保留', 'fail', String(e).slice(0, 200)); }
+      } catch (e) { rec('GATE-07', 'M2', '无障碍属性刷新后保留', 'fail', String(e).slice(0, 200)); }
 
-      // G-08
+      // GATE-08
       try {
         const v = await g08(env);
         if (v.unresolved.length === 0) {
-          rec('G-08', 'M2', '无回退引用的 var(--x) 全部可解析', 'pass',
+          rec('GATE-08', 'M2', '无回退引用的 var(--x) 全部可解析', 'pass',
             `必需 ${v.requiredCount} 个全部解析；另有 ${v.optionalCount} 个带回退引用` +
             (v.optUnresolved.length ? `（其中 ${v.optUnresolved.length} 个未定义但有回退，属可接受）` : ''));
         } else {
-          rec('G-08', 'M2', '无回退引用的 var(--x) 全部可解析', 'fail',
+          rec('GATE-08', 'M2', '无回退引用的 var(--x) 全部可解析', 'fail',
             `${v.unresolved.length}/${v.requiredCount} 个无回退引用的变量解析为空：\n` +
             '  ' + v.unresolved.slice(0, 20).join(', ') +
             (v.unresolved.length > 20 ? ` …（共 ${v.unresolved.length}）` : '') +
             `\n（另有 ${v.optUnresolved.length}/${v.optionalCount} 个带回退的变量未定义，属可接受）`);
         }
-      } catch (e) { rec('G-08', 'M2', '无回退引用的 var(--x) 全部可解析', 'fail', String(e).slice(0, 200)); }
+      } catch (e) { rec('GATE-08', 'M2', '无回退引用的 var(--x) 全部可解析', 'fail', String(e).slice(0, 200)); }
     } finally {
       await env.browser.close();
     }

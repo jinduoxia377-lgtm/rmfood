@@ -30,6 +30,8 @@
      保证「实底 + 白字」在暗色下仍为深底白字（白字 7.78:1 ✅ AAA）。 */
   --color-primary-surface: #065f46;
   --color-on-primary-surface: #ffffff;
+  /* hover 态同样不参与反转：暗色下比 base 略亮，白字 5.08:1（≥4.5:1 AA） */
+  --color-primary-surface-hover: #047857;
 
   /* ═══ Brand Secondary: Ocean Blue (dark mode 提亮) ═══ */
   --color-secondary-50: #172554;

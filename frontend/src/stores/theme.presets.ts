@@ -551,12 +551,16 @@ export function generateCSSVariables(theme: ThemeConfig): Record<string, string>
 // 现改为逐属性 setProperty + 严格白名单，使 value 永远无法逃逸出声明值位置。
 // ============================================================================
 
-/** 合法令牌名：仅小写 kebab-case 的自定义属性 */
+/** 合法令牌名：仅小写 kebab-case 的自定义属性（符合规范 T1）。
+ *  注意：camelCase 名（如 `--z-modalBackdrop`）会被拒绝 —— 这既是安全边界，
+ *  也暴露了 generateCSSVariables 输出违反 T1 的既有缺陷（见规范 D-53）。 */
 const SAFE_TOKEN_NAME = /^--[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
-/** 合法令牌值：颜色 / var() 引用 / 渐变 / 数值+单位 / 关键字 */
-const SAFE_TOKEN_VALUE =
-  /^(?:#[0-9a-fA-F]{3,8}|rgba?\(\s*[\d.%,\s/]+\)|hsla?\(\s*[\d.%,\s/deg]+\)|var\(\s*--[a-z0-9-]+\s*(?:,[^;{}]*)?\)|linear-gradient\([^;{}]*\)|radial-gradient\([^;{}]*\)|-?[\d.]+(?:px|rem|em|%|ms|s|vh|vw)?|none|auto|inherit|transparent|currentColor)$/;
+/** 危险构造：会逃逸出声明上下文、或引入外部资源 / 脚本。
+ *  采用「结构性拒绝」而非「值形状白名单」—— 后者会误杀阴影、字体栈、
+ *  cubic-bezier 等复合值，导致主题自定义静默失效（见规范 D-54）。 */
+const UNSAFE_TOKEN_VALUE =
+  /[;{}<>\\]|url\s*\(|expression\s*\(|@import|javascript:|[\r\n]/i;
 
 /** 校验单个令牌，返回是否可安全写入 */
 export function isSafeToken(name: string, value: string): boolean {
@@ -564,9 +568,7 @@ export function isSafeToken(name: string, value: string): boolean {
   if (!SAFE_TOKEN_NAME.test(name)) return false;
   const v = value.trim();
   if (v.length === 0 || v.length > 300) return false;
-  if (/[;{}<>\\]/.test(v)) return false;        // 显式拒绝分隔符与转义
-  if (/url\s*\(/i.test(v)) return false;        // 拒绝外部资源引用
-  return SAFE_TOKEN_VALUE.test(v);
+  return !UNSAFE_TOKEN_VALUE.test(v);
 }
 
 // ============================================================================
