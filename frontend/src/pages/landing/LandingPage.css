@@ -900,3 +900,38 @@ section[id] {
   transform: translateZ(0);
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   M3 设计手法增强（选择性吸收，保留现有 token 架构）
+   ① 深底块文字统一：深底容器声明 color，未显式设色子文本继承
+      （替代 M3 的 :not([style*]) 脆弱选择器，类级更可控）
+   ② color-mix() 状态色：hover 背景/边框随主题 token 自动调谐
+   ③ elevation hover 分级：卡片 hover 阴影 e1→e2 升级
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ① 深底块统一文字：深底容器设浅色，未显式设色的子文本/图标继承 */
+.lp-data-panel,
+.lp-titlebar {
+  color: var(--color-neutral-100, #f1f5f9);
+}
+
+/* ② color-mix() 状态色：卡片 hover 边框混入 primary（浅色下品牌绿、暗色下自动跟随） */
+.lp-card:hover,
+.lp-card-white:hover,
+.lp-metric-card:hover {
+  border-color: color-mix(in srgb, var(--color-primary-500, #10b981) 35%, transparent);
+}
+
+/* ③ elevation hover 分级：卡片 hover 从 e1 静态升级为 e2（去边框靠阴影表达层级） */
+.lp-card,
+.lp-card-white,
+.lp-metric-card {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+.lp-card:hover,
+.lp-card-white:hover,
+.lp-metric-card:hover,
+.lp-data-card:hover {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.10), 0 2px 6px 2px rgba(0, 0, 0, 0.06);
+}
+
+
