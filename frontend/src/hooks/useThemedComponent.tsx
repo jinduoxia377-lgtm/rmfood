@@ -4,7 +4,9 @@
  */
 
 import React, { ReactNode } from 'react';
-import { useTheme } from '@/hooks/useTheme';
+// D-40：原 import { useTheme } from '@/hooks/useTheme'（遗留兼容层）。
+// 该文件只用 mode，而 @/theme 的现代 useTheme 已提供 mode，故直接切换。
+import { useTheme } from '@/theme';
 
 interface ThemedComponentProps {
   children: ReactNode;

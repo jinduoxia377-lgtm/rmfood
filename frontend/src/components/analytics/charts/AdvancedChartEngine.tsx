@@ -27,7 +27,9 @@ import {
   ScatterChart,
   Scatter,
 } from 'recharts';
-import { useTheme } from '@/hooks/useTheme';
+// D-40：原 import { useTheme } from '@/hooks/useTheme'（遗留兼容层）。
+// 该文件仅需 isDark，改用 @/theme 的现代 hook，消除同名 useTheme 歧义。
+import { useIsDarkMode } from '@/theme';
 
 // ─── 类型定义 ───
 export type ChartType =
@@ -167,7 +169,7 @@ export const AdvancedChartEngine: React.FC<ChartConfig> = ({
   emptyState,
   error,
 }) => {
-  const { isDark } = useTheme();
+  const isDark = useIsDarkMode();
   const [activeIndex, setActiveIndex] = useState(-1);
 
   const colors = useMemo(() => (isDark ? DARK_CHART_COLORS : CHART_COLORS), [isDark]);

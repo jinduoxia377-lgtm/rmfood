@@ -5,11 +5,7 @@ import { vi } from 'vitest';
 import axe from 'axe-core';
 import LoginPage from '../../pages/auth/LoginPage';
 import { useAuthStore } from '../../stores/auth';
-import { useTheme } from '../../hooks/useTheme';
-
 vi.mock('../../stores/auth');
-vi.mock('../../hooks/useTheme');
-
 describe('LoginPage Accessibility Tests', () => {
   const queryClient = new QueryClient({
     defaultOptions: {
@@ -22,11 +18,6 @@ describe('LoginPage Accessibility Tests', () => {
   beforeEach(() => {
     (useAuthStore as unknown as vi.Mock).mockReturnValue({
       login: vi.fn(),
-    });
-
-    (useTheme as unknown as vi.Mock).mockReturnValue({
-      isDark: false,
-      toggleTheme: vi.fn(),
     });
   });
 

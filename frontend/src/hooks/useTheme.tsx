@@ -58,8 +58,17 @@ export type {
  * 旧版返回 { settings, isDark, updateSettings, ... }
  * 新版 Zustand 返回 { theme, mode, setThemeMode, ... }
  * 此包装层桥接两者。
+ *
+ * D-40 修复：本导出**原名为 `useTheme`**，与 `@/theme`
+ * （即 `stores/ThemeProvider.tsx`）导出的现代 `useTheme` **同名但返回结构不兼容** ——
+ * 消费方从不同路径导入会得到完全不同的形状，且 IDE 无法提示。
+ * 现已改名为 `useLegacyTheme`，`useTheme` 全项目唯一。
+ *
+ * @deprecated 仅为旧返回结构保留。新代码**必须**使用 `@/theme` 的
+ * `useTheme()` / `useIsDarkMode()`。当前已无任何消费者，
+ * 计划在 M3（死代码清理，D-18/D-25）随本文件一并删除。
  */
-export const useTheme = () => {
+export const useLegacyTheme = () => {
   const store = useThemeFromStore();
   const storeFull = useThemeStore();
   const isDark = store.mode === 'dark' || store.theme?.mode === 'dark';
@@ -152,7 +161,9 @@ export const useTheme = () => {
 // ==================== 便捷 Hook ====================
 
 export const useThemeSettings = () => {
-  const theme = useTheme();
+  // D-40：本函数返回的是**遗留结构**（settings/updateSettings），故调用本地遗留包装层。
+  // 改名后不能再用 `useTheme()` —— 那会解析到未导入的现代 hook。
+  const theme = useLegacyTheme();
   return {
     settings: theme.settings,
     setMode: (mode: 'light' | 'dark' | 'auto') => theme.updateSettings({ mode }),
