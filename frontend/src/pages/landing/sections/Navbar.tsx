@@ -82,7 +82,7 @@ export default function Navbar() {
           ) : (
             <div
               className="shrink-0 rounded-md flex items-center justify-center transition-transform duration-200 group-hover:rotate-[-5deg]"
-              style={{ width: logoSize.image, height: logoSize.image, background: '#047857' }}
+              style={{ width: logoSize.image, height: logoSize.image, background: 'var(--color-primary-700, #047857)' }}
             >
               <Beaker size={logoSize.icon} color="white" strokeWidth={2.2} />
             </div>
@@ -151,7 +151,7 @@ export default function Navbar() {
               </button>
             </CollapsibleTrigger>
             <CollapsibleContent className="md:hidden overflow-hidden" style={{ animation: 'lp-mobile-menu 0.2s ease' }}>
-              <div style={{ background: '#fff', borderTop: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}>
+              <div style={{ background: '#fff', borderTop: '1px solid var(--color-neutral-200, #e2e8f0)', boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}>
                 <div className="px-4 py-3 space-y-0.5">
                   {navLinks.map((l) => (
                     <a

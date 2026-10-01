@@ -41,7 +41,7 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
         {isCore && (
           <div
             className="absolute top-0 right-0 px-2 py-0.5 text-[12px] font-semibold uppercase tracking-wider"
-            style={{ background: '#047857', color: '#fff' }}
+            style={{ background: 'var(--color-primary-700, #047857)', color: '#fff' }}
           >
             核心
           </div>
@@ -60,7 +60,7 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
               <div className="flex items-center gap-2 mb-0.5">
                 <h3 className="text-[15px] font-bold text-slate-900">{feature.title}</h3>
                 {feature.keyMetric && (
-                  <span className="lp-caption font-mono shrink-0" style={{ color: '#047857' }}>{feature.keyMetric}</span>
+                  <span className="lp-caption font-mono shrink-0" style={{ color: 'var(--color-primary-700, #047857)' }}>{feature.keyMetric}</span>
                 )}
               </div>
               <span className="text-[12px] text-slate-500">{feature.tag}</span>
@@ -109,7 +109,7 @@ export default function Features() {
   const titleLines = sectionTitle.split('\n');
 
   return (
-    <section id="features" className="py-20 lg:py-24" style={{ background: 'var(--bg-canvas, #f8fafc)', borderTop: '1px solid #e2e8f0' }}>
+    <section id="features" className="py-20 lg:py-24" style={{ background: 'var(--bg-canvas, #f8fafc)', borderTop: '1px solid var(--color-neutral-200, #e2e8f0)' }}>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* 标题区 */}
@@ -121,7 +121,7 @@ export default function Features() {
             <h2 className="lp-h2 mb-4">
               {titleLines.map((line, i) => <span key={i}>{line}{i < titleLines.length - 1 && <br />} </span>)}
             </h2>
-            <p className="lp-body-sm max-w-lg" style={{ color: '#475569' }}>
+            <p className="lp-body-sm max-w-lg" style={{ color: 'var(--color-neutral-600, #475569)' }}>
               {sectionDesc}
             </p>
           </div>

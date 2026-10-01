@@ -34,16 +34,16 @@ export default function Pricing() {
           <div className="text-center mb-10">
             <span className="lp-section-tag block mb-3">{sectionLabel}</span>
             <h2 className="lp-h2 mb-2">{sectionTitle}</h2>
-            <p className="lp-body-sm max-w-sm mx-auto text-slate-600" style={{ color: '#475569' }}>{sectionSub}</p>
+            <p className="lp-body-sm max-w-sm mx-auto text-slate-600" style={{ color: 'var(--color-neutral-600, #475569)' }}>{sectionSub}</p>
 
-            <div className="mt-5 inline-flex items-center gap-0.5 p-0.5 rounded-md" style={{ background: '#f1f5f9', border: '1px solid #e2e8f0' }}>
+            <div className="mt-5 inline-flex items-center gap-0.5 p-0.5 rounded-md" style={{ background: 'var(--color-neutral-100, #f1f5f9)', border: '1px solid var(--color-neutral-200, #e2e8f0)' }}>
               {(['monthly', 'yearly'] as const).map((m) => (
                 <button key={m} onClick={() => setBilling(m)}
                   className="lp-label rounded-md transition-colors px-4 py-2 min-h-[44px] flex items-center"
-                  style={billing === m ? { background: '#fff', color: 'var(--color-neutral-900, #0f172a)', border: '1px solid #e2e8f0', boxShadow: '0 1px 2px rgba(0,0,0,0.04)' } : { background: 'transparent', color: '#475569' }}
+                  style={billing === m ? { background: '#fff', color: 'var(--color-neutral-900, #0f172a)', border: '1px solid var(--color-neutral-200, #e2e8f0)', boxShadow: '0 1px 2px rgba(0,0,0,0.04)' } : { background: 'transparent', color: 'var(--color-neutral-600, #475569)' }}
                 >{m === 'monthly' ? '月付' : '年付'}</button>
               ))}
-              {billing === 'yearly' && <span key={animKey} className="text-[12px] font-mono ml-1.5 px-1.5 py-0.5 rounded-md animate-in fade-in duration-200" style={{ background: '#ecfdf5', color: '#047857', border: '1px solid #a7f3d0' }}>省 17%</span>}
+              {billing === 'yearly' && <span key={animKey} className="text-[12px] font-mono ml-1.5 px-1.5 py-0.5 rounded-md animate-in fade-in duration-200" style={{ background: 'var(--color-success-50, #ecfdf5)', color: 'var(--color-primary-700, #047857)', border: '1px solid var(--color-success-200, #a7f3d0)' }}>省 17%</span>}
             </div>
           </div>
         </Reveal>
@@ -52,29 +52,29 @@ export default function Pricing() {
           {plans.map((p, i) => (
             <Reveal key={p.name} delay={`lp-reveal-delay-${i + 1}`}>
               <div className={cn('h-full flex flex-col rounded-md p-5', p.popular && 'ring-1 ring-emerald-500/40')}
-                style={{ background: p.popular ? 'var(--color-neutral-900, #0f172a)' : '#fafafa', border: p.popular ? '1px solid rgba(5,150,105,0.35)' : '1px solid #e2e8f0' }}
+                style={{ background: p.popular ? 'var(--color-neutral-900, #0f172a)' : '#fafafa', border: p.popular ? '1px solid rgba(5,150,105,0.35)' : '1px solid var(--color-neutral-200, #e2e8f0)' }}
               >
                 {p.popular && <span className="lp-popular-badge mb-3 block">推荐方案</span>}
                 <h3 className={cn('text-base font-bold mb-0.5', p.popular ? 'text-white' : 'text-slate-900')}>{p.name}</h3>
-                <p className="lp-caption mb-4" style={{ color: p.popular ? '#ffffff' : '#475569' }}>{p.desc}</p>
+                <p className="lp-caption mb-4" style={{ color: p.popular ? '#ffffff' : 'var(--color-neutral-600, #475569)' }}>{p.desc}</p>
                 <div className={cn('mb-4 flex items-baseline gap-1', p.popular ? 'text-white' : 'text-slate-900')}>
                   <span key={`${p.name}-${animKey}`} className="text-2xl font-bold font-mono animate-in fade-in duration-200">
                     {p.name === '专业版' ? (billing === 'monthly' ? p.priceMonthly : p.priceYearly) : p.priceMonthly}
                   </span>
-                  {p.name === '专业版' && <span className="text-xs font-normal" style={{ color: p.popular ? 'var(--color-neutral-300, #cbd5e1)' : '#64748b' }}>{billing === 'monthly' ? '/月' : '/年'}</span>}
+                  {p.name === '专业版' && <span className="text-xs font-normal" style={{ color: p.popular ? 'var(--color-neutral-300, #cbd5e1)' : 'var(--color-neutral-500, #64748b)' }}>{billing === 'monthly' ? '/月' : '/年'}</span>}
                 </div>
                 <ul className="space-y-1.5 mb-5 flex-1">
                   {p.features.map((f) => (
                     <li key={f.text} className="flex items-start gap-2">
                       {f.included ? (
-                        <Check size={14} className="mt-0.5 shrink-0" style={{ color: p.popular ? '#34d399' : '#047857' }} />
+                        <Check size={14} className="mt-0.5 shrink-0" style={{ color: p.popular ? 'var(--color-success-500, #34d399)' : 'var(--color-primary-700, #047857)' }} />
                       ) : (
-                        <Lock size={12} className="mt-0.5 shrink-0" style={{ color: p.popular ? 'var(--color-neutral-400, #94a3b8)' : '#64748b' }} />
+                        <Lock size={12} className="mt-0.5 shrink-0" style={{ color: p.popular ? 'var(--color-neutral-400, #94a3b8)' : 'var(--color-neutral-500, #64748b)' }} />
                       )}
-                      <span className="lp-label" style={{ color: f.included ? (p.popular ? '#f8fafc' : '#475569') : (p.popular ? 'var(--color-neutral-300, #cbd5e1)' : '#475569') }}>
+                      <span className="lp-label" style={{ color: f.included ? (p.popular ? 'var(--color-neutral-50, #f8fafc)' : 'var(--color-neutral-600, #475569)') : (p.popular ? 'var(--color-neutral-300, #cbd5e1)' : 'var(--color-neutral-600, #475569)') }}>
                         {f.text}
                         {!f.included && p.name !== '企业版' && (
-                          <span className="ml-1.5 lp-mono" style={{ color: p.popular ? 'var(--color-neutral-400, #94a3b8)' : '#64748b' }}>升级解锁</span>
+                          <span className="ml-1.5 lp-mono" style={{ color: p.popular ? 'var(--color-neutral-400, #94a3b8)' : 'var(--color-neutral-500, #64748b)' }}>升级解锁</span>
                         )}
                       </span>
                     </li>
@@ -87,7 +87,7 @@ export default function Pricing() {
                       className={cn('w-full min-h-[44px] lp-label rounded-md')}
                       style={p.popular
                         ? { background: '#fff', color: 'var(--color-neutral-900, #0f172a)', border: 'none' }
-                        : { borderColor: '#e2e8f0', color: '#475569' }}
+                        : { borderColor: 'var(--color-neutral-200, #e2e8f0)', color: 'var(--color-neutral-600, #475569)' }}
                     >
                       {p.cta}
                     </Button>
@@ -100,7 +100,7 @@ export default function Pricing() {
                     <ul className="space-y-1.5">
                       {p.features.filter((f) => f.included).map((f) => (
                         <li key={f.text} className="flex items-center gap-2 lp-caption text-slate-600">
-                          <Check size={12} style={{ color: '#047857' }} /> {f.text}
+                          <Check size={12} style={{ color: 'var(--color-primary-700, #047857)' }} /> {f.text}
                         </li>
                       ))}
                     </ul>

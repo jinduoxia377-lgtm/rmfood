@@ -53,10 +53,10 @@ export default function Footer() {
           {/* 品牌区 */}
           <div className="col-span-2 md:col-span-1">
             <div className="flex items-center gap-2 mb-3">
-              <div className="w-7 h-7 rounded-md flex items-center justify-center" style={{ background: '#047857' }}>
+              <div className="w-7 h-7 rounded-md flex items-center justify-center" style={{ background: 'var(--color-primary-700, #047857)' }}>
                 <Beaker size={13} color="white" strokeWidth={2.2} />
               </div>
-              <span className="font-bold text-sm tracking-tight" style={{ color: '#f1f5f9' }}>莱茵分子</span>
+              <span className="font-bold text-sm tracking-tight" style={{ color: 'var(--color-neutral-100, #f1f5f9)' }}>莱茵分子</span>
             </div>
             <p className="lp-footer-desc mb-4 leading-relaxed">
               {RHINE_BRAND_CONFIG.description}
@@ -110,7 +110,7 @@ export default function Footer() {
                 { icon: MapPin, text: '厦门市思明区' },
               ].map(({ icon: Icon, text }, i) => (
                 <li key={i} className="flex items-center gap-2 text-[13px] min-h-[44px]" style={{ color: 'var(--color-neutral-400, #94a3b8)' }}>
-                  <Icon size={14} className="shrink-0 opacity-60" style={{ color: '#64748b' }} />
+                  <Icon size={14} className="shrink-0 opacity-60" style={{ color: 'var(--color-neutral-500, #64748b)' }} />
                   <span>{text}</span>
                 </li>
               ))}

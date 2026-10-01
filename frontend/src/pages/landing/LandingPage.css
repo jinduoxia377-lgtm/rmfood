@@ -27,14 +27,14 @@
   background: rgba(255, 255, 255, 0.97) !important;
   backdrop-filter: blur(12px) saturate(180%) !important;
   -webkit-backdrop-filter: blur(12px) saturate(180%) !important;
-  border-bottom: 1px solid #e2e8f0 !important;
+  border-bottom: 1px solid var(--color-neutral-200, #e2e8f0) !important;
   box-shadow: 0 1px 0 rgba(0,0,0,0.04), 0 2px 8px rgba(0,0,0,0.04) !important;
 }
 .navbar-scrolled {
   background: rgba(255, 255, 255, 0.97) !important;
   backdrop-filter: blur(12px) saturate(180%) !important;
   -webkit-backdrop-filter: blur(12px) saturate(180%) !important;
-  border-bottom: 1px solid #e2e8f0 !important;
+  border-bottom: 1px solid var(--color-neutral-200, #e2e8f0) !important;
   box-shadow: 0 1px 0 rgba(0,0,0,0.04), 0 2px 8px rgba(0,0,0,0.04) !important;
 }
 
@@ -50,7 +50,7 @@ html { scroll-behavior: smooth; }
 /* ── Section 分隔线（学术风格） ── */
 .lp-section-divider {
   height: 1px;
-  background: linear-gradient(90deg, transparent 0%, #e2e8f0 20%, #e2e8f0 80%, transparent 100%);
+  background: linear-gradient(90deg, transparent 0%, var(--color-neutral-200, #e2e8f0) 20%, var(--color-neutral-200, #e2e8f0) 80%, transparent 100%);
   margin: 0 auto;
   max-width: 400px;
 }
@@ -59,9 +59,9 @@ html { scroll-behavior: smooth; }
 .lp-quote {
   position: relative;
   padding-left: 1.5rem;
-  border-left: 2px solid #059669;
+  border-left: 2px solid var(--color-primary-600, #059669);
   font-style: italic;
-  color: #475569;
+  color: var(--color-neutral-600, #475569);
 }
 
 /* ── 编号列表样式（学术编号） ── */
@@ -84,14 +84,14 @@ html { scroll-behavior: smooth; }
   width: 1.4rem;
   height: 1.4rem;
   border-radius: 50%;
-  background: #f1f5f9;
-  color: #475569;
+  background: var(--color-neutral-100, #f1f5f9);
+  color: var(--color-neutral-600, #475569);
   font-size: 0.7rem;
   font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-neutral-200, #e2e8f0);
 }
 
 /* ── 数据表格风格（学术表格） ── */
@@ -112,23 +112,23 @@ html { scroll-behavior: smooth; }
 }
 .lp-data-table td {
   padding: 0.5rem 0.75rem;
-  border-bottom: 1px solid #e2e8f0;
-  color: #475569;
+  border-bottom: 1px solid var(--color-neutral-200, #e2e8f0);
+  color: var(--color-neutral-600, #475569);
 }
 .lp-data-table tr:hover td {
-  background: #f8fafc;
+  background: var(--color-neutral-50, #f8fafc);
 }
 
 /* ── Focus 可见性（无障碍） ── */
 *:focus-visible {
-  outline: 2px solid #059669;
+  outline: 2px solid var(--color-primary-600, #059669);
   outline-offset: 2px;
   border-radius: 4px;
 }
 input:focus-visible, button:focus-visible, a:focus-visible {
   outline: none;
-  box-shadow: inset 0 0 0 2px #059669;
-  border-color: #059669;
+  box-shadow: inset 0 0 0 2px var(--color-primary-600, #059669);
+  border-color: var(--color-primary-600, #059669);
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -138,7 +138,7 @@ input:focus-visible, button:focus-visible, a:focus-visible {
 /* 基础卡片 */
 .lp-card {
   border-radius: 4px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-neutral-200, #e2e8f0);
   background: #fafafa;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -150,7 +150,7 @@ input:focus-visible, button:focus-visible, a:focus-visible {
 /* 主卡片（白色背景，用于 section 内的内容卡片） */
 .lp-card-white {
   border-radius: 4px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-neutral-200, #e2e8f0);
   background: #fff;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -162,7 +162,7 @@ input:focus-visible, button:focus-visible, a:focus-visible {
 /* 指标卡片（SocialProof 核心数字） */
 .lp-metric-card {
   border-radius: 4px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-neutral-200, #e2e8f0);
   background: #fff;
   padding: 1rem 1.25rem;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
@@ -186,11 +186,11 @@ input:focus-visible, button:focus-visible, a:focus-visible {
   gap: 0.375rem;
   font-size: 0.75rem;
   font-weight: 500;
-  color: #475569;
+  color: var(--color-neutral-600, #475569);
   padding: 0.25rem 0.625rem;
   border-radius: 4px;
-  background: #f1f5f9;
-  border: 1px solid #e2e8f0;
+  background: var(--color-neutral-100, #f1f5f9);
+  border: 1px solid var(--color-neutral-200, #e2e8f0);
   font-variant-numeric: tabular-nums;
 }
 .lp-hero-metric strong {
@@ -261,7 +261,7 @@ input:focus-visible, button:focus-visible, a:focus-visible {
 .lp-step-fill {
   height: 2px;
   border-radius: 1px;
-  background: #059669;
+  background: var(--color-primary-600, #059669);
   animation: lp-step-progress 0.8s ease-out forwards;
 }
 
@@ -305,11 +305,11 @@ input:focus-visible, button:focus-visible, a:focus-visible {
   border-bottom: 1px solid var(--color-neutral-800, #1e293b);
 }
 .lp-sidebar {
-  background: #f1f5f9;
+  background: var(--color-neutral-100, #f1f5f9);
   border-right: 1px solid var(--color-neutral-300, #cbd5e1);
 }
 .lp-input-border:focus-within {
-  border-color: #059669 !important;
+  border-color: var(--color-primary-600, #059669) !important;
   box-shadow: 0 0 0 2px rgba(5,150,105,0.10) !important;
 }
 
@@ -325,7 +325,7 @@ input:focus-visible, button:focus-visible, a:focus-visible {
   content: '';
   position: absolute;
   inset: 0;
-  background-image: radial-gradient(circle, #e2e8f0 1px, transparent 1px);
+  background-image: radial-gradient(circle, var(--color-neutral-200, #e2e8f0) 1px, transparent 1px);
   background-size: 32px 32px;
   background-position: center top;
   pointer-events: none;
@@ -438,7 +438,7 @@ input:focus-visible, button:focus-visible, a:focus-visible {
   font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  /* P0 对比度修复：原硬编码 #64748b 在深色标题栏（var(--color-neutral-900, #0f172a)）上仅 3.75:1，
+  /* P0 对比度修复：原硬编码 var(--color-neutral-500, #64748b) 在深色标题栏（var(--color-neutral-900, #0f172a)）上仅 3.75:1，
      且会覆盖调用处的浅色工具类。改为不设定颜色，由调用处决定：
      深底用 text-slate-300/text-white，浅底用 text-slate-600。 */
 }
@@ -451,18 +451,18 @@ input:focus-visible, button:focus-visible, a:focus-visible {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #475569;
+  color: var(--color-neutral-600, #475569);
 }
 
 /* ── 专业导航链接（桌面） ──
    P0 触控热区修复：padding 0.375rem → 0.75rem，链接实际高度由 ~35px 提升到 44px。
-   对比度修复：默认色 #64748b（白底 4.76:1）→ #475569（7.5:1），深底由调用处覆盖。
+   对比度修复：默认色 var(--color-neutral-500, #64748b)（白底 4.76:1）→ var(--color-neutral-600, #475569)（7.5:1），深底由调用处覆盖。
    合并自 L178 的重复定义（原 P1「.lp-nav-link 重复定义」项）。 */
 .lp-nav-link {
   position: relative;
   font-size: 13px;
   font-weight: 500;
-  color: #475569;
+  color: var(--color-neutral-600, #475569);
   padding: 0.75rem 0.75rem;
   border-radius: 6px;
   border-bottom: 2px solid transparent;
@@ -522,9 +522,9 @@ section[id] {
   padding: 0.625rem 1.25rem;
   font-size: 13px;
   font-weight: 500;
-  color: #475569;
+  color: var(--color-neutral-600, #475569);
   background: transparent;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-neutral-200, #e2e8f0);
   border-radius: 6px;
   cursor: pointer;
   transition: color 0.15s, border-color 0.15s, background-color 0.15s;
@@ -533,13 +533,13 @@ section[id] {
 .lp-cta-secondary:hover {
   color: var(--color-neutral-900, #0f172a);
   border-color: var(--color-neutral-300, #cbd5e1);
-  background-color: #f8fafc;
+  background-color: var(--color-neutral-50, #f8fafc);
 }
 
 /* ── 产品预览窗口底部装饰线 ── */
 .lp-preview-accent {
   height: 2px;
-  background: linear-gradient(90deg, #059669 0%, #34d399 50%, #059669 100%);
+  background: linear-gradient(90deg, var(--color-primary-600, #059669) 0%, var(--color-success-500, #34d399) 50%, var(--color-primary-600, #059669) 100%);
   opacity: 0.6;
 }
 
@@ -551,9 +551,9 @@ section[id] {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  /* P0 对比度修复：#a7f3d0 on var(--color-neutral-900, #0f172a) ≈ 12.9:1
+  /* P0 对比度修复：var(--color-success-200, #a7f3d0) on var(--color-neutral-900, #0f172a) ≈ 12.9:1
    注：「推荐方案」徽章位于深底（var(--color-neutral-900, #0f172a)）卡片，背景取色对 var(--color-neutral-900, #0f172a) 透明。 */
-  color: #d1fae5;
+  color: var(--color-success-100, #d1fae5);
   background: rgba(4,120,87,0.25);
   border: 1px solid rgba(4,120,87,0.55);
   border-radius: 4px;
@@ -564,7 +564,7 @@ section[id] {
 .lp-faq-accent {
   width: 32px;
   height: 2px;
-  background: linear-gradient(90deg, #059669, #34d399);
+  background: linear-gradient(90deg, var(--color-primary-600, #059669), var(--color-success-500, #34d399));
   border-radius: 1px;
   margin: 0 auto 1rem;
 }
@@ -588,20 +588,20 @@ section[id] {
   transition: color 0.15s;
 }
 .lp-footer a:hover {
-  color: #e2e8f0;
+  color: var(--color-neutral-200, #e2e8f0);
 }
 .lp-footer-label {
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  /* P0 对比度修复：#475569 on var(--color-neutral-900, #0f172a) = 2.36:1 → var(--color-neutral-400, #94a3b8) = 6.3:1 */
+  /* P0 对比度修复：var(--color-neutral-600, #475569) on var(--color-neutral-900, #0f172a) = 2.36:1 → var(--color-neutral-400, #94a3b8) = 6.3:1 */
   color: var(--color-neutral-400, #94a3b8);
 }
 .lp-footer-desc {
   font-size: 12px;
   line-height: 1.65;
-  /* P0 对比度修复：#64748b on var(--color-neutral-900, #0f172a) = 3.75:1 → var(--color-neutral-400, #94a3b8) = 6.3:1 */
+  /* P0 对比度修复：var(--color-neutral-500, #64748b) on var(--color-neutral-900, #0f172a) = 3.75:1 → var(--color-neutral-400, #94a3b8) = 6.3:1 */
   color: var(--color-neutral-400, #94a3b8);
 }
 .lp-footer-link {
@@ -616,7 +616,7 @@ section[id] {
   min-height: 44px;
 }
 .lp-footer-link:hover {
-  color: #e2e8f0;
+  color: var(--color-neutral-200, #e2e8f0);
 }
 .lp-footer-bottom {
   border-color: var(--color-neutral-800, #1e293b);
@@ -652,7 +652,7 @@ section[id] {
   font-weight: 500;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  /* P0 对比度修复：#475569 on var(--color-neutral-900, #0f172a) = 2.36:1 → var(--color-neutral-400, #94a3b8) = 6.3:1 */
+  /* P0 对比度修复：var(--color-neutral-600, #475569) on var(--color-neutral-900, #0f172a) = 2.36:1 → var(--color-neutral-400, #94a3b8) = 6.3:1 */
   color: var(--color-neutral-400, #94a3b8);
   margin-top: 2px;
 }
@@ -692,7 +692,7 @@ section[id] {
 .lp-data-card {
   position: relative;
   background: #fff;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-neutral-200, #e2e8f0);
   border-radius: 6px;
   overflow: hidden;
   transition: border-color 0.15s, box-shadow 0.15s;
@@ -759,7 +759,7 @@ section[id] {
 .lp-data-card-desc {
   font-size: 11px;
   line-height: 1.6;
-  color: #475569;
+  color: var(--color-neutral-600, #475569);
   margin-bottom: 8px;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -786,7 +786,7 @@ section[id] {
   align-items: flex-end;
   justify-content: space-between;
   padding: 8px 14px 10px;
-  border-top: 1px solid #f1f5f9;
+  border-top: 1px solid var(--color-neutral-100, #f1f5f9);
   margin-top: 2px;
 }
 .lp-data-card-stat {
@@ -806,8 +806,8 @@ section[id] {
   font-weight: 500;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  /* P0 对比度修复：var(--color-neutral-400, #94a3b8) on #fff = 2.56:1 → #475569 = 7.4:1 */
-  color: #475569;
+  /* P0 对比度修复：var(--color-neutral-400, #94a3b8) on #fff = 2.56:1 → var(--color-neutral-600, #475569) = 7.4:1 */
+  color: var(--color-neutral-600, #475569);
   margin-top: 2px;
 }
 .lp-data-card-status-dot {
@@ -837,7 +837,7 @@ section[id] {
   flex-direction: column;
   gap: 3px;
   padding: 0 14px 6px;
-  border-top: 1px solid #f1f5f9;
+  border-top: 1px solid var(--color-neutral-100, #f1f5f9);
   margin-top: 6px;
 }
 .lp-data-card-link {
@@ -882,7 +882,7 @@ section[id] {
 .lp-data-section-desc {
   font-size: 13px;
   line-height: 1.65;
-  color: #475569;
+  color: var(--color-neutral-600, #475569);
   margin-top: 4px;
   max-width: 480px;
 }

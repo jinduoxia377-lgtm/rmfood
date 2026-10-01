@@ -47,15 +47,15 @@ function CountUnit({ value, label, prevValue }: UnitProps) {
           flipped && 'lp-countdown-flip'
         )}
         style={{
-          background: '#f8fafc',
-          border: '1px solid #e2e8f0',
+          background: 'var(--color-neutral-50, #f8fafc)',
+          border: '1px solid var(--color-neutral-200, #e2e8f0)',
           color: 'var(--color-neutral-900, #0f172a)',
           minWidth: 48,
         }}
       >
         {value}
       </div>
-      <span className="lp-caption uppercase tracking-wider" style={{ color: '#475569' }}>{label}</span>
+      <span className="lp-caption uppercase tracking-wider" style={{ color: 'var(--color-neutral-600, #475569)' }}>{label}</span>
     </div>
   );
 }
@@ -107,7 +107,7 @@ export function CountdownBanner() {
       className="relative overflow-hidden mt-[64px] border-b"
       style={{
         background: '#fff',
-        borderBottom: '1px solid #e2e8f0',
+        borderBottom: '1px solid var(--color-neutral-200, #e2e8f0)',
       }}
     >
       <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5">
@@ -121,7 +121,7 @@ export function CountdownBanner() {
               style={{
                 background: 'rgba(4,120,87,0.08)',
                 border: '1px solid rgba(4,120,87,0.25)',
-                color: '#047857',
+                color: 'var(--color-primary-700, #047857)',
               }}
             >
               <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
@@ -133,7 +133,7 @@ export function CountdownBanner() {
               <p className="text-[13px] sm:text-[15px] font-medium truncate" style={{ color: 'var(--color-neutral-900, #0f172a)' }}>
                 {LAUNCH_CONFIG.subtitle}
               </p>
-              <p className="lp-caption mt-0.5" style={{ color: '#475569' }}>
+              <p className="lp-caption mt-0.5" style={{ color: 'var(--color-neutral-600, #475569)' }}>
                 {LAUNCH_CONFIG.footnote}
               </p>
             </div>
