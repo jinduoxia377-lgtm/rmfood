@@ -179,7 +179,7 @@ export const CHART_TYPOGRAPHY = {
     fontSize: parseInt(FONT_SIZES['body-md']), // 14px
     fontFamily: "'Inter', 'Noto Sans SC', sans-serif",
     fontWeight: Number(FONT_WEIGHTS.semibold),
-    color: 'var(--color-text-primary)',
+    color: 'var(--text-primary)',
   },
   tooltipContent: {
     fontSize: parseInt(FONT_SIZES['body-sm']), // 12px
@@ -190,6 +190,6 @@ export const CHART_TYPOGRAPHY = {
     fontSize: parseInt(FONT_SIZES['label-md']), // 12px
     fontFamily: "'Inter', 'Noto Sans SC', sans-serif",
     fontWeight: Number(FONT_WEIGHTS.medium),
-    color: 'var(--color-text-primary)',
+    color: 'var(--text-primary)',
   },
 } as const;

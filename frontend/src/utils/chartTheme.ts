@@ -164,3 +164,76 @@ export function getSeriesColor(index: number, isDark: boolean): string {
   const colors = isDark ? SERIES_COLORS_DARK : SERIES_COLORS_LIGHT
   return colors[index % colors.length]
 }
+
+// ============================================================================
+// T-E1：配方图表配色（自 utils/color-migration.ts 迁入，统一到本文件唯一通道）
+// ----------------------------------------------------------------------------
+// 迁移时**为每个 var() 补上 fallback**。原实现引用了一批**并不存在**的令牌且无回退：
+//   · --color-success-light / -info-light / -warning-light / -error-light 四族缺失（D-4）
+//   · --color-chart-1..5 全缺（D-45）
+//   · --color-pink-500 / --color-cyan-500 / --color-sky-500 未定义
+// 导致 GATE-08 报「无回退 var() 解析为空」——图表取色实际落到继承值。
+// 现改为：优先复用**确实存在**的语义令牌（暗色已由令牌自身承载亮色变体），
+// 并保留同色系 fallback 兜底。
+// ============================================================================
+
+/** 配方角色配色（君臣佐使）。暗色侧不再另找 `-light` 令牌 —— 语义令牌本身已随模式切换。 */
+export const FORMULA_ROLE_COLORS = {
+  light: {
+    君: 'var(--color-success, #10b981)',
+    臣: 'var(--color-info, #3b82f6)',
+    佐: 'var(--color-purple-500, #a855f7)',
+    使: 'var(--color-warning, #f59e0b)',
+    辅料: 'var(--color-neutral-500, #64748b)',
+  },
+  dark: {
+    君: 'var(--color-success, #34d399)',
+    臣: 'var(--color-info, #60a5fa)',
+    佐: 'var(--color-purple-400, #c084fc)',
+    使: 'var(--color-warning, #fcd34d)',
+    辅料: 'var(--color-neutral-400, #94a3b8)',
+  },
+} as const
+
+/** 配方分类调色板（10 色，用于饼图/柱状图）。复用系列色板并补足到 10 色。 */
+export const FORMULA_CATEGORY_PALETTE = {
+  light: [...SERIES_COLORS_LIGHT, 'var(--color-cyan-600, #0891b2)', 'var(--color-purple-600, #9333ea)'],
+  dark: [...SERIES_COLORS_DARK, 'var(--color-cyan-700, #0e7490)', 'var(--color-purple-500, #a855f7)'],
+} as const
+
+function detectDark(): boolean {
+  if (typeof document === 'undefined') return false
+  const root = document.documentElement
+  return root.classList.contains('dark') || root.getAttribute('data-mode') === 'dark'
+}
+
+/**
+ * 获取图表通用配色。
+ * 注意：**依赖 DOM 上的当前模式**，调用方必须把模式纳入 React 依赖，
+ * 否则切主题后颜色不会更新（D-43：原消费方写 `useMemo(..., [])`）。
+ */
+export function getChartThemeColors() {
+  const isDark = detectDark()
+
+  return {
+    grid: 'var(--color-border-divider, rgba(0,0,0,0.06))',
+    axis: 'var(--color-text-secondary, #6E6E73)',
+    tooltipBg: 'var(--color-surface-default, #ffffff)',
+    tooltipBorder: 'var(--color-border-default, #E5E7EB)',
+    tooltipText: 'var(--color-text-primary, #111827)',
+    line: isDark ? 'var(--color-primary, #34d399)' : 'var(--color-success, #10b981)',
+    bar: isDark ? 'var(--color-secondary, #60a5fa)' : 'var(--color-success, #10b981)',
+    pie: isDark ? FORMULA_CATEGORY_PALETTE.dark : FORMULA_CATEGORY_PALETTE.light,
+    axisColor: 'var(--color-text-secondary, #6E6E73)',
+    barFill: 'var(--color-primary, #10b981)',
+  }
+}
+
+/**
+ * 获取配方角色颜色（君臣佐使）。
+ * 同样依赖 DOM 模式 —— 调用方需把模式纳入依赖。
+ */
+export function getRoleColor(role: string): string {
+  const colors = detectDark() ? FORMULA_ROLE_COLORS.dark : FORMULA_ROLE_COLORS.light
+  return colors[role as keyof typeof colors] || colors['辅料']
+}

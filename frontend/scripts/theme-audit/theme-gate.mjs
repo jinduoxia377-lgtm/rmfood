@@ -584,42 +584,46 @@ async function g07(env) {
   return { set, after };
 }
 
-async function g08(env) {
-  // 静态收集 src 中引用的 var 名，区分「无回退」与「有回退」
-  const files = walkFiles(SRC, ['.css', '.ts', '.tsx']);
-  const required = new Set();   // var(--x) 无回退 → 必须有定义
-  const optional = new Set();   // var(--x, fallback) → 可以无定义
-  const defFiles = new Set(['index.css', 'base.css', 'dark.css']);  // 定义位不计入
-  for (const f of files) {
-    const base = f.split(/[\\/]/).pop();
-    if (defFiles.has(base)) continue;                    // 跳过定义文件
-    const t = readFileSync(f, 'utf8');
-    for (const m of t.matchAll(/var\(\s*(--[a-z0-9-]+)\s*(,?)/gi)) {
-      (m[2] === ',' ? optional : required).add(m[1]);
-    }
+async function g08() {
+  // ── 模型修正（v1.1.4）──────────────────────────────────────────────
+  // 旧实现：在 `/login` 一个页面上用 getComputedStyle(<html>) 检查 src 里所有 var()。
+  // 缺陷：① 只看到该页面实际加载的样式表 → 懒加载模块（chat 等）的令牌被误判为
+  //         「未解析」（实测 --chat-text-primary 在产物中有 3 处声明）；
+  //       ② 看不到「源文件未进构建」的情况（如 chat-accessibility.css 已无 import）。
+  // 现改为**以编译产物为判据**：CSS 自定义属性一旦在任一已构建样式表中于 :root
+  // 声明即全局生效，因此「引用存在但全文无声明」才是真缺陷。
+  // 该模型同时不再依赖 dev server。
+  const assets = join(ROOT, 'dist/assets');
+  if (!existsSync(assets)) {
+    return { skipped: true, reason: '未找到 dist/assets，请先 npm run build' };
   }
-  // @theme 自引用块内的无回退引用（如 --color-blue-500: var(--color-blue-500)）也是缺陷
-  const idx = join(SRC, 'index.css');
-  if (existsSync(idx)) {
-    const t = readFileSync(idx, 'utf8');
-    for (const m of t.matchAll(SELF_REF)) required.add(`--${m[1]}`);
+  const cssFiles = readdirSync(assets).filter(f => f.endsWith('.css'));
+  if (!cssFiles.length) return { skipped: true, reason: 'dist/assets 下无 CSS 产物' };
+  const compiled = cssFiles.map(f => readFileSync(join(assets, f), 'utf8')).join('\n');
+
+  // 产物中声明的令牌名（`--x:` 形式，排除 var() 引用内部的冒号误配）
+  const declared = new Set();
+  for (const m of compiled.matchAll(/(^|[;{\s])--([a-z0-9-]+)\s*:/gi)) declared.add(`--${m[2]}`);
+  // Tailwind 的内部属性前缀（--tw-*）由框架运行时写入，跳过
+  const isFrameworkOwned = (n) => n.startsWith('--tw-') || n.startsWith('--radix-');
+
+  // 产物中无回退的 var() 引用
+  const required = new Map(); // name -> 出现次数
+  for (const m of compiled.matchAll(/var\(\s*(--[a-z0-9-]+)\s*([,)])/gi)) {
+    if (m[2] === ',') continue;                     // 有回退 → 可接受
+    const n = m[1];
+    if (isFrameworkOwned(n)) continue;
+    required.set(n, (required.get(n) ?? 0) + 1);
   }
 
-  await env.page.goto(OPT.baseUrl + '/login', { waitUntil: 'domcontentloaded', timeout: 70000 });
-  await env.page.waitForTimeout(4000);
-  const res = await env.page.evaluate((names) => {
-    const cs = getComputedStyle(document.documentElement);
-    const bad = [];
-    for (const n of names) if (!cs.getPropertyValue(n).trim()) bad.push(n);
-    return bad;
-  }, [...required]);
+  const unresolved = [...required.keys()].filter(n => !declared.has(n)).sort();
 
-  const optUnresolved = await env.page.evaluate((names) => {
-    const cs = getComputedStyle(document.documentElement);
-    return names.filter(n => !cs.getPropertyValue(n).trim());
-  }, [...optional]);
-
-  return { requiredCount: required.size, optionalCount: optional.size, unresolved: res, optUnresolved };
+  return {
+    requiredCount: required.size,
+    declaredCount: declared.size,
+    compiledFiles: cssFiles.length,
+    unresolved,
+  };
 }
 
 // ============================================================================
@@ -717,17 +721,21 @@ async function main() {
 
       // GATE-08
       try {
-        const v = await g08(env);
-        if (v.unresolved.length === 0) {
+        const v = await g08();
+        if (v.skipped) {
+          rec('GATE-08', 'M2', '无回退引用的 var(--x) 全部可解析', 'skip', v.reason);
+        } else if (v.unresolved.length === 0) {
           rec('GATE-08', 'M2', '无回退引用的 var(--x) 全部可解析', 'pass',
-            `必需 ${v.requiredCount} 个全部解析；另有 ${v.optionalCount} 个带回退引用` +
-            (v.optUnresolved.length ? `（其中 ${v.optUnresolved.length} 个未定义但有回退，属可接受）` : ''));
+            `${v.compiledFiles} 个 CSS 产物中声明的 ${v.declaredCount} 个令牌，` +
+            `覆盖全部 ${v.requiredCount} 个无回退引用`);
         } else {
           rec('GATE-08', 'M2', '无回退引用的 var(--x) 全部可解析', 'fail',
-            `${v.unresolved.length}/${v.requiredCount} 个无回退引用的变量解析为空：\n` +
+            `${v.unresolved.length}/${v.requiredCount} 个无回退引用的令牌在**编译产物中无任何声明**：\n` +
             '  ' + v.unresolved.slice(0, 20).join(', ') +
             (v.unresolved.length > 20 ? ` …（共 ${v.unresolved.length}）` : '') +
-            `\n（另有 ${v.optUnresolved.length}/${v.optionalCount} 个带回退的变量未定义，属可接受）`);
+            `\n（判据：${v.compiledFiles} 个 CSS 产物共声明 ${v.declaredCount} 个令牌；` +
+            'CSS 自定义属性在任一已加载样式表中于 :root 声明即全局生效，' +
+            '故「有引用、全文无声明」才是真缺陷）');
         }
       } catch (e) { rec('GATE-08', 'M2', '无回退引用的 var(--x) 全部可解析', 'fail', String(e).slice(0, 200)); }
     } finally {

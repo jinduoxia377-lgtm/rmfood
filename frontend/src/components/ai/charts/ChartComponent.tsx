@@ -4,7 +4,8 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts'
 import { CHART_TYPOGRAPHY } from '../../../utils/typography'
-import { getChartThemeColors } from '../../../utils/color-migration'
+import { getChartThemeColors } from '../../../utils/chartTheme'
+import { useIsDarkMode } from '@/theme'
 
 export interface ChartComponentProps {
   type: 'line' | 'bar' | 'pie'
@@ -20,7 +21,10 @@ export interface ChartComponentProps {
 }
 
 export function ChartComponent({ type, data, options }: ChartComponentProps) {
-  const colors = useMemo(() => getChartThemeColors(), [])
+  // D-43 修复：原为 useMemo(..., []) 空依赖 —— getChartThemeColors() 读取 DOM 上的
+  // 当前模式（.dark / data-mode），空依赖会使**切主题后图表颜色永不更新**。
+  const isDark = useIsDarkMode()
+  const colors = useMemo(() => getChartThemeColors(), [isDark])
 
   const tooltipStyle = {
     backgroundColor: colors.tooltipBg,
