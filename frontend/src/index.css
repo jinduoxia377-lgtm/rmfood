@@ -4,16 +4,16 @@
    ═══════════════════════════════════════════════════════════════ */
 
 /* ── Tailwind CSS v4 ── */
-/* TODO(T-E1 遗留)：自动内容探测会扫描整个 frontend/，把 docs/、coverage/、
-   dist-*/、*.bak 中的**代码示例**当作真实类名，生成引用不存在令牌的工具类 ——
-   实测 `--color-text-primary` / `--color-background-default` 即由此进入编译产物，
-   被 GATE-08 判为「有引用、全文无声明」。
-   拟改为显式声明扫描范围（Tailwind ≥4.1 语法）：
-       @import "tailwindcss" source(none);
-       @source ".";
-       @source "../index.html";
-   该改动需在构建可用的前提下验证「未丢失真实工具类」，暂缓。 */
-@import "tailwindcss";
+/* `source(none)` 关闭自动内容探测，改为**显式声明**扫描范围。
+   原状：自动探测扫描整个 frontend/，把 docs 文档、coverage、多份历史构建产物、
+   备份文件里的**代码示例**当作真实类名 → 生成引用不存在令牌的工具类。实测
+   `--color-text-primary` / `--color-background-default` 即由此进入编译产物，
+   被 GATE-08 判为「有引用、全文无声明」；陈旧产物中的类名也会造成 CSS 体积膨胀。
+   现仅扫描应用源码（本目录）与入口 HTML。
+   验证方式：对比收窄前后产物中的类名集合，确认未丢失任何真实工具类。 */
+@import "tailwindcss" source(none);
+@source ".";
+@source "../index.html";
 
 /* ── 暗色变体绑定（D-1 修复）───────────────────────────────────────────
    Tailwind v4 默认把 dark: 编译为 @media (prefers-color-scheme: dark)，
