@@ -161,7 +161,7 @@ export function FormulaSharePanel({ formula, onClose, onShare, onImport }: Formu
       : '';
 
     return `
-      <div style="padding:16px;background:linear-gradient(135deg,var(--color-primary-main) 0%,var(--color-secondary-dark) 100%);border-radius:12px;color:var(--color-primary-contrast-text);max-width:280px;">
+      <div style="padding:16px;background:linear-gradient(135deg,var(--color-primary-surface,#047857) 0%,var(--color-primary-surface-hover,#065f46) 100%);border-radius:12px;color:var(--color-on-primary-surface,#ffffff);max-width:280px;">
         <div style="font-size:${FONT_SIZES['body-lg']};font-weight:${FONT_WEIGHTS.bold};margin-bottom:8px;">${typeof formula.formulaName === 'string' ? formula.formulaName : '未知配方'}</div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
           ${(Array.isArray(formula.effects) ? formula.effects : []).map((e) => `<span style="background:rgba(255,255,255,0.2);padding:2px 8px;border-radius:12px;font-size:${FONT_SIZES['label-sm']};">${typeof e === 'string' ? e : '未知功效'}</span>`).join('')}

@@ -216,9 +216,10 @@
 
   /* ═══ Duration / Easing Tokens (dark) ═══ */
   --duration-fast: 100ms; --duration-normal: 200ms; --duration-slow: 300ms; --duration-emphasis: 500ms;
+  /* T11：缓动曲线必须与 base.css 相同（原 dark 版 spring/elegant 取值不同） */
   --ease-standard: cubic-bezier(0.25, 0.1, 0.25, 1.0);
-  --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  --ease-elegant: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-elegant: cubic-bezier(0.16, 1, 0.3, 1);
 
   /* ═══ Layout Tokens (dark) ═══ */
   --sidebar-width: 16rem;
@@ -232,8 +233,9 @@
   --safe-area-inset-top: env(safe-area-inset-top, 0px);
   --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
   /* ═══ Font Family (dark) ═══ */
-  --font-sans: 'Inter', 'Noto Sans SC', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', Monaco, ui-monospace, monospace;
+  /* T11：字体族链必须与 base.css **完全相同**（原 dark 版缺 'Noto Sans TC' / 多 Monaco） */
+  --font-sans: 'Inter', 'Noto Sans SC', 'Noto Sans TC', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', Consolas, ui-monospace, monospace;
   --font-serif: 'Noto Serif SC', Georgia, 'Times New Roman', serif;
 
   /* ═══ shadcn/ui Theme Variables — dark mode ═══ */
