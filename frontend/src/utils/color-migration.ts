@@ -41,7 +41,8 @@ export const CHART_THEME_COLORS = {
   },
 
   line: {
-    primary: 'var(--color-primary-main)',
+    // T-B2a：--color-primary-main → L0 名 --color-primary（生成器已改名）
+    primary: 'var(--color-primary)',
     success: 'var(--color-success-main)',
     warning: 'var(--color-warning-main)',
     danger: 'var(--color-error-main)',
@@ -49,8 +50,8 @@ export const CHART_THEME_COLORS = {
   },
 
   bar: {
-    primary: 'var(--color-primary-main)',
-    secondary: 'var(--color-secondary-main)',
+    primary: 'var(--color-primary)',
+    secondary: 'var(--color-secondary)',
   },
 } as const;
 
@@ -125,7 +126,7 @@ export function getChartThemeColors() {
     bar: isDark ? '#007AFF' : 'var(--color-success-main)',
     pie: isDark ? FORMULA_CATEGORY_PALETTE.dark : FORMULA_CATEGORY_PALETTE.light,
     axisColor: 'var(--color-text-secondary)',
-    barFill: 'var(--color-primary-main)',
+    barFill: 'var(--color-primary)',   // T-B2a：原 --color-primary-main（生成器已改名）
   };
 }
 
