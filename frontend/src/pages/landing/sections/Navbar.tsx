@@ -69,7 +69,7 @@ export default function Navbar() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between">
 
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2.5 group min-h-[44px]" aria-label="莱茵分子 — 返回首页" style={{ color: '#0f172a' }}>
+        <Link to="/" className="flex items-center gap-2.5 group min-h-[44px]" aria-label="莱茵分子 — 返回首页" style={{ color: 'var(--color-neutral-900, #0f172a)' }}>
           {isImageLogo ? (
             <div className="shrink-0 rounded-md overflow-hidden" style={{ width: logoSize.image, height: logoSize.image }}>
                 <img
@@ -89,7 +89,7 @@ export default function Navbar() {
           )}
           <span
             className="font-bold text-[16px] tracking-tight leading-none"
-            style={{ color: '#0f172a' }}
+            style={{ color: 'var(--color-neutral-900, #0f172a)' }}
           >
             莱茵分子
           </span>
@@ -129,7 +129,7 @@ export default function Navbar() {
                 to="/login"
                 className="inline-flex items-center gap-1.5 text-[13px] font-semibold px-4 min-h-[44px] rounded-md text-white transition-all hover:opacity-90"
                 style={{
-                  background: '#0f172a',
+                  background: 'var(--color-neutral-900, #0f172a)',
                   boxShadow: '0 1px 3px rgba(15,23,42,0.15)',
                 }}
               >
@@ -159,7 +159,7 @@ export default function Navbar() {
                       href={l.href}
                       onClick={() => setMobileOpen(false)}
                       className={cn(
-                        'block text-[14px] font-medium py-2.5 px-3 rounded-md transition-colors min-h-[44px] flex items-center',
+                        'block text-[15px] font-medium py-2.5 px-3 rounded-md transition-colors min-h-[44px] flex items-center',
                         isActive(l.href) ? 'text-slate-900 bg-slate-50' : 'text-slate-900 hover:text-slate-900 hover:bg-slate-50'
                       )}
                     >
@@ -169,8 +169,8 @@ export default function Navbar() {
                   <div className="pt-2 mt-2 border-t border-slate-100">
                     <Link
                       to="/login"
-                      className="w-full text-center text-[14px] font-semibold py-3 rounded-md text-white block transition-opacity hover:opacity-90 min-h-[44px] flex items-center justify-center"
-                      style={{ background: '#0f172a' }}
+                      className="w-full text-center text-[15px] font-semibold py-3 rounded-md text-white block transition-opacity hover:opacity-90 min-h-[44px] flex items-center justify-center"
+                      style={{ background: 'var(--color-neutral-900, #0f172a)' }}
                     >
                       {navbarCTA.trialLabel}
                     </Link>

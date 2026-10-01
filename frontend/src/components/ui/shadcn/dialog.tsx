@@ -48,6 +48,10 @@ const DialogContent = React.forwardRef<
         ref={ref}
         className={cn(
           'fixed left-[50%] top-[50%] z-[var(--z-modal-backdrop,1000)] w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 rounded-2xl border bg-card p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%]',
+          /* P2 小屏适配：≤479px 切换为全屏（inset:0 铺满 + 去圆角/边框/阴影，
+             底部安全区留白）。480px 以上保持原居中卡片。
+             Tailwind 默认未生成 inset-0，故用 left/top/right/bottom-0 显式展开。 */
+          'max-[479px]:left-0 max-[479px]:top-0 max-[479px]:right-0 max-[479px]:bottom-0 max-[479px]:translate-x-0 max-[479px]:translate-y-0 max-[479px]:max-w-none max-[479px]:rounded-none max-[479px]:border-0 max-[479px]:p-4 max-[479px]:pb-[max(1rem,env(safe-area-inset-bottom))] max-[479px]:shadow-none max-[479px]:data-[state=open]:slide-in-from-bottom max-[479px]:data-[state=closed]:slide-out-to-bottom',
           sizeClasses[size],
           maxWidth && `max-w-[${maxWidth}]`,
           className

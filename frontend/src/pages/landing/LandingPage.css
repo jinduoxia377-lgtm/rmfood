@@ -103,9 +103,9 @@ html { scroll-behavior: smooth; }
 .lp-data-table th {
   text-align: left;
   padding: 0.5rem 0.75rem;
-  border-bottom: 2px solid #0f172a;
+  border-bottom: 2px solid var(--color-neutral-900, #0f172a);
   font-weight: 600;
-  color: #0f172a;
+  color: var(--color-neutral-900, #0f172a);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   font-size: 0.7rem;
@@ -143,7 +143,7 @@ input:focus-visible, button:focus-visible, a:focus-visible {
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 .lp-card:hover {
-  border-color: #cbd5e1;
+  border-color: var(--color-neutral-300, #cbd5e1);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
@@ -155,7 +155,7 @@ input:focus-visible, button:focus-visible, a:focus-visible {
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 .lp-card-white:hover {
-  border-color: #cbd5e1;
+  border-color: var(--color-neutral-300, #cbd5e1);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07);
 }
 
@@ -168,33 +168,14 @@ input:focus-visible, button:focus-visible, a:focus-visible {
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 .lp-metric-card:hover {
-  border-color: #cbd5e1;
+  border-color: var(--color-neutral-300, #cbd5e1);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   导航链接样式类（替代内联 onMouseEnter/OnMouseLeave）
+   导航链接样式类 — 已合并至下方「专业导航链接（桌面）」唯一定义
+   （原 P1「.lp-nav-link 重复定义」修复：删除此处重复块，保留本注释标记）
    ═══════════════════════════════════════════════════════════════ */
-.lp-nav-link {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #475569;
-  padding: 0.5rem 0.75rem;
-  border-radius: 4px;
-  border-bottom: 2px solid transparent;
-  transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
-  text-decoration: none;
-}
-.lp-nav-link:hover {
-  color: #0f172a;
-  background: rgba(15, 23, 42, 0.04);
-}
-.lp-nav-link.lp-nav-active {
-  color: #0f172a;
-  background: rgba(15, 23, 42, 0.06);
-  border-bottom-color: #0f172a;
-}
-/* 已合并至下方 L485「专业导航链接（桌面）」定义，此处仅保留注释以标记原 P1 重复项。 */
 
 /* ═══════════════════════════════════════════════════════════════
    Hero 指标浮标
@@ -213,7 +194,7 @@ input:focus-visible, button:focus-visible, a:focus-visible {
   font-variant-numeric: tabular-nums;
 }
 .lp-hero-metric strong {
-  color: #0f172a;
+  color: var(--color-neutral-900, #0f172a);
   font-weight: 600;
 }
 
@@ -320,12 +301,12 @@ input:focus-visible, button:focus-visible, a:focus-visible {
   pointer-events: none;
 }
 .lp-titlebar {
-  background: #0f172a;
-  border-bottom: 1px solid #1e293b;
+  background: var(--color-neutral-900, #0f172a);
+  border-bottom: 1px solid var(--color-neutral-800, #1e293b);
 }
 .lp-sidebar {
   background: #f1f5f9;
-  border-right: 1px solid #cbd5e1;
+  border-right: 1px solid var(--color-neutral-300, #cbd5e1);
 }
 .lp-input-border:focus-within {
   border-color: #059669 !important;
@@ -377,7 +358,7 @@ input:focus-visible, button:focus-visible, a:focus-visible {
   font-weight: 700;
   line-height: 1.12;
   letter-spacing: -0.025em;
-  color: #0f172a;
+  color: var(--color-neutral-900, #0f172a);
 }
 
 /* ── H2 区块标题 — 24px，克制有力 ── */
@@ -386,7 +367,7 @@ input:focus-visible, button:focus-visible, a:focus-visible {
   font-weight: 600;
   line-height: 1.25;
   letter-spacing: -0.015em;
-  color: #0f172a;
+  color: var(--color-neutral-900, #0f172a);
 }
 
 /* ── H3 小标题 — 20px ── */
@@ -395,7 +376,7 @@ input:focus-visible, button:focus-visible, a:focus-visible {
   font-weight: 600;
   line-height: 1.3;
   letter-spacing: -0.01em;
-  color: #0f172a;
+  color: var(--color-neutral-900, #0f172a);
 }
 
 /* ── 正文段落 — 15px，学术阅读舒适 ── */
@@ -403,7 +384,7 @@ input:focus-visible, button:focus-visible, a:focus-visible {
   font-size: 15px;
   font-weight: 400;
   line-height: 1.7;
-  color: #334155;
+  color: var(--color-neutral-700, #334155);
 }
 
 /* ── 次要文案 — 13px ── */
@@ -412,7 +393,7 @@ input:focus-visible, button:focus-visible, a:focus-visible {
   font-weight: 400;
   line-height: 1.6;
   /* P0 对比度修复：本类不再携带任何 color —— 项目主题系统会把 Tailwind
-     灰阶工具类重映射（text-slate-300 在深底渲染为 #334155 等），任何硬编码
+     灰阶工具类重映射（text-slate-300 在深底渲染为 var(--color-neutral-700, #334155) 等），任何硬编码
      默认色都会与调用处的显式颜色产生不可预测的覆盖冲突。
      颜色一律由调用处内联 style 指定（内联样式优先级最高，深底/浅底各取所需）。 */
 }
@@ -457,7 +438,7 @@ input:focus-visible, button:focus-visible, a:focus-visible {
   font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  /* P0 对比度修复：原硬编码 #64748b 在深色标题栏（#0f172a）上仅 3.75:1，
+  /* P0 对比度修复：原硬编码 #64748b 在深色标题栏（var(--color-neutral-900, #0f172a)）上仅 3.75:1，
      且会覆盖调用处的浅色工具类。改为不设定颜色，由调用处决定：
      深底用 text-slate-300/text-white，浅底用 text-slate-600。 */
 }
@@ -489,13 +470,13 @@ input:focus-visible, button:focus-visible, a:focus-visible {
   text-decoration: none;
 }
 .lp-nav-link:hover {
-  color: #0f172a;
+  color: var(--color-neutral-900, #0f172a);
   background-color: rgba(0,0,0,0.04);
 }
 .lp-nav-active {
-  color: #0f172a !important;
+  color: var(--color-neutral-900, #0f172a) !important;
   background-color: rgba(5,150,105,0.08) !important;
-  border-bottom-color: #0f172a;
+  border-bottom-color: var(--color-neutral-900, #0f172a);
 }
 
 /* ── Section 锚点防遮挡（固定导航栏 64px + 额外空间） ── */
@@ -511,10 +492,10 @@ section[id] {
   /* P0 触控热区修复：min-height 44px（原 padding 仅 ~42px 高） */
   min-height: 44px;
   padding: 0.625rem 1.25rem;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   color: #fff;
-  background: #0f172a;
+  background: var(--color-neutral-900, #0f172a);
   border: none;
   border-radius: 6px;
   cursor: pointer;
@@ -550,8 +531,8 @@ section[id] {
   text-decoration: none;
 }
 .lp-cta-secondary:hover {
-  color: #0f172a;
-  border-color: #cbd5e1;
+  color: var(--color-neutral-900, #0f172a);
+  border-color: var(--color-neutral-300, #cbd5e1);
   background-color: #f8fafc;
 }
 
@@ -570,8 +551,8 @@ section[id] {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  /* P0 对比度修复：#a7f3d0 on #0f172a ≈ 12.9:1
-   注：「推荐方案」徽章位于深底（#0f172a）卡片，背景取色对 #0f172a 透明。 */
+  /* P0 对比度修复：#a7f3d0 on var(--color-neutral-900, #0f172a) ≈ 12.9:1
+   注：「推荐方案」徽章位于深底（var(--color-neutral-900, #0f172a)）卡片，背景取色对 var(--color-neutral-900, #0f172a) 透明。 */
   color: #d1fae5;
   background: rgba(4,120,87,0.25);
   border: 1px solid rgba(4,120,87,0.55);
@@ -598,11 +579,11 @@ section[id] {
 
 /* ── Footer 样式 ── */
 .lp-footer {
-  background: #0f172a;
-  color: #94a3b8;
+  background: var(--color-neutral-900, #0f172a);
+  color: var(--color-neutral-400, #94a3b8);
 }
 .lp-footer a {
-  color: #94a3b8;
+  color: var(--color-neutral-400, #94a3b8);
   text-decoration: none;
   transition: color 0.15s;
 }
@@ -614,18 +595,18 @@ section[id] {
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  /* P0 对比度修复：#475569 on #0f172a = 2.36:1 → #94a3b8 = 6.3:1 */
-  color: #94a3b8;
+  /* P0 对比度修复：#475569 on var(--color-neutral-900, #0f172a) = 2.36:1 → var(--color-neutral-400, #94a3b8) = 6.3:1 */
+  color: var(--color-neutral-400, #94a3b8);
 }
 .lp-footer-desc {
   font-size: 12px;
   line-height: 1.65;
-  /* P0 对比度修复：#64748b on #0f172a = 3.75:1 → #94a3b8 = 6.3:1 */
-  color: #94a3b8;
+  /* P0 对比度修复：#64748b on var(--color-neutral-900, #0f172a) = 3.75:1 → var(--color-neutral-400, #94a3b8) = 6.3:1 */
+  color: var(--color-neutral-400, #94a3b8);
 }
 .lp-footer-link {
   font-size: 13px;
-  color: #94a3b8;
+  color: var(--color-neutral-400, #94a3b8);
   transition: color 0.15s;
   text-decoration: none;
   /* P0 触控热区修复：页脚链接原 248x21 / 156x21（<44px）
@@ -638,12 +619,12 @@ section[id] {
   color: #e2e8f0;
 }
 .lp-footer-bottom {
-  border-color: #1e293b;
+  border-color: var(--color-neutral-800, #1e293b);
 }
 
 /* ── 数据底座 — 聚合统计横幅 ── */
 .lp-data-panel {
-  background: #0f172a;
+  background: var(--color-neutral-900, #0f172a);
   border-radius: 6px;
   padding: 14px 20px;
   display: flex;
@@ -671,14 +652,14 @@ section[id] {
   font-weight: 500;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  /* P0 对比度修复：#475569 on #0f172a = 2.36:1 → #94a3b8 = 6.3:1 */
-  color: #94a3b8;
+  /* P0 对比度修复：#475569 on var(--color-neutral-900, #0f172a) = 2.36:1 → var(--color-neutral-400, #94a3b8) = 6.3:1 */
+  color: var(--color-neutral-400, #94a3b8);
   margin-top: 2px;
 }
 .lp-data-panel-divider {
   width: 1px;
   height: 32px;
-  background: #1e293b;
+  background: var(--color-neutral-800, #1e293b);
   flex-shrink: 0;
 }
 
@@ -717,14 +698,14 @@ section[id] {
   transition: border-color 0.15s, box-shadow 0.15s;
 }
 .lp-data-card:hover {
-  border-color: var(--card-hover-border, #cbd5e1);
+  border-color: var(--card-hover-border, var(--color-neutral-300, #cbd5e1));
   box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
 .lp-data-card-accent {
   position: absolute;
   left: 0; top: 0; bottom: 0;
   width: 3px;
-  background: var(--card-accent-color, #94a3b8);
+  background: var(--card-accent-color, var(--color-neutral-400, #94a3b8));
   opacity: 0.7;
   transition: opacity 0.15s;
 }
@@ -758,7 +739,7 @@ section[id] {
 .lp-data-card-name {
   font-size: 12px;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--color-neutral-900, #0f172a);
   letter-spacing: 0.01em;
   line-height: 1.2;
   white-space: nowrap;
@@ -766,7 +747,7 @@ section[id] {
   text-overflow: ellipsis;
 }
 .lp-data-card-subtitle {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 500;
   letter-spacing: 0.03em;
   margin-top: 1px;
@@ -825,7 +806,7 @@ section[id] {
   font-weight: 500;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  /* P0 对比度修复：#94a3b8 on #fff = 2.56:1 → #475569 = 7.4:1 */
+  /* P0 对比度修复：var(--color-neutral-400, #94a3b8) on #fff = 2.56:1 → #475569 = 7.4:1 */
   color: #475569;
   margin-top: 2px;
 }
@@ -837,7 +818,7 @@ section[id] {
   margin-top: 4px;
 }
 .lp-data-card-connect {
-  font-size: 9px;
+  font-size: 11px;
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   letter-spacing: 0.04em;
   padding: 2px 6px;

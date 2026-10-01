@@ -49,7 +49,7 @@ function CountUnit({ value, label, prevValue }: UnitProps) {
         style={{
           background: '#f8fafc',
           border: '1px solid #e2e8f0',
-          color: '#0f172a',
+          color: 'var(--color-neutral-900, #0f172a)',
           minWidth: 48,
         }}
       >
@@ -63,7 +63,7 @@ function CountUnit({ value, label, prevValue }: UnitProps) {
 // ── 分隔符（:） ────────────────────────────────────────────────────
 function Separator() {
   return (
-    <div className="flex items-center pb-5 text-lg font-bold" style={{ color: '#cbd5e1' }}>
+    <div className="flex items-center pb-5 text-lg font-bold" style={{ color: 'var(--color-neutral-300, #cbd5e1)' }}>
       :
     </div>
   );
@@ -130,7 +130,7 @@ export function CountdownBanner() {
 
             {/* 文案 */}
             <div className="min-w-0">
-              <p className="text-[13px] sm:text-[14px] font-medium truncate" style={{ color: '#0f172a' }}>
+              <p className="text-[13px] sm:text-[15px] font-medium truncate" style={{ color: 'var(--color-neutral-900, #0f172a)' }}>
                 {LAUNCH_CONFIG.subtitle}
               </p>
               <p className="lp-caption mt-0.5" style={{ color: '#475569' }}>
@@ -157,7 +157,7 @@ export function CountdownBanner() {
               to={LAUNCH_CONFIG.ctaHref}
               className="shrink-0 inline-flex items-center gap-1.5 px-4 min-h-[44px] rounded-xl lp-label transition-all duration-200"
               style={{
-                background: '#0f172a',
+                background: 'var(--color-neutral-900, #0f172a)',
                 color: '#ffffff',
                 boxShadow: '0 1px 3px rgba(15,23,42,0.12)',
               }}

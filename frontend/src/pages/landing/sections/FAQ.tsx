@@ -30,7 +30,7 @@ export default function FAQ() {
                 style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '4px' }}
               >
                 <AccordionTrigger className="px-4 py-3 hover:no-underline">
-                  <span className="lp-body font-normal text-left" style={{ color: '#1e293b' }}>{faq.q}</span>
+                  <span className="lp-body font-normal text-left" style={{ color: 'var(--color-neutral-800, #1e293b)' }}>{faq.q}</span>
                 </AccordionTrigger>
                 <AccordionContent className="pb-3">
                   <p className="lp-body leading-[1.7]" style={{ color: '#475569' }}>{faq.a}</p>

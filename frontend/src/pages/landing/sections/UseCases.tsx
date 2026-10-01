@@ -56,7 +56,7 @@ function ScenarioCard({ item, index }: { item: (typeof useCases)[0]; index: numb
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-0.5">
-                <h3 className="text-[14px] font-bold text-slate-900 truncate">{item.title}</h3>
+                <h3 className="text-[15px] font-bold text-slate-900 truncate">{item.title}</h3>
                 <span
                   className="shrink-0 lp-label px-2 py-0.5 rounded-md"
                   style={{ background: cfg.primaryLight, color: cfg.primaryText, border: `1px solid ${cfg.primaryBorder}` }}
@@ -87,7 +87,7 @@ function ScenarioCard({ item, index }: { item: (typeof useCases)[0]; index: numb
                     {i + 1}
                   </div>
                   <div className="pt-0.5">
-                    <div className="lp-label" style={{ color: '#1e293b' }}>{step.label}</div>
+                    <div className="lp-label" style={{ color: 'var(--color-neutral-800, #1e293b)' }}>{step.label}</div>
                     <div className="lp-caption">{step.detail}</div>
                   </div>
                 </div>
@@ -138,7 +138,7 @@ function ScenarioCard({ item, index }: { item: (typeof useCases)[0]; index: numb
               </DialogHeader>
               <DialogFooter>
                 <Link to="/login" className="w-full sm:w-auto">
-                  <Button style={{ background: '#0f172a' }}>立即体验</Button>
+                  <Button style={{ background: 'var(--color-neutral-900, #0f172a)' }}>立即体验</Button>
                 </Link>
               </DialogFooter>
             </DialogContent>
