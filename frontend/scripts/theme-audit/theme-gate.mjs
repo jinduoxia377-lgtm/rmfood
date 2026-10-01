@@ -227,19 +227,25 @@ function g09() {
 
   // 分类：同名有真实定义 → 冗余（可工作，潜在风险）；无定义 → 循环引用（令牌彻底失效）
   const harmful = new Map();   // name -> sources
-  const redundant = new Map();
+  // v1.1.5 更正：这一类**不是「冗余」**。@theme 中的 --x: var(--x) 是 Tailwind v4
+  // 生成工具类的登记机制（有声明才生成 bg-<族>-<档> 等），删除会导致工具类完全不生成
+  // （实证 D-55：secondary 族缺条目 → .bg-secondary-500 为 0 个）。故改称「登记声明」。
+  const registered = new Map();
   for (const h of hits) {
-    const bucket = defined.has(h.name) ? redundant : harmful;
+    const bucket = defined.has(h.name) ? registered : harmful;
     if (!bucket.has(h.name)) bucket.set(h.name, new Set());
     bucket.get(h.name).add(h.where);
   }
 
   if (harmful.size === 0) {
     return rec('GATE-09', 'M1', '无自引用令牌（循环引用）', 'warn',
-      `无「循环引用」（失效）令牌；但存在 ${redundant.size} 个冗余自引用（同名有真实定义，靠层叠顺序侥幸可用）：\n` +
-      '  ' + [...redundant.keys()].slice(0, 15).join(', ') +
-      (redundant.size > 15 ? ` …（共 ${redundant.size}）` : '') +
-      '\n建议清理：@theme 写成 --x: var(--x) 既不生效也无意义，且一旦 base.css 移除该定义即静默失效。');
+      `无「循环引用」（失效）令牌；另有 ${registered.size} 个**登记声明**（\`@theme\` 中的 --x: var(--x)）：\n` +
+      '  ' + [...registered.keys()].slice(0, 15).join(', ') +
+      (registered.size > 15 ? ` …（共 ${registered.size}）` : '') +
+      '\n说明（v1.1.5 更正口径）：**这些声明不得删除** —— 它们是 Tailwind v4 生成工具类的' +
+      '\n登记机制（有声明才生成 bg-<族>-<档> 等）。实证：D-55 中 secondary 族因缺条目，' +
+      '\n产物里 .bg-secondary-500 等为 0 个；补上后变为 5 个。' +
+      '\n真正的隐患是取值依赖层叠顺序，根治方向为改用 @theme inline（不输出自引用、仍登记令牌）。');
   }
 
   const detail = [...harmful.entries()].slice(0, 12)
@@ -248,10 +254,10 @@ function g09() {
   rec('GATE-09', 'M1', '无自引用令牌（循环引用）', 'fail',
     `发现 ${harmful.size} 个【循环引用】令牌（令牌彻底失效，共 ${[...harmful.values()].reduce((a, s) => a + s.size, 0)} 处）：\n${detail}` +
     (harmful.size > 12 ? `\n  …（共 ${harmful.size} 个）` : '') +
-    `\n另有 ${redundant.size} 个冗余自引用（同名有真实定义，靠层叠顺序侥幸可用）。` +
-    '\n成因：@theme 写 --color-X: var(--color-X)，替换掉 Tailwind 默认值；若 base.css/dark.css 也未定义同名令牌，' +
-    '则全部声明都是自引用 → 解析为 guaranteed-invalid（空）→ 依赖它的工具类失去颜色。' +
-    '\n修复：删除这些自引用声明，让 Tailwind 保留默认主题值（或改为引用真实 primitive）。');
+    `\n另有 ${registered.size} 个登记声明（有同名真实定义，属正常机制，不需处理）。` +
+    '\n成因：@theme 写 --color-X: var(--color-X) 会替换 Tailwind 默认值；若 base.css/dark.css ' +
+    '也未定义同名令牌，则全部声明都是自引用 → 解析为 guaranteed-invalid（空）→ 依赖它的工具类失去颜色。' +
+    '\n修复：为这些令牌在 base.css/dark.css 中补上真实定义，或删除该条 @theme 声明让 Tailwind 保留默认值。');
 }
 
 // ============================================================================
