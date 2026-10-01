@@ -121,7 +121,7 @@ export default function Features() {
             <h2 className="lp-h2 mb-4">
               {titleLines.map((line, i) => <span key={i}>{line}{i < titleLines.length - 1 && <br />} </span>)}
             </h2>
-            <p className="lp-body-sm max-w-lg text-slate-600">
+            <p className="lp-body-sm max-w-lg" style={{ color: '#475569' }}>
               {sectionDesc}
             </p>
           </div>

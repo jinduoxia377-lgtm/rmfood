@@ -55,7 +55,7 @@ function CountUnit({ value, label, prevValue }: UnitProps) {
       >
         {value}
       </div>
-      <span className="lp-caption uppercase tracking-wider">{label}</span>
+      <span className="lp-caption uppercase tracking-wider" style={{ color: '#475569' }}>{label}</span>
     </div>
   );
 }
@@ -133,7 +133,7 @@ export function CountdownBanner() {
               <p className="text-[13px] sm:text-[14px] font-medium truncate" style={{ color: '#0f172a' }}>
                 {LAUNCH_CONFIG.subtitle}
               </p>
-              <p className="lp-caption mt-0.5">
+              <p className="lp-caption mt-0.5" style={{ color: '#475569' }}>
                 {LAUNCH_CONFIG.footnote}
               </p>
             </div>

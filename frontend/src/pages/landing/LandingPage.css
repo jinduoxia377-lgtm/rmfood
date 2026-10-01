@@ -176,7 +176,6 @@ input:focus-visible, button:focus-visible, a:focus-visible {
    导航链接样式类（替代内联 onMouseEnter/OnMouseLeave）
    ═══════════════════════════════════════════════════════════════ */
 .lp-nav-link {
-  position: relative;
   font-size: 0.875rem;
   font-weight: 500;
   color: #475569;
@@ -195,6 +194,7 @@ input:focus-visible, button:focus-visible, a:focus-visible {
   background: rgba(15, 23, 42, 0.06);
   border-bottom-color: #0f172a;
 }
+/* 已合并至下方 L485「专业导航链接（桌面）」定义，此处仅保留注释以标记原 P1 重复项。 */
 
 /* ═══════════════════════════════════════════════════════════════
    Hero 指标浮标
@@ -411,9 +411,10 @@ input:focus-visible, button:focus-visible, a:focus-visible {
   font-size: 13px;
   font-weight: 400;
   line-height: 1.6;
-  /* P0 对比度修复：移除硬编码 color，否则会覆盖深色背景上的
-     text-white / text-slate-300 等 Tailwind 工具类，导致深底深字。
-     默认色改由 .lp-body-sm 的继承链或调用处的工具类决定。 */
+  /* P0 对比度修复：本类不再携带任何 color —— 项目主题系统会把 Tailwind
+     灰阶工具类重映射（text-slate-300 在深底渲染为 #334155 等），任何硬编码
+     默认色都会与调用处的显式颜色产生不可预测的覆盖冲突。
+     颜色一律由调用处内联 style 指定（内联样式优先级最高，深底/浅底各取所需）。 */
 }
 
 /* ── 标签/按钮 — 12px，500 字重 ── */
@@ -421,7 +422,7 @@ input:focus-visible, button:focus-visible, a:focus-visible {
   font-size: 12px;
   font-weight: 500;
   line-height: 1.5;
-  /* 同上：不再硬编码颜色，避免覆盖深色卡片上的浅色文字。 */
+  /* 同上：无默认色，由调用处内联 style 指定。 */
 }
 
 /* ── 辅助说明 — 12px（P0 对比度/可读性修复：原 11px） ── */
@@ -429,7 +430,8 @@ input:focus-visible, button:focus-visible, a:focus-visible {
   font-size: 12px;
   font-weight: 400;
   line-height: 1.55;
-  color: #475569;
+  /* P0 对比度修复：本类不再携带任何 color —— 颜色一律由调用处内联 style
+     指定（内联样式优先级最高，深底/浅底各取所需，彻底消除类级覆盖冲突）。 */
 }
 
 /* ── 微标注 — 11px（P0 对比度/可读性修复：原 10px） ── */
@@ -437,7 +439,6 @@ input:focus-visible, button:focus-visible, a:focus-visible {
   font-size: 11px;
   font-weight: 400;
   line-height: 1.4;
-  color: #475569;
 }
 
 /* ── 超微注 / mono — 11px（P0 可读性修复：原 9px） ── */
@@ -446,38 +447,45 @@ input:focus-visible, button:focus-visible, a:focus-visible {
   font-weight: 400;
   line-height: 1.3;
   letter-spacing: 0.02em;
-  color: #475569;
   font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
 }
 
 /* ── 品牌标识 — 等宽 + 大写间距 ── */
 .lp-brand {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 500;
   font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #64748b;
+  /* P0 对比度修复：原硬编码 #64748b 在深色标题栏（#0f172a）上仅 3.75:1，
+     且会覆盖调用处的浅色工具类。改为不设定颜色，由调用处决定：
+     深底用 text-slate-300/text-white，浅底用 text-slate-600。 */
 }
 
 /* ── 学术分类标签 ── */
+/* ── 学术分类标签 — 11px（P0 可读性修复：原 10px < 功能文本地板） ── */
 .lp-section-tag {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 500;
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #64748b;
+  color: #475569;
 }
 
-/* ── 专业导航链接（桌面） ── */
+/* ── 专业导航链接（桌面） ──
+   P0 触控热区修复：padding 0.375rem → 0.75rem，链接实际高度由 ~35px 提升到 44px。
+   对比度修复：默认色 #64748b（白底 4.76:1）→ #475569（7.5:1），深底由调用处覆盖。
+   合并自 L178 的重复定义（原 P1「.lp-nav-link 重复定义」项）。 */
 .lp-nav-link {
+  position: relative;
   font-size: 13px;
   font-weight: 500;
-  color: #64748b;
-  padding: 0.375rem 0.75rem;
+  color: #475569;
+  padding: 0.75rem 0.75rem;
   border-radius: 6px;
-  transition: color 0.15s, background-color 0.15s;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, background-color 0.15s, border-color 0.15s;
   text-decoration: none;
 }
 .lp-nav-link:hover {
@@ -487,6 +495,7 @@ input:focus-visible, button:focus-visible, a:focus-visible {
 .lp-nav-active {
   color: #0f172a !important;
   background-color: rgba(5,150,105,0.08) !important;
+  border-bottom-color: #0f172a;
 }
 
 /* ── Section 锚点防遮挡（固定导航栏 64px + 额外空间） ── */
@@ -499,6 +508,8 @@ section[id] {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
+  /* P0 触控热区修复：min-height 44px（原 padding 仅 ~42px 高） */
+  min-height: 44px;
   padding: 0.625rem 1.25rem;
   font-size: 14px;
   font-weight: 600;
@@ -525,6 +536,8 @@ section[id] {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
+  /* P0 触控热区修复：min-height 44px（与主 CTA 对齐） */
+  min-height: 44px;
   padding: 0.625rem 1.25rem;
   font-size: 13px;
   font-weight: 500;
@@ -557,10 +570,11 @@ section[id] {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  /* P0 对比度修复：#a7f3d0 on #0f172a ≈ 12.9:1 */
-  color: #a7f3d0;
-  background: rgba(4,120,87,0.2);
-  border: 1px solid rgba(4,120,87,0.5);
+  /* P0 对比度修复：#a7f3d0 on #0f172a ≈ 12.9:1
+   注：「推荐方案」徽章位于深底（#0f172a）卡片，背景取色对 #0f172a 透明。 */
+  color: #d1fae5;
+  background: rgba(4,120,87,0.25);
+  border: 1px solid rgba(4,120,87,0.55);
   border-radius: 4px;
   padding: 0.125rem 0.5rem;
 }

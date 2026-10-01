@@ -70,7 +70,7 @@ function AlgoCard({ algo, index }: { algo: Algorithm; index: number }) {
           <div className="flex items-start gap-3 mb-3">
             <div
               className="w-8 h-8 rounded-md flex items-center justify-center shrink-0"
-              style={{ background: cfg.primaryLight, color: cfg.primary, border: `1px solid ${cfg.primaryBorder}` }}
+              style={{ background: cfg.primaryLight, color: cfg.primaryText, border: `1px solid ${cfg.primaryBorder}` }}
             >
               <IconComp size={15} strokeWidth={1.8} />
             </div>
@@ -235,7 +235,7 @@ export default function Algorithms() {
               7 种优化算法 · 5 种协同机制 ·<br className="hidden sm:block" />
               亚秒级实时推理
             </h2>
-            <p className="lp-body-sm max-w-2xl text-slate-500">
+            <p className="lp-body-sm max-w-2xl" style={{ color: '#475569' }}>
               基于统一优化调度器（UnifiedOptimizer）的智能策略选择系统，内置 Bandit 在线学习自动匹配最优算法引擎。
               5 种协同作用机制量化成分间交互，NSGA-III 支持 8 维目标 Pareto 优化，完整管线 P95 &lt; 3.2s。
             </p>

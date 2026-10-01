@@ -50,7 +50,7 @@ function ScenarioCard({ item, index }: { item: (typeof useCases)[0]; index: numb
           <div className="flex items-center gap-2.5 mb-4">
             <div
               className="w-8 h-8 rounded-md flex items-center justify-center shrink-0"
-              style={{ background: cfg.primaryLight, color: cfg.primary, border: `1px solid ${cfg.primaryBorder}` }}
+              style={{ background: cfg.primaryLight, color: cfg.primaryText, border: `1px solid ${cfg.primaryBorder}` }}
             >
               <IconComp size={15} strokeWidth={1.8} />
             </div>
@@ -59,7 +59,7 @@ function ScenarioCard({ item, index }: { item: (typeof useCases)[0]; index: numb
                 <h3 className="text-[14px] font-bold text-slate-900 truncate">{item.title}</h3>
                 <span
                   className="shrink-0 lp-label px-2 py-0.5 rounded-md"
-                  style={{ background: cfg.primaryLight, color: cfg.primary, border: `1px solid ${cfg.primaryBorder}` }}
+                  style={{ background: cfg.primaryLight, color: cfg.primaryText, border: `1px solid ${cfg.primaryBorder}` }}
                 >
                   {SCENARIO_LABELS[item.scenario as Scenario]}
                 </span>
@@ -82,12 +82,12 @@ function ScenarioCard({ item, index }: { item: (typeof useCases)[0]; index: numb
                 <div key={step.label} className="flex items-start gap-2.5">
                   <div
                     className="w-5 h-5 rounded-md flex items-center justify-center lp-tiny font-bold shrink-0 mt-0.5"
-                    style={{ background: hovered ? cfg.primaryLight : '#f1f5f9', color: hovered ? cfg.primary : '#475569', border: `1px solid ${cfg.primaryBorder}` }}
+                    style={{ background: hovered ? cfg.primaryLight : '#f1f5f9', color: hovered ? cfg.primaryText : '#475569', border: `1px solid ${cfg.primaryBorder}` }}
                   >
                     {i + 1}
                   </div>
                   <div className="pt-0.5">
-                    <div className="lp-label text-slate-800">{step.label}</div>
+                    <div className="lp-label" style={{ color: '#1e293b' }}>{step.label}</div>
                     <div className="lp-caption">{step.detail}</div>
                   </div>
                 </div>
@@ -120,10 +120,10 @@ function ScenarioCard({ item, index }: { item: (typeof useCases)[0]; index: numb
             <DialogTrigger asChild>
               <button
                 type="button"
-                className="w-full inline-flex items-center justify-center gap-2 px-3 py-2.5 rounded-md lp-label transition-colors"
+                className="w-full inline-flex items-center justify-center gap-2 px-3 py-2.5 min-h-[44px] rounded-md lp-label transition-colors"
                 style={{
                   background: hovered ? cfg.primaryLight : '#fff',
-                  color: cfg.primary,
+                  color: cfg.primaryText,
                   border: `1px solid ${cfg.primaryBorder}`,
                 }}
               >
@@ -167,7 +167,7 @@ export default function UseCases() {
                 <span key={i}>{line}{i < titleLines.length - 1 && <br />} </span>
               ))}
             </h2>
-            <p className="lp-body-sm max-w-lg text-slate-600">
+            <p className="lp-body-sm max-w-lg" style={{ color: '#475569' }}>
               {sectionDesc}
             </p>
           </div>

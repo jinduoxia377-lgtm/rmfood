@@ -61,13 +61,13 @@ export default function CTABanner() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <Reveal>
           <h2 className="lp-h3 text-white mb-2">开始您的配方研发</h2>
-          <p className="lp-body-sm text-slate-300 mb-7">科研版永久免费，无需信用卡，30 秒完成注册。</p>
+          <p className="lp-body-sm mb-7" style={{ color: '#cbd5e1' }}>科研版永久免费，无需信用卡，30 秒完成注册。</p>
           <div className="flex items-center justify-center gap-3 flex-wrap">
             {/* 主 CTA：免费注册 — 白色大按钮 */}
             <Link
               to="/login"
-              className="inline-flex items-center gap-1.5 px-7 min-h-[44px] rounded-md text-[14px] font-semibold text-slate-900 transition-opacity hover:opacity-90 lp-label"
-              style={{ background: '#fff' }}
+              className="inline-flex items-center gap-1.5 px-7 min-h-[44px] rounded-md text-[14px] font-semibold transition-opacity hover:opacity-90 lp-label"
+              style={{ background: '#fff', color: '#0f172a' }}
             >
               免费注册
               <ArrowRight size={14} />
@@ -77,7 +77,8 @@ export default function CTABanner() {
               <DialogTrigger asChild>
                 <button
                   type="button"
-                  className="inline-flex items-center gap-1.5 text-[13px] font-medium text-slate-300 px-6 py-3 rounded-md transition-colors hover:text-white border border-slate-600 hover:border-slate-400 min-h-[44px] lp-body-sm"
+                  className="inline-flex items-center gap-1.5 text-[13px] font-medium px-6 py-3 rounded-md transition-colors hover:text-white border min-h-[44px] lp-body-sm"
+                  style={{ color: '#cbd5e1', borderColor: '#475569' }}
                 >
                   预约演示
                 </button>
