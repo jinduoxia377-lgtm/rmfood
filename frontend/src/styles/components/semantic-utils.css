@@ -173,6 +173,17 @@
 
 /* ═══════════════════════════════════════════════════════════════
    无障碍模式覆盖
+   T-W2（D-32）修复三处「覆盖了不生效的令牌 / 缺失规则」：
+   ① 高对比度原只改 --border-default，而组件实际读 --border-color
+      （实测 var(--border-color) 147 处 vs var(--border-default) 2 处）
+      → 边框根本未变黑。环境层的 @media (prefers-contrast: high) 用的是
+      --border-color，此处与之对齐。
+   ② 阅读模式原只覆盖 --bg-primary，而**亮色下 body 读 --bg-canvas**
+      （typography.css:19；var(--bg-canvas) 48 处消费者）
+      → sepia 只改了文字色，页面底色仍是 slate #f8fafc。
+      同时高对比度也漏了 --bg-canvas。
+   ③ color-blind 在 CSS 层**零规则** —— 按规范 A-15 必须提供最小规则，
+      否则「色盲友好」仅在 JS 侧生效，对样式无任何影响。
    ═══════════════════════════════════════════════════════════════ */
 
 [data-a11y-mode="high-contrast"] {
@@ -180,15 +191,19 @@
   --text-primary:         #000000;
   --text-secondary:       #334155;
   --bg-primary:           #FFFFFF;
+  --bg-canvas:            #FFFFFF;   /* ② 亮色 body 实际读取的令牌 */
   --bg-surface:           #FFFFFF;
-  --border-default:       #000000;
+  --border-color:         #000000;   /* ① 147 处消费者 */
+  --border-default:       #000000;   /* 保留：兼容仍读旧名的 2 处 */
   --color-neutral-50:  #FFFFFF;
   --color-neutral-900: #000000;
 }
 [data-a11y-mode="high-contrast"].dark {
   --text-primary:    #FFFFFF;
   --bg-primary:      #000000;
+  --bg-canvas:       #000000;
   --bg-surface:      #000000;
+  --border-color:    #FFFFFF;
   --border-default:  #FFFFFF;
   --color-neutral-50:  #000000;
   --color-neutral-900: #FFFFFF;
@@ -196,19 +211,44 @@
 
 /* ═══════════════════════════════════════════════════════════════
    阅读模式覆盖
+   ② 必须同时覆盖 --bg-canvas（亮色 body）与 --bg-primary（暗色 body），
+      否则底色与文字色不同步。
    ═══════════════════════════════════════════════════════════════ */
 
 [data-reading-mode="sepia"] {
+  --bg-canvas:      #FDF6E3;
   --bg-primary:     #FDF6E3;
   --bg-surface:     #FAF3E0;
   --text-primary:   #5C4B37;
   --text-secondary: #8B7355;
 }
 [data-reading-mode="dark-read"] {
+  --bg-canvas:      #1a1a2e;
   --bg-primary:     #1a1a2e;
   --bg-surface:     #16213e;
   --text-primary:   #e0e0e0;
   --text-secondary: #a0a0a0;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   色盲友好（A-15）
+   采用 **Okabe-Ito 色盲安全色板**：其各色在红绿色盲（deuteranopia /
+   protanopia）下仍可区分，因为它主要依靠**明度差**而非色相差，
+   而原语义色（绿 #10b981 / 红 #ef4444）在红绿色盲下几乎同色。
+   两模式共用同一色板（Okabe-Ito 本就为明/暗背景通用而设计）。
+   ═══════════════════════════════════════════════════════════════ */
+
+[data-a11y-mode="color-blind"] {
+  --color-success: #009E73;   /* bluish green */
+  --color-error:   #D55E00;   /* vermillion */
+  --color-warning: #E69F00;   /* orange */
+  --color-info:    #0072B2;   /* blue */
+}
+[data-a11y-mode="color-blind"].dark {
+  --color-success: #56B4E9;   /* sky blue */
+  --color-error:   #E69F00;   /* orange */
+  --color-warning: #F0E442;   /* yellow */
+  --color-info:    #0072B2;   /* blue */
 }
 
 /* GPU acceleration hints */
