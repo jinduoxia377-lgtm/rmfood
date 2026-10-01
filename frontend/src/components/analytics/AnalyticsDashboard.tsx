@@ -21,7 +21,10 @@ import {
   AlertCircle, CheckCircle, Info, Loader2, Sparkles, Eye, EyeOff,
   Save, RotateCcw, Upload, Table, FileType,
 } from 'lucide-react'
-import { useTheme } from '@/hooks/useTheme'
+// D-40：原 import { useTheme } from '@/hooks/useTheme'（遗留兼容层，与 @/theme 的
+// 同名 hook 返回结构不兼容）。改用 @/theme 的现代 hook，并把原先由
+// getCurrentColors() 派生的字段**逐字**内联，保持渲染行为完全不变。
+import { useTheme } from '@/theme'
 import { fetchMockDashboardData, getMockAnalyticsData } from '@/services/mockAnalyticsData'
 
 /** Chart component ThemeColors - stricter than store ThemeColors */
@@ -124,8 +127,20 @@ interface DashboardData {
 }
 
 export function AnalyticsDashboard() {
-  const { isDark, getCurrentColors } = useTheme()
-  const colors = getCurrentColors()
+  // D-40：等价于原 useTheme().getCurrentColors()（后者实为同一 store 的派生视图）
+  const { theme } = useTheme()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const colors = useMemo(() => ({
+    ...theme.colors,
+    textPrimary: theme.colors.text?.primary || '#1D1D1F',
+    textSecondary: theme.colors.text?.secondary || '#4B5563',
+    textMuted: theme.colors.text?.textMuted || '#9CA3AF',
+    surfaceVariant: theme.colors.surfaceVariant || '#F3F4F6',
+    errorContainer: theme.colors.errorContainer || '#FFE0E0',
+    outline: theme.colors.border?.default || '#E5E7EB',
+    outlineVariant: theme.colors.outlineVariant || '#E5E7EB',
+    tertiary: theme.colors.tertiary?.main || '#AF52DE',
+  }) as unknown as Record<string, string>, [theme])
 
   const [data, setData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)

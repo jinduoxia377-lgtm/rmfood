@@ -3,12 +3,8 @@ import { MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import LoginPage from '../pages/auth/LoginPage';
 import { useAuthStore } from '../stores/auth';
-import { useTheme } from '../hooks/useTheme';
-
 // Mock stores
 jest.mock('../stores/auth');
-jest.mock('../hooks/useTheme');
-
 // Mock useNavigate
 const mockNavigate = jest.fn();
 jest.mock('react-router-dom', () => ({
@@ -28,11 +24,6 @@ describe('LoginPage', () => {
   beforeEach(() => {
     (useAuthStore as unknown as jest.Mock).mockReturnValue({
       login: jest.fn(),
-    });
-    
-    (useTheme as unknown as jest.Mock).mockReturnValue({
-      isDark: false,
-      toggleTheme: jest.fn(),
     });
   });
 
@@ -172,10 +163,6 @@ describe('LoginPage', () => {
   });
 
   test('renders in dark mode', () => {
-    (useTheme as unknown as jest.Mock).mockReturnValue({
-      isDark: true,
-      toggleTheme: jest.fn(),
-    });
 
     render(
       <MemoryRouter>
@@ -228,10 +215,6 @@ describe('LoginPage', () => {
 
   test('toggles theme', () => {
     const mockToggleTheme = jest.fn();
-    (useTheme as unknown as jest.Mock).mockReturnValue({
-      isDark: false,
-      toggleTheme: mockToggleTheme,
-    });
 
     render(
       <MemoryRouter>
