@@ -78,7 +78,7 @@ export default function CTABanner() {
                 <button
                   type="button"
                   className="inline-flex items-center gap-1.5 text-[13px] font-medium px-6 py-3 rounded-md transition-colors hover:text-white border min-h-[44px] lp-body-sm"
-                  style={{ color: 'var(--color-neutral-300, #cbd5e1)', borderColor: '#475569' }}
+                  style={{ color: 'var(--color-neutral-300, #cbd5e1)', borderColor: 'var(--color-neutral-600, #475569)' }}
                 >
                   预约演示
                 </button>
@@ -90,7 +90,7 @@ export default function CTABanner() {
                 </DialogHeader>
                 {submitted ? (
                   <div className="flex items-start gap-3 py-4">
-                    <CheckCircle size={20} className="shrink-0 mt-0.5" style={{ color: '#047857' }} />
+                    <CheckCircle size={20} className="shrink-0 mt-0.5" style={{ color: 'var(--color-primary-700, #047857)' }} />
                     <div>
                       <p className="text-[15px] font-semibold text-slate-900">预约成功</p>
                       <p className="text-[12px] text-slate-500 mt-1">

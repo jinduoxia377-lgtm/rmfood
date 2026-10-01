@@ -21,9 +21,9 @@ const SYNC_STATUS   = '实时同步';
 // ── 状态指示点 ──────────────────────────────────────────────────────
 function StatusDot({ status }: { status: DataSource['status'] }) {
   const cfg = {
-    online:  { color: '#047857', label: '在线' },
-    syncing: { color: '#1d4ed8', label: '同步中' },
-    update:  { color: '#b45309', label: '已更新' },
+    online:  { color: 'var(--color-primary-700, #047857)', label: '在线' },
+    syncing: { color: 'var(--color-secondary-700, #1d4ed8)', label: '同步中' },
+    update:  { color: 'var(--color-warning-700, #b45309)', label: '已更新' },
   };
   const c = cfg[status];
   return (
@@ -145,7 +145,7 @@ function DataSourceCard({ data, index }: { data: DataSource; index: number }) {
 // ── 主组件 ──────────────────────────────────────────────────────────
 export default function DataSources() {
   return (
-    <section id="data-sources" className="py-16 lg:py-20" style={{ background: 'var(--bg-canvas, #f8fafc)', borderTop: '1px solid #e2e8f0' }}>
+    <section id="data-sources" className="py-16 lg:py-20" style={{ background: 'var(--bg-canvas, #f8fafc)', borderTop: '1px solid var(--color-neutral-200, #e2e8f0)' }}>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* 标题区 */}
@@ -158,7 +158,7 @@ export default function DataSources() {
                 覆盖中药材、活性肽、知识图谱、法规标准、国际标准五大维度，支持跨库联合查询与实时同步。
               </p>
             </div>
-            <span className="lp-caption shrink-0 hidden sm:block" style={{ color: '#475569' }}>
+            <span className="lp-caption shrink-0 hidden sm:block" style={{ color: 'var(--color-neutral-600, #475569)' }}>
               最后更新：刚刚
             </span>
           </div>
@@ -168,7 +168,7 @@ export default function DataSources() {
         <Reveal>
           <div className="lp-data-panel mb-6" style={{ background: 'var(--color-neutral-900, #0f172a)' }}>
             {[
-              { value: '6',  label: '数据源',  color: '#6ee7b7' },
+              { value: '6',  label: '数据源',  color: 'var(--color-success-600, #6ee7b7)' },
               { value: '38K+', label: '知识实体', color: '#93c5fd' },
               { value: '128K', label: '图谱节点', color: '#c4b5fd' },
               { value: SYNC_STATUS, label: '同步状态', color: 'var(--color-neutral-300, #cbd5e1)' },

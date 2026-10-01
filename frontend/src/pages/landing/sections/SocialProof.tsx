@@ -43,7 +43,7 @@ function TrustMetrics() {
                   <span className="lp-caption" style={{ color: m.color }}>{m.sub}</span>
                 </div>
                 <div className="text-xl font-bold font-mono text-slate-900">{m.value}</div>
-                <div className="lp-caption mt-0.5" style={{ color: '#475569' }}>{m.label}</div>
+                <div className="lp-caption mt-0.5" style={{ color: 'var(--color-neutral-600, #475569)' }}>{m.label}</div>
               </div>
             );
           })}
@@ -117,14 +117,14 @@ function Testimonials() {
               )}
               style={{
                 background: hovered === i ? '#fff' : '#fafafa',
-                border: `1px solid ${hovered === i ? '#059669' : '#e2e8f0'}`,
+                border: `1px solid ${hovered === i ? 'var(--color-primary-600, #059669)' : 'var(--color-neutral-200, #e2e8f0)'}`,
                 boxShadow: hovered === i ? '0 2px 6px rgba(0,0,0,0.05)' : 'none',
               }}
               onMouseEnter={() => setHovered(i)}
               onMouseLeave={() => setHovered(null)}
             >
               {/* 引用符号 */}
-              <Quote size={14} className="mb-2 opacity-25" style={{ color: '#047857' }} />
+              <Quote size={14} className="mb-2 opacity-25" style={{ color: 'var(--color-primary-700, #047857)' }} />
 
               {/* 星级 — 空心描边风格（学术克制） */}
               <div className="flex items-center gap-0.5 mb-2.5" aria-label={`评分 ${t.rating} / 5`}>
@@ -133,7 +133,7 @@ function Testimonials() {
                     key={si}
                     size={10}
                     fill="none"
-                    stroke="#047857"
+                    stroke="var(--color-primary-700, #047857)"
                     strokeWidth={1.8}
                   />
                 ))}
@@ -167,7 +167,7 @@ function Testimonials() {
 
 export default function SocialProof() {
   return (
-    <section id="social-proof" className="py-16 lg:py-20" style={{ background: '#fff', borderTop: '1px solid #e2e8f0' }}>
+    <section id="social-proof" className="py-16 lg:py-20" style={{ background: '#fff', borderTop: '1px solid var(--color-neutral-200, #e2e8f0)' }}>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* 标题 */}

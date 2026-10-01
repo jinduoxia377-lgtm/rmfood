@@ -2,7 +2,7 @@
  * UseCases 组件 v10 — 学术案例研究风格（升级 v10）
  *
  * 升级要点（v10）：
- *   - 背景色从 #f8fafc 改为 #fff（与 DataSources 区分）
+ *   - 背景色从 var(--color-neutral-50, #f8fafc) 改为 #fff（与 DataSources 区分）
  *   - 去掉"应用场景 X"机械编号，改为场景关键词标签
  *   - 圆角 rounded-sm → rounded-md
  *   - CTA 文案强化
@@ -37,7 +37,7 @@ function ScenarioCard({ item, index }: { item: (typeof useCases)[0]; index: numb
         className="lp-card-white relative overflow-hidden transition-all duration-200 cursor-default"
         style={{
           background: hovered ? '#fff' : '#fff',
-          border: `1px solid ${hovered ? cfg.primary + '40' : '#e2e8f0'}`,
+          border: `1px solid ${hovered ? cfg.primary + '40' : 'var(--color-neutral-200, #e2e8f0)'}`,
         }}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
@@ -82,7 +82,7 @@ function ScenarioCard({ item, index }: { item: (typeof useCases)[0]; index: numb
                 <div key={step.label} className="flex items-start gap-2.5">
                   <div
                     className="w-5 h-5 rounded-md flex items-center justify-center lp-tiny font-bold shrink-0 mt-0.5"
-                    style={{ background: hovered ? cfg.primaryLight : '#f1f5f9', color: hovered ? cfg.primaryText : '#475569', border: `1px solid ${cfg.primaryBorder}` }}
+                    style={{ background: hovered ? cfg.primaryLight : 'var(--color-neutral-100, #f1f5f9)', color: hovered ? cfg.primaryText : 'var(--color-neutral-600, #475569)', border: `1px solid ${cfg.primaryBorder}` }}
                   >
                     {i + 1}
                   </div>
@@ -103,9 +103,9 @@ function ScenarioCard({ item, index }: { item: (typeof useCases)[0]; index: numb
             <table className="w-full text-[12px] border-collapse">
               <tbody>
                 {item.metrics.map((m, i) => (
-                  <tr key={m.label} style={{ borderBottom: i < item.metrics.length - 1 ? '1px solid #f1f5f9' : 'none' }}>
+                  <tr key={m.label} style={{ borderBottom: i < item.metrics.length - 1 ? '1px solid var(--color-neutral-100, #f1f5f9)' : 'none' }}>
                     <td className="py-1 px-2 text-slate-500">{m.label}</td>
-                    <td className="py-1 px-2 text-right font-mono font-semibold" style={{ color: '#047857' }}>
+                    <td className="py-1 px-2 text-right font-mono font-semibold" style={{ color: 'var(--color-primary-700, #047857)' }}>
                       {m.value}
                       {m.unit && <span className="font-normal text-slate-500 ml-0.5">{m.unit}</span>}
                     </td>
@@ -153,7 +153,7 @@ export default function UseCases() {
   const titleLines = sectionTitle.split('\n');
 
   return (
-    <section id="use-cases" className="py-16 lg:py-20" style={{ background: 'var(--bg-canvas, #f8fafc)', borderTop: '1px solid #e2e8f0' }}>
+    <section id="use-cases" className="py-16 lg:py-20" style={{ background: 'var(--bg-canvas, #f8fafc)', borderTop: '1px solid var(--color-neutral-200, #e2e8f0)' }}>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* 标题区 */}
@@ -167,7 +167,7 @@ export default function UseCases() {
                 <span key={i}>{line}{i < titleLines.length - 1 && <br />} </span>
               ))}
             </h2>
-            <p className="lp-body-sm max-w-lg" style={{ color: '#475569' }}>
+            <p className="lp-body-sm max-w-lg" style={{ color: 'var(--color-neutral-600, #475569)' }}>
               {sectionDesc}
             </p>
           </div>
