@@ -43,7 +43,7 @@ function TrustMetrics() {
                   <span className="lp-caption" style={{ color: m.color }}>{m.sub}</span>
                 </div>
                 <div className="text-xl font-bold font-mono text-slate-900">{m.value}</div>
-                <div className="lp-caption mt-0.5">{m.label}</div>
+                <div className="lp-caption mt-0.5" style={{ color: '#475569' }}>{m.label}</div>
               </div>
             );
           })}
@@ -79,9 +79,7 @@ function PartnerLogos() {
                 onMouseEnter={() => setHovered(org.name)}
                 onMouseLeave={() => setHovered(null)}
               >
-                <div className="lp-label leading-tight mb-1">
-                  {org.name}
-                </div>
+                <div className="lp-label" style={{ color: '#1e293b' }}>{org.name}</div>
                 <span className="text-[11px] font-mono" style={{ color: s.text }}>
                   [{label}]
                 </span>
@@ -155,7 +153,7 @@ function Testimonials() {
                   {t.name[0]}
                 </div>
                 <div>
-                  <div className="lp-label font-semibold text-slate-800">{t.name}</div>
+                  <div className="lp-label font-semibold" style={{ color: '#1e293b' }}>{t.name}</div>
                   <div className="text-[11px] text-slate-500">{t.role} · {t.org}</div>
                 </div>
               </div>

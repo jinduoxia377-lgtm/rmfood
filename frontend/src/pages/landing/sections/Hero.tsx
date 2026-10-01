@@ -906,7 +906,7 @@ function ProductPreview() {
         {/* 标题栏 */}
         <div className="lp-titlebar flex items-center gap-0 px-4 py-2 border-b">
           <div className="flex items-center gap-2">
-            <span className="lp-brand tracking-wider">莱茵分子</span>
+            <span className="lp-brand tracking-wider" style={{ color: '#cbd5e1' }}>莱茵分子</span>
             <div className="w-px h-3 bg-slate-700" />
             <div className="flex items-center gap-1 px-2 py-0.5 rounded lp-section-tag" style={{ background: 'rgba(4,120,87,0.45)', color: '#ffffff', border: '1px solid rgba(4,120,87,0.6)' }}>
               <Sparkles size={10} /><span>智能对话</span>
@@ -916,9 +916,9 @@ function ProductPreview() {
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full" style={{ background: demoState.status === 'error' ? '#ef4444' : '#34d399', boxShadow: '0 0 4px rgba(5,150,105,0.4)' }} />
-              <span className="text-[10px] text-slate-400 font-mono">{demoState.status === 'error' ? '离线' : '在线'}</span>
+              <span className="text-[10px] font-mono" style={{ color: '#94a3b8' }}>{demoState.status === 'error' ? '离线' : '在线'}</span>
             </div>
-            <span className="text-[10px] font-mono text-slate-400">v2.4</span>
+            <span className="text-[10px] font-mono" style={{ color: '#94a3b8' }}>v2.4</span>
           </div>
         </div>
 
@@ -930,18 +930,19 @@ function ProductPreview() {
               const Icon = item.icon;
               const isActive = activeTab === i;
               return (
-                <button key={item.label} onClick={() => setActiveTab(i)} title={item.label}
-                  className="w-7 h-7 rounded-md flex items-center justify-center transition-all duration-150"
+                <button key={item.label} onClick={() => setActiveTab(i)} aria-label={item.label} title={item.label}
+                  className="w-11 h-11 rounded-md flex items-center justify-center transition-all duration-150"
                   style={isActive ? { background: '#047857', color: '#fff', border: '1px solid #047857', boxShadow: '0 1px 2px rgba(5,150,105,0.3)' } : { background: 'transparent', color: '#475569', border: '1px solid transparent' }}>
-                  <Icon size={13} strokeWidth={1.8} />
+                  <Icon size={16} strokeWidth={1.8} />
                 </button>
               );
             })}
             <div className="w-5 h-px my-1.5" style={{ background: 'var(--border-color, #e2e8f0)' }} />
             <button
               onClick={() => { if (activeTab === 0) { setMessages([]); setDemoState({ status: 'idle', message: '' }); } }}
+              aria-label="刷新对话"
               title="刷新"
-              className="w-7 h-7 rounded-md flex items-center justify-center transition-colors"
+              className="w-11 h-11 rounded-md flex items-center justify-center transition-colors"
               style={{ color: '#64748b', border: '1px solid transparent' }}
               onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#e2e8f0'; (e.currentTarget as HTMLButtonElement).style.color = '#334155'; }}
               onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; (e.currentTarget as HTMLButtonElement).style.color = '#64748b'; }}
@@ -962,7 +963,7 @@ function ProductPreview() {
                       <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4 lp-welcome-icon" style={{ background: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)', border: '1px solid #a7f3d0' }}>
                         <Sparkles size={16} style={{ color: '#059669' }} />
                       </div>
-                      <p className="lp-label font-semibold mb-1">与配方顾问对话</p>
+                      <p className="lp-label font-semibold mb-1" style={{ color: '#334155' }}>与配方顾问对话</p>
                       <p className="text-[11px] text-slate-500 text-center leading-relaxed mb-6 max-w-[220px]">输入您的研发需求，获取专业配方设计与安全评估</p>
                       <div className="grid grid-cols-2 gap-2 w-full max-w-[280px]">
                         {PRESET_QUESTIONS.map((q, i) => (
@@ -1101,7 +1102,7 @@ export default function Hero() {
           <div className="max-w-xl pt-4">
             <Reveal>
               <div className="flex items-center gap-2 mb-4">
-                <span className="lp-brand">莱茵分子</span>
+                <span className="lp-brand" style={{ color: '#047857' }}>莱茵分子</span>
                 <span className="text-slate-400">·</span>
                 <span className="lp-caption">药食同源 AI 配方研发平台</span>
               </div>
@@ -1112,7 +1113,7 @@ export default function Hero() {
                 <span className="text-emerald-700">像对话一样简单</span>
               </h1>
 
-              <p className="lp-body mb-8 max-w-lg">
+              <p className="lp-body mb-8 max-w-lg" style={{ color: '#475569' }}>
                 整合 TCMSP、DFBP、知识图谱等五大权威数据源，
                 为研发团队提供从原料筛选到合规审查的完整工作流。
               </p>

@@ -34,7 +34,7 @@ export default function Pricing() {
           <div className="text-center mb-10">
             <span className="lp-section-tag block mb-3">{sectionLabel}</span>
             <h2 className="lp-h2 mb-2">{sectionTitle}</h2>
-            <p className="lp-body-sm max-w-sm mx-auto text-slate-600">{sectionSub}</p>
+            <p className="lp-body-sm max-w-sm mx-auto text-slate-600" style={{ color: '#475569' }}>{sectionSub}</p>
 
             <div className="mt-5 inline-flex items-center gap-0.5 p-0.5 rounded-md" style={{ background: '#f1f5f9', border: '1px solid #e2e8f0' }}>
               {(['monthly', 'yearly'] as const).map((m) => (
@@ -56,12 +56,12 @@ export default function Pricing() {
               >
                 {p.popular && <span className="lp-popular-badge mb-3 block">推荐方案</span>}
                 <h3 className={cn('text-base font-bold mb-0.5', p.popular ? 'text-white' : 'text-slate-900')}>{p.name}</h3>
-                <p className={cn('lp-caption mb-4', p.popular ? 'text-slate-300' : 'text-slate-600')}>{p.desc}</p>
+                <p className="lp-caption mb-4" style={{ color: p.popular ? '#ffffff' : '#475569' }}>{p.desc}</p>
                 <div className={cn('mb-4 flex items-baseline gap-1', p.popular ? 'text-white' : 'text-slate-900')}>
                   <span key={`${p.name}-${animKey}`} className="text-2xl font-bold font-mono animate-in fade-in duration-200">
                     {p.name === '专业版' ? (billing === 'monthly' ? p.priceMonthly : p.priceYearly) : p.priceMonthly}
                   </span>
-                  {p.name === '专业版' && <span className={cn('text-xs font-normal', p.popular ? 'text-slate-300' : 'text-slate-400')}>{billing === 'monthly' ? '/月' : '/年'}</span>}
+                  {p.name === '专业版' && <span className="text-xs font-normal" style={{ color: p.popular ? '#cbd5e1' : '#64748b' }}>{billing === 'monthly' ? '/月' : '/年'}</span>}
                 </div>
                 <ul className="space-y-1.5 mb-5 flex-1">
                   {p.features.map((f) => (
@@ -71,7 +71,7 @@ export default function Pricing() {
                       ) : (
                         <Lock size={12} className="mt-0.5 shrink-0" style={{ color: p.popular ? '#94a3b8' : '#64748b' }} />
                       )}
-                      <span className="lp-label" style={{ color: f.included ? (p.popular ? '#f8fafc' : '#475569') : (p.popular ? '#cbd5e1' : '#94a3b8') }}>
+                      <span className="lp-label" style={{ color: f.included ? (p.popular ? '#f8fafc' : '#475569') : (p.popular ? '#cbd5e1' : '#475569') }}>
                         {f.text}
                         {!f.included && p.name !== '企业版' && (
                           <span className="ml-1.5 lp-mono" style={{ color: p.popular ? '#94a3b8' : '#64748b' }}>升级解锁</span>

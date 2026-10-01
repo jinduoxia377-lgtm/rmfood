@@ -69,7 +69,7 @@ export default function Navbar() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between">
 
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2.5 group">
+        <Link to="/" className="flex items-center gap-2.5 group min-h-[44px]" aria-label="莱茵分子 — 返回首页" style={{ color: '#0f172a' }}>
           {isImageLogo ? (
             <div className="shrink-0 rounded-md overflow-hidden" style={{ width: logoSize.image, height: logoSize.image }}>
                 <img
@@ -82,7 +82,7 @@ export default function Navbar() {
           ) : (
             <div
               className="shrink-0 rounded-md flex items-center justify-center transition-transform duration-200 group-hover:rotate-[-5deg]"
-              style={{ width: logoSize.image, height: logoSize.image, background: '#059669' }}
+              style={{ width: logoSize.image, height: logoSize.image, background: '#047857' }}
             >
               <Beaker size={logoSize.icon} color="white" strokeWidth={2.2} />
             </div>
@@ -160,8 +160,7 @@ export default function Navbar() {
                       onClick={() => setMobileOpen(false)}
                       className={cn(
                         'block text-[14px] font-medium py-2.5 px-3 rounded-md transition-colors min-h-[44px] flex items-center',
-                        'text-slate-600 hover:text-slate-900 hover:bg-slate-50',
-                        isActive(l.href) && 'text-slate-900 bg-slate-50'
+                        isActive(l.href) ? 'text-slate-900 bg-slate-50' : 'text-slate-900 hover:text-slate-900 hover:bg-slate-50'
                       )}
                     >
                       {l.label}

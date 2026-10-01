@@ -38,10 +38,12 @@ export const navbarCTA: NavbarCTA = {
 export const logoPath = BRAND_CONFIG.logo.path ?? '';
 
 export const logoSize = {
-  /** 图片模式：容器尺寸（w/h），含内边距 */
-  image: 36,
+  /** 图片模式：容器尺寸（w/h），含内边距
+   *  P0 触控热区修复：原 36px < HIG 44px，logo 区点击高度不足。
+   *  44px 容器 + 44px 文字行高（h-[44px] items-center）保证整条 logo 命中区达标。 */
+  image: 44,
   /** 图标模式：lucide-react 尺寸 */
-  icon: 20,
+  icon: 24,
 };
 
 /**

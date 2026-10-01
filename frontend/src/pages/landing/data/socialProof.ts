@@ -58,7 +58,9 @@ export const testimonials: Testimonial[] = [
     org: '广东中医药大学生药学院',
     quote: 'AI 配方对话将原料筛选时间从 3 天缩短到 20 分钟，知识图谱的关联推理帮我们发现了以前忽略的配伍规律。',
     rating: 5,
-    gradient: 'linear-gradient(135deg, #047857, #059669)',
+    /* P0 对比度修复：白字落点色改为 800/900 级，保证 #fff 对比 ≥4.5:1
+   （原 500/400 级中点 #10b981/#60a5fa/#a78bfa 对白字仅 2.2–2.9:1） */
+gradient: 'linear-gradient(135deg, #065f46, #047857)',
   },
   {
     name: '李思涵',
@@ -66,7 +68,7 @@ export const testimonials: Testimonial[] = [
     org: '同仁堂健康药业',
     quote: '合规引擎让配方审核一次通过率从 60% 提升到 92%，极大地减少了反复修改的成本。',
     rating: 5,
-    gradient: 'linear-gradient(135deg, #2563eb, #60a5fa)',
+    gradient: 'linear-gradient(135deg, #1e40af, #1d4ed8)',
   },
   {
     name: '王浩然',
@@ -74,7 +76,7 @@ export const testimonials: Testimonial[] = [
     org: '上海医药工业研究院',
     quote: '肽序列 ADME 预测准确率超过 94%，为新产品管线筛选提供了量化依据，是团队不可或缺的工具。',
     rating: 5,
-    gradient: 'linear-gradient(135deg, #7c3aed, #a78bfa)',
+    gradient: 'linear-gradient(135deg, #5b21b6, #6d28d9)',
   },
 ];
 
