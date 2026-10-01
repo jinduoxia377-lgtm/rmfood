@@ -434,31 +434,35 @@ export function getAccessibilityTheme(baseTheme: ThemeConfig, mode: Accessibilit
     }
 
     case 'color-blind':
-      // 色盲友好：调整颜色确保不仅靠颜色传达信息
-      // 关键改进：success/error 使用更高对比度 + 不同色相
+      // T-W2（D-32）：改用 **Okabe-Ito 色盲安全色板**。
+      // 原实现给 success/error 选的是 Apple 绿 #34C759 与 Apple 红 #FF3B30 ——
+      // 正是红绿色盲（deuteranopia/protanopia）下最难区分的一对，与「色盲友好」
+      // 目标相反。Okabe-Ito 各色主要依靠**明度差**而非色相差区分。
+      // 与此处对应，semantic-utils.css 中 [data-a11y-mode="color-blind"]
+      // 也设置了同色板的 --color-success / --color-error / --color-warning / --color-info。
       return {
         ...baseTheme,
         colors: {
           ...baseTheme.colors,
           success: {
-            main: '#34C759', // Apple Green — 与 primary 区分明显
-            background: baseTheme.mode === 'dark' ? '#064E3B' : '#F0FDF4',
-            text: baseTheme.mode === 'dark' ? '#86EFAC' : '#065F46',
+            main: baseTheme.mode === 'dark' ? '#56B4E9' : '#009E73', // sky blue / bluish green
+            background: baseTheme.mode === 'dark' ? '#04384A' : '#E3F5F0',
+            text: baseTheme.mode === 'dark' ? '#A5E3F5' : '#00543D',
           },
           error: {
-            main: '#FF3B30', // Apple Red — 高对比度
-            background: baseTheme.mode === 'dark' ? '#7F1D1D' : '#FFF0F0',
-            text: baseTheme.mode === 'dark' ? '#FF8080' : '#DC2626',
+            main: '#D55E00', // vermillion（与绿色在明度上差异显著）
+            background: baseTheme.mode === 'dark' ? '#5C2A00' : '#FBEADF',
+            text: baseTheme.mode === 'dark' ? '#FFB380' : '#7A3600',
           },
           warning: {
-            main: '#CA8A04', // Yellow-600 — 与 success 色相区分
-            background: baseTheme.mode === 'dark' ? '#713F12' : '#FEFCE8',
-            text: baseTheme.mode === 'dark' ? '#FDE047' : '#854D0E',
+            main: baseTheme.mode === 'dark' ? '#F0E442' : '#E69F00', // yellow / orange
+            background: baseTheme.mode === 'dark' ? '#4A4508' : '#FCF3DC',
+            text: baseTheme.mode === 'dark' ? '#F7F0A0' : '#6B4A00',
           },
           info: {
-            main: '#0E7490', // Cyan-600 — 独立色相
-            background: baseTheme.mode === 'dark' ? '#0C4A6E' : '#E8FAFF',
-            text: baseTheme.mode === 'dark' ? '#C7D2FE' : '#0C4A6E',
+            main: '#0072B2', // blue
+            background: baseTheme.mode === 'dark' ? '#02304A' : '#E1F0F8',
+            text: baseTheme.mode === 'dark' ? '#8FCFEE' : '#004E7A',
           },
         },
       };
