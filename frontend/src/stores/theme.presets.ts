@@ -26,42 +26,43 @@ import type {
 /** Light 主题色彩 */
 const lightColors: SemanticColors = {
   primary: {
-    main: '#34C759', // Emerald-500 ✅ Apple 风格主色
-    light: '#86EFAC', // Emerald-300 浅色变体
-    dark: '#065F46', // Emerald-800 深色变体
-    contrastText: '#ffffff', // 白色文字 (对比度达标 ✅)
+    // T-B1：原为 Apple 绿 #34C759，与 base.css 的 --color-primary(#10b981) 分叉（D-2/D-3）
+    main: '#10b981', // = base.css 的 --color-primary（规范 §13 权威）
+    light: '#6ee7b7', // = --color-primary-300
+    dark: '#047857', // = --color-primary-700
+    contrastText: '#052e16', // 亮绿底（#10b981）配白字仅 2.23:1 → 必须用深字
   },
   secondary: {
-    main: '#007AFF', // Blue-600 Ocean Blue 品牌辅色 (设计系统文档 v1.0)
-    light: '#A8DFFF', // Blue-300
-    dark: '#003E87', // Blue-800
+    main: '#3b82f6', // T-B1：= --color-secondary（原 Apple 蓝 #007AFF）
+    light: '#93c5fd', // Blue-300
+    dark: '#1d4ed8', // Blue-700
     contrastText: '#ffffff', // (对比度达标 ✅)
   },
   tertiary: {
-    main: '#AF52DE',
-    light: '#D4B3FF',
-    dark: '#8B5CF6',
+    main: '#8b5cf6', // T-B1：= --color-accent（原 Apple 紫 #AF52DE）
+    light: '#c4b5fd',
+    dark: '#6d28d9',
     contrastText: '#ffffff',
   },
   success: {
     main: '#16a34a', // Green-600
     background: '#f0fdf4', // Green-50
-    text: '#1E8E3E', // Green-800 (4.5:1 ✅)
+    text: '#065f46', // T-B1：= base.css 的 --color-success-text
   },
   warning: {
     main: '#ca8a04', // Yellow-600
     background: '#fefce8', // Yellow-50
-    text: '#854d0e', // Yellow-800 (4.6:1 ✅)
+    text: '#92400e', // T-B1：= --color-warning-text
   },
   error: {
     main: '#B91C1C', // Red-600
     background: '#FFF0F0', // Red-50
-    text: '#DC2626', // Red-900 (7.0:1 ✅)
+    text: '#991b1b', // T-B1：= --color-error-text
   },
   info: {
     main: '#0E7490', // Cyan-600
     background: '#E8FAFF', // Cyan-50
-    text: '#0C4A6E', // Cyan-900 (6.3:1 ✅)
+    text: '#1e40af', // T-B1：= --color-info-text
   },
   background: {
     default: '#ffffff',
@@ -79,14 +80,14 @@ const lightColors: SemanticColors = {
     primary: '#111827', // Slate-900 (15.2:1 on white ✅)
     secondary: '#4B5563', // Slate-600 (4.7:1 ✅)
     disabled: '#9CA3AF', // Slate-400
-    link: '#34C759', // Apple 风格翡翠绿
+    link: '#047857', // T-B1：链接需 ≥4.5:1，改用 --color-primary-700（原 #34C759 在白色上仅 2.6:1）
     textPrimary: '#1D1D1F',
     textSecondary: '#6E6E73',
     textMuted: '#9A9A9F',
   },
   border: {
     default: '#E5E7EB', // Slate-200
-    focus: '#007AFF', // Focus ring (可见焦点环 2-4px)
+    focus: '#3b82f6', // T-B1：焦点环 = --color-secondary（原 Apple 蓝 #007AFF）
     divider: '#F3F4F6', // Slate-100
   },
   surfaceVariant: '#F3F4F6',
@@ -98,42 +99,42 @@ const lightColors: SemanticColors = {
 /** Dark 主题色彩（去饱和/更浅色调变体，非简单反转 - WCAG 2.1 AA优化版） */
 const darkColors: SemanticColors = {
   primary: {
-    main: '#4ADE80', // Emerald-400 ✅ 暗色模式使用更亮版本 (Forest Green)
-    light: '#86EFAC', // Emerald-300
-    dark: '#34C759', // Emerald-500
-    contrastText: '#111827', // 深色文字 (对比度达标 ✅)
+    main: '#34d399', // T-B1：= dark.css 的 --color-primary
+    light: '#6ee7b7', // T-B1：= --color-primary-300
+    dark: '#047857', // T-B1：= --color-primary-700
+    contrastText: '#052e16', // 亮绿底必须配深字（白字仅 2.2:1，见 §4.3 C-24）
   },
   secondary: {
-    main: '#6ECAFF', // Blue-400 Ocean Blue 暗色模式亮色版
-    light: '#A8DFFF', // Blue-300
-    dark: '#007AFF', // Blue-500
+    main: '#60a5fa', // T-B1：= dark.css 的 --color-secondary
+    light: '#93c5fd', // Blue-300
+    dark: '#3b82f6', // Blue-500
     contrastText: '#111827', // (对比度达标 ✅)
   },
   tertiary: {
-    main: '#C090FF',
-    light: '#D4B3FF',
-    dark: '#AF52DE',
+    main: '#a78bfa', // T-B1：= dark.css 的 --color-accent
+    light: '#c4b5fd',
+    dark: '#8b5cf6',
     contrastText: '#3730a3',
   },
   success: {
     main: '#4ade80', // Green-400
     background: '#052e16', // Green-950
-    text: '#4ADE80', // Green-300 (4.5:1 ✅ AA)
+    text: '#6ee7b7', // T-B1：= dark.css 的 --color-success-text
   },
   warning: {
     main: '#facc15', // Yellow-400
     background: '#422006', // Yellow-950
-    text: '#fde047', // Yellow-300 (4.5:1 ✅ AA)
+    text: '#fcd34d', // T-B1：= --color-warning-text
   },
   error: {
     main: '#EF4444', // Red-400
     background: '#450a0a', // Red-950
-    text: '#FF8080', // Red-300 (4.5:1 ✅ AA)
+    text: '#fca5a5', // T-B1：= --color-error-text
   },
   info: {
     main: '#67E8F9', // Cyan-400
     background: '#083344', // Cyan-950
-    text: '#A5F3FC', // Cyan-300 (4.5:1 ✅ AA)
+    text: '#c7d2fe', // T-B1：= --color-info-text
   },
   background: {
     default: '#000000', // Apple OLED 纯黑
@@ -175,17 +176,20 @@ const typography: Typography = {
   fontFamily: {
     heading: "'Microsoft YaHei', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif",
     body: "'Microsoft YaHei', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif",
-    mono: "'JetBrains Mono', 'Fira Code', 'Consolas', monospace",
+    // T-B1：与 base.css 的 --font-mono 逐字对齐（原缺 ui-monospace 回退）
+    mono: "'JetBrains Mono', 'Fira Code', Consolas, ui-monospace, monospace",
   },
   fontSize: {
     xs: '0.75rem', // 12px
     sm: '0.875rem', // 14px
     base: '1rem', // 16px (移动端最小可读字体)
     lg: '1.125rem', // 18px
-    xl: '1.5rem', // 24px
-    '2xl': '2rem', // 32px
-    '3xl': '2.5rem', // 40px
-    '4xl': '3rem', // 48px
+    // T-B1：xl~4xl 原为 Tailwind 默认档（24/32/40/48px），与 base.css 的
+    // --text-xl..4xl（20/24/30/36px）不符，运行时注入会**覆盖项目自有排版比例**。
+    xl: '1.25rem', // 20px ← 原 1.5rem
+    '2xl': '1.5rem', // 24px ← 原 2rem
+    '3xl': '1.875rem', // 30px ← 原 2.5rem
+    '4xl': '2.25rem', // 36px ← 原 3rem
   },
   lineHeight: {
     tight: '1.25', // 标题
@@ -233,11 +237,13 @@ const spacing: Spacing = {
 
 const borderRadius: BorderRadius = {
   none: '0',
-  sm: '0.25rem', // 4px
-  md: '0.5rem', // 8px
-  lg: '0.75rem', // 12px
-  xl: '1rem', // 16px
-  '2xl': '1.25rem', // 20px
+  // T-B1：与 base.css 的 --radius-* 对齐（原为 Tailwind 默认档，
+  // 其中 sm 会被注入为 4px，覆盖项目定义的 6px）
+  sm: '6px',
+  md: '8px',
+  lg: '12px',
+  xl: '16px',
+  '2xl': '20px',
   full: '9999px',
 };
 
@@ -260,12 +266,12 @@ const transitions: Transitions = {
     enter: '250ms',
     exit: '150ms', // 退出更快 (进入的 60-70%)
   },
+  // T-D5：键名与 L0 的 --ease-* 对齐，使主题面板的缓动调节能真正命中 CSS 消费者
+  // （全项目 51 处读 var(--ease-*)，此前 0 处读 var(--easing-*)）
   easing: {
-    easeOut: 'cubic-bezier(0.16, 1, 0.3, 1)',
-    easeIn: 'cubic-bezier(0.7, 0, 0.84, 1)',
-    easeInOut: 'cubic-bezier(0.87, 0, 0.13, 1)',
-    spring: 'cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-    bounce: 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+    standard: 'cubic-bezier(0.25, 0.1, 0.25, 1.0)', // = --ease-standard
+    spring: 'cubic-bezier(0.16, 1, 0.3, 1)', // = --ease-spring
+    elegant: 'cubic-bezier(0.16, 1, 0.3, 1)', // = --ease-elegant
   },
   all: 'all 200ms cubic-bezier(0.16, 1, 0.3, 1)',
   colors: 'color 200ms ease-out',
@@ -296,8 +302,9 @@ const zIndex: ZIndex = {
   modalBackdrop: 50,
   modal: 100,
   popover: 110,
-  tooltip: 1000,
-  toast: 1100,
+  // T-B1：与 base.css 的 --z-tooltip(1300) / --z-toast(1200) 对齐
+  tooltip: 1300,
+  toast: 1200,
   max: 9999,
 };
 
@@ -505,9 +512,11 @@ export function generateCSSVariables(theme: ThemeConfig): Record<string, string>
   Object.entries(theme.typography.fontSize).forEach(([key, value]) => {
     vars[`--text-${key}`] = value;
   });
-  Object.entries(theme.typography.fontWeight).forEach(([key, value]) => {
-    vars[`--weight-${key}`] = String(value);
-  });
+  // T-D5：不再导出 --weight-*。
+  // 实测全项目 var(--weight-*) 消费者 = 0；L0 的字重令牌命名为
+  // --text-<级别>-font-weight（base.css 已定义），此前导出的 --weight-regular
+  // 等名字没有任何消费者，纯属无效注入。
+  // 若将来需要面板调节字重，应导出 --text-<级别>-font-weight。
 
   // 间距变量
   Object.entries(theme.spacing).forEach(([key, value]) => {
@@ -521,17 +530,21 @@ export function generateCSSVariables(theme: ThemeConfig): Record<string, string>
     vars[`--radius-${key}`] = value;
   });
 
-  // 阴影变量
-  Object.entries(theme.shadows.flat).forEach(([key, value]) => {
-    vars[`--shadow-${key}`] = value;
-  });
+  // T-B1：不再注入 --shadow-*。
+  // 原因：L0 的 --shadow-* 是**模式相关**的（亮色 alpha .06/.06/.12/.14 ，
+  // 暗色 .3/.3/.4/.45），而 preset 的 shadows 是单一对象、无法表达两个模式，
+  // 原先会把**亮色阴影注入到暗色模式**，使暗色阴影过弱（51 处消费者受影响）。
+  // base.css / dark.css 已各自正确定义，注入纯属破坏。
+  // 待 T-B2b 统一处理所有冗余注入时一并重构数据模型。
 
   // 动画变量
   Object.entries(theme.transitions.duration).forEach(([key, value]) => {
     vars[`--duration-${key}`] = value;
   });
   Object.entries(theme.transitions.easing).forEach(([key, value]) => {
-    vars[`--easing-${key}`] = value;
+    // T-D5：原写 `--easing-${key}`，但全项目 0 处读 var(--easing-*)，
+    // 而 51 处读 var(--ease-*)（L0 已定义 standard/spring/elegant）→ 改为对齐命名
+    vars[`--ease-${key}`] = value;
   });
 
   // Z-index 变量

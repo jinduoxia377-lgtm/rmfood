@@ -291,13 +291,15 @@ export interface Duration {
   exit: string;         // 退出动画（进入的 60-70%，更快以显响应性）
 }
 
-/** 缓动函数（ease-out 进入，ease-in 退出） */
+/** 缓动函数。
+ *  T-D5：键名**必须**与 L0 的 `--ease-*` 令牌一一对应
+ *  （`--ease-standard` / `--ease-spring` / `--ease-elegant`），
+ *  否则生成器写出的 `--easing-easeOut` 这类名字没有任何 CSS 消费者（实测 0 处），
+ *  主题面板的缓动调节会 100% 失效。 */
 export interface Easing {
-  easeOut: string;      // 'cubic-bezier(0.16, 1, 0.3, 1)'
-  easeIn: string;       // 'cubic-bezier(0.7, 0, 0.84, 0)'
-  easeInOut: string;    // 'cubic-bezier(0.87, 0, 0.13, 1)'
-  spring: string;       // 物理弹簧曲线（自然感觉）
-  bounce: string;       // 弹跳效果（谨慎使用）
+  standard: string;     // 'cubic-bezier(0.25, 0.1, 0.25, 1.0)' = --ease-standard
+  spring: string;       // 'cubic-bezier(0.16, 1, 0.3, 1)'       = --ease-spring
+  elegant: string;      // 'cubic-bezier(0.16, 1, 0.3, 1)'       = --ease-elegant
 }
 
 /** 过渡动画配置 */

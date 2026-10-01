@@ -303,10 +303,7 @@ export const useThemeStore = create<ThemeStore>()(
           activeTheme: finalTheme,
         });
 
-        // 同步无障碍属性到 DOM（供 semantic-utils.css 中的 [data-a11y-mode] 规则使用）
-        // 与 initialize() 共用同一 helper，避免两条路径行为漂移（D-39）
-        syncA11yAttributes(mode, finalTheme.mode);
-
+        // 无障碍属性由 applyThemeWithTransition 统一同步（D-57），此处不再重复调用
         applyThemeWithTransition(finalTheme, state.transitionType);
       },
 
@@ -528,6 +525,15 @@ let _transitionTimer: ReturnType<typeof setTimeout> | null = null;
 
 async function applyThemeWithTransition(theme: ThemeConfig, transitionType: TransitionType): Promise<void> {
   const root = document.documentElement;
+
+  // D-57 修复：无障碍 DOM 属性**必须**与主题一并应用。
+  // 本函数是全部应用路径的唯一汇聚点（setThemeMode / setPresetTheme /
+  // applyCustomTheme / resetToDefault / importTheme / setAccessibilityMode），
+  // 在此统一同步可覆盖此前遗漏的 5 条路径。此前仅 initialize() 与
+  // setAccessibilityMode() 两处调用，导致 resetToDefault() 残留
+  // data-a11y-mode="reading"、reading 模式下切亮暗不更新 data-reading-mode。
+  // 读 store 当前值而非入参：各调用点均已先 set({ accessibilityMode })，顺序安全。
+  syncA11yAttributes(useThemeStore.getState().accessibilityMode, theme.mode);
 
   if (transitionType === 'none') {
     applyThemeToDOM(theme);
