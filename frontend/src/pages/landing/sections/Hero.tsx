@@ -100,7 +100,7 @@ function parseInline(text: string, keyPrefix: string): React.ReactNode {
       parts.push(
         <a key={`${keyPrefix}-l-${idx++}`} href={m[6]} target="_blank" rel="noopener noreferrer"
           className="text-emerald-700 hover:text-emerald-800 underline decoration-emerald-400 underline-offset-2"
-          style={{ fontSize: 11 }}>
+          style={{ fontSize: 12 }}>
           {m[5]}
         </a>
       );
@@ -117,7 +117,7 @@ function parseInline(text: string, keyPrefix: string): React.ReactNode {
 function InlineLine({ text, prefix }: { text: string; prefix?: React.ReactNode }) {
   return (
     <div className="flex items-start gap-1" style={{ fontSize: 12, lineHeight: '1.65', color: 'var(--color-neutral-700, #334155)' }}>
-      {prefix && <span className="flex-shrink-0 mt-0.5 text-emerald-600" style={{ fontSize: 10 }}>{prefix}</span>}
+      {prefix && <span className="flex-shrink-0 mt-0.5 text-emerald-600" style={{ fontSize: 12 }}>{prefix}</span>}
       <span className="flex-1">{parseInline(text, 'line')}</span>
     </div>
   );
@@ -172,7 +172,7 @@ function MDCallout({ type, children }: { type: 'info' | 'warn' | 'success'; chil
   return (
     <div className="my-1.5 rounded-md px-2.5 py-2 flex items-start gap-2" style={{ background: cfg.bg, border: `1px solid ${cfg.border}` }}>
       <div className="w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1" style={{ background: cfg.dot }} />
-      <div className="text-[12px] leading-relaxed text-slate-700" style={{ fontSize: 10.5 }}>{children}</div>
+      <div className="text-[12px] leading-relaxed text-slate-700">{children}</div>
     </div>
   );
 }
@@ -186,7 +186,7 @@ function MDTable({ header: hdr, rows }: { header: string[]; rows: string[][] }) 
           <tr>
             {hdr.map((h, i) => (
               <th key={i} className="px-2.5 py-1.5 font-semibold text-left whitespace-nowrap"
-                style={{ background: 'var(--color-neutral-50, #f8fafc)', color: 'var(--color-neutral-600, #475569)', borderBottom: '1px solid var(--color-neutral-200, #e2e8f0)', fontSize: 10 }}>
+                style={{ background: 'var(--color-neutral-50, #f8fafc)', color: 'var(--color-neutral-600, #475569)', borderBottom: '1px solid var(--color-neutral-200, #e2e8f0)', fontSize: 12 }}>
                 {h.trim()}
               </th>
             ))}
@@ -197,7 +197,7 @@ function MDTable({ header: hdr, rows }: { header: string[]; rows: string[][] }) 
             <tr key={ri}>
               {row.map((cell, ci) => (
                 <td key={ci} className="px-2.5 py-1.5 align-top whitespace-nowrap"
-                  style={{ borderBottom: '1px solid var(--color-neutral-100, #f1f5f9)', color: 'var(--color-neutral-600, #475569)', fontSize: 10, background: ri % 2 === 1 ? '#fafbfc' : 'transparent' }}>
+                  style={{ borderBottom: '1px solid var(--color-neutral-100, #f1f5f9)', color: 'var(--color-neutral-600, #475569)', fontSize: 12, background: ri % 2 === 1 ? '#fafbfc' : 'transparent' }}>
                   {parseInline(cell.trim(), `cell-${ri}-${ci}`)}
                 </td>
               ))}
@@ -224,7 +224,7 @@ export function MarkdownRenderer({ content }: MDProps) {
     const items = listItems.map((item, i) => (
       <InlineLine
         key={i}
-        prefix={listType === 'ol' ? `${i + 1}.` : <span style={{ fontSize: 11, lineHeight: 1.5 }}>·</span>}
+        prefix={listType === 'ol' ? `${i + 1}.` : <span style={{ fontSize: 12, lineHeight: 1.5 }}>·</span>}
         text={item}
       />
     ));
@@ -631,7 +631,7 @@ function DataTab() {
             同步活动记录
           </div>
           {ACTIVITY_LOG.map((log, i) => (
-            <div key={i} className="flex items-center gap-2 py-1 border-t" style={{ borderColor: 'var(--color-neutral-100, #f1f5f9)', fontSize: 10 }}>
+            <div key={i} className="flex items-center gap-2 py-1 border-t" style={{ borderColor: 'var(--color-neutral-100, #f1f5f9)', fontSize: 12 }}>
               <span className="font-mono flex-shrink-0" style={{ color: 'var(--color-neutral-500, #64748b)' }}>{log.time}</span>
               <span className="text-slate-600 flex-1 truncate">{log.action}</span>
               <span className="text-slate-500 flex-shrink-0">{log.detail}</span>
