@@ -73,7 +73,7 @@ export default function Footer() {
                   rel="noopener noreferrer"
                   aria-label={label}
                   className="w-11 h-11 flex items-center justify-center transition-colors"
-                  style={{ color: '#94a3b8', border: '1px solid #1e293b' }}
+                  style={{ color: 'var(--color-neutral-400, #94a3b8)', border: '1px solid var(--color-neutral-800, #1e293b)' }}
                 >
                   <Icon size={14} />
                 </a>
@@ -109,7 +109,7 @@ export default function Footer() {
                 { icon: Globe, text: 'www.rmfood.cn' },
                 { icon: MapPin, text: '厦门市思明区' },
               ].map(({ icon: Icon, text }, i) => (
-                <li key={i} className="flex items-center gap-2 text-[13px] min-h-[44px]" style={{ color: '#94a3b8' }}>
+                <li key={i} className="flex items-center gap-2 text-[13px] min-h-[44px]" style={{ color: 'var(--color-neutral-400, #94a3b8)' }}>
                   <Icon size={14} className="shrink-0 opacity-60" style={{ color: '#64748b' }} />
                   <span>{text}</span>
                 </li>
@@ -123,13 +123,13 @@ export default function Footer() {
       <div className="border-t lp-footer-bottom">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
-            <p className="text-[12px]" style={{ color: '#cbd5e1' }}>
+            <p className="text-[12px]" style={{ color: 'var(--color-neutral-300, #cbd5e1)' }}>
               &copy; {new Date().getFullYear()} {RHINE_BRAND_CONFIG.fullName}
             </p>
             <div className="flex items-center gap-4">
-              <span className="lp-mono text-[11px]" style={{ color: '#94a3b8' }}>闽ICP备2025XXXXXX号-1</span>
-              <span className="text-[11px]" style={{ color: '#94a3b8' }}>·</span>
-              <span className="lp-mono text-[11px]" style={{ color: '#94a3b8' }}>网络经营备案</span>
+              <span className="lp-mono text-[12px]" style={{ color: 'var(--color-neutral-400, #94a3b8)' }}>闽ICP备2025XXXXXX号-1</span>
+              <span className="text-[12px]" style={{ color: 'var(--color-neutral-400, #94a3b8)' }}>·</span>
+              <span className="lp-mono text-[12px]" style={{ color: 'var(--color-neutral-400, #94a3b8)' }}>网络经营备案</span>
             </div>
           </div>
         </div>

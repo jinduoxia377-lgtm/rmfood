@@ -40,7 +40,7 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
         {/* 核心能力角标 */}
         {isCore && (
           <div
-            className="absolute top-0 right-0 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider"
+            className="absolute top-0 right-0 px-2 py-0.5 text-[12px] font-semibold uppercase tracking-wider"
             style={{ background: '#047857', color: '#fff' }}
           >
             核心
@@ -58,12 +58,12 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-0.5">
-                <h3 className="text-[14px] font-bold text-slate-900">{feature.title}</h3>
+                <h3 className="text-[15px] font-bold text-slate-900">{feature.title}</h3>
                 {feature.keyMetric && (
                   <span className="lp-caption font-mono shrink-0" style={{ color: '#047857' }}>{feature.keyMetric}</span>
                 )}
               </div>
-              <span className="text-[11px] text-slate-500">{feature.tag}</span>
+              <span className="text-[12px] text-slate-500">{feature.tag}</span>
             </div>
           </div>
 

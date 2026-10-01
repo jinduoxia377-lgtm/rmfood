@@ -91,8 +91,8 @@ function parseInline(text: string, keyPrefix: string): React.ReactNode {
       parts.push(<em key={`${keyPrefix}-i-${idx++}`} className="italic text-slate-600">{m[3]}</em>);
     } else if (m[4] !== undefined) {
       parts.push(
-        <code key={`${keyPrefix}-c-${idx++}`} className="px-1 py-0.5 rounded text-[10px] font-mono"
-          style={{ background: '#f1f5f9', color: '#0f172a', border: '1px solid #e2e8f0' }}>
+        <code key={`${keyPrefix}-c-${idx++}`} className="px-1 py-0.5 rounded text-[12px] font-mono"
+          style={{ background: '#f1f5f9', color: 'var(--color-neutral-900, #0f172a)', border: '1px solid #e2e8f0' }}>
           {m[4]}
         </code>
       );
@@ -116,7 +116,7 @@ function parseInline(text: string, keyPrefix: string): React.ReactNode {
 /** 渲染一行文本（含内联格式） */
 function InlineLine({ text, prefix }: { text: string; prefix?: React.ReactNode }) {
   return (
-    <div className="flex items-start gap-1" style={{ fontSize: 12, lineHeight: '1.65', color: '#334155' }}>
+    <div className="flex items-start gap-1" style={{ fontSize: 12, lineHeight: '1.65', color: 'var(--color-neutral-700, #334155)' }}>
       {prefix && <span className="flex-shrink-0 mt-0.5 text-emerald-600" style={{ fontSize: 10 }}>{prefix}</span>}
       <span className="flex-1">{parseInline(text, 'line')}</span>
     </div>
@@ -137,17 +137,17 @@ function MDCodeBlock({ lang, code }: { lang: string; code: string }) {
     setTimeout(() => setCopied(false), 1500);
   };
   return (
-    <div className="my-1.5 rounded-md overflow-hidden" style={{ border: '1px solid #e2e8f0', background: '#0f172a' }}>
-      <div className="flex items-center justify-between px-3 py-1.5" style={{ background: '#1e293b' }}>
-        <span className="text-[10px] font-mono" style={{ color: '#cbd5e1' }}>{lang || 'text'}</span>
+    <div className="my-1.5 rounded-md overflow-hidden" style={{ border: '1px solid #e2e8f0', background: 'var(--color-neutral-900, #0f172a)' }}>
+      <div className="flex items-center justify-between px-3 py-1.5" style={{ background: 'var(--color-neutral-800, #1e293b)' }}>
+        <span className="text-[12px] font-mono" style={{ color: 'var(--color-neutral-300, #cbd5e1)' }}>{lang || 'text'}</span>
         <button onClick={handleCopy} className="flex items-center gap-1 transition-opacity hover:opacity-80 min-h-[44px] min-w-[44px] justify-center py-1" style={{ opacity: 0.9 }}>
           {copied
-            ? <><Check size={11} style={{ color: '#34d399' }} /><span className="text-[10px]" style={{ color: '#34d399' }}>已复制</span></>
-            : <Copy size={11} style={{ color: '#cbd5e1' }} />}
+            ? <><Check size={11} style={{ color: '#34d399' }} /><span className="text-[12px]" style={{ color: '#34d399' }}>已复制</span></>
+            : <Copy size={11} style={{ color: 'var(--color-neutral-300, #cbd5e1)' }} />}
         </button>
       </div>
       <pre className="m-0 p-2.5 overflow-x-auto">
-        <code className="text-[10px] font-mono leading-[1.7]" style={{ color: '#e2e8f0' }}>{code}</code>
+        <code className="text-[12px] font-mono leading-[1.7]" style={{ color: '#e2e8f0' }}>{code}</code>
       </pre>
     </div>
   );
@@ -156,8 +156,8 @@ function MDCodeBlock({ lang, code }: { lang: string; code: string }) {
 /** 引用块 */
 function MDBlockquote({ children }: { children: React.ReactNode }) {
   return (
-    <div className="my-1.5 pl-2.5 py-1.5 rounded-r-md" style={{ background: '#f8fafc', borderLeft: '2px solid #94a3b8' }}>
-      <div className="text-[10px] italic text-slate-500 leading-relaxed">{children}</div>
+    <div className="my-1.5 pl-2.5 py-1.5 rounded-r-md" style={{ background: '#f8fafc', borderLeft: '2px solid var(--color-neutral-400, #94a3b8)' }}>
+      <div className="text-[12px] italic text-slate-500 leading-relaxed">{children}</div>
     </div>
   );
 }
@@ -172,7 +172,7 @@ function MDCallout({ type, children }: { type: 'info' | 'warn' | 'success'; chil
   return (
     <div className="my-1.5 rounded-md px-2.5 py-2 flex items-start gap-2" style={{ background: cfg.bg, border: `1px solid ${cfg.border}` }}>
       <div className="w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1" style={{ background: cfg.dot }} />
-      <div className="text-[10px] leading-relaxed text-slate-700" style={{ fontSize: 10.5 }}>{children}</div>
+      <div className="text-[12px] leading-relaxed text-slate-700" style={{ fontSize: 10.5 }}>{children}</div>
     </div>
   );
 }
@@ -181,7 +181,7 @@ function MDCallout({ type, children }: { type: 'info' | 'warn' | 'success'; chil
 function MDTable({ header: hdr, rows }: { header: string[]; rows: string[][] }) {
   return (
     <div className="my-2 overflow-x-auto">
-      <table className="w-full border-collapse text-[10px]" style={{ borderSpacing: 0 }}>
+      <table className="w-full border-collapse text-[12px]" style={{ borderSpacing: 0 }}>
         <thead>
           <tr>
             {hdr.map((h, i) => (
@@ -331,7 +331,7 @@ export function MarkdownRenderer({ content }: MDProps) {
       const weight = level === 1 ? 'font-semibold' : 'font-medium';
       const mg = level === 1 ? 'mt-2 mb-1.5' : level === 2 ? 'mt-1.5 mb-1' : 'mt-1 mb-0.5';
       elements.push(
-        <div key={`h-${i}`} className={`${weight} ${mg}`} style={{ fontSize: size, color: level <= 2 ? '#0f172a' : '#475569' }}>
+        <div key={`h-${i}`} className={`${weight} ${mg}`} style={{ fontSize: size, color: level <= 2 ? 'var(--color-neutral-900, #0f172a)' : '#475569' }}>
           {parseInline(txt, `h-${i}`)}
         </div>
       );
@@ -421,13 +421,13 @@ function GraphTab() {
       {/* 搜索栏 */}
       <div className="w-full px-3 py-2 border-b" style={{ borderColor: '#e2e8f0', background: '#fafbfc' }}>
         <div className="relative">
-          <Search size={11} className="absolute left-2 top-1/2 -translate-y-1/2" style={{ color: '#94a3b8' }} />
+          <Search size={11} className="absolute left-2 top-1/2 -translate-y-1/2" style={{ color: 'var(--color-neutral-400, #94a3b8)' }} />
           <input
             value={search} onChange={e => setSearch(e.target.value)}
             placeholder="搜索药材 / 成分 / 靶点…"
             aria-label="搜索知识图谱节点"
-            className="w-full min-h-[36px] pl-7 pr-2 text-[11px] rounded-md border outline-none transition-all focus:ring-1 focus:ring-emerald-500"
-            style={{ borderColor: '#e2e8f0', background: '#fff', color: '#334155' }}
+            className="w-full min-h-[36px] pl-7 pr-2 text-[12px] rounded-md border outline-none transition-all focus:ring-1 focus:ring-emerald-500"
+            style={{ borderColor: '#e2e8f0', background: '#fff', color: 'var(--color-neutral-700, #334155)' }}
           />
         </div>
       </div>
@@ -448,7 +448,7 @@ function GraphTab() {
             const isDimmed = selectedNode && !(connectedIds.has(s.id) && connectedIds.has(t.id));
             return (
               <line key={i} x1={s.x} y1={s.y} x2={t.x} y2={t.y}
-                stroke={isDimmed ? '#f1f5f9' : '#cbd5e1'} strokeWidth={isDimmed ? 0.5 : 1}
+                stroke={isDimmed ? '#f1f5f9' : 'var(--color-neutral-300, #cbd5e1)'} strokeWidth={isDimmed ? 0.5 : 1}
                 strokeDasharray={isDimmed ? 'none' : '3 2'}
                 style={{ transition: 'all 0.3s' }} />
             );
@@ -486,7 +486,7 @@ function GraphTab() {
           {(['herb','compound','target','disease'] as const).map(t => (
             <div key={t} className="flex items-center gap-1">
               <div className="w-1.5 h-1.5 rounded-full" style={{ background: KG_TYPE_STYLE[t].color }} />
-              <span className="text-[10px] text-slate-500">{KG_TYPE_STYLE[t].label}</span>
+              <span className="text-[12px] text-slate-500">{KG_TYPE_STYLE[t].label}</span>
             </div>
           ))}
         </div>
@@ -499,11 +499,11 @@ function GraphTab() {
             <div className="w-2 h-2 rounded-full" style={{ background: KG_TYPE_STYLE[selectedNode.type].color }} />
             <span className="lp-tiny font-semibold text-slate-800">{selectedNode.name}</span>
           </div>
-          <div className="text-[10px] font-mono px-1.5 py-0.5 rounded mb-2 inline-block" style={{ background: KG_TYPE_STYLE[selectedNode.type].bg, color: KG_TYPE_STYLE[selectedNode.type].color, border: `1px solid ${KG_TYPE_STYLE[selectedNode.type].border}` }}>
+          <div className="text-[12px] font-mono px-1.5 py-0.5 rounded mb-2 inline-block" style={{ background: KG_TYPE_STYLE[selectedNode.type].bg, color: KG_TYPE_STYLE[selectedNode.type].color, border: `1px solid ${KG_TYPE_STYLE[selectedNode.type].border}` }}>
             {KG_TYPE_STYLE[selectedNode.type].label}
           </div>
-          <p className="text-[11px] text-slate-500 leading-[1.55] mb-2">{selectedNode.desc}</p>
-          <div className="text-[10px] text-slate-500">关联节点</div>
+          <p className="text-[12px] text-slate-500 leading-[1.55] mb-2">{selectedNode.desc}</p>
+          <div className="text-[12px] text-slate-500">关联节点</div>
           <div className="mt-1 space-y-0.5">
             {KG_LINKS.filter(l => l.source === selectedNode.id || l.target === selectedNode.id).map((l, i) => {
               const otherId = l.source === selectedNode.id ? l.target : l.source;
@@ -512,7 +512,7 @@ function GraphTab() {
               return (
                 <div key={i} role="button" tabIndex={0} onClick={() => setSelectedNode(other)}
                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedNode(other); } }}
-                   className="flex items-center gap-1 text-[10px] text-slate-600 cursor-pointer hover:text-emerald-700 transition-colors min-h-[22px]"
+                   className="flex items-center gap-1 text-[12px] text-slate-600 cursor-pointer hover:text-emerald-700 transition-colors min-h-[22px]"
                 >
                   <span className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: KG_TYPE_STYLE[other.type].color }} />
                   {other.name}
@@ -566,9 +566,9 @@ function DataTab() {
         <div className="flex items-center gap-2">
           <DBIcon size={11} style={{ color: '#64748b' }} />
           <span className="lp-tiny font-medium text-slate-600">数据源概览</span>
-          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded" style={{ background: '#ecfdf5', color: '#047857', border: '1px solid #a7f3d0' }}>5 个活跃</span>
+          <span className="text-[12px] font-mono px-1.5 py-0.5 rounded" style={{ background: '#ecfdf5', color: '#047857', border: '1px solid #a7f3d0' }}>5 个活跃</span>
         </div>
-        <button onClick={() => setAnimKey(k => k + 1)} className="text-[10px] text-slate-500 hover:text-emerald-700 transition-colors flex items-center gap-1" title="刷新">
+        <button onClick={() => setAnimKey(k => k + 1)} className="text-[12px] text-slate-500 hover:text-emerald-700 transition-colors flex items-center gap-1" title="刷新">
           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="23 4 23 10 17 10" /><polyline points="1 20 1 14 7 14" /><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
           </svg>
@@ -597,21 +597,21 @@ function DataTab() {
                     {statusIcon(ds.status)}
                   </div>
                   <div className="flex items-baseline gap-1 mb-1">
-                    <span className="text-base font-bold font-mono leading-none" style={{ color: '#0f172a' }}>{ds.stat}</span>
-                    <span className="text-[11px] text-slate-500">{ds.unit}</span>
+                    <span className="text-base font-bold font-mono leading-none" style={{ color: 'var(--color-neutral-900, #0f172a)' }}>{ds.stat}</span>
+                    <span className="text-[12px] text-slate-500">{ds.unit}</span>
                   </div>
                   {/* 功能标签 */}
                   <div className="flex flex-wrap gap-0.5">
                     {ds.features.slice(0, isExpanded ? 3 : 2).map(f => (
-                      <span key={f} className="text-[10px] px-1 py-0.5 rounded" style={{ background: '#f1f5f9', color: '#475569', border: '1px solid #e2e8f0' }}>{f}</span>
+                      <span key={f} className="text-[12px] px-1 py-0.5 rounded" style={{ background: '#f1f5f9', color: '#475569', border: '1px solid #e2e8f0' }}>{f}</span>
                     ))}
                   </div>
                 </div>
                 {/* 展开详情 */}
                 {isExpanded && (
                   <div className="px-2.5 pb-2.5 border-t" style={{ borderColor: '#f1f5f9' }}>
-                    <p className="text-[11px] text-slate-500 leading-[1.55] mt-1.5">{ds.desc}</p>
-                    <div className="flex items-center gap-1 mt-1.5 text-[10px] text-slate-500">
+                    <p className="text-[12px] text-slate-500 leading-[1.55] mt-1.5">{ds.desc}</p>
+                    <div className="flex items-center gap-1 mt-1.5 text-[12px] text-slate-500">
                       <Clock size={9} />
                       <span>上次同步：刚刚</span>
                     </div>
@@ -624,7 +624,7 @@ function DataTab() {
 
         {/* 活动日志 */}
         <div className="mt-2.5 rounded-md border p-2.5" style={{ borderColor: '#e2e8f0', background: '#fafbfc' }}>
-          <div className="text-[10px] font-medium text-slate-500 mb-1.5 flex items-center gap-1">
+          <div className="text-[12px] font-medium text-slate-500 mb-1.5 flex items-center gap-1">
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
             </svg>
@@ -717,7 +717,7 @@ function ComplianceTab() {
     <div className="flex flex-col h-full">
       {/* 输入区 */}
       <div className="px-3 py-2 border-b" style={{ borderColor: '#e2e8f0', background: '#fafbfc' }}>
-        <div className="text-[10px] font-medium text-slate-500 mb-1.5 flex items-center gap-1">
+        <div className="text-[12px] font-medium text-slate-500 mb-1.5 flex items-center gap-1">
           <ShieldCheck size={11} style={{ color: '#64748b' }} />
           输入配方成分（每行一个）
         </div>
@@ -725,12 +725,12 @@ function ComplianceTab() {
           value={ingredients}
           onChange={e => { setIngredients(e.target.value); setResult({ status: 'idle', score: 0, hazards: [], analysis: [] }); }}
           rows={4}
-          className="w-full text-[10px] text-slate-700 resize-none outline-none leading-[1.7] bg-transparent"
+          className="w-full text-[12px] text-slate-700 resize-none outline-none leading-[1.7] bg-transparent"
           placeholder="黄芪&#10;枸杞&#10;甘草"
         />
         <button onClick={runCheck} disabled={result.status === 'scanning'}
           className="mt-1.5 w-full min-h-[36px] rounded-md lp-tiny font-medium flex items-center justify-center gap-1.5 transition-all disabled:opacity-50"
-          style={{ background: result.status === 'scanning' ? '#94a3b8' : '#047857', color: '#fff' }}>
+          style={{ background: result.status === 'scanning' ? 'var(--color-neutral-400, #94a3b8)' : '#047857', color: '#fff' }}>
           {result.status === 'scanning'
             ? <><Loader2 size={11} className="animate-spin" />检测中…</>
             : <><ShieldCheck size={11} />开始合规检测</>
@@ -749,16 +749,16 @@ function ComplianceTab() {
       <div className="flex-1 overflow-y-auto p-3">
         {result.status === 'idle' && (
           <div className="h-full flex flex-col items-center justify-center text-center">
-            <ShieldCheck size={24} style={{ color: '#cbd5e1', marginBottom: 8 }} />
-            <p className="text-[10px] text-slate-500 mb-1">输入成分后点击检测</p>
-            <p className="text-[10px] text-slate-400">覆盖配伍禁忌 · 过敏原风险 · 法规合规</p>
+            <ShieldCheck size={24} style={{ color: 'var(--color-neutral-300, #cbd5e1)', marginBottom: 8 }} />
+            <p className="text-[12px] text-slate-500 mb-1">输入成分后点击检测</p>
+            <p className="text-[12px] text-slate-400">覆盖配伍禁忌 · 过敏原风险 · 法规合规</p>
           </div>
         )}
 
         {result.status === 'scanning' && (
           <div className="h-full flex flex-col items-center justify-center">
             <Loader2 size={20} className="animate-spin mb-2" style={{ color: '#047857' }} />
-            <p className="text-[10px] text-slate-500">正在扫描 {progress}%</p>
+            <p className="text-[12px] text-slate-500">正在扫描 {progress}%</p>
           </div>
         )}
 
@@ -768,13 +768,13 @@ function ComplianceTab() {
             <div className="rounded-md p-2.5 flex items-center gap-3" style={{ background: result.score >= 90 ? '#ecfdf5' : result.score >= 70 ? '#fffbeb' : '#fef2f2', border: `1px solid ${result.score >= 90 ? '#a7f3d0' : result.score >= 70 ? '#fde68a' : '#fecaca'}` }}>
               <div className="text-center">
                 <div className="text-xl font-bold font-mono leading-none" style={{ color: result.score >= 90 ? '#047857' : result.score >= 70 ? '#b45309' : '#dc2626' }}>{result.score}</div>
-                <div className="text-[10px] text-slate-500 mt-0.5">安全评分</div>
+                <div className="text-[12px] text-slate-500 mt-0.5">安全评分</div>
               </div>
               <div className="flex-1">
                 <div className="lp-tiny font-semibold" style={{ color: result.score >= 90 ? '#065f46' : result.score >= 70 ? '#92400e' : '#991b1b' }}>
                   {result.score >= 90 ? '✅ 配方整体安全' : result.score >= 70 ? '⚠️ 存在部分风险项' : '❌ 存在严重禁忌'}
                 </div>
-                <div className="text-[10px] text-slate-500 mt-0.5">
+                <div className="text-[12px] text-slate-500 mt-0.5">
                   {result.hazards.filter(h => h.severity === 'warn').length} 个警告 · {result.analysis.filter(a => a.result === 'pass').length} 项通过
                 </div>
               </div>
@@ -783,7 +783,7 @@ function ComplianceTab() {
             {/* 风险项 */}
             {result.hazards.length > 0 && (
               <div>
-                <div className="text-[10px] font-medium text-slate-500 mb-1 px-1">风险检测</div>
+                <div className="text-[12px] font-medium text-slate-500 mb-1 px-1">风险检测</div>
                 {result.hazards.map((h, i) => (
                   <div key={i} className="flex items-start gap-1.5 px-1.5 py-1.5 rounded-md mb-1" style={{ background: h.severity === 'safe' ? '#f8fafc' : h.severity === 'warn' ? '#fffbeb' : '#fef2f2', border: `1px solid ${h.severity === 'safe' ? '#e2e8f0' : h.severity === 'warn' ? '#fde68a' : '#fecaca'}` }}>
                     {h.severity === 'safe' ? <CheckCircle size={11} style={{ color: '#047857', flexShrink: 0, marginTop: 1 }} />
@@ -801,7 +801,7 @@ function ComplianceTab() {
             {/* 配伍分析 */}
             {result.analysis.length > 0 && (
               <div>
-                <div className="text-[10px] font-medium text-slate-500 mb-1 px-1">配伍分析</div>
+                <div className="text-[12px] font-medium text-slate-500 mb-1 px-1">配伍分析</div>
                 {result.analysis.map((a, i) => (
                   <div key={i} className="flex items-center gap-1.5 px-1.5 py-1 rounded-md mb-0.5" style={{ background: a.result === 'pass' ? '#f8fafc' : '#fffbeb', border: `1px solid ${a.result === 'pass' ? '#e2e8f0' : '#fde68a'}` }}>
                     {a.result === 'pass'
@@ -906,7 +906,7 @@ function ProductPreview() {
         {/* 标题栏 */}
         <div className="lp-titlebar flex items-center gap-0 px-4 py-2 border-b">
           <div className="flex items-center gap-2">
-            <span className="lp-brand tracking-wider" style={{ color: '#cbd5e1' }}>莱茵分子</span>
+            <span className="lp-brand tracking-wider" style={{ color: 'var(--color-neutral-300, #cbd5e1)' }}>莱茵分子</span>
             <div className="w-px h-3 bg-slate-700" />
             <div className="flex items-center gap-1 px-2 py-0.5 rounded lp-section-tag" style={{ background: 'rgba(4,120,87,0.45)', color: '#ffffff', border: '1px solid rgba(4,120,87,0.6)' }}>
               <Sparkles size={10} /><span>智能对话</span>
@@ -916,9 +916,9 @@ function ProductPreview() {
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full" style={{ background: demoState.status === 'error' ? '#ef4444' : '#34d399', boxShadow: '0 0 4px rgba(5,150,105,0.4)' }} />
-              <span className="text-[10px] font-mono" style={{ color: '#94a3b8' }}>{demoState.status === 'error' ? '离线' : '在线'}</span>
+              <span className="text-[12px] font-mono" style={{ color: 'var(--color-neutral-400, #94a3b8)' }}>{demoState.status === 'error' ? '离线' : '在线'}</span>
             </div>
-            <span className="text-[10px] font-mono" style={{ color: '#94a3b8' }}>v2.4</span>
+            <span className="text-[12px] font-mono" style={{ color: 'var(--color-neutral-400, #94a3b8)' }}>v2.4</span>
           </div>
         </div>
 
@@ -944,7 +944,7 @@ function ProductPreview() {
               title="刷新"
               className="w-11 h-11 rounded-md flex items-center justify-center transition-colors"
               style={{ color: '#64748b', border: '1px solid transparent' }}
-              onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#e2e8f0'; (e.currentTarget as HTMLButtonElement).style.color = '#334155'; }}
+              onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#e2e8f0'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--color-neutral-700, #334155)'; }}
               onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; (e.currentTarget as HTMLButtonElement).style.color = '#64748b'; }}
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -963,12 +963,12 @@ function ProductPreview() {
                       <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4 lp-welcome-icon" style={{ background: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)', border: '1px solid #a7f3d0' }}>
                         <Sparkles size={16} style={{ color: '#059669' }} />
                       </div>
-                      <p className="lp-label font-semibold mb-1" style={{ color: '#334155' }}>与配方顾问对话</p>
-                      <p className="text-[11px] text-slate-500 text-center leading-relaxed mb-6 max-w-[220px]">输入您的研发需求，获取专业配方设计与安全评估</p>
+                      <p className="lp-label font-semibold mb-1" style={{ color: 'var(--color-neutral-700, #334155)' }}>与配方顾问对话</p>
+                      <p className="text-[12px] text-slate-500 text-center leading-relaxed mb-6 max-w-[220px]">输入您的研发需求，获取专业配方设计与安全评估</p>
                       <div className="grid grid-cols-2 gap-2 w-full max-w-[280px]">
                         {PRESET_QUESTIONS.map((q, i) => (
                           <button key={i} onClick={() => triggerPreset(q)}
-                            className="text-left px-3 py-2 rounded-lg text-[11px] leading-relaxed text-slate-600 transition-all duration-150 border min-h-[44px] flex items-center"
+                            className="text-left px-3 py-2 rounded-lg text-[12px] leading-relaxed text-slate-600 transition-all duration-150 border min-h-[44px] flex items-center"
                             style={{ background: '#f8fafc', borderColor: '#eef2f7' }}
                             onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#f0fdf4'; (e.currentTarget as HTMLButtonElement).style.borderColor = '#bbf7d0'; (e.currentTarget as HTMLButtonElement).style.color = '#065f46'; }}
                             onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = '#f8fafc'; (e.currentTarget as HTMLButtonElement).style.borderColor = '#eef2f7'; (e.currentTarget as HTMLButtonElement).style.color = '#475569'; }}
@@ -985,7 +985,7 @@ function ProductPreview() {
                               <Sparkles size={10} style={{ color: '#047857' }} />
                             </div>
                           )}
-                          <div className="px-3 py-2 max-w-[80%] leading-relaxed" style={{ background: msg.role === 'user' ? 'linear-gradient(135deg, #059669 0%, #047857 100%)' : '#ffffff', color: msg.role === 'user' ? '#fff' : '#1e293b', borderRadius: msg.role === 'user' ? '12px 12px 3px 12px' : '3px 12px 12px 3px', border: msg.role === 'assistant' ? '1px solid #e2e8f0' : 'none', lineHeight: '1.65', boxShadow: msg.role === 'assistant' ? '0 1px 4px rgba(0,0,0,0.06)' : 'none' }}>
+                          <div className="px-3 py-2 max-w-[80%] leading-relaxed" style={{ background: msg.role === 'user' ? 'linear-gradient(135deg, #059669 0%, #047857 100%)' : '#ffffff', color: msg.role === 'user' ? '#fff' : 'var(--color-neutral-800, #1e293b)', borderRadius: msg.role === 'user' ? '12px 12px 3px 12px' : '3px 12px 12px 3px', border: msg.role === 'assistant' ? '1px solid #e2e8f0' : 'none', lineHeight: '1.65', boxShadow: msg.role === 'assistant' ? '0 1px 4px rgba(0,0,0,0.06)' : 'none' }}>
                             <MarkdownRenderer content={msg.content} />
                           </div>
                         </div>
@@ -1000,7 +1000,7 @@ function ProductPreview() {
                               {THINKING_STEPS.map((step, i) => (
                                 <div key={step.label} className="flex items-center gap-1.5">
                                   <div className="w-1.5 h-1.5 rounded-full transition-all duration-300" style={{ background: i <= thinkingStep ? step.color : '#e2e8f0', opacity: i <= thinkingStep ? 1 : 0.4 }} />
-                                  <span className="text-[10px] text-slate-500">{step.label}</span>
+                                  <span className="text-[12px] text-slate-500">{step.label}</span>
                                 </div>
                               ))}
                             </div>
@@ -1017,7 +1017,7 @@ function ProductPreview() {
                           <div className="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 mr-2 mt-0.5" style={{ background: '#fef2f2', border: '1px solid #fecaca' }}>
                             <AlertCircle size={10} style={{ color: '#dc2626' }} />
                           </div>
-                          <div className="px-3 py-2 text-[10px] text-red-600 rounded-xl" style={{ background: '#fef2f2', border: '1px solid #fca5a5' }}>{demoState.message}</div>
+                          <div className="px-3 py-2 text-[12px] text-red-600 rounded-xl" style={{ background: '#fef2f2', border: '1px solid #fca5a5' }}>{demoState.message}</div>
                         </div>
                       )}
                     </div>
@@ -1032,7 +1032,7 @@ function ProductPreview() {
                         placeholder="描述您的研发需求…" rows={1} disabled={demoState.status === 'thinking'}
                         aria-label="配方研发需求输入"
                         className="w-full resize-none px-3 py-2.5 text-[12px] text-slate-800 placeholder:text-slate-400 bg-transparent outline-none leading-[1.6]" style={{ maxHeight: 80 }} />
-                      <div className="absolute bottom-1.5 right-2"><kbd className="text-[10px] font-mono text-slate-400 px-1 py-0.5 rounded" style={{ border: '1px solid #e2e8f0' }}>⏎</kbd></div>
+                      <div className="absolute bottom-1.5 right-2"><kbd className="text-[12px] font-mono text-slate-400 px-1 py-0.5 rounded" style={{ border: '1px solid #e2e8f0' }}>⏎</kbd></div>
                     </div>
                     <button type="submit" disabled={!input.trim() || demoState.status === 'thinking'}
                       aria-label="发送"
@@ -1053,10 +1053,10 @@ function ProductPreview() {
         {/* 状态栏 */}
         <div className="flex items-center justify-between px-4 py-1.5 border-t" style={{ background: 'var(--bg-canvas, #f8fafc)', borderColor: 'var(--border-color, #e2e8f0)' }}>
           <div className="flex items-center gap-3">
-            <span className="text-[10px] font-mono" style={{ color: 'var(--text-secondary, #475569)' }}>{tabStatus}</span>
-            {isConversing && <span className="text-[10px] font-mono" style={{ color: 'var(--text-muted, #475569)' }}>· {messages.length} 轮</span>}
+            <span className="text-[12px] font-mono" style={{ color: 'var(--text-secondary, #475569)' }}>{tabStatus}</span>
+            {isConversing && <span className="text-[12px] font-mono" style={{ color: 'var(--text-muted, #475569)' }}>· {messages.length} 轮</span>}
           </div>
-          <span className="text-[10px] font-mono" style={{ color: 'var(--text-muted, #475569)' }}>{tabEngine}</span>
+          <span className="text-[12px] font-mono" style={{ color: 'var(--text-muted, #475569)' }}>{tabEngine}</span>
         </div>
       </div>
     </div>
@@ -1135,7 +1135,7 @@ export default function Hero() {
                 <div className="flex items-center gap-3 lp-label text-slate-500">
                   <div className="flex -space-x-1.5">
                     {testimonials.slice(0, 4).map((t, i) => (
-                      <div key={i} className="w-6 h-6 rounded-full border-2 border-white flex items-center justify-center text-[10px] font-bold text-white" style={{ background: t.gradient }}>
+                      <div key={i} className="w-6 h-6 rounded-full border-2 border-white flex items-center justify-center text-[12px] font-bold text-white" style={{ background: t.gradient }}>
                         {t.name[0]}
                       </div>
                     ))}

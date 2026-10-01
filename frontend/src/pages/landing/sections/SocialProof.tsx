@@ -79,11 +79,11 @@ function PartnerLogos() {
                 onMouseEnter={() => setHovered(org.name)}
                 onMouseLeave={() => setHovered(null)}
               >
-                <div className="lp-label" style={{ color: '#1e293b' }}>{org.name}</div>
-                <span className="text-[11px] font-mono" style={{ color: s.text }}>
+                <div className="lp-label" style={{ color: 'var(--color-neutral-800, #1e293b)' }}>{org.name}</div>
+                <span className="text-[12px] font-mono" style={{ color: s.text }}>
                   [{label}]
                 </span>
-                <div className="mt-1.5 text-[11px] text-slate-600 leading-relaxed">
+                <div className="mt-1.5 text-[12px] text-slate-600 leading-relaxed">
                   {org.category === 'university' && '中医药学术研究'}
                   {org.category === 'hospital' && '临床验证与处方研究'}
                   {org.category === 'enterprise' && '药食同源产品研发'}
@@ -153,8 +153,8 @@ function Testimonials() {
                   {t.name[0]}
                 </div>
                 <div>
-                  <div className="lp-label font-semibold" style={{ color: '#1e293b' }}>{t.name}</div>
-                  <div className="text-[11px] text-slate-500">{t.role} · {t.org}</div>
+                  <div className="lp-label font-semibold" style={{ color: 'var(--color-neutral-800, #1e293b)' }}>{t.name}</div>
+                  <div className="text-[12px] text-slate-500">{t.role} · {t.org}</div>
                 </div>
               </div>
             </div>

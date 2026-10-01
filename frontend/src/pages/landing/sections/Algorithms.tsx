@@ -76,14 +76,14 @@ function AlgoCard({ algo, index }: { algo: Algorithm; index: number }) {
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-0.5">
-                <h3 className="text-[14px] font-bold text-slate-900">{algo.title}</h3>
+                <h3 className="text-[15px] font-bold text-slate-900">{algo.title}</h3>
                 {algo.metric && (
                   <span className="lp-caption font-mono shrink-0" style={{ color: '#047857' }}>
                     {algo.metric.value}
                   </span>
                 )}
               </div>
-              <div className="text-[11px] font-mono text-slate-500">{algo.subtitle}</div>
+              <div className="text-[12px] font-mono text-slate-500">{algo.subtitle}</div>
             </div>
           </div>
 
@@ -97,7 +97,7 @@ function AlgoCard({ algo, index }: { algo: Algorithm; index: number }) {
             {algo.tech.map((t) => (
               <span
                 key={t}
-                className="text-[11px] px-1.5 py-0.5 rounded font-mono"
+                className="text-[12px] px-1.5 py-0.5 rounded font-mono"
                 style={{ background: cfg.primaryLight, color: cfg.primaryText, border: `1px solid ${cfg.primaryBorder}` }}
               >
                 {t}
@@ -108,12 +108,12 @@ function AlgoCard({ algo, index }: { algo: Algorithm; index: number }) {
           {/* 适用场景（展开时显示） */}
           {expanded && algo.applicable && (
             <div className="mb-3 pt-3" style={{ borderTop: '1px solid #f1f5f9' }}>
-              <div className="text-[11px] text-slate-500 mb-1.5">适用场景</div>
+              <div className="text-[12px] text-slate-500 mb-1.5">适用场景</div>
               <div className="flex flex-wrap gap-1">
                 {algo.applicable.map((s) => (
                   <span
                     key={s}
-                    className="text-[11px] px-2 py-0.5 rounded"
+                    className="text-[12px] px-2 py-0.5 rounded"
                     style={{ background: '#f8fafc', color: '#475569', border: '1px solid #e2e8f0' }}
                   >
                     {s}
@@ -129,7 +129,7 @@ function AlgoCard({ algo, index }: { algo: Algorithm; index: number }) {
               {algo.backendClass && (
                 <button
                   onClick={handleCopy}
-                  className="flex items-center gap-1 text-[11px] font-mono px-2 min-h-[44px] rounded transition-colors"
+                  className="flex items-center gap-1 text-[12px] font-mono px-2 min-h-[44px] rounded transition-colors"
                   style={{ color: '#64748b', background: 'transparent', border: 'none' }}
                   title="复制类名"
                 >
@@ -143,7 +143,7 @@ function AlgoCard({ algo, index }: { algo: Algorithm; index: number }) {
             <button
               onClick={() => setExpanded(!expanded)}
               aria-expanded={expanded}
-              className="flex items-center gap-0.5 text-[11px] text-slate-600 hover:text-slate-800 transition-colors min-h-[44px] px-1"
+              className="flex items-center gap-0.5 text-[12px] text-slate-600 hover:text-slate-800 transition-colors min-h-[44px] px-1"
             >
               {expanded ? '收起' : '详情'}
               {expanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
@@ -166,15 +166,15 @@ function SynergyCard({ mech, index }: { mech: typeof synergyMechanisms[0]; index
         <div className="flex items-center justify-between mb-2">
           <h4 className="text-[13px] font-bold text-slate-800">{mech.name}</h4>
           <span
-            className="text-[10px] font-mono px-1.5 py-0.5 rounded"
+            className="text-[12px] font-mono px-1.5 py-0.5 rounded"
             style={{ background: '#f0fdf4', color: '#047857', border: '1px solid #bbf7d0' }}
           >
             权重 {mech.weight}
           </span>
         </div>
         <div
-          className="font-mono text-[11px] px-2 py-1.5 rounded mb-2"
-          style={{ background: '#0f172a', color: '#6ee7b7', overflowX: 'auto' }}
+          className="font-mono text-[12px] px-2 py-1.5 rounded mb-2"
+          style={{ background: 'var(--color-neutral-900, #0f172a)', color: '#6ee7b7', overflowX: 'auto' }}
         >
           {mech.formula}
         </div>
@@ -192,7 +192,7 @@ function PerformanceTable() {
         className="rounded-md overflow-hidden"
         style={{ background: '#fff', border: '1px solid #e2e8f0' }}
       >
-        <table className="w-full text-[11px] border-collapse">
+        <table className="w-full text-[12px] border-collapse">
           <thead>
             <tr style={{ background: '#f8fafc' }}>
               {['操作类型', 'P50', 'P95', 'P99', 'SLA 目标'].map((h) => (

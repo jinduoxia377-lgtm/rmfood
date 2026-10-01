@@ -40,10 +40,10 @@ export default function Pricing() {
               {(['monthly', 'yearly'] as const).map((m) => (
                 <button key={m} onClick={() => setBilling(m)}
                   className="lp-label rounded-md transition-colors px-4 py-2 min-h-[44px] flex items-center"
-                  style={billing === m ? { background: '#fff', color: '#0f172a', border: '1px solid #e2e8f0', boxShadow: '0 1px 2px rgba(0,0,0,0.04)' } : { background: 'transparent', color: '#475569' }}
+                  style={billing === m ? { background: '#fff', color: 'var(--color-neutral-900, #0f172a)', border: '1px solid #e2e8f0', boxShadow: '0 1px 2px rgba(0,0,0,0.04)' } : { background: 'transparent', color: '#475569' }}
                 >{m === 'monthly' ? '月付' : '年付'}</button>
               ))}
-              {billing === 'yearly' && <span key={animKey} className="text-[11px] font-mono ml-1.5 px-1.5 py-0.5 rounded-md animate-in fade-in duration-200" style={{ background: '#ecfdf5', color: '#047857', border: '1px solid #a7f3d0' }}>省 17%</span>}
+              {billing === 'yearly' && <span key={animKey} className="text-[12px] font-mono ml-1.5 px-1.5 py-0.5 rounded-md animate-in fade-in duration-200" style={{ background: '#ecfdf5', color: '#047857', border: '1px solid #a7f3d0' }}>省 17%</span>}
             </div>
           </div>
         </Reveal>
@@ -52,7 +52,7 @@ export default function Pricing() {
           {plans.map((p, i) => (
             <Reveal key={p.name} delay={`lp-reveal-delay-${i + 1}`}>
               <div className={cn('h-full flex flex-col rounded-md p-5', p.popular && 'ring-1 ring-emerald-500/40')}
-                style={{ background: p.popular ? '#0f172a' : '#fafafa', border: p.popular ? '1px solid rgba(5,150,105,0.35)' : '1px solid #e2e8f0' }}
+                style={{ background: p.popular ? 'var(--color-neutral-900, #0f172a)' : '#fafafa', border: p.popular ? '1px solid rgba(5,150,105,0.35)' : '1px solid #e2e8f0' }}
               >
                 {p.popular && <span className="lp-popular-badge mb-3 block">推荐方案</span>}
                 <h3 className={cn('text-base font-bold mb-0.5', p.popular ? 'text-white' : 'text-slate-900')}>{p.name}</h3>
@@ -61,7 +61,7 @@ export default function Pricing() {
                   <span key={`${p.name}-${animKey}`} className="text-2xl font-bold font-mono animate-in fade-in duration-200">
                     {p.name === '专业版' ? (billing === 'monthly' ? p.priceMonthly : p.priceYearly) : p.priceMonthly}
                   </span>
-                  {p.name === '专业版' && <span className="text-xs font-normal" style={{ color: p.popular ? '#cbd5e1' : '#64748b' }}>{billing === 'monthly' ? '/月' : '/年'}</span>}
+                  {p.name === '专业版' && <span className="text-xs font-normal" style={{ color: p.popular ? 'var(--color-neutral-300, #cbd5e1)' : '#64748b' }}>{billing === 'monthly' ? '/月' : '/年'}</span>}
                 </div>
                 <ul className="space-y-1.5 mb-5 flex-1">
                   {p.features.map((f) => (
@@ -69,12 +69,12 @@ export default function Pricing() {
                       {f.included ? (
                         <Check size={14} className="mt-0.5 shrink-0" style={{ color: p.popular ? '#34d399' : '#047857' }} />
                       ) : (
-                        <Lock size={12} className="mt-0.5 shrink-0" style={{ color: p.popular ? '#94a3b8' : '#64748b' }} />
+                        <Lock size={12} className="mt-0.5 shrink-0" style={{ color: p.popular ? 'var(--color-neutral-400, #94a3b8)' : '#64748b' }} />
                       )}
-                      <span className="lp-label" style={{ color: f.included ? (p.popular ? '#f8fafc' : '#475569') : (p.popular ? '#cbd5e1' : '#475569') }}>
+                      <span className="lp-label" style={{ color: f.included ? (p.popular ? '#f8fafc' : '#475569') : (p.popular ? 'var(--color-neutral-300, #cbd5e1)' : '#475569') }}>
                         {f.text}
                         {!f.included && p.name !== '企业版' && (
-                          <span className="ml-1.5 lp-mono" style={{ color: p.popular ? '#94a3b8' : '#64748b' }}>升级解锁</span>
+                          <span className="ml-1.5 lp-mono" style={{ color: p.popular ? 'var(--color-neutral-400, #94a3b8)' : '#64748b' }}>升级解锁</span>
                         )}
                       </span>
                     </li>
@@ -86,7 +86,7 @@ export default function Pricing() {
                       variant={p.popular ? 'default' : 'outline'}
                       className={cn('w-full min-h-[44px] lp-label rounded-md')}
                       style={p.popular
-                        ? { background: '#fff', color: '#0f172a', border: 'none' }
+                        ? { background: '#fff', color: 'var(--color-neutral-900, #0f172a)', border: 'none' }
                         : { borderColor: '#e2e8f0', color: '#475569' }}
                     >
                       {p.cta}
@@ -108,7 +108,7 @@ export default function Pricing() {
                       <DialogClose asChild>
                         <Button variant="outline">取消</Button>
                       </DialogClose>
-                      <Link to="/login" className="w-full sm:w-auto"><Button className="w-full" style={{ background: '#0f172a' }}>{p.cta}</Button></Link>
+                      <Link to="/login" className="w-full sm:w-auto"><Button className="w-full" style={{ background: 'var(--color-neutral-900, #0f172a)' }}>{p.cta}</Button></Link>
                     </DialogFooter>
                   </DialogContent>
                 </Dialog>
