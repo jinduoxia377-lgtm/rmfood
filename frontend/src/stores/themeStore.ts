@@ -132,11 +132,21 @@ export const useThemeStore = create<ThemeStore>()(
           }
 
           // 4. 获取基础主题配置
-          let baseTheme = presetThemes[state.activeThemeId as PresetThemeId];
+          // D-37 修复：mode==='system' 时**必须**按系统实际偏好选择预设，
+          // 而非直接沿用持久化的 activeThemeId。原实现算了 effectiveMode 却只用于
+          // 日志（见下方 logger），导致「跟随系统」在冷启动时失效 ——
+          // 例如用户在亮色下把 mode 设为 system 后熄灯，下次冷启动仍应用亮色预设。
+          const systemThemeId: PresetThemeId = effectiveMode === 'dark' ? 'dark-default' : 'light-default';
+          let resolvedThemeId: PresetThemeId = state.mode === 'system'
+            ? systemThemeId
+            : (state.activeThemeId as PresetThemeId);
+
+          let baseTheme = presetThemes[resolvedThemeId];
 
           // 防御性检查：如果主题ID无效，回退到默认主题
           if (!baseTheme) {
             logger.warn('[Theme System] ⚠️ 无效的主题ID:', state.activeThemeId, '，回退到默认主题');
+            resolvedThemeId = 'light-default';
             baseTheme = presetThemes['light-default'];
           }
 
@@ -154,6 +164,9 @@ export const useThemeStore = create<ThemeStore>()(
           // 6. 更新状态并应用主题
           set({
             activeTheme: baseTheme,
+            // D-37：system 模式下解析出的实际预设要回写，避免 activeThemeId 与
+            // activeTheme 长期不一致（前者可能是用户上次的显式选择）
+            activeThemeId: resolvedThemeId,
             motionPreferences: motionPrefs,
             isInitialized: true,
           });
@@ -242,13 +255,17 @@ export const useThemeStore = create<ThemeStore>()(
           baseTheme = getAccessibilityTheme(baseTheme, state.accessibilityMode);
         }
 
-        // 从主题 ID 推断模式
-        const newMode = themeId.startsWith('dark-') ? 'dark' : 'light';
-
+        // D-34 修复：**不再**按 ID 前缀强写 mode。
+        // 原实现 `const newMode = themeId.startsWith('dark-') ? 'dark' : 'light'` 会
+        // 破坏「跟随系统」：mode==='system' 时，ThemeProvider 的系统偏好监听器会调用
+        // setPresetTheme('dark-default'|'light-default')，而该赋值随即把 mode 改成
+        // 'dark'/'light' → 用户**首次系统切换后就永久退出 system 模式**（规范 R-27 实测）。
+        // mode 只应由 setThemeMode() 与系统监听器改变；DOM 侧由 activeTheme.mode
+        // 驱动（applyThemeToDOM 用 theme.mode 设置 .dark / data-mode / colorScheme），
+        // 因此不写 mode 也能正确切换外观。
         set({
           activeThemeId: themeId,
           activeTheme: baseTheme,
-          mode: newMode,
         });
 
         applyThemeWithTransition(baseTheme, state.transitionType);

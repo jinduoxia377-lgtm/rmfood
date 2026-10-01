@@ -487,6 +487,29 @@ export function mergeThemeOverrides(base: ThemeConfig, overrides: CustomThemeOve
 // 辅助功能：生成 CSS 变量
 // ============================================================================
 
+/**
+ * T-B2a：颜色角色 `main` → L0 令牌名的映射。
+ *
+ * 原实现一律生成 `--color-<角色>-main`，而**所有 CSS 消费者读的是 L0 名**
+ * （`--color-primary`、`--color-secondary`、`--color-accent`）。
+ * 后果：自定义主题 / 无障碍变体 / 文件导入**完全无法改变品牌色** ——
+ * 实测把 `colors.primary.main` 设为 `#ff0000` 后，
+ * `--color-primary-main` 变为 `#ff0000`，而组件实际读取的 `--color-primary`
+ * 仍是 `#10b981`（D-2/D-3 的最终形态，也是 D-36「导入无效果」的深层原因）。
+ *
+ * 映射前提：经 T-B1 对齐后，内置预设的这三个角色取值已与 L0 **完全相等**，
+ * 因此改名对内置预设是零视觉变化，仅让自定义主题真正生效。
+ *
+ * 注：success / warning / error / info **暂不映射** —— 其预设值有意不同于
+ * §13 的权威色（如 error `#B91C1C` 配白字 6.4:1，而权威 `#ef4444` 仅 3.76:1，
+ * 直接改名会造成对比度倒退）。这四个角色待 T-B2b 统一处理。
+ */
+const COLOR_MAIN_TO_L0: Record<string, string> = {
+  'primary-main': '--color-primary',
+  'secondary-main': '--color-secondary',
+  'tertiary-main': '--color-accent',
+};
+
 export function generateCSSVariables(theme: ThemeConfig): Record<string, string> {
   // 防御性检查：如果theme或theme.colors不存在，返回空对象
   if (!theme?.colors) {
@@ -500,7 +523,9 @@ export function generateCSSVariables(theme: ThemeConfig): Record<string, string>
   Object.entries(theme.colors).forEach(([category, values]) => {
     if (typeof values === 'object' && !Array.isArray(values)) {
       Object.entries(values as Record<string, string>).forEach(([key, value]) => {
-        vars[`--color-${category}-${key}`] = value;
+        const l0 = COLOR_MAIN_TO_L0[`${category}-${key}`];
+        // T-B2a：命中映射时写 L0 名，否则维持原命名（待 T-B2b 收敛）
+        vars[l0 ?? `--color-${category}-${key}`] = value;
       });
     }
   });
