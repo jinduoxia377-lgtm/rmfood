@@ -61,15 +61,17 @@
   --empty-state-duration-fast: 150ms;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --empty-state-bg-primary: #0f172a;
-    --empty-state-bg-secondary: #1e293b;
-    --empty-state-text-primary: #f1f5f9;
-    --empty-state-text-secondary: #94a3b8;
-    --empty-state-text-disabled: #475569;
-    --empty-state-border-light: #334155;
-  }
+/* T-F1a（D-13/D-26）：暗色覆盖改为由 <html> 上的 .dark 类驱动。
+   原为 @media (prefers-color-scheme: dark)，会跟随操作系统偏好 ——
+   用户在「系统暗 + 应用显式浅色」时仍会看到暗色空状态。
+   选择器 .dark 与 :root 特异度相同 (0,1,0)，且在源序中更靠后，故存在 .dark 时生效。 */
+.dark {
+  --empty-state-bg-primary: #0f172a;
+  --empty-state-bg-secondary: #1e293b;
+  --empty-state-text-primary: #f1f5f9;
+  --empty-state-text-secondary: #94a3b8;
+  --empty-state-text-disabled: #475569;
+  --empty-state-border-light: #334155;
 }
 
 /* ── Chat 内容样式 ── */

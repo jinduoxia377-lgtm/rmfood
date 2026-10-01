@@ -1432,7 +1432,12 @@
 
 /* ============================================================
  *  Dark Mode 暗色模式支持
- *  通过父级 .dark class 或 @media (prefers-color-scheme: dark) 触发
+ *  T-F1a（D-13/D-26）：**只**由 <html> 上的 .dark 类驱动，
+ *  禁止使用 @media (prefers-color-scheme: dark) ——
+ *  后者会跟随操作系统偏好，使用户在「系统暗 + 应用显式浅色」时
+ *  仍看到暗色对话区，与全局主题开关不一致。
+ *  本次已把 20 个媒体查询块与 14 个自作用域死规则（.dark.X 要求元素自身
+ *  同时带 .dark，而 .dark 在 <html> 上 → 永不匹配）统一改写为 .dark 后代选择器。
  * ============================================================ */
 
 /* --- Academic 暗色模式 — 使用项目翠绿品牌色 --- */
@@ -1640,89 +1645,41 @@
 }
 
 /* --- 表格暗色模式适配 --- */
-.dark.chat-unified .chat-md-table-wrapper {
+.dark .chat-unified .chat-md-table-wrapper {
     border-color: #33335a;
 }
 
-@media (prefers-color-scheme: dark) {
-  .chat-unified .chat-md-table-wrapper {
-    border-color: #33335a;
-  }
-}
-.dark.chat-unified .chat-md-table thead tr th {
+.dark .chat-unified .chat-md-table thead tr th {
     background-color: #2a2a45;
     border-bottom-color: #44446a;
 }
 
-@media (prefers-color-scheme: dark) {
-  .chat-unified .chat-md-table thead tr th {
-    background-color: #2a2a45;
-    border-bottom-color: #44446a;
-  }
-}
-.dark.chat-unified .chat-md-table tbody tr:nth-child(odd) {
+.dark .chat-unified .chat-md-table tbody tr:nth-child(odd) {
     background-color: #232340;
 }
 
-@media (prefers-color-scheme: dark) {
-  .chat-unified .chat-md-table tbody tr:nth-child(odd) {
-    background-color: #232340;
-  }
-}
-.dark.chat-unified .chat-md-table tbody tr:hover {
+.dark .chat-unified .chat-md-table tbody tr:hover {
     background-color: rgba(107, 140, 206, 0.15);
 }
 
-@media (prefers-color-scheme: dark) {
-  .chat-unified .chat-md-table tbody tr:hover {
-    background-color: rgba(107, 140, 206, 0.15);
-  }
-}
-.dark.chat-unified .chat-md-table tbody tr td {
+.dark .chat-unified .chat-md-table tbody tr td {
     border-bottom-color: #33335a;
 }
 
-@media (prefers-color-scheme: dark) {
-  .chat-unified .chat-md-table tbody tr td {
-    border-bottom-color: #33335a;
-  }
-}
-
-.dark.chat-unified .chat-md-table-wrapper {
+.dark .chat-unified .chat-md-table-wrapper {
     border-color: #363b46;
 }
 
-@media (prefers-color-scheme: dark) {
-  .chat-unified .chat-md-table-wrapper {
-    border-color: #363b46;
-  }
-}
-.dark.chat-unified .chat-md-table thead tr th {
+.dark .chat-unified .chat-md-table thead tr th {
     background: linear-gradient(180deg, #2c303a, #242830);
 }
 
-@media (prefers-color-scheme: dark) {
-  .chat-unified .chat-md-table thead tr th {
-    background: linear-gradient(180deg, #2c303a, #242830);
-  }
-}
-.dark.chat-unified .chat-md-table tbody tr:nth-child(odd) {
+.dark .chat-unified .chat-md-table tbody tr:nth-child(odd) {
     background-color: #1a1d23;
 }
 
-@media (prefers-color-scheme: dark) {
-  .chat-unified .chat-md-table tbody tr:nth-child(odd) {
-    background-color: #1a1d23;
-  }
-}
-.dark.chat-unified .chat-md-table tbody tr td {
+.dark .chat-unified .chat-md-table tbody tr td {
     border-bottom-color: #363b46;
-}
-
-@media (prefers-color-scheme: dark) {
-  .chat-unified .chat-md-table tbody tr td {
-    border-bottom-color: #363b46;
-  }
 }
 
 /* ================================
@@ -1890,71 +1847,41 @@
 }
 
 /* Callout 暗色模式适配 */
-.dark.chat-md-callout-info {
-    background: rgba(59, 130, 246, 0.12);
-    color: #93c5fd;
+/* T-F1a：原 .dark.chat-md-callout-info 为自作用域死规则（.dark 在 <html>，
+   本类在内层元素 → 永不匹配）。改为后代选择器并保留原 :not() 覆盖面。 */
+.dark .chat-md-callout-info:not(.chat-unified *) {
+  background: rgba(59, 130, 246, 0.12);
+  color: #93c5fd;
 }
-
-@media (prefers-color-scheme: dark) {
-  .chat-md-callout-info:not(.chat-unified *) {
-    background: rgba(59, 130, 246, 0.12);
-    color: #93c5fd;
-  }
+/* T-F1a：原 .dark.chat-md-callout-warning 为自作用域死规则（.dark 在 <html>，
+   本类在内层元素 → 永不匹配）。改为后代选择器并保留原 :not() 覆盖面。 */
+.dark .chat-md-callout-warning:not(.chat-unified *) {
+  background: rgba(245, 158, 11, 0.12);
+  color: #fcd34d;
 }
-.dark.chat-md-callout-warning {
-    background: rgba(245, 158, 11, 0.12);
-    color: #fcd34d;
+/* T-F1a：原 .dark.chat-md-callout-success 为自作用域死规则（.dark 在 <html>，
+   本类在内层元素 → 永不匹配）。改为后代选择器并保留原 :not() 覆盖面。 */
+.dark .chat-md-callout-success:not(.chat-unified *) {
+  background: rgba(34, 197, 94, 0.12);
+  color: #86efac;
 }
-
-@media (prefers-color-scheme: dark) {
-  .chat-md-callout-warning:not(.chat-unified *) {
-    background: rgba(245, 158, 11, 0.12);
-    color: #fcd34d;
-  }
+/* T-F1a：原 .dark.chat-md-callout-error 为自作用域死规则（.dark 在 <html>，
+   本类在内层元素 → 永不匹配）。改为后代选择器并保留原 :not() 覆盖面。 */
+.dark .chat-md-callout-error:not(.chat-unified *) {
+  background: rgba(239, 68, 68, 0.12);
+  color: #fca5a5;
 }
-.dark.chat-md-callout-success {
-    background: rgba(34, 197, 94, 0.12);
-    color: #86efac;
+/* T-F1a：原 .dark.chat-md-callout-tip 为自作用域死规则（.dark 在 <html>，
+   本类在内层元素 → 永不匹配）。改为后代选择器并保留原 :not() 覆盖面。 */
+.dark .chat-md-callout-tip:not(.chat-unified *) {
+  background: rgba(16, 185, 129, 0.12);
+  color: var(--color-primary-300, #6ee7b7);
 }
-
-@media (prefers-color-scheme: dark) {
-  .chat-md-callout-success:not(.chat-unified *) {
-    background: rgba(34, 197, 94, 0.12);
-    color: #86efac;
-  }
-}
-.dark.chat-md-callout-error {
-    background: rgba(239, 68, 68, 0.12);
-    color: #fca5a5;
-}
-
-@media (prefers-color-scheme: dark) {
-  .chat-md-callout-error:not(.chat-unified *) {
-    background: rgba(239, 68, 68, 0.12);
-    color: #fca5a5;
-  }
-}
-.dark.chat-md-callout-tip {
-    background: rgba(16, 185, 129, 0.12);
-    color: var(--color-primary-300, #6ee7b7);
-}
-
-@media (prefers-color-scheme: dark) {
-  .chat-md-callout-tip:not(.chat-unified *) {
-    background: rgba(16, 185, 129, 0.12);
-    color: var(--color-primary-300, #6ee7b7);
-  }
-}
-.dark.chat-md-callout-note {
-    background: rgba(107, 114, 128, 0.12);
-    color: #d1d5db;
-}
-
-@media (prefers-color-scheme: dark) {
-  .chat-md-callout-note:not(.chat-unified *) {
-    background: rgba(107, 114, 128, 0.12);
-    color: #d1d5db;
-  }
+/* T-F1a：原 .dark.chat-md-callout-note 为自作用域死规则（.dark 在 <html>，
+   本类在内层元素 → 永不匹配）。改为后代选择器并保留原 :not() 覆盖面。 */
+.dark .chat-md-callout-note:not(.chat-unified *) {
+  background: rgba(107, 114, 128, 0.12);
+  color: #d1d5db;
 }
 
 /* ================================
@@ -2036,25 +1963,13 @@
 .chat-md-sub { font-size: 0.75em; vertical-align: sub; }
 
 /* kbd 暗色模式 */
-.dark.chat-md-kbd {
+.dark .chat-md-kbd {
     box-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
-}
-
-@media (prefers-color-scheme: dark) {
-  .chat-md-kbd {
-    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
-  }
 }
 
 /* mark 暗色模式 */
-.dark.chat-md-mark {
+.dark .chat-md-mark {
     background: rgba(250, 204, 21, 0.18);
-}
-
-@media (prefers-color-scheme: dark) {
-  .chat-md-mark {
-    background: rgba(250, 204, 21, 0.18);
-  }
 }
 
 /* ================================
@@ -2147,14 +2062,8 @@
 }
 
 /* TOC 暗色模式 */
-.dark.chat-md-toc {
+.dark .chat-md-toc {
     border-color: var(--chat-border);
-}
-
-@media (prefers-color-scheme: dark) {
-  .chat-md-toc {
-    border-color: var(--chat-border);
-  }
 }
 
 /* ================================
@@ -2173,14 +2082,8 @@
 }
 
 /* 图片暗色模式阴影调整 */
-.dark.chat-md-img {
+.dark .chat-md-img {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-@media (prefers-color-scheme: dark) {
-  .chat-md-img {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  }
 }
 
 /* ================================
@@ -2240,16 +2143,9 @@
 }
 
 /* 代码行号暗色模式 */
-.dark.chat-md-code-line-num {
+.dark .chat-md-code-line-num {
     color: #6b7280;
     border-right-color: #4b5563;
-}
-
-@media (prefers-color-scheme: dark) {
-  .chat-md-code-line-num {
-    color: #6b7280;
-    border-right-color: #4b5563;
-  }
 }
 
 /* ================================
@@ -2719,7 +2615,6 @@
     transform: translateY(0);
   }
 }
-
 
 /* ═══════════════════════════════════════════════════════════════
    ChatSidebarV4 紧凑模式 — 折叠触发按钮
