@@ -5,7 +5,8 @@
 import { useMemo } from 'react'
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts'
 import { CHART_TYPOGRAPHY } from '../../../utils/typography'
-import { getChartThemeColors, getRoleColor } from '../../../utils/color-migration'
+import { getChartThemeColors, getRoleColor } from '../../../utils/chartTheme'
+import { useIsDarkMode } from '@/theme'
 
 interface Ingredient {
   name: string
@@ -33,7 +34,9 @@ function getDosageUnit(dosage: string): string {
 }
 
 export function CompositionChart({ ingredients, compact = false }: CompositionChartProps) {
-  const colors = useMemo(() => getChartThemeColors(), [])
+  // D-43 修复：原为 useMemo(..., []) 空依赖 —— 切主题后图表颜色不会更新
+  const isDark = useIsDarkMode()
+  const colors = useMemo(() => getChartThemeColors(), [isDark])
   const tooltipBg = colors.tooltipBg || 'var(--card-bg-solid, #FFFFFF)'
   const tooltipBorder = colors.tooltipBorder || 'var(--border-subtle, rgba(0,0,0,0.06))'
   const tooltipText = colors.tooltipText || 'var(--text-secondary, #6E6E73)'

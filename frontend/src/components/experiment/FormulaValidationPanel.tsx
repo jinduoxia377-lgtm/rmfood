@@ -267,7 +267,7 @@ function ComparisonChart({ comparisons }: { comparisons: PredictionComparison[] 
             }}
           />
           <Legend wrapperStyle={{ fontSize: '12px' }} />
-          <Bar dataKey="predicted" name="预测值" fill="var(--primary-500)" radius={[4, 4, 0, 0]} />
+          <Bar dataKey="predicted" name="预测值" fill="var(--color-primary-500)" radius={[4, 4, 0, 0]} />
           <Bar dataKey="measured" name="实测值" fill="var(--emerald-500)" radius={[4, 4, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>

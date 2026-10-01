@@ -4,6 +4,15 @@
    ═══════════════════════════════════════════════════════════════ */
 
 /* ── Tailwind CSS v4 ── */
+/* TODO(T-E1 遗留)：自动内容探测会扫描整个 frontend/，把 docs/、coverage/、
+   dist-*/、*.bak 中的**代码示例**当作真实类名，生成引用不存在令牌的工具类 ——
+   实测 `--color-text-primary` / `--color-background-default` 即由此进入编译产物，
+   被 GATE-08 判为「有引用、全文无声明」。
+   拟改为显式声明扫描范围（Tailwind ≥4.1 语法）：
+       @import "tailwindcss" source(none);
+       @source ".";
+       @source "../index.html";
+   该改动需在构建可用的前提下验证「未丢失真实工具类」，暂缓。 */
 @import "tailwindcss";
 
 /* ── 暗色变体绑定（D-1 修复）───────────────────────────────────────────
@@ -344,7 +353,7 @@ select:focus-visible,
 textarea:focus-visible,
 [role="button"]:focus-visible,
 [role="tab"]:focus-visible {
-  outline: 2px solid var(--color-primary, var(--accent-500));
+  outline: 2px solid var(--color-primary, var(--color-accent-500, #8b5cf6));
   outline-offset: 2px;
   border-radius: var(--radius-sm, 4px);
 }

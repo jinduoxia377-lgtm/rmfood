@@ -387,7 +387,7 @@ select:focus-visible,
 textarea:focus-visible,
 [role="button"]:focus-visible,
 [role="tab"]:focus-visible {
-  outline: 2px solid var(--color-primary, var(--accent-500));
+  outline: 2px solid var(--color-primary, var(--color-accent-500, #8b5cf6));
   outline-offset: 2px;
   border-radius: var(--radius-sm, 4px);
 }

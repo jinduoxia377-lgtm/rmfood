@@ -577,14 +577,14 @@ export const FormulaInputWithOptimization: React.FC<FormulaInputWithOptimization
                             <svg viewBox={`0 0 ${result.convergence_history.length * 40} 100`} preserveAspectRatio="none" className="chart-svg">
                               <defs>
                                 <linearGradient id="fitnessGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                                  <stop offset="0%" stopColor="var(--primary-500)" stopOpacity="0.3" />
-                                  <stop offset="100%" stopColor="var(--primary-500)" stopOpacity="0" />
+                                  <stop offset="0%" stopColor="var(--color-primary-500)" stopOpacity="0.3" />
+                                  <stop offset="100%" stopColor="var(--color-primary-500)" stopOpacity="0" />
                                 </linearGradient>
                               </defs>
                               <path
                                 d={`M ${result.convergence_history.map((h: NSGAIIProgress, i: number) => `${i * 40},${100 - h.best_fitness * 100}`).join(' L ')}`}
                                 fill="none"
-                                stroke="var(--primary-600)"
+                                stroke="var(--color-primary-600)"
                                 strokeWidth="2"
                                 className="chart-line"
                               />
@@ -598,7 +598,7 @@ export const FormulaInputWithOptimization: React.FC<FormulaInputWithOptimization
                                   cx={result.convergence_history.findIndex((x: NSGAIIProgress) => x.generation === h.generation) * 40}
                                   cy={100 - h.best_fitness * 100}
                                   r="4"
-                                  fill="var(--primary-600)"
+                                  fill="var(--color-primary-600)"
                                 />
                               ))}
                             </svg>
@@ -611,7 +611,7 @@ export const FormulaInputWithOptimization: React.FC<FormulaInputWithOptimization
                         </div>
                         <div className="convergence-legend">
                           <div className="legend-item">
-                            <div className="legend-color" style={{ backgroundColor: 'var(--primary-600)' }} />
+                            <div className="legend-color" style={{ backgroundColor: 'var(--color-primary-600)' }} />
                             <span>最佳适应度</span>
                           </div>
                         </div>

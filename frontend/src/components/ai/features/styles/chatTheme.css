@@ -2386,7 +2386,7 @@
   left: 0;
   right: 0;
   height: 3px;
-  background: linear-gradient(90deg, var(--primary-500), var(--indigo-500));
+  background: linear-gradient(90deg, var(--color-primary-500), var(--color-indigo-500));
   border-radius: 3px 3px 0 0;
 }
 
@@ -2574,7 +2574,7 @@
   inset: 0;
   border-radius: 1rem;
   padding: 1px;
-  background: linear-gradient(135deg, var(--primary-500), var(--indigo-500));
+  background: linear-gradient(135deg, var(--color-primary-500), var(--color-indigo-500));
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
@@ -2639,7 +2639,7 @@
   left: 50%;
   width: 60%;
   height: 2px;
-  background: linear-gradient(90deg, var(--primary-500), var(--indigo-500));
+  background: linear-gradient(90deg, var(--color-primary-500), var(--color-indigo-500));
   border-radius: 1px;
   animation: tabIndicatorSlide 0.3s ease-out both;
 }
@@ -2651,7 +2651,7 @@
 
 .chat-bubble-user:hover {
   transform: translateY(-1px) !important;
-  box-shadow: 0 8px 24px rgba(var(--primary-rgb), 0.25) !important;
+  box-shadow: 0 8px 24px rgba(var(--color-primary-rgb), 0.25) !important;
 }
 
 .chat-bubble-ai {
@@ -2670,12 +2670,12 @@
 
 .chat-action-btn:hover {
   transform: scale(1.15) !important;
-  background: rgba(var(--neutral-rgb), 0.1) !important;
+  background: rgba(var(--neutral-rgb, 100, 116, 139), 0.1) !important;
 }
 
 /* 输入区域焦点增强 */
 .chat-input-area:focus-within {
-  box-shadow: 0 -2px 20px rgba(var(--primary-rgb), 0.08) !important;
+  box-shadow: 0 -2px 20px rgba(var(--color-primary-rgb), 0.08) !important;
 }
 
 /* 顶部栏玻璃态增强 */
@@ -2691,7 +2691,7 @@
 
 .empty-state-card-item:hover {
   transform: translateY(-2px) !important;
-  box-shadow: 0 12px 32px rgba(var(--primary-rgb), 0.12) !important;
+  box-shadow: 0 12px 32px rgba(var(--color-primary-rgb), 0.12) !important;
 }
 
 /* 徽章脉冲动画 */
