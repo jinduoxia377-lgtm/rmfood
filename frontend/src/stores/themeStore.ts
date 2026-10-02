@@ -500,6 +500,11 @@ export const useThemeStore = create<ThemeStore>()(
                 persistedState.customThemes = oldThemes;
               }
             }
+            // R-15：迁移完成后删除遗留存储键（一次性清理僵尸数据）
+            localStorage.removeItem('rmfood-custom-themes');
+            localStorage.removeItem('rmfood-theme-state');
+            localStorage.removeItem('rmfood-theme-preferences');
+            localStorage.removeItem('rmfood-theme-versions');
           } catch { /* 忽略迁移错误 */ }
         }
 
