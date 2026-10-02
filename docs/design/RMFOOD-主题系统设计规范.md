@@ -4,7 +4,7 @@
 |:-----|:-----|
 | **文档编号** | RMFOOD-DS-THEME-001 |
 | **标题** | RMFOOD 配方研发平台 — 主题系统设计规范 |
-| **版本** | **v1.1.7** |
+| **版本** | **v1.1.8** |
 | **状态** | 正式发布（Normative） |
 | **适用平台** | Web 前端（`frontend/`，React 19 + Vite 8 + Tailwind CSS v4） |
 | **不适用范围** | 微信小程序（`miniprogram/`，另见 `docs/theme-system-spec.md`） |
@@ -33,7 +33,7 @@
 > 其中 **T-B2a 解锁了长期失效的自定义主题功能** —— 此前 `colors.primary.main` 只写入 `--color-primary-main`，
 > 而 CSS 消费者读 `--color-primary`，导致自定义主题 / 无障碍变体 / 文件导入对品牌色**完全无效**。
 > 门禁从 9 项 → **12 项**，并于本版**首次全绿**（通过 11 / 失败 0 / 退出码 0）。
-> 同步更新 §10.1 检查清单、§11.2 状态表与 §12 路线图。仅剩 **T-B2b**（去冗余注入，高风险）。
+> 同步更新 §10.1 检查清单、§11.2 状态表与 §12 路线图。
 >
 > **历史版本摘要**
 > - **v1.1.2**：M1（止血）执行完成，修复 15 项缺陷（D-1/8/9/10/11/12b/21/22/33/39/41/49/50/51/52），门禁 M1 范围退出码 0。
@@ -1019,7 +1019,7 @@ export function applyThemeToDOM(theme: ThemeConfig, a11yMode?: AccessibilityMode
 
 **M1（止血）已完成**。门禁 `npm run theme:gate:m1` **退出码 0**：M1 范围 8 条断言中 **通过 5 / warn 1 / 跳过 2**（跳过项因当时 dev server 未运行，非失败）。
 
-> **M2（一致性）亦已完成 7/8** —— 见本节末尾的 M2 状态表。门禁从 9 项扩展至 **12 项**，且**全量门禁首次全绿**（通过 11 / 失败 0 / 跳过 0，退出码 0）。
+> **M2（一致性）已完成 8/8**（T-B2b 于 v1.1.8 收口）—— 见 §11.2 末尾的 M2 状态表。门禁从 9 项扩展至 **12 项**，且**全量门禁全绿**（通过 11 / 失败 0 / 跳过 0，退出码 0）。
 
 > 断言清单与含义见 **§10.3**。当时逐项：GATE-01 ✅、GATE-02 ✅、GATE-03 ✅、GATE-09 ⚠️ warn、GATE-10 ✅、GATE-04~06 ⏭️ 跳过（需渲染）。
 
@@ -1047,7 +1047,7 @@ export function applyThemeToDOM(theme: ThemeConfig, a11yMode?: AccessibilityMode
 | *(附带)* D-7 的测试失效 | ✅ 附带修复 | 删除从未通过的死测试 `radix-components-a11y.test.tsx`（引用了从未导出的 `RadixButton`/`RadixCard`），替换为 `badge-text-a11y.test.tsx`（仅测真实导出）。**注：此行非独立缺陷 ID，仅为 D-7 的关联修复记录。** |
 | **D-5** | ⊘ 已推翻 | 实测无内联累加；仅记录为不良实践（已随 D-33 一并改写） |
 
-**M2（一致性）—— 已完成 7/8，仅剩 T-B2b**
+**M2（一致性）—— 已完成 8/8 ✅（T-B2b 收口）**
 
 | 任务 | 状态 | 覆盖缺陷 | 验证证据 |
 |:-----|:-----|:---------|:---------|
@@ -1058,12 +1058,11 @@ export function applyThemeToDOM(theme: ThemeConfig, a11yMode?: AccessibilityMode
 | **T-E1** 图表取色单通道 | ✅ | **D-4 / D-43 / D-45** | 迁入 `chartTheme.ts` 并为每个 `var()` 补 fallback（原引用 `-light` 四族、`--color-chart-1..5`、`pink/cyan/sky-500` 等**并不存在**的令牌）；修复两处 `useMemo(…, [])` 空依赖（切主题后图表颜色永不更新）；删除 3 个零消费者模块 |
 | **T-F1a** 对话区暗色驱动 | ✅ | **D-13 / D-26** | 全 src 的 `@media (prefers-color-scheme: dark)` 块 **22 → 0**。修法为**转换而非删除**：该文件另有 **14 条 `.dark.X` 自作用域死规则**（`.dark` 在 `<html>`、目标类在内层元素 → 永不匹配），真正生效的反而是配对的 `@media` 版 → 改写为后代选择器 `.dark X`，使规则复活且由应用设置驱动。双场景判别验证（OS=dark+应用 light → 浅色；OS=light+应用 dark → 暗色） |
 | **T-W2** 无障碍覆盖缺口 | ✅ | **D-32** | ① 阅读模式补 `--bg-canvas`（`typography.css:19` 亮色 body 实际读取，**48 处**消费者），原只覆盖 `--bg-primary` → sepia 下文字变棕而底色仍是 slate；② 高对比度 `--border-default` → `--border-color`（**147 处 vs 2 处**），并补 `--bg-canvas`；③ `color-blind` 在 CSS 层**零规则** → 按 **A-15** 用 Okabe-Ito 色盲安全色板落地；同时修正 JS 侧原给 success/error 选的 Apple 绿/红（**正是红绿色盲最难区分的一对**） |
-| **T-B2b** 去冗余注入 | ⏳ | — | 高风险（方案要求单独提交并保留回滚点）。内置预设仍有 102 处「仅注入」令牌待收敛；补齐 success/warning/error/info 四角色的 L0 映射 |
+| **T-B2b** 去冗余注入 + 四角色映射 | ✅ | **D-2/D-3 终局 / D-53 配对** | 两步提交：**Step 1** 四语义角色（success/error/warning/info）的 main/background/text → L0 名映射（12 条，`verify-b2b.mjs` 37 项断言全过）；**Step 2** 新增 `isCleanBuiltinPreset()` —— 内置纯净预设（light/dark-default 且 colors 未被无障碍变体修改）时 `applyThemeToDOM` 跳过内联注入（`<html>` 内联自定义属性 **86 → 0**），无障碍变体 / 自定义 / 导入仍注入（color-blind 态 `--color-success=#009E73` 生效）。残余：变体态全量注入 86 个（部分对 L0 冗余），精确差异注入记 M3/M4 优化项 |
 
 **⏳ 待办（M2 后重算）**：
 `D-12、D-18、D-19、D-24、D-25、D-27、D-28、D-29、D-30、D-31、D-42、D-44、D-46、D-47、D-48`（M3 死代码/架构收口）
-＋ `D-53`（须与 T-B2b 同做）
-→ 排期见《修复执行方案》§0.0 与 §6.4。**M2 已关闭**：D-2、D-3、D-4、D-13、D-23、D-26、D-32、D-34~D-38、D-40、D-43、D-45。
+→ 排期见《修复执行方案》§0.0 与 §6.4。**M2 已关闭**：D-2、D-3、D-4、D-13、D-23、D-26、D-32、D-34~D-38、D-40、D-43、D-45。**D-53 已随 T-B2b 修复**（kebab 化令牌名，解锁 10 维度自定义）。
 
 **残余风险**：静态扫描仍有 **82 处**条件类字符串形如 `bg-primary-{400..950} + text-white`（仅在特定状态渲染；原记 105 处，经精确统计修正为 82）。门禁在 **12 路由 × 22 个白字实底元素 × 双模式**下未发现失败实例，但这些未渲染状态仍可能触发 D-50。
 
@@ -1093,7 +1092,7 @@ export function applyThemeToDOM(theme: ThemeConfig, a11yMode?: AccessibilityMode
 
 ### 阶段 1 — 一致性（P1，2–4 周）
 
-### 阶段 1 — 一致性（P1）—— **✅ M2 已完成 7/8（仅剩第 22 项）**
+### 阶段 1 — 一致性（P1）—— **✅ M2 已完成 8/8（T-B2b 收口，v1.1.8）**
 
 | 序 | 动作 | 缺陷 | 状态 |
 |:--|:-----|:-----|:-----|
@@ -1109,6 +1108,8 @@ export function applyThemeToDOM(theme: ThemeConfig, a11yMode?: AccessibilityMode
 | 20 | **建立渲染级 CI 门禁**：关键路由亮/暗截图 diff + 对比度断言 | G-5 | 🔶 **部分完成** — `theme:gate` 已交付 **12 项断言**（含渲染级 GATE-04~08）并通过 npm script 暴露；**接入 CI 仍待做（G-4）** |
 | 21 | 静态清零条件类字符串 `bg-primary-*` + `text-white`（**实测 82 处**，原记 105） | D-50 残余 | ⏳ 未做 |
 | **22** | ~~清理 106 个「冗余」自引用令牌~~ **→ 更正为：保留登记声明（不改 inline、不删除）** | D-51 残余 | ✅ **已澄清**（v1.1.7）——这 106 条是 Tailwind 生成工具类的**登记机制**，删除会导致工具类完全不生成（实证 D-55）。**改为 `@theme inline` 经实测证伪**（会导致带 opacity 修饰符的类 0 生成）。层叠顺序隐患靠保证 `base.css`/`dark.css` 在 `index.css` 之前导入缓解（当前已如此），**无需额外动作** |
+| **23（新增 v1.1.8）** | **T-B2b 去冗余注入 + 四角色映射**：`isCleanBuiltinPreset()` 使内置预设不注入（`<html>` 内联 86 → 0），无障碍变体 / 自定义 / 导入仍注入；`COLOR_MAIN_TO_L0` 补全 success/error/warning/info 四角色（12 条） | D-2 / D-3 终局 / D-53 配对 | ✅ **完成**（v1.1.8，`verify-b2b.mjs` 37 项断言全过） |
+| **24（新增 v1.1.8）** | **D-53 kebab 化**：`generateCSSVariables` 引入 `toKebab`，10 个 camelCase 令牌名（`--color-primary-contrastText`、`--z-modalBackdrop`、`--ease-easeIn` 等）kebab 化后通过 `SAFE_TOKEN_NAME` 白名单 | D-53 | ✅ **完成**（v1.1.8，`verify-d53.mjs` 16 项断言全过，`--z-modal-backdrop` 首次匹配 L0） |
 
 > **M2 另新增两项任务**（不在原表内）：
 > · **T-B1 / T-B2a** 品牌色双源收敛与生成器改名 —— 关闭 **D-2 / D-3**，并**解锁自定义主题**；
@@ -1550,6 +1551,7 @@ node scripts/theme-audit/theme-audit-isolation.mjs   # 纯 CSS 隔离矩阵，�
 
 | 版本 | 日期 | 变更 |
 |:-----|:-----|:-----|
+| **v1.1.8** | 2026-10-02 | **收口 M2 后的两项修正 + 门禁脆弱性修复 + D-53 修复**。① **T-B2b**（M2 最后一项，8/8）：`COLOR_MAIN_TO_L0` 补全 success/error/warning/info 四语义角色（main→L0 主色、background→-container、text→-text，12 条）；新增 `isCleanBuiltinPreset()` —— 内置纯净预设（`light-default`/`dark-default` 且 `colors` 未被无障碍变体修改）时 `applyThemeToDOM` **跳过内联注入**（`<html>` 内联自定义属性 **86 → 0**），无障碍变体 / 自定义主题 / 导入主题仍注入（color-blind 态 `--color-success=#009E73` Okabe-Ito 生效）；`clearInlineCustomProps()` 清旧防残留。② **D-53**：`generateCSSVariables` 引入 `toKebab`，10 个 camelCase 令牌名（`--color-primary-contrastText`、`--z-modalBackdrop`、`--ease-easeIn` 等）kebab 化后通过 `SAFE_TOKEN_NAME` 白名单，解锁该 10 维度自定义；`--z-modal-backdrop` 首次匹配 L0 既有定义。静态断言 37（B2b）+ 16（D-53）全过。③ **GATE-04/05 脆弱性修复**：`g0405` 中单路由导航异常原会 `return { error }` 提前退出并让 GATE-04/05 双双 fail（"单路由拖垮整组"）；改为单路由异常跳过并记录、仅**全部**路由失败才报错。门禁稳定 **11/0/0**。新增验证脚本 `verify-b2b.mjs` / `verify-b2b-step1.mjs` / `verify-d53.mjs` / `measure-b2b.mjs` / `measure-d53.mjs` / `repro-gate0405.mjs`。**残余**：变体态全量注入 86 个（部分对 L0 冗余，精确差异注入记 M3/M4 优化项）；M3 死代码清理（`useLegacyTheme`/`useThemedComponent` 待删）未启动。 |
 | v1.0.0 | 2026-10-01 | 首次发布。确立五层模型、令牌命名规范、消费契约、无障碍要求、治理流程；登记 49 项缺陷；裁决品牌色与两套命名体系；废止 6 份旧规范文档。**验证等级 L2（静态）。** |
 | **v1.1.0** | 2026-10-01 | **升级为 L3（真实浏览器渲染取证）**。新增 §1.3 渲染验证基线、§17 验证方法与可复现证据、C-24（反转色阶禁止配白字）、I9 不变量、CHK-23~25、R-9、A-2/A-5/A-7/A-8、U-12。**推翻 1 项**（D-5 内联累加）、**修正 4 项**（D-2/D-3/D-4 变量范围、D-39 缺陷边界、§1.2 静态启发式、D-4 精确缺失清单）、**新增 1 项 P0**（D-50，实测暗色对比度 1.52:1）。缺陷总数 49 → 52（含推翻项标注）。 |
 | **v1.1.1** | 2026-10-01 | **门禁驱动发现新增 P0**。交付 `theme:gate`（9 项断言 `GATE-01`~`GATE-09`）后立即发现 **D-51**：`index.css` 的 `@theme` 悬空自引用致 `--color-blue-50..900` **循环引用**、解析为空，使全项目约 **347 处** `blue-*` 工具类失去颜色（编译产物与浏览器双重确证）。新增令牌规则 **T13**、检查项 **CHK-26/CHK-27**。 |
