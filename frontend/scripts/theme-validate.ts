@@ -1,8 +1,14 @@
-﻿#!/usr/bin/env node
+#!/usr/bin/env node
 /**
- * theme:validate — 主题系统合规检查脚本
- * 扫描 src/ 目录，检测硬编码颜色、缺失 token 引用
+ * theme:validate — 主题系统合规检查脚本（T-H2 / M4 治理重写版）
+ *
+ * 对齐规范 §13 权威品牌色值 + 扩展至 §10 阻塞级检查清单。
  * 用法: npx tsx scripts/theme-validate.ts
+ *
+ * 检查项：
+ *   1. 禁用色（Apple 系统色 + 旧品牌主色声明）—— error 级
+ *   2. 非白名单硬编码 hex —— warn 级（排除 CSS 变量定义行 / 字符串字面量）
+ *   3. 循环引用检测（base.css / dark.css 的 var() 组合）—— error 级
  */
 
 import { readdirSync, readFileSync, existsSync } from 'fs';
@@ -11,30 +17,46 @@ import { join, relative } from 'path';
 const SRC_DIR = join(process.cwd(), 'src');
 const IGNORE_PATTERNS = [/node_modules/, /coverage/, /__tests__/, /\.test\./, /dist\//];
 
-// 品牌规范色值（来自 DESIGN.md v1.0）
-const SPEC_COLORS = {
-  primary_main: '#059669',
-  primary_500: '#10b981',
-  secondary_main: '#2563eb',
-  secondary_500: '#3b82f6',
-  accent_main: '#7c3aed',
-  accent_500: '#8b5cf6',
+// 规范 §13 权威品牌色值（2026-10 裁决）
+const SPEC_COLORS: Record<string, string> = {
+  primary_light: '#10b981',
+  primary_dark: '#34d399',
+  primary_surface_light: '#047857',
+  primary_surface_dark: '#065f46',
+  primary_600_light: '#059669',
+  primary_600_dark: '#6ee7b7',
+  on_primary: '#ffffff',
+  secondary: '#3b82f6',
+  accent: '#8b5cf6',
+  success: '#10b981',
+  warning: '#f59e0b',
+  error: '#ef4444',
+  info: '#3b82f6',
 };
 
-// Apple 风格颜色（禁止使用）
+// 禁用色：Apple 系统色 + 已废弃的旧品牌主色声明
 const FORBIDDEN_COLORS = [
-  '#34c759', '#34C759', // Apple Emerald
-  '#007aff', '#007AFF', // Apple Blue
-  '#af52de', '#AF52DE', // Apple Purple
-  '#1c1c1e', '#2c2c2e', '#3a3a3c', // Apple dark surfaces
-  '#f5f5f7', '#F5F5F7', // Apple light surface
+  '#34c759', '#007aff', '#af52de',
+  '#1c1c1e', '#2c2c2e', '#3a3a3c',
+  '#f5f5f7',
+  '#28a745', '#22c55e', '#0891b2',
 ];
+
+// 白名单：允许出现在源码中的非 token hex 值
+const HEX_WHITELIST = new Set([
+  '#ffffff', '#000000', '#f8fafc', '#f1f5f9', '#e2e8f0',
+  '#cbd5e1', '#94a3b8', '#64748b', '#475569', '#334155',
+  '#1e293b', '#0f172a', '#020617',
+  '#f97316', '#ea580c', '#a855f7', '#9333ea',
+  '#0891b2', '#0e7490', '#2563eb',
+]);
 
 interface Finding {
   file: string;
   line: number;
-  color: string;
+  detail: string;
   suggestion: string;
+  severity: 'error' | 'warn';
 }
 
 const findings: Finding[] = [];
@@ -52,6 +74,21 @@ function walkDir(dir: string): string[] {
   return result;
 }
 
+function getReplacement(hex: string): string {
+  const map: Record<string, string> = {
+    '#34c759': '--color-primary-400',
+    '#007aff': '--color-secondary-500',
+    '#af52de': '--color-accent-500',
+    '#1c1c1e': '--bg-surface-container (dark)',
+    '#2c2c2e': '--bg-surface-raised (dark)',
+    '#f5f5f7': '--bg-canvas (light)',
+    '#28a745': '--color-primary-500 (#10b981)',
+    '#22c55e': '--color-primary-500 (#10b981)',
+    '#0891b2': '--color-info-600 (#2563eb)',
+  };
+  return map[hex] ?? '使用 CSS 变量替代';
+}
+
 function checkFile(filePath: string) {
   if (IGNORE_PATTERNS.some(p => p.test(filePath))) return;
 
@@ -61,54 +98,108 @@ function checkFile(filePath: string) {
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
+    const trimmed = line.trim();
+    if (trimmed.startsWith('//') || trimmed.startsWith('*') || trimmed.startsWith('/*')) continue;
+
     const matches = line.matchAll(/(?<![a-zA-Z0-9#])(#[0-9a-fA-F]{3,8})\b/g);
     for (const m of matches) {
       const hex = m[1].toLowerCase();
-      // Skip if it's inside a CSS variable definition
-      if (line.includes('var(--') || line.includes('// ') || line.includes('* ')) continue;
-      // Skip valid Tailwind classes
-      if (hex.length === 3 && /^[0-9a-f]{3}$/.test(hex)) continue;
-      // Check forbidden colors
+      if (HEX_WHITELIST.has(hex)) continue;
+      if (hex.length === 4) continue;
+
       if (FORBIDDEN_COLORS.some(f => f.toLowerCase() === hex)) {
         findings.push({
-          file: relPath,
-          line: i + 1,
-          color: hex,
+          file: relPath, line: i + 1, detail: hex,
           suggestion: getReplacement(hex),
+          severity: 'error',
         });
+        continue;
+      }
+
+      const inVarDef = line.includes('--') && line.includes(':') && !line.includes('var(');
+      if (!inVarDef) {
+        const commentIdx = line.indexOf('//');
+        const codePart = commentIdx > -1 ? line.slice(0, commentIdx) : line;
+        const inString = codePart.includes("'" + hex + "'") || codePart.includes('"' + hex + '"');
+        if (codePart.includes(hex) && !inString) {
+          findings.push({
+            file: relPath, line: i + 1, detail: hex,
+            suggestion: '考虑改用 var(--color-*) 或加入 HEX_WHITELIST',
+            severity: 'warn',
+          });
+        }
       }
     }
   }
 }
 
-function getReplacement(hex: string): string {
-  const map: Record<string, string> = {
-    '#34c759': '--color-primary-400 (Forest Green 浅)',
-    '#007aff': '--color-secondary-500 (Ocean Blue)',
-    '#af52de': '--color-accent-500 (Bio Purple)',
-    '#1c1c1e': '--bg-surface-container (dark)',
-    '#2c2c2e': '--bg-surface-raised (dark)',
-    '#f5f5f7': '--bg-canvas (light)',
-  };
-  return map[hex] ?? '使用 CSS 变量替代';
+function checkCycles() {
+  const TOKENS_DIR = join(SRC_DIR, 'styles/tokens');
+  for (const fname of ['base.css', 'dark.css']) {
+    const fpath = join(TOKENS_DIR, fname);
+    if (!existsSync(fpath)) continue;
+    const text = readFileSync(fpath, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+    const map = new Map<string, string>();
+    const re = /--([a-zA-Z0-9_-]+)\s*:\s*([^;]+);/g;
+    let m;
+    while ((m = re.exec(text)) !== null) {
+      const name = '--' + m[1];
+      if (!map.has(name)) map.set(name, m[2].trim());
+    }
+    const seen = new Set<string>();
+    function findCycle(start: string, pathArr: string[], depth: number): string[] | null {
+      if (depth > 15) return null;
+      const val = map.get(start) || '';
+      const refs = (val.match(/var\(\s*(--[a-z0-9-]+)/gi) || []).map(x => x.replace(/^var\(\s*/, '').trim());
+      for (const t of refs) {
+        if (t === pathArr[0]) return pathArr.concat(t);
+        if (!pathArr.includes(t) && !seen.has(t) && map.has(t)) {
+          seen.add(t);
+          const c = findCycle(t, pathArr.concat(t), depth + 1);
+          if (c) return c;
+        }
+      }
+      return null;
+    }
+    for (const start of map.keys()) {
+      if (!seen.has(start)) {
+        seen.add(start);
+        const c = findCycle(start, [start], 0);
+        if (c) {
+          findings.push({
+            file: 'styles/tokens/' + fname, line: 0, detail: c.join(' -> '),
+            suggestion: '循环引用',
+            severity: 'error',
+          });
+        }
+      }
+    }
+  }
 }
 
-// Main
-console.log('🔍 扫描主题合规性...');
+console.log('扫描主题合规性（规范 §13 + §10 阻塞级清单）...');
 const files = walkDir(SRC_DIR);
-console.log(`   找到 ${files.length} 个源文件`);
+console.log('   找到 ' + files.length + ' 个源文件');
 
 for (const f of files) checkFile(f);
+checkCycles();
 
-console.log(`\n📊 发现 ${findings.length} 个问题`);
-if (findings.length > 0) {
-  console.log('\n前 20 个:')
-  findings.slice(0, 20).forEach((f, i) => {
-    console.log(`  ${i+1}. ${f.file}:${f.line} → ${f.color} (${f.suggestion})`);
+const errors = findings.filter(f => f.severity === 'error');
+const warns = findings.filter(f => f.severity === 'warn');
+
+console.log('\n发现 ' + errors.length + ' 个 error + ' + warns.length + ' 个 warn');
+if (errors.length > 0) {
+  console.log('\n前 20 个 error:');
+  errors.slice(0, 20).forEach((f, i) => {
+    console.log('  ' + (i + 1) + '. ' + f.file + ':' + f.line + ' ' + f.detail + ' (' + f.suggestion + ')');
   });
-  if (findings.length > 20) console.log(`  ... 还有 ${findings.length - 20} 个`);
-  process.exit(1);
-} else {
-  console.log('✅ 所有文件符合主题规范');
-  process.exit(0);
 }
+if (warns.length > 0) {
+  console.log('\n前 10 个 warn:');
+  warns.slice(0, 10).forEach((f, i) => {
+    console.log('  ' + (i + 1) + '. ' + f.file + ':' + f.line + ' ' + f.detail + ' (' + f.suggestion + ')');
+  });
+}
+if (findings.length === 0) console.log('所有文件符合主题规范');
+
+process.exit(errors.length > 0 ? 1 : 0);
