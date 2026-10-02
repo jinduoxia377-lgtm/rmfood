@@ -169,8 +169,8 @@ export default function DataSources() {
           <div className="lp-data-panel mb-6" style={{ background: 'var(--color-neutral-900, #0f172a)' }}>
             {[
               { value: '6',  label: '数据源',  color: 'var(--color-success-600, #6ee7b7)' },
-              { value: '38K+', label: '知识实体', color: '#93c5fd' },
-              { value: '128K', label: '图谱节点', color: '#c4b5fd' },
+              { value: '38K+', label: '知识实体', color: 'var(--color-secondary-300, #93c5fd)' },
+              { value: '128K', label: '图谱节点', color: 'var(--color-accent-300, #c4b5fd)' },
               { value: SYNC_STATUS, label: '同步状态', color: 'var(--color-neutral-300, #cbd5e1)' },
             ].map((s, i) => (
               <div key={i} className="flex-1 flex items-center gap-0">

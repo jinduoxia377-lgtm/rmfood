@@ -140,9 +140,9 @@ export const dimensionConfig: Record<Dimension, {
   data: {
     primary: 'var(--color-secondary-700, #1d4ed8)',
     primaryLight: 'var(--color-secondary-50, #eff6ff)',
-    primaryBorder: '#bfdbfe',
+    primaryBorder: 'var(--color-secondary-200, #bfdbfe)',
     primaryRGB: '37,99,235',
-    iconBg: 'linear-gradient(135deg, var(--color-secondary-700, #1d4ed8), #60a5fa)',
+    iconBg: 'linear-gradient(135deg, var(--color-secondary-700, #1d4ed8), var(--color-secondary-400, #60a5fa))',
     stepActive: 'var(--color-secondary-700, #1d4ed8)',
   },
   team: {
@@ -150,7 +150,7 @@ export const dimensionConfig: Record<Dimension, {
     primaryLight: 'var(--color-warning-50, #fffbeb)',
     primaryBorder: 'var(--color-warning-200, #fde68a)',
     primaryRGB: '217,119,6',
-    iconBg: 'linear-gradient(135deg, var(--color-warning-700, #b45309), #fbbf24)',
+    iconBg: 'linear-gradient(135deg, var(--color-warning-700, #b45309), var(--color-warning-400, #fbbf24))',
     stepActive: 'var(--color-warning-700, #b45309)',
   },
 };

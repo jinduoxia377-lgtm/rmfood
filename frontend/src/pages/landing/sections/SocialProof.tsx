@@ -74,7 +74,7 @@ function PartnerLogos() {
                 style={{
                   background: isHovered ? '#fff' : s.bg,
                   border: `1px solid ${isHovered ? s.border : s.border}`,
-                  boxShadow: isHovered ? '0 2px 6px rgba(0,0,0,0.06)' : 'none',
+                  boxShadow: isHovered ? '0 2px 6px color-mix(in srgb, #000000 6%, transparent)' : 'none',
                 }}
                 onMouseEnter={() => setHovered(org.name)}
                 onMouseLeave={() => setHovered(null)}
@@ -116,9 +116,9 @@ function Testimonials() {
                 hovered === i && 'translate-y-[-1px]'
               )}
               style={{
-                background: hovered === i ? '#fff' : '#fafafa',
+                background: hovered === i ? '#fff' : 'var(--color-neutral-50, #fafafa)',
                 border: `1px solid ${hovered === i ? 'var(--color-primary-600, #059669)' : 'var(--color-neutral-200, #e2e8f0)'}`,
-                boxShadow: hovered === i ? '0 2px 6px rgba(0,0,0,0.05)' : 'none',
+                boxShadow: hovered === i ? '0 2px 6px color-mix(in srgb, #000000 5%, transparent)' : 'none',
               }}
               onMouseEnter={() => setHovered(i)}
               onMouseLeave={() => setHovered(null)}
@@ -148,7 +148,7 @@ function Testimonials() {
               <div className="flex items-center gap-2 pt-2.5 border-t border-slate-100">
                 <div
                   className="w-7 h-7 rounded-full flex items-center justify-center lp-label text-white shrink-0"
-                  style={{ background: t.gradient, boxShadow: '0 1px 4px rgba(0,0,0,0.15)' }}
+                  style={{ background: t.gradient, boxShadow: '0 1px 4px color-mix(in srgb, #000000 15%, transparent)' }}
                 >
                   {t.name[0]}
                 </div>

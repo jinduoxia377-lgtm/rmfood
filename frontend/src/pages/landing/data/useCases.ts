@@ -46,16 +46,16 @@ export const scenarioConfig: Record<Scenario, {
     primaryLight: 'var(--color-success-50, #ecfdf5)',
     primaryBorder: 'var(--color-success-200, #a7f3d0)',
     primaryRGB: '5,150,105',
-    gradient: 'linear-gradient(135deg, var(--color-primary-700, #047857), #10b981, var(--color-success-500, #34d399))',
+    gradient: 'linear-gradient(135deg, var(--color-primary-700, #047857), var(--color-success-500, #10b981), var(--color-success-500, #34d399))',
     metricBg: 'var(--color-success-50, #ecfdf5)',
   },
   peptide: {
     primary: 'var(--color-secondary-700, #1d4ed8)',
     primaryText: 'var(--color-secondary-700, #1d4ed8)',
     primaryLight: 'var(--color-secondary-50, #eff6ff)',
-    primaryBorder: '#bfdbfe',
+    primaryBorder: 'var(--color-secondary-200, #bfdbfe)',
     primaryRGB: '37,99,235',
-    gradient: 'linear-gradient(135deg, var(--color-secondary-700, #1d4ed8), var(--color-secondary-500, #3b82f6), #60a5fa)',
+    gradient: 'linear-gradient(135deg, var(--color-secondary-700, #1d4ed8), var(--color-secondary-500, #3b82f6), var(--color-secondary-400, #60a5fa))',
     metricBg: 'var(--color-secondary-50, #eff6ff)',
   },
   eln: {
@@ -64,7 +64,7 @@ export const scenarioConfig: Record<Scenario, {
     primaryLight: 'var(--color-warning-50, #fffbeb)',
     primaryBorder: 'var(--color-warning-200, #fde68a)',
     primaryRGB: '217,119,6',
-    gradient: 'linear-gradient(135deg, var(--color-warning-700, #b45309), var(--color-warning-500, #f59e0b), #fbbf24)',
+    gradient: 'linear-gradient(135deg, var(--color-warning-700, #b45309), var(--color-warning-500, #f59e0b), var(--color-warning-400, #fbbf24))',
     metricBg: 'var(--color-warning-50, #fffbeb)',
   },
 };

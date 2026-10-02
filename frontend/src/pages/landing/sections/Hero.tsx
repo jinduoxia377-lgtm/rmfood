@@ -165,8 +165,8 @@ function MDBlockquote({ children }: { children: React.ReactNode }) {
 /** Callout 提示块 */
 function MDCallout({ type, children }: { type: 'info' | 'warn' | 'success'; children: React.ReactNode }) {
   const cfg = {
-    info:    { bg: 'var(--color-secondary-50, #eff6ff)', border: '#93c5fd', dot: 'var(--color-secondary-700, #1d4ed8)', label: '信息' },
-    warn:    { bg: 'var(--color-warning-50, #fffbeb)', border: '#fcd34d', dot: 'var(--color-warning-700, #b45309)', label: '注意' },
+    info:    { bg: 'var(--color-secondary-50, #eff6ff)', border: 'var(--color-secondary-300, #93c5fd)', dot: 'var(--color-secondary-700, #1d4ed8)', label: '信息' },
+    warn:    { bg: 'var(--color-warning-50, #fffbeb)', border: 'var(--color-warning-300, #fcd34d)', dot: 'var(--color-warning-700, #b45309)', label: '注意' },
     success: { bg: 'var(--color-success-50, #ecfdf5)', border: 'var(--color-success-600, #6ee7b7)', dot: 'var(--color-primary-700, #047857)', label: '通过' },
   }[type];
   return (
@@ -197,7 +197,7 @@ function MDTable({ header: hdr, rows }: { header: string[]; rows: string[][] }) 
             <tr key={ri}>
               {row.map((cell, ci) => (
                 <td key={ci} className="px-2.5 py-1.5 align-top whitespace-nowrap"
-                  style={{ borderBottom: '1px solid var(--color-neutral-100, #f1f5f9)', color: 'var(--color-neutral-600, #475569)', fontSize: 12, background: ri % 2 === 1 ? '#fafbfc' : 'transparent' }}>
+                  style={{ borderBottom: '1px solid var(--color-neutral-100, #f1f5f9)', color: 'var(--color-neutral-600, #475569)', fontSize: 12, background: ri % 2 === 1 ? 'var(--color-neutral-50, #fafbfc)' : 'transparent' }}>
                   {parseInline(cell.trim(), `cell-${ri}-${ci}`)}
                 </td>
               ))}
@@ -396,8 +396,8 @@ const KG_LINKS: KGLink[] = [
 
 const KG_TYPE_STYLE: Record<string, { color: string; bg: string; border: string; label: string }> = {
   herb:      { color: 'var(--color-primary-700, #047857)', bg: 'var(--color-success-50, #ecfdf5)',  border: 'var(--color-success-200, #a7f3d0)',  label: '药材' },
-  compound:  { color: 'var(--color-secondary-700, #1d4ed8)', bg: 'var(--color-secondary-50, #eff6ff)',  border: '#bfdbfe',  label: '成分' },
-  target:    { color: 'var(--color-accent-700, #6d28d9)', bg: '#f5f3ff',  border: '#ddd6fe',  label: '靶点' },
+  compound:  { color: 'var(--color-secondary-700, #1d4ed8)', bg: 'var(--color-secondary-50, #eff6ff)',  border: 'var(--color-secondary-200, #bfdbfe)',  label: '成分' },
+  target:    { color: 'var(--color-accent-700, #6d28d9)', bg: 'var(--color-accent-50, #f5f3ff)',  border: 'var(--color-accent-200, #ddd6fe)',  label: '靶点' },
   disease:   { color: 'var(--color-warning-700, #b45309)', bg: 'var(--color-warning-50, #fffbeb)',  border: 'var(--color-warning-200, #fde68a)',  label: '适应症' },
 };
 
@@ -419,7 +419,7 @@ function GraphTab() {
   return (
     <div className="flex h-full">
       {/* 搜索栏 */}
-      <div className="w-full px-3 py-2 border-b" style={{ borderColor: 'var(--color-neutral-200, #e2e8f0)', background: '#fafbfc' }}>
+      <div className="w-full px-3 py-2 border-b" style={{ borderColor: 'var(--color-neutral-200, #e2e8f0)', background: 'var(--color-neutral-50, #fafbfc)' }}>
         <div className="relative">
           <Search size={11} className="absolute left-2 top-1/2 -translate-y-1/2" style={{ color: 'var(--color-neutral-400, #94a3b8)' }} />
           <input
@@ -482,7 +482,7 @@ function GraphTab() {
         </svg>
 
         {/* 图例 */}
-        <div className="absolute bottom-2 left-2 flex items-center gap-2 px-2 py-1 rounded-md" style={{ background: 'rgba(248,250,252,0.95)', border: '1px solid var(--color-neutral-200, #e2e8f0)' }}>
+        <div className="absolute bottom-2 left-2 flex items-center gap-2 px-2 py-1 rounded-md" style={{ background: 'color-mix(in srgb, var(--color-neutral-50, #f8fafc) 95%, transparent)', border: '1px solid var(--color-neutral-200, #e2e8f0)' }}>
           {(['herb','compound','target','disease'] as const).map(t => (
             <div key={t} className="flex items-center gap-1">
               <div className="w-1.5 h-1.5 rounded-full" style={{ background: KG_TYPE_STYLE[t].color }} />
@@ -494,7 +494,7 @@ function GraphTab() {
 
       {/* 右侧详情面板 */}
       {selectedNode && (
-        <div className="w-32 flex-shrink-0 border-l p-3 overflow-y-auto" style={{ background: '#fafbfc', borderColor: 'var(--color-neutral-200, #e2e8f0)' }}>
+        <div className="w-32 flex-shrink-0 border-l p-3 overflow-y-auto" style={{ background: 'var(--color-neutral-50, #fafbfc)', borderColor: 'var(--color-neutral-200, #e2e8f0)' }}>
           <div className="flex items-center gap-1.5 mb-2">
             <div className="w-2 h-2 rounded-full" style={{ background: KG_TYPE_STYLE[selectedNode.type].color }} />
             <span className="lp-tiny font-semibold text-slate-800">{selectedNode.name}</span>
@@ -562,7 +562,7 @@ function DataTab() {
   return (
     <div className="flex flex-col h-full">
       {/* 顶部工具栏 */}
-      <div className="flex items-center justify-between px-3 py-2 border-b" style={{ borderColor: 'var(--color-neutral-200, #e2e8f0)', background: '#fafbfc' }}>
+      <div className="flex items-center justify-between px-3 py-2 border-b" style={{ borderColor: 'var(--color-neutral-200, #e2e8f0)', background: 'var(--color-neutral-50, #fafbfc)' }}>
         <div className="flex items-center gap-2">
           <DBIcon size={11} style={{ color: 'var(--color-neutral-500, #64748b)' }} />
           <span className="lp-tiny font-medium text-slate-600">数据源概览</span>
@@ -623,7 +623,7 @@ function DataTab() {
         </div>
 
         {/* 活动日志 */}
-        <div className="mt-2.5 rounded-md border p-2.5" style={{ borderColor: 'var(--color-neutral-200, #e2e8f0)', background: '#fafbfc' }}>
+        <div className="mt-2.5 rounded-md border p-2.5" style={{ borderColor: 'var(--color-neutral-200, #e2e8f0)', background: 'var(--color-neutral-50, #fafbfc)' }}>
           <div className="text-[12px] font-medium text-slate-500 mb-1.5 flex items-center gap-1">
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
@@ -716,7 +716,7 @@ function ComplianceTab() {
   return (
     <div className="flex flex-col h-full">
       {/* 输入区 */}
-      <div className="px-3 py-2 border-b" style={{ borderColor: 'var(--color-neutral-200, #e2e8f0)', background: '#fafbfc' }}>
+      <div className="px-3 py-2 border-b" style={{ borderColor: 'var(--color-neutral-200, #e2e8f0)', background: 'var(--color-neutral-50, #fafbfc)' }}>
         <div className="text-[12px] font-medium text-slate-500 mb-1.5 flex items-center gap-1">
           <ShieldCheck size={11} style={{ color: 'var(--color-neutral-500, #64748b)' }} />
           输入配方成分（每行一个）
@@ -765,13 +765,13 @@ function ComplianceTab() {
         {result.status === 'done' && (
           <div className="space-y-2">
             {/* 总评分 */}
-            <div className="rounded-md p-2.5 flex items-center gap-3" style={{ background: result.score >= 90 ? 'var(--color-success-50, #ecfdf5)' : result.score >= 70 ? 'var(--color-warning-50, #fffbeb)' : 'var(--color-danger-50, #fef2f2)', border: `1px solid ${result.score >= 90 ? 'var(--color-success-200, #a7f3d0)' : result.score >= 70 ? 'var(--color-warning-200, #fde68a)' : '#fecaca'}` }}>
+            <div className="rounded-md p-2.5 flex items-center gap-3" style={{ background: result.score >= 90 ? 'var(--color-success-50, #ecfdf5)' : result.score >= 70 ? 'var(--color-warning-50, #fffbeb)' : 'var(--color-danger-50, #fef2f2)', border: `1px solid ${result.score >= 90 ? 'var(--color-success-200, #a7f3d0)' : result.score >= 70 ? 'var(--color-warning-200, #fde68a)' : 'var(--color-danger-200, #fecaca)'}` }}>
               <div className="text-center">
                 <div className="text-xl font-bold font-mono leading-none" style={{ color: result.score >= 90 ? 'var(--color-primary-700, #047857)' : result.score >= 70 ? 'var(--color-warning-700, #b45309)' : 'var(--color-danger-700, #dc2626)' }}>{result.score}</div>
                 <div className="text-[12px] text-slate-500 mt-0.5">安全评分</div>
               </div>
               <div className="flex-1">
-                <div className="lp-tiny font-semibold" style={{ color: result.score >= 90 ? 'var(--color-primary-800, #065f46)' : result.score >= 70 ? '#92400e' : '#991b1b' }}>
+                <div className="lp-tiny font-semibold" style={{ color: result.score >= 90 ? 'var(--color-primary-800, #065f46)' : result.score >= 70 ? 'var(--color-warning-800, #92400e)' : 'var(--color-danger-800, #991b1b)' }}>
                   {result.score >= 90 ? '✅ 配方整体安全' : result.score >= 70 ? '⚠️ 存在部分风险项' : '❌ 存在严重禁忌'}
                 </div>
                 <div className="text-[12px] text-slate-500 mt-0.5">
@@ -785,7 +785,7 @@ function ComplianceTab() {
               <div>
                 <div className="text-[12px] font-medium text-slate-500 mb-1 px-1">风险检测</div>
                 {result.hazards.map((h, i) => (
-                  <div key={i} className="flex items-start gap-1.5 px-1.5 py-1.5 rounded-md mb-1" style={{ background: h.severity === 'safe' ? 'var(--color-neutral-50, #f8fafc)' : h.severity === 'warn' ? 'var(--color-warning-50, #fffbeb)' : 'var(--color-danger-50, #fef2f2)', border: `1px solid ${h.severity === 'safe' ? 'var(--color-neutral-200, #e2e8f0)' : h.severity === 'warn' ? 'var(--color-warning-200, #fde68a)' : '#fecaca'}` }}>
+                  <div key={i} className="flex items-start gap-1.5 px-1.5 py-1.5 rounded-md mb-1" style={{ background: h.severity === 'safe' ? 'var(--color-neutral-50, #f8fafc)' : h.severity === 'warn' ? 'var(--color-warning-50, #fffbeb)' : 'var(--color-danger-50, #fef2f2)', border: `1px solid ${h.severity === 'safe' ? 'var(--color-neutral-200, #e2e8f0)' : h.severity === 'warn' ? 'var(--color-warning-200, #fde68a)' : 'var(--color-danger-200, #fecaca)'}` }}>
                     {h.severity === 'safe' ? <CheckCircle size={11} style={{ color: 'var(--color-primary-700, #047857)', flexShrink: 0, marginTop: 1 }} />
                      : h.severity === 'warn' ? <AlertTriangle size={11} style={{ color: 'var(--color-warning-700, #b45309)', flexShrink: 0, marginTop: 1 }} />
                      : <XCircle size={11} style={{ color: 'var(--color-danger-700, #dc2626)', flexShrink: 0, marginTop: 1 }} />}
@@ -908,14 +908,14 @@ function ProductPreview() {
           <div className="flex items-center gap-2">
             <span className="lp-brand tracking-wider" style={{ color: 'var(--color-neutral-300, #cbd5e1)' }}>莱茵分子</span>
             <div className="w-px h-3 bg-slate-700" />
-            <div className="flex items-center gap-1 px-2 py-0.5 rounded lp-section-tag" style={{ background: 'rgba(4,120,87,0.45)', color: '#ffffff', border: '1px solid rgba(4,120,87,0.6)' }}>
+            <div className="flex items-center gap-1 px-2 py-0.5 rounded lp-section-tag" style={{ background: 'color-mix(in srgb, var(--color-primary-700, #047857) 45%, transparent)', color: '#ffffff', border: '1px solid color-mix(in srgb, var(--color-primary-700, #047857) 60%, transparent)' }}>
               <Sparkles size={10} /><span>智能对话</span>
             </div>
           </div>
           <div className="flex-1" />
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full" style={{ background: demoState.status === 'error' ? '#ef4444' : 'var(--color-success-500, #34d399)', boxShadow: '0 0 4px rgba(5,150,105,0.4)' }} />
+              <span className="w-1.5 h-1.5 rounded-full" style={{ background: demoState.status === 'error' ? 'var(--color-danger-500, #ef4444)' : 'var(--color-success-500, #34d399)', boxShadow: '0 0 4px color-mix(in srgb, var(--color-primary-500, #10b981) 40%, transparent)' }} />
               <span className="text-[12px] font-mono" style={{ color: 'var(--color-neutral-400, #94a3b8)' }}>{demoState.status === 'error' ? '离线' : '在线'}</span>
             </div>
             <span className="text-[12px] font-mono" style={{ color: 'var(--color-neutral-400, #94a3b8)' }}>v2.4</span>
@@ -932,7 +932,7 @@ function ProductPreview() {
               return (
                 <button key={item.label} onClick={() => setActiveTab(i)} aria-label={item.label} title={item.label}
                   className="w-11 h-11 rounded-md flex items-center justify-center transition-all duration-150"
-                  style={isActive ? { background: 'var(--color-primary-700, #047857)', color: '#fff', border: '1px solid var(--color-primary-700, #047857)', boxShadow: '0 1px 2px rgba(5,150,105,0.3)' } : { background: 'transparent', color: 'var(--color-neutral-600, #475569)', border: '1px solid transparent' }}>
+                  style={isActive ? { background: 'var(--color-primary-700, #047857)', color: '#fff', border: '1px solid var(--color-primary-700, #047857)', boxShadow: '0 1px 2px color-mix(in srgb, var(--color-primary-500, #10b981) 30%, transparent)' } : { background: 'transparent', color: 'var(--color-neutral-600, #475569)', border: '1px solid transparent' }}>
                   <Icon size={16} strokeWidth={1.8} />
                 </button>
               );
@@ -969,9 +969,9 @@ function ProductPreview() {
                         {PRESET_QUESTIONS.map((q, i) => (
                           <button key={i} onClick={() => triggerPreset(q)}
                             className="text-left px-3 py-2 rounded-lg text-[12px] leading-relaxed text-slate-600 transition-all duration-150 border min-h-[44px] flex items-center"
-                            style={{ background: 'var(--color-neutral-50, #f8fafc)', borderColor: '#eef2f7' }}
-                            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#f0fdf4'; (e.currentTarget as HTMLButtonElement).style.borderColor = '#bbf7d0'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--color-primary-800, #065f46)'; }}
-                            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--color-neutral-50, #f8fafc)'; (e.currentTarget as HTMLButtonElement).style.borderColor = '#eef2f7'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--color-neutral-600, #475569)'; }}
+                            style={{ background: 'var(--color-neutral-50, #f8fafc)', borderColor: 'var(--color-neutral-100, #eef2f7)' }}
+                            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--color-success-50, #f0fdf4)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--color-success-200, #bbf7d0)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--color-primary-800, #065f46)'; }}
+                            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--color-neutral-50, #f8fafc)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--color-neutral-100, #eef2f7)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--color-neutral-600, #475569)'; }}
                           >{q}</button>
                         ))}
                       </div>
@@ -985,7 +985,7 @@ function ProductPreview() {
                               <Sparkles size={10} style={{ color: 'var(--color-primary-700, #047857)' }} />
                             </div>
                           )}
-                          <div className="px-3 py-2 max-w-[80%] leading-relaxed" style={{ background: msg.role === 'user' ? 'linear-gradient(135deg, var(--color-primary-600, #059669) 0%, var(--color-primary-700, #047857) 100%)' : '#ffffff', color: msg.role === 'user' ? '#fff' : 'var(--color-neutral-800, #1e293b)', borderRadius: msg.role === 'user' ? '12px 12px 3px 12px' : '3px 12px 12px 3px', border: msg.role === 'assistant' ? '1px solid var(--color-neutral-200, #e2e8f0)' : 'none', lineHeight: '1.65', boxShadow: msg.role === 'assistant' ? '0 1px 4px rgba(0,0,0,0.06)' : 'none' }}>
+                          <div className="px-3 py-2 max-w-[80%] leading-relaxed" style={{ background: msg.role === 'user' ? 'linear-gradient(135deg, var(--color-primary-600, #059669) 0%, var(--color-primary-700, #047857) 100%)' : '#ffffff', color: msg.role === 'user' ? '#fff' : 'var(--color-neutral-800, #1e293b)', borderRadius: msg.role === 'user' ? '12px 12px 3px 12px' : '3px 12px 12px 3px', border: msg.role === 'assistant' ? '1px solid var(--color-neutral-200, #e2e8f0)' : 'none', lineHeight: '1.65', boxShadow: msg.role === 'assistant' ? '0 1px 4px color-mix(in srgb, #000000 6%, transparent)' : 'none' }}>
                             <MarkdownRenderer content={msg.content} />
                           </div>
                         </div>
@@ -995,7 +995,7 @@ function ProductPreview() {
                           <div className="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 mr-2 mt-0.5" style={{ background: 'var(--color-success-50, #ecfdf5)', border: '1px solid var(--color-success-100, #d1fae5)' }}>
                             <Sparkles size={10} style={{ color: 'var(--color-primary-700, #047857)' }} />
                           </div>
-                          <div className="px-4 py-3 rounded-xl" style={{ background: '#ffffff', border: '1px solid var(--color-neutral-200, #e2e8f0)', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+                          <div className="px-4 py-3 rounded-xl" style={{ background: '#ffffff', border: '1px solid var(--color-neutral-200, #e2e8f0)', boxShadow: '0 1px 4px color-mix(in srgb, #000000 6%, transparent)' }}>
                             <div className="flex items-center gap-2 mb-2">
                               {THINKING_STEPS.map((step, i) => (
                                 <div key={step.label} className="flex items-center gap-1.5">
@@ -1014,17 +1014,17 @@ function ProductPreview() {
                       )}
                       {demoState.status === 'error' && (
                         <div className="flex justify-start lp-chat-bubble-in">
-                          <div className="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 mr-2 mt-0.5" style={{ background: 'var(--color-danger-50, #fef2f2)', border: '1px solid #fecaca' }}>
+                          <div className="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 mr-2 mt-0.5" style={{ background: 'var(--color-danger-50, #fef2f2)', border: '1px solid var(--color-danger-200, #fecaca)' }}>
                             <AlertCircle size={10} style={{ color: 'var(--color-danger-700, #dc2626)' }} />
                           </div>
-                          <div className="px-3 py-2 text-[12px] text-red-600 rounded-xl" style={{ background: 'var(--color-danger-50, #fef2f2)', border: '1px solid #fca5a5' }}>{demoState.message}</div>
+                          <div className="px-3 py-2 text-[12px] text-red-600 rounded-xl" style={{ background: 'var(--color-danger-50, #fef2f2)', border: '1px solid var(--color-danger-300, #fca5a5)' }}>{demoState.message}</div>
                         </div>
                       )}
                     </div>
                   )}
                   <div ref={messagesEndRef} />
                 </div>
-                <div className="flex-shrink-0 px-4 py-3 border-t" style={{ borderColor: 'var(--color-neutral-200, #e2e8f0)', background: '#fafbfc' }}>
+                <div className="flex-shrink-0 px-4 py-3 border-t" style={{ borderColor: 'var(--color-neutral-200, #e2e8f0)', background: 'var(--color-neutral-50, #fafbfc)' }}>
                   <form onSubmit={handleSubmit} className="flex items-end gap-2">
                     <div className="flex-1 relative rounded-lg border overflow-hidden transition-all lp-input-border" style={{ borderColor: 'var(--border-color, #e2e8f0)', background: 'var(--bg-canvas, #f8fafc)' }}>
                       <textarea ref={textareaRef} value={input} onChange={(e) => setInput(e.target.value)}
