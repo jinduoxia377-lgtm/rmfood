@@ -6,13 +6,15 @@
 import type { ThemeConfig } from '../types/theme.types';
 import { logger } from '@/utils/safeLogger';
 
-
-const STORAGE_KEYS = {
+// ── 历史存储键（仅用于一次性迁移与清理，不再作为活跃写目标）─────────────
+// D-44 / R-15：版本历史功能已删除（rollbackVersion 恒空 + 不应用状态）；
+// 这些旧键保留在迁移路径中读取，确保存量用户数据不丢失。
+export const LEGACY_STORAGE_KEYS = {
   THEME_STATE: 'rmfood-theme-state',
   CUSTOM_THEMES: 'rmfood-custom-themes',
   USER_PREFERENCES: 'rmfood-theme-preferences',
   THEME_VERSIONS: 'rmfood-theme-versions',
-};
+} as const;
 
 // ============================================================================
 // 存储接口
@@ -33,18 +35,6 @@ interface ThemeStateSnapshot {
 }
 
 // ============================================================================
-// 主题版本历史记录
-// ============================================================================
-
-export interface ThemeVersion {
-  id: string;
-  timestamp: number;
-  summary: string;
-  /** 快照为 themeState 的简化颜色摘要 */
-  snapshot: ThemeStateSnapshot;
-}
-
-// ============================================================================
 // Theme Storage 类
 // ============================================================================
 
@@ -56,28 +46,11 @@ export class ThemeStorage {
   }
 
   /**
-   * 保存主题状态快照
-   */
-  saveThemeState(state: ThemeStateSnapshot): void {
-    try {
-      const data: StorageData<ThemeStateSnapshot> = {
-        version: 2,
-        data: state,
-        timestamp: Date.now(),
-      };
-      this.storage.setItem(STORAGE_KEYS.THEME_STATE, JSON.stringify(data));
-      logger.info('💾 [Theme Storage] State saved');
-    } catch (error) {
-      logger.error('❌ [Theme Storage] Failed to save state:', error);
-    }
-  }
-
-  /**
-   * 加载主题状态快照
+   * 加载主题状态快照（read-only，供一次性迁移）
    */
   loadThemeState(): ThemeStateSnapshot | null {
     try {
-      const raw = this.storage.getItem(STORAGE_KEYS.THEME_STATE);
+      const raw = this.storage.getItem(LEGACY_STORAGE_KEYS.THEME_STATE);
       if (!raw) return null;
 
       const parsed: StorageData<ThemeStateSnapshot> = JSON.parse(raw);
@@ -95,28 +68,11 @@ export class ThemeStorage {
   }
 
   /**
-   * 保存自定义主题列表
-   */
-  saveCustomThemes(themes: ThemeConfig[]): void {
-    try {
-      const data: StorageData<ThemeConfig[]> = {
-        version: 1,
-        data: themes,
-        timestamp: Date.now(),
-      };
-      this.storage.setItem(STORAGE_KEYS.CUSTOM_THEMES, JSON.stringify(data));
-      logger.info(`💾 [Theme Storage] ${themes.length} custom theme(s) saved`);
-    } catch (error) {
-      logger.error('❌ [Theme Storage] Failed to save custom themes:', error);
-    }
-  }
-
-  /**
-   * 加载自定义主题列表
+   * 加载自定义主题列表（read-only，供一次性迁移）
    */
   loadCustomThemes(): ThemeConfig[] {
     try {
-      const raw = this.storage.getItem(STORAGE_KEYS.CUSTOM_THEMES);
+      const raw = this.storage.getItem(LEGACY_STORAGE_KEYS.CUSTOM_THEMES);
       if (!raw) return [];
 
       const parsed: StorageData<ThemeConfig[]> = JSON.parse(raw);
@@ -128,97 +84,15 @@ export class ThemeStorage {
   }
 
   /**
-   * 删除所有主题相关数据（重置）
+   * 一次性清理遗留存储键（R-15）
+   * 删除旧键的本地副本，确保僵尸数据不残留。
+   * 调用方：themeStore 的 v4 迁移完成后。
    */
-  clearAll(): void {
-    Object.values(STORAGE_KEYS).forEach(key => {
+  cleanLegacyKeys(): void {
+    Object.values(LEGACY_STORAGE_KEYS).forEach(key => {
       this.storage.removeItem(key);
     });
-    logger.info('🗑️ [Theme Storage] All data cleared');
-  }
-
-  /**
-   * 获取存储使用情况
-   */
-  getStorageUsage(): { used: number; total: number; percentage: number } {
-    let used = 0;
-
-    for (let i = 0; i < this.storage.length; i++) {
-      const key = this.storage.key(i);
-      if (key && key.startsWith('rmfood-')) {
-        const value = this.storage.getItem(key);
-        if (value) {
-          used += value.length * 2; // UTF-16 encoding
-        }
-      }
-    }
-
-    // localStorage 通常限制为 5MB
-    const total = 5 * 1024 * 1024;
-
-    return {
-      used,
-      total,
-      percentage: Math.round((used / total) * 10000) / 100,
-    };
-  }
-
-  // ============================================================================
-  // 私有方法：版本迁移
-  // ============================================================================
-  // 版本历史记录
-  // ============================================================================
-
-  private getVersions(): ThemeVersion[] {
-    try {
-      const raw = this.storage.getItem(STORAGE_KEYS.THEME_VERSIONS);
-      return raw ? JSON.parse(raw) : [];
-    } catch { return []; }
-  }
-
-  private saveVersions(versions: ThemeVersion[]): void {
-    try {
-      this.storage.setItem(STORAGE_KEYS.THEME_VERSIONS, JSON.stringify(versions));
-    } catch (error) {
-      logger.error('❌ [Theme Storage] Failed to save versions:', error);
-    }
-  }
-
-  createVersion(summary = '手动保存'): ThemeVersion | null {
-    const state = this.loadThemeState();
-    if (!state) return null;
-    const versions = this.getVersions();
-    const version: ThemeVersion = {
-      id: crypto.randomUUID(),
-      timestamp: Date.now(),
-      summary,
-      snapshot: {
-        activeThemeId: state.activeThemeId || 'light-default',
-        mode: state.mode || 'light',
-        accessibilityMode: state.accessibilityMode || 'normal',
-        transitionType: state.transitionType || 'smooth',
-        colors: { primary: state.activeThemeId || 'light-default' },
-      },
-    };
-    versions.unshift(version);
-    const MAX = 10;
-    if (versions.length > MAX) versions.splice(MAX);
-    this.saveVersions(versions);
-    return version;
-  }
-
-  getVersionHistory(): ThemeVersion[] {
-    return this.getVersions();
-  }
-
-  clearVersionHistory(): void {
-    this.storage.removeItem(STORAGE_KEYS.THEME_VERSIONS);
-  }
-
-  rollbackVersion(versionId: string): ThemeVersion | null {
-    const versions = this.getVersions();
-    const version = versions.find((v) => v.id === versionId);
-    return version ?? null;
+    logger.info('🗑️ [Theme Storage] Legacy keys cleaned');
   }
 
   // ============================================================================
@@ -235,9 +109,6 @@ export class ThemeStorage {
       accessibilityMode: v1Data.accessibilityMode || 'normal',
       transitionType: v1Data.transitionType || 'fade',
     };
-
-    // 保存迁移后的数据
-    this.saveThemeState(migrated);
 
     return migrated;
   }

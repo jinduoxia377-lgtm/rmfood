@@ -598,12 +598,4 @@ textarea:focus-visible,
 *, *::before, *::after {
   will-change: auto;
 }
-/* Reduced motion support */
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-}
+/* Reduced motion support — D-28：全局块已移至 environment.css（唯一权威），此处删除冗余副本 */
