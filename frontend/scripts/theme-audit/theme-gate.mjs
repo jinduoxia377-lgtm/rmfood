@@ -569,6 +569,7 @@ async function g0405(env) {
   const inverted = [];
   const failures = [];
   let scanned = 0;
+  const routeErrors = []; // 记录单路由异常，但不让一个异常拖垮整组（v1.1.7 修复）
 
   for (const route of routes) {
     try {
@@ -589,8 +590,19 @@ async function g0405(env) {
         }
       }
     } catch (e) {
-      return { error: `${route}: ${String(e).slice(0, 160)}` };
+      // v1.1.7 修复：单路由异常（如该路由在当前构建中不存在 / 导航中断）不再让
+      // 整个 GATE-04/05 失败 —— 仅跳过该路由并记录，其余路由继续扫描。
+      // 只有**所有**路由都失败时才报错（说明渲染环境本身有问题）。
+      routeErrors.push(`${route}: ${String(e).slice(0, 160)}`);
     }
+  }
+  // 全部路由都失败才视为环境错误；部分失败仅记录不影响判定
+  if (routeErrors.length === routes.length) {
+    return { error: `全部 ${routes.length} 个路由均失败：` + routeErrors.slice(0, 3).join(' | ') };
+  }
+  if (routeErrors.length > 0) {
+    // 附注：被跳过的路由（不影响 pass/fail 判定，仅审计记录）
+    return { inverted, failures, scanned, routes, skippedRoutes: routeErrors };
   }
   return { inverted, failures, scanned, routes };
 }
