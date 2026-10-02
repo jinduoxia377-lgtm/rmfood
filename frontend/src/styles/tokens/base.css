@@ -18,9 +18,9 @@
   --color-primary-900: #064e3b;
   --color-primary-950: #022c22;
 
-  --color-primary: #10b981;
+  --color-primary: var(--color-primary-500);
   --color-primary-rgb: 16, 185, 129;
-  --color-primary-hover: #059669;
+  --color-primary-hover: var(--color-primary-600);
   --color-primary-container: #d1fae5;
   --color-primary-text: #047857; /* WCAG AA: 5.24:1 on white */
 
@@ -47,9 +47,9 @@
   --color-secondary-900: #1e3a8a;
   --color-secondary-950: #172554;
 
-  --color-secondary: #3b82f6;
+  --color-secondary: var(--color-secondary-500);
   --color-secondary-rgb: 59, 130, 246;
-  --color-secondary-hover: #1d4ed8;
+  --color-secondary-hover: var(--color-secondary-700);
   --color-secondary-container: #dbeafe;
 
   /* ═══ Brand Accent: Bio Purple (#8B5CF6) ═══ */
@@ -65,24 +65,24 @@
   --color-accent-900: #3b0764;
   --color-accent-950: #1a0542;
 
-  --color-accent: #8b5cf6;
+  --color-accent: var(--color-accent-500);
   --color-accent-rgb: 139, 92, 246;
   --color-accent-hover: #7c3aed;
   --color-accent-container: #f3e8ff;
 
   /* ═══ Semantic Colors ═══ */
-  --color-success: #10b981;
-  --color-success-bg: #ecfdf5;
+  --color-success: var(--color-success-500);
+  --color-success-bg: var(--color-success-50);
   --color-success-text: #065f46;
-  --color-warning: #f59e0b;
-  --color-warning-bg: #fffbeb;
+  --color-warning: var(--color-warning-500);
+  --color-warning-bg: var(--color-warning-50);
   --color-warning-text: #92400e;
-  --color-error: #ef4444;
-  --color-error-bg: #fef2f2;
+  --color-error: var(--color-danger-500);
+  --color-error-bg: var(--color-danger-50);
   --color-error-text: #991b1b;
   /* D-56 同族：error 色阶缺 950 档（danger 族有），源码使用了 bg-error-950 */
   --color-error-950: var(--color-danger-950);
-  --color-info: #3b82f6;
+  --color-info: var(--color-info-500);
   --color-info-bg: #eff6ff;
   /* ── D-56 修复：info 族补全为 10 阶色阶 ──
      原状：info 仅有 info / info-bg / info-container / info-text / info-600 / info-100
@@ -118,14 +118,14 @@
   --color-danger-900: #7f1d1d; --color-danger-950: #450a0a;
 
   /* ═══ Surface & Canvas ═══ */
-  --bg-canvas: #f8fafc;       /* DESIGN.md: slate-50 — 页面背景 */
-  --bg-primary: #f8fafc;
+  --bg-canvas: var(--color-neutral-50);       /* DESIGN.md: slate-50 — 页面背景 */
+  --bg-primary: var(--color-neutral-50);
   --bg-secondary: #ffffff;    /* 卡片背景 */
   --bg-tertiary: #f1f5f9;
   --card-bg: #ffffff;
   --card-bg-solid: #ffffff;
   --bg-surface-container: #ffffff;
-  --bg-surface-container-low: #f8fafc;
+  --bg-surface-container-low: var(--color-neutral-50);
   --bg-surface-raised: #ffffff;
 
   /* ═══ 网格背景（Dashboard 专用）═══ */
@@ -136,9 +136,9 @@
   --hover-bg: rgba(0, 0, 0, 0.04);
 
   /* ═══ Neutral Semantic Tokens — 替代 Tailwind 内置 neutral-* ═══ */
-  --color-neutral-default: #f8fafc;  /* canvas 级背景 */
-  --color-neutral-subtle:  #f1f5f9;  /* surface-elevated 级 */
-  --color-neutral-muted:   #e2e8f0;  /* border 级 */
+  --color-neutral-default: var(--color-neutral-50);  /* canvas 级背景 */
+  --color-neutral-subtle:  var(--color-neutral-100);  /* surface-elevated 级 */
+  --color-neutral-muted:   var(--color-neutral-200);  /* border 级 */
 
 
   /* ═══ Hero v5 — Dark Product Preview Area Tokens ═══ */
@@ -158,7 +158,7 @@
   --glass-border: rgba(255, 255, 255, 0.3);
 
   /* ═══ Text Colors ═══ */
-  --text-primary: #0f172a;   /* slate-900 */
+  --text-primary: var(--color-neutral-900);   /* slate-900 */
   --text-secondary: #334155; /* slate-700 */
   --text-muted: #334155;     /* slate-700 — 6.47:1 on canvas ✅ AA */
   --text-disabled: #64748b;  /* slate-500 — 修正: 原 #94a3b8(2.45:1 FAIL) → 4.55:1 ✅ AA */
@@ -375,7 +375,7 @@
   --color-tertiary-hover: #7c3aed;
 
   /* ── 错误悬停色 ── */
-  --color-error-hover: #dc2626;
+  --color-error-hover: var(--color-danger-600);
 
   /* ── 别名 ── */
   --bg-surface: var(--bg-surface-container);
@@ -402,7 +402,7 @@
   --color-info-600: #2563eb;
 
   /* ── 渐变背景 ── */
-  --bg-gradient-start: #f8fafc;
+  --bg-gradient-start: var(--color-neutral-50);
   --bg-gradient-end: #ecfdf5;
 
   /* ── 滚动条色 ── */
