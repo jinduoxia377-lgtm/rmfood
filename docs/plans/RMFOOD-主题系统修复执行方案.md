@@ -16,14 +16,14 @@
 
 ### 0.0 执行进度（滚动更新）
 
-**当前阶段：M3（架构收口）进行中** —— T-G1（死代码清理）**已完成**；余 T-G2（令牌语义化）/ T-G3（样板与僵尸键）/ T-T1（测试覆盖）。
+**当前阶段：M3（架构收口）进行中** —— T-G1（死代码清理）✅ + T-G3（样板与僵尸键）✅ 已完成；余 T-G2（令牌语义化）/ T-T1（测试覆盖）。
 
 | 里程碑 | 状态 | 门禁 |
 |:-------|:-----|:-----|
 | **M0** 门禁（T-H1） | ✅ 完成 | 断言 9 → **12 项** |
 | **M1** 止血 | ✅ 完成 | `--milestone M1` 退出码 0 |
 | **M2** 一致性 | ✅ **8/8 完成** | **全量门禁通过 11 / 失败 0 / 跳过 0，退出码 0**（T-B2b 收口后复验） |
-| M3 架构收口 | 🔶 进行中 — **T-G1 已完成**（删除 24 个零引用孤岛文件 + 2 个死 hook，2580 行）；余 T-G2/T-G3/T-T1 | M4 治理 | ⏳ 未开始 |
+| M3 架构收口 | 🔶 进行中 — **T-G1 ✅（24 孤岛文件删除）+ T-G3 ✅（样板收敛 14→1 + 僵尸键清理 + 版本历史删除）**；余 T-G2（令牌语义化）/ T-T1（测试覆盖） | M4 治理 | ⏳ 未开始 |
 
 #### M2 任务状态
 
@@ -766,19 +766,30 @@ vars[`--ease-${key}`] = value;
 
 ---
 
-#### T-G3 · 清理重复样板与僵尸存储键【D-28 + D-44 + R-15】
+#### T-G3 · 清理重复样板与僵尸存储键【D-28 + D-44 + R-15】 — ✅ 完成（commit `b56f94e`）
 
-- **目标**：消除维护噪音与无效状态。
+> **交付**：`theme.storage.ts` 版本历史子系统删除（7 个 0 消费者方法 + `ThemeVersion` 接口，净删 ~120 行）；
+> `themeStore.ts` v4 迁移后一次性清理 4 个遗留存储键；全 src `*, *::before, *::after` 全局
+> reduced-motion 块 **14 → 1**（仅 `environment.css`）。`verify-g3.mjs` 21 断言全过。
+> **勘误**：R-15 原文「rmfood-theme-settings-v2」键在 src 中不存在，实际僵尸键为 theme.storage.ts
+> 的 4 个 `STORAGE_KEYS`，已按实际键名清理。D-28 原文「8 份」实测 14 个 CSS 文件。
 
-  | 子项 | 变更 |
-  |:-----|:-----|
-  | **D-28** 8 份相同的 `prefers-reduced-motion` `!important` 样板 | 只保留 `environment.css` 一份，删除 `base.css:440`、`dark.css:357`、`typography.css:205`、`semantic-utils.css:217`、`index.css:313`、`App.css:11`、`adjustments.css`（随 T-G1 删除）中的重复块 |
-  | **D-44** 版本历史恒空、回滚无效 | 修复 `theme.storage.ts` 的 `createVersion` 签名不匹配，或**删除**该功能与 `VersionHistoryPanel`（产品决策） |
-  | **R-15** 5 个僵尸存储键 | 删除 `rmfood-theme-state`、`rmfood-theme-preferences`、`rmfood_custom_themes`（下划线）的读写；为 `rmfood-theme-settings-v2` 增加一次性清理 |
+- **子项 1：D-28 重复样板** — ✅ 完成。`prefers-reduced-motion` 的 `!important` 全局块
+  收敛为 `environment.css` 一份（14 → 1）；特异性块（`.animate-*`、`.card-hover`、
+  `.lp-reveal`、`.btn-*:active`、`micro-interactions.css` 等）保留。
+- **子项 2：D-44 版本历史恒空 / 回滚无效** — ✅ 删除。`ThemeStorage` 的版本历史子系统
+  （`getVersions`/`saveVersions`/`createVersion`/`getVersionHistory`/`clearVersionHistory`/
+  `rollbackVersion` + `ThemeVersion` 接口）全链路 0 消费者，`rollbackVersion` 只返回
+  version 对象从不应用状态，按「删除」处置（非修签名）。
+- **子项 3：R-15 僵尸存储键** — ✅ 完成。`themeStore.ts` 的 v4 `migrate` 完成后增加一次性
+  `localStorage.removeItem` 清理 4 个遗留键（`rmfood-custom-themes`/`rmfood-theme-state`/
+  `rmfood-theme-preferences`/`rmfood-theme-versions`）。**活跃 persist 键 `rmfood-theme-storage` 保留不动**。
+  `ThemeStorage` 类同步瘦身：删除 0 消费者的写方法（`saveThemeState`/`saveCustomThemes`/
+  `clearAll`/`getStorageUsage`），保留 read-only 迁移方法（`loadThemeState`/`loadCustomThemes`），
+  新增 `cleanLegacyKeys()`。
 
-- **验证**：`rg 'prefers-reduced-motion' src` 命中数 = 1（仅 `environment.css`）；`rg 'rmfood-theme-state|rmfood-theme-preferences|rmfood_custom_themes' src` = 0。
-- **工时**：1 人日
-- **风险**：低。删除存储键前需确认无用户数据依赖（已实测均为无消费者）。
+- **验证**：`verify-g3.mjs` 21/21 通过；`vite build` ✅；全量门禁 **11/0/0**。
+- **残余**：`focus-scroll.css`（他人 D-57 WIP）中的 1 个全局块副本待其合并后删除。
 
 ---
 
