@@ -1,5 +1,7 @@
 # RMFOOD UI/UX 设计系统规范
 
+> **DEPRECATED** — 本文档已被 `docs/design/RMFOOD-主题系统设计规范.md`（v1.1.9）取代，仅存档用途。详见其 §14.3「旧规范文档处置」。
+
 > 基于 `ui-ux-design-system.html` 设计文档的完整实现
 
 ## 目录

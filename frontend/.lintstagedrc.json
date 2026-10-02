@@ -1,0 +1,10 @@
+{
+  "$schema": "https://raw.githubusercontent.com/hiddenxceed/lint-staged/main/packages/lint-staged/schema.json",
+  "src/**/*.{ts,tsx,js,jsx}": [
+    "eslint --fix --max-warnings=100",
+    "prettier --write"
+  ],
+  "src/**/*.{css,scss,less}": [
+    "prettier --write"
+  ]
+}

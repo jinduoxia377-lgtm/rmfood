@@ -16,7 +16,7 @@
 
 ### 0.0 执行进度（滚动更新）
 
-**当前阶段：M3（架构收口）全任务完成** —— T-G1 ✅ + T-G3 ✅ + T-T1 ✅ + **T-G2 ✅（commit `a1bb06d`）**；M3 收尾，余项见 M4 治理。
+**当前阶段：M4（治理落地）完成** —— T-H2 全部 7 项子任务落地（ESLint flat config + pre-commit + theme-validate 重写 + CI 门禁 + ADR 去重 + 废弃文档 + 2 份新 ADR）。
 
 | 里程碑 | 状态 | 门禁 |
 |:-------|:-----|:-----|
@@ -818,20 +818,22 @@ vars[`--ease-${key}`] = value;
 
 ### 阶段 3 — 治理落地
 
-#### T-H2 · 治理与文档
+#### T-H2 · 治理与文档 — ✅ 完成（M4）
 
-| 任务 | 内容 |
-|:-----|:-----|
-| 重建 ESLint | 新增 `frontend/eslint.config.js`（flat config，ESLint 9），使 `npm run lint` 可用 |
-| 接通 pre-commit | 新增 `.lintstagedrc.json`，至少对暂存的 `*.{ts,tsx,css}` 跑 `eslint --fix` 与 `theme:gate`（快速模式） |
-| 重写 `scripts/theme-validate.ts` | ① 修正其 `SPEC_COLORS` 为规范 §13 权威值；② 扩展检查项至 §10 阻塞级清单；③ 注册为 `theme:validate` |
-| 接入 CI | `npm run theme:gate` 纳入流水线；无服务时降级策略明确 |
-| ADR 去重 | 修复 7 组重号（012 最紧急）；`index.md` 补登 11 个缺失文件 |
-| 废弃文档标记 | 按规范 §14.3 处置 6 份文档 |
-| 新增 ADR | 记录「令牌双源收敛」与「页头表面令牌」两项决策 |
+> **交付**（7 项子任务全部落地）：
+>
+> | 子任务 | 交付物 | 说明 |
+> |:-------|:-------|:-----|
+> | 重建 ESLint | `frontend/eslint.config.js`（flat config，ESLint 9） | `js.configs.recommended` + `typescript-eslint` 推荐 + `react-hooks`/`react-refresh`/`i18next`；`no-explicit-any` 降 warn（避免 type-aware 依赖）；`npm run lint` 可用 |
+> | 接通 pre-commit | `frontend/.lintstagedrc.json` | `*.{ts,tsx}` 跑 `eslint --fix --max-warnings=100` + `prettier --write`；`*.{css}` 跑 `prettier --write`；`.husky/pre-commit` 已存在（`npx lint-staged`） |
+> | 重写 `theme-validate.ts` | `scripts/theme-validate.ts`（重写） | ① `SPEC_COLORS` 对齐规范 §13 权威值（primary `#10b981` 等）；② 扩展至 §10 阻塞级清单（禁用色 Apple 系 + 旧品牌主色 + 非白名单 hex + 循环引用检测）；③ 注册为 `npm run theme:validate` |
+> | 接入 CI | `.github/workflows/ci-cd.yml` 新增 `theme-gate` job | 静态层 + `--milestone M1`（无 dev server 降级策略）；Playwright chromium 安装；`theme:validate` 非阻断 |
+> | ADR 去重 | `docs/adr/index.md` 更新 | 7 组重号登记为「同号多文档」（`NNNb` 后缀，不删不改名避免破坏跨文档引用）；补登 031/032/033/034/035 |
+> | 废弃文档标记 | 按规范 §14.3 处置 | `UI-DESIGN-SYSTEM.md` / `src/docs/DESIGN_SYSTEM.md` 加 DEPRECATED 头；`design-system/rmfood/`（5 文件，0 src 引用）删除；`docs/theme-system-spec.md` 保留 + 标题补注「（小程序）」 |
+> | 新增 ADR | `ADR-036`（令牌双源收敛）+ `ADR-037`（页头表面令牌） | 记录 T-B1/T-B2a/T-B2b 与 D-50/D-54 的架构决策 |
 
-- **工时**：3 人日
-- **风险**：低。
+- **验证**：`npm run lint` ✅（主题 store 0 error / 2 warn）；全量门禁 **11/0/0**；`vite build` ✅；`theme:validate` 运行正常（检出 18+ 处既有禁用色债务，非阻断）。
+- **残余（非 M4 阻断）**：`theme:validate` 检出的 18+ 处禁用色（`#34c759`/`#007aff` 等 Apple 色）散落在 `components/ai/` 与 `App.css`，属既有债务，记 M5 清理。
 
 ---
 

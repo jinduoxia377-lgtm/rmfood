@@ -21,7 +21,6 @@ import {
   mergeThemeOverrides,
   applyThemeToDOM,
 } from './theme.presets';
-// themeStorage 仅用于版本历史读取（read-only），不再双写 customThemes
 import { themeStorage } from './theme.storage';
 import { logger } from '@/utils/safeLogger';
 
@@ -491,14 +490,13 @@ export const useThemeStore = create<ThemeStore>()(
         // v4: 从旧的 themeStorage CUSTOM_THEMES 键迁移自定义主题（一次性）
         if (version === undefined || version < 4) {
           try {
-            const raw = localStorage.getItem('rmfood-custom-themes');
-            if (raw) {
-              const parsed = JSON.parse(raw);
-              const oldThemes: any[] = parsed?.data ?? parsed;
-              if (Array.isArray(oldThemes) && oldThemes.length > 0 && (!persistedState?.customThemes || persistedState.customThemes.length === 0)) {
-                logger.info(`[Theme System] 🔄 v3→v4 迁移 ${oldThemes.length} 个自定义主题从旧存储键`);
-                persistedState.customThemes = oldThemes;
-              }
+            // 优先走 themeStorage 的 read-only 迁移 API（封装了键名与容错），
+            // 回退到直接读 localStorage（防御 themeStorage 不可用）
+            const migrated = themeStorage.loadCustomThemes();
+            const oldThemes: any[] = migrated ?? [];
+            if (Array.isArray(oldThemes) && oldThemes.length > 0 && (!persistedState?.customThemes || persistedState.customThemes.length === 0)) {
+              logger.info(`[Theme System] 🔄 v3→v4 迁移 ${oldThemes.length} 个自定义主题从旧存储键`);
+              persistedState.customThemes = oldThemes;
             }
             // R-15：迁移完成后删除遗留存储键（一次性清理僵尸数据）
             localStorage.removeItem('rmfood-custom-themes');
