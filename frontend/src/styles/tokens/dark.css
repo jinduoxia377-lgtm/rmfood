@@ -18,9 +18,9 @@
   --color-primary-900: #ecfdf5;
   --color-primary-950: #f0fdf4;
 
-  --color-primary: #34d399;
+  --color-primary: var(--color-primary-500);
   --color-primary-rgb: 52, 211, 153;
-  --color-primary-hover: #6ee7b7;
+  --color-primary-hover: var(--color-primary-600);
   --color-primary-container: rgba(52, 211, 153, 0.15);
   /* D-12 修复：--color-primary-text 原先只在 base.css 定义为 #047857（深绿），
      在暗色画布 #020617 上仅约 2.3:1。此处给出暗色专用值（对比度约 13.3:1）。 */
@@ -46,9 +46,9 @@
   --color-secondary-900: #dbeafe;
   --color-secondary-950: #eff6ff;
 
-  --color-secondary: #60a5fa;
+  --color-secondary: var(--color-secondary-600);
   --color-secondary-rgb: 96, 165, 250;
-  --color-secondary-hover: #93c5fd;
+  --color-secondary-hover: var(--color-secondary-700);
   --color-secondary-container: rgba(96, 165, 250, 0.15);
 
   /* ═══ Brand Accent: Bio Purple (dark mode 提亮) ═══ */
@@ -64,32 +64,32 @@
   --color-accent-900: #ede9fe;
   --color-accent-950: #faf5ff;
 
-  --color-accent: #a78bfa;
+  --color-accent: var(--color-accent-600);
   --color-accent-rgb: 167, 139, 250;
   --color-accent-hover: #c4b5fd;
   --color-accent-container: rgba(167, 139, 250, 0.15);
 
   /* ═══ Semantic Colors (dark mode) ═══ */
-  --color-success: #34d399;
-  --color-success-bg: #022c22;
-  --color-success-text: #6ee7b7;
-  --color-warning: #fbbf24;
-  --color-warning-bg: #451a03;
-  --color-warning-text: #fcd34d;
-  --color-error: #f87171;
-  --color-error-bg: #450a0a;
-  --color-error-text: #fca5a5;
-  --color-info: #818cf8;
+  --color-success: var(--color-success-600);
+  --color-success-bg: var(--color-success-50);
+  --color-success-text: var(--color-success-600);
+  --color-warning: var(--color-warning-400);
+  --color-warning-bg: var(--color-warning-50);
+  --color-warning-text: var(--color-warning-700);
+  --color-error: var(--color-danger-400);
+  --color-error-bg: var(--color-danger-50);
+  --color-error-text: var(--color-danger-600);
+  --color-info: var(--color-info-100);
   --color-info-bg: #1e1b4b;
   /* ═══ Surface & Canvas — DESIGN.md: slate-950 (#020617) ═══ */
-  --bg-canvas: #020617;       /* slate-950 — 页面全局背景 */
-  --bg-primary: #020617;
+  --bg-canvas: var(--color-neutral-50);       /* slate-950 — 页面全局背景 */
+  --bg-primary: var(--color-neutral-50);
   --bg-secondary: #0f172a;    /* slate-900 — 卡片背景 */
   --bg-tertiary: #1e293b;     /* slate-800 */
   --card-bg: #0f172a;
   --card-bg-solid: #0f172a;
   --bg-surface-container: #0f172a;
-  --bg-surface-container-low: #020617;
+  --bg-surface-container-low: var(--color-neutral-50);
 
   /* ═══ 网格背景（Dashboard 专用，暗色模式更淡）═══ */
   --grid-color-light: rgba(148, 163, 184, 0.06);   /* slate-400 @ 6% — 深色模式极淡网格 */
@@ -100,9 +100,9 @@
   --hover-bg: rgba(255, 255, 255, 0.04);
 
   /* ═══ Neutral Semantic Tokens (dark) ═══ */
-  --color-neutral-default: #020617;  /* canvas 级背景 */
-  --color-neutral-subtle:  #0f172a;  /* surface-elevated 级 */
-  --color-neutral-muted:   #1e293b;  /* border 级 */
+  --color-neutral-default: var(--color-neutral-50);  /* canvas 级背景 */
+  --color-neutral-subtle:  var(--color-neutral-100);  /* surface-elevated 级 */
+  --color-neutral-muted:   var(--color-neutral-200);  /* border 级 */
 
   /* ═══ Glassmorphism (Dark Acrylic) ═══ */
   --material-acrylic: rgba(15, 23, 42, 0.72);
@@ -113,7 +113,7 @@
   --glass-border: rgba(255, 255, 255, 0.05);
 
   /* ═══ Text Colors — DESIGN.md: ink-light/dark ═══ */
-  --text-primary: #f1f5f9;   /* slate-100 */
+  --text-primary: var(--color-neutral-900);   /* slate-100 */
   --text-secondary: #94a3b8; /* slate-400 — 7.87:1 on canvas ✅ */
   --text-muted: #94a3b8;     /* slate-400 — 修正: 原 #64748b (3.91:1) 不达标 AA ✅ */
   --text-disabled: #94a3b8;  /* slate-400 — 7.87:1 on canvas ✅ AA OK（原 #475569=2.36:1 FAIL） */
@@ -164,7 +164,7 @@
 
   /* ═══ Layout Variables (dark) ═══ */
   --bg-surface-container: #0f172a;
-  --bg-surface-container-low: #020617;
+  --bg-surface-container-low: var(--color-neutral-50);
   --bg-surface: #0f172a;
   --bg-surface-hover: rgba(255, 255, 255, 0.04);
   --color-primary-container: rgba(52, 211, 153, 0.15);
@@ -294,7 +294,7 @@
   --color-tertiary-hover: #c4b5fd;
 
   /* ── 暗色模式错误悬停 ── */
-  --color-error-hover: #f87171;
+  --color-error-hover: var(--color-danger-400);
 
   /* ── 暗色模式渐变文字 ── */
   --gradient-text-primary: linear-gradient(135deg, var(--color-primary), var(--color-accent));
@@ -315,7 +315,7 @@
   --color-info-600: #2563eb;
 
   /* ── 暗色模式渐变背景 ── */
-  --bg-gradient-start: #020617;
+  --bg-gradient-start: var(--color-neutral-50);
   --bg-gradient-end: #064e3b;
 
   /* ── 暗色模式滚动条 ── */
