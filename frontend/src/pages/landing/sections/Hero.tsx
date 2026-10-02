@@ -985,7 +985,7 @@ function ProductPreview() {
                               <Sparkles size={10} style={{ color: 'var(--color-primary-700, #047857)' }} />
                             </div>
                           )}
-                          <div className="px-3 py-2 max-w-[80%] leading-relaxed" style={{ background: msg.role === 'user' ? 'linear-gradient(135deg, var(--color-primary-600, #059669) 0%, var(--color-primary-700, #047857) 100%)' : '#ffffff', color: msg.role === 'user' ? '#fff' : 'var(--color-neutral-800, #1e293b)', borderRadius: msg.role === 'user' ? '12px 12px 3px 12px' : '3px 12px 12px 3px', border: msg.role === 'assistant' ? '1px solid var(--color-neutral-200, #e2e8f0)' : 'none', lineHeight: '1.65', boxShadow: msg.role === 'assistant' ? '0 1px 4px color-mix(in srgb, #000000 6%, transparent)' : 'none' }}>
+                          <div className="px-3 py-2 max-w-[80%] leading-relaxed" style={{ background: msg.role === 'user' ? 'linear-gradient(135deg, var(--color-primary-600, #059669) 0%, var(--color-primary-700, #047857) 100%)' : '#ffffff', color: msg.role === 'user' ? '#fff' : 'var(--color-neutral-800, #1e293b)', borderRadius: msg.role === 'user' ? '12px 12px 3px 12px' : '3px 12px 12px 3px', border: msg.role === 'assistant' ? '1px solid var(--color-neutral-200, #e2e8f0)' : 'none', lineHeight: '1.65', boxShadow: msg.role === 'assistant' ? 'var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.06))' : 'none' }}>
                             <MarkdownRenderer content={msg.content} />
                           </div>
                         </div>
@@ -995,7 +995,7 @@ function ProductPreview() {
                           <div className="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 mr-2 mt-0.5" style={{ background: 'var(--color-success-50, #ecfdf5)', border: '1px solid var(--color-success-100, #d1fae5)' }}>
                             <Sparkles size={10} style={{ color: 'var(--color-primary-700, #047857)' }} />
                           </div>
-                          <div className="px-4 py-3 rounded-xl" style={{ background: '#ffffff', border: '1px solid var(--color-neutral-200, #e2e8f0)', boxShadow: '0 1px 4px color-mix(in srgb, #000000 6%, transparent)' }}>
+                          <div className="px-4 py-3 rounded-xl" style={{ background: '#ffffff', border: '1px solid var(--color-neutral-200, #e2e8f0)', boxShadow: 'var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.06))' }}>
                             <div className="flex items-center gap-2 mb-2">
                               {THINKING_STEPS.map((step, i) => (
                                 <div key={step.label} className="flex items-center gap-1.5">

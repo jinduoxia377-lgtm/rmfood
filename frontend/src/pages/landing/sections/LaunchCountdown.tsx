@@ -159,14 +159,14 @@ export function CountdownBanner() {
               style={{
                 background: 'var(--color-neutral-900, #0f172a)',
                 color: '#ffffff',
-                boxShadow: '0 1px 3px color-mix(in srgb, var(--color-neutral-900, #0f172a) 12%, transparent)',
+                boxShadow: 'var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.06))',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.boxShadow = '0 2px 8px color-mix(in srgb, var(--color-neutral-900, #0f172a) 18%, transparent)';
+                e.currentTarget.style.boxShadow = 'var(--shadow-elevated, 0 8px 24px rgba(0,0,0,0.1))';
                 e.currentTarget.style.opacity = '0.9';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.boxShadow = '0 1px 3px color-mix(in srgb, var(--color-neutral-900, #0f172a) 12%, transparent)';
+                e.currentTarget.style.boxShadow = 'var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.06))';
                 e.currentTarget.style.opacity = '1';
               }}
             >

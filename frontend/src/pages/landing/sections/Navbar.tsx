@@ -130,7 +130,7 @@ export default function Navbar() {
                 className="inline-flex items-center gap-1.5 text-[15px] font-semibold px-4 min-h-[44px] rounded-md text-white transition-all hover:opacity-90"
                 style={{
                   background: 'var(--color-neutral-900, #0f172a)',
-                  boxShadow: '0 1px 3px color-mix(in srgb, var(--color-neutral-900, #0f172a) 15%, transparent)',
+                  boxShadow: 'var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.06))',
                 }}
               >
                 {navbarCTA.trialLabel}
@@ -151,7 +151,7 @@ export default function Navbar() {
               </button>
             </CollapsibleTrigger>
             <CollapsibleContent className="md:hidden overflow-hidden" style={{ animation: 'lp-mobile-menu 0.2s ease' }}>
-              <div style={{ background: '#fff', borderTop: '1px solid var(--color-neutral-200, #e2e8f0)', boxShadow: '0 4px 12px color-mix(in srgb, #000000 6%, transparent)' }}>
+              <div style={{ background: '#fff', borderTop: '1px solid var(--color-neutral-200, #e2e8f0)', boxShadow: 'var(--shadow-md, 0 2px 8px rgba(0,0,0,0.06))' }}>
                 <div className="px-4 py-3 space-y-0.5">
                   {navLinks.map((l) => (
                     <a

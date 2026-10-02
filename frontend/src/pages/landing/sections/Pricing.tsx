@@ -40,7 +40,7 @@ export default function Pricing() {
               {(['monthly', 'yearly'] as const).map((m) => (
                 <button key={m} onClick={() => setBilling(m)}
                   className="lp-label rounded-md transition-colors px-4 py-2 min-h-[44px] flex items-center"
-                  style={billing === m ? { background: '#fff', color: 'var(--color-neutral-900, #0f172a)', border: '1px solid var(--color-neutral-200, #e2e8f0)', boxShadow: '0 1px 2px var(--hover-bg, rgba(0,0,0,0.04))' } : { background: 'transparent', color: 'var(--color-neutral-600, #475569)' }}
+                  style={billing === m ? { background: '#fff', color: 'var(--color-neutral-900, #0f172a)', border: '1px solid var(--color-neutral-200, #e2e8f0)', boxShadow: 'var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.06))' } : { background: 'transparent', color: 'var(--color-neutral-600, #475569)' }}
                 >{m === 'monthly' ? '月付' : '年付'}</button>
               ))}
               {billing === 'yearly' && <span key={animKey} className="text-[12px] font-mono ml-1.5 px-1.5 py-0.5 rounded-md animate-in fade-in duration-200" style={{ background: 'var(--color-success-50, #ecfdf5)', color: 'var(--color-primary-700, #047857)', border: '1px solid var(--color-success-200, #a7f3d0)' }}>省 17%</span>}
