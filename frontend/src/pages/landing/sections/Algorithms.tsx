@@ -167,7 +167,7 @@ function SynergyCard({ mech, index }: { mech: typeof synergyMechanisms[0]; index
           <h4 className="text-[13px] font-bold text-slate-800">{mech.name}</h4>
           <span
             className="text-[12px] font-mono px-1.5 py-0.5 rounded"
-            style={{ background: '#f0fdf4', color: 'var(--color-primary-700, #047857)', border: '1px solid #bbf7d0' }}
+            style={{ background: 'var(--color-success-50, #f0fdf4)', color: 'var(--color-primary-700, #047857)', border: '1px solid var(--color-success-200, #bbf7d0)' }}
           >
             权重 {mech.weight}
           </span>
@@ -268,7 +268,7 @@ export default function Algorithms() {
             <div className="flex items-center gap-2 mb-5">
               <span
                 className="lp-section-tag px-3 py-1.5 shrink-0"
-                style={{ background: '#f0fdf4', color: 'var(--color-primary-700, #047857)', border: '1px solid #bbf7d0' }}
+                style={{ background: 'var(--color-success-50, #f0fdf4)', color: 'var(--color-primary-700, #047857)', border: '1px solid var(--color-success-200, #bbf7d0)' }}
               >
                 协同机制
               </span>
@@ -288,7 +288,7 @@ export default function Algorithms() {
             <div className="flex items-center gap-2 mb-5">
               <span
                 className="lp-section-tag px-3 py-1.5 shrink-0"
-                style={{ background: 'var(--color-secondary-50, #eff6ff)', color: 'var(--color-secondary-700, #1d4ed8)', border: '1px solid #bfdbfe' }}
+                style={{ background: 'var(--color-secondary-50, #eff6ff)', color: 'var(--color-secondary-700, #1d4ed8)', border: '1px solid var(--color-secondary-200, #bfdbfe)' }}
               >
                 性能基准
               </span>

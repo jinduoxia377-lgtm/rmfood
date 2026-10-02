@@ -56,12 +56,12 @@ export default function Navbar() {
         scrolled && 'navbar-scrolled'
       )}
       style={{
-        background: scrolled ? 'rgba(255,255,255,0.97)' : 'rgba(255,255,255,0.95)',
-        borderBottom: scrolled ? '1px solid rgba(226,232,240,1)' : '1px solid rgba(226,232,240,0.3)',
+        background: scrolled ? 'color-mix(in srgb, #ffffff 97%, transparent)' : 'color-mix(in srgb, #ffffff 95%, transparent)',
+        borderBottom: scrolled ? '1px solid var(--color-neutral-200, #e2e8f0)' : '1px solid color-mix(in srgb, var(--color-neutral-200, #e2e8f0) 30%, transparent)',
         backdropFilter: 'blur(12px) saturate(180%)',
         WebkitBackdropFilter: 'blur(12px) saturate(180%)',
         height: '64px',
-        boxShadow: scrolled ? '0 1px 0 rgba(0,0,0,0.04), 0 2px 8px rgba(0,0,0,0.04)' : 'none',
+        boxShadow: scrolled ? '0 1px 0 var(--hover-bg, rgba(0,0,0,0.04)), 0 2px 8px var(--hover-bg, rgba(0,0,0,0.04))' : 'none',
       }}
       role="navigation"
       aria-label="主导航"
@@ -130,7 +130,7 @@ export default function Navbar() {
                 className="inline-flex items-center gap-1.5 text-[13px] font-semibold px-4 min-h-[44px] rounded-md text-white transition-all hover:opacity-90"
                 style={{
                   background: 'var(--color-neutral-900, #0f172a)',
-                  boxShadow: '0 1px 3px rgba(15,23,42,0.15)',
+                  boxShadow: '0 1px 3px color-mix(in srgb, var(--color-neutral-900, #0f172a) 15%, transparent)',
                 }}
               >
                 {navbarCTA.trialLabel}
@@ -151,7 +151,7 @@ export default function Navbar() {
               </button>
             </CollapsibleTrigger>
             <CollapsibleContent className="md:hidden overflow-hidden" style={{ animation: 'lp-mobile-menu 0.2s ease' }}>
-              <div style={{ background: '#fff', borderTop: '1px solid var(--color-neutral-200, #e2e8f0)', boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}>
+              <div style={{ background: '#fff', borderTop: '1px solid var(--color-neutral-200, #e2e8f0)', boxShadow: '0 4px 12px color-mix(in srgb, #000000 6%, transparent)' }}>
                 <div className="px-4 py-3 space-y-0.5">
                   {navLinks.map((l) => (
                     <a

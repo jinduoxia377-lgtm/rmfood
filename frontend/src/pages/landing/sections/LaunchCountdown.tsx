@@ -119,8 +119,8 @@ export function CountdownBanner() {
             <div
               className="shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-full lp-label"
               style={{
-                background: 'rgba(4,120,87,0.08)',
-                border: '1px solid rgba(4,120,87,0.25)',
+                background: 'color-mix(in srgb, var(--color-primary-700, #047857) 8%, transparent)',
+                border: '1px solid color-mix(in srgb, var(--color-primary-700, #047857) 25%, transparent)',
                 color: 'var(--color-primary-700, #047857)',
               }}
             >
@@ -159,14 +159,14 @@ export function CountdownBanner() {
               style={{
                 background: 'var(--color-neutral-900, #0f172a)',
                 color: '#ffffff',
-                boxShadow: '0 1px 3px rgba(15,23,42,0.12)',
+                boxShadow: '0 1px 3px color-mix(in srgb, var(--color-neutral-900, #0f172a) 12%, transparent)',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.boxShadow = '0 2px 8px rgba(15,23,42,0.18)';
+                e.currentTarget.style.boxShadow = '0 2px 8px color-mix(in srgb, var(--color-neutral-900, #0f172a) 18%, transparent)';
                 e.currentTarget.style.opacity = '0.9';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.boxShadow = '0 1px 3px rgba(15,23,42,0.12)';
+                e.currentTarget.style.boxShadow = '0 1px 3px color-mix(in srgb, var(--color-neutral-900, #0f172a) 12%, transparent)';
                 e.currentTarget.style.opacity = '1';
               }}
             >

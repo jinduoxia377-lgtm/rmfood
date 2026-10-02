@@ -24,18 +24,18 @@
 
 /* ── 导航滚动效果 ── */
 .lp-nav-scrolled {
-  background: rgba(255, 255, 255, 0.97) !important;
+  background: color-mix(in srgb, #ffffff 97%, transparent) !important;
   backdrop-filter: blur(12px) saturate(180%) !important;
   -webkit-backdrop-filter: blur(12px) saturate(180%) !important;
   border-bottom: 1px solid var(--color-neutral-200, #e2e8f0) !important;
-  box-shadow: 0 1px 0 rgba(0,0,0,0.04), 0 2px 8px rgba(0,0,0,0.04) !important;
+  box-shadow: 0 1px 0 var(--hover-bg, rgba(0,0,0,0.04)), 0 2px 8px var(--hover-bg, rgba(0,0,0,0.04)) !important;
 }
 .navbar-scrolled {
-  background: rgba(255, 255, 255, 0.97) !important;
+  background: color-mix(in srgb, #ffffff 97%, transparent) !important;
   backdrop-filter: blur(12px) saturate(180%) !important;
   -webkit-backdrop-filter: blur(12px) saturate(180%) !important;
   border-bottom: 1px solid var(--color-neutral-200, #e2e8f0) !important;
-  box-shadow: 0 1px 0 rgba(0,0,0,0.04), 0 2px 8px rgba(0,0,0,0.04) !important;
+  box-shadow: 0 1px 0 var(--hover-bg, rgba(0,0,0,0.04)), 0 2px 8px var(--hover-bg, rgba(0,0,0,0.04)) !important;
 }
 
 /* ── 平滑锚点滚动 ── */
@@ -139,12 +139,12 @@ input:focus-visible, button:focus-visible, a:focus-visible {
 .lp-card {
   border-radius: 4px;
   border: 1px solid var(--color-neutral-200, #e2e8f0);
-  background: #fafafa;
+  background: var(--color-neutral-50, #fafafa);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 .lp-card:hover {
   border-color: var(--color-neutral-300, #cbd5e1);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 8px color-mix(in srgb, #000000 6%, transparent);
 }
 
 /* 主卡片（白色背景，用于 section 内的内容卡片） */
@@ -156,7 +156,7 @@ input:focus-visible, button:focus-visible, a:focus-visible {
 }
 .lp-card-white:hover {
   border-color: var(--color-neutral-300, #cbd5e1);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07);
+  box-shadow: 0 4px 12px color-mix(in srgb, #000000 7%, transparent);
 }
 
 /* 指标卡片（SocialProof 核心数字） */
@@ -169,7 +169,7 @@ input:focus-visible, button:focus-visible, a:focus-visible {
 }
 .lp-metric-card:hover {
   border-color: var(--color-neutral-300, #cbd5e1);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 8px color-mix(in srgb, #000000 6%, transparent);
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -249,8 +249,8 @@ input:focus-visible, button:focus-visible, a:focus-visible {
 .lp-dot-3 { animation: lp-dots-pulse 1.4s infinite ease-in-out 0.4s; }
 
 @keyframes lp-welcome-glow {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(5,150,105,0.12); }
-  50%       { box-shadow: 0 0 0 6px rgba(5,150,105,0);  }
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-primary-500, #10b981) 12%, transparent); }
+  50%       { box-shadow: 0 0 0 6px color-mix(in srgb, var(--color-primary-500, #10b981) 0%, transparent);  }
 }
 .lp-welcome-icon { animation: lp-welcome-glow 2.5s infinite ease-in-out; }
 
@@ -270,14 +270,14 @@ input:focus-visible, button:focus-visible, a:focus-visible {
   position: relative;
   border-radius: 10px;
   overflow: hidden;
-  border: 1px solid #b8c4d0;
-  border-top-color: rgba(255,255,255,0.6);
-  border-bottom-color: rgba(5,150,105,0.25);
+  border: 1px solid var(--color-neutral-400, #b8c4d0);
+  border-top-color: color-mix(in srgb, #ffffff 60%, transparent);
+  border-bottom-color: color-mix(in srgb, var(--color-primary-500, #10b981) 25%, transparent);
   background: #fff;
   box-shadow:
-    0 1px 3px rgba(0,0,0,0.08),
-    0 4px 16px rgba(0,0,0,0.06),
-    0 16px 48px rgba(5,150,105,0.10);
+    0 1px 3px var(--hairline-light, rgba(0,0,0,0.08)),
+    0 4px 16px color-mix(in srgb, #000000 6%, transparent),
+    0 16px 48px color-mix(in srgb, var(--color-primary-500, #10b981) 10%, transparent);
 }
 .lp-preview-window::before {
   content: '';
@@ -286,7 +286,7 @@ input:focus-visible, button:focus-visible, a:focus-visible {
   border-radius: 11px;
   background: linear-gradient(
     180deg,
-    rgba(255,255,255,0.7) 0%,
+    color-mix(in srgb, #ffffff 70%, transparent) 0%,
     transparent 40%
   );
   pointer-events: none;
@@ -295,7 +295,7 @@ input:focus-visible, button:focus-visible, a:focus-visible {
 .lp-preview-glow {
   position: absolute;
   inset: 12px -16px -12px -16px;
-  background: radial-gradient(ellipse at center, rgba(5,150,105,0.10) 0%, transparent 65%);
+  background: radial-gradient(ellipse at center, color-mix(in srgb, var(--color-primary-500, #10b981) 10%, transparent) 0%, transparent 65%);
   filter: blur(24px);
   z-index: 0;
   pointer-events: none;
@@ -310,7 +310,7 @@ input:focus-visible, button:focus-visible, a:focus-visible {
 }
 .lp-input-border:focus-within {
   border-color: var(--color-primary-600, #059669) !important;
-  box-shadow: 0 0 0 2px rgba(5,150,105,0.10) !important;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary-500, #10b981) 10%, transparent) !important;
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -471,11 +471,11 @@ input:focus-visible, button:focus-visible, a:focus-visible {
 }
 .lp-nav-link:hover {
   color: var(--color-neutral-900, #0f172a);
-  background-color: rgba(0,0,0,0.04);
+  background-color: var(--hover-bg, rgba(0,0,0,0.04));
 }
 .lp-nav-active {
   color: var(--color-neutral-900, #0f172a) !important;
-  background-color: rgba(5,150,105,0.08) !important;
+  background-color: color-mix(in srgb, var(--color-primary-500, #10b981) 8%, transparent) !important;
   border-bottom-color: var(--color-neutral-900, #0f172a);
 }
 
@@ -500,11 +500,11 @@ section[id] {
   border-radius: 6px;
   cursor: pointer;
   transition: box-shadow 0.2s, transform 0.15s, opacity 0.15s;
-  box-shadow: 0 1px 3px rgba(15,23,42,0.12), 0 1px 2px rgba(15,23,42,0.08);
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--color-neutral-900, #0f172a) 12%, transparent), 0 1px 2px color-mix(in srgb, var(--color-neutral-900, #0f172a) 8%, transparent);
   text-decoration: none;
 }
 .lp-cta-primary:hover {
-  box-shadow: 0 4px 12px rgba(15,23,42,0.15), 0 2px 4px rgba(15,23,42,0.10);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--color-neutral-900, #0f172a) 15%, transparent), 0 2px 4px color-mix(in srgb, var(--color-neutral-900, #0f172a) 10%, transparent);
   transform: translateY(-1px);
   opacity: 0.92;
 }
@@ -554,8 +554,8 @@ section[id] {
   /* P0 对比度修复：var(--color-success-200, #a7f3d0) on var(--color-neutral-900, #0f172a) ≈ 12.9:1
    注：「推荐方案」徽章位于深底（var(--color-neutral-900, #0f172a)）卡片，背景取色对 var(--color-neutral-900, #0f172a) 透明。 */
   color: var(--color-success-100, #d1fae5);
-  background: rgba(4,120,87,0.25);
-  border: 1px solid rgba(4,120,87,0.55);
+  background: color-mix(in srgb, var(--color-primary-700, #047857) 25%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-primary-700, #047857) 55%, transparent);
   border-radius: 4px;
   padding: 0.125rem 0.5rem;
 }
@@ -572,8 +572,8 @@ section[id] {
 /* ── Hero 区域背景网格 ── */
 .lp-grid-bg {
   background-image:
-    linear-gradient(rgba(148,163,184,0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(148,163,184,0.04) 1px, transparent 1px);
+    linear-gradient(color-mix(in srgb, var(--color-neutral-400, #94a3b8) 4%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--color-neutral-400, #94a3b8) 4%, transparent) 1px, transparent 1px);
   background-size: 24px 24px;
 }
 
@@ -699,7 +699,7 @@ section[id] {
 }
 .lp-data-card:hover {
   border-color: var(--card-hover-border, var(--color-neutral-300, #cbd5e1));
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 8px color-mix(in srgb, #000000 6%, transparent);
 }
 .lp-data-card-accent {
   position: absolute;
@@ -925,13 +925,13 @@ section[id] {
 .lp-card,
 .lp-card-white,
 .lp-metric-card {
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 2px color-mix(in srgb, #000000 5%, transparent);
 }
 .lp-card:hover,
 .lp-card-white:hover,
 .lp-metric-card:hover,
 .lp-data-card:hover {
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.10), 0 2px 6px 2px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 2px color-mix(in srgb, #000000 10%, transparent), 0 2px 6px 2px color-mix(in srgb, #000000 6%, transparent);
 }
 
 

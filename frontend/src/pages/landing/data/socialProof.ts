@@ -59,7 +59,7 @@ export const testimonials: Testimonial[] = [
     quote: 'AI 配方对话将原料筛选时间从 3 天缩短到 20 分钟，知识图谱的关联推理帮我们发现了以前忽略的配伍规律。',
     rating: 5,
     /* P0 对比度修复：白字落点色改为 800/900 级，保证 #fff 对比 ≥4.5:1
-   （原 500/400 级中点 #10b981/#60a5fa/#a78bfa 对白字仅 2.2–2.9:1） */
+   （原 500/400 级中点 var(--color-success-500, #10b981)/var(--color-secondary-400, #60a5fa)/var(--color-accent-400, #a78bfa) 对白字仅 2.2–2.9:1） */
 gradient: 'linear-gradient(135deg, var(--color-primary-800, #065f46), var(--color-primary-700, #047857))',
   },
   {
@@ -83,9 +83,9 @@ gradient: 'linear-gradient(135deg, var(--color-primary-800, #065f46), var(--colo
 // ── 合作机构分类标签样式 ──────────────────────────────────────────
 export const categoryStyle: Record<string, { bg: string; text: string; border: string }> = {
   university:  { bg: 'var(--color-success-50, #ecfdf5)', text: 'var(--color-primary-700, #047857)', border: 'var(--color-success-200, #a7f3d0)' },
-  hospital:    { bg: 'var(--color-danger-50, #fef2f2)', text: '#b91c1c', border: '#fecaca'  },
-  enterprise:  { bg: 'var(--color-secondary-50, #eff6ff)', text: 'var(--color-secondary-700, #1d4ed8)', border: '#bfdbfe' },
-  government:  { bg: '#f5f3ff', text: 'var(--color-accent-700, #6d28d9)', border: '#ddd6fe' },
+  hospital:    { bg: 'var(--color-danger-50, #fef2f2)', text: 'var(--color-danger-700, #b91c1c)', border: 'var(--color-danger-200, #fecaca)'  },
+  enterprise:  { bg: 'var(--color-secondary-50, #eff6ff)', text: 'var(--color-secondary-700, #1d4ed8)', border: 'var(--color-secondary-200, #bfdbfe)' },
+  government:  { bg: 'var(--color-accent-50, #f5f3ff)', text: 'var(--color-accent-700, #6d28d9)', border: 'var(--color-accent-200, #ddd6fe)' },
 };
 
 export const categoryLabel: Record<string, string> = {
