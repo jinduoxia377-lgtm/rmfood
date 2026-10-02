@@ -74,7 +74,7 @@ function PartnerLogos() {
                 style={{
                   background: isHovered ? '#fff' : s.bg,
                   border: `1px solid ${isHovered ? s.border : s.border}`,
-                  boxShadow: isHovered ? '0 2px 6px color-mix(in srgb, #000000 6%, transparent)' : 'none',
+                  boxShadow: isHovered ? 'var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.06))' : 'none',
                 }}
                 onMouseEnter={() => setHovered(org.name)}
                 onMouseLeave={() => setHovered(null)}
@@ -118,7 +118,7 @@ function Testimonials() {
               style={{
                 background: hovered === i ? '#fff' : 'var(--color-neutral-50, #fafafa)',
                 border: `1px solid ${hovered === i ? 'var(--color-primary-600, #059669)' : 'var(--color-neutral-200, #e2e8f0)'}`,
-                boxShadow: hovered === i ? '0 2px 6px color-mix(in srgb, #000000 5%, transparent)' : 'none',
+                boxShadow: hovered === i ? 'var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.06))' : 'none',
               }}
               onMouseEnter={() => setHovered(i)}
               onMouseLeave={() => setHovered(null)}
@@ -148,7 +148,7 @@ function Testimonials() {
               <div className="flex items-center gap-2 pt-2.5 border-t border-neutral-100">
                 <div
                   className="w-7 h-7 rounded-full flex items-center justify-center lp-label text-white shrink-0"
-                  style={{ background: t.gradient, boxShadow: '0 1px 4px color-mix(in srgb, #000000 15%, transparent)' }}
+                  style={{ background: t.gradient, boxShadow: 'var(--shadow-md, 0 2px 8px rgba(0,0,0,0.06))' }}
                 >
                   {t.name[0]}
                 </div>
