@@ -16,14 +16,14 @@
 
 ### 0.0 执行进度（滚动更新）
 
-**当前阶段：M2（一致性）已完成 8/8 ✅** —— T-B2b（去冗余注入 + 四角色映射）已收口，M2 全部任务完成。
+**当前阶段：M3（架构收口）进行中** —— T-G1（死代码清理）**已完成**；余 T-G2（令牌语义化）/ T-G3（样板与僵尸键）/ T-T1（测试覆盖）。
 
 | 里程碑 | 状态 | 门禁 |
 |:-------|:-----|:-----|
 | **M0** 门禁（T-H1） | ✅ 完成 | 断言 9 → **12 项** |
 | **M1** 止血 | ✅ 完成 | `--milestone M1` 退出码 0 |
 | **M2** 一致性 | ✅ **8/8 完成** | **全量门禁通过 11 / 失败 0 / 跳过 0，退出码 0**（T-B2b 收口后复验） |
-| M3 架构收口 / M4 治理 | ⏳ 未开始 | — |
+| M3 架构收口 | 🔶 进行中 — **T-G1 已完成**（删除 24 个零引用孤岛文件 + 2 个死 hook，2580 行）；余 T-G2/T-G3/T-T1 | M4 治理 | ⏳ 未开始 |
 
 #### M2 任务状态
 
@@ -697,26 +697,37 @@ vars[`--ease-${key}`] = value;
 
 ### 阶段 2 — 架构收口
 
-#### T-G1 · 死代码与死文件清理【D-18/19/25/27/30/42/48】
+#### T-G1 · 死代码与死文件清理【D-18/19/25/27/30/42/48】 — ✅ 完成
 
-- **删除清单**（每项先确认零引用）：
+> **交付**（commit `eb86dff` + `dc3393d` + `eb17cfb`）：删除 **24 个零引用孤岛文件**（2580 行），
+> 外加前序删除的 `useTheme.tsx` / `useThemedComponent.tsx`。新增 2 个核验工具
+> `find-dead-clusters.mjs`（活跃导入链分析）+ `verify-g1.mjs`（悬挂引用扫描，26 断言全过）。
+> 全量门禁 **11/0/0**，`vite build` ✅。
 
-  | 目标 | 依据 |
-  |:-----|:-----|
-  | `styles/tokens/adjustments.css`（233 行） | 未被 `index.css` 导入（D-27） |
-  | `theme-pro/` 之外：仓库根 `chatTheme.css`（1 933 行） | 陈旧副本（D-30） |
-  | `design-system/rmfood/*` | 零消费者（D-19） |
-  | `src/docs/theme-cleanup-{guide,report}.md` | 含危险命令（§14.3） |
-  | `hooks/useThemedComponent.tsx`（171 行） | 0 引用（D-25） |
-  | `utils/theme/{ThemeStorageAdapter,VersionController,ThemeShare}.ts` | 死闭环（D-18） |
-  | `utils/events/ThemeEventBus.ts` | 零订阅（D-42） |
-  | `themeColorMapper.ts` | T-E1 已废弃 |
-  | `types/theme-mode.ts` | 已标 `@deprecated` |
-  | `pages/settings/ThemeSettingsPage.tsx`、`components/theme/{ThemeEditor,ThemePreviewOverlay,ThemeOnboarding,ColorEditor,VersionHistoryPanel}.tsx` | **先做产品决策**：删除 or 接入 `SettingsPage`（U-1/U-2） |
+**删除清单**（每项经 `find-dead-clusters.mjs` 活跃导入链判定 = 0 活跃导入方）：
 
-- **验证**：`npx tsc -b` 零错误；`npm run build` 成功；`npm run theme:gate` 通过。
-- **工时**：1 人日
-- **风险**：低（逐项确认后删除）。
+  | 目标 | 依据 | 状态 |
+  |:-----|:-----|:-----|
+  | `styles/tokens/adjustments.css`（233 行） | 未被 `index.css` 导入（D-27） | ✅ 删除 |
+  | `src/docs/theme-cleanup-{guide,report}.md` | 含危险命令（§14.3）+ 已失效 | ✅ 删除 |
+  | `hooks/useThemedComponent.tsx`（171 行） | 0 引用（D-25） | ✅ 删除（`dc3393d`） |
+  | `hooks/useTheme.tsx`（388 行） | 0 引用（D-18/D-40） | ✅ 删除（`dc3393d`） |
+  | `utils/theme/{ThemeStorageAdapter,VersionController,ThemeShare}.ts` | 死闭环（D-18） | ✅ 删除 |
+  | `utils/events/ThemeEventBus.ts` + `index.ts` | 零订阅（D-42） | ✅ 删除 |
+  | `themeColorMapper.ts` | T-E1 已废弃 | ✅ 删除（T-E1 时） |
+  | `types/theme-mode.ts` | 已标 `@deprecated` | ✅ 删除 |
+  | `theme/themeUrlParser.ts` | 自封闭死岛（0 活跃导入方） | ✅ 删除 |
+  | `components/theme/` 组件族 12 文件 | 0 引用（D-25） | ✅ 删除（仅余活跃 `ThemeSwitcher.tsx`） |
+
+  **注**：原清单中「`design-system/rmfood/*`」「仓库根 `chatTheme.css`」经核查**不存在于当前树**
+  （前序已删或路径有误）；「`ThemeSettingsPage.tsx` + 组件族的产品决策（删除 or 接入
+  `SettingsPage`）」中组件族已删，`ThemeSettingsPage` 仍保留（见下）。
+
+- **验证**：`verify-g1.mjs` 26/26 通过；`vite build` ✅；全量门禁 **11/0/0**。
+  （`npx tsc -b` 因并发编辑者 `NotificationCenter.tsx:39` 类型错误阻断，非本次删除引入。）
+- **保留项（需产品决策 U-1/U-2，未删）**：`pages/settings/ThemeSettingsPage.tsx` —— 0 引用，
+  但方案要求「删除 or 接入 SettingsPage」二选一；`SettingsPage.tsx` 当前在并发编辑者 WIP 中，
+  接入会触碰他人文件。已单独登记，待产品决策后处理。
 
 ---
 
