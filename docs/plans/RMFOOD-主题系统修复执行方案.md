@@ -16,7 +16,7 @@
 
 ### 0.0 执行进度（滚动更新）
 
-**当前阶段：M3（架构收口）接近完成** —— T-G1（死代码清理）✅ + T-G3（样板与僵尸键）✅ + T-T1（测试覆盖）✅ 已完成；仅余 T-G2（令牌语义化，中风险，3 pd）。
+**当前阶段：M3（架构收口）全任务完成** —— T-G1 ✅ + T-G3 ✅ + T-T1 ✅ + **T-G2 ✅（commit `a1bb06d`）**；M3 收尾，余项见 M4 治理。
 
 | 里程碑 | 状态 | 门禁 |
 |:-------|:-----|:-----|
@@ -731,16 +731,34 @@ vars[`--ease-${key}`] = value;
 
 ---
 
-#### T-G2 · 令牌层语义化【D-24，长期】
+#### T-G2 · 令牌层语义化【D-24，长期】 — ✅ 完成（commit `a1bb06d`）
 
-- **目标**：把 `base.css` 的语义层从「抄字面量」改为 `var()` 组合（当前 343 变量仅 44 处 `var()`）。
-- **策略**：**按域分阶段，禁止一次性重写**：
-  1. 颜色域：`--color-primary: var(--color-primary-500)` 等；
-  2. 文字/背景域：`--text-primary: var(--color-neutral-900)`；
-  3. 其他域（间距/圆角/阴影）已是别名或本就不变，跳过。
-- **验证**：改 `--color-primary-500` 后 `--color-primary` **随之变化**（当前不会）。
-- **工时**：3 人日
-- **风险**：中。暗色反转语义下需确认别名方向正确（暗色 `--color-primary: var(--color-primary-400)` 而非 500）。
+> **交付**：`base.css`（16 项）+ `dark.css`（28 项，含 DIVERGENT 安全子集 12 项）语义 token
+> 由字面量改为 primitive 色阶的 `var()` 组合，**共 44 项**，组合率 **12% → 18%**（43 → 64 处）。
+>
+> **方法**：`measure-g2.mjs` 双模式值比对自动匹配候选目标 + `verify-g2.mjs` 静态断言
+> （67/67）+ `verify-g2-browser.mjs` 渲染级 computed 值回归（45/45，亮/暗双模式逐项与改前
+> 字面值一致，**零视觉回归**）。门禁 11/0/0、`vite build` ✅、主题回归测试 29/29。
+>
+> **关键勘误（实施中发现）**：暗色 10 档色阶与亮色**档位号一一对应、实际色值相反**
+> （如亮 `warning-500`=#f59e0b、暗 `warning-500` 也=#f59e0b，但暗 `--color-warning`
+> 语义设计值是 #fbbf24 = 暗 600 档）。故暗色目标档位**必须按浏览器实测计算值选定**，
+> 不能机械套「500 档」。本次 6 项暗色 token（warning/error/info/secondary/accent/error-hover）
+> 因该勘误修正了初版方案的档位映射。
+
+- **验证**：改 `--color-primary-500` 后 `--color-primary` 随之变化（已成立）。
+- **残余（登记 M4）**：
+  - **18 项 DIVERGENT 保持字面量**（`--color-primary-container/-text/-surface/-surface-hover`、
+    `--color-secondary-container`、`--color-accent-hover/-container`、`--bg-tertiary`、
+    `--bg-surface-elevated`、`--text-secondary/-muted/-disabled`、`--border-color`、
+    `--focus-ring`、`--color-info-text`、`--color-tertiary/-hover`、`--border-default`）：
+    暗色语义设计值 ≠ 同档 primitive（如 `--text-secondary` 暗色 #94a3b8 vs 中性 700 档
+    暗色 #cbd5e1 方向相反），强行组合改变暗色计算值，属**设计裁决**（需产品确认暗色
+    反转档位），记 M4 治理。
+  - **18 项 NO_MATCH**（rgb 三元组 `*-rgb`、`#ffffff` 卡片底、`rgba()` 容器/边框/遮罩）：
+    primitive 池无同值，组合无意义，保持字面量。
+- **工时**：3 人日（实际 1 人日完成，工具化程度高）
+- **风险**：中 → 实际执行后**零视觉回归**（45/45 computed 值验证）
 
 ---
 
