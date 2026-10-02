@@ -4,7 +4,7 @@
 |:-----|:-----|
 | **文档编号** | RMFOOD-DS-THEME-001 |
 | **标题** | RMFOOD 配方研发平台 — 主题系统设计规范 |
-| **版本** | **v1.1.8** |
+| **版本** | **v1.1.9** |
 | **状态** | 正式发布（Normative） |
 | **适用平台** | Web 前端（`frontend/`，React 19 + Vite 8 + Tailwind CSS v4） |
 | **不适用范围** | 微信小程序（`miniprogram/`，另见 `docs/theme-system-spec.md`） |
@@ -1341,7 +1341,7 @@ const bad = await page.evaluate(() => {
 ## 17. 附录 E — 渲染验证方法与可复现证据
 
 > ⚠️ **本节 17.2~17.9 记录的是 v1.1.0 的「修复前」取证数据**（M1 执行之前），用于支撑缺陷认定。
-> **修复后的复测数据见 §17.10**。阅读 §17.2~17.9 时请勿将其当作当前状态。
+> **修复后的复测数据见 §17.10（M1）与 §17.11（M2/M3，最新）**。阅读 §17.2~17.9 时请勿将其当作当前状态。
 > 生产产物哈希与体积随版本变化，**以本节所列的时点值理解，不要用于当次构建校验**。
 
 ### 17.1 环境
@@ -1547,10 +1547,66 @@ node scripts/theme-audit/theme-audit-isolation.mjs   # 纯 CSS 隔离矩阵，�
 
 ---
 
+### 17.11 M2/M3 修复后复测（v1.1.8，2026-10-02）
+
+> 本节为 **M2（T-B2b/D-53）与 M3（T-G1/T-G3）执行后**的复测数据。采集方式同 §17.1（dev server `http://127.0.0.1:3000` 渲染级），采集脚本 `scripts/theme-audit/collect-m2m3.mjs`，证据文件 `temp/theme-m2m3-verify.json`。
+
+**A. 门禁结果**
+
+| 范围 | 结果 |
+|:-----|:-----|
+| `npm run theme:gate`（全部 12 项） | **通过 11 / 失败 0 / 跳过 0**，退出码 0（稳定，重复运行无抖动） |
+| GATE-09 | warn（预期：0 循环引用 + 106 登记声明） |
+| `npx vite build` | ✅ |
+| `npm run build`（`tsc -b`） | ❌ 被并发编辑者 `NotificationCenter.tsx:39` 类型错误阻断（非主题系统引入） |
+
+**B. T-B2b / D-53 注入形态复测（核心指标）**
+
+| 模式 | `<html>` 内联自定义属性 | 证据 |
+|:-----|:---:|:-----|
+| 内置纯净 `light-default` | **0**（T-B2b 前为 86） | `isCleanBuiltinPreset()` 跳过注入，L0 由 `base.css` 静态提供 |
+| 内置纯净 `dark-default` | **0** | 同上，L0 由 `dark.css` 静态提供 |
+| 无障碍 `color-blind` | **93**（含 Okabe-Ito） | `--color-success=#009E73`、`--color-error=#D55E00`、`--color-warning=#E69F00`、`--color-info=#0072B2`、`--z-modal-backdrop=50`、`--color-primary-contrast-text=#052e16` |
+
+**C. D-53 kebab 化复测**
+
+| 指标 | 结果 |
+|:-----|:-----|
+| 自定义主题写入 `--color-primary-contrast-text` | ✅ kebab 名通过 `SAFE_TOKEN_NAME` 白名单 |
+| 自定义主题写入 `--z-modal-backdrop` | ✅ 首次匹配 L0 既有定义（值 50，color-blind 态） |
+| 旧 camelCase 名（`-contrastText`/`-modalBackdrop`/`-easeIn`）生成 | ✅ **0 个**（已 kebab 化，camel 名不再生成） |
+| `verify-d53.mjs` 静态断言 | **16/16** 通过 |
+
+**D. M3 死代码清理复测（T-G1 / T-G3）**
+
+| 项 | 结果 |
+|:-----|:-----|
+| T-G1 删除孤岛文件 | **24 文件 / 2580 行**（`utils/theme`/`utils/events`/`types/theme-mode.ts`/`adjustments.css`/`themeUrlParser.ts`/`components/theme` 组件族 12 文件 + 2 文档） |
+| 悬挂 import（`verify-g1.mjs`） | **0**（26 断言全过） |
+| T-G3 版本历史死功能 | 删除 7 方法 + `ThemeVersion` 接口（`theme.storage.ts` 246 → ~130 行） |
+| T-G3 僵尸键清理 | `themeStore.ts` v4 迁移后一次性 `removeItem` 4 个遗留键（活跃 persist 键 `rmfood-theme-storage` 保留） |
+| T-G3 全局 `reduced-motion` 块 | **14 → 1**（仅 `environment.css`），特异性块保留 |
+| `verify-g3.mjs` 断言 | **21/21** 通过 |
+
+**E. 采集口径勘误（重要，避免误读 B/C 数据）**
+
+1. **`data-mode` / `bodyBg` 在三个预设下均显示亮色值** —— 这是**正确行为**而非 bug：M2 的 T-S1 修复后，`data-mode` 由**应用设置**驱动，**不**由 `activeThemeId` 派生；采集脚本只切 `activeThemeId` 未切 `mode`，故 `dark-default` 的 bodyBg 仍为亮色 `rgb(248,250,252)`。判定暗色渲染须同时设 `mode=dark`。
+2. **脚本中的 `contrastPrimary=2.42:1` 是采集口径错误**，**不可作为对比度验收结论**：脚本误算「`--color-primary` vs body 背景」，而设计目标的对比度验收是「primary 表面 vs `on-<surface>` 文字色」，且 L0 的 `--color-primary` 是**静态令牌**（暗色下不反转，须用 `-contrast-text` 配）。**真正的对比度验收由 GATE-04/05（渲染级 12 项门禁）覆盖**，本次 **通过 11/0**，无对比度回归。
+3. `color-blind` 内联 **93**（非旧记 86）：T-B2b 四角色映射（+12 条 L0 目标）与 D-53 kebab 化（+10 维度解锁）叠加后的**当前真实值**，旧记 86 为 T-B2b 前数据。
+
+**F. 未覆盖项（明确声明）**
+
+- **暗色双场景渲染**（`mode=dark` 下的 `/dashboard`、`/formulas`、`/settings`、`/ai`、`/login` 逐像素 diff）未在本节重采 —— 由 §17.10 C 节的 M1 数据 + 本次 GATE-04/05 通过结论覆盖，未单独截图。
+- **移动端视口（≤767px）/ 打印样式 / `forced-colors` 实际渲染** 仍未覆盖（同 §17.10 F）。
+- 变体态（`color-blind` 等）全量注入 93 个令牌（部分对 L0 冗余），**精确差异注入**记 M3/M4 优化项（需逐令牌比对 L0 计算值）。
+
+---
+
 ## 18. 变更日志
 
 | 版本 | 日期 | 变更 |
 |:-----|:-----|:-----|
+| **v1.1.9** | 2026-10-02 | **新增 §17.11 M2/M3 修复后复测 + §17 目录指针更新 + M3 T-G1/T-G3 收口登记**。① **§17.11** 以 dev server 渲染级重新采集：门禁 **11/0/0**、T-B2b/D-53 注入形态（内置纯净 `<html>` 内联 **0**，color-blind 内联 **93** 含 Okabe-Ito 色板 `#009E73`/`#D55E00`/`#E69F00`/`#0072B2` + `--z-modal-backdrop=50` + `--color-primary-contrast-text=#052e16`）、M3 死代码清理（T-G1 24 文件 / T-G3 版本历史删除 + 僵尸键一次性清理 + 全局 reduced-motion 块 14→1）、`verify-g1.mjs` 26/26 与 `verify-g3.mjs` 21/21 全过。② **采集口径勘误（重要）**：采集脚本误算「`--color-primary` vs body 背景」得出 2.42:1，**不可作为对比度验收结论**——设计目标的对比度验收是「primary 表面 vs `on-<surface>` 文字色」，L0 的 `--color-primary` 是静态令牌（暗色不反转，须用 `-contrast-text` 配）；**真正的对比度验收由 GATE-04/05 渲染级门禁覆盖**（本次通过）。③ §17 目录指针更新指向 §17.11。版本头升至 v1.1.9。 |
 | **v1.1.8** | 2026-10-02 | **收口 M2 后的两项修正 + 门禁脆弱性修复 + D-53 修复**。① **T-B2b**（M2 最后一项，8/8）：`COLOR_MAIN_TO_L0` 补全 success/error/warning/info 四语义角色（main→L0 主色、background→-container、text→-text，12 条）；新增 `isCleanBuiltinPreset()` —— 内置纯净预设（`light-default`/`dark-default` 且 `colors` 未被无障碍变体修改）时 `applyThemeToDOM` **跳过内联注入**（`<html>` 内联自定义属性 **86 → 0**），无障碍变体 / 自定义主题 / 导入主题仍注入（color-blind 态 `--color-success=#009E73` Okabe-Ito 生效）；`clearInlineCustomProps()` 清旧防残留。② **D-53**：`generateCSSVariables` 引入 `toKebab`，10 个 camelCase 令牌名（`--color-primary-contrastText`、`--z-modalBackdrop`、`--ease-easeIn` 等）kebab 化后通过 `SAFE_TOKEN_NAME` 白名单，解锁该 10 维度自定义；`--z-modal-backdrop` 首次匹配 L0 既有定义。静态断言 37（B2b）+ 16（D-53）全过。③ **GATE-04/05 脆弱性修复**：`g0405` 中单路由导航异常原会 `return { error }` 提前退出并让 GATE-04/05 双双 fail（"单路由拖垮整组"）；改为单路由异常跳过并记录、仅**全部**路由失败才报错。门禁稳定 **11/0/0**。新增验证脚本 `verify-b2b.mjs` / `verify-b2b-step1.mjs` / `verify-d53.mjs` / `measure-b2b.mjs` / `measure-d53.mjs` / `repro-gate0405.mjs`。**残余**：变体态全量注入 86 个（部分对 L0 冗余，精确差异注入记 M3/M4 优化项）；M3 死代码清理（`useLegacyTheme`/`useThemedComponent` 待删）未启动。 |
 | v1.0.0 | 2026-10-01 | 首次发布。确立五层模型、令牌命名规范、消费契约、无障碍要求、治理流程；登记 49 项缺陷；裁决品牌色与两套命名体系；废止 6 份旧规范文档。**验证等级 L2（静态）。** |
 | **v1.1.0** | 2026-10-01 | **升级为 L3（真实浏览器渲染取证）**。新增 §1.3 渲染验证基线、§17 验证方法与可复现证据、C-24（反转色阶禁止配白字）、I9 不变量、CHK-23~25、R-9、A-2/A-5/A-7/A-8、U-12。**推翻 1 项**（D-5 内联累加）、**修正 4 项**（D-2/D-3/D-4 变量范围、D-39 缺陷边界、§1.2 静态启发式、D-4 精确缺失清单）、**新增 1 项 P0**（D-50，实测暗色对比度 1.52:1）。缺陷总数 49 → 52（含推翻项标注）。 |
