@@ -73,7 +73,7 @@ describe('isSafeToken — 令牌值白名单', () => {
       '#fff { color: red }',
       'url(https://evil.example/x.png)',
       'expression(alert(1))',
-      '#fff\\'; color: red',
+      '#fff\\; color: red',
       '#fff; }',
       'red; @import "https://evil/x.css"',
     ]) {
