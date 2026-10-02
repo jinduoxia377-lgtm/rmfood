@@ -180,6 +180,29 @@ function g03() {
 // ============================================================================
 const SELF_REF = /--([a-z0-9-]+)\s*:\s*var\(\s*--\1\s*\)/g;
 
+/**
+ * 剥离 CSS 注释（v1.1.7：系统性消除「注释中的示例文本被当成自引用」的误报）。
+ * 实现：线性扫描 `/* … */`，用空格替换注释体（保留行号偏移，便于报错定位）。
+ * 边界：本门禁只扫 CSS 文件，字符串里出现 `/*` 的可能极低；
+ * 若将来扫含大量字符串的 CSS，请改用 `postcss` 或 `css.escape` 解析器。
+ */
+function stripCssComments(css) {
+  let out = '';
+  let i = 0;
+  while (i < css.length) {
+    if (css[i] === '/' && css[i + 1] === '*') {
+      const end = css.indexOf('*/', i + 2);
+      const stop = end === -1 ? css.length : end + 2;
+      out += css.slice(i, stop).replace(/[^\n]/g, ' ');
+      i = stop;
+      continue;
+    }
+    out += css[i];
+    i++;
+  }
+  return out;
+}
+
 function g09() {
   // 先收集 base.css / dark.css 中「真正定义」（右侧不是指向自身的 var）的令牌名
   const tokenFiles = [
@@ -189,7 +212,7 @@ function g09() {
   const defined = new Set();
   for (const f of tokenFiles) {
     if (!existsSync(f)) continue;
-    const css = readFileSync(f, 'utf8');
+    const css = stripCssComments(readFileSync(f, 'utf8'));
     for (const m of css.matchAll(/--([a-z0-9-]+)\s*:\s*([^;}]+)/gi)) {
       const name = m[1], value = m[2].trim();
       // 排除自身引用形式
@@ -205,7 +228,8 @@ function g09() {
   ];
   for (const f of srcFiles) {
     if (!existsSync(f)) continue;
-    const css = readFileSync(f, 'utf8');
+    // v1.1.7：剥注释，避免源码中注释/文档文本里的示例被误判为自引用
+    const css = stripCssComments(readFileSync(f, 'utf8'));
     for (const m of css.matchAll(SELF_REF)) {
       const line = css.slice(0, m.index).split('\n').length;
       hits.push({ where: `${relative(ROOT, f)}:${line}`, name: m[1] });
@@ -389,34 +413,66 @@ function g12() {
   const STEPS = ['50', '100', '200', '300', '400', '500', '600', '700', '800', '900', '950'];
   const PREFIX = ['bg', 'text', 'border', 'from', 'to', 'via', 'ring', 'fill', 'stroke', 'divide', 'outline', 'shadow', 'decoration', 'accent'];
 
-  const used = new Set();
+  // 识别源码中所有「品牌色阶工具类」的使用（含变体前缀与 opacity 修饰符）。
+  // 例：`focus:ring-primary-600/40`、`hover:bg-primary-500/50`、`dark:border-secondary-300`、
+  //     `md:text-info-700`、`bg-primary-600`（裸用法）
+  // 匹配形态：[变体前缀(可多个,以:分隔)]裸类名[可选 /NN]
+  // 变体前缀：小写字母数字+连字符，后跟 `:`（如 `focus`、`md`、`dark`、`group-hover`、`sm`、`lg` 等）
+  // ⚠️ 必须用 \b 词边界收尾，否则 `500` 会被误匹配为 `50`
+  const variants = '[a-z][a-z0-9]*(-[a-z0-9]+)*:';
+  const bare = `(?:${PREFIX.join('|')})-(?:${FAMILIES.join('|')})-(?:${STEPS.join('|')})\\b`;
+  const re = new RegExp(`(?:${variants})*(${bare})(\\/\\d{1,3})?`, 'g');
+
+  // 每个 (base, opacity) 作为唯一键
+  const used = new Set(); // 形如 "base" 或 "base/NN"
   for (const f of walkFiles(SRC, ['.ts', '.tsx'])) {
     const t = readFileSync(f, 'utf8');
-    const re = new RegExp(`\\b((?:${PREFIX.join('|')})-(?:${FAMILIES.join('|')})-(?:${STEPS.join('|')}))\\b`, 'g');
-    for (const m of t.matchAll(re)) used.add(m[1]);
+    for (const m of t.matchAll(re)) {
+      const bare = m[2];
+      const op = m[3]; // '/NN' 或 undefined
+      used.add(op ? `${bare}${op}` : bare);
+    }
   }
 
-  // Tailwind 产物中类选择器形如 `.bg-x`，带变体时形如 `.dark\:bg-x`、`.hover\:bg-x`
-  // 故匹配「紧邻 `.` 或转义冒号 `\:`」的类名，并排除更长标识符的误配
+  // 产物中对应形态（简化版）：
+  //  - Tailwind 编译后，类选择器形如 `.bg-x`、`.focus\:bg-x`、`.bg-x\/NN`
+  //  - 无论变体前缀如何转义，**裸类名的子串一定存在**（如 `focus:ring-primary-600/40`
+  //    编译为 `.focus\:ring-primary-600\/40`，子串 `ring-primary-600` 一定出现）
+  //  - 故只需检查「裸类名是否作为子串存在于产物中」即可判定工具类是否被生成
+  // ⚠️ 用词边界收尾，避免 `500` 误匹配 `50`
   const esc = (c) => c.replace(/[.*+?^${}()|[\]\\-]/g, '\\$&');
   const missing = [];
-  for (const c of used) {
-    const re = new RegExp(`(?:\\.|\\\\:)${esc(c)}(?![\\w-])`);
-    if (!re.test(css)) missing.push(c);
+  const byFam = {};
+  const missingSet = new Set();
+  for (const full of used) {
+    const slash = full.indexOf('/');
+    const base = slash === -1 ? full : full.slice(0, slash);
+    // 去重：同一个 base 只检查一次（避免 `ring-primary-600` 和 `ring-primary-600/40` 都指向同一个 base）
+    if (missingSet.has(base)) continue;
+    missingSet.add(base);
+
+    const familyMatch = base.match(new RegExp(`(?:${PREFIX.join('|')})-(${FAMILIES.join('|')})-`));
+    const family = familyMatch ? familyMatch[1] : '其他';
+    if (!byFam[family]) byFam[family] = new Set();
+
+    // 检查裸类名是否作为子串存在于产物中（不跟数字，避免 500 → 50 误匹配）
+    const re = new RegExp(`\\b${esc(base)}(?!\\d)`);
+    if (!re.test(css)) {
+      byFam[family].add(full);
+      missing.push(full);
+    }
   }
 
   if (missing.length === 0) {
     rec('GATE-12', 'M1', '品牌色阶工具类已在产物中生成', 'pass',
       `源码使用的 ${used.size} 个品牌色阶类全部存在于 ${compiled}`);
   } else {
-    const byFam = {};
-    for (const c of missing) {
-      const fam = c.match(new RegExp(`(?:${PREFIX.join('|')})-(${FAMILIES.join('|')})-`))?.[1] ?? '其他';
-      (byFam[fam] ??= []).push(c);
-    }
+    const detail = Object.entries(byFam)
+      .filter(([, s]) => s.size > 0)
+      .map(([f, s]) => `  · ${f}(${s.size}): ${[...s].slice(0, 8).join(', ')}${s.size > 8 ? ' …' : ''}`)
+      .join('\n');
     rec('GATE-12', 'M1', '品牌色阶工具类已在产物中生成', 'fail',
-      `源码使用了 ${missing.length}/${used.size} 个产物中不存在的品牌色阶类：\n` +
-      Object.entries(byFam).map(([f, a]) => `  · ${f}(${a.length}): ${a.slice(0, 8).join(', ')}${a.length > 8 ? ' …' : ''}`).join('\n') +
+      `源码使用了 ${missing.length}/${used.size} 个产物中不存在的品牌色阶类：\n${detail}\n` +
       '\n后果：这些类不产生任何样式 → bg-* 元素背景透明、text-* 回落继承色。\n' +
       '成因：@theme 块未桥接对应令牌 —— 在 index.css 的 @theme 中补 `--color-<族>-<档>: var(--color-<族>-<档>);`。');
   }
