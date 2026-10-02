@@ -545,14 +545,18 @@ export function generateCSSVariables(theme: ThemeConfig): Record<string, string>
   }
 
   const vars: Record<string, string> = {};
+  // D-53：驼峰键名 → kebab-case（T1 要求令牌名全小写 kebab；SAFE_TOKEN_NAME 白名单只放行
+  // kebab，故生成器必须规范化键名，否则这些维度被静默拒绝、无法自定义）。
+  const toKebab = (k: string) => k.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
 
   // 颜色变量
   Object.entries(theme.colors).forEach(([category, values]) => {
     if (typeof values === 'object' && !Array.isArray(values)) {
       Object.entries(values as Record<string, string>).forEach(([key, value]) => {
         const l0 = COLOR_MAIN_TO_L0[`${category}-${key}`];
-        // T-B2a：命中映射时写 L0 名，否则维持原命名（待 T-B2b 收敛）
-        vars[l0 ?? `--color-${category}-${key}`] = value;
+        // T-B2a/T-B2b：命中映射时写 L0 名；否则 kebab 化（D-53）后写
+        const kebabKey = toKebab(key);
+        vars[l0 ?? `--color-${category}-${kebabKey}`] = value;
       });
     }
   });
@@ -591,17 +595,19 @@ export function generateCSSVariables(theme: ThemeConfig): Record<string, string>
 
   // 动画变量
   Object.entries(theme.transitions.duration).forEach(([key, value]) => {
-    vars[`--duration-${key}`] = value;
+    vars[`--duration-${toKebab(key)}`] = value;
   });
   Object.entries(theme.transitions.easing).forEach(([key, value]) => {
     // T-D5：原写 `--easing-${key}`，但全项目 0 处读 var(--easing-*)，
     // 而 51 处读 var(--ease-*)（L0 已定义 standard/spring/elegant）→ 改为对齐命名
-    vars[`--ease-${key}`] = value;
+    // D-53：键名 kebab 化（如 easeIn → ease-in），通过 SAFE_TOKEN_NAME 白名单
+    vars[`--ease-${toKebab(key)}`] = value;
   });
 
   // Z-index 变量
+  // D-53：键名 kebab 化（modalBackdrop → modal-backdrop），与 L0 的 --z-modal-backdrop 匹配
   Object.entries(theme.zIndex).forEach(([key, value]) => {
-    vars[`--z-${key}`] = String(value);
+    vars[`--z-${toKebab(key)}`] = String(value);
   });
 
   return vars;
