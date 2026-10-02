@@ -1042,7 +1042,7 @@ export function applyThemeToDOM(theme: ThemeConfig, a11yMode?: AccessibilityMode
 | **D-54** | ✅ 已修复（v1.1.4） | 新增 `--color-primary-surface-hover`（亮 `#065f46` / 暗 `#047857`），`.surface-primary:hover` 改用它并删除 `.dark` 覆盖。实测：亮 基础 **5.48** / hover **7.68**；暗 基础 **7.68** / hover **5.48**（旧暗色 hover **1.13**）→ **GATE-11** |
 | **D-55** | ✅ 已修复（v1.1.4） | `@theme` 补 `--color-secondary-50..950` 全族桥接。实测 `.bg-secondary-500` **0 → 5**、`.bg-secondary-600` **0 → 1**、`.text-secondary-500` **0 → 1**、`.hover\:bg-secondary-700` **0 → 1** → **GATE-12** |
 | **D-56** | ✅ 已修复（v1.1.4） | `info` 族补为 10 阶（按档位别名到同源的 `secondary`，因后者在 `.dark` 中重定义，别名自动随模式解析）+ `error-950` 别名到 `danger-950`；`@theme` 同步桥接。**GATE-12 缺失类由 93（含误报）→ 14 → 1 → 0** |
-| **D-53** | ⏳ 待 M2 末 | `generateCSSVariables()` 输出的 10 个 camelCase 令牌名待改为 kebab-case；当前被安全白名单静默拒绝（值校验已放宽，名称校验保留为 T1 守卫）。**须与 T-B2b 一并处理** —— 单独改名会与 L0 既有值冲突 |
+| **D-53** | ✅ 已修复（D-53 kebab 化提交） | `generateCSSVariables()` 输出的 10 个 camelCase 令牌名已 kebab 化（`toKebab` 辅助 + 颜色/缓动/z-index 三处生成点）；`--z-modal-backdrop` 首次能匹配 L0 既有定义。16 项静态断言 + 运行时验证通过，全量门禁 11/0/0 |
 | **D-57** | ✅ 已修复（M2） | 无障碍 DOM 属性原仅在 `initialize()` 与 `setAccessibilityMode()` 两处同步，另 5 条应用路径不同步。改为在 `applyThemeWithTransition()`（**全部 7 条路径的唯一汇聚点**）统一同步。实测：`resetToDefault()` 后 `data-a11y-mode=normal`、`data-reading-mode=null`（原残留 `reading`+`sepia`）；阅读模式 + 切暗色 → `dark-read`（原仍 `sepia`）。新增 `verify-d57.mjs` |
 | *(附带)* D-7 的测试失效 | ✅ 附带修复 | 删除从未通过的死测试 `radix-components-a11y.test.tsx`（引用了从未导出的 `RadixButton`/`RadixCard`），替换为 `badge-text-a11y.test.tsx`（仅测真实导出）。**注：此行非独立缺陷 ID，仅为 D-7 的关联修复记录。** |
 | **D-5** | ⊘ 已推翻 | 实测无内联累加；仅记录为不良实践（已随 D-33 一并改写） |
