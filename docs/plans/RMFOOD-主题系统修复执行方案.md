@@ -16,7 +16,7 @@
 
 ### 0.0 执行进度（滚动更新）
 
-**当前阶段：M3（架构收口）进行中** —— T-G1（死代码清理）✅ + T-G3（样板与僵尸键）✅ 已完成；余 T-G2（令牌语义化）/ T-T1（测试覆盖）。
+**当前阶段：M3（架构收口）接近完成** —— T-G1（死代码清理）✅ + T-G3（样板与僵尸键）✅ + T-T1（测试覆盖）✅ 已完成；仅余 T-G2（令牌语义化，中风险，3 pd）。
 
 | 里程碑 | 状态 | 门禁 |
 |:-------|:-----|:-----|
@@ -744,25 +744,30 @@ vars[`--ease-${key}`] = value;
 
 ---
 
-#### T-T1 · 建立主题系统测试覆盖【D-46】
+#### T-T1 · 建立主题系统测试覆盖【D-46】 — ✅ 完成（commit `5f893cb`）
 
-- **目标**：从 **0 覆盖**（`tests/useTheme.test.ts` 全文注释禁用）建立回归保护。
-- **文件**：新建 `frontend/src/stores/__tests__/themeStore.test.ts`、`frontend/src/stores/__tests__/theme.presets.test.ts`、`frontend/src/utils/__tests__/themeUrlParser.test.ts`
-- **必须覆盖的用例**：
+> **交付**：新增 `themeStore.test.ts`（**22 用例**）+ 修复既有 `theme.presets.test.ts` 语法错误
+> （第 76 行 `'#fff\'; color: red'` 字符串截断 → `'#fff\\; color: red'`），全量 **29/29 通过**。
+>
+> **环境修复**：vitest 配置 `environment: 'jsdom'` 但 `jsdom` 从未作为直接依赖安装（历史测试从未真正
+> 运行过 jsdom 环境）→ 补 `jsdom ^30.1.1` devDep；pnpm 虚拟存储破损（`vitest→vite@7.3.6` 链接缺失
+> + 包文件不完整 + esbuild 二进制损坏）→ 全量重装 `node_modules` + `pnpm approve-builds` 修复。
 
-  | 类别 | 用例 |
-  |:-----|:-----|
-  | 值安全（T-D2） | `SAFE_COLOR` 拒绝含 `;` / `}` / `url(` 的值；接受 `#hex`/`rgb()`/`var(--token)` |
-  | 迁移（R-13） | `getValidThemeId` 对 9 个已迁移 ID 回退到 `light-default` |
-  | 持久化（R-12） | v3→v4 迁移幂等；损坏 JSON 不抛异常 |
-  | 状态（T-S1） | `setPresetTheme` **不修改** `mode`；`partialize` 输出含恢复 `activeTheme` 所需字段 |
-  | 无障碍（T-W1） | `initialize()` 后 `data-a11y-mode` 存在；`reading` 时 `data-reading-mode` = `sepia` |
-  | URL 协议（R-22） | `?preset=` 与 `?theme=` 分别解析；base64 不再喂给 `setPresetTheme` |
-  | 令牌生成（T-B2） | `generateCSSVariables` 输出名全部匹配 `/^--[a-z0-9-]+$/` 且属于 §3 白名单 |
+- **必须覆盖的用例**（全部落地）：
 
-- **验证**：`npm test` 通过；覆盖率报告中 `stores/theme*.ts` 行覆盖 ≥ 70%。
-- **工时**：2 人日
-- **风险**：低。需注意 `localStorage` 与 `matchMedia` 的 jsdom stub。
+  | 类别 | 用例 | 状态 |
+  |:-----|:-----|:-----|
+  | 值安全（T-D2） | `isSafeToken` 拒绝 `;`/`}`/`url(`/`javascript:` 等；接受 `#hex`/`rgb()`/`var(--token)` | ✅ 既有 `theme.presets.test.ts`（7 用例） |
+  | 迁移（R-13） | 无效预设 ID 回退 `light-default` | ✅ `themeStore.test.ts` |
+  | 持久化（R-12） | `partialize` 输出含恢复 `activeTheme` 所需字段 | ✅ |
+  | 状态（T-S1） | `setPresetTheme` **不修改** `mode`（system 模式下不退出跟随系统） | ✅（D-34 关键断言） |
+  | 无障碍（T-W1） | `initialize()` 后 `data-a11y-mode` 存在；`reading` 时 `data-reading-mode=sepia` | ✅（mock matchMedia） |
+  | 令牌生成（T-B2/D-53） | `generateCSSVariables` 输出名全匹配 `^--[a-z0-9-]+$`，无 camelCase 残留 | ✅ |
+  | T-B2b 注入 | `isCleanBuiltinPreset` 判定 + `applyThemeToDOM` 内置纯净内联=0 / 变体内联>0 | ✅ |
+
+- **验证**：`npx vitest run src/stores/__tests__/` **29/29 通过**；`vite build` ✅；全量门禁 **11/0/0**。
+- **备注**：`themeUrlParser.ts` 已随 T-G1 删除，其 URL 协议（R-22）用例不单独覆盖（协议由
+  `themeStore` 的 `importTheme` + `theme.presets` 的 `isSafeToken` 白名单间接锁定）。
 
 ---
 
