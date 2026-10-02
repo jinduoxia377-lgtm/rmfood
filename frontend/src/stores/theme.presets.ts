@@ -492,26 +492,49 @@ export function mergeThemeOverrides(base: ThemeConfig, overrides: CustomThemeOve
 // ============================================================================
 
 /**
- * T-B2a：颜色角色 `main` → L0 令牌名的映射。
+ * T-B2a / T-B2b：颜色角色 → L0 令牌名的映射。
  *
- * 原实现一律生成 `--color-<角色>-main`，而**所有 CSS 消费者读的是 L0 名**
- * （`--color-primary`、`--color-secondary`、`--color-accent`）。
- * 后果：自定义主题 / 无障碍变体 / 文件导入**完全无法改变品牌色** ——
+ * 原实现一律生成 `--color-<组>-<键>`（如 `--color-success-main`），而**所有 CSS
+ * 消费者读的是 L0 名**（`--color-primary`、`--color-secondary`、`--color-accent`、
+ * `--color-success`、`--color-error`、`--color-warning`、`--color-info` 及其
+ * `-container` / `-text` 容器/文字令牌）。
+ * 后果：自定义主题 / 无障碍变体 / 文件导入**完全无法改变这些颜色** ——
  * 实测把 `colors.primary.main` 设为 `#ff0000` 后，
  * `--color-primary-main` 变为 `#ff0000`，而组件实际读取的 `--color-primary`
  * 仍是 `#10b981`（D-2/D-3 的最终形态，也是 D-36「导入无效果」的深层原因）。
  *
- * 映射前提：经 T-B1 对齐后，内置预设的这三个角色取值已与 L0 **完全相等**，
+ * T-B2a 已映射 primary/secondary/tertiary 三个品牌角色。
+ * **T-B2b 补全 success/error/warning/info 四个语义角色**（含 background→-container、
+ * text→-text），使无障碍变体与自定义主题的语义色能真正驱动 L0 令牌。
+ *
+ * 映射前提（T-B1 对齐）：内置预设的这三个品牌角色取值已与 L0 **完全相等**，
  * 因此改名对内置预设是零视觉变化，仅让自定义主题真正生效。
  *
- * 注：success / warning / error / info **暂不映射** —— 其预设值有意不同于
- * §13 的权威色（如 error `#B91C1C` 配白字 6.4:1，而权威 `#ef4444` 仅 3.76:1，
- * 直接改名会造成对比度倒退）。这四个角色待 T-B2b 统一处理。
+ * 对比度裁决说明：
+ *   四个语义角色的预设 `main` 值有意不同于 §13 的权威色
+ *   （如 error `#B91C1C` 配白字 6.4:1，而权威 `#ef4444` 仅 3.76:1）。
+ *   映射到 L0 名后，**内置预设**因值与 L0 完全相等，映射无视觉影响；
+ *   **无障碍变体**（T-W2 已改用 Okabe-Ito 色盲安全色板）会注入与 L0 不同的值，
+ *   差异正是期望行为 —— GATE-05/GATE-11 负责拦截对比度倒退。
  */
 const COLOR_MAIN_TO_L0: Record<string, string> = {
+  // T-B2a：三个品牌角色
   'primary-main': '--color-primary',
   'secondary-main': '--color-secondary',
   'tertiary-main': '--color-accent',
+  // T-B2b：四个语义角色（main → L0 主色，background → -container，text → -text）
+  'success-main': '--color-success',
+  'success-background': '--color-success-container',
+  'success-text': '--color-success-text',
+  'error-main': '--color-error',
+  'error-background': '--color-error-container',
+  'error-text': '--color-error-text',
+  'warning-main': '--color-warning',
+  'warning-background': '--color-warning-container',
+  'warning-text': '--color-warning-text',
+  'info-main': '--color-info',
+  'info-background': '--color-info-container',
+  'info-text': '--color-info-text',
 };
 
 export function generateCSSVariables(theme: ThemeConfig): Record<string, string> {
@@ -617,6 +640,56 @@ export function isSafeToken(name: string, value: string): boolean {
 // 辅助功能：将主题应用到 DOM
 // ============================================================================
 
+/**
+ * T-B2b Step 2：判定一个 ThemeConfig 是否为「内置预设且未被无障碍变体修改过」的纯净预设。
+ *
+ * 背景：`base.css` + `dark.css` + `.dark` 类已完整实现亮/暗切换，
+ * 内置预设（light-default / dark-default）的颜色/排版/间距/缓动等取值
+ * 与 L0 令牌完全相等（T-B1 对齐的结果），因此对这些预设做内联注入
+ * 是**纯冗余**（原实测 `<html>` 有 86+ 个内联自定义属性，无视觉增量）。
+ *
+ * 判定规则（保守，误判方向安全）：
+ *  1. `theme.id` 必须是内置预设 id（`presetThemes` 的键）；且
+ *  2. `theme.colors` 必须与 `presetThemes[theme.id].colors` 完全相等
+ *     （无障碍变体经 `getAccessibilityTheme` 修改了 success/error/warning/info，
+ *      不相等 → 判定为「非纯净」→ 仍注入，语义色差异才生效）。
+ *
+ * 满足两者 → 内置纯净预设 → `applyThemeToDOM` 跳过 setProperty 注入。
+ * 否则（自定义主题 / 导入主题 / 无障碍变体）→ 正常注入。
+ */
+export function isCleanBuiltinPreset(theme: ThemeConfig): boolean {
+  if (!theme?.id || !(theme.id in presetThemes)) return false;
+  const builtin = presetThemes[theme.id as PresetThemeId];
+  if (!builtin?.colors || !theme.colors) return false;
+  // 深度比较 colors（键集与值都须相等；无障碍变体会改 success/error/warning/info）
+  const a = Object.keys(builtin.colors).sort();
+  const b = Object.keys(theme.colors).sort();
+  if (a.join(',') !== b.join(',')) return false;
+  for (const k of a) {
+    const bv = builtin.colors[k as keyof SemanticColors];
+    const tv = theme.colors[k as keyof SemanticColors];
+    if (typeof bv === 'string' || typeof tv === 'string') {
+      if (String(bv) !== String(tv)) return false;
+    } else if (bv && tv && typeof bv === 'object' && typeof tv === 'object') {
+      if (JSON.stringify(bv) !== JSON.stringify(tv)) return false;
+    } else if (bv !== tv) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/** 清除 `<html>` 上所有 `--` 内联自定义属性（从自定义/无障碍态切回内置预设时避免残留） */
+function clearInlineCustomProps(): void {
+  const root = document.documentElement;
+  const names = new Set<string>();
+  for (const seg of root.style.cssText.split(';')) {
+    const nm = seg.split(':')[0]?.trim();
+    if (nm?.startsWith('--')) names.add(nm);
+  }
+  for (const nm of names) root.style.removeProperty(nm);
+}
+
 export function applyThemeToDOM(theme: ThemeConfig): void {
   // 防御性检查：如果theme无效，不执行任何操作
   if (!theme?.colors) {
@@ -625,23 +698,32 @@ export function applyThemeToDOM(theme: ThemeConfig): void {
   }
 
   const root = document.documentElement;
-  const cssVars = generateCSSVariables(theme);
 
-  // D-33 / D-5 修复：
-  //  · 原先用 `root.style.cssText += \`${name}: ${value};\`` 拼接写入 —— 既是 CSS 注入向量，
-  //    也会整体重置 <html> 的 style 属性并强制全量重解析。
-  //  · 现改为逐属性 setProperty：幂等覆盖、无字符串拼接、值无法逃逸声明位置。
-  let rejected = 0;
-  for (const [name, value] of Object.entries(cssVars)) {
-    if (!isSafeToken(name, value)) {
-      rejected++;
-      logger.warn('[Theme System] 拒绝不安全的令牌值', { name, value: String(value).slice(0, 60) });
-      continue;
+  // T-B2b Step 2：内置纯净预设不注入令牌 —— base.css/dark.css/.dark 已完整提供
+  // 全部 L0 令牌，内联注入纯属冗余。仅「自定义主题 / 导入主题 / 无障碍变体」
+  // 需要注入差异部分。两条路径都先清旧，保证「切到内置预设时 <html> 内联自定义属性 = 0」。
+  const skipInjection = isCleanBuiltinPreset(theme);
+  if (skipInjection) {
+    clearInlineCustomProps();
+  } else {
+    const cssVars = generateCSSVariables(theme);
+    clearInlineCustomProps();
+    // D-33 / D-5 修复：
+    //  · 原先用 `root.style.cssText += \`${name}: ${value};\`` 拼接写入 —— 既是 CSS 注入向量，
+    //    也会整体重置 <html> 的 style 属性并强制全量重解析。
+    //  · 现改为逐属性 setProperty：幂等覆盖、无字符串拼接、值无法逃逸声明位置。
+    let rejected = 0;
+    for (const [name, value] of Object.entries(cssVars)) {
+      if (!isSafeToken(name, value)) {
+        rejected++;
+        logger.warn('[Theme System] 拒绝不安全的令牌值', { name, value: String(value).slice(0, 60) });
+        continue;
+      }
+      root.style.setProperty(name, value);
     }
-    root.style.setProperty(name, value);
-  }
-  if (rejected > 0) {
-    logger.warn(`[Theme System] 共拒绝 ${rejected} 个不安全的令牌值（已跳过，未写入 DOM）`);
+    if (rejected > 0) {
+      logger.warn(`[Theme System] 共拒绝 ${rejected} 个不安全的令牌值（已跳过，未写入 DOM）`);
+    }
   }
 
   // 设置 data 属性用于 CSS 选择器
@@ -658,7 +740,10 @@ export function applyThemeToDOM(theme: ThemeConfig): void {
   // syncA11yAttributes() 在【初始化】与【交互切换】两条路径统一负责（D-39 修复）。
   // 此处不再重复维护，避免两处写入漂移。
 
-  logger.info(`🎨 [Theme System] Applied theme: ${theme.name} (${theme.mode})`);
+  logger.info(
+    `🎨 [Theme System] Applied theme: ${theme.name} (${theme.mode})` +
+    (skipInjection ? '（内置纯净预设，跳过内联注入 T-B2b）' : ''),
+  );
 }
 
 
