@@ -393,7 +393,7 @@ input:focus-visible, button:focus-visible, a:focus-visible {
   font-weight: 400;
   line-height: 1.6;
   /* P0 对比度修复：本类不再携带任何 color —— 项目主题系统会把 Tailwind
-     灰阶工具类重映射（text-slate-300 在深底渲染为 var(--color-neutral-700, #334155) 等），任何硬编码
+     灰阶工具类重映射（text-neutral-300 在深底渲染为 var(--color-neutral-700, #334155) 等），任何硬编码
      默认色都会与调用处的显式颜色产生不可预测的覆盖冲突。
      颜色一律由调用处内联 style 指定（内联样式优先级最高，深底/浅底各取所需）。 */
 }
@@ -440,7 +440,7 @@ input:focus-visible, button:focus-visible, a:focus-visible {
   text-transform: uppercase;
   /* P0 对比度修复：原硬编码 var(--color-neutral-500, #64748b) 在深色标题栏（var(--color-neutral-900, #0f172a)）上仅 3.75:1，
      且会覆盖调用处的浅色工具类。改为不设定颜色，由调用处决定：
-     深底用 text-slate-300/text-white，浅底用 text-slate-600。 */
+     深底用 text-neutral-300/text-white，浅底用 text-neutral-600。 */
 }
 
 /* ── 学术分类标签 ── */

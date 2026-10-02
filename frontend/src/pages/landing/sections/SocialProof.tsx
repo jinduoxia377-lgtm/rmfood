@@ -42,7 +42,7 @@ function TrustMetrics() {
                   </div>
                   <span className="lp-caption" style={{ color: m.color }}>{m.sub}</span>
                 </div>
-                <div className="text-xl font-bold font-mono text-slate-900">{m.value}</div>
+                <div className="text-xl font-bold font-mono text-neutral-900">{m.value}</div>
                 <div className="lp-caption mt-0.5" style={{ color: 'var(--color-neutral-600, #475569)' }}>{m.label}</div>
               </div>
             );
@@ -83,7 +83,7 @@ function PartnerLogos() {
                 <span className="text-[12px] font-mono" style={{ color: s.text }}>
                   [{label}]
                 </span>
-                <div className="mt-1.5 text-[12px] text-slate-600 leading-relaxed">
+                <div className="mt-1.5 text-[12px] text-neutral-600 leading-relaxed">
                   {org.category === 'university' && '中医药学术研究'}
                   {org.category === 'hospital' && '临床验证与处方研究'}
                   {org.category === 'enterprise' && '药食同源产品研发'}
@@ -140,12 +140,12 @@ function Testimonials() {
               </div>
 
               {/* 引言 */}
-              <div className="text-[13px] leading-[1.7] text-slate-600 mb-3 min-h-[60px] lp-quote">
+              <div className="text-[15px] leading-[1.7] text-neutral-600 mb-3 min-h-[60px] lp-quote">
                 {t.quote}
               </div>
 
               {/* 作者 */}
-              <div className="flex items-center gap-2 pt-2.5 border-t border-slate-100">
+              <div className="flex items-center gap-2 pt-2.5 border-t border-neutral-100">
                 <div
                   className="w-7 h-7 rounded-full flex items-center justify-center lp-label text-white shrink-0"
                   style={{ background: t.gradient, boxShadow: '0 1px 4px color-mix(in srgb, #000000 15%, transparent)' }}
@@ -154,7 +154,7 @@ function Testimonials() {
                 </div>
                 <div>
                   <div className="lp-label font-semibold" style={{ color: 'var(--color-neutral-800, #1e293b)' }}>{t.name}</div>
-                  <div className="text-[12px] text-slate-500">{t.role} · {t.org}</div>
+                  <div className="text-[12px] text-neutral-500">{t.role} · {t.org}</div>
                 </div>
               </div>
             </div>
@@ -179,7 +179,7 @@ export default function SocialProof() {
             <h2 className="lp-h2">
               200+ 研发团队信赖
             </h2>
-            <p className="text-[13px] leading-relaxed max-w-lg text-slate-600 mt-2">
+            <p className="text-[15px] leading-relaxed max-w-lg text-neutral-600 mt-2">
               从高校实验室到大型企业研发中心，覆盖全国 6 所重点中医药院校及 Top 50 药企。
             </p>
           </div>

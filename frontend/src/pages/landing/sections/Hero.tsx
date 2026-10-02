@@ -86,9 +86,9 @@ function parseInline(text: string, keyPrefix: string): React.ReactNode {
       parts.push(<span key={`${keyPrefix}-t-${idx++}`}>{text.slice(lastIdx, m.index)}</span>);
     }
     if (m[2] !== undefined) {
-      parts.push(<strong key={`${keyPrefix}-b-${idx++}`} className="font-semibold text-slate-900">{m[2]}</strong>);
+      parts.push(<strong key={`${keyPrefix}-b-${idx++}`} className="font-semibold text-neutral-900">{m[2]}</strong>);
     } else if (m[3] !== undefined) {
-      parts.push(<em key={`${keyPrefix}-i-${idx++}`} className="italic text-slate-600">{m[3]}</em>);
+      parts.push(<em key={`${keyPrefix}-i-${idx++}`} className="italic text-neutral-600">{m[3]}</em>);
     } else if (m[4] !== undefined) {
       parts.push(
         <code key={`${keyPrefix}-c-${idx++}`} className="px-1 py-0.5 rounded text-[12px] font-mono"
@@ -99,7 +99,7 @@ function parseInline(text: string, keyPrefix: string): React.ReactNode {
     } else if (m[5] !== undefined) {
       parts.push(
         <a key={`${keyPrefix}-l-${idx++}`} href={m[6]} target="_blank" rel="noopener noreferrer"
-          className="text-emerald-700 hover:text-emerald-800 underline decoration-emerald-400 underline-offset-2"
+          className="text-primary-700 hover:text-primary-800 underline decoration-primary-400 underline-offset-2"
           style={{ fontSize: 12 }}>
           {m[5]}
         </a>
@@ -117,7 +117,7 @@ function parseInline(text: string, keyPrefix: string): React.ReactNode {
 function InlineLine({ text, prefix }: { text: string; prefix?: React.ReactNode }) {
   return (
     <div className="flex items-start gap-1" style={{ fontSize: 12, lineHeight: '1.65', color: 'var(--color-neutral-700, #334155)' }}>
-      {prefix && <span className="flex-shrink-0 mt-0.5 text-emerald-600" style={{ fontSize: 12 }}>{prefix}</span>}
+      {prefix && <span className="flex-shrink-0 mt-0.5 text-primary-600" style={{ fontSize: 12 }}>{prefix}</span>}
       <span className="flex-1">{parseInline(text, 'line')}</span>
     </div>
   );
@@ -157,7 +157,7 @@ function MDCodeBlock({ lang, code }: { lang: string; code: string }) {
 function MDBlockquote({ children }: { children: React.ReactNode }) {
   return (
     <div className="my-1.5 pl-2.5 py-1.5 rounded-r-md" style={{ background: 'var(--color-neutral-50, #f8fafc)', borderLeft: '2px solid var(--color-neutral-400, #94a3b8)' }}>
-      <div className="text-[12px] italic text-slate-500 leading-relaxed">{children}</div>
+      <div className="text-[12px] italic text-neutral-500 leading-relaxed">{children}</div>
     </div>
   );
 }
@@ -172,7 +172,7 @@ function MDCallout({ type, children }: { type: 'info' | 'warn' | 'success'; chil
   return (
     <div className="my-1.5 rounded-md px-2.5 py-2 flex items-start gap-2" style={{ background: cfg.bg, border: `1px solid ${cfg.border}` }}>
       <div className="w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1" style={{ background: cfg.dot }} />
-      <div className="text-[12px] leading-relaxed text-slate-700">{children}</div>
+      <div className="text-[12px] leading-relaxed text-neutral-700">{children}</div>
     </div>
   );
 }
@@ -426,7 +426,7 @@ function GraphTab() {
             value={search} onChange={e => setSearch(e.target.value)}
             placeholder="搜索药材 / 成分 / 靶点…"
             aria-label="搜索知识图谱节点"
-            className="w-full min-h-[36px] pl-7 pr-2 text-[12px] rounded-md border outline-none transition-all focus:ring-1 focus:ring-emerald-500"
+            className="w-full min-h-[36px] pl-7 pr-2 text-[12px] rounded-md border outline-none transition-all focus:ring-1 focus:ring-primary-500"
             style={{ borderColor: 'var(--color-neutral-200, #e2e8f0)', background: '#fff', color: 'var(--color-neutral-700, #334155)' }}
           />
         </div>
@@ -486,7 +486,7 @@ function GraphTab() {
           {(['herb','compound','target','disease'] as const).map(t => (
             <div key={t} className="flex items-center gap-1">
               <div className="w-1.5 h-1.5 rounded-full" style={{ background: KG_TYPE_STYLE[t].color }} />
-              <span className="text-[12px] text-slate-500">{KG_TYPE_STYLE[t].label}</span>
+              <span className="text-[12px] text-neutral-500">{KG_TYPE_STYLE[t].label}</span>
             </div>
           ))}
         </div>
@@ -497,13 +497,13 @@ function GraphTab() {
         <div className="w-32 flex-shrink-0 border-l p-3 overflow-y-auto" style={{ background: 'var(--color-neutral-50, #fafbfc)', borderColor: 'var(--color-neutral-200, #e2e8f0)' }}>
           <div className="flex items-center gap-1.5 mb-2">
             <div className="w-2 h-2 rounded-full" style={{ background: KG_TYPE_STYLE[selectedNode.type].color }} />
-            <span className="lp-tiny font-semibold text-slate-800">{selectedNode.name}</span>
+            <span className="lp-tiny font-semibold text-neutral-800">{selectedNode.name}</span>
           </div>
           <div className="text-[12px] font-mono px-1.5 py-0.5 rounded mb-2 inline-block" style={{ background: KG_TYPE_STYLE[selectedNode.type].bg, color: KG_TYPE_STYLE[selectedNode.type].color, border: `1px solid ${KG_TYPE_STYLE[selectedNode.type].border}` }}>
             {KG_TYPE_STYLE[selectedNode.type].label}
           </div>
-          <p className="text-[12px] text-slate-500 leading-[1.55] mb-2">{selectedNode.desc}</p>
-          <div className="text-[12px] text-slate-500">关联节点</div>
+          <p className="text-[12px] text-neutral-500 leading-[1.55] mb-2">{selectedNode.desc}</p>
+          <div className="text-[12px] text-neutral-500">关联节点</div>
           <div className="mt-1 space-y-0.5">
             {KG_LINKS.filter(l => l.source === selectedNode.id || l.target === selectedNode.id).map((l, i) => {
               const otherId = l.source === selectedNode.id ? l.target : l.source;
@@ -512,7 +512,7 @@ function GraphTab() {
               return (
                 <div key={i} role="button" tabIndex={0} onClick={() => setSelectedNode(other)}
                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedNode(other); } }}
-                   className="flex items-center gap-1 text-[12px] text-slate-600 cursor-pointer hover:text-emerald-700 transition-colors min-h-[22px]"
+                   className="flex items-center gap-1 text-[12px] text-neutral-600 cursor-pointer hover:text-primary-700 transition-colors min-h-[22px]"
                 >
                   <span className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: KG_TYPE_STYLE[other.type].color }} />
                   {other.name}
@@ -565,10 +565,10 @@ function DataTab() {
       <div className="flex items-center justify-between px-3 py-2 border-b" style={{ borderColor: 'var(--color-neutral-200, #e2e8f0)', background: 'var(--color-neutral-50, #fafbfc)' }}>
         <div className="flex items-center gap-2">
           <DBIcon size={11} style={{ color: 'var(--color-neutral-500, #64748b)' }} />
-          <span className="lp-tiny font-medium text-slate-600">数据源概览</span>
+          <span className="lp-tiny font-medium text-neutral-600">数据源概览</span>
           <span className="text-[12px] font-mono px-1.5 py-0.5 rounded" style={{ background: 'var(--color-success-50, #ecfdf5)', color: 'var(--color-primary-700, #047857)', border: '1px solid var(--color-success-200, #a7f3d0)' }}>5 个活跃</span>
         </div>
-        <button onClick={() => setAnimKey(k => k + 1)} className="text-[12px] text-slate-500 hover:text-emerald-700 transition-colors flex items-center gap-1" title="刷新">
+        <button onClick={() => setAnimKey(k => k + 1)} className="text-[12px] text-neutral-500 hover:text-primary-700 transition-colors flex items-center gap-1" title="刷新">
           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="23 4 23 10 17 10" /><polyline points="1 20 1 14 7 14" /><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
           </svg>
@@ -593,12 +593,12 @@ function DataTab() {
                 <div className="h-0.5 w-full" style={{ background: ds.color + '40' }} />
                 <div className="p-2.5">
                   <div className="flex items-center justify-between mb-1.5">
-                    <span className="lp-tiny font-semibold text-slate-800 leading-tight">{ds.name}</span>
+                    <span className="lp-tiny font-semibold text-neutral-800 leading-tight">{ds.name}</span>
                     {statusIcon(ds.status)}
                   </div>
                   <div className="flex items-baseline gap-1 mb-1">
                     <span className="text-base font-bold font-mono leading-none" style={{ color: 'var(--color-neutral-900, #0f172a)' }}>{ds.stat}</span>
-                    <span className="text-[12px] text-slate-500">{ds.unit}</span>
+                    <span className="text-[12px] text-neutral-500">{ds.unit}</span>
                   </div>
                   {/* 功能标签 */}
                   <div className="flex flex-wrap gap-0.5">
@@ -610,8 +610,8 @@ function DataTab() {
                 {/* 展开详情 */}
                 {isExpanded && (
                   <div className="px-2.5 pb-2.5 border-t" style={{ borderColor: 'var(--color-neutral-100, #f1f5f9)' }}>
-                    <p className="text-[12px] text-slate-500 leading-[1.55] mt-1.5">{ds.desc}</p>
-                    <div className="flex items-center gap-1 mt-1.5 text-[12px] text-slate-500">
+                    <p className="text-[12px] text-neutral-500 leading-[1.55] mt-1.5">{ds.desc}</p>
+                    <div className="flex items-center gap-1 mt-1.5 text-[12px] text-neutral-500">
                       <Clock size={9} />
                       <span>上次同步：刚刚</span>
                     </div>
@@ -624,7 +624,7 @@ function DataTab() {
 
         {/* 活动日志 */}
         <div className="mt-2.5 rounded-md border p-2.5" style={{ borderColor: 'var(--color-neutral-200, #e2e8f0)', background: 'var(--color-neutral-50, #fafbfc)' }}>
-          <div className="text-[12px] font-medium text-slate-500 mb-1.5 flex items-center gap-1">
+          <div className="text-[12px] font-medium text-neutral-500 mb-1.5 flex items-center gap-1">
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
             </svg>
@@ -633,8 +633,8 @@ function DataTab() {
           {ACTIVITY_LOG.map((log, i) => (
             <div key={i} className="flex items-center gap-2 py-1 border-t" style={{ borderColor: 'var(--color-neutral-100, #f1f5f9)', fontSize: 12 }}>
               <span className="font-mono flex-shrink-0" style={{ color: 'var(--color-neutral-500, #64748b)' }}>{log.time}</span>
-              <span className="text-slate-600 flex-1 truncate">{log.action}</span>
-              <span className="text-slate-500 flex-shrink-0">{log.detail}</span>
+              <span className="text-neutral-600 flex-1 truncate">{log.action}</span>
+              <span className="text-neutral-500 flex-shrink-0">{log.detail}</span>
             </div>
           ))}
         </div>
@@ -717,7 +717,7 @@ function ComplianceTab() {
     <div className="flex flex-col h-full">
       {/* 输入区 */}
       <div className="px-3 py-2 border-b" style={{ borderColor: 'var(--color-neutral-200, #e2e8f0)', background: 'var(--color-neutral-50, #fafbfc)' }}>
-        <div className="text-[12px] font-medium text-slate-500 mb-1.5 flex items-center gap-1">
+        <div className="text-[12px] font-medium text-neutral-500 mb-1.5 flex items-center gap-1">
           <ShieldCheck size={11} style={{ color: 'var(--color-neutral-500, #64748b)' }} />
           输入配方成分（每行一个）
         </div>
@@ -725,7 +725,7 @@ function ComplianceTab() {
           value={ingredients}
           onChange={e => { setIngredients(e.target.value); setResult({ status: 'idle', score: 0, hazards: [], analysis: [] }); }}
           rows={4}
-          className="w-full text-[12px] text-slate-700 resize-none outline-none leading-[1.7] bg-transparent"
+          className="w-full text-[12px] text-neutral-700 resize-none outline-none leading-[1.7] bg-transparent"
           placeholder="黄芪&#10;枸杞&#10;甘草"
         />
         <button onClick={runCheck} disabled={result.status === 'scanning'}
@@ -750,15 +750,15 @@ function ComplianceTab() {
         {result.status === 'idle' && (
           <div className="h-full flex flex-col items-center justify-center text-center">
             <ShieldCheck size={24} style={{ color: 'var(--color-neutral-300, #cbd5e1)', marginBottom: 8 }} />
-            <p className="text-[12px] text-slate-500 mb-1">输入成分后点击检测</p>
-            <p className="text-[12px] text-slate-400">覆盖配伍禁忌 · 过敏原风险 · 法规合规</p>
+            <p className="text-[12px] text-neutral-500 mb-1">输入成分后点击检测</p>
+            <p className="text-[12px] text-neutral-500">覆盖配伍禁忌 · 过敏原风险 · 法规合规</p>
           </div>
         )}
 
         {result.status === 'scanning' && (
           <div className="h-full flex flex-col items-center justify-center">
             <Loader2 size={20} className="animate-spin mb-2" style={{ color: 'var(--color-primary-700, #047857)' }} />
-            <p className="text-[12px] text-slate-500">正在扫描 {progress}%</p>
+            <p className="text-[12px] text-neutral-500">正在扫描 {progress}%</p>
           </div>
         )}
 
@@ -768,13 +768,13 @@ function ComplianceTab() {
             <div className="rounded-md p-2.5 flex items-center gap-3" style={{ background: result.score >= 90 ? 'var(--color-success-50, #ecfdf5)' : result.score >= 70 ? 'var(--color-warning-50, #fffbeb)' : 'var(--color-danger-50, #fef2f2)', border: `1px solid ${result.score >= 90 ? 'var(--color-success-200, #a7f3d0)' : result.score >= 70 ? 'var(--color-warning-200, #fde68a)' : 'var(--color-danger-200, #fecaca)'}` }}>
               <div className="text-center">
                 <div className="text-xl font-bold font-mono leading-none" style={{ color: result.score >= 90 ? 'var(--color-primary-700, #047857)' : result.score >= 70 ? 'var(--color-warning-700, #b45309)' : 'var(--color-danger-700, #dc2626)' }}>{result.score}</div>
-                <div className="text-[12px] text-slate-500 mt-0.5">安全评分</div>
+                <div className="text-[12px] text-neutral-500 mt-0.5">安全评分</div>
               </div>
               <div className="flex-1">
                 <div className="lp-tiny font-semibold" style={{ color: result.score >= 90 ? 'var(--color-primary-800, #065f46)' : result.score >= 70 ? 'var(--color-warning-800, #92400e)' : 'var(--color-danger-800, #991b1b)' }}>
                   {result.score >= 90 ? '✅ 配方整体安全' : result.score >= 70 ? '⚠️ 存在部分风险项' : '❌ 存在严重禁忌'}
                 </div>
-                <div className="text-[12px] text-slate-500 mt-0.5">
+                <div className="text-[12px] text-neutral-500 mt-0.5">
                   {result.hazards.filter(h => h.severity === 'warn').length} 个警告 · {result.analysis.filter(a => a.result === 'pass').length} 项通过
                 </div>
               </div>
@@ -783,15 +783,15 @@ function ComplianceTab() {
             {/* 风险项 */}
             {result.hazards.length > 0 && (
               <div>
-                <div className="text-[12px] font-medium text-slate-500 mb-1 px-1">风险检测</div>
+                <div className="text-[12px] font-medium text-neutral-500 mb-1 px-1">风险检测</div>
                 {result.hazards.map((h, i) => (
                   <div key={i} className="flex items-start gap-1.5 px-1.5 py-1.5 rounded-md mb-1" style={{ background: h.severity === 'safe' ? 'var(--color-neutral-50, #f8fafc)' : h.severity === 'warn' ? 'var(--color-warning-50, #fffbeb)' : 'var(--color-danger-50, #fef2f2)', border: `1px solid ${h.severity === 'safe' ? 'var(--color-neutral-200, #e2e8f0)' : h.severity === 'warn' ? 'var(--color-warning-200, #fde68a)' : 'var(--color-danger-200, #fecaca)'}` }}>
                     {h.severity === 'safe' ? <CheckCircle size={11} style={{ color: 'var(--color-primary-700, #047857)', flexShrink: 0, marginTop: 1 }} />
                      : h.severity === 'warn' ? <AlertTriangle size={11} style={{ color: 'var(--color-warning-700, #b45309)', flexShrink: 0, marginTop: 1 }} />
                      : <XCircle size={11} style={{ color: 'var(--color-danger-700, #dc2626)', flexShrink: 0, marginTop: 1 }} />}
                     <div>
-                      <div className="lp-tiny font-medium text-slate-700">{h.label}</div>
-                      <div className="lp-micro text-slate-500">{h.detail}</div>
+                      <div className="lp-tiny font-medium text-neutral-700">{h.label}</div>
+                      <div className="lp-micro text-neutral-500">{h.detail}</div>
                     </div>
                   </div>
                 ))}
@@ -801,14 +801,14 @@ function ComplianceTab() {
             {/* 配伍分析 */}
             {result.analysis.length > 0 && (
               <div>
-                <div className="text-[12px] font-medium text-slate-500 mb-1 px-1">配伍分析</div>
+                <div className="text-[12px] font-medium text-neutral-500 mb-1 px-1">配伍分析</div>
                 {result.analysis.map((a, i) => (
                   <div key={i} className="flex items-center gap-1.5 px-1.5 py-1 rounded-md mb-0.5" style={{ background: a.result === 'pass' ? 'var(--color-neutral-50, #f8fafc)' : 'var(--color-warning-50, #fffbeb)', border: `1px solid ${a.result === 'pass' ? 'var(--color-neutral-200, #e2e8f0)' : 'var(--color-warning-200, #fde68a)'}` }}>
                     {a.result === 'pass'
                       ? <CheckCircle size={11} style={{ color: 'var(--color-primary-700, #047857)' }} />
                       : <AlertTriangle size={11} style={{ color: 'var(--color-warning-700, #b45309)' }} />}
-                    <span className="lp-tiny font-medium text-slate-700">{a.label}</span>
-                    <span className="lp-micro text-slate-400 ml-auto">{a.detail}</span>
+                    <span className="lp-tiny font-medium text-neutral-700">{a.label}</span>
+                    <span className="lp-micro text-neutral-500 ml-auto">{a.detail}</span>
                   </div>
                 ))}
               </div>
@@ -907,7 +907,7 @@ function ProductPreview() {
         <div className="lp-titlebar flex items-center gap-0 px-4 py-2 border-b">
           <div className="flex items-center gap-2">
             <span className="lp-brand tracking-wider" style={{ color: 'var(--color-neutral-300, #cbd5e1)' }}>莱茵分子</span>
-            <div className="w-px h-3 bg-slate-700" />
+            <div className="w-px h-3 bg-neutral-700" />
             <div className="flex items-center gap-1 px-2 py-0.5 rounded lp-section-tag" style={{ background: 'color-mix(in srgb, var(--color-primary-700, #047857) 45%, transparent)', color: '#ffffff', border: '1px solid color-mix(in srgb, var(--color-primary-700, #047857) 60%, transparent)' }}>
               <Sparkles size={10} /><span>智能对话</span>
             </div>
@@ -964,11 +964,11 @@ function ProductPreview() {
                         <Sparkles size={16} style={{ color: 'var(--color-primary-600, #059669)' }} />
                       </div>
                       <p className="lp-label font-semibold mb-1" style={{ color: 'var(--color-neutral-700, #334155)' }}>与配方顾问对话</p>
-                      <p className="text-[12px] text-slate-500 text-center leading-relaxed mb-6 max-w-[220px]">输入您的研发需求，获取专业配方设计与安全评估</p>
+                      <p className="text-[12px] text-neutral-500 text-center leading-relaxed mb-6 max-w-[220px]">输入您的研发需求，获取专业配方设计与安全评估</p>
                       <div className="grid grid-cols-2 gap-2 w-full max-w-[280px]">
                         {PRESET_QUESTIONS.map((q, i) => (
                           <button key={i} onClick={() => triggerPreset(q)}
-                            className="text-left px-3 py-2 rounded-lg text-[12px] leading-relaxed text-slate-600 transition-all duration-150 border min-h-[44px] flex items-center"
+                            className="text-left px-3 py-2 rounded-lg text-[12px] leading-relaxed text-neutral-600 transition-all duration-150 border min-h-[44px] flex items-center"
                             style={{ background: 'var(--color-neutral-50, #f8fafc)', borderColor: 'var(--color-neutral-100, #eef2f7)' }}
                             onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--color-success-50, #f0fdf4)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--color-success-200, #bbf7d0)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--color-primary-800, #065f46)'; }}
                             onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--color-neutral-50, #f8fafc)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--color-neutral-100, #eef2f7)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--color-neutral-600, #475569)'; }}
@@ -1000,14 +1000,14 @@ function ProductPreview() {
                               {THINKING_STEPS.map((step, i) => (
                                 <div key={step.label} className="flex items-center gap-1.5">
                                   <div className="w-1.5 h-1.5 rounded-full transition-all duration-300" style={{ background: i <= thinkingStep ? step.color : 'var(--color-neutral-200, #e2e8f0)', opacity: i <= thinkingStep ? 1 : 0.4 }} />
-                                  <span className="text-[12px] text-slate-500">{step.label}</span>
+                                  <span className="text-[12px] text-neutral-500">{step.label}</span>
                                 </div>
                               ))}
                             </div>
                             <div className="flex items-center gap-1">
-                              <div className="w-1 h-1 rounded-full bg-emerald-400 lp-dot-1" />
-                              <div className="w-1 h-1 rounded-full bg-emerald-400 lp-dot-2" />
-                              <div className="w-1 h-1 rounded-full bg-emerald-400 lp-dot-3" />
+                              <div className="w-1 h-1 rounded-full bg-primary-400 lp-dot-1" />
+                              <div className="w-1 h-1 rounded-full bg-primary-400 lp-dot-2" />
+                              <div className="w-1 h-1 rounded-full bg-primary-400 lp-dot-3" />
                             </div>
                           </div>
                         </div>
@@ -1017,7 +1017,7 @@ function ProductPreview() {
                           <div className="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 mr-2 mt-0.5" style={{ background: 'var(--color-danger-50, #fef2f2)', border: '1px solid var(--color-danger-200, #fecaca)' }}>
                             <AlertCircle size={10} style={{ color: 'var(--color-danger-700, #dc2626)' }} />
                           </div>
-                          <div className="px-3 py-2 text-[12px] text-red-600 rounded-xl" style={{ background: 'var(--color-danger-50, #fef2f2)', border: '1px solid var(--color-danger-300, #fca5a5)' }}>{demoState.message}</div>
+                          <div className="px-3 py-2 text-[12px] text-danger-600 rounded-xl" style={{ background: 'var(--color-danger-50, #fef2f2)', border: '1px solid var(--color-danger-300, #fca5a5)' }}>{demoState.message}</div>
                         </div>
                       )}
                     </div>
@@ -1031,8 +1031,8 @@ function ProductPreview() {
                         onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(e); } }}
                         placeholder="描述您的研发需求…" rows={1} disabled={demoState.status === 'thinking'}
                         aria-label="配方研发需求输入"
-                        className="w-full resize-none px-3 py-2.5 text-[12px] text-slate-800 placeholder:text-slate-400 bg-transparent outline-none leading-[1.6]" style={{ maxHeight: 80 }} />
-                      <div className="absolute bottom-1.5 right-2"><kbd className="text-[12px] font-mono text-slate-400 px-1 py-0.5 rounded" style={{ border: '1px solid var(--color-neutral-200, #e2e8f0)' }}>⏎</kbd></div>
+                        className="w-full resize-none px-3 py-2.5 text-[12px] text-neutral-800 placeholder:text-neutral-400 bg-transparent outline-none leading-[1.6]" style={{ maxHeight: 80 }} />
+                      <div className="absolute bottom-1.5 right-2"><kbd className="text-[12px] font-mono text-neutral-500 px-1 py-0.5 rounded" style={{ border: '1px solid var(--color-neutral-200, #e2e8f0)' }}>⏎</kbd></div>
                     </div>
                     <button type="submit" disabled={!input.trim() || demoState.status === 'thinking'}
                       aria-label="发送"
@@ -1103,14 +1103,14 @@ export default function Hero() {
             <Reveal>
               <div className="flex items-center gap-2 mb-4">
                 <span className="lp-brand" style={{ color: 'var(--color-primary-700, #047857)' }}>莱茵分子</span>
-                <span className="text-slate-400">·</span>
+                <span className="text-neutral-500">·</span>
                 <span className="lp-caption">药食同源 AI 配方研发平台</span>
               </div>
 
               <h1 className="lp-h1 mb-5">
                 让配方研发
                 <br />
-                <span className="text-emerald-700">像对话一样简单</span>
+                <span className="text-primary-700">像对话一样简单</span>
               </h1>
 
               <p className="lp-body mb-8 max-w-lg" style={{ color: 'var(--color-neutral-600, #475569)' }}>
@@ -1132,7 +1132,7 @@ export default function Hero() {
               </Reveal>
 
               <Reveal delay="lp-reveal-delay-2">
-                <div className="flex items-center gap-3 lp-label text-slate-500">
+                <div className="flex items-center gap-3 lp-label text-neutral-500">
                   <div className="flex -space-x-1.5">
                     {testimonials.slice(0, 4).map((t, i) => (
                       <div key={i} className="w-6 h-6 rounded-full border-2 border-white flex items-center justify-center text-[12px] font-bold text-white" style={{ background: t.gradient }}>

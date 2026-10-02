@@ -127,7 +127,7 @@ export default function Navbar() {
               </Link>
               <Link
                 to="/login"
-                className="inline-flex items-center gap-1.5 text-[13px] font-semibold px-4 min-h-[44px] rounded-md text-white transition-all hover:opacity-90"
+                className="inline-flex items-center gap-1.5 text-[15px] font-semibold px-4 min-h-[44px] rounded-md text-white transition-all hover:opacity-90"
                 style={{
                   background: 'var(--color-neutral-900, #0f172a)',
                   boxShadow: '0 1px 3px color-mix(in srgb, var(--color-neutral-900, #0f172a) 15%, transparent)',
@@ -160,13 +160,13 @@ export default function Navbar() {
                       onClick={() => setMobileOpen(false)}
                       className={cn(
                         'block text-[15px] font-medium py-2.5 px-3 rounded-md transition-colors min-h-[44px] flex items-center',
-                        isActive(l.href) ? 'text-slate-900 bg-slate-50' : 'text-slate-900 hover:text-slate-900 hover:bg-slate-50'
+                        isActive(l.href) ? 'text-neutral-900 bg-neutral-50' : 'text-neutral-900 hover:text-neutral-900 hover:bg-neutral-50'
                       )}
                     >
                       {l.label}
                     </a>
                   ))}
-                  <div className="pt-2 mt-2 border-t border-slate-100">
+                  <div className="pt-2 mt-2 border-t border-neutral-100">
                     <Link
                       to="/login"
                       className="w-full text-center text-[15px] font-semibold py-3 rounded-md text-white block transition-opacity hover:opacity-90 min-h-[44px] flex items-center justify-center"
