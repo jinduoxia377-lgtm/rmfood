@@ -77,7 +77,7 @@ export default function CTABanner() {
               <DialogTrigger asChild>
                 <button
                   type="button"
-                  className="inline-flex items-center gap-1.5 text-[13px] font-medium px-6 py-3 rounded-md transition-colors hover:text-white border min-h-[44px] lp-body-sm"
+                  className="inline-flex items-center gap-1.5 text-[15px] font-medium px-6 py-3 rounded-md transition-colors hover:text-white border min-h-[44px] lp-body-sm"
                   style={{ color: 'var(--color-neutral-300, #cbd5e1)', borderColor: 'var(--color-neutral-600, #475569)' }}
                 >
                   预约演示
@@ -92,8 +92,8 @@ export default function CTABanner() {
                   <div className="flex items-start gap-3 py-4">
                     <CheckCircle size={20} className="shrink-0 mt-0.5" style={{ color: 'var(--color-primary-700, #047857)' }} />
                     <div>
-                      <p className="text-[15px] font-semibold text-slate-900">预约成功</p>
-                      <p className="text-[12px] text-slate-500 mt-1">
+                      <p className="text-[15px] font-semibold text-neutral-900">预约成功</p>
+                      <p className="text-[12px] text-neutral-500 mt-1">
                         已收到您的预约信息（{email}），顾问将在 24 小时内与您联系。
                       </p>
                     </div>
@@ -105,7 +105,7 @@ export default function CTABanner() {
                       <input
                         id="demo-booking-name"
                         aria-label="请输入您的姓名"
-                        className="w-full h-11 px-3 text-[15px] rounded-md border border-slate-200 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600/40"
+                        className="w-full h-11 px-3 text-[15px] rounded-md border border-neutral-200 bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-600/40"
                         placeholder="请输入您的姓名"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
@@ -116,7 +116,7 @@ export default function CTABanner() {
                       <input
                         id="demo-booking-email"
                         aria-label="请输入您的公司邮箱"
-                        className="w-full h-11 px-3 text-[15px] rounded-md border border-slate-200 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600/40"
+                        className="w-full h-11 px-3 text-[15px] rounded-md border border-neutral-200 bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-600/40"
                         placeholder="company@example.com"
                         type="email"
                         inputMode="email"
@@ -129,14 +129,14 @@ export default function CTABanner() {
                       <input
                         id="demo-booking-company"
                         aria-label="请输入公司名称"
-                        className="w-full h-11 px-3 text-[15px] rounded-md border border-slate-200 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600/40"
+                        className="w-full h-11 px-3 text-[15px] rounded-md border border-neutral-200 bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-600/40"
                         placeholder="请输入公司名称"
                         value={company}
                         onChange={(e) => setCompany(e.target.value)}
                       />
                     </div>
                     {submitError && (
-                      <p className="text-[12px] text-red-600" role="alert">{submitError}</p>
+                      <p className="text-[12px] text-danger-600" role="alert">{submitError}</p>
                     )}
                   </div>
                 )}
@@ -167,7 +167,7 @@ export default function CTABanner() {
           'lp-scroll-top',
           showScrollTop && 'lp-scroll-top-visible'
         )}
-        style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', color: 'var(--color-neutral-400, #94a3b8)' }}
+        style={{ background: 'color-mix(in srgb, #ffffff 8%, transparent)', border: '1px solid color-mix(in srgb, #ffffff 12%, transparent)', color: 'var(--color-neutral-400, #94a3b8)' }}
         aria-label="回到顶部"
       >
         <ChevronUp size={14} />

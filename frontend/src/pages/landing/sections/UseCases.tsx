@@ -56,7 +56,7 @@ function ScenarioCard({ item, index }: { item: (typeof useCases)[0]; index: numb
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-0.5">
-                <h3 className="text-[15px] font-bold text-slate-900 truncate">{item.title}</h3>
+                <h3 className="text-[15px] font-bold text-neutral-900 truncate">{item.title}</h3>
                 <span
                   className="shrink-0 lp-label px-2 py-0.5 rounded-md"
                   style={{ background: cfg.primaryLight, color: cfg.primaryText, border: `1px solid ${cfg.primaryBorder}` }}
@@ -68,7 +68,7 @@ function ScenarioCard({ item, index }: { item: (typeof useCases)[0]; index: numb
           </div>
 
           {/* 描述 */}
-          <p className="text-[13px] leading-[1.7] text-slate-600 mb-5 min-h-[66px]">
+          <p className="text-[15px] leading-[1.7] text-neutral-600 mb-5 min-h-[66px]">
             {item.desc}
           </p>
 
@@ -104,10 +104,10 @@ function ScenarioCard({ item, index }: { item: (typeof useCases)[0]; index: numb
               <tbody>
                 {item.metrics.map((m, i) => (
                   <tr key={m.label} style={{ borderBottom: i < item.metrics.length - 1 ? '1px solid var(--color-neutral-100, #f1f5f9)' : 'none' }}>
-                    <td className="py-1 px-2 text-slate-500">{m.label}</td>
+                    <td className="py-1 px-2 text-neutral-500">{m.label}</td>
                     <td className="py-1 px-2 text-right font-mono font-semibold" style={{ color: 'var(--color-primary-700, #047857)' }}>
                       {m.value}
-                      {m.unit && <span className="font-normal text-slate-500 ml-0.5">{m.unit}</span>}
+                      {m.unit && <span className="font-normal text-neutral-500 ml-0.5">{m.unit}</span>}
                     </td>
                   </tr>
                 ))}

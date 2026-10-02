@@ -90,7 +90,7 @@ export default function Footer() {
                   <li key={link.label}>
                     <Link
                       to={link.href}
-                      className="lp-footer-link text-[13px]"
+                      className="lp-footer-link text-[15px]"
                     >
                       {link.label}
                     </Link>
@@ -109,7 +109,7 @@ export default function Footer() {
                 { icon: Globe, text: 'www.rmfood.cn' },
                 { icon: MapPin, text: '厦门市思明区' },
               ].map(({ icon: Icon, text }, i) => (
-                <li key={i} className="flex items-center gap-2 text-[13px] min-h-[44px]" style={{ color: 'var(--color-neutral-400, #94a3b8)' }}>
+                <li key={i} className="flex items-center gap-2 text-[15px] min-h-[44px]" style={{ color: 'var(--color-neutral-400, #94a3b8)' }}>
                   <Icon size={14} className="shrink-0 opacity-60" style={{ color: 'var(--color-neutral-500, #64748b)' }} />
                   <span>{text}</span>
                 </li>

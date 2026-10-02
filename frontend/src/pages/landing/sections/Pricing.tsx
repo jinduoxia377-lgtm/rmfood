@@ -34,7 +34,7 @@ export default function Pricing() {
           <div className="text-center mb-10">
             <span className="lp-section-tag block mb-3">{sectionLabel}</span>
             <h2 className="lp-h2 mb-2">{sectionTitle}</h2>
-            <p className="lp-body-sm max-w-sm mx-auto text-slate-600" style={{ color: 'var(--color-neutral-600, #475569)' }}>{sectionSub}</p>
+            <p className="lp-body-sm max-w-sm mx-auto text-neutral-600" style={{ color: 'var(--color-neutral-600, #475569)' }}>{sectionSub}</p>
 
             <div className="mt-5 inline-flex items-center gap-0.5 p-0.5 rounded-md" style={{ background: 'var(--color-neutral-100, #f1f5f9)', border: '1px solid var(--color-neutral-200, #e2e8f0)' }}>
               {(['monthly', 'yearly'] as const).map((m) => (
@@ -51,13 +51,13 @@ export default function Pricing() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {plans.map((p, i) => (
             <Reveal key={p.name} delay={`lp-reveal-delay-${i + 1}`}>
-              <div className={cn('h-full flex flex-col rounded-md p-5', p.popular && 'ring-1 ring-emerald-500/40')}
+              <div className={cn('h-full flex flex-col rounded-md p-5', p.popular && 'ring-1 ring-primary-500/40')}
                 style={{ background: p.popular ? 'var(--color-neutral-900, #0f172a)' : 'var(--color-neutral-50, #fafafa)', border: p.popular ? '1px solid color-mix(in srgb, var(--color-primary-500, #10b981) 35%, transparent)' : '1px solid var(--color-neutral-200, #e2e8f0)' }}
               >
                 {p.popular && <span className="lp-popular-badge mb-3 block">推荐方案</span>}
-                <h3 className={cn('text-base font-bold mb-0.5', p.popular ? 'text-white' : 'text-slate-900')}>{p.name}</h3>
+                <h3 className={cn('text-base font-bold mb-0.5', p.popular ? 'text-white' : 'text-neutral-900')}>{p.name}</h3>
                 <p className="lp-caption mb-4" style={{ color: p.popular ? '#ffffff' : 'var(--color-neutral-600, #475569)' }}>{p.desc}</p>
-                <div className={cn('mb-4 flex items-baseline gap-1', p.popular ? 'text-white' : 'text-slate-900')}>
+                <div className={cn('mb-4 flex items-baseline gap-1', p.popular ? 'text-white' : 'text-neutral-900')}>
                   <span key={`${p.name}-${animKey}`} className="text-2xl font-bold font-mono animate-in fade-in duration-200">
                     {p.name === '专业版' ? (billing === 'monthly' ? p.priceMonthly : p.priceYearly) : p.priceMonthly}
                   </span>
@@ -99,7 +99,7 @@ export default function Pricing() {
                     </DialogHeader>
                     <ul className="space-y-1.5">
                       {p.features.filter((f) => f.included).map((f) => (
-                        <li key={f.text} className="flex items-center gap-2 lp-caption text-slate-600">
+                        <li key={f.text} className="flex items-center gap-2 lp-caption text-neutral-600">
                           <Check size={12} style={{ color: 'var(--color-primary-700, #047857)' }} /> {f.text}
                         </li>
                       ))}

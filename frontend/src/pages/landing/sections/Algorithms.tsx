@@ -76,19 +76,19 @@ function AlgoCard({ algo, index }: { algo: Algorithm; index: number }) {
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-0.5">
-                <h3 className="text-[15px] font-bold text-slate-900">{algo.title}</h3>
+                <h3 className="text-[15px] font-bold text-neutral-900">{algo.title}</h3>
                 {algo.metric && (
                   <span className="lp-caption font-mono shrink-0" style={{ color: 'var(--color-primary-700, #047857)' }}>
                     {algo.metric.value}
                   </span>
                 )}
               </div>
-              <div className="text-[12px] font-mono text-slate-500">{algo.subtitle}</div>
+              <div className="text-[12px] font-mono text-neutral-500">{algo.subtitle}</div>
             </div>
           </div>
 
           {/* 描述 */}
-          <p className="text-[13px] leading-[1.7] text-slate-600 mb-3">
+          <p className="text-[15px] leading-[1.7] text-neutral-600 mb-3">
             {algo.desc}
           </p>
 
@@ -108,7 +108,7 @@ function AlgoCard({ algo, index }: { algo: Algorithm; index: number }) {
           {/* 适用场景（展开时显示） */}
           {expanded && algo.applicable && (
             <div className="mb-3 pt-3" style={{ borderTop: '1px solid var(--color-neutral-100, #f1f5f9)' }}>
-              <div className="text-[12px] text-slate-500 mb-1.5">适用场景</div>
+              <div className="text-[12px] text-neutral-500 mb-1.5">适用场景</div>
               <div className="flex flex-wrap gap-1">
                 {algo.applicable.map((s) => (
                   <span
@@ -143,7 +143,7 @@ function AlgoCard({ algo, index }: { algo: Algorithm; index: number }) {
             <button
               onClick={() => setExpanded(!expanded)}
               aria-expanded={expanded}
-              className="flex items-center gap-0.5 text-[12px] text-slate-600 hover:text-slate-800 transition-colors min-h-[44px] px-1"
+              className="flex items-center gap-0.5 text-[12px] text-neutral-600 hover:text-neutral-800 transition-colors min-h-[44px] px-1"
             >
               {expanded ? '收起' : '详情'}
               {expanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
@@ -164,7 +164,7 @@ function SynergyCard({ mech, index }: { mech: typeof synergyMechanisms[0]; index
         style={{ background: '#fff', border: '1px solid var(--color-neutral-200, #e2e8f0)' }}
       >
         <div className="flex items-center justify-between mb-2">
-          <h4 className="text-[13px] font-bold text-slate-800">{mech.name}</h4>
+          <h4 className="text-[15px] font-bold text-neutral-800">{mech.name}</h4>
           <span
             className="text-[12px] font-mono px-1.5 py-0.5 rounded"
             style={{ background: 'var(--color-success-50, #f0fdf4)', color: 'var(--color-primary-700, #047857)', border: '1px solid var(--color-success-200, #bbf7d0)' }}
@@ -178,7 +178,7 @@ function SynergyCard({ mech, index }: { mech: typeof synergyMechanisms[0]; index
         >
           {mech.formula}
         </div>
-        <p className="text-[12px] leading-[1.65] text-slate-600">{mech.desc}</p>
+        <p className="text-[12px] leading-[1.65] text-neutral-600">{mech.desc}</p>
       </div>
     </Reveal>
   );
@@ -196,7 +196,7 @@ function PerformanceTable() {
           <thead>
             <tr style={{ background: 'var(--color-neutral-50, #f8fafc)' }}>
               {['操作类型', 'P50', 'P95', 'P99', 'SLA 目标'].map((h) => (
-                <th key={h} className="px-3 py-2 text-left font-medium text-slate-500 whitespace-nowrap">
+                <th key={h} className="px-3 py-2 text-left font-medium text-neutral-500 whitespace-nowrap">
                   {h}
                 </th>
               ))}
@@ -205,11 +205,11 @@ function PerformanceTable() {
           <tbody>
             {performanceMetrics.map((m, i) => (
               <tr key={i} style={{ borderBottom: i < performanceMetrics.length - 1 ? '1px solid var(--color-neutral-100, #f1f5f9)' : 'none' }}>
-                <td className="px-3 py-2 text-slate-700 font-medium">{m.operation}</td>
+                <td className="px-3 py-2 text-neutral-700 font-medium">{m.operation}</td>
                 <td className="px-3 py-2 font-mono" style={{ color: 'var(--color-primary-700, #047857)' }}>{m.p50}</td>
                 <td className="px-3 py-2 font-mono" style={{ color: 'var(--color-secondary-700, #1d4ed8)' }}>{m.p95}</td>
                 <td className="px-3 py-2 font-mono" style={{ color: 'var(--color-warning-700, #b45309)' }}>{m.p99}</td>
-                <td className="px-3 py-2 font-mono text-slate-500">{m.sla}</td>
+                <td className="px-3 py-2 font-mono text-neutral-500">{m.sla}</td>
               </tr>
             ))}
           </tbody>
@@ -252,7 +252,7 @@ export default function Algorithms() {
               >
                 优化算法引擎
               </span>
-              <span className="lp-caption text-slate-500">7 种求解器 · 统一接口 · 自动策略选择</span>
+              <span className="lp-caption text-neutral-500">7 种求解器 · 统一接口 · 自动策略选择</span>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {optimizerAlgos.map((algo, i) => (
@@ -272,7 +272,7 @@ export default function Algorithms() {
               >
                 协同机制
               </span>
-              <span className="lp-caption text-slate-500">5 种数学模型 · 加权综合指数 SI</span>
+              <span className="lp-caption text-neutral-500">5 种数学模型 · 加权综合指数 SI</span>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {synergyMechanisms.slice(0, 5).map((mech, i) => (
@@ -292,7 +292,7 @@ export default function Algorithms() {
               >
                 性能基准
               </span>
-              <span className="lp-caption text-slate-500">实测于 Intel i7 · Python 3.10 · 5 成分配方</span>
+              <span className="lp-caption text-neutral-500">实测于 Intel i7 · Python 3.10 · 5 成分配方</span>
             </div>
             <PerformanceTable />
           </div>

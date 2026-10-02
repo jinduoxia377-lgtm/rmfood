@@ -124,13 +124,13 @@ export function CountdownBanner() {
                 color: 'var(--color-primary-700, #047857)',
               }}
             >
-              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary-500" />
               {LAUNCH_CONFIG.title}
             </div>
 
             {/* 文案 */}
             <div className="min-w-0">
-              <p className="text-[13px] sm:text-[15px] font-medium truncate" style={{ color: 'var(--color-neutral-900, #0f172a)' }}>
+              <p className="text-[15px] font-medium truncate" style={{ color: 'var(--color-neutral-900, #0f172a)' }}>
                 {LAUNCH_CONFIG.subtitle}
               </p>
               <p className="lp-caption mt-0.5" style={{ color: 'var(--color-neutral-600, #475569)' }}>

@@ -58,17 +58,17 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-0.5">
-                <h3 className="text-[15px] font-bold text-slate-900">{feature.title}</h3>
+                <h3 className="text-[15px] font-bold text-neutral-900">{feature.title}</h3>
                 {feature.keyMetric && (
                   <span className="lp-caption font-mono shrink-0" style={{ color: 'var(--color-primary-700, #047857)' }}>{feature.keyMetric}</span>
                 )}
               </div>
-              <span className="text-[12px] text-slate-500">{feature.tag}</span>
+              <span className="text-[12px] text-neutral-500">{feature.tag}</span>
             </div>
           </div>
 
           {/* 描述 */}
-          <p className="text-[13px] leading-relaxed text-neutral-600 mb-4 min-h-[52px]">
+          <p className="text-[15px] leading-relaxed text-neutral-600 mb-4 min-h-[52px]">
             {feature.desc}
           </p>
 
@@ -76,9 +76,9 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
           {feature.steps && feature.steps.length > 0 && (
             <ol className="lp-numbered">
               {feature.steps.map((step, i) => (
-                <li key={step.label} className="text-[12px] text-slate-600 leading-relaxed">
-                  <span className="font-medium text-slate-700">{step.label}</span>
-                  {step.detail && <span className="text-slate-500 ml-1">— {step.detail}</span>}
+                <li key={step.label} className="text-[12px] text-neutral-600 leading-relaxed">
+                  <span className="font-medium text-neutral-700">{step.label}</span>
+                  {step.detail && <span className="text-neutral-500 ml-1">— {step.detail}</span>}
                 </li>
               ))}
             </ol>
