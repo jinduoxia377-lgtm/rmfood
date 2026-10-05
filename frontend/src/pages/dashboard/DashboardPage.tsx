@@ -21,7 +21,7 @@ import { Card, CardHeader, CardTitle, CardContent, Button, Badge, StatCard } fro
 import { StatusBadge, Skeleton, EmptyState } from '@/components/ui/Common'
 import { activityApi, type TimelineEvent, type TodoItem, type ReviewQueueItem } from '@/api/activity'
 import { notificationApi } from '@/api/notifications'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { STATUS_CONFIG, DASHBOARD_CONFIG } from '@/config'
 
 const STATUS_LABELS = STATUS_CONFIG.labels
@@ -141,12 +141,11 @@ interface CardRenderProps {
   timelineLoading?: boolean
   timelineError?: Error | null
   refetchTimeline?: () => void
-  aiInsightsLoading?: boolean
-  aiInsightsError?: Error | null
+  refetchTrends?: () => void
   refetchAIInsights?: () => void
 }
 
-function renderCard({ card, data, trendsData, formulasData, experimentsData, todos, reviewQueue, timeline, navigate, currentLayout, setCurrentLayout, statsLoading, statsError, refetchStats, trendsLoading, trendsError, formulasLoading, formulasError, refetchFormulas, experimentsLoading, experimentsError, refetchExperiments, todosLoading, todosError, refetchTodos, reviewQueueLoading, reviewQueueError, refetchReviewQueue, timelineLoading, timelineError, refetchTimeline, aiInsightsLoading, aiInsightsError, refetchAIInsights }: CardRenderProps) {
+function renderCard({ card, data, trendsData, formulasData, experimentsData, todos, reviewQueue, timeline, navigate, currentLayout, setCurrentLayout, statsLoading, statsError, refetchStats, trendsLoading, trendsError, refetchTrends, formulasLoading, formulasError, refetchFormulas, experimentsLoading, experimentsError, refetchExperiments, todosLoading, todosError, refetchTodos, reviewQueueLoading, reviewQueueError, refetchReviewQueue, timelineLoading, timelineError, refetchTimeline, refetchAIInsights }: CardRenderProps) {
   // Lazy-access to currentLayout/setCurrentLayout for the components that need them
   const lazyLayout = { currentLayout, setCurrentLayout }
 
@@ -176,6 +175,8 @@ function renderCard({ card, data, trendsData, formulasData, experimentsData, tod
     } else {
       props.total = experimentsByStatus['completed'] ?? 0
     }
+    // P0-01: 统计卡需按索引映射图标与文案，缺失会导致 4 张卡渲染同一内容
+    props.statIndex = idx
     props.loading = statsLoading
     props.error = statsError
     props.onRetry = refetchStats
@@ -256,12 +257,8 @@ function renderCard({ card, data, trendsData, formulasData, experimentsData, tod
     props.onRetry = refetchTimeline
   }
 
-  // AI insights
-  if (card.type === 'ai-insights') {
-    props.loading = aiInsightsLoading
-    props.error = aiInsightsError
-    props.onRetry = refetchAIInsights
-  }
+  // AI insights — API-03: 由卡片内部 useAIInsights 统一管理加载/错误态，
+  // 页面不再注入 loading/error/onRetry（否则会与卡片自身查询状态冲突）
 
   // Layout-dependent lazy components
   if (card.type === 'team-dashboard-share') {
@@ -297,7 +294,7 @@ export default function DashboardPage() {
   const user = useAuthStore((s) => s.user)
   const [trendPeriod] = useState<'7d' | '30d' | '90d'>('30d')
   const { data: stats, isLoading: statsLoading, error: statsError, refetch: refetchStats } = useDashboardStatistics()
-  const { data: trendsData, isLoading: trendsLoading, error: trendsError } = useDashboardTrends(trendPeriod)
+  const { data: trendsData, isLoading: trendsLoading, error: trendsError, refetch: refetchTrends } = useDashboardTrends(trendPeriod)
   const { data: formulasData, isLoading: formulasLoading, error: formulasError, refetch: refetchFormulas } = useFormulas({ page: 1, page_size: 5 })
   const { data: experimentsData, isLoading: experimentsLoading, error: experimentsError, refetch: refetchExperiments } = useExperiments({ page: 1, page_size: 5 })
 
@@ -325,13 +322,13 @@ export default function DashboardPage() {
   const reviewQueue = reviewQueueData?.items ?? []
   const timeline = timelineData?.items ?? []
 
-  // AI 洞察数据 — 延迟加载（等关键数据就绪后请求）
-  const { data: aiInsightsData, isLoading: aiInsightsLoading, error: aiInsightsError, refetch: refetchAIInsights } = useQuery({
-    queryKey: ['ai-insights'],
-    queryFn: aiInsightsApi.getInsights,
-    enabled: !statsLoading && !trendsLoading,
-    staleTime: 5 * 60_000,
-  })
+  // AI 洞察数据 — API-03：卡片组件内部 useAIInsights 使用同一 queryKey 与 staleTime（5min），
+  // 页面级不再持有独立查询（避免同页双查）；「刷新」按钮通过 invalidate 使卡片侧缓存失效后重新拉取
+  const qc = useQueryClient()
+  const refetchAIInsights = useCallback(
+    () => qc.invalidateQueries({ queryKey: ['ai-insights'], refetchType: 'none' }),
+    [qc],
+  )
 
   // 全局加载状态：关键数据未就绪时显示全局骨架
   const isInitialLoading = statsLoading || trendsLoading || formulasLoading || experimentsLoading
@@ -386,10 +383,10 @@ export default function DashboardPage() {
   const [showNotifications, setShowNotifications] = useState(false)
   const [notificationCount, setNotificationCount] = useState(0)
 
-  // 从后端 API 获取未读通知数
+  // 从后端 API 获取未读通知数（契约：GET /notifications/unread-count → { unread_count }）
   useEffect(() => {
     notificationApi.unreadCount()
-      .then((data) => setNotificationCount(data.count))
+      .then((data) => setNotificationCount(data.unread_count ?? 0))
       .catch(() => setNotificationCount(0))
   }, [])
 
@@ -398,14 +395,14 @@ export default function DashboardPage() {
     const unsubscribe = subscribeToChannel('notifications', (msg) => {
       if (msg.type === 'notification.created' || msg.type === 'notification.marked_read') {
         notificationApi.unreadCount()
-          .then((data) => setNotificationCount(data.count))
+          .then((data) => setNotificationCount(data.unread_count ?? 0))
           .catch(() => {})
       }
     })
     return unsubscribe
   }, [])
-  const [layoutColumns, setLayoutColumns] = useState(4)
-  const [layoutGap, setLayoutGap] = useState(16)
+  const [layoutColumns, setLayoutColumns] = useState(() => currentLayout.gridColumns ?? 4)
+  const [layoutGap, setLayoutGap] = useState(() => currentLayout.gridGap ?? 16)
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<Array<{ type: string; id: number; title: string; to: string }>>([])
   const [showSearch, setShowSearch] = useState(false)
@@ -526,6 +523,49 @@ export default function DashboardPage() {
     }
   }, [layouts])
 
+  // L-02：列/间距变更后落盘到当前布局（随 saveLayout 写入 localStorage）
+  const persistGridConfig = useCallback((columns: number, gap: number) => {
+    const newLayout = { ...currentLayout, gridColumns: columns, gridGap: gap, updatedAt: new Date().toISOString() }
+    setCurrentLayout(newLayout)
+    DashboardConfigManager.saveLayout(newLayout)
+  }, [currentLayout])
+
+  const handleColumnsChange = useCallback((col: number) => {
+    setLayoutColumns(col)
+    persistGridConfig(col, layoutGap)
+  }, [persistGridConfig, layoutGap])
+
+  const handleGapChange = useCallback((g: number) => {
+    setLayoutGap(g)
+    persistGridConfig(layoutColumns, g)
+  }, [persistGridConfig, layoutColumns])
+
+  // 切换布局时恢复该布局的网格配置（刷新/切换后保持）
+  useEffect(() => {
+    setLayoutColumns(currentLayout.gridColumns ?? 4)
+    setLayoutGap(currentLayout.gridGap ?? 16)
+    // 仅随 currentLayout.id 变化触发（同布局内的卡片编辑不改网格）
+  }, [currentLayout.id, currentLayout.gridColumns, currentLayout.gridGap])
+
+  // L-06：共享 ownerId/ownerName 注入真实用户（占位值 current-user 在登录态下自动升级一次）
+  useEffect(() => {
+    const currentUser = user
+    if (!currentUser) return
+    if (currentLayout.ownerId !== 'current-user' && currentLayout.ownerId) return
+    const uid = String(currentUser.id ?? 'current-user')
+    const uname = currentUser.fullName || currentUser.username || ''
+    if (currentLayout.ownerId === uid && currentLayout.ownerName === uname) return
+    const upgraded: DashboardLayout = {
+      ...currentLayout,
+      ownerId: uid,
+      ownerName: uname || currentLayout.ownerName,
+      lastModifiedBy: uid,
+      lastModifiedAt: new Date().toISOString(),
+    }
+    setCurrentLayout(upgraded)
+    DashboardConfigManager.saveLayout(upgraded as any)
+  }, [user, currentLayout, setCurrentLayout])
+
   const handleExportDashboard = () => {
     const rows = [['类别', '名称', '数值']]
     if (stats?.formulas && stats.experiments) {
@@ -551,6 +591,27 @@ export default function DashboardPage() {
   }
 
   const visibleCards = currentLayout.cards.filter(card => card.isVisible)
+
+  // L-01：预设布局「应用」为整卡替换语义（而非追加），并落盘
+  const applyPresetLayout = useCallback((presetCards: Array<{ type: string; position: { x: number; y: number }; size: { w: number; h: number } }>) => {
+    const newCards: CardConfig[] = presetCards.map((item, index) => {
+      const allCards = [...CARD_CATALOG.default, ...CARD_CATALOG.premium]
+      const info = allCards.find(c => c.type === item.type)
+      return {
+        id: `card-${Date.now()}-${index}`,
+        type: item.type as CardConfig['type'],
+        title: info?.name ?? item.type,
+        description: info?.description ?? '',
+        position: item.position,
+        size: item.size,
+        isVisible: true,
+      }
+    })
+    const newLayout = { ...currentLayout, cards: newCards, updatedAt: new Date().toISOString() }
+    setCurrentLayout(newLayout)
+    DashboardConfigManager.saveLayout(newLayout)
+    setShowEditor(false)
+  }, [currentLayout])
 
   return (
     <div className="min-h-screen bg-grid" style={{ backgroundColor: 'var(--bg-canvas)' }}>
@@ -688,7 +749,7 @@ export default function DashboardPage() {
                     {[2, 3, 4].map((col) => (
                       <button
                         key={col}
-                        onClick={() => setLayoutColumns(col)}
+                        onClick={() => handleColumnsChange(col)}
                         className={`px-2 py-0.5 text-xs font-medium transition-colors ${
                           layoutColumns === col
                             ? 'bg-white text-primary-600'
@@ -708,7 +769,7 @@ export default function DashboardPage() {
                     {[8, 16, 24].map((g) => (
                       <button
                         key={g}
-                        onClick={() => setLayoutGap(g)}
+                        onClick={() => handleGapChange(g)}
                         className={`px-2 py-0.5 text-xs font-medium transition-colors ${
                           layoutGap === g
                             ? 'bg-white text-primary-600'
@@ -810,8 +871,6 @@ export default function DashboardPage() {
                   timelineLoading,
                   timelineError,
                   refetchTimeline,
-                  aiInsightsLoading,
-                  aiInsightsError,
                   refetchAIInsights,
                 })}
               </DraggableCard>
@@ -832,6 +891,7 @@ export default function DashboardPage() {
           ...CARD_CATALOG.premium,
         ]}
         onAddCard={addCard}
+        onApplyPreset={applyPresetLayout}
       />
 
       {/* 通知中心 */}

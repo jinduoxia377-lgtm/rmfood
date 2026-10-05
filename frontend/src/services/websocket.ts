@@ -65,6 +65,7 @@ export class WebSocketService {
   }
   private batchProcessing: boolean
   private batchInterval: number
+  private eventHandlers = new Map<string, Set<(data?: Record<string, unknown>) => void>>()
 
   constructor(options: WebSocketOptions) {
     this.url = options.url
@@ -490,17 +491,35 @@ export class WebSocketService {
     return this.connectionId
   }
 
-  on(event: string, _handler: (data?: Record<string, unknown>) => void): () => void {
-    // 这里简单实现事件订阅，实际项目中可能需要更复杂的事件系统
-    logger.info(`WebSocket subscribe to event: ${event}`)
+  on(event: string, handler: (data?: Record<string, unknown>) => void): () => void {
+    // 事件订阅（EventEmitter 语义）：emit(event, data) 时调用所有对应 handler
+    if (!this.eventHandlers.has(event)) {
+      this.eventHandlers.set(event, new Set())
+    }
+    const handlers = this.eventHandlers.get(event)!
+    handlers.add(handler)
     return () => {
-      logger.info(`WebSocket unsubscribe from event: ${event}`)
+      handlers.delete(handler)
+      if (handlers.size === 0) {
+        this.eventHandlers.delete(event)
+      }
     }
   }
 
   private emit(event: string, data?: Record<string, unknown>) {
-    // 这里简单实现事件发送，实际项目中可能需要更复杂的事件系统
-    logger.info(`WebSocket event: ${event}`, data)
+    // 事件分发：遍历该事件的全部 handler（拷贝 Set 避免回调中增删导致迭代器失效）
+    const handlers = this.eventHandlers.get(event)
+    if (!handlers || handlers.size === 0) {
+      logger.info(`WebSocket event: ${event}`, data)
+      return
+    }
+    handlers.forEach(handler => {
+      try {
+        handler(data)
+      } catch (error) {
+        logger.error(`WebSocket event handler error for "${event}":`, error)
+      }
+    })
   }
 }
 
@@ -553,6 +572,7 @@ class NoOpWebSocketService {
   }
 
   on(): () => void {
+    // 降级模式：订阅无实际事件源，返回空取消函数
     return () => {}
   }
 }

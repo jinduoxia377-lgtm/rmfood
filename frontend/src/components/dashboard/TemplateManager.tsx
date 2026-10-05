@@ -4,7 +4,7 @@
  * - 管理保存的模板
  * - 应用模板到仪表板
  */
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Download, Upload, Save, Trash2, CheckCircle2, FileText, Share2 } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent, Button, Input, Badge } from '@/components/ui'
 import type { DashboardLayout } from '@/config/dashboard'
@@ -37,8 +37,8 @@ export function TemplateManager({ currentLayout, onUpdate, className }: Template
   const [importError, setImportError] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // 加载保存的模板
-  useState(() => {
+  // 挂载时从 localStorage 加载已保存的模板
+  useEffect(() => {
     const savedTemplates = localStorage.getItem('rmfood_dashboard_templates')
     if (savedTemplates) {
       try {
@@ -47,7 +47,7 @@ export function TemplateManager({ currentLayout, onUpdate, className }: Template
         logger.error('Error loading templates:', error)
       }
     }
-  })
+  }, [])
 
   const saveTemplates = (newTemplates: DashboardTemplate[]) => {
     setTemplates(newTemplates)

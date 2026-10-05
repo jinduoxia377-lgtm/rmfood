@@ -3,6 +3,7 @@
  * 集成配方智能分析、推荐、趋势预测和实验分析
  */
 import { useState, useEffect, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Brain, BarChart3, TrendingUp, FlaskConical, TestTube, Lightbulb, AlertTriangle, ArrowRight, Loader2 } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge, Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui'
 import { cn } from '@/lib/utils'
@@ -130,6 +131,7 @@ interface AIAnalysisPanelProps {
 }
 
 export function AIAnalysisPanel({ className, defaultTab = 'analysis', loading: parentLoading, error: parentError, onRetry: parentRetry }: AIAnalysisPanelProps) {
+  const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<typeof defaultTab>(defaultTab)
   const [isLoading, setIsLoading] = useState(false)
   const [analysisResult, setAnalysisResult] = useState<FormulaAnalysisResult | null>(null)
@@ -137,6 +139,8 @@ export function AIAnalysisPanel({ className, defaultTab = 'analysis', loading: p
   const [trendPrediction, setTrendPrediction] = useState<TrendPrediction | null>(null)
   const [experimentAnalysis, setExperimentAnalysis] = useState<ExperimentAnalysisResult | null>(null)
   const [error, setError] = useState<string | null>(null)
+  // P1-08：当前展示数据是否来自 mock 兜底（用于渲染「模拟数据」标识）
+  const [isMockData, setIsMockData] = useState(false)
 
   // 获取真实配方和实验 ID
   const { data: formulasData } = useFormulas({ page: 1, page_size: 1 })
@@ -171,6 +175,7 @@ export function AIAnalysisPanel({ className, defaultTab = 'analysis', loading: p
         target_effects: ['增强免疫', '抗疲劳'],
       })
       setAnalysisResult(response.data)
+      setIsMockData(false)
     } catch (err: any) {
       // 优雅的错误处理：只在开发环境输出详细日志
       if (process.env.NODE_ENV === 'development') {
@@ -223,6 +228,7 @@ export function AIAnalysisPanel({ className, defaultTab = 'analysis', loading: p
         generated_at: new Date().toISOString(),
       }
       setAnalysisResult(mockData)
+      setIsMockData(true)
     } finally {
       setIsLoading(false)
     }
@@ -237,6 +243,7 @@ export function AIAnalysisPanel({ className, defaultTab = 'analysis', loading: p
         limit: 3,
       })
       setRecommendations(response.data.recommendations)
+      setIsMockData(false)
     } catch (err) {
       logger.error('Recommendations error:', err)
       // 模拟数据，用于前端展示
@@ -273,6 +280,7 @@ export function AIAnalysisPanel({ className, defaultTab = 'analysis', loading: p
         },
       ]
       setRecommendations(mockData)
+      setIsMockData(true)
     } finally {
       setIsLoading(false)
     }
@@ -288,6 +296,7 @@ export function AIAnalysisPanel({ className, defaultTab = 'analysis', loading: p
         metrics: ['formulas', 'experiments', 'success_rate'],
       })
       setTrendPrediction(response.data)
+      setIsMockData(false)
     } catch (err) {
       logger.error('Trend prediction error:', err)
       // 模拟数据，用于前端展示
@@ -326,6 +335,7 @@ export function AIAnalysisPanel({ className, defaultTab = 'analysis', loading: p
         generated_at: new Date().toISOString(),
       }
       setTrendPrediction(mockData)
+      setIsMockData(true)
     } finally {
       setIsLoading(false)
     }
@@ -340,6 +350,7 @@ export function AIAnalysisPanel({ className, defaultTab = 'analysis', loading: p
         experiment_id: experimentId,
       })
       setExperimentAnalysis(response.data)
+      setIsMockData(false)
     } catch (err) {
       logger.error('Experiment analysis error:', err)
       // 模拟数据，用于前端展示
@@ -521,7 +532,14 @@ export function AIAnalysisPanel({ className, defaultTab = 'analysis', loading: p
               <p className="text-xs text-neutral-500 dark:text-neutral-400">实时数据分析与智能洞察</p>
             </div>
           </div>
-          <Badge variant="primary" size="sm">智能</Badge>
+          <div className="flex items-center gap-1.5">
+            {isMockData && (
+              <Badge variant="neutral" size="sm" className="text-xs" title="后端 AI 服务不可用，当前展示模拟数据">
+                模拟数据
+              </Badge>
+            )}
+            <Badge variant="primary" size="sm">智能</Badge>
+          </div>
         </div>
       </CardHeader>
 
@@ -626,7 +644,12 @@ export function AIAnalysisPanel({ className, defaultTab = 'analysis', loading: p
                     <Badge variant="neutral" size="sm" className="text-xs">
                       相关度 {Math.round(rec.relevance_score * 100)}%
                     </Badge>
-                    <Button variant="secondary" size="sm" className="text-xs h-7">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="text-xs h-7"
+                      onClick={() => navigate(`/formulas/${rec.formula_id}`)}
+                    >
                       查看详情
                     </Button>
                   </div>

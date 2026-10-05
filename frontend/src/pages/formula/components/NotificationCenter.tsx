@@ -1,16 +1,20 @@
 /**
  * 智能通知中心组件
  * 支持实时通知、分类管理、批量操作
+ * R-02：列表接后端 /notifications API；接口不可用时降级为本地 mock 并展示「离线模式」标识
  */
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Bell, Check, CheckCircle, Archive, Trash2, Settings, Mail, Clock, Zap, AlertTriangle } from 'lucide-react'
 import { Button, Badge, Modal, Input } from '@/components/ui'
 import { cn } from '@/lib/utils'
+import { notificationApi, type Notification as ApiNotification } from '@/api/notifications'
+import { logger } from '@/utils/safeLogger'
 
-export type NotificationType = 'system' | 'formula' | 'experiment' | 'review' | 'alert' | 'ai'
+export type NotificationType = 'system' | 'formula_review' | 'experiment_complete' | 'ai_task_done' | 'data_sync' | 'other'
 
 export interface Notification {
   id: string
+  apiId?: number
   type: NotificationType
   title: string
   message: string
@@ -21,10 +25,33 @@ export interface Notification {
   metadata?: Record<string, unknown>
 }
 
+// notificationApi.list 的 items 已是全局展示模型（message/isRead/createdAt），此处补充 apiId
+function mapApiItem(n: ApiNotification): Notification {
+  return {
+    id: String(n.id),
+    apiId: n.id,
+    type: mapApiType(n.type),
+    title: n.title,
+    message: n.message,
+    isRead: n.isRead,
+    isArchived: false,
+    createdAt: n.createdAt,
+    metadata: n.metadata ?? undefined,
+  }
+}
+
+// 后端 NotificationType → 前端展示分类
+function mapApiType(type: unknown): NotificationType {
+  const t = String(type ?? 'other')
+  return (['system', 'formula_review', 'experiment_complete', 'ai_task_done', 'data_sync'] as const).includes(t as never)
+    ? (t as NotificationType)
+    : 'other'
+}
+
 const MOCK_NOTIFICATIONS: Notification[] = [
   {
     id: '1',
-    type: 'formula',
+    type: 'formula_review',
     title: '配方审核完成',
     message: '配方"益气补血膏"已通过审核',
     isRead: false,
@@ -34,7 +61,7 @@ const MOCK_NOTIFICATIONS: Notification[] = [
   },
   {
     id: '2',
-    type: 'experiment',
+    type: 'data_sync',
     title: '实验数据同步完成',
     message: '实验"EXP-003"数据已成功同步',
     isRead: false,
@@ -44,7 +71,7 @@ const MOCK_NOTIFICATIONS: Notification[] = [
   },
   {
     id: '3',
-    type: 'review',
+    type: 'formula_review',
     title: '待审核配方提醒',
     message: '有3个配方等待您的审核',
     isRead: true,
@@ -54,7 +81,7 @@ const MOCK_NOTIFICATIONS: Notification[] = [
   },
   {
     id: '4',
-    type: 'ai',
+    type: 'ai_task_done',
     title: 'AI智能分析完成',
     message: '您的配方安全分析报告已生成',
     isRead: false,
@@ -75,29 +102,29 @@ const MOCK_NOTIFICATIONS: Notification[] = [
 
 const NOTIFICATION_ICONS: Record<NotificationType, React.ReactNode> = {
   system: <Mail size={18} />,
-  formula: <Zap size={18} />,
-  experiment: <Clock size={18} />,
-  review: <AlertTriangle size={18} />,
-  alert: <AlertTriangle size={18} />,
-  ai: <Zap size={18} />,
+  formula_review: <Zap size={18} />,
+  experiment_complete: <Clock size={18} />,
+  ai_task_done: <Zap size={18} />,
+  data_sync: <Clock size={18} />,
+  other: <AlertTriangle size={18} />,
 }
 
 const NOTIFICATION_COLORS: Record<NotificationType, string> = {
   system: 'text-neutral-500 bg-neutral-100 dark:bg-neutral-800',
-  formula: 'text-primary-600 bg-primary-100 dark:bg-primary-900/30',
-  experiment: 'text-secondary-600 bg-secondary-100 dark:bg-secondary-900/30',
-  review: 'text-warning-600 bg-warning-100 dark:bg-warning-900/30',
-  alert: 'text-error-600 bg-error-100 dark:bg-error-900/30',
-  ai: 'text-accent-600 bg-accent-100 dark:bg-accent-900/30',
+  formula_review: 'text-warning-600 bg-warning-100 dark:bg-warning-900/30',
+  experiment_complete: 'text-secondary-600 bg-secondary-100 dark:bg-secondary-900/30',
+  ai_task_done: 'text-accent-600 bg-accent-100 dark:bg-accent-900/30',
+  data_sync: 'text-info-600 bg-info-100 dark:bg-info-900/30',
+  other: 'text-error-600 bg-error-100 dark:bg-error-900/30',
 }
 
 const NOTIFICATION_LABELS: Record<NotificationType, string> = {
   system: '系统通知',
-  formula: '配方通知',
-  experiment: '实验通知',
-  review: '审核通知',
-  alert: '警告通知',
-  ai: 'AI助手',
+  formula_review: '配方审核',
+  experiment_complete: '实验完成',
+  ai_task_done: 'AI任务',
+  data_sync: '数据同步',
+  other: '其他',
 }
 
 interface NotificationCenterProps {
@@ -106,9 +133,42 @@ interface NotificationCenterProps {
 }
 
 export function NotificationCenter({ isOpen, onClose }: NotificationCenterProps) {
-  const [notifications, setNotifications] = useState<Notification[]>(MOCK_NOTIFICATIONS)
+  const [notifications, setNotifications] = useState<Notification[]>([])
+  const [loading, setLoading] = useState(false)
+  // R-02：false = 后端 API 可用；true = 降级为本地 mock（接口不可用）
+  const [isOfflineMode, setIsOfflineMode] = useState(false)
   const [filter, setFilter] = useState<NotificationType | 'all'>('all')
   const [searchQuery, setSearchQuery] = useState('')
+
+  // 将后端列表映射为前端展示模型
+  const loadNotifications = useCallback(async () => {
+    const res = await notificationApi.list({ page: 1, page_size: 20 })
+    return (res.items ?? []).map(mapApiItem)
+  }, [])
+
+  // 打开时拉取真实通知；失败则降级 mock 并标记离线
+  useEffect(() => {
+    if (!isOpen) return
+    let cancelled = false
+    const load = async () => {
+      setLoading(true)
+      try {
+        const items = await loadNotifications()
+        if (cancelled) return
+        setNotifications(items)
+        setIsOfflineMode(false)
+      } catch (error) {
+        if (cancelled) return
+        logger.warn('通知中心：后端接口不可用，降级为离线模式', error)
+        setNotifications(MOCK_NOTIFICATIONS)
+        setIsOfflineMode(true)
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+    load()
+    return () => { cancelled = true }
+  }, [isOpen, loadNotifications])
 
   const unreadCount = notifications.filter(n => !n.isRead && !n.isArchived).length
   const filteredNotifications = notifications.filter(n => {
@@ -121,24 +181,52 @@ export function NotificationCenter({ isOpen, onClose }: NotificationCenterProps)
     return true
   })
 
-  const markAsRead = (id: string) => {
-    setNotifications(prev => prev.map(n =>
-      n.id === id ? { ...n, isRead: true } : n,
-    ))
+  // 离线模式（mock）下操作仅更新本地 state；在线模式下标已读调后端并刷新列表
+  const markAsRead = async (id: string) => {
+    const target = notifications.find(n => n.id === id)
+    if (isOfflineMode || !target?.apiId) {
+      setNotifications(prev => prev.map(n => (n.id === id ? { ...n, isRead: true } : n)))
+      return
+    }
+    try {
+      await notificationApi.markRead([target.apiId])
+      const items = await loadNotifications()
+      setNotifications(items)
+    } catch {
+      setNotifications(prev => prev.map(n => (n.id === id ? { ...n, isRead: true } : n)))
+    }
   }
 
-  const markAllAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, isRead: true })))
+  const markAllAsRead = async () => {
+    if (isOfflineMode) {
+      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })))
+      return
+    }
+    try {
+      await notificationApi.markAllRead()
+      const items = await loadNotifications()
+      setNotifications(items)
+    } catch {
+      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })))
+    }
   }
 
   const archive = (id: string) => {
+    // 归档为本地操作（后端无归档端点）
     setNotifications(prev => prev.map(n =>
       n.id === id ? { ...n, isArchived: true } : n,
     ))
   }
 
-  const deleteNotification = (id: string) => {
+  const deleteNotification = async (id: string) => {
+    const target = notifications.find(n => n.id === id)
     setNotifications(prev => prev.filter(n => n.id !== id))
+    if (isOfflineMode || !target?.apiId) return
+    try {
+      await notificationApi.remove(target.apiId)
+    } catch (error) {
+      logger.warn('通知删除失败（本地已移除）', error)
+    }
   }
 
   const formatTime = (dateString: string) => {
@@ -168,6 +256,11 @@ export function NotificationCenter({ isOpen, onClose }: NotificationCenterProps)
             <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">通知中心</h3>
             {unreadCount > 0 && (
               <Badge variant="primary" size="sm">{unreadCount}条未读</Badge>
+            )}
+            {isOfflineMode && (
+              <Badge variant="neutral" size="sm" title="后端接口不可用，当前展示本地缓存数据">
+                离线模式
+              </Badge>
             )}
           </div>
           <div className="flex items-center gap-2">
@@ -224,7 +317,16 @@ export function NotificationCenter({ isOpen, onClose }: NotificationCenterProps)
 
         {/* 通知列表 */}
         <div className="flex-1 overflow-y-auto space-y-2">
-          {filteredNotifications.length === 0 ? (
+          {loading ? (
+            <div className="space-y-2">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="p-4 rounded-xl border border-neutral-100 dark:border-neutral-800 animate-pulse">
+                  <div className="h-4 w-1/3 bg-neutral-200 dark:bg-neutral-700 rounded mb-2" />
+                  <div className="h-3 w-2/3 bg-neutral-100 dark:bg-neutral-800 rounded" />
+                </div>
+              ))}
+            </div>
+          ) : filteredNotifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-48 text-center">
               <Bell size={48} className="text-neutral-300 dark:text-neutral-600 mb-3" />
               <p className="text-neutral-500 dark:text-neutral-400 text-sm">暂无通知</p>

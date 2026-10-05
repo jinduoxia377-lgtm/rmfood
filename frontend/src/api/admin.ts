@@ -6,11 +6,17 @@ import type { Notification, User, PaginatedResponse } from '@/types'
 
 export const notificationApi = {
   list: (params?: { page?: number; page_size?: number; status?: string }) =>
-    api.get<PaginatedResponse<Notification> & { unread_count: number }>('/notifications', { params }).then((r) => r.data),
+    api.get<PaginatedResponse<Notification> & { unread_count: number }>('/notifications', {
+      params: {
+        ...params,
+        // 对齐后端契约（v1 notification_router）：状态筛选参数名为 is_read
+        is_read: params?.status ? params.status === 'read' : undefined,
+      },
+    }).then((r) => r.data),
 
-  markRead: (id: number) => api.post(`/notifications/${id}/read`).then((r) => r.data),
+  markRead: (id: number) => api.put(`/notifications/${id}/read`).then((r) => r.data),
 
-  markAllRead: () => api.post('/notifications/read-all').then((r) => r.data),
+  markAllRead: () => api.put('/notifications/read-all').then((r) => r.data),
 }
 
 export const adminApi = {
