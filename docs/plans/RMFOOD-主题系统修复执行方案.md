@@ -28,6 +28,7 @@
 | **M5** 禁用色债务 | ✅ **完成** — 429 处替换，error 423→0（commit `3eefec9`） | 门禁 11/0/0 |
 | **M5+** 优化（方案 B） | ✅ **完成** — canvas 安全色表 + 白名单降噪，warn 919→221（commit `599a974`） | 门禁 11/0/0 |
 | **M5+ C 批** | ✅ **完成** — `theme:validate` 全量清零 **0 error / 0 warn**（白名单 158→190 + 兜底修正 + 误报修正，commit `5d9f116`） | 门禁 11/0/0 |
+| **T-G2 余项收口** | ✅ **完成** — DIVERGENT 18 项裁决实施（24 处组合 + 3 rgba 容器保留）+ NO_MATCH 18 项设计裁决登记 + GATE-11 解析器升级（commit `cc6f604`） | 门禁 11/0/0 |
 
 #### M2 任务状态
 
@@ -765,6 +766,15 @@ vars[`--ease-${key}`] = value;
 - **风险**：中 → 实际执行后**零视觉回归**（45/45 computed 值验证）
 - **M5+ 优化（方案 B，commit `599a974`）**：canvas 直绘安全色表 `CANVAS_COLORS` 收口
   + `theme:validate` 白名单降噪（warn 919 → 221）。详见 M5+ 章节。
+- **T-G2 余项收口（commit `cc6f604`）**：
+  - **DIVERGENT 18 项裁决实施**：按「双侧独立档位匹配」批量组合 24 处（17 项可组合；
+    暗侧 7 处引用暗色档位、亮侧 14 处引用亮色档位），3 项 rgba 透明度容器
+    （primary/secondary/accent-container）保持字面量（暗色独立设计值）
+  - **NO_MATCH 18 项设计裁决登记**：rgb 三元组 ×3 + 白底卡片 ×7 + rgba 容器/边框/遮罩 ×8，
+    全部「保持字面量」为正确设计（非漏做），登记脚本 `g2-nomatch-register.mjs`
+  - **GATE-11 解析器升级**：支持 var() 组合递归展开（修复 DIVERGENT 组合后
+    「缺少令牌」误报），门禁恢复 11/0/0
+  - `focus-scroll.css`（他人 WIP）本批不触碰，工具 `focus-scroll-fix.mjs` 已备好待用
 
 ---
 
