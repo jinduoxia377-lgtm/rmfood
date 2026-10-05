@@ -27,6 +27,7 @@
 | **M4** 治理落地 | ✅ **完成** — T-H2 七项子任务（ESLint/pre-commit/theme-validate/CI/ADR 去重/废弃文档/2 新 ADR）（commit `3f59b8d`） | 门禁 11/0/0 |
 | **M5** 禁用色债务 | ✅ **完成** — 429 处替换，error 423→0（commit `3eefec9`） | 门禁 11/0/0 |
 | **M5+** 优化（方案 B） | ✅ **完成** — canvas 安全色表 + 白名单降噪，warn 919→221（commit `599a974`） | 门禁 11/0/0 |
+| **M5+ C 批** | ✅ **完成** — `theme:validate` 全量清零 **0 error / 0 warn**（白名单 158→190 + 兜底修正 + 误报修正，commit `5d9f116`） | 门禁 11/0/0 |
 
 #### M2 任务状态
 
