@@ -22,17 +22,17 @@
   --color-primary-rgb: 16, 185, 129;
   --color-primary-hover: var(--color-primary-600);
   --color-primary-container: #d1fae5;
-  --color-primary-text: #047857; /* WCAG AA: 5.24:1 on white */
+  --color-primary-text: var(--color-success-600); /* WCAG AA: 5.24:1 on white */
 
   /* ── 主色表面（实底 + 白字）──
      D-50 修复：品牌色阶在暗色下【整体反转】，使 bg-primary-{400..700} 变成浅色，
      而 text-white 不随主题变化 → 实测暗色对比度仅 1.52:1。
      本组令牌【不参与反转】，专用于承载白色前景的实底（页头横幅、主按钮、图标圆）。
      亮色 #047857：白字 5.55:1 ✅ AA；暗色 #065f46：白字 7.78:1 ✅ AAA。 */
-  --color-primary-surface: #047857;
+  --color-primary-surface: var(--color-primary-700);
   --color-on-primary-surface: #ffffff;
   /* hover 态同样不参与反转：比 base 更深，白字 7.53:1（≥4.5:1 AA） */
-  --color-primary-surface-hover: #065f46;
+  --color-primary-surface-hover: var(--color-primary-800);
 
   /* ═══ Brand Secondary: Ocean Blue (#3B82F6) ═══ */
   --color-secondary-50: #eff6ff;
@@ -67,7 +67,7 @@
 
   --color-accent: var(--color-accent-500);
   --color-accent-rgb: 139, 92, 246;
-  --color-accent-hover: #7c3aed;
+  --color-accent-hover: var(--color-accent-600);
   --color-accent-container: #f3e8ff;
 
   /* ═══ Semantic Colors ═══ */
@@ -83,7 +83,7 @@
   /* D-56 同族：error 色阶缺 950 档（danger 族有），源码使用了 bg-error-950 */
   --color-error-950: var(--color-danger-950);
   --color-info: var(--color-info-500);
-  --color-info-bg: #eff6ff;
+  --color-info-bg: var(--color-secondary-50);
   /* ── D-56 修复：info 族补全为 10 阶色阶 ──
      原状：info 仅有 info / info-bg / info-container / info-text / info-600 / info-100
      共 6 个零散令牌，**不是色阶**。而源码使用了 bg-info-50/500/900/950、
@@ -121,7 +121,7 @@
   --bg-canvas: var(--color-neutral-50);       /* DESIGN.md: slate-50 — 页面背景 */
   --bg-primary: var(--color-neutral-50);
   --bg-secondary: #ffffff;    /* 卡片背景 */
-  --bg-tertiary: #f1f5f9;
+  --bg-tertiary: var(--color-neutral-100);
   --card-bg: #ffffff;
   --card-bg-solid: #ffffff;
   --bg-surface-container: #ffffff;
@@ -131,7 +131,7 @@
   /* ═══ 网格背景（Dashboard 专用）═══ */
   --grid-color-light: rgba(148, 163, 184, 0.12);   /* slate-400 @ 12% — 浅色模式网格线 */
   --grid-size: 24px;                                 /* 网格单元格尺寸 */
-  --bg-surface-elevated: #f1f5f9;
+  --bg-surface-elevated: var(--color-neutral-100);
   --header-bg: rgba(255, 255, 255, 0.9);
   --hover-bg: rgba(0, 0, 0, 0.04);
 
@@ -159,17 +159,17 @@
 
   /* ═══ Text Colors ═══ */
   --text-primary: var(--color-neutral-900);   /* slate-900 */
-  --text-secondary: #334155; /* slate-700 */
-  --text-muted: #334155;     /* slate-700 — 6.47:1 on canvas ✅ AA */
-  --text-disabled: #64748b;  /* slate-500 — 修正: 原 #94a3b8(2.45:1 FAIL) → 4.55:1 ✅ AA */
+  --text-secondary: var(--color-neutral-700); /* slate-700 */
+  --text-muted: var(--color-neutral-700);     /* slate-700 — 6.47:1 on canvas ✅ AA */
+  --text-disabled: var(--color-neutral-500);  /* slate-500 — 修正: 原 #94a3b8(2.45:1 FAIL) → 4.55:1 ✅ AA */
 
   /* ═══ Borders ═══ */
-  --border-color: #e2e8f0;   /* slate-200 */
+  --border-color: var(--color-neutral-200);   /* slate-200 */
   --border-color-hover: rgba(0, 0, 0, 0.1);
   --border-subtle: rgba(0, 0, 0, 0.04);
   --border-subtle-hover: rgba(0, 0, 0, 0.08);
   --overlay-bg: rgba(0, 0, 0, 0.4);
-  --focus-ring: #3b82f6;
+  --focus-ring: var(--color-secondary-500);
 
   /* ═══ Font Family — DESIGN.md v1.0 ═══ */
   --font-sans: 'Inter', 'Noto Sans SC', 'Noto Sans TC', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -367,12 +367,12 @@
   --color-error-container: rgba(239, 68, 68, 0.12);
   --color-error-text: #991b1b;
   --color-info-container: rgba(59, 130, 246, 0.12);
-  --color-info-text: #1e40af;
+  --color-info-text: var(--color-secondary-800);
 
   /* ── 第三色调 ── */
-  --color-tertiary: #8b5cf6;
+  --color-tertiary: var(--color-accent-500);
   --color-tertiary-container: rgba(139, 92, 246, 0.12);
-  --color-tertiary-hover: #7c3aed;
+  --color-tertiary-hover: var(--color-accent-600);
 
   /* ── 错误悬停色 ── */
   --color-error-hover: var(--color-danger-600);
@@ -403,7 +403,7 @@
 
   /* ── 渐变背景 ── */
   --bg-gradient-start: var(--color-neutral-50);
-  --bg-gradient-end: #ecfdf5;
+  --bg-gradient-end: var(--color-success-50);
 
   /* ── 滚动条色 ── */
   --scrollbar-thumb: rgba(148, 163, 184, 0.2);
@@ -421,7 +421,7 @@
   --space-xl: 32px;
 
   /* ── 边框默认 token ── */
-  --border-default: #e2e8f0;
+  --border-default: var(--color-neutral-200);
 
   /* ── Info 色阶补充 ── */
   --color-info-100: #dbeafe;

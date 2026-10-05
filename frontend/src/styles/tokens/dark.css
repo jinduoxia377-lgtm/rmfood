@@ -24,14 +24,14 @@
   --color-primary-container: rgba(52, 211, 153, 0.15);
   /* D-12 修复：--color-primary-text 原先只在 base.css 定义为 #047857（深绿），
      在暗色画布 #020617 上仅约 2.3:1。此处给出暗色专用值（对比度约 13.3:1）。 */
-  --color-primary-text: #6ee7b7;
+  --color-primary-text: var(--color-primary-600);
 
   /* D-50 修复：主色表面令牌【不参与色阶反转】，
      保证「实底 + 白字」在暗色下仍为深底白字（白字 7.78:1 ✅ AAA）。 */
-  --color-primary-surface: #065f46;
+  --color-primary-surface: var(--color-primary-200);
   --color-on-primary-surface: #ffffff;
   /* hover 态同样不参与反转：暗色下比 base 略亮，白字 5.08:1（≥4.5:1 AA） */
-  --color-primary-surface-hover: #047857;
+  --color-primary-surface-hover: var(--color-primary-300);
 
   /* ═══ Brand Secondary: Ocean Blue (dark mode 提亮) ═══ */
   --color-secondary-50: #172554;
@@ -66,7 +66,7 @@
 
   --color-accent: var(--color-accent-600);
   --color-accent-rgb: 167, 139, 250;
-  --color-accent-hover: #c4b5fd;
+  --color-accent-hover: var(--color-accent-700);
   --color-accent-container: rgba(167, 139, 250, 0.15);
 
   /* ═══ Semantic Colors (dark mode) ═══ */
@@ -289,9 +289,9 @@
   --color-info-text: #c7d2fe;
 
   /* ── 暗色模式第三色调 ── */
-  --color-tertiary: #a78bfa;
+  --color-tertiary: var(--color-accent-600);
   --color-tertiary-container: rgba(167, 139, 250, 0.15);
-  --color-tertiary-hover: #c4b5fd;
+  --color-tertiary-hover: var(--color-accent-700);
 
   /* ── 暗色模式错误悬停 ── */
   --color-error-hover: var(--color-danger-400);
@@ -316,7 +316,7 @@
 
   /* ── 暗色模式渐变背景 ── */
   --bg-gradient-start: var(--color-neutral-50);
-  --bg-gradient-end: #064e3b;
+  --bg-gradient-end: var(--color-primary-100);
 
   /* ── 暗色模式滚动条 ── */
   --scrollbar-thumb-dark: rgba(148, 163, 184, 0.12);
