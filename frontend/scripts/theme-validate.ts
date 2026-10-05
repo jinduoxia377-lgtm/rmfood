@@ -49,11 +49,7 @@ const FORBIDDEN_COLORS = [
 
 // 白名单：允许出现在源码中的非 token hex 值
 const HEX_WHITELIST = new Set([
-  '#ffffff', '#000000', '#f8fafc', '#f1f5f9', '#e2e8f0',
-  '#cbd5e1', '#94a3b8', '#64748b', '#475569', '#334155',
-  '#1e293b', '#0f172a', '#020617',
-  '#f97316', '#ea580c', '#a855f7', '#9333ea',
-  '#0891b2', '#0e7490', '#2563eb',
+  '#ffffff', '#000000', '#f8fafc', '#f1f5f9', '#e2e8f0', '#cbd5e1', '#94a3b8', '#64748b', '#475569', '#334155', '#1e293b', '#0f172a', '#020617', '#f97316', '#ea580c', '#a855f7', '#9333ea', '#0891b2', '#0e7490', '#2563eb', '#059669', '#10b981', '#34d399', '#6ee7b7', '#a7f3d0', '#d1fae5', '#ecfdf5', '#065f46', '#047857', '#022c22', '#052e16', '#3b82f6', '#1d4ed8', '#60a5fa', '#93c5fd', '#bfdbfe', '#dbeafe', '#eff6ff', '#1e3a8a', '#1e40af', '#8b5cf6', '#7c3aed', '#a78bfa', '#c4b5fd', '#ddd6fe', '#ede9fe', '#f5f3ff', '#4c1d95', '#2e1065', '#ef4444', '#dc2626', '#f87171', '#fca5a5', '#fecaca', '#fee2e2', '#fef2f2', '#450a0a', '#f59e0b', '#d97706', '#b45309', '#fcd34d', '#fde68a', '#fffbeb', '#facc15', '#713f12', '#111827', '#1f2937', '#374151', '#4b5563', '#6b7280', '#9ca3af', '#d1d5db', '#e5e7eb', '#f3f4f6', '#f9fafb', '#f5f5f5', '#d4d4d8', '#a1a1aa', '#71717a', '#52525b', '#3f3f46', '#27272a', '#18181b', '#1c1c1e', '#2c2c2e', '#3a3a3c', '#155e75', '#164e63'
 ]);
 
 interface Finding {
@@ -195,6 +191,25 @@ const errors = findings.filter(f => f.severity === 'error');
 const warns = findings.filter(f => f.severity === 'warn');
 
 console.log('\n发现 ' + errors.length + ' 个 error + ' + warns.length + ' 个 warn');
+
+// M5+ 分析：warn 按 hex + 文件分布，供白名单扩充决策
+const byHex = new Map<string, number>();
+const byFile = new Map<string, number>();
+for (const w of warns) {
+  byHex.set(w.detail, (byHex.get(w.detail) || 0) + 1);
+  byFile.set(w.file, (byFile.get(w.file) || 0) + 1);
+}
+if (warns.length > 0) {
+  console.log('\n══ warn hex 分布（Top 30）══');
+  [...byHex.entries()].sort((a, b) => b[1] - a[1]).slice(0, 30).forEach(([hex, n]) => {
+    console.log('  ' + hex + ' : ' + n + ' 处');
+  });
+  console.log('\n══ warn 文件分布（Top 20）══');
+  [...byFile.entries()].sort((a, b) => b[1] - a[1]).slice(0, 20).forEach(([f, n]) => {
+    console.log('  ' + f + ' : ' + n + ' 处');
+  });
+}
+
 if (errors.length > 0) {
   console.log('\n前 20 个 error:');
   errors.slice(0, 20).forEach((f, i) => {

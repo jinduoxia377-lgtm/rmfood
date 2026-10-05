@@ -49,6 +49,7 @@
 import { useRef, useEffect, useCallback, useState, useMemo } from 'react'
 import * as d3 from 'd3'
 import { cn } from '@/lib/utils'
+import { CANVAS_COLORS } from '@/utils/canvas-colors'
 import { Badge } from '@/components/ui'
 import { GraphEngine } from './graph/engine/forceSimulation'
 import type { SimNode, SimEdge } from './graph/engine/forceSimulation'
@@ -543,7 +544,7 @@ function MinimapCanvas({
       if (!src || !tgt) return
       const [sx, sy] = toScreen(src.x ?? 0, src.y ?? 0)
       const [tx, ty] = toScreen(tgt.x ?? 0, tgt.y ?? 0)
-      ctx.strokeStyle = 'var(--color-knowledge-default, #9CA3AF)'
+      ctx.strokeStyle = '#9CA3AF' // canvas 直绘：中性灰（M5+ 保留，非品牌色）
       ctx.beginPath()
       ctx.moveTo(sx, sy)
       ctx.lineTo(tx, ty)
@@ -554,7 +555,7 @@ function MinimapCanvas({
     if (pathAnimation) {
       ctx.globalAlpha = 0.9
       ctx.lineWidth = 1.5
-      ctx.strokeStyle = 'var(--color-accent-500)'
+      ctx.strokeStyle = CANVAS_COLORS.accent // canvas 直绘：不解析 var()，用品牌色 hex（M5+）
       pathAnimation.pathEdges.forEach(([sId, tId]) => {
         const sn = nodes.find(n => (n.id || n.label) === sId)
         const tn = nodes.find(n => (n.id || n.label) === tId)
@@ -599,7 +600,7 @@ function MinimapCanvas({
 
     // Viewport indicator (simple center dot for now)
     ctx.globalAlpha = 0.4
-    ctx.fillStyle = 'var(--color-secondary-500)'
+    ctx.fillStyle = CANVAS_COLORS.secondary // canvas 直绘：用品牌色 hex（M5+）
     ctx.beginPath()
     ctx.arc(width / 2, height / 2, 4, 0, Math.PI * 2)
     ctx.fill()
