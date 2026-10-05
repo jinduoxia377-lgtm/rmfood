@@ -313,9 +313,12 @@ export function KPIDashboard({ className }: { className?: string }) {
         ) : kpiProgress && kpiProgress.length > 0 ? (
           <div className="space-y-4">
             {kpiProgress.map((kpi, idx) => {
-              const percent = Math.min(100, Math.max(0, (kpi.current / kpi.target) * 100))
-              const isOnTrack = percent >= 90
-              const isBehind = percent < 80
+              // KPI current/target 均为百分数（0-100），进度条宽度 = current/target
+              const progress = kpi.target > 0 ? kpi.current / kpi.target : 0
+              const percent = Math.min(100, Math.max(0, progress * 100))
+              // 达标：达到目标值的 90% 及以上；需关注：低于 80%
+              const isOnTrack = progress >= 0.9
+              const isBehind = progress < 0.8
 
               return (
                 <div key={idx}>

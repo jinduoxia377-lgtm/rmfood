@@ -3,6 +3,10 @@
 提供配方、实验、用户的综合统计数据和趋势数据
 
 使用 text() 查询避免 ORM 枚举类型与数据库 varchar 列不匹配问题。
+P1-12：逐日统计改为 GROUP BY date(created_at) 聚合，SQL 往返次数从 O(N×2) 降为 O(1)；
+       Python 侧补全缺失日期（0 值填充），响应结构与旧实现保持一致。
+       注：date() 提取依赖 PostgreSQL；SQLite（测试库）下会抛异常，
+       生产环境为 PostgreSQL，该异常路径不影响线上行为。
 """
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -65,32 +69,36 @@ async def get_statistics(
     for role_val, count in user_role_result.all():
         user_role_map[str(role_val)] = count
 
-    # ── 最近30天每日活动数据（naive datetime，匹配 TIMESTAMP WITHOUT TIME ZONE）──
+    # ── 最近30天每日活动数据（P1-12：GROUP BY 聚合，2 条 SQL 替代 60 次逐日往返）──
+    # PostgreSQL：date(created_at) 按日统计后在 Python 侧补全缺失日期为 0
     today = datetime.now().date()
     start_date = today - timedelta(days=29)
-    recent_activity = []
 
+    formula_daily = await db.execute(text("""
+        SELECT date(created_at) AS d, count(*) AS c
+        FROM formulas
+        WHERE created_at >= :start
+        GROUP BY date(created_at)
+        ORDER BY d
+    """), {"start": start_date})
+    experiment_daily = await db.execute(text("""
+        SELECT date(created_at) AS d, count(*) AS c
+        FROM experiments
+        WHERE created_at >= :start
+        GROUP BY date(created_at)
+        ORDER BY d
+    """), {"start": start_date})
+
+    formula_by_day = {row[0]: row[1] for row in formula_daily.all()}
+    experiment_by_day = {row[0]: row[1] for row in experiment_daily.all()}
+
+    recent_activity = []
     for i in range(30):
         day = start_date + timedelta(days=i)
-        day_start = datetime.combine(day, datetime.min.time())
-        day_end = day_start + timedelta(days=1)
-
-        formula_day_result = await db.execute(text("""
-            SELECT count(*) FROM formulas
-            WHERE created_at >= :start AND created_at < :end
-        """), {"start": day_start, "end": day_end})
-        formula_day_count = formula_day_result.scalar() or 0
-
-        experiment_day_result = await db.execute(text("""
-            SELECT count(*) FROM experiments
-            WHERE created_at >= :start AND created_at < :end
-        """), {"start": day_start, "end": day_end})
-        experiment_day_count = experiment_day_result.scalar() or 0
-
         recent_activity.append({
             "date": day.isoformat(),
-            "formulas": formula_day_count,
-            "experiments": experiment_day_count,
+            "formulas": formula_by_day.get(day, 0),
+            "experiments": experiment_by_day.get(day, 0),
         })
 
     return {
@@ -131,36 +139,42 @@ async def get_trends(
 
     today = datetime.now().date()
     start_date = today - timedelta(days=days - 1)
-    data = []
 
+    # P1-12：3 条 GROUP BY 聚合 SQL 替代逐日 N×3 次往返（30d=90 次 → 3 次）
+    formula_daily = await db.execute(text("""
+        SELECT date(created_at) AS d, count(*) AS c
+        FROM formulas
+        WHERE created_at >= :start
+        GROUP BY date(created_at)
+        ORDER BY d
+    """), {"start": start_date})
+    experiment_daily = await db.execute(text("""
+        SELECT date(created_at) AS d, count(*) AS c
+        FROM experiments
+        WHERE created_at >= :start
+        GROUP BY date(created_at)
+        ORDER BY d
+    """), {"start": start_date})
+    formula_approved_daily = await db.execute(text("""
+        SELECT date(created_at) AS d, count(*) AS c
+        FROM formulas
+        WHERE status = 'approved' AND created_at >= :start
+        GROUP BY date(created_at)
+        ORDER BY d
+    """), {"start": start_date})
+
+    f_by_day = {row[0]: row[1] for row in formula_daily.all()}
+    e_by_day = {row[0]: row[1] for row in experiment_daily.all()}
+    fa_by_day = {row[0]: row[1] for row in formula_approved_daily.all()}
+
+    data = []
     for i in range(days):
         day = start_date + timedelta(days=i)
-        day_start = datetime.combine(day, datetime.min.time())
-        day_end = day_start + timedelta(days=1)
-
-        formulas_created_result = await db.execute(text("""
-            SELECT count(*) FROM formulas
-            WHERE created_at >= :start AND created_at < :end
-        """), {"start": day_start, "end": day_end})
-        formulas_created = formulas_created_result.scalar() or 0
-
-        experiments_created_result = await db.execute(text("""
-            SELECT count(*) FROM experiments
-            WHERE created_at >= :start AND created_at < :end
-        """), {"start": day_start, "end": day_end})
-        experiments_created = experiments_created_result.scalar() or 0
-
-        formulas_approved_result = await db.execute(text("""
-            SELECT count(*) FROM formulas
-            WHERE status = 'approved' AND created_at >= :start AND created_at < :end
-        """), {"start": day_start, "end": day_end})
-        formulas_approved = formulas_approved_result.scalar() or 0
-
         data.append({
             "date": day.isoformat(),
-            "formulas_created": formulas_created,
-            "experiments_created": experiments_created,
-            "formulas_approved": formulas_approved,
+            "formulas_created": f_by_day.get(day, 0),
+            "experiments_created": e_by_day.get(day, 0),
+            "formulas_approved": fa_by_day.get(day, 0),
         })
 
     return {

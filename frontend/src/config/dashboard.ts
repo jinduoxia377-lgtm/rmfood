@@ -71,6 +71,9 @@ export interface DashboardLayout {
   shares: DashboardShare[];
   lastModifiedBy: string;
   lastModifiedAt: string;
+  // 网格配置（L-02：列数/间距随布局持久化，刷新后保持）
+  gridColumns?: number;
+  gridGap?: number;
 }
 
 export const DEFAULT_CARDS: CardConfig[] = [
@@ -161,8 +164,12 @@ class DashboardConfigManager {
         return {
           ...DEFAULT_LAYOUT,
           ...layout,
+          // 网格配置（L-02：数值化并 clamp，非法值回退默认 4/16）
+          gridColumns: typeof layout.gridColumns === 'number' && [2, 3, 4].includes(layout.gridColumns) ? layout.gridColumns : undefined,
+          gridGap: typeof layout.gridGap === 'number' && [8, 16, 24].includes(layout.gridGap) ? layout.gridGap : undefined,
           // 确保共享相关字段存在
           isShared: Boolean(layout.isShared),
+          // L-06：ownerId/ownerName 缺省时回退占位值，真实值由 UI 层注入
           ownerId: String(layout.ownerId || 'current-user'),
           ownerName: String(layout.ownerName || '当前用户'),
           shares: Array.isArray(layout.shares) ? layout.shares : [],
@@ -244,6 +251,9 @@ class DashboardConfigManager {
         shares: Array.isArray(layout.shares) ? layout.shares : [],
         lastModifiedBy: String(layout.lastModifiedBy || 'current-user'),
         lastModifiedAt: new Date().toISOString(),
+        // 网格配置（L-02：随布局落盘，clamp 到合法档位）
+        gridColumns: typeof layout.gridColumns === 'number' && [2, 3, 4].includes(layout.gridColumns) ? layout.gridColumns : undefined,
+        gridGap: typeof layout.gridGap === 'number' && [8, 16, 24].includes(layout.gridGap) ? layout.gridGap : undefined,
       }
 
       if (index >= 0) {

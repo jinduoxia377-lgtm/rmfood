@@ -305,6 +305,8 @@ interface LayoutEditorProps {
   onClose: () => void
   availableCards: { type: string; name: string; description: string; icon: string }[]
   onAddCard: (type: string) => void
+  /** 应用预设布局（整卡替换当前布局，而非逐个追加） */
+  onApplyPreset?: (layout: { type: string; position: { x: number; y: number }; size: { w: number; h: number } }[]) => void
 }
 
 interface PresetLayout {
@@ -375,7 +377,7 @@ const PRESET_LAYOUTS: PresetLayout[] = [
   },
 ]
 
-export function LayoutEditor({ isOpen, onClose, availableCards, onAddCard }: LayoutEditorProps) {
+export function LayoutEditor({ isOpen, onClose, availableCards, onAddCard, onApplyPreset }: LayoutEditorProps) {
   if (!isOpen) return null
 
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
@@ -417,10 +419,14 @@ export function LayoutEditor({ isOpen, onClose, availableCards, onAddCard }: Lay
   })
 
   const handleApplyPreset = (preset: PresetLayout) => {
-    // 应用预设布局
-    preset.layout.forEach((item) => {
-      onAddCard(item.type)
-    })
+    // 应用预设布局：整卡替换当前布局（存在回调时走替换语义，未提供时降级为逐个追加）
+    if (onApplyPreset) {
+      onApplyPreset(preset.layout)
+    } else {
+      preset.layout.forEach((item) => {
+        onAddCard(item.type)
+      })
+    }
     onClose()
   }
 
