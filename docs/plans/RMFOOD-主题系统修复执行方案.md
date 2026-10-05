@@ -16,7 +16,7 @@
 
 ### 0.0 执行进度（滚动更新）
 
-**当前阶段：M5（禁用色债务清零）完成（commit `3eefec9`）** —— 429 处 Apple/旧品牌色 → 品牌色阶 `var()`，`theme:validate` 禁用色 error **423 → 0**；M4 治理全部子任务此前已落地（commit `3f59b8d`）。
+**当前阶段：M5+（优化收口 / 方案 B）完成（commit `599a974`）** —— canvas 安全色表 `CANVAS_COLORS` 收口 + 白名单降噪（`theme:validate` warn **919 → 221**，error 0）；M5 禁用色债务清零（commit `3eefec9`，429 处 / 99 文件，error 423→0）。
 
 | 里程碑 | 状态 | 门禁 |
 |:-------|:-----|:-----|
@@ -26,6 +26,7 @@
 | **M3** 架构收口 | ✅ **完成** — T-G1 + T-G2 + T-G3 + T-T1 + §17.11 全落地（commit `a1bb06d`/`0f50344`） | 门禁 11/0/0 |
 | **M4** 治理落地 | ✅ **完成** — T-H2 七项子任务（ESLint/pre-commit/theme-validate/CI/ADR 去重/废弃文档/2 新 ADR）（commit `3f59b8d`） | 门禁 11/0/0 |
 | **M5** 禁用色债务 | ✅ **完成** — 429 处替换，error 423→0（commit `3eefec9`） | 门禁 11/0/0 |
+| **M5+** 优化（方案 B） | ✅ **完成** — canvas 安全色表 + 白名单降噪，warn 919→221（commit `599a974`） | 门禁 11/0/0 |
 
 #### M2 任务状态
 
@@ -761,6 +762,41 @@ vars[`--ease-${key}`] = value;
     primitive 池无同值，组合无意义，保持字面量。
 - **工时**：3 人日（实际 1 人日完成，工具化程度高）
 - **风险**：中 → 实际执行后**零视觉回归**（45/45 computed 值验证）
+- **M5+ 优化（方案 B，commit `599a974`）**：canvas 直绘安全色表 `CANVAS_COLORS` 收口
+  + `theme:validate` 白名单降噪（warn 919 → 221）。详见 M5+ 章节。
+
+---
+
+#### M5 · 禁用色债务清零 — ✅ 完成（commit `3eefec9`）
+
+> **交付**：`m5-fix.mjs` 批量替换 **429 处 / 99 文件**，把 10 种禁用色（Apple 系统色
+> `#34C759`/`#007AFF`/`#AF52DE`/`#F5F5F7` + 旧品牌主色 `#28A745`/`#22C55E`/`#0891B2`）
+> 统一替换为品牌色阶引用。`theme:validate` 禁用色 error **423 → 0**。
+>
+> **关键安全设计**：
+> - **双目标**：DOM/CSS/React style 用 `var(--token)`；canvas 直绘文件用**品牌色 hex**
+>   （canvas 的 `fillStyle`/`strokeStyle` 不解析 `var()`）
+> - 边界检查（前后非 hex 字符）+ 注释行跳过，避免误伤相邻色
+> - 排除 `types/design-tokens.ts`（他人 WIP）+ token 定义层
+> - `m5-wip-check.mjs` 把工作区 139 个改动文件精确分类（100 M5 / 39 WIP），
+>   `git add --pathspec-from-file` 精确暂存，零 WIP 混入
+>
+> **验证**：门禁 11/0/0、`vite build` ✅、`verify-g2-browser` 45/45、主题 vitest 29/29。
+
+#### M5+ · 优化收口（方案 B） — ✅ 完成（commit `599a974`）
+
+> **交付**：
+> - **B-1 白名单降噪**：`theme:validate` 的 HEX_WHITELIST 20 → 88 项（品牌 Emerald/Blue/
+>   Violet 全色阶 + Slate/Gray 中性阶 + 语义色 + 辅助色），warn **919 → 221**（剩余 221
+>   为长尾：图表调色板小数组/骨架屏占位，登记 M5+）
+> - **B-2 canvas 安全色表**：新增 `src/utils/canvas-colors.ts` 的 `CANVAS_COLORS`
+>   （10 项，取值与 base.css 品牌色阶一致），收口 `knowledge-graph-colors.ts` /
+>   `MinimapCanvas.tsx` / `KnowledgeGraph.tsx` 的 canvas 直绘 hex——消除
+>   「canvas 误用 `var()` 会静默渲染失败」的隐患；`forceSimulation.ts` 的 `var()`
+>   经核实传给 d3 SVG `.attr()`（DOM 渲染，可解析 `var()`），合法未改
+>
+> **验证**：`theme:validate` 0 error / 221 warn；门禁 11/0/0；`vite build` ✅；
+> `verify-g2-browser` 45/45；主题 vitest 29/29。
 
 ---
 
