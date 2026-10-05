@@ -1,5 +1,6 @@
 import { useRef, useEffect } from 'react'
 import { GraphNode, TYPE_CONFIG } from '../types'
+import { CANVAS_COLORS } from '@/utils/canvas-colors'
 
 export interface MinimapCanvasProps {
   nodes: GraphNode[]
@@ -69,7 +70,7 @@ export default function MinimapCanvas({
     if (pathAnimation) {
       ctx.globalAlpha = 0.9
       ctx.lineWidth = 1.5
-      ctx.strokeStyle = 'var(--color-accent-500)'
+      ctx.strokeStyle = CANVAS_COLORS.accent // canvas 直绘：不解析 var()，用品牌色 hex（M5+）
       pathAnimation.pathEdges.forEach(([sId, tId]) => {
         const sn = nodes.find(n => (n.id || n.label) === sId)
         const tn = nodes.find(n => (n.id || n.label) === tId)
@@ -114,7 +115,7 @@ export default function MinimapCanvas({
 
     // Viewport indicator
     ctx.globalAlpha = 0.4
-    ctx.fillStyle = 'var(--color-secondary-500)'
+    ctx.fillStyle = CANVAS_COLORS.secondary // canvas 直绘：用品牌色 hex（M5+）
     ctx.beginPath()
     ctx.arc(width / 2, height / 2, 4, 0, Math.PI * 2)
     ctx.fill()

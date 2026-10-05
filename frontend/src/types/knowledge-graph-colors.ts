@@ -2,7 +2,11 @@
  * 知识图谱节点配色系统 (Knowledge Graph Node Colors)
  * 设计系统文档 v1.0 指定值
  * 用于配方成分可视化、关系图谱、数据图表等场景
+ *
+ * M5+：主色统一收口到 CANVAS_COLORS（canvas 直绘安全色表），
+ * 改品牌色只需改 src/utils/canvas-colors.ts 一处。
  */
+import { CANVAS_COLORS } from '@/utils/canvas-colors';
 
 /**
  * 7种知识图谱节点专用颜色
@@ -14,7 +18,7 @@ export const KNOWLEDGE_GRAPH_COLORS = {
    * 颜色：绿色系 - 代表天然、草本、植物来源
    */
   herb: {
-    main: 'var(--color-primary-400)',
+    main: CANVAS_COLORS.primary,
     light: '#4ADE80',
     dark: '#166534',
     bg: 'rgba(34,197,94,0.1)',
@@ -26,7 +30,7 @@ export const KNOWLEDGE_GRAPH_COLORS = {
    * 颜色：蓝色系 - 代表化学、分子、科学精确性
    */
   compound: {
-    main: 'var(--color-secondary-500)',
+    main: CANVAS_COLORS.secondary,
     light: '#A8DFFF',
     dark: '#0052AE',
     bg: 'rgba(59,130,246,0.1)',
@@ -50,7 +54,7 @@ export const KNOWLEDGE_GRAPH_COLORS = {
    * 颜色：紫色系 - 代表生物活性、复杂结构
    */
   peptide: {
-    main: 'var(--color-accent-500)',
+    main: CANVAS_COLORS.accent,
     light: '#D4B3FF',
     dark: '#8B5CF6',
     bg: 'rgba(139,92,246,0.1)',
@@ -74,7 +78,7 @@ export const KNOWLEDGE_GRAPH_COLORS = {
    * 颜色：青色系 - 代表营养、食物链、自然循环
    */
   food_source: {
-    main: 'var(--color-info-600)',
+    main: CANVAS_COLORS.info,
     light: '#A5F3FC',
     dark: '#155E75',
     bg: 'rgba(6,182,212,0.1)',
@@ -116,11 +120,11 @@ export function getKnowledgeGraphPalette(): string[] {
  * 用于饼图、柱状图等数据可视化
  */
 export const CHART_COLOR_PALETTE = [
-  'var(--color-primary-400)', // 中药材 - 绿
-  'var(--color-secondary-500)', // 化合物 - 蓝
+  CANVAS_COLORS.primary, // 中药材 - 绿
+  CANVAS_COLORS.secondary, // 化合物 - 蓝
   '#FF3B30', // 靶点 - 红
-  'var(--color-accent-500)', // 多肽 - 紫
+  CANVAS_COLORS.accent, // 多肽 - 紫
   '#D97706', // 蛋白 - 橙
-  'var(--color-info-600)', // 食物 - 青
+  CANVAS_COLORS.info, // 食物 - 青
   '#D946EF', // 疾病 - 粉
 ] as const;
