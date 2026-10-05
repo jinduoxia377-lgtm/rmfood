@@ -169,15 +169,10 @@ const hardDangling = dCombined.filter(x => {
 });
 assert(hardDangling.length === 0, `无裸 var() 悬空引用`, hardDangling.length ? hardDangling.slice(0, 5).join(', ') : `（共 ${dCombined.length} 处含 fallback 引用，均合法）`);
 
-// ── 5. 暗色 DIVERGENT 项保持字面量（未被误改；--color-warning-text 已在 Phase A 按 700 修正）──
-console.log('\n── 5. DIVERGENT 项保持字面量（dark.css）──');
+// ── 5. 暗色保持字面量项（DIVERGENT 余项裁决后：仅 rgba 容器 3 项保持）──
+console.log('\n── 5. 保持字面量项（dark.css rgba 容器）──');
 const divergentKeep = [
-  '--color-primary-container', '--color-primary-text', '--color-primary-surface',
-  '--color-primary-surface-hover', '--color-secondary-container', '--color-accent-hover',
-  '--color-accent-container', '--color-info-bg',
-  '--bg-tertiary', '--bg-surface-elevated', '--text-secondary', '--text-muted',
-  '--text-disabled', '--border-color', '--focus-ring', '--color-info-text',
-  '--color-tertiary', '--color-tertiary-hover', '--border-default',
+  '--color-primary-container', '--color-secondary-container',
 ];
 for (const k of divergentKeep) {
   const v = dark.get(k);

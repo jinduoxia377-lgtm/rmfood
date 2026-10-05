@@ -333,13 +333,25 @@ function g10() {
 // 的 1.52:1 更差，且静态对比度断言无法发现（它只测非悬停态）。
 // ============================================================================
 function g11() {
+  // 令牌解析：字面量（hex / rgb() / 数字三元组）+ var() 组合（递归解析到字面量）
+  const LITERAL_RE = /--([a-z0-9-]+)\s*:\s*(#[0-9a-fA-F]{3,8}|rgb\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\)|\d+\s*,\s*\d+\s*,\s*\d+)\s*;/g;
   const readTokens = (file) => {
     const p = join(SRC, 'styles/tokens', file);
     if (!existsSync(p)) return {};
     const css = readFileSync(p, 'utf8');
+    const raw = {};
+    for (const m of css.matchAll(LITERAL_RE)) raw['--' + m[1]] = m[2];
+    // var() 组合层（--x: var(--y) / var(--y, fallback)）
     const out = {};
-    // 键统一保留 `--` 前缀，与 NEED 数组口径一致
-    for (const m of css.matchAll(/--([a-z0-9-]+)\s*:\s*(#[0-9a-fA-F]{3,8})\s*;/g)) out[`--${m[1]}`] = m[2];
+    for (const [k, v] of Object.entries(raw)) out[k] = v;
+    // 解析 var() 链：从字面量表出发，把 var(--y) 组合展开为 y 的字面量值
+    const VAR_COMBOS = [...css.matchAll(/--([a-z0-9-]+)\s*:\s*var\(\s*(--[a-z0-9-]+)/g)];
+    for (const [, name, refRaw] of VAR_COMBOS) {
+      const ref = refRaw; // --xxx
+      if (out[ref]) {
+        out['--' + name] = out[ref]; // 展开：组合值 = 被引用 token 的字面量
+      }
+    }
     return out;
   };
   const lum = (hex) => {
