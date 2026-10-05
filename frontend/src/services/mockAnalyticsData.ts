@@ -232,7 +232,7 @@ export function getMockAnalyticsData(): MockDashboardData {
     // Recent Activity
     const activities = [
       { type: 'formula', title: '创建了新配方：高蛋白营养棒配方v2.3', timestamp: new Date(Date.now() - 120000).toISOString(), author: '张研发', id: 'act-1' },
-      { type: 'experiment', title: '完成了实验：抗氧化活性测试-批次#20260502', timestamp: new Date(Date.now() - 1800000).toISOString(), author: '李实验', id: 'act-2' },
+      { type: 'experiment', title: '完成了实验：抗氧化活性测试-批次 20260502', timestamp: new Date(Date.now() - 1800000).toISOString(), author: '李实验', id: 'act-2' },
       { type: 'ai_generation', title: 'AI生成了3个配方建议方案', timestamp: new Date(Date.now() - 3600000).toISOString(), author: 'AI助手', id: 'act-3' },
       { type: 'formula', title: '更新了配方：低GI代餐粉（审核通过）', timestamp: new Date(Date.now() - 7200000).toISOString(), author: '王配方', id: 'act-4' },
       { type: 'experiment', title: '启动了新实验：稳定性加速测试', timestamp: new Date(Date.now() - 10800000).toISOString(), author: '赵测试', id: 'act-5' },
