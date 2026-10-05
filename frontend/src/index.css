@@ -236,7 +236,7 @@
 /* ── 背景色 ── */
 .bg-surface-default       { background: var(--bg-surface-container, var(--card-bg-solid, #fff)); }
 .bg-surface-variant       { background: var(--bg-surface-variant, var(--bg-secondary, #f9fafb)); }
-.bg-background-default    { background: var(--bg-primary, #f5f5f7); }
+.bg-background-default    { background: var(--bg-primary, var(--bg-canvas)); }
 .bg-background-elevated   { background: var(--bg-surface-elevated, #fff); }
 .bg-background-hover      { background: var(--hover-bg, rgba(0,0,0,0.04)); }
 

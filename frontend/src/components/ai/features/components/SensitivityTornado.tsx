@@ -74,7 +74,7 @@ interface SensitivityTornadoProps {
 // ===== 颜色配置 =====
 
 const SENSITIVITY_COLORS = {
-  positive: 'var(--color-primary, #34C759)',
+  positive: 'var(--color-primary, var(--color-primary-400))',
   negative: 'var(--color-error, #FF3B30)',
   neutral: 'var(--color-slate-500, #6B7280)',
   highlight: 'var(--color-secondary, #0A84FF)',
@@ -340,9 +340,9 @@ function SensitivityTornado({
                     x2={optimalRegion.xMax}
                     y1={optimalRegion.yMin}
                     y2={optimalRegion.yMax}
-                    fill="var(--color-primary, #34C759)"
+                    fill="var(--color-primary, var(--color-primary-400))"
                     fillOpacity={0.15}
-                    stroke="var(--color-primary, #34C759)"
+                    stroke="var(--color-primary, var(--color-primary-400))"
                     strokeDasharray="5 5"
                   />
                 )}

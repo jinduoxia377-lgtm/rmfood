@@ -189,7 +189,7 @@ export function CollaborationPanel() {
     setActiveUsers(active.map(p => ({
       userId: p.user.id,
       name: p.user.name,
-      color: p.user.id === 'user-1' ? '#FF3B30' : '#007AFF',
+      color: p.user.id === 'user-1' ? '#FF3B30' : 'var(--color-secondary-500)',
       joinedAt: typeof p.joinedAt === 'string' ? p.joinedAt : p.joinedAt.toISOString(),
       role: p.role,
       isOnline: p.isOnline ?? true,
@@ -247,7 +247,7 @@ export function CollaborationPanel() {
           <div className="mb-4 p-3 bg-slate-50 dark:bg-neutral-700/50 rounded-lg">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-full" style={{ backgroundColor: 'var(--color-tertiary, #AF52DE)' }} />
+                <div className="w-6 h-6 rounded-full" style={{ backgroundColor: 'var(--color-tertiary, var(--color-accent-500))' }} />
                 <div>
                   <div className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
                     {useCollaborationStore.getState().currentUser.name}
@@ -307,7 +307,7 @@ export function CollaborationPanel() {
           </div>
 
           <div className="flex items-center gap-2 p-3 bg-primary-50 dark:bg-primary-900/20 rounded-lg">
-            <div className="w-6 h-6 rounded-full" style={{ backgroundColor: 'var(--color-tertiary, #AF52DE)' }} />
+            <div className="w-6 h-6 rounded-full" style={{ backgroundColor: 'var(--color-tertiary, var(--color-accent-500))' }} />
             <div>
               <div className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
                 您的光标

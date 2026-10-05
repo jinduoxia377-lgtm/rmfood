@@ -361,7 +361,7 @@ function SafetySlider({ label, value, onChange }: SafetySliderProps) {
         onChange={(e) => onChange(parseFloat(e.target.value))}
         className="w-full h-1.5 bg-neutral-200 dark:bg-neutral-700 rounded-full appearance-none cursor-pointer accent-red-500"
         style={{
-          background: `linear-gradient(to right, #FF3B30 0%, #D97706 50%, #34C759 ${value * 100}%, #d1d5db ${value * 100}%, #d1d5db 100%)`,
+          background: `linear-gradient(to right, #FF3B30 0%, #D97706 50%, var(--color-primary-400) ${value * 100}%, #d1d5db ${value * 100}%, #d1d5db 100%)`,
         }}
       />
     </div>

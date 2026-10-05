@@ -1168,7 +1168,7 @@ const createAdvancedAnalysisHandlers = (
       commMap[commId].push(nodeId)
     })
 
-    const colors = ['#AF52DE', '#D946EF', '#D97706', '#34C759', '#007AFF', '#FF3B30', '#0891B2', '#84CC16']
+    const colors = ['var(--color-accent-500)', '#D946EF', '#D97706', 'var(--color-primary-400)', 'var(--color-secondary-500)', '#FF3B30', 'var(--color-info-600)', '#84CC16']
     const communities = Object.entries(commMap).map(([cid, nodes], idx) => ({
       id: Number(cid),
       nodes,

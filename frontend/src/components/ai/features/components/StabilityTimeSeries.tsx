@@ -79,10 +79,10 @@ interface StabilityTimeSeriesProps {
 const DEFAULT_METRICS = [
   { key: 'stability', name: '稳定性指数', color: 'var(--color-primary-500, #10b981)' },
   { key: 'temperature', name: '温度 (°C)', color: 'var(--color-error, #FF3B30)' },
-  { key: 'ph', name: 'pH 值', color: 'var(--color-primary, #34C759)' },
+  { key: 'ph', name: 'pH 值', color: 'var(--color-primary, var(--color-primary-400))' },
 ]
 
-const COLORS = ['var(--color-primary-500, #10b981)', 'var(--color-error, #FF3B30)', 'var(--color-primary, #34C759)', 'var(--color-warning, #FF9F0A)', 'var(--color-pink-500, #D946EF)']
+const COLORS = ['var(--color-primary-500, #10b981)', 'var(--color-error, #FF3B30)', 'var(--color-primary, var(--color-primary-400))', 'var(--color-warning, #FF9F0A)', 'var(--color-pink-500, #D946EF)']
 
 // ===== 主组件实现 =====
 
@@ -313,7 +313,7 @@ function StabilityTimeSeries({
                   point.type === 'peak'
                     ? 'var(--color-error, #FF3B30)'
                     : point.type === 'valley'
-                    ? 'var(--color-primary, #34C759)'
+                    ? 'var(--color-primary, var(--color-primary-400))'
                     : 'var(--color-warning, #FF9F0A)'
                 }
                 strokeDasharray="5 5"

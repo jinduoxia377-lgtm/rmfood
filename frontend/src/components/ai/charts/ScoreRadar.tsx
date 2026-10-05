@@ -28,8 +28,8 @@ export function ScoreRadar({ scores, size = 160, theme = 'light' }: ScoreRadarPr
     return {
       grid: isDark ? '#4B5563' : 'var(--border-subtle, rgba(0,0,0,0.06))',
       axis: isDark ? '#9CA3AF' : 'var(--text-secondary, #6E6E73)',
-      fill: isDark ? '#007AFF' : 'var(--color-primary, #34C759)',
-      stroke: isDark ? '#6ECAFF' : 'var(--color-primary, #34C759)',
+      fill: isDark ? 'var(--color-secondary-500)' : 'var(--color-primary, var(--color-primary-400))',
+      stroke: isDark ? '#6ECAFF' : 'var(--color-primary, var(--color-primary-400))',
       opacity: isDark ? 0.4 : 0.2,
     }
   }, [theme])

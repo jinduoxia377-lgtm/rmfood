@@ -84,7 +84,7 @@ function CategoryChip({
         'inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[13px] font-medium transition-all duration-150 active:scale-95',
         active
           ? 'bg-primary-500 text-white shadow-sm'
-          : 'bg-[#f5f5f7] dark:bg-neutral-800 text-text-secondary hover:bg-neutral-200 dark:hover:bg-neutral-700',
+          : 'bg-[var(--bg-canvas)] dark:bg-neutral-800 text-text-secondary hover:bg-neutral-200 dark:hover:bg-neutral-700',
       )}
     >
       {name}
@@ -150,12 +150,12 @@ function CaseCard({ item }: { item: FormulaCase }) {
           {/* Category + Tags */}
           <div className="flex flex-wrap items-center gap-1.5 mb-3">
             {item.category && (
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-[#f5f5f7] dark:bg-neutral-800 text-text-muted">
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-[var(--bg-canvas)] dark:bg-neutral-800 text-text-muted">
                 {item.category}
               </span>
             )}
             {item.tags.slice(0, 2).map((tag) => (
-              <span key={tag} className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[11px] bg-[#f5f5f7] dark:bg-neutral-800 text-text-disabled">
+              <span key={tag} className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[11px] bg-[var(--bg-canvas)] dark:bg-neutral-800 text-text-disabled">
                 {tag}
               </span>
             ))}
@@ -198,7 +198,7 @@ function CaseListItem({ item }: { item: FormulaCase }) {
         'card-hover flex items-center gap-4 px-5 py-3.5 rounded-xl border border-neutral-default/50 dark:border-neutral-default/80 bg-surface-default transition-all duration-200 cursor-pointer',
       )}>
         {/* Category label */}
-        <div className="w-10 h-10 rounded-lg bg-[#f5f5f7] dark:bg-neutral-800 flex items-center justify-center shrink-0 text-text-muted text-xs font-semibold">
+        <div className="w-10 h-10 rounded-lg bg-[var(--bg-canvas)] dark:bg-neutral-800 flex items-center justify-center shrink-0 text-text-muted text-xs font-semibold">
           {item.category?.slice(0, 2) ?? '方'}
         </div>
 
@@ -210,7 +210,7 @@ function CaseListItem({ item }: { item: FormulaCase }) {
             </h3>
             {item.is_featured && <Star size={13} className="text-warning-500 shrink-0 fill-warning-500" />}
             {item.generated_by_ai && (
-              <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-[#f5f5f7] dark:bg-neutral-800 text-text-disabled">AI</span>
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-[var(--bg-canvas)] dark:bg-neutral-800 text-text-disabled">AI</span>
             )}
           </div>
           <p className="text-[13px] text-text-muted line-clamp-1 mb-1.5">{item.summary}</p>
@@ -219,7 +219,7 @@ function CaseListItem({ item }: { item: FormulaCase }) {
             <span className="inline-flex items-center gap-1"><Heart size={11} />{item.likes}</span>
             <span className="inline-flex items-center gap-1"><Bookmark size={11} />{item.bookmarks ?? 0}</span>
             {item.category && (
-              <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[11px] bg-[#f5f5f7] dark:bg-neutral-800 text-text-muted">{item.category}</span>
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[11px] bg-[var(--bg-canvas)] dark:bg-neutral-800 text-text-muted">{item.category}</span>
             )}
             {item.formula_name && <span className="flex items-center gap-1"><FileText size={11} />{item.formula_name}</span>}
           </div>
@@ -551,7 +551,7 @@ export function FormulaCasesPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="rounded-xl overflow-hidden border border-neutral-default/50 dark:border-neutral-default/80 bg-surface-default">
-              <div className="h-44 bg-[#f5f5f7] dark:bg-neutral-800 animate-pulse" />
+              <div className="h-44 bg-[var(--bg-canvas)] dark:bg-neutral-800 animate-pulse" />
               <div className="p-4 space-y-2">
                 <Skeleton className="h-4 w-3/4 rounded-full" />
                 <Skeleton className="h-3 w-full rounded-full" />

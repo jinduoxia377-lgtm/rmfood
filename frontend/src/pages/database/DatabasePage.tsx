@@ -233,13 +233,13 @@ const PeptideActivityChart = lazy(() =>
 
 // ─── 常量配置 ───
 const PIE_COLORS = [
-  'var(--color-primary-600, #28A745)',
-  'var(--color-info-600, #007AFF)',
+  'var(--color-primary-600, var(--color-primary-500))',
+  'var(--color-info-600, var(--color-secondary-500))',
   'var(--color-warning-600, #B45309)',
   'var(--color-danger-600, #B91C1C)',
-  'var(--color-purple-600, #AF52DE)',
-  'var(--color-cyan-600, #0891B2)',
-  'var(--color-success-500, #34C759)',
+  'var(--color-purple-600, var(--color-accent-500))',
+  'var(--color-cyan-600, var(--color-info-600))',
+  'var(--color-success-500, var(--color-primary-400))',
   'var(--color-warning-500, #D97706)',
 ];
 

@@ -60,7 +60,7 @@ const DEFAULT_DIMENSIONS: Omit<FlavorDimension, 'value'>[] = [
   { id: 'sweet', label: '甜', color: 'var(--color-pink-500, #D946EF)' },
   { id: 'bitter', label: '苦', color: 'var(--color-amber-600, #d97706)' },
   { id: 'spicy', label: '辣', color: 'var(--color-error, #FF3B30)' },
-  { id: 'umami', label: '鲜', color: 'var(--color-primary, #34C759)' },
+  { id: 'umami', label: '鲜', color: 'var(--color-primary, var(--color-primary-400))' },
   { id: 'astringent', label: '涩', color: 'var(--color-primary-500, #10b981)' },
 ]
 

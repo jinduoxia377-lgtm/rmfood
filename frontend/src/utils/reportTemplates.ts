@@ -3,15 +3,15 @@ import type { ReportTemplate, TemplateConfig, ColorScheme } from '../types/repor
 
 export const defaultColorScheme: ColorScheme = {
   primary: '#003E87',
-  secondary: '#007AFF',
-  accent: '#0891B2',
+  secondary: 'var(--color-secondary-500)',
+  accent: 'var(--color-info-600)',
   text: '#1f2937',
   textSecondary: '#6b7280',
   background: '#ffffff',
   headerBg: '#f3f4f6',
   tableHeaderBg: '#e5e7eb',
   tableBorder: '#d1d5db',
-  linkColor: '#007AFF',
+  linkColor: 'var(--color-secondary-500)',
 };
 
 export const defaultTemplateConfig: TemplateConfig = {
@@ -410,8 +410,8 @@ export const businessTemplate: ReportTemplate = {
     ...defaultTemplateConfig,
     colors: {
       ...defaultColorScheme,
-      primary: '#28A745',
-      secondary: '#34C759',
+      primary: 'var(--color-primary-500)',
+      secondary: 'var(--color-primary-400)',
     },
   },
   metadata: {
@@ -576,8 +576,8 @@ export const experimentTemplate: ReportTemplate = {
     ...defaultTemplateConfig,
     colors: {
       ...defaultColorScheme,
-      primary: '#AF52DE',
-      secondary: '#AF52DE',
+      primary: 'var(--color-accent-500)',
+      secondary: 'var(--color-accent-500)',
     },
   },
   metadata: {
@@ -874,7 +874,7 @@ export const regulatoryTemplate: ReportTemplate = {
     colors: {
       ...defaultColorScheme,
       primary: '#0E7490',
-      secondary: '#0891B2',
+      secondary: 'var(--color-info-600)',
     },
   },
   metadata: {

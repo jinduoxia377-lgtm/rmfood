@@ -393,7 +393,7 @@ export function TastePredictTab() {
                           {
                             label: '历史记录 #1',
                             data: historyResults[0].profile,
-                            color: '#34C759',
+                            color: 'var(--color-primary-400)',
                           },
                         ]
                       : undefined

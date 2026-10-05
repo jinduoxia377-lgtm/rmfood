@@ -205,8 +205,8 @@ const LoadingComponent = () => (
       <div
         className="inline-block rounded-full h-8 w-8 border-t-2 border-b-2 animate-spin mb-4"
         style={{
-          borderColor: 'var(--color-primary-600, var(--color-primary, #34C759))',
-          borderTopColor: 'var(--color-primary, #34C759)',
+          borderColor: 'var(--color-primary-600, var(--color-primary, var(--color-primary-400)))',
+          borderTopColor: 'var(--color-primary, var(--color-primary-400))',
         }}
       ></div>
       <p className="text-neutral-600 dark:text-neutral-400">加载中...</p>

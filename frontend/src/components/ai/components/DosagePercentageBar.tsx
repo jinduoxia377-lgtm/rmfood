@@ -29,7 +29,7 @@ const SIZE_CONFIG = {
 
 function getBarColor(percentage: number): string {
   if (percentage >= 30) return '#003E87'
-  if (percentage >= 10) return '#007AFF'
+  if (percentage >= 10) return 'var(--color-secondary-500)'
   return '#9ca3af'
 }
 

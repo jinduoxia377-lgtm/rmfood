@@ -79,7 +79,7 @@ const METRIC_LABELS: Record<keyof MetricResult, string> = {
 }
 
 const METRIC_COLORS: Record<keyof MetricResult, string> = {
-  efficacy: 'var(--color-primary, #34C759)',
+  efficacy: 'var(--color-primary, var(--color-primary-400))',
   stability: 'var(--color-secondary, #0A84FF)',
   cost: 'var(--color-warning, #FF9F0A)',
   safety: 'var(--color-error, #FF3B30)',
@@ -87,7 +87,7 @@ const METRIC_COLORS: Record<keyof MetricResult, string> = {
   overall: 'var(--color-pink-500, #D946EF)',
 }
 
-const SCENARIO_COLORS = ['var(--color-primary, #34C759)', 'var(--color-secondary, #0A84FF)', 'var(--color-warning, #FF9F0A)']
+const SCENARIO_COLORS = ['var(--color-primary, var(--color-primary-400))', 'var(--color-secondary, #0A84FF)', 'var(--color-warning, #FF9F0A)']
 
 function calculateMockResults(parameters: Record<string, number>): MetricResult {
   const ph = parameters.ph || 6.5

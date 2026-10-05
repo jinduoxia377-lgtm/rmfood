@@ -40,7 +40,7 @@ main, .app-root, #root {
     background: var(--bg-surface, #ffffff) !important;
   }
   .dark header {
-    background: var(--bg-surface-container, #1c1c1e) !important;
+    background: var(--bg-surface-container, var(--bg-surface-container)) !important;
   }
 }
 

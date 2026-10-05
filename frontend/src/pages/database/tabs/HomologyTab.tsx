@@ -143,7 +143,7 @@ export default function HomologyTab() {
     <div className="space-y-4">
       {/* 查询工具 */}
       <Card className="p-5">
-        <h3 className="font-bold text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)] mb-2 flex items-center gap-2">
+        <h3 className="font-bold text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))] mb-2 flex items-center gap-2">
           <Search className="w-4 h-4 text-primary-600" />
           药食同源快速查询
         </h3>
@@ -183,7 +183,7 @@ export default function HomologyTab() {
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)] text-lg">
+                  <span className="font-bold text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))] text-lg">
                     {checkQuery.data.herb_name}
                   </span>
                   <Badge variant={checkQuery.data.is_food_homology ? 'success' : 'neutral'} size="md">
@@ -296,7 +296,7 @@ export default function HomologyTab() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-0.5">
-                      <span className="font-medium text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)]">
+                      <span className="font-medium text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))]">
                         <Highlight text={item.name_cn} keyword={keyword} />
                       </span>
                       <Badge variant="success" size="sm">
@@ -347,7 +347,7 @@ export default function HomologyTab() {
                     key={item.id}
                     className="hover:bg-primary-50/60 dark:hover:bg-primary-950/20 transition-colors duration-150"
                   >
-                    <td className="px-4 py-3 font-medium text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)]">
+                    <td className="px-4 py-3 font-medium text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))]">
                       <Highlight text={item.name_cn} keyword={keyword} />
                       <Badge variant="success" size="sm" className="ml-1.5">
                         药食同源

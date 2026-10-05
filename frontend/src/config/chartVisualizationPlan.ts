@@ -296,13 +296,13 @@ export const ChartThemes = {
   light: {
     name: 'Light',
     colors: {
-      primary: ['#007AFF', '#16a34a', '#B45309', '#B91C1C', '#9333ea'],
+      primary: ['var(--color-secondary-500)', '#16a34a', '#B45309', '#B91C1C', '#9333ea'],
       secondary: ['#6ECAFF', '#4ade80', '#F59E0B', '#EF4444', '#c084fc'],
       semantic: {
         success: '#16a34a',
         warning: '#B45309',
         error: '#B91C1C',
-        info: '#007AFF',
+        info: 'var(--color-secondary-500)',
       },
       grayscale: ['#374151', '#6b7280', '#9ca3af', '#d1d5db', '#e5e7eb'],
     },
@@ -339,13 +339,13 @@ export const ChartThemes = {
   dark: {
     name: 'Dark',
     colors: {
-      primary: ['#007AFF', '#34C759', '#D97706', '#FF3B30', '#a855f7'],
+      primary: ['var(--color-secondary-500)', 'var(--color-primary-400)', '#D97706', '#FF3B30', '#a855f7'],
       secondary: ['#6ECAFF', '#4ade80', '#F59E0B', '#EF4444', '#c084fc'],
       semantic: {
-        success: '#34C759',
+        success: 'var(--color-primary-400)',
         warning: '#D97706',
         error: '#FF3B30',
-        info: '#007AFF',
+        info: 'var(--color-secondary-500)',
       },
       grayscale: ['#d1d5db', '#9ca3af', '#6b7280', '#4b5563', '#374151'],
     },
@@ -383,12 +383,12 @@ export const ChartThemes = {
     name: 'Professional',
     colors: {
       primary: ['#003E87', '#1E8E3E', '#D97706', '#be123c', '#6b21a8'],
-      secondary: ['#007AFF', '#34C759', '#D97706', '#FF3B30', '#AF52DE'],
+      secondary: ['var(--color-secondary-500)', 'var(--color-primary-400)', '#D97706', '#FF3B30', 'var(--color-accent-500)'],
       semantic: {
-        success: '#28A745',
+        success: 'var(--color-primary-500)',
         warning: '#B45309',
         error: '#B91C1C',
-        info: '#007AFF',
+        info: 'var(--color-secondary-500)',
       },
       grayscale: ['#1f2937', '#4b5563', '#9ca3af', '#d1d5db', '#f3f4f6'],
     },

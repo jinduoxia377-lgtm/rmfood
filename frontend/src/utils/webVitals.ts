@@ -241,7 +241,7 @@ class WebVitalsMonitor {
   getStatusColor(status: 'good' | 'needs-improvement' | 'poor'): string {
     switch (status) {
       case 'good':
-        return '#34C759'
+        return 'var(--color-primary-400)'
       case 'needs-improvement':
         return '#D97706'
       case 'poor':

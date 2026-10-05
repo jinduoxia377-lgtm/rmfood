@@ -210,13 +210,13 @@ const RANK_BADGE_STYLES: Record<number, string> = {
 const REFRESH_INTERVAL_MS = 60_000;
 
 const PIE_COLORS = [
-  'var(--color-primary-600, #28A745)',
-  'var(--color-info-600, #007AFF)',
+  'var(--color-primary-600, var(--color-primary-500))',
+  'var(--color-info-600, var(--color-secondary-500))',
   'var(--color-warning-600, #B45309)',
   'var(--color-danger-600, #B91C1C)',
-  'var(--color-purple-600, #AF52DE)',
-  'var(--color-cyan-600, #0891B2)',
-  'var(--color-success-500, #34C759)',
+  'var(--color-purple-600, var(--color-accent-500))',
+  'var(--color-cyan-600, var(--color-info-600))',
+  'var(--color-success-500, var(--color-primary-400))',
   'var(--color-warning-500, #D97706)',
 ];
 
@@ -232,10 +232,10 @@ const STAT_CARD_GRADIENTS = [
 
 const ACTIVITY_TYPE_CONFIG: Record<string, { color: string; label: string }> = {
   sync: { color: 'var(--color-secondary, #0A84FF)', label: '同步' },
-  import: { color: 'var(--color-primary, #34C759)', label: '导入' },
+  import: { color: 'var(--color-primary, var(--color-primary-400))', label: '导入' },
   edit: { color: 'var(--color-warning, #FF9F0A)', label: '编辑' },
   delete: { color: 'var(--color-error, #FF3B30)', label: '删除' },
-  export: { color: 'var(--color-tertiary, #AF52DE)', label: '导出' },
+  export: { color: 'var(--color-tertiary, var(--color-accent-500))', label: '导出' },
 };
 
 // ============================================================
@@ -365,7 +365,7 @@ const ProgressRing = React.memo<ProgressRingProps>(
     const getColor =
       colorFn ||
       ((v: number) => {
-        if (v >= 90) return 'var(--color-primary, #34C759)';
+        if (v >= 90) return 'var(--color-primary, var(--color-primary-400))';
         if (v >= 70) return 'var(--color-warning, #FF9F0A)';
         return 'var(--color-error, #FF3B30)';
       });
@@ -714,7 +714,7 @@ const PerformancePanel = React.memo(({ metrics }: { metrics: PerformanceMetrics 
                       className="h-full rounded-full transition-all duration-700 ease-out"
                       style={{
                         width: `${metric.barValue ?? 0}%`,
-                        backgroundColor: (metric.barValue ?? 0) > 80 ? 'var(--color-warning, #FF9F0A)' : 'var(--color-primary, #34C759)',
+                        backgroundColor: (metric.barValue ?? 0) > 80 ? 'var(--color-warning, #FF9F0A)' : 'var(--color-primary, var(--color-primary-400))',
                       }}
                     />
                   </div>
@@ -904,7 +904,7 @@ const SeqLengthDistributionChart = React.memo(
           <ComposedChart data={processed} margin={{ top: 10, right: 50, left: 10, bottom: 10 }}>
             <XAxis dataKey="name" tick={{ fontSize: 12, fill: 'var(--text-muted, #9A9A9F)' }} axisLine={false} tickLine={false} />
             <YAxis yAxisId="left" tick={{ fontSize: 12, fill: 'var(--text-muted, #9A9A9F)' }} axisLine={false} tickLine={false} />
-            <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 12, fill: 'var(--color-tertiary, #AF52DE)' }} axisLine={false} tickLine={false} width={40} />
+            <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 12, fill: 'var(--color-tertiary, var(--color-accent-500))' }} axisLine={false} tickLine={false} width={40} />
             <Tooltip
               contentStyle={{ fontSize: 13, borderRadius: 8 }}
               formatter={(value: number, name: string) => {
@@ -918,7 +918,7 @@ const SeqLengthDistributionChart = React.memo(
               dataKey="value"
               name="数量"
               radius={[4, 4, 4, 4]}
-              fill="var(--color-primary-600, #28A745)"
+              fill="var(--color-primary-600, var(--color-primary-500))"
               opacity={0.85}
             >
               {processed.map((_, index) => (
@@ -930,9 +930,9 @@ const SeqLengthDistributionChart = React.memo(
               type="monotone"
               dataKey="cumulative"
               name="累计"
-              stroke="#AF52DE"
+              stroke="var(--color-accent-500)"
               strokeWidth={2}
-              dot={{ r: 4, fill: 'var(--color-tertiary, #AF52DE)' }}
+              dot={{ r: 4, fill: 'var(--color-tertiary, var(--color-accent-500))' }}
               activeDot={{ r: 6 }}
             />
           </ComposedChart>
@@ -959,21 +959,21 @@ function DistributionChart({
   const entries = Object.entries(data).sort((a, b) => b[1] - a[1]);
   const maxVal = entries[0]?.[1] || 1;
   const defaultColors = [
-    'var(--color-info-500, #007AFF)',
+    'var(--color-info-500, var(--color-secondary-500))',
     'var(--color-danger-500, #FF3B30)',
-    'var(--color-success-500, #34C759)',
+    'var(--color-success-500, var(--color-primary-400))',
     'var(--color-warning-500, #D97706)',
-    'var(--color-purple-500, #AF52DE)',
+    'var(--color-purple-500, var(--color-accent-500))',
     'var(--color-pink-500, #D946EF)',
     'var(--color-teal-500, #14b8a6)',
     'var(--color-orange-500, #EA580C)',
-    'var(--color-cyan-500, #0891B2)',
+    'var(--color-cyan-500, var(--color-info-600))',
     'var(--color-lime-500, #84cc16)',
     'var(--color-purple-600, #a855f7)',
     'var(--color-rose-600, #e11d48)',
-    'var(--color-primary-600, #28A745)',
+    'var(--color-primary-600, var(--color-primary-500))',
     'var(--color-warning-600, #B45309)',
-    'var(--color-purple-600, #AF52DE)',
+    'var(--color-purple-600, var(--color-accent-500))',
   ];
   const getColor = colorFn || ((i: number) => defaultColors[i % defaultColors.length]);
 

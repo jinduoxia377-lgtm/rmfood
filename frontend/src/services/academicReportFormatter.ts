@@ -47,9 +47,9 @@ const STYLE_THEMES = {
     lineSpacing: 1.6,
   },
   thesis: {
-    primaryColor: '#AF52DE',
+    primaryColor: 'var(--color-accent-500)',
     secondaryColor: '#4338ca',
-    accentColor: '#AF52DE',
+    accentColor: 'var(--color-accent-500)',
     fontFamily: 'SimSun',
     fontSize: 12,
     lineSpacing: 1.6,

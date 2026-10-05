@@ -90,7 +90,7 @@ export function ParallelCoordinatesChart({
               cx={axisXPositions[i] - 8}
               cy={labelY - 3}
               r={3}
-              fill={obj.direction === 'maximize' ? 'var(--color-primary, #34C759)' : 'var(--color-orange-500, #EA580C)'}
+              fill={obj.direction === 'maximize' ? 'var(--color-primary, var(--color-primary-400))' : 'var(--color-orange-500, #EA580C)'}
             />
             <line
               x1={axisXPositions[i]}
@@ -353,7 +353,7 @@ export function MOCandidateCard({ candidate, rank, objectivesConfig }: MOCandida
                     className="w-3 rounded-t-sm opacity-80"
                     style={{
                       height: `${Math.max(Math.abs(val) * 48, 4)}px`,
-                      backgroundColor: obj.direction === 'maximize' ? 'var(--color-primary-500, #34C759)' : 'var(--color-orange-500, #EA580C)',
+                      backgroundColor: obj.direction === 'maximize' ? 'var(--color-primary-500, var(--color-primary-400))' : 'var(--color-orange-500, #EA580C)',
                     }}
                   />
                   <span className="text-[10px] text-neutral-400 dark:text-neutral-500 whitespace-nowrap truncate w-8 text-center">

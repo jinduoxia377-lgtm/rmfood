@@ -159,7 +159,7 @@ const LineChartPlaceholder: React.FC<{ data: any[]; options: Record<string, any>
     <polyline
       points={data.map((d, i) => `${(i / (data.length - 1)) * 760 + 20},${300 - (d.value || Math.random() * 200 + 50)}`).join(' ')}
       fill="none"
-      stroke="#007AFF"
+      stroke="var(--color-secondary-500)"
       strokeWidth="2"
       className="transition-all duration-300"
     />
@@ -169,7 +169,7 @@ const LineChartPlaceholder: React.FC<{ data: any[]; options: Record<string, any>
         cx={(i / (data.length - 1)) * 760 + 20}
         cy={300 - (d.value || Math.random() * 200 + 50)}
         r="4"
-        fill="#007AFF"
+        fill="var(--color-secondary-500)"
         className="hover:r-6 transition-all cursor-pointer"
       />
     ))}
@@ -302,7 +302,7 @@ const ViolinPlaceholder: React.FC<{ data: any[]; options: Record<string, any> }>
     {data.map((_, i) => (
       <div key={i} className="flex flex-col items-center">
         <svg width="60" height="160" viewBox="0 0 60 160">
-          <ellipse cx="30" cy="80" rx="25" ry="70" fill="#AF52DE" opacity="0.6" />
+          <ellipse cx="30" cy="80" rx="25" ry="70" fill="var(--color-accent-500)" opacity="0.6" />
           <rect x="27" y="30" width="6" height="100" fill="#8B5CF6" />
         </svg>
         <span className="text-xs text-neutral-600 mt-2">组{i + 1}</span>
@@ -333,7 +333,7 @@ const RadarPlaceholder: React.FC<{ options: Record<string, any> }> = () => (
         return `${200 + radius * Math.cos(angle)},${200 + radius * Math.sin(angle)}`;
       }).join(' ')}
         fill="rgba(59, 130, 246, 0.3)"
-        stroke="#007AFF"
+        stroke="var(--color-secondary-500)"
         strokeWidth="2"
     />
   </svg>

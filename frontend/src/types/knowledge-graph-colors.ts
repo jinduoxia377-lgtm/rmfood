@@ -14,7 +14,7 @@ export const KNOWLEDGE_GRAPH_COLORS = {
    * 颜色：绿色系 - 代表天然、草本、植物来源
    */
   herb: {
-    main: '#34C759',
+    main: 'var(--color-primary-400)',
     light: '#4ADE80',
     dark: '#166534',
     bg: 'rgba(34,197,94,0.1)',
@@ -26,7 +26,7 @@ export const KNOWLEDGE_GRAPH_COLORS = {
    * 颜色：蓝色系 - 代表化学、分子、科学精确性
    */
   compound: {
-    main: '#007AFF',
+    main: 'var(--color-secondary-500)',
     light: '#A8DFFF',
     dark: '#0052AE',
     bg: 'rgba(59,130,246,0.1)',
@@ -50,7 +50,7 @@ export const KNOWLEDGE_GRAPH_COLORS = {
    * 颜色：紫色系 - 代表生物活性、复杂结构
    */
   peptide: {
-    main: '#AF52DE',
+    main: 'var(--color-accent-500)',
     light: '#D4B3FF',
     dark: '#8B5CF6',
     bg: 'rgba(139,92,246,0.1)',
@@ -74,7 +74,7 @@ export const KNOWLEDGE_GRAPH_COLORS = {
    * 颜色：青色系 - 代表营养、食物链、自然循环
    */
   food_source: {
-    main: '#0891B2',
+    main: 'var(--color-info-600)',
     light: '#A5F3FC',
     dark: '#155E75',
     bg: 'rgba(6,182,212,0.1)',
@@ -116,11 +116,11 @@ export function getKnowledgeGraphPalette(): string[] {
  * 用于饼图、柱状图等数据可视化
  */
 export const CHART_COLOR_PALETTE = [
-  '#34C759', // 中药材 - 绿
-  '#007AFF', // 化合物 - 蓝
+  'var(--color-primary-400)', // 中药材 - 绿
+  'var(--color-secondary-500)', // 化合物 - 蓝
   '#FF3B30', // 靶点 - 红
-  '#AF52DE', // 多肽 - 紫
+  'var(--color-accent-500)', // 多肽 - 紫
   '#D97706', // 蛋白 - 橙
-  '#0891B2', // 食物 - 青
+  'var(--color-info-600)', // 食物 - 青
   '#D946EF', // 疾病 - 粉
 ] as const;

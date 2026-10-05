@@ -272,7 +272,7 @@ export class GraphEngine {
       })
       .attr('stroke', (d: SimNode) => {
         const nodeKey = `${d.label}_${d.type}`
-        if (this.input.selectedNodes.has(nodeKey)) return '#007AFF'
+        if (this.input.selectedNodes.has(nodeKey)) return 'var(--color-secondary-500)'
         const highlightSet = new Set(this.input.highlightPath || [])
         return highlightSet.has(d.id) ? '#F59E0B' : 'white'
       })
@@ -713,7 +713,7 @@ export class GraphEngine {
       })
       .attr('stroke', (d: SimNode) => {
         const nodeKey = `${d.label}_${d.type}`
-        if (selectedNodes.has(nodeKey)) return '#007AFF'
+        if (selectedNodes.has(nodeKey)) return 'var(--color-secondary-500)'
         return highlightSet.has(d.id || d.label) ? '#F59E0B' : 'white'
       })
       .attr('stroke-width', (d: SimNode) => {
@@ -844,7 +844,7 @@ export class GraphEngine {
       .attr('class', 'keyboard-focus-ring')
       .attr('r', 0)
       .attr('fill', 'none')
-      .attr('stroke', '#007AFF')
+      .attr('stroke', 'var(--color-secondary-500)')
       .attr('stroke-width', 2)
       .attr('stroke-dasharray', '4 2')
       .style('pointer-events', 'none')
@@ -886,7 +886,7 @@ export class GraphEngine {
       })
       .attr('stroke', (d: SimNode) => {
         const nodeKey = `${d.label}_${d.type}`
-        if (selectedNodes.has(nodeKey)) return '#007AFF'
+        if (selectedNodes.has(nodeKey)) return 'var(--color-secondary-500)'
         return highlightSet.has(d.id || d.label) ? '#F59E0B' : 'white'
       })
       .attr('stroke-width', (d: SimNode) => {

@@ -554,7 +554,7 @@ function MinimapCanvas({
     if (pathAnimation) {
       ctx.globalAlpha = 0.9
       ctx.lineWidth = 1.5
-      ctx.strokeStyle = '#AF52DE'
+      ctx.strokeStyle = 'var(--color-accent-500)'
       pathAnimation.pathEdges.forEach(([sId, tId]) => {
         const sn = nodes.find(n => (n.id || n.label) === sId)
         const tn = nodes.find(n => (n.id || n.label) === tId)
@@ -599,7 +599,7 @@ function MinimapCanvas({
 
     // Viewport indicator (simple center dot for now)
     ctx.globalAlpha = 0.4
-    ctx.fillStyle = '#007AFF'
+    ctx.fillStyle = 'var(--color-secondary-500)'
     ctx.beginPath()
     ctx.arc(width / 2, height / 2, 4, 0, Math.PI * 2)
     ctx.fill()

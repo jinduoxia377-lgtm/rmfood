@@ -52,11 +52,11 @@ interface RadarDataPoint {
 }
 
 const DEFAULT_COLORS = [
-  '#007AFF',
-  '#34C759',
+  'var(--color-secondary-500)',
+  'var(--color-primary-400)',
   '#D97706',
   '#FF3B30',
-  '#AF52DE',
+  'var(--color-accent-500)',
 ]
 
 export function TasteRadarChart({
@@ -150,11 +150,11 @@ export function TasteRadarChart({
           <Radar
             name="当前配方"
             dataKey="primary"
-            stroke="#007AFF"
-            fill="#007AFF"
+            stroke="var(--color-secondary-500)"
+            fill="var(--color-secondary-500)"
             fillOpacity={0.25}
             strokeWidth={2.5}
-            dot={{ r: 4, fill: '#007AFF', strokeWidth: 2 }}
+            dot={{ r: 4, fill: 'var(--color-secondary-500)', strokeWidth: 2 }}
           />
 
           {/* 对比数据 1 */}

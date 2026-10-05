@@ -86,7 +86,7 @@ export function EnhancedBarChart({
     themeColors.secondary,
     themeColors.success,
     themeColors.warning,
-    'var(--color-tertiary, #AF52DE)',
+    'var(--color-tertiary, var(--color-accent-500))',
   ]
 
   const CustomTooltip = ({ active, payload, label }: any) => {

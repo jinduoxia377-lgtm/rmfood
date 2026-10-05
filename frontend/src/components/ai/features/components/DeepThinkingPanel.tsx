@@ -98,7 +98,7 @@ const ComplexityGauge: React.FC<{ complexity: number }> = memo(({ complexity }) 
   const offset = circumference - (complexity * circumference)
 
   const getColor = () => {
-    if (percentage <= 33) return { stroke: '#34C759', text: 'text-success-500', bg: 'bg-success-50 dark:bg-success-900/20' }
+    if (percentage <= 33) return { stroke: 'var(--color-primary-400)', text: 'text-success-500', bg: 'bg-success-50 dark:bg-success-900/20' }
     if (percentage <= 66) return { stroke: '#D97706', text: 'text-yellow-500', bg: 'bg-yellow-50 dark:bg-yellow-900/20' }
     return { stroke: '#FF3B30', text: 'text-error-500', bg: 'bg-error-50 dark:bg-error-900/20' }
   }

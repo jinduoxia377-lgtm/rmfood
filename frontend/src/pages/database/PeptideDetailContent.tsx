@@ -18,10 +18,10 @@ const AA_NAMES: Record<string, string> = {
 
 // ─── 氨基酸颜色 ───
 const AA_COLORS: Record<string, string> = {
-  A: 'var(--text-muted, #9CA3AF)', R: 'var(--color-tertiary, #AF52DE)', N: 'var(--color-secondary, #0A84FF)', D: 'var(--color-danger-600, #B91C1C)', C: 'var(--color-warning-700, #B45309)',
-  E: 'var(--color-primary, #34C759)', Q: 'var(--color-cyan-600, #0E7490)', G: 'var(--color-warning, #FF9F0A)', H: 'var(--color-pink-500, #D946EF)', I: 'var(--color-primary-hover, #28A745)',
-  L: 'var(--color-primary-hover, #28A745)', K: 'var(--color-tertiary, #AF52DE)', M: 'var(--color-warning-700, #B45309)', F: 'var(--color-danger-600, #B91C1C)', P: 'var(--color-warning, #FF9F0A)',
-  S: 'var(--color-secondary, #0A84FF)', T: 'var(--color-secondary, #0A84FF)', W: 'var(--color-pink-500, #D946EF)', Y: 'var(--color-warning-700, #B45309)', V: 'var(--color-primary-hover, #28A745)',
+  A: 'var(--text-muted, #9CA3AF)', R: 'var(--color-tertiary, var(--color-accent-500))', N: 'var(--color-secondary, #0A84FF)', D: 'var(--color-danger-600, #B91C1C)', C: 'var(--color-warning-700, #B45309)',
+  E: 'var(--color-primary, var(--color-primary-400))', Q: 'var(--color-cyan-600, #0E7490)', G: 'var(--color-warning, #FF9F0A)', H: 'var(--color-pink-500, #D946EF)', I: 'var(--color-primary-hover, var(--color-primary-500))',
+  L: 'var(--color-primary-hover, var(--color-primary-500))', K: 'var(--color-tertiary, var(--color-accent-500))', M: 'var(--color-warning-700, #B45309)', F: 'var(--color-danger-600, #B91C1C)', P: 'var(--color-warning, #FF9F0A)',
+  S: 'var(--color-secondary, #0A84FF)', T: 'var(--color-secondary, #0A84FF)', W: 'var(--color-pink-500, #D946EF)', Y: 'var(--color-warning-700, #B45309)', V: 'var(--color-primary-hover, var(--color-primary-500))',
 }
 
 export function PeptideDetailContent({ peptide }: { peptide: BioactivePeptide }) {
@@ -92,7 +92,7 @@ export function PeptideDetailContent({ peptide }: { peptide: BioactivePeptide })
         ].map(({ label, value, bg }) => (
           <div key={label} className={`p-3 rounded-xl ${bg} dark:bg-opacity-20`}>
             <span className="text-[10px] text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)]">{label}</span>
-            <div className="font-medium mt-0.5 text-sm text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)]">{value}</div>
+            <div className="font-medium mt-0.5 text-sm text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))]">{value}</div>
           </div>
         ))}
       </div>
@@ -102,7 +102,7 @@ export function PeptideDetailContent({ peptide }: { peptide: BioactivePeptide })
         <div className="flex items-center gap-2 p-3 bg-slate-50/60 dark:bg-neutral-800/40 rounded-xl border border-[var(--border-subtle,rgba(0,0,0,0.06))]">
           <ExternalLink className="w-4 h-4 text-[var(--text-muted,#9A9A9F)]" />
           <span className="text-xs text-[var(--text-secondary,#6E6E73)] dark:text-[var(--text-muted,#9A9A9F)]">DFBP ID:</span>
-          <span className="text-xs font-mono text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,#F5F5F7)]">{peptide.dfbp_id}</span>
+          <span className="text-xs font-mono text-[var(--text-primary,#1D1D1F)] dark:text-[var(--text-primary,var(--bg-canvas))]">{peptide.dfbp_id}</span>
           {peptide.literature_doi && (
             <>
               <span className="text-xs text-[var(--text-muted,#9A9A9F)] ml-2">DOI:</span>

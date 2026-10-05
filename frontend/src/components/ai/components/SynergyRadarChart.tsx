@@ -86,8 +86,8 @@ const DIMENSION_CONFIG: Record<
     labelEn: 'Synergy Strength',
     description: '衡量药食同源成分与多肽之间的协同作用强弱程度',
     scoringCriteria: [
-      { range: '85-100', level: '优秀', color: '#34C759' },
-      { range: '70-84', level: '良好', color: '#007AFF' },
+      { range: '85-100', level: '优秀', color: 'var(--color-primary-400)' },
+      { range: '70-84', level: '良好', color: 'var(--color-secondary-500)' },
       { range: '55-69', level: '一般', color: '#D97706' },
       { range: '0-54', level: '需改进', color: '#FF3B30' },
     ],
@@ -105,8 +105,8 @@ const DIMENSION_CONFIG: Record<
     labelEn: 'Bioavailability Enhancement',
     description: '成分组合对生物利用度的改善效果',
     scoringCriteria: [
-      { range: '85-100', level: '优秀', color: '#34C759' },
-      { range: '70-84', level: '良好', color: '#007AFF' },
+      { range: '85-100', level: '优秀', color: 'var(--color-primary-400)' },
+      { range: '70-84', level: '良好', color: 'var(--color-secondary-500)' },
       { range: '55-69', level: '一般', color: '#D97706' },
       { range: '0-54', level: '需改进', color: '#FF3B30' },
     ],
@@ -124,8 +124,8 @@ const DIMENSION_CONFIG: Record<
     labelEn: 'Efficacy Multiplication',
     description: '组合后的功效是否呈现1+1>2的倍增效果',
     scoringCriteria: [
-      { range: '85-100', level: '优秀', color: '#34C759' },
-      { range: '70-84', level: '良好', color: '#007AFF' },
+      { range: '85-100', level: '优秀', color: 'var(--color-primary-400)' },
+      { range: '70-84', level: '良好', color: 'var(--color-secondary-500)' },
       { range: '55-69', level: '一般', color: '#D97706' },
       { range: '0-54', level: '需改进', color: '#FF3B30' },
     ],
@@ -143,8 +143,8 @@ const DIMENSION_CONFIG: Record<
     labelEn: 'Safety Index',
     description: '综合评估成分组合的安全性水平',
     scoringCriteria: [
-      { range: '85-100', level: '优秀', color: '#34C759' },
-      { range: '70-84', level: '良好', color: '#007AFF' },
+      { range: '85-100', level: '优秀', color: 'var(--color-primary-400)' },
+      { range: '70-84', level: '良好', color: 'var(--color-secondary-500)' },
       { range: '55-69', level: '一般', color: '#D97706' },
       { range: '0-54', level: '需改进', color: '#FF3B30' },
     ],
@@ -162,8 +162,8 @@ const DIMENSION_CONFIG: Record<
     labelEn: 'Stability Improvement',
     description: '成分组合对产品稳定性的提升程度',
     scoringCriteria: [
-      { range: '85-100', level: '优秀', color: '#34C759' },
-      { range: '70-84', level: '良好', color: '#007AFF' },
+      { range: '85-100', level: '优秀', color: 'var(--color-primary-400)' },
+      { range: '70-84', level: '良好', color: 'var(--color-secondary-500)' },
       { range: '55-69', level: '一般', color: '#D97706' },
       { range: '0-54', level: '需改进', color: '#FF3B30' },
     ],
@@ -181,8 +181,8 @@ const DIMENSION_CONFIG: Record<
     labelEn: 'Taste Balance',
     description: '最终产品的风味协调性和适口性',
     scoringCriteria: [
-      { range: '85-100', level: '优秀', color: '#34C759' },
-      { range: '70-84', level: '良好', color: '#007AFF' },
+      { range: '85-100', level: '优秀', color: 'var(--color-primary-400)' },
+      { range: '70-84', level: '良好', color: 'var(--color-secondary-500)' },
       { range: '55-69', level: '一般', color: '#D97706' },
       { range: '0-54', level: '需改进', color: '#FF3B30' },
     ],
@@ -197,7 +197,7 @@ const DIMENSION_CONFIG: Record<
   },
 }
 
-const DEFAULT_COLORS = ['#007AFF', '#34C759', '#D97706', '#FF3B30']
+const DEFAULT_COLORS = ['var(--color-secondary-500)', 'var(--color-primary-400)', '#D97706', '#FF3B30']
 
 const DIMENSION_ORDER: SynergyDimension[] = [
   'synergyStrength',
@@ -510,8 +510,8 @@ const SynergyRadarChartComponent: React.FC<SynergyRadarChartProps> = ({
             className="absolute inset-2 rounded-full border-4 animate-spin"
             style={{
               borderColor: themeColors.axisText,
-              borderTopColor: '#007AFF',
-              borderBottomColor: '#007AFF',
+              borderTopColor: 'var(--color-secondary-500)',
+              borderBottomColor: 'var(--color-secondary-500)',
             }}
           />
         </div>

@@ -7,22 +7,22 @@ import type { Conversation, Category, Tag } from './types'
 // ── 分类数据 ──
 export const categories: Category[] = [
   { id: 'all', name: '全部', icon: 'LayoutGrid', count: 42, color: '#6B7280' },
-  { id: 'chat', name: 'AI 对话', icon: 'MessageSquare', count: 23, color: '#28A745' },
-  { id: 'formula', name: '配方设计', icon: 'FlaskConical', count: 12, color: '#007AFF' },
-  { id: 'report', name: '学术报告', icon: 'FileText', count: 5, color: '#AF52DE' },
+  { id: 'chat', name: 'AI 对话', icon: 'MessageSquare', count: 23, color: 'var(--color-primary-500)' },
+  { id: 'formula', name: '配方设计', icon: 'FlaskConical', count: 12, color: 'var(--color-secondary-500)' },
+  { id: 'report', name: '学术报告', icon: 'FileText', count: 5, color: 'var(--color-accent-500)' },
   { id: 'search', name: '检索记录', icon: 'Search', count: 2, color: '#D97706' },
 ]
 
 // ── 标签数据 ──
 export const tags: Tag[] = [
-  { id: 't1', name: '营养配方', color: '#28A745', count: 8 },
-  { id: 't2', name: '护肤配方', color: '#007AFF', count: 12 },
-  { id: 't3', name: 'AI生成', color: '#AF52DE', count: 15 },
+  { id: 't1', name: '营养配方', color: 'var(--color-primary-500)', count: 8 },
+  { id: 't2', name: '护肤配方', color: 'var(--color-secondary-500)', count: 12 },
+  { id: 't3', name: 'AI生成', color: 'var(--color-accent-500)', count: 15 },
   { id: 't4', name: '待审核', color: '#D97706', count: 3 },
-  { id: 't5', name: '已完成', color: '#34C759', count: 20 },
+  { id: 't5', name: '已完成', color: 'var(--color-primary-400)', count: 20 },
   { id: 't6', name: '研究中', color: '#D946EF', count: 5 },
   { id: 't7', name: '紧急', color: '#FF3B30', count: 2 },
-  { id: 't8', name: '客户需求', color: '#0891B2', count: 6 },
+  { id: 't8', name: '客户需求', color: 'var(--color-info-600)', count: 6 },
 ]
 
 // ── 对话数据生成 ──

@@ -42,7 +42,7 @@ export const FORMULA_STATE_COLORS = {
    * 颜色：绿色系 - 代表通过、成功、可使用
    */
   approved: {
-    main: '#34C759',
+    main: 'var(--color-primary-400)',
     light: '#86EFAC',
     dark: '#1E8E3E',
     bg: 'rgba(16,185,129,0.1)',

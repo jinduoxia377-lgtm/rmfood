@@ -191,7 +191,7 @@ function ScoreProgress({ label, score }: { label: string; score: number }) {
           className="h-2 rounded-full transition-all duration-500"
           style={{
             width: `${score * 100}%`,
-            backgroundColor: score >= 0.8 ? '#22c55e' : score >= 0.5 ? '#eab308' : '#ef4444',
+            backgroundColor: score >= 0.8 ? 'var(--color-primary-500)' : score >= 0.5 ? '#eab308' : '#ef4444',
           }}
         />
       </div>
@@ -277,7 +277,7 @@ function BarChart({ data }: { data: PeptideAnalysisResult }) {
         },
         {
           value: data.antioxidant.score,
-          itemStyle: { color: '#22c55e', borderRadius: [4, 4, 0, 0] }
+          itemStyle: { color: 'var(--color-primary-500)', borderRadius: [4, 4, 0, 0] }
         },
         {
           value: data.antimicrobial.score,
@@ -422,7 +422,7 @@ function ComparisonView({ sequences }: { sequences: string[] }) {
                       r.safety.food_score / 100,
                     ],
                     name: r.sequence,
-                    lineStyle: { color: ['#3b82f6', '#22c55e', '#f59e0b', '#ef4444'][i % 4] },
+                    lineStyle: { color: ['#3b82f6', 'var(--color-primary-500)', '#f59e0b', '#ef4444'][i % 4] },
                     areaStyle: { color: (['rgba(59,130,246,0.1)', 'rgba(34,197,94,0.1)', 'rgba(245,158,11,0.1)', 'rgba(239,68,68,0.1)'][i % 4]) },
                   })),
                 }],
@@ -873,7 +873,7 @@ function DeepAnalysisView() {
         <div className="grid grid-cols-3 gap-3">
           {[
             ['α-螺旋 (%)', ss?.alpha_helix ?? 0, '#3b82f6'],
-            ['β-折叠 (%)', ss?.beta_sheet ?? 0, '#22c55e'],
+            ['β-折叠 (%)', ss?.beta_sheet ?? 0, 'var(--color-primary-500)'],
             ['无规卷曲 (%)', ss?.random_coil ?? 0, '#f59e0b'],
           ].map(([label, val, color]: any) => (
             <div key={label} className="text-center p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg">

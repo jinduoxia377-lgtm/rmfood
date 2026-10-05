@@ -93,7 +93,7 @@ class ReportExportService {
     .header h1 {
       font-size: 28px;
       font-weight: 700;
-      color: #007AFF;
+      color: var(--color-secondary-500);
       margin-bottom: 10px;
     }
     .header .subtitle {
@@ -137,7 +137,7 @@ class ReportExportService {
     }
     .score-card.purple .value { color: #9333ea; }
     .score-card.yellow .value { color: #ca8a04; }
-    .score-card.blue .value { color: #007AFF; }
+    .score-card.blue .value { color: var(--color-secondary-500); }
     .score-card.green .value { color: #16a34a; }
     .score-bar {
       width: 100%;
@@ -153,7 +153,7 @@ class ReportExportService {
     }
     .score-card.purple .score-bar-fill { background-color: #9333ea; }
     .score-card.yellow .score-bar-fill { background-color: #ca8a04; }
-    .score-card.blue .score-bar-fill { background-color: #007AFF; }
+    .score-card.blue .score-bar-fill { background-color: var(--color-secondary-500); }
     .score-card.green .score-bar-fill { background-color: #16a34a; }
     table {
       width: 100%;

@@ -881,10 +881,10 @@ const MDStyles = `
   --md-text-secondary: var(--text-secondary, #6E6E73);
   --md-text-muted: var(--text-muted, #9A9A9F);
   --md-surface: var(--card-bg-solid, #FFFFFF);
-  --md-surface-alt: var(--bg-tertiary, #F5F5F7);
+  --md-surface-alt: var(--bg-tertiary, var(--bg-canvas));
   --md-border: var(--border-color, rgba(0, 0, 0, 0.06));
   --md-border-strong: rgba(0, 0, 0, 0.12);
-  --md-accent: var(--color-primary, #34C759);
+  --md-accent: var(--color-primary, var(--color-primary-400));
   --md-accent-soft: rgba(52, 199, 89, 0.12);
   --md-accent2: var(--color-primary-500, #10b981);
   --md-accent2-soft: rgba(16, 185, 129, 0.15);
@@ -894,23 +894,23 @@ const MDStyles = `
   --md-success-soft: rgba(36, 138, 61, 0.1);
   --md-error: #DC2626;
   --md-error-soft: rgba(220, 38, 38, 0.1);
-  --md-link: #007AFF;
-  --md-code-bg: var(--bg-tertiary, #F5F5F7);
+  --md-link: var(--color-secondary-500);
+  --md-code-bg: var(--bg-tertiary, var(--bg-canvas));
   --md-code-text: var(--text-primary, #1D1D1F);
 }
 
 .dark .chat-md-root {
-  --md-text-primary: var(--text-primary, #F5F5F7);
+  --md-text-primary: var(--text-primary, var(--bg-canvas));
   --md-text-secondary: var(--text-secondary, #A1A1A6);
   --md-text-muted: var(--text-muted, #636366);
-  --md-surface: var(--bg-surface, #1C1C1E);
+  --md-surface: var(--bg-surface, var(--bg-surface-container));
   --md-surface-alt: rgba(44, 44, 46, 0.5);
   --md-border: var(--border-color, rgba(255, 255, 255, 0.06));
   --md-border-strong: rgba(255, 255, 255, 0.12);
   --md-accent: var(--color-primary, #30D158);
   --md-accent-soft: rgba(48, 209, 88, 0.15);
   --md-code-bg: rgba(44, 44, 46, 0.8);
-  --md-code-text: #F5F5F7;
+  --md-code-text: var(--bg-canvas);
 }
 
 /* ===== Root Container ===== */
@@ -1289,8 +1289,8 @@ const MDStyles = `
 }
 
 .chat-md-checked {
-  background-color: #34C759;
-  border-color: #34C759;
+  background-color: var(--color-primary-400);
+  border-color: var(--color-primary-400);
   color: white;
   font-weight: 700;
 }

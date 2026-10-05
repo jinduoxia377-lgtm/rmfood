@@ -1396,9 +1396,9 @@ private getFormatStyles(format: 'html' | 'word' | 'pdf'): string {
  `,
  word: `
  :root {
- --primary: #AF52DE;
+ --primary: var(--color-accent-500);
  --secondary: #4338ca;
- --accent: #AF52DE;
+ --accent: var(--color-accent-500);
  --text-primary: #1e1b4b;
  --text-secondary: #3730a3;
  --bg-primary: #faf5ff;

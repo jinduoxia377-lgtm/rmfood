@@ -78,7 +78,7 @@ export function EnhancedLineChart({
     });
   }, [data]);
 
-  const defaultColors = [themeColors.primary, themeColors.secondary, themeColors.tertiary, 'var(--color-success, #34C759)', 'var(--color-warning, #FF9F0A)'];
+  const defaultColors = [themeColors.primary, themeColors.secondary, themeColors.tertiary, 'var(--color-success, var(--color-primary-400))', 'var(--color-warning, #FF9F0A)'];
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload?.length) {

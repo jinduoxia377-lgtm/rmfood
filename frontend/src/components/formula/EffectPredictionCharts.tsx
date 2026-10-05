@@ -193,7 +193,7 @@ export function EffectPredictionChart({ data, showConfidenceBand = true, height 
             y={padding.top}
             width={windowEndX - windowStartX}
             height={plotHeight}
-            fill="#34C759"
+            fill="var(--color-primary-400)"
             opacity="0.08"
             rx="4"
           />
@@ -204,22 +204,22 @@ export function EffectPredictionChart({ data, showConfidenceBand = true, height 
               <path
                 d={ctPath}
                 fill="none"
-                stroke="#007AFF"
+                stroke="var(--color-secondary-500)"
                 strokeWidth="3"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
 
               {/* 峰值点标记 */}
-              <circle cx={peakX} cy={peakYConc} r="6" fill="#007AFF" stroke="#fff" strokeWidth="2" />
+              <circle cx={peakX} cy={peakYConc} r="6" fill="var(--color-secondary-500)" stroke="#fff" strokeWidth="2" />
 
               {/* 峰值标注 */}
               <g>
-                <rect x={peakX - 40} y={peakYConc - 35} width="80" height="24" rx="4" fill="#007AFF" />
+                <rect x={peakX - 40} y={peakYConc - 35} width="80" height="24" rx="4" fill="var(--color-secondary-500)" />
                 <text x={peakX} y={peakYConc - 19} textAnchor="middle" fontSize="11" fill="#fff" fontWeight="bold">
                   Tmax: {data.peak_time.toFixed(1)}h
                 </text>
-                <line x1={peakX} y1={peakYConc - 11} x2={peakX} y2={peakYConc - 6} stroke="#007AFF" strokeWidth="2" />
+                <line x1={peakX} y1={peakYConc - 11} x2={peakX} y2={peakYConc - 6} stroke="var(--color-secondary-500)" strokeWidth="2" />
               </g>
 
               {/* Y轴标签 */}
@@ -267,7 +267,7 @@ export function EffectPredictionChart({ data, showConfidenceBand = true, height 
                     })),
                     toYConc,
                   )} Z`}
-                  fill="#007AFF"
+                  fill="var(--color-secondary-500)"
                   opacity="0.1"
                 />
               )}
@@ -278,14 +278,14 @@ export function EffectPredictionChart({ data, showConfidenceBand = true, height 
               <path
                 d={etPath}
                 fill="none"
-                stroke="#34C759"
+                stroke="var(--color-primary-400)"
                 strokeWidth="3"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
 
               {/* 最大效应点标记 */}
-              <circle cx={toX(data.peak_time)} cy={peakYEffect} r="6" fill="#34C759" stroke="#fff" strokeWidth="2" />
+              <circle cx={toX(data.peak_time)} cy={peakYEffect} r="6" fill="var(--color-primary-400)" stroke="#fff" strokeWidth="2" />
 
               {/* 半效期参考线 */}
               <line
@@ -345,7 +345,7 @@ export function EffectPredictionChart({ data, showConfidenceBand = true, height 
               y1={padding.top}
               x2={windowStartX}
               y2={height - padding.bottom}
-              stroke="#34C759"
+              stroke="var(--color-primary-400)"
               strokeWidth="2"
               strokeDasharray="6,3"
             />
@@ -354,7 +354,7 @@ export function EffectPredictionChart({ data, showConfidenceBand = true, height 
               y1={padding.top}
               x2={windowEndX}
               y2={height - padding.bottom}
-              stroke="#34C759"
+              stroke="var(--color-primary-400)"
               strokeWidth="2"
               strokeDasharray="6,3"
             />
@@ -366,7 +366,7 @@ export function EffectPredictionChart({ data, showConfidenceBand = true, height 
               width="90"
               height="18"
               rx="9"
-              fill="#34C759"
+              fill="var(--color-primary-400)"
             />
             <text
               x={(windowStartX + windowEndX) / 2}

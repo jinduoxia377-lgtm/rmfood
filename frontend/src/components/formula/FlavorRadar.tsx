@@ -16,7 +16,7 @@ const FLAVORS = [
   { key: 'sweet', label: '甜', color: '#f59e0b' },
   { key: 'umami', label: '鲜', color: '#10b981' },
   { key: 'astringent', label: '涩', color: '#8b5cf6' },
-  { key: 'sour', label: '酸', color: '#22c55e' },
+  { key: 'sour', label: '酸', color: 'var(--color-primary-500)' },
 ] as const;
 
 export function FlavorRadar({ profile, balanceScore, size = 200 }: FlavorRadarProps) {

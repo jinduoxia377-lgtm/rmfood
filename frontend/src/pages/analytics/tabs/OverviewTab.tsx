@@ -305,7 +305,7 @@ export default function OverviewTab({ filters, dashboard, refresh }: Props) {
                     {
                       label: '实验',
                       data: trendChartData.map(d => d.experiment as number),
-                      borderColor: 'var(--color-primary, #34C759)',
+                      borderColor: 'var(--color-primary, var(--color-primary-400))',
                       backgroundColor: 'rgba(16, 185, 129, 0.1)',
                       fill: true,
                     },
@@ -496,7 +496,7 @@ export default function OverviewTab({ filters, dashboard, refresh }: Props) {
                   data={statusChartData}
                   nameKey="name"
                   dataKey="value"
-                  datasets={[{ label: '状态', data: statusChartData.map(d => d.value as number), backgroundColor: ['#94a3b8','#22c55e','#6b7280','#f59e0b'] }]}
+                  datasets={[{ label: '状态', data: statusChartData.map(d => d.value as number), backgroundColor: ['#94a3b8','var(--color-primary-500)','#6b7280','#f59e0b'] }]}
                   height={250}
                 />
               ) : (

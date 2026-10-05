@@ -50,7 +50,7 @@ export function BarChart({ data }: BarChartProps) {
           <Bar
             name="贡献度"
             dataKey="contribution"
-            fill="var(--color-tertiary, #AF52DE)"
+            fill="var(--color-tertiary, var(--color-accent-500))"
             radius={[0, 4, 4, 0]}
           />
         </RechartsBarChart>

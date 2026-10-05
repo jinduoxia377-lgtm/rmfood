@@ -19,7 +19,7 @@ interface NutritionNRVChartProps {
 
 const NUTRIENT_COLORS: Record<string, string> = {
   energy: '#6366f1',
-  protein: '#22c55e',
+  protein: 'var(--color-primary-500)',
   fat: '#f59e0b',
   carbohydrate: '#3b82f6',
   sodium: '#ef4444',

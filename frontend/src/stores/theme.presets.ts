@@ -26,20 +26,20 @@ import type {
 /** Light 主题色彩 */
 const lightColors: SemanticColors = {
   primary: {
-    // T-B1：原为 Apple 绿 #34C759，与 base.css 的 --color-primary(#10b981) 分叉（D-2/D-3）
+    // T-B1：原为 Apple 绿 var(--color-primary-400)，与 base.css 的 --color-primary(#10b981) 分叉（D-2/D-3）
     main: '#10b981', // = base.css 的 --color-primary（规范 §13 权威）
     light: '#6ee7b7', // = --color-primary-300
     dark: '#047857', // = --color-primary-700
     contrastText: '#052e16', // 亮绿底（#10b981）配白字仅 2.23:1 → 必须用深字
   },
   secondary: {
-    main: '#3b82f6', // T-B1：= --color-secondary（原 Apple 蓝 #007AFF）
+    main: '#3b82f6', // T-B1：= --color-secondary（原 Apple 蓝 var(--color-secondary-500)）
     light: '#93c5fd', // Blue-300
     dark: '#1d4ed8', // Blue-700
     contrastText: '#ffffff', // (对比度达标 ✅)
   },
   tertiary: {
-    main: '#8b5cf6', // T-B1：= --color-accent（原 Apple 紫 #AF52DE）
+    main: '#8b5cf6', // T-B1：= --color-accent（原 Apple 紫 var(--color-accent-500)）
     light: '#c4b5fd',
     dark: '#6d28d9',
     contrastText: '#ffffff',
@@ -80,14 +80,14 @@ const lightColors: SemanticColors = {
     primary: '#111827', // Slate-900 (15.2:1 on white ✅)
     secondary: '#4B5563', // Slate-600 (4.7:1 ✅)
     disabled: '#9CA3AF', // Slate-400
-    link: '#047857', // T-B1：链接需 ≥4.5:1，改用 --color-primary-700（原 #34C759 在白色上仅 2.6:1）
+    link: '#047857', // T-B1：链接需 ≥4.5:1，改用 --color-primary-700（原 var(--color-primary-400) 在白色上仅 2.6:1）
     textPrimary: '#1D1D1F',
     textSecondary: '#6E6E73',
     textMuted: '#9A9A9F',
   },
   border: {
     default: '#E5E7EB', // Slate-200
-    focus: '#3b82f6', // T-B1：焦点环 = --color-secondary（原 Apple 蓝 #007AFF）
+    focus: '#3b82f6', // T-B1：焦点环 = --color-secondary（原 Apple 蓝 var(--color-secondary-500)）
     divider: '#F3F4F6', // Slate-100
   },
   surfaceVariant: '#F3F4F6',
@@ -138,14 +138,14 @@ const darkColors: SemanticColors = {
   },
   background: {
     default: '#000000', // Apple OLED 纯黑
-    elevated: '#1C1C1E', // Apple 标准暗色表面
-    hover: '#2C2C2E', // Apple 浮起表面
-    active: '#3A3A3C', // Apple 高亮表面
-    disabled: '#1C1C1E', // (opacity 0.38)
+    elevated: 'var(--bg-surface-container)', // Apple 标准暗色表面
+    hover: 'var(--bg-surface-raised)', // Apple 浮起表面
+    active: 'var(--bg-surface-container-high)', // Apple 高亮表面
+    disabled: 'var(--bg-surface-container)', // (opacity 0.38)
   },
   surface: {
-    default: '#1C1C1E', // Apple 标准暗色表面
-    variant: '#2C2C2E', // Apple 浮起表面
+    default: 'var(--bg-surface-container)', // Apple 标准暗色表面
+    variant: 'var(--bg-surface-raised)', // Apple 浮起表面
     overlay: 'rgba(0, 0, 0, 0.7)', // 暗色模式稍强遮罩
   },
   text: {
@@ -153,7 +153,7 @@ const darkColors: SemanticColors = {
     secondary: '#D1D5DB', // Slate-300 (9.2:1 ✅✅ AAA)
     disabled: '#9CA3AF', // Slate-400 (5.4:1 ✅ AA) - 从#64748b提升，原值仅3.2:1不达标
     link: '#4ADE80', // Emerald-400 Forest Green 暗色模式亮色版
-    textPrimary: '#F5F5F7',
+    textPrimary: 'var(--bg-canvas)',
     textSecondary: '#A1A1A6',
     textMuted: '#636366',
   },
@@ -435,7 +435,7 @@ export function getAccessibilityTheme(baseTheme: ThemeConfig, mode: Accessibilit
 
     case 'color-blind':
       // T-W2（D-32）：改用 **Okabe-Ito 色盲安全色板**。
-      // 原实现给 success/error 选的是 Apple 绿 #34C759 与 Apple 红 #FF3B30 ——
+      // 原实现给 success/error 选的是 Apple 绿 var(--color-primary-400) 与 Apple 红 #FF3B30 ——
       // 正是红绿色盲（deuteranopia/protanopia）下最难区分的一对，与「色盲友好」
       // 目标相反。Okabe-Ito 各色主要依靠**明度差**而非色相差区分。
       // 与此处对应，semantic-utils.css 中 [data-a11y-mode="color-blind"]

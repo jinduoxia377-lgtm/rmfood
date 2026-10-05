@@ -111,7 +111,7 @@ export const dataSources: DataSource[] = [
     desc: '覆盖美国 FDA GRAS、欧盟 EFSA 认证、日本厚生省等国际标准数据库，支持多国法规交叉比对',
     stat: '50+',
     statLabel: '国际法规源',
-    color: 'var(--color-cyan-600, #0891b2)',
+    color: 'var(--color-cyan-600, var(--color-info-600))',
     colorText: 'var(--color-cyan-700, #0e7490)',
     colorLight: '#ecfeff',
     colorBorder: '#a5f3fc',

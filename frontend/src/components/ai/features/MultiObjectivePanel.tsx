@@ -1533,10 +1533,10 @@ export function MultiObjectivePanel({ className }: MultiObjectivePanelProps) {
                       type="monotone"
                       dataKey="best_fitness"
                       name="最佳适应度"
-                      stroke="var(--color-green-500, #34C759)"
+                      stroke="var(--color-green-500, var(--color-primary-400))"
                       strokeWidth={2}
                       dot={false}
-                      activeDot={{ r: 4, fill: 'var(--color-green-500, #34C759)' }}
+                      activeDot={{ r: 4, fill: 'var(--color-green-500, var(--color-primary-400))' }}
                     />
                     <Line
                       type="monotone"
